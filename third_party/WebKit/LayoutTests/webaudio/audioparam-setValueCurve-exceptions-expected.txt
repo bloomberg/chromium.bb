@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 121: Delay.delayTime.setValueCurveAtTime value 5 outside nominal range [0, 1]; value will be clamped.
 Test Exceptions from setValueCurveAtTime
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -19,8 +20,15 @@ PASS setValueCurveAtTime(curve, 0.00625, 0.01) threw NotSupportedError: Failed t
 PASS setValueCurveAtTime(curve, 0.018750000000000003, 0.01) threw NotSupportedError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.01875, 0.01) overlaps exponentialRampToValue(1, 0.025).
 PASS setValueCurveAtTime(curve, 0.03125, 0.01) threw NotSupportedError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.03125, 0.01) overlaps setTargetAtTime(1, 0.03750000000000001, 0.1).
 PASS setValueCurveAtTime(curve, 0.043750000000000004, 0.01) threw NotSupportedError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.04375, 0.01) overlaps setValueCurveAtTime(..., 0.05, 0.1).
+PASS setValueCurveAtTime([NaN, NaN], 0.043750000000000004, 0.01) threw TypeError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': The provided float value for the curve at element 0 is non-finite: NaN.
+PASS setValueCurveAtTime([1, Infinity], 0.043750000000000004, 0.01) threw TypeError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': The provided float value for the curve at element 1 is non-finite: Infinity.
+PASS delayTime.setValueCurveAtTime([1, 5], 0.043750000000000004, 0.01) did not throw an exception.
+PASS delayTime.setValueCurveAtTime([1, 5, Infinity], 0.043750000000000004, 0.01) threw TypeError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': The provided float value for the curve at element 2 is non-finite: Infinity.
 PASS setValueCurveAtTime(curve, 0.031415926535897934, 0.01) threw NotSupportedError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': setValueCurveAtTime(..., 0.03141592653589793, 0.01) overlaps setTargetAtTime(1, 0.03750000000000001, 0.1).
 PASS setValueCurve overlapping existing automation functions correctly signaled errors.
+
+PASS Handled setValueCurve exception so output contains only the constant 1.
+PASS setValueCurveAtTime correctly not inserted into timeline.
 
 PASS setValueAtTime(1, 0) did not throw an exception.
 PASS linearRampToValueAtTime(0, 0.0025) did not throw an exception.

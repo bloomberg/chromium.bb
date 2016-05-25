@@ -25,6 +25,7 @@
 
 #include "modules/webaudio/AudioParam.h"
 
+#include "core/dom/ExceptionCode.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/webaudio/AudioNode.h"
 #include "modules/webaudio/AudioNodeOutput.h"
@@ -454,15 +455,34 @@ AudioParam* AudioParam::setTargetAtTime(float target, double time, double timeCo
 
 AudioParam* AudioParam::setValueCurveAtTime(DOMFloat32Array* curve, double time, double duration, ExceptionState& exceptionState)
 {
-    // Just find the first value in the curve (if any) that is outside the nominal range.  It's
-    // probably not necessary to produce a warning on every value outside the nominal range.
     float* curveData = curve->data();
     float min = minValue();
     float max = maxValue();
 
+    // First, find any non-finite value in the curve and throw an exception if
+    // there are any.
     for (unsigned k = 0; k < curve->length(); ++k) {
-        if (curveData[k] < min || curveData[k] > max) {
-            warnIfOutsideRange("setValueCurveAtTime value", curveData[k]);
+        float value = curveData[k];
+
+        if (!std::isfinite(value)) {
+            exceptionState.throwDOMException(
+                V8TypeError,
+                "The provided float value for the curve at element "
+                + String::number(k)
+                + " is non-finite: "
+                + String::number(value));
+            return nullptr;
+        }
+    }
+
+    // Second, find the first value in the curve (if any) that is outside the
+    // nominal range.  It's probably not necessary to produce a warning on every
+    // value outside the nominal range.
+    for (unsigned k = 0; k < curve->length(); ++k) {
+        float value = curveData[k];
+
+        if (value < min || value > max) {
+            warnIfOutsideRange("setValueCurveAtTime value", value);
             break;
         }
     }

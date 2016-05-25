@@ -105,6 +105,27 @@
           }).throw("NotSupportedError") && success;
         }
 
+        // Elements of setValueCurve should be finite.
+        success = Should("setValueCurveAtTime([NaN, NaN], " + time + ", 0.01)", function () {
+          g.gain.setValueCurveAtTime(Float32Array.from([NaN, NaN]), time, 0.01);
+        }).throw("TypeError") && success;
+
+        success = Should("setValueCurveAtTime([1, Infinity], " + time + ", 0.01)", function () {
+          g.gain.setValueCurveAtTime(Float32Array.from([1, Infinity]), time, 0.01);
+        }).throw("TypeError") && success;
+
+        var d = context.createDelay();
+        // Check that we get warnings for out-of-range values and also throw for
+        // non-finite values.
+        success = Should("delayTime.setValueCurveAtTime([1, 5], " + time + ", 0.01)", function() {
+          d.delayTime.setValueCurveAtTime(Float32Array.from([1, 5]), time, 0.01);
+        }).notThrow() && success;
+
+        success = Should("delayTime.setValueCurveAtTime([1, 5, Infinity], " + time + ", 0.01)",
+          function() {
+            d.delayTime.setValueCurveAtTime(Float32Array.from([1, 5, Infinity]), time, 0.01);
+          }).throw("TypeError") && success;
+
         // One last test that prints out lots of digits for the time.
         var time = Math.PI / 100;
         success = Should("setValueCurveAtTime(curve, " + time + ", 0.01)", function () {
@@ -118,6 +139,42 @@
           testFailed(prefix + " failed to signal errors.\n");
 
         done();
+      });
+
+      audit.defineTask("catch-exception", function (done) {
+        // Verify that the curve isn't inserted into the time line even if we catch the exception.
+        var success = true;
+        var context = new OfflineAudioContext(1, testDurationFrames, sampleRate);
+        var gain = context.createGain();
+        var source = context.createBufferSource();
+        var buffer = context.createBuffer(1, 1, context.sampleRate);
+        buffer.getChannelData(0)[0] = 1;
+        source.buffer = buffer;
+        source.loop = true;
+
+        source.connect(gain);
+        gain.connect(context.destination);
+
+        gain.gain.setValueAtTime(1, 0);
+        try {
+          // The value curve has an invalid element. This automation shouldn't be inserted into the
+          // timeline at all.
+          gain.gain.setValueCurveAtTime(Float32Array.from([0, NaN]), 128 / context.sampleRate, .5);
+        } catch (e) {
+        };
+        source.start();
+
+        context.startRendering().then(function (resultBuffer) {
+          // Since the setValueCurve wasn't inserted, the output should be exactly 1 for the entire
+          // duration.
+          var success = Should("Handled setValueCurve exception so output", resultBuffer.getChannelData(0))
+            .beConstantValueOf(1);
+
+          if (success)
+            testPassed("setValueCurveAtTime correctly not inserted into timeline.\n");
+          else
+            testFailed("setValueCurveAtTime incorrectly still inserted into timeline.\n");
+        }).then(done);
       });
 
       audit.defineTask("start-end", function (done) {
