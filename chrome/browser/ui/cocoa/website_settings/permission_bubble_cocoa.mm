@@ -19,12 +19,6 @@ PermissionBubbleCocoa::PermissionBubbleCocoa(Browser* browser)
 PermissionBubbleCocoa::~PermissionBubbleCocoa() {
 }
 
-// static
-std::unique_ptr<PermissionBubbleView> PermissionBubbleView::Create(
-    Browser* browser) {
-  return base::WrapUnique(new PermissionBubbleCocoa(browser));
-}
-
 void PermissionBubbleCocoa::Show(
     const std::vector<PermissionBubbleRequest*>& requests,
     const std::vector<bool>& accept_state) {

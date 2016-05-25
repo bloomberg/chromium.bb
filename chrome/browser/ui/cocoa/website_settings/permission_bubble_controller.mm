@@ -248,6 +248,44 @@ const NSSize kPermissionIconSize = {18, 18};
   return self;
 }
 
++ (NSPoint)getAnchorPointForBrowser:(Browser*)browser {
+  NSPoint anchor;
+  NSWindow* parentWindow = browser->window()->GetNativeWindow();
+  if ([PermissionBubbleController hasVisibleLocationBarForBrowser:browser]) {
+    LocationBarViewMac* location_bar =
+        [[parentWindow windowController] locationBarBridge];
+    anchor = location_bar->GetPageInfoBubblePoint();
+  } else {
+    // Center the bubble if there's no location bar.
+    NSRect contentFrame = [[parentWindow contentView] frame];
+    anchor = NSMakePoint(NSMidX(contentFrame), NSMaxY(contentFrame));
+  }
+
+  return ui::ConvertPointFromWindowToScreen(parentWindow, anchor);
+}
+
++ (bool)hasVisibleLocationBarForBrowser:(Browser*)browser {
+  if (!browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
+    return false;
+
+  if (!browser->exclusive_access_manager()->context()->IsFullscreen())
+    return true;
+
+  // If the browser is in browser-initiated full screen, a preference can cause
+  // the toolbar to be hidden.
+  if (browser->exclusive_access_manager()
+          ->fullscreen_controller()
+          ->IsFullscreenForBrowser()) {
+    PrefService* prefs = browser->profile()->GetPrefs();
+    bool show_toolbar = prefs->GetBoolean(prefs::kShowFullscreenToolbar);
+    return show_toolbar;
+  }
+
+  // Otherwise this is fullscreen without a toolbar, so there is no visible
+  // location bar.
+  return false;
+}
+
 - (void)windowWillClose:(NSNotification*)notification {
   [[NSNotificationCenter defaultCenter]
       removeObserver:self
@@ -436,41 +474,11 @@ const NSSize kPermissionIconSize = {18, 18};
 }
 
 - (NSPoint)getExpectedAnchorPoint {
-  NSPoint anchor;
-  if ([self hasVisibleLocationBar]) {
-    LocationBarViewMac* location_bar =
-        [[[self getExpectedParentWindow] windowController] locationBarBridge];
-    anchor = location_bar->GetPageInfoBubblePoint();
-  } else {
-    // Center the bubble if there's no location bar.
-    NSRect contentFrame = [[[self getExpectedParentWindow] contentView] frame];
-    anchor = NSMakePoint(NSMidX(contentFrame), NSMaxY(contentFrame));
-  }
-
-  return ui::ConvertPointFromWindowToScreen([self getExpectedParentWindow],
-                                            anchor);
+  return [PermissionBubbleController getAnchorPointForBrowser:browser_];
 }
 
 - (bool)hasVisibleLocationBar {
-  if (!browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
-    return false;
-
-  if (!browser_->exclusive_access_manager()->context()->IsFullscreen())
-    return true;
-
-  // If the browser is in browser-initiated full screen, a preference can cause
-  // the toolbar to be hidden.
-  if (browser_->exclusive_access_manager()
-          ->fullscreen_controller()
-          ->IsFullscreenForBrowser()) {
-    PrefService* prefs = browser_->profile()->GetPrefs();
-    bool show_toolbar = prefs->GetBoolean(prefs::kShowFullscreenToolbar);
-    return show_toolbar;
-  }
-
-  // Otherwise this is fullscreen without a toolbar, so there is no visible
-  // location bar.
-  return false;
+  return [PermissionBubbleController hasVisibleLocationBarForBrowser:browser_];
 }
 
 - (info_bubble::BubbleArrowLocation)getExpectedArrowLocation {

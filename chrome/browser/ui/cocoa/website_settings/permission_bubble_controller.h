@@ -36,6 +36,12 @@ class PermissionBubbleRequest;
 // Designated initializer.  |browser| and |bridge| must both be non-nil.
 - (id)initWithBrowser:(Browser*)browser bridge:(PermissionBubbleCocoa*)bridge;
 
+// Returns the anchor point to use for the given Cocoa |browser|.
++ (NSPoint)getAnchorPointForBrowser:(Browser*)browser;
+
+// Returns true if |browser| has a visible location bar.
++ (bool)hasVisibleLocationBarForBrowser:(Browser*)browser;
+
 // Makes the bubble visible. The bubble will be popuplated with text retrieved
 // from |requests|. |delegate| will receive callbacks for user actions.
 - (void)showWithDelegate:(PermissionBubbleView::Delegate*)delegate

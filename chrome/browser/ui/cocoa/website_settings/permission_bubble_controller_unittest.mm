@@ -48,14 +48,14 @@
 @end
 
 @implementation MockBubbleYesLocationBar
-- (bool)hasVisibleLocationBar { return true; }
++ (bool)hasVisibleLocationBarForBrowser:(Browser*)browser { return true; }
 @end
 
 @interface MockBubbleNoLocationBar : NSObject
 @end
 
 @implementation MockBubbleNoLocationBar
-- (bool)hasVisibleLocationBar { return false; }
++ (bool)hasVisibleLocationBarForBrowser:(Browser*)browser { return false; }
 @end
 
 namespace {
@@ -353,7 +353,7 @@ TEST_F(PermissionBubbleControllerTest, ExitFullscreen) {
 TEST_F(PermissionBubbleControllerTest, AnchorPositionWithLocationBar) {
   base::mac::ScopedObjCClassSwizzler locationSwizzle(
       [PermissionBubbleController class], [MockBubbleYesLocationBar class],
-      @selector(hasVisibleLocationBar));
+      @selector(hasVisibleLocationBarForBrowser:));
 
   NSPoint anchor = [controller_ getExpectedAnchorPoint];
 
@@ -370,7 +370,7 @@ TEST_F(PermissionBubbleControllerTest, AnchorPositionWithLocationBar) {
 TEST_F(PermissionBubbleControllerTest, AnchorPositionWithoutLocationBar) {
   base::mac::ScopedObjCClassSwizzler locationSwizzle(
       [PermissionBubbleController class], [MockBubbleNoLocationBar class],
-      @selector(hasVisibleLocationBar));
+      @selector(hasVisibleLocationBarForBrowser:));
 
   NSPoint anchor = [controller_ getExpectedAnchorPoint];
 
@@ -388,7 +388,7 @@ TEST_F(PermissionBubbleControllerTest,
   {
     base::mac::ScopedObjCClassSwizzler locationSwizzle(
         [PermissionBubbleController class], [MockBubbleYesLocationBar class],
-        @selector(hasVisibleLocationBar));
+        @selector(hasVisibleLocationBarForBrowser:));
     withLocationBar = [controller_ getExpectedAnchorPoint];
   }
 
@@ -396,7 +396,7 @@ TEST_F(PermissionBubbleControllerTest,
   {
     base::mac::ScopedObjCClassSwizzler locationSwizzle(
         [PermissionBubbleController class], [MockBubbleNoLocationBar class],
-        @selector(hasVisibleLocationBar));
+        @selector(hasVisibleLocationBarForBrowser:));
     withoutLocationBar = [controller_ getExpectedAnchorPoint];
   }
 

@@ -9,13 +9,11 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/frame/top_container_view.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view_observer.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_request.h"
@@ -148,8 +146,6 @@ class PermissionsBubbleDialogDelegateView
       public PermissionCombobox::Listener {
  public:
   PermissionsBubbleDialogDelegateView(
-      views::View* anchor_view,
-      views::BubbleBorder::Arrow anchor_arrow,
       PermissionBubbleViewViews* owner,
       const std::vector<PermissionBubbleRequest*>& requests,
       const std::vector<bool>& accept_state);
@@ -177,6 +173,7 @@ class PermissionsBubbleDialogDelegateView
   // Updates the anchor's arrow and view. Also repositions the bubble so it's
   // displayed in the correct location.
   void UpdateAnchor(views::View* anchor_view,
+                    const gfx::Point& anchor_point,
                     views::BubbleBorder::Arrow anchor_arrow);
 
  private:
@@ -190,13 +187,10 @@ class PermissionsBubbleDialogDelegateView
 };
 
 PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
-    views::View* anchor_view,
-    views::BubbleBorder::Arrow anchor_arrow,
     PermissionBubbleViewViews* owner,
     const std::vector<PermissionBubbleRequest*>& requests,
     const std::vector<bool>& accept_state)
-    : views::BubbleDialogDelegateView(anchor_view, anchor_arrow),
-      owner_(owner),
+    : owner_(owner),
       multiple_requests_(requests.size() > 1) {
   DCHECK(!requests.empty());
 
@@ -353,10 +347,8 @@ void PermissionsBubbleDialogDelegateView::PermissionSelectionChanged(
 
 void PermissionsBubbleDialogDelegateView::UpdateAnchor(
     views::View* anchor_view,
+    const gfx::Point& anchor_point,
     views::BubbleBorder::Arrow anchor_arrow) {
-  if (GetAnchorView() == anchor_view && arrow() == anchor_arrow)
-    return;
-
   set_arrow(anchor_arrow);
 
   // Update the border in the bubble: will either add or remove the arrow.
@@ -369,7 +361,10 @@ void PermissionsBubbleDialogDelegateView::UpdateAnchor(
       new views::BubbleBorder(adjusted_arrow, shadow(), color())));
 
   // Reposition the bubble based on the updated arrow and view.
-  SetAnchorView(anchor_view);
+  if (anchor_view)
+    SetAnchorView(anchor_view);
+  else
+    SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -380,33 +375,10 @@ PermissionBubbleViewViews::PermissionBubbleViewViews(Browser* browser)
       delegate_(nullptr),
       bubble_delegate_(nullptr) {
   DCHECK(browser);
+  DCHECK(browser->window());
 }
 
 PermissionBubbleViewViews::~PermissionBubbleViewViews() {
-}
-
-// static
-std::unique_ptr<PermissionBubbleView> PermissionBubbleView::Create(
-    Browser* browser) {
-  return base::WrapUnique(new PermissionBubbleViewViews(browser));
-}
-
-views::View* PermissionBubbleViewViews::GetAnchorView() {
-  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
-
-  if (browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
-    return browser_view->GetLocationBarView()->location_icon_view();
-
-  if (browser_view->IsFullscreenBubbleVisible())
-    return browser_view->exclusive_access_bubble()->GetView();
-
-  return browser_view->top_container();
-}
-
-views::BubbleBorder::Arrow PermissionBubbleViewViews::GetAnchorArrow() {
-  if (browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR))
-    return views::BubbleBorder::TOP_LEFT;
-  return views::BubbleBorder::NONE;
 }
 
 void PermissionBubbleViewViews::SetDelegate(Delegate* delegate) {
@@ -420,15 +392,18 @@ void PermissionBubbleViewViews::Show(
     bubble_delegate_->CloseBubble();
 
   bubble_delegate_ = new PermissionsBubbleDialogDelegateView(
-      GetAnchorView(), GetAnchorArrow(), this, requests, values);
+      this, requests, values);
 
   // Set |parent_window| because some valid anchors can become hidden.
-  views::Widget* widget = views::Widget::GetWidgetForNativeWindow(
-      browser_->window()->GetNativeWindow());
-  bubble_delegate_->set_parent_window(widget->GetNativeView());
+  bubble_delegate_->set_parent_window(
+      platform_util::GetViewForWindow(browser_->window()->GetNativeWindow()));
 
   views::BubbleDialogDelegateView::CreateBubble(bubble_delegate_)->Show();
   bubble_delegate_->SizeToContents();
+
+  bubble_delegate_->UpdateAnchor(GetAnchorView(),
+                                 GetAnchorPoint(),
+                                 GetAnchorArrow());
 }
 
 bool PermissionBubbleViewViews::CanAcceptRequestUpdate() {
@@ -447,8 +422,13 @@ bool PermissionBubbleViewViews::IsVisible() {
 }
 
 void PermissionBubbleViewViews::UpdateAnchorPosition() {
-  if (IsVisible())
-    bubble_delegate_->UpdateAnchor(GetAnchorView(), GetAnchorArrow());
+  if (IsVisible()) {
+    bubble_delegate_->set_parent_window(
+        platform_util::GetViewForWindow(browser_->window()->GetNativeWindow()));
+    bubble_delegate_->UpdateAnchor(GetAnchorView(),
+                                   GetAnchorPoint(),
+                                   GetAnchorArrow());
+  }
 }
 
 gfx::NativeWindow PermissionBubbleViewViews::GetNativeWindow() {
