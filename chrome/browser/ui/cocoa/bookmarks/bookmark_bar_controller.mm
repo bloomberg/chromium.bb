@@ -318,11 +318,11 @@ CGFloat BookmarkRightMargin() {
 
       const int kIconSize = 16;
       defaultImage_.reset([NSImageFromImageSkia(
-          gfx::CreateVectorIcon(gfx::VectorIconId::LOCATION_BAR_HTTP,
+          gfx::CreateVectorIcon(gfx::VectorIconId::OMNIBOX_HTTP,
                                 kIconSize,
                                 gfx::kChromeIconGrey)) retain]);
       defaultImageIncognito_.reset([NSImageFromImageSkia(
-          gfx::CreateVectorIcon(gfx::VectorIconId::LOCATION_BAR_HTTP,
+          gfx::CreateVectorIcon(gfx::VectorIconId::OMNIBOX_HTTP,
                                 kIconSize,
                                 SkColorSetA(SK_ColorWHITE, 0xCC))) retain]);
     } else {
