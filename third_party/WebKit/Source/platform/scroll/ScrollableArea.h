@@ -51,12 +51,6 @@ class ScrollAnimatorBase;
 class CompositorAnimationTimeline;
 class Widget;
 
-enum ScrollBehavior {
-    ScrollBehaviorAuto,
-    ScrollBehaviorInstant,
-    ScrollBehaviorSmooth,
-};
-
 enum IncludeScrollbarsInRect {
     ExcludeScrollbars,
     IncludeScrollbars,

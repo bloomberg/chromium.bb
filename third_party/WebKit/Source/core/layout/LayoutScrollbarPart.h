@@ -32,6 +32,7 @@
 namespace blink {
 
 class LayoutScrollbar;
+class ScrollableArea;
 
 class LayoutScrollbarPart final : public LayoutBlock {
 public:

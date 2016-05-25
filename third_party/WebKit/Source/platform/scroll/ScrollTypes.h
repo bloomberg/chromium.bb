@@ -183,6 +183,12 @@ enum ScrollbarOverlayStyle {
     ScrollbarOverlayStyleLight
 };
 
+enum ScrollBehavior {
+    ScrollBehaviorAuto,
+    ScrollBehaviorInstant,
+    ScrollBehaviorSmooth,
+};
+
 // The result of an attempt to scroll. If didScroll is true, then unusedScrollDelta gives
 // the amount of the scroll delta that was not consumed by scrolling.
 struct ScrollResult {
