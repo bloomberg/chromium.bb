@@ -1,0 +1,17 @@
+{
+    "description": "Describes the Web Page Replay archives for a user story set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "memory_health_plan_000.wpr": [
+            "http://yahoo.co.jp", 
+            "http://bing.com", 
+            "http://amazon.com", 
+            "http://cnn.com", 
+            "http://ebay.com", 
+            "http://yandex.ru", 
+            "http://google.com", 
+            "http://vimeo.com", 
+            "http://yahoo.com", 
+            "http://baidu.com"
+        ]
+    }
+}
