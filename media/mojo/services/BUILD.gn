@@ -113,6 +113,8 @@ component("services") {
     "mojo_renderer_service.cc",
     "mojo_renderer_service.h",
     "mojo_type_trait.h",
+    "mojo_video_decoder_service.cc",
+    "mojo_video_decoder_service.h",
     "service_factory_impl.cc",
     "service_factory_impl.h",
   ]

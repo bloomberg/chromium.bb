@@ -37,11 +37,10 @@ class ServiceFactoryImpl : public mojom::ServiceFactory {
   ~ServiceFactoryImpl() final;
 
   // mojom::ServiceFactory implementation.
-  void CreateAudioDecoder(
-      mojo::InterfaceRequest<mojom::AudioDecoder> audio_decoder) final;
-  void CreateRenderer(mojo::InterfaceRequest<mojom::Renderer> renderer) final;
-  void CreateCdm(
-      mojo::InterfaceRequest<mojom::ContentDecryptionModule> cdm) final;
+  void CreateAudioDecoder(mojom::AudioDecoderRequest request) final;
+  void CreateVideoDecoder(mojom::VideoDecoderRequest request) final;
+  void CreateRenderer(mojom::RendererRequest request) final;
+  void CreateCdm(mojom::ContentDecryptionModuleRequest request) final;
 
  private:
 #if defined(ENABLE_MOJO_RENDERER)

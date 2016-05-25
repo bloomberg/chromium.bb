@@ -7,12 +7,7 @@
 
 #include <memory>
 
-#include "media/base/audio_decoder.h"
-#include "media/base/audio_renderer_sink.h"
-#include "media/base/cdm_factory.h"
-#include "media/base/media_log.h"
-#include "media/base/renderer_factory.h"
-#include "media/base/video_renderer_sink.h"
+#include "base/memory/ref_counted.h"
 #include "media/mojo/services/media_mojo_export.h"
 
 namespace base {
@@ -27,18 +22,30 @@ class InterfaceProvider;
 
 namespace media {
 
+class AudioDecoder;
+class AudioRendererSink;
+class CdmFactory;
+class MediaLog;
+class RendererFactory;
+class VideoDecoder;
+class VideoRendererSink;
+
 class MEDIA_MOJO_EXPORT MojoMediaClient {
  public:
   virtual ~MojoMediaClient();
 
   // Called exactly once before any other method.
   virtual void Initialize();
+
   // Called before the host application is scheduled to quit.
   // The application message loop is still valid at this point, so all clean
   // up tasks requiring the message loop must be completed before returning.
   virtual void WillQuit();
 
   virtual std::unique_ptr<AudioDecoder> CreateAudioDecoder(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  virtual std::unique_ptr<VideoDecoder> CreateVideoDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // TODO(xhwang): Consider creating Renderer and CDM directly in the client

@@ -17,6 +17,7 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class AudioDecoder;
+class GpuVideoAcceleratorFactories;
 class VideoDecoder;
 
 // A factory class for creating audio and video decoders.
@@ -35,6 +36,7 @@ class MEDIA_EXPORT DecoderFactory {
   // Decoders are single-threaded, each decoder should run on |task_runner|.
   virtual void CreateVideoDecoders(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      GpuVideoAcceleratorFactories* gpu_factories,
       ScopedVector<VideoDecoder>* video_decoders);
 
  private:

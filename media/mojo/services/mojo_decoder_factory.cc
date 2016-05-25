@@ -29,16 +29,20 @@ void MojoDecoderFactory::CreateAudioDecoders(
                                            &audio_decoder_ptr);
 
   audio_decoders->push_back(
-      new media::MojoAudioDecoder(task_runner, std::move(audio_decoder_ptr)));
+      new MojoAudioDecoder(task_runner, std::move(audio_decoder_ptr)));
 #endif
 }
 
 void MojoDecoderFactory::CreateVideoDecoders(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    GpuVideoAcceleratorFactories* gpu_factories,
     ScopedVector<VideoDecoder>* video_decoders) {
 #if defined(ENABLE_MOJO_VIDEO_DECODER)
-  // TODO(sandersd): Connect to mojo video decoder service and pass it here.
-  video_decoders->push_back(new media::MojoVideoDecoder());
+  mojom::VideoDecoderPtr remote_decoder;
+  shell::GetInterface<mojom::VideoDecoder>(interface_provider_,
+                                           &remote_decoder);
+  video_decoders->push_back(new MojoVideoDecoder(task_runner, gpu_factories,
+                                                 std::move(remote_decoder)));
 #endif
 }
 

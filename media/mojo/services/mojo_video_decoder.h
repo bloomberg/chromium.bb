@@ -8,6 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/video_decoder.h"
+#include "media/mojo/interfaces/video_decoder.mojom.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/data_pipe.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -15,10 +18,18 @@ class SingleThreadTaskRunner;
 
 namespace media {
 
-// A VideoDecoder that proxies to a mojom::VideoDecoder.
-class MojoVideoDecoder : public VideoDecoder {
+class GpuVideoAcceleratorFactories;
+
+// A VideoDecoder, for use in the renderer process, that proxies to a
+// mojom::VideoDecoder. It is assumed that the other side will be implemented by
+// MojoVideoDecoderService, running in the GPU process, and that the remote
+// decoder will be hardware accelerated.
+class MojoVideoDecoder final : public VideoDecoder,
+                               public mojom::VideoDecoderClient {
  public:
-  MojoVideoDecoder();
+  MojoVideoDecoder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                   GpuVideoAcceleratorFactories* gpu_factories,
+                   mojom::VideoDecoderPtr remote_decoder);
   ~MojoVideoDecoder() final;
 
   // VideoDecoder implementation.
@@ -35,8 +46,34 @@ class MojoVideoDecoder : public VideoDecoder {
   bool CanReadWithoutStalling() const final;
   int GetMaxDecodeRequests() const final;
 
+  // mojom::VideoDecoderClient implementation.
+  void OnVideoFrameDecoded(mojom::VideoFramePtr frame) final;
+
  private:
+  void OnInitializeDone(bool status);
+  void OnDecodeDone(mojom::DecodeStatus status);
+  void OnResetDone();
+
+  void BindRemoteDecoder();
+  void OnConnectionError();
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  GpuVideoAcceleratorFactories* gpu_factories_;
+
+  // Used to pass the remote decoder from the constructor (on the main thread)
+  // to Initialize() (on the media thread).
+  mojom::VideoDecoderPtrInfo remote_decoder_info_;
+
+  InitCB init_cb_;
+  OutputCB output_cb_;
+  DecodeCB decode_cb_;
+  base::Closure reset_cb_;
+
+  mojom::VideoDecoderPtr remote_decoder_;
+  mojo::ScopedDataPipeProducerHandle decoder_buffer_pipe_;
+  bool remote_decoder_bound_ = false;
+  bool has_connection_error_ = false;
+  mojo::Binding<VideoDecoderClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(MojoVideoDecoder);
 };

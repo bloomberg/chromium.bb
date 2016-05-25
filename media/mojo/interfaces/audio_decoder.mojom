@@ -7,13 +7,6 @@ module media.mojom;
 import "media/mojo/interfaces/media_types.mojom";
 
 interface AudioDecoder {
-  // Status of a decode operation. See media::AudioDecoder for description.
-  enum DecodeStatus {
-    OK,            // We're all good.
-    ABORTED,       // We aborted as a result of Reset() or destruction.
-    DECODE_ERROR,  // A decoding error occurred.
-  };
-
   // Initializes the AudioDecoder with the audio codec configuration and CDM id.
   // For the unencrypted streams the |cdm_id| is ignored. Executed the callback
   // with whether the initialization succeeded, and whether the pipeline needs

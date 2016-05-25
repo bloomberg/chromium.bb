@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "media/base/audio_decoder.h"
 #include "media/mojo/interfaces/audio_decoder.mojom.h"
+#include "media/mojo/interfaces/media_types.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 
@@ -47,7 +48,7 @@ class MojoAudioDecoder : public AudioDecoder, public mojom::AudioDecoderClient {
   void OnInitialized(bool success, bool needs_bitstream_conversion);
 
   // Called when |remote_decoder_| accepted or rejected DecoderBuffer.
-  void OnDecodeStatus(mojom::AudioDecoder::DecodeStatus decode_status);
+  void OnDecodeStatus(mojom::DecodeStatus decode_status);
 
   // called when |remote_decoder_| finished Reset() sequence.
   void OnResetDone();

@@ -16,6 +16,7 @@ mojom("interfaces") {
     "output_protection.mojom",
     "renderer.mojom",
     "service_factory.mojom",
+    "video_decoder.mojom",
   ]
 
   if (is_chromeos) {

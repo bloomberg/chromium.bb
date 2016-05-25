@@ -4,6 +4,12 @@
 
 #include "media/mojo/services/mojo_media_client.h"
 
+#include "base/single_thread_task_runner.h"
+#include "media/base/audio_decoder.h"
+#include "media/base/cdm_factory.h"
+#include "media/base/renderer_factory.h"
+#include "media/base/video_decoder.h"
+
 namespace media {
 
 MojoMediaClient::MojoMediaClient() {}
@@ -15,6 +21,11 @@ void MojoMediaClient::Initialize() {}
 void MojoMediaClient::WillQuit() {}
 
 std::unique_ptr<AudioDecoder> MojoMediaClient::CreateAudioDecoder(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  return nullptr;
+}
+
+std::unique_ptr<VideoDecoder> MojoMediaClient::CreateVideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return nullptr;
 }

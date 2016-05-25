@@ -5,6 +5,7 @@
 #include "media/mojo/services/service_factory_impl.h"
 
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "media/base/media_log.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"
@@ -12,6 +13,10 @@
 #if defined(ENABLE_MOJO_AUDIO_DECODER)
 #include "media/mojo/services/mojo_audio_decoder_service.h"
 #endif  // defined(ENABLE_MOJO_AUDIO_DECODER)
+
+#if defined(ENABLE_MOJO_VIDEO_DECODER)
+#include "media/mojo/services/mojo_video_decoder_service.h"
+#endif  // defined(ENABLE_MOJO_VIDEO_DECODER)
 
 #if defined(ENABLE_MOJO_RENDERER)
 #include "media/base/renderer_factory.h"
@@ -66,6 +71,13 @@ void ServiceFactoryImpl::CreateAudioDecoder(
   new MojoAudioDecoderService(cdm_service_context_.GetWeakPtr(),
                               std::move(audio_decoder), std::move(request));
 #endif  // defined(ENABLE_MOJO_AUDIO_DECODER)
+}
+
+void ServiceFactoryImpl::CreateVideoDecoder(
+    mojom::VideoDecoderRequest request) {
+#if defined(ENABLE_MOJO_VIDEO_DECODER)
+  new MojoVideoDecoderService(std::move(request), mojo_media_client_);
+#endif  // defined(ENABLE_MOJO_VIDEO_DECODER)
 }
 
 void ServiceFactoryImpl::CreateRenderer(

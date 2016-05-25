@@ -13,6 +13,14 @@ enum BufferingState {
   HAVE_ENOUGH,
 };
 
+// See media/base/decode_status.h for descriptions.
+// Kept in sync with media::DecodeStatus via static_asserts.
+enum DecodeStatus {
+  OK,
+  ABORTED,
+  DECODE_ERROR,
+};
+
 // See media/base/audio_decoder_config.h for descriptions.
 // Kept in sync with media::AudioCodec via static_asserts.
 enum AudioCodec {
@@ -256,7 +264,6 @@ struct DecoderBuffer {
   // This is backed by an std::vector and results in a few copies.
   // Into the vector, onto and off the MessagePipe, back into a vector.
   array<uint8>? side_data;
-  uint32 side_data_size;
 
   // DecryptConfig for a encrypted buffer. NULL if the buffer is not encrypted.
   DecryptConfig? decrypt_config;

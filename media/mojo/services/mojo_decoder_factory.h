@@ -23,6 +23,7 @@ class MojoDecoderFactory : public DecoderFactory {
 
   void CreateVideoDecoders(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      GpuVideoAcceleratorFactories* gpu_factories,
       ScopedVector<VideoDecoder>* video_decoders) final;
 
  private:

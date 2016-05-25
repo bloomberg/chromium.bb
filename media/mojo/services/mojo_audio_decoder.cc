@@ -170,27 +170,12 @@ void MojoAudioDecoder::OnInitialized(bool success,
   base::ResetAndReturn(&init_cb_).Run(success);
 }
 
-static media::DecodeStatus ConvertDecodeStatus(
-    mojom::AudioDecoder::DecodeStatus status) {
-  switch (status) {
-    case mojom::AudioDecoder::DecodeStatus::OK:
-      return media::DecodeStatus::OK;
-    case mojom::AudioDecoder::DecodeStatus::ABORTED:
-      return media::DecodeStatus::ABORTED;
-    case mojom::AudioDecoder::DecodeStatus::DECODE_ERROR:
-      return media::DecodeStatus::DECODE_ERROR;
-  }
-  NOTREACHED();
-  return media::DecodeStatus::DECODE_ERROR;
-}
-
-void MojoAudioDecoder::OnDecodeStatus(
-    mojom::AudioDecoder::DecodeStatus status) {
+void MojoAudioDecoder::OnDecodeStatus(mojom::DecodeStatus status) {
   DVLOG(1) << __FUNCTION__ << ": status:" << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   DCHECK(!decode_cb_.is_null());
-  base::ResetAndReturn(&decode_cb_).Run(ConvertDecodeStatus(status));
+  base::ResetAndReturn(&decode_cb_).Run(static_cast<DecodeStatus>(status));
 }
 
 void MojoAudioDecoder::OnResetDone() {

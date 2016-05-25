@@ -6,6 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "media/base/android/android_cdm_factory.h"
+#include "media/base/audio_decoder.h"
+#include "media/base/cdm_factory.h"
 #include "media/filters/android/media_codec_audio_decoder.h"
 #include "media/mojo/interfaces/provision_fetcher.mojom.h"
 #include "media/mojo/services/mojo_provision_fetcher.h"

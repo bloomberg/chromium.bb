@@ -4,6 +4,8 @@
 
 #include "media/mojo/services/default_mojo_media_client.h"
 
+#include "media/base/cdm_factory.h"
+
 namespace media {
 
 DefaultMojoMediaClient::DefaultMojoMediaClient() {}

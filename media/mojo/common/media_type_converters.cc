@@ -14,6 +14,7 @@
 #include "media/base/buffering_state.h"
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/decode_status.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/decryptor.h"
@@ -41,9 +42,20 @@ namespace mojo {
                                                media::mojom::mojo_enum_value), \
                 "Mismatched enum: " #media_enum_value " != " #mojo_enum_value)
 
+#define ASSERT_ENUM_CLASS_EQ(media_enum, value)                            \
+  static_assert(                                                           \
+      media::media_enum::value ==                                          \
+          static_cast<media::media_enum>(media::mojom::media_enum::value), \
+      "Mismatched enum: " #media_enum #value)
+
 // BufferingState.
 ASSERT_ENUM_EQ(BufferingState, BUFFERING_, , HAVE_NOTHING);
 ASSERT_ENUM_EQ(BufferingState, BUFFERING_, , HAVE_ENOUGH);
+
+// DecodeStatus.
+ASSERT_ENUM_CLASS_EQ(DecodeStatus, OK);
+ASSERT_ENUM_CLASS_EQ(DecodeStatus, ABORTED);
+ASSERT_ENUM_CLASS_EQ(DecodeStatus, DECODE_ERROR);
 
 // AudioCodec.
 ASSERT_ENUM_EQ_RAW(AudioCodec, kUnknownAudioCodec, AudioCodec::UNKNOWN);
@@ -427,8 +439,6 @@ TypeConverter<media::mojom::DecoderBufferPtr,
   mojo_buffer->duration_usec = input->duration().InMicroseconds();
   mojo_buffer->is_key_frame = input->is_key_frame();
   mojo_buffer->data_size = base::checked_cast<uint32_t>(input->data_size());
-  mojo_buffer->side_data_size =
-      base::checked_cast<uint32_t>(input->side_data_size());
   mojo_buffer->front_discard_usec =
       input->discard_padding().first.InMicroseconds();
   mojo_buffer->back_discard_usec =
@@ -463,8 +473,8 @@ TypeConverter<scoped_refptr<media::DecoderBuffer>,
 
   scoped_refptr<media::DecoderBuffer> buffer(
       new media::DecoderBuffer(input->data_size));
-  if (input->side_data_size)
-    buffer->CopySideDataFrom(&input->side_data.front(), input->side_data_size);
+
+  buffer->CopySideDataFrom(&input->side_data.front(), input->side_data.size());
 
   buffer->set_timestamp(
       base::TimeDelta::FromMicroseconds(input->timestamp_usec));

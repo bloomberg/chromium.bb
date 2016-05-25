@@ -37,6 +37,9 @@ void MediaInterfaceProvider::GetInterface(const mojo::String& interface_name,
   } else if (interface_name == media::mojom::AudioDecoder::Name_) {
     GetMediaServiceFactory()->CreateAudioDecoder(
         mojo::MakeRequest<media::mojom::AudioDecoder>(std::move(pipe)));
+  } else if (interface_name == media::mojom::VideoDecoder::Name_) {
+    GetMediaServiceFactory()->CreateVideoDecoder(
+        mojo::MakeRequest<media::mojom::VideoDecoder>(std::move(pipe)));
   } else {
     NOTREACHED();
   }

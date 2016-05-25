@@ -14,20 +14,6 @@
 
 namespace media {
 
-static mojom::AudioDecoder::DecodeStatus ConvertDecodeStatus(
-    media::DecodeStatus status) {
-  switch (status) {
-    case media::DecodeStatus::OK:
-      return mojom::AudioDecoder::DecodeStatus::OK;
-    case media::DecodeStatus::ABORTED:
-      return mojom::AudioDecoder::DecodeStatus::ABORTED;
-    case media::DecodeStatus::DECODE_ERROR:
-      return mojom::AudioDecoder::DecodeStatus::DECODE_ERROR;
-  }
-  NOTREACHED();
-  return mojom::AudioDecoder::DecodeStatus::DECODE_ERROR;
-}
-
 MojoAudioDecoderService::MojoAudioDecoderService(
     base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
     std::unique_ptr<media::AudioDecoder> decoder,
@@ -95,7 +81,7 @@ void MojoAudioDecoderService::Decode(mojom::DecoderBufferPtr buffer,
   scoped_refptr<DecoderBuffer> media_buffer =
       ReadDecoderBuffer(std::move(buffer));
   if (!media_buffer) {
-    callback.Run(ConvertDecodeStatus(media::DecodeStatus::DECODE_ERROR));
+    callback.Run(mojom::DecodeStatus::DECODE_ERROR);
     return;
   }
 
@@ -127,7 +113,7 @@ void MojoAudioDecoderService::OnInitialized(const InitializeCallback& callback,
 void MojoAudioDecoderService::OnDecodeStatus(const DecodeCallback& callback,
                                              media::DecodeStatus status) {
   DVLOG(3) << __FUNCTION__ << " status:" << status;
-  callback.Run(ConvertDecodeStatus(status));
+  callback.Run(static_cast<mojom::DecodeStatus>(status));
 }
 
 void MojoAudioDecoderService::OnResetDone(const ResetCallback& callback) {

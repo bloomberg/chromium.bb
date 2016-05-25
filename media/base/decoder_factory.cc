@@ -18,6 +18,7 @@ void DecoderFactory::CreateAudioDecoders(
 
 void DecoderFactory::CreateVideoDecoders(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    GpuVideoAcceleratorFactories* gpu_factories,
     ScopedVector<VideoDecoder>* video_decoders) {}
 
 }  // namespace media
