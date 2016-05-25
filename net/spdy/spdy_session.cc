@@ -361,6 +361,8 @@ SpdyProtocolErrorDetails MapFramerErrorToProtocolError(
       return SPDY_ERROR_INVALID_CONTROL_FRAME_FLAGS;
     case SpdyFramer::SPDY_UNEXPECTED_FRAME:
       return SPDY_ERROR_UNEXPECTED_FRAME;
+    case SpdyFramer::SPDY_INTERNAL_FRAMER_ERROR:
+      return SPDY_ERROR_INTERNAL_FRAMER_ERROR;
     case SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE:
       return SPDY_ERROR_INVALID_CONTROL_FRAME_SIZE;
     case SpdyFramer::SPDY_INVALID_STREAM_ID:
@@ -398,6 +400,8 @@ Error MapFramerErrorToNetError(SpdyFramer::SpdyError err) {
     case SpdyFramer::SPDY_INVALID_CONTROL_FRAME_FLAGS:
       return ERR_SPDY_PROTOCOL_ERROR;
     case SpdyFramer::SPDY_UNEXPECTED_FRAME:
+      return ERR_SPDY_PROTOCOL_ERROR;
+    case SpdyFramer::SPDY_INTERNAL_FRAMER_ERROR:
       return ERR_SPDY_PROTOCOL_ERROR;
     case SpdyFramer::SPDY_INVALID_CONTROL_FRAME_SIZE:
       return ERR_SPDY_FRAME_SIZE_ERROR;
@@ -2205,16 +2209,6 @@ void SpdySession::OnStreamPadding(SpdyStreamId stream_id, size_t len) {
   if (it == active_streams_.end())
     return;
   it->second.stream->OnPaddingConsumed(len);
-}
-
-SpdyHeadersHandlerInterface* SpdySession::OnHeaderFrameStart(
-    SpdyStreamId stream_id) {
-  LOG(FATAL);
-  return nullptr;
-}
-
-void SpdySession::OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) {
-  LOG(FATAL);
 }
 
 void SpdySession::OnSettings(bool clear_persisted) {

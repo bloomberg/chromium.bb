@@ -1090,6 +1090,8 @@
       'spdy/buffered_spdy_framer.h',
       'spdy/fuzzing/hpack_fuzz_util.cc',
       'spdy/fuzzing/hpack_fuzz_util.h',
+      'spdy/header_coalescer.cc',
+      'spdy/header_coalescer.h',
       'spdy/hpack/hpack_constants.cc',
       'spdy/hpack/hpack_constants.h',
       'spdy/hpack/hpack_decoder.cc',

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "net/base/net_export.h"
 #include "net/socket/next_proto.h"
+#include "net/spdy/header_coalescer.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_header_block.h"
 #include "net/spdy/spdy_protocol.h"
@@ -80,20 +81,6 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
   // |stream_id| The stream receiving data.
   // |len| The number of padding octets.
   virtual void OnStreamPadding(SpdyStreamId stream_id, size_t len) = 0;
-
-  // Called just before processing the payload of a frame containing header
-  // data. Should return an implementation of SpdyHeadersHandlerInterface that
-  // will receive headers for stream |stream_id|. The caller will not take
-  // ownership of the headers handler. The same instance should be returned
-  // for all header frames comprising a logical header block (i.e. until
-  // OnHeaderFrameEnd() is called with end_headers == true).
-  virtual SpdyHeadersHandlerInterface* OnHeaderFrameStart(
-      SpdyStreamId stream_id) = 0;
-
-  // Called after processing the payload of a frame containing header data.
-  // |end_headers| is true if there will not be any subsequent CONTINUATION
-  // frames.
-  virtual void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) = 0;
 
   // Called when a SETTINGS frame is received.
   // |clear_persisted| True if the respective flag is set on the SETTINGS frame.
@@ -310,6 +297,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
     std::string debug_data;
   };
   std::unique_ptr<GoAwayFields> goaway_fields_;
+
+  std::unique_ptr<HeaderCoalescer> coalescer_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedSpdyFramer);
 };
