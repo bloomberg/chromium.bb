@@ -384,14 +384,19 @@ TEST_F(WindowTreeTest, SetEventObserverWrongUser) {
   ASSERT_EQ(0u, other_binding->client()->tracker()->changes()->size());
 }
 
-// Tests that an event observer can receive events that have no target window.
-TEST_F(WindowTreeTest, SetEventObserverNoTarget) {
+// Tests that an event observer cannot observe keystrokes.
+TEST_F(WindowTreeTest, SetEventObserverKeyEventsDisallowed) {
   WindowTreeTestApi(wm_tree()).SetEventObserver(
-      CreateEventMatcher(mojom::EventType::KEY_RELEASED), 111u);
-  ui::KeyEvent key(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_NONE);
-  DispatchEventAndAckImmediately(key);
-  EXPECT_EQ("EventObserved event_action=2 event_observer_id=111",
-            SingleChangeToDescription(*wm_client()->tracker()->changes()));
+      CreateEventMatcher(mojom::EventType::KEY_PRESSED), 111u);
+  ui::KeyEvent key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
+  DispatchEventAndAckImmediately(key_pressed);
+  EXPECT_EQ(0u, wm_client()->tracker()->changes()->size());
+
+  WindowTreeTestApi(wm_tree()).SetEventObserver(
+      CreateEventMatcher(mojom::EventType::KEY_RELEASED), 222u);
+  ui::KeyEvent key_released(ui::ET_KEY_RELEASED, ui::VKEY_A, ui::EF_NONE);
+  DispatchEventAndAckImmediately(key_released);
+  EXPECT_EQ(0u, wm_client()->tracker()->changes()->size());
 }
 
 TEST_F(WindowTreeTest, CursorChangesWhenMouseOverWindowAndWindowSetsCursor) {

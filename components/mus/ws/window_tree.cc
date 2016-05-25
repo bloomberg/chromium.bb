@@ -1147,13 +1147,41 @@ void WindowTree::ReleaseCapture(uint32_t change_id, Id window_id) {
 
 void WindowTree::SetEventObserver(mojom::EventMatcherPtr matcher,
                                   uint32_t observer_id) {
-  if (!matcher.is_null() && observer_id != 0) {
-    event_observer_matcher_.reset(new EventMatcher(*matcher));
-    event_observer_id_ = observer_id;
-  } else {
+  if (matcher.is_null() || observer_id == 0) {
+    // Clear any existing event observer.
     event_observer_matcher_.reset();
     event_observer_id_ = 0;
+    return;
   }
+
+  // Do not allow key events to be observed, as a compromised app could register
+  // itself as an event observer and spy on keystrokes to another app.
+  if (!matcher->type_matcher) {
+    DVLOG(1) << "SetEventObserver must specify an event type.";
+    return;
+  }
+  const mojom::EventType event_type_whitelist[] = {
+      mojom::EventType::POINTER_CANCEL,
+      mojom::EventType::POINTER_DOWN,
+      mojom::EventType::POINTER_MOVE,
+      mojom::EventType::POINTER_UP,
+      mojom::EventType::MOUSE_EXIT,
+      mojom::EventType::WHEEL,
+  };
+  bool allowed = false;
+  for (mojom::EventType event_type : event_type_whitelist) {
+    if (matcher->type_matcher->type == event_type) {
+      allowed = true;
+      break;
+    }
+  }
+  if (!allowed) {
+    DVLOG(1) << "SetEventObserver event type not allowed";
+    return;
+  }
+
+  event_observer_matcher_.reset(new EventMatcher(*matcher));
+  event_observer_id_ = observer_id;
 }
 
 void WindowTree::SetWindowBounds(uint32_t change_id,
