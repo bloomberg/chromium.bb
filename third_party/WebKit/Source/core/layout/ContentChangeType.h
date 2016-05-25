@@ -5,10 +5,14 @@
 #ifndef ContentChangeType_h
 #define ContentChangeType_h
 
+namespace blink {
+
 enum ContentChangeType {
     ImageChanged,
     CanvasChanged,
     CanvasContextChanged
 };
+
+} // namespace blink
 
 #endif // ContentChangeType_h

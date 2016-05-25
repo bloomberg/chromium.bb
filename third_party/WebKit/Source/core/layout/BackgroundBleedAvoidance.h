@@ -5,11 +5,15 @@
 #ifndef BackgroundBleedAvoidance_h
 #define BackgroundBleedAvoidance_h
 
+namespace blink {
+
 enum BackgroundBleedAvoidance {
     BackgroundBleedNone,
     BackgroundBleedShrinkBackground,
     BackgroundBleedClipOnly,
     BackgroundBleedClipLayer,
 };
+
+} // namespace blink
 
 #endif // BackgroundBleedAvoidance_h
