@@ -171,14 +171,15 @@ class BlimpEngineSession
   // This field is used per tab.
   bool last_page_load_completed_value_;
 
+  // Presents the client's single screen.
+  // Screen should be deleted after browser context (crbug.com/613372).
+  std::unique_ptr<BlimpScreen> screen_;
+
   // Content BrowserContext for this session.
   std::unique_ptr<BlimpBrowserContext> browser_context_;
 
   // Engine configuration including assigned client token.
   BlimpEngineConfig* engine_config_;
-
-  // Presents the client's single screen.
-  std::unique_ptr<BlimpScreen> screen_;
 
   // Represents the (currently single) browser window into which tab(s) will
   // be rendered.

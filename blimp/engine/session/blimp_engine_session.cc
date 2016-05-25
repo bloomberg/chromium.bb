@@ -207,9 +207,9 @@ BlimpEngineSession::BlimpEngineSession(
     net::NetLog* net_log,
     BlimpEngineConfig* engine_config,
     SettingsManager* settings_manager)
-    : browser_context_(std::move(browser_context)),
+    : screen_(new BlimpScreen),
+      browser_context_(std::move(browser_context)),
       engine_config_(engine_config),
-      screen_(new BlimpScreen),
       settings_manager_(settings_manager),
       settings_feature_(settings_manager_),
       render_widget_feature_(settings_manager_),
