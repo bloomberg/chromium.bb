@@ -44,13 +44,6 @@ base::MemoryMappedFile* g_mapped_snapshot = nullptr;
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 
-const base::PlatformFile kInvalidPlatformFile =
-#if defined(OS_WIN)
-    INVALID_HANDLE_VALUE;
-#else
-    -1;
-#endif
-
 // File handles intentionally never closed. Not using File here because its
 // Windows implementation guards against two instances owning the same
 // PlatformFile (which we allow since we know it is never freed).
@@ -63,8 +56,8 @@ static base::LazyInstance<OpenedFileMap>::Leaky g_opened_files =
 OpenedFileMap::mapped_type& GetOpenedFile(const char* file) {
   OpenedFileMap& opened_files(g_opened_files.Get());
   if (opened_files.find(file) == opened_files.end()) {
-    opened_files[file] =
-        std::make_pair(kInvalidPlatformFile, base::MemoryMappedFile::Region());
+    opened_files[file] = std::make_pair(base::kInvalidPlatformFile,
+                                        base::MemoryMappedFile::Region());
   }
   return opened_files[file];
 }
@@ -193,7 +186,7 @@ base::PlatformFile OpenV8File(const char* file_name,
 static const OpenedFileMap::mapped_type OpenFileIfNecessary(
     const char* file_name) {
   OpenedFileMap::mapped_type& opened = GetOpenedFile(file_name);
-  if (opened.first == kInvalidPlatformFile) {
+  if (opened.first == base::kInvalidPlatformFile) {
     opened.first = OpenV8File(file_name, &opened.second);
   }
   return opened;
@@ -258,7 +251,7 @@ static LoadV8FileResult MapVerify(const OpenedFileMap::mapped_type& file_region,
                                   const unsigned char* fingerprint,
 #endif
                                   base::MemoryMappedFile** mmapped_file_out) {
-  if (file_region.first == kInvalidPlatformFile)
+  if (file_region.first == base::kInvalidPlatformFile)
     return V8_LOAD_FAILED_OPEN;
   if (!MapV8File(file_region.first, file_region.second, mmapped_file_out))
     return V8_LOAD_FAILED_MAP;
@@ -309,7 +302,7 @@ void V8Initializer::LoadV8SnapshotFromFD(base::PlatformFile snapshot_pf,
   if (g_mapped_snapshot)
     return;
 
-  if (snapshot_pf == kInvalidPlatformFile)
+  if (snapshot_pf == base::kInvalidPlatformFile)
     return;
 
   base::MemoryMappedFile::Region snapshot_region =
@@ -341,7 +334,7 @@ void V8Initializer::LoadV8NativesFromFD(base::PlatformFile natives_pf,
   if (g_mapped_natives)
     return;
 
-  CHECK_NE(natives_pf, kInvalidPlatformFile);
+  CHECK_NE(natives_pf, base::kInvalidPlatformFile);
 
   base::MemoryMappedFile::Region natives_region =
       base::MemoryMappedFile::Region::kWholeFile;

@@ -30,10 +30,8 @@
 namespace mojo {
 
 #if defined(OS_POSIX)
-
 const MojoPlatformHandleType kPlatformFileHandleType =
     MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR;
-const base::PlatformFile kInvalidPlatformFile = -1;
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 const MojoPlatformHandleType kPlatformSharedBufferHandleType =
@@ -46,7 +44,6 @@ const MojoPlatformHandleType kPlatformSharedBufferHandleType =
 #elif defined(OS_WIN)
 const MojoPlatformHandleType kPlatformFileHandleType =
     MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE;
-const base::PlatformFile kInvalidPlatformFile = INVALID_HANDLE_VALUE;
 
 const MojoPlatformHandleType kPlatformSharedBufferHandleType =
     MOJO_PLATFORM_HANDLE_TYPE_WINDOWS_HANDLE;

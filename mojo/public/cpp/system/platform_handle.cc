@@ -48,7 +48,7 @@ MojoResult UnwrapPlatformFile(ScopedHandle handle, base::PlatformFile* file) {
     return result;
 
   if (platform_handle.type == MOJO_PLATFORM_HANDLE_TYPE_INVALID) {
-    *file = kInvalidPlatformFile;
+    *file = base::kInvalidPlatformFile;
   } else {
     CHECK_EQ(platform_handle.type, kPlatformFileHandleType);
     *file = PlatformFileFromPlatformHandleValue(platform_handle.value);

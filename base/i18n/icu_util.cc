@@ -78,12 +78,6 @@ const char kAndroidAssetsIcuDataFileName[] = "assets/icudtl.dat";
 // File handle intentionally never closed. Not using File here because its
 // Windows implementation guards against two instances owning the same
 // PlatformFile (which we allow since we know it is never freed).
-const PlatformFile kInvalidPlatformFile =
-#if defined(OS_WIN)
-    INVALID_HANDLE_VALUE;
-#else
-    -1;
-#endif
 PlatformFile g_icudtl_pf = kInvalidPlatformFile;
 MemoryMappedFile* g_icudtl_mapped_file = nullptr;
 MemoryMappedFile::Region g_icudtl_region;

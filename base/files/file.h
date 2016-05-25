@@ -29,10 +29,13 @@
 namespace base {
 
 #if defined(OS_WIN)
-typedef HANDLE PlatformFile;
-#elif defined(OS_POSIX)
-typedef int PlatformFile;
+using PlatformFile = HANDLE;
 
+const PlatformFile kInvalidPlatformFile = INVALID_HANDLE_VALUE;
+#elif defined(OS_POSIX)
+using PlatformFile = int;
+
+const PlatformFile kInvalidPlatformFile = -1;
 #if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL)
 typedef struct stat stat_wrapper_t;
 #else
