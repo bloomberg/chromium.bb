@@ -135,7 +135,8 @@ static bool shouldShowContextMenuFromTouch(const WebContextMenuData& data)
 {
     return !data.linkURL.isEmpty()
         || data.mediaType == WebContextMenuData::MediaTypeImage
-        || data.mediaType == WebContextMenuData::MediaTypeVideo;
+        || data.mediaType == WebContextMenuData::MediaTypeVideo
+        || data.isEditable;
 }
 
 bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu, bool fromTouch)
@@ -263,9 +264,6 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu, bool
         }
     }
 
-    if (fromTouch && !shouldShowContextMenuFromTouch(data))
-        return false;
-
     // If it's not a link, an image, a media element, or an image/media link,
     // show a selection menu or a more generic page menu.
     if (selectedFrame->document()->loader())
@@ -368,11 +366,15 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu, bool
         data.inputFieldType = WebContextMenuData::InputFieldTypeNone;
     }
 
+    if (fromTouch && !shouldShowContextMenuFromTouch(data))
+        return false;
+
     WebLocalFrameImpl* selectedWebFrame = WebLocalFrameImpl::fromFrame(selectedFrame);
     selectedWebFrame->setContextMenuNode(r.innerNodeOrImageMapImage());
-    if (selectedWebFrame->client())
-        selectedWebFrame->client()->showContextMenu(data);
+    if (!selectedWebFrame->client())
+        return false;
 
+    selectedWebFrame->client()->showContextMenu(data);
     return true;
 }
 

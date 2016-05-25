@@ -1687,6 +1687,26 @@ TEST_F(WebViewTest, LongPressLink)
     EXPECT_EQ(WebInputEventResult::HandledSystem, webView->handleInputEvent(event));
 }
 
+TEST_F(WebViewTest, LongPressEmptyEditableSelection)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()),
+        WebString::fromUTF8("long_press_empty_editable_selection.html"));
+
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
+        m_baseURL + "long_press_empty_editable_selection.html", true);
+    webView->resize(WebSize(500, 300));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    WebGestureEvent event;
+    event.type = WebInputEvent::GestureLongPress;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
+    event.x = 10;
+    event.y = 10;
+
+    EXPECT_EQ(WebInputEventResult::HandledSystem, webView->handleInputEvent(event));
+}
+
 TEST_F(WebViewTest, LongPressSelection)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("longpress_selection.html"));
