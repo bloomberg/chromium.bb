@@ -23,6 +23,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "media/base/limits.h"
+#include "media/gpu/shared_memory_region.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image_io_surface.h"
 #include "ui/gl/gl_implementation.h"
@@ -466,9 +467,8 @@ void VTVideoDecodeAccelerator::DecodeTask(
   DCHECK(decoder_thread_.task_runner()->BelongsToCurrentThread());
 
   // Map the bitstream buffer.
-  base::SharedMemory memory(bitstream.handle(), true);
-  size_t size = bitstream.size();
-  if (!memory.Map(size)) {
+  SharedMemoryRegion memory(bitstream, true);
+  if (!memory.Map()) {
     DLOG(ERROR) << "Failed to map bitstream buffer";
     NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
     return;
@@ -487,7 +487,7 @@ void VTVideoDecodeAccelerator::DecodeTask(
   bool has_slice = false;
   size_t data_size = 0;
   std::vector<media::H264NALU> nalus;
-  parser_.SetStream(buf, size);
+  parser_.SetStream(buf, memory.size());
   media::H264NALU nalu;
   while (true) {
     media::H264Parser::Result result = parser_.AdvanceToNextNALU(&nalu);
