@@ -335,20 +335,30 @@ void ServiceWorkerVersion::SetStatus(Status status) {
   if (status_ == status)
     return;
 
-  status_ = status;
+  TRACE_EVENT2("ServiceWorker", "ServiceWorkerVersion::SetStatus", "Script URL",
+               script_url_.spec(), "New Status", VersionStatusToString(status));
 
+  status_ = status;
   if (skip_waiting_ && status_ == ACTIVATED) {
     for (int request_id : pending_skip_waiting_requests_)
       DidSkipWaiting(request_id);
     pending_skip_waiting_requests_.clear();
   }
 
+  // OnVersionStateChanged() invokes updates of the status using state
+  // change IPC at ServiceWorkerHandle (for JS-land on renderer process) and
+  // ServiceWorkerContextCore (for devtools and serviceworker-internals).
+  // This should be done before using the new status by
+  // |status_change_callbacks_| which sends the IPC for resolving the .ready
+  // property.
+  // TODO(shimazu): Clarify the dependency of OnVersionStateChanged and
+  // |status_change_callbacks_|
+  FOR_EACH_OBSERVER(Listener, listeners_, OnVersionStateChanged(this));
+
   std::vector<base::Closure> callbacks;
   callbacks.swap(status_change_callbacks_);
   for (const auto& callback : callbacks)
     callback.Run();
-
-  FOR_EACH_OBSERVER(Listener, listeners_, OnVersionStateChanged(this));
 
   if (status == INSTALLED)
     embedded_worker_->OnWorkerVersionInstalled();
