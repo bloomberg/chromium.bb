@@ -12,7 +12,6 @@
 #include "core/frame/RemoteFrameClient.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
-#include "core/layout/LayoutPart.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/PluginScriptForbiddenScope.h"

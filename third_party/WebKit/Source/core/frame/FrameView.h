@@ -30,7 +30,6 @@
 #include "core/frame/FrameViewAutoSizeInfo.h"
 #include "core/frame/LayoutSubtreeRootList.h"
 #include "core/frame/RootFrameViewport.h"
-#include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/ScrollAnchor.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
@@ -68,6 +67,7 @@ class LayoutPart;
 class LocalFrame;
 class KURL;
 class Node;
+class LayoutAnalyzer;
 class LayoutBox;
 class LayoutEmbeddedObject;
 class LayoutObject;
