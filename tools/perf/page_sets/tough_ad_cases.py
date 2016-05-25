@@ -36,7 +36,7 @@ class SwiffyPage(page_module.Page):
 class AdPage(page_module.Page):
 
   def __init__(self, url, page_set, make_javascript_deterministic=True,
-               y_scroll_distance_multiplier=0.5, bidirectional_scroll=False,
+               y_scroll_distance_multiplier=0.5,
                scroll=False,
                wait_for_interactive_or_better=False):
     super(AdPage, self).__init__(
@@ -48,7 +48,6 @@ class AdPage(page_module.Page):
                 RepeatableSynthesizeScrollGestureSharedState))
     self._y_scroll_distance_multiplier = y_scroll_distance_multiplier
     self._scroll = scroll
-    self._bidirectional_scroll = bidirectional_scroll
     self._wait_for_interactive_or_better = wait_for_interactive_or_better
 
   def RunNavigateSteps(self, action_runner):
@@ -82,13 +81,6 @@ class AdPage(page_module.Page):
     if not self._scroll:
       with action_runner.CreateInteraction('ToughAd'):
         action_runner.Wait(30)
-    elif self._bidirectional_scroll:
-      action_runner.RepeatableBrowserDrivenScroll(
-          y_scroll_distance_ratio=self._y_scroll_distance_multiplier,
-          repeat_count=4)
-      action_runner.RepeatableBrowserDrivenScroll(
-          y_scroll_distance_ratio=-self._y_scroll_distance_multiplier * .5,
-          repeat_count=4)
     else:
       action_runner.RepeatableBrowserDrivenScroll(
           y_scroll_distance_ratio=self._y_scroll_distance_multiplier,
@@ -97,14 +89,13 @@ class AdPage(page_module.Page):
 
 class ForbesAdPage(AdPage):
 
-  def __init__(self, url, page_set, scroll=False, bidirectional_scroll=False):
+  def __init__(self, url, page_set, scroll=False):
     # forbes.com uses a strange dynamic transform on the body element,
     # which occasionally causes us to try scrolling from outside the
     # screen. Start at the very top of the viewport to avoid this.
     super(ForbesAdPage, self).__init__(
         url=url, page_set=page_set, make_javascript_deterministic=False,
         scroll=scroll,
-        bidirectional_scroll=bidirectional_scroll,
         wait_for_interactive_or_better=True)
 
   def RunNavigateSteps(self, action_runner):
@@ -177,50 +168,40 @@ class SyntheticToughWebglAdCasesPageSet(story.StorySet):
 class ToughAdCasesPageSet(story.StorySet):
   """Pages for measuring performance with advertising content."""
 
-  def __init__(self, scroll=False, bidirectional_scroll=False):
+  def __init__(self, scroll=False):
     super(ToughAdCasesPageSet, self).__init__(
         archive_data_file='data/tough_ad_cases.json',
         cloud_storage_bucket=story.INTERNAL_BUCKET)
 
     self.AddStory(AdPage('file://tough_ad_cases/'
         'swiffy_collection.html', self, make_javascript_deterministic=False,
-        y_scroll_distance_multiplier=0.25, scroll=scroll,
-        bidirectional_scroll=bidirectional_scroll))
+        y_scroll_distance_multiplier=0.25, scroll=scroll))
     self.AddStory(AdPage('file://tough_ad_cases/'
         'swiffy_webgl_collection.html',
-        self, make_javascript_deterministic=False, scroll=scroll,
-        bidirectional_scroll=bidirectional_scroll))
-    self.AddStory(AdPage('http://www.latimes.com', self,
-        bidirectional_scroll=bidirectional_scroll, scroll=scroll,
+        self, make_javascript_deterministic=False, scroll=scroll))
+    self.AddStory(AdPage('http://www.latimes.com', self, scroll=scroll,
         wait_for_interactive_or_better=True))
     self.AddStory(ForbesAdPage('http://www.forbes.com/sites/parmyolson/'
         '2015/07/29/jana-mobile-data-facebook-internet-org/',
-        self, scroll=scroll, bidirectional_scroll=bidirectional_scroll))
+        self, scroll=scroll))
     self.AddStory(AdPage('http://androidcentral.com', self, scroll=scroll,
-        bidirectional_scroll=bidirectional_scroll,
         wait_for_interactive_or_better=True))
     self.AddStory(AdPage('http://mashable.com', self, scroll=scroll,
-        y_scroll_distance_multiplier=0.25,
-        bidirectional_scroll=bidirectional_scroll))
+        y_scroll_distance_multiplier=0.25))
     self.AddStory(AdPage('http://www.androidauthority.com/'
         'reduce-data-use-turn-on-data-compression-in-chrome-630064/', self,
-        scroll=scroll, bidirectional_scroll=bidirectional_scroll))
+        scroll=scroll))
     self.AddStory(AdPage(('http://www.cnn.com/2015/01/09/politics/'
                           'nebraska-keystone-pipeline/index.html'),
-                         self, scroll=scroll,
-                         bidirectional_scroll=bidirectional_scroll))
+                         self, scroll=scroll))
     # Disabled: crbug.com/520509
     #self.AddStory(AdPage('http://time.com/3977891/'
-    #    'donald-trump-debate-republican/', self, scroll=scroll,
-    #    bidirectional_scroll=bidirectional_scroll))
-    self.AddStory(AdPage('http://www.theguardian.com/uk', self, scroll=scroll,
-        bidirectional_scroll=bidirectional_scroll))
+    #    'donald-trump-debate-republican/', self, scroll=scroll))
+    self.AddStory(AdPage('http://www.theguardian.com/uk', self, scroll=scroll))
     # Disabled: http://crbug.com/597656
     # self.AddStory(AdPage('http://m.tmz.com', self, scroll=scroll,
-    #     y_scroll_distance_multiplier=0.25,
-    #     bidirectional_scroll=bidirectional_scroll))
+    #     y_scroll_distance_multiplier=0.25))
     self.AddStory(AdPage('http://androidpolice.com', self, scroll=scroll,
-        bidirectional_scroll=bidirectional_scroll,
         wait_for_interactive_or_better=True))
 
 
@@ -230,11 +211,3 @@ class ScrollingToughAdCasesPageSet(ToughAdCasesPageSet):
   def __init__(self):
     super(ScrollingToughAdCasesPageSet, self).__init__(
         scroll=True)
-
-
-class BidirectionallyScrollingToughAdCasesPageSet(ToughAdCasesPageSet):
-  """Same as ScrollingToughAdCasesPageSet except we scroll in two directions."""
-
-  def __init__(self):
-    super(BidirectionallyScrollingToughAdCasesPageSet, self).__init__(
-        bidirectional_scroll=True)

@@ -514,21 +514,6 @@ class SmoothnessScrollingToughAdCases(_Smoothness):
     return 'smoothness.scrolling_tough_ad_cases'
 
 
-@benchmark.Disabled('android-reference')  # crbug.com/588786
-@benchmark.Disabled('mac', 'win')  # crbug.com/522619 (mac/win)
-class SmoothnessBidirectionallyScrollingToughAdCases(_Smoothness):
-  """Measures rendering statistics while scrolling advertisements."""
-  page_set = page_sets.BidirectionallyScrollingToughAdCasesPageSet
-
-  def SetExtraBrowserOptions(self, options):
-    # Don't accidentally reload the page while scrolling.
-    options.AppendExtraBrowserArgs('--disable-pull-to-refresh-effect')
-
-  @classmethod
-  def Name(cls):
-    return 'smoothness.bidirectionally_scrolling_tough_ad_cases'
-
-
 class SmoothnessToughWebGLAdCases(_Smoothness):
   """Measures rendering statistics while scrolling advertisements."""
   page_set = page_sets.SyntheticToughWebglAdCasesPageSet
