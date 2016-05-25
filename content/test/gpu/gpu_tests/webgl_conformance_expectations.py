@@ -326,21 +326,31 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
     self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
-    self.Fail('conformance/glsl/misc/shader-struct-scope.html',
+    # This test is skipped because running it causes a future test to fail.
+    # The list of tests which may be that future test is very long. It is
+    # almost (but not quite) every webgl conformance test.
+    self.Skip('conformance/glsl/misc/shader-struct-scope.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=614550)
+    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
-    self.Fail('conformance/glsl/misc/shader-uniform-packing-restrictions.html',
+    self.Fail('conformance/rendering/gl-viewport-test.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
-    self.Fail('conformance/glsl/misc/shader-varying-packing-restrictions.html',
+    self.Fail('conformance/textures/svg_image/' +
+              'tex-2d-rgb-rgb-unsigned_byte.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
-    self.Fail('conformance/glsl/misc/shader-with-256-character-define.html',
+    self.Fail('conformance/textures/svg_image/' +
+              'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
-    self.Fail('conformance/glsl/misc/' +
-              'shader-with-256-character-identifier.frag.html',
+    self.Fail('conformance/textures/svg_image/' +
+              'tex-2d-rgba-rgba-unsigned_byte.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
-    self.Fail('conformance/glsl/misc/shader-with-257-character-define.html',
+    self.Fail('conformance/textures/svg_image/' +
+              'tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
-    self.Fail('conformance/glsl/misc/' +
-              'shader-with-257-character-identifier.frag.html',
+    self.Fail('conformance/textures/svg_image/' +
+              'tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
+    self.Fail('deqp/data/gles2/shaders/preprocessor.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
     self.Fail('conformance/glsl/misc/shader-with-_webgl-identifier.vert.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=611945)
