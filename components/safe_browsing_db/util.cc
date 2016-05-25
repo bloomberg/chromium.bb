@@ -19,6 +19,7 @@ namespace safe_browsing {
 // Utility functions -----------------------------------------------------------
 
 namespace {
+
 bool IsKnownList(const std::string& name) {
   for (size_t i = 0; i < arraysize(kAllLists); ++i) {
     if (!strcmp(kAllLists[i], name.c_str())) {
@@ -27,6 +28,68 @@ bool IsKnownList(const std::string& name) {
   }
   return false;
 }
+
+void GenerateHostVariantsToCheck(const std::string& host,
+                                 std::vector<std::string>* hosts) {
+  hosts->clear();
+
+  if (host.empty())
+    return;
+
+  // Per the Safe Browsing Protocol v2 spec, we try the host, and also up to 4
+  // hostnames formed by starting with the last 5 components and successively
+  // removing the leading component.  The last component isn't examined alone,
+  // since it's the TLD or a subcomponent thereof.
+  //
+  // Note that we don't need to be clever about stopping at the "real" eTLD --
+  // the data on the server side has been filtered to ensure it will not
+  // blacklist a whole TLD, and it's not significantly slower on our side to
+  // just check too much.
+  //
+  // Also note that because we have a simple blacklist, not some sort of complex
+  // whitelist-in-blacklist or vice versa, it doesn't matter what order we check
+  // these in.
+  const size_t kMaxHostsToCheck = 4;
+  bool skipped_last_component = false;
+  for (std::string::const_reverse_iterator i(host.rbegin());
+       i != host.rend() && hosts->size() < kMaxHostsToCheck; ++i) {
+    if (*i == '.') {
+      if (skipped_last_component)
+        hosts->push_back(std::string(i.base(), host.end()));
+      else
+        skipped_last_component = true;
+    }
+  }
+  hosts->push_back(host);
+}
+
+void GeneratePathVariantsToCheck(const std::string& path,
+                                 const std::string& query,
+                                 std::vector<std::string>* paths) {
+  paths->clear();
+
+  if (path.empty())
+    return;
+
+  // Per the Safe Browsing Protocol v2 spec, we try the exact path with/without
+  // the query parameters, and also up to 4 paths formed by starting at the root
+  // and adding more path components.
+  //
+  // As with the hosts above, it doesn't matter what order we check these in.
+  const size_t kMaxPathsToCheck = 4;
+  for (std::string::const_iterator i(path.begin());
+       i != path.end() && paths->size() < kMaxPathsToCheck; ++i) {
+    if (*i == '/')
+      paths->push_back(std::string(path.begin(), i + 1));
+  }
+
+  if (!paths->empty() && paths->back() != path)
+    paths->push_back(path);
+
+  if (!query.empty())
+    paths->push_back(path + "?" + query);
+}
+
 }  // namespace
 
 // ThreatMetadata ------------------------------------------------------------
@@ -317,15 +380,20 @@ void UrlToFullHashes(const GURL& url,
   // called sparingly.
   TRACE_EVENT2("loader", "safe_browsing::UrlToFullHashes", "url", url.spec(),
                "include_whitelist_hashes", include_whitelist_hashes);
+  std::string canon_host;
+  std::string canon_path;
+  std::string canon_query;
+  CanonicalizeUrl(url, &canon_host, &canon_path, &canon_query);
+
   std::vector<std::string> hosts;
   if (url.HostIsIPAddress()) {
     hosts.push_back(url.host());
   } else {
-    GenerateHostsToCheck(url, &hosts);
+    GenerateHostVariantsToCheck(canon_host, &hosts);
   }
 
   std::vector<std::string> paths;
-  GeneratePathsToCheck(url, &paths);
+  GeneratePathVariantsToCheck(canon_path, canon_query, &paths);
 
   for (const std::string& host : hosts) {
     for (const std::string& path : paths) {
@@ -345,77 +413,27 @@ void UrlToFullHashes(const GURL& url,
 }
 
 void GenerateHostsToCheck(const GURL& url, std::vector<std::string>* hosts) {
-  hosts->clear();
-
   std::string canon_host;
   CanonicalizeUrl(url, &canon_host, NULL, NULL);
-
-  const std::string host = canon_host;  // const sidesteps GCC bugs below!
-  if (host.empty())
-    return;
-
-  // Per the Safe Browsing Protocol v2 spec, we try the host, and also up to 4
-  // hostnames formed by starting with the last 5 components and successively
-  // removing the leading component.  The last component isn't examined alone,
-  // since it's the TLD or a subcomponent thereof.
-  //
-  // Note that we don't need to be clever about stopping at the "real" eTLD --
-  // the data on the server side has been filtered to ensure it will not
-  // blacklist a whole TLD, and it's not significantly slower on our side to
-  // just check too much.
-  //
-  // Also note that because we have a simple blacklist, not some sort of complex
-  // whitelist-in-blacklist or vice versa, it doesn't matter what order we check
-  // these in.
-  const size_t kMaxHostsToCheck = 4;
-  bool skipped_last_component = false;
-  for (std::string::const_reverse_iterator i(host.rbegin());
-       i != host.rend() && hosts->size() < kMaxHostsToCheck; ++i) {
-    if (*i == '.') {
-      if (skipped_last_component)
-        hosts->push_back(std::string(i.base(), host.end()));
-      else
-        skipped_last_component = true;
-    }
-  }
-  hosts->push_back(host);
+  GenerateHostVariantsToCheck(canon_host, hosts);
 }
 
 void GeneratePathsToCheck(const GURL& url, std::vector<std::string>* paths) {
-  paths->clear();
-
   std::string canon_path;
   std::string canon_query;
   CanonicalizeUrl(url, NULL, &canon_path, &canon_query);
-
-  const std::string path = canon_path;   // const sidesteps GCC bugs below!
-  const std::string query = canon_query;
-  if (path.empty())
-    return;
-
-  // Per the Safe Browsing Protocol v2 spec, we try the exact path with/without
-  // the query parameters, and also up to 4 paths formed by starting at the root
-  // and adding more path components.
-  //
-  // As with the hosts above, it doesn't matter what order we check these in.
-  const size_t kMaxPathsToCheck = 4;
-  for (std::string::const_iterator i(path.begin());
-       i != path.end() && paths->size() < kMaxPathsToCheck; ++i) {
-    if (*i == '/')
-      paths->push_back(std::string(path.begin(), i + 1));
-  }
-
-  if (!paths->empty() && paths->back() != path)
-    paths->push_back(path);
-
-  if (!query.empty())
-    paths->push_back(path + "?" + query);
+  GeneratePathVariantsToCheck(canon_path, canon_query, paths);
 }
 
 void GeneratePatternsToCheck(const GURL& url, std::vector<std::string>* urls) {
+  std::string canon_host;
+  std::string canon_path;
+  std::string canon_query;
+  CanonicalizeUrl(url, &canon_host, &canon_path, &canon_query);
+
   std::vector<std::string> hosts, paths;
-  GenerateHostsToCheck(url, &hosts);
-  GeneratePathsToCheck(url, &paths);
+  GenerateHostVariantsToCheck(canon_host, &hosts);
+  GeneratePathVariantsToCheck(canon_path, canon_query, &paths);
   for (size_t h = 0; h < hosts.size(); ++h) {
     for (size_t p = 0; p < paths.size(); ++p) {
       urls->push_back(hosts[h] + paths[p]);
