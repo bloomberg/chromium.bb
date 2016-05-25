@@ -450,6 +450,11 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // called NotifyInitializationComplete.
   bool deferred_initialization_pending_;
 
+  // Indicates if ResetCodecState() should be called upon the next call to
+  // Decode(). Allows us to avoid trashing the last few frames of a playback
+  // when the EOS buffer is received.
+  bool codec_needs_reset_;
+
   // Copy of the VDA::Config we were given.
   Config config_;
 

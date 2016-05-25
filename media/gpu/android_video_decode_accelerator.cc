@@ -396,6 +396,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       error_sequence_token_(0),
       defer_errors_(false),
       deferred_initialization_pending_(false),
+      codec_needs_reset_(false),
       weak_this_factory_(this) {}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
@@ -914,6 +915,13 @@ void AndroidVideoDecodeAccelerator::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // If we previously deferred a codec restart, take care of it now. This can
+  // happen on older devices where configuration changes require a codec reset.
+  if (codec_needs_reset_) {
+    DCHECK_EQ(drain_type_, DRAIN_TYPE_NONE);
+    ResetCodecState(base::Closure());
+  }
+
   if (bitstream_buffer.id() >= 0 && bitstream_buffer.size() > 0) {
     DecodeBuffer(bitstream_buffer);
     return;
@@ -1192,6 +1200,17 @@ void AndroidVideoDecodeAccelerator::ResetCodecState(
 
   const bool did_codec_error_happen = state_ == ERROR;
   state_ = NO_ERROR;
+
+  // Don't reset the codec here if there's no error and we're only flushing;
+  // instead defer until the next decode call; this prevents us from unbacking
+  // frames that might be out for display at end of stream.
+  codec_needs_reset_ = false;
+  if (drain_type_ == DRAIN_FOR_FLUSH && !did_codec_error_happen) {
+    codec_needs_reset_ = true;
+    if (!done_cb.is_null())
+      done_cb.Run();
+    return;
+  }
 
   // We might increment error_sequence_token here to cancel any delayed errors,
   // but right now it's unclear that it's safe to do so.  If we are in an error

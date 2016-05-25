@@ -35,7 +35,7 @@ AVDACodecImage::AVDACodecImage(
   // Default to a sane guess of "flip Y", just in case we can't get
   // the matrix on the first call.
   memset(gl_matrix_, 0, sizeof(gl_matrix_));
-  gl_matrix_[0] = gl_matrix_[10] = gl_matrix_[15] = 1.0f;
+  gl_matrix_[0] = gl_matrix_[10] = gl_matrix_[13] = gl_matrix_[15] = 1.0f;
   gl_matrix_[5] = -1.0f;
   shared_state_->SetImageForPicture(picture_buffer_id_, this);
 }
