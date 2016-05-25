@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -23,6 +24,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WindowDelegate;
@@ -40,6 +42,7 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.Overv
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.LocationBar;
@@ -371,6 +374,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             @Override
             public void onContentChanged(Tab tab) {
                 mToolbar.onTabContentViewChanged();
+                if (shouldShowCusrsorInLocationBar()) {
+                    mToolbar.getLocationBar().showUrlBarCursorWithoutFocusAnimations();
+                }
             }
 
             @Override
@@ -1089,6 +1095,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             // Ensure the URL bar loses focus if the tab it was interacting with is changed from
             // underneath it.
             setUrlBarFocus(false);
+
+            // Place the cursor in the Omnibox if applicable.  We always clear the focus above to
+            // ensure the shield placed over the content is dismissed when switching tabs.  But if
+            // needed, we will refocus the omnibox and make the cursor visible here.
+            if (shouldShowCusrsorInLocationBar()) {
+                mToolbar.getLocationBar().showUrlBarCursorWithoutFocusAnimations();
+            }
         }
 
         Profile profile = mTabModelSelector.getModel(isIncognito).getProfile();
@@ -1157,6 +1170,20 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
     private void startLoadProgress() {
         if (mToolbar.isProgressStarted()) return;
         mToolbar.startLoadProgress();
+    }
+
+    private boolean shouldShowCusrsorInLocationBar() {
+        Tab tab = mToolbarModel.getTab();
+        if (tab == null) return false;
+        NativePage nativePage = tab.getNativePage();
+        if (!(nativePage instanceof NewTabPage) && !(nativePage instanceof IncognitoNewTabPage)) {
+            return false;
+        }
+
+        Context context = mToolbar.getContext();
+        return DeviceFormFactor.isTablet(context)
+                && context.getResources().getConfiguration().keyboard
+                == Configuration.KEYBOARD_QWERTY;
     }
 
     private static class LoadProgressSimulator {

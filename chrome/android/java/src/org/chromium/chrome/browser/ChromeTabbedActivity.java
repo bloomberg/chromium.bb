@@ -1015,24 +1015,16 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (id == R.id.move_to_other_window_menu_id) {
             if (currentTab != null) moveTabToOtherWindow(currentTab);
         } else if (id == R.id.new_tab_menu_id) {
-            Tab launchedTab = getTabCreator(false).launchUrl(
-                    UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
             RecordUserAction.record("MobileMenuNewTab");
             RecordUserAction.record("MobileNewTabOpened");
-            if (isTablet() && !fromMenu && !launchedTab.isHidden()) {
-                getToolbarManager().setUrlBarFocus(true);
-            }
+            getTabCreator(false).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
         } else if (id == R.id.new_incognito_tab_menu_id) {
             if (PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
                 // This action must be recorded before opening the incognito tab since UMA actions
                 // are dropped when an incognito tab is open.
                 RecordUserAction.record("MobileMenuNewIncognitoTab");
                 RecordUserAction.record("MobileNewTabOpened");
-                Tab launchedTab = getTabCreator(true).launchUrl(
-                        UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
-                if (isTablet() && !fromMenu && !launchedTab.isHidden()) {
-                    getToolbarManager().setUrlBarFocus(true);
-                }
+                getTabCreator(true).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
             }
         } else if (id == R.id.all_bookmarks_menu_id) {
             if (currentTab != null) {

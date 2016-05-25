@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
@@ -90,7 +91,6 @@ import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
@@ -198,6 +198,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     private boolean mUrlHasFocus;
     private boolean mUrlFocusChangeInProgress;
     private boolean mUrlFocusedFromFakebox;
+    private boolean mUrlFocusedWithoutAnimations;
 
     private boolean mVoiceSearchEnabled;
 
@@ -701,6 +702,29 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     }
 
     @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        boolean retVal = super.dispatchKeyEvent(event);
+        if (retVal && mUrlHasFocus && mUrlFocusedWithoutAnimations
+                && event.getAction() == KeyEvent.ACTION_DOWN && event.isPrintingKey()
+                && event.hasNoModifiers()) {
+            handleUrlFocusAnimation(mUrlHasFocus);
+        }
+        return retVal;
+    }
+
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        if (mUrlHasFocus && mUrlFocusedWithoutAnimations
+                && newConfig.keyboard != Configuration.KEYBOARD_QWERTY) {
+            // If we lose the hardware keyboard and the focus animations were not run, then the
+            // user has not typed any text, so we will just clear the focus instead.
+            setUrlBarFocus(false);
+        }
+    }
+
+    @Override
     public void initializeControls(WindowDelegate windowDelegate,
             ActionBarDelegate actionBarDelegate, WindowAndroid windowAndroid) {
         mWindowDelegate = windowDelegate;
@@ -891,6 +915,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             mUrlBar.deEmphasizeUrl();
         } else {
             mUrlFocusedFromFakebox = false;
+            mUrlFocusedWithoutAnimations = false;
             hideSuggestions();
 
             // Focus change caused by a close-tab may result in an invalid current tab.
@@ -905,14 +930,12 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             if (mUrlHasFocus) mUrlBar.selectAll();
         }
 
-        if (mUrlFocusChangeListener != null) mUrlFocusChangeListener.onUrlFocusChange(hasFocus);
         changeLocationBarIcon(
                 (!DeviceFormFactor.isTablet(getContext()) || !hasFocus) && isSecurityButtonShown());
         mUrlBar.setCursorVisible(hasFocus);
         if (mQueryInTheOmnibox) mUrlBar.setSelection(mUrlBar.getSelectionEnd());
 
-        updateOmniboxResultsContainer();
-        if (hasFocus) updateOmniboxResultsContainerBackground(true);
+        if (!mUrlFocusedWithoutAnimations) handleUrlFocusAnimation(hasFocus);
 
         if (hasFocus && currentTab != null && !currentTab.isIncognito()) {
             if (mNativeInitialized
@@ -956,6 +979,18 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                         GEOLOCATION_SNACKBAR_SHOW_DELAY_MS);
             }
         }
+    }
+
+    /**
+     * Handle and run any necessary animations that are triggered off focusing the UrlBar.
+     * @param hasFocus Whether focus was gained.
+     */
+    protected void handleUrlFocusAnimation(boolean hasFocus) {
+        if (hasFocus) mUrlFocusedWithoutAnimations = false;
+        if (mUrlFocusChangeListener != null) mUrlFocusChangeListener.onUrlFocusChange(hasFocus);
+
+        updateOmniboxResultsContainer();
+        if (hasFocus) updateOmniboxResultsContainerBackground(true);
     }
 
     /**
@@ -1048,13 +1083,25 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     @Override
     public void requestUrlFocusFromFakebox(String pastedText) {
         mUrlFocusedFromFakebox = true;
-        mUrlBar.requestFocus();
+        if (mUrlHasFocus && mUrlFocusedWithoutAnimations) {
+            handleUrlFocusAnimation(mUrlHasFocus);
+        } else {
+            setUrlBarFocus(true);
+        }
 
         if (pastedText != null) {
             // This must be happen after requestUrlFocus(), which changes the selection.
             mUrlBar.setUrl(pastedText, null);
             mUrlBar.setSelection(mUrlBar.getText().length());
         }
+    }
+
+    @Override
+    public void showUrlBarCursorWithoutFocusAnimations() {
+        if (mUrlHasFocus || mUrlFocusedFromFakebox) return;
+
+        mUrlFocusedWithoutAnimations = true;
+        setUrlBarFocus(true);
     }
 
     /**
@@ -1724,7 +1771,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
         setUrlBarText(query, null);
         mUrlBar.setSelection(0, mUrlBar.getText().length());
-        mUrlBar.requestFocus();
+        setUrlBarFocus(true);
         stopAutocomplete(false);
         if (getCurrentTab() != null) {
             mAutocomplete.start(
@@ -1832,6 +1879,12 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         initSuggestionList();  // It may not have been initialized yet.
         mSuggestionList.resetMaxTextWidths();
 
+        // Handle the case where suggestions (in particular zero suggest) are received without the
+        // URL focusing happening.
+        if (mUrlFocusedWithoutAnimations && mUrlHasFocus) {
+            handleUrlFocusAnimation(mUrlHasFocus);
+        }
+
         if (itemsChanged) mSuggestionListAdapter.notifySuggestionsChanged();
 
         if (mUrlBar.hasFocus()) {
@@ -1935,9 +1988,20 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
      */
     @Override
     public void setUrlToPageUrl() {
+        String url = getOnlineUrlFromTab();
+
         // If the URL is currently focused, do not replace the text they have entered with the URL.
         // Once they stop editing the URL, the current tab's URL will automatically be filled in.
-        if (mUrlBar.hasFocus()) return;
+        if (mUrlBar.hasFocus()) {
+            if (mUrlFocusedWithoutAnimations && !NewTabPage.isNTPUrl(url)) {
+                // If we did not run the focus animations, then the user has not typed any text.
+                // So, clear the focus and accept whatever URL the page is currently attempting to
+                // display.
+                setUrlBarFocus(false);
+            } else {
+                return;
+            }
+        }
 
         mQueryInTheOmnibox = false;
 
@@ -1950,10 +2014,10 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         Profile profile = getCurrentTab().getProfile();
         if (profile != null) mOmniboxPrerender.clear(profile);
 
-        String url = getOnlineUrlFromTab();
         mOriginalUrl = url;
 
-        if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())) {
+        if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())
+                || NewTabPage.isNTPUrl(url)) {
             // Don't show anything for Chrome URLs.
             setUrlBarText(null, "");
             return;
@@ -2081,11 +2145,6 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
         return mToolbarDataProvider.getTab();
     }
 
-    private ContentViewCore getContentViewCore() {
-        Tab currentTab = getCurrentTab();
-        return currentTab != null ? currentTab.getContentViewCore() : null;
-    }
-
     private void initOmniboxResultsContainer() {
         if (mOmniboxResultsContainer != null) return;
 
@@ -2101,7 +2160,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
                 int action = event.getActionMasked();
                 if (action == MotionEvent.ACTION_CANCEL
                         || action == MotionEvent.ACTION_UP) {
-                    mUrlBar.clearFocus();
+                    setUrlBarFocus(false);
                     updateOmniboxResultsContainerBackground(false);
                 }
                 return true;

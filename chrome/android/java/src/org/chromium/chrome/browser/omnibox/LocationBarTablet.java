@@ -165,8 +165,8 @@ public class LocationBarTablet extends LocationBarLayout {
     }
 
     @Override
-    public void onUrlFocusChange(final boolean hasFocus) {
-        super.onUrlFocusChange(hasFocus);
+    public void handleUrlFocusAnimation(final boolean hasFocus) {
+        super.handleUrlFocusAnimation(hasFocus);
 
         removeCallbacks(mKeyboardResizeModeTask);
 

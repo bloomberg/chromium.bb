@@ -194,7 +194,10 @@ public class NewTabPage
      * @return Whether the passed in URL is used to render the NTP.
      */
     public static boolean isNTPUrl(String url) {
-        return url != null && url.startsWith(UrlConstants.NTP_URL);
+        // Also handle the legacy chrome://newtab URL since that will redirect to
+        // chrome-native://newtab natively.
+        return url != null
+                && (url.startsWith(UrlConstants.NTP_URL) || url.startsWith("chrome://newtab"));
     }
 
     public static void launchInterestsDialog(Activity activity, final Tab tab) {

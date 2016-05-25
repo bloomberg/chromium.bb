@@ -337,7 +337,6 @@ public class ToolbarTablet extends ToolbarLayout implements OnClickListener {
             }
             mUseLightColorAssets = incognito;
         }
-        mLocationBar.setUrlBarFocus(false);
     }
 
     @Override
