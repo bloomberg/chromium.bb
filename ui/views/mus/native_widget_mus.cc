@@ -28,10 +28,10 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/path.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/platform_window/platform_window_delegate.h"
+#include "ui/views/mus/platform_window_mus.h"
 #include "ui/views/mus/surface_context_factory.h"
 #include "ui/views/mus/window_manager_constants_converters.h"
 #include "ui/views/mus/window_manager_frame_values.h"
@@ -639,7 +639,6 @@ NonClientFrameView* NativeWidgetMus::CreateNonClientFrameView() {
 
 void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   NativeWidgetAura::RegisterNativeWidgetForWindow(this, content_);
-  aura::Window* hosted_window = window_tree_host_->window();
 
   ownership_ = params.ownership;
   window_->SetCanFocus(params.activatable ==
@@ -647,16 +646,17 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
 
   window_tree_host_->AddObserver(this);
   window_tree_host_->InitHost();
-  hosted_window->SetProperty(kMusWindow, window_);
+  window_tree_host_->window()->SetProperty(kMusWindow, window_);
 
   focus_client_.reset(
-      new wm::FocusController(new FocusRulesImpl(hosted_window)));
+      new wm::FocusController(new FocusRulesImpl(window_tree_host_->window())));
 
-  aura::client::SetFocusClient(hosted_window, focus_client_.get());
-  aura::client::SetActivationClient(hosted_window,
+  aura::client::SetFocusClient(window_tree_host_->window(),
+                               focus_client_.get());
+  aura::client::SetActivationClient(window_tree_host_->window(),
                                     focus_client_.get());
   screen_position_client_.reset(new ScreenPositionClientMus(window_));
-  aura::client::SetScreenPositionClient(hosted_window,
+  aura::client::SetScreenPositionClient(window_tree_host_->window(),
                                         screen_position_client_.get());
 
   // TODO(erg): Remove this check when mash/wm/frame/move_event_handler.cc's
@@ -665,17 +665,17 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   if (surface_type_ == mus::mojom::SurfaceType::DEFAULT) {
     cursor_manager_.reset(new wm::CursorManager(
         base::WrapUnique(new NativeCursorManagerMus(window_))));
-    aura::client::SetCursorClient(hosted_window,
+    aura::client::SetCursorClient(window_tree_host_->window(),
                                   cursor_manager_.get());
   }
 
   window_tree_client_.reset(
-      new NativeWidgetMusWindowTreeClient(hosted_window));
-  hosted_window->AddPreTargetHandler(focus_client_.get());
-  hosted_window->SetLayoutManager(
-      new ContentWindowLayoutManager(hosted_window, content_));
+      new NativeWidgetMusWindowTreeClient(window_tree_host_->window()));
+  window_tree_host_->window()->AddPreTargetHandler(focus_client_.get());
+  window_tree_host_->window()->SetLayoutManager(
+      new ContentWindowLayoutManager(window_tree_host_->window(), content_));
   capture_client_.reset(
-      new MusCaptureClient(hosted_window, content_, window_));
+      new MusCaptureClient(window_tree_host_->window(), content_, window_));
 
   content_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   content_->Init(ui::LAYER_TEXTURED);
@@ -683,7 +683,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
     content_->Show();
   content_->SetTransparent(true);
   content_->SetFillsBoundsCompletely(false);
-  hosted_window->AddChild(content_);
+  window_tree_host_->window()->AddChild(content_);
 
   // Set-up transiency if appropriate.
   if (params.parent && !params.child) {
@@ -1030,11 +1030,11 @@ void NativeWidgetMus::Restore() {
 }
 
 void NativeWidgetMus::SetFullscreen(bool fullscreen) {
-  if (IsFullscreen() == fullscreen)
+  if (!window_tree_host_ || IsFullscreen() == fullscreen)
     return;
   if (fullscreen) {
     show_state_before_fullscreen_ = mus_window_observer_->show_state();
-    // TODO(markdittmer): Fullscreen not implemented in mus::Window.
+    window_tree_host_->platform_window()->ToggleFullscreen();
   } else {
     switch (show_state_before_fullscreen_) {
       case mus::mojom::ShowState::MAXIMIZED:

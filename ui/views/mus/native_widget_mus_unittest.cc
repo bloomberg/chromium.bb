@@ -418,6 +418,58 @@ TEST_F(NativeWidgetMusTest, WidgetReceivesEvent) {
   EXPECT_EQ(1, handler.num_mouse_events());
 }
 
+// Tests that an incoming UI event is acked with the handled status.
+TEST_F(NativeWidgetMusTest, EventAcked) {
+  std::unique_ptr<Widget> widget(CreateWidget(nullptr));
+  widget->Show();
+
+  View* content = new HandleMousePressView;
+  content->SetBounds(10, 20, 90, 180);
+  widget->GetContentsView()->AddChildView(content);
+
+  // Dispatch an input event to the window and view.
+  std::unique_ptr<ui::MouseEvent> event = CreateMouseEvent();
+  std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
+      new base::Callback<void(EventResult)>(base::Bind(
+          &NativeWidgetMusTest::AckCallback, base::Unretained(this))));
+  OnWindowInputEvent(
+      static_cast<NativeWidgetMus*>(widget->native_widget_private()),
+      *event,
+      &ack_callback);
+
+  // The test took ownership of the callback and called it.
+  EXPECT_FALSE(ack_callback);
+  EXPECT_EQ(1, ack_callback_count());
+}
+
+// Tests that a window that is deleted during event handling properly acks the
+// event.
+TEST_F(NativeWidgetMusTest, EventAckedWithWindowDestruction) {
+  std::unique_ptr<Widget> widget(CreateWidget(nullptr));
+  widget->Show();
+
+  View* content = new DeleteWidgetView(&widget);
+  content->SetBounds(10, 20, 90, 180);
+  widget->GetContentsView()->AddChildView(content);
+
+  // Dispatch an input event to the window and view.
+  std::unique_ptr<ui::MouseEvent> event = CreateMouseEvent();
+  std::unique_ptr<base::Callback<void(EventResult)>> ack_callback(
+      new base::Callback<void(EventResult)>(base::Bind(
+          &NativeWidgetMusTest::AckCallback, base::Unretained(this))));
+  OnWindowInputEvent(
+      static_cast<NativeWidgetMus*>(widget->native_widget_private()),
+      *event,
+      &ack_callback);
+
+  // The widget was deleted.
+  EXPECT_FALSE(widget.get());
+
+  // The test took ownership of the callback and called it.
+  EXPECT_FALSE(ack_callback);
+  EXPECT_EQ(1, ack_callback_count());
+}
+
 TEST_F(NativeWidgetMusTest, SetAndReleaseCapture) {
   std::unique_ptr<Widget> widget(CreateWidget(nullptr));
   widget->Show();

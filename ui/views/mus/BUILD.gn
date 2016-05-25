@@ -24,6 +24,8 @@ component("mus") {
     "mus_export.h",
     "native_widget_mus.cc",
     "native_widget_mus.h",
+    "platform_window_mus.cc",
+    "platform_window_mus.h",
     "screen_mus.cc",
     "screen_mus.h",
     "screen_mus_delegate.h",
@@ -82,7 +84,6 @@ component("mus") {
     "//ui/mojo/ime:interfaces_cpp_sources",
     "//ui/native_theme",
     "//ui/platform_window",
-    "//ui/platform_window/stub",
     "//ui/views",
     "//ui/wm",
   ]

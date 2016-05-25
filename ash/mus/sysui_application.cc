@@ -101,8 +101,7 @@ class AshWindowTreeHostMus : public AshWindowTreeHostPlatform {
  public:
   explicit AshWindowTreeHostMus(const gfx::Rect& initial_bounds)
       : AshWindowTreeHostPlatform() {
-    std::unique_ptr<ui::PlatformWindow> window(
-        new ui::StubWindow(this, gfx::kNullAcceleratedWidget));
+    std::unique_ptr<ui::PlatformWindow> window(new ui::StubWindow(this));
     window->SetBounds(initial_bounds);
     SetPlatformWindow(std::move(window));
   }

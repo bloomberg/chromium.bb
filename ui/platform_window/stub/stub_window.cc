@@ -4,15 +4,12 @@
 
 #include "ui/platform_window/stub/stub_window.h"
 
-#include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
-StubWindow::StubWindow(
-    PlatformWindowDelegate* delegate, gfx::AcceleratedWidget accelerated_widget)
-    : delegate_(delegate) {
-  delegate_->OnAcceleratedWidgetAvailable(accelerated_widget, 1.f);
+StubWindow::StubWindow(PlatformWindowDelegate* delegate) : delegate_(delegate) {
+  delegate_->OnAcceleratedWidgetAvailable(gfx::kNullAcceleratedWidget, 1.f);
 }
 
 StubWindow::~StubWindow() {
