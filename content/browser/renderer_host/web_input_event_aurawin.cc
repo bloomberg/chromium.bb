@@ -16,18 +16,20 @@ namespace content {
 
 blink::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
     const base::NativeEvent& native_event,
-    const base::TimeDelta& time_stamp) {
+    const base::TimeDelta& time_stamp,
+    blink::WebPointerProperties::PointerType pointer_type) {
   return WebMouseEventBuilder::Build(native_event.hwnd, native_event.message,
                                      native_event.wParam, native_event.lParam,
-                                     time_stamp.InSecondsF());
+                                     time_stamp.InSecondsF(), pointer_type);
 }
 
 blink::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
     const base::NativeEvent& native_event,
-    const base::TimeDelta& time_stamp) {
+    const base::TimeDelta& time_stamp,
+    blink::WebPointerProperties::PointerType pointer_type) {
   return WebMouseWheelEventBuilder::Build(
       native_event.hwnd, native_event.message, native_event.wParam,
-      native_event.lParam, time_stamp.InSecondsF());
+      native_event.lParam, time_stamp.InSecondsF(), pointer_type);
 }
 
 blink::WebKeyboardEvent MakeWebKeyboardEventFromNativeEvent(

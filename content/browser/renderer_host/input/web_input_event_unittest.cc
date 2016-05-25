@@ -33,9 +33,9 @@ TEST(WebInputEventBuilderTest, TestMouseEventScale) {
   command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "2");
 
   // Synthesize a mouse move with x = 300 and y = 200.
-  WebMouseEvent mouse_move =
-      WebMouseEventBuilder::Build(::GetDesktopWindow(), WM_MOUSEMOVE, 0,
-                                  MAKELPARAM(300, 200), 100);
+  WebMouseEvent mouse_move = WebMouseEventBuilder::Build(
+      ::GetDesktopWindow(), WM_MOUSEMOVE, 0, MAKELPARAM(300, 200), 100,
+      blink::WebPointerProperties::PointerType::Mouse);
 
   // The WebMouseEvent.x, WebMouseEvent.y, WebMouseEvent.windowX and
   // WebMouseEvent.windowY fields should be in pixels on return and hence
@@ -50,6 +50,9 @@ TEST(WebInputEventBuilderTest, TestMouseEventScale) {
   // WebMouseEvent.globalX and WebMouseEvent.globalY are calculated in DIPs.
   EXPECT_EQ(150, mouse_move.globalX);
   EXPECT_EQ(100, mouse_move.globalY);
+
+  EXPECT_EQ(blink::WebPointerProperties::PointerType::Mouse,
+            mouse_move.pointerType);
 
   command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor, "1");
   display::Display::ResetForceDeviceScaleFactorForTesting();

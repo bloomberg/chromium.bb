@@ -23,20 +23,24 @@ class CONTENT_EXPORT WebKeyboardEventBuilder {
 
 class CONTENT_EXPORT WebMouseEventBuilder {
  public:
-  static blink::WebMouseEvent Build(HWND hwnd,
-                                    UINT message,
-                                    WPARAM wparam,
-                                    LPARAM lparam,
-                                    double time_stamp);
+  static blink::WebMouseEvent Build(
+      HWND hwnd,
+      UINT message,
+      WPARAM wparam,
+      LPARAM lparam,
+      double time_stamp,
+      blink::WebPointerProperties::PointerType pointer_type);
 };
 
 class CONTENT_EXPORT WebMouseWheelEventBuilder {
  public:
-  static blink::WebMouseWheelEvent Build(HWND hwnd,
-                                         UINT message,
-                                         WPARAM wparam,
-                                         LPARAM lparam,
-                                         double time_stamp);
+  static blink::WebMouseWheelEvent Build(
+      HWND hwnd,
+      UINT message,
+      WPARAM wparam,
+      LPARAM lparam,
+      double time_stamp,
+      blink::WebPointerProperties::PointerType pointer_type);
 };
 
 } // namespace content
