@@ -250,7 +250,7 @@ void PannerHandler::uninitialize()
     if (!isInitialized())
         return;
 
-    m_panner.clear();
+    m_panner.reset();
     listener()->removePanner(*this);
 
     AudioHandler::uninitialize();

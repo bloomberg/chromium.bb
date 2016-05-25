@@ -392,7 +392,7 @@ void SQLTransactionBackend::doCleanup()
         // m_sqliteTransaction invokes SQLiteTransaction's destructor which does
         // just that. We might as well do this unconditionally and free up its
         // resources because we're already terminating.
-        m_sqliteTransaction.clear();
+        m_sqliteTransaction.reset();
     }
 
     // Release the lock on this database
@@ -499,7 +499,7 @@ void SQLTransactionBackend::computeNextStateAndCleanupIfNeeded()
     // The current SQLite transaction should be stopped, as well
     if (m_sqliteTransaction) {
         m_sqliteTransaction->stop();
-        m_sqliteTransaction.clear();
+        m_sqliteTransaction.reset();
     }
 
     // Terminate the frontend state machine. This also gets the frontend to
@@ -572,7 +572,7 @@ SQLTransactionState SQLTransactionBackend::openTransactionAndPreflight()
         m_database->reportStartTransactionResult(2, SQLError::DATABASE_ERR, m_database->sqliteDatabase().lastError());
         m_transactionError = SQLErrorData::create(SQLError::DATABASE_ERR, "unable to begin transaction",
             m_database->sqliteDatabase().lastError(), m_database->sqliteDatabase().lastErrorMsg());
-        m_sqliteTransaction.clear();
+        m_sqliteTransaction.reset();
         return nextStateForTransactionError();
     }
 
@@ -585,7 +585,7 @@ SQLTransactionState SQLTransactionBackend::openTransactionAndPreflight()
         m_transactionError = SQLErrorData::create(SQLError::DATABASE_ERR, "unable to read version",
             m_database->sqliteDatabase().lastError(), m_database->sqliteDatabase().lastErrorMsg());
         m_database->disableAuthorizer();
-        m_sqliteTransaction.clear();
+        m_sqliteTransaction.reset();
         m_database->enableAuthorizer();
         return nextStateForTransactionError();
     }
@@ -594,7 +594,7 @@ SQLTransactionState SQLTransactionBackend::openTransactionAndPreflight()
     // Spec 4.3.2.3: Perform preflight steps, jumping to the error callback if they fail
     if (m_wrapper && !m_wrapper->performPreflight(this)) {
         m_database->disableAuthorizer();
-        m_sqliteTransaction.clear();
+        m_sqliteTransaction.reset();
         m_database->enableAuthorizer();
         if (m_wrapper->sqlError()) {
             m_transactionError = SQLErrorData::create(*m_wrapper->sqlError());
@@ -788,7 +788,7 @@ SQLTransactionState SQLTransactionBackend::cleanupAfterTransactionErrorCallback(
         m_sqliteTransaction->rollback();
 
         ASSERT(!m_database->sqliteDatabase().transactionInProgress());
-        m_sqliteTransaction.clear();
+        m_sqliteTransaction.reset();
     }
     m_database->enableAuthorizer();
 

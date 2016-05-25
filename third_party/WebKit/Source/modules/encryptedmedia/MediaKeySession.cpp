@@ -374,7 +374,7 @@ void MediaKeySession::dispose()
 {
     // Promptly clears a raw reference from content/ to an on-heap object
     // so that content/ doesn't access it in a lazy sweeping phase.
-    m_session.clear();
+    m_session.reset();
 }
 
 String MediaKeySession::sessionId() const
@@ -912,7 +912,7 @@ bool MediaKeySession::hasPendingActivity() const
 void MediaKeySession::stop()
 {
     // Stop the CDM from firing any more events for this session.
-    m_session.clear();
+    m_session.reset();
     m_isClosed = true;
 
     if (m_actionTimer.isActive())

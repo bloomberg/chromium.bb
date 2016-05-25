@@ -89,7 +89,7 @@ void DatabaseThread::terminate()
     // The WebThread destructor blocks until all the tasks of the database
     // thread are processed. However, it shouldn't block at all because
     // the database thread has already finished processing the cleanup task.
-    m_thread.clear();
+    m_thread.reset();
 }
 
 void DatabaseThread::cleanupDatabaseThread()

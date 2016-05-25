@@ -81,7 +81,7 @@ void OfflineAudioDestinationHandler::uninitialize()
         return;
 
     if (m_renderThread)
-        m_renderThread.clear();
+        m_renderThread.reset();
 
     AudioHandler::uninitialize();
 }

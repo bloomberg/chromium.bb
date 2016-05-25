@@ -450,7 +450,7 @@ void MediaSource::setReadyState(const AtomicString& state)
     DVLOG(MEDIA_SOURCE_LOG_LEVEL) << __FUNCTION__ << " : " << oldState << " -> " << state << " " << this;
 
     if (state == closedKeyword()) {
-        m_webMediaSource.clear();
+        m_webMediaSource.reset();
     }
 
     if (oldState == state)
@@ -574,7 +574,7 @@ void MediaSource::stop()
     m_asyncEventQueue->close();
     if (!isClosed())
         setReadyState(closedKeyword());
-    m_webMediaSource.clear();
+    m_webMediaSource.reset();
 }
 
 PassOwnPtr<WebSourceBuffer> MediaSource::createWebSourceBuffer(const String& type, const String& codecs, ExceptionState& exceptionState)

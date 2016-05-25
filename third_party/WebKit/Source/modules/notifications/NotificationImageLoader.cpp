@@ -68,7 +68,7 @@ void NotificationImageLoader::stop()
         // ExecutionContext it received in |create|. Kill it to prevent
         // reference cycles involving a mix of GC and non-GC types that fail to
         // clear in ThreadState::cleanup.
-        m_threadableLoader.clear();
+        m_threadableLoader.reset();
     }
 }
 

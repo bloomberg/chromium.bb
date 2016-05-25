@@ -69,7 +69,7 @@ TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition)
     ASSERT(!handle.isEmpty());
 
     // Delete the page & associated objects.
-    m_page.clear();
+    m_page.reset();
 
     // Run a GC, the persistent should have been collected.
     ThreadHeap::collectAllGarbage();

@@ -116,7 +116,7 @@ void ServiceWorkerRegistration::dispose()
 {
     // Promptly clears a raw reference from content/ to an on-heap object
     // so that content/ doesn't access it in a lazy sweeping phase.
-    m_handle.clear();
+    m_handle.reset();
 }
 
 DEFINE_TRACE(ServiceWorkerRegistration)

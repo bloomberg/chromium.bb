@@ -93,7 +93,7 @@ void MediaElementAudioSourceHandler::setFormat(size_t numberOfChannels, float so
             m_multiChannelResampler = adoptPtr(new MultiChannelResampler(scaleFactor, numberOfChannels));
         } else {
             // Bypass resampling.
-            m_multiChannelResampler.clear();
+            m_multiChannelResampler.reset();
         }
 
         {

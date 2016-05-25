@@ -248,7 +248,7 @@ void MediaKeys::contextDestroyed()
 
     // We don't need the CDM anymore. Only destroyed after all related
     // ActiveDOMObjects have been stopped.
-    m_cdm.clear();
+    m_cdm.reset();
 }
 
 bool MediaKeys::hasPendingActivity() const

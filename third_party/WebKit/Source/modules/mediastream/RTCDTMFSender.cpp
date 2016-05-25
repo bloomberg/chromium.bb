@@ -78,7 +78,7 @@ void RTCDTMFSender::dispose()
     // Promptly clears a raw reference from content/ to an on-heap object
     // so that content/ doesn't access it in a lazy sweeping phase.
     m_handler->setClient(nullptr);
-    m_handler.clear();
+    m_handler.reset();
 }
 
 bool RTCDTMFSender::canInsertDTMF() const

@@ -90,7 +90,7 @@ public:
 
     void TearDown() override
     {
-        m_page.clear();
+        m_page.reset();
         CompositorWorkerThread::resetSharedBackingThreadForTest();
     }
 

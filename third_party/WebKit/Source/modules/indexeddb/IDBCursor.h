@@ -52,7 +52,7 @@ public:
     static IDBCursor* create(PassOwnPtr<WebIDBCursor>, WebIDBCursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursor();
     DECLARE_TRACE();
-    void contextWillBeDestroyed() { m_backend.clear(); }
+    void contextWillBeDestroyed() { m_backend.reset(); }
 
     v8::Local<v8::Object> associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper) override WARN_UNUSED_RETURN;
 

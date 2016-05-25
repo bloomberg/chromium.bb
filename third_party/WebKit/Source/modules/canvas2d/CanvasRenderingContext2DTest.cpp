@@ -715,7 +715,7 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas)
     EXPECT_EQ(400, getGlobalGPUMemoryUsage());
 
     // Tear down the second image buffer
-    imageBuffer2.clear();
+    imageBuffer2.reset();
     EXPECT_EQ(0, getGlobalGPUMemoryUsage());
 }
 

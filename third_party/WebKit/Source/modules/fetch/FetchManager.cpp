@@ -521,7 +521,7 @@ void FetchManager::Loader::dispose()
     m_fetchManager = nullptr;
     if (m_loader) {
         m_loader->cancel();
-        m_loader.clear();
+        m_loader.reset();
     }
     m_executionContext = nullptr;
 }

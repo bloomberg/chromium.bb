@@ -72,7 +72,7 @@ MIDIAccess::~MIDIAccess()
 
 void MIDIAccess::dispose()
 {
-    m_accessor.clear();
+    m_accessor.reset();
 }
 
 EventListener* MIDIAccess::onstatechange()
@@ -203,7 +203,7 @@ void MIDIAccess::sendMIDIData(unsigned portIndex, const unsigned char* data, siz
 
 void MIDIAccess::stop()
 {
-    m_accessor.clear();
+    m_accessor.reset();
 }
 
 DEFINE_TRACE(MIDIAccess)

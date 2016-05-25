@@ -296,7 +296,7 @@ void IDBCursor::close()
 {
     m_value.clear();
     m_request.clear();
-    m_backend.clear();
+    m_backend.reset();
 }
 
 ScriptValue IDBCursor::key(ScriptState* scriptState)

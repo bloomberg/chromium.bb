@@ -141,7 +141,7 @@ private:
             // We have to destruct |*m_obj| here because destructing |*m_obj|
             // in ~Bridge() might be too late when |executionContext| is
             // stopped.
-            m_obj.clear();
+            m_obj.reset();
         }
 
 

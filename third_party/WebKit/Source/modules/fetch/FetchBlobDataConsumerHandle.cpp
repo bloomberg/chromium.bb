@@ -75,7 +75,7 @@ public:
             m_updater->update(createUnexpectedErrorDataConsumerHandle());
         if (m_loader) {
             m_loader->cancel();
-            m_loader.clear();
+            m_loader.reset();
         }
     }
 
@@ -133,14 +133,14 @@ private:
 
     void didFinishLoading(unsigned long, double) override
     {
-        m_loader.clear();
+        m_loader.reset();
     }
 
     void didFail(const ResourceError&) override
     {
         if (!m_receivedResponse)
             m_updater->update(createUnexpectedErrorDataConsumerHandle());
-        m_loader.clear();
+        m_loader.reset();
     }
 
     void didFailRedirectCheck() override

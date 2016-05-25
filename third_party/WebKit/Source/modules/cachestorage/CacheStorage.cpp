@@ -337,7 +337,7 @@ CacheStorage::~CacheStorage()
 
 void CacheStorage::dispose()
 {
-    m_webCacheStorage.clear();
+    m_webCacheStorage.reset();
 }
 
 DEFINE_TRACE(CacheStorage)

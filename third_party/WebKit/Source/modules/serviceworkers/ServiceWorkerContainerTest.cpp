@@ -154,7 +154,7 @@ protected:
 
     ~ServiceWorkerContainerTest()
     {
-        m_page.clear();
+        m_page.reset();
         V8GCController::collectAllGarbageForTesting(isolate());
     }
 

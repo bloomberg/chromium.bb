@@ -280,7 +280,7 @@ void DocumentWebSocketChannel::disconnect()
         InspectorInstrumentation::didCloseWebSocket(document(), m_identifier);
     }
     abortAsyncOperations();
-    m_handle.clear();
+    m_handle.reset();
     m_client = nullptr;
     m_identifier = 0;
 }
@@ -390,7 +390,7 @@ void DocumentWebSocketChannel::abortAsyncOperations()
 
 void DocumentWebSocketChannel::handleDidClose(bool wasClean, unsigned short code, const String& reason)
 {
-    m_handle.clear();
+    m_handle.reset();
     abortAsyncOperations();
     if (!m_client) {
         return;
@@ -518,7 +518,7 @@ void DocumentWebSocketChannel::didClose(WebSocketHandle* handle, bool wasClean, 
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
 
-    m_handle.clear();
+    m_handle.reset();
 
     if (m_identifier) {
         TRACE_EVENT_INSTANT1("devtools.timeline", "WebSocketDestroy", TRACE_EVENT_SCOPE_THREAD, "data", InspectorWebSocketEvent::data(document(), m_identifier));

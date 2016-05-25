@@ -39,7 +39,7 @@ private:
         RefPtr<BlobDataHandle> blobHandle = m_reader->drainAsBlobDataHandle();
         if (blobHandle) {
             ASSERT(blobHandle->size() != UINT64_MAX);
-            m_reader.clear();
+            m_reader.reset();
             if (blobHandle->type() != m_mimeType) {
                 // A new BlobDataHandle is created to override the Blob's type.
                 m_client->didFetchDataLoadedBlobHandle(BlobDataHandle::create(blobHandle->uuid(), m_mimeType, blobHandle->size()));
@@ -72,7 +72,7 @@ private:
                 break;
 
             case WebDataConsumerHandle::Done: {
-                m_reader.clear();
+                m_reader.reset();
                 long long size = m_blobData->length();
                 m_client->didFetchDataLoadedBlobHandle(BlobDataHandle::create(std::move(m_blobData), size));
                 m_client.clear();
@@ -85,8 +85,8 @@ private:
             case WebDataConsumerHandle::Busy:
             case WebDataConsumerHandle::ResourceExhausted:
             case WebDataConsumerHandle::UnexpectedError:
-                m_reader.clear();
-                m_blobData.clear();
+                m_reader.reset();
+                m_blobData.reset();
                 m_client->didFetchDataLoadFailed();
                 m_client.clear();
                 return;
@@ -96,8 +96,8 @@ private:
 
     void cancel() override
     {
-        m_reader.clear();
-        m_blobData.clear();
+        m_reader.reset();
+        m_blobData.reset();
         m_client.clear();
     }
 
@@ -158,9 +158,9 @@ protected:
                 break;
 
             case WebDataConsumerHandle::Done:
-                m_reader.clear();
+                m_reader.reset();
                 m_client->didFetchDataLoadedArrayBuffer(DOMArrayBuffer::create(m_rawData->toArrayBuffer()));
-                m_rawData.clear();
+                m_rawData.reset();
                 m_client.clear();
                 return;
 
@@ -178,16 +178,16 @@ protected:
 
     void error()
     {
-        m_reader.clear();
-        m_rawData.clear();
+        m_reader.reset();
+        m_rawData.reset();
         m_client->didFetchDataLoadFailed();
         m_client.clear();
     }
 
     void cancel() override
     {
-        m_reader.clear();
-        m_rawData.clear();
+        m_reader.reset();
+        m_rawData.reset();
         m_client.clear();
     }
 
@@ -240,11 +240,11 @@ protected:
                 break;
 
             case WebDataConsumerHandle::Done:
-                m_reader.clear();
+                m_reader.reset();
                 m_builder.append(m_decoder->flush());
                 m_client->didFetchDataLoadedString(m_builder.toString());
                 m_builder.clear();
-                m_decoder.clear();
+                m_decoder.reset();
                 m_client.clear();
                 return;
 
@@ -262,18 +262,18 @@ protected:
 
     void error()
     {
-        m_reader.clear();
+        m_reader.reset();
         m_builder.clear();
-        m_decoder.clear();
+        m_decoder.reset();
         m_client->didFetchDataLoadFailed();
         m_client.clear();
     }
 
     void cancel() override
     {
-        m_reader.clear();
+        m_reader.reset();
         m_builder.clear();
-        m_decoder.clear();
+        m_decoder.reset();
         m_client.clear();
     }
 
@@ -327,7 +327,7 @@ protected:
                 break;
 
             case WebDataConsumerHandle::Done:
-                m_reader.clear();
+                m_reader.reset();
                 if (needToFlush)
                     m_outStream->flush();
                 m_outStream->finalize();
@@ -348,7 +348,7 @@ protected:
                 // notice the error and continue waiting forever.
                 // FIXME: Add new message to report the error to the browser
                 // process.
-                m_reader.clear();
+                m_reader.reset();
                 m_outStream->abort();
                 m_client->didFetchDataLoadFailed();
                 cleanup();
@@ -364,7 +364,7 @@ protected:
 
     void cleanup()
     {
-        m_reader.clear();
+        m_reader.reset();
         m_client.clear();
         m_outStream.clear();
     }

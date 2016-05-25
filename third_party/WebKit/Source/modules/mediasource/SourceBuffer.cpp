@@ -143,7 +143,7 @@ void SourceBuffer::dispose()
 {
     // Promptly clears a raw reference from content/ to an on-heap object
     // so that content/ doesn't access it in a lazy sweeping phase.
-    m_webSourceBuffer.clear();
+    m_webSourceBuffer.reset();
 }
 
 const AtomicString& SourceBuffer::segmentsKeyword()
@@ -493,7 +493,7 @@ void SourceBuffer::removedFromMediaSource()
     }
 
     m_webSourceBuffer->removedFromMediaSource();
-    m_webSourceBuffer.clear();
+    m_webSourceBuffer.reset();
     m_source = nullptr;
     m_asyncEventQueue = nullptr;
 }
@@ -945,7 +945,7 @@ void SourceBuffer::clearAppendStreamState()
 {
     m_streamMaxSizeValid = false;
     m_streamMaxSize = 0;
-    m_loader.clear();
+    m_loader.reset();
     m_stream = nullptr;
 }
 

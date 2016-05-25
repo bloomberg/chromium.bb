@@ -467,7 +467,7 @@ void RTCPeerConnection::dispose()
 {
     // Promptly clears a raw reference from content/ to an on-heap object
     // so that content/ doesn't access it in a lazy sweeping phase.
-    m_peerHandler.clear();
+    m_peerHandler.reset();
 }
 
 ScriptPromise RTCPeerConnection::createOffer(ScriptState* scriptState, const RTCOfferOptions& options)
@@ -1134,7 +1134,7 @@ void RTCPeerConnection::stop()
 
     m_dispatchScheduledEventRunner->stop();
 
-    m_peerHandler.clear();
+    m_peerHandler.reset();
 }
 
 void RTCPeerConnection::changeSignalingState(SignalingState signalingState)

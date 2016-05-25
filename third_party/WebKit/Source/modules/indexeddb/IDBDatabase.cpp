@@ -343,7 +343,7 @@ void IDBDatabase::closeConnection()
 
     if (m_backend) {
         m_backend->close();
-        m_backend.clear();
+        m_backend.reset();
     }
 
     if (m_contextStopped || !getExecutionContext())
@@ -432,7 +432,7 @@ void IDBDatabase::stop()
     // round trip to the back-end to abort.
     if (m_backend) {
         m_backend->close();
-        m_backend.clear();
+        m_backend.reset();
     }
 }
 

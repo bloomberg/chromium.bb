@@ -1155,7 +1155,7 @@ void WebGLRenderingContextBase::destroyContext()
     if (!drawingBuffer())
         return;
 
-    m_extensionsUtil.clear();
+    m_extensionsUtil.reset();
 
     drawingBuffer()->contextProvider()->setLostContextCallback(WebClosure());
     drawingBuffer()->contextProvider()->setErrorMessageCallback(WebFunction<void(const char*, int32_t)>());

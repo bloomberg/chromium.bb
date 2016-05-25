@@ -87,7 +87,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap(ExceptionS
     RefPtr<SkImage> skImage = m_imageBuffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);
     RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(skImage.release());
     image->setOriginClean(this->originClean());
-    m_imageBuffer.clear(); // "Transfer" means no retained buffer
+    m_imageBuffer.reset(); // "Transfer" means no retained buffer
     return ImageBitmap::create(image.release());
 }
 

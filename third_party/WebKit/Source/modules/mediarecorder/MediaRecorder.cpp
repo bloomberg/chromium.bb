@@ -280,7 +280,7 @@ void MediaRecorder::stop()
 
     m_stopped = true;
     m_stream.clear();
-    m_recorderHandler.clear();
+    m_recorderHandler.reset();
 }
 
 void MediaRecorder::writeData(const char* data, size_t length, bool lastInSlice)
