@@ -25,8 +25,7 @@ AutofillPrivateEventRouter::AutofillPrivateEventRouter(
     content::BrowserContext* context)
     : context_(context),
       event_router_(nullptr),
-      personal_data_(nullptr),
-      listening_(false) {
+      personal_data_(nullptr) {
   // Register with the event router so we know when renderers are listening to
   // our events. We first check and see if there *is* an event router, because
   // some unit tests try to create all context services, but don't initialize
