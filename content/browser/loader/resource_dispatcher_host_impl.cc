@@ -2253,15 +2253,14 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       GetChromeBlobStorageContextForResourceContext(resource_context));
 
   // Resolve elements from request_body and prepare upload data.
-  if (info.request_body.get()) {
-    AttachRequestBodyBlobDataHandles(
-        info.request_body.get(),
-        blob_context);
+  ResourceRequestBody* body = info.common_params.post_data.get();
+  if (body) {
+    AttachRequestBodyBlobDataHandles(body, blob_context);
     // TODO(davidben): The FileSystemContext is null here. In the case where
     // another renderer requested this navigation, this should be the same
     // FileSystemContext passed into ShouldServiceRequest.
     new_request->set_upload(UploadDataStreamBuilder::Build(
-        info.request_body.get(),
+        body,
         blob_context,
         nullptr,  // file_system_context
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
@@ -2326,7 +2325,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   ServiceWorkerRequestHandler::InitializeForNavigation(
       new_request.get(), service_worker_handle_core, blob_context,
       info.begin_params.skip_service_worker, resource_type,
-      info.begin_params.request_context_type, frame_type, info.request_body);
+      info.begin_params.request_context_type, frame_type,
+      info.common_params.post_data);
 
   // TODO(davidben): Attach AppCacheInterceptor.
 

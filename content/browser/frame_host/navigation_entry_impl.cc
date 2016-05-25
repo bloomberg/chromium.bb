@@ -18,6 +18,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_params.h"
 #include "content/common/page_state_serialization.h"
+#include "content/common/resource_request_body.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_constants.h"
@@ -569,8 +570,22 @@ std::unique_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
   return copy;
 }
 
+scoped_refptr<ResourceRequestBody>
+NavigationEntryImpl::ConstructBodyFromBrowserInitiatedPostData() const {
+  scoped_refptr<ResourceRequestBody> browser_initiated_post_body;
+  if (GetHasPostData()) {
+    if (const base::RefCountedMemory* memory = GetBrowserInitiatedPostData()) {
+      browser_initiated_post_body = new ResourceRequestBody();
+      browser_initiated_post_body->AppendBytes(memory->front_as<char>(),
+                                               memory->size());
+    }
+  }
+  return browser_initiated_post_body;
+}
+
 CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
     const FrameNavigationEntry& frame_entry,
+    const scoped_refptr<ResourceRequestBody>& post_body,
     const GURL& dest_url,
     const Referrer& dest_referrer,
     FrameMsg_Navigate_Type::Value navigation_type,
@@ -592,26 +607,19 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
   if (IsBrowserSideNavigationEnabled())
     method = frame_entry.method();
   else
-    method = GetHasPostData() ? "POST" : "GET";
+    method = (post_body.get() || GetHasPostData()) ? "POST" : "GET";
 
   return CommonNavigationParams(
       dest_url, dest_referrer, GetTransitionType(), navigation_type,
       !IsViewSourceMode(), should_replace_entry(), ui_timestamp, report_type,
       GetBaseURLForDataURL(), GetHistoryURLForDataURL(), lofi_state,
-      navigation_start, method);
+      navigation_start, method,
+      post_body ? post_body : ConstructBodyFromBrowserInitiatedPostData());
 }
 
 StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()
     const {
-  std::vector<unsigned char> browser_initiated_post_data;
-  if (GetBrowserInitiatedPostData()) {
-    browser_initiated_post_data.assign(
-        GetBrowserInitiatedPostData()->front(),
-        GetBrowserInitiatedPostData()->front() +
-            GetBrowserInitiatedPostData()->size());
-  }
-
-  return StartNavigationParams(extra_headers(), browser_initiated_post_data,
+  return StartNavigationParams(extra_headers(),
 #if defined(OS_ANDROID)
                                has_user_gesture(),
 #endif

@@ -369,8 +369,7 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
     common_params.url = url;
     common_params.referrer = Referrer(GURL(), blink::WebReferrerPolicyDefault);
     common_params.transition = ui::PAGE_TRANSITION_LINK;
-    OnBeginNavigation(common_params, begin_params,
-                      scoped_refptr<ResourceRequestBody>());
+    OnBeginNavigation(common_params, begin_params);
   }
 }
 

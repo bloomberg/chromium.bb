@@ -142,11 +142,9 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // PlzNavigate
   // Used to start a new renderer-initiated navigation, following a
   // BeginNavigation IPC from the renderer.
-  virtual void OnBeginNavigation(
-      FrameTreeNode* frame_tree_node,
-      const CommonNavigationParams& common_params,
-      const BeginNavigationParams& begin_params,
-      scoped_refptr<ResourceRequestBody> body);
+  virtual void OnBeginNavigation(FrameTreeNode* frame_tree_node,
+                                 const CommonNavigationParams& common_params,
+                                 const BeginNavigationParams& begin_params);
 
   // PlzNavigate
   // Called when a NavigationRequest for |frame_tree_node| failed. An

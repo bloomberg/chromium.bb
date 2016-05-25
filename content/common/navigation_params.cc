@@ -47,7 +47,8 @@ CommonNavigationParams::CommonNavigationParams(
     const GURL& history_url_for_data_url,
     LoFiState lofi_state,
     const base::TimeTicks& navigation_start,
-    std::string method)
+    std::string method,
+    const scoped_refptr<ResourceRequestBody>& post_data)
     : url(url),
       referrer(referrer),
       transition(transition),
@@ -60,7 +61,8 @@ CommonNavigationParams::CommonNavigationParams(
       history_url_for_data_url(history_url_for_data_url),
       lofi_state(lofi_state),
       navigation_start(navigation_start),
-      method(method) {}
+      method(method),
+      post_data(post_data) {}
 
 CommonNavigationParams::CommonNavigationParams(
     const CommonNavigationParams& other) = default;
@@ -100,14 +102,12 @@ StartNavigationParams::StartNavigationParams()
 
 StartNavigationParams::StartNavigationParams(
     const std::string& extra_headers,
-    const std::vector<unsigned char>& browser_initiated_post_data,
 #if defined(OS_ANDROID)
     bool has_user_gesture,
 #endif
     int transferred_request_child_id,
     int transferred_request_request_id)
     : extra_headers(extra_headers),
-      browser_initiated_post_data(browser_initiated_post_data),
 #if defined(OS_ANDROID)
       has_user_gesture(has_user_gesture),
 #endif

@@ -387,7 +387,7 @@ bool NavigatorImpl::NavigateToEntry(
       FrameMsg_Navigate_Type::Value navigation_type = GetNavigationType(
           controller_->GetBrowserContext(), entry, reload_type);
       dest_render_frame_host->Navigate(
-          entry.ConstructCommonNavigationParams(frame_entry, dest_url,
+          entry.ConstructCommonNavigationParams(frame_entry, nullptr, dest_url,
                                                 dest_referrer, navigation_type,
                                                 lofi_state, navigation_start),
           entry.ConstructStartNavigationParams(),
@@ -860,8 +860,7 @@ void NavigatorImpl::OnBeforeUnloadACK(FrameTreeNode* frame_tree_node,
 void NavigatorImpl::OnBeginNavigation(
     FrameTreeNode* frame_tree_node,
     const CommonNavigationParams& common_params,
-    const BeginNavigationParams& begin_params,
-    scoped_refptr<ResourceRequestBody> body) {
+    const BeginNavigationParams& begin_params) {
   // TODO(clamy): the url sent by the renderer should be validated with
   // FilterURL.
   // This is a renderer-initiated navigation.
@@ -889,7 +888,7 @@ void NavigatorImpl::OnBeginNavigation(
   // NavigationRequest is created for the node.
   frame_tree_node->CreatedNavigationRequest(
       NavigationRequest::CreateRendererInitiated(
-          frame_tree_node, common_params, begin_params, body,
+          frame_tree_node, common_params, begin_params,
           controller_->GetLastCommittedEntryIndex(),
           controller_->GetEntryCount()));
   NavigationRequest* navigation_request = frame_tree_node->navigation_request();

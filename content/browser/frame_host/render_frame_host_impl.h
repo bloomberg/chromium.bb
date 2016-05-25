@@ -496,8 +496,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
                         std::unique_ptr<StreamHandle> body,
                         const CommonNavigationParams& common_params,
                         const RequestNavigationParams& request_params,
-                        bool is_view_source,
-                        scoped_refptr<ResourceRequestBody> post_data);
+                        bool is_view_source);
 
   // PlzNavigate
   // Indicates that a navigation failed and that this RenderFrame should display
@@ -653,8 +652,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
                      blink::WebTextDirection title_direction);
   void OnUpdateEncoding(const std::string& encoding);
   void OnBeginNavigation(const CommonNavigationParams& common_params,
-                         const BeginNavigationParams& begin_params,
-                         scoped_refptr<ResourceRequestBody> body);
+                         const BeginNavigationParams& begin_params);
   void OnDispatchLoad();
   void OnAccessibilityEvents(
       const std::vector<AccessibilityHostMsg_EventParams>& params,

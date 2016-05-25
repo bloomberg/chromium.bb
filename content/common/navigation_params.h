@@ -9,10 +9,12 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
+#include "content/common/resource_request_body.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/request_context_type.h"
@@ -60,7 +62,8 @@ struct CONTENT_EXPORT CommonNavigationParams {
                          const GURL& history_url_for_data_url,
                          LoFiState lofi_state,
                          const base::TimeTicks& navigation_start,
-                         std::string method);
+                         std::string method,
+                         const scoped_refptr<ResourceRequestBody>& post_data);
   CommonNavigationParams(const CommonNavigationParams& other);
   ~CommonNavigationParams();
 
@@ -118,6 +121,9 @@ struct CONTENT_EXPORT CommonNavigationParams {
 
   // The request method: GET, POST, etc.
   std::string method;
+
+  // Body of HTTP POST request.
+  scoped_refptr<ResourceRequestBody> post_data;
 };
 
 // Provided by the renderer ----------------------------------------------------
@@ -172,23 +178,17 @@ struct CONTENT_EXPORT BeginNavigationParams {
 // PlzNavigate: These are not used.
 struct CONTENT_EXPORT StartNavigationParams {
   StartNavigationParams();
-  StartNavigationParams(
-      const std::string& extra_headers,
-      const std::vector<unsigned char>& browser_initiated_post_data,
+  StartNavigationParams(const std::string& extra_headers,
 #if defined(OS_ANDROID)
-      bool has_user_gesture,
+                        bool has_user_gesture,
 #endif
-      int transferred_request_child_id,
-      int transferred_request_request_id);
+                        int transferred_request_child_id,
+                        int transferred_request_request_id);
   StartNavigationParams(const StartNavigationParams& other);
   ~StartNavigationParams();
 
   // Extra headers (separated by \n) to send during the request.
   std::string extra_headers;
-
-  // If is_post is true, holds the post_data information from browser. Empty
-  // otherwise.
-  std::vector<unsigned char> browser_initiated_post_data;
 
 #if defined(OS_ANDROID)
   bool has_user_gesture;

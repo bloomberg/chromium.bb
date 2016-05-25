@@ -83,20 +83,12 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
 
   // Fill POST data in the request body.
   scoped_refptr<ResourceRequestBody> request_body;
-  if (frame_entry.method() == "POST") {
+  if (frame_entry.method() == "POST")
     request_body = frame_entry.GetPostData();
-    if (!request_body && entry.GetBrowserInitiatedPostData()) {
-      request_body = new ResourceRequestBody();
-      request_body->AppendBytes(
-          reinterpret_cast<const char*>(
-              entry.GetBrowserInitiatedPostData()->front()),
-          entry.GetBrowserInitiatedPostData()->size());
-    }
-  }
 
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, entry.ConstructCommonNavigationParams(
-                           frame_entry, dest_url, dest_referrer,
+                           frame_entry, request_body, dest_url, dest_referrer,
                            navigation_type, lofi_state, navigation_start),
       BeginNavigationParams(headers.ToString(),
                             LoadFlagFromNavigationType(navigation_type),
@@ -110,7 +102,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
           controller->GetIndexOfEntry(&entry),
           controller->GetLastCommittedEntryIndex(),
           controller->GetEntryCount()),
-      request_body, true, &frame_entry, &entry));
+      true, &frame_entry, &entry));
   return navigation_request;
 }
 
@@ -119,7 +111,6 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
     FrameTreeNode* frame_tree_node,
     const CommonNavigationParams& common_params,
     const BeginNavigationParams& begin_params,
-    scoped_refptr<ResourceRequestBody> body,
     int current_history_list_offset,
     int current_history_list_length) {
   // TODO(clamy): Check if some PageState should be provided here.
@@ -145,7 +136,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
       false);                  // should_clear_history_list
   std::unique_ptr<NavigationRequest> navigation_request(
       new NavigationRequest(frame_tree_node, common_params, begin_params,
-                            request_params, body, false, nullptr, nullptr));
+                            request_params, false, nullptr, nullptr));
   return navigation_request;
 }
 
@@ -154,7 +145,6 @@ NavigationRequest::NavigationRequest(
     const CommonNavigationParams& common_params,
     const BeginNavigationParams& begin_params,
     const RequestNavigationParams& request_params,
-    scoped_refptr<ResourceRequestBody> body,
     bool browser_initiated,
     const FrameNavigationEntry* frame_entry,
     const NavigationEntryImpl* entry)
@@ -167,7 +157,6 @@ NavigationRequest::NavigationRequest(
       restore_type_(NavigationEntryImpl::RESTORE_NONE),
       is_view_source_(false),
       bindings_(NavigationEntryImpl::kInvalidBindings),
-      post_data_(body),
       associated_site_instance_type_(AssociatedSiteInstanceType::NONE) {
   DCHECK(!browser_initiated || (entry != nullptr && frame_entry != nullptr));
   if (browser_initiated) {
@@ -200,7 +189,7 @@ NavigationRequest::NavigationRequest(
   info_.reset(new NavigationRequestInfo(
       common_params, begin_params, first_party_for_cookies,
       frame_tree_node->current_origin(), frame_tree_node->IsMainFrame(),
-      parent_is_main_frame, frame_tree_node->frame_tree_node_id(), body));
+      parent_is_main_frame, frame_tree_node->frame_tree_node_id()));
 }
 
 NavigationRequest::~NavigationRequest() {
@@ -264,7 +253,7 @@ void NavigationRequest::OnRequestRedirected(
     const scoped_refptr<ResourceResponse>& response) {
   // If the navigation is no longer a POST, the POST data should be reset.
   if (redirect_info.new_method != "POST")
-    post_data_ = nullptr;
+    common_params_.post_data = nullptr;
 
   common_params_.url = redirect_info.new_url;
   common_params_.method = redirect_info.new_method;
@@ -435,7 +424,7 @@ void NavigationRequest::CommitNavigation() {
   TransferNavigationHandleOwnership(render_frame_host);
   render_frame_host->CommitNavigation(response_.get(), std::move(body_),
                                       common_params_, request_params_,
-                                      is_view_source_, post_data_);
+                                      is_view_source_);
 
   // When navigating to a Javascript url, the NavigationRequest is not stored
   // in the FrameTreeNode. Therefore do not reset it, as this could cancel an

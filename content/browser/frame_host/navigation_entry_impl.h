@@ -23,6 +23,7 @@
 #include "content/public/common/ssl_status.h"
 
 namespace content {
+class ResourceRequestBody;
 struct CommonNavigationParams;
 struct RequestNavigationParams;
 struct StartNavigationParams;
@@ -159,8 +160,11 @@ class CONTENT_EXPORT NavigationEntryImpl
 
   // Helper functions to construct NavigationParameters for a navigation to this
   // NavigationEntry.
+  scoped_refptr<ResourceRequestBody> ConstructBodyFromBrowserInitiatedPostData()
+      const;
   CommonNavigationParams ConstructCommonNavigationParams(
       const FrameNavigationEntry& frame_entry,
+      const scoped_refptr<ResourceRequestBody>& post_body,
       const GURL& dest_url,
       const Referrer& dest_referrer,
       FrameMsg_Navigate_Type::Value navigation_type,

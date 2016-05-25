@@ -547,7 +547,7 @@ WebURLRequest CreateURLRequestForNavigation(
 // to the WebURLRequest used to commit the navigation. This ensures that the
 // POST data will be in the PageState sent to the browser on commit.
 void AddHTTPBodyToRequest(WebURLRequest* request,
-                          scoped_refptr<ResourceRequestBody> body) {
+                          const scoped_refptr<ResourceRequestBody>& body) {
   WebHTTPBody http_body;
   http_body.initialize();
   http_body.setIdentifier(body->identifier());
@@ -639,7 +639,8 @@ CommonNavigationParams MakeCommonNavigationParams(
       request->url(), referrer, extra_data->transition_type(),
       FrameMsg_Navigate_Type::NORMAL, true, should_replace_current_entry,
       ui_timestamp, report_type, GURL(), GURL(), extra_data->lofi_state(),
-      base::TimeTicks::Now(), request->httpMethod().latin1());
+      base::TimeTicks::Now(), request->httpMethod().latin1(),
+      GetRequestBodyForWebURLRequest(*request));
 }
 
 media::Context3D GetSharedMainThreadContext3D(
@@ -1579,7 +1580,7 @@ void RenderFrameImpl::OnNavigate(
   TRACE_EVENT2("navigation", "RenderFrameImpl::OnNavigate", "id", routing_id_,
                "url", common_params.url.possibly_invalid_spec());
   NavigateInternal(common_params, start_params, request_params,
-                   std::unique_ptr<StreamOverrideParameters>(), nullptr);
+                   std::unique_ptr<StreamOverrideParameters>());
 }
 
 void RenderFrameImpl::BindServiceRegistry(
@@ -4711,8 +4712,7 @@ void RenderFrameImpl::OnCommitNavigation(
     const ResourceResponseHead& response,
     const GURL& stream_url,
     const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params,
-    scoped_refptr<ResourceRequestBody> post_data) {
+    const RequestNavigationParams& request_params) {
   CHECK(IsBrowserSideNavigationEnabled());
   // This will override the url requested by the WebURLLoader, as well as
   // provide it with the response to the request.
@@ -4722,7 +4722,7 @@ void RenderFrameImpl::OnCommitNavigation(
   stream_override->response = response;
 
   NavigateInternal(common_params, StartNavigationParams(), request_params,
-                   std::move(stream_override), post_data);
+                   std::move(stream_override));
 }
 
 // PlzNavigate
@@ -5324,8 +5324,7 @@ void RenderFrameImpl::NavigateInternal(
     const CommonNavigationParams& common_params,
     const StartNavigationParams& start_params,
     const RequestNavigationParams& request_params,
-    std::unique_ptr<StreamOverrideParameters> stream_params,
-    scoped_refptr<ResourceRequestBody> post_data) {
+    std::unique_ptr<StreamOverrideParameters> stream_params) {
   bool browser_side_navigation = IsBrowserSideNavigationEnabled();
 
   // Lower bound for browser initiated navigation start time.
@@ -5386,8 +5385,8 @@ void RenderFrameImpl::NavigateInternal(
       CreateURLRequestForNavigation(common_params, std::move(stream_params),
                                     frame_->isViewSourceModeEnabled());
 
-  if (IsBrowserSideNavigationEnabled() && post_data)
-    AddHTTPBodyToRequest(&request, post_data);
+  if (IsBrowserSideNavigationEnabled() && common_params.post_data)
+    AddHTTPBodyToRequest(&request, common_params.post_data);
 
   // Used to determine whether this frame is actually loading a request as part
   // of a history navigation.
@@ -5478,18 +5477,9 @@ void RenderFrameImpl::NavigateInternal(
       }
     }
 
-    if (common_params.method == "POST" && !browser_side_navigation) {
-      // Set post data.
-      WebHTTPBody http_body;
-      http_body.initialize();
-      const char* data = nullptr;
-      if (start_params.browser_initiated_post_data.size()) {
-        data = reinterpret_cast<const char*>(
-            &start_params.browser_initiated_post_data.front());
-      }
-      http_body.appendData(
-          WebData(data, start_params.browser_initiated_post_data.size()));
-      request.setHTTPBody(http_body);
+    if (common_params.method == "POST" && !browser_side_navigation &&
+        common_params.post_data) {
+      AddHTTPBodyToRequest(&request, common_params.post_data);
     }
 
     // A session history navigation should have been accompanied by state.
@@ -5748,8 +5738,7 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request,
                             GetLoadFlagsForWebURLRequest(*request),
                             request->hasUserGesture(),
                             request->skipServiceWorker(),
-                            GetRequestContextTypeForWebURLRequest(*request)),
-      GetRequestBodyForWebURLRequest(*request)));
+                            GetRequestContextTypeForWebURLRequest(*request))));
 }
 
 void RenderFrameImpl::LoadDataURL(

@@ -1644,13 +1644,12 @@ void RenderFrameHostImpl::OnUpdateEncoding(const std::string& encoding_name) {
 
 void RenderFrameHostImpl::OnBeginNavigation(
     const CommonNavigationParams& common_params,
-    const BeginNavigationParams& begin_params,
-    scoped_refptr<ResourceRequestBody> body) {
+    const BeginNavigationParams& begin_params) {
   CHECK(IsBrowserSideNavigationEnabled());
   CommonNavigationParams validated_params = common_params;
   GetProcess()->FilterURL(false, &validated_params.url);
   frame_tree_node()->navigator()->OnBeginNavigation(
-      frame_tree_node(), validated_params, begin_params, body);
+      frame_tree_node(), validated_params, begin_params);
 }
 
 void RenderFrameHostImpl::OnDispatchLoad() {
@@ -2100,10 +2099,10 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       data_url, Referrer(), ui::PAGE_TRANSITION_LINK,
       FrameMsg_Navigate_Type::NORMAL, false, false, base::TimeTicks::Now(),
       FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(), LOFI_OFF,
-      base::TimeTicks::Now(), "GET");
+      base::TimeTicks::Now(), "GET", nullptr);
   if (IsBrowserSideNavigationEnabled()) {
     CommitNavigation(nullptr, nullptr, common_params, RequestNavigationParams(),
-                     false, nullptr);
+                     false);
   } else {
     Navigate(common_params, StartNavigationParams(), RequestNavigationParams());
   }
@@ -2240,8 +2239,7 @@ void RenderFrameHostImpl::CommitNavigation(
     std::unique_ptr<StreamHandle> body,
     const CommonNavigationParams& common_params,
     const RequestNavigationParams& request_params,
-    bool is_view_source,
-    scoped_refptr<ResourceRequestBody> post_data) {
+    bool is_view_source) {
   DCHECK((response && body.get()) ||
           !ShouldMakeNetworkRequestForURL(common_params.url));
   UpdatePermissionsForNavigation(common_params, request_params);
@@ -2262,7 +2260,7 @@ void RenderFrameHostImpl::CommitNavigation(
   const ResourceResponseHead head = response ?
       response->head : ResourceResponseHead();
   Send(new FrameMsg_CommitNavigation(routing_id_, head, body_url, common_params,
-                                     request_params, post_data));
+                                     request_params));
 
   // If a network request was made, update the LoFi state.
   if (ShouldMakeNetworkRequestForURL(common_params.url))

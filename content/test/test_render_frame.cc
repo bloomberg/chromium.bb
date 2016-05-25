@@ -30,7 +30,7 @@ void TestRenderFrame::Navigate(const CommonNavigationParams& common_params,
   // PlzNavigate
   if (IsBrowserSideNavigationEnabled()) {
     OnCommitNavigation(ResourceResponseHead(), GURL(), common_params,
-                       request_params, nullptr);
+                       request_params);
   } else {
     OnNavigate(common_params, start_params, request_params);
   }

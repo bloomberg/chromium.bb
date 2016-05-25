@@ -608,11 +608,11 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   request_params.page_id = -1;
 
   // Set up post data.
-  const unsigned char* raw_data = reinterpret_cast<const unsigned char*>(
-      "post \0\ndata");
-  const unsigned int length = 11;
-  const std::vector<unsigned char> post_data(raw_data, raw_data + length);
-  start_params.browser_initiated_post_data = post_data;
+  const char raw_data[] = "post \0\ndata";
+  const size_t length = arraysize(raw_data);
+  scoped_refptr<ResourceRequestBody> post_data(new ResourceRequestBody);
+  post_data->AppendBytes(raw_data, length);
+  common_params.post_data = post_data;
 
   frame()->Navigate(common_params, start_params, request_params);
   ProcessPendingMessages();

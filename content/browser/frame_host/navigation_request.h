@@ -92,7 +92,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       FrameTreeNode* frame_tree_node,
       const CommonNavigationParams& common_params,
       const BeginNavigationParams& begin_params,
-      scoped_refptr<ResourceRequestBody> body,
       int current_history_list_offset,
       int current_history_list_length);
 
@@ -166,7 +165,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
                     const CommonNavigationParams& common_params,
                     const BeginNavigationParams& begin_params,
                     const RequestNavigationParams& request_params,
-                    scoped_refptr<ResourceRequestBody> body,
                     bool browser_initiated,
                     const FrameNavigationEntry* frame_navigation_entry,
                     const NavigationEntryImpl* navitation_entry);
@@ -229,9 +227,6 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   NavigationEntryImpl::RestoreType restore_type_;
   bool is_view_source_;
   int bindings_;
-
-  // This is kept to be sent to the renderer on commit.
-  scoped_refptr<ResourceRequestBody> post_data_;
 
   // The type of SiteInstance associated with this navigation.
   AssociatedSiteInstanceType associated_site_instance_type_;

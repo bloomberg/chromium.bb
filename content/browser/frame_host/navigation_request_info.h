@@ -28,8 +28,7 @@ struct CONTENT_EXPORT NavigationRequestInfo {
                         const url::Origin& request_initiator,
                         bool is_main_frame,
                         bool parent_is_main_frame,
-                        int frame_tree_node_id,
-                        scoped_refptr<ResourceRequestBody> request_body);
+                        int frame_tree_node_id);
   ~NavigationRequestInfo();
 
   const CommonNavigationParams common_params;
@@ -46,8 +45,6 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   const bool parent_is_main_frame;
 
   const int frame_tree_node_id;
-
-  scoped_refptr<ResourceRequestBody> request_body;
 };
 
 }  // namespace content

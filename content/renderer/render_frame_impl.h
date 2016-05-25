@@ -800,8 +800,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnCommitNavigation(const ResourceResponseHead& response,
                           const GURL& stream_url,
                           const CommonNavigationParams& common_params,
-                          const RequestNavigationParams& request_params,
-                          scoped_refptr<ResourceRequestBody> post_data);
+                          const RequestNavigationParams& request_params);
   void OnFailedNavigation(const CommonNavigationParams& common_params,
                           const RequestNavigationParams& request_params,
                           bool has_stale_copy_in_cache,
@@ -849,8 +848,7 @@ class CONTENT_EXPORT RenderFrameImpl
       const CommonNavigationParams& common_params,
       const StartNavigationParams& start_params,
       const RequestNavigationParams& request_params,
-      std::unique_ptr<StreamOverrideParameters> stream_params,
-      scoped_refptr<ResourceRequestBody> body);
+      std::unique_ptr<StreamOverrideParameters> stream_params);
 
   // Update current main frame's encoding and send it to browser window.
   // Since we want to let users see the right encoding info from menu
