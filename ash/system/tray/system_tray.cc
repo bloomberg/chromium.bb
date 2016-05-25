@@ -624,6 +624,9 @@ void SystemTray::SetShelfAlignment(wm::ShelfAlignment alignment) {
   if (notification_bubble_) {
     notification_bubble_.reset();
     UpdateNotificationBubble();
+    // UpdateWebNotifications() should be called in UpdateNotificationBubble().
+  } else if (!hide_notifications_) {
+    UpdateWebNotifications();
   }
 }
 
