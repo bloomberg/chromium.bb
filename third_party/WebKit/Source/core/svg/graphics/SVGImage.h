@@ -27,6 +27,7 @@
 #ifndef SVGImage_h
 #define SVGImage_h
 
+#include "core/CoreExport.h"
 #include "platform/graphics/Image.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
@@ -35,13 +36,12 @@
 namespace blink {
 
 class Document;
-class FrameView;
 class Page;
 class LayoutReplaced;
 class SVGImageChromeClient;
 class SVGImageForContainer;
 
-class SVGImage final : public Image {
+class CORE_EXPORT SVGImage final : public Image {
 public:
     static PassRefPtr<SVGImage> create(ImageObserver* observer)
     {
@@ -64,14 +64,14 @@ public:
     // Advances an animated image. This will trigger an animation update for CSS
     // and advance the SMIL timeline by one frame.
     void advanceAnimationForTesting() override;
+    SVGImageChromeClient& chromeClientForTesting();
 
     PassRefPtr<SkImage> imageForCurrentFrame() override;
 
-    // Returns the SVG image document's frame.
-    FrameView* frameView() const;
-
     // Does the SVG image/document contain any animations?
     bool hasAnimations() const;
+    // Service CSS and SMIL animations.
+    void serviceAnimations(double monotonicAnimationStartTime);
 
     void updateUseCounters(Document&) const;
 
@@ -83,8 +83,10 @@ public:
     bool hasIntrinsicDimensions() const;
 
 private:
-    friend class AXLayoutObject;
+    // Accesses m_page.
     friend class SVGImageChromeClient;
+    // Forwards calls to the various *ForContainer methods and other parts of
+    // the the Image interface.
     friend class SVGImageForContainer;
 
     ~SVGImage() override;
@@ -111,6 +113,8 @@ private:
     PassRefPtr<SkImage> imageForCurrentFrameForContainer(const KURL&, const FloatSize& containerSize);
     void drawInternal(SkCanvas*, const SkPaint&, const FloatRect& fromRect, const FloatRect& toRect, RespectImageOrientationEnum,
         ImageClampingMode, const KURL&);
+
+    void stopAnimation();
 
     Persistent<SVGImageChromeClient> m_chromeClient;
     Persistent<Page> m_page;

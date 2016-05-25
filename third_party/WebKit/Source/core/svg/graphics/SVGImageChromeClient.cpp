@@ -28,9 +28,7 @@
 
 #include "core/svg/graphics/SVGImageChromeClient.h"
 
-#include "core/frame/FrameView.h"
 #include "core/svg/graphics/SVGImage.h"
-#include "platform/ScriptForbiddenScope.h"
 #include "platform/graphics/ImageObserver.h"
 #include "wtf/CurrentTime.h"
 
@@ -40,7 +38,10 @@ static const double animationFrameDelay = 0.025;
 
 SVGImageChromeClient::SVGImageChromeClient(SVGImage* image)
     : m_image(image)
-    , m_animationTimer(this, &SVGImageChromeClient::animationTimerFired)
+    , m_animationTimer(
+        adoptPtr(new Timer<SVGImageChromeClient>(
+            this, &SVGImageChromeClient::animationTimerFired)))
+    , m_timelineState(Running)
 {
 }
 
@@ -66,6 +67,28 @@ void SVGImageChromeClient::invalidateRect(const IntRect& r)
         m_image->getImageObserver()->changedInRect(m_image, r);
 }
 
+void SVGImageChromeClient::suspendAnimation()
+{
+    if (m_image->hasAnimations()) {
+        m_timelineState = SuspendedWithAnimationPending;
+    } else {
+        // Preserve SuspendedWithAnimationPending if set.
+        m_timelineState = std::max(m_timelineState, Suspended);
+    }
+}
+
+void SVGImageChromeClient::resumeAnimation()
+{
+    bool havePendingAnimation = m_timelineState == SuspendedWithAnimationPending;
+    m_timelineState = Running;
+
+    // If an animation frame was pending/requested while animations were
+    // suspended, schedule a new animation frame.
+    if (!havePendingAnimation)
+        return;
+    scheduleAnimation(nullptr);
+}
+
 void SVGImageChromeClient::scheduleAnimation(Widget*)
 {
     // Because a single SVGImage can be shared by multiple pages, we can't key
@@ -73,14 +96,24 @@ void SVGImageChromeClient::scheduleAnimation(Widget*)
     // run this fake animation timer to trigger layout in SVGImages. The name,
     // "animationTimer", is to match the new requestAnimationFrame-based layout
     // approach.
-    if (m_animationTimer.isActive())
+    if (m_animationTimer->isActive())
         return;
     // Schedule the 'animation' ASAP if the image does not contain any
     // animations, but prefer a fixed, jittery, frame-delay if there're any
     // animations. Checking for pending/active animations could be more
     // stringent.
-    double fireTime = m_image->hasAnimations() ? animationFrameDelay : 0;
-    m_animationTimer.startOneShot(fireTime, BLINK_FROM_HERE);
+    double fireTime = 0;
+    if (m_image->hasAnimations()) {
+        if (m_timelineState >= Suspended)
+            return;
+        fireTime = animationFrameDelay;
+    }
+    m_animationTimer->startOneShot(fireTime, BLINK_FROM_HERE);
+}
+
+void SVGImageChromeClient::setTimer(Timer<SVGImageChromeClient>* timer)
+{
+    m_animationTimer = adoptPtr(timer);
 }
 
 void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
@@ -97,16 +130,7 @@ void SVGImageChromeClient::animationTimerFired(Timer<SVGImageChromeClient>*)
     if (ThreadHeap::willObjectBeLazilySwept(m_image->getImageObserver()))
         return;
 
-    // serviceScriptedAnimations runs requestAnimationFrame callbacks, but SVG
-    // images can't have any so we assert there's no script.
-    ScriptForbiddenScope forbidScript;
-
-    // The calls below may trigger GCs, so set up the required persistent
-    // reference on the ImageResource which owns this SVGImage. By transitivity,
-    // that will keep this SVGImageChromeClient object alive.
-    Persistent<ImageObserver> protect(m_image->getImageObserver());
-    m_image->frameView()->page()->animator().serviceScriptedAnimations(monotonicallyIncreasingTime());
-    m_image->frameView()->updateAllLifecyclePhases();
+    m_image->serviceAnimations(monotonicallyIncreasingTime());
 }
 
 } // namespace blink

@@ -88,6 +88,7 @@ private:
         }
 
         void imageChanged(ImageResource*, const IntRect* = nullptr) override;
+        bool willRenderImage() override;
         String debugName() const override { return "CrossfadeSubimageObserverProxy"; }
         void setReady(bool ready) { m_ready = ready; }
     private:
@@ -95,6 +96,7 @@ private:
         bool m_ready;
     };
 
+    bool willRenderImage() const;
     void crossfadeChanged(const IntRect&);
 
     Member<CSSValue> m_fromValue;

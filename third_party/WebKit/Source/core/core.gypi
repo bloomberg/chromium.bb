@@ -4128,6 +4128,7 @@
             'style/SVGComputedStyleTest.cpp',
             'svg/SVGPathParserTest.cpp',
             'svg/UnsafeSVGAttributeSanitizationTest.cpp',
+            'svg/graphics/SVGImageTest.cpp',
             'testing/PrivateScriptTestTest.cpp',
             'timing/MemoryInfoTest.cpp',
             'timing/PerformanceBaseTest.cpp',
