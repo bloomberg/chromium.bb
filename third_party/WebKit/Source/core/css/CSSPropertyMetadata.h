@@ -8,6 +8,7 @@
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
 #include "wtf/Allocator.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 

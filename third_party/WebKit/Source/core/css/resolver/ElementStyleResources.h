@@ -24,6 +24,7 @@
 #define ElementStyleResources_h
 
 #include "core/CSSPropertyNames.h"
+#include "core/css/CSSPropertyIDTemplates.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
@@ -39,6 +40,7 @@ class CSSImageValue;
 class CSSSVGDocumentValue;
 class CSSValue;
 class ComputedStyle;
+class Document;
 class FilterOperation;
 class StyleImage;
 class StylePendingImage;

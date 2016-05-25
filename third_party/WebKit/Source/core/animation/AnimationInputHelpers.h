@@ -7,10 +7,12 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
+class Document;
 class Element;
 class ExceptionState;
 class TimingFunction;

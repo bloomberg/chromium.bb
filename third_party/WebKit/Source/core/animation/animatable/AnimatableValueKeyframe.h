@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/animation/Keyframe.h"
 #include "core/animation/animatable/AnimatableValue.h"
+#include "core/css/CSSPropertyIDTemplates.h"
 
 namespace blink {
 

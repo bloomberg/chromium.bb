@@ -15,10 +15,8 @@ HEADER_TEMPLATE = """
 #define %(class_name)s_h
 
 #include "core/CoreExport.h"
-#include "core/css/parser/CSSParserMode.h"
-#include "wtf/HashFunctions.h"
-#include "wtf/HashTraits.h"
-#include <string.h>
+#include "wtf/Assertions.h"
+#include <stddef.h>
 
 namespace WTF {
 class AtomicString;
@@ -64,15 +62,6 @@ CSSPropertyID unresolvedCSSPropertyID(const WTF::String&);
 CSSPropertyID CORE_EXPORT cssPropertyID(const WTF::String&);
 
 } // namespace blink
-
-namespace WTF {
-template<> struct DefaultHash<blink::CSSPropertyID> { typedef IntHash<unsigned> Hash; };
-template<> struct HashTraits<blink::CSSPropertyID> : GenericHashTraits<blink::CSSPropertyID> {
-    static const bool emptyValueIsZero = true;
-    static void constructDeletedValue(blink::CSSPropertyID& slot, bool) { slot = static_cast<blink::CSSPropertyID>(blink::lastUnresolvedCSSProperty + 1); }
-    static bool isDeletedValue(blink::CSSPropertyID value) { return value == (blink::lastUnresolvedCSSProperty + 1); }
-};
-}
 
 #endif // %(class_name)s_h
 """

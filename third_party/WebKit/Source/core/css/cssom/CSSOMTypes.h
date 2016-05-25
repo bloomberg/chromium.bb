@@ -6,6 +6,7 @@
 #define CSSOMTypes_h
 
 #include "core/CSSPropertyNames.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
 
