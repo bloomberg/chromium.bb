@@ -27,18 +27,40 @@
 
 namespace blink {
 
-BiquadFilterNode::BiquadFilterNode(AbstractAudioContext& context, float sampleRate)
+BiquadFilterNode::BiquadFilterNode(AbstractAudioContext& context)
     : AudioNode(context)
-    , m_frequency(AudioParam::create(context, ParamTypeBiquadFilterFrequency, 350.0, 0, sampleRate / 2))
+    , m_frequency(AudioParam::create(context, ParamTypeBiquadFilterFrequency, 350.0, 0, context.sampleRate() / 2))
     , m_q(AudioParam::create(context, ParamTypeBiquadFilterQ, 1.0))
     , m_gain(AudioParam::create(context, ParamTypeBiquadFilterGain, 0.0))
     , m_detune(AudioParam::create(context, ParamTypeBiquadFilterDetune, 0.0))
 {
-    setHandler(AudioBasicProcessorHandler::create(AudioHandler::NodeTypeBiquadFilter, *this, sampleRate, adoptPtr(new BiquadProcessor(sampleRate, 1, m_frequency->handler(), m_q->handler(), m_gain->handler(), m_detune->handler()))));
+    setHandler(AudioBasicProcessorHandler::create(
+        AudioHandler::NodeTypeBiquadFilter,
+        *this,
+        context.sampleRate(),
+        adoptPtr(new BiquadProcessor(
+            context.sampleRate(),
+            1,
+            m_frequency->handler(),
+            m_q->handler(),
+            m_gain->handler(),
+            m_detune->handler()))));
 
     // Explicitly set the filter type so that any histograms get updated with the default value.
     // Otherwise, the histogram won't ever show it.
     setType("lowpass");
+}
+
+BiquadFilterNode* BiquadFilterNode::create(AbstractAudioContext& context, ExceptionState& exceptionState)
+{
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
+    return new BiquadFilterNode(context);
 }
 
 DEFINE_TRACE(BiquadFilterNode)

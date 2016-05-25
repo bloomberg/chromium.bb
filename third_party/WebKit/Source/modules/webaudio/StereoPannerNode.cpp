@@ -134,16 +134,23 @@ void StereoPannerHandler::setChannelCountMode(const String& mode, ExceptionState
 
 // ----------------------------------------------------------------
 
-StereoPannerNode::StereoPannerNode(AbstractAudioContext& context, float sampleRate)
+StereoPannerNode::StereoPannerNode(AbstractAudioContext& context)
     : AudioNode(context)
     , m_pan(AudioParam::create(context, ParamTypeStereoPannerPan, 0, -1, 1))
 {
-    setHandler(StereoPannerHandler::create(*this, sampleRate, m_pan->handler()));
+    setHandler(StereoPannerHandler::create(*this, context.sampleRate(), m_pan->handler()));
 }
 
-StereoPannerNode* StereoPannerNode::create(AbstractAudioContext& context, float sampleRate)
+StereoPannerNode* StereoPannerNode::create(AbstractAudioContext& context, ExceptionState& exceptionState)
 {
-    return new StereoPannerNode(context, sampleRate);
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
+    return new StereoPannerNode(context);
 }
 
 DEFINE_TRACE(StereoPannerNode)

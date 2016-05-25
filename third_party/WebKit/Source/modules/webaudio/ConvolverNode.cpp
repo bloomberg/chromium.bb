@@ -165,15 +165,22 @@ double ConvolverHandler::latencyTime() const
 
 // ----------------------------------------------------------------
 
-ConvolverNode::ConvolverNode(AbstractAudioContext& context, float sampleRate)
+ConvolverNode::ConvolverNode(AbstractAudioContext& context)
     : AudioNode(context)
 {
-    setHandler(ConvolverHandler::create(*this, sampleRate));
+    setHandler(ConvolverHandler::create(*this, context.sampleRate()));
 }
 
-ConvolverNode* ConvolverNode::create(AbstractAudioContext& context, float sampleRate)
+ConvolverNode* ConvolverNode::create(AbstractAudioContext& context, ExceptionState& exceptionState)
 {
-    return new ConvolverNode(context, sampleRate);
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
+    return new ConvolverNode(context);
 }
 
 ConvolverHandler& ConvolverNode::convolverHandler() const

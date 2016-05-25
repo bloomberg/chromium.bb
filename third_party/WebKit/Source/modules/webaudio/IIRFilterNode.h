@@ -17,10 +17,12 @@ class ExceptionState;
 class IIRFilterNode : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static IIRFilterNode* create(AbstractAudioContext& context, float sampleRate, const Vector<double> feedforward, const Vector<double> feedback)
-    {
-        return new IIRFilterNode(context, sampleRate, feedforward, feedback);
-    }
+    static IIRFilterNode* create(
+        AbstractAudioContext&,
+        const Vector<double> feedforward,
+        const Vector<double> feedback,
+        ExceptionState&);
+
     DECLARE_VIRTUAL_TRACE();
 
     // Get the magnitude and phase response of the filter at the given
@@ -28,7 +30,7 @@ public:
     void getFrequencyResponse(const DOMFloat32Array* frequencyHz, DOMFloat32Array* magResponse, DOMFloat32Array* phaseResponse, ExceptionState&);
 
 private:
-    IIRFilterNode(AbstractAudioContext&, float sampleRate, const Vector<double> denominator, const Vector<double> numerator);
+    IIRFilterNode(AbstractAudioContext&, const Vector<double> denominator, const Vector<double> numerator);
 
     IIRProcessor* iirProcessor() const;
 };

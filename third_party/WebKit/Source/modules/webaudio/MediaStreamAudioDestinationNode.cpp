@@ -122,8 +122,15 @@ MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AbstractAudioCo
     setHandler(MediaStreamAudioDestinationHandler::create(*this, numberOfChannels));
 }
 
-MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::create(AbstractAudioContext& context, size_t numberOfChannels)
+MediaStreamAudioDestinationNode* MediaStreamAudioDestinationNode::create(AbstractAudioContext& context, size_t numberOfChannels, ExceptionState& exceptionState)
 {
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
     return new MediaStreamAudioDestinationNode(context, numberOfChannels);
 }
 

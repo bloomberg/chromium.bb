@@ -81,7 +81,7 @@ private:
 class MODULES_EXPORT DynamicsCompressorNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static DynamicsCompressorNode* create(AbstractAudioContext&, float sampleRate);
+    static DynamicsCompressorNode* create(AbstractAudioContext&, ExceptionState&);
     DECLARE_VIRTUAL_TRACE();
 
     AudioParam* threshold() const;
@@ -92,7 +92,7 @@ public:
     AudioParam* release() const;
 
 private:
-    DynamicsCompressorNode(AbstractAudioContext&, float sampleRate);
+    DynamicsCompressorNode(AbstractAudioContext&);
     DynamicsCompressorHandler& dynamicsCompressorHandler() const;
 
     Member<AudioParam> m_threshold;

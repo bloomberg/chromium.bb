@@ -39,6 +39,18 @@ WaveShaperNode::WaveShaperNode(AbstractAudioContext& context)
     handler().initialize();
 }
 
+WaveShaperNode* WaveShaperNode::create(AbstractAudioContext& context, ExceptionState& exceptionState)
+{
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
+    return new WaveShaperNode(context);
+}
+
 WaveShaperProcessor* WaveShaperNode::getWaveShaperProcessor() const
 {
     return static_cast<WaveShaperProcessor*>(static_cast<AudioBasicProcessorHandler&>(handler()).processor());

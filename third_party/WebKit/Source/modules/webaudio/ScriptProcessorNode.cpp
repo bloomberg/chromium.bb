@@ -259,8 +259,79 @@ static size_t chooseBufferSize()
     return bufferSize;
 }
 
-ScriptProcessorNode* ScriptProcessorNode::create(AbstractAudioContext& context, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels)
+ScriptProcessorNode* ScriptProcessorNode::create(
+    AbstractAudioContext& context,
+    ExceptionState& exceptionState)
 {
+    DCHECK(isMainThread());
+
+    // Default buffer size is 0 (let WebAudio choose) with 2 inputs and 2
+    // outputs.
+    return create(context, 0, 2, 2, exceptionState);
+}
+
+ScriptProcessorNode* ScriptProcessorNode::create(
+    AbstractAudioContext& context,
+    size_t bufferSize,
+    ExceptionState& exceptionState)
+{
+    DCHECK(isMainThread());
+
+    // Default is 2 inputs and 2 outputs.
+    return create(context, bufferSize, 2, 2, exceptionState);
+}
+
+ScriptProcessorNode* ScriptProcessorNode::create(
+    AbstractAudioContext& context,
+    size_t bufferSize,
+    unsigned numberOfInputChannels,
+    ExceptionState& exceptionState)
+{
+    DCHECK(isMainThread());
+
+    // Default is 2 outputs.
+    return create(context, bufferSize, numberOfInputChannels, 2, exceptionState);
+}
+
+ScriptProcessorNode* ScriptProcessorNode::create(
+    AbstractAudioContext& context,
+    size_t bufferSize,
+    unsigned numberOfInputChannels,
+    unsigned numberOfOutputChannels,
+    ExceptionState& exceptionState)
+{
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
+    if (numberOfInputChannels == 0 && numberOfOutputChannels == 0) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            "number of input channels and output channels cannot both be zero.");
+        return nullptr;
+    }
+
+    if (numberOfInputChannels > AbstractAudioContext::maxNumberOfChannels()) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            "number of input channels (" + String::number(numberOfInputChannels)
+            + ") exceeds maximum ("
+            + String::number(AbstractAudioContext::maxNumberOfChannels()) + ").");
+        return nullptr;
+    }
+
+    if (numberOfOutputChannels > AbstractAudioContext::maxNumberOfChannels()) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            "number of output channels (" + String::number(numberOfInputChannels)
+            + ") exceeds maximum ("
+            + String::number(AbstractAudioContext::maxNumberOfChannels()) + ").");
+        return nullptr;
+    }
+
     // Check for valid buffer size.
     switch (bufferSize) {
     case 0:
@@ -275,19 +346,22 @@ ScriptProcessorNode* ScriptProcessorNode::create(AbstractAudioContext& context, 
     case 16384:
         break;
     default:
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            "buffer size (" + String::number(bufferSize)
+            + ") must be 0 or a power of two between 256 and 16384.");
         return nullptr;
     }
 
-    if (!numberOfInputChannels && !numberOfOutputChannels)
+    ScriptProcessorNode* node =  new ScriptProcessorNode(context, context.sampleRate(), bufferSize, numberOfInputChannels, numberOfOutputChannels);
+
+    if (!node)
         return nullptr;
 
-    if (numberOfInputChannels > AbstractAudioContext::maxNumberOfChannels())
-        return nullptr;
+    // context keeps reference until we stop making javascript rendering callbacks
+    context.notifySourceNodeStartedProcessing(node);
 
-    if (numberOfOutputChannels > AbstractAudioContext::maxNumberOfChannels())
-        return nullptr;
-
-    return new ScriptProcessorNode(context, sampleRate, bufferSize, numberOfInputChannels, numberOfOutputChannels);
+    return node;
 }
 
 size_t ScriptProcessorNode::bufferSize() const

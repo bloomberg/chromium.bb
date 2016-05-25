@@ -581,17 +581,28 @@ void AudioBufferSourceHandler::handleStoppableSourceNode()
 }
 
 // ----------------------------------------------------------------
-AudioBufferSourceNode::AudioBufferSourceNode(AbstractAudioContext& context, float sampleRate)
+AudioBufferSourceNode::AudioBufferSourceNode(AbstractAudioContext& context)
     : AudioScheduledSourceNode(context)
     , m_playbackRate(AudioParam::create(context, ParamTypeAudioBufferSourcePlaybackRate, 1.0))
     , m_detune(AudioParam::create(context, ParamTypeAudioBufferSourceDetune, 0.0))
 {
-    setHandler(AudioBufferSourceHandler::create(*this, sampleRate, m_playbackRate->handler(), m_detune->handler()));
+    setHandler(AudioBufferSourceHandler::create(
+        *this,
+        context.sampleRate(),
+        m_playbackRate->handler(),
+        m_detune->handler()));
 }
 
-AudioBufferSourceNode* AudioBufferSourceNode::create(AbstractAudioContext& context, float sampleRate)
+AudioBufferSourceNode* AudioBufferSourceNode::create(AbstractAudioContext& context, ExceptionState& exceptionState)
 {
-    return new AudioBufferSourceNode(context, sampleRate);
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
+    return new AudioBufferSourceNode(context);
 }
 
 DEFINE_TRACE(AudioBufferSourceNode)

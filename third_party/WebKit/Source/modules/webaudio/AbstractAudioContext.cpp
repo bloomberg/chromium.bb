@@ -253,12 +253,7 @@ AudioBufferSourceNode* AbstractAudioContext::createBufferSource(ExceptionState& 
 {
     ASSERT(isMainThread());
 
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
-    AudioBufferSourceNode* node = AudioBufferSourceNode::create(*this, sampleRate());
+    AudioBufferSourceNode* node = AudioBufferSourceNode::create(*this, exceptionState);
 
     // Do not add a reference to this source node now. The reference will be added when start() is
     // called.
@@ -270,418 +265,183 @@ MediaElementAudioSourceNode* AbstractAudioContext::createMediaElementSource(HTML
 {
     ASSERT(isMainThread());
 
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
-    // First check if this media element already has a source node.
-    if (mediaElement->audioSourceNode()) {
-        exceptionState.throwDOMException(
-            InvalidStateError,
-            "HTMLMediaElement already connected previously to a different MediaElementSourceNode.");
-        return nullptr;
-    }
-
-    MediaElementAudioSourceNode* node = MediaElementAudioSourceNode::create(*this, *mediaElement);
-
-    mediaElement->setAudioSourceNode(node);
-
-    notifySourceNodeStartedProcessing(node); // context keeps reference until node is disconnected
-    return node;
+    return MediaElementAudioSourceNode::create(*this, *mediaElement, exceptionState);
 }
 
 MediaStreamAudioSourceNode* AbstractAudioContext::createMediaStreamSource(MediaStream* mediaStream, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
-    MediaStreamTrackVector audioTracks = mediaStream->getAudioTracks();
-    if (audioTracks.isEmpty()) {
-        exceptionState.throwDOMException(
-            InvalidStateError,
-            "MediaStream has no audio track");
-        return nullptr;
-    }
-
-    // Use the first audio track in the media stream.
-    MediaStreamTrack* audioTrack = audioTracks[0];
-    OwnPtr<AudioSourceProvider> provider = audioTrack->createWebAudioSource();
-    MediaStreamAudioSourceNode* node = MediaStreamAudioSourceNode::create(*this, *mediaStream, audioTrack, std::move(provider));
-
-    // FIXME: Only stereo streams are supported right now. We should be able to accept multi-channel streams.
-    node->setFormat(2, sampleRate());
-
-    notifySourceNodeStartedProcessing(node); // context keeps reference until node is disconnected
-    return node;
+    return MediaStreamAudioSourceNode::create(*this, *mediaStream, exceptionState);
 }
 
 MediaStreamAudioDestinationNode* AbstractAudioContext::createMediaStreamDestination(ExceptionState& exceptionState)
 {
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
+    DCHECK(isMainThread());
 
     // Set number of output channels to stereo by default.
-    return MediaStreamAudioDestinationNode::create(*this, 2);
+    return MediaStreamAudioDestinationNode::create(*this, 2, exceptionState);
 }
 
 ScriptProcessorNode* AbstractAudioContext::createScriptProcessor(ExceptionState& exceptionState)
 {
-    // Set number of input/output channels to stereo by default.
-    return createScriptProcessor(0, 2, 2, exceptionState);
+    DCHECK(isMainThread());
+
+    return ScriptProcessorNode::create(*this, exceptionState);
 }
 
 ScriptProcessorNode* AbstractAudioContext::createScriptProcessor(size_t bufferSize, ExceptionState& exceptionState)
 {
-    // Set number of input/output channels to stereo by default.
-    return createScriptProcessor(bufferSize, 2, 2, exceptionState);
+    DCHECK(isMainThread());
+
+    return ScriptProcessorNode::create(*this, bufferSize, exceptionState);
 }
 
 ScriptProcessorNode* AbstractAudioContext::createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, ExceptionState& exceptionState)
 {
-    // Set number of output channels to stereo by default.
-    return createScriptProcessor(bufferSize, numberOfInputChannels, 2, exceptionState);
+    DCHECK(isMainThread());
+
+    return ScriptProcessorNode::create(*this, bufferSize, numberOfInputChannels, exceptionState);
 }
 
 ScriptProcessorNode* AbstractAudioContext::createScriptProcessor(size_t bufferSize, size_t numberOfInputChannels, size_t numberOfOutputChannels, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
-    ScriptProcessorNode* node = ScriptProcessorNode::create(*this, sampleRate(), bufferSize, numberOfInputChannels, numberOfOutputChannels);
-
-    if (!node) {
-        if (!numberOfInputChannels && !numberOfOutputChannels) {
-            exceptionState.throwDOMException(
-                IndexSizeError,
-                "number of input channels and output channels cannot both be zero.");
-        } else if (numberOfInputChannels > AbstractAudioContext::maxNumberOfChannels()) {
-            exceptionState.throwDOMException(
-                IndexSizeError,
-                "number of input channels (" + String::number(numberOfInputChannels)
-                + ") exceeds maximum ("
-                + String::number(AbstractAudioContext::maxNumberOfChannels()) + ").");
-        } else if (numberOfOutputChannels > AbstractAudioContext::maxNumberOfChannels()) {
-            exceptionState.throwDOMException(
-                IndexSizeError,
-                "number of output channels (" + String::number(numberOfInputChannels)
-                + ") exceeds maximum ("
-                + String::number(AbstractAudioContext::maxNumberOfChannels()) + ").");
-        } else {
-            exceptionState.throwDOMException(
-                IndexSizeError,
-                "buffer size (" + String::number(bufferSize)
-                + ") must be a power of two between 256 and 16384.");
-        }
-        return nullptr;
-    }
-
-    notifySourceNodeStartedProcessing(node); // context keeps reference until we stop making javascript rendering callbacks
-    return node;
+    return ScriptProcessorNode::create(
+        *this,
+        bufferSize,
+        numberOfInputChannels,
+        numberOfOutputChannels,
+        exceptionState);
 }
 
 StereoPannerNode* AbstractAudioContext::createStereoPanner(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
 
-    return StereoPannerNode::create(*this, sampleRate());
+    return StereoPannerNode::create(*this, exceptionState);
 }
 
 BiquadFilterNode* AbstractAudioContext::createBiquadFilter(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
 
-    return BiquadFilterNode::create(*this, sampleRate());
+    return BiquadFilterNode::create(*this, exceptionState);
 }
 
 WaveShaperNode* AbstractAudioContext::createWaveShaper(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
 
-    return WaveShaperNode::create(*this);
+    return WaveShaperNode::create(*this, exceptionState);
 }
 
 PannerNode* AbstractAudioContext::createPanner(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
 
-    return PannerNode::create(*this, sampleRate());
+    return PannerNode::create(*this, exceptionState);
 }
 
 ConvolverNode* AbstractAudioContext::createConvolver(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
 
-    return ConvolverNode::create(*this, sampleRate());
+    return ConvolverNode::create(*this, exceptionState);
 }
 
 DynamicsCompressorNode* AbstractAudioContext::createDynamicsCompressor(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
 
-    return DynamicsCompressorNode::create(*this, sampleRate());
+    return DynamicsCompressorNode::create(*this, exceptionState);
 }
 
 AnalyserNode* AbstractAudioContext::createAnalyser(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
 
-    return AnalyserNode::create(*this, sampleRate());
+    return AnalyserNode::create(*this, exceptionState);
 }
 
 GainNode* AbstractAudioContext::createGain(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
 
-    return GainNode::create(*this, sampleRate());
+    return GainNode::create(*this, exceptionState);
 }
 
 DelayNode* AbstractAudioContext::createDelay(ExceptionState& exceptionState)
 {
-    const double defaultMaxDelayTime = 1;
-    return createDelay(defaultMaxDelayTime, exceptionState);
+    DCHECK(isMainThread());
+
+    return DelayNode::create(*this, exceptionState);
 }
 
 DelayNode* AbstractAudioContext::createDelay(double maxDelayTime, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
 
-    return DelayNode::create(*this, sampleRate(), maxDelayTime, exceptionState);
+    return DelayNode::create(*this, maxDelayTime, exceptionState);
 }
 
 ChannelSplitterNode* AbstractAudioContext::createChannelSplitter(ExceptionState& exceptionState)
 {
-    const unsigned ChannelSplitterDefaultNumberOfOutputs = 6;
-    return createChannelSplitter(ChannelSplitterDefaultNumberOfOutputs, exceptionState);
+    DCHECK(isMainThread());
+
+    return ChannelSplitterNode::create(*this, exceptionState);
 }
 
 ChannelSplitterNode* AbstractAudioContext::createChannelSplitter(size_t numberOfOutputs, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
-    ChannelSplitterNode* node = ChannelSplitterNode::create(*this, sampleRate(), numberOfOutputs);
-
-    if (!node) {
-        exceptionState.throwDOMException(
-            IndexSizeError,
-            "number of outputs (" + String::number(numberOfOutputs)
-            + ") must be between 1 and "
-            + String::number(AbstractAudioContext::maxNumberOfChannels()) + ".");
-        return nullptr;
-    }
-
-    return node;
+    return ChannelSplitterNode::create(*this, numberOfOutputs, exceptionState);
 }
 
 ChannelMergerNode* AbstractAudioContext::createChannelMerger(ExceptionState& exceptionState)
 {
-    const unsigned ChannelMergerDefaultNumberOfInputs = 6;
-    return createChannelMerger(ChannelMergerDefaultNumberOfInputs, exceptionState);
+    DCHECK(isMainThread());
+
+    return ChannelMergerNode::create(*this, exceptionState);
 }
 
 ChannelMergerNode* AbstractAudioContext::createChannelMerger(size_t numberOfInputs, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
 
-    ChannelMergerNode* node = ChannelMergerNode::create(*this, sampleRate(), numberOfInputs);
-
-    if (!node) {
-        exceptionState.throwDOMException(
-            IndexSizeError,
-            ExceptionMessages::indexOutsideRange<size_t>(
-                "number of inputs",
-                numberOfInputs,
-                1,
-                ExceptionMessages::InclusiveBound,
-                AbstractAudioContext::maxNumberOfChannels(),
-                ExceptionMessages::InclusiveBound));
-        return nullptr;
-    }
-
-    return node;
+    return ChannelMergerNode::create(*this, numberOfInputs, exceptionState);
 }
 
 OscillatorNode* AbstractAudioContext::createOscillator(ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
 
-    OscillatorNode* node = OscillatorNode::create(*this, sampleRate());
-
-    // Do not add a reference to this source node now. The reference will be added when start() is
-    // called.
-
-    return node;
+    return OscillatorNode::create(*this, exceptionState);
 }
 
 PeriodicWave* AbstractAudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, ExceptionState& exceptionState)
 {
-    return PeriodicWave::create(sampleRate(), real, imag, false);
+    DCHECK(isMainThread());
+
+    return PeriodicWave::create(*this, real, imag, false, exceptionState);
 }
 
 PeriodicWave* AbstractAudioContext::createPeriodicWave(DOMFloat32Array* real, DOMFloat32Array* imag, const PeriodicWaveConstraints& options, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
-    if (real->length() != imag->length()) {
-        exceptionState.throwDOMException(
-            IndexSizeError,
-            "length of real array (" + String::number(real->length())
-            + ") and length of imaginary array (" +  String::number(imag->length())
-            + ") must match.");
-        return nullptr;
-    }
-
     bool disable = options.hasDisableNormalization() ? options.disableNormalization() : false;
 
-    return PeriodicWave::create(sampleRate(), real, imag, disable);
+    return PeriodicWave::create(*this, real, imag, disable, exceptionState);
 }
 
 IIRFilterNode* AbstractAudioContext::createIIRFilter(Vector<double> feedforwardCoef, Vector<double> feedbackCoef,  ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return nullptr;
-    }
-
-    if (feedbackCoef.size() == 0 || (feedbackCoef.size() > IIRFilter::kMaxOrder + 1)) {
-        exceptionState.throwDOMException(
-            NotSupportedError,
-            ExceptionMessages::indexOutsideRange<size_t>(
-                "number of feedback coefficients",
-                feedbackCoef.size(),
-                1,
-                ExceptionMessages::InclusiveBound,
-                IIRFilter::kMaxOrder + 1,
-                ExceptionMessages::InclusiveBound));
-        return nullptr;
-    }
-
-    if (feedforwardCoef.size() == 0 || (feedforwardCoef.size() > IIRFilter::kMaxOrder + 1)) {
-        exceptionState.throwDOMException(
-            NotSupportedError,
-            ExceptionMessages::indexOutsideRange<size_t>(
-                "number of feedforward coefficients",
-                feedforwardCoef.size(),
-                1,
-                ExceptionMessages::InclusiveBound,
-                IIRFilter::kMaxOrder + 1,
-                ExceptionMessages::InclusiveBound));
-        return nullptr;
-    }
-
-    if (feedbackCoef[0] == 0) {
-        exceptionState.throwDOMException(
-            InvalidStateError,
-            "First feedback coefficient cannot be zero.");
-        return nullptr;
-    }
-
-    bool hasNonZeroCoef = false;
-
-    for (size_t k = 0; k < feedforwardCoef.size(); ++k) {
-        if (feedforwardCoef[k] != 0) {
-            hasNonZeroCoef = true;
-            break;
-        }
-    }
-
-    if (!hasNonZeroCoef) {
-        exceptionState.throwDOMException(
-            InvalidStateError,
-            "At least one feedforward coefficient must be non-zero.");
-        return nullptr;
-    }
-
-    // Make sure all coefficents are finite.
-    for (size_t k = 0; k < feedforwardCoef.size(); ++k) {
-        double c = feedforwardCoef[k];
-        if (!std::isfinite(c)) {
-            String name = "feedforward coefficient " + String::number(k);
-            exceptionState.throwDOMException(
-                InvalidStateError,
-                ExceptionMessages::notAFiniteNumber(c, name.ascii().data()));
-            return nullptr;
-        }
-    }
-
-    for (size_t k = 0; k < feedbackCoef.size(); ++k) {
-        double c = feedbackCoef[k];
-        if (!std::isfinite(c)) {
-            String name = "feedback coefficient " + String::number(k);
-            exceptionState.throwDOMException(
-                InvalidStateError,
-                ExceptionMessages::notAFiniteNumber(c, name.ascii().data()));
-            return nullptr;
-        }
-    }
-
-    return IIRFilterNode::create(*this, sampleRate(), feedforwardCoef, feedbackCoef);
+    return IIRFilterNode::create(*this, feedforwardCoef, feedbackCoef, exceptionState);
 }
 
 PeriodicWave* AbstractAudioContext::periodicWave(int type)

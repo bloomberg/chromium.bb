@@ -206,7 +206,7 @@ private:
 class PannerNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PannerNode* create(AbstractAudioContext&, float sampleRate);
+    static PannerNode* create(AbstractAudioContext&, ExceptionState&);
     PannerHandler& pannerHandler() const;
 
     DECLARE_VIRTUAL_TRACE();
@@ -241,7 +241,7 @@ public:
     void setConeOuterGain(double);
 
 private:
-    PannerNode(AbstractAudioContext&, float sampleRate);
+    PannerNode(AbstractAudioContext&);
 
     Member<AudioParam> m_positionX;
     Member<AudioParam> m_positionY;

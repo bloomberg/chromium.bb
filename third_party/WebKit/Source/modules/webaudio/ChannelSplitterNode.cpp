@@ -23,6 +23,9 @@
  */
 
 #include "modules/webaudio/ChannelSplitterNode.h"
+#include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
@@ -71,17 +74,43 @@ void ChannelSplitterHandler::process(size_t framesToProcess)
 
 // ----------------------------------------------------------------
 
-ChannelSplitterNode::ChannelSplitterNode(AbstractAudioContext& context, float sampleRate, unsigned numberOfOutputs)
+ChannelSplitterNode::ChannelSplitterNode(AbstractAudioContext& context, unsigned numberOfOutputs)
     : AudioNode(context)
 {
-    setHandler(ChannelSplitterHandler::create(*this, sampleRate, numberOfOutputs));
+    setHandler(ChannelSplitterHandler::create(*this, context.sampleRate(), numberOfOutputs));
 }
 
-ChannelSplitterNode* ChannelSplitterNode::create(AbstractAudioContext& context, float sampleRate, unsigned numberOfOutputs)
+ChannelSplitterNode* ChannelSplitterNode::create(AbstractAudioContext& context, ExceptionState& exceptionState)
 {
-    if (!numberOfOutputs || numberOfOutputs > AbstractAudioContext::maxNumberOfChannels())
+    DCHECK(isMainThread());
+
+    // Default number of outputs for the splitter node is 6.
+    return create(context, 6, exceptionState);
+}
+
+ChannelSplitterNode* ChannelSplitterNode::create(AbstractAudioContext& context, unsigned numberOfOutputs, ExceptionState& exceptionState)
+{
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
         return nullptr;
-    return new ChannelSplitterNode(context, sampleRate, numberOfOutputs);
+    }
+
+    if (!numberOfOutputs || numberOfOutputs > AbstractAudioContext::maxNumberOfChannels()) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::indexOutsideRange<size_t>(
+                "number of outputs",
+                numberOfOutputs,
+                1,
+                ExceptionMessages::InclusiveBound,
+                AbstractAudioContext::maxNumberOfChannels(),
+                ExceptionMessages::InclusiveBound));
+        return nullptr;
+    }
+
+    return new ChannelSplitterNode(context, numberOfOutputs);
 }
 
 } // namespace blink

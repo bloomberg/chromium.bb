@@ -100,7 +100,7 @@ class MediaElementAudioSourceNode final : public AudioSourceNode, public AudioSo
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(MediaElementAudioSourceNode);
 public:
-    static MediaElementAudioSourceNode* create(AbstractAudioContext&, HTMLMediaElement&);
+    static MediaElementAudioSourceNode* create(AbstractAudioContext&, HTMLMediaElement&, ExceptionState&);
     DECLARE_VIRTUAL_TRACE();
     MediaElementAudioSourceHandler& mediaElementAudioSourceHandler() const;
 

@@ -632,7 +632,7 @@ void PannerHandler::updateDirtyState()
 }
 // ----------------------------------------------------------------
 
-PannerNode::PannerNode(AbstractAudioContext& context, float sampleRate)
+PannerNode::PannerNode(AbstractAudioContext& context)
     : AudioNode(context)
     , m_positionX(AudioParam::create(context, ParamTypePannerPositionX, 0.0))
     , m_positionY(AudioParam::create(context, ParamTypePannerPositionY, 0.0))
@@ -643,7 +643,7 @@ PannerNode::PannerNode(AbstractAudioContext& context, float sampleRate)
 {
     setHandler(PannerHandler::create(
         *this,
-        sampleRate,
+        context.sampleRate(),
         m_positionX->handler(),
         m_positionY->handler(),
         m_positionZ->handler(),
@@ -652,9 +652,16 @@ PannerNode::PannerNode(AbstractAudioContext& context, float sampleRate)
         m_orientationZ->handler()));
 }
 
-PannerNode* PannerNode::create(AbstractAudioContext& context, float sampleRate)
+PannerNode* PannerNode::create(AbstractAudioContext& context, ExceptionState& exceptionState)
 {
-    return new PannerNode(context, sampleRate);
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
+    return new PannerNode(context);
 }
 
 PannerHandler& PannerNode::pannerHandler() const

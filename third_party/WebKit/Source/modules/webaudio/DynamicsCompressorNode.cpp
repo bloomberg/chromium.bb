@@ -125,7 +125,7 @@ double DynamicsCompressorHandler::latencyTime() const
 
 // ----------------------------------------------------------------
 
-DynamicsCompressorNode::DynamicsCompressorNode(AbstractAudioContext& context, float sampleRate)
+DynamicsCompressorNode::DynamicsCompressorNode(AbstractAudioContext& context)
     : AudioNode(context)
     , m_threshold(AudioParam::create(context, ParamTypeDynamicsCompressorThreshold, -24, -100, 0))
     , m_knee(AudioParam::create(context, ParamTypeDynamicsCompressorKnee, 30, 0, 40))
@@ -135,7 +135,7 @@ DynamicsCompressorNode::DynamicsCompressorNode(AbstractAudioContext& context, fl
 {
     setHandler(DynamicsCompressorHandler::create(
         *this,
-        sampleRate,
+        context.sampleRate(),
         m_threshold->handler(),
         m_knee->handler(),
         m_ratio->handler(),
@@ -143,9 +143,16 @@ DynamicsCompressorNode::DynamicsCompressorNode(AbstractAudioContext& context, fl
         m_release->handler()));
 }
 
-DynamicsCompressorNode* DynamicsCompressorNode::create(AbstractAudioContext& context, float sampleRate)
+DynamicsCompressorNode* DynamicsCompressorNode::create(AbstractAudioContext& context, ExceptionState& exceptionState)
 {
-    return new DynamicsCompressorNode(context, sampleRate);
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
+    return new DynamicsCompressorNode(context);
 }
 
 DEFINE_TRACE(DynamicsCompressorNode)

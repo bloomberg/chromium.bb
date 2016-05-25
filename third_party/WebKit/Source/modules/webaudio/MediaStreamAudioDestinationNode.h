@@ -65,7 +65,7 @@ private:
 class MediaStreamAudioDestinationNode final : public AudioBasicInspectorNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static MediaStreamAudioDestinationNode* create(AbstractAudioContext&, size_t numberOfChannels);
+    static MediaStreamAudioDestinationNode* create(AbstractAudioContext&, size_t numberOfChannels, ExceptionState&);
     MediaStream* stream() const;
 
 private:

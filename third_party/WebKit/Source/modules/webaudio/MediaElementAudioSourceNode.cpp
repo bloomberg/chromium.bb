@@ -206,9 +206,32 @@ MediaElementAudioSourceNode::MediaElementAudioSourceNode(AbstractAudioContext& c
     setHandler(MediaElementAudioSourceHandler::create(*this, mediaElement));
 }
 
-MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(AbstractAudioContext& context, HTMLMediaElement& mediaElement)
+MediaElementAudioSourceNode* MediaElementAudioSourceNode::create(AbstractAudioContext& context, HTMLMediaElement& mediaElement, ExceptionState& exceptionState)
 {
-    return new MediaElementAudioSourceNode(context, mediaElement);
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
+    // First check if this media element already has a source node.
+    if (mediaElement.audioSourceNode()) {
+        exceptionState.throwDOMException(
+            InvalidStateError,
+            "HTMLMediaElement already connected previously to a different MediaElementSourceNode.");
+        return nullptr;
+    }
+
+    MediaElementAudioSourceNode* node = new MediaElementAudioSourceNode(context, mediaElement);
+
+    if (node) {
+        mediaElement.setAudioSourceNode(node);
+        // context keeps reference until node is disconnected
+        context.notifySourceNodeStartedProcessing(node);
+    }
+
+    return node;
 }
 
 DEFINE_TRACE(MediaElementAudioSourceNode)

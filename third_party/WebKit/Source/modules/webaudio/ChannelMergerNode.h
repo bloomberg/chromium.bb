@@ -51,10 +51,11 @@ private:
 class ChannelMergerNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ChannelMergerNode* create(AbstractAudioContext&, float sampleRate, unsigned numberOfInputs);
+    static ChannelMergerNode* create(AbstractAudioContext&, ExceptionState&);
+    static ChannelMergerNode* create(AbstractAudioContext&, unsigned numberOfInputs, ExceptionState&);
 
 private:
-    ChannelMergerNode(AbstractAudioContext&, float sampleRate, unsigned numberOfInputs);
+    ChannelMergerNode(AbstractAudioContext&, unsigned numberOfInputs);
 };
 
 } // namespace blink

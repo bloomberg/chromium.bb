@@ -141,7 +141,7 @@ private:
 class AudioBufferSourceNode final : public AudioScheduledSourceNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static AudioBufferSourceNode* create(AbstractAudioContext&, float sampleRate);
+    static AudioBufferSourceNode* create(AbstractAudioContext&, ExceptionState&);
     DECLARE_VIRTUAL_TRACE();
     AudioBufferSourceHandler& audioBufferSourceHandler() const;
 
@@ -162,7 +162,7 @@ public:
     void start(double when, double grainOffset, double grainDuration, ExceptionState&);
 
 private:
-    AudioBufferSourceNode(AbstractAudioContext&, float sampleRate);
+    AudioBufferSourceNode(AbstractAudioContext&);
 
     Member<AudioParam> m_playbackRate;
     Member<AudioParam> m_detune;

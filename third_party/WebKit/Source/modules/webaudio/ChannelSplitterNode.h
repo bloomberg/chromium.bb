@@ -46,10 +46,11 @@ private:
 class ChannelSplitterNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ChannelSplitterNode* create(AbstractAudioContext&, float sampleRate, unsigned numberOfOutputs);
+    static ChannelSplitterNode* create(AbstractAudioContext&, ExceptionState&);
+    static ChannelSplitterNode* create(AbstractAudioContext&, unsigned numberOfOutputs, ExceptionState&);
 
 private:
-    ChannelSplitterNode(AbstractAudioContext&, float sampleRate, unsigned numberOfOutputs);
+    ChannelSplitterNode(AbstractAudioContext&, unsigned numberOfOutputs);
 };
 
 } // namespace blink

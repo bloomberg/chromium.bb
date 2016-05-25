@@ -49,10 +49,8 @@ public:
         ALLPASS = 7
     };
 
-    static BiquadFilterNode* create(AbstractAudioContext& context, float sampleRate)
-    {
-        return new BiquadFilterNode(context, sampleRate);
-    }
+    static BiquadFilterNode* create(AbstractAudioContext&, ExceptionState&);
+
     DECLARE_VIRTUAL_TRACE();
 
     String type() const;
@@ -68,7 +66,7 @@ public:
     void getFrequencyResponse(const DOMFloat32Array* frequencyHz, DOMFloat32Array* magResponse, DOMFloat32Array* phaseResponse);
 
 private:
-    BiquadFilterNode(AbstractAudioContext&, float sampleRate);
+    BiquadFilterNode(AbstractAudioContext&);
 
     BiquadProcessor* getBiquadProcessor() const;
     bool setType(unsigned); // Returns true on success.

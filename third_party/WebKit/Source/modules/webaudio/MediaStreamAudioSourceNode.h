@@ -73,7 +73,7 @@ class MediaStreamAudioSourceNode final : public AudioSourceNode, public AudioSou
     DEFINE_WRAPPERTYPEINFO();
     USING_GARBAGE_COLLECTED_MIXIN(MediaStreamAudioSourceNode);
 public:
-    static MediaStreamAudioSourceNode* create(AbstractAudioContext&, MediaStream&, MediaStreamTrack*, PassOwnPtr<AudioSourceProvider>);
+    static MediaStreamAudioSourceNode* create(AbstractAudioContext&, MediaStream&, ExceptionState&);
     DECLARE_VIRTUAL_TRACE();
     MediaStreamAudioSourceHandler& mediaStreamAudioSourceHandler() const;
 

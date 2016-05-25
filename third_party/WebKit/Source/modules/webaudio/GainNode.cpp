@@ -114,16 +114,23 @@ void GainHandler::checkNumberOfChannelsForInput(AudioNodeInput* input)
 
 // ----------------------------------------------------------------
 
-GainNode::GainNode(AbstractAudioContext& context, float sampleRate)
+GainNode::GainNode(AbstractAudioContext& context)
     : AudioNode(context)
     , m_gain(AudioParam::create(context, ParamTypeGainGain, 1.0))
 {
-    setHandler(GainHandler::create(*this, sampleRate, m_gain->handler()));
+    setHandler(GainHandler::create(*this, context.sampleRate(), m_gain->handler()));
 }
 
-GainNode* GainNode::create(AbstractAudioContext& context, float sampleRate)
+GainNode* GainNode::create(AbstractAudioContext& context, ExceptionState& exceptionState)
 {
-    return new GainNode(context, sampleRate);
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
+    return new GainNode(context);
 }
 
 AudioParam* GainNode::gain() const

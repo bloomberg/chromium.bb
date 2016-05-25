@@ -17,13 +17,13 @@ PASS context.createBuffer(1, 0, context.sampleRate) threw exception NotSupported
 PASS context.createBuffer(new ArrayBuffer(100), true) threw exception TypeError: Failed to execute 'createBuffer' on 'AudioContext': 3 arguments required, but only 2 present..
 PASS context.createMediaElementSource(null) threw exception TypeError: Failed to execute 'createMediaElementSource' on 'AudioContext': parameter 1 is not of type 'HTMLMediaElement'..
 PASS context.createMediaStreamSource(null) threw exception TypeError: Failed to execute 'createMediaStreamSource' on 'AudioContext': parameter 1 is not of type 'MediaStream'..
-PASS context.createScriptProcessor(1, 1, 1) threw exception IndexSizeError: Failed to execute 'createScriptProcessor' on 'AudioContext': buffer size (1) must be a power of two between 256 and 16384..
+PASS context.createScriptProcessor(1, 1, 1) threw exception IndexSizeError: Failed to execute 'createScriptProcessor' on 'AudioContext': buffer size (1) must be 0 or a power of two between 256 and 16384..
 PASS context.createScriptProcessor(4096, 100, 1) threw exception IndexSizeError: Failed to execute 'createScriptProcessor' on 'AudioContext': number of input channels (100) exceeds maximum (32)..
 PASS context.createScriptProcessor(4096, 1, 100) threw exception IndexSizeError: Failed to execute 'createScriptProcessor' on 'AudioContext': number of output channels (1) exceeds maximum (32)..
 PASS context.createScriptProcessor() did not throw exception.
 PASS context.createScriptProcessor(0) did not throw exception.
-PASS context.createChannelSplitter(0) threw exception IndexSizeError: Failed to execute 'createChannelSplitter' on 'AudioContext': number of outputs (0) must be between 1 and 32..
-PASS context.createChannelSplitter(99) threw exception IndexSizeError: Failed to execute 'createChannelSplitter' on 'AudioContext': number of outputs (99) must be between 1 and 32..
+PASS context.createChannelSplitter(0) threw exception IndexSizeError: Failed to execute 'createChannelSplitter' on 'AudioContext': The number of outputs provided (0) is outside the range [1, 32]..
+PASS context.createChannelSplitter(99) threw exception IndexSizeError: Failed to execute 'createChannelSplitter' on 'AudioContext': The number of outputs provided (99) is outside the range [1, 32]..
 PASS context.createChannelMerger(0) threw exception IndexSizeError: Failed to execute 'createChannelMerger' on 'AudioContext': The number of inputs provided (0) is outside the range [1, 32]..
 PASS context.createChannelMerger(99) threw exception IndexSizeError: Failed to execute 'createChannelMerger' on 'AudioContext': The number of inputs provided (99) is outside the range [1, 32]..
 PASS context.createPeriodicWave(null, null) threw exception TypeError: Failed to execute 'createPeriodicWave' on 'AudioContext': parameter 1 is not of type 'Float32Array'..

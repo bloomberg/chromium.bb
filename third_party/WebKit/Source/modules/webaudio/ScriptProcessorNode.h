@@ -103,7 +103,10 @@ public:
     // latency. Higher numbers will be necessary to avoid audio breakup and
     // glitches.
     // The value chosen must carefully balance between latency and audio quality.
-    static ScriptProcessorNode* create(AbstractAudioContext&, float sampleRate, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels);
+    static ScriptProcessorNode* create(AbstractAudioContext&, ExceptionState&);
+    static ScriptProcessorNode* create(AbstractAudioContext&, size_t bufferSize, ExceptionState&);
+    static ScriptProcessorNode* create(AbstractAudioContext&, size_t bufferSize, unsigned numberOfInputChannels, ExceptionState&);
+    static ScriptProcessorNode* create(AbstractAudioContext&, size_t bufferSize, unsigned numberOfInputChannels, unsigned numberOfOutputChannels, ExceptionState&);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(audioprocess);
     size_t bufferSize() const;

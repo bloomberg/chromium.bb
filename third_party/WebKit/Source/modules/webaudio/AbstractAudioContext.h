@@ -135,6 +135,7 @@ public:
 
     String state() const;
     AudioContextState contextState() const { return m_contextState; }
+    void throwExceptionForClosedState(ExceptionState&);
 
     AudioBuffer* createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
 
@@ -292,8 +293,6 @@ protected:
 private:
     bool m_isCleared;
     void clear();
-
-    void throwExceptionForClosedState(ExceptionState&);
 
     // When the context goes away, there might still be some sources which
     // haven't finished playing.  Make sure to release them here.

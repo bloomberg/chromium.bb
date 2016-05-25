@@ -100,7 +100,7 @@ private:
 class OscillatorNode final : public AudioScheduledSourceNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static OscillatorNode* create(AbstractAudioContext&, float sampleRate);
+    static OscillatorNode* create(AbstractAudioContext&, ExceptionState&);
     DECLARE_VIRTUAL_TRACE();
 
     String type() const;
@@ -110,7 +110,7 @@ public:
     void setPeriodicWave(PeriodicWave*);
 
 private:
-    OscillatorNode(AbstractAudioContext&, float sampleRate);
+    OscillatorNode(AbstractAudioContext&);
     OscillatorHandler& oscillatorHandler() const;
 
     Member<AudioParam> m_frequency;

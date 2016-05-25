@@ -42,13 +42,13 @@ private:
 class StereoPannerNode final : public AudioNode {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static StereoPannerNode* create(AbstractAudioContext&, float sampleRate);
+    static StereoPannerNode* create(AbstractAudioContext&, ExceptionState&);
     DECLARE_VIRTUAL_TRACE();
 
     AudioParam* pan() const;
 
 private:
-    StereoPannerNode(AbstractAudioContext&, float sampleRate);
+    StereoPannerNode(AbstractAudioContext&);
 
     Member<AudioParam> m_pan;
 };

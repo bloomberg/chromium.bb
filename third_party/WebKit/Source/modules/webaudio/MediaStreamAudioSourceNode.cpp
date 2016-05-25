@@ -23,6 +23,8 @@
  */
 
 #include "modules/webaudio/MediaStreamAudioSourceNode.h"
+
+#include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/Logging.h"
@@ -114,9 +116,39 @@ MediaStreamAudioSourceNode::MediaStreamAudioSourceNode(AbstractAudioContext& con
     setHandler(MediaStreamAudioSourceHandler::create(*this, mediaStream, audioTrack, std::move(audioSourceProvider)));
 }
 
-MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(AbstractAudioContext& context, MediaStream& mediaStream, MediaStreamTrack* audioTrack, PassOwnPtr<AudioSourceProvider> audioSourceProvider)
+MediaStreamAudioSourceNode* MediaStreamAudioSourceNode::create(AbstractAudioContext& context, MediaStream& mediaStream, ExceptionState& exceptionState)
 {
-    return new MediaStreamAudioSourceNode(context, mediaStream, audioTrack, std::move(audioSourceProvider));
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
+    MediaStreamTrackVector audioTracks = mediaStream.getAudioTracks();
+    if (audioTracks.isEmpty()) {
+        exceptionState.throwDOMException(
+            InvalidStateError,
+            "MediaStream has no audio track");
+        return nullptr;
+    }
+
+    // Use the first audio track in the media stream.
+    MediaStreamTrack* audioTrack = audioTracks[0];
+    OwnPtr<AudioSourceProvider> provider = audioTrack->createWebAudioSource();
+
+    MediaStreamAudioSourceNode* node = new MediaStreamAudioSourceNode(context, mediaStream, audioTrack, std::move(provider));
+
+    if (!node)
+        return nullptr;
+
+    // TODO(hongchan): Only stereo streams are supported right now. We should be
+    // able to accept multi-channel streams.
+    node->setFormat(2, context.sampleRate());
+    // context keeps reference until node is disconnected
+    context.notifySourceNodeStartedProcessing(node);
+
+    return node;
 }
 
 DEFINE_TRACE(MediaStreamAudioSourceNode)

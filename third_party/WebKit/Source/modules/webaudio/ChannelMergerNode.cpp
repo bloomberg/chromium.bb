@@ -119,17 +119,43 @@ void ChannelMergerHandler::setChannelCountMode(const String& mode, ExceptionStat
 
 // ----------------------------------------------------------------
 
-ChannelMergerNode::ChannelMergerNode(AbstractAudioContext& context, float sampleRate, unsigned numberOfInputs)
+ChannelMergerNode::ChannelMergerNode(AbstractAudioContext& context, unsigned numberOfInputs)
     : AudioNode(context)
 {
-    setHandler(ChannelMergerHandler::create(*this, sampleRate, numberOfInputs));
+    setHandler(ChannelMergerHandler::create(*this, context.sampleRate(), numberOfInputs));
 }
 
-ChannelMergerNode* ChannelMergerNode::create(AbstractAudioContext& context, float sampleRate, unsigned numberOfInputs)
+ChannelMergerNode* ChannelMergerNode::create(AbstractAudioContext& context, ExceptionState& exceptionState)
 {
-    if (!numberOfInputs || numberOfInputs > AbstractAudioContext::maxNumberOfChannels())
+    DCHECK(isMainThread());
+
+    // The default number of inputs for the merger node is 6.
+    return create(context, 6, exceptionState);
+}
+
+ChannelMergerNode* ChannelMergerNode::create(AbstractAudioContext& context, unsigned numberOfInputs, ExceptionState& exceptionState)
+{
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
         return nullptr;
-    return new ChannelMergerNode(context, sampleRate, numberOfInputs);
+    }
+
+    if (!numberOfInputs || numberOfInputs > AbstractAudioContext::maxNumberOfChannels()) {
+        exceptionState.throwDOMException(
+            IndexSizeError,
+            ExceptionMessages::indexOutsideRange<size_t>(
+                "number of inputs",
+                numberOfInputs,
+                1,
+                ExceptionMessages::InclusiveBound,
+                AbstractAudioContext::maxNumberOfChannels(),
+                ExceptionMessages::InclusiveBound));
+        return nullptr;
+    }
+
+    return new ChannelMergerNode(context, numberOfInputs);
 }
 
 } // namespace blink

@@ -330,19 +330,26 @@ bool OscillatorHandler::propagatesSilence() const
 
 // ----------------------------------------------------------------
 
-OscillatorNode::OscillatorNode(AbstractAudioContext& context, float sampleRate)
+OscillatorNode::OscillatorNode(AbstractAudioContext& context)
     : AudioScheduledSourceNode(context)
     // Use musical pitch standard A440 as a default.
-    , m_frequency(AudioParam::create(context, ParamTypeOscillatorFrequency, 440, 0, sampleRate / 2))
+    , m_frequency(AudioParam::create(context, ParamTypeOscillatorFrequency, 440, 0, context.sampleRate() / 2))
     // Default to no detuning.
     , m_detune(AudioParam::create(context, ParamTypeOscillatorDetune, 0))
 {
-    setHandler(OscillatorHandler::create(*this, sampleRate, m_frequency->handler(), m_detune->handler()));
+    setHandler(OscillatorHandler::create(*this, context.sampleRate(), m_frequency->handler(), m_detune->handler()));
 }
 
-OscillatorNode* OscillatorNode::create(AbstractAudioContext& context, float sampleRate)
+OscillatorNode* OscillatorNode::create(AbstractAudioContext& context, ExceptionState& exceptionState)
 {
-    return new OscillatorNode(context, sampleRate);
+    DCHECK(isMainThread());
+
+    if (context.isContextClosed()) {
+        context.throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
+    return new OscillatorNode(context);
 }
 
 DEFINE_TRACE(OscillatorNode)
