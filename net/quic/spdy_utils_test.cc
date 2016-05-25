@@ -202,6 +202,20 @@ TEST(SpdyUtilsTest, CopyAndValidateHeadersMultipleValues) {
   EXPECT_EQ(-1, content_length);
 }
 
+TEST(SpdyUtilsTest, CopyAndValidateHeadersMoreThanTwoValues) {
+  auto headers = FromList({{"set-cookie", "value1"},
+                           {"set-cookie", "value2"},
+                           {"set-cookie", "value3"}});
+  int64_t content_length = -1;
+  SpdyHeaderBlock block;
+  ASSERT_TRUE(
+      SpdyUtils::CopyAndValidateHeaders(*headers, &content_length, &block));
+  EXPECT_THAT(block,
+              UnorderedElementsAre(Pair(
+                  "set-cookie", StringPiece("value1\0value2\0value3", 20))));
+  EXPECT_EQ(-1, content_length);
+}
+
 TEST(SpdyUtilsTest, CopyAndValidateHeadersCookie) {
   auto headers = FromList({{"foo", "foovalue"},
                            {"bar", "barvalue"},
