@@ -1,7 +1,7 @@
 Hidden by modal dialog
 (Dialog itself is not hidden)
 Non-hidden element inside dialog
-#_1: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -14,8 +14,7 @@ Non-hidden element inside dialog
             "type": "idref",
             "relatedNodes": [
               {
-                "backendNodeId": "<string>",
-                "idref": "_2"
+                "nodeResult": "dialog"
               }
             ]
           }
@@ -28,7 +27,7 @@ Non-hidden element inside dialog
     }
   }
 }
-#_2: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -60,7 +59,7 @@ Non-hidden element inside dialog
     }
   }
 }
-#_3: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {

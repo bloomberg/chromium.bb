@@ -7,7 +7,7 @@ Descendant of aria-hidden node
 List item also presentational
 Div in list isn't presentational
 Content within label refers to label container   
-#_1: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -39,7 +39,7 @@ Content within label refers to label container
     }
   }
 }
-#_2: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -93,7 +93,7 @@ Content within label refers to label container
     }
   }
 }
-#_3: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -106,7 +106,7 @@ Content within label refers to label container
             "type": "idref",
             "relatedNodes": [
               {
-                "backendNodeId": "<string>"
+                "nodeResult": "div"
               }
             ]
           }
@@ -119,7 +119,7 @@ Content within label refers to label container
     }
   }
 }
-#_4: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -132,7 +132,7 @@ Content within label refers to label container
             "type": "idref",
             "relatedNodes": [
               {
-                "backendNodeId": "<string>"
+                "nodeResult": "div"
               }
             ]
           }
@@ -145,7 +145,7 @@ Content within label refers to label container
     }
   }
 }
-#_5: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -158,7 +158,7 @@ Content within label refers to label container
             "type": "idref",
             "relatedNodes": [
               {
-                "backendNodeId": "<string>"
+                "nodeResult": "button"
               }
             ]
           }
@@ -171,7 +171,7 @@ Content within label refers to label container
     }
   }
 }
-#_6: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -193,7 +193,7 @@ Content within label refers to label container
     }
   }
 }
-#_7: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -206,8 +206,7 @@ Content within label refers to label container
             "type": "idref",
             "relatedNodes": [
               {
-                "backendNodeId": "<string>",
-                "idref": "_6"
+                "nodeResult": "div"
               }
             ]
           }
@@ -220,7 +219,7 @@ Content within label refers to label container
     }
   }
 }
-#_8: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -242,7 +241,7 @@ Content within label refers to label container
     }
   }
 }
-#_9: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -264,7 +263,7 @@ Content within label refers to label container
     }
   }
 }
-#_10: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -277,8 +276,7 @@ Content within label refers to label container
             "type": "idref",
             "relatedNodes": [
               {
-                "backendNodeId": "<string>",
-                "idref": "_9"
+                "nodeResult": "ol"
               }
             ]
           }
@@ -291,7 +289,7 @@ Content within label refers to label container
     }
   }
 }
-#_11: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -323,7 +321,7 @@ Content within label refers to label container
     }
   }
 }
-#_12: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -336,8 +334,8 @@ Content within label refers to label container
             "type": "idref",
             "relatedNodes": [
               {
-                "backendNodeId": "<string>",
-                "idref": "checkbox"
+                "idref": "checkbox",
+                "nodeResult": "input#checkbox"
               }
             ]
           }
@@ -350,7 +348,7 @@ Content within label refers to label container
     }
   }
 }
-#_13: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -363,8 +361,7 @@ Content within label refers to label container
             "type": "idref",
             "relatedNodes": [
               {
-                "backendNodeId": "<string>",
-                "idref": "_12"
+                "nodeResult": "label"
               }
             ]
           }
@@ -375,8 +372,8 @@ Content within label refers to label container
             "type": "idref",
             "relatedNodes": [
               {
-                "backendNodeId": "<string>",
-                "idref": "checkbox"
+                "idref": "checkbox",
+                "nodeResult": "input#checkbox"
               }
             ]
           }
@@ -389,7 +386,7 @@ Content within label refers to label container
     }
   }
 }
-#_14: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {
@@ -411,7 +408,7 @@ Content within label refers to label container
     }
   }
 }
-#_15: {
+{
   "id": "<int>",
   "result": {
     "accessibilityNode": {

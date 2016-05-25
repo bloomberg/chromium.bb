@@ -2,170 +2,19 @@
 <head>
 <script type="text/javascript" src="../../http/tests/inspector-protocol/dom-protocol-test.js"></script>
 <script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-protocol-test.js"></script>
-<script type="text/javascript" src="../../http/tests/inspector-protocol/inspector-test.js"></script>
+<script type="text/javascript" src="./accessibility-dumpAccessibilityNodes.js"></script>
 <script>
 
 function test()
 {
-    InspectorTest.sendCommand("DOM.getDocument", {}, onGotDocument);
-
-    var numPendingQuerySelectors = 0;
-    var nodeInfo = {};
-    InspectorTest.trackGetChildNodesEvents(nodeInfo);
-    function onGotDocument(msg)
-    {
-        if (msg.error) {
-            InspectorTest.log(msg.error.message);
-            InspectorTest.completeTest();
-            return;
-        }
-        var rootNode = msg.result.root;
-
-        InspectorTest.sendCommand("DOM.querySelector", { "nodeId": rootNode.nodeId, "selector": "ul#rg1" }, onQuerySelector);
-        numPendingQuerySelectors++;
-        InspectorTest.sendCommand("DOM.querySelector", { "nodeId": rootNode.nodeId, "selector": "ul#rg2" }, onQuerySelector);
-        numPendingQuerySelectors++;
-    }
-
-    function onQuerySelector(msg)
-    {
-        if (msg.error) {
-            InspectorTest.log(msg.error.message);
-            InspectorTest.completeTest();
-            return;
-        }
-        var node = msg.result;
-        InspectorTest.sendCommand("Accessibility.getAXNode", { "nodeId": node.nodeId }, rewriteNodes);
-    }
-
-    function describeNode(nodeData)
-    {
-        var description = nodeData.nodeName.toLowerCase();
-        switch (nodeData.nodeType) {
-        case Node.ELEMENT_NODE:
-            var p = nodeData.attributes.indexOf("id");
-            if (p >= 0)
-                description += "#" + nodeData.attributes[p + 1];
-        }
-        return description;
-    }
-
-    function rewriteNode(relatedNode)
-    {
-        function rewriteNodePromise(resolve, reject) {
-            if (!("backendNodeId" in relatedNode)) {
-                reject("Could not find backendNodeId in " + JSON.stringify(relatedNode));
-                return;
-            }
-            var backendNodeId = relatedNode.backendNodeId;
-
-            function onNodeResolved(backendNodeId, message) {
-                var nodeId = message.result.nodeIds[0];
-                if (!(nodeId in nodeInfo)) {
-                    relatedNode.nodeResult = "[NODE NOT FOUND]";
-                    resolve();
-                    return;
-                }
-                var node = nodeInfo[nodeId];
-                delete relatedNode.backendNodeId;
-                relatedNode.nodeResult = describeNode(node);
-                resolve();
-            }
-            InspectorTest.sendCommand("DOM.pushNodesByBackendIdsToFrontend", { "backendNodeIds": [ backendNodeId ] }, onNodeResolved.bind(null, backendNodeId));
-        }
-        return new Promise(rewriteNodePromise);
-    }
-
-    function checkExists(path, obj)
-    {
-        var pathComponents = path.split(".");
-        var currentPath = [];
-        var currentObject = obj;
-        for (var component of pathComponents) {
-            currentPath.push(component);
-            if (!(component in currentObject)) {
-                InspectorTest.log("Could not find " + currentPath.join(".") + " in " + JSON.stringify(obj, null, "  "));
-                InspectorTest.completeTest();
-            }
-            currentObject = currentObject[component];
-        }
-    }
-
-    function check(condition, errorMsg, obj)
-    {
-        if (condition)
-            return;
-        InspectorTest.log(errorMsg + " in " + JSON.stringify(obj, null, "  "));
-        InspectorTest.completeTest();
-    }
-
-    function rewriteValue(value, promises)
-    {
-        if (value.type === "idrefList" || value.type === "idref" || value.type == "nodeList") {
-            checkExists("relatedNodes", value);
-            var relatedNodeArray = value.relatedNodes;
-            check(Array.isArray(relatedNodeArray), "relatedNodes should be an array", JSON.stringify(value));
-            for (var relatedNode of relatedNodeArray) {
-               promises.push(rewriteNode(relatedNode));
-            }
-        }
-    }
-    function rewriteNodes(msg)
-    {
-        if (msg.error) {
-            InspectorTest.log(msg.error.message);
-            InspectorTest.completeTest();
-            return;
-        }
-
-        checkExists("result.accessibilityNode.properties", msg);
-        var node = msg.result.accessibilityNode;
-        var properties = node.properties;
-        var promises = [];
-        if (node.name && node.name.sources) {
-           for (var source of node.name.sources) {
-               if (source.value)
-                   rewriteValue(source.value, promises);
-               if (source.attributeValue)
-                   rewriteValue(source.attributeValue, promises);
-           }
-        }
-        for (var property of properties)
-            rewriteValue(property.value, promises);
-
-        function onSuccess()
-        {
-            function stripIds(key, value) {
-                if (key == "id")
-                    return "<int>"
-                if (key == "nodeId")
-                    return "<string>"
-                return value;
-            }
-            InspectorTest.log(JSON.stringify(msg, stripIds, "  "));
-            numPendingQuerySelectors--;
-
-            if (!numPendingQuerySelectors)
-                InspectorTest.completeTest();
-        }
-
-        function onError(err)
-        {
-            InpectorTest.log("error: " + JSON.stringify(err, null, "  "));
-            numPendingQuerySelectors--;
-
-            if (!numPendingQuerySelectors)
-                InspectorTest.completeTest();
-        }
-        Promise.all(promises).then(onSuccess, onError);
-    }
+    InspectorTest.sendCommand("DOM.getDocument", {}, InspectorTest.dumpAccessibilityNodesBySelectorAndCompleteTest.bind(null, "[data-dump]"));
 }
 
 </script>
 </head>
 <body onLoad="runTest();">
   <h3 id="rg1_label">Lunch Options</h3>
-  <ul id="rg1" class="radiogroup" role="radiogroup" aria-labelledby="rg1_label" aria-activedescendant="rg1-r4" tabindex="0">
+  <ul id="rg1" class="radiogroup" role="radiogroup" aria-labelledby="rg1_label" aria-activedescendant="rg1-r4" tabindex="0" data-dump>
     <li id="rg1-r1" tabindex="-1" role="radio" aria-checked="false">
       Thai
     </li>
@@ -185,7 +34,7 @@ function test()
 
  <!-- Start of second Radio Group  -->
   <h3 id="rg2_label">Drink Options</h3>
-  <ul id="rg2" role="radiogroup" aria-labelledby="rg2_label" aria-activedescendant="" tabindex="0">
+  <ul id="rg2" role="radiogroup" aria-labelledby="rg2_label" aria-activedescendant="" tabindex="0" data-dump>
     <li id="rg2-r1" tabindex="-1" role="radio" aria-checked="false">
       Water
     </li>
