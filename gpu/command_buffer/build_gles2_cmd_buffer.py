@@ -5227,35 +5227,6 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
 
-  def WriteMojoGLES2ImplHeader(self, func, f):
-    """Writes the Mojo GLES2 implementation header."""
-    f.write("%s %s(%s) override;\n" %
-               (func.return_type, func.original_name,
-                func.MakeTypedOriginalArgString("")))
-
-  def WriteMojoGLES2Impl(self, func, f):
-    """Writes the Mojo GLES2 implementation."""
-    f.write("%s MojoGLES2Impl::%s(%s) {\n" %
-               (func.return_type, func.original_name,
-                func.MakeTypedOriginalArgString("")))
-    is_core_gl_func = func.IsCoreGLFunction()
-    is_ext = bool(func.GetInfo("extension"))
-    is_safe = not func.IsUnsafe()
-    if is_core_gl_func or (is_safe and is_ext):
-      f.write("MojoGLES2MakeCurrent(context_);");
-      func_return = "gl" + func.original_name + "(" + \
-          func.MakeOriginalArgString("") + ");"
-      if func.return_type == "void":
-        f.write(func_return);
-      else:
-        f.write("return " + func_return);
-    else:
-      f.write("NOTREACHED() << \"Unimplemented %s.\";\n" %
-                 func.original_name);
-      if func.return_type != "void":
-        f.write("return 0;")
-    f.write("}")
-
   def WriteGLES2InterfaceStub(self, func, f):
     """Writes the GLES2 Interface stub declaration."""
     f.write("%s %s(%s) override;\n" %
@@ -9758,14 +9729,6 @@ class Function(object):
     """Writes the GLES2 Interface declaration."""
     self.type_handler.WriteGLES2InterfaceHeader(self, f)
 
-  def WriteMojoGLES2ImplHeader(self, f):
-    """Writes the Mojo GLES2 implementation header declaration."""
-    self.type_handler.WriteMojoGLES2ImplHeader(self, f)
-
-  def WriteMojoGLES2Impl(self, f):
-    """Writes the Mojo GLES2 implementation declaration."""
-    self.type_handler.WriteMojoGLES2Impl(self, f)
-
   def WriteGLES2InterfaceStub(self, f):
     """Writes the GLES2 Interface Stub declaration."""
     self.type_handler.WriteGLES2InterfaceStub(self, f)
@@ -10784,62 +10747,6 @@ extern const NameToFunc g_gles2_function_table[] = {
         func.WriteGLES2InterfaceHeader(f)
     self.generated_cpp_filenames.append(filename)
 
-  def WriteMojoGLES2ImplHeader(self, filename):
-    """Writes the Mojo GLES2 implementation header."""
-    comment = ("// This file is included by gles2_interface.h to declare the\n"
-               "// GL api functions.\n")
-    code = """
-#include <memory>
-
-#include "gpu/command_buffer/client/gles2_interface.h"
-#include "mojo/public/c/gles2/gles2.h"
-
-namespace mojo {
-
-class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
- public:
-  explicit MojoGLES2Impl(MojoGLES2Context context) {
-    context_ = context;
-  }
-  ~MojoGLES2Impl() override {}
-    """
-    with CHeaderWriter(filename, comment) as f:
-      f.write(code);
-      for func in self.original_functions:
-        func.WriteMojoGLES2ImplHeader(f)
-      code = """
- private:
-  MojoGLES2Context context_;
-};
-
-}  // namespace mojo
-      """
-      f.write(code);
-    self.generated_cpp_filenames.append(filename)
-
-  def WriteMojoGLES2Impl(self, filename):
-    """Writes the Mojo GLES2 implementation."""
-    code = """
-#include "mojo/gpu/mojo_gles2_impl_autogen.h"
-
-#include "base/logging.h"
-#include "mojo/public/c/gles2/chromium_extension.h"
-#include "mojo/public/c/gles2/gles2.h"
-
-namespace mojo {
-
-    """
-    with CWriter(filename) as f:
-      f.write(code);
-      for func in self.original_functions:
-        func.WriteMojoGLES2Impl(f)
-      code = """
-
-}  // namespace mojo
-    """
-      f.write(code);
-    self.generated_cpp_filenames.append(filename)
-
   def WriteGLES2InterfaceStub(self, filename):
     """Writes the GLES2 interface stub header."""
     comment = "// This file is included by gles2_interface_stub.h.\n"
@@ -11281,31 +11188,6 @@ const size_t GLES2Util::enum_to_string_table_len_ =
         f.write("}\n\n")
     self.generated_cpp_filenames.append(filename)
 
-  def WriteMojoGLCallVisitor(self, filename):
-    """Provides the GL implementation for mojo"""
-    with CWriter(filename) as f:
-      for func in self.original_functions:
-        if not func.IsCoreGLFunction():
-          continue
-        f.write("VISIT_GL_CALL(%s, %s, (%s), (%s))\n" %
-                               (func.name, func.return_type,
-                                func.MakeTypedOriginalArgString(""),
-                                func.MakeOriginalArgString("")))
-    self.generated_cpp_filenames.append(filename)
-
-  def WriteMojoGLCallVisitorForExtension(self, filename):
-    """Provides the GL implementation for mojo for all extensions"""
-    with CWriter(filename) as f:
-      for func in self.original_functions:
-        if not func.GetInfo("extension"):
-          continue
-        if func.IsUnsafe():
-          continue
-        f.write("VISIT_GL_CALL(%s, %s, (%s), (%s))\n" %
-                               (func.name, func.return_type,
-                                func.MakeTypedOriginalArgString(""),
-                                func.MakeOriginalArgString("")))
-    self.generated_cpp_filenames.append(filename)
 
 def Format(generated_files):
   formatter = "clang-format"
@@ -11377,10 +11259,6 @@ def main(argv):
     "gpu/command_buffer/common/gles2_cmd_format_test_autogen.h")
   gen.WriteGLES2InterfaceHeader(
     "gpu/command_buffer/client/gles2_interface_autogen.h")
-  gen.WriteMojoGLES2ImplHeader(
-    "mojo/gpu/mojo_gles2_impl_autogen.h")
-  gen.WriteMojoGLES2Impl(
-    "mojo/gpu/mojo_gles2_impl_autogen.cc")
   gen.WriteGLES2InterfaceStub(
     "gpu/command_buffer/client/gles2_interface_stub_autogen.h")
   gen.WriteGLES2InterfaceStubImpl(
@@ -11425,9 +11303,6 @@ def main(argv):
     "gpu/command_buffer/common/gles2_cmd_utils_implementation_autogen.h")
   gen.WriteGLES2Header("gpu/GLES2/gl2chromium_autogen.h")
   mojo_gles2_prefix = ("mojo/public/c/gles2/gles2_call_visitor")
-  gen.WriteMojoGLCallVisitor(mojo_gles2_prefix + "_autogen.h")
-  gen.WriteMojoGLCallVisitorForExtension(
-      mojo_gles2_prefix + "_chromium_extension_autogen.h")
 
   Format(gen.generated_cpp_filenames)
 

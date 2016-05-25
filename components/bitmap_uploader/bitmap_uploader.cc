@@ -9,23 +9,18 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "components/mus/public/cpp/gles2_context.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_surface.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_utils.h"
-#include "mojo/public/c/gles2/chromium_extension.h"
-#include "mojo/public/c/gles2/gles2.h"
 #include "services/shell/public/cpp/connector.h"
 
 namespace bitmap_uploader {
 namespace {
 
 const uint32_t g_transparent_color = 0x00000000;
-
-void LostContext(void*) {
-  // TODO(fsamuel): Figure out if there's something useful to do here.
-}
 
 }  // namespace
 
@@ -42,7 +37,6 @@ BitmapUploader::BitmapUploader(mus::Window* window)
       id_namespace_(0u) {}
 
 BitmapUploader::~BitmapUploader() {
-  MojoGLES2DestroyContext(gles2_context_);
 }
 
 void BitmapUploader::Init(shell::Connector* connector) {
@@ -53,10 +47,9 @@ void BitmapUploader::Init(shell::Connector* connector) {
   connector->ConnectToInterface("mojo:mus", &gpu_service_);
   mus::mojom::CommandBufferPtr gles2_client;
   gpu_service_->CreateOffscreenGLES2Context(GetProxy(&gles2_client));
-  gles2_context_ = MojoGLES2CreateContext(
-      gles2_client.PassInterface().PassHandle().release().value(), nullptr,
-      &LostContext, nullptr);
-  MojoGLES2MakeCurrent(gles2_context_);
+  gles2_context_.reset(new mus::GLES2Context(
+      std::vector<int32_t>(), gles2_client.PassInterface().PassHandle()));
+  DCHECK(gles2_context_->Initialize());
 }
 
 // Sets the color which is RGBA.
@@ -103,31 +96,25 @@ void BitmapUploader::Upload() {
   pass->shared_quad_states.push_back(
       mojo::CreateDefaultSQS(bounds.size()));
 
-  MojoGLES2MakeCurrent(gles2_context_);
   if (bitmap_.get()) {
+    gpu::gles2::GLES2Interface* gl = gles2_context_->interface();
     mojo::Size bitmap_size;
     bitmap_size.width = width_;
     bitmap_size.height = height_;
     GLuint texture_id = BindTextureForSize(bitmap_size);
-    glTexSubImage2D(GL_TEXTURE_2D,
-                    0,
-                    0,
-                    0,
-                    bitmap_size.width,
-                    bitmap_size.height,
-                    TextureFormat(),
-                    GL_UNSIGNED_BYTE,
-                    &((*bitmap_)[0]));
+    gl->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, bitmap_size.width,
+                      bitmap_size.height, TextureFormat(), GL_UNSIGNED_BYTE,
+                      &((*bitmap_)[0]));
 
     gpu::Mailbox mailbox;
-    glGenMailboxCHROMIUM(mailbox.name);
-    glProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+    gl->GenMailboxCHROMIUM(mailbox.name);
+    gl->ProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
 
-    const GLuint64 fence_sync = glInsertFenceSyncCHROMIUM();
-    glShallowFlushCHROMIUM();
+    const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
+    gl->ShallowFlushCHROMIUM();
 
     gpu::SyncToken sync_token;
-    glGenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+    gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 
     mus::mojom::TransferableResourcePtr resource =
         mus::mojom::TransferableResource::New();
@@ -213,20 +200,14 @@ void BitmapUploader::Upload() {
 }
 
 uint32_t BitmapUploader::BindTextureForSize(const mojo::Size size) {
+  gpu::gles2::GLES2Interface* gl = gles2_context_->interface();
   // TODO(jamesr): Recycle textures.
   GLuint texture = 0u;
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexImage2D(GL_TEXTURE_2D,
-                0,
-                TextureFormat(),
-                size.width,
-                size.height,
-                0,
-                TextureFormat(),
-                GL_UNSIGNED_BYTE,
-                0);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  gl->GenTextures(1, &texture);
+  gl->BindTexture(GL_TEXTURE_2D, texture);
+  gl->TexImage2D(GL_TEXTURE_2D, 0, TextureFormat(), size.width, size.height, 0,
+                 TextureFormat(), GL_UNSIGNED_BYTE, 0);
+  gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   return texture;
 }
 
@@ -239,17 +220,16 @@ void BitmapUploader::SetIdNamespace(uint32_t id_namespace) {
 void BitmapUploader::OnResourcesReturned(
     mus::WindowSurface* surface,
     mojo::Array<mus::mojom::ReturnedResourcePtr> resources) {
-  MojoGLES2MakeCurrent(gles2_context_);
+  gpu::gles2::GLES2Interface* gl = gles2_context_->interface();
   // TODO(jamesr): Recycle.
   for (size_t i = 0; i < resources.size(); ++i) {
     mus::mojom::ReturnedResourcePtr resource = std::move(resources[i]);
     DCHECK_EQ(1, resource->count);
-    glWaitSyncTokenCHROMIUM(
-        resource->sync_token.GetConstData());
+    gl->WaitSyncTokenCHROMIUM(resource->sync_token.GetConstData());
     uint32_t texture_id = resource_to_texture_id_map_[resource->id];
     DCHECK_NE(0u, texture_id);
     resource_to_texture_id_map_.erase(resource->id);
-    glDeleteTextures(1, &texture_id);
+    gl->DeleteTextures(1, &texture_id);
   }
 }
 

@@ -60,7 +60,6 @@ source_set("cpp") {
     "//mojo/converters/geometry",
     "//mojo/converters/input_events",
     "//mojo/converters/surfaces",
-    "//mojo/public/c/gles2:gles2",
     "//mojo/public/cpp/bindings:bindings",
     "//mojo/public/cpp/system",
     "//services/shell/public/cpp",

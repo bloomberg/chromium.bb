@@ -567,7 +567,6 @@
     },
     'mus': {
       'filepath': 'components/mus/'\
-                  '|mojo/gles2/'\
                   '|mojo/gpu/',
     },
     'nacl': {

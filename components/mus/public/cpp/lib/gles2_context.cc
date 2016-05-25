@@ -18,12 +18,8 @@
 namespace mus {
 
 GLES2Context::GLES2Context(const std::vector<int32_t>& attribs,
-                           mojo::ScopedMessagePipeHandle command_buffer_handle,
-                           MojoGLES2ContextLost lost_callback,
-                           void* closure)
-    : command_buffer_(attribs, std::move(command_buffer_handle)),
-      lost_callback_(lost_callback),
-      closure_(closure) {}
+                           mojo::ScopedMessagePipeHandle command_buffer_handle)
+    : command_buffer_(attribs, std::move(command_buffer_handle)) {}
 
 GLES2Context::~GLES2Context() {}
 
@@ -53,13 +49,7 @@ bool GLES2Context::Initialize() {
                                    default_limits.max_transfer_buffer_size,
                                    default_limits.mapped_memory_reclaim_limit))
     return false;
-  implementation_->SetLostContextCallback(
-      base::Bind(&GLES2Context::OnLostContext, base::Unretained(this)));
   return true;
-}
-
-void GLES2Context::OnLostContext() {
-  lost_callback_(closure_);
 }
 
 }  // namespace mus

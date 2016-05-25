@@ -19,7 +19,10 @@
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "gpu/GLES2/gl2chromium.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "mojo/public/c/gles2/gles2.h"
+
+namespace mus {
+class GLES2Context;
+}
 
 namespace shell {
 class Connector;
@@ -72,7 +75,7 @@ class BITMAP_UPLOADER_EXPORT BitmapUploader
   mus::Window* window_;
   mus::mojom::GpuPtr gpu_service_;
   std::unique_ptr<mus::WindowSurface> surface_;
-  MojoGLES2Context gles2_context_;
+  std::unique_ptr<mus::GLES2Context> gles2_context_;
 
   mojo::Size size_;
   uint32_t color_;

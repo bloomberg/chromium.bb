@@ -18,10 +18,8 @@ ContextProvider::ContextProvider(
 }
 
 bool ContextProvider::BindToCurrentThread() {
-  DCHECK(command_buffer_handle_.is_valid());
   std::unique_ptr<GLES2Context> context(new GLES2Context(
-      std::vector<int32_t>(), std::move(command_buffer_handle_),
-      &ContextLostThunk, this));
+      std::vector<int32_t>(), std::move(command_buffer_handle_)));
   if (context->Initialize())
     context_ = std::move(context);
   return !!context_;
@@ -59,7 +57,5 @@ base::Lock* ContextProvider::GetLock() {
 
 ContextProvider::~ContextProvider() {
 }
-
-void ContextProvider::ContextLost() {}
 
 }  // namespace mus

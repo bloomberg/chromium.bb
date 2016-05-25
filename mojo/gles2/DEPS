@@ -1,5 +1,0 @@
-include_rules = [
-  "+components/mus/gles2",
-  "+components/mus/public",
-  "+gpu",
-]

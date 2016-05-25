@@ -38,11 +38,6 @@ class ContextProvider : public cc::ContextProvider {
   ~ContextProvider() override;
 
  private:
-  static void ContextLostThunk(void* closure) {
-    static_cast<ContextProvider*>(closure)->ContextLost();
-  }
-  void ContextLost();
-
   mojo::ScopedMessagePipeHandle command_buffer_handle_;
   std::unique_ptr<GLES2Context> context_;
 

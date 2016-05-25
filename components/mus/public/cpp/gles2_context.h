@@ -13,9 +13,6 @@
 #include "base/macros.h"
 #include "components/mus/public/cpp/lib/command_buffer_client_impl.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "mojo/public/c/gles2/gles2.h"
-
-struct MojoGLES2ContextPrivate {};
 
 namespace gpu {
 class TransferBuffer;
@@ -27,12 +24,10 @@ class GLES2Implementation;
 
 namespace mus {
 
-class GLES2Context : public MojoGLES2ContextPrivate {
+class GLES2Context {
  public:
   explicit GLES2Context(const std::vector<int32_t>& attribs,
-                        mojo::ScopedMessagePipeHandle command_buffer_handle,
-                        MojoGLES2ContextLost lost_callback,
-                        void* closure);
+                        mojo::ScopedMessagePipeHandle command_buffer_handle);
   virtual ~GLES2Context();
   bool Initialize();
 
@@ -42,14 +37,10 @@ class GLES2Context : public MojoGLES2ContextPrivate {
   gpu::ContextSupport* context_support() const { return implementation_.get(); }
 
  private:
-  void OnLostContext();
-
   CommandBufferClientImpl command_buffer_;
   std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
   std::unique_ptr<gpu::gles2::GLES2Implementation> implementation_;
-  MojoGLES2ContextLost lost_callback_;
-  void* closure_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Context);
 };

@@ -121,11 +121,6 @@ group("for_shared_library") {
   public_deps = [
     ":mus",
   ]
-  if (!is_component_build) {
-    deps = [
-      "//mojo/gles2",
-    ]
-  }
 }
 
 source_set("test_support") {
@@ -305,8 +300,5 @@ mojo_application_manifest("interactive_ui_tests_manifest") {
 group("for_component") {
   public_deps = [
     ":mus",
-  ]
-  deps = [
-    "//mojo/gles2",
   ]
 }
