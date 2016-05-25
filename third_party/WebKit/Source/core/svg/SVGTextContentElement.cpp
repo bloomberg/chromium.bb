@@ -30,8 +30,6 @@
 #include "core/editing/FrameSelection.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/svg/SVGTextQuery.h"
 
 namespace blink {
