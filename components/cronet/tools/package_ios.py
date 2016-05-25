@@ -43,7 +43,7 @@ def package_ios(out_dir, build_dir, build_config):
   build_dir_sim = build_dir
   build_dir_dev = build_dir +'-iphoneos'
   build_target = 'cronet_package'
-  target_dir = out_dir + "/Cronet"
+  target_dir = out_dir
   return build(build_dir_sim, build_target) or \
          build(build_dir_dev, build_target) or \
          copy_build_dir(target_dir, build_dir_dev + "/cronet") or \
@@ -75,6 +75,12 @@ def package_ios_framework(out_dir='out/Framework', extra_options=''):
     if 'Release' in build_dir:
       shutil.copytree(os.path.join('out', build_dir, 'Cronet.framework.dSYM'),
                       os.path.join(out_dir, build_dir, 'Cronet.framework.dSYM'))
+  # Copy the version file
+  shutil.copy2('chrome/VERSION', out_dir)
+  # Copy the headers
+  shutil.copytree(os.path.join(out_dir, build_dirs[0],
+                               'Cronet.framework', 'Headers'),
+                  os.path.join(out_dir, 'Headers'))
 
 
 def main():
