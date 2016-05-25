@@ -59,7 +59,7 @@ private:
 class CORE_EXPORT NativeBreakpoint {
     STACK_ALLOCATED();
 public:
-    NativeBreakpoint(ExecutionContext*, const String& name, bool sync);
+    NativeBreakpoint(ExecutionContext*, const char* name, bool sync);
     NativeBreakpoint(ExecutionContext*, EventTarget*, Event*);
     ~NativeBreakpoint();
 

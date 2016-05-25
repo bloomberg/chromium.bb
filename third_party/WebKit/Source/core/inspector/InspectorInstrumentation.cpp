@@ -73,7 +73,7 @@ AsyncTask::~AsyncTask()
         session->asyncTaskFinished(m_task);
 }
 
-NativeBreakpoint::NativeBreakpoint(ExecutionContext* context, const String& name, bool sync)
+NativeBreakpoint::NativeBreakpoint(ExecutionContext* context, const char* name, bool sync)
     : m_instrumentingAgents(instrumentingAgentsFor(context))
     , m_sync(sync)
 {
