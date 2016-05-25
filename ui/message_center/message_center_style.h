@@ -35,8 +35,8 @@ const int kNotificationWidth = 360;
 const int kMinScrollViewHeight = 100;
 
 // Colors.
-MESSAGE_CENTER_EXPORT extern const SkColor kMessageCenterBorderColor;
-MESSAGE_CENTER_EXPORT extern const SkColor kMessageCenterShadowColor;
+const SkColor kMessageCenterBorderColor = SkColorSetRGB(0xC7, 0xCA, 0xCE);
+const SkColor kMessageCenterShadowColor = SkColorSetARGB(0.5 * 255, 0, 0, 0);
 
 // Settings dialog constants.
 namespace settings {
@@ -77,18 +77,21 @@ const int kMessageFontSize = 12;           // For everything but title.
 const int kMessageLineHeight = 18;         // In DIPs.
 
 // Colors.
-extern const SkColor kNotificationBackgroundColor; // Background of the card.
+// Background of the card.
+const SkColor kNotificationBackgroundColor = SkColorSetRGB(255, 255, 255);
 // Background of the image.
-MESSAGE_CENTER_EXPORT extern const SkColor kImageBackgroundColor;
-extern const SkColor kIconBackgroundColor;         // Used behind icons smaller
-                                                   // than the icon view.
-extern const SkColor kRegularTextColor;            // Title, message, ...
-extern const SkColor kDimTextColor;
-extern const SkColor kFocusBorderColor;  // The focus border.
-MESSAGE_CENTER_EXPORT extern const SkColor
-    kSmallImageMaskForegroundColor;  // Foreground of small icon image.
-MESSAGE_CENTER_EXPORT extern const SkColor
-    kSmallImageMaskBackgroundColor;  // Background of small icon image.
+const SkColor kImageBackgroundColor = SkColorSetRGB(0x22, 0x22, 0x22);
+// Used behind icons smaller than the icon view.
+const SkColor kIconBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
+// Title, message, ...
+const SkColor kRegularTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
+const SkColor kDimTextColor = SkColorSetRGB(0x7f, 0x7f, 0x7f);
+// The focus border.
+const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
+// Foreground of small icon image.
+const SkColor kSmallImageMaskForegroundColor = SK_ColorWHITE;
+// Background of small icon image.
+const SkColor kSmallImageMaskBackgroundColor = SkColorSetRGB(0xa3, 0xa3, 0xa);
 
 // Limits.
 
@@ -98,14 +101,15 @@ MESSAGE_CENTER_EXPORT gfx::Size GetImageSizeForContainerSize(
     const gfx::Size& container_size,
     const gfx::Size& image_size);
 
-extern const int kNotificationMaximumImageHeight;  // For image notifications.
-MESSAGE_CENTER_EXPORT extern const size_t
-    kNotificationMaximumItems;     // For list notifications.
+const size_t kNotificationMaximumItems = 5;     // For list notifications.
 
 // Timing.
-extern const int kAutocloseDefaultDelaySeconds;
-extern const int kAutocloseHighPriorityDelaySeconds;
-extern const int kAutocloseWebPageDelaySeconds;
+const int kAutocloseDefaultDelaySeconds = 8;
+const int kAutocloseHighPriorityDelaySeconds = 25;
+// Web notifications use a larger timeout for now, which improves re-engagement.
+// TODO(johnme): Use Finch to experiment with different values, then consider
+// replacing kAutocloseDefaultDelaySeconds with this (https://crbug.com/530697)
+const int kAutocloseWebPageDelaySeconds = 20;
 
 // Buttons.
 const int kButtonHeight = 38;              // In DIPs.
@@ -138,14 +142,19 @@ const int kMarginBetweenItems = 10;  // H & V space around & between
                                      // notifications.
 
 // Colors.
-extern const SkColor kBackgroundLightColor;  // Behind notifications, gradient
-extern const SkColor kBackgroundDarkColor;   // from light to dark.
+// Behind notifications, gradient
+const SkColor kBackgroundLightColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);
+// from light to dark.
+const SkColor kBackgroundDarkColor = SkColorSetRGB(0xe7, 0xe7, 0xe7);
 
-extern const SkColor kShadowColor;           // Shadow in the tray.
+// Shadow in the tray.
+const SkColor kShadowColor = SkColorSetARGB(0.3 * 255, 0, 0, 0);
 
-extern const SkColor kMessageCenterBackgroundColor;
-extern const SkColor kFooterDelimiterColor;  // Separator color for the tray.
-extern const SkColor kFooterTextColor;       // Text color for tray labels.
+const SkColor kMessageCenterBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
+// Separator color for the tray.
+const SkColor kFooterDelimiterColor = SkColorSetRGB(0xcc, 0xcc, 0xcc);
+// Text color for tray labels.
+const SkColor kFooterTextColor = SkColorSetRGB(0x7b, 0x7b, 0x7b);
 
 }  // namespace message_center
 
