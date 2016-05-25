@@ -43,7 +43,6 @@
 #include "core/layout/line/LineBoxList.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/layout/line/TrailingObjects.h"
-#include "core/style/ComputedStyleConstants.h"
 
 namespace blink {
 
@@ -51,7 +50,6 @@ class BlockChildrenLayoutInfo;
 class ClipScope;
 class MarginInfo;
 class LayoutInline;
-class LineBreaker;
 class LineInfo;
 class LineLayoutState;
 class LineWidth;

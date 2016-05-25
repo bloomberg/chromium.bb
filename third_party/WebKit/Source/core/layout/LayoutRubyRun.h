@@ -32,6 +32,7 @@
 #define LayoutRubyRun_h
 
 #include "core/layout/LayoutBlockFlow.h"
+#include "platform/text/TextBreakIterator.h"
 
 namespace blink {
 

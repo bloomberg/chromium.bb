@@ -8,6 +8,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/StyleEngine.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/testing/DummyPageHolder.h"

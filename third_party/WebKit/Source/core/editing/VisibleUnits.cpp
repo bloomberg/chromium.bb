@@ -65,6 +65,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextBoundaries.h"
+#include "platform/text/TextBreakIterator.h"
 
 namespace blink {
 

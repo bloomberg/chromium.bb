@@ -24,17 +24,14 @@
 #define LayoutBlock_h
 
 #include "core/CoreExport.h"
-#include "core/layout/FloatingObjects.h"
-#include "core/layout/GapRects.h"
 #include "core/layout/LayoutBox.h"
-#include "core/style/ShapeValue.h"
-#include "platform/text/TextBreakIterator.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
 
 struct PaintInfo;
+class LineLayoutBox;
 class WordMeasurement;
 
 typedef WTF::ListHashSet<LayoutBox*, 16> TrackedLayoutBoxListHashSet;
