@@ -1575,7 +1575,8 @@ void LayoutGrid::applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection 
 
 void LayoutGrid::layoutGridItems(GridSizingData& sizingData)
 {
-    populateGridPositions(sizingData);
+    populateGridPositionsForDirection(sizingData, ForColumns);
+    populateGridPositionsForDirection(sizingData, ForRows);
     m_gridItemsOverflowingGridArea.resize(0);
 
     for (LayoutBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
@@ -1789,7 +1790,7 @@ LayoutUnit LayoutGrid::gridAreaBreadthForChildIncludingAlignmentOffsets(const La
     return finalTrackPosition - initialTrackPosition + tracks[span.endLine() - 1].baseSize();
 }
 
-void LayoutGrid::populateGridPositions(GridSizingData& sizingData)
+void LayoutGrid::populateGridPositionsForDirection(GridSizingData& sizingData, GridTrackSizingDirection direction)
 {
     // Since we add alignment offsets and track gutters, grid lines are not always adjacent. Hence we will have to
     // assume from now on that we just store positions of the initial grid lines of each track,
@@ -1798,31 +1799,23 @@ void LayoutGrid::populateGridPositions(GridSizingData& sizingData)
     // The grid container's frame elements (border, padding and <content-position> offset) are sensible to the
     // inline-axis flow direction. However, column lines positions are 'direction' unaware. This simplification
     // allows us to use the same indexes to identify the columns independently on the inline-axis direction.
-    unsigned numberOfTracks = sizingData.columnTracks.size();
-    unsigned numberOfLines = numberOfTracks + 1;
-    unsigned lastLine = numberOfLines - 1;
-    unsigned nextToLastLine = numberOfLines - 2;
-    ContentAlignmentData offset = computeContentPositionAndDistributionOffset(ForColumns, sizingData.freeSpaceForDirection(ForColumns), numberOfTracks);
-    LayoutUnit trackGap = guttersSize(ForColumns, 2);
-    m_columnPositions.resize(numberOfLines);
-    m_columnPositions[0] = borderAndPaddingLogicalLeft() + offset.positionOffset;
-    for (unsigned i = 0; i < nextToLastLine; ++i)
-        m_columnPositions[i + 1] = m_columnPositions[i] + offset.distributionOffset + sizingData.columnTracks[i].baseSize() + trackGap;
-    m_columnPositions[lastLine] = m_columnPositions[nextToLastLine] + sizingData.columnTracks[nextToLastLine].baseSize();
-    m_offsetBetweenColumns = offset.distributionOffset;
-
-    numberOfTracks = sizingData.rowTracks.size();
-    numberOfLines = numberOfTracks + 1;
-    lastLine = numberOfLines - 1;
-    nextToLastLine = numberOfLines - 2;
-    offset = computeContentPositionAndDistributionOffset(ForRows, sizingData.freeSpaceForDirection(ForRows), numberOfTracks);
-    trackGap = guttersSize(ForRows, 2);
-    m_rowPositions.resize(numberOfLines);
-    m_rowPositions[0] = borderAndPaddingBefore() + offset.positionOffset;
-    for (unsigned i = 0; i < nextToLastLine; ++i)
-        m_rowPositions[i + 1] = m_rowPositions[i] + offset.distributionOffset + sizingData.rowTracks[i].baseSize() + trackGap;
-    m_rowPositions[lastLine] = m_rowPositions[nextToLastLine] + sizingData.rowTracks[nextToLastLine].baseSize();
-    m_offsetBetweenRows = offset.distributionOffset;
+    bool isRowAxis = direction == ForColumns;
+    auto& tracks = isRowAxis ? sizingData.columnTracks : sizingData.rowTracks;
+    size_t numberOfTracks = tracks.size();
+    size_t numberOfLines = numberOfTracks + 1;
+    size_t lastLine = numberOfLines - 1;
+    size_t nextToLastLine = numberOfLines - 2;
+    ContentAlignmentData offset = computeContentPositionAndDistributionOffset(direction, sizingData.freeSpaceForDirection(direction), numberOfTracks);
+    LayoutUnit trackGap = guttersSize(direction, 2);
+    auto& positions = isRowAxis ? m_columnPositions : m_rowPositions;
+    positions.resize(numberOfLines);
+    auto borderAndPadding = isRowAxis ? borderAndPaddingLogicalLeft() : borderAndPaddingBefore();
+    positions[0] = borderAndPadding + offset.positionOffset;
+    for (size_t i = 0; i < nextToLastLine; ++i)
+        positions[i + 1] = positions[i] + offset.distributionOffset + tracks[i].baseSize() + trackGap;
+    positions[lastLine] = positions[nextToLastLine] + tracks[nextToLastLine].baseSize();
+    auto& offsetBetweenTracks = isRowAxis ? m_offsetBetweenColumns : m_offsetBetweenRows;
+    offsetBetweenTracks = offset.distributionOffset;
 }
 
 static LayoutUnit computeOverflowAlignmentOffset(OverflowAlignment overflow, LayoutUnit trackBreadth, LayoutUnit childBreadth)

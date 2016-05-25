@@ -147,7 +147,7 @@ private:
     void prepareChildForPositionedLayout(LayoutBox&);
     void layoutPositionedObjects(bool relayoutChildren, PositionedLayoutBehavior = DefaultLayout);
     void offsetAndBreadthForPositionedChild(const LayoutBox&, GridTrackSizingDirection, LayoutUnit& offset, LayoutUnit& breadth);
-    void populateGridPositions(GridSizingData&);
+    void populateGridPositionsForDirection(GridSizingData&, GridTrackSizingDirection);
 
     typedef struct GridItemsSpanGroupRange GridItemsSpanGroupRange;
     LayoutUnit currentItemSizeForTrackSizeComputationPhase(TrackSizeComputationPhase, LayoutBox&, GridTrackSizingDirection, GridSizingData&);
