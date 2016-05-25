@@ -4,7 +4,6 @@
 
 #include "core/paint/ScopeRecorder.h"
 
-#include "core/layout/LayoutObject.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
 

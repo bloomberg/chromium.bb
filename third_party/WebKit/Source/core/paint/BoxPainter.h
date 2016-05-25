@@ -5,16 +5,26 @@
 #ifndef BoxPainter_h
 #define BoxPainter_h
 
-#include "core/layout/LayoutBoxModelObject.h"
-#include "core/paint/ObjectPainter.h"
+#include "core/layout/BackgroundBleedAvoidance.h"
 #include "core/style/ShadowData.h"
+#include "platform/geometry/LayoutSize.h"
+#include "platform/graphics/GraphicsTypes.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
 
 class BackgroundImageGeometry;
+class ComputedStyle;
+class FillLayer;
 class FloatRoundedRect;
+class GraphicsContext;
+class Image;
+class InlineFlowBox;
 class LayoutPoint;
+class LayoutRect;
+class LayoutBoxModelObject;
+class NinePieceImage;
 struct PaintInfo;
 class LayoutBox;
 class LayoutObject;

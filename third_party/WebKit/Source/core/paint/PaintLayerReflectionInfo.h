@@ -45,14 +45,17 @@
 #ifndef PaintLayerReflectionInfo_h
 #define PaintLayerReflectionInfo_h
 
-#include "core/layout/LayoutBoxModelObject.h"
 #include "core/paint/PaintLayerPainter.h"
+#include "core/paint/PaintLayerPaintingInfo.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
 
+class ComputedStyle;
+class GraphicsContext;
 class PaintLayer;
+class LayoutBox;
 class LayoutReplica;
 
 // PaintLayerReflectionInfo is the main object used for reflections.

@@ -47,7 +47,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ClipRectsCache.h"
-#include "core/layout/LayoutBox.h"
+#include "core/layout/ScrollEnums.h"
 #include "wtf/Allocator.h"
 
 namespace blink {

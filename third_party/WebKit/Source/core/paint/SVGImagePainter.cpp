@@ -7,7 +7,6 @@
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/svg/LayoutSVGImage.h"
-#include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"

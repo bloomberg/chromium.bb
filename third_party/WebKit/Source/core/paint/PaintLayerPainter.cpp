@@ -8,7 +8,6 @@
 #include "core/frame/Settings.h"
 #include "core/layout/ClipPathOperation.h"
 #include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutFrame.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/page/Page.h"

@@ -26,7 +26,6 @@
 
 #include "core/paint/FilterEffectBuilder.h"
 
-#include "core/layout/LayoutObject.h"
 #include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "platform/FloatConversion.h"
 #include "platform/LengthFunctions.h"
@@ -36,6 +35,8 @@
 #include "platform/graphics/filters/FEComponentTransfer.h"
 #include "platform/graphics/filters/FEDropShadow.h"
 #include "platform/graphics/filters/FEGaussianBlur.h"
+#include "platform/graphics/filters/Filter.h"
+#include "platform/graphics/filters/FilterOperations.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>

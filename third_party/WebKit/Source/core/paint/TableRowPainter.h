@@ -5,11 +5,14 @@
 #ifndef TableRowPainter_h
 #define TableRowPainter_h
 
-#include "core/layout/LayoutTableRow.h"
-#include "core/style/ShadowData.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
+
+class LayoutPoint;
+class LayoutTableCell;
+class LayoutTableRow;
+struct PaintInfo;
 
 class TableRowPainter {
     STACK_ALLOCATED();

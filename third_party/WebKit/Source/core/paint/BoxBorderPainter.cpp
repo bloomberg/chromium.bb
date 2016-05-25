@@ -5,6 +5,7 @@
 #include "core/paint/BoxBorderPainter.h"
 
 #include "core/paint/BoxPainter.h"
+#include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/BorderEdge.h"
 #include "core/style/ComputedStyle.h"

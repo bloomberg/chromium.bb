@@ -4,11 +4,7 @@
 
 #include "core/paint/InlineFlowBoxPainter.h"
 
-#include "core/layout/LayoutBlock.h"
-#include "core/layout/LayoutInline.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
-#include "core/layout/api/LineLayoutBoxModel.h"
-#include "core/layout/api/SelectionState.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/PaintInfo.h"

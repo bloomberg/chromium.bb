@@ -7,15 +7,11 @@
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/ListMarkerText.h"
-#include "core/layout/TextRunConstructor.h"
 #include "core/layout/api/SelectionState.h"
-#include "core/paint/BlockPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
-#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 

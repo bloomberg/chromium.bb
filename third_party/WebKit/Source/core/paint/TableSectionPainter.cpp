@@ -4,14 +4,10 @@
 
 #include "core/paint/TableSectionPainter.h"
 
-#include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableCol.h"
 #include "core/layout/LayoutTableRow.h"
-#include "core/paint/BlockPainter.h"
 #include "core/paint/BoxClipper.h"
-#include "core/paint/BoxPainter.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TableCellPainter.h"
