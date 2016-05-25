@@ -52,12 +52,17 @@ struct FileMetricsProvider::SourceInfo {
   bool read_complete = false;
 
   // Once a file has been recognized as needing to be read, it is |mapped|
-  // into memory. If that file is "atomic" then the data from that file
-  // will be copied to |data| and the mapped file released. If the file is
-  // "active", it remains mapped and nothing is copied to local memory.
+  // into memory. The contents of that file may be copied to local |data|
+  // so that access to it does not cause disk I/O.
   std::vector<uint8_t> data;
   std::unique_ptr<base::MemoryMappedFile> mapped;
   std::unique_ptr<base::PersistentHistogramAllocator> allocator;
+
+  // Once a file has been processed, the actual releasing of the file must
+  // be done on a thread capable of doing file I/O. These fields hold the
+  // previously active objects that are to be released when possible.
+  std::unique_ptr<base::MemoryMappedFile> mapped_to_release;
+  std::unique_ptr<base::PersistentHistogramAllocator> allocator_to_release;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SourceInfo);
@@ -130,6 +135,15 @@ void FileMetricsProvider::CheckAndMapNewMetricSourcesOnTaskRunner(
       UMA_HISTOGRAM_ENUMERATION(
           "UMA.FileMetricsProvider.AccessResult", result, ACCESS_RESULT_MAX);
     }
+
+    switch (source->type) {
+      case SOURCE_HISTOGRAMS_ATOMIC_FILE:
+      case SOURCE_HISTOGRAMS_ATOMIC_DIR:
+        // Remove the file if it's already been seen.
+        if (result == ACCESS_RESULT_NOT_MODIFIED)
+          base::DeleteFile(source->path, /*recursive=*/false);
+        break;
+    }
   }
 }
 
@@ -139,11 +153,19 @@ void FileMetricsProvider::CheckAndMapNewMetricSourcesOnTaskRunner(
 FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapNewMetrics(
     SourceInfo* source) {
   DCHECK(!source->mapped);
-  DCHECK(source->data.empty());
+  DCHECK(!source->allocator);
 
+  // Release any resources from a previous run.
+  source->mapped_to_release.reset();
+  source->allocator_to_release.reset();
+  source->data.clear();
+  source->read_complete = false;
+
+  // If the source is a directory, look for files within it.
   if (!source->directory.empty() && !LocateNextFileInDirectory(source))
     return ACCESS_RESULT_DOESNT_EXIST;
 
+  // Do basic validation on the file metadata.
   base::File::Info info;
   if (!base::GetFileInfo(source->path, &info))
     return ACCESS_RESULT_DOESNT_EXIST;
@@ -155,11 +177,13 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapNewMetrics(
     return ACCESS_RESULT_NOT_MODIFIED;
 
   // A new file of metrics has been found. Open it with exclusive access and
-  // map it into memory.
+  // map it into memory. The file is opened with "share delete" so it can
+  // be later deleted while still open.
   // TODO(bcwhite): Make this open read/write when supported for "active".
   base::File file(source->path, base::File::FLAG_OPEN |
                                 base::File::FLAG_READ |
-                                base::File::FLAG_EXCLUSIVE_READ);
+                                base::File::FLAG_EXCLUSIVE_READ |
+                                base::File::FLAG_SHARE_DELETE);
   if (!file.IsValid())
     return ACCESS_RESULT_NO_EXCLUSIVE_OPEN;
   source->mapped.reset(new base::MemoryMappedFile());
@@ -172,24 +196,27 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapNewMetrics(
   source->last_seen = info.last_modified;
 
   // Test the validity of the file contents.
-  if (!base::FilePersistentMemoryAllocator::IsFileAcceptable(*source->mapped))
+  if (!base::FilePersistentMemoryAllocator::IsFileAcceptable(*source->mapped)) {
+    source->mapped.reset();
     return ACCESS_RESULT_INVALID_CONTENTS;
+  }
 
   switch (source->type) {
     case SOURCE_HISTOGRAMS_ATOMIC_FILE:
     case SOURCE_HISTOGRAMS_ATOMIC_DIR:
-      // For an "atomic" file, immediately copy the data into local memory
-      // and release the file so that it is not held open.
+      // For an "atomic" file, copy the data into local memory but don't
+      // release the file so that it is held open to prevent access by other
+      // processes. The copy means all I/O is done on this thread instead of
+      // the thread processing the data.
       source->data.assign(source->mapped->data(),
                           source->mapped->data() + source->mapped->length());
-      source->mapped.reset();
       break;
   }
 
-  source->read_complete = false;
   return ACCESS_RESULT_SUCCESS;
 }
 
+// static
 bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
   DCHECK_EQ(SOURCE_HISTOGRAMS_ATOMIC_DIR, source->type);
   DCHECK(!source->directory.empty());
@@ -261,6 +288,22 @@ bool FileMetricsProvider::LocateNextFileInDirectory(SourceInfo* source) {
   return true;
 }
 
+// static
+void FileMetricsProvider::DeleteFileWhenPossible(const base::FilePath& path) {
+#if defined(OS_WIN)
+  // Windows won't allow an open file to be removed from the filesystem so
+  // schedule the file to be deleted as soon as it is closed. No access flag
+  // (eg. FLAG_READ) is given as it would fail because the original read was
+  // exclusive.
+  base::File file(path, base::File::FLAG_OPEN |
+                        base::File::FLAG_DELETE_ON_CLOSE);
+#else
+  // Posix won't allow opening a file without some access flag (eg. FLAG_READ)
+  // but will allow one to be removed while open. Delete it the typical way.
+  base::DeleteFile(path, /*recursive=*/false);
+#endif
+}
+
 void FileMetricsProvider::ScheduleSourcesCheck() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (sources_to_check_.empty())
@@ -311,20 +354,23 @@ void FileMetricsProvider::RecordHistogramSnapshotsFromSource(
 }
 
 void FileMetricsProvider::CreateAllocatorForSource(SourceInfo* source) {
+  DCHECK(source->mapped);
   DCHECK(!source->allocator);
 
   // File data was validated earlier. Files are not considered "untrusted"
   // as some processes might be (e.g. Renderer) so there's no need to check
   // again to try to thwart some malicious actor that may have modified the
   // data between then and now.
-  if (source->mapped) {
-    DCHECK(source->data.empty());
+  if (source->data.empty()) {
+    // Data hasn't been copied into memory. Create the allocator directly
+    // on the memory-mapped file.
     // TODO(bcwhite): Make this do read/write when supported for "active".
     source->allocator.reset(new base::PersistentHistogramAllocator(
         base::WrapUnique(new base::FilePersistentMemoryAllocator(
             std::move(source->mapped), 0, ""))));
   } else {
-    DCHECK(!source->mapped);
+    // Data was copied from the mapped file into memory. Create an allocator
+    // on the copy thus eliminating disk I/O during data access.
     source->allocator.reset(new base::PersistentHistogramAllocator(
         base::WrapUnique(new base::PersistentMemoryAllocator(
             &source->data[0], source->data.size(), 0, 0, "", true))));
@@ -339,21 +385,49 @@ void FileMetricsProvider::RecordSourcesChecked(SourceInfoList* checked) {
   for (auto iter = checked->begin(); iter != checked->end();) {
     auto temp = iter++;
     const SourceInfo* source = temp->get();
-    if (source->mapped || !source->data.empty())
+    if (source->mapped)
       sources_to_read_.splice(sources_to_read_.end(), *checked, temp);
     else
       sources_to_check_.splice(sources_to_check_.end(), *checked, temp);
   }
 }
 
-void FileMetricsProvider::RecordSourceAsSeen(SourceInfo* source) {
+void FileMetricsProvider::RecordSourceAsRead(SourceInfo* source) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   source->read_complete = true;
+
+  // Persistently record the "last seen" timestamp of the source file to
+  // ensure that the file is never read again unless it is modified again.
   if (pref_service_ && !source->prefs_key.empty()) {
     pref_service_->SetInt64(
         metrics::prefs::kMetricsLastSeenPrefix + source->prefs_key,
         source->last_seen.ToInternalValue());
+  }
+
+  switch (source->type) {
+    case SOURCE_HISTOGRAMS_ATOMIC_FILE:
+    case SOURCE_HISTOGRAMS_ATOMIC_DIR:
+      // The actual release of the data is delayed until the next sources-
+      // check so that the data remains valid in memory until it is fully
+      // processed by the caller. These will be released during the next
+      // ScheduleSourcesCheck() started by OnDidCreateMetricsLog() as soon
+      // as the data is uploaded. This is also necessary because unmapping
+      // must be done on a thread capable of file I/O.
+      source->mapped_to_release = std::move(source->mapped);
+      source->allocator_to_release = std::move(source->allocator);
+
+      // Schedule the deletion of the file now that the data has been sent.
+      // While recording the last-modified time prevents this process from
+      // re-reading the data, deleting the file prevents other processes
+      // (such as those with different profile directories or those run by
+      // other users on the machine) from also reporting the contents of the
+      // file.
+      task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&FileMetricsProvider::DeleteFileWhenPossible,
+                   source->path));
+      break;
   }
 }
 
@@ -365,19 +439,11 @@ void FileMetricsProvider::OnDidCreateMetricsLog() {
     auto temp = iter++;
     SourceInfo* source = temp->get();
 
-    switch (source->type) {
-      // Atomic files are read once and then ignored unless they change.
-      case SOURCE_HISTOGRAMS_ATOMIC_FILE:
-      case SOURCE_HISTOGRAMS_ATOMIC_DIR:
-        if (source->read_complete) {
-          DCHECK(!source->mapped);
-          source->allocator.reset();
-          source->data.clear();
-        }
-        break;
-    }
-
-    if (!source->allocator && !source->mapped && source->data.empty())
+    // The file has been fully processed once it is no longer "mapped" (even
+    // though it may still be "mapped to release"). In practice, this only
+    // happens with "atomic" files since "active" files may always acquire
+    // more data to process.
+    if (!source->mapped)
       sources_to_check_.splice(sources_to_check_.end(), sources_to_read_, temp);
   }
 
@@ -426,10 +492,12 @@ bool FileMetricsProvider::HasInitialStabilityMetrics() {
     // If it couldn't be accessed, remove it from the list. There is only ever
     // one chance to record it so no point keeping it around for later. Also
     // mark it as having been read since uploading it with a future browser
-    // run would associate it with the previous run which would no longer be
-    // the run from which it came.
+    // run would associate it with the then-previous run which would no longer
+    // be the run from which it came.
     if (result != ACCESS_RESULT_SUCCESS) {
-      RecordSourceAsSeen(source);
+      DCHECK(!source->mapped);
+      DCHECK(!source->allocator);
+      RecordSourceAsRead(source);
       sources_for_previous_run_.erase(temp);
     }
   }
@@ -453,24 +521,16 @@ void FileMetricsProvider::RecordHistogramSnapshots(
 
     SCOPED_UMA_HISTOGRAM_TIMER("UMA.FileMetricsProvider.SnapshotTime.File");
 
-    // If the source is mapped or loaded then it needs to have an allocator
-    // attached to it in order to read histograms out of it.
-    if (source->mapped || !source->data.empty())
-      CreateAllocatorForSource(source.get());
-
-    // A source should not be under "sources to read" unless it has an allocator
-    // or is memory-mapped (at which point it will have received an allocator
-    // above). However, if this method gets called twice before the scheduled-
-    // sources-check has a chance to clean up, this may trigger. This also
-    // catches the case where creating an allocator from the source has failed.
-    if (!source->allocator)
-      continue;
+    // The source needs to have an allocator attached to it in order to read
+    // histograms out of it.
+    CreateAllocatorForSource(source.get());
+    DCHECK(source->allocator);
 
     // Dump all histograms contained within the source to the snapshot-manager.
     RecordHistogramSnapshotsFromSource(snapshot_manager, source.get());
 
     // Update the last-seen time so it isn't read again unless it changes.
-    RecordSourceAsSeen(source.get());
+    RecordSourceAsRead(source.get());
   }
 }
 
@@ -491,7 +551,8 @@ void FileMetricsProvider::RecordInitialHistogramSnapshots(
 
     // The source needs to have an allocator attached to it in order to read
     // histograms out of it.
-    DCHECK(source->mapped || !source->data.empty());
+    DCHECK(!source->read_complete);
+    DCHECK(source->mapped);
     CreateAllocatorForSource(source.get());
     DCHECK(source->allocator);
 
@@ -499,7 +560,7 @@ void FileMetricsProvider::RecordInitialHistogramSnapshots(
     RecordHistogramSnapshotsFromSource(snapshot_manager, source.get());
 
     // Update the last-seen time so it isn't read again unless it changes.
-    RecordSourceAsSeen(source.get());
+    RecordSourceAsRead(source.get());
   }
 }
 
