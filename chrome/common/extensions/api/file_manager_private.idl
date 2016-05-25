@@ -184,6 +184,15 @@ enum Source {
   system
 };
 
+// File handler verbs used to describe the action that an extension performs
+// over a file or directory.
+enum Verb {
+  open_with,
+  add_to,
+  pack_with,
+  share_with
+};
+
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
@@ -194,6 +203,10 @@ dictionary FileTask {
 
   // Task title (ex. App name).
   DOMString title;
+
+  // The verb that will be used to indicate the action a task performs over
+  // a file (ex. "open_with").
+  Verb? verb;
 
   // Task icon url (from chrome://extension-icon/...)
   DOMString iconUrl;

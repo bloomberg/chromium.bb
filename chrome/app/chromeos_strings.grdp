@@ -445,8 +445,20 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_CUT_BUTTON_LABEL" desc="Button Label.">
     Cut
   </message>
-  <message name="IDS_FILE_BROWSER_OPEN_WITH_BUTTON_LABEL" desc="Menu item label, showing dialog to choose application to open selected files.">
-    Open with...
+  <message name="IDS_FILE_BROWSER_MORE_ACTIONS_BUTTON_LABEL" desc="Menu item label, showing dialog to choose extension to open selected files or directories.">
+    More actions...
+  </message>
+  <message name="IDS_FILE_BROWSER_OPEN_WITH_VERB_BUTTON_LABEL" desc="Verb that describe the action of opening one or more files or directories with the given extension.">
+    Open with <ph name="EXTENSION_NAME">$1<ex>Gallery</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_ADD_TO_VERB_BUTTON_LABEL" desc="Verb that describes the uploading or addition of one or multiple files or directories to the given extension.">
+    Add to <ph name="EXTENSION_NAME">$1<ex>Evernote</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_PACK_WITH_VERB_BUTTON_LABEL" desc="Verb that describes the packing or archiving of one or multiple files or directories with the given extension.">
+    Pack with <ph name="EXTENSION_NAME">$1<ex>ZIP</ex></ph>
+  </message>
+  <message name="IDS_FILE_BROWSER_SHARE_WITH_VERB_BUTTON_LABEL" desc="Verb that describes the action of sharing/attaching/sending files with the given application.">
+    Share with <ph name="EXTENSION_NAME">$1<ex>GMail</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_ZIP_SELECTION_BUTTON_LABEL" desc="Menu item label, showing dialog to create zip file for selected files.">
     Zip selection
@@ -459,9 +471,6 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_FILE_BROWSER_SHARE_BUTTON_LABEL" desc="Menu item label, showing dialog to share the selected file.">
     Share
-  </message>
-  <message name="IDS_FILE_BROWSER_SHARE_WITH_ACTION_LABEL" desc="Menu item label, describing the action of sharing/attaching/sending files with the given application.">
-    Share with <ph name="APPLICATION_NAME">$1<ex>GMail</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_TOGGLE_HIDDEN_FILES_COMMAND_LABEL" desc="Label for menu or button with checkmark that toggles visibility of hidden files.">
     Show hidden files

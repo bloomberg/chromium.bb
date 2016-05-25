@@ -31,6 +31,9 @@ struct FileHandlerInfo {
 
   // True if the handler can manage directories.
   bool include_directories;
+
+  // A verb describing the intent of the handler.
+  std::string verb;
 };
 
 typedef std::vector<FileHandlerInfo> FileHandlersInfo;
@@ -57,6 +60,16 @@ class FileHandlersParser : public ManifestHandler {
 
   DISALLOW_COPY_AND_ASSIGN(FileHandlersParser);
 };
+
+namespace file_handler_verbs {
+
+// Supported verbs for file handlers.
+extern const char kOpenWith[];
+extern const char kAddTo[];
+extern const char kPackWith[];
+extern const char kShareWith[];
+
+}  // namespace file_handler_verbs
 
 }  // namespace extensions
 

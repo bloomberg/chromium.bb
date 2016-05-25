@@ -67,7 +67,7 @@ function TaskController(
   /**
    * @private {boolean}
    */
-  this.canExecuteOpenWith_ = false;
+  this.canExecuteMoreActions_ = false;
 
   /**
    * @private {!cr.ui.Command}
@@ -77,10 +77,12 @@ function TaskController(
       document.querySelector('#default-task'), cr.ui.Command);
 
   /**
+   * More actions command that uses #open-with as selector due to the open-with
+   * command used previously for the same task.
    * @private {!cr.ui.Command}
    * @const
    */
-  this.openWithCommand_ =
+  this.moreActionsCommand_ =
       assertInstanceof(document.querySelector('#open-with'), cr.ui.Command);
 
   /**
@@ -332,8 +334,8 @@ TaskController.prototype.canExecuteDefaultTask = function() {
  * Returns whether open with command can be executed or not.
  * @return {boolean} True if open with command is executable.
  */
-TaskController.prototype.canExecuteOpenWith = function() {
-  return this.canExecuteOpenWith_;
+TaskController.prototype.canExecuteMoreActions = function() {
+  return this.canExecuteMoreActions_;
 };
 
 /**
@@ -343,34 +345,37 @@ TaskController.prototype.canExecuteOpenWith = function() {
  * @private
  */
 TaskController.prototype.updateContextMenuTaskItems_ = function(items) {
-  // When only one task is available, show it as default item.
-  if (items.length === 1) {
-    var taskItem = items[0];
+  // Always show a default item in case at least one task is available, even
+  // if there is no corresponding default task (i.e. the available task is
+  // a generic handler).
+  if (items.length >= 1) {
+    var defaultTask = FileTasks.getDefaultTask(
+        items, items[0] /* task to use in case of no default */);
 
-    if (taskItem.iconType) {
+    if (defaultTask.iconType) {
       this.ui_.fileContextMenu.defaultTaskMenuItem.style.backgroundImage = '';
       this.ui_.fileContextMenu.defaultTaskMenuItem.setAttribute(
-          'file-type-icon', taskItem.iconType);
-    } else if (taskItem.iconUrl) {
+          'file-type-icon', defaultTask.iconType);
+    } else if (defaultTask.iconUrl) {
       this.ui_.fileContextMenu.defaultTaskMenuItem.style.backgroundImage =
-          'url(' + taskItem.iconUrl + ')';
+          'url(' + defaultTask.iconUrl + ')';
     } else {
       this.ui_.fileContextMenu.defaultTaskMenuItem.style.backgroundImage = '';
     }
 
     this.ui_.fileContextMenu.defaultTaskMenuItem.label =
-        taskItem.taskId === FileTasks.ZIP_UNPACKER_TASK_ID ?
-        str('TASK_OPEN') : taskItem.title;
+        defaultTask.taskId === FileTasks.ZIP_UNPACKER_TASK_ID ?
+        str('TASK_OPEN') : defaultTask.title;
     this.ui_.fileContextMenu.defaultTaskMenuItem.disabled =
-        !!taskItem.disabled;
-    this.ui_.fileContextMenu.defaultTaskMenuItem.taskId = taskItem.taskId;
+        !!defaultTask.disabled;
+    this.ui_.fileContextMenu.defaultTaskMenuItem.taskId = defaultTask.taskId;
   }
 
-  this.canExecuteDefaultTask_ = items.length === 1;
+  this.canExecuteDefaultTask_ = items.length >= 1;
   this.defaultTaskCommand_.canExecuteChange(this.ui_.listContainer.element);
 
-  this.canExecuteOpenWith_ = items.length > 1;
-  this.openWithCommand_.canExecuteChange(this.ui_.listContainer.element);
+  this.canExecuteMoreActions_ = items.length > 1;
+  this.moreActionsCommand_.canExecuteChange(this.ui_.listContainer.element);
 
   this.ui_.fileContextMenu.tasksSeparator.hidden = items.length === 0;
 };

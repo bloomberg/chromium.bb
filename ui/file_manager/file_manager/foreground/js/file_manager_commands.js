@@ -1022,7 +1022,7 @@ CommandHandler.COMMANDS_['default-task'] = /** @type {Command} */ ({
 });
 
 /**
- * Displays open with dialog for current selection.
+ * Displays "open with"/"more actions" dialog for current selection.
  * @type {Command}
  */
 CommandHandler.COMMANDS_['open-with'] = /** @type {Command} */ ({
@@ -1033,7 +1033,7 @@ CommandHandler.COMMANDS_['open-with'] = /** @type {Command} */ ({
   execute: function(event, fileManager) {
     fileManager.taskController.getFileTasks().then(function(tasks) {
       tasks.showTaskPicker(fileManager.ui.defaultTaskPicker,
-          str('OPEN_WITH_BUTTON_LABEL'),
+          str('MORE_ACTIONS_BUTTON_LABEL'),
           '',
           function(task) {
             tasks.execute(task.taskId);
@@ -1050,7 +1050,7 @@ CommandHandler.COMMANDS_['open-with'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   canExecute: function(event, fileManager) {
-    var canExecute = fileManager.taskController.canExecuteOpenWith();
+    var canExecute = fileManager.taskController.canExecuteMoreActions();
     event.canExecute = canExecute;
     event.command.setHidden(!canExecute);
   }

@@ -16,20 +16,22 @@ typedef ManifestTest FileHandlersManifestTest;
 
 TEST_F(FileHandlersManifestTest, InvalidFileHandlers) {
   Testcase testcases[] = {
-    Testcase("file_handlers_invalid_handlers.json",
-             errors::kInvalidFileHandlers),
-    Testcase("file_handlers_invalid_type.json",
-             errors::kInvalidFileHandlerType),
-    Testcase("file_handlers_invalid_extension.json",
-             errors::kInvalidFileHandlerExtension),
-    Testcase("file_handlers_invalid_no_type_or_extension.json",
-             errors::kInvalidFileHandlerNoTypeOrExtension),
-    Testcase("file_handlers_invalid_type_element.json",
-             errors::kInvalidFileHandlerTypeElement),
-    Testcase("file_handlers_invalid_extension_element.json",
-             errors::kInvalidFileHandlerExtensionElement),
-    Testcase("file_handlers_invalid_too_many.json",
-             errors::kInvalidFileHandlersTooManyTypesAndExtensions),
+      Testcase("file_handlers_invalid_handlers.json",
+               errors::kInvalidFileHandlers),
+      Testcase("file_handlers_invalid_type.json",
+               errors::kInvalidFileHandlerType),
+      Testcase("file_handlers_invalid_extension.json",
+               errors::kInvalidFileHandlerExtension),
+      Testcase("file_handlers_invalid_no_type_or_extension.json",
+               errors::kInvalidFileHandlerNoTypeOrExtension),
+      Testcase("file_handlers_invalid_type_element.json",
+               errors::kInvalidFileHandlerTypeElement),
+      Testcase("file_handlers_invalid_extension_element.json",
+               errors::kInvalidFileHandlerExtensionElement),
+      Testcase("file_handlers_invalid_too_many.json",
+               errors::kInvalidFileHandlersTooManyTypesAndExtensions),
+      Testcase("file_handlers_invalid_verb.json",
+               errors::kInvalidFileHandlerVerb),
   };
   RunTestcases(testcases, arraysize(testcases), EXPECT_TYPE_ERROR);
 }
@@ -51,6 +53,7 @@ TEST_F(FileHandlersManifestTest, ValidFileHandlers) {
   EXPECT_EQ(2U, handler.extensions.size());
   EXPECT_EQ(1U, handler.extensions.count(".png"));
   EXPECT_EQ(1U, handler.extensions.count(".gif"));
+  EXPECT_EQ("add_to", handler.verb);
 
   handler = handlers->at(1);
   EXPECT_EQ("text", handler.id);

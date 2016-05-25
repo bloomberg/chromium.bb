@@ -50,6 +50,7 @@ const char kFileBrowserHandlers[] = "file_browser_handlers";
 const char kFileHandlers[] = "file_handlers";
 const char kFileHandlerExtensions[] = "extensions";
 const char kFileHandlerTypes[] = "types";
+const char kFileHandlerVerb[] = "verb";
 const char kGlobal[] = "global";
 const char kHideBookmarkButton[] = "hide_bookmark_button";
 const char kHomepageURL[] = "homepage_url";
@@ -407,6 +408,8 @@ const char kInvalidFileHandlerType[] =
     "Invalid value for 'file_handlers[*].types'.";
 const char kInvalidFileHandlerTypeElement[] =
     "Invalid value for 'file_handlers[*].types[*]'.";
+const char kInvalidFileHandlerVerb[] =
+    "Invalid value for 'file_handlers[*].verb'.";
 const char kInvalidGlob[] =
     "Invalid value for 'content_scripts[*].*[*]'.";
 const char kInvalidGlobList[] =

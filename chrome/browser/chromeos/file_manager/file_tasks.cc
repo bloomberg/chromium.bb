@@ -46,6 +46,7 @@
 #include "storage/browser/fileapi/file_system_url.h"
 
 using extensions::Extension;
+using extensions::api::file_manager_private::Verb;
 using extensions::app_file_handler_util::FindFileHandlersForEntries;
 using storage::FileSystemURL;
 
@@ -167,18 +168,20 @@ void PostProcessFoundTasks(
 
 }  // namespace
 
-FullTaskDescriptor::FullTaskDescriptor(
-    const TaskDescriptor& task_descriptor,
-    const std::string& task_title,
-    const GURL& icon_url,
-    bool is_default,
-    bool is_generic_file_handler)
+FullTaskDescriptor::FullTaskDescriptor(const TaskDescriptor& task_descriptor,
+                                       const std::string& task_title,
+                                       const Verb task_verb,
+                                       const GURL& icon_url,
+                                       bool is_default,
+                                       bool is_generic_file_handler)
     : task_descriptor_(task_descriptor),
       task_title_(task_title),
+      task_verb_(task_verb),
       icon_url_(icon_url),
       is_default_(is_default),
-      is_generic_file_handler_(is_generic_file_handler) {
-}
+      is_generic_file_handler_(is_generic_file_handler) {}
+
+FullTaskDescriptor::~FullTaskDescriptor() {}
 
 FullTaskDescriptor::FullTaskDescriptor(const FullTaskDescriptor& other) =
     default;
@@ -403,12 +406,10 @@ void FindDriveAppTasks(const drive::DriveAppRegistry& drive_app_registry,
     GURL icon_url = drive::util::FindPreferredIcon(
         app_info.app_icons,
         drive::util::kPreferredIconSize);
-    result_list->push_back(
-        FullTaskDescriptor(descriptor,
-                           app_info.app_name,
-                           icon_url,
-                           false /* is_default */,
-                           false /* is_generic_file_handler */));
+
+    result_list->push_back(FullTaskDescriptor(
+        descriptor, app_info.app_name, Verb::VERB_OPEN_WITH, icon_url,
+        false /* is_default */, false /* is_generic_file_handler */));
   }
 }
 
@@ -475,35 +476,60 @@ void FindFileHandlerTasks(Profile* profile,
       continue;
     }
 
-    // Show the first good matching handler of each app. If there doesn't exist
-    // such handler, show the first matching handler of the app.
-    const extensions::FileHandlerInfo* file_handler = file_handlers.front();
-    for (auto handler : file_handlers) {
-      if (IsGoodMatchFileHandler(*handler, entries)) {
-        file_handler = handler;
-        break;
+    // A map which has as key a handler verb, and as value a pair of the
+    // handler with which to open the given entries and a boolean marking
+    // if the handler is a good match.
+    std::map<std::string, std::pair<const extensions::FileHandlerInfo*, bool>>
+        handlers_for_entries;
+    // Show the first good matching handler of each verb supporting the given
+    // entries that corresponds to the app. If there doesn't exist such handler,
+    // show the first matching handler of the verb.
+    for (const extensions::FileHandlerInfo* handler : file_handlers) {
+      bool good_match = IsGoodMatchFileHandler(*handler, entries);
+      auto it = handlers_for_entries.find(handler->verb);
+      if (it == handlers_for_entries.end() ||
+          (!it->second.second /* existing handler not a good match */ &&
+           good_match)) {
+        handlers_for_entries[handler->verb] =
+            std::make_pair(handler, good_match);
       }
     }
 
-    std::string task_id = file_tasks::MakeTaskID(
-        extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER, file_handler->id);
+    for (const auto& entry : handlers_for_entries) {
+      const extensions::FileHandlerInfo* handler = entry.second.first;
+      std::string task_id = file_tasks::MakeTaskID(
+          extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER, handler->id);
 
-    GURL best_icon = extensions::ExtensionIconSource::GetIconURL(
-        extension,
-        drive::util::kPreferredIconSize,
-        ExtensionIconSet::MATCH_BIGGER,
-        false,  // grayscale
-        NULL);  // exists
+      GURL best_icon = extensions::ExtensionIconSource::GetIconURL(
+          extension, drive::util::kPreferredIconSize,
+          ExtensionIconSet::MATCH_BIGGER,
+          false,  // grayscale
+          NULL);  // exists
 
-    // If file handler doesn't match as good match, regards it as generic file
-    // handler.
-    const bool is_generic_file_handler =
-        !IsGoodMatchFileHandler(*file_handler, entries);
-    result_list->push_back(FullTaskDescriptor(
-        TaskDescriptor(extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER,
-                       file_handler->id),
-        extension->name(), best_icon, false /* is_default */,
-        is_generic_file_handler));
+      // If file handler doesn't match as good match, regards it as generic file
+      // handler.
+      const bool is_generic_file_handler =
+          !IsGoodMatchFileHandler(*handler, entries);
+      Verb verb;
+      if (handler->verb == extensions::file_handler_verbs::kAddTo) {
+        verb = Verb::VERB_ADD_TO;
+      } else if (handler->verb == extensions::file_handler_verbs::kPackWith) {
+        verb = Verb::VERB_PACK_WITH;
+      } else if (handler->verb == extensions::file_handler_verbs::kShareWith) {
+        verb = Verb::VERB_SHARE_WITH;
+      } else {
+        // Only kOpenWith is a valid remaining verb. Invalid verbs should fall
+        // back to it.
+        DCHECK(handler->verb == extensions::file_handler_verbs::kOpenWith);
+        verb = Verb::VERB_OPEN_WITH;
+      }
+
+      result_list->push_back(FullTaskDescriptor(
+          TaskDescriptor(extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER,
+                         handler->id),
+          extension->name(), verb, best_icon, false /* is_default */,
+          is_generic_file_handler));
+    }
   }
 }
 
@@ -540,13 +566,10 @@ void FindFileBrowserHandlerTasks(
         NULL);  // exists
 
     result_list->push_back(FullTaskDescriptor(
-        TaskDescriptor(extension_id,
-                       file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
+        TaskDescriptor(extension_id, file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
                        handler->id()),
-        handler->title(),
-        icon_url,
-        false /* is_default */,
-        false /* is_generic_file_handler */));
+        handler->title(), Verb::VERB_NONE /* no verb for FileBrowserHandler */,
+        icon_url, false /* is_default */, false /* is_generic_file_handler */));
   }
 }
 

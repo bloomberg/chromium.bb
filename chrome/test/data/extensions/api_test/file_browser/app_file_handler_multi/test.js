@@ -166,6 +166,8 @@ function launchWithEntries(isolatedEntries) {
               chrome.fileManagerPrivate.getFileTasks(entries, fulfill);
             }).then(function(tasks) {
               chrome.test.assertEq(1, tasks.length);
+              chrome.test.assertEq("ChromeOS File handler extension",
+                                   tasks[0].title);
               chrome.test.assertEq(
                   'pkplfbidichfdicaijlchgnapepdginl|app|textAction',
                   tasks[0].taskId);

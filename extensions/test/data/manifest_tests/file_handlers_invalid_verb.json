@@ -13,15 +13,9 @@
         "text/*"
       ]
     },
-    "image": {
-      "types": [
-        "image/*"
-      ],
-      "extensions": [
-        ".png",
-        ".gif"
-      ],
-      "verb": "add_to"
+    "verb": {
+      "extensions": ["*"],
+      "verb": "invalid_verb"
     }
   }
 }

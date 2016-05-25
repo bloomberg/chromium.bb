@@ -23,7 +23,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/filename_util.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 namespace file_manager {
@@ -137,19 +136,19 @@ void OnArcHandlerList(
     std::unique_ptr<std::vector<FullTaskDescriptor>> result_list,
     const FindTasksCallback& callback,
     mojo::Array<arc::mojom::UrlHandlerInfoPtr> handlers) {
+  using extensions::api::file_manager_private::Verb;
   for (const arc::mojom::UrlHandlerInfoPtr& handler : handlers) {
-    // TODO(crbug.com/578725): Wire action to "verb" once it's implemented.
     std::string name(handler->name);
+    Verb handler_verb = Verb::VERB_NONE;
     if (handler->action == arc::mojom::ActionType::SEND ||
         handler->action == arc::mojom::ActionType::SEND_MULTIPLE) {
-      name = l10n_util::GetStringFUTF8(IDS_FILE_BROWSER_SHARE_WITH_ACTION_LABEL,
-                                       base::UTF8ToUTF16(name));
+      handler_verb = Verb::VERB_SHARE_WITH;
     }
     result_list->push_back(FullTaskDescriptor(
         TaskDescriptor(
             ActivityNameToAppId(handler->package_name, handler->activity_name),
             TASK_TYPE_ARC_APP, ArcActionToString(handler->action)),
-        name,
+        handler->name, handler_verb,
         GURL(""),                                        // TODO: get the icon
         false,                                           // is_default,
         handler->action != arc::mojom::ActionType::VIEW  // is_generic

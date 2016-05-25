@@ -169,16 +169,25 @@ struct TaskDescriptor {
 // Describes a task with extra information such as icon URL.
 class FullTaskDescriptor {
  public:
-  FullTaskDescriptor(const TaskDescriptor& task_descriptor,
-                     const std::string& task_title,
-                     const GURL& icon_url,
-                     bool is_default,
-                     bool is_generic_file_handler);
+  FullTaskDescriptor(
+      const TaskDescriptor& task_descriptor,
+      const std::string& task_title,
+      const extensions::api::file_manager_private::Verb task_verb,
+      const GURL& icon_url,
+      bool is_default,
+      bool is_generic_file_handler);
+
+  ~FullTaskDescriptor();
+
   FullTaskDescriptor(const FullTaskDescriptor& other);
   const TaskDescriptor& task_descriptor() const { return task_descriptor_; }
 
   // The title of the task.
   const std::string& task_title() const { return task_title_; }
+  // The verb of the task.
+  extensions::api::file_manager_private::Verb task_verb() const {
+    return task_verb_;
+  }
   // The icon URL for the task (ex. app icon)
   const GURL& icon_url() const { return icon_url_; }
 
@@ -198,6 +207,7 @@ class FullTaskDescriptor {
  private:
   TaskDescriptor task_descriptor_;
   std::string task_title_;
+  extensions::api::file_manager_private::Verb task_verb_;
   GURL icon_url_;
   bool is_default_;
   bool is_generic_file_handler_;

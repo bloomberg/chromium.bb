@@ -141,19 +141,7 @@ FileTasks.create = function(volumeManager, metadataModel, directoryModel, ui,
   });
 
   var defaultTaskPromise = tasksPromise.then(function(tasks) {
-    for (var i = 0; i < tasks.length; i++) {
-      if (tasks[i].isDefault) {
-        return tasks[i];
-      }
-    }
-    // If we haven't picked a default task yet, then just pick the first one
-    // which is not generic file handler.
-    for (var i = 0; i < tasks.length; i++) {
-      if (!tasks[i].isGenericFileHandler) {
-        return tasks[i];
-      }
-    }
-    return null;
+    return FileTasks.getDefaultTask(tasks);
   });
 
   return Promise.all([tasksPromise, defaultTaskPromise]).then(
@@ -380,6 +368,29 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
     if (!task.iconType && taskParts[1] === 'web-intent') {
       task.iconType = 'generic';
     }
+
+    // Add verb to title.
+    if (task.verb) {
+      var verb_button_label = 'OPEN_WITH_VERB_BUTTON_LABEL';  // Default.
+      switch (task.verb) {
+        case chrome.fileManagerPrivate.Verb.ADD_TO:
+          verb_button_label = 'ADD_TO_VERB_BUTTON_LABEL';
+          break;
+        case chrome.fileManagerPrivate.Verb.PACK_WITH:
+          verb_button_label = 'PACK_WITH_VERB_BUTTON_LABEL';
+          break;
+        case chrome.fileManagerPrivate.Verb.SHARE_WITH:
+          verb_button_label = 'SHARE_WITH_VERB_BUTTON_LABEL';
+          break;
+        case chrome.fileManagerPrivate.Verb.OPEN_WITH:
+          // Nothing to do as same as initialization button label.
+          break;
+        default:
+          console.error('Invalid task verb: ' + task.verb + '.');
+      }
+      task.title = loadTimeData.getStringF(verb_button_label, task.title);
+    }
+
     result.push(task);
   }
 
@@ -720,7 +731,7 @@ FileTasks.prototype.display = function(combobutton) {
   } else {
     combobutton.defaultItem = {
       type: FileTasks.TaskMenuButtonItemType.ShowMenu,
-      label: str('OPEN_WITH_BUTTON_LABEL')
+      label: str('MORE_ACTIONS_BUTTON_LABEL')
     };
   }
 
@@ -845,4 +856,32 @@ FileTasks.prototype.showTaskPicker = function(taskDialog, title, message,
       function(item) {
         onSuccess(item.task);
       });
+};
+
+/**
+ * Gets the default task from tasks. In case there is no such task (i.e. all
+ * tasks are generic file handlers), then return opt_taskToUseIfNoDefault or
+ * null.
+ *
+ * @param {!Array<!Object>} tasks The list of tasks from where to choose the
+ *     default task.
+ * @param {!Object=} opt_taskToUseIfNoDefault The task to return in case there
+ *     is no default task available in tasks.
+ * @return {Object} opt_taskToUseIfNoDefault or null in case
+ *     opt_taskToUseIfNoDefault is undefined.
+ */
+FileTasks.getDefaultTask = function(tasks, opt_taskToUseIfNoDefault) {
+  for (var i = 0; i < tasks.length; i++) {
+    if (tasks[i].isDefault) {
+      return tasks[i];
+    }
+  }
+  // If we haven't picked a default task yet, then just pick the first one
+  // which is not generic file handler.
+  for (var i = 0; i < tasks.length; i++) {
+    if (!tasks[i].isGenericFileHandler) {
+      return tasks[i];
+    }
+  }
+  return opt_taskToUseIfNoDefault || null;
 };

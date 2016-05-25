@@ -682,3 +682,11 @@ chrome.fileManagerPrivate.onDeviceChanged;
 
 /** @type {!ChromeEvent} */
 chrome.fileManagerPrivate.onDriveSyncError;
+
+/** @enum {string} */
+chrome.fileManagerPrivate.Verb = {
+  OPEN_WITH: 'open_with',
+  ADD_TO: 'add_to',
+  PACK_WITH: 'pack_with',
+  SHARE_WITH: 'share_with',
+};
