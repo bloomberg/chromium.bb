@@ -272,6 +272,8 @@
         'webui/crw_web_ui_page_builder.mm',
         'webui/mojo_facade.h',
         'webui/mojo_facade.mm',
+        'webui/mojo_js_constants.cc',
+        'webui/mojo_js_constants.h',
         'webui/shared_resources_data_source_ios.h',
         'webui/shared_resources_data_source_ios.mm',
         'webui/url_data_manager_ios.cc',

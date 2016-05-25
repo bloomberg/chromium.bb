@@ -20,6 +20,7 @@
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/web_state/web_state_impl.h"
 #import "ios/web/webui/crw_web_ui_page_builder.h"
+#include "ios/web/webui/mojo_js_constants.h"
 #include "ios/web/webui/url_fetcher_block_adapter.h"
 #include "mojo/public/js/constants.h"
 #import "net/base/mac/url_conversions.h"
@@ -251,6 +252,12 @@ const char kScriptCommandPrefix[] = "webui";
       {mojo::kRouterModuleName, IDR_MOJO_ROUTER_JS},
       {mojo::kUnicodeModuleName, IDR_MOJO_UNICODE_JS},
       {mojo::kValidatorModuleName, IDR_MOJO_VALIDATOR_JS},
+      {web::kSyncMessageChannelModuleName,
+       IDR_IOS_MOJO_SYNC_MESSAGE_CHANNEL_JS},
+      {web::kHandleUtilModuleName, IDR_IOS_MOJO_HANDLE_UTIL_JS},
+      {web::kSupportModuleName, IDR_IOS_MOJO_SUPPORT_JS},
+      {web::kCoreModuleName, IDR_IOS_MOJO_CORE_JS},
+      {web::kServiceProviderModuleName, IDR_IOS_MOJO_SERVICE_PROVIDER_JS},
   };
   scoped_refptr<base::RefCountedStaticMemory> scriptData(
       web::GetWebClient()->GetDataResourceBytes(resource_map[moduleName]));
