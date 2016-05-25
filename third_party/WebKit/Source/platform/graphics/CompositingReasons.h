@@ -7,7 +7,6 @@
 
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
-#include "wtf/MathExtras.h"
 #include <stdint.h>
 
 namespace blink {

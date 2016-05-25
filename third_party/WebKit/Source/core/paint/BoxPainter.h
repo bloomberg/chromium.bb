@@ -7,6 +7,7 @@
 
 #include "core/layout/LayoutBoxModelObject.h"
 #include "core/paint/ObjectPainter.h"
+#include "core/style/ShadowData.h"
 #include "wtf/Allocator.h"
 
 namespace blink {

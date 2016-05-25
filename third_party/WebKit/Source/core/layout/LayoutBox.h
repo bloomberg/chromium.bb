@@ -28,7 +28,6 @@
 #include "core/layout/OverflowModel.h"
 #include "core/layout/ScrollEnums.h"
 #include "platform/scroll/ScrollTypes.h"
-#include "platform/scroll/ScrollableArea.h"
 
 namespace blink {
 

@@ -29,12 +29,8 @@
 #include "core/CoreExport.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentLifecycle.h"
-#include "core/dom/Element.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/fetch/ImageResourceObserver.h"
-#include "core/html/HTMLElement.h"
-#include "core/inspector/InspectorTraceEvents.h"
-#include "core/layout/HitTestRequest.h"
 #include "core/layout/LayoutObjectChildList.h"
 #include "core/layout/PaintInvalidationState.h"
 #include "core/layout/ScrollAlignment.h"
@@ -42,9 +38,7 @@
 #include "core/layout/api/HitTestAction.h"
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/compositing/CompositingState.h"
-#include "core/layout/compositing/CompositingTriggers.h"
 #include "core/style/ComputedStyle.h"
-#include "core/style/StyleInheritedData.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/CompositingReasons.h"
@@ -56,8 +50,8 @@ namespace blink {
 
 class AffineTransform;
 class Cursor;
-class Document;
 class HitTestLocation;
+class HitTestRequest;
 class HitTestResult;
 class InlineBox;
 class LayoutBoxModelObject;

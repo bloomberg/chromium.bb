@@ -28,7 +28,6 @@
 #include "core/layout/BackgroundBleedAvoidance.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
-#include "core/style/ShadowData.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {
