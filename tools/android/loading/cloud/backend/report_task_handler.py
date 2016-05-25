@@ -70,6 +70,15 @@ class ReportTaskHandler(object):
     self._ad_rules_filename = ad_rules_filename
     self._tracking_rules_filename = tracking_rules_filename
 
+  def _IsBigQueryValueValid(self, value):
+    """Returns whether a value is valid and can be uploaded to BigQuery."""
+    if value is None:
+      return False
+    # BigQuery rejects NaN.
+    if type(value) is float and (math.isnan(value) or math.isinf(value)):
+      return False
+    return True
+
   def _StreamRowsToBigQuery(self, rows, table_id):
     """Uploads a list of rows to the BigQuery table associated with the given
     table_id.
@@ -144,9 +153,10 @@ class ReportTaskHandler(object):
         continue
       # Filter out bad values.
       for key, value in report.items():
-        if type(value) is float and (math.isnan(value) or math.isinf(value)):
-          self._logger.error('Invalid %s for URL:%s' % (key, report.get('url')))
-          self._failure_database.AddFailure('invalid_bigquery_value', key)
+        if not self._IsBigQueryValueValid(value):
+          url = report.get('url')
+          self._logger.error('Invalid %s for URL:%s' % (key, url))
+          self._failure_database.AddFailure('invalid_bigquery_value', url)
           del report[key]
       rows.append(report)
 
