@@ -22,13 +22,11 @@
 
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
-#include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/PositionWithAffinity.h"
 #include "core/fileapi/FileList.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/layout/TextRunConstructor.h"
 #include "core/paint/FileUploadControlPainter.h"
 #include "platform/fonts/Font.h"
 #include "platform/text/PlatformLocale.h"

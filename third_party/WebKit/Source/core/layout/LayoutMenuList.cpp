@@ -24,26 +24,16 @@
 
 #include "core/layout/LayoutMenuList.h"
 
-#include "core/HTMLNames.h"
-#include "core/css/CSSFontSelector.h"
-#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/NodeComputedStyle.h"
-#include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
-#include "core/layout/LayoutBR.h"
-#include "core/layout/LayoutScrollbar.h"
+#include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTheme.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/geometry/IntSize.h"
-#include "platform/text/BidiTextRun.h"
 #include "platform/text/PlatformLocale.h"
 #include <math.h>
 
 namespace blink {
-
-using namespace HTMLNames;
 
 LayoutMenuList::LayoutMenuList(Element* element)
     : LayoutFlexibleBox(element)

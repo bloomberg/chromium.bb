@@ -22,12 +22,9 @@
 
 #include "core/dom/AXObjectCache.h"
 #include "core/layout/BidiRunForLine.h"
-#include "core/layout/LayoutCounter.h"
-#include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/TextRunConstructor.h"
 #include "core/layout/VerticalPositionCache.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/api/SelectionState.h"

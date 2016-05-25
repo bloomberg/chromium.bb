@@ -25,24 +25,18 @@
 
 #include "core/layout/LayoutBoxModelObject.h"
 
-#include "core/dom/NodeComputedStyle.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutInline.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
-#include "core/style/BorderEdge.h"
 #include "core/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
-#include "platform/geometry/TransformState.h"
-#include "wtf/CurrentTime.h"
 
 namespace blink {
 

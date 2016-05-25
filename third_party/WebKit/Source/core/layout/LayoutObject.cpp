@@ -26,7 +26,6 @@
 
 #include "core/layout/LayoutObject.h"
 
-#include "core/HTMLNames.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
@@ -34,18 +33,14 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/editing/EditingBoundary.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextAffinity.h"
-#include "core/fetch/ResourceLoader.h"
 #include "core/frame/DeprecatedScheduleStyleRecalcDuringLayout.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/frame/UseCounter.h"
-#include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTableCellElement.h"
@@ -57,14 +52,12 @@
 #include "core/layout/LayoutDeprecatedFlexibleBox.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutFlowThread.h"
-#include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutGrid.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutImageResourceStyleImage.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
-#include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutScrollbarPart.h"
 #include "core/layout/LayoutTableCaption.h"
@@ -73,23 +66,16 @@
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/Page.h"
 #include "core/paint/ObjectPaintProperties.h"
-#include "core/paint/ObjectPainter.h"
-#include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/style/ContentData.h"
 #include "core/style/CursorData.h"
-#include "core/style/ShadowList.h"
 #include "platform/HostWindow.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/PaintController.h"
 #include "wtf/allocator/Partitions.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
@@ -107,8 +93,6 @@ static bool gModifyLayoutTreeStructureAnyState = false;
 static bool gDisablePaintInvalidationStateAsserts = false;
 
 } // namespace
-
-using namespace HTMLNames;
 
 const LayoutUnit& caretWidth()
 {

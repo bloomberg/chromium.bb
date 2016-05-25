@@ -23,10 +23,15 @@
 #ifndef LayoutTheme_h
 #define LayoutTheme_h
 
+#include "core/CSSValueKeywords.h"
 #include "core/CoreExport.h"
-#include "core/layout/LayoutObject.h"
 #include "platform/ThemeTypes.h"
+#include "platform/fonts/Font.h"
+#include "platform/fonts/FontDescription.h"
+#include "platform/fonts/FontTraits.h"
+#include "platform/graphics/Color.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "platform/text/PlatformLocale.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
@@ -37,6 +42,7 @@ class ComputedStyle;
 class Element;
 class FileList;
 class HTMLInputElement;
+class LayoutObject;
 class Theme;
 class ThemePainter;
 

@@ -24,9 +24,9 @@
 #ifndef FloatingObjects_h
 #define FloatingObjects_h
 
-#include "core/layout/line/RootInlineBox.h"
 #include "platform/PODFreeListArena.h"
 #include "platform/PODIntervalTree.h"
+#include "platform/geometry/LayoutRect.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/OwnPtr.h"
 
@@ -34,6 +34,7 @@ namespace blink {
 
 class LayoutBlockFlow;
 class LayoutBox;
+class RootInlineBox;
 
 class FloatingObject {
     WTF_MAKE_NONCOPYABLE(FloatingObject); USING_FAST_MALLOC(FloatingObject);

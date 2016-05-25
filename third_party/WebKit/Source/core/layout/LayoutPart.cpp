@@ -31,9 +31,6 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/svg/LayoutSVGRoot.h"
-#include "core/paint/BoxPainter.h"
-#include "core/paint/PaintLayer.h"
 #include "core/paint/PartPainter.h"
 #include "core/plugins/PluginView.h"
 

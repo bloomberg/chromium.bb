@@ -27,7 +27,6 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/Text.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutBlock.h"
 
 namespace blink {
 

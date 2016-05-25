@@ -25,15 +25,9 @@
 
 #include "core/layout/LayoutIFrame.h"
 
-#include "core/HTMLNames.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/LocalFrame.h"
-#include "core/html/HTMLIFrameElement.h"
 #include "core/layout/LayoutAnalyzer.h"
 
 namespace blink {
-
-using namespace HTMLNames;
 
 LayoutIFrame::LayoutIFrame(Element* element)
     : LayoutPart(element)

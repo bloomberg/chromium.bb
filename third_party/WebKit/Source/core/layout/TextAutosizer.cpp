@@ -38,12 +38,12 @@
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/layout/LayoutBlock.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
-#include "core/layout/line/InlineIterator.h"
 #include "core/page/Page.h"
 
 #ifdef AUTOSIZING_DOM_DEBUG_INFO

@@ -8,7 +8,7 @@
 #include "core/layout/ClipRects.h"
 
 #if ENABLE(ASSERT)
-#include "core/layout/LayoutBox.h" // For OverlayScrollbarClipBehavior.
+#include "core/layout/ScrollEnums.h" // For OverlayScrollbarClipBehavior.
 #endif
 
 namespace blink {

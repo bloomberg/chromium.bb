@@ -29,7 +29,7 @@
 
 #include "core/dom/Element.h"
 #include "core/fetch/DocumentResource.h"
-#include "core/layout/LayoutBox.h"
+#include "core/layout/LayoutObject.h"
 #include "core/paint/PaintLayer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGFilterElement.h"

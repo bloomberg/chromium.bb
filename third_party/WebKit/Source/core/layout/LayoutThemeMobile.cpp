@@ -25,16 +25,12 @@
 
 #include "core/layout/LayoutThemeMobile.h"
 
-#include "core/CSSValueKeywords.h"
-#include "core/InputTypeNames.h"
-#include "core/layout/LayoutObject.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/PlatformResourceLoader.h"
-#include "platform/graphics/Color.h"
-#include "platform/scroll/ScrollbarTheme.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThemeEngine.h"
-#include "wtf/StdLibExtras.h"
 
 namespace blink {
 

@@ -32,11 +32,15 @@
 #define ImageQualityController_h
 
 #include "base/gtest_prod_util.h"
-#include "core/layout/LayoutObject.h"
+#include "core/CoreExport.h"
+#include "platform/Timer.h"
 #include "platform/geometry/LayoutSize.h"
+#include "platform/graphics/Image.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
+
+class LayoutObject;
 
 typedef HashMap<const void*, LayoutSize> LayerSizeMap;
 

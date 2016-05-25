@@ -4,6 +4,8 @@
 
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 
+#include "core/layout/LayoutMultiColumnFlowThread.h"
+
 namespace blink {
 
 static void copyMarginProperties(ComputedStyle& placeholderStyle, const ComputedStyle& spannerStyle)

@@ -24,10 +24,8 @@
 #ifndef BidiRun_h
 #define BidiRun_h
 
-#include "core/layout/LayoutText.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "platform/text/BidiResolver.h"
-#include "wtf/StdLibExtras.h"
 
 namespace blink {
 

@@ -24,10 +24,7 @@
 #include "core/dom/StyleChangeReason.h"
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutTheme.h"
-#include "core/layout/TextRunConstructor.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 

@@ -20,7 +20,6 @@
 
 #include "core/layout/LayoutTextCombine.h"
 
-#include "core/layout/TextRunConstructor.h"
 #include "platform/graphics/GraphicsContext.h"
 
 namespace blink {

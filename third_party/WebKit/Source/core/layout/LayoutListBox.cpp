@@ -29,38 +29,14 @@
 
 #include "core/layout/LayoutListBox.h"
 
-#include "core/HTMLNames.h"
-#include "core/css/CSSFontSelector.h"
-#include "core/css/resolver/StyleResolver.h"
-#include "core/dom/AXObjectCache.h"
-#include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
-#include "core/dom/NodeComputedStyle.h"
-#include "core/dom/StyleEngine.h"
-#include "core/editing/FrameSelection.h"
-#include "core/frame/FrameView.h"
-#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
-#include "core/input/EventHandler.h"
-#include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutText.h"
-#include "core/layout/LayoutTheme.h"
-#include "core/layout/TextRunConstructor.h"
-#include "core/page/FocusController.h"
-#include "core/page/Page.h"
-#include "core/page/SpatialNavigation.h"
 #include "core/paint/PaintLayer.h"
-#include "platform/fonts/FontCache.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/text/BidiTextRun.h"
-#include <math.h>
 
 namespace blink {
-
-using namespace HTMLNames;
 
 // Default size when the multiple attribute is present but size attribute is absent.
 const int defaultSize = 4;

@@ -30,8 +30,6 @@
 
 #include "core/layout/LayoutRubyBase.h"
 
-#include "core/layout/LayoutRubyRun.h"
-
 namespace blink {
 
 LayoutRubyBase::LayoutRubyBase()

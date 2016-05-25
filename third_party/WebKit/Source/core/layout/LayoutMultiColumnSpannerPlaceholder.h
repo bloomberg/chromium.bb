@@ -5,7 +5,7 @@
 #ifndef LayoutMultiColumnSpannerPlaceholder_h
 #define LayoutMultiColumnSpannerPlaceholder_h
 
-#include "core/layout/LayoutMultiColumnFlowThread.h"
+#include "core/layout/LayoutBlockFlow.h"
 
 namespace blink {
 

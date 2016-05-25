@@ -30,7 +30,6 @@
 #include "core/layout/LayoutScrollbar.h"
 #include "core/layout/LayoutScrollbarTheme.h"
 #include "core/layout/LayoutView.h"
-#include "core/paint/PaintLayerScrollableArea.h"
 #include "platform/LengthFunctions.h"
 
 namespace blink {

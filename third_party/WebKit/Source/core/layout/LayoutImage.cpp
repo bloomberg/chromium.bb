@@ -28,22 +28,15 @@
 #include "core/layout/LayoutImage.h"
 
 #include "core/HTMLNames.h"
-#include "core/editing/FrameSelection.h"
 #include "core/fetch/ImageResource.h"
-#include "core/fetch/ResourceLoader.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/html/HTMLInputElement.h"
-#include "core/html/HTMLMapElement.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/TextRunConstructor.h"
-#include "core/page/Page.h"
 #include "core/paint/ImagePainter.h"
 #include "core/svg/graphics/SVGImage.h"
-#include "platform/fonts/Font.h"
-#include "platform/fonts/FontCache.h"
 
 namespace blink {
 

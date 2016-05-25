@@ -25,10 +25,8 @@
 
 #include "core/layout/LayoutBox.h"
 
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/editing/EditingUtilities.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
@@ -40,10 +38,10 @@
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutDeprecatedFlexibleBox.h"
 #include "core/layout/LayoutFlexibleBox.h"
-#include "core/layout/LayoutGeometryMap.h"
 #include "core/layout/LayoutGrid.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutListMarker.h"
+#include "core/layout/LayoutMultiColumnFlowThread.h"
 #include "core/layout/LayoutMultiColumnSpannerPlaceholder.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/LayoutReplica.h"
@@ -63,15 +61,10 @@
 #include "platform/geometry/DoubleRect.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRoundedRect.h"
-#include "platform/geometry/TransformState.h"
-#include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/PaintController.h"
 #include <algorithm>
 #include <math.h>
 
 namespace blink {
-
-using namespace HTMLNames;
 
 // Used by flexible boxes when flexing this element and by table cells.
 typedef WTF::HashMap<const LayoutBox*, LayoutUnit> OverrideSizeMap;

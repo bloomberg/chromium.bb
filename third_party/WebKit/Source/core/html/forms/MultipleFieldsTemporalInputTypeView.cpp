@@ -45,6 +45,7 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/DateComponents.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/DateTimeFormat.h"

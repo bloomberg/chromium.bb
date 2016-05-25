@@ -30,7 +30,6 @@
 #include "core/layout/ListMarkerText.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/paint/ListMarkerPainter.h"
-#include "core/paint/PaintLayer.h"
 #include "platform/fonts/Font.h"
 
 namespace blink {
