@@ -70,6 +70,11 @@ LayoutBlock* CaretBase::caretLayoutObject(Node* node)
 
     // if caretNode is a block and caret is inside it then caret should be painted by that block
     bool paintedByBlock = layoutObject->isLayoutBlock() && caretRendersInsideNode(node);
+    // TODO(yoichio): This function is called at least
+    // DocumentLifeCycle::LayoutClean but caretRendersInsideNode above can
+    // layout. Thus |node->layoutObject()| can be changed then this is bad
+    // design. We should make caret painting algorithm clean.
+    CHECK_EQ(layoutObject, node->layoutObject()) << "Layout tree should not changed";
     return paintedByBlock ? toLayoutBlock(layoutObject) : layoutObject->containingBlock();
 }
 
@@ -134,6 +139,9 @@ IntRect CaretBase::absoluteBoundsForLocalRect(Node* node, const LayoutRect& rect
     return caretPainter->localToAbsoluteQuad(FloatRect(localRect)).enclosingBoundingBox();
 }
 
+// TODO(yoichio): |node| is FrameSelection::m_previousCaretNode and this is bad
+// design. We should use only previous layoutObject or Rectangle to invalidate
+// old caret.
 void CaretBase::invalidateLocalCaretRect(Node* node, const LayoutRect& rect)
 {
     LayoutBlockItem caretPainter = LayoutBlockItem(caretLayoutObject(node));
