@@ -215,7 +215,7 @@ TEST_F(ResourceFetcherTest, VaryImage)
     Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
 }
 
-class RequestSameResourceOnComplete : public RawResourceClient {
+class RequestSameResourceOnComplete : public GarbageCollectedFinalized<RequestSameResourceOnComplete>, public RawResourceClient {
 public:
     explicit RequestSameResourceOnComplete(Resource* resource)
         : m_resource(resource)
@@ -236,10 +236,15 @@ public:
     }
     bool notifyFinishedCalled() const { return m_notifyFinishedCalled; }
 
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_resource);
+    }
+
     String debugName() const override { return "RequestSameResourceOnComplete"; }
 
 private:
-    Persistent<Resource> m_resource;
+    Member<Resource> m_resource;
     bool m_notifyFinishedCalled;
 };
 
@@ -258,12 +263,12 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading)
     request1.setHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
     FetchRequest fetchRequest1 = FetchRequest(request1, FetchInitiatorInfo());
     Resource* resource1 = fetcher1->requestResource(fetchRequest1, TestResourceFactory(Resource::Image));
-    RequestSameResourceOnComplete client(resource1);
-    resource1->addClient(&client);
+    Persistent<RequestSameResourceOnComplete> client = new RequestSameResourceOnComplete(resource1);
+    resource1->addClient(client);
     Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
     Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
-    EXPECT_TRUE(client.notifyFinishedCalled());
-    resource1->removeClient(&client);
+    EXPECT_TRUE(client->notifyFinishedCalled());
+    resource1->removeClient(client);
     memoryCache()->remove(resource1);
 }
 
@@ -280,7 +285,7 @@ TEST_F(ResourceFetcherTest, DontReuseMediaDataUrl)
     memoryCache()->remove(resource2);
 }
 
-class ServeRequestsOnCompleteClient : public RawResourceClient {
+class ServeRequestsOnCompleteClient final : public GarbageCollectedFinalized<ServeRequestsOnCompleteClient>, public RawResourceClient {
 public:
     void notifyFinished(Resource*) override
     {
@@ -296,6 +301,8 @@ public:
     void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override { ASSERT_TRUE(false); }
     void dataDownloaded(Resource*, int) override { ASSERT_TRUE(false); }
     void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override { ASSERT_TRUE(false); }
+
+    DEFINE_INLINE_TRACE() {}
 
     String debugName() const override { return "ServeRequestsOnCompleteClient"; }
 };
@@ -316,9 +323,10 @@ TEST_F(ResourceFetcherTest, ResponseOnCancel)
     ResourceFetcher* fetcher = ResourceFetcher::create(ResourceFetcherTestMockFetchContext::create());
     FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
     Resource* resource = fetcher->requestResource(fetchRequest, TestResourceFactory(Resource::Raw));
-    ServeRequestsOnCompleteClient client;
-    resource->addClient(&client);
+    Persistent<ServeRequestsOnCompleteClient> client = new ServeRequestsOnCompleteClient();
+    resource->addClient(client);
     resource->loader()->cancel();
+    resource->removeClient(client);
     Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
 }
 

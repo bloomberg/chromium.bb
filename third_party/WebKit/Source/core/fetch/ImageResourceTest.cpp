@@ -126,7 +126,7 @@ TEST(ImageResourceTest, MultipartImage)
     cachedImage->load(fetcher);
     Platform::current()->getURLLoaderMockFactory()->unregisterURL(testURL);
 
-    MockImageResourceClient client(cachedImage);
+    Persistent<MockImageResourceClient> client = new MockImageResourceClient(cachedImage);
     EXPECT_EQ(Resource::Pending, cachedImage->getStatus());
 
     // Send the multipart response. No image or data buffer is created.
@@ -137,8 +137,8 @@ TEST(ImageResourceTest, MultipartImage)
     cachedImage->loader()->didReceiveResponse(nullptr, WrappedResourceResponse(multipartResponse), nullptr);
     ASSERT_FALSE(cachedImage->resourceBuffer());
     ASSERT_FALSE(cachedImage->hasImage());
-    ASSERT_EQ(client.imageChangedCount(), 0);
-    ASSERT_FALSE(client.notifyFinishedCalled());
+    ASSERT_EQ(client->imageChangedCount(), 0);
+    ASSERT_FALSE(client->notifyFinishedCalled());
     EXPECT_EQ("multipart/x-mixed-replace", cachedImage->response().mimeType());
 
     const char firstPart[] =
@@ -148,8 +148,8 @@ TEST(ImageResourceTest, MultipartImage)
     // Send the response for the first real part. No image or data buffer is created.
     ASSERT_FALSE(cachedImage->resourceBuffer());
     ASSERT_FALSE(cachedImage->hasImage());
-    ASSERT_EQ(client.imageChangedCount(), 0);
-    ASSERT_FALSE(client.notifyFinishedCalled());
+    ASSERT_EQ(client->imageChangedCount(), 0);
+    ASSERT_FALSE(client->notifyFinishedCalled());
     EXPECT_EQ("image/svg+xml", cachedImage->response().mimeType());
 
     const char secondPart[] = "<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'><rect width='1' height='1' fill='green'/></svg>\n";
@@ -157,8 +157,8 @@ TEST(ImageResourceTest, MultipartImage)
     cachedImage->appendData(secondPart, strlen(secondPart));
     ASSERT_TRUE(cachedImage->resourceBuffer());
     ASSERT_FALSE(cachedImage->hasImage());
-    ASSERT_EQ(client.imageChangedCount(), 0);
-    ASSERT_FALSE(client.notifyFinishedCalled());
+    ASSERT_EQ(client->imageChangedCount(), 0);
+    ASSERT_FALSE(client->notifyFinishedCalled());
 
     const char thirdPart[] = "--boundary";
     cachedImage->appendData(thirdPart, strlen(thirdPart));
@@ -173,8 +173,8 @@ TEST(ImageResourceTest, MultipartImage)
     ASSERT_FALSE(cachedImage->getImage()->isNull());
     ASSERT_EQ(cachedImage->getImage()->width(), 1);
     ASSERT_EQ(cachedImage->getImage()->height(), 1);
-    ASSERT_EQ(client.imageChangedCount(), 1);
-    ASSERT_TRUE(client.notifyFinishedCalled());
+    ASSERT_EQ(client->imageChangedCount(), 1);
+    ASSERT_TRUE(client->notifyFinishedCalled());
 }
 
 TEST(ImageResourceTest, CancelOnDetach)
@@ -191,11 +191,11 @@ TEST(ImageResourceTest, CancelOnDetach)
     cachedImage->load(fetcher);
     memoryCache()->add(cachedImage);
 
-    MockImageResourceClient client(cachedImage);
+    Persistent<MockImageResourceClient> client = new MockImageResourceClient(cachedImage);
     EXPECT_EQ(Resource::Pending, cachedImage->getStatus());
 
     // The load should still be alive, but a timer should be started to cancel the load inside removeClient().
-    client.removeAsClient();
+    client->removeAsClient();
     EXPECT_EQ(Resource::Pending, cachedImage->getStatus());
     EXPECT_NE(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
 
@@ -212,7 +212,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
     ImageResource* cachedImage = ImageResource::create(ResourceRequest());
     cachedImage->setStatus(Resource::Pending);
 
-    MockImageResourceClient client(cachedImage);
+    Persistent<MockImageResourceClient> client = new MockImageResourceClient(cachedImage);
 
     // Send the image response.
     cachedImage->responseReceived(ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom, String()), nullptr);
@@ -224,7 +224,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
     ASSERT_FALSE(cachedImage->getImage()->isNull());
-    ASSERT_TRUE(client.notifyFinishedCalled());
+    ASSERT_TRUE(client->notifyFinishedCalled());
 
     // The prune comes when the ImageResource still has clients. The image should not be deleted.
     cachedImage->prune();
@@ -233,7 +233,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
     ASSERT_FALSE(cachedImage->getImage()->isNull());
 
     // The ImageResource no longer has clients. The image should be deleted by prune.
-    client.removeAsClient();
+    client->removeAsClient();
     cachedImage->prune();
     ASSERT_FALSE(cachedImage->hasClientsOrObservers());
     ASSERT_FALSE(cachedImage->hasImage());
@@ -245,7 +245,7 @@ TEST(ImageResourceTest, UpdateBitmapImages)
     ImageResource* cachedImage = ImageResource::create(ResourceRequest());
     cachedImage->setStatus(Resource::Pending);
 
-    MockImageResourceClient client(cachedImage);
+    Persistent<MockImageResourceClient> client = new MockImageResourceClient(cachedImage);
 
     // Send the image response.
     Vector<unsigned char> jpeg = jpegImage();
@@ -255,8 +255,8 @@ TEST(ImageResourceTest, UpdateBitmapImages)
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
     ASSERT_FALSE(cachedImage->getImage()->isNull());
-    ASSERT_EQ(client.imageChangedCount(), 2);
-    ASSERT_TRUE(client.notifyFinishedCalled());
+    ASSERT_EQ(client->imageChangedCount(), 2);
+    ASSERT_TRUE(client->notifyFinishedCalled());
     ASSERT_TRUE(cachedImage->getImage()->isBitmapImage());
 }
 
@@ -267,7 +267,7 @@ TEST(ImageResourceTest, ReloadIfLoFi)
     ImageResource* cachedImage = ImageResource::create(ResourceRequest(testURL));
     cachedImage->setStatus(Resource::Pending);
 
-    MockImageResourceClient client(cachedImage);
+    Persistent<MockImageResourceClient> client = new MockImageResourceClient(cachedImage);
     ResourceFetcher* fetcher = ResourceFetcher::create(ImageResourceTestMockFetchContext::create());
 
     // Send the image response.
@@ -281,15 +281,15 @@ TEST(ImageResourceTest, ReloadIfLoFi)
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
     ASSERT_FALSE(cachedImage->getImage()->isNull());
-    ASSERT_EQ(client.imageChangedCount(), 2);
-    ASSERT_TRUE(client.notifyFinishedCalled());
+    ASSERT_EQ(client->imageChangedCount(), 2);
+    ASSERT_TRUE(client->notifyFinishedCalled());
     ASSERT_TRUE(cachedImage->getImage()->isBitmapImage());
 
     cachedImage->reloadIfLoFi(fetcher);
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_FALSE(cachedImage->resourceBuffer());
     ASSERT_TRUE(cachedImage->hasImage());
-    ASSERT_EQ(client.imageChangedCount(), 3);
+    ASSERT_EQ(client->imageChangedCount(), 3);
 
     cachedImage->loader()->didReceiveResponse(nullptr, WrappedResourceResponse(resourceResponse), nullptr);
     cachedImage->loader()->didReceiveData(nullptr, reinterpret_cast<const char*>(jpeg.data()), jpeg.size(), jpeg.size());
@@ -297,7 +297,7 @@ TEST(ImageResourceTest, ReloadIfLoFi)
     ASSERT_FALSE(cachedImage->errorOccurred());
     ASSERT_TRUE(cachedImage->hasImage());
     ASSERT_FALSE(cachedImage->getImage()->isNull());
-    ASSERT_TRUE(client.notifyFinishedCalled());
+    ASSERT_TRUE(client->notifyFinishedCalled());
     ASSERT_TRUE(cachedImage->getImage()->isBitmapImage());
 }
 

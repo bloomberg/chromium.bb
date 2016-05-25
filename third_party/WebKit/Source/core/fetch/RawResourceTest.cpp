@@ -33,6 +33,7 @@
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/SharedBuffer.h"
+#include "platform/heap/Handle.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
@@ -54,7 +55,7 @@ TEST(RawResourceTest, DontIgnoreAcceptForCacheReuse)
     ASSERT_FALSE(jpegResource->canReuse(pngRequest));
 }
 
-class DummyClient final : public RawResourceClient {
+class DummyClient final : public GarbageCollectedFinalized<DummyClient>, public RawResourceClient {
 public:
     DummyClient() : m_called(false) {}
     ~DummyClient() override {}
@@ -73,13 +74,15 @@ public:
 
     bool called() { return m_called; }
     const Vector<char>& data() { return m_data; }
+    DEFINE_INLINE_TRACE() {}
+
 private:
     bool m_called;
     Vector<char> m_data;
 };
 
 // This client adds another client when notified.
-class AddingClient : public RawResourceClient {
+class AddingClient final : public GarbageCollectedFinalized<AddingClient>, public RawResourceClient {
 public:
     AddingClient(DummyClient* client, Resource* resource)
         : m_dummyClient(client)
@@ -102,9 +105,16 @@ public:
     {
         m_resource->removeClient(m_dummyClient);
     }
+
+    DEFINE_INLINE_VIRTUAL_TRACE()
+    {
+        visitor->trace(m_dummyClient);
+        visitor->trace(m_resource);
+    }
+
 private:
-    DummyClient* m_dummyClient;
-    Persistent<Resource> m_resource;
+    Member<DummyClient> m_dummyClient;
+    Member<Resource> m_resource;
     Timer<AddingClient> m_removeClientTimer;
 };
 
@@ -122,8 +132,8 @@ TEST(RawResourceTest, RevalidationSucceeded)
     // Simulate a successful revalidation.
     resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
 
-    OwnPtr<DummyClient> client = adoptPtr(new DummyClient);
-    resource->addClient(client.get());
+    Persistent<DummyClient> client = new DummyClient;
+    resource->addClient(client);
 
     ResourceResponse revalidatingResponse;
     revalidatingResponse.setHTTPStatusCode(304);
@@ -134,7 +144,7 @@ TEST(RawResourceTest, RevalidationSucceeded)
     EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), resource);
     memoryCache()->remove(resource);
 
-    resource->removeClient(client.get());
+    resource->removeClient(client);
     EXPECT_FALSE(resource->hasClientsOrObservers());
     EXPECT_FALSE(client->called());
     EXPECT_EQ("abcd", String(client->data().data(), client->data().size()));
@@ -152,8 +162,8 @@ TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
     // Simulate a successful revalidation.
     resource->setRevalidatingRequest(ResourceRequest("data:text/html,"));
 
-    OwnPtr<DummyClient> client = adoptPtr(new DummyClient);
-    resource->addClient(client.get());
+    Persistent<DummyClient> client = new DummyClient;
+    resource->addClient(client);
 
     ResourceResponse revalidatingResponse;
     revalidatingResponse.setHTTPStatusCode(304);
@@ -164,7 +174,7 @@ TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
     EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), resource);
     memoryCache()->remove(resource);
 
-    resource->removeClient(client.get());
+    resource->removeClient(client);
     EXPECT_FALSE(resource->hasClientsOrObservers());
     EXPECT_FALSE(client->called());
     EXPECT_EQ(0u, client->data().size());
@@ -197,7 +207,7 @@ TEST(RawResourceTest, RevalidationSucceededUpdateHeaders)
     EXPECT_EQ("proxy-connection value", resource->response().httpHeaderField("proxy-connection"));
     EXPECT_EQ("custom value", resource->response().httpHeaderField("x-custom"));
 
-    OwnPtr<DummyClient> client = adoptPtr(new DummyClient);
+    Persistent<DummyClient> client = new DummyClient;
     resource->addClient(client.get());
 
     // Perform a revalidation step.
@@ -227,7 +237,7 @@ TEST(RawResourceTest, RevalidationSucceededUpdateHeaders)
 
     memoryCache()->remove(resource);
 
-    resource->removeClient(client.get());
+    resource->removeClient(client);
     EXPECT_FALSE(resource->hasClientsOrObservers());
     EXPECT_FALSE(client->called());
     EXPECT_EQ(0u, client->data().size());
@@ -244,17 +254,17 @@ TEST(RawResourceTest, AddClientDuringCallback)
     raw->finish();
     EXPECT_FALSE(raw->response().isNull());
 
-    OwnPtr<DummyClient> dummyClient = adoptPtr(new DummyClient());
-    OwnPtr<AddingClient> addingClient = adoptPtr(new AddingClient(dummyClient.get(), raw));
-    raw->addClient(addingClient.get());
+    Persistent<DummyClient> dummyClient = new DummyClient();
+    Persistent<AddingClient> addingClient = new AddingClient(dummyClient.get(), raw);
+    raw->addClient(addingClient);
     testing::runPendingTasks();
-    raw->removeClient(addingClient.get());
+    raw->removeClient(addingClient);
     EXPECT_FALSE(dummyClient->called());
     EXPECT_FALSE(raw->hasClientsOrObservers());
 }
 
 // This client removes another client when notified.
-class RemovingClient : public RawResourceClient {
+class RemovingClient : public GarbageCollectedFinalized<RemovingClient>, public RawResourceClient {
 public:
     RemovingClient(DummyClient* client)
         : m_dummyClient(client) {}
@@ -268,8 +278,13 @@ public:
         resource->removeClient(this);
     }
     String debugName() const override { return "RemovingClient"; }
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_dummyClient);
+    }
+
 private:
-    DummyClient* m_dummyClient;
+    Member<DummyClient> m_dummyClient;
 };
 
 TEST(RawResourceTest, RemoveClientDuringCallback)
@@ -283,10 +298,10 @@ TEST(RawResourceTest, RemoveClientDuringCallback)
     raw->finish();
     EXPECT_FALSE(raw->response().isNull());
 
-    OwnPtr<DummyClient> dummyClient = adoptPtr(new DummyClient());
-    OwnPtr<RemovingClient> removingClient = adoptPtr(new RemovingClient(dummyClient.get()));
-    raw->addClient(dummyClient.get());
-    raw->addClient(removingClient.get());
+    Persistent<DummyClient> dummyClient = new DummyClient();
+    Persistent<RemovingClient> removingClient = new RemovingClient(dummyClient.get());
+    raw->addClient(dummyClient);
+    raw->addClient(removingClient);
     testing::runPendingTasks();
     EXPECT_FALSE(raw->hasClientsOrObservers());
 }

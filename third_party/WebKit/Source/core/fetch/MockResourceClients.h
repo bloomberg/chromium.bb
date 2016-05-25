@@ -38,7 +38,8 @@
 
 namespace blink {
 
-class MockResourceClient : public ResourceClient {
+class MockResourceClient : public GarbageCollectedFinalized<MockResourceClient>, public ResourceClient {
+    USING_PRE_FINALIZER(MockResourceClient, dispose);
 public:
     explicit MockResourceClient(Resource*);
     ~MockResourceClient() override;
@@ -48,10 +49,12 @@ public:
     virtual bool notifyFinishedCalled() const { return m_notifyFinishedCalled; }
 
     virtual void removeAsClient();
+    virtual void dispose();
+
+    DECLARE_TRACE();
 
 protected:
-    // TODO(Oilpan): properly trace when ResourceClient is on the heap.
-    UntracedMember<Resource> m_resource;
+    Member<Resource> m_resource;
     bool m_notifyFinishedCalled;
 };
 
@@ -68,6 +71,7 @@ public:
     bool notifyFinishedCalled() const override;
 
     void removeAsClient() override;
+    void dispose() override;
 
     int imageChangedCount() const { return m_imageChangedCount; }
 

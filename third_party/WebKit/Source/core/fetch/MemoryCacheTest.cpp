@@ -133,7 +133,7 @@ TEST_F(MemoryCacheTest, VeryLargeResourceAccounting)
     ASSERT_EQ(cachedResource->size(), memoryCache()->deadSize());
     ASSERT_EQ(0u, memoryCache()->liveSize());
 
-    MockResourceClient client(cachedResource);
+    Persistent<MockResourceClient> client = new MockResourceClient(cachedResource);
     ASSERT_EQ(0u, memoryCache()->deadSize());
     ASSERT_EQ(cachedResource->size(), memoryCache()->liveSize());
 
@@ -237,7 +237,7 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, Re
     const char data[6] = "abcde";
     cachedDeadResource->appendData(data, 3u);
     cachedDeadResource->finish();
-    MockResourceClient client(cachedLiveResource);
+    Persistent<MockResourceClient> client = new MockResourceClient(cachedLiveResource);
     cachedLiveResource->appendData(data, 4u);
     cachedLiveResource->finish();
 
@@ -294,9 +294,9 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask_MultipleResourceMaps)
 static void TestClientRemoval(Resource* resource1, Resource* resource2)
 {
     const char data[6] = "abcde";
-    MockResourceClient client1(resource1);
+    Persistent<MockResourceClient> client1 = new MockResourceClient(resource1);
     resource1->appendData(data, 4u);
-    MockResourceClient client2(resource2);
+    Persistent<MockResourceClient> client2 = new MockResourceClient(resource2);
     resource2->appendData(data, 4u);
 
     const unsigned minDeadCapacity = 0;
@@ -315,7 +315,7 @@ static void TestClientRemoval(Resource* resource1, Resource* resource2)
 
     // Removing the client from resource1 should result in all resources
     // remaining in cache since the prune is deferred.
-    client1.removeAsClient();
+    client1->removeAsClient();
     ASSERT_GT(resource1->decodedSize(), 0u);
     ASSERT_GT(resource2->decodedSize(), 0u);
     ASSERT_EQ(memoryCache()->deadSize(), resource1->size());
@@ -325,7 +325,7 @@ static void TestClientRemoval(Resource* resource1, Resource* resource2)
 
     // Removing the client from resource2 should result in immediate
     // eviction of resource2 because we are over the prune deferral limit.
-    client2.removeAsClient();
+    client2->removeAsClient();
     ASSERT_GT(resource1->decodedSize(), 0u);
     ASSERT_GT(resource2->decodedSize(), 0u);
     ASSERT_EQ(memoryCache()->deadSize(), resource1->size());

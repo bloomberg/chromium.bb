@@ -13,14 +13,12 @@ MockResourceClient::MockResourceClient(Resource* resource)
     : m_resource(resource)
     , m_notifyFinishedCalled(false)
 {
+    ThreadState::current()->registerPreFinalizer(this);
     m_resource->addClient(this);
 }
 
-MockResourceClient::~MockResourceClient()
-{
-    if (m_resource)
-        m_resource->removeClient(this);
-}
+MockResourceClient::~MockResourceClient() {}
+
 void MockResourceClient::notifyFinished(Resource*)
 {
     ASSERT_FALSE(m_notifyFinishedCalled);
@@ -33,6 +31,19 @@ void MockResourceClient::removeAsClient()
     m_resource = nullptr;
 }
 
+void MockResourceClient::dispose()
+{
+    if (m_resource) {
+        m_resource->removeClient(this);
+        m_resource = nullptr;
+    }
+}
+
+DEFINE_TRACE(MockResourceClient)
+{
+    visitor->trace(m_resource);
+}
+
 MockImageResourceClient::MockImageResourceClient(ImageResource* resource)
     : MockResourceClient(resource)
     , m_imageChangedCount(0)
@@ -41,16 +52,19 @@ MockImageResourceClient::MockImageResourceClient(ImageResource* resource)
     toImageResource(m_resource.get())->addObserver(this);
 }
 
-MockImageResourceClient::~MockImageResourceClient()
-{
-    if (m_resource)
-        toImageResource(m_resource.get())->removeObserver(this);
-}
+MockImageResourceClient::~MockImageResourceClient() {}
 
 void MockImageResourceClient::removeAsClient()
 {
     toImageResource(m_resource.get())->removeObserver(this);
     MockResourceClient::removeAsClient();
+}
+
+void MockImageResourceClient::dispose()
+{
+    if (m_resource)
+        toImageResource(m_resource.get())->removeObserver(this);
+    MockResourceClient::dispose();
 }
 
 void MockImageResourceClient::imageChanged(ImageResource*, const IntRect*)
