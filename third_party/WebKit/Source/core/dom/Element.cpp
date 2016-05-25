@@ -2670,10 +2670,6 @@ void Element::setPointerCapture(int pointerId, ExceptionState& exceptionState)
             exceptionState.throwDOMException(InvalidPointerId, "InvalidPointerId");
         else if (!inShadowIncludingDocument())
             exceptionState.throwDOMException(InvalidStateError, "InvalidStateError");
-        // TODO(crbug.com/579553): This next "else if" is a hack to notify JS that we don't (yet) support
-        // explicit set/release of touch pointers (which are implicitly captured for performance reasons).
-        else if (document().frame()->eventHandler().getPointerEventType(pointerId) == WebPointerProperties::PointerType::Touch)
-            exceptionState.throwDOMException(InvalidPointerId, "InvalidPointerId");
         else
             document().frame()->eventHandler().setPointerCapture(pointerId, this);
     }
@@ -2683,10 +2679,6 @@ void Element::releasePointerCapture(int pointerId, ExceptionState& exceptionStat
 {
     if (document().frame()) {
         if (!document().frame()->eventHandler().isPointerEventActive(pointerId))
-            exceptionState.throwDOMException(InvalidPointerId, "InvalidPointerId");
-        // TODO(crbug.com/579553): This next "else if" is a hack to notify JS that we don't (yet) support
-        // explicit set/release of touch pointers (which are implicitly captured for performance reasons).
-        else if (document().frame()->eventHandler().getPointerEventType(pointerId) == WebPointerProperties::PointerType::Touch)
             exceptionState.throwDOMException(InvalidPointerId, "InvalidPointerId");
         else
             document().frame()->eventHandler().releasePointerCapture(pointerId, this);

@@ -1743,11 +1743,6 @@ bool EventHandler::isPointerEventActive(int pointerId)
     return m_pointerEventManager.isActive(pointerId);
 }
 
-WebPointerProperties::PointerType EventHandler::getPointerEventType(int pointerId)
-{
-    return m_pointerEventManager.getPointerEventType(pointerId);
-}
-
 void EventHandler::setPointerCapture(int pointerId, EventTarget* target)
 {
     // TODO(crbug.com/591387): This functionality should be per page not per frame.

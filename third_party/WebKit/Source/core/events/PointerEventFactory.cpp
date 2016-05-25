@@ -358,16 +358,6 @@ bool PointerEventFactory::isPrimary(int mappedId) const
     return m_primaryId[p.pointerType()] == mappedId;
 }
 
-WebPointerProperties::PointerType PointerEventFactory::getPointerType(
-    const int pointerId) const
-{
-    if (m_pointerIdMapping.contains(pointerId)) {
-        return static_cast<WebPointerProperties::PointerType>(
-            m_pointerIdMapping.get(pointerId).incomingId.pointerType());
-    }
-    return WebPointerProperties::PointerType::Unknown;
-}
-
 bool PointerEventFactory::isActive(const int pointerId) const
 {
     return m_pointerIdMapping.contains(pointerId);

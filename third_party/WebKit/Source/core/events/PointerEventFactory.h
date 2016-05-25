@@ -68,9 +68,6 @@ public:
     // Returns whether a pointer id exists and active.
     bool isActive(const int) const;
 
-    // Returns type of pointer id if exists, otherwise Unknown.
-    WebPointerProperties::PointerType getPointerType(const int) const;
-
     // Returns whether a pointer id exists and has at least one pressed button.
     bool isActiveButtonsState(const int) const;
 

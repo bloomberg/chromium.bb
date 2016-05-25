@@ -494,14 +494,13 @@ WebInputEventResult PointerEventManager::sendTouchPointerEvent(
 
     processCaptureAndPositionOfPointerEvent(pointerEvent, target);
 
-    // TODO(nzolghadr): crbug.com/579553 dealing with implicit touch capturing vs pointer event capturing
-    WebInputEventResult result = dispatchPointerEvent(
-        getEffectiveTargetForPointerEvent(target, pointerEvent->pointerId()),
-        pointerEvent);
-
     // Setting the implicit capture for touch
     if (pointerEvent->type() == EventTypeNames::pointerdown)
         setPointerCapture(pointerEvent->pointerId(), target);
+
+    WebInputEventResult result = dispatchPointerEvent(
+        getEffectiveTargetForPointerEvent(target, pointerEvent->pointerId()),
+        pointerEvent);
 
     if (pointerEvent->type() == EventTypeNames::pointerup
         || pointerEvent->type() == EventTypeNames::pointercancel) {
@@ -748,7 +747,14 @@ void PointerEventManager::setPointerCapture(int pointerId, EventTarget* target)
 
 void PointerEventManager::releasePointerCapture(int pointerId, EventTarget* target)
 {
-    if (m_pointerCaptureTarget.get(pointerId) == target)
+    // Only the element that is going to get the next pointer event can release
+    // the capture. Note that this might be different from
+    // |m_pointercaptureTarget|. |m_pointercaptureTarget| holds the element
+    // that had the capture until now and has been receiving the pointerevents
+    // but |m_pendingPointerCaptureTarget| indicated the element that gets the
+    // very next pointer event. They will be the same if there was no change in
+    // capturing of a particular |pointerId|. See crbug.com/614481.
+    if (m_pendingPointerCaptureTarget.get(pointerId) == target)
         releasePointerCapture(pointerId);
 }
 
@@ -760,12 +766,6 @@ void PointerEventManager::releasePointerCapture(int pointerId)
 bool PointerEventManager::isActive(const int pointerId) const
 {
     return m_pointerEventFactory.isActive(pointerId);
-}
-
-WebPointerProperties::PointerType PointerEventManager::getPointerEventType(
-    const int pointerId) const
-{
-    return m_pointerEventFactory.getPointerType(pointerId);
 }
 
 bool PointerEventManager::isAnyTouchActive() const

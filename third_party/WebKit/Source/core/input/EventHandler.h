@@ -185,9 +185,6 @@ public:
     // Returns whether pointerId is active or not
     bool isPointerEventActive(int);
 
-    // Returns the type of the pointer corresponding to given pointerId
-    WebPointerProperties::PointerType getPointerEventType(int);
-
     void setPointerCapture(int, EventTarget*);
     void releasePointerCapture(int, EventTarget*);
     void elementRemoved(EventTarget*);

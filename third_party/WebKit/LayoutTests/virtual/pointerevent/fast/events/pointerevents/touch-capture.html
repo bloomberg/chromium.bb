@@ -24,6 +24,13 @@ div.box {
 <script>
 description("Verifies that pointer capture works for touch.");
 
+var ACTION_NONE = 0;
+var ACTION_RELEASE = 1;
+var ACTION_RESET = 2;
+
+document.captureAction = ACTION_NONE;
+document.movecount = 0;
+
 var rect = document.getElementById("green").getBoundingClientRect();
 var x1 = rect.left + 5;
 var y1 = rect.top + 5;
@@ -47,9 +54,19 @@ function init() {
     eventList.forEach(function(eventName) {
       targetDiv.addEventListener(eventName, function(event) {
         if (event.eventPhase == Event.AT_TARGET) {
-          if (event.type.includes("pointer"))
+          if (event.type.includes("pointer")) {
             debug(id + " received " + event.type + " " + event.pointerId);
-          else
+            if (document.captureAction == ACTION_RESET && event.type == "pointerdown") {
+              debug("     --- Set pointer capture to blue " + event.pointerId + " ---");
+              document.getElementById('blue').setPointerCapture(event.pointerId);
+              document.captureAction = ACTION_NONE;
+            }
+            if (document.captureAction == ACTION_RELEASE && event.type == "pointermove" && ++document.movecount > 1) {
+              debug("     &&& Releasing pointer capture for " + event.pointerId + " &&&");
+              event.target.releasePointerCapture(event.pointerId);
+              document.captureAction = ACTION_NONE;
+            }
+          } else
             debug(id + " received " + event.type);
         }
       });
@@ -57,7 +74,15 @@ function init() {
   });
 }
 
-function singleTouchTestScenario(touchCancel) {
+function singleTouchTestScenario(touchCancel, captureAction) {
+  var captureName = captureAction == ACTION_RELEASE ? " with capture release" :
+                    captureAction == ACTION_RESET ? " with capture reset" : "";
+
+  debug(" ======= Touch and " + (touchCancel ? "cancel" : "release") + captureName + " =======");
+
+  document.captureAction = captureAction;
+  document.movecount = 0;
+
   debug("    **** First touch on green box & jiggle ****");
   eventSender.addTouchPoint(x1, y1)
   eventSender.touchStart();
@@ -84,7 +109,15 @@ function singleTouchTestScenario(touchCancel) {
 }
 
 
-function multiTouchTestScenario(touchCancel) {
+function multiTouchTestScenario(touchCancel, captureAction) {
+  var captureName = captureAction == ACTION_RELEASE ? " with capture release" :
+                    captureAction == ACTION_RESET ? " with capture reset" : "";
+
+  debug(" ======= Multitouch and " + (touchCancel ? "cancel" : "release") + captureName + " =======");
+
+  document.captureAction = captureAction;
+  document.movecount = 0;
+
   debug("    **** First touch on green & second touch on blue & jiggle ****");
   eventSender.addTouchPoint(x1, y1)
   eventSender.touchStart();
@@ -129,18 +162,12 @@ function multiTouchTestScenario(touchCancel) {
 }
 
 function runTests() {
-  debug(" ======= Touch and release  =======");
-  singleTouchTestScenario(false);
-
-  debug(" ======= Touch and cancel  =======");
-  singleTouchTestScenario(true);
-
-  debug(" ======= Multitouch and release  =======");
-  multiTouchTestScenario(false);
-
-  debug(" ======= Multitouch and cancel  =======");
-  multiTouchTestScenario(true);
-
+  [ACTION_NONE, ACTION_RELEASE, ACTION_RESET].forEach(function(action) {
+    singleTouchTestScenario(false, action);
+    singleTouchTestScenario(true, action);
+    multiTouchTestScenario(false, action);
+    multiTouchTestScenario(true, action);
+  });
 }
 
 init();

@@ -61,7 +61,6 @@ public:
     void setPointerCapture(int, EventTarget*);
     void releasePointerCapture(int, EventTarget*);
     bool isActive(const int) const;
-    WebPointerProperties::PointerType getPointerEventType(const int) const;
 
     // Returns whether there is any touch on the screen.
     bool isAnyTouchActive() const;
