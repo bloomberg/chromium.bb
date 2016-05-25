@@ -1216,7 +1216,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Now load an extension with a background page. This will result in a
   // BrowsingInstance for the background page.
-  const Extension* extension2 = CreateExtension("Extension One", true);
+  const Extension* extension2 = CreateExtension("Extension Two", true);
   details = new TestMemoryDetails();
   details->StartFetchAndWait();
   EXPECT_THAT(details->uma()->GetAllSamples(
