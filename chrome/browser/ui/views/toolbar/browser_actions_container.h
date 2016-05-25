@@ -212,13 +212,10 @@ class BrowserActionsContainer : public views::View,
   void RemoveAllViews() override;
   void Redraw(bool order_changed) override;
   void ResizeAndAnimate(gfx::Tween::Type tween_type,
-                        int target_width,
-                        bool suppress_chevron) override;
-  void SetChevronVisibility(bool chevron_visible) override;
+                        int target_width) override;
   int GetWidth(GetWidthTime get_width_time) const override;
   bool IsAnimating() const override;
   void StopAnimating() override;
-  int GetChevronWidth() const override;
   void ShowToolbarActionBubble(
       std::unique_ptr<ToolbarActionsBarBubbleDelegate> controller) override;
 

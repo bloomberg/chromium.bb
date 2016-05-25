@@ -224,11 +224,9 @@ TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   // Since all icons are showing, the current width should be the max width.
   int maximum_width = expected_width;
   EXPECT_EQ(maximum_width, toolbar_actions_bar()->GetMaximumWidth());
-  // The minimum width should be just enough for the chevron to be displayed
-  // along with left and right padding.
-  int minimum_width = 2 * platform_settings.item_spacing +
-                      toolbar_actions_bar()->delegate_for_test()->
-                          GetChevronWidth();
+  // The minimum width should be be non-zero (as long as there are any icons) so
+  // we can render the grippy to allow the user to drag to adjust the width.
+  int minimum_width = platform_settings.item_spacing;
   EXPECT_EQ(minimum_width, toolbar_actions_bar()->GetMinimumWidth());
 
   // Test the connection between the ToolbarActionsBar and the model by
@@ -236,14 +234,12 @@ TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   toolbar_model()->SetVisibleIconCount(2u);
   EXPECT_EQ(2u, toolbar_actions_bar()->GetIconCount());
 
-  // The current width should now be enough for two icons, and the chevron.
+  // The current width should now be enough for two icons.
   // IconWidth(true) includes the spacing to the left of each icon and
   // |item_spacing| accounts for the spacing to the right of the rightmost
   // icon.
   expected_width = 2 * ToolbarActionsBar::IconWidth(true) +
-                   platform_settings.item_spacing +
-                   toolbar_actions_bar()->delegate_for_test()->
-                       GetChevronWidth();
+                   platform_settings.item_spacing;
   EXPECT_EQ(expected_width, toolbar_actions_bar()->GetPreferredSize().width());
   // The maximum and minimum widths should have remained constant (since we have
   // the same number of actions).

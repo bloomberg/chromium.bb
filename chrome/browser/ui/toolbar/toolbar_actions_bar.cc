@@ -199,9 +199,7 @@ gfx::Size ToolbarActionsBar::GetPreferredSize() const {
 }
 
 int ToolbarActionsBar::GetMinimumWidth() const {
-  if (!platform_settings_.chevron_enabled || toolbar_actions_.empty())
-    return platform_settings_.item_spacing;
-  return 2 * platform_settings_.item_spacing + delegate_->GetChevronWidth();
+  return platform_settings_.item_spacing;
 }
 
 int ToolbarActionsBar::GetMaximumWidth() const {
@@ -211,18 +209,7 @@ int ToolbarActionsBar::GetMaximumWidth() const {
 int ToolbarActionsBar::IconCountToWidth(int icons) const {
   if (icons < 0)
     icons = toolbar_actions_.size();
-  const bool display_chevron =
-      platform_settings_.chevron_enabled &&
-      static_cast<size_t>(icons) < toolbar_actions_.size();
-  if (icons == 0 && !display_chevron)
-    return platform_settings_.item_spacing;
-
-  const int icons_size = (icons == 0) ? 0 :
-      (icons * IconWidth(true)) - platform_settings_.item_spacing;
-  const int chevron_size = display_chevron ? delegate_->GetChevronWidth() : 0;
-  const int side_padding = platform_settings_.item_spacing * 2;
-
-  return icons_size + chevron_size + side_padding;
+  return icons * IconWidth(true) + platform_settings_.item_spacing;
 }
 
 size_t ToolbarActionsBar::WidthToIconCount(int pixels) const {
@@ -230,16 +217,10 @@ size_t ToolbarActionsBar::WidthToIconCount(int pixels) const {
   if (pixels >= IconCountToWidth(-1))
     return toolbar_actions_.size();
 
-  // We reserve space for the padding on either side of the toolbar and,
-  // if enabled, for the chevron.
-  int available_space = pixels - (platform_settings_.item_spacing * 2);
-  if (platform_settings_.chevron_enabled)
-    available_space -= delegate_->GetChevronWidth();
-
   // Now we add an extra between-item padding value so the space can be divided
   // evenly by (size of icon with padding).
   return static_cast<size_t>(std::max(
-      0, available_space + platform_settings_.item_spacing) / IconWidth(true));
+      0, pixels - platform_settings_.item_spacing) / IconWidth(true));
 }
 
 size_t ToolbarActionsBar::GetIconCount() const {
@@ -711,7 +692,6 @@ void ToolbarActionsBar::OnToolbarActionRemoved(const std::string& action_id) {
       // removed an entry directly from the overflow list).
       delegate_->Redraw(false);
     } else {
-      delegate_->SetChevronVisibility(false);
       // Either we went from overflow to no-overflow, or we shrunk the no-
       // overflow container by 1.  Either way the size changed, so animate.
       ResizeDelegate(gfx::Tween::EASE_OUT, false);
@@ -745,7 +725,7 @@ void ToolbarActionsBar::ResizeDelegate(gfx::Tween::Type tween_type,
   int desired_width = GetPreferredSize().width();
   if (desired_width !=
       delegate_->GetWidth(ToolbarActionsBarDelegate::GET_WIDTH_CURRENT)) {
-    delegate_->ResizeAndAnimate(tween_type, desired_width, suppress_chevron);
+    delegate_->ResizeAndAnimate(tween_type, desired_width);
   } else if (delegate_->IsAnimating()) {
     // It's possible that we're right where we're supposed to be in terms of
     // width, but that we're also currently resizing. If this is the case, end

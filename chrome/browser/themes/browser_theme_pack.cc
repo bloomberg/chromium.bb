@@ -49,7 +49,7 @@ namespace {
 // theme packs that aren't int-equal to this. Increment this number if you
 // change default theme assets or if you need themes to recreate their generated
 // images (which are cached).
-const int kThemePackVersion = 41;
+const int kThemePackVersion = 42;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the
@@ -165,16 +165,13 @@ PersistingImagesTable kPersistingImages[] = {
     {30, IDR_STOP_D, NULL},
     {31, IDR_STOP_H, NULL},
     {32, IDR_STOP_P, NULL},
-    {33, IDR_BROWSER_ACTIONS_OVERFLOW, NULL},
-    {34, IDR_BROWSER_ACTIONS_OVERFLOW_H, NULL},
-    {35, IDR_BROWSER_ACTIONS_OVERFLOW_P, NULL},
-    {36, IDR_TOOLS, NULL},
-    {37, IDR_TOOLS_H, NULL},
-    {38, IDR_TOOLS_P, NULL},
-    {39, IDR_MENU_DROPARROW, NULL},
-    {40, IDR_TOOLBAR_BEZEL_HOVER, NULL},
-    {41, IDR_TOOLBAR_BEZEL_PRESSED, NULL},
-    {42, IDR_TOOLS_BAR, NULL},
+    {33, IDR_TOOLS, NULL},
+    {34, IDR_TOOLS_H, NULL},
+    {35, IDR_TOOLS_P, NULL},
+    {36, IDR_MENU_DROPARROW, NULL},
+    {37, IDR_TOOLBAR_BEZEL_HOVER, NULL},
+    {38, IDR_TOOLBAR_BEZEL_PRESSED, NULL},
+    {39, IDR_TOOLS_BAR, NULL},
 };
 const size_t kPersistingImagesLength = arraysize(kPersistingImages);
 

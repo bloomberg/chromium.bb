@@ -200,11 +200,6 @@ constexpr int kToolbarButtonIDs[] = {
     IDR_STOP_D,
     IDR_STOP_H,
     IDR_STOP_P,
-#if defined(OS_MACOSX)
-    IDR_BROWSER_ACTIONS_OVERFLOW,
-    IDR_BROWSER_ACTIONS_OVERFLOW_H,
-    IDR_BROWSER_ACTIONS_OVERFLOW_P,
-#endif
     IDR_TOOLS,
     IDR_TOOLS_H,
     IDR_TOOLS_P,

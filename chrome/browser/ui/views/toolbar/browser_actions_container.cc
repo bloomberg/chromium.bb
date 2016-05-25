@@ -220,8 +220,7 @@ void BrowserActionsContainer::Redraw(bool order_changed) {
 }
 
 void BrowserActionsContainer::ResizeAndAnimate(gfx::Tween::Type tween_type,
-                                               int target_width,
-                                               bool /*suppress_chevron*/) {
+                                               int target_width) {
   if (resize_animation_ && !toolbar_actions_bar_->suppress_animation()) {
     if (!ShownInsideMenu()) {
       // Make sure we don't try to animate to wider than the allowed width.
@@ -242,8 +241,6 @@ void BrowserActionsContainer::ResizeAndAnimate(gfx::Tween::Type tween_type,
   }
 }
 
-void BrowserActionsContainer::SetChevronVisibility(bool visible) {}
-
 int BrowserActionsContainer::GetWidth(GetWidthTime get_width_time) const {
   return get_width_time == GET_WIDTH_AFTER_ANIMATION &&
                  animation_target_size_ > 0
@@ -258,10 +255,6 @@ bool BrowserActionsContainer::IsAnimating() const {
 void BrowserActionsContainer::StopAnimating() {
   animation_target_size_ = width();
   resize_animation_->Reset();
-}
-
-int BrowserActionsContainer::GetChevronWidth() const {
-  return 0;
 }
 
 void BrowserActionsContainer::ShowToolbarActionBubble(

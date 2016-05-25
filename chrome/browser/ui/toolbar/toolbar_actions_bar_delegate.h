@@ -45,14 +45,9 @@ class ToolbarActionsBarDelegate {
   virtual void Redraw(bool order_changed) = 0;
 
   // Resizes the view to the |target_width| and animates with the given
-  // |tween_type|. |suppress_chevron| indicates if the chevron should not be
-  // shown during the animation.
+  // |tween_type|.
   virtual void ResizeAndAnimate(gfx::Tween::Type tween_type,
-                                int target_width,
-                                bool suppress_chevron) = 0;
-
-  // Sets the overflow chevron's visibility.
-  virtual void SetChevronVisibility(bool chevron_visible) = 0;
+                                int target_width) = 0;
 
   // Returns the width of the view according to |get_width_time|.
   virtual int GetWidth(GetWidthTime get_width_time) const = 0;
@@ -62,9 +57,6 @@ class ToolbarActionsBarDelegate {
 
   // Stops the current animation (width remains where it currently is).
   virtual void StopAnimating() = 0;
-
-  // Returns the width (including padding) for the overflow chevron.
-  virtual int GetChevronWidth() const = 0;
 
   // Shows the given |bubble|. Must not be called if another bubble is showing
   // or if the toolbar is animating.

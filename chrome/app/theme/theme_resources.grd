@@ -149,11 +149,6 @@
         <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_H" file="common/browser_action_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTION_P" file="common/browser_action_pressed.png" />
       </if>
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW" file="mac/browser_actions_overflow_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW_H" file="mac/browser_actions_overflow_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="mac/browser_actions_overflow_pressed.png" />
-      </if>
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_BUILDINGS_ILLUSTRATION" file="cros/buildings_illustration.png" />
       </if>
