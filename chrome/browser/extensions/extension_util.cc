@@ -126,8 +126,10 @@ bool IsIncognitoEnabled(const std::string& extension_id,
       return false;
     // If this is an existing component extension we always allow it to
     // work in incognito mode.
-    if (extension->location() == Manifest::COMPONENT)
+    if (extension->location() == Manifest::COMPONENT ||
+        extension->location() == Manifest::EXTERNAL_COMPONENT) {
       return true;
+    }
     if (IsWhitelistedForIncognito(extension))
       return true;
   }
