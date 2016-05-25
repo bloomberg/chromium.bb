@@ -39,12 +39,16 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_util_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
+
+// TODO(ellyjones): Remove this when the deployment target is 10.9 or later.
+extern NSString* const NSAccessibilityPriorityKey;
 
 using content::WebContents;
 
@@ -657,6 +661,8 @@ bool OmniboxViewMac::OnInlineAutocompleteTextMaybeChanged(
   model()->OnChanged();
   [field_ clearUndoChain];
 
+  AnnounceAutocompleteForScreenReader(display_text);
+
   return true;
 }
 
@@ -1146,4 +1152,19 @@ NSUInteger OmniboxViewMac::GetTextLength() const {
 bool OmniboxViewMac::IsCaretAtEnd() const {
   const NSRange selection = GetSelectedRange();
   return NSMaxRange(selection) == GetTextLength();
+}
+
+void OmniboxViewMac::AnnounceAutocompleteForScreenReader(
+    const base::string16& display_text) {
+  NSString* announcement =
+      l10n_util::GetNSStringF(IDS_ANNOUNCEMENT_COMPLETION_AVAILABLE_MAC,
+                              display_text);
+  NSDictionary* notification_info = @{
+      NSAccessibilityAnnouncementKey : announcement,
+      NSAccessibilityPriorityKey :     @(NSAccessibilityPriorityHigh)
+  };
+  NSAccessibilityPostNotificationWithUserInfo(
+      [field_ window],
+      NSAccessibilityAnnouncementRequestedNotification,
+      notification_info);
 }

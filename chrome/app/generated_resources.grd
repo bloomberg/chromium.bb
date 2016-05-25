@@ -14927,6 +14927,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
     <message name="IDS_FLAGS_FONT_CACHE_SCALING_DESCRIPTION" desc="Description for the flag to enable FontCache scaling">
       Reuse a cached font in the renderer to serve different sizes of font for faster layout.
     </message>
+    <if expr="is_macosx">
+      <message name="IDS_ANNOUNCEMENT_COMPLETION_AVAILABLE_MAC" desc="Text to be
+read aloud to screenreader users to announce that a completion is available.">
+        Completion available: <ph name="COMPLETION_TEXT">$1</ph>
+      </message>
+    </if>
     </messages>
   </release>
 </grit>

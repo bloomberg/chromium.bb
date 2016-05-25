@@ -197,6 +197,9 @@ class OmniboxViewMac : public OmniboxView,
   // Returns true if the caret is at the end of the content.
   bool IsCaretAtEnd() const;
 
+  // Announce that an inline autocomplete is available for screenreaders.
+  void AnnounceAutocompleteForScreenReader(const base::string16& text);
+
   Profile* profile_;
 
   std::unique_ptr<OmniboxPopupView> popup_view_;
