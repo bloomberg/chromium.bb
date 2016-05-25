@@ -23,7 +23,6 @@
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebView.h"
 
 namespace {
 const int32_t kSubframeRouteId = 20;
@@ -291,32 +290,6 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
     // It happens to be left around in this test because this does not simulate
     // the frame detach.
   }
-}
-
-TEST_F(RenderFrameImplTest, ZoomLimit) {
-  const double kMinZoomLevel = ZoomFactorToZoomLevel(kMinimumZoomFactor);
-  const double kMaxZoomLevel = ZoomFactorToZoomLevel(kMaximumZoomFactor);
-
-  // Verifies navigation to a URL with preset zoom level indeed sets the level.
-  // Regression test for http://crbug.com/139559, where the level was not
-  // properly set when it is out of the default zoom limits of WebView.
-  CommonNavigationParams common_params;
-  common_params.url = GURL("data:text/html,min_zoomlimit_test");
-  GetMainRenderFrame()->OnGotZoomLevel(common_params.url, kMinZoomLevel);
-  GetMainRenderFrame()->OnNavigate(common_params, StartNavigationParams(),
-                                   RequestNavigationParams());
-  ProcessPendingMessages();
-  EXPECT_DOUBLE_EQ(kMinZoomLevel, view_->GetWebView()->zoomLevel());
-
-  // It should work even when the zoom limit is temporarily changed in the page.
-  view_->GetWebView()->zoomLimitsChanged(ZoomFactorToZoomLevel(1.0),
-                                         ZoomFactorToZoomLevel(1.0));
-  common_params.url = GURL("data:text/html,max_zoomlimit_test");
-  GetMainRenderFrame()->OnGotZoomLevel(common_params.url, kMaxZoomLevel);
-  GetMainRenderFrame()->OnNavigate(common_params, StartNavigationParams(),
-                                   RequestNavigationParams());
-  ProcessPendingMessages();
-  EXPECT_DOUBLE_EQ(kMaxZoomLevel, view_->GetWebView()->zoomLevel());
 }
 
 }  // namespace

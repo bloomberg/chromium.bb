@@ -661,6 +661,13 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetPageScale, float /* page_scale_factor */)
 IPC_MESSAGE_ROUTED1(ViewMsg_Zoom,
                     content::PageZoom /* function */)
 
+// Set the zoom level for a particular url that the renderer is in the
+// process of loading.  This will be stored, to be used if the load commits
+// and ignored otherwise.
+IPC_MESSAGE_ROUTED2(ViewMsg_SetZoomLevelForLoadingURL,
+                    GURL /* url */,
+                    double /* zoom_level */)
+
 // Change encoding of page in the renderer.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetPageEncoding,
                     std::string /*new encoding name*/)

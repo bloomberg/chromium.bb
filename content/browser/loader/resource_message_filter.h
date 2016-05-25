@@ -10,6 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/host_zoom_level_context.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/common/resource_type.h"
@@ -54,6 +55,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
                         ChromeBlobStorageContext* blob_storage_context,
                         storage::FileSystemContext* file_system_context,
                         ServiceWorkerContextWrapper* service_worker_context,
+                        HostZoomLevelContext* host_zoom_level_context,
                         const GetContextsCallback& get_contexts_callback);
 
   // BrowserMessageFilter implementation.
@@ -86,6 +88,10 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
     return service_worker_context_.get();
   }
 
+  // Returns a raw pointer to the HostZoomLevelContext's associated HostZoomMap,
+  // or NULL if no context is present.
+  const HostZoomMap* GetHostZoomMap() const;
+
   int child_id() const { return child_id_; }
   int process_type() const { return process_type_; }
 
@@ -105,6 +111,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+  scoped_refptr<HostZoomLevelContext> host_zoom_level_context_;
 
   GetContextsCallback get_contexts_callback_;
 

@@ -544,6 +544,7 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewTest, MacTestCmdUp);
 #endif
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SetHistoryLengthAndOffset);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, ZoomLimit);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, NavigateFrame);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, BasicRenderFrame);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, TextInputTypeWithPepper);
@@ -558,6 +559,8 @@ class CONTENT_EXPORT RenderViewImpl
                            ConverViewportToScreenWithZoomForDSF);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplScaleFactorTest,
                            GetCompositionCharacterBoundsTest);
+
+  typedef std::map<GURL, double> HostZoomLevels;
 
   enum ErrorPageType {
     DNS_ERROR,
@@ -660,6 +663,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSetPageEncoding(const std::string& encoding_name);
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
+  void OnSetZoomLevelForLoadingURL(const GURL& url, double zoom_level);
   void OnSuppressDialogsUntilSwapOut();
   void OnThemeChanged();
   void OnUpdateTargetURLAck();
@@ -746,6 +750,8 @@ class CONTENT_EXPORT RenderViewImpl
 
   WebPreferences webkit_preferences_;
   RendererPreferences renderer_preferences_;
+
+  HostZoomLevels host_zoom_levels_;
 
   // Whether content state (such as form state, scroll position and page
   // contents) should be sent to the browser immediately. This is normally

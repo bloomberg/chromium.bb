@@ -35,7 +35,7 @@ RenderViewImplTest.InsertCharacters
 RenderViewImplTest.OnHandleKeyboardEvent
 RenderViewImplTest.OnNavStateChanged
 # ZoomLevel is not used on Android
-RenderFrameImplTest.ZoomLimit
+RenderViewImplTest.ZoomLimit
 RendererAccessibilityTest.SendFullAccessibilityTreeOnReload
 RendererAccessibilityTest.HideAccessibilityObject
 RendererAccessibilityTest.ShowAccessibilityObject

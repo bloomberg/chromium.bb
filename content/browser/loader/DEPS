@@ -23,6 +23,7 @@ specific_include_rules = {
     "+content/public/common/resource_response.h",
 
     # TODO: these all have to be removed.
+    "+content/browser/host_zoom_map_impl.h",
     "+content/browser/resource_context_impl.h",
     "+content/public/common/content_features.h",
 

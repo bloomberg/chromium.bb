@@ -1228,20 +1228,6 @@ void RenderFrameImpl::InitializeBlameContext(RenderFrameImpl* parent_frame) {
   blame_context_->Initialize();
 }
 
-void RenderFrameImpl::OnGotZoomLevel(const GURL& url, double zoom_level) {
-  // TODO(wjmaclean): We should see if this restriction is really necessary,
-  // since it isn't enforced in other parts of the page zoom system (e.g.
-  // when a users changes the zoom of a currently displayed page). Android
-  // has no UI for this, so in theory the following code would normally just use
-  // the default zoom anyways.
-#if !defined(OS_ANDROID)
-  // On Android, page zoom isn't used, and in case of WebView, text zoom is used
-  // for legacy WebView text scaling emulation. Thus, the code that resets
-  // the zoom level from this map will be effectively resetting text zoom level.
-  host_zoom_levels_[url] = zoom_level;
-#endif
-}
-
 RenderWidget* RenderFrameImpl::GetRenderWidget() {
   RenderFrameImpl* local_root =
       RenderFrameImpl::FromWebFrame(frame_->localRoot());
@@ -4011,12 +3997,6 @@ void RenderFrameImpl::willSendRequest(
 
   if (!render_view_->renderer_preferences_.enable_referrers)
     request.setHTTPReferrer(WebString(), blink::WebReferrerPolicyDefault);
-
-  if (extra_data->is_main_frame()) {
-    frame_host_->GetHostZoomLevel(
-        request_url, base::Bind(&RenderFrameImpl::OnGotZoomLevel,
-                                weak_factory_.GetWeakPtr(), request_url));
-  }
 }
 
 void RenderFrameImpl::didReceiveResponse(
@@ -4588,7 +4568,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     // Set zoom level, but don't do it for full-page plugin since they don't use
     // the same zoom settings.
     HostZoomLevels::iterator host_zoom =
-        host_zoom_levels_.find(GURL(request.url()));
+        render_view_->host_zoom_levels_.find(GURL(request.url()));
     if (render_view_->webview()->mainFrame()->isWebLocalFrame() &&
         render_view_->webview()->mainFrame()->document().isPluginDocument()) {
       // Reset the zoom levels for plugins.
@@ -4596,15 +4576,15 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     } else {
       // If the zoom level is not found, then do nothing. In-page navigation
       // relies on not changing the zoom level in this case.
-      if (host_zoom != host_zoom_levels_.end())
+      if (host_zoom != render_view_->host_zoom_levels_.end())
         render_view_->SetZoomLevel(host_zoom->second);
     }
 
-    if (host_zoom != host_zoom_levels_.end()) {
+    if (host_zoom != render_view_->host_zoom_levels_.end()) {
       // This zoom level was merely recorded transiently for this load.  We can
       // erase it now.  If at some point we reload this page, the browser will
       // send us a new, up-to-date zoom level.
-      host_zoom_levels_.erase(host_zoom);
+      render_view_->host_zoom_levels_.erase(host_zoom);
     }
 
     // Update contents MIME type for main frame.
@@ -6093,8 +6073,6 @@ void RenderFrameImpl::RegisterMojoServices() {
     GetServiceRegistry()->AddService(base::Bind(
         &ImageDownloaderImpl::CreateMojoService, base::Unretained(this)));
   }
-
-  GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&frame_host_));
 }
 
 template <typename Interface>
