@@ -8,8 +8,6 @@
 #include "core/dom/IntersectionObserver.h"
 #include "core/frame/FrameView.h"
 #include "core/layout/LayoutBox.h"
-#include "core/layout/LayoutPart.h"
-#include "core/layout/LayoutText.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayer.h"
 
