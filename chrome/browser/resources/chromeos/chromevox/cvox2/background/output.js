@@ -435,7 +435,8 @@ Output.RULES = {
       enter: '$nameFromNode $role $description'
     },
     heading: {
-      enter: '@tag_h+$hierarchicalLevel',
+      enter:
+          '!relativePitch(hierarchicalLevel) $name= @tag_h+$hierarchicalLevel',
       speak: '!relativePitch(hierarchicalLevel)' +
           ' $nameOrDescendants= @tag_h+$hierarchicalLevel'
     },
