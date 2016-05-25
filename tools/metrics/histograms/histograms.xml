@@ -17874,6 +17874,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Net error results from restartable cache read errors.</summary>
 </histogram>
 
+<histogram name="HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed">
+  <owner>jkarlin@chromium.org</owner>
+  <summary>
+    For each http cache transaction for which a cache entry exists but it cannot
+    be used because the entry's age is beyond its freshness: counts how many
+    freshness periods have elapsed since the entry was last used (x1000).
+  </summary>
+</histogram>
+
 <histogram name="HttpCache.ValidationCause" enum="HttpCacheValidationCause">
   <owner>jkarlin@chromium.org</owner>
   <summary>For each validation attempt, the cause for the validation.</summary>

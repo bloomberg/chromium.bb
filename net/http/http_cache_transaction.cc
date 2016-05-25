@@ -1134,6 +1134,8 @@ int HttpCache::Transaction::DoAddToEntryComplete(int result) {
     return OK;
   }
 
+  open_entry_last_used_ = entry_->disk_entry->GetLastUsed();
+
   if (result != OK) {
     NOTREACHED();
     return result;
@@ -2190,11 +2192,14 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
                                             cache_->clock_->Now());
 
   if (validation_required_by_headers != VALIDATION_NONE) {
-    validation_cause_ =
-        response_.headers->GetFreshnessLifetimes(response_.response_time)
-                    .freshness == base::TimeDelta()
-            ? VALIDATION_CAUSE_ZERO_FRESHNESS
-            : VALIDATION_CAUSE_STALE;
+    HttpResponseHeaders::FreshnessLifetimes lifetimes =
+        response_.headers->GetFreshnessLifetimes(response_.response_time);
+    if (lifetimes.freshness == base::TimeDelta()) {
+      validation_cause_ = VALIDATION_CAUSE_ZERO_FRESHNESS;
+    } else {
+      validation_cause_ = VALIDATION_CAUSE_STALE;
+      stale_entry_freshness_ = lifetimes.freshness;
+    }
   }
 
   if (validation_required_by_headers == VALIDATION_ASYNCHRONOUS) {
@@ -2788,6 +2793,19 @@ void HttpCache::Transaction::RecordHistograms() {
                                   validation_cause_, VALIDATION_CAUSE_MAX);
       }
     }
+  }
+
+  if ((validation_request ||
+       transaction_pattern_ == PATTERN_ENTRY_CANT_CONDITIONALIZE) &&
+      validation_cause_ == VALIDATION_CAUSE_STALE) {
+    // For stale entries, record how many freshness periods have elapsed since
+    // the entry was last used.
+    DCHECK(!open_entry_last_used_.is_null());
+    DCHECK(!stale_entry_freshness_.is_zero());
+
+    base::TimeDelta time_since_use = base::Time::Now() - open_entry_last_used_;
+    UMA_HISTOGRAM_COUNTS("HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed",
+                         (time_since_use * 1000) / stale_entry_freshness_);
   }
 
   UMA_HISTOGRAM_ENUMERATION(

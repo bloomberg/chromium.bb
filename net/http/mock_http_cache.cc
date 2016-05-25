@@ -83,11 +83,11 @@ std::string MockDiskEntry::GetKey() const {
 }
 
 base::Time MockDiskEntry::GetLastUsed() const {
-  return base::Time::FromInternalValue(0);
+  return base::Time::Now();
 }
 
 base::Time MockDiskEntry::GetLastModified() const {
-  return base::Time::FromInternalValue(0);
+  return base::Time::Now();
 }
 
 int32_t MockDiskEntry::GetDataSize(int index) const {
