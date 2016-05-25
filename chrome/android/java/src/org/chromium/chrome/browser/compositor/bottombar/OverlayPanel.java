@@ -797,7 +797,30 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     @Override
     public void onSizeChanged(float width, float height, float visibleViewportOffsetY,
             int orientation) {
+        resizePanelContentViewCore(width, height);
         onSizeChanged(width, height);
+    }
+
+    /**
+     * Resize the panel's ContentViewCore manually since it is not attached to the view hierarchy.
+     * TODO(mdjones): Remove the need for this method by supporting multiple ContentViewCores
+     * existing simultaneously in the view hierarchy.
+     * @param width The new width in dp.
+     * @param height The new height in dp.
+     */
+    private void resizePanelContentViewCore(float width, float height) {
+        if (!isShowing()) return;
+        ContentViewCore panelContent = getContentViewCore();
+        if (panelContent != null) {
+            // Take the height of the toolbar into consideration.
+            int toolbarHeightPx = getTopControlsOffsetDp() > 0
+                    ? 0 : (int) (getToolbarHeight() / mPxToDp);
+            panelContent.onSizeChanged((int) (width / mPxToDp),
+                    (int) (height / mPxToDp) + toolbarHeightPx, panelContent.getViewportWidthPix(),
+                    panelContent.getViewportHeightPix());
+            panelContent.onPhysicalBackingSizeChanged(
+                    (int) (width / mPxToDp), (int) (height / mPxToDp));
+        }
     }
 
     @Override
