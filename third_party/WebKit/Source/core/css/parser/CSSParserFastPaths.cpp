@@ -900,12 +900,12 @@ static bool parseTransformNumberArguments(CharType*& pos, CharType* end, unsigne
     return true;
 }
 
-static const int kShortestValidTransformStringLength = 12;
-
 template <typename CharType>
 static CSSFunctionValue* parseSimpleTransformValue(CharType*& pos, CharType* end)
 {
-    if (end - pos < kShortestValidTransformStringLength)
+    static const int shortestValidTransformStringLength = 12;
+
+    if (end - pos < shortestValidTransformStringLength)
         return nullptr;
 
     const bool isTranslate = toASCIILower(pos[0]) == 't'
@@ -986,56 +986,8 @@ static CSSFunctionValue* parseSimpleTransformValue(CharType*& pos, CharType* end
 }
 
 template <typename CharType>
-static bool transformCanLikelyUseFastPath(const CharType* chars, unsigned length)
+static CSSValueList* parseSimpleTransformList(CharType*& pos, CharType* end)
 {
-    // Very fast scan that attempts to reject most transforms that couldn't
-    // take the fast path. This avoids doing the malloc and string->double
-    // conversions in parseSimpleTransformValue only to discard them when we
-    // run into a transform component we don't understand.
-    unsigned i = 0;
-    while (i < length) {
-        if (isCSSSpace(chars[i])) {
-            ++i;
-            continue;
-        }
-        if (length - i < kShortestValidTransformStringLength)
-            return false;
-        switch (toASCIILower(chars[i])) {
-        case 't':
-            // translate, translateX, translateY, translateZ, translate3d.
-            if (toASCIILower(chars[i + 8]) != 'e')
-                return false;
-            i += 9;
-            break;
-        case 'm':
-            // matrix3d.
-            if (toASCIILower(chars[i + 7]) != 'd')
-                return false;
-            i += 8;
-            break;
-        case 's':
-            // scale3d.
-            if (toASCIILower(chars[i + 6]) != 'd')
-                return false;
-            i += 7;
-            break;
-        default:
-            // All other things, ex. rotate.
-            return false;
-        }
-        // Advance to the end of the arguments.
-        i = WTF::find(chars, length, ')', i) + 1;
-    }
-    return i == length;
-}
-
-template <typename CharType>
-static CSSValueList* parseSimpleTransformList(const CharType* chars, unsigned length)
-{
-    if (!transformCanLikelyUseFastPath(chars, length))
-        return nullptr;
-    const CharType*& pos = chars;
-    const CharType* end = chars + length;
     CSSValueList* transformList = nullptr;
     while (pos < end) {
         while (pos < end && isCSSSpace(*pos))
@@ -1058,9 +1010,14 @@ static CSSValue* parseSimpleTransform(CSSPropertyID propertyID, const String& st
 
     if (propertyID != CSSPropertyTransform)
         return nullptr;
-    if (string.is8Bit())
-        return parseSimpleTransformList(string.characters8(), string.length());
-    return parseSimpleTransformList(string.characters16(), string.length());
+    if (string.is8Bit()) {
+        const LChar* pos = string.characters8();
+        const LChar* end = pos + string.length();
+        return parseSimpleTransformList(pos, end);
+    }
+    const UChar* pos = string.characters16();
+    const UChar* end = pos + string.length();
+    return parseSimpleTransformList(pos, end);
 }
 
 CSSValue* CSSParserFastPaths::maybeParseValue(CSSPropertyID propertyID, const String& string, CSSParserMode parserMode)
