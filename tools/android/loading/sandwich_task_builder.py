@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import csv
+import logging
 import json
 import os
 import shutil
@@ -95,7 +96,7 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
 
     self._patched_wpr_task = None
     self._reference_cache_task = None
-    self._subresources_for_urls_run_task = None
+    self._trace_from_grabbing_reference_cache = None
     self._subresources_for_urls_task = None
     self._PopulateCommonPipelines()
 
@@ -112,8 +113,7 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
           depends on: common/webpages-patched.wpr
             depends on: common/webpages.wpr
       depends on: common/urls-resources.json
-        depends on: common/urls-resources-run/
-          depends on: common/webpages.wpr
+        depends on: common/original-cache.zip
     """
     @self.RegisterTask('common/webpages-patched.wpr',
                        dependencies=[self._common_builder.original_wpr_task])
@@ -140,31 +140,28 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
       sandwich_misc.PatchCacheArchive(BuildOriginalCache.path,
           original_cache_trace_path, BuildPatchedCache.path)
 
-    @self.RegisterTask('common/subresources-for-urls-run/',
-                       dependencies=[self._common_builder.original_wpr_task])
-    def UrlsResourcesRun():
-      runner = self._common_builder.CreateSandwichRunner()
-      runner.wpr_archive_path = self._common_builder.original_wpr_task.path
-      runner.cache_operation = sandwich_runner.CacheOperation.CLEAR
-      runner.output_dir = UrlsResourcesRun.path
-      runner.Run()
-
-    @self.RegisterTask('common/subresources-for-urls.json', [UrlsResourcesRun])
+    @self.RegisterTask('common/subresources-for-urls.json',
+                       [BuildOriginalCache])
     def ListUrlsResources():
       url_resources = sandwich_misc.ReadSubresourceFromRunnerOutputDir(
-          UrlsResourcesRun.path)
+          BuildOriginalCache.run_path)
       with open(ListUrlsResources.path, 'w') as output:
         json.dump(url_resources, output)
 
     @self.RegisterTask('common/patched-cache-validation.log',
                        [BuildPatchedCache])
     def ValidatePatchedCache():
-      sandwich_misc.ValidateCacheArchiveContent(
-          original_cache_trace_path, BuildPatchedCache.path)
+      handler = logging.FileHandler(ValidatePatchedCache.path)
+      logging.getLogger().addHandler(handler)
+      try:
+        sandwich_misc.ValidateCacheArchiveContent(
+            original_cache_trace_path, BuildPatchedCache.path)
+      finally:
+        logging.getLogger().removeHandler(handler)
 
     self._patched_wpr_task = BuildPatchedWpr
+    self._trace_from_grabbing_reference_cache = original_cache_trace_path
     self._reference_cache_task = BuildPatchedCache
-    self._subresources_for_urls_run_task = UrlsResourcesRun
     self._subresources_for_urls_task = ListUrlsResources
 
     self._common_builder.default_final_tasks.append(ValidatePatchedCache)
@@ -197,10 +194,8 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
     @self.RegisterTask(shared_task_prefix + '-setup.json', merge=True,
                        dependencies=[self._subresources_for_urls_task])
     def SetupBenchmark():
-      trace_path = os.path.join(self._subresources_for_urls_run_task.path, '0',
-                                sandwich_runner.TRACE_FILENAME)
       whitelisted_urls = sandwich_misc.ExtractDiscoverableUrls(
-          trace_path, subresource_discoverer)
+          self._trace_from_grabbing_reference_cache, subresource_discoverer)
 
       url_resources = json.load(open(self._subresources_for_urls_task.path))
       common_util.EnsureParentDirectoryExists(SetupBenchmark.path)
