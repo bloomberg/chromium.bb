@@ -53,10 +53,6 @@ public:
 
     void appendVisualRect(const IntRect& visualRect);
 
-#if ENABLE(ASSERT)
-    void assertDisplayItemClientsAreAlive() const;
-#endif
-
     // Useful for iterating with a range-based for loop.
     template <typename Iterator>
     class Range {

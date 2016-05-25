@@ -208,8 +208,6 @@ private:
     void checkNoRemainingCachedDisplayItems();
 #endif
 
-    void commitNewDisplayItemsInternal(const LayoutSize& offsetFromLayoutObject);
-
     void updateCacheGeneration();
 
     // The last complete paint artifact.

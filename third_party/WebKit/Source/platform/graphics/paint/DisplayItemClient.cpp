@@ -4,7 +4,8 @@
 
 #include "platform/graphics/paint/DisplayItemClient.h"
 
-#if ENABLE(ASSERT)
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+#include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #endif
 
@@ -12,12 +13,14 @@ namespace blink {
 
 DisplayItemCacheGeneration::Generation DisplayItemCacheGeneration::s_nextGeneration = 1;
 
-#if DCHECK_IS_ON()
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
 
 HashSet<const DisplayItemClient*>* liveDisplayItemClients = nullptr;
+HashMap<const DisplayItemClient*, String>* displayItemClientsShouldKeepAlive = nullptr;
 
 DisplayItemClient::DisplayItemClient()
 {
+    CHECK(!displayItemClientsShouldKeepAlive || !displayItemClientsShouldKeepAlive->contains(this));
     if (!liveDisplayItemClients)
         liveDisplayItemClients = new HashSet<const DisplayItemClient*>();
     liveDisplayItemClients->add(this);
@@ -25,14 +28,35 @@ DisplayItemClient::DisplayItemClient()
 
 DisplayItemClient::~DisplayItemClient()
 {
+    CHECK(!displayItemClientsShouldKeepAlive || !displayItemClientsShouldKeepAlive->contains(this))
+        << "Short-lived DisplayItemClient: " << displayItemClientsShouldKeepAlive->get(this)
+        << ". See crbug.com/570030.";
     liveDisplayItemClients->remove(this);
 }
 
-bool DisplayItemClient::isAlive(const DisplayItemClient& client)
+bool DisplayItemClient::isAlive() const
 {
-    return liveDisplayItemClients && liveDisplayItemClients->contains(&client);
+    return liveDisplayItemClients && liveDisplayItemClients->contains(this);
 }
 
-#endif // DCHECK_IS_ON()
+void DisplayItemClient::beginShouldKeepAlive() const
+{
+    CHECK(isAlive());
+    if (!displayItemClientsShouldKeepAlive)
+        displayItemClientsShouldKeepAlive = new HashMap<const DisplayItemClient*, String>();
+    auto addResult = displayItemClientsShouldKeepAlive->add(this, "");
+#ifndef NDEBUG
+    if (addResult.isNewEntry)
+        addResult.storedValue->value = debugName();
+#endif
+}
+
+void DisplayItemClient::endShouldKeepAlive() const
+{
+    CHECK(isAlive());
+    displayItemClientsShouldKeepAlive->remove(this);
+}
+
+#endif // CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
 
 } // namespace blink

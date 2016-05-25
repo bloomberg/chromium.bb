@@ -99,9 +99,6 @@ void PaintArtifact::replay(GraphicsContext& graphicsContext) const
 void PaintArtifact::appendToWebDisplayItemList(WebDisplayItemList* list) const
 {
     TRACE_EVENT0("blink,benchmark", "PaintArtifact::appendToWebDisplayItemList");
-#if ENABLE(ASSERT)
-    m_displayItemList.assertDisplayItemClientsAreAlive();
-#endif
     unsigned visualRectIndex = 0;
     for (const DisplayItem& displayItem : m_displayItemList) {
         displayItem.appendToWebDisplayItemList(m_displayItemList.visualRect(visualRectIndex), list);

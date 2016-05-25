@@ -133,9 +133,12 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout)
         dummyPageHolder().frameView().setFrameRect(frameRect);
     }
     OwnPtr<PaintController> paintController = PaintController::create();
-    GraphicsContext context(*paintController);
-    DrawingRecorder drawingRecorder(context, *dummyPageHolder().frameView().layoutView(), DisplayItem::Caret, LayoutRect::infiniteIntRect());
-    selection().paintCaret(context, LayoutPoint());
+    {
+        GraphicsContext context(*paintController);
+        DrawingRecorder drawingRecorder(context, *dummyPageHolder().frameView().layoutView(), DisplayItem::Caret, LayoutRect::infiniteIntRect());
+        selection().paintCaret(context, LayoutPoint());
+    }
+    paintController->commitNewDisplayItems();
     EXPECT_EQ(startCount, layoutCount());
 }
 

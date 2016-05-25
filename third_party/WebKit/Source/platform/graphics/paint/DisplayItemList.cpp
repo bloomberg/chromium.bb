@@ -36,19 +36,6 @@ DisplayItem& DisplayItemList::appendByMoving(DisplayItem& item, const IntRect& v
     return result;
 }
 
-#if ENABLE(ASSERT)
-void DisplayItemList::assertDisplayItemClientsAreAlive() const
-{
-    for (auto& item : *this) {
-#ifdef NDEBUG
-        DCHECK(DisplayItemClient::isAlive(item.client())) << "Short-lived DisplayItemClient. See crbug.com/570030.";
-#else
-        DCHECK(DisplayItemClient::isAlive(item.client())) << "Short-lived DisplayItemClient: " << item.clientDebugString() << ". See crbug.com/570030.";
-#endif
-    }
-}
-#endif
-
 void DisplayItemList::appendVisualRect(const IntRect& visualRect)
 {
     size_t itemIndex = m_visualRects.size();

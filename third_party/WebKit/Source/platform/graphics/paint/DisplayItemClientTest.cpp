@@ -14,11 +14,11 @@ namespace {
 
 TEST(DisplayItemClientTest, IsAlive)
 {
-    EXPECT_FALSE(DisplayItemClient::isAlive(*reinterpret_cast<DisplayItemClient*>(0x12345678)));
+    EXPECT_FALSE(reinterpret_cast<DisplayItemClient*>(0x12345678)->isAlive());
     FakeDisplayItemClient* testClient = new FakeDisplayItemClient;
-    EXPECT_TRUE(DisplayItemClient::isAlive(*testClient));
+    EXPECT_TRUE(testClient->isAlive());
     delete testClient;
-    EXPECT_FALSE(DisplayItemClient::isAlive(*testClient));
+    EXPECT_FALSE(testClient->isAlive());
 }
 
 #endif // ENABLE(ASSERT)

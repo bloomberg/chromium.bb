@@ -65,6 +65,11 @@ void PaintController::processNewItem(DisplayItem& displayItem)
     DCHECK(!m_constructionDisabled);
     DCHECK(!skippingCache() || !displayItem.isCached());
 
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+    if (!skippingCache() && (displayItem.isCacheable() || displayItem.isCached()))
+        displayItem.client().beginShouldKeepAlive();
+#endif
+
     if (displayItem.isCached())
         ++m_numCachedNewItems;
 
@@ -158,8 +163,8 @@ void PaintController::invalidateAll()
 
 bool PaintController::clientCacheIsValid(const DisplayItemClient& client) const
 {
-#if DCHECK_IS_ON()
-    DCHECK(DisplayItemClient::isAlive(client));
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+    CHECK(client.isAlive());
 #endif
     if (skippingCache())
         return false;
@@ -261,17 +266,6 @@ void PaintController::copyCachedSubsequence(const DisplayItemList& currentList, 
     } while (!endSubsequenceId.matches(updatedList.last()));
 }
 
-void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutObject)
-{
-#if DCHECK_IS_ON()
-    m_newDisplayItemList.assertDisplayItemClientsAreAlive();
-#endif
-    commitNewDisplayItemsInternal(offsetFromLayoutObject);
-#if DCHECK_IS_ON()
-    m_currentPaintArtifact.getDisplayItemList().assertDisplayItemClientsAreAlive();
-#endif
-}
-
 static IntRect visualRectForDisplayItem(const DisplayItem& displayItem, const LayoutSize& offsetFromLayoutObject)
 {
     LayoutRect visualRect = displayItem.client().visualRect();
@@ -290,7 +284,7 @@ static IntRect visualRectForDisplayItem(const DisplayItem& displayItem, const La
 // Coefficients are related to the ratio of out-of-order CachedDisplayItems
 // and the average number of (Drawing|Subsequence)DisplayItems per client.
 //
-void PaintController::commitNewDisplayItemsInternal(const LayoutSize& offsetFromLayoutObject)
+void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutObject)
 {
     TRACE_EVENT2("blink,benchmark", "PaintController::commitNewDisplayItems",
         "current_display_list_size", (int)m_currentPaintArtifact.getDisplayItemList().size(),
@@ -441,8 +435,12 @@ void PaintController::updateCacheGeneration()
 {
     m_currentCacheGeneration = DisplayItemCacheGeneration::next();
     for (const DisplayItem& displayItem : m_currentPaintArtifact.getDisplayItemList()) {
-        if (displayItem.isCacheable())
-            displayItem.client().setDisplayItemsCached(m_currentCacheGeneration);
+        if (!displayItem.isCacheable())
+            continue;
+        displayItem.client().setDisplayItemsCached(m_currentCacheGeneration);
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+        displayItem.client().endShouldKeepAlive();
+#endif
     }
 }
 
