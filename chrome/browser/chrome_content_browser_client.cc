@@ -198,6 +198,10 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
+#if defined(MOJO_SHELL_CLIENT)
+#include "chrome/browser/chromeos/chrome_interface_factory.h"
+#include "chrome/browser/ui/ash/ash_util.h"
+#endif  // MOJO_SHELL_CLIENT
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
@@ -2948,6 +2952,17 @@ bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
 #else
   return false;
 #endif
+}
+
+void ChromeContentBrowserClient::AddMojoShellConnectionListeners() {
+#if defined(OS_CHROMEOS)
+#if defined(MOJO_SHELL_CLIENT)
+  if (chrome::IsRunningInMash()) {
+    content::MojoShellConnection::Get()->AddListener(
+        base::WrapUnique(new chromeos::ChromeInterfaceFactory));
+  }
+#endif  // MOJO_SHELL_CLIENT
+#endif  // OS_CHROMEOS
 }
 
 void ChromeContentBrowserClient::OverridePageVisibilityState(

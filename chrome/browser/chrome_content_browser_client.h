@@ -248,6 +248,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsPluginAllowedToUseDevChannelAPIs(
       content::BrowserContext* browser_context,
       const GURL& url) override;
+  void AddMojoShellConnectionListeners() override;
   void OverridePageVisibilityState(
       content::RenderFrameHost* render_frame_host,
       blink::WebPageVisibilityState* visibility_state) override;

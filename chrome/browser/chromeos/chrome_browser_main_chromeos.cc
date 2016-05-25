@@ -157,10 +157,6 @@
 #include "chrome/browser/chromeos/events/xinput_hierarchy_changed_event_listener.h"
 #endif
 
-#if defined(MOJO_SHELL_CLIENT)
-#include "chrome/browser/chromeos/chrome_interface_factory.h"
-#endif
-
 namespace chromeos {
 
 namespace {
@@ -382,13 +378,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 // Threads are initialized between MainMessageLoopStart and MainMessageLoopRun.
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
-#if defined(MOJO_SHELL_CLIENT)
-  if (chrome::IsRunningInMash()) {
-    content::MojoShellConnection::Get()->AddListener(
-        base::WrapUnique(new ChromeInterfaceFactory));
-  }
-#endif
-
   // Set the crypto thread after the IO thread has been created/started.
   TPMTokenLoader::Get()->SetCryptoTaskRunner(
       content::BrowserThread::GetMessageLoopProxyForThread(

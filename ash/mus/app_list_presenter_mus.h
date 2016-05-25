@@ -29,6 +29,11 @@ class AppListPresenterMus : public app_list::AppListPresenter {
   bool GetTargetVisibility() const override;
 
  private:
+  // Connect to the mojo app list service in chrome if the connection hasn't
+  // been established or has an error.
+  bool ConnectIfNeeded();
+
+  ::shell::Connector* connector_;
   app_list::mojom::AppListPresenterPtr presenter_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListPresenterMus);
