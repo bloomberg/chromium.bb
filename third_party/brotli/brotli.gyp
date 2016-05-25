@@ -33,6 +33,7 @@
           'cflags': ['-O2'],
         }],
       ],
+      'toolsets': ['host', 'target'],
     },
     {
       'target_name': 'bro',
@@ -88,16 +89,12 @@
         'enc/write_bits.h',
         'tools/bro.cc',
       ],
+      'toolsets': ['host'],
       'conditions': [
-        ['OS=="win"', {
-          'msvs_settings': {
-            'VCCLCompilerTool': {
-              'AdditionalOptions': [ '/EHsc', ],
-            },
-          },
-        }],
-        ['os_posix==1', {
-          'cflags_cc!': [ '-fno-exceptions', ],
+        ['OS=="win" and MSVS_VERSION == "2015"', {
+          # Disabling "result of 32-bit shift implicitly converted to 64 bits",
+          # caused by code like: foo |= (1 << i);   // warning 4334
+          'msvs_disabled_warnings': [ 4334, ],
         }],
       ],
     }

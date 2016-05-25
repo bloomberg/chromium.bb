@@ -16,6 +16,8 @@ Local Modifications:
   tools.
 - Lines 659 of enc/hash.h and 66 of enc/cluster.h were modified to eliminate
   build errors that appeared on Windows.
+- Lines 290 - 304 from tools/bro.cc were adjusted to remove a try/catch block,
+  which are disabled by default in Chromium.
 - BUILD.gn: Added.
 - brotli.gyp: Added.
 - brotli.gni: Added.

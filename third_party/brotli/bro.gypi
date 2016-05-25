@@ -41,6 +41,6 @@
     '<(output_file)',
   ],
   'dependencies': [
-    '<(DEPTH)/third_party/brotli/brotli.gyp:bro',
+    '<(DEPTH)/third_party/brotli/brotli.gyp:bro#host',
   ],
 }

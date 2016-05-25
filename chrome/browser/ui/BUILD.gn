@@ -169,6 +169,7 @@ source_set("ui") {
       "//storage/common",
       "//third_party/WebKit/public:resources",
       "//third_party/adobe/flash:flapper_version_h",
+      "//third_party/brotli",
       "//third_party/leveldatabase",
       "//third_party/libjingle",
       "//third_party/re2",

@@ -14,6 +14,7 @@ include_rules = [
 
   # Other libraries.
   "+third_party/angle",       # For ANGLE version.
+  "+third_party/brotli",      # For compressed resources.
   "+third_party/zlib/zlib.h", # For compression level constants.
   "+third_party/libaddressinput", # For i18n address input.
 

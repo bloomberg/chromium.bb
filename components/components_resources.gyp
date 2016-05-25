@@ -5,6 +5,7 @@
 {
   'variables': {
     'about_credits_file': '<(SHARED_INTERMEDIATE_DIR)/about_credits.html',
+    'about_credits_file_bro': '<(SHARED_INTERMEDIATE_DIR)/about_credits.bro',
   },
   'targets': [
     {
@@ -12,7 +13,7 @@
       'target_name': 'components_resources',
       'type': 'none',
       'dependencies': [
-        'about_credits',
+        'compressed_about_credits',
       ],
       'hard_dependency': 1,
       'variables': {
@@ -25,7 +26,7 @@
           'variables': {
             'grit_grd_file': 'resources/components_resources.grd',
             'grit_additional_defines': [
-              '-E', 'about_credits_file=<(about_credits_file)',
+              '-E', 'about_credits_file=<(about_credits_file_bro)',
             ],
           },
           'includes': [ '../build/grit_action.gypi' ],
@@ -40,6 +41,22 @@
         },
       ],
       'includes': [ '../build/grit_target.gypi' ],
+    },
+    {
+      'target_name': 'compressed_about_credits',
+      'type': 'none',
+      'actions': [
+        {
+          'variables': {
+            'input_file': '<(about_credits_file)',
+            'output_file': '<(about_credits_file_bro)',
+          },
+          'includes': ['../third_party/brotli/bro.gypi'],
+	}
+      ],
+      'dependencies': [
+        'about_credits'
+      ],
     },
     {
       # GN version: //components/resources:about_credits

@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+if (is_win) {
+  import("//build/config/win/visual_studio_version.gni")
+}
+
 source_set("brotli") {
   sources = [
     "dec/bit_reader.c",
@@ -85,15 +89,16 @@ if (current_toolchain == host_toolchain) {
       ":brotli",
     ]
 
+    if (is_win && visual_studio_version == "2015") {
+      # Disabling "result of 32-bit shift implicitly converted to 64 bits",
+      # caused by code like: foo |= (1 << i);   // warning 4334
+      cflags = [ "/wd4334" ]
+    }
+
     # Always build release since this is a build tool.
     if (is_debug) {
       configs -= [ "//build/config:debug" ]
       configs += [ "//build/config:release" ]
-    }
-    if (is_posix) {
-      configs -= [ "//build/config/gcc:no_exceptions" ]
-    } else if (is_win) {
-      cflags_cc = [ "/EHsc" ]
     }
   }
 }

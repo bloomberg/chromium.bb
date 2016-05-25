@@ -2919,6 +2919,7 @@
             '../net/net.gyp:stale_while_revalidate_experiment_domains',
             '../storage/storage_browser.gyp:storage',
             '../storage/storage_common.gyp:storage_common',
+            '../third_party/brotli/brotli.gyp:brotli',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
             '../third_party/re2/re2.gyp:re2',
             '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
