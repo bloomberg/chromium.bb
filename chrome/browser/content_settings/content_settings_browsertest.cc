@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -328,13 +329,6 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
     base::FilePath::StringType pepper_plugins = BuildPepperCdmRegistration(
         kClearKeyCdmBaseDirectory, kClearKeyCdmAdapterFileName,
         kClearKeyCdmDisplayName, kClearKeyCdmPepperMimeType);
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
-    // The CDM must be registered when it is a component.
-    pepper_plugins.append(FILE_PATH_LITERAL(","));
-    pepper_plugins.append(BuildPepperCdmRegistration(
-        kWidevineCdmBaseDirectory, kWidevineCdmAdapterFileName,
-        kWidevineCdmDisplayName, kWidevineCdmPluginMimeType));
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
     command_line->AppendSwitchNative(switches::kRegisterPepperPlugins,
                                      pepper_plugins);
 #endif  // defined(ENABLE_PEPPER_CDMS)
@@ -344,6 +338,15 @@ class PepperContentSettingsSpecialCasesTest : public ContentSettingsTest {
     command_line->AppendSwitch(switches::kEnableNaCl);
 #endif
   }
+
+#if defined(ENABLE_PEPPER_CDMS)
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
+    base::CommandLine default_command_line(base::CommandLine::NO_PROGRAM);
+    InProcessBrowserTest::SetUpDefaultCommandLine(&default_command_line);
+    test_launcher_utils::RemoveCommandLineSwitch(
+        default_command_line, switches::kDisableComponentUpdate, command_line);
+  }
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
   void RunLoadPepperPluginTest(const char* mime_type, bool expect_loaded) {
     const char* expected_result = expect_loaded ? "Loaded" : "Not Loaded";

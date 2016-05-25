@@ -135,7 +135,6 @@ InProcessBrowserTest::InProcessBrowserTest()
     : browser_(NULL),
       exit_when_last_browser_closes_(true),
       open_about_blank_on_browser_launch_(true),
-      multi_desktop_test_(false),
       run_accessibility_checks_for_test_case_(false)
 #if defined(OS_MACOSX)
       , autorelease_pool_(NULL)
@@ -196,7 +195,7 @@ void InProcessBrowserTest::SetUp() {
   // Allow subclasses to change the command line before running any tests.
   SetUpCommandLine(command_line);
   // Add command line arguments that are used by all InProcessBrowserTests.
-  PrepareTestCommandLine(command_line);
+  SetUpDefaultCommandLine(command_line);
 
   // Create a temporary user data directory if required.
   ASSERT_TRUE(CreateUserDataDirectory())
@@ -241,7 +240,7 @@ void InProcessBrowserTest::SetUp() {
   BrowserTestBase::SetUp();
 }
 
-void InProcessBrowserTest::PrepareTestCommandLine(
+void InProcessBrowserTest::SetUpDefaultCommandLine(
     base::CommandLine* command_line) {
   // Propagate commandline settings from test_launcher_utils.
   test_launcher_utils::PrepareBrowserCommandLineForTests(command_line);

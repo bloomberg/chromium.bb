@@ -60,12 +60,21 @@ class ContentRendererClient;
 //   SetUpInProcessBrowserTestFixture and other related hook methods for a
 //   cleaner alternative).
 //
-// Following three hook methods are called in sequence before calling
+// The following four hook methods are called in sequence before calling
 // BrowserMain(), thus no browser has been created yet. They are mainly for
 // setting up the environment for running the browser.
 // . SetUpUserDataDirectory()
 // . SetUpCommandLine()
+// . SetUpDefaultCommandLine()
 // . SetUpInProcessBrowserTestFixture()
+//
+// Default command line switches are added in the default implementation of
+// SetUpDefaultCommandLine(). Addtional command line switches can be simply
+// appended in SetUpCommandLine() without the need to invoke
+// InProcessBrowserTest::SetUpCommandLine(). If a test needs to change the
+// default command line, it can override SetUpDefaultCommandLine(), where it
+// should invoke InProcessBrowserTest::SetUpDefaultCommandLine() to get the
+// default swtiches, and modify them as needed.
 //
 // SetUpOnMainThread() is called just after creating the default browser object
 // and before executing the real test code. It's mainly for setting up things
@@ -134,6 +143,13 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   void AddTabAtIndex(int index,
                      const GURL& url,
                      ui::PageTransition transition);
+
+  // Setups default command line that will be used to launch the child browser
+  // process with an in-process test. Called by SetUp() after SetupCommandLine()
+  // to add default commandline switches. A default implementation is provided
+  // in this class. If a test does not want to use the default implementation,
+  // it should override this method.
+  virtual void SetUpDefaultCommandLine(base::CommandLine* command_line);
 
   // Initializes the contents of the user data directory. Called by SetUp()
   // after creating the user data directory, but before any browser is launched.
@@ -207,11 +223,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
     open_about_blank_on_browser_launch_ = value;
   }
 
-  // This must be called before RunTestOnMainThreadLoop() to have any effect.
-  void set_multi_desktop_test(bool multi_desktop_test) {
-    multi_desktop_test_ = multi_desktop_test;
-  }
-
   // Runs accessibility checks and sets |error_message| if it fails.
   bool RunAccessibilityChecks(std::string* error_message);
 
@@ -222,10 +233,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
   // Quits all open browsers and waits until there are no more browsers.
   void QuitBrowsers();
-
-  // Prepare command line that will be used to launch the child browser process
-  // with an in-process test.
-  void PrepareTestCommandLine(base::CommandLine* command_line);
 
   // Browser created from CreateBrowser.
   Browser* browser_;
@@ -239,10 +246,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
   // True if the about:blank tab should be opened when the browser is launched.
   bool open_about_blank_on_browser_launch_;
-
-  // True if this is a multi-desktop test (in which case this browser test will
-  // not ensure that Browsers are only created on the tested desktop).
-  bool multi_desktop_test_;
 
   // True if the accessibility test should run for a particular test case.
   // This is reset for every test case.

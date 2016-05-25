@@ -21,6 +21,13 @@ namespace test_launcher_utils {
 // when running under tests.
 void PrepareBrowserCommandLineForTests(base::CommandLine* command_line);
 
+// Appends all switches from |in_command_line| to |out_command_line| except for
+// |switch_to_remove|.
+// TODO(xhwang): Add CommandLine::RemoveSwitch() so we don't need this hack.
+void RemoveCommandLineSwitch(const base::CommandLine& in_command_line,
+                             const std::string& switch_to_remove,
+                             base::CommandLine* out_command_line);
+
 // Overrides the current process' user data dir.
 bool OverrideUserDataDir(
     const base::FilePath& user_data_dir) WARN_UNUSED_RESULT;

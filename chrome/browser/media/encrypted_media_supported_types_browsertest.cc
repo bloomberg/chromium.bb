@@ -18,7 +18,9 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -85,20 +87,15 @@ const char kUnexpectedResult[] = "unexpected result";
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
 // Expectations for Widevine.
-// Note: Widevine is not available on platforms using components because
-// RegisterPepperCdm() cannot set the codecs.
-// TODO(xhwang): Enable these tests after we have the ability to use the
-// manifest in these tests. See http://crbug.com/586634
-#if defined(WIDEVINE_CDM_AVAILABLE) && !defined(WIDEVINE_CDM_IS_COMPONENT)
+#if defined(WIDEVINE_CDM_AVAILABLE)
 #define EXPECT_WV_SUCCESS EXPECT_SUCCESS
 #define EXPECT_WV_PROPRIETARY EXPECT_PROPRIETARY
 #define EXPECT_WV_NO_MATCH EXPECT_NO_MATCH
-#else  // defined(WIDEVINE_CDM_AVAILABLE) && !defined(WIDEVINE_CDM_IS_COMPONENT)
+#else  // defined(WIDEVINE_CDM_AVAILABLE)
 #define EXPECT_WV_SUCCESS EXPECT_UNKNOWN_KEYSYSTEM
 #define EXPECT_WV_PROPRIETARY EXPECT_UNKNOWN_KEYSYSTEM
 #define EXPECT_WV_NO_MATCH EXPECT_UNKNOWN_KEYSYSTEM
-#endif  // defined(WIDEVINE_CDM_AVAILABLE) &&
-        // !defined(WIDEVINE_CDM_IS_COMPONENT)
+#endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 };  // namespace
 
@@ -150,6 +147,15 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     return video_mp4_hi10p_codecs_;
   }
   const CodecVector& invalid_codecs() const { return invalid_codecs_; }
+
+#if defined(ENABLE_PEPPER_CDMS)
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
+    base::CommandLine default_command_line(base::CommandLine::NO_PROGRAM);
+    InProcessBrowserTest::SetUpDefaultCommandLine(&default_command_line);
+    test_launcher_utils::RemoveCommandLineSwitch(
+        default_command_line, switches::kDisableComponentUpdate, command_line);
+  }
+#endif  // defined(ENABLE_PEPPER_CDMS)
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
@@ -265,9 +271,6 @@ class EncryptedMediaSupportedTypesExternalClearKeyTest
 #endif  // defined(ENABLE_PEPPER_CDMS)
 };
 
-// TODO(sandersd): Register the Widevine CDM if it is a component. A component
-// CDM registered using RegisterPepperCdm() declares support for audio codecs,
-// but not the other codecs we expect. http://crbug.com/356833.
 class EncryptedMediaSupportedTypesWidevineTest
     : public EncryptedMediaSupportedTypesTest {
 };
@@ -652,9 +655,8 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesTest,
   EXPECT_UNKNOWN_KEYSYSTEM(AreCodecsSupportedByKeySystem(
       kVideoWebMMimeType, no_codecs(), kExternalClearKey));
 
-  // This will fail in all builds unless widevine is available but not a
-  // component, in which case it is registered internally
-#if !defined(WIDEVINE_CDM_AVAILABLE) || defined(WIDEVINE_CDM_IS_COMPONENT)
+// This will fail in all builds unless widevine is available.
+#if !defined(WIDEVINE_CDM_AVAILABLE)
   EXPECT_UNKNOWN_KEYSYSTEM(AreCodecsSupportedByKeySystem(
       kVideoWebMMimeType, no_codecs(), kWidevine));
 #endif
@@ -678,9 +680,8 @@ IN_PROC_BROWSER_TEST_F(
       kVideoWebMMimeType, no_codecs(), kClearKey));
 }
 
-// This will fail in all builds unless Widevine is available but not a
-// component, in which case it is registered internally.
-#if !defined(WIDEVINE_CDM_AVAILABLE) || defined(WIDEVINE_CDM_IS_COMPONENT)
+// This will fail in all builds unless Widevine is available.
+#if !defined(WIDEVINE_CDM_AVAILABLE)
 IN_PROC_BROWSER_TEST_F(
     EncryptedMediaSupportedTypesWidevineCDMRegisteredWithWrongPathTest,
     PepperCDMsRegisteredButAdapterNotPresent) {
@@ -691,8 +692,6 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_SUCCESS(AreCodecsSupportedByKeySystem(
       kVideoWebMMimeType, no_codecs(), kClearKey));
 }
-#endif  // !defined(WIDEVINE_CDM_AVAILABLE) ||
-        // defined(WIDEVINE_CDM_IS_COMPONENT)
+#endif  // !defined(WIDEVINE_CDM_AVAILABLE)
 #endif  // defined(ENABLE_PEPPER_CDMS)
-
 }  // namespace chrome
