@@ -58,7 +58,8 @@ def _baseline_name(fs, test_name, suffix):
 
 
 class AbstractRebaseliningCommand(Command):
-    # not overriding execute() - pylint: disable=W0223
+    """Base class for rebaseline-related commands."""
+    # Not overriding execute() - pylint: disable=abstract-method
 
     no_optimize_option = optparse.make_option('--no-optimize', dest='optimize', action='store_false', default=True,
                                               help=('Do not optimize/de-dup the expectations after rebaselining (default is to de-dup automatically). '
@@ -66,10 +67,10 @@ class AbstractRebaseliningCommand(Command):
 
     platform_options = factory.platform_options(use_globs=True)
 
-    results_directory_option = optparse.make_option("--results-directory", help="Local results directory to use")
+    results_directory_option = optparse.make_option("--results-directory", help="Local results directory to use.")
 
     suffixes_option = optparse.make_option("--suffixes", default=','.join(BASELINE_SUFFIX_LIST), action="store",
-                                           help="Comma-separated-list of file types to rebaseline")
+                                           help="Comma-separated-list of file types to rebaseline.")
 
     def __init__(self, options=None):
         super(AbstractRebaseliningCommand, self).__init__(options=options)
@@ -84,13 +85,15 @@ class AbstractRebaseliningCommand(Command):
 
 
 class BaseInternalRebaselineCommand(AbstractRebaseliningCommand):
+    """Base class for rebaseline-related commands that are intended to be used by other commands."""
+    # Not overriding execute() - pylint: disable=abstract-method
 
     def __init__(self):
         super(BaseInternalRebaselineCommand, self).__init__(options=[
             self.results_directory_option,
             self.suffixes_option,
-            optparse.make_option("--builder", help="Builder to pull new baselines from"),
-            optparse.make_option("--test", help="Test to rebaseline"),
+            optparse.make_option("--builder", help="Builder to pull new baselines from."),
+            optparse.make_option("--test", help="Test to rebaseline."),
         ])
 
     def _baseline_directory(self, builder_name):
@@ -128,7 +131,7 @@ class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
                 if index:
                     immediate_predecessors_in_fallback.append(self._tool.filesystem.basename(baseline_search_path[index - 1]))
             except ValueError:
-                # index throw's a ValueError if the item isn't in the list.
+                # baseline_search_path.index() throws a ValueError if the item isn't in the list.
                 pass
         return immediate_predecessors_in_fallback
 
@@ -245,7 +248,7 @@ class OptimizeBaselines(AbstractRebaseliningCommand):
         super(OptimizeBaselines, self).__init__(options=[
             self.suffixes_option,
             optparse.make_option('--no-modify-scm', action='store_true', default=False,
-                                 help='Dump SCM commands as JSON instead of '),
+                                 help='Dump SCM commands as JSON instead of actually committing changes.'),
         ] + self.platform_options)
 
     def _optimize_baseline(self, optimizer, test_name):
@@ -288,7 +291,7 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
     def __init__(self):
         super(AnalyzeBaselines, self).__init__(options=[
             self.suffixes_option,
-            optparse.make_option('--missing', action='store_true', default=False, help='show missing baselines as well'),
+            optparse.make_option('--missing', action='store_true', default=False, help='Show missing baselines as well.'),
         ] + self.platform_options)
         self._optimizer_class = BaselineOptimizer  # overridable for testing
         self._baseline_optimizer = None
@@ -320,7 +323,8 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
 
 
 class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
-    # not overriding execute() - pylint: disable=W0223
+    """Base class for rebaseline commands that do some tasks in parallel."""
+    # Not overriding execute() - pylint: disable=abstract-method
 
     def __init__(self, options=None):
         super(AbstractParallelRebaselineCommand, self).__init__(options=options)
@@ -359,10 +363,16 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
             traceback.print_exc(file=sys.stderr)
 
     def _builders_to_fetch_from(self, builders_to_check):
-        # This routine returns the subset of builders that will cover all of the baseline search paths
-        # used in the input list. In particular, if the input list contains both Release and Debug
-        # versions of a configuration, we *only* return the Release version (since we don't save
-        # debug versions of baselines).
+        """Returns the subset of builders that will cover all of the baseline search paths
+        used in the input list.
+
+        In particular, if the input list contains both Release and Debug
+        versions of a configuration, we *only* return the Release version
+        (since we don't save debug versions of baselines).
+
+        Args:
+          builders_to_check: List of builder names.
+        """
         release_builders = set()
         debug_builders = set()
         builders_to_fallback_paths = {}
@@ -624,7 +634,7 @@ class RebaselineExpectations(AbstractParallelRebaselineCommand):
 
 class Rebaseline(AbstractParallelRebaselineCommand):
     name = "rebaseline"
-    help_text = "Rebaseline tests with results from the build bots. Shows the list of failing tests on the builders if no test names are provided."
+    help_text = "Rebaseline tests with results from the build bots."
     show_in_main_help = True
     argument_names = "[TEST_NAMES]"
 
@@ -635,7 +645,7 @@ class Rebaseline(AbstractParallelRebaselineCommand):
             self.suffixes_option,
             self.results_directory_option,
             optparse.make_option("--builders", default=None, action="append",
-                                 help="Comma-separated-list of builders to pull new baselines from (can also be provided multiple times)"),
+                                 help="Comma-separated-list of builders to pull new baselines from (can also be provided multiple times)."),
         ])
 
     def _builders_to_pull_from(self):
