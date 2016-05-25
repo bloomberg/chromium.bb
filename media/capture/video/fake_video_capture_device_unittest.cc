@@ -74,7 +74,8 @@ class MockClient : public VideoCaptureDevice::Client {
                               int length,
                               const VideoCaptureFormat& format,
                               int rotation,
-                              const base::TimeTicks& timestamp) {
+                              base::TimeTicks reference_time,
+                              base::TimeDelta timestamp) override {
     frame_cb_.Run(format);
   }
   // Virtual methods for capturing using Client's Buffers.
@@ -93,13 +94,14 @@ class MockClient : public VideoCaptureDevice::Client {
   }
   void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
                                 const VideoCaptureFormat& frame_format,
-                                const base::TimeTicks& timestamp) {
+                                base::TimeTicks reference_time,
+                                base::TimeDelta timestamp) {
     frame_cb_.Run(frame_format);
   }
   void OnIncomingCapturedVideoFrame(
       std::unique_ptr<Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame,
-      const base::TimeTicks& timestamp) {
+      base::TimeTicks reference_time) {
     VideoCaptureFormat format(frame->natural_size(), 30.0,
                               PIXEL_FORMAT_I420);
     frame_cb_.Run(format);

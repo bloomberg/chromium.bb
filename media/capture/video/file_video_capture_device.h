@@ -81,6 +81,8 @@ class MEDIA_EXPORT FileVideoCaptureDevice : public VideoCaptureDevice {
   VideoCaptureFormat capture_format_;
   // Target time for the next frame.
   base::TimeTicks next_frame_time_;
+  // The system time when we receive the first frame.
+  base::TimeTicks first_ref_time_;
 
   DISALLOW_COPY_AND_ASSIGN(FileVideoCaptureDevice);
 };

@@ -366,8 +366,10 @@ void FileVideoCaptureDevice::OnCaptureTask() {
   DCHECK(frame_size);
   CHECK(frame_ptr);
   const base::TimeTicks current_time = base::TimeTicks::Now();
+  if (first_ref_time_.is_null())
+    first_ref_time_ = current_time;
   client_->OnIncomingCapturedData(frame_ptr, frame_size, capture_format_, 0,
-                                  current_time);
+                                  current_time, current_time - first_ref_time_);
   // Reschedule next CaptureTask.
   const base::TimeDelta frame_interval =
       base::TimeDelta::FromMicroseconds(1E6 / capture_format_.frame_rate);

@@ -86,7 +86,7 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
   // Implements SinkFilterObserver.
   void FrameReceived(const uint8_t* buffer,
                      int length,
-                     base::TimeTicks timestamp) override;
+                     base::TimeDelta timestamp) override;
 
   bool CreateCapabilityMap();
   void SetAntiFlickerInCaptureFilter(const VideoCaptureParams& params);
@@ -111,6 +111,8 @@ class VideoCaptureDeviceWin : public VideoCaptureDevice,
   // Map of all capabilities this device support.
   CapabilityList capabilities_;
   VideoCaptureFormat capture_format_;
+
+  base::TimeTicks first_ref_time_;
 
   base::ThreadChecker thread_checker_;
 

@@ -190,6 +190,7 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
   if (!got_first_frame_) {
     // Set aside one frame allowance for fluctuation.
     expected_next_frame_time_ = current_time - frame_interval_;
+    first_ref_time_ = current_time;
     got_first_frame_ = true;
   }
 
@@ -197,9 +198,11 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
   if (expected_next_frame_time_ <= current_time) {
     expected_next_frame_time_ += frame_interval_;
 
+    // TODO(qiangchen): Investigate how to get raw timestamp for Android,
+    // rather than using reference time to calculate timestamp.
     client_->OnIncomingCapturedData(reinterpret_cast<uint8_t*>(buffer), length,
-                                    capture_format_, rotation,
-                                    base::TimeTicks::Now());
+                                    capture_format_, rotation, current_time,
+                                    current_time - first_ref_time_);
   }
 
   env->ReleaseByteArrayElements(data, buffer, JNI_ABORT);

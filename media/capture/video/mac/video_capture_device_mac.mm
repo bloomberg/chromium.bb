@@ -316,7 +316,6 @@ VideoCaptureDeviceMac::VideoCaptureDeviceMac(const Name& device_name)
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       state_(kNotInitialized),
       capture_device_(nil),
-      first_timestamp_(media::kNoTimestamp()),
       weak_factory_(this) {
 }
 
@@ -423,18 +422,8 @@ void VideoCaptureDeviceMac::ReceiveFrame(const uint8_t* video_frame,
     return;
   }
 
-  base::TimeTicks aligned_timestamp;
-  if (timestamp == media::kNoTimestamp()) {
-    aligned_timestamp = base::TimeTicks::Now();
-  } else {
-    if (first_timestamp_ == media::kNoTimestamp()) {
-      first_timestamp_ = timestamp;
-      first_aligned_timestamp_ = base::TimeTicks::Now();
-    }
-    aligned_timestamp = first_aligned_timestamp_ + timestamp - first_timestamp_;
-  }
   client_->OnIncomingCapturedData(video_frame, video_frame_length, frame_format,
-                                  0, aligned_timestamp);
+                                  0, base::TimeTicks::Now(), timestamp);
 }
 
 void VideoCaptureDeviceMac::ReceiveError(

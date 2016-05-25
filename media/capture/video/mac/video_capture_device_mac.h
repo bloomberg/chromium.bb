@@ -99,9 +99,6 @@ class VideoCaptureDeviceMac : public VideoCaptureDevice {
 
   base::scoped_nsobject<VideoCaptureDeviceAVFoundation> capture_device_;
 
-  base::TimeDelta first_timestamp_;
-  base::TimeTicks first_aligned_timestamp_;
-
   // Used with Bind and PostTask to ensure that methods aren't called after the
   // VideoCaptureDeviceMac is destroyed.
   // NOTE: Weak pointers must be invalidated before all other member variables.

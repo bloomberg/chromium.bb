@@ -126,6 +126,9 @@ class DesktopCaptureDevice::Core : public webrtc::DesktopCapturer::Callback {
   // The type of the capturer.
   DesktopMediaID::Type capturer_type_;
 
+  // The system time when we receive the first frame.
+  base::TimeTicks first_ref_time_;
+
   std::unique_ptr<webrtc::BasicDesktopFrame> black_frame_;
 
   // TODO(jiayl): Remove power_save_blocker_ when there is an API to keep the
@@ -308,12 +311,15 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
     output_data = frame->data();
   }
 
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (first_ref_time_.is_null())
+    first_ref_time_ = now;
   client_->OnIncomingCapturedData(
       output_data, output_bytes,
       media::VideoCaptureFormat(
           gfx::Size(output_size.width(), output_size.height()),
           requested_frame_rate_, media::PIXEL_FORMAT_ARGB),
-      0, base::TimeTicks::Now());
+      0, now, now - first_ref_time_);
 }
 
 void DesktopCaptureDevice::Core::OnCaptureTimer() {

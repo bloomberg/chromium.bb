@@ -93,6 +93,7 @@ class MEDIA_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   InternalState state_;
   bool got_first_frame_;
   base::TimeTicks expected_next_frame_time_;
+  base::TimeTicks first_ref_time_;
   base::TimeDelta frame_interval_;
   std::unique_ptr<VideoCaptureDevice::Client> client_;
 

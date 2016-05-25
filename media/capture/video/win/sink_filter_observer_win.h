@@ -18,7 +18,7 @@ class SinkFilterObserver {
   // buffer in only valid during this function call.
   virtual void FrameReceived(const uint8_t* buffer,
                              int length,
-                             base::TimeTicks timestamp) = 0;
+                             base::TimeDelta timestamp) = 0;
 
  protected:
   virtual ~SinkFilterObserver();

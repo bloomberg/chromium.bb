@@ -92,6 +92,8 @@ class DeckLinkCaptureDelegate
   // |decklink_| represents a physical device attached to the host.
   ScopedDeckLinkPtr<IDeckLink> decklink_;
 
+  base::TimeTicks first_ref_time_;
+
   // Checks for Device (a.k.a. Audio) thread.
   base::ThreadChecker thread_checker_;
 
@@ -256,13 +258,26 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived(
       gfx::Size(video_frame->GetWidth(), video_frame->GetHeight()),
       0.0f,  // Frame rate is not needed for captured data callback.
       pixel_format);
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (first_ref_time_.is_null())
+    first_ref_time_ = now;
   base::AutoLock lock(lock_);
   if (frame_receiver_) {
+    const BMDTimeScale micros_time_scale = base::Time::kMicrosecondsPerSecond;
+    BMDTimeValue frame_time;
+    BMDTimeValue frame_duration;
+    base::TimeDelta timestamp;
+    if (SUCCEEDED(video_frame->GetStreamTime(&frame_time, &frame_duration,
+                                             micros_time_scale))) {
+      timestamp = base::TimeDelta::FromMicroseconds(frame_time);
+    } else {
+      timestamp = now - first_ref_time_;
+    }
     frame_receiver_->OnIncomingCapturedData(
         video_data, video_frame->GetRowBytes() * video_frame->GetHeight(),
         capture_format,
         0,  // Rotation.
-        base::TimeTicks::Now());
+        now, timestamp);
   }
   return S_OK;
 }
@@ -451,11 +466,12 @@ void VideoCaptureDeviceDeckLinkMac::OnIncomingCapturedData(
     size_t length,
     const VideoCaptureFormat& frame_format,
     int rotation,  // Clockwise.
-    base::TimeTicks timestamp) {
+    base::TimeTicks reference_time,
+    base::TimeDelta timestamp) {
   base::AutoLock lock(lock_);
   if (client_) {
     client_->OnIncomingCapturedData(data, length, frame_format, rotation,
-                                    timestamp);
+                                    reference_time, timestamp);
   }
 }
 

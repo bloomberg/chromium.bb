@@ -60,22 +60,13 @@ const uint8_t kFakePixelValueFirst = 2;
 
 class MockDeviceClient : public media::VideoCaptureDevice::Client {
  public:
-  MOCK_METHOD5(OnIncomingCapturedData,
+  MOCK_METHOD6(OnIncomingCapturedData,
                void(const uint8_t* data,
                     int length,
                     const media::VideoCaptureFormat& frame_format,
                     int rotation,
-                    const base::TimeTicks& timestamp));
-  MOCK_METHOD9(OnIncomingCapturedYuvData,
-               void(const uint8_t* y_data,
-                    const uint8_t* u_data,
-                    const uint8_t* v_data,
-                    size_t y_stride,
-                    size_t u_stride,
-                    size_t v_stride,
-                    const media::VideoCaptureFormat& frame_format,
-                    int clockwise_rotation,
-                    const base::TimeTicks& timestamp));
+                    base::TimeTicks reference_time,
+                    base::TimeDelta timestamp));
   MOCK_METHOD0(DoReserveOutputBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));
@@ -96,13 +87,14 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   }
   void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
                                 const media::VideoCaptureFormat& frame_format,
-                                const base::TimeTicks& timestamp) override {
+                                base::TimeTicks reference_time,
+                                base::TimeDelta timestamp) override {
     DoOnIncomingCapturedBuffer();
   }
   void OnIncomingCapturedVideoFrame(
       std::unique_ptr<Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame,
-      const base::TimeTicks& timestamp) override {
+      base::TimeTicks reference_time) override {
     DoOnIncomingCapturedVideoFrame();
   }
   std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
@@ -269,8 +261,12 @@ class DesktopCaptureDeviceTest : public testing::Test {
         std::move(capturer), DesktopMediaID::TYPE_SCREEN));
   }
 
-  void CopyFrame(const uint8_t* frame, int size,
-                 const media::VideoCaptureFormat&, int, base::TimeTicks) {
+  void CopyFrame(const uint8_t* frame,
+                 int size,
+                 const media::VideoCaptureFormat&,
+                 int,
+                 base::TimeTicks,
+                 base::TimeDelta) {
     ASSERT_TRUE(output_frame_);
     ASSERT_EQ(output_frame_->stride() * output_frame_->size().height(), size);
     memcpy(output_frame_->data(), frame, size);
@@ -301,10 +297,10 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_, _)).Times(0);
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _)).WillRepeatedly(
-      DoAll(SaveArg<1>(&frame_size),
-            SaveArg<2>(&format),
-            InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _))
+      .WillRepeatedly(
+          DoAll(SaveArg<1>(&frame_size), SaveArg<2>(&format),
+                InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
@@ -336,10 +332,11 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_, _)).Times(0);
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _)).WillRepeatedly(
-      DoAll(WithArg<2>(Invoke(&format_checker,
-                              &FormatChecker::ExpectAcceptableSize)),
-            InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _))
+      .WillRepeatedly(
+          DoAll(WithArg<2>(Invoke(&format_checker,
+                                  &FormatChecker::ExpectAcceptableSize)),
+                InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestFrameWidth1,
@@ -377,10 +374,11 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeFixedAspectRatio) {
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_,_)).Times(0);
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _)).WillRepeatedly(
-      DoAll(WithArg<2>(Invoke(&format_checker,
-                              &FormatChecker::ExpectAcceptableSize)),
-            InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _))
+      .WillRepeatedly(
+          DoAll(WithArg<2>(Invoke(&format_checker,
+                                  &FormatChecker::ExpectAcceptableSize)),
+                InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureParams capture_params;
   const gfx::Size high_def_16_by_9(1920, 1080);
@@ -422,10 +420,11 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_,_)).Times(0);
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _)).WillRepeatedly(
-      DoAll(WithArg<2>(Invoke(&format_checker,
-                              &FormatChecker::ExpectAcceptableSize)),
-            InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _))
+      .WillRepeatedly(
+          DoAll(WithArg<2>(Invoke(&format_checker,
+                                  &FormatChecker::ExpectAcceptableSize)),
+                InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureParams capture_params;
   const gfx::Size high_def_16_by_9(1920, 1080);
@@ -469,10 +468,11 @@ TEST_F(DesktopCaptureDeviceTest, UnpackedFrame) {
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_,_)).Times(0);
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _)).WillRepeatedly(
-      DoAll(Invoke(this, &DesktopCaptureDeviceTest::CopyFrame),
-            SaveArg<1>(&frame_size),
-            InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _))
+      .WillRepeatedly(
+          DoAll(Invoke(this, &DesktopCaptureDeviceTest::CopyFrame),
+                SaveArg<1>(&frame_size),
+                InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestFrameWidth1,
@@ -513,10 +513,11 @@ TEST_F(DesktopCaptureDeviceTest, InvertedFrame) {
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_,_)).Times(0);
-  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _)).WillRepeatedly(
-      DoAll(Invoke(this, &DesktopCaptureDeviceTest::CopyFrame),
-            SaveArg<1>(&frame_size),
-            InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
+  EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _))
+      .WillRepeatedly(
+          DoAll(Invoke(this, &DesktopCaptureDeviceTest::CopyFrame),
+                SaveArg<1>(&frame_size),
+                InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(kTestFrameWidth1,

@@ -56,7 +56,8 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin : public base::NonThreadSafe,
   void OnIncomingCapturedData(const uint8_t* data,
                               int length,
                               int rotation,
-                              const base::TimeTicks& time_stamp);
+                              base::TimeTicks reference_time,
+                              base::TimeDelta timestamp);
 
  private:
   void OnError(const tracked_objects::Location& from_here, HRESULT hr);

@@ -63,6 +63,8 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   base::TimeDelta elapsed_time_;
   VideoCaptureFormat capture_format_;
 
+  // The system time when we receive the first frame.
+  base::TimeTicks first_ref_time_;
   // FakeVideoCaptureDevice post tasks to itself for frame construction and
   // needs to deal with asynchronous StopAndDeallocate().
   base::WeakPtrFactory<FakeVideoCaptureDevice> weak_factory_;

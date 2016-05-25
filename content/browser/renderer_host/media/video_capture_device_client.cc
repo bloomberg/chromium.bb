@@ -85,7 +85,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     int length,
     const VideoCaptureFormat& frame_format,
     int rotation,
-    const base::TimeTicks& timestamp) {
+    base::TimeTicks reference_time,
+    base::TimeDelta timestamp) {
   TRACE_EVENT0("video", "VideoCaptureDeviceClient::OnIncomingCapturedData");
   DCHECK_EQ(media::PIXEL_STORAGE_CPU, frame_format.pixel_storage);
 
@@ -224,8 +225,9 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     } else if (status == VideoCaptureGpuJpegDecoder::INIT_PASSED &&
         frame_format.pixel_format == media::PIXEL_FORMAT_MJPEG &&
         rotation == 0 && !flip) {
-      external_jpeg_decoder_->DecodeCapturedData(data, length, frame_format,
-                                                 timestamp, std::move(buffer));
+      // TODO(qiangchen): Pass timestamp into DecodeCapturedData.
+      external_jpeg_decoder_->DecodeCapturedData(
+          data, length, frame_format, reference_time, std::move(buffer));
       return;
     }
   }
@@ -254,7 +256,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
   const VideoCaptureFormat output_format = VideoCaptureFormat(
       dimensions, frame_format.frame_rate,
       media::PIXEL_FORMAT_I420, output_pixel_storage);
-  OnIncomingCapturedBuffer(std::move(buffer), output_format, timestamp);
+  OnIncomingCapturedBuffer(std::move(buffer), output_format, reference_time,
+                           timestamp);
 }
 
 std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
@@ -287,7 +290,8 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(
 void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
     std::unique_ptr<Buffer> buffer,
     const VideoCaptureFormat& frame_format,
-    const base::TimeTicks& timestamp) {
+    base::TimeTicks reference_time,
+    base::TimeDelta timestamp) {
   // Currently, only I420 pixel format is supported.
   DCHECK_EQ(media::PIXEL_FORMAT_I420, frame_format.pixel_format);
 
@@ -302,7 +306,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
           reinterpret_cast<uint8_t*>(buffer->data(media::VideoFrame::kYPlane)),
           reinterpret_cast<uint8_t*>(buffer->data(media::VideoFrame::kUPlane)),
           reinterpret_cast<uint8_t*>(buffer->data(media::VideoFrame::kVPlane)),
-          handle, handle, handle, base::TimeDelta());
+          handle, handle, handle, timestamp);
       break;
     }
     case media::PIXEL_STORAGE_CPU:
@@ -312,29 +316,27 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
           reinterpret_cast<uint8_t*>(buffer->data()),
           VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420,
                                      frame_format.frame_size),
-          base::SharedMemory::NULLHandle(), 0u, base::TimeDelta());
+          base::SharedMemory::NULLHandle(), 0u, timestamp);
       break;
   }
   if (!frame)
     return;
   frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                frame_format.frame_rate);
-  OnIncomingCapturedVideoFrame(std::move(buffer), frame, timestamp);
+  OnIncomingCapturedVideoFrame(std::move(buffer), frame, reference_time);
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
     std::unique_ptr<Buffer> buffer,
     const scoped_refptr<VideoFrame>& frame,
-    const base::TimeTicks& timestamp) {
+    base::TimeTicks reference_time) {
+  // TODO(qiangchen): Dive into DoIncomingCapturedVideoFrameOnIOThread to
+  // process timestamp.
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(
           &VideoCaptureController::DoIncomingCapturedVideoFrameOnIOThread,
-          controller_,
-          base::Passed(&buffer),
-          frame,
-          timestamp));
+          controller_, base::Passed(&buffer), frame, reference_time));
 }
 
 std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>

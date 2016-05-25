@@ -179,9 +179,12 @@ void FakeVideoCaptureDevice::CaptureUsingOwnBuffers(
              fake_capture_rate_, capture_format_.frame_size);
 
   // Give the captured frame to the client.
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (first_ref_time_.is_null())
+    first_ref_time_ = now;
   client_->OnIncomingCapturedData(fake_frame_.get(), frame_size,
-                                  capture_format_, 0 /* rotation */,
-                                  base::TimeTicks::Now());
+                                  capture_format_, 0 /* rotation */, now,
+                                  now - first_ref_time_);
   BeepAndScheduleNextCapture(
       expected_execution_time,
       base::Bind(&FakeVideoCaptureDevice::CaptureUsingOwnBuffers,
@@ -227,8 +230,11 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
   }
 
   // Give the captured frame to the client.
+  base::TimeTicks now = base::TimeTicks::Now();
+  if (first_ref_time_.is_null())
+    first_ref_time_ = now;
   client_->OnIncomingCapturedBuffer(std::move(capture_buffer), capture_format_,
-                                    base::TimeTicks::Now());
+                                    now, now - first_ref_time_);
 
   BeepAndScheduleNextCapture(
       expected_execution_time,

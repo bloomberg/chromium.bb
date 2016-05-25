@@ -73,16 +73,6 @@ static const gfx::Size kCaptureSizes[] = {gfx::Size(640, 480),
 
 class MockClient : public VideoCaptureDevice::Client {
  public:
-  MOCK_METHOD9(OnIncomingCapturedYuvData,
-               void(const uint8_t* y_data,
-                    const uint8_t* u_data,
-                    const uint8_t* v_data,
-                    size_t y_stride,
-                    size_t u_stride,
-                    size_t v_stride,
-                    const VideoCaptureFormat& frame_format,
-                    int clockwise_rotation,
-                    const base::TimeTicks& timestamp));
   MOCK_METHOD0(DoReserveOutputBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));
@@ -100,7 +90,8 @@ class MockClient : public VideoCaptureDevice::Client {
                               int length,
                               const VideoCaptureFormat& format,
                               int rotation,
-                              const base::TimeTicks& timestamp) override {
+                              base::TimeTicks reference_time,
+                              base::TimeDelta timestamp) override {
     ASSERT_GT(length, 0);
     ASSERT_TRUE(data != NULL);
     main_thread_->PostTask(FROM_HERE, base::Bind(frame_cb_, format));
@@ -117,12 +108,13 @@ class MockClient : public VideoCaptureDevice::Client {
   }
   void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
                                 const VideoCaptureFormat& frame_format,
-                                const base::TimeTicks& timestamp) override {
+                                base::TimeTicks reference_time,
+                                base::TimeDelta timestamp) override {
     DoOnIncomingCapturedBuffer();
   }
   void OnIncomingCapturedVideoFrame(std::unique_ptr<Buffer> buffer,
                                     const scoped_refptr<VideoFrame>& frame,
-                                    const base::TimeTicks& timestamp) override {
+                                    base::TimeTicks reference_time) override {
     DoOnIncomingCapturedVideoFrame();
   }
   std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
@@ -179,8 +171,6 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
 #if defined(OS_MACOSX)
     AVFoundationGlue::InitializeAVFoundation();
 #endif
-    EXPECT_CALL(*client_, OnIncomingCapturedYuvData(_, _, _, _, _, _, _, _, _))
-        .Times(0);
     EXPECT_CALL(*client_, DoReserveOutputBuffer()).Times(0);
     EXPECT_CALL(*client_, DoOnIncomingCapturedBuffer()).Times(0);
     EXPECT_CALL(*client_, DoOnIncomingCapturedVideoFrame()).Times(0);

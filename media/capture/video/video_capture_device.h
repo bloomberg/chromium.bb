@@ -200,12 +200,19 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // The format of the frame is described by |frame_format|, and is assumed to
     // be tightly packed. This method will try to reserve an output buffer and
     // copy from |data| into the output buffer. If no output buffer is
-    // available, the frame will be silently dropped.
+    // available, the frame will be silently dropped. |reference_time| is
+    // system clock time when we detect the capture happens, it is used for
+    // Audio/Video sync, not an exact presentation time for playout, because it
+    // could contain noise. |timestamp| measures the ideal time span between the
+    // first frame in the stream and the current frame; however, the time source
+    // is determined by the platform's device driver and is often not the system
+    // clock, or even has a drift with respect to system clock.
     virtual void OnIncomingCapturedData(const uint8_t* data,
                                         int length,
                                         const VideoCaptureFormat& frame_format,
                                         int clockwise_rotation,
-                                        const base::TimeTicks& timestamp) = 0;
+                                        base::TimeTicks reference_time,
+                                        base::TimeDelta timestamp) = 0;
 
     // Reserve an output buffer into which contents can be captured directly.
     // The returned Buffer will always be allocated with a memory size suitable
@@ -228,14 +235,17 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // In both cases, as the frame is backed by a reservation returned by
     // ReserveOutputBuffer(), delivery is guaranteed and will require no
     // additional copies in the browser process.
+    // See OnIncomingCapturedData for details of |reference_time| and
+    // |timestamp|.
     virtual void OnIncomingCapturedBuffer(
         std::unique_ptr<Buffer> buffer,
         const VideoCaptureFormat& frame_format,
-        const base::TimeTicks& timestamp) = 0;
+        base::TimeTicks reference_time,
+        base::TimeDelta timestamp) = 0;
     virtual void OnIncomingCapturedVideoFrame(
         std::unique_ptr<Buffer> buffer,
         const scoped_refptr<VideoFrame>& frame,
-        const base::TimeTicks& timestamp) = 0;
+        base::TimeTicks reference_time) = 0;
 
     // Attempts to reserve the same Buffer provided in the last call to one of
     // the OnIncomingCapturedXXX() methods. This will fail if the content of the

@@ -56,7 +56,8 @@ class MEDIA_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
                               size_t length,
                               const VideoCaptureFormat& frame_format,
                               int rotation,  // Clockwise.
-                              base::TimeTicks timestamp);
+                              base::TimeTicks reference_time,
+                              base::TimeDelta timestamp);
 
   // Forwarder to VideoCaptureDevice::Client::OnError().
   void SendErrorString(const tracked_objects::Location& from_here,

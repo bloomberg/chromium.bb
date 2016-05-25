@@ -15,6 +15,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
+#include "media/base/timestamp_constants.h"
 
 using base::win::ScopedCoMem;
 using base::win::ScopedComPtr;
@@ -451,9 +452,17 @@ void VideoCaptureDeviceWin::StopAndDeAllocate() {
 // Implements SinkFilterObserver::SinkFilterObserver.
 void VideoCaptureDeviceWin::FrameReceived(const uint8_t* buffer,
                                           int length,
-                                          base::TimeTicks timestamp) {
+                                          base::TimeDelta timestamp) {
+  if (first_ref_time_.is_null())
+    first_ref_time_ = base::TimeTicks::Now();
+
+  // There is a chance that the platform does not provide us with the timestamp,
+  // in which case, we use reference time to calculate a timestamp.
+  if (timestamp == media::kNoTimestamp())
+    timestamp = base::TimeTicks::Now() - first_ref_time_;
+
   client_->OnIncomingCapturedData(buffer, length, capture_format_, 0,
-                                  timestamp);
+                                  base::TimeTicks::Now(), timestamp);
 }
 
 bool VideoCaptureDeviceWin::CreateCapabilityMap() {

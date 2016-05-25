@@ -336,22 +336,13 @@ class StubClient : public media::VideoCaptureDevice::Client {
   }
   ~StubClient() override {}
 
-  MOCK_METHOD5(OnIncomingCapturedData,
+  MOCK_METHOD6(OnIncomingCapturedData,
                void(const uint8_t* data,
                     int length,
                     const media::VideoCaptureFormat& frame_format,
                     int rotation,
-                    const base::TimeTicks& timestamp));
-  MOCK_METHOD9(OnIncomingCapturedYuvData,
-               void(const uint8_t* y_data,
-                    const uint8_t* u_data,
-                    const uint8_t* v_data,
-                    size_t y_stride,
-                    size_t u_stride,
-                    size_t v_stride,
-                    const media::VideoCaptureFormat& frame_format,
-                    int clockwise_rotation,
-                    const base::TimeTicks& timestamp));
+                    base::TimeTicks reference_time,
+                    base::TimeDelta timestamp));
 
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
 
@@ -374,14 +365,15 @@ class StubClient : public media::VideoCaptureDevice::Client {
   // Trampoline method to workaround GMOCK problems with std::unique_ptr<>.
   void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
                                 const media::VideoCaptureFormat& frame_format,
-                                const base::TimeTicks& timestamp) override {
+                                base::TimeTicks reference_time,
+                                base::TimeDelta timestamp) override {
     DoOnIncomingCapturedBuffer();
   }
 
   void OnIncomingCapturedVideoFrame(
       std::unique_ptr<Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame,
-      const base::TimeTicks& timestamp) override {
+      base::TimeTicks reference_time) override {
     EXPECT_FALSE(frame->visible_rect().IsEmpty());
     EXPECT_EQ(media::PIXEL_FORMAT_I420, frame->format());
     double frame_rate = 0;
