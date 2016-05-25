@@ -32,21 +32,26 @@
 #define TextAutosizer_h
 
 #include "core/CoreExport.h"
-#include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutTable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
+
+#include <unicode/uchar.h>
 
 namespace blink {
 
+class ComputedStyle;
 class Document;
+class IntSize;
+class LayoutBlock;
 class LayoutListItem;
 class LayoutListMarker;
-class LayoutBlock;
+class LayoutObject;
+class LayoutTable;
+class LocalFrame;
+class Page;
 class SubtreeLayoutScope;
 
 // Single-pass text autosizer. Documentation at:
@@ -55,10 +60,8 @@ class SubtreeLayoutScope;
 class CORE_EXPORT TextAutosizer final : public GarbageCollectedFinalized<TextAutosizer> {
     WTF_MAKE_NONCOPYABLE(TextAutosizer);
 public:
-    static TextAutosizer* create(const Document* document)
-    {
-        return new TextAutosizer(document);
-    }
+    ~TextAutosizer();
+    static TextAutosizer* create(const Document* document) { return new TextAutosizer(document); }
     static float computeAutosizedFontSize(float specifiedSize, float multiplier);
 
     void updatePageInfoInAllFrames();
@@ -157,17 +160,7 @@ private:
     struct Cluster {
         USING_FAST_MALLOC(Cluster);
     public:
-        explicit Cluster(const LayoutBlock* root, BlockFlags flags, Cluster* parent, Supercluster* supercluster = nullptr)
-            : m_root(root)
-            , m_flags(flags)
-            , m_deepestBlockContainingAllText(nullptr)
-            , m_parent(parent)
-            , m_multiplier(0)
-            , m_hasEnoughTextToAutosize(UnknownAmountOfText)
-            , m_supercluster(supercluster)
-            , m_hasTableAncestor(root->isTableCell() || (m_parent && m_parent->m_hasTableAncestor))
-        {
-        }
+        explicit Cluster(const LayoutBlock* root, BlockFlags, Cluster* parent, Supercluster* = nullptr);
 
         const LayoutBlock* const m_root;
         BlockFlags m_flags;

@@ -40,6 +40,7 @@
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutListItem.h"
 #include "core/layout/LayoutListMarker.h"
+#include "core/layout/LayoutTable.h"
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineIterator.h"
@@ -290,6 +291,10 @@ TextAutosizer::TextAutosizer(const Document* document)
     , m_fingerprintMapper()
     , m_pageInfo()
     , m_updatePageInfoDeferred(false)
+{
+}
+
+TextAutosizer::~TextAutosizer()
 {
 }
 
@@ -1038,6 +1043,18 @@ TextAutosizer::Cluster* TextAutosizer::currentCluster() const
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!m_clusterStack.isEmpty());
     return m_clusterStack.last().get();
+}
+
+TextAutosizer::Cluster::Cluster(const LayoutBlock* root, BlockFlags flags, Cluster* parent, Supercluster* supercluster)
+    : m_root(root)
+    , m_flags(flags)
+    , m_deepestBlockContainingAllText(nullptr)
+    , m_parent(parent)
+    , m_multiplier(0)
+    , m_hasEnoughTextToAutosize(UnknownAmountOfText)
+    , m_supercluster(supercluster)
+    , m_hasTableAncestor(root->isTableCell() || (m_parent && m_parent->m_hasTableAncestor))
+{
 }
 
 #if ENABLE(ASSERT)

@@ -24,10 +24,12 @@
 #include "core/css/resolver/FontBuilder.h"
 
 #include "core/CSSValueKeywords.h"
+#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/TextAutosizer.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/FontFamilyNames.h"
 #include "platform/fonts/FontDescription.h"
 
