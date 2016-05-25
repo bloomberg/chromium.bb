@@ -223,9 +223,8 @@ bool BlockPainter::intersectsPaintRect(const PaintInfo& paintInfo, const LayoutP
         Vector<LayoutRect> rects;
         m_layoutBlock.addElementVisualOverflowRects(rects, LayoutPoint());
         overflowRect = unionRect(rects);
-    } else {
-        overflowRect = m_layoutBlock.visualOverflowRect();
     }
+    overflowRect.unite(m_layoutBlock.visualOverflowRect());
 
     if (m_layoutBlock.hasOverflowModel() && m_layoutBlock.usesCompositedScrolling()) {
         overflowRect.unite(m_layoutBlock.layoutOverflowRect());

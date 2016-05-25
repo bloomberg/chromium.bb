@@ -1293,6 +1293,7 @@ public:
 
     // Collects rectangles enclosing visual overflows of the DOM subtree under this object.
     // The rects also cover continuations which may be not in the layout subtree of this object.
+    // TODO(crbug.com/614781): Currently the result rects don't cover list markers and outlines.
     void addElementVisualOverflowRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
     {
         addOutlineRects(rects, additionalOffset, IncludeBlockVisualOverflow);
