@@ -443,9 +443,9 @@ void DOMStorageContextImpl::PurgeMemory(PurgeOption purge_option) {
     // size since it can be expensive trying to estimate the sqlite usage for
     // all databases. For low end devices purge all inactive areas.
     bool should_purge =
-        (is_low_end_device_ && initial_stats.inactive_area_count) ||
-        initial_stats.total_cache_size > kMaxCacheSize ||
-        initial_stats.total_area_count > kMaxStorageAreaCount;
+        initial_stats.inactive_area_count &&
+        (is_low_end_device_ || initial_stats.total_cache_size > kMaxCacheSize ||
+         initial_stats.total_area_count > kMaxStorageAreaCount);
     if (!should_purge)
       return;
 
