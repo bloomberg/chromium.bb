@@ -9,6 +9,9 @@ function test()
         // Each of these is red. Some may need to be clipped to [0, 255].
         'red',
         '#F00',
+        '#F00F',
+        '#FF0000',
+        '#FF0000FF',
         'rgb(255,0,0)',
         'rgb(300,0,0)',        // clipped to rgb(255,0,0)
         'rgb(255,-10,0)',      // clipped to rgb(255,0,0)
@@ -35,7 +38,6 @@ function test()
     var invalidColors = [
         // An invalid color, eg a value for a shorthand like 'border' which can have a color
         'none',
-        '#0000',
         '#00000',
         '#ggg',
         'rgb(a,b,c)',
@@ -98,7 +100,7 @@ function test()
             if (color.hasAlpha() && (colorFormat === cf.ShortHEX || colorFormat === cf.HEX))
                 continue;
             // If there is no ShortHEX then skip it.
-            if (colorFormat === cf.ShortHEX && !color.canBeShortHex())
+            if (colorFormat === cf.ShortHEX && color.detectHEXFormat() !== cf.ShortHEX)
                 continue;
             // If there is no nickname, then skip it.
             if (colorFormat === cf.Nickname && !color.nickname())
