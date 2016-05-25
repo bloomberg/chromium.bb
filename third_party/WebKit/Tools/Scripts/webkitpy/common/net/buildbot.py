@@ -296,10 +296,6 @@ class BuildBot(object):
             _log.error("Error decoding json data from %s: %s" % (build_url, err))
             return None
 
-    def _fetch_one_box_per_builder(self):
-        build_status_url = "%s/one_box_per_builder" % self.buildbot_url
-        return urllib2.urlopen(build_status_url)
-
     def _file_cell_text(self, file_cell):
         """Traverses down through firstChild elements until one containing a string is found, then returns that string"""
         element = file_cell
@@ -330,9 +326,10 @@ class BuildBot(object):
     def builders(self):
         return [self.builder_with_name(status["name"]) for status in self.builder_statuses()]
 
-    # This method pulls from /one_box_per_builder as an efficient way to get information about
     def builder_statuses(self):
-        soup = BeautifulSoup(self._fetch_one_box_per_builder())
+        builders_page_url = "%s/builders" % self.buildbot_url
+        builders_page_content = urllib2.urlopen(builders_page_url)
+        soup = BeautifulSoup(builders_page_content)
         return [self._parse_builder_status_from_row(status_row) for status_row in soup.find('table').findAll('tr')]
 
     def builder_with_name(self, name):
@@ -342,9 +339,15 @@ class BuildBot(object):
             self._builder_by_name[name] = builder
         return builder
 
-    # This makes fewer requests than calling Builder.latest_build would.  It grabs all builder
-    # statuses in one request using self.builder_statuses (fetching /one_box_per_builder instead of builder pages).
     def _latest_builds_from_builders(self):
+        """Fetches a list of latest builds.
+
+        This is for the chromium.webkit waterfall by default.
+
+        This makes fewer requests than calling Builder.latest_build would.
+        It grabs all builder statuses in one request by fetching from .../builders
+        instead of builder pages.
+        """
         builder_statuses = self.builder_statuses()
         return [self.builder_with_name(status["name"]).build(status["build_number"]) for status in builder_statuses]
 
