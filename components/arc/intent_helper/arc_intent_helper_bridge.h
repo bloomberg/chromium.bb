@@ -31,7 +31,8 @@ class ArcIntentHelperBridge : public ArcService,
                               public mojom::IntentHelperHost,
                               public ash::LinkHandlerModelFactory {
  public:
-  explicit ArcIntentHelperBridge(ArcBridgeService* bridge_service);
+  ArcIntentHelperBridge(ArcBridgeService* bridge_service,
+                        const scoped_refptr<ActivityIconLoader>& icon_loader);
   ~ArcIntentHelperBridge() override;
 
   // ArcBridgeService::Observer

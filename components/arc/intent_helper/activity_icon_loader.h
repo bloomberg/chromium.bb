@@ -44,7 +44,7 @@ class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
   using OnIconsReadyCallback =
       base::Callback<void(std::unique_ptr<ActivityToIconsMap>)>;
 
-  explicit ActivityIconLoader(ui::ScaleFactor scale_factor);
+  ActivityIconLoader();
 
   // Removes icons associated with |package_name| from the cache.
   void InvalidateIcons(const std::string& package_name);

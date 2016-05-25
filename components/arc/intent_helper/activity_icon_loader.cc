@@ -13,6 +13,7 @@
 #include "base/task_runner_util.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "ui/base/layout.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
@@ -45,6 +46,12 @@ mojom::IntentHelperInstance* GetIntentHelperInstance() {
   return intent_helper_instance;
 }
 
+ui::ScaleFactor GetSupportedScaleFactor() {
+  std::vector<ui::ScaleFactor> scale_factors = ui::GetSupportedScaleFactors();
+  DCHECK(!scale_factors.empty());
+  return scale_factors.back();
+}
+
 }  // namespace
 
 ActivityIconLoader::Icons::Icons(const gfx::Image& icon16,
@@ -61,8 +68,8 @@ bool ActivityIconLoader::ActivityName::operator<(
          std::tie(other.package_name, other.activity_name);
 }
 
-ActivityIconLoader::ActivityIconLoader(ui::ScaleFactor scale_factor)
-    : scale_factor_(scale_factor) {}
+ActivityIconLoader::ActivityIconLoader()
+    : scale_factor_(GetSupportedScaleFactor()) {}
 
 ActivityIconLoader::~ActivityIconLoader() {}
 

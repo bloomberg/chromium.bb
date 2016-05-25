@@ -51,8 +51,7 @@ void OnIconsReady3(
 
 // Tests if InvalidateIcons properly cleans up the cache.
 TEST(ActivityIconLoaderTest, TestInvalidateIcons) {
-  scoped_refptr<ActivityIconLoader> loader(
-      new ActivityIconLoader(ui::SCALE_FACTOR_100P));
+  scoped_refptr<ActivityIconLoader> loader(new ActivityIconLoader);
   loader->AddIconToCacheForTesting(ActivityIconLoader::ActivityName("p0", "a0"),
                                    gfx::Image());
   loader->AddIconToCacheForTesting(ActivityIconLoader::ActivityName("p0", "a1"),
@@ -76,8 +75,7 @@ TEST(ActivityIconLoaderTest, TestInvalidateIcons) {
 
 // Tests if GetActivityIcons immediately returns cached icons.
 TEST(ActivityIconLoaderTest, TestGetActivityIcons) {
-  scoped_refptr<ActivityIconLoader> loader(
-      new ActivityIconLoader(ui::SCALE_FACTOR_100P));
+  scoped_refptr<ActivityIconLoader> loader(new ActivityIconLoader);
   loader->AddIconToCacheForTesting(ActivityIconLoader::ActivityName("p0", "a0"),
                                    gfx::Image());
   loader->AddIconToCacheForTesting(ActivityIconLoader::ActivityName("p1", "a1"),
@@ -106,8 +104,7 @@ TEST(ActivityIconLoaderTest, TestGetActivityIcons) {
 
 // Tests if OnIconsResized updates the cache.
 TEST(ActivityIconLoaderTest, TestOnIconsResized) {
-  scoped_refptr<ActivityIconLoader> loader(
-      new ActivityIconLoader(ui::SCALE_FACTOR_100P));
+  scoped_refptr<ActivityIconLoader> loader(new ActivityIconLoader);
   std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> activity_to_icons(
       new ActivityIconLoader::ActivityToIconsMap);
   activity_to_icons->insert(

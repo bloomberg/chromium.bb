@@ -17,20 +17,10 @@
 
 namespace arc {
 
-namespace {
-
-ui::ScaleFactor GetSupportedScaleFactor() {
-  std::vector<ui::ScaleFactor> scale_factors = ui::GetSupportedScaleFactors();
-  DCHECK(!scale_factors.empty());
-  return scale_factors.back();
-}
-
-}  // namespace
-
-ArcIntentHelperBridge::ArcIntentHelperBridge(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service),
-      binding_(this),
-      icon_loader_(new ActivityIconLoader(GetSupportedScaleFactor())) {
+ArcIntentHelperBridge::ArcIntentHelperBridge(
+    ArcBridgeService* bridge_service,
+    const scoped_refptr<ActivityIconLoader>& icon_loader)
+    : ArcService(bridge_service), binding_(this), icon_loader_(icon_loader) {
   arc_bridge_service()->AddObserver(this);
 }
 
