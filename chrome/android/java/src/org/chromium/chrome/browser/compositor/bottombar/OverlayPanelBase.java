@@ -277,7 +277,7 @@ abstract class OverlayPanelBase {
      * than the peeking height.
      */
     public boolean isPanelOpened() {
-        return mHeight > mBarHeightPeeking;
+        return mHeight > getBarContainerHeight();
     }
 
     /**

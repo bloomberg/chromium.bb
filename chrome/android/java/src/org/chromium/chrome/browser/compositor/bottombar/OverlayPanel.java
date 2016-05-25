@@ -681,7 +681,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      * @param y The y coordinate in dp.
      * @return Whether the given coordinate is inside the Overlay Panel area.
      */
-    private boolean isCoordinateInsideOverlayPanel(float x, float y) {
+    public boolean isCoordinateInsideOverlayPanel(float x, float y) {
         return y >= getOffsetY() && y <= (getOffsetY() + getHeight())
                 &&  x >= getOffsetX() && x <= (getOffsetX() + getWidth());
     }
