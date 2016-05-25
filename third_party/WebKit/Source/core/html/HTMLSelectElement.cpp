@@ -2032,8 +2032,16 @@ HTMLSelectElement::PopupUpdater::PopupUpdater(HTMLSelectElement& select)
     : m_select(select)
 {
     m_observer = MutationObserver::create(this);
+    Vector<String> filter;
+    filter.reserveCapacity(4);
+    // Observe only attributes which affect popup content.
+    filter.append(String("disabled"));
+    filter.append(String("label"));
+    filter.append(String("selected"));
+    filter.append(String("value"));
     MutationObserverInit init;
     init.setAttributes(true);
+    init.setAttributeFilter(filter);
     init.setCharacterData(true);
     init.setChildList(true);
     init.setSubtree(true);
