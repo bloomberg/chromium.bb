@@ -63,10 +63,12 @@ class HEADLESS_EXPORT HeadlessBrowser {
 
 // Embedding API overrides for the headless browser.
 struct HeadlessBrowser::Options {
-  Options(const Options& other);
+  class Builder;
+
+  Options(Options&& options);
   ~Options();
 
-  class Builder;
+  Options& operator=(Options&& options);
 
   // Command line options to be passed to browser.
   int argc;
@@ -97,6 +99,8 @@ struct HeadlessBrowser::Options {
 
  private:
   Options(int argc, const char** argv);
+
+  DISALLOW_COPY_AND_ASSIGN(Options);
 };
 
 class HeadlessBrowser::Options::Builder {
@@ -126,7 +130,7 @@ class HeadlessBrowser::Options::Builder {
 // the main loop, it will only return after HeadlessBrowser::Shutdown() is
 // called, returning the exit code for the process.
 int HeadlessBrowserMain(
-    const HeadlessBrowser::Options& options,
+    HeadlessBrowser::Options options,
     const base::Callback<void(HeadlessBrowser*)>& on_browser_start_callback);
 
 }  // namespace headless

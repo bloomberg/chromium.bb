@@ -44,7 +44,7 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors,
       net::NetLog* net_log,
-      const HeadlessBrowser::Options& options);
+      HeadlessBrowser::Options* options);
 
   // net::URLRequestContextGetter implementation:
   net::URLRequestContext* GetURLRequestContext() override;
@@ -66,7 +66,13 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   net::NetLog* net_log_;
-  HeadlessBrowser::Options options_;
+
+  // The |options| object given to the constructor is not guaranteed to outlive
+  // this class, so we make copies of the parts we need to access on the IO
+  // thread.
+  std::string user_agent_;
+  std::string host_resolver_rules_;
+  net::HostPortPair proxy_server_;
 
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
   std::unique_ptr<net::NetworkDelegate> network_delegate_;

@@ -22,9 +22,9 @@ namespace headless {
 
 HeadlessBrowserImpl::HeadlessBrowserImpl(
     const base::Callback<void(HeadlessBrowser*)>& on_start_callback,
-    const HeadlessBrowser::Options& options)
+    HeadlessBrowser::Options options)
     : on_start_callback_(on_start_callback),
-      options_(options),
+      options_(std::move(options)),
       browser_main_parts_(nullptr) {
   DCHECK(!on_start_callback_.is_null());
 }
@@ -112,24 +112,25 @@ void HeadlessBrowserImpl::DestroyWebContents(
 }
 
 void HeadlessBrowserImpl::SetOptionsForTesting(
-    const HeadlessBrowser::Options& options) {
-  options_ = options;
-  browser_context()->SetOptionsForTesting(options);
+    HeadlessBrowser::Options options) {
+  options_ = std::move(options);
+  browser_context()->SetOptionsForTesting(&options_);
 }
 
 int HeadlessBrowserMain(
-    const HeadlessBrowser::Options& options,
+    HeadlessBrowser::Options options,
     const base::Callback<void(HeadlessBrowser*)>& on_browser_start_callback) {
-  std::unique_ptr<HeadlessBrowserImpl> browser(
-      new HeadlessBrowserImpl(on_browser_start_callback, options));
+  content::ContentMainParams params(nullptr);
+  params.argc = options.argc;
+  params.argv = options.argv;
 
   // TODO(skyostil): Implement custom message pumps.
   DCHECK(!options.message_pump);
 
+  std::unique_ptr<HeadlessBrowserImpl> browser(
+      new HeadlessBrowserImpl(on_browser_start_callback, std::move(options)));
   headless::HeadlessContentMainDelegate delegate(std::move(browser));
-  content::ContentMainParams params(&delegate);
-  params.argc = options.argc;
-  params.argv = options.argv;
+  params.delegate = &delegate;
   return content::ContentMain(params);
 }
 

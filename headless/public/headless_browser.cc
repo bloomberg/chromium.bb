@@ -23,9 +23,11 @@ Options::Options(int argc, const char** argv)
       message_pump(nullptr),
       single_process_mode(false) {}
 
-Options::Options(const Options& other) = default;
+Options::Options(Options&& options) = default;
 
 Options::~Options() {}
+
+Options& Options::operator=(Options&& options) = default;
 
 Builder::Builder(int argc, const char** argv) : options_(argc, argv) {}
 
@@ -64,7 +66,7 @@ Builder& Builder::SetSingleProcessMode(bool single_process_mode) {
 }
 
 Options Builder::Build() {
-  return options_;
+  return std::move(options_);
 }
 
 }  // namespace headless

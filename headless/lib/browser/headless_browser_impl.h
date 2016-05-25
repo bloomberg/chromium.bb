@@ -30,7 +30,7 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
  public:
   HeadlessBrowserImpl(
       const base::Callback<void(HeadlessBrowser*)>& on_start_callback,
-      const HeadlessBrowser::Options& options);
+      HeadlessBrowser::Options options);
   ~HeadlessBrowserImpl() override;
 
   // HeadlessBrowser implementation:
@@ -50,7 +50,7 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
 
   void RunOnStartCallback();
 
-  const HeadlessBrowser::Options& options() const { return options_; }
+  HeadlessBrowser::Options* options() { return &options_; }
 
   HeadlessWebContentsImpl* RegisterWebContents(
       std::unique_ptr<HeadlessWebContentsImpl> web_contents);
@@ -61,7 +61,7 @@ class HeadlessBrowserImpl : public HeadlessBrowser {
   // Customize the options used by this headless browser instance. Note that
   // options which take effect before the message loop has been started (e.g.,
   // custom message pumps) cannot be set via this method.
-  void SetOptionsForTesting(const HeadlessBrowser::Options& options);
+  void SetOptionsForTesting(HeadlessBrowser::Options options);
 
  protected:
   base::Callback<void(HeadlessBrowser*)> on_start_callback_;

@@ -93,13 +93,13 @@ HeadlessDevToolsDelegate::HandleWebSocketConnection(const std::string& path) {
 std::unique_ptr<DevToolsHttpHandler> CreateLocalDevToolsHttpHandler(
     HeadlessBrowserContext* browser_context) {
   const net::IPEndPoint& endpoint =
-      browser_context->options().devtools_endpoint;
+      browser_context->options()->devtools_endpoint;
   std::unique_ptr<DevToolsHttpHandler::ServerSocketFactory> socket_factory(
       new TCPServerSocketFactory(endpoint));
   return base::WrapUnique(new DevToolsHttpHandler(
       std::move(socket_factory), std::string(), new HeadlessDevToolsDelegate(),
       browser_context->GetPath(), base::FilePath(), std::string(),
-      browser_context->options().user_agent));
+      browser_context->options()->user_agent));
 }
 
 }  // namespace headless

@@ -9,14 +9,13 @@
 
 namespace headless {
 
-HeadlessContentClient::HeadlessContentClient(
-    const HeadlessBrowser::Options& options)
+HeadlessContentClient::HeadlessContentClient(HeadlessBrowser::Options* options)
     : options_(options) {}
 
 HeadlessContentClient::~HeadlessContentClient() {}
 
 std::string HeadlessContentClient::GetUserAgent() const {
-  return options_.user_agent;
+  return options_->user_agent;
 }
 
 base::string16 HeadlessContentClient::GetLocalizedString(int message_id) const {

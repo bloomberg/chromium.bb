@@ -99,10 +99,9 @@ void HeadlessBrowserTest::RunTestOnMainThreadLoop() {
   }
 }
 
-void HeadlessBrowserTest::SetBrowserOptions(
-    const HeadlessBrowser::Options& options) {
+void HeadlessBrowserTest::SetBrowserOptions(HeadlessBrowser::Options options) {
   HeadlessContentMainDelegate::GetInstance()->browser()->SetOptionsForTesting(
-      options);
+      std::move(options));
 }
 
 HeadlessBrowser* HeadlessBrowserTest::browser() const {

@@ -12,7 +12,7 @@ namespace headless {
 
 class HeadlessContentClient : public content::ContentClient {
  public:
-  explicit HeadlessContentClient(const HeadlessBrowser::Options& options);
+  explicit HeadlessContentClient(HeadlessBrowser::Options* options);
   ~HeadlessContentClient() override;
 
   // content::ContentClient implementation:
@@ -26,7 +26,7 @@ class HeadlessContentClient : public content::ContentClient {
   gfx::Image& GetNativeImageNamed(int resource_id) const override;
 
  private:
-  HeadlessBrowser::Options options_;
+  HeadlessBrowser::Options* options_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessContentClient);
 };

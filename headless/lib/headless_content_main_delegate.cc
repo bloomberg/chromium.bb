@@ -41,7 +41,7 @@ HeadlessContentMainDelegate::~HeadlessContentMainDelegate() {
 bool HeadlessContentMainDelegate::BasicStartupComplete(int* exit_code) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
-  if (browser_->options().single_process_mode)
+  if (browser_->options()->single_process_mode)
     command_line->AppendSwitch(switches::kSingleProcess);
 
   // The headless backend is automatically chosen for a headless build, but also

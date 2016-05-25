@@ -35,7 +35,7 @@ class HeadlessBrowserTest : public content::BrowserTestBase {
   // Customize the options used in this test. Note that options which take
   // effect before the message loop has been started (e.g., custom message
   // pumps) cannot be set via this method.
-  void SetBrowserOptions(const HeadlessBrowser::Options& options);
+  void SetBrowserOptions(HeadlessBrowser::Options options);
 
   // Run an asynchronous test in a nested run loop. The caller should call
   // FinishAsynchronousTest() to notify that the test should finish.

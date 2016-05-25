@@ -33,7 +33,7 @@ HeadlessBrowserMainParts::~HeadlessBrowserMainParts() {}
 
 void HeadlessBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new HeadlessBrowserContext(browser_->options()));
-  if (browser_->options().devtools_endpoint.address().IsValid()) {
+  if (browser_->options()->devtools_endpoint.address().IsValid()) {
     devtools_http_handler_ =
         CreateLocalDevToolsHttpHandler(browser_context_.get());
   }

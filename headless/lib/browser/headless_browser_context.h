@@ -19,7 +19,7 @@ class HeadlessResourceContext;
 
 class HeadlessBrowserContext : public content::BrowserContext {
  public:
-  explicit HeadlessBrowserContext(const HeadlessBrowser::Options& options);
+  explicit HeadlessBrowserContext(HeadlessBrowser::Options* options);
   ~HeadlessBrowserContext() override;
 
   // BrowserContext implementation:
@@ -48,8 +48,8 @@ class HeadlessBrowserContext : public content::BrowserContext {
       const base::FilePath& partition_path,
       bool in_memory) override;
 
-  const HeadlessBrowser::Options& options() const { return options_; }
-  void SetOptionsForTesting(const HeadlessBrowser::Options& options);
+  HeadlessBrowser::Options* options() const { return options_; }
+  void SetOptionsForTesting(HeadlessBrowser::Options* options);
 
  private:
   // Performs initialization of the HeadlessBrowserContext while IO is still
@@ -58,7 +58,7 @@ class HeadlessBrowserContext : public content::BrowserContext {
 
   base::FilePath path_;
   std::unique_ptr<HeadlessResourceContext> resource_context_;
-  HeadlessBrowser::Options options_;
+  HeadlessBrowser::Options* options_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowserContext);
 };

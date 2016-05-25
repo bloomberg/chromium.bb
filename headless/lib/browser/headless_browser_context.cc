@@ -65,7 +65,7 @@ net::URLRequestContext* HeadlessResourceContext::GetRequestContext() {
 }
 
 HeadlessBrowserContext::HeadlessBrowserContext(
-    const HeadlessBrowser::Options& options)
+    HeadlessBrowser::Options* options)
     : resource_context_(new HeadlessResourceContext), options_(options) {
   InitWhileIOAllowed();
 }
@@ -173,7 +173,7 @@ HeadlessBrowserContext::CreateMediaRequestContextForStoragePartition(
 }
 
 void HeadlessBrowserContext::SetOptionsForTesting(
-    const HeadlessBrowser::Options& options) {
+    HeadlessBrowser::Options* options) {
   options_ = options;
 }
 

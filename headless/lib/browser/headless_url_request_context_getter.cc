@@ -58,13 +58,15 @@ HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors,
     net::NetLog* net_log,
-    const HeadlessBrowser::Options& options)
+    HeadlessBrowser::Options* options)
     : ignore_certificate_errors_(ignore_certificate_errors),
       base_path_(base_path),
       io_task_runner_(std::move(io_task_runner)),
       file_task_runner_(std::move(file_task_runner)),
       net_log_(net_log),
-      options_(options),
+      user_agent_(options->user_agent),
+      host_resolver_rules_(options->host_resolver_rules),
+      proxy_server_(options->proxy_server),
       request_interceptors_(std::move(request_interceptors)) {
   // Must first be created on the UI thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -74,7 +76,7 @@ HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
   // We must create the proxy config service on the UI loop on Linux because it
   // must synchronously run on the glib message loop. This will be passed to
   // the URLRequestContextStorage on the IO thread in GetURLRequestContext().
-  if (options_.proxy_server.IsEmpty())
+  if (proxy_server_.IsEmpty())
     proxy_config_service_ = GetProxyConfigService();
 }
 
@@ -93,8 +95,8 @@ HeadlessURLRequestContextGetter::GetProxyConfigService() {
 
 std::unique_ptr<net::ProxyService>
 HeadlessURLRequestContextGetter::GetProxyService() {
-  if (!options_.proxy_server.IsEmpty())
-    return net::ProxyService::CreateFixed(options_.proxy_server.ToString());
+  if (!proxy_server_.IsEmpty())
+    return net::ProxyService::CreateFixed(proxy_server_.ToString());
   return net::ProxyService::CreateUsingSystemProxyResolver(
       std::move(proxy_config_service_), 0, url_request_context_->net_log());
 }
@@ -117,7 +119,7 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
                                   base::WorkerPool::GetTaskRunner(true))));
     // TODO(skyostil): Make language settings configurable.
     storage_->set_http_user_agent_settings(base::WrapUnique(
-        new net::StaticHttpUserAgentSettings("en-us,en", options_.user_agent)));
+        new net::StaticHttpUserAgentSettings("en-us,en", user_agent_)));
 
     std::unique_ptr<net::HostResolver> host_resolver(
         net::HostResolver::CreateDefaultResolver(
@@ -158,10 +160,10 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
     network_session_params.net_log = url_request_context_->net_log();
     network_session_params.ignore_certificate_errors =
         ignore_certificate_errors_;
-    if (!options_.host_resolver_rules.empty()) {
+    if (!host_resolver_rules_.empty()) {
       std::unique_ptr<net::MappedHostResolver> mapped_host_resolver(
           new net::MappedHostResolver(std::move(host_resolver)));
-      mapped_host_resolver->SetRulesFromString(options_.host_resolver_rules);
+      mapped_host_resolver->SetRulesFromString(host_resolver_rules_);
       host_resolver = std::move(mapped_host_resolver);
     }
 
