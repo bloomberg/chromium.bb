@@ -11,6 +11,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/common/constants.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_set.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace task_management {
@@ -19,12 +23,27 @@ namespace {
 
 base::string16 AdjustTitle(const content::SiteInstance* site_instance) {
   DCHECK(site_instance);
+
+  // By default, subframe rows display the site, like this:
+  //     "Subframe: http://example.com/"
+  const GURL& site_url = site_instance->GetSiteURL();
+  std::string name = site_url.spec();
+
+  // If |site_url| wraps a chrome extension id, we can display the extension
+  // name instead, which is more human-readable.
+  if (site_url.SchemeIs(extensions::kExtensionScheme)) {
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(site_instance->GetBrowserContext())
+            ->enabled_extensions()
+            .GetExtensionOrAppByURL(site_url);
+    if (extension)
+      name = extension->name();
+  }
+
   int message_id = site_instance->GetBrowserContext()->IsOffTheRecord() ?
       IDS_TASK_MANAGER_SUBFRAME_INCOGNITO_PREFIX :
       IDS_TASK_MANAGER_SUBFRAME_PREFIX;
-
-  return l10n_util::GetStringFUTF16(message_id, base::UTF8ToUTF16(
-      site_instance->GetSiteURL().spec()));
+  return l10n_util::GetStringFUTF16(message_id, base::UTF8ToUTF16(name));
 }
 
 }  // namespace
