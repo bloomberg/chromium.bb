@@ -121,6 +121,7 @@ public:
     void setIsTransparent(bool) override;
     void setBaseBackgroundColor(WebColor) override;
     void scheduleAnimation() override;
+    CompositorProxyClient* createCompositorProxyClient() override;
 
     WebWidgetClient* client() const override { return m_client; }
 

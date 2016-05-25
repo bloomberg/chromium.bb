@@ -13,7 +13,7 @@ namespace blink {
 class CompositorWorkerMessagingProxy final : public InProcessWorkerMessagingProxy {
     USING_FAST_MALLOC(CompositorWorkerMessagingProxy);
 public:
-    explicit CompositorWorkerMessagingProxy(InProcessWorkerBase*);
+    CompositorWorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
 
 protected:
     ~CompositorWorkerMessagingProxy() override;

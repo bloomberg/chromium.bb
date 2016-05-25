@@ -5,8 +5,10 @@
 #include "modules/compositorworker/CompositorWorker.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/CompositorProxyClient.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/page/ChromeClient.h"
 #include "core/workers/WorkerClients.h"
 #include "modules/EventTargetModules.h"
 #include "modules/compositorworker/CompositorWorkerMessagingProxy.h"
@@ -42,10 +44,12 @@ const AtomicString& CompositorWorker::interfaceName() const
     return EventTargetNames::CompositorWorker;
 }
 
-InProcessWorkerGlobalScopeProxy* CompositorWorker::createInProcessWorkerGlobalScopeProxy(ExecutionContext* worker)
+InProcessWorkerGlobalScopeProxy* CompositorWorker::createInProcessWorkerGlobalScopeProxy(ExecutionContext* context)
 {
-    ASSERT(getExecutionContext()->isDocument());
-    return new CompositorWorkerMessagingProxy(this);
+    Document* document = toDocument(context);
+    WorkerClients* workerClients = WorkerClients::create();
+    provideCompositorProxyClientTo(workerClients, document->frame()->chromeClient().createCompositorProxyClient(document->frame()));
+    return new CompositorWorkerMessagingProxy(this, workerClients);
 }
 
 } // namespace blink

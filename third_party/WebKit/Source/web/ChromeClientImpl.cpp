@@ -1073,6 +1073,12 @@ void ChromeClientImpl::didUpdateTopControls() const
     m_webView->didUpdateTopControls();
 }
 
+CompositorProxyClient* ChromeClientImpl::createCompositorProxyClient(LocalFrame* frame)
+{
+    WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
+    return webFrame->localRoot()->frameWidget()->createCompositorProxyClient();
+}
+
 void ChromeClientImpl::registerPopupOpeningObserver(PopupOpeningObserver* observer)
 {
     DCHECK(observer);

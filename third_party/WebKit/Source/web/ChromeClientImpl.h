@@ -179,6 +179,7 @@ public:
     void onMouseDown(Node*) override;
     void didUpdateTopControls() const override;
 
+    CompositorProxyClient* createCompositorProxyClient(LocalFrame*) override;
     FloatSize elasticOverscroll() const override;
 
     void didObserveNonGetFetchFromScript() const override;

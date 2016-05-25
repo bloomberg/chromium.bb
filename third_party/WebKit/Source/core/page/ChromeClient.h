@@ -48,6 +48,7 @@ class AXObject;
 class ColorChooser;
 class ColorChooserClient;
 class CompositorAnimationTimeline;
+class CompositorProxyClient;
 class DateTimeChooser;
 class DateTimeChooserClient;
 class Element;
@@ -268,6 +269,8 @@ public:
 
     virtual void registerPopupOpeningObserver(PopupOpeningObserver*) = 0;
     virtual void unregisterPopupOpeningObserver(PopupOpeningObserver*) = 0;
+
+    virtual CompositorProxyClient* createCompositorProxyClient(LocalFrame*) = 0;
 
     virtual FloatSize elasticOverscroll() const { return FloatSize(); }
 

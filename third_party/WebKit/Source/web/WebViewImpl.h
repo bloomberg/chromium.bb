@@ -87,6 +87,7 @@ class WebLayerTreeView;
 class WebLocalFrame;
 class WebLocalFrameImpl;
 class WebImage;
+class CompositorMutatorImpl;
 class WebPagePopupImpl;
 class WebPlugin;
 class WebRemoteFrame;
@@ -503,6 +504,7 @@ public:
     void forceNextWebGLContextCreationToFail() override;
     void forceNextDrawingBufferCreationToFail() override;
 
+    CompositorProxyClient* createCompositorProxyClient();
     IntSize mainFrameSize();
     WebDisplayMode displayMode() const { return m_displayMode; }
 

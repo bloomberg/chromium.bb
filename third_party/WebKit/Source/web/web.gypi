@@ -15,6 +15,8 @@
       'CompositionUnderlineBuilder.h',
       'CompositionUnderlineVectorBuilder.cpp',
       'CompositionUnderlineVectorBuilder.h',
+      'CompositorProxyClientImpl.cpp',
+      'CompositorProxyClientImpl.h',
       'ContextFeaturesClientImpl.cpp',
       'ContextFeaturesClientImpl.h',
       'ContextMenuAllowedScope.cpp',

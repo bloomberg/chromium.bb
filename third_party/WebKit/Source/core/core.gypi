@@ -2370,6 +2370,8 @@
             'dom/Comment.h',
             'dom/CompositorProxy.cpp',
             'dom/CompositorProxy.h',
+            'dom/CompositorProxyClient.cpp',
+            'dom/CompositorProxyClient.h',
             'dom/ContainerNode.cpp',
             'dom/ContextFeatures.cpp',
             'dom/ContextFeatures.h',

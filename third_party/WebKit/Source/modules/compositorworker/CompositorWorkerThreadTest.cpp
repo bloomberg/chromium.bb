@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/V8GCController.h"
+#include "core/dom/CompositorProxyClient.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
@@ -57,6 +58,17 @@ private:
     Persistent<ExecutionContext> m_executionContext;
 };
 
+class TestCompositorProxyClient
+    : public GarbageCollected<TestCompositorProxyClient>
+    , public CompositorProxyClient {
+    USING_GARBAGE_COLLECTED_MIXIN(TestCompositorProxyClient);
+public:
+    TestCompositorProxyClient() {}
+
+    void setGlobalScope(WorkerGlobalScope*) override {}
+    void runAnimationFrameCallbacks() override {}
+};
+
 class CompositorWorkerTestPlatform : public TestingPlatformSupport {
 public:
     CompositorWorkerTestPlatform()
@@ -97,7 +109,8 @@ public:
     PassOwnPtr<CompositorWorkerThread> createCompositorWorker()
     {
         OwnPtr<CompositorWorkerThread> workerThread = CompositorWorkerThread::create(nullptr, *m_objectProxy, 0);
-        WorkerClients* clients = nullptr;
+        WorkerClients* clients = WorkerClients::create();
+        provideCompositorProxyClientTo(clients, new TestCompositorProxyClient);
         workerThread->start(WorkerThreadStartupData::create(
             KURL(ParsedURLString, "http://fake.url/"),
             "fake user agent",

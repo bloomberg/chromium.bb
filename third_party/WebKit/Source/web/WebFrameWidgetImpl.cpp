@@ -49,6 +49,7 @@
 #include "platform/KeyboardCodes.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/web/WebWidgetClient.h"
+#include "web/CompositorProxyClientImpl.h"
 #include "web/ContextMenuAllowedScope.h"
 #include "web/WebDevToolsAgentImpl.h"
 #include "web/WebInputEventConversion.h"
@@ -397,6 +398,11 @@ void WebFrameWidgetImpl::scheduleAnimation()
     }
     if (m_client)
         m_client->scheduleAnimation();
+}
+
+CompositorProxyClient* WebFrameWidgetImpl::createCompositorProxyClient()
+{
+    return new CompositorProxyClientImpl();
 }
 
 void WebFrameWidgetImpl::applyViewportDeltas(

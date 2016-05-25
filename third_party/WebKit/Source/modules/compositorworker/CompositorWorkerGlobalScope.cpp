@@ -24,8 +24,10 @@ CompositorWorkerGlobalScope* CompositorWorkerGlobalScope::create(CompositorWorke
 
 CompositorWorkerGlobalScope::CompositorWorkerGlobalScope(const KURL& url, const String& userAgent, CompositorWorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, WorkerClients* workerClients)
     : WorkerGlobalScope(url, userAgent, thread, timeOrigin, std::move(starterOriginPrivilegeData), workerClients)
+    , m_executingAnimationFrameCallbacks(false)
     , m_callbackCollection(this)
 {
+    CompositorProxyClient::from(clients())->setGlobalScope(this);
 }
 
 CompositorWorkerGlobalScope::~CompositorWorkerGlobalScope()
@@ -54,6 +56,12 @@ void CompositorWorkerGlobalScope::postMessage(ExecutionContext* executionContext
 
 int CompositorWorkerGlobalScope::requestAnimationFrame(FrameRequestCallback* callback)
 {
+    // For now, just post a task to call mutate on the compositor proxy client.
+    // TODO(flackr): Remove this as soon as CompositorProxyClient can request a
+    // compositor frame from the CompositorMutatorImpl.
+    thread()->postTask(BLINK_FROM_HERE, createSameThreadTask(&CompositorProxyClient::runAnimationFrameCallbacks,
+        CompositorProxyClient::from(clients())));
+    // TODO(flackr): Signal the compositor to call mutate on the next compositor frame.
     return m_callbackCollection.registerCallback(callback);
 }
 
@@ -62,9 +70,11 @@ void CompositorWorkerGlobalScope::cancelAnimationFrame(int id)
     m_callbackCollection.cancelCallback(id);
 }
 
-void CompositorWorkerGlobalScope::executeAnimationFrameCallbacks(double highResTimeNow)
+bool CompositorWorkerGlobalScope::executeAnimationFrameCallbacks(double highResTimeMs)
 {
-    m_callbackCollection.executeCallbacks(highResTimeNow, highResTimeNow);
+    TemporaryChange<bool> temporaryChange(m_executingAnimationFrameCallbacks, true);
+    m_callbackCollection.executeCallbacks(highResTimeMs, highResTimeMs);
+    return !m_callbackCollection.isEmpty();
 }
 
 CompositorWorkerThread* CompositorWorkerGlobalScope::thread() const

@@ -37,6 +37,7 @@
 
 namespace blink {
 
+class CompositorProxyClient;
 class WebLocalFrame;
 class WebView;
 class WebWidgetClient;
@@ -76,6 +77,7 @@ public:
     // blink.
     virtual bool forSubframe() const { return true; }
     virtual void scheduleAnimation() = 0;
+    virtual CompositorProxyClient* createCompositorProxyClient() = 0;
     virtual WebWidgetClient* client() const = 0;
 };
 

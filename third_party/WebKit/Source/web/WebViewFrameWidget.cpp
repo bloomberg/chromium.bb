@@ -260,4 +260,9 @@ void WebViewFrameWidget::scheduleAnimation()
     m_webView->scheduleAnimation();
 }
 
+CompositorProxyClient* WebViewFrameWidget::createCompositorProxyClient()
+{
+    return m_webView->createCompositorProxyClient();
+}
+
 } // namespace blink

@@ -171,6 +171,8 @@ public:
     void annotatedRegionsChanged() override {}
     String acceptLanguages() override;
 
+    CompositorProxyClient* createCompositorProxyClient(LocalFrame*) override { return nullptr; }
+
     void registerPopupOpeningObserver(PopupOpeningObserver*) override {}
     void unregisterPopupOpeningObserver(PopupOpeningObserver*) override {}
 
