@@ -87,6 +87,10 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
                            DesktopShellLauncherContextMenuItemCheck);
   FRIEND_TEST_ALL_PREFIXES(LauncherContextMenuTest,
                            ArcLauncherContextMenuItemCheck);
+  FRIEND_TEST_ALL_PREFIXES(LauncherContextMenuTest,
+                           DesktopShellLauncherContextMenuVerifyCloseItem);
+  FRIEND_TEST_ALL_PREFIXES(ShelfAppBrowserTest,
+                           LauncherContextMenuVerifyCloseItemAppearance);
 
   ChromeLauncherController* controller_;
 

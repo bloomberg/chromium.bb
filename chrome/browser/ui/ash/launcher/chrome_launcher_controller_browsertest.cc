@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/ash/app_list/test/app_list_service_ash_test_api.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
+#include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -72,6 +73,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
 
 using extensions::AppWindow;
@@ -160,6 +162,17 @@ void CloseAppBrowserWindow(Browser* app_browser) {
       chrome::NOTIFICATION_BROWSER_CLOSED,
       content::Source<Browser>(app_browser));
   app_browser->window()->Close();
+  close_observer.Wait();
+}
+
+// Close browsers from context menu
+void CloseBrowserWindow(Browser* browser,
+                        LauncherContextMenu* menu,
+                        int close_command) {
+  content::WindowedNotificationObserver close_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED, content::Source<Browser>(browser));
+  // Note that event_flag is never used inside function ExecuteCommand.
+  menu->ExecuteCommand(close_command, ui::EventFlags::EF_NONE);
   close_observer.Wait();
 }
 
@@ -351,6 +364,27 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
       base::MessageLoop::current()->RunUntilIdle();
       test->RunMessageLoopUntilAnimationsDone();
     }
+  }
+
+  std::unique_ptr<LauncherContextMenu> CreateLauncherContextMenu(
+      ash::ShelfItemType shelf_item_type) {
+    ash::ShelfItem item;
+    item.id = 1;  // dummy id
+    item.type = shelf_item_type;
+    ash::Shelf* shelf = ash::Shelf::ForWindow(CurrentContext());
+    std::unique_ptr<LauncherContextMenu> menu(
+        LauncherContextMenu::Create(controller_, &item, shelf));
+    return menu;
+  }
+
+  aura::Window* CurrentContext() {
+    aura::Window* root_window = ash::Shell::GetTargetRootWindow();
+    DCHECK(root_window);
+    return root_window;
+  }
+
+  bool IsItemPresentInMenu(LauncherContextMenu* menu, int command_id) {
+    return menu->GetIndexOfCommandId(command_id) != -1;
   }
 
   ash::Shelf* shelf_;
@@ -2237,4 +2271,30 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
   EXPECT_EQ(ash::STATUS_RUNNING, model_->ItemByID(hosted_app_shelf_id)->status);
   EXPECT_EQ(ash::STATUS_ACTIVE,
             model_->ItemByID(bookmark_app_shelf_id)->status);
+}
+
+// Test that "Close" is shown in the context menu when there are opened browsers
+// windows.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
+                       LauncherContextMenuVerifyCloseItemAppearance) {
+  // Open a new window.
+  aura::Window* window1 = browser()->window()->GetNativeWindow();
+  ash::wm::WindowState* window1_state = ash::wm::GetWindowState(window1);
+  window1->Show();
+  window1_state->Activate();
+  std::unique_ptr<LauncherContextMenu> menu1 =
+      CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT);
+  // Check if "Close" is added to in the context menu.
+  ASSERT_TRUE(
+      IsItemPresentInMenu(menu1.get(), LauncherContextMenu::MENU_CLOSE));
+
+  // Close all windows.
+  CloseBrowserWindow(browser(), menu1.get(), LauncherContextMenu::MENU_CLOSE);
+  EXPECT_EQ(0u, BrowserList::GetInstance()->size());
+
+  // Check if "Close" is removed from the context menu.
+  std::unique_ptr<LauncherContextMenu> menu2 =
+      CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT);
+  ASSERT_FALSE(
+      IsItemPresentInMenu(menu2.get(), LauncherContextMenu::MENU_CLOSE));
 }

@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/desktop_shell_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
@@ -136,6 +137,16 @@ TEST_F(LauncherContextMenuTest, DesktopShellLauncherContextMenuItemCheck) {
                                   LauncherContextMenu::MENU_CHANGE_WALLPAPER));
   EXPECT_FALSE(
       menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CHANGE_WALLPAPER));
+}
+
+// Verifies that "Close" is not shown in context menu if no browser window is
+// opened.
+TEST_F(LauncherContextMenuTest,
+       DesktopShellLauncherContextMenuVerifyCloseItem) {
+  std::unique_ptr<LauncherContextMenu> menu(
+      CreateLauncherContextMenu(ash::TYPE_BROWSER_SHORTCUT));
+  ASSERT_FALSE(
+      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
 }
 
 // Verifies contextmenu items for Arc app

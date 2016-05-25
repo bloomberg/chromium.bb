@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -78,6 +79,11 @@ void ExtensionLauncherContextMenu::Init() {
     if (!controller()->IsLoggedInAsGuest()) {
       AddItemWithStringId(MENU_NEW_INCOGNITO_WINDOW,
                           IDS_APP_LIST_NEW_INCOGNITO_WINDOW);
+    }
+    if (!BrowserShortcutLauncherItemController(controller())
+             .IsListOfActiveBrowserEmpty()) {
+      AddItem(MENU_CLOSE,
+              l10n_util::GetStringUTF16(IDS_LAUNCHER_CONTEXT_MENU_CLOSE));
     }
   } else if (item().type == ash::TYPE_DIALOG) {
     AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);

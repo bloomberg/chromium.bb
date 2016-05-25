@@ -18,8 +18,8 @@
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager.h"
@@ -174,6 +174,8 @@ BrowserShortcutLauncherItemController::Activate(ash::LaunchSource source) {
 }
 
 void BrowserShortcutLauncherItemController::Close() {
+  for (auto* browser : GetListOfActiveBrowsers())
+    browser->window()->Close();
 }
 
 ChromeLauncherAppMenuItems
@@ -182,27 +184,12 @@ BrowserShortcutLauncherItemController::GetApplicationList(int event_flags) {
   bool found_tabbed_browser = false;
   // Add the application name to the menu.
   items.push_back(new ChromeLauncherAppMenuItem(GetTitle(), NULL, false));
-  const BrowserList* browser_list = BrowserList::GetInstance();
-  for (BrowserList::const_iterator it = browser_list->begin();
-       it != browser_list->end(); ++it) {
-    Browser* browser = *it;
-    // Make sure that the browser is from the current user, has a proper window,
-    // and the window was already shown.
-    if (!launcher_controller()->IsBrowserFromActiveUser(browser))
-      continue;
-    if (!(browser->window() && browser->window()->GetNativeWindow()))
-      continue;
-    if (!(browser->window()->GetNativeWindow()->IsVisible() ||
-          browser->window()->IsMinimized())) {
-      continue;
-    }
-    if (browser->is_type_tabbed())
-      found_tabbed_browser = true;
-    else if (!IsBrowserRepresentedInBrowserList(browser))
-      continue;
+  for (auto* browser : GetListOfActiveBrowsers()) {
     TabStripModel* tab_strip = browser->tab_strip_model();
     if (tab_strip->active_index() == -1)
       continue;
+    if (browser->is_type_tabbed())
+      found_tabbed_browser = true;
     if (!(event_flags & ui::EF_SHIFT_DOWN)) {
       content::WebContents* web_contents =
           tab_strip->GetWebContentsAt(tab_strip->active_index());
@@ -267,6 +254,10 @@ bool BrowserShortcutLauncherItemController::CanPin() const {
 
 bool BrowserShortcutLauncherItemController::ShouldShowTooltip() {
   return true;
+}
+
+bool BrowserShortcutLauncherItemController::IsListOfActiveBrowserEmpty() {
+  return GetListOfActiveBrowsers().empty();
 }
 
 gfx::Image BrowserShortcutLauncherItemController::GetBrowserListIcon(
@@ -360,4 +351,24 @@ bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
 
   // Tabbed browser and other popup windows are all represented.
   return true;
+}
+
+BrowserList::BrowserVector
+BrowserShortcutLauncherItemController::GetListOfActiveBrowsers() {
+  BrowserList::BrowserVector active_browsers;
+  for (auto* browser : *BrowserList::GetInstance()) {
+    // Make sure that the browser is from the current user, has a proper window,
+    // and the window was already shown.
+    if (!launcher_controller()->IsBrowserFromActiveUser(browser))
+      continue;
+    if (!browser->window()->GetNativeWindow()->IsVisible() &&
+        !browser->window()->IsMinimized()) {
+      continue;
+    }
+    if (!IsBrowserRepresentedInBrowserList(browser) &&
+        !browser->is_type_tabbed())
+      continue;
+    active_browsers.push_back(browser);
+  }
+  return active_browsers;
 }

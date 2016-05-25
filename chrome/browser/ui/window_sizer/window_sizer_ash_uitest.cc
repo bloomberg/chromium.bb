@@ -193,11 +193,12 @@ IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
             browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
   EXPECT_EQ(root_windows[1], ash::Shell::GetTargetRootWindow());
 
+  CloseBrowser(browser_list->get(0));
   OpenBrowserUsingContextMenuOnRootWindow(root_windows[0]);
 
   // Next new browser must be created on 1st display.
-  ASSERT_EQ(2u, browser_list->size());
+  ASSERT_EQ(1u, browser_list->size());
   EXPECT_EQ(root_windows[0],
-            browser_list->get(1)->window()->GetNativeWindow()->GetRootWindow());
+            browser_list->get(0)->window()->GetNativeWindow()->GetRootWindow());
   EXPECT_EQ(root_windows[0], ash::Shell::GetTargetRootWindow());
 }
