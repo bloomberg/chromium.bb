@@ -21,20 +21,6 @@ bool MappedFile::Store(const FileBlock* block) {
   return Write(block->buffer(), block->size(), offset);
 }
 
-bool MappedFile::Load(const FileBlock* block,
-                      FileIOCallback* callback,
-                      bool* completed) {
-  size_t offset = block->offset() + view_size_;
-  return Read(block->buffer(), block->size(), offset, callback, completed);
-}
-
-bool MappedFile::Store(const FileBlock* block,
-                       FileIOCallback* callback,
-                       bool* completed) {
-  size_t offset = block->offset() + view_size_;
-  return Write(block->buffer(), block->size(), offset, callback, completed);
-}
-
 bool MappedFile::Preload() {
   size_t file_len = GetLength();
   std::unique_ptr<char[]> buf(new char[file_len]);
