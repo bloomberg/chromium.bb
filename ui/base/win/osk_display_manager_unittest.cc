@@ -9,11 +9,16 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "base/win/windows_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // This test validates the on screen keyboard path (tabtip.exe) which is read
 // from the registry.
 TEST(OnScreenKeyboardTest, OSKPath) {
+  // The on screen keyboard is only available on Windows 8+.
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
   ui::OnScreenKeyboardDisplayManager* keyboard_display_manager =
       ui::OnScreenKeyboardDisplayManager::GetInstance();
   EXPECT_NE(nullptr, keyboard_display_manager);
