@@ -51,3 +51,57 @@ template("repack") {
     }
   }
 }
+
+# This template combines repacking resources and defining a bundle_data target
+# to move them to the application bundle. This is mostly useful on iOS.
+#
+# Parameters:
+#   sources  [required]
+#       List of pak files that need to be combined.
+#
+#   output  [required]
+#       File name (single string) of the output file.
+#
+#   bundle_output [optional]
+#       Path of the file in the application bundle, defaults to
+#       {{bundle_resources_dir}}/{{source_file_part}} if omitted.
+#
+#   deps  [optional]
+#   visibility  [optional]
+#       Normal meaning.
+template("repack_and_bundle") {
+  assert(defined(invoker.bundle_output), "Need bundle_output for $target_name")
+
+  _repack_target_name = target_name + "_repack"
+  _bundle_target_name = target_name
+
+  repack(_repack_target_name) {
+    visibility = [ ":$_bundle_target_name" ]
+    forward_variables_from(invoker,
+                           [
+                             "deps",
+                             "output",
+                             "sources",
+                           ])
+  }
+
+  bundle_data(_bundle_target_name) {
+    forward_variables_from(invoker, [ "visibility" ])
+
+    public_deps = [
+      ":$_repack_target_name",
+    ]
+    sources = [
+      invoker.output,
+    ]
+    if (defined(invoker.bundle_output)) {
+      outputs = [
+        invoker.bundle_output,
+      ]
+    } else {
+      outputs = [
+        "{{bundle_resources_dir}}/{{source_file_part}}",
+      ]
+    }
+  }
+}
