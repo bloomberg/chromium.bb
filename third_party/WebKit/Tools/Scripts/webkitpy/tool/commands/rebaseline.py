@@ -45,7 +45,6 @@ from webkitpy.layout_tests.controllers.test_result_writer import TestResultWrite
 from webkitpy.layout_tests.models import test_failures
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, BASELINE_SUFFIX_LIST, SKIP
 from webkitpy.layout_tests.port import factory
-from webkitpy.layout_tests.builders import Builders
 from webkitpy.tool.commands.command import Command
 
 

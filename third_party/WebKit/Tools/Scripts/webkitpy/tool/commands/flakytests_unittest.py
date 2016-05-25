@@ -6,19 +6,9 @@ import flakytests
 
 from webkitpy.common.checkout.scm.scm_mock import MockSCM
 from webkitpy.layout_tests.layout_package import bot_test_expectations
-from webkitpy.layout_tests.builders import Builders
+from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.tool.commands.commandtest import CommandsTest
 from webkitpy.tool.mocktool import MockTool, MockOptions
-
-
-class FakeBuilders(Builders):
-
-    def __init__(self):
-        super(FakeBuilders, self).__init__()
-        self._exact_matches = {
-            "foo-builder": {"port_name": "dummy-port", "specifiers": ['Linux', 'Release']},
-            "bar-builder": {"port_name": "dummy-port", "specifiers": ['Mac', 'Debug']},
-        }
 
 
 class FakeBotTestExpectations(object):
@@ -63,9 +53,16 @@ class FakeBotTestExpectationsFactory(object):
 
 class FlakyTestsTest(CommandsTest):
 
+    @staticmethod
+    def fake_builders_list():
+        return BuilderList({
+            "foo-builder": {"port_name": "dummy-port", "specifiers": ['Linux', 'Release']},
+            "bar-builder": {"port_name": "dummy-port", "specifiers": ['Mac', 'Debug']},
+        })
+
     def test_merge_lines(self):
         command = flakytests.FlakyTests()
-        factory = FakeBotTestExpectationsFactory(FakeBuilders())
+        factory = FakeBotTestExpectationsFactory(self.fake_builders_list())
 
         lines = command._collect_expectation_lines(['foo-builder', 'bar-builder'], factory)
         self.assertEqual(len(lines), 1)
@@ -75,7 +72,7 @@ class FlakyTestsTest(CommandsTest):
     def test_integration(self):
         command = flakytests.FlakyTests()
         tool = MockTool()
-        tool.builders = FakeBuilders()
+        tool.builders = self.fake_builders_list()
         command.expectations_factory = FakeBotTestExpectationsFactory
         options = MockOptions(upload=True)
         expected_stdout = flakytests.FlakyTests.OUTPUT % (

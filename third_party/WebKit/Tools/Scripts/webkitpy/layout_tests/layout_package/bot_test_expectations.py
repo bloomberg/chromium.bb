@@ -35,7 +35,6 @@ import os.path
 import urllib
 import urllib2
 
-from webkitpy.layout_tests.builders import Builders
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, PASS
 from webkitpy.layout_tests.models.test_expectations import TestExpectationLine
 

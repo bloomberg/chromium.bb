@@ -28,46 +28,36 @@
 
 import re
 
-"""Represents builder bots running layout tests.
+"""Represents a set of builder bots running layout tests.
 
-This class is used to keep a list of all builder bots running layout tests on
-the Chromium waterfall. There are other waterfalls that run layout tests but
-this list is the one we care about in the context of TestExpectations. The
-builders are hard coded in the constructor but can be overridden for unit tests.
+This class is used to hold a list of builder bots running layout tests and their
+corresponding port names and TestExpectations specifiers.
 
+The actual constants are in webkitpy.common.config.builders.
 """
-class Builders(object):
 
-    def __init__(self):
-        """ In this dictionary, each item stores:
 
-            * port_name -- a fully qualified port name
-            * rebaseline_override_dir -- (optional) directory to put baselines in instead of where
+class BuilderList(object):
+
+    def __init__(self, builders_dict):
+        """The given dictionary maps builder names to dicts with the keys:
+
+            port_name: A fully qualified port name.
+            specifiers: TestExpectations specifiers for that config. Valid values are found in
+                  TestExpectationsParser._configuration_tokens_list.
+            TODO(qyearsley): Remove rebaseline_override_dir if it's not used.
+            rebaseline_override_dir (optional): Directory to put baselines in instead of where
                   you would normally put them. This is useful when we don't have bots that cover
                   particular configurations; so, e.g., you might support mac-mountainlion but not
                   have a mac-mountainlion bot yet, so you'd want to put the mac-lion results into
                   platform/mac temporarily.
-            * specifiers -- TestExpectation specifiers for that config. Valid values are found in
-                 TestExpectationsParser._configuration_tokens_list
-        """
-        self._exact_matches = {
-            "WebKit Win7": {"port_name": "win-win7", "specifiers": ['Win7', 'Release']},
-            "WebKit Win7 (dbg)": {"port_name": "win-win7", "specifiers": ['Win7', 'Debug']},
-            "WebKit Win10": {"port_name": "win-win10", "specifiers": ['Win10', 'Release']},
-            # FIXME: Rename this to 'WebKit Linux Precise'
-            "WebKit Linux": {"port_name": "linux-precise", "specifiers": ['Precise', 'Release']},
-            "WebKit Linux Trusty": {"port_name": "linux-trusty", "specifiers": ['Trusty', 'Release']},
-            "WebKit Linux (dbg)": {"port_name": "linux-precise", "specifiers": ['Precise', 'Debug']},
-            "WebKit Mac10.9": {"port_name": "mac-mac10.9", "specifiers": ['Mac10.9', 'Release']},
-            "WebKit Mac10.10": {"port_name": "mac-mac10.10", "specifiers": ['Mac10.10', 'Release']},
-            "WebKit Mac10.11": {"port_name": "mac-mac10.11", "specifiers": ['10.11', 'Release']},
-            "WebKit Mac10.11 (dbg)": {"port_name": "mac-mac10.11", "specifiers": ['10.11', 'Debug']},
-            "WebKit Mac10.11 (retina)": {"port_name": "mac-retina", "specifiers": ['Retina', 'Release']},
-            "WebKit Android (Nexus4)": {"port_name": "android", "specifiers": ['Android', 'Release']},
-        }
 
-        self._ports_without_builders = [
-        ]
+        Possible refactoring note: Potentially, it might make sense to use
+        webkitpy.common.buildbot.Builder and add port_name and specifiers
+        properties to that class.
+        """
+        self._exact_matches = builders_dict
+        self._ports_without_builders = []
 
     def builder_path_from_name(self, builder_name):
         return re.sub(r'[\s().]', '_', builder_name)

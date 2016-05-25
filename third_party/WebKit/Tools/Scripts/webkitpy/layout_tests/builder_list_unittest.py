@@ -28,10 +28,10 @@
 
 import unittest
 
-from builders import Builders
+from webkitpy.layout_tests.builder_list import BuilderList
 
 
-class BuildersTest(unittest.TestCase):
+class BuilderListTest(unittest.TestCase):
 
     def test_path_from_name(self):
         tests = {
@@ -39,6 +39,6 @@ class BuildersTest(unittest.TestCase):
             'Mac 10.6 (dbg)(1)': 'Mac_10_6__dbg__1_',
             '(.) ': '____',
         }
-        builders = Builders()
+        builder_list = BuilderList({})
         for name, expected in tests.items():
-            self.assertEqual(expected, builders.builder_path_from_name(name))
+            self.assertEqual(expected, builder_list.builder_path_from_name(name))
