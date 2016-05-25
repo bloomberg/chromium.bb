@@ -79,7 +79,6 @@ class WebDevToolsAgentImpl final
 public:
     static WebDevToolsAgentImpl* create(WebLocalFrameImpl*, WebDevToolsAgentClient*);
     ~WebDevToolsAgentImpl() override;
-    void dispose();
     DECLARE_VIRTUAL_TRACE();
 
     void willBeDestroyed();
@@ -142,9 +141,6 @@ private:
 
     WebDevToolsAgentClient* m_client;
     Member<WebLocalFrameImpl> m_webLocalFrameImpl;
-#if DCHECK_IS_ON()
-    bool m_hasBeenDisposed;
-#endif
 
     Member<InstrumentingAgents> m_instrumentingAgents;
     Member<InspectorResourceContentLoader> m_resourceContentLoader;

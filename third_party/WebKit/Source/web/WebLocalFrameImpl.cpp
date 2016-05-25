@@ -569,10 +569,8 @@ void WebLocalFrameImpl::close()
 {
     m_client = nullptr;
 
-    if (m_devToolsAgent) {
-        m_devToolsAgent->dispose();
+    if (m_devToolsAgent)
         m_devToolsAgent.clear();
-    }
 
     m_selfKeepAlive.clear();
 }
