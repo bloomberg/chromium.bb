@@ -158,6 +158,8 @@ template("test") {
       _apk_specific_vars = [
         "android_manifest",
         "enable_multidex",
+        "proguard_configs",
+        "proguard_enabled",
         "use_default_launcher",
         "write_asset_list",
       ]

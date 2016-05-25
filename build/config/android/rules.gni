@@ -2134,6 +2134,12 @@ template("unittest_apk") {
     # are defined, as otherwise test_suite_name would not be used.
     assert(test_suite_name != "")
 
+    if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
+      assert(invoker.proguard_configs != [])
+      proguard_enabled = true
+      proguard_configs = invoker.proguard_configs
+    }
+
     if (!defined(apk_name)) {
       apk_name = test_suite_name
     }
