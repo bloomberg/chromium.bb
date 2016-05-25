@@ -41,7 +41,9 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "zlib.h"
+// TODO(saugustine): Add support for compressed debug.
+// Also need to add configure tests for zlib.
+//#include "zlib.h"
 
 #include "third_party/musl/include/elf.h"
 #include "elf_reader.h"
