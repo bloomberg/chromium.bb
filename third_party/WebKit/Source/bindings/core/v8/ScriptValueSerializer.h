@@ -279,7 +279,6 @@ protected:
             : State<v8::Object>(object, next)
             , m_index(0)
             , m_numSerializedProperties(0)
-            , m_nameDone(false)
         {
         }
 
@@ -290,10 +289,8 @@ protected:
         v8::Local<v8::Array> m_propertyNames;
 
     private:
-        v8::Local<v8::Value> m_propertyName;
         unsigned m_index;
         unsigned m_numSerializedProperties;
-        bool m_nameDone;
     };
 
     class ObjectState final : public AbstractObjectState {

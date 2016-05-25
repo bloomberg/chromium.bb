@@ -555,34 +555,29 @@ int SerializedScriptValueWriter::v8StringWriteOptions()
 ScriptValueSerializer::StateBase* ScriptValueSerializer::AbstractObjectState::serializeProperties(bool ignoreIndexed, ScriptValueSerializer& serializer)
 {
     while (m_index < m_propertyNames->Length()) {
-        if (!m_nameDone) {
-            v8::Local<v8::Value> propertyName;
-            if (!m_propertyNames->Get(serializer.context(), m_index).ToLocal(&propertyName))
-                return serializer.handleError(JSException, "Failed to get a property while cloning an object.", this);
-            bool hasStringProperty = propertyName->IsString() && v8CallBoolean(composite()->HasRealNamedProperty(serializer.context(), propertyName.As<v8::String>()));
-            if (StateBase* newState = serializer.checkException(this))
-                return newState;
-            bool hasIndexedProperty = !hasStringProperty && propertyName->IsUint32() && v8CallBoolean(composite()->HasRealIndexedProperty(serializer.context(), propertyName.As<v8::Uint32>()->Value()));
-            if (StateBase* newState = serializer.checkException(this))
-                return newState;
-            if (hasStringProperty || (hasIndexedProperty && !ignoreIndexed)) {
-                m_propertyName = propertyName;
-            } else {
-                ++m_index;
-                continue;
-            }
-        }
-        ASSERT(!m_propertyName.IsEmpty());
-        if (!m_nameDone) {
-            m_nameDone = true;
-            if (StateBase* newState = serializer.doSerialize(m_propertyName, this))
-                return newState;
-        }
-        v8::Local<v8::Value> value;
-        if (!composite()->Get(serializer.context(), m_propertyName).ToLocal(&value))
+        v8::Local<v8::Value> propertyName;
+        if (!m_propertyNames->Get(serializer.context(), m_index).ToLocal(&propertyName))
             return serializer.handleError(JSException, "Failed to get a property while cloning an object.", this);
-        m_nameDone = false;
-        m_propertyName.Clear();
+
+        bool hasProperty = false;
+        if (propertyName->IsString()) {
+            hasProperty = v8CallBoolean(composite()->HasRealNamedProperty(serializer.context(), propertyName.As<v8::String>()));
+        } else if (propertyName->IsUint32()) {
+            hasProperty = v8CallBoolean(composite()->HasRealIndexedProperty(serializer.context(), propertyName.As<v8::Uint32>()->Value())) && !ignoreIndexed;
+        }
+        if (StateBase* newState = serializer.checkException(this))
+            return newState;
+        if (!hasProperty) {
+            ++m_index;
+            continue;
+        }
+
+        // |propertyName| is v8::String or v8::Uint32, so its serialization cannot be recursive.
+        serializer.doSerialize(propertyName, nullptr);
+
+        v8::Local<v8::Value> value;
+        if (!composite()->Get(serializer.context(), propertyName).ToLocal(&value))
+            return serializer.handleError(JSException, "Failed to get a property while cloning an object.", this);
         ++m_index;
         ++m_numSerializedProperties;
         // If we return early here, it's either because we have pushed a new state onto the
