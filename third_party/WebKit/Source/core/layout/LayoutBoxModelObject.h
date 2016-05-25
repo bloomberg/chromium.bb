@@ -25,6 +25,7 @@
 #define LayoutBoxModelObject_h
 
 #include "core/CoreExport.h"
+#include "core/layout/BackgroundBleedAvoidance.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "core/style/ShadowData.h"
@@ -49,13 +50,6 @@ enum PaintLayerType {
 enum LinePositionMode { PositionOnContainingLine, PositionOfInteriorLineBoxes };
 enum LineDirectionMode { HorizontalLine, VerticalLine };
 typedef unsigned BorderEdgeFlags;
-
-enum BackgroundBleedAvoidance {
-    BackgroundBleedNone,
-    BackgroundBleedShrinkBackground,
-    BackgroundBleedClipOnly,
-    BackgroundBleedClipLayer,
-};
 
 enum ContentChangeType {
     ImageChanged,

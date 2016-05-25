@@ -5,7 +5,7 @@
 #ifndef BoxDecorationData_h
 #define BoxDecorationData_h
 
-#include "core/layout/LayoutBoxModelObject.h" // For BackgroundBleedAvoidance.
+#include "core/layout/BackgroundBleedAvoidance.h"
 #include "platform/graphics/Color.h"
 
 namespace blink {
