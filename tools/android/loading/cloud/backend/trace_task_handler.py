@@ -204,6 +204,7 @@ class TraceTaskHandler(object):
       self._logger.debug('Uploading: %s' % remote_trace_location)
       self._google_storage_accessor.UploadFile(local_filename,
                                                remote_trace_location)
+      os.remove(local_filename)  # The trace may be very large.
     else:
       self._logger.warning('No trace found at: ' + local_filename)
 
