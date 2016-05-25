@@ -99,6 +99,8 @@ public:
 private:
     explicit DOMSelection(const TreeScope*);
 
+    bool isAvailable() const;
+
     // Convenience method for accessors, does not check m_frame present.
     const VisibleSelection& visibleSelection() const;
 
