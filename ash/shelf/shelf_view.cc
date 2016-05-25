@@ -436,6 +436,10 @@ void ShelfView::OnShelfAlignmentChanged() {
   tooltip_.Close();
   if (overflow_bubble_)
     overflow_bubble_->Hide();
+  // For crbug.com/587931, because AppListButton layout logic is in OnPaint.
+  views::View* app_list_button = GetAppListButtonView();
+  if (app_list_button)
+    app_list_button->SchedulePaint();
 }
 
 void ShelfView::SchedulePaintForAllButtons() {
