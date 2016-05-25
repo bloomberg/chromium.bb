@@ -5227,6 +5227,21 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SAVE_PAGE_AS_MHTML_DESCRIPTION" desc="Description of the 'Save Page as MHTML' lab.">
         Enables saving pages as MHTML: a single text file containing HTML and all sub-resources.
       </message>
+      
+      <!-- Flag and values for MHTML Geenrator options lab. -->
+      <message name="IDS_FLAGS_MHTML_GENERATOR_OPTION_NAME" desc="Name of the 'MHTML Generator Options' lab.">
+        MHTML Generation Option
+      </message>
+      <message name="IDS_FLAGS_MHTML_GENERATOR_OPTION_DESCRIPTION" desc="Description of the 'MHTML Generator Options' lab.">
+        Provides experimental options for MHTML file generator.
+      </message>
+      <message name="IDS_FLAGS_MHTML_SKIP_NOSTORE_MAIN">
+        Skips no-store main frame.
+      </message>
+      <message name="IDS_FLAGS_MHTML_SKIP_NOSTORE_ALL">
+        Skips all no-store resources.
+      </message>
+
       <message name="IDS_FLAGS_DEVICE_DISCOVERY_NOTIFICATIONS_NAME" desc="Title of the 'device discovery notificatios' flag.">
         Device Discovery Notifications
       </message>

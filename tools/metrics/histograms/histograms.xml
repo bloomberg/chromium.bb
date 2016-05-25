@@ -78579,6 +78579,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="610545308" label="enable-potentially-annoying-security-features"/>
   <int value="625273056" label="disable-boot-animation"/>
   <int value="630947363" label="touch-events"/>
+  <int value="636425179" label="mhtml-generator-option"/>
   <int value="643725031" label="disable-touch-feedback"/>
   <int value="646738320" label="disable-gesture-editing"/>
   <int value="650602639" label="enable-autofill-keyboard-accessory-view"/>

@@ -305,6 +305,14 @@ const FeatureEntry::Choice kGpuRasterizationMSAASampleCountChoices[] = {
     switches::kGpuRasterizationMSAASampleCount, "16" },
 };
 
+const FeatureEntry::Choice kMHTMLGeneratorOptionChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_MHTML_SKIP_NOSTORE_MAIN,
+    switches::kMHTMLGeneratorOption, switches::kMHTMLSkipNostoreMain },
+  { IDS_FLAGS_MHTML_SKIP_NOSTORE_ALL,
+    switches::kMHTMLGeneratorOption, switches::kMHTMLSkipNostoreAll },
+};
+
 const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -690,6 +698,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME,
      IDS_FLAGS_SAVE_PAGE_AS_MHTML_DESCRIPTION, kOsMac | kOsWin | kOsLinux,
      SINGLE_VALUE_TYPE(switches::kSavePageAsMHTML)},
+    {"mhtml-generator-option",
+     IDS_FLAGS_MHTML_GENERATOR_OPTION_NAME,
+     IDS_FLAGS_MHTML_GENERATOR_OPTION_DESCRIPTION, kOsMac | kOsWin | kOsLinux,
+     MULTI_VALUE_TYPE(kMHTMLGeneratorOptionChoices)},
     {"enable-quic", IDS_FLAGS_QUIC_NAME, IDS_FLAGS_QUIC_DESCRIPTION, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableQuic, switches::kDisableQuic)},
     {"enable-alternative-services", IDS_FLAGS_ALTSVC_NAME,
