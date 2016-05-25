@@ -947,8 +947,38 @@ void VisibleSelectionTemplate<Strategy>::showTreeForThis() const
 
 #endif
 
+template <typename Strategy>
+void VisibleSelectionTemplate<Strategy>::PrintTo(
+    const VisibleSelectionTemplate<Strategy>& selection,
+    std::ostream* ostream)
+{
+    if (selection.isNone()) {
+        *ostream << "VisibleSelection()";
+        return;
+    }
+    *ostream << "VisibleSelection(base: " << selection.base()
+        << " extent:" << selection.extent()
+        << " start: " << selection.start()
+        << " end: " << selection.end()
+        << ' ' << selection.affinity()
+        << ' ' << (selection.isDirectional() ? "Directional" : "NonDirectional")
+        << ')';
+}
+
 template class CORE_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingStrategy>;
 template class CORE_TEMPLATE_EXPORT VisibleSelectionTemplate<EditingInFlatTreeStrategy>;
+
+std::ostream& operator<<(std::ostream& ostream, const VisibleSelection& selection)
+{
+    VisibleSelection::PrintTo(selection, &ostream);
+    return ostream;
+}
+
+std::ostream& operator<<(std::ostream& ostream, const VisibleSelectionInFlatTree& selection)
+{
+    VisibleSelectionInFlatTree::PrintTo(selection, &ostream);
+    return ostream;
+}
 
 } // namespace blink
 

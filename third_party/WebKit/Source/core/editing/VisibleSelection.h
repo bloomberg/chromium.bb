@@ -156,6 +156,7 @@ public:
     void formatForDebugger(char* buffer, unsigned length) const;
     void showTreeForThis() const;
 #endif
+    static void PrintTo(const VisibleSelectionTemplate&, std::ostream*);
 
     void setStartRespectingGranularity(TextGranularity, EWordSide = RightWordIfOnBoundary);
     void setEndRespectingGranularity(TextGranularity, EWordSide = RightWordIfOnBoundary);
@@ -216,6 +217,9 @@ CORE_EXPORT EphemeralRange firstEphemeralRangeOf(const VisibleSelection&);
 
 // TODO(sof): move more firstRangeOf() uses to be over EphemeralRange instead.
 CORE_EXPORT Range* firstRangeOf(const VisibleSelection&);
+
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const VisibleSelection&);
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const VisibleSelectionInFlatTree&);
 
 } // namespace blink
 
