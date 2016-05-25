@@ -36,6 +36,7 @@ class ExtensionServiceWorkerMessageFilter
   void OnRequestWorker(const ExtensionHostMsg_Request_Params& params);
 
   const int render_process_id_;
+  content::BrowserContext* browser_context_;
 
   std::unique_ptr<ExtensionFunctionDispatcher,
                   content::BrowserThread::DeleteOnUIThread>

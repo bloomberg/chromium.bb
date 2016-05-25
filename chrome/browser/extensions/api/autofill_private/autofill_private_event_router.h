@@ -48,6 +48,9 @@ class AutofillPrivateEventRouter :
 
   autofill::PersonalDataManager* personal_data_;
 
+  // Whether this class is currently listening for changes to |personal_data_|.
+  bool listening_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateEventRouter);
 };
 
