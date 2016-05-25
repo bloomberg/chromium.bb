@@ -989,7 +989,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
       data_reduction_proxy_settings));
   host->AddFilter(new startup_metric_utils::StartupMetricMessageFilter());
 
-  host->Send(new ChromeViewMsg_SetIsIncognitoProcess(
+  host->GetImmediateSender()->Send(new ChromeViewMsg_SetIsIncognitoProcess(
       profile->IsOffTheRecord()));
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)
@@ -1006,7 +1006,8 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
     GetRendererContentSettingRules(
         HostContentSettingsMapFactory::GetForProfile(profile), &rules);
   }
-  host->Send(new ChromeViewMsg_SetContentSettingRules(rules));
+  host->GetImmediateSender()->Send(
+      new ChromeViewMsg_SetContentSettingRules(rules));
 }
 
 GURL ChromeContentBrowserClient::GetEffectiveURL(

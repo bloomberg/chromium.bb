@@ -230,7 +230,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   latency_tracker_.Initialize(routing_id_, GetProcess()->GetID());
 
   input_router_.reset(new InputRouterImpl(
-      process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
+      process_->GetImmediateSender(), this, this, routing_id_,
+      GetInputRouterConfigForPlatform()));
 
   touch_emulator_.reset();
 
@@ -1346,7 +1347,8 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   // event. (In particular, the above call to view_->RenderProcessGone will
   // destroy the aura window, which may dispatch a synthetic mouse move.)
   input_router_.reset(new InputRouterImpl(
-      process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
+      process_->GetImmediateSender(), this, this, routing_id_,
+      GetInputRouterConfigForPlatform()));
 
   synthetic_gesture_controller_.reset();
 }

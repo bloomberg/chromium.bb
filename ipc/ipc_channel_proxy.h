@@ -123,9 +123,23 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
   // with / allow for this possibility.
   void Close();
 
-  // Send a message asynchronously.  The message is routed to the background
-  // thread where it is passed to the IPC::Channel's Send method.
+  // DEPRECATED: Please use either SendNow or SendOnIPCThread to make ordering
+  // expectations explicit.
+  //
+  // This is an alias for for SendOnIPCThread.
   bool Send(Message* message) override;
+
+  // Send a message as soon as possible. This method may send the message
+  // immediately, or it may defer and send on the IPC thread. Use this when you
+  // you don't care about strict ordering of the send operation with respect to
+  // tasks on the IPC thread. This is most commonly what you want.
+  virtual bool SendNow(std::unique_ptr<Message> message);
+
+  // Send a message from the IPC thread. This immediately posts a task to the
+  // IPC thread task runner to send the message. Use this when you're posting
+  // other related tasks to the IPC thread and you need to guarantee that the
+  // send operation is ordered with respect to those tasks.
+  virtual bool SendOnIPCThread(std::unique_ptr<Message> message);
 
   // Used to intercept messages as they are received on the background thread.
   //
@@ -181,7 +195,7 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     void OnDispatchMessage(const Message& message);
 
     // Sends |message| from appropriate thread.
-    void Send(Message* message);
+    bool Send(std::unique_ptr<Message> message, bool force_io_thread);
 
     // Indicates if the underlying channel's Send is thread-safe.
     bool IsChannelSendThreadSafe() const;
@@ -235,7 +249,6 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
     void OnDispatchError();
     void OnDispatchBadMessage(const Message& message);
 
-    void SendFromThisThread(Message* message);
     void ClearChannel();
 
     scoped_refptr<base::SingleThreadTaskRunner> listener_task_runner_;
@@ -295,6 +308,8 @@ class IPC_EXPORT ChannelProxy : public Endpoint, public base::NonThreadSafe {
 
   // Always called once immediately after Init.
   virtual void OnChannelInit();
+
+  bool SendImpl(std::unique_ptr<Message> message, bool force_io_thread);
 
   // By maintaining this indirection (ref-counted) to our internal state, we
   // can safely be destroyed while the background thread continues to do stuff

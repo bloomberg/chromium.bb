@@ -164,6 +164,7 @@
 #include "ipc/attachment_broker_privileged.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_logging.h"
+#include "ipc/ipc_sender.h"
 #include "ipc/ipc_switches.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 #include "media/base/media_switches.h"
@@ -447,6 +448,25 @@ std::string UintVectorToString(const std::vector<unsigned>& vector) {
 
 }  // namespace
 
+class RenderProcessHostImpl::SafeSenderProxy : public IPC::Sender {
+ public:
+  // |process| must outlive this object.
+  explicit SafeSenderProxy(RenderProcessHostImpl* process, bool send_now)
+      : process_(process), send_now_(send_now) {}
+  ~SafeSenderProxy() override {}
+
+  // IPC::Sender:
+  bool Send(IPC::Message* message) override {
+    return process_->SendImpl(base::WrapUnique(message), send_now_);
+  }
+
+ private:
+  RenderProcessHostImpl* const process_;
+  const bool send_now_;
+
+  DISALLOW_COPY_AND_ASSIGN(SafeSenderProxy);
+};
+
 RendererMainThreadFactoryFunction g_renderer_main_thread_factory = NULL;
 
 base::MessageLoop* g_in_process_thread;
@@ -536,6 +556,8 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       is_self_deleted_(false),
 #endif
       pending_views_(0),
+      immediate_sender_(new SafeSenderProxy(this, true)),
+      io_thread_sender_(new SafeSenderProxy(this, false)),
       mojo_application_host_(new MojoApplicationHost),
       visible_widgets_(0),
       is_process_backgrounded_(false),
@@ -648,10 +670,8 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
 #endif
   // We may have some unsent messages at this point, but that's OK.
   channel_.reset();
-  while (!queued_messages_.empty()) {
-    delete queued_messages_.front();
+  while (!queued_messages_.empty())
     queued_messages_.pop();
-  }
 
   UnregisterHost(GetID());
 
@@ -1015,6 +1035,41 @@ void RenderProcessHostImpl::CreateMessageFilters() {
     bluetooth_dispatcher_host_ = new BluetoothDispatcherHost(GetID());
     AddFilter(bluetooth_dispatcher_host_.get());
   }
+}
+
+bool RenderProcessHostImpl::SendImpl(std::unique_ptr<IPC::Message> msg,
+                                     bool send_now) {
+  TRACE_EVENT0("renderer_host", "RenderProcessHostImpl::SendImpl");
+#if !defined(OS_ANDROID)
+  DCHECK(!msg->is_sync());
+#endif
+
+  if (!channel_) {
+#if defined(OS_ANDROID)
+    if (msg->is_sync())
+      return false;
+#endif
+    if (!is_initialized_) {
+      queued_messages_.emplace(std::move(msg));
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  if (child_process_launcher_.get() && child_process_launcher_->IsStarting()) {
+#if defined(OS_ANDROID)
+    if (msg->is_sync())
+      return false;
+#endif
+    queued_messages_.emplace(std::move(msg));
+    return true;
+  }
+
+  if (send_now)
+    return channel_->SendNow(std::move(msg));
+
+  return channel_->SendOnIPCThread(std::move(msg));
 }
 
 void RenderProcessHostImpl::RegisterMojoServices() {
@@ -1645,39 +1700,7 @@ bool RenderProcessHostImpl::FastShutdownIfPossible() {
 }
 
 bool RenderProcessHostImpl::Send(IPC::Message* msg) {
-  TRACE_EVENT0("renderer_host", "RenderProcessHostImpl::Send");
-#if !defined(OS_ANDROID)
-  DCHECK(!msg->is_sync());
-#endif
-
-  if (!channel_) {
-#if defined(OS_ANDROID)
-    if (msg->is_sync()) {
-      delete msg;
-      return false;
-    }
-#endif
-    if (!is_initialized_) {
-      queued_messages_.push(msg);
-      return true;
-    } else {
-      delete msg;
-      return false;
-    }
-  }
-
-  if (child_process_launcher_.get() && child_process_launcher_->IsStarting()) {
-#if defined(OS_ANDROID)
-    if (msg->is_sync()) {
-      delete msg;
-      return false;
-    }
-#endif
-    queued_messages_.push(msg);
-    return true;
-  }
-
-  return channel_->Send(msg);
+  return SendImpl(base::WrapUnique(msg), false /* send_now */);
 }
 
 bool RenderProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {
@@ -2033,6 +2056,14 @@ IPC::ChannelProxy* RenderProcessHostImpl::GetChannel() {
   return channel_.get();
 }
 
+IPC::Sender* RenderProcessHostImpl::GetImmediateSender() {
+  return immediate_sender_.get();
+}
+
+IPC::Sender* RenderProcessHostImpl::GetIOThreadSender() {
+  return io_thread_sender_.get();
+}
+
 void RenderProcessHostImpl::AddFilter(BrowserMessageFilter* filter) {
   channel_->AddFilter(filter->GetFilter());
 }
@@ -2378,10 +2409,8 @@ void RenderProcessHostImpl::ProcessDied(bool already_dead,
       channel_.get());
 #endif
   channel_.reset();
-  while (!queued_messages_.empty()) {
-    delete queued_messages_.front();
+  while (!queued_messages_.empty())
     queued_messages_.pop();
-  }
   UpdateProcessPriority();
   DCHECK(!is_process_backgrounded_);
 
@@ -2558,7 +2587,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
                                          NotificationService::NoDetails());
 
   while (!queued_messages_.empty()) {
-    Send(queued_messages_.front());
+    Send(queued_messages_.front().release());
     queued_messages_.pop();
   }
 

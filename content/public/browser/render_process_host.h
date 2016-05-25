@@ -178,6 +178,14 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns the renderer channel.
   virtual IPC::ChannelProxy* GetChannel() = 0;
 
+  // Returns an IPC::Sender which tries to send messages immediately from the
+  // calling thread. The returned Sender is owned by the RenderProcessHost.
+  virtual IPC::Sender* GetImmediateSender() = 0;
+
+  // Returns an IPC::Sender which always sends messages from the IO thread's
+  // task queue. The returned Sender is owned by the RenderProcessHost.
+  virtual IPC::Sender* GetIOThreadSender() = 0;
+
   // Adds a message filter to the IPC channel.
   virtual void AddFilter(BrowserMessageFilter* filter) = 0;
 

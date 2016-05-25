@@ -605,4 +605,36 @@ void SyncChannel::OnChannelInit() {
   pre_init_sync_message_filters_.clear();
 }
 
+bool SyncChannel::SendNow(std::unique_ptr<Message> message) {
+#ifdef IPC_MESSAGE_LOG_ENABLED
+  std::string name;
+  Logging::GetInstance()->GetMessageText(
+      message->type(), &name, message.get(), nullptr);
+  TRACE_EVENT1("ipc", "SyncChannel::SendNow", "name", name);
+#else
+  TRACE_EVENT2("ipc", "SyncChannel::SendNow",
+               "class", IPC_MESSAGE_ID_CLASS(message->type()),
+               "line", IPC_MESSAGE_ID_LINE(message->type()));
+#endif
+  if (!message->is_sync())
+    return ChannelProxy::SendNow(std::move(message));
+  return Send(message.release());
+}
+
+bool SyncChannel::SendOnIPCThread(std::unique_ptr<Message> message) {
+#ifdef IPC_MESSAGE_LOG_ENABLED
+  std::string name;
+  Logging::GetInstance()->GetMessageText(
+      message->type(), &name, message.get(), nullptr);
+  TRACE_EVENT1("ipc", "SyncChannel::SendOnIPCThread", "name", name);
+#else
+  TRACE_EVENT2("ipc", "SyncChannel::SendOnIPCThread",
+               "class", IPC_MESSAGE_ID_CLASS(message->type()),
+               "line", IPC_MESSAGE_ID_LINE(message->type()));
+#endif
+  if (!message->is_sync())
+    return ChannelProxy::SendOnIPCThread(std::move(message));
+  return Send(message.release());
+}
+
 }  // namespace IPC

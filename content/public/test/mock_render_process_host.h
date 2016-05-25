@@ -74,6 +74,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   BrowserContext* GetBrowserContext() const override;
   bool InSameStoragePartition(StoragePartition* partition) const override;
   IPC::ChannelProxy* GetChannel() override;
+  IPC::Sender* GetImmediateSender() override;
+  IPC::Sender* GetIOThreadSender() override;
   void AddFilter(BrowserMessageFilter* filter) override;
   bool FastShutdownForPageCount(size_t count) override;
   base::TimeDelta GetChildProcessIdleTime() const override;
