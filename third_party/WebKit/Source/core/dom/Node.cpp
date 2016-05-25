@@ -973,9 +973,10 @@ bool Node::canStartSelection() const
 
     if (layoutObject()) {
         const ComputedStyle& style = layoutObject()->styleRef();
-        // We allow selections to begin within an element that has -webkit-user-select: none set,
-        // but if the element is draggable then dragging should take priority over selection.
-        if (style.userDrag() == DRAG_ELEMENT && style.userSelect() == SELECT_NONE)
+        // We don't allow selections to begin within an element that has
+        // -webkit-user-select: none set,
+        // https://drafts.csswg.org/css-ui-4/#valdef-user-select-none
+        if (style.userSelect() == SELECT_NONE)
             return false;
     }
     ContainerNode* parent = FlatTreeTraversal::parent(*this);
