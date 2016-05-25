@@ -25,7 +25,6 @@
 
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/resolver/StyleResolver.h"
-#include "core/layout/LayoutObject.h"
 
 namespace blink {
 
