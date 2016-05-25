@@ -182,8 +182,24 @@ class ActivityLens(object):
     assert end_msec - start_msec >= 0.
     events = self._OverlappingMainRendererThreadEvents(start_msec, end_msec)
     result = {'edge_cost': end_msec - start_msec,
-              'busy': self._ThreadBusyness(events, start_msec, end_msec),
-              'parsing': self._Parsing(events, start_msec, end_msec),
+              'busy': self._ThreadBusyness(events, start_msec, end_msec)}
+    result.update(self.ComputeActivity(start_msec, end_msec))
+    return result
+
+  def ComputeActivity(self, start_msec, end_msec):
+    """Returns a breakdown of the main renderer thread activity between two
+    timestamps.
+
+    Args:
+      start_msec: (float)
+      end_msec: (float)
+
+    Returns:
+       {'parsing': {'url' -> time_ms}, 'script': {'url' -> time_ms}}.
+    """
+    assert end_msec - start_msec >= 0.
+    events = self._OverlappingMainRendererThreadEvents(start_msec, end_msec)
+    result = {'parsing': self._Parsing(events, start_msec, end_msec),
               'script': self._ScriptsExecuting(events, start_msec, end_msec)}
     return result
 

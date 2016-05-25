@@ -51,8 +51,6 @@ class LoadingReport(object):
     else:
       self._contentful_byte_frac = float('Nan')
       self._significant_byte_frac = float('Nan')
-    self._ad_report = self._AdRequestsReport(
-        trace, ad_rules or [], tracking_rules or [])
 
     graph = LoadingGraphView.FromTrace(trace)
     self._contentful_inversion = graph.GetInversionsAtTime(
@@ -60,25 +58,55 @@ class LoadingReport(object):
     self._significant_inversion = graph.GetInversionsAtTime(
         self._significant_paint_msec)
     self._transfer_size = metrics.TotalTransferSize(trace)[1]
-    self._cpu_busyness = self._ComputeCpuBusyness(trace)
 
-  def _ComputeCpuBusyness(self, trace):
     activity = ActivityLens(trace)
+    self._cpu_busyness = self._ComputeCpuBusyness(activity)
+
+    content_lens = ContentClassificationLens(
+        trace, ad_rules or [], tracking_rules or [])
+    has_ad_rules = bool(ad_rules)
+    has_tracking_rules = bool(tracking_rules)
+    self._ad_report = self._AdRequestsReport(
+        trace, content_lens, has_ad_rules, has_tracking_rules)
+
+  def _ComputeCpuBusyness(self, activity):
     load_start = self._navigation_start_msec
     load_end = self._load_end_msec
     contentful = self._contentful_paint_msec
     significant = self._significant_paint_msec
 
-    return {
+    load_time = float(load_end - load_start)
+    contentful_time = float(contentful - load_start)
+    significant_time = float(significant - load_start)
+
+    result = {
         'activity_load_frac': (
             activity.MainRendererThreadBusyness(load_start, load_end)
-            / float(load_end - load_start)),
+            / load_time),
         'activity_contentful_paint_frac': (
             activity.MainRendererThreadBusyness(load_start, contentful)
-            / float(contentful - load_start)),
+            / contentful_time),
         'activity_significant_paint_frac': (
             activity.MainRendererThreadBusyness(load_start, significant)
-            / float(significant - load_start))}
+            / significant_time)}
+
+    activity_load = activity.ComputeActivity(load_start, load_end)
+    activity_contentful = activity.ComputeActivity(load_start, contentful)
+    activity_significant = activity.ComputeActivity(load_start, significant)
+
+    result['parsing_load_frac'] = (
+        sum(activity_load['parsing'].values()) / load_time)
+    result['script_load_frac'] = (
+        sum(activity_load['script'].values()) / load_time)
+    result['parsing_contentful_frac'] = (
+        sum(activity_contentful['parsing'].values()) / contentful_time)
+    result['script_contentful_frac'] = (
+        sum(activity_contentful['script'].values()) / contentful_time)
+    result['parsing_significant_frac'] = (
+        sum(activity_significant['parsing'].values()) / significant_time)
+    result['script_significant_frac'] = (
+        sum(activity_significant['script'].values()) / significant_time)
+    return result
 
   def GenerateReport(self):
     """Returns a report as a dict."""
@@ -113,29 +141,28 @@ class LoadingReport(object):
     return LoadingReport(trace, ad_rules_filename, tracking_rules_filename)
 
   @classmethod
-  def _AdRequestsReport(cls, trace, ad_rules, tracking_rules):
-    has_rules = bool(ad_rules) or bool(tracking_rules)
+  def _AdRequestsReport(
+      cls, trace, content_lens, has_ad_rules, has_tracking_rules):
     requests = trace.request_track.GetEvents()
+    has_rules = has_ad_rules or has_tracking_rules
     result = {
         'request_count': len(requests),
-        'ad_requests': 0 if ad_rules else None,
-        'tracking_requests': 0 if tracking_rules else None,
+        'ad_requests': 0 if has_ad_rules else None,
+        'tracking_requests': 0 if has_tracking_rules else None,
         'ad_or_tracking_requests': 0 if has_rules else None,
         'ad_or_tracking_initiated_requests': 0 if has_rules else None,
         'ad_or_tracking_initiated_transfer_size': 0 if has_rules else None}
-    content_classification_lens = ContentClassificationLens(
-        trace, ad_rules, tracking_rules)
     if not has_rules:
       return result
-    for request in trace.request_track.GetEvents():
-      is_ad = content_classification_lens.IsAdRequest(request)
-      is_tracking = content_classification_lens.IsTrackingRequest(request)
-      if ad_rules:
+    for request in requests:
+      is_ad = content_lens.IsAdRequest(request)
+      is_tracking = content_lens.IsTrackingRequest(request)
+      if has_ad_rules:
         result['ad_requests'] += int(is_ad)
-      if tracking_rules:
+      if has_tracking_rules:
         result['tracking_requests'] += int(is_tracking)
       result['ad_or_tracking_requests'] += int(is_ad or is_tracking)
-    ad_tracking_requests = content_classification_lens.AdAndTrackingRequests()
+    ad_tracking_requests = content_lens.AdAndTrackingRequests()
     result['ad_or_tracking_initiated_requests'] = len(ad_tracking_requests)
     result['ad_or_tracking_initiated_transfer_size'] = metrics.TransferSize(
         ad_tracking_requests)[1]
