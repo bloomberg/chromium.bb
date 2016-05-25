@@ -45,7 +45,7 @@ class InspectorFrontend;
 class Page;
 
 
-class MODULES_EXPORT InspectorDatabaseAgent final : public InspectorBaseAgent<InspectorDatabaseAgent, protocol::Frontend::Database>, public protocol::Backend::Database {
+class MODULES_EXPORT InspectorDatabaseAgent final : public InspectorBaseAgent<InspectorDatabaseAgent, protocol::Database::Frontend>, public protocol::Database::Backend {
     WTF_MAKE_NONCOPYABLE(InspectorDatabaseAgent);
 public:
     static InspectorDatabaseAgent* create(Page* page)

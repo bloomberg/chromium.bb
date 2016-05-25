@@ -155,7 +155,7 @@ static std::unique_ptr<protocol::Debugger::Location> buildProtocolLocation(const
         .setColumnNumber(columnNumber).build();
 }
 
-V8DebuggerAgentImpl::V8DebuggerAgentImpl(V8InspectorSessionImpl* session, protocol::Frontend::Debugger* frontend, protocol::DictionaryValue* state)
+V8DebuggerAgentImpl::V8DebuggerAgentImpl(V8InspectorSessionImpl* session, protocol::Debugger::Frontend* frontend, protocol::DictionaryValue* state)
     : m_debugger(session->debugger())
     , m_session(session)
     , m_enabled(false)

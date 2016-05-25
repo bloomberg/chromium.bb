@@ -50,7 +50,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
-typedef blink::protocol::Backend::Database::ExecuteSQLCallback ExecuteSQLCallback;
+typedef blink::protocol::Database::Backend::ExecuteSQLCallback ExecuteSQLCallback;
 
 namespace blink {
 
@@ -247,7 +247,7 @@ void InspectorDatabaseAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 }
 
 InspectorDatabaseAgent::InspectorDatabaseAgent(Page* page)
-    : InspectorBaseAgent<InspectorDatabaseAgent, protocol::Frontend::Database>("Database")
+    : InspectorBaseAgent<InspectorDatabaseAgent, protocol::Database::Frontend>("Database")
     , m_page(page)
     , m_enabled(false)
 {

@@ -71,11 +71,11 @@ using blink::protocol::IndexedDB::KeyRange;
 using blink::protocol::IndexedDB::ObjectStore;
 using blink::protocol::IndexedDB::ObjectStoreIndex;
 
-typedef blink::protocol::Backend::CallbackBase RequestCallback;
-typedef blink::protocol::Backend::IndexedDB::RequestDatabaseNamesCallback RequestDatabaseNamesCallback;
-typedef blink::protocol::Backend::IndexedDB::RequestDatabaseCallback RequestDatabaseCallback;
-typedef blink::protocol::Backend::IndexedDB::RequestDataCallback RequestDataCallback;
-typedef blink::protocol::Backend::IndexedDB::ClearObjectStoreCallback ClearObjectStoreCallback;
+typedef blink::protocol::BackendCallback RequestCallback;
+typedef blink::protocol::IndexedDB::Backend::RequestDatabaseNamesCallback RequestDatabaseNamesCallback;
+typedef blink::protocol::IndexedDB::Backend::RequestDatabaseCallback RequestDatabaseCallback;
+typedef blink::protocol::IndexedDB::Backend::RequestDataCallback RequestDataCallback;
+typedef blink::protocol::IndexedDB::Backend::ClearObjectStoreCallback ClearObjectStoreCallback;
 
 namespace blink {
 
@@ -577,7 +577,7 @@ InspectorIndexedDBAgent* InspectorIndexedDBAgent::create(InspectedFrames* inspec
 }
 
 InspectorIndexedDBAgent::InspectorIndexedDBAgent(InspectedFrames* inspectedFrames)
-    : InspectorBaseAgent<InspectorIndexedDBAgent, protocol::Frontend::IndexedDB>("IndexedDB")
+    : InspectorBaseAgent<InspectorIndexedDBAgent, protocol::IndexedDB::Frontend>("IndexedDB")
     , m_inspectedFrames(inspectedFrames)
 {
 }

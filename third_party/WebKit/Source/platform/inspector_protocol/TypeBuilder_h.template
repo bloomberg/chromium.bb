@@ -11,6 +11,7 @@
 #include "platform/inspector_protocol/Array.h"
 #include "platform/inspector_protocol/ErrorSupport.h"
 #include "platform/inspector_protocol/Maybe.h"
+#include "platform/inspector_protocol/Object.h"
 #include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/inspector_protocol/ValueConversions.h"
@@ -19,20 +20,6 @@
 
 namespace blink {
 namespace protocol {
-
-using ErrorString = String16;
-
-class PLATFORM_EXPORT Object {
-public:
-    static std::unique_ptr<Object> parse(protocol::Value* value, ErrorSupport* errors);
-    ~Object();
-
-    std::unique_ptr<protocol::DictionaryValue> serialize() const;
-    std::unique_ptr<Object> clone() const;
-private:
-    Object(std::unique_ptr<protocol::DictionaryValue> object);
-    std::unique_ptr<protocol::DictionaryValue> m_object;
-};
 
 {% for domain in api.domains %}
 

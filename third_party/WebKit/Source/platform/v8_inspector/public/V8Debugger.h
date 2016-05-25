@@ -6,7 +6,7 @@
 #define V8Debugger_h
 
 #include "platform/PlatformExport.h"
-#include "platform/inspector_protocol/Frontend.h"
+#include "platform/inspector_protocol/String16.h"
 #include "wtf/PtrUtil.h"
 
 #include <v8.h>

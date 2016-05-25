@@ -54,7 +54,7 @@ class V8InspectorSession;
 
 using blink::protocol::Maybe;
 
-class CORE_EXPORT InspectorPageAgent final : public InspectorBaseAgent<InspectorPageAgent, protocol::Frontend::Page>, public protocol::Backend::Page {
+class CORE_EXPORT InspectorPageAgent final : public InspectorBaseAgent<InspectorPageAgent, protocol::Page::Frontend>, public protocol::Page::Backend {
     WTF_MAKE_NONCOPYABLE(InspectorPageAgent);
 public:
     class Client {

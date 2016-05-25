@@ -13,7 +13,7 @@ class InspectorOverlay;
 class WebLocalFrameImpl;
 class WebViewImpl;
 
-class InspectorRenderingAgent final : public InspectorBaseAgent<InspectorRenderingAgent, protocol::Frontend::Rendering>, public protocol::Backend::Rendering {
+class InspectorRenderingAgent final : public InspectorBaseAgent<InspectorRenderingAgent, protocol::Rendering::Frontend>, public protocol::Rendering::Backend {
     WTF_MAKE_NONCOPYABLE(InspectorRenderingAgent);
 public:
     static InspectorRenderingAgent* create(WebLocalFrameImpl*, InspectorOverlay*);

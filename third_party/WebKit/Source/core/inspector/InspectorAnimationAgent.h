@@ -23,7 +23,7 @@ class InspectorDOMAgent;
 class TimingFunction;
 class V8InspectorSession;
 
-class CORE_EXPORT InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent, protocol::Frontend::Animation>, public protocol::Backend::Animation {
+class CORE_EXPORT InspectorAnimationAgent final : public InspectorBaseAgent<InspectorAnimationAgent, protocol::Animation::Frontend>, public protocol::Animation::Backend {
     WTF_MAKE_NONCOPYABLE(InspectorAnimationAgent);
 public:
     InspectorAnimationAgent(InspectedFrames*, InspectorDOMAgent*, InspectorCSSAgent*, V8InspectorSession*);

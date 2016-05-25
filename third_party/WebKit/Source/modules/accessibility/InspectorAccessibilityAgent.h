@@ -14,7 +14,7 @@ namespace blink {
 class InspectorDOMAgent;
 class Page;
 
-class MODULES_EXPORT InspectorAccessibilityAgent : public InspectorBaseAgent<InspectorAccessibilityAgent, protocol::Frontend::Accessibility>, public protocol::Backend::Accessibility {
+class MODULES_EXPORT InspectorAccessibilityAgent : public InspectorBaseAgent<InspectorAccessibilityAgent, protocol::Accessibility::Frontend>, public protocol::Accessibility::Backend {
     WTF_MAKE_NONCOPYABLE(InspectorAccessibilityAgent);
 public:
     InspectorAccessibilityAgent(Page*, InspectorDOMAgent*);

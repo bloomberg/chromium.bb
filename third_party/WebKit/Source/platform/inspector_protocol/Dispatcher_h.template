@@ -21,23 +21,8 @@ public:
     static std::unique_ptr<Dispatcher> create(FrontendChannel* frontendChannel);
     virtual ~Dispatcher() { }
 
-    class PLATFORM_EXPORT CallbackBase {
-    public:
-        CallbackBase(std::unique_ptr<DispatcherImplWeakPtr> backendImpl, int callId);
-        virtual ~CallbackBase();
-        void sendFailure(const ErrorString&);
-        void dispose();
-
-    protected:
-        void sendIfActive(std::unique_ptr<protocol::DictionaryValue> partialMessage, const ErrorString& invocationError);
-
-    private:
-        std::unique_ptr<DispatcherImplWeakPtr> m_backendImpl;
-        int m_callId;
-    };
-
 {% for domain in api.domains %}
-    virtual void registerAgent(blink::protocol::Backend::{{domain.domain}}*) = 0;
+    virtual void registerAgent(blink::protocol::{{domain.domain}}::Backend*) = 0;
 {% endfor %}
 
     virtual void clearFrontend() = 0;

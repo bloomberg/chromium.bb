@@ -12,7 +12,7 @@ namespace blink {
 class WebLocalFrameImpl;
 class WebViewImpl;
 
-class InspectorEmulationAgent final : public InspectorBaseAgent<InspectorEmulationAgent, protocol::Frontend::Emulation>, public protocol::Backend::Emulation {
+class InspectorEmulationAgent final : public InspectorBaseAgent<InspectorEmulationAgent, protocol::Emulation::Frontend>, public protocol::Emulation::Backend {
     WTF_MAKE_NONCOPYABLE(InspectorEmulationAgent);
 public:
     class Client {

@@ -18,11 +18,16 @@ Frontend::Frontend(FrontendChannel* frontendChannel)
 {% endfor %}
 {
 }
-
 {% for domain in api.domains %}
+
+{{domain.domain}}::Frontend* {{domain.domain}}::Frontend::from(protocol::Frontend* frontend)
+{
+    return &(frontend->m_{{domain.domain | lower}});
+}
   {% for event in domain.events %}
     {% if "handlers" in event and not ("renderer" in event["handlers"]) %}{% continue %}{% endif %}
-void Frontend::{{domain.domain}}::{{event.name}}(
+
+void {{domain.domain}}::Frontend::{{event.name}}(
     {%- for parameter in event.parameters %}
       {% if "optional" in parameter -%}
         const Maybe<{{resolve_type(parameter).raw_type}}>&

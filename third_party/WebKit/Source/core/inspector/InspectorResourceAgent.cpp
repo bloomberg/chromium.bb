@@ -77,7 +77,7 @@
 
 namespace blink {
 
-using GetResponseBodyCallback = protocol::Backend::Network::GetResponseBodyCallback;
+using GetResponseBodyCallback = protocol::Network::Backend::GetResponseBodyCallback;
 
 namespace ResourceAgentState {
 static const char resourceAgentEnabled[] = "resourceAgentEnabled";
@@ -1113,7 +1113,7 @@ void InspectorResourceAgent::removeFinishedReplayXHRFired(Timer<InspectorResourc
 }
 
 InspectorResourceAgent::InspectorResourceAgent(InspectedFrames* inspectedFrames)
-    : InspectorBaseAgent<InspectorResourceAgent, protocol::Frontend::Network>("Network")
+    : InspectorBaseAgent<InspectorResourceAgent, protocol::Network::Frontend>("Network")
     , m_inspectedFrames(inspectedFrames)
     , m_resourcesData(NetworkResourcesData::create(maximumTotalBufferSize, maximumResourceBufferSize))
     , m_pendingRequest(nullptr)

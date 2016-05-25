@@ -242,7 +242,7 @@ bool InspectorDOMAgent::getPseudoElementType(PseudoId pseudoId, protocol::DOM::P
 }
 
 InspectorDOMAgent::InspectorDOMAgent(v8::Isolate* isolate, InspectedFrames* inspectedFrames, V8InspectorSession* v8Session, Client* client)
-    : InspectorBaseAgent<InspectorDOMAgent, protocol::Frontend::DOM>("DOM")
+    : InspectorBaseAgent<InspectorDOMAgent, protocol::DOM::Frontend>("DOM")
     , m_isolate(isolate)
     , m_inspectedFrames(inspectedFrames)
     , m_v8Session(v8Session)

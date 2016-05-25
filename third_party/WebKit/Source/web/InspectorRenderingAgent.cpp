@@ -27,7 +27,7 @@ InspectorRenderingAgent* InspectorRenderingAgent::create(WebLocalFrameImpl* webL
 }
 
 InspectorRenderingAgent::InspectorRenderingAgent(WebLocalFrameImpl* webLocalFrameImpl, InspectorOverlay* overlay)
-    : InspectorBaseAgent<InspectorRenderingAgent, protocol::Frontend::Rendering>("Rendering")
+    : InspectorBaseAgent<InspectorRenderingAgent, protocol::Rendering::Frontend>("Rendering")
     , m_webLocalFrameImpl(webLocalFrameImpl)
     , m_overlay(overlay)
 {

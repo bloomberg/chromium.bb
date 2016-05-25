@@ -41,7 +41,7 @@ static const char consoleMessagesEnabled[] = "consoleMessagesEnabled";
 }
 
 InspectorConsoleAgent::InspectorConsoleAgent(V8InspectorSession* v8Session)
-    : InspectorBaseAgent<InspectorConsoleAgent, protocol::Frontend::Console>("Console")
+    : InspectorBaseAgent<InspectorConsoleAgent, protocol::Console::Frontend>("Console")
     , m_v8Session(v8Session)
     , m_enabled(false)
 {

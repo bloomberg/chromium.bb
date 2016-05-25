@@ -16,10 +16,10 @@ class V8InspectorSessionImpl;
 
 using protocol::Maybe;
 
-class V8HeapProfilerAgentImpl : public protocol::Backend::HeapProfiler {
+class V8HeapProfilerAgentImpl : public protocol::HeapProfiler::Backend {
     PROTOCOL_DISALLOW_COPY(V8HeapProfilerAgentImpl);
 public:
-    V8HeapProfilerAgentImpl(V8InspectorSessionImpl*, protocol::Frontend::HeapProfiler*, protocol::DictionaryValue* state);
+    V8HeapProfilerAgentImpl(V8InspectorSessionImpl*, protocol::HeapProfiler::Frontend*, protocol::DictionaryValue* state);
     ~V8HeapProfilerAgentImpl() override;
     void restore();
 
@@ -48,7 +48,7 @@ private:
 
     V8InspectorSessionImpl* m_session;
     v8::Isolate* m_isolate;
-    protocol::Frontend::HeapProfiler* m_frontend;
+    protocol::HeapProfiler::Frontend* m_frontend;
     protocol::DictionaryValue* m_state;
     bool m_hasTimer;
 };

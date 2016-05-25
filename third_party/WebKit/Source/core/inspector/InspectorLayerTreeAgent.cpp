@@ -147,7 +147,7 @@ static std::unique_ptr<protocol::LayerTree::Layer> buildObjectForLayer(GraphicsL
 }
 
 InspectorLayerTreeAgent::InspectorLayerTreeAgent(InspectedFrames* inspectedFrames)
-    : InspectorBaseAgent<InspectorLayerTreeAgent, protocol::Frontend::LayerTree>("LayerTree")
+    : InspectorBaseAgent<InspectorLayerTreeAgent, protocol::LayerTree::Frontend>("LayerTree")
     , m_inspectedFrames(inspectedFrames)
 {
 }

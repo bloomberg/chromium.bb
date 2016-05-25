@@ -13,7 +13,7 @@
 namespace blink {
 
 
-class MODULES_EXPORT InspectorCacheStorageAgent final : public InspectorBaseAgent<InspectorCacheStorageAgent, protocol::Frontend::CacheStorage>, public protocol::Backend::CacheStorage {
+class MODULES_EXPORT InspectorCacheStorageAgent final : public InspectorBaseAgent<InspectorCacheStorageAgent, protocol::CacheStorage::Frontend>, public protocol::CacheStorage::Backend {
     WTF_MAKE_NONCOPYABLE(InspectorCacheStorageAgent);
 
 public:

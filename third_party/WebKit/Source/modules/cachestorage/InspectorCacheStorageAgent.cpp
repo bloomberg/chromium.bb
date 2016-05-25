@@ -34,11 +34,10 @@ using blink::protocol::Array;
 using blink::protocol::CacheStorage::Cache;
 using blink::protocol::CacheStorage::DataEntry;
 
-typedef blink::protocol::Backend::CacheStorage::DeleteCacheCallback DeleteCacheCallback;
-typedef blink::protocol::Backend::CacheStorage::DeleteEntryCallback DeleteEntryCallback;
-typedef blink::protocol::Backend::CacheStorage::RequestCacheNamesCallback RequestCacheNamesCallback;
-typedef blink::protocol::Backend::CacheStorage::RequestEntriesCallback RequestEntriesCallback;
-typedef blink::protocol::Dispatcher::CallbackBase RequestCallback;
+typedef blink::protocol::CacheStorage::Backend::DeleteCacheCallback DeleteCacheCallback;
+typedef blink::protocol::CacheStorage::Backend::DeleteEntryCallback DeleteEntryCallback;
+typedef blink::protocol::CacheStorage::Backend::RequestCacheNamesCallback RequestCacheNamesCallback;
+typedef blink::protocol::CacheStorage::Backend::RequestEntriesCallback RequestEntriesCallback;
 typedef blink::WebServiceWorkerCache::BatchOperation BatchOperation;
 
 namespace blink {
@@ -400,7 +399,7 @@ private:
 } // namespace
 
 InspectorCacheStorageAgent::InspectorCacheStorageAgent()
-    : InspectorBaseAgent<InspectorCacheStorageAgent, protocol::Frontend::CacheStorage>("CacheStorage")
+    : InspectorBaseAgent<InspectorCacheStorageAgent, protocol::CacheStorage::Frontend>("CacheStorage")
 {
 }
 

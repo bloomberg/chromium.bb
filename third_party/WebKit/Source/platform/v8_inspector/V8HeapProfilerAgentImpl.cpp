@@ -28,7 +28,7 @@ static const char samplingHeapProfilerInterval[] = "samplingHeapProfilerInterval
 
 class HeapSnapshotProgress final : public v8::ActivityControl {
 public:
-    HeapSnapshotProgress(protocol::Frontend::HeapProfiler* frontend)
+    HeapSnapshotProgress(protocol::HeapProfiler::Frontend* frontend)
         : m_frontend(frontend) { }
     ControlOption ReportProgressValue(int done, int total) override
     {
@@ -40,7 +40,7 @@ public:
         return kContinue;
     }
 private:
-    protocol::Frontend::HeapProfiler* m_frontend;
+    protocol::HeapProfiler::Frontend* m_frontend;
 };
 
 class GlobalObjectNameResolver final : public v8::HeapProfiler::ObjectNameResolver {
@@ -81,7 +81,7 @@ private:
 
 class HeapSnapshotOutputStream final : public v8::OutputStream {
 public:
-    HeapSnapshotOutputStream(protocol::Frontend::HeapProfiler* frontend)
+    HeapSnapshotOutputStream(protocol::HeapProfiler::Frontend* frontend)
         : m_frontend(frontend) { }
     void EndOfStream() override { }
     int GetChunkSize() override { return 102400; }
@@ -92,7 +92,7 @@ public:
         return kContinue;
     }
 private:
-    protocol::Frontend::HeapProfiler* m_frontend;
+    protocol::HeapProfiler::Frontend* m_frontend;
 };
 
 v8::Local<v8::Object> objectByHeapObjectId(v8::Isolate* isolate, int id)
@@ -117,7 +117,7 @@ private:
 
 class HeapStatsStream final : public v8::OutputStream {
 public:
-    HeapStatsStream(protocol::Frontend::HeapProfiler* frontend)
+    HeapStatsStream(protocol::HeapProfiler::Frontend* frontend)
         : m_frontend(frontend)
     {
     }
@@ -144,12 +144,12 @@ public:
     }
 
 private:
-    protocol::Frontend::HeapProfiler* m_frontend;
+    protocol::HeapProfiler::Frontend* m_frontend;
 };
 
 } // namespace
 
-V8HeapProfilerAgentImpl::V8HeapProfilerAgentImpl(V8InspectorSessionImpl* session, protocol::Frontend::HeapProfiler* frontend, protocol::DictionaryValue* state)
+V8HeapProfilerAgentImpl::V8HeapProfilerAgentImpl(V8InspectorSessionImpl* session, protocol::HeapProfiler::Frontend* frontend, protocol::DictionaryValue* state)
     : m_session(session)
     , m_isolate(session->debugger()->isolate())
     , m_frontend(frontend)

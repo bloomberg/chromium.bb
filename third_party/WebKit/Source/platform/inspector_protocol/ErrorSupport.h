@@ -12,6 +12,8 @@
 namespace blink {
 namespace protocol {
 
+using ErrorString = String16;
+
 class PLATFORM_EXPORT ErrorSupport {
 public:
     ErrorSupport();

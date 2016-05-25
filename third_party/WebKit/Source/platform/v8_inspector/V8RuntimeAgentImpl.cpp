@@ -56,7 +56,7 @@ static bool hasInternalError(ErrorString* errorString, bool hasError)
     return hasError;
 }
 
-V8RuntimeAgentImpl::V8RuntimeAgentImpl(V8InspectorSessionImpl* session, protocol::Frontend::Runtime* frontend, protocol::DictionaryValue* state)
+V8RuntimeAgentImpl::V8RuntimeAgentImpl(V8InspectorSessionImpl* session, protocol::Runtime::Frontend* frontend, protocol::DictionaryValue* state)
     : m_session(session)
     , m_state(state)
     , m_frontend(frontend)

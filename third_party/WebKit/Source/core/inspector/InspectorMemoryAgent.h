@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class CORE_EXPORT InspectorMemoryAgent final : public InspectorBaseAgent<InspectorMemoryAgent, protocol::Frontend::Memory>, public protocol::Backend::Memory {
+class CORE_EXPORT InspectorMemoryAgent final : public InspectorBaseAgent<InspectorMemoryAgent, protocol::Memory::Frontend>, public protocol::Memory::Backend {
     WTF_MAKE_NONCOPYABLE(InspectorMemoryAgent);
 public:
     static InspectorMemoryAgent* create()

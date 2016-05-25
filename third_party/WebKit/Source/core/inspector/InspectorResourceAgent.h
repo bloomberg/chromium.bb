@@ -67,7 +67,7 @@ namespace protocol {
 class DictionaryValue;
 }
 
-class CORE_EXPORT InspectorResourceAgent final : public InspectorBaseAgent<InspectorResourceAgent, protocol::Frontend::Network>, public protocol::Backend::Network {
+class CORE_EXPORT InspectorResourceAgent final : public InspectorBaseAgent<InspectorResourceAgent, protocol::Network::Frontend>, public protocol::Network::Backend {
 public:
     static InspectorResourceAgent* create(InspectedFrames* inspectedFrames)
     {

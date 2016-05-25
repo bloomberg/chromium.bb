@@ -72,13 +72,13 @@ void V8Inspector::connectFrontend(protocol::FrontendChannel* channel)
     m_dispatcher->registerAgent(m_session->heapProfilerAgent());
 
     m_session->runtimeAgent()->setFrontend(
-        protocol::Frontend::Runtime::from(m_frontend.get()));
+        protocol::Runtime::Frontend::from(m_frontend.get()));
     m_session->debuggerAgent()->setFrontend(
-        protocol::Frontend::Debugger::from(m_frontend.get()));
+        protocol::Debugger::Frontend::from(m_frontend.get()));
     m_session->profilerAgent()->setFrontend(
-        protocol::Frontend::Profiler::from(m_frontend.get()));
+        protocol::Profiler::Frontend::from(m_frontend.get()));
     m_session->heapProfilerAgent()->setFrontend(
-        protocol::Frontend::HeapProfiler::from(m_frontend.get()));
+        protocol::HeapProfiler::Frontend::from(m_frontend.get()));
 }
 
 void V8Inspector::disconnectFrontend()

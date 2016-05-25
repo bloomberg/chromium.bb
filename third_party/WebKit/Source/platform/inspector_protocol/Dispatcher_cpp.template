@@ -77,7 +77,7 @@ public:
     void sendResponse(int callId, const ErrorString& invocationError, ErrorSupport* errors, std::unique_ptr<protocol::DictionaryValue> result);
 
 {% for domain in api.domains %}
-    virtual void registerAgent(blink::protocol::Backend::{{domain.domain}}* agent) { DCHECK(!m_{{domain.domain | lower}}Agent); m_{{domain.domain | lower}}Agent = agent; }
+    virtual void registerAgent(blink::protocol::{{domain.domain}}::Backend* agent) { DCHECK(!m_{{domain.domain | lower}}Agent); m_{{domain.domain | lower}}Agent = agent; }
 {% endfor %}
 
 private:
@@ -97,7 +97,7 @@ private:
     FrontendChannel* m_frontendChannel;
 
 {% for domain in api.domains %}
-    Backend::{{domain.domain}}* m_{{domain.domain | lower}}Agent;
+    {{domain.domain}}::Backend* m_{{domain.domain | lower}}Agent;
 {% endfor %}
 
     void sendResponse(int callId, ErrorString invocationError, std::unique_ptr<protocol::DictionaryValue> result)
@@ -117,7 +117,7 @@ private:
     protocol::HashSet<DispatcherImplWeakPtr*> m_weakPtrs;
 };
 
-class PLATFORM_EXPORT DispatcherCallbackBase : public protocol::Backend::CallbackBase {
+class PLATFORM_EXPORT DispatcherCallbackBase : public protocol::BackendCallback {
 public:
     DispatcherCallbackBase(std::unique_ptr<DispatcherImplWeakPtr> backendImpl, int callId)
         : m_backendImpl(std::move(backendImpl)), m_callId(callId) { }
@@ -153,7 +153,7 @@ const char DispatcherImpl::kInvalidRequest[] = "Invalid request";
 
     {% if "async" in command %}
 
-class PLATFORM_EXPORT {{domain.domain}}{{command.name | to_title_case}}Callback : public Backend::{{domain.domain}}::{{command.name | to_title_case}}Callback, public DispatcherCallbackBase {
+class PLATFORM_EXPORT {{domain.domain}}{{command.name | to_title_case}}Callback : public {{domain.domain}}::Backend::{{command.name | to_title_case}}Callback, public DispatcherCallbackBase {
 public:
     {{domain.domain}}{{command.name | to_title_case}}Callback(std::unique_ptr<DispatcherImplWeakPtr> backendImpl, int callId)
         : DispatcherCallbackBase(std::move(backendImpl), callId) { }

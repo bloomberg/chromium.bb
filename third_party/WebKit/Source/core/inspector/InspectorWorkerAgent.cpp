@@ -45,7 +45,7 @@ static const char waitForDebuggerOnStart[] = "waitForDebuggerOnStart";
 };
 
 InspectorWorkerAgent::InspectorWorkerAgent(InspectedFrames* inspectedFrames)
-    : InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>("Worker")
+    : InspectorBaseAgent<InspectorWorkerAgent, protocol::Worker::Frontend>("Worker")
     , m_inspectedFrames(inspectedFrames)
 {
 }
@@ -179,7 +179,7 @@ DEFINE_TRACE(InspectorWorkerAgent)
 {
     visitor->trace(m_connectedProxies);
     visitor->trace(m_inspectedFrames);
-    InspectorBaseAgent<InspectorWorkerAgent, protocol::Frontend::Worker>::trace(visitor);
+    InspectorBaseAgent<InspectorWorkerAgent, protocol::Worker::Frontend>::trace(visitor);
 }
 
 } // namespace blink

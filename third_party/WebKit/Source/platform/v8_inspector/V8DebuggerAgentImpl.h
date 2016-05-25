@@ -25,7 +25,7 @@ class DictionaryValue;
 
 using protocol::Maybe;
 
-class V8DebuggerAgentImpl : public protocol::Backend::Debugger {
+class V8DebuggerAgentImpl : public protocol::Debugger::Backend {
     PROTOCOL_DISALLOW_COPY(V8DebuggerAgentImpl);
 public:
     enum SkipPauseRequest {
@@ -42,7 +42,7 @@ public:
         MonitorCommandBreakpointSource
     };
 
-    V8DebuggerAgentImpl(V8InspectorSessionImpl*, protocol::Frontend::Debugger*, protocol::DictionaryValue* state);
+    V8DebuggerAgentImpl(V8InspectorSessionImpl*, protocol::Debugger::Frontend*, protocol::DictionaryValue* state);
     ~V8DebuggerAgentImpl() override;
     void restore();
 
@@ -207,7 +207,7 @@ private:
     V8InspectorSessionImpl* m_session;
     bool m_enabled;
     protocol::DictionaryValue* m_state;
-    protocol::Frontend::Debugger* m_frontend;
+    protocol::Debugger::Frontend* m_frontend;
     v8::Isolate* m_isolate;
     v8::Global<v8::Context> m_pausedContext;
     JavaScriptCallFrames m_pausedCallFrames;

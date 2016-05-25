@@ -264,7 +264,7 @@ namespace CSSAgentState {
 static const char cssAgentEnabled[] = "cssAgentEnabled";
 }
 
-typedef blink::protocol::Backend::CSS::EnableCallback EnableCallback;
+typedef blink::protocol::CSS::Backend::EnableCallback EnableCallback;
 
 namespace blink {
 
@@ -611,7 +611,7 @@ CSSMediaRule* InspectorCSSAgent::asCSSMediaRule(CSSRule* rule)
 }
 
 InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader, InspectorResourceContainer* resourceContainer)
-    : InspectorBaseAgent<InspectorCSSAgent, protocol::Frontend::CSS>("CSS")
+    : InspectorBaseAgent<InspectorCSSAgent, protocol::CSS::Frontend>("CSS")
     , m_domAgent(domAgent)
     , m_inspectedFrames(inspectedFrames)
     , m_resourceAgent(resourceAgent)

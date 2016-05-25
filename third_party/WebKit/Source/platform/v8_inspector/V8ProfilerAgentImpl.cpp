@@ -121,7 +121,7 @@ public:
     String16 m_title;
 };
 
-V8ProfilerAgentImpl::V8ProfilerAgentImpl(V8InspectorSessionImpl* session, protocol::Frontend::Profiler* frontend, protocol::DictionaryValue* state)
+V8ProfilerAgentImpl::V8ProfilerAgentImpl(V8InspectorSessionImpl* session, protocol::Profiler::Frontend* frontend, protocol::DictionaryValue* state)
     : m_session(session)
     , m_isolate(m_session->debugger()->isolate())
     , m_state(state)

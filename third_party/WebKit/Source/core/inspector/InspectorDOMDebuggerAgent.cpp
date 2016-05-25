@@ -111,7 +111,7 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate
 }
 
 InspectorDOMDebuggerAgent::InspectorDOMDebuggerAgent(v8::Isolate* isolate, InspectorDOMAgent* domAgent, V8InspectorSession* v8Session)
-    : InspectorBaseAgent<InspectorDOMDebuggerAgent, protocol::Frontend::DOMDebugger>("DOMDebugger")
+    : InspectorBaseAgent<InspectorDOMDebuggerAgent, protocol::DOMDebugger::Frontend>("DOMDebugger")
     , m_isolate(isolate)
     , m_domAgent(domAgent)
     , m_v8Session(v8Session)

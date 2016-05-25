@@ -37,7 +37,7 @@ class LocalFrame;
 class InspectedFrames;
 class InspectorFrontend;
 
-class CORE_EXPORT InspectorApplicationCacheAgent final : public InspectorBaseAgent<InspectorApplicationCacheAgent, protocol::Frontend::ApplicationCache>, public protocol::Backend::ApplicationCache {
+class CORE_EXPORT InspectorApplicationCacheAgent final : public InspectorBaseAgent<InspectorApplicationCacheAgent, protocol::ApplicationCache::Frontend>, public protocol::ApplicationCache::Backend {
     WTF_MAKE_NONCOPYABLE(InspectorApplicationCacheAgent);
 public:
     static InspectorApplicationCacheAgent* create(InspectedFrames* inspectedFrames)

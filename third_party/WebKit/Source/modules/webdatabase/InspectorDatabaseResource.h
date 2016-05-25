@@ -44,7 +44,7 @@ public:
     static InspectorDatabaseResource* create(Database*, const String& domain, const String& name, const String& version);
     DECLARE_TRACE();
 
-    void bind(protocol::Frontend::Database*);
+    void bind(protocol::Database::Frontend*);
     Database* database() { return m_database.get(); }
     void setDatabase(Database* database) { m_database = database; }
     String id() const { return m_id; }
