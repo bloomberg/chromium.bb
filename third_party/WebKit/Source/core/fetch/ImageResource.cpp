@@ -372,7 +372,6 @@ void ImageResource::updateImage(bool allDataReceived)
             clear();
             if (memoryCache()->contains(this))
                 memoryCache()->remove(this);
-            return;
         }
 
         // It would be nice to only redraw the decoded band of the image, but with the current design
