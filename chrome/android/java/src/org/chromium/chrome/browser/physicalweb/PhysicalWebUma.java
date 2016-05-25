@@ -53,8 +53,11 @@ public class PhysicalWebUma {
             "PhysicalWeb.TotalUrls.OnRefresh";
     private static final String ACTIVITY_REFERRALS = "PhysicalWeb.ActivityReferral";
     private static final String PHYSICAL_WEB_STATE = "PhysicalWeb.State";
+    // Physical Web action names
     private static final String LAUNCH_FROM_PREFERENCES = "LaunchFromPreferences";
     private static final String LAUNCH_FROM_DIAGNOSTICS = "LaunchFromDiagnostics";
+    private static final String CHROME_START = "ChromeStart";
+    // Physical Web state names
     private static final String BLUETOOTH = "Bluetooth";
     private static final String DATA_CONNECTION = "DataConnection";
     private static final String LOCATION_PERMISSION = "LocationPermission";
@@ -206,6 +209,13 @@ public class PhysicalWebUma {
     }
 
     /**
+     * Records the Physical Web state on Chrome startup.
+     */
+    public static void onChromeStart(Context context) {
+        recordPhysicalWebState(context, CHROME_START);
+    }
+
+    /**
      * Calculate a Physical Web state.
      * The Physical Web state includes:
      * - The location provider
@@ -345,6 +355,14 @@ public class PhysicalWebUma {
             uploadEnums(createStateString(DATA_CONNECTION, LAUNCH_FROM_PREFERENCES),
                     BOOLEAN_BOUNDARY);
             uploadEnums(createStateString(PREFERENCE, LAUNCH_FROM_PREFERENCES), TRISTATE_BOUNDARY);
+            uploadEnums(createStateString(LOCATION_SERVICES, CHROME_START),
+                    BOOLEAN_BOUNDARY);
+            uploadEnums(createStateString(LOCATION_PERMISSION, CHROME_START),
+                    BOOLEAN_BOUNDARY);
+            uploadEnums(createStateString(BLUETOOTH, CHROME_START), TRISTATE_BOUNDARY);
+            uploadEnums(createStateString(DATA_CONNECTION, CHROME_START),
+                    BOOLEAN_BOUNDARY);
+            uploadEnums(createStateString(PREFERENCE, CHROME_START), TRISTATE_BOUNDARY);
             removePref(HAS_DEFERRED_METRICS_KEY);
         }
 
