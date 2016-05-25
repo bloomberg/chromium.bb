@@ -18,7 +18,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -200,9 +199,6 @@ class VpxVideoDecoder::MemoryPool
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  int NumberOfFrameBuffersInUseByDecoder() const;
-  int NumberOfFrameBuffersInUseByDecoderAndVideoFrame() const;
-
  private:
   friend class base::RefCountedThreadSafe<VpxVideoDecoder::MemoryPool>;
   ~MemoryPool() override;
@@ -225,11 +221,6 @@ class VpxVideoDecoder::MemoryPool
 
   // Frame buffers to be used by libvpx for VP9 Decoding.
   std::vector<VP9FrameBuffer*> frame_buffers_;
-
-  // Number of VP9FrameBuffer currently in use by the decoder.
-  int in_use_by_decoder_ = 0;
-  // Number of VP9FrameBuffer currently in use by the decoder and a video frame.
-  int in_use_by_decoder_and_video_frame_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryPool);
 };
@@ -282,7 +273,6 @@ int32_t VpxVideoDecoder::MemoryPool::GetVP9FrameBuffer(
   fb->data = &fb_to_use->data[0];
   fb->size = fb_to_use->data.size();
   ++fb_to_use->ref_cnt;
-  ++memory_pool->in_use_by_decoder_;
 
   // Set the frame buffer's private data to point at the external frame buffer.
   fb->priv = static_cast<void*>(fb_to_use);
@@ -300,12 +290,6 @@ int32_t VpxVideoDecoder::MemoryPool::ReleaseVP9FrameBuffer(
 
   VP9FrameBuffer* frame_buffer = static_cast<VP9FrameBuffer*>(fb->priv);
   --frame_buffer->ref_cnt;
-
-  VpxVideoDecoder::MemoryPool* memory_pool =
-      static_cast<VpxVideoDecoder::MemoryPool*>(user_priv);
-  --memory_pool->in_use_by_decoder_;
-  if (frame_buffer->ref_cnt)
-    --memory_pool->in_use_by_decoder_and_video_frame_;
   return 0;
 }
 
@@ -313,8 +297,6 @@ base::Closure VpxVideoDecoder::MemoryPool::CreateFrameCallback(
     void* fb_priv_data) {
   VP9FrameBuffer* frame_buffer = static_cast<VP9FrameBuffer*>(fb_priv_data);
   ++frame_buffer->ref_cnt;
-  if (frame_buffer->ref_cnt > 1)
-    ++in_use_by_decoder_and_video_frame_;
   return BindToCurrentLoop(
       base::Bind(&MemoryPool::OnVideoFrameDestroyed, this, frame_buffer));
 }
@@ -348,20 +330,9 @@ bool VpxVideoDecoder::MemoryPool::OnMemoryDump(
   return true;
 }
 
-int VpxVideoDecoder::MemoryPool::NumberOfFrameBuffersInUseByDecoder() const {
-  return in_use_by_decoder_;
-}
-
-int VpxVideoDecoder::MemoryPool::
-    NumberOfFrameBuffersInUseByDecoderAndVideoFrame() const {
-  return in_use_by_decoder_and_video_frame_;
-}
-
 void VpxVideoDecoder::MemoryPool::OnVideoFrameDestroyed(
     VP9FrameBuffer* frame_buffer) {
   --frame_buffer->ref_cnt;
-  if (frame_buffer->ref_cnt)
-    --in_use_by_decoder_and_video_frame_;
 }
 
 VpxVideoDecoder::VpxVideoDecoder()
@@ -704,13 +675,6 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
 
     video_frame->get()->AddDestructionObserver(
         memory_pool_->CreateFrameCallback(vpx_image->fb_priv));
-
-    UMA_HISTOGRAM_COUNTS("Media.Vpx.VideoDecoderBuffersInUseByDecoder",
-                         memory_pool_->NumberOfFrameBuffersInUseByDecoder());
-    UMA_HISTOGRAM_COUNTS(
-        "Media.Vpx.VideoDecoderBuffersInUseByDecoderAndVideoFrame",
-        memory_pool_->NumberOfFrameBuffersInUseByDecoderAndVideoFrame());
-
     return true;
   }
 

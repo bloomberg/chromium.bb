@@ -22149,11 +22149,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.Vpx.VideoDecoderBuffersInUseByDecoder">
+  <obsolete>
+    Deprecated 05/2016.
+  </obsolete>
   <owner>dcastagna@chromium.org</owner>
   <summary>Number of frame buffers used by Vpx decoder.</summary>
 </histogram>
 
 <histogram name="Media.Vpx.VideoDecoderBuffersInUseByDecoderAndVideoFrame">
+  <obsolete>
+    Deprecated 05/2016.
+  </obsolete>
   <owner>dcastagna@chromium.org</owner>
   <summary>
     Number of frame buffers currently in use by both Vpx decoder and a
