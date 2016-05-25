@@ -91253,6 +91253,8 @@ To add a new entry, add it with any value and run test to compute valid value.
              content-length &gt;= 100 bytes."/>
   <suffix name="Font" label="Showing cache patterns only for font resources."/>
   <affected-histogram name="HttpCache.Pattern"/>
+  <affected-histogram
+      name="HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed"/>
   <affected-histogram name="HttpCache.ValidationCause"/>
 </histogram_suffixes>
 

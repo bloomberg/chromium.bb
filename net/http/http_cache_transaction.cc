@@ -2724,6 +2724,26 @@ void HttpCache::Transaction::RecordHistograms() {
 
   bool validation_request = transaction_pattern_ == PATTERN_ENTRY_VALIDATED ||
                             transaction_pattern_ == PATTERN_ENTRY_UPDATED;
+
+  bool stale_request =
+      validation_cause_ == VALIDATION_CAUSE_STALE &&
+      (validation_request ||
+       transaction_pattern_ == PATTERN_ENTRY_CANT_CONDITIONALIZE);
+  int64_t freshness_periods_since_last_used = 0;
+
+  if (stale_request) {
+    // For stale entries, record how many freshness periods have elapsed since
+    // the entry was last used.
+    DCHECK(!open_entry_last_used_.is_null());
+    DCHECK(!stale_entry_freshness_.is_zero());
+    base::TimeDelta time_since_use = base::Time::Now() - open_entry_last_used_;
+    freshness_periods_since_last_used =
+        (time_since_use * 1000) / stale_entry_freshness_;
+
+    UMA_HISTOGRAM_COUNTS("HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed",
+                         freshness_periods_since_last_used);
+  }
+
   std::string mime_type;
   HttpResponseHeaders* response_headers = GetResponseInfo()->headers.get();
   if (response_headers && response_headers->GetMimeType(&mime_type)) {
@@ -2737,6 +2757,11 @@ void HttpCache::Transaction::RecordHistograms() {
         UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.MainFrameHTML",
                                   validation_cause_, VALIDATION_CAUSE_MAX);
       }
+      if (stale_request) {
+        UMA_HISTOGRAM_COUNTS(
+            "HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed.MainFrameHTML",
+            freshness_periods_since_last_used);
+      }
     } else if (mime_type == "text/html") {
       UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern.NonMainFrameHTML",
                                 transaction_pattern_, PATTERN_MAX);
@@ -2744,12 +2769,23 @@ void HttpCache::Transaction::RecordHistograms() {
         UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.NonMainFrameHTML",
                                   validation_cause_, VALIDATION_CAUSE_MAX);
       }
+      if (stale_request) {
+        UMA_HISTOGRAM_COUNTS(
+            "HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed."
+            "NonMainFrameHTML",
+            freshness_periods_since_last_used);
+      }
     } else if (mime_type == "text/css") {
       UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern.CSS", transaction_pattern_,
                                 PATTERN_MAX);
       if (validation_request) {
         UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.CSS",
                                   validation_cause_, VALIDATION_CAUSE_MAX);
+      }
+      if (stale_request) {
+        UMA_HISTOGRAM_COUNTS(
+            "HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed.CSS",
+            freshness_periods_since_last_used);
       }
     } else if (base::StartsWith(mime_type, "image/",
                                 base::CompareCase::SENSITIVE)) {
@@ -2761,6 +2797,11 @@ void HttpCache::Transaction::RecordHistograms() {
           UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.TinyImage",
                                     validation_cause_, VALIDATION_CAUSE_MAX);
         }
+        if (stale_request) {
+          UMA_HISTOGRAM_COUNTS(
+              "HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed.TinyImage",
+              freshness_periods_since_last_used);
+        }
       } else if (content_length >= 100) {
         UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern.NonTinyImage",
                                   transaction_pattern_, PATTERN_MAX);
@@ -2768,12 +2809,22 @@ void HttpCache::Transaction::RecordHistograms() {
           UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.NonTinyImage",
                                     validation_cause_, VALIDATION_CAUSE_MAX);
         }
+        if (stale_request) {
+          UMA_HISTOGRAM_COUNTS(
+              "HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed.NonTinyImage",
+              freshness_periods_since_last_used);
+        }
       }
       UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern.Image", transaction_pattern_,
                                 PATTERN_MAX);
       if (validation_request) {
         UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.Image",
                                   validation_cause_, VALIDATION_CAUSE_MAX);
+      }
+      if (stale_request) {
+        UMA_HISTOGRAM_COUNTS(
+            "HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed.Image",
+            freshness_periods_since_last_used);
       }
     } else if (base::EndsWith(mime_type, "javascript",
                               base::CompareCase::SENSITIVE) ||
@@ -2785,6 +2836,11 @@ void HttpCache::Transaction::RecordHistograms() {
         UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.JavaScript",
                                   validation_cause_, VALIDATION_CAUSE_MAX);
       }
+      if (stale_request) {
+        UMA_HISTOGRAM_COUNTS(
+            "HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed.JavaScript",
+            freshness_periods_since_last_used);
+      }
     } else if (mime_type.find("font") != std::string::npos) {
       UMA_HISTOGRAM_ENUMERATION("HttpCache.Pattern.Font", transaction_pattern_,
                                 PATTERN_MAX);
@@ -2792,20 +2848,12 @@ void HttpCache::Transaction::RecordHistograms() {
         UMA_HISTOGRAM_ENUMERATION("HttpCache.ValidationCause.Font",
                                   validation_cause_, VALIDATION_CAUSE_MAX);
       }
+      if (stale_request) {
+        UMA_HISTOGRAM_COUNTS(
+            "HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed.Font",
+            freshness_periods_since_last_used);
+      }
     }
-  }
-
-  if ((validation_request ||
-       transaction_pattern_ == PATTERN_ENTRY_CANT_CONDITIONALIZE) &&
-      validation_cause_ == VALIDATION_CAUSE_STALE) {
-    // For stale entries, record how many freshness periods have elapsed since
-    // the entry was last used.
-    DCHECK(!open_entry_last_used_.is_null());
-    DCHECK(!stale_entry_freshness_.is_zero());
-
-    base::TimeDelta time_since_use = base::Time::Now() - open_entry_last_used_;
-    UMA_HISTOGRAM_COUNTS("HttpCache.StaleEntry.FreshnessPeriodsSinceLastUsed",
-                         (time_since_use * 1000) / stale_entry_freshness_);
   }
 
   UMA_HISTOGRAM_ENUMERATION(
