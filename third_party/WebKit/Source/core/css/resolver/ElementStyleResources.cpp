@@ -32,6 +32,7 @@
 #include "core/layout/svg/ReferenceFilterBuilder.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ContentData.h"
+#include "core/style/CursorData.h"
 #include "core/style/FillLayer.h"
 #include "core/style/StyleFetchedImage.h"
 #include "core/style/StyleFetchedImageSet.h"

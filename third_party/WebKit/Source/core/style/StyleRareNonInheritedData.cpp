@@ -21,6 +21,8 @@
 
 #include "core/style/StyleRareNonInheritedData.h"
 
+#include "core/animation/css/CSSAnimationData.h"
+#include "core/animation/css/CSSTransitionData.h"
 #include "core/style/ContentData.h"
 #include "core/style/DataEquivalency.h"
 #include "core/style/ComputedStyle.h"

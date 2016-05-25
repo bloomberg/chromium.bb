@@ -22,6 +22,8 @@
 
 #include "core/style/ComputedStyle.h"
 
+#include "core/animation/css/CSSAnimationData.h"
+#include "core/animation/css/CSSTransitionData.h"
 #include "core/css/CSSPaintValue.h"
 #include "core/css/CSSPropertyEquality.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -32,6 +34,7 @@
 #include "core/style/ContentData.h"
 #include "core/style/DataEquivalency.h"
 #include "core/style/ComputedStyleConstants.h"
+#include "core/style/CursorData.h"
 #include "core/style/QuotesData.h"
 #include "core/style/ShadowList.h"
 #include "core/style/StyleImage.h"

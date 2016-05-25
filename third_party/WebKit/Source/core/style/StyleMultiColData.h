@@ -27,7 +27,6 @@
 
 #include "core/style/BorderValue.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "platform/Length.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 

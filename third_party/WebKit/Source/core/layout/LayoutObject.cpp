@@ -81,6 +81,7 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/style/ContentData.h"
+#include "core/style/CursorData.h"
 #include "core/style/ShadowList.h"
 #include "platform/HostWindow.h"
 #include "platform/RuntimeEnabledFeatures.h"
