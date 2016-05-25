@@ -95,6 +95,7 @@ class ExtensionFrameHelper
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC handlers.
+  void OnExtensionValidateMessagePort(int port_id);
   void OnExtensionDispatchOnConnect(
       int target_port_id,
       const std::string& channel_name,
@@ -102,6 +103,7 @@ class ExtensionFrameHelper
       const ExtensionMsg_ExternalConnectionInfo& info,
       const std::string& tls_channel_id);
   void OnExtensionDeliverMessage(int target_port_id,
+                                 int source_tab_id,
                                  const Message& message);
   void OnExtensionDispatchOnDisconnect(int port_id,
                                        const std::string& error_message);

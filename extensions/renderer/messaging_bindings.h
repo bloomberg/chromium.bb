@@ -25,7 +25,6 @@ class Extension;
 }
 
 namespace extensions {
-class Dispatcher;
 struct Message;
 class ObjectBackedNativeHandler;
 class ScriptContextSet;
@@ -38,8 +37,13 @@ class ScriptContextSet;
 class MessagingBindings {
  public:
   // Creates an instance of the extension.
-  static ObjectBackedNativeHandler* Get(Dispatcher* dispatcher,
-                                        ScriptContext* context);
+  static ObjectBackedNativeHandler* Get(ScriptContext* context);
+
+  // Checks whether the port exists in the given frame. If it does not, a reply
+  // is sent back to the browser.
+  static void ValidateMessagePort(const ScriptContextSet& context_set,
+                                  int port_id,
+                                  content::RenderFrame* render_frame);
 
   // Dispatches the onConnect content script messaging event to some contexts
   // in |context_set|. If |restrict_to_render_frame| is specified, only contexts

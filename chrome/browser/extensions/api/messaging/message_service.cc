@@ -573,13 +573,14 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
     return;
   }
 
-  std::unique_ptr<MessagePort> opener(
+  std::unique_ptr<ExtensionMessagePort> opener(
       new ExtensionMessagePort(weak_factory_.GetWeakPtr(),
                                GET_OPPOSITE_PORT_ID(params->receiver_port_id),
                                params->source_extension_id, source, false));
   if (!opener->IsValidPort())
     return;
   opener->OpenPort(params->source_process_id, params->source_routing_id);
+  opener->RevalidatePort();
 
   params->receiver->RemoveCommonFrames(*opener);
   if (!params->receiver->IsValidPort()) {

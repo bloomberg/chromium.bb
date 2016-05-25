@@ -99,6 +99,7 @@ ExtensionMessagePort::ExtensionMessagePort(
       extension_id_(extension_id),
       browser_context_(extension_process->GetBrowserContext()),
       extension_process_(extension_process),
+      opener_tab_id_(-1),
       did_create_port_(false),
       background_host_ptr_(nullptr),
       frame_tracker_(new FrameTracker(this)) {
@@ -121,6 +122,7 @@ ExtensionMessagePort::ExtensionMessagePort(
       extension_id_(extension_id),
       browser_context_(rfh->GetProcess()->GetBrowserContext()),
       extension_process_(nullptr),
+      opener_tab_id_(-1),
       did_create_port_(false),
       background_host_ptr_(nullptr),
       frame_tracker_(new FrameTracker(this)) {
@@ -158,6 +160,17 @@ ExtensionMessagePort::ExtensionMessagePort(
 
 ExtensionMessagePort::~ExtensionMessagePort() {}
 
+void ExtensionMessagePort::RevalidatePort() {
+  // Only opener ports need to be revalidated, because these are created in the
+  // renderer before the browser knows about them.
+  DCHECK(!extension_process_);
+  DCHECK_LE(frames_.size(), 1U);
+
+  // If the port is unknown, the renderer will respond by closing the port.
+  SendToPort(base::MakeUnique<ExtensionMsg_ValidateMessagePort>(
+          MSG_ROUTING_NONE, port_id_));
+}
+
 void ExtensionMessagePort::RemoveCommonFrames(const MessagePort& port) {
   // Avoid overlap in the set of frames to make sure that it does not matter
   // when UnregisterFrame is called.
@@ -190,8 +203,10 @@ void ExtensionMessagePort::DispatchOnConnect(
     const GURL& source_url,
     const std::string& tls_channel_id) {
   ExtensionMsg_TabConnectionInfo source;
-  if (source_tab)
+  if (source_tab) {
     source.tab.Swap(source_tab.get());
+    source.tab.GetInteger("id", &opener_tab_id_);
+  }
   source.frame_id = source_frame_id;
 
   ExtensionMsg_ExternalConnectionInfo info;
@@ -212,8 +227,8 @@ void ExtensionMessagePort::DispatchOnDisconnect(
 }
 
 void ExtensionMessagePort::DispatchOnMessage(const Message& message) {
-  SendToPort(base::WrapUnique(
-      new ExtensionMsg_DeliverMessage(MSG_ROUTING_NONE, port_id_, message)));
+  SendToPort(base::WrapUnique(new ExtensionMsg_DeliverMessage(
+      MSG_ROUTING_NONE, port_id_, opener_tab_id_, message)));
 }
 
 void ExtensionMessagePort::IncrementLazyKeepaliveCount() {

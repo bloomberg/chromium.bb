@@ -564,6 +564,11 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_GetAppInstallStateResponse,
                     std::string /* state */,
                     int32_t /* callback_id */)
 
+// Check whether the Port for extension messaging exists in the frame. If the
+// port ID is unknown, the frame replies with ExtensionHostMsg_CloseMessagePort.
+IPC_MESSAGE_ROUTED1(ExtensionMsg_ValidateMessagePort,
+                    int /* port_id */)
+
 // Dispatch the Port.onConnect event for message channels.
 IPC_MESSAGE_ROUTED5(ExtensionMsg_DispatchOnConnect,
                     int /* target_port_id */,
@@ -573,8 +578,9 @@ IPC_MESSAGE_ROUTED5(ExtensionMsg_DispatchOnConnect,
                     std::string /* tls_channel_id */)
 
 // Deliver a message sent with ExtensionHostMsg_PostMessage.
-IPC_MESSAGE_ROUTED2(ExtensionMsg_DeliverMessage,
+IPC_MESSAGE_ROUTED3(ExtensionMsg_DeliverMessage,
                     int /* target_port_id */,
+                    int /* source_tab_id */,
                     extensions::Message)
 
 // Dispatch the Port.onDisconnect event for message channels.

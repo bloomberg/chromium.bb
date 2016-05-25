@@ -672,13 +672,6 @@ void Dispatcher::InvokeModuleSystemMethod(content::RenderFrame* render_frame,
   }
 }
 
-void Dispatcher::ClearPortData(int port_id) {
-  // Only the target port side has entries in |port_to_tab_id_map_|. If
-  // |port_id| is a source port, std::map::erase() will just silently fail
-  // here as a no-op.
-  port_to_tab_id_map_.erase(port_id);
-}
-
 // static
 std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
   std::vector<std::pair<std::string, int> > resources;
@@ -887,8 +880,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
       "event_natives",
       std::unique_ptr<NativeHandler>(new EventBindings(context)));
   module_system->RegisterNativeHandler(
-      "messaging_natives", std::unique_ptr<NativeHandler>(
-                               MessagingBindings::Get(dispatcher, context)));
+      "messaging_natives",
+      std::unique_ptr<NativeHandler>(MessagingBindings::Get(context)));
   module_system->RegisterNativeHandler(
       "apiDefinitions", std::unique_ptr<NativeHandler>(
                             new ApiDefinitionsNatives(dispatcher, context)));
@@ -1035,13 +1028,13 @@ void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
   DispatchEvent(extension_id, kOnSuspendCanceledEvent);
 }
 
-void Dispatcher::OnDeliverMessage(int target_port_id, const Message& message) {
+void Dispatcher::OnDeliverMessage(int target_port_id,
+                                  int source_tab_id,
+                                  const Message& message) {
   std::unique_ptr<RequestSender::ScopedTabID> scoped_tab_id;
-  std::map<int, int>::const_iterator it =
-      port_to_tab_id_map_.find(target_port_id);
-  if (it != port_to_tab_id_map_.end()) {
+  if (source_tab_id != -1) {
     scoped_tab_id.reset(
-        new RequestSender::ScopedTabID(request_sender(), it->second));
+        new RequestSender::ScopedTabID(request_sender(), source_tab_id));
   }
 
   MessagingBindings::DeliverMessage(*script_context_set_, target_port_id,
@@ -1055,11 +1048,7 @@ void Dispatcher::OnDispatchOnConnect(
     const ExtensionMsg_TabConnectionInfo& source,
     const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& tls_channel_id) {
-  DCHECK(!ContainsKey(port_to_tab_id_map_, target_port_id));
   DCHECK_EQ(1, target_port_id % 2);  // target renderer ports have odd IDs.
-  int sender_tab_id = -1;
-  source.tab.GetInteger("id", &sender_tab_id);
-  port_to_tab_id_map_[target_port_id] = sender_tab_id;
 
   MessagingBindings::DispatchOnConnect(*script_context_set_, target_port_id,
                                        channel_name, source, info,

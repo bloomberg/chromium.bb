@@ -21,6 +21,7 @@
   var kRequestChannel = "chrome.extension.sendRequest";
   var kMessageChannel = "chrome.runtime.sendMessage";
   var kNativeMessageChannel = "chrome.runtime.sendNativeMessage";
+  var kPortClosedError = 'Attempting to use a disconnected port object';
 
   // Map of port IDs to port object.
   var ports = {__proto__: null};
@@ -53,13 +54,15 @@
     };
     this.onDisconnect = new Event(null, [portSchema], options);
     this.onMessage = new Event(null, [messageSchema, portSchema], options);
-    this.onDestroy_ = null;
   }
   $Object.setPrototypeOf(PortImpl.prototype, null);
 
   // Sends a message asynchronously to the context on the other end of this
   // port.
   PortImpl.prototype.postMessage = function(msg) {
+    if (!$Object.hasOwnProperty(ports, this.portId_))
+      throw new Error(kPortClosedError);
+
     // JSON.stringify doesn't support a root object which is undefined.
     if (msg === undefined)
       msg = null;
@@ -80,28 +83,24 @@
 
   // Disconnects the port from the other end.
   PortImpl.prototype.disconnect = function() {
+    if (!$Object.hasOwnProperty(ports, this.portId_))
+      return;  // disconnect() on an already-closed port is a no-op.
     messagingNatives.CloseChannel(this.portId_, true);
     this.destroy_();
   };
 
+  // Close this specific port without forcing the channel to close. The channel
+  // will close if this was the only port at this end of the channel.
+  PortImpl.prototype.disconnectSoftly = function() {
+    if (!$Object.hasOwnProperty(ports, this.portId_))
+      return;
+    messagingNatives.CloseChannel(this.portId_, false);
+    this.destroy_();
+  };
+
   PortImpl.prototype.destroy_ = function() {
-    if (this.onDestroy_) {
-      this.onDestroy_();
-      this.onDestroy_ = null;
-    }
     privates(this.onDisconnect).impl.destroy_();
     privates(this.onMessage).impl.destroy_();
-    // TODO(robwu): Remove port lifetime management because it is completely
-    // handled in the browser. The renderer's only roles are
-    // 1) rejecting ports so that the browser knows that the renderer is not
-    //    interested in the port (this is merely an optimization)
-    // 2) acknowledging port creations, so that the browser knows that the port
-    //    was successfully created (from the perspective of the extension), but
-    //    then closed for some non-fatal reason.
-    // 3) notifying the browser of explicit port closure via .disconnect().
-    // In other cases (navigations), the browser automatically cleans up the
-    //    port.
-    messagingNatives.PortRelease(this.portId_);
     delete ports[this.portId_];
   };
 
@@ -109,7 +108,7 @@
   // the C++ to avoid creating the javascript message for all the contexts that
   // don't care about a particular message.
   function hasPort(portId) {
-    return portId in ports;
+    return $Object.hasOwnProperty(ports, portId);
   };
 
   // Hidden port creation function.  We don't want to expose an API that lets
@@ -119,7 +118,6 @@
       throw new Error("Port '" + portId + "' already exists.");
     var port = new Port(portId, opt_name);
     ports[portId] = port;
-    messagingNatives.PortAddRef(portId);
     return port;
   };
 
@@ -177,7 +175,11 @@
       var responseCallback = function(response) {
         if (port) {
           port.postMessage(response);
-          privates(port).impl.destroy_();
+          // TODO(robwu): This can be changed to disconnect() because there is
+          // no point in allowing other receivers at this end of the port to
+          // keep the channel alive because the opener port can only receive one
+          // message.
+          privates(port).impl.disconnectSoftly();
           port = null;
         } else {
           // We nulled out port when sending the response, and now the page
@@ -198,7 +200,7 @@
       // the context has been destroyed, so there isn't any JS state to clear.
       messagingNatives.BindToGC(responseCallback, function() {
         if (port) {
-          privates(port).impl.destroy_();
+          privates(port).impl.disconnectSoftly();
           port = null;
         }
       }, portId);
@@ -209,15 +211,12 @@
         if (!responseCallbackPreserved && port) {
           // If they didn't access the response callback, they're not
           // going to send a response, so clean up the port immediately.
-          privates(port).impl.destroy_();
+          privates(port).impl.disconnectSoftly();
           port = null;
         }
       }
     }
 
-    privates(port).impl.onDestroy_ = function() {
-      port.onMessage.removeListener(messageListener);
-    };
     port.onMessage.addListener(messageListener);
 
     var eventName = isSendMessage ? "runtime.onMessage" : "extension.onRequest";
@@ -314,8 +313,7 @@
   function dispatchOnDisconnect(portId, errorMessage) {
     var port = ports[portId];
     if (port) {
-      // Update the renderer's port bookkeeping, without notifying the browser.
-      messagingNatives.CloseChannel(portId, false);
+      delete ports[portId];
       if (errorMessage)
         lastError.set('Port', errorMessage, null, chrome);
       try {
@@ -398,10 +396,6 @@
       }
     }
 
-    privates(port).impl.onDestroy_ = function() {
-      port.onDisconnect.removeListener(disconnectListener);
-      port.onMessage.removeListener(messageListener);
-    };
     port.onDisconnect.addListener(disconnectListener);
     port.onMessage.addListener(messageListener);
   };

@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -25,7 +24,6 @@
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/manifest_handlers/externally_connectable.h"
-#include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/event_bindings.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/gc_callback.h"
@@ -61,191 +59,51 @@ using v8_helpers::IsEmptyOrUndefied;
 
 namespace {
 
-// Tracks every reference between ScriptContexts and Ports, by ID.
-class PortTracker {
- public:
-  PortTracker() {}
-  ~PortTracker() {}
-
-  // Returns true if |context| references |port_id|.
-  bool HasReference(ScriptContext* context, int port_id) const {
-    auto ports = contexts_to_ports_.find(context);
-    return ports != contexts_to_ports_.end() &&
-           ports->second.count(port_id) > 0;
-  }
-
-  // Marks |context| and |port_id| as referencing each other.
-  void AddReference(ScriptContext* context, int port_id) {
-    contexts_to_ports_[context].insert(port_id);
-  }
-
-  // Removes the references between |context| and |port_id|.
-  // Returns true if a reference was removed, false if the reference didn't
-  // exist to be removed.
-  bool RemoveReference(ScriptContext* context, int port_id) {
-    auto ports = contexts_to_ports_.find(context);
-    if (ports == contexts_to_ports_.end() ||
-        ports->second.erase(port_id) == 0) {
-      return false;
-    }
-    if (ports->second.empty())
-      contexts_to_ports_.erase(context);
-    return true;
-  }
-
-  // Returns true if this tracker has any reference to |port_id|.
-  bool HasPort(int port_id) const {
-    for (auto it : contexts_to_ports_) {
-      if (it.second.count(port_id) > 0)
-        return true;
-    }
-    return false;
-  }
-
-  // Deletes all references to |port_id|.
-  void DeletePort(int port_id) {
-    for (auto it = contexts_to_ports_.begin();
-         it != contexts_to_ports_.end();) {
-      if (it->second.erase(port_id) > 0 && it->second.empty())
-        contexts_to_ports_.erase(it++);
-      else
-        ++it;
-    }
-  }
-
-  // Gets every port ID that has a reference to |context|.
-  std::set<int> GetPortsForContext(ScriptContext* context) const {
-    auto ports = contexts_to_ports_.find(context);
-    return ports == contexts_to_ports_.end() ? std::set<int>() : ports->second;
-  }
-
- private:
-  // Maps ScriptContexts to the port IDs that have a reference to it.
-  std::map<ScriptContext*, std::set<int>> contexts_to_ports_;
-
-  DISALLOW_COPY_AND_ASSIGN(PortTracker);
-};
-
-base::LazyInstance<PortTracker> g_port_tracker = LAZY_INSTANCE_INITIALIZER;
-
-const char kPortClosedError[] = "Attempting to use a disconnected port object";
-
 class ExtensionImpl : public ObjectBackedNativeHandler {
  public:
-  ExtensionImpl(Dispatcher* dispatcher, ScriptContext* context)
-      : ObjectBackedNativeHandler(context),
-        dispatcher_(dispatcher),
-        weak_ptr_factory_(this) {
+  explicit ExtensionImpl(ScriptContext* context)
+      : ObjectBackedNativeHandler(context), weak_ptr_factory_(this) {
     RouteFunction(
         "CloseChannel",
         base::Bind(&ExtensionImpl::CloseChannel, base::Unretained(this)));
-    RouteFunction(
-        "PortAddRef",
-        base::Bind(&ExtensionImpl::PortAddRef, base::Unretained(this)));
-    RouteFunction(
-        "PortRelease",
-        base::Bind(&ExtensionImpl::PortRelease, base::Unretained(this)));
     RouteFunction(
         "PostMessage",
         base::Bind(&ExtensionImpl::PostMessage, base::Unretained(this)));
     // TODO(fsamuel, kalman): Move BindToGC out of messaging natives.
     RouteFunction("BindToGC",
                   base::Bind(&ExtensionImpl::BindToGC, base::Unretained(this)));
-
-    // Observe |context| so that port references to it can be cleared.
-    context->AddInvalidationObserver(base::Bind(
-        &ExtensionImpl::OnContextInvalidated, weak_ptr_factory_.GetWeakPtr()));
   }
 
   ~ExtensionImpl() override {}
 
  private:
-  void OnContextInvalidated() {
-    for (int port_id : g_port_tracker.Get().GetPortsForContext(context()))
-      ReleasePort(port_id);
-  }
-
-  void ClearPortDataAndNotifyDispatcher(int port_id) {
-    g_port_tracker.Get().DeletePort(port_id);
-    dispatcher_->ClearPortData(port_id);
-  }
-
   // Sends a message along the given channel.
   void PostMessage(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    content::RenderFrame* render_frame = context()->GetRenderFrame();
-    if (!render_frame)
-      return;
-
     // Arguments are (int32_t port_id, string message).
     CHECK(args.Length() == 2 && args[0]->IsInt32() && args[1]->IsString());
 
     int port_id = args[0].As<v8::Int32>()->Value();
-    if (!g_port_tracker.Get().HasPort(port_id)) {
-      v8::Local<v8::String> error_message =
-          ToV8StringUnsafe(args.GetIsolate(), kPortClosedError);
-      args.GetIsolate()->ThrowException(v8::Exception::Error(error_message));
-      return;
-    }
 
-    render_frame->Send(new ExtensionHostMsg_PostMessage(
-        render_frame->GetRoutingID(), port_id,
-        Message(*v8::String::Utf8Value(args[1]),
-                blink::WebUserGestureIndicator::isProcessingUserGesture())));
+    content::RenderFrame* render_frame = context()->GetRenderFrame();
+    if (render_frame) {
+      render_frame->Send(new ExtensionHostMsg_PostMessage(
+          render_frame->GetRoutingID(), port_id,
+          Message(*v8::String::Utf8Value(args[1]),
+                  blink::WebUserGestureIndicator::isProcessingUserGesture())));
+    }
   }
 
-  // Forcefully disconnects a port.
+  // Close a port, optionally forcefully (i.e. close the whole channel instead
+  // of just the given port).
   void CloseChannel(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    // Arguments are (int32_t port_id, boolean notify_browser).
+    // Arguments are (int32_t port_id, bool force_close).
     CHECK_EQ(2, args.Length());
     CHECK(args[0]->IsInt32());
     CHECK(args[1]->IsBoolean());
 
     int port_id = args[0].As<v8::Int32>()->Value();
-    if (!g_port_tracker.Get().HasPort(port_id))
-      return;
-
-    // Send via the RenderThread because the RenderFrame might be closing.
-    bool notify_browser = args[1].As<v8::Boolean>()->Value();
-    content::RenderFrame* render_frame = context()->GetRenderFrame();
-    if (notify_browser && render_frame) {
-      render_frame->Send(new ExtensionHostMsg_CloseMessagePort(
-          render_frame->GetRoutingID(), port_id, true));
-    }
-
-    ClearPortDataAndNotifyDispatcher(port_id);
-  }
-
-  // A new port has been created for a context.  This occurs both when script
-  // opens a connection, and when a connection is opened to this script.
-  void PortAddRef(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    // Arguments are (int32_t port_id).
-    CHECK_EQ(1, args.Length());
-    CHECK(args[0]->IsInt32());
-
-    int port_id = args[0].As<v8::Int32>()->Value();
-    g_port_tracker.Get().AddReference(context(), port_id);
-  }
-
-  // The frame a port lived in has been destroyed.  When there are no more
-  // frames with a reference to a given port, we will disconnect it and notify
-  // the other end of the channel.
-  // TODO(robwu): Port lifetime management has moved to the browser, this is no
-  // longer needed. See .destroy_() inmessaging.js for more details.
-  void PortRelease(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    // Arguments are (int32_t port_id).
-    CHECK(args.Length() == 1 && args[0]->IsInt32());
-    ReleasePort(args[0].As<v8::Int32>()->Value());
-  }
-
-  // Releases the reference to |port_id| for this context, and clears all port
-  // data if there are no more references.
-  void ReleasePort(int port_id) {
-    content::RenderFrame* render_frame = context()->GetRenderFrame();
-    if (g_port_tracker.Get().RemoveReference(context(), port_id) &&
-        !g_port_tracker.Get().HasPort(port_id) && render_frame) {
-      render_frame->Send(new ExtensionHostMsg_CloseMessagePort(
-          render_frame->GetRoutingID(), port_id, false));
-    }
+    bool force_close = args[1].As<v8::Boolean>()->Value();
+    ClosePort(port_id, force_close);
   }
 
   // void BindToGC(object, callback, port_id)
@@ -263,19 +121,54 @@ class ExtensionImpl : public ObjectBackedNativeHandler {
     int port_id = args[2].As<v8::Int32>()->Value();
     base::Closure fallback = base::Bind(&base::DoNothing);
     if (port_id >= 0) {
-      fallback = base::Bind(&ExtensionImpl::ReleasePort,
-                            weak_ptr_factory_.GetWeakPtr(), port_id);
+      // TODO(robwu): Falling back to closing the port shouldn't be needed. If
+      // the script context is destroyed, then the frame has navigated. But that
+      // is already detected by the browser, so this logic is redundant. Remove
+      // this fallback (and move BindToGC out of messaging because it is also
+      // used in other places that have nothing to do with messaging...).
+      fallback =
+          base::Bind(&ExtensionImpl::ClosePort, weak_ptr_factory_.GetWeakPtr(),
+                     port_id, false /* force_close */);
     }
     // Destroys itself when the object is GC'd or context is invalidated.
     new GCCallback(context(), args[0].As<v8::Object>(),
                    args[1].As<v8::Function>(), fallback);
   }
 
-  // Dispatcher handle. Not owned.
-  Dispatcher* dispatcher_;
+  // See ExtensionImpl::CloseChannel for documentation.
+  // TODO(robwu): Merge this logic with CloseChannel once the TODO in BindToGC
+  // has been addressed.
+  void ClosePort(int port_id, bool force_close) {
+    content::RenderFrame* render_frame = context()->GetRenderFrame();
+    if (render_frame) {
+      render_frame->Send(new ExtensionHostMsg_CloseMessagePort(
+          render_frame->GetRoutingID(), port_id, force_close));
+    }
+  }
 
   base::WeakPtrFactory<ExtensionImpl> weak_ptr_factory_;
 };
+
+void HasMessagePort(int port_id,
+                    bool* has_port,
+                    ScriptContext* script_context) {
+  if (*has_port)
+    return;  // Stop checking if the port was found.
+
+  v8::Isolate* isolate = script_context->isolate();
+  v8::HandleScope handle_scope(isolate);
+
+  v8::Local<v8::Value> port_id_handle = v8::Integer::New(isolate, port_id);
+  v8::Local<v8::Value> v8_has_port =
+      script_context->module_system()->CallModuleMethod("messaging", "hasPort",
+                                                        1, &port_id_handle);
+  if (IsEmptyOrUndefied(v8_has_port))
+    return;
+  CHECK(v8_has_port->IsBoolean());
+  if (!v8_has_port.As<v8::Boolean>()->Value())
+    return;
+  *has_port = true;
+}
 
 void DispatchOnConnectToScriptContext(
     int target_port_id,
@@ -435,9 +328,29 @@ void DispatchOnDisconnectToScriptContext(int port_id,
 
 }  // namespace
 
-ObjectBackedNativeHandler* MessagingBindings::Get(Dispatcher* dispatcher,
-                                                  ScriptContext* context) {
-  return new ExtensionImpl(dispatcher, context);
+ObjectBackedNativeHandler* MessagingBindings::Get(ScriptContext* context) {
+  return new ExtensionImpl(context);
+}
+
+void MessagingBindings::ValidateMessagePort(
+    const ScriptContextSet& context_set,
+    int port_id,
+    content::RenderFrame* render_frame) {
+  int routing_id = render_frame->GetRoutingID();
+
+  bool has_port = false;
+  context_set.ForEach(render_frame,
+                      base::Bind(&HasMessagePort, port_id, &has_port));
+  // Note: HasMessagePort invokes a JavaScript function. If the runtime of the
+  // extension bindings in JS have been compromised, then |render_frame| may be
+  // invalid at this point.
+
+  // A reply is only sent if the port is missing, because the port is assumed to
+  // exist unless stated otherwise.
+  if (!has_port) {
+    content::RenderThread::Get()->Send(
+        new ExtensionHostMsg_CloseMessagePort(routing_id, port_id, false));
+  }
 }
 
 // static

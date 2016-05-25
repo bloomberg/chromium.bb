@@ -136,8 +136,6 @@ class Dispatcher : public content::RenderThreadObserver,
                                 const base::ListValue& args,
                                 bool user_gesture);
 
-  void ClearPortData(int port_id);
-
   // Returns a list of (module name, resource id) pairs for the JS modules to
   // add to the source map.
   static std::vector<std::pair<std::string, int> > GetJsResources();
@@ -163,7 +161,9 @@ class Dispatcher : public content::RenderThreadObserver,
 
   void OnActivateExtension(const std::string& extension_id);
   void OnCancelSuspend(const std::string& extension_id);
-  void OnDeliverMessage(int target_port_id, const Message& message);
+  void OnDeliverMessage(int target_port_id,
+                        int source_tab_id,
+                        const Message& message);
   void OnDispatchOnConnect(int target_port_id,
                            const std::string& channel_name,
                            const ExtensionMsg_TabConnectionInfo& source,
@@ -299,9 +299,6 @@ class Dispatcher : public content::RenderThreadObserver,
   // The platforms system font family and size;
   std::string system_font_family_;
   std::string system_font_size_;
-
-  // Mapping of port IDs to tabs. If there is no tab, the value would be -1.
-  std::map<int, int> port_to_tab_id_map_;
 
   // It is important for this to come after the ScriptInjectionManager, so that
   // the observer is destroyed before the UserScriptSet.

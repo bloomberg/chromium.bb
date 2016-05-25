@@ -189,6 +189,8 @@ void ExtensionFrameHelper::WillReleaseScriptContext(
 bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ExtensionFrameHelper, message)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_ValidateMessagePort,
+                        OnExtensionValidateMessagePort)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DispatchOnConnect,
                         OnExtensionDispatchOnConnect)
     IPC_MESSAGE_HANDLER(ExtensionMsg_DeliverMessage, OnExtensionDeliverMessage)
@@ -204,6 +206,11 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void ExtensionFrameHelper::OnExtensionValidateMessagePort(int port_id) {
+  MessagingBindings::ValidateMessagePort(
+      extension_dispatcher_->script_context_set(), port_id, render_frame());
 }
 
 void ExtensionFrameHelper::OnExtensionDispatchOnConnect(
@@ -223,6 +230,7 @@ void ExtensionFrameHelper::OnExtensionDispatchOnConnect(
 }
 
 void ExtensionFrameHelper::OnExtensionDeliverMessage(int target_id,
+                                                     int source_tab_id,
                                                      const Message& message) {
   MessagingBindings::DeliverMessage(
       extension_dispatcher_->script_context_set(), target_id, message,
