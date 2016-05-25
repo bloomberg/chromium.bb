@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
 
+#include "base/i18n/number_formatting.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -41,9 +42,9 @@ bool ZoomDecoration::UpdateIfNecessary(
   }
 
   base::string16 zoom_percent =
-      base::IntToString16(zoom_controller->GetZoomPercent());
+      base::FormatPercent(zoom_controller->GetZoomPercent());
   NSString* zoom_string =
-      l10n_util::GetNSStringFWithFixup(IDS_TOOLTIP_ZOOM, zoom_percent);
+      l10n_util::GetNSStringF(IDS_TOOLTIP_ZOOM, zoom_percent);
 
   if (IsVisible() && [tooltip_ isEqualToString:zoom_string] &&
       !default_zoom_changed) {

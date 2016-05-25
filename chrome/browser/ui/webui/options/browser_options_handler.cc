@@ -12,12 +12,12 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/environment.h"
+#include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
@@ -1999,8 +1999,7 @@ void BrowserOptionsHandler::SetupPageZoomSelector() {
     base::ListValue* option = new base::ListValue();
     double factor = *i;
     int percent = static_cast<int>(factor * 100 + 0.5);
-    option->Append(new base::StringValue(
-        l10n_util::GetStringFUTF16Int(IDS_ZOOM_PERCENT, percent)));
+    option->Append(new base::StringValue(base::FormatPercent(percent)));
     option->Append(new base::FundamentalValue(factor));
     bool selected = content::ZoomValuesEqual(factor, default_zoom_factor);
     option->Append(new base::FundamentalValue(selected));

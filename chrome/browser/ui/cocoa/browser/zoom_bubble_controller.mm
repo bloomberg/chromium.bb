@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/cocoa/browser/zoom_bubble_controller.h"
 
+#include "base/i18n/number_formatting.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/grit/generated_resources.h"
@@ -147,8 +149,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
     return;
 
   int percent = zoomController->GetZoomPercent();
-  NSString* string =
-      l10n_util::GetNSStringF(IDS_ZOOM_PERCENT, base::IntToString16(percent));
+  NSString* string = base::SysUTF16ToNSString(base::FormatPercent(percent));
   [zoomPercent_ setAttributedStringValue:
       [self attributedStringWithString:string
                               fontSize:kTextFontSize]];

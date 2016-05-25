@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 
+#include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -176,8 +177,8 @@ void ZoomBubbleView::Init() {
   ui_zoom::ZoomController* zoom_controller =
       ui_zoom::ZoomController::FromWebContents(web_contents_);
   int zoom_percent = zoom_controller->GetZoomPercent();
-  label_ = new views::Label(
-      l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM, zoom_percent));
+  label_ = new views::Label(l10n_util::GetStringFUTF16(
+      IDS_TOOLTIP_ZOOM, base::FormatPercent(zoom_percent)));
   label_->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::MediumFont));
   grid_layout->AddView(label_);
@@ -245,8 +246,8 @@ void ZoomBubbleView::Refresh() {
   ui_zoom::ZoomController* zoom_controller =
       ui_zoom::ZoomController::FromWebContents(web_contents_);
   int zoom_percent = zoom_controller->GetZoomPercent();
-  label_->SetText(
-      l10n_util::GetStringFUTF16Int(IDS_TOOLTIP_ZOOM, zoom_percent));
+  label_->SetText(l10n_util::GetStringFUTF16(
+      IDS_TOOLTIP_ZOOM, base::FormatPercent(zoom_percent)));
   StartTimerIfNecessary();
 }
 

@@ -13,11 +13,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/i18n/number_formatting.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -1189,10 +1189,7 @@ void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
     // number.
     int zoom_percent = static_cast<int>(
         content::ZoomLevelToZoomFactor(i->zoom_level) * 100 + 0.5);
-    exception->SetString(
-        kZoom,
-        l10n_util::GetStringFUTF16(IDS_ZOOM_PERCENT,
-                                   base::IntToString16(zoom_percent)));
+    exception->SetString(kZoom, base::FormatPercent(zoom_percent));
     exception->SetString(
         site_settings::kSource, site_settings::kPreferencesSource);
     // Append the new entry to the list and map.

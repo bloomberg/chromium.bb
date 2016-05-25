@@ -94,5 +94,31 @@ TEST(NumberFormattingTest, FormatDouble) {
   }
 }
 
+TEST(NumberFormattingTest, FormatPercent) {
+  static const struct {
+    int64_t number;
+    const char* expected_english;
+    const wchar_t* expected_german;   // Note: Space before % isn't \x20.
+    const wchar_t* expected_persian;  // Note: Non-Arabic numbers and %.
+  } cases[] = {
+    {0, "0%", L"0\xa0%", L"\x6f0\x200f\x66a"},
+    {42, "42%", L"42\xa0%", L"\x6f4\x6f2\x200f\x66a"},
+    {1024, "1,024%", L"1.024\xa0%", L"\x6f1\x66c\x6f0\x6f2\x6f4\x200f\x66a"},
+  };
+
+  test::ScopedRestoreICUDefaultLocale restore_locale;
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    i18n::SetICUDefaultLocale("en");
+    EXPECT_EQ(ASCIIToUTF16(cases[i].expected_english),
+              FormatPercent(cases[i].number));
+    i18n::SetICUDefaultLocale("de");
+    EXPECT_EQ(WideToUTF16(cases[i].expected_german),
+              FormatPercent(cases[i].number));
+    i18n::SetICUDefaultLocale("fa");
+    EXPECT_EQ(WideToUTF16(cases[i].expected_persian),
+              FormatPercent(cases[i].number));
+  }
+}
+
 }  // namespace
 }  // namespace base

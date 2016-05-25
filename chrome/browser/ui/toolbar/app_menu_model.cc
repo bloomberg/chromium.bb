@@ -10,9 +10,9 @@
 #include "base/command_line.h"
 #include "base/debug/debugging_flags.h"
 #include "base/debug/profiler.h"
+#include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -939,8 +939,7 @@ void AppMenuModel::UpdateZoomControls() {
                        browser_->tab_strip_model()->GetActiveWebContents())
                        ->GetZoomPercent();
   }
-  zoom_label_ = l10n_util::GetStringFUTF16(
-      IDS_ZOOM_PERCENT, base::IntToString16(zoom_percent));
+  zoom_label_ = base::FormatPercent(zoom_percent);
 }
 
 void AppMenuModel::OnZoomLevelChanged(

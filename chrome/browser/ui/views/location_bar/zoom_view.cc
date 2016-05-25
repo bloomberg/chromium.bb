@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 
+#include "base/i18n/number_formatting.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -33,8 +34,9 @@ void ZoomView::Update(ui_zoom::ZoomController* zoom_controller) {
     return;
   }
 
-  SetTooltipText(l10n_util::GetStringFUTF16Int(
-      IDS_TOOLTIP_ZOOM, zoom_controller->GetZoomPercent()));
+  SetTooltipText(l10n_util::GetStringFUTF16(
+      IDS_TOOLTIP_ZOOM,
+      base::FormatPercent(zoom_controller->GetZoomPercent())));
 
   // The icon is hidden when the zoom level is default.
   image_id_ = zoom_controller->GetZoomRelativeToDefault() ==
