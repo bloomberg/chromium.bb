@@ -29,8 +29,6 @@ class EmbeddedApplicationRunner::Instance
         quit_closure_(quit_closure),
         quit_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         application_task_runner_(info.application_task_runner) {
-    application_thread_checker_.DetachFromThread();
-
     if (!use_own_thread_ && !application_task_runner_)
       application_task_runner_ = base::ThreadTaskRunnerHandle::Get();
   }
@@ -63,7 +61,7 @@ class EmbeddedApplicationRunner::Instance
  private:
   void BindShellClientRequestOnApplicationThread(
       shell::mojom::ShellClientRequest request) {
-    DCHECK(application_thread_checker_.CalledOnValidThread());
+    DCHECK(application_task_runner_->BelongsToCurrentThread());
 
     if (!shell_client_) {
       shell_client_ = factory_callback_.Run(
@@ -88,7 +86,7 @@ class EmbeddedApplicationRunner::Instance
   }
 
   void OnShellConnectionLost(shell::ShellConnection* connection) {
-    DCHECK(application_thread_checker_.CalledOnValidThread());
+    DCHECK(application_task_runner_->BelongsToCurrentThread());
 
     for (auto it = shell_connections_.begin(); it != shell_connections_.end();
          ++it) {
@@ -100,7 +98,7 @@ class EmbeddedApplicationRunner::Instance
   }
 
   void Quit() {
-    DCHECK(application_thread_checker_.CalledOnValidThread());
+    DCHECK(application_task_runner_->BelongsToCurrentThread());
 
     shell_connections_.clear();
     shell_client_.reset();
@@ -123,10 +121,6 @@ class EmbeddedApplicationRunner::Instance
   // Thread checker used to ensure certain operations happen only on the
   // runner's (i.e. our owner's) thread.
   base::ThreadChecker runner_thread_checker_;
-
-  // Thread checker used to ensure certain operations happen only on the
-  // application task runner's thread.
-  base::ThreadChecker application_thread_checker_;
 
   // These fields must only be accessed from the runner's thread.
   std::unique_ptr<base::Thread> thread_;
