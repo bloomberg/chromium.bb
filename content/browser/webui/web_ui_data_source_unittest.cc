@@ -33,7 +33,7 @@ class TestClient : public TestContentClient {
     return base::string16();
   }
 
-  base::RefCountedStaticMemory* GetDataResourceBytes(
+  base::RefCountedMemory* GetDataResourceBytes(
       int resource_id) const override {
     base::RefCountedStaticMemory* bytes = NULL;
     if (resource_id == kDummyDefaultResourceId) {

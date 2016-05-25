@@ -109,7 +109,7 @@ gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
     // supported at runtime, based on the device resolution.
     ui::ScaleFactor scale_factor = GetMaxScaleFactor();
 
-    scoped_refptr<base::RefCountedStaticMemory> data(
+    scoped_refptr<base::RefCountedMemory> data(
         LoadDataResourceBytesForScale(resource_id, scale_factor));
 
     if (!data.get()) {

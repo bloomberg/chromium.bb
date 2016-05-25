@@ -66,8 +66,7 @@ base::StringPiece WebClient::GetDataResource(
   return base::StringPiece();
 }
 
-base::RefCountedStaticMemory* WebClient::GetDataResourceBytes(
-    int resource_id) const {
+base::RefCountedMemory* WebClient::GetDataResourceBytes(int resource_id) const {
   return nullptr;
 }
 

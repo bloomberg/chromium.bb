@@ -26,7 +26,7 @@ bool TestWebClient::IsAppSpecificURL(const GURL& url) const {
   return url.SchemeIs(kTestWebUIScheme);
 }
 
-base::RefCountedStaticMemory* TestWebClient::GetDataResourceBytes(
+base::RefCountedMemory* TestWebClient::GetDataResourceBytes(
     int resource_id) const {
   if (!ResourceBundle::HasSharedInstance())
     return nullptr;

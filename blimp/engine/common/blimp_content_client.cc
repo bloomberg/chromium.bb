@@ -27,7 +27,7 @@ base::StringPiece BlimpContentClient::GetDataResource(
       resource_id, scale_factor);
 }
 
-base::RefCountedStaticMemory* BlimpContentClient::GetDataResourceBytes(
+base::RefCountedMemory* BlimpContentClient::GetDataResourceBytes(
     int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
       resource_id);

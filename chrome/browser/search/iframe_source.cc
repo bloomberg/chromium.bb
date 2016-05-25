@@ -73,7 +73,7 @@ bool IframeSource::GetOrigin(
 void IframeSource::SendResource(
     int resource_id,
     const content::URLDataSource::GotDataCallback& callback) {
-  scoped_refptr<base::RefCountedStaticMemory> response(
+  scoped_refptr<base::RefCountedMemory> response(
       ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id));
   callback.Run(response.get());
 }

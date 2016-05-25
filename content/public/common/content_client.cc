@@ -92,9 +92,9 @@ base::StringPiece ContentClient::GetDataResource(
   return base::StringPiece();
 }
 
-base::RefCountedStaticMemory* ContentClient::GetDataResourceBytes(
+base::RefCountedMemory* ContentClient::GetDataResourceBytes(
     int resource_id) const {
-  return NULL;
+  return nullptr;
 }
 
 gfx::Image& ContentClient::GetNativeImageNamed(int resource_id) const {

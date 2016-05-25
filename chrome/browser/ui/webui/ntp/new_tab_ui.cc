@@ -187,7 +187,7 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(
   std::map<std::string, std::pair<std::string, int> >::iterator it =
     resource_map_.find(path);
   if (it != resource_map_.end()) {
-    scoped_refptr<base::RefCountedStaticMemory> resource_bytes(
+    scoped_refptr<base::RefCountedMemory> resource_bytes(
         it->second.second ?
             ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
                 it->second.second) :

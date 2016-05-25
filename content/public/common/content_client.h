@@ -19,7 +19,7 @@
 class GURL;
 
 namespace base {
-class RefCountedStaticMemory;
+class RefCountedMemory;
 }
 
 namespace IPC {
@@ -123,7 +123,7 @@ class CONTENT_EXPORT ContentClient {
       ui::ScaleFactor scale_factor) const;
 
   // Returns the raw bytes of a scale independent data resource.
-  virtual base::RefCountedStaticMemory* GetDataResourceBytes(
+  virtual base::RefCountedMemory* GetDataResourceBytes(
       int resource_id) const;
 
   // Returns a native image given its id.

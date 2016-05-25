@@ -101,7 +101,7 @@ base::StringPiece CastContentClient::GetDataResource(
       resource_id, scale_factor);
 }
 
-base::RefCountedStaticMemory* CastContentClient::GetDataResourceBytes(
+base::RefCountedMemory* CastContentClient::GetDataResourceBytes(
     int resource_id) const {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
       resource_id);

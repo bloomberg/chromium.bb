@@ -15,7 +15,7 @@
 #include "url/url_util.h"
 
 namespace base {
-class RefCountedStaticMemory;
+class RefCountedMemory;
 }
 
 class GURL;
@@ -101,8 +101,7 @@ class WebClient {
                                             ui::ScaleFactor scale_factor) const;
 
   // Returns the raw bytes of a scale independent data resource.
-  virtual base::RefCountedStaticMemory* GetDataResourceBytes(
-      int resource_id) const;
+  virtual base::RefCountedMemory* GetDataResourceBytes(int resource_id) const;
 
   // Returns a list of additional WebUI schemes, if any. These additional
   // schemes act as aliases to the about: scheme. The additional schemes may or

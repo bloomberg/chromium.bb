@@ -74,8 +74,7 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
   MOCK_METHOD1(GetImageNamed, gfx::Image(int resource_id));
   MOCK_METHOD1(GetNativeImageNamed, gfx::Image(int resource_id));
   MOCK_METHOD2(LoadDataResourceBytes,
-      base::RefCountedStaticMemory*(int resource_id,
-                                    ui::ScaleFactor scale_factor));
+      base::RefCountedMemory*(int resource_id, ui::ScaleFactor scale_factor));
   MOCK_METHOD2(GetRawDataResourceMock, base::StringPiece(
       int resource_id,
       ui::ScaleFactor scale_factor));
@@ -266,7 +265,7 @@ TEST_F(ResourceBundleTest, DelegateLoadDataResourceBytes) {
   EXPECT_CALL(delegate, LoadDataResourceBytes(resource_id, scale_factor))
       .Times(1).WillOnce(Return(static_memory.get()));
 
-  scoped_refptr<base::RefCountedStaticMemory> result =
+  scoped_refptr<base::RefCountedMemory> result =
       resource_bundle->LoadDataResourceBytesForScale(resource_id, scale_factor);
   EXPECT_EQ(static_memory, result);
 }

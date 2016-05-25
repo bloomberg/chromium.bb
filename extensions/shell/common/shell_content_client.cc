@@ -109,7 +109,7 @@ base::StringPiece ShellContentClient::GetDataResource(
       resource_id, scale_factor);
 }
 
-base::RefCountedStaticMemory* ShellContentClient::GetDataResourceBytes(
+base::RefCountedMemory* ShellContentClient::GetDataResourceBytes(
     int resource_id) const {
   return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
 }

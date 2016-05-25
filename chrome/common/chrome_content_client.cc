@@ -624,7 +624,7 @@ base::StringPiece ChromeContentClient::GetDataResource(
       resource_id, scale_factor);
 }
 
-base::RefCountedStaticMemory* ChromeContentClient::GetDataResourceBytes(
+base::RefCountedMemory* ChromeContentClient::GetDataResourceBytes(
     int resource_id) const {
   return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
 }

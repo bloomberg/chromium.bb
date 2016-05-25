@@ -440,15 +440,15 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
   return images_[resource_id];
 }
 
-base::RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
+base::RefCountedMemory* ResourceBundle::LoadDataResourceBytes(
     int resource_id) const {
   return LoadDataResourceBytesForScale(resource_id, ui::SCALE_FACTOR_NONE);
 }
 
-base::RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytesForScale(
+base::RefCountedMemory* ResourceBundle::LoadDataResourceBytesForScale(
     int resource_id,
     ScaleFactor scale_factor) const {
-  base::RefCountedStaticMemory* bytes = NULL;
+  base::RefCountedMemory* bytes = NULL;
   if (delegate_)
     bytes = delegate_->LoadDataResourceBytes(resource_id, scale_factor);
 

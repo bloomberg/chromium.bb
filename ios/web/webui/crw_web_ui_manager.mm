@@ -259,7 +259,7 @@ const char kScriptCommandPrefix[] = "webui";
       {web::kCoreModuleName, IDR_IOS_MOJO_CORE_JS},
       {web::kServiceProviderModuleName, IDR_IOS_MOJO_SERVICE_PROVIDER_JS},
   };
-  scoped_refptr<base::RefCountedStaticMemory> scriptData(
+  scoped_refptr<base::RefCountedMemory> scriptData(
       web::GetWebClient()->GetDataResourceBytes(resource_map[moduleName]));
   if (scriptData) {
     std::string script(reinterpret_cast<const char*>(scriptData->front()),

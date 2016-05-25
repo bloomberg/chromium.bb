@@ -233,7 +233,7 @@ void LocalNtpSource::StartDataRequest(
 
   for (size_t i = 0; i < arraysize(kResources); ++i) {
     if (filename == kResources[i].filename) {
-      scoped_refptr<base::RefCountedStaticMemory> response(
+      scoped_refptr<base::RefCountedMemory> response(
           ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
               kResources[i].identifier, scale_factor));
       callback.Run(response.get());

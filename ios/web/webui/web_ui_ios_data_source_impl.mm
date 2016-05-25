@@ -154,7 +154,7 @@ void WebUIIOSDataSourceImpl::SendLocalizedStringsAsJSON(
 void WebUIIOSDataSourceImpl::SendFromResourceBundle(
     const URLDataSourceIOS::GotDataCallback& callback,
     int idr) {
-  scoped_refptr<base::RefCountedStaticMemory> response(
+  scoped_refptr<base::RefCountedMemory> response(
       GetWebClient()->GetDataResourceBytes(idr));
   callback.Run(response);
 }

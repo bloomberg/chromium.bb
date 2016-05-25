@@ -29,7 +29,7 @@ base::StringPiece HeadlessContentClient::GetDataResource(
       resource_id, scale_factor);
 }
 
-base::RefCountedStaticMemory* HeadlessContentClient::GetDataResourceBytes(
+base::RefCountedMemory* HeadlessContentClient::GetDataResourceBytes(
     int resource_id) const {
   return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
 }

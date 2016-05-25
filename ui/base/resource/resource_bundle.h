@@ -31,7 +31,7 @@ class SkBitmap;
 namespace base {
 class File;
 class Lock;
-class RefCountedStaticMemory;
+class RefCountedMemory;
 }
 
 namespace ui {
@@ -96,9 +96,9 @@ class UI_BASE_EXPORT ResourceBundle {
     // default resource.
     virtual gfx::Image GetNativeImageNamed(int resource_id) = 0;
 
-    // Return a static memory resource or NULL to attempt retrieval of the
+    // Return a ref counted memory resource or NULL to attempt retrieval of the
     // default resource.
-    virtual base::RefCountedStaticMemory* LoadDataResourceBytes(
+    virtual base::RefCountedMemory* LoadDataResourceBytes(
         int resource_id,
         ScaleFactor scale_factor) = 0;
 
@@ -216,14 +216,14 @@ class UI_BASE_EXPORT ResourceBundle {
   gfx::Image& GetNativeImageNamed(int resource_id);
 
   // Loads the raw bytes of a scale independent data resource.
-  base::RefCountedStaticMemory* LoadDataResourceBytes(int resource_id) const;
+  base::RefCountedMemory* LoadDataResourceBytes(int resource_id) const;
 
   // Loads the raw bytes of a data resource nearest the scale factor
   // |scale_factor| into |bytes|, without doing any processing or
   // interpretation of the resource. Use ResourceHandle::SCALE_FACTOR_NONE
   // for scale independent image resources (such as wallpaper).
   // Returns NULL if we fail to read the resource.
-  base::RefCountedStaticMemory* LoadDataResourceBytesForScale(
+  base::RefCountedMemory* LoadDataResourceBytesForScale(
       int resource_id,
       ScaleFactor scale_factor) const;
 
