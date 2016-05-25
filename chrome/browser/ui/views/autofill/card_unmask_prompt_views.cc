@@ -55,12 +55,6 @@ SkColor const kSubtleBorderColor = SkColorSetARGB(10, 0, 0, 0);
 
 }  // namespace
 
-CardUnmaskPromptView* CreateCardUnmaskPromptView(
-    CardUnmaskPromptController* controller,
-    content::WebContents* web_contents) {
-  return new CardUnmaskPromptViews(controller, web_contents);
-}
-
 CardUnmaskPromptViews::CardUnmaskPromptViews(
     CardUnmaskPromptController* controller,
     content::WebContents* web_contents)
