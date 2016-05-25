@@ -60,7 +60,7 @@ MediaStreamComponent::MediaStreamComponent(const String& id, MediaStreamSource* 
 
 void MediaStreamComponent::dispose()
 {
-    m_extraData.clear();
+    m_extraData.reset();
 }
 
 void MediaStreamComponent::AudioSourceProviderImpl::wrap(WebAudioSourceProvider* provider)

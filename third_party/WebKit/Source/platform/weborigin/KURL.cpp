@@ -290,7 +290,7 @@ KURL& KURL::operator=(const KURL& other)
     if (other.m_innerURL)
         m_innerURL = adoptPtr(new KURL(other.m_innerURL->copy()));
     else
-        m_innerURL.clear();
+        m_innerURL.reset();
     return *this;
 }
 
@@ -814,13 +814,13 @@ void KURL::init(const KURL& base, const CHAR* relative, int relativeLength, cons
 void KURL::initInnerURL()
 {
     if (!m_isValid) {
-        m_innerURL.clear();
+        m_innerURL.reset();
         return;
     }
     if (url::Parsed* innerParsed = m_parsed.inner_parsed())
         m_innerURL = adoptPtr(new KURL(ParsedURLString, m_string.substring(innerParsed->scheme.begin, innerParsed->Length() - innerParsed->scheme.begin)));
     else
-        m_innerURL.clear();
+        m_innerURL.reset();
 }
 
 template<typename CHAR>

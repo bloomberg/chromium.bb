@@ -999,7 +999,7 @@ void JPEGImageDecoder::decode(bool onlySize)
 
     // If decoding is done or failed, we don't need the JPEGImageReader anymore.
     if (isComplete(this, onlySize) || failed())
-        m_reader.clear();
+        m_reader.reset();
 }
 
 } // namespace blink

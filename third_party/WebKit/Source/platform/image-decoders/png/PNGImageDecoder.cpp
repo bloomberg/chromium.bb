@@ -444,7 +444,7 @@ void PNGImageDecoder::decode(bool onlySize)
 
     // If decoding is done or failed, we don't need the PNGImageReader anymore.
     if (isComplete(this) || failed())
-        m_reader.clear();
+        m_reader.reset();
 }
 
 } // namespace blink

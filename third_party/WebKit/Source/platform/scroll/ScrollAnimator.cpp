@@ -95,7 +95,7 @@ void ScrollAnimator::resetAnimationState()
 {
     ScrollAnimatorCompositorCoordinator::resetAnimationState();
     if (m_animationCurve)
-        m_animationCurve.clear();
+        m_animationCurve.reset();
     m_startTime = 0.0;
 }
 

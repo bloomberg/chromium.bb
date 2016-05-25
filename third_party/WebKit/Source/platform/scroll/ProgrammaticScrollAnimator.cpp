@@ -28,7 +28,7 @@ ProgrammaticScrollAnimator::~ProgrammaticScrollAnimator()
 void ProgrammaticScrollAnimator::resetAnimationState()
 {
     ScrollAnimatorCompositorCoordinator::resetAnimationState();
-    m_animationCurve.clear();
+    m_animationCurve.reset();
     m_startTime = 0.0;
 }
 

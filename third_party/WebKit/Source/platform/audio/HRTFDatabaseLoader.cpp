@@ -120,7 +120,7 @@ void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
     // TODO(alexclarke): Should this be posted as a loading task?
     m_thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&HRTFDatabaseLoader::cleanupTask, AllowCrossThreadAccess(this), AllowCrossThreadAccess(&sync)));
     sync.waitForTaskCompletion();
-    m_thread.clear();
+    m_thread.reset();
 }
 
 } // namespace blink

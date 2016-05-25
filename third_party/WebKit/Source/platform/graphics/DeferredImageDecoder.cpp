@@ -273,7 +273,7 @@ void DeferredImageDecoder::prepareLazyDecodedFrames()
 
     if (m_allDataReceived) {
         m_repetitionCount = m_actualDecoder->repetitionCount();
-        m_actualDecoder.clear();
+        m_actualDecoder.reset();
         // Hold on to m_rwBuffer, which is still needed by createFrameAtIndex.
     }
 }

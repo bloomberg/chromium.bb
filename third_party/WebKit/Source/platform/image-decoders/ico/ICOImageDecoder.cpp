@@ -150,8 +150,8 @@ void ICOImageDecoder::decode(size_t index, bool onlySize)
     // PNGImageDecoder anymore.  (If we failed, these have already been
     // cleared.)
     } else if ((m_frameBufferCache.size() > index) && (m_frameBufferCache[index].getStatus() == ImageFrame::FrameComplete)) {
-        m_bmpReaders[index].clear();
-        m_pngDecoders[index].clear();
+        m_bmpReaders[index].reset();
+        m_pngDecoders[index].reset();
     }
 }
 

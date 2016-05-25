@@ -130,7 +130,7 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge()
     clearCHROMIUMImageCache();
 #endif // USE_IOSURFACE_FOR_2D_CANVAS
 
-    m_layer.clear();
+    m_layer.reset();
     ASSERT(m_mailboxes.size() == 0);
 }
 
@@ -543,7 +543,7 @@ void Canvas2DLayerBridge::disableDeferral(DisableDeferralReason reason)
     m_haveRecordedDrawCommands = false;
 
     m_isDeferralEnabled = false;
-    m_recorder.clear();
+    m_recorder.reset();
     // install the current matrix/clip stack onto the immediate canvas
     SkSurface* surface = getOrCreateSurface();
     if (m_imageBuffer && surface)
@@ -565,7 +565,7 @@ void Canvas2DLayerBridge::beginDestruction()
     if (isHibernating())
         m_logger->reportHibernationEvent(HibernationEndedWithTeardown);
     m_hibernationImage.clear();
-    m_recorder.clear();
+    m_recorder.reset();
     m_imageBuffer = nullptr;
     m_destructionInProgress = true;
     setIsHidden(true);

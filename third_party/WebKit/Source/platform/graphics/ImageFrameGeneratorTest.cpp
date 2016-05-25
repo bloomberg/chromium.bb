@@ -186,7 +186,7 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded)
     addNewData();
     OwnPtr<WebThread> thread = adoptPtr(Platform::current()->createThread("DecodeThread"));
     thread->getWebTaskRunner()->postTask(BLINK_FROM_HERE, threadSafeBind(&decodeThreadMain, m_generator, m_segmentReader));
-    thread.clear();
+    thread.reset();
     EXPECT_EQ(2, m_decodeRequestCount);
     EXPECT_EQ(1, m_decodersDestroyed);
 

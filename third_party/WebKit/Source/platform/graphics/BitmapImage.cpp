@@ -547,7 +547,7 @@ void BitmapImage::stopAnimation()
 {
     // This timer is used to animate all occurrences of this image.  Don't invalidate
     // the timer unless all renderers have stopped drawing.
-    m_frameTimer.clear();
+    m_frameTimer.reset();
 }
 
 void BitmapImage::resetAnimation()

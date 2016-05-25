@@ -68,8 +68,8 @@ public:
 
     ~GraphicsLayerTest() override
     {
-        m_graphicsLayer.clear();
-        m_layerTreeView.clear();
+        m_graphicsLayer.reset();
+        m_layerTreeView.reset();
     }
 
     WebLayerTreeView* layerTreeView() { return m_layerTreeView.get(); }

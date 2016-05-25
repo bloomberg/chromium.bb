@@ -306,7 +306,7 @@ qcms_profile* gOutputDeviceProfile = nullptr;
 // static
 void ImageDecoder::setColorProfileAndTransform(const char* iccData, unsigned iccLength, bool hasAlpha, bool useSRGB)
 {
-    m_sourceToOutputDeviceColorTransform.clear();
+    m_sourceToOutputDeviceColorTransform.reset();
 
     // Create the input profile
     OwnPtr<qcms_profile> inputProfile;

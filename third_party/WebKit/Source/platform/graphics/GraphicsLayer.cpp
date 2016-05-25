@@ -936,7 +936,7 @@ void GraphicsLayer::setDrawsContent(bool drawsContent)
     updateLayerIsDrawable();
 
     if (!drawsContent && m_paintController)
-        m_paintController.clear();
+        m_paintController.reset();
 }
 
 void GraphicsLayer::setContentsVisible(bool contentsVisible)
@@ -1114,7 +1114,7 @@ void GraphicsLayer::setContentsToImage(Image* image, RespectImageOrientationEnum
     } else {
         if (m_imageLayer) {
             unregisterContentsLayer(m_imageLayer->layer());
-            m_imageLayer.clear();
+            m_imageLayer.reset();
         }
     }
 

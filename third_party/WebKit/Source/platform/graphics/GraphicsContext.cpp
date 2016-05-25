@@ -181,7 +181,7 @@ void GraphicsContext::setShadow(const FloatSize& offset, float blur, const Color
         // to disable rendering of the source primitive.  When not shadow-only, we
         // clear the looper.
         if (shadowMode != DrawShadowOnly)
-            drawLooperBuilder.clear();
+            drawLooperBuilder.reset();
 
         setDrawLooper(std::move(drawLooperBuilder));
         return;

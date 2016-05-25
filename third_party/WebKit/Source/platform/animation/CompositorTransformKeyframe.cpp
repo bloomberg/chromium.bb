@@ -14,7 +14,7 @@ CompositorTransformKeyframe::CompositorTransformKeyframe(double time, PassOwnPtr
 
 CompositorTransformKeyframe::~CompositorTransformKeyframe()
 {
-    m_value.clear();
+    m_value.reset();
 }
 
 double CompositorTransformKeyframe::time() const

@@ -14,7 +14,7 @@ CompositorFilterKeyframe::CompositorFilterKeyframe(double time, PassOwnPtr<Compo
 
 CompositorFilterKeyframe::~CompositorFilterKeyframe()
 {
-    m_value.clear();
+    m_value.reset();
 }
 
 } // namespace blink

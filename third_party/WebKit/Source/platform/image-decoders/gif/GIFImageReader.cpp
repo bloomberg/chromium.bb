@@ -338,7 +338,7 @@ bool GIFFrameContext::decode(blink::FastSharedBufferReader* reader, blink::GIFIm
 
         m_lzwContext = adoptPtr(new GIFLZWContext(client, this));
         if (!m_lzwContext->prepareToDecode()) {
-            m_lzwContext.clear();
+            m_lzwContext.reset();
             return false;
         }
 
@@ -368,7 +368,7 @@ bool GIFFrameContext::decode(blink::FastSharedBufferReader* reader, blink::GIFIm
     // There will be no more decoding for this frame so it's time to cleanup.
     if (isComplete()) {
         *frameDecoded = true;
-        m_lzwContext.clear();
+        m_lzwContext.reset();
     }
     return true;
 }

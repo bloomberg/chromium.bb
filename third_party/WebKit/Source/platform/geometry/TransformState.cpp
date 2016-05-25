@@ -42,7 +42,7 @@ TransformState& TransformState::operator=(const TransformState& other)
     m_forceAccumulatingTransform = other.m_forceAccumulatingTransform;
     m_direction = other.m_direction;
 
-    m_accumulatedTransform.clear();
+    m_accumulatedTransform.reset();
 
     if (other.m_accumulatedTransform)
         m_accumulatedTransform = TransformationMatrix::create(*other.m_accumulatedTransform);

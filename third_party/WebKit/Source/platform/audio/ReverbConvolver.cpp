@@ -122,7 +122,7 @@ ReverbConvolver::ReverbConvolver(AudioChannel* impulseResponse, size_t renderSli
 ReverbConvolver::~ReverbConvolver()
 {
     // Wait for background thread to stop
-    m_backgroundThread.clear();
+    m_backgroundThread.reset();
 }
 
 void ReverbConvolver::processInBackground()

@@ -90,7 +90,7 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas(FallbackReason reason)
 
     if (m_currentFrame) {
         m_currentFrame->finishRecordingAsPicture()->playback(m_fallbackSurface->canvas());
-        m_currentFrame.clear();
+        m_currentFrame.reset();
     }
 
     if (m_imageBuffer) {

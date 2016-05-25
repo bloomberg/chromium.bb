@@ -248,7 +248,7 @@ public:
     bool interlaced() const { return m_interlaced; }
     void setInterlaced(bool interlaced) { m_interlaced = interlaced; }
 
-    void clearDecodeState() { m_lzwContext.clear(); }
+    void clearDecodeState() { m_lzwContext.reset(); }
     const GIFColorMap& localColorMap() const { return m_localColorMap; }
     GIFColorMap& localColorMap() { return m_localColorMap; }
 

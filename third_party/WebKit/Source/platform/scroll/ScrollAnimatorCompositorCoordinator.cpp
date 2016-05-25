@@ -36,7 +36,7 @@ ScrollAnimatorCompositorCoordinator::~ScrollAnimatorCompositorCoordinator()
 void ScrollAnimatorCompositorCoordinator::dispose()
 {
     m_compositorPlayer->setAnimationDelegate(nullptr);
-    m_compositorPlayer.clear();
+    m_compositorPlayer.reset();
 }
 
 void ScrollAnimatorCompositorCoordinator::resetAnimationState()

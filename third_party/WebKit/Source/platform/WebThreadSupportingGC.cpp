@@ -42,7 +42,7 @@ WebThreadSupportingGC::~WebThreadSupportingGC()
     if (ThreadState::current() && m_owningThread) {
         // WebThread's destructor blocks until all the tasks are processed.
         SafePointScope scope(BlinkGC::HeapPointersOnStack);
-        m_owningThread.clear();
+        m_owningThread.reset();
     }
 }
 
@@ -58,7 +58,7 @@ void WebThreadSupportingGC::shutdown()
     ThreadState::current()->releaseStaticPersistentNodes();
 #endif
     // Ensure no posted tasks will run from this point on.
-    m_gcTaskRunner.clear();
+    m_gcTaskRunner.reset();
 
     // Shutdown the thread (via its scheduler) only when the thread is created
     // and is owned by this instance.

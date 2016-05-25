@@ -54,7 +54,7 @@ void BMPImageDecoder::onSetData(SegmentReader* data)
 
 bool BMPImageDecoder::setFailed()
 {
-    m_reader.clear();
+    m_reader.reset();
     return ImageDecoder::setFailed();
 }
 
@@ -70,7 +70,7 @@ void BMPImageDecoder::decode(bool onlySize)
     // If we're done decoding the image, we don't need the BMPImageReader
     // anymore.  (If we failed, |m_reader| has already been cleared.)
     else if (!m_frameBufferCache.isEmpty() && (m_frameBufferCache.first().getStatus() == ImageFrame::FrameComplete))
-        m_reader.clear();
+        m_reader.reset();
 }
 
 bool BMPImageDecoder::decodeHelper(bool onlySize)

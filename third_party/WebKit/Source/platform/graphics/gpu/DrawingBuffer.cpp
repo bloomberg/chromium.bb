@@ -152,8 +152,8 @@ DrawingBuffer::~DrawingBuffer()
 {
     ASSERT(m_destructionInProgress);
     ASSERT(m_textureMailboxes.isEmpty());
-    m_layer.clear();
-    m_contextProvider.clear();
+    m_layer.reset();
+    m_contextProvider.reset();
 }
 
 void DrawingBuffer::markContentsChanged()

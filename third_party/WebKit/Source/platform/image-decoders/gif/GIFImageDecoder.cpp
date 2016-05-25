@@ -97,7 +97,7 @@ float GIFImageDecoder::frameDurationAtIndex(size_t index) const
 
 bool GIFImageDecoder::setFailed()
 {
-    m_reader.clear();
+    m_reader.reset();
     return ImageDecoder::setFailed();
 }
 
