@@ -1831,15 +1831,13 @@ def GetConfig():
       if board in _paladin_hwtest_boards:
         customizations.update(hw_tests=HWTestList.DefaultListCQ())
       if board in _paladin_moblab_hwtest_boards:
-        # TODO(kevcheng): Take out once moblab move is complete b/28933347.
-        # customizations.update(
-        #     hw_tests=[
-        #         config_lib.HWTestConfig(
-        #             constants.HWTEST_MOBLAB_QUICK_SUITE,
-        #             num=1, timeout=120*60,
-        #             pool=constants.HWTEST_PALADIN_POOL)
-        #     ])
-        customizations.update(hw_tests=[])
+        customizations.update(
+            hw_tests=[
+                config_lib.HWTestConfig(
+                    constants.HWTEST_MOBLAB_QUICK_SUITE,
+                    num=1, timeout=120*60,
+                    pool=constants.HWTEST_PALADIN_POOL)
+            ])
       if board in _paladin_cheets_hwtest_boards:
         customizations.update(
             hw_tests=[
