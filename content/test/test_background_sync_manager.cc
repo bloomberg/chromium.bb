@@ -76,7 +76,7 @@ void TestBackgroundSyncManager::GetDataFromBackend(
 
 void TestBackgroundSyncManager::DispatchSyncEvent(
     const std::string& tag,
-    const scoped_refptr<ServiceWorkerVersion>& active_version,
+    scoped_refptr<ServiceWorkerVersion> active_version,
     blink::mojom::BackgroundSyncEventLastChance last_chance,
     const ServiceWorkerVersion::StatusCallback& callback) {
   ASSERT_FALSE(dispatch_sync_callback_.is_null());

@@ -5,6 +5,7 @@ Register ServiceWorker for scope1
 http://127.0.0.1:8000/inspector/service-workers/resources/scope1/
 Update
 Push
+Sync
 Unregister
 Source
 service-worker-empty.js
@@ -21,6 +22,7 @@ Register ServiceWorker for scope2
 http://127.0.0.1:8000/inspector/service-workers/resources/scope1/
 Update
 Push
+Sync
 Unregister
 Source
 service-worker-empty.js
@@ -36,6 +38,7 @@ clear
 http://127.0.0.1:8000/inspector/service-workers/resources/scope2/
 Update
 Push
+Sync
 Unregister
 Source
 service-worker-empty.js
@@ -52,6 +55,7 @@ Unegister ServiceWorker for scope1
 http://127.0.0.1:8000/inspector/service-workers/resources/scope1/ - deleted
 Update
 Push
+Sync
 Unregister
 Source
 service-worker-empty.js
@@ -65,6 +69,7 @@ clear
 http://127.0.0.1:8000/inspector/service-workers/resources/scope2/
 Update
 Push
+Sync
 Unregister
 Source
 service-worker-empty.js

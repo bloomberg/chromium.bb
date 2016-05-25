@@ -62,6 +62,10 @@ class ServiceWorkerHandler : public DevToolsAgentHostClient,
   Response DeliverPushMessage(const std::string& origin,
                               const std::string& registration_id,
                               const std::string& data);
+  Response DispatchSyncEvent(const std::string& origin,
+                             const std::string& registration_id,
+                             const std::string& tag,
+                             bool last_chance);
   Response GetTargetInfo(const std::string& target_id,
                          scoped_refptr<TargetInfo>* target_info);
   Response ActivateTarget(const std::string& target_id);

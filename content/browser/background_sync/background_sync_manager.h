@@ -64,7 +64,7 @@ class CONTENT_EXPORT BackgroundSyncManager
       std::unique_ptr<ScopedVector<BackgroundSyncRegistration>>)>;
 
   static std::unique_ptr<BackgroundSyncManager> Create(
-      const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context);
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
   ~BackgroundSyncManager() override;
 
   // Stores the given background sync registration and adds it to the scheduling
@@ -102,9 +102,16 @@ class CONTENT_EXPORT BackgroundSyncManager
     clock_ = std::move(clock);
   }
 
+  // Called from DevTools
+  void EmulateDispatchSyncEvent(
+      const std::string& tag,
+      scoped_refptr<ServiceWorkerVersion> active_version,
+      bool last_chance,
+      const ServiceWorkerVersion::StatusCallback& callback);
+
  protected:
   explicit BackgroundSyncManager(
-      const scoped_refptr<ServiceWorkerContextWrapper>& context);
+      scoped_refptr<ServiceWorkerContextWrapper> context);
 
   // Init must be called before any public member function. Only call it once.
   void Init();
@@ -122,7 +129,7 @@ class CONTENT_EXPORT BackgroundSyncManager
           callback);
   virtual void DispatchSyncEvent(
       const std::string& tag,
-      const scoped_refptr<ServiceWorkerVersion>& active_version,
+      scoped_refptr<ServiceWorkerVersion> active_version,
       blink::mojom::BackgroundSyncEventLastChance last_chance,
       const ServiceWorkerVersion::StatusCallback& callback);
   virtual void ScheduleDelayedTask(const base::Closure& callback,
@@ -247,12 +254,12 @@ class CONTENT_EXPORT BackgroundSyncManager
   void FireReadyEventsAllEventsFiring(const base::Closure& callback);
 
   // Called when a sync event has completed.
-  void EventComplete(const scoped_refptr<ServiceWorkerRegistration>&
-                         service_worker_registration,
-                     int64_t service_worker_id,
-                     const std::string& tag,
-                     const base::Closure& callback,
-                     ServiceWorkerStatusCode status_code);
+  void EventComplete(
+      scoped_refptr<ServiceWorkerRegistration> service_worker_registration,
+      int64_t service_worker_id,
+      const std::string& tag,
+      const base::Closure& callback,
+      ServiceWorkerStatusCode status_code);
   void EventCompleteImpl(int64_t service_worker_id,
                          const std::string& tag,
                          ServiceWorkerStatusCode status_code,

@@ -51,7 +51,7 @@ void RecordFailureAndPostError(
 
 // Returns nullptr if the browser context cannot be accessed for any reason.
 BrowserContext* GetBrowserContextOnUIThread(
-    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context) {
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!service_worker_context)
@@ -66,11 +66,11 @@ BrowserContext* GetBrowserContextOnUIThread(
 
 // Returns nullptr if the controller cannot be accessed for any reason.
 BackgroundSyncController* GetBackgroundSyncControllerOnUIThread(
-    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context) {
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserContext* browser_context =
-      GetBrowserContextOnUIThread(service_worker_context);
+      GetBrowserContextOnUIThread(std::move(service_worker_context));
   if (!browser_context)
     return nullptr;
 
@@ -80,12 +80,12 @@ BackgroundSyncController* GetBackgroundSyncControllerOnUIThread(
 // Returns PermissionStatus::DENIED if the permission manager cannot be
 // accessed for any reason.
 blink::mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
-    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context,
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserContext* browser_context =
-      GetBrowserContextOnUIThread(service_worker_context);
+      GetBrowserContextOnUIThread(std::move(service_worker_context));
   if (!browser_context)
     return blink::mojom::PermissionStatus::DENIED;
 
@@ -100,12 +100,12 @@ blink::mojom::PermissionStatus GetBackgroundSyncPermissionOnUIThread(
 }
 
 void NotifyBackgroundSyncRegisteredOnUIThread(
-    const scoped_refptr<ServiceWorkerContextWrapper>& sw_context_wrapper,
+    scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
     const GURL& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BackgroundSyncController* background_sync_controller =
-      GetBackgroundSyncControllerOnUIThread(sw_context_wrapper);
+      GetBackgroundSyncControllerOnUIThread(std::move(sw_context_wrapper));
 
   if (!background_sync_controller)
     return;
@@ -114,7 +114,7 @@ void NotifyBackgroundSyncRegisteredOnUIThread(
 }
 
 void RunInBackgroundOnUIThread(
-    const scoped_refptr<ServiceWorkerContextWrapper>& sw_context_wrapper,
+    scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
     bool enabled,
     int64_t min_ms) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -127,7 +127,7 @@ void RunInBackgroundOnUIThread(
 }
 
 std::unique_ptr<BackgroundSyncParameters> GetControllerParameters(
-    const scoped_refptr<ServiceWorkerContextWrapper>& sw_context_wrapper,
+    scoped_refptr<ServiceWorkerContextWrapper> sw_context_wrapper,
     std::unique_ptr<BackgroundSyncParameters> parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -145,11 +145,10 @@ std::unique_ptr<BackgroundSyncParameters> GetControllerParameters(
   return parameters;
 }
 
-void OnSyncEventFinished(
-    const scoped_refptr<ServiceWorkerVersion>& active_version,
-    int request_id,
-    const ServiceWorkerVersion::StatusCallback& callback,
-    blink::mojom::ServiceWorkerEventStatus status) {
+void OnSyncEventFinished(scoped_refptr<ServiceWorkerVersion> active_version,
+                         int request_id,
+                         const ServiceWorkerVersion::StatusCallback& callback,
+                         blink::mojom::ServiceWorkerEventStatus status) {
   if (!active_version->FinishRequest(
           request_id,
           status == blink::mojom::ServiceWorkerEventStatus::COMPLETED)) {
@@ -174,7 +173,7 @@ BackgroundSyncManager::BackgroundSyncRegistrations::
 
 // static
 std::unique_ptr<BackgroundSyncManager> BackgroundSyncManager::Create(
-    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context) {
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BackgroundSyncManager* sync_manager =
@@ -259,8 +258,22 @@ void BackgroundSyncManager::SetMaxSyncAttemptsForTesting(int max_attempts) {
       weak_ptr_factory_.GetWeakPtr(), max_attempts, MakeEmptyCompletion()));
 }
 
+void BackgroundSyncManager::EmulateDispatchSyncEvent(
+    const std::string& tag,
+    scoped_refptr<ServiceWorkerVersion> active_version,
+    bool last_chance,
+    const ServiceWorkerVersion::StatusCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DispatchSyncEvent(
+      tag, std::move(active_version),
+      last_chance
+          ? blink::mojom::BackgroundSyncEventLastChance::IS_LAST_CHANCE
+          : blink::mojom::BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE,
+      callback);
+}
+
 BackgroundSyncManager::BackgroundSyncManager(
-    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : service_worker_context_(service_worker_context),
       parameters_(new BackgroundSyncParameters()),
       disabled_(false),
@@ -736,7 +749,7 @@ void BackgroundSyncManager::GetDataFromBackend(
 
 void BackgroundSyncManager::DispatchSyncEvent(
     const std::string& tag,
-    const scoped_refptr<ServiceWorkerVersion>& active_version,
+    scoped_refptr<ServiceWorkerVersion> active_version,
     blink::mojom::BackgroundSyncEventLastChance last_chance,
     const ServiceWorkerVersion::StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -761,9 +774,9 @@ void BackgroundSyncManager::DispatchSyncEvent(
           ->GetMojoServiceForRequest<blink::mojom::BackgroundSyncServiceClient>(
               request_id);
 
-  client->Sync(
-      tag, last_chance,
-      base::Bind(&OnSyncEventFinished, active_version, request_id, callback));
+  client->Sync(tag, last_chance,
+               base::Bind(&OnSyncEventFinished, std::move(active_version),
+                          request_id, callback));
 }
 
 void BackgroundSyncManager::ScheduleDelayedTask(const base::Closure& callback,
@@ -1010,7 +1023,7 @@ void BackgroundSyncManager::FireReadyEventsAllEventsFiring(
 // |service_worker_registration| is just to keep the registration alive
 // while the event is firing.
 void BackgroundSyncManager::EventComplete(
-    const scoped_refptr<ServiceWorkerRegistration>& service_worker_registration,
+    scoped_refptr<ServiceWorkerRegistration> service_worker_registration,
     int64_t service_worker_id,
     const std::string& tag,
     const base::Closure& callback,

@@ -106,7 +106,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   // callback instead.
   void DispatchSyncEvent(
       const std::string& tag,
-      const scoped_refptr<ServiceWorkerVersion>& active_version,
+      scoped_refptr<ServiceWorkerVersion> active_version,
       blink::mojom::BackgroundSyncEventLastChance last_chance,
       const ServiceWorkerVersion::StatusCallback& callback) override;
 
