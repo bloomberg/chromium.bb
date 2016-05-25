@@ -15,8 +15,6 @@ component("mus") {
   sources = [
     "aura_init.cc",
     "aura_init.h",
-    "display_converter.cc",
-    "display_converter.h",
     "display_list.cc",
     "display_list.h",
     "input_method_mus.cc",

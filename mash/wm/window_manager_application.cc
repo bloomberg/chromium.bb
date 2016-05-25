@@ -24,7 +24,6 @@
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "ui/events/event.h"
 #include "ui/views/mus/aura_init.h"
-#include "ui/views/mus/display_converter.h"
 #include "ui/views/mus/screen_mus.h"
 
 namespace mash {
