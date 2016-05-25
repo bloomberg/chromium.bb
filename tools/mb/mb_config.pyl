@@ -714,7 +714,7 @@
       'linux_chromium_archive_rel_ng': 'noswarming_gn_release_bot',
       'linux_chromium_asan_rel_ng': 'swarming_asan_lsan_gyp_release_trybot',
       'linux_chromium_asan_variable': 'findit',
-      'linux_chromium_browser_side_navigation_rel': 'gyp_release_trybot',
+      'linux_chromium_browser_side_navigation_rel': 'gn_release_trybot',
       'linux_chromium_cast_variable': 'findit',
       'linux_chromium_cfi_rel_ng': 'gn_cfi_release_static_dcheck_always_on',
       'linux_chromium_chromeos_asan_rel_ng':
@@ -1340,10 +1340,6 @@
 
     'gyp_release_bot_minimal_symbols_x86': [
       'gyp', 'release_bot_minimal_symbols', 'x86'
-    ],
-
-    'gyp_release_trybot': [
-      'gyp', 'release_trybot',
     ],
 
     'gyp_release_trybot_x64': [
