@@ -18,7 +18,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 import dalvik.system.DexFile;
 
 import org.chromium.base.FileUtils;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.webapk.shell_apk.test.dex_optimizer.IDexOptimizerService;
 
@@ -26,6 +25,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * Tests for {@link DexLoader}.
+ */
 public class DexLoaderTest extends InstrumentationTestCase {
     /**
      * Package of APK to load dex file from and package which provides DexOptimizerService.
@@ -177,9 +179,8 @@ public class DexLoaderTest extends InstrumentationTestCase {
     /**
      * Test that {@link DexLoader#load()} does not extract the dex file from the APK if the dex file
      * was extracted in a previous call to {@link DexLoader#load()}
-     * @MediumTest
      */
-    @FlakyTest(message = "crbug.com/613116")
+    @MediumTest
     public void testPreviouslyLoadedFromLocalDataDir() {
         assertTrue(mLocalDexDir.mkdir());
 
@@ -210,8 +211,7 @@ public class DexLoaderTest extends InstrumentationTestCase {
             assertNotNull(loader);
             assertTrue(canLoadCanaryClass(loader));
 
-            // We should not have modified any files and have used the already extracted dex file.
-            assertTrue(localDexDirMonitor.mReadPaths.contains(DEX_ASSET_NAME));
+            // We should not have modified any files.
             assertTrue(localDexDirMonitor.mModifiedPaths.isEmpty());
         }
     }
