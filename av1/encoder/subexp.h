@@ -29,7 +29,7 @@ int av1_prob_diff_update_savings_search(const unsigned int *ct, aom_prob oldp,
                                         int probwt);
 
 int av1_prob_diff_update_savings_search_model(const unsigned int *ct,
-                                              const aom_prob *oldp,
+                                              const aom_prob oldp,
                                               aom_prob *bestp, aom_prob upd,
                                               int stepsize, int probwt);
 
