@@ -12,46 +12,39 @@ from telemetry import story
 from devil.android.sdk import intent # pylint: disable=import-error
 from devil.android.sdk import keyevent # pylint: disable=import-error
 
+from page_sets import top_10_mobile
+
 
 DUMP_WAIT_TIME = 3
 
-URL_LIST = [
-    'http://google.com',
-    'http://vimeo.com',
-    'http://yahoo.com',
-    'http://baidu.com',
-    'http://cnn.com',
-    'http://yandex.ru',
-    'http://yahoo.co.jp',
-    'http://amazon.com',
-    'http://ebay.com',
-    'http://bing.com',
-]
 
-
-class MemoryHealthPage(page_module.Page):
-  """Abstract page class for measuring memory."""
+class MemoryMeasurementPage(page_module.Page):
+  """Abstract class for measuring memory on a story unit."""
 
   _PHASE = NotImplemented
 
   def __init__(self, story_set, name, url):
-    super(MemoryHealthPage, self).__init__(
+    super(MemoryMeasurementPage, self).__init__(
         page_set=story_set, name=name, url=url,
         shared_page_state_class=shared_page_state.SharedMobilePageState,
         grouping_keys={'phase': self._PHASE})
 
   def _TakeMemoryMeasurement(self, action_runner):
+    platform = action_runner.tab.browser.platform
     action_runner.Wait(1)  # See crbug.com/540022#c17.
+    if not platform.tracing_controller.is_tracing_running:
+      logging.warning('Tracing is off. No memory dumps are being recorded.')
+      return  # Tracing is not running, e.g., when recording a WPR archive.
     with action_runner.CreateInteraction(self._PHASE):
       action_runner.Wait(DUMP_WAIT_TIME)
       action_runner.ForceGarbageCollection()
-      action_runner.tab.browser.platform.FlushEntireSystemCache()
+      platform.FlushEntireSystemCache()
       action_runner.Wait(DUMP_WAIT_TIME)
       if not action_runner.tab.browser.DumpMemory():
         logging.error('Unable to get a memory dump for %s.', self.name)
 
 
-class ForegroundPage(MemoryHealthPage):
+class ForegroundPage(MemoryMeasurementPage):
   """Take a measurement after loading a regular webpage."""
 
   _PHASE = 'foreground'
@@ -64,7 +57,7 @@ class ForegroundPage(MemoryHealthPage):
     self._TakeMemoryMeasurement(action_runner)
 
 
-class BackgroundPage(MemoryHealthPage):
+class BackgroundPage(MemoryMeasurementPage):
   """Take a measurement while Chrome is in the background."""
 
   _PHASE = 'background'
@@ -89,15 +82,15 @@ class BackgroundPage(MemoryHealthPage):
     android_platform.android_action_runner.InputKeyEvent(keyevent.KEYCODE_BACK)
 
 
-class MemoryHealthStory(story.StorySet):
-  """User story for the Memory Health Plan."""
+class MemoryTop10Mobile(story.StorySet):
+  """User story to measure foreground/background memory in top 10 mobile."""
 
   def __init__(self):
-    super(MemoryHealthStory, self).__init__(
-        archive_data_file='data/memory_health_plan.json',
+    super(MemoryTop10Mobile, self).__init__(
+        archive_data_file='data/memory_top_10_mobile.json',
         cloud_storage_bucket=story.PARTNER_BUCKET)
 
-    for url in URL_LIST:
+    for url in top_10_mobile.URL_LIST:
       # We name pages so their foreground/background counterparts are easy
       # to identify. For example 'http://google.com' becomes
       # 'http_google_com' and 'after_http_google_com' respectively.

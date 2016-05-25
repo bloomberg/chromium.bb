@@ -1,0 +1,27 @@
+{
+    "description": "Describes the Web Page Replay archives for a story set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "memory_top_10_mobile_000.wpr": [
+            "after_http_en_m_wikipedia_org_wiki_Science", 
+            "after_https_mobile_twitter_com_justinbieber_skip_interstitial_true", 
+            "after_http_yandex_ru_touchsearch_text_science", 
+            "https_www_google_com_hl_en_q_science", 
+            "http_search_yahoo_com_search__ylt_p_google", 
+            "after_http_m_youtube_com_results_q_science", 
+            "https_mobile_twitter_com_justinbieber_skip_interstitial_true", 
+            "https_m_facebook_com_rihanna", 
+            "after_http_www_amazon_com_gp_aw_s_k_nexus", 
+            "after_http_search_yahoo_com_search__ylt_p_google", 
+            "after_https_www_google_com_hl_en_q_science", 
+            "http_en_m_wikipedia_org_wiki_Science", 
+            "http_www_baidu_com_s_word_google", 
+            "after_http_www_baidu_com_s_word_google", 
+            "after_https_m_facebook_com_rihanna", 
+            "http_www_amazon_com_gp_aw_s_k_nexus", 
+            "after_http_m_taobao_com_channel_act_mobile_20131111_women_html", 
+            "http_yandex_ru_touchsearch_text_science", 
+            "http_m_youtube_com_results_q_science", 
+            "http_m_taobao_com_channel_act_mobile_20131111_women_html"
+        ]
+    }
+}

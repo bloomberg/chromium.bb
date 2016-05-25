@@ -59,16 +59,21 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
     return tbm_options
 
 
-# TODO(crbug.com/606361): Remove benchmark when replaced by the TBMv2 version.
-@benchmark.Disabled('all')
-class MemoryHealthPlan(_MemoryInfra):
-  """Timeline based benchmark for the Memory Health Plan."""
-  page_set = page_sets.MemoryHealthStory
+# TODO(bashi): Workaround for http://crbug.com/532075.
+# @benchmark.Enabled('android') shouldn't be needed.
+@benchmark.Enabled('android')
+class MemoryBenchmarkTop10Mobile(_MemoryInfra):
+  """Measure foreground/background memory on top 10 mobile page set.
+
+  This metric provides memory measurements for the System Health Plan of
+  Chrome on Android.
+  """
+  page_set = page_sets.MemoryTop10Mobile
   options = {'pageset_repeat': 5}
 
   @classmethod
   def Name(cls):
-    return 'memory.memory_health_plan'
+    return 'memory.top_10_mobile'
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
@@ -77,9 +82,11 @@ class MemoryHealthPlan(_MemoryInfra):
         'com.google.android.deskclock')
 
 
+# TODO(bashi): Workaround for http://crbug.com/532075.
+# @benchmark.Enabled('android') shouldn't be needed.
 @benchmark.Enabled('android')
-class TBMv2MemoryBenchmarkTop10Mobile(MemoryHealthPlan):
-  """Timeline based benchmark for the Memory Health Plan based on TBMv2.
+class TBMv2MemoryBenchmarkTop10Mobile(MemoryBenchmarkTop10Mobile):
+  """Measure foreground/background memory on top 10 mobile page set (TBMv2).
 
   This is a temporary benchmark to compare the new TBMv2 memory metric
   (memory_metric.html) with the existing TBMv1 one (memory_timeline.py). Once
