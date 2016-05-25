@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplay) {
   set_info_function->set_has_callback(true);
 
   EXPECT_EQ(
-      "Function available only on ChromeOS.",
+      SystemDisplayFunction::kCrosOnlyError,
       api_test_utils::RunFunctionAndReturnError(
           set_info_function.get(), "[\"display_id\", {}]", browser_context()));
 
@@ -197,7 +197,7 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, SetDisplayNotKioskEnabled) {
   set_info_function->set_has_callback(true);
 
   EXPECT_EQ(
-      "The extension needs to be kiosk enabled to use the function.",
+      SystemDisplayFunction::kKioskOnlyError,
       api_test_utils::RunFunctionAndReturnError(
           set_info_function.get(), "[\"display_id\", {}]", browser_context()));
 
@@ -267,7 +267,8 @@ IN_PROC_BROWSER_TEST_F(SystemDisplayApiTest, EnableUnifiedDesktop) {
                                       "    \"background\": {\n"
                                       "      \"scripts\": [\"background.js\"]\n"
                                       "    }\n"
-                                      "  }\n"
+                                      "  },\n"
+                                      "  \"kiosk_enabled\": true\n"
                                       "}"));
   scoped_refptr<Extension> test_extension(
       api_test_utils::CreateExtension(test_extension_value.get()));

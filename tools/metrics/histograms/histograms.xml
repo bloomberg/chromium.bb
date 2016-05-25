@@ -71578,6 +71578,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1129" label="BLUETOOTHLOWENERGY_REMOVESERVICE"/>
   <int value="1130" label="AUTOFILLPRIVATE_GETADDRESSLIST"/>
   <int value="1131" label="AUTOFILLPRIVATE_GETCREDITCARDLIST"/>
+  <int value="1132" label="SYSTEM_DISPLAY_OVERSCANCALIBRATIONSTART"/>
+  <int value="1133" label="SYSTEM_DISPLAY_OVERSCANCALIBRATIONADJUST"/>
+  <int value="1134" label="SYSTEM_DISPLAY_OVERSCANCALIBRATIONRESET"/>
+  <int value="1135" label="SYSTEM_DISPLAY_OVERSCANCALIBRATIONCOMPLETE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

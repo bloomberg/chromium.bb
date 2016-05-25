@@ -126,6 +126,42 @@ chrome.system.display.setDisplayProperties = function(id, info, callback) {};
 chrome.system.display.enableUnifiedDesktop = function(enabled) {};
 
 /**
+ * Starts overscan calibration for a display. This will show an overlay on the
+ * screen indicating the current overscan insets.
+ * @param {string} id The display's unique identifier.
+ * @see https://developer.chrome.com/extensions/system.display#method-overscanCalibrationStart
+ */
+chrome.system.display.overscanCalibrationStart = function(id) {};
+
+/**
+ * Adjusts the current overscan insets for a display. Typically this should
+ * etiher move the display along an axis (e.g. left+right have the same value)
+ * or scale it along an axis (e.g. top+bottom have opposite values). Each Adjust
+ * call is cumulative with previous calls since Start.
+ * @param {string} id The display's unique identifier.
+ * @param {!chrome.system.display.Insets} delta The amount to change the
+ *     overscan insets.
+ * @see https://developer.chrome.com/extensions/system.display#method-overscanCalibrationAdjust
+ */
+chrome.system.display.overscanCalibrationAdjust = function(id, delta) {};
+
+/**
+ * Resets the overscan insets for a display to the last saved value (i.e before
+ * Start was called).
+ * @param {string} id The display's unique identifier.
+ * @see https://developer.chrome.com/extensions/system.display#method-overscanCalibrationReset
+ */
+chrome.system.display.overscanCalibrationReset = function(id) {};
+
+/**
+ * Complete overscan adjustments for a display  by saving the current values and
+ * hiding the overlay.
+ * @param {string} id The display's unique identifier.
+ * @see https://developer.chrome.com/extensions/system.display#method-overscanCalibrationComplete
+ */
+chrome.system.display.overscanCalibrationComplete = function(id) {};
+
+/**
  * Fired when anything changes to the display configuration.
  * @type {!ChromeEvent}
  * @see https://developer.chrome.com/extensions/system.display#event-onDisplayChanged

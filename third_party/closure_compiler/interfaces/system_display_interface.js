@@ -47,6 +47,42 @@ SystemDisplay.prototype = {
    * @see https://developer.chrome.com/extensions/system.display#method-enableUnifiedDesktop
    */
   enableUnifiedDesktop: assertNotReached,
+
+  /**
+   * Starts overscan calibration for a display. This will show an overlay on the
+   * screen indicating the current overscan insets.
+   * @param {string} id The display's unique identifier.
+   * @see https://developer.chrome.com/extensions/system.display#method-overscanCalibrationStart
+   */
+  overscanCalibrationStart: assertNotReached,
+
+  /**
+   * Adjusts the current overscan insets for a display. Typically this should
+   * etiher move the display along an axis (e.g. left+right have the same value)
+   * or scale it along an axis (e.g. top+bottom have opposite values). Each
+   * Adjust call is cumulative with previous calls since Start.
+   * @param {string} id The display's unique identifier.
+   * @param {!chrome.system.display.Insets} delta The amount to change the
+   *     overscan insets.
+   * @see https://developer.chrome.com/extensions/system.display#method-overscanCalibrationAdjust
+   */
+  overscanCalibrationAdjust: assertNotReached,
+
+  /**
+   * Resets the overscan insets for a display to the last saved value (i.e
+   * before Start was called).
+   * @param {string} id The display's unique identifier.
+   * @see https://developer.chrome.com/extensions/system.display#method-overscanCalibrationReset
+   */
+  overscanCalibrationReset: assertNotReached,
+
+  /**
+   * Complete overscan adjustments for a display  by saving the current values
+   * and hiding the overlay.
+   * @param {string} id The display's unique identifier.
+   * @see https://developer.chrome.com/extensions/system.display#method-overscanCalibrationComplete
+   */
+  overscanCalibrationComplete: assertNotReached,
 };
 
 /**

@@ -21,6 +21,22 @@ using api::system_display::DisplayUnitInfo;
 
 namespace SetDisplayProperties = api::system_display::SetDisplayProperties;
 
+const char SystemDisplayFunction::kCrosOnlyError[] =
+    "Function available only on ChromeOS.";
+const char SystemDisplayFunction::kKioskOnlyError[] =
+    "Only kiosk enabled extensions are allowed to use this function.";
+
+bool SystemDisplayFunction::CheckValidExtension() {
+  if (!extension())
+    return true;
+#if defined(OS_CHROMEOS)
+  if (KioskModeInfo::IsKioskEnabled(extension()))
+    return true;
+#endif
+  SetError(kKioskOnlyError);
+  return false;
+}
+
 bool SystemDisplayGetInfoFunction::RunSync() {
   DisplayUnitInfoList all_displays_info =
       DisplayInfoProvider::Get()->GetAllDisplaysInfo();
@@ -30,13 +46,11 @@ bool SystemDisplayGetInfoFunction::RunSync() {
 
 bool SystemDisplaySetDisplayPropertiesFunction::RunSync() {
 #if !defined(OS_CHROMEOS)
-  SetError("Function available only on ChromeOS.");
+  SetError(kCrosOnlyError);
   return false;
 #else
-  if (extension() && !KioskModeInfo::IsKioskEnabled(extension())) {
-    SetError("The extension needs to be kiosk enabled to use the function.");
+  if (!CheckValidExtension())
     return false;
-  }
   std::string error;
   std::unique_ptr<SetDisplayProperties::Params> params(
       SetDisplayProperties::Params::Create(*args_));
@@ -50,12 +64,89 @@ bool SystemDisplaySetDisplayPropertiesFunction::RunSync() {
 
 bool SystemDisplayEnableUnifiedDesktopFunction::RunSync() {
 #if !defined(OS_CHROMEOS)
-  SetError("Function available only on ChromeOS.");
+  SetError(kCrosOnlyError);
   return false;
 #else
+  if (!CheckValidExtension())
+    return false;
   std::unique_ptr<api::system_display::EnableUnifiedDesktop::Params> params(
       api::system_display::EnableUnifiedDesktop::Params::Create(*args_));
   DisplayInfoProvider::Get()->EnableUnifiedDesktop(params->enabled);
+  return true;
+#endif
+}
+
+bool SystemDisplayOverscanCalibrationStartFunction::RunSync() {
+#if !defined(OS_CHROMEOS)
+  SetError(kCrosOnlyError);
+  return false;
+#else
+  if (!CheckValidExtension())
+    return false;
+  std::unique_ptr<api::system_display::OverscanCalibrationStart::Params> params(
+      api::system_display::OverscanCalibrationStart::Params::Create(*args_));
+  if (!DisplayInfoProvider::Get()->OverscanCalibrationStart(params->id)) {
+    SetError("Invalid display ID: " + params->id);
+    return false;
+  }
+  return true;
+#endif
+}
+
+bool SystemDisplayOverscanCalibrationAdjustFunction::RunSync() {
+#if !defined(OS_CHROMEOS)
+  SetError(kCrosOnlyError);
+  return false;
+#else
+  if (!CheckValidExtension())
+    return false;
+  std::unique_ptr<api::system_display::OverscanCalibrationAdjust::Params>
+      params(api::system_display::OverscanCalibrationAdjust::Params::Create(
+          *args_));
+  if (!params) {
+    SetError("Invalid parameters");
+    return false;
+  }
+  if (!DisplayInfoProvider::Get()->OverscanCalibrationAdjust(params->id,
+                                                             params->delta)) {
+    SetError("Calibration not started for display ID: " + params->id);
+    return false;
+  }
+  return true;
+#endif
+}
+
+bool SystemDisplayOverscanCalibrationResetFunction::RunSync() {
+#if !defined(OS_CHROMEOS)
+  SetError(kCrosOnlyError);
+  return false;
+#else
+  if (!CheckValidExtension())
+    return false;
+  std::unique_ptr<api::system_display::OverscanCalibrationReset::Params> params(
+      api::system_display::OverscanCalibrationReset::Params::Create(*args_));
+  if (!DisplayInfoProvider::Get()->OverscanCalibrationReset(params->id)) {
+    SetError("Calibration not started for display ID: " + params->id);
+    return false;
+  }
+  return true;
+#endif
+}
+
+bool SystemDisplayOverscanCalibrationCompleteFunction::RunSync() {
+#if !defined(OS_CHROMEOS)
+  SetError(kCrosOnlyError);
+  return false;
+#else
+  if (!CheckValidExtension())
+    return false;
+  std::unique_ptr<api::system_display::OverscanCalibrationComplete::Params>
+      params(api::system_display::OverscanCalibrationComplete::Params::Create(
+          *args_));
+  if (!DisplayInfoProvider::Get()->OverscanCalibrationComplete(params->id)) {
+    SetError("Calibration not started for display ID: " + params->id);
+    return false;
+  }
   return true;
 #endif
 }

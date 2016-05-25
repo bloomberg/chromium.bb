@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
+#include "chrome/browser/chromeos/display/overscan_calibrator.h"
 #include "extensions/common/api/system_display.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_layout.h"
@@ -29,6 +30,15 @@ namespace {
 
 // Maximum allowed bounds origin absolute value.
 const int kMaxBoundsOrigin = 200 * 1000;
+
+// Gets the display with the provided string id.
+display::Display GetDisplay(const std::string& display_id_str) {
+  int64_t display_id;
+  if (!base::StringToInt64(display_id_str, &display_id))
+    return display::Display();
+  return ash::Shell::GetInstance()->display_manager()->GetDisplayForId(
+      display_id);
+}
 
 // Checks if the given integer value is valid display rotation in degrees.
 bool IsValidRotationValue(int rotation) {
@@ -195,10 +205,8 @@ bool ValidateParamsForDisplay(const DisplayProperties& info,
   // If mirroring source id is set, a display with the given id should exist,
   // and if should not be the same as the target display's id.
   if (info.mirroring_source_id && !info.mirroring_source_id->empty()) {
-    int64_t mirroring_id;
-    if (!base::StringToInt64(*info.mirroring_source_id, &mirroring_id) ||
-        display_manager->GetDisplayForId(mirroring_id).id() ==
-            display::Display::kInvalidDisplayID) {
+    int64_t mirroring_id = GetDisplay(*info.mirroring_source_id).id();
+    if (mirroring_id == display::Display::kInvalidDisplayID) {
       *error = "Display " + *info.mirroring_source_id + " not found.";
       return false;
     }
@@ -311,17 +319,6 @@ bool ValidateParamsForDisplay(const DisplayProperties& info,
   return true;
 }
 
-// Gets the display with the provided string id.
-display::Display GetTargetDisplay(const std::string& display_id_str,
-                                  ash::DisplayManager* manager) {
-  int64_t display_id;
-  if (!base::StringToInt64(display_id_str, &display_id)) {
-    // This should return invalid display.
-    return display::Display();
-  }
-  return manager->GetDisplayForId(display_id);
-}
-
 extensions::api::system_display::DisplayMode GetDisplayMode(
     ash::DisplayManager* display_manager,
     const ash::DisplayInfo& display_info,
@@ -359,8 +356,7 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
   ash::DisplayConfigurationController* display_configuration_controller =
       ash::Shell::GetInstance()->display_configuration_controller();
 
-  const display::Display target =
-      GetTargetDisplay(display_id_str, display_manager);
+  const display::Display target = GetDisplay(display_id_str);
 
   if (target.id() == display::Display::kInvalidDisplayID) {
     *error = "Display not found.";
@@ -480,6 +476,62 @@ DisplayUnitInfoList DisplayInfoProviderChromeOS::GetAllDisplaysInfo() {
     all_displays.push_back(std::move(unit));
   }
   return all_displays;
+}
+
+bool DisplayInfoProviderChromeOS::OverscanCalibrationStart(
+    const std::string& id) {
+  VLOG(1) << "OverscanCalibrationStart: " << id;
+  const display::Display display = GetDisplay(id);
+  if (display.id() == display::Display::kInvalidDisplayID)
+    return false;
+  auto insets =
+      ash::Shell::GetInstance()->window_tree_host_manager()->GetOverscanInsets(
+          display.id());
+  overscan_calibrators_[id].reset(
+      new chromeos::OverscanCalibrator(display, insets));
+  return true;
+}
+
+bool DisplayInfoProviderChromeOS::OverscanCalibrationAdjust(
+    const std::string& id,
+    const api::system_display::Insets& delta) {
+  VLOG(1) << "OverscanCalibrationAdjust: " << id;
+  chromeos::OverscanCalibrator* calibrator = GetCalibrator(id);
+  if (!calibrator)
+    return false;
+  gfx::Insets insets = calibrator->insets();
+  insets += gfx::Insets(delta.top, delta.left, delta.bottom, delta.right);
+  calibrator->UpdateInsets(insets);
+  return true;
+}
+
+bool DisplayInfoProviderChromeOS::OverscanCalibrationReset(
+    const std::string& id) {
+  VLOG(1) << "OverscanCalibrationReset: " << id;
+  chromeos::OverscanCalibrator* calibrator = GetCalibrator(id);
+  if (!calibrator)
+    return false;
+  calibrator->Reset();
+  return true;
+}
+
+bool DisplayInfoProviderChromeOS::OverscanCalibrationComplete(
+    const std::string& id) {
+  VLOG(1) << "OverscanCalibrationComplete: " << id;
+  chromeos::OverscanCalibrator* calibrator = GetCalibrator(id);
+  if (!calibrator)
+    return false;
+  calibrator->Commit();
+  overscan_calibrators_[id].reset();
+  return true;
+}
+
+chromeos::OverscanCalibrator* DisplayInfoProviderChromeOS::GetCalibrator(
+    const std::string& id) {
+  auto iter = overscan_calibrators_.find(id);
+  if (iter == overscan_calibrators_.end())
+    return nullptr;
+  return iter->second.get();
 }
 
 // static

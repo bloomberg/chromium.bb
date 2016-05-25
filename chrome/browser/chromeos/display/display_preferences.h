@@ -13,7 +13,6 @@
 class PrefRegistrySimple;
 
 namespace gfx {
-class Display;
 class Insets;
 }
 

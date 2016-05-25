@@ -22,6 +22,7 @@ namespace api {
 namespace system_display {
 struct DisplayProperties;
 struct DisplayUnitInfo;
+struct Insets;
 }
 }
 
@@ -51,6 +52,15 @@ class DisplayInfoProvider {
 
   // Get display information.
   virtual DisplayUnitInfoList GetAllDisplaysInfo();
+
+  // Implement overscan calbiration methods. See system_display.idl. These
+  // return false if |id| is invalid.
+  virtual bool OverscanCalibrationStart(const std::string& id);
+  virtual bool OverscanCalibrationAdjust(
+      const std::string& id,
+      const api::system_display::Insets& delta);
+  virtual bool OverscanCalibrationReset(const std::string& id);
+  virtual bool OverscanCalibrationComplete(const std::string& id);
 
  protected:
   DisplayInfoProvider();

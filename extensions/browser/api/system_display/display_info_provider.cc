@@ -89,6 +89,24 @@ DisplayUnitInfoList DisplayInfoProvider::GetAllDisplaysInfo() {
   return all_displays;
 }
 
+bool DisplayInfoProvider::OverscanCalibrationStart(const std::string& id) {
+  return false;
+}
+
+bool DisplayInfoProvider::OverscanCalibrationAdjust(
+    const std::string& id,
+    const api::system_display::Insets& delta) {
+  return false;
+}
+
+bool DisplayInfoProvider::OverscanCalibrationReset(const std::string& id) {
+  return false;
+}
+
+bool DisplayInfoProvider::OverscanCalibrationComplete(const std::string& id) {
+  return false;
+}
+
 DisplayInfoProvider::DisplayInfoProvider() {
 }
 
