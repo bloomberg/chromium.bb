@@ -187,7 +187,9 @@ class RasterBufferProviderPerfTestBase {
   enum NamedTaskSet { REQUIRED_FOR_ACTIVATION, REQUIRED_FOR_DRAW, ALL };
 
   RasterBufferProviderPerfTestBase()
-      : context_provider_(make_scoped_refptr(new PerfContextProvider)),
+      : compositor_context_provider_(
+            make_scoped_refptr(new PerfContextProvider)),
+        worker_context_provider_(make_scoped_refptr(new PerfContextProvider)),
         task_runner_(new base::TestSimpleTaskRunner),
         task_graph_runner_(new SynchronousTaskGraphRunner),
         timer_(kWarmupRuns,
@@ -248,7 +250,8 @@ class RasterBufferProviderPerfTestBase {
   }
 
  protected:
-  scoped_refptr<ContextProvider> context_provider_;
+  scoped_refptr<ContextProvider> compositor_context_provider_;
+  scoped_refptr<ContextProvider> worker_context_provider_;
   FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
   std::unique_ptr<ResourceProvider> resource_provider_;
@@ -272,16 +275,18 @@ class RasterBufferProviderPerfTest
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
         Create3dOutputSurfaceAndResourceProvider();
-        raster_buffer_provider = OneCopyRasterBufferProvider::Create(
-            task_runner_.get(), context_provider_.get(),
-            resource_provider_.get(), std::numeric_limits<int>::max(), false,
+        raster_buffer_provider = base::MakeUnique<OneCopyRasterBufferProvider>(
+            task_runner_.get(), compositor_context_provider_.get(),
+            worker_context_provider_.get(), resource_provider_.get(),
+            std::numeric_limits<int>::max(), false,
             std::numeric_limits<int>::max(),
             PlatformColor::BestTextureFormat());
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();
-        raster_buffer_provider = GpuRasterBufferProvider::Create(
-            context_provider_.get(), resource_provider_.get(), false, 0);
+        raster_buffer_provider = base::MakeUnique<GpuRasterBufferProvider>(
+            compositor_context_provider_.get(), worker_context_provider_.get(),
+            resource_provider_.get(), false, 0);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareOutputSurfaceAndResourceProvider();
@@ -397,7 +402,8 @@ class RasterBufferProviderPerfTest
 
  private:
   void Create3dOutputSurfaceAndResourceProvider() {
-    output_surface_ = FakeOutputSurface::Create3d(context_provider_);
+    output_surface_ = FakeOutputSurface::Create3d(compositor_context_provider_,
+                                                  worker_context_provider_);
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     resource_provider_ = FakeResourceProvider::Create(
         output_surface_.get(), nullptr, &gpu_memory_buffer_manager_);
@@ -471,7 +477,8 @@ class RasterBufferProviderCommonPerfTest
  public:
   // Overridden from testing::Test:
   void SetUp() override {
-    output_surface_ = FakeOutputSurface::Create3d(context_provider_);
+    output_surface_ = FakeOutputSurface::Create3d(compositor_context_provider_,
+                                                  worker_context_provider_);
     CHECK(output_surface_->BindToClient(&output_surface_client_));
     resource_provider_ =
         FakeResourceProvider::Create(output_surface_.get(), nullptr);

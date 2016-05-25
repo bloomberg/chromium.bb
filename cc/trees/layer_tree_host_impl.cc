@@ -2196,8 +2196,9 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   // resolved.
   CHECK(resource_provider_);
 
-  ContextProvider* context_provider = output_surface_->context_provider();
-  if (!context_provider) {
+  ContextProvider* compositor_context_provider =
+      output_surface_->context_provider();
+  if (!compositor_context_provider) {
     *resource_pool =
         ResourcePool::Create(resource_provider_.get(), GetTaskRunner());
 
@@ -2206,17 +2207,20 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
     return;
   }
 
+  ContextProvider* worker_context_provider =
+      output_surface_->worker_context_provider();
   if (use_gpu_rasterization_) {
-    DCHECK(resource_provider_->output_surface()->worker_context_provider());
+    DCHECK(worker_context_provider);
 
     *resource_pool =
         ResourcePool::Create(resource_provider_.get(), GetTaskRunner());
 
     int msaa_sample_count = use_msaa_ ? RequestedMSAASampleCount() : 0;
 
-    *raster_buffer_provider = GpuRasterBufferProvider::Create(
-        context_provider, resource_provider_.get(),
-        settings_.use_distance_field_text, msaa_sample_count);
+    *raster_buffer_provider = base::MakeUnique<GpuRasterBufferProvider>(
+        compositor_context_provider, worker_context_provider,
+        resource_provider_.get(), settings_.use_distance_field_text,
+        msaa_sample_count);
     return;
   }
 
@@ -2225,7 +2229,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
   bool use_zero_copy = settings_.use_zero_copy;
   // TODO(reveman): Remove this when mojo supports worker contexts.
   // crbug.com/522440
-  if (!resource_provider_->output_surface()->worker_context_provider()) {
+  if (!worker_context_provider) {
     LOG(ERROR)
         << "Forcing zero-copy tile initialization as worker context is missing";
     use_zero_copy = true;
@@ -2245,12 +2249,13 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
       ResourcePool::Create(resource_provider_.get(), GetTaskRunner());
 
   const int max_copy_texture_chromium_size =
-      context_provider->ContextCapabilities().max_copy_texture_chromium_size;
+      compositor_context_provider->ContextCapabilities()
+          .max_copy_texture_chromium_size;
 
-  *raster_buffer_provider = OneCopyRasterBufferProvider::Create(
-      GetTaskRunner(), context_provider, resource_provider_.get(),
-      max_copy_texture_chromium_size, settings_.use_partial_raster,
-      settings_.max_staging_buffer_usage_in_bytes,
+  *raster_buffer_provider = base::MakeUnique<OneCopyRasterBufferProvider>(
+      GetTaskRunner(), compositor_context_provider, worker_context_provider,
+      resource_provider_.get(), max_copy_texture_chromium_size,
+      settings_.use_partial_raster, settings_.max_staging_buffer_usage_in_bytes,
       settings_.renderer_settings.preferred_tile_format);
 }
 
@@ -2307,11 +2312,13 @@ bool LayerTreeHostImpl::InitializeRenderer(OutputSurface* output_surface) {
   }
 
   output_surface_ = output_surface;
-  resource_provider_ = ResourceProvider::Create(
-      output_surface_, shared_bitmap_manager_, gpu_memory_buffer_manager_,
+  resource_provider_ = base::MakeUnique<ResourceProvider>(
+      output_surface_->context_provider(), shared_bitmap_manager_,
+      gpu_memory_buffer_manager_,
       task_runner_provider_->blocking_main_thread_task_runner(),
       settings_.renderer_settings.highp_threshold_min,
       settings_.renderer_settings.texture_id_allocation_chunk_size,
+      output_surface_->capabilities().delegated_sync_points_required,
       settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.use_image_texture_targets);
 

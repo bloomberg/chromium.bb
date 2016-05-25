@@ -383,22 +383,89 @@ ResourceProvider::Child::Child(const Child& other) = default;
 
 ResourceProvider::Child::~Child() {}
 
-std::unique_ptr<ResourceProvider> ResourceProvider::Create(
-    OutputSurface* output_surface,
+ResourceProvider::ResourceProvider(
+    ContextProvider* compositor_context_provider,
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     BlockingTaskRunner* blocking_main_thread_task_runner,
     int highp_threshold_min,
     size_t id_allocation_chunk_size,
+    bool delegated_sync_points_required,
     bool use_gpu_memory_buffer_resources,
-    const std::vector<unsigned>& use_image_texture_targets) {
-  std::unique_ptr<ResourceProvider> resource_provider(new ResourceProvider(
-      output_surface, shared_bitmap_manager, gpu_memory_buffer_manager,
-      blocking_main_thread_task_runner, highp_threshold_min,
-      id_allocation_chunk_size, use_gpu_memory_buffer_resources,
-      use_image_texture_targets));
-  resource_provider->Initialize();
-  return resource_provider;
+    const std::vector<unsigned>& use_image_texture_targets)
+    : compositor_context_provider_(compositor_context_provider),
+      shared_bitmap_manager_(shared_bitmap_manager),
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      blocking_main_thread_task_runner_(blocking_main_thread_task_runner),
+      lost_output_surface_(false),
+      highp_threshold_min_(highp_threshold_min),
+      next_id_(1),
+      next_child_(1),
+      delegated_sync_points_required_(delegated_sync_points_required),
+      default_resource_type_(use_gpu_memory_buffer_resources
+                                 ? RESOURCE_TYPE_GPU_MEMORY_BUFFER
+                                 : RESOURCE_TYPE_GL_TEXTURE),
+      use_texture_storage_ext_(false),
+      use_texture_format_bgra_(false),
+      use_texture_usage_hint_(false),
+      use_compressed_texture_etc1_(false),
+      yuv_resource_format_(LUMINANCE_8),
+      max_texture_size_(0),
+      best_texture_format_(RGBA_8888),
+      best_render_buffer_format_(RGBA_8888),
+      id_allocation_chunk_size_(id_allocation_chunk_size),
+      use_sync_query_(false),
+      use_image_texture_targets_(use_image_texture_targets),
+      tracing_id_(g_next_resource_provider_tracing_id.GetNext()) {
+  DCHECK(id_allocation_chunk_size_);
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
+  // Don't register a dump provider in these cases.
+  // TODO(ericrk): Get this working in Android Webview. crbug.com/517156
+  if (base::ThreadTaskRunnerHandle::IsSet()) {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "cc::ResourceProvider", base::ThreadTaskRunnerHandle::Get());
+  }
+
+  if (!compositor_context_provider_) {
+    default_resource_type_ = RESOURCE_TYPE_BITMAP;
+    // Pick an arbitrary limit here similar to what hardware might.
+    max_texture_size_ = 16 * 1024;
+    best_texture_format_ = RGBA_8888;
+    return;
+  }
+
+  DCHECK(!texture_id_allocator_);
+  DCHECK(!buffer_id_allocator_);
+
+  const auto& caps = compositor_context_provider_->ContextCapabilities();
+
+  DCHECK(IsGpuResourceType(default_resource_type_));
+  use_texture_storage_ext_ = caps.texture_storage;
+  use_texture_format_bgra_ = caps.texture_format_bgra8888;
+  use_texture_usage_hint_ = caps.texture_usage;
+  use_compressed_texture_etc1_ = caps.texture_format_etc1;
+  yuv_resource_format_ = caps.texture_rg ? RED_8 : LUMINANCE_8;
+  yuv_highbit_resource_format_ = yuv_resource_format_;
+  if (caps.texture_half_float_linear)
+    yuv_highbit_resource_format_ = LUMINANCE_F16;
+  use_sync_query_ = caps.sync_query;
+
+  GLES2Interface* gl = ContextGL();
+
+  max_texture_size_ = 0;  // Context expects cleared value.
+  gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
+  best_texture_format_ =
+      PlatformColor::BestSupportedTextureFormat(use_texture_format_bgra_);
+
+  best_render_buffer_format_ = PlatformColor::BestSupportedTextureFormat(
+      caps.render_buffer_format_bgra8888);
+
+  texture_id_allocator_.reset(
+      new TextureIdAllocator(gl, id_allocation_chunk_size_));
+  buffer_id_allocator_.reset(
+      new BufferIdAllocator(gl, id_allocation_chunk_size_));
 }
 
 ResourceProvider::~ResourceProvider() {
@@ -433,8 +500,8 @@ ResourceProvider::~ResourceProvider() {
 
 bool ResourceProvider::IsResourceFormatSupported(ResourceFormat format) const {
   gpu::Capabilities caps;
-  if (output_surface_->context_provider())
-    caps = output_surface_->context_provider()->ContextCapabilities();
+  if (compositor_context_provider_)
+    caps = compositor_context_provider_->ContextCapabilities();
 
   switch (format) {
     case ALPHA_8:
@@ -1158,6 +1225,7 @@ ResourceProvider::ScopedWriteLockGr::~ScopedWriteLockGr() {
 }
 
 void ResourceProvider::ScopedWriteLockGr::InitSkSurface(
+    GrContext* gr_context,
     bool use_distance_field_text,
     bool can_use_lcd_text,
     int msaa_sample_count) {
@@ -1175,9 +1243,6 @@ void ResourceProvider::ScopedWriteLockGr::InitSkSurface(
   desc.fTextureHandle = skia::GrGLTextureInfoToGrBackendObject(texture_info);
   desc.fSampleCnt = msaa_sample_count;
 
-  bool use_worker_context = true;
-  class GrContext* gr_context =
-      resource_provider_->GrContext(use_worker_context);
   uint32_t flags =
       use_distance_field_text ? SkSurfaceProps::kUseDistanceFieldFonts_Flag : 0;
   // Use unknown pixel geometry to disable LCD text.
@@ -1224,93 +1289,6 @@ void ResourceProvider::SynchronousFence::Wait() {
 void ResourceProvider::SynchronousFence::Synchronize() {
   TRACE_EVENT0("cc", "ResourceProvider::SynchronousFence::Synchronize");
   gl_->Finish();
-}
-
-ResourceProvider::ResourceProvider(
-    OutputSurface* output_surface,
-    SharedBitmapManager* shared_bitmap_manager,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    BlockingTaskRunner* blocking_main_thread_task_runner,
-    int highp_threshold_min,
-    size_t id_allocation_chunk_size,
-    bool use_gpu_memory_buffer_resources,
-    const std::vector<unsigned>& use_image_texture_targets)
-    : output_surface_(output_surface),
-      shared_bitmap_manager_(shared_bitmap_manager),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
-      blocking_main_thread_task_runner_(blocking_main_thread_task_runner),
-      lost_output_surface_(false),
-      highp_threshold_min_(highp_threshold_min),
-      next_id_(1),
-      next_child_(1),
-      default_resource_type_(use_gpu_memory_buffer_resources
-                                 ? RESOURCE_TYPE_GPU_MEMORY_BUFFER
-                                 : RESOURCE_TYPE_GL_TEXTURE),
-      use_texture_storage_ext_(false),
-      use_texture_format_bgra_(false),
-      use_texture_usage_hint_(false),
-      use_compressed_texture_etc1_(false),
-      yuv_resource_format_(LUMINANCE_8),
-      max_texture_size_(0),
-      best_texture_format_(RGBA_8888),
-      best_render_buffer_format_(RGBA_8888),
-      id_allocation_chunk_size_(id_allocation_chunk_size),
-      use_sync_query_(false),
-      use_image_texture_targets_(use_image_texture_targets),
-      tracing_id_(g_next_resource_provider_tracing_id.GetNext()) {
-  DCHECK(output_surface_->HasClient());
-  DCHECK(id_allocation_chunk_size_);
-}
-
-void ResourceProvider::Initialize() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
-  // Don't register a dump provider in these cases.
-  // TODO(ericrk): Get this working in Android Webview. crbug.com/517156
-  if (base::ThreadTaskRunnerHandle::IsSet()) {
-    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, "cc::ResourceProvider", base::ThreadTaskRunnerHandle::Get());
-  }
-
-  GLES2Interface* gl = ContextGL();
-  if (!gl) {
-    default_resource_type_ = RESOURCE_TYPE_BITMAP;
-    // Pick an arbitrary limit here similar to what hardware might.
-    max_texture_size_ = 16 * 1024;
-    best_texture_format_ = RGBA_8888;
-    return;
-  }
-
-  DCHECK(!texture_id_allocator_);
-  DCHECK(!buffer_id_allocator_);
-
-  const gpu::Capabilities& caps =
-      output_surface_->context_provider()->ContextCapabilities();
-
-  DCHECK(IsGpuResourceType(default_resource_type_));
-  use_texture_storage_ext_ = caps.texture_storage;
-  use_texture_format_bgra_ = caps.texture_format_bgra8888;
-  use_texture_usage_hint_ = caps.texture_usage;
-  use_compressed_texture_etc1_ = caps.texture_format_etc1;
-  yuv_resource_format_ = caps.texture_rg ? RED_8 : LUMINANCE_8;
-  yuv_highbit_resource_format_ = yuv_resource_format_;
-  if (caps.texture_half_float_linear)
-    yuv_highbit_resource_format_ = LUMINANCE_F16;
-  use_sync_query_ = caps.sync_query;
-
-  max_texture_size_ = 0;  // Context expects cleared value.
-  gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size_);
-  best_texture_format_ =
-      PlatformColor::BestSupportedTextureFormat(use_texture_format_bgra_);
-
-  best_render_buffer_format_ = PlatformColor::BestSupportedTextureFormat(
-      caps.render_buffer_format_bgra8888);
-
-  texture_id_allocator_.reset(
-      new TextureIdAllocator(gl, id_allocation_chunk_size_));
-  buffer_id_allocator_.reset(
-      new BufferIdAllocator(gl, id_allocation_chunk_size_));
 }
 
 int ResourceProvider::CreateChild(const ReturnCallback& return_callback,
@@ -1383,12 +1361,12 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resource_ids,
     // are required. The only case where we allow a sync token to not be set is
     // the case where the image is dirty. In that case we will bind the image
     // lazily and generate a sync token at that point.
-    DCHECK(!output_surface_->capabilities().delegated_sync_points_required ||
-           resource->dirty_image || !resource->needs_sync_token());
+    DCHECK(!delegated_sync_points_required_ || resource->dirty_image ||
+           !resource->needs_sync_token());
 
     // If we are validating the resource to be sent, the resource cannot be
     // in a LOCALLY_USED state. It must have been properly synchronized.
-    DCHECK(!output_surface_->capabilities().delegated_sync_points_required ||
+    DCHECK(!delegated_sync_points_required_ ||
            Resource::LOCALLY_USED != resource->synchronization_state());
 
     resources.push_back(resource);
@@ -1400,8 +1378,7 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resource_ids,
   for (Resource* resource : resources) {
     CreateMailboxAndBindResource(gl, resource);
 
-    if (output_surface_->capabilities().delegated_sync_points_required &&
-        resource->needs_sync_token()) {
+    if (delegated_sync_points_required_ && resource->needs_sync_token()) {
       need_synchronization_resources.push_back(resource);
     } else if (resource->mailbox().HasSyncToken() &&
                !resource->mailbox().sync_token().verified_flush()) {
@@ -1435,9 +1412,8 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resource_ids,
     Resource* source = resources[i];
     const ResourceId id = resource_ids[i];
 
-    DCHECK(!output_surface_->capabilities().delegated_sync_points_required ||
-           !source->needs_sync_token());
-    DCHECK(!output_surface_->capabilities().delegated_sync_points_required ||
+    DCHECK(!delegated_sync_points_required_ || !source->needs_sync_token());
+    DCHECK(!delegated_sync_points_required_ ||
            Resource::LOCALLY_USED != source->synchronization_state());
 
     TransferableResource resource;
@@ -1934,15 +1910,8 @@ void ResourceProvider::ValidateResource(ResourceId id) const {
 }
 
 GLES2Interface* ResourceProvider::ContextGL() const {
-  ContextProvider* context_provider = output_surface_->context_provider();
+  ContextProvider* context_provider = compositor_context_provider_;
   return context_provider ? context_provider->ContextGL() : nullptr;
-}
-
-class GrContext* ResourceProvider::GrContext(bool worker_context) const {
-  ContextProvider* context_provider =
-      worker_context ? output_surface_->worker_context_provider()
-                     : output_surface_->context_provider();
-  return context_provider ? context_provider->GrContext() : nullptr;
 }
 
 bool ResourceProvider::IsGLContextLost() const {
@@ -2004,8 +1973,7 @@ bool ResourceProvider::OnMemoryDump(
       case RESOURCE_TYPE_GL_TEXTURE:
         DCHECK(resource.gl_id);
         guid = gfx::GetGLTextureClientGUIDForTracing(
-            output_surface_->context_provider()
-                ->ContextSupport()
+            compositor_context_provider_->ContextSupport()
                 ->ShareGroupTracingGUID(),
             resource.gl_id);
         break;

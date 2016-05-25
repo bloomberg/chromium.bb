@@ -31,14 +31,18 @@ class CC_EXPORT GpuRasterizer {
                        float scale,
                        const RasterSource::PlaybackSettings& playback_settings);
 
-  ResourceProvider* resource_provider() { return resource_provider_; }
+  ResourceProvider* resource_provider() const { return resource_provider_; }
+  ContextProvider* worker_context_provider() const {
+    return worker_context_provider_;
+  }
 
  private:
-  GpuRasterizer(ContextProvider* context_provider,
+  GpuRasterizer(ContextProvider* worker_context_provider,
                 ResourceProvider* resource_provider,
                 bool use_distance_filed_text,
                 int msaa_sample_count);
 
+  ContextProvider* worker_context_provider_;
   ResourceProvider* resource_provider_;
 
   bool use_distance_field_text_;

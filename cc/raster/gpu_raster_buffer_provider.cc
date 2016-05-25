@@ -47,12 +47,9 @@ class RasterBufferImpl : public RasterBuffer {
     TRACE_EVENT0("cc", "RasterBufferImpl::Playback");
     // GPU raster doesn't do low res tiles, so should always include images.
     DCHECK(!playback_settings.skip_images);
-    ContextProvider* context_provider = rasterizer_->resource_provider()
-                                            ->output_surface()
-                                            ->worker_context_provider();
-    DCHECK(context_provider);
 
-    ContextProvider::ScopedContextLock scoped_context(context_provider);
+    ContextProvider::ScopedContextLock scoped_context(
+        rasterizer_->worker_context_provider());
 
     gfx::Rect playback_rect = raster_full_rect;
     if (resource_has_previous_content_) {
@@ -88,26 +85,19 @@ class RasterBufferImpl : public RasterBuffer {
 
 }  // namespace
 
-// static
-std::unique_ptr<RasterBufferProvider> GpuRasterBufferProvider::Create(
-    ContextProvider* context_provider,
-    ResourceProvider* resource_provider,
-    bool use_distance_field_text,
-    int gpu_rasterization_msaa_sample_count) {
-  return base::WrapUnique<RasterBufferProvider>(new GpuRasterBufferProvider(
-      context_provider, resource_provider, use_distance_field_text,
-      gpu_rasterization_msaa_sample_count));
-}
-
 GpuRasterBufferProvider::GpuRasterBufferProvider(
-    ContextProvider* context_provider,
+    ContextProvider* compositor_context_provider,
+    ContextProvider* worker_context_provider,
     ResourceProvider* resource_provider,
     bool use_distance_field_text,
     int gpu_rasterization_msaa_sample_count)
-    : rasterizer_(new GpuRasterizer(context_provider,
+    : compositor_context_provider_(compositor_context_provider),
+      rasterizer_(new GpuRasterizer(worker_context_provider,
                                     resource_provider,
                                     use_distance_field_text,
-                                    gpu_rasterization_msaa_sample_count)) {}
+                                    gpu_rasterization_msaa_sample_count)) {
+  DCHECK(compositor_context_provider_);
+}
 
 GpuRasterBufferProvider::~GpuRasterBufferProvider() {}
 
@@ -126,12 +116,7 @@ void GpuRasterBufferProvider::ReleaseBufferForRaster(
 
 void GpuRasterBufferProvider::OrderingBarrier() {
   TRACE_EVENT0("cc", "GpuRasterBufferProvider::OrderingBarrier");
-
-  rasterizer_->resource_provider()
-      ->output_surface()
-      ->context_provider()
-      ->ContextGL()
-      ->OrderingBarrierCHROMIUM();
+  compositor_context_provider_->ContextGL()->OrderingBarrierCHROMIUM();
 }
 
 ResourceFormat GpuRasterBufferProvider::GetResourceFormat(

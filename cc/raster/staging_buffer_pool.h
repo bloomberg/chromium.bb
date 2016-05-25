@@ -54,11 +54,11 @@ class CC_EXPORT StagingBufferPool
  public:
   ~StagingBufferPool() final;
 
-  static std::unique_ptr<StagingBufferPool> Create(
-      base::SequencedTaskRunner* task_runner,
-      ResourceProvider* resource_provider,
-      bool use_partial_raster,
-      int max_staging_buffer_usage_in_bytes);
+  StagingBufferPool(base::SequencedTaskRunner* task_runner,
+                    ContextProvider* worker_context_provider,
+                    ResourceProvider* resource_provider,
+                    bool use_partial_raster,
+                    int max_staging_buffer_usage_in_bytes);
   void Shutdown();
 
   // Overridden from base::trace_event::MemoryDumpProvider:
@@ -71,11 +71,6 @@ class CC_EXPORT StagingBufferPool
   void ReleaseStagingBuffer(std::unique_ptr<StagingBuffer> staging_buffer);
 
  private:
-  StagingBufferPool(base::SequencedTaskRunner* task_runner,
-                    ResourceProvider* resource_provider,
-                    bool use_partial_raster,
-                    int max_staging_buffer_usage_in_bytes);
-
   void AddStagingBuffer(const StagingBuffer* staging_buffer,
                         ResourceFormat format);
   void RemoveStagingBuffer(const StagingBuffer* staging_buffer);
@@ -93,6 +88,7 @@ class CC_EXPORT StagingBufferPool
       base::trace_event::TracedValue* staging_state) const;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  ContextProvider* const worker_context_provider_;
   ResourceProvider* const resource_provider_;
   const bool use_partial_raster_;
 

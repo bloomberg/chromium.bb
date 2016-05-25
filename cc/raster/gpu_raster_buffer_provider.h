@@ -17,13 +17,12 @@ class ResourceProvider;
 
 class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
  public:
+  GpuRasterBufferProvider(ContextProvider* compositor_context_provider,
+                          ContextProvider* worker_context_provider,
+                          ResourceProvider* resource_provider,
+                          bool use_distance_field_text,
+                          int gpu_rasterization_msaa_sample_count);
   ~GpuRasterBufferProvider() override;
-
-  static std::unique_ptr<RasterBufferProvider> Create(
-      ContextProvider* context_provider,
-      ResourceProvider* resource_provider,
-      bool use_distance_field_text,
-      int gpu_rasterization_msaa_sample_count);
 
   // Overridden from RasterBufferProvider:
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
@@ -37,11 +36,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   void Shutdown() override;
 
  private:
-  GpuRasterBufferProvider(ContextProvider* context_provider,
-                          ResourceProvider* resource_provider,
-                          bool use_distance_field_text,
-                          int gpu_rasterization_msaa_sample_count);
-
+  ContextProvider* const compositor_context_provider_;
   std::unique_ptr<GpuRasterizer> rasterizer_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuRasterBufferProvider);

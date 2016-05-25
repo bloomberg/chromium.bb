@@ -5,6 +5,7 @@
 #ifndef CC_RESOURCES_RESOURCE_H_
 #define CC_RESOURCES_RESOURCE_H_
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/resource_provider.h"

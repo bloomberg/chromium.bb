@@ -150,15 +150,17 @@ class RasterBufferProviderTest
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
         Create3dOutputSurfaceAndResourceProvider();
-        raster_buffer_provider = OneCopyRasterBufferProvider::Create(
+        raster_buffer_provider = base::MakeUnique<OneCopyRasterBufferProvider>(
             base::ThreadTaskRunnerHandle::Get().get(), context_provider_.get(),
-            resource_provider_.get(), kMaxBytesPerCopyOperation, false,
-            kMaxStagingBuffers, PlatformColor::BestTextureFormat());
+            worker_context_provider_.get(), resource_provider_.get(),
+            kMaxBytesPerCopyOperation, false, kMaxStagingBuffers,
+            PlatformColor::BestTextureFormat());
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
         Create3dOutputSurfaceAndResourceProvider();
-        raster_buffer_provider = GpuRasterBufferProvider::Create(
-            context_provider_.get(), resource_provider_.get(), false, 0);
+        raster_buffer_provider = base::MakeUnique<GpuRasterBufferProvider>(
+            context_provider_.get(), worker_context_provider_.get(),
+            resource_provider_.get(), false, 0);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareOutputSurfaceAndResourceProvider();

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "cc/output/context_provider.h"
 #include "cc/raster/raster_buffer_provider.h"
+#include "cc/raster/staging_buffer_pool.h"
 #include "cc/resources/resource_provider.h"
 
 namespace cc {
@@ -19,16 +20,15 @@ class ResourcePool;
 
 class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
  public:
+  OneCopyRasterBufferProvider(base::SequencedTaskRunner* task_runner,
+                              ContextProvider* compositor_context_provider,
+                              ContextProvider* worker_context_provider,
+                              ResourceProvider* resource_provider,
+                              int max_copy_texture_chromium_size,
+                              bool use_partial_raster,
+                              int max_staging_buffer_usage_in_bytes,
+                              ResourceFormat preferred_tile_format);
   ~OneCopyRasterBufferProvider() override;
-
-  static std::unique_ptr<RasterBufferProvider> Create(
-      base::SequencedTaskRunner* task_runner,
-      ContextProvider* context_provider,
-      ResourceProvider* resource_provider,
-      int max_copy_texture_chromium_size,
-      bool use_partial_raster,
-      int max_staging_buffer_usage_in_bytes,
-      ResourceFormat preferred_tile_format);
 
   // Overridden from RasterBufferProvider:
   std::unique_ptr<RasterBuffer> AcquireBufferForRaster(
@@ -53,14 +53,6 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       uint64_t previous_content_id,
       uint64_t new_content_id);
 
- protected:
-  OneCopyRasterBufferProvider(base::SequencedTaskRunner* task_runner,
-                              ResourceProvider* resource_provider,
-                              int max_copy_texture_chromium_size,
-                              bool use_partial_raster,
-                              int max_staging_buffer_usage_in_bytes,
-                              ResourceFormat preferred_tile_format);
-
  private:
   void PlaybackToStagingBuffer(
       StagingBuffer* staging_buffer,
@@ -79,6 +71,8 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
                           uint64_t previous_content_id,
                           uint64_t new_content_id);
 
+  ContextProvider* const compositor_context_provider_;
+  ContextProvider* const worker_context_provider_;
   ResourceProvider* const resource_provider_;
   const int max_bytes_per_copy_operation_;
   bool use_partial_raster_;
@@ -87,7 +81,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
   int bytes_scheduled_since_last_flush_;
 
   ResourceFormat preferred_tile_format_;
-  std::unique_ptr<StagingBufferPool> staging_pool_;
+  StagingBufferPool staging_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(OneCopyRasterBufferProvider);
 };

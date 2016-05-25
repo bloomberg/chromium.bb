@@ -16,7 +16,6 @@
 #include "cc/raster/raster_buffer.h"
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/resource.h"
-#include "cc/resources/resource_provider.h"
 #include "cc/tiles/tile_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/core/SkMultiPictureDraw.h"
@@ -26,13 +25,15 @@
 
 namespace cc {
 
-GpuRasterizer::GpuRasterizer(ContextProvider* context_provider,
+GpuRasterizer::GpuRasterizer(ContextProvider* worker_context_provider,
                              ResourceProvider* resource_provider,
                              bool use_distance_field_text,
                              int msaa_sample_count)
-    : resource_provider_(resource_provider),
+    : worker_context_provider_(worker_context_provider),
+      resource_provider_(resource_provider),
       use_distance_field_text_(use_distance_field_text),
       msaa_sample_count_(msaa_sample_count) {
+  DCHECK(worker_context_provider_);
 }
 
 GpuRasterizer::~GpuRasterizer() {
@@ -64,11 +65,10 @@ void GpuRasterizer::RasterizeSource(
 
   // Playback picture into resource.
   {
-    ScopedGpuRaster gpu_raster(
-        resource_provider_->output_surface()->worker_context_provider());
-    write_lock->InitSkSurface(use_distance_field_text,
-                              raster_source->CanUseLCDText(),
-                              msaa_sample_count_);
+    ScopedGpuRaster gpu_raster(worker_context_provider_);
+    write_lock->InitSkSurface(
+        worker_context_provider_->GrContext(), use_distance_field_text,
+        raster_source->CanUseLCDText(), msaa_sample_count_);
 
     SkSurface* sk_surface = write_lock->sk_surface();
 

@@ -116,8 +116,10 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
   DCHECK(task_runner);
   DCHECK(initialized_);
 
-  ContextProvider* context_provider =
+  ContextProvider* compositor_context_provider =
       host_impl->output_surface()->context_provider();
+  ContextProvider* worker_context_provider =
+      host_impl->output_surface()->worker_context_provider();
   ResourceProvider* resource_provider = host_impl->resource_provider();
   int max_bytes_per_copy_operation = 1024 * 1024;
   int max_staging_buffer_usage_in_bytes = 32 * 1024 * 1024;
@@ -127,21 +129,23 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
 
   switch (raster_buffer_provider_type_) {
     case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
-      EXPECT_FALSE(context_provider);
+      EXPECT_FALSE(compositor_context_provider);
       EXPECT_EQ(PIXEL_TEST_SOFTWARE, test_type_);
 
       *raster_buffer_provider =
           BitmapRasterBufferProvider::Create(resource_provider);
       break;
     case RASTER_BUFFER_PROVIDER_TYPE_GPU:
-      EXPECT_TRUE(context_provider);
+      EXPECT_TRUE(compositor_context_provider);
+      EXPECT_TRUE(worker_context_provider);
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
 
-      *raster_buffer_provider = GpuRasterBufferProvider::Create(
-          context_provider, resource_provider, false, 0);
+      *raster_buffer_provider = base::MakeUnique<GpuRasterBufferProvider>(
+          compositor_context_provider, worker_context_provider,
+          resource_provider, false, 0);
       break;
     case RASTER_BUFFER_PROVIDER_TYPE_ZERO_COPY:
-      EXPECT_TRUE(context_provider);
+      EXPECT_TRUE(compositor_context_provider);
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
       EXPECT_TRUE(host_impl->GetRendererCapabilities().using_image);
 
@@ -149,13 +153,14 @@ void LayerTreeHostPixelResourceTest::CreateResourceAndRasterBufferProvider(
           resource_provider, PlatformColor::BestTextureFormat());
       break;
     case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
-      EXPECT_TRUE(context_provider);
+      EXPECT_TRUE(compositor_context_provider);
+      EXPECT_TRUE(worker_context_provider);
       EXPECT_EQ(PIXEL_TEST_GL, test_type_);
       EXPECT_TRUE(host_impl->GetRendererCapabilities().using_image);
 
-      *raster_buffer_provider = OneCopyRasterBufferProvider::Create(
-          task_runner, context_provider, resource_provider,
-          max_bytes_per_copy_operation, false,
+      *raster_buffer_provider = base::MakeUnique<OneCopyRasterBufferProvider>(
+          task_runner, compositor_context_provider, worker_context_provider,
+          resource_provider, max_bytes_per_copy_operation, false,
           max_staging_buffer_usage_in_bytes,
           PlatformColor::BestTextureFormat());
       break;

@@ -135,9 +135,10 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
 
   shared_bitmap_manager_.reset(new TestSharedBitmapManager);
   gpu_memory_buffer_manager_.reset(new TestGpuMemoryBufferManager);
-  resource_provider_ = ResourceProvider::Create(
-      output_surface_.get(), shared_bitmap_manager_.get(),
+  resource_provider_ = base::MakeUnique<ResourceProvider>(
+      output_surface_->context_provider(), shared_bitmap_manager_.get(),
       gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 0, 1,
+      output_surface_->capabilities().delegated_sync_points_required,
       settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.use_image_texture_targets);
 
@@ -178,9 +179,10 @@ void PixelTest::SetUpSoftwareRenderer() {
   output_surface_.reset(new PixelTestOutputSurface(std::move(device), nullptr));
   output_surface_->BindToClient(output_surface_client_.get());
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-  resource_provider_ = ResourceProvider::Create(
-      output_surface_.get(), shared_bitmap_manager_.get(),
-      gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(), 0, 1,
+  bool delegated_sync_points_required = false;  // Meaningless for software.
+  resource_provider_ = base::MakeUnique<ResourceProvider>(
+      nullptr, shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
+      main_thread_task_runner_.get(), 0, 1, delegated_sync_points_required,
       settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.use_image_texture_targets);
   renderer_ =

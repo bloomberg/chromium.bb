@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "cc/base/math_util.h"
-#include "cc/raster/staging_buffer_pool.h"
 #include "cc/resources/platform_color.h"
 #include "cc/resources/resource_format.h"
 #include "cc/resources/resource_util.h"
@@ -67,29 +66,18 @@ const int kMaxBytesPerCopyOperation = 1024 * 1024 * 4;
 
 }  // namespace
 
-// static
-std::unique_ptr<RasterBufferProvider> OneCopyRasterBufferProvider::Create(
-    base::SequencedTaskRunner* task_runner,
-    ContextProvider* context_provider,
-    ResourceProvider* resource_provider,
-    int max_copy_texture_chromium_size,
-    bool use_partial_raster,
-    int max_staging_buffer_usage_in_bytes,
-    ResourceFormat preferred_tile_format) {
-  return base::WrapUnique<RasterBufferProvider>(new OneCopyRasterBufferProvider(
-      task_runner, resource_provider, max_copy_texture_chromium_size,
-      use_partial_raster, max_staging_buffer_usage_in_bytes,
-      preferred_tile_format));
-}
-
 OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
     base::SequencedTaskRunner* task_runner,
+    ContextProvider* compositor_context_provider,
+    ContextProvider* worker_context_provider,
     ResourceProvider* resource_provider,
     int max_copy_texture_chromium_size,
     bool use_partial_raster,
     int max_staging_buffer_usage_in_bytes,
     ResourceFormat preferred_tile_format)
-    : resource_provider_(resource_provider),
+    : compositor_context_provider_(compositor_context_provider),
+      worker_context_provider_(worker_context_provider),
+      resource_provider_(resource_provider),
       max_bytes_per_copy_operation_(
           max_copy_texture_chromium_size
               ? std::min(kMaxBytesPerCopyOperation,
@@ -97,10 +85,14 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
               : kMaxBytesPerCopyOperation),
       use_partial_raster_(use_partial_raster),
       bytes_scheduled_since_last_flush_(0),
-      preferred_tile_format_(preferred_tile_format) {
-  staging_pool_ = StagingBufferPool::Create(task_runner, resource_provider,
-                                            use_partial_raster,
-                                            max_staging_buffer_usage_in_bytes);
+      preferred_tile_format_(preferred_tile_format),
+      staging_pool_(task_runner,
+                    worker_context_provider,
+                    resource_provider,
+                    use_partial_raster,
+                    max_staging_buffer_usage_in_bytes) {
+  DCHECK(compositor_context_provider_);
+  DCHECK(worker_context_provider);
 }
 
 OneCopyRasterBufferProvider::~OneCopyRasterBufferProvider() {}
@@ -124,11 +116,7 @@ void OneCopyRasterBufferProvider::ReleaseBufferForRaster(
 
 void OneCopyRasterBufferProvider::OrderingBarrier() {
   TRACE_EVENT0("cc", "OneCopyRasterBufferProvider::OrderingBarrier");
-
-  resource_provider_->output_surface()
-      ->context_provider()
-      ->ContextGL()
-      ->OrderingBarrierCHROMIUM();
+  compositor_context_provider_->ContextGL()->OrderingBarrierCHROMIUM();
 }
 
 ResourceFormat OneCopyRasterBufferProvider::GetResourceFormat(
@@ -148,7 +136,7 @@ bool OneCopyRasterBufferProvider::GetResourceRequiresSwizzle(
 }
 
 void OneCopyRasterBufferProvider::Shutdown() {
-  staging_pool_->Shutdown();
+  staging_pool_.Shutdown();
 }
 
 void OneCopyRasterBufferProvider::PlaybackAndCopyOnWorkerThread(
@@ -162,7 +150,7 @@ void OneCopyRasterBufferProvider::PlaybackAndCopyOnWorkerThread(
     uint64_t previous_content_id,
     uint64_t new_content_id) {
   std::unique_ptr<StagingBuffer> staging_buffer =
-      staging_pool_->AcquireStagingBuffer(resource, previous_content_id);
+      staging_pool_.AcquireStagingBuffer(resource, previous_content_id);
 
   PlaybackToStagingBuffer(staging_buffer.get(), resource, raster_source,
                           raster_full_rect, raster_dirty_rect, scale,
@@ -172,7 +160,7 @@ void OneCopyRasterBufferProvider::PlaybackAndCopyOnWorkerThread(
   CopyOnWorkerThread(staging_buffer.get(), resource, resource_lock,
                      raster_source, previous_content_id, new_content_id);
 
-  staging_pool_->ReleaseStagingBuffer(std::move(staging_buffer));
+  staging_pool_.ReleaseStagingBuffer(std::move(staging_buffer));
 }
 
 void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
@@ -233,12 +221,8 @@ void OneCopyRasterBufferProvider::CopyOnWorkerThread(
     const RasterSource* raster_source,
     uint64_t previous_content_id,
     uint64_t new_content_id) {
-  ContextProvider* context_provider =
-      resource_provider_->output_surface()->worker_context_provider();
-  DCHECK(context_provider);
-
   {
-    ContextProvider::ScopedContextLock scoped_context(context_provider);
+    ContextProvider::ScopedContextLock scoped_context(worker_context_provider_);
 
     gpu::gles2::GLES2Interface* gl = scoped_context.ContextGL();
     DCHECK(gl);

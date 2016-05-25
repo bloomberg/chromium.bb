@@ -85,16 +85,18 @@ class CC_EXPORT ResourceProvider
     RESOURCE_TYPE_BITMAP,
   };
 
-  static std::unique_ptr<ResourceProvider> Create(
-      OutputSurface* output_surface,
-      SharedBitmapManager* shared_bitmap_manager,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      BlockingTaskRunner* blocking_main_thread_task_runner,
-      int highp_threshold_min,
-      size_t id_allocation_chunk_size,
-      bool use_gpu_memory_buffer_resources,
-      const std::vector<unsigned>& use_image_texture_targets);
+  ResourceProvider(ContextProvider* compositor_context_provider,
+                   SharedBitmapManager* shared_bitmap_manager,
+                   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+                   BlockingTaskRunner* blocking_main_thread_task_runner,
+                   int highp_threshold_min,
+                   size_t id_allocation_chunk_size,
+                   bool delegated_sync_points_required,
+                   bool use_gpu_memory_buffer_resources,
+                   const std::vector<unsigned>& use_image_texture_targets);
   ~ResourceProvider() override;
+
+  void Initialize();
 
   void DidLoseOutputSurface() { lost_output_surface_ = true; }
 
@@ -361,7 +363,8 @@ class CC_EXPORT ResourceProvider
                       ResourceId resource_id);
     ~ScopedWriteLockGr();
 
-    void InitSkSurface(bool use_distance_field_text,
+    void InitSkSurface(GrContext* gr_context,
+                       bool use_distance_field_text,
                        bool can_use_lcd_text,
                        int msaa_sample_count);
     void ReleaseSkSurface();
@@ -466,8 +469,6 @@ class CC_EXPORT ResourceProvider
 
   static GLint GetActiveTextureUnit(gpu::gles2::GLES2Interface* gl);
 
-  OutputSurface* output_surface() { return output_surface_; }
-
   void ValidateResource(ResourceId id) const;
 
   GLenum GetImageTextureTarget(ResourceFormat format);
@@ -477,17 +478,6 @@ class CC_EXPORT ResourceProvider
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
   int tracing_id() const { return tracing_id_; }
-
- protected:
-  ResourceProvider(OutputSurface* output_surface,
-                   SharedBitmapManager* shared_bitmap_manager,
-                   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                   BlockingTaskRunner* blocking_main_thread_task_runner,
-                   int highp_threshold_min,
-                   size_t id_allocation_chunk_size,
-                   bool use_gpu_memory_buffer_resources,
-                   const std::vector<unsigned>& use_image_texture_targets);
-  void Initialize();
 
  private:
   struct Resource {
@@ -663,12 +653,11 @@ class CC_EXPORT ResourceProvider
   // texture target used. The resource must be locked for reading.
   GLenum BindForSampling(ResourceId resource_id, GLenum unit, GLenum filter);
 
-  // Returns NULL if the output_surface_ does not have a ContextProvider.
+  // Returns null if we do not have a ContextProvider.
   gpu::gles2::GLES2Interface* ContextGL() const;
-  class GrContext* GrContext(bool worker_context) const;
   bool IsGLContextLost() const;
 
-  OutputSurface* output_surface_;
+  ContextProvider* compositor_context_provider_;
   SharedBitmapManager* shared_bitmap_manager_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   BlockingTaskRunner* blocking_main_thread_task_runner_;
@@ -679,8 +668,9 @@ class CC_EXPORT ResourceProvider
   int next_child_;
   ChildMap children_;
 
+  const bool delegated_sync_points_required_;
+
   ResourceType default_resource_type_;
-  bool use_gpu_memory_buffer_resources_;
   bool use_texture_storage_ext_;
   bool use_texture_format_bgra_;
   bool use_texture_usage_hint_;
