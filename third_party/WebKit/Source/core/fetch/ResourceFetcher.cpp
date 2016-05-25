@@ -1126,22 +1126,25 @@ void ResourceFetcher::logPreloadStats()
             ASSERT_NOT_REACHED();
         }
     }
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, imagePreloads, ("PreloadScanner.Counts.Image", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, imagePreloadMisses, ("PreloadScanner.Counts.Miss.Image", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, scriptPreloads, ("PreloadScanner.Counts.Script", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, scriptPreloadMisses, ("PreloadScanner.Counts.Miss.Script", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, stylesheetPreloads, ("PreloadScanner.Counts.CSSStyleSheet", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, stylesheetPreloadMisses, ("PreloadScanner.Counts.Miss.CSSStyleSheet", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, fontPreloads, ("PreloadScanner.Counts.Font", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, fontPreloadMisses, ("PreloadScanner.Counts.Miss.Font", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, mediaPreloads, ("PreloadScanner.Counts.Media", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, mediaPreloadMisses, ("PreloadScanner.Counts.Miss.Media", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, textTrackPreloads, ("PreloadScanner.Counts.TextTrack", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, textTrackPreloadMisses, ("PreloadScanner.Counts.Miss.TextTrack", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, importPreloads, ("PreloadScanner.Counts.Import", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, importPreloadMisses, ("PreloadScanner.Counts.Miss.Import", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, rawPreloads, ("PreloadScanner.Counts.Raw", 0, 100, 5));
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, rawPreloadMisses, ("PreloadScanner.Counts.Miss.Raw", 0, 100, 5));
+    // TODO(csharrison): These can falsely attribute link rel="preload" requests
+    // as misses if they are referenced after parsing completes. Migrate this
+    // logic to the memory cache / individual resources to prevent this.
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, imagePreloads, ("PreloadScanner.Counts2.Image", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, imagePreloadMisses, ("PreloadScanner.Counts2.Miss.Image", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, scriptPreloads, ("PreloadScanner.Counts2.Script", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, scriptPreloadMisses, ("PreloadScanner.Counts2.Miss.Script", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, stylesheetPreloads, ("PreloadScanner.Counts2.CSSStyleSheet", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, stylesheetPreloadMisses, ("PreloadScanner.Counts2.Miss.CSSStyleSheet", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, fontPreloads, ("PreloadScanner.Counts2.Font", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, fontPreloadMisses, ("PreloadScanner.Counts2.Miss.Font", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, mediaPreloads, ("PreloadScanner.Counts2.Media", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, mediaPreloadMisses, ("PreloadScanner.Counts2.Miss.Media", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, textTrackPreloads, ("PreloadScanner.Counts2.TextTrack", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, textTrackPreloadMisses, ("PreloadScanner.Counts2.Miss.TextTrack", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, importPreloads, ("PreloadScanner.Counts2.Import", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, importPreloadMisses, ("PreloadScanner.Counts2.Miss.Import", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, rawPreloads, ("PreloadScanner.Counts2.Raw", 0, 100, 25));
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, rawPreloadMisses, ("PreloadScanner.Counts2.Miss.Raw", 0, 100, 25));
     if (images)
         imagePreloads.count(images);
     if (imageMisses)
