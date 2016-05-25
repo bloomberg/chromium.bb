@@ -67,7 +67,7 @@ class MicrodumpContext : public DumpContext {
   virtual void SetContextARM(MDRawContextARM* arm);
   virtual void SetContextARM64(MDRawContextARM64* arm64);
   virtual void SetContextX86(MDRawContextX86* x86);
-  virtual void SetContextMIPS(MDRawContextMIPS* mips);
+  virtual void SetContextMIPS(MDRawContextMIPS* mips32);
   virtual void SetContextMIPS64(MDRawContextMIPS* mips64);
 };
 

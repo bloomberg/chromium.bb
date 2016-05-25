@@ -133,9 +133,9 @@ void MicrodumpContext::SetContextX86(MDRawContextX86* x86) {
   valid_ = true;
 }
 
-void MicrodumpContext::SetContextMIPS(MDRawContextMIPS* mips) {
+void MicrodumpContext::SetContextMIPS(MDRawContextMIPS* mips32) {
   DumpContext::SetContextFlags(MD_CONTEXT_MIPS);
-  DumpContext::SetContextMIPS(mips);
+  DumpContext::SetContextMIPS(mips32);
   valid_ = true;
 }
 
@@ -330,9 +330,9 @@ Microdump::Microdump(const string& contents)
                     << std::endl;
           continue;
         }
-        MDRawContextMIPS* mips = new MDRawContextMIPS();
-        memcpy(mips, &cpu_state_raw[0], cpu_state_raw.size());
-        context_->SetContextMIPS(mips);
+        MDRawContextMIPS* mips32 = new MDRawContextMIPS();
+        memcpy(mips32, &cpu_state_raw[0], cpu_state_raw.size());
+        context_->SetContextMIPS(mips32);
       } else if (strcmp(arch.c_str(), kMips64Architecture) == 0) {
         if (cpu_state_raw.size() != sizeof(MDRawContextMIPS)) {
           std::cerr << "Malformed CPU context. Got " << cpu_state_raw.size()
