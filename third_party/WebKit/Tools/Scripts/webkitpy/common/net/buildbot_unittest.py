@@ -191,7 +191,7 @@ class BuildBotTest(unittest.TestCase):
     def test_builder_with_name(self):
         buildbot = BuildBot()
 
-        builder = buildbot.builder_with_name("Test Builder")
+        builder = buildbot.builder_with_name("Test Builder", master_name='chromium.webkit')
         self.assertEqual(builder.name(), "Test Builder")
         self.assertEqual(builder.url(), "http://build.chromium.org/p/chromium.webkit/builders/Test%20Builder")
         self.assertEqual(builder.url_encoded_name(), "Test%20Builder")
