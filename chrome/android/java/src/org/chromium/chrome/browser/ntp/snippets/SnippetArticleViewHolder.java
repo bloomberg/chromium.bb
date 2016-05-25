@@ -10,6 +10,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.media.ThumbnailUtils;
+import android.support.v4.text.BidiFormatter;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -122,9 +123,10 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
         SnippetArticle item = (SnippetArticle) article;
 
         mHeadlineTextView.setText(item.mTitle);
-        mPublisherTextView.setText(String.format(PUBLISHER_FORMAT_STRING, item.mPublisher,
-                DateUtils.getRelativeTimeSpanString(item.mTimestamp, System.currentTimeMillis(),
-                        DateUtils.MINUTE_IN_MILLIS)));
+        String publisherAttribution = String.format(PUBLISHER_FORMAT_STRING, item.mPublisher,
+                DateUtils.getRelativeTimeSpanString(
+                        item.mTimestamp, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS));
+        mPublisherTextView.setText(BidiFormatter.getInstance().unicodeWrap(publisherAttribution));
 
         mArticleSnippetTextView.setText(item.mPreviewText);
         mUrl = item.mUrl;
