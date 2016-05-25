@@ -214,7 +214,7 @@ TraceWrappables
 TrustedEventsDefaultAction
 UnsafeES3APIs
 UnsandboxedAuxiliary status=stable
-UserSelectAll status=experimental
+UserSelectAll status=stable
 WebAnimationsAPI status=experimental
 WebAnimationsSVG status=experimental
 WebBluetooth
