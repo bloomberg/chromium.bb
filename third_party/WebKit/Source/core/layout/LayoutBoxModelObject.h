@@ -26,6 +26,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/BackgroundBleedAvoidance.h"
+#include "core/layout/ContentChangeType.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "platform/geometry/LayoutRect.h"
@@ -48,12 +49,6 @@ enum PaintLayerType {
 // Modes for some of the line-related functions.
 enum LinePositionMode { PositionOnContainingLine, PositionOfInteriorLineBoxes };
 enum LineDirectionMode { HorizontalLine, VerticalLine };
-
-enum ContentChangeType {
-    ImageChanged,
-    CanvasChanged,
-    CanvasContextChanged
-};
 
 class InlineFlowBox;
 
