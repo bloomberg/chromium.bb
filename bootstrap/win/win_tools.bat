@@ -70,7 +70,7 @@ reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | %FIND_EXE% /i 
 if not exist "%WIN_TOOLS_ROOT_DIR%\.git_bleeding_edge" (
   set GIT_VERSION=2.7.4
 ) else (
-  set GIT_VERSION=2.8.1
+  set GIT_VERSION=2.8.3
 )
 set GIT_VERSION=%GIT_VERSION%-%OS_BITS%
 
