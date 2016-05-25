@@ -18,12 +18,9 @@ class WebContents;
 
 class PowerSaveBlockerImpl : public PowerSaveBlocker {
  public:
-  PowerSaveBlockerImpl(
-      PowerSaveBlockerType type,
-      Reason reason,
-      const std::string& description,
-      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+  PowerSaveBlockerImpl(PowerSaveBlockerType type,
+                       Reason reason,
+                       const std::string& description);
   ~PowerSaveBlockerImpl() override;
 
 #if defined(OS_ANDROID)
@@ -54,9 +51,6 @@ class PowerSaveBlockerImpl : public PowerSaveBlocker {
   // block system suspend when screen saver / display sleep is blocked.
   scoped_refptr<Delegate> freedesktop_suspend_delegate_;
 #endif
-
-  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerSaveBlockerImpl);
 };

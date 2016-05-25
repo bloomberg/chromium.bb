@@ -39,7 +39,6 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/power_save_blocker_impl.h"
-#include "content/public/browser/power_save_blocker_factory.h"
 #include "content/public/browser/render_widget_host_view.h"
 #endif
 
@@ -498,10 +497,9 @@ void RenderFrameDevToolsAgentHost::OnClientAttached() {
   frame_trace_recorder_.reset(new DevToolsFrameTraceRecorder());
 #if defined(OS_ANDROID)
   power_save_blocker_.reset(static_cast<PowerSaveBlockerImpl*>(
-      CreatePowerSaveBlocker(
+      PowerSaveBlocker::Create(
           PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-          PowerSaveBlocker::kReasonOther, "DevTools")
-          .release()));
+          PowerSaveBlocker::kReasonOther, "DevTools").release()));
   power_save_blocker_->InitDisplaySleepBlocker(web_contents());
 #endif
 

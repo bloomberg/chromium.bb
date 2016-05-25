@@ -20,13 +20,13 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
-#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/nix/xdg_util.h"
 #include "base/synchronization/lock.h"
+#include "content/public/browser/browser_thread.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -76,9 +76,7 @@ class PowerSaveBlockerImpl::Delegate
   // Picks an appropriate D-Bus API to use based on the desktop environment.
   Delegate(PowerSaveBlockerType type,
            const std::string& description,
-           bool freedesktop_only,
-           scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-           scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
+           bool freedesktop_only);
 
   // Post a task to initialize the delegate on the UI thread, which will itself
   // then post a task to apply the power save block on the FILE thread.
@@ -115,22 +113,22 @@ class PowerSaveBlockerImpl::Delegate
   // Wrapper for XScreenSaverSuspend. Checks whether the X11 Screen Saver
   // Extension is available first. If it isn't, this is a no-op.
   // Must be called on the UI thread.
-  void XSSSuspendSet(bool suspend);
+  static void XSSSuspendSet(bool suspend);
 
   // If DPMS (the power saving system in X11) is not enabled, then we don't want
   // to try to disable power saving, since on some desktop environments that may
   // enable DPMS with very poor default settings (e.g. turning off the display
   // after only 1 second). Must be called on the UI thread.
-  bool DPMSEnabled();
+  static bool DPMSEnabled();
 
   // If no other method is available (i.e. not running under a Desktop
   // Environment) check whether the X11 Screen Saver Extension can be used
   // to disable the screen saver. Must be called on the UI thread.
-  bool XSSAvailable();
+  static bool XSSAvailable();
 
   // Returns an appropriate D-Bus API to use based on the desktop environment.
   // Must be called on the UI thread, as it may call DPMSEnabled() above.
-  DBusAPI SelectAPI();
+  static DBusAPI SelectAPI();
 
   const PowerSaveBlockerType type_;
   const std::string description_;
@@ -160,26 +158,18 @@ class PowerSaveBlockerImpl::Delegate
   // or 0 if there is no active inhibit request.
   uint32_t inhibit_cookie_;
 
-  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-PowerSaveBlockerImpl::Delegate::Delegate(
-    PowerSaveBlockerType type,
-    const std::string& description,
-    bool freedesktop_only,
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
+PowerSaveBlockerImpl::Delegate::Delegate(PowerSaveBlockerType type,
+                                         const std::string& description,
+                                         bool freedesktop_only)
     : type_(type),
       description_(description),
       freedesktop_only_(freedesktop_only),
       api_(NO_API),
       enqueue_apply_(false),
-      inhibit_cookie_(0),
-      ui_task_runner_(ui_task_runner),
-      blocking_task_runner_(blocking_task_runner) {
+      inhibit_cookie_(0) {
   // We're on the client's thread here, so we don't allocate the dbus::Bus
   // object yet. We'll do it later in ApplyBlock(), on the FILE thread.
 }
@@ -191,8 +181,8 @@ void PowerSaveBlockerImpl::Delegate::Init() {
   block_inflight_ = false;
   unblock_inflight_ = false;
   enqueue_unblock_ = false;
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&Delegate::InitOnUIThread, this));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&Delegate::InitOnUIThread, this));
 }
 
 void PowerSaveBlockerImpl::Delegate::CleanUp() {
@@ -204,17 +194,17 @@ void PowerSaveBlockerImpl::Delegate::CleanUp() {
     enqueue_apply_ = false;
   } else {
     if (ShouldBlock()) {
-      blocking_task_runner_->PostTask(FROM_HERE,
-                                      base::Bind(&Delegate::RemoveBlock, this));
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                              base::Bind(&Delegate::RemoveBlock, this));
     }
 
-    ui_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Delegate::XSSSuspendSet, this, false));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(&Delegate::XSSSuspendSet, false));
   }
 }
 
 void PowerSaveBlockerImpl::Delegate::InitOnUIThread() {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
   api_ = SelectAPI();
 
@@ -224,8 +214,8 @@ void PowerSaveBlockerImpl::Delegate::InitOnUIThread() {
       // D-Bus library, so we need to use the same thread above for
       // RemoveBlock(). It must be a thread that allows I/O operations, so we
       // use the FILE thread.
-      blocking_task_runner_->PostTask(FROM_HERE,
-                                      base::Bind(&Delegate::ApplyBlock, this));
+      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                              base::Bind(&Delegate::ApplyBlock, this));
     }
     XSSSuspendSet(true);
   }
@@ -237,7 +227,7 @@ bool PowerSaveBlockerImpl::Delegate::ShouldBlock() const {
 }
 
 void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!bus_);  // ApplyBlock() should only be called once.
   DCHECK(!block_inflight_);
 
@@ -319,7 +309,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
 
 void PowerSaveBlockerImpl::Delegate::ApplyBlockFinished(
     dbus::Response* response) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(bus_);
   DCHECK(block_inflight_);
   block_inflight_ = false;
@@ -339,13 +329,13 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlockFinished(
     enqueue_unblock_ = false;
     // RemoveBlock() was called while the Inhibit operation was in flight,
     // so go ahead and remove the block now.
-    blocking_task_runner_->PostTask(FROM_HERE,
-                                    base::Bind(&Delegate::RemoveBlock, this));
+    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
+                            base::Bind(&Delegate::RemoveBlock, this));
   }
 }
 
 void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(bus_);  // RemoveBlock() should only be called once.
   DCHECK(!unblock_inflight_);
 
@@ -401,7 +391,7 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
 
 void PowerSaveBlockerImpl::Delegate::RemoveBlockFinished(
     dbus::Response* response) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(bus_);
   unblock_inflight_ = false;
 
@@ -415,8 +405,9 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlockFinished(
   bus_ = nullptr;
 }
 
+// static
 void PowerSaveBlockerImpl::Delegate::XSSSuspendSet(bool suspend) {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (!XSSAvailable())
     return;
@@ -425,8 +416,9 @@ void PowerSaveBlockerImpl::Delegate::XSSSuspendSet(bool suspend) {
   XScreenSaverSuspend(display, suspend);
 }
 
+// static
 bool PowerSaveBlockerImpl::Delegate::DPMSEnabled() {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   XDisplay* display = gfx::GetXDisplay();
   BOOL enabled = false;
   int dummy;
@@ -437,8 +429,9 @@ bool PowerSaveBlockerImpl::Delegate::DPMSEnabled() {
   return enabled;
 }
 
+// static
 bool PowerSaveBlockerImpl::Delegate::XSSAvailable() {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   XDisplay* display = gfx::GetXDisplay();
   int dummy;
   int major;
@@ -453,8 +446,9 @@ bool PowerSaveBlockerImpl::Delegate::XSSAvailable() {
   return major > 1 || (major == 1 && minor >= 1);
 }
 
+// static
 DBusAPI PowerSaveBlockerImpl::Delegate::SelectAPI() {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   switch (base::nix::GetDesktopEnvironment(env.get())) {
     case base::nix::DESKTOP_ENVIRONMENT_GNOME:
@@ -476,25 +470,16 @@ DBusAPI PowerSaveBlockerImpl::Delegate::SelectAPI() {
   return NO_API;
 }
 
-PowerSaveBlockerImpl::PowerSaveBlockerImpl(
-    PowerSaveBlockerType type,
-    Reason reason,
-    const std::string& description,
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : delegate_(new Delegate(type,
-                             description,
-                             false /* freedesktop_only */,
-                             ui_task_runner,
-                             blocking_task_runner)),
-      ui_task_runner_(ui_task_runner),
-      blocking_task_runner_(blocking_task_runner) {
+PowerSaveBlockerImpl::PowerSaveBlockerImpl(PowerSaveBlockerType type,
+                                           Reason reason,
+                                           const std::string& description)
+    : delegate_(new Delegate(type, description, false /* freedesktop_only */)) {
   delegate_->Init();
 
   if (type == kPowerSaveBlockPreventDisplaySleep) {
-    freedesktop_suspend_delegate_ = new Delegate(
-        kPowerSaveBlockPreventAppSuspension, description,
-        true /* freedesktop_only */, ui_task_runner, blocking_task_runner);
+    freedesktop_suspend_delegate_ =
+        new Delegate(kPowerSaveBlockPreventAppSuspension, description,
+                     true /* freedesktop_only */);
     freedesktop_suspend_delegate_->Init();
   }
 }

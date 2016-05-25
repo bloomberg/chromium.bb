@@ -4,7 +4,7 @@
 
 #include "content/browser/loader/power_save_block_resource_throttle.h"
 
-#include "content/public/browser/power_save_blocker_factory.h"
+#include "content/public/browser/power_save_blocker.h"
 
 namespace content {
 
@@ -40,7 +40,7 @@ const char* PowerSaveBlockResourceThrottle::GetNameForLogging() const {
 }
 
 void PowerSaveBlockResourceThrottle::ActivatePowerSaveBlocker() {
-  power_save_blocker_ = CreatePowerSaveBlocker(
+  power_save_blocker_ = PowerSaveBlocker::Create(
       PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       PowerSaveBlocker::kReasonOther, "Uploading data to " + host_);
 }

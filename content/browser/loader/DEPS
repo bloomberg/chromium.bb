@@ -95,7 +95,7 @@ specific_include_rules = {
     "+content/public/browser/resource_throttle.h",
 
     # TODO: these all have to be removed.
-    "+content/public/browser/power_save_blocker_factory.h",
+    "+content/public/browser/power_save_blocker.h",
   ],
   "resource_dispatcher_host_impl\.(cc|h)": [
     "-content",

@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/power_save_blocker_impl.h"
+
 #include <windows.h>
 
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
-#include "content/browser/power_save_blocker_impl.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 namespace {
@@ -87,12 +88,8 @@ void ApplySimpleBlock(PowerSaveBlocker::PowerSaveBlockerType type,
 class PowerSaveBlockerImpl::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
  public:
-  Delegate(PowerSaveBlockerType type,
-           const std::string& description,
-           scoped_refptr<base::SequencedTaskRunner> ui_task_runner)
-      : type_(type),
-        description_(description),
-        ui_task_runner_(ui_task_runner) {}
+  Delegate(PowerSaveBlockerType type, const std::string& description)
+      : type_(type), description_(description) {}
 
   // Does the actual work to apply or remove the desired power save block.
   void ApplyBlock();
@@ -108,13 +105,12 @@ class PowerSaveBlockerImpl::Delegate
   PowerSaveBlockerType type_;
   const std::string description_;
   base::win::ScopedHandle handle_;
-  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
 void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return ApplySimpleBlock(type_, 1);
 
@@ -122,7 +118,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
 }
 
 void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
-  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return ApplySimpleBlock(type_, -1);
 
@@ -139,22 +135,19 @@ POWER_REQUEST_TYPE PowerSaveBlockerImpl::Delegate::RequestType() {
   return PowerRequestExecutionRequired;
 }
 
-PowerSaveBlockerImpl::PowerSaveBlockerImpl(
-    PowerSaveBlockerType type,
-    Reason reason,
-    const std::string& description,
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : delegate_(new Delegate(type, description, ui_task_runner)),
-      ui_task_runner_(ui_task_runner),
-      blocking_task_runner_(blocking_task_runner) {
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&Delegate::ApplyBlock, delegate_));
+PowerSaveBlockerImpl::PowerSaveBlockerImpl(PowerSaveBlockerType type,
+                                           Reason reason,
+                                           const std::string& description)
+    : delegate_(new Delegate(type, description)) {
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&Delegate::ApplyBlock, delegate_));
 }
 
 PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&Delegate::RemoveBlock, delegate_));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&Delegate::RemoveBlock, delegate_));
 }
 
 }  // namespace content

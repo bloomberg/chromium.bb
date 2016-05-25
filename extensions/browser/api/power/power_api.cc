@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "content/public/browser/power_save_blocker_factory.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/power.h"
 #include "extensions/common/extension.h"
@@ -72,9 +71,9 @@ void PowerAPI::RemoveRequest(const std::string& extension_id) {
 
 void PowerAPI::SetCreateBlockerFunctionForTesting(
     CreateBlockerFunction function) {
-  create_blocker_function_ = !function.is_null()
-                                 ? function
-                                 : base::Bind(&content::CreatePowerSaveBlocker);
+  create_blocker_function_ =
+      !function.is_null() ? function
+                          : base::Bind(&content::PowerSaveBlocker::Create);
 }
 
 void PowerAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -86,7 +85,7 @@ void PowerAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
 
 PowerAPI::PowerAPI(content::BrowserContext* context)
     : browser_context_(context),
-      create_blocker_function_(base::Bind(&content::CreatePowerSaveBlocker)),
+      create_blocker_function_(base::Bind(&content::PowerSaveBlocker::Create)),
       current_level_(api::power::LEVEL_SYSTEM) {
   ExtensionRegistry::Get(browser_context_)->AddObserver(this);
 }

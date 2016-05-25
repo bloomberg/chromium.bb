@@ -97,15 +97,10 @@ void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
   }
 }
 
-PowerSaveBlockerImpl::PowerSaveBlockerImpl(
-    PowerSaveBlockerType type,
-    Reason reason,
-    const std::string& description,
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : delegate_(new Delegate(type, description)),
-      ui_task_runner_(ui_task_runner),
-      blocking_task_runner_(blocking_task_runner) {
+PowerSaveBlockerImpl::PowerSaveBlockerImpl(PowerSaveBlockerType type,
+                                           Reason reason,
+                                           const std::string& description)
+    : delegate_(new Delegate(type, description)) {
   g_power_thread.Pointer()->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&Delegate::ApplyBlock, delegate_));

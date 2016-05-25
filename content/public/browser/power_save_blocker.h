@@ -8,8 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -50,12 +48,10 @@ class CONTENT_EXPORT PowerSaveBlocker {
   // |reason| and |description| (a more-verbose, human-readable justification of
   // the blocking) may be provided to the underlying system APIs on some
   // platforms.
-  static std::unique_ptr<PowerSaveBlocker> CreateWithTaskRunners(
+  static std::unique_ptr<PowerSaveBlocker> Create(
       PowerSaveBlockerType type,
       Reason reason,
-      const std::string& description,
-      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-      scoped_refptr<base::SequencedTaskRunner> file_task_runner);
+      const std::string& description);
 };
 
 }  // namespace content

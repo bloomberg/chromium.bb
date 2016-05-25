@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chromeos/dbus/power_policy_controller.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace content {
 
@@ -39,16 +40,11 @@ class PowerSaveBlockerImpl::Delegate
  public:
   Delegate(PowerSaveBlockerType type,
            Reason reason,
-           const std::string& description,
-           scoped_refptr<base::SequencedTaskRunner> ui_task_runner)
-      : type_(type),
-        reason_(reason),
-        description_(description),
-        block_id_(0),
-        ui_task_runner_(ui_task_runner) {}
+           const std::string& description)
+      : type_(type), reason_(reason), description_(description), block_id_(0) {}
 
   void ApplyBlock() {
-    DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!chromeos::PowerPolicyController::IsInitialized())
       return;
 
@@ -68,7 +64,7 @@ class PowerSaveBlockerImpl::Delegate
   }
 
   void RemoveBlock() {
-    DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     if (!chromeos::PowerPolicyController::IsInitialized())
       return;
 
@@ -86,27 +82,20 @@ class PowerSaveBlockerImpl::Delegate
   // ID corresponding to the block request in PowerPolicyController.
   int block_id_;
 
-  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
-
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-PowerSaveBlockerImpl::PowerSaveBlockerImpl(
-    PowerSaveBlockerType type,
-    Reason reason,
-    const std::string& description,
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner)
-    : delegate_(new Delegate(type, reason, description, ui_task_runner)),
-      ui_task_runner_(ui_task_runner),
-      blocking_task_runner_(blocking_task_runner) {
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&Delegate::ApplyBlock, delegate_));
+PowerSaveBlockerImpl::PowerSaveBlockerImpl(PowerSaveBlockerType type,
+                                           Reason reason,
+                                           const std::string& description)
+    : delegate_(new Delegate(type, reason, description)) {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&Delegate::ApplyBlock, delegate_));
 }
 
 PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
-  ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&Delegate::RemoveBlock, delegate_));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&Delegate::RemoveBlock, delegate_));
 }
 
 }  // namespace content
