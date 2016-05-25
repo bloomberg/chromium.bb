@@ -139,4 +139,11 @@
       assertWithMatcher:grey_notNil()];
 }
 
+// Tests that sometimes passing and failing makes the bots red.
+// TODO(crbug.com/614729): Remove this test once it is verified that
+// infrastructure is properly working.
+- (void)testCoinFlip {
+  GREYAssertTrue(arc4random_uniform(10) < 5, @"Failed coin flip.");
+}
+
 @end
