@@ -2507,12 +2507,9 @@ def GetConfig():
       signer_tests=False,
   )
 
-  # beaglebone build doesn't generate signed images, so don't try to release
-  # them.
+  # beaglebones are a little weird, but they are created here instead of
+  # one of the more standard loops.
   _beaglebone_release = _release.derive(beaglebone,
-                                        paygen=False,
-                                        signer_tests=False,
-                                        images=['base', 'test'],
                                         important=True)
 
   site_config.Add(
@@ -2524,7 +2521,6 @@ def GetConfig():
   site_config.Add(
       'beaglebone_servo-release', _beaglebone_release,
       boards=['beaglebone_servo'],
-      payload_image='base',
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
   )
 
