@@ -78,7 +78,7 @@ void DisplayScheduler::SetNewRootSurface(SurfaceId root_surface_id) {
 // triggering the deadline.
 void DisplayScheduler::SurfaceDamaged(SurfaceId surface_id) {
   TRACE_EVENT1("cc", "DisplayScheduler::SurfaceDamaged", "surface_id",
-               surface_id.id);
+               surface_id.ToString());
 
   needs_draw_ = true;
 

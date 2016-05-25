@@ -70,7 +70,7 @@ TEST(SurfaceLibTest, SurfaceIdConverterNullId) {
 }
 
 TEST(SurfaceLibTest, SurfaceIdConverterValidId) {
-  cc::SurfaceId valid_id(7);
+  cc::SurfaceId valid_id(0, 7, 0);
   cc::SurfaceId round_trip = SurfaceId::From(valid_id).To<cc::SurfaceId>();
   EXPECT_FALSE(round_trip.is_null());
   EXPECT_EQ(valid_id, round_trip);
@@ -131,7 +131,7 @@ TEST_F(SurfaceLibQuadTest, ColorQuad) {
 TEST_F(SurfaceLibQuadTest, SurfaceQuad) {
   cc::SurfaceDrawQuad* surface_quad =
       pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-  cc::SurfaceId arbitrary_id(5);
+  cc::SurfaceId arbitrary_id(0, 5, 0);
   surface_quad->SetAll(
       sqs, rect, opaque_rect, visible_rect, needs_blending, arbitrary_id);
 
@@ -295,7 +295,7 @@ TEST(SurfaceLibTest, RenderPass) {
 
   cc::SurfaceDrawQuad* surface_quad =
       pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-  cc::SurfaceId arbitrary_id(5);
+  cc::SurfaceId arbitrary_id(0, 5, 0);
   surface_quad->SetAll(
       sqs, rect, opaque_rect, visible_rect, needs_blending, arbitrary_id);
 

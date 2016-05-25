@@ -35,7 +35,7 @@ TEST(SurfaceTest, SurfaceLifetime) {
   FakeSurfaceFactoryClient surface_factory_client;
   SurfaceFactory factory(&manager, &surface_factory_client);
 
-  SurfaceId surface_id(6);
+  SurfaceId surface_id(0, 6, 0);
   {
     factory.Create(surface_id);
     EXPECT_TRUE(manager.GetSurfaceForId(surface_id));
@@ -54,7 +54,8 @@ TEST(SurfaceTest, SurfaceIds) {
     EXPECT_EQ(id1.id_namespace(), id_namespace);
     SurfaceId id2 = allocator.GenerateId();
     EXPECT_EQ(id2.id_namespace(), id_namespace);
-    EXPECT_NE(id1.id, id2.id);
+    EXPECT_NE(id1.local_id(), id2.local_id());
+    EXPECT_NE(id1.nonce(), id2.nonce());
   }
 }
 

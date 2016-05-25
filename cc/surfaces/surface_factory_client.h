@@ -13,7 +13,7 @@
 namespace cc {
 
 class BeginFrameSource;
-struct SurfaceId;
+class SurfaceId;
 
 class CC_SURFACES_EXPORT SurfaceFactoryClient {
  public:

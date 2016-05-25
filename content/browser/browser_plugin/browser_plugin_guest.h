@@ -52,7 +52,7 @@ struct FrameHostMsg_ShowPopup_Params;
 
 namespace cc {
 class CompositorFrame;
-struct SurfaceId;
+class SurfaceId;
 struct SurfaceSequence;
 }  // namespace cc
 

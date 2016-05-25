@@ -98,8 +98,8 @@ void Surface::QueueFrame(std::unique_ptr<CompositorFrame> frame,
     // Notify the manager that sequences were satisfied either if some new
     // sequences were satisfied, or if the set of referenced surfaces changed
     // to force a GC to happen.
-    factory_->manager()->DidSatisfySequences(
-        SurfaceIdAllocator::NamespaceForId(surface_id_), &satisfies_sequences);
+    factory_->manager()->DidSatisfySequences(surface_id_.id_namespace(),
+                                             &satisfies_sequences);
   }
 }
 

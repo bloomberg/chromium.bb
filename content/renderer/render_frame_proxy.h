@@ -24,7 +24,7 @@ struct WebRect;
 }
 
 namespace cc {
-struct SurfaceId;
+class SurfaceId;
 struct SurfaceSequence;
 }
 

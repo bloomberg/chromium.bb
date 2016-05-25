@@ -108,9 +108,9 @@ class DisplaySchedulerTest : public testing::Test {
 };
 
 TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilNewRootSurface) {
-  SurfaceId root_surface_id1(1);
-  SurfaceId root_surface_id2(2);
-  SurfaceId sid1(3);
+  SurfaceId root_surface_id1(0, 1, 0);
+  SurfaceId root_surface_id2(0, 2, 0);
+  SurfaceId sid1(0, 3, 0);
   base::TimeTicks late_deadline;
 
   // Go trough an initial BeginFrame cycle with the root surface.
@@ -143,8 +143,8 @@ TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilNewRootSurface) {
 }
 
 TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilDamagedSurface) {
-  SurfaceId root_surface_id(1);
-  SurfaceId sid1(2);
+  SurfaceId root_surface_id(0, 1, 0);
+  SurfaceId sid1(0, 2, 0);
   base::TimeTicks late_deadline;
 
   // Go trough an initial BeginFrame cycle with the root surface.
@@ -177,9 +177,9 @@ TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilDamagedSurface) {
 }
 
 TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
-  SurfaceId root_surface_id(0);
-  SurfaceId sid1(1);
-  SurfaceId sid2(2);
+  SurfaceId root_surface_id(0, 0, 0);
+  SurfaceId sid1(0, 1, 0);
+  SurfaceId sid2(0, 2, 0);
 
   // Set the root surface
   scheduler_->SetNewRootSurface(root_surface_id);
@@ -241,8 +241,8 @@ TEST_F(DisplaySchedulerTest, SurfaceDamaged) {
 }
 
 TEST_F(DisplaySchedulerTest, OutputSurfaceLost) {
-  SurfaceId root_surface_id(0);
-  SurfaceId sid1(1);
+  SurfaceId root_surface_id(0, 0, 0);
+  SurfaceId sid1(0, 1, 0);
 
   // Set the root surface
   scheduler_->SetNewRootSurface(root_surface_id);
@@ -272,8 +272,8 @@ TEST_F(DisplaySchedulerTest, OutputSurfaceLost) {
 }
 
 TEST_F(DisplaySchedulerTest, ResizeCausesSwap) {
-  SurfaceId root_surface_id(0);
-  SurfaceId sid1(1);
+  SurfaceId root_surface_id(0, 0, 0);
+  SurfaceId sid1(0, 1, 0);
 
   // Set the root surface
   scheduler_->SetNewRootSurface(root_surface_id);
@@ -295,8 +295,8 @@ TEST_F(DisplaySchedulerTest, ResizeCausesSwap) {
 }
 
 TEST_F(DisplaySchedulerTest, RootSurfaceResourcesLocked) {
-  SurfaceId root_surface_id(0);
-  SurfaceId sid1(1);
+  SurfaceId root_surface_id(0, 0, 0);
+  SurfaceId sid1(0, 1, 0);
   base::TimeTicks late_deadline;
 
   // Set the root surface
@@ -341,9 +341,9 @@ TEST_F(DisplaySchedulerTest, RootSurfaceResourcesLocked) {
 }
 
 TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
-  SurfaceId root_surface_id(0);
-  SurfaceId sid1(1);
-  SurfaceId sid2(2);
+  SurfaceId root_surface_id(0, 0, 0);
+  SurfaceId sid1(0, 1, 0);
+  SurfaceId sid2(0, 2, 0);
 
   // Set the root surface
   scheduler_->SetNewRootSurface(root_surface_id);
@@ -406,8 +406,8 @@ TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
 // This test verfies that we try to reschedule the deadline
 // after any event that may change what deadline we want.
 TEST_F(DisplaySchedulerTest, ScheduleBeginFrameDeadline) {
-  SurfaceId root_surface_id(1);
-  SurfaceId sid1(2);
+  SurfaceId root_surface_id(0, 1, 0);
+  SurfaceId sid1(0, 2, 0);
   int count = 1;
   EXPECT_EQ(count++, scheduler_->scheduler_begin_frame_deadline_count());
 

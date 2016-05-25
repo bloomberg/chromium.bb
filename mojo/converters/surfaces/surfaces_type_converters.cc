@@ -256,18 +256,16 @@ bool ConvertDrawQuad(const QuadPtr& input,
 SurfaceIdPtr TypeConverter<SurfaceIdPtr, cc::SurfaceId>::Convert(
     const cc::SurfaceId& input) {
   SurfaceIdPtr id(SurfaceId::New());
-  id->local = static_cast<uint32_t>(input.id);
-  id->id_namespace = cc::SurfaceIdAllocator::NamespaceForId(input);
+  id->id_namespace = input.id_namespace();
+  id->local_id = input.local_id();
+  id->nonce = input.nonce();
   return id;
 }
 
 // static
 cc::SurfaceId TypeConverter<cc::SurfaceId, SurfaceIdPtr>::Convert(
     const SurfaceIdPtr& input) {
-  uint64_t packed_id = input->id_namespace;
-  packed_id <<= 32ull;
-  packed_id |= input->local;
-  return cc::SurfaceId(packed_id);
+  return cc::SurfaceId(input->id_namespace, input->local_id, input->nonce);
 }
 
 // static

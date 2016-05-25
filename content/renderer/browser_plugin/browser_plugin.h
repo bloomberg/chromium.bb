@@ -23,7 +23,7 @@ struct BrowserPluginHostMsg_ResizeGuest_Params;
 struct FrameMsg_BuffersSwapped_Params;
 
 namespace cc {
-struct SurfaceId;
+class SurfaceId;
 struct SurfaceSequence;
 }
 

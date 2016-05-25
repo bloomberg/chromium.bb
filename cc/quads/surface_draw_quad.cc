@@ -41,7 +41,7 @@ const SurfaceDrawQuad* SurfaceDrawQuad::MaterialCast(const DrawQuad* quad) {
 }
 
 void SurfaceDrawQuad::ExtendValue(base::trace_event::TracedValue* value) const {
-  value->SetInteger("surface_id", surface_id.id);
+  value->SetString("surface_id", surface_id.ToString());
 }
 
 

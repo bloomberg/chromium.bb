@@ -49,7 +49,7 @@ class SurfaceAggregatorPerfTest : public testing::Test {
     aggregator_.reset(new SurfaceAggregator(&manager_, resource_provider_.get(),
                                             optimize_damage));
     for (int i = 1; i <= num_surfaces; i++) {
-      factory_.Create(SurfaceId(i));
+      factory_.Create(SurfaceId(0, i, 0));
       std::unique_ptr<RenderPass> pass(RenderPass::Create());
       std::unique_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
 
@@ -86,17 +86,17 @@ class SurfaceAggregatorPerfTest : public testing::Test {
         SurfaceDrawQuad* surface_quad =
             pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
         surface_quad->SetNew(sqs, gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1),
-                             SurfaceId(i - 1));
+                             SurfaceId(0, i - 1, 0));
       }
 
       frame_data->render_pass_list.push_back(std::move(pass));
       std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
       frame->delegated_frame_data = std::move(frame_data);
-      factory_.SubmitCompositorFrame(SurfaceId(i), std::move(frame),
+      factory_.SubmitCompositorFrame(SurfaceId(0, i, 0), std::move(frame),
                                      SurfaceFactory::DrawCallback());
     }
 
-    factory_.Create(SurfaceId(num_surfaces + 1));
+    factory_.Create(SurfaceId(0, num_surfaces + 1, 0));
     timer_.Reset();
     do {
       std::unique_ptr<RenderPass> pass(RenderPass::Create());
@@ -106,7 +106,8 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       SurfaceDrawQuad* surface_quad =
           pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
       surface_quad->SetNew(sqs, gfx::Rect(0, 0, 100, 100),
-                           gfx::Rect(0, 0, 100, 100), SurfaceId(num_surfaces));
+                           gfx::Rect(0, 0, 100, 100),
+                           SurfaceId(0, num_surfaces, 0));
 
       if (full_damage)
         pass->damage_rect = gfx::Rect(0, 0, 100, 100);
@@ -116,21 +117,21 @@ class SurfaceAggregatorPerfTest : public testing::Test {
       frame_data->render_pass_list.push_back(std::move(pass));
       std::unique_ptr<CompositorFrame> frame(new CompositorFrame);
       frame->delegated_frame_data = std::move(frame_data);
-      factory_.SubmitCompositorFrame(SurfaceId(num_surfaces + 1),
+      factory_.SubmitCompositorFrame(SurfaceId(0, num_surfaces + 1, 0),
                                      std::move(frame),
                                      SurfaceFactory::DrawCallback());
 
       std::unique_ptr<CompositorFrame> aggregated =
-          aggregator_->Aggregate(SurfaceId(num_surfaces + 1));
+          aggregator_->Aggregate(SurfaceId(0, num_surfaces + 1, 0));
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
     perf_test::PrintResult("aggregator_speed", "", name, timer_.LapsPerSecond(),
                            "runs/s", true);
 
-    factory_.Destroy(SurfaceId(num_surfaces + 1));
+    factory_.Destroy(SurfaceId(0, num_surfaces + 1, 0));
     for (int i = 1; i <= num_surfaces; i++)
-      factory_.Destroy(SurfaceId(i));
+      factory_.Destroy(SurfaceId(0, i, 0));
   }
 
  protected:

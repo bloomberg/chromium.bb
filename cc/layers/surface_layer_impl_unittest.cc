@@ -22,7 +22,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
       impl.AddChildToRoot<SurfaceLayerImpl>();
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
-  SurfaceId surface_id(9);
+  SurfaceId surface_id(0, 9, 0);
   surface_layer_impl->SetSurfaceId(surface_id);
   surface_layer_impl->SetSurfaceScale(1.f);
   surface_layer_impl->SetSurfaceSize(layer_size);

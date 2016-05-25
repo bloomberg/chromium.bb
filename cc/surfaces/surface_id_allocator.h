@@ -25,8 +25,6 @@ class CC_SURFACES_EXPORT SurfaceIdAllocator {
 
   SurfaceId GenerateId();
 
-  static uint32_t NamespaceForId(SurfaceId id);
-
   // This needs to be called before any sequences with this allocator's
   // namespace will be used to enforce destruction dependencies.
   // When this SurfaceIdAllocator is destroyed, its namespace is

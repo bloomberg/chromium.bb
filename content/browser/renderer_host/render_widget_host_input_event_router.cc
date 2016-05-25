@@ -273,7 +273,7 @@ void RenderWidgetHostInputEventRouter::RemoveSurfaceIdNamespaceOwner(
   }
 
   for (auto it = hittest_data_.begin(); it != hittest_data_.end();) {
-    if (cc::SurfaceIdAllocator::NamespaceForId(it->first) == id)
+    if (it->first.id_namespace() == id)
       it = hittest_data_.erase(it);
     else
       ++it;
@@ -282,8 +282,7 @@ void RenderWidgetHostInputEventRouter::RemoveSurfaceIdNamespaceOwner(
 
 void RenderWidgetHostInputEventRouter::OnHittestData(
     const FrameHostMsg_HittestData_Params& params) {
-  if (owner_map_.find(cc::SurfaceIdAllocator::NamespaceForId(
-          params.surface_id)) == owner_map_.end()) {
+  if (owner_map_.find(params.surface_id.id_namespace()) == owner_map_.end()) {
     return;
   }
   HittestData data;

@@ -1639,7 +1639,7 @@ uint32_t RenderWidgetHostViewMac::SurfaceIdNamespaceAtPoint(
   // case we return our current namespace.
   if (id.is_null())
     return GetSurfaceIdNamespace();
-  return cc::SurfaceIdAllocator::NamespaceForId(id);
+  return id.id_namespace();
 }
 
 bool RenderWidgetHostViewMac::ShouldRouteEvent(

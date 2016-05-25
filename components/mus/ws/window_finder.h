@@ -5,10 +5,6 @@
 #ifndef COMPONENTS_MUS_WS_WINDOW_FINDER_H_
 #define COMPONENTS_MUS_WS_WINDOW_FINDER_H_
 
-namespace cc {
-struct SurfaceId;
-}
-
 namespace gfx {
 class Point;
 class Transform;

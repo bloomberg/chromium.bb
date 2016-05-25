@@ -110,7 +110,7 @@ bool ServerWindowSurface::ConvertSurfaceDrawQuad(
   // Surface ids originate from the client, meaning they are ClientWindowIds
   // and can only be resolved by the client that submitted the frame.
   const ClientWindowId other_client_window_id(
-      input->surface_quad_state->surface.To<cc::SurfaceId>().id);
+      input->surface_quad_state->surface->local_id);
   ServerWindow* other_window = window()->delegate()->FindWindowForSurface(
       window(), mojom::SurfaceType::DEFAULT, other_client_window_id);
   if (!other_window) {

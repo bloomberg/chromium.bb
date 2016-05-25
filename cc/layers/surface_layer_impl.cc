@@ -179,7 +179,7 @@ void SurfaceLayerImpl::AppendRainbowDebugBorder(RenderPass* render_pass) {
 
 void SurfaceLayerImpl::AsValueInto(base::trace_event::TracedValue* dict) const {
   LayerImpl::AsValueInto(dict);
-  dict->SetInteger("surface_id", surface_id_.id);
+  dict->SetString("surface_id", surface_id_.ToString());
 }
 
 const char* SurfaceLayerImpl::LayerTypeAsString() const {
