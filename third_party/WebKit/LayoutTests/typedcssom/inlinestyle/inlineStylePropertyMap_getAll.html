@@ -8,14 +8,14 @@
 
 test(function() {
   // TODO(meade): Make this a test case for a property with multiple values when that is supported.
-  testElement.styleMap.set('width', new SimpleLength(90, 'px'));
+  testElement.styleMap.set('width', new CSSSimpleLength(90, 'px'));
   var result = testElement.styleMap.getAll('width');
   assert_equals(result.length, 1);
   assert_equals(result[0].cssString, '90px');
 }, "getAll() returns a list of values");
 
 test(function() {
-  testElement.styleMap.set('width', new SimpleLength(100, 'px'));
+  testElement.styleMap.set('width', new CSSSimpleLength(100, 'px'));
   var lowerResult = testElement.styleMap.getAll('width');
   var upperResult = testElement.styleMap.getAll('WIDTH');
   var mixedResult = testElement.styleMap.getAll('wIdTh');

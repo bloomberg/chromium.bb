@@ -4,13 +4,13 @@
 
 <script>
 
-var simpleLength = new SimpleLength(0, "px");
-var decimalLength = new SimpleLength(1.1, "px");
-var negativeLength = new SimpleLength(-2.2, "em");
+var simpleLength = new CSSSimpleLength(0, "px");
+var decimalLength = new CSSSimpleLength(1.1, "px");
+var negativeLength = new CSSSimpleLength(-2.2, "em");
 var calcLengthPx = new CalcLength({px: 1});
 var calcLength = new CalcLength({px: 1, em: -2.2});
 
-var simplePercent = new SimpleLength(10, "percent");
+var simplePercent = new CSSSimpleLength(10, "percent");
 var calcPercent = new CalcLength({px: 1, percent: 2.2});
 
 var values = [

@@ -9,7 +9,7 @@
 // Append
 test(function() {
   assert_throws(new TypeError(), function() {
-    testElement.styleMap.append('width', new SimpleLength(60, 'px'));
+    testElement.styleMap.append('width', new CSSSimpleLength(60, 'px'));
   });
 }, "Attempting to append to a property that doesn't support multiple values throws");
 

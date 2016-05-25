@@ -10,12 +10,12 @@ test(function() {
 }, "Constructor should throw an error for CalcLengths with a percentage type");
 
 test(function() {
-  var simpleLength = new SimpleLength(10, 'percent');
+  var simpleLength = new CSSSimpleLength(10, 'percent');
   assert_throws(null, function() { new Perspective(simpleLength) });
-}, "Constructor should throw an error for SimpleLengths with a percentage type");
+}, "Constructor should throw an error for CSSSimpleLengths with a percentage type");
 
 test(function() {
-  var simpleLength = new SimpleLength(10, 'px');
+  var simpleLength = new CSSSimpleLength(10, 'px');
   var calcLength = new CalcLength({px: 10, em: 3.2});
   var perspectiveTransformSimple = new Perspective(simpleLength);
   var perspectiveTransformCalc = new Perspective(calcLength);

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<script src='../resources/testharness.js'></script>
+<script src='../resources/testharnessreport.js'></script>
+
+<script>
+
+test(function() {
+  var simpleLength1 = new CSSSimpleLength(5.1, 'px');
+  var simpleLength2 = new CSSSimpleLength(10, 'px');
+
+  var result = simpleLength1.add(simpleLength2);
+
+  assert_not_equals(simpleLength1, result);
+  assert_not_equals(simpleLength2, result);
+  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.value, 15.1);
+  assert_equals(result.type, 'px');
+}, 'Test that adding CSSSimpleLengths with the same unit produces a new CSSSimpleLength with the correct value.');
+
+test(function() {
+  var simpleLength1 = new CSSSimpleLength(5.1, 'px');
+  var simpleLength2 = new CSSSimpleLength(10, 'percent');
+
+  var result = simpleLength1.add(simpleLength2);
+
+  assert_true(result instanceof CalcLength);
+  assert_equals(result.px, 5.1);
+  assert_equals(result.percent, 10);
+}, 'Test that adding CSSSimpleLengths with different units produces a calc length with the correct values.');
+
+test(function() {
+  var simpleLength1 = new CSSSimpleLength(5.1, 'px');
+  var simpleLength2 = new CSSSimpleLength(10, 'px');
+
+  var result = simpleLength1.subtract(simpleLength2);
+
+  assert_not_equals(simpleLength1, result);
+  assert_not_equals(simpleLength2, result);
+  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.value, -4.9);
+  assert_equals(result.type, 'px');
+}, 'Test that subtracting CSSSimpleLengths with the same unit produces a new CSSSimpleLength with the correct value.');
+
+test(function() {
+  var simpleLength1 = new CSSSimpleLength(5.1, 'px');
+  var simpleLength2 = new CSSSimpleLength(10, 'percent');
+
+  var result = simpleLength1.subtract(simpleLength2);
+
+  assert_true(result instanceof CalcLength);
+  assert_equals(result.px, 5.1);
+  assert_equals(result.percent, -10);
+}, 'Test that subtracting CSSSimpleLengths with different units produces a calc length with the correct values.');
+
+test(function() {
+  var simpleLength = new CSSSimpleLength(5.2, 'px');
+  var result = simpleLength.multiply(4);
+
+  assert_not_equals(simpleLength, result);
+  assert_true(result instanceof CSSSimpleLength);
+  assert_approx_equals(result.value, 20.8, 0.00000001);
+  assert_equals(result.type, 'px');
+}, 'Test that multiplying a CSSSimpleLength produces a new CSSSimpleLength with the correct value.');
+
+test(function() {
+  var simpleLength = new CSSSimpleLength(25, 'px');
+  var result = simpleLength.divide(2);
+
+  assert_not_equals(simpleLength, result);
+  assert_true(result instanceof CSSSimpleLength);
+  assert_equals(result.value, 12.5);
+  assert_equals(result.type, 'px');
+}, 'Test that dividing a CSSSimpleLength produces a new CSSSimpleLength with the correct value.');
+
+test(function() {
+  var values = [
+    {input: new CSSSimpleLength(1, 'px'), cssString: '1px' },
+    {input: new CSSSimpleLength(2, 'percent'), cssString: '2%' },
+    {input: new CSSSimpleLength(3, '%'), cssString: '3%' },
+    {input: new CSSSimpleLength(4, 'em'), cssString: '4em' },
+    {input: new CSSSimpleLength(5, 'ex'), cssString: '5ex' },
+    {input: new CSSSimpleLength(6, 'ch'), cssString: '6ch' },
+    {input: new CSSSimpleLength(7, 'rem'), cssString: '7rem' },
+    {input: new CSSSimpleLength(8, 'vw'), cssString: '8vw' },
+    {input: new CSSSimpleLength(9, 'vh'), cssString: '9vh' },
+    {input: new CSSSimpleLength(10, 'vmin'), cssString: '10vmin' },
+    {input: new CSSSimpleLength(11, 'vmax'), cssString: '11vmax' },
+    {input: new CSSSimpleLength(12, 'cm'), cssString: '12cm' },
+    {input: new CSSSimpleLength(13, 'mm'), cssString: '13mm' },
+    {input: new CSSSimpleLength(14, 'in'), cssString: '14in' },
+    {input: new CSSSimpleLength(15, 'pc'), cssString: '15pc' },
+    {input: new CSSSimpleLength(16, 'pt'), cssString: '16pt' },
+    // Same again to double check that it's case insensitive.
+    {input: new CSSSimpleLength(1, 'PX'), cssString: '1px' },
+    {input: new CSSSimpleLength(2, 'PERCENT'), cssString: '2%' },
+    {input: new CSSSimpleLength(3, '%'), cssString: '3%' },
+    {input: new CSSSimpleLength(4, 'EM'), cssString: '4em' },
+    {input: new CSSSimpleLength(5, 'EX'), cssString: '5ex' },
+    {input: new CSSSimpleLength(6, 'CH'), cssString: '6ch' },
+    {input: new CSSSimpleLength(7, 'REM'), cssString: '7rem' },
+    {input: new CSSSimpleLength(8, 'VW'), cssString: '8vw' },
+    {input: new CSSSimpleLength(9, 'VH'), cssString: '9vh' },
+    {input: new CSSSimpleLength(10, 'VMIN'), cssString: '10vmin' },
+    {input: new CSSSimpleLength(11, 'VMAX'), cssString: '11vmax' },
+    {input: new CSSSimpleLength(12, 'CM'), cssString: '12cm' },
+    {input: new CSSSimpleLength(13, 'MM'), cssString: '13mm' },
+    {input: new CSSSimpleLength(14, 'IN'), cssString: '14in' },
+    {input: new CSSSimpleLength(15, 'PC'), cssString: '15pc' },
+    {input: new CSSSimpleLength(16, 'PT'), cssString: '16pt' },
+  ];
+
+  for (var i = 0; i < values.length; ++i) {
+    assert_equals(values[i].input.cssString, values[i].cssString);
+  }
+}, 'Test that the CSSSimpleLength css string is generated correctly for each unit type.');
+
+test(function() {
+  var values = [
+    {value: NaN, unit: 'px'},
+    {value: Infinity, unit: 'px'},
+    {value: -Infinity, unit: 'px'},
+    {value: 5, unit: 'puppies'}
+  ];
+
+  for (var i = 0; i < values.length; ++i) {
+    assert_throws(null, function() { new CSSSimpleLength(values[i].value, values[i].unit); });
+  }
+}, 'Test that invalid input throws an exception.');
+
+</script>
+
+<body>
+</body>

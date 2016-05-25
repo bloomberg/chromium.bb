@@ -5,10 +5,10 @@
 
 test(function() {
   var result = CSSLengthValue.from(5, 'px');
-  assert_true(result instanceof SimpleLength);
+  assert_true(result instanceof CSSSimpleLength);
   assert_equals(result.value, 5);
   assert_equals(result.type, 'px');
-}, "Test that CSSLengthValue's static from(double value, LengthType type) method produces a SimpleLength.");
+}, "Test that CSSLengthValue's static from(double value, LengthType type) method produces a CSSSimpleLength.");
 
 test(function() {
   var result = CSSLengthValue.from({px: 1, percent: 2.5});

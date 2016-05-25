@@ -7,14 +7,14 @@
 <script>
 
 test(function() {
-  testElement.styleMap.set('width', new SimpleLength(10, 'px'));
+  testElement.styleMap.set('width', new CSSSimpleLength(10, 'px'));
   assert_equals(testElement.styleMap.get('width').cssString, '10px');
 }, "Setting and getting round trips");
 
 test(function() {
-  testElement.styleMap.set('WIDTH', new SimpleLength(40, 'px'));
+  testElement.styleMap.set('WIDTH', new CSSSimpleLength(40, 'px'));
   assert_equals(testElement.styleMap.get('WiDtH').cssString, '40px');
-  testElement.styleMap.set('wIdTh', new SimpleLength(50, 'px'));
+  testElement.styleMap.set('wIdTh', new CSSSimpleLength(50, 'px'));
   assert_equals(testElement.styleMap.get('width').cssString, '50px');
 }, "Setting and getting is not case sensitive");
 
@@ -24,7 +24,7 @@ test(function() {
 }, "Changes to element.style are reflected in the element.styleMap");
 
 test(function() {
-  testElement.styleMap.set('width', new SimpleLength(30, 'px'));
+  testElement.styleMap.set('width', new CSSSimpleLength(30, 'px'));
   assert_equals(testElement.style.width, '30px');
 }, "Changes to element.styleMap are reflected in element.style");
 
@@ -35,7 +35,7 @@ test(function() {
 }, "Attempting to set an invalid type for a property throws");
 
 test(function() {
-  testElement.styleMap.set('width', new SimpleLength(2, 'px'));
+  testElement.styleMap.set('width', new CSSSimpleLength(2, 'px'));
   assert_throws(new TypeError(), function() {
     testElement.styleMap.set('width', new CSSNumberValue(4));
   });

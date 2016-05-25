@@ -13,12 +13,12 @@ test(function() {
 
 test(function() {
   testElement.style = '';
-  testElement.styleMap.set('width', new SimpleLength(10, 'px'));
+  testElement.styleMap.set('width', new CSSSimpleLength(10, 'px'));
   assert_array_equals(testElement.styleMap.getProperties(), ['width']);
 }, "getProperties returns the name of a property if it is set");
 
 test(function() {
-  testElement.styleMap.set('width', new SimpleLength(10, 'px'));
+  testElement.styleMap.set('width', new CSSSimpleLength(10, 'px'));
   assert_array_equals(testElement.styleMap.getProperties(), ['width']);
 
   testElement.styleMap.get('height');
@@ -26,7 +26,7 @@ test(function() {
 }, "Accessing another property doesn't add a spurious result");
 
 test(function() {
-  testElement.styleMap.set('width', new SimpleLength(10, 'px'));
+  testElement.styleMap.set('width', new CSSSimpleLength(10, 'px'));
   assert_array_equals(testElement.styleMap.getProperties(), ['width']);
 
   testElement.styleMap.delete('width');
@@ -34,10 +34,10 @@ test(function() {
 }, "property name does not appear in result after deletion");
 
 test(function() {
-  testElement.styleMap.set('width', new SimpleLength(10, 'px'));
+  testElement.styleMap.set('width', new CSSSimpleLength(10, 'px'));
   assert_array_equals(testElement.styleMap.getProperties(), ['width']);
 
-  testElement.styleMap.set('border-top-width', new SimpleLength(10, 'px'));
+  testElement.styleMap.set('border-top-width', new CSSSimpleLength(10, 'px'));
   var result = testElement.styleMap.getProperties();
   // TODO(meade): The spec should describe an order for this.
   assert_equals(2, result.length, 2);

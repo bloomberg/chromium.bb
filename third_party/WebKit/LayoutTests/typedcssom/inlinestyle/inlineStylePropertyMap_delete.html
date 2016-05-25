@@ -17,7 +17,7 @@ test(function() {
 }, "delete() removes the value from the property when set in element.style");
 
 test(function() {
-  testElement.styleMap.set('width', new SimpleLength(100, 'px'));
+  testElement.styleMap.set('width', new CSSSimpleLength(100, 'px'));
   assert_equals(testElement.styleMap.get('width').cssString, '100px');
 
   testElement.styleMap.delete('width');

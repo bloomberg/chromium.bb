@@ -5,8 +5,8 @@
 #include "core/css/cssom/CSSLengthValue.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/css/cssom/CSSSimpleLength.h"
 #include "core/css/cssom/CalcDictionary.h"
-#include "core/css/cssom/SimpleLength.h"
 #include "core/css/cssom/StyleCalcLength.h"
 #include "wtf/HashMap.h"
 
@@ -28,7 +28,7 @@ CSSLengthValue* CSSLengthValue::from(const String& cssString, ExceptionState& ex
 
 CSSLengthValue* CSSLengthValue::from(double value, const String& type, ExceptionState&)
 {
-    return SimpleLength::create(value, unitFromName(type));
+    return CSSSimpleLength::create(value, unitFromName(type));
 }
 
 CSSLengthValue* CSSLengthValue::from(const CalcDictionary& dictionary, ExceptionState& exceptionState)

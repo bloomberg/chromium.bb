@@ -5,7 +5,7 @@
 #include "core/css/cssom/StyleValueFactory.h"
 
 #include "core/css/CSSValue.h"
-#include "core/css/cssom/SimpleLength.h"
+#include "core/css/cssom/CSSSimpleLength.h"
 #include "core/css/cssom/StyleValue.h"
 
 namespace blink {
@@ -15,7 +15,7 @@ StyleValue* StyleValueFactory::create(CSSPropertyID propertyID, const CSSValue& 
     if (value.isPrimitiveValue()) {
         const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value);
         if (primitiveValue.isLength() && !primitiveValue.isCalculated()) {
-            return SimpleLength::create(primitiveValue.getDoubleValue(), primitiveValue.typeWithCalcResolved());
+            return CSSSimpleLength::create(primitiveValue.getDoubleValue(), primitiveValue.typeWithCalcResolved());
         }
     }
     // TODO(meade): Implement the rest.

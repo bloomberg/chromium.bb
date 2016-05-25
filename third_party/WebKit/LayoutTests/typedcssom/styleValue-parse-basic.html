@@ -7,10 +7,10 @@ test(function() {
   var result = StyleValue.parse('width', '10px');
 
   assert_not_equals(result, null);
-  assert_true(result instanceof SimpleLength);
+  assert_true(result instanceof CSSSimpleLength);
   assert_equals(result.value, 10);
   assert_equals(result.type, 'px');
-}, 'Parsing 10px results in a SimpleLength');
+}, 'Parsing 10px results in a CSSSimpleLength');
 
 test(function() {
   assert_equals(StyleValue.parse('width', 'hello'), null);

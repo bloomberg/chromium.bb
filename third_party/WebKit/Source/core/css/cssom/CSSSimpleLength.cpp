@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/SimpleLength.h"
+#include "core/css/cssom/CSSSimpleLength.h"
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/cssom/StyleCalcLength.h"
@@ -10,19 +10,19 @@
 
 namespace blink {
 
-CSSValue* SimpleLength::toCSSValue() const
+CSSValue* CSSSimpleLength::toCSSValue() const
 {
     return cssValuePool().createValue(m_value, m_unit);
 }
 
-bool SimpleLength::containsPercent() const
+bool CSSSimpleLength::containsPercent() const
 {
     return lengthUnit() == CSSPrimitiveValue::UnitType::Percentage;
 }
 
-CSSLengthValue* SimpleLength::addInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* CSSSimpleLength::addInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
 {
-    const SimpleLength* o = toSimpleLength(other);
+    const CSSSimpleLength* o = toCSSSimpleLength(other);
     if (m_unit == o->m_unit)
         return create(m_value + o->value(), m_unit);
 
@@ -31,9 +31,9 @@ CSSLengthValue* SimpleLength::addInternal(const CSSLengthValue* other, Exception
     return result->add(other, exceptionState);
 }
 
-CSSLengthValue* SimpleLength::subtractInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* CSSSimpleLength::subtractInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
 {
-    const SimpleLength* o = toSimpleLength(other);
+    const CSSSimpleLength* o = toCSSSimpleLength(other);
     if (m_unit == o->m_unit)
         return create(m_value - o->value(), m_unit);
 
@@ -42,12 +42,12 @@ CSSLengthValue* SimpleLength::subtractInternal(const CSSLengthValue* other, Exce
     return result->subtract(other, exceptionState);
 }
 
-CSSLengthValue* SimpleLength::multiplyInternal(double x, ExceptionState& exceptionState)
+CSSLengthValue* CSSSimpleLength::multiplyInternal(double x, ExceptionState& exceptionState)
 {
     return create(m_value * x, m_unit);
 }
 
-CSSLengthValue* SimpleLength::divideInternal(double x, ExceptionState& exceptionState)
+CSSLengthValue* CSSSimpleLength::divideInternal(double x, ExceptionState& exceptionState)
 {
     return create(m_value / x, m_unit);
 }

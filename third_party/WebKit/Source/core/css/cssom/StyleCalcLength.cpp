@@ -6,8 +6,8 @@
 
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/cssom/CSSSimpleLength.h"
 #include "core/css/cssom/CalcDictionary.h"
-#include "core/css/cssom/SimpleLength.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -19,7 +19,7 @@ StyleCalcLength::StyleCalcLength(const StyleCalcLength& other) :
     m_hasValues(other.m_hasValues)
 {}
 
-StyleCalcLength::StyleCalcLength(const SimpleLength& other) :
+StyleCalcLength::StyleCalcLength(const CSSSimpleLength& other) :
     m_values(CSSLengthValue::kNumSupportedUnits), m_hasValues(CSSLengthValue::kNumSupportedUnits)
 {
     set(other.value(), other.lengthUnit());
@@ -28,7 +28,7 @@ StyleCalcLength::StyleCalcLength(const SimpleLength& other) :
 StyleCalcLength* StyleCalcLength::create(const CSSLengthValue* length)
 {
     if (length->type() == SimpleLengthType) {
-        const SimpleLength* simpleLength = toSimpleLength(length);
+        const CSSSimpleLength* simpleLength = toCSSSimpleLength(length);
         return new StyleCalcLength(*simpleLength);
     }
 
@@ -95,7 +95,7 @@ CSSLengthValue* StyleCalcLength::subtractInternal(const CSSLengthValue* other, E
             }
         }
     } else {
-        const SimpleLength* o = toSimpleLength(other);
+        const CSSSimpleLength* o = toCSSSimpleLength(other);
         result->set(get(o->lengthUnit()) - o->value(), o->lengthUnit());
     }
     return result;

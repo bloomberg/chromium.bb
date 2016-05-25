@@ -504,6 +504,12 @@ interface CSSRuleList
     method @@iterator
     method constructor
     method item
+interface CSSSimpleLength : CSSLengthValue
+    attribute @@toStringTag
+    getter type
+    getter value
+    method constructor
+    setter value
 interface CSSStyleDeclaration
     attribute @@toStringTag
     getter cssFloat
@@ -5793,12 +5799,6 @@ interface ShippingAddress
     getter regionCode
     getter sortingCode
     method constructor
-interface SimpleLength : CSSLengthValue
-    attribute @@toStringTag
-    getter type
-    getter value
-    method constructor
-    setter value
 interface SiteBoundCredential : Credential
     attribute @@toStringTag
     getter iconURL

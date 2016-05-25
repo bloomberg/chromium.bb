@@ -11,7 +11,7 @@
 namespace blink {
 
 class CalcDictionary;
-class SimpleLength;
+class CSSSimpleLength;
 
 class CORE_EXPORT StyleCalcLength final : public CSSLengthValue {
     DEFINE_WRAPPERTYPEINFO();
@@ -62,7 +62,7 @@ protected:
 private:
     StyleCalcLength();
     StyleCalcLength(const StyleCalcLength& other);
-    StyleCalcLength(const SimpleLength& other);
+    StyleCalcLength(const CSSSimpleLength& other);
 
     static int indexForUnit(CSSPrimitiveValue::UnitType);
     static CSSPrimitiveValue::UnitType unitFromIndex(int index)
