@@ -1590,7 +1590,7 @@
 
     'swarming_gpu_fyi_tests_gn_release_trybot': [
       'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gn',
-      'release_bot', 'angle_deqp_tests',
+      'release_trybot', 'angle_deqp_tests',
     ],
 
     'swarming_gpu_fyi_tests_gyp_clang_debug_trybot_x86': [
