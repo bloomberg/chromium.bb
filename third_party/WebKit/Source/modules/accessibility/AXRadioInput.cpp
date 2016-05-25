@@ -8,6 +8,7 @@
 #include "core/InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/RadioInputType.h"
+#include "core/layout/LayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 
 namespace blink {

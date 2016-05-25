@@ -28,7 +28,6 @@
 
 #include "modules/accessibility/AXARIAGrid.h"
 
-#include "core/layout/LayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXTableColumn.h"
 #include "modules/accessibility/AXTableRow.h"

@@ -30,7 +30,6 @@
 #define AXObjectCacheImpl_h
 
 #include "core/dom/AXObjectCache.h"
-#include "core/layout/LayoutText.h"
 #include "modules/ModulesExport.h"
 #include "modules/accessibility/AXObject.h"
 #include "platform/Timer.h"

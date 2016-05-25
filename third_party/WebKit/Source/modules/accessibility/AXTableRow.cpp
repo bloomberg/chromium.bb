@@ -28,7 +28,7 @@
 
 #include "modules/accessibility/AXTableRow.h"
 
-#include "core/layout/LayoutTableRow.h"
+#include "core/layout/LayoutObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXTableCell.h"
 
