@@ -30,7 +30,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/layout/LayoutImage.h"
+#include "core/layout/LayoutBox.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"

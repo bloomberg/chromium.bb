@@ -38,7 +38,6 @@
 #include "core/html/HTMLMetaElement.h"
 #include "core/html/HTMLParamElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/layout/LayoutEmbeddedObject.h"
 #include "core/plugins/PluginView.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/Widget.h"

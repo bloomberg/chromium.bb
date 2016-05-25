@@ -35,7 +35,7 @@
 #include "core/html/ValidityState.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/layout/LayoutBox.h"
+#include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/Page.h"
 #include "core/page/ValidationMessageClient.h"

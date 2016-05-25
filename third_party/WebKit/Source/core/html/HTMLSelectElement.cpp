@@ -61,7 +61,6 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutListBox.h"
 #include "core/layout/LayoutMenuList.h"
-#include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/page/AutoscrollController.h"
 #include "core/page/ChromeClient.h"

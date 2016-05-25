@@ -44,8 +44,6 @@
 #include "core/html/shadow/MediaControls.h"
 #include "core/html/track/TextTrackList.h"
 #include "core/input/EventHandler.h"
-#include "core/layout/LayoutTheme.h"
-#include "core/layout/LayoutVideo.h"
 #include "core/layout/api/LayoutSliderItem.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/Histogram.h"
