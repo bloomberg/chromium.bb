@@ -1,31 +1,21 @@
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src="video-test.js"></script>
+<!DOCTYPE html>
+<title>This tests that audio controls do not fade out when the audio is playing.</title>
+<script src="media-file.js"></script>
 <script src="media-controls.js"></script>
-<body>
-<p>
-    This tests that audio controls do not fade out when the audio is playing.
-</p>
-<audio id="audio" controls autoplay src="content/test.oga"></audio>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<audio controls autoplay></audio>
 <script>
-    var controls;
-
-    if (window.testRunner) {
-        testRunner.waitUntilDone();
-        testRunner.dumpAsText();
-    }
-
-    var audio = document.getElementById("audio");
-    audio.addEventListener("playing", function()
-    {
-        runAfterHideMediaControlsTimerFired(function()
-        {
-            controls = mediaControlsButton(audio, "panel");
-            testExpected("getComputedStyle(controls).opacity", 1);
-
-            consoleWrite("");
-            endTest();
-        }, audio);
+async_test(function(t) {
+    var audio = document.querySelector("audio");
+    audio.src = findMediaFile("audio", "content/test");
+    audio.onplaying = t.step_func(function() {
+        runAfterHideMediaControlsTimerFired(t.step_func_done(controlsTimerFired), audio);
     });
+
+    function controlsTimerFired() {
+        var controls = mediaControlsButton(audio, "panel");
+        assert_equals(getComputedStyle(controls).opacity, "1");
+    }
+});
 </script>
-</body>

@@ -99,6 +99,20 @@ function textTrackDisplayElement(parentElement, id, cueNumber)
     return displayElement;
 }
 
+function isClosedCaptionsButtonVisible(currentMediaElement)
+{
+    var captionsButtonElement = mediaControlsButton(currentMediaElement, "toggle-closed-captions-button");
+    var captionsButtonCoordinates = mediaControlsButtonCoordinates(currentMediaElement, "toggle-closed-captions-button");
+
+    if (!captionsButtonElement.disabled
+        && captionsButtonCoordinates[0] > 0
+        && captionsButtonCoordinates[1] > 0) {
+        return true;
+    }
+
+    return false;
+}
+
 function testClosedCaptionsButtonVisibility(expected)
 {
     try {
