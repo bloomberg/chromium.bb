@@ -69,6 +69,9 @@ class NonClientFrameController : public views::WidgetDelegateView,
       const std::string& name,
       const std::vector<uint8_t>* old_data,
       const std::vector<uint8_t>* new_data) override;
+  void OnWindowLocalPropertyChanged(mus::Window* window,
+                                    const void* key,
+                                    intptr_t old) override;
   void OnWindowDestroyed(mus::Window* window) override;
 
   views::Widget* widget_;

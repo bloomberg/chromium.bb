@@ -66,6 +66,10 @@ base::string16 GetAppID(const mus::Window* window);
 
 bool GetWindowIgnoredByShelf(mus::Window* window);
 
+void SetWindowIsJanky(mus::Window* window, bool janky);
+bool IsWindowJanky(mus::Window* window);
+bool IsWindowJankyProperty(const void* key);
+
 void SetAlwaysOnTop(mus::Window* window, bool value);
 bool IsAlwaysOnTop(mus::Window* window);
 

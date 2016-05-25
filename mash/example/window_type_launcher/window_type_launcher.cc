@@ -8,7 +8,9 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/platform_thread.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "mash/session/public/interfaces/session.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -24,6 +26,7 @@
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/window_manager_connection.h"
@@ -262,7 +265,10 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
                                    base::ASCIIToUTF16("Show/Hide a Window"))),
         show_web_notification_(new views::LabelButton(
             this,
-            base::ASCIIToUTF16("Show a web/app notification"))) {
+            base::ASCIIToUTF16("Show a web/app notification"))),
+        jank_button_(new views::LabelButton(
+            this, base::ASCIIToUTF16("Jank for (s):"))),
+        jank_duration_field_(new views::Textfield) {
     create_button_->SetStyle(views::Button::STYLE_BUTTON);
     always_on_top_button_->SetStyle(views::Button::STYLE_BUTTON);
     panel_button_->SetStyle(views::Button::STYLE_BUTTON);
@@ -279,6 +285,8 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
     examples_button_->SetStyle(views::Button::STYLE_BUTTON);
     show_hide_window_button_->SetStyle(views::Button::STYLE_BUTTON);
     show_web_notification_->SetStyle(views::Button::STYLE_BUTTON);
+    jank_button_->SetStyle(views::Button::STYLE_BUTTON);
+    jank_duration_field_->SetText(base::ASCIIToUTF16("5"));
 
     views::GridLayout* layout = new views::GridLayout(this);
     layout->SetInsets(5, 5, 5, 5);
@@ -290,6 +298,22 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
                           views::GridLayout::USE_PREF,
                           0,
                           0);
+
+    views::ColumnSet* label_field_set = layout->AddColumnSet(1);
+    label_field_set->AddColumn(views::GridLayout::LEADING,
+                               views::GridLayout::CENTER,
+                               0,
+                               views::GridLayout::USE_PREF,
+                               0,
+                               0);
+    label_field_set->AddPaddingColumn(0, 5);
+    label_field_set->AddColumn(views::GridLayout::FILL,
+                               views::GridLayout::CENTER,
+                               0,
+                               views::GridLayout::FIXED,
+                               75,
+                               0);
+
     AddViewToLayout(layout, create_button_);
     AddViewToLayout(layout, always_on_top_button_);
     AddViewToLayout(layout, panel_button_);
@@ -306,6 +330,12 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
     AddViewToLayout(layout, examples_button_);
     AddViewToLayout(layout, show_hide_window_button_);
     AddViewToLayout(layout, show_web_notification_);
+
+    layout->StartRow(0, 1);
+    layout->AddView(jank_button_);
+    layout->AddView(jank_duration_field_);
+    layout->AddPaddingRow(0, 5);
+
     set_context_menu_controller(this);
   }
   ~WindowTypeLauncherView() override {
@@ -376,6 +406,10 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
       NonModalTransient::OpenNonModalTransient(GetWidget()->GetNativeView());
     } else if (sender == show_hide_window_button_) {
       NonModalTransient::ToggleNonModalTransient(GetWidget()->GetNativeView());
+    } else if (sender == jank_button_) {
+      int64_t val;
+      base::StringToInt64(jank_duration_field_->text(), &val);
+      base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(val));
     }
   }
 
@@ -434,6 +468,8 @@ class WindowTypeLauncherView : public views::WidgetDelegateView,
   views::LabelButton* examples_button_;
   views::LabelButton* show_hide_window_button_;
   views::LabelButton* show_web_notification_;
+  views::LabelButton* jank_button_;
+  views::Textfield* jank_duration_field_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTypeLauncherView);

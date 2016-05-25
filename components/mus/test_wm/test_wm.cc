@@ -89,6 +89,10 @@ class TestWM : public shell::ShellClient,
     root_->AddChild(window);
     return window;
   }
+  void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
+                                  bool janky) override {
+    // Don't care.
+  }
   void OnAccelerator(uint32_t id, const ui::Event& event) override {
     // Don't care.
   }

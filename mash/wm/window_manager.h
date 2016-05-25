@@ -58,6 +58,8 @@ class WindowManager : public mus::WindowTracker,
       std::unique_ptr<std::vector<uint8_t>>* new_data) override;
   mus::Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) override;
+  void OnWmClientJankinessChanged(const std::set<mus::Window*>& client_windows,
+                                  bool not_responding) override;
   void OnAccelerator(uint32_t id, const ui::Event& event) override;
 
   // session::mojom::ScreenlockStateListener:

@@ -66,6 +66,8 @@ class MusDemo : public shell::ShellClient,
       std::unique_ptr<std::vector<uint8_t>>* new_data) override;
   mus::Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) override;
+  void OnWmClientJankinessChanged(const std::set<mus::Window*>& client_windows,
+                                  bool janky) override;
   void OnAccelerator(uint32_t id, const ui::Event& event) override;
 
   // Allocate a bitmap the same size as the window to draw into.

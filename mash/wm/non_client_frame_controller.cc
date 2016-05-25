@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
@@ -240,8 +241,13 @@ base::string16 NonClientFrameController::GetWindowTitle() const {
     return base::string16();
   }
 
-  return window_->GetSharedProperty<base::string16>(
+  base::string16 title = window_->GetSharedProperty<base::string16>(
       mus::mojom::WindowManager::kWindowTitle_Property);
+
+  if (IsWindowJanky(window_))
+    title += base::ASCIIToUTF16(" !! Not responding !!");
+
+  return title;
 }
 
 views::View* NonClientFrameController::GetContentsView() {
@@ -286,6 +292,16 @@ void NonClientFrameController::OnWindowSharedPropertyChanged(
     widget_->OnSizeConstraintsChanged();
   else if (name == mus::mojom::WindowManager::kWindowTitle_Property)
     widget_->UpdateWindowTitle();
+}
+
+void NonClientFrameController::OnWindowLocalPropertyChanged(
+    mus::Window* window,
+    const void* key,
+    intptr_t old) {
+  if (IsWindowJankyProperty(key)) {
+    widget_->UpdateWindowTitle();
+    widget_->non_client_view()->frame_view()->SchedulePaint();
+  }
 }
 
 void NonClientFrameController::OnWindowDestroyed(mus::Window* window) {

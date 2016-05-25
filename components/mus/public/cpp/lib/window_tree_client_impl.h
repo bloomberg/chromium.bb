@@ -250,11 +250,14 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                      const mojo::String& name,
                      mojo::Array<uint8_t> transit_data) override;
   void WmCreateTopLevelWindow(uint32_t change_id,
+                              ConnectionSpecificId requesting_client_id,
                               mojo::Map<mojo::String, mojo::Array<uint8_t>>
                                   transport_properties) override;
+  void WmClientJankinessChanged(ConnectionSpecificId client_id,
+                                bool janky) override;
   void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override;
 
-  // Overriden from WindowManagerClient:
+  // Overridden from WindowManagerClient:
   void SetFrameDecorationValues(
       mojom::FrameDecorationValuesPtr values) override;
   void SetNonClientCursor(Window* window,
@@ -289,6 +292,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   std::set<Window*> roots_;
 
   IdToWindowMap windows_;
+  std::map<ConnectionSpecificId, std::set<Window*>> embedded_windows_;
 
   Window* capture_window_;
 

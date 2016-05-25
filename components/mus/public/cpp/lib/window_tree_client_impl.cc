@@ -454,6 +454,14 @@ void WindowTreeClientImpl::AddWindow(Window* window) {
 void WindowTreeClientImpl::OnWindowDestroyed(Window* window) {
   windows_.erase(server_id(window));
 
+  for (auto& entry : embedded_windows_) {
+    auto it = entry.second.find(window);
+    if (it != entry.second.end()) {
+      entry.second.erase(it);
+      break;
+    }
+  }
+
   // Remove any InFlightChanges associated with the window.
   std::set<uint32_t> in_flight_change_ids_to_remove;
   for (const auto& pair : in_flight_map_) {
@@ -1072,14 +1080,27 @@ void WindowTreeClientImpl::WmSetProperty(uint32_t change_id,
 
 void WindowTreeClientImpl::WmCreateTopLevelWindow(
     uint32_t change_id,
+    ConnectionSpecificId requesting_client_id,
     mojo::Map<mojo::String, mojo::Array<uint8_t>> transport_properties) {
   std::map<std::string, std::vector<uint8_t>> properties =
       transport_properties.To<std::map<std::string, std::vector<uint8_t>>>();
   Window* window =
       window_manager_delegate_->OnWmCreateTopLevelWindow(&properties);
+  embedded_windows_[requesting_client_id].insert(window);
   if (window_manager_internal_client_) {
     window_manager_internal_client_->OnWmCreatedTopLevelWindow(
         change_id, server_id(window));
+  }
+}
+
+void WindowTreeClientImpl::WmClientJankinessChanged(
+    ConnectionSpecificId client_id,
+    bool janky) {
+  if (window_manager_delegate_) {
+    auto it = embedded_windows_.find(client_id);
+    CHECK(it != embedded_windows_.end());
+    window_manager_delegate_->OnWmClientJankinessChanged(
+        embedded_windows_[client_id], janky);
   }
 }
 

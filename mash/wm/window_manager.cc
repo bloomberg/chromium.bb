@@ -193,6 +193,13 @@ mus::Window* WindowManager::OnWmCreateTopLevelWindow(
   return NewTopLevelWindow(properties);
 }
 
+void WindowManager::OnWmClientJankinessChanged(
+    const std::set<mus::Window*>& client_windows,
+    bool janky) {
+  for (auto window : client_windows)
+    SetWindowIsJanky(window, janky);
+}
+
 void WindowManager::OnAccelerator(uint32_t id, const ui::Event& event) {
   root_controller_->OnAccelerator(id, std::move(event));
 }

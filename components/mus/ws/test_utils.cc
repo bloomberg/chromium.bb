@@ -154,10 +154,14 @@ WindowTree* TestDisplayBinding::CreateWindowTree(ServerWindow* root) {
 
 void TestWindowManager::WmCreateTopLevelWindow(
     uint32_t change_id,
+    ConnectionSpecificId requesting_client_id,
     mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) {
   got_create_top_level_window_ = true;
   change_id_ = change_id;
 }
+
+void TestWindowManager::WmClientJankinessChanged(ConnectionSpecificId client_id,
+                                                 bool janky) {}
 
 void TestWindowManager::OnAccelerator(uint32_t id, mojom::EventPtr event) {
   on_accelerator_called_ = true;

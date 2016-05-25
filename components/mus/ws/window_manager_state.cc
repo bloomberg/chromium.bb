@@ -169,7 +169,8 @@ WindowManagerState::WindowManagerState(Display* display,
       platform_display_(platform_display),
       is_user_id_valid_(is_user_id_valid),
       user_id_(user_id),
-      event_dispatcher_(this) {
+      event_dispatcher_(this),
+      weak_factory_(this) {
   frame_decoration_values_ = mojom::FrameDecorationValues::New();
   frame_decoration_values_->normal_client_area_insets = mojo::Insets::New();
   frame_decoration_values_->maximized_client_area_insets = mojo::Insets::New();
@@ -245,9 +246,10 @@ WindowServer* WindowManagerState::window_server() {
   return display_->window_server();
 }
 
-void WindowManagerState::OnEventAckTimeout() {
-  // TODO(sad): Figure out what we should do.
-  NOTIMPLEMENTED() << "Event ACK timed out.";
+void WindowManagerState::OnEventAckTimeout(ConnectionSpecificId connection_id) {
+  WindowTree* hung_tree = window_server()->GetTreeWithId(connection_id);
+  if (hung_tree && !hung_tree->janky())
+    tree_->ConnectionJankinessChanged(hung_tree);
   OnEventAck(tree_awaiting_input_ack_, mojom::EventResult::UNHANDLED);
 }
 
@@ -319,8 +321,10 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
   const base::TimeDelta max_delay = base::debug::BeingDebugged()
                                         ? base::TimeDelta::FromDays(1)
                                         : GetDefaultAckTimerDelay();
-  event_ack_timer_.Start(FROM_HERE, max_delay, this,
-                         &WindowManagerState::OnEventAckTimeout);
+  event_ack_timer_.Start(
+      FROM_HERE, max_delay,
+      base::Bind(&WindowManagerState::OnEventAckTimeout,
+                 weak_factory_.GetWeakPtr(), tree->id()));
 
   tree_awaiting_input_ack_ = tree;
   if (accelerator) {

@@ -14,6 +14,11 @@
 #include "ui/views/mus/screen_mus_delegate.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 
+#ifdef NOTIMPLEMENTED
+#undef NOTIMPLEMENTED
+#define NOTIMPLEMENTED() DVLOG(1) << "notimplemented"
+#endif
+
 namespace mojo {
 
 template <>
@@ -112,7 +117,7 @@ display::Display ScreenMus::GetPrimaryDisplay() const {
 
 display::Display ScreenMus::GetDisplayNearestWindow(
     gfx::NativeView view) const {
-  //NOTIMPLEMENTED();
+  NOTIMPLEMENTED();
   return *display_list_.GetPrimaryDisplayIterator();
 }
 

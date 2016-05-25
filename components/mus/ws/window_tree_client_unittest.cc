@@ -408,7 +408,12 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   }
   void WmCreateTopLevelWindow(
       uint32_t change_id,
+      ConnectionSpecificId requesting_client_id,
       mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override {
+    NOTIMPLEMENTED();
+  }
+  void WmClientJankinessChanged(ConnectionSpecificId client_id,
+                                bool janky) override {
     NOTIMPLEMENTED();
   }
   void OnAccelerator(uint32_t id, mojom::EventPtr event) override {

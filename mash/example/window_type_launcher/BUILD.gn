@@ -22,6 +22,7 @@ executable("window_type_launcher") {
     ":window_type_launcher_resources",
     "//base",
     "//base:base_static",
+    "//base:i18n",
     "//build/config/sanitizers:deps",
     "//build/win:default_exe_manifest",
     "//components/mus/public/cpp",

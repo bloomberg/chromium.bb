@@ -154,11 +154,13 @@ class WindowManagerStateTestApi {
                                   bool in_nonclient_area,
                                   const ui::Event& event,
                                   Accelerator* accelerator) {
-    wms_->DispatchInputEventToWindow(target, in_nonclient_area, event,
-                                     accelerator);
+    wms_->DispatchInputEventToWindow(
+        target, in_nonclient_area, event, accelerator);
   }
 
-  void OnEventAckTimeout() { wms_->OnEventAckTimeout(); }
+  void OnEventAckTimeout(ConnectionSpecificId client_id) {
+    wms_->OnEventAckTimeout(client_id);
+  }
 
   mojom::WindowTree* tree_awaiting_input_ack() {
     return wms_->tree_awaiting_input_ack_;
@@ -239,7 +241,10 @@ class TestWindowManager : public mojom::WindowManager {
                      mojo::Array<uint8_t> value) override {}
   void WmCreateTopLevelWindow(
       uint32_t change_id,
+      ConnectionSpecificId requesting_client_id,
       mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override;
+  void WmClientJankinessChanged(ConnectionSpecificId client_id,
+                                bool janky) override;
   void OnAccelerator(uint32_t id, mojom::EventPtr event) override;
 
   bool got_create_top_level_window_;

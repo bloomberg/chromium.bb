@@ -116,6 +116,13 @@ Window* WindowServerTestBase::OnWmCreateTopLevelWindow(
              : nullptr;
 }
 
+void WindowServerTestBase::OnWmClientJankinessChanged(
+    const std::set<Window*>& client_windows,
+    bool janky) {
+  if (window_manager_delegate_)
+    window_manager_delegate_->OnWmClientJankinessChanged(client_windows, janky);
+}
+
 void WindowServerTestBase::OnAccelerator(uint32_t id, const ui::Event& event) {
   if (window_manager_delegate_)
     window_manager_delegate_->OnAccelerator(id, event);

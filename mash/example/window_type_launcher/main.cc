@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
+#include "base/i18n/icu_util.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
@@ -59,6 +60,8 @@ int main(int argc, char** argv) {
 
     mojo::edk::InitIPCSupport(&process_delegate, io_thread.task_runner().get());
     mojo::edk::SetParentPipeHandleFromCommandLine();
+
+    base::i18n::InitializeICU();
 
     base::MessageLoop loop;
     WindowTypeLauncher delegate;

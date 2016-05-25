@@ -58,9 +58,19 @@ interface WindowManager {
                 uint32 window_id,
                 string name,
                 array<uint8>? value);
+  
   // Asks the WindowManager to create a new window.
+  // |requesting_client_id| is the id of the client issuing the request. This
+  // allows the window manager to track top level windows by client.
   WmCreateTopLevelWindow(uint32 change_id,
+                         uint16 requesting_client_id,
                          map<string, array<uint8>> properties);
+
+  // A WindowTreeClient is considered "janky" by Mus when it stops ACK'ing input
+  // events within a reasonable timeframe. When a client enters or exits this
+  // state, Mus will tell the window manager about it so that the window manager
+  // can update the UI for the janky windows.
+  WmClientJankinessChanged(uint16 client_id, bool janky);
 
   // An accelerator registered via AddAccelerator() has been triggered.
   OnAccelerator(uint32 id, Event event);

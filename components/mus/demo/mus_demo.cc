@@ -121,6 +121,12 @@ mus::Window* MusDemo::OnWmCreateTopLevelWindow(
   return nullptr;
 }
 
+void MusDemo::OnWmClientJankinessChanged(
+    const std::set<mus::Window*>& client_windows,
+    bool janky) {
+  // Don't care
+}
+
 void MusDemo::OnAccelerator(uint32_t id, const ui::Event& event) {
   // Don't care
 }

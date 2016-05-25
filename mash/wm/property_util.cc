@@ -17,6 +17,7 @@ namespace wm {
 namespace {
 
 MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(Shadow*, kLocalShadowProperty, nullptr);
+MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(bool, kWindowIsJankyProperty, false);
 
 }  // namespace
 
@@ -202,6 +203,18 @@ bool GetWindowIgnoredByShelf(mus::Window* window) {
              mus::mojom::WindowManager::kWindowIgnoredByShelf_Property) &&
          window->GetSharedProperty<bool>(
              mus::mojom::WindowManager::kWindowIgnoredByShelf_Property);
+}
+
+void SetWindowIsJanky(mus::Window* window, bool janky) {
+  window->SetLocalProperty(kWindowIsJankyProperty, janky);
+}
+
+bool IsWindowJanky(mus::Window* window) {
+  return window->GetLocalProperty(kWindowIsJankyProperty);
+}
+
+bool IsWindowJankyProperty(const void* key) {
+  return key == kWindowIsJankyProperty;
 }
 
 void SetAlwaysOnTop(mus::Window* window, bool value) {

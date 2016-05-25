@@ -114,6 +114,8 @@ class WindowTree : public mojom::WindowTree,
   void set_connection_name(const std::string& name) { connection_name_ = name; }
   const std::string& connection_name() const { return connection_name_; }
 
+  bool janky() const { return janky_; }
+
   const Display* GetDisplay(const ServerWindow* window) const;
   Display* GetDisplay(const ServerWindow* window) {
     return const_cast<Display*>(
@@ -158,6 +160,11 @@ class WindowTree : public mojom::WindowTree,
   // Calls through to the client.
   void OnChangeCompleted(uint32_t change_id, bool success);
   void OnAccelerator(uint32_t accelerator_id, const ui::Event& event);
+
+  // Called when |tree|'s jankiness changes (see janky_ for definition).
+  // Notifies the window manager client so it can update UI for the affected
+  // window(s).
+  void ConnectionJankinessChanged(WindowTree* tree);
 
   // The following methods are invoked after the corresponding change has been
   // processed. They do the appropriate bookkeeping and update the client as
@@ -444,6 +451,10 @@ class WindowTree : public mojom::WindowTree,
   base::hash_map<WindowId, ClientWindowId> window_id_to_client_id_map_;
 
   uint32_t event_ack_id_;
+
+  // A client is considered janky if it hasn't ACK'ed input events within a
+  // reasonable timeframe.
+  bool janky_ = false;
 
   // Set when the client is using SetEventObserver() to observe events,
   // otherwise null.

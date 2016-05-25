@@ -125,7 +125,7 @@ class WindowManagerState : public EventDispatcherDelegate {
 
   WindowServer* window_server();
 
-  void OnEventAckTimeout();
+  void OnEventAckTimeout(ConnectionSpecificId connection_id);
 
   // Schedules an event to be processed later.
   void QueueEvent(const ui::Event& event,
@@ -185,6 +185,8 @@ class WindowManagerState : public EventDispatcherDelegate {
   base::OneShotTimer event_ack_timer_;
 
   EventDispatcher event_dispatcher_;
+
+  base::WeakPtrFactory<WindowManagerState> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerState);
 };

@@ -62,6 +62,8 @@ class TestWindowManagerDelegate : public WindowManagerDelegate {
       std::map<std::string, std::vector<uint8_t>>* properties) override {
     return nullptr;
   }
+  void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
+                                  bool janky) override {}
   void OnAccelerator(uint32_t id, const ui::Event& event) override {}
 
  private:

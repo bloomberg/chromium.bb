@@ -399,6 +399,14 @@ void WindowTree::OnAccelerator(uint32_t accelerator_id,
                                           mojom::Event::From(event));
 }
 
+void WindowTree::ConnectionJankinessChanged(WindowTree* tree) {
+  tree->janky_ = !tree->janky_;
+  if (window_manager_internal_) {
+    window_manager_internal_->WmClientJankinessChanged(
+        tree->id(), tree->janky());
+  }
+}
+
 void WindowTree::ProcessWindowBoundsChanged(const ServerWindow* window,
                                             const gfx::Rect& old_bounds,
                                             const gfx::Rect& new_bounds,
@@ -1030,7 +1038,7 @@ void WindowTree::NewTopLevelWindow(
       new WaitingForTopLevelWindowInfo(client_window_id, wm_change_id));
 
   wms->tree()->window_manager_internal_->WmCreateTopLevelWindow(
-      wm_change_id, std::move(transport_properties));
+      wm_change_id, id_, std::move(transport_properties));
 }
 
 void WindowTree::DeleteWindow(uint32_t change_id, Id transport_window_id) {
@@ -1265,6 +1273,9 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
     NOTIMPLEMENTED() << "Wrong event acked.";
   }
   event_ack_id_ = 0;
+
+  if (janky_)
+    event_source_wms_->tree()->ConnectionJankinessChanged(this);
 
   WindowManagerState* event_source_wms = event_source_wms_;
   event_source_wms_ = nullptr;

@@ -90,6 +90,12 @@ class WindowManagerDelegate {
   virtual Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) = 0;
 
+  // Called when a Mus client's jankiness changes. |windows| is the set of
+  // windows owned by the window manager in which the client is embedded.
+  virtual void OnWmClientJankinessChanged(
+      const std::set<Window*>& client_windows,
+      bool janky) = 0;
+
   virtual void OnAccelerator(uint32_t id, const ui::Event& event) = 0;
 
  protected:
