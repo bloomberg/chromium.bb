@@ -71,10 +71,12 @@ cr.define('extension_test_util', function() {
    * Returns whether or not the element specified is visible.
    * @param {!HTMLElement} parentEl
    * @param {string} selector
+   * @param {boolean=} checkLightDom
    * @return {boolean}
    */
-  function isVisible(parentEl, selector) {
-    var element = parentEl.$$(selector);
+  function isVisible(parentEl, selector, checkLightDom) {
+    var element = (checkLightDom ? parentEl.querySelector : parentEl.$$).call(
+                      parentEl, selector);
     var rect = element ? element.getBoundingClientRect() : null;
     return !!rect && rect.width * rect.height > 0;
   }
@@ -108,6 +110,7 @@ cr.define('extension_test_util', function() {
         opt_properties[id] : 'a'.repeat(32);
     var baseUrl = 'chrome-extension://' + id + '/';
     return Object.assign({
+      commands: [],
       dependentExtensions: [],
       description: 'This is an extension',
       disableReasons: {

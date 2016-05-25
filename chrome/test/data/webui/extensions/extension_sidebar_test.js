@@ -30,6 +30,9 @@ cr.define('extension_sidebar_tests', function() {
 
     /** @override */
     showType: function() {},
+
+    /** @override */
+    showKeyboardShortcuts: function() {}
   };
 
   /** @enum {string} */
@@ -96,6 +99,8 @@ cr.define('extension_sidebar_tests', function() {
         mockDelegate.testClickingCalls(
             sidebar.$$('#sections-apps'), 'showType',
             [extensions.ShowingType.APPS]);
+        mockDelegate.testClickingCalls(
+            sidebar.$$('#keyboard-shortcuts'), 'showKeyboardShortcuts', []);
       });
     });
   }

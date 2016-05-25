@@ -9,6 +9,7 @@ cr.define('extension_manager_tests', function() {
     ItemOrder: 'item order',
     ItemListVisibility: 'item list visibility',
     ShowItems: 'show items',
+    ChangePages: 'change pages',
   };
 
   function getDataByName(list, name) {
@@ -122,6 +123,34 @@ cr.define('extension_manager_tests', function() {
         // Repeating a selection should have no change.
         manager.listHelper_.showType(extensions.ShowingType.EXTENSIONS);
         expectEquals(manager.extensions, manager.$['items-list'].items);
+      });
+
+      test(assert(TestNames.ChangePages), function() {
+        // We start on the item list.
+        var pages = manager.$.pages;
+        expectEquals(Page.ITEM_LIST, pages.selected);
+
+        // Switch: item list -> keyboard shortcuts.
+        MockInteractions.tap(manager.sidebar.$['keyboard-shortcuts']);
+        Polymer.dom.flush();
+        expectEquals(Page.KEYBOARD_SHORTCUTS, pages.selected);
+
+        // Switch: keyboard shortcuts -> item list.
+        MockInteractions.tap(manager.sidebar.$['sections-apps']);
+        Polymer.dom.flush();
+        expectEquals(Page.ITEM_LIST, pages.selected);
+
+        // Switch: item list -> detail view.
+        var item = manager.$['items-list'].$$('extensions-item');
+        assert(item);
+        item.onDetailsTap_();
+        Polymer.dom.flush();
+        expectEquals(Page.DETAIL_VIEW, pages.selected);
+
+        // Switch: detail view -> keyboard shortcuts.
+        MockInteractions.tap(manager.sidebar.$['keyboard-shortcuts']);
+        Polymer.dom.flush();
+        expectEquals(Page.KEYBOARD_SHORTCUTS, pages.selected);
       });
     });
   }

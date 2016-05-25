@@ -12,19 +12,6 @@ cr.define('extensions', function() {
     ],
 
     properties: {
-      animationConfig: {
-        type: Object,
-        value: function() {
-          return {
-            exit: [{
-              name: 'hero-animation',
-              id: 'hero',
-              fromPage: this,
-            }],
-          };
-        },
-      },
-
       /** @type {Array<!chrome.developerPrivate.ExtensionInfo>} */
       items: Array,
 
@@ -42,6 +29,13 @@ cr.define('extensions', function() {
     listeners: {
       'list.extension-item-size-changed': 'itemSizeChanged_',
       'list.extension-item-show-details': 'showItemDetails_',
+    },
+
+    ready: function() {
+      /** @type {extensions.AnimationHelper} */
+      this.animationHelper = new extensions.AnimationHelper(this, this.$.list);
+      this.animationHelper.setEntryAnimation(extensions.Animation.FADE_IN);
+      this.animationHelper.setExitAnimation(extensions.Animation.HERO);
     },
 
     /**

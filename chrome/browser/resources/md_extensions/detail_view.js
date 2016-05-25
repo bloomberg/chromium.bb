@@ -11,26 +11,6 @@ cr.define('extensions', function() {
     behaviors: [Polymer.NeonAnimatableBehavior],
 
     properties: {
-      animationConfig: {
-        type: Object,
-        /** @suppress {checkTypes} Compiler doesn't recognize this.$.main. */
-        value: function() {
-          return {
-            entry: [{
-              name: 'hero-animation',
-              id: 'hero',
-              toPage: this
-            }],
-            exit: [{
-              name: 'scale-down-animation',
-              node: this.$.main,
-              transformOrigin: '50% 50%',
-              axis: 'y'
-            }],
-          };
-        },
-      },
-
       /**
        * The underlying ExtensionInfo for the details being displayed.
        * @type {chrome.developerPrivate.ExtensionInfo}
@@ -43,6 +23,8 @@ cr.define('extensions', function() {
 
     ready: function() {
       this.sharedElements = {hero: this.$.main};
+      /** @type {!extensions.AnimationHelper} */
+      this.animationHelper = new extensions.AnimationHelper(this, this.$.main);
     },
 
     /** @private */

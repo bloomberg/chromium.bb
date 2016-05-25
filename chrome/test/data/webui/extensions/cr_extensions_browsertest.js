@@ -39,6 +39,7 @@ CrExtensionsBrowserTest.prototype = {
     'extension_detail_view_test.js',
     'extension_item_test.js',
     'extension_item_list_test.js',
+    'extension_keyboard_shortcuts_test.js',
     'extension_service_test.js',
     'extension_sidebar_test.js',
     'extension_manager_test.js',
@@ -202,4 +203,19 @@ TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
        'ExtensionManagerShowItemsTest', function() {
   extension_manager_tests.registerTests();
   mocha.grep(assert(extension_manager_tests.TestNames.ShowItems)).run();
+});
+
+TEST_F('CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled',
+       'ExtensionManagerChangePagesTest', function() {
+  extension_manager_tests.registerTests();
+  mocha.grep(assert(extension_manager_tests.TestNames.ChangePages)).run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// Extension Keyboard Shortcuts Tests
+
+TEST_F('CrExtensionsBrowserTest', 'ExtensionKeyboardShortcutsLayoutTest',
+       function() {
+  extension_keyboard_shortcut_tests.registerTests();
+  mocha.grep(assert(extension_keyboard_shortcut_tests.TestNames.Layout)).run();
 });

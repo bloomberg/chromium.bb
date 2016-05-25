@@ -41,6 +41,9 @@ cr.define('extensions', function() {
      * @param {extensions.ShowingType} type
      */
     showType: assertNotReached,
+
+    /** Shows the keyboard shortcuts page. */
+    showKeyboardShortcuts: assertNotReached,
   };
 
   var Sidebar = Polymer({
@@ -96,6 +99,11 @@ cr.define('extensions', function() {
     /** @private */
     onUpdateNowTap_: function() {
       this.delegate_.updateAllExtensions();
+    },
+
+    /** @private */
+    onKeyboardShortcutsTap_: function() {
+      this.listDelegate_.showKeyboardShortcuts();
     },
   });
 

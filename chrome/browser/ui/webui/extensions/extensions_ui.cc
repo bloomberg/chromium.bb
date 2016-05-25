@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/browser/google_util.h"
 #include "content/public/browser/web_ui.h"
@@ -98,6 +99,14 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
       l10n_util::GetStringFUTF16(
           IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE,
           l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
+  source->AddLocalizedString("shortcutNotSet",
+                             IDS_MD_EXTENSIONS_SHORTCUT_NOT_SET);
+  source->AddLocalizedString("shortcutScopeGlobal",
+                             IDS_MD_EXTENSIONS_SHORTCUT_SCOPE_GLOBAL);
+  source->AddLocalizedString("shortcutScopeLabel",
+                             IDS_MD_EXTENSIONS_SHORTCUT_SCOPE_LABEL);
+  source->AddLocalizedString("shortcutScopeInChrome",
+                             IDS_MD_EXTENSIONS_SHORTCUT_SCOPE_IN_CHROME);
   source->AddLocalizedString("viewBackgroundPage",
                              IDS_EXTENSIONS_BACKGROUND_PAGE);
   source->AddLocalizedString("viewIncognito",
@@ -113,10 +122,18 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
               GURL(extension_urls::GetWebstoreExtensionsCategoryURL()),
               g_browser_process->GetApplicationLocale()).spec()));
 
+  source->AddResourcePath("animation_helper.html",
+                          IDR_MD_EXTENSIONS_ANIMATION_HELPER_HTML);
+  source->AddResourcePath("animation_helper.js",
+                          IDR_MD_EXTENSIONS_ANIMATION_HELPER_JS);
   source->AddResourcePath("extensions.js", IDR_MD_EXTENSIONS_EXTENSIONS_JS);
   source->AddResourcePath("detail_view.html",
                           IDR_MD_EXTENSIONS_DETAIL_VIEW_HTML);
   source->AddResourcePath("detail_view.js", IDR_MD_EXTENSIONS_DETAIL_VIEW_JS);
+  source->AddResourcePath("keyboard_shortcuts.html",
+                          IDR_MD_EXTENSIONS_KEYBOARD_SHORTCUTS_HTML);
+  source->AddResourcePath("keyboard_shortcuts.js",
+                          IDR_MD_EXTENSIONS_KEYBOARD_SHORTCUTS_JS);
   source->AddResourcePath("manager.css", IDR_MD_EXTENSIONS_MANAGER_CSS);
   source->AddResourcePath("manager.html", IDR_MD_EXTENSIONS_MANAGER_HTML);
   source->AddResourcePath("manager.js", IDR_MD_EXTENSIONS_MANAGER_JS);

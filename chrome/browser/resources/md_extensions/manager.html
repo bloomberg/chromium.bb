@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
 <link rel="import" href="chrome://extensions/detail_view.html">
 <link rel="import" href="chrome://extensions/item_list.html">
+<link rel="import" href="chrome://extensions/keyboard_shortcuts.html">
 <link rel="import" href="chrome://extensions/service.html">
 <link rel="import" href="chrome://extensions/sidebar.html">
 <link rel="import" href="chrome://extensions/toolbar.html">
@@ -27,6 +28,9 @@
         <extensions-detail-view id="details-view" delegate="[[itemDelegate]]"
             on-close="onDetailsViewClose_">
         </extensions-detail-view>
+        <extensions-keyboard-shortcuts id="keyboard-shortcuts"
+            items="[[extensions]]">
+        </extensions-keyboard-shortcuts>
       </neon-animated-pages>
     </paper-header-panel>
   </template>
