@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "blimp/net/blimp_connection_statistics.h"
 #include "blimp/net/common.h"
 #include "blimp/net/stream_packet_writer.h"
 #include "blimp/net/test_common.h"
@@ -33,7 +34,7 @@ class StreamPacketWriterTest : public testing::Test {
       : test_data_(
             new net::DrainableIOBuffer(new net::StringIOBuffer(test_data_str_),
                                        test_data_str_.size())),
-        message_writer_(&socket_) {}
+        message_writer_(&socket_, &statistics_) {}
 
  protected:
   const std::string test_data_str_ = "U WOT M8";
@@ -41,6 +42,7 @@ class StreamPacketWriterTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   MockStreamSocket socket_;
+  BlimpConnectionStatistics statistics_;
   StreamPacketWriter message_writer_;
   testing::InSequence mock_sequence_;
 
@@ -93,6 +95,9 @@ TEST_F(StreamPacketWriterTest, TestPartialWriteAsync) {
       .RetiresOnSaturation();
 
   message_writer_.WritePacket(test_data_, writer_cb.callback());
+
+  EXPECT_EQ(static_cast<int>(payload.size()),
+            statistics_.Get(BlimpConnectionStatistics::BYTES_SENT));
 
   // Header is written - first one byte, then the remainder.
   header_cb.Run(1);
@@ -198,7 +203,8 @@ TEST_F(StreamPacketWriterTest, DeletedDuringHeaderWrite) {
   net::TestCompletionCallback writer_cb;
   net::CompletionCallback header_cb;
   net::CompletionCallback payload_cb;
-  std::unique_ptr<StreamPacketWriter> writer(new StreamPacketWriter(&socket_));
+  std::unique_ptr<StreamPacketWriter> writer(
+      new StreamPacketWriter(&socket_, &statistics_));
 
   // Write header.
   EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
@@ -218,7 +224,8 @@ TEST_F(StreamPacketWriterTest, DeletedDuringPayloadWrite) {
   net::TestCompletionCallback writer_cb;
   net::CompletionCallback header_cb;
   net::CompletionCallback payload_cb;
-  std::unique_ptr<StreamPacketWriter> writer(new StreamPacketWriter(&socket_));
+  std::unique_ptr<StreamPacketWriter> writer(
+      new StreamPacketWriter(&socket_, &statistics_));
 
   EXPECT_CALL(socket_, Write(BufferEquals(EncodeHeader(test_data_str_.size())),
                              kPacketHeaderSizeBytes, _))

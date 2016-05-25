@@ -23,6 +23,7 @@
 #include "blimp/engine/app/ui/blimp_window_tree_host.h"
 #include "blimp/engine/common/blimp_browser_context.h"
 #include "blimp/net/blimp_connection.h"
+#include "blimp/net/blimp_connection_statistics.h"
 #include "blimp/net/blimp_message_multiplexer.h"
 #include "blimp/net/blimp_message_thread_pipe.h"
 #include "blimp/net/browser_connection_handler.h"
@@ -148,6 +149,7 @@ class EngineNetworkComponents : public ConnectionHandler,
   std::unique_ptr<BrowserConnectionHandler> connection_handler_;
   std::unique_ptr<EngineAuthenticationHandler> authentication_handler_;
   std::unique_ptr<EngineConnectionManager> connection_manager_;
+  BlimpConnectionStatistics blimp_connection_statistics_;
 
   DISALLOW_COPY_AND_ASSIGN(EngineNetworkComponents);
 };
@@ -178,7 +180,8 @@ void EngineNetworkComponents::Initialize(const std::string& client_token) {
 
   // Adds BlimpTransports to connection_manager_.
   net::IPEndPoint address(GetIPv4AnyAddress(), GetListeningPort());
-  TCPEngineTransport* transport = new TCPEngineTransport(address, net_log_);
+  TCPEngineTransport* transport =
+      new TCPEngineTransport(address, &blimp_connection_statistics_, net_log_);
   connection_manager_->AddTransport(base::WrapUnique(transport));
 
   transport->GetLocalAddress(&address);

@@ -148,6 +148,21 @@
       <message name="IDS_VERSION_INFO" desc="Show version info.">
         Version Info
       </message>
+      <message name="IDS_SHOW_DEBUG_INFO" desc="Show debug info.">
+        Show Debug Info
+      </message>
+      <message name="IDS_HIDE_DEBUG_INFO" desc="Hide debug info.">
+        Hide Debug Info
+      </message>
+      <message name="IDS_RECEIVED_BYTES_TITLE" desc="Label text for bytes received.">
+        Received (KB)
+      </message>
+      <message name="IDS_SENT_BYTES_TITLE" desc="Label text for bytes sent.">
+        Sent (KB)
+      </message>
+      <message name="IDS_COMMIT_COUNT_TITLE" desc="Label text for commit count.">
+        Commits
+      </message>
       <message name="IDS_SUBTITLE_FOR_VERSION_NUMBER" desc="Version number.">
         Blimp %1$s
       </message>

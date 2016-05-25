@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/sys_byteorder.h"
+#include "blimp/net/blimp_connection_statistics.h"
 #include "blimp/net/common.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -34,8 +35,12 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-StreamPacketReader::StreamPacketReader(net::StreamSocket* socket)
-    : read_state_(ReadState::IDLE), socket_(socket), weak_factory_(this) {
+StreamPacketReader::StreamPacketReader(net::StreamSocket* socket,
+                                       BlimpConnectionStatistics* statistics)
+    : read_state_(ReadState::IDLE),
+      socket_(socket),
+      statistics_(statistics),
+      weak_factory_(this) {
   DCHECK(socket_);
   header_buffer_ = new net::GrowableIOBuffer;
   header_buffer_->SetCapacity(kPacketHeaderSizeBytes);
@@ -138,6 +143,7 @@ int StreamPacketReader::DoReadPayload(int result) {
                          base::Bind(&StreamPacketReader::OnReadComplete,
                                     weak_factory_.GetWeakPtr()));
   }
+  statistics_->Add(BlimpConnectionStatistics::BYTES_RECEIVED, payload_size_);
 
   // Finished reading the payload.
   read_state_ = ReadState::IDLE;

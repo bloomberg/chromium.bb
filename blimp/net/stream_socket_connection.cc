@@ -13,14 +13,16 @@
 namespace blimp {
 
 StreamSocketConnection::StreamSocketConnection(
-    std::unique_ptr<net::StreamSocket> socket)
+    std::unique_ptr<net::StreamSocket> socket,
+    BlimpConnectionStatistics* statistics)
     : BlimpConnection(
-          base::WrapUnique(new CompressedPacketReader(
-              base::WrapUnique(new StreamPacketReader(socket.get())))),
-          base::WrapUnique(new CompressedPacketWriter(
-              base::WrapUnique(new StreamPacketWriter(socket.get()))))),
+          base::WrapUnique(new CompressedPacketReader(base::WrapUnique(
+              new StreamPacketReader(socket.get(), statistics)))),
+          base::WrapUnique(new CompressedPacketWriter(base::WrapUnique(
+              new StreamPacketWriter(socket.get(), statistics))))),
       socket_(std::move(socket)) {
   DCHECK(socket_);
+  DCHECK(statistics);
 }
 
 StreamSocketConnection::~StreamSocketConnection() {}

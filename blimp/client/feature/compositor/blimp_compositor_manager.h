@@ -19,6 +19,7 @@ class ClientImageSerializationProcessor;
 class BlimpCompositorManagerClient {
  public:
   virtual void OnSwapBuffersCompleted() = 0;
+  virtual void DidCommitAndDrawFrame() = 0;
 };
 
 // The BlimpCompositorManager manages multiple BlimpCompositor instances, each
@@ -70,6 +71,7 @@ class BlimpCompositorManager
 
   // BlimpCompositorClient implementation.
   void DidCompleteSwapBuffers() override;
+  void DidCommitAndDrawFrame() override;
   cc::LayerTreeSettings* GetLayerTreeSettings() override;
   scoped_refptr<base::SingleThreadTaskRunner>
   GetCompositorTaskRunner() override;

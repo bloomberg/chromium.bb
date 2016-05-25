@@ -15,11 +15,13 @@ class StreamSocket;
 }  // namespace net
 
 namespace blimp {
+class BlimpConnectionStatistics;
 
 // BlimpConnection specialization for StreamSocket-based connections.
 class StreamSocketConnection : public BlimpConnection {
  public:
-  explicit StreamSocketConnection(std::unique_ptr<net::StreamSocket> socket);
+  StreamSocketConnection(std::unique_ptr<net::StreamSocket> socket,
+                         BlimpConnectionStatistics* statistics);
 
   ~StreamSocketConnection() override;
 

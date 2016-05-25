@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/sys_byteorder.h"
 #include "blimp/common/proto/blimp_message.pb.h"
+#include "blimp/net/blimp_connection_statistics.h"
 #include "blimp/net/common.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -35,14 +36,17 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
-StreamPacketWriter::StreamPacketWriter(net::StreamSocket* socket)
+StreamPacketWriter::StreamPacketWriter(net::StreamSocket* socket,
+                                       BlimpConnectionStatistics* statistics)
     : write_state_(WriteState::IDLE),
       socket_(socket),
       header_buffer_(
           new net::DrainableIOBuffer(new net::IOBuffer(kPacketHeaderSizeBytes),
                                      kPacketHeaderSizeBytes)),
+      statistics_(statistics),
       weak_factory_(this) {
   DCHECK(socket_);
+  DCHECK(statistics_);
 }
 
 StreamPacketWriter::~StreamPacketWriter() {}
@@ -60,6 +64,8 @@ void StreamPacketWriter::WritePacket(
       base::HostToNet32(data->BytesRemaining());
   payload_buffer_ = data;
 
+  statistics_->Add(BlimpConnectionStatistics::BYTES_SENT,
+                   payload_buffer_->BytesRemaining());
   int result = DoWriteLoop(net::OK);
   if (result != net::ERR_IO_PENDING) {
     // Release the payload buffer, since the write operation has completed
