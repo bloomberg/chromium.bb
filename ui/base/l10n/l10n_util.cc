@@ -699,23 +699,21 @@ base::string16 GetStringFUTF16(int message_id,
   // check as the code may simply want to find the placeholders rather than
   // actually replacing them.
   if (!offsets) {
-    std::string utf8_string = base::UTF16ToUTF8(format_string);
-
     // $9 is the highest allowed placeholder.
     for (size_t i = 0; i < 9; ++i) {
       bool placeholder_should_exist = replacements.size() > i;
 
-      std::string placeholder =
-          base::StringPrintf("$%d", static_cast<int>(i + 1));
-      size_t pos = utf8_string.find(placeholder.c_str());
+      base::string16 placeholder = base::ASCIIToUTF16("$");
+      placeholder += (L'1' + i);
+      size_t pos = format_string.find(placeholder);
       if (placeholder_should_exist) {
-        DCHECK_NE(std::string::npos, pos) <<
-            " Didn't find a " << placeholder << " placeholder in " <<
-            utf8_string;
+        DCHECK_NE(std::string::npos, pos) << " Didn't find a " << placeholder
+                                          << " placeholder in "
+                                          << format_string;
       } else {
-        DCHECK_EQ(std::string::npos, pos) <<
-            " Unexpectedly found a " << placeholder << " placeholder in " <<
-            utf8_string;
+        DCHECK_EQ(std::string::npos, pos) << " Unexpectedly found a "
+                                          << placeholder << " placeholder in "
+                                          << format_string;
       }
     }
   }
@@ -865,10 +863,11 @@ void GetAcceptLanguagesForLocale(const std::string& display_locale,
                                  std::vector<std::string>* locale_codes) {
   for (size_t i = 0; i < arraysize(kAcceptLanguageList); ++i) {
     if (!l10n_util::IsLocaleNameTranslated(kAcceptLanguageList[i],
-                                           display_locale))
-      // TODO(jungshik) : Put them at the of the list with language codes
+                                           display_locale)) {
+      // TODO(jungshik) : Put them at the end of the list with language codes
       // enclosed by brackets instead of skipping.
-        continue;
+      continue;
+    }
     locale_codes->push_back(kAcceptLanguageList[i]);
   }
 }
