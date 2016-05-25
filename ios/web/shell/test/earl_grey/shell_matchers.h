@@ -8,14 +8,6 @@
 
 namespace web {
 
-// TODO(crbug.com/614167): Remove this method when it is no longer used.
-// Shorthand for GREYMatchers::matcherForWebViewContainingText.
-id<GREYMatcher> webViewContainingText(NSString* text);
-
-// TODO(crbug.com/614167): Remove this method when it is no longer used.
-// Shorthand for GREYMatchers::matcherForAddressFieldEqualToText.
-id<GREYMatcher> addressFieldText(NSString* text);
-
 // Shorthand for GREYMatchers::matcherForWebViewContainingText.
 id<GREYMatcher> webViewContainingText(const std::string& text);
 

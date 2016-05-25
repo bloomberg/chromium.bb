@@ -10,10 +10,6 @@
 
 namespace web {
 
-// TODO(crbug.com/614167): Remove this method when it is no longer used.
-// Shorthand for GREYMatchers::matcherForWebViewContainingText:inWebState.
-id<GREYMatcher> webViewContainingText(NSString* text, web::WebState* webState);
-
 // Shorthand for GREYMatchers::matcherForWebViewContainingText:inWebState.
 id<GREYMatcher> webViewContainingText(const std::string& text,
                                       web::WebState* webState);

@@ -22,12 +22,6 @@ char kGetDocumentBodyJavaScript[] =
 
 namespace web {
 
-id<GREYMatcher> webViewContainingText(NSString* text, web::WebState* webState) {
-  return [GREYMatchers
-      matcherForWebViewContainingText:base::SysNSStringToUTF8(text)
-                           inWebState:webState];
-}
-
 id<GREYMatcher> webViewContainingText(const std::string& text,
                                       web::WebState* webState) {
   return

@@ -15,16 +15,6 @@
 
 namespace web {
 
-id<GREYMatcher> webViewContainingText(NSString* text) {
-  return [GREYMatchers
-      matcherForWebViewContainingText:base::SysNSStringToUTF8(text)];
-}
-
-id<GREYMatcher> addressFieldText(NSString* text) {
-  return [GREYMatchers
-      matcherForAddressFieldEqualToText:base::SysNSStringToUTF8(text)];
-}
-
 id<GREYMatcher> webViewContainingText(const std::string& text) {
   return [GREYMatchers matcherForWebViewContainingText:text];
 }
