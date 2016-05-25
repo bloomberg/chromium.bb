@@ -604,9 +604,9 @@ bool NativeWidgetAura::IsFullscreen() const {
       ui::SHOW_STATE_FULLSCREEN;
 }
 
-void NativeWidgetAura::SetOpacity(unsigned char opacity) {
+void NativeWidgetAura::SetOpacity(float opacity) {
   if (window_)
-    window_->layer()->SetOpacity(opacity / 255.0);
+    window_->layer()->SetOpacity(opacity);
 }
 
 void NativeWidgetAura::FlashFrame(bool flash) {

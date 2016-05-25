@@ -850,11 +850,11 @@ bool DesktopWindowTreeHostX11::IsFullscreen() const {
   return is_fullscreen_;
 }
 
-void DesktopWindowTreeHostX11::SetOpacity(unsigned char opacity) {
+void DesktopWindowTreeHostX11::SetOpacity(float opacity) {
   // X server opacity is in terms of 32 bit unsigned int space, and counts from
   // the opposite direction.
   // XChangeProperty() expects "cardinality" to be long.
-  unsigned long cardinality = opacity * 0x1010101;
+  unsigned long cardinality = static_cast<int>(opacity * 255) * 0x1010101;
 
   if (cardinality == 0xffffffff) {
     XDeleteProperty(xdisplay_, xwindow_,

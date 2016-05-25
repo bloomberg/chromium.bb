@@ -540,7 +540,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Sets the opacity of the widget. This may allow widgets behind the widget
   // in the Z-order to become visible, depending on the capabilities of the
   // underlying windowing system.
-  void SetOpacity(unsigned char opacity);
+  void SetOpacity(float opacity);
 
   // Flashes the frame of the window to draw attention to it. Currently only
   // implemented on Windows for non-Aura.

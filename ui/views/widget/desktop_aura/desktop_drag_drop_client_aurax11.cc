@@ -128,7 +128,7 @@ const int kRepeatMouseMoveTimeoutMs = 350;
 const uint32_t kMinAlpha = 32;
 
 // |drag_widget_|'s opacity.
-const unsigned char kDragWidgetOpacity = 0xc0;
+const float kDragWidgetOpacity = .75f;
 
 static base::LazyInstance<
     std::map< ::Window, views::DesktopDragDropClientAuraX11*> >::Leaky

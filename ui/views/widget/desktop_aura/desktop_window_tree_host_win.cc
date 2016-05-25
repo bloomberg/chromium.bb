@@ -445,8 +445,8 @@ bool DesktopWindowTreeHostWin::IsFullscreen() const {
   return message_handler_->fullscreen_handler()->fullscreen();
 }
 
-void DesktopWindowTreeHostWin::SetOpacity(unsigned char opacity) {
-  content_window_->layer()->SetOpacity(opacity / 255.0);
+void DesktopWindowTreeHostWin::SetOpacity(float opacity) {
+  content_window_->layer()->SetOpacity(opacity);
 }
 
 void DesktopWindowTreeHostWin::SetWindowIcons(

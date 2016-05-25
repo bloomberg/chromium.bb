@@ -820,7 +820,7 @@ bool DesktopNativeWidgetAura::IsFullscreen() const {
   return content_window_ && desktop_window_tree_host_->IsFullscreen();
 }
 
-void DesktopNativeWidgetAura::SetOpacity(unsigned char opacity) {
+void DesktopNativeWidgetAura::SetOpacity(float opacity) {
   if (content_window_)
     desktop_window_tree_host_->SetOpacity(opacity);
 }

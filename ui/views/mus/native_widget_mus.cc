@@ -1060,9 +1060,9 @@ bool NativeWidgetMus::IsFullscreen() const {
       mus_window_observer_->show_state() == mus::mojom::ShowState::FULLSCREEN;
 }
 
-void NativeWidgetMus::SetOpacity(unsigned char opacity) {
+void NativeWidgetMus::SetOpacity(float opacity) {
   if (window_)
-    window_->SetOpacity(opacity / 255.0);
+    window_->SetOpacity(opacity);
 }
 
 void NativeWidgetMus::FlashFrame(bool flash_frame) {

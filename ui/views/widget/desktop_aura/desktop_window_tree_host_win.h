@@ -94,7 +94,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void FrameTypeChanged() override;
   void SetFullscreen(bool fullscreen) override;
   bool IsFullscreen() const override;
-  void SetOpacity(unsigned char opacity) override;
+  void SetOpacity(float opacity) override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
   void InitModalType(ui::ModalType modal_type) override;

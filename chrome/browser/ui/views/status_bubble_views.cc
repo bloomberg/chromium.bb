@@ -86,11 +86,11 @@ class StatusBubbleViews::StatusViewAnimation : public gfx::LinearAnimation,
                                                public gfx::AnimationDelegate {
  public:
   StatusViewAnimation(StatusView* status_view,
-                      double opacity_start,
-                      double opacity_end);
+                      float opacity_start,
+                      float opacity_end);
   ~StatusViewAnimation() override;
 
-  double GetCurrentOpacity();
+  float GetCurrentOpacity();
 
  private:
   // gfx::LinearAnimation:
@@ -104,8 +104,8 @@ class StatusBubbleViews::StatusViewAnimation : public gfx::LinearAnimation,
   // Start and end opacities for the current transition - note that as a
   // fade-in can easily turn into a fade out, opacity_start_ is sometimes
   // a value between 0 and 1.
-  double opacity_start_;
-  double opacity_end_;
+  float opacity_start_;
+  float opacity_end_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusViewAnimation);
 };
@@ -158,7 +158,7 @@ class StatusBubbleViews::StatusView : public views::View {
   void ResetTimer();
 
   // This call backs the StatusView in order to fade the bubble in and out.
-  void SetOpacity(double opacity);
+  void SetOpacity(float opacity);
 
   // Depending on the state of the bubble this will either hide the popup or
   // not.
@@ -174,7 +174,7 @@ class StatusBubbleViews::StatusView : public views::View {
   void RestartTimer(base::TimeDelta delay);
 
   // Manage the fades and starting and stopping the animations correctly.
-  void StartFade(double start, double end, int duration);
+  void StartFade(float start, float end, int duration);
   void StartHiding();
   void StartShowing();
 
@@ -262,10 +262,10 @@ void StatusBubbleViews::StatusView::StartTimer(base::TimeDelta time) {
 void StatusBubbleViews::StatusView::OnTimer() {
   if (state_ == BUBBLE_HIDING_TIMER) {
     state_ = BUBBLE_HIDING_FADE;
-    StartFade(1.0, 0.0, kHideFadeDurationMS);
+    StartFade(1.0f, 0.0f, kHideFadeDurationMS);
   } else if (state_ == BUBBLE_SHOWING_TIMER) {
     state_ = BUBBLE_SHOWING_FADE;
-    StartFade(0.0, 1.0, kShowFadeDurationMS);
+    StartFade(0.0f, 1.0f, kShowFadeDurationMS);
   }
 }
 
@@ -287,8 +287,8 @@ void StatusBubbleViews::StatusView::ResetTimer() {
   }
 }
 
-void StatusBubbleViews::StatusView::StartFade(double start,
-                                              double end,
+void StatusBubbleViews::StatusView::StartFade(float start,
+                                              float end,
                                               int duration) {
   animation_.reset(new StatusViewAnimation(this, start, end));
 
@@ -308,10 +308,10 @@ void StatusBubbleViews::StatusView::StartHiding() {
   } else if (state_ == BUBBLE_SHOWING_FADE) {
     state_ = BUBBLE_HIDING_FADE;
     // Figure out where we are in the current fade.
-    double current_opacity = animation_->GetCurrentOpacity();
+    float current_opacity = animation_->GetCurrentOpacity();
 
     // Start a fade in the opposite direction.
-    StartFade(current_opacity, 0.0,
+    StartFade(current_opacity, 0.0f,
               static_cast<int>(kHideFadeDurationMS * current_opacity));
   }
 }
@@ -329,10 +329,10 @@ void StatusBubbleViews::StatusView::StartShowing() {
     state_ = BUBBLE_SHOWING_FADE;
 
     // Figure out where we are in the current fade.
-    double current_opacity = animation_->GetCurrentOpacity();
+    float current_opacity = animation_->GetCurrentOpacity();
 
     // Start a fade in the opposite direction.
-    StartFade(current_opacity, 1.0,
+    StartFade(current_opacity, 1.0f,
               static_cast<int>(kShowFadeDurationMS * current_opacity));
   } else if (state_ == BUBBLE_SHOWING_TIMER) {
     // We hadn't yet begun showing anything when we received a new request
@@ -341,8 +341,8 @@ void StatusBubbleViews::StatusView::StartShowing() {
   }
 }
 
-void StatusBubbleViews::StatusView::SetOpacity(double opacity) {
-  popup_->SetOpacity(static_cast<unsigned char>(opacity * 255));
+void StatusBubbleViews::StatusView::SetOpacity(float opacity) {
+  popup_->SetOpacity(opacity);
 }
 
 void StatusBubbleViews::StatusView::SetStyle(BubbleStyle style) {
@@ -453,13 +453,12 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
 
 StatusBubbleViews::StatusViewAnimation::StatusViewAnimation(
     StatusView* status_view,
-    double opacity_start,
-    double opacity_end)
+    float opacity_start,
+    float opacity_end)
     : gfx::LinearAnimation(kFramerate, this),
       status_view_(status_view),
       opacity_start_(opacity_start),
-      opacity_end_(opacity_end) {
-}
+      opacity_end_(opacity_end) {}
 
 StatusBubbleViews::StatusViewAnimation::~StatusViewAnimation() {
   // Remove ourself as a delegate so that we don't get notified when
@@ -467,9 +466,10 @@ StatusBubbleViews::StatusViewAnimation::~StatusViewAnimation() {
   set_delegate(NULL);
 }
 
-double StatusBubbleViews::StatusViewAnimation::GetCurrentOpacity() {
-  return opacity_start_ + (opacity_end_ - opacity_start_) *
-      gfx::LinearAnimation::GetCurrentValue();
+float StatusBubbleViews::StatusViewAnimation::GetCurrentOpacity() {
+  return static_cast<float>(opacity_start_ +
+                            (opacity_end_ - opacity_start_) *
+                                gfx::LinearAnimation::GetCurrentValue());
 }
 
 void StatusBubbleViews::StatusViewAnimation::AnimateToState(double state) {
@@ -614,7 +614,7 @@ void StatusBubbleViews::Init() {
     popup_->Init(params);
     // We do our own animation and don't want any from the system.
     popup_->SetVisibilityChangedAnimationsEnabled(false);
-    popup_->SetOpacity(0x00);
+    popup_->SetOpacity(0.f);
     popup_->SetContentsView(view_);
 #if defined(USE_ASH)
     ash::wm::GetWindowState(popup_->GetNativeWindow())->

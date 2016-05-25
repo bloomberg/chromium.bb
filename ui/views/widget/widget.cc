@@ -700,7 +700,7 @@ bool Widget::IsFullscreen() const {
   return native_widget_->IsFullscreen();
 }
 
-void Widget::SetOpacity(unsigned char opacity) {
+void Widget::SetOpacity(float opacity) {
   native_widget_->SetOpacity(opacity);
 }
 

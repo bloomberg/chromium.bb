@@ -494,8 +494,8 @@ bool NativeWidgetMac::IsFullscreen() const {
   return bridge_ && bridge_->target_fullscreen_state();
 }
 
-void NativeWidgetMac::SetOpacity(unsigned char opacity) {
-  [GetNativeWindow() setAlphaValue:opacity / 255.0];
+void NativeWidgetMac::SetOpacity(float opacity) {
+  [GetNativeWindow() setAlphaValue:opacity];
 }
 
 void NativeWidgetMac::FlashFrame(bool flash_frame) {
