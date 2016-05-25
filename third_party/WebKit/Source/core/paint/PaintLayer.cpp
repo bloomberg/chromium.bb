@@ -756,14 +756,11 @@ bool PaintLayer::update3DTransformedDescendantStatus()
 void PaintLayer::updateLayerPosition()
 {
     LayoutPoint localPoint;
-    LayoutPoint inlineBoundingBoxOffset; // We don't put this into the Layer x/y for inlines, so we need to subtract it out when done.
 
     if (layoutObject()->isInline() && layoutObject()->isLayoutInline()) {
         LayoutInline* inlineFlow = toLayoutInline(layoutObject());
         IntRect lineBox = enclosingIntRect(inlineFlow->linesBoundingBox());
         m_size = lineBox.size();
-        inlineBoundingBoxOffset = lineBox.location();
-        localPoint.moveBy(inlineBoundingBoxOffset);
     } else if (LayoutBox* box = layoutBox()) {
         m_size = pixelSnappedIntSize(box->size(), box->location());
         localPoint.moveBy(box->topLeftLocation());
@@ -812,9 +809,6 @@ void PaintLayer::updateLayerPosition()
     } else if (m_rareData) {
         m_rareData->offsetForInFlowPosition = LayoutSize();
     }
-
-    // FIXME: We'd really like to just get rid of the concept of a layer rectangle and rely on the layoutObjects.
-    localPoint.moveBy(-inlineBoundingBoxOffset);
 
     if (m_location != localPoint) {
         setNeedsRepaint();
