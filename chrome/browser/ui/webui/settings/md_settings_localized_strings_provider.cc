@@ -785,7 +785,10 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_ENABLE_CONTENT_PROTECTION_ATTESTATION},
       {"wakeOnWifi", IDS_SETTINGS_WAKE_ON_WIFI_DESCRIPTION},
       {"manageCertificates", IDS_SETTINGS_MANAGE_CERTIFICATES},
+      {"manageCertificatesDescription",
+       IDS_SETTINGS_MANAGE_CERTIFICATES_DESCRIPTION},
       {"siteSettings", IDS_SETTINGS_SITE_SETTINGS},
+      {"siteSettingsDescription", IDS_SETTINGS_SITE_SETTINGS_DESCRIPTION},
       {"clearBrowsingData", IDS_SETTINGS_CLEAR_DATA},
       {"titleAndCount", IDS_SETTINGS_TITLE_AND_COUNT},
   };
