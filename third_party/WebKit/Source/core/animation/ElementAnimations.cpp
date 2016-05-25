@@ -30,8 +30,6 @@
 
 #include "core/animation/ElementAnimations.h"
 
-#include "core/layout/LayoutObject.h"
-
 namespace blink {
 
 ElementAnimations::ElementAnimations()

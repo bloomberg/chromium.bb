@@ -12,7 +12,6 @@
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSPropertyEquality.h"
-#include "core/layout/LayoutObject.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
