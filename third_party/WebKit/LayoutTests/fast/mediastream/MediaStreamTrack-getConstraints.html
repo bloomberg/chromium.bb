@@ -59,7 +59,7 @@ promise_test(function() {
     height: { min: 30, max: 480, exact: 350 },
     aspectRatio: { ideal: 1.3333333, exact: 1.4444 },
     frameRate: { exact: 30.0 },
-    facingMode: { ideal: [ "user" ] }
+    facingMode: { exact: "user" }
   };
   // These constraints are syntactically valid, but may cause rejection.
   // They are included in an "advanced" constraint.
@@ -70,8 +70,8 @@ promise_test(function() {
     echoCancellation: { exact: false },
     latency: { exact: 0.22 },
     channelCount: { exact: 2 },
-    deviceId: { exact: ["foo"] },
-    groupId: { exact: ["bar"] }
+    deviceId: { exact: ["foo", "fooz"] },
+    groupId: { exact: ["bar", "baz"] }
   };
   let complexConstraints = complexConstraintSet;
   complexConstraints.advanced = [ ignorableConstraintSet ];
@@ -80,9 +80,55 @@ promise_test(function() {
       .then(function(s) {
     constraints = s.getVideoTracks()[0].getConstraints();
     assert_true(constraintElementsEqual(constraints, complexConstraints),
-      "Unexpected result:" + JSON.stringify(constraints, null, 2));
+      "Unexpected result: In: " + JSON.stringify(complexConstraints, null, 2) +
+      " Out: " + JSON.stringify(constraints, null, 2));
   });
 }, 'All valid keys are returned for complex constraints');
+
+// Syntax tests for constraints.
+
+function constraintSyntaxTestWithChange(name, constraints, expected_result) {
+  promise_test(function() {
+    return navigator.mediaDevices.getUserMedia(
+        {'video': { 'advanced': [ constraints ]}})
+      .then(function(s) {
+          var constraints_out = s.getVideoTracks()[0].getConstraints().advanced[0];
+          assert_true(constraintElementsEqual(expected_result, constraints_out),
+              "Unexpected result: Expected: " +
+              JSON.stringify(expected_result, null, 2) +
+              " Out: " + JSON.stringify(constraints_out, null, 2));
+        })
+   }, name);
+}
+
+function constraintSyntaxTest(name, constraints) {
+  constraintSyntaxTestWithChange(name, constraints, constraints);
+}
+
+constraintSyntaxTest('Simple integer', { height: 42 });
+constraintSyntaxTest('Exact integer', { height: { exact: 42 }});
+constraintSyntaxTest('Min/max integer', { height: { min: 42, max: 43 }});
+constraintSyntaxTestWithChange('Ideal unwrapped integer',
+    { height: { ideal: 42 } }, { height: 42 });
+
+constraintSyntaxTest('Simple double', { aspectRatio: 1.5 });
+constraintSyntaxTest('Exact double', { aspectRatio: { exact: 1.5 }});
+constraintSyntaxTest('Min/max double', { aspectRatio: { min: 1.5, max: 2.0 }});
+constraintSyntaxTestWithChange('Ideal unwrapped double',
+    { aspectRatio: { ideal: 1.5 } }, { aspectRatio: 1.5 });
+
+constraintSyntaxTest('Simple String', { facingMode: "user1" });
+constraintSyntaxTest('Exact String', { facingMode: { exact: "user2" }});
+constraintSyntaxTest('Multiple String in Brackets', { facingMode: { exact: ["user3", "left3"]}});
+constraintSyntaxTest('Multiple Bracketed Naked String', { facingMode: ["user4", "left4"] });
+constraintSyntaxTestWithChange('Single Bracketed string unwrapped',
+    { 'facingMode': ["user5"]}, { facingMode: "user5" });
+constraintSyntaxTest('Both Ideal and Exact string', { facingMode: { ideal: "user6", exact: "left6" }});
+
+constraintSyntaxTest('Simple boolean', { echoCancellation: true });
+constraintSyntaxTest('Exact boolean', { echoCancellation: { exact: true }});
+constraintSyntaxTestWithChange('Ideal unwrapped boolean',
+    { echoCancellation: { ideal: true } }, { echoCancellation: true });
 
 </script>
 </body>

@@ -4,16 +4,10 @@
 
 // https://w3c.github.io/mediacapture-main/getusermedia.html#idl-def-MediaTrackConstraintSet
 
-typedef ConstrainLongRange ConstrainLong;
-typedef ConstrainDoubleRange ConstrainDouble;
-typedef ConstrainBooleanParameters ConstrainBoolean;
-typedef ConstrainDOMStringParameters ConstrainDOMString;
-// The spec says that the typedefs should be:
-// typedef (long or ConstrainLongRange) ConstrainLong;
-// typedef (double or ConstrainDoubleRange) ConstrainDouble;
-// typedef (boolean or ConstrainBooleanParameters) ConstrainBoolean;
-// typedef (DOMString or sequence<DOMString> or ConstrainDomStringParameters) ConstrainDomString;
-// This is blocked on https://crbug.com/524424
+typedef (long or ConstrainLongRange) ConstrainLong;
+typedef (double or ConstrainDoubleRange) ConstrainDouble;
+typedef (boolean or ConstrainBooleanParameters) ConstrainBoolean;
+typedef (DOMString or sequence<DOMString> or ConstrainDOMStringParameters) ConstrainDOMString;
 
 dictionary MediaTrackConstraintSet {
     [RuntimeEnabled=MediaConstraints] ConstrainLong width;

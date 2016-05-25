@@ -56,8 +56,13 @@ promise_test(function() {
 // The following set of tests verify behavior when trying to use the
 // dictionary form of constraints. The behaviors currently expected are:
 // - Unknown names in dictionary: ignored - which means Error
-// - Known names but illegal syntax for value: TypeError
-// - Known names and legal syntax for value: Error (no handler yet).
+// - Known names and legal syntax for value: Error
+// All constraints allow a primitive value (boolean, string or number),
+// and Javascript is capable of coercing just about anything into those values,
+// so we never get TypeError thrown here.
+//
+// Tests that the values are parsed and returned correctly are in
+// MediaStreamTrack-getConstraints.html.
 
 function check_constraints(name, constraints, expected_error) {
   promise_test(function() {
@@ -79,33 +84,31 @@ check_constraints(
   'Constraint with exact Long value should be parsed',
   {'height': {exact: 47}}, 'Error');
 check_constraints(
-  'Constraint with naked value should fail with TypeError (until supported)',
-  {height: 47}, 'TypeError');
+  'Constraint with Long naked value should be parsed',
+  {height: 47}, 'Error');
 
 check_constraints(
   'Constraint with boolean value should be parsed',
   {'echoCancellation': {exact: true}}, 'Error');
 check_constraints(
-  'Constraint with boolean value should fail on naked value (until supported)',
-  {'echoCancellation': true}, 'TypeError');
+  'Constraint with boolean naked value should be parsed',
+  {'echoCancellation': true}, 'Error');
 
 check_constraints(
   'Constraint with string value should work on exact with array',
   {'facingMode': {exact: ['user']}}, 'Error');
+
 check_constraints(
-  'Constraint with exact string value should fail (until supported)',
-  {'facingMode': {exact: 'user'}}, 'TypeError');
+  'Constraint with exact string value should work',
+  {'facingMode': {exact: 'user'}}, 'Error');
+
 check_constraints(
-  'Constraint with naked string value should fail (until supported)',
-  {'facingMode': 'user'}, 'TypeError');
+  'Constraint with naked string value should be parsed',
+  {'facingMode': 'user'}, 'Error');
+
 check_constraints(
   'Using both mandatory and height should give TypeError',
   {'mandatory': {'height': '270'}, 'height': '270'}, 'TypeError');
-
-// Shows that the advanced element is not ignored.
-check_constraints(
-  'Advanced constraints with illegal content gives TypeError',
-  {'advanced': [{'height': 270}]}, 'TypeError');
 
 </script>
 </body>

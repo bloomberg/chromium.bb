@@ -5,10 +5,6 @@
 // https://w3c.github.io/mediacapture-main/getusermedia.html#idl-def-ConstrainLongRange
 
 dictionary ConstrainDOMStringParameters {
-  sequence<DOMString> exact;
-  sequence<DOMString> ideal;
-  // The spec says that the members should be:
-  //  (DOMString or sequence<DOMString>) exact;
-  //  (DOMString or sequence<DOMString>) ideal;
-  // This is blocked on https://crbug.com/524424
+    (DOMString or sequence<DOMString>) exact;
+    (DOMString or sequence<DOMString>) ideal;
 };

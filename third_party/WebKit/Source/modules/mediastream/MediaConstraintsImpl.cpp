@@ -453,8 +453,13 @@ WebMediaConstraints create(ExecutionContext* context, const Dictionary& constrai
     return createFromNamedConstraints(context, mandatory, optional, errorState);
 }
 
-void copyLongConstraint(const ConstrainLongRange& blinkForm, LongConstraint& webForm)
+void copyLongConstraint(const LongOrConstrainLongRange& blinkUnionForm, LongConstraint& webForm)
 {
+    if (blinkUnionForm.isLong()) {
+        webForm.setIdeal(blinkUnionForm.getAsLong());
+        return;
+    }
+    const auto& blinkForm = blinkUnionForm.getAsConstrainLongRange();
     if (blinkForm.hasMin()) {
         webForm.setMin(blinkForm.min());
     }
@@ -469,8 +474,13 @@ void copyLongConstraint(const ConstrainLongRange& blinkForm, LongConstraint& web
     }
 }
 
-void copyDoubleConstraint(const ConstrainDoubleRange& blinkForm, DoubleConstraint& webForm)
+void copyDoubleConstraint(const DoubleOrConstrainDoubleRange& blinkUnionForm, DoubleConstraint& webForm)
 {
+    if (blinkUnionForm.isDouble()) {
+        webForm.setIdeal(blinkUnionForm.getAsDouble());
+        return;
+    }
+    const auto& blinkForm = blinkUnionForm.getAsConstrainDoubleRange();
     if (blinkForm.hasMin()) {
         webForm.setMin(blinkForm.min());
     }
@@ -485,18 +495,40 @@ void copyDoubleConstraint(const ConstrainDoubleRange& blinkForm, DoubleConstrain
     }
 }
 
-void copyStringConstraint(const ConstrainDOMStringParameters& blinkForm, StringConstraint& webForm)
+void copyStringConstraint(const StringOrStringSequenceOrConstrainDOMStringParameters& blinkUnionForm, StringConstraint& webForm)
 {
+    if (blinkUnionForm.isString()) {
+        webForm.setIdeal(Vector<String>(1, blinkUnionForm.getAsString()));
+        return;
+    }
+    if (blinkUnionForm.isStringSequence()) {
+        webForm.setIdeal(blinkUnionForm.getAsStringSequence());
+        return;
+    }
+    const auto& blinkForm = blinkUnionForm.getAsConstrainDOMStringParameters();
     if (blinkForm.hasIdeal()) {
-        webForm.setIdeal(WebVector<WebString>(blinkForm.ideal()));
+        if (blinkForm.ideal().isStringSequence()) {
+            webForm.setIdeal(blinkForm.ideal().getAsStringSequence());
+        } else if (blinkForm.ideal().isString()) {
+            webForm.setIdeal(Vector<String>(1, blinkForm.ideal().getAsString()));
+        }
     }
     if (blinkForm.hasExact()) {
-        webForm.setExact(WebVector<WebString>(blinkForm.exact()));
+        if (blinkForm.exact().isStringSequence()) {
+            webForm.setExact(blinkForm.exact().getAsStringSequence());
+        } else if (blinkForm.exact().isString()) {
+            webForm.setExact(Vector<String>(1, blinkForm.exact().getAsString()));
+        }
     }
 }
 
-void copyBooleanConstraint(const ConstrainBooleanParameters& blinkForm, BooleanConstraint& webForm)
+void copyBooleanConstraint(const BooleanOrConstrainBooleanParameters& blinkUnionForm, BooleanConstraint& webForm)
 {
+    if (blinkUnionForm.isBoolean()) {
+        webForm.setIdeal(blinkUnionForm.getAsBoolean());
+        return;
+    }
+    const auto& blinkForm = blinkUnionForm.getAsConstrainBooleanParameters();
     if (blinkForm.hasIdeal()) {
         webForm.setIdeal(blinkForm.ideal());
     }
@@ -505,7 +537,7 @@ void copyBooleanConstraint(const ConstrainBooleanParameters& blinkForm, BooleanC
     }
 }
 
-void copyConstraints(const MediaTrackConstraintSet& constraintsIn, WebMediaTrackConstraintSet& constraintBuffer)
+void copyConstraintSet(const MediaTrackConstraintSet& constraintsIn, WebMediaTrackConstraintSet& constraintBuffer)
 {
     if (constraintsIn.hasWidth()) {
         copyLongConstraint(constraintsIn.width(), constraintBuffer.width);
@@ -548,23 +580,28 @@ void copyConstraints(const MediaTrackConstraintSet& constraintsIn, WebMediaTrack
     }
 }
 
-WebMediaConstraints create(ExecutionContext* context, const MediaTrackConstraints& constraintsIn, MediaErrorState& errorState)
+WebMediaConstraints convertConstraintsToWeb(const MediaTrackConstraints& constraintsIn)
 {
     WebMediaConstraints constraints;
     WebMediaTrackConstraintSet constraintBuffer;
     Vector<WebMediaTrackConstraintSet> advancedBuffer;
-    copyConstraints(constraintsIn, constraintBuffer);
+    copyConstraintSet(constraintsIn, constraintBuffer);
     if (constraintsIn.hasAdvanced()) {
         for (const auto& element : constraintsIn.advanced()) {
             WebMediaTrackConstraintSet advancedElement;
-            copyConstraints(element, advancedElement);
+            copyConstraintSet(element, advancedElement);
             advancedBuffer.append(advancedElement);
         }
     }
-    // TODO(hta): Add initialization of advanced constraints once present.
-    // https://crbug.com/253412
+    constraints.initialize(constraintBuffer, advancedBuffer);
+    return constraints;
+}
+
+WebMediaConstraints create(ExecutionContext* context, const MediaTrackConstraints& constraintsIn, MediaErrorState& errorState)
+{
+    WebMediaConstraints standardForm = convertConstraintsToWeb(constraintsIn);
     if (constraintsIn.hasOptional() || constraintsIn.hasMandatory()) {
-        if (!constraintBuffer.isEmpty() || constraintsIn.hasAdvanced()) {
+        if (!standardForm.isEmpty()) {
             errorState.throwTypeError("Malformed constraint: Cannot use both optional/mandatory and specific or advanced constraints.");
             return WebMediaConstraints();
         }
@@ -578,8 +615,7 @@ WebMediaConstraints create(ExecutionContext* context, const MediaTrackConstraint
         return createFromNamedConstraints(context, mandatory, optional, errorState);
     }
     UseCounter::count(context, UseCounter::MediaStreamConstraintsConformant);
-    constraints.initialize(constraintBuffer, advancedBuffer);
-    return constraints;
+    return standardForm;
 }
 
 WebMediaConstraints create()
@@ -589,63 +625,101 @@ WebMediaConstraints create()
     return constraints;
 }
 
-ConstrainLongRange convertLong(const LongConstraint& input)
+LongOrConstrainLongRange convertLong(const LongConstraint& input)
 {
-
-    ConstrainLongRange output;
-    if (input.hasExact())
-        output.setExact(input.exact());
-    if (input.hasIdeal())
-        output.setIdeal(input.ideal());
-    if (input.hasMin())
-        output.setMin(input.min());
-    if (input.hasMax())
-        output.setMax(input.max());
-    return output;
-}
-
-ConstrainDoubleRange convertDouble(const DoubleConstraint& input)
-{
-
-    ConstrainDoubleRange output;
-    if (input.hasExact())
-        output.setExact(input.exact());
-    if (input.hasIdeal())
-        output.setIdeal(input.ideal());
-    if (input.hasMin())
-        output.setMin(input.min());
-    if (input.hasMax())
-        output.setMax(input.max());
-    return output;
-}
-
-ConstrainDOMStringParameters convertString(const StringConstraint& input)
-{
-    ConstrainDOMStringParameters output;
-    if (input.hasIdeal()) {
-        Vector<String> buffer;
-        for (const auto& scanner : input.ideal())
-            buffer.append(scanner);
-        output.setIdeal(buffer);
+    LongOrConstrainLongRange outputUnion;
+    if (input.hasExact() || input.hasMin() || input.hasMax()) {
+        ConstrainLongRange output;
+        if (input.hasExact())
+            output.setExact(input.exact());
+        if (input.hasMin())
+            output.setMin(input.min());
+        if (input.hasMax())
+            output.setMax(input.max());
+        if (input.hasIdeal())
+            output.setIdeal(input.ideal());
+        outputUnion.setConstrainLongRange(output);
+    } else {
+        if (input.hasIdeal()) {
+            outputUnion.setLong(input.ideal());
+        }
     }
+    return outputUnion;
+}
+
+DoubleOrConstrainDoubleRange convertDouble(const DoubleConstraint& input)
+{
+    DoubleOrConstrainDoubleRange outputUnion;
+    if (input.hasExact() || input.hasMin() || input.hasMax()) {
+        ConstrainDoubleRange output;
+        if (input.hasExact())
+            output.setExact(input.exact());
+        if (input.hasIdeal())
+            output.setIdeal(input.ideal());
+        if (input.hasMin())
+            output.setMin(input.min());
+        if (input.hasMax())
+            output.setMax(input.max());
+        outputUnion.setConstrainDoubleRange(output);
+    } else {
+        if (input.hasIdeal()) {
+            outputUnion.setDouble(input.ideal());
+        }
+    }
+    return outputUnion;
+}
+
+StringOrStringSequence convertStringSequence(const WebVector<WebString>& input)
+{
+    StringOrStringSequence theStrings;
+    if (input.size() > 1) {
+        Vector<String> buffer;
+        for (const auto& scanner : input)
+            buffer.append(scanner);
+        theStrings.setStringSequence(buffer);
+    } else if (input.size() > 0) {
+        theStrings.setString(input[0]);
+    }
+    return theStrings;
+}
+
+StringOrStringSequenceOrConstrainDOMStringParameters convertString(const StringConstraint& input)
+{
+    StringOrStringSequenceOrConstrainDOMStringParameters outputUnion;
     if (input.hasExact()) {
-        Vector<String> buffer;
-        for (const auto& scanner : input.exact())
-            buffer.append(scanner);
-        output.setExact(buffer);
+        ConstrainDOMStringParameters output;
+        output.setExact(convertStringSequence(input.exact()));
+        if (input.hasIdeal()) {
+            output.setIdeal(convertStringSequence(input.ideal()));
+        }
+        outputUnion.setConstrainDOMStringParameters(output);
+    } else if (input.hasIdeal()) {
+        if (input.ideal().size() > 1) {
+            Vector<String> buffer;
+            for (const auto& scanner : input.ideal())
+                buffer.append(scanner);
+            outputUnion.setStringSequence(buffer);
+        } else if (input.ideal().size() == 1) {
+            outputUnion.setString(input.ideal()[0]);
+        }
     }
-    return output;
+    return outputUnion;
 }
 
-ConstrainBooleanParameters convertBoolean(const BooleanConstraint& input)
+BooleanOrConstrainBooleanParameters convertBoolean(const BooleanConstraint& input)
 {
-
-    ConstrainBooleanParameters output;
-    if (input.hasExact())
-        output.setExact(input.exact());
-    if (input.hasIdeal())
-        output.setIdeal(input.ideal());
-    return output;
+    BooleanOrConstrainBooleanParameters outputUnion;
+    if (input.hasExact()) {
+        ConstrainBooleanParameters output;
+        if (input.hasExact())
+            output.setExact(input.exact());
+        if (input.hasIdeal())
+            output.setIdeal(input.ideal());
+        outputUnion.setConstrainBooleanParameters(output);
+    } else if (input.hasIdeal()) {
+        outputUnion.setBoolean(input.ideal());
+    }
+    return outputUnion;
 }
 
 void convertConstraintSet(const WebMediaTrackConstraintSet& input, MediaTrackConstraintSet& output)
