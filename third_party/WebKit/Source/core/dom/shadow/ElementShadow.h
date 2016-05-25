@@ -43,7 +43,7 @@ public:
     static ElementShadow* create();
     ~ElementShadow();
 
-    Element* host() const;
+    Element& host() const;
     ShadowRoot& youngestShadowRoot() const;
     ShadowRoot* oldestShadowRoot() const { return m_shadowRoot; }
     ElementShadow* containingShadow() const;
@@ -99,7 +99,7 @@ private:
     bool m_needsSelectFeatureSet;
 };
 
-inline Element* ElementShadow::host() const
+inline Element& ElementShadow::host() const
 {
     DCHECK(m_shadowRoot);
     return m_shadowRoot->host();
@@ -121,7 +121,7 @@ inline ShadowRoot* Element::youngestShadowRoot() const
 
 inline ElementShadow* ElementShadow::containingShadow() const
 {
-    if (ShadowRoot* parentRoot = host()->containingShadowRoot())
+    if (ShadowRoot* parentRoot = host().containingShadowRoot())
         return parentRoot->owner();
     return 0;
 }

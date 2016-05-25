@@ -161,8 +161,8 @@ void StyleSheetInvalidationAnalysis::invalidateStyle()
     ASSERT(!m_dirtiesAllStyle);
 
     if (m_treeScope->rootNode().isShadowRoot()) {
-        ContainerNode* shadowHost = toShadowRoot(m_treeScope->rootNode()).host();
-        shadowHost->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
+        ContainerNode& shadowHost = toShadowRoot(m_treeScope->rootNode()).host();
+        shadowHost.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
         return;
     }
 

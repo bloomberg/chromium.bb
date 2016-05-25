@@ -1923,7 +1923,7 @@ static InlineBoxPosition computeInlineBoxPositionTemplate(const PositionTemplate
     InlineBox* inlineBox = nullptr;
     int caretOffset = position.computeEditingOffset();
     Node* const anchorNode = position.anchorNode();
-    LayoutObject* layoutObject = anchorNode->isShadowRoot() ? toShadowRoot(anchorNode)->host()->layoutObject() : anchorNode->layoutObject();
+    LayoutObject* layoutObject = anchorNode->isShadowRoot() ? toShadowRoot(anchorNode)->host().layoutObject() : anchorNode->layoutObject();
 
     DCHECK(layoutObject) << position;
 

@@ -892,13 +892,13 @@ static Node* nextNodeWithShadowDOMInMind(const Node& current, const Node* stayWi
             const ShadowRoot* shadowRoot = toShadowRoot(node);
             if (shadowRoot->olderShadowRoot())
                 return shadowRoot->olderShadowRoot();
-            Node* host = shadowRoot->host();
-            if (host && host->hasChildren())
-                return host->firstChild();
+            Element& host = shadowRoot->host();
+            if (host.hasChildren())
+                return host.firstChild();
         }
         if (node->nextSibling())
             return node->nextSibling();
-        node = node->isShadowRoot() ? toShadowRoot(node)->host() : node->parentNode();
+        node = node->isShadowRoot() ? &toShadowRoot(node)->host() : node->parentNode();
     } while (node);
 
     return nullptr;

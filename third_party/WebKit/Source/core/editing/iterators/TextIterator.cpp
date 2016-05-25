@@ -389,7 +389,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
                             m_fullyClippedStack.pushFullyClippedState(m_node);
                         } else {
                             // We are the last shadow root; exit from here and go back to where we were.
-                            m_node = shadowRoot->host();
+                            m_node = &shadowRoot->host();
                             m_iterationProgress = HandledOpenShadowRoots;
                             --m_shadowDepth;
                             m_fullyClippedStack.pop();
@@ -398,7 +398,7 @@ void TextIteratorAlgorithm<Strategy>::advance()
                         // If we are in a closed or user-agent shadow root, then go back to the host.
                         // TODO(kochi): Make sure we treat closed shadow as user agent shadow here.
                         DCHECK(shadowRoot->type() == ShadowRootType::Closed || shadowRoot->type() == ShadowRootType::UserAgent);
-                        m_node = shadowRoot->host();
+                        m_node = &shadowRoot->host();
                         m_iterationProgress = HandledUserAgentShadowRoot;
                         --m_shadowDepth;
                         m_fullyClippedStack.pop();

@@ -72,10 +72,8 @@ public:
     using TreeScope::setDocument;
     using TreeScope::setParentTreeScope;
 
-    // TODO(kochi): crbug.com/507413 In non-Oilpan, host() may return null during queued
-    // event handling (e.g. during execCommand()).
-    Element* host() const { return toElement(parentOrShadowHostNode()); }
-    ElementShadow* owner() const { return host() ? host()->shadow() : 0; }
+    Element& host() const { DCHECK(parentOrShadowHostNode()); return *toElement(parentOrShadowHostNode()); }
+    ElementShadow* owner() const { return host().shadow(); }
     ShadowRootType type() const { return static_cast<ShadowRootType>(m_type); }
     String mode() const { return (type() == ShadowRootType::V0 || type() == ShadowRootType::Open) ? "open" : "closed"; };
 
@@ -158,9 +156,6 @@ private:
 
     // ShadowRoots should never be cloned.
     Node* cloneNode(bool) override { return nullptr; }
-
-    // FIXME: This shouldn't happen. https://bugs.webkit.org/show_bug.cgi?id=88834
-    bool isOrphan() const { return !host(); }
 
     void invalidateDescendantSlots();
     unsigned descendantSlotCount() const;

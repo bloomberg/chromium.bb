@@ -1040,7 +1040,7 @@ bool Node::isChildOfV0ShadowHost() const
 Element* Node::shadowHost() const
 {
     if (ShadowRoot* root = containingShadowRoot())
-        return root->host();
+        return &root->host();
     return nullptr;
 }
 
@@ -1078,7 +1078,7 @@ Element* Node::parentOrShadowHostElement() const
         return nullptr;
 
     if (parent->isShadowRoot())
-        return toShadowRoot(parent)->host();
+        return &toShadowRoot(parent)->host();
 
     if (!parent->isElementNode())
         return nullptr;

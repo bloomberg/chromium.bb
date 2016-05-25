@@ -130,12 +130,7 @@ String ShadowRoot::innerHTML() const
 
 void ShadowRoot::setInnerHTML(const String& markup, ExceptionState& exceptionState)
 {
-    if (isOrphan()) {
-        exceptionState.throwDOMException(InvalidAccessError, "The ShadowRoot does not have a host.");
-        return;
-    }
-
-    if (DocumentFragment* fragment = createFragmentForInnerOuterHTML(markup, host(), AllowScriptingContent, "innerHTML", exceptionState))
+    if (DocumentFragment* fragment = createFragmentForInnerOuterHTML(markup, &host(), AllowScriptingContent, "innerHTML", exceptionState))
         replaceChildrenWithFragment(this, fragment, exceptionState);
 }
 
@@ -175,7 +170,7 @@ Node::InsertionNotificationRequest ShadowRoot::insertedInto(ContainerNode* inser
     if (m_registeredWithParentShadowRoot)
         return InsertionDone;
 
-    if (ShadowRoot* root = host()->containingShadowRoot()) {
+    if (ShadowRoot* root = host().containingShadowRoot()) {
         root->addChildShadowRoot();
         m_registeredWithParentShadowRoot = true;
     }
@@ -188,7 +183,7 @@ void ShadowRoot::removedFrom(ContainerNode* insertionPoint)
     if (insertionPoint->inShadowIncludingDocument()) {
         document().styleEngine().shadowRootRemovedFromDocument(this);
         if (m_registeredWithParentShadowRoot) {
-            ShadowRoot* root = host()->containingShadowRoot();
+            ShadowRoot* root = host().containingShadowRoot();
             if (!root)
                 root = insertionPoint->containingShadowRoot();
             if (root)

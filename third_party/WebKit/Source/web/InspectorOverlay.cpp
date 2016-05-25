@@ -697,7 +697,7 @@ bool InspectorOverlay::handleMouseMove(const PlatformMouseEvent& event)
     if (m_inspectMode != InspectorDOMAgent::SearchingForUAShadow) {
         ShadowRoot* shadowRoot = InspectorDOMAgent::userAgentShadowRoot(node);
         if (shadowRoot)
-            node = shadowRoot->host();
+            node = &shadowRoot->host();
     }
 
     // Shadow roots don't have boxes - use host element instead.

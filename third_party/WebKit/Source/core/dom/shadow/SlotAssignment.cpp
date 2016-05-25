@@ -40,7 +40,7 @@ void SlotAssignment::resolveAssignment(ShadowRoot& shadowRoot)
         name2slot.add(slot->name(), slot.get());
     }
 
-    for (Node& child : NodeTraversal::childrenOf(*shadowRoot.host())) {
+    for (Node& child : NodeTraversal::childrenOf(shadowRoot.host())) {
         if (child.isInsertionPoint()) {
             // A re-distribution across v0 and v1 shadow trees is not supported.
             detachNotAssignedNode(child);

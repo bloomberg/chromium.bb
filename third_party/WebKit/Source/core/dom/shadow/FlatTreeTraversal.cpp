@@ -203,7 +203,7 @@ ContainerNode* FlatTreeTraversal::traverseParentOrHost(const Node& node)
     DCHECK(!shadowRoot->shadowInsertionPointOfYoungerShadowRoot());
     if (!shadowRoot->isYoungest())
         return nullptr;
-    return shadowRoot->host();
+    return &shadowRoot->host();
 }
 
 Node* FlatTreeTraversal::childAt(const Node& node, unsigned index)

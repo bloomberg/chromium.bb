@@ -425,7 +425,7 @@ static ContainerNode* nextTraversingShadowTree(const ContainerNode& node, const 
             return youngerShadowRoot;
         }
 
-        current = shadowRoot->host();
+        current = &shadowRoot->host();
     }
     return nullptr;
 }

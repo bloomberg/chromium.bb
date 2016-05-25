@@ -222,7 +222,7 @@ Element* ScopedFocusNavigation::owner() const
     ASSERT(m_rootNode);
     if (m_rootNode->isShadowRoot()) {
         ShadowRoot& shadowRoot = toShadowRoot(*m_rootNode);
-        return shadowRoot.isYoungest() ? shadowRoot.host() : shadowRoot.shadowInsertionPointOfYoungerShadowRoot();
+        return shadowRoot.isYoungest() ? &shadowRoot.host() : shadowRoot.shadowInsertionPointOfYoungerShadowRoot();
     }
     // FIXME: Figure out the right thing for OOPI here.
     if (Frame* frame = m_rootNode->document().frame())

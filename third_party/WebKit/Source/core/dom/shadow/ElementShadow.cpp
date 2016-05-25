@@ -222,7 +222,7 @@ void ElementShadow::setNeedsDistributionRecalc()
     if (m_needsDistributionRecalc)
         return;
     m_needsDistributionRecalc = true;
-    host()->markAncestorsWithChildNeedsDistributionRecalc();
+    host().markAncestorsWithChildNeedsDistributionRecalc();
     clearDistribution();
 }
 
@@ -282,7 +282,7 @@ void ElementShadow::distribute()
 void ElementShadow::distributeV0()
 {
     HeapVector<Member<HTMLShadowElement>, 32> shadowInsertionPoints;
-    DistributionPool pool(*host());
+    DistributionPool pool(host());
 
     for (ShadowRoot* root = &youngestShadowRoot(); root; root = root->olderShadowRoot()) {
         HTMLShadowElement* shadowInsertionPoint = 0;
@@ -319,7 +319,7 @@ void ElementShadow::distributeV0()
         if (ElementShadow* shadow = shadowWhereNodeCanBeDistributed(*shadowInsertionPoint))
             shadow->setNeedsDistributionRecalc();
     }
-    InspectorInstrumentation::didPerformElementShadowDistribution(host());
+    InspectorInstrumentation::didPerformElementShadowDistribution(&host());
 }
 
 void ElementShadow::didDistributeNode(const Node* node, InsertionPoint* insertionPoint)

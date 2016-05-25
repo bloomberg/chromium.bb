@@ -976,7 +976,7 @@ static inline const LayoutObject& layoutObjectForScrollbar(const LayoutObject& l
 
         if (ShadowRoot* shadowRoot = node->containingShadowRoot()) {
             if (shadowRoot->type() == ShadowRootType::UserAgent)
-                return *shadowRoot->host()->layoutObject();
+                return *shadowRoot->host().layoutObject();
         }
     }
 

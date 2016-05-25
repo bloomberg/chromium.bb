@@ -929,7 +929,7 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
         if (ShadowRoot* root = element.containingShadowRoot()) {
             if (root->type() != ShadowRootType::UserAgent)
                 return false;
-            const ComputedStyle* style = root->host()->computedStyle();
+            const ComputedStyle* style = root->host().computedStyle();
             return style && style->hasAppearance();
         }
         return false;
