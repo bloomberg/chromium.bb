@@ -3,8 +3,7 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<!-- The list below All Sites is ordered by privacy-sensitive items first. If
-     you are not sure where to add your item, add it above Storage. -->
+<!-- The order of the following items is from: http://crbug.com/610358. -->
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- All sites -->
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
@@ -28,6 +27,10 @@
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
         android:key="microphone" />
+    <!-- Notifications -->
+    <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
+        android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
+        android:key="notifications" />
     <!-- JavaScript -->
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
@@ -36,26 +39,22 @@
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
         android:key="popups" />
-    <!-- Fullscreen -->
-    <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
-        android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
-        android:key="fullscreen" />
-    <!-- Notifications -->
-    <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
-        android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
-        android:key="notifications" />
-    <!-- Autoplay -->
-    <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
-        android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
-        android:key="autoplay" />
-    <!-- Protected content -->
-    <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
-        android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
-        android:key="protected_content" />
     <!-- Background sync -->
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
         android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
         android:key="background_sync" />
+    <!-- Fullscreen -->
+    <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
+        android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
+        android:key="fullscreen" />
+    <!-- Protected content -->
+    <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
+        android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
+        android:key="protected_content" />
+    <!-- Autoplay -->
+    <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
+        android:fragment="org.chromium.chrome.browser.preferences.website.SingleCategoryPreferences"
+        android:key="autoplay" />
     <!-- Language -->
     <org.chromium.chrome.browser.preferences.website.SiteSettingsPreference
         android:fragment="org.chromium.chrome.browser.preferences.website.LanguagePreferences"
