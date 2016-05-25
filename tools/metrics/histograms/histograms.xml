@@ -45182,30 +45182,78 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.FileTypeUpdate.Result"
+<histogram name="SafeBrowsing.FileTypeUpdate.DynamicUpdateResult"
     enum="SBFileTypeUpdateResult">
   <owner>nparker@chromium.org</owner>
   <summary>
     The result of reading/parsing/accepting a new proto for the FileTypePolices
     repo of file extensions and their meta data.
+
+      This is for the file types loaded from the component-update system. This
+    includes both those loaded from disk shortly after startup, and those
+    received over the network when the component version changes
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.FileTypeUpdate.TypeCount"
+<histogram name="SafeBrowsing.FileTypeUpdate.DynamicUpdateTypeCount"
     units="number of file types">
   <owner>nparker@chromium.org</owner>
   <summary>
     Number of file types (aka file extensions) present in the FileTypePolicies
     proto loaded.
+
+      This is for the file types loaded from the component-update system. This
+    includes both those loaded from disk shortly after startup, and those
+    received over the network when the component version changes
   </summary>
 </histogram>
 
-<histogram name="SafeBrowsing.FileTypeUpdate.Version"
+<histogram name="SafeBrowsing.FileTypeUpdate.DynamicUpdateVersion"
     units="FileTypePolicies Version">
   <owner>nparker@chromium.org</owner>
   <summary>
     Integer version number citing which version of the proto data chrome just
     loaded.  Latest version is in download_file_types.asciipb.
+
+      This is for the file types loaded from the component-update system. This
+    includes both those loaded from disk shortly after startup, and those
+    received over the network when the component version changes
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.FileTypeUpdate.ResourceBundleResult"
+    enum="SBFileTypeUpdateResult">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    The result of reading/parsing/accepting a new proto for the FileTypePolices
+    repo of file extensions and their meta data.
+
+      This is for the file types loaded from the resource bundle packaged with
+    Chrome, which is always loaded at startup.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.FileTypeUpdate.ResourceBundleTypeCount"
+    units="number of file types">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Number of file types (aka file extensions) present in the FileTypePolicies
+    proto loaded.
+
+      This is for the file types loaded from the resource bundle packaged with
+    Chrome, which is always loaded at startup.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.FileTypeUpdate.ResourceBundleVersion"
+    units="FileTypePolicies Version">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Integer version number citing which version of the proto data chrome just
+    loaded.  Latest version is in download_file_types.asciipb.
+
+      This is for the file types loaded from the resource bundle packaged with
+    Chrome, which is always loaded at startup.
   </summary>
 </histogram>
 
@@ -95894,21 +95942,6 @@ To add a new entry, add it with any value and run test to compute valid value.
              unsafe. Logged as the request is canceled."/>
   <affected-histogram name="SB2.ResourceTypes"/>
   <affected-histogram name="SB2.ResourceTypes2"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="SBFileTypeUpdateSource" separator=""
-    ordering="prefix">
-  <suffix name="ResourceBundle"
-      label="The file types loaded from the resource bundle packaged with
-             Chrome. This is always loaded at startup."/>
-  <suffix name="DynamicUpdate"
-      label="The file types loaded from the component-update system. This
-             includes both those loaded from disk shortly after startup, and
-             those received over the network when the component version
-             changes."/>
-  <affected-histogram name="SafeBrowsing.FileTypeUpdate.Result"/>
-  <affected-histogram name="SafeBrowsing.FileTypeUpdate.TypeCount"/>
-  <affected-histogram name="SafeBrowsing.FileTypeUpdate.Version"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="SBInterstitial">
