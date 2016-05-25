@@ -68,8 +68,12 @@ class DataUseMatcher {
   // |external_data_use_observer_bridge_|.
   void FetchMatchingRules();
 
-  // Returns true if there is any valid matching rule.
-  bool HasValidRules() const;
+  // Returns true if there is any matching rule. HasRules may return true even
+  // if all rules are expired.
+  bool HasRules() const;
+
+  // Returns true if there is any valid matching rule with label |label|.
+  bool HasValidRuleWithLabel(const std::string& label) const;
 
  private:
   friend class DataUseMatcherTest;

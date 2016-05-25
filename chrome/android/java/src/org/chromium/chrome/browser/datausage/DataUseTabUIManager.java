@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.sessions.SessionTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 
 /**
@@ -105,8 +106,9 @@ public class DataUseTabUIManager {
      * continue.
      */
     public static boolean wouldDataUseTrackingEnd(Tab tab, String url, int pageTransitionType) {
-        return nativeWouldDataUseTrackingEnd(SessionTabHelper.sessionIdForTab(tab.getWebContents()),
-                url, pageTransitionType, tab.getProfile());
+        return nativeWouldDataUseTrackingEnd(tab.getWebContents(),
+                SessionTabHelper.sessionIdForTab(tab.getWebContents()), url, pageTransitionType,
+                tab.getProfile());
     }
 
     /**
@@ -293,8 +295,8 @@ public class DataUseTabUIManager {
     private static native boolean nativeCheckAndResetDataUseTrackingEnded(
             int tabId, Profile profile);
     private static native void nativeUserClickedContinueOnDialogBox(int tabId, Profile profile);
-    private static native boolean nativeWouldDataUseTrackingEnd(
-            int tabId, String url, int pageTransitionType, Profile jprofile);
+    private static native boolean nativeWouldDataUseTrackingEnd(WebContents webContents, int tabId,
+            String url, int pageTransitionType, Profile jprofile);
     private static native void nativeOnCustomTabInitialNavigation(int tabID, String packageName,
             String url, Profile profile);
     private static native String nativeGetDataUseUIString(int messageID);

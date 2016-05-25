@@ -11,8 +11,11 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "components/sessions/core/session_id.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/page_transition_types.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(DataUseTabHelper);
@@ -42,12 +45,21 @@ void DataUseTabHelper::DidFinishNavigation(
       chrome::android::DataUseUITabModelFactory::GetForBrowserContext(
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
   SessionID::id_type tab_id = SessionTabHelper::IdForTab(web_contents());
-  if (data_use_ui_tab_model && tab_id >= 0) {
-    data_use_ui_tab_model->ReportBrowserNavigation(
-        navigation_handle->GetURL(),
-        ui::PageTransitionFromInt(navigation_handle->GetPageTransition()),
-        tab_id);
-  }
+  if (!data_use_ui_tab_model || tab_id < 0)
+    return;
+
+  // The last committed navigation entry should correspond to the current
+  // navigation. This should not be null since the DidFinishNavigation
+  // callback is received for a committed navigation.
+  auto navigation_entry = navigation_handle->GetWebContents()
+                              ->GetController()
+                              .GetLastCommittedEntry();
+  DCHECK(navigation_entry);
+  DCHECK_EQ(navigation_handle->GetURL(), navigation_entry->GetURL());
+  data_use_ui_tab_model->ReportBrowserNavigation(
+      navigation_handle->GetURL(),
+      ui::PageTransitionFromInt(navigation_handle->GetPageTransition()), tab_id,
+      navigation_entry);
 }
 
 void DataUseTabHelper::FrameDeleted(

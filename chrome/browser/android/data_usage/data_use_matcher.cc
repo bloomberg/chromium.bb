@@ -145,8 +145,18 @@ void DataUseMatcher::FetchMatchingRules() {
   external_data_use_observer_bridge_->FetchMatchingRules();
 }
 
-bool DataUseMatcher::HasValidRules() const {
+bool DataUseMatcher::HasRules() const {
   return !matching_rules_.empty();
+}
+
+bool DataUseMatcher::HasValidRuleWithLabel(const std::string& label) const {
+  for (const auto& matching_rule : matching_rules_) {
+    if (matching_rule->expiration() > tick_clock_->NowTicks() &&
+        label == matching_rule->label()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void DataUseMatcher::ParsePackageField(const std::string& app_package_name,

@@ -20,6 +20,10 @@
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
+namespace content {
+class NavigationEntry;
+}
+
 namespace chrome {
 
 namespace android {
@@ -46,10 +50,13 @@ class DataUseUITabModel : public KeyedService,
 
   // Reports a browser navigation to the DataUseTabModel on IO thread. Includes
   // the |page_transition|, |tab_id|, and |gurl| for the navigation. Tabs that
-  // are restored when Chromium restarts are not reported.
+  // are restored when Chromium restarts are not reported. |navigation_entry|
+  // corresponds to the navigation entry of the current navigation in
+  // back-forward navigation history, and should not be null.
   void ReportBrowserNavigation(const GURL& gurl,
                                ui::PageTransition page_transition,
-                               SessionID::id_type tab_id);
+                               SessionID::id_type tab_id,
+                               content::NavigationEntry* navigation_entry);
 
   // Reports a tab closure for the tab with |tab_id| to the DataUseTabModel on
   // IO thread. The tab could either have been closed or evicted from the memory
@@ -77,10 +84,14 @@ class DataUseUITabModel : public KeyedService,
   // Returns true if the tab with id |tab_id| is currently tracked, and
   // starting the navigation to |url| with transition type |page_transition|
   // would end tracking of data use. Should only be called before the navigation
-  // starts.
-  bool WouldDataUseTrackingEnd(const std::string& url,
-                               int page_transition,
-                               SessionID::id_type tab_id) const;
+  // starts. |navigation_entry| corresponds to the navigation entry of the
+  // current navigation in back-forward navigation history, and should not be
+  // null.
+  bool WouldDataUseTrackingEnd(
+      const std::string& url,
+      int page_transition,
+      SessionID::id_type tab_id,
+      const content::NavigationEntry* navigation_entry) const;
 
   // Notifies that user clicked "Continue" when the dialog box with data use
   // warning was shown. Includes the |tab_id| on which the warning was shown.

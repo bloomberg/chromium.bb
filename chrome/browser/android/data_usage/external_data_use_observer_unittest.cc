@@ -116,7 +116,7 @@ class ExternalDataUseObserverTest : public testing::Test {
   void TriggerTabTrackingOnDefaultTab() {
     external_data_use_observer_->GetDataUseTabModel()->OnNavigationEvent(
         kDefaultTabId, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
-        GURL(kDefaultURL), std::string());
+        GURL(kDefaultURL), std::string(), nullptr);
   }
 
   // Returns a default data_usage::DataUse object.
@@ -307,11 +307,11 @@ TEST_F(ExternalDataUseObserverTest, MultipleMatchingRules) {
 
   external_data_use_observer()->GetDataUseTabModel()->OnNavigationEvent(
       kDefaultTabId, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
-      GURL("http://www.foo.com/#q=abc"), std::string());
+      GURL("http://www.foo.com/#q=abc"), std::string(), nullptr);
 
   external_data_use_observer()->GetDataUseTabModel()->OnNavigationEvent(
       kDefaultTabId + 1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
-      GURL("http://www.bar.com/#q=abc"), std::string());
+      GURL("http://www.bar.com/#q=abc"), std::string(), nullptr);
 
   EXPECT_EQ(0U, external_data_use_observer()->buffered_data_reports_.size());
   EXPECT_TRUE(external_data_use_observer()
@@ -409,7 +409,7 @@ TEST_F(ExternalDataUseObserverTest, MatchingRuleFetchOnControlAppInstall) {
     base::HistogramTester histogram_tester;
     external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
         kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
-        std::string());
+        std::string(), nullptr);
     base::RunLoop().RunUntilIdle();
     histogram_tester.ExpectTotalCount("DataUsage.MatchingRulesCount.Valid", 0);
   }
@@ -431,7 +431,7 @@ TEST_F(ExternalDataUseObserverTest, MatchingRuleFetchOnControlAppInstall) {
     base::HistogramTester histogram_tester;
     external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
         kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
-        std::string());
+        std::string(), nullptr);
     base::RunLoop().RunUntilIdle();
     histogram_tester.ExpectTotalCount("DataUsage.MatchingRulesCount.Valid", 1);
   }
@@ -447,7 +447,7 @@ TEST_F(ExternalDataUseObserverTest, MatchingRuleFetchOnControlAppInstall) {
     base::HistogramTester histogram_tester;
     external_data_use_observer()->data_use_tab_model_->OnNavigationEvent(
         kDefaultTabId, DataUseTabModel::TRANSITION_LINK, GURL(kDefaultURL),
-        std::string());
+        std::string(), nullptr);
     base::RunLoop().RunUntilIdle();
     histogram_tester.ExpectTotalCount("DataUsage.MatchingRulesCount.Valid", 0);
   }
@@ -630,7 +630,7 @@ TEST_F(ExternalDataUseObserverTest, DataUseReportTimedOut) {
   // control app is installed, since there are no valid rules yet.
   external_data_use_observer()->GetDataUseTabModel()->OnNavigationEvent(
       kDefaultTabId, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH,
-      GURL(kDefaultURL), std::string());
+      GURL(kDefaultURL), std::string(), nullptr);
   base::RunLoop().RunUntilIdle();
   histogram_tester.ExpectTotalCount(kUMAMatchingRuleFirstFetchDurationHistogram,
                                     1);

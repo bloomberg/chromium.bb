@@ -14,7 +14,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
@@ -26,6 +28,7 @@
 #include "components/data_usage/core/data_use_annotator.h"
 #include "components/sessions/core/session_id.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -49,6 +52,8 @@ const char kURLBaz[] = "http://baz.com/";
 const char kURLFooBar[] = "http://foobar.com/";
 const char kPackageFoo[] = "com.google.package.foo";
 const char kPackageBar[] = "com.google.package.bar";
+
+const char kDataUseTabModelLabel[] = "data_use_tab_model_label";
 
 enum TabEntrySize { ZERO = 0, ONE, TWO, THREE };
 
@@ -76,6 +81,23 @@ class TestExternalDataUseObserverBridge
   void FetchMatchingRules() const override {}
   void ShouldRegisterAsDataUseObserver(bool should_register) const override{};
 };
+
+std::unique_ptr<content::NavigationEntry> CreateNavigationEntry(
+    const std::string& url) {
+  auto navigation_entry(content::NavigationEntry::Create());
+  navigation_entry->SetURL(GURL(url));
+  return navigation_entry;
+}
+
+void ExpectDataUseLabelInNavigationEntry(
+    const content::NavigationEntry& navigation_entry,
+    const std::string& label) {
+  base::string16 extra_data;
+  bool exists =
+      navigation_entry.GetExtraData(kDataUseTabModelLabel, &extra_data);
+  EXPECT_EQ(!label.empty(), exists);
+  EXPECT_EQ(label, base::UTF16ToASCII(extra_data));
+}
 
 }  // namespace
 
@@ -530,27 +552,35 @@ TEST_F(DataUseTabModelTest, NavigationEnterEvent) {
 
   ExpectTabEntrySize(TabEntrySize::ZERO);
 
+  auto navigation_entry = CreateNavigationEntry(kURLFoo);
   EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(
-      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLFoo)));
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLFoo),
+      navigation_entry.get()));
   data_use_tab_model_->OnNavigationEvent(
       kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLFoo),
-      std::string());
+      std::string(), navigation_entry.get());
   ExpectTabEntrySize(TabEntrySize::ONE);
   EXPECT_TRUE(IsTrackingDataUse(kTabID1));
   ExpectTrackingInfo(kTabID1, kTestLabel1, DataUseTabModel::kDefaultTag);
+  ExpectDataUseLabelInNavigationEntry(*navigation_entry, kTestLabel1);
   EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
-      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFooBar)));
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFooBar),
+      navigation_entry.get()));
 
+  navigation_entry = CreateNavigationEntry(kURLBar);
   EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(
-      kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLBar)));
+      kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLBar),
+      navigation_entry.get()));
   data_use_tab_model_->OnNavigationEvent(
       kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLBar),
-      std::string());
+      std::string(), navigation_entry.get());
   ExpectTabEntrySize(TabEntrySize::TWO);
   EXPECT_TRUE(IsTrackingDataUse(kTabID2));
   ExpectTrackingInfo(kTabID2, kTestLabel2, DataUseTabModel::kDefaultTag);
+  ExpectDataUseLabelInNavigationEntry(*navigation_entry, kTestLabel2);
   EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
-      kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFooBar)));
+      kTabID2, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFooBar),
+      navigation_entry.get()));
 }
 
 // Tests that a navigation event with empty url and empty package name does not
@@ -562,17 +592,18 @@ TEST_F(DataUseTabModelTest, EmptyNavigationEvent) {
                      std::vector<std::string>(1, kURLFoo),
                      std::vector<std::string>(1, kTestLabel1));
 
-  data_use_tab_model_->OnNavigationEvent(
-      kTabID1, DataUseTabModel::TRANSITION_CUSTOM_TAB, GURL(), std::string());
+  data_use_tab_model_->OnNavigationEvent(kTabID1,
+                                         DataUseTabModel::TRANSITION_CUSTOM_TAB,
+                                         GURL(), std::string(), nullptr);
   EXPECT_FALSE(IsTrackingDataUse(kTabID1));
 
   data_use_tab_model_->OnNavigationEvent(
       kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(),
-      std::string());
+      std::string(), nullptr);
   EXPECT_FALSE(IsTrackingDataUse(kTabID1));
 
   EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(
-      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL()));
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(), nullptr));
 
   ExpectTabEntrySize(TabEntrySize::ZERO);
 }
@@ -587,15 +618,18 @@ TEST_F(DataUseTabModelTest, NavigationEnterAndExitEvent) {
 
   RegisterURLRegexes(app_package_names, domain_regexes, labels);
 
+  auto navigation_entry = CreateNavigationEntry(kURLFoo);
   EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(
-      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo)));
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo),
+      navigation_entry.get()));
   data_use_tab_model_->OnNavigationEvent(
       kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo),
-      std::string());
+      std::string(), navigation_entry.get());
+  ExpectDataUseLabelInNavigationEntry(*navigation_entry, kTestLabel2);
   ExpectTabEntrySize(TabEntrySize::ONE);
   EXPECT_TRUE(IsTrackingDataUse(kTabID1));
   EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
-      kTabID1, DataUseTabModel::TRANSITION_BOOKMARK, GURL()));
+      kTabID1, DataUseTabModel::TRANSITION_BOOKMARK, GURL(), nullptr));
 }
 
 // Tests that any of the Enter transition events start the tracking.
@@ -637,8 +671,10 @@ TEST_F(DataUseTabModelTest, AllNavigationEnterEvents) {
     ExpectEmptyTrackingInfo(tab_id);
 
     // Tracking should start.
+    auto navigation_entry = CreateNavigationEntry(test.url);
     data_use_tab_model_->OnNavigationEvent(tab_id, test.transition,
-                                           GURL(test.url), test.package);
+                                           GURL(test.url), test.package,
+                                           navigation_entry.get());
 
     const std::string expected_tag =
         test.transition == DataUseTabModel::TRANSITION_CUSTOM_TAB
@@ -648,9 +684,12 @@ TEST_F(DataUseTabModelTest, AllNavigationEnterEvents) {
     EXPECT_TRUE(IsTrackingDataUse(tab_id));
     ExpectTrackingInfo(tab_id, test.expect_label, expected_tag);
     if (test.transition != DataUseTabModel::TRANSITION_CUSTOM_TAB) {
+      ExpectDataUseLabelInNavigationEntry(*navigation_entry, test.expect_label);
+
+      auto navigation_entry_bar = CreateNavigationEntry(kURLBar);
       EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
-          tab_id, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION,
-          GURL(kURLBar)));
+          tab_id, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLBar),
+          navigation_entry_bar.get()));
     }
     ExpectTabEntrySize(tab_id);
     EXPECT_EQ(test.transition == DataUseTabModel::TRANSITION_CUSTOM_TAB,
@@ -682,18 +721,23 @@ TEST_F(DataUseTabModelTest, AllNavigationExitEvents) {
 
   for (const auto& test : all_exit_transition_tests) {
     EXPECT_FALSE(IsTrackingDataUse(tab_id));
+    auto navigation_entry = CreateNavigationEntry(kURLFoo);
     data_use_tab_model_->OnNavigationEvent(
         tab_id, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo),
-        std::string());
+        std::string(), navigation_entry.get());
     EXPECT_TRUE(IsTrackingDataUse(tab_id));
+    ExpectDataUseLabelInNavigationEntry(*navigation_entry, kTestLabel1);
 
     // Tracking should end.
+    navigation_entry = CreateNavigationEntry(test.url);
     EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
-        tab_id, test.transition, GURL(test.url)));
+        tab_id, test.transition, GURL(test.url), navigation_entry.get()));
     data_use_tab_model_->OnNavigationEvent(tab_id, test.transition,
-                                           GURL(test.url), std::string());
+                                           GURL(test.url), std::string(),
+                                           navigation_entry.get());
     EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(
-        tab_id, test.transition, GURL(test.url)));
+        tab_id, test.transition, GURL(test.url), navigation_entry.get()));
+    ExpectDataUseLabelInNavigationEntry(*navigation_entry, std::string());
 
     EXPECT_FALSE(IsTrackingDataUse(tab_id));
     ExpectTabEntrySize(tab_id);
@@ -718,29 +762,127 @@ TEST_F(DataUseTabModelTest, AllNavigationExitAndEnterEvents) {
 
   for (const auto& transition : all_test_transitions) {
     EXPECT_FALSE(IsTrackingDataUse(tab_id));
+    auto navigation_entry = CreateNavigationEntry(kURLFoo);
     data_use_tab_model_->OnNavigationEvent(tab_id, transition, GURL(kURLFoo),
-                                           std::string());
+                                           std::string(),
+                                           navigation_entry.get());
     EXPECT_TRUE(IsTrackingDataUse(tab_id));
     ExpectTrackingInfo(tab_id, kTestLabel1, DataUseTabModel::kDefaultTag);
+    ExpectDataUseLabelInNavigationEntry(*navigation_entry, kTestLabel1);
+
+    navigation_entry = CreateNavigationEntry(kURLBar);
     EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
-        tab_id, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLBar)));
+        tab_id, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLBar),
+        navigation_entry.get()));
 
     // No change in label.
+    navigation_entry = CreateNavigationEntry(kURLFoo);
     data_use_tab_model_->OnNavigationEvent(tab_id, transition, GURL(kURLFoo),
-                                           std::string());
+                                           std::string(),
+                                           navigation_entry.get());
     EXPECT_TRUE(IsTrackingDataUse(tab_id));
     ExpectTrackingInfo(tab_id, kTestLabel1, DataUseTabModel::kDefaultTag);
+    ExpectDataUseLabelInNavigationEntry(*navigation_entry, kTestLabel1);
 
     // Tracking should end.
+    navigation_entry = CreateNavigationEntry(std::string());
     EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
-        tab_id, transition, GURL()));
-    data_use_tab_model_->OnNavigationEvent(tab_id, transition, GURL(),
-                                           std::string());
+        tab_id, transition, GURL(), navigation_entry.get()));
+    data_use_tab_model_->OnNavigationEvent(
+        tab_id, transition, GURL(), std::string(), navigation_entry.get());
 
     EXPECT_FALSE(IsTrackingDataUse(tab_id));
     ExpectTabEntrySize(tab_id);
     ++tab_id;
   }
+}
+
+// Tests that back-forward navigations start or end tracking depending on the
+// tracking state of the initial navigation.
+// TODO(rajendrant) Add an integration test with TestWebContents that calls
+// NavigateAndCommit(), test if the navigation_entry is popped up correctly,
+// and label is applied from there.
+TEST_F(DataUseTabModelTest, BackForwardNavigationSequence) {
+  std::vector<std::string> app_package_names, domain_regexes, labels;
+  MockTabDataUseObserver mock_observer;
+
+  app_package_names.push_back(kPackageFoo);
+  domain_regexes.push_back(kURLFoo);
+  labels.push_back(kTestLabel1);
+  RegisterURLRegexes(app_package_names, domain_regexes, labels);
+
+  data_use_tab_model_->AddObserver(&mock_observer);
+
+  // Start tracking.
+  EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1)).Times(1);
+  auto navigation_entry_foo = CreateNavigationEntry(kURLFoo);
+  data_use_tab_model_->OnNavigationEvent(
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo),
+      std::string(), navigation_entry_foo.get());
+
+  EXPECT_TRUE(IsTrackingDataUse(kTabID1));
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+  ExpectTrackingInfo(kTabID1, kTestLabel1, DataUseTabModel::kDefaultTag);
+  ExpectDataUseLabelInNavigationEntry(*navigation_entry_foo, kTestLabel1);
+
+  // Navigate to some URL which does not match regex. Still continues tracking.
+  auto navigation_entry_bar = CreateNavigationEntry(kURLBar);
+  data_use_tab_model_->OnNavigationEvent(
+      kTabID1, DataUseTabModel::TRANSITION_LINK, GURL(kURLBar), std::string(),
+      navigation_entry_bar.get());
+  ExpectTrackingInfo(kTabID1, kTestLabel1, DataUseTabModel::kDefaultTag);
+  ExpectDataUseLabelInNavigationEntry(*navigation_entry_foo, kTestLabel1);
+
+  // End tracking.
+  auto navigation_entry_baz = CreateNavigationEntry(kURLBaz);
+  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID1)).Times(1);
+  EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLBaz),
+      navigation_entry_baz.get()));
+  data_use_tab_model_->OnNavigationEvent(
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION, GURL(kURLBaz),
+      std::string(), navigation_entry_baz.get());
+  EXPECT_FALSE(IsTrackingDataUse(kTabID1));
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+  ExpectDataUseLabelInNavigationEntry(*navigation_entry_baz, std::string());
+
+  // Navigating backward starts tracking.
+  EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1)).Times(1);
+  data_use_tab_model_->OnNavigationEvent(
+      kTabID1, DataUseTabModel::TRANSITION_FORWARD_BACK, GURL(kURLBar),
+      std::string(), navigation_entry_bar.get());
+  EXPECT_TRUE(IsTrackingDataUse(kTabID1));
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+  ExpectTrackingInfo(kTabID1, kTestLabel1, DataUseTabModel::kDefaultTag);
+  ExpectDataUseLabelInNavigationEntry(*navigation_entry_bar, kTestLabel1);
+
+  // Continue navigating backwards.
+  data_use_tab_model_->OnNavigationEvent(
+      kTabID1, DataUseTabModel::TRANSITION_FORWARD_BACK, GURL(kURLFoo),
+      std::string(), navigation_entry_foo.get());
+  EXPECT_TRUE(IsTrackingDataUse(kTabID1));
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+  ExpectTrackingInfo(kTabID1, kTestLabel1, DataUseTabModel::kDefaultTag);
+  ExpectDataUseLabelInNavigationEntry(*navigation_entry_foo, kTestLabel1);
+
+  // Navigating forward continues tracking.
+  data_use_tab_model_->OnNavigationEvent(
+      kTabID1, DataUseTabModel::TRANSITION_FORWARD_BACK, GURL(kURLBar),
+      std::string(), navigation_entry_bar.get());
+  EXPECT_TRUE(IsTrackingDataUse(kTabID1));
+  ExpectTrackingInfo(kTabID1, kTestLabel1, DataUseTabModel::kDefaultTag);
+  ExpectDataUseLabelInNavigationEntry(*navigation_entry_bar, kTestLabel1);
+
+  // Continue navigating forwards ends tracking.
+  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID1)).Times(1);
+  EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
+      kTabID1, DataUseTabModel::TRANSITION_FORWARD_BACK, GURL(kURLBaz),
+      navigation_entry_baz.get()));
+  data_use_tab_model_->OnNavigationEvent(
+      kTabID1, DataUseTabModel::TRANSITION_FORWARD_BACK, GURL(kURLBaz),
+      std::string(), navigation_entry_baz.get());
+  EXPECT_FALSE(IsTrackingDataUse(kTabID1));
+  ExpectDataUseLabelInNavigationEntry(*navigation_entry_baz, std::string());
 }
 
 // Tests that a sequence of transitions simulating user actions are able to
@@ -799,9 +941,11 @@ TEST_F(DataUseTabModelTest, SingleTabTransitionSequence) {
   for (auto const& test : transition_tests) {
     tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
 
+    auto navigation_entry = CreateNavigationEntry(test.url);
+
     if (test.observer_event == ENDED) {
       EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
-          kTabID1, test.transition, GURL(test.url)));
+          kTabID1, test.transition, GURL(test.url), navigation_entry.get()));
     }
 
     EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1))
@@ -810,16 +954,18 @@ TEST_F(DataUseTabModelTest, SingleTabTransitionSequence) {
         .Times(test.observer_event == ENDED ? 1 : 0);
 
     data_use_tab_model_->OnNavigationEvent(kTabID1, test.transition,
-                                           GURL(test.url), test.package);
+                                           GURL(test.url), test.package,
+                                           navigation_entry.get());
     tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
 
     EXPECT_EQ(!test.expected_label.empty(), IsTrackingDataUse(kTabID1));
     ExpectTrackingInfo(kTabID1, test.expected_label,
                        DataUseTabModel::kDefaultTag);
+    ExpectDataUseLabelInNavigationEntry(*navigation_entry, test.expected_label);
 
     if (test.observer_event == STARTED || test.observer_event == CONTINUES) {
       EXPECT_TRUE(data_use_tab_model_->WouldNavigationEventEndTracking(
-          kTabID1, DataUseTabModel::TRANSITION_BOOKMARK, GURL()));
+          kTabID1, DataUseTabModel::TRANSITION_BOOKMARK, GURL(), nullptr));
     }
 
     testing::Mock::VerifyAndClearExpectations(&mock_observer);
@@ -875,17 +1021,20 @@ TEST_F(DataUseTabModelTest, SingleCustomTabTransitionSequence) {
     EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID1))
         .Times(test.observer_event == ENDED ? 1 : 0);
 
+    auto navigation_entry = CreateNavigationEntry(test.url);
     data_use_tab_model_->OnNavigationEvent(kTabID1, test.transition,
-                                           GURL(test.url), test.package);
+                                           GURL(test.url), test.package,
+                                           navigation_entry.get());
     tick_clock_->Advance(base::TimeDelta::FromSeconds(1));
 
     EXPECT_EQ(!test.expected_label.empty(), IsTrackingDataUse(kTabID1));
     ExpectTrackingInfo(kTabID1, test.expected_label,
                        DataUseTabModel::kCustomTabTag);
+    ExpectDataUseLabelInNavigationEntry(*navigation_entry, test.expected_label);
 
     // Tracking never ends.
     EXPECT_FALSE(data_use_tab_model_->WouldNavigationEventEndTracking(
-        kTabID1, DataUseTabModel::TRANSITION_LINK, GURL()));
+        kTabID1, DataUseTabModel::TRANSITION_LINK, GURL(), nullptr));
 
     testing::Mock::VerifyAndClearExpectations(&mock_observer);
   }
@@ -902,9 +1051,10 @@ TEST_F(DataUseTabModelTest, LabelRemoved) {
   RegisterURLRegexes(std::vector<std::string>(labels.size(), std::string()),
                      std::vector<std::string>(labels.size(), kURLFoo), labels);
 
+  auto navigation_entry = CreateNavigationEntry(kURLFoo);
   data_use_tab_model_->OnNavigationEvent(
       kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo),
-      std::string());
+      std::string(), navigation_entry.get());
   EXPECT_TRUE(IsTrackingDataUse(kTabID1));
 
   labels.clear();
@@ -930,12 +1080,12 @@ TEST_F(DataUseTabModelTest, MatchingRuleClearedOnControlAppUninstall) {
 
   StartTrackingDataUse(kTabID1, kTestLabel1);
   EXPECT_TRUE(IsTrackingDataUse(kTabID1));
-  EXPECT_TRUE(data_use_tab_model_->data_use_matcher_->HasValidRules());
+  EXPECT_TRUE(data_use_tab_model_->data_use_matcher_->HasRules());
 
   data_use_tab_model_->OnControlAppInstallStateChange(false);
 
   EXPECT_FALSE(IsTrackingDataUse(kTabID1));
-  EXPECT_FALSE(data_use_tab_model_->data_use_matcher_->HasValidRules());
+  EXPECT_FALSE(data_use_tab_model_->data_use_matcher_->HasRules());
 }
 
 // Tests that |OnDataUseTabModelReady| is sent to observers when the external

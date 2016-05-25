@@ -27,6 +27,10 @@ class SingleThreadTaskRunner;
 class TickClock;
 }
 
+namespace content {
+class NavigationEntry;
+}
+
 namespace chrome {
 
 namespace android {
@@ -72,6 +76,12 @@ class DataUseTabModel {
 
     // Navigating from history.
     TRANSITION_HISTORY_ITEM,
+
+    // Navigation back or forward.
+    TRANSITION_FORWARD_BACK,
+
+    // Navigation due to form submission.
+    TRANSITION_FORM_SUBMIT,
   };
 
   // TabDataUseObserver provides the interface for getting notifications from
@@ -113,10 +123,17 @@ class DataUseTabModel {
   // tab of the generated event, |transition| indicates the type of the UI
   // event/transition,  |url| is the URL in the source tab, |package| indicates
   // the android package name of external application that initiated the event.
+  // |navigation_entry| corresponds to the navigation entry of the current
+  // navigation in back-forward navigation history, and is used to save the
+  // current tracking label to be used for back-forward navigations.
+  // |navigation_entry| can be null in some cases where it cannot be retrieved
+  // such as buffered navigation events or when support for back-forward
+  // navigations is not needed such as custom tab navigation.
   void OnNavigationEvent(SessionID::id_type tab_id,
                          TransitionType transition,
                          const GURL& url,
-                         const std::string& package);
+                         const std::string& package,
+                         content::NavigationEntry* navigation_entry);
 
   // Notifies the DataUseTabModel that tab with |tab_id| is closed. Any active
   // tracking sessions for the tab are terminated, and the tab is marked as
@@ -140,10 +157,14 @@ class DataUseTabModel {
 
   // Returns true if the navigation event would end the tracking session for
   // |tab_id|. |transition| is the type of the UI event/transition. |url| is the
-  // URL in the tab.
-  bool WouldNavigationEventEndTracking(SessionID::id_type tab_id,
-                                       TransitionType transition,
-                                       const GURL& url) const;
+  // URL in the tab. |navigation_entry| which can be null corresponds to the
+  // navigation entry of the current navigation in back-forward navigation
+  // history.
+  bool WouldNavigationEventEndTracking(
+      SessionID::id_type tab_id,
+      TransitionType transition,
+      const GURL& url,
+      const content::NavigationEntry* navigation_entry) const;
 
   // Adds observers to the observer list. Must be called on UI thread.
   // |observer| is notified on the UI thread.
@@ -226,20 +247,23 @@ class DataUseTabModel {
   // occurs in the tab. |tab_id| is the source tab of the generated event,
   // |transition| indicates the type of the UI event/transition,  |url| is the
   // URL in the source tab, |package| indicates the android package name of
-  // external application that initiated the event. |current_label|, |new_label|
-  // and |is_package_match| should not be null, and are set with current and new
-  // labels respectively. |current_label| will be set to empty string, if there
-  // is no active tracking session. |new_label| will be set to empty string if
-  // there would be no active tracking session if the navigation happens.
-  // |is_package_match| will be set to true if a tracking session will start due
-  // to package name match.
-  void GetCurrentAndNewLabelForNavigationEvent(SessionID::id_type tab_id,
-                                               TransitionType transition,
-                                               const GURL& url,
-                                               const std::string& package,
-                                               std::string* current_label,
-                                               std::string* new_label,
-                                               bool* is_package_match) const;
+  // external application that initiated the event. |navigation_entry| which can
+  // be null is the navigation entry of the current navigation in back-forward
+  // history. |current_label|, |new_label| and |is_package_match| should not be
+  // null, and are set with current and new labels respectively. |current_label|
+  // will be set to empty string, if there is no active tracking session.
+  // |new_label| will be set to empty string if there would be no active
+  // tracking session if the navigation happens. |is_package_match| will be set
+  // to true if a tracking session will start due to package name match.
+  void GetCurrentAndNewLabelForNavigationEvent(
+      SessionID::id_type tab_id,
+      TransitionType transition,
+      const GURL& url,
+      const std::string& package,
+      const content::NavigationEntry* navigation_entry,
+      std::string* current_label,
+      std::string* new_label,
+      bool* is_package_match) const;
 
   // Initiates a new tracking session with the |label| for tab with id |tab_id|.
   // |is_custom_tab_package_match| is true if |tab_id| is a custom tab and
