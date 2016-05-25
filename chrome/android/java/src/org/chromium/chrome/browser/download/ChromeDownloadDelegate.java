@@ -19,6 +19,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.webkit.URLUtil;
 import android.widget.TextView;
 
 import org.chromium.base.Log;
@@ -595,8 +596,11 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
         // OMA downloads have extension "dm" or "dd". For the latter, it
         // can be handled when native download completes.
         if (path != null && (path.endsWith(".dm"))) {
-            final DownloadInfo downloadInfo = new DownloadInfo.Builder().setUrl(url).build();
             if (mTab == null) return true;
+            String fileName = URLUtil.guessFileName(
+                    url, null, OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
+            final DownloadInfo downloadInfo =
+                    new DownloadInfo.Builder().setUrl(url).setFileName(fileName).build();
             WindowAndroid window = mTab.getWindowAndroid();
             if (window.hasPermission(permission.WRITE_EXTERNAL_STORAGE)) {
                 onDownloadStartNoStream(downloadInfo);
