@@ -7,7 +7,7 @@ function repaintTest() {
   target.offsetLeft;
   target.parentNode.removeChild(target);
 }
-onload = runRepaintTest;
+onload = runRepaintAndPixelTest;
 </script>
 <div style="height: 100px">
 Tests invalidation after layouting and then removing a span. The span should disappear without any residue.

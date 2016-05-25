@@ -4,7 +4,7 @@
 function repaintTest() {
   document.getElementById('great-grandparent').style.top = '-100px';
 }
-onload = runRepaintTest;
+onload = runRepaintAndPixelTest;
 </script>
 Tests paint invalidation of the target when the great-grandparent changes location.
 Passes if there is only one green square.

@@ -4,7 +4,7 @@
 function repaintTest() {
   document.getElementById('block').style.left = '200px';
 }
-onload = runRepaintTest;
+onload = runRepaintAndPixelTest;
 </script>
 Tests paint invalidation of focus ring of an inline when a block content of the inline moves.
 Passes if the focus ring encloses the moved green rectangle.

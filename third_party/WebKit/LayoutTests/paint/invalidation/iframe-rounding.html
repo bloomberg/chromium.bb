@@ -8,7 +8,7 @@ because iframes are painted in rounded-int coordinates.
   <iframe id='iframe' srcdoc="<div id='target' style='position: relative; background: lightblue; width: 100px; height: 100px; left: 0.5px'></div>"></iframe>
 </div>
 <script>
-onload = runRepaintTest;
+onload = runRepaintAndPixelTest;
 function repaintTest() {
   iframe.contentDocument.querySelector('#target').style.background = 'lightgray';
 }

@@ -5,7 +5,7 @@ function repaintTest() {
     window.frames['subframe'].contentDocument.body.style.height = '200px';
 }
 </script>
-<body onload="runRepaintTest()">
+<body onload="runRepaintAndPixelTest()">
 <div id="foo" style="width: 200px; height: 1000px; transform: translateZ(0); background-color: lightgray;"></div>
 
 <!-- The squashing layer will contain the following two divs. Note that the second is 100px lower than the top. -->

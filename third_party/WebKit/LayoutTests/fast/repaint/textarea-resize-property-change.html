@@ -4,7 +4,7 @@
 function repaintTest() {
   document.getElementById('textarea').style.resize = 'auto';
 }
-onload = runRepaintTest;
+onload = runRepaintAndPixelTest;
 </script>
 Tests paint invalidation when a textarea's resize property changed.
 Passes if the resize handle is repainted correctly.

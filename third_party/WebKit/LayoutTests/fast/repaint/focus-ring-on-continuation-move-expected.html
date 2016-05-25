@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+Tests paint invalidation of focus ring of an inline when a block content of the inline moves.
+Passes if the focus ring encloses the moved green rectangle.
+<div style="position: absolute; top: 200px">
+  <span style="outline: auto">
+    <div id="block" style="position: relative; left: 200px; width: 100px; height: 100px; background-color: green"></div>
+  </span>
+</div>

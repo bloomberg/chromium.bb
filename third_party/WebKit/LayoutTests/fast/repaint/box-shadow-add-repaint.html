@@ -6,7 +6,7 @@
         // Adding box-shadow will cause a repaint but no layout.
         document.getElementById("test").style['box-shadow'] = '5px 5px 5px rgba(0,0,0,0.3)';
     }
-    window.onload = runRepaintTest;
+    window.onload = runRepaintAndPixelTest;
 </script>
 <div id="test" style="background-color: green; width: 100px; height: 100px;"></div>
 <p>

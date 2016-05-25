@@ -4,7 +4,7 @@
 function repaintTest() {
   document.getElementById('iframe').contentDocument.getElementById('div').style.backgroundColor = 'green';
 }
-onload = runRepaintTest;
+onload = runRepaintAndPixelTest;
 </script>
 <div style="transform: scale(0.5); transform-origin: 0 0">
   <iframe id="iframe" style="width: 800px; height: 800px"
