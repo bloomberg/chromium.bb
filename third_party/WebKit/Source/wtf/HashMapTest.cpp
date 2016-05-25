@@ -135,7 +135,7 @@ TEST(HashMapTest, OwnPtrAsValue)
     EXPECT_EQ(0UL, map.size());
     EXPECT_EQ(1, destructNumber);
 
-    ownCounter1.clear();
+    ownCounter1.reset();
     EXPECT_EQ(2, destructNumber);
 }
 

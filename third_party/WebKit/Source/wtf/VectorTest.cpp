@@ -206,7 +206,7 @@ TEST(VectorTest, OwnPtr)
     ASSERT_EQ(0u, vector.size());
     ASSERT_EQ(1, destructNumber);
 
-    ownCounter1.clear();
+    ownCounter1.reset();
     EXPECT_EQ(2, destructNumber);
 
     size_t count = 1025;
