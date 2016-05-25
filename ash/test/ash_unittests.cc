@@ -9,9 +9,7 @@
 int main(int argc, char** argv) {
   ash::test::AuraShellTestSuite test_suite(argc, argv);
 
-  return base::LaunchUnitTestsSerially(
-      argc,
-      argv,
-      base::Bind(&ash::test::AuraShellTestSuite::Run,
-                 base::Unretained(&test_suite)));
+  return base::LaunchUnitTests(argc, argv,
+                               base::Bind(&ash::test::AuraShellTestSuite::Run,
+                                          base::Unretained(&test_suite)));
 }
