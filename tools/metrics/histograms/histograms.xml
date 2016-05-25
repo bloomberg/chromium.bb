@@ -3441,9 +3441,52 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Blink.DecodedImage.CanvasExpanded"
+    enum="BooleanCanvasExpanded">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>bengr@google.com</owner>
+  <summary>
+    The original canvas dimensions were sufficient to determine image size. This
+    is logged once per image header decode, which happens typically twice per
+    image on the page.
+  </summary>
+</histogram>
+
+<histogram name="Blink.DecodedImage.EffectiveDimensionsLocation" units="bytes">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>bengr@google.com</owner>
+  <summary>
+    How many bytes of the file were read before an image width and height were
+    determined. This is logged once per image header decode, which happens
+    typically twice per image on the page.
+  </summary>
+</histogram>
+
 <histogram name="Blink.DecodedImage.Orientation" enum="DecodedImageOrientation">
   <owner>rob.buis@samsung.org</owner>
   <summary>Image orientation inferred during decode.</summary>
+</histogram>
+
+<histogram name="Blink.DecodedImage.XCanvasExpansion" units="bytes">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>bengr@google.com</owner>
+  <summary>
+    How much the canvas width needed to be expanded as a result of the first
+    frame's width and x-offset being larger than the initial canvas width. This
+    is logged once per image header decode, which happens typically twice per
+    image on the page.
+  </summary>
+</histogram>
+
+<histogram name="Blink.DecodedImage.YCanvasExpansion" units="bytes">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>bengr@google.com</owner>
+  <summary>
+    How much the canvas height needed to be expanded as a result of the first
+    frame's height and y-offset being larger than the initial canvas height.
+    This is logged once per image header decode, which happens typically twice
+    per image on the page.
+  </summary>
 </histogram>
 
 <histogram name="Blink.DecodedImageType" enum="DecodedImageType">
@@ -64510,6 +64553,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="Can check"/>
 </enum>
 
+<enum name="BooleanCanvasExpanded" type="int">
+  <int value="0" label="Original canvas dimensions were sufficient"/>
+  <int value="1" label="First image frame dimension were needed"/>
+</enum>
+
 <enum name="BooleanChanged" type="int">
   <int value="0" label="Not changed"/>
   <int value="1" label="Changed"/>
@@ -92633,6 +92681,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadReload"/>
   <affected-histogram name="PLT.BeginToFinish_LinkLoadStaleOk"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ImageDecoderFileTypes" separator=".">
+  <suffix name="BMP" label="Image decoded as BMP"/>
+  <suffix name="GIF" label="Image decoded as GIF"/>
+  <suffix name="ICO" label="Image decoded as ICO"/>
+  <suffix name="JPEG" label="Image decoded as JPEG"/>
+  <suffix name="PNG" label="Image decoded as PNG"/>
+  <affected-histogram name="Blink.DecodedImage.CanvasExpanded"/>
+  <affected-histogram name="Blink.DecodedImage.EffectiveDimensionsLocation"/>
+  <affected-histogram name="Blink.DecodedImage.XCanvasExpansion"/>
+  <affected-histogram name="Blink.DecodedImage.YCanvasExpansion"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="IMEAutoCorrect" separator=".">

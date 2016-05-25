@@ -38,7 +38,10 @@
 
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 
+#include "platform/Histogram.h"
 #include "png.h"
+#include "wtf/Threading.h"
+
 #if !defined(PNG_LIBPNG_VER_MAJOR) || !defined(PNG_LIBPNG_VER_MINOR)
 #error version error: compile against a versioned libpng.
 #endif
@@ -133,6 +136,7 @@ public:
     png_structp pngPtr() const { return m_png; }
     png_infop infoPtr() const { return m_info; }
 
+    size_t getReadOffset() const { return m_readOffset; }
     void setReadOffset(size_t offset) { m_readOffset = offset; }
     size_t currentBufferSize() const { return m_currentBufferSize; }
     bool decodingSizeOnly() const { return m_decodingSizeOnly; }
@@ -176,6 +180,11 @@ void PNGImageDecoder::headerAvailable()
     png_infop info = m_reader->infoPtr();
     png_uint_32 width = png_get_image_width(png, info);
     png_uint_32 height = png_get_image_height(png, info);
+
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(blink::CustomCountHistogram,
+        dimensionsLocationHistogram,
+        new blink::CustomCountHistogram("Blink.DecodedImage.EffectiveDimensionsLocation.PNG", 0, 50000, 50));
+    dimensionsLocationHistogram.count(m_reader->getReadOffset() - png->current_buffer_size - 1);
 
     // Protect against large PNGs. See http://bugzil.la/251381 for more details.
     const unsigned long maxPNGSize = 1000000UL;

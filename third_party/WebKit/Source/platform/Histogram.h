@@ -27,6 +27,11 @@ protected:
     base::HistogramBase* m_histogram;
 };
 
+class PLATFORM_EXPORT BooleanHistogram : public CustomCountHistogram {
+public:
+    BooleanHistogram(const char* name);
+};
+
 class PLATFORM_EXPORT EnumerationHistogram : public CustomCountHistogram {
 public:
     EnumerationHistogram(const char* name, base::HistogramBase::Sample boundaryValue);

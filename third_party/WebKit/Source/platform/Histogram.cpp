@@ -24,6 +24,11 @@ void CustomCountHistogram::count(base::HistogramBase::Sample sample)
     m_histogram->Add(sample);
 }
 
+BooleanHistogram::BooleanHistogram(const char* name)
+    : CustomCountHistogram(base::BooleanHistogram::FactoryGet(name, base::HistogramBase::kUmaTargetedHistogramFlag))
+{
+}
+
 EnumerationHistogram::EnumerationHistogram(const char* name, base::HistogramBase::Sample boundaryValue)
     : CustomCountHistogram(base::LinearHistogram::FactoryGet(name, 1, boundaryValue, boundaryValue + 1, base::HistogramBase::kUmaTargetedHistogramFlag))
 {
