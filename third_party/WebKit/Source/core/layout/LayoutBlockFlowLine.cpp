@@ -1321,7 +1321,6 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
             // values (if any of them are larger than our current min/max). We then look at
             // the width of the last non-breakable run and use that to start a new line
             // (unless we end in whitespace).
-            const ComputedStyle& childStyle = child->styleRef();
             LayoutUnit childMin;
             LayoutUnit childMax;
 
@@ -1349,6 +1348,7 @@ void LayoutBlockFlow::computeInlinePreferredLogicalWidths(LayoutUnit& minLogical
 
                 bool clearPreviousFloat;
                 if (child->isFloating()) {
+                    const ComputedStyle& childStyle = child->styleRef();
                     clearPreviousFloat = (prevFloat
                         && ((prevFloat->styleRef().floating() == LeftFloat && (childStyle.clear() & ClearLeft))
                             || (prevFloat->styleRef().floating() == RightFloat && (childStyle.clear() & ClearRight))));
