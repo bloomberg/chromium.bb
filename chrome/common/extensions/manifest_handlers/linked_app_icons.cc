@@ -68,7 +68,7 @@ bool LinkedAppIconsHandler::Parse(Extension* extension, base::string16* error) {
       return false;
     }
 
-    for (const base::Value* icon_value : *icons_list) {
+    for (const auto& icon_value : *icons_list) {
       const base::DictionaryValue* icon_dict = nullptr;
       if (!icon_value->GetAsDictionary(&icon_dict)) {
         *error = base::UTF8ToUTF16(

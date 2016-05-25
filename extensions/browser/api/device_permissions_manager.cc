@@ -252,7 +252,7 @@ std::set<scoped_refptr<DevicePermissionEntry>> GetDevicePermissionEntries(
     return result;
   }
 
-  for (const base::Value* entry : *devices) {
+  for (const auto& entry : *devices) {
     const base::DictionaryValue* entry_dict;
     if (entry->GetAsDictionary(&entry_dict)) {
       scoped_refptr<DevicePermissionEntry> device_entry =

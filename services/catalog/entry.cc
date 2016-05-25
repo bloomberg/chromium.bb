@@ -14,9 +14,8 @@ namespace {
 bool ReadStringSet(const base::ListValue& list_value,
                    std::set<std::string>* string_set) {
   DCHECK(string_set);
-  for (auto i = list_value.begin(); i != list_value.end(); ++i) {
+  for (const auto& value_value : list_value) {
     std::string value;
-    const base::Value* value_value = *i;
     if (!value_value->GetAsString(&value)) {
       LOG(ERROR) << "Entry::Deserialize: list member must be a string";
       return false;

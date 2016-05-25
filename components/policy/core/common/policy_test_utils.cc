@@ -55,21 +55,21 @@ bool PolicyServiceIsEmpty(const PolicyService* service) {
 }
 
 #if defined(OS_IOS) || defined(OS_MACOSX)
-CFPropertyListRef ValueToProperty(const base::Value* value) {
-  switch (value->GetType()) {
+CFPropertyListRef ValueToProperty(const base::Value& value) {
+  switch (value.GetType()) {
     case base::Value::TYPE_NULL:
       return kCFNull;
 
     case base::Value::TYPE_BOOLEAN: {
       bool bool_value;
-      if (value->GetAsBoolean(&bool_value))
+      if (value.GetAsBoolean(&bool_value))
         return bool_value ? kCFBooleanTrue : kCFBooleanFalse;
       break;
     }
 
     case base::Value::TYPE_INTEGER: {
       int int_value;
-      if (value->GetAsInteger(&int_value)) {
+      if (value.GetAsInteger(&int_value)) {
         return CFNumberCreate(
             kCFAllocatorDefault, kCFNumberIntType, &int_value);
       }
@@ -78,7 +78,7 @@ CFPropertyListRef ValueToProperty(const base::Value* value) {
 
     case base::Value::TYPE_DOUBLE: {
       double double_value;
-      if (value->GetAsDouble(&double_value)) {
+      if (value.GetAsDouble(&double_value)) {
         return CFNumberCreate(
             kCFAllocatorDefault, kCFNumberDoubleType, &double_value);
       }
@@ -87,14 +87,14 @@ CFPropertyListRef ValueToProperty(const base::Value* value) {
 
     case base::Value::TYPE_STRING: {
       std::string string_value;
-      if (value->GetAsString(&string_value))
+      if (value.GetAsString(&string_value))
         return base::SysUTF8ToCFStringRef(string_value);
       break;
     }
 
     case base::Value::TYPE_DICTIONARY: {
       const base::DictionaryValue* dict_value;
-      if (value->GetAsDictionary(&dict_value)) {
+      if (value.GetAsDictionary(&dict_value)) {
         // |dict| is owned by the caller.
         CFMutableDictionaryRef dict =
             CFDictionaryCreateMutable(kCFAllocatorDefault,
@@ -108,7 +108,7 @@ CFPropertyListRef ValueToProperty(const base::Value* value) {
           base::ScopedCFTypeRef<CFStringRef> key(
               base::SysUTF8ToCFStringRef(iterator.key()));
           base::ScopedCFTypeRef<CFPropertyListRef> cf_value(
-              ValueToProperty(&iterator.value()));
+              ValueToProperty(iterator.value()));
           if (cf_value)
             CFDictionaryAddValue(dict, key, cf_value);
         }
@@ -119,15 +119,14 @@ CFPropertyListRef ValueToProperty(const base::Value* value) {
 
     case base::Value::TYPE_LIST: {
       const base::ListValue* list;
-      if (value->GetAsList(&list)) {
+      if (value.GetAsList(&list)) {
         CFMutableArrayRef array =
             CFArrayCreateMutable(NULL, list->GetSize(), &kCFTypeArrayCallBacks);
-        for (base::ListValue::const_iterator it(list->begin());
-             it != list->end(); ++it) {
-          // CFArrayAppendValue() retains |value|, so make sure the reference
+        for (const auto& entry : *list) {
+          // CFArrayAppendValue() retains |cf_value|, so make sure the reference
           // created by ValueToProperty() is released.
           base::ScopedCFTypeRef<CFPropertyListRef> cf_value(
-              ValueToProperty(*it));
+              ValueToProperty(*entry));
           if (cf_value)
             CFArrayAppendValue(array, cf_value);
         }

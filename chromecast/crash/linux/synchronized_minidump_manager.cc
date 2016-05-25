@@ -292,7 +292,7 @@ int SynchronizedMinidumpManager::WriteFiles(const base::ListValue* dumps,
   DCHECK(metadata);
   std::string lockfile;
 
-  for (const base::Value* elem : *dumps) {
+  for (const auto& elem : *dumps) {
     std::unique_ptr<std::string> dump_info = SerializeToJson(*elem);
     RCHECK(dump_info, -1);
     lockfile += *dump_info;
@@ -364,8 +364,8 @@ void SynchronizedMinidumpManager::ReleaseLockFile() {
 ScopedVector<DumpInfo> SynchronizedMinidumpManager::GetDumps() {
   ScopedVector<DumpInfo> dumps;
 
-  for (const base::Value* elem : *dumps_) {
-    dumps.push_back(new DumpInfo(elem));
+  for (const auto& elem : *dumps_) {
+    dumps.push_back(new DumpInfo(elem.get()));
   }
 
   return dumps;

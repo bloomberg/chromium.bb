@@ -253,15 +253,14 @@ bool LoadFileBrowserHandlers(
     const base::ListValue* extension_actions,
     FileBrowserHandler::List* result,
     base::string16* error) {
-  for (base::ListValue::const_iterator iter = extension_actions->begin();
-       iter != extension_actions->end();
-       ++iter) {
-    if (!(*iter)->IsType(base::Value::TYPE_DICTIONARY)) {
+  for (const auto& entry : *extension_actions) {
+    base::DictionaryValue* dict;
+    if (!entry->GetAsDictionary(&dict)) {
       *error = base::ASCIIToUTF16(errors::kInvalidFileBrowserHandler);
       return false;
     }
-    std::unique_ptr<FileBrowserHandler> action(LoadFileBrowserHandler(
-        extension_id, reinterpret_cast<base::DictionaryValue*>(*iter), error));
+    std::unique_ptr<FileBrowserHandler> action(
+        LoadFileBrowserHandler(extension_id, dict, error));
     if (!action.get())
       return false;  // Failed to parse file browser action definition.
     result->push_back(linked_ptr<FileBrowserHandler>(action.release()));

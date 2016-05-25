@@ -65,7 +65,7 @@ const char kActive[] = "active";
 void InitializeOverridesList(base::ListValue* list) {
   base::ListValue migrated;
   std::set<std::string> seen_entries;
-  for (base::Value* val : *list) {
+  for (const auto& val : *list) {
     std::unique_ptr<base::DictionaryValue> new_dict(
         new base::DictionaryValue());
     std::string entry_name;
@@ -96,7 +96,7 @@ void InitializeOverridesList(base::ListValue* list) {
 // marks it as active.
 void AddOverridesToList(base::ListValue* list,
                         const std::string& override) {
-  for (base::Value* val : *list) {
+  for (const auto& val : *list) {
     base::DictionaryValue* dict = nullptr;
     std::string entry;
     if (!val->GetAsDictionary(&dict) || !dict->GetString(kEntry, &entry)) {
@@ -121,7 +121,7 @@ void AddOverridesToList(base::ListValue* list,
 void ValidateOverridesList(const extensions::ExtensionSet* all_extensions,
                            base::ListValue* list) {
   base::ListValue migrated;
-  for (base::Value* val : *list) {
+  for (const auto& val : *list) {
     base::DictionaryValue* dict = nullptr;
     std::string entry;
     if (!val->GetAsDictionary(&dict) || !dict->GetString(kEntry, &entry)) {
@@ -176,7 +176,7 @@ bool UpdateOverridesList(base::ListValue* overrides_list,
                          UpdateBehavior behavior) {
   base::ListValue::iterator iter =
       std::find_if(overrides_list->begin(), overrides_list->end(),
-                   [&override_url](const base::Value* value) {
+                   [&override_url](const std::unique_ptr<base::Value>& value) {
                      std::string entry;
                      const base::DictionaryValue* dict = nullptr;
                      return value->GetAsDictionary(&dict) &&

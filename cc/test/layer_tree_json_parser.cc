@@ -19,14 +19,14 @@ namespace cc {
 
 namespace {
 
-scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
+scoped_refptr<Layer> ParseTreeFromValue(const base::Value& val,
                                         ContentLayerClient* content_client) {
-  base::DictionaryValue* dict;
+  const base::DictionaryValue* dict;
   bool success = true;
-  success &= val->GetAsDictionary(&dict);
+  success &= val.GetAsDictionary(&dict);
   std::string layer_type;
   success &= dict->GetString("LayerType", &layer_type);
-  base::ListValue* list;
+  const base::ListValue* list;
   success &= dict->GetList("Bounds", &list);
   int width, height;
   success &= list->GetInteger(0, &width);
@@ -50,7 +50,7 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
     success &= list->GetInteger(2, &aperture_width);
     success &= list->GetInteger(3, &aperture_height);
 
-    base::ListValue* bounds;
+    const base::ListValue* bounds;
     success &= dict->GetList("ImageBounds", &bounds);
     double image_width, image_height;
     success &= bounds->GetDouble(0, &image_width);
@@ -151,9 +151,8 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
   new_layer->SetTransform(layer_transform);
 
   success &= dict->GetList("Children", &list);
-  for (base::ListValue::const_iterator it = list->begin();
-       it != list->end(); ++it) {
-    new_layer->AddChild(ParseTreeFromValue(*it, content_client));
+  for (const auto& value : *list) {
+    new_layer->AddChild(ParseTreeFromValue(*value, content_client));
   }
 
   if (!success)
@@ -167,7 +166,7 @@ scoped_refptr<Layer> ParseTreeFromValue(base::Value* val,
 scoped_refptr<Layer> ParseTreeFromJson(std::string json,
                                        ContentLayerClient* content_client) {
   std::unique_ptr<base::Value> val = base::test::ParseJson(json);
-  return ParseTreeFromValue(val.get(), content_client);
+  return ParseTreeFromValue(*val, content_client);
 }
 
 }  // namespace cc

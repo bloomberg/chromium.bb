@@ -127,13 +127,11 @@ bool ParseCellularScanResults(const base::ListValue& list,
                               std::vector<CellularScanResult>* scan_results) {
   scan_results->clear();
   scan_results->reserve(list.GetSize());
-  for (base::ListValue::const_iterator it = list.begin();
-       it != list.end(); ++it) {
-    if (!(*it)->IsType(base::Value::TYPE_DICTIONARY))
+  for (const auto& value : list) {
+    const base::DictionaryValue* dict;
+    if (!value->GetAsDictionary(&dict))
       return false;
     CellularScanResult scan_result;
-    const base::DictionaryValue* dict =
-        static_cast<const base::DictionaryValue*>(*it);
     // If the network id property is not present then this network cannot be
     // connected to so don't include it in the results.
     if (!dict->GetStringWithoutPathExpansion(shill::kNetworkIdProperty,

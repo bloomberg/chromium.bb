@@ -30,9 +30,9 @@ using testing::Return;
 
 namespace {
 
-uint64_t GetId(const base::Value* value) {
+uint64_t GetId(const base::Value& value) {
   const base::DictionaryValue* dict;
-  CHECK(value->GetAsDictionary(&dict));
+  CHECK(value.GetAsDictionary(&dict));
 
   int id;
   CHECK(dict->GetInteger("id", &id));
@@ -40,17 +40,13 @@ uint64_t GetId(const base::Value* value) {
   return static_cast<uint64_t>(id);
 }
 
-std::vector<uint64_t> GetIds(const base::Value* value) {
-  CHECK(value);
-
+std::vector<uint64_t> GetIds(const base::Value& value) {
   std::vector<uint64_t> ids;
 
-  if (value->GetType() == base::Value::TYPE_LIST) {
-    const base::ListValue* list;
-    value->GetAsList(&list);
-
-    for (auto* list_item : *list)
-      ids.push_back(GetId(list_item));
+  const base::ListValue* list;
+  if (value.GetAsList(&list)) {
+    for (const auto& list_item : *list)
+      ids.push_back(GetId(*list_item));
   } else {
     ids.push_back(GetId(value));
   }
@@ -185,7 +181,7 @@ TEST_F(DownloadsListTrackerTest, StartCallsInsertItems) {
             web_ui()->call_data()[0]->function_name());
   EXPECT_EQ(0, GetIndex(web_ui()->call_data()[0]->arg1()));
 
-  std::vector<uint64_t> ids = GetIds(web_ui()->call_data()[0]->arg2());
+  std::vector<uint64_t> ids = GetIds(*web_ui()->call_data()[0]->arg2());
   ASSERT_FALSE(ids.empty());
   EXPECT_EQ(first_item->GetId(), ids[0]);
 }
@@ -204,7 +200,7 @@ TEST_F(DownloadsListTrackerTest, EmptyGetAllItemsStillCallsInsertItems) {
   EXPECT_EQ("downloads.Manager.insertItems",
             web_ui()->call_data()[0]->function_name());
   ASSERT_TRUE(web_ui()->call_data()[0]->arg2());
-  EXPECT_TRUE(GetIds(web_ui()->call_data()[0]->arg2()).empty());
+  EXPECT_TRUE(GetIds(*web_ui()->call_data()[0]->arg2()).empty());
 }
 
 TEST_F(DownloadsListTrackerTest, OnDownloadCreatedCallsInsertItems) {
@@ -221,7 +217,7 @@ TEST_F(DownloadsListTrackerTest, OnDownloadCreatedCallsInsertItems) {
             web_ui()->call_data()[0]->function_name());
   EXPECT_EQ(0, GetIndex(web_ui()->call_data()[0]->arg1()));
 
-  std::vector<uint64_t> ids = GetIds(web_ui()->call_data()[0]->arg2());
+  std::vector<uint64_t> ids = GetIds(*web_ui()->call_data()[0]->arg2());
   ASSERT_FALSE(ids.empty());
   EXPECT_EQ(first_item->GetId(), ids[0]);
 }
@@ -276,7 +272,7 @@ TEST_F(DownloadsListTrackerTest, StartExcludesHiddenItems) {
 
   EXPECT_EQ("downloads.Manager.insertItems",
             web_ui()->call_data()[0]->function_name());
-  EXPECT_TRUE(GetIds(web_ui()->call_data()[0]->arg2()).empty());
+  EXPECT_TRUE(GetIds(*web_ui()->call_data()[0]->arg2()).empty());
 }
 
 TEST_F(DownloadsListTrackerTest, Incognito) {
@@ -309,7 +305,7 @@ TEST_F(DownloadsListTrackerTest, OnlySendSomeItems) {
   EXPECT_EQ("downloads.Manager.insertItems",
             web_ui()->call_data()[0]->function_name());
   EXPECT_EQ(0, GetIndex(web_ui()->call_data()[0]->arg1()));
-  EXPECT_EQ(3u, GetIds(web_ui()->call_data()[0]->arg2()).size());
+  EXPECT_EQ(3u, GetIds(*web_ui()->call_data()[0]->arg2()).size());
 
   tracker()->StartAndSendChunk();
   ASSERT_GE(2u, web_ui()->call_data().size());
@@ -317,7 +313,7 @@ TEST_F(DownloadsListTrackerTest, OnlySendSomeItems) {
   EXPECT_EQ("downloads.Manager.insertItems",
             web_ui()->call_data()[1]->function_name());
   EXPECT_EQ(3, GetIndex(web_ui()->call_data()[1]->arg1()));
-  EXPECT_EQ(2u, GetIds(web_ui()->call_data()[1]->arg2()).size());
+  EXPECT_EQ(2u, GetIds(*web_ui()->call_data()[1]->arg2()).size());
 }
 
 TEST_F(DownloadsListTrackerTest, IgnoreUnsentItemUpdates) {
@@ -332,7 +328,7 @@ TEST_F(DownloadsListTrackerTest, IgnoreUnsentItemUpdates) {
 
   EXPECT_EQ("downloads.Manager.insertItems",
             web_ui()->call_data()[0]->function_name());
-  EXPECT_EQ(1u, GetIds(web_ui()->call_data()[0]->arg2()).size());
+  EXPECT_EQ(1u, GetIds(*web_ui()->call_data()[0]->arg2()).size());
 
   tracker()->OnDownloadUpdated(manager(), unsent_item);
   EXPECT_EQ(1u, web_ui()->call_data().size());
@@ -350,7 +346,7 @@ TEST_F(DownloadsListTrackerTest, IgnoreUnsentItemRemovals) {
 
   EXPECT_EQ("downloads.Manager.insertItems",
             web_ui()->call_data()[0]->function_name());
-  EXPECT_EQ(1u, GetIds(web_ui()->call_data()[0]->arg2()).size());
+  EXPECT_EQ(1u, GetIds(*web_ui()->call_data()[0]->arg2()).size());
 
   DownloadItemModel(unsent_item).SetShouldShowInShelf(false);
   tracker()->OnDownloadUpdated(manager(), unsent_item);

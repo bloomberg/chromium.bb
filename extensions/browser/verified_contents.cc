@@ -46,10 +46,10 @@ const char kWebstoreKId[] = "webstore";
 DictionaryValue* FindDictionaryWithValue(const ListValue* list,
                                          std::string key,
                                          std::string value) {
-  for (ListValue::const_iterator i = list->begin(); i != list->end(); ++i) {
-    if (!(*i)->IsType(Value::TYPE_DICTIONARY))
+  for (const auto& i : *list) {
+    DictionaryValue* dictionary;
+    if (!i->GetAsDictionary(&dictionary))
       continue;
-    DictionaryValue* dictionary = static_cast<DictionaryValue*>(*i);
     std::string found_value;
     if (dictionary->GetString(key, &found_value) && found_value == value)
       return dictionary;

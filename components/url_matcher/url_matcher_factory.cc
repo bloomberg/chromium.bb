@@ -248,9 +248,7 @@ std::unique_ptr<URLMatcherPortFilter> URLMatcherFactory::CreateURLMatcherPorts(
     return nullptr;
   }
 
-  for (base::ListValue::const_iterator i = value_list->begin();
-       i != value_list->end(); ++i) {
-    base::Value* entry = *i;
+  for (const auto& entry : *value_list) {
     int port = 0;
     base::ListValue* range = NULL;
     if (entry->GetAsInteger(&port)) {

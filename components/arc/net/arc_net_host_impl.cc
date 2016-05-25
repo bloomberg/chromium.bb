@@ -369,7 +369,7 @@ void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
   // property.
   mojo::Array<mojom::WifiConfigurationPtr> networks =
       mojo::Array<mojom::WifiConfigurationPtr>::New(0);
-  for (base::Value* value : *network_properties_list) {
+  for (const auto& value : *network_properties_list) {
     mojom::WifiConfigurationPtr wc = mojom::WifiConfiguration::New();
 
     base::DictionaryValue* network_dict = nullptr;

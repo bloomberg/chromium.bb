@@ -716,8 +716,7 @@ bool HttpServerPropertiesManager::AddToAlternativeServiceMap(
   }
 
   AlternativeServiceInfoVector alternative_service_info_vector;
-  for (const base::Value* alternative_service_list_item :
-       *alternative_service_list) {
+  for (const auto& alternative_service_list_item : *alternative_service_list) {
     const base::DictionaryValue* alternative_service_dict;
     if (!alternative_service_list_item->GetAsDictionary(
             &alternative_service_dict))

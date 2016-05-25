@@ -145,9 +145,8 @@ void Instance::DeserializeCatalog() {
   CHECK(catalog);
   // TODO(sky): make this handle aliases.
   // TODO(beng): implement this properly!
-  for (auto it = catalog->begin(); it != catalog->end(); ++it) {
+  for (const auto& v : *catalog) {
     const base::DictionaryValue* dictionary = nullptr;
-    const base::Value* v = *it;
     CHECK(v->GetAsDictionary(&dictionary));
     std::unique_ptr<Entry> entry = Entry::Deserialize(*dictionary);
     // TODO(beng): user catalog.

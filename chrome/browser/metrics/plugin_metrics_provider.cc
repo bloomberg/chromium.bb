@@ -141,14 +141,12 @@ void PluginMetricsProvider::ProvideStabilityMetrics(
 
   metrics::SystemProfileProto::Stability* stability =
       system_profile_proto->mutable_stability();
-  for (base::ListValue::const_iterator iter = plugin_stats_list->begin();
-       iter != plugin_stats_list->end(); ++iter) {
-    if (!(*iter)->IsType(base::Value::TYPE_DICTIONARY)) {
+  for (const auto& value : *plugin_stats_list) {
+    base::DictionaryValue* plugin_dict;
+    if (!value->GetAsDictionary(&plugin_dict)) {
       NOTREACHED();
       continue;
     }
-    base::DictionaryValue* plugin_dict =
-        static_cast<base::DictionaryValue*>(*iter);
 
     // Note that this search is potentially a quadratic operation, but given the
     // low number of plugins installed on a "reasonable" setup, this should be
@@ -210,15 +208,13 @@ void PluginMetricsProvider::RecordCurrentState() {
   base::ListValue* plugins = update.Get();
   DCHECK(plugins);
 
-  for (base::ListValue::iterator value_iter = plugins->begin();
-       value_iter != plugins->end(); ++value_iter) {
-    if (!(*value_iter)->IsType(base::Value::TYPE_DICTIONARY)) {
+  for (const auto& value : *plugins) {
+    base::DictionaryValue* plugin_dict;
+    if (!value->GetAsDictionary(&plugin_dict)) {
       NOTREACHED();
       continue;
     }
 
-    base::DictionaryValue* plugin_dict =
-        static_cast<base::DictionaryValue*>(*value_iter);
     base::string16 plugin_name;
     plugin_dict->GetString(prefs::kStabilityPluginName, &plugin_name);
     if (plugin_name.empty()) {

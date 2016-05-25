@@ -129,7 +129,7 @@ void AddOncCaCertsToPolicies(const policy::PolicyMap& policy_map,
 
   std::unique_ptr<base::ListValue> ca_certs(
       base::WrapUnique(new base::ListValue()));
-  for (const auto entry : certificates) {
+  for (const auto& entry : certificates) {
     const base::DictionaryValue* certificate = nullptr;
     if (!entry->GetAsDictionary(&certificate)) {
       DLOG(FATAL) << "Value of a certificate entry is not a dictionary "

@@ -263,10 +263,8 @@ void WebRTCInternals::UpdateObserver(WebRTCInternalsUIObserver* observer) {
   if (peer_connection_data_.GetSize() > 0)
     observer->OnUpdate("updateAllPeerConnections", &peer_connection_data_);
 
-  for (base::ListValue::iterator it = get_user_media_requests_.begin();
-       it != get_user_media_requests_.end();
-       ++it) {
-    observer->OnUpdate("addGetUserMedia", *it);
+  for (const auto& request : get_user_media_requests_) {
+    observer->OnUpdate("addGetUserMedia", request.get());
   }
 }
 

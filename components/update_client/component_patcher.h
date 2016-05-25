@@ -91,7 +91,7 @@ class ComponentPatcher : public base::RefCountedThreadSafe<ComponentPatcher> {
   scoped_refptr<OutOfProcessPatcher> out_of_process_patcher_;
   ComponentUnpacker::Callback callback_;
   std::unique_ptr<base::ListValue> commands_;
-  base::ValueVector::const_iterator next_command_;
+  base::ListValue::const_iterator next_command_;
   scoped_refptr<DeltaUpdateOp> current_operation_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

@@ -73,12 +73,12 @@ class CONTENT_EXPORT GinJavaMethodInvocationHelper
   ~GinJavaMethodInvocationHelper();
 
   void BuildObjectRefsFromListValue(DispatcherDelegate* dispatcher,
-                                    const base::Value* list_value);
+                                    const base::Value& list_value);
   void BuildObjectRefsFromDictionaryValue(DispatcherDelegate* dispatcher,
-                                          const base::Value* dict_value);
+                                          const base::Value& dict_value);
 
   bool AppendObjectRef(DispatcherDelegate* dispatcher,
-                       const base::Value* raw_value);
+                       const base::Value& raw_value);
 
   void InvokeMethod(jobject object,
                     jclass clazz,

@@ -238,7 +238,7 @@ void ExpandStringsInOncObject(
 
 void ExpandStringsInNetworks(const StringSubstitution& substitution,
                              base::ListValue* network_configs) {
-  for (base::Value* entry : *network_configs) {
+  for (const auto& entry : *network_configs) {
     base::DictionaryValue* network = nullptr;
     entry->GetAsDictionary(&network);
     DCHECK(network);
@@ -362,9 +362,10 @@ std::string DecodePEM(const std::string& pem_encoded) {
 CertPEMsByGUIDMap GetServerAndCACertsByGUID(
     const base::ListValue& certificates) {
   CertPEMsByGUIDMap certs_by_guid;
-  for (const base::Value* entry : certificates) {
+  for (const auto& entry : certificates) {
     const base::DictionaryValue* cert = nullptr;
-    entry->GetAsDictionary(&cert);
+    bool entry_is_dictionary = entry->GetAsDictionary(&cert);
+    DCHECK(entry_is_dictionary);
 
     std::string guid;
     cert->GetStringWithoutPathExpansion(certificate::kGUID, &guid);
@@ -391,7 +392,7 @@ CertPEMsByGUIDMap GetServerAndCACertsByGUID(
 }
 
 void FillInHexSSIDFieldsInNetworks(base::ListValue* network_configs) {
-  for (base::Value* entry : *network_configs) {
+  for (const auto& entry : *network_configs) {
     base::DictionaryValue* network = nullptr;
     entry->GetAsDictionary(&network);
     DCHECK(network);
@@ -557,9 +558,10 @@ bool ResolveCertRefList(const CertPEMsByGUIDMap& certs_by_guid,
   }
 
   std::unique_ptr<base::ListValue> pem_list(new base::ListValue);
-  for (const base::Value* entry : *guid_ref_list) {
+  for (const auto& entry : *guid_ref_list) {
     std::string guid_ref;
-    entry->GetAsString(&guid_ref);
+    bool entry_is_string = entry->GetAsString(&guid_ref);
+    DCHECK(entry_is_string);
 
     std::string pem_encoded;
     if (!GUIDRefToPEMEncoding(certs_by_guid, guid_ref, &pem_encoded))

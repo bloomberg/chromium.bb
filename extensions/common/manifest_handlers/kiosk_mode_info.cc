@@ -114,7 +114,7 @@ bool KioskModeHandler::Parse(Extension* extension, base::string16* error) {
       return false;
     }
 
-    for (const base::Value* value : *list) {
+    for (const auto& value : *list) {
       std::unique_ptr<KioskSecondaryAppsType> app =
           KioskSecondaryAppsType::FromValue(*value, error);
       if (!app) {

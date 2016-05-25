@@ -320,7 +320,7 @@ class HeaderMatcher {
 
     // |data| is the pattern to be matched in the position given by |type|.
     // Note that |data| must point to a StringValue object.
-    static std::unique_ptr<StringMatchTest> Create(const base::Value* data,
+    static std::unique_ptr<StringMatchTest> Create(const base::Value& data,
                                                    MatchType type,
                                                    bool case_sensitive);
     ~StringMatchTest();
@@ -417,13 +417,12 @@ HeaderMatcher::HeaderMatcher(
 
 // static
 std::unique_ptr<HeaderMatcher::StringMatchTest>
-HeaderMatcher::StringMatchTest::Create(const base::Value* data,
+HeaderMatcher::StringMatchTest::Create(const base::Value& data,
                                        MatchType type,
                                        bool case_sensitive) {
   std::string str;
-  CHECK(data->GetAsString(&str));
-  return std::unique_ptr<StringMatchTest>(
-      new StringMatchTest(str, type, case_sensitive));
+  CHECK(data.GetAsString(&str));
+  return base::WrapUnique(new StringMatchTest(str, type, case_sensitive));
 }
 
 HeaderMatcher::StringMatchTest::~StringMatchTest() {}
@@ -511,16 +510,14 @@ HeaderMatcher::HeaderMatchTest::Create(const base::DictionaryValue* tests) {
       case base::Value::TYPE_LIST: {
         const base::ListValue* list = NULL;
         CHECK(content->GetAsList(&list));
-        for (base::ListValue::const_iterator it = list->begin();
-             it != list->end(); ++it) {
-          tests->push_back(base::WrapUnique(
-              StringMatchTest::Create(*it, match_type, !is_name).release()));
+        for (const auto& it : *list) {
+          tests->push_back(StringMatchTest::Create(*it, match_type, !is_name));
         }
         break;
       }
       case base::Value::TYPE_STRING: {
-        tests->push_back(base::WrapUnique(
-            StringMatchTest::Create(content, match_type, !is_name).release()));
+        tests->push_back(
+            StringMatchTest::Create(*content, match_type, !is_name));
         break;
       }
       default: {

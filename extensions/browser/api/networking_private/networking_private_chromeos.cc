@@ -356,7 +356,7 @@ void NetworkingPrivateChromeOS::GetNetworks(
       chromeos::network_util::TranslateNetworkListToONC(
           pattern, configured_only, visible_only, limit);
 
-  for (base::Value* value : *network_properties_list) {
+  for (const auto& value : *network_properties_list) {
     base::DictionaryValue* network_dict = nullptr;
     value->GetAsDictionary(&network_dict);
     DCHECK(network_dict);

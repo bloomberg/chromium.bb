@@ -63,9 +63,10 @@ void ProhibitedTechnologiesHandler::SetProhibitedTechnologies(
   // Build up prohibited network type list and save it for furthur use when
   // enforced
   prohibited_technologies_.clear();
-  for (const base::Value* item : *prohibited_list) {
+  for (const auto& item : *prohibited_list) {
     std::string prohibited_technology;
-    item->GetAsString(&prohibited_technology);
+    bool item_is_string = item->GetAsString(&prohibited_technology);
+    DCHECK(item_is_string);
     std::string translated_tech =
         network_util::TranslateONCTypeToShill(prohibited_technology);
     if (!translated_tech.empty())

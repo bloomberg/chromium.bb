@@ -478,7 +478,7 @@ void WebUILoginView::RequestMediaAccessPermission(
 
   const base::ListValue* list_value;
   CHECK(raw_list_value->GetAsList(&list_value));
-  for (base::Value* base_value : *list_value) {
+  for (const auto& base_value : *list_value) {
     std::string value;
     if (base_value->GetAsString(&value)) {
       ContentSettingsPattern pattern =

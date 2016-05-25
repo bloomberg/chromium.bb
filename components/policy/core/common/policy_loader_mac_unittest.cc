@@ -108,7 +108,7 @@ void TestHarness::InstallBooleanPolicy(const std::string& policy_name,
 void TestHarness::InstallStringListPolicy(const std::string& policy_name,
                                           const base::ListValue* policy_value) {
   ScopedCFTypeRef<CFStringRef> name(base::SysUTF8ToCFStringRef(policy_name));
-  ScopedCFTypeRef<CFPropertyListRef> array(ValueToProperty(policy_value));
+  ScopedCFTypeRef<CFPropertyListRef> array(ValueToProperty(*policy_value));
   ASSERT_TRUE(array);
   prefs_->AddTestItem(name, array, true);
 }
@@ -117,7 +117,7 @@ void TestHarness::InstallDictionaryPolicy(
     const std::string& policy_name,
     const base::DictionaryValue* policy_value) {
   ScopedCFTypeRef<CFStringRef> name(base::SysUTF8ToCFStringRef(policy_name));
-  ScopedCFTypeRef<CFPropertyListRef> dict(ValueToProperty(policy_value));
+  ScopedCFTypeRef<CFPropertyListRef> dict(ValueToProperty(*policy_value));
   ASSERT_TRUE(dict);
   prefs_->AddTestItem(name, dict, true);
 }

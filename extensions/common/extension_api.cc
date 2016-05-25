@@ -132,8 +132,8 @@ void PrefixRefsWithNamespace(const std::string& schema_namespace,
   base::ListValue* list = NULL;
   base::DictionaryValue* dict = NULL;
   if (value->GetAsList(&list)) {
-    for (base::ListValue::iterator i = list->begin(); i != list->end(); ++i) {
-      PrefixRefsWithNamespace(schema_namespace, *i);
+    for (const auto& i : *list) {
+      PrefixRefsWithNamespace(schema_namespace, i.get());
     }
   } else if (value->GetAsDictionary(&dict)) {
     MaybePrefixFieldWithNamespace(schema_namespace, dict, "$ref");

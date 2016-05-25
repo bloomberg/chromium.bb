@@ -334,8 +334,7 @@ void AppBannerSettingsHelper::RecordBannerCouldShowEvent(
   // Trim any items that are older than we should care about. For comparisons
   // the times are converted to local dates.
   base::Time date = BucketTimeToResolution(time, gMinimumMinutesBetweenVisits);
-  base::ValueVector::iterator it = could_show_list->begin();
-  while (it != could_show_list->end()) {
+  for (auto it = could_show_list->begin(); it != could_show_list->end();) {
     if ((*it)->IsType(base::Value::TYPE_DICTIONARY)) {
       base::DictionaryValue* internal_value;
       double internal_date;
@@ -476,7 +475,7 @@ AppBannerSettingsHelper::GetCouldShowBannerEvents(
   if (!app_dict->GetList(event_key, &could_show_list))
     return result;
 
-  for (auto value : *could_show_list) {
+  for (const auto& value : *could_show_list) {
     if (value->IsType(base::Value::TYPE_DICTIONARY)) {
       base::DictionaryValue* internal_value;
       double internal_date = 0;

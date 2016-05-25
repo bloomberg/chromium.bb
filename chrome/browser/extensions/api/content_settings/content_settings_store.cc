@@ -288,13 +288,12 @@ void ContentSettingsStore::SetExtensionContentSettingFromList(
     const std::string& extension_id,
     const base::ListValue* list,
     ExtensionPrefsScope scope) {
-  for (base::ListValue::const_iterator it = list->begin();
-       it != list->end(); ++it) {
-    if ((*it)->GetType() != base::Value::TYPE_DICTIONARY) {
+  for (const auto& value : *list) {
+    base::DictionaryValue* dict;
+    if (!value->GetAsDictionary(&dict)) {
       NOTREACHED();
       continue;
     }
-    base::DictionaryValue* dict = static_cast<base::DictionaryValue*>(*it);
     std::string primary_pattern_str;
     dict->GetString(keys::kPrimaryPatternKey, &primary_pattern_str);
     ContentSettingsPattern primary_pattern =

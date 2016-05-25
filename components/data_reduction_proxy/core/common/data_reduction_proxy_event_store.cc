@@ -54,9 +54,8 @@ const StringToConstant kDataReductionProxyBypassActionTypeTable[] = {
 
 std::string JoinListValueStrings(base::ListValue* list_value) {
   std::vector<std::string> values;
-  for (auto it = list_value->begin(); it != list_value->end(); ++it) {
+  for (const auto& value : *list_value) {
     std::string value_string;
-    base::Value* value = *it;
     if (!value->GetAsString(&value_string))
       return std::string();
 

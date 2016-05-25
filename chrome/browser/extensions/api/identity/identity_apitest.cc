@@ -490,15 +490,13 @@ class IdentityGetAccountsFunctionTest : public ExtensionBrowserTest {
     if (!results) {
       msg << "NULL";
     } else {
-      for (base::ListValue::const_iterator it = results->begin();
-           it != results->end();
-           ++it) {
+      for (const auto& result : *results) {
         std::unique_ptr<api::identity::AccountInfo> info =
-            api::identity::AccountInfo::FromValue(**it);
+            api::identity::AccountInfo::FromValue(*result);
         if (info.get())
           msg << info->id << " ";
         else
-          msg << *it << "<-" << (*it)->GetType() << " ";
+          msg << *result << "<-" << result->GetType() << " ";
       }
     }
 

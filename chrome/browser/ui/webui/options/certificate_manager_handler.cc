@@ -87,14 +87,14 @@ struct DictionaryIdComparator {
       : collator_(collator) {
   }
 
-  bool operator()(const base::Value* a,
-                  const base::Value* b) const {
-    DCHECK(a->GetType() == base::Value::TYPE_DICTIONARY);
-    DCHECK(b->GetType() == base::Value::TYPE_DICTIONARY);
-    const base::DictionaryValue* a_dict =
-        reinterpret_cast<const base::DictionaryValue*>(a);
-    const base::DictionaryValue* b_dict =
-        reinterpret_cast<const base::DictionaryValue*>(b);
+  bool operator()(const std::unique_ptr<base::Value>& a,
+                  const std::unique_ptr<base::Value>& b) const {
+    const base::DictionaryValue* a_dict;
+    bool a_is_dictionary = a->GetAsDictionary(&a_dict);
+    DCHECK(a_is_dictionary);
+    const base::DictionaryValue* b_dict;
+    bool b_is_dictionary = b->GetAsDictionary(&b_dict);
+    DCHECK(b_is_dictionary);
     base::string16 a_str;
     base::string16 b_str;
     a_dict->GetString(kNameId, &a_str);

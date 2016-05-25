@@ -161,7 +161,7 @@ void HttpIceConfigRequest::OnResponse(const UrlRequest::Result& result) {
 
   // Parse iceServers list and store them in |ice_config|.
   bool errors_found = false;
-  for (base::Value* server : *ice_servers_list) {
+  for (const auto& server : *ice_servers_list) {
     base::DictionaryValue* server_dict;
     if (!server->GetAsDictionary(&server_dict)) {
       errors_found = true;
@@ -180,7 +180,7 @@ void HttpIceConfigRequest::OnResponse(const UrlRequest::Result& result) {
     std::string password;
     server_dict->GetString("credential", &password);
 
-    for (base::Value* url : *urls_list) {
+    for (const auto& url : *urls_list) {
       std::string url_str;
       if (!url->GetAsString(&url_str)) {
         errors_found = true;

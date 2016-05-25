@@ -118,17 +118,15 @@ BaseFeatureProvider::BaseFeatureProvider(const base::DictionaryValue& root,
           new ComplexFeature::FeatureList());
 
       // Parse and add all SimpleFeatures from the list.
-      for (base::ListValue::const_iterator list_iter = list->begin();
-           list_iter != list->end(); ++list_iter) {
-        if ((*list_iter)->GetType() != base::Value::TYPE_DICTIONARY) {
+      for (const auto& entry : *list) {
+        base::DictionaryValue* dict;
+        if (!entry->GetAsDictionary(&dict)) {
           LOG(ERROR) << iter.key() << ": Feature rules must be dictionaries.";
           continue;
         }
 
         std::unique_ptr<SimpleFeature> feature((*factory_)());
-        if (!ParseFeature(static_cast<const base::DictionaryValue*>(*list_iter),
-                          iter.key(),
-                          feature.get()))
+        if (!ParseFeature(dict, iter.key(), feature.get()))
           continue;
 
         features->push_back(std::move(feature));

@@ -118,7 +118,7 @@ std::vector<JobDetails> PrinterJobQueueHandler::GetJobsFromQueue(
     return jobs;
 
   std::vector<JobDetails> jobs_with_timeouts;
-  for (const auto* job_value : *job_list) {
+  for (const auto& job_value : *job_list) {
     const base::DictionaryValue* job_data = nullptr;
     if (!job_value->GetAsDictionary(&job_data))
       continue;

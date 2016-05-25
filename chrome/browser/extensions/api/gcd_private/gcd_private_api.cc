@@ -312,7 +312,7 @@ void GcdPrivateCreateSessionFunction::OnSessionInitialized(
   if (status == gcd_private::STATUS_SUCCESS) {
     const base::ListValue* pairing = nullptr;
     if (info.GetList("authentication.pairing", &pairing)) {
-      for (const base::Value* value : *pairing) {
+      for (const auto& value : *pairing) {
         std::string pairing_string;
         if (value->GetAsString(&pairing_string)) {
           api::gcd_private::PairingType pairing_type =

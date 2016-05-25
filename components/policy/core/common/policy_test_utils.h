@@ -52,7 +52,7 @@ bool PolicyServiceIsEmpty(const PolicyService* service);
 
 // Converts a base::Value to the equivalent CFPropertyListRef.
 // The returned value is owned by the caller.
-CFPropertyListRef ValueToProperty(const base::Value* value);
+CFPropertyListRef ValueToProperty(const base::Value& value);
 
 #endif
 

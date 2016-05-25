@@ -413,7 +413,7 @@ void DisplayOptionsHandler::HandleSetDisplayLayout(
   display::DisplayLayoutBuilder builder(
       display_manager->GetCurrentDisplayLayout());
   builder.ClearPlacements();
-  for (const base::Value* layout : *layouts) {
+  for (const auto& layout : *layouts) {
     const base::DictionaryValue* dictionary;
     if (!layout->GetAsDictionary(&dictionary)) {
       LOG(ERROR) << "Invalid layout dictionary: " << *dictionary;

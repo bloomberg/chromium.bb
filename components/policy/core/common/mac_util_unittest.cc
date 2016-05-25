@@ -52,7 +52,7 @@ TEST(PolicyMacUtilTest, PropertyToValue) {
   // Very meta.
   root.Set("dict", root.DeepCopy());
 
-  base::ScopedCFTypeRef<CFPropertyListRef> property(ValueToProperty(&root));
+  base::ScopedCFTypeRef<CFPropertyListRef> property(ValueToProperty(root));
   ASSERT_TRUE(property);
   std::unique_ptr<base::Value> value = PropertyToValue(property);
   ASSERT_TRUE(value);

@@ -182,7 +182,7 @@ InterestsFetcher::ExtractInterests(const std::string& response) {
   }
 
   std::unique_ptr<std::vector<Interest>> res(new std::vector<Interest>());
-  for (const base::Value* entry : *interests_list) {
+  for (const auto& entry : *interests_list) {
     const base::DictionaryValue* interest_dict = nullptr;
     if (!entry->GetAsDictionary(&interest_dict)) {
       DLOG(WARNING) << "Failed to parse interest dictionary.";

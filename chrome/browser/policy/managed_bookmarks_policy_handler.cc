@@ -49,7 +49,7 @@ void ManagedBookmarksPolicyHandler::ApplyPolicySettings(
 std::string
 ManagedBookmarksPolicyHandler::GetFolderName(const base::ListValue& list) {
   // Iterate over the list, and try to find the FolderName.
-  for (auto el : list) {
+  for (const auto& el : list) {
     const base::DictionaryValue* dict = NULL;
     if (!el || !el->GetAsDictionary(&dict)) continue;
 

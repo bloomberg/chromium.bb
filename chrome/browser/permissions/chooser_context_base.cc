@@ -55,12 +55,8 @@ ChooserContextBase::GetGrantedObjects(const GURL& requesting_origin,
   if (!object_list)
     return results;
 
-  for (base::ListValue::iterator it = object_list->begin();
-       it != object_list->end(); ++it) {
+  for (auto& object : *object_list) {
     // Steal ownership of |object| from |object_list|.
-    std::unique_ptr<base::Value> object(*it);
-    *it = nullptr;
-
     std::unique_ptr<base::DictionaryValue> object_dict =
         base::DictionaryValue::From(std::move(object));
     if (object_dict && IsValidObject(*object_dict))
@@ -88,7 +84,7 @@ ChooserContextBase::GetAllGrantedObjects() {
     if (!setting->GetList(kObjectListKey, &object_list))
       continue;
 
-    for (base::Value* object : *object_list) {
+    for (const auto& object : *object_list) {
       base::DictionaryValue* object_dict;
       if (!object->GetAsDictionary(&object_dict) ||
           !IsValidObject(*object_dict)) {

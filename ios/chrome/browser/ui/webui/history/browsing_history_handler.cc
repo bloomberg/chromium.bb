@@ -456,7 +456,7 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
   expire_list.reserve(args->GetSize());
 
   DCHECK(urls_to_be_deleted_.empty());
-  for (base::Value* arg : *args) {
+  for (const auto& arg : *args) {
     base::DictionaryValue* deletion = NULL;
     base::string16 url;
     base::ListValue* timestamps = NULL;
@@ -478,7 +478,7 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
 
     double timestamp;
     history::ExpireHistoryArgs* expire_args = NULL;
-    for (base::Value* timestamp_value : *timestamps) {
+    for (const auto& timestamp_value : *timestamps) {
       if (!timestamp_value->GetAsDouble(&timestamp)) {
         NOTREACHED() << "Unable to extract visit timestamp.";
         continue;

@@ -498,7 +498,7 @@ void NTPSnippetsService::StoreDiscardedSnippetsToPrefs() {
 std::set<std::string> NTPSnippetsService::GetSnippetHostsFromPrefs() const {
   std::set<std::string> hosts;
   const base::ListValue* list = pref_service_->GetList(prefs::kSnippetHosts);
-  for (const base::Value* value : *list) {
+  for (const auto& value : *list) {
     std::string str;
     bool success = value->GetAsString(&str);
     DCHECK(success) << "Failed to parse snippet host from prefs";

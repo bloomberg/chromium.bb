@@ -246,7 +246,7 @@ void KeyPermissions::PermissionsForExtension::KeyEntriesFromState(
     LOG(ERROR) << "Found a state store of wrong type.";
     return;
   }
-  for (const base::Value* entry : *entries) {
+  for (const auto& entry : *entries) {
     if (!entry) {
       LOG(ERROR) << "Found invalid NULL entry in PlatformKeys state store.";
       continue;

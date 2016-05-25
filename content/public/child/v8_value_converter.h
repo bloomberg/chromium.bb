@@ -105,6 +105,7 @@ class CONTENT_EXPORT V8ValueConverter {
   // Unsupported types are replaced with null.  If an array or object throws
   // while setting a value, that property or item is skipped, leaving a hole in
   // the case of arrays.
+  // TODO(dcheng): This should just take a const reference.
   virtual v8::Local<v8::Value> ToV8Value(
       const base::Value* value,
       v8::Local<v8::Context> context) const = 0;
@@ -118,6 +119,7 @@ class CONTENT_EXPORT V8ValueConverter {
   // Likewise, if an object throws while converting a property it will not be
   // converted, whereas if an array throws while converting an item it will be
   // converted to Value(TYPE_NULL).
+  // TODO(dcheng): This should return a unique_ptr.
   virtual base::Value* FromV8Value(v8::Local<v8::Value> value,
                                    v8::Local<v8::Context> context) const = 0;
 };

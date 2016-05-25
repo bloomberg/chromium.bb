@@ -88,7 +88,7 @@ bool HostListFetcher::ProcessResponse(
 
   // Any host_info with malformed data will not be added to the hostlist.
   base::DictionaryValue* host_dict;
-  for (base::Value* host_info : *hosts) {
+  for (const auto& host_info : *hosts) {
     HostInfo host;
     if (host_info->GetAsDictionary(&host_dict) &&
         host.ParseHostInfo(*host_dict)) {

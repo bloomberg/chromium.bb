@@ -78,7 +78,7 @@ bool ContainsString(const base::DictionaryValue& dictionary,
   if (!dictionary.GetList(key, &list_of_string))
     return false;
 
-  for (const base::Value* value : *list_of_string) {
+  for (const auto& value : *list_of_string) {
     std::string string_value;
     if (value->GetAsString(&string_value) && string_value == expected_value)
       return true;

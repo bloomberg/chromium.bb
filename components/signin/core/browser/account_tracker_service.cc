@@ -348,7 +348,7 @@ void AccountTrackerService::LoadFromPrefs() {
         if (dict->GetList(kAccountServiceFlagsPath, &service_flags_list)) {
           contains_deprecated_service_flags = true;
           std::string flag_string;
-          for (base::Value* flag : *service_flags_list) {
+          for (const auto& flag : *service_flags_list) {
             if (flag->GetAsString(&flag_string) &&
                 flag_string == kChildAccountServiceFlag) {
               is_child_account = true;

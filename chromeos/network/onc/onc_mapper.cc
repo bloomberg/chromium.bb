@@ -116,10 +116,7 @@ std::unique_ptr<base::ListValue> Mapper::MapArray(
 
   std::unique_ptr<base::ListValue> result_array(new base::ListValue);
   int original_index = 0;
-  for (base::ListValue::const_iterator it = onc_array.begin();
-       it != onc_array.end(); ++it, ++original_index) {
-    const base::Value* entry = *it;
-
+  for (const auto& entry : onc_array) {
     std::unique_ptr<base::Value> result_entry;
     result_entry = MapEntry(original_index,
                             *array_signature.onc_array_entry_signature,
@@ -129,6 +126,7 @@ std::unique_ptr<base::ListValue> Mapper::MapArray(
       result_array->Append(result_entry.release());
     else
       DCHECK(*nested_error);
+    ++original_index;
   }
   return result_array;
 }

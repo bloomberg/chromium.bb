@@ -379,7 +379,7 @@ void ShillPropertyHandler::UpdateObserved(ManagedState::ManagedType type,
       (type == ManagedState::MANAGED_TYPE_NETWORK) ? observed_networks_
                                                    : observed_devices_;
   ShillPropertyObserverMap new_observed;
-  for (auto* entry : entries) {
+  for (const auto& entry : entries) {
     std::string path;
     entry->GetAsString(&path);
     if (path.empty())

@@ -71,7 +71,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
     return nullptr;
   }
 
-  for (base::Value* value : *corpus_infos_list) {
+  for (const auto& value : *corpus_infos_list) {
     const base::DictionaryValue* dict_value = nullptr;
     if (!value->GetAsDictionary(&dict_value)) {
       DLOG(WARNING) << "Invalid source info for article " << id;
@@ -149,7 +149,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromDictionary(
 // static
 bool NTPSnippet::AddFromListValue(const base::ListValue& list,
                                   PtrVector* snippets) {
-  for (const base::Value* const value : list) {
+  for (const auto& value : list) {
     const base::DictionaryValue* dict = nullptr;
     if (!value->GetAsDictionary(&dict))
       return false;

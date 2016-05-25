@@ -63,7 +63,7 @@ int WriteLockFile(const std::string& path, base::ListValue* contents) {
   DCHECK(contents);
   std::string lockfile;
 
-  for (const base::Value* elem : *contents) {
+  for (const auto& elem : *contents) {
     std::unique_ptr<std::string> dump_info = SerializeToJson(*elem);
     RCHECK(dump_info, -1, "Failed to serialize DumpInfo");
     lockfile += *dump_info;
@@ -95,8 +95,8 @@ bool FetchDumps(const std::string& lockfile_path,
 
   dumps->clear();
 
-  for (base::Value* elem : *dump_list) {
-    std::unique_ptr<DumpInfo> dump = base::WrapUnique(new DumpInfo(elem));
+  for (const auto& elem : *dump_list) {
+    std::unique_ptr<DumpInfo> dump(new DumpInfo(elem.get()));
     RCHECK(dump->valid(), false, "Invalid DumpInfo");
     dumps->push_back(std::move(dump));
   }

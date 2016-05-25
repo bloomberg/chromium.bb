@@ -43,10 +43,7 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkApiTest, GetNetworkInterfaces) {
   base::ListValue* value = static_cast<base::ListValue*>(result.get());
   ASSERT_TRUE(value->GetSize() > 0);
 
-  for (base::ListValue::const_iterator it = value->begin(); it != value->end();
-       ++it) {
-    base::Value* network_interface_value = *it;
-
+  for (const auto& network_interface_value : *value) {
     NetworkInterface network_interface;
     ASSERT_TRUE(NetworkInterface::Populate(*network_interface_value,
                                            &network_interface));

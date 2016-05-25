@@ -78,12 +78,11 @@ void ComponentPatcher::PatchNextFile() {
     DonePatching(ComponentUnpacker::kNone, 0);
     return;
   }
-  if (!(*next_command_)->IsType(base::Value::TYPE_DICTIONARY)) {
+  const base::DictionaryValue* command_args;
+  if (!(*next_command_)->GetAsDictionary(&command_args)) {
     DonePatching(ComponentUnpacker::kDeltaBadCommands, 0);
     return;
   }
-  const base::DictionaryValue* command_args =
-      static_cast<base::DictionaryValue*>(*next_command_);
 
   std::string operation;
   if (command_args->GetString(kOp, &operation)) {
