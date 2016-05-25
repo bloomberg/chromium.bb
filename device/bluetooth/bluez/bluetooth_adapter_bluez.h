@@ -127,10 +127,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   // BluetoothDevice methods are by address).
   BluetoothDeviceBlueZ* GetDeviceWithPath(const dbus::ObjectPath& object_path);
 
-  // Announces to observers a change in device state that is not reflected by
-  // its D-Bus properties. |device| is owned by the caller and cannot be NULL.
-  void NotifyDeviceChanged(BluetoothDeviceBlueZ* device);
-
   // Announce to observers a device address change.
   void NotifyDeviceAddressChanged(BluetoothDeviceBlueZ* device,
                                   const std::string& old_address);

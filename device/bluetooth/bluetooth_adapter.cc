@@ -164,6 +164,14 @@ void BluetoothAdapter::NotifyAdapterStateChanged(bool powered) {
                     AdapterPoweredChanged(this, powered));
 }
 
+void BluetoothAdapter::NotifyDeviceChanged(BluetoothDevice* device) {
+  DCHECK(device);
+  DCHECK_EQ(device->GetAdapter(), this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    DeviceChanged(this, device));
+}
+
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 void BluetoothAdapter::NotifyDevicePairedChanged(BluetoothDevice* device,
                                                  bool new_paired_status) {

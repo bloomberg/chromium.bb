@@ -989,14 +989,6 @@ void BluetoothAdapterBlueZ::PresentChanged(bool present) {
                     AdapterPresentChanged(this, present));
 }
 
-void BluetoothAdapterBlueZ::NotifyDeviceChanged(BluetoothDeviceBlueZ* device) {
-  DCHECK(device);
-  DCHECK(device->adapter_ == this);
-
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    DeviceChanged(this, device));
-}
-
 void BluetoothAdapterBlueZ::NotifyDeviceAddressChanged(
     BluetoothDeviceBlueZ* device,
     const std::string& old_address) {

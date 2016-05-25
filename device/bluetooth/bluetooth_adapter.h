@@ -82,9 +82,22 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     virtual void DeviceAdded(BluetoothAdapter* adapter,
                              BluetoothDevice* device) {}
 
-    // Called when properties of the device |device| known to the adapter
-    // |adapter| change. |device| should not be cached. Instead, copy its
-    // Bluetooth address.
+    // Called when the result of one of the following methods of the device
+    // |device| changes:
+    //  * GetAddress()
+    //  * GetAppearance()
+    //  * GetBluetoothClass()
+    //  * GetInquiryRSSI()
+    //  * GetInquiryTxPower()
+    //  * GetUUIDs()
+    //  * IsConnectable()
+    //  * IsConnected()
+    //  * IsConnecting()
+    //  * IsGattConnected()
+    //  * IsPaired()
+    //  * IsTrustable()
+    //
+    // |device| should not be cached. Instead, copy its Bluetooth address.
     virtual void DeviceChanged(BluetoothAdapter* adapter,
                                BluetoothDevice* device) {}
 
@@ -428,6 +441,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
 
   // The following methods are used to send various events to observers.
   void NotifyAdapterStateChanged(bool powered);
+  void NotifyDeviceChanged(BluetoothDevice* device);
+
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   // This function is implemented for ChromeOS only, and the support on
   // Android, MaxOS and Windows should be added on demand in the future.

@@ -26,7 +26,9 @@ BluetoothDevice::BluetoothDevice(BluetoothAdapter* adapter)
       services_data_(new base::DictionaryValue()) {}
 
 BluetoothDevice::~BluetoothDevice() {
-  DidDisconnectGatt();
+  for (BluetoothGattConnection* connection : gatt_connections_) {
+    connection->InvalidateConnectionReference();
+  }
 }
 
 BluetoothDevice::ConnectionInfo::ConnectionInfo()
@@ -335,6 +337,7 @@ void BluetoothDevice::DidConnectGatt() {
   }
   create_gatt_connection_success_callbacks_.clear();
   create_gatt_connection_error_callbacks_.clear();
+  GetAdapter()->NotifyDeviceChanged(this);
 }
 
 void BluetoothDevice::DidFailToConnectGatt(ConnectErrorCode error) {
@@ -358,6 +361,7 @@ void BluetoothDevice::DidDisconnectGatt() {
     connection->InvalidateConnectionReference();
   }
   gatt_connections_.clear();
+  GetAdapter()->NotifyDeviceChanged(this);
 }
 
 void BluetoothDevice::AddGattConnection(BluetoothGattConnection* connection) {
