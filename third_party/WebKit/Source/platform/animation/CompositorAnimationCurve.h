@@ -10,6 +10,7 @@
 #include <memory>
 
 namespace cc {
+class AnimationCurve;
 class TimingFunction;
 }
 
@@ -25,16 +26,8 @@ public:
         TimingFunctionTypeLinear
     };
 
-    enum AnimationCurveType {
-        AnimationCurveTypeFilter,
-        AnimationCurveTypeFloat,
-        AnimationCurveTypeScrollOffset,
-        AnimationCurveTypeTransform,
-    };
-
     virtual ~CompositorAnimationCurve() {}
-
-    virtual AnimationCurveType type() const = 0;
+    virtual std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const = 0;
 
 protected:
     static std::unique_ptr<cc::TimingFunction> createTimingFunction(TimingFunctionType);

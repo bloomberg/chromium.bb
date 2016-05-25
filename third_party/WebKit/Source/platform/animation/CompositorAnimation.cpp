@@ -20,38 +20,14 @@ using blink::CompositorAnimationCurve;
 
 namespace blink {
 
-CompositorAnimation::CompositorAnimation(const CompositorAnimationCurve& webCurve, CompositorTargetProperty::Type targetProperty, int animationId, int groupId)
+CompositorAnimation::CompositorAnimation(const CompositorAnimationCurve& curve, CompositorTargetProperty::Type targetProperty, int animationId, int groupId)
 {
     if (!animationId)
         animationId = AnimationIdProvider::NextAnimationId();
     if (!groupId)
         groupId = AnimationIdProvider::NextGroupId();
 
-    CompositorAnimationCurve::AnimationCurveType curveType = webCurve.type();
-    std::unique_ptr<cc::AnimationCurve> curve;
-    switch (curveType) {
-    case CompositorAnimationCurve::AnimationCurveTypeFloat: {
-        const blink::CompositorFloatAnimationCurve* floatCurve = static_cast<const blink::CompositorFloatAnimationCurve*>(&webCurve);
-        curve = floatCurve->cloneToAnimationCurve();
-        break;
-    }
-    case CompositorAnimationCurve::AnimationCurveTypeTransform: {
-        const blink::CompositorTransformAnimationCurve* transformCurve = static_cast<const blink::CompositorTransformAnimationCurve*>(&webCurve);
-        curve = transformCurve->cloneToAnimationCurve();
-        break;
-    }
-    case CompositorAnimationCurve::AnimationCurveTypeFilter: {
-        const blink::CompositorFilterAnimationCurve* filterCurve = static_cast<const blink::CompositorFilterAnimationCurve*>(&webCurve);
-        curve = filterCurve->cloneToAnimationCurve();
-        break;
-    }
-    case CompositorAnimationCurve::AnimationCurveTypeScrollOffset: {
-        const blink::CompositorScrollOffsetAnimationCurve* scrollCurve = static_cast<const blink::CompositorScrollOffsetAnimationCurve*>(&webCurve);
-        curve = scrollCurve->cloneToAnimationCurve();
-        break;
-    }
-    }
-    m_animation = Animation::Create(std::move(curve), animationId, groupId, targetProperty);
+    m_animation = Animation::Create(curve.cloneToAnimationCurve(), animationId, groupId, targetProperty);
 }
 
 CompositorAnimation::CompositorAnimation() {}

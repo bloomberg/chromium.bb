@@ -49,11 +49,6 @@ CompositorScrollOffsetAnimationCurve::~CompositorScrollOffsetAnimationCurve()
 {
 }
 
-CompositorAnimationCurve::AnimationCurveType CompositorScrollOffsetAnimationCurve::type() const
-{
-    return CompositorAnimationCurve::AnimationCurveTypeScrollOffset;
-}
-
 void CompositorScrollOffsetAnimationCurve::setInitialValue(FloatPoint initialValue)
 {
     m_curve->SetInitialValue(gfx::ScrollOffset(initialValue.x(), initialValue.y()));

@@ -21,11 +21,6 @@ CompositorFloatAnimationCurve::~CompositorFloatAnimationCurve()
 {
 }
 
-CompositorAnimationCurve::AnimationCurveType CompositorFloatAnimationCurve::type() const
-{
-    return CompositorAnimationCurve::AnimationCurveTypeFloat;
-}
-
 void CompositorFloatAnimationCurve::add(const CompositorFloatKeyframe& keyframe)
 {
     add(keyframe, TimingFunctionTypeEase);

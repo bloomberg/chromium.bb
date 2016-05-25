@@ -492,7 +492,7 @@ void getCubicBezierTimingFunctionParameters(const TimingFunction& timingFunction
 }
 
 template<typename PlatformAnimationCurveType, typename PlatformAnimationKeyframeType>
-void addKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const PlatformAnimationKeyframeType& keyframe, const TimingFunction* timingFunction)
+void addCompositorKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const PlatformAnimationKeyframeType& keyframe, const TimingFunction* timingFunction)
 {
     if (!timingFunction) {
         curve.add(keyframe);
@@ -567,9 +567,35 @@ void setTimingFunctionOnCurve(PlatformAnimationCurveType& curve, TimingFunction*
     }
 }
 
-} // namespace
+void addKeyframeToCurve(CompositorFilterAnimationCurve& curve, Keyframe::PropertySpecificKeyframe* keyframe,
+    const AnimatableValue* value, const TimingFunction* keyframeTimingFunction)
+{
+    OwnPtr<CompositorFilterOperations> ops = adoptPtr(CompositorFactory::current().createFilterOperations());
+    toCompositorFilterOperations(toAnimatableFilterOperations(value)->operations(), ops.get());
 
-void CompositorAnimationsImpl::addKeyframesToCurve(CompositorAnimationCurve& curve, const PropertySpecificKeyframeVector& keyframes, const Timing& timing)
+    CompositorFilterKeyframe filterKeyframe(keyframe->offset(), std::move(ops));
+    addCompositorKeyframeWithTimingFunction(curve, filterKeyframe, keyframeTimingFunction);
+}
+
+void addKeyframeToCurve(CompositorFloatAnimationCurve& curve, Keyframe::PropertySpecificKeyframe* keyframe,
+    const AnimatableValue* value, const TimingFunction* keyframeTimingFunction)
+{
+    CompositorFloatKeyframe floatKeyframe(keyframe->offset(), toAnimatableDouble(value)->toDouble());
+    addCompositorKeyframeWithTimingFunction(curve, floatKeyframe, keyframeTimingFunction);
+}
+
+void addKeyframeToCurve(CompositorTransformAnimationCurve& curve, Keyframe::PropertySpecificKeyframe* keyframe,
+    const AnimatableValue* value, const TimingFunction* keyframeTimingFunction)
+{
+    OwnPtr<CompositorTransformOperations> ops = adoptPtr(CompositorFactory::current().createTransformOperations());
+    toCompositorTransformOperations(toAnimatableTransform(value)->transformOperations(), ops.get());
+
+    CompositorTransformKeyframe transformKeyframe(keyframe->offset(), std::move(ops));
+    addCompositorKeyframeWithTimingFunction(curve, transformKeyframe, keyframeTimingFunction);
+}
+
+template <typename PlatformAnimationCurveType>
+void addKeyframesToCurve(PlatformAnimationCurveType& curve, const AnimatableValuePropertySpecificKeyframeVector& keyframes)
 {
     auto* lastKeyframe = keyframes.last().get();
     for (const auto& keyframe : keyframes) {
@@ -583,36 +609,11 @@ void CompositorAnimationsImpl::addKeyframesToCurve(CompositorAnimationCurve& cur
         // and convert using another set of toAnimatableXXXOperations functions.
         const AnimatableValue* value = keyframe->getAnimatableValue().get();
 
-        switch (curve.type()) {
-        case CompositorAnimationCurve::AnimationCurveTypeFilter: {
-            OwnPtr<CompositorFilterOperations> ops = adoptPtr(CompositorFactory::current().createFilterOperations());
-            toCompositorFilterOperations(toAnimatableFilterOperations(value)->operations(), ops.get());
-
-            CompositorFilterKeyframe filterKeyframe(keyframe->offset(), std::move(ops));
-            CompositorFilterAnimationCurve* filterCurve = static_cast<CompositorFilterAnimationCurve*>(&curve);
-            addKeyframeWithTimingFunction(*filterCurve, filterKeyframe, keyframeTimingFunction);
-            break;
-        }
-        case CompositorAnimationCurve::AnimationCurveTypeFloat: {
-            CompositorFloatKeyframe floatKeyframe(keyframe->offset(), toAnimatableDouble(value)->toDouble());
-            CompositorFloatAnimationCurve* floatCurve = static_cast<CompositorFloatAnimationCurve*>(&curve);
-            addKeyframeWithTimingFunction(*floatCurve, floatKeyframe, keyframeTimingFunction);
-            break;
-        }
-        case CompositorAnimationCurve::AnimationCurveTypeTransform: {
-            OwnPtr<CompositorTransformOperations> ops = adoptPtr(CompositorFactory::current().createTransformOperations());
-            toCompositorTransformOperations(toAnimatableTransform(value)->transformOperations(), ops.get());
-
-            CompositorTransformKeyframe transformKeyframe(keyframe->offset(), std::move(ops));
-            CompositorTransformAnimationCurve* transformCurve = static_cast<CompositorTransformAnimationCurve*>(&curve);
-            addKeyframeWithTimingFunction(*transformCurve, transformKeyframe, keyframeTimingFunction);
-            break;
-        }
-        default:
-            ASSERT_NOT_REACHED();
-        }
+        addKeyframeToCurve(curve, keyframe.get(), value, keyframeTimingFunction);
     }
 }
+
+} // namespace
 
 void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, int group, double startTime, double timeOffset, const KeyframeEffectModelBase& effect, Vector<OwnPtr<CompositorAnimation>>& animations, double animationPlaybackRate)
 {
@@ -641,7 +642,7 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, in
             targetProperty = CompositorTargetProperty::OPACITY;
 
             CompositorFloatAnimationCurve* floatCurve = CompositorFactory::current().createFloatAnimationCurve();
-            addKeyframesToCurve(*floatCurve, values, timing);
+            addKeyframesToCurve(*floatCurve, values);
             setTimingFunctionOnCurve(*floatCurve, timing.timingFunction.get());
             curve = adoptPtr(floatCurve);
             break;
@@ -650,7 +651,7 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, in
         case CSSPropertyBackdropFilter: {
             targetProperty = CompositorTargetProperty::FILTER;
             CompositorFilterAnimationCurve* filterCurve = CompositorFactory::current().createFilterAnimationCurve();
-            addKeyframesToCurve(*filterCurve, values, timing);
+            addKeyframesToCurve(*filterCurve, values);
             setTimingFunctionOnCurve(*filterCurve, timing.timingFunction.get());
             curve = adoptPtr(filterCurve);
             break;
@@ -661,7 +662,7 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(const Timing& timing, in
         case CSSPropertyTransform: {
             targetProperty = CompositorTargetProperty::TRANSFORM;
             CompositorTransformAnimationCurve* transformCurve = CompositorFactory::current().createTransformAnimationCurve();
-            addKeyframesToCurve(*transformCurve, values, timing);
+            addKeyframesToCurve(*transformCurve, values);
             setTimingFunctionOnCurve(*transformCurve, timing.timingFunction.get());
             curve = adoptPtr(transformCurve);
             break;

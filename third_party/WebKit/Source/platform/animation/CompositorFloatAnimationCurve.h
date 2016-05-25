@@ -14,7 +14,6 @@
 #include <memory>
 
 namespace cc {
-class AnimationCurve;
 class KeyframedFloatAnimationCurve;
 }
 
@@ -48,9 +47,7 @@ public:
     virtual float getValue(double time) const;
 
     // CompositorAnimationCurve implementation.
-    AnimationCurveType type() const override;
-
-    std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
+    std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const override;
 
 private:
     std::unique_ptr<cc::KeyframedFloatAnimationCurve> m_curve;

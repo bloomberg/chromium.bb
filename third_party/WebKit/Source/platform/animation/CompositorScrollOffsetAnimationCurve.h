@@ -10,10 +10,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "wtf/Noncopyable.h"
 
-#include <memory>
-
 namespace cc {
-class AnimationCurve;
 class ScrollOffsetAnimationCurve;
 }
 
@@ -32,16 +29,14 @@ public:
     CompositorScrollOffsetAnimationCurve(cc::ScrollOffsetAnimationCurve*);
     ~CompositorScrollOffsetAnimationCurve() override;
 
-    // CompositorAnimationCurve implementation.
-    AnimationCurveType type() const override;
-
     virtual void setInitialValue(FloatPoint);
     virtual FloatPoint getValue(double time) const;
     virtual double duration() const;
     virtual FloatPoint targetValue() const;
     virtual void updateTarget(double time, FloatPoint newTarget);
 
-    std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
+    // CompositorAnimationCurve implementation.
+    std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const override;
 
 private:
     std::unique_ptr<cc::ScrollOffsetAnimationCurve> m_curve;

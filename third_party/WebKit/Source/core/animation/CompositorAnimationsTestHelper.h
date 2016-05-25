@@ -93,7 +93,7 @@ public:
     ~WebCompositorAnimationMock() { delete_(); }
 };
 
-template<typename CurveType, CompositorAnimationCurve::AnimationCurveType CurveId, typename KeyframeType>
+template<typename CurveType, typename KeyframeType>
 class WebCompositorAnimationCurveMock : public CurveType {
 public:
     MOCK_METHOD1_T(add, void(const KeyframeType&));
@@ -108,13 +108,11 @@ public:
 
     MOCK_CONST_METHOD1_T(getValue, float(double)); // Only on CompositorFloatAnimationCurve, but can't hurt to have here.
 
-    virtual CompositorAnimationCurve::AnimationCurveType type() const { return CurveId; }
-
     MOCK_METHOD0(delete_, void());
     ~WebCompositorAnimationCurveMock() override { delete_(); }
 };
 
-using WebFloatAnimationCurveMock = WebCompositorAnimationCurveMock<CompositorFloatAnimationCurve, CompositorAnimationCurve::AnimationCurveTypeFloat, CompositorFloatKeyframe>;
+using WebFloatAnimationCurveMock = WebCompositorAnimationCurveMock<CompositorFloatAnimationCurve, CompositorFloatKeyframe>;
 
 class WebCompositorAnimationTimelineMock : public CompositorAnimationTimeline {
 public:

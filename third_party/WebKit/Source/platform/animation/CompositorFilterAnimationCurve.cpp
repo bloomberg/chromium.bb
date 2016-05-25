@@ -22,11 +22,6 @@ CompositorFilterAnimationCurve::~CompositorFilterAnimationCurve()
 {
 }
 
-blink::CompositorAnimationCurve::AnimationCurveType CompositorFilterAnimationCurve::type() const
-{
-    return CompositorAnimationCurve::AnimationCurveTypeFilter;
-}
-
 void CompositorFilterAnimationCurve::add(const CompositorFilterKeyframe& keyframe, TimingFunctionType type)
 {
     const cc::FilterOperations& filterOperations = keyframe.value().asFilterOperations();

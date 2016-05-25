@@ -14,7 +14,6 @@
 #include <memory>
 
 namespace cc {
-class AnimationCurve;
 class KeyframedFilterAnimationCurve;
 }
 
@@ -44,9 +43,7 @@ public:
     virtual void setStepsTimingFunction(int numberOfSteps, StepsTimingFunction::StepPosition);
 
     // blink::CompositorAnimationCurve implementation.
-    AnimationCurveType type() const override;
-
-    std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const;
+    std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const override;
 
 private:
     std::unique_ptr<cc::KeyframedFilterAnimationCurve> m_curve;

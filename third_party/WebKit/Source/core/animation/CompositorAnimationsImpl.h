@@ -41,8 +41,6 @@
 
 namespace blink {
 
-class CompositorAnimationCurve;
-
 class CORE_EXPORT CompositorAnimationsImpl {
     STATIC_ONLY(CompositorAnimationsImpl);
 private:
@@ -69,8 +67,6 @@ private:
     static bool convertTimingForCompositor(const Timing&, double timeOffset, CompositorTiming& out, double animationPlaybackRate);
 
     static void getAnimationOnCompositor(const Timing&, int group, double startTime, double timeOffset, const KeyframeEffectModelBase&, Vector<OwnPtr<CompositorAnimation>>& animations, double animationPlaybackRate);
-
-    static void addKeyframesToCurve(CompositorAnimationCurve&, const AnimatableValuePropertySpecificKeyframeVector&, const Timing&);
 
     friend class CompositorAnimations;
     friend class AnimationCompositorAnimationsTest;

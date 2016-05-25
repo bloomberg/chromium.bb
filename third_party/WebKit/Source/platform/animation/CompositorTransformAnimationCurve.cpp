@@ -22,11 +22,6 @@ CompositorTransformAnimationCurve::~CompositorTransformAnimationCurve()
 {
 }
 
-CompositorAnimationCurve::AnimationCurveType CompositorTransformAnimationCurve::type() const
-{
-    return CompositorAnimationCurve::AnimationCurveTypeTransform;
-}
-
 void CompositorTransformAnimationCurve::add(const CompositorTransformKeyframe& keyframe)
 {
     add(keyframe, TimingFunctionTypeEase);
