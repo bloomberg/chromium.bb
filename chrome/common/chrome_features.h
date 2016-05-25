@@ -31,6 +31,10 @@ extern const base::Feature kExpectCTReporting;
 
 extern const base::Feature kExperimentalKeyboardLockUI;
 
+#if defined(OS_CHROMEOS)
+extern const base::Feature kHappininessTrackingSystem;
+#endif
+
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
 extern const base::Feature kLinuxObsoleteSystemIsEndOfTheLine;
 #endif

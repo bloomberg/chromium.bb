@@ -39,6 +39,12 @@ const base::Feature kExpectCTReporting{"ExpectCTReporting",
 const base::Feature kExperimentalKeyboardLockUI{
     "ExperimentalKeyboardLockUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined (OS_CHROMEOS)
+// Enables or disables the Happininess Tracking System for the device.
+const base::Feature kHappininessTrackingSystem {
+    "HappininessTrackingSystem", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Enables showing the "This computer will no longer receive Google Chrome
 // updates" infobar instead of the "will soon stop receiving" infobar on
