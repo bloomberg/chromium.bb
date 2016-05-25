@@ -19,14 +19,25 @@ setup_env() {
   export JOBS=$(( $NCPUS < 4 ? $NCPUS : 4 ))
 }
 
+# Do an in-tree build and make sure tests pass.
 build() {
   ./configure
   make -j${JOBS} check VERBOSE=1
+  make distclean
+}
+
+# Do an out-of-tree build and make sure we can create a release tarball.
+build_out_of_tree() {
+  mkdir -p build/native
+  cd build/native
+  ../../configure
+  make -j${JOBS} distcheck VERBOSE=1
 }
 
 main() {
   setup_env
   build
+  build_out_of_tree
 }
 
 main "$@"

@@ -140,6 +140,7 @@ check_LIBRARIES += src/testing/libtesting.a
 
 if !SYSTEM_TEST_LIBS
 src_testing_libtesting_a_SOURCES = \
+	src/breakpad_googletest_includes.h \
 	src/testing/gtest/src/gtest-all.cc \
 	src/testing/gtest/src/gtest_main.cc \
 	src/testing/src/gmock-all.cc
@@ -163,21 +164,33 @@ src_client_linux_libbreakpad_client_a_SOURCES = \
 	src/client/linux/dump_writer_common/thread_info.cc \
 	src/client/linux/dump_writer_common/ucontext_reader.cc \
 	src/client/linux/handler/exception_handler.cc \
+	src/client/linux/handler/exception_handler.h \
 	src/client/linux/handler/minidump_descriptor.cc \
+	src/client/linux/handler/minidump_descriptor.h \
 	src/client/linux/log/log.cc \
+	src/client/linux/log/log.h \
 	src/client/linux/microdump_writer/microdump_writer.cc \
+	src/client/linux/microdump_writer/microdump_writer.h \
 	src/client/linux/minidump_writer/linux_core_dumper.cc \
 	src/client/linux/minidump_writer/linux_dumper.cc \
 	src/client/linux/minidump_writer/linux_ptrace_dumper.cc \
 	src/client/linux/minidump_writer/minidump_writer.cc \
+	src/client/minidump_file_writer-inl.h \
 	src/client/minidump_file_writer.cc \
+	src/client/minidump_file_writer.h \
 	src/common/convert_UTF.c \
+	src/common/convert_UTF.h \
 	src/common/md5.cc \
+	src/common/md5.h \
 	src/common/string_conversion.cc \
+	src/common/string_conversion.h \
 	src/common/linux/elf_core_dump.cc \
 	src/common/linux/elfutils.cc \
+	src/common/linux/elfutils.h \
 	src/common/linux/file_id.cc \
+	src/common/linux/file_id.h \
 	src/common/linux/guid_creator.cc \
+	src/common/linux/guid_creator.h \
 	src/common/linux/linux_libc_support.cc \
 	src/common/linux/memory_mapped_file.cc \
 	src/common/linux/safe_readlink.cc
@@ -469,9 +482,12 @@ src_client_linux_linux_client_unittest_shlib_SOURCES = \
 	src/client/linux/minidump_writer/proc_cpuinfo_reader_unittest.cc \
 	src/common/linux/elf_core_dump.cc \
 	src/common/linux/linux_libc_support_unittest.cc \
+	src/common/linux/tests/auto_testfile.h \
 	src/common/linux/tests/crash_generator.cc \
 	src/common/memory_unittest.cc \
+	src/common/tests/auto_tempdir.h \
 	src/common/tests/file_utils.cc \
+	src/common/tests/file_utils.h \
 	src/processor/basic_code_modules.cc \
 	src/processor/dump_context.cc \
 	src/processor/dump_object.cc \
@@ -567,7 +583,9 @@ src_tools_linux_dump_syms_dump_syms_SOURCES = \
 	src/common/dwarf/elf_reader.cc \
 	src/common/linux/crc32.cc \
 	src/common/linux/dump_symbols.cc \
+	src/common/linux/dump_symbols.h \
 	src/common/linux/elf_symbols_to_module.cc \
+	src/common/linux/elf_symbols_to_module.h \
 	src/common/linux/elfutils.cc \
 	src/common/linux/file_id.cc \
 	src/common/linux/linux_libc_support.cc \
@@ -577,7 +595,8 @@ src_tools_linux_dump_syms_dump_syms_SOURCES = \
 
 src_tools_linux_md2core_minidump_2_core_SOURCES = \
 	src/common/linux/memory_mapped_file.cc \
-	src/tools/linux/md2core/minidump-2-core.cc
+	src/tools/linux/md2core/minidump-2-core.cc \
+	src/tools/linux/md2core/minidump_memory_range.h
 
 src_tools_linux_symupload_minidump_upload_SOURCES = \
 	src/common/linux/http_upload.cc \
@@ -586,7 +605,9 @@ src_tools_linux_symupload_minidump_upload_LDADD = -ldl
 
 src_tools_linux_symupload_sym_upload_SOURCES = \
 	src/common/linux/http_upload.cc \
+	src/common/linux/http_upload.h \
 	src/common/linux/symbol_upload.cc \
+	src/common/linux/symbol_upload.h \
 	src/tools/linux/symupload/sym_upload.cc
 src_tools_linux_symupload_sym_upload_LDADD = -ldl
 
@@ -605,11 +626,17 @@ src_tools_mac_dump_syms_dump_syms_mac_SOURCES = \
 	src/common/dwarf/elf_reader.cc \
 	src/common/mac/arch_utilities.cc \
 	src/common/mac/dump_syms.cc \
+	src/common/mac/dump_syms.h \
 	src/common/mac/file_id.cc \
+	src/common/mac/file_id.h \
 	src/common/mac/macho_id.cc \
+	src/common/mac/macho_id.h \
 	src/common/mac/macho_reader.cc \
+	src/common/mac/macho_reader.h \
 	src/common/mac/macho_utilities.cc \
+	src/common/mac/macho_utilities.h \
 	src/common/mac/macho_walker.cc \
+	src/common/mac/macho_walker.h \
 	src/tools/mac/dump_syms/dump_syms_tool.cc
 src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS= \
 	-I$(top_srcdir)/src/third_party/mac_headers \
@@ -633,14 +660,20 @@ src_common_dumper_unittest_SOURCES = \
 	src/common/stabs_to_module_unittest.cc \
 	src/common/test_assembler.cc \
 	src/common/dwarf/bytereader.cc \
+	src/common/dwarf/bytereader.h \
+	src/common/dwarf/bytereader-inl.h \
 	src/common/dwarf/bytereader_unittest.cc \
 	src/common/dwarf/cfi_assembler.cc \
+	src/common/dwarf/cfi_assembler.h \
 	src/common/dwarf/dwarf2diehandler.cc \
 	src/common/dwarf/dwarf2diehandler_unittest.cc \
 	src/common/dwarf/dwarf2reader.cc \
+	src/common/dwarf/dwarf2reader.h \
 	src/common/dwarf/elf_reader.cc \
+	src/common/dwarf/elf_reader.h \
 	src/common/dwarf/dwarf2reader_cfi_unittest.cc \
 	src/common/dwarf/dwarf2reader_die_unittest.cc \
+	src/common/dwarf/dwarf2reader_test_common.h \
 	src/common/linux/crc32.cc \
 	src/common/linux/dump_symbols.cc \
 	src/common/linux/dump_symbols_unittest.cc \
@@ -659,6 +692,8 @@ src_common_dumper_unittest_SOURCES = \
 	src/common/linux/synth_elf.cc \
 	src/common/linux/synth_elf_unittest.cc \
 	src/common/linux/tests/crash_generator.cc \
+	src/common/linux/tests/crash_generator.h \
+	src/common/testdata/func-line-pairing.h \
 	src/common/tests/file_utils.cc
 src_common_dumper_unittest_CPPFLAGS = \
 	$(AM_CPPFLAGS) $(TEST_CFLAGS) \
@@ -1205,33 +1240,32 @@ endif !DISABLE_PROCESSOR
 ##     sed -e s/'^\(.*\)$'/'\t\1 \\'/
 EXTRA_DIST = \
 	$(SCRIPTS) \
-	src/processor/stackwalk_selftest_sol.s \
-	src/client/linux/handler/Makefile \
-	src/client/linux/handler/exception_handler.cc \
-	src/client/linux/handler/exception_handler.h \
-	src/client/linux/handler/minidump_descriptor.cc \
-	src/client/linux/handler/minidump_descriptor.h \
-	src/client/linux/handler/exception_handler_test.cc \
-	src/client/linux/handler/linux_thread.cc \
-	src/client/linux/handler/linux_thread.h \
-	src/client/linux/handler/linux_thread_test.cc \
-	src/client/linux/handler/minidump_generator.cc \
-	src/client/linux/handler/minidump_generator.h \
-	src/client/linux/handler/minidump_test.cc \
+	src/client/linux/data/linux-gate-amd.sym \
+	src/client/linux/data/linux-gate-intel.sym \
+	src/client/mac/handler/breakpad_nlist_64.cc \
+	src/client/mac/handler/breakpad_nlist_64.h \
 	src/client/mac/handler/dynamic_images.cc \
 	src/client/mac/handler/dynamic_images.h \
 	src/client/mac/handler/exception_handler.cc \
 	src/client/mac/handler/exception_handler.h \
-	src/client/mac/handler/exception_handler_test.cc \
+	src/client/mac/handler/mach_vm_compat.h \
 	src/client/mac/handler/minidump_generator.cc \
 	src/client/mac/handler/minidump_generator.h \
-	src/client/mac/handler/minidump_generator_test.cc \
 	src/client/mac/handler/minidump_test.xcodeproj/project.pbxproj \
+	src/client/mac/handler/minidump_tests32-Info.plist \
+	src/client/mac/handler/minidump_tests64-Info.plist \
+	src/client/mac/handler/obj-cTestCases-Info.plist \
 	src/client/mac/handler/protected_memory_allocator.cc \
 	src/client/mac/handler/protected_memory_allocator.h \
-	src/client/minidump_file_writer-inl.h \
-	src/client/minidump_file_writer.cc \
-	src/client/minidump_file_writer.h \
+	src/client/mac/handler/ucontext_compat.h \
+	src/client/mac/handler/testcases/testdata/dump_syms_i386_breakpad.sym \
+	src/client/mac/tests/BreakpadFramework_Test.mm \
+	src/client/mac/tests/crash_generation_server_test.cc \
+	src/client/mac/tests/exception_handler_test.cc \
+	src/client/mac/tests/minidump_generator_test.cc \
+	src/client/mac/tests/minidump_generator_test_helper.cc \
+	src/client/mac/tests/spawn_child_process.h \
+	src/client/mac/tests/testlogging.h \
 	src/client/minidump_file_writer_unittest.cc \
 	src/client/solaris/handler/Makefile \
 	src/client/solaris/handler/exception_handler.cc \
@@ -1242,46 +1276,24 @@ EXTRA_DIST = \
 	src/client/solaris/handler/minidump_test.cc \
 	src/client/solaris/handler/solaris_lwp.cc \
 	src/client/solaris/handler/solaris_lwp.h \
-	src/client/windows/breakpad_client.sln \
+	src/client/windows/breakpad_client.gyp \
 	src/client/windows/handler/exception_handler.cc \
 	src/client/windows/handler/exception_handler.h \
-	src/client/windows/handler/exception_handler.vcproj \
+	src/client/windows/handler/exception_handler.gyp \
 	src/client/windows/sender/crash_report_sender.cc \
 	src/client/windows/sender/crash_report_sender.h \
-	src/client/windows/sender/crash_report_sender.vcproj \
-	src/common/convert_UTF.c \
-	src/common/convert_UTF.h \
-	src/common/linux/crc32.cc \
-	src/common/linux/dump_symbols.cc \
-	src/common/linux/dump_symbols.h \
-	src/common/linux/elf_symbols_to_module.cc \
-	src/common/linux/elf_symbols_to_module.h \
-	src/common/linux/elfutils.cc \
-	src/common/linux/elfutils.h \
-	src/common/linux/file_id.cc \
-	src/common/linux/file_id.h \
-	src/common/linux/guid_creator.cc \
-	src/common/linux/guid_creator.h \
-	src/common/linux/http_upload.cc \
-	src/common/linux/http_upload.h \
-	src/common/linux/symbol_upload.cc \
-	src/common/linux/symbol_upload.h \
+	src/client/windows/sender/crash_report_sender.gyp \
+	src/common/dwarf/dwarf2diehandler.h \
+	src/common/dwarf/dwarf2enums.h \
+	src/common/dwarf/line_state_machine.h \
+	src/common/dwarf/types.h \
+	src/common/mac/arch_utilities.h \
+	src/common/mac/byteswap.h \
 	src/common/mac/HTTPMultipartUpload.h \
 	src/common/mac/HTTPMultipartUpload.m \
-	src/common/mac/dump_syms.h \
-	src/common/mac/dump_syms.cc \
-	src/common/mac/file_id.cc \
-	src/common/mac/file_id.h \
-	src/common/mac/macho_id.cc \
-	src/common/mac/macho_id.h \
-	src/common/mac/macho_utilities.cc \
-	src/common/mac/macho_utilities.h \
-	src/common/mac/macho_walker.cc \
-	src/common/mac/macho_walker.h \
 	src/common/mac/string_utilities.cc \
 	src/common/mac/string_utilities.h \
-	src/common/md5.cc \
-	src/common/md5.h \
+	src/common/mac/super_fat_arch.h \
 	src/common/scoped_ptr.h \
 	src/common/solaris/dump_symbols.cc \
 	src/common/solaris/dump_symbols.h \
@@ -1290,8 +1302,6 @@ EXTRA_DIST = \
 	src/common/solaris/guid_creator.cc \
 	src/common/solaris/guid_creator.h \
 	src/common/solaris/message_output.h \
-	src/common/string_conversion.cc \
-	src/common/string_conversion.h \
 	src/common/windows/guid_string.cc \
 	src/common/windows/guid_string.h \
 	src/common/windows/http_upload.cc \
@@ -1300,22 +1310,158 @@ EXTRA_DIST = \
 	src/common/windows/pdb_source_line_writer.h \
 	src/common/windows/string_utils-inl.h \
 	src/common/windows/string_utils.cc \
+	src/processor/stackwalk_common.cc \
+	src/processor/stackwalk_common.h \
+	src/processor/stackwalker_selftest_sol.s \
+	src/processor/testdata/ascii_read_av_block_write.dmp \
+	src/processor/testdata/ascii_read_av_clobber_write.dmp \
+	src/processor/testdata/ascii_read_av_conditional.dmp \
+	src/processor/testdata/ascii_read_av.dmp \
+	src/processor/testdata/ascii_read_av_then_jmp.dmp \
+	src/processor/testdata/ascii_read_av_xchg_write.dmp \
+	src/processor/testdata/ascii_write_av_arg_to_call.dmp \
+	src/processor/testdata/ascii_write_av.dmp \
+	src/processor/testdata/exec_av_on_stack.dmp \
+	src/processor/testdata/linux_divide_by_zero.dmp \
+	src/processor/testdata/linux_executable_heap.dmp \
+	src/processor/testdata/linux_executable_stack.dmp \
+	src/processor/testdata/linux_inside_module_exe_region1.dmp \
+	src/processor/testdata/linux_inside_module_exe_region2.dmp \
+	src/processor/testdata/linux_jmp_to_0.dmp \
+	src/processor/testdata/linux_jmp_to_module_not_exe_region.dmp \
+	src/processor/testdata/linux_null_dereference.dmp \
+	src/processor/testdata/linux_null_read_av.dmp \
+	src/processor/testdata/linux_outside_module.dmp \
+	src/processor/testdata/linux_overflow.dmp \
+	src/processor/testdata/linux_raise_sigabrt.dmp \
+	src/processor/testdata/linux_stack_pointer_in_module.dmp \
+	src/processor/testdata/linux_stack_pointer_in_stack.dmp \
+	src/processor/testdata/linux_stacksmash.dmp \
+	src/processor/testdata/linux_write_to_nonwritable_module.dmp \
+	src/processor/testdata/linux_write_to_nonwritable_region_math.dmp \
+	src/processor/testdata/linux_write_to_outside_module.dmp \
+	src/processor/testdata/linux_write_to_outside_module_via_math.dmp \
+	src/processor/testdata/linux_write_to_under_4k.dmp \
+	src/processor/testdata/microdump-arm64.dmp \
+	src/processor/testdata/microdump-arm.dmp \
+	src/processor/testdata/microdump-mips32.dmp \
+	src/processor/testdata/microdump-mips64.dmp \
+	src/processor/testdata/microdump-multiple.dmp \
+	src/processor/testdata/microdump.stackwalk-arm64.out \
+	src/processor/testdata/microdump.stackwalk-arm.out \
+	src/processor/testdata/microdump.stackwalk.machine_readable-arm64.out \
+	src/processor/testdata/microdump.stackwalk.machine_readable-arm.out \
+	src/processor/testdata/microdump-x86.dmp \
 	src/processor/testdata/minidump2.dmp \
 	src/processor/testdata/minidump2.dump.out \
 	src/processor/testdata/minidump2.stackwalk.machine_readable.out \
 	src/processor/testdata/minidump2.stackwalk.out \
+	src/processor/testdata/module0.out \
 	src/processor/testdata/module1.out \
 	src/processor/testdata/module2.out \
 	src/processor/testdata/module3_bad.out \
 	src/processor/testdata/module4_bad.out \
+	src/processor/testdata/null_read_av.dmp \
+	src/processor/testdata/null_write_av.dmp \
+	src/processor/testdata/read_av_clobber_write.dmp \
+	src/processor/testdata/read_av_conditional.dmp \
+	src/processor/testdata/read_av_non_null.dmp \
+	src/processor/testdata/stack_exhaustion.dmp \
+	src/processor/testdata/write_av_non_null.dmp \
 	src/processor/testdata/symbols/kernel32.pdb/BCE8785C57B44245A669896B6A19B9542/kernel32.sym \
+	src/processor/testdata/symbols/ld-2.13.so/C32AD7E235EA6112E02A5B9D6219C4850/ld-2.13.so.sym \
+	src/processor/testdata/symbols/libc-2.13.so/F4F8DFCD5A5FB5A7CE64717E9E6AE3890/libc-2.13.so.sym \
+	src/processor/testdata/symbols/libgcc_s.so.1/18B180F90887D8F8B5C35D185444AF4C0/libgcc_s.so.1.sym \
+	src/processor/testdata/symbols/microdump/breakpad_unittests/D6D1FEC9A15DE7F38A236898871A2E770/breakpad_unittests.sym \
+	src/processor/testdata/symbols/microdump/breakpad_unittests/DA7778FB66018A4E9B4110ED06E730D00/breakpad_unittests.sym \
+	src/processor/testdata/symbols/microdump/crash_example/6E72E2F1A5F59AB3D51356FDFE394D490/crash_example.sym \
+	src/processor/testdata/symbols/microdump/crash_example/8F36148CC4647A8116CAF2A25F591F570/crash_example.sym \
+	src/processor/testdata/symbols/null_read_av/7B7D1968FF0D47AE4366E9C3A7E1B6750/null_read_av.sym \
+	src/processor/testdata/symbols/overflow/B0E1FC01EF48E39CAF5C881D2DF0C3840/overflow.sym \
 	src/processor/testdata/symbols/test_app.pdb/5A9832E5287241C1838ED98914E9B7FF1/test_app.sym \
 	src/processor/testdata/test_app.cc \
-	src/tools/linux/dump_syms/Makefile \
-	src/tools/linux/dump_syms/dump_syms.cc \
-	src/tools/linux/symupload/Makefile \
-	src/tools/linux/symupload/minidump_upload.cc \
-	src/tools/linux/symupload/sym_upload.cc \
+	src/testing/gtest/include/gtest/gtest.h \
+	src/testing/gtest/include/gtest/gtest-death-test.h \
+	src/testing/gtest/include/gtest/gtest-message.h \
+	src/testing/gtest/include/gtest/gtest-param-test.h \
+	src/testing/gtest/include/gtest/gtest-printers.h \
+	src/testing/gtest/include/gtest/gtest-spi.h \
+	src/testing/gtest/include/gtest/gtest-test-part.h \
+	src/testing/gtest/include/gtest/gtest-typed-test.h \
+	src/testing/gtest/include/gtest/gtest_pred_impl.h \
+	src/testing/gtest/include/gtest/gtest_prod.h \
+	src/testing/gtest/include/gtest/internal/gtest-death-test-internal.h \
+	src/testing/gtest/include/gtest/internal/gtest-filepath.h \
+	src/testing/gtest/include/gtest/internal/gtest-internal.h \
+	src/testing/gtest/include/gtest/internal/gtest-linked_ptr.h \
+	src/testing/gtest/include/gtest/internal/gtest-param-util-generated.h \
+	src/testing/gtest/include/gtest/internal/gtest-param-util.h \
+	src/testing/gtest/include/gtest/internal/gtest-port.h \
+	src/testing/gtest/include/gtest/internal/gtest-string.h \
+	src/testing/gtest/include/gtest/internal/gtest-tuple.h \
+	src/testing/gtest/include/gtest/internal/gtest-type-util.h \
+	src/testing/gtest/src/gtest.cc \
+	src/testing/gtest/src/gtest-death-test.cc \
+	src/testing/gtest/src/gtest-filepath.cc \
+	src/testing/gtest/src/gtest-internal-inl.h \
+	src/testing/gtest/src/gtest-port.cc \
+	src/testing/gtest/src/gtest-printers.cc \
+	src/testing/gtest/src/gtest-test-part.cc \
+	src/testing/gtest/src/gtest-typed-test.cc \
+	src/testing/include/gmock/gmock.h \
+	src/testing/include/gmock/gmock-actions.h \
+	src/testing/include/gmock/gmock-cardinalities.h \
+	src/testing/include/gmock/gmock-generated-actions.h \
+	src/testing/include/gmock/gmock-generated-function-mockers.h \
+	src/testing/include/gmock/gmock-generated-matchers.h \
+	src/testing/include/gmock/gmock-generated-nice-strict.h \
+	src/testing/include/gmock/gmock-matchers.h \
+	src/testing/include/gmock/gmock-more-actions.h \
+	src/testing/include/gmock/gmock-more-matchers.h \
+	src/testing/include/gmock/gmock-spec-builders.h \
+	src/testing/include/gmock/internal/gmock-generated-internal-utils.h \
+	src/testing/include/gmock/internal/gmock-internal-utils.h \
+	src/testing/include/gmock/internal/gmock-port.h \
+	src/testing/src/gmock.cc \
+	src/testing/src/gmock-cardinalities.cc \
+	src/testing/src/gmock-internal-utils.cc \
+	src/testing/src/gmock-matchers.cc \
+	src/testing/src/gmock-spec-builders.cc \
+	src/testing/src/gmock_main.cc \
+	src/third_party/curl/COPYING \
+	src/third_party/curl/curlbuild.h \
+	src/third_party/curl/curl.h \
+	src/third_party/curl/curlrules.h \
+	src/third_party/curl/curlver.h \
+	src/third_party/curl/easy.h \
+	src/third_party/curl/mprintf.h \
+	src/third_party/curl/multi.h \
+	src/third_party/curl/stdcheaders.h \
+	src/third_party/curl/typecheck-gcc.h \
+	src/third_party/curl/types.h \
+	src/third_party/mac_headers/architecture/byte_order.h \
+	src/third_party/mac_headers/i386/_types.h \
+	src/third_party/mac_headers/mach/boolean.h \
+	src/third_party/mac_headers/mach/i386/boolean.h \
+	src/third_party/mac_headers/mach/i386/vm_param.h \
+	src/third_party/mac_headers/mach/i386/vm_types.h \
+	src/third_party/mac_headers/mach/machine/boolean.h \
+	src/third_party/mac_headers/mach/machine.h \
+	src/third_party/mac_headers/mach/machine/thread_state.h \
+	src/third_party/mac_headers/mach/machine/thread_status.h \
+	src/third_party/mac_headers/mach/machine/vm_types.h \
+	src/third_party/mac_headers/mach-o/arch.h \
+	src/third_party/mac_headers/mach-o/fat.h \
+	src/third_party/mac_headers/mach-o/loader.h \
+	src/third_party/mac_headers/mach-o/nlist.h \
+	src/third_party/mac_headers/mach/thread_status.h \
+	src/third_party/mac_headers/mach/vm_prot.h \
+	src/third_party/mac_headers/README \
+	src/third_party/musl/README \
+	src/third_party/musl/COPYRIGHT \
+	src/third_party/musl/README.breakpad \
+	src/third_party/musl/VERSION \
+	src/third_party/musl/include/elf.h \
 	src/tools/mac/crash_report/crash_report.mm \
 	src/tools/mac/crash_report/crash_report.xcodeproj/project.pbxproj \
 	src/tools/mac/crash_report/on_demand_symbol_supplier.h \
@@ -1334,15 +1480,20 @@ EXTRA_DIST = \
 	src/tools/solaris/dump_syms/testdata/dump_syms_regtest.sym \
 	src/tools/windows/converter/ms_symbol_server_converter.cc \
 	src/tools/windows/converter/ms_symbol_server_converter.h \
-	src/tools/windows/converter/ms_symbol_server_converter.vcproj \
+	src/tools/windows/converter/ms_symbol_server_converter.gyp \
 	src/tools/windows/dump_syms/dump_syms.cc \
-	src/tools/windows/dump_syms/dump_syms.vcproj \
+	src/tools/windows/dump_syms/dump_syms.gyp \
 	src/tools/windows/dump_syms/run_regtest.sh \
 	src/tools/windows/dump_syms/testdata/dump_syms_regtest.cc \
 	src/tools/windows/dump_syms/testdata/dump_syms_regtest.pdb \
 	src/tools/windows/dump_syms/testdata/dump_syms_regtest.sym \
+	src/tools/windows/dump_syms/testdata/dump_syms_regtest64.sym \
+	src/tools/windows/dump_syms/testdata/omap_reorder_bbs.sym \
+	src/tools/windows/dump_syms/testdata/omap_reorder_funcs.sym \
+	src/tools/windows/dump_syms/testdata/omap_stretched.sym \
+	src/tools/windows/dump_syms/testdata/omap_stretched_filled.sym \
 	src/tools/windows/symupload/symupload.cc \
-	src/tools/windows/symupload/symupload.vcproj
+	src/tools/windows/symupload/symupload.gyp
 
 mostlyclean-local:
 	-find src -name '*.dwo' -exec rm -f {} +
