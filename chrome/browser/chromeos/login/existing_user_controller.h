@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/hats/hats_notification_controller.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
@@ -342,6 +343,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
   std::unique_ptr<OAuth2TokenInitializer> oauth2_token_initializer_;
 
   std::unique_ptr<TokenHandleUtil> token_handle_util_;
+
+  scoped_refptr<typename HatsNotificationController::HatsNotificationController>
+      hats_notification_controller_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
 

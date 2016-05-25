@@ -234,7 +234,6 @@
   <message name="IDS_ASH_STATUS_TRAY_AUDIO_HDMI_DEVICE" desc="label used for hdmi audio device">
     <ph name="device_name">$1<ex>Speaker</ex></ph> (HDMI/DP)
   </message>
-  
   <message name="IDS_ASH_STATUS_TRAY_AUDIO_MIC_JACK_DEVICE" desc="label used for mic jack device">
     Mic Jack
   </message>
@@ -486,6 +485,18 @@ Press Shift + Alt to switch.
   </message>
   <message name="IDS_ASH_LOGOUT_CONFIRMATION_BUTTON" desc="The text for okay button of the logout confirmation dialog.">
     Sign out now
+  </message>
+
+  <!-- HaTS Strings -->
+  <message name="IDS_ASH_HATS_NOTIFICATION_TITLE" desc="The title of the notification for Happiness Tracking Survey.">
+    Help us improve Chromebooks
+  </message>
+  <message name="IDS_ASH_HATS_NOTIFICATION_BODY" desc="The body of the notification for Happiness Tracking Survey.">
+    <!-- TODO(malaykeshav): Implement the actual HaTS notification strings -->
+    Chrome OS HaTS survey text here. Chrome OS HaTS survey text here. Chrome OS HaTS survey text here. Chrome OS HaTS survey text here.
+  </message>
+  <message name="IDS_ASH_HATS_NOTIFICATION_TAKE_SURVEY_BUTTON" desc="The title of the button in the notification for Happiness Tracking Survey to take the said survey.">
+    Take our survey
   </message>
 
   <!-- Deprecated Accelerators Messages -->

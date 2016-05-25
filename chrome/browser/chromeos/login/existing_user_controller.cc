@@ -697,6 +697,9 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
   // Reenable clicking on other windows and status area.
   login_display_->SetUIEnabled(true);
 
+  if (HatsNotificationController::ShouldShowSurveyToProfile(profile))
+    hats_notification_controller_ = new HatsNotificationController(profile);
+
   if (browser_launched)
     host_ = nullptr;
 
