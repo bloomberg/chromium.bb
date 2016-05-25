@@ -107,7 +107,6 @@ private:
     }
 
     String composingText() const;
-    bool insertTextForConfirmedComposition(const String& text);
     void selectComposition() const;
     bool setSelectionOffsets(const PlainTextRange&);
 };

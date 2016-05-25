@@ -372,7 +372,8 @@ TEST_F(InputMethodControllerTest, CompositionFireBeforeInput)
 
     document().setTitle(emptyString());
     controller().confirmComposition();
-    EXPECT_STREQ("beforeinput.isComposing:false", document().title().utf8().data());
+    // Last 'beforeinput' should also be inside composition scope.
+    EXPECT_STREQ("beforeinput.isComposing:true", document().title().utf8().data());
 }
 
 } // namespace blink

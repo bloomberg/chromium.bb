@@ -1127,8 +1127,8 @@ public class ImeTest extends ContentShellTestBase {
         // TODO(changwan): reduce the number of selection changes
         waitForEventLogs("selectionchange,selectionchange,selectionchange,"
                 + "keydown(229),compositionstart(),compositionupdate(a),input,"
-                + "keyup(229),compositionend(a),input,selectionchange,selectionchange,"
-                + "selectionchange,selectionchange,selectionchange");
+                + "keyup(229),compositionupdate(a),input,compositionend(a),selectionchange,"
+                + "selectionchange,selectionchange,selectionchange,selectionchange");
     }
 
     @MediumTest

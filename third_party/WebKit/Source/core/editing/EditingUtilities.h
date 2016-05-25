@@ -353,7 +353,7 @@ const String& nonBreakingSpaceString();
 
 // Functions dispatch InputEvent
 DispatchEventResult dispatchBeforeInputInsertText(EventTarget*, const String& data);
-DispatchEventResult dispatchBeforeInputFromComposition(EventTarget*, InputEvent::InputType, const String& data);
+DispatchEventResult dispatchBeforeInputFromComposition(EventTarget*, InputEvent::InputType, const String& data, InputEvent::EventCancelable);
 DispatchEventResult dispatchBeforeInputEditorCommand(EventTarget*, InputEvent::InputType, const String& data = "");
 
 } // namespace blink
