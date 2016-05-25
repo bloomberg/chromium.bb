@@ -48,10 +48,10 @@ GpuSurfacelessBrowserCompositorOutputSurface::
 
   gl_helper_.reset(new display_compositor::GLHelper(
       context_provider_->ContextGL(), context_provider_->ContextSupport()));
-  buffer_queue_.reset(new display_compositor::BufferQueue(
-      context_provider_->ContextGL(), target, internalformat_, gl_helper_.get(),
+  output_surface_.reset(new display_compositor::BufferQueue(
+      context_provider_, target, internalformat_, gl_helper_.get(),
       gpu_memory_buffer_manager_, surface_handle));
-  buffer_queue_->Initialize();
+  output_surface_->Initialize();
 }
 
 GpuSurfacelessBrowserCompositorOutputSurface::
@@ -65,25 +65,25 @@ bool GpuSurfacelessBrowserCompositorOutputSurface::IsDisplayedAsOverlayPlane()
 
 unsigned GpuSurfacelessBrowserCompositorOutputSurface::GetOverlayTextureId()
     const {
-  return buffer_queue_->current_texture_id();
+  return output_surface_->current_texture_id();
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
-  DCHECK(buffer_queue_);
-  buffer_queue_->SwapBuffers(frame->gl_frame_data->sub_buffer_rect);
+  DCHECK(output_surface_);
+  output_surface_->SwapBuffers(frame->gl_frame_data->sub_buffer_rect);
   GpuBrowserCompositorOutputSurface::SwapBuffers(frame);
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::OnSwapBuffersComplete() {
-  DCHECK(buffer_queue_);
-  buffer_queue_->PageFlipComplete();
+  DCHECK(output_surface_);
+  output_surface_->PageFlipComplete();
   GpuBrowserCompositorOutputSurface::OnSwapBuffersComplete();
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::BindFramebuffer() {
-  DCHECK(buffer_queue_);
-  buffer_queue_->BindFramebuffer();
+  DCHECK(output_surface_);
+  output_surface_->BindFramebuffer();
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::Reshape(
@@ -91,8 +91,8 @@ void GpuSurfacelessBrowserCompositorOutputSurface::Reshape(
     float scale_factor,
     bool alpha) {
   GpuBrowserCompositorOutputSurface::Reshape(size, scale_factor, alpha);
-  DCHECK(buffer_queue_);
-  buffer_queue_->Reshape(SurfaceSize(), scale_factor);
+  DCHECK(output_surface_);
+  output_surface_->Reshape(SurfaceSize(), scale_factor);
 }
 
 void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
@@ -104,7 +104,7 @@ void GpuSurfacelessBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     // Even through the swap failed, this is a fixable error so we can pretend
     // it succeeded to the rest of the system.
     result = gfx::SwapResult::SWAP_ACK;
-    buffer_queue_->RecreateBuffers();
+    output_surface_->RecreateBuffers();
     force_swap = true;
   }
   GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(

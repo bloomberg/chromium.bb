@@ -18,27 +18,47 @@ FakeOutputSurface::FakeOutputSurface(
     scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> worker_context_provider,
     bool delegated_rendering)
-    : FakeOutputSurface(std::move(context_provider),
-                        std::move(worker_context_provider),
-                        nullptr,
-                        delegated_rendering) {}
-
-FakeOutputSurface::FakeOutputSurface(
-    std::unique_ptr<SoftwareOutputDevice> software_device,
-    bool delegated_rendering)
-    : FakeOutputSurface(nullptr,
-                        nullptr,
-                        std::move(software_device),
-                        delegated_rendering) {}
+    : OutputSurface(context_provider, worker_context_provider),
+      client_(NULL),
+      num_sent_frames_(0),
+      has_external_stencil_test_(false),
+      suspended_for_recycle_(false),
+      framebuffer_(0),
+      overlay_candidate_validator_(nullptr) {
+  capabilities_.delegated_rendering = delegated_rendering;
+}
 
 FakeOutputSurface::FakeOutputSurface(
     scoped_refptr<ContextProvider> context_provider,
-    scoped_refptr<ContextProvider> worker_context_provider,
+    bool delegated_rendering)
+    : OutputSurface(context_provider),
+      client_(NULL),
+      num_sent_frames_(0),
+      has_external_stencil_test_(false),
+      suspended_for_recycle_(false),
+      framebuffer_(0),
+      overlay_candidate_validator_(nullptr) {
+  capabilities_.delegated_rendering = delegated_rendering;
+}
+
+FakeOutputSurface::FakeOutputSurface(
     std::unique_ptr<SoftwareOutputDevice> software_device,
     bool delegated_rendering)
-    : OutputSurface(std::move(context_provider),
-                    std::move(worker_context_provider),
-                    std::move(software_device)),
+    : OutputSurface(std::move(software_device)),
+      client_(NULL),
+      num_sent_frames_(0),
+      has_external_stencil_test_(false),
+      suspended_for_recycle_(false),
+      framebuffer_(0),
+      overlay_candidate_validator_(nullptr) {
+  capabilities_.delegated_rendering = delegated_rendering;
+}
+
+FakeOutputSurface::FakeOutputSurface(
+    scoped_refptr<ContextProvider> context_provider,
+    std::unique_ptr<SoftwareOutputDevice> software_device,
+    bool delegated_rendering)
+    : OutputSurface(context_provider, std::move(software_device)),
       client_(NULL),
       num_sent_frames_(0),
       has_external_stencil_test_(false),

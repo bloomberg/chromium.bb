@@ -139,11 +139,11 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface,
  public:
   OutputSurfaceWithoutParent(
       CompositorImpl* compositor,
-      scoped_refptr<ContextProviderCommandBuffer> context_provider,
+      const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
       const base::Callback<void(gpu::Capabilities)>&
           populate_gpu_capabilities_callback,
       std::unique_ptr<ExternalBeginFrameSource> begin_frame_source)
-      : cc::OutputSurface(std::move(context_provider), nullptr, nullptr),
+      : cc::OutputSurface(context_provider),
         compositor_(compositor),
         populate_gpu_capabilities_callback_(populate_gpu_capabilities_callback),
         swap_buffers_completion_callback_(

@@ -60,7 +60,7 @@ class FakeOutputSurface : public OutputSurface {
   static std::unique_ptr<FakeOutputSurface>
   Create3dWithResourcelessSoftwareSupport() {
     return base::WrapUnique(new FakeOutputSurface(
-        TestContextProvider::Create(), TestContextProvider::CreateWorker(),
+        TestContextProvider::Create(),
         base::WrapUnique(new SoftwareOutputDevice), false));
   }
 
@@ -98,9 +98,8 @@ class FakeOutputSurface : public OutputSurface {
 
   static std::unique_ptr<FakeOutputSurface> CreateOffscreen(
       std::unique_ptr<TestWebGraphicsContext3D> context) {
-    std::unique_ptr<FakeOutputSurface> surface(
-        new FakeOutputSurface(TestContextProvider::Create(std::move(context)),
-                              TestContextProvider::CreateWorker(), false));
+    std::unique_ptr<FakeOutputSurface> surface(new FakeOutputSurface(
+        TestContextProvider::Create(std::move(context)), false));
     surface->capabilities_.uses_default_gl_framebuffer = false;
     return surface;
   }
@@ -153,6 +152,10 @@ class FakeOutputSurface : public OutputSurface {
   }
 
  protected:
+  FakeOutputSurface(
+      scoped_refptr<ContextProvider> context_provider,
+      bool delegated_rendering);
+
   FakeOutputSurface(scoped_refptr<ContextProvider> context_provider,
                     scoped_refptr<ContextProvider> worker_context_provider,
                     bool delegated_rendering);
@@ -161,7 +164,6 @@ class FakeOutputSurface : public OutputSurface {
                     bool delegated_rendering);
 
   FakeOutputSurface(scoped_refptr<ContextProvider> context_provider,
-                    scoped_refptr<ContextProvider> worker_context_provider,
                     std::unique_ptr<SoftwareOutputDevice> software_device,
                     bool delegated_rendering);
 

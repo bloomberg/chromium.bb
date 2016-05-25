@@ -18,7 +18,7 @@ namespace client {
 class BlimpOutputSurface : public cc::OutputSurface {
  public:
   explicit BlimpOutputSurface(
-      scoped_refptr<cc::ContextProvider> context_provider);
+      const scoped_refptr<cc::ContextProvider>& context_provider);
   ~BlimpOutputSurface() override;
 
   // OutputSurface implementation.

@@ -41,7 +41,7 @@ class SurfacesContextProvider;
 class DirectOutputSurfaceOzone : public cc::OutputSurface {
  public:
   DirectOutputSurfaceOzone(
-      scoped_refptr<SurfacesContextProvider> context_provider,
+      const scoped_refptr<SurfacesContextProvider>& context_provider,
       gfx::AcceleratedWidget widget,
       base::SingleThreadTaskRunner* task_runner,
       uint32_t target,
@@ -69,7 +69,7 @@ class DirectOutputSurfaceOzone : public cc::OutputSurface {
 
   display_compositor::GLHelper gl_helper_;
   OzoneGpuMemoryBufferManager gpu_memory_buffer_manager_;
-  std::unique_ptr<display_compositor::BufferQueue> buffer_queue_;
+  std::unique_ptr<display_compositor::BufferQueue> output_surface_;
   std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
 
   base::WeakPtrFactory<DirectOutputSurfaceOzone> weak_ptr_factory_;

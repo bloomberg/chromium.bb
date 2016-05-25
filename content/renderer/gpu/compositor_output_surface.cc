@@ -30,43 +30,31 @@ namespace content {
 CompositorOutputSurface::CompositorOutputSurface(
     int32_t routing_id,
     uint32_t output_surface_id,
-    scoped_refptr<cc::ContextProvider> context_provider,
-    scoped_refptr<cc::ContextProvider> worker_context_provider,
-    scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue)
-    : OutputSurface(std::move(context_provider),
-                    std::move(worker_context_provider),
-                    nullptr),
+    const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+    const scoped_refptr<ContextProviderCommandBuffer>& worker_context_provider,
+    const scoped_refptr<cc::VulkanContextProvider>& vulkan_context_provider,
+    std::unique_ptr<cc::SoftwareOutputDevice> software_device,
+    scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue,
+    bool use_swap_compositor_frame_message)
+    : OutputSurface(context_provider,
+                    worker_context_provider,
+                    vulkan_context_provider,
+                    std::move(software_device)),
       output_surface_id_(output_surface_id),
+      use_swap_compositor_frame_message_(use_swap_compositor_frame_message),
       output_surface_filter_(
           RenderThreadImpl::current()->compositor_message_filter()),
-      message_sender_(RenderThreadImpl::current()->sync_message_filter()),
       frame_swap_message_queue_(swap_frame_message_queue),
-      routing_id_(routing_id) {
-  DCHECK(output_surface_filter_);
-  DCHECK(frame_swap_message_queue_);
-  DCHECK(message_sender_);
-  capabilities_.delegated_rendering = true;
+      routing_id_(routing_id),
+      layout_test_mode_(RenderThreadImpl::current()->layout_test_mode()),
+      weak_ptrs_(this) {
+  DCHECK(output_surface_filter_.get());
+  DCHECK(frame_swap_message_queue_.get());
+  message_sender_ = RenderThreadImpl::current()->sync_message_filter();
+  DCHECK(message_sender_.get());
 }
 
-CompositorOutputSurface::CompositorOutputSurface(
-    int32_t routing_id,
-    uint32_t output_surface_id,
-    scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
-    scoped_refptr<FrameSwapMessageQueue> swap_frame_message_queue)
-    : OutputSurface(std::move(vulkan_context_provider)),
-      output_surface_id_(output_surface_id),
-      output_surface_filter_(
-          RenderThreadImpl::current()->compositor_message_filter()),
-      message_sender_(RenderThreadImpl::current()->sync_message_filter()),
-      frame_swap_message_queue_(swap_frame_message_queue),
-      routing_id_(routing_id) {
-  DCHECK(output_surface_filter_);
-  DCHECK(frame_swap_message_queue_);
-  DCHECK(message_sender_);
-  capabilities_.delegated_rendering = true;
-}
-
-CompositorOutputSurface::~CompositorOutputSurface() = default;
+CompositorOutputSurface::~CompositorOutputSurface() {}
 
 bool CompositorOutputSurface::BindToClient(
     cc::OutputSurfaceClient* client) {
@@ -103,22 +91,70 @@ void CompositorOutputSurface::DetachFromClient() {
   cc::OutputSurface::DetachFromClient();
 }
 
-void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
-  {
-    std::unique_ptr<FrameSwapMessageQueue::SendMessageScope>
-        send_message_scope =
-            frame_swap_message_queue_->AcquireSendMessageScope();
-    std::vector<std::unique_ptr<IPC::Message>> messages;
-    std::vector<IPC::Message> messages_to_deliver_with_frame;
-    frame_swap_message_queue_->DrainMessages(&messages);
-    FrameSwapMessageQueue::TransferMessages(&messages,
-                                            &messages_to_deliver_with_frame);
-    Send(new ViewHostMsg_SwapCompositorFrame(routing_id_, output_surface_id_,
-                                             *frame,
-                                             messages_to_deliver_with_frame));
-    // ~send_message_scope.
+void CompositorOutputSurface::ShortcutSwapAck(
+    uint32_t output_surface_id,
+    std::unique_ptr<cc::GLFrameData> gl_frame_data) {
+  if (!layout_test_previous_frame_ack_) {
+    layout_test_previous_frame_ack_.reset(new cc::CompositorFrameAck);
+    layout_test_previous_frame_ack_->gl_frame_data.reset(new cc::GLFrameData);
   }
-  client_->DidSwapBuffers();
+
+  OnSwapAck(output_surface_id, *layout_test_previous_frame_ack_);
+
+  layout_test_previous_frame_ack_->gl_frame_data = std::move(gl_frame_data);
+}
+
+void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
+  DCHECK(use_swap_compositor_frame_message_);
+  if (layout_test_mode_) {
+    // This code path is here to support layout tests that are currently
+    // doing a readback in the renderer instead of the browser. So they
+    // are using deprecated code paths in the renderer and don't need to
+    // actually swap anything to the browser. We shortcut the swap to the
+    // browser here and just ack directly within the renderer process.
+    // Once crbug.com/311404 is fixed, this can be removed.
+
+    // This would indicate that crbug.com/311404 is being fixed, and this
+    // block needs to be removed.
+    DCHECK(!frame->delegated_frame_data);
+
+    base::Closure closure = base::Bind(
+        &CompositorOutputSurface::ShortcutSwapAck, weak_ptrs_.GetWeakPtr(),
+        output_surface_id_, base::Passed(&frame->gl_frame_data));
+
+    if (context_provider()) {
+      gpu::gles2::GLES2Interface* context = context_provider()->ContextGL();
+      const uint64_t fence_sync = context->InsertFenceSyncCHROMIUM();
+      context->Flush();
+
+      gpu::SyncToken sync_token;
+      context->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+
+      context_provider()->ContextSupport()->SignalSyncToken(sync_token,
+                                                            closure);
+    } else {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, closure);
+    }
+    client_->DidSwapBuffers();
+    return;
+  } else {
+    {
+      std::vector<std::unique_ptr<IPC::Message>> messages;
+      std::vector<IPC::Message> messages_to_deliver_with_frame;
+      std::unique_ptr<FrameSwapMessageQueue::SendMessageScope>
+          send_message_scope =
+              frame_swap_message_queue_->AcquireSendMessageScope();
+      frame_swap_message_queue_->DrainMessages(&messages);
+      FrameSwapMessageQueue::TransferMessages(&messages,
+                                              &messages_to_deliver_with_frame);
+      Send(new ViewHostMsg_SwapCompositorFrame(routing_id_,
+                                               output_surface_id_,
+                                               *frame,
+                                               messages_to_deliver_with_frame));
+      // ~send_message_scope.
+    }
+    client_->DidSwapBuffers();
+  }
 }
 
 void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {

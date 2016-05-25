@@ -7,6 +7,7 @@
 #include "base/containers/adapters.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "cc/output/context_provider.h"
 #include "components/display_compositor/gl_helper.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -19,13 +20,13 @@
 
 namespace display_compositor {
 
-BufferQueue::BufferQueue(gpu::gles2::GLES2Interface* gl,
+BufferQueue::BufferQueue(scoped_refptr<cc::ContextProvider> context_provider,
                          unsigned int texture_target,
                          unsigned int internalformat,
                          GLHelper* gl_helper,
                          gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                          gpu::SurfaceHandle surface_handle)
-    : gl_(gl),
+    : context_provider_(context_provider),
       fbo_(0),
       allocated_count_(0),
       texture_target_(texture_target),
@@ -37,23 +38,26 @@ BufferQueue::BufferQueue(gpu::gles2::GLES2Interface* gl,
 BufferQueue::~BufferQueue() {
   FreeAllSurfaces();
 
+  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
   if (fbo_)
-    gl_->DeleteFramebuffers(1, &fbo_);
+    gl->DeleteFramebuffers(1, &fbo_);
 }
 
 void BufferQueue::Initialize() {
-  gl_->GenFramebuffers(1, &fbo_);
+  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+  gl->GenFramebuffers(1, &fbo_);
 }
 
 void BufferQueue::BindFramebuffer() {
-  gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+  gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
 
   if (!current_surface_)
     current_surface_ = GetNextSurface();
 
   if (current_surface_) {
-    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              texture_target_, current_surface_->texture, 0);
+    gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                             texture_target_, current_surface_->texture, 0);
   }
 }
 
@@ -104,7 +108,7 @@ void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
   in_flight_surfaces_.push_back(std::move(current_surface_));
   // Some things reset the framebuffer (CopySubBufferDamage, some GLRenderer
   // paths), so ensure we restore it here.
-  gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+  context_provider_->ContextGL()->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
 }
 
 void BufferQueue::Reshape(const gfx::Size& size, float scale_factor) {
@@ -119,9 +123,10 @@ void BufferQueue::Reshape(const gfx::Size& size, float scale_factor) {
   size_ = size;
 
   // TODO: add stencil buffer when needed.
-  gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
-  gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                            texture_target_, 0, 0);
+  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+  gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+  gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                           texture_target_, 0, 0);
 
   FreeAllSurfaces();
 }
@@ -142,9 +147,10 @@ void BufferQueue::RecreateBuffers() {
 
   if (current_surface_) {
     // If we have a texture bound, we will need to re-bind it.
-    gl_->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
-    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              texture_target_, current_surface_->texture, 0);
+    gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+    gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                             texture_target_, current_surface_->texture, 0);
   }
 }
 
@@ -187,10 +193,11 @@ void BufferQueue::FreeSurfaceResources(AllocatedSurface* surface) {
   if (!surface->texture)
     return;
 
-  gl_->BindTexture(texture_target_, surface->texture);
-  gl_->ReleaseTexImage2DCHROMIUM(texture_target_, surface->image);
-  gl_->DeleteTextures(1, &surface->texture);
-  gl_->DestroyImageCHROMIUM(surface->image);
+  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+  gl->BindTexture(texture_target_, surface->texture);
+  gl->ReleaseTexImage2DCHROMIUM(texture_target_, surface->image);
+  gl->DeleteTextures(1, &surface->texture);
+  gl->DestroyImageCHROMIUM(surface->image);
   surface->buffer.reset();
   allocated_count_--;
 }
@@ -203,8 +210,11 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
     return surface;
   }
 
-  GLuint texture;
-  gl_->GenTextures(1, &texture);
+  unsigned int texture = 0;
+  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+  gl->GenTextures(1, &texture);
+  if (!texture)
+    return nullptr;
 
   // We don't want to allow anything more than triple buffering.
   DCHECK_LT(allocated_count_, 4U);
@@ -214,23 +224,23 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface() {
           size_, gpu::DefaultBufferFormatForImageFormat(internal_format_),
           gfx::BufferUsage::SCANOUT, surface_handle_));
   if (!buffer.get()) {
-    gl_->DeleteTextures(1, &texture);
+    gl->DeleteTextures(1, &texture);
     DLOG(ERROR) << "Failed to allocate GPU memory buffer";
     return nullptr;
   }
 
   unsigned int id =
-      gl_->CreateImageCHROMIUM(buffer->AsClientBuffer(), size_.width(),
-                               size_.height(), internal_format_);
+      gl->CreateImageCHROMIUM(buffer->AsClientBuffer(), size_.width(),
+                              size_.height(), internal_format_);
   if (!id) {
     LOG(ERROR) << "Failed to allocate backing image surface";
-    gl_->DeleteTextures(1, &texture);
+    gl->DeleteTextures(1, &texture);
     return nullptr;
   }
 
   allocated_count_++;
-  gl_->BindTexture(texture_target_, texture);
-  gl_->BindTexImage2DCHROMIUM(texture_target_, id);
+  gl->BindTexture(texture_target_, texture);
+  gl->BindTexImage2DCHROMIUM(texture_target_, id);
   return base::WrapUnique(new AllocatedSurface(this, std::move(buffer), texture,
                                                id, gfx::Rect(size_)));
 }

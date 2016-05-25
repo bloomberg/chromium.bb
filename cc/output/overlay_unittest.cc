@@ -134,7 +134,7 @@ size_t DefaultOverlayProcessor::GetStrategyCount() {
 class OverlayOutputSurface : public OutputSurface {
  public:
   explicit OverlayOutputSurface(scoped_refptr<ContextProvider> context_provider)
-      : OutputSurface(context_provider, nullptr, nullptr) {
+      : OutputSurface(context_provider) {
     surface_size_ = kDisplaySize;
     device_scale_factor_ = 1;
     is_displayed_as_overlay_plane_ = true;
