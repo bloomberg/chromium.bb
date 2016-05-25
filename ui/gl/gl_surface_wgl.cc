@@ -239,6 +239,8 @@ bool NativeViewGLSurfaceWGL::Initialize(GLSurface::Format format) {
     return false;
   }
 
+  format_ = format;
+
   return true;
 }
 
@@ -251,6 +253,32 @@ void NativeViewGLSurfaceWGL::Destroy() {
 
   child_window_ = NULL;
   device_context_ = NULL;
+}
+
+bool NativeViewGLSurfaceWGL::Resize(const gfx::Size& size,
+                                    float scale_factor,
+                                    bool has_alpha) {
+  RECT rect;
+  if (!GetClientRect(window_, &rect)) {
+    LOG(ERROR) << "Failed to get parent window size.";
+    return false;
+  }
+  DCHECK(size.width() == (rect.right - rect.left) &&
+         size.height() == (rect.bottom - rect.top));
+  if (!MoveWindow(child_window_, 0, 0, size.width(), size.height(), FALSE)) {
+    LOG(ERROR) << "Failed to resize child window.";
+    return false;
+  }
+  return true;
+}
+
+bool NativeViewGLSurfaceWGL::Recreate() {
+  Destroy();
+  if (!Initialize(format_)) {
+    LOG(ERROR) << "Failed to create surface.";
+    return false;
+  }
+  return true;
 }
 
 bool NativeViewGLSurfaceWGL::IsOffscreen() {
