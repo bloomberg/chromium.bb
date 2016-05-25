@@ -47,7 +47,12 @@ class JavaTestRunner(object):
       # Add JVM arguments.
       jvm_args = []
       if self._coverage_dir:
-        jvm_args.append('-Demma.coverage.out.file=%s' % self._coverage_dir)
+        if not os.path.exists(self._coverage_dir):
+          os.makedirs(self._coverage_dir)
+        elif not os.path.isdir(self._coverage_dir):
+          raise Exception('--coverage-dir takes a directory, not file path.')
+        jvm_args.append('-Demma.coverage.out.file=%s' % os.path.join(
+            self._coverage_dir, '%s.ec' % self._test_suite))
       if jvm_args:
         command.extend(['--jvm-args', '"%s"' % ' '.join(jvm_args)])
 
