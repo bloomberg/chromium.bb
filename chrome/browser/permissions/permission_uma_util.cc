@@ -20,7 +20,7 @@
 #include "url/gurl.h"
 
 // UMA keys need to be statically initialized so plain function would not
-// work. Use a Macro instead.
+// work. Use macros instead.
 #define PERMISSION_ACTION_UMA(secure_origin, permission, permission_secure, \
                               permission_insecure, action)                  \
   UMA_HISTOGRAM_ENUMERATION(permission, action, PERMISSION_ACTION_NUM);     \
@@ -31,6 +31,12 @@
     UMA_HISTOGRAM_ENUMERATION(permission_insecure, action,                  \
                               PERMISSION_ACTION_NUM);                       \
   }
+
+#define PERMISSION_BUBBLE_TYPE_UMA(metric_name, permission_bubble_type)      \
+    UMA_HISTOGRAM_ENUMERATION(                                               \
+        metric_name,                                                         \
+        static_cast<base::HistogramBase::Sample>(permission_bubble_type),    \
+        static_cast<base::HistogramBase::Sample>(PermissionBubbleType::NUM))
 
 using content::PermissionType;
 
@@ -237,6 +243,21 @@ void RecordPermissionRequest(PermissionType permission,
 
 }  // anonymous namespace
 
+const char PermissionUmaUtil::kPermissionsPromptShown[] =
+    "Permissions.Prompt.Shown";
+const char PermissionUmaUtil::kPermissionsPromptAccepted[] =
+    "Permissions.Prompt.Accepted";
+const char PermissionUmaUtil::kPermissionsPromptDenied[] =
+    "Permissions.Prompt.Denied";
+const char PermissionUmaUtil::kPermissionsPromptRequestsPerPrompt[] =
+    "Permissions.Prompt.RequestsPerPrompt";
+const char PermissionUmaUtil::kPermissionsPromptMergedBubbleTypes[] =
+    "Permissions.Prompt.MergedBubbleTypes";
+const char PermissionUmaUtil::kPermissionsPromptMergedBubbleAccepted[] =
+    "Permissions.Prompt.MergedBubbleAccepted";
+const char PermissionUmaUtil::kPermissionsPromptMergedBubbleDenied[] =
+    "Permissions.Prompt.MergedBubbleDenied";
+
 // Make sure you update histograms.xml permission histogram_suffix if you
 // add new permission
 void PermissionUmaUtil::PermissionRequested(PermissionType permission,
@@ -282,26 +303,63 @@ void PermissionUmaUtil::PermissionRevoked(PermissionType permission,
 void PermissionUmaUtil::PermissionPromptShown(
     const std::vector<PermissionBubbleRequest*>& requests) {
   DCHECK(!requests.empty());
+
   PermissionBubbleType permission_prompt_type = PermissionBubbleType::MULTIPLE;
   if (requests.size() == 1)
     permission_prompt_type = requests[0]->GetPermissionBubbleType();
-  UMA_HISTOGRAM_ENUMERATION(
-      "Permissions.Prompt.Shown",
-      static_cast<base::HistogramBase::Sample>(permission_prompt_type),
-      static_cast<base::HistogramBase::Sample>(PermissionBubbleType::NUM));
+  PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptShown, permission_prompt_type);
 
   UMA_HISTOGRAM_ENUMERATION(
-      "Permissions.Prompt.RequestsPerPrompt",
+      kPermissionsPromptRequestsPerPrompt,
       static_cast<base::HistogramBase::Sample>(requests.size()),
       static_cast<base::HistogramBase::Sample>(10));
 
   if (requests.size() > 1) {
     for (const auto* request : requests) {
-      UMA_HISTOGRAM_ENUMERATION(
-          "Permissions.Prompt.MergedBubbleTypes",
-          static_cast<base::HistogramBase::Sample>(
-              request->GetPermissionBubbleType()),
-          static_cast<base::HistogramBase::Sample>(PermissionBubbleType::NUM));
+      PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptMergedBubbleTypes,
+                                 request->GetPermissionBubbleType());
     }
   }
+}
+
+void PermissionUmaUtil::PermissionPromptAccepted(
+    const std::vector<PermissionBubbleRequest*>& requests,
+    const std::vector<bool>& accept_states) {
+  DCHECK(!requests.empty());
+  DCHECK(requests.size() == accept_states.size());
+
+  bool all_accepted = accept_states[0];
+  PermissionBubbleType permission_prompt_type =
+      requests[0]->GetPermissionBubbleType();
+  if (requests.size() > 1) {
+    permission_prompt_type = PermissionBubbleType::MULTIPLE;
+    for (size_t i = 0; i < requests.size(); ++i) {
+      const auto* request = requests[i];
+      if (accept_states[i]) {
+        PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptMergedBubbleAccepted,
+                                   request->GetPermissionBubbleType());
+      } else {
+        all_accepted = false;
+        PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptMergedBubbleDenied,
+                                   request->GetPermissionBubbleType());
+      }
+    }
+  }
+
+  if (all_accepted) {
+    PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptAccepted,
+                               permission_prompt_type);
+  } else {
+    PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptDenied,
+                               permission_prompt_type);
+  }
+}
+
+void PermissionUmaUtil::PermissionPromptDenied(
+    const std::vector<PermissionBubbleRequest*>& requests) {
+  DCHECK(!requests.empty());
+  DCHECK(requests.size() == 1);
+
+  PERMISSION_BUBBLE_TYPE_UMA(kPermissionsPromptDenied,
+                             requests[0]->GetPermissionBubbleType());
 }

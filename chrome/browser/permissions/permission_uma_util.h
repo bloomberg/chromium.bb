@@ -38,6 +38,14 @@ enum PermissionAction {
 // Provides a convenient way of logging UMA for permission related operations.
 class PermissionUmaUtil {
  public:
+  static const char kPermissionsPromptShown[];
+  static const char kPermissionsPromptAccepted[];
+  static const char kPermissionsPromptDenied[];
+  static const char kPermissionsPromptRequestsPerPrompt[];
+  static const char kPermissionsPromptMergedBubbleTypes[];
+  static const char kPermissionsPromptMergedBubbleAccepted[];
+  static const char kPermissionsPromptMergedBubbleDenied[];
+
   static void PermissionRequested(content::PermissionType permission,
                                   const GURL& requesting_origin,
                                   const GURL& embedding_origin,
@@ -63,6 +71,18 @@ class PermissionUmaUtil {
   //   granted+denied+dismissed+ignored is not equal to requested), so it is
   //   unclear from those metrics alone how many prompts are seen by users.
   static void PermissionPromptShown(
+      const std::vector<PermissionBubbleRequest*>& requests);
+
+  // The following two functions can be combined with the PermissionPromptShown
+  // metrics to calculate accept, deny and ignore rates.
+  // Note that for coalesced permission bubbles, PermissionPromptAccepted will
+  // always be called, with |accept_states| containing whether each request was
+  // accepted or denied.
+  static void PermissionPromptAccepted(
+      const std::vector<PermissionBubbleRequest*>& requests,
+      const std::vector<bool>& accept_states);
+
+  static void PermissionPromptDenied(
       const std::vector<PermissionBubbleRequest*>& requests);
 
  private:

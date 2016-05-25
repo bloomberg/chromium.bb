@@ -144,7 +144,6 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
 
   if (is_main_frame) {
     requests_.push_back(request);
-    // TODO(gbillock): do we need to make default state a request property?
     accept_states_.push_back(true);
   } else {
     content::RecordAction(
@@ -310,6 +309,8 @@ void PermissionBubbleManager::ToggleAccept(int request_index, bool new_value) {
 }
 
 void PermissionBubbleManager::Accept() {
+  PermissionUmaUtil::PermissionPromptAccepted(requests_, accept_states_);
+
   std::vector<PermissionBubbleRequest*>::iterator requests_iter;
   std::vector<bool>::iterator accepts_iter = accept_states_.begin();
   for (requests_iter = requests_.begin(), accepts_iter = accept_states_.begin();
@@ -325,6 +326,8 @@ void PermissionBubbleManager::Accept() {
 }
 
 void PermissionBubbleManager::Deny() {
+  PermissionUmaUtil::PermissionPromptDenied(requests_);
+
   std::vector<PermissionBubbleRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin();
        requests_iter != requests_.end();
@@ -376,9 +379,6 @@ void PermissionBubbleManager::TriggerShowBubble() {
       requests_.swap(queued_frame_requests_);
 
     // Sets the default value for each request to be 'accept'.
-    // TODO(leng):  Currently all requests default to true.  If that changes:
-    // a) Add additional accept_state queues to store default values.
-    // b) Change the request API to provide the default value.
     accept_states_.resize(requests_.size(), true);
   }
 

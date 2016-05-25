@@ -37219,6 +37219,44 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Permissions.Prompt.Accepted" enum="PermissionBubbleType">
+  <owner>benwells@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    Tracks the permission bubbles (merged and non-merged) that are accepted.
+    Merged bubbles are considered accepted if all permissions are allowed.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.Prompt.Denied" enum="PermissionBubbleType">
+  <owner>benwells@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    Tracks the permission bubbles (merged and non-merged) that are denied.
+    Merged bubbles are considered denied if any permission is denied.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.Prompt.MergedBubbleAccepted"
+    enum="PermissionBubbleType">
+  <owner>benwells@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    Tracks acceptance of permission bubble request types that have been merged
+    into coalesced bubbles.
+  </summary>
+</histogram>
+
+<histogram name="Permissions.Prompt.MergedBubbleDenied"
+    enum="PermissionBubbleType">
+  <owner>benwells@chromium.org</owner>
+  <owner>tsergeant@chromium.org</owner>
+  <summary>
+    Tracks denial of permission bubble request types that have been merged into
+    coalesced bubbles.
+  </summary>
+</histogram>
+
 <histogram name="Permissions.Prompt.MergedBubbleTypes"
     enum="PermissionBubbleType">
   <owner>benwells@chromium.org</owner>

@@ -9,50 +9,46 @@
 #include "grit/theme_resources.h"
 
 MockPermissionBubbleRequest::MockPermissionBubbleRequest()
-    : granted_(false),
-      cancelled_(false),
-      finished_(false) {
-  text_ = base::ASCIIToUTF16("test");
-  accept_label_ = base::ASCIIToUTF16("button");
-  deny_label_ = base::ASCIIToUTF16("button");
-  origin_ = GURL("http://www.google.com");
-}
+    : MockPermissionBubbleRequest("test",
+                                  "button",
+                                  "button",
+                                  GURL("http://www.google.com"),
+                                  PermissionBubbleType::UNKNOWN) {}
 
 MockPermissionBubbleRequest::MockPermissionBubbleRequest(
     const std::string& text)
-    : granted_(false),
-      cancelled_(false),
-      finished_(false) {
-  text_ = base::UTF8ToUTF16(text);
-  accept_label_ = base::ASCIIToUTF16("button");
-  deny_label_ = base::ASCIIToUTF16("button");
-  origin_ = GURL("http://www.google.com");
-}
+    : MockPermissionBubbleRequest(text,
+                                  "button",
+                                  "button",
+                                  GURL("http://www.google.com"),
+                                  PermissionBubbleType::UNKNOWN) {}
+
+MockPermissionBubbleRequest::MockPermissionBubbleRequest(
+    const std::string& text, PermissionBubbleType bubble_type)
+    : MockPermissionBubbleRequest(text,
+                                  "button",
+                                  "button",
+                                  GURL("http://www.google.com"),
+                                  bubble_type) {}
 
 MockPermissionBubbleRequest::MockPermissionBubbleRequest(
     const std::string& text,
     const GURL& url)
-    : granted_(false),
-      cancelled_(false),
-      finished_(false) {
-  text_ = base::UTF8ToUTF16(text);
-  accept_label_ = base::ASCIIToUTF16("button");
-  deny_label_ = base::ASCIIToUTF16("button");
-  origin_ = url.GetOrigin();
-}
+    : MockPermissionBubbleRequest(text,
+                                  "button",
+                                  "button",
+                                  url,
+                                  PermissionBubbleType::UNKNOWN) {}
 
 MockPermissionBubbleRequest::MockPermissionBubbleRequest(
     const std::string& text,
     const std::string& accept_label,
     const std::string& deny_label)
-    : granted_(false),
-      cancelled_(false),
-      finished_(false) {
-  text_ = base::UTF8ToUTF16(text);
-  accept_label_ = base::UTF8ToUTF16(accept_label);
-  deny_label_ = base::UTF8ToUTF16(deny_label);
-  origin_ = GURL("http://www.google.com");
-}
+    : MockPermissionBubbleRequest(text,
+                                  accept_label,
+                                  deny_label,
+                                  GURL("http://www.google.com"),
+                                  PermissionBubbleType::UNKNOWN) {}
 
 MockPermissionBubbleRequest::~MockPermissionBubbleRequest() {}
 
@@ -86,6 +82,11 @@ void MockPermissionBubbleRequest::RequestFinished() {
   finished_ = true;
 }
 
+PermissionBubbleType MockPermissionBubbleRequest::GetPermissionBubbleType()
+    const {
+  return bubble_type_;
+}
+
 bool MockPermissionBubbleRequest::granted() {
   return granted_;
 }
@@ -98,3 +99,18 @@ bool MockPermissionBubbleRequest::finished() {
   return finished_;
 }
 
+MockPermissionBubbleRequest::MockPermissionBubbleRequest(
+    const std::string& text,
+    const std::string& accept_label,
+    const std::string& deny_label,
+    const GURL& origin,
+    PermissionBubbleType bubble_type)
+    : granted_(false),
+      cancelled_(false),
+      finished_(false),
+      bubble_type_(bubble_type) {
+  text_ = base::UTF8ToUTF16(text);
+  accept_label_ = base::UTF8ToUTF16(accept_label);
+  deny_label_ = base::UTF8ToUTF16(deny_label);
+  origin_ = origin.GetOrigin();
+}
