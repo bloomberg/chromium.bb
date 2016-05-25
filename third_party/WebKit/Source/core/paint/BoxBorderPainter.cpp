@@ -362,6 +362,19 @@ struct OpacityGroup {
     unsigned alpha;
 };
 
+void clipQuad(GraphicsContext& context, const FloatPoint quad[], bool antialiased)
+{
+    SkPath path;
+    path.incReserve(4);
+    path.moveTo(WebCoreFloatToSkScalar(quad[0].x()),
+        WebCoreFloatToSkScalar(quad[0].y()));
+    for (size_t i = 1; i < 4; ++i) {
+        path.lineTo(WebCoreFloatToSkScalar(quad[i].x()),
+            WebCoreFloatToSkScalar(quad[i].y()));
+    }
+    context.clipPath(path, antialiased ? AntiAliased : NotAntiAliased);
+}
+
 } // anonymous namespace
 
 // Holds edges grouped by opacity and sorted in paint order.
@@ -1155,7 +1168,7 @@ void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext& graphicsContext, B
     }
 
     if (firstMiter == secondMiter) {
-        graphicsContext.clipPolygon(4, quad, firstMiter == SoftMiter);
+        clipQuad(graphicsContext, quad, firstMiter == SoftMiter);
         return;
     }
 
@@ -1188,7 +1201,7 @@ void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext& graphicsContext, B
         firstQuad[1] = quad[1];
         firstQuad[2] = FloatPoint(quad[3].x() + r2 * ax, quad[3].y() + r2 * ay);
         firstQuad[3] = quad[3];
-        graphicsContext.clipPolygon(4, firstQuad, firstMiter == SoftMiter);
+        clipQuad(graphicsContext, firstQuad, firstMiter == SoftMiter);
     }
 
     if (secondMiter != NoMiter) {
@@ -1197,7 +1210,7 @@ void BoxBorderPainter::clipBorderSidePolygon(GraphicsContext& graphicsContext, B
         secondQuad[1] = FloatPoint(quad[0].x() - r1 * cx, quad[0].y() - r1 * cy);
         secondQuad[2] = quad[2];
         secondQuad[3] = quad[3];
-        graphicsContext.clipPolygon(4, secondQuad, secondMiter == SoftMiter);
+        clipQuad(graphicsContext, secondQuad, secondMiter == SoftMiter);
     }
 }
 

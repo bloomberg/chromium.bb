@@ -180,7 +180,6 @@ public:
     void clipOut(const Path&);
     void clipOutRoundedRect(const FloatRoundedRect&);
     void clipPath(const SkPath&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
-    void clipPolygon(size_t numPoints, const FloatPoint*, bool antialias);
     void clipRect(const SkRect&, AntiAliasingMode = NotAntiAliased, SkRegion::Op = SkRegion::kIntersect_Op);
 
     void drawText(const Font&, const TextRunPaintInfo&, const FloatPoint&);

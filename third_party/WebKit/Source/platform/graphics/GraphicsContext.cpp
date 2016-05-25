@@ -1104,18 +1104,6 @@ void GraphicsContext::clipOut(const Path& pathToClip)
     path.toggleInverseFillType();
 }
 
-void GraphicsContext::clipPolygon(size_t numPoints, const FloatPoint* points, bool antialiased)
-{
-    if (contextDisabled())
-        return;
-
-    ASSERT(numPoints > 2);
-
-    SkPath path;
-    setPathFromPoints(&path, numPoints, points);
-    clipPath(path, antialiased ? AntiAliased : NotAntiAliased);
-}
-
 void GraphicsContext::clipOutRoundedRect(const FloatRoundedRect& rect)
 {
     if (contextDisabled())
