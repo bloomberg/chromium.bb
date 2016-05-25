@@ -46,12 +46,20 @@ SolidColorScrollbarLayer::SolidColorScrollbarLayer(
       orientation_(orientation),
       thumb_thickness_(thumb_thickness),
       track_start_(track_start),
-      is_left_side_vertical_scrollbar_(is_left_side_vertical_scrollbar) {}
+      is_left_side_vertical_scrollbar_(is_left_side_vertical_scrollbar) {
+  Layer::SetOpacity(0.f);
+}
 
 SolidColorScrollbarLayer::~SolidColorScrollbarLayer() {}
 
 ScrollbarLayerInterface* SolidColorScrollbarLayer::ToScrollbarLayer() {
   return this;
+}
+
+void SolidColorScrollbarLayer::SetOpacity(float opacity) {
+  // The opacity of a solid color scrollbar layer is always 0 on main thread.
+  DCHECK_EQ(opacity, 0.f);
+  Layer::SetOpacity(opacity);
 }
 
 void SolidColorScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {

@@ -2678,6 +2678,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
         SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), 400,
                                              VERTICAL, 10, 0, false, true);
+    scrollbar->SetOpacity(0.f);
     EXPECT_FLOAT_EQ(0.f, scrollbar->opacity());
 
     LayerImpl* scroll = host_impl_->active_tree()->OuterViewportScrollLayer();
@@ -2862,6 +2863,7 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
         SolidColorScrollbarLayerImpl::Create(host_impl_->pending_tree(), 400,
                                              VERTICAL, 10, 0, false, true);
+    scrollbar->SetOpacity(0.f);
     LayerImpl* scroll = host_impl_->pending_tree()->OuterViewportScrollLayer();
     LayerImpl* root = host_impl_->pending_tree()->InnerViewportContainerLayer();
     scrollbar->SetScrollLayerId(scroll->id());

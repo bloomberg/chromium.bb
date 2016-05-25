@@ -29,6 +29,7 @@ class CC_EXPORT SolidColorScrollbarLayer : public ScrollbarLayerInterface,
   bool AlwaysUseActiveTreeOpacity() const override;
   ScrollbarLayerInterface* ToScrollbarLayer() override;
 
+  void SetOpacity(float opacity) override;
   void PushPropertiesTo(LayerImpl* layer) override;
 
   void SetNeedsDisplayRect(const gfx::Rect& rect) override;

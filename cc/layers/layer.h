@@ -128,7 +128,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual void SetNeedsDisplayRect(const gfx::Rect& dirty_rect);
   void SetNeedsDisplay() { SetNeedsDisplayRect(gfx::Rect(bounds())); }
 
-  void SetOpacity(float opacity);
+  virtual void SetOpacity(float opacity);
   float opacity() const { return opacity_; }
   float EffectiveOpacity() const;
   bool OpacityIsAnimating() const;
