@@ -30,7 +30,7 @@ interface MutationEvent : Event {
     readonly attribute DOMString      newValue;
     readonly attribute DOMString      attrName;
     readonly attribute unsigned short attrChange;
-    // TODO(philipj): None of the initMutationEvent() arguments should be optional.
+    // TODO(foolip): None of the initMutationEvent() arguments should be optional.
     [Measure] void initMutationEvent([Default=Undefined] optional DOMString type,
                                      [Default=Undefined] optional boolean bubbles,
                                      [Default=Undefined] optional boolean cancelable,

@@ -78,7 +78,7 @@ void LayoutMedia::layout()
 
         LayoutBox* layoutBox = toLayoutBox(child);
         layoutBox->setLocation(newRect.location());
-        // TODO(philipj): Remove the mutableStyleRef() and depend on CSS
+        // TODO(foolip): Remove the mutableStyleRef() and depend on CSS
         // width/height: inherit to match the media element size.
         layoutBox->mutableStyleRef().setHeight(Length(newRect.height(), Fixed));
         layoutBox->mutableStyleRef().setWidth(Length(newRect.width(), Fixed));

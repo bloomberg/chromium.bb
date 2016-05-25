@@ -39,6 +39,6 @@ SVGPatternElement implements SVGFitToViewBox;
 SVGPatternElement implements SVGURIReference;
 // SVGPatternElement implements SVGUnitTypes;
 
-// TODO(philipj): The following was part of SVG 1.1:
+// TODO(foolip): The following was part of SVG 1.1:
 // http://www.w3.org/TR/SVG11/pservers.html#InterfaceSVGPatternElement
 SVGPatternElement implements SVGTests;

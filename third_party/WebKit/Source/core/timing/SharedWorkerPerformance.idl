@@ -27,7 +27,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// TODO(philipj): SharedWorker.workerStart was in the High Resolution Time spec,
+// TODO(foolip): SharedWorker.workerStart was in the High Resolution Time spec,
 // but was removed in favor of Performance.translateTime():
 // https://github.com/w3c/hr-time/commit/39aaf81e1ea206fdf0fde4f49604ddd64d4f5b13
 

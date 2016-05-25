@@ -30,7 +30,7 @@
     RuntimeEnabled=WebVTTRegions,
 ] interface VTTRegion {
     [RaisesException=Setter] attribute double width;
-    // TODO(philipj): height should be called lines.
+    // TODO(foolip): height should be called lines.
     [RaisesException=Setter] attribute long height;
     [RaisesException=Setter] attribute double regionAnchorX;
     [RaisesException=Setter] attribute double regionAnchorY;
@@ -39,7 +39,7 @@
     // TODO(philip): scroll should be of type ScrollSetting.
     [RaisesException=Setter] attribute DOMString scroll;
 
-    // TODO(philipj): The track/id attributes are gone from the spec:
+    // TODO(foolip): The track/id attributes are gone from the spec:
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=24380
     readonly attribute TextTrack track;
     attribute DOMString id;

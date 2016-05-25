@@ -37,7 +37,7 @@
     boolean getModifierState(DOMString keyArg);
 
     // https://w3c.github.io/uievents/#idl-interface-MouseEvent-initializers
-    // TODO(philipj): None of the initMouseEvent() arguments should be optional.
+    // TODO(foolip): None of the initMouseEvent() arguments should be optional.
     [CallWith=ScriptState, Measure] void initMouseEvent([Default=Undefined] optional DOMString type,
                                                         [Default=Undefined] optional boolean bubbles,
                                                         [Default=Undefined] optional boolean cancelable,
@@ -56,7 +56,7 @@
 
     // CSSOM View Module
     // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-mouseevent-interface
-    // TODO(philipj): These attributes should be of type double, and the spec
+    // TODO(foolip): These attributes should be of type double, and the spec
     // also redefines screenX/Y and clientX/Y as double.
     readonly attribute long pageX;
     readonly attribute long pageY;

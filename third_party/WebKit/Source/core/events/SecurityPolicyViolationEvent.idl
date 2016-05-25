@@ -27,10 +27,10 @@
 [
     Constructor(DOMString type, optional SecurityPolicyViolationEventInit eventInitDict),
 ] interface SecurityPolicyViolationEvent : Event {
-    // TODO(philipj): The spec says "documentURL".
+    // TODO(foolip): The spec says "documentURL".
     [Measure] readonly attribute DOMString documentURI;
     readonly attribute DOMString referrer;
-    // TODO(philipj): The spec says "blockedURL".
+    // TODO(foolip): The spec says "blockedURL".
     [Measure] readonly attribute DOMString blockedURI;
     readonly attribute DOMString violatedDirective;
     readonly attribute DOMString effectiveDirective;

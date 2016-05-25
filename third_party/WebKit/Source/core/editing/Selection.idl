@@ -51,7 +51,7 @@
     [MeasureAs=SelectionCollapseToStart, RaisesException] void collapseToStart();
     [MeasureAs=SelectionCollapseToEnd, RaisesException] void collapseToEnd();
     [MeasureAs=SelectionExtend, RaisesException] void extend(Node node, optional long offset = 0);
-    // TODO(philipj): The arguments should be anchorNode, anchorOffset,
+    // TODO(foolip): The arguments should be anchorNode, anchorOffset,
     // focusNode and focusOffset, and none of them are nullable in the spec.
     [MeasureAs=SelectionSetBaseAndExtent, RaisesException] void setBaseAndExtent(Node? baseNode, long baseOffset,
                                                                                  Node? extentNode, long extentOffset);

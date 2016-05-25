@@ -20,7 +20,7 @@
 
 // https://html.spec.whatwg.org/#the-img-element
 
-// TODO(philipj): All long types in this interfaces should be unsigned long.
+// TODO(foolip): All long types in this interfaces should be unsigned long.
 [
     ActiveScriptWrappable, 
     ConstructorCallWith=Document,

@@ -53,7 +53,7 @@ interface HTMLTextAreaElement : HTMLElement {
     readonly attribute NodeList labels;
 
     void select();
-    // TODO(philipj): selectionStart and selectionEnd should be unsigned long.
+    // TODO(foolip): selectionStart and selectionEnd should be unsigned long.
     attribute long selectionStart;
     attribute long selectionEnd;
     attribute DOMString selectionDirection;
@@ -62,7 +62,7 @@ interface HTMLTextAreaElement : HTMLElement {
                                         unsigned long start,
                                         unsigned long end,
                                         optional SelectionMode selectionMode = "preserve");
-    // TODO(philipj): The start and end arguments should be unsigned long and
+    // TODO(foolip): The start and end arguments should be unsigned long and
     // should not be optional.
     void setSelectionRange([Default=Undefined] optional long start,
                            [Default=Undefined] optional long end,

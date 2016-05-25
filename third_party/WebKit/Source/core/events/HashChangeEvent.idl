@@ -21,7 +21,7 @@
 
 [
     Constructor(DOMString type, optional HashChangeEventInit eventInitDict),
-    // TODO(philipj): Exposed=(Window,Worker)
+    // TODO(foolip): Exposed=(Window,Worker)
 ] interface HashChangeEvent : Event {
     readonly attribute DOMString oldURL;
     readonly attribute DOMString newURL;

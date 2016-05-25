@@ -35,7 +35,7 @@
     Exposed=SharedWorker,
 ] interface SharedWorkerGlobalScope : WorkerGlobalScope {
     readonly attribute DOMString name;
-    // TODO(philipj): readonly attribute ApplicationCache applicationCache;
+    // TODO(foolip): readonly attribute ApplicationCache applicationCache;
 
     void close();
 

@@ -37,7 +37,7 @@ interface SVGTextContentElement : SVGGraphicsElement {
     long getNumberOfChars();
     float getComputedTextLength();
     [RaisesException] float getSubStringLength(unsigned long charnum, unsigned long nchars);
-    // TODO(philipj): SVGPoint/SVGRect should be DOMPoint/DOMRect.
+    // TODO(foolip): SVGPoint/SVGRect should be DOMPoint/DOMRect.
     [RaisesException] SVGPoint getStartPositionOfChar(unsigned long charnum);
     [RaisesException] SVGPoint getEndPositionOfChar(unsigned long charnum);
     [RaisesException] SVGRect getExtentOfChar(unsigned long charnum);

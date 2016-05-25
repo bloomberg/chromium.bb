@@ -32,7 +32,7 @@
     readonly attribute WorkerGlobalScope self;
     readonly attribute WorkerLocation location;
 
-    // TODO(philipj): onerror should be an OnErrorEventHandler.
+    // TODO(foolip): onerror should be an OnErrorEventHandler.
     attribute EventHandler onerror;
     // attribute EventHandler onlanguagechange;
     // attribute EventHandler onoffline;

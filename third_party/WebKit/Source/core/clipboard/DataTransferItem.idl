@@ -34,8 +34,8 @@
 ] interface DataTransferItem {
     readonly attribute DOMString kind;
     readonly attribute DOMString type;
-    // TODO(philipj): The callback argument should be a FunctionStringCallback.
+    // TODO(foolip): The callback argument should be a FunctionStringCallback.
     [CallWith=ExecutionContext] void getAsString(StringCallback? callback);
-    // TODO(philipj): getAsFile() should return a File object. crbug.com/361145
+    // TODO(foolip): getAsFile() should return a File object. crbug.com/361145
     Blob? getAsFile();
 };

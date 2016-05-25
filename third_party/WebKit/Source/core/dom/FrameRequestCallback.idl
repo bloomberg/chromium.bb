@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// TODO(philipj): FrameRequestCallback should not be a callback interface.
+// TODO(foolip): FrameRequestCallback should not be a callback interface.
 // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28152
 callback interface FrameRequestCallback {
     // highResTime is passed as high resolution timestamp, see

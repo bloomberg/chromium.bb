@@ -40,7 +40,7 @@
     readonly attribute MessagePort[]? ports;
     [RuntimeEnabled=suborigins] readonly attribute DOMString suborigin;
 
-    // TODO(philipj): None of the initMessageEvent() arguments should be
+    // TODO(foolip): None of the initMessageEvent() arguments should be
     // optional, and |sourceArg| and |portsArg| are of the wrong type.
     [Custom, MeasureAs=InitMessageEvent] void initMessageEvent([Default=Undefined] optional DOMString typeArg,
                                    [Default=Undefined] optional boolean canBubbleArg,

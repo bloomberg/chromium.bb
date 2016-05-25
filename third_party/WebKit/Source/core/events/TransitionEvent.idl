@@ -30,7 +30,7 @@
     Constructor(DOMString type, optional TransitionEventInit eventInitDict),
 ] interface TransitionEvent : Event {
     readonly attribute DOMString propertyName;
-    // TODO(philipj): elapsedTime should be float.
+    // TODO(foolip): elapsedTime should be float.
     readonly attribute double elapsedTime;
     readonly attribute DOMString pseudoElement;
 };

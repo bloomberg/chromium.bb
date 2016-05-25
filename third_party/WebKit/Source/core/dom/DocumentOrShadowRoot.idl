@@ -13,7 +13,7 @@
     Selection? getSelection();
     // CSSOM View Module
     // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-document-interface
-    // TODO(philipj): The x and y arguments should be of type double.
+    // TODO(foolip): The x and y arguments should be of type double.
     Element? elementFromPoint(long x, long y);
     sequence<Element> elementsFromPoint(long x, long y);
     readonly attribute Element? activeElement;

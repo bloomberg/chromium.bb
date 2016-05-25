@@ -26,7 +26,7 @@
 
 // http://www.w3.org/TR/css-masking/#InterfaceSVGClipPathElement
 
-// TODO(philipj): SVGClipPathElement should inherit from SVGElement and
+// TODO(foolip): SVGClipPathElement should inherit from SVGElement and
 // implement SVGUnitTypes. The transform attribute (which is on
 // SVGGraphicsElement) should also be on SVGClipPathElement.
 interface SVGClipPathElement : SVGGraphicsElement {

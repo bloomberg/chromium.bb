@@ -33,7 +33,7 @@ interface ShadowRoot : DocumentFragment {
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerHTML;
     [RuntimeEnabled=ShadowDOMV1] readonly attribute boolean delegatesFocus;
 
-    // TODO(philipj): The spec does not override cloneNode() on the ShadowRoot
+    // TODO(foolip): The spec does not override cloneNode() on the ShadowRoot
     // interface. Here, it's used to implement "Invoking the cloneNode() method
     // on a ShadowRoot instance must always throw a DATA_CLONE_ERR exception" as
     // Node.cloneNode() does not have [RaisesException].

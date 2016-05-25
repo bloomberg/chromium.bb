@@ -35,7 +35,7 @@ interface SVGStyleElement : SVGElement {
     // http://dev.w3.org/csswg/cssom/#the-linkstyle-interface
     readonly attribute StyleSheet? sheet;
 
-    // TODO(philipj): The disabled attribute was not in SVG 1.1 and has been
+    // TODO(foolip): The disabled attribute was not in SVG 1.1 and has been
     // removed from HTMLLinkElement and HTMLStyleElement in the HTML spec:
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=14703
     [Measure] attribute boolean disabled;

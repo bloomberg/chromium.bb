@@ -22,7 +22,7 @@
 // https://html.spec.whatwg.org/#the-select-element
 
 interface HTMLSelectElement : HTMLElement {
-    // TODO(philipj): attribute DOMString autocomplete;
+    // TODO(foolip): attribute DOMString autocomplete;
     [Reflect] attribute boolean autofocus;
     [Reflect] attribute boolean disabled;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
@@ -34,7 +34,7 @@ interface HTMLSelectElement : HTMLElement {
     readonly attribute DOMString type;
 
     readonly attribute HTMLOptionsCollection options;
-    // TODO(philipj): The length setter should never throw.
+    // TODO(foolip): The length setter should never throw.
     [RaisesException=Setter] attribute unsigned long length;
     getter Element? item(unsigned long index);
     HTMLOptionElement? namedItem(DOMString name);

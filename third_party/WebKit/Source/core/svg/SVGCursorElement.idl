@@ -32,6 +32,6 @@ interface SVGCursorElement : SVGElement {
 
 SVGCursorElement implements SVGURIReference;
 
-// TODO(philipj): The following was part of SVG 1.1:
+// TODO(foolip): The following was part of SVG 1.1:
 // http://www.w3.org/TR/SVG11/interact.html#InterfaceSVGCursorElement
 SVGCursorElement implements SVGTests;

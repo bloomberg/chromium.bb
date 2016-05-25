@@ -22,7 +22,7 @@
 
 // http://www.w3.org/TR/SVG11/types.html#InterfaceSVGRect
 
-// TODO(philipj): SVGRect is gone from SVG 2, replaced by DOMRect.
+// TODO(foolip): SVGRect is gone from SVG 2, replaced by DOMRect.
 [
     ImplementedAs=SVGRectTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),

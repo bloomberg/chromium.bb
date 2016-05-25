@@ -192,7 +192,7 @@ void VTTCueBox::applyCSSProperties(const VTTDisplayParameters& displayParameters
     // text alignment:
     setInlineStyleProperty(CSSPropertyTextAlign, displayParameters.textAlign);
 
-    // TODO(philipj): The position adjustment for non-snap-to-lines cues has
+    // TODO(foolip): The position adjustment for non-snap-to-lines cues has
     // been removed from the spec:
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=19178
     if (std::isnan(displayParameters.snapToLinesPosition)) {
@@ -820,7 +820,7 @@ VTTCueBox* VTTCue::getDisplayTree()
     m_cueBackgroundBox->removeChildren();
     m_vttNodeTree->cloneChildNodes(m_cueBackgroundBox.get());
 
-    // TODO(philipj): The region identifier may be non-empty without there being
+    // TODO(foolip): The region identifier may be non-empty without there being
     // a corresponding region, in which case this VTTCueBox will be added
     // directly to the text track container in updateDisplay().
     if (regionId().isEmpty()) {

@@ -22,7 +22,7 @@
 
 // http://www.w3.org/TR/SVG11/coords.html#InterfaceSVGMatrix
 
-// TODO(philipj): SVGMatrix is gone from SVG 2, replaced by DOMMatrix.
+// TODO(foolip): SVGMatrix is gone from SVG 2, replaced by DOMMatrix.
 [
     ImplementedAs=SVGMatrixTearOff,
     SetWrapperReferenceTo(SVGTransform contextTransform),

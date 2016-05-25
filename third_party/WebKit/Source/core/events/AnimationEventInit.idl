@@ -6,7 +6,7 @@
 
 dictionary AnimationEventInit : EventInit {
     DOMString animationName = "";
-    // TODO(philipj): elapsedTime should be float.
+    // TODO(foolip): elapsedTime should be float.
     double elapsedTime = 0.0;
-    // TODO(philipj): DOMString pseudoElement = "";
+    // TODO(foolip): DOMString pseudoElement = "";
 };

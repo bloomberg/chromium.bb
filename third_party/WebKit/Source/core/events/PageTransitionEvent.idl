@@ -27,7 +27,7 @@
 
 [
     Constructor(DOMString type, optional PageTransitionEventInit eventInitDict),
-    // TODO(philipj): Exposed=(Window,Worker)
+    // TODO(foolip): Exposed=(Window,Worker)
 ] interface PageTransitionEvent : Event {
     readonly attribute boolean persisted;
 };

@@ -28,7 +28,7 @@
 
 // http://dev.w3.org/csswg/css-conditional/#the-csssupportsrule-interface
 
-// TODO(philipj): CSSSupportsRule should inherit from CSSConditionRule and
+// TODO(foolip): CSSSupportsRule should inherit from CSSConditionRule and
 // inherit all members.
 interface CSSSupportsRule : CSSRule {
     // http://dev.w3.org/csswg/css-conditional/#the-cssconditionrule-interface

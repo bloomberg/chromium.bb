@@ -27,7 +27,7 @@
 
 [
 ] interface Storage {
-    // TODO(philipj): [NotEnumerable] should not be used anywhere in this interface.
+    // TODO(foolip): [NotEnumerable] should not be used anywhere in this interface.
     [NotEnumerable, RaisesException=Getter] readonly attribute unsigned long length;
     [NotEnumerable, RaisesException] DOMString? key(unsigned long index);
     [LogActivity, NotEnumerable, RaisesException] DOMString? getItem(DOMString key);
@@ -35,7 +35,7 @@
     [LogActivity, NotEnumerable, RaisesException] void removeItem(DOMString key);
     [LogActivity, NotEnumerable, RaisesException] void clear();
 
-    // TODO(philipj): Merge these into getItem/setItem/removeItem.
+    // TODO(foolip): Merge these into getItem/setItem/removeItem.
     [RaisesException] getter DOMString (DOMString name);
     [RaisesException] setter DOMString (DOMString name, DOMString value);
     [RaisesException] deleter boolean (DOMString name);

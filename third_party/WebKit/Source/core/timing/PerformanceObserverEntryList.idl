@@ -8,7 +8,7 @@
     RuntimeEnabled=PerformanceObserver,
     Exposed=(Window,Worker),
 ] interface PerformanceObserverEntryList {
-    // TODO(philipj): getEntries() should take an optional FilterOptions argument.
+    // TODO(foolip): getEntries() should take an optional FilterOptions argument.
     sequence<PerformanceEntry> getEntries();
     sequence<PerformanceEntry> getEntriesByType(DOMString entryType);
     sequence<PerformanceEntry> getEntriesByName(DOMString name, optional DOMString entryType = null);

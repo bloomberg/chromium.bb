@@ -43,7 +43,7 @@ private:
     static void timeCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void timeEndCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void timeStampCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    // TODO(philipj): There is no spec for the Memory Info API, see blink-dev:
+    // TODO(foolip): There is no spec for the Memory Info API, see blink-dev:
     // https://groups.google.com/a/chromium.org/d/msg/blink-dev/g5YRCGpC9vs/b4OJz71NmPwJ
     static void memoryGetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void memorySetterCallback(const v8::FunctionCallbackInfo<v8::Value>&);

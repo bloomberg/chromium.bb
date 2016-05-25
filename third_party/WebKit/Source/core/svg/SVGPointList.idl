@@ -33,7 +33,7 @@
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;
 
     [RaisesException] void clear();
-    // TODO(philipj): SVGPoint should be DOMPoint.
+    // TODO(foolip): SVGPoint should be DOMPoint.
     [RaisesException] SVGPoint initialize(SVGPoint newItem);
     [RaisesException] getter SVGPoint getItem(unsigned long index);
     [RaisesException] SVGPoint insertItemBefore(SVGPoint newItem, unsigned long index);

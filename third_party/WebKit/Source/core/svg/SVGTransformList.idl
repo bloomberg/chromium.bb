@@ -40,7 +40,7 @@
     [RaisesException] SVGTransform replaceItem(SVGTransform newItem, unsigned long index);
     [RaisesException] SVGTransform removeItem(unsigned long index);
     [RaisesException] SVGTransform appendItem(SVGTransform newItem);
-    // TODO(philipj): SVGMatrix should be DOMMatrix.
+    // TODO(foolip): SVGMatrix should be DOMMatrix.
     SVGTransform createSVGTransformFromMatrix(SVGMatrix matrix);
     [RaisesException, MeasureAs=SVGTransformListConsolidate] SVGTransform? consolidate();
     [RaisesException] setter void (unsigned long index, SVGTransform newItem);

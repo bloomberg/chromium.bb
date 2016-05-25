@@ -25,11 +25,11 @@
 ] interface StyleSheet {
     readonly attribute DOMString type;
     readonly attribute DOMString? href;
-    // TODO(philipj): ownerNode should be (Element or ProcessingInstruction).
+    // TODO(foolip): ownerNode should be (Element or ProcessingInstruction).
     readonly attribute Node? ownerNode;
     readonly attribute StyleSheet? parentStyleSheet;
     readonly attribute DOMString? title;
-    // TODO(philipj): media should have [PutForwards=mediaText].
+    // TODO(foolip): media should have [PutForwards=mediaText].
     [SameObject] readonly attribute MediaList media;
     attribute boolean disabled;
 };

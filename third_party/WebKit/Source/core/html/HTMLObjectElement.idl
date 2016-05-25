@@ -27,14 +27,14 @@
 ] interface HTMLObjectElement : HTMLElement {
     [Reflect, URL] attribute DOMString data;
     [Reflect] attribute DOMString type;
-    // TODO(philipj): attribute boolean typeMustMatch;
+    // TODO(foolip): attribute boolean typeMustMatch;
     [Reflect] attribute DOMString name;
     [Reflect] attribute DOMString useMap;
     [ImplementedAs=formOwner] readonly attribute HTMLFormElement? form;
     [Reflect] attribute DOMString width;
     [Reflect] attribute DOMString height;
     [CheckSecurity=ReturnValue] readonly attribute Document? contentDocument;
-    // TODO(philipj): readonly attribute WindowProxy? contentWindow;
+    // TODO(foolip): readonly attribute WindowProxy? contentWindow;
     [CheckSecurity=ReturnValue, RaisesException] Document? getSVGDocument();
 
     readonly attribute boolean willValidate;
@@ -44,7 +44,7 @@
     boolean reportValidity();
     void setCustomValidity(DOMString error);
 
-    // TODO(philipj): legacycaller any (any... arguments); crbug.com/465009
+    // TODO(foolip): legacycaller any (any... arguments); crbug.com/465009
 
     // obsolete members
     // https://html.spec.whatwg.org/#HTMLObjectElement-partial
@@ -52,7 +52,7 @@
     [Reflect] attribute DOMString archive;
     [Reflect] attribute DOMString code;
     [Reflect] attribute boolean declare;
-    // TODO(philipj): hspace and vspace should be unsigned long.
+    // TODO(foolip): hspace and vspace should be unsigned long.
     [Reflect] attribute long hspace;
     [Reflect] attribute DOMString standby;
     [Reflect] attribute long vspace;
@@ -61,7 +61,7 @@
 
     [Reflect, TreatNullAs=EmptyString] attribute DOMString border;
 
-    // TODO(philipj): These getters and setters are not in the spec.
+    // TODO(foolip): These getters and setters are not in the spec.
     [Custom, NotEnumerable] getter boolean (unsigned long index);
     [Custom] setter boolean (unsigned long index, Node value);
     [Custom, NotEnumerable] getter Node (DOMString name);

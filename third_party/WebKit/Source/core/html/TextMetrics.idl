@@ -25,9 +25,9 @@
 
 // https://html.spec.whatwg.org/#textmetrics
 
-// TODO(philipj): All float types in this interface should be double.
+// TODO(foolip): All float types in this interface should be double.
 [
-    // TODO(philipj): Exposed=(Window,Worker)
+    // TODO(foolip): Exposed=(Window,Worker)
 ] interface TextMetrics {
     // x-direction
     readonly attribute float width; // advance width

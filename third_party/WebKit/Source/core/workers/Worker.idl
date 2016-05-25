@@ -32,12 +32,12 @@
     DependentLifetime,
     Constructor(DOMString scriptUrl),
     ConstructorCallWith=ExecutionContext,
-    // TODO(philipj): Exposed=(Window,Worker),
+    // TODO(foolip): Exposed=(Window,Worker),
     RaisesException=Constructor,
 ] interface Worker : EventTarget {
     void terminate();
 
-    // TODO(philipj): The SerializedScriptValue type should be any.
+    // TODO(foolip): The SerializedScriptValue type should be any.
     [PostMessage, RaisesException] void postMessage(SerializedScriptValue message, optional sequence<Transferable> transfer);
     attribute EventHandler onmessage;
 };

@@ -32,7 +32,7 @@
 
 enum FontFaceSetLoadStatus { "loading", "loaded" };
 
-// TODO(philipj): This interface should be [Exposed=Window,Worker] and should
+// TODO(foolip): This interface should be [Exposed=Window,Worker] and should
 // have a constructor, and thus not have [NoInterfaceObject].
 [
     DependentLifetime,

@@ -35,7 +35,7 @@
     const unsigned short SVG_TRANSFORM_SKEWY = 6;
 
     [ImplementedAs=transformType] readonly attribute unsigned short type;
-    // TODO(philipj): SVGMatrix should be DOMMatrixReadOnly.
+    // TODO(foolip): SVGMatrix should be DOMMatrixReadOnly.
     readonly attribute SVGMatrix matrix;
     readonly attribute float angle;
 

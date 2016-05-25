@@ -27,14 +27,14 @@ interface SVGSVGElement : SVGGraphicsElement {
     [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength y;
     [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength width;
     [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength height;
-    // TODO(philipj): viewport should be a DOMRectReadOnly.
+    // TODO(foolip): viewport should be a DOMRectReadOnly.
     [Measure] readonly attribute SVGRect viewport;
-    // TODO(philipj): useCurrentView and currentView have been removed:
+    // TODO(foolip): useCurrentView and currentView have been removed:
     // https://github.com/w3c/svgwg/commit/4c26fd36937a65192024208d85c144a21071b057
     [Measure] readonly attribute boolean useCurrentView;
     [Measure] readonly attribute SVGViewSpec currentView;
              attribute float currentScale;
-    // TODO(philipj): currentTranslate should be a DOMPointReadOnly.
+    // TODO(foolip): currentTranslate should be a DOMPointReadOnly.
     [ImplementedAs=currentTranslateFromJavascript] readonly attribute SVGPoint currentTranslate;
 
     [MeasureAs=SVGSVGElementSuspendRedraw] unsigned long suspendRedraw(unsigned long maxWaitMilliseconds);
@@ -48,7 +48,7 @@ interface SVGSVGElement : SVGGraphicsElement {
     [RuntimeEnabled=smil] float getCurrentTime();
     [RuntimeEnabled=smil] void setCurrentTime(float seconds);
 
-    // TODO(philipj): The rect arguments should be DOMRectReadOnly.
+    // TODO(foolip): The rect arguments should be DOMRectReadOnly.
     NodeList getIntersectionList(SVGRect rect, SVGElement? referenceElement);
     NodeList getEnclosureList(SVGRect rect, SVGElement? referenceElement);
     boolean checkIntersection(SVGElement element, SVGRect rect);
@@ -57,14 +57,14 @@ interface SVGSVGElement : SVGGraphicsElement {
     [Measure] SVGNumber createSVGNumber();
     [Measure] SVGLength createSVGLength();
     [Measure] SVGAngle createSVGAngle();
-    // TODO(philipj): SVGPoint/Matrix/Rect should be DOMPoint/Matrix/Rect.
+    // TODO(foolip): SVGPoint/Matrix/Rect should be DOMPoint/Matrix/Rect.
     [Measure] SVGPoint createSVGPoint();
     [Measure] SVGMatrix createSVGMatrix();
     [Measure] SVGRect createSVGRect();
     [Measure] SVGTransform createSVGTransform();
     [Measure] SVGTransform createSVGTransformFromMatrix(SVGMatrix matrix);
 
-    // TODO(philipj): The following was part of SVG 1.1:
+    // TODO(foolip): The following was part of SVG 1.1:
     // http://www.w3.org/TR/SVG11/struct.html#InterfaceSVGSVGElement
     [Measure] Element getElementById(DOMString elementId);
 };

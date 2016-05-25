@@ -788,7 +788,7 @@ void HTMLMediaElement::invokeLoadAlgorithm()
 
         cueTimeline().updateActiveCues(0);
     } else if (!m_paused) {
-        // TODO(philipj): There is a proposal to always reset the paused state
+        // TODO(foolip): There is a proposal to always reset the paused state
         // in the media element load algorithm, to avoid a bogus play() promise
         // rejection: https://github.com/whatwg/html/issues/869
         // This is where that change would have an effect, and it is measured to
@@ -1993,7 +1993,7 @@ WebMediaPlayer::Preload HTMLMediaElement::preloadType() const
     // The spec does not define an invalid value default:
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=28950
 
-    // TODO(philipj): Try to make "metadata" the default preload state:
+    // TODO(foolip): Try to make "metadata" the default preload state:
     // https://crbug.com/310450
     UseCounter::count(document(), UseCounter::HTMLMediaElementPreloadDefault);
     return WebMediaPlayer::PreloadAuto;

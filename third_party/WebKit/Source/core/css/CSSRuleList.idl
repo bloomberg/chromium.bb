@@ -25,7 +25,7 @@
 
 // http://dev.w3.org/csswg/cssom/#the-cssrulelist-interface
 
-// TODO(philipj): CSSRuleList should be an [ArrayClass].
+// TODO(foolip): CSSRuleList should be an [ArrayClass].
 [
     DependentLifetime,
 ] interface CSSRuleList {

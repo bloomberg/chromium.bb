@@ -20,7 +20,7 @@
 
 // http://dev.w3.org/csswg/cssom/#the-stylesheetlist-interface
 
-// TODO(philipj): StyleSheetList should be an [ArrayClass].
+// TODO(foolip): StyleSheetList should be an [ArrayClass].
 [
     SetWrapperReferenceFrom=document,
 ] interface StyleSheetList {

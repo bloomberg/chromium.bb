@@ -9,7 +9,7 @@ dictionary KeyboardEventInit : EventModifierInit {
     DOMString code = "";
     unsigned long location = 0;
     boolean repeat = false;
-    // TODO(philipj): boolean isComposing = false;
+    // TODO(foolip): boolean isComposing = false;
 
     // Non-standard APIs
     DOMString keyIdentifier = "";

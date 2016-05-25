@@ -5,7 +5,7 @@
 // ApplicationCache Error Detail Proposal:
 // https://docs.google.com/document/d/1nlk7WgRD3d0ZcfK1xrwBFVZ3DI_e44j7QoMd5gAJC4E/edit
 
-// TODO(philipj): Update the spec link once this is in the HTML spec:
+// TODO(foolip): Update the spec link once this is in the HTML spec:
 // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22702
 
 [

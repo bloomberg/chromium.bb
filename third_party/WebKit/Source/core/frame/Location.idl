@@ -41,11 +41,11 @@
     [CallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity, RaisesException] void replace(DOMString url);
     [CallWith=CurrentWindow] void reload();
 
-    // TODO(philipj): ancestorOrigins should have [SameObject] and be of type
+    // TODO(foolip): ancestorOrigins should have [SameObject] and be of type
     // DOMString[], i.e. it should return the same array every time.
     [Measure] readonly attribute DOMStringList ancestorOrigins;
 
-    // TODO(philipj): Per spec, Location implements URLUtils. The below is
+    // TODO(foolip): Per spec, Location implements URLUtils. The below is
     // mostly like the URLUtils interface, but with some members missing and
     // using DOMString instead of USVString.
     [SetterCallWith=(CurrentWindow,EnteredWindow), DoNotCheckSecurity=Setter] attribute DOMString href;
@@ -60,7 +60,7 @@
     [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString search;
     [SetterCallWith=(CurrentWindow,EnteredWindow)] attribute DOMString hash;
 
-    // TODO(philipj): Location does not have a valueOf() override in the spec.
+    // TODO(foolip): Location does not have a valueOf() override in the spec.
     // See the comment in Location.h for the purpose of this.
     [NotEnumerable, CallWith=ThisValue] any valueOf();
 };

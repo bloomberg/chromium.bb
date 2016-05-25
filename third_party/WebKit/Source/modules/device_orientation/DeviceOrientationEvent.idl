@@ -25,14 +25,14 @@
 
 // http://w3c.github.io/deviceorientation/spec-source-orientation.html#deviceorientation
 
-// TODO(philipj): DeviceOrientationEvent should have a constructor.
+// TODO(foolip): DeviceOrientationEvent should have a constructor.
 interface DeviceOrientationEvent : Event {
     readonly attribute double? alpha;
     readonly attribute double? beta;
     readonly attribute double? gamma;
     readonly attribute boolean absolute;
 
-    // TODO(philipj): The init*Event() methods are not in the spec:
+    // TODO(foolip): The init*Event() methods are not in the spec:
     // https://github.com/w3c/deviceorientation/issues/18
     [Measure] void initDeviceOrientationEvent([Default=Undefined] optional DOMString type,
                                               [Default=Undefined] optional boolean bubbles,

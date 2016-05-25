@@ -29,7 +29,7 @@
     getter DOMString item(unsigned long index);
     DOMString getPropertyValue(DOMString property);
     DOMString getPropertyPriority(DOMString property);
-    // TODO(philipj): The value and priority arguments should have
+    // TODO(foolip): The value and priority arguments should have
     // [TreatNullAs=EmptyString] and should not be nullable.
     [RaisesException] void setProperty(DOMString property, DOMString? value, optional DOMString? priority = null);
     // void setPropertyValue(DOMString property, [TreatNullAs=EmptyString] DOMString value);

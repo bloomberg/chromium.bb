@@ -5,10 +5,10 @@
 // http://w3c.github.io/webappsec/specs/content-security-policy/#securitypolicyviolationevent-interface
 
 dictionary SecurityPolicyViolationEventInit : EventInit {
-    // TODO(philipj): The spec says "documentURL".
+    // TODO(foolip): The spec says "documentURL".
     DOMString documentURI;
     DOMString referrer;
-    // TODO(philipj): The spec says "blockedURL".
+    // TODO(foolip): The spec says "blockedURL".
     DOMString blockedURI;
     DOMString violatedDirective;
     DOMString effectiveDirective;

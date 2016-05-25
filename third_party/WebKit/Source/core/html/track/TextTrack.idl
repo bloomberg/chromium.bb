@@ -48,7 +48,7 @@ enum TextTrackKind { "subtitles",  "captions",  "descriptions",  "chapters",  "m
 
     attribute EventHandler oncuechange;
 
-    // TODO(philipj): These WebVTT extensions have been removed from the spec:
+    // TODO(foolip): These WebVTT extensions have been removed from the spec:
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=24380
     [RuntimeEnabled=WebVTTRegions] readonly attribute VTTRegionList regions;
     [RuntimeEnabled=WebVTTRegions] void addRegion(VTTRegion region);

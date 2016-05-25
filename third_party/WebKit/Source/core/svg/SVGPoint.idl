@@ -22,7 +22,7 @@
 
 // http://www.w3.org/TR/SVG11/coords.html#InterfaceSVGPoint
 
-// TODO(philipj): SVGPoint is gone from SVG 2, replaced by DOMPoint.
+// TODO(foolip): SVGPoint is gone from SVG 2, replaced by DOMPoint.
 [
     ImplementedAs=SVGPointTearOff,
     SetWrapperReferenceTo(SVGElement contextElement),

@@ -33,7 +33,7 @@
 [
     RuntimeEnabled=FrameTimingSupport  // Experimental flag
 ] interface PerformanceRenderTiming : PerformanceEntry {
-    // TODO(philipj): This is named |sourceFrameNumber| in the spec.
+    // TODO(foolip): This is named |sourceFrameNumber| in the spec.
     readonly attribute unsigned long sourceFrame;
-    // TODO(philipj): serializer = {inherit, attribute};
+    // TODO(foolip): serializer = {inherit, attribute};
 };

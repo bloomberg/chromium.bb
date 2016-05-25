@@ -24,7 +24,7 @@
 // http://dev.w3.org/csswg/css-fonts/#om-fontface
 //
 // The interface from DOM Level 2 Style is implemented here.
-// TODO(philipj): Implement the interface from CSS Fonts.
+// TODO(foolip): Implement the interface from CSS Fonts.
 
 interface CSSFontFaceRule : CSSRule {
     [Measure] readonly attribute CSSStyleDeclaration style;

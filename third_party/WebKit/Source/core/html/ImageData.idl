@@ -36,6 +36,6 @@
 ] interface ImageData {
     readonly attribute unsigned long width;
     readonly attribute unsigned long height;
-    // TODO(philipj): Expose data.
+    // TODO(foolip): Expose data.
     // readonly attribute Uint8ClampedArray data;
 };

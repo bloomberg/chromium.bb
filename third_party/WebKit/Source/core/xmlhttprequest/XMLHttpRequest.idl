@@ -38,7 +38,7 @@ enum XMLHttpRequestResponseType {
     "legacystream",
 };
 
-// TODO(philipj): Most DOMString types in the XMLHttpRequest interface should be
+// TODO(foolip): Most DOMString types in the XMLHttpRequest interface should be
 // either ByteString or USVString.
 [
     ActiveScriptWrappable,
@@ -65,7 +65,7 @@ enum XMLHttpRequestResponseType {
     [RaisesException=Setter] attribute unsigned long timeout;
     [RaisesException=Setter] attribute boolean withCredentials;
     readonly attribute XMLHttpRequestUpload upload;
-    // TODO(philipj): The data argument should be of type
+    // TODO(foolip): The data argument should be of type
     // (Document or BodyInit)?
     [RaisesException] void send(optional (ArrayBuffer or ArrayBufferView or Blob or Document or DOMString or FormData)? body = null);
     void abort();
@@ -80,6 +80,6 @@ enum XMLHttpRequestResponseType {
     [RaisesException=Setter] attribute XMLHttpRequestResponseType responseType;
     [Custom=Getter, RaisesException=Getter] readonly attribute any response;
     [Custom=Getter, RaisesException=Getter] readonly attribute DOMString responseText;
-    // TODO(philipj): responseXML should be [Exposed=Window].
+    // TODO(foolip): responseXML should be [Exposed=Window].
     [RaisesException=Getter] readonly attribute Document? responseXML;
 };

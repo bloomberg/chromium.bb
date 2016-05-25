@@ -32,7 +32,7 @@
     ImplementedAs=DOMURL,
     RaisesException=Constructor,
 ] interface URL {
-    // TODO(philipj): Implement domainToASCII() and domainToUnicode().
+    // TODO(foolip): Implement domainToASCII() and domainToUnicode().
     // crbug.com/493908
     // static USVString domainToASCII(USVString domain);
     // static USVString domainToUnicode(USVString domain);

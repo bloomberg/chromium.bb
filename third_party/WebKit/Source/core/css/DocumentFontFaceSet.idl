@@ -30,7 +30,7 @@
 
 // http://dev.w3.org/csswg/css-font-loading/#font-face-source
 
-// TODO(philipj): This should be a FontFaceSource interface implemented by
+// TODO(foolip): This should be a FontFaceSource interface implemented by
 // Document and WorkerGlobalScope.
 partial interface Document {
     [MeasureAs=DocumentFonts] readonly attribute FontFaceSet fonts;

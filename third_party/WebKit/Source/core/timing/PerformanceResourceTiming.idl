@@ -30,10 +30,10 @@
 
 // https://w3c.github.io/resource-timing/#performanceresourcetiming
 
-// TODO(philipj): This interface should be [Exposed=(Window,Worker)].
+// TODO(foolip): This interface should be [Exposed=(Window,Worker)].
 interface PerformanceResourceTiming : PerformanceEntry {
     readonly attribute DOMString initiatorType;
-    // TODO(philipj): readonly attribute DOMString nextHopProtocol;
+    // TODO(foolip): readonly attribute DOMString nextHopProtocol;
     readonly attribute DOMHighResTimeStamp workerStart;
     readonly attribute DOMHighResTimeStamp redirectStart;
     readonly attribute DOMHighResTimeStamp redirectEnd;
@@ -46,7 +46,7 @@ interface PerformanceResourceTiming : PerformanceEntry {
     readonly attribute DOMHighResTimeStamp requestStart;
     readonly attribute DOMHighResTimeStamp responseStart;
     readonly attribute DOMHighResTimeStamp responseEnd;
-    // TODO(philipj): The spec has tranferSize/encodedBodySize/decodedBodySize
+    // TODO(foolip): The spec has tranferSize/encodedBodySize/decodedBodySize
     // and a serializer:
     // readonly attribute unsigned short transferSize;
     // readonly attribute unsigned short encodedBodySize;

@@ -26,7 +26,7 @@
 // http://www.w3.org/TR/SVG2/shapes.html#InterfaceSVGPolylineElement
 
 interface SVGPolylineElement : SVGGeometryElement {
-    // TODO(philipj): points and animatedPoints should be on the
+    // TODO(foolip): points and animatedPoints should be on the
     // SVGAnimatedPoints interface which SVGPolylineElement should implement:
     // http://www.w3.org/TR/SVG2/shapes.html#InterfaceSVGAnimatedPoints
     [MeasureAs=SVG1DOMShape, ImplementedAs=pointsFromJavascript] readonly attribute SVGPointList points;

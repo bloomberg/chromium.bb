@@ -33,11 +33,11 @@
 
 [
     ActiveScriptWrappable,
-    // TODO(philipj): The name argument should not have a default null value.
+    // TODO(foolip): The name argument should not have a default null value.
     Constructor(DOMString scriptURL, optional DOMString name = null),
     ConstructorCallWith=ExecutionContext,
     DependentLifetime,
-    // TODO(philipj): Exposed=(Window,Worker),
+    // TODO(foolip): Exposed=(Window,Worker),
     RaisesException=Constructor,
     RuntimeEnabled=SharedWorker,
 ] interface SharedWorker : EventTarget {

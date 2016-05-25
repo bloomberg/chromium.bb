@@ -35,7 +35,7 @@
     [ImplementedAs=selectedForBinding] attribute boolean selected;
     attribute DOMString value;
 
-    // TODO(philipj): The text setter should never throw.
+    // TODO(foolip): The text setter should never throw.
     [RaisesException=Setter] attribute DOMString text;
     readonly attribute long index;
 };

@@ -23,7 +23,7 @@
 interface HTMLTableCellElement : HTMLElement {
     attribute unsigned long colSpan;
     attribute unsigned long rowSpan;
-    // TODO(philipj): headers should be a [PutForwards=value] readonly attribute
+    // TODO(foolip): headers should be a [PutForwards=value] readonly attribute
     // DOMTokenList.
     [Reflect, TreatNullAs=NullString] attribute DOMString headers;
     readonly attribute long cellIndex;
@@ -42,7 +42,7 @@ interface HTMLTableCellElement : HTMLElement {
 
     [Reflect, TreatNullAs=EmptyString] attribute DOMString bgColor;
 
-    // TODO(philipj): The spec has HTMLTableHeaderCellElement and
+    // TODO(foolip): The spec has HTMLTableHeaderCellElement and
     // HTMLTableDataCellElement interfaces for the th and td elements
     // respectively. HTMLTableHeaderCellElement has the abbr and scope
     // attributes, while HTMLTableDataCellElement has only abbr.

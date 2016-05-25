@@ -30,7 +30,7 @@
 
 // https://w3c.github.io/hr-time/#the-performance-interface
 
-// TODO(philipj): This should be a GlobalPerformance interface implemented by
+// TODO(foolip): This should be a GlobalPerformance interface implemented by
 // Window and WorkerGlobalScope.
 partial interface WorkerGlobalScope {
     readonly attribute WorkerPerformance performance;

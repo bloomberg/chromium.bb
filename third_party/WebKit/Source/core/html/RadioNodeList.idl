@@ -28,6 +28,6 @@
 interface RadioNodeList : NodeList {
     attribute DOMString value;
 
-    // TODO(philipj): This should be inherited from NodeList.
+    // TODO(foolip): This should be inherited from NodeList.
     [ImplementedAs=item] getter Node? (unsigned long index);
 };
