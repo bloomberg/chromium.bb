@@ -31,6 +31,7 @@ class ExtensionTask
   // task_management::RendererTask:
   void UpdateTitle() override;
   void UpdateFavicon() override;
+  void Activate() override;
   Type GetType() const override;
 
   // extensions::IconImage::Observer

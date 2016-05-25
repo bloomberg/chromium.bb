@@ -20,14 +20,18 @@ namespace task_management {
 class SubframeTask : public RendererTask {
  public:
   SubframeTask(content::RenderFrameHost* render_frame_host,
-               content::WebContents* web_contents);
+               content::WebContents* web_contents,
+               RendererTask* main_task);
   ~SubframeTask() override;
 
   // task_management::RendererTask:
   void UpdateTitle() override;
   void UpdateFavicon() override;
+  void Activate() override;
 
  private:
+  // The task for the main frame of this WebContents.
+  RendererTask* main_task_;
   DISALLOW_COPY_AND_ASSIGN(SubframeTask);
 };
 

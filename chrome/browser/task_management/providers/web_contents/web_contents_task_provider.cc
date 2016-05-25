@@ -230,7 +230,9 @@ void WebContentsEntry::CreateTaskForFrame(RenderFrameHost* render_frame_host) {
       new_task = tag->CreateTask();
       main_frame_site_instance_ = site_instance;
     } else {
-      new_task = new SubframeTask(render_frame_host, web_contents());
+      new_task =
+          new SubframeTask(render_frame_host, web_contents(),
+                           GetTaskForFrame(web_contents()->GetMainFrame()));
     }
   }
 

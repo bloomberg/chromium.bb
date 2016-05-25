@@ -30,11 +30,13 @@ base::string16 AdjustTitle(const content::SiteInstance* site_instance) {
 }  // namespace
 
 SubframeTask::SubframeTask(content::RenderFrameHost* render_frame_host,
-                           content::WebContents* web_contents)
+                           content::WebContents* web_contents,
+                           RendererTask* main_task)
     : RendererTask(AdjustTitle(render_frame_host->GetSiteInstance()),
                    nullptr,
                    web_contents,
-                   render_frame_host->GetProcess()) {
+                   render_frame_host->GetProcess()),
+      main_task_(main_task) {
   // Note that we didn't get the RenderProcessHost from the WebContents, but
   // rather from the RenderFrameHost. Out-of-process iframes reside on
   // different processes than that of their main frame.
@@ -51,6 +53,11 @@ void SubframeTask::UpdateTitle() {
 void SubframeTask::UpdateFavicon() {
   // This will be called when the favicon changes on the WebContents's main
   // frame, but this Task represents other frames, so we don't care.
+}
+
+void SubframeTask::Activate() {
+  // Activate the root task.
+  main_task_->Activate();
 }
 
 }  // namespace task_management
