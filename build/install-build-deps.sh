@@ -109,7 +109,7 @@ dev_list="bison cdbs curl dpkg-dev elfutils devscripts fakeroot
           libwww-perl libxslt1-dev libxss-dev libxt-dev libxtst-dev openbox
           patch perl pkg-config python python-cherrypy3 python-crypto
           python-dev python-numpy python-opencv python-openssl python-psutil
-          python-yaml rpm ruby subversion ttf-dejavu-core wdiff zip
+          python-yaml rpm ruby subversion ttf-dejavu-core wdiff xcompmgr zip
           $chromeos_dev_list"
 
 # 64-bit systems need a minimum set of 32-bit compat packages for the pre-built
