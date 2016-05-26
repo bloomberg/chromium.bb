@@ -4,7 +4,6 @@
 
 package org.chromium.device.usb;
 
-import android.hardware.usb.UsbConstants;
 import android.hardware.usb.UsbEndpoint;
 
 import org.chromium.base.Log;
@@ -39,18 +38,6 @@ final class ChromeUsbEndpoint {
     }
 
     @CalledByNative
-    private int getDirection() {
-        switch (mEndpoint.getDirection()) {
-            case UsbConstants.USB_DIR_IN:
-                return UsbEndpointDirection.USB_DIRECTION_INBOUND;
-            case UsbConstants.USB_DIR_OUT:
-                return UsbEndpointDirection.USB_DIRECTION_OUTBOUND;
-            default:
-                throw new AssertionError();
-        }
-    }
-
-    @CalledByNative
     private int getMaxPacketSize() {
         return mEndpoint.getMaxPacketSize();
     }
@@ -58,22 +45,6 @@ final class ChromeUsbEndpoint {
     @CalledByNative
     private int getAttributes() {
         return mEndpoint.getAttributes();
-    }
-
-    @CalledByNative
-    private int getType() {
-        switch (mEndpoint.getType()) {
-            case UsbConstants.USB_ENDPOINT_XFER_CONTROL:
-                return UsbTransferType.USB_TRANSFER_CONTROL;
-            case UsbConstants.USB_ENDPOINT_XFER_ISOC:
-                return UsbTransferType.USB_TRANSFER_ISOCHRONOUS;
-            case UsbConstants.USB_ENDPOINT_XFER_BULK:
-                return UsbTransferType.USB_TRANSFER_BULK;
-            case UsbConstants.USB_ENDPOINT_XFER_INT:
-                return UsbTransferType.USB_TRANSFER_INTERRUPT;
-            default:
-                throw new AssertionError();
-        }
     }
 
     @CalledByNative

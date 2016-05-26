@@ -409,14 +409,8 @@ class MockUsbDevice : public UsbDevice {
         config_desc_(1, false, false, 0) {
     UsbInterfaceDescriptor interface_desc(0, 0, T::kClass, T::kSubclass,
                                           T::kProtocol);
-    interface_desc.endpoints.emplace_back(0x81, device::USB_DIRECTION_INBOUND,
-                                          512, device::USB_SYNCHRONIZATION_NONE,
-                                          device::USB_TRANSFER_BULK,
-                                          device::USB_USAGE_DATA, 0);
-    interface_desc.endpoints.emplace_back(0x01, device::USB_DIRECTION_OUTBOUND,
-                                          512, device::USB_SYNCHRONIZATION_NONE,
-                                          device::USB_TRANSFER_BULK,
-                                          device::USB_USAGE_DATA, 0);
+    interface_desc.endpoints.emplace_back(0x81, 0x02, 512, 0);
+    interface_desc.endpoints.emplace_back(0x01, 0x02, 512, 0);
     config_desc_.interfaces.push_back(interface_desc);
   }
 

@@ -19,8 +19,6 @@ namespace device {
 
 class UsbDeviceHandle;
 
-// A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.device.usb
 enum UsbTransferType {
   USB_TRANSFER_CONTROL = 0,
   USB_TRANSFER_ISOCHRONOUS,
@@ -28,8 +26,6 @@ enum UsbTransferType {
   USB_TRANSFER_INTERRUPT,
 };
 
-// A Java counterpart will be generated for this enum.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.device.usb
 enum UsbEndpointDirection {
   USB_DIRECTION_INBOUND = 0,
   USB_DIRECTION_OUTBOUND,
@@ -43,19 +39,23 @@ enum UsbSynchronizationType {
 };
 
 enum UsbUsageType {
+  // Isochronous endpoint usages.
   USB_USAGE_DATA = 0,
   USB_USAGE_FEEDBACK,
-  USB_USAGE_EXPLICIT_FEEDBACK
+  USB_USAGE_EXPLICIT_FEEDBACK,
+  // Interrupt endpoint usages.
+  USB_USAGE_PERIODIC,
+  USB_USAGE_NOTIFICATION,
+  // Not currently defined by any spec.
+  USB_USAGE_RESERVED,
 };
 
 struct UsbEndpointDescriptor {
+  UsbEndpointDescriptor(const uint8_t* data);
   UsbEndpointDescriptor(uint8_t address,
-                        UsbEndpointDirection direction,
+                        uint8_t attributes,
                         uint16_t maximum_packet_size,
-                        UsbSynchronizationType synchronization_type,
-                        UsbTransferType transfer_type,
-                        UsbUsageType usage_type,
-                        uint16_t polling_interval);
+                        uint8_t polling_interval);
   UsbEndpointDescriptor() = delete;
   UsbEndpointDescriptor(const UsbEndpointDescriptor& other);
   ~UsbEndpointDescriptor();
@@ -66,11 +66,12 @@ struct UsbEndpointDescriptor {
   UsbSynchronizationType synchronization_type;
   UsbTransferType transfer_type;
   UsbUsageType usage_type;
-  uint16_t polling_interval;
+  uint8_t polling_interval;
   std::vector<uint8_t> extra_data;
 };
 
 struct UsbInterfaceDescriptor {
+  UsbInterfaceDescriptor(const uint8_t* data);
   UsbInterfaceDescriptor(uint8_t interface_number,
                          uint8_t alternate_setting,
                          uint8_t interface_class,
@@ -92,10 +93,11 @@ struct UsbInterfaceDescriptor {
 };
 
 struct UsbConfigDescriptor {
+  UsbConfigDescriptor(const uint8_t* data);
   UsbConfigDescriptor(uint8_t configuration_value,
                       bool self_powered,
                       bool remote_wakeup,
-                      uint16_t maximum_power);
+                      uint8_t maximum_power);
   UsbConfigDescriptor() = delete;
   UsbConfigDescriptor(const UsbConfigDescriptor& other);
   ~UsbConfigDescriptor();
@@ -107,9 +109,30 @@ struct UsbConfigDescriptor {
   uint8_t configuration_value;
   bool self_powered;
   bool remote_wakeup;
-  uint16_t maximum_power;
+  uint8_t maximum_power;
   std::vector<UsbInterfaceDescriptor> interfaces;
   std::vector<uint8_t> extra_data;
+};
+
+struct UsbDeviceDescriptor {
+  UsbDeviceDescriptor();
+  ~UsbDeviceDescriptor();
+
+  // Parses |buffer| for USB descriptors. Any configuration descriptors found
+  // will be added to |configurations|. If a device descriptor is found it will
+  // be used to populate this struct's fields. This function may be called more
+  // than once (i.e. for multiple buffers containing a configuration descriptor
+  // each).
+  bool Parse(const std::vector<uint8_t>& buffer);
+
+  uint16_t usb_version = 0;
+  uint8_t device_class = 0;
+  uint8_t device_subclass = 0;
+  uint8_t device_protocol = 0;
+  uint16_t vendor_id = 0;
+  uint16_t product_id = 0;
+  uint16_t device_version = 0;
+  std::vector<UsbConfigDescriptor> configurations;
 };
 
 bool ParseUsbStringDescriptor(const std::vector<uint8_t>& descriptor,

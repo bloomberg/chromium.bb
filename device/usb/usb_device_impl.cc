@@ -39,66 +39,6 @@ namespace device {
 
 namespace {
 
-UsbEndpointDirection GetDirection(
-    const libusb_endpoint_descriptor* descriptor) {
-  switch (descriptor->bEndpointAddress & LIBUSB_ENDPOINT_DIR_MASK) {
-    case LIBUSB_ENDPOINT_IN:
-      return USB_DIRECTION_INBOUND;
-    case LIBUSB_ENDPOINT_OUT:
-      return USB_DIRECTION_OUTBOUND;
-    default:
-      NOTREACHED();
-      return USB_DIRECTION_INBOUND;
-  }
-}
-
-UsbSynchronizationType GetSynchronizationType(
-    const libusb_endpoint_descriptor* descriptor) {
-  switch ((descriptor->bmAttributes & LIBUSB_ISO_SYNC_TYPE_MASK) >> 2) {
-    case LIBUSB_ISO_SYNC_TYPE_NONE:
-      return USB_SYNCHRONIZATION_NONE;
-    case LIBUSB_ISO_SYNC_TYPE_ASYNC:
-      return USB_SYNCHRONIZATION_ASYNCHRONOUS;
-    case LIBUSB_ISO_SYNC_TYPE_ADAPTIVE:
-      return USB_SYNCHRONIZATION_ADAPTIVE;
-    case LIBUSB_ISO_SYNC_TYPE_SYNC:
-      return USB_SYNCHRONIZATION_SYNCHRONOUS;
-    default:
-      NOTREACHED();
-      return USB_SYNCHRONIZATION_NONE;
-  }
-}
-
-UsbTransferType GetTransferType(const libusb_endpoint_descriptor* descriptor) {
-  switch (descriptor->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK) {
-    case LIBUSB_TRANSFER_TYPE_CONTROL:
-      return USB_TRANSFER_CONTROL;
-    case LIBUSB_TRANSFER_TYPE_ISOCHRONOUS:
-      return USB_TRANSFER_ISOCHRONOUS;
-    case LIBUSB_TRANSFER_TYPE_BULK:
-      return USB_TRANSFER_BULK;
-    case LIBUSB_TRANSFER_TYPE_INTERRUPT:
-      return USB_TRANSFER_INTERRUPT;
-    default:
-      NOTREACHED();
-      return USB_TRANSFER_CONTROL;
-  }
-}
-
-UsbUsageType GetUsageType(const libusb_endpoint_descriptor* descriptor) {
-  switch ((descriptor->bmAttributes & LIBUSB_ISO_USAGE_TYPE_MASK) >> 4) {
-    case LIBUSB_ISO_USAGE_TYPE_DATA:
-      return USB_USAGE_DATA;
-    case LIBUSB_ISO_USAGE_TYPE_FEEDBACK:
-      return USB_USAGE_FEEDBACK;
-    case LIBUSB_ISO_USAGE_TYPE_IMPLICIT:
-      return USB_USAGE_EXPLICIT_FEEDBACK;
-    default:
-      NOTREACHED();
-      return USB_USAGE_DATA;
-  }
-}
-
 void ConvertConfigDescriptor(const libusb_config_descriptor* platform_config,
                              UsbConfigDescriptor* configuration) {
   for (size_t i = 0; i < platform_config->bNumInterfaces; ++i) {
@@ -118,12 +58,10 @@ void ConvertConfigDescriptor(const libusb_config_descriptor* platform_config,
       for (size_t k = 0; k < platform_alt_setting->bNumEndpoints; ++k) {
         const struct libusb_endpoint_descriptor* platform_endpoint =
             &platform_alt_setting->endpoint[k];
-        UsbEndpointDescriptor endpoint(
-            platform_endpoint->bEndpointAddress,
-            GetDirection(platform_endpoint), platform_endpoint->wMaxPacketSize,
-            GetSynchronizationType(platform_endpoint),
-            GetTransferType(platform_endpoint), GetUsageType(platform_endpoint),
-            platform_endpoint->bInterval);
+        UsbEndpointDescriptor endpoint(platform_endpoint->bEndpointAddress,
+                                       platform_endpoint->bmAttributes,
+                                       platform_endpoint->wMaxPacketSize,
+                                       platform_endpoint->bInterval);
         endpoint.extra_data.assign(
             platform_endpoint->extra,
             platform_endpoint->extra + platform_endpoint->extra_length);

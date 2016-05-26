@@ -24,7 +24,19 @@ using IndexMapPtr = std::unique_ptr<IndexMap>;
 
 // Standard USB requests and descriptor types:
 const uint8_t kGetDescriptorRequest = 0x06;
+
+const uint8_t kDeviceDescriptorType = 0x01;
+const uint8_t kConfigurationDescriptorType = 0x02;
 const uint8_t kStringDescriptorType = 0x03;
+const uint8_t kInterfaceDescriptorType = 0x04;
+const uint8_t kEndpointDescriptorType = 0x05;
+const uint8_t kInterfaceAssociationDescriptorType = 11;
+
+const uint8_t kDeviceDescriptorLength = 18;
+const uint8_t kConfigurationDescriptorLength = 9;
+const uint8_t kInterfaceDescriptorLength = 9;
+const uint8_t kEndpointDescriptorLength = 7;
+const uint8_t kInterfaceAssociationDescriptorLength = 8;
 
 const int kControlTransferTimeout = 60000;  // 1 minute
 
@@ -44,8 +56,6 @@ struct UsbInterfaceAssociationDescriptor {
 void ParseInterfaceAssociationDescriptors(
     const std::vector<uint8_t>& buffer,
     std::vector<UsbInterfaceAssociationDescriptor>* functions) {
-  const uint8_t kInterfaceAssociationDescriptorType = 11;
-  const uint8_t kInterfaceAssociationDescriptorLength = 8;
   std::vector<uint8_t>::const_iterator it = buffer.begin();
 
   while (it != buffer.end()) {
@@ -124,26 +134,96 @@ void OnReadLanguageIds(scoped_refptr<UsbDeviceHandle> device_handle,
 
 }  // namespace
 
-UsbEndpointDescriptor::UsbEndpointDescriptor(
-    uint8_t address,
-    UsbEndpointDirection direction,
-    uint16_t maximum_packet_size,
-    UsbSynchronizationType synchronization_type,
-    UsbTransferType transfer_type,
-    UsbUsageType usage_type,
-    uint16_t polling_interval)
+UsbEndpointDescriptor::UsbEndpointDescriptor(const uint8_t* data)
+    : UsbEndpointDescriptor(data[2] /* bEndpointAddress */,
+                            data[3] /* bmAttributes */,
+                            data[4] + (data[5] << 8) /* wMaxPacketSize */,
+                            data[6] /* bInterval */) {
+  DCHECK_GE(data[0], kEndpointDescriptorLength);
+  DCHECK_EQ(data[1], kEndpointDescriptorType);
+}
+
+UsbEndpointDescriptor::UsbEndpointDescriptor(uint8_t address,
+                                             uint8_t attributes,
+                                             uint16_t maximum_packet_size,
+                                             uint8_t polling_interval)
     : address(address),
-      direction(direction),
       maximum_packet_size(maximum_packet_size),
-      synchronization_type(synchronization_type),
-      transfer_type(transfer_type),
-      usage_type(usage_type),
-      polling_interval(polling_interval) {}
+      polling_interval(polling_interval) {
+  // These fields are defined in Table 9-24 of the USB 3.1 Specification.
+  switch (address & 0x80) {
+    case 0x00:
+      direction = USB_DIRECTION_OUTBOUND;
+      break;
+    case 0x80:
+      direction = USB_DIRECTION_INBOUND;
+      break;
+  }
+  switch (attributes & 0x03) {
+    case 0x00:
+      transfer_type = USB_TRANSFER_CONTROL;
+      break;
+    case 0x01:
+      transfer_type = USB_TRANSFER_ISOCHRONOUS;
+      break;
+    case 0x02:
+      transfer_type = USB_TRANSFER_BULK;
+      break;
+    case 0x03:
+      transfer_type = USB_TRANSFER_INTERRUPT;
+      break;
+  }
+  switch (attributes & 0x0F) {
+    // Isochronous endpoints only.
+    case 0x05:
+      synchronization_type = USB_SYNCHRONIZATION_ASYNCHRONOUS;
+      break;
+    case 0x09:
+      synchronization_type = USB_SYNCHRONIZATION_ADAPTIVE;
+      break;
+    case 0x0D:
+      synchronization_type = USB_SYNCHRONIZATION_SYNCHRONOUS;
+      break;
+    default:
+      synchronization_type = USB_SYNCHRONIZATION_NONE;
+  }
+  switch (attributes & 0x33) {
+    // Isochronous endpoint usages.
+    case 0x01:
+      usage_type = USB_USAGE_DATA;
+      break;
+    case 0x11:
+      usage_type = USB_USAGE_FEEDBACK;
+      break;
+    case 0x21:
+      usage_type = USB_USAGE_EXPLICIT_FEEDBACK;
+      break;
+    // Interrupt endpoint usages.
+    case 0x03:
+      usage_type = USB_USAGE_PERIODIC;
+      break;
+    case 0x13:
+      usage_type = USB_USAGE_NOTIFICATION;
+      break;
+    default:
+      usage_type = USB_USAGE_RESERVED;
+  }
+}
 
 UsbEndpointDescriptor::UsbEndpointDescriptor(
     const UsbEndpointDescriptor& other) = default;
 
 UsbEndpointDescriptor::~UsbEndpointDescriptor() = default;
+
+UsbInterfaceDescriptor::UsbInterfaceDescriptor(const uint8_t* data)
+    : UsbInterfaceDescriptor(data[2] /* bInterfaceNumber */,
+                             data[3] /* bAlternateSetting */,
+                             data[5] /* bInterfaceClass */,
+                             data[6] /* bInterfaceSubClass */,
+                             data[7] /* bInterfaceProtocol */) {
+  DCHECK_GE(data[0], kInterfaceDescriptorLength);
+  DCHECK_EQ(data[1], kInterfaceDescriptorType);
+}
 
 UsbInterfaceDescriptor::UsbInterfaceDescriptor(uint8_t interface_number,
                                                uint8_t alternate_setting,
@@ -162,10 +242,19 @@ UsbInterfaceDescriptor::UsbInterfaceDescriptor(
 
 UsbInterfaceDescriptor::~UsbInterfaceDescriptor() = default;
 
+UsbConfigDescriptor::UsbConfigDescriptor(const uint8_t* data)
+    : UsbConfigDescriptor(data[5] /* bConfigurationValue */,
+                          (data[7] & 0x02) != 0 /* bmAttributes */,
+                          (data[7] & 0x04) != 0 /* bmAttributes */,
+                          data[8] /* bMaxPower */) {
+  DCHECK_GE(data[0], kConfigurationDescriptorLength);
+  DCHECK_EQ(data[1], kConfigurationDescriptorType);
+}
+
 UsbConfigDescriptor::UsbConfigDescriptor(uint8_t configuration_value,
                                          bool self_powered,
                                          bool remote_wakeup,
-                                         uint16_t maximum_power)
+                                         uint8_t maximum_power)
     : configuration_value(configuration_value),
       self_powered(self_powered),
       remote_wakeup(remote_wakeup),
@@ -220,6 +309,81 @@ void UsbConfigDescriptor::AssignFirstInterfaceNumbers() {
       ++interface_it;
     }
   }
+}
+
+UsbDeviceDescriptor::UsbDeviceDescriptor() {}
+
+UsbDeviceDescriptor::~UsbDeviceDescriptor() {}
+
+bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {
+  UsbConfigDescriptor* last_config = nullptr;
+  UsbInterfaceDescriptor* last_interface = nullptr;
+  UsbEndpointDescriptor* last_endpoint = nullptr;
+
+  for (std::vector<uint8_t>::const_iterator it = buffer.begin();
+       it != buffer.end();
+       /* incremented internally */) {
+    const uint8_t* data = &it[0];
+    uint8_t length = data[0];
+    if (length < 2 || length > std::distance(it, buffer.end()))
+      return false;
+    it += length;
+
+    switch (data[1] /* bDescriptorType */) {
+      case kDeviceDescriptorType:
+        if (configurations.size() > 0 || length < kDeviceDescriptorLength)
+          return false;
+        usb_version = data[2] | data[3] << 8;
+        device_class = data[4];
+        device_subclass = data[5];
+        device_protocol = data[6];
+        vendor_id = data[8] | data[9] << 8;
+        product_id = data[10] | data[11] << 8;
+        device_version = data[12] | data[13] << 8;
+        break;
+      case kConfigurationDescriptorType:
+        if (length < kConfigurationDescriptorLength)
+          return false;
+        if (last_config)
+          last_config->AssignFirstInterfaceNumbers();
+        configurations.emplace_back(data);
+        last_config = &configurations.back();
+        last_interface = nullptr;
+        last_endpoint = nullptr;
+        break;
+      case kInterfaceDescriptorType:
+        if (!last_config || length < kInterfaceDescriptorLength)
+          return false;
+        last_config->interfaces.emplace_back(data);
+        last_interface = &last_config->interfaces.back();
+        last_endpoint = nullptr;
+        break;
+      case kEndpointDescriptorType:
+        if (!last_interface || length < kEndpointDescriptorLength)
+          return false;
+        last_interface->endpoints.emplace_back(data);
+        last_endpoint = &last_interface->endpoints.back();
+        break;
+      default:
+        // Append unknown descriptor types to the |extra_data| field of the last
+        // descriptor.
+        if (last_endpoint) {
+          last_endpoint->extra_data.insert(last_endpoint->extra_data.end(),
+                                           data, data + length);
+        } else if (last_interface) {
+          last_interface->extra_data.insert(last_interface->extra_data.end(),
+                                            data, data + length);
+        } else if (last_config) {
+          last_config->extra_data.insert(last_config->extra_data.end(), data,
+                                         data + length);
+        }
+    }
+  }
+
+  if (last_config)
+    last_config->AssignFirstInterfaceNumbers();
+
+  return true;
 }
 
 bool ParseUsbStringDescriptor(const std::vector<uint8_t>& descriptor,
