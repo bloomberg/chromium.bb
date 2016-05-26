@@ -33,6 +33,8 @@ class BlimpMessageSender : public BlimpMessageProcessor {
   }
 
   // BlimpMessageProcessor implementation.
+  // |callback| receives net::OK on write success, or receives an error code
+  // otherwise.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
@@ -91,10 +93,17 @@ void BlimpMessageSender::ProcessMessage(
 void BlimpMessageSender::OnWritePacketComplete(int result) {
   DVLOG(2) << "OnWritePacketComplete, result=" << result;
   DCHECK_NE(net::ERR_IO_PENDING, result);
-  base::ResetAndReturn(&pending_process_msg_callback_).Run(result);
+
+  // Create a stack-local copy of |pending_process_msg_callback_|, in case an
+  // observer deletes |this|.
+  net::CompletionCallback process_callback =
+      base::ResetAndReturn(&pending_process_msg_callback_);
+
   if (result != net::OK) {
     error_observer_->OnConnectionError(result);
   }
+
+  process_callback.Run(result);
 }
 
 }  // namespace
@@ -106,9 +115,8 @@ BlimpConnection::BlimpConnection(std::unique_ptr<PacketReader> reader,
       writer_(std::move(writer)),
       outgoing_msg_processor_(new BlimpMessageSender(writer_.get())) {
   DCHECK(writer_);
+  DCHECK(reader_);
 
-  // Observe the connection errors received by any of this connection's network
-  // objects.
   message_pump_->set_error_observer(this);
   BlimpMessageSender* sender =
       static_cast<BlimpMessageSender*>(outgoing_msg_processor_.get());

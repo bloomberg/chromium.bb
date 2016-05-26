@@ -47,6 +47,8 @@ class BlimpConnectionTest : public testing::Test {
 
   ~BlimpConnectionTest() override {}
 
+  void DropConnection() { connection_.reset(); }
+
  protected:
   std::unique_ptr<BlimpMessage> CreateInputMessage() {
     InputMessage* input;
@@ -132,6 +134,26 @@ TEST_F(BlimpConnectionTest, AsyncTwoPacketsWriteWithError) {
                          complete_cb_2.callback());
   base::ResetAndReturn(&write_packet_cb).Run(net::ERR_FAILED);
   EXPECT_EQ(net::ERR_FAILED, complete_cb_2.WaitForResult());
+}
+
+TEST_F(BlimpConnectionTest, DeleteHappyObserversAreOK) {
+  net::CompletionCallback write_packet_cb;
+
+  InSequence s;
+  EXPECT_CALL(*writer_,
+              WritePacket(BufferEqualsProto(*CreateInputMessage()), _))
+      .WillOnce(SaveArg<1>(&write_packet_cb))
+      .RetiresOnSaturation();
+  EXPECT_CALL(error_observer1_, OnConnectionError(net::ERR_FAILED))
+      .WillOnce(testing::InvokeWithoutArgs(
+          this, &BlimpConnectionTest::DropConnection));
+
+  BlimpMessageProcessor* sender = connection_->GetOutgoingMessageProcessor();
+  net::TestCompletionCallback complete_cb_1;
+  sender->ProcessMessage(CreateInputMessage(),
+                         complete_cb_1.callback());
+  base::ResetAndReturn(&write_packet_cb).Run(net::ERR_FAILED);
+  EXPECT_EQ(net::ERR_FAILED, complete_cb_1.WaitForResult());
 }
 
 }  // namespace

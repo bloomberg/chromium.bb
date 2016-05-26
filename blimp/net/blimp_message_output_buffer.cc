@@ -144,17 +144,13 @@ void BlimpMessageOutputBuffer::WriteNextMessageIfReady() {
 }
 
 void BlimpMessageOutputBuffer::OnWriteComplete(int result) {
-  DCHECK_LE(result, net::OK);
-  VLOG(2) << "Write complete, result=" << result;
+  DCHECK_LE(result, 0);
 
+  VLOG(2) << "Write result=" << net::ErrorToString(result);
   if (result == net::OK) {
     ack_buffer_.push_back(std::move(write_buffer_.front()));
     write_buffer_.pop_front();
     WriteNextMessageIfReady();
-  } else {
-    // An error occurred while writing to the network connection.
-    // Stop writing more messages until a new connection is established.
-    DLOG(WARNING) << "Write error (result=" << result << ")";
   }
 }
 
