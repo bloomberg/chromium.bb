@@ -5,6 +5,7 @@
 <link rel="import" href="/settings_page/main_page_behavior.html">
 <link rel="import" href="/settings_page/settings_animated_pages.html">
 <link rel="import" href="/settings_page/settings_section.html">
+<link rel="import" href="/settings_page_css.html">
 <link rel="import" href="/settings_shared_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
@@ -20,9 +21,8 @@
 </if>
 
 <dom-module id="settings-about-page">
-  <link rel="import" type="css" href="/settings_page.css">
   <template>
-    <style include="settings-shared main-page-styles">
+    <style include="settings-shared settings-page-styles">
       span {
         font-size: 20px;
         margin-top: auto;
