@@ -1692,7 +1692,10 @@ void HTMLMediaElement::seek(double time)
     DVLOG(MEDIA_LOG_LEVEL) << "seek(" << (void*)this << ", " << time << ")";
 
     // 2 - If the media element's readyState is HAVE_NOTHING, abort these steps.
-    if (m_readyState == HAVE_NOTHING)
+    // FIXME: remove m_webMediaPlayer check once we figure out how
+    // m_webMediaPlayer is going out of sync with readystate.
+    // m_webMediaPlayer is cleared but readystate is not set to HAVE_NOTHING.
+    if (!m_webMediaPlayer || m_readyState == HAVE_NOTHING)
         return;
 
     // Ignore preload none and start load if necessary.
