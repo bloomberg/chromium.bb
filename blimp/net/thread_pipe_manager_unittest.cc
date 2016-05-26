@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/net/blimp_message_thread_pipe.h"
@@ -119,8 +118,7 @@ class ThreadPipeManagerTest : public testing::Test {
     connection_handler_ = base::WrapUnique(
         new FakeBrowserConnectionHandler(thread_.task_runner()));
     pipe_manager_ = base::WrapUnique(new ThreadPipeManager(
-        thread_.task_runner(), base::SequencedTaskRunnerHandle::Get(),
-        connection_handler_.get()));
+        thread_.task_runner(), connection_handler_.get()));
 
     input_feature_.reset(
         new FakeFeature(BlimpMessage::kInput, pipe_manager_.get()));

@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_net_export.h"
 
@@ -22,18 +23,18 @@ namespace blimp {
 class BlimpMessageProcessor;
 class BlimpMessageThreadPipe;
 class BrowserConnectionHandler;
-class IoThreadPipeManager;
+class ConnectionThreadPipeManager;
 
-// This class is used on the UI thread for registering features and setting up
-// BlimpMessageThreadPipes for communicating with |connection_handler| on the
-// IO thread.
+// Manages routing of messages between a |connection_manager| operating on one
+// SequencedTaskRunner, and per-feature message processors running on the same
+// TaskRunner as the caller. This is used to allow Blimp feature implementations
+// to operate on the UI thread, with network I/O delegated to an IO thread.
 class BLIMP_NET_EXPORT ThreadPipeManager {
  public:
   // Caller is responsible for ensuring that |connection_handler| outlives
   // |this|.
   explicit ThreadPipeManager(
-      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& connection_task_runner,
       BrowserConnectionHandler* connection_handler);
 
   ~ThreadPipeManager();
@@ -46,16 +47,16 @@ class BLIMP_NET_EXPORT ThreadPipeManager {
       BlimpMessageProcessor* incoming_processor);
 
  private:
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> connection_task_runner_;
 
   // Container for BlimpMessageThreadPipes that are destroyed on IO thread.
-  std::unique_ptr<IoThreadPipeManager> io_pipe_manager_;
+  std::unique_ptr<ConnectionThreadPipeManager> connection_pipe_manager_;
 
-  // Pipes for routing messages from the IO to the UI thread.
-  // Incoming messages are only routed to the UI thread since all features run
-  // there.
+  // Pipes for routing incoming messages from the connection's task runner
+  // to handlers on the caller's task runner.
   std::vector<std::unique_ptr<BlimpMessageThreadPipe>> incoming_pipes_;
+
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(ThreadPipeManager);
 };

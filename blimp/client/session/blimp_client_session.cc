@@ -219,9 +219,9 @@ void BlimpClientSession::OnAssignmentConnectionAttempted(
     const Assignment& assignment) {}
 
 void BlimpClientSession::RegisterFeatures() {
-  thread_pipe_manager_ = base::WrapUnique(new ThreadPipeManager(
-      io_thread_.task_runner(), base::SequencedTaskRunnerHandle::Get(),
-      net_components_->GetBrowserConnectionHandler()));
+  thread_pipe_manager_ = base::WrapUnique(
+      new ThreadPipeManager(io_thread_.task_runner(),
+                            net_components_->GetBrowserConnectionHandler()));
 
   // Register features' message senders and receivers.
   tab_control_feature_->set_outgoing_message_processor(

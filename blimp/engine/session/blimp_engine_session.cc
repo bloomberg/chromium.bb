@@ -290,8 +290,6 @@ void BlimpEngineSession::RegisterFeatures() {
   thread_pipe_manager_.reset(new ThreadPipeManager(
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::IO),
-      content::BrowserThread::GetMessageLoopProxyForThread(
-          content::BrowserThread::UI),
       net_components_->GetBrowserConnectionHandler()));
 
   // Register features' message senders and receivers.

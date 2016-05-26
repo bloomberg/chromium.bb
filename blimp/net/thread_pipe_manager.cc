@@ -6,20 +6,23 @@
 
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/blimp_message_thread_pipe.h"
 #include "blimp/net/browser_connection_handler.h"
 
 namespace blimp {
 
-// IoThreadPipeManager is created on the UI thread, and then used and destroyed
-// on the IO thread.
-// It works with |connection_handler| to register features on the IO thread,
-// and manages IO-thread-side BlimpMessageThreadPipes.
-class IoThreadPipeManager {
+// ConnectionThreadPipeManager manages ThreadPipeManager resources used on the
+// connection thread. It is created on the caller thread, and then has pipe
+// and proxy pairs passed to it on the connection thread, to register with
+// the supplied |connection_handler|. It is finally deleted on the connection
+// thread.
+class ConnectionThreadPipeManager {
  public:
-  explicit IoThreadPipeManager(BrowserConnectionHandler* connection_handler);
-  virtual ~IoThreadPipeManager();
+  explicit ConnectionThreadPipeManager(
+      BrowserConnectionHandler* connection_handler);
+  virtual ~ConnectionThreadPipeManager();
 
   // Connects message pipes between the specified feature and the network layer,
   // using |incoming_proxy| as the incoming message processor, and connecting
@@ -32,28 +35,28 @@ class IoThreadPipeManager {
   BrowserConnectionHandler* connection_handler_;
 
   // Container for the feature-specific MessageProcessors.
-  // IO-side proxy for sending messages to UI thread.
+  // connection-side proxy for sending messages to caller thread.
   std::vector<std::unique_ptr<BlimpMessageProcessor>> incoming_proxies_;
 
   // Containers for the MessageProcessors used to write feature-specific
   // messages to the network, and the thread-pipe endpoints through which
-  // they are used from the UI thread.
+  // they are used from the caller thread.
   std::vector<std::unique_ptr<BlimpMessageProcessor>>
       outgoing_message_processors_;
   std::vector<std::unique_ptr<BlimpMessageThreadPipe>> outgoing_pipes_;
 
-  DISALLOW_COPY_AND_ASSIGN(IoThreadPipeManager);
+  DISALLOW_COPY_AND_ASSIGN(ConnectionThreadPipeManager);
 };
 
-IoThreadPipeManager::IoThreadPipeManager(
+ConnectionThreadPipeManager::ConnectionThreadPipeManager(
     BrowserConnectionHandler* connection_handler)
     : connection_handler_(connection_handler) {
   DCHECK(connection_handler_);
 }
 
-IoThreadPipeManager::~IoThreadPipeManager() {}
+ConnectionThreadPipeManager::~ConnectionThreadPipeManager() {}
 
-void IoThreadPipeManager::RegisterFeature(
+void ConnectionThreadPipeManager::RegisterFeature(
     BlimpMessage::FeatureCase feature_case,
     std::unique_ptr<BlimpMessageThreadPipe> outgoing_pipe,
     std::unique_ptr<BlimpMessageProcessor> incoming_proxy) {
@@ -71,40 +74,45 @@ void IoThreadPipeManager::RegisterFeature(
 }
 
 ThreadPipeManager::ThreadPipeManager(
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& connection_task_runner,
     BrowserConnectionHandler* connection_handler)
-    : io_task_runner_(io_task_runner),
-      ui_task_runner_(ui_task_runner),
-      io_pipe_manager_(new IoThreadPipeManager(connection_handler)) {}
+    : connection_task_runner_(connection_task_runner),
+      connection_pipe_manager_(
+          new ConnectionThreadPipeManager(connection_handler)) {}
 
 ThreadPipeManager::~ThreadPipeManager() {
-  io_task_runner_->DeleteSoon(FROM_HERE, io_pipe_manager_.release());
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+
+  connection_task_runner_->DeleteSoon(FROM_HERE,
+                                      connection_pipe_manager_.release());
 }
 
 std::unique_ptr<BlimpMessageProcessor> ThreadPipeManager::RegisterFeature(
     BlimpMessage::FeatureCase feature_case,
     BlimpMessageProcessor* incoming_processor) {
+  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+
   // Creates an outgoing pipe and a proxy for forwarding messages
-  // from features on the UI thread to network components on the IO thread.
+  // from features on the caller thread to network components on the
+  // connection thread.
   std::unique_ptr<BlimpMessageThreadPipe> outgoing_pipe(
-      new BlimpMessageThreadPipe(io_task_runner_));
+      new BlimpMessageThreadPipe(connection_task_runner_));
   std::unique_ptr<BlimpMessageProcessor> outgoing_proxy =
       outgoing_pipe->CreateProxy();
 
   // Creates an incoming pipe and a proxy for receiving messages
-  // from network components on the IO thread.
+  // from network components on the connection thread.
   std::unique_ptr<BlimpMessageThreadPipe> incoming_pipe(
-      new BlimpMessageThreadPipe(ui_task_runner_));
+      new BlimpMessageThreadPipe(base::SequencedTaskRunnerHandle::Get()));
   incoming_pipe->set_target_processor(incoming_processor);
   std::unique_ptr<BlimpMessageProcessor> incoming_proxy =
       incoming_pipe->CreateProxy();
 
-  // Finishes registration on IO thread.
-  io_task_runner_->PostTask(
+  // Finishes registration on connection thread.
+  connection_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IoThreadPipeManager::RegisterFeature,
-                 base::Unretained(io_pipe_manager_.get()), feature_case,
+      base::Bind(&ConnectionThreadPipeManager::RegisterFeature,
+                 base::Unretained(connection_pipe_manager_.get()), feature_case,
                  base::Passed(std::move(outgoing_pipe)),
                  base::Passed(std::move(incoming_proxy))));
 
