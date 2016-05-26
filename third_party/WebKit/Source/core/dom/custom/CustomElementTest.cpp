@@ -4,6 +4,11 @@
 
 #include "core/dom/custom/CustomElement.h"
 
+#include "core/HTMLNames.h"
+#include "core/SVGNames.h"
+#include "core/dom/Document.h"
+#include "core/html/HTMLElement.h"
+#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -119,6 +124,63 @@ TEST(CustomElementTest, TestIsValidNameHyphenContainingElementNames)
     EXPECT_FALSE(CustomElement::isValidName("font-face-format"));
     EXPECT_FALSE(CustomElement::isValidName("font-face-name"));
     EXPECT_FALSE(CustomElement::isValidName("missing-glyph"));
+}
+
+TEST(CustomElementTest, StateByParser)
+{
+    const char* bodyContent = "<div id=div></div>"
+        "<a-a id=v1v0></a-a>"
+        "<font-face id=v0></font-face>";
+    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create();
+    Document& document = pageHolder->document();
+    document.body()->setInnerHTML(String::fromUTF8(bodyContent), ASSERT_NO_EXCEPTION);
+
+    struct {
+        const char* id;
+        CustomElementState state;
+        Element::V0CustomElementState v0state;
+    } parserData[] = {
+        { "div", CustomElementState::Uncustomized, Element::V0NotCustomElement },
+        { "v1v0", CustomElementState::Undefined, Element::V0WaitingForUpgrade },
+        { "v0", CustomElementState::Uncustomized, Element::V0WaitingForUpgrade },
+    };
+    for (const auto& data : parserData) {
+        Element* element = document.getElementById(data.id);
+        EXPECT_EQ(data.state, element->getCustomElementState()) << data.id;
+        EXPECT_EQ(data.v0state, element->getV0CustomElementState()) << data.id;
+    }
+}
+
+TEST(CustomElementTest, StateByCreateElement)
+{
+    struct {
+        const char* name;
+        CustomElementState state;
+        Element::V0CustomElementState v0state;
+    } createElementData[] = {
+        { "div", CustomElementState::Uncustomized, Element::V0NotCustomElement },
+        { "a-a", CustomElementState::Undefined, Element::V0WaitingForUpgrade },
+        // TODO(pdr): <font-face> should be V0NotCustomElement as per the spec,
+        // but was regressed to be V0WaitingForUpgrade in
+        // http://crrev.com/656913006
+        { "font-face", CustomElementState::Uncustomized, Element::V0WaitingForUpgrade },
+        { "_-X", CustomElementState::Uncustomized, Element::V0WaitingForUpgrade },
+    };
+    OwnPtr<DummyPageHolder> pageHolder = DummyPageHolder::create();
+    Document& document = pageHolder->document();
+    for (const auto& data : createElementData) {
+        Element* element = document.createElement(data.name, ASSERT_NO_EXCEPTION);
+        EXPECT_EQ(data.state, element->getCustomElementState()) << data.name;
+        EXPECT_EQ(data.v0state, element->getV0CustomElementState()) << data.name;
+
+        element = document.createElementNS(HTMLNames::xhtmlNamespaceURI, data.name, ASSERT_NO_EXCEPTION);
+        EXPECT_EQ(data.state, element->getCustomElementState()) << data.name;
+        EXPECT_EQ(data.v0state, element->getV0CustomElementState()) << data.name;
+
+        element = document.createElementNS(SVGNames::svgNamespaceURI, data.name, ASSERT_NO_EXCEPTION);
+        EXPECT_EQ(CustomElementState::Uncustomized, element->getCustomElementState()) << data.name;
+        EXPECT_EQ(data.v0state, element->getV0CustomElementState()) << data.name;
+    }
 }
 
 } // namespace blink

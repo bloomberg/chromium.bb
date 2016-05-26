@@ -4,6 +4,12 @@
 
 #include "core/dom/custom/CustomElement.h"
 
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/QualifiedName.h"
+#include "core/dom/custom/V0CustomElement.h"
+#include "core/dom/custom/V0CustomElementRegistrationContext.h"
+#include "core/html/HTMLElement.h"
 #include "platform/text/Character.h"
 #include "wtf/text/AtomicStringHash.h"
 
@@ -43,6 +49,45 @@ bool CustomElement::isValidName(const AtomicString& name)
     }
 
     return !hyphenContainingElementNames.contains(name);
+}
+
+bool CustomElement::shouldCreateCustomElement(Document& document, const AtomicString& localName)
+{
+    return RuntimeEnabledFeatures::customElementsV1Enabled()
+        && document.frame() && isValidName(localName);
+}
+
+bool CustomElement::shouldCreateCustomElement(Document& document, const QualifiedName& tagName)
+{
+    return shouldCreateCustomElement(document, tagName.localName())
+        && tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
+}
+
+HTMLElement* CustomElement::createCustomElement(Document& document, const AtomicString& localName)
+{
+    return createCustomElement(document,
+        QualifiedName(nullAtom, document.convertLocalName(localName), HTMLNames::xhtmlNamespaceURI));
+}
+
+HTMLElement* CustomElement::createCustomElement(Document& document, const QualifiedName& tagName)
+{
+    DCHECK(shouldCreateCustomElement(document, tagName));
+
+    // TODO(kojii): Look up already defined custom elements when custom element
+    // queues and upgrade are implemented.
+
+    HTMLElement* element;
+    if (V0CustomElement::isValidName(tagName.localName()) && document.registrationContext()) {
+        Element* v0element = document.registrationContext()->createCustomTagElement(document, tagName);
+        SECURITY_DCHECK(v0element->isHTMLElement());
+        element = toHTMLElement(v0element);
+    } else {
+        element = HTMLElement::create(tagName, document);
+    }
+
+    element->setCustomElementState(CustomElementState::Undefined);
+
+    return element;
 }
 
 } // namespace blink

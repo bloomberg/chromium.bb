@@ -105,6 +105,7 @@
 #include "core/dom/TreeWalker.h"
 #include "core/dom/VisitedLinkState.h"
 #include "core/dom/XMLDocument.h"
+#include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/V0CustomElementMicrotaskRunQueue.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "core/dom/shadow/ElementShadow.h"
@@ -679,7 +680,9 @@ Element* Document::createElement(const AtomicString& localName, const AtomicStri
 
     Element* element;
 
-    if (V0CustomElement::isValidName(localName) && registrationContext()) {
+    if (CustomElement::shouldCreateCustomElement(*this, localName)) {
+        element = CustomElement::createCustomElement(*this, localName);
+    } else if (V0CustomElement::isValidName(localName) && registrationContext()) {
         element = registrationContext()->createCustomTagElement(*this, QualifiedName(nullAtom, convertLocalName(localName), xhtmlNamespaceURI));
     } else {
         element = createElement(localName, exceptionState);
@@ -724,7 +727,9 @@ Element* Document::createElementNS(const AtomicString& namespaceURI, const Atomi
         return nullptr;
 
     Element* element;
-    if (V0CustomElement::isValidName(qName.localName()) && registrationContext())
+    if (CustomElement::shouldCreateCustomElement(*this, qName))
+        element = CustomElement::createCustomElement(*this, qName);
+    else if (V0CustomElement::isValidName(qName.localName()) && registrationContext())
         element = registrationContext()->createCustomTagElement(*this, qName);
     else
         element = createElement(qName, false);
