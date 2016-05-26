@@ -159,7 +159,7 @@ AC_ARG_WITH(readline,
   if test "$withval" != "no" -a "$withval" != "yes"; then
     RDL_DIR=$withval
     CPPFLAGS="${CPPFLAGS} -I$withval/include"
-    LIBS="${LIBS} -L$withval/lib"
+    LDFLAGS="${LDFLAGS} -L$withval/lib"
   fi
 ])
 AC_ARG_WITH(regexps,
@@ -195,7 +195,7 @@ AC_ARG_WITH(zlib,
   if test "$withval" != "no" -a "$withval" != "yes"; then
     Z_DIR=$withval
     CPPFLAGS="${CPPFLAGS} -I$withval/include"
-    LIBS="${LIBS} -L$withval/lib"
+    LDFLAGS="${LDFLAGS} -L$withval/lib"
   fi
 ])
 AC_ARG_WITH(lzma,
@@ -203,7 +203,7 @@ AC_ARG_WITH(lzma,
   if test "$withval" != "no" -a "$withval" != "yes"; then
     LZMA_DIR=$withval
     CPPFLAGS="${CPPFLAGS} -I$withval/include"
-    LIBS="${LIBS} -L$withval/lib"
+    LDFLAGS="${LDFLAGS} -L$withval/lib"
   fi
 ])
 AC_ARG_WITH(coverage,
@@ -399,8 +399,6 @@ else
 
      if test "x$have_libz" = "xno"; then
         AC_CHECK_HEADERS(zlib.h,
-            [SAVE_LDFLAGS="${LDFLAGS}"
-             LDFLAGS="-L${Z_DIR}/lib"
             AC_CHECK_LIB(z, gzread,[
                 have_libz=yes
                 if test "x${Z_DIR}" != "x"; then
@@ -415,7 +413,7 @@ else
                     Z_LIBS="-lz"
                 fi],
                 [have_libz=no])
-             LDFLAGS="${SAVE_LDFLAGS}"])
+             )
     else
 	# we still need to check for zlib.h header
 	AC_CHECK_HEADERS([zlib.h])
@@ -451,8 +449,6 @@ else
      # private dependencies, though, so static linking may fail.
      if test "x$have_liblzma" = "xno"; then
          AC_CHECK_HEADERS(lzma.h,
-	    [SAVE_LDFLAGS="${LDFLAGS}"
-	     LDFLAGS="-L${LZMA_DIR}/lib"
             AC_CHECK_LIB(lzma, lzma_code,[
                 have_liblzma=yes
                 if test "x${LZMA_DIR}" != "x"; then
@@ -462,7 +458,7 @@ else
                     LZMA_LIBS="-llzma"
                 fi],
                 [have_liblzma=no])
-	     LDFLAGS="${SAVE_LDFLAGS}"])
+	     )
     else
 	# we still need to check for lzma,h header
 	AC_CHECK_HEADERS([lzma.h])
@@ -795,7 +791,7 @@ else
     fi
 
     # warnings we'd like to see
-    CFLAGS="${CFLAGS} -pedantic -W -Wformat -Wunused -Wimplicit -Wreturn-type -Wswitch -Wcomment -Wtrigraphs -Wformat -Wchar-subscripts -Wuninitialized -Wparentheses -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wredundant-decls"
+    CFLAGS="${CFLAGS} -pedantic -W -Wformat -Wno-format-extra-args -Wunused -Wimplicit -Wreturn-type -Wswitch -Wcomment -Wtrigraphs -Wchar-subscripts -Wuninitialized -Wparentheses -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wredundant-decls"
     # warnings we'd like to supress
     CFLAGS="${CFLAGS} -Wno-long-long"
     case "${host}" in
@@ -1014,7 +1010,7 @@ if [[ "${LOGNAME}" = "veillard" -a "`pwd`" = "/u/veillard/XML" ]] || \
 	fi
     fi
     if test "${GCC}" = "yes" ; then
-    CFLAGS="-g -O -pedantic -W -Wformat -Wunused -Wimplicit -Wreturn-type -Wswitch -Wcomment -Wtrigraphs -Wformat -Wchar-subscripts -Wuninitialized -Wparentheses -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wredundant-decls -Wall"
+    CFLAGS="-g -O -pedantic -W -Wformat -Wno-format-extra-args -Wunused -Wimplicit -Wreturn-type -Wswitch -Wcomment -Wtrigraphs -Wchar-subscripts -Wuninitialized -Wparentheses -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wredundant-decls -Wall"
     fi
     STATIC_BINARIES="-static"
 dnl -Wcast-qual -ansi

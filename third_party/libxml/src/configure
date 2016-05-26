@@ -12875,7 +12875,7 @@ if test "${with_readline+set}" = set; then :
   if test "$withval" != "no" -a "$withval" != "yes"; then
     RDL_DIR=$withval
     CPPFLAGS="${CPPFLAGS} -I$withval/include"
-    LIBS="${LIBS} -L$withval/lib"
+    LDFLAGS="${LDFLAGS} -L$withval/lib"
   fi
 
 fi
@@ -12971,7 +12971,7 @@ if test "${with_zlib+set}" = set; then :
   if test "$withval" != "no" -a "$withval" != "yes"; then
     Z_DIR=$withval
     CPPFLAGS="${CPPFLAGS} -I$withval/include"
-    LIBS="${LIBS} -L$withval/lib"
+    LDFLAGS="${LDFLAGS} -L$withval/lib"
   fi
 
 fi
@@ -12983,7 +12983,7 @@ if test "${with_lzma+set}" = set; then :
   if test "$withval" != "no" -a "$withval" != "yes"; then
     LZMA_DIR=$withval
     CPPFLAGS="${CPPFLAGS} -I$withval/include"
-    LIBS="${LIBS} -L$withval/lib"
+    LDFLAGS="${LDFLAGS} -L$withval/lib"
   fi
 
 fi
@@ -13262,9 +13262,7 @@ if test "x$ac_cv_header_zlib_h" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_ZLIB_H 1
 _ACEOF
- SAVE_LDFLAGS="${LDFLAGS}"
-             LDFLAGS="-L${Z_DIR}/lib"
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gzread in -lz" >&5
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gzread in -lz" >&5
 $as_echo_n "checking for gzread in -lz... " >&6; }
 if ${ac_cv_lib_z_gzread+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -13318,7 +13316,7 @@ else
   have_libz=no
 fi
 
-             LDFLAGS="${SAVE_LDFLAGS}"
+
 fi
 
 done
@@ -13444,9 +13442,7 @@ if test "x$ac_cv_header_lzma_h" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LZMA_H 1
 _ACEOF
- SAVE_LDFLAGS="${LDFLAGS}"
-	     LDFLAGS="-L${LZMA_DIR}/lib"
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lzma_code in -llzma" >&5
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lzma_code in -llzma" >&5
 $as_echo_n "checking for lzma_code in -llzma... " >&6; }
 if ${ac_cv_lib_lzma_lzma_code+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -13495,7 +13491,7 @@ else
   have_liblzma=no
 fi
 
-	     LDFLAGS="${SAVE_LDFLAGS}"
+
 fi
 
 done
@@ -14454,7 +14450,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether va_list is an array type" >&5
 $as_echo_n "checking whether va_list is an array type... " >&6; }
 cat > conftest.$ac_ext <<EOF
-#line 14457 "configure"
+#line 14453 "configure"
 #include "confdefs.h"
 
 #include <stdarg.h>
@@ -14464,7 +14460,7 @@ int main(void) {
 va_list ap1, ap2; a(&ap1); ap2 = (va_list) ap1
 ; return 0; }
 EOF
-if { (eval echo configure:14467: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; _out=`eval $ac_compile 2>&1` && test "x$_out" = x; }; then
+if { (eval echo configure:14463: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; _out=`eval $ac_compile 2>&1` && test "x$_out" = x; }; then
   rm -rf conftest*
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
@@ -14654,7 +14650,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for type of socket length (socklen_t)" >&5
 $as_echo_n "checking for type of socket length (socklen_t)... " >&6; }
 cat > conftest.$ac_ext <<EOF
-#line 14657 "configure"
+#line 14653 "configure"
 #include "confdefs.h"
 
 #include <stddef.h>
@@ -14665,7 +14661,7 @@ int main(void) {
 (void)getsockopt (1, 1, 1, NULL, (socklen_t *)NULL)
 ; return 0; }
 EOF
-if { (eval echo configure:14668: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; _out=`eval $ac_compile 2>&1` && test "x$_out" = x; }; then
+if { (eval echo configure:14664: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; _out=`eval $ac_compile 2>&1` && test "x$_out" = x; }; then
   rm -rf conftest*
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: socklen_t *" >&5
@@ -14677,7 +14673,7 @@ else
   rm -rf conftest*
 
   cat > conftest.$ac_ext <<EOF
-#line 14680 "configure"
+#line 14676 "configure"
 #include "confdefs.h"
 
 #include <stddef.h>
@@ -14688,7 +14684,7 @@ int main(void) {
 (void)getsockopt (1, 1, 1, NULL, (size_t *)NULL)
 ; return 0; }
 EOF
-if { (eval echo configure:14691: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; _out=`eval $ac_compile 2>&1` && test "x$_out" = x; }; then
+if { (eval echo configure:14687: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; _out=`eval $ac_compile 2>&1` && test "x$_out" = x; }; then
   rm -rf conftest*
 
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: size_t *" >&5
@@ -14700,7 +14696,7 @@ else
   rm -rf conftest*
 
     cat > conftest.$ac_ext <<EOF
-#line 14703 "configure"
+#line 14699 "configure"
 #include "confdefs.h"
 
 #include <stddef.h>
@@ -14711,7 +14707,7 @@ int main(void) {
 (void)getsockopt (1, 1, 1, NULL, (int *)NULL)
 ; return 0; }
 EOF
-if { (eval echo configure:14714: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; _out=`eval $ac_compile 2>&1` && test "x$_out" = x; }; then
+if { (eval echo configure:14710: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; _out=`eval $ac_compile 2>&1` && test "x$_out" = x; }; then
   rm -rf conftest*
 
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: int *" >&5
@@ -15114,7 +15110,7 @@ else
     fi
 
     # warnings we'd like to see
-    CFLAGS="${CFLAGS} -pedantic -W -Wformat -Wunused -Wimplicit -Wreturn-type -Wswitch -Wcomment -Wtrigraphs -Wformat -Wchar-subscripts -Wuninitialized -Wparentheses -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wredundant-decls"
+    CFLAGS="${CFLAGS} -pedantic -W -Wformat -Wno-format-extra-args -Wunused -Wimplicit -Wreturn-type -Wswitch -Wcomment -Wtrigraphs -Wchar-subscripts -Wuninitialized -Wparentheses -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wredundant-decls"
     # warnings we'd like to supress
     CFLAGS="${CFLAGS} -Wno-long-long"
     case "${host}" in
@@ -15505,7 +15501,7 @@ if [ "${LOGNAME}" = "veillard" -a "`pwd`" = "/u/veillard/XML" ] || \
 	fi
     fi
     if test "${GCC}" = "yes" ; then
-    CFLAGS="-g -O -pedantic -W -Wformat -Wunused -Wimplicit -Wreturn-type -Wswitch -Wcomment -Wtrigraphs -Wformat -Wchar-subscripts -Wuninitialized -Wparentheses -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wredundant-decls -Wall"
+    CFLAGS="-g -O -pedantic -W -Wformat -Wno-format-extra-args -Wunused -Wimplicit -Wreturn-type -Wswitch -Wcomment -Wtrigraphs -Wchar-subscripts -Wuninitialized -Wparentheses -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs -Winline -Wredundant-decls -Wall"
     fi
     STATIC_BINARIES="-static"
 else
