@@ -37,12 +37,6 @@ Core* GetCore() { return g_core; }
 void SetMaxMessageSize(size_t bytes) {
 }
 
-ScopedPlatformHandle ChildProcessLaunched(base::ProcessHandle child_process) {
-  PlatformChannelPair channel;
-  ChildProcessLaunched(child_process, channel.PassServerHandle());
-  return channel.PassClientHandle();
-}
-
 void ChildProcessLaunched(base::ProcessHandle child_process,
                           ScopedPlatformHandle server_pipe) {
   CHECK(internal::g_core);

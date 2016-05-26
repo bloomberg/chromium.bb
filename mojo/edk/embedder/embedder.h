@@ -38,13 +38,7 @@ class ProcessDelegate;
 // Allows changing the default max message size. Must be called before Init.
 MOJO_SYSTEM_IMPL_EXPORT void SetMaxMessageSize(size_t bytes);
 
-// Called in the parent process for each child process that is launched. The
-// returned handle must be sent to the child process which then calls
-// SetParentPipeHandle.
-MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle ChildProcessLaunched(
-    base::ProcessHandle child_process);
-// Like above, except used when the embedder establishes the pipe between the
-// parent and child processes itself.
+// Called in the parent process for each child process that is launched.
 MOJO_SYSTEM_IMPL_EXPORT void ChildProcessLaunched(
     base::ProcessHandle child_process, ScopedPlatformHandle server_pipe);
 

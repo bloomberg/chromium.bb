@@ -253,11 +253,13 @@ base::ScopedFD ArcBridgeBootstrapImpl::AcceptInstanceConnection(
 
   // Hardcode pid 0 since it is unused in mojo.
   const base::ProcessHandle kUnusedChildProcessHandle = 0;
-  mojo::edk::ScopedPlatformHandle child_handle =
-      mojo::edk::ChildProcessLaunched(kUnusedChildProcessHandle);
+  mojo::edk::PlatformChannelPair channel_pair;
+  mojo::edk::ChildProcessLaunched(kUnusedChildProcessHandle,
+                                  channel_pair.PassServerHandle());
 
   mojo::edk::ScopedPlatformHandleVectorPtr handles(
-      new mojo::edk::PlatformHandleVector{child_handle.release()});
+      new mojo::edk::PlatformHandleVector{
+          channel_pair.PassClientHandle().release()});
 
   struct iovec iov = {const_cast<char*>(""), 1};
   ssize_t result = mojo::edk::PlatformChannelSendmsgWithHandles(

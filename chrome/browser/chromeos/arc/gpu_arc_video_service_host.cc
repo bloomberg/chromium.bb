@@ -13,6 +13,7 @@
 #include "content/public/browser/gpu_service_registry.h"
 #include "content/public/common/service_registry.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
 
 namespace {
 
@@ -58,12 +59,13 @@ void GpuArcVideoServiceHost::OnRequestArcVideoAcceleratorChannel(
   // Hardcode pid 0 since it is unused in mojo.
   const base::ProcessHandle kUnusedChildProcessHandle =
       base::kNullProcessHandle;
-  mojo::edk::ScopedPlatformHandle child_platform_handle =
-      mojo::edk::ChildProcessLaunched(kUnusedChildProcessHandle);
+  mojo::edk::PlatformChannelPair channel_pair;
+  mojo::edk::ChildProcessLaunched(kUnusedChildProcessHandle,
+                                  channel_pair.PassServerHandle());
 
   MojoHandle wrapped_handle;
   MojoResult wrap_result = mojo::edk::CreatePlatformHandleWrapper(
-      std::move(child_platform_handle), &wrapped_handle);
+      channel_pair.PassClientHandle(), &wrapped_handle);
   if (wrap_result != MOJO_RESULT_OK) {
     LOG(ERROR) << "Pipe failed to wrap handles. Closing: " << wrap_result;
     callback.Run(mojo::ScopedHandle(), std::string());
