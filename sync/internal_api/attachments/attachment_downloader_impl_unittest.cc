@@ -70,7 +70,7 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
 
 void MockOAuth2TokenService::RespondToAccessTokenRequest(
     GoogleServiceAuthError error) {
-  EXPECT_TRUE(last_request_ != NULL);
+  EXPECT_TRUE(last_request_);
   std::string access_token;
   base::Time expiration_time;
   if (error == GoogleServiceAuthError::AuthErrorNone()) {
@@ -94,7 +94,7 @@ void MockOAuth2TokenService::FetchOAuth2Token(
     const std::string& client_secret,
     const ScopeSet& scopes) {
   // Only one request at a time is allowed.
-  EXPECT_TRUE(last_request_ == NULL);
+  EXPECT_FALSE(last_request_);
   last_request_ = request->AsWeakPtr();
 }
 
@@ -233,7 +233,7 @@ void AttachmentDownloaderImplTest::CompleteDownload(
   // TestURLFetcherFactory remembers last active URLFetcher.
   net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
   // There should be outstanding url fetch request.
-  EXPECT_TRUE(fetcher != NULL);
+  EXPECT_TRUE(fetcher);
   fetcher->set_status(net::URLRequestStatus());
   fetcher->set_response_code(response_code);
   if (response_code == net::HTTP_OK) {
@@ -247,7 +247,7 @@ void AttachmentDownloaderImplTest::CompleteDownload(
   RunMessageLoop();
   // Once result is processed URLFetcher should be deleted.
   fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  EXPECT_TRUE(fetcher == NULL);
+  EXPECT_FALSE(fetcher);
 }
 
 void AttachmentDownloaderImplTest::DownloadDone(
@@ -258,14 +258,14 @@ void AttachmentDownloaderImplTest::DownloadDone(
   if (result == AttachmentDownloader::DOWNLOAD_SUCCESS) {
     // Successful download should be accompanied by valid attachment with
     // matching id and valid data.
-    EXPECT_TRUE(attachment != NULL);
+    EXPECT_TRUE(attachment);
     EXPECT_EQ(attachment_id, attachment->GetId());
 
     scoped_refptr<base::RefCountedMemory> data = attachment->GetData();
     std::string data_as_string(data->front_as<char>(), data->size());
     EXPECT_EQ(data_as_string, kAttachmentContent);
   } else {
-    EXPECT_TRUE(attachment == NULL);
+    EXPECT_FALSE(attachment);
   }
   ++num_completed_downloads_;
 }

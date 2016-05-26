@@ -283,7 +283,7 @@ TEST_P(SpdySessionTest, PendingStreamCancellingAnother) {
   for (size_t i = 0; i < kInitialMaxConcurrentStreams; ++i) {
     base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
         SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-    ASSERT_TRUE(spdy_stream != nullptr);
+    ASSERT_TRUE(spdy_stream);
   }
 
   SpdyStreamRequest request1;
@@ -915,7 +915,7 @@ TEST_P(SpdySessionTest, ClientPing) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   test::StreamDelegateSendImmediate delegate(spdy_stream1, nullptr);
   spdy_stream1->SetDelegate(&delegate);
 
@@ -968,7 +968,7 @@ TEST_P(SpdySessionTest, ServerPing) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   test::StreamDelegateSendImmediate delegate(spdy_stream1, nullptr);
   spdy_stream1->SetDelegate(&delegate);
 
@@ -1419,7 +1419,7 @@ TEST_P(SpdySessionTest, FailedPing) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   test::StreamDelegateSendImmediate delegate(spdy_stream1, nullptr);
   spdy_stream1->SetDelegate(&delegate);
 
@@ -1491,7 +1491,7 @@ TEST_P(SpdySessionTest, OnSettings) {
   for (size_t i = 0; i < kInitialMaxConcurrentStreams; ++i) {
     base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
         SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-    ASSERT_TRUE(spdy_stream != nullptr);
+    ASSERT_TRUE(spdy_stream);
   }
 
   StreamReleaserCallback stream_releaser;
@@ -1559,7 +1559,7 @@ TEST_P(SpdySessionTest, ClearSettings) {
   for (size_t i = 0; i < kInitialMaxConcurrentStreams; ++i) {
     base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
         SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-    ASSERT_TRUE(spdy_stream != nullptr);
+    ASSERT_TRUE(spdy_stream);
   }
 
   StreamReleaserCallback stream_releaser;
@@ -1616,13 +1616,13 @@ TEST_P(SpdySessionTest, CancelPendingCreateStream) {
   for (size_t i = 0; i < kInitialMaxConcurrentStreams - 1; ++i) {
     base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
         SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-    ASSERT_TRUE(spdy_stream != nullptr);
+    ASSERT_TRUE(spdy_stream);
   }
 
   // Create 2 more streams.  First will succeed.  Second will be pending.
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
 
   // Use scoped_ptr to let us invalidate the memory when we want to, to trigger
   // a valgrind error if the callback is invoked when it's not supposed to be.
@@ -1999,14 +1999,14 @@ TEST_P(SpdySessionTest, CancelStream) {
   base::WeakPtr<SpdyStream> spdy_stream1 =
       CreateStreamSynchronously(SPDY_REQUEST_RESPONSE_STREAM, session_,
                                 test_url_, HIGHEST, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
 
   base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(spdy_stream2.get() != nullptr);
+  ASSERT_TRUE(spdy_stream2);
   EXPECT_EQ(0u, spdy_stream2->stream_id());
   test::StreamDelegateDoNothing delegate2(spdy_stream2);
   spdy_stream2->SetDelegate(&delegate2);
@@ -2060,12 +2060,12 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoCreatedSelfClosingStreams) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, HIGHEST, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
   base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(spdy_stream2.get() != nullptr);
+  ASSERT_TRUE(spdy_stream2);
   EXPECT_EQ(0u, spdy_stream2->stream_id());
 
   test::ClosingDelegate delegate1(spdy_stream1);
@@ -2183,12 +2183,12 @@ TEST_P(SpdySessionTest, CloseSessionWithTwoActivatedSelfClosingStreams) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
   base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream2.get() != nullptr);
+  ASSERT_TRUE(spdy_stream2);
   EXPECT_EQ(0u, spdy_stream2->stream_id());
 
   test::ClosingDelegate delegate1(spdy_stream1);
@@ -2355,7 +2355,7 @@ TEST_P(SpdySessionTest, CloseActivatedStreamThatClosesSession) {
 
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream.get() != nullptr);
+  ASSERT_TRUE(spdy_stream);
   EXPECT_EQ(0u, spdy_stream->stream_id());
 
   SessionClosingDelegate delegate(spdy_stream, session_);
@@ -2513,7 +2513,7 @@ TEST_P(SpdySessionTest, CloseTwoStalledCreateStream) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
@@ -2622,12 +2622,12 @@ TEST_P(SpdySessionTest, CancelTwoStalledCreateStream) {
   for (size_t i = 0; i < kInitialMaxConcurrentStreams - 1; ++i) {
     base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
         SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-    ASSERT_TRUE(spdy_stream != nullptr);
+    ASSERT_TRUE(spdy_stream);
   }
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
   TestCompletionCallback callback2;
@@ -2730,7 +2730,7 @@ TEST_P(SpdySessionTest, ReadDataWithoutYielding) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
@@ -2794,7 +2794,7 @@ TEST_P(SpdySessionTest, TestYieldingSlowReads) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
@@ -2865,7 +2865,7 @@ TEST_P(SpdySessionTest, TestYieldingSlowSynchronousReads) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
@@ -2946,7 +2946,7 @@ TEST_P(SpdySessionTest, TestYieldingDuringReadData) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
@@ -3053,7 +3053,7 @@ TEST_P(SpdySessionTest, TestYieldingDuringAsyncReadData) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
@@ -3124,7 +3124,7 @@ TEST_P(SpdySessionTest, GoAwayWhileInDoReadLoop) {
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
 
   std::unique_ptr<SpdyHeaderBlock> headers1(
@@ -3468,7 +3468,7 @@ TEST_P(SpdySessionTest, CreateStreamOnStreamReset) {
 
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream.get() != nullptr);
+  ASSERT_TRUE(spdy_stream);
   EXPECT_EQ(0u, spdy_stream->stream_id());
 
   StreamCreatingDelegate delegate(spdy_stream, session_);
@@ -3533,7 +3533,7 @@ TEST_P(SpdySessionTest, UpdateStreamsSendWindowSize) {
   CreateInsecureSpdySession();
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   TestCompletionCallback callback1;
   EXPECT_NE(spdy_stream1->send_window_size(), window_size);
 
@@ -3548,7 +3548,7 @@ TEST_P(SpdySessionTest, UpdateStreamsSendWindowSize) {
 
   base::WeakPtr<SpdyStream> spdy_stream2 = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(spdy_stream2.get() != nullptr);
+  ASSERT_TRUE(spdy_stream2);
   EXPECT_EQ(spdy_stream2->send_window_size(), window_size);
   spdy_stream2->Cancel();
   EXPECT_FALSE(spdy_stream2);
@@ -3986,7 +3986,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoReceiveLeaks) {
 
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(stream.get() != nullptr);
+  ASSERT_TRUE(stream);
   EXPECT_EQ(0u, stream->stream_id());
 
   DropReceivedDataDelegate delegate(stream, msg_data);
@@ -4052,7 +4052,7 @@ TEST_P(SpdySessionTest, SessionFlowControlNoSendLeaks) {
 
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(stream.get() != nullptr);
+  ASSERT_TRUE(stream);
   EXPECT_EQ(0u, stream->stream_id());
 
   test::StreamDelegateSendImmediate delegate(stream, msg_data);
@@ -4137,7 +4137,7 @@ TEST_P(SpdySessionTest, SessionFlowControlEndToEnd) {
 
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_BIDIRECTIONAL_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(stream.get() != nullptr);
+  ASSERT_TRUE(stream);
   EXPECT_EQ(0u, stream->stream_id());
 
   test::StreamDelegateSendImmediate delegate(stream, msg_data);
@@ -4236,7 +4236,7 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
 
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(stream.get() != nullptr);
+  ASSERT_TRUE(stream);
 
   test::StreamDelegateWithBody delegate(stream, kBodyDataStringPiece);
   stream->SetDelegate(&delegate);
@@ -4362,7 +4362,7 @@ TEST_P(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
 
   base::WeakPtr<SpdyStream> stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(stream1.get() != nullptr);
+  ASSERT_TRUE(stream1);
 
   test::StreamDelegateWithBody delegate1(stream1, kBodyDataStringPiece);
   stream1->SetDelegate(&delegate1);
@@ -4371,7 +4371,7 @@ TEST_P(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
 
   base::WeakPtr<SpdyStream> stream2 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, MEDIUM, BoundNetLog());
-  ASSERT_TRUE(stream2.get() != nullptr);
+  ASSERT_TRUE(stream2);
 
   test::StreamDelegateWithBody delegate2(stream2, kBodyDataStringPiece);
   stream2->SetDelegate(&delegate2);
@@ -4501,7 +4501,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
 
   base::WeakPtr<SpdyStream> stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(stream1.get() != nullptr);
+  ASSERT_TRUE(stream1);
 
   test::StreamDelegateWithBody delegate1(stream1, kBodyDataStringPiece);
   stream1->SetDelegate(&delegate1);
@@ -4510,7 +4510,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
 
   base::WeakPtr<SpdyStream> stream2 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(stream2.get() != nullptr);
+  ASSERT_TRUE(stream2);
 
   StreamClosingDelegate delegate2(stream2, kBodyDataStringPiece);
   stream2->SetDelegate(&delegate2);
@@ -4519,7 +4519,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
 
   base::WeakPtr<SpdyStream> stream3 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(stream3.get() != nullptr);
+  ASSERT_TRUE(stream3);
 
   test::StreamDelegateWithBody delegate3(stream3, kBodyDataStringPiece);
   stream3->SetDelegate(&delegate3);
@@ -4640,7 +4640,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
 
   base::WeakPtr<SpdyStream> stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(stream1.get() != nullptr);
+  ASSERT_TRUE(stream1);
 
   test::StreamDelegateWithBody delegate1(stream1, kBodyDataStringPiece);
   stream1->SetDelegate(&delegate1);
@@ -4649,7 +4649,7 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
 
   base::WeakPtr<SpdyStream> stream2 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(stream2.get() != nullptr);
+  ASSERT_TRUE(stream2);
 
   test::StreamDelegateWithBody delegate2(stream2, kBodyDataStringPiece);
   stream2->SetDelegate(&delegate2);
@@ -4738,7 +4738,7 @@ TEST_P(SpdySessionTest, GoAwayOnSessionFlowControlError) {
 
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(spdy_stream.get() != nullptr);
+  ASSERT_TRUE(spdy_stream);
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
 
@@ -4820,7 +4820,7 @@ TEST_P(SpdySessionTest, PushedStreamShouldNotCountToClientConcurrencyLimit) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
@@ -4900,7 +4900,7 @@ TEST_P(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
@@ -4994,7 +4994,7 @@ TEST_P(SpdySessionTest, TrustedSpdyProxy) {
 
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(spdy_stream.get() != nullptr);
+  ASSERT_TRUE(spdy_stream);
   EXPECT_EQ(0u, spdy_stream->stream_id());
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
@@ -5073,7 +5073,7 @@ TEST_P(SpdySessionTest, TrustedSpdyProxyNotSet) {
 
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(spdy_stream.get() != nullptr);
+  ASSERT_TRUE(spdy_stream);
   EXPECT_EQ(0u, spdy_stream->stream_id());
   test::StreamDelegateDoNothing delegate(spdy_stream);
   spdy_stream->SetDelegate(&delegate);
@@ -5145,7 +5145,7 @@ TEST_P(SpdySessionTest, IgnoreReservedRemoteStreamsCount) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
@@ -5237,7 +5237,7 @@ TEST_P(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
 
   base::WeakPtr<SpdyStream> spdy_stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
-  ASSERT_TRUE(spdy_stream1.get() != nullptr);
+  ASSERT_TRUE(spdy_stream1);
   EXPECT_EQ(0u, spdy_stream1->stream_id());
   test::StreamDelegateDoNothing delegate1(spdy_stream1);
   spdy_stream1->SetDelegate(&delegate1);
@@ -5273,7 +5273,7 @@ TEST_P(SpdySessionTest, CancelReservedStreamOnHeadersReceived) {
   int rv =
       session_->GetPushStream(GURL(kPushedUrl), &pushed_stream, BoundNetLog());
   ASSERT_EQ(OK, rv);
-  ASSERT_TRUE(pushed_stream.get() != nullptr);
+  ASSERT_TRUE(pushed_stream);
   test::StreamDelegateCloseOnHeaders delegate2(pushed_stream);
   pushed_stream->SetDelegate(&delegate2);
 
