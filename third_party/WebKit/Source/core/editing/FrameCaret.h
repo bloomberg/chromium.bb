@@ -28,6 +28,7 @@
 
 #include "core/editing/CaretBase.h"
 #include "core/editing/VisibleSelection.h"
+#include "platform/geometry/IntRect.h"
 
 namespace blink {
 
@@ -36,15 +37,26 @@ public:
     FrameCaret(LocalFrame*);
     ~FrameCaret() override;
 
+    void setCaretPosition(const PositionWithAffinity&);
+    void clear();
+    bool isActive() const { return m_caretPosition.isNotNull(); }
+
+    void updateAppearance();
+
     // Used to suspend caret blinking while the mouse is down.
     void setCaretBlinkingSuspended(bool suspended) { m_isCaretBlinkingSuspended = suspended; }
     bool isCaretBlinkingSuspended() const { return m_isCaretBlinkingSuspended; }
     void stopCaretBlinkTimer();
     void startBlinkCaret();
 
+    void setCaretVisibility(CaretVisibility) override;
     bool isCaretBoundsDirty() const { return m_caretRectDirty; }
     void setCaretRectNeedsUpdate();
     void invalidateCaretRect(const VisibleSelection&);
+    IntRect absoluteCaretBounds();
+
+    bool shouldShowBlockCursor() const { return m_shouldShowBlockCursor; }
+    void setShouldShowBlockCursor(bool);
 
     void paintCaret(GraphicsContext&, const LayoutPoint&, const VisibleSelection&);
 
@@ -60,8 +72,10 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
+    bool shouldBlinkCaret() const;
     void caretBlinkTimerFired(Timer<FrameCaret>*);
 
+    PositionWithAffinity m_caretPosition;
     const Member<LocalFrame> m_frame;
     // The last node which painted the caret. Retained for clearing the old
     // caret when it moves.
@@ -72,6 +86,7 @@ private:
     bool m_caretRectDirty : 1;
     bool m_shouldPaintCaret : 1;
     bool m_isCaretBlinkingSuspended : 1;
+    bool m_shouldShowBlockCursor : 1;
 };
 
 } // namespace blink

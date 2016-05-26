@@ -100,7 +100,6 @@ FrameSelection::FrameSelection(LocalFrame* frame)
     , m_granularity(CharacterGranularity)
     , m_xPosForVerticalArrowNavigation(NoXPosForVerticalArrowNavigation())
     , m_focused(frame->page() && frame->page()->focusController().focusedFrame() == frame)
-    , m_shouldShowBlockCursor(false)
     , m_frameCaret(new FrameCaret(frame))
 {
     DCHECK(frame);
@@ -333,7 +332,10 @@ void FrameSelection::setSelectionAlgorithm(const VisibleSelectionTemplate<Strate
     const VisibleSelection oldSelectionInDOMTree = selection();
 
     m_selectionEditor->setVisibleSelection(s, options);
-    setCaretRectNeedsUpdate();
+    if (s.isCaret())
+        m_frameCaret->setCaretPosition(PositionWithAffinity(toPositionInDOMTree(s.start()), s.affinity()));
+    else
+        m_frameCaret->clear();
 
     if (!s.isNone() && !(options & DoNotSetFocus))
         setFocusedNodeIfNeeded();
@@ -485,8 +487,15 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
     if (clearLayoutTreeSelection)
         selection().start().document()->layoutViewItem().clearSelection();
 
-    if (clearDOMTreeSelection)
+    if (clearDOMTreeSelection) {
         setSelection(VisibleSelection(), DoNotSetFocus);
+    } else {
+        const VisibleSelection& selection = m_selectionEditor->visibleSelection<EditingStrategy>();
+        if (selection.isCaret())
+            m_frameCaret->setCaretPosition(PositionWithAffinity(selection.start(), selection.affinity()));
+        else
+            m_frameCaret->clear();
+    }
 
     // TODO(yosin): We should move to call |TypingCommand::closeTyping()| to
     // |Editor| class.
@@ -676,6 +685,7 @@ void FrameSelection::clear()
 // TODO(yoiciho): We should move this function to FrameCaret.cpp
 void FrameCaret::prepareForDestruction()
 {
+    m_caretPosition = PositionWithAffinity();
     m_caretBlinkTimer.stop();
     m_previousCaretNode.clear();
 }
@@ -695,11 +705,6 @@ void FrameSelection::prepareForDestruction()
     m_frameCaret->prepareForDestruction();
 }
 
-static bool isTextFormControl(const VisibleSelection& selection)
-{
-    return enclosingTextFormControl(selection.start());
-}
-
 LayoutBlock* FrameSelection::caretLayoutObject() const
 {
     DCHECK(selection().isValidFor(*m_frame->document()));
@@ -708,23 +713,26 @@ LayoutBlock* FrameSelection::caretLayoutObject() const
     return CaretBase::caretLayoutObject(selection().start().anchorNode());
 }
 
-// TODO(yoichio): All of functionality should be in FrameCaret.
-// FrameCaret should have PositionWithAffnity and FrameSelection set in
-// setSelecitonAlgorithm.
+// TODO(yoiciho): We should move this function to FrameCaret.cpp
+IntRect FrameCaret::absoluteCaretBounds()
+{
+    DCHECK_NE(m_frame->document()->lifecycle().state(), DocumentLifecycle::InPaintInvalidation);
+    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
+    if (!isActive()) {
+        clearCaretRect();
+    } else {
+        if (enclosingTextFormControl(m_caretPosition.position()))
+            updateCaretRect(PositionWithAffinity(isVisuallyEquivalentCandidate(m_caretPosition.position()) ? m_caretPosition.position() : Position(), m_caretPosition.affinity()));
+        else
+            updateCaretRect(createVisiblePosition(m_caretPosition));
+    }
+    return absoluteBoundsForLocalRect(m_caretPosition.position().anchorNode(), localCaretRectWithoutUpdate());
+}
+
 IntRect FrameSelection::absoluteCaretBounds()
 {
     DCHECK(selection().isValidFor(*m_frame->document()));
-    DCHECK_NE(m_frame->document()->lifecycle().state(), DocumentLifecycle::InPaintInvalidation);
-    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-    if (!isCaret()) {
-        m_frameCaret->clearCaretRect();
-    } else {
-        if (isTextFormControl(selection()))
-            m_frameCaret->updateCaretRect(PositionWithAffinity(isVisuallyEquivalentCandidate(selection().start()) ? selection().start() : Position(), selection().affinity()));
-        else
-            m_frameCaret->updateCaretRect(createVisiblePosition(selection().start(), selection().affinity()));
-    }
-    return m_frameCaret->absoluteBoundsForLocalRect(selection().start().anchorNode(), m_frameCaret->localCaretRectWithoutUpdate());
+    return m_frameCaret->absoluteCaretBounds();
 }
 
 // TODO(yoiciho): We should move this function to FrameCaret.cpp
@@ -1004,7 +1012,7 @@ void FrameSelection::focusedOrActiveStateChanged()
         setSelectionFromNone();
     else
         m_frame->spellChecker().spellCheckAfterBlur();
-    setCaretVisibility(activeAndFocused ? CaretVisibility::Visible : CaretVisibility::Hidden);
+    m_frameCaret->setCaretVisibility(activeAndFocused ? CaretVisibility::Visible : CaretVisibility::Hidden);
 
     // Update for caps lock state
     m_frame->eventHandler().capsLockStateMayHaveChanged();
@@ -1078,54 +1086,56 @@ void FrameCaret::startBlinkCaret()
 
 }
 
-// TODO(yoichio): All of functionality should be in FrameCaret.
-// FrameCaret should have PositionWithAffnity and FrameSelection set in
-// setSelecitonAlgorithm.
-void FrameSelection::updateAppearance()
+// TODO(yoiciho): We should move this function to FrameCaret.cpp
+void FrameCaret::updateAppearance()
 {
     // Paint a block cursor instead of a caret in overtype mode unless the caret is at the end of a line (in this case
     // the FrameSelection will paint a blinking caret as usual).
-    bool paintBlockCursor = m_shouldShowBlockCursor && selection().isCaret() && !isLogicalEndOfLine(selection().visibleEnd());
+    bool paintBlockCursor = m_shouldShowBlockCursor && isActive() && !isLogicalEndOfLine(createVisiblePosition(m_caretPosition));
 
     bool shouldBlink = !paintBlockCursor && shouldBlinkCaret();
 
     // If the caret moved, stop the blink timer so we can restart with a
     // black caret in the new location.
     if (!shouldBlink || shouldStopBlinkingDueToTypingCommand(m_frame))
-        m_frameCaret->stopCaretBlinkTimer();
+        stopCaretBlinkTimer();
 
     // Start blinking with a black caret. Be sure not to restart if we're
     // already blinking in the right location.
     if (shouldBlink)
-        m_frameCaret->startBlinkCaret();
+        startBlinkCaret();
+}
+
+void FrameSelection::updateAppearance()
+{
+    m_frameCaret->updateAppearance();
 
     if (m_frame->contentLayoutItem().isNull())
         return;
     m_pendingSelection->setHasPendingSelection();
 }
 
-// TODO(yoichio): All of functionality should be in FrameCaret.
-// FrameCaret should have PositionWithAffnity and FrameSelection set in
-// setSelecitonAlgorithm.
-void FrameSelection::setCaretVisibility(CaretVisibility visibility)
+// TODO(yoiciho): We should move this function to FrameCaret.cpp
+void FrameCaret::setCaretVisibility(CaretVisibility visibility)
 {
-    if (m_frameCaret->getCaretVisibility() == visibility)
+    if (getCaretVisibility() == visibility)
         return;
 
-    m_frameCaret->setCaretVisibility(visibility);
+    CaretBase::setCaretVisibility(visibility);
 
     updateAppearance();
 }
 
-bool FrameSelection::shouldBlinkCaret() const
+// TODO(yoiciho): We should move this function to FrameCaret.cpp
+bool FrameCaret::shouldBlinkCaret() const
 {
-    if (!m_frameCaret->caretIsVisible() || !isCaret())
+    if (!caretIsVisible() || !isActive())
         return false;
 
     if (m_frame->settings() && m_frame->settings()->caretBrowsingEnabled())
         return false;
 
-    Element* root = rootEditableElement();
+    Element* root = rootEditableElementOf(m_caretPosition.position());
     if (!root)
         return false;
 
@@ -1133,7 +1143,7 @@ bool FrameSelection::shouldBlinkCaret() const
     if (!focusedElement)
         return false;
 
-    return focusedElement->isShadowIncludingInclusiveAncestorOf(selection().start().anchorNode());
+    return focusedElement->isShadowIncludingInclusiveAncestorOf(m_caretPosition.position().anchorNode());
 }
 
 // TODO(yoiciho): We should move this function to FrameCaret.cpp
@@ -1345,13 +1355,34 @@ void FrameSelection::setSelectionFromNone()
         setSelection(VisibleSelection(firstPositionInOrBeforeNode(body), TextAffinity::Downstream));
 }
 
-void FrameSelection::setShouldShowBlockCursor(bool shouldShowBlockCursor)
+// TODO(yoichio): We should have LocalFrame having FrameCaret,
+// Editor and PendingSelection using FrameCaret directly
+// and get rid of this.
+bool FrameSelection::shouldShowBlockCursor() const
+{
+    return m_frameCaret->shouldShowBlockCursor();
+}
+
+// TODO(yoiciho): We should move this function to FrameCaret.cpp
+void FrameCaret::setShouldShowBlockCursor(bool shouldShowBlockCursor)
 {
     m_shouldShowBlockCursor = shouldShowBlockCursor;
 
     m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
     updateAppearance();
+}
+
+// TODO(yoichio): We should have LocalFrame having FrameCaret,
+// Editor and PendingSelection using FrameCaret directly
+// and get rid of this.
+// TODO(yoichio): We should use "caret-shape" in "CSS Basic User Interface
+// Module Level 4" https://drafts.csswg.org/css-ui-4/
+// To use "caret-shape", we need to expose inserting mode information to CSS;
+// https://github.com/w3c/csswg-drafts/issues/133
+void FrameSelection::setShouldShowBlockCursor(bool shouldShowBlockCursor)
+{
+    m_frameCaret->setShouldShowBlockCursor(shouldShowBlockCursor);
 }
 
 template <typename Strategy>
@@ -1486,7 +1517,7 @@ void FrameSelection::updateIfNeeded()
 
 void FrameSelection::setCaretVisible(bool caretIsVisible)
 {
-    setCaretVisibility(caretIsVisible ? CaretVisibility::Visible : CaretVisibility::Hidden);
+    m_frameCaret->setCaretVisibility(caretIsVisible ? CaretVisibility::Visible : CaretVisibility::Hidden);
 }
 
 bool FrameSelection::shouldPaintCaretForTesting() const

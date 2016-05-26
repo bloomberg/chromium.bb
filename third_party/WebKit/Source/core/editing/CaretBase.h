@@ -62,7 +62,7 @@ public:
 
     const LayoutRect& localCaretRectWithoutUpdate() const { return m_caretLocalRect; }
 
-    void setCaretVisibility(CaretVisibility visibility) { m_caretVisibility = visibility; }
+    virtual void setCaretVisibility(CaretVisibility);
     bool caretIsVisible() const { return m_caretVisibility == CaretVisibility::Visible; }
     CaretVisibility getCaretVisibility() const { return m_caretVisibility; }
 

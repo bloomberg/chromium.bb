@@ -214,4 +214,9 @@ void CaretBase::paintCaret(Node* node, GraphicsContext& context, const LayoutPoi
     context.fillRect(FloatRect(drawingRect), caretColor);
 }
 
+void CaretBase::setCaretVisibility(CaretVisibility visibility)
+{
+    m_caretVisibility = visibility;
+}
+
 } // namespace blink

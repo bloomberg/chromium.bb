@@ -230,7 +230,7 @@ public:
     void revealSelection(const ScrollAlignment& = ScrollAlignment::alignCenterIfNeeded, RevealExtentOption = DoNotRevealExtent);
     void setSelectionFromNone();
 
-    bool shouldShowBlockCursor() const { return m_shouldShowBlockCursor; }
+    bool shouldShowBlockCursor() const;
     void setShouldShowBlockCursor(bool);
 
     // TODO(yosin): We should check DOM tree version and style version in
@@ -271,9 +271,6 @@ private:
 
     void setUseSecureKeyboardEntry(bool);
 
-    void setCaretVisibility(CaretVisibility);
-    bool shouldBlinkCaret() const;
-
     void updateSelectionIfNeeded(const Position& base, const Position& extent, const Position& start, const Position& end);
 
     template <typename Strategy>
@@ -298,7 +295,6 @@ private:
     Member<EditingStyle> m_typingStyle;
 
     bool m_focused : 1;
-    bool m_shouldShowBlockCursor : 1;
 
     // Controls text granularity used to adjust the selection's extent in moveRangeSelectionExtent.
     OwnPtr<GranularityStrategy> m_granularityStrategy;

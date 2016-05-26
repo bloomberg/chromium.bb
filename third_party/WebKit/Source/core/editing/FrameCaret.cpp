@@ -36,6 +36,7 @@ FrameCaret::FrameCaret(LocalFrame* frame)
     , m_caretRectDirty(true)
     , m_shouldPaintCaret(true)
     , m_isCaretBlinkingSuspended(false)
+    , m_shouldShowBlockCursor(false)
 {
     DCHECK(frame);
 }
@@ -46,7 +47,20 @@ DEFINE_TRACE(FrameCaret)
 {
     visitor->trace(m_frame);
     visitor->trace(m_previousCaretNode);
+    visitor->trace(m_caretPosition);
     CaretBase::trace(visitor);
+}
+
+void FrameCaret::setCaretPosition(const PositionWithAffinity& position)
+{
+    m_caretPosition = position;
+    setCaretRectNeedsUpdate();
+}
+
+void FrameCaret::clear()
+{
+    m_caretPosition = PositionWithAffinity();
+    setCaretRectNeedsUpdate();
 }
 
 } // nemaspace blink
