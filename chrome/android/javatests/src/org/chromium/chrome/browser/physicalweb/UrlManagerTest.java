@@ -28,7 +28,8 @@ public class UrlManagerTest extends InstrumentationTestCase {
     private static final String DESC1 = "Example Website";
     private static final String URL2 = "https://google.com/";
     private static final String TITLE2 = "Google";
-    private static final String DESC2 = "Search the web";
+    private static final String DESC2 = "Search the Web";
+    private static final String URL3 = "https://html5zombo.com/";
     private static final String PREF_PHYSICAL_WEB = "physical_web";
     private static final int PHYSICAL_WEB_OFF = 0;
     private static final int PHYSICAL_WEB_ON = 1;
@@ -64,6 +65,10 @@ public class UrlManagerTest extends InstrumentationTestCase {
         mMockPwsClient.addPwsResults(results);
     }
 
+    private void addEmptyPwsResult() {
+        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
+    }
+
     private void setOnboarding() {
         mSharedPreferences.edit().putInt(PREF_PHYSICAL_WEB, PHYSICAL_WEB_ONBOARDING).apply();
     }
@@ -83,6 +88,8 @@ public class UrlManagerTest extends InstrumentationTestCase {
         mUrlManager.addUrl(URL1);
         mUrlManager.addUrl(URL2);
         getInstrumentation().waitForIdleSync();
+        List<UrlInfo> urlInfos = mUrlManager.getUrls();
+        assertEquals(2, urlInfos.size());
     }
 
     @SmallTest
@@ -107,7 +114,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
 
     @SmallTest
     public void testAddUrlNoResolutionDoesNothing() throws Exception {
-        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
+        addEmptyPwsResult();
         mUrlManager.addUrl(URL1);
         getInstrumentation().waitForIdleSync();
 
@@ -165,7 +172,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     @SmallTest
     public void testAddUrlGarbageCollectsForSize() throws Exception {
         // Add and remove 101 URLs, making sure one is clearly slightly older than the others.
-        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
+        addEmptyPwsResult();
         UrlInfo urlInfo = new UrlInfo(URL1, -1.0, System.currentTimeMillis() - 1);
         mUrlManager.addUrl(urlInfo);
         mUrlManager.removeUrl(urlInfo);
@@ -185,8 +192,8 @@ public class UrlManagerTest extends InstrumentationTestCase {
     @SmallTest
     public void testAddUrlGarbageCollectsForAge() throws Exception {
         // Add a URL with a phony timestamp.
-        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
-        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
+        addEmptyPwsResult();
+        addEmptyPwsResult();
         UrlInfo urlInfo1 = new UrlInfo(URL1, -1.0, 0);
         UrlInfo urlInfo2 = new UrlInfo(URL2, -1.0, System.currentTimeMillis());
         mUrlManager.addUrl(urlInfo1);
@@ -203,10 +210,10 @@ public class UrlManagerTest extends InstrumentationTestCase {
     public void testAddUrlTwiceWorks() throws Exception {
         // Add and remove an old URL twice and add new URL twice before removing.
         // This should cover several issues involved with updating the cache queue.
-        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
-        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
-        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
-        mMockPwsClient.addPwsResults(new ArrayList<PwsResult>());
+        addEmptyPwsResult();
+        addEmptyPwsResult();
+        addEmptyPwsResult();
+        addEmptyPwsResult();
         UrlInfo urlInfo1 = new UrlInfo(URL1, -1.0, 0);
         UrlInfo urlInfo2 = new UrlInfo(URL2, -1.0, System.currentTimeMillis());
         mUrlManager.addUrl(urlInfo1);
@@ -314,7 +321,47 @@ public class UrlManagerTest extends InstrumentationTestCase {
     }
 
     @SmallTest
-    public void testSerializationWorks() throws Exception {
+    public void testGetUrlSorts() throws Exception {
+        addEmptyPwsResult();
+        addEmptyPwsResult();
+        addEmptyPwsResult();
+        UrlInfo urlInfo1 = new UrlInfo(URL1, 30.0, System.currentTimeMillis());
+        UrlInfo urlInfo2 = new UrlInfo(URL2, 10.0, System.currentTimeMillis());
+        UrlInfo urlInfo3 = new UrlInfo(URL3, 20.0, System.currentTimeMillis());
+        mUrlManager.addUrl(urlInfo1);
+        mUrlManager.addUrl(urlInfo2);
+        mUrlManager.addUrl(urlInfo3);
+        getInstrumentation().waitForIdleSync();
+
+        // Make sure URLs are in order.
+        List<UrlInfo> urlInfos = mUrlManager.getUrls(true);
+        assertEquals(3, urlInfos.size());
+        assertEquals(10.0, urlInfos.get(0).getDistance());
+        assertEquals(URL2, urlInfos.get(0).getUrl());
+        assertEquals(20.0, urlInfos.get(1).getDistance());
+        assertEquals(URL3, urlInfos.get(1).getUrl());
+        assertEquals(30.0, urlInfos.get(2).getDistance());
+        assertEquals(URL1, urlInfos.get(2).getUrl());
+    }
+
+    @SmallTest
+    public void testSerializationWorksWithoutGarbageCollection() throws Exception {
+        addPwsResult1();
+        addPwsResult2();
+        long curTime = System.currentTimeMillis();
+        mUrlManager.addUrl(new UrlInfo(URL1, 99.5, curTime + 42));
+        mUrlManager.addUrl(new UrlInfo(URL2, 100.5, curTime + 43));
+        getInstrumentation().waitForIdleSync();
+
+        // Make sure all URLs are restored.
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        UrlManager urlManager = new UrlManager(context);
+        List<UrlInfo> urlInfos = urlManager.getUrls();
+        assertEquals(2, urlInfos.size());
+    }
+
+    @SmallTest
+    public void testSerializationWorksWithGarbageCollection() throws Exception {
         addPwsResult1();
         addPwsResult2();
         mUrlManager.addUrl(new UrlInfo(URL1, 99.5, 42));
@@ -325,7 +372,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
         UrlManager urlManager = new UrlManager(context);
         List<UrlInfo> urlInfos = urlManager.getUrls();
-        assertEquals(2, urlInfos.size());
+        assertEquals(0, urlInfos.size());
     }
 
     @SmallTest

@@ -79,6 +79,7 @@ class UrlManager {
     private PwsClient mPwsClient;
 
     private final Comparator<String> mScanTimestampComparator = new Comparator<String>() {
+        @Override
         public int compare(String url1, String url2) {
             UrlInfo urlInfo1 = mUrlInfoMap.get(url1);
             UrlInfo urlInfo2 = mUrlInfoMap.get(url2);
@@ -156,7 +157,10 @@ class UrlManager {
         putCachedUrlInfoMap();
 
         recordUpdate();
-        if (mNearbyUrls.contains(urlInfo.getUrl())) {
+        if (mNearbyUrls.contains(urlInfo.getUrl())
+                // In the rare event that our entry is immediately garbage collected from the cache,
+                // we should stop here.
+                || !mUrlInfoMap.containsKey(urlInfo.getUrl())) {
             return;
         }
         mNearbyUrls.add(urlInfo.getUrl());
@@ -210,7 +214,6 @@ class UrlManager {
      * Get the list of URLs which are both nearby and resolved through PWS.
      * @return A set of nearby and resolved URLs, sorted by distance.
      */
-    // TODO(conleyo) We will need to provide sorted URLs after distance is in place.
     @VisibleForTesting
     public List<UrlInfo> getUrls() {
         return getUrls(false);
@@ -220,7 +223,7 @@ class UrlManager {
      * Get the list of URLs which are both nearby and resolved through PWS.
      * @param allowUnresolved If true, include unresolved URLs only if the
      * resolved URL list is empty.
-     * @return A set of nearby URLs.
+     * @return A set of nearby URLs, sorted by distance.
      */
     @VisibleForTesting
     public List<UrlInfo> getUrls(boolean allowUnresolved) {
@@ -229,11 +232,19 @@ class UrlManager {
         Log.d(TAG, "Get URLs With: %d nearby, %d resolved, and %d in intersection.",
                 mNearbyUrls.size(), mResolvedUrls.size(), intersection.size());
 
+        List<UrlInfo> urlInfos = null;
         if (allowUnresolved && mResolvedUrls.isEmpty()) {
-            return getUrlInfoList(mNearbyUrls);
+            urlInfos = getUrlInfoList(mNearbyUrls);
+        } else {
+            urlInfos = getUrlInfoList(intersection);
         }
-
-        return getUrlInfoList(intersection);
+        Collections.sort(urlInfos, new Comparator<UrlInfo>() {
+            @Override
+            public int compare(UrlInfo urlInfo1, UrlInfo urlInfo2) {
+                return Double.compare(urlInfo1.getDistance(), urlInfo2.getDistance());
+            }
+        });
+        return urlInfos;
     }
 
     public Set<String> getNearbyUrls() {
