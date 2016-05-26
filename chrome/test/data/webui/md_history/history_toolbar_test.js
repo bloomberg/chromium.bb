@@ -59,8 +59,9 @@ cr.define('md_history.history_toolbar_test', function() {
         registerMessageCallback('queryHistory', this, function (info) {
           assertEquals('example.com', info[0]);
           flush(function() {
-            assertEquals(toolbar.$$('#search-input').$$('#search-input').value,
-                'example.com');
+            assertEquals(
+                'example.com',
+                toolbar.$['main-toolbar'].getSearchField().getValue());
             done();
           });
         });

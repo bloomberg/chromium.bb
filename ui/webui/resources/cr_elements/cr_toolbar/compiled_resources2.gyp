@@ -1,19 +1,19 @@
-# Copyright 2015 The Chromium Authors. All rights reserved.
+# Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 {
   'targets': [
     {
-      'target_name': 'cr_search_field_behavior',
+      'target_name': 'cr_toolbar_search_field',
       'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/cr_elements/cr_search_field/compiled_resources2.gyp:cr_search_field_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
-      'target_name': 'cr_search_field',
+      'target_name': 'cr_toolbar',
       'dependencies': [
-        'cr_search_field_behavior'
+        'cr_toolbar_search_field',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

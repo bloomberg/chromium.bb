@@ -1,13 +1,12 @@
-<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/hardware-icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tab.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
 <dom-module id="history-toolbar">
@@ -19,10 +18,9 @@
         width: 100%;
       }
 
+      cr-toolbar,
       #overlay-buttons,
       #overlay-wrapper,
-      #main-content,
-      #button-container,
       #toolbar-container {
         @apply(--layout-center);
         @apply(--layout-horizontal);
@@ -33,47 +31,8 @@
         background: rgb(68, 136, 255);
       }
 
-      h1 {
-        @apply(--layout-flex);
-        -webkit-padding-start: 24px;
-        font-size: 123%;
-        font-weight: 400;
-      }
-
       #toolbar-container {
         height: 56px;
-      }
-
-      #right-content {
-        flex: 1 0 0;
-      }
-
-      #left-content {
-        flex: 1 0 var(--side-bar-width);
-      }
-
-      #centered-content {
-        /** Padding-start gives space on one side, flex-basis gives space on the
-          other. */
-        -webkit-padding-start: var(--card-padding-side);
-        display: flex;
-        flex: 1 1 calc(var(--card-max-width) + var(--card-padding-side));
-      }
-
-      #right-content {
-        @apply(--layout-center);
-        @apply(--layout-horizontal);
-        justify-content: flex-end;
-      }
-
-      #search-input {
-        -webkit-padding-end: 20px;
-      }
-
-      #searching-spinner {
-        height: 20px;
-        width: 20px;
-        -webkit-padding-end: 10px;
       }
 
       #overlay-buttons {
@@ -155,21 +114,10 @@
       }
     </style>
     <div id="toolbar-container">
-      <div id="main-content" hidden$="[[itemsSelected_]]">
-        <div id="left-content">
-          <h1 id="title">$i18n{title}</h1>
-        </div>
-        <div id="centered-content">
-          <div id="right-content">
-            <paper-spinner id="searching-spinner" active="[[searching]]">
-            </paper-spinner>
-            <cr-search-field id="search-input" label="$i18n{search}"
-                clear-label="$i18n{clearSearch}">
-            </cr-search-field>
-          </div>
-        </div>
-      </div>
-
+      <cr-toolbar id="main-toolbar" page-name="$i18n{title}"
+          clear-label="$i18n{clearSearch}" search-prompt="$i18n{searchPrompt}"
+          hidden$="[[itemsSelected_]]">
+      </cr-toolbar>
       <div id="overlay-wrapper" hidden$="[[!itemsSelected_]]">
         <div id="overlay-buttons">
           <paper-icon-button icon="cr:clear" id="cancel-icon-button"

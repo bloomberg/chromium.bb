@@ -1,3 +1,4 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
@@ -7,20 +8,18 @@
 
 <dom-module id="cr-search-field">
   <template>
-    <paper-icon-button icon="cr:search" id="search-button"
-        disabled$="[[showingSearch_]]" title="[[label]]"
+    <paper-icon-button icon="cr:search" id="searchButton"
+        disabled$="[[showingSearch]]" title="[[label]]"
         on-click="toggleShowingSearch_"></paper-icon-button>
-    <template is="dom-if" if="[[showingSearch_]]" id="search-container">
-      <paper-input-container id="search-term" on-search="onSearchTermSearch_"
-          on-keydown="onSearchTermKeydown_" hidden$="[[!showingSearch_]]"
-          no-label-float>
-        <input is="iron-input" id="search-input" type="search"
-            placeholder="[[label]]" incremental>
-        <paper-icon-button icon="cr:cancel" id="clear-search"
-            on-click="toggleShowingSearch_" title="[[clearLabel]]"
-            hidden$="[[!showingSearch_]]"></paper-icon-button>
-      </paper-input-container>
-    </template>
+    <paper-input-container id="searchTerm" on-search="onSearchTermSearch_"
+        on-keydown="onSearchTermKeydown_" hidden$="[[!showingSearch]]"
+        no-label-float>
+      <input is="iron-input" id="searchInput" type="search"
+          placeholder="[[label]]" incremental>
+      <paper-icon-button icon="cr:cancel" id="clearSearch"
+          on-click="toggleShowingSearch_" title="[[clearLabel]]"
+          hidden$="[[!showingSearch]]"></paper-icon-button>
+    </paper-input-container>
   </template>
   <link rel="import" type="css" href="cr_search_field.css">
   <script src="cr_search_field.js"></script>

@@ -59,7 +59,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("rangeNext", IDS_HISTORY_RANGE_NEXT);
   source->AddLocalizedString("rangePrevious", IDS_HISTORY_RANGE_PREVIOUS);
   source->AddLocalizedString("removeFromHistory", IDS_HISTORY_REMOVE_PAGE);
-  source->AddLocalizedString("search", IDS_MD_HISTORY_SEARCH);
+  source->AddLocalizedString("searchPrompt", IDS_MD_HISTORY_SEARCH_PROMPT);
   source->AddLocalizedString("searchResult", IDS_HISTORY_SEARCH_RESULT);
   source->AddLocalizedString("searchResults", IDS_HISTORY_SEARCH_RESULTS);
   source->AddLocalizedString("title", IDS_HISTORY_TITLE);
