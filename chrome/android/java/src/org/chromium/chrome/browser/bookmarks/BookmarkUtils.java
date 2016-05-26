@@ -23,6 +23,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
@@ -257,7 +258,15 @@ public class BookmarkUtils {
         intent.putExtra(Browser.EXTRA_APPLICATION_ID,
                 activity.getApplicationContext().getPackageName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setComponent(componentName);
+
+        if (componentName != null) {
+            intent.setComponent(componentName);
+        } else {
+            // If the bookmark manager is shown in a tab on a phone (rather than in a separate
+            // activity) the component name may be null. Send the intent through
+            // ChromeLauncherActivity instead to avoid crashing. See crbug.com/615012.
+            intent.setClass(activity, ChromeLauncherActivity.class);
+        }
 
         IntentHandler.startActivityForTrustedIntent(intent, activity);
     }
