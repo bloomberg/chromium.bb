@@ -1024,4 +1024,34 @@ TEST_F(WindowTreeClientImplTest, TwoWindowsRequestCapture) {
   EXPECT_FALSE(root->HasCapture());
 }
 
+TEST_F(WindowTreeClientImplTest, WindowDestroyedWhileTransientChildHasCapture) {
+  WindowTreeSetup setup;
+  Window* root = setup.GetFirstRoot();
+  Window* transient_parent = setup.window_tree_connection()->NewWindow();
+  Window* transient_child = setup.window_tree_connection()->NewWindow();
+  transient_parent->SetVisible(true);
+  transient_child->SetVisible(true);
+  root->AddChild(transient_parent);
+  root->AddChild(transient_child);
+
+  transient_parent->AddTransientWindow(transient_child);
+
+  WindowTracker tracker;
+  tracker.Add(transient_parent);
+  tracker.Add(transient_child);
+  // Request a capture on the transient child, then destroy the transient
+  // parent. That will destroy both windows, and should reset the capture window
+  // correctly.
+  transient_child->SetCapture();
+  transient_parent->Destroy();
+  EXPECT_TRUE(tracker.windows().empty());
+
+  // Create a new Window, and attempt to place capture on that.
+  Window* child = setup.window_tree_connection()->NewWindow();
+  child->SetVisible(true);
+  root->AddChild(child);
+  child->SetCapture();
+  EXPECT_TRUE(child->HasCapture());
+}
+
 }  // namespace mus

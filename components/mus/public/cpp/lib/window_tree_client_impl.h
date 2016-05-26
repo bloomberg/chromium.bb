@@ -124,6 +124,8 @@ class WindowTreeClientImpl : public WindowTreeConnection,
 
   bool IsRoot(Window* window) const { return roots_.count(window) > 0; }
 
+  void OnWindowDestroying(Window* window);
+
   // Called after the window's observers have been notified of destruction (as
   // the last step of ~Window).
   void OnWindowDestroyed(Window* window);
