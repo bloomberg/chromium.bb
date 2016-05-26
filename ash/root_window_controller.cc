@@ -430,19 +430,20 @@ const aura::Window* RootWindowController::GetContainer(int container_id) const {
 }
 
 void RootWindowController::ShowShelf() {
-  if (!shelf_->shelf())
+  if (!shelf_widget_->shelf())
     return;
-  shelf_->shelf()->SetVisible(true);
-  shelf_->status_area_widget()->Show();
+  shelf_widget_->shelf()->SetVisible(true);
+  shelf_widget_->status_area_widget()->Show();
 }
 
 void RootWindowController::OnShelfCreated() {
   if (panel_layout_manager_)
-    panel_layout_manager_->SetShelf(shelf_->shelf()->wm_shelf());
+    panel_layout_manager_->SetShelf(shelf_widget_->shelf()->wm_shelf());
   if (docked_layout_manager_) {
-    docked_layout_manager_->SetShelf(shelf_->shelf()->wm_shelf());
-    if (shelf_->shelf_layout_manager())
-      docked_layout_manager_->AddObserver(shelf_->shelf_layout_manager());
+    docked_layout_manager_->SetShelf(shelf_widget_->shelf()->wm_shelf());
+    if (shelf_widget_->shelf_layout_manager())
+      docked_layout_manager_->AddObserver(
+          shelf_widget_->shelf_layout_manager());
   }
 
   // Notify shell observers that the shelf has been created.
@@ -453,8 +454,8 @@ void RootWindowController::UpdateAfterLoginStatusChange(
     user::LoginStatus status) {
   if (status != user::LOGGED_IN_NONE)
     mouse_event_target_.reset();
-  if (shelf_->status_area_widget())
-    shelf_->status_area_widget()->UpdateAfterLoginStatusChange(status);
+  if (shelf_widget_->status_area_widget())
+    shelf_widget_->status_area_widget()->UpdateAfterLoginStatusChange(status);
 }
 
 void RootWindowController::HandleInitialDesktopBackgroundAnimationStarted() {
@@ -499,8 +500,10 @@ void RootWindowController::CloseChildWindows() {
 
   // Remove observer as deactivating keyboard causes |docked_layout_manager_|
   // to fire notifications.
-  if (docked_layout_manager_ && shelf_ && shelf_->shelf_layout_manager())
-    docked_layout_manager_->RemoveObserver(shelf_->shelf_layout_manager());
+  if (docked_layout_manager_ && shelf_widget_ &&
+      shelf_widget_->shelf_layout_manager())
+    docked_layout_manager_->RemoveObserver(
+        shelf_widget_->shelf_layout_manager());
 
   // Deactivate keyboard container before closing child windows and shutting
   // down associated layout managers.
@@ -519,8 +522,8 @@ void RootWindowController::CloseChildWindows() {
   aura::Window* root_window = GetRootWindow();
   aura::client::SetDragDropClient(root_window, NULL);
 
-  if (shelf_)
-    shelf_->Shutdown();
+  if (shelf_widget_)
+    shelf_widget_->Shutdown();
 
   // Close background widget first as it depends on tooltip.
   wallpaper_controller_.reset();
@@ -560,7 +563,7 @@ void RootWindowController::CloseChildWindows() {
     }
   }
 
-  shelf_.reset();
+  shelf_widget_.reset();
 }
 
 void RootWindowController::MoveWindowsTo(aura::Window* dst) {
@@ -572,21 +575,22 @@ void RootWindowController::MoveWindowsTo(aura::Window* dst) {
 }
 
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
-  return shelf_->shelf_layout_manager();
+  return shelf_widget_->shelf_layout_manager();
 }
 
 SystemTray* RootWindowController::GetSystemTray() {
   // We assume in throughout the code that this will not return NULL. If code
   // triggers this for valid reasons, it should test status_area_widget first.
-  CHECK(shelf_->status_area_widget());
-  return shelf_->status_area_widget()->system_tray();
+  CHECK(shelf_widget_->status_area_widget());
+  return shelf_widget_->status_area_widget()->system_tray();
 }
 
 void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
                                            ui::MenuSourceType source_type) {
   ShellDelegate* delegate = Shell::GetInstance()->delegate();
   DCHECK(delegate);
-  menu_model_.reset(delegate->CreateContextMenu(shelf_->shelf(), nullptr));
+  menu_model_.reset(
+      delegate->CreateContextMenu(shelf_widget_->shelf(), nullptr));
   if (!menu_model_)
     return;
 
@@ -609,7 +613,7 @@ void RootWindowController::ShowContextMenu(const gfx::Point& location_in_screen,
 }
 
 void RootWindowController::UpdateShelfVisibility() {
-  shelf_->shelf_layout_manager()->UpdateVisibilityState();
+  shelf_widget_->shelf_layout_manager()->UpdateVisibilityState();
 }
 
 aura::Window* RootWindowController::GetWindowForFullscreenMode() {
@@ -624,7 +628,7 @@ void RootWindowController::ActivateKeyboard(
     return;
   }
   DCHECK(keyboard_controller);
-  keyboard_controller->AddObserver(shelf()->shelf_layout_manager());
+  keyboard_controller->AddObserver(shelf_widget()->shelf_layout_manager());
   keyboard_controller->AddObserver(panel_layout_manager_);
   keyboard_controller->AddObserver(docked_layout_manager_);
   keyboard_controller->AddObserver(workspace_controller_->layout_manager());
@@ -655,7 +659,7 @@ void RootWindowController::DeactivateKeyboard(
     // Virtual keyboard may be deactivated while still showing, notify all
     // observers that keyboard bounds changed to 0 before remove them.
     keyboard_controller->NotifyKeyboardBoundsChanging(gfx::Rect());
-    keyboard_controller->RemoveObserver(shelf()->shelf_layout_manager());
+    keyboard_controller->RemoveObserver(shelf_widget()->shelf_layout_manager());
     keyboard_controller->RemoveObserver(panel_layout_manager_);
     keyboard_controller->RemoveObserver(docked_layout_manager_);
     keyboard_controller->RemoveObserver(
@@ -718,7 +722,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
 
     // Create a shelf if a user is already logged in.
     if (shell->session_state_delegate()->NumberOfLoggedInUsers())
-      shelf()->CreateShelf();
+      shelf_widget()->CreateShelf();
 
     // Notify shell observers about new root window.
     shell->OnRootWindowAdded(root_window);
@@ -751,13 +755,14 @@ void RootWindowController::InitLayoutManagers() {
   always_on_top_controller_.reset(
       new AlwaysOnTopController(always_on_top_container));
 
-  DCHECK(!shelf_.get());
+  DCHECK(!shelf_widget_.get());
   aura::Window* shelf_container = GetContainer(kShellWindowId_ShelfContainer);
   // TODO(harrym): Remove when status area is view.
   aura::Window* status_container = GetContainer(kShellWindowId_StatusContainer);
-  shelf_.reset(new ShelfWidget(
-      shelf_container, status_container, workspace_controller()));
-  workspace_layout_manager_delegate->set_shelf(shelf_->shelf_layout_manager());
+  shelf_widget_.reset(new ShelfWidget(shelf_container, status_container,
+                                      workspace_controller()));
+  workspace_layout_manager_delegate->set_shelf(
+      shelf_widget_->shelf_layout_manager());
 
   if (!Shell::GetInstance()->session_state_delegate()->
       IsActiveUserSessionStarted()) {
@@ -1047,7 +1052,7 @@ void RootWindowController::OnMenuClosed() {
 }
 
 void RootWindowController::OnLoginStateChanged(user::LoginStatus status) {
-  shelf_->shelf_layout_manager()->UpdateVisibilityState();
+  shelf_widget_->shelf_layout_manager()->UpdateVisibilityState();
 }
 
 void RootWindowController::OnTouchHudProjectionToggled(bool enabled) {

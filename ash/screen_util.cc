@@ -32,7 +32,7 @@ display::Display ScreenUtil::FindDisplayContainingPoint(
 
 // static
 gfx::Rect ScreenUtil::GetMaximizedWindowBoundsInParent(aura::Window* window) {
-  if (GetRootWindowController(window->GetRootWindow())->shelf())
+  if (GetRootWindowController(window->GetRootWindow())->shelf_widget())
     return GetDisplayWorkAreaBoundsInParent(window);
   else
     return GetDisplayBoundsInParent(window);

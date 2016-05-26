@@ -42,8 +42,10 @@ namespace test {
 namespace {
 
 SystemTray* GetSystemTray() {
-  return Shell::GetPrimaryRootWindowController()->shelf()->
-      status_area_widget()->system_tray();
+  return Shell::GetPrimaryRootWindowController()
+      ->shelf_widget()
+      ->status_area_widget()
+      ->system_tray();
 }
 
 // Trivial item implementation that tracks its views for testing.
@@ -180,8 +182,9 @@ TEST_F(SystemTrayTest, SystemTrayColoring) {
 TEST_F(SystemTrayTest, SystemTrayColoringAfterAlignmentChange) {
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
-  ShelfLayoutManager* manager =
-      Shell::GetPrimaryRootWindowController()->shelf()->shelf_layout_manager();
+  ShelfLayoutManager* manager = Shell::GetPrimaryRootWindowController()
+                                    ->shelf_widget()
+                                    ->shelf_layout_manager();
   manager->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
   // At the beginning the tray coloring is not active.
   ASSERT_FALSE(tray->draw_background_as_active());
@@ -350,10 +353,12 @@ TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
 // Tests that the tray is laid out properly and is fully contained within
 // the shelf.
 TEST_F(SystemTrayTest, TrayBoundsInWidget) {
-  ShelfLayoutManager* manager =
-      Shell::GetPrimaryRootWindowController()->shelf()->shelf_layout_manager();
-  StatusAreaWidget* widget =
-      Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget();
+  ShelfLayoutManager* manager = Shell::GetPrimaryRootWindowController()
+                                    ->shelf_widget()
+                                    ->shelf_layout_manager();
+  StatusAreaWidget* widget = Shell::GetPrimaryRootWindowController()
+                                 ->shelf_widget()
+                                 ->status_area_widget();
   SystemTray* tray = widget->system_tray();
 
   // Test in bottom alignment.

@@ -113,8 +113,9 @@ class UpdateNagger : public ui::LayerAnimationObserver {
   }
 
   ~UpdateNagger() override {
-    StatusAreaWidget* status_area =
-        Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget();
+    StatusAreaWidget* status_area = Shell::GetPrimaryRootWindowController()
+                                        ->shelf_widget()
+                                        ->status_area_widget();
     if (status_area) {
       status_area->system_tray()->GetWidget()->GetNativeView()->layer()->
           GetAnimator()->RemoveObserver(this);
@@ -138,7 +139,7 @@ class UpdateNagger : public ui::LayerAnimationObserver {
   void OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) override {
     // TODO(oshima): Find out if the updator will be shown on non
     // primary display.
-    if (Shell::GetPrimaryRootWindowController()->shelf()->IsVisible())
+    if (Shell::GetPrimaryRootWindowController()->shelf_widget()->IsVisible())
       timer_.Stop();
     else if (!timer_.IsRunning())
       RestartTimer();
@@ -195,7 +196,7 @@ void TrayUpdate::DestroyDetailedView() {
 void TrayUpdate::OnUpdateRecommended(const UpdateInfo& info) {
   SetImageFromResourceId(DecideResource(info.severity, false));
   tray_view()->SetVisible(true);
-  if (!Shell::GetPrimaryRootWindowController()->shelf()->IsVisible() &&
+  if (!Shell::GetPrimaryRootWindowController()->shelf_widget()->IsVisible() &&
       !nagger_.get()) {
     // The shelf is not visible, and there is no nagger scheduled.
     nagger_.reset(new tray::UpdateNagger(this));

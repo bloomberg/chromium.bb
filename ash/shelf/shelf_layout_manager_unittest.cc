@@ -60,7 +60,7 @@ void StepWidgetLayerAnimatorToEnd(views::Widget* widget) {
 }
 
 ShelfWidget* GetShelfWidget() {
-  return Shell::GetPrimaryRootWindowController()->shelf();
+  return Shell::GetPrimaryRootWindowController()->shelf_widget();
 }
 
 ShelfLayoutManager* GetShelfLayoutManager() {
@@ -2097,8 +2097,9 @@ TEST_F(ShelfLayoutManagerTest, Dimming) {
 // the shelf.
 TEST_F(ShelfLayoutManagerTest, BubbleEnlargesShelfMouseHitArea) {
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
-  StatusAreaWidget* status_area_widget =
-      Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget();
+  StatusAreaWidget* status_area_widget = Shell::GetPrimaryRootWindowController()
+                                             ->shelf_widget()
+                                             ->status_area_widget();
   SystemTray* tray = GetSystemTray();
 
   // Create a visible window so auto-hide behavior is enforced.
@@ -2210,8 +2211,9 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorAutoHide) {
 TEST_F(ShelfLayoutManagerTest, MAYBE_StatusAreaHitBoxCoversEdge) {
   UpdateDisplay("400x400");
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
-  StatusAreaWidget* status_area_widget =
-      Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget();
+  StatusAreaWidget* status_area_widget = Shell::GetPrimaryRootWindowController()
+                                             ->shelf_widget()
+                                             ->status_area_widget();
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   generator.MoveMouseTo(399,399);
 
@@ -2291,8 +2293,9 @@ TEST_F(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
 
   UpdateDisplay("500x400, 500x400");
 
-  StatusAreaWidget* status_area_widget =
-      Shell::GetPrimaryRootWindowController()->shelf()->status_area_widget();
+  StatusAreaWidget* status_area_widget = Shell::GetPrimaryRootWindowController()
+                                             ->shelf_widget()
+                                             ->status_area_widget();
   EXPECT_TRUE(status_area_widget->IsVisible());
   // Shelf should be in the first display's area.
   gfx::Rect status_area_bounds(status_area_widget->GetWindowBoundsInScreen());

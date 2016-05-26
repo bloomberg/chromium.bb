@@ -30,8 +30,10 @@ namespace test {
 namespace {
 
 SystemTray* GetSystemTray() {
-  return Shell::GetPrimaryRootWindowController()->shelf()->
-      status_area_widget()->system_tray();
+  return Shell::GetPrimaryRootWindowController()
+      ->shelf_widget()
+      ->status_area_widget()
+      ->system_tray();
 }
 
 class TestDetailsView : public TrayDetailsView,

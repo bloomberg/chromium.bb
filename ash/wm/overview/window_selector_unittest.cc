@@ -860,7 +860,8 @@ TEST_F(WindowSelectorTest, OverviewUndimsShelf) {
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   wm::WindowState* window_state = wm::GetWindowState(window1.get());
   window_state->Maximize();
-  ash::ShelfWidget* shelf = Shell::GetPrimaryRootWindowController()->shelf();
+  ash::ShelfWidget* shelf =
+      Shell::GetPrimaryRootWindowController()->shelf_widget();
   EXPECT_TRUE(shelf->GetDimsShelf());
   ToggleOverview();
   EXPECT_FALSE(shelf->GetDimsShelf());

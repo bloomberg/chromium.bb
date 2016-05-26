@@ -446,7 +446,7 @@ void Shell::CreateShelf() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter)
-    (*iter)->shelf()->CreateShelf();
+    (*iter)->shelf_widget()->CreateShelf();
 }
 
 void Shell::OnShelfCreatedForRootWindow(aura::Window* root_window) {
@@ -490,8 +490,8 @@ void Shell::ShutdownShelf() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter) {
-    if ((*iter)->shelf())
-      (*iter)->shelf()->Shutdown();
+    if ((*iter)->shelf_widget())
+      (*iter)->shelf_widget()->Shutdown();
   }
 }
 
@@ -523,7 +523,7 @@ void Shell::UpdateShelfVisibility() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter)
-    if ((*iter)->shelf())
+    if ((*iter)->shelf_widget())
       (*iter)->UpdateShelfVisibility();
 }
 
@@ -592,12 +592,14 @@ void Shell::OnModalWindowRemoved(aura::Window* removed) {
 }
 
 WebNotificationTray* Shell::GetWebNotificationTray() {
-  return GetPrimaryRootWindowController()->shelf()->
-      status_area_widget()->web_notification_tray();
+  return GetPrimaryRootWindowController()
+      ->shelf_widget()
+      ->status_area_widget()
+      ->web_notification_tray();
 }
 
 bool Shell::HasPrimaryStatusArea() {
-  ShelfWidget* shelf = GetPrimaryRootWindowController()->shelf();
+  ShelfWidget* shelf = GetPrimaryRootWindowController()->shelf_widget();
   return shelf && shelf->status_area_widget();
 }
 

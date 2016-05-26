@@ -118,9 +118,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
     return always_on_top_controller_.get();
   }
 
-  // Access the shelf associated with this root window controller,
+  // Access the shelf widget associated with this root window controller,
   // NULL if no such shelf exists.
-  ShelfWidget* shelf() { return shelf_.get(); }
+  ShelfWidget* shelf_widget() { return shelf_widget_.get(); }
 
   // Get touch HUDs associated with this root window controller.
   TouchHudDebug* touch_hud_debug() const {
@@ -269,8 +269,8 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   std::unique_ptr<StackingController> stacking_controller_;
 
-  // The shelf for managing the shelf and the status widget.
-  std::unique_ptr<ShelfWidget> shelf_;
+  // The shelf widget for this root window.
+  std::unique_ptr<ShelfWidget> shelf_widget_;
 
   // An invisible/empty window used as a event target for
   // |MouseCursorEventFilter| before a user logs in.

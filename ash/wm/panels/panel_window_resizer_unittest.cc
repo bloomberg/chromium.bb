@@ -272,10 +272,12 @@ TEST_F(PanelWindowResizerTest, DetachThenHideShelf) {
 
   // Hide the shelf. This minimizes all attached windows but should ignore
   // the dragged window.
-  ShelfLayoutManager* shelf = RootWindowController::ForWindow(window.get())->
-      shelf()->shelf_layout_manager();
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
-  shelf->UpdateVisibilityState();
+  ShelfLayoutManager* layout_manager =
+      RootWindowController::ForWindow(window.get())
+          ->shelf_widget()
+          ->shelf_layout_manager();
+  layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_ALWAYS_HIDDEN);
+  layout_manager->UpdateVisibilityState();
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(state->IsMinimized());
   EXPECT_EQ(kShellWindowId_PanelContainer, window->parent()->id());

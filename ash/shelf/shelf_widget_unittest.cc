@@ -166,8 +166,8 @@ TEST_F(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
   for (Shell::RootWindowControllerList::const_iterator i = controllers.begin();
        i != controllers.end();
        ++i) {
-    if (!(*i)->shelf()->shelf()) {
-      shelf_widget = (*i)->shelf();
+    if (!(*i)->shelf_widget()->shelf()) {
+      shelf_widget = (*i)->shelf_widget();
       break;
     }
   }

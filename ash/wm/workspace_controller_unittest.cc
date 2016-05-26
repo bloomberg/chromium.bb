@@ -146,7 +146,7 @@ class WorkspaceControllerTest : public test::AshTestBase {
   }
 
   ShelfWidget* shelf_widget() {
-    return Shell::GetPrimaryRootWindowController()->shelf();
+    return Shell::GetPrimaryRootWindowController()->shelf_widget();
   }
 
   ShelfLayoutManager* shelf_layout_manager() {

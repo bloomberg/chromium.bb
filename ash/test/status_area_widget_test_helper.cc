@@ -17,8 +17,9 @@ user::LoginStatus StatusAreaWidgetTestHelper::GetUserLoginStatus() {
 }
 
 StatusAreaWidget* StatusAreaWidgetTestHelper::GetStatusAreaWidget() {
-  return Shell::GetPrimaryRootWindowController()->shelf()->
-      status_area_widget();
+  return Shell::GetPrimaryRootWindowController()
+      ->shelf_widget()
+      ->status_area_widget();
 }
 
 StatusAreaWidget* StatusAreaWidgetTestHelper::GetSecondaryStatusAreaWidget() {
@@ -28,7 +29,7 @@ StatusAreaWidget* StatusAreaWidgetTestHelper::GetSecondaryStatusAreaWidget() {
       Shell::GetAllRootWindowControllers();
   for (size_t i = 0; i < controllers.size(); ++i) {
     if (controllers[i] != primary_controller)
-      return controllers[i]->shelf()->status_area_widget();
+      return controllers[i]->shelf_widget()->status_area_widget();
   }
 
   return NULL;

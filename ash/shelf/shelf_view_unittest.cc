@@ -223,7 +223,7 @@ TEST_F(ShelfViewIconObserverTest, MAYBE_AddRemoveWithMultipleDisplays) {
 }
 
 TEST_F(ShelfViewIconObserverTest, BoundsChanged) {
-  ShelfWidget* widget = Shell::GetPrimaryRootWindowController()->shelf();
+  ShelfWidget* widget = Shell::GetPrimaryRootWindowController()->shelf_widget();
   gfx::Rect shelf_bounds = widget->GetWindowBoundsInScreen();
   shelf_bounds.set_width(shelf_bounds.width() / 2);
   ASSERT_GT(shelf_bounds.width(), 0);

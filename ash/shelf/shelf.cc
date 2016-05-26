@@ -67,7 +67,8 @@ Shelf* Shelf::ForPrimaryDisplay() {
 
 // static
 Shelf* Shelf::ForWindow(const aura::Window* window) {
-  ShelfWidget* shelf_widget = RootWindowController::ForWindow(window)->shelf();
+  ShelfWidget* shelf_widget =
+      RootWindowController::ForWindow(window)->shelf_widget();
   return shelf_widget ? shelf_widget->shelf() : nullptr;
 }
 

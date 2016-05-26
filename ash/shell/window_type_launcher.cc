@@ -322,7 +322,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
         message_center::RichNotificationData(), NULL /* delegate */));
 
     ash::Shell::GetPrimaryRootWindowController()
-        ->shelf()
+        ->shelf_widget()
         ->status_area_widget()
         ->web_notification_tray()
         ->message_center()

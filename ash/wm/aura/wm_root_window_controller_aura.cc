@@ -63,7 +63,7 @@ const WmRootWindowControllerAura* WmRootWindowControllerAura::Get(
 }
 
 bool WmRootWindowControllerAura::HasShelf() {
-  return root_window_controller_->shelf() != nullptr;
+  return root_window_controller_->shelf_widget() != nullptr;
 }
 
 WmGlobals* WmRootWindowControllerAura::GetGlobals() {
@@ -79,8 +79,8 @@ AlwaysOnTopController* WmRootWindowControllerAura::GetAlwaysOnTopController() {
 }
 
 WmShelf* WmRootWindowControllerAura::GetShelf() {
-  return root_window_controller_->shelf()
-             ? root_window_controller_->shelf()->shelf()->wm_shelf()
+  return root_window_controller_->shelf_widget()
+             ? root_window_controller_->shelf_widget()->shelf()->wm_shelf()
              : nullptr;
 }
 
