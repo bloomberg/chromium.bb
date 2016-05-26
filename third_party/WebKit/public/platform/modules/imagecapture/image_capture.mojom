@@ -10,7 +10,7 @@ module blink.mojom;
 struct Range {
   uint32 max;
   uint32 min;
-  uint32 initial;
+  uint32 current;
 };
 
 struct PhotoCapabilities {

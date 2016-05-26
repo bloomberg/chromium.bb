@@ -14,26 +14,26 @@ class MediaSettingsRange final
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static MediaSettingsRange* create(unsigned long max, unsigned long min, unsigned long initial)
+    static MediaSettingsRange* create(unsigned long max, unsigned long min, unsigned long current)
     {
-        return new MediaSettingsRange(max, min, initial);
+        return new MediaSettingsRange(max, min, current);
     }
 
     unsigned long max() const { return m_max; }
     unsigned long min() const { return m_min; }
-    unsigned long initial() const { return m_initial; }
+    unsigned long current() const { return m_current; }
 
     DEFINE_INLINE_TRACE() {}
 
 private:
-    MediaSettingsRange(unsigned long max, unsigned long min, unsigned long initial)
+    MediaSettingsRange(unsigned long max, unsigned long min, unsigned long current)
         : m_max(max)
         , m_min(min)
-        , m_initial(initial) { }
+        , m_current(current) { }
 
     unsigned long m_max;
     unsigned long m_min;
-    unsigned long m_initial;
+    unsigned long m_current;
 };
 
 } // namespace blink

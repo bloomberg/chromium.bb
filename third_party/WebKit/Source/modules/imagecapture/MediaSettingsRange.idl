@@ -9,5 +9,5 @@
 ] interface MediaSettingsRange {
     readonly attribute unsigned long max;
     readonly attribute unsigned long min;
-    readonly attribute unsigned long initial;
+    readonly attribute unsigned long current;
 };

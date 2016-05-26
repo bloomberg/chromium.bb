@@ -11,9 +11,9 @@
     RaisesException=Constructor,
     RuntimeEnabled=ImageCapture,
 ] interface ImageCapture {
-    readonly attribute PhotoCapabilities photoCapabilities;
     readonly attribute MediaStreamTrack videoStreamTrack;
 
+    [CallWith=ScriptState, RaisesException] Promise<PhotoCapabilities> getPhotoCapabilities();
     [CallWith=ScriptState, RaisesException] Promise<Blob> takePhoto();
     [CallWith=ScriptState, RaisesException] Promise<ImageBitmap> grabFrame();
 };

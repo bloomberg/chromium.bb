@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-imagecapture.js"></script>
+<body>
+<canvas id='canvas' width=10 height=10/>
+</body>
+<script>
+
+// This test verifies that ImageCapture can get PhotoCapabilities(), with a mock
+// Mojo interface implementation.
+
+async_test(function(t) {
+  var canvas = document.getElementById('canvas');
+  var context = canvas.getContext("2d");
+  context.fillStyle = "red";
+  context.fillRect(0, 0, 10, 10);
+  var stream = canvas.captureStream();
+
+  var mock_capabilities;
+  mockImageCaptureReady
+    .then(mock => {
+      mock_capabilities = mock.capabilities();
+      return new ImageCapture(stream.getVideoTracks()[0]);
+    })
+    .catch(error => {
+      assert_unreached("Error creating MockImageCapture: " + error);
+    })
+    .then(capturer => {
+      assert_true(typeof capturer.getPhotoCapabilities == 'function');
+      return capturer.getPhotoCapabilities();
+    })
+    .then(capabilities => {
+      assert_true(capabilities instanceof PhotoCapabilities);
+      assert_true(capabilities.zoom instanceof MediaSettingsRange);
+
+      assert_equals(capabilities.zoom.max, mock_capabilities.zoom.max);
+      assert_equals(capabilities.zoom.min, mock_capabilities.zoom.min);
+      assert_equals(capabilities.zoom.current,
+                    mock_capabilities.zoom.current);
+
+      t.done();
+    })
+    .catch(error => {
+        assert_unreached("Error during getPhotoCapabilities(): " + error);
+    });
+
+}, 'exercises the retrieval of Capabilities on ImageCapture API construction');
+
+</script>

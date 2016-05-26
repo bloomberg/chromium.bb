@@ -3424,9 +3424,9 @@ interface ImageBitmapRenderingContext
     method transferFromImageBitmap
 interface ImageCapture
     attribute @@toStringTag
-    getter photoCapabilities
     getter videoStreamTrack
     method constructor
+    method getPhotoCapabilities
     method grabFrame
     method takePhoto
 interface ImageData
@@ -3695,7 +3695,7 @@ interface MediaRecorder : EventTarget
     setter onstop
 interface MediaSettingsRange
     attribute @@toStringTag
-    getter initial
+    getter current
     getter max
     getter min
     method constructor

@@ -75,6 +75,27 @@ void ImageCapture::contextDestroyed()
     DCHECK(!hasEventListeners());
 }
 
+ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* scriptState, ExceptionState& exceptionState)
+{
+    DVLOG(1) << __FUNCTION__;
+
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    if (!m_service) {
+        resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
+        return promise;
+    }
+
+    m_serviceRequests.add(resolver);
+
+    // m_streamTrack->component()->source()->id() is the renderer "name" of the camera;
+    // TODO(mcasas) consider sending the security origin as well:
+    // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
+    m_service->GetCapabilities(m_streamTrack->component()->source()->id(), createBaseCallback(bind<mojom::blink::PhotoCapabilitiesPtr>(&ImageCapture::onCapabilities, this, resolver)));
+    return promise;
+}
+
 ScriptPromise ImageCapture::takePhoto(ScriptState* scriptState, ExceptionState& exceptionState)
 {
 
@@ -129,7 +150,6 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* scriptState, ExceptionState& 
 ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
     : ActiveScriptWrappable(this)
     , ContextLifecycleObserver(context)
-    , m_photoCapabilities(PhotoCapabilities::create())
     , m_streamTrack(track)
 {
     DCHECK(m_streamTrack);
@@ -139,12 +159,23 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
 
     m_service.set_connection_error_handler(createBaseCallback(bind(&ImageCapture::onServiceConnectionError, WeakPersistentThisPointer<ImageCapture>(this))));
 
-    m_service->GetCapabilities(m_streamTrack->component()->source()->id(), createBaseCallback(bind<mojom::blink::PhotoCapabilitiesPtr>(&ImageCapture::onCapabilities, this)));
 }
 
-void ImageCapture::onCapabilities(mojom::blink::PhotoCapabilitiesPtr capabilities)
+void ImageCapture::onCapabilities(ScriptPromiseResolver* resolver, mojom::blink::PhotoCapabilitiesPtr capabilities)
 {
-    m_photoCapabilities->setZoom(MediaSettingsRange::create(capabilities->zoom->max, capabilities->zoom->min, capabilities->zoom->initial));
+    DVLOG(1) << __FUNCTION__;
+    if (!m_serviceRequests.contains(resolver))
+        return;
+    if (capabilities.is_null()) {
+        resolver->reject(DOMException::create(UnknownError, "platform error"));
+    } else {
+        // Should be using a capabilities.To<PhotoCapabilities>()
+        MediaSettingsRange* zoom = MediaSettingsRange::create(capabilities->zoom->max, capabilities->zoom->min, capabilities->zoom->current);
+        PhotoCapabilities* caps = PhotoCapabilities::create();
+        caps->setZoom(zoom);
+        resolver->resolve(caps);
+    }
+    m_serviceRequests.remove(resolver);
 }
 
 void ImageCapture::onTakePhoto(ScriptPromiseResolver* resolver, const String& mimeType, mojo::WTFArray<uint8_t> data)
@@ -171,7 +202,6 @@ void ImageCapture::onServiceConnectionError()
 
 DEFINE_TRACE(ImageCapture)
 {
-    visitor->trace(m_photoCapabilities);
     visitor->trace(m_streamTrack);
     visitor->trace(m_serviceRequests);
     EventTargetWithInlineData::trace(visitor);
