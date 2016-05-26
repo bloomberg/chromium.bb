@@ -56,7 +56,6 @@ class BlimpDisplayManager : public ui::PlatformWindowDelegate,
  private:
   // BlimpCompositorManagerClient implementation.
   void OnSwapBuffersCompleted() override;
-  void DidCommitAndDrawFrame() override;
 
   float device_pixel_ratio_;
 

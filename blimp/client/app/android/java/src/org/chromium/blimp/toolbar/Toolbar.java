@@ -4,48 +4,51 @@
 
 package org.chromium.blimp.toolbar;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ListPopupWindow;
 import android.widget.ProgressBar;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp.R;
 import org.chromium.blimp.session.BlimpClientSession;
+import org.chromium.blimp.session.EngineInfo;
+import org.chromium.blimp.settings.AboutBlimpPreferences;
+import org.chromium.blimp.settings.Preferences;
 
 /**
  * A {@link View} that visually represents the Blimp toolbar, which lets users issue navigation
  * commands and displays relevant navigation UI.
  */
 @JNINamespace("blimp::client")
-public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver, View.OnClickListener {
-    /**
-     * Delegate for the Toolbar.
-     */
-    public interface ToolbarDelegate {
-        /**
-         * Resets the metrics. Used for displaying per navigation metrics.
-         */
-        public void resetDebugStats();
-    }
-
+public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver, View.OnClickListener,
+                                                     BlimpClientSession.ConnectionObserver {
     private static final String TAG = "Toolbar";
+    private static final int ID_OPEN_IN_CHROME = 0;
+    private static final int ID_VERSION_INFO = 1;
 
     private long mNativeToolbarPtr;
 
     private Context mContext;
     private UrlBar mUrlBar;
-    private ToolbarMenu mToolbarMenu;
     private ImageButton mReloadButton;
     private ImageButton mMenuButton;
+    private ListPopupWindow mPopupMenu;
     private ProgressBar mProgressBar;
-    private BlimpClientSession mBlimpClientSession;
-    private ToolbarDelegate mDelegate;
+
+    private EngineInfo mEngineInfo;
 
     /**
      * A URL to load when this object is initialized.  This handles the case where there is a URL
@@ -64,30 +67,16 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver, View
     }
 
     /**
-     * @return the mToolbarMenu
-     */
-    public ToolbarMenu getToolbarMenu() {
-        return mToolbarMenu;
-    }
-
-    /**
      * To be called when the native library is loaded so that this class can initialize its native
      * components.
      * @param blimpClientSession The {@link BlimpClientSession} that contains the content-lite
      *                           features required by the native components of the Toolbar.
-     *        delegate The delegate for the Toolbar.
      */
-    public void initialize(BlimpClientSession blimpClientSession, ToolbarDelegate delegate) {
+    public void initialize(BlimpClientSession blimpClientSession) {
         assert mNativeToolbarPtr == 0;
 
-        mDelegate = delegate;
-
-        mBlimpClientSession = blimpClientSession;
-        mNativeToolbarPtr = nativeInit(mBlimpClientSession);
+        mNativeToolbarPtr = nativeInit(blimpClientSession);
         sendUrlTextInternal(mUrlToLoad);
-
-        mToolbarMenu = new ToolbarMenu(mContext, this);
-        mBlimpClientSession.addObserver(mToolbarMenu);
     }
 
     /**
@@ -95,7 +84,6 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver, View
      * this.
      */
     public void destroy() {
-        mBlimpClientSession.removeObserver(mToolbarMenu);
         if (mNativeToolbarPtr != 0) {
             nativeDestroy(mNativeToolbarPtr);
             mNativeToolbarPtr = 0;
@@ -109,16 +97,7 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver, View
      */
     public void loadUrl(String text) {
         mUrlBar.setText(text);
-        mDelegate.resetDebugStats();
         sendUrlTextInternal(text);
-    }
-
-    /**
-     * Returns the URL from the URL bar.
-     * @return Current URL
-     */
-    public String getUrl() {
-        return mUrlBar.getText().toString();
     }
 
     /**
@@ -127,7 +106,6 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver, View
      */
     public boolean onBackPressed() {
         if (mNativeToolbarPtr == 0) return false;
-        mDelegate.resetDebugStats();
         return nativeOnBackPressed(mNativeToolbarPtr);
     }
 
@@ -136,7 +114,6 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver, View
      */
     public void onForwardPressed() {
         if (mNativeToolbarPtr == 0) return;
-        mDelegate.resetDebugStats();
         nativeOnForwardPressed(mNativeToolbarPtr);
     }
 
@@ -155,7 +132,7 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver, View
         mMenuButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mToolbarMenu.showMenu(v);
+                showMenu(v);
             }
         });
 
@@ -201,11 +178,88 @@ public class Toolbar extends LinearLayout implements UrlBar.UrlBarObserver, View
         }
     }
 
+    private void showMenu(View anchorView) {
+        if (mPopupMenu == null) {
+            initializeMenu(anchorView);
+        }
+        mPopupMenu.show();
+        mPopupMenu.getListView().setDivider(null);
+    }
+
+    /**
+     * Creates and initializes the app menu anchored to the specified view.
+     * @param anchorView The anchor of the {@link ListPopupWindow}
+     */
+    private void initializeMenu(View anchorView) {
+        mPopupMenu = new ListPopupWindow(mContext);
+        mPopupMenu.setAdapter(new ArrayAdapter<String>(mContext, R.layout.toolbar_popup_item,
+                new String[] {mContext.getString(R.string.open_in_chrome),
+                        mContext.getString(R.string.version_info)}));
+        mPopupMenu.setAnchorView(anchorView);
+        mPopupMenu.setWidth(getResources().getDimensionPixelSize(R.dimen.toolbar_popup_item_width));
+        mPopupMenu.setVerticalOffset(-anchorView.getHeight());
+        mPopupMenu.setModal(true);
+        mPopupMenu.setOnItemClickListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (position == ID_OPEN_IN_CHROME) {
+                    openInChrome();
+                } else if (position == ID_VERSION_INFO) {
+                    showVersionInfo();
+                }
+                mPopupMenu.dismiss();
+            }
+        });
+    }
+
+    private void openInChrome() {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(mUrlBar.getText().toString()));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setPackage("com.android.chrome");
+        try {
+            mContext.startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            // Chrome is probably not installed, so try with the default browser
+            intent.setPackage(null);
+            mContext.startActivity(intent);
+        }
+    }
+
+    private void showVersionInfo() {
+        Intent intent = new Intent();
+        intent.setClass(mContext, Preferences.class);
+        if (mEngineInfo != null) {
+            intent.putExtra(AboutBlimpPreferences.EXTRA_ENGINE_IP, mEngineInfo.ipAddress);
+            intent.putExtra(AboutBlimpPreferences.EXTRA_ENGINE_VERSION, mEngineInfo.engineVersion);
+        }
+        mContext.startActivity(intent);
+    }
+
+    // BlimpClientSession.ConnectionObserver interface.
+    @Override
+    public void onAssignmentReceived(
+            int result, int suggestedMessageResourceId, EngineInfo engineInfo) {
+        mEngineInfo = engineInfo;
+    }
+
+    @Override
+    public void onConnected() {
+        if (mEngineInfo == null) return;
+
+        mEngineInfo.setConnected(true);
+    }
+
+    @Override
+    public void onDisconnected(String reason) {
+        if (mEngineInfo == null) return;
+
+        mEngineInfo.setConnected(false);
+    }
+
     // Methods that are called by native via JNI.
     @CalledByNative
     private void onEngineSentUrl(String url) {
         if (url != null) mUrlBar.setText(url);
-        mDelegate.resetDebugStats();
     }
 
     @CalledByNative

@@ -144,11 +144,6 @@ void BlimpCompositorManager::DidCompleteSwapBuffers() {
   client_->OnSwapBuffersCompleted();
 }
 
-void BlimpCompositorManager::DidCommitAndDrawFrame() {
-  DCHECK(client_);
-  client_->DidCommitAndDrawFrame();
-}
-
 scoped_refptr<base::SingleThreadTaskRunner>
 BlimpCompositorManager::GetCompositorTaskRunner() {
   if (compositor_thread_)

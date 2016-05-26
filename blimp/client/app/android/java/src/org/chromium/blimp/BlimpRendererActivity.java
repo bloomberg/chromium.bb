@@ -7,10 +7,7 @@ package org.chromium.blimp;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.TextUtils;
-import android.view.View;
-import android.widget.TextView;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.SuppressFBWarnings;
@@ -24,7 +21,6 @@ import org.chromium.blimp.session.BlimpClientSession;
 import org.chromium.blimp.session.EngineInfo;
 import org.chromium.blimp.session.TabControlFeature;
 import org.chromium.blimp.toolbar.Toolbar;
-import org.chromium.blimp.toolbar.ToolbarMenu;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -33,14 +29,9 @@ import org.chromium.ui.widget.Toast;
  */
 public class BlimpRendererActivity
         extends Activity implements BlimpLibraryLoader.Callback, TokenSource.Callback,
-                                    BlimpClientSession.ConnectionObserver,
-                                    ToolbarMenu.ToolbarMenuDelegate, Toolbar.ToolbarDelegate {
+                                    BlimpClientSession.ConnectionObserver {
     private static final int ACCOUNT_CHOOSER_INTENT_REQUEST_CODE = 100;
     private static final String TAG = "BlimpRendererActivity";
-
-    // Refresh interval for the debug view in milliseconds.
-    private static final int DEBUG_VIEW_REFRESH_INTERVAL = 1000;
-    private static final int BYTES_PER_KILO = 1024;
 
     /** Provides user authentication tokens that can be used to query for engine assignments.  This
      *  can potentially query GoogleAuthUtil for an OAuth2 authentication token with userinfo.email
@@ -53,18 +44,7 @@ public class BlimpRendererActivity
     private TabControlFeature mTabControlFeature;
     private WebInputBox mWebInputBox;
 
-    private Handler mHandler = new Handler();
-
     private boolean mFirstUrlLoadDone = false;
-
-    // Flag to record the base value of the metrics when the debug view is turned on.
-    private boolean mStatsBaseRecorded = false;
-    private int mSentBase;
-    private int mReceivedBase;
-    private int mCommitsBase;
-    private int mSent;
-    private int mReceived;
-    private int mCommits;
 
     @Override
     @SuppressFBWarnings("DM_EXIT")  // FindBugs doesn't like System.exit().
@@ -103,6 +83,9 @@ public class BlimpRendererActivity
         }
 
         if (mToolbar != null) {
+            if (mBlimpClientSession != null) {
+                mBlimpClientSession.removeObserver(mToolbar);
+            }
             mToolbar.destroy();
             mToolbar = null;
         }
@@ -170,7 +153,8 @@ public class BlimpRendererActivity
         mBlimpView.initializeRenderer(mBlimpClientSession);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        mToolbar.initialize(mBlimpClientSession, this);
+        mToolbar.initialize(mBlimpClientSession);
+        mBlimpClientSession.addObserver(mToolbar);
 
         mWebInputBox = (WebInputBox) findViewById(R.id.editText);
         mWebInputBox.initialize(mBlimpClientSession);
@@ -178,28 +162,6 @@ public class BlimpRendererActivity
         mTabControlFeature = new TabControlFeature(mBlimpClientSession, mBlimpView);
 
         handleUrlFromIntent(getIntent());
-    }
-
-    // ToolbarMenu.ToolbarMenuDelegate implementation.
-    @Override
-    public void showDebugView(boolean show) {
-        View debugView = findViewById(R.id.debug_stats);
-        debugView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
-        if (show) {
-            Runnable debugStatsRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    if (mToolbar.getToolbarMenu().isDebugInfoEnabled()) {
-                        int[] metrics = mBlimpClientSession.getDebugStats();
-                        updateDebugStats(metrics);
-                        mHandler.postDelayed(this, DEBUG_VIEW_REFRESH_INTERVAL);
-                    }
-                }
-            };
-            debugStatsRunnable.run();
-        } else {
-            mStatsBaseRecorded = false;
-        }
     }
 
     @Override
@@ -269,41 +231,6 @@ public class BlimpRendererActivity
     @Override
     public void onConnected() {
         Toast.makeText(this, R.string.network_connected, Toast.LENGTH_SHORT).show();
-    }
-
-    /**
-     * Displays debug metrics up to one decimal place.
-     */
-    @Override
-    public void updateDebugStatsUI(int received, int sent, int commits) {
-        TextView tv = (TextView) findViewById(R.id.bytes_received_client);
-        tv.setText(String.format("%.1f", (float) received / BYTES_PER_KILO));
-        tv = (TextView) findViewById(R.id.bytes_sent_client);
-        tv.setText(String.format("%.1f", (float) sent / BYTES_PER_KILO));
-        tv = (TextView) findViewById(R.id.commit_count);
-        tv.setText(String.valueOf(commits));
-    }
-
-    private void updateDebugStats(int[] metrics) {
-        assert metrics.length == 3;
-        mReceived = metrics[0];
-        mSent = metrics[1];
-        mCommits = metrics[2];
-        if (!mStatsBaseRecorded) {
-            mReceivedBase = mReceived;
-            mSentBase = mSent;
-            mCommitsBase = mCommits;
-            mStatsBaseRecorded = true;
-        }
-        updateDebugStatsUI(mReceived - mReceivedBase, mSent - mSentBase, mCommits - mCommitsBase);
-    }
-
-    // Toolbar.ToolbarDelegate interface.
-    @Override
-    public void resetDebugStats() {
-        mReceivedBase = mReceived;
-        mSentBase = mSent;
-        mCommitsBase = mCommits;
     }
 
     @Override

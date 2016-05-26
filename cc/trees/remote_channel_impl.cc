@@ -334,12 +334,7 @@ void RemoteChannelImpl::SetRendererCapabilitiesMainCopy(
 
 void RemoteChannelImpl::BeginMainFrameNotExpectedSoon() {}
 
-void RemoteChannelImpl::DidCommitAndDrawFrame() {
-  DCHECK(task_runner_provider_->IsImplThread());
-  MainThreadTaskRunner()->PostTask(
-      FROM_HERE, base::Bind(&RemoteChannelImpl::DidCommitAndDrawFrameOnMain,
-                            impl().remote_channel_weak_ptr));
-}
+void RemoteChannelImpl::DidCommitAndDrawFrame() {}
 
 void RemoteChannelImpl::SetAnimationEvents(
     std::unique_ptr<AnimationEvents> queue) {}
@@ -402,11 +397,6 @@ void RemoteChannelImpl::SendMessageProto(
 void RemoteChannelImpl::DidCompleteSwapBuffersOnMain() {
   DCHECK(task_runner_provider_->IsMainThread());
   main().layer_tree_host->DidCompleteSwapBuffers();
-}
-
-void RemoteChannelImpl::DidCommitAndDrawFrameOnMain() {
-  DCHECK(task_runner_provider_->IsMainThread());
-  main().layer_tree_host->DidCommitAndDrawFrame();
 }
 
 void RemoteChannelImpl::DidLoseOutputSurfaceOnMain() {

@@ -113,17 +113,5 @@ void BlimpClientSessionAndroid::OnAssignmentConnectionAttempted(
   BlimpClientSession::OnAssignmentConnectionAttempted(result, assignment);
 }
 
-base::android::ScopedJavaLocalRef<jintArray>
-BlimpClientSessionAndroid::GetDebugInfo(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jobj) {
-  BlimpConnectionStatistics* stats =
-      BlimpClientSession::GetBlimpConnectionStatistics();
-  int metrics[] = {stats->Get(BlimpConnectionStatistics::BYTES_RECEIVED),
-                   stats->Get(BlimpConnectionStatistics::BYTES_SENT),
-                   stats->Get(BlimpConnectionStatistics::COMMIT)};
-  return base::android::ToJavaIntArray(env, metrics, arraysize(metrics));
-}
-
 }  // namespace client
 }  // namespace blimp

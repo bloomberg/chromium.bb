@@ -106,9 +106,7 @@ void BlimpCompositor::WillCommit() {}
 
 void BlimpCompositor::DidCommit() {}
 
-void BlimpCompositor::DidCommitAndDrawFrame() {
-  client_->DidCommitAndDrawFrame();
-}
+void BlimpCompositor::DidCommitAndDrawFrame() {}
 
 void BlimpCompositor::DidCompleteSwapBuffers() {
   client_->DidCompleteSwapBuffers();

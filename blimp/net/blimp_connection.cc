@@ -20,6 +20,7 @@
 #include "net/base/completion_callback.h"
 
 namespace blimp {
+namespace {
 
 // Forwards incoming blimp messages to PacketWriter.
 class BlimpMessageSender : public BlimpMessageProcessor {
@@ -96,6 +97,8 @@ void BlimpMessageSender::OnWritePacketComplete(int result) {
   }
 }
 
+}  // namespace
+
 BlimpConnection::BlimpConnection(std::unique_ptr<PacketReader> reader,
                                  std::unique_ptr<PacketWriter> writer)
     : reader_(std::move(reader)),
@@ -107,7 +110,9 @@ BlimpConnection::BlimpConnection(std::unique_ptr<PacketReader> reader,
   // Observe the connection errors received by any of this connection's network
   // objects.
   message_pump_->set_error_observer(this);
-  outgoing_msg_processor_->set_error_observer(this);
+  BlimpMessageSender* sender =
+      static_cast<BlimpMessageSender*>(outgoing_msg_processor_.get());
+  sender->set_error_observer(this);
 }
 
 BlimpConnection::BlimpConnection() {}

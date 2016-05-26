@@ -16,7 +16,6 @@ namespace blimp {
 
 class BlimpMessageProcessor;
 class BlimpMessagePump;
-class BlimpMessageSender;
 class PacketReader;
 class PacketWriter;
 
@@ -53,7 +52,7 @@ class BLIMP_NET_EXPORT BlimpConnection : public ConnectionErrorObserver {
   std::unique_ptr<PacketReader> reader_;
   std::unique_ptr<BlimpMessagePump> message_pump_;
   std::unique_ptr<PacketWriter> writer_;
-  std::unique_ptr<BlimpMessageSender> outgoing_msg_processor_;
+  std::unique_ptr<BlimpMessageProcessor> outgoing_msg_processor_;
   base::ObserverList<ConnectionErrorObserver> error_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpConnection);

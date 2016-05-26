@@ -10,7 +10,6 @@
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/protocol_control.pb.h"
 #include "blimp/net/blimp_connection.h"
-#include "blimp/net/blimp_connection_statistics.h"
 #include "blimp/net/tcp_client_transport.h"
 #include "blimp/net/tcp_engine_transport.h"
 #include "blimp/net/test_common.h"
@@ -33,7 +32,7 @@ class TCPTransportTest : public testing::Test {
  protected:
   TCPTransportTest() {
     net::IPEndPoint local_address(net::IPAddress(127, 0, 0, 1), 0);
-    engine_.reset(new TCPEngineTransport(local_address, &statistics_, nullptr));
+    engine_.reset(new TCPEngineTransport(local_address, nullptr));
   }
 
   net::IPEndPoint GetLocalEndpoint() const {
@@ -43,17 +42,15 @@ class TCPTransportTest : public testing::Test {
   }
 
   base::MessageLoopForIO message_loop_;
-  BlimpConnectionStatistics statistics_;
   std::unique_ptr<TCPEngineTransport> engine_;
 };
 
 TEST_F(TCPTransportTest, Connect) {
-  BlimpConnectionStatistics statistics;
   net::TestCompletionCallback accept_callback;
   engine_->Connect(accept_callback.callback());
 
   net::TestCompletionCallback connect_callback;
-  TCPClientTransport client(GetLocalEndpoint(), &statistics, nullptr);
+  TCPClientTransport client(GetLocalEndpoint(), nullptr);
   client.Connect(connect_callback.callback());
 
   EXPECT_EQ(net::OK, connect_callback.WaitForResult());
@@ -62,16 +59,15 @@ TEST_F(TCPTransportTest, Connect) {
 }
 
 TEST_F(TCPTransportTest, TwoClientConnections) {
-  BlimpConnectionStatistics statistics;
   net::TestCompletionCallback accept_callback1;
   engine_->Connect(accept_callback1.callback());
 
   net::TestCompletionCallback connect_callback1;
-  TCPClientTransport client1(GetLocalEndpoint(), &statistics, nullptr);
+  TCPClientTransport client1(GetLocalEndpoint(), nullptr);
   client1.Connect(connect_callback1.callback());
 
   net::TestCompletionCallback connect_callback2;
-  TCPClientTransport client2(GetLocalEndpoint(), &statistics, nullptr);
+  TCPClientTransport client2(GetLocalEndpoint(), nullptr);
   client2.Connect(connect_callback2.callback());
 
   EXPECT_EQ(net::OK, connect_callback1.WaitForResult());
@@ -86,14 +82,11 @@ TEST_F(TCPTransportTest, TwoClientConnections) {
 }
 
 TEST_F(TCPTransportTest, ExchangeMessages) {
-  BlimpConnectionStatistics statistics;
-
   // Start the Engine transport and connect a client to it.
   net::TestCompletionCallback accept_callback;
   engine_->Connect(accept_callback.callback());
   net::TestCompletionCallback client_connect_callback;
-  TCPClientTransport client(GetLocalEndpoint(), &statistics,
-                            nullptr /* NetLog */);
+  TCPClientTransport client(GetLocalEndpoint(), nullptr /* NetLog */);
   client.Connect(client_connect_callback.callback());
   EXPECT_EQ(net::OK, client_connect_callback.WaitForResult());
   EXPECT_EQ(net::OK, accept_callback.WaitForResult());

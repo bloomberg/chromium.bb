@@ -6,7 +6,6 @@
 #define BLIMP_CLIENT_APP_ANDROID_BLIMP_CLIENT_SESSION_ANDROID_H_
 
 #include "base/android/jni_android.h"
-#include "base/android/jni_array.h"
 #include "base/macros.h"
 #include "blimp/client/session/blimp_client_session.h"
 
@@ -33,12 +32,6 @@ class BlimpClientSessionAndroid : public BlimpClientSession {
                const base::android::JavaParamRef<jstring>& jclient_auth_token);
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
-
-  // Returns an integer array to Java representing blimp debug statistics which
-  // contain bytes received, bytes sent, number of commits in order.
-  base::android::ScopedJavaLocalRef<jintArray> GetDebugInfo(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jobj);
 
  private:
   ~BlimpClientSessionAndroid() override;

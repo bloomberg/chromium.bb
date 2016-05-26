@@ -436,7 +436,6 @@ if (is_android) {
       "app/android/java/src/org/chromium/blimp/settings/AboutBlimpPreferences.java",
       "app/android/java/src/org/chromium/blimp/settings/Preferences.java",
       "app/android/java/src/org/chromium/blimp/toolbar/Toolbar.java",
-      "app/android/java/src/org/chromium/blimp/toolbar/ToolbarMenu.java",
       "app/android/java/src/org/chromium/blimp/toolbar/UrlBar.java",
     ]
   }
