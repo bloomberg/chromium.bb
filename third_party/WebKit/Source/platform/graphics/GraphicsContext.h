@@ -137,8 +137,6 @@ public:
     void drawRect(const IntRect&);
     void drawLine(const IntPoint&, const IntPoint&);
 
-    void fillPolygon(size_t numPoints, const FloatPoint*, const Color&, bool shouldAntialias);
-
     void fillPath(const Path&);
     void strokePath(const Path&);
 
@@ -290,8 +288,6 @@ private:
 
     template<typename DrawTextFunc>
     void drawTextPasses(const DrawTextFunc&);
-
-    static void setPathFromPoints(SkPath*, size_t, const FloatPoint*);
 
 #if OS(MACOSX)
     static inline int focusRingOffset(int offset) { return offset + 2; }

@@ -184,6 +184,21 @@ void paintComplexOutline(GraphicsContext& graphicsContext, const Vector<IntRect>
         graphicsContext.endLayer();
 }
 
+
+void fillQuad(GraphicsContext& context, const FloatPoint quad[], const Color& color, bool antialias)
+{
+    SkPath path;
+    path.moveTo(quad[0]);
+    path.lineTo(quad[1]);
+    path.lineTo(quad[2]);
+    path.lineTo(quad[3]);
+    SkPaint paint(context.fillPaint());
+    paint.setAntiAlias(antialias);
+    paint.setColor(color.rgb());
+
+    context.drawPath(path, paint);
+}
+
 } // namespace
 
 void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
@@ -490,7 +505,7 @@ void ObjectPainter::drawSolidBoxSide(GraphicsContext& graphicsContext, int x1, i
     ASSERT(y2 >= y1);
 
     if (!adjacentWidth1 && !adjacentWidth2) {
-        // Tweak antialiasing to match the behavior of fillPolygon();
+        // Tweak antialiasing to match the behavior of fillQuad();
         // this matters for rects in transformed contexts.
         bool wasAntialiased = graphicsContext.shouldAntialias();
         if (antialias != wasAntialiased)
@@ -529,7 +544,7 @@ void ObjectPainter::drawSolidBoxSide(GraphicsContext& graphicsContext, int x1, i
         break;
     }
 
-    graphicsContext.fillPolygon(4, quad, color, antialias);
+    fillQuad(graphicsContext, quad, color, antialias);
 }
 
 void ObjectPainter::paintAllPhasesAtomically(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

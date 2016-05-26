@@ -265,22 +265,25 @@ bool ThemePainterMac::paintMenuListButton(const LayoutObject& o, const PaintInfo
         return false;
 
     Color color = o.styleRef().visitedDependentColor(CSSPropertyColor);
+    SkPaint paint = paintInfo.context.fillPaint();
+    paint.setAntiAlias(true);
+    paint.setColor(color.rgb());
 
-    FloatPoint arrow1[3];
-    arrow1[0] = FloatPoint(leftEdge, centerY - spaceBetweenArrows / 2.0f);
-    arrow1[1] = FloatPoint(leftEdge + arrowWidth, centerY - spaceBetweenArrows / 2.0f);
-    arrow1[2] = FloatPoint(leftEdge + arrowWidth / 2.0f, centerY - spaceBetweenArrows / 2.0f - arrowHeight);
+    SkPath arrow1;
+    arrow1.moveTo(leftEdge, centerY - spaceBetweenArrows / 2.0f);
+    arrow1.lineTo(leftEdge + arrowWidth, centerY - spaceBetweenArrows / 2.0f);
+    arrow1.lineTo(leftEdge + arrowWidth / 2.0f, centerY - spaceBetweenArrows / 2.0f - arrowHeight);
 
     // Draw the top arrow.
-    paintInfo.context.fillPolygon(3, arrow1, color, true);
+    paintInfo.context.drawPath(arrow1, paint);
 
-    FloatPoint arrow2[3];
-    arrow2[0] = FloatPoint(leftEdge, centerY + spaceBetweenArrows / 2.0f);
-    arrow2[1] = FloatPoint(leftEdge + arrowWidth, centerY + spaceBetweenArrows / 2.0f);
-    arrow2[2] = FloatPoint(leftEdge + arrowWidth / 2.0f, centerY + spaceBetweenArrows / 2.0f + arrowHeight);
+    SkPath arrow2;
+    arrow2.moveTo(leftEdge, centerY + spaceBetweenArrows / 2.0f);
+    arrow2.lineTo(leftEdge + arrowWidth, centerY + spaceBetweenArrows / 2.0f);
+    arrow2.lineTo(leftEdge + arrowWidth / 2.0f, centerY + spaceBetweenArrows / 2.0f + arrowHeight);
 
     // Draw the bottom arrow.
-    paintInfo.context.fillPolygon(3, arrow2, color, true);
+    paintInfo.context.drawPath(arrow2, paint);
     return false;
 }
 

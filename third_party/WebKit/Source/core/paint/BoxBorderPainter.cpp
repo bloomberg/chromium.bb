@@ -366,13 +366,11 @@ struct OpacityGroup {
 void clipQuad(GraphicsContext& context, const FloatPoint quad[], bool antialiased)
 {
     SkPath path;
-    path.incReserve(4);
-    path.moveTo(WebCoreFloatToSkScalar(quad[0].x()),
-        WebCoreFloatToSkScalar(quad[0].y()));
-    for (size_t i = 1; i < 4; ++i) {
-        path.lineTo(WebCoreFloatToSkScalar(quad[i].x()),
-            WebCoreFloatToSkScalar(quad[i].y()));
-    }
+    path.moveTo(quad[0]);
+    path.lineTo(quad[1]);
+    path.lineTo(quad[2]);
+    path.lineTo(quad[3]);
+
     context.clipPath(path, antialiased ? AntiAliased : NotAntiAliased);
 }
 
