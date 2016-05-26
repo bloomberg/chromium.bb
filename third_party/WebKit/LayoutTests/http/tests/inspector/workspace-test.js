@@ -35,11 +35,12 @@ InspectorTest.createWorkspace = function(ignoreEvents)
 
 InspectorTest._mockTargetId = 1;
 
-InspectorTest.createMockTarget = function(id, debuggerModelConstructor)
+InspectorTest.createMockTarget = function(id, debuggerModelConstructor, targetType)
 {
     var MockTarget = function(name, connection, callback)
     {
-        WebInspector.Target.call(this, InspectorTest.testTargetManager, name, WebInspector.Target.Type.Page, connection, null, callback);
+        var type = typeof targetType === "undefined" ? WebInspector.Target.Type.Page : targetType;
+        WebInspector.Target.call(this, InspectorTest.testTargetManager, name, type, connection, null, callback);
         this.consoleModel = new WebInspector.ConsoleModel(this);
         this.networkManager = new WebInspector.NetworkManager(this);
         this.resourceTreeModel = new WebInspector.ResourceTreeModel(this);
