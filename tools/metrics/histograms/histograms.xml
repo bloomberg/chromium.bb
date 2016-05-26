@@ -87093,6 +87093,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="Can't Read Key"/>
   <int value="6" label="Key Mismatch"/>
   <int value="7" label="Hash Mismatch"/>
+  <int value="8" label="Sparse Open Failed"/>
 </enum>
 
 <enum name="SimpleCacheSyncSHA256Result" type="int">
@@ -87106,6 +87107,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Pretruncate Failure"/>
   <int value="2" label="Write Failure"/>
   <int value="3" label="Truncate Failure"/>
+  <int value="4" label="Lazy Stream Entry Doomed"/>
+  <int value="5" label="Lazy Create Failure"/>
+  <int value="6" label="Lazy Initialization Failure"/>
 </enum>
 
 <enum name="SimpleCacheWriteDependencyType" type="int">
