@@ -414,23 +414,6 @@ std::unique_ptr<LayerImpl> LayerImpl::CreateLayerImpl(
   return LayerImpl::Create(tree_impl, layer_id_);
 }
 
-void LayerImpl::set_main_thread_scrolling_reasons(
-    uint32_t main_thread_scrolling_reasons) {
-  if (main_thread_scrolling_reasons_ == main_thread_scrolling_reasons)
-    return;
-
-  if (main_thread_scrolling_reasons &
-          MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects &&
-      layer_tree_impl()) {
-    if (layer_tree_impl()->ScrollOffsetIsAnimatingOnImplOnly(this)) {
-      const bool needs_completion = true;
-      layer_tree_impl()->ScrollAnimationAbort(needs_completion);
-    }
-  }
-
-  main_thread_scrolling_reasons_ = main_thread_scrolling_reasons;
-}
-
 void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetBackgroundColor(background_color_);
   layer->SetSafeOpaqueBackgroundColor(safe_opaque_background_color_);

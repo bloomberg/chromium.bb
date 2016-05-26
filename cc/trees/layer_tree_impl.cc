@@ -2018,12 +2018,6 @@ bool LayerTreeImpl::HasAnyAnimationTargetingProperty(
       ->HasAnyAnimationTargetingProperty(layer->id(), property);
 }
 
-bool LayerTreeImpl::ScrollOffsetIsAnimatingOnImplOnly(
-    const LayerImpl* layer) const {
-  return layer_tree_host_impl_->animation_host()
-      ->ScrollOffsetIsAnimatingOnImplOnly(layer->id());
-}
-
 bool LayerTreeImpl::AnimationsPreserveAxisAlignment(
     const LayerImpl* layer) const {
   return layer_tree_host_impl_->animation_host()

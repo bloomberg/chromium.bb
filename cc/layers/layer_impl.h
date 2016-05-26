@@ -380,7 +380,9 @@ class CC_EXPORT LayerImpl {
   bool user_scrollable(ScrollbarOrientation orientation) const;
 
   void set_main_thread_scrolling_reasons(
-      uint32_t main_thread_scrolling_reasons);
+      uint32_t main_thread_scrolling_reasons) {
+    main_thread_scrolling_reasons_ = main_thread_scrolling_reasons;
+  }
   uint32_t main_thread_scrolling_reasons() const {
     return main_thread_scrolling_reasons_;
   }

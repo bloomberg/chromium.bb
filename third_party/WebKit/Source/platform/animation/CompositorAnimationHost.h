@@ -32,7 +32,8 @@ public:
     // is returned. See crbug.com/610763.
     bool isNull() const;
 
-    void updateImplOnlyScrollOffsetAnimation(const gfx::Vector2dF& adjustment, cc::ElementId);
+    void adjustImplOnlyScrollOffsetAnimation(cc::ElementId, const gfx::Vector2dF& adjustment);
+    void takeOverImplOnlyScrollOffsetAnimation(cc::ElementId);
 
 private:
     cc::AnimationHost* m_animationHost;

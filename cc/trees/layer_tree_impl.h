@@ -446,8 +446,6 @@ class CC_EXPORT LayerTreeImpl {
   bool HasAnyAnimationTargetingProperty(const LayerImpl* layer,
                                         TargetProperty::Type property) const;
 
-  bool ScrollOffsetIsAnimatingOnImplOnly(const LayerImpl* layer) const;
-
   bool AnimationsPreserveAxisAlignment(const LayerImpl* layer) const;
   bool HasOnlyTranslationTransforms(const LayerImpl* layer) const;
 

@@ -22,6 +22,7 @@ ScrollAnimatorCompositorCoordinator::ScrollAnimatorCompositorCoordinator()
     , m_runState(RunState::Idle)
     , m_compositorAnimationId(0)
     , m_compositorAnimationGroupId(0)
+    , m_implOnlyAnimationTakeover(false)
 {
     ThreadState::current()->registerPreFinalizer(this);
     m_compositorPlayer = adoptPtr(CompositorFactory::current().createAnimationPlayer());
@@ -48,7 +49,7 @@ void ScrollAnimatorCompositorCoordinator::resetAnimationState()
 
 bool ScrollAnimatorCompositorCoordinator::hasAnimationThatRequiresService() const
 {
-    if (!m_implOnlyAnimationAdjustment.isZero())
+    if (hasImplOnlyAnimationUpdate())
         return true;
 
     switch (m_runState) {
@@ -119,10 +120,12 @@ void ScrollAnimatorCompositorCoordinator::cancelAnimation()
     }
 }
 
-void ScrollAnimatorCompositorCoordinator::takeoverCompositorAnimation()
+void ScrollAnimatorCompositorCoordinator::takeOverCompositorAnimation()
 {
     switch (m_runState) {
     case RunState::Idle:
+        takeOverImplOnlyScrollOffsetAnimation();
+        break;
     case RunState::WaitingToCancelOnCompositor:
     case RunState::WaitingToCancelOnCompositorButNewScroll:
     case RunState::PostAnimationCleanup:
@@ -242,29 +245,50 @@ FloatPoint ScrollAnimatorCompositorCoordinator::blinkOffsetFromCompositorOffset(
     return offset;
 }
 
+bool ScrollAnimatorCompositorCoordinator::hasImplOnlyAnimationUpdate() const
+{
+    return !m_implOnlyAnimationAdjustment.isZero() || m_implOnlyAnimationTakeover;
+}
+
 void ScrollAnimatorCompositorCoordinator::updateCompositorAnimations()
 {
-    if (!getScrollableArea()->scrollAnimatorEnabled() || m_implOnlyAnimationAdjustment.isZero())
+    if (!getScrollableArea()->scrollAnimatorEnabled() || !hasImplOnlyAnimationUpdate())
         return;
 
     GraphicsLayer* layer = getScrollableArea()->layerForScrolling();
     CompositorAnimationTimeline* timeline = getScrollableArea()->compositorAnimationTimeline();
     if (layer && timeline && !timeline->compositorAnimationHost().isNull()) {
         CompositorAnimationHost host = timeline->compositorAnimationHost();
-        host.updateImplOnlyScrollOffsetAnimation(
-            gfx::Vector2dF(m_implOnlyAnimationAdjustment.width(), m_implOnlyAnimationAdjustment.height()),
-            layer->platformLayer()->id());
+        int elementId = layer->platformLayer()->id();
+        if (!m_implOnlyAnimationAdjustment.isZero()) {
+            host.adjustImplOnlyScrollOffsetAnimation(
+                elementId,
+                gfx::Vector2dF(m_implOnlyAnimationAdjustment.width(), m_implOnlyAnimationAdjustment.height()));
+        }
+        if (m_implOnlyAnimationTakeover)
+            host.takeOverImplOnlyScrollOffsetAnimation(elementId);
     }
     m_implOnlyAnimationAdjustment = FloatSize();
+    m_implOnlyAnimationTakeover = false;
 }
 
-void ScrollAnimatorCompositorCoordinator::updateImplOnlyScrollOffsetAnimation(
+void ScrollAnimatorCompositorCoordinator::adjustImplOnlyScrollOffsetAnimation(
     const FloatSize& adjustment)
 {
     if (!getScrollableArea()->scrollAnimatorEnabled())
         return;
 
     m_implOnlyAnimationAdjustment.expand(adjustment.width(), adjustment.height());
+
+    getScrollableArea()->registerForAnimation();
+}
+
+void ScrollAnimatorCompositorCoordinator::takeOverImplOnlyScrollOffsetAnimation()
+{
+    if (!getScrollableArea()->scrollAnimatorEnabled())
+        return;
+
+    m_implOnlyAnimationTakeover = true;
 
     getScrollableArea()->registerForAnimation();
 }

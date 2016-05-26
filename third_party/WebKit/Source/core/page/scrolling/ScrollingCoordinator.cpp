@@ -665,7 +665,7 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainTh
         m_lastMainThreadScrollingReasons = mainThreadScrollingReasons;
         if (mainThreadScrollingReasons) {
             if (ScrollAnimatorBase* scrollAnimator = layer->getScrollableArea()->existingScrollAnimator())
-                scrollAnimator->takeoverCompositorAnimation();
+                scrollAnimator->takeOverCompositorAnimation();
             scrollLayer->addMainThreadScrollingReasons(mainThreadScrollingReasons);
         } else {
             // Clear all main thread scrolling reasons except the one that's set

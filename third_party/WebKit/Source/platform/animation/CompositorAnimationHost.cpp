@@ -16,14 +16,20 @@ bool CompositorAnimationHost::isNull() const
     return !m_animationHost;
 }
 
-void CompositorAnimationHost::updateImplOnlyScrollOffsetAnimation(const gfx::Vector2dF& adjustment, cc::ElementId elementId)
+void CompositorAnimationHost::adjustImplOnlyScrollOffsetAnimation(cc::ElementId elementId, const gfx::Vector2dF& adjustment)
 {
     if (!m_animationHost)
         return;
 
-    cc::ScrollOffsetAnimationUpdate update(cc::ScrollOffsetAnimationUpdate::Type::SCROLL_OFFSET_CHANGED, elementId);
-    update.adjustment_ = adjustment;
-    m_animationHost->scroll_offset_animations().AddUpdate(update);
+    m_animationHost->scroll_offset_animations().AddAdjustmentUpdate(elementId, adjustment);
+}
+
+void CompositorAnimationHost::takeOverImplOnlyScrollOffsetAnimation(cc::ElementId elementId)
+{
+    if (!m_animationHost)
+        return;
+
+    m_animationHost->scroll_offset_animations().AddTakeoverUpdate(elementId);
 }
 
 } // namespace blink

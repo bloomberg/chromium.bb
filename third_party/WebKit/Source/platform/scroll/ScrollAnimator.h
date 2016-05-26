@@ -58,7 +58,7 @@ public:
     // ScrollAnimatorCompositorCoordinator implementation.
     void tickAnimation(double monotonicTime) override;
     void cancelAnimation() override;
-    void takeoverCompositorAnimation() override;
+    void takeOverCompositorAnimation() override;
     void resetAnimationState() override;
     void updateCompositorAnimations() override;
     void notifyCompositorAnimationFinished(int groupId) override;

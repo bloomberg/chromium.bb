@@ -245,7 +245,7 @@ void ScrollAnchor::adjust(IntSize adjustment)
     ScrollAnimatorBase* animator = m_scroller->existingScrollAnimator();
     if (!animator || !animator->hasRunningAnimation()) {
         m_scroller->setScrollPosition(desiredPos, AnchoringScroll);
-        animator->updateImplOnlyScrollOffsetAnimation(FloatSize(adjustment));
+        animator->adjustImplOnlyScrollOffsetAnimation(FloatSize(adjustment));
     } else {
         // If in the middle of a scroll animation, stop the animation, make
         // the adjustment, and continue the animation on the pending delta.

@@ -286,7 +286,7 @@ void ScrollAnimator::updateCompositorAnimations()
 
         if (m_runState == RunState::RunningOnCompositorButNeedsTakeover) {
             // The animation is already aborted when the call to
-            // ::takeoverCompositorAnimation is made.
+            // ::takeOverCompositorAnimation is made.
             m_runState = RunState::WaitingToSendToCompositor;
         } else {
             abortAnimation();
@@ -401,13 +401,13 @@ void ScrollAnimator::cancelAnimation()
     ScrollAnimatorCompositorCoordinator::cancelAnimation();
 }
 
-void ScrollAnimator::takeoverCompositorAnimation()
+void ScrollAnimator::takeOverCompositorAnimation()
 {
     if (m_runState == RunState::RunningOnCompositor
         || m_runState ==  RunState::RunningOnCompositorButNeedsUpdate)
         removeMainThreadScrollingReason();
 
-    ScrollAnimatorCompositorCoordinator::takeoverCompositorAnimation();
+    ScrollAnimatorCompositorCoordinator::takeOverCompositorAnimation();
 }
 
 void ScrollAnimator::layerForCompositedScrollingDidChange(

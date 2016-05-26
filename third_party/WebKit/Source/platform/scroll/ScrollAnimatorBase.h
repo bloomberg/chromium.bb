@@ -81,7 +81,7 @@ public:
     ScrollableArea* getScrollableArea() const override { return m_scrollableArea; }
     void tickAnimation(double monotonicTime) override { };
     void cancelAnimation() override { }
-    void takeoverCompositorAnimation() override { }
+    void takeOverCompositorAnimation() override { }
     void updateCompositorAnimations() override { };
     void notifyCompositorAnimationFinished(int groupId) override { };
     void notifyCompositorAnimationAborted(int groupId) override { };

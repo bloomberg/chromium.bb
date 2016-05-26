@@ -34,7 +34,7 @@ public:
     void dispose();
     String runStateAsText() const;
 
-    void updateImplOnlyScrollOffsetAnimation(const FloatSize& adjustment);
+    void adjustImplOnlyScrollOffsetAnimation(const FloatSize& adjustment);
 
     virtual bool hasRunningAnimation() const { return false; }
 
@@ -43,7 +43,7 @@ public:
     // Aborts the currently running scroll offset animation on the compositor
     // and continues it on the main thread. This should only be called when in
     // DocumentLifecycle::LifecycleState::CompositingClean state.
-    virtual void takeoverCompositorAnimation();
+    virtual void takeOverCompositorAnimation();
     virtual void updateCompositorAnimations();
 
     virtual ScrollableArea* getScrollableArea() const = 0;
@@ -139,6 +139,15 @@ protected:
     // An adjustment to the scroll offset on the main thread that may affect
     // impl-only scroll offset animations.
     FloatSize m_implOnlyAnimationAdjustment;
+
+    // If set to true, sends a cc::ScrollOffsetAnimationUpdate to cc which will
+    // abort the impl-only scroll offset animation and continue it on main
+    // thread.
+    bool m_implOnlyAnimationTakeover;
+
+private:
+    bool hasImplOnlyAnimationUpdate() const;
+    void takeOverImplOnlyScrollOffsetAnimation();
 };
 
 } // namespace blink

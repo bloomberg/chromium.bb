@@ -314,7 +314,7 @@ TEST(ScrollAnimatorTest, AnimatedScrollTakeover)
         .WillRepeatedly(Return(IntPoint(1000, 1000)));
     EXPECT_CALL(*scrollableArea, setScrollOffset(_, _)).Times(2);
     // Called from userScroll, updateCompositorAnimations, then
-    // takeoverCompositorAnimation (to re-register after RunningOnCompositor).
+    // takeOverCompositorAnimation (to re-register after RunningOnCompositor).
     EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(3);
     EXPECT_CALL(*scrollableArea, scheduleAnimation()).Times(AtLeast(1))
         .WillRepeatedly(Return(true));
@@ -336,7 +336,7 @@ TEST(ScrollAnimatorTest, AnimatedScrollTakeover)
         ScrollAnimatorCompositorCoordinator::RunState::RunningOnCompositor);
 
     // Takeover.
-    scrollAnimator->takeoverCompositorAnimation();
+    scrollAnimator->takeOverCompositorAnimation();
     EXPECT_EQ(scrollAnimator->m_runState,
         ScrollAnimatorCompositorCoordinator::RunState::RunningOnCompositorButNeedsTakeover);
 
@@ -519,21 +519,23 @@ TEST(ScrollAnimatorTest, CancellingCompositorAnimation)
     ThreadHeap::collectAllGarbage();
 }
 
-// This test verifies that ImplOnlyAnimationUpdate gets cleared once its
-// pushed to compositor animation host.
+// This test verifies that impl only animation updates get cleared once they
+// are pushed to compositor animation host.
 TEST(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared)
 {
     MockScrollableArea* scrollableArea = MockScrollableArea::create(true);
     TestScrollAnimator* animator = new TestScrollAnimator(scrollableArea, getMockedTime);
 
-    EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(2);
+    // From calls to adjust/takeoverImplOnlyScrollOffsetAnimation.
+    EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(3);
 
+    // Verify that the adjustment update is cleared.
     EXPECT_EQ(animator->m_runState, ScrollAnimatorCompositorCoordinator::RunState::Idle);
     EXPECT_FALSE(animator->hasAnimationThatRequiresService());
     EXPECT_TRUE(animator->implOnlyAnimationAdjustmentForTesting().isZero());
 
-    animator->updateImplOnlyScrollOffsetAnimation(FloatSize(100.f, 100.f));
-    animator->updateImplOnlyScrollOffsetAnimation(FloatSize(10.f, -10.f));
+    animator->adjustImplOnlyScrollOffsetAnimation(FloatSize(100.f, 100.f));
+    animator->adjustImplOnlyScrollOffsetAnimation(FloatSize(10.f, -10.f));
 
     EXPECT_TRUE(animator->hasAnimationThatRequiresService());
     EXPECT_EQ(FloatSize(110.f, 90.f), animator->implOnlyAnimationAdjustmentForTesting());
@@ -543,6 +545,12 @@ TEST(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared)
     EXPECT_EQ(animator->m_runState, ScrollAnimatorCompositorCoordinator::RunState::Idle);
     EXPECT_FALSE(animator->hasAnimationThatRequiresService());
     EXPECT_TRUE(animator->implOnlyAnimationAdjustmentForTesting().isZero());
+
+    // Verify that the takeover update is cleared.
+    animator->takeOverImplOnlyScrollOffsetAnimation();
+    EXPECT_TRUE(animator->hasAnimationThatRequiresService());
+    animator->updateCompositorAnimations();
+    EXPECT_FALSE(animator->hasAnimationThatRequiresService());
 
     // Forced GC in order to finalize objects depending on the mock object.
     ThreadHeap::collectAllGarbage();

@@ -779,11 +779,17 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationTakeover
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DidCommit() override {
-    // Add a main thread scrolling reason after the first commit to trigger
-    // the takeover path.
     if (layer_tree_host()->source_frame_number() == 1) {
-      scroll_layer_->AddMainThreadScrollingReasons(
-          MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects);
+      // Add an update after the first commit to trigger the animation takeover
+      // path.
+      layer_tree_host()
+          ->animation_host()
+          ->scroll_offset_animations()
+          .AddTakeoverUpdate(scroll_layer_->id());
+      EXPECT_TRUE(layer_tree_host()
+                      ->animation_host()
+                      ->scroll_offset_animations()
+                      .HasUpdatesForTesting());
     }
   }
 
@@ -837,12 +843,11 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationAdjusted
     if (layer_tree_host()->source_frame_number() == 1) {
       // Add an update after the first commit to trigger the animation update
       // path.
-      ScrollOffsetAnimationUpdate update(
-          ScrollOffsetAnimationUpdate::Type::SCROLL_OFFSET_CHANGED,
-          scroll_layer_->id());
-      update.adjustment_ = gfx::Vector2dF(100.f, 100.f);
-      layer_tree_host()->animation_host()->scroll_offset_animations().AddUpdate(
-          update);
+      layer_tree_host()
+          ->animation_host()
+          ->scroll_offset_animations()
+          .AddAdjustmentUpdate(scroll_layer_->id(),
+                               gfx::Vector2dF(100.f, 100.f));
       EXPECT_TRUE(layer_tree_host()
                       ->animation_host()
                       ->scroll_offset_animations()

@@ -109,8 +109,6 @@ class CC_EXPORT AnimationHost {
   bool HasAnyAnimationTargetingProperty(ElementId element_id,
                                         TargetProperty::Type property) const;
 
-  bool ScrollOffsetIsAnimatingOnImplOnly(ElementId element_id) const;
-
   bool HasFilterAnimationThatInflatesBounds(ElementId element_id) const;
   bool HasTransformAnimationThatInflatesBounds(ElementId element_id) const;
   bool HasAnimationThatInflatesBounds(ElementId element_id) const;

@@ -9738,8 +9738,8 @@ TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
   host_impl_->DidFinishImplFrame();
 }
 
-// Test that a smooth scroll offset animation is marked finished when a main
-// thread scrolling reason is added. The animation is then finished on the
+// Test that a smooth scroll offset animation is marked finished when aborted
+// with the needs_completion flag. The animation is then finished on the
 // main thread.
 TEST_F(LayerTreeHostImplTimelinesTest,
        ScrollAnimatedFinishedByMainThreadScrollingReason) {
@@ -9782,13 +9782,12 @@ TEST_F(LayerTreeHostImplTimelinesTest,
   float y = scrolling_layer->CurrentScrollOffset().y();
   EXPECT_TRUE(y > 1 && y < 49);
 
-  // Add main thread scrolling reason.
-  scrolling_layer->set_main_thread_scrolling_reasons(
-      MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects);
+  // Abort animation.
+  host_impl_->animation_host()->ScrollAnimationAbort(true /*needs_completion*/);
   host_impl_->UpdateAnimationState(true);
 
-  // The main thread scrolling reason should have marked the smooth scroll
-  // animation as finished.
+  // Aborting with the needs completion param should have marked the smooth
+  // scroll animation as finished.
   EXPECT_FALSE(host_impl_->animation_host()->HasActiveAnimationForTesting(
       scrolling_layer->id()));
   EXPECT_TRUE(y > 1 && y < 49);

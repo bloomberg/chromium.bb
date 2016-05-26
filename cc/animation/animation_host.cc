@@ -395,17 +395,6 @@ bool AnimationHost::HasAnyAnimationTargetingProperty(
   return !!element_animations->GetAnimation(property);
 }
 
-bool AnimationHost::ScrollOffsetIsAnimatingOnImplOnly(
-    ElementId element_id) const {
-  auto element_animations = GetElementAnimationsForElementId(element_id);
-  if (!element_animations)
-    return false;
-
-  Animation* animation =
-      element_animations->GetAnimation(TargetProperty::SCROLL_OFFSET);
-  return animation && animation->is_impl_only();
-}
-
 bool AnimationHost::HasFilterAnimationThatInflatesBounds(
     ElementId element_id) const {
   auto element_animations = GetElementAnimationsForElementId(element_id);
