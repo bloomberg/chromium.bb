@@ -297,7 +297,7 @@ void GetUploadedReports(std::vector<UploadedReport>* uploaded_reports) {
 
   std::sort(uploaded_reports->begin(), uploaded_reports->end(),
             [](const UploadedReport& a, const UploadedReport& b) {
-              return a.creation_time >= b.creation_time;
+              return a.creation_time > b.creation_time;
             });
 }
 
