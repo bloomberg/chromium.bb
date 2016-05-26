@@ -53,7 +53,7 @@ DesktopAutomationHandler = function(node) {
   this.addListener_(e.menuListItemSelected, this.onEventIfSelected);
   this.addListener_(e.menuStart, this.onMenuStart);
   this.addListener_(e.scrollPositionChanged, this.onScrollPositionChanged);
-  this.addListener_(e.selection, this.onEventWithFlushedOutput);
+  this.addListener_(e.selection, this.onSelection);
   this.addListener_(e.textChanged, this.onTextChanged);
   this.addListener_(e.textSelectionChanged, this.onTextSelectionChanged);
   this.addListener_(e.valueChanged, this.onValueChanged);
@@ -228,8 +228,8 @@ DesktopAutomationHandler.prototype = {
         ChromeVoxState.instance.mode === ChromeVoxMode.CLASSIC)
       return;
 
-    chrome.automation.getFocus((function(focus) {
-      if (!focus)
+    chrome.automation.getFocus(function(focus) {
+      if (!focus || !AutomationUtil.isDescendantOf(focus, evt.target))
         return;
 
       // If initial focus was already placed on this page (e.g. if a user starts
@@ -242,11 +242,10 @@ DesktopAutomationHandler.prototype = {
       ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(focus));
       new Output().withRichSpeechAndBraille(
           ChromeVoxState.instance.currentRange, null, evt.type).go();
-    }).bind(this));
+    }.bind(this));
   },
 
-
-    /**
+  /**
    * Provides all feedback once a text changed event fires.
    * @param {!AutomationEvent} evt
    */
@@ -334,6 +333,20 @@ DesktopAutomationHandler.prototype = {
     var currentRange = ChromeVoxState.instance.currentRange;
     if (currentRange)
       new Output().withLocation(currentRange, null, evt.type).go();
+  },
+
+  /**
+   * @param {!AutomationEvent} evt
+   */
+  onSelection: function(evt) {
+    chrome.automation.getFocus(function(focus) {
+      // Some cases (e.g. in overview mode), require overriding the assumption
+      // that focus is an ancestor of a selection target.
+      var override =
+          evt.target.root == focus.root && focus.root.role == RoleType.desktop;
+      if (override || AutomationUtil.isDescendantOf(evt.target, focus))
+        this.onEventDefault(evt);
+    }.bind(this));
   },
 
   /**

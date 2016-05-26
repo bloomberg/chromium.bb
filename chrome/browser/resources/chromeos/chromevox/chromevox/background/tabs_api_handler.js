@@ -51,6 +51,11 @@ cvox.TabsApiHandler = function() {
   this.pageLoadTabID_ = null;
 };
 
+/**
+ * @type {boolean}
+ */
+cvox.TabsApiHandler.shouldOutputSpeechAndBraille = true;
+
 cvox.TabsApiHandler.prototype = {
   /**
    * Handles chrome.tabs.onCreated.
@@ -60,11 +65,13 @@ cvox.TabsApiHandler.prototype = {
     if (!cvox.ChromeVox.isActive) {
       return;
     }
-    cvox.ChromeVox.tts.speak(this.msg_('chrome_tab_created'),
-                             cvox.QueueMode.FLUSH,
-                             cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
-    cvox.ChromeVox.braille.write(
-        cvox.NavBraille.fromText(this.msg_('chrome_tab_created')));
+    if (cvox.TabsApiHandler.shouldOutputSpeechAndBraille) {
+      cvox.ChromeVox.tts.speak(this.msg_('chrome_tab_created'),
+                                cvox.QueueMode.FLUSH,
+                                cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
+      cvox.ChromeVox.braille.write(
+          cvox.NavBraille.fromText(this.msg_('chrome_tab_created')));
+    }
     cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_OPEN);
     this.refreshAutomationHandler_(tab.id);
   },
@@ -97,13 +104,16 @@ cvox.TabsApiHandler.prototype = {
     }
     this.updateLoadingSoundsWhenTabFocusChanges_(activeInfo.tabId);
     chrome.tabs.get(activeInfo.tabId, function(tab) {
-      var title = tab.title ? tab.title : tab.url;
-      cvox.ChromeVox.tts.speak(this.msg_('chrome_tab_selected',
-                                         [title]),
-                               cvox.QueueMode.FLUSH,
-                               cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
-      cvox.ChromeVox.braille.write(
-          cvox.NavBraille.fromText(this.msg_('chrome_tab_selected', [title])));
+      if (cvox.TabsApiHandler.shouldOutputSpeechAndBraille) {
+        var title = tab.title ? tab.title : tab.url;
+        cvox.ChromeVox.tts.speak(this.msg_('chrome_tab_selected',
+                                           [title]),
+                                 cvox.QueueMode.FLUSH,
+                                 cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
+        cvox.ChromeVox.braille.write(
+            cvox.NavBraille.fromText(
+                this.msg_('chrome_tab_selected', [title])));
+      }
       cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_SELECT);
       this.refreshAutomationHandler_(tab.id);
       this.focusTab_(tab.id);
@@ -172,15 +182,17 @@ cvox.TabsApiHandler.prototype = {
         if (tabs[0])
           this.updateLoadingSoundsWhenTabFocusChanges_(tabs[0].id);
 
-        var msgId = window.incognito ? 'chrome_incognito_window_selected' :
-            'chrome_normal_window_selected';
-        var tab = tabs[0] || {};
-        var title = tab.title ? tab.title : tab.url;
-        cvox.ChromeVox.tts.speak(this.msg_(msgId, [title]),
-                                 cvox.QueueMode.FLUSH,
-                                 cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
-        cvox.ChromeVox.braille.write(
-            cvox.NavBraille.fromText(this.msg_(msgId, [title])));
+        if (cvox.TabsApiHandler.shouldOutputSpeechAndBraille) {
+          var msgId = window.incognito ? 'chrome_incognito_window_selected' :
+              'chrome_normal_window_selected';
+          var tab = tabs[0] || {};
+          var title = tab.title ? tab.title : tab.url;
+          cvox.ChromeVox.tts.speak(this.msg_(msgId, [title]),
+                                   cvox.QueueMode.FLUSH,
+                                   cvox.AbstractTts.PERSONALITY_ANNOUNCEMENT);
+          cvox.ChromeVox.braille.write(
+              cvox.NavBraille.fromText(this.msg_(msgId, [title])));
+        }
         cvox.ChromeVox.earcons.playEarcon(cvox.Earcon.OBJECT_SELECT);
         this.refreshAutomationHandler_(tab.id);
         this.focusTab_(tab.id);

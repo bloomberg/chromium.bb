@@ -148,9 +148,6 @@ AutomationUtil.getAncestors = function(node) {
   while (candidate) {
     ret.push(candidate);
 
-    if (!AutomationUtil.isInSameTree(candidate, candidate.parent))
-      break;
-
     candidate = candidate.parent;
   }
   return ret.reverse();

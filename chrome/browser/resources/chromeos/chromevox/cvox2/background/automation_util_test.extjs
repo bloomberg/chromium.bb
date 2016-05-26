@@ -22,6 +22,22 @@ AutomationUtilE2ETest.prototype = {
   /** @override */
   setUp: function() {
     window.Dir = constants.Dir;
+    window.RoleType = chrome.automation.RoleType;
+
+    /** Filters nodes not rooted by desktop. */
+    function filterNonDesktopRoot(node) {
+      return node.root.role != RoleType.desktop;
+    }
+
+    window.getNonDesktopAncestors = function(node) {
+      return AutomationUtil.getAncestors(node)
+          .filter(filterNonDesktopRoot);
+    }
+
+    window.getNonDesktopUniqueAncestors = function(node1, node2) {
+      return AutomationUtil.getUniqueAncestors(node1, node2)
+          .filter(filterNonDesktopRoot);
+    }
   },
 
   basicDoc: function() {/*!
@@ -50,7 +66,7 @@ TEST_F('AutomationUtilE2ETest', 'GetAncestors', function() {
   this.runWithLoadedTree(this.basicDoc, function(root) {
     var expectedLength = 1;
     while (root) {
-      var ancestors = AutomationUtil.getAncestors(root);
+      var ancestors = getNonDesktopAncestors(root);
       assertEquals(expectedLength++, ancestors.length);
       root = root.firstChild;
     }
@@ -65,40 +81,41 @@ TEST_F('AutomationUtilE2ETest', 'GetUniqueAncestors', function() {
     while (rightmost.lastChild)
       rightmost = rightmost.lastChild;
 
-    var leftAncestors = AutomationUtil.getAncestors(leftmost);
-    var rightAncestors = AutomationUtil.getAncestors(rightmost);
-    assertEquals(chrome.automation.RoleType.link, leftmost.role);
-    assertEquals(chrome.automation.RoleType.button, rightmost.role);
+    var leftAncestors = getNonDesktopAncestors(leftmost);
+    var rightAncestors = getNonDesktopAncestors(rightmost);
+    assertEquals(RoleType.link, leftmost.role);
+    assertEquals(RoleType.button, rightmost.role);
     assertEquals(
         1, AutomationUtil.getDivergence(leftAncestors, rightAncestors));
+
     assertEquals(
         -1, AutomationUtil.getDivergence(leftAncestors, leftAncestors));
 
     var uniqueAncestorsLeft =
-        AutomationUtil.getUniqueAncestors(rightmost, leftmost);
+        getNonDesktopUniqueAncestors(rightmost, leftmost);
     var uniqueAncestorsRight =
-        AutomationUtil.getUniqueAncestors(leftmost, rightmost);
+        getNonDesktopUniqueAncestors(leftmost, rightmost);
 
     assertEquals(2, uniqueAncestorsLeft.length);
-    assertEquals(chrome.automation.RoleType.paragraph,
+    assertEquals(RoleType.paragraph,
         uniqueAncestorsLeft[0].role);
-    assertEquals(chrome.automation.RoleType.link,
+    assertEquals(RoleType.link,
         uniqueAncestorsLeft[1].role);
 
     assertEquals(3, uniqueAncestorsRight.length);
-    assertEquals(chrome.automation.RoleType.heading,
+    assertEquals(RoleType.heading,
         uniqueAncestorsRight[0].role);
-    assertEquals(chrome.automation.RoleType.group,
+    assertEquals(RoleType.group,
         uniqueAncestorsRight[1].role);
-    assertEquals(chrome.automation.RoleType.button,
+    assertEquals(RoleType.button,
         uniqueAncestorsRight[2].role);
 
     assertEquals(
-        1, AutomationUtil.getUniqueAncestors(leftmost, leftmost).length);
+        1, getNonDesktopUniqueAncestors(leftmost, leftmost).length);
 
-  });
+  }.bind(this));
 });
-  
+
 TEST_F('AutomationUtilE2ETest', 'GetDirection', function() {
   this.runWithLoadedTree(this.basicDoc, function(root) {
     var left = root, right = root;

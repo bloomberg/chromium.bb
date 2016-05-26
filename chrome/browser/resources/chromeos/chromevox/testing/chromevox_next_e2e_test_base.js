@@ -45,22 +45,29 @@ ChromeVoxNextE2ETest.prototype = {
    * @param {function() : void} doc Snippet wrapped inside of a function.
    * @param {function(chrome.automation.AutomationNode)} callback
    *     Called once the document is ready.
+   * @param {string=} opt_url Optional url to wait for. Defaults to undefined.
    */
-  runWithLoadedTree: function(doc, callback) {
+  runWithLoadedTree: function(doc, callback, opt_url) {
     callback = this.newCallback(callback);
     chrome.automation.getDesktop(function(r) {
-      this.runWithTab(doc, function(newTabUrl) {
-        var listener = function(evt) {
-          if (!evt.target.docUrl || evt.target.docUrl != newTabUrl)
-            return;
+      var url = opt_url || TestUtils.createUrlForDoc(doc);
+      var listener = function(evt) {
+        if (evt.target.root.url != url)
+          return;
 
-          r.removeEventListener('loadComplete', listener, true);
-          global.backgroundObj.onGotCommand('nextObject');
-          callback && callback(evt.target);
-          callback = null;
-        };
-        r.addEventListener('loadComplete', listener, true);
-      }.bind(this));
+        r.removeEventListener('focus', listener, true);
+        r.removeEventListener('loadComplete', listener, true);
+        global.backgroundObj.onGotCommand('nextObject');
+        callback && callback(evt.target);
+        callback = null;
+      };
+      r.addEventListener('focus', listener, true);
+      r.addEventListener('loadComplete', listener, true);
+      var createParams = {
+        active: true,
+        url: url
+      };
+      chrome.tabs.create(createParams);
     }.bind(this));
   },
 

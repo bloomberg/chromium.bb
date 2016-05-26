@@ -530,7 +530,7 @@ Output.RULES = {
           '@describe_depth($hierarchicalLevel)'
     },
     window: {
-      enter: '$name',
+      enter: '@describe_window($name)',
       speak: '@describe_window($name) $earcon(OBJECT_OPEN)'
     }
   },

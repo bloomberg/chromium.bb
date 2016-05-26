@@ -77,10 +77,7 @@ ChromeVoxE2ETest.prototype = {
    *     document is created.
    */
   runWithTab: function(doc, opt_callback) {
-    var docString = TestUtils.extractHtmlFromCommentEncodedString(doc);
-    var url = 'data:text/html,<!doctype html>' +
-        docString +
-        '<!-- chromevox_next_test -->';
+    var url = TestUtils.createUrlForDoc(doc);
     var createParams = {
       active: true,
       url: url

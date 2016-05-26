@@ -254,8 +254,12 @@ Background.prototype = {
     if (mode === ChromeVoxMode.NEXT ||
         mode === ChromeVoxMode.FORCE_NEXT) {
       (new PanelCommand(PanelCommandType.ENABLE_MENUS)).send();
+      if (cvox.TabsApiHandler)
+        cvox.TabsApiHandler.shouldOutputSpeechAndBraille = false;
     } else {
       (new PanelCommand(PanelCommandType.DISABLE_MENUS)).send();
+      if (cvox.TabsApiHandler)
+        cvox.TabsApiHandler.shouldOutputSpeechAndBraille = true;
     }
 
     // If switching to Classic from any automation-API-based mode,
@@ -318,7 +322,9 @@ Background.prototype = {
    * @override
    */
   getCurrentRange: function() {
-    return this.currentRange_;
+    if (this.currentRange_ && this.currentRange_.isValid())
+      return this.currentRange_;
+    return null;
   },
 
   /**

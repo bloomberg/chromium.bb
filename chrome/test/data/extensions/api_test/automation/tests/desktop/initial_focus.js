@@ -9,8 +9,8 @@ var allTests = [
     chrome.automation.getDesktop(function(rootNode) {
       chrome.tabs.create({url: url});
 
-      rootNode.addEventListener('loadComplete', function(event) {
-        if (event.target.url == url) {
+      rootNode.addEventListener('focus', function(event) {
+        if (event.target.root.url == url) {
           chrome.automation.getFocus(function(focus) {
             assertEq('textField', focus.role);
             assertEq('abc', focus.name);

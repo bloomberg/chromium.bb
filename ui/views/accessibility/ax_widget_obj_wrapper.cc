@@ -4,10 +4,12 @@
 
 #include "ui/views/accessibility/ax_widget_obj_wrapper.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace views {
 
@@ -39,9 +41,12 @@ void AXWidgetObjWrapper::GetChildren(
 
 void AXWidgetObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->id = GetID();
-  out_node_data->role = ui::AX_ROLE_CLIENT;
+  out_node_data->role = widget_->widget_delegate()->GetAccessibleWindowRole();
+  out_node_data->AddStringAttribute(
+      ui::AX_ATTR_NAME,
+      base::UTF16ToUTF8(
+          widget_->widget_delegate()->GetAccessibleWindowTitle()));
   out_node_data->location = widget_->GetWindowBoundsInScreen();
-  // TODO(dtseng): Set better states.
   out_node_data->state = 0;
 }
 

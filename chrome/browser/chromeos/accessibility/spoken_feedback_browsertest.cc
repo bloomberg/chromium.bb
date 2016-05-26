@@ -311,6 +311,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
 
   EXPECT_EQ("Shelf", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Tool bar", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ(", window", speech_monitor_.GetNextUtterance());
 
   SendKeyPress(ui::VKEY_TAB);
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "*"));
@@ -377,7 +378,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
       base::MatchPattern(speech_monitor_.GetNextUtterance(), "Status tray*"));
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(), "time *"));
   EXPECT_TRUE(base::MatchPattern(speech_monitor_.GetNextUtterance(),
-                                 "Battery is*full."));
+                                 "Battery is*full.,"));
+  EXPECT_EQ("window", speech_monitor_.GetNextUtterance());
 }
 
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
@@ -386,7 +388,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
   EXPECT_TRUE(PerformAcceleratorAction(ash::SHOW_SYSTEM_TRAY_BUBBLE));
   while (true) {
     std::string utterance = speech_monitor_.GetNextUtterance();
-    if (base::MatchPattern(utterance, "Battery*"))
+    if (base::MatchPattern(utterance, "window"))
       break;
   }
 
@@ -465,6 +467,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
 
   EXPECT_TRUE(PerformAcceleratorAction(ash::TOGGLE_OVERVIEW));
   EXPECT_EQ("Edit text", speech_monitor_.GetNextUtterance());
+  EXPECT_EQ(", window", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Alert", speech_monitor_.GetNextUtterance());
   EXPECT_EQ("Entered window overview mode", speech_monitor_.GetNextUtterance());
 

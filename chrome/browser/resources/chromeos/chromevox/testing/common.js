@@ -42,6 +42,28 @@ TestUtils.extractHtmlFromCommentEncodedString =
   return stringified.replace(/^[^\/]+\/\*!?/, '').replace(/\*\/[^\/]+$/, '');
 };
 
+
+  /**
+   * Creates a data url for a document.
+   * @param {function() : void} doc Snippet wrapped inside of a function.
+   * @return {string}
+   */
+TestUtils.createUrlForDoc = function(doc) {
+  var docString = TestUtils.extractHtmlFromCommentEncodedString(doc);
+  return TestUtils.collapseWhitespace('data:text/html,<!doctype html>' +
+      docString.replace(/[\n\r]/g, '')
+      .trim());
+};
+
+/**
+ * Collapses inner whitespace.
+ * @param {string} str
+ * @return {string}
+ */
+TestUtils.collapseWhitespace = function(str) {
+  return str.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+};
+
 /**
  * Similar to |TEST_F|. Generates a test for the given |testFixture|,
  * |testName|, and |testFunction|.

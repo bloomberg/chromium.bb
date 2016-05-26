@@ -228,7 +228,7 @@ TEST_F('BackgroundTest', 'InitialFocus', function() {
   this.runWithLoadedTree('<a href="a">a</a>',
     function(rootNode) {
       mockFeedback.expectSpeech('data:text/html,<!doctype html>' +
-              '<a href="a">a</a><!-- chromevox_next_test -->')
+              '<a href="a">a</a>')
           .expectSpeech('a')
           .expectSpeech('Link');
       mockFeedback.replay();
@@ -473,8 +473,7 @@ TEST_F('BackgroundTest', 'ActiveOrInactive', function() {
           .expectSpeech('Edit text');
 
       mockFeedback.replay();
-    }
-  );
+    });
 });
 
 TEST_F('BackgroundTest', 'ModeSwitching', function() {

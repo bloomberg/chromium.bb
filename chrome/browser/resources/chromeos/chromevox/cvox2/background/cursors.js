@@ -534,8 +534,9 @@ cursors.Range.prototype = {
    * @return {boolean}
   */
   isWebRange: function() {
-    return this.start.node.root.role != RoleType.desktop ||
-        this.end.node.root.role != RoleType.desktop;
+    return this.isValid() &&
+        (this.start.node.root.role != RoleType.desktop ||
+        this.end.node.root.role != RoleType.desktop);
   },
 
   /**
