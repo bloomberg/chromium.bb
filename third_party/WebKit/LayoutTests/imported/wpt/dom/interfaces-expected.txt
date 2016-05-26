@@ -70,7 +70,7 @@ FAIL Event interface: calling initEvent(DOMString,boolean,boolean) on new Event(
             fn.apply(obj, args);
         }" did not throw
 PASS CustomEvent interface: existence and properties of interface object 
-FAIL CustomEvent interface object length assert_equals: wrong value for CustomEvent.length expected 1 but got 0
+PASS CustomEvent interface object length 
 PASS CustomEvent interface object name 
 FAIL CustomEvent interface: existence and properties of interface prototype object assert_equals: class string of CustomEvent.prototype expected "[object CustomEventPrototype]" but got "[object CustomEvent]"
 PASS CustomEvent interface: existence and properties of interface prototype object's "constructor" property 

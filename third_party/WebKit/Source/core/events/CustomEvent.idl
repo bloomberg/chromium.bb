@@ -28,7 +28,7 @@
 [
     // TODO(bashi): Don't use CustomConstructor. Constructor should be:
     // Constructor(DOMString type, optional CustomEventInit eventInitDict),
-    CustomConstructor,
+    CustomConstructor(DOMString type, optional CustomEventInit eventInitDict),
     Exposed=(Window,Worker),
 ] interface CustomEvent : Event {
     [Custom=Getter] readonly attribute any detail;
