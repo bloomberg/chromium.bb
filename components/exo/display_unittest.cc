@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/wm/common/wm_shell_window_ids.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
 #include "components/exo/shared_memory.h"
@@ -121,6 +122,28 @@ TEST_F(DisplayTest, CreatePopupShellSurface) {
   std::unique_ptr<ShellSurface> shell_surface2 =
       display->CreatePopupShellSurface(surface2.get(), shell_surface1.get(),
                                        gfx::Point());
+  EXPECT_TRUE(shell_surface2);
+}
+
+TEST_F(DisplayTest, CreateRemoteShellSurface) {
+  std::unique_ptr<Display> display(new Display);
+
+  // Create two surfaces.
+  std::unique_ptr<Surface> surface1 = display->CreateSurface();
+  ASSERT_TRUE(surface1);
+  std::unique_ptr<Surface> surface2 = display->CreateSurface();
+  ASSERT_TRUE(surface2);
+
+  // Create a remote shell surface for surface1.
+  std::unique_ptr<ShellSurface> shell_surface1 =
+      display->CreateRemoteShellSurface(
+          surface1.get(), ash::kShellWindowId_SystemModalContainer);
+  EXPECT_TRUE(shell_surface1);
+
+  // Create a remote shell surface for surface2.
+  std::unique_ptr<ShellSurface> shell_surface2 =
+      display->CreateRemoteShellSurface(surface2.get(),
+                                        ash::kShellWindowId_DefaultContainer);
   EXPECT_TRUE(shell_surface2);
 }
 

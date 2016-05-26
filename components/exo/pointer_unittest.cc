@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/shell.h"
+#include "ash/wm/common/wm_shell_window_ids.h"
 #include "components/exo/buffer.h"
 #include "components/exo/pointer.h"
 #include "components/exo/pointer_delegate.h"
@@ -171,7 +172,8 @@ TEST_F(PointerTest, OnPointerMotion) {
 
   std::unique_ptr<Surface> child_surface(new Surface);
   std::unique_ptr<ShellSurface> child_shell_surface(new ShellSurface(
-      child_surface.get(), shell_surface.get(), gfx::Rect(9, 9, 1, 1), true));
+      child_surface.get(), shell_surface.get(), gfx::Rect(9, 9, 1, 1), true,
+      true, ash::kShellWindowId_DefaultContainer));
   gfx::Size child_buffer_size(15, 15);
   std::unique_ptr<Buffer> child_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size)));

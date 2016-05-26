@@ -67,6 +67,10 @@ class Display {
       ShellSurface* parent,
       const gfx::Point& position);
 
+  // Creates a remote shell surface for an existing surface using |container|.
+  std::unique_ptr<ShellSurface> CreateRemoteShellSurface(Surface* surface,
+                                                         int container);
+
   // Creates a sub-surface for an existing surface. The sub-surface will be
   // a child of |parent|.
   std::unique_ptr<SubSurface> CreateSubSurface(Surface* surface,

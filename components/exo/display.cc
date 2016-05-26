@@ -7,6 +7,7 @@
 #include <iterator>
 #include <utility>
 
+#include "ash/wm/common/wm_shell_window_ids.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -103,7 +104,8 @@ std::unique_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
   }
 
   return base::WrapUnique(
-      new ShellSurface(surface, nullptr, gfx::Rect(), true));
+      new ShellSurface(surface, nullptr, gfx::Rect(), true, true,
+                       ash::kShellWindowId_DefaultContainer));
 }
 
 std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
@@ -123,8 +125,24 @@ std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
     return nullptr;
   }
 
-  return base::WrapUnique(new ShellSurface(
-      surface, parent, gfx::Rect(position, gfx::Size(1, 1)), false));
+  return base::WrapUnique(
+      new ShellSurface(surface, parent, gfx::Rect(position, gfx::Size(1, 1)),
+                       false, true, ash::kShellWindowId_DefaultContainer));
+}
+
+std::unique_ptr<ShellSurface> Display::CreateRemoteShellSurface(
+    Surface* surface,
+    int container) {
+  TRACE_EVENT2("exo", "Display::CreateRemoteShellSurface", "surface",
+               surface->AsTracedValue(), "container", container);
+
+  if (surface->HasSurfaceDelegate()) {
+    DLOG(ERROR) << "Surface has already been assigned a role";
+    return nullptr;
+  }
+
+  return base::WrapUnique(new ShellSurface(surface, nullptr, gfx::Rect(1, 1),
+                                           true, true, container));
 }
 
 std::unique_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,

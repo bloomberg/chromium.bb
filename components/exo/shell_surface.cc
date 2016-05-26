@@ -160,12 +160,18 @@ DEFINE_LOCAL_WINDOW_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
 ShellSurface::ShellSurface(Surface* surface,
                            ShellSurface* parent,
                            const gfx::Rect& initial_bounds,
-                           bool activatable)
+                           bool activatable,
+                           bool resizeable,
+                           int container)
     : widget_(nullptr),
       surface_(surface),
       parent_(parent ? parent->GetWidget()->GetNativeWindow() : nullptr),
       initial_bounds_(initial_bounds),
       activatable_(activatable),
+      resizeable_(resizeable),
+      container_(container),
+      scale_(1.0),
+      pending_scale_(1.0),
       scoped_configure_(nullptr),
       ignore_window_bounds_changes_(false),
       resize_component_(HTCAPTION),
@@ -180,12 +186,19 @@ ShellSurface::ShellSurface(Surface* surface,
 }
 
 ShellSurface::ShellSurface(Surface* surface)
-    : ShellSurface(surface, nullptr, gfx::Rect(), true) {}
+    : ShellSurface(surface,
+                   nullptr,
+                   gfx::Rect(),
+                   true,
+                   true,
+                   ash::kShellWindowId_DefaultContainer) {}
 
 ShellSurface::~ShellSurface() {
   DCHECK(!scoped_configure_);
   ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
   if (surface_) {
+    if (scale_ != 1.0)
+      surface_->SetTransform(gfx::Transform());
     surface_->SetSurfaceDelegate(nullptr);
     surface_->RemoveSurfaceObserver(this);
   }
@@ -340,6 +353,17 @@ void ShellSurface::SetGeometry(const gfx::Rect& geometry) {
   pending_geometry_ = geometry;
 }
 
+void ShellSurface::SetScale(double scale) {
+  TRACE_EVENT1("exo", "ShellSurface::SetScale", "scale", scale);
+
+  if (scale <= 0.0) {
+    DLOG(WARNING) << "Surface scale must be greater than 0";
+    return;
+  }
+
+  pending_scale_ = scale;
+}
+
 // static
 void ShellSurface::SetMainSurface(aura::Window* window, Surface* surface) {
   window->SetProperty(kMainSurfaceKey, surface);
@@ -365,7 +389,14 @@ std::unique_ptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
 void ShellSurface::OnSurfaceCommit() {
   surface_->CommitSurfaceHierarchy();
 
-  // Apply new window geometry.
+  // Apply new window geometry. Widget origin needs to be adjusted to avoid
+  // having changes to geometry origin cause a change of the surface position
+  // on screen.
+  if (widget_ && pending_geometry_.origin() != geometry_.origin()) {
+    gfx::Rect new_widget_bounds = widget_->GetNativeWindow()->bounds();
+    new_widget_bounds.Offset(pending_geometry_.origin() - geometry_.origin());
+    widget_->SetBounds(new_widget_bounds);
+  }
   geometry_ = pending_geometry_;
 
   if (enabled() && !widget_)
@@ -405,6 +436,15 @@ void ShellSurface::OnSurfaceCommit() {
     // Update surface bounds.
     surface_->SetBounds(gfx::Rect(surface_origin, surface_->layer()->size()));
 
+    // Update surface scale.
+    if (pending_scale_ != scale_) {
+      gfx::Transform transform;
+      DCHECK_NE(pending_scale_, 0.0);
+      transform.Scale(1.0 / pending_scale_, 1.0 / pending_scale_);
+      surface_->SetTransform(transform);
+      scale_ = pending_scale_;
+    }
+
     // Show widget if not already visible.
     if (!widget_->IsClosed() && !widget_->IsVisible())
       widget_->Show();
@@ -443,11 +483,11 @@ void ShellSurface::OnSurfaceDestroying(Surface* surface) {
 // views::WidgetDelegate overrides:
 
 bool ShellSurface::CanMaximize() const {
-  return true;
+  return resizeable_;
 }
 
 bool ShellSurface::CanResize() const {
-  return true;
+  return resizeable_;
 }
 
 base::string16 ShellSurface::GetWindowTitle() const {
@@ -652,8 +692,8 @@ void ShellSurface::CreateShellSurfaceWidget(ui::WindowShowState show_state) {
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.show_state = show_state;
-  params.parent = ash::Shell::GetContainer(
-      ash::Shell::GetPrimaryRootWindow(), ash::kShellWindowId_DefaultContainer);
+  params.parent =
+      ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(), container_);
   if (!initial_bounds_.IsEmpty()) {
     params.bounds = initial_bounds_;
     if (parent_) {

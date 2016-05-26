@@ -48,7 +48,9 @@ class ShellSurface : public SurfaceDelegate,
   ShellSurface(Surface* surface,
                ShellSurface* parent,
                const gfx::Rect& initial_bounds,
-               bool activatable);
+               bool activatable,
+               bool resizeable,
+               int container);
   explicit ShellSurface(Surface* surface);
   ~ShellSurface() override;
 
@@ -122,6 +124,10 @@ class ShellSurface : public SurfaceDelegate,
   // Set geometry for surface. The geometry represents the "visible bounds"
   // for the surface from the user's perspective.
   void SetGeometry(const gfx::Rect& geometry);
+
+  // Set scale factor for surface. The scale factor will be applied to surface
+  // and all descendants.
+  void SetScale(double scale);
 
   // Sets the main surface for the window.
   static void SetMainSurface(aura::Window* window, Surface* surface);
@@ -219,10 +225,15 @@ class ShellSurface : public SurfaceDelegate,
   aura::Window* parent_;
   const gfx::Rect initial_bounds_;
   const bool activatable_;
+  const bool resizeable_;
+  // Container Window Id (see ash/wm/common/wm_shell_window_ids.h)
+  const int container_;
   base::string16 title_;
   std::string application_id_;
   gfx::Rect geometry_;
   gfx::Rect pending_geometry_;
+  double scale_;
+  double pending_scale_;
   base::Closure close_callback_;
   base::Closure surface_destroyed_callback_;
   ConfigureCallback configure_callback_;

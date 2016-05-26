@@ -4,17 +4,20 @@
 
 #include "components/exo/wayland/server.h"
 
-#include <alpha-compositing-unstable-v1-server-protocol.h>
 #include <grp.h>
 #include <linux/input.h>
-#include <scaler-server-protocol.h>
-#include <secure-output-unstable-v1-server-protocol.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <viewporter-server-protocol.h>
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
-#include <xdg-shell-unstable-v5-server-protocol.h>
+
+// Note: core wayland headers need to be included before protocol headers.
+#include <alpha-compositing-unstable-v1-server-protocol.h>  // NOLINT
+#include <remote-shell-unstable-v1-server-protocol.h>       // NOLINT
+#include <scaler-server-protocol.h>                         // NOLINT
+#include <secure-output-unstable-v1-server-protocol.h>      // NOLINT
+#include <xdg-shell-unstable-v5-server-protocol.h>          // NOLINT
 
 #include <algorithm>
 #include <iterator>
@@ -24,6 +27,8 @@
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
+#include "ash/shell_observer.h"
+#include "ash/wm/common/wm_shell_window_ids.h"
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
@@ -53,6 +58,8 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
+#include "ui/wm/public/activation_change_observer.h"
+#include "ui/wm/public/activation_client.h"
 
 #if defined(USE_OZONE)
 #include <drm_fourcc.h>
@@ -1357,6 +1364,210 @@ void bind_xdg_shell(wl_client* client,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// remote_surface_interface:
+
+void remote_surface_destroy(wl_client* client, wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+void remote_surface_set_app_id(wl_client* client,
+                               wl_resource* resource,
+                               const char* app_id) {
+  GetUserDataAs<ShellSurface>(resource)->SetApplicationId(app_id);
+}
+
+void remote_surface_set_window_geometry(wl_client* client,
+                                        wl_resource* resource,
+                                        int32_t x,
+                                        int32_t y,
+                                        int32_t width,
+                                        int32_t height) {
+  GetUserDataAs<ShellSurface>(resource)->SetGeometry(
+      gfx::Rect(x, y, width, height));
+}
+
+void remote_surface_set_scale(wl_client* client,
+                              wl_resource* resource,
+                              wl_fixed_t scale) {
+  GetUserDataAs<ShellSurface>(resource)->SetScale(wl_fixed_to_double(scale));
+}
+
+const struct zwp_remote_surface_v1_interface remote_surface_implementation = {
+    remote_surface_destroy, remote_surface_set_app_id,
+    remote_surface_set_window_geometry, remote_surface_set_scale};
+
+////////////////////////////////////////////////////////////////////////////////
+// remote_shell_interface:
+
+// Observer class that monitors workspace state needed to implement the
+// remote shell interface.
+class WaylandWorkspaceObserver : public ash::ShellObserver,
+                                 public aura::client::ActivationChangeObserver,
+                                 public display::DisplayObserver {
+ public:
+  WaylandWorkspaceObserver(const display::Display& display,
+                           wl_resource* remote_shell_resource)
+      : display_id_(display.id()),
+        remote_shell_resource_(remote_shell_resource) {
+    ash::Shell* shell = ash::Shell::GetInstance();
+    shell->AddShellObserver(this);
+    shell->activation_client()->AddObserver(this);
+    display::Screen::GetScreen()->AddObserver(this);
+    SendConfigure();
+    SendActivated(shell->activation_client()->GetActiveWindow(), nullptr);
+  }
+  ~WaylandWorkspaceObserver() override {
+    ash::Shell* shell = ash::Shell::GetInstance();
+    shell->RemoveShellObserver(this);
+    shell->activation_client()->RemoveObserver(this);
+    display::Screen::GetScreen()->RemoveObserver(this);
+  }
+
+  // Overridden from display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& new_display) override {}
+  void OnDisplayRemoved(const display::Display& new_display) override {}
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t metrics) override {
+    if (display.id() == display_id_)
+      SendConfigure();
+  }
+
+  // Overridden from ash::ShellObserver:
+  void OnDisplayWorkAreaInsetsChanged() override { SendConfigure(); }
+
+  // Overridden from aura::client::ActivationChangeObserver:
+  void OnWindowActivated(
+      aura::client::ActivationChangeObserver::ActivationReason reason,
+      aura::Window* gained_active,
+      aura::Window* lost_active) override {
+    SendActivated(gained_active, lost_active);
+  }
+
+ private:
+  void SendConfigure() {
+    const display::Display& display =
+        ash::Shell::GetInstance()->display_manager()->GetDisplayForId(
+            display_id_);
+    gfx::Insets work_area_insets = display.GetWorkAreaInsets();
+    zwp_remote_shell_v1_send_configure(
+        remote_shell_resource_, display.size().width(), display.size().height(),
+        work_area_insets.left(), work_area_insets.top(),
+        work_area_insets.right(), work_area_insets.bottom());
+    wl_client_flush(wl_resource_get_client(remote_shell_resource_));
+  }
+
+  void SendActivated(aura::Window* gained_active, aura::Window* lost_active) {
+    Surface* gained_active_surface =
+        gained_active ? ShellSurface::GetMainSurface(gained_active) : nullptr;
+    Surface* lost_active_surface =
+        lost_active ? ShellSurface::GetMainSurface(lost_active) : nullptr;
+    wl_resource* gained_active_surface_resource =
+        gained_active_surface
+            ? gained_active_surface->GetProperty(kSurfaceResourceKey)
+            : nullptr;
+    wl_resource* lost_active_surface_resource =
+        lost_active_surface
+            ? lost_active_surface->GetProperty(kSurfaceResourceKey)
+            : nullptr;
+
+    wl_client* client = wl_resource_get_client(remote_shell_resource_);
+
+    // If surface that gained active is not owned by remote shell client then
+    // set it to null.
+    if (gained_active_surface_resource &&
+        wl_resource_get_client(gained_active_surface_resource) != client) {
+      gained_active_surface_resource = nullptr;
+    }
+
+    // If surface that lost active is not owned by remote shell client then
+    // set it to null.
+    if (lost_active_surface_resource &&
+        wl_resource_get_client(lost_active_surface_resource) != client) {
+      lost_active_surface_resource = nullptr;
+    }
+
+    zwp_remote_shell_v1_send_activated(remote_shell_resource_,
+                                       gained_active_surface_resource,
+                                       lost_active_surface_resource);
+    wl_client_flush(client);
+  }
+
+  // The identifier associated with the observed display.
+  int64_t display_id_;
+
+  // The remote shell resource associated with observer.
+  wl_resource* const remote_shell_resource_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaylandWorkspaceObserver);
+};
+
+void remote_shell_destroy(wl_client* client, wl_resource* resource) {
+  // Nothing to do here.
+}
+
+int RemoteSurfaceContainer(uint32_t container) {
+  switch (container) {
+    case ZWP_REMOTE_SHELL_V1_CONTAINER_DEFAULT:
+      return ash::kShellWindowId_DefaultContainer;
+    case ZWP_REMOTE_SHELL_V1_CONTAINER_OVERLAY:
+      return ash::kShellWindowId_SystemModalContainer;
+    default:
+      DLOG(WARNING) << "Unsupported container: " << container;
+      return ash::kShellWindowId_DefaultContainer;
+  }
+}
+
+void HandleRemoteSurfaceCloseCallback(wl_resource* resource) {
+  zwp_remote_surface_v1_send_close(resource);
+  wl_client_flush(wl_resource_get_client(resource));
+}
+
+void remote_shell_get_remote_surface(wl_client* client,
+                                     wl_resource* resource,
+                                     uint32_t id,
+                                     wl_resource* surface,
+                                     uint32_t container) {
+  std::unique_ptr<ShellSurface> shell_surface =
+      GetUserDataAs<Display>(resource)->CreateRemoteShellSurface(
+          GetUserDataAs<Surface>(surface), RemoteSurfaceContainer(container));
+  if (!shell_surface) {
+    wl_resource_post_error(resource, ZWP_REMOTE_SHELL_V1_ERROR_ROLE,
+                           "surface has already been assigned a role");
+    return;
+  }
+
+  wl_resource* remote_surface_resource =
+      wl_resource_create(client, &zwp_remote_surface_v1_interface, 1, id);
+
+  shell_surface->set_close_callback(
+      base::Bind(&HandleRemoteSurfaceCloseCallback,
+                 base::Unretained(remote_surface_resource)));
+
+  SetImplementation(remote_surface_resource, &remote_surface_implementation,
+                    std::move(shell_surface));
+}
+
+const struct zwp_remote_shell_v1_interface remote_shell_implementation = {
+    remote_shell_destroy, remote_shell_get_remote_surface};
+
+void bind_remote_shell(wl_client* client,
+                       void* data,
+                       uint32_t version,
+                       uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &zwp_remote_shell_v1_interface, 1, id);
+
+  // TODO(reveman): Multi-display support.
+  const display::Display& display = ash::Shell::GetInstance()
+                                        ->display_manager()
+                                        ->GetPrimaryDisplayCandidate();
+
+  SetImplementation(
+      resource, &remote_shell_implementation,
+      base::WrapUnique(new WaylandWorkspaceObserver(display, resource)));
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // wl_data_device_interface:
 
 void data_device_start_drag(wl_client* client,
@@ -2330,6 +2541,8 @@ Server::Server(Display* display)
                    display_, bind_secure_output);
   wl_global_create(wl_display_.get(), &zwp_alpha_compositing_v1_interface, 1,
                    display_, bind_alpha_compositing);
+  wl_global_create(wl_display_.get(), &zwp_remote_shell_v1_interface, 1,
+                   display_, bind_remote_shell);
 }
 
 Server::~Server() {}

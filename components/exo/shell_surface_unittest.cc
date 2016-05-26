@@ -202,6 +202,24 @@ TEST_F(ShellSurfaceTest, SetGeometry) {
             surface->bounds().ToString());
 }
 
+TEST_F(ShellSurfaceTest, SetScale) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  double scale = 1.5;
+  shell_surface->SetScale(scale);
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  gfx::Transform transform;
+  transform.Scale(1.0 / scale, 1.0 / scale);
+  EXPECT_EQ(transform.ToString(),
+            surface->layer()->GetTargetTransform().ToString());
+}
+
 void Close(int* close_call_count) {
   (*close_call_count)++;
 }
