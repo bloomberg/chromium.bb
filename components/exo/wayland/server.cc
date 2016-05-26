@@ -1963,7 +1963,7 @@ void viewporter_get_viewport(wl_client* client,
   }
 
   wl_resource* viewport_resource = wl_resource_create(
-      client, &wl_viewport_interface, wl_resource_get_version(resource), id);
+      client, &wp_viewport_interface, wl_resource_get_version(resource), id);
 
   SetImplementation(viewport_resource, &viewport_implementation,
                     base::WrapUnique(new Viewport(surface)));
