@@ -14,10 +14,8 @@
 
 namespace {
 
-// Required range of memory segment sizes. It has to fit in an unsigned 32-bit
-// number and should be a power of 2 in order to accomodate almost any page
-// size.
-const uint32_t kSegmentMinSize = 1 << 10;  // 1 KiB
+// Limit of memory segment size. It has to fit in an unsigned 32-bit number
+// and should be a power of 2 in order to accomodate almost any page size.
 const uint32_t kSegmentMaxSize = 1 << 30;  // 1 GiB
 
 // A constant (random) value placed in the shared metadata to identify
@@ -239,7 +237,6 @@ bool PersistentMemoryAllocator::IsMemoryAcceptable(const void* base,
                                                    bool readonly) {
   return ((base && reinterpret_cast<uintptr_t>(base) % kAllocAlignment == 0) &&
           (size >= sizeof(SharedMetadata) && size <= kSegmentMaxSize) &&
-          (size >= kSegmentMinSize || readonly) &&
           (size % kAllocAlignment == 0 || readonly) &&
           (page_size == 0 || size % page_size == 0 || readonly));
 }
@@ -301,7 +298,6 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(
         first_block->type_id != 0 ||
         first_block->next != 0) {
       // ...or something malicious has been playing with the metadata.
-      NOTREACHED();
       SetCorrupt();
     }
 
@@ -339,12 +335,22 @@ PersistentMemoryAllocator::PersistentMemoryAllocator(
     }
     if (!readonly) {
       // The allocator is attaching to a previously initialized segment of
-      // memory. Make sure the embedded data matches what has been passed.
-      if (shared_meta()->size != mem_size_ ||
-          shared_meta()->page_size != mem_page_) {
-        NOTREACHED();
+      // memory. If the initialization parameters differ, make the best of it
+      // by reducing the local construction parameters to match those of
+      // the actual memory area. This ensures that the local object never
+      // tries to write outside of the original bounds.
+      // Because the fields are const to ensure that no code other than the
+      // constructor makes changes to them as well as to give optimization
+      // hints to the compiler, it's necessary to const-cast them for changes
+      // here.
+      if (shared_meta()->size < mem_size_)
+        *const_cast<uint32_t*>(&mem_size_) = shared_meta()->size;
+      if (shared_meta()->page_size < mem_page_)
+        *const_cast<uint32_t*>(&mem_page_) = shared_meta()->page_size;
+
+      // Ensure that settings are still valid after the above adjustments.
+      if (!IsMemoryAcceptable(base, mem_size_, mem_page_, readonly))
         SetCorrupt();
-      }
     }
   }
 }
@@ -744,7 +750,7 @@ SharedPersistentMemoryAllocator::~SharedPersistentMemoryAllocator() {}
 // static
 bool SharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(
     const SharedMemory& memory) {
-  return IsMemoryAcceptable(memory.memory(), memory.mapped_size(), 0, true);
+  return IsMemoryAcceptable(memory.memory(), memory.mapped_size(), 0, false);
 }
 
 
@@ -752,22 +758,25 @@ bool SharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(
 
 FilePersistentMemoryAllocator::FilePersistentMemoryAllocator(
     std::unique_ptr<MemoryMappedFile> file,
+    size_t max_size,
     uint64_t id,
-    base::StringPiece name)
+    base::StringPiece name,
+    bool read_only)
     : PersistentMemoryAllocator(const_cast<uint8_t*>(file->data()),
-                                file->length(),
+                                max_size != 0 ? max_size : file->length(),
                                 0,
                                 id,
                                 name,
-                                true),
+                                read_only),
       mapped_file_(std::move(file)) {}
 
 FilePersistentMemoryAllocator::~FilePersistentMemoryAllocator() {}
 
 // static
 bool FilePersistentMemoryAllocator::IsFileAcceptable(
-    const MemoryMappedFile& file) {
-  return IsMemoryAcceptable(file.data(), file.length(), 0, true);
+    const MemoryMappedFile& file,
+    bool read_only) {
+  return IsMemoryAcceptable(file.data(), file.length(), 0, read_only);
 }
 
 }  // namespace base

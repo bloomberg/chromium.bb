@@ -386,21 +386,25 @@ class BASE_EXPORT SharedPersistentMemoryAllocator
 
 
 // This allocator takes a memory-mapped file object and performs allocation
-// from it. The allocator takes ownership of the file object. Only read access
-// is provided due to limitions of the MemoryMappedFile class.
+// from it. The allocator takes ownership of the file object.
 class BASE_EXPORT FilePersistentMemoryAllocator
     : public PersistentMemoryAllocator {
  public:
+  // A |max_size| of zero will use the length of the file as the maximum
+  // size. The |file| object must have been already created with sufficient
+  // permissions (read, read/write, or read/write/extend).
   FilePersistentMemoryAllocator(std::unique_ptr<MemoryMappedFile> file,
+                                size_t max_size,
                                 uint64_t id,
-                                base::StringPiece name);
+                                base::StringPiece name,
+                                bool read_only);
   ~FilePersistentMemoryAllocator() override;
 
   // Ensure that the file isn't so invalid that it won't crash when passing it
   // to the allocator. This doesn't guarantee the file is valid, just that it
   // won't cause the program to abort. The existing IsCorrupt() call will handle
   // the rest.
-  static bool IsFileAcceptable(const MemoryMappedFile& file);
+  static bool IsFileAcceptable(const MemoryMappedFile& file, bool read_only);
 
  private:
   std::unique_ptr<MemoryMappedFile> mapped_file_;

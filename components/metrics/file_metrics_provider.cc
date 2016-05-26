@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
+#include "base/strings/string_piece.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -196,7 +197,8 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapNewMetrics(
   source->last_seen = info.last_modified;
 
   // Test the validity of the file contents.
-  if (!base::FilePersistentMemoryAllocator::IsFileAcceptable(*source->mapped)) {
+  if (!base::FilePersistentMemoryAllocator::IsFileAcceptable(*source->mapped,
+                                                             true)) {
     source->mapped.reset();
     return ACCESS_RESULT_INVALID_CONTENTS;
   }
@@ -367,13 +369,14 @@ void FileMetricsProvider::CreateAllocatorForSource(SourceInfo* source) {
     // TODO(bcwhite): Make this do read/write when supported for "active".
     source->allocator.reset(new base::PersistentHistogramAllocator(
         base::WrapUnique(new base::FilePersistentMemoryAllocator(
-            std::move(source->mapped), 0, ""))));
+            std::move(source->mapped), 0, 0, base::StringPiece(), true))));
   } else {
     // Data was copied from the mapped file into memory. Create an allocator
     // on the copy thus eliminating disk I/O during data access.
     source->allocator.reset(new base::PersistentHistogramAllocator(
         base::WrapUnique(new base::PersistentMemoryAllocator(
-            &source->data[0], source->data.size(), 0, 0, "", true))));
+            &source->data[0], source->data.size(), 0, 0, base::StringPiece(),
+            true))));
   }
 }
 
