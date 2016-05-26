@@ -6,6 +6,16 @@ This list is sorted such that the largest speedup is first; see
 
 [TOC]
 
+## General configuration
+
+The [GN build configuration](https://www.chromium.org/developers/gn-build-configuration)
+page discusses a number of options that will speed up your build. In particular:
+
+    is_component_build = true
+    enable_nacl = false
+    symbol_level = 0
+    remove_webcore_debug_symbols = true
+
 ## Use goma
 
 If you work at Google, you can use goma for distributed builds; this is similar
@@ -24,70 +34,31 @@ build processes with `-jX` where `X` is the number of processes to start.
 central scheduler to share build load. Currently, many external contributors use
 it. e.g. Intel, Opera, Samsung.
 
-When you use Icecc, you need to set some gyp variables.
+When you use Icecc, you need to [set some GN variables](https://www.chromium.org/developers/gn-build-configuration).
 
-    linux_use_bundled_binutils=0**
+    linux_use_bundled_binutils = false
 
-`-B` option is not supported.
+The `-B` option is not supported.
 [relevant commit](https://github.com/icecc/icecream/commit/b2ce5b9cc4bd1900f55c3684214e409fa81e7a92)
 
-    linux_use_debug_fission=0
+    linux_use_debug_fission = false
 
 [debug fission](http://gcc.gnu.org/wiki/DebugFission) is not supported.
 [bug](https://github.com/icecc/icecream/issues/86)
 
-    clang=0
+    is_clang = false
 
 Icecc doesn't support clang yet.
 
-    use_sysroot=0
+    use_sysroot = false
 
 Icecc doesn't work with sysroot.
 
-    linux_use_bundled_gold=0
-
 Using the system linker is necessary when using glibc 2.21 or newer. See
 [related bug](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=808181).
-
-## Build only specific targets
-
-If you specify just the target(s) you want built, the build will only walk that
-portion of the dependency graph:
-
-    cd $CHROMIUM_ROOT/src
-    ninja -C out/Debug base_unittests
-
-## Linking
-
-### Dynamically link
-
-We normally statically link everything into one final executable, which produces
-enormous (nearly 1gb in debug mode) files. If you dynamically link, you save a
-lot of time linking for a bit of time during startup, which is fine especially
-when you're in an edit/compile/test cycle.
-
-Add the flag `is_component_build=true` in your build args (to edit build args
-run `gn args out/foo` where `out/foo` is your build directory).
-
-See the
-[component build page](http://www.chromium.org/developers/how-tos/component-build)
-for more information.
-
-### Linking using gold
-
-The experimental "gold" linker is much faster than the standard BFD linker.
-
-On some systems (including Debian experimental, Ubuntu Karmic and beyond), there
-exists a `binutils-gold` package. Do not install this version! Having gold as
-the default linker is known to break kernel / kernel module builds.
-
-The Chrome tree now includes a binary of gold compiled for x64 Linux. It is used
-by default on those systems.
-
-On other systems, to safely install gold, make sure the final binary is named
-`ld` and then set `CC/CXX` appropriately, e.g.
-`export CC="gcc -B/usr/local/gold/bin"` and similarly for `CXX`. Alternatively,
-you can add `/usr/local/gold/bin` to your `PATH` in front of `/usr/bin`.
+Previously these instructions listed the linux_use_bundled_gold GYP variable
+which no longer exists. If you know about this, please update or delete this
+section.
 
 ## WebKit
 

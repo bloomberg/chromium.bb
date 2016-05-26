@@ -33,10 +33,8 @@ Build: `ninja -C out/Debug chrome`
 ## Reverting to gcc on linux
 
 We don't have bots that test this, but building with gcc4.8+ should still work
-on Linux. If your system gcc is new enough, use this to build with gcc if you
-don't want to build with clang:
-
-    GYP_DEFINES=clang=0 build/gyp_chromium
+on Linux. If your system gcc is new enough, run `gn args` and add `is_clang =
+false`.
 
 ## Mailing List
 
@@ -62,7 +60,7 @@ To test the FindBadConstructs plugin, run:
                ../../../../third_party/llvm-build/Release+Asserts/lib/libFindBadConstructs.so)
 
 To run [other plugins](writing_clang_plugins.md), add these to your
-`GYP_DEFINES`:
+`GYP_DEFINES` (this is not currently set up in GN):
 
 *   `clang_load`: Absolute path to a dynamic library containing your plugin
 *   `clang_add_plugin`: tells clang to run a specific PluginASTAction

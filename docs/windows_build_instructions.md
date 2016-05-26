@@ -1,5 +1,12 @@
 # Windows Build Instructions
 
+## Common checkout instructions
+
+This page covers Windows-specific setup and configuration. The
+[general checkout
+instructions](http://dev.chromium.org/developers/how-tos/get-the-code) cover
+installing depot tools and checking out the code via git.
+
 ## Setting up Windows
 
 You must set your Windows system locale to English, or else you may get
@@ -13,11 +20,7 @@ supported.
 
 You must have Windows 7 x64 or later. x86 OSs are unsupported.
 
-## Step 1: Getting depot_tools
-
-Get [depot\_tools](http://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up).
-
-## Step 2: Getting the compiler toolchain
+## Getting the compiler toolchain
 
 Follow the appropriate path below:
 
@@ -48,8 +51,7 @@ authentication instructions. **Note that you must authenticate with your
 @google.com credentials**, not @chromium.org. Enter "0" if asked for a
 project-id.
 
-Once you've done this, the toolchain will be installed automatically for
-you in Step 3, below (near the end of the step).
+Run: `gclient sync` again to download and install the toolchain automatically.
 
 The toolchain will be in `depot_tools\win_toolchain\vs_files\<hash>`, and windbg
 can be found in `depot_tools\win_toolchain\vs_files\<hash>\win_sdk\Debuggers`.
@@ -57,31 +59,35 @@ can be found in `depot_tools\win_toolchain\vs_files\<hash>\win_sdk\Debuggers`.
 If you want the IDE for debugging and editing, you will need to install
 it separately, but this is optional and not needed to build Chromium.
 
-## Step 3: Getting the Code
+## Using the Visual Studio IDE
 
-Follow the steps to [check out the
-code](https://www.chromium.org/developers/how-tos/get-the-code) (largely
-`fetch chromium`).
+If you want to use the Visual Studio IDE, use the `--ide` command line
+argument to `gn gen` when you generate your output directory (as described on
+the [get the code](http://dev.chromium.org/developers/how-tos/get-the-code)
+page):
 
-## Step 4: Building
-
-Build the target you are interested in.
-
-```shell
-ninja -C out\Debug chrome
+```gn gen --ide=vs out\Default
+devenv out\Default\all.sln
 ```
 
-Alternative (Graphical user interface): Open a generated .sln
-file such as chrome.sln, right-click the chrome project and select build.
-This will invoke the real step 4 above. Do not build the whole solution
-since that conflicts with ninja's build management and everything will
-explode.
-Substitute the build directory given to `-C` with `out\Debug_x64` for
-[64-bit
-builds](https://www.chromium.org/developers/design-documents/64-bit-support)
-in GYP, or whatever build directory you have configured if using GN.
+GN will produce a file `all.sln` in your build directory. It will internally
+use Ninja to compile while still allowing most IDE functions to work (there is
+no native Visual Studio compilation mode). If you manually run "gen" again you
+will need to resupply this argument, but normally GN will keep the build and
+IDE files up-to-date automatically when you build.
 
-### Performance tips
+The generated solution will contain several thousand projects and will be very
+slow to load. Use the `--filters` argument to restrict generating project files
+for only the code you're interested in, although this will also limit what
+files appear in the project explorer. A minimal solution that will let you
+compile and run Chrome in the IDE but will not show any source files is:
+
+```gn gen --ide=vs --filters=//chrome out\Default```
+
+There are other options for controlling how the solution is generated, run `gn
+help gen` for the current documentation.
+
+## Performance tips
 
 1.  Have a lot of fast CPU cores and enough RAM to keep them all busy.
     (Minimum recommended is 4-8 fast cores and 16-32 GB of RAM)
@@ -89,11 +95,9 @@ in GYP, or whatever build directory you have configured if using GN.
     antivirus and indexing software.
 3.  Store the build tree on a fast disk (preferably SSD).
 4.  If you are primarily going to be doing debug development builds, you
-    should use the component build:
-    - for [GYP](https://www.chromium.org/developers/gyp-environment-variables)
-      set `GYP_DEFINES=component=shared_library`
-    - for [GN](https://www.chromium.org/developers/gn-build-configuration),
-      set the build arg `is_component_build = true`.
+    should use the component build. Set the [build
+    arg](https://www.chromium.org/developers/gn-build-configuration)
+    `is_component_build = true`.
     This will generate many DLLs and enable incremental linking, which makes
     linking **much** faster in Debug.
 
