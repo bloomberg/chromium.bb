@@ -23,13 +23,14 @@ uint64_t FileTimeToUInt64(FILETIME time) {
 }
 
 CounterHandle AddPdhCounter(PDH_HQUERY query,
-                            wchar_t* object_name,
-                            wchar_t* counter_name) {
+                            const wchar_t* object_name,
+                            const wchar_t* counter_name) {
   DCHECK(counter_name);
 
   // Get the counter's path.
   PDH_COUNTER_PATH_ELEMENTS path_elements = {
-      nullptr, object_name, nullptr, nullptr, 0, counter_name};
+      nullptr, const_cast<LPTSTR>(object_name), nullptr, nullptr,
+      0,       const_cast<LPTSTR>(counter_name)};
   std::unique_ptr<wchar_t[]> counter_path(new wchar_t[PDH_MAX_COUNTER_PATH]);
   DWORD path_len = PDH_MAX_COUNTER_PATH;
 
