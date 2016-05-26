@@ -20,6 +20,7 @@ const mojom::Container kActivationContainers[] = {
     mojom::Container::USER_PRIVATE_PANELS,
     mojom::Container::USER_PRIVATE_APP_LIST,
     mojom::Container::USER_PRIVATE_SYSTEM_MODAL,
+    mojom::Container::LOGIN,
     // Bubble windows must be allowed to activate because some of them rely on
     // deactivation to close.
     mojom::Container::BUBBLES,

@@ -104,6 +104,11 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "url/gurl.h"
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "components/mus/public/cpp/property_type_converters.h"
+#include "mash/wm/public/interfaces/container.mojom.h"
+#endif
+
 namespace {
 
 // Maximum delay for startup sound after 'loginPromptVisible' signal.
@@ -1140,6 +1145,14 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
     params.parent =
         ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
                                  ash::kShellWindowId_LockScreenContainer);
+  } else {
+#if defined(MOJO_SHELL_CLIENT)
+    params.mus_properties[mash::wm::mojom::kWindowContainer_Property] =
+        mojo::ConvertTo<std::vector<uint8_t>>(
+            static_cast<int32_t>(mash::wm::mojom::Container::LOGIN_WINDOWS));
+#else
+    NOTREACHED();
+#endif
   }
   login_window_ = new views::Widget;
   params.delegate = new LoginWidgetDelegate(login_window_);
