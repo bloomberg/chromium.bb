@@ -946,8 +946,9 @@ void ChromeSourceTargetStep2(SimpleTestDragDropClient* client,
   target_widget->Init(target_params);
   target_widget->Show();
 
-  TestDragDropDelegate* delegate = new TestDragDropDelegate;
-  aura::client::SetDragDropDelegate(target_widget->GetNativeWindow(), delegate);
+  std::unique_ptr<TestDragDropDelegate> delegate(new TestDragDropDelegate);
+  aura::client::SetDragDropDelegate(target_widget->GetNativeWindow(),
+                                    delegate.get());
 
   client->SetTopmostXWindow(
       target_widget->GetNativeView()->GetHost()->GetAcceleratedWidget());
