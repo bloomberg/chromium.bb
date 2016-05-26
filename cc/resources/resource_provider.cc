@@ -1203,6 +1203,11 @@ unsigned ResourceProvider::ScopedReadLockGpuMemoryBuffer::GetTextureId() const {
   return resource_->gl_id;
 }
 
+ResourceId ResourceProvider::ScopedReadLockGpuMemoryBuffer::GetResourceId()
+    const {
+  return resource_id_;
+}
+
 ResourceProvider::ScopedWriteLockGr::ScopedWriteLockGr(
     ResourceProvider* resource_provider,
     ResourceId resource_id)
