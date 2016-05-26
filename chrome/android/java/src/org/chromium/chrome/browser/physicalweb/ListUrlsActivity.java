@@ -32,6 +32,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.privacy.PhysicalWebPreferenceFragment;
 import org.chromium.chrome.browser.widget.FadingShadow;
 import org.chromium.chrome.browser.widget.FadingShadowView;
 
@@ -127,13 +129,13 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        Drawable tintedRefresh = ContextCompat.getDrawable(this, R.drawable.btn_toolbar_reload);
         int tintColor = ContextCompat.getColor(this, R.color.light_normal_color);
-        tintedRefresh.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
 
-        MenuItem refreshItem = menu.add(R.string.physical_web_refresh);
-        refreshItem.setIcon(tintedRefresh);
-        refreshItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        Drawable tintedRefresh = ContextCompat.getDrawable(this, R.drawable.btn_toolbar_reload);
+        tintedRefresh.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
+        MenuItem refreshItem = menu.add(R.string.physical_web_refresh)
+                .setIcon(tintedRefresh)
+                .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
         refreshItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -142,9 +144,9 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
             }
         });
 
-        MenuItem closeItem = menu.add(R.string.close);
-        closeItem.setIcon(R.drawable.btn_close);
-        closeItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        MenuItem closeItem = menu.add(R.string.close)
+                .setIcon(R.drawable.btn_close)
+                .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
         closeItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -153,7 +155,22 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
             }
         });
 
-        return true;
+        Drawable tintedSettings = ContextCompat.getDrawable(this, R.drawable.settings_cog);
+        tintedSettings.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
+        MenuItem settingsButton = menu.add(R.string.menu_preferences)
+                .setIcon(tintedSettings)
+                .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        settingsButton.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                        ListUrlsActivity.this, PhysicalWebPreferenceFragment.class.getName());
+                startActivity(intent);
+                return true;
+            }
+        });
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     private void foregroundSubscribe() {
