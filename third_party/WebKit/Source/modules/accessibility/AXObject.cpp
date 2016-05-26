@@ -512,6 +512,7 @@ void AXObject::updateCachedAttributeValuesIfNeeded() const
         return;
 
     m_lastModificationCount = cache.modificationCount();
+    m_cachedBackgroundColor = computeBackgroundColor();
     m_cachedIsInertOrAriaHidden = computeIsInertOrAriaHidden();
     m_cachedIsDescendantOfLeafNode = (leafNodeAncestor() != 0);
     m_cachedIsDescendantOfDisabledNode = (disabledAncestor() != 0);
@@ -922,6 +923,12 @@ String AXObject::textFromAriaDescribedby(AXRelatedObjectVector* relatedObjects) 
     HeapVector<Member<Element>> elements;
     elementsFromAttribute(elements, aria_describedbyAttr);
     return textFromElements(true, visited, elements, relatedObjects);
+}
+
+RGBA32 AXObject::backgroundColor() const
+{
+    updateCachedAttributeValuesIfNeeded();
+    return m_cachedBackgroundColor;
 }
 
 AccessibilityOrientation AXObject::orientation() const

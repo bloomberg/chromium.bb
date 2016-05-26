@@ -722,7 +722,8 @@ public:
     //
 
     virtual const AtomicString& accessKey() const { return nullAtom; }
-    virtual RGBA32 backgroundColor() const { return Color::transparent; }
+    RGBA32 backgroundColor() const;
+    virtual RGBA32 computeBackgroundColor() const { return Color::transparent; }
     virtual RGBA32 color() const { return Color::black; }
     // Used by objects of role ColorWellRole.
     virtual RGBA32 colorValue() const { return Color::transparent; }
@@ -961,6 +962,7 @@ protected:
     // The following cached attribute values (the ones starting with m_cached*)
     // are only valid if m_lastModificationCount matches AXObjectCacheImpl::modificationCount().
     mutable int m_lastModificationCount;
+    mutable RGBA32 m_cachedBackgroundColor;
     mutable bool m_cachedIsIgnored : 1;
     mutable bool m_cachedIsInertOrAriaHidden : 1;
     mutable bool m_cachedIsDescendantOfLeafNode : 1;

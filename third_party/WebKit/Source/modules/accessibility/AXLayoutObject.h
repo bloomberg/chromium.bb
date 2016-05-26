@@ -101,7 +101,7 @@ protected:
 
     // Properties of static elements.
     const AtomicString& accessKey() const override;
-    RGBA32 backgroundColor() const final;
+    RGBA32 computeBackgroundColor() const final;
     RGBA32 color() const final;
     String fontFamily() const final;
     // Font size is in pixels.

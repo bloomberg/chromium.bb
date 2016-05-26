@@ -831,17 +831,46 @@ const AtomicString& AXLayoutObject::accessKey() const
     return toElement(node)->getAttribute(accesskeyAttr);
 }
 
-RGBA32 AXLayoutObject::backgroundColor() const
+RGBA32 AXLayoutObject::computeBackgroundColor() const
 {
     if (!getLayoutObject())
         return AXNodeObject::backgroundColor();
 
-    const ComputedStyle* style = getLayoutObject()->style();
-    if (!style || !style->hasBackground())
-        return AXNodeObject::backgroundColor();
+    Color blendedColor = Color::transparent;
+    // Color::blend should be called like this: background.blend(foreground).
+    for (LayoutObject* layoutObject = getLayoutObject(); layoutObject;
+        layoutObject = layoutObject->parent()) {
+        const AXObject* axParent = axObjectCache().getOrCreate(layoutObject);
+        if (axParent && axParent != this) {
+            Color parentColor = axParent->backgroundColor();
+            blendedColor = parentColor.blend(blendedColor);
+            return blendedColor.rgb();
+        }
 
-    Color color = style->visitedDependentColor(CSSPropertyBackgroundColor);
-    return color.rgb();
+        const ComputedStyle* style = layoutObject->style();
+        if (!style || !style->hasBackground())
+            continue;
+
+        Color currentColor = style->visitedDependentColor(CSSPropertyBackgroundColor);
+        blendedColor = currentColor.blend(blendedColor);
+        // Continue blending until we get no transparency.
+        if (!blendedColor.hasAlpha())
+            break;
+    }
+
+    // If we still have some transparency, blend in the document base color.
+    if (blendedColor.hasAlpha()) {
+        FrameView* view = documentFrameView();
+        if (view) {
+            Color documentBaseColor = view->baseBackgroundColor();
+            blendedColor = documentBaseColor.blend(blendedColor);
+        } else {
+            // Default to a white background.
+            blendedColor.blendWithWhite();
+        }
+    }
+
+    return blendedColor.rgb();
 }
 
 RGBA32 AXLayoutObject::color() const
@@ -1675,11 +1704,11 @@ Document* AXLayoutObject::getDocument() const
 
 FrameView* AXLayoutObject::documentFrameView() const
 {
-    if (!m_layoutObject)
-        return 0;
+    if (!getLayoutObject())
+        return nullptr;
 
     // this is the LayoutObject's Document's LocalFrame's FrameView
-    return m_layoutObject->document().view();
+    return getLayoutObject()->document().view();
 }
 
 Element* AXLayoutObject::anchorElement() const
