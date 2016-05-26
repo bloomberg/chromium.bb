@@ -198,11 +198,12 @@ void ShellDevToolsFrontend::HandleMessageFromDevToolsFrontend(
   dict->GetList("params", &params);
 
   if (method == "dispatchProtocolMessage" && params && params->GetSize() == 1) {
+    if (!agent_host_ || !agent_host_->IsAttached())
+      return;
     std::string protocol_message;
     if (!params->GetString(0, &protocol_message))
       return;
-    if (agent_host_)
-      agent_host_->DispatchProtocolMessage(protocol_message);
+    agent_host_->DispatchProtocolMessage(protocol_message);
   } else if (method == "loadCompleted") {
     web_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("DevToolsAPI.setUseSoftMenu(true);"));
