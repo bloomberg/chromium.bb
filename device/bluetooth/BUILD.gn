@@ -145,7 +145,6 @@ component("bluetooth") {
     "//base",
     "//crypto",
     "//device/bluetooth/strings",
-    "//device/bluetooth/uribeacon",
     "//ipc",
     "//net",
     "//ui/base",
