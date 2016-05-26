@@ -171,7 +171,7 @@ imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/text3 [ Skip
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/transforms [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/ui3 [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/values3 [ Skip ]
-## Owners: leviw@chromium.org, kojii@chromium.org
+## Owners: kojii@chromium.org
 # imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables [ Pass ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/variables/reftest.list [ Skip ]
 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/will-change [ Skip ]
