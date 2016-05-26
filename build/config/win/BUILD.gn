@@ -279,14 +279,6 @@ config("common_linker_setup") {
   } else {
     ldflags += [ "/DYNAMICBASE" ]
   }
-
-  # Delay loaded DLLs.
-  ldflags += [
-    "/DELAYLOAD:dbghelp.dll",
-    "/DELAYLOAD:dwmapi.dll",
-    "/DELAYLOAD:shell32.dll",
-    "/DELAYLOAD:uxtheme.dll",
-  ]
 }
 
 # Subsystem --------------------------------------------------------------------

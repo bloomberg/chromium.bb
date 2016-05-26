@@ -303,6 +303,7 @@ if (is_win) {
         "/DELAYLOAD:crypt32.dll",
         "/DELAYLOAD:cryptui.dll",
         "/DELAYLOAD:dhcpcsvc.dll",
+        "/DELAYLOAD:dwmapi.dll",
         "/DELAYLOAD:imagehlp.dll",
         "/DELAYLOAD:imm32.dll",
         "/DELAYLOAD:iphlpapi.dll",
@@ -377,6 +378,15 @@ if (is_win) {
       if (is_win) {
         deps += [ "//chrome/install_static:install_static_util" ]
 
+        ldflags = [
+          "/DELAYLOAD:d3d11.dll",
+          "/DELAYLOAD:d3d9.dll",
+          "/DELAYLOAD:dwmapi.dll",
+          "/DELAYLOAD:dxva2.dll",
+          "/DELAYLOAD:esent.dll",
+          "/DELAYLOAD:wininet.dll",
+        ]
+
         if (symbol_level == 2) {
           # Incremental linking doesn't work on this target in debug mode with
           # full symbols, but does work in other cases, including minimal
@@ -385,12 +395,12 @@ if (is_win) {
           configs += [ "//build/config/win:no_incremental_linking" ]
         }
         if (chrome_pgo_phase == 1) {
-          ldflags = [
+          ldflags += [
             "/LTCG:PGINSTRUMENT",
             "/PogoSafeMode",
           ]
         } else if (chrome_pgo_phase == 2) {
-          ldflags = [ "/LTCG:PGOPTIMIZE" ]
+          ldflags += [ "/LTCG:PGOPTIMIZE" ]
         }
       }
 
