@@ -79,6 +79,11 @@ public:
     void addChangedChannelCountMode(AudioHandler*);
     void removeChangedChannelCountMode(AudioHandler*);
 
+    // Keep track of AudioNode's that have their channel interpretation
+    // changed. We process the changes in the post rendering phase.
+    void addChangedChannelInterpretation(AudioHandler*);
+    void removeChangedChannelInterpretation(AudioHandler*);
+
     // Only accessed when the graph lock is held.
     void markSummingJunctionDirty(AudioSummingJunction*);
     // Only accessed when the graph lock is held. Must be called on the main thread.
@@ -117,10 +122,8 @@ public:
     // MUST NOT be used in the real-time audio context.
     void offlineLock();
 
-#if ENABLE(ASSERT)
     // Returns true if this thread owns the context's lock.
     bool isGraphOwner();
-#endif
 
     class MODULES_EXPORT AutoLocker {
         STACK_ALLOCATED();
@@ -157,6 +160,7 @@ private:
     DeferredTaskHandler();
     void updateAutomaticPullNodes();
     void updateChangedChannelCountMode();
+    void updateChangedChannelInterpretation();
     void handleDirtyAudioSummingJunctions();
     void handleDirtyAudioNodeOutputs();
     void deleteHandlersOnMainThread();
@@ -174,6 +178,8 @@ private:
     // channel count mode to change in the pre- or post-rendering phase so as
     // not to disturb the running audio thread.
     HashSet<AudioHandler*> m_deferredCountModeChange;
+
+    HashSet<AudioHandler*> m_deferredChannelInterpretationChange;
 
     // These two HashSet must be accessed only when the graph lock is held.
     // These raw pointers are safe because their destructors unregister them.

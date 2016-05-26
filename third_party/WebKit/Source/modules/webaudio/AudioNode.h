@@ -217,6 +217,7 @@ public:
     AudioBus::ChannelInterpretation internalChannelInterpretation() const { return m_channelInterpretation; }
 
     void updateChannelCountMode();
+    void updateChannelInterpretation();
 
 protected:
     // Inputs and outputs must be created before the AudioHandler is
@@ -273,6 +274,10 @@ protected:
     // The new channel count mode that will be used to set the actual mode in the pre or post
     // rendering phase.
     ChannelCountMode m_newChannelCountMode;
+    // The new channel interpretation that will be used to set the actual
+    // intepretation in the pre or post rendering phase.
+    AudioBus::ChannelInterpretation m_newChannelInterpretation;
+
 };
 
 class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {

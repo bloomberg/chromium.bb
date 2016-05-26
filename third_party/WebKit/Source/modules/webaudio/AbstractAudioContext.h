@@ -232,10 +232,8 @@ public:
     void lock() { deferredTaskHandler().lock(); }
     bool tryLock() { return deferredTaskHandler().tryLock(); }
     void unlock() { deferredTaskHandler().unlock(); }
-#if ENABLE(ASSERT)
     // Returns true if this thread owns the context's lock.
     bool isGraphOwner() { return deferredTaskHandler().isGraphOwner(); }
-#endif
     using AutoLocker = DeferredTaskHandler::AutoLocker;
 
     // Returns the maximum numuber of channels we can support.

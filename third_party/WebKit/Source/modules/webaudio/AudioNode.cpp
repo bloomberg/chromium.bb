@@ -97,6 +97,7 @@ void AudioHandler::dispose()
     ASSERT(context()->isGraphOwner());
 
     context()->deferredTaskHandler().removeChangedChannelCountMode(this);
+    context()->deferredTaskHandler().removeChangedChannelInterpretation(this);
     context()->deferredTaskHandler().removeAutomaticPullNode(this);
     for (auto& output : m_outputs)
         output->dispose();
@@ -280,13 +281,18 @@ void AudioHandler::setChannelInterpretation(const String& interpretation, Except
     ASSERT(isMainThread());
     AbstractAudioContext::AutoLocker locker(context());
 
+    AudioBus::ChannelInterpretation oldMode = m_channelInterpretation;
+
     if (interpretation == "speakers") {
-        m_channelInterpretation = AudioBus::Speakers;
+        m_newChannelInterpretation = AudioBus::Speakers;
     } else if (interpretation == "discrete") {
-        m_channelInterpretation = AudioBus::Discrete;
+        m_newChannelInterpretation = AudioBus::Discrete;
     } else {
         ASSERT_NOT_REACHED();
     }
+
+    if (m_newChannelInterpretation != oldMode)
+        context()->deferredTaskHandler().addChangedChannelInterpretation(this);
 }
 
 void AudioHandler::updateChannelsForInputs()
@@ -504,6 +510,11 @@ void AudioHandler::updateChannelCountMode()
 {
     m_channelCountMode = m_newChannelCountMode;
     updateChannelsForInputs();
+}
+
+void AudioHandler::updateChannelInterpretation()
+{
+    m_channelInterpretation = m_newChannelInterpretation;
 }
 
 unsigned AudioHandler::numberOfOutputChannels() const
