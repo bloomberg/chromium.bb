@@ -256,10 +256,10 @@ void UpdateScreen::UpdateStatusChanged(
 void UpdateScreen::OnPortalDetectionCompleted(
     const NetworkState* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
-  LOG(WARNING) << "UpdateScreen::OnPortalDetectionCompleted(): "
-               << "network=" << (network ? network->path() : "") << ", "
-               << "state.status=" << state.status << ", "
-               << "state.response_code=" << state.response_code;
+  VLOG(1) << "UpdateScreen::OnPortalDetectionCompleted(): "
+          << "network=" << (network ? network->path() : "") << ", "
+          << "state.status=" << state.status << ", "
+          << "state.response_code=" << state.response_code;
 
   // Wait for sane detection results.
   if (network &&
