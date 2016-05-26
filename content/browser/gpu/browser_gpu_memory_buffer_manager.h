@@ -29,6 +29,10 @@ using GpuMemoryBufferConfigurationSet =
 
 }  // content
 
+namespace gpu {
+class GpuMemoryBufferImpl;
+}  // gpu
+
 namespace BASE_HASH_NAMESPACE {
 
 template <>
@@ -111,7 +115,7 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
                gfx::BufferFormat format,
                gfx::BufferUsage usage,
                int gpu_host_id);
-    BufferInfo(const BufferInfo& other);
+    BufferInfo(BufferInfo&& other);
     ~BufferInfo();
 
     gfx::Size size;
@@ -119,6 +123,11 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
     gfx::BufferFormat format = gfx::BufferFormat::RGBA_8888;
     gfx::BufferUsage usage = gfx::BufferUsage::GPU_READ;
     int gpu_host_id = 0;
+
+    // An open instance of the buffer in the browser process.
+    // TODO(ccameron): This only is implemented for IOSurface buffers. Ensure
+    // that this is always valid, and delete the then-redundant above state.
+    std::unique_ptr<gpu::GpuMemoryBufferImpl> buffer;
   };
 
   struct CreateGpuMemoryBufferRequest;
