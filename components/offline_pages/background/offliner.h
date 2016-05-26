@@ -15,18 +15,19 @@ class SavePageRequest;
 // a request with a URL.
 class Offliner {
  public:
-  // Completion status of processing an offline page request.
-  enum CompletionStatus {
-    SAVED = 0,
-    CANCELED = 1,
-    FAILED_CONSIDER_RETRY = 2,
-    FAILED_DO_NOT_RETRY = 3,
-    UNKNOWN = 4,
+  // Status of processing an offline page request.
+  enum class RequestStatus {
+    UNKNOWN,   // No status determined/reported yet.
+    LOADED,    // Page loaded but not (yet) saved.
+    SAVED,     // Offline page snapshot saved.
+    CANCELED,  // Request was canceled.
+    FAILED,    // Request failed.
+    // TODO(dougarnett): Define a retry-able failure status.
   };
 
   // Reports the completion status of a request.
   // TODO(dougarnett): consider passing back a request id instead of request.
-  typedef base::Callback<void(const SavePageRequest&, CompletionStatus)>
+  typedef base::Callback<void(const SavePageRequest&, RequestStatus)>
       CompletionCallback;
 
   Offliner() {}

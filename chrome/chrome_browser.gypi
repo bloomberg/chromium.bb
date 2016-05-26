@@ -1567,6 +1567,8 @@
       'browser/android/offline_pages/offline_page_utils.cc',
       'browser/android/offline_pages/offline_page_utils.h',
       'browser/android/offline_pages/offliner_factory.h',
+      'browser/android/offline_pages/prerender_adapter.cc',
+      'browser/android/offline_pages/prerender_adapter.h',
       'browser/android/offline_pages/prerendering_loader.cc',
       'browser/android/offline_pages/prerendering_loader.h',
       'browser/android/offline_pages/prerendering_offliner.cc',

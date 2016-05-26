@@ -10,6 +10,7 @@
 #include "chrome/browser/android/offline_pages/prerendering_loader.h"
 #include "components/offline_pages/background/offliner.h"
 #include "components/offline_pages/background/save_page_request.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -24,7 +25,9 @@ const ClientId kClientId("AsyncLoading", "88");
 class MockPrerenderingLoader : public PrerenderingLoader {
  public:
   explicit MockPrerenderingLoader(content::BrowserContext* browser_context)
-      : PrerenderingLoader(browser_context), mock_loading_(false) {}
+      : PrerenderingLoader(browser_context),
+        mock_loading_(false),
+        mock_loaded_(false) {}
   ~MockPrerenderingLoader() override {}
 
   bool LoadPage(const GURL& url, const LoadPageCallback& callback) override {
@@ -32,12 +35,18 @@ class MockPrerenderingLoader : public PrerenderingLoader {
     return mock_loading_;
   }
 
-  void StopLoading() override { mock_loading_ = false; }
+  void StopLoading() override {
+    mock_loading_ = false;
+    mock_loaded_ = false;
+  }
+  bool IsIdle() override { return !mock_loading_ && !mock_loaded_; }
+  bool IsLoaded() override { return mock_loaded_; }
 
   bool mock_loading() const { return mock_loading_; }
 
  private:
   bool mock_loading_;
+  bool mock_loaded_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPrerenderingLoader);
 };
@@ -58,23 +67,23 @@ class PrerenderingOfflinerTest : public testing::Test {
   }
 
   bool loading() const { return loader_->mock_loading(); }
-  Offliner::CompletionStatus completion_status() {
-    return completion_status_;
-  }
+  Offliner::RequestStatus completion_status() { return completion_status_; }
 
  private:
   void OnCompletion(const SavePageRequest& request,
-                    Offliner::CompletionStatus status);
+                    Offliner::RequestStatus status);
 
+  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<PrerenderingOffliner> offliner_;
   // Not owned.
   MockPrerenderingLoader* loader_;
-  Offliner::CompletionStatus completion_status_;
+  Offliner::RequestStatus completion_status_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderingOfflinerTest);
 };
 
-PrerenderingOfflinerTest::PrerenderingOfflinerTest() {}
+PrerenderingOfflinerTest::PrerenderingOfflinerTest()
+    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
 PrerenderingOfflinerTest::~PrerenderingOfflinerTest() {}
 
@@ -87,7 +96,7 @@ void PrerenderingOfflinerTest::SetUp() {
 }
 
 void PrerenderingOfflinerTest::OnCompletion(const SavePageRequest& request,
-                                            Offliner::CompletionStatus status) {
+                                            Offliner::RequestStatus status) {
   completion_status_ = status;
 }
 
