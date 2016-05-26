@@ -90,7 +90,6 @@ public:
     // Frame overrides:
     ~LocalFrame() override;
     DECLARE_VIRTUAL_TRACE();
-    bool isLocalFrame() const override { return true; }
     DOMWindow* domWindow() const override;
     WindowProxy* windowProxy(DOMWrapperWorld&) override;
     void navigate(Document& originDocument, const KURL&, bool replaceCurrentItem, UserGestureStatus) override;
@@ -189,6 +188,10 @@ private:
 
     // Internal Frame helper overrides:
     WindowProxyManager* getWindowProxyManager() const override;
+    // Intentionally private to prevent redundant checks when the type is
+    // already LocalFrame.
+    bool isLocalFrame() const override { return true; }
+    bool isRemoteFrame() const override { return false; }
 
     String localLayerTreeAsText(unsigned flags) const;
 

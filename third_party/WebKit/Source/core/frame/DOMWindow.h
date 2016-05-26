@@ -50,8 +50,8 @@ public:
     // GarbageCollectedFinalized overrides:
     DECLARE_VIRTUAL_TRACE();
 
-    virtual bool isLocalDOMWindow() const { return false; }
-    virtual bool isRemoteDOMWindow() const { return false; }
+    virtual bool isLocalDOMWindow() const = 0;
+    virtual bool isRemoteDOMWindow() const = 0;
 
     virtual Frame* frame() const = 0;
 

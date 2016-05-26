@@ -1728,7 +1728,7 @@ void WebViewImpl::enablePopupMouseWheelEventListener()
     // scrolled to a new position. This is part of a larger set of issues with
     // popups.
     // See https://crbug.com/566130
-    if (!mainFrameImpl() || !mainFrameImpl()->frame()->isLocalFrame())
+    if (!mainFrameImpl())
         return;
     DCHECK(!m_popupMouseWheelEventListener);
     Document* document = mainFrameImpl()->frame()->document();
@@ -1743,7 +1743,7 @@ void WebViewImpl::disablePopupMouseWheelEventListener()
 {
     // TODO(kenrb): Concerns the same as in enablePopupMouseWheelEventListener.
     // See https://crbug.com/566130
-    if (!mainFrameImpl() || !mainFrameImpl()->frame()->isLocalFrame())
+    if (!mainFrameImpl())
         return;
     DCHECK(m_popupMouseWheelEventListener);
     Document* document = mainFrameImpl()->frame()->document();
@@ -1875,7 +1875,6 @@ void WebViewImpl::resizeViewWhileAnchored(
     FrameView* view, float topControlsHeight, bool topControlsShrinkLayout)
 {
     DCHECK(mainFrameImpl());
-    DCHECK(mainFrameImpl()->frame()->isLocalFrame());
 
     topControls().setHeight(topControlsHeight, topControlsShrinkLayout);
 
@@ -2844,7 +2843,7 @@ void WebViewImpl::didChangeWindowResizerRect()
 
 void WebViewImpl::reportFixedRasterScaleUseCounters(bool hasBlurryContent, bool hasPotentialPerformanceRegression)
 {
-    if (!mainFrameImpl() || !mainFrameImpl()->frame()->isLocalFrame())
+    if (!mainFrameImpl())
         return;
     Document* document = mainFrameImpl()->frame()->document();
     if (hasBlurryContent)

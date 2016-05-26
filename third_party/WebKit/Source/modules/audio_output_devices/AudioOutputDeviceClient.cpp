@@ -21,7 +21,7 @@ AudioOutputDeviceClient* AudioOutputDeviceClient::from(ExecutionContext* context
         return nullptr;
 
     const Document* document = toDocument(context);
-    if (!document->frame() || !document->frame()->isLocalFrame())
+    if (!document->frame())
         return nullptr;
 
     return static_cast<AudioOutputDeviceClient*>(Supplement<LocalFrame>::from(document->frame(), supplementName()));

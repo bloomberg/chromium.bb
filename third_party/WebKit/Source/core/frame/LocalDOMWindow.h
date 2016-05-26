@@ -86,7 +86,6 @@ public:
     LocalDOMWindow* toLocalDOMWindow() override;
 
     // DOMWindow overrides:
-    bool isLocalDOMWindow() const override { return true; }
     LocalFrame* frame() const override;
     Screen* screen() const override;
     History* history() const override;
@@ -210,6 +209,11 @@ protected:
 
 private:
     class WindowFrameObserver;
+
+    // Intentionally private to prevent redundant checks when the type is
+    // already LocalDOMWindow.
+    bool isLocalDOMWindow() const override { return true; }
+    bool isRemoteDOMWindow() const override { return false; }
 
     explicit LocalDOMWindow(LocalFrame&);
     void dispose();

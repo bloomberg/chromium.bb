@@ -74,8 +74,6 @@ public:
     };
 
     // FrameOwner overrides:
-    bool isLocal() const override { return true; }
-    bool isRemote() const override { return false; }
     void setContentFrame(Frame&) override;
     void clearContentFrame() override;
     void dispatchLoad() override;
@@ -95,6 +93,11 @@ protected:
     bool loadOrRedirectSubframe(const KURL&, const AtomicString& frameName, bool replaceCurrentItem);
 
 private:
+    // Intentionally private to prevent redundant checks when the type is
+    // already HTMLFrameOwnerElement.
+    bool isLocal() const override { return true; }
+    bool isRemote() const override { return false; }
+
     bool isKeyboardFocusable() const override;
     bool isFrameOwnerElement() const final { return true; }
 

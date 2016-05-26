@@ -52,8 +52,6 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE() { FrameOwner::trace(visitor); }
 
     // FrameOwner overrides:
-    bool isLocal() const override { return false; }
-    bool isRemote() const override { return false; }
     void setContentFrame(Frame&) override { }
     void clearContentFrame() override { }
     SandboxFlags getSandboxFlags() const override { return SandboxNone; }
@@ -63,6 +61,12 @@ public:
     int marginWidth() const override { return -1; }
     int marginHeight() const override { return -1; }
     bool allowFullscreen() const override { return false; }
+
+private:
+    // Intentionally private to prevent redundant checks when the type is
+    // already DummyFrameOwner.
+    bool isLocal() const override { return false; }
+    bool isRemote() const override { return false; }
 };
 
 } // namespace blink

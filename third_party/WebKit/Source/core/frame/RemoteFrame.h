@@ -30,7 +30,6 @@ public:
 
     // Frame overrides:
     DECLARE_VIRTUAL_TRACE();
-    bool isRemoteFrame() const override { return true; }
     DOMWindow* domWindow() const override;
     WindowProxy* windowProxy(DOMWrapperWorld&) override;
     void navigate(Document& originDocument, const KURL&, bool replaceCurrentItem, UserGestureStatus) override;
@@ -67,6 +66,10 @@ private:
 
     // Internal Frame helper overrides:
     WindowProxyManager* getWindowProxyManager() const override { return m_windowProxyManager.get(); }
+    // Intentionally private to prevent redundant checks when the type is
+    // already RemoteFrame.
+    bool isLocalFrame() const override { return false; }
+    bool isRemoteFrame() const override { return true; }
 
     Member<RemoteFrameView> m_view;
     Member<RemoteSecurityContext> m_securityContext;

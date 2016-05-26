@@ -25,8 +25,6 @@ public:
     }
 
     // FrameOwner overrides:
-    bool isLocal() const override { return false; }
-    bool isRemote() const override { return true; }
     void setContentFrame(Frame&) override;
     void clearContentFrame() override;
     SandboxFlags getSandboxFlags() const override { return m_sandboxFlags; }
@@ -48,6 +46,11 @@ public:
 
 private:
     RemoteFrameOwner(SandboxFlags, const WebFrameOwnerProperties&);
+
+    // Intentionally private to prevent redundant checks when the type is
+    // already HTMLFrameOwnerElement.
+    bool isLocal() const override { return false; }
+    bool isRemote() const override { return true; }
 
     Member<Frame> m_frame;
     SandboxFlags m_sandboxFlags;

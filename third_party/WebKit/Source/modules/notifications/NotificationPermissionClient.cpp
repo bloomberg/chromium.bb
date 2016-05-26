@@ -21,7 +21,7 @@ NotificationPermissionClient* NotificationPermissionClient::from(ExecutionContex
         return nullptr;
 
     const Document* document = toDocument(context);
-    if (!document->frame() || !document->frame()->isLocalFrame())
+    if (!document->frame())
         return nullptr;
 
     return static_cast<NotificationPermissionClient*>(Supplement<LocalFrame>::from(document->frame(), supplementName()));

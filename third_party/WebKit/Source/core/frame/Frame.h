@@ -68,8 +68,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
-    virtual bool isLocalFrame() const { return false; }
-    virtual bool isRemoteFrame() const { return false; }
+    virtual bool isLocalFrame() const = 0;
+    virtual bool isRemoteFrame() const = 0;
 
     virtual DOMWindow* domWindow() const = 0;
     virtual WindowProxy* windowProxy(DOMWrapperWorld&) = 0;

@@ -22,7 +22,6 @@ public:
 
     // DOMWindow overrides:
     DECLARE_VIRTUAL_TRACE();
-    bool isRemoteDOMWindow() const override { return true; }
     RemoteFrame* frame() const override;
     Screen* screen() const override;
     History* history() const override;
@@ -87,6 +86,11 @@ protected:
 
 private:
     explicit RemoteDOMWindow(RemoteFrame&);
+
+    // Intentionally private to prevent redundant checks when the type is
+    // already RemoteDOMWindow.
+    bool isLocalDOMWindow() const override { return false; }
+    bool isRemoteDOMWindow() const override { return true; }
 
     Member<RemoteFrame> m_frame;
 };
