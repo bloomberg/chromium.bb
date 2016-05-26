@@ -263,8 +263,16 @@ class Request(object):
         break
     return result
 
+  def SetHTTPResponseHeader(self, header, header_value):
+    """Sets the value of a HTTP response header."""
+    assert header.islower()
+    for name in self.response_headers.keys():
+      if name.lower() == header:
+        del self.response_headers[name]
+    self.response_headers[header] = header_value
+
   def GetResponseHeaderValue(self, header, value):
-    """Returns True iff the response headers |header| contains |value|."""
+    """Returns a copy of |value| iff response |header| contains it."""
     header_values = self.GetHTTPResponseHeader(header)
     if not header_values:
       return None
@@ -420,7 +428,7 @@ class CachingPolicy(object):
     # net/http/http_response_headers.cc, itself following RFC 2616.
     if not self.IsCacheable():
       return self.FETCH
-    freshness = self._GetFreshnessLifetimes()
+    freshness = self.GetFreshnessLifetimes()
     if freshness[0] == 0 and freshness[1] == 0:
       return self.VALIDATION_SYNC
     age = self._GetCurrentAge(timestamp)
@@ -430,7 +438,7 @@ class CachingPolicy(object):
       return self.VALIDATION_ASYNC
     return self.VALIDATION_SYNC
 
-  def _GetFreshnessLifetimes(self):
+  def GetFreshnessLifetimes(self):
     """Returns [freshness, stale-while-revalidate freshness] in seconds."""
     # This is adapted from GetFreshnessLifetimes() in
     # //net/http/http_response_headers.cc (which follows the RFC).

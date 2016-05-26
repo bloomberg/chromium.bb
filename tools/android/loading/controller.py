@@ -156,9 +156,9 @@ class ChromeControllerBase(object):
     self._network_name = None
     self._slow_death = False
 
-  def AddChromeArgument(self, arg):
-    """Add command-line argument to the chrome execution."""
-    self._chrome_args.append(arg)
+  def AddChromeArguments(self, args):
+    """Add command-line arguments to the chrome execution."""
+    self._chrome_args.extend(args)
 
   @contextlib.contextmanager
   def Open(self):
@@ -407,7 +407,7 @@ class LocalChromeController(ChromeControllerBase):
     """
     super(LocalChromeController, self).__init__()
     if OPTIONS.no_sandbox:
-      self.AddChromeArgument('--no-sandbox')
+      self.AddChromeArguments(['--no-sandbox'])
     self._profile_dir = OPTIONS.local_profile_dir
     self._using_temp_profile_dir = self._profile_dir is None
     if self._using_temp_profile_dir:

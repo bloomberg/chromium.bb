@@ -75,6 +75,9 @@ class SandwichRunner(object):
     # The cache archive's path to save to or push from. Is str or None.
     self.cache_archive_path = None
 
+    # List of additional chrome command line flags.
+    self.chrome_args = []
+
     # Controls whether the WPR server should do script injection.
     self.disable_wpr_script_injection = False
 
@@ -220,7 +223,8 @@ class SandwichRunner(object):
       self._chrome_ctl = controller.RemoteChromeController(self.android_device)
     else:
       self._chrome_ctl = controller.LocalChromeController()
-    self._chrome_ctl.AddChromeArgument('--disable-infobars')
+    self._chrome_ctl.AddChromeArguments(['--disable-infobars'])
+    self._chrome_ctl.AddChromeArguments(self.chrome_args)
     if self.cache_operation == CacheOperation.SAVE:
       self._chrome_ctl.SetSlowDeath()
 
