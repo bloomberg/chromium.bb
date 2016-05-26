@@ -604,7 +604,7 @@
       'Win7 Tests (dbg)(1)': 'none',
       'Win8 Aura': 'gn_release_bot_minimal_symbols_x86',
       'Win8 GN (dbg)': 'gn_debug_bot_minimal_symbols_x86',
-      'WinClang64 (dbg)': 'win_clang_debug_bot',
+      'WinClang64 (dbg)': 'win_clang_debug_lld_bot',
     },
 
     'official.desktop': {
@@ -862,7 +862,7 @@
       'win_chromium_variable_webkit_win7_builder': 'findit',
       'win_chromium_variable_webkit_win7_builder_x64': 'findit',
       'win_chromium_x64_rel_ng': 'swarming_gn_release_trybot_x64',
-      'win_clang': 'win_clang_debug_bot',
+      'win_clang': 'win_clang_debug_lld_bot',
       'win_clang_dbg': 'swarming_gyp_clang_debug_trybot_x86',
       'win_clang_rel': 'swarming_gyp_clang_official_release_trybot_x86',
       'win_clang_x64_dbg': 'win_clang_debug_bot',
@@ -1833,6 +1833,9 @@
     'win_clang_debug_bot': [
       'gn', 'clang', 'debug_bot_minimal_symbols',
     ],
+    'win_clang_debug_lld_bot': [
+      'gn', 'clang', 'lld', 'debug_bot_minimal_symbols',
+    ],
   },
 
   # This is a dict mapping a given 'mixin' name to a dict of settings that
@@ -1937,6 +1940,11 @@
     'clang': {
       'gn_args': 'is_clang=true',
       'gyp_defines': 'clang=1',
+    },
+
+    'lld': {
+      'gn_args': 'use_lld=true',
+      'gyp_defines': 'use_lld=1',
     },
 
     'cronet': {
