@@ -35,6 +35,7 @@ void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations(bool es3_capable) {
 }
 
 void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
+  const auto& feature_info_ = group_->feature_info();
   EXPECT_CALL(*gl_, BlendColor(0.0f, 0.0f, 0.0f, 0.0f))
       .Times(1)
       .RetiresOnSaturation();
@@ -64,22 +65,24 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
   EXPECT_CALL(*gl_, DepthMask(true)).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*gl_, DepthRange(0.0f, 1.0f)).Times(1).RetiresOnSaturation();
   EXPECT_CALL(*gl_, FrontFace(GL_CCW)).Times(1).RetiresOnSaturation();
-  EXPECT_CALL(*gl_, Hint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE))
-      .Times(1)
-      .RetiresOnSaturation();
-  if (group_->feature_info()->feature_flags().oes_standard_derivatives) {
+  if (!feature_info_->gl_version_info().is_desktop_core_profile) {
+    EXPECT_CALL(*gl_, Hint(GL_GENERATE_MIPMAP_HINT, GL_DONT_CARE))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  if (feature_info_->feature_flags().oes_standard_derivatives) {
     EXPECT_CALL(*gl_,
                 Hint(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES, GL_DONT_CARE))
         .Times(1)
         .RetiresOnSaturation();
   }
   EXPECT_CALL(*gl_, LineWidth(1.0f)).Times(1).RetiresOnSaturation();
-  if (group_->feature_info()->feature_flags().chromium_path_rendering) {
+  if (feature_info_->feature_flags().chromium_path_rendering) {
     EXPECT_CALL(*gl_, MatrixLoadfEXT(GL_PATH_MODELVIEW_CHROMIUM, _))
         .Times(1)
         .RetiresOnSaturation();
   }
-  if (group_->feature_info()->feature_flags().chromium_path_rendering) {
+  if (feature_info_->feature_flags().chromium_path_rendering) {
     EXPECT_CALL(*gl_, MatrixLoadfEXT(GL_PATH_PROJECTION_CHROMIUM, _))
         .Times(1)
         .RetiresOnSaturation();

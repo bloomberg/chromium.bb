@@ -4609,6 +4609,34 @@ def CachedStateName(item):
     return 'cached_' + item['name']
   return item['name']
 
+def GuardState(state, operation):
+  if 'manual' in state:
+    assert state['manual']
+    return ""
+
+  result = []
+  result_end = []
+  if 'es3' in state:
+    assert state['es3']
+    result.append("  if (feature_info_->IsES3Capable()) {\n");
+    result_end.append("  }\n")
+  if 'extension_flag' in state:
+    result.append("  if (feature_info_->feature_flags().%s) {\n  " %
+                     (state['extension_flag']))
+    result_end.append("  }\n")
+  if 'gl_version_flag' in state:
+    name = state['gl_version_flag']
+    inverted = ''
+    if name[0] == '!':
+      inverted = '!'
+      name = name[1:]
+    result.append("  if (%sfeature_info_->gl_version_info().%s) {\n" %
+                      (inverted, name))
+    result_end.append("  }\n")
+
+  result.append(operation)
+  return ''.join(result + result_end)
+
 def ToGLExtensionString(extension_flag):
   """Returns GL-type extension string of a extension flag."""
   if extension_flag == "oes_compressed_etc1_rgb8_texture":
@@ -5582,8 +5610,9 @@ class StateSetNamedParameter(TypeHandler):
                  (state['name'], args[1].name))
       f.write("        state_.%s = %s;\n" % (state['name'], args[1].name))
       if not func.GetInfo("no_gl"):
-        f.write("        %s(%s);\n" %
-                   (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
+        operation = "        %s(%s);\n" % \
+                    (func.GetGLFunctionName(), func.MakeOriginalArgString(""))
+        f.write(GuardState(state, operation))
       f.write("      }\n")
       f.write("      break;\n")
     f.write("    default:\n")
@@ -10366,45 +10395,28 @@ void ContextState::InitState(const ContextState *prev_state) const {
             for item in state['states']:
               item_name = CachedStateName(item)
 
-              if 'manual' in item:
-                assert item['manual']
-                continue
-              if 'es3' in item:
-                assert item['es3']
-                f.write("  if (feature_info_->IsES3Capable()) {\n");
-              if 'extension_flag' in item:
-                f.write("  if (feature_info_->feature_flags().%s) {\n  " %
-                           item['extension_flag'])
+              operation = []
               if test_prev:
                 if isinstance(item['default'], list):
-                  f.write("  if (memcmp(prev_state->%s, %s, "
-                             "sizeof(%s) * %d)) {\n" %
-                             (item_name, item_name, item['type'],
-                              len(item['default'])))
+                  operation.append("  if (memcmp(prev_state->%s, %s, "
+                                      "sizeof(%s) * %d)) {\n" %
+                                      (item_name, item_name, item['type'],
+                                      len(item['default'])))
                 else:
-                  f.write("  if (prev_state->%s != %s) {\n  " %
-                             (item_name, item_name))
-              if 'gl_version_flag' in item:
-                item_name = item['gl_version_flag']
-                inverted = ''
-                if item_name[0] == '!':
-                  inverted = '!'
-                  item_name = item_name[1:]
-                f.write("  if (%sfeature_info_->gl_version_info().%s) {\n" %
-                           (inverted, item_name))
-              f.write("  gl%s(%s, %s);\n" %
-                         (state['func'],
-                          (item['enum_set']
-                             if 'enum_set' in item else item['enum']),
-                          item['name']))
-              if 'gl_version_flag' in item or 'es3' in item:
-                f.write("  }\n")
+                  operation.append("  if (prev_state->%s != %s) {\n  " %
+                                      (item_name, item_name))
+
+              operation.append("  gl%s(%s, %s);\n" %
+                             (state['func'],
+                             (item['enum_set']
+                                 if 'enum_set' in item else item['enum']),
+                             item['name']))
+
               if test_prev:
-                if 'extension_flag' in item:
-                  f.write("  ")
-                f.write("  }")
-              if 'extension_flag' in item:
-                f.write("  }")
+                operation.append("  }")
+
+              guarded_operation = GuardState(item, ''.join(operation))
+              f.write(guarded_operation)
           else:
             if 'extension_flag' in state:
               f.write("  if (feature_info_->feature_flags().%s)\n  " %
@@ -10608,6 +10620,7 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
 }
 
 void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
+  const auto& feature_info_ = group_->feature_info();
 """)
       # We need to sort the keys so the expectations match
       for state_name in sorted(_STATES.keys()):
@@ -10628,32 +10641,23 @@ void GLES2DecoderTestBase::SetupInitStateExpectations(bool es3_capable) {
             f.write("      .RetiresOnSaturation();\n")
         elif state['type'] == 'NamedParameter':
           for item in state['states']:
-            if 'manual' in item:
-              assert item['manual']
-              continue
-            if 'extension_flag' in item:
-              f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %
-                         item['extension_flag'])
-              f.write("  ")
-            if 'es3' in item:
-              assert item['es3']
-              f.write("  if (es3_capable) {\n")
-              f.write("  ")
             expect_value = item['default']
             if isinstance(expect_value, list):
               # TODO: Currently we do not check array values.
               expect_value = "_"
 
-            f.write(
-                "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
-                (state['func'],
-                 (item['enum_set']
-                             if 'enum_set' in item else item['enum']),
-                 expect_value))
-            f.write("      .Times(1)\n")
-            f.write("      .RetiresOnSaturation();\n")
-            if 'extension_flag' in item or 'es3' in item:
-              f.write("  }\n")
+            operation = []
+            operation.append(
+                             "  EXPECT_CALL(*gl_, %s(%s, %s))\n" %
+                             (state['func'],
+                              (item['enum_set']
+                                  if 'enum_set' in item else item['enum']),
+                              expect_value))
+            operation.append("      .Times(1)\n")
+            operation.append("      .RetiresOnSaturation();\n")
+
+            guarded_operation = GuardState(item, ''.join(operation))
+            f.write(guarded_operation)
         else:
           if 'extension_flag' in state:
             f.write("  if (group_->feature_info()->feature_flags().%s) {\n" %

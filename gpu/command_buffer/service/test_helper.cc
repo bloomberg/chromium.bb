@@ -343,13 +343,25 @@ void TestHelper::SetupContextGroupInitExpectations(
       .RetiresOnSaturation();
   if (strstr(extensions, "GL_EXT_framebuffer_multisample") ||
       strstr(extensions, "GL_EXT_multisampled_render_to_texture") ||
-      gl_info.is_es3) {
+      gl_info.is_es3 || gl_info.is_desktop_core_profile) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_SAMPLES, _))
         .WillOnce(SetArgumentPointee<1>(kMaxSamples))
         .RetiresOnSaturation();
   } else if (strstr(extensions, "GL_IMG_multisampled_render_to_texture")) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_SAMPLES_IMG, _))
         .WillOnce(SetArgumentPointee<1>(kMaxSamples))
+        .RetiresOnSaturation();
+  }
+
+  if (strstr(extensions, "GL_EXT_draw_buffers") ||
+      strstr(extensions, "GL_ARB_draw_buffers") ||
+      (gl_info.is_es3 && strstr(extensions, "GL_NV_draw_buffers")) ||
+      gl_info.is_desktop_core_profile) {
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_COLOR_ATTACHMENTS_EXT, _))
+        .WillOnce(SetArgumentPointee<1>(8))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_DRAW_BUFFERS_ARB, _))
+        .WillOnce(SetArgumentPointee<1>(8))
         .RetiresOnSaturation();
   }
 
@@ -396,7 +408,8 @@ void TestHelper::SetupContextGroupInitExpectations(
         .WillOnce(SetArgumentPointee<1>(kMaxArrayTextureLayers))
         .RetiresOnSaturation();
   }
-  if (strstr(extensions, "GL_ARB_texture_rectangle")) {
+  if (strstr(extensions, "GL_ARB_texture_rectangle") ||
+      gl_info.is_desktop_core_profile) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_RECTANGLE_TEXTURE_SIZE, _))
         .WillOnce(SetArgumentPointee<1>(kMaxRectangleTextureSize))
         .RetiresOnSaturation();
@@ -408,7 +421,7 @@ void TestHelper::SetupContextGroupInitExpectations(
       .WillOnce(SetArgumentPointee<1>(kMaxVertexTextureImageUnits))
       .RetiresOnSaturation();
 
-  if (gl_info.is_es) {
+  if (gl_info.is_es || gl_info.is_desktop_core_profile) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_FRAGMENT_UNIFORM_VECTORS, _))
         .WillOnce(SetArgumentPointee<1>(kMaxFragmentUniformVectors))
         .RetiresOnSaturation();

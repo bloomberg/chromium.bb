@@ -344,15 +344,34 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   EXPECT_CALL(*gl_, BindFramebufferEXT(GL_FRAMEBUFFER, 0))
       .Times(1)
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_ALPHA_BITS, _))
-      .WillOnce(SetArgumentPointee<1>(normalized_init.has_alpha ? 8 : 0))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_DEPTH_BITS, _))
-      .WillOnce(SetArgumentPointee<1>(normalized_init.has_depth ? 24 : 0))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(GL_STENCIL_BITS, _))
-      .WillOnce(SetArgumentPointee<1>(normalized_init.has_stencil ? 8 : 0))
-      .RetiresOnSaturation();
+
+  if (group_->feature_info()->gl_version_info().is_desktop_core_profile) {
+    EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
+                          GL_FRAMEBUFFER, GL_BACK_LEFT,
+                          GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE, _))
+        .WillOnce(SetArgumentPointee<3>(normalized_init.has_alpha ? 8 : 0))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
+                          GL_FRAMEBUFFER, GL_DEPTH,
+                          GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE, _))
+        .WillOnce(SetArgumentPointee<3>(normalized_init.has_depth ? 24 : 0))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetFramebufferAttachmentParameterivEXT(
+                          GL_FRAMEBUFFER, GL_STENCIL,
+                          GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE, _))
+        .WillOnce(SetArgumentPointee<3>(normalized_init.has_stencil ? 8 : 0))
+        .RetiresOnSaturation();
+  } else {
+    EXPECT_CALL(*gl_, GetIntegerv(GL_ALPHA_BITS, _))
+        .WillOnce(SetArgumentPointee<1>(normalized_init.has_alpha ? 8 : 0))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetIntegerv(GL_DEPTH_BITS, _))
+        .WillOnce(SetArgumentPointee<1>(normalized_init.has_depth ? 24 : 0))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetIntegerv(GL_STENCIL_BITS, _))
+        .WillOnce(SetArgumentPointee<1>(normalized_init.has_stencil ? 8 : 0))
+        .RetiresOnSaturation();
+  }
 
   if (!group_->feature_info()->gl_version_info().BehavesLikeGLES()) {
     EXPECT_CALL(*gl_, Enable(GL_VERTEX_PROGRAM_POINT_SIZE))
@@ -360,6 +379,12 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
         .RetiresOnSaturation();
 
     EXPECT_CALL(*gl_, Enable(GL_POINT_SPRITE))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else if (group_->feature_info()
+                 ->gl_version_info()
+                 .is_desktop_core_profile) {
+    EXPECT_CALL(*gl_, Enable(GL_PROGRAM_POINT_SIZE))
         .Times(1)
         .RetiresOnSaturation();
   }

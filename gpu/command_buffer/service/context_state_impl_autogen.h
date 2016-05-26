@@ -288,8 +288,8 @@ void ContextState::InitState(const ContextState* prev_state) const {
       glDepthRange(z_near, z_far);
     if ((front_face != prev_state->front_face))
       glFrontFace(front_face);
-    if (prev_state->hint_generate_mipmap != hint_generate_mipmap) {
-      if (!feature_info_->gl_version_info().is_desktop_core_profile) {
+    if (!feature_info_->gl_version_info().is_desktop_core_profile) {
+      if (prev_state->hint_generate_mipmap != hint_generate_mipmap) {
         glHint(GL_GENERATE_MIPMAP_HINT, hint_generate_mipmap);
       }
     }
