@@ -414,6 +414,9 @@ void DOMSelection::addRange(Range* newRange)
     if (!isAvailable())
         return;
 
+    if (newRange->ownerDocument() != m_frame->document())
+        return;
+
     if (!newRange->inShadowIncludingDocument()) {
         addConsoleError("The given range isn't in document.");
         return;
