@@ -953,6 +953,9 @@ bool AutofillTable::GetServerProfiles(std::vector<AutofillProfile*>* profiles) {
         AutofillProfile::SERVER_PROFILE, s.ColumnString(index++)));
     profile->set_use_count(s.ColumnInt64(index++));
     profile->set_use_date(Time::FromInternalValue(s.ColumnInt64(index++)));
+    // Modification date is not tracked for server profiles. Explicitly set it
+    // here to override the default value of Time::Now().
+    profile->set_modification_date(Time());
 
     base::string16 recipient_name = s.ColumnString16(index++);
     profile->SetRawInfo(COMPANY_NAME, s.ColumnString16(index++));
@@ -1219,6 +1222,9 @@ bool AutofillTable::GetServerCreditCards(
                                                       : full_card_number);
     card->set_use_count(s.ColumnInt64(index++));
     card->set_use_date(Time::FromInternalValue(s.ColumnInt64(index++)));
+    // Modification date is not tracked for server cards. Explicitly set it here
+    // to override the default value of Time::Now().
+    card->set_modification_date(Time());
 
     std::string card_type = s.ColumnString(index++);
     if (record_type == CreditCard::MASKED_SERVER_CARD) {

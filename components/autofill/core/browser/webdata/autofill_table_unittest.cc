@@ -1741,6 +1741,9 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(1U, outputs[0]->use_count());
   EXPECT_NE(base::Time(), outputs[0]->use_date());
+  // We don't track modification date for server cards. It should always be
+  // base::Time().
+  EXPECT_EQ(base::Time(), outputs[0]->modification_date());
   outputs.clear();
 
   // Update the usage stats; make sure they're reflected in GetServerProfiles.
@@ -1752,6 +1755,7 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(4U, outputs[0]->use_count());
   EXPECT_EQ(base::Time(), outputs[0]->use_date());
+  EXPECT_EQ(base::Time(), outputs[0]->modification_date());
   outputs.clear();
 
   // Setting the cards again shouldn't delete the usage stats.
@@ -1761,6 +1765,7 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(4U, outputs[0]->use_count());
   EXPECT_EQ(base::Time(), outputs[0]->use_date());
+  EXPECT_EQ(base::Time(), outputs[0]->modification_date());
   outputs.clear();
 
   // Set a card list where the card is missing --- this should clear metadata.
@@ -1776,6 +1781,7 @@ TEST_F(AutofillTableTest, SetServerCardUpdateUsageStats) {
   EXPECT_EQ(masked_card.server_id(), outputs[0]->server_id());
   EXPECT_EQ(1U, outputs[0]->use_count());
   EXPECT_NE(base::Time(), outputs[0]->use_date());
+  EXPECT_EQ(base::Time(), outputs[0]->modification_date());
   outputs.clear();
 }
 
@@ -1819,6 +1825,9 @@ TEST_F(AutofillTableTest, SetServerProfileUpdateUsageStats) {
   EXPECT_EQ(one.server_id(), outputs[0]->server_id());
   EXPECT_EQ(0U, outputs[0]->use_count());
   EXPECT_EQ(base::Time(), outputs[0]->use_date());
+  // We don't track modification date for server profiles. It should always be
+  // base::Time().
+  EXPECT_EQ(base::Time(), outputs[0]->modification_date());
   outputs.clear();
 
   // Update the usage stats; make sure they're reflected in GetServerProfiles.
@@ -1830,6 +1839,7 @@ TEST_F(AutofillTableTest, SetServerProfileUpdateUsageStats) {
   EXPECT_EQ(one.server_id(), outputs[0]->server_id());
   EXPECT_EQ(4U, outputs[0]->use_count());
   EXPECT_NE(base::Time(), outputs[0]->use_date());
+  EXPECT_EQ(base::Time(), outputs[0]->modification_date());
   outputs.clear();
 
   // Setting the profiles again shouldn't delete the usage stats.
@@ -1839,6 +1849,7 @@ TEST_F(AutofillTableTest, SetServerProfileUpdateUsageStats) {
   EXPECT_EQ(one.server_id(), outputs[0]->server_id());
   EXPECT_EQ(4U, outputs[0]->use_count());
   EXPECT_NE(base::Time(), outputs[0]->use_date());
+  EXPECT_EQ(base::Time(), outputs[0]->modification_date());
   outputs.clear();
 
   // Set a null profile list --- this should clear metadata.
@@ -1850,6 +1861,7 @@ TEST_F(AutofillTableTest, SetServerProfileUpdateUsageStats) {
   EXPECT_EQ(one.server_id(), outputs[0]->server_id());
   EXPECT_EQ(0U, outputs[0]->use_count());
   EXPECT_EQ(base::Time(), outputs[0]->use_date());
+  EXPECT_EQ(base::Time(), outputs[0]->modification_date());
   outputs.clear();
 }
 
