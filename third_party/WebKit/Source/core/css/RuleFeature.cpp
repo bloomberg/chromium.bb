@@ -148,6 +148,7 @@ bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoFutureCue:
     case CSSSelector::PseudoPastCue:
     case CSSSelector::PseudoUnresolved:
+    case CSSSelector::PseudoDefined:
     case CSSSelector::PseudoContent:
     case CSSSelector::PseudoHost:
     case CSSSelector::PseudoShadow:
@@ -345,6 +346,7 @@ InvalidationSet* RuleFeatureSet::invalidationSetForSelector(const CSSSelector& s
         case CSSSelector::PseudoInRange:
         case CSSSelector::PseudoOutOfRange:
         case CSSSelector::PseudoUnresolved:
+        case CSSSelector::PseudoDefined:
             return &ensurePseudoInvalidationSet(selector.getPseudoType(), type);
         default:
             break;

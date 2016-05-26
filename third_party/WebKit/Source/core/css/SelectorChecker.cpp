@@ -916,6 +916,9 @@ bool SelectorChecker::checkPseudoClass(const SelectorCheckingContext& context, M
         return context.scope == &element;
     case CSSSelector::PseudoUnresolved:
         return element.isUnresolvedV0CustomElement();
+    case CSSSelector::PseudoDefined:
+        DCHECK(RuntimeEnabledFeatures::customElementsV1Enabled());
+        return element.isDefined();
     case CSSSelector::PseudoHost:
     case CSSSelector::PseudoHostContext:
         return checkPseudoHost(context, result);

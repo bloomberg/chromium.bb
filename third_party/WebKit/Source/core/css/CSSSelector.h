@@ -201,6 +201,7 @@ public:
         PseudoFutureCue,
         PseudoPastCue,
         PseudoUnresolved,
+        PseudoDefined,
         PseudoContent,
         PseudoHost,
         PseudoHostContext,

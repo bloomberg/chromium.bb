@@ -257,6 +257,7 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoFutureCue:
     case PseudoPastCue:
     case PseudoUnresolved:
+    case PseudoDefined:
     case PseudoContent:
     case PseudoHost:
     case PseudoHostContext:
@@ -317,6 +318,7 @@ const static NameToPseudoStruct pseudoTypeWithoutArgumentsMap[] = {
 {"cue",                           CSSSelector::PseudoWebKitCustomElement},
 {"decrement",                     CSSSelector::PseudoDecrement},
 {"default",                       CSSSelector::PseudoDefault},
+{"defined",                       CSSSelector::PseudoDefined},
 {"disabled",                      CSSSelector::PseudoDisabled},
 {"double-button",                 CSSSelector::PseudoDoubleButton},
 {"empty",                         CSSSelector::PseudoEmpty},
@@ -412,6 +414,9 @@ static CSSSelector::PseudoType nameToPseudoType(const AtomicString& name, bool h
     NameToPseudoStruct dummyKey = { 0, CSSSelector::PseudoUnknown };
     const NameToPseudoStruct* match = std::lower_bound(pseudoTypeMap, pseudoTypeMapEnd, dummyKey, NameToPseudoCompare(name));
     if (match == pseudoTypeMapEnd || match->string != name.getString())
+        return CSSSelector::PseudoUnknown;
+
+    if (match->type == CSSSelector::PseudoDefined && !RuntimeEnabledFeatures::customElementsV1Enabled())
         return CSSSelector::PseudoUnknown;
 
     return static_cast<CSSSelector::PseudoType>(match->type);
@@ -512,6 +517,7 @@ void CSSSelector::updatePseudoType(const AtomicString& value, bool hasArguments)
     case PseudoCornerPresent:
     case PseudoDecrement:
     case PseudoDefault:
+    case PseudoDefined:
     case PseudoDisabled:
     case PseudoDoubleButton:
     case PseudoDrag:

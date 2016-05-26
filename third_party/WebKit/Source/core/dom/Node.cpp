@@ -2342,15 +2342,21 @@ void Node::setCustomElementState(CustomElementState newState)
 
     DCHECK(isHTMLElement());
     DCHECK_NE(V0Upgraded, getV0CustomElementState());
+#if DCHECK_IS_ON()
+    bool wasDefined = toElement(this)->isDefined();
+#endif
 
     setFlag(CustomElementFlag);
     if (newState == CustomElementState::Custom)
         setFlag(CustomElementCustomFlag);
     DCHECK(newState == getCustomElementState());
 
-    // TODO(kojii): Should fire pseudoStateChanged() when :defined selector is
-    // ready.
-    // toElement(this)->pseudoStateChanged(CSSSelector::PseudoDefined);
+    // When the state goes from Uncustomized to Undefined, and then to Custom,
+    // isDefined is always flipped.
+#if DCHECK_IS_ON()
+    DCHECK_NE(wasDefined, toElement(this)->isDefined());
+#endif
+    toElement(this)->pseudoStateChanged(CSSSelector::PseudoDefined);
 }
 
 void Node::setV0CustomElementState(V0CustomElementState newState)
