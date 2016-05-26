@@ -6,9 +6,9 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS elements.length > 0 is true
 Testing LABEL
-PASS formOwner is "defined"
+PASS formOwner is "not defined"
 Testing INPUT
-PASS formOwner is "defined"
+PASS formOwner is "not defined"
 Testing BUTTON
 PASS formOwner is "defined"
 Testing FIELDSET
@@ -20,9 +20,9 @@ PASS formOwner is "defined"
 Testing KEYGEN
 PASS formOwner is "defined"
 Testing LABEL
-PASS formOwner is "defined"
+PASS formOwner is "not defined"
 Testing INPUT
-PASS formOwner is "defined"
+PASS formOwner is "not defined"
 Testing OBJECT
 PASS formOwner is "defined"
 Testing SELECT

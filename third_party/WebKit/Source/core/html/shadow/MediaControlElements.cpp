@@ -499,7 +499,7 @@ String MediaControlTextTrackListElement::getTextTrackLabel(TextTrack* track)
 Element* MediaControlTextTrackListElement::createTextTrackListItem(TextTrack* track)
 {
     int trackIndex = track ? track->trackIndex() : trackIndexOffValue;
-    HTMLLabelElement* trackItem = HTMLLabelElement::create(document(), nullptr);
+    HTMLLabelElement* trackItem = HTMLLabelElement::create(document());
     trackItem->setShadowPseudoId(AtomicString("-internal-media-controls-text-track-list-item"));
     HTMLInputElement* trackItemInput = HTMLInputElement::create(document(), nullptr, false);
     trackItemInput->setShadowPseudoId(AtomicString("-internal-media-controls-text-track-list-item-input"));

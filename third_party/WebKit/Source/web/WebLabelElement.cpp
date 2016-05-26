@@ -32,6 +32,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/html/HTMLLabelElement.h"
+#include "core/html/LabelableElement.h"
 #include "public/platform/WebString.h"
 #include "wtf/PassRefPtr.h"
 

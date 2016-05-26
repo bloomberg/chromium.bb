@@ -50,7 +50,6 @@ public:
     virtual bool isFormControlElement() const = 0;
     virtual bool isFormControlElementWithState() const;
     virtual bool isEnumeratable() const = 0;
-    virtual bool isLabelElement() const { return false; }
 
     // Returns the 'name' attribute value. If this element has no name
     // attribute, it returns an empty string instead of null string.

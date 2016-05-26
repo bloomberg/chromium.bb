@@ -25,28 +25,23 @@
 #define HTMLLabelElement_h
 
 #include "core/CoreExport.h"
-#include "core/html/FormAssociatedElement.h"
 #include "core/html/HTMLElement.h"
-#include "core/html/LabelableElement.h"
 
 namespace blink {
 
-class CORE_EXPORT HTMLLabelElement final : public HTMLElement, public FormAssociatedElement {
+class LabelableElement;
+
+class CORE_EXPORT HTMLLabelElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
-    USING_GARBAGE_COLLECTED_MIXIN(HTMLLabelElement);
 public:
-    static HTMLLabelElement* create(Document&, HTMLFormElement*);
+    static HTMLLabelElement* create(Document&);
     LabelableElement* control() const;
+    HTMLFormElement* form() const;
 
     bool willRespondToMouseClickEvents() override;
 
-    DECLARE_VIRTUAL_TRACE();
-
-    HTMLFormElement* formOwner() const override;
-    HTMLFormElement* formForBinding() const;
-
 private:
-    explicit HTMLLabelElement(Document&, HTMLFormElement*);
+    explicit HTMLLabelElement(Document&);
     bool isInInteractiveContent(Node*) const;
 
     bool isInteractiveContent() const override;
@@ -64,37 +59,12 @@ private:
 
     void focus(const FocusParams&) override;
 
-    // FormAssociatedElement methods
-    bool isFormControlElement() const override { return false; }
-    bool isEnumeratable() const override { return false; }
-    bool isLabelElement() const override { return true; }
-
     void parseAttribute(const QualifiedName&, const AtomicString&, const AtomicString&) override;
 
     void updateLabel(TreeScope&, const AtomicString& oldForAttributeValue, const AtomicString& newForAttributeValue);
 
     bool m_processingClick;
 };
-
-
-template<typename T> inline const T& toElement(const FormAssociatedElement&);
-template<typename T> inline const T* toElement(const FormAssociatedElement*);
-// Make toHTMLLabelElement() accept a FormAssociatedElement as input instead of a Node.
-template<> inline const HTMLLabelElement* toElement<HTMLLabelElement>(const FormAssociatedElement* element)
-{
-    const HTMLLabelElement* labelElement = static_cast<const HTMLLabelElement*>(element);
-    // FormAssociatedElement doesn't have hasTagName, hence check for assert.
-    ASSERT_WITH_SECURITY_IMPLICATION(!labelElement || labelElement->hasTagName(HTMLNames::labelTag));
-    return labelElement;
-}
-
-template<> inline const HTMLLabelElement& toElement<HTMLLabelElement>(const FormAssociatedElement& element)
-{
-    const HTMLLabelElement& labelElement = static_cast<const HTMLLabelElement&>(element);
-    // FormAssociatedElement doesn't have hasTagName, hence check for assert.
-    ASSERT_WITH_SECURITY_IMPLICATION(labelElement.hasTagName(HTMLNames::labelTag));
-    return labelElement;
-}
 
 } // namespace blink
 

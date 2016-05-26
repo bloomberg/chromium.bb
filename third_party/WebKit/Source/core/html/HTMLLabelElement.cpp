@@ -42,17 +42,15 @@ namespace blink {
 
 using namespace HTMLNames;
 
-inline HTMLLabelElement::HTMLLabelElement(Document& document, HTMLFormElement* form)
+inline HTMLLabelElement::HTMLLabelElement(Document& document)
     : HTMLElement(labelTag, document)
     , m_processingClick(false)
 {
-    FormAssociatedElement::associateByParser(form);
 }
 
-HTMLLabelElement* HTMLLabelElement::create(Document& document, HTMLFormElement* form)
+HTMLLabelElement* HTMLLabelElement::create(Document& document)
 {
-    HTMLLabelElement* labelElement = new HTMLLabelElement(document, form);
-    return labelElement;
+    return new HTMLLabelElement(document);
 }
 
 LabelableElement* HTMLLabelElement::control() const
@@ -83,24 +81,11 @@ LabelableElement* HTMLLabelElement::control() const
     return nullptr;
 }
 
-HTMLFormElement* HTMLLabelElement::formOwner() const
+HTMLFormElement* HTMLLabelElement::form() const
 {
-    return FormAssociatedElement::form();
-}
-
-HTMLFormElement* HTMLLabelElement::formForBinding() const
-{
-    HTMLFormElement* formOwner = FormAssociatedElement::form();
-    HTMLFormElement* controlForm = nullptr;
-    if (LabelableElement* control = this->control()) {
-        if (control->isFormControlElement())
-            controlForm = toHTMLFormControlElement(control)->form();
-    }
-    if (formOwner != controlForm)
-        UseCounter::count(document(), UseCounter::HTMLLabelElementFormIsDifferentFromControlForm);
-    if (!controlForm && formOwner && formOwner == findFormAncestor())
-        UseCounter::count(document(), UseCounter::HTMLLabelElementHasNoControlAndFormIsAncestor);
-    return formOwner;
+    if (LabelableElement* control = this->control())
+        return control->isFormControlElement() ? toHTMLFormControlElement(control)->form() : nullptr;
+    return nullptr;
 }
 
 void HTMLLabelElement::setActive(bool down)
@@ -260,7 +245,6 @@ void HTMLLabelElement::updateLabel(TreeScope& scope, const AtomicString& oldForA
 Node::InsertionNotificationRequest HTMLLabelElement::insertedInto(ContainerNode* insertionPoint)
 {
     InsertionNotificationRequest result = HTMLElement::insertedInto(insertionPoint);
-    FormAssociatedElement::insertedInto(insertionPoint);
     if (insertionPoint->isInTreeScope()) {
         TreeScope& scope = insertionPoint->treeScope();
         if (scope == treeScope() && scope.shouldCacheLabelsByForAttribute())
@@ -282,29 +266,17 @@ void HTMLLabelElement::removedFrom(ContainerNode* insertionPoint)
             updateLabel(treeScope, fastGetAttribute(forAttr), nullAtom);
     }
     HTMLElement::removedFrom(insertionPoint);
-    FormAssociatedElement::removedFrom(insertionPoint);
     document().removeFormAssociation(this);
-}
-
-DEFINE_TRACE(HTMLLabelElement)
-{
-    HTMLElement::trace(visitor);
-    FormAssociatedElement::trace(visitor);
 }
 
 void HTMLLabelElement::parseAttribute(const QualifiedName& attributeName, const AtomicString& oldValue, const AtomicString& attributeValue)
 {
-    if (attributeName == formAttr) {
-        formAttributeChanged();
-        UseCounter::count(document(), UseCounter::HTMLLabelElementFormContentAttribute);
-    } else {
-        if (attributeName == forAttr) {
-            TreeScope& scope = treeScope();
-            if (scope.shouldCacheLabelsByForAttribute())
-                updateLabel(scope, oldValue, attributeValue);
-        }
-        HTMLElement::parseAttribute(attributeName, oldValue, attributeValue);
+    if (attributeName == forAttr) {
+        TreeScope& scope = treeScope();
+        if (scope.shouldCacheLabelsByForAttribute())
+            updateLabel(scope, oldValue, attributeValue);
     }
+    HTMLElement::parseAttribute(attributeName, oldValue, attributeValue);
 }
 
 } // namespace blink

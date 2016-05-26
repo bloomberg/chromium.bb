@@ -72,7 +72,7 @@ input constructorNeedsFormElement, constructorNeedsCreatedByParser
 ins interfaceName=HTMLModElement
 kbd interfaceName=HTMLElement
 keygen constructorNeedsFormElement
-label constructorNeedsFormElement
+label
 layer interfaceName=HTMLElement
 legend
 li interfaceName=HTMLLIElement

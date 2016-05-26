@@ -27,6 +27,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeRareData.h"
 #include "core/html/HTMLLabelElement.h"
+#include "core/html/LabelableElement.h"
 
 namespace blink {
 
