@@ -448,34 +448,7 @@ private:
     BlobDataHandleMap& m_blobDataHandles;
 };
 
-// Interface used by SerializedScriptValueReader to create objects of composite types.
-class CORE_EXPORT ScriptValueCompositeCreator {
-    STACK_ALLOCATED();
-    WTF_MAKE_NONCOPYABLE(ScriptValueCompositeCreator);
-public:
-    ScriptValueCompositeCreator() { }
-    virtual ~ScriptValueCompositeCreator() { }
-
-    virtual bool consumeTopOfStack(v8::Local<v8::Value>*) = 0;
-    virtual uint32_t objectReferenceCount() = 0;
-    virtual void pushObjectReference(const v8::Local<v8::Value>&) = 0;
-    virtual bool tryGetObjectFromObjectReference(uint32_t reference, v8::Local<v8::Value>*) = 0;
-    virtual bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*) = 0;
-    virtual bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) = 0;
-    virtual bool tryGetTransferredImageBitmap(uint32_t index, v8::Local<v8::Value>*) = 0;
-    virtual bool tryGetTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t id, v8::Local<v8::Value>*) = 0;
-    virtual bool tryGetTransferredSharedArrayBuffer(uint32_t index, v8::Local<v8::Value>*) = 0;
-    virtual bool newSparseArray(uint32_t length) = 0;
-    virtual bool newDenseArray(uint32_t length) = 0;
-    virtual bool newMap() = 0;
-    virtual bool newSet() = 0;
-    virtual bool newObject() = 0;
-    virtual bool completeObject(uint32_t numProperties, v8::Local<v8::Value>*) = 0;
-    virtual bool completeSparseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) = 0;
-    virtual bool completeDenseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) = 0;
-    virtual bool completeMap(uint32_t length, v8::Local<v8::Value>*) = 0;
-    virtual bool completeSet(uint32_t length, v8::Local<v8::Value>*) = 0;
-};
+class ScriptValueDeserializer;
 
 // SerializedScriptValueReader is responsible for deserializing primitive types and
 // restoring information about saved objects of composite types.
@@ -514,12 +487,12 @@ protected:
     }
 
 public:
-    virtual bool read(v8::Local<v8::Value>*, ScriptValueCompositeCreator&);
+    virtual bool read(v8::Local<v8::Value>*, ScriptValueDeserializer&);
     bool readVersion(uint32_t& version);
     void setVersion(uint32_t);
 
 protected:
-    bool readWithTag(SerializationTag, v8::Local<v8::Value>*, ScriptValueCompositeCreator&);
+    bool readWithTag(SerializationTag, v8::Local<v8::Value>*, ScriptValueDeserializer&);
 
     bool readTag(SerializationTag*);
     bool readWebCoreString(String*);
@@ -543,7 +516,7 @@ private:
     bool readCompositorProxy(v8::Local<v8::Value>*);
     DOMArrayBuffer* doReadArrayBuffer();
     bool readArrayBuffer(v8::Local<v8::Value>*);
-    bool readArrayBufferView(v8::Local<v8::Value>*, ScriptValueCompositeCreator&);
+    bool readArrayBufferView(v8::Local<v8::Value>*, ScriptValueDeserializer&);
     bool readRegExp(v8::Local<v8::Value>*);
     bool readBlob(v8::Local<v8::Value>*, bool isIndexed);
     bool readFile(v8::Local<v8::Value>*, bool isIndexed);
@@ -581,7 +554,7 @@ private:
     const BlobDataHandleMap& m_blobDataHandles;
 };
 
-class CORE_EXPORT ScriptValueDeserializer : public ScriptValueCompositeCreator {
+class CORE_EXPORT ScriptValueDeserializer {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ScriptValueDeserializer);
 public:
@@ -597,25 +570,25 @@ public:
     }
 
     v8::Local<v8::Value> deserialize();
-    bool newSparseArray(uint32_t) override;
-    bool newDenseArray(uint32_t length) override;
-    bool newMap() override;
-    bool newSet() override;
-    bool consumeTopOfStack(v8::Local<v8::Value>*) override;
-    bool newObject() override;
-    bool completeObject(uint32_t numProperties, v8::Local<v8::Value>*) override;
-    bool completeSparseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) override;
-    bool completeDenseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*) override;
-    bool completeMap(uint32_t length, v8::Local<v8::Value>*) override;
-    bool completeSet(uint32_t length, v8::Local<v8::Value>*) override;
-    void pushObjectReference(const v8::Local<v8::Value>&) override;
-    bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*) override;
-    bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*) override;
-    bool tryGetTransferredImageBitmap(uint32_t index, v8::Local<v8::Value>*) override;
-    bool tryGetTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t id, v8::Local<v8::Value>*) override;
-    bool tryGetTransferredSharedArrayBuffer(uint32_t index, v8::Local<v8::Value>*) override;
-    bool tryGetObjectFromObjectReference(uint32_t reference, v8::Local<v8::Value>*) override;
-    uint32_t objectReferenceCount() override;
+    bool newSparseArray(uint32_t);
+    bool newDenseArray(uint32_t length);
+    bool newMap();
+    bool newSet();
+    bool consumeTopOfStack(v8::Local<v8::Value>*);
+    bool newObject();
+    bool completeObject(uint32_t numProperties, v8::Local<v8::Value>*);
+    bool completeSparseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*);
+    bool completeDenseArray(uint32_t numProperties, uint32_t length, v8::Local<v8::Value>*);
+    bool completeMap(uint32_t length, v8::Local<v8::Value>*);
+    bool completeSet(uint32_t length, v8::Local<v8::Value>*);
+    void pushObjectReference(const v8::Local<v8::Value>&);
+    bool tryGetTransferredMessagePort(uint32_t index, v8::Local<v8::Value>*);
+    bool tryGetTransferredArrayBuffer(uint32_t index, v8::Local<v8::Value>*);
+    bool tryGetTransferredImageBitmap(uint32_t index, v8::Local<v8::Value>*);
+    bool tryGetTransferredOffscreenCanvas(uint32_t index, uint32_t width, uint32_t height, uint32_t id, v8::Local<v8::Value>*);
+    bool tryGetTransferredSharedArrayBuffer(uint32_t index, v8::Local<v8::Value>*);
+    bool tryGetObjectFromObjectReference(uint32_t reference, v8::Local<v8::Value>*);
+    uint32_t objectReferenceCount();
 
 protected:
     SerializedScriptValueReader& reader() { return m_reader; }

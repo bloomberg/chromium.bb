@@ -334,7 +334,7 @@ ScriptValueSerializer::StateBase* ScriptValueSerializerForModules::doSerializeOb
     return ScriptValueSerializer::doSerializeObject(jsObject, next);
 }
 
-bool SerializedScriptValueReaderForModules::read(v8::Local<v8::Value>* value, ScriptValueCompositeCreator& creator)
+bool SerializedScriptValueReaderForModules::read(v8::Local<v8::Value>* value, ScriptValueDeserializer& deserializer)
 {
     SerializationTag tag;
     if (!readTag(&tag))
@@ -343,20 +343,20 @@ bool SerializedScriptValueReaderForModules::read(v8::Local<v8::Value>* value, Sc
     case DOMFileSystemTag:
         if (!readDOMFileSystem(value))
             return false;
-        creator.pushObjectReference(*value);
+        deserializer.pushObjectReference(*value);
         break;
     case CryptoKeyTag:
         if (!readCryptoKey(value))
             return false;
-        creator.pushObjectReference(*value);
+        deserializer.pushObjectReference(*value);
         break;
     case RTCCertificateTag:
         if (!readRTCCertificate(value))
             return false;
-        creator.pushObjectReference(*value);
+        deserializer.pushObjectReference(*value);
         break;
     default:
-        return SerializedScriptValueReader::readWithTag(tag, value, creator);
+        return SerializedScriptValueReader::readWithTag(tag, value, deserializer);
     }
     return !value->IsEmpty();
 }

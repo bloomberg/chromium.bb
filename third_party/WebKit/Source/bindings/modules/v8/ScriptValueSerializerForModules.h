@@ -50,7 +50,7 @@ public:
     {
     }
 
-    bool read(v8::Local<v8::Value>*, ScriptValueCompositeCreator&) override;
+    bool read(v8::Local<v8::Value>*, ScriptValueDeserializer&) override;
 
 private:
     bool readDOMFileSystem(v8::Local<v8::Value>*);
