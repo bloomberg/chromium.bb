@@ -53,7 +53,6 @@
 #include "core/xml/XPathResult.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
-#include "public/platform/Platform.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -87,7 +86,6 @@ MainThreadDebugger::MainThreadDebugger(v8::Isolate* isolate)
     MutexLocker locker(creationMutex());
     ASSERT(!s_instance);
     s_instance = this;
-    IdentifiersFactory::setProcessId(Platform::current()->getUniqueIdForProcess());
 }
 
 MainThreadDebugger::~MainThreadDebugger()

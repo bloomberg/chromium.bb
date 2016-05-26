@@ -29,6 +29,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/loader/DocumentLoader.h"
+#include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -49,10 +50,11 @@ String& processIdPrefix()
 
 
 // static
-void IdentifiersFactory::setProcessId(long processId)
+void IdentifiersFactory::initialize()
 {
     StringBuilder builder;
-    builder.appendNumber(processId);
+
+    builder.appendNumber(Platform::current()->getUniqueIdForProcess());
     builder.append('.');
     ASSERT(processIdPrefix().isEmpty() || processIdPrefix() == builder.toString());
     processIdPrefix() = builder.toString();
@@ -108,7 +110,8 @@ DocumentLoader* IdentifiersFactory::loaderById(InspectedFrames* inspectedFrames,
 // static
 String IdentifiersFactory::addProcessIdPrefixTo(int id)
 {
-    ASSERT(!processIdPrefix().isEmpty());
+    if (processIdPrefix().isEmpty())
+        initialize();
     return processIdPrefix() + String::number(id);
 }
 

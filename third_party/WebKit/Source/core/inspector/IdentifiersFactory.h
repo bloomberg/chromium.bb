@@ -39,7 +39,6 @@ class InspectedFrames;
 class CORE_EXPORT IdentifiersFactory {
     STATIC_ONLY(IdentifiersFactory);
 public:
-    static void setProcessId(long);
     static String createIdentifier();
 
     static String requestId(unsigned long identifier);
@@ -51,6 +50,7 @@ public:
     static DocumentLoader* loaderById(InspectedFrames*, const String&);
 
 private:
+    static void initialize();
     static String addProcessIdPrefixTo(int id);
     static int removeProcessIdPrefixFrom(const String&, bool* ok);
 };
