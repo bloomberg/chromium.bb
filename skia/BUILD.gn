@@ -15,6 +15,17 @@ if (current_cpu == "mipsel" || current_cpu == "mips64el") {
 skia_support_gpu = !is_ios
 skia_support_pdf = !is_ios && (enable_basic_printing || enable_print_preview)
 
+# When building Chrome for iOS with GYP, the target cpu is not known during
+# the invocation of gyp. This cause the iOS build to use non-optimised skia.
+# Replicate this with GN to avoid introducing regression as recommended by
+# the OWNERS of skia.
+
+declare_args() {
+  # TODO(crbug.com/607933): Once GYP is no longer supported, port iOS to use
+  # optimised skia.
+  skia_build_no_opts = is_ios
+}
+
 # The list of Skia defines that are to be set for chromium.
 gypi_chromium_skia_defines =
     exec_script("//build/gypi_to_gn.py",
@@ -141,6 +152,10 @@ config("skia_config") {
 
   defines += []
 
+  if (skia_build_no_opts) {
+    defines += [ "SK_BUILD_NO_OPTS" ]
+  }
+
   if (is_component_build) {
     defines += [
       "SKIA_DLL",
@@ -204,7 +219,7 @@ config("skia_library_config") {
     defines += [ "SKIA_IMPLEMENTATION=1" ]
   }
 
-  if (current_cpu == "arm") {
+  if (current_cpu == "arm" && !skia_build_no_opts) {
     if (arm_use_neon) {
       defines += [ "SK_ARM_HAS_NEON" ]
     } else if (arm_optionally_use_neon) {
@@ -524,88 +539,91 @@ component("skia") {
 }
 
 # Separated out so it can be compiled with different flags for SSE.
-if (current_cpu == "x86" || current_cpu == "x64") {
-  source_set("skia_opts_sse3") {
-    sources = gypi_skia_opts.ssse3_sources
-    if (!is_win || is_clang) {
-      cflags = [ "-mssse3" ]
+if (!skia_build_no_opts) {
+  if (current_cpu == "x86" || current_cpu == "x64") {
+    source_set("skia_opts_sse3") {
+      sources = gypi_skia_opts.ssse3_sources
+      if (!is_win || is_clang) {
+        cflags = [ "-mssse3" ]
+      }
+      if (is_win) {
+        defines = [ "SK_CPU_SSE_LEVEL=31" ]
+      }
+      visibility = [ ":skia_opts" ]
+      configs -= [ "//build/config/compiler:chromium_code" ]
+      configs += [
+        ":skia_config",
+        ":skia_library_config",
+        "//build/config/compiler:no_chromium_code",
+      ]
     }
-    if (is_win) {
-      defines = [ "SK_CPU_SSE_LEVEL=31" ]
+    source_set("skia_opts_sse41") {
+      sources = gypi_skia_opts.sse41_sources
+      if (!is_win || is_clang) {
+        cflags = [ "-msse4.1" ]
+      }
+      if (is_win) {
+        defines = [ "SK_CPU_SSE_LEVEL=41" ]
+      }
+      visibility = [ ":skia_opts" ]
+      configs -= [ "//build/config/compiler:chromium_code" ]
+      configs += [
+        ":skia_config",
+        ":skia_library_config",
+        "//build/config/compiler:no_chromium_code",
+      ]
     }
-    visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
-  }
-  source_set("skia_opts_sse41") {
-    sources = gypi_skia_opts.sse41_sources
-    if (!is_win || is_clang) {
-      cflags = [ "-msse4.1" ]
+    source_set("skia_opts_sse42") {
+      sources = gypi_skia_opts.sse42_sources
+      if (!is_win || is_clang) {
+        cflags = [ "-msse4.2" ]
+      }
+      if (is_win) {
+        defines = [ "SK_CPU_SSE_LEVEL=42" ]
+      }
+      visibility = [ ":skia_opts" ]
+      configs -= [ "//build/config/compiler:chromium_code" ]
+      configs += [
+        ":skia_config",
+        ":skia_library_config",
+        "//build/config/compiler:no_chromium_code",
+      ]
     }
-    if (is_win) {
-      defines = [ "SK_CPU_SSE_LEVEL=41" ]
+    source_set("skia_opts_avx") {
+      sources = gypi_skia_opts.avx_sources
+      if (!is_win) {
+        cflags = [ "-mavx" ]
+      }
+      if (is_win) {
+        cflags = [ "/arch:AVX" ]
+      }
+      visibility = [ ":skia_opts" ]
+      configs -= [ "//build/config/compiler:chromium_code" ]
+      configs += [
+        ":skia_config",
+        ":skia_library_config",
+        "//build/config/compiler:no_chromium_code",
+      ]
     }
-    visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
-  }
-  source_set("skia_opts_sse42") {
-    sources = gypi_skia_opts.sse42_sources
-    if (!is_win || is_clang) {
-      cflags = [ "-msse4.2" ]
+    source_set("skia_opts_avx2") {
+      sources = gypi_skia_opts.avx2_sources
+      if (!is_win) {
+        cflags = [ "-mavx2" ]
+      }
+      if (is_win) {
+        cflags = [ "/arch:AVX2" ]
+      }
+      visibility = [ ":skia_opts" ]
+      configs -= [ "//build/config/compiler:chromium_code" ]
+      configs += [
+        ":skia_config",
+        ":skia_library_config",
+        "//build/config/compiler:no_chromium_code",
+      ]
     }
-    if (is_win) {
-      defines = [ "SK_CPU_SSE_LEVEL=42" ]
-    }
-    visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
-  }
-  source_set("skia_opts_avx") {
-    sources = gypi_skia_opts.avx_sources
-    if (!is_win) {
-      cflags = [ "-mavx" ]
-    }
-    if (is_win) {
-      cflags = [ "/arch:AVX" ]
-    }
-    visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
-  }
-  source_set("skia_opts_avx2") {
-    sources = gypi_skia_opts.avx2_sources
-    if (!is_win) {
-      cflags = [ "-mavx2" ]
-    }
-    if (is_win) {
-      cflags = [ "/arch:AVX2" ]
-    }
-    visibility = [ ":skia_opts" ]
-    configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":skia_config",
-      ":skia_library_config",
-      "//build/config/compiler:no_chromium_code",
-    ]
   }
 }
+
 source_set("skia_opts") {
   cflags = []
   defines = []
@@ -614,7 +632,9 @@ source_set("skia_opts") {
     "//base",
   ]
 
-  if (current_cpu == "x86" || current_cpu == "x64") {
+  if (skia_build_no_opts) {
+    sources = gypi_skia_opts.none_sources
+  } else if (current_cpu == "x86" || current_cpu == "x64") {
     sources = gypi_skia_opts.sse2_sources
     deps += [
       ":skia_opts_avx",
