@@ -475,6 +475,39 @@ TEST_P(GLES2DecoderTest, BeginQueryEXTDisabled) {
   // Test something fails if off.
 }
 
+TEST_P(GLES2DecoderTest, GenQueriesEXTImmediateValidArgs) {
+  cmds::GenQueriesEXTImmediate* cmd =
+      GetImmediateAs<cmds::GenQueriesEXTImmediate>();
+  GLuint temp = kNewClientId;
+  cmd->Init(1, &temp);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(*cmd, sizeof(temp)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  QueryManager* query_manager = decoder_->GetQueryManager();
+  ASSERT_TRUE(query_manager != NULL);
+  EXPECT_TRUE(query_manager->IsValidQuery(kNewClientId));
+}
+
+TEST_P(GLES2DecoderTest, GenQueriesEXTImmediateDuplicateIds) {
+  cmds::GenQueriesEXTImmediate* cmd =
+      GetImmediateAs<cmds::GenQueriesEXTImmediate>();
+  GLuint temp[3] = {kNewClientId, kNewClientId + 1, kNewClientId};
+  cmd->Init(3, temp);
+  EXPECT_EQ(error::kInvalidArguments, ExecuteImmediateCmd(*cmd, sizeof(temp)));
+  QueryManager* query_manager = decoder_->GetQueryManager();
+  ASSERT_TRUE(query_manager != NULL);
+  EXPECT_FALSE(query_manager->IsValidQuery(kNewClientId));
+  EXPECT_FALSE(query_manager->IsValidQuery(kNewClientId + 1));
+}
+
+TEST_P(GLES2DecoderTest, GenQueriesEXTImmediateInvalidArgs) {
+  cmds::GenQueriesEXTImmediate* cmd =
+      GetImmediateAs<cmds::GenQueriesEXTImmediate>();
+  cmd->Init(1, &client_query_id_);
+  EXPECT_EQ(error::kInvalidArguments,
+            ExecuteImmediateCmd(*cmd, sizeof(&client_query_id_)));
+}
+
+
 TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXT) {
   InitState init;
   init.extensions = "GL_EXT_occlusion_query_boolean";
@@ -1540,30 +1573,6 @@ TEST_P(GLES3DecoderTest, BindTransformFeedbackValidArgs) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
-TEST_P(GLES3DecoderTest, GenDeleteTransformFeedbacksImmediateValidArgs) {
-  EXPECT_CALL(*gl_, GenTransformFeedbacks(1, _))
-      .WillOnce(SetArgPointee<1>(kNewServiceId));
-  cmds::GenTransformFeedbacksImmediate* gen_cmd =
-      GetImmediateAs<cmds::GenTransformFeedbacksImmediate>();
-  GLuint temp = kNewClientId;
-  SpecializedSetup<cmds::GenTransformFeedbacksImmediate, 0>(true);
-  gen_cmd->Init(1, &temp);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(*gen_cmd, sizeof(temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(GetTransformFeedback(kNewClientId) != nullptr);
-
-  EXPECT_CALL(*gl_,
-              DeleteTransformFeedbacks(1, Pointee(kNewServiceId)))
-      .Times(1);
-  cmds::DeleteTransformFeedbacksImmediate& delete_cmd =
-      *GetImmediateAs<cmds::DeleteTransformFeedbacksImmediate>();
-  SpecializedSetup<cmds::DeleteTransformFeedbacksImmediate, 0>(true);
-  delete_cmd.Init(1, &temp);
-  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(delete_cmd, sizeof(&temp)));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(GetTransformFeedback(kNewClientId) == nullptr);
-}
-
 TEST_P(GLES3DecoderTest, DeleteTransformFeedbacksImmediateInvalidArgs) {
   cmds::DeleteTransformFeedbacksImmediate& cmd =
       *GetImmediateAs<cmds::DeleteTransformFeedbacksImmediate>();
@@ -1572,16 +1581,6 @@ TEST_P(GLES3DecoderTest, DeleteTransformFeedbacksImmediateInvalidArgs) {
   cmd.Init(1, &temp);
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES3DecoderTest, GenTransformFeedbacksImmediateInvalidArgs) {
-  EXPECT_CALL(*gl_, GenTransformFeedbacks(_, _)).Times(0);
-  cmds::GenTransformFeedbacksImmediate* cmd =
-      GetImmediateAs<cmds::GenTransformFeedbacksImmediate>();
-  SpecializedSetup<cmds::GenTransformFeedbacksImmediate, 0>(false);
-  cmd->Init(1, &client_transformfeedback_id_);
-  EXPECT_EQ(error::kInvalidArguments,
-            ExecuteImmediateCmd(*cmd, sizeof(&client_transformfeedback_id_)));
 }
 
 TEST_P(GLES3DecoderTest, GetIntegeri_vValidArgs) {

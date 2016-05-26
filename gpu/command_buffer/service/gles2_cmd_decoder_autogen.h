@@ -1257,7 +1257,7 @@ error::Error GLES2DecoderImpl::HandleGenBuffersImmediate(
   if (buffers == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenBuffersHelper(n, buffers)) {
+  if (!CheckUniqueIds(n, buffers) || !GenBuffersHelper(n, buffers)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -1294,7 +1294,8 @@ error::Error GLES2DecoderImpl::HandleGenFramebuffersImmediate(
   if (framebuffers == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenFramebuffersHelper(n, framebuffers)) {
+  if (!CheckUniqueIds(n, framebuffers) ||
+      !GenFramebuffersHelper(n, framebuffers)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -1316,7 +1317,8 @@ error::Error GLES2DecoderImpl::HandleGenRenderbuffersImmediate(
   if (renderbuffers == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenRenderbuffersHelper(n, renderbuffers)) {
+  if (!CheckUniqueIds(n, renderbuffers) ||
+      !GenRenderbuffersHelper(n, renderbuffers)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -1340,7 +1342,7 @@ error::Error GLES2DecoderImpl::HandleGenSamplersImmediate(
   if (samplers == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenSamplersHelper(n, samplers)) {
+  if (!CheckUniqueIds(n, samplers) || !GenSamplersHelper(n, samplers)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -1362,7 +1364,7 @@ error::Error GLES2DecoderImpl::HandleGenTexturesImmediate(
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenTexturesHelper(n, textures)) {
+  if (!CheckUniqueIds(n, textures) || !GenTexturesHelper(n, textures)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -1386,7 +1388,7 @@ error::Error GLES2DecoderImpl::HandleGenTransformFeedbacksImmediate(
   if (ids == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenTransformFeedbacksHelper(n, ids)) {
+  if (!CheckUniqueIds(n, ids) || !GenTransformFeedbacksHelper(n, ids)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -4451,7 +4453,7 @@ error::Error GLES2DecoderImpl::HandleGenQueriesEXTImmediate(
   if (queries == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenQueriesEXTHelper(n, queries)) {
+  if (!CheckUniqueIds(n, queries) || !GenQueriesEXTHelper(n, queries)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;
@@ -4573,7 +4575,7 @@ error::Error GLES2DecoderImpl::HandleGenVertexArraysOESImmediate(
   if (arrays == NULL) {
     return error::kOutOfBounds;
   }
-  if (!GenVertexArraysOESHelper(n, arrays)) {
+  if (!CheckUniqueIds(n, arrays) || !GenVertexArraysOESHelper(n, arrays)) {
     return error::kInvalidArguments;
   }
   return error::kNoError;

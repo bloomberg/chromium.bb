@@ -193,6 +193,13 @@ GLuint GetServiceId(const OBJECT_TYPE* object) {
   return object ? object->service_id() : 0;
 }
 
+bool CheckUniqueIds(GLsizei n, const GLuint* client_ids) {
+  if (n <= 0)
+    return true;
+  std::unordered_set<uint32_t> unique_ids(client_ids, client_ids + n);
+  return unique_ids.size() == static_cast<size_t>(n);
+}
+
 struct Vec4f {
   explicit Vec4f(const Vec4& data) {
     data.GetValues(v);
@@ -13716,7 +13723,7 @@ error::Error GLES2DecoderImpl::HandleDiscardBackbufferCHROMIUM(
 bool GLES2DecoderImpl::GenQueriesEXTHelper(
     GLsizei n, const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
-    if (query_manager_->GetQuery(client_ids[ii])) {
+    if (query_manager_->IsValidQuery(client_ids[ii])) {
       return false;
     }
   }

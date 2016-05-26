@@ -268,6 +268,17 @@ class GLES2DecoderVertexArraysOESTest : public GLES2DecoderWithShaderTest {
     AddExpectationsForDeleteVertexArraysOES();
   }
 
+  void GenVertexArraysOESImmediateDuplicateIds() {
+    cmds::GenVertexArraysOESImmediate* cmd =
+        GetImmediateAs<cmds::GenVertexArraysOESImmediate>();
+    GLuint temp[3] = {kNewClientId, kNewClientId + 1, kNewClientId};
+    cmd->Init(3, temp);
+    EXPECT_EQ(error::kInvalidArguments,
+              ExecuteImmediateCmd(*cmd, sizeof(temp)));
+    EXPECT_TRUE(GetVertexArrayInfo(kNewClientId) == NULL);
+    EXPECT_TRUE(GetVertexArrayInfo(kNewClientId + 1) == NULL);
+  }
+
   void GenVertexArraysOESImmediateInvalidArgs() {
     EXPECT_CALL(*gl_, GenVertexArraysOES(_, _)).Times(0);
     GenVertexArraysOESImmediate* cmd =
@@ -378,6 +389,15 @@ TEST_P(GLES2DecoderVertexArraysOESTest, GenVertexArraysOESImmediateValidArgs) {
 TEST_P(GLES2DecoderEmulatedVertexArraysOESTest,
        GenVertexArraysOESImmediateValidArgs) {
   GenVertexArraysOESImmediateValidArgs();
+}
+
+TEST_P(GLES2DecoderVertexArraysOESTest,
+       GenVertexArraysOESImmediateDuplicateIds) {
+  GenVertexArraysOESImmediateDuplicateIds();
+}
+TEST_P(GLES2DecoderEmulatedVertexArraysOESTest,
+       GenVertexArraysOESImmediateDuplicateIds) {
+  GenVertexArraysOESImmediateDuplicateIds();
 }
 
 TEST_P(GLES2DecoderVertexArraysOESTest,

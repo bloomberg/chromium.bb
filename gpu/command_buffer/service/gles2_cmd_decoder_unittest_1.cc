@@ -176,6 +176,18 @@ void GLES2DecoderTestBase::SpecializedSetup<cmds::GetProgramiv, 0>(
   }
 }
 
+template <>
+void GLES2DecoderTestBase::
+    SpecializedSetup<cmds::GenTransformFeedbacksImmediate, 0>(bool valid) {
+  if (valid) {
+    // Transform feedbacks are per-context, not per-group, so they get cleaned
+    // up at the end of the test.
+    EXPECT_CALL(*gl_, DeleteTransformFeedbacks(_, _))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+}
+
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_1_autogen.h"
 
 }  // namespace gles2

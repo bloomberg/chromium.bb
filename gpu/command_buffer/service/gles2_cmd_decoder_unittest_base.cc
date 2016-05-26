@@ -475,6 +475,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
       .WillOnce(SetArgumentPointee<1>(kServiceElementBufferId))
       .RetiresOnSaturation();
   GenHelper<cmds::GenBuffersImmediate>(client_element_buffer_id_);
+  GenHelper<cmds::GenQueriesEXTImmediate>(client_query_id_);
 
   DoCreateProgram(client_program_id_, kServiceProgramId);
   DoCreateShader(GL_VERTEX_SHADER, client_shader_id_, kServiceShaderId);

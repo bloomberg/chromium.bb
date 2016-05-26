@@ -2935,7 +2935,6 @@ _FUNCTION_INFO = {
     'resource_type': 'TransformFeedback',
     'resource_types': 'TransformFeedbacks',
     'unsafe': True,
-    'unit_test': False,
   },
   'GetActiveAttrib': {
     'type': 'Custom',
@@ -6065,17 +6064,15 @@ class GENnHandler(TypeHandler):
 
   def WriteHandlerImplementation (self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("  if (!%sHelper(n, %s)) {\n"
-               "    return error::kInvalidArguments;\n"
-               "  }\n" %
-               (func.name, func.GetLastOriginalArg().name))
+    raise NotImplementedError("GENn functions are immediate")
 
   def WriteImmediateHandlerImplementation(self, func, f):
     """Overrriden from TypeHandler."""
-    f.write("  if (!%sHelper(n, %s)) {\n"
+    param_name = func.GetLastOriginalArg().name
+    f.write("  if (!CheckUniqueIds(n, %s) || !%sHelper(n, %s)) {\n"
             "    return error::kInvalidArguments;\n"
             "  }\n" %
-            (func.original_name, func.GetLastOriginalArg().name))
+            (param_name, func.original_name, param_name))
 
   def WriteGLES2Implementation(self, func, f):
     """Overrriden from TypeHandler."""
@@ -6152,35 +6149,7 @@ TEST_F(GLES2ImplementationTest, %(name)s) {
 
   def WriteServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
-    valid_test = """
-TEST_P(%(test_name)s, %(name)sValidArgs) {
-  EXPECT_CALL(*gl_, %(gl_func_name)s(1, _))
-      .WillOnce(SetArgumentPointee<1>(kNewServiceId));
-  GetSharedMemoryAs<GLuint*>()[0] = kNewClientId;
-  SpecializedSetup<cmds::%(name)s, 0>(true);
-  cmds::%(name)s cmd;
-  cmd.Init(%(args)s);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-  EXPECT_TRUE(Get%(resource_name)s(kNewClientId, &service_id) != NULL);
-}
-"""
-    self.WriteValidUnitTest(func, f, valid_test, {
-        'resource_name': func.GetInfo('resource_type'),
-      }, *extras)
-    invalid_test = """
-TEST_P(%(test_name)s, %(name)sInvalidArgs) {
-  EXPECT_CALL(*gl_, %(gl_func_name)s(_, _)).Times(0);
-  GetSharedMemoryAs<GLuint*>()[0] = client_%(resource_name)s_id_;
-  SpecializedSetup<cmds::%(name)s, 0>(false);
-  cmds::%(name)s cmd;
-  cmd.Init(%(args)s);
-  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
-}
-"""
-    self.WriteValidUnitTest(func, f, invalid_test, {
-          'resource_name': func.GetInfo('resource_type').lower(),
-        }, *extras)
+    raise NotImplementedError("GENn functions are immediate")
 
   def WriteImmediateServiceUnitTest(self, func, f, *extras):
     """Overrriden from TypeHandler."""
@@ -6203,6 +6172,26 @@ TEST_P(%(test_name)s, %(name)sValidArgs) {
 }
 """
     self.WriteValidUnitTest(func, f, valid_test, {
+        'resource_name': func.GetInfo('resource_type'),
+      }, *extras)
+    duplicate_id_test = """
+TEST_P(%(test_name)s, %(name)sDuplicateIds) {
+  EXPECT_CALL(*gl_, %(gl_func_name)s(_, _)).Times(0);
+  cmds::%(name)s* cmd = GetImmediateAs<cmds::%(name)s>();
+  GLuint temp[3] = {kNewClientId, kNewClientId + 1, kNewClientId};
+  SpecializedSetup<cmds::%(name)s, 1>(true);"""
+    if func.IsUnsafe():
+      duplicate_id_test += """
+  decoder_->set_unsafe_es3_apis_enabled(true);"""
+    duplicate_id_test += """
+  cmd->Init(3, temp);
+  EXPECT_EQ(error::kInvalidArguments,
+            ExecuteImmediateCmd(*cmd, sizeof(temp)));
+  EXPECT_TRUE(Get%(resource_name)s(kNewClientId) == NULL);
+  EXPECT_TRUE(Get%(resource_name)s(kNewClientId + 1) == NULL);
+}
+    """
+    self.WriteValidUnitTest(func, f, duplicate_id_test, {
         'resource_name': func.GetInfo('resource_type'),
       }, *extras)
     invalid_test = """
