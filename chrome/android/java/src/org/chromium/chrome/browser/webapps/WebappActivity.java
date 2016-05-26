@@ -107,6 +107,10 @@ public class WebappActivity extends FullScreenActivity {
         }
     }
 
+    protected boolean isInitialized() {
+        return mIsInitialized;
+    }
+
     private void initializeUI(Bundle savedInstanceState) {
         // We do not load URL when restoring from saved instance states.
         if (savedInstanceState == null && mWebappInfo.isInitialized()) {
@@ -259,6 +263,10 @@ public class WebappActivity extends FullScreenActivity {
                 ? WebappUma.SPLASHSCREEN_COLOR_STATUS_CUSTOM
                 : WebappUma.SPLASHSCREEN_COLOR_STATUS_DEFAULT);
 
+        initializeSplashScreenWidgets(backgroundColor);
+    }
+
+    protected void initializeSplashScreenWidgets(final int backgroundColor) {
         final Intent intent = getIntent();
         WebappRegistry.getWebappDataStorage(this, mWebappInfo.id(),
                 new WebappRegistry.FetchWebappDataStorageCallback() {
@@ -292,7 +300,7 @@ public class WebappActivity extends FullScreenActivity {
         );
     }
 
-    private void initializeSplashScreenWidgets(int backgroundColor, Bitmap splashImage) {
+    protected void initializeSplashScreenWidgets(int backgroundColor, Bitmap splashImage) {
         Bitmap displayIcon = splashImage == null ? mWebappInfo.icon() : splashImage;
         int minimiumSizeThreshold = getResources().getDimensionPixelSize(
                 R.dimen.webapp_splash_image_size_minimum);

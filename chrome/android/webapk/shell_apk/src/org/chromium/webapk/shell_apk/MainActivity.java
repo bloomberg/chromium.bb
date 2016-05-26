@@ -24,15 +24,18 @@ import java.io.ByteArrayOutputStream;
  * WebAPK's main Activity.
  */
 public class MainActivity extends Activity {
+    // These EXTRA_* values must stay in sync with
+    // {@link org.chromium.chrome.browser.ShortcutHelper}.
     private static final String EXTRA_ID = "org.chromium.chrome.browser.webapp_id";
     private static final String EXTRA_ICON = "org.chromium.chrome.browser.webapp_icon";
     private static final String EXTRA_NAME = "org.chromium.chrome.browser.webapp_name";
     private static final String EXTRA_URL = "org.chromium.chrome.browser.webapp_url";
     private static final String EXTRA_MAC = "org.chromium.chrome.browser.webapp_mac";
-    private static final String EXTRA_SCOPE = "org.chromium.chrome.browser.webapp_scope";
+    private static final String EXTRA_WEBAPK_PACKAGE_NAME =
+            "org.chromium.chrome.browser.webapk_package_name";
+
     private static final String META_DATA_HOST_URL = "hostUrl";
     private static final String META_DATA_MAC = "mac";
-    private static final String META_DATA_SCOPE = "scope";
     private static final String META_DATA_RUNTIME_HOST = "runtimeHost";
 
     private static final String TAG = "cr_MainActivity";
@@ -46,7 +49,6 @@ public class MainActivity extends Activity {
         String mac = null;
         String name = null;
         String url = null;
-        String scope = null;
         String encodedIcon = null;
         String runtimeHost = null;
         try {
@@ -61,7 +63,6 @@ public class MainActivity extends Activity {
                 url = overrideUrl;
             }
 
-            scope = bundle.getString(META_DATA_SCOPE);
             webappId = WebApkConstants.WEBAPK_ID_PREFIX + packageName;
             mac = bundle.getString(META_DATA_MAC);
             runtimeHost = bundle.getString(META_DATA_RUNTIME_HOST);
@@ -71,23 +72,24 @@ public class MainActivity extends Activity {
             Bitmap icon = BitmapFactory.decodeResource(getResources(), R.drawable.app_icon);
             encodedIcon = encodeBitmapAsString(icon);
             Log.w(TAG, "Url of the WebAPK: " + url);
-            Log.w(TAG, "webappId of the WebAPK: " + webappId);
-            Log.w(TAG, "name of the WebAPK:" + name);
+            Log.w(TAG, "WebappId of the WebAPK: " + webappId);
+            Log.w(TAG, "Name of the WebAPK:" + name);
+            Log.w(TAG, "Package name of the WebAPK:" + packageName);
+
+            Intent newIntent = new Intent();
+            newIntent.setComponent(new ComponentName(runtimeHost,
+                    "org.chromium.chrome.browser.webapps.WebappLauncherActivity"));
+            newIntent.putExtra(EXTRA_ID, webappId)
+                     .putExtra(EXTRA_NAME, name)
+                     .putExtra(EXTRA_URL, url)
+                     .putExtra(EXTRA_MAC, mac)
+                     .putExtra(EXTRA_ICON, encodedIcon)
+                     .putExtra(EXTRA_WEBAPK_PACKAGE_NAME, packageName);
+            startActivity(newIntent);
+            finish();
         } catch (NameNotFoundException e) {
             e.printStackTrace();
         }
-
-        Intent newIntent = new Intent();
-        newIntent.setComponent(new ComponentName(runtimeHost,
-                "org.chromium.chrome.browser.webapps.WebappLauncherActivity"));
-        newIntent.putExtra(EXTRA_ID, webappId);
-        newIntent.putExtra(EXTRA_NAME, name);
-        newIntent.putExtra(EXTRA_SCOPE, scope);
-        newIntent.putExtra(EXTRA_URL, url);
-        newIntent.putExtra(EXTRA_MAC, mac);
-        newIntent.putExtra(EXTRA_ICON, encodedIcon);
-        startActivity(newIntent);
-        finish();
     }
 
     /**

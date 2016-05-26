@@ -1,19 +1,17 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.chrome.browser.webapps;
 
 /**
- * Type of WebappActivity that has the ability to swap out the webapp it is currently showing for a
- * new one. This is necessary on Android versions older than L because the framework had no way of
- * allowing multiple instances of an Activity to be launched and show up as different tasks.
- * Anything extending this class must be named WebappActivity0, WebappActivity1, etc.
+ * Type of WebApkActivity and it is targeted on Android versions older than L, similar to
+ * WebappManagedActivity for WebappActivity.
  */
-public abstract class WebappManagedActivity extends WebappActivity {
+public abstract class WebApkManagedActivity extends WebApkActivity {
     private final int mActivityIndex;
 
-    public WebappManagedActivity() {
+    public WebApkManagedActivity() {
         mActivityIndex = getActivityIndex();
     }
 
@@ -32,7 +30,7 @@ public abstract class WebappManagedActivity extends WebappActivity {
     }
 
     /**
-     * Marks that this WebappActivity is recently used to prevent other webapps from using it.
+     * Marks that this WebApkActivity is recently used to prevent other webapps from using it.
      */
     private void markActivityUsed() {
         ActivityAssigner.instance(getWebappInfo().id()).markActivityUsed(
@@ -40,13 +38,13 @@ public abstract class WebappManagedActivity extends WebappActivity {
     }
 
     /**
-     * Pulls out the index of the WebappActivity subclass that is being used.
-     * e.g. WebappActivity0.getActivityIndex() will return 0.
-     * @return The index corresponding to this WebappActivity.
+     * Pulls out the index of the WebApkActivity subclass that is being used.
+     * e.g. WebApkActivity0.getActivityIndex() will return 0.
+     * @return The index corresponding to this WebApkActivity0.
      */
     private int getActivityIndex() {
         // Cull out the activity index from the class name.
-        String baseClassName = WebappActivity.class.getSimpleName();
+        String baseClassName = WebApkActivity.class.getSimpleName();
         String className = this.getClass().getSimpleName();
         assert className.matches("^" + baseClassName + "[0-9]+$");
         String indexString = className.substring(baseClassName.length());

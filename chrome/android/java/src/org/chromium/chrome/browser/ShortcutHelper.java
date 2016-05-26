@@ -74,6 +74,8 @@ public class ShortcutHelper {
             "org.chromium.chrome.browser.webapp_shortcut_version";
     public static final String REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB =
             "REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB";
+    public static final String EXTRA_WEBAPK_PACKAGE_NAME =
+            "org.chromium.chrome.browser.webapk_package_name";
 
     // When a new field is added to the intent, this version should be incremented so that it will
     // be correctly populated into the WebappRegistry/WebappDataStorage.

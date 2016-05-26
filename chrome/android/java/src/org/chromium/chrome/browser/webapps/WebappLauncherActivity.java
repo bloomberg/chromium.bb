@@ -13,14 +13,17 @@ import android.util.Base64;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
+import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.lang.ref.WeakReference;
 
@@ -51,6 +54,7 @@ public class WebappLauncherActivity extends Activity {
         Intent intent = getIntent();
         String webappId = webappInfo.id();
         String webappUrl = webappInfo.uri().toString();
+        String webApkPackageName = webappInfo.webApkPackageName();
         int webappSource = webappInfo.source();
 
         if (webappId != null && webappUrl != null) {
@@ -67,26 +71,14 @@ public class WebappLauncherActivity extends Activity {
                     ContextUtils.getApplicationContext());
             boolean isUrlValid = (webappMac != null
                     && WebappAuthenticator.isUrlValid(this, webappUrl, webappMac));
+            boolean isValidWebApk = isValidWebApk(webApkPackageName);
+            if (webApkPackageName != null && !isValidWebApk) {
+                isUrlValid = false;
+            }
 
             if (isTrusted || isUrlValid) {
                 LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(webappUrl, webappSource);
-
-                String activityName = WebappActivity.class.getName();
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                    // Specifically assign the app to a particular WebappActivity instance.
-                    int activityIndex = ActivityAssigner.instance(this).assign(webappId);
-                    activityName += String.valueOf(activityIndex);
-                }
-
-                // Create an intent to launch the Webapp in an unmapped WebappActivity.
-                launchIntent = new Intent();
-                launchIntent.setClassName(this, activityName);
-                webappInfo.setWebappIntentExtras(launchIntent);
-
-                // On L+, firing intents with the exact same data should relaunch a particular
-                // Activity.
-                launchIntent.setAction(Intent.ACTION_VIEW);
-                launchIntent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + webappId));
+                launchIntent = createWebappLaunchIntent(webappInfo, isValidWebApk);
             } else {
                 Log.e(TAG, "Shortcut (%s) opened in Chrome.", webappUrl);
 
@@ -96,14 +88,48 @@ public class WebappLauncherActivity extends Activity {
                 launchIntent.setClassName(getPackageName(), ChromeLauncherActivity.class.getName());
                 launchIntent.putExtra(ShortcutHelper.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
                 launchIntent.putExtra(ShortcutHelper.EXTRA_SOURCE, webappSource);
+                launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                        | ApiCompatibilityUtils.getActivityNewDocumentFlag());
             }
 
-            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | ApiCompatibilityUtils.getActivityNewDocumentFlag());
             startActivity(launchIntent);
         }
 
         ApiCompatibilityUtils.finishAndRemoveTask(this);
+    }
+
+    /**
+     * Creates an Intent to launch the web app.
+     * @param info     Information about the web app.
+     * @param isWebApk If true, launch the app as a WebApkActivity.  If false, launch the app as
+     *                 a WebappActivity.
+     */
+    private Intent createWebappLaunchIntent(WebappInfo info, boolean isWebApk) {
+        String activityName = isWebApk ? WebApkActivity.class.getName()
+                : WebappActivity.class.getName();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            // Specifically assign the app to a particular WebappActivity instance.
+            int activityIndex = ActivityAssigner.instance(info.id()).assign(info.id());
+            activityName += String.valueOf(activityIndex);
+        }
+
+        // Create an intent to launch the Webapp in an unmapped WebappActivity.
+        Intent launchIntent = new Intent();
+        launchIntent.setClassName(this, activityName);
+        info.setWebappIntentExtras(launchIntent);
+
+        // On L+, firing intents with the exact same data should relaunch a particular
+        // Activity.
+        launchIntent.setAction(Intent.ACTION_VIEW);
+        launchIntent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + info.id()));
+
+        if (!isWebApk) {
+            // For WebAPK, we don't start a new task for WebApkActivity, it is just on top
+            // of the WebAPK's main activity and in the same task.
+            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | ApiCompatibilityUtils.getActivityNewDocumentFlag());
+        }
+        return launchIntent;
     }
 
     /**
@@ -128,5 +154,18 @@ public class WebappLauncherActivity extends Activity {
         }
 
         return false;
+    }
+
+    /**
+     * Checks whether the package being targeted is a valid WebAPK.
+     * @param webapkPackageName The package name of the requested WebAPK.
+     * @return true iff all validation criteria are met.
+     */
+    private boolean isValidWebApk(String webapkPackageName) {
+        // TODO(hanxi): Adds more validation checks. For example, whether the WebAPK is signed
+        // by the WebAPK Minting Server.
+        return CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)
+                && webapkPackageName != null
+                && webapkPackageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);
     }
 }

@@ -410,6 +410,30 @@ by a child template that "extends" this file.
             android:label="@string/webapp_activity_title">
         </activity-alias>
         {% endfor %}
+        <!-- Activities for WebAPKs. -->
+        <activity android:name="org.chromium.chrome.browser.webapps.WebApkActivity"
+            android:theme="@style/WebappTheme"
+            android:label="@string/webapp_activity_title"
+            android:launchMode="singleTop"
+            android:documentLaunchMode="intoExisting"
+            android:windowSoftInputMode="adjustResize"
+            android:persistableMode="persistNever"
+            android:hardwareAccelerated="false"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+        </activity>
+        {% for i in range(10) %}
+        <activity android:name="org.chromium.chrome.browser.webapps.WebApkActivity{{ i }}"
+            android:theme="@style/WebappTheme"
+            android:icon="@mipmap/app_shortcut_icon"
+            android:label="@string/webapp_activity_title"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize"
+            android:persistableMode="persistNever"
+            android:hardwareAccelerated="false"
+            android:taskAffinity="{{ manifest_package }}.webapps.WebApkActivity{{ i }}"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize">
+        </activity>
+        {% endfor %}
 
         <activity android:name="org.chromium.chrome.browser.media.remote.ExpandedControllerActivity"
             android:theme="@style/MainTheme"
