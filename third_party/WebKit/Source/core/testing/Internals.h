@@ -290,10 +290,6 @@ public:
     void updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(Node*, ExceptionState&);
     void forceFullRepaint(Document*, ExceptionState&);
 
-    void startTrackingPaintInvalidationObjects();
-    void stopTrackingPaintInvalidationObjects();
-    Vector<String> trackedPaintInvalidationObjects();
-
     ClientRectList* draggableRegions(Document*, ExceptionState&);
     ClientRectList* nonDraggableRegions(Document*, ExceptionState&);
 

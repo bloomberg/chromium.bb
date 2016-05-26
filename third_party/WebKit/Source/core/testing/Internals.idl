@@ -235,7 +235,6 @@
 
     // These functions both reset the tracked repaint rects. They are intended to be used in the following order:
     //  startTrackingRepaints(), repaintRectsAsText(), stopTrackingRepaints().
-    // TODO(wangxianzhu): Remove these functions when we no longer use repaint rects.
     [RaisesException] void startTrackingRepaints(Document document);
     [RaisesException] void stopTrackingRepaints(Document document);
 
@@ -245,16 +244,6 @@
     [RaisesException] void updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(optional Node? node = null);
 
     [RaisesException] void forceFullRepaint(Document document);
-
-    // These functions both reset the tracked paint invalidation objects. They are intended to be used in the following order:
-    //  startTrackingPaintInvalidationObjects(), trackedPaintInvalidationObjects(), stopTrackingPaintInvalidationObjects().
-    void startTrackingPaintInvalidationObjects();
-    void stopTrackingPaintInvalidationObjects();
-
-    // Returns a list of debug strings for objects that were invalidated between
-    // startTrackingPaintInvalidationObjects() and stopTrackingPaintInvalidationObjects().
-    // If an object is invalidated multiple times, it will appear in the list multiple times.
-    DOMString[] trackedPaintInvalidationObjects();
 
     // Returns a list of draggable/non-draggable regions in the document.
     [RaisesException] ClientRectList draggableRegions(Document document);

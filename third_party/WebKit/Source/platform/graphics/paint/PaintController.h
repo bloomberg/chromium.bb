@@ -148,22 +148,6 @@ public:
     bool hasInvalidations() { return !m_invalidations.isEmpty(); }
 #endif
 
-    void startTrackingPaintInvalidationObjects()
-    {
-        DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-        m_trackedPaintInvalidationObjects = adoptPtr(new Vector<String>());
-    }
-    void stopTrackingPaintInvalidationObjects()
-    {
-        DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-        m_trackedPaintInvalidationObjects = nullptr;
-    }
-    Vector<String> trackedPaintInvalidationObjects()
-    {
-        DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
-        return m_trackedPaintInvalidationObjects ? *m_trackedPaintInvalidationObjects : Vector<String>();
-    }
-
 #if DCHECK_IS_ON()
     void assertDisplayItemClientsAreLive();
 #endif
@@ -251,8 +235,6 @@ private:
     // easily find where the duplicated ids are from.
     DisplayItemIndicesByClientMap m_newDisplayItemIndicesByClient;
 #endif
-
-    OwnPtr<Vector<String>> m_trackedPaintInvalidationObjects;
 
     DisplayItemCacheGeneration m_currentCacheGeneration;
 };

@@ -230,6 +230,11 @@
   },
   {
     "prefix": "spv2",
+    "base": "fast/repaint",
+    "args": ["--enable-slimming-paint-v2"]
+  },
+  {
+    "prefix": "spv2",
     "base": "svg",
     "args": ["--enable-slimming-paint-v2"]
   },
