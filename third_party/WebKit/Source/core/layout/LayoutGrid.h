@@ -199,16 +199,8 @@ private:
     size_t gridItemSpan(const LayoutBox&, GridTrackSizingDirection);
     bool spanningItemCrossesFlexibleSizedTracks(const GridSpan&, GridTrackSizingDirection) const;
 
-    size_t gridColumnCount() const
-    {
-        ASSERT(!m_gridIsDirty);
-        return m_grid[0].size();
-    }
-    size_t gridRowCount() const
-    {
-        ASSERT(!m_gridIsDirty);
-        return m_grid.size();
-    }
+    size_t gridColumnCount() const;
+    size_t gridRowCount() const;
 
     bool hasDefiniteLogicalSize(GridTrackSizingDirection) const;
 

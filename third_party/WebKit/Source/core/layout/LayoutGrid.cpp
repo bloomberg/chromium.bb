@@ -159,13 +159,16 @@ public:
         , m_columnIndex((direction == ForColumns) ? fixedTrackIndex : varyingTrackIndex)
         , m_childIndex(0)
     {
-        ASSERT(m_rowIndex < m_grid.size());
-        ASSERT(m_columnIndex < m_grid[0].size());
+        DCHECK(!m_grid.isEmpty());
+        DCHECK(!m_grid[0].isEmpty());
+        DCHECK(m_rowIndex < m_grid.size());
+        DCHECK(m_columnIndex < m_grid[0].size());
     }
 
     LayoutBox* nextGridItem()
     {
-        ASSERT(!m_grid.isEmpty());
+        DCHECK(!m_grid.isEmpty());
+        DCHECK(!m_grid[0].isEmpty());
 
         size_t& varyingTrackIndex = (m_direction == ForColumns) ? m_rowIndex : m_columnIndex;
         const size_t endOfVaryingTrackIndex = (m_direction == ForColumns) ? m_grid.size() : m_grid[0].size();
@@ -181,6 +184,9 @@ public:
 
     bool checkEmptyCells(size_t rowSpan, size_t columnSpan) const
     {
+        DCHECK(!m_grid.isEmpty());
+        DCHECK(!m_grid[0].isEmpty());
+
         // Ignore cells outside current grid as we will grow it later if needed.
         size_t maxRows = std::min(m_rowIndex + rowSpan, m_grid.size());
         size_t maxColumns = std::min(m_columnIndex + columnSpan, m_grid[0].size());
@@ -199,7 +205,8 @@ public:
 
     PassOwnPtr<GridArea> nextEmptyGridArea(size_t fixedTrackSpan, size_t varyingTrackSpan)
     {
-        ASSERT(!m_grid.isEmpty());
+        DCHECK(!m_grid.isEmpty());
+        DCHECK(!m_grid[0].isEmpty());
         ASSERT(fixedTrackSpan >= 1 && varyingTrackSpan >= 1);
 
         size_t rowSpan = (m_direction == ForColumns) ? varyingTrackSpan : fixedTrackSpan;
@@ -322,6 +329,23 @@ bool LayoutGrid::namedGridLinesDefinitionDidChange(const ComputedStyle& oldStyle
         || oldStyle.namedGridColumnLines() != styleRef().namedGridColumnLines();
 }
 
+size_t LayoutGrid::gridColumnCount() const
+{
+    DCHECK(!m_gridIsDirty);
+    // Due to limitations in our internal representation, we cannot know the number of columns from
+    // m_grid *if* there is no row (because m_grid would be empty). That's why in that case we need
+    // to get it from the style. Note that we know for sure that there are't any implicit tracks,
+    // because not having rows implies that there are no "normal" children (out-of-flow children are
+    // not stored in m_grid).
+    return m_grid.size() ? m_grid[0].size() : GridPositionsResolver::explicitGridColumnCount(styleRef(), m_autoRepeatColumns);
+}
+
+size_t LayoutGrid::gridRowCount() const
+{
+    DCHECK(!m_gridIsDirty);
+    return m_grid.size();
+}
+
 LayoutUnit LayoutGrid::computeTrackBasedLogicalHeight(const GridSizingData& sizingData) const
 {
     LayoutUnit logicalHeight;
@@ -417,9 +441,7 @@ void LayoutGrid::layoutBlock(bool relayoutChildren)
 
 LayoutUnit LayoutGrid::guttersSize(GridTrackSizingDirection direction, size_t span) const
 {
-    ASSERT(span >= 1);
-
-    if (span == 1)
+    if (span <= 1)
         return LayoutUnit();
 
     const Length& trackGap = direction == ForColumns ? styleRef().gridColumnGap() : styleRef().gridRowGap();
@@ -560,16 +582,18 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
         for (const auto& trackIndex : flexibleSizedTracksIndex)
             flexFraction = std::max(flexFraction, normalizedFlexFraction(tracks[trackIndex], gridTrackSize(direction, trackIndex).maxTrackBreadth().flex()));
 
-        for (size_t i = 0; i < flexibleSizedTracksIndex.size(); ++i) {
-            GridIterator iterator(m_grid, direction, flexibleSizedTracksIndex[i]);
-            while (LayoutBox* gridItem = iterator.nextGridItem()) {
-                const GridSpan span = cachedGridSpan(*gridItem, direction);
+        if (!m_gridItemArea.isEmpty()) {
+            for (size_t i = 0; i < flexibleSizedTracksIndex.size(); ++i) {
+                GridIterator iterator(m_grid, direction, flexibleSizedTracksIndex[i]);
+                while (LayoutBox* gridItem = iterator.nextGridItem()) {
+                    const GridSpan span = cachedGridSpan(*gridItem, direction);
 
-                // Do not include already processed items.
-                if (i > 0 && span.startLine() <= flexibleSizedTracksIndex[i - 1])
-                    continue;
+                    // Do not include already processed items.
+                    if (i > 0 && span.startLine() <= flexibleSizedTracksIndex[i - 1])
+                        continue;
 
-                flexFraction = std::max(flexFraction, findFlexFactorUnitSize(tracks, span, direction, maxContentForChild(*gridItem, direction, sizingData)));
+                    flexFraction = std::max(flexFraction, findFlexFactorUnitSize(tracks, span, direction, maxContentForChild(*gridItem, direction, sizingData)));
+                }
             }
         }
     }
@@ -896,22 +920,24 @@ bool LayoutGrid::spanningItemCrossesFlexibleSizedTracks(const GridSpan& span, Gr
 void LayoutGrid::resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection direction, GridSizingData& sizingData)
 {
     sizingData.itemsSortedByIncreasingSpan.shrink(0);
-    HashSet<LayoutBox*> itemsSet;
-    for (const auto& trackIndex : sizingData.contentSizedTracksIndex) {
-        GridIterator iterator(m_grid, direction, trackIndex);
-        GridTrack& track = (direction == ForColumns) ? sizingData.columnTracks[trackIndex] : sizingData.rowTracks[trackIndex];
-        while (LayoutBox* gridItem = iterator.nextGridItem()) {
-            if (itemsSet.add(gridItem).isNewEntry) {
-                const GridSpan& span = cachedGridSpan(*gridItem, direction);
-                if (span.integerSpan() == 1) {
-                    resolveContentBasedTrackSizingFunctionsForNonSpanningItems(direction, span, *gridItem, track, sizingData);
-                } else if (!spanningItemCrossesFlexibleSizedTracks(span, direction)) {
-                    sizingData.itemsSortedByIncreasingSpan.append(GridItemWithSpan(*gridItem, span));
+    if (!m_gridItemArea.isEmpty()) {
+        HashSet<LayoutBox*> itemsSet;
+        for (const auto& trackIndex : sizingData.contentSizedTracksIndex) {
+            GridIterator iterator(m_grid, direction, trackIndex);
+            GridTrack& track = (direction == ForColumns) ? sizingData.columnTracks[trackIndex] : sizingData.rowTracks[trackIndex];
+            while (LayoutBox* gridItem = iterator.nextGridItem()) {
+                if (itemsSet.add(gridItem).isNewEntry) {
+                    const GridSpan& span = cachedGridSpan(*gridItem, direction);
+                    if (span.integerSpan() == 1) {
+                        resolveContentBasedTrackSizingFunctionsForNonSpanningItems(direction, span, *gridItem, track, sizingData);
+                    } else if (!spanningItemCrossesFlexibleSizedTracks(span, direction)) {
+                        sizingData.itemsSortedByIncreasingSpan.append(GridItemWithSpan(*gridItem, span));
+                    }
                 }
             }
         }
+        std::sort(sizingData.itemsSortedByIncreasingSpan.begin(), sizingData.itemsSortedByIncreasingSpan.end());
     }
-    std::sort(sizingData.itemsSortedByIncreasingSpan.begin(), sizingData.itemsSortedByIncreasingSpan.end());
 
     auto it = sizingData.itemsSortedByIncreasingSpan.begin();
     auto end = sizingData.itemsSortedByIncreasingSpan.end();
@@ -1353,8 +1379,8 @@ void LayoutGrid::populateExplicitGridAndOrderIterator()
 
     m_smallestRowStart = m_smallestColumnStart = 0;
 
-    size_t maximumRowIndex = std::max<size_t>(1, GridPositionsResolver::explicitGridRowCount(*style(), m_autoRepeatRows));
-    size_t maximumColumnIndex = std::max<size_t>(1, GridPositionsResolver::explicitGridColumnCount(*style(), m_autoRepeatColumns));
+    size_t maximumRowIndex = GridPositionsResolver::explicitGridRowCount(*style(), m_autoRepeatRows);
+    size_t maximumColumnIndex = GridPositionsResolver::explicitGridColumnCount(*style(), m_autoRepeatColumns);
 
     ASSERT(m_gridItemsIndexesMap.isEmpty());
     size_t childIndex = 0;
@@ -1803,16 +1829,18 @@ void LayoutGrid::populateGridPositionsForDirection(GridSizingData& sizingData, G
     size_t numberOfTracks = tracks.size();
     size_t numberOfLines = numberOfTracks + 1;
     size_t lastLine = numberOfLines - 1;
-    size_t nextToLastLine = numberOfLines - 2;
     ContentAlignmentData offset = computeContentPositionAndDistributionOffset(direction, sizingData.freeSpaceForDirection(direction), numberOfTracks);
     LayoutUnit trackGap = guttersSize(direction, 2);
     auto& positions = isRowAxis ? m_columnPositions : m_rowPositions;
     positions.resize(numberOfLines);
     auto borderAndPadding = isRowAxis ? borderAndPaddingLogicalLeft() : borderAndPaddingBefore();
     positions[0] = borderAndPadding + offset.positionOffset;
-    for (size_t i = 0; i < nextToLastLine; ++i)
-        positions[i + 1] = positions[i] + offset.distributionOffset + tracks[i].baseSize() + trackGap;
-    positions[lastLine] = positions[nextToLastLine] + tracks[nextToLastLine].baseSize();
+    if (numberOfLines > 1) {
+        size_t nextToLastLine = numberOfLines - 2;
+        for (size_t i = 0; i < nextToLastLine; ++i)
+            positions[i + 1] = positions[i] + offset.distributionOffset + tracks[i].baseSize() + trackGap;
+        positions[lastLine] = positions[nextToLastLine] + tracks[nextToLastLine].baseSize();
+    }
     auto& offsetBetweenTracks = isRowAxis ? m_offsetBetweenColumns : m_offsetBetweenRows;
     offsetBetweenTracks = offset.distributionOffset;
 }
@@ -2235,7 +2263,8 @@ LayoutPoint LayoutGrid::findChildLogicalPosition(const LayoutBox& child, GridSiz
 
 void LayoutGrid::paintChildren(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
-    GridPainter(*this).paintChildren(paintInfo, paintOffset);
+    if (!m_gridItemArea.isEmpty())
+        GridPainter(*this).paintChildren(paintInfo, paintOffset);
 }
 
 } // namespace blink
