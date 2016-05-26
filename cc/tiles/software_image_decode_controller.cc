@@ -446,6 +446,7 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
     decoded_image = decoded_images_it->second.get();
     if (decoded_image->is_locked()) {
       RefImage(key);
+      decoded_image->mark_used();
       SanityCheckState(__LINE__, true);
       return DecodedDrawImage(
           decoded_image->image(), decoded_image->src_rect_offset(),
@@ -464,6 +465,7 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
     RefAtRasterImage(key);
     SanityCheckState(__LINE__, true);
     DecodedImage* at_raster_decoded_image = at_raster_images_it->second.get();
+    at_raster_decoded_image->mark_used();
     auto decoded_draw_image =
         DecodedDrawImage(at_raster_decoded_image->image(),
                          at_raster_decoded_image->src_rect_offset(),
@@ -516,6 +518,7 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
   DCHECK(decoded_image->is_locked());
   RefAtRasterImage(key);
   SanityCheckState(__LINE__, true);
+  decoded_image->mark_used();
   auto decoded_draw_image =
       DecodedDrawImage(decoded_image->image(), decoded_image->src_rect_offset(),
                        GetScaleAdjustment(key), GetDecodedFilterQuality(key));
@@ -924,14 +927,56 @@ SoftwareImageDecodeController::DecodedImage::DecodedImage(
 
 SoftwareImageDecodeController::DecodedImage::~DecodedImage() {
   DCHECK(!locked_);
+  // lock_count | used  | last lock failed | result state
+  // ===========+=======+==================+==================
+  //  1         | false | false            | WASTED
+  //  1         | false | true             | WASTED
+  //  1         | true  | false            | USED
+  //  1         | true  | true             | USED_RELOCK_FAILED
+  //  >1        | false | false            | WASTED_RELOCKED
+  //  >1        | false | true             | WASTED_RELOCKED
+  //  >1        | true  | false            | USED_RELOCKED
+  //  >1        | true  | true             | USED_RELOCKED
+  // Note that it's important not to reorder the following enums, since the
+  // numerical values are used in the histogram code.
+  enum State : int {
+    DECODED_IMAGE_STATE_WASTED,
+    DECODED_IMAGE_STATE_USED,
+    DECODED_IMAGE_STATE_USED_RELOCK_FAILED,
+    DECODED_IMAGE_STATE_WASTED_RELOCKED,
+    DECODED_IMAGE_STATE_USED_RELOCKED,
+    DECODED_IMAGE_STATE_COUNT
+  } state = DECODED_IMAGE_STATE_WASTED;
+
+  if (usage_stats_.lock_count == 1) {
+    if (!usage_stats_.used)
+      state = DECODED_IMAGE_STATE_WASTED;
+    else if (usage_stats_.last_lock_failed)
+      state = DECODED_IMAGE_STATE_USED_RELOCK_FAILED;
+    else
+      state = DECODED_IMAGE_STATE_USED;
+  } else {
+    if (usage_stats_.used)
+      state = DECODED_IMAGE_STATE_USED_RELOCKED;
+    else
+      state = DECODED_IMAGE_STATE_WASTED_RELOCKED;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Renderer4.SoftwareImageDecodeState", state,
+                            DECODED_IMAGE_STATE_COUNT);
+  UMA_HISTOGRAM_BOOLEAN("Renderer4.SoftwareImageDecodeState.FirstLockWasted",
+                        usage_stats_.first_lock_wasted);
 }
 
 bool SoftwareImageDecodeController::DecodedImage::Lock() {
   DCHECK(!locked_);
   bool success = memory_->Lock();
-  if (!success)
+  if (!success) {
+    usage_stats_.last_lock_failed = true;
     return false;
+  }
   locked_ = true;
+  ++usage_stats_.lock_count;
   return true;
 }
 
@@ -939,6 +984,8 @@ void SoftwareImageDecodeController::DecodedImage::Unlock() {
   DCHECK(locked_);
   memory_->Unlock();
   locked_ = false;
+  if (usage_stats_.lock_count == 1)
+    usage_stats_.first_lock_wasted = !usage_stats_.used;
 }
 
 // MemoryBudget

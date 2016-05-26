@@ -157,14 +157,28 @@ class CC_EXPORT SoftwareImageDecodeController
     // An ID which uniquely identifies this DecodedImage within the image decode
     // controller. Used in memory tracing.
     uint64_t tracing_id() const { return tracing_id_; }
+    // Mark this image as being used in either a draw or as a source for a
+    // scaled image. Either case represents this decode as being valuable and
+    // not wasted.
+    void mark_used() { usage_stats_.used = true; }
 
    private:
+    struct UsageStats {
+      // We can only create a decoded image in a locked state, so the initial
+      // lock count is 1.
+      int lock_count = 1;
+      bool used = false;
+      bool last_lock_failed = false;
+      bool first_lock_wasted = false;
+    };
+
     bool locked_;
     SkImageInfo image_info_;
     std::unique_ptr<base::DiscardableMemory> memory_;
     sk_sp<SkImage> image_;
     SkSize src_rect_offset_;
     uint64_t tracing_id_;
+    UsageStats usage_stats_;
   };
 
   // MemoryBudget is a convenience class for memory bookkeeping and ensuring
