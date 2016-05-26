@@ -46,9 +46,11 @@ class VideoCaptureControllerEventHandler;
 // VideoCaptureManager opens/closes and start/stops video capture devices.
 class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
  public:
+  using VideoCaptureDevice = media::VideoCaptureDevice;
+
   // Callback used to signal the completion of a controller lookup.
-  typedef base::Callback<
-      void(const base::WeakPtr<VideoCaptureController>&)> DoneCB;
+  using DoneCB =
+      base::Callback<void(const base::WeakPtr<VideoCaptureController>&)>;
 
   explicit VideoCaptureManager(
       std::unique_ptr<media::VideoCaptureDeviceFactory> factory);
@@ -158,8 +160,8 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   }
 
   bool TakePhoto(int session_id,
-                 const media::VideoCaptureDevice::TakePhotoCallback&
-                     photo_callback) WARN_UNUSED_RESULT;
+                 const VideoCaptureDevice::TakePhotoCallback& photo_callback)
+      WARN_UNUSED_RESULT;
 
  private:
   class DeviceEntry;
@@ -205,7 +207,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
           on_devices_enumerated_callback,
       MediaStreamType stream_type,
       const media::VideoCaptureDeviceInfos& old_device_info_cache,
-      std::unique_ptr<media::VideoCaptureDevice::Names> names_snapshot);
+      std::unique_ptr<VideoCaptureDevice::Names> names_snapshot);
 
   // Starting a capture device can take 1-2 seconds.
   // To avoid multiple unnecessary start/stop commands to the OS, each start
@@ -217,7 +219,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
                         DeviceEntry* entry,
                         const media::VideoCaptureParams& params);
   void OnDeviceStarted(int serial_id,
-                       std::unique_ptr<media::VideoCaptureDevice> device);
+                       std::unique_ptr<VideoCaptureDevice> device);
   void DoStopDevice(DeviceEntry* entry);
   void HandleQueuedStartRequest();
 
@@ -225,29 +227,27 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   // VideoCaptureDevice is returned to the IO-thread and stored in
   // a DeviceEntry in |devices_|. Ownership of |client| passes to
   // the device.
-  std::unique_ptr<media::VideoCaptureDevice> DoStartDeviceCaptureOnDeviceThread(
-      const media::VideoCaptureDevice::Name& name,
+  std::unique_ptr<VideoCaptureDevice> DoStartDeviceCaptureOnDeviceThread(
+      const VideoCaptureDevice::Name& name,
       const media::VideoCaptureParams& params,
-      std::unique_ptr<media::VideoCaptureDevice::Client> client);
+      std::unique_ptr<VideoCaptureDevice::Client> client);
 
-  std::unique_ptr<media::VideoCaptureDevice> DoStartTabCaptureOnDeviceThread(
+  std::unique_ptr<VideoCaptureDevice> DoStartTabCaptureOnDeviceThread(
       const std::string& device_id,
       const media::VideoCaptureParams& params,
-      std::unique_ptr<media::VideoCaptureDevice::Client> client);
+      std::unique_ptr<VideoCaptureDevice::Client> client);
 
-  std::unique_ptr<media::VideoCaptureDevice>
-  DoStartDesktopCaptureOnDeviceThread(
+  std::unique_ptr<VideoCaptureDevice> DoStartDesktopCaptureOnDeviceThread(
       const std::string& device_id,
       const media::VideoCaptureParams& params,
-      std::unique_ptr<media::VideoCaptureDevice::Client> client);
+      std::unique_ptr<VideoCaptureDevice::Client> client);
 
   // Stops and destroys the VideoCaptureDevice held in |device|.
-  void DoStopDeviceOnDeviceThread(
-      std::unique_ptr<media::VideoCaptureDevice> device);
+  void DoStopDeviceOnDeviceThread(std::unique_ptr<VideoCaptureDevice> device);
 
   void DoTakePhotoOnDeviceThread(
       media::VideoCaptureDevice* device,
-      const media::VideoCaptureDevice::TakePhotoCallback& photo_callback);
+      const VideoCaptureDevice::TakePhotoCallback& photo_callback);
 
   media::VideoCaptureDeviceInfo* FindDeviceInfoById(
       const std::string& id,
