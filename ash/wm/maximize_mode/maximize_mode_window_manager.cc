@@ -6,6 +6,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/common/window_state.h"
@@ -164,6 +165,21 @@ void MaximizeModeWindowManager::OnDisplayMetricsChanged(const display::Display&,
 }
 
 void MaximizeModeWindowManager::OnTouchEvent(ui::TouchEvent* event) {
+  const SessionStateDelegate* delegate =
+      Shell::GetInstance()->session_state_delegate();
+
+  if (delegate->IsScreenLocked())
+    return;
+
+  switch (delegate->GetSessionState()) {
+    case SessionStateDelegate::SESSION_STATE_LOGIN_PRIMARY:
+      return;
+    case SessionStateDelegate::SESSION_STATE_ACTIVE:
+      break;
+    case SessionStateDelegate::SESSION_STATE_LOGIN_SECONDARY:
+      return;
+  }
+
   if (event->type() != ui::ET_TOUCH_PRESSED)
     return;
 
