@@ -336,7 +336,6 @@ LayoutUnit LayoutGrid::computeTrackBasedLogicalHeight(const GridSizingData& sizi
 
 void LayoutGrid::computeTrackSizesForDirection(GridTrackSizingDirection direction, GridSizingData& sizingData, LayoutUnit freeSpace)
 {
-    ASSERT(freeSpace >= 0);
     sizingData.freeSpaceForDirection(direction) = freeSpace - guttersSize(direction, direction == ForRows ? gridRowCount() : gridColumnCount());
     sizingData.sizingOperation = GridSizingData::TrackSizing;
 
