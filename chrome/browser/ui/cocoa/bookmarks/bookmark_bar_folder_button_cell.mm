@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_folder_button_cell.h"
 
+#include "ui/base/material_design/material_design_controller.h"
+
 using bookmarks::BookmarkNode;
 
 @implementation BookmarkBarFolderButtonCell
@@ -26,6 +28,13 @@ using bookmarks::BookmarkNode;
 }
 
 - (void)setMouseInside:(BOOL)flag animate:(BOOL)animated {
+}
+
+- (int)verticalTextOffset {
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    return [super verticalTextOffset];
+  }
+  return -3;
 }
 
 @end

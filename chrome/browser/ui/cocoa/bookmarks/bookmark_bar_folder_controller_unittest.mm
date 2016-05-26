@@ -1284,8 +1284,10 @@ TEST_F(BookmarkBarFolderControllerMenuTest, MenuSizingAndScrollArrows) {
   EXPECT_TRUE(folderController);
   NSWindow* folderWindow = [folderController window];
   EXPECT_TRUE(folderWindow);
-  CGFloat expectedHeight = (CGFloat)bookmarks::kBookmarkFolderButtonHeight +
-      (2*bookmarks::BookmarkVerticalPadding());
+  CGFloat expectedHeight =
+      (CGFloat)bookmarks::kBookmarkFolderButtonHeight +
+      bookmarks::BookmarkTopVerticalPadding() +
+      bookmarks::BookmarkBottomVerticalPadding();
   NSRect windowFrame = [folderWindow frame];
   CGFloat windowHeight = NSHeight(windowFrame);
   EXPECT_CGFLOAT_EQ(expectedHeight, windowHeight);
@@ -1593,18 +1595,20 @@ TEST_F(BookmarkBarFolderControllerMenuTest, DropPositionIndicator) {
   EXPECT_TRUE(folder);
 
   // Test a series of points starting at the top of the folder.
-  const CGFloat yOffset = 0.5 * bookmarks::BookmarkVerticalPadding();
+  const CGFloat yTopOffset = 0.5 * bookmarks::BookmarkTopVerticalPadding();
+  const CGFloat yBottomOffset =
+      0.5 * bookmarks::BookmarkBottomVerticalPadding();
   BookmarkButton* targetButton = [folder buttonWithTitleEqualTo:@"2f1b"];
   ASSERT_TRUE(targetButton);
   NSPoint targetPoint = [targetButton top];
   CGFloat pos = [folder indicatorPosForDragToPoint:targetPoint];
-  EXPECT_CGFLOAT_EQ(targetPoint.y + yOffset, pos);
+  EXPECT_CGFLOAT_EQ(targetPoint.y + yTopOffset, pos);
   pos = [folder indicatorPosForDragToPoint:[targetButton bottom]];
   targetButton = [folder buttonWithTitleEqualTo:@"2f2f"];
-  EXPECT_CGFLOAT_EQ([targetButton top].y + yOffset, pos);
+  EXPECT_CGFLOAT_EQ([targetButton top].y + yTopOffset, pos);
   pos = [folder indicatorPosForDragToPoint:NSMakePoint(10,0)];
   targetButton = [folder buttonWithTitleEqualTo:@"2f3b"];
-  EXPECT_CGFLOAT_EQ([targetButton bottom].y - yOffset, pos);
+  EXPECT_CGFLOAT_EQ([targetButton bottom].y - yBottomOffset, pos);
 }
 
 @interface BookmarkBarControllerNoDelete : BookmarkBarController
