@@ -1299,7 +1299,7 @@ TEST_F(HostContentSettingsMapTest, GuestProfileMigration) {
   EXPECT_TRUE(all_settings_dictionary->empty());
 }
 
-TEST_F(HostContentSettingsMapTest, MigrateOldSettings) {
+TEST_F(HostContentSettingsMapTest, MigrateKeygenSettings) {
   TestingProfile profile;
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
@@ -1326,7 +1326,7 @@ TEST_F(HostContentSettingsMapTest, MigrateOldSettings) {
             host_content_settings_map->GetContentSetting(
                 host, host, CONTENT_SETTINGS_TYPE_KEYGEN, std::string()));
 
-  host_content_settings_map->MigrateOldSettings();
+  host_content_settings_map->MigrateKeygenSettings();
 
   ContentSettingsForOneType settings;
   host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_KEYGEN,

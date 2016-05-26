@@ -283,7 +283,7 @@ class HostContentSettingsMap : public content_settings::Observer,
 
  private:
   friend class base::RefCountedThreadSafe<HostContentSettingsMap>;
-  friend class HostContentSettingsMapTest_MigrateOldSettings_Test;
+  friend class HostContentSettingsMapTest_MigrateKeygenSettings_Test;
 
   friend class content_settings::TestUtils;
 
@@ -304,16 +304,15 @@ class HostContentSettingsMap : public content_settings::Observer,
       ContentSettingsType content_type,
       ProviderType* provider_type) const;
 
-  // Migrate old settings for ContentSettingsTypes which only use a primary
-  // pattern. Settings which only used a primary pattern were inconsistent in
-  // what they did with the secondary pattern. Some stored a
-  // ContentSettingsPattern::Wildcard() whereas others stored the same pattern
-  // twice. This function migrates all such settings to use
-  // ContentSettingsPattern::Wildcard(). This allows us to make the scoping code
-  // consistent across different settings.
+  // Migrate Keygen settings which only use a primary pattern. Settings which
+  // only used a primary pattern were inconsistent in what they did with the
+  // secondary pattern. Some stored a ContentSettingsPattern::Wildcard() whereas
+  // others stored the same pattern twice. This function migrates all such
+  // settings to use ContentSettingsPattern::Wildcard(). This allows us to make
+  // the scoping code consistent across different settings.
   // TODO(lshang): Remove this when clients have migrated (~M53). We should
   // leave in some code to remove old-format settings for a long time.
-  void MigrateOldSettings();
+  void MigrateKeygenSettings();
 
   // Collect UMA data about the number of exceptions.
   void RecordNumberOfExceptions();
