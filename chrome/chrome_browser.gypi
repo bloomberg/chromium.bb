@@ -670,6 +670,8 @@
       'browser/usb/web_usb_permission_provider.h',
       'browser/web_data_service_factory.cc',
       'browser/web_data_service_factory.h',
+      'browser/win/settings_app_monitor.cc',
+      'browser/win/settings_app_monitor.h',
     ],
     # Android sources included regardless of android_java_ui.
     'chrome_browser_android_sources': [

@@ -50558,6 +50558,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SettingsAppMonitor.InitializationResult" enum="BooleanSuccess">
+  <owner>grt@chromium.org</owner>
+  <summary>
+    Indicates whether or not the Windows Settings app monitor was initialized.
+  </summary>
+</histogram>
+
 <histogram name="SettingsResetBubble.NumNoThanksPerReset">
   <owner>mad@chromium.org</owner>
   <summary>

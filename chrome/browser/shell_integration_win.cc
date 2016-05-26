@@ -23,6 +23,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -37,6 +39,7 @@
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/win/settings_app_monitor.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
@@ -222,6 +225,68 @@ DefaultWebClientState GetDefaultWebClientStateFromShellUtilDefaultState(
       DCHECK_EQ(ShellUtil::UNKNOWN_DEFAULT, default_state);
       return DefaultWebClientState::UNKNOWN_DEFAULT;
   }
+}
+
+// A recorder of user actions in the Windows Settings app.
+class DefaultBrowserActionRecorder : public win::SettingsAppMonitor::Delegate {
+ public:
+  // Creates the recorder and the monitor that drives it. |continuation| will be
+  // run once the monitor's initialization completes (regardless of success or
+  // failure).
+  explicit DefaultBrowserActionRecorder(base::Closure continuation)
+      : continuation_(std::move(continuation)), settings_app_monitor_(this) {}
+
+ private:
+  // win::SettingsAppMonitor::Delegate:
+  void OnInitialized(HRESULT result) override {
+    UMA_HISTOGRAM_BOOLEAN("SettingsAppMonitor.InitializationResult",
+                          SUCCEEDED(result));
+    if (SUCCEEDED(result)) {
+      base::RecordAction(
+          base::UserMetricsAction("SettingsAppMonitor.Initialized"));
+    }
+    continuation_.Run();
+    continuation_ = base::Closure();
+  }
+
+  void OnAppFocused() override {
+    base::RecordAction(
+        base::UserMetricsAction("SettingsAppMonitor.AppFocused"));
+  }
+
+  void OnChooserInvoked() override {
+    base::RecordAction(
+        base::UserMetricsAction("SettingsAppMonitor.ChooserInvoked"));
+  }
+
+  void OnBrowserChosen(const base::string16& browser_name) override {
+    if (browser_name ==
+        BrowserDistribution::GetDistribution()->GetDisplayName()) {
+      base::RecordAction(
+          base::UserMetricsAction("SettingsAppMonitor.ChromeBrowserChosen"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("SettingsAppMonitor.OtherBrowserChosen"));
+    }
+  }
+
+  // A closure to be run once initialization completes.
+  base::Closure continuation_;
+
+  // Monitors user interaction with the Windows Settings app for the sake of
+  // reporting user actions.
+  win::SettingsAppMonitor settings_app_monitor_;
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultBrowserActionRecorder);
+};
+
+// A function bound up in a callback with a DefaultBrowserActionRecorder and
+// a closure to keep the former alive until the time comes to run the latter.
+void OnSettingsAppFinished(
+    std::unique_ptr<DefaultBrowserActionRecorder> recorder,
+    const base::Closure& on_finished_callback) {
+  recorder.reset();
+  on_finished_callback.Run();
 }
 
 // There is no way to make sure the user is done with the system settings, but a
@@ -489,12 +554,21 @@ void SetAsDefaultBrowserUsingSystemSettings(
     return;
   }
 
-  // The helper manages its own lifetime.
-  static const wchar_t* const kProtocols[] = {L"http", L"https", nullptr};
-  OpenSystemSettingsHelper::Begin(kProtocols, on_finished_callback);
+  // Create an action recorder that will open the settings app once it has
+  // initialized.
+  std::unique_ptr<DefaultBrowserActionRecorder> recorder(
+      new DefaultBrowserActionRecorder(base::Bind(
+          base::IgnoreResult(&ShellUtil::ShowMakeChromeDefaultSystemUI),
+          base::Unretained(BrowserDistribution::GetDistribution()),
+          chrome_exe)));
 
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  ShellUtil::ShowMakeChromeDefaultSystemUI(dist, chrome_exe);
+  // The helper manages its own lifetime. Bind the action recorder
+  // into the finished callback to keep it alive throughout the
+  // interaction.
+  static const wchar_t* const kProtocols[] = {L"http", L"https", nullptr};
+  OpenSystemSettingsHelper::Begin(
+      kProtocols, base::Bind(&OnSettingsAppFinished, base::Passed(&recorder),
+                             on_finished_callback));
 }
 
 bool SetAsDefaultProtocolClientUsingIntentPicker(const std::string& protocol) {
