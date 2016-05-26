@@ -97,6 +97,7 @@
 #include "chrome/browser/ui/webui/options/chromeos/power_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/proxy_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/stats_options_handler.h"
+#include "chrome/browser/ui/webui/options/chromeos/storage_manager_handler.h"
 #include "chrome/browser/ui/webui/options/chromeos/user_image_source.h"
 #endif
 
@@ -341,6 +342,8 @@ OptionsUI::OptionsUI(content::WebUI* web_ui)
       new chromeos::options::ChangePictureOptionsHandler());
   AddOptionsPageUIHandler(localized_strings,
                           new chromeos::options::StatsOptionsHandler());
+  AddOptionsPageUIHandler(localized_strings,
+                          new chromeos::options::StorageManagerHandler());
 
   policy::ConsumerManagementService* consumer_management =
       g_browser_process->platform_part()->browser_policy_connector_chromeos()->

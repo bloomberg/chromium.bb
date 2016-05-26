@@ -1302,6 +1302,12 @@ Press any key to continue exploring.
   <message name="IDS_FLAGS_FULLSCREEN_APP_LIST_DESCRIPTION" desc="Description for the flag to enable experimental fullscreen app list.">
     The app-list will appear as fullscreen mode when it's in touch view mode. This flag does nothing outside of the mode.
   </message>
+  <message name="IDS_FLAGS_STORAGE_MANAGER_NAME" desc="Description for the flag to enable experimental storage manager.">
+    Storage manager
+  </message>
+  <message name="IDS_FLAGS_STORAGE_MANAGER_DESCRIPTION" desc="Description for the flag to enable experimental storage manager.">
+    Enables storage manager to manage local storage.
+  </message>
   <message name="IDS_OFFERS_CONSENT_INFOBAR_LABEL_LEARN_MORE" desc="Text of the Learn More link in the echo dialog.">
     Learn More
   </message>
@@ -2065,6 +2071,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE">
     Keyboard settings
   </message>
+  <message name="IDS_OPTIONS_DEVICE_GROUP_STORAGE_MANAGER_BUTTON_TITLE">
+    Storage
+  </message>
   <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION">
     Pointer speed:
   </message>
@@ -2533,11 +2542,14 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING" desc="Appears in the Mobile Data drop-down menu in the Internet Connections section of the Settings tab.">
     Allow mobile data roaming
   </message>
-<message name="IDS_OPTIONS_SETTINGS_TOGGLE_DATA_ROAMING_RESTRICTION" desc="Tooltip for the 'enable data roaming' entry in the Mobile Data drop-down menu indicating why the command is disabled.">
+  <message name="IDS_OPTIONS_SETTINGS_TOGGLE_DATA_ROAMING_RESTRICTION" desc="Tooltip for the 'enable data roaming' entry in the Mobile Data drop-down menu indicating why the command is disabled.">
     This setting may only be modified by the owner.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_DISABLE_DATA_ROAMING" desc="Appears in the Mobile Data drop-down menu in the Internet Connections section of the Settings tab.">
     Disable mobile data roaming
+  </message>
+  <message name="IDS_OPTIONS_SETTINGS_STORAGE_MANAGER_TAB_TITLE" desc="Title for the storage manager tab.">
+    Storage
   </message>
   <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
     Enable Guest browsing

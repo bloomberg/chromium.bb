@@ -1932,6 +1932,8 @@
       'browser/ui/webui/options/chromeos/proxy_handler.h',
       'browser/ui/webui/options/chromeos/stats_options_handler.cc',
       'browser/ui/webui/options/chromeos/stats_options_handler.h',
+      'browser/ui/webui/options/chromeos/storage_manager_handler.cc',
+      'browser/ui/webui/options/chromeos/storage_manager_handler.h',
       'browser/ui/webui/options/chromeos/user_image_source.cc',
       'browser/ui/webui/options/chromeos/user_image_source.h',
       'browser/ui/webui/options/clear_browser_data_handler.cc',

@@ -491,6 +491,8 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       IDS_OPTIONS_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION },
     { "sectionTitleDevice", IDS_OPTIONS_DEVICE_GROUP_NAME },
     { "sectionTitleInternet", IDS_OPTIONS_INTERNET_OPTIONS_GROUP_LABEL },
+    { "storageManagerButtonTitle",
+      IDS_OPTIONS_DEVICE_GROUP_STORAGE_MANAGER_BUTTON_TITLE },
     { "syncButtonTextStart", IDS_SYNC_SETUP_BUTTON_LABEL },
     { "thirdPartyImeConfirmDisable", IDS_CANCEL },
     { "thirdPartyImeConfirmEnable", IDS_OK },
@@ -731,6 +733,10 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   bool allow_bluetooth = true;
   cros_settings->GetBoolean(chromeos::kAllowBluetooth, &allow_bluetooth);
   values->SetBoolean("allowBluetooth", allow_bluetooth);
+
+  values->SetBoolean("enableStorageManager",
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableStorageManager));
 #endif
 }
 

@@ -223,6 +223,9 @@ function load() {
     PageManager.registerOverlay(PowerOverlay.getInstance(),
                                 BrowserOptions.getInstance(),
                                 [$('power-settings-link')]);
+    PageManager.registerOverlay(StorageManager.getInstance(),
+                                BrowserOptions.getInstance(),
+                                [$('storage-manager-button')]);
     PageManager.registerOverlay(ThirdPartyImeConfirmOverlay.getInstance(),
                                 LanguageOptions.getInstance());
   }

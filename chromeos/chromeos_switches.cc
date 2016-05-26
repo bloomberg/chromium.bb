@@ -174,6 +174,9 @@ const char kEnableTouchpadThreeFingerClick[]
 const char kEnableScreenshotTestingWithMode[] =
     "enable-screenshot-testing-with-mode";
 
+// Enables experimental storage manager to manage local storage.
+const char kEnableStorageManager[] = "enable-storage-manager";
+
 // Enable Kiosk mode for ChromeOS. Note this switch refers to retail mode rather
 // than the kiosk app mode.
 const char kEnableKioskMode[] = "enable-kiosk-mode";
