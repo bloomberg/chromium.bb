@@ -199,13 +199,12 @@ public class CardsLayoutOperations {
 
     private static View getFirstViewMatchingViewType(RecyclerView recyclerView,
             int newTabPageListItemViewType) {
-        int adapterSize = recyclerView.getAdapter().getItemCount();
-        for (int i = 0; i < adapterSize; i++) {
-            if (recyclerView.getAdapter().getItemViewType(i) == newTabPageListItemViewType) {
-                return recyclerView.getLayoutManager().findViewByPosition(i);
+        for (int i = 0; i < recyclerView.getLayoutManager().getChildCount(); i++) {
+            RecyclerView.ViewHolder viewHolder = recyclerView.findViewHolderForLayoutPosition(i);
+            if (viewHolder != null && viewHolder.getItemViewType() == newTabPageListItemViewType) {
+                return viewHolder.itemView;
             }
         }
         return null;
     }
 }
-
