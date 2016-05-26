@@ -364,7 +364,7 @@ public:
     virtual void moveChildrenTo(LayoutBoxModelObject* toBoxModelObject, LayoutObject* startChild, LayoutObject* endChild, LayoutObject* beforeChild, bool fullRemoveInsert = false);
 
 private:
-    void createLayer(PaintLayerType);
+    void createLayer();
 
     LayoutUnit computedCSSPadding(const Length&) const;
     bool isBoxModelObject() const final { return true; }

@@ -209,7 +209,7 @@ struct PaintLayerRareData {
 class CORE_EXPORT PaintLayer : public DisplayItemClient {
     WTF_MAKE_NONCOPYABLE(PaintLayer);
 public:
-    PaintLayer(LayoutBoxModelObject*, PaintLayerType);
+    PaintLayer(LayoutBoxModelObject*);
     ~PaintLayer() override;
 
     // DisplayItemClient methods
@@ -238,8 +238,6 @@ public:
 
     // FIXME: Many people call this function while it has out-of-date information.
     bool isSelfPaintingLayer() const { return m_isSelfPaintingLayer; }
-
-    void setLayerType(PaintLayerType layerType) { m_layerType = layerType; ASSERT(static_cast<PaintLayerType>(m_layerType) == layerType); }
 
     bool isTransparent() const { return layoutObject()->isTransparent() || layoutObject()->style()->hasBlendMode() || layoutObject()->hasMask(); }
 
@@ -785,8 +783,6 @@ private:
         m_needsPaintPhaseFloat |= layer.m_needsPaintPhaseFloat;
         m_needsPaintPhaseDescendantBlockBackgrounds |= layer.m_needsPaintPhaseDescendantBlockBackgrounds;
     }
-
-    unsigned m_layerType : 2; // PaintLayerType
 
     // Self-painting layer is an optimization where we avoid the heavy Layer painting
     // machinery for a Layer allocated only to handle the overflow clip case.
