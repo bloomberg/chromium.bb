@@ -18,7 +18,7 @@ DisplayCompositorTestSuite::~DisplayCompositorTestSuite() {}
 
 void DisplayCompositorTestSuite::Initialize() {
   base::TestSuite::Initialize();
-  gfx::GLSurfaceTestSupport::InitializeOneOff();
+  gl::GLSurfaceTestSupport::InitializeOneOff();
   cc::CCPaths::RegisterPathProvider();
 
   message_loop_.reset(new base::MessageLoop);

@@ -33,7 +33,7 @@
 namespace media {
 
 namespace {
-static gfx::GLContext* GetGLContext(
+static gl::GLContext* GetGLContext(
     const base::WeakPtr<gpu::GpuCommandBufferStub>& stub) {
   if (!stub) {
     DLOG(ERROR) << "Stub is gone; no GLContext.";

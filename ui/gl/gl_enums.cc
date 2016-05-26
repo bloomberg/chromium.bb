@@ -7,7 +7,7 @@
 
 #include "ui/gl/gl_enums.h"
 
-namespace gfx {
+namespace gl {
 
 std::string GLEnums::GetStringEnum(uint32_t value) {
   const EnumToString* entry = enum_to_string_table_;
@@ -36,5 +36,4 @@ std::string GLEnums::GetStringBool(uint32_t value) {
 
 #include "ui/gl/gl_enums_implementation_autogen.h"
 
-}  // namespace gfx
-
+}  // namespace gl

@@ -13,7 +13,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 
 class GLSurface;
 
@@ -47,6 +47,6 @@ class GL_EXPORT GLContextGLX : public GLContextReal {
   DISALLOW_COPY_AND_ASSIGN(GLContextGLX);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_CONTEXT_GLX_H_

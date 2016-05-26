@@ -103,8 +103,8 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
     return GetCommonCommandName(static_cast<cmd::CommandId>(command_id));
   }
 
-  bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
-                  const scoped_refptr<gfx::GLContext>& context,
+  bool Initialize(const scoped_refptr<gl::GLSurface>& surface,
+                  const scoped_refptr<gl::GLContext>& context,
                   bool offscreen,
                   const gfx::Size& offscreen_size,
                   const DisallowedFeatures& disallowed_features,
@@ -136,7 +136,7 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   }
 
   // Set the surface associated with the default FBO.
-  void SetSurface(const scoped_refptr<gfx::GLSurface>& surface) override {
+  void SetSurface(const scoped_refptr<gl::GLSurface>& surface) override {
     DCHECK(context_->IsCurrent(nullptr));
     DCHECK(surface_.get());
     surface_ = surface;
@@ -183,7 +183,7 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   GLES2Util* GetGLES2Util() override { return nullptr; }
 
   // Gets the associated GLContext.
-  gfx::GLContext* GetGLContext() override { return nullptr; }
+  gl::GLContext* GetGLContext() override { return nullptr; }
 
   // Gets the associated ContextGroup
   ContextGroup* GetContextGroup() override { return nullptr; }
@@ -359,8 +359,8 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   static const CommandInfo command_info[kNumCommands - kFirstGLES2Command];
 
   // The GL context this decoder renders to on behalf of the client.
-  scoped_refptr<gfx::GLSurface> surface_;
-  scoped_refptr<gfx::GLContext> context_;
+  scoped_refptr<gl::GLSurface> surface_;
+  scoped_refptr<gl::GLContext> context_;
 
   // Managers
   std::unique_ptr<ImageManager> image_manager_;

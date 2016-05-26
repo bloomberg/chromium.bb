@@ -4,7 +4,7 @@
 
 #include "ui/gl/gl_context_stub.h"
 
-namespace gfx {
+namespace gl {
 
 GLContextStub::GLContextStub() : GLContextReal(nullptr) {}
 GLContextStub::GLContextStub(GLShareGroup* share_group)
@@ -42,4 +42,4 @@ std::string GLContextStub::GetGLRenderer() {
 
 GLContextStub::~GLContextStub() {}
 
-}  // namespace gfx
+}  // namespace gl

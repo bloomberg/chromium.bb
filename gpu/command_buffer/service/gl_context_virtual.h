@@ -13,7 +13,7 @@
 #include "gpu/gpu_export.h"
 #include "ui/gl/gl_context.h"
 
-namespace gfx {
+namespace gl {
 class GPUPreference;
 class GPUTimingClient;
 class GLShareGroup;
@@ -26,21 +26,20 @@ class GLES2Decoder;
 }
 
 // Encapsulates a virtual OpenGL context.
-class GPU_EXPORT GLContextVirtual : public gfx::GLContext {
+class GPU_EXPORT GLContextVirtual : public gl::GLContext {
  public:
-  GLContextVirtual(
-      gfx::GLShareGroup* share_group,
-      gfx::GLContext* shared_context,
-      base::WeakPtr<gles2::GLES2Decoder> decoder);
+  GLContextVirtual(gl::GLShareGroup* share_group,
+                   gl::GLContext* shared_context,
+                   base::WeakPtr<gles2::GLES2Decoder> decoder);
 
   // Implement GLContext.
-  bool Initialize(gfx::GLSurface* compatible_surface,
-                  gfx::GpuPreference gpu_preference) override;
-  bool MakeCurrent(gfx::GLSurface* surface) override;
-  void ReleaseCurrent(gfx::GLSurface* surface) override;
-  bool IsCurrent(gfx::GLSurface* surface) override;
+  bool Initialize(gl::GLSurface* compatible_surface,
+                  gl::GpuPreference gpu_preference) override;
+  bool MakeCurrent(gl::GLSurface* surface) override;
+  void ReleaseCurrent(gl::GLSurface* surface) override;
+  bool IsCurrent(gl::GLSurface* surface) override;
   void* GetHandle() override;
-  scoped_refptr<gfx::GPUTimingClient> CreateGPUTimingClient() override;
+  scoped_refptr<gl::GPUTimingClient> CreateGPUTimingClient() override;
   void OnSetSwapInterval(int interval) override;
   std::string GetExtensions() override;
   void SetSafeToForceGpuSwitch() override;
@@ -54,7 +53,7 @@ class GPU_EXPORT GLContextVirtual : public gfx::GLContext {
  private:
   void Destroy();
 
-  scoped_refptr<gfx::GLContext> shared_context_;
+  scoped_refptr<gl::GLContext> shared_context_;
   base::WeakPtr<gles2::GLES2Decoder> decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContextVirtual);

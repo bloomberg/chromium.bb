@@ -14,7 +14,7 @@ namespace gles2 {
 }  // namespace gles2
 }  // namespace gpu
 
-namespace gfx {
+namespace gl {
 
 // An interface for Restoring GL State.
 // This will expand over time to provide an more optimizable implementation.
@@ -35,6 +35,6 @@ class GL_EXPORT GLStateRestorer {
   DISALLOW_COPY_AND_ASSIGN(GLStateRestorer);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_STATE_RESTORER_H_

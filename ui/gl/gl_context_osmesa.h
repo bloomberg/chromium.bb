@@ -12,7 +12,7 @@
 
 typedef struct osmesa_context* OSMesaContext;
 
-namespace gfx {
+namespace gl {
 
 class GLShareGroup;
 class GLSurface;
@@ -43,6 +43,6 @@ class GL_EXPORT GLContextOSMesa : public GLContextReal {
   DISALLOW_COPY_AND_ASSIGN(GLContextOSMesa);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_CONTEXT_OSMESA_H_

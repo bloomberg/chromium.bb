@@ -10,7 +10,7 @@
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_fence.h"
 
-namespace gfx {
+namespace gl {
 
 class GL_EXPORT GLFenceEGL : public GLFence {
  public:
@@ -31,6 +31,6 @@ class GL_EXPORT GLFenceEGL : public GLFence {
   DISALLOW_COPY_AND_ASSIGN(GLFenceEGL);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_FENCE_EGL_H_

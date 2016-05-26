@@ -22,14 +22,14 @@ class GpuCommandBufferStub;
 
 // An implementation of ImageTransportSurface that implements GLSurface through
 // GLSurfaceAdapter, thereby forwarding GLSurface methods through to it.
-class PassThroughImageTransportSurface : public gfx::GLSurfaceAdapter {
+class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
  public:
   PassThroughImageTransportSurface(GpuChannelManager* manager,
                                    GpuCommandBufferStub* stub,
-                                   gfx::GLSurface* surface);
+                                   gl::GLSurface* surface);
 
   // GLSurface implementation.
-  bool Initialize(gfx::GLSurface::Format format) override;
+  bool Initialize(gl::GLSurface::Format format) override;
   void Destroy() override;
   gfx::SwapResult SwapBuffers() override;
   void SwapBuffersAsync(const SwapCompletionCallback& callback) override;
@@ -42,7 +42,7 @@ class PassThroughImageTransportSurface : public gfx::GLSurfaceAdapter {
   gfx::SwapResult CommitOverlayPlanes() override;
   void CommitOverlayPlanesAsync(
       const SwapCompletionCallback& callback) override;
-  bool OnMakeCurrent(gfx::GLContext* context) override;
+  bool OnMakeCurrent(gl::GLContext* context) override;
 
  private:
   ~PassThroughImageTransportSurface() override;

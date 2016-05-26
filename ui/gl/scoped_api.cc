@@ -6,7 +6,7 @@
 
 #include "ui/gl/gl_gl_api_implementation.h"
 
-namespace gfx {
+namespace gl {
 
 ScopedSetGLToRealGLApi::ScopedSetGLToRealGLApi()
     : old_gl_api_(GetCurrentGLApi()) {
@@ -17,4 +17,4 @@ ScopedSetGLToRealGLApi::~ScopedSetGLToRealGLApi() {
   SetGLApi(old_gl_api_);
 }
 
-}  // namespace gfx
+}  // namespace gl

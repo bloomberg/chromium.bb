@@ -13,7 +13,7 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_switches.h"
 
-namespace gfx {
+namespace gl {
 
 class GLShareGroup;
 
@@ -52,4 +52,4 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
   }
 }
 
-}  // namespace gfx
+}  // namespace gl

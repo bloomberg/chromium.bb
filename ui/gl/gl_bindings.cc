@@ -22,7 +22,7 @@
 #include "ui/gl/gl_surface_egl.h"
 #endif
 
-namespace gfx {
+namespace gl {
 
 std::string DriverOSMESA::GetPlatformExtensions() {
   return "";
@@ -61,4 +61,4 @@ std::string DriverGLX::GetPlatformExtensions() {
 }
 #endif
 
-}  // namespace gfx
+}  // namespace gl

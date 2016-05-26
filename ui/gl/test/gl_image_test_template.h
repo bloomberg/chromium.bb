@@ -51,10 +51,10 @@ GLuint LoadFragmentShader(unsigned target, const gfx::Size& size) {
   );
   // clang-format on
 
-  bool is_gles = gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
+  bool is_gles = gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2;
   switch (target) {
     case GL_TEXTURE_2D:
-      return gfx::GLHelper::LoadShader(
+      return gl::GLHelper::LoadShader(
           GL_FRAGMENT_SHADER,
           base::StringPrintf("%s\n"
                              "#define SamplerType sampler2D\n"
@@ -65,7 +65,7 @@ GLuint LoadFragmentShader(unsigned target, const gfx::Size& size) {
                              kFragmentShader)
               .c_str());
     case GL_TEXTURE_RECTANGLE_ARB:
-      return gfx::GLHelper::LoadShader(
+      return gl::GLHelper::LoadShader(
           GL_FRAGMENT_SHADER,
           base::StringPrintf("%s\n"
                              "#extension GL_ARB_texture_rectangle : require\n"
@@ -99,9 +99,9 @@ void DrawTextureQuad(GLenum target, const gfx::Size& size) {
   // clang-format on
 
   GLuint vertex_shader =
-      gfx::GLHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
+      gl::GLHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
   GLuint fragment_shader = LoadFragmentShader(target, size);
-  GLuint program = gfx::GLHelper::SetupProgram(vertex_shader, fragment_shader);
+  GLuint program = gl::GLHelper::SetupProgram(vertex_shader, fragment_shader);
   EXPECT_NE(program, 0u);
   glUseProgram(program);
 
@@ -109,8 +109,8 @@ void DrawTextureQuad(GLenum target, const gfx::Size& size) {
   ASSERT_NE(sampler_location, -1);
   glUniform1i(sampler_location, 0);
 
-  GLuint vertex_buffer = gfx::GLHelper::SetupQuadVertexBuffer();
-  gfx::GLHelper::DrawQuad(vertex_buffer);
+  GLuint vertex_buffer = gl::GLHelper::SetupQuadVertexBuffer();
+  gl::GLHelper::DrawQuad(vertex_buffer);
 
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
@@ -128,7 +128,7 @@ class GLImageTest : public testing::Test {
     GLImageTestSupport::InitializeGL();
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
     context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
-                                         gfx::PreferIntegratedGpu);
+                                         gl::PreferIntegratedGpu);
     context_->MakeCurrent(surface_.get());
   }
   void TearDown() override {
@@ -139,8 +139,8 @@ class GLImageTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<gfx::GLSurface> surface_;
-  scoped_refptr<gfx::GLContext> context_;
+  scoped_refptr<gl::GLSurface> surface_;
+  scoped_refptr<gl::GLContext> context_;
   GLImageTestDelegate delegate_;
 };
 

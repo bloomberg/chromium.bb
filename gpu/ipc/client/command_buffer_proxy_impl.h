@@ -91,7 +91,7 @@ class GPU_EXPORT CommandBufferProxyImpl
       gpu::GpuStreamPriority stream_priority,
       const gpu::gles2::ContextCreationAttribHelper& attribs,
       const GURL& active_url,
-      gfx::GpuPreference gpu_preference,
+      gl::GpuPreference gpu_preference,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~CommandBufferProxyImpl() override;
 

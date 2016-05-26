@@ -31,7 +31,7 @@
 #define GL_DEPTH24_STENCIL8 0x88F0
 #endif
 
-using ::gfx::MockGLInterface;
+using ::gl::MockGLInterface;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::InSequence;
@@ -52,10 +52,9 @@ namespace gles2 {
 
 namespace {
 
-void SetupUpdateES3UnpackParametersExpectations(
-    ::gfx::MockGLInterface* gl,
-    GLint row_length,
-    GLint image_height) {
+void SetupUpdateES3UnpackParametersExpectations(::gl::MockGLInterface* gl,
+                                                GLint row_length,
+                                                GLint image_height) {
   EXPECT_CALL(*gl, PixelStorei(GL_UNPACK_ROW_LENGTH, row_length))
       .Times(1)
       .RetiresOnSaturation();

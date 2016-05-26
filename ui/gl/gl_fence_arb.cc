@@ -7,7 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace gfx {
+namespace gl {
 
 namespace {
 
@@ -65,4 +65,4 @@ GLFenceARB::~GLFenceARB() {
   glDeleteSync(sync_);
 }
 
-}  // namespace gfx
+}  // namespace gl

@@ -1908,7 +1908,7 @@ def GenerateHeader(file, functions, set_name,
 #ifndef UI_GL_GL_BINDINGS_AUTOGEN_%(name)s_H_
 #define UI_GL_GL_BINDINGS_AUTOGEN_%(name)s_H_
 
-namespace gfx {
+namespace gl {
 
 class GLContext;
 
@@ -1952,13 +1952,13 @@ class GLContext;
   file.write('};\n')
   file.write('\n')
 
-  file.write( '}  // namespace gfx\n')
+  file.write( '}  // namespace gl\n')
 
   # Write macros to invoke function pointers. Always use the GL name for the
   # macro.
   file.write('\n')
   for func in functions:
-    file.write('#define %s ::gfx::g_current_%s_context->%sFn\n' %
+    file.write('#define %s ::gl::g_current_%s_context->%sFn\n' %
         (func['known_as'], set_name.lower(), func['known_as']))
 
   file.write('\n')
@@ -2031,7 +2031,7 @@ def GenerateSource(file, functions, set_name, used_extensions,
 
 %s
 
-namespace gfx {
+namespace gl {
 """ % includes_string)
 
   file.write('\n')
@@ -2368,7 +2368,7 @@ void Driver%s::InitializeExtensionBindings() {
       file.write('}\n')
 
   file.write('\n')
-  file.write('}  // namespace gfx\n')
+  file.write('}  // namespace gl\n')
 
 
 def GetUniquelyNamedFunctions(functions):
@@ -2408,7 +2408,7 @@ def GenerateMockBindingsSource(file, functions):
 
 #include "ui/gl/gl_mock.h"
 
-namespace gfx {
+namespace gl {
 
 // This is called mainly to prevent the compiler combining the code of mock
 // functions with identical contents, so that their function pointers will be
@@ -2462,7 +2462,7 @@ void MakeFunctionUnique(const char *func_name) {
   file.write('}\n')
 
   file.write('\n')
-  file.write('}  // namespace gfx\n')
+  file.write('}  // namespace gl\n')
 
 def GenerateEnumUtils(out_file, input_filenames):
   enum_re = re.compile(r'\#define\s+(GL_[a-zA-Z0-9_]+)\s+([0-9A-Fa-fx]+)')

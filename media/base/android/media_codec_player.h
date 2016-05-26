@@ -201,7 +201,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
 
   // MediaPlayerAndroid implementation.
   void DeleteOnCorrectThread() override;
-  void SetVideoSurface(gfx::ScopedJavaSurface surface) override;
+  void SetVideoSurface(gl::ScopedJavaSurface surface) override;
   void Start() override;
   void Pause(bool is_media_related_action) override;
   void SeekTo(base::TimeDelta timestamp) override;
@@ -382,7 +382,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   TimeDeltaInterpolator interpolator_;
 
   // Pending data to be picked up by the upcoming state.
-  gfx::ScopedJavaSurface pending_surface_;
+  gl::ScopedJavaSurface pending_surface_;
   bool pending_start_;
   base::TimeDelta pending_seek_;
 

@@ -133,7 +133,7 @@ class AndroidVideoDecodeAccelerator::OnFrameAvailableHandler
   // |surface_texture| to receive OnFrameAvailable callbacks.
   OnFrameAvailableHandler(
       AndroidVideoDecodeAccelerator* owner,
-      const scoped_refptr<gfx::SurfaceTexture>& surface_texture)
+      const scoped_refptr<gl::SurfaceTexture>& surface_texture)
       : owner_(owner) {
     // Note that the callback owns a strong ref to us.
     surface_texture->SetFrameAvailableCallbackOnAnyThread(
@@ -526,7 +526,7 @@ bool AndroidVideoDecodeAccelerator::InitializeStrategy() {
       on_destroying_surface_cb_);
 
   // TODO(watk,liberato): move this into the strategy.
-  scoped_refptr<gfx::SurfaceTexture> surface_texture =
+  scoped_refptr<gl::SurfaceTexture> surface_texture =
       strategy_->GetSurfaceTexture();
   if (surface_texture) {
     on_frame_available_handler_ =

@@ -44,8 +44,8 @@ bool SurfacelessGlRenderer::BufferWrapper::Initialize(
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmap(widget, size, gfx::BufferFormat::BGRX_8888,
                                gfx::BufferUsage::SCANOUT);
-  scoped_refptr<gfx::GLImageOzoneNativePixmap> image(
-      new gfx::GLImageOzoneNativePixmap(size, GL_RGB));
+  scoped_refptr<gl::GLImageOzoneNativePixmap> image(
+      new gl::GLImageOzoneNativePixmap(size, GL_RGB));
   if (!image->Initialize(pixmap.get(), gfx::BufferFormat::BGRX_8888)) {
     LOG(ERROR) << "Failed to create GLImage";
     return false;
@@ -76,7 +76,7 @@ void SurfacelessGlRenderer::BufferWrapper::BindFramebuffer() {
 
 SurfacelessGlRenderer::SurfacelessGlRenderer(
     gfx::AcceleratedWidget widget,
-    const scoped_refptr<gfx::GLSurface>& surface,
+    const scoped_refptr<gl::GLSurface>& surface,
     const gfx::Size& size)
     : GlRenderer(widget, surface, size), weak_ptr_factory_(this) {}
 

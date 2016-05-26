@@ -19,7 +19,7 @@ namespace ui {
 class SurfacelessGlRenderer : public GlRenderer {
  public:
   SurfacelessGlRenderer(gfx::AcceleratedWidget widget,
-                        const scoped_refptr<gfx::GLSurface>& surface,
+                        const scoped_refptr<gl::GLSurface>& surface,
                         const gfx::Size& size);
   ~SurfacelessGlRenderer() override;
 

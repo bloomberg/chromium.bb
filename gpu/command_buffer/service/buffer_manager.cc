@@ -355,7 +355,7 @@ bool BufferManager::UseNonZeroSizeForClientSideArrayBuffer() {
 bool BufferManager::UseShadowBuffer(GLenum target, GLenum usage) {
   const bool is_client_side_array = IsUsageClientSideArray(usage);
   const bool support_fixed_attribs =
-    gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
+      gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2;
 
   // TODO(zmo): Don't shadow buffer data on ES3. crbug.com/491002.
   return (
@@ -651,7 +651,7 @@ bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                     static_cast<uint64_t>(buffer->size()));
 
-    auto guid = gfx::GetGLBufferGUIDForTracing(
+    auto guid = gl::GetGLBufferGUIDForTracing(
         memory_tracker_->ShareGroupTracingGUID(), client_buffer_id);
     pmd->CreateSharedGlobalAllocatorDump(guid);
     pmd->AddOwnershipEdge(dump->guid(), guid);

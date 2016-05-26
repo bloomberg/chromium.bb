@@ -83,7 +83,7 @@ bool InProcessContextProvider::BindToCurrentThread() {
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
   if (!context_) {
-    gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+    gl::GpuPreference gpu_preference = gl::PreferDiscreteGpu;
     context_.reset(gpu::GLInProcessContext::Create(
         nullptr,  /* service */
         nullptr,  /* surface */

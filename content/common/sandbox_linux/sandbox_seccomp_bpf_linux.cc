@@ -172,7 +172,7 @@ std::unique_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox() {
   } else {
     bool allow_mincore = command_line.HasSwitch(switches::kUseGL) &&
                          command_line.GetSwitchValueASCII(switches::kUseGL) ==
-                             gfx::kGLImplementationEGLName;
+                             gl::kGLImplementationEGLName;
     return std::unique_ptr<SandboxBPFBasePolicy>(
         new GpuProcessPolicy(allow_mincore));
   }

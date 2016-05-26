@@ -13,31 +13,31 @@
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gl/gl_image.h"
 
-namespace gfx {
+namespace gl {
 
 // For saving the properties of a GLImage overlay plane and scheduling it later.
 class GLSurfaceOverlay {
  public:
   GLSurfaceOverlay(int z_order,
-                   OverlayTransform transform,
+                   gfx::OverlayTransform transform,
                    gl::GLImage* image,
-                   const Rect& bounds_rect,
-                   const RectF& crop_rect);
+                   const gfx::Rect& bounds_rect,
+                   const gfx::RectF& crop_rect);
   GLSurfaceOverlay(const GLSurfaceOverlay& other);
   ~GLSurfaceOverlay();
 
   // Schedule the image as an overlay plane to be shown at swap time for
   // |widget|.
-  bool ScheduleOverlayPlane(AcceleratedWidget widget) const;
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget) const;
 
  private:
   int z_order_;
-  OverlayTransform transform_;
+  gfx::OverlayTransform transform_;
   scoped_refptr<gl::GLImage> image_;
-  Rect bounds_rect_;
-  RectF crop_rect_;
+  gfx::Rect bounds_rect_;
+  gfx::RectF crop_rect_;
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_SURFACE_OVERLAY_H_

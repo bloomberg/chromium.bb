@@ -22,7 +22,7 @@ class Size;
 }
 
 #if defined(OS_ANDROID)
-namespace gfx {
+namespace gl {
 class SurfaceTexture;
 }
 #endif
@@ -48,13 +48,13 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   // to correctly create a surface.
   static GLInProcessContext* Create(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
-      scoped_refptr<gfx::GLSurface> surface,
+      scoped_refptr<gl::GLSurface> surface,
       bool is_offscreen,
       gfx::AcceleratedWidget window,
       const gfx::Size& size,
       GLInProcessContext* share_context,
       const gpu::gles2::ContextCreationAttribHelper& attribs,
-      gfx::GpuPreference gpu_preference,
+      gl::GpuPreference gpu_preference,
       const SharedMemoryLimits& memory_limits,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       ImageFactory* image_factory);

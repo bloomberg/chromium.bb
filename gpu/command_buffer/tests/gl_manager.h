@@ -23,7 +23,7 @@ namespace base {
 class CommandLine;
 }
 
-namespace gfx {
+namespace gl {
 
 class GLContext;
 class GLShareGroup;
@@ -94,7 +94,7 @@ class GLManager : private GpuControl {
 
   void MakeCurrent();
 
-  void SetSurface(gfx::GLSurface* surface);
+  void SetSurface(gl::GLSurface* surface);
 
   void set_use_iosurface_memory_buffers(bool use_iosurface_memory_buffers) {
     use_iosurface_memory_buffers_ = use_iosurface_memory_buffers;
@@ -110,17 +110,13 @@ class GLManager : private GpuControl {
     return mailbox_manager_.get();
   }
 
-  gfx::GLShareGroup* share_group() const {
-    return share_group_.get();
-  }
+  gl::GLShareGroup* share_group() const { return share_group_.get(); }
 
   gles2::GLES2Implementation* gles2_implementation() const {
     return gles2_implementation_.get();
   }
 
-  gfx::GLContext* context() {
-    return context_.get();
-  }
+  gl::GLContext* context() { return context_.get(); }
 
   const GpuDriverBugWorkarounds& workarounds() const;
 
@@ -166,12 +162,12 @@ class GLManager : private GpuControl {
   scoped_refptr<SyncPointOrderData> sync_point_order_data_;
   std::unique_ptr<SyncPointClient> sync_point_client_;
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;
-  scoped_refptr<gfx::GLShareGroup> share_group_;
+  scoped_refptr<gl::GLShareGroup> share_group_;
   std::unique_ptr<CommandBufferService> command_buffer_;
   std::unique_ptr<gles2::GLES2Decoder> decoder_;
   std::unique_ptr<CommandExecutor> executor_;
-  scoped_refptr<gfx::GLSurface> surface_;
-  scoped_refptr<gfx::GLContext> context_;
+  scoped_refptr<gl::GLSurface> surface_;
+  scoped_refptr<gl::GLContext> context_;
   std::unique_ptr<gles2::GLES2CmdHelper> gles2_helper_;
   std::unique_ptr<TransferBuffer> transfer_buffer_;
   std::unique_ptr<gles2::GLES2Implementation> gles2_implementation_;
@@ -186,9 +182,9 @@ class GLManager : private GpuControl {
 
   // Used on Android to virtualize GL for all contexts.
   static int use_count_;
-  static scoped_refptr<gfx::GLShareGroup>* base_share_group_;
-  static scoped_refptr<gfx::GLSurface>* base_surface_;
-  static scoped_refptr<gfx::GLContext>* base_context_;
+  static scoped_refptr<gl::GLShareGroup>* base_share_group_;
+  static scoped_refptr<gl::GLSurface>* base_surface_;
+  static scoped_refptr<gl::GLContext>* base_context_;
 };
 
 }  // namespace gpu

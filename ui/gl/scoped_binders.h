@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 class GLStateRestorer;
 
 class GL_EXPORT ScopedFrameBufferBinder {
@@ -153,6 +153,6 @@ class GL_EXPORT ScopedCapability {
   DISALLOW_COPY_AND_ASSIGN(ScopedCapability);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_SCOPED_BINDERS_H_

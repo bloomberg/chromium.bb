@@ -52,20 +52,20 @@ void GpuState::InitializeOnGpuThread(base::WaitableEvent* event) {
   command_buffer_task_runner_ = new CommandBufferTaskRunner;
   driver_manager_.reset(new CommandBufferDriverManager);
   sync_point_manager_.reset(new gpu::SyncPointManager(true));
-  share_group_ = new gfx::GLShareGroup;
+  share_group_ = new gl::GLShareGroup;
   mailbox_manager_ = new gpu::gles2::MailboxManagerImpl;
 
   // TODO(penghuang): investigate why gpu::CollectBasicGraphicsInfo() failed on
   // windows remote desktop.
-  const gfx::GLImplementation impl = gfx::GetGLImplementation();
-  if (impl != gfx::kGLImplementationNone &&
-      impl != gfx::kGLImplementationOSMesaGL &&
-      impl != gfx::kGLImplementationMockGL) {
+  const gl::GLImplementation impl = gl::GetGLImplementation();
+  if (impl != gl::kGLImplementationNone &&
+      impl != gl::kGLImplementationOSMesaGL &&
+      impl != gl::kGLImplementationMockGL) {
     gpu::CollectInfoResult result = gpu::CollectBasicGraphicsInfo(&gpu_info_);
     LOG_IF(ERROR, result != gpu::kCollectInfoSuccess)
         << "Collect basic graphics info failed!";
   }
-  if (impl != gfx::kGLImplementationNone) {
+  if (impl != gl::kGLImplementationNone) {
     gpu::CollectInfoResult result = gpu::CollectContextGraphicsInfo(&gpu_info_);
     LOG_IF(ERROR, result != gpu::kCollectInfoSuccess)
         << "Collect context graphics info failed!";

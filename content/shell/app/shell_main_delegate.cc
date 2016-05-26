@@ -168,7 +168,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     // only default to osmesa if the flag isn't already specified.
     if (!command_line.HasSwitch(switches::kUseGL)) {
       command_line.AppendSwitchASCII(switches::kUseGL,
-                                     gfx::kGLImplementationOSMesaName);
+                                     gl::kGLImplementationOSMesaName);
     }
     command_line.AppendSwitch(switches::kSkipGpuDataLoading);
     command_line.AppendSwitchASCII(switches::kTouchEvents,

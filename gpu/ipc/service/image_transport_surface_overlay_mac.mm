@@ -57,7 +57,7 @@ void IOSurfaceContextNoOp(scoped_refptr<ui::IOSurfaceContext>) {
 
 namespace gpu {
 
-scoped_refptr<gfx::GLSurface> ImageTransportSurfaceCreateNativeSurface(
+scoped_refptr<gl::GLSurface> ImageTransportSurfaceCreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     SurfaceHandle handle) {
@@ -86,8 +86,7 @@ ImageTransportSurfaceOverlayMac::~ImageTransportSurfaceOverlayMac() {
   Destroy();
 }
 
-bool ImageTransportSurfaceOverlayMac::Initialize(
-    gfx::GLSurface::Format format) {
+bool ImageTransportSurfaceOverlayMac::Initialize(gl::GLSurface::Format format) {
   if (!stub_.get() || !stub_->decoder())
     return false;
 
@@ -136,7 +135,7 @@ void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
     std::vector<ui::LatencyInfo> latency_info) {
   // TRACE_EVENT for gpu tests:
   TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffers", TRACE_EVENT_SCOPE_THREAD,
-                       "GLImpl", static_cast<int>(gfx::GetGLImplementation()),
+                       "GLImpl", static_cast<int>(gl::GetGLImplementation()),
                        "width", size.width());
 
   GpuCommandBufferMsg_SwapBuffersCompleted_Params params;
@@ -162,7 +161,7 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
   // appears empirically to be the best way to get maximum performance when
   // GPU bound.
   {
-    gfx::ScopedSetGLToRealGLApi scoped_set_gl_api;
+    gl::ScopedSetGLToRealGLApi scoped_set_gl_api;
     TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::glFinish");
     CheckGLErrors("Before finish");
     glFinish();
@@ -234,7 +233,7 @@ void* ImageTransportSurfaceOverlayMac::GetHandle() {
   return nullptr;
 }
 
-bool ImageTransportSurfaceOverlayMac::OnMakeCurrent(gfx::GLContext* context) {
+bool ImageTransportSurfaceOverlayMac::OnMakeCurrent(gl::GLContext* context) {
   // Ensure that the context is on the appropriate GL renderer. The GL renderer
   // will generally only change when the GPU changes.
   if (gl_renderer_id_ && context)

@@ -14,7 +14,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
 
-namespace gfx {
+namespace gl {
 
 // static
 scoped_refptr<GLContext> GLContext::CreateGLContext(
@@ -43,4 +43,4 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
   }
 }
 
-}  // namespace gfx
+}  // namespace gl

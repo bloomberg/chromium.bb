@@ -8,7 +8,7 @@
 #include "gpu/gpu_export.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace gfx {
+namespace gl {
 class SurfaceTexture;
 }
 
@@ -22,7 +22,7 @@ class GPU_EXPORT SurfaceTextureManager {
   // Register a surface texture for use in another process.
   virtual void RegisterSurfaceTexture(int surface_texture_id,
                                       int client_id,
-                                      gfx::SurfaceTexture* surface_texture) = 0;
+                                      gl::SurfaceTexture* surface_texture) = 0;
 
   // Unregister a surface texture previously registered for use in another
   // process.

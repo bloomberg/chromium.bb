@@ -64,7 +64,7 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   virtual void DeleteOnCorrectThread();
 
   // Passing an external java surface object to the player.
-  virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) = 0;
+  virtual void SetVideoSurface(gl::ScopedJavaSurface surface) = 0;
 
   // Start playing the media.
   virtual void Start() = 0;

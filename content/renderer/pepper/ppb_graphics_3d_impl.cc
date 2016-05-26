@@ -227,7 +227,7 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
 
   gfx::Size surface_size;
   std::vector<int32_t> attribs;
-  gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+  gl::GpuPreference gpu_preference = gl::PreferDiscreteGpu;
   // TODO(alokp): Change CommandBufferProxyImpl::Create()
   // interface to accept width and height in the attrib_list so that
   // we do not need to filter for width and height here.
@@ -244,8 +244,8 @@ bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
         case PP_GRAPHICS3DATTRIB_GPU_PREFERENCE:
           gpu_preference =
               (attr[1] == PP_GRAPHICS3DATTRIB_GPU_PREFERENCE_LOW_POWER)
-                  ? gfx::PreferIntegratedGpu
-                  : gfx::PreferDiscreteGpu;
+                  ? gl::PreferIntegratedGpu
+                  : gl::PreferDiscreteGpu;
           break;
         case PP_GRAPHICS3DATTRIB_ALPHA_SIZE:
           has_alpha_ = attr[1] > 0;

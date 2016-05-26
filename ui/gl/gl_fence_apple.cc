@@ -6,7 +6,7 @@
 
 #include "ui/gl/gl_bindings.h"
 
-namespace gfx {
+namespace gl {
 
 GLFenceAPPLE::GLFenceAPPLE() {
   glGenFencesAPPLE(1, &fence_);
@@ -35,4 +35,4 @@ GLFenceAPPLE::~GLFenceAPPLE() {
   glDeleteFencesAPPLE(1, &fence_);
 }
 
-}  // namespace gfx
+}  // namespace gl

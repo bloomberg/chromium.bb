@@ -15,10 +15,10 @@ namespace gl {
 namespace android {
 
 static base::android::RegistrationMethod kGLRegisteredMethods[] = {
-  { "SurfaceTexture",
-    gfx::SurfaceTexture::RegisterSurfaceTexture },
-  { "SurfaceTextureListener",
-    gfx::SurfaceTextureListener::RegisterSurfaceTextureListener },
+    {"SurfaceTexture",
+     ::gl::SurfaceTexture::RegisterSurfaceTexture},
+    {"SurfaceTextureListener",
+     ::gl::SurfaceTextureListener::RegisterSurfaceTextureListener},
 };
 
 bool RegisterJni(JNIEnv* env) {

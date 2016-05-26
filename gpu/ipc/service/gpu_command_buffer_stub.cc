@@ -470,7 +470,7 @@ bool GpuCommandBufferStub::Initialize(
   // Virtualize PreferIntegratedGpu contexts by default on OS X to prevent
   // performance regressions when enabling FCM.
   // http://crbug.com/180463
-  if (init_params.gpu_preference == gfx::PreferIntegratedGpu)
+  if (init_params.gpu_preference == gl::PreferIntegratedGpu)
     use_virtualized_gl_context_ = true;
 #endif
 
@@ -481,15 +481,15 @@ bool GpuCommandBufferStub::Initialize(
   // only a single context. See crbug.com/510243 for details.
   use_virtualized_gl_context_ |= channel_->mailbox_manager()->UsesSync();
 
-  gfx::GLSurface::Format surface_format = gfx::GLSurface::SURFACE_DEFAULT;
+  gl::GLSurface::Format surface_format = gl::GLSurface::SURFACE_DEFAULT;
   bool offscreen = (surface_handle_ == kNullSurfaceHandle);
 #if defined(OS_ANDROID)
   if (init_params.attribs.red_size <= 5 &&
       init_params.attribs.green_size <= 6 &&
       init_params.attribs.blue_size <= 5 &&
       init_params.attribs.alpha_size == 0)
-    surface_format = gfx::GLSurface::SURFACE_RGB565;
-  gfx::GLSurface* default_surface = manager->GetDefaultOffscreenSurface();
+    surface_format = gl::GLSurface::SURFACE_RGB565;
+  gl::GLSurface* default_surface = manager->GetDefaultOffscreenSurface();
   // We can only use virtualized contexts for onscreen command buffers if their
   // config is compatible with the offscreen ones - otherwise MakeCurrent fails.
   if (surface_format != default_surface->GetFormat() && !offscreen)
@@ -531,8 +531,8 @@ bool GpuCommandBufferStub::Initialize(
     }
   }
 
-  scoped_refptr<gfx::GLContext> context;
-  gfx::GLShareGroup* gl_share_group = channel_->share_group();
+  scoped_refptr<gl::GLContext> context;
+  gl::GLShareGroup* gl_share_group = channel_->share_group();
   if (use_virtualized_gl_context_ && gl_share_group) {
     context = gl_share_group->GetSharedContext();
     if (!context.get()) {
@@ -553,7 +553,7 @@ bool GpuCommandBufferStub::Initialize(
     // (1) a non-virtual GL context, or
     // (2) a mock context.
     DCHECK(context->GetHandle() ||
-           gfx::GetGLImplementation() == gfx::kGLImplementationMockGL);
+           gl::GetGLImplementation() == gl::kGLImplementationMockGL);
     context = new GLContextVirtual(
         gl_share_group, context.get(), decoder_->AsWeakPtr());
     if (!context->Initialize(surface_.get(), init_params.gpu_preference)) {
@@ -1064,7 +1064,7 @@ bool GpuCommandBufferStub::CheckContextLost() {
     // Lose all other contexts if the reset was triggered by the robustness
     // extension instead of being synthetic.
     if (was_lost_by_robustness &&
-        (gfx::GLContext::LosesAllContextsOnContextLost() ||
+        (gl::GLContext::LosesAllContextsOnContextLost() ||
          use_virtualized_gl_context_)) {
       channel_->LoseAllContexts();
     }

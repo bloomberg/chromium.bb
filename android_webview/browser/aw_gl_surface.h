@@ -13,7 +13,7 @@ namespace android_webview {
 // This surface is used to represent the underlying surface provided by the App
 // inside a hardware draw. Note that offscreen contexts will not be using this
 // GLSurface.
-class AwGLSurface : public gfx::GLSurface {
+class AwGLSurface : public gl::GLSurface {
  public:
   AwGLSurface();
 

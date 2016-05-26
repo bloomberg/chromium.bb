@@ -21,7 +21,7 @@ class AppListPresenterTestSuite : public base::TestSuite {
 
  protected:
   void Initialize() override {
-    gfx::GLSurfaceTestSupport::InitializeOneOff();
+    gl::GLSurfaceTestSupport::InitializeOneOff();
     base::TestSuite::Initialize();
     ui::RegisterPathProvider();
 

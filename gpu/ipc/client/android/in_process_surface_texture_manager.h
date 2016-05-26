@@ -24,7 +24,7 @@ class GPU_EXPORT InProcessSurfaceTextureManager : public SurfaceTextureManager {
   // Overridden from SurfaceTextureManager:
   void RegisterSurfaceTexture(int surface_texture_id,
                               int client_id,
-                              gfx::SurfaceTexture* surface_texture) override;
+                              gl::SurfaceTexture* surface_texture) override;
   void UnregisterSurfaceTexture(int surface_texture_id, int client_id) override;
   gfx::AcceleratedWidget AcquireNativeWidgetForSurfaceTexture(
       int surface_texture_id) override;
@@ -36,7 +36,7 @@ class GPU_EXPORT InProcessSurfaceTextureManager : public SurfaceTextureManager {
   ~InProcessSurfaceTextureManager() override;
 
   using SurfaceTextureMap =
-      base::ScopedPtrHashMap<int, std::unique_ptr<gfx::ScopedJavaSurface>>;
+      base::ScopedPtrHashMap<int, std::unique_ptr<gl::ScopedJavaSurface>>;
   SurfaceTextureMap surface_textures_;
   base::Lock lock_;
 

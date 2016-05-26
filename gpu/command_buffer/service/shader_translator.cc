@@ -110,7 +110,7 @@ void GetNameHashingInfo(ShHandle compiler, NameMap* name_map) {
 }  // namespace
 
 ShShaderOutput ShaderTranslator::GetShaderOutputLanguageForContext(
-    const gfx::GLVersionInfo& version_info) {
+    const gl::GLVersionInfo& version_info) {
   if (version_info.is_es) {
     return SH_ESSL_OUTPUT;
   }

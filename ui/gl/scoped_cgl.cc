@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #include "ui/gl/scoped_cgl.h"
 
-namespace gfx {
+namespace gl {
 
 ScopedCGLSetCurrentContext::ScopedCGLSetCurrentContext(CGLContextObj context) {
   CGLContextObj previous_context = CGLGetCurrentContext();
@@ -24,4 +24,4 @@ ScopedCGLSetCurrentContext::~ScopedCGLSetCurrentContext() {
   DCHECK_EQ(error, kCGLNoError) << "CGLSetCurrentContext should never fail";
 }
 
-}  // namespace gfx
+}  // namespace gl

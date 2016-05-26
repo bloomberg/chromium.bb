@@ -37,8 +37,7 @@ BrowserSurfaceViewManager::BrowserSurfaceViewManager(
 
 BrowserSurfaceViewManager::~BrowserSurfaceViewManager() {}
 
-void BrowserSurfaceViewManager::SetVideoSurface(
-    gfx::ScopedJavaSurface surface) {
+void BrowserSurfaceViewManager::SetVideoSurface(gl::ScopedJavaSurface surface) {
   TRACE_EVENT0("media", "BrowserSurfaceViewManager::SetVideoSurface");
   if (surface.IsEmpty()) {
     DCHECK_NE(surface_id_, media::SurfaceManager::kNoSurfaceID);

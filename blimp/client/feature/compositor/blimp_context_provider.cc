@@ -44,7 +44,7 @@ BlimpContextProvider::BlimpContextProvider(
   context_.reset(gpu::GLInProcessContext::Create(
       nullptr /* service */, nullptr /* surface */, false /* is_offscreen */,
       widget, gfx::Size(1, 1), nullptr /* share_context */, attribs_for_gles2,
-      gfx::PreferDiscreteGpu, gpu::SharedMemoryLimits(),
+      gl::PreferDiscreteGpu, gpu::SharedMemoryLimits(),
       gpu_memory_buffer_manager, nullptr /* memory_limits */));
   context_->GetImplementation()->SetLostContextCallback(
       base::Bind(&BlimpContextProvider::OnLostContext, base::Unretained(this)));

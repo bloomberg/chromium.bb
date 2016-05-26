@@ -15,7 +15,7 @@
 namespace ui {
 
 GlRenderer::GlRenderer(gfx::AcceleratedWidget widget,
-                       const scoped_refptr<gfx::GLSurface>& surface,
+                       const scoped_refptr<gl::GLSurface>& surface,
                        const gfx::Size& size)
     : RendererBase(widget, size), surface_(surface), weak_ptr_factory_(this) {}
 
@@ -24,7 +24,7 @@ GlRenderer::~GlRenderer() {
 
 bool GlRenderer::Initialize() {
   context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
-                                       gfx::PreferIntegratedGpu);
+                                       gl::PreferIntegratedGpu);
   if (!context_.get()) {
     LOG(ERROR) << "Failed to create GL context";
     return false;

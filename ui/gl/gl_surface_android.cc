@@ -13,7 +13,7 @@
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
 
-namespace gfx {
+namespace gl {
 
 // static
 bool GLSurface::InitializeOneOffInternal() {
@@ -40,7 +40,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
     return surface;
   }
   DCHECK(GetGLImplementation() == kGLImplementationEGLGLES2);
-  if (window != kNullAcceleratedWidget) {
+  if (window != gfx::kNullAcceleratedWidget) {
     scoped_refptr<GLSurface> surface = new NativeViewGLSurfaceEGL(window);
     if (surface->Initialize())
       return surface;
@@ -90,4 +90,4 @@ EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay() {
   return EGL_DEFAULT_DISPLAY;
 }
 
-}  // namespace gfx
+}  // namespace gl

@@ -11,7 +11,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_context.h"
 
-namespace gfx {
+namespace gl {
 
 class GLSurface;
 
@@ -39,6 +39,6 @@ class GLContextWGL : public GLContextReal {
   DISALLOW_COPY_AND_ASSIGN(GLContextWGL);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_CONTEXT_WGL_H_

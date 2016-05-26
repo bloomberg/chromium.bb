@@ -10,7 +10,7 @@
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface.h"
 
-namespace gfx {
+namespace gl {
 
 // Base interface for WGL surfaces.
 class GL_EXPORT GLSurfaceWGL : public GLSurface {
@@ -84,6 +84,6 @@ class PbufferGLSurfaceWGL : public GLSurfaceWGL {
   DISALLOW_COPY_AND_ASSIGN(PbufferGLSurfaceWGL);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_SURFACE_WGL_H_

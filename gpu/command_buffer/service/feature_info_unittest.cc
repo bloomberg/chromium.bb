@@ -1312,7 +1312,7 @@ TEST_P(FeatureInfoTest, InitializeWithES3) {
   EXPECT_TRUE(info_->feature_flags().ext_discard_framebuffer);
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_EXT_discard_framebuffer"));
   EXPECT_TRUE(info_->feature_flags().chromium_sync_query);
-  EXPECT_TRUE(gfx::GLFence::IsSupported());
+  EXPECT_TRUE(gl::GLFence::IsSupported());
 }
 
 TEST_P(FeatureInfoTest, InitializeWithoutSamplers) {
@@ -1347,13 +1347,13 @@ TEST_P(FeatureInfoTest, ParseDriverBugWorkaroundsMultiple) {
 TEST_P(FeatureInfoTest, InitializeWithARBSync) {
   SetupInitExpectations("GL_ARB_sync");
   EXPECT_TRUE(info_->feature_flags().chromium_sync_query);
-  EXPECT_TRUE(gfx::GLFence::IsSupported());
+  EXPECT_TRUE(gl::GLFence::IsSupported());
 }
 
 TEST_P(FeatureInfoTest, InitializeWithNVFence) {
   SetupInitExpectations("GL_NV_fence");
   EXPECT_TRUE(info_->feature_flags().chromium_sync_query);
-  EXPECT_TRUE(gfx::GLFence::IsSupported());
+  EXPECT_TRUE(gl::GLFence::IsSupported());
 }
 
 TEST_P(FeatureInfoTest, InitializeWithNVDrawBuffers) {

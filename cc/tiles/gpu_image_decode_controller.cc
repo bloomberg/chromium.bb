@@ -411,7 +411,7 @@ bool GpuImageDecodeController::OnMemoryDump(
                              false /* flushPendingGrContextIO */))
                          ->fID;
       base::trace_event::MemoryAllocatorDumpGuid guid =
-          gfx::GetGLTextureClientGUIDForTracing(
+          gl::GetGLTextureClientGUIDForTracing(
               context_->ContextSupport()->ShareGroupTracingGUID(), gl_id);
 
       // kImportance is somewhat arbitrary - we chose 3 to be higher than the

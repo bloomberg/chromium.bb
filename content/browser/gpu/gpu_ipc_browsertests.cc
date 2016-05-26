@@ -40,7 +40,7 @@ scoped_refptr<content::ContextProviderCommandBuffer> CreateContext(
   return make_scoped_refptr(new content::ContextProviderCommandBuffer(
       std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
       gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle, GURL(),
-      gfx::PreferIntegratedGpu, automatic_flushes, support_locking,
+      gl::PreferIntegratedGpu, automatic_flushes, support_locking,
       gpu::SharedMemoryLimits(), attributes, nullptr,
       content::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING));
 }

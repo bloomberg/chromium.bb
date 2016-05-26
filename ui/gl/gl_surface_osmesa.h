@@ -14,7 +14,7 @@
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface.h"
 
-namespace gfx {
+namespace gl {
 
 // A surface that the Mesa software renderer draws to. This is actually just a
 // buffer in system memory. GetHandle returns a pointer to the buffer. These
@@ -63,6 +63,6 @@ class GLSurfaceOSMesaHeadless : public GLSurfaceOSMesa {
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceOSMesaHeadless);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_SURFACE_OSMESA_H_

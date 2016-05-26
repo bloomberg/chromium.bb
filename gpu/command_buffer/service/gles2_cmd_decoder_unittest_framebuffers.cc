@@ -35,7 +35,7 @@
 #define GL_DEPTH24_STENCIL8 0x88F0
 #endif
 
-using ::gfx::MockGLInterface;
+using ::gl::MockGLInterface;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
@@ -2983,11 +2983,11 @@ TEST_P(GLES2DecoderManualInitTest, InvalidateFramebufferBinding) {
 
   // EXPECT_EQ can't be used to compare function pointers
   EXPECT_TRUE(
-      gfx::MockGLInterface::GetGLProcAddress("glInvalidateFramebuffer") !=
-      gfx::g_driver_gl.fn.glDiscardFramebufferEXTFn);
+      gl::MockGLInterface::GetGLProcAddress("glInvalidateFramebuffer") !=
+      gl::g_driver_gl.fn.glDiscardFramebufferEXTFn);
   EXPECT_TRUE(
-      gfx::MockGLInterface::GetGLProcAddress("glInvalidateFramebuffer") !=
-      gfx::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT"));
+      gl::MockGLInterface::GetGLProcAddress("glInvalidateFramebuffer") !=
+      gl::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT"));
 }
 
 TEST_P(GLES2DecoderTest, ClearBackbufferBitsOnFlipSwap) {
@@ -3033,8 +3033,8 @@ TEST_P(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {
 
   // EXPECT_EQ can't be used to compare function pointers
   EXPECT_TRUE(
-      gfx::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
-      gfx::g_driver_gl.fn.glDiscardFramebufferEXTFn);
+      gl::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
+      gl::g_driver_gl.fn.glDiscardFramebufferEXTFn);
 
   const GLenum target = GL_FRAMEBUFFER;
   const GLsizei count = 1;
@@ -3075,8 +3075,8 @@ TEST_P(GLES2DecoderManualInitTest, ClearBackbufferBitsOnDiscardFramebufferEXT) {
 
   // EXPECT_EQ can't be used to compare function pointers.
   EXPECT_TRUE(
-      gfx::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
-      gfx::g_driver_gl.fn.glDiscardFramebufferEXTFn);
+      gl::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
+      gl::g_driver_gl.fn.glDiscardFramebufferEXTFn);
 
   const GLenum target = GL_FRAMEBUFFER;
   const GLsizei count = 1;
@@ -3212,8 +3212,8 @@ TEST_P(GLES2DecoderManualInitTest,
   // Check that Discard GL_COLOR_ATTACHMENT0, sets the attachment as uncleared
   // and the framebuffer as incomplete.
   EXPECT_TRUE(
-      gfx::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
-      gfx::g_driver_gl.fn.glDiscardFramebufferEXTFn);
+      gl::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT") ==
+      gl::g_driver_gl.fn.glDiscardFramebufferEXTFn);
 
   const GLenum target = GL_FRAMEBUFFER;
   const GLsizei count = 1;

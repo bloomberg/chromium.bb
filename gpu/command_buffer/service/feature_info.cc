@@ -306,15 +306,15 @@ void FeatureInfo::EnableOESTextureHalfFloatLinear() {
 
 void FeatureInfo::InitializeFeatures() {
   // Figure out what extensions to turn on.
-  StringSet extensions(gfx::GetGLExtensionsFromCurrentContext());
+  StringSet extensions(gl::GetGLExtensionsFromCurrentContext());
 
   const char* version_str =
       reinterpret_cast<const char*>(glGetString(GL_VERSION));
   const char* renderer_str =
       reinterpret_cast<const char*>(glGetString(GL_RENDERER));
 
-  gl_version_info_.reset(new gfx::GLVersionInfo(
-      version_str, renderer_str, extensions.GetImpl()));
+  gl_version_info_.reset(
+      new gl::GLVersionInfo(version_str, renderer_str, extensions.GetImpl()));
 
   AddExtensionString("GL_ANGLE_translated_shader_source");
   AddExtensionString("GL_CHROMIUM_async_pixel_transfers");
@@ -532,7 +532,7 @@ void FeatureInfo::InitializeFeatures() {
 
   if (gl_version_info_->is_es3 ||
       extensions.Contains("GL_OES_element_index_uint") ||
-      gfx::HasDesktopGLFeatures()) {
+      gl::HasDesktopGLFeatures()) {
     AddExtensionString("GL_OES_element_index_uint");
     validators_.index_type.AddValue(GL_UNSIGNED_INT);
   }
@@ -546,7 +546,7 @@ void FeatureInfo::InitializeFeatures() {
   if ((((gl_version_info_->is_es3 ||
          extensions.Contains("GL_OES_rgb8_rgba8")) &&
         extensions.Contains("GL_EXT_sRGB")) ||
-       gfx::HasDesktopGLFeatures()) &&
+       gl::HasDesktopGLFeatures()) &&
       (context_type_ == CONTEXT_TYPE_WEBGL1 ||
        context_type_ == CONTEXT_TYPE_OPENGLES2)) {
     AddExtensionString("GL_EXT_sRGB");
@@ -647,7 +647,7 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_EXT_disjoint_timer_query");
   }
 
-  if (extensions.Contains("GL_OES_rgb8_rgba8") || gfx::HasDesktopGLFeatures()) {
+  if (extensions.Contains("GL_OES_rgb8_rgba8") || gl::HasDesktopGLFeatures()) {
     AddExtensionString("GL_OES_rgb8_rgba8");
     validators_.render_buffer_format.AddValue(GL_RGB8_OES);
     validators_.render_buffer_format.AddValue(GL_RGBA8_OES);
@@ -882,7 +882,7 @@ void FeatureInfo::InitializeFeatures() {
     AddExtensionString("GL_CHROMIUM_screen_space_antialiasing");
   }
 
-  if (extensions.Contains("GL_OES_depth24") || gfx::HasDesktopGLFeatures() ||
+  if (extensions.Contains("GL_OES_depth24") || gl::HasDesktopGLFeatures() ||
       gl_version_info_->is_es3) {
     AddExtensionString("GL_OES_depth24");
     feature_flags_.oes_depth24 = true;
@@ -891,7 +891,7 @@ void FeatureInfo::InitializeFeatures() {
 
   if (gl_version_info_->is_es3 ||
       extensions.Contains("GL_OES_standard_derivatives") ||
-      gfx::HasDesktopGLFeatures()) {
+      gl::HasDesktopGLFeatures()) {
     AddExtensionString("GL_OES_standard_derivatives");
     feature_flags_.oes_standard_derivatives = true;
     validators_.hint_target.AddValue(GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES);
@@ -979,7 +979,7 @@ void FeatureInfo::InitializeFeatures() {
   }
 
 #if defined(OS_MACOSX)
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationOSMesaGL) {
+  if (gl::GetGLImplementation() != gl::kGLImplementationOSMesaGL) {
     AddExtensionString("GL_CHROMIUM_iosurface");
     AddExtensionString("GL_CHROMIUM_ycbcr_420v_image");
     feature_flags_.chromium_image_ycbcr_420v = true;
@@ -1098,9 +1098,8 @@ void FeatureInfo::InitializeFeatures() {
     }
   }
 
-  if (gl_version_info_->is_es3 ||
-      extensions.Contains("GL_EXT_blend_minmax") ||
-      gfx::HasDesktopGLFeatures()) {
+  if (gl_version_info_->is_es3 || extensions.Contains("GL_EXT_blend_minmax") ||
+      gl::HasDesktopGLFeatures()) {
     AddExtensionString("GL_EXT_blend_minmax");
     validators_.equation.AddValue(GL_MIN_EXT);
     validators_.equation.AddValue(GL_MAX_EXT);
@@ -1109,18 +1108,18 @@ void FeatureInfo::InitializeFeatures() {
   }
 
   // TODO(dshwang): GLES3 supports gl_FragDepth, not gl_FragDepthEXT.
-  if (extensions.Contains("GL_EXT_frag_depth") || gfx::HasDesktopGLFeatures()) {
+  if (extensions.Contains("GL_EXT_frag_depth") || gl::HasDesktopGLFeatures()) {
     AddExtensionString("GL_EXT_frag_depth");
     feature_flags_.ext_frag_depth = true;
   }
 
   if (extensions.Contains("GL_EXT_shader_texture_lod") ||
-      gfx::HasDesktopGLFeatures()) {
+      gl::HasDesktopGLFeatures()) {
     AddExtensionString("GL_EXT_shader_texture_lod");
     feature_flags_.ext_shader_texture_lod = true;
   }
 
-  bool ui_gl_fence_works = gfx::GLFence::IsSupported();
+  bool ui_gl_fence_works = gl::GLFence::IsSupported();
   UMA_HISTOGRAM_BOOLEAN("GPU.FenceSupport", ui_gl_fence_works);
 
   feature_flags_.map_buffer_range =
@@ -1278,7 +1277,7 @@ void FeatureInfo::InitializeFeatures() {
 
 #if !defined(OS_MACOSX)
   if (workarounds_.ignore_egl_sync_failures) {
-    gfx::GLFenceEGL::SetIgnoreFailures();
+    gl::GLFenceEGL::SetIgnoreFailures();
   }
 #endif
 

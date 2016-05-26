@@ -339,9 +339,8 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
     // ANGLE's EGL vendor strings are of the form:
     // Google, Inc. (adapter LUID: 0123456789ABCDEF)
     // The LUID is optional and identifies the GPU adapter ANGLE is using.
-    const char* egl_vendor = eglQueryString(
-        gfx::GLSurfaceEGL::GetHardwareDisplay(),
-        EGL_VENDOR);
+    const char* egl_vendor =
+        eglQueryString(gl::GLSurfaceEGL::GetHardwareDisplay(), EGL_VENDOR);
     RE2::PartialMatch(egl_vendor,
                       " \\(adapter LUID: ([0-9A-Fa-f]{16})\\)",
                       RE2::Hex(&gpu_info->adapter_luid));

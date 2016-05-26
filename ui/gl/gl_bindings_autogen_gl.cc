@@ -18,7 +18,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_version_info.h"
 
-namespace gfx {
+namespace gl {
 
 static bool g_debugBindingsInitialized;
 DriverGL g_driver_gl;
@@ -13551,4 +13551,4 @@ GLenum NoContextGLApi::glWaitSyncFn(GLsync sync,
   return static_cast<GLenum>(0);
 }
 
-}  // namespace gfx
+}  // namespace gl

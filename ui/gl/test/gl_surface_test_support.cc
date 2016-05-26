@@ -17,7 +17,7 @@
 #include "ui/platform_window/x11/x11_window.h"
 #endif
 
-namespace gfx {
+namespace gl {
 
 // static
 void GLSurfaceTestSupport::InitializeOneOff() {
@@ -89,4 +89,4 @@ void GLSurfaceTestSupport::InitializeDynamicMockBindings(GLContext* context) {
   CHECK(InitializeDynamicGLBindings(kGLImplementationMockGL, context));
 }
 
-}  // namespace gfx
+}  // namespace gl

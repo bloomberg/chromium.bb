@@ -40,7 +40,7 @@ int ViewsTestSuite::RunTestsSerially() {
 
 void ViewsTestSuite::Initialize() {
   base::TestSuite::Initialize();
-  gfx::GLSurfaceTestSupport::InitializeOneOff();
+  gl::GLSurfaceTestSupport::InitializeOneOff();
   ui::RegisterPathProvider();
 
   base::FilePath ui_test_pak_path;

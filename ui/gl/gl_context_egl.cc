@@ -24,7 +24,7 @@ extern "C" {
 
 using ui::GetLastEGLErrorString;
 
-namespace gfx {
+namespace gl {
 
 GLContextEGL::GLContextEGL(GLShareGroup* share_group)
     : GLContextReal(share_group),
@@ -224,4 +224,4 @@ GLContextEGL::~GLContextEGL() {
   Destroy();
 }
 
-}  // namespace gfx
+}  // namespace gl

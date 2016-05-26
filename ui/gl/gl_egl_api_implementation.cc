@@ -10,7 +10,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 
-namespace gfx {
+namespace gl {
 
 RealEGLApi* g_real_egl;
 
@@ -111,6 +111,4 @@ bool GetGLWindowSystemBindingInfoEGL(GLWindowSystemBindingInfo* info) {
   return true;
 }
 
-}  // namespace gfx
-
-
+}  // namespace gl

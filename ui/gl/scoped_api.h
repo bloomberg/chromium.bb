@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 
 class GLApi;
 
@@ -23,6 +23,6 @@ class GL_EXPORT ScopedSetGLToRealGLApi {
   DISALLOW_COPY_AND_ASSIGN(ScopedSetGLToRealGLApi);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_SCOPED_API_H_

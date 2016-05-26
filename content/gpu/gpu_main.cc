@@ -296,7 +296,7 @@ int GpuMain(const MainFunctionParams& parameters) {
     // Load and initialize the GL implementation and locate the GL entry points.
     bool gl_initialized =
         gl_already_initialized
-            ? gfx::GetGLImplementation() != gfx::kGLImplementationNone
+            ? gl::GetGLImplementation() != gl::kGLImplementationNone
             : gl::init::InitializeGLOneOff();
     if (gl_initialized) {
       // We need to collect GL strings (VENDOR, RENDERER) for blacklisting
@@ -360,7 +360,7 @@ int GpuMain(const MainFunctionParams& parameters) {
     // OSMesa is expected to run very slowly, so disable the watchdog in that
     // case.
     if (enable_watchdog &&
-        gfx::GetGLImplementation() == gfx::kGLImplementationOSMesaGL) {
+        gl::GetGLImplementation() == gl::kGLImplementationOSMesaGL) {
       watchdog_thread->Stop();
       watchdog_thread = NULL;
     }
@@ -530,7 +530,7 @@ bool CanAccessNvidiaDeviceFile() {
 #endif
 
 void CreateDummyGlContext() {
-  scoped_refptr<gfx::GLSurface> surface(
+  scoped_refptr<gl::GLSurface> surface(
       gl::init::CreateOffscreenGLSurface(gfx::Size()));
   if (!surface.get()) {
     DVLOG(1) << "gl::init::CreateOffscreenGLSurface failed";
@@ -539,8 +539,8 @@ void CreateDummyGlContext() {
 
   // On Linux, this is needed to make sure /dev/nvidiactl has
   // been opened and its descriptor cached.
-  scoped_refptr<gfx::GLContext> context(
-      gl::init::CreateGLContext(NULL, surface.get(), gfx::PreferDiscreteGpu));
+  scoped_refptr<gl::GLContext> context(
+      gl::init::CreateGLContext(NULL, surface.get(), gl::PreferDiscreteGpu));
   if (!context.get()) {
     DVLOG(1) << "gl::init::CreateGLContext failed";
     return;
@@ -550,7 +550,7 @@ void CreateDummyGlContext() {
   if (context->MakeCurrent(surface.get())) {
     context->ReleaseCurrent(surface.get());
   } else {
-    DVLOG(1)  << "gfx::GLContext::MakeCurrent failed";
+    DVLOG(1) << "gl::GLContext::MakeCurrent failed";
   }
 }
 

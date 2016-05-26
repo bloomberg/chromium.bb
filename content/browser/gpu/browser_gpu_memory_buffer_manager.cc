@@ -107,7 +107,7 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
   // Disable native buffers only when using Mesa.
   bool force_native_gpu_read_write_formats =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kUseGL) != gfx::kGLImplementationOSMesaName;
+          switches::kUseGL) != gl::kGLImplementationOSMesaName;
 #else
   bool force_native_gpu_read_write_formats = false;
 #endif
@@ -216,7 +216,7 @@ BrowserGpuMemoryBufferManager* BrowserGpuMemoryBufferManager::current() {
 bool BrowserGpuMemoryBufferManager::IsNativeGpuMemoryBuffersEnabled() {
   // Disable native buffers when using Mesa.
   if (base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kUseGL) == gfx::kGLImplementationOSMesaName) {
+          switches::kUseGL) == gl::kGLImplementationOSMesaName) {
     return false;
   }
 

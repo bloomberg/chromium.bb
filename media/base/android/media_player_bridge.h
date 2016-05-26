@@ -60,7 +60,7 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   virtual void Initialize();
 
   // MediaPlayerAndroid implementation.
-  void SetVideoSurface(gfx::ScopedJavaSurface surface) override;
+  void SetVideoSurface(gl::ScopedJavaSurface surface) override;
   void Start() override;
   void Pause(bool is_media_related_action) override;
   void SeekTo(base::TimeDelta timestamp) override;
@@ -189,7 +189,7 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   std::string cookies_;
 
   // The surface object currently owned by the player.
-  gfx::ScopedJavaSurface surface_;
+  gl::ScopedJavaSurface surface_;
 
   // Java MediaPlayerBridge instance.
   base::android::ScopedJavaGlobalRef<jobject> j_media_player_bridge_;

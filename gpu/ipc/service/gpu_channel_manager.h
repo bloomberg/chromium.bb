@@ -30,7 +30,7 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace gfx {
+namespace gl {
 class GLShareGroup;
 }
 
@@ -110,7 +110,7 @@ class GPU_EXPORT GpuChannelManager {
 
   GpuChannel* LookupChannel(int32_t client_id) const;
 
-  gfx::GLSurface* GetDefaultOffscreenSurface();
+  gl::GLSurface* GetDefaultOffscreenSurface();
 
   GpuMemoryBufferFactory* gpu_memory_buffer_factory() {
     return gpu_memory_buffer_factory_;
@@ -144,7 +144,7 @@ class GPU_EXPORT GpuChannelManager {
     return sync_point_manager_;
   }
 
-  gfx::GLShareGroup* share_group() const { return share_group_.get(); }
+  gl::GLShareGroup* share_group() const { return share_group_.get(); }
   gles2::MailboxManager* mailbox_manager() const {
     return mailbox_manager_.get();
   }
@@ -178,7 +178,7 @@ class GPU_EXPORT GpuChannelManager {
 
   base::WaitableEvent* shutdown_event_;
 
-  scoped_refptr<gfx::GLShareGroup> share_group_;
+  scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;
   scoped_refptr<PreemptionFlag> preemption_flag_;
   GpuMemoryManager gpu_memory_manager_;
@@ -189,7 +189,7 @@ class GPU_EXPORT GpuChannelManager {
   scoped_refptr<gles2::ShaderTranslatorCache> shader_translator_cache_;
   scoped_refptr<gles2::FramebufferCompletenessCache>
       framebuffer_completeness_cache_;
-  scoped_refptr<gfx::GLSurface> default_offscreen_surface_;
+  scoped_refptr<gl::GLSurface> default_offscreen_surface_;
   GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
 #if defined(OS_ANDROID)
   // Last time we know the GPU was powered on. Global for tracking across all

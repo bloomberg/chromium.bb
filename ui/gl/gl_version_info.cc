@@ -19,8 +19,7 @@ bool DesktopCoreCommonCheck(
 
 }
 
-
-namespace gfx {
+namespace gl {
 
 GLVersionInfo::GLVersionInfo(const char* version_str, const char* renderer_str,
                              const char* extensions_str)
@@ -91,4 +90,4 @@ void GLVersionInfo::ParseVersionString(const char* version_str,
   DCHECK(major_version != 0);
 }
 
-}  // namespace gfx
+}  // namespace gl

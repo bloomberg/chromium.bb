@@ -101,8 +101,7 @@ std::string GetVertexShaderSource() {
   std::string source;
 
   // Preamble for core and compatibility mode.
-  if (gfx::GetGLImplementation() ==
-          gfx::kGLImplementationDesktopGLCoreProfile) {
+  if (gl::GetGLImplementation() == gl::kGLImplementationDesktopGLCoreProfile) {
     source += std::string("\
         #version 150\n\
         #define ATTRIBUTE in\n\
@@ -143,8 +142,7 @@ std::string GetFragmentShaderSource(bool premultiply_alpha,
   std::string source;
 
   // Preamble for core and compatibility mode.
-  if (gfx::GetGLImplementation() ==
-          gfx::kGLImplementationDesktopGLCoreProfile) {
+  if (gl::GetGLImplementation() == gl::kGLImplementationDesktopGLCoreProfile) {
     source += std::string("\
         #version 150\n\
         out vec4 frag_color;\n\
@@ -586,8 +584,8 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
   if (vertex_array_object_id_) {
     glBindVertexArrayOES(vertex_array_object_id_);
   } else {
-    if (gfx::GetGLImplementation() !=
-        gfx::kGLImplementationDesktopGLCoreProfile) {
+    if (gl::GetGLImplementation() !=
+        gl::kGLImplementationDesktopGLCoreProfile) {
       decoder->ClearAllAttributes();
     }
     glEnableVertexAttribArray(kVertexPositionAttrib);

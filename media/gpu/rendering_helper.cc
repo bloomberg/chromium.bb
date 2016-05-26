@@ -190,9 +190,9 @@ void RenderingHelper::InitializeOneOff(base::WaitableEvent* done) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 #if GL_VARIANT_GLX
   cmd_line->AppendSwitchASCII(switches::kUseGL,
-                              gfx::kGLImplementationDesktopName);
+                              gl::kGLImplementationDesktopName);
 #else
-  cmd_line->AppendSwitchASCII(switches::kUseGL, gfx::kGLImplementationEGLName);
+  cmd_line->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationEGLName);
 #endif
 
   if (!gl::init::InitializeGLOneOff())
@@ -347,7 +347,7 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   screen_size_ = gl_surface_->GetSize();
 
   gl_context_ = gl::init::CreateGLContext(nullptr, gl_surface_.get(),
-                                          gfx::PreferIntegratedGpu);
+                                          gl::PreferIntegratedGpu);
   CHECK(gl_context_->MakeCurrent(gl_surface_.get()));
 
   CHECK_GT(params.window_sizes.size(), 0U);
@@ -655,7 +655,7 @@ void RenderingHelper::DeleteTexture(uint32_t texture_id) {
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
-gfx::GLContext* RenderingHelper::GetGLContext() {
+gl::GLContext* RenderingHelper::GetGLContext() {
   return gl_context_.get();
 }
 

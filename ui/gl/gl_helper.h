@@ -8,7 +8,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 
 class GL_EXPORT GLHelper {
  public:
@@ -36,6 +36,6 @@ class GL_EXPORT GLHelper {
   static void DrawQuad(GLuint vertex_buffer);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_HELPER_H_

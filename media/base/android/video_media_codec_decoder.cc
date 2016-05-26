@@ -85,7 +85,7 @@ void VideoMediaCodecDecoder::ReleaseDecoderResources() {
 
   ReleaseMediaCodec();
 
-  surface_ = gfx::ScopedJavaSurface();
+  surface_ = gl::ScopedJavaSurface();
 }
 
 void VideoMediaCodecDecoder::ReleaseMediaCodec() {
@@ -95,7 +95,7 @@ void VideoMediaCodecDecoder::ReleaseMediaCodec() {
   delayed_buffers_.clear();
 }
 
-void VideoMediaCodecDecoder::SetVideoSurface(gfx::ScopedJavaSurface surface) {
+void VideoMediaCodecDecoder::SetVideoSurface(gl::ScopedJavaSurface surface) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
 
   DVLOG(1) << class_name() << "::" << __FUNCTION__

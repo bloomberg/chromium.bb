@@ -7,7 +7,7 @@
 
 namespace egl {
 
-Surface::Surface(gfx::GLSurface* gl_surface, const Config* config)
+Surface::Surface(gl::GLSurface* gl_surface, const Config* config)
     : is_current_in_some_thread_(false),
       gl_surface_(gl_surface),
       config_(config) {}
@@ -15,7 +15,7 @@ Surface::Surface(gfx::GLSurface* gl_surface, const Config* config)
 Surface::~Surface() {
 }
 
-gfx::GLSurface* Surface::gl_surface() const {
+gl::GLSurface* Surface::gl_surface() const {
   return gl_surface_.get();
 }
 

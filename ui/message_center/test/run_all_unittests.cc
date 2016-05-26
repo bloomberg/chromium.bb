@@ -31,7 +31,7 @@ class MessageCenterTestSuite : public base::TestSuite {
 #if defined(OS_MACOSX)
     mock_cr_app::RegisterMockCrApp();
 #else
-    gfx::GLSurfaceTestSupport::InitializeOneOff();
+    gl::GLSurfaceTestSupport::InitializeOneOff();
 #endif
     base::TestSuite::Initialize();
     ui::RegisterPathProvider();

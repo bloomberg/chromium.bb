@@ -524,8 +524,8 @@ void GpuDataManagerImplPrivate::Initialize() {
   }
 
   gpu::GPUInfo gpu_info;
-  if (command_line->GetSwitchValueASCII(
-          switches::kUseGL) == gfx::kGLImplementationOSMesaName) {
+  if (command_line->GetSwitchValueASCII(switches::kUseGL) ==
+      gl::kGLImplementationOSMesaName) {
     // If using the OSMesa GL implementation, use fake vendor and device ids to
     // make sure it never gets blacklisted. This is better than simply
     // cancelling GPUInfo gathering as it allows us to proceed with loading the
@@ -536,7 +536,7 @@ void GpuDataManagerImplPrivate::Initialize() {
 
     // Also declare the driver_vendor to be osmesa to be able to specify
     // exceptions based on driver_vendor==osmesa for some blacklist rules.
-    gpu_info.driver_vendor = gfx::kGLImplementationOSMesaName;
+    gpu_info.driver_vendor = gl::kGLImplementationOSMesaName;
   } else {
     TRACE_EVENT0("startup",
       "GpuDataManagerImpl::Initialize:CollectBasicGraphicsInfo");
@@ -703,8 +703,8 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
               IsFeatureBlacklisted(
                   gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)) &&
              (use_gl == "any")) {
-    command_line->AppendSwitchASCII(
-        switches::kUseGL, gfx::kGLImplementationOSMesaName);
+    command_line->AppendSwitchASCII(switches::kUseGL,
+                                    gl::kGLImplementationOSMesaName);
   } else if (!use_gl.empty()) {
     command_line->AppendSwitchASCII(switches::kUseGL, use_gl);
   }

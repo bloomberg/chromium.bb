@@ -15,7 +15,7 @@ typedef void* EGLContext;
 typedef void* EGLDisplay;
 typedef void* EGLConfig;
 
-namespace gfx {
+namespace gl {
 
 class GLSurface;
 
@@ -51,6 +51,6 @@ class GLContextEGL : public GLContextReal {
   DISALLOW_COPY_AND_ASSIGN(GLContextEGL);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_CONTEXT_EGL_H_

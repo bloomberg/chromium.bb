@@ -18,7 +18,7 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-namespace gfx {
+namespace gl {
 
 // Listener class for all the callbacks from android SurfaceTexture.
 class GL_EXPORT SurfaceTextureListener {
@@ -54,6 +54,6 @@ class GL_EXPORT SurfaceTextureListener {
   DISALLOW_IMPLICIT_CONSTRUCTORS(SurfaceTextureListener);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_ANDROID_SURFACE_TEXTURE_LISTENER_H_

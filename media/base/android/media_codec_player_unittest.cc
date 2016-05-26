@@ -595,8 +595,8 @@ class MediaCodecPlayerTest : public testing::Test {
   base::MessageLoop message_loop_;
   MockMediaPlayerManager manager_;
   MockDemuxerAndroid* demuxer_;  // owned by player_
-  scoped_refptr<gfx::SurfaceTexture> surface_texture_a_;
-  scoped_refptr<gfx::SurfaceTexture> surface_texture_b_;
+  scoped_refptr<gl::SurfaceTexture> surface_texture_a_;
+  scoped_refptr<gl::SurfaceTexture> surface_texture_b_;
   MediaCodecPlayer* player_;     // raw pointer due to DeleteOnCorrectThread()
 
  private:
@@ -652,23 +652,23 @@ void MediaCodecPlayerTest::CreatePlayer() {
 }
 
 void MediaCodecPlayerTest::SetVideoSurface() {
-  surface_texture_a_ = gfx::SurfaceTexture::Create(0);
-  gfx::ScopedJavaSurface surface(surface_texture_a_.get());
+  surface_texture_a_ = gl::SurfaceTexture::Create(0);
+  gl::ScopedJavaSurface surface(surface_texture_a_.get());
 
   ASSERT_NE(nullptr, player_);
   player_->SetVideoSurface(std::move(surface));
 }
 
 void MediaCodecPlayerTest::SetVideoSurfaceB() {
-  surface_texture_b_ = gfx::SurfaceTexture::Create(1);
-  gfx::ScopedJavaSurface surface(surface_texture_b_.get());
+  surface_texture_b_ = gl::SurfaceTexture::Create(1);
+  gl::ScopedJavaSurface surface(surface_texture_b_.get());
 
   ASSERT_NE(nullptr, player_);
   player_->SetVideoSurface(std::move(surface));
 }
 
 void MediaCodecPlayerTest::RemoveVideoSurface() {
-  player_->SetVideoSurface(gfx::ScopedJavaSurface());
+  player_->SetVideoSurface(gl::ScopedJavaSurface());
   surface_texture_a_ = NULL;
 }
 

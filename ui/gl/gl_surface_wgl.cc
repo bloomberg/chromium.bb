@@ -12,7 +12,7 @@
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_wgl_api_implementation.h"
 
-namespace gfx {
+namespace gl {
 
 namespace {
 const PIXELFORMATDESCRIPTOR kPixelFormatDescriptor = {
@@ -337,7 +337,7 @@ PbufferGLSurfaceWGL::~PbufferGLSurfaceWGL() {
 bool PbufferGLSurfaceWGL::Initialize(GLSurface::Format format) {
   DCHECK(!device_context_);
 
-  if (!gfx::g_driver_wgl.fn.wglCreatePbufferARBFn) {
+  if (!gl::g_driver_wgl.fn.wglCreatePbufferARBFn) {
     LOG(ERROR) << "wglCreatePbufferARB not available.";
     Destroy();
     return false;
@@ -394,4 +394,4 @@ void* PbufferGLSurfaceWGL::GetHandle() {
   return device_context_;
 }
 
-}  // namespace gfx
+}  // namespace gl

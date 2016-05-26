@@ -18,31 +18,29 @@ namespace init {
 // be deleted.
 
 bool InitializeGLOneOff() {
-  return gfx::GLSurface::InitializeOneOff();
+  return GLSurface::InitializeOneOff();
 }
 
-scoped_refptr<gfx::GLContext> CreateGLContext(
-    gfx::GLShareGroup* share_group,
-    gfx::GLSurface* compatible_surface,
-    gfx::GpuPreference gpu_preference) {
-  return gfx::GLContext::CreateGLContext(share_group, compatible_surface,
-                                         gpu_preference);
+scoped_refptr<GLContext> CreateGLContext(GLShareGroup* share_group,
+                                         GLSurface* compatible_surface,
+                                         GpuPreference gpu_preference) {
+  return GLContext::CreateGLContext(share_group, compatible_surface,
+                                    gpu_preference);
 }
 
-scoped_refptr<gfx::GLSurface> CreateViewGLSurface(
-    gfx::AcceleratedWidget window) {
-  return gfx::GLSurface::CreateViewGLSurface(window);
+scoped_refptr<GLSurface> CreateViewGLSurface(gfx::AcceleratedWidget window) {
+  return GLSurface::CreateViewGLSurface(window);
 }
 
 #if defined(USE_OZONE)
-scoped_refptr<gfx::GLSurface> CreateSurfacelessViewGLSurface(
+scoped_refptr<GLSurface> CreateSurfacelessViewGLSurface(
     gfx::AcceleratedWidget window) {
-  return gfx::GLSurface::CreateSurfacelessViewGLSurface(window);
+  return GLSurface::CreateSurfacelessViewGLSurface(window);
 }
 #endif  // defined(USE_OZONE)
 
-scoped_refptr<gfx::GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {
-  return gfx::GLSurface::CreateOffscreenGLSurface(size);
+scoped_refptr<GLSurface> CreateOffscreenGLSurface(const gfx::Size& size) {
+  return GLSurface::CreateOffscreenGLSurface(size);
 }
 
 }  // namespace init

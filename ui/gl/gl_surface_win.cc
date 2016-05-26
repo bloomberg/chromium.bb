@@ -28,7 +28,7 @@
   reinterpret_cast<EGLNativeDisplayType>(-2)
 #endif
 
-namespace gfx {
+namespace gl {
 
 // This OSMesa GL surface can use GDI to swap the contents of the buffer to a
 // view.
@@ -210,7 +210,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
       DCHECK(window != gfx::kNullAcceleratedWidget);
       scoped_refptr<NativeViewGLSurfaceEGL> surface(
           new NativeViewGLSurfaceEGL(window));
-      std::unique_ptr<VSyncProvider> sync_provider;
+      std::unique_ptr<gfx::VSyncProvider> sync_provider;
       sync_provider.reset(new VSyncProviderWin(window));
       if (!surface->Initialize(std::move(sync_provider)))
         return NULL;
@@ -271,4 +271,4 @@ EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay() {
   return GetDC(NULL);
 }
 
-}  // namespace gfx
+}  // namespace gl

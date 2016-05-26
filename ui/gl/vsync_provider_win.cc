@@ -11,7 +11,7 @@
 #include "base/win/windows_version.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace gfx {
+namespace gl {
 
 namespace {
 bool g_use_dwm_vsync;
@@ -125,4 +125,4 @@ void VSyncProviderWin::GetVSyncParameters(const UpdateVSyncCallback& callback) {
   }
 }
 
-}  // namespace gfx
+}  // namespace gl

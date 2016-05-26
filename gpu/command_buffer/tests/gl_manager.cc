@@ -171,9 +171,9 @@ class IOSurfaceGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
 }  // namespace
 
 int GLManager::use_count_;
-scoped_refptr<gfx::GLShareGroup>* GLManager::base_share_group_;
-scoped_refptr<gfx::GLSurface>* GLManager::base_surface_;
-scoped_refptr<gfx::GLContext>* GLManager::base_context_;
+scoped_refptr<gl::GLShareGroup>* GLManager::base_share_group_;
+scoped_refptr<gl::GLSurface>* GLManager::base_surface_;
+scoped_refptr<gl::GLContext>* GLManager::base_context_;
 
 GLManager::Options::Options()
     : size(4, 4),
@@ -253,7 +253,7 @@ void GLManager::InitializeWithCommandLine(
     mailbox_manager = options.share_group_manager->mailbox_manager();
   }
 
-  gfx::GLShareGroup* share_group = NULL;
+  gl::GLShareGroup* share_group = NULL;
   if (options.share_group_manager) {
     share_group = options.share_group_manager->share_group();
   } else if (options.share_mailbox_manager) {
@@ -268,17 +268,16 @@ void GLManager::InitializeWithCommandLine(
       options.share_group_manager->gles2_implementation()->share_group();
   }
 
-  gfx::GLContext* real_gl_context = NULL;
+  gl::GLContext* real_gl_context = NULL;
   if (options.virtual_manager) {
     real_gl_context = options.virtual_manager->context();
   }
 
   mailbox_manager_ =
       mailbox_manager ? mailbox_manager : new gles2::MailboxManagerImpl;
-  share_group_ =
-      share_group ? share_group : new gfx::GLShareGroup;
+  share_group_ = share_group ? share_group : new gl::GLShareGroup;
 
-  gfx::GpuPreference gpu_preference(gfx::PreferDiscreteGpu);
+  gl::GpuPreference gpu_preference(gl::PreferDiscreteGpu);
   gles2::ContextCreationAttribHelper attribs;
   attribs.red_size = 8;
   attribs.green_size = 8;
@@ -317,16 +316,15 @@ void GLManager::InitializeWithCommandLine(
   ASSERT_TRUE(surface_.get() != NULL) << "could not create offscreen surface";
 
   if (base_context_) {
-    context_ = scoped_refptr<gfx::GLContext>(new gpu::GLContextVirtual(
+    context_ = scoped_refptr<gl::GLContext>(new gpu::GLContextVirtual(
         share_group_.get(), base_context_->get(), decoder_->AsWeakPtr()));
-    ASSERT_TRUE(context_->Initialize(
-        surface_.get(), gfx::PreferIntegratedGpu));
+    ASSERT_TRUE(context_->Initialize(surface_.get(), gl::PreferIntegratedGpu));
   } else {
     if (real_gl_context) {
-      context_ = scoped_refptr<gfx::GLContext>(new gpu::GLContextVirtual(
+      context_ = scoped_refptr<gl::GLContext>(new gpu::GLContextVirtual(
           share_group_.get(), real_gl_context, decoder_->AsWeakPtr()));
-      ASSERT_TRUE(context_->Initialize(
-          surface_.get(), gfx::PreferIntegratedGpu));
+      ASSERT_TRUE(
+          context_->Initialize(surface_.get(), gl::PreferIntegratedGpu));
     } else {
       context_ = gl::init::CreateGLContext(share_group_.get(), surface_.get(),
                                            gpu_preference);
@@ -388,15 +386,14 @@ void GLManager::InitializeWithCommandLine(
 void GLManager::SetupBaseContext() {
   if (use_count_) {
     #if defined(OS_ANDROID)
-      base_share_group_ = new scoped_refptr<gfx::GLShareGroup>(
-          new gfx::GLShareGroup);
-      gfx::Size size(4, 4);
-      base_surface_ = new scoped_refptr<gfx::GLSurface>(
-          gl::init::CreateOffscreenGLSurface(size));
-      gfx::GpuPreference gpu_preference(gfx::PreferDiscreteGpu);
-      base_context_ =
-          new scoped_refptr<gfx::GLContext>(gl::init::CreateGLContext(
-              base_share_group_->get(), base_surface_->get(), gpu_preference));
+    base_share_group_ =
+        new scoped_refptr<gl::GLShareGroup>(new gl::GLShareGroup);
+    gfx::Size size(4, 4);
+    base_surface_ = new scoped_refptr<gl::GLSurface>(
+        gl::init::CreateOffscreenGLSurface(size));
+    gl::GpuPreference gpu_preference(gl::PreferDiscreteGpu);
+    base_context_ = new scoped_refptr<gl::GLContext>(gl::init::CreateGLContext(
+        base_share_group_->get(), base_surface_->get(), gpu_preference));
     #endif
   }
   ++use_count_;
@@ -428,7 +425,7 @@ void GLManager::MakeCurrent() {
   ::gles2::SetGLContext(gles2_implementation_.get());
 }
 
-void GLManager::SetSurface(gfx::GLSurface* surface) {
+void GLManager::SetSurface(gl::GLSurface* surface) {
   decoder_->SetSurface(surface);
 }
 

@@ -108,7 +108,7 @@ void ContentVideoView::SetSurface(JNIEnv*,
                                   const JavaParamRef<jobject>&,
                                   const JavaParamRef<jobject>& surface) {
   client_->SetVideoSurface(
-      gfx::ScopedJavaSurface::AcquireExternalSurface(surface));
+      gl::ScopedJavaSurface::AcquireExternalSurface(surface));
 }
 
 void ContentVideoView::DidExitFullscreen(JNIEnv*,

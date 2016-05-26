@@ -28,7 +28,7 @@ GpuSwitchingManager* GpuSwitchingManager::GetInstance() {
 }
 
 GpuSwitchingManager::GpuSwitchingManager()
-    : gpu_switching_option_(gfx::PreferIntegratedGpu),
+    : gpu_switching_option_(gl::PreferIntegratedGpu),
       gpu_switching_option_set_(false),
       supports_dual_gpus_(false),
       supports_dual_gpus_set_(false),
@@ -48,9 +48,9 @@ GpuSwitchingManager::~GpuSwitchingManager() {
 void GpuSwitchingManager::ForceUseOfIntegratedGpu() {
   DCHECK(SupportsDualGpus());
   if (gpu_switching_option_set_) {
-    DCHECK_EQ(gpu_switching_option_, gfx::PreferIntegratedGpu);
+    DCHECK_EQ(gpu_switching_option_, gl::PreferIntegratedGpu);
   } else {
-    gpu_switching_option_ = gfx::PreferIntegratedGpu;
+    gpu_switching_option_ = gl::PreferIntegratedGpu;
     gpu_switching_option_set_ = true;
   }
 }
@@ -58,9 +58,9 @@ void GpuSwitchingManager::ForceUseOfIntegratedGpu() {
 void GpuSwitchingManager::ForceUseOfDiscreteGpu() {
   DCHECK(SupportsDualGpus());
   if (gpu_switching_option_set_) {
-    DCHECK_EQ(gpu_switching_option_, gfx::PreferDiscreteGpu);
+    DCHECK_EQ(gpu_switching_option_, gl::PreferDiscreteGpu);
   } else {
-    gpu_switching_option_ = gfx::PreferDiscreteGpu;
+    gpu_switching_option_ = gl::PreferDiscreteGpu;
     gpu_switching_option_set_ = true;
 #if defined(OS_MACOSX)
     // Create a pixel format that lasts the lifespan of Chrome, so Chrome
@@ -93,7 +93,7 @@ bool GpuSwitchingManager::SupportsDualGpus() {
       flag = (vendor_ids_.size() == 2);
       if (flag && command_line.HasSwitch(switches::kUseGL) &&
           command_line.GetSwitchValueASCII(switches::kUseGL) !=
-            gfx::kGLImplementationDesktopName)
+              gl::kGLImplementationDesktopName)
         flag = false;
 
       if (flag) {
@@ -131,8 +131,8 @@ void GpuSwitchingManager::NotifyGpuSwitched() {
   FOR_EACH_OBSERVER(GpuSwitchingObserver, observer_list_, OnGpuSwitched());
 }
 
-gfx::GpuPreference GpuSwitchingManager::AdjustGpuPreference(
-    gfx::GpuPreference gpu_preference) {
+gl::GpuPreference GpuSwitchingManager::AdjustGpuPreference(
+    gl::GpuPreference gpu_preference) {
   if (!gpu_switching_option_set_)
     return gpu_preference;
   return gpu_switching_option_;

@@ -54,7 +54,7 @@ Measurement Measurement::Divide(int a) const {
 Measurement::~Measurement() {
 }
 
-MeasurementTimers::MeasurementTimers(gfx::GPUTimingClient* gpu_timing_client)
+MeasurementTimers::MeasurementTimers(gl::GPUTimingClient* gpu_timing_client)
     : wall_time_start_(), cpu_time_start_(), gpu_timer_() {
   DCHECK(gpu_timing_client);
   wall_time_start_ = base::TimeTicks::Now();

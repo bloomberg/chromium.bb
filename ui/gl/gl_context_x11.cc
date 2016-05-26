@@ -19,7 +19,7 @@
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
 
-namespace gfx {
+namespace gl {
 
 class GLShareGroup;
 
@@ -58,4 +58,4 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
   }
 }
 
-}  // namespace gfx
+}  // namespace gl

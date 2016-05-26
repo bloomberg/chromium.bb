@@ -7,7 +7,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_state_restorer.h"
 
-namespace gfx {
+namespace gl {
 
 ScopedFrameBufferBinder::ScopedFrameBufferBinder(unsigned int fbo)
     : state_restorer_(!GLContext::GetCurrent()
@@ -176,4 +176,4 @@ ScopedCapability::~ScopedCapability() {
   }
 }
 
-}  // namespace gfx
+}  // namespace gl

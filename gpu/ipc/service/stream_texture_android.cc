@@ -61,7 +61,7 @@ bool StreamTexture::Create(GpuCommandBufferStub* owner_stub,
 StreamTexture::StreamTexture(GpuCommandBufferStub* owner_stub,
                              int32_t route_id,
                              uint32_t texture_id)
-    : surface_texture_(gfx::SurfaceTexture::Create(texture_id)),
+    : surface_texture_(gl::SurfaceTexture::Create(texture_id)),
       size_(0, 0),
       has_pending_frame_(false),
       owner_stub_(owner_stub),

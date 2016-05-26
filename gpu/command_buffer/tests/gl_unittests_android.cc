@@ -35,12 +35,12 @@ TEST_F(GLSurfaceTextureTest, SimpleTest) {
   // abstraction for the SurfaceTexture in this test.
   GLuint texture = 0xFEEDBEEF;
 
-  scoped_refptr<gfx::SurfaceTexture> surface_texture(
-      gfx::SurfaceTexture::Create(texture));
+  scoped_refptr<gl::SurfaceTexture> surface_texture(
+      gl::SurfaceTexture::Create(texture));
   gfx::AcceleratedWidget window = surface_texture->CreateSurface();
   EXPECT_TRUE(window != NULL);
 
-  scoped_refptr<gfx::GLSurface> gl_surface =
+  scoped_refptr<gl::GLSurface> gl_surface =
       gl::init::CreateViewGLSurface(window);
   EXPECT_TRUE(gl_surface.get() != NULL);
 

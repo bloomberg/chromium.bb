@@ -227,7 +227,7 @@ class MediaCodecDecoderTest : public testing::Test {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   FrameStatistics frame_statistics_;
   DataAvailableCallback data_available_cb_;
-  scoped_refptr<gfx::SurfaceTexture> surface_texture_;
+  scoped_refptr<gl::SurfaceTexture> surface_texture_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCodecDecoderTest);
 };
@@ -319,8 +319,8 @@ void MediaCodecDecoderTest::OnDataRequested() {
 }
 
 void MediaCodecDecoderTest::SetVideoSurface() {
-  surface_texture_ = gfx::SurfaceTexture::Create(0);
-  gfx::ScopedJavaSurface surface(surface_texture_.get());
+  surface_texture_ = gl::SurfaceTexture::Create(0);
+  gl::ScopedJavaSurface surface(surface_texture_.get());
   ASSERT_NE(nullptr, decoder_.get());
   VideoMediaCodecDecoder* video_decoder =
       static_cast<VideoMediaCodecDecoder*>(decoder_.get());
@@ -441,9 +441,9 @@ TEST_F(MediaCodecDecoderTest, VideoConfigureInvalidSurface) {
   decoder_->SetDemuxerConfigs(GetConfigs());
 
   // Prepare the surface.
-  scoped_refptr<gfx::SurfaceTexture> surface_texture(
-      gfx::SurfaceTexture::Create(0));
-  gfx::ScopedJavaSurface surface(surface_texture.get());
+  scoped_refptr<gl::SurfaceTexture> surface_texture(
+      gl::SurfaceTexture::Create(0));
+  gl::ScopedJavaSurface surface(surface_texture.get());
 
   // Release the surface texture.
   surface_texture = NULL;

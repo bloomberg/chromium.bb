@@ -29,8 +29,8 @@ GpuMemoryBufferFactorySurfaceTexture::CreateGpuMemoryBuffer(
   // attaches the surface texture to a real texture id. glDeleteTextures
   // silently ignores 0.
   const int kDummyTextureId = 0;
-  scoped_refptr<gfx::SurfaceTexture> surface_texture =
-      gfx::SurfaceTexture::Create(kDummyTextureId);
+  scoped_refptr<gl::SurfaceTexture> surface_texture =
+      gl::SurfaceTexture::Create(kDummyTextureId);
   if (!surface_texture.get())
     return gfx::GpuMemoryBufferHandle();
 

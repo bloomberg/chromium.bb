@@ -13,7 +13,7 @@
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
-namespace gfx {
+namespace gl {
 
 namespace {
 
@@ -55,8 +55,8 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
 
       // These two functions take single precision float rather than double
       // precision float parameters in GLES.
-      ::gfx::g_driver_gl.fn.glClearDepthFn = MarshalClearDepthToClearDepthf;
-      ::gfx::g_driver_gl.fn.glDepthRangeFn = MarshalDepthRangeToDepthRangef;
+      ::gl::g_driver_gl.fn.glClearDepthFn = MarshalClearDepthToClearDepthf;
+      ::gl::g_driver_gl.fn.glDepthRangeFn = MarshalDepthRangeToDepthRangef;
       break;
     case kGLImplementationMockGL: {
       SetGLImplementation(kGLImplementationMockGL);
@@ -120,4 +120,4 @@ bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
   return false;
 }
 
-}  // namespace gfx
+}  // namespace gl

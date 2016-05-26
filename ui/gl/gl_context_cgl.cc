@@ -19,7 +19,7 @@
 #include "ui/gl/scoped_cgl.h"
 #include "ui/gl/yuv_to_rgb_converter.h"
 
-namespace gfx {
+namespace gl {
 
 namespace {
 
@@ -139,7 +139,7 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
 
 void GLContextCGL::Destroy() {
   if (yuv_to_rgb_converter_) {
-    gfx::ScopedCGLSetCurrentContext(static_cast<CGLContextObj>(context_));
+    gl::ScopedCGLSetCurrentContext(static_cast<CGLContextObj>(context_));
     yuv_to_rgb_converter_.reset();
   }
   if (discrete_pixelformat_) {
@@ -285,4 +285,4 @@ GpuPreference GLContextCGL::GetGpuPreference() {
   return gpu_preference_;
 }
 
-}  // namespace gfx
+}  // namespace gl

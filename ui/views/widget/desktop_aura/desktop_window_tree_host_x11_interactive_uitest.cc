@@ -128,7 +128,7 @@ class DesktopWindowTreeHostX11Test : public ViewsTestBase {
   ~DesktopWindowTreeHostX11Test() override {}
 
   static void SetUpTestCase() {
-    gfx::GLSurfaceTestSupport::InitializeOneOff();
+    gl::GLSurfaceTestSupport::InitializeOneOff();
     ui::RegisterPathProvider();
     base::FilePath ui_test_pak_path;
     ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));

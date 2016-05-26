@@ -13,7 +13,7 @@
 #include "ui/gl/android/surface_texture_listener.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace gfx {
+namespace gl {
 
 scoped_refptr<SurfaceTexture> SurfaceTexture::Create(int texture_id) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -100,4 +100,4 @@ bool SurfaceTexture::RegisterSurfaceTexture(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace gfx
+}  // namespace gl

@@ -12,7 +12,7 @@
 
 typedef std::pair<std::string, std::string> stringpair;
 
-namespace gfx {
+namespace gl {
 
 class WGLApiTest : public testing::Test {
  public:
@@ -151,4 +151,4 @@ TEST_F(WGLApiTest, DisabledExtensionStringTest) {
             GetExtensions());
 }
 
-}  // namespace gfx
+}  // namespace gl

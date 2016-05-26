@@ -59,7 +59,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // Pass a java surface object to the MediaPlayerAndroid object
   // identified by render process handle, render frame ID and player ID.
-  static void SetSurfacePeer(scoped_refptr<gfx::SurfaceTexture> surface_texture,
+  static void SetSurfacePeer(scoped_refptr<gl::SurfaceTexture> surface_texture,
                              base::ProcessHandle render_process_handle,
                              int render_frame_id,
                              int player_id);
@@ -75,7 +75,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // ContentVideoView::Client implementation.
   void DidExitFullscreen(bool release_media_player) override;
-  void SetVideoSurface(gfx::ScopedJavaSurface surface) override;
+  void SetVideoSurface(gl::ScopedJavaSurface surface) override;
 
   // Called when browser player wants the renderer media element to seek.
   // Any actual seek started by renderer will be handled by browser in OnSeek().

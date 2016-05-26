@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 
 class GLContext;
 
@@ -65,6 +65,6 @@ class GL_EXPORT GLShareGroup : public base::RefCounted<GLShareGroup> {
   DISALLOW_COPY_AND_ASSIGN(GLShareGroup);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_SHARE_GROUP_H_

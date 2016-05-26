@@ -9,7 +9,7 @@
 
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 
 // The GL implementation names that can be passed to --use-gl.
 GL_EXPORT extern const char kGLImplementationDesktopName[];
@@ -26,7 +26,7 @@ GL_EXPORT extern const char kANGLEImplementationD3D11Name[];
 GL_EXPORT extern const char kANGLEImplementationOpenGLName[];
 GL_EXPORT extern const char kANGLEImplementationOpenGLESName[];
 
-}  // namespace gfx
+}  // namespace gl
 
 namespace switches {
 

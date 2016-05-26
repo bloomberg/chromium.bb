@@ -84,7 +84,7 @@ static void SetSurfacePeer(
   }
 
   if (player != player_manager->GetFullscreenPlayer()) {
-    gfx::ScopedJavaSurface scoped_surface(surface);
+    gl::ScopedJavaSurface scoped_surface(surface);
     player->SetVideoSurface(std::move(scoped_surface));
   }
 }
@@ -247,16 +247,16 @@ void UnregisterViewSurface(int surface_id) {
   Java_ChildProcessLauncher_unregisterViewSurface(env, surface_id);
 }
 
-gfx::ScopedJavaSurface GetViewSurface(int surface_id) {
+gl::ScopedJavaSurface GetViewSurface(int surface_id) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
-  return gfx::ScopedJavaSurface::AcquireExternalSurface(
+  return gl::ScopedJavaSurface::AcquireExternalSurface(
       Java_ChildProcessLauncher_getViewSurface(env, surface_id).obj());
 }
 
 void CreateSurfaceTextureSurface(int surface_texture_id,
                                  int client_id,
-                                 gfx::SurfaceTexture* surface_texture) {
+                                 gl::SurfaceTexture* surface_texture) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
   Java_ChildProcessLauncher_createSurfaceTextureSurface(
@@ -273,13 +273,14 @@ void DestroySurfaceTextureSurface(int surface_texture_id, int client_id) {
       env, surface_texture_id, client_id);
 }
 
-gfx::ScopedJavaSurface GetSurfaceTextureSurface(int surface_texture_id,
-                                                int client_id) {
+gl::ScopedJavaSurface GetSurfaceTextureSurface(int surface_texture_id,
+                                               int client_id) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
-  return gfx::ScopedJavaSurface::AcquireExternalSurface(
+  return gl::ScopedJavaSurface::AcquireExternalSurface(
       Java_ChildProcessLauncher_getSurfaceTextureSurface(
-          env, surface_texture_id, client_id).obj());
+          env, surface_texture_id, client_id)
+          .obj());
 }
 
 jboolean IsSingleProcess(JNIEnv* env, const JavaParamRef<jclass>& clazz) {

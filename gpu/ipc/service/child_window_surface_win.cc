@@ -74,7 +74,7 @@ void InitializeWindowClass() {
 
 ChildWindowSurfaceWin::ChildWindowSurfaceWin(GpuChannelManager* manager,
                                              HWND parent_window)
-    : gfx::NativeViewGLSurfaceEGL(0),
+    : gl::NativeViewGLSurfaceEGL(0),
       parent_window_(parent_window),
       manager_(manager),
       alpha_(true),
@@ -142,7 +142,7 @@ bool ChildWindowSurfaceWin::Resize(const gfx::Size& size,
       return false;
     }
     alpha_ = has_alpha;
-    return gfx::NativeViewGLSurfaceEGL::Resize(size, scale_factor, has_alpha);
+    return gl::NativeViewGLSurfaceEGL::Resize(size, scale_factor, has_alpha);
   } else {
     if (size == GetSize() && has_alpha == alpha_)
       return true;
@@ -163,7 +163,7 @@ bool ChildWindowSurfaceWin::Resize(const gfx::Size& size,
       config_ = nullptr;
 
       std::unique_ptr<ui::ScopedMakeCurrent> scoped_make_current;
-      gfx::GLContext* current_context = gfx::GLContext::GetCurrent();
+      gl::GLContext* current_context = gl::GLContext::GetCurrent();
       bool was_current = current_context && current_context->IsCurrent(this);
       if (was_current) {
         scoped_make_current.reset(

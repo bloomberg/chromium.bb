@@ -16,12 +16,9 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-namespace gfx {
-class SurfaceTexture;
-}
-
 namespace gl {
 class GLImage;
+class SurfaceTexture;
 }
 
 namespace gpu {
@@ -62,7 +59,8 @@ class GPU_EXPORT GpuMemoryBufferFactorySurfaceTexture
  private:
   typedef std::pair<int, int> SurfaceTextureMapKey;
   typedef base::hash_map<SurfaceTextureMapKey,
-                         scoped_refptr<gfx::SurfaceTexture>> SurfaceTextureMap;
+                         scoped_refptr<gl::SurfaceTexture>>
+      SurfaceTextureMap;
   SurfaceTextureMap surface_textures_;
   base::Lock surface_textures_lock_;
 };

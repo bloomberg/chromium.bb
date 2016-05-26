@@ -30,7 +30,7 @@ class GPU_EXPORT GpuSurfaceLookup {
       gpu::SurfaceHandle surface_handle) = 0;
 
 #if defined(OS_ANDROID)
-  virtual gfx::ScopedJavaSurface AcquireJavaSurface(int surface_id) = 0;
+  virtual gl::ScopedJavaSurface AcquireJavaSurface(int surface_id) = 0;
 #endif
 
  private:

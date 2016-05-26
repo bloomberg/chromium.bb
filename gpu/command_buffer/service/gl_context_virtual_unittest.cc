@@ -39,21 +39,21 @@ TEST_F(GLContextVirtualTest, Reinitialize) {
       .Times(AnyNumber())
       .WillRepeatedly(Return(reinterpret_cast<unsigned const char *>("")));
   {
-    scoped_refptr<gfx::GLContextStub> base_context = new gfx::GLContextStub;
-    gfx::GLShareGroup* share_group = base_context->share_group();
+    scoped_refptr<gl::GLContextStub> base_context = new gl::GLContextStub;
+    gl::GLShareGroup* share_group = base_context->share_group();
     share_group->SetSharedContext(base_context.get());
     scoped_refptr<GLContextVirtual> context(new GLContextVirtual(
         share_group, base_context.get(), decoder_->AsWeakPtr()));
-    EXPECT_TRUE(context->Initialize(GetGLSurface(), gfx::PreferIntegratedGpu));
+    EXPECT_TRUE(context->Initialize(GetGLSurface(), gl::PreferIntegratedGpu));
     EXPECT_TRUE(context->MakeCurrent(GetGLSurface()));
   }
   {
-    scoped_refptr<gfx::GLContextStub> base_context = new gfx::GLContextStub;
-    gfx::GLShareGroup* share_group = base_context->share_group();
+    scoped_refptr<gl::GLContextStub> base_context = new gl::GLContextStub;
+    gl::GLShareGroup* share_group = base_context->share_group();
     share_group->SetSharedContext(base_context.get());
     scoped_refptr<GLContextVirtual> context(new GLContextVirtual(
         share_group, base_context.get(), decoder_->AsWeakPtr()));
-    EXPECT_TRUE(context->Initialize(GetGLSurface(), gfx::PreferIntegratedGpu));
+    EXPECT_TRUE(context->Initialize(GetGLSurface(), gl::PreferIntegratedGpu));
     EXPECT_TRUE(context->MakeCurrent(GetGLSurface()));
   }
 }

@@ -28,7 +28,7 @@ class CONTENT_EXPORT BrowserSurfaceViewManager
   ~BrowserSurfaceViewManager();
 
   // ContentVideoView::Client overrides.
-  void SetVideoSurface(gfx::ScopedJavaSurface surface) override;
+  void SetVideoSurface(gl::ScopedJavaSurface surface) override;
   void DidExitFullscreen(bool release_media_player) override;
 
   void OnCreateFullscreenSurface(const gfx::Size& video_natural_size);

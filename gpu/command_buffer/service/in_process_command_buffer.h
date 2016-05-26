@@ -37,10 +37,13 @@ namespace base {
 class SequenceChecker;
 }
 
-namespace gfx {
+namespace gl {
 class GLContext;
 class GLShareGroup;
 class GLSurface;
+}
+
+namespace gfx {
 class Size;
 }
 
@@ -78,12 +81,12 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // If |surface| is not null, use it directly; in this case, the command
   // buffer gpu thread must be the same as the client thread. Otherwise create
   // a new GLSurface.
-  bool Initialize(scoped_refptr<gfx::GLSurface> surface,
+  bool Initialize(scoped_refptr<gl::GLSurface> surface,
                   bool is_offscreen,
                   gfx::AcceleratedWidget window,
                   const gfx::Size& size,
                   const gles2::ContextCreationAttribHelper& attribs,
-                  gfx::GpuPreference gpu_preference,
+                  gl::GpuPreference gpu_preference,
                   InProcessCommandBuffer* share_group,
                   GpuMemoryBufferManager* gpu_memory_buffer_manager,
                   ImageFactory* image_factory);
@@ -153,14 +156,14 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     virtual SyncPointManager* sync_point_manager() = 0;
     const GpuPreferences& gpu_preferences();
     const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds();
-    scoped_refptr<gfx::GLShareGroup> share_group();
+    scoped_refptr<gl::GLShareGroup> share_group();
     scoped_refptr<gles2::MailboxManager> mailbox_manager();
     gpu::gles2::ProgramCache* program_cache();
 
    private:
     const GpuPreferences gpu_preferences_;
     const GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
-    scoped_refptr<gfx::GLShareGroup> share_group_;
+    scoped_refptr<gl::GLShareGroup> share_group_;
     scoped_refptr<gles2::MailboxManager> mailbox_manager_;
     std::unique_ptr<gpu::gles2::ProgramCache> program_cache_;
   };
@@ -171,7 +174,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     gfx::AcceleratedWidget window;
     const gfx::Size& size;
     const gles2::ContextCreationAttribHelper& attribs;
-    gfx::GpuPreference gpu_preference;
+    gl::GpuPreference gpu_preference;
     gpu::Capabilities* capabilities;  // Ouptut.
     InProcessCommandBuffer* context_group;
     ImageFactory* image_factory;
@@ -181,7 +184,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
         gfx::AcceleratedWidget window,
         const gfx::Size& size,
         const gles2::ContextCreationAttribHelper& attribs,
-        gfx::GpuPreference gpu_preference,
+        gl::GpuPreference gpu_preference,
         gpu::Capabilities* capabilities,
         InProcessCommandBuffer* share_group,
         ImageFactory* image_factory)
@@ -238,8 +241,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   scoped_refptr<TransferBufferManagerInterface> transfer_buffer_manager_;
   std::unique_ptr<CommandExecutor> executor_;
   std::unique_ptr<gles2::GLES2Decoder> decoder_;
-  scoped_refptr<gfx::GLContext> context_;
-  scoped_refptr<gfx::GLSurface> surface_;
+  scoped_refptr<gl::GLContext> context_;
+  scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<SyncPointOrderData> sync_point_order_data_;
   std::unique_ptr<SyncPointClient> sync_point_client_;
   base::Closure context_lost_callback_;
@@ -267,7 +270,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   scoped_refptr<Service> service_;
   State state_after_last_flush_;
   base::Lock state_after_last_flush_lock_;
-  scoped_refptr<gfx::GLShareGroup> gl_share_group_;
+  scoped_refptr<gl::GLShareGroup> gl_share_group_;
   base::WaitableEvent fence_sync_wait_event_;
 
   // Only used with explicit scheduling and the gpu thread is the same as

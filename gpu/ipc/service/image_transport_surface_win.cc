@@ -18,23 +18,23 @@
 namespace gpu {
 
 // static
-scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
+scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     SurfaceHandle surface_handle,
-    gfx::GLSurface::Format format) {
+    gl::GLSurface::Format format) {
   DCHECK_NE(surface_handle, kNullSurfaceHandle);
 
-  scoped_refptr<gfx::GLSurface> surface;
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
-      gfx::GLSurfaceEGL::IsDirectCompositionSupported()) {
+  scoped_refptr<gl::GLSurface> surface;
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2 &&
+      gl::GLSurfaceEGL::IsDirectCompositionSupported()) {
     scoped_refptr<ChildWindowSurfaceWin> egl_surface(
         new ChildWindowSurfaceWin(manager, surface_handle));
     surface = egl_surface;
 
     // TODO(jbauman): Get frame statistics from DirectComposition
     std::unique_ptr<gfx::VSyncProvider> vsync_provider(
-        new gfx::VSyncProviderWin(surface_handle));
+        new gl::VSyncProviderWin(surface_handle));
     if (!egl_surface->Initialize(std::move(vsync_provider)))
       return nullptr;
   } else {
@@ -43,8 +43,8 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
       return nullptr;
   }
 
-  return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(
-      manager, stub, surface.get()));
+  return scoped_refptr<gl::GLSurface>(
+      new PassThroughImageTransportSurface(manager, stub, surface.get()));
 }
 
 }  // namespace gpu

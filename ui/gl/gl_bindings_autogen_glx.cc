@@ -18,7 +18,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_version_info.h"
 
-namespace gfx {
+namespace gl {
 
 static bool g_debugBindingsInitialized;
 DriverGLX g_driver_glx;
@@ -1573,4 +1573,4 @@ void TraceGLXApi::glXWaitXFn(void) {
   glx_api_->glXWaitXFn();
 }
 
-}  // namespace gfx
+}  // namespace gl

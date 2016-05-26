@@ -15,7 +15,7 @@ using ui::GetLastEGLErrorString;
 using ui::PlatformEvent;
 using ui::PlatformEventSource;
 
-namespace gfx {
+namespace gl {
 
 NativeViewGLSurfaceEGLX11::NativeViewGLSurfaceEGLX11(EGLNativeWindowType window)
     : NativeViewGLSurfaceEGL(0),
@@ -177,4 +177,4 @@ NativeViewGLSurfaceEGLX11::~NativeViewGLSurfaceEGLX11() {
   Destroy();
 }
 
-}  // namespace gfx
+}  // namespace gl

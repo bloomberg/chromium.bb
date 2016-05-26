@@ -198,8 +198,8 @@ class MailboxManagerSyncTest : public MailboxManagerTest {
   void SetUp() override {
     MailboxManagerTest::SetUpWithSynchronizer();
     manager2_ = new MailboxManagerSync();
-    context_ = new gfx::GLContextStub();
-    surface_ = new gfx::GLSurfaceStub();
+    context_ = new gl::GLContextStub();
+    surface_ = new gl::GLSurfaceStub();
     context_->MakeCurrent(surface_.get());
   }
 
@@ -253,8 +253,8 @@ class MailboxManagerSyncTest : public MailboxManagerTest {
   }
 
   scoped_refptr<MailboxManager> manager2_;
-  scoped_refptr<gfx::GLContext> context_;
-  scoped_refptr<gfx::GLSurface> surface_;
+  scoped_refptr<gl::GLContext> context_;
+  scoped_refptr<gl::GLSurface> surface_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MailboxManagerSyncTest);

@@ -10,10 +10,10 @@
 
 namespace ui {
 
-ScopedMakeCurrent::ScopedMakeCurrent(gfx::GLContext* context,
-                                     gfx::GLSurface* surface)
-    : previous_context_(gfx::GLContext::GetCurrent()),
-      previous_surface_(gfx::GLSurface::GetCurrent()),
+ScopedMakeCurrent::ScopedMakeCurrent(gl::GLContext* context,
+                                     gl::GLSurface* surface)
+    : previous_context_(gl::GLContext::GetCurrent()),
+      previous_surface_(gl::GLSurface::GetCurrent()),
       context_(context),
       surface_(surface),
       succeeded_(false) {

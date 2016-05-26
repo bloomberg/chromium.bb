@@ -17,13 +17,12 @@ namespace gl {
 
 // static
 void GLImageTestSupport::InitializeGL() {
-
-  std::vector<gfx::GLImplementation> allowed_impls;
+  std::vector<gl::GLImplementation> allowed_impls;
   GetAllowedGLImplementations(&allowed_impls);
   DCHECK(!allowed_impls.empty());
 
-  gfx::GLImplementation impl = allowed_impls[0];
-  gfx::GLSurfaceTestSupport::InitializeOneOffImplementation(impl, true);
+  gl::GLImplementation impl = allowed_impls[0];
+  gl::GLSurfaceTestSupport::InitializeOneOffImplementation(impl, true);
 #if defined(USE_OZONE)
   // Make sure all the tasks posted to the current task runner by the
   // initialization functions are run before running the tests.
@@ -33,7 +32,7 @@ void GLImageTestSupport::InitializeGL() {
 
 // static
 void GLImageTestSupport::CleanupGL() {
-  gfx::ClearGLBindings();
+  gl::ClearGLBindings();
 }
 
 // static

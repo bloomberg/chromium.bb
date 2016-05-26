@@ -18,7 +18,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_version_info.h"
 
-namespace gfx {
+namespace gl {
 
 static bool g_debugBindingsInitialized;
 DriverEGL g_driver_egl;
@@ -1974,4 +1974,4 @@ EGLint TraceEGLApi::eglWaitSyncKHRFn(EGLDisplay dpy,
   return egl_api_->eglWaitSyncKHRFn(dpy, sync, flags);
 }
 
-}  // namespace gfx
+}  // namespace gl

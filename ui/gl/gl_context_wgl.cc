@@ -12,7 +12,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_wgl.h"
 
-namespace gfx {
+namespace gl {
 
 GLContextWGL::GLContextWGL(GLShareGroup* share_group)
     : GLContextReal(share_group), context_(nullptr) {
@@ -115,7 +115,7 @@ void* GLContextWGL::GetHandle() {
 
 void GLContextWGL::OnSetSwapInterval(int interval) {
   DCHECK(IsCurrent(nullptr));
-  if (gfx::g_driver_wgl.ext.b_WGL_EXT_swap_control) {
+  if (gl::g_driver_wgl.ext.b_WGL_EXT_swap_control) {
     wglSwapIntervalEXT(interval);
   } else {
       LOG(WARNING) <<
@@ -141,4 +141,4 @@ GLContextWGL::~GLContextWGL() {
   Destroy();
 }
 
-}  // namespace gfx
+}  // namespace gl

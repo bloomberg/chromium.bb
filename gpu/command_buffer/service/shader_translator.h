@@ -14,7 +14,7 @@
 #include "gpu/gpu_export.h"
 #include "third_party/angle/include/GLSLANG/ShaderLang.h"
 
-namespace gfx {
+namespace gl {
 struct GLVersionInfo;
 }
 
@@ -93,7 +93,7 @@ class GPU_EXPORT ShaderTranslator
 
   // Return shader output lanaguage type based on the context version.
   static ShShaderOutput GetShaderOutputLanguageForContext(
-      const gfx::GLVersionInfo& context_version);
+      const gl::GLVersionInfo& context_version);
 
   // Overridden from ShaderTranslatorInterface.
   bool Init(sh::GLenum shader_type,

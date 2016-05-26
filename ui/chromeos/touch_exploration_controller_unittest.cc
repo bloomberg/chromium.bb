@@ -195,8 +195,8 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
   ~TouchExplorationTest() override {}
 
   void SetUp() override {
-    if (gfx::GetGLImplementation() == gfx::kGLImplementationNone)
-      gfx::GLSurfaceTestSupport::InitializeOneOff();
+    if (gl::GetGLImplementation() == gl::kGLImplementationNone)
+      gl::GLSurfaceTestSupport::InitializeOneOff();
     aura::test::AuraTestBase::SetUp();
     cursor_client_.reset(new aura::test::TestCursorClient(root_window()));
     root_window()->AddPreTargetHandler(&event_capturer_);

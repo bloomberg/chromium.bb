@@ -79,7 +79,7 @@ ExtensionsTestSuite::~ExtensionsTestSuite() {}
 
 void ExtensionsTestSuite::Initialize() {
   content::ContentTestSuiteBase::Initialize();
-  gfx::GLSurfaceTestSupport::InitializeOneOff();
+  gl::GLSurfaceTestSupport::InitializeOneOff();
 
   // Register the chrome-extension:// scheme via this circuitous path. Note
   // that this does not persistently set up a ContentClient; individual tests

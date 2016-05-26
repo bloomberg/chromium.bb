@@ -18,7 +18,7 @@
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/gl_wgl_api_implementation.h"
 
-namespace gfx {
+namespace gl {
 
 static bool g_debugBindingsInitialized;
 DriverWGL g_driver_wgl;
@@ -588,4 +588,4 @@ BOOL TraceWGLApi::wglSwapLayerBuffersFn(HDC hdc, UINT fuPlanes) {
   return wgl_api_->wglSwapLayerBuffersFn(hdc, fuPlanes);
 }
 
-}  // namespace gfx
+}  // namespace gl

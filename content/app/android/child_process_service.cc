@@ -52,7 +52,7 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
   // Overridden from SurfaceTextureManager:
   void RegisterSurfaceTexture(int surface_texture_id,
                               int client_id,
-                              gfx::SurfaceTexture* surface_texture) override {
+                              gl::SurfaceTexture* surface_texture) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_ChildProcessService_createSurfaceTextureSurface(
         env,
@@ -70,7 +70,7 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
   gfx::AcceleratedWidget AcquireNativeWidgetForSurfaceTexture(
       int surface_texture_id) override {
     JNIEnv* env = base::android::AttachCurrentThread();
-    gfx::ScopedJavaSurface surface(
+    gl::ScopedJavaSurface surface(
         Java_ChildProcessService_getSurfaceTextureSurface(env, service_.obj(),
                                                           surface_texture_id));
 
@@ -90,7 +90,7 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
   // Overridden from SurfaceTexturePeer:
   void EstablishSurfaceTexturePeer(
       base::ProcessHandle pid,
-      scoped_refptr<gfx::SurfaceTexture> surface_texture,
+      scoped_refptr<gl::SurfaceTexture> surface_texture,
       int primary_id,
       int secondary_id) override {
     JNIEnv* env = base::android::AttachCurrentThread();
@@ -106,9 +106,9 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
   // Overridden from GpuSurfaceLookup:
   gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) override {
     JNIEnv* env = base::android::AttachCurrentThread();
-    gfx::ScopedJavaSurface surface(
-        content::Java_ChildProcessService_getViewSurface(
-            env, service_.obj(), surface_id));
+    gl::ScopedJavaSurface surface(
+        content::Java_ChildProcessService_getViewSurface(env, service_.obj(),
+                                                         surface_id));
 
     if (surface.j_surface().is_null())
       return NULL;
@@ -124,9 +124,9 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
   }
 
   // Overridden from GpuSurfaceLookup:
-  gfx::ScopedJavaSurface AcquireJavaSurface(int surface_id) override {
+  gl::ScopedJavaSurface AcquireJavaSurface(int surface_id) override {
     JNIEnv* env = base::android::AttachCurrentThread();
-    return gfx::ScopedJavaSurface(
+    return gl::ScopedJavaSurface(
         content::Java_ChildProcessService_getViewSurface(env, service_.obj(),
                                                          surface_id));
   }

@@ -27,14 +27,14 @@ class CALayerTreeCoordinator;
 
 namespace gpu {
 
-class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
+class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
                                         public ui::GpuSwitchingObserver {
  public:
   ImageTransportSurfaceOverlayMac(GpuCommandBufferStub* stub,
                                   SurfaceHandle handle);
 
   // GLSurface implementation
-  bool Initialize(gfx::GLSurface::Format format) override;
+  bool Initialize(gl::GLSurface::Format format) override;
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
@@ -45,7 +45,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   bool SupportsPostSubBuffer() override;
   gfx::Size GetSize() override;
   void* GetHandle() override;
-  bool OnMakeCurrent(gfx::GLContext* context) override;
+  bool OnMakeCurrent(gl::GLContext* context) override;
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,
                             gl::GLImage* image,

@@ -42,7 +42,7 @@ VideoDecoderJob::VideoDecoderJob(
 
 VideoDecoderJob::~VideoDecoderJob() {}
 
-bool VideoDecoderJob::SetVideoSurface(gfx::ScopedJavaSurface surface) {
+bool VideoDecoderJob::SetVideoSurface(gl::ScopedJavaSurface surface) {
   // For an empty surface, always pass it to the |media_codec_bridge_| job so
   // that it can detach from the current one. Otherwise, don't pass an
   // unprotected surface if the video content requires a protected one.
@@ -62,7 +62,7 @@ bool VideoDecoderJob::HasStream() const {
 
 void VideoDecoderJob::ReleaseDecoderResources() {
   MediaDecoderJob::ReleaseDecoderResources();
-  surface_ = gfx::ScopedJavaSurface();
+  surface_ = gl::ScopedJavaSurface();
 }
 
 void VideoDecoderJob::SetDemuxerConfigs(const DemuxerConfigs& configs) {

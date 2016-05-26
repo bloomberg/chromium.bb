@@ -9,7 +9,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "jni/SurfaceTextureListener_jni.h"
 
-namespace gfx {
+namespace gl {
 
 SurfaceTextureListener::SurfaceTextureListener(const base::Closure& callback,
                                                bool use_any_thread)
@@ -41,4 +41,4 @@ bool SurfaceTextureListener::RegisterSurfaceTextureListener(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace gfx
+}  // namespace gl

@@ -19,7 +19,7 @@
 #include "ui/gl/gl_fence_apple.h"
 #endif
 
-namespace gfx {
+namespace gl {
 
 GLFence::GLFence() {
 }
@@ -79,4 +79,4 @@ void GLFence::ResetState() {
   NOTIMPLEMENTED();
 }
 
-}  // namespace gfx
+}  // namespace gl

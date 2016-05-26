@@ -8,10 +8,10 @@
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 
-namespace gfx {
+namespace gl {
 
 bool InitializeStaticGLBindingsOSMesaGL();
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_IMPLEMENTATION_OSMESA_

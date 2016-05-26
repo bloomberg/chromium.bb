@@ -11,13 +11,12 @@
 #include "ui/gl/gpu_preference.h"
 #include "ui/gl/init/gl_init_export.h"
 
-namespace gfx {
+namespace gl {
+
 class GLContext;
 class GLShareGroup;
 class GLSurface;
-};
 
-namespace gl {
 namespace init {
 
 // Initialize GL bindings.
@@ -26,13 +25,13 @@ GL_INIT_EXPORT bool InitializeGLOneOff();
 // Create a GL context that is compatible with the given surface. |share_group|,
 // if non-NULL, is a group of contexts which the internally created OpenGL
 // context shares textures and other resources.
-GL_INIT_EXPORT scoped_refptr<gfx::GLContext> CreateGLContext(
-    gfx::GLShareGroup* share_group,
-    gfx::GLSurface* compatible_surface,
-    gfx::GpuPreference gpu_preference);
+GL_INIT_EXPORT scoped_refptr<GLContext> CreateGLContext(
+    GLShareGroup* share_group,
+    GLSurface* compatible_surface,
+    GpuPreference gpu_preference);
 
 // Create a GL surface that renders directly to a view.
-GL_INIT_EXPORT scoped_refptr<gfx::GLSurface> CreateViewGLSurface(
+GL_INIT_EXPORT scoped_refptr<GLSurface> CreateViewGLSurface(
     gfx::AcceleratedWidget window);
 
 #if defined(USE_OZONE)
@@ -40,12 +39,12 @@ GL_INIT_EXPORT scoped_refptr<gfx::GLSurface> CreateViewGLSurface(
 // semantics - there is no default framebuffer and the primary surface must
 // be presented as an overlay. If surfaceless mode is not supported or
 // enabled it will return a null pointer.
-GL_INIT_EXPORT scoped_refptr<gfx::GLSurface> CreateSurfacelessViewGLSurface(
+GL_INIT_EXPORT scoped_refptr<GLSurface> CreateSurfacelessViewGLSurface(
     gfx::AcceleratedWidget window);
 #endif  // defined(USE_OZONE)
 
 // Create a GL surface used for offscreen rendering.
-GL_INIT_EXPORT scoped_refptr<gfx::GLSurface> CreateOffscreenGLSurface(
+GL_INIT_EXPORT scoped_refptr<GLSurface> CreateOffscreenGLSurface(
     const gfx::Size& size);
 
 }  // namespace init

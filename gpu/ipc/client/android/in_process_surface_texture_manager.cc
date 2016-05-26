@@ -24,13 +24,13 @@ InProcessSurfaceTextureManager* InProcessSurfaceTextureManager::GetInstance() {
 void InProcessSurfaceTextureManager::RegisterSurfaceTexture(
     int surface_texture_id,
     int client_id,
-    gfx::SurfaceTexture* surface_texture) {
+    gl::SurfaceTexture* surface_texture) {
   base::AutoLock lock(lock_);
 
   DCHECK(surface_textures_.find(surface_texture_id) == surface_textures_.end());
   surface_textures_.add(
       surface_texture_id,
-      base::WrapUnique(new gfx::ScopedJavaSurface(surface_texture)));
+      base::WrapUnique(new gl::ScopedJavaSurface(surface_texture)));
 }
 
 void InProcessSurfaceTextureManager::UnregisterSurfaceTexture(

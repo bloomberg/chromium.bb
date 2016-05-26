@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "third_party/angle/include/platform/Platform.h"
 
-namespace gfx {
+namespace gl {
 
 // Derives the base ANGLE platform and provides implementations
 class ANGLEPlatformImpl : public angle::Platform {
@@ -54,6 +54,6 @@ class ANGLEPlatformImpl : public angle::Platform {
   DISALLOW_COPY_AND_ASSIGN(ANGLEPlatformImpl);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_ANGLE_PLATFORM_IMPL_H_

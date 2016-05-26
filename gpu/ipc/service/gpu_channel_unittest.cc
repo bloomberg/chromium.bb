@@ -27,12 +27,12 @@ class GpuChannelTest : public GpuChannelTestCommon {
 
   void SetUp() override {
     // We need GL bindings to actually initialize command buffers.
-    gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
-    gfx::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
+    gl::SetGLGetProcAddressProc(gl::MockGLInterface::GetGLProcAddress);
+    gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
 
     // This GLInterface is a stub for the gl driver.
-    gl_interface_.reset(new testing::NiceMock<gfx::MockGLInterface>);
-    gfx::MockGLInterface::SetGLInterface(gl_interface_.get());
+    gl_interface_.reset(new testing::NiceMock<gl::MockGLInterface>);
+    gl::MockGLInterface::SetGLInterface(gl_interface_.get());
 
     using testing::AnyNumber;
     using testing::NotNull;
@@ -120,10 +120,10 @@ class GpuChannelTest : public GpuChannelTestCommon {
     // Dynamic bindings must be set up for the GLES2DecoderImpl, which requires
     // a GLContext. Use a GLContextStub which does nothing but call through to
     // our |gl_interface| above.
-    stub_context_ = new gfx::GLContextStub;
-    stub_surface_ = new gfx::GLSurfaceStub;
+    stub_context_ = new gl::GLContextStub;
+    stub_surface_ = new gl::GLSurfaceStub;
     stub_context_->MakeCurrent(stub_surface_.get());
-    gfx::GLSurfaceTestSupport::InitializeDynamicMockBindings(
+    gl::GLSurfaceTestSupport::InitializeDynamicMockBindings(
         stub_context_.get());
 
     GpuChannelTestCommon::SetUp();
@@ -134,8 +134,8 @@ class GpuChannelTest : public GpuChannelTestCommon {
 
     stub_context_ = nullptr;
     stub_surface_ = nullptr;
-    gfx::MockGLInterface::SetGLInterface(nullptr);
-    gfx::ClearGLBindings();
+    gl::MockGLInterface::SetGLInterface(nullptr);
+    gl::ClearGLBindings();
     gl_interface_ = nullptr;
   }
 
@@ -190,9 +190,9 @@ class GpuChannelTest : public GpuChannelTestCommon {
 
  private:
   base::TestMessageLoop message_loop_;
-  std::unique_ptr<gfx::MockGLInterface> gl_interface_;
-  scoped_refptr<gfx::GLContextStub> stub_context_;
-  scoped_refptr<gfx::GLSurfaceStub> stub_surface_;
+  std::unique_ptr<gl::MockGLInterface> gl_interface_;
+  scoped_refptr<gl::GLContextStub> stub_context_;
+  scoped_refptr<gl::GLSurfaceStub> stub_surface_;
 };
 
 #if defined(OS_WIN)
@@ -220,7 +220,7 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
   init_params.stream_priority = GpuStreamPriority::NORMAL;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gfx::PreferIntegratedGpu;
+  init_params.gpu_preference = gl::PreferIntegratedGpu;
   bool result = false;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -251,7 +251,7 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferDisallowed) {
   init_params.stream_priority = GpuStreamPriority::NORMAL;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gfx::PreferIntegratedGpu;
+  init_params.gpu_preference = gl::PreferIntegratedGpu;
   bool result = false;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -277,7 +277,7 @@ TEST_F(GpuChannelTest, CreateOffscreenCommandBuffer) {
   init_params.stream_priority = GpuStreamPriority::NORMAL;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gfx::PreferIntegratedGpu;
+  init_params.gpu_preference = gl::PreferIntegratedGpu;
   bool result = false;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -305,7 +305,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   init_params.stream_priority = GpuStreamPriority::NORMAL;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gfx::PreferIntegratedGpu;
+  init_params.gpu_preference = gl::PreferIntegratedGpu;
   bool result = false;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -325,7 +325,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   init_params.stream_priority = GpuStreamPriority::NORMAL;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gfx::PreferIntegratedGpu;
+  init_params.gpu_preference = gl::PreferIntegratedGpu;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                              init_params, kRouteId2, GetSharedHandle(), &result,
                              &capabilities));
@@ -352,7 +352,7 @@ TEST_F(GpuChannelTest, StreamLifetime) {
   init_params.stream_priority = kStreamPriority1;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gfx::PreferIntegratedGpu;
+  init_params.gpu_preference = gl::PreferIntegratedGpu;
   bool result = false;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -377,7 +377,7 @@ TEST_F(GpuChannelTest, StreamLifetime) {
   init_params.stream_priority = kStreamPriority2;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gfx::PreferIntegratedGpu;
+  init_params.gpu_preference = gl::PreferIntegratedGpu;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                              init_params, kRouteId2, GetSharedHandle(), &result,
                              &capabilities));
@@ -405,7 +405,7 @@ TEST_F(GpuChannelTest, RealTimeStreamsDisallowed) {
   init_params.stream_priority = kStreamPriority;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gfx::PreferIntegratedGpu;
+  init_params.gpu_preference = gl::PreferIntegratedGpu;
   bool result = false;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -435,7 +435,7 @@ TEST_F(GpuChannelTest, RealTimeStreamsAllowed) {
   init_params.stream_priority = kStreamPriority;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  init_params.gpu_preference = gfx::PreferIntegratedGpu;
+  init_params.gpu_preference = gl::PreferIntegratedGpu;
   bool result = false;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -464,7 +464,7 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.stream_priority = GpuStreamPriority::NORMAL;
     init_params.attribs = gles2::ContextCreationAttribHelper();
     init_params.active_url = GURL();
-    init_params.gpu_preference = gfx::PreferIntegratedGpu;
+    init_params.gpu_preference = gl::PreferIntegratedGpu;
     bool result = false;
     gpu::Capabilities capabilities;
     HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -486,7 +486,7 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.stream_priority = GpuStreamPriority::NORMAL;
     init_params.attribs = gles2::ContextCreationAttribHelper();
     init_params.active_url = GURL();
-    init_params.gpu_preference = gfx::PreferIntegratedGpu;
+    init_params.gpu_preference = gl::PreferIntegratedGpu;
     bool result = false;
     gpu::Capabilities capabilities;
     HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
@@ -512,7 +512,7 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.stream_priority = GpuStreamPriority::NORMAL;
     init_params.attribs = gles2::ContextCreationAttribHelper();
     init_params.active_url = GURL();
-    init_params.gpu_preference = gfx::PreferIntegratedGpu;
+    init_params.gpu_preference = gl::PreferIntegratedGpu;
     bool result = false;
     gpu::Capabilities capabilities;
     HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(

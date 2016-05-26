@@ -4,7 +4,7 @@
 
 #include "ui/gl/gl_osmesa_api_implementation.h"
 
-namespace gfx {
+namespace gl {
 
 RealOSMESAApi* g_real_osmesa;
 
@@ -61,6 +61,4 @@ void RealOSMESAApi::Initialize(DriverOSMESA* driver) {
 TraceOSMESAApi::~TraceOSMESAApi() {
 }
 
-}  // namespace gfx
-
-
+}  // namespace gl

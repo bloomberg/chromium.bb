@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 
 class GL_EXPORT GLFence {
  public:
@@ -35,6 +35,6 @@ class GL_EXPORT GLFence {
   DISALLOW_COPY_AND_ASSIGN(GLFence);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_FENCE_H_

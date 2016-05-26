@@ -17,7 +17,7 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gl_version_info.h"
 
-namespace gfx {
+namespace gl {
 
 // The GL Api being used. This could be g_real_gl or gl_trace_gl
 static GLApi* g_gl = NULL;
@@ -34,7 +34,7 @@ static GLVersionInfo* g_version_info = NULL;
 namespace {
 
 static inline GLenum GetInternalFormat(GLenum internal_format) {
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+  if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2) {
     if (internal_format == GL_BGRA_EXT || internal_format == GL_BGRA8_EXT)
       return GL_RGBA8;
   }
@@ -48,8 +48,8 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
   GLenum gl_internal_format = GetInternalFormat(internal_format);
 
   // g_version_info must be initialized when this function is bound.
-  DCHECK(gfx::g_version_info);
-  if (gfx::g_version_info->is_es3) {
+  DCHECK(gl::g_version_info);
+  if (gl::g_version_info->is_es3) {
     if (internal_format == GL_RED_EXT) {
       // GL_EXT_texture_rg case in ES2.
       switch (type) {
@@ -87,8 +87,8 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
     }
   }
 
-  if (type == GL_FLOAT && gfx::g_version_info->is_angle &&
-      gfx::g_version_info->is_es && gfx::g_version_info->major_version == 2) {
+  if (type == GL_FLOAT && gl::g_version_info->is_angle &&
+      gl::g_version_info->is_es && gl::g_version_info->major_version == 2) {
     // It's possible that the texture is using a sized internal format, and
     // ANGLE exposing GLES2 API doesn't support those.
     // TODO(oetuaho@nvidia.com): Remove these conversions once ANGLE has the
@@ -106,8 +106,8 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
     }
   }
 
-  if (gfx::g_version_info->IsAtLeastGL(2, 1) ||
-      gfx::g_version_info->IsAtLeastGLES(3, 0)) {
+  if (gl::g_version_info->IsAtLeastGL(2, 1) ||
+      gl::g_version_info->IsAtLeastGLES(3, 0)) {
     switch (internal_format) {
       case GL_SRGB_EXT:
         gl_internal_format = GL_SRGB8;
@@ -120,7 +120,7 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
     }
   }
 
-  if (gfx::g_version_info->is_es)
+  if (gl::g_version_info->is_es)
     return gl_internal_format;
 
   if (type == GL_FLOAT) {
@@ -175,9 +175,9 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
 static inline GLenum GetTexFormat(GLenum format) {
   GLenum gl_format = format;
 
-  DCHECK(gfx::g_version_info);
-  if (gfx::g_version_info->IsAtLeastGL(2, 1) ||
-      gfx::g_version_info->IsAtLeastGLES(3, 0)) {
+  DCHECK(gl::g_version_info);
+  if (gl::g_version_info->IsAtLeastGL(2, 1) ||
+      gl::g_version_info->IsAtLeastGLES(3, 0)) {
     switch (format) {
       case GL_SRGB_EXT:
         gl_format = GL_RGB;
@@ -194,9 +194,9 @@ static inline GLenum GetTexFormat(GLenum format) {
 }
 
 static inline GLenum GetTexType(GLenum type) {
-   if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
-     if (type == GL_HALF_FLOAT_OES)
-       return GL_HALF_FLOAT_ARB;
+  if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2) {
+    if (type == GL_HALF_FLOAT_OES)
+      return GL_HALF_FLOAT_ARB;
    }
    return type;
 }
@@ -516,7 +516,7 @@ void RealGLApi::glFinishFn() {
 void RealGLApi::InitializeFilteredExtensions() {
   if (disabled_exts_.size()) {
     filtered_exts_.clear();
-    if (gfx::WillUseGLGetStringForExtensions()) {
+    if (gl::WillUseGLGetStringForExtensions()) {
       filtered_exts_str_ =
           FilterGLExtensionList(reinterpret_cast<const char*>(
                                     GLApiBase::glGetStringFn(GL_EXTENSIONS)),
@@ -672,4 +672,4 @@ void VirtualGLApi::glFinishFn() {
   GLApiBase::glFinishFn();
 }
 
-}  // namespace gfx
+}  // namespace gl

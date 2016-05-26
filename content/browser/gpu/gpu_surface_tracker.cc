@@ -58,7 +58,7 @@ gfx::AcceleratedWidget GpuSurfaceTracker::AcquireNativeWidget(
 }
 
 #if defined(OS_ANDROID)
-gfx::ScopedJavaSurface GpuSurfaceTracker::AcquireJavaSurface(int surface_id) {
+gl::ScopedJavaSurface GpuSurfaceTracker::AcquireJavaSurface(int surface_id) {
   return GetViewSurface(surface_id);
 }
 #endif

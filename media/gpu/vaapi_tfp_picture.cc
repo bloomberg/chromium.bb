@@ -58,7 +58,7 @@ bool VaapiTFPPicture::Initialize() {
       return false;
     }
 
-    gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, texture_id_);
+    gl::ScopedTextureBinder texture_binder(GL_TEXTURE_2D, texture_id_);
     if (!glx_image_->BindTexImage(GL_TEXTURE_2D)) {
       LOG(ERROR) << "Failed to bind texture to glx image";
       return false;

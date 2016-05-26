@@ -230,7 +230,7 @@ bool Context::CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) {
   return false;
 }
 
-void Context::ApplyCurrentContext(gfx::GLSurface* current_surface) {
+void Context::ApplyCurrentContext(gl::GLSurface* current_surface) {
   DCHECK(HasService());
   // The current_surface will be the same as
   // the surface of the decoder. We can not DCHECK as there is
@@ -246,7 +246,7 @@ void Context::ApplyContextReleased() {
   gles2::SetGLContext(nullptr);
 }
 
-bool Context::CreateService(gfx::GLSurface* gl_surface) {
+bool Context::CreateService(gl::GLSurface* gl_surface) {
   scoped_refptr<gpu::TransferBufferManager> transfer_buffer_manager(
       new gpu::TransferBufferManager(nullptr));
   transfer_buffer_manager->Initialize();
@@ -272,8 +272,8 @@ bool Context::CreateService(gfx::GLSurface* gl_surface) {
 
   decoder->set_engine(command_executor.get());
 
-  scoped_refptr<gfx::GLContext> gl_context(
-      gl::init::CreateGLContext(nullptr, gl_surface, gfx::PreferDiscreteGpu));
+  scoped_refptr<gl::GLContext> gl_context(
+      gl::init::CreateGLContext(nullptr, gl_surface, gl::PreferDiscreteGpu));
   if (!gl_context)
     return false;
 
@@ -381,7 +381,7 @@ bool Context::IsCompatibleSurface(Surface* surface) const {
   return surface_config_is_offscreen == context_config_is_offscreen;
 }
 
-bool Context::Flush(gfx::GLSurface* gl_surface) {
+bool Context::Flush(gl::GLSurface* gl_surface) {
   if (WasServiceContextLost())
     return false;
   if (!gl_context_->MakeCurrent(gl_surface)) {

@@ -4,7 +4,7 @@
 
 #include "ui/gl/gl_surface_stub.h"
 
-namespace gfx {
+namespace gl {
 
 void GLSurfaceStub::Destroy() {
 }
@@ -37,4 +37,4 @@ bool GLSurfaceStub::BuffersFlipped() const {
 
 GLSurfaceStub::~GLSurfaceStub() {}
 
-}  // namespace gfx
+}  // namespace gl

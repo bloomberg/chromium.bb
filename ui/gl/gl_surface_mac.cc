@@ -19,7 +19,7 @@
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gpu_switching_manager.h"
 
-namespace gfx {
+namespace gl {
 namespace {
 
 // A "no-op" surface. It is not required that a CGLContextObj have an
@@ -163,4 +163,4 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
   }
 }
 
-}  // namespace gfx
+}  // namespace gl

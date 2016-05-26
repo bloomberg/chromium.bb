@@ -4,7 +4,7 @@
 
 #include "ui/gl/gl_mock.h"
 
-namespace gfx {
+namespace gl {
 
 namespace {
 
@@ -38,4 +38,4 @@ void GL_BINDING_CALL MockGLInterface::Mock_glTexSubImage3DNoData(
       format, type);
 }
 
-}  // namespace gfx
+}  // namespace gl

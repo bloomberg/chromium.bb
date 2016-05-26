@@ -42,7 +42,7 @@ class AppListTestSuite : public base::TestSuite {
     mock_cr_app::RegisterMockCrApp();
 #endif
 #if defined(TOOLKIT_VIEWS)
-    gfx::GLSurfaceTestSupport::InitializeOneOff();
+    gl::GLSurfaceTestSupport::InitializeOneOff();
 #endif
     base::TestSuite::Initialize();
     ui::RegisterPathProvider();

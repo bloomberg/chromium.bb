@@ -12,23 +12,23 @@
 #include "ui/gl/gl_image_egl.h"
 #include "ui/ozone/public/native_pixmap.h"
 
-namespace gfx {
+namespace gl {
 
 class GL_EXPORT GLImageOzoneNativePixmap : public gl::GLImageEGL {
  public:
-  GLImageOzoneNativePixmap(const Size& size, unsigned internalformat);
+  GLImageOzoneNativePixmap(const gfx::Size& size, unsigned internalformat);
 
-  bool Initialize(ui::NativePixmap* pixmap, BufferFormat format);
+  bool Initialize(ui::NativePixmap* pixmap, gfx::BufferFormat format);
 
   // Overridden from GLImage:
   unsigned GetInternalFormat() override;
   void Destroy(bool have_context) override;
   bool CopyTexImage(unsigned target) override;
-  bool ScheduleOverlayPlane(AcceleratedWidget widget,
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                             int z_order,
-                            OverlayTransform transform,
-                            const Rect& bounds_rect,
-                            const RectF& crop_rect) override;
+                            gfx::OverlayTransform transform,
+                            const gfx::Rect& bounds_rect,
+                            const gfx::RectF& crop_rect) override;
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t process_tracing_id,
                     const std::string& dump_name) override;
@@ -41,6 +41,6 @@ class GL_EXPORT GLImageOzoneNativePixmap : public gl::GLImageEGL {
   scoped_refptr<ui::NativePixmap> pixmap_;
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_IMAGE_OZONE_NATIVE_PIXMAP_H_

@@ -11,7 +11,7 @@
 #ifndef UI_GL_GL_BINDINGS_AUTOGEN_GL_H_
 #define UI_GL_GL_BINDINGS_AUTOGEN_GL_H_
 
-namespace gfx {
+namespace gl {
 
 class GLContext;
 
@@ -2335,414 +2335,414 @@ class GL_EXPORT GLApi {
                               GLuint64 timeout) = 0;
 };
 
-}  // namespace gfx
+}  // namespace gl
 
-#define glActiveTexture ::gfx::g_current_gl_context->glActiveTextureFn
+#define glActiveTexture ::gl::g_current_gl_context->glActiveTextureFn
 #define glApplyFramebufferAttachmentCMAAINTEL \
-  ::gfx::g_current_gl_context->glApplyFramebufferAttachmentCMAAINTELFn
-#define glAttachShader ::gfx::g_current_gl_context->glAttachShaderFn
-#define glBeginQuery ::gfx::g_current_gl_context->glBeginQueryFn
+  ::gl::g_current_gl_context->glApplyFramebufferAttachmentCMAAINTELFn
+#define glAttachShader ::gl::g_current_gl_context->glAttachShaderFn
+#define glBeginQuery ::gl::g_current_gl_context->glBeginQueryFn
 #define glBeginTransformFeedback \
-  ::gfx::g_current_gl_context->glBeginTransformFeedbackFn
-#define glBindAttribLocation ::gfx::g_current_gl_context->glBindAttribLocationFn
-#define glBindBuffer ::gfx::g_current_gl_context->glBindBufferFn
-#define glBindBufferBase ::gfx::g_current_gl_context->glBindBufferBaseFn
-#define glBindBufferRange ::gfx::g_current_gl_context->glBindBufferRangeFn
+  ::gl::g_current_gl_context->glBeginTransformFeedbackFn
+#define glBindAttribLocation ::gl::g_current_gl_context->glBindAttribLocationFn
+#define glBindBuffer ::gl::g_current_gl_context->glBindBufferFn
+#define glBindBufferBase ::gl::g_current_gl_context->glBindBufferBaseFn
+#define glBindBufferRange ::gl::g_current_gl_context->glBindBufferRangeFn
 #define glBindFragDataLocation \
-  ::gfx::g_current_gl_context->glBindFragDataLocationFn
+  ::gl::g_current_gl_context->glBindFragDataLocationFn
 #define glBindFragDataLocationIndexed \
-  ::gfx::g_current_gl_context->glBindFragDataLocationIndexedFn
-#define glBindFramebufferEXT ::gfx::g_current_gl_context->glBindFramebufferEXTFn
+  ::gl::g_current_gl_context->glBindFragDataLocationIndexedFn
+#define glBindFramebufferEXT ::gl::g_current_gl_context->glBindFramebufferEXTFn
 #define glBindImageTextureEXT \
-  ::gfx::g_current_gl_context->glBindImageTextureEXTFn
+  ::gl::g_current_gl_context->glBindImageTextureEXTFn
 #define glBindRenderbufferEXT \
-  ::gfx::g_current_gl_context->glBindRenderbufferEXTFn
-#define glBindSampler ::gfx::g_current_gl_context->glBindSamplerFn
-#define glBindTexture ::gfx::g_current_gl_context->glBindTextureFn
+  ::gl::g_current_gl_context->glBindRenderbufferEXTFn
+#define glBindSampler ::gl::g_current_gl_context->glBindSamplerFn
+#define glBindTexture ::gl::g_current_gl_context->glBindTextureFn
 #define glBindTransformFeedback \
-  ::gfx::g_current_gl_context->glBindTransformFeedbackFn
+  ::gl::g_current_gl_context->glBindTransformFeedbackFn
 #define glBindUniformLocationCHROMIUM \
-  ::gfx::g_current_gl_context->glBindUniformLocationCHROMIUMFn
-#define glBindVertexArrayOES ::gfx::g_current_gl_context->glBindVertexArrayOESFn
-#define glBlendBarrierKHR ::gfx::g_current_gl_context->glBlendBarrierKHRFn
-#define glBlendColor ::gfx::g_current_gl_context->glBlendColorFn
-#define glBlendEquation ::gfx::g_current_gl_context->glBlendEquationFn
+  ::gl::g_current_gl_context->glBindUniformLocationCHROMIUMFn
+#define glBindVertexArrayOES ::gl::g_current_gl_context->glBindVertexArrayOESFn
+#define glBlendBarrierKHR ::gl::g_current_gl_context->glBlendBarrierKHRFn
+#define glBlendColor ::gl::g_current_gl_context->glBlendColorFn
+#define glBlendEquation ::gl::g_current_gl_context->glBlendEquationFn
 #define glBlendEquationSeparate \
-  ::gfx::g_current_gl_context->glBlendEquationSeparateFn
-#define glBlendFunc ::gfx::g_current_gl_context->glBlendFuncFn
-#define glBlendFuncSeparate ::gfx::g_current_gl_context->glBlendFuncSeparateFn
-#define glBlitFramebuffer ::gfx::g_current_gl_context->glBlitFramebufferFn
+  ::gl::g_current_gl_context->glBlendEquationSeparateFn
+#define glBlendFunc ::gl::g_current_gl_context->glBlendFuncFn
+#define glBlendFuncSeparate ::gl::g_current_gl_context->glBlendFuncSeparateFn
+#define glBlitFramebuffer ::gl::g_current_gl_context->glBlitFramebufferFn
 #define glBlitFramebufferANGLE \
-  ::gfx::g_current_gl_context->glBlitFramebufferANGLEFn
-#define glBlitFramebufferEXT ::gfx::g_current_gl_context->glBlitFramebufferEXTFn
-#define glBufferData ::gfx::g_current_gl_context->glBufferDataFn
-#define glBufferSubData ::gfx::g_current_gl_context->glBufferSubDataFn
+  ::gl::g_current_gl_context->glBlitFramebufferANGLEFn
+#define glBlitFramebufferEXT ::gl::g_current_gl_context->glBlitFramebufferEXTFn
+#define glBufferData ::gl::g_current_gl_context->glBufferDataFn
+#define glBufferSubData ::gl::g_current_gl_context->glBufferSubDataFn
 #define glCheckFramebufferStatusEXT \
-  ::gfx::g_current_gl_context->glCheckFramebufferStatusEXTFn
-#define glClear ::gfx::g_current_gl_context->glClearFn
-#define glClearBufferfi ::gfx::g_current_gl_context->glClearBufferfiFn
-#define glClearBufferfv ::gfx::g_current_gl_context->glClearBufferfvFn
-#define glClearBufferiv ::gfx::g_current_gl_context->glClearBufferivFn
-#define glClearBufferuiv ::gfx::g_current_gl_context->glClearBufferuivFn
-#define glClearColor ::gfx::g_current_gl_context->glClearColorFn
-#define glClearDepth ::gfx::g_current_gl_context->glClearDepthFn
-#define glClearDepthf ::gfx::g_current_gl_context->glClearDepthfFn
-#define glClearStencil ::gfx::g_current_gl_context->glClearStencilFn
-#define glClientWaitSync ::gfx::g_current_gl_context->glClientWaitSyncFn
-#define glColorMask ::gfx::g_current_gl_context->glColorMaskFn
-#define glCompileShader ::gfx::g_current_gl_context->glCompileShaderFn
+  ::gl::g_current_gl_context->glCheckFramebufferStatusEXTFn
+#define glClear ::gl::g_current_gl_context->glClearFn
+#define glClearBufferfi ::gl::g_current_gl_context->glClearBufferfiFn
+#define glClearBufferfv ::gl::g_current_gl_context->glClearBufferfvFn
+#define glClearBufferiv ::gl::g_current_gl_context->glClearBufferivFn
+#define glClearBufferuiv ::gl::g_current_gl_context->glClearBufferuivFn
+#define glClearColor ::gl::g_current_gl_context->glClearColorFn
+#define glClearDepth ::gl::g_current_gl_context->glClearDepthFn
+#define glClearDepthf ::gl::g_current_gl_context->glClearDepthfFn
+#define glClearStencil ::gl::g_current_gl_context->glClearStencilFn
+#define glClientWaitSync ::gl::g_current_gl_context->glClientWaitSyncFn
+#define glColorMask ::gl::g_current_gl_context->glColorMaskFn
+#define glCompileShader ::gl::g_current_gl_context->glCompileShaderFn
 #define glCompressedTexImage2D \
-  ::gfx::g_current_gl_context->glCompressedTexImage2DFn
+  ::gl::g_current_gl_context->glCompressedTexImage2DFn
 #define glCompressedTexImage3D \
-  ::gfx::g_current_gl_context->glCompressedTexImage3DFn
+  ::gl::g_current_gl_context->glCompressedTexImage3DFn
 #define glCompressedTexSubImage2D \
-  ::gfx::g_current_gl_context->glCompressedTexSubImage2DFn
+  ::gl::g_current_gl_context->glCompressedTexSubImage2DFn
 #define glCompressedTexSubImage3D \
-  ::gfx::g_current_gl_context->glCompressedTexSubImage3DFn
-#define glCopyBufferSubData ::gfx::g_current_gl_context->glCopyBufferSubDataFn
-#define glCopyTexImage2D ::gfx::g_current_gl_context->glCopyTexImage2DFn
-#define glCopyTexSubImage2D ::gfx::g_current_gl_context->glCopyTexSubImage2DFn
-#define glCopyTexSubImage3D ::gfx::g_current_gl_context->glCopyTexSubImage3DFn
+  ::gl::g_current_gl_context->glCompressedTexSubImage3DFn
+#define glCopyBufferSubData ::gl::g_current_gl_context->glCopyBufferSubDataFn
+#define glCopyTexImage2D ::gl::g_current_gl_context->glCopyTexImage2DFn
+#define glCopyTexSubImage2D ::gl::g_current_gl_context->glCopyTexSubImage2DFn
+#define glCopyTexSubImage3D ::gl::g_current_gl_context->glCopyTexSubImage3DFn
 #define glCoverageModulationNV \
-  ::gfx::g_current_gl_context->glCoverageModulationNVFn
+  ::gl::g_current_gl_context->glCoverageModulationNVFn
 #define glCoverFillPathInstancedNV \
-  ::gfx::g_current_gl_context->glCoverFillPathInstancedNVFn
-#define glCoverFillPathNV ::gfx::g_current_gl_context->glCoverFillPathNVFn
+  ::gl::g_current_gl_context->glCoverFillPathInstancedNVFn
+#define glCoverFillPathNV ::gl::g_current_gl_context->glCoverFillPathNVFn
 #define glCoverStrokePathInstancedNV \
-  ::gfx::g_current_gl_context->glCoverStrokePathInstancedNVFn
-#define glCoverStrokePathNV ::gfx::g_current_gl_context->glCoverStrokePathNVFn
-#define glCreateProgram ::gfx::g_current_gl_context->glCreateProgramFn
-#define glCreateShader ::gfx::g_current_gl_context->glCreateShaderFn
-#define glCullFace ::gfx::g_current_gl_context->glCullFaceFn
-#define glDeleteBuffersARB ::gfx::g_current_gl_context->glDeleteBuffersARBFn
-#define glDeleteFencesAPPLE ::gfx::g_current_gl_context->glDeleteFencesAPPLEFn
-#define glDeleteFencesNV ::gfx::g_current_gl_context->glDeleteFencesNVFn
+  ::gl::g_current_gl_context->glCoverStrokePathInstancedNVFn
+#define glCoverStrokePathNV ::gl::g_current_gl_context->glCoverStrokePathNVFn
+#define glCreateProgram ::gl::g_current_gl_context->glCreateProgramFn
+#define glCreateShader ::gl::g_current_gl_context->glCreateShaderFn
+#define glCullFace ::gl::g_current_gl_context->glCullFaceFn
+#define glDeleteBuffersARB ::gl::g_current_gl_context->glDeleteBuffersARBFn
+#define glDeleteFencesAPPLE ::gl::g_current_gl_context->glDeleteFencesAPPLEFn
+#define glDeleteFencesNV ::gl::g_current_gl_context->glDeleteFencesNVFn
 #define glDeleteFramebuffersEXT \
-  ::gfx::g_current_gl_context->glDeleteFramebuffersEXTFn
-#define glDeletePathsNV ::gfx::g_current_gl_context->glDeletePathsNVFn
-#define glDeleteProgram ::gfx::g_current_gl_context->glDeleteProgramFn
-#define glDeleteQueries ::gfx::g_current_gl_context->glDeleteQueriesFn
+  ::gl::g_current_gl_context->glDeleteFramebuffersEXTFn
+#define glDeletePathsNV ::gl::g_current_gl_context->glDeletePathsNVFn
+#define glDeleteProgram ::gl::g_current_gl_context->glDeleteProgramFn
+#define glDeleteQueries ::gl::g_current_gl_context->glDeleteQueriesFn
 #define glDeleteRenderbuffersEXT \
-  ::gfx::g_current_gl_context->glDeleteRenderbuffersEXTFn
-#define glDeleteSamplers ::gfx::g_current_gl_context->glDeleteSamplersFn
-#define glDeleteShader ::gfx::g_current_gl_context->glDeleteShaderFn
-#define glDeleteSync ::gfx::g_current_gl_context->glDeleteSyncFn
-#define glDeleteTextures ::gfx::g_current_gl_context->glDeleteTexturesFn
+  ::gl::g_current_gl_context->glDeleteRenderbuffersEXTFn
+#define glDeleteSamplers ::gl::g_current_gl_context->glDeleteSamplersFn
+#define glDeleteShader ::gl::g_current_gl_context->glDeleteShaderFn
+#define glDeleteSync ::gl::g_current_gl_context->glDeleteSyncFn
+#define glDeleteTextures ::gl::g_current_gl_context->glDeleteTexturesFn
 #define glDeleteTransformFeedbacks \
-  ::gfx::g_current_gl_context->glDeleteTransformFeedbacksFn
+  ::gl::g_current_gl_context->glDeleteTransformFeedbacksFn
 #define glDeleteVertexArraysOES \
-  ::gfx::g_current_gl_context->glDeleteVertexArraysOESFn
-#define glDepthFunc ::gfx::g_current_gl_context->glDepthFuncFn
-#define glDepthMask ::gfx::g_current_gl_context->glDepthMaskFn
-#define glDepthRange ::gfx::g_current_gl_context->glDepthRangeFn
-#define glDepthRangef ::gfx::g_current_gl_context->glDepthRangefFn
-#define glDetachShader ::gfx::g_current_gl_context->glDetachShaderFn
-#define glDisable ::gfx::g_current_gl_context->glDisableFn
+  ::gl::g_current_gl_context->glDeleteVertexArraysOESFn
+#define glDepthFunc ::gl::g_current_gl_context->glDepthFuncFn
+#define glDepthMask ::gl::g_current_gl_context->glDepthMaskFn
+#define glDepthRange ::gl::g_current_gl_context->glDepthRangeFn
+#define glDepthRangef ::gl::g_current_gl_context->glDepthRangefFn
+#define glDetachShader ::gl::g_current_gl_context->glDetachShaderFn
+#define glDisable ::gl::g_current_gl_context->glDisableFn
 #define glDisableVertexAttribArray \
-  ::gfx::g_current_gl_context->glDisableVertexAttribArrayFn
+  ::gl::g_current_gl_context->glDisableVertexAttribArrayFn
 #define glDiscardFramebufferEXT \
-  ::gfx::g_current_gl_context->glDiscardFramebufferEXTFn
-#define glDrawArrays ::gfx::g_current_gl_context->glDrawArraysFn
+  ::gl::g_current_gl_context->glDiscardFramebufferEXTFn
+#define glDrawArrays ::gl::g_current_gl_context->glDrawArraysFn
 #define glDrawArraysInstancedANGLE \
-  ::gfx::g_current_gl_context->glDrawArraysInstancedANGLEFn
-#define glDrawBuffer ::gfx::g_current_gl_context->glDrawBufferFn
-#define glDrawBuffersARB ::gfx::g_current_gl_context->glDrawBuffersARBFn
-#define glDrawElements ::gfx::g_current_gl_context->glDrawElementsFn
+  ::gl::g_current_gl_context->glDrawArraysInstancedANGLEFn
+#define glDrawBuffer ::gl::g_current_gl_context->glDrawBufferFn
+#define glDrawBuffersARB ::gl::g_current_gl_context->glDrawBuffersARBFn
+#define glDrawElements ::gl::g_current_gl_context->glDrawElementsFn
 #define glDrawElementsInstancedANGLE \
-  ::gfx::g_current_gl_context->glDrawElementsInstancedANGLEFn
-#define glDrawRangeElements ::gfx::g_current_gl_context->glDrawRangeElementsFn
+  ::gl::g_current_gl_context->glDrawElementsInstancedANGLEFn
+#define glDrawRangeElements ::gl::g_current_gl_context->glDrawRangeElementsFn
 #define glEGLImageTargetRenderbufferStorageOES \
-  ::gfx::g_current_gl_context->glEGLImageTargetRenderbufferStorageOESFn
+  ::gl::g_current_gl_context->glEGLImageTargetRenderbufferStorageOESFn
 #define glEGLImageTargetTexture2DOES \
-  ::gfx::g_current_gl_context->glEGLImageTargetTexture2DOESFn
-#define glEnable ::gfx::g_current_gl_context->glEnableFn
+  ::gl::g_current_gl_context->glEGLImageTargetTexture2DOESFn
+#define glEnable ::gl::g_current_gl_context->glEnableFn
 #define glEnableVertexAttribArray \
-  ::gfx::g_current_gl_context->glEnableVertexAttribArrayFn
-#define glEndQuery ::gfx::g_current_gl_context->glEndQueryFn
+  ::gl::g_current_gl_context->glEnableVertexAttribArrayFn
+#define glEndQuery ::gl::g_current_gl_context->glEndQueryFn
 #define glEndTransformFeedback \
-  ::gfx::g_current_gl_context->glEndTransformFeedbackFn
-#define glFenceSync ::gfx::g_current_gl_context->glFenceSyncFn
-#define glFinish ::gfx::g_current_gl_context->glFinishFn
-#define glFinishFenceAPPLE ::gfx::g_current_gl_context->glFinishFenceAPPLEFn
-#define glFinishFenceNV ::gfx::g_current_gl_context->glFinishFenceNVFn
-#define glFlush ::gfx::g_current_gl_context->glFlushFn
+  ::gl::g_current_gl_context->glEndTransformFeedbackFn
+#define glFenceSync ::gl::g_current_gl_context->glFenceSyncFn
+#define glFinish ::gl::g_current_gl_context->glFinishFn
+#define glFinishFenceAPPLE ::gl::g_current_gl_context->glFinishFenceAPPLEFn
+#define glFinishFenceNV ::gl::g_current_gl_context->glFinishFenceNVFn
+#define glFlush ::gl::g_current_gl_context->glFlushFn
 #define glFlushMappedBufferRange \
-  ::gfx::g_current_gl_context->glFlushMappedBufferRangeFn
+  ::gl::g_current_gl_context->glFlushMappedBufferRangeFn
 #define glFramebufferRenderbufferEXT \
-  ::gfx::g_current_gl_context->glFramebufferRenderbufferEXTFn
+  ::gl::g_current_gl_context->glFramebufferRenderbufferEXTFn
 #define glFramebufferTexture2DEXT \
-  ::gfx::g_current_gl_context->glFramebufferTexture2DEXTFn
+  ::gl::g_current_gl_context->glFramebufferTexture2DEXTFn
 #define glFramebufferTexture2DMultisampleEXT \
-  ::gfx::g_current_gl_context->glFramebufferTexture2DMultisampleEXTFn
+  ::gl::g_current_gl_context->glFramebufferTexture2DMultisampleEXTFn
 #define glFramebufferTexture2DMultisampleIMG \
-  ::gfx::g_current_gl_context->glFramebufferTexture2DMultisampleIMGFn
+  ::gl::g_current_gl_context->glFramebufferTexture2DMultisampleIMGFn
 #define glFramebufferTextureLayer \
-  ::gfx::g_current_gl_context->glFramebufferTextureLayerFn
-#define glFrontFace ::gfx::g_current_gl_context->glFrontFaceFn
-#define glGenBuffersARB ::gfx::g_current_gl_context->glGenBuffersARBFn
-#define glGenerateMipmapEXT ::gfx::g_current_gl_context->glGenerateMipmapEXTFn
-#define glGenFencesAPPLE ::gfx::g_current_gl_context->glGenFencesAPPLEFn
-#define glGenFencesNV ::gfx::g_current_gl_context->glGenFencesNVFn
-#define glGenFramebuffersEXT ::gfx::g_current_gl_context->glGenFramebuffersEXTFn
-#define glGenPathsNV ::gfx::g_current_gl_context->glGenPathsNVFn
-#define glGenQueries ::gfx::g_current_gl_context->glGenQueriesFn
+  ::gl::g_current_gl_context->glFramebufferTextureLayerFn
+#define glFrontFace ::gl::g_current_gl_context->glFrontFaceFn
+#define glGenBuffersARB ::gl::g_current_gl_context->glGenBuffersARBFn
+#define glGenerateMipmapEXT ::gl::g_current_gl_context->glGenerateMipmapEXTFn
+#define glGenFencesAPPLE ::gl::g_current_gl_context->glGenFencesAPPLEFn
+#define glGenFencesNV ::gl::g_current_gl_context->glGenFencesNVFn
+#define glGenFramebuffersEXT ::gl::g_current_gl_context->glGenFramebuffersEXTFn
+#define glGenPathsNV ::gl::g_current_gl_context->glGenPathsNVFn
+#define glGenQueries ::gl::g_current_gl_context->glGenQueriesFn
 #define glGenRenderbuffersEXT \
-  ::gfx::g_current_gl_context->glGenRenderbuffersEXTFn
-#define glGenSamplers ::gfx::g_current_gl_context->glGenSamplersFn
-#define glGenTextures ::gfx::g_current_gl_context->glGenTexturesFn
+  ::gl::g_current_gl_context->glGenRenderbuffersEXTFn
+#define glGenSamplers ::gl::g_current_gl_context->glGenSamplersFn
+#define glGenTextures ::gl::g_current_gl_context->glGenTexturesFn
 #define glGenTransformFeedbacks \
-  ::gfx::g_current_gl_context->glGenTransformFeedbacksFn
-#define glGenVertexArraysOES ::gfx::g_current_gl_context->glGenVertexArraysOESFn
-#define glGetActiveAttrib ::gfx::g_current_gl_context->glGetActiveAttribFn
-#define glGetActiveUniform ::gfx::g_current_gl_context->glGetActiveUniformFn
+  ::gl::g_current_gl_context->glGenTransformFeedbacksFn
+#define glGenVertexArraysOES ::gl::g_current_gl_context->glGenVertexArraysOESFn
+#define glGetActiveAttrib ::gl::g_current_gl_context->glGetActiveAttribFn
+#define glGetActiveUniform ::gl::g_current_gl_context->glGetActiveUniformFn
 #define glGetActiveUniformBlockiv \
-  ::gfx::g_current_gl_context->glGetActiveUniformBlockivFn
+  ::gl::g_current_gl_context->glGetActiveUniformBlockivFn
 #define glGetActiveUniformBlockName \
-  ::gfx::g_current_gl_context->glGetActiveUniformBlockNameFn
+  ::gl::g_current_gl_context->glGetActiveUniformBlockNameFn
 #define glGetActiveUniformsiv \
-  ::gfx::g_current_gl_context->glGetActiveUniformsivFn
-#define glGetAttachedShaders ::gfx::g_current_gl_context->glGetAttachedShadersFn
-#define glGetAttribLocation ::gfx::g_current_gl_context->glGetAttribLocationFn
-#define glGetBooleanv ::gfx::g_current_gl_context->glGetBooleanvFn
+  ::gl::g_current_gl_context->glGetActiveUniformsivFn
+#define glGetAttachedShaders ::gl::g_current_gl_context->glGetAttachedShadersFn
+#define glGetAttribLocation ::gl::g_current_gl_context->glGetAttribLocationFn
+#define glGetBooleanv ::gl::g_current_gl_context->glGetBooleanvFn
 #define glGetBufferParameteriv \
-  ::gfx::g_current_gl_context->glGetBufferParameterivFn
-#define glGetError ::gfx::g_current_gl_context->glGetErrorFn
-#define glGetFenceivNV ::gfx::g_current_gl_context->glGetFenceivNVFn
-#define glGetFloatv ::gfx::g_current_gl_context->glGetFloatvFn
-#define glGetFragDataIndex ::gfx::g_current_gl_context->glGetFragDataIndexFn
+  ::gl::g_current_gl_context->glGetBufferParameterivFn
+#define glGetError ::gl::g_current_gl_context->glGetErrorFn
+#define glGetFenceivNV ::gl::g_current_gl_context->glGetFenceivNVFn
+#define glGetFloatv ::gl::g_current_gl_context->glGetFloatvFn
+#define glGetFragDataIndex ::gl::g_current_gl_context->glGetFragDataIndexFn
 #define glGetFragDataLocation \
-  ::gfx::g_current_gl_context->glGetFragDataLocationFn
+  ::gl::g_current_gl_context->glGetFragDataLocationFn
 #define glGetFramebufferAttachmentParameterivEXT \
-  ::gfx::g_current_gl_context->glGetFramebufferAttachmentParameterivEXTFn
+  ::gl::g_current_gl_context->glGetFramebufferAttachmentParameterivEXTFn
 #define glGetGraphicsResetStatusARB \
-  ::gfx::g_current_gl_context->glGetGraphicsResetStatusARBFn
-#define glGetInteger64i_v ::gfx::g_current_gl_context->glGetInteger64i_vFn
-#define glGetInteger64v ::gfx::g_current_gl_context->glGetInteger64vFn
-#define glGetIntegeri_v ::gfx::g_current_gl_context->glGetIntegeri_vFn
-#define glGetIntegerv ::gfx::g_current_gl_context->glGetIntegervFn
+  ::gl::g_current_gl_context->glGetGraphicsResetStatusARBFn
+#define glGetInteger64i_v ::gl::g_current_gl_context->glGetInteger64i_vFn
+#define glGetInteger64v ::gl::g_current_gl_context->glGetInteger64vFn
+#define glGetIntegeri_v ::gl::g_current_gl_context->glGetIntegeri_vFn
+#define glGetIntegerv ::gl::g_current_gl_context->glGetIntegervFn
 #define glGetInternalformativ \
-  ::gfx::g_current_gl_context->glGetInternalformativFn
-#define glGetProgramBinary ::gfx::g_current_gl_context->glGetProgramBinaryFn
-#define glGetProgramInfoLog ::gfx::g_current_gl_context->glGetProgramInfoLogFn
+  ::gl::g_current_gl_context->glGetInternalformativFn
+#define glGetProgramBinary ::gl::g_current_gl_context->glGetProgramBinaryFn
+#define glGetProgramInfoLog ::gl::g_current_gl_context->glGetProgramInfoLogFn
 #define glGetProgramInterfaceiv \
-  ::gfx::g_current_gl_context->glGetProgramInterfaceivFn
-#define glGetProgramiv ::gfx::g_current_gl_context->glGetProgramivFn
+  ::gl::g_current_gl_context->glGetProgramInterfaceivFn
+#define glGetProgramiv ::gl::g_current_gl_context->glGetProgramivFn
 #define glGetProgramResourceiv \
-  ::gfx::g_current_gl_context->glGetProgramResourceivFn
+  ::gl::g_current_gl_context->glGetProgramResourceivFn
 #define glGetProgramResourceLocation \
-  ::gfx::g_current_gl_context->glGetProgramResourceLocationFn
+  ::gl::g_current_gl_context->glGetProgramResourceLocationFn
 #define glGetProgramResourceName \
-  ::gfx::g_current_gl_context->glGetProgramResourceNameFn
-#define glGetQueryiv ::gfx::g_current_gl_context->glGetQueryivFn
-#define glGetQueryObjecti64v ::gfx::g_current_gl_context->glGetQueryObjecti64vFn
-#define glGetQueryObjectiv ::gfx::g_current_gl_context->glGetQueryObjectivFn
+  ::gl::g_current_gl_context->glGetProgramResourceNameFn
+#define glGetQueryiv ::gl::g_current_gl_context->glGetQueryivFn
+#define glGetQueryObjecti64v ::gl::g_current_gl_context->glGetQueryObjecti64vFn
+#define glGetQueryObjectiv ::gl::g_current_gl_context->glGetQueryObjectivFn
 #define glGetQueryObjectui64v \
-  ::gfx::g_current_gl_context->glGetQueryObjectui64vFn
-#define glGetQueryObjectuiv ::gfx::g_current_gl_context->glGetQueryObjectuivFn
+  ::gl::g_current_gl_context->glGetQueryObjectui64vFn
+#define glGetQueryObjectuiv ::gl::g_current_gl_context->glGetQueryObjectuivFn
 #define glGetRenderbufferParameterivEXT \
-  ::gfx::g_current_gl_context->glGetRenderbufferParameterivEXTFn
+  ::gl::g_current_gl_context->glGetRenderbufferParameterivEXTFn
 #define glGetSamplerParameterfv \
-  ::gfx::g_current_gl_context->glGetSamplerParameterfvFn
+  ::gl::g_current_gl_context->glGetSamplerParameterfvFn
 #define glGetSamplerParameteriv \
-  ::gfx::g_current_gl_context->glGetSamplerParameterivFn
-#define glGetShaderInfoLog ::gfx::g_current_gl_context->glGetShaderInfoLogFn
-#define glGetShaderiv ::gfx::g_current_gl_context->glGetShaderivFn
+  ::gl::g_current_gl_context->glGetSamplerParameterivFn
+#define glGetShaderInfoLog ::gl::g_current_gl_context->glGetShaderInfoLogFn
+#define glGetShaderiv ::gl::g_current_gl_context->glGetShaderivFn
 #define glGetShaderPrecisionFormat \
-  ::gfx::g_current_gl_context->glGetShaderPrecisionFormatFn
-#define glGetShaderSource ::gfx::g_current_gl_context->glGetShaderSourceFn
-#define glGetString ::gfx::g_current_gl_context->glGetStringFn
-#define glGetStringi ::gfx::g_current_gl_context->glGetStringiFn
-#define glGetSynciv ::gfx::g_current_gl_context->glGetSyncivFn
+  ::gl::g_current_gl_context->glGetShaderPrecisionFormatFn
+#define glGetShaderSource ::gl::g_current_gl_context->glGetShaderSourceFn
+#define glGetString ::gl::g_current_gl_context->glGetStringFn
+#define glGetStringi ::gl::g_current_gl_context->glGetStringiFn
+#define glGetSynciv ::gl::g_current_gl_context->glGetSyncivFn
 #define glGetTexLevelParameterfv \
-  ::gfx::g_current_gl_context->glGetTexLevelParameterfvFn
+  ::gl::g_current_gl_context->glGetTexLevelParameterfvFn
 #define glGetTexLevelParameteriv \
-  ::gfx::g_current_gl_context->glGetTexLevelParameterivFn
-#define glGetTexParameterfv ::gfx::g_current_gl_context->glGetTexParameterfvFn
-#define glGetTexParameteriv ::gfx::g_current_gl_context->glGetTexParameterivFn
+  ::gl::g_current_gl_context->glGetTexLevelParameterivFn
+#define glGetTexParameterfv ::gl::g_current_gl_context->glGetTexParameterfvFn
+#define glGetTexParameteriv ::gl::g_current_gl_context->glGetTexParameterivFn
 #define glGetTransformFeedbackVarying \
-  ::gfx::g_current_gl_context->glGetTransformFeedbackVaryingFn
+  ::gl::g_current_gl_context->glGetTransformFeedbackVaryingFn
 #define glGetTranslatedShaderSourceANGLE \
-  ::gfx::g_current_gl_context->glGetTranslatedShaderSourceANGLEFn
+  ::gl::g_current_gl_context->glGetTranslatedShaderSourceANGLEFn
 #define glGetUniformBlockIndex \
-  ::gfx::g_current_gl_context->glGetUniformBlockIndexFn
-#define glGetUniformfv ::gfx::g_current_gl_context->glGetUniformfvFn
-#define glGetUniformIndices ::gfx::g_current_gl_context->glGetUniformIndicesFn
-#define glGetUniformiv ::gfx::g_current_gl_context->glGetUniformivFn
-#define glGetUniformLocation ::gfx::g_current_gl_context->glGetUniformLocationFn
-#define glGetUniformuiv ::gfx::g_current_gl_context->glGetUniformuivFn
-#define glGetVertexAttribfv ::gfx::g_current_gl_context->glGetVertexAttribfvFn
-#define glGetVertexAttribiv ::gfx::g_current_gl_context->glGetVertexAttribivFn
+  ::gl::g_current_gl_context->glGetUniformBlockIndexFn
+#define glGetUniformfv ::gl::g_current_gl_context->glGetUniformfvFn
+#define glGetUniformIndices ::gl::g_current_gl_context->glGetUniformIndicesFn
+#define glGetUniformiv ::gl::g_current_gl_context->glGetUniformivFn
+#define glGetUniformLocation ::gl::g_current_gl_context->glGetUniformLocationFn
+#define glGetUniformuiv ::gl::g_current_gl_context->glGetUniformuivFn
+#define glGetVertexAttribfv ::gl::g_current_gl_context->glGetVertexAttribfvFn
+#define glGetVertexAttribiv ::gl::g_current_gl_context->glGetVertexAttribivFn
 #define glGetVertexAttribPointerv \
-  ::gfx::g_current_gl_context->glGetVertexAttribPointervFn
-#define glHint ::gfx::g_current_gl_context->glHintFn
+  ::gl::g_current_gl_context->glGetVertexAttribPointervFn
+#define glHint ::gl::g_current_gl_context->glHintFn
 #define glInsertEventMarkerEXT \
-  ::gfx::g_current_gl_context->glInsertEventMarkerEXTFn
+  ::gl::g_current_gl_context->glInsertEventMarkerEXTFn
 #define glInvalidateFramebuffer \
-  ::gfx::g_current_gl_context->glInvalidateFramebufferFn
+  ::gl::g_current_gl_context->glInvalidateFramebufferFn
 #define glInvalidateSubFramebuffer \
-  ::gfx::g_current_gl_context->glInvalidateSubFramebufferFn
-#define glIsBuffer ::gfx::g_current_gl_context->glIsBufferFn
-#define glIsEnabled ::gfx::g_current_gl_context->glIsEnabledFn
-#define glIsFenceAPPLE ::gfx::g_current_gl_context->glIsFenceAPPLEFn
-#define glIsFenceNV ::gfx::g_current_gl_context->glIsFenceNVFn
-#define glIsFramebufferEXT ::gfx::g_current_gl_context->glIsFramebufferEXTFn
-#define glIsPathNV ::gfx::g_current_gl_context->glIsPathNVFn
-#define glIsProgram ::gfx::g_current_gl_context->glIsProgramFn
-#define glIsQuery ::gfx::g_current_gl_context->glIsQueryFn
-#define glIsRenderbufferEXT ::gfx::g_current_gl_context->glIsRenderbufferEXTFn
-#define glIsSampler ::gfx::g_current_gl_context->glIsSamplerFn
-#define glIsShader ::gfx::g_current_gl_context->glIsShaderFn
-#define glIsSync ::gfx::g_current_gl_context->glIsSyncFn
-#define glIsTexture ::gfx::g_current_gl_context->glIsTextureFn
+  ::gl::g_current_gl_context->glInvalidateSubFramebufferFn
+#define glIsBuffer ::gl::g_current_gl_context->glIsBufferFn
+#define glIsEnabled ::gl::g_current_gl_context->glIsEnabledFn
+#define glIsFenceAPPLE ::gl::g_current_gl_context->glIsFenceAPPLEFn
+#define glIsFenceNV ::gl::g_current_gl_context->glIsFenceNVFn
+#define glIsFramebufferEXT ::gl::g_current_gl_context->glIsFramebufferEXTFn
+#define glIsPathNV ::gl::g_current_gl_context->glIsPathNVFn
+#define glIsProgram ::gl::g_current_gl_context->glIsProgramFn
+#define glIsQuery ::gl::g_current_gl_context->glIsQueryFn
+#define glIsRenderbufferEXT ::gl::g_current_gl_context->glIsRenderbufferEXTFn
+#define glIsSampler ::gl::g_current_gl_context->glIsSamplerFn
+#define glIsShader ::gl::g_current_gl_context->glIsShaderFn
+#define glIsSync ::gl::g_current_gl_context->glIsSyncFn
+#define glIsTexture ::gl::g_current_gl_context->glIsTextureFn
 #define glIsTransformFeedback \
-  ::gfx::g_current_gl_context->glIsTransformFeedbackFn
-#define glIsVertexArrayOES ::gfx::g_current_gl_context->glIsVertexArrayOESFn
-#define glLineWidth ::gfx::g_current_gl_context->glLineWidthFn
-#define glLinkProgram ::gfx::g_current_gl_context->glLinkProgramFn
-#define glMapBuffer ::gfx::g_current_gl_context->glMapBufferFn
-#define glMapBufferRange ::gfx::g_current_gl_context->glMapBufferRangeFn
-#define glMatrixLoadfEXT ::gfx::g_current_gl_context->glMatrixLoadfEXTFn
+  ::gl::g_current_gl_context->glIsTransformFeedbackFn
+#define glIsVertexArrayOES ::gl::g_current_gl_context->glIsVertexArrayOESFn
+#define glLineWidth ::gl::g_current_gl_context->glLineWidthFn
+#define glLinkProgram ::gl::g_current_gl_context->glLinkProgramFn
+#define glMapBuffer ::gl::g_current_gl_context->glMapBufferFn
+#define glMapBufferRange ::gl::g_current_gl_context->glMapBufferRangeFn
+#define glMatrixLoadfEXT ::gl::g_current_gl_context->glMatrixLoadfEXTFn
 #define glMatrixLoadIdentityEXT \
-  ::gfx::g_current_gl_context->glMatrixLoadIdentityEXTFn
-#define glMemoryBarrierEXT ::gfx::g_current_gl_context->glMemoryBarrierEXTFn
-#define glPathCommandsNV ::gfx::g_current_gl_context->glPathCommandsNVFn
-#define glPathParameterfNV ::gfx::g_current_gl_context->glPathParameterfNVFn
-#define glPathParameteriNV ::gfx::g_current_gl_context->glPathParameteriNVFn
-#define glPathStencilFuncNV ::gfx::g_current_gl_context->glPathStencilFuncNVFn
+  ::gl::g_current_gl_context->glMatrixLoadIdentityEXTFn
+#define glMemoryBarrierEXT ::gl::g_current_gl_context->glMemoryBarrierEXTFn
+#define glPathCommandsNV ::gl::g_current_gl_context->glPathCommandsNVFn
+#define glPathParameterfNV ::gl::g_current_gl_context->glPathParameterfNVFn
+#define glPathParameteriNV ::gl::g_current_gl_context->glPathParameteriNVFn
+#define glPathStencilFuncNV ::gl::g_current_gl_context->glPathStencilFuncNVFn
 #define glPauseTransformFeedback \
-  ::gfx::g_current_gl_context->glPauseTransformFeedbackFn
-#define glPixelStorei ::gfx::g_current_gl_context->glPixelStoreiFn
-#define glPointParameteri ::gfx::g_current_gl_context->glPointParameteriFn
-#define glPolygonOffset ::gfx::g_current_gl_context->glPolygonOffsetFn
-#define glPopGroupMarkerEXT ::gfx::g_current_gl_context->glPopGroupMarkerEXTFn
+  ::gl::g_current_gl_context->glPauseTransformFeedbackFn
+#define glPixelStorei ::gl::g_current_gl_context->glPixelStoreiFn
+#define glPointParameteri ::gl::g_current_gl_context->glPointParameteriFn
+#define glPolygonOffset ::gl::g_current_gl_context->glPolygonOffsetFn
+#define glPopGroupMarkerEXT ::gl::g_current_gl_context->glPopGroupMarkerEXTFn
 #define glPrimitiveRestartIndex \
-  ::gfx::g_current_gl_context->glPrimitiveRestartIndexFn
-#define glProgramBinary ::gfx::g_current_gl_context->glProgramBinaryFn
-#define glProgramParameteri ::gfx::g_current_gl_context->glProgramParameteriFn
+  ::gl::g_current_gl_context->glPrimitiveRestartIndexFn
+#define glProgramBinary ::gl::g_current_gl_context->glProgramBinaryFn
+#define glProgramParameteri ::gl::g_current_gl_context->glProgramParameteriFn
 #define glProgramPathFragmentInputGenNV \
-  ::gfx::g_current_gl_context->glProgramPathFragmentInputGenNVFn
-#define glPushGroupMarkerEXT ::gfx::g_current_gl_context->glPushGroupMarkerEXTFn
-#define glQueryCounter ::gfx::g_current_gl_context->glQueryCounterFn
-#define glReadBuffer ::gfx::g_current_gl_context->glReadBufferFn
-#define glReadPixels ::gfx::g_current_gl_context->glReadPixelsFn
+  ::gl::g_current_gl_context->glProgramPathFragmentInputGenNVFn
+#define glPushGroupMarkerEXT ::gl::g_current_gl_context->glPushGroupMarkerEXTFn
+#define glQueryCounter ::gl::g_current_gl_context->glQueryCounterFn
+#define glReadBuffer ::gl::g_current_gl_context->glReadBufferFn
+#define glReadPixels ::gl::g_current_gl_context->glReadPixelsFn
 #define glReleaseShaderCompiler \
-  ::gfx::g_current_gl_context->glReleaseShaderCompilerFn
+  ::gl::g_current_gl_context->glReleaseShaderCompilerFn
 #define glRenderbufferStorageEXT \
-  ::gfx::g_current_gl_context->glRenderbufferStorageEXTFn
+  ::gl::g_current_gl_context->glRenderbufferStorageEXTFn
 #define glRenderbufferStorageMultisample \
-  ::gfx::g_current_gl_context->glRenderbufferStorageMultisampleFn
+  ::gl::g_current_gl_context->glRenderbufferStorageMultisampleFn
 #define glRenderbufferStorageMultisampleANGLE \
-  ::gfx::g_current_gl_context->glRenderbufferStorageMultisampleANGLEFn
+  ::gl::g_current_gl_context->glRenderbufferStorageMultisampleANGLEFn
 #define glRenderbufferStorageMultisampleEXT \
-  ::gfx::g_current_gl_context->glRenderbufferStorageMultisampleEXTFn
+  ::gl::g_current_gl_context->glRenderbufferStorageMultisampleEXTFn
 #define glRenderbufferStorageMultisampleIMG \
-  ::gfx::g_current_gl_context->glRenderbufferStorageMultisampleIMGFn
+  ::gl::g_current_gl_context->glRenderbufferStorageMultisampleIMGFn
 #define glResumeTransformFeedback \
-  ::gfx::g_current_gl_context->glResumeTransformFeedbackFn
-#define glSampleCoverage ::gfx::g_current_gl_context->glSampleCoverageFn
-#define glSamplerParameterf ::gfx::g_current_gl_context->glSamplerParameterfFn
-#define glSamplerParameterfv ::gfx::g_current_gl_context->glSamplerParameterfvFn
-#define glSamplerParameteri ::gfx::g_current_gl_context->glSamplerParameteriFn
-#define glSamplerParameteriv ::gfx::g_current_gl_context->glSamplerParameterivFn
-#define glScissor ::gfx::g_current_gl_context->glScissorFn
-#define glSetFenceAPPLE ::gfx::g_current_gl_context->glSetFenceAPPLEFn
-#define glSetFenceNV ::gfx::g_current_gl_context->glSetFenceNVFn
-#define glShaderBinary ::gfx::g_current_gl_context->glShaderBinaryFn
-#define glShaderSource ::gfx::g_current_gl_context->glShaderSourceFn
+  ::gl::g_current_gl_context->glResumeTransformFeedbackFn
+#define glSampleCoverage ::gl::g_current_gl_context->glSampleCoverageFn
+#define glSamplerParameterf ::gl::g_current_gl_context->glSamplerParameterfFn
+#define glSamplerParameterfv ::gl::g_current_gl_context->glSamplerParameterfvFn
+#define glSamplerParameteri ::gl::g_current_gl_context->glSamplerParameteriFn
+#define glSamplerParameteriv ::gl::g_current_gl_context->glSamplerParameterivFn
+#define glScissor ::gl::g_current_gl_context->glScissorFn
+#define glSetFenceAPPLE ::gl::g_current_gl_context->glSetFenceAPPLEFn
+#define glSetFenceNV ::gl::g_current_gl_context->glSetFenceNVFn
+#define glShaderBinary ::gl::g_current_gl_context->glShaderBinaryFn
+#define glShaderSource ::gl::g_current_gl_context->glShaderSourceFn
 #define glStencilFillPathInstancedNV \
-  ::gfx::g_current_gl_context->glStencilFillPathInstancedNVFn
-#define glStencilFillPathNV ::gfx::g_current_gl_context->glStencilFillPathNVFn
-#define glStencilFunc ::gfx::g_current_gl_context->glStencilFuncFn
+  ::gl::g_current_gl_context->glStencilFillPathInstancedNVFn
+#define glStencilFillPathNV ::gl::g_current_gl_context->glStencilFillPathNVFn
+#define glStencilFunc ::gl::g_current_gl_context->glStencilFuncFn
 #define glStencilFuncSeparate \
-  ::gfx::g_current_gl_context->glStencilFuncSeparateFn
-#define glStencilMask ::gfx::g_current_gl_context->glStencilMaskFn
+  ::gl::g_current_gl_context->glStencilFuncSeparateFn
+#define glStencilMask ::gl::g_current_gl_context->glStencilMaskFn
 #define glStencilMaskSeparate \
-  ::gfx::g_current_gl_context->glStencilMaskSeparateFn
-#define glStencilOp ::gfx::g_current_gl_context->glStencilOpFn
-#define glStencilOpSeparate ::gfx::g_current_gl_context->glStencilOpSeparateFn
+  ::gl::g_current_gl_context->glStencilMaskSeparateFn
+#define glStencilOp ::gl::g_current_gl_context->glStencilOpFn
+#define glStencilOpSeparate ::gl::g_current_gl_context->glStencilOpSeparateFn
 #define glStencilStrokePathInstancedNV \
-  ::gfx::g_current_gl_context->glStencilStrokePathInstancedNVFn
+  ::gl::g_current_gl_context->glStencilStrokePathInstancedNVFn
 #define glStencilStrokePathNV \
-  ::gfx::g_current_gl_context->glStencilStrokePathNVFn
+  ::gl::g_current_gl_context->glStencilStrokePathNVFn
 #define glStencilThenCoverFillPathInstancedNV \
-  ::gfx::g_current_gl_context->glStencilThenCoverFillPathInstancedNVFn
+  ::gl::g_current_gl_context->glStencilThenCoverFillPathInstancedNVFn
 #define glStencilThenCoverFillPathNV \
-  ::gfx::g_current_gl_context->glStencilThenCoverFillPathNVFn
+  ::gl::g_current_gl_context->glStencilThenCoverFillPathNVFn
 #define glStencilThenCoverStrokePathInstancedNV \
-  ::gfx::g_current_gl_context->glStencilThenCoverStrokePathInstancedNVFn
+  ::gl::g_current_gl_context->glStencilThenCoverStrokePathInstancedNVFn
 #define glStencilThenCoverStrokePathNV \
-  ::gfx::g_current_gl_context->glStencilThenCoverStrokePathNVFn
-#define glTestFenceAPPLE ::gfx::g_current_gl_context->glTestFenceAPPLEFn
-#define glTestFenceNV ::gfx::g_current_gl_context->glTestFenceNVFn
-#define glTexImage2D ::gfx::g_current_gl_context->glTexImage2DFn
-#define glTexImage3D ::gfx::g_current_gl_context->glTexImage3DFn
-#define glTexParameterf ::gfx::g_current_gl_context->glTexParameterfFn
-#define glTexParameterfv ::gfx::g_current_gl_context->glTexParameterfvFn
-#define glTexParameteri ::gfx::g_current_gl_context->glTexParameteriFn
-#define glTexParameteriv ::gfx::g_current_gl_context->glTexParameterivFn
-#define glTexStorage2DEXT ::gfx::g_current_gl_context->glTexStorage2DEXTFn
-#define glTexStorage3D ::gfx::g_current_gl_context->glTexStorage3DFn
-#define glTexSubImage2D ::gfx::g_current_gl_context->glTexSubImage2DFn
-#define glTexSubImage3D ::gfx::g_current_gl_context->glTexSubImage3DFn
+  ::gl::g_current_gl_context->glStencilThenCoverStrokePathNVFn
+#define glTestFenceAPPLE ::gl::g_current_gl_context->glTestFenceAPPLEFn
+#define glTestFenceNV ::gl::g_current_gl_context->glTestFenceNVFn
+#define glTexImage2D ::gl::g_current_gl_context->glTexImage2DFn
+#define glTexImage3D ::gl::g_current_gl_context->glTexImage3DFn
+#define glTexParameterf ::gl::g_current_gl_context->glTexParameterfFn
+#define glTexParameterfv ::gl::g_current_gl_context->glTexParameterfvFn
+#define glTexParameteri ::gl::g_current_gl_context->glTexParameteriFn
+#define glTexParameteriv ::gl::g_current_gl_context->glTexParameterivFn
+#define glTexStorage2DEXT ::gl::g_current_gl_context->glTexStorage2DEXTFn
+#define glTexStorage3D ::gl::g_current_gl_context->glTexStorage3DFn
+#define glTexSubImage2D ::gl::g_current_gl_context->glTexSubImage2DFn
+#define glTexSubImage3D ::gl::g_current_gl_context->glTexSubImage3DFn
 #define glTransformFeedbackVaryings \
-  ::gfx::g_current_gl_context->glTransformFeedbackVaryingsFn
-#define glUniform1f ::gfx::g_current_gl_context->glUniform1fFn
-#define glUniform1fv ::gfx::g_current_gl_context->glUniform1fvFn
-#define glUniform1i ::gfx::g_current_gl_context->glUniform1iFn
-#define glUniform1iv ::gfx::g_current_gl_context->glUniform1ivFn
-#define glUniform1ui ::gfx::g_current_gl_context->glUniform1uiFn
-#define glUniform1uiv ::gfx::g_current_gl_context->glUniform1uivFn
-#define glUniform2f ::gfx::g_current_gl_context->glUniform2fFn
-#define glUniform2fv ::gfx::g_current_gl_context->glUniform2fvFn
-#define glUniform2i ::gfx::g_current_gl_context->glUniform2iFn
-#define glUniform2iv ::gfx::g_current_gl_context->glUniform2ivFn
-#define glUniform2ui ::gfx::g_current_gl_context->glUniform2uiFn
-#define glUniform2uiv ::gfx::g_current_gl_context->glUniform2uivFn
-#define glUniform3f ::gfx::g_current_gl_context->glUniform3fFn
-#define glUniform3fv ::gfx::g_current_gl_context->glUniform3fvFn
-#define glUniform3i ::gfx::g_current_gl_context->glUniform3iFn
-#define glUniform3iv ::gfx::g_current_gl_context->glUniform3ivFn
-#define glUniform3ui ::gfx::g_current_gl_context->glUniform3uiFn
-#define glUniform3uiv ::gfx::g_current_gl_context->glUniform3uivFn
-#define glUniform4f ::gfx::g_current_gl_context->glUniform4fFn
-#define glUniform4fv ::gfx::g_current_gl_context->glUniform4fvFn
-#define glUniform4i ::gfx::g_current_gl_context->glUniform4iFn
-#define glUniform4iv ::gfx::g_current_gl_context->glUniform4ivFn
-#define glUniform4ui ::gfx::g_current_gl_context->glUniform4uiFn
-#define glUniform4uiv ::gfx::g_current_gl_context->glUniform4uivFn
+  ::gl::g_current_gl_context->glTransformFeedbackVaryingsFn
+#define glUniform1f ::gl::g_current_gl_context->glUniform1fFn
+#define glUniform1fv ::gl::g_current_gl_context->glUniform1fvFn
+#define glUniform1i ::gl::g_current_gl_context->glUniform1iFn
+#define glUniform1iv ::gl::g_current_gl_context->glUniform1ivFn
+#define glUniform1ui ::gl::g_current_gl_context->glUniform1uiFn
+#define glUniform1uiv ::gl::g_current_gl_context->glUniform1uivFn
+#define glUniform2f ::gl::g_current_gl_context->glUniform2fFn
+#define glUniform2fv ::gl::g_current_gl_context->glUniform2fvFn
+#define glUniform2i ::gl::g_current_gl_context->glUniform2iFn
+#define glUniform2iv ::gl::g_current_gl_context->glUniform2ivFn
+#define glUniform2ui ::gl::g_current_gl_context->glUniform2uiFn
+#define glUniform2uiv ::gl::g_current_gl_context->glUniform2uivFn
+#define glUniform3f ::gl::g_current_gl_context->glUniform3fFn
+#define glUniform3fv ::gl::g_current_gl_context->glUniform3fvFn
+#define glUniform3i ::gl::g_current_gl_context->glUniform3iFn
+#define glUniform3iv ::gl::g_current_gl_context->glUniform3ivFn
+#define glUniform3ui ::gl::g_current_gl_context->glUniform3uiFn
+#define glUniform3uiv ::gl::g_current_gl_context->glUniform3uivFn
+#define glUniform4f ::gl::g_current_gl_context->glUniform4fFn
+#define glUniform4fv ::gl::g_current_gl_context->glUniform4fvFn
+#define glUniform4i ::gl::g_current_gl_context->glUniform4iFn
+#define glUniform4iv ::gl::g_current_gl_context->glUniform4ivFn
+#define glUniform4ui ::gl::g_current_gl_context->glUniform4uiFn
+#define glUniform4uiv ::gl::g_current_gl_context->glUniform4uivFn
 #define glUniformBlockBinding \
-  ::gfx::g_current_gl_context->glUniformBlockBindingFn
-#define glUniformMatrix2fv ::gfx::g_current_gl_context->glUniformMatrix2fvFn
-#define glUniformMatrix2x3fv ::gfx::g_current_gl_context->glUniformMatrix2x3fvFn
-#define glUniformMatrix2x4fv ::gfx::g_current_gl_context->glUniformMatrix2x4fvFn
-#define glUniformMatrix3fv ::gfx::g_current_gl_context->glUniformMatrix3fvFn
-#define glUniformMatrix3x2fv ::gfx::g_current_gl_context->glUniformMatrix3x2fvFn
-#define glUniformMatrix3x4fv ::gfx::g_current_gl_context->glUniformMatrix3x4fvFn
-#define glUniformMatrix4fv ::gfx::g_current_gl_context->glUniformMatrix4fvFn
-#define glUniformMatrix4x2fv ::gfx::g_current_gl_context->glUniformMatrix4x2fvFn
-#define glUniformMatrix4x3fv ::gfx::g_current_gl_context->glUniformMatrix4x3fvFn
-#define glUnmapBuffer ::gfx::g_current_gl_context->glUnmapBufferFn
-#define glUseProgram ::gfx::g_current_gl_context->glUseProgramFn
-#define glValidateProgram ::gfx::g_current_gl_context->glValidateProgramFn
-#define glVertexAttrib1f ::gfx::g_current_gl_context->glVertexAttrib1fFn
-#define glVertexAttrib1fv ::gfx::g_current_gl_context->glVertexAttrib1fvFn
-#define glVertexAttrib2f ::gfx::g_current_gl_context->glVertexAttrib2fFn
-#define glVertexAttrib2fv ::gfx::g_current_gl_context->glVertexAttrib2fvFn
-#define glVertexAttrib3f ::gfx::g_current_gl_context->glVertexAttrib3fFn
-#define glVertexAttrib3fv ::gfx::g_current_gl_context->glVertexAttrib3fvFn
-#define glVertexAttrib4f ::gfx::g_current_gl_context->glVertexAttrib4fFn
-#define glVertexAttrib4fv ::gfx::g_current_gl_context->glVertexAttrib4fvFn
+  ::gl::g_current_gl_context->glUniformBlockBindingFn
+#define glUniformMatrix2fv ::gl::g_current_gl_context->glUniformMatrix2fvFn
+#define glUniformMatrix2x3fv ::gl::g_current_gl_context->glUniformMatrix2x3fvFn
+#define glUniformMatrix2x4fv ::gl::g_current_gl_context->glUniformMatrix2x4fvFn
+#define glUniformMatrix3fv ::gl::g_current_gl_context->glUniformMatrix3fvFn
+#define glUniformMatrix3x2fv ::gl::g_current_gl_context->glUniformMatrix3x2fvFn
+#define glUniformMatrix3x4fv ::gl::g_current_gl_context->glUniformMatrix3x4fvFn
+#define glUniformMatrix4fv ::gl::g_current_gl_context->glUniformMatrix4fvFn
+#define glUniformMatrix4x2fv ::gl::g_current_gl_context->glUniformMatrix4x2fvFn
+#define glUniformMatrix4x3fv ::gl::g_current_gl_context->glUniformMatrix4x3fvFn
+#define glUnmapBuffer ::gl::g_current_gl_context->glUnmapBufferFn
+#define glUseProgram ::gl::g_current_gl_context->glUseProgramFn
+#define glValidateProgram ::gl::g_current_gl_context->glValidateProgramFn
+#define glVertexAttrib1f ::gl::g_current_gl_context->glVertexAttrib1fFn
+#define glVertexAttrib1fv ::gl::g_current_gl_context->glVertexAttrib1fvFn
+#define glVertexAttrib2f ::gl::g_current_gl_context->glVertexAttrib2fFn
+#define glVertexAttrib2fv ::gl::g_current_gl_context->glVertexAttrib2fvFn
+#define glVertexAttrib3f ::gl::g_current_gl_context->glVertexAttrib3fFn
+#define glVertexAttrib3fv ::gl::g_current_gl_context->glVertexAttrib3fvFn
+#define glVertexAttrib4f ::gl::g_current_gl_context->glVertexAttrib4fFn
+#define glVertexAttrib4fv ::gl::g_current_gl_context->glVertexAttrib4fvFn
 #define glVertexAttribDivisorANGLE \
-  ::gfx::g_current_gl_context->glVertexAttribDivisorANGLEFn
-#define glVertexAttribI4i ::gfx::g_current_gl_context->glVertexAttribI4iFn
-#define glVertexAttribI4iv ::gfx::g_current_gl_context->glVertexAttribI4ivFn
-#define glVertexAttribI4ui ::gfx::g_current_gl_context->glVertexAttribI4uiFn
-#define glVertexAttribI4uiv ::gfx::g_current_gl_context->glVertexAttribI4uivFn
+  ::gl::g_current_gl_context->glVertexAttribDivisorANGLEFn
+#define glVertexAttribI4i ::gl::g_current_gl_context->glVertexAttribI4iFn
+#define glVertexAttribI4iv ::gl::g_current_gl_context->glVertexAttribI4ivFn
+#define glVertexAttribI4ui ::gl::g_current_gl_context->glVertexAttribI4uiFn
+#define glVertexAttribI4uiv ::gl::g_current_gl_context->glVertexAttribI4uivFn
 #define glVertexAttribIPointer \
-  ::gfx::g_current_gl_context->glVertexAttribIPointerFn
+  ::gl::g_current_gl_context->glVertexAttribIPointerFn
 #define glVertexAttribPointer \
-  ::gfx::g_current_gl_context->glVertexAttribPointerFn
-#define glViewport ::gfx::g_current_gl_context->glViewportFn
-#define glWaitSync ::gfx::g_current_gl_context->glWaitSyncFn
+  ::gl::g_current_gl_context->glVertexAttribPointerFn
+#define glViewport ::gl::g_current_gl_context->glViewportFn
+#define glWaitSync ::gl::g_current_gl_context->glWaitSyncFn
 
 #endif  //  UI_GL_GL_BINDINGS_AUTOGEN_GL_H_

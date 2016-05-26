@@ -53,7 +53,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
       gpu::GpuStreamPriority stream_priority,
       gpu::SurfaceHandle surface_handle,
       const GURL& active_url,
-      gfx::GpuPreference gpu_preference,
+      gl::GpuPreference gpu_preference,
       bool automatic_flushes,
       bool support_locking,
       const gpu::SharedMemoryLimits& memory_limits,
@@ -109,7 +109,7 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   const gpu::GpuStreamPriority stream_priority_;
   const gpu::SurfaceHandle surface_handle_;
   const GURL active_url_;
-  const gfx::GpuPreference gpu_preference_;
+  const gl::GpuPreference gpu_preference_;
   const bool automatic_flushes_;
   const bool support_locking_;
   const gpu::SharedMemoryLimits memory_limits_;

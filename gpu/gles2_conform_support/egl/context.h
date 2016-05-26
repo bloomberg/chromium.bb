@@ -84,13 +84,13 @@ class Context : public base::RefCountedThreadSafe<Context>,
 
   // Called by ThreadState to set the needed global variables when this context
   // is current.
-  void ApplyCurrentContext(gfx::GLSurface* current_surface);
+  void ApplyCurrentContext(gl::GLSurface* current_surface);
   static void ApplyContextReleased();
 
  private:
   friend class base::RefCountedThreadSafe<Context>;
   ~Context() override;
-  bool CreateService(gfx::GLSurface* gl_surface);
+  bool CreateService(gl::GLSurface* gl_surface);
   void DestroyService();
   // Returns true if the object has GL service, either a working one or one
   // that has lost its GL context.
@@ -98,7 +98,7 @@ class Context : public base::RefCountedThreadSafe<Context>,
   void MarkServiceContextLost();
   bool WasServiceContextLost() const;
   bool IsCompatibleSurface(Surface* surface) const;
-  bool Flush(gfx::GLSurface* gl_surface);
+  bool Flush(gl::GLSurface* gl_surface);
 
   Display* display_;
   const Config* config_;
@@ -112,7 +112,7 @@ class Context : public base::RefCountedThreadSafe<Context>,
   std::unique_ptr<gpu::CommandExecutor> command_executor_;
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;
 
-  scoped_refptr<gfx::GLContext> gl_context_;
+  scoped_refptr<gl::GLContext> gl_context_;
 
   std::unique_ptr<gpu::gles2::GLES2Interface> client_gl_context_;
   DISALLOW_COPY_AND_ASSIGN(Context);

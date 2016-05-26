@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 
-namespace gfx {
+namespace gl {
 class GLContext;
 }
 

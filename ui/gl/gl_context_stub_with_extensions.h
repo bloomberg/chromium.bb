@@ -9,12 +9,12 @@
 #include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 
 // Lightweight GLContext stub implementation that returns a constructed
 // extensions string.  We use this to create a context that we can use to
 // initialize GL extensions with, without actually creating a platform context.
-class GL_EXPORT GLContextStubWithExtensions : public gfx::GLContextStub {
+class GL_EXPORT GLContextStubWithExtensions : public gl::GLContextStub {
  public:
   GLContextStubWithExtensions() {}
   std::string GetExtensions() override;
@@ -35,6 +35,6 @@ class GL_EXPORT GLContextStubWithExtensions : public gfx::GLContextStub {
   DISALLOW_COPY_AND_ASSIGN(GLContextStubWithExtensions);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_CONTEXT_STUB_WITH_EXTENSIONS_H_

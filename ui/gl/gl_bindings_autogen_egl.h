@@ -11,7 +11,7 @@
 #ifndef UI_GL_GL_BINDINGS_AUTOGEN_EGL_H_
 #define UI_GL_GL_BINDINGS_AUTOGEN_EGL_H_
 
-namespace gfx {
+namespace gl {
 
 class GLContext;
 
@@ -445,81 +445,76 @@ class GL_EXPORT EGLApi {
                                   EGLint flags) = 0;
 };
 
-}  // namespace gfx
+}  // namespace gl
 
-#define eglBindAPI ::gfx::g_current_egl_context->eglBindAPIFn
-#define eglBindTexImage ::gfx::g_current_egl_context->eglBindTexImageFn
-#define eglChooseConfig ::gfx::g_current_egl_context->eglChooseConfigFn
-#define eglClientWaitSyncKHR \
-  ::gfx::g_current_egl_context->eglClientWaitSyncKHRFn
-#define eglCopyBuffers ::gfx::g_current_egl_context->eglCopyBuffersFn
-#define eglCreateContext ::gfx::g_current_egl_context->eglCreateContextFn
-#define eglCreateImageKHR ::gfx::g_current_egl_context->eglCreateImageKHRFn
+#define eglBindAPI ::gl::g_current_egl_context->eglBindAPIFn
+#define eglBindTexImage ::gl::g_current_egl_context->eglBindTexImageFn
+#define eglChooseConfig ::gl::g_current_egl_context->eglChooseConfigFn
+#define eglClientWaitSyncKHR ::gl::g_current_egl_context->eglClientWaitSyncKHRFn
+#define eglCopyBuffers ::gl::g_current_egl_context->eglCopyBuffersFn
+#define eglCreateContext ::gl::g_current_egl_context->eglCreateContextFn
+#define eglCreateImageKHR ::gl::g_current_egl_context->eglCreateImageKHRFn
 #define eglCreatePbufferFromClientBuffer \
-  ::gfx::g_current_egl_context->eglCreatePbufferFromClientBufferFn
+  ::gl::g_current_egl_context->eglCreatePbufferFromClientBufferFn
 #define eglCreatePbufferSurface \
-  ::gfx::g_current_egl_context->eglCreatePbufferSurfaceFn
+  ::gl::g_current_egl_context->eglCreatePbufferSurfaceFn
 #define eglCreatePixmapSurface \
-  ::gfx::g_current_egl_context->eglCreatePixmapSurfaceFn
-#define eglCreateStreamKHR ::gfx::g_current_egl_context->eglCreateStreamKHRFn
+  ::gl::g_current_egl_context->eglCreatePixmapSurfaceFn
+#define eglCreateStreamKHR ::gl::g_current_egl_context->eglCreateStreamKHRFn
 #define eglCreateStreamProducerD3DTextureNV12ANGLE \
-  ::gfx::g_current_egl_context->eglCreateStreamProducerD3DTextureNV12ANGLEFn
-#define eglCreateSyncKHR ::gfx::g_current_egl_context->eglCreateSyncKHRFn
+  ::gl::g_current_egl_context->eglCreateStreamProducerD3DTextureNV12ANGLEFn
+#define eglCreateSyncKHR ::gl::g_current_egl_context->eglCreateSyncKHRFn
 #define eglCreateWindowSurface \
-  ::gfx::g_current_egl_context->eglCreateWindowSurfaceFn
-#define eglDestroyContext ::gfx::g_current_egl_context->eglDestroyContextFn
-#define eglDestroyImageKHR ::gfx::g_current_egl_context->eglDestroyImageKHRFn
-#define eglDestroyStreamKHR ::gfx::g_current_egl_context->eglDestroyStreamKHRFn
-#define eglDestroySurface ::gfx::g_current_egl_context->eglDestroySurfaceFn
-#define eglDestroySyncKHR ::gfx::g_current_egl_context->eglDestroySyncKHRFn
-#define eglGetConfigAttrib ::gfx::g_current_egl_context->eglGetConfigAttribFn
-#define eglGetConfigs ::gfx::g_current_egl_context->eglGetConfigsFn
-#define eglGetCurrentContext \
-  ::gfx::g_current_egl_context->eglGetCurrentContextFn
-#define eglGetCurrentDisplay \
-  ::gfx::g_current_egl_context->eglGetCurrentDisplayFn
-#define eglGetCurrentSurface \
-  ::gfx::g_current_egl_context->eglGetCurrentSurfaceFn
-#define eglGetDisplay ::gfx::g_current_egl_context->eglGetDisplayFn
-#define eglGetError ::gfx::g_current_egl_context->eglGetErrorFn
+  ::gl::g_current_egl_context->eglCreateWindowSurfaceFn
+#define eglDestroyContext ::gl::g_current_egl_context->eglDestroyContextFn
+#define eglDestroyImageKHR ::gl::g_current_egl_context->eglDestroyImageKHRFn
+#define eglDestroyStreamKHR ::gl::g_current_egl_context->eglDestroyStreamKHRFn
+#define eglDestroySurface ::gl::g_current_egl_context->eglDestroySurfaceFn
+#define eglDestroySyncKHR ::gl::g_current_egl_context->eglDestroySyncKHRFn
+#define eglGetConfigAttrib ::gl::g_current_egl_context->eglGetConfigAttribFn
+#define eglGetConfigs ::gl::g_current_egl_context->eglGetConfigsFn
+#define eglGetCurrentContext ::gl::g_current_egl_context->eglGetCurrentContextFn
+#define eglGetCurrentDisplay ::gl::g_current_egl_context->eglGetCurrentDisplayFn
+#define eglGetCurrentSurface ::gl::g_current_egl_context->eglGetCurrentSurfaceFn
+#define eglGetDisplay ::gl::g_current_egl_context->eglGetDisplayFn
+#define eglGetError ::gl::g_current_egl_context->eglGetErrorFn
 #define eglGetPlatformDisplayEXT \
-  ::gfx::g_current_egl_context->eglGetPlatformDisplayEXTFn
-#define eglGetProcAddress ::gfx::g_current_egl_context->eglGetProcAddressFn
-#define eglGetSyncAttribKHR ::gfx::g_current_egl_context->eglGetSyncAttribKHRFn
+  ::gl::g_current_egl_context->eglGetPlatformDisplayEXTFn
+#define eglGetProcAddress ::gl::g_current_egl_context->eglGetProcAddressFn
+#define eglGetSyncAttribKHR ::gl::g_current_egl_context->eglGetSyncAttribKHRFn
 #define eglGetSyncValuesCHROMIUM \
-  ::gfx::g_current_egl_context->eglGetSyncValuesCHROMIUMFn
-#define eglInitialize ::gfx::g_current_egl_context->eglInitializeFn
-#define eglMakeCurrent ::gfx::g_current_egl_context->eglMakeCurrentFn
-#define eglPostSubBufferNV ::gfx::g_current_egl_context->eglPostSubBufferNVFn
-#define eglQueryAPI ::gfx::g_current_egl_context->eglQueryAPIFn
-#define eglQueryContext ::gfx::g_current_egl_context->eglQueryContextFn
-#define eglQueryStreamKHR ::gfx::g_current_egl_context->eglQueryStreamKHRFn
-#define eglQueryStreamu64KHR \
-  ::gfx::g_current_egl_context->eglQueryStreamu64KHRFn
-#define eglQueryString ::gfx::g_current_egl_context->eglQueryStringFn
-#define eglQuerySurface ::gfx::g_current_egl_context->eglQuerySurfaceFn
+  ::gl::g_current_egl_context->eglGetSyncValuesCHROMIUMFn
+#define eglInitialize ::gl::g_current_egl_context->eglInitializeFn
+#define eglMakeCurrent ::gl::g_current_egl_context->eglMakeCurrentFn
+#define eglPostSubBufferNV ::gl::g_current_egl_context->eglPostSubBufferNVFn
+#define eglQueryAPI ::gl::g_current_egl_context->eglQueryAPIFn
+#define eglQueryContext ::gl::g_current_egl_context->eglQueryContextFn
+#define eglQueryStreamKHR ::gl::g_current_egl_context->eglQueryStreamKHRFn
+#define eglQueryStreamu64KHR ::gl::g_current_egl_context->eglQueryStreamu64KHRFn
+#define eglQueryString ::gl::g_current_egl_context->eglQueryStringFn
+#define eglQuerySurface ::gl::g_current_egl_context->eglQuerySurfaceFn
 #define eglQuerySurfacePointerANGLE \
-  ::gfx::g_current_egl_context->eglQuerySurfacePointerANGLEFn
-#define eglReleaseTexImage ::gfx::g_current_egl_context->eglReleaseTexImageFn
-#define eglReleaseThread ::gfx::g_current_egl_context->eglReleaseThreadFn
-#define eglStreamAttribKHR ::gfx::g_current_egl_context->eglStreamAttribKHRFn
+  ::gl::g_current_egl_context->eglQuerySurfacePointerANGLEFn
+#define eglReleaseTexImage ::gl::g_current_egl_context->eglReleaseTexImageFn
+#define eglReleaseThread ::gl::g_current_egl_context->eglReleaseThreadFn
+#define eglStreamAttribKHR ::gl::g_current_egl_context->eglStreamAttribKHRFn
 #define eglStreamConsumerAcquireKHR \
-  ::gfx::g_current_egl_context->eglStreamConsumerAcquireKHRFn
+  ::gl::g_current_egl_context->eglStreamConsumerAcquireKHRFn
 #define eglStreamConsumerGLTextureExternalAttribsNV \
-  ::gfx::g_current_egl_context->eglStreamConsumerGLTextureExternalAttribsNVFn
+  ::gl::g_current_egl_context->eglStreamConsumerGLTextureExternalAttribsNVFn
 #define eglStreamConsumerGLTextureExternalKHR \
-  ::gfx::g_current_egl_context->eglStreamConsumerGLTextureExternalKHRFn
+  ::gl::g_current_egl_context->eglStreamConsumerGLTextureExternalKHRFn
 #define eglStreamConsumerReleaseKHR \
-  ::gfx::g_current_egl_context->eglStreamConsumerReleaseKHRFn
+  ::gl::g_current_egl_context->eglStreamConsumerReleaseKHRFn
 #define eglStreamPostD3DTextureNV12ANGLE \
-  ::gfx::g_current_egl_context->eglStreamPostD3DTextureNV12ANGLEFn
-#define eglSurfaceAttrib ::gfx::g_current_egl_context->eglSurfaceAttribFn
-#define eglSwapBuffers ::gfx::g_current_egl_context->eglSwapBuffersFn
-#define eglSwapInterval ::gfx::g_current_egl_context->eglSwapIntervalFn
-#define eglTerminate ::gfx::g_current_egl_context->eglTerminateFn
-#define eglWaitClient ::gfx::g_current_egl_context->eglWaitClientFn
-#define eglWaitGL ::gfx::g_current_egl_context->eglWaitGLFn
-#define eglWaitNative ::gfx::g_current_egl_context->eglWaitNativeFn
-#define eglWaitSyncKHR ::gfx::g_current_egl_context->eglWaitSyncKHRFn
+  ::gl::g_current_egl_context->eglStreamPostD3DTextureNV12ANGLEFn
+#define eglSurfaceAttrib ::gl::g_current_egl_context->eglSurfaceAttribFn
+#define eglSwapBuffers ::gl::g_current_egl_context->eglSwapBuffersFn
+#define eglSwapInterval ::gl::g_current_egl_context->eglSwapIntervalFn
+#define eglTerminate ::gl::g_current_egl_context->eglTerminateFn
+#define eglWaitClient ::gl::g_current_egl_context->eglWaitClientFn
+#define eglWaitGL ::gl::g_current_egl_context->eglWaitGLFn
+#define eglWaitNative ::gl::g_current_egl_context->eglWaitNativeFn
+#define eglWaitSyncKHR ::gl::g_current_egl_context->eglWaitSyncKHRFn
 
 #endif  //  UI_GL_GL_BINDINGS_AUTOGEN_EGL_H_

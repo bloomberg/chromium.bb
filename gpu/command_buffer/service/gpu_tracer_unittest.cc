@@ -86,22 +86,21 @@ class GPUTracerTester : public GPUTracer {
 
 class BaseGpuTest : public GpuServiceTest {
  public:
-  explicit BaseGpuTest(gfx::GPUTiming::TimerType test_timer_type)
-      : test_timer_type_(test_timer_type) {
-  }
+  explicit BaseGpuTest(gl::GPUTiming::TimerType test_timer_type)
+      : test_timer_type_(test_timer_type) {}
 
  protected:
   void SetUp() override {
     g_fakeCPUTime = 0;
     const char* gl_version = "3.2";
     const char* extensions = "";
-    if (GetTimerType() == gfx::GPUTiming::kTimerTypeEXT) {
+    if (GetTimerType() == gl::GPUTiming::kTimerTypeEXT) {
       gl_version = "2.1";
       extensions = "GL_EXT_timer_query";
-    } else if (GetTimerType() == gfx::GPUTiming::kTimerTypeDisjoint) {
+    } else if (GetTimerType() == gl::GPUTiming::kTimerTypeDisjoint) {
       gl_version = "opengl es 3.0";
       extensions = "GL_EXT_disjoint_timer_query";
-    } else if (GetTimerType() == gfx::GPUTiming::kTimerTypeARB) {
+    } else if (GetTimerType() == gl::GPUTiming::kTimerTypeARB) {
       // TODO(sievers): The tracer should not depend on ARB_occlusion_query.
       // Try merge Query APIs (core, ARB, EXT) into a single binding each.
       extensions = "GL_ARB_timer_query GL_ARB_occlusion_query";
@@ -109,7 +108,7 @@ class BaseGpuTest : public GpuServiceTest {
     GpuServiceTest::SetUpWithGLVersion(gl_version, extensions);
 
     // Disjoint check should only be called by kTracerTypeDisjointTimer type.
-    if (GetTimerType() == gfx::GPUTiming::kTimerTypeDisjoint)
+    if (GetTimerType() == gl::GPUTiming::kTimerTypeDisjoint)
       gl_fake_queries_.ExpectDisjointCalls(*gl_);
     else
       gl_fake_queries_.ExpectNoDisjointCalls(*gl_);
@@ -132,7 +131,7 @@ class BaseGpuTest : public GpuServiceTest {
   void ExpectTraceQueryMocks() {
     if (gpu_timing_client_->IsAvailable()) {
       // Delegate query APIs used by GPUTrace to a GlFakeQueries
-      const bool elapsed = (GetTimerType() == gfx::GPUTiming::kTimerTypeEXT);
+      const bool elapsed = (GetTimerType() == gl::GPUTiming::kTimerTypeEXT);
       gl_fake_queries_.ExpectGPUTimerQuery(*gl_, elapsed);
     }
   }
@@ -203,26 +202,26 @@ class BaseGpuTest : public GpuServiceTest {
   }
 
   void ExpectTracerOffsetQueryMocks() {
-    if (GetTimerType() != gfx::GPUTiming::kTimerTypeARB) {
+    if (GetTimerType() != gl::GPUTiming::kTimerTypeARB) {
       gl_fake_queries_.ExpectNoOffsetCalculationQuery(*gl_);
     } else {
       gl_fake_queries_.ExpectOffsetCalculationQuery(*gl_);
     }
   }
 
-  gfx::GPUTiming::TimerType GetTimerType() { return test_timer_type_; }
+  gl::GPUTiming::TimerType GetTimerType() { return test_timer_type_; }
 
-  gfx::GPUTiming::TimerType test_timer_type_;
-  gfx::GPUTimingFake gl_fake_queries_;
+  gl::GPUTiming::TimerType test_timer_type_;
+  gl::GPUTimingFake gl_fake_queries_;
 
-  scoped_refptr<gfx::GPUTimingClient> gpu_timing_client_;
+  scoped_refptr<gl::GPUTimingClient> gpu_timing_client_;
   scoped_refptr<MockOutputter> outputter_ref_;
 };
 
 // Test GPUTrace calls all the correct gl calls.
 class BaseGpuTraceTest : public BaseGpuTest {
  public:
-  explicit BaseGpuTraceTest(gfx::GPUTiming::TimerType test_timer_type)
+  explicit BaseGpuTraceTest(gl::GPUTiming::TimerType test_timer_type)
       : BaseGpuTest(test_timer_type) {}
 
   void DoTraceTest(bool tracing_service, bool tracing_device) {
@@ -286,13 +285,13 @@ class BaseGpuTraceTest : public BaseGpuTest {
 
 class GpuARBTimerTraceTest : public BaseGpuTraceTest {
  public:
-  GpuARBTimerTraceTest() : BaseGpuTraceTest(gfx::GPUTiming::kTimerTypeARB) {}
+  GpuARBTimerTraceTest() : BaseGpuTraceTest(gl::GPUTiming::kTimerTypeARB) {}
 };
 
 class GpuDisjointTimerTraceTest : public BaseGpuTraceTest {
  public:
   GpuDisjointTimerTraceTest()
-      : BaseGpuTraceTest(gfx::GPUTiming::kTimerTypeDisjoint) {}
+      : BaseGpuTraceTest(gl::GPUTiming::kTimerTypeDisjoint) {}
 };
 
 TEST_F(GpuARBTimerTraceTest, ARBTimerTraceTestOff) {
@@ -330,7 +329,7 @@ TEST_F(GpuDisjointTimerTraceTest, DisjointTimerTraceTestBothOn) {
 // Test GPUTracer calls all the correct gl calls.
 class BaseGpuTracerTest : public BaseGpuTest {
  public:
-  explicit BaseGpuTracerTest(gfx::GPUTiming::TimerType test_timer_type)
+  explicit BaseGpuTracerTest(gl::GPUTiming::TimerType test_timer_type)
       : BaseGpuTest(test_timer_type) {}
 
   void DoBasicTracerTest() {
@@ -556,7 +555,7 @@ class BaseGpuTracerTest : public BaseGpuTest {
 
     // Create GPUTimingClient to make sure disjoint value is correct. This
     // should not interfere with the tracer's disjoint value.
-    scoped_refptr<gfx::GPUTimingClient> disjoint_client =
+    scoped_refptr<gl::GPUTimingClient> disjoint_client =
         GetGLContext()->CreateGPUTimingClient();
 
     // We assert here based on the disjoint_client because if disjoints are not
@@ -638,24 +637,23 @@ class BaseGpuTracerTest : public BaseGpuTest {
 class InvalidTimerTracerTest : public BaseGpuTracerTest {
  public:
   InvalidTimerTracerTest()
-      : BaseGpuTracerTest(gfx::GPUTiming::kTimerTypeInvalid) {}
+      : BaseGpuTracerTest(gl::GPUTiming::kTimerTypeInvalid) {}
 };
 
 class GpuEXTTimerTracerTest : public BaseGpuTracerTest {
  public:
-  GpuEXTTimerTracerTest() : BaseGpuTracerTest(gfx::GPUTiming::kTimerTypeEXT) {}
+  GpuEXTTimerTracerTest() : BaseGpuTracerTest(gl::GPUTiming::kTimerTypeEXT) {}
 };
 
 class GpuARBTimerTracerTest : public BaseGpuTracerTest {
  public:
-  GpuARBTimerTracerTest()
-      : BaseGpuTracerTest(gfx::GPUTiming::kTimerTypeARB) {}
+  GpuARBTimerTracerTest() : BaseGpuTracerTest(gl::GPUTiming::kTimerTypeARB) {}
 };
 
 class GpuDisjointTimerTracerTest : public BaseGpuTracerTest {
  public:
   GpuDisjointTimerTracerTest()
-      : BaseGpuTracerTest(gfx::GPUTiming::kTimerTypeDisjoint) {}
+      : BaseGpuTracerTest(gl::GPUTiming::kTimerTypeDisjoint) {}
 };
 
 TEST_F(InvalidTimerTracerTest, InvalidTimerBasicTracerTest) {
@@ -778,9 +776,9 @@ TEST_F(GPUTracerTest, TraceDuringDecodeTest) {
 }
 
 TEST_F(GpuDisjointTimerTracerTest, MultipleClientsDisjointTest) {
-  scoped_refptr<gfx::GPUTimingClient> client1 =
+  scoped_refptr<gl::GPUTimingClient> client1 =
       GetGLContext()->CreateGPUTimingClient();
-  scoped_refptr<gfx::GPUTimingClient>  client2 =
+  scoped_refptr<gl::GPUTimingClient> client2 =
       GetGLContext()->CreateGPUTimingClient();
 
   // Test both clients are initialized as no errors.
@@ -801,7 +799,7 @@ TEST_F(GpuDisjointTimerTracerTest, MultipleClientsDisjointTest) {
   gl_fake_queries_.SetDisjoint();
 
   // Test new client disjoint value is cleared.
-  scoped_refptr<gfx::GPUTimingClient>  client3 =
+  scoped_refptr<gl::GPUTimingClient> client3 =
       GetGLContext()->CreateGPUTimingClient();
   ASSERT_TRUE(client1->CheckAndResetTimerErrors());
   ASSERT_TRUE(client2->CheckAndResetTimerErrors());

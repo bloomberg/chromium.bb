@@ -13,7 +13,7 @@ namespace gpu {
 
 class GpuChannelManager;
 
-class ChildWindowSurfaceWin : public gfx::NativeViewGLSurfaceEGL {
+class ChildWindowSurfaceWin : public gl::NativeViewGLSurfaceEGL {
  public:
   ChildWindowSurfaceWin(GpuChannelManager* manager, HWND parent_window);
 

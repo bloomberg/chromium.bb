@@ -11,7 +11,7 @@
 #include "base/move.h"
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 
 class SurfaceTexture;
 
@@ -63,6 +63,6 @@ class GL_EXPORT ScopedJavaSurface {
   base::android::ScopedJavaGlobalRef<jobject> j_surface_;
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_ANDROID_SCOPED_JAVA_SURFACE_H_

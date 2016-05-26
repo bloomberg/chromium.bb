@@ -11,17 +11,17 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/demo/renderer_base.h"
 
-namespace gfx {
+namespace gl {
 class GLContext;
 class GLSurface;
-}  // namespace gfx
+}  // namespace gl
 
 namespace ui {
 
 class GlRenderer : public RendererBase {
  public:
   GlRenderer(gfx::AcceleratedWidget widget,
-             const scoped_refptr<gfx::GLSurface>& surface,
+             const scoped_refptr<gl::GLSurface>& surface,
              const gfx::Size& size);
   ~GlRenderer() override;
 
@@ -32,8 +32,8 @@ class GlRenderer : public RendererBase {
   virtual void RenderFrame();
   virtual void PostRenderFrameTask(gfx::SwapResult result);
 
-  scoped_refptr<gfx::GLSurface> surface_;
-  scoped_refptr<gfx::GLContext> context_;
+  scoped_refptr<gl::GLSurface> surface_;
+  scoped_refptr<gl::GLContext> context_;
 
  private:
   base::WeakPtrFactory<GlRenderer> weak_ptr_factory_;

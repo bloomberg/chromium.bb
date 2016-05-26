@@ -77,7 +77,7 @@ std::unique_ptr<CommandBufferProxyImpl> CommandBufferProxyImpl::Create(
     gpu::GpuStreamPriority stream_priority,
     const gpu::gles2::ContextCreationAttribHelper& attribs,
     const GURL& active_url,
-    gfx::GpuPreference gpu_preference,
+    gl::GpuPreference gpu_preference,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(!share_group || (stream_id == share_group->stream_id_));
   TRACE_EVENT1("gpu", "GpuChannelHost::CreateViewCommandBuffer",

@@ -4,7 +4,7 @@
 
 #include "ui/gl/gl_state_restorer.h"
 
-namespace gfx {
+namespace gl {
 
 GLStateRestorer::GLStateRestorer() {
 }
@@ -12,5 +12,4 @@ GLStateRestorer::GLStateRestorer() {
 GLStateRestorer::~GLStateRestorer() {
 }
 
-}  // namespace gfx
-
+}  // namespace gl

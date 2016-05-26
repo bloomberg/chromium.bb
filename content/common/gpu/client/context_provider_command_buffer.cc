@@ -59,7 +59,7 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     gpu::GpuStreamPriority stream_priority,
     gpu::SurfaceHandle surface_handle,
     const GURL& active_url,
-    gfx::GpuPreference gpu_preference,
+    gl::GpuPreference gpu_preference,
     bool automatic_flushes,
     bool support_locking,
     const gpu::SharedMemoryLimits& memory_limits,

@@ -385,10 +385,10 @@ base::win::ScopedComPtr<T> QueryDeviceObjectFromANGLE(int object_type) {
 
   {
     TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. GetHardwareDisplay");
-    egl_display = gfx::GLSurfaceEGL::GetHardwareDisplay();
+    egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
   }
 
-  RETURN_ON_FAILURE(gfx::GLSurfaceEGL::HasEGLExtension("EGL_EXT_device_query"),
+  RETURN_ON_FAILURE(gl::GLSurfaceEGL::HasEGLExtension("EGL_EXT_device_query"),
                     "EGL_EXT_device_query missing", device_object);
 
   PFNEGLQUERYDISPLAYATTRIBEXTPROC QueryDisplayAttribEXT = nullptr;
@@ -665,11 +665,11 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
   }
 
   RETURN_AND_NOTIFY_ON_FAILURE(
-      gfx::g_driver_egl.ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle,
+      gl::g_driver_egl.ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle,
       "EGL_ANGLE_surface_d3d_texture_2d_share_handle unavailable",
       PLATFORM_FAILURE, false);
 
-  RETURN_AND_NOTIFY_ON_FAILURE(gfx::GLFence::IsSupported(),
+  RETURN_AND_NOTIFY_ON_FAILURE(gl::GLFence::IsSupported(),
                                "GL fences are unsupported", PLATFORM_FAILURE,
                                false);
 
@@ -995,7 +995,7 @@ void DXVAVideoDecodeAccelerator::WaitForOutputBuffer(int32_t picture_buffer_id,
   DCHECK(!picture_buffer->available());
   DCHECK(picture_buffer->waiting_to_reuse());
 
-  gfx::GLFence* fence = picture_buffer->reuse_fence();
+  gl::GLFence* fence = picture_buffer->reuse_fence();
   RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
                                "Failed to make context current",
                                PLATFORM_FAILURE, );
@@ -1427,7 +1427,7 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(media::VideoCodecProfile profile) {
     RETURN_ON_HR_FAILURE(hr, "Failed to pass D3D manager to decoder", false);
   }
 
-  EGLDisplay egl_display = gfx::GLSurfaceEGL::GetHardwareDisplay();
+  EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
 
   EGLint config_attribs[] = {EGL_BUFFER_SIZE,  32,
                              EGL_RED_SIZE,     8,
@@ -1483,13 +1483,13 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
   }
 
   use_keyed_mutex_ =
-      use_dx11_ && gfx::GLSurfaceEGL::HasEGLExtension("EGL_ANGLE_keyed_mutex");
+      use_dx11_ && gl::GLSurfaceEGL::HasEGLExtension("EGL_ANGLE_keyed_mutex");
 
   if (!use_dx11_ ||
-      !gfx::g_driver_egl.ext.b_EGL_ANGLE_stream_producer_d3d_texture_nv12 ||
-      !gfx::g_driver_egl.ext.b_EGL_KHR_stream ||
-      !gfx::g_driver_egl.ext.b_EGL_KHR_stream_consumer_gltexture ||
-      !gfx::g_driver_egl.ext.b_EGL_NV_stream_consumer_gltexture_yuv) {
+      !gl::g_driver_egl.ext.b_EGL_ANGLE_stream_producer_d3d_texture_nv12 ||
+      !gl::g_driver_egl.ext.b_EGL_KHR_stream ||
+      !gl::g_driver_egl.ext.b_EGL_KHR_stream_consumer_gltexture ||
+      !gl::g_driver_egl.ext.b_EGL_NV_stream_consumer_gltexture_yuv) {
     share_nv12_textures_ = false;
   }
 

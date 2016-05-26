@@ -53,7 +53,7 @@ class DXVAPictureBuffer {
   gfx::Size size() const { return picture_buffer_.size(); }
 
   virtual bool waiting_to_reuse() const;
-  virtual gfx::GLFence* reuse_fence();
+  virtual gl::GLFence* reuse_fence();
 
   // Called when the source surface |src_surface| is copied to the destination
   // |dest_surface|
@@ -88,7 +88,7 @@ class PbufferPictureBuffer : public DXVAPictureBuffer {
                                            ID3D11Texture2D* dx11_texture,
                                            int input_buffer_id) override;
   bool waiting_to_reuse() const override;
-  gfx::GLFence* reuse_fence() override;
+  gl::GLFence* reuse_fence() override;
   bool CopySurfaceComplete(IDirect3DSurface9* src_surface,
                            IDirect3DSurface9* dest_surface) override;
 
@@ -98,7 +98,7 @@ class PbufferPictureBuffer : public DXVAPictureBuffer {
   bool waiting_to_reuse_;
   EGLSurface decoding_surface_;
 
-  std::unique_ptr<gfx::GLFence> reuse_fence_;
+  std::unique_ptr<gl::GLFence> reuse_fence_;
 
   HANDLE texture_share_handle_;
   base::win::ScopedComPtr<IDirect3DTexture9> decoding_texture_;

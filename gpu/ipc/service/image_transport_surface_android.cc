@@ -13,13 +13,13 @@
 namespace gpu {
 
 // static
-scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
+scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
     SurfaceHandle surface_handle,
-    gfx::GLSurface::Format format) {
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationMockGL)
-    return new gfx::GLSurfaceStub;
+    gl::GLSurface::Format format) {
+  if (gl::GetGLImplementation() == gl::kGLImplementationMockGL)
+    return new gl::GLSurfaceStub;
   DCHECK(GpuSurfaceLookup::GetInstance());
   DCHECK_NE(surface_handle, kNullSurfaceHandle);
   // On Android, the surface_handle is the id of the surface in the
@@ -30,14 +30,13 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     LOG(WARNING) << "Failed to acquire native widget.";
     return nullptr;
   }
-  scoped_refptr<gfx::GLSurface> surface =
-      new gfx::NativeViewGLSurfaceEGL(window);
+  scoped_refptr<gl::GLSurface> surface = new gl::NativeViewGLSurfaceEGL(window);
   bool initialize_success = surface->Initialize(format);
   ANativeWindow_release(window);
   if (!initialize_success)
-    return scoped_refptr<gfx::GLSurface>();
+    return scoped_refptr<gl::GLSurface>();
 
-  return scoped_refptr<gfx::GLSurface>(
+  return scoped_refptr<gl::GLSurface>(
       new PassThroughImageTransportSurface(manager, stub, surface.get()));
 }
 

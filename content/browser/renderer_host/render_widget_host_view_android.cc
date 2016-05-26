@@ -189,7 +189,7 @@ void GLHelperHolder::Initialize() {
   provider_ = new ContextProviderCommandBuffer(
       std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
       gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle, url,
-      gfx::PreferIntegratedGpu, automatic_flushes, support_locking, limits,
+      gl::PreferIntegratedGpu, automatic_flushes, support_locking, limits,
       attributes, nullptr,
       command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   if (!provider_->BindToCurrentThread())

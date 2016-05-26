@@ -20,7 +20,7 @@ class CONTENT_EXPORT BrowserSurfaceTextureManager
   // Overridden from SurfaceTextureManager:
   void RegisterSurfaceTexture(int surface_texture_id,
                               int client_id,
-                              gfx::SurfaceTexture* surface_texture) override;
+                              gl::SurfaceTexture* surface_texture) override;
   void UnregisterSurfaceTexture(int surface_texture_id, int client_id) override;
   gfx::AcceleratedWidget AcquireNativeWidgetForSurfaceTexture(
       int surface_texture_id) override;

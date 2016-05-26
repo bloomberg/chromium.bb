@@ -34,11 +34,11 @@ class MEDIA_GPU_EXPORT AndroidCopyingBackingStrategy
   ~AndroidCopyingBackingStrategy() override;
 
   // AndroidVideoDecodeAccelerator::BackingStrategy
-  gfx::ScopedJavaSurface Initialize(int surface_view_id) override;
+  gl::ScopedJavaSurface Initialize(int surface_view_id) override;
   void Cleanup(
       bool have_context,
       const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) override;
-  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture() const override;
+  scoped_refptr<gl::SurfaceTexture> GetSurfaceTexture() const override;
   uint32_t GetTextureTarget() const override;
   gfx::Size GetPictureBufferSize() const override;
   void UseCodecBufferForPictureBuffer(
@@ -57,7 +57,7 @@ class MEDIA_GPU_EXPORT AndroidCopyingBackingStrategy
   AVDAStateProvider* state_provider_;
 
   // A container of texture. Used to set a texture to |media_codec_|.
-  scoped_refptr<gfx::SurfaceTexture> surface_texture_;
+  scoped_refptr<gl::SurfaceTexture> surface_texture_;
 
   // The texture id which is set to |surface_texture_|.
   uint32_t surface_texture_id_;

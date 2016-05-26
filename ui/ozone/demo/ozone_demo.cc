@@ -43,8 +43,8 @@ const char kWindowSize[] = "window-size";
 
 class DemoWindow;
 
-scoped_refptr<gfx::GLSurface> CreateGLSurface(gfx::AcceleratedWidget widget) {
-  scoped_refptr<gfx::GLSurface> surface;
+scoped_refptr<gl::GLSurface> CreateGLSurface(gfx::AcceleratedWidget widget) {
+  scoped_refptr<gl::GLSurface> surface;
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableSurfaceless))
     surface = gl::init::CreateSurfacelessViewGLSurface(widget);
   if (!surface)
@@ -214,7 +214,7 @@ std::unique_ptr<ui::Renderer> RendererFactory::CreateRenderer(
     const gfx::Size& size) {
   switch (type_) {
     case GL: {
-      scoped_refptr<gfx::GLSurface> surface = CreateGLSurface(widget);
+      scoped_refptr<gl::GLSurface> surface = CreateGLSurface(widget);
       if (!surface)
         LOG(FATAL) << "Failed to create GL surface";
       if (surface->IsSurfaceless())

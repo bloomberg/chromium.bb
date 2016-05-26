@@ -221,7 +221,7 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
     group_->LoseContexts(reason);
   }
 
-  ::testing::StrictMock< ::gfx::MockGLInterface>* GetGLMock() const {
+  ::testing::StrictMock<::gl::MockGLInterface>* GetGLMock() const {
     return gl_.get();
   }
 
@@ -622,8 +622,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
   static const char* kOutputVariable1NameESSL3;
 
   // Use StrictMock to make 100% sure we know how GL will be called.
-  std::unique_ptr<::testing::StrictMock<::gfx::MockGLInterface>> gl_;
-  scoped_refptr<gfx::GLSurfaceStub> surface_;
+  std::unique_ptr<::testing::StrictMock<::gl::MockGLInterface>> gl_;
+  scoped_refptr<gl::GLSurfaceStub> surface_;
   scoped_refptr<GLContextMock> context_;
   std::unique_ptr<MockGLES2Decoder> mock_decoder_;
   std::unique_ptr<GLES2Decoder> decoder_;

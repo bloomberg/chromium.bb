@@ -9,7 +9,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 
 class GLContext;
 
@@ -54,7 +54,7 @@ class GL_EXPORT TraceOSMESAApi : public OSMESAApi {
   OSMESAApi* osmesa_api_;
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_OSMESA_API_IMPLEMENTATION_H_
 

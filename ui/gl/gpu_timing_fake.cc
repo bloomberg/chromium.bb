@@ -8,7 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_mock.h"
 
-namespace gfx {
+namespace gl {
 
 using ::testing::_;
 using ::testing::AtLeast;
@@ -295,4 +295,4 @@ GLenum GPUTimingFake::FakeGLGetError() {
   return GL_NO_ERROR;
 }
 
-}  // namespace gfx
+}  // namespace gl

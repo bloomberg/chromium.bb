@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 
 struct GL_EXPORT GLVersionInfo {
   GLVersionInfo(const char* version_str, const char* renderer_str,
@@ -72,6 +72,6 @@ struct GL_EXPORT GLVersionInfo {
   DISALLOW_COPY_AND_ASSIGN(GLVersionInfo);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif // UI_GL_GL_VERSION_INFO_H_

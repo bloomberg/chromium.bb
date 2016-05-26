@@ -1632,12 +1632,12 @@ void Texture::SetUnownedServiceId(GLuint service_id) {
   if (service_id_ != new_service_id) {
     service_id_ = new_service_id;
     IncrementManagerServiceIdGeneration();
-    if (gfx::GLContext* context = gfx::GLContext::GetCurrent()) {
+    if (gl::GLContext* context = gl::GLContext::GetCurrent()) {
       // It would be preferable to pass in the decoder, and ask it to do this
       // instead.  However, there are several cases, such as TextureDefinition,
       // that show up without a clear context owner.  So, instead, we use the
       // current state's state restorer.
-      if (gfx::GLStateRestorer* restorer = context->GetGLStateRestorer())
+      if (gl::GLStateRestorer* restorer = context->GetGLStateRestorer())
         restorer->RestoreAllExternalTextureBindingsIfNeeded();
     }
   }
@@ -2843,7 +2843,7 @@ GLenum TextureManager::AdjustTexInternalFormat(GLenum format) const {
 GLenum TextureManager::AdjustTexFormat(GLenum format) const {
   // TODO(bajones): GLES 3 allows for internal format and format to differ.
   // This logic may need to change as a result.
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationDesktopGL) {
+  if (gl::GetGLImplementation() == gl::kGLImplementationDesktopGL) {
     if (format == GL_SRGB_EXT)
       return GL_RGB;
     if (format == GL_SRGB_ALPHA_EXT)
@@ -3025,7 +3025,7 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
 
   // Add the |client_guid| which expresses shared ownership with the client
   // process.
-  auto client_guid = gfx::GetGLTextureClientGUIDForTracing(
+  auto client_guid = gl::GetGLTextureClientGUIDForTracing(
       memory_tracker_->ShareGroupTracingGUID(), ref->client_id());
   pmd->CreateSharedGlobalAllocatorDump(client_guid);
   pmd->AddOwnershipEdge(dump->guid(), client_guid);
@@ -3034,7 +3034,7 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
   // |client_guid|s.
   // TODO(ericrk): May need to ensure uniqueness using GLShareGroup and
   // potentially cross-share-group sharing via EGLImages. crbug.com/512534
-  auto service_guid = gfx::GetGLTextureServiceGUIDForTracing(
+  auto service_guid = gl::GetGLTextureServiceGUIDForTracing(
       memory_tracker_->ShareGroupTracingGUID(), ref->texture()->service_id());
   pmd->CreateSharedGlobalAllocatorDump(service_guid);
 

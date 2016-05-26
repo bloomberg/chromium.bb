@@ -6,16 +6,16 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 
-class GL_EXPORT VSyncProviderWin : public VSyncProvider {
+class GL_EXPORT VSyncProviderWin : public gfx::VSyncProvider {
  public:
   explicit VSyncProviderWin(gfx::AcceleratedWidget window);
   ~VSyncProviderWin() override;
 
   static void InitializeOneOff();
 
-  // VSyncProvider overrides;
+  // gfx::VSyncProvider overrides;
   void GetVSyncParameters(const UpdateVSyncCallback& callback) override;
 
  private:
@@ -24,4 +24,4 @@ class GL_EXPORT VSyncProviderWin : public VSyncProvider {
   DISALLOW_COPY_AND_ASSIGN(VSyncProviderWin);
 };
 
-}  // namespace gfx
+}  // namespace gl

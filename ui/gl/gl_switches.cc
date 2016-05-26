@@ -5,7 +5,7 @@
 #include "base/macros.h"
 #include "ui/gl/gl_switches.h"
 
-namespace gfx {
+namespace gl {
 
 const char kGLImplementationDesktopName[]     = "desktop";
 const char kGLImplementationOSMesaName[]      = "osmesa";
@@ -21,7 +21,7 @@ const char kANGLEImplementationD3D11Name[]    = "d3d11";
 const char kANGLEImplementationOpenGLName[]   = "gl";
 const char kANGLEImplementationOpenGLESName[] = "gles";
 
-}  // namespace gfx
+}  // namespace gl
 
 namespace switches {
 

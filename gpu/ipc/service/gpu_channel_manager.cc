@@ -58,7 +58,7 @@ GpuChannelManager::GpuChannelManager(
       delegate_(delegate),
       watchdog_(watchdog),
       shutdown_event_(shutdown_event),
-      share_group_(new gfx::GLShareGroup),
+      share_group_(new gl::GLShareGroup),
       mailbox_manager_(gles2::MailboxManager::Create(gpu_preferences)),
       gpu_memory_manager_(this),
       sync_point_manager_(sync_point_manager),
@@ -84,8 +84,8 @@ GpuChannelManager::~GpuChannelManager() {
 
 gles2::ProgramCache* GpuChannelManager::program_cache() {
   if (!program_cache_.get() &&
-      (gfx::g_driver_gl.ext.b_GL_ARB_get_program_binary ||
-       gfx::g_driver_gl.ext.b_GL_OES_get_program_binary) &&
+      (gl::g_driver_gl.ext.b_GL_ARB_get_program_binary ||
+       gl::g_driver_gl.ext.b_GL_OES_get_program_binary) &&
       !gpu_preferences_.disable_gpu_program_cache) {
     program_cache_.reset(new gles2::MemoryProgramCache(
           gpu_preferences_.gpu_program_cache_size,
@@ -232,7 +232,7 @@ void GpuChannelManager::DestroyAllChannels() {
   gpu_channels_.clear();
 }
 
-gfx::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
+gl::GLSurface* GpuChannelManager::GetDefaultOffscreenSurface() {
   if (!default_offscreen_surface_.get()) {
     default_offscreen_surface_ =
         gl::init::CreateOffscreenGLSurface(gfx::Size());

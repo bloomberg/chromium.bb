@@ -128,8 +128,8 @@ void GetShaderPrecisionFormatImpl(GLenum shader_type,
       break;
   }
 
-  if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2 &&
-      gfx::g_driver_gl.fn.glGetShaderPrecisionFormatFn) {
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2 &&
+      gl::g_driver_gl.fn.glGetShaderPrecisionFormatFn) {
     // This function is sometimes defined even though it's really just
     // a stub, so we need to set range and precision as if it weren't
     // defined before calling it.
@@ -515,12 +515,9 @@ class BackFramebuffer {
 };
 
 struct FenceCallback {
-  FenceCallback()
-      : fence(gfx::GLFence::Create()) {
-    DCHECK(fence);
-  }
+  FenceCallback() : fence(gl::GLFence::Create()) { DCHECK(fence); }
   std::vector<base::Closure> callbacks;
-  std::unique_ptr<gfx::GLFence> fence;
+  std::unique_ptr<gl::GLFence> fence;
 };
 
 // }  // anonymous namespace.
@@ -580,14 +577,14 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   const char* GetCommandName(unsigned int command_id) const override;
 
   // Overridden from GLES2Decoder.
-  bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
-                  const scoped_refptr<gfx::GLContext>& context,
+  bool Initialize(const scoped_refptr<gl::GLSurface>& surface,
+                  const scoped_refptr<gl::GLContext>& context,
                   bool offscreen,
                   const gfx::Size& offscreen_size,
                   const DisallowedFeatures& disallowed_features,
                   const ContextCreationAttribHelper& attrib_helper) override;
   void Destroy(bool have_context) override;
-  void SetSurface(const scoped_refptr<gfx::GLSurface>& surface) override;
+  void SetSurface(const scoped_refptr<gl::GLSurface>& surface) override;
   void ReleaseSurface() override;
   void TakeFrontBuffer(const Mailbox& mailbox) override;
   void ReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) override;
@@ -595,7 +592,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void UpdateParentTextureInfo();
   bool MakeCurrent() override;
   GLES2Util* GetGLES2Util() override { return &util_; }
-  gfx::GLContext* GetGLContext() override { return context_.get(); }
+  gl::GLContext* GetGLContext() override { return context_.get(); }
   ContextGroup* GetContextGroup() override { return group_.get(); }
   Capabilities GetCapabilities() override;
   void RestoreState(const ContextState* prev_state) override;
@@ -2002,8 +1999,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   #undef GLES2_CMD_OP
 
   // The GL context this decoder renders to on behalf of the client.
-  scoped_refptr<gfx::GLSurface> surface_;
-  scoped_refptr<gfx::GLContext> context_;
+  scoped_refptr<gl::GLSurface> surface_;
+  scoped_refptr<gl::GLContext> context_;
 
   // The ContextGroup for this decoder uses to track resources.
   scoped_refptr<ContextGroup> group_;
@@ -2755,8 +2752,8 @@ GLES2DecoderImpl::~GLES2DecoderImpl() {
 }
 
 bool GLES2DecoderImpl::Initialize(
-    const scoped_refptr<gfx::GLSurface>& surface,
-    const scoped_refptr<gfx::GLContext>& context,
+    const scoped_refptr<gl::GLSurface>& surface,
+    const scoped_refptr<gl::GLContext>& context,
     bool offscreen,
     const gfx::Size& offscreen_size,
     const DisallowedFeatures& disallowed_features,
@@ -2930,7 +2927,7 @@ bool GLES2DecoderImpl::Initialize(
     }
     offscreen_target_buffer_preserved_ = attrib_helper.buffer_preserved;
 
-    if (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2) {
+    if (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2) {
       const bool rgb8_supported =
           context_->HasExtension("GL_OES_rgb8_rgba8");
       // The only available default render buffer formats in GLES2 have very
@@ -4377,8 +4374,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
 #endif
 }
 
-void GLES2DecoderImpl::SetSurface(
-    const scoped_refptr<gfx::GLSurface>& surface) {
+void GLES2DecoderImpl::SetSurface(const scoped_refptr<gl::GLSurface>& surface) {
   DCHECK(context_->IsCurrent(NULL));
   DCHECK(surface);
   surface_ = surface;
@@ -5668,7 +5664,7 @@ bool GLES2DecoderImpl::GetHelper(
       break;
   }
 
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+  if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2) {
     switch (pname) {
       case GL_MAX_FRAGMENT_UNIFORM_VECTORS:
         *num_written = 1;
@@ -13151,11 +13147,10 @@ void GLES2DecoderImpl::DoSwapBuffers() {
 
   int this_frame_number = frame_number_++;
   // TRACE_EVENT for gpu tests:
-  TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffersLatency",
-                       TRACE_EVENT_SCOPE_THREAD,
-                       "GLImpl", static_cast<int>(gfx::GetGLImplementation()),
-                       "width", (is_offscreen ? offscreen_size_.width() :
-                                 surface_->GetSize().width()));
+  TRACE_EVENT_INSTANT2(
+      "test_gpu", "SwapBuffersLatency", TRACE_EVENT_SCOPE_THREAD, "GLImpl",
+      static_cast<int>(gl::GetGLImplementation()), "width",
+      (is_offscreen ? offscreen_size_.width() : surface_->GetSize().width()));
   TRACE_EVENT2("gpu", "GLES2DecoderImpl::DoSwapBuffers",
                "offscreen", is_offscreen,
                "frame", this_frame_number);
@@ -14083,7 +14078,7 @@ void GLES2DecoderImpl::DoTexImageIOSurface2DCHROMIUM(
     GLenum target, GLsizei width, GLsizei height,
     GLuint io_surface_id, GLuint plane) {
 #if defined(OS_MACOSX)
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL) {
+  if (gl::GetGLImplementation() != gl::kGLImplementationDesktopGL) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
         "glTexImageIOSurface2DCHROMIUM", "only supported on desktop GL.");

@@ -11,7 +11,7 @@
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_decode_accelerator.h"
 
-namespace gfx {
+namespace gl {
 class SurfaceTexture;
 }
 

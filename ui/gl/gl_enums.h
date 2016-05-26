@@ -12,7 +12,7 @@
 
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 
 class GL_EXPORT GLEnums {
  public:
@@ -30,7 +30,7 @@ class GL_EXPORT GLEnums {
   static const size_t enum_to_string_table_len_;
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_ENUMS_H_
 

@@ -392,7 +392,7 @@ typedef uint64_t EGLuint64CHROMIUM;
 #include "gl_bindings_autogen_glx.h"
 #endif
 
-namespace gfx {
+namespace gl {
 
 struct GL_EXPORT DriverGL {
   void InitializeStaticBindings();
@@ -499,6 +499,6 @@ GL_EXPORT extern GLXApi* g_current_glx_context;
 GL_EXPORT extern DriverGLX g_driver_glx;
 #endif
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_BINDINGS_H_

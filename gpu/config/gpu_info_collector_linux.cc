@@ -176,7 +176,7 @@ CollectInfoResult CollectContextGraphicsInfo(GPUInfo* gpu_info) {
     // TODO(zmo): need to consider the case where we are running on top
     // of desktop GL and GL_ARB_robustness extension is available.
     gpu_info->can_lose_context =
-        (gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2);
+        (gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2);
 #endif
   }
 

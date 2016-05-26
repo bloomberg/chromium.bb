@@ -499,7 +499,7 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
       return false;
     }
 
-    if (!gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync) {
+    if (!gl::g_driver_egl.ext.b_EGL_KHR_fence_sync) {
       LOG(ERROR) << "Initialize(): context does not have EGL_KHR_fence_sync";
       return false;
     }
@@ -1595,14 +1595,14 @@ void V4L2SliceVideoDecodeAccelerator::CreateEGLImageFor(
     return;
   }
 
-  gfx::GLContext* gl_context = get_gl_context_cb_.Run();
+  gl::GLContext* gl_context = get_gl_context_cb_.Run();
   if (!gl_context || !make_context_current_cb_.Run()) {
     DLOG(ERROR) << "No GL context";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
 
-  gfx::ScopedTextureBinder bind_restore(GL_TEXTURE_EXTERNAL_OES, 0);
+  gl::ScopedTextureBinder bind_restore(GL_TEXTURE_EXTERNAL_OES, 0);
 
   EGLImageKHR egl_image =
       device_->CreateEGLImage(egl_display_, gl_context->GetHandle(), texture_id,

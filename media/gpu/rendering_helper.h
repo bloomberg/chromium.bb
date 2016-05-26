@@ -136,7 +136,7 @@ class RenderingHelper {
   void* GetGLDisplay();
 
   // Get the GL context.
-  gfx::GLContext* GetGLContext();
+  gl::GLContext* GetGLContext();
 
   // Get rendered thumbnails as RGB.
   // Sets alpha_solid to true if the alpha channel is entirely 0xff.
@@ -188,8 +188,8 @@ class RenderingHelper {
 
   base::MessageLoop* message_loop_;
 
-  scoped_refptr<gfx::GLContext> gl_context_;
-  scoped_refptr<gfx::GLSurface> gl_surface_;
+  scoped_refptr<gl::GLContext> gl_context_;
+  scoped_refptr<gl::GLSurface> gl_surface_;
 
 #if defined(USE_OZONE)
   class StubOzoneDelegate;

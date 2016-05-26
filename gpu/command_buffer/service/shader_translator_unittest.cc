@@ -16,7 +16,7 @@ class ShaderTranslatorTest : public testing::Test {
   ShaderTranslatorTest() {
     shader_output_language_ =
         ShaderTranslator::GetShaderOutputLanguageForContext(
-            gfx::GLVersionInfo("2.0", "", ""));
+            gl::GLVersionInfo("2.0", "", ""));
   }
 
   ~ShaderTranslatorTest() override {}
@@ -55,7 +55,7 @@ class ES3ShaderTranslatorTest : public testing::Test {
   ES3ShaderTranslatorTest() {
     shader_output_language_ =
         ShaderTranslator::GetShaderOutputLanguageForContext(
-            gfx::GLVersionInfo("3.0", "", ""));
+            gl::GLVersionInfo("3.0", "", ""));
   }
 
   ~ES3ShaderTranslatorTest() override {}
@@ -527,8 +527,7 @@ TEST_P(ShaderTranslatorOutputVersionTest, HasCorrectOutputGLSLVersion) {
       "  gl_Position = vPosition;\n"
       "}";
 
-  gfx::GLVersionInfo output_context_version(testing::get<0>(GetParam()), "",
-                                            "");
+  gl::GLVersionInfo output_context_version(testing::get<0>(GetParam()), "", "");
 
   scoped_refptr<ShaderTranslator> translator = new ShaderTranslator();
   ShBuiltInResources resources;

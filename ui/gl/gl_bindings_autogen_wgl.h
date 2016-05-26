@@ -11,7 +11,7 @@
 #ifndef UI_GL_GL_BINDINGS_AUTOGEN_WGL_H_
 #define UI_GL_GL_BINDINGS_AUTOGEN_WGL_H_
 
-namespace gfx {
+namespace gl {
 
 class GLContext;
 
@@ -116,32 +116,30 @@ class GL_EXPORT WGLApi {
   virtual BOOL wglSwapLayerBuffersFn(HDC hdc, UINT fuPlanes) = 0;
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #define wglChoosePixelFormatARB \
-  ::gfx::g_current_wgl_context->wglChoosePixelFormatARBFn
-#define wglCopyContext ::gfx::g_current_wgl_context->wglCopyContextFn
-#define wglCreateContext ::gfx::g_current_wgl_context->wglCreateContextFn
+  ::gl::g_current_wgl_context->wglChoosePixelFormatARBFn
+#define wglCopyContext ::gl::g_current_wgl_context->wglCopyContextFn
+#define wglCreateContext ::gl::g_current_wgl_context->wglCreateContextFn
 #define wglCreateLayerContext \
-  ::gfx::g_current_wgl_context->wglCreateLayerContextFn
-#define wglCreatePbufferARB ::gfx::g_current_wgl_context->wglCreatePbufferARBFn
-#define wglDeleteContext ::gfx::g_current_wgl_context->wglDeleteContextFn
-#define wglDestroyPbufferARB \
-  ::gfx::g_current_wgl_context->wglDestroyPbufferARBFn
-#define wglGetCurrentContext \
-  ::gfx::g_current_wgl_context->wglGetCurrentContextFn
-#define wglGetCurrentDC ::gfx::g_current_wgl_context->wglGetCurrentDCFn
+  ::gl::g_current_wgl_context->wglCreateLayerContextFn
+#define wglCreatePbufferARB ::gl::g_current_wgl_context->wglCreatePbufferARBFn
+#define wglDeleteContext ::gl::g_current_wgl_context->wglDeleteContextFn
+#define wglDestroyPbufferARB ::gl::g_current_wgl_context->wglDestroyPbufferARBFn
+#define wglGetCurrentContext ::gl::g_current_wgl_context->wglGetCurrentContextFn
+#define wglGetCurrentDC ::gl::g_current_wgl_context->wglGetCurrentDCFn
 #define wglGetExtensionsStringARB \
-  ::gfx::g_current_wgl_context->wglGetExtensionsStringARBFn
+  ::gl::g_current_wgl_context->wglGetExtensionsStringARBFn
 #define wglGetExtensionsStringEXT \
-  ::gfx::g_current_wgl_context->wglGetExtensionsStringEXTFn
-#define wglGetPbufferDCARB ::gfx::g_current_wgl_context->wglGetPbufferDCARBFn
-#define wglMakeCurrent ::gfx::g_current_wgl_context->wglMakeCurrentFn
-#define wglQueryPbufferARB ::gfx::g_current_wgl_context->wglQueryPbufferARBFn
+  ::gl::g_current_wgl_context->wglGetExtensionsStringEXTFn
+#define wglGetPbufferDCARB ::gl::g_current_wgl_context->wglGetPbufferDCARBFn
+#define wglMakeCurrent ::gl::g_current_wgl_context->wglMakeCurrentFn
+#define wglQueryPbufferARB ::gl::g_current_wgl_context->wglQueryPbufferARBFn
 #define wglReleasePbufferDCARB \
-  ::gfx::g_current_wgl_context->wglReleasePbufferDCARBFn
-#define wglShareLists ::gfx::g_current_wgl_context->wglShareListsFn
-#define wglSwapIntervalEXT ::gfx::g_current_wgl_context->wglSwapIntervalEXTFn
-#define wglSwapLayerBuffers ::gfx::g_current_wgl_context->wglSwapLayerBuffersFn
+  ::gl::g_current_wgl_context->wglReleasePbufferDCARBFn
+#define wglShareLists ::gl::g_current_wgl_context->wglShareListsFn
+#define wglSwapIntervalEXT ::gl::g_current_wgl_context->wglSwapIntervalEXTFn
+#define wglSwapLayerBuffers ::gl::g_current_wgl_context->wglSwapLayerBuffersFn
 
 #endif  //  UI_GL_GL_BINDINGS_AUTOGEN_WGL_H_

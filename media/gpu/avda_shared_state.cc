@@ -54,8 +54,8 @@ void AVDASharedState::WaitForFrameAvailable() {
 }
 
 void AVDASharedState::DidAttachSurfaceTexture() {
-  context_ = gfx::GLContext::GetCurrent();
-  surface_ = gfx::GLSurface::GetCurrent();
+  context_ = gl::GLContext::GetCurrent();
+  surface_ = gl::GLSurface::GetCurrent();
   DCHECK(context_);
   DCHECK(surface_);
 

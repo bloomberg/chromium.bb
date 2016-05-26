@@ -90,7 +90,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   static const SkColor kCSSBrown = 0xffa52a2a;
   static const SkColor kCSSGreen = 0xff008000;
 
-  gfx::DisableNullDrawGLBindings enable_pixel_output_;
+  gl::DisableNullDrawGLBindings enable_pixel_output_;
   std::unique_ptr<PixelComparator> pixel_comparator_;
   PixelTestType test_type_;
   scoped_refptr<Layer> content_root_;

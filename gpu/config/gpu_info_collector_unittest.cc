@@ -16,7 +16,7 @@
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
-using ::gfx::MockGLInterface;
+using ::gl::MockGLInterface;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::_;
@@ -51,10 +51,10 @@ class GPUInfoCollectorTest
 
   void SetUp() override {
     testing::Test::SetUp();
-    gfx::SetGLGetProcAddressProc(gfx::MockGLInterface::GetGLProcAddress);
-    gfx::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
-    gl_.reset(new ::testing::StrictMock< ::gfx::MockGLInterface>());
-    ::gfx::MockGLInterface::SetGLInterface(gl_.get());
+    gl::SetGLGetProcAddressProc(gl::MockGLInterface::GetGLProcAddress);
+    gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
+    gl_.reset(new ::testing::StrictMock<::gl::MockGLInterface>());
+    ::gl::MockGLInterface::SetGLInterface(gl_.get());
     switch (GetParam()) {
       case kMockedAndroid: {
         test_values_.gpu.vendor_id = 0;  // not implemented
@@ -133,7 +133,7 @@ class GPUInfoCollectorTest
             test_values_.gl_version.c_str())));
 
     // Now that that expectation is set up, we can call this helper function.
-    if (gfx::WillUseGLGetStringForExtensions()) {
+    if (gl::WillUseGLGetStringForExtensions()) {
       EXPECT_CALL(*gl_, GetString(GL_EXTENSIONS))
           .WillRepeatedly(Return(reinterpret_cast<const GLubyte*>(
               test_values_.gl_extensions.c_str())));
@@ -165,16 +165,16 @@ class GPUInfoCollectorTest
   }
 
   void TearDown() override {
-    ::gfx::MockGLInterface::SetGLInterface(NULL);
+    ::gl::MockGLInterface::SetGLInterface(NULL);
     gl_.reset();
-    gfx::ClearGLBindings();
+    gl::ClearGLBindings();
 
     testing::Test::TearDown();
   }
 
  public:
   // Use StrictMock to make 100% sure we know how GL will be called.
-  std::unique_ptr<::testing::StrictMock<::gfx::MockGLInterface>> gl_;
+  std::unique_ptr<::testing::StrictMock<::gl::MockGLInterface>> gl_;
   GPUInfo test_values_;
   const char* gl_shading_language_version_ = nullptr;
 

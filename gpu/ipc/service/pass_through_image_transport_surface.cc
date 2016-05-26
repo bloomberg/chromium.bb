@@ -19,14 +19,14 @@ namespace gpu {
 PassThroughImageTransportSurface::PassThroughImageTransportSurface(
     GpuChannelManager* /* manager */,
     GpuCommandBufferStub* stub,
-    gfx::GLSurface* surface)
+    gl::GLSurface* surface)
     : GLSurfaceAdapter(surface),
       stub_(stub->AsWeakPtr()),
       did_set_swap_interval_(false),
       weak_ptr_factory_(this) {}
 
 bool PassThroughImageTransportSurface::Initialize(
-    gfx::GLSurface::Format format) {
+    gl::GLSurface::Format format) {
   // The surface is assumed to have already been initialized.
   if (!stub_.get() || !stub_->decoder())
     return false;
@@ -43,7 +43,7 @@ void PassThroughImageTransportSurface::Destroy() {
 gfx::SwapResult PassThroughImageTransportSurface::SwapBuffers() {
   std::unique_ptr<std::vector<ui::LatencyInfo>> latency_info =
       StartSwapBuffers();
-  gfx::SwapResult result = gfx::GLSurfaceAdapter::SwapBuffers();
+  gfx::SwapResult result = gl::GLSurfaceAdapter::SwapBuffers();
   FinishSwapBuffers(std::move(latency_info), result);
   return result;
 }
@@ -57,7 +57,7 @@ void PassThroughImageTransportSurface::SwapBuffersAsync(
   // of this class. Callback will not be called once the instance of this class
   // is destroyed. However, this also means that the callback can be run on
   // the calling thread only.
-  gfx::GLSurfaceAdapter::SwapBuffersAsync(base::Bind(
+  gl::GLSurfaceAdapter::SwapBuffersAsync(base::Bind(
       &PassThroughImageTransportSurface::FinishSwapBuffersAsync,
       weak_ptr_factory_.GetWeakPtr(), base::Passed(&latency_info), callback));
 }
@@ -69,7 +69,7 @@ gfx::SwapResult PassThroughImageTransportSurface::PostSubBuffer(int x,
   std::unique_ptr<std::vector<ui::LatencyInfo>> latency_info =
       StartSwapBuffers();
   gfx::SwapResult result =
-      gfx::GLSurfaceAdapter::PostSubBuffer(x, y, width, height);
+      gl::GLSurfaceAdapter::PostSubBuffer(x, y, width, height);
   FinishSwapBuffers(std::move(latency_info), result);
   return result;
 }
@@ -82,7 +82,7 @@ void PassThroughImageTransportSurface::PostSubBufferAsync(
     const GLSurface::SwapCompletionCallback& callback) {
   std::unique_ptr<std::vector<ui::LatencyInfo>> latency_info =
       StartSwapBuffers();
-  gfx::GLSurfaceAdapter::PostSubBufferAsync(
+  gl::GLSurfaceAdapter::PostSubBufferAsync(
       x, y, width, height,
       base::Bind(&PassThroughImageTransportSurface::FinishSwapBuffersAsync,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&latency_info),
@@ -92,7 +92,7 @@ void PassThroughImageTransportSurface::PostSubBufferAsync(
 gfx::SwapResult PassThroughImageTransportSurface::CommitOverlayPlanes() {
   std::unique_ptr<std::vector<ui::LatencyInfo>> latency_info =
       StartSwapBuffers();
-  gfx::SwapResult result = gfx::GLSurfaceAdapter::CommitOverlayPlanes();
+  gfx::SwapResult result = gl::GLSurfaceAdapter::CommitOverlayPlanes();
   FinishSwapBuffers(std::move(latency_info), result);
   return result;
 }
@@ -101,12 +101,12 @@ void PassThroughImageTransportSurface::CommitOverlayPlanesAsync(
     const GLSurface::SwapCompletionCallback& callback) {
   std::unique_ptr<std::vector<ui::LatencyInfo>> latency_info =
       StartSwapBuffers();
-  gfx::GLSurfaceAdapter::CommitOverlayPlanesAsync(base::Bind(
+  gl::GLSurfaceAdapter::CommitOverlayPlanesAsync(base::Bind(
       &PassThroughImageTransportSurface::FinishSwapBuffersAsync,
       weak_ptr_factory_.GetWeakPtr(), base::Passed(&latency_info), callback));
 }
 
-bool PassThroughImageTransportSurface::OnMakeCurrent(gfx::GLContext* context) {
+bool PassThroughImageTransportSurface::OnMakeCurrent(gl::GLContext* context) {
   if (!did_set_swap_interval_) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableGpuVsync))

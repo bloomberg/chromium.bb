@@ -32,7 +32,7 @@ class ContentVideoView {
     // For receiving notififcations when the SurfaceView surface is created and
     // destroyed. When |surface.IsEmpty()| the surface was destroyed and
     // the client should not hold any references to it once this returns.
-    virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) = 0;
+    virtual void SetVideoSurface(gl::ScopedJavaSurface surface) = 0;
 
     // Called after the ContentVideoView has been hidden because we're exiting
     // fullscreen.

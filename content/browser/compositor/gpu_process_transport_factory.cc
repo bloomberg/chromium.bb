@@ -133,7 +133,7 @@ scoped_refptr<content::ContextProviderCommandBuffer> CreateContextCommon(
   return make_scoped_refptr(new content::ContextProviderCommandBuffer(
       std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
       gpu::GpuStreamPriority::NORMAL, surface_handle, url,
-      gfx::PreferIntegratedGpu, automatic_flushes, support_locking,
+      gl::PreferIntegratedGpu, automatic_flushes, support_locking,
       gpu::SharedMemoryLimits(), attributes, shared_context_provider, type));
 }
 

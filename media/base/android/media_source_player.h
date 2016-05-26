@@ -51,7 +51,7 @@ class MEDIA_EXPORT MediaSourcePlayer : public MediaPlayerAndroid,
   ~MediaSourcePlayer() override;
 
   // MediaPlayerAndroid implementation.
-  void SetVideoSurface(gfx::ScopedJavaSurface surface) override;
+  void SetVideoSurface(gl::ScopedJavaSurface surface) override;
   void Start() override;
   void Pause(bool is_media_related_action) override;
   void SeekTo(base::TimeDelta timestamp) override;

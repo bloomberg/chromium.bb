@@ -90,12 +90,12 @@ bool CommandBufferDriver::Initialize(
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size(0, 0));
   } else {
 #if defined(USE_OZONE)
-    scoped_refptr<gfx::GLSurface> underlying_surface =
+    scoped_refptr<gl::GLSurface> underlying_surface =
         gl::init::CreateSurfacelessViewGLSurface(widget_);
     if (!underlying_surface)
       underlying_surface = gl::init::CreateViewGLSurface(widget_);
 #else
-    scoped_refptr<gfx::GLSurface> underlying_surface =
+    scoped_refptr<gl::GLSurface> underlying_surface =
         gl::init::CreateViewGLSurface(widget_);
 #endif
     scoped_refptr<GLSurfaceAdapterMus> surface_adapter =
@@ -118,8 +118,8 @@ bool CommandBufferDriver::Initialize(
     return false;
 
   // TODO(piman): virtual contexts, gpu preference.
-  context_ = gl::init::CreateGLContext(
-      gpu_state_->share_group(), surface_.get(), gfx::PreferIntegratedGpu);
+  context_ = gl::init::CreateGLContext(gpu_state_->share_group(),
+                                       surface_.get(), gl::PreferIntegratedGpu);
   if (!context_.get())
     return false;
 
@@ -297,8 +297,8 @@ void CommandBufferDriver::CreateImageNativeOzone(int32_t id,
     return;
   }
 
-  scoped_refptr<gfx::GLImageOzoneNativePixmap> image =
-      new gfx::GLImageOzoneNativePixmap(size, internal_format);
+  scoped_refptr<gl::GLImageOzoneNativePixmap> image =
+      new gl::GLImageOzoneNativePixmap(size, internal_format);
   if (!image->Initialize(pixmap, format)) {
     NOTREACHED();
     return;

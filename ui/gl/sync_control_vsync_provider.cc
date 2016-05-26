@@ -23,9 +23,9 @@ const int64_t kMaxVsyncIntervalUs = base::Time::kMicrosecondsPerSecond / 10;
 const double kRelativeIntervalDifferenceThreshold = 0.05;
 #endif
 
-namespace gfx {
+namespace gl {
 
-SyncControlVSyncProvider::SyncControlVSyncProvider() : VSyncProvider() {
+SyncControlVSyncProvider::SyncControlVSyncProvider() : gfx::VSyncProvider() {
 #if defined(OS_LINUX)
   // On platforms where we can't get an accurate reading on the refresh
   // rate we fall back to the assumption that we're displaying 60 frames
@@ -158,4 +158,4 @@ void SyncControlVSyncProvider::GetVSyncParameters(
 #endif  // defined(OS_LINUX)
 }
 
-}  // namespace gfx
+}  // namespace gl

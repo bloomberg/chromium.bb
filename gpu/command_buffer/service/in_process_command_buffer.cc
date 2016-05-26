@@ -165,10 +165,9 @@ InProcessCommandBuffer::Service::gpu_driver_bug_workarounds() {
   return gpu_driver_bug_workarounds_;
 }
 
-scoped_refptr<gfx::GLShareGroup>
-InProcessCommandBuffer::Service::share_group() {
+scoped_refptr<gl::GLShareGroup> InProcessCommandBuffer::Service::share_group() {
   if (!share_group_.get())
-    share_group_ = new gfx::GLShareGroup;
+    share_group_ = new gl::GLShareGroup;
   return share_group_;
 }
 
@@ -182,8 +181,8 @@ InProcessCommandBuffer::Service::mailbox_manager() {
 
 gpu::gles2::ProgramCache* InProcessCommandBuffer::Service::program_cache() {
   if (!program_cache_.get() &&
-      (gfx::g_driver_gl.ext.b_GL_ARB_get_program_binary ||
-       gfx::g_driver_gl.ext.b_GL_OES_get_program_binary) &&
+      (gl::g_driver_gl.ext.b_GL_ARB_get_program_binary ||
+       gl::g_driver_gl.ext.b_GL_OES_get_program_binary) &&
       !gpu_preferences().disable_gpu_program_cache) {
     program_cache_.reset(new gpu::gles2::MemoryProgramCache(
           gpu_preferences().gpu_program_cache_size,
@@ -247,12 +246,12 @@ void InProcessCommandBuffer::PumpCommandsOnGpuThread() {
 }
 
 bool InProcessCommandBuffer::Initialize(
-    scoped_refptr<gfx::GLSurface> surface,
+    scoped_refptr<gl::GLSurface> surface,
     bool is_offscreen,
     gfx::AcceleratedWidget window,
     const gfx::Size& size,
     const gles2::ContextCreationAttribHelper& attribs,
-    gfx::GpuPreference gpu_preference,
+    gl::GpuPreference gpu_preference,
     InProcessCommandBuffer* share_group,
     GpuMemoryBufferManager* gpu_memory_buffer_manager,
     ImageFactory* image_factory) {

@@ -37,7 +37,7 @@ struct ScopedTypeRefTraits<CGLPixelFormatObj> {
 
 }  // namespace base
 
-namespace gfx {
+namespace gl {
 
 class GL_EXPORT ScopedCGLSetCurrentContext {
  public:
@@ -54,6 +54,6 @@ class GL_EXPORT ScopedCGLSetCurrentContext {
   DISALLOW_COPY_AND_ASSIGN(ScopedCGLSetCurrentContext);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_SCOPED_CGL_H_

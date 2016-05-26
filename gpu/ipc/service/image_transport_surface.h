@@ -32,11 +32,11 @@ class ImageTransportSurface {
   // Creates the appropriate native surface depending on the GL implementation.
   // This will be implemented separately by each platform. On failure, a null
   // scoped_refptr should be returned.
-  static scoped_refptr<gfx::GLSurface> CreateNativeSurface(
+  static scoped_refptr<gl::GLSurface> CreateNativeSurface(
       GpuChannelManager* manager,
       GpuCommandBufferStub* stub,
       SurfaceHandle surface_handle,
-      gfx::GLSurface::Format format);
+      gl::GLSurface::Format format);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageTransportSurface);

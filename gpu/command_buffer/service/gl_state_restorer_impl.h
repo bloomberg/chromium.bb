@@ -20,13 +20,13 @@ struct ContextState;
 }
 
 // This class implements a GLStateRestorer that forwards to a GLES2Decoder.
-class GPU_EXPORT GLStateRestorerImpl : public gfx::GLStateRestorer {
+class GPU_EXPORT GLStateRestorerImpl : public gl::GLStateRestorer {
  public:
    explicit GLStateRestorerImpl(base::WeakPtr<gles2::GLES2Decoder> decoder);
    ~GLStateRestorerImpl() override;
 
    bool IsInitialized() override;
-   void RestoreState(const gfx::GLStateRestorer* prev_state) override;
+   void RestoreState(const gl::GLStateRestorer* prev_state) override;
    void RestoreAllTextureUnitBindings() override;
    void RestoreActiveTextureUnitBinding(unsigned int target) override;
    void RestoreAllExternalTextureBindingsIfNeeded() override;

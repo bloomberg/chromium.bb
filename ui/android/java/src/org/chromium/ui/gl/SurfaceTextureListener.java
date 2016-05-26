@@ -11,7 +11,7 @@ import org.chromium.base.annotations.JNINamespace;
 /**
  * Listener to an android SurfaceTexture object for frame availability.
  */
-@JNINamespace("gfx")
+@JNINamespace("gl")
 class SurfaceTextureListener implements SurfaceTexture.OnFrameAvailableListener {
     // Used to determine the class instance to dispatch the native call to.
     private final long mNativeSurfaceTextureListener;

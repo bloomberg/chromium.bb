@@ -22,7 +22,7 @@
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/gpu_timing.h"
 
-namespace gfx {
+namespace gl {
 
 namespace {
 base::LazyInstance<base::ThreadLocalPointer<GLContext> >::Leaky
@@ -213,7 +213,7 @@ void GLContext::SetRealGLApi() {
 GLContextReal::GLContextReal(GLShareGroup* share_group)
     : GLContext(share_group) {}
 
-scoped_refptr<gfx::GPUTimingClient> GLContextReal::CreateGPUTimingClient() {
+scoped_refptr<gl::GPUTimingClient> GLContextReal::CreateGPUTimingClient() {
   if (!gpu_timing_) {
     gpu_timing_.reset(GPUTiming::CreateGPUTiming(this));
   }
@@ -230,4 +230,4 @@ void GLContextReal::SetCurrent(GLSurface* surface) {
   current_real_context_.Pointer()->Set(surface ? this : nullptr);
 }
 
-}  // namespace gfx
+}  // namespace gl

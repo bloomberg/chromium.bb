@@ -18,7 +18,7 @@ AshInteractiveUITestBase::AshInteractiveUITestBase() {}
 AshInteractiveUITestBase::~AshInteractiveUITestBase() {}
 
 void AshInteractiveUITestBase::SetUp() {
-  gfx::GLSurfaceTestSupport::InitializeOneOff();
+  gl::GLSurfaceTestSupport::InitializeOneOff();
 
   ui::RegisterPathProvider();
   ui::ResourceBundle::InitSharedInstanceWithLocale(

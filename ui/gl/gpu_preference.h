@@ -5,7 +5,7 @@
 #ifndef UI_GL_GPU_PREFERENCE_H_
 #define UI_GL_GPU_PREFERENCE_H_
 
-namespace gfx {
+namespace gl {
 
 // On dual-GPU systems, expresses a preference for using the integrated
 // or discrete GPU. On systems that have dual-GPU support (see
@@ -20,6 +20,6 @@ enum GpuPreference {
   GpuPreferenceLast = PreferDiscreteGpu
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GPU_PREFERENCE_H_

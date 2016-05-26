@@ -18,7 +18,7 @@
 #include "ui/gl/gl_osmesa_api_implementation.h"
 #include "ui/gl/gl_version_info.h"
 
-namespace gfx {
+namespace gl {
 
 static bool g_debugBindingsInitialized;
 DriverOSMESA g_driver_osmesa;
@@ -378,4 +378,4 @@ void TraceOSMESAApi::OSMesaPixelStoreFn(GLint pname, GLint value) {
   osmesa_api_->OSMesaPixelStoreFn(pname, value);
 }
 
-}  // namespace gfx
+}  // namespace gl

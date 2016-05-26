@@ -45,7 +45,7 @@ class YUVReadbackTest : public testing::Test {
         gfx::kNullAcceleratedWidget, /* window */
         gfx::Size(1, 1),             /* size */
         nullptr,                     /* share_context */
-        attributes, gfx::PreferDiscreteGpu, gpu::SharedMemoryLimits(),
+        attributes, gl::PreferDiscreteGpu, gpu::SharedMemoryLimits(),
         nullptr, /* gpu_memory_buffer_manager */
         nullptr /* image_factory */));
     gl_ = context_->GetImplementation();
@@ -472,7 +472,7 @@ class YUVReadbackTest : public testing::Test {
   std::unique_ptr<gpu::GLInProcessContext> context_;
   gpu::gles2::GLES2Interface* gl_;
   std::unique_ptr<display_compositor::GLHelper> helper_;
-  gfx::DisableNullDrawGLBindings enable_pixel_output_;
+  gl::DisableNullDrawGLBindings enable_pixel_output_;
   base::MessageLoop message_loop_;
 };
 

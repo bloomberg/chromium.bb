@@ -29,7 +29,7 @@ namespace {
 class WaitableEvent;
 }
 
-namespace gfx {
+namespace gl {
 class GLContext;
 class GLSurface;
 }

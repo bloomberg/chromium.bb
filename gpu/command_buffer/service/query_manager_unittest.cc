@@ -669,9 +669,9 @@ TEST_F(QueryManagerTest, TimeElapsedQuery) {
   const GLuint kClient1Id = 1;
   const GLenum kTarget = GL_TIME_ELAPSED_EXT;
   const base::subtle::Atomic32 kSubmitCount = 123;
-  gfx::GPUTimingFake fake_timing_queries;
+  gl::GPUTimingFake fake_timing_queries;
   decoder_->GetGLContext()->CreateGPUTimingClient()->SetCpuTimeForTesting(
-      base::Bind(&gfx::GPUTimingFake::GetFakeCPUTime));
+      base::Bind(&gl::GPUTimingFake::GetFakeCPUTime));
 
   QueryManager::Query* query = manager_->CreateQuery(
       kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
@@ -701,9 +701,9 @@ TEST_F(QueryManagerTest, TimeElapsedPauseResume) {
   const GLuint kClient1Id = 1;
   const GLenum kTarget = GL_TIME_ELAPSED_EXT;
   const base::subtle::Atomic32 kSubmitCount = 123;
-  gfx::GPUTimingFake fake_timing_queries;
+  gl::GPUTimingFake fake_timing_queries;
   decoder_->GetGLContext()->CreateGPUTimingClient()->SetCpuTimeForTesting(
-      base::Bind(&gfx::GPUTimingFake::GetFakeCPUTime));
+      base::Bind(&gl::GPUTimingFake::GetFakeCPUTime));
 
   QueryManager::Query* query = manager_->CreateQuery(
       kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
@@ -757,7 +757,7 @@ TEST_F(QueryManagerTest, TimeElapsedPauseResume) {
 TEST_F(QueryManagerManualSetupTest, TimeElapsedDisjoint) {
   GpuServiceTest::SetUpWithGLVersion("OpenGL ES 3.0",
                                      "GL_EXT_disjoint_timer_query");
-  gfx::GPUTimingFake fake_timing_queries;
+  gl::GPUTimingFake fake_timing_queries;
   fake_timing_queries.ExpectDisjointCalls(*gl_);
   SetUpMockGL("GL_EXT_disjoint_timer_query");
 
@@ -806,10 +806,10 @@ TEST_F(QueryManagerTest, TimeStampQuery) {
   const GLuint kClient1Id = 1;
   const GLenum kTarget = GL_TIMESTAMP_EXT;
   const base::subtle::Atomic32 kSubmitCount = 123;
-  gfx::GPUTimingFake fake_timing_queries;
+  gl::GPUTimingFake fake_timing_queries;
 
   decoder_->GetGLContext()->CreateGPUTimingClient()->SetCpuTimeForTesting(
-      base::Bind(&gfx::GPUTimingFake::GetFakeCPUTime));
+      base::Bind(&gl::GPUTimingFake::GetFakeCPUTime));
 
   QueryManager::Query* query = manager_->CreateQuery(
       kTarget, kClient1Id, kSharedMemoryId, kSharedMemoryOffset);
@@ -832,7 +832,7 @@ TEST_F(QueryManagerTest, TimeStampQuery) {
 TEST_F(QueryManagerManualSetupTest, TimeStampDisjoint) {
   GpuServiceTest::SetUpWithGLVersion("OpenGL ES 3.0",
                                      "GL_EXT_disjoint_timer_query");
-  gfx::GPUTimingFake fake_timing_queries;
+  gl::GPUTimingFake fake_timing_queries;
   fake_timing_queries.ExpectDisjointCalls(*gl_);
   SetUpMockGL("GL_EXT_disjoint_timer_query");
 
@@ -878,7 +878,7 @@ TEST_F(QueryManagerManualSetupTest, TimeStampDisjoint) {
 TEST_F(QueryManagerManualSetupTest, DisjointContinualTest) {
   GpuServiceTest::SetUpWithGLVersion("OpenGL ES 3.0",
                                      "GL_EXT_disjoint_timer_query");
-  gfx::GPUTimingFake fake_timing_queries;
+  gl::GPUTimingFake fake_timing_queries;
   fake_timing_queries.ExpectDisjointCalls(*gl_);
   SetUpMockGL("GL_EXT_disjoint_timer_query");
 

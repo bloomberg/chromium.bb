@@ -345,13 +345,13 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
   DVLOG(2) << "Initializing VAVDA, profile: " << profile;
 
 #if defined(USE_X11)
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGL) {
+  if (gl::GetGLImplementation() != gl::kGLImplementationDesktopGL) {
     DVLOG(1) << "HW video decode acceleration not available without "
                 "DesktopGL (GLX).";
     return false;
   }
 #elif defined(USE_OZONE)
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationEGLGLES2) {
+  if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2) {
     DVLOG(1) << "HW video decode acceleration not available without "
              << "EGLGLES2.";
     return false;

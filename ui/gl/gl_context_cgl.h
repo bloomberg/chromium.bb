@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "ui/gl/gl_context.h"
 
-namespace gfx {
+namespace gl {
 
 class GLSurface;
 
@@ -53,6 +53,6 @@ class GLContextCGL : public GLContextReal {
   DISALLOW_COPY_AND_ASSIGN(GLContextCGL);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_CONTEXT_CGL_H_

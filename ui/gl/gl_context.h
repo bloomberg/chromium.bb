@@ -26,7 +26,7 @@ namespace gpu {
 class GLContextVirtual;
 }  // namespace gpu
 
-namespace gfx {
+namespace gl {
 
 class GLSurface;
 class GPUTiming;
@@ -60,7 +60,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   virtual void* GetHandle() = 0;
 
   // Creates a GPUTimingClient class which abstracts various GPU Timing exts.
-  virtual scoped_refptr<gfx::GPUTimingClient> CreateGPUTimingClient() = 0;
+  virtual scoped_refptr<gl::GPUTimingClient> CreateGPUTimingClient() = 0;
 
   // Gets the GLStateRestorer for the context.
   GLStateRestorer* GetGLStateRestorer();
@@ -186,7 +186,7 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
 class GL_EXPORT GLContextReal : public GLContext {
  public:
   explicit GLContextReal(GLShareGroup* share_group);
-  scoped_refptr<gfx::GPUTimingClient> CreateGPUTimingClient() override;
+  scoped_refptr<gl::GPUTimingClient> CreateGPUTimingClient() override;
 
  protected:
   ~GLContextReal() override;
@@ -194,10 +194,10 @@ class GL_EXPORT GLContextReal : public GLContext {
   void SetCurrent(GLSurface* surface) override;
 
  private:
-  std::unique_ptr<gfx::GPUTiming> gpu_timing_;
+  std::unique_ptr<gl::GPUTiming> gpu_timing_;
   DISALLOW_COPY_AND_ASSIGN(GLContextReal);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_CONTEXT_H_

@@ -10,13 +10,13 @@
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gl/gl_image.h"
 
-namespace gfx {
+namespace gl {
 
 GLSurfaceOverlay::GLSurfaceOverlay(int z_order,
-                                   OverlayTransform transform,
+                                   gfx::OverlayTransform transform,
                                    gl::GLImage* image,
-                                   const Rect& bounds_rect,
-                                   const RectF& crop_rect)
+                                   const gfx::Rect& bounds_rect,
+                                   const gfx::RectF& crop_rect)
     : z_order_(z_order),
       transform_(transform),
       image_(image),
@@ -27,9 +27,10 @@ GLSurfaceOverlay::GLSurfaceOverlay(const GLSurfaceOverlay& other) = default;
 
 GLSurfaceOverlay::~GLSurfaceOverlay() {}
 
-bool GLSurfaceOverlay::ScheduleOverlayPlane(AcceleratedWidget widget) const {
+bool GLSurfaceOverlay::ScheduleOverlayPlane(
+    gfx::AcceleratedWidget widget) const {
   return image_->ScheduleOverlayPlane(widget, z_order_, transform_,
                                       bounds_rect_, crop_rect_);
 }
 
-}  // namespace gfx
+}  // namespace gl

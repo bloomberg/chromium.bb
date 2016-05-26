@@ -43,8 +43,8 @@ class GLImageOzoneNativePixmapTestDelegate {
       client_pixmap->Unmap();
     }
 
-    scoped_refptr<gfx::GLImageOzoneNativePixmap> image(
-        new gfx::GLImageOzoneNativePixmap(size, GL_RGBA));
+    scoped_refptr<gl::GLImageOzoneNativePixmap> image(
+        new gl::GLImageOzoneNativePixmap(size, GL_RGBA));
     EXPECT_TRUE(image->Initialize(pixmap.get(), pixmap->GetBufferFormat()));
     return image;
   }

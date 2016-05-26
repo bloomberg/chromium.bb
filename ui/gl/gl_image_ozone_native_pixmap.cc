@@ -16,7 +16,7 @@
 #define DRM_FORMAT_XRGB8888 FOURCC('X', 'R', '2', '4')
 #define DRM_FORMAT_XBGR8888 FOURCC('X', 'B', '2', '4')
 
-namespace gfx {
+namespace gl {
 namespace {
 
 bool ValidInternalFormat(unsigned internalformat) {
@@ -31,24 +31,24 @@ bool ValidInternalFormat(unsigned internalformat) {
   }
 }
 
-bool ValidFormat(BufferFormat format) {
+bool ValidFormat(gfx::BufferFormat format) {
   switch (format) {
-    case BufferFormat::R_8:
-    case BufferFormat::BGR_565:
-    case BufferFormat::RGBA_8888:
-    case BufferFormat::RGBX_8888:
-    case BufferFormat::BGRA_8888:
-    case BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::R_8:
+    case gfx::BufferFormat::BGR_565:
+    case gfx::BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::BGRX_8888:
       return true;
-    case BufferFormat::ATC:
-    case BufferFormat::ATCIA:
-    case BufferFormat::DXT1:
-    case BufferFormat::DXT5:
-    case BufferFormat::ETC1:
-    case BufferFormat::RGBA_4444:
-    case BufferFormat::YUV_420:
-    case BufferFormat::YUV_420_BIPLANAR:
-    case BufferFormat::UYVY_422:
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::YUV_420:
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::UYVY_422:
       return false;
   }
 
@@ -56,29 +56,29 @@ bool ValidFormat(BufferFormat format) {
   return false;
 }
 
-EGLint FourCC(BufferFormat format) {
+EGLint FourCC(gfx::BufferFormat format) {
   switch (format) {
-    case BufferFormat::R_8:
+    case gfx::BufferFormat::R_8:
       return DRM_FORMAT_R8;
-    case BufferFormat::BGR_565:
+    case gfx::BufferFormat::BGR_565:
       return DRM_FORMAT_RGB565;
-    case BufferFormat::RGBA_8888:
+    case gfx::BufferFormat::RGBA_8888:
       return DRM_FORMAT_ABGR8888;
-    case BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::RGBX_8888:
       return DRM_FORMAT_XBGR8888;
-    case BufferFormat::BGRA_8888:
+    case gfx::BufferFormat::BGRA_8888:
       return DRM_FORMAT_ARGB8888;
-    case BufferFormat::BGRX_8888:
+    case gfx::BufferFormat::BGRX_8888:
       return DRM_FORMAT_XRGB8888;
-    case BufferFormat::ATC:
-    case BufferFormat::ATCIA:
-    case BufferFormat::DXT1:
-    case BufferFormat::DXT5:
-    case BufferFormat::ETC1:
-    case BufferFormat::RGBA_4444:
-    case BufferFormat::YUV_420:
-    case BufferFormat::YUV_420_BIPLANAR:
-    case BufferFormat::UYVY_422:
+    case gfx::BufferFormat::ATC:
+    case gfx::BufferFormat::ATCIA:
+    case gfx::BufferFormat::DXT1:
+    case gfx::BufferFormat::DXT5:
+    case gfx::BufferFormat::ETC1:
+    case gfx::BufferFormat::RGBA_4444:
+    case gfx::BufferFormat::YUV_420:
+    case gfx::BufferFormat::YUV_420_BIPLANAR:
+    case gfx::BufferFormat::UYVY_422:
       NOTREACHED();
       return 0;
   }
@@ -89,7 +89,7 @@ EGLint FourCC(BufferFormat format) {
 
 }  // namespace
 
-GLImageOzoneNativePixmap::GLImageOzoneNativePixmap(const Size& size,
+GLImageOzoneNativePixmap::GLImageOzoneNativePixmap(const gfx::Size& size,
                                                    unsigned internalformat)
     : gl::GLImageEGL(size), internalformat_(internalformat) {}
 
@@ -97,7 +97,7 @@ GLImageOzoneNativePixmap::~GLImageOzoneNativePixmap() {
 }
 
 bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
-                                          BufferFormat format) {
+                                          gfx::BufferFormat format) {
   DCHECK(!pixmap_);
   if (pixmap->GetEGLClientBuffer()) {
     EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
@@ -170,11 +170,12 @@ bool GLImageOzoneNativePixmap::CopyTexImage(unsigned target) {
   return GLImageEGL::CopyTexImage(target);
 }
 
-bool GLImageOzoneNativePixmap::ScheduleOverlayPlane(AcceleratedWidget widget,
-                                                    int z_order,
-                                                    OverlayTransform transform,
-                                                    const Rect& bounds_rect,
-                                                    const RectF& crop_rect) {
+bool GLImageOzoneNativePixmap::ScheduleOverlayPlane(
+    gfx::AcceleratedWidget widget,
+    int z_order,
+    gfx::OverlayTransform transform,
+    const gfx::Rect& bounds_rect,
+    const gfx::RectF& crop_rect) {
   DCHECK(pixmap_);
   return pixmap_->ScheduleOverlayPlane(widget, z_order, transform, bounds_rect,
                                        crop_rect);
@@ -187,4 +188,4 @@ void GLImageOzoneNativePixmap::OnMemoryDump(
   // TODO(ericrk): Implement GLImage OnMemoryDump. crbug.com/514914
 }
 
-}  // namespace gfx
+}  // namespace gl

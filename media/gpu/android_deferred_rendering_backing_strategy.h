@@ -40,11 +40,11 @@ class MEDIA_GPU_EXPORT AndroidDeferredRenderingBackingStrategy
   ~AndroidDeferredRenderingBackingStrategy() override;
 
   // AndroidVideoDecodeAccelerator::BackingStrategy
-  gfx::ScopedJavaSurface Initialize(int surface_view_id) override;
+  gl::ScopedJavaSurface Initialize(int surface_view_id) override;
   void Cleanup(
       bool have_context,
       const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) override;
-  scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture() const override;
+  scoped_refptr<gl::SurfaceTexture> GetSurfaceTexture() const override;
   uint32_t GetTextureTarget() const override;
   gfx::Size GetPictureBufferSize() const override;
   void UseCodecBufferForPictureBuffer(
@@ -91,7 +91,7 @@ class MEDIA_GPU_EXPORT AndroidDeferredRenderingBackingStrategy
 
   // The SurfaceTexture to render to. Non-null after Initialize() if
   // we're not rendering to a SurfaceView.
-  scoped_refptr<gfx::SurfaceTexture> surface_texture_;
+  scoped_refptr<gl::SurfaceTexture> surface_texture_;
 
   media::VideoCodecBridge* media_codec_;
 

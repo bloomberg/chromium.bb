@@ -209,7 +209,7 @@ void RemoteMediaPlayerBridge::Pause(bool is_media_related_action) {
   }
 }
 
-void RemoteMediaPlayerBridge::SetVideoSurface(gfx::ScopedJavaSurface surface) {
+void RemoteMediaPlayerBridge::SetVideoSurface(gl::ScopedJavaSurface surface) {
   // The surface is reset whenever the fullscreen view is destroyed or created.
   // Since the remote player doesn't use it, we forward it to the local player
   // for the time when user disconnects and resumes local playback

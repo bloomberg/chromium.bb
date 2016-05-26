@@ -18,7 +18,7 @@ GLImageSurfaceTexture::~GLImageSurfaceTexture() {
   DCHECK_EQ(0, texture_id_);
 }
 
-bool GLImageSurfaceTexture::Initialize(gfx::SurfaceTexture* surface_texture) {
+bool GLImageSurfaceTexture::Initialize(gl::SurfaceTexture* surface_texture) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!surface_texture_.get());
   surface_texture_ = surface_texture;

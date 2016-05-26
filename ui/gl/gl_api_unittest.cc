@@ -15,7 +15,7 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_timing.h"
 
-namespace gfx {
+namespace gl {
 
 class GLContextFake : public GLContext {
  public:
@@ -27,7 +27,7 @@ class GLContextFake : public GLContext {
   void ReleaseCurrent(GLSurface* surface) override {}
   bool IsCurrent(GLSurface* surface) override { return true; }
   void* GetHandle() override { return NULL; }
-  scoped_refptr<gfx::GPUTimingClient> CreateGPUTimingClient() override {
+  scoped_refptr<gl::GPUTimingClient> CreateGPUTimingClient() override {
     return NULL;
   }
   void OnSetSwapInterval(int interval) override {}
@@ -217,4 +217,4 @@ TEST_F(GLApiTest, DisabledExtensionStringIndexTest) {
   }
 }
 
-}  // namespace gfx
+}  // namespace gl

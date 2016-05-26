@@ -9,7 +9,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 
 class GLShareGroup;
 
@@ -36,6 +36,6 @@ class GL_EXPORT GLContextStub : public GLContextReal {
   DISALLOW_COPY_AND_ASSIGN(GLContextStub);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_CONTEXT_STUB_H_

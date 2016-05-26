@@ -16,7 +16,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
 
-namespace gfx {
+namespace gl {
 namespace {
 const char kOpenGLFrameworkPath[] =
     "/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL";
@@ -156,4 +156,4 @@ bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
   return false;
 }
 
-}  // namespace gfx
+}  // namespace gl

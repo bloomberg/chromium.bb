@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "ui/gl/gl_export.h"
 
-namespace gfx {
+namespace gl {
 class GLContext;
 class GLSurface;
 }
@@ -18,16 +18,16 @@ namespace ui {
 
 class GL_EXPORT ScopedMakeCurrent {
  public:
-  ScopedMakeCurrent(gfx::GLContext* context, gfx::GLSurface* surface);
+  ScopedMakeCurrent(gl::GLContext* context, gl::GLSurface* surface);
   ~ScopedMakeCurrent();
 
   bool Succeeded() const;
 
  private:
-  scoped_refptr<gfx::GLContext> previous_context_;
-  scoped_refptr<gfx::GLSurface> previous_surface_;
-  scoped_refptr<gfx::GLContext> context_;
-  scoped_refptr<gfx::GLSurface> surface_;
+  scoped_refptr<gl::GLContext> previous_context_;
+  scoped_refptr<gl::GLSurface> previous_surface_;
+  scoped_refptr<gl::GLContext> context_;
+  scoped_refptr<gl::GLSurface> surface_;
   bool succeeded_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedMakeCurrent);

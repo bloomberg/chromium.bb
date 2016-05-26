@@ -39,7 +39,7 @@ class CONTENT_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
       gpu::SurfaceHandle surface_handle) override;
 
 #if defined(OS_ANDROID)
-  gfx::ScopedJavaSurface AcquireJavaSurface(int surface_id) override;
+  gl::ScopedJavaSurface AcquireJavaSurface(int surface_id) override;
 #endif
 
   // Gets the global instance of the surface tracker.

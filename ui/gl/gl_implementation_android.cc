@@ -15,7 +15,7 @@
 #include "ui/gl/gl_implementation_osmesa.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
 
-namespace gfx {
+namespace gl {
 
 namespace {
 
@@ -74,8 +74,8 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
 
       // These two functions take single precision float rather than double
       // precision float parameters in GLES.
-      ::gfx::g_driver_gl.fn.glClearDepthFn = MarshalClearDepthToClearDepthf;
-      ::gfx::g_driver_gl.fn.glDepthRangeFn = MarshalDepthRangeToDepthRangef;
+      ::gl::g_driver_gl.fn.glClearDepthFn = MarshalClearDepthToClearDepthf;
+      ::gl::g_driver_gl.fn.glDepthRangeFn = MarshalDepthRangeToDepthRangef;
       break;
     }
     case kGLImplementationOSMesaGL:
@@ -143,4 +143,4 @@ bool GetGLWindowSystemBindingInfo(GLWindowSystemBindingInfo* info) {
   return false;
 }
 
-}  // namespace gfx
+}  // namespace gl

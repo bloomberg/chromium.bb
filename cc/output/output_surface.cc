@@ -69,12 +69,12 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
     base::trace_event::MemoryAllocatorDumpGuid guid;
 
     if (strcmp(backing_type, kGLTextureBackingType) == 0) {
-      guid = gfx::GetGLTextureClientGUIDForTracing(share_group_tracing_guid_,
-                                                   gl_id);
+      guid = gl::GetGLTextureClientGUIDForTracing(share_group_tracing_guid_,
+                                                  gl_id);
     } else if (strcmp(backing_type, kGLBufferBackingType) == 0) {
-      guid = gfx::GetGLBufferGUIDForTracing(tracing_process_id, gl_id);
+      guid = gl::GetGLBufferGUIDForTracing(tracing_process_id, gl_id);
     } else if (strcmp(backing_type, kGLRenderbufferBackingType) == 0) {
-      guid = gfx::GetGLRenderbufferGUIDForTracing(tracing_process_id, gl_id);
+      guid = gl::GetGLRenderbufferGUIDForTracing(tracing_process_id, gl_id);
     }
 
     if (!guid.empty()) {

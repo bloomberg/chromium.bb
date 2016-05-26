@@ -9,7 +9,7 @@
 #include "ui/gl/gl_glx_api_implementation.h"
 #include "ui/gl/gl_implementation.h"
 
-namespace gfx {
+namespace gl {
 
 class GLXApiTest : public testing::Test {
  public:
@@ -114,4 +114,4 @@ TEST_F(GLXApiTest, DisabledExtensionStringTest) {
   EXPECT_STREQ(kFilteredExtensions, GetExtensions());
 }
 
-}  // namespace gfx
+}  // namespace gl

@@ -51,7 +51,7 @@ class VideoMediaCodecDecoder : public MediaCodecDecoder {
   void ReleaseMediaCodec() override;
 
   // Stores the video surface to use with upcoming Configure()
-  void SetVideoSurface(gfx::ScopedJavaSurface surface);
+  void SetVideoSurface(gl::ScopedJavaSurface surface);
 
   // Returns true if there is a video surface to use.
   bool HasVideoSurface() const;
@@ -98,7 +98,7 @@ class VideoMediaCodecDecoder : public MediaCodecDecoder {
   DemuxerConfigs configs_;
 
   // Video surface that we render to.
-  gfx::ScopedJavaSurface surface_;
+  gl::ScopedJavaSurface surface_;
 
   // Flags that indicates whether we need protected surface.
   bool is_protected_surface_required_;

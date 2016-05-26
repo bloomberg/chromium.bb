@@ -59,10 +59,10 @@ bool VaapiDrmPicture::Initialize() {
     if (!make_context_current_cb_.Run())
       return false;
 
-    gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_EXTERNAL_OES,
-                                            texture_id_);
-    scoped_refptr<gfx::GLImageOzoneNativePixmap> image(
-        new gfx::GLImageOzoneNativePixmap(size_, GL_BGRA_EXT));
+    gl::ScopedTextureBinder texture_binder(GL_TEXTURE_EXTERNAL_OES,
+                                           texture_id_);
+    scoped_refptr<gl::GLImageOzoneNativePixmap> image(
+        new gl::GLImageOzoneNativePixmap(size_, GL_BGRA_EXT));
     if (!image->Initialize(pixmap_.get(), pixmap_->GetBufferFormat())) {
       LOG(ERROR) << "Failed to create GLImage";
       return false;

@@ -9,7 +9,7 @@
 #include "ui/gl/gl_egl_api_implementation.h"
 #include "ui/gl/gl_switches.h"
 
-namespace gfx {
+namespace gl {
 
 class EGLApiTest : public testing::Test {
  public:
@@ -138,4 +138,4 @@ TEST_F(EGLApiTest, DisabledExtensionStringTest) {
   EXPECT_STREQ(kFilteredExtensions, GetExtensions().second);
 }
 
-}  // namespace gfx
+}  // namespace gl

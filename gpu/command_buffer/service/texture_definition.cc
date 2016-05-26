@@ -154,16 +154,16 @@ class NativeImageBufferEGL : public NativeImageBuffer {
 
 scoped_refptr<NativeImageBufferEGL> NativeImageBufferEGL::Create(
     GLuint texture_id) {
-  EGLDisplay egl_display = gfx::GLSurfaceEGL::GetHardwareDisplay();
+  EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
   EGLContext egl_context = eglGetCurrentContext();
 
   DCHECK_NE(EGL_NO_CONTEXT, egl_context);
   DCHECK_NE(EGL_NO_DISPLAY, egl_display);
   DCHECK(glIsTexture(texture_id));
 
-  DCHECK(gfx::g_driver_egl.ext.b_EGL_KHR_image_base &&
-         gfx::g_driver_egl.ext.b_EGL_KHR_gl_texture_2D_image &&
-         gfx::g_driver_gl.ext.b_GL_OES_EGL_image);
+  DCHECK(gl::g_driver_egl.ext.b_EGL_KHR_image_base &&
+         gl::g_driver_egl.ext.b_EGL_KHR_gl_texture_2D_image &&
+         gl::g_driver_gl.ext.b_GL_OES_EGL_image);
 
   const EGLint egl_attrib_list[] = {
       EGL_GL_TEXTURE_LEVEL_KHR, 0, EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
@@ -263,12 +263,12 @@ bool g_avoid_egl_target_texture_reuse = false;
 
 // static
 scoped_refptr<NativeImageBuffer> NativeImageBuffer::Create(GLuint texture_id) {
-  switch (gfx::GetGLImplementation()) {
+  switch (gl::GetGLImplementation()) {
 #if !defined(OS_MACOSX)
-    case gfx::kGLImplementationEGLGLES2:
+    case gl::kGLImplementationEGLGLES2:
       return NativeImageBufferEGL::Create(texture_id);
 #endif
-    case gfx::kGLImplementationMockGL:
+    case gl::kGLImplementationMockGL:
       return new NativeImageBufferStub;
     default:
       NOTREACHED();
@@ -377,7 +377,7 @@ Texture* TextureDefinition::CreateTexture() const {
 }
 
 void TextureDefinition::UpdateTextureInternal(Texture* texture) const {
-  gfx::ScopedTextureBinder texture_binder(target_, texture->service_id());
+  gl::ScopedTextureBinder texture_binder(target_, texture->service_id());
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, min_filter_);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, mag_filter_);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap_s_);

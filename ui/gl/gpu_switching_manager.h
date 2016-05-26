@@ -33,7 +33,7 @@ class GL_EXPORT GpuSwitchingManager {
 
   // If no GPU is forced, return the original GpuPreference; otherwise, return
   // the forced GPU.
-  gfx::GpuPreference AdjustGpuPreference(gfx::GpuPreference gpu_preference);
+  gl::GpuPreference AdjustGpuPreference(gl::GpuPreference gpu_preference);
 
   // In the browser process, the value for this flag is computed the first time
   // this function is called.
@@ -65,7 +65,7 @@ class GL_EXPORT GpuSwitchingManager {
   void SwitchToDiscreteGpuMac();
 #endif  // OS_MACOSX
 
-  gfx::GpuPreference gpu_switching_option_;
+  gl::GpuPreference gpu_switching_option_;
   bool gpu_switching_option_set_;
 
   std::vector<uint32_t> vendor_ids_;

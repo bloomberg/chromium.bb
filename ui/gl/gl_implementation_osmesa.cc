@@ -13,7 +13,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_osmesa_api_implementation.h"
 
-namespace gfx {
+namespace gl {
 
 bool InitializeStaticGLBindingsOSMesaGL() {
   base::FilePath module_path;
@@ -46,4 +46,4 @@ bool InitializeStaticGLBindingsOSMesaGL() {
   return true;
 }
 
-}  // namespace gfx
+}  // namespace gl

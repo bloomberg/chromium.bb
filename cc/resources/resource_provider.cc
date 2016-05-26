@@ -1972,7 +1972,7 @@ bool ResourceProvider::OnMemoryDump(
         break;
       case RESOURCE_TYPE_GL_TEXTURE:
         DCHECK(resource.gl_id);
-        guid = gfx::GetGLTextureClientGUIDForTracing(
+        guid = gl::GetGLTextureClientGUIDForTracing(
             compositor_context_provider_->ContextSupport()
                 ->ShareGroupTracingGUID(),
             resource.gl_id);

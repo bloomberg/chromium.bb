@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
   android_webview::RegisterJni(base::android::AttachCurrentThread());
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kSingleProcess);
-  gfx::GLSurfaceTestSupport::InitializeOneOff();
+  gl::GLSurfaceTestSupport::InitializeOneOff();
   android_webview::DeferredGpuCommandService::SetInstance();
   return base::TestSuite(argc, argv).Run();
 }

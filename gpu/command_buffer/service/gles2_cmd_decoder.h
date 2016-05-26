@@ -24,9 +24,12 @@
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/gpu_export.h"
 
-namespace gfx {
+namespace gl {
 class GLContext;
 class GLSurface;
+}
+
+namespace gfx {
 class Size;
 }
 
@@ -147,8 +150,8 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   //  offscreen_size: the size if the GL context is offscreen.
   // Returns:
   //   true if successful.
-  virtual bool Initialize(const scoped_refptr<gfx::GLSurface>& surface,
-                          const scoped_refptr<gfx::GLContext>& context,
+  virtual bool Initialize(const scoped_refptr<gl::GLSurface>& surface,
+                          const scoped_refptr<gl::GLContext>& context,
                           bool offscreen,
                           const gfx::Size& offscreen_size,
                           const DisallowedFeatures& disallowed_features,
@@ -158,7 +161,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual void Destroy(bool have_context) = 0;
 
   // Set the surface associated with the default FBO.
-  virtual void SetSurface(const scoped_refptr<gfx::GLSurface>& surface) = 0;
+  virtual void SetSurface(const scoped_refptr<gl::GLSurface>& surface) = 0;
   // Releases the surface associated with the GL context.
   // The decoder should not be used until a new surface is set.
   virtual void ReleaseSurface() = 0;
@@ -176,7 +179,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual GLES2Util* GetGLES2Util() = 0;
 
   // Gets the associated GLContext.
-  virtual gfx::GLContext* GetGLContext() = 0;
+  virtual gl::GLContext* GetGLContext() = 0;
 
   // Gets the associated ContextGroup
   virtual ContextGroup* GetContextGroup() = 0;

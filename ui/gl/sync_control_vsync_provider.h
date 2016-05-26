@@ -12,11 +12,11 @@
 #include "base/macros.h"
 #include "ui/gfx/vsync_provider.h"
 
-namespace gfx {
+namespace gl {
 
 // Base class for providers based on extensions like GLX_OML_sync_control and
 // EGL_CHROMIUM_sync_control.
-class SyncControlVSyncProvider : public VSyncProvider {
+class SyncControlVSyncProvider : public gfx::VSyncProvider {
  public:
   SyncControlVSyncProvider();
   ~SyncControlVSyncProvider() override;
@@ -47,6 +47,6 @@ class SyncControlVSyncProvider : public VSyncProvider {
   DISALLOW_COPY_AND_ASSIGN(SyncControlVSyncProvider);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_SYNC_CONTROL_VSYNC_PROVIDER_H_

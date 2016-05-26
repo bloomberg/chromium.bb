@@ -42,7 +42,7 @@ std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
   attribs.sample_buffers = 0;
   attribs.fail_if_major_perf_caveat = false;
   attribs.bind_generates_resource = false;
-  gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+  gl::GpuPreference gpu_preference = gl::PreferDiscreteGpu;
 
   std::unique_ptr<gpu::GLInProcessContext> context =
       base::WrapUnique(gpu::GLInProcessContext::Create(

@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 #include "ui/gl/gl_context.h"
 
-namespace gfx {
+namespace gl {
 
 GLShareGroup::GLShareGroup()
     : shared_context_(NULL)
@@ -69,4 +69,4 @@ int GLShareGroup::GetRendererID() {
 GLShareGroup::~GLShareGroup() {
 }
 
-}  // namespace gfx
+}  // namespace gl

@@ -17,7 +17,7 @@ extern "C" {
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_glx.h"
 
-namespace gfx {
+namespace gl {
 
 GLContextGLX::GLContextGLX(GLShareGroup* share_group)
   : GLContextReal(share_group),
@@ -201,4 +201,4 @@ GLContextGLX::~GLContextGLX() {
   Destroy();
 }
 
-}  // namespace gfx
+}  // namespace gl

@@ -104,7 +104,7 @@ gpu::CollectInfoResult CollectDriverInfo(gpu::GPUInfo* gpu_info) {
     return (void *)nullptr;
   };
 
-#define LOOKUP_FUNC(x) auto x##Fn = reinterpret_cast<gfx::x##Proc>(get_func(#x))
+#define LOOKUP_FUNC(x) auto x##Fn = reinterpret_cast<gl::x##Proc>(get_func(#x))
 
   LOOKUP_FUNC(eglGetError);
   LOOKUP_FUNC(eglQueryString);

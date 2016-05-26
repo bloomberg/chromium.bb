@@ -7,7 +7,7 @@
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace gfx {
+namespace gl {
 
 namespace {
 
@@ -53,7 +53,7 @@ void GLFenceEGL::ClientWait() {
 }
 
 void GLFenceEGL::ServerWait() {
-  if (!gfx::g_driver_egl.ext.b_EGL_KHR_wait_sync) {
+  if (!gl::g_driver_egl.ext.b_EGL_KHR_wait_sync) {
     ClientWait();
     return;
   }
@@ -69,4 +69,4 @@ GLFenceEGL::~GLFenceEGL() {
   eglDestroySyncKHR(display_, sync_);
 }
 
-}  // namespace gfx
+}  // namespace gl

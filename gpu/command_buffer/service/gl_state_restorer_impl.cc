@@ -22,7 +22,7 @@ bool GLStateRestorerImpl::IsInitialized() {
   return decoder_->initialized();
 }
 
-void GLStateRestorerImpl::RestoreState(const gfx::GLStateRestorer* prev_state) {
+void GLStateRestorerImpl::RestoreState(const gl::GLStateRestorer* prev_state) {
   DCHECK(decoder_.get());
   const GLStateRestorerImpl* restorer_impl =
       static_cast<const GLStateRestorerImpl*>(prev_state);

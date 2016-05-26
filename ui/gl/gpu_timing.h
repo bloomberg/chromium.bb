@@ -43,7 +43,7 @@
 //     The constructor and destructor of this object handles the actual
 //     creation and deletion of the GL Queries within GL.
 
-namespace gfx {
+namespace gl {
 
 class GLContextReal;
 class GPUTimingClient;
@@ -159,6 +159,6 @@ class GL_EXPORT GPUTimingClient
   DISALLOW_COPY_AND_ASSIGN(GPUTimingClient);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GPU_TIMING_H_

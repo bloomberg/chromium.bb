@@ -29,7 +29,7 @@
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gl/android/scoped_java_surface.h"
 
-namespace gfx {
+namespace gl {
 class SurfaceTexture;
 }
 
@@ -58,7 +58,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
     // |kNoSurfaceID| it refers to a SurfaceView that the strategy must render
     // to.
     // Returns the Java surface to configure MediaCodec with.
-    virtual gfx::ScopedJavaSurface Initialize(int surface_view_id) = 0;
+    virtual gl::ScopedJavaSurface Initialize(int surface_view_id) = 0;
 
     // Called before the AVDA does any Destroy() work.  This will be
     // the last call that the BackingStrategy receives.
@@ -67,7 +67,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
     // This returns the SurfaceTexture created by Initialize, or nullptr if
     // the strategy was initialized with a SurfaceView.
-    virtual scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture() const = 0;
+    virtual scoped_refptr<gl::SurfaceTexture> GetSurfaceTexture() const = 0;
 
     // Return the GL texture target that the PictureBuffer textures use.
     virtual uint32_t GetTextureTarget() const = 0;
@@ -194,7 +194,7 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
     // The surface that MediaCodec is configured to output to. It's created by
     // the backing strategy.
-    gfx::ScopedJavaSurface surface_;
+    gl::ScopedJavaSurface surface_;
 
     // The MediaCrypto object is used in the MediaCodec.configure() in case of
     // an encrypted stream.

@@ -62,7 +62,7 @@ class BrowserSurfaceTexturePeer : public gpu::SurfaceTexturePeer {
 
   void EstablishSurfaceTexturePeer(
       base::ProcessHandle render_process_handle,
-      scoped_refptr<gfx::SurfaceTexture> surface_texture,
+      scoped_refptr<gl::SurfaceTexture> surface_texture,
       int render_frame_id,
       int player_id) override;
 
@@ -86,7 +86,7 @@ BrowserSurfaceTexturePeer::~BrowserSurfaceTexturePeer() {
 
 void BrowserSurfaceTexturePeer::EstablishSurfaceTexturePeer(
     base::ProcessHandle render_process_handle,
-    scoped_refptr<gfx::SurfaceTexture> surface_texture,
+    scoped_refptr<gl::SurfaceTexture> surface_texture,
     int render_frame_id,
     int player_id) {
   if (!surface_texture.get())
@@ -130,7 +130,7 @@ void BrowserMediaPlayerManager::InitSurfaceTexturePeer() {
 
 // static
 void BrowserMediaPlayerManager::SetSurfacePeer(
-    scoped_refptr<gfx::SurfaceTexture> surface_texture,
+    scoped_refptr<gl::SurfaceTexture> surface_texture,
     base::ProcessHandle render_process_handle,
     int render_frame_id,
     int player_id) {
@@ -173,7 +173,7 @@ void BrowserMediaPlayerManager::SetSurfacePeer(
   }
 
   if (player != player_manager->GetFullscreenPlayer()) {
-    gfx::ScopedJavaSurface scoped_surface(surface_texture.get());
+    gl::ScopedJavaSurface scoped_surface(surface_texture.get());
     player->SetVideoSurface(std::move(scoped_surface));
   }
 }
@@ -316,7 +316,7 @@ void BrowserMediaPlayerManager::DidExitFullscreen(bool release_media_player) {
   if (release_media_player)
     ReleaseFullscreenPlayer(player);
   else
-    player->SetVideoSurface(gfx::ScopedJavaSurface());
+    player->SetVideoSurface(gl::ScopedJavaSurface());
 #endif  // defined(USE_AURA)
 }
 
@@ -328,8 +328,7 @@ void BrowserMediaPlayerManager::OnTimeUpdate(
       RoutingID(), player_id, current_timestamp, current_time_ticks));
 }
 
-void BrowserMediaPlayerManager::SetVideoSurface(
-    gfx::ScopedJavaSurface surface) {
+void BrowserMediaPlayerManager::SetVideoSurface(gl::ScopedJavaSurface surface) {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (!player)
     return;
@@ -466,14 +465,14 @@ void BrowserMediaPlayerManager::AttachExternalVideoSurface(int player_id,
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player) {
     player->SetVideoSurface(
-        gfx::ScopedJavaSurface::AcquireExternalSurface(surface));
+        gl::ScopedJavaSurface::AcquireExternalSurface(surface));
   }
 }
 
 void BrowserMediaPlayerManager::DetachExternalVideoSurface(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
   if (player)
-    player->SetVideoSurface(gfx::ScopedJavaSurface());
+    player->SetVideoSurface(gl::ScopedJavaSurface());
 }
 
 void BrowserMediaPlayerManager::OnFrameInfoUpdated() {

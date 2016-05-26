@@ -19,7 +19,7 @@
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_surface_wgl.h"
 
-namespace gfx {
+namespace gl {
 
 scoped_refptr<GLContext> GLContext::CreateGLContext(
     GLShareGroup* share_group,
@@ -56,4 +56,4 @@ scoped_refptr<GLContext> GLContext::CreateGLContext(
   }
 }
 
-}  // namespace gfx
+}  // namespace gl

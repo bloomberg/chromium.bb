@@ -18,7 +18,7 @@
 #include "ui/gl/gpu_timing_fake.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
-namespace gfx {
+namespace gl {
 
 using ::testing::Exactly;
 using ::testing::NotNull;
@@ -38,7 +38,7 @@ class GPUTimingTest : public testing::Test {
     surface_ = nullptr;
     if (setup_) {
       MockGLInterface::SetGLInterface(NULL);
-      gfx::ClearGLBindings();
+      gl::ClearGLBindings();
     }
     setup_ = false;
     cpu_time_bounded_ = false;
@@ -56,7 +56,7 @@ class GPUTimingTest : public testing::Test {
     context_ = new GLContextStubWithExtensions;
     context_->AddExtensionsString(gl_extensions);
     context_->SetGLVersionString(gl_version);
-    surface_ = new gfx::GLSurfaceStub;
+    surface_ = new gl::GLSurfaceStub;
     context_->MakeCurrent(surface_.get());
     gpu_timing_fake_queries_.Reset();
     GLSurfaceTestSupport::InitializeDynamicMockBindings(context_.get());
@@ -82,7 +82,7 @@ class GPUTimingTest : public testing::Test {
   bool cpu_time_bounded_ = false;
   std::unique_ptr<::testing::StrictMock<MockGLInterface>> gl_;
   scoped_refptr<GLContextStubWithExtensions> context_;
-  scoped_refptr<gfx::GLSurfaceStub> surface_;
+  scoped_refptr<gl::GLSurfaceStub> surface_;
   GPUTimingFake gpu_timing_fake_queries_;
 };
 

@@ -21,7 +21,7 @@ MashTestSuite::~MashTestSuite() {}
 
 void MashTestSuite::Initialize() {
   base::TestSuite::Initialize();
-  gfx::GLSurfaceTestSupport::InitializeOneOff();
+  gl::GLSurfaceTestSupport::InitializeOneOff();
 
   // Load ash resources and en-US strings; not 'common' (Chrome) resources.
   // TODO(msw): Check ResourceBundle::IsScaleFactorSupported; load 300% etc.

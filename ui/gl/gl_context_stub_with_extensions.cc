@@ -4,7 +4,7 @@
 
 #include "ui/gl/gl_context_stub_with_extensions.h"
 
-namespace gfx {
+namespace gl {
 
 void GLContextStubWithExtensions::AddExtensionsString(const char* extensions) {
   if (extensions == nullptr)
@@ -33,4 +33,4 @@ bool GLContextStubWithExtensions::WasAllocatedUsingRobustnessExtension() {
          HasExtension("GL_EXT_robustness");
 }
 
-}  // namespace gfx
+}  // namespace gl

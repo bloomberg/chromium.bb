@@ -22,15 +22,15 @@ namespace {
 class AppContextSurface {
  public:
   AppContextSurface()
-      : surface(new gfx::GLSurfaceStub),
+      : surface(new gl::GLSurfaceStub),
         context(gl::init::CreateGLContext(nullptr,
                                           surface.get(),
-                                          gfx::PreferDiscreteGpu)) {}
+                                          gl::PreferDiscreteGpu)) {}
   void MakeCurrent() { context->MakeCurrent(surface.get()); }
 
  private:
-  scoped_refptr<gfx::GLSurfaceStub> surface;
-  scoped_refptr<gfx::GLContext> context;
+  scoped_refptr<gl::GLSurfaceStub> surface;
+  scoped_refptr<gl::GLContext> context;
 
   DISALLOW_COPY_AND_ASSIGN(AppContextSurface);
 };

@@ -8,11 +8,8 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 
-namespace gfx {
-class GLContext;
-}
-
 namespace gl {
+class GLContext;
 class GLImage;
 }
 
@@ -34,7 +31,7 @@ namespace media {
 // thread (i.e. the thread which the VDAs are initialized on).
 
 // Return current GLContext.
-using GetGLContextCallback = base::Callback<gfx::GLContext*(void)>;
+using GetGLContextCallback = base::Callback<gl::GLContext*(void)>;
 
 // Make the applicable GL context current. To be called by VDAs before
 // executing any GL calls. Return true on success, false otherwise.

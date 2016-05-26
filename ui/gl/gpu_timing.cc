@@ -11,7 +11,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_version_info.h"
 
-namespace gfx {
+namespace gl {
 
 class TimeElapsedTimerQuery;
 class TimerQuery;
@@ -666,4 +666,4 @@ void GPUTimingClient::ForceTimeElapsedQuery() {
 GPUTimingClient::~GPUTimingClient() {
 }
 
-}  // namespace gfx
+}  // namespace gl

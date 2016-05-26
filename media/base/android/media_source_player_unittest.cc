@@ -705,17 +705,17 @@ class MediaSourcePlayerTest : public testing::Test {
   }
 
   void CreateNextTextureAndSetVideoSurface() {
-    gfx::SurfaceTexture* surface_texture;
+    gl::SurfaceTexture* surface_texture;
     if (surface_texture_a_is_next_) {
-      surface_texture_a_ = gfx::SurfaceTexture::Create(next_texture_id_++);
+      surface_texture_a_ = gl::SurfaceTexture::Create(next_texture_id_++);
       surface_texture = surface_texture_a_.get();
     } else {
-      surface_texture_b_ = gfx::SurfaceTexture::Create(next_texture_id_++);
+      surface_texture_b_ = gl::SurfaceTexture::Create(next_texture_id_++);
       surface_texture = surface_texture_b_.get();
     }
 
     surface_texture_a_is_next_ = !surface_texture_a_is_next_;
-    gfx::ScopedJavaSurface surface = gfx::ScopedJavaSurface(surface_texture);
+    gl::ScopedJavaSurface surface = gl::ScopedJavaSurface(surface_texture);
     player_.SetVideoSurface(std::move(surface));
   }
 
@@ -853,8 +853,8 @@ class MediaSourcePlayerTest : public testing::Test {
   // between two surface textures, only replacing the N-2 texture. Assumption is
   // that no more than N-1 texture is in use by decoder when
   // CreateNextTextureAndSetVideoSurface() is called.
-  scoped_refptr<gfx::SurfaceTexture> surface_texture_a_;
-  scoped_refptr<gfx::SurfaceTexture> surface_texture_b_;
+  scoped_refptr<gl::SurfaceTexture> surface_texture_a_;
+  scoped_refptr<gl::SurfaceTexture> surface_texture_b_;
   bool surface_texture_a_is_next_;
   int next_texture_id_;
 
@@ -917,9 +917,9 @@ TEST_F(MediaSourcePlayerTest, StartVideoCodecWithInvalidSurface) {
   SKIP_TEST_IF_MEDIA_CODEC_BRIDGE_IS_NOT_AVAILABLE();
 
   // Test video codec will not be created when surface is invalid.
-  scoped_refptr<gfx::SurfaceTexture> surface_texture(
-      gfx::SurfaceTexture::Create(0));
-  gfx::ScopedJavaSurface surface(surface_texture.get());
+  scoped_refptr<gl::SurfaceTexture> surface_texture(
+      gl::SurfaceTexture::Create(0));
+  gl::ScopedJavaSurface surface(surface_texture.get());
   StartVideoDecoderJob();
 
   // Release the surface texture.
@@ -988,7 +988,7 @@ TEST_F(MediaSourcePlayerTest, ChangeMultipleSurfaceWhileDecoding) {
 
   // While the decoder is decoding, change multiple surfaces. Pass an empty
   // surface first.
-  gfx::ScopedJavaSurface empty_surface;
+  gl::ScopedJavaSurface empty_surface;
   player_.SetVideoSurface(std::move(empty_surface));
   // Next, pass a new non-empty surface.
   CreateNextTextureAndSetVideoSurface();
@@ -1029,7 +1029,7 @@ TEST_F(MediaSourcePlayerTest, SetEmptySurfaceAndStarveWhileDecoding) {
   player_.OnDemuxerDataAvailable(CreateReadFromDemuxerAckForVideo(false));
 
   // While the decoder is decoding, pass an empty surface.
-  gfx::ScopedJavaSurface empty_surface;
+  gl::ScopedJavaSurface empty_surface;
   player_.SetVideoSurface(std::move(empty_surface));
   // Let the player starve. However, it should not issue any new data request in
   // this case.

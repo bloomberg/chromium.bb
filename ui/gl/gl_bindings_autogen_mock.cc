@@ -12,7 +12,7 @@
 
 #include "ui/gl/gl_mock.h"
 
-namespace gfx {
+namespace gl {
 
 // This is called mainly to prevent the compiler combining the code of mock
 // functions with identical contents, so that their function pointers will be
@@ -3688,4 +3688,4 @@ void* GL_BINDING_CALL MockGLInterface::GetGLProcAddress(const char* name) {
   return reinterpret_cast<void*>(&MockInvalidFunction);
 }
 
-}  // namespace gfx
+}  // namespace gl

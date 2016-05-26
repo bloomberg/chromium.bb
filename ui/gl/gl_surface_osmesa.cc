@@ -13,7 +13,7 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/scoped_make_current.h"
 
-namespace gfx {
+namespace gl {
 
 GLSurfaceOSMesa::GLSurfaceOSMesa(GLSurface::Format format,
                                  const gfx::Size& size)
@@ -115,4 +115,4 @@ GLSurfaceOSMesaHeadless::GLSurfaceOSMesaHeadless()
 
 GLSurfaceOSMesaHeadless::~GLSurfaceOSMesaHeadless() { Destroy(); }
 
-}  // namespace gfx
+}  // namespace gl

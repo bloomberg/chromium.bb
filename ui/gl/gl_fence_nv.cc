@@ -6,7 +6,7 @@
 
 #include "ui/gl/gl_bindings.h"
 
-namespace gfx {
+namespace gl {
 
 GLFenceNV::GLFenceNV() {
   // What if either of these GL calls fails? TestFenceNV will return true.
@@ -53,4 +53,4 @@ GLFenceNV::~GLFenceNV() {
   glDeleteFencesNV(1, &fence_);
 }
 
-}  // namespace gfx
+}  // namespace gl

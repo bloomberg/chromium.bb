@@ -13,11 +13,8 @@
 #include "gpu/config/gpu_info.h"
 #include "media/video/video_decode_accelerator.h"
 
-namespace gfx {
-class GLContext;
-}
-
 namespace gl {
+class GLContext;
 class GLImage;
 }
 
@@ -41,7 +38,7 @@ class CONTENT_EXPORT GpuVideoDecodeAcceleratorFactory {
   virtual ~GpuVideoDecodeAcceleratorFactory();
 
   // Return current GLContext.
-  using GetGLContextCallback = base::Callback<gfx::GLContext*(void)>;
+  using GetGLContextCallback = base::Callback<gl::GLContext*(void)>;
 
   // Make the applicable GL context current. To be called by VDAs before
   // executing any GL calls. Return true on success, false otherwise.

@@ -17,7 +17,7 @@
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 
-namespace gfx {
+namespace gl {
 
 namespace {
 base::LazyInstance<base::ThreadLocalPointer<GLSurface> >::Leaky
@@ -192,28 +192,28 @@ GLSurface::Format GLSurface::GetFormat() {
   return SURFACE_DEFAULT;
 }
 
-VSyncProvider* GLSurface::GetVSyncProvider() {
+gfx::VSyncProvider* GLSurface::GetVSyncProvider() {
   return NULL;
 }
 
 bool GLSurface::ScheduleOverlayPlane(int z_order,
-                                     OverlayTransform transform,
+                                     gfx::OverlayTransform transform,
                                      gl::GLImage* image,
-                                     const Rect& bounds_rect,
-                                     const RectF& crop_rect) {
+                                     const gfx::Rect& bounds_rect,
+                                     const gfx::RectF& crop_rect) {
   NOTIMPLEMENTED();
   return false;
 }
 
 bool GLSurface::ScheduleCALayer(gl::GLImage* contents_image,
-                                const RectF& contents_rect,
+                                const gfx::RectF& contents_rect,
                                 float opacity,
                                 unsigned background_color,
                                 unsigned edge_aa_mask,
-                                const RectF& rect,
+                                const gfx::RectF& rect,
                                 bool is_clipped,
-                                const RectF& clip_rect,
-                                const Transform& transform,
+                                const gfx::RectF& clip_rect,
+                                const gfx::Transform& transform,
                                 int sorting_content_id,
                                 unsigned filter) {
   NOTIMPLEMENTED();
@@ -375,15 +375,15 @@ GLSurface::Format GLSurfaceAdapter::GetFormat() {
   return surface_->GetFormat();
 }
 
-VSyncProvider* GLSurfaceAdapter::GetVSyncProvider() {
+gfx::VSyncProvider* GLSurfaceAdapter::GetVSyncProvider() {
   return surface_->GetVSyncProvider();
 }
 
 bool GLSurfaceAdapter::ScheduleOverlayPlane(int z_order,
-                                            OverlayTransform transform,
+                                            gfx::OverlayTransform transform,
                                             gl::GLImage* image,
-                                            const Rect& bounds_rect,
-                                            const RectF& crop_rect) {
+                                            const gfx::Rect& bounds_rect,
+                                            const gfx::RectF& crop_rect) {
   return surface_->ScheduleOverlayPlane(
       z_order, transform, image, bounds_rect, crop_rect);
 }
@@ -402,4 +402,4 @@ bool GLSurfaceAdapter::BuffersFlipped() const {
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}
 
-}  // namespace gfx
+}  // namespace gl

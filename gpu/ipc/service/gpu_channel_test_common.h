@@ -77,7 +77,7 @@ class TestGpuChannel : public GpuChannel {
  public:
   TestGpuChannel(GpuChannelManager* gpu_channel_manager,
                  SyncPointManager* sync_point_manager,
-                 gfx::GLShareGroup* share_group,
+                 gl::GLShareGroup* share_group,
                  gles2::MailboxManager* mailbox_manager,
                  PreemptionFlag* preempting_flag,
                  PreemptionFlag* preempted_flag,

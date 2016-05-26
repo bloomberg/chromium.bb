@@ -91,7 +91,7 @@ void ContentTestSuite::Initialize() {
     gpu::CollectBasicGraphicsInfo(&gpu_info);
     gpu::ApplyGpuDriverBugWorkarounds(gpu_info,
                                       base::CommandLine::ForCurrentProcess());
-    gfx::GLSurfaceTestSupport::InitializeOneOff();
+    gl::GLSurfaceTestSupport::InitializeOneOff();
   }
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();

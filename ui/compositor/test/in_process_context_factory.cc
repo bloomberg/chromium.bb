@@ -103,9 +103,9 @@ InProcessContextFactory::InProcessContextFactory(
       use_test_surface_(true),
       context_factory_for_test_(context_factory_for_test),
       surface_manager_(surface_manager) {
-  DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone)
+  DCHECK_NE(gl::GetGLImplementation(), gl::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
-      << "gfx::GLSurfaceTestSupport::InitializeOneOff()";
+      << "gl::GLSurfaceTestSupport::InitializeOneOff()";
 }
 
 InProcessContextFactory::~InProcessContextFactory() {

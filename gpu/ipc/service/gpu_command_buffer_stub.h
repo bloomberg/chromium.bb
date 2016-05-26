@@ -115,7 +115,7 @@ class GPU_EXPORT GpuCommandBufferStub
 
   void SendCachedShader(const std::string& key, const std::string& shader);
 
-  gfx::GLSurface* surface() const { return surface_.get(); }
+  gl::GLSurface* surface() const { return surface_.get(); }
 
   void AddDestructionObserver(DestructionObserver* observer);
   void RemoveDestructionObserver(DestructionObserver* observer);
@@ -230,7 +230,7 @@ class GPU_EXPORT GpuCommandBufferStub
   std::unique_ptr<gles2::GLES2Decoder> decoder_;
   std::unique_ptr<CommandExecutor> executor_;
   std::unique_ptr<SyncPointClient> sync_point_client_;
-  scoped_refptr<gfx::GLSurface> surface_;
+  scoped_refptr<gl::GLSurface> surface_;
 
   base::ObserverList<DestructionObserver> destruction_observers_;
 

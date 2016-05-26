@@ -14,7 +14,7 @@
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_switches.h"
 
-namespace gfx {
+namespace gl {
 
 class GLContext;
 
@@ -141,6 +141,6 @@ base::NativeLibrary LoadLibraryAndPrintError(
     const base::FilePath::CharType* filename);
 base::NativeLibrary LoadLibraryAndPrintError(const base::FilePath& filename);
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_IMPLEMENTATION_H_

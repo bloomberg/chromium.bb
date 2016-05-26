@@ -86,7 +86,7 @@ MediaSourcePlayer::~MediaSourcePlayer() {
   }
 }
 
-void MediaSourcePlayer::SetVideoSurface(gfx::ScopedJavaSurface surface) {
+void MediaSourcePlayer::SetVideoSurface(gl::ScopedJavaSurface surface) {
   DVLOG(1) << __FUNCTION__;
   if (!video_decoder_job_->SetVideoSurface(std::move(surface)))
     return;

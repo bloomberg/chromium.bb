@@ -19,7 +19,7 @@ namespace gles2 {
 class GLES2Decoder;
 }
 }
-namespace gfx {
+namespace gl {
 
 class GLContext;
 class GLSurface;
@@ -143,6 +143,6 @@ class VirtualGLApi : public GLApiBase {
   std::vector<std::string> extensions_vec_;
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_GL_API_IMPLEMENTATION_H_

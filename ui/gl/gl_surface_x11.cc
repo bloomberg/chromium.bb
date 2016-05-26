@@ -22,7 +22,7 @@
 #include "ui/gl/gl_surface_osmesa.h"
 #include "ui/gl/gl_surface_stub.h"
 
-namespace gfx {
+namespace gl {
 
 namespace {
 
@@ -346,4 +346,4 @@ EGLNativeDisplayType GetPlatformDefaultEGLNativeDisplay() {
   return gfx::GetXDisplay();
 }
 
-}  // namespace gfx
+}  // namespace gl

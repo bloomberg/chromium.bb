@@ -19,7 +19,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace gfx {
+namespace gl {
 class GLContext;
 class GLSurface;
 }
@@ -45,14 +45,14 @@ class MockGLES2Decoder : public GLES2Decoder {
                               int* entries_processed);
 
   MOCK_METHOD6(Initialize,
-               bool(const scoped_refptr<gfx::GLSurface>& surface,
-                    const scoped_refptr<gfx::GLContext>& context,
+               bool(const scoped_refptr<gl::GLSurface>& surface,
+                    const scoped_refptr<gl::GLContext>& context,
                     bool offscreen,
                     const gfx::Size& size,
                     const DisallowedFeatures& disallowed_features,
                     const ContextCreationAttribHelper& attrib_helper));
   MOCK_METHOD1(Destroy, void(bool have_context));
-  MOCK_METHOD1(SetSurface, void(const scoped_refptr<gfx::GLSurface>& surface));
+  MOCK_METHOD1(SetSurface, void(const scoped_refptr<gl::GLSurface>& surface));
   MOCK_METHOD0(ReleaseSurface, void());
   MOCK_METHOD1(TakeFrontBuffer, void(const Mailbox& mailbox));
   MOCK_METHOD2(ReturnFrontBuffer, void(const Mailbox& mailbox, bool is_lost));
@@ -62,8 +62,8 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(MakeCurrent, bool());
   MOCK_METHOD1(GetServiceIdForTesting, uint32_t(uint32_t client_id));
   MOCK_METHOD0(GetGLES2Util, GLES2Util*());
-  MOCK_METHOD0(GetGLSurface, gfx::GLSurface*());
-  MOCK_METHOD0(GetGLContext, gfx::GLContext*());
+  MOCK_METHOD0(GetGLSurface, gl::GLSurface*());
+  MOCK_METHOD0(GetGLContext, gl::GLContext*());
   MOCK_METHOD0(GetContextGroup, ContextGroup*());
   MOCK_METHOD0(GetContextState, const ContextState*());
   MOCK_METHOD0(GetCapabilities, Capabilities());

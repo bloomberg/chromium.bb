@@ -22,7 +22,7 @@ class GPU_EXPORT SurfaceTexturePeer {
   // process.
   virtual void EstablishSurfaceTexturePeer(
       base::ProcessHandle pid,
-      scoped_refptr<gfx::SurfaceTexture> surface_texture,
+      scoped_refptr<gl::SurfaceTexture> surface_texture,
       int primary_id,
       int secondary_id) = 0;
 

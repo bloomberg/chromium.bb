@@ -14,7 +14,7 @@
 namespace base {
 class CommandLine;
 }
-namespace gfx {
+namespace gl {
 
 class GLContext;
 struct GLWindowSystemBindingInfo;
@@ -71,7 +71,7 @@ class GL_EXPORT TraceWGLApi : public WGLApi {
   WGLApi* wgl_api_;
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_WGL_API_IMPLEMENTATION_H_
 

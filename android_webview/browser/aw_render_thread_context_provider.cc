@@ -22,13 +22,13 @@ namespace android_webview {
 // static
 scoped_refptr<AwRenderThreadContextProvider>
 AwRenderThreadContextProvider::Create(
-    scoped_refptr<gfx::GLSurface> surface,
+    scoped_refptr<gl::GLSurface> surface,
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
   return new AwRenderThreadContextProvider(surface, service);
 }
 
 AwRenderThreadContextProvider::AwRenderThreadContextProvider(
-    scoped_refptr<gfx::GLSurface> surface,
+    scoped_refptr<gl::GLSurface> surface,
     scoped_refptr<gpu::InProcessCommandBuffer::Service> service) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
@@ -63,7 +63,7 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
   context_.reset(gpu::GLInProcessContext::Create(
       service, surface, surface->IsOffscreen(), gfx::kNullAcceleratedWidget,
       surface->GetSize(), nullptr /* share_context */, attributes,
-      gfx::PreferDiscreteGpu, limits, nullptr, nullptr));
+      gl::PreferDiscreteGpu, limits, nullptr, nullptr));
 
   context_->GetImplementation()->SetLostContextCallback(base::Bind(
       &AwRenderThreadContextProvider::OnLostContext, base::Unretained(this)));

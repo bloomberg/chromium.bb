@@ -10,11 +10,11 @@
 
 namespace gpu {
 
-class GLContextMock : public gfx::GLContextStubWithExtensions {
+class GLContextMock : public gl::GLContextStubWithExtensions {
  public:
   GLContextMock();
 
-  MOCK_METHOD1(MakeCurrent, bool(gfx::GLSurface* surface));
+  MOCK_METHOD1(MakeCurrent, bool(gl::GLSurface* surface));
 
  protected:
   virtual ~GLContextMock();

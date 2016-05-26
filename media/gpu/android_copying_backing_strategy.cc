@@ -26,12 +26,12 @@ AndroidCopyingBackingStrategy::AndroidCopyingBackingStrategy(
 
 AndroidCopyingBackingStrategy::~AndroidCopyingBackingStrategy() {}
 
-gfx::ScopedJavaSurface AndroidCopyingBackingStrategy::Initialize(
+gl::ScopedJavaSurface AndroidCopyingBackingStrategy::Initialize(
     int surface_view_id) {
   if (surface_view_id != media::VideoDecodeAccelerator::Config::kNoSurfaceID) {
     LOG(ERROR) << "The copying strategy should not be initialized with a "
                   "surface id.";
-    return gfx::ScopedJavaSurface();
+    return gl::ScopedJavaSurface();
   }
 
   // Create a texture and attach the SurfaceTexture to it.
@@ -49,9 +49,9 @@ gfx::ScopedJavaSurface AndroidCopyingBackingStrategy::Initialize(
   state_provider_->GetGlDecoder()->RestoreTextureUnitBindings(0);
   state_provider_->GetGlDecoder()->RestoreActiveTexture();
 
-  surface_texture_ = gfx::SurfaceTexture::Create(surface_texture_id_);
+  surface_texture_ = gl::SurfaceTexture::Create(surface_texture_id_);
 
-  return gfx::ScopedJavaSurface(surface_texture_.get());
+  return gl::ScopedJavaSurface(surface_texture_.get());
 }
 
 void AndroidCopyingBackingStrategy::Cleanup(
@@ -66,7 +66,7 @@ void AndroidCopyingBackingStrategy::Cleanup(
     glDeleteTextures(1, &surface_texture_id_);
 }
 
-scoped_refptr<gfx::SurfaceTexture>
+scoped_refptr<gl::SurfaceTexture>
 AndroidCopyingBackingStrategy::GetSurfaceTexture() const {
   return surface_texture_;
 }

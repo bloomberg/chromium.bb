@@ -15,7 +15,7 @@
 
 struct ANativeWindow;
 
-namespace gfx {
+namespace gl {
 
 // This class serves as a bridge for native code to call java functions inside
 // android SurfaceTexture class.
@@ -77,6 +77,6 @@ class GL_EXPORT SurfaceTexture
   DISALLOW_COPY_AND_ASSIGN(SurfaceTexture);
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_ANDROID_SURFACE_TEXTURE_H_

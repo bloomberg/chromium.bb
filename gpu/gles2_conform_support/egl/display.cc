@@ -178,7 +178,7 @@ EGLSurface Display::DoCreatePbufferSurface(ThreadState* ts,
                                            EGLint width,
                                            EGLint height) {
   lock_.AssertAcquired();
-  scoped_refptr<gfx::GLSurface> gl_surface;
+  scoped_refptr<gl::GLSurface> gl_surface;
   gl_surface = gl::init::CreateOffscreenGLSurface(gfx::Size(width, height));
   if (!gl_surface)
     return ts->ReturnError(EGL_BAD_ALLOC, nullptr);
@@ -213,7 +213,7 @@ EGLSurface Display::CreateWindowSurface(ThreadState* ts,
     window_surface_pbuffer_height_ = 0;
     return result;
   }
-  scoped_refptr<gfx::GLSurface> gl_surface;
+  scoped_refptr<gl::GLSurface> gl_surface;
   gl_surface = gl::init::CreateViewGLSurface(win);
   if (!gl_surface)
     return ts->ReturnError(EGL_BAD_ALLOC, EGL_NO_SURFACE);
@@ -367,7 +367,7 @@ void Display::InitializeConfigsIfNeeded() {
   if (!configs_[0]) {
     // The interface offers separate configs for window and pbuffer.
     // This way we can record the client intention at context creation time.
-    // The GL implementation (gfx::GLContext and gfx::GLSurface) needs this
+    // The GL implementation (gl::GLContext and gl::GLSurface) needs this
     // distinction when creating a context.
     configs_[0].reset(new Config(EGL_WINDOW_BIT));
     configs_[1].reset(new Config(EGL_PBUFFER_BIT));

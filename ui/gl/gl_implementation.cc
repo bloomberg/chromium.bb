@@ -20,7 +20,7 @@
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_version_info.h"
 
-namespace gfx {
+namespace gl {
 
 namespace {
 
@@ -206,9 +206,8 @@ bool WillUseGLGetStringForExtensions() {
       reinterpret_cast<const char*>(glGetString(GL_VERSION));
   unsigned major_version, minor_version;
   bool is_es, is_es2, is_es3;
-  gfx::GLVersionInfo::ParseVersionString(
-      version_str, &major_version, &minor_version,
-      &is_es, &is_es2, &is_es3);
+  gl::GLVersionInfo::ParseVersionString(
+      version_str, &major_version, &minor_version, &is_es, &is_es2, &is_es3);
   return is_es || major_version < 3;
 }
 
@@ -228,4 +227,4 @@ base::NativeLibrary LoadLibraryAndPrintError(const base::FilePath& filename) {
   return library;
 }
 
-}  // namespace gfx
+}  // namespace gl

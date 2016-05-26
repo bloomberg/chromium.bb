@@ -34,7 +34,7 @@ AuraShellTestSuite::~AuraShellTestSuite() {
 
 void AuraShellTestSuite::Initialize() {
   base::TestSuite::Initialize();
-  gfx::GLSurfaceTestSupport::InitializeOneOff();
+  gl::GLSurfaceTestSupport::InitializeOneOff();
 
 #if defined(OS_WIN)
   base::win::Version version = base::win::GetVersion();

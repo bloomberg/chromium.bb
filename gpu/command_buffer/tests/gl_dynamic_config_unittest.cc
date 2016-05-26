@@ -18,7 +18,7 @@ TEST_F(GLDynamicConfigTest, SwitchConfigurationInNonVirtualizedContextMode) {
   GLManager::SetEnableVirtualContext(false);
 
   GLManager::Options options;
-  options.surface_format = gfx::GLSurface::SURFACE_RGB565;
+  options.surface_format = gl::GLSurface::SURFACE_RGB565;
   GLManager gl_rgb_565;
   gl_rgb_565.Initialize(options);
 

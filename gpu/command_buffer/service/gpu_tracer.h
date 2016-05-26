@@ -20,9 +20,9 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/gpu_export.h"
 
-namespace gfx {
-  class GPUTimingClient;
-  class GPUTimer;
+namespace gl {
+class GPUTimingClient;
+class GPUTimer;
 }
 
 namespace gpu {
@@ -92,7 +92,7 @@ class GPU_EXPORT GPUTracer
   bool CheckDisjointStatus();
   void ClearOngoingTraces(bool have_context);
 
-  scoped_refptr<gfx::GPUTimingClient> gpu_timing_client_;
+  scoped_refptr<gl::GPUTimingClient> gpu_timing_client_;
   scoped_refptr<Outputter> outputter_;
   std::vector<TraceMarker> markers_[NUM_TRACER_SOURCES];
   std::deque<scoped_refptr<GPUTrace> > finished_traces_;
@@ -166,7 +166,7 @@ class GPU_EXPORT GPUTrace
     : public base::RefCounted<GPUTrace> {
  public:
   GPUTrace(scoped_refptr<Outputter> outputter,
-           gfx::GPUTimingClient* gpu_timing_client,
+           gl::GPUTimingClient* gpu_timing_client,
            const GpuTracerSource source,
            const std::string& category,
            const std::string& name,
@@ -193,7 +193,7 @@ class GPU_EXPORT GPUTrace
   const std::string category_;
   const std::string name_;
   scoped_refptr<Outputter> outputter_;
-  std::unique_ptr<gfx::GPUTimer> gpu_timer_;
+  std::unique_ptr<gl::GPUTimer> gpu_timer_;
   const bool service_enabled_ = false;
   const bool device_enabled_ = false;
 

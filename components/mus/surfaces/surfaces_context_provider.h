@@ -58,7 +58,7 @@ class SurfacesContextProvider : public cc::ContextProvider,
 
   // SurfacesContextProvider API.
   void SetSwapBuffersCompletionCallback(
-      gfx::GLSurface::SwapCompletionCallback callback);
+      gl::GLSurface::SwapCompletionCallback callback);
 
  protected:
   friend class base::RefCountedThreadSafe<SurfacesContextProvider>;
@@ -82,7 +82,7 @@ class SurfacesContextProvider : public cc::ContextProvider,
   gfx::AcceleratedWidget widget_;
   CommandBufferLocal* command_buffer_local_;
 
-  gfx::GLSurface::SwapCompletionCallback swap_buffers_completion_callback_;
+  gl::GLSurface::SwapCompletionCallback swap_buffers_completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesContextProvider);
 };

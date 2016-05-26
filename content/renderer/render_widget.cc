@@ -789,7 +789,7 @@ std::unique_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(
       new ContextProviderCommandBuffer(
           std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
           gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
-          GetURLForGraphicsContext3D(), gfx::PreferIntegratedGpu,
+          GetURLForGraphicsContext3D(), gl::PreferIntegratedGpu,
           automatic_flushes, support_locking, limits, attributes, share_context,
           command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
 

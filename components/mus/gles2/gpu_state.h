@@ -58,7 +58,7 @@ class GpuState : public base::RefCountedThreadSafe<GpuState> {
 
   // These objects are intended to be used on the "driver" thread (i.e., the
   // thread on which GpuImpl instances are created).
-  gfx::GLShareGroup* share_group() const { return share_group_.get(); }
+  gl::GLShareGroup* share_group() const { return share_group_.get(); }
   gpu::gles2::MailboxManager* mailbox_manager() const {
     return mailbox_manager_.get();
   }
@@ -96,7 +96,7 @@ class GpuState : public base::RefCountedThreadSafe<GpuState> {
   scoped_refptr<CommandBufferTaskRunner> command_buffer_task_runner_;
   std::unique_ptr<CommandBufferDriverManager> driver_manager_;
   std::unique_ptr<gpu::SyncPointManager> sync_point_manager_;
-  scoped_refptr<gfx::GLShareGroup> share_group_;
+  scoped_refptr<gl::GLShareGroup> share_group_;
   scoped_refptr<gpu::gles2::MailboxManager> mailbox_manager_;
   gpu::GPUInfo gpu_info_;
   bool hardware_rendering_available_;

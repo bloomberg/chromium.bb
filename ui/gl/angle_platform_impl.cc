@@ -8,7 +8,7 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/trace_event/trace_event.h"
 
-namespace gfx {
+namespace gl {
 
 ANGLEPlatformImpl::ANGLEPlatformImpl() {
 }
@@ -107,4 +107,4 @@ void ANGLEPlatformImpl::histogramBoolean(const char* name, bool sample) {
   histogramEnumeration(name, sample ? 1 : 0, 2);
 }
 
-}  // namespace gfx
+}  // namespace gl

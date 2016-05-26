@@ -11,7 +11,7 @@
 #ifndef UI_GL_GL_BINDINGS_AUTOGEN_GLX_H_
 #define UI_GL_GL_BINDINGS_AUTOGEN_GLX_H_
 
-namespace gfx {
+namespace gl {
 
 class GLContext;
 
@@ -357,68 +357,63 @@ class GL_EXPORT GLXApi {
   virtual void glXWaitXFn(void) = 0;
 };
 
-}  // namespace gfx
+}  // namespace gl
 
-#define glXBindTexImageEXT ::gfx::g_current_glx_context->glXBindTexImageEXTFn
-#define glXChooseFBConfig ::gfx::g_current_glx_context->glXChooseFBConfigFn
-#define glXChooseVisual ::gfx::g_current_glx_context->glXChooseVisualFn
-#define glXCopyContext ::gfx::g_current_glx_context->glXCopyContextFn
-#define glXCopySubBufferMESA \
-  ::gfx::g_current_glx_context->glXCopySubBufferMESAFn
-#define glXCreateContext ::gfx::g_current_glx_context->glXCreateContextFn
+#define glXBindTexImageEXT ::gl::g_current_glx_context->glXBindTexImageEXTFn
+#define glXChooseFBConfig ::gl::g_current_glx_context->glXChooseFBConfigFn
+#define glXChooseVisual ::gl::g_current_glx_context->glXChooseVisualFn
+#define glXCopyContext ::gl::g_current_glx_context->glXCopyContextFn
+#define glXCopySubBufferMESA ::gl::g_current_glx_context->glXCopySubBufferMESAFn
+#define glXCreateContext ::gl::g_current_glx_context->glXCreateContextFn
 #define glXCreateContextAttribsARB \
-  ::gfx::g_current_glx_context->glXCreateContextAttribsARBFn
-#define glXCreateGLXPixmap ::gfx::g_current_glx_context->glXCreateGLXPixmapFn
-#define glXCreateNewContext ::gfx::g_current_glx_context->glXCreateNewContextFn
-#define glXCreatePbuffer ::gfx::g_current_glx_context->glXCreatePbufferFn
-#define glXCreatePixmap ::gfx::g_current_glx_context->glXCreatePixmapFn
-#define glXCreateWindow ::gfx::g_current_glx_context->glXCreateWindowFn
-#define glXDestroyContext ::gfx::g_current_glx_context->glXDestroyContextFn
-#define glXDestroyGLXPixmap ::gfx::g_current_glx_context->glXDestroyGLXPixmapFn
-#define glXDestroyPbuffer ::gfx::g_current_glx_context->glXDestroyPbufferFn
-#define glXDestroyPixmap ::gfx::g_current_glx_context->glXDestroyPixmapFn
-#define glXDestroyWindow ::gfx::g_current_glx_context->glXDestroyWindowFn
-#define glXGetClientString ::gfx::g_current_glx_context->glXGetClientStringFn
-#define glXGetConfig ::gfx::g_current_glx_context->glXGetConfigFn
-#define glXGetCurrentContext \
-  ::gfx::g_current_glx_context->glXGetCurrentContextFn
-#define glXGetCurrentDisplay \
-  ::gfx::g_current_glx_context->glXGetCurrentDisplayFn
+  ::gl::g_current_glx_context->glXCreateContextAttribsARBFn
+#define glXCreateGLXPixmap ::gl::g_current_glx_context->glXCreateGLXPixmapFn
+#define glXCreateNewContext ::gl::g_current_glx_context->glXCreateNewContextFn
+#define glXCreatePbuffer ::gl::g_current_glx_context->glXCreatePbufferFn
+#define glXCreatePixmap ::gl::g_current_glx_context->glXCreatePixmapFn
+#define glXCreateWindow ::gl::g_current_glx_context->glXCreateWindowFn
+#define glXDestroyContext ::gl::g_current_glx_context->glXDestroyContextFn
+#define glXDestroyGLXPixmap ::gl::g_current_glx_context->glXDestroyGLXPixmapFn
+#define glXDestroyPbuffer ::gl::g_current_glx_context->glXDestroyPbufferFn
+#define glXDestroyPixmap ::gl::g_current_glx_context->glXDestroyPixmapFn
+#define glXDestroyWindow ::gl::g_current_glx_context->glXDestroyWindowFn
+#define glXGetClientString ::gl::g_current_glx_context->glXGetClientStringFn
+#define glXGetConfig ::gl::g_current_glx_context->glXGetConfigFn
+#define glXGetCurrentContext ::gl::g_current_glx_context->glXGetCurrentContextFn
+#define glXGetCurrentDisplay ::gl::g_current_glx_context->glXGetCurrentDisplayFn
 #define glXGetCurrentDrawable \
-  ::gfx::g_current_glx_context->glXGetCurrentDrawableFn
+  ::gl::g_current_glx_context->glXGetCurrentDrawableFn
 #define glXGetCurrentReadDrawable \
-  ::gfx::g_current_glx_context->glXGetCurrentReadDrawableFn
-#define glXGetFBConfigAttrib \
-  ::gfx::g_current_glx_context->glXGetFBConfigAttribFn
+  ::gl::g_current_glx_context->glXGetCurrentReadDrawableFn
+#define glXGetFBConfigAttrib ::gl::g_current_glx_context->glXGetFBConfigAttribFn
 #define glXGetFBConfigFromVisualSGIX \
-  ::gfx::g_current_glx_context->glXGetFBConfigFromVisualSGIXFn
-#define glXGetFBConfigs ::gfx::g_current_glx_context->glXGetFBConfigsFn
-#define glXGetMscRateOML ::gfx::g_current_glx_context->glXGetMscRateOMLFn
-#define glXGetSelectedEvent ::gfx::g_current_glx_context->glXGetSelectedEventFn
-#define glXGetSyncValuesOML ::gfx::g_current_glx_context->glXGetSyncValuesOMLFn
+  ::gl::g_current_glx_context->glXGetFBConfigFromVisualSGIXFn
+#define glXGetFBConfigs ::gl::g_current_glx_context->glXGetFBConfigsFn
+#define glXGetMscRateOML ::gl::g_current_glx_context->glXGetMscRateOMLFn
+#define glXGetSelectedEvent ::gl::g_current_glx_context->glXGetSelectedEventFn
+#define glXGetSyncValuesOML ::gl::g_current_glx_context->glXGetSyncValuesOMLFn
 #define glXGetVisualFromFBConfig \
-  ::gfx::g_current_glx_context->glXGetVisualFromFBConfigFn
-#define glXIsDirect ::gfx::g_current_glx_context->glXIsDirectFn
+  ::gl::g_current_glx_context->glXGetVisualFromFBConfigFn
+#define glXIsDirect ::gl::g_current_glx_context->glXIsDirectFn
 #define glXMakeContextCurrent \
-  ::gfx::g_current_glx_context->glXMakeContextCurrentFn
-#define glXMakeCurrent ::gfx::g_current_glx_context->glXMakeCurrentFn
-#define glXQueryContext ::gfx::g_current_glx_context->glXQueryContextFn
-#define glXQueryDrawable ::gfx::g_current_glx_context->glXQueryDrawableFn
-#define glXQueryExtension ::gfx::g_current_glx_context->glXQueryExtensionFn
+  ::gl::g_current_glx_context->glXMakeContextCurrentFn
+#define glXMakeCurrent ::gl::g_current_glx_context->glXMakeCurrentFn
+#define glXQueryContext ::gl::g_current_glx_context->glXQueryContextFn
+#define glXQueryDrawable ::gl::g_current_glx_context->glXQueryDrawableFn
+#define glXQueryExtension ::gl::g_current_glx_context->glXQueryExtensionFn
 #define glXQueryExtensionsString \
-  ::gfx::g_current_glx_context->glXQueryExtensionsStringFn
-#define glXQueryServerString \
-  ::gfx::g_current_glx_context->glXQueryServerStringFn
-#define glXQueryVersion ::gfx::g_current_glx_context->glXQueryVersionFn
+  ::gl::g_current_glx_context->glXQueryExtensionsStringFn
+#define glXQueryServerString ::gl::g_current_glx_context->glXQueryServerStringFn
+#define glXQueryVersion ::gl::g_current_glx_context->glXQueryVersionFn
 #define glXReleaseTexImageEXT \
-  ::gfx::g_current_glx_context->glXReleaseTexImageEXTFn
-#define glXSelectEvent ::gfx::g_current_glx_context->glXSelectEventFn
-#define glXSwapBuffers ::gfx::g_current_glx_context->glXSwapBuffersFn
-#define glXSwapIntervalEXT ::gfx::g_current_glx_context->glXSwapIntervalEXTFn
-#define glXSwapIntervalMESA ::gfx::g_current_glx_context->glXSwapIntervalMESAFn
-#define glXUseXFont ::gfx::g_current_glx_context->glXUseXFontFn
-#define glXWaitGL ::gfx::g_current_glx_context->glXWaitGLFn
-#define glXWaitVideoSyncSGI ::gfx::g_current_glx_context->glXWaitVideoSyncSGIFn
-#define glXWaitX ::gfx::g_current_glx_context->glXWaitXFn
+  ::gl::g_current_glx_context->glXReleaseTexImageEXTFn
+#define glXSelectEvent ::gl::g_current_glx_context->glXSelectEventFn
+#define glXSwapBuffers ::gl::g_current_glx_context->glXSwapBuffersFn
+#define glXSwapIntervalEXT ::gl::g_current_glx_context->glXSwapIntervalEXTFn
+#define glXSwapIntervalMESA ::gl::g_current_glx_context->glXSwapIntervalMESAFn
+#define glXUseXFont ::gl::g_current_glx_context->glXUseXFontFn
+#define glXWaitGL ::gl::g_current_glx_context->glXWaitGLFn
+#define glXWaitVideoSyncSGI ::gl::g_current_glx_context->glXWaitVideoSyncSGIFn
+#define glXWaitX ::gl::g_current_glx_context->glXWaitXFn
 
 #endif  //  UI_GL_GL_BINDINGS_AUTOGEN_GLX_H_

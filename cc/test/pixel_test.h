@@ -80,7 +80,7 @@ class PixelTest : public testing::Test, RendererClient {
   bool PixelsMatchReference(const base::FilePath& ref_file,
                             const PixelComparator& comparator);
 
-  std::unique_ptr<gfx::DisableNullDrawGLBindings> enable_pixel_output_;
+  std::unique_ptr<gl::DisableNullDrawGLBindings> enable_pixel_output_;
 };
 
 template<typename RendererType>

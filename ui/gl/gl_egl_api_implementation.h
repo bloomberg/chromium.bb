@@ -15,7 +15,7 @@
 namespace base {
 class CommandLine;
 }
-namespace gfx {
+namespace gl {
 
 class GLContext;
 struct GLWindowSystemBindingInfo;
@@ -72,7 +72,7 @@ class GL_EXPORT TraceEGLApi : public EGLApi {
   EGLApi* egl_api_;
 };
 
-}  // namespace gfx
+}  // namespace gl
 
 #endif  // UI_GL_GL_EGL_API_IMPLEMENTATION_H_
 

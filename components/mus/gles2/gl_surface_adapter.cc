@@ -8,8 +8,8 @@
 
 namespace mus {
 
-GLSurfaceAdapterMus::GLSurfaceAdapterMus(scoped_refptr<gfx::GLSurface> surface)
-    : gfx::GLSurfaceAdapter(surface.get()),
+GLSurfaceAdapterMus::GLSurfaceAdapterMus(scoped_refptr<gl::GLSurface> surface)
+    : gl::GLSurfaceAdapter(surface.get()),
       surface_(surface),
       weak_ptr_factory_(this) {}
 
@@ -17,7 +17,7 @@ GLSurfaceAdapterMus::~GLSurfaceAdapterMus() {}
 
 void GLSurfaceAdapterMus::SwapBuffersAsync(
     const GLSurface::SwapCompletionCallback& callback) {
-  gfx::GLSurfaceAdapter::SwapBuffersAsync(
+  gl::GLSurfaceAdapter::SwapBuffersAsync(
       base::Bind(&GLSurfaceAdapterMus::WrappedCallbackForSwapBuffersAsync,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
@@ -28,7 +28,7 @@ void GLSurfaceAdapterMus::PostSubBufferAsync(
     int width,
     int height,
     const GLSurface::SwapCompletionCallback& callback) {
-  gfx::GLSurfaceAdapter::PostSubBufferAsync(
+  gl::GLSurfaceAdapter::PostSubBufferAsync(
       x, y, width, height,
       base::Bind(&GLSurfaceAdapterMus::WrappedCallbackForSwapBuffersAsync,
                  weak_ptr_factory_.GetWeakPtr(), callback));
@@ -36,13 +36,13 @@ void GLSurfaceAdapterMus::PostSubBufferAsync(
 
 void GLSurfaceAdapterMus::CommitOverlayPlanesAsync(
     const GLSurface::SwapCompletionCallback& callback) {
-  gfx::GLSurfaceAdapter::CommitOverlayPlanesAsync(
+  gl::GLSurfaceAdapter::CommitOverlayPlanesAsync(
       base::Bind(&GLSurfaceAdapterMus::WrappedCallbackForSwapBuffersAsync,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void GLSurfaceAdapterMus::WrappedCallbackForSwapBuffersAsync(
-    const gfx::GLSurface::SwapCompletionCallback& original_callback,
+    const gl::GLSurface::SwapCompletionCallback& original_callback,
     gfx::SwapResult result) {
   if (!adapter_callback_.is_null())
     adapter_callback_.Run(result);
@@ -50,7 +50,7 @@ void GLSurfaceAdapterMus::WrappedCallbackForSwapBuffersAsync(
 }
 
 void GLSurfaceAdapterMus::SetGpuCompletedSwapBuffersCallback(
-    gfx::GLSurface::SwapCompletionCallback callback) {
+    gl::GLSurface::SwapCompletionCallback callback) {
   adapter_callback_ = std::move(callback);
 }
 

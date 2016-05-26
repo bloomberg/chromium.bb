@@ -57,7 +57,7 @@ egl::ThreadState* ThreadState::Get() {
 #endif
     gles2::Initialize();
 
-    if (gfx::GetGLImplementation() == gfx::kGLImplementationNone) {
+    if (gl::GetGLImplementation() == gl::kGLImplementationNone) {
       base::CommandLine::StringVector argv;
       std::unique_ptr<base::Environment> env(base::Environment::Create());
       std::string env_string;

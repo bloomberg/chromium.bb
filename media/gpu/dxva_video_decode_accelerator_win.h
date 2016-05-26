@@ -39,7 +39,7 @@
 interface IMFSample;
 interface IDirect3DSurface9;
 
-namespace gfx {
+namespace gl {
 class GLContext;
 }
 

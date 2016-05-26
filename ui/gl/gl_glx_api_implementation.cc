@@ -9,7 +9,7 @@
 #include "base/strings/string_util.h"
 #include "ui/gl/gl_implementation.h"
 
-namespace gfx {
+namespace gl {
 
 RealGLXApi* g_real_glx;
 
@@ -119,6 +119,4 @@ bool GetGLWindowSystemBindingInfoGLX(GLWindowSystemBindingInfo* info) {
   return true;
 }
 
-}  // namespace gfx
-
-
+}  // namespace gl

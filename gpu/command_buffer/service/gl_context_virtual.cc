@@ -15,17 +15,15 @@
 
 namespace gpu {
 
-GLContextVirtual::GLContextVirtual(
-    gfx::GLShareGroup* share_group,
-    gfx::GLContext* shared_context,
-    base::WeakPtr<gles2::GLES2Decoder> decoder)
-  : GLContext(share_group),
-    shared_context_(shared_context),
-    decoder_(decoder) {
-}
+GLContextVirtual::GLContextVirtual(gl::GLShareGroup* share_group,
+                                   gl::GLContext* shared_context,
+                                   base::WeakPtr<gles2::GLES2Decoder> decoder)
+    : GLContext(share_group),
+      shared_context_(shared_context),
+      decoder_(decoder) {}
 
-bool GLContextVirtual::Initialize(
-    gfx::GLSurface* compatible_surface, gfx::GpuPreference gpu_preference) {
+bool GLContextVirtual::Initialize(gl::GLSurface* compatible_surface,
+                                  gl::GpuPreference gpu_preference) {
   SetGLStateRestorer(new GLStateRestorerImpl(decoder_));
 
   // Virtual contexts obviously can't make a context that is compatible
@@ -50,7 +48,7 @@ void GLContextVirtual::Destroy() {
   shared_context_ = NULL;
 }
 
-bool GLContextVirtual::MakeCurrent(gfx::GLSurface* surface) {
+bool GLContextVirtual::MakeCurrent(gl::GLSurface* surface) {
   if (decoder_.get())
     return shared_context_->MakeVirtuallyCurrent(this, surface);
 
@@ -58,14 +56,14 @@ bool GLContextVirtual::MakeCurrent(gfx::GLSurface* surface) {
   return false;
 }
 
-void GLContextVirtual::ReleaseCurrent(gfx::GLSurface* surface) {
+void GLContextVirtual::ReleaseCurrent(gl::GLSurface* surface) {
   if (IsCurrent(surface)) {
     shared_context_->OnReleaseVirtuallyCurrent(this);
     shared_context_->ReleaseCurrent(surface);
   }
 }
 
-bool GLContextVirtual::IsCurrent(gfx::GLSurface* surface) {
+bool GLContextVirtual::IsCurrent(gl::GLSurface* surface) {
   // If it's a real surface it needs to be current.
   if (surface &&
       !surface->IsOffscreen())
@@ -79,7 +77,7 @@ void* GLContextVirtual::GetHandle() {
   return shared_context_->GetHandle();
 }
 
-scoped_refptr<gfx::GPUTimingClient> GLContextVirtual::CreateGPUTimingClient() {
+scoped_refptr<gl::GPUTimingClient> GLContextVirtual::CreateGPUTimingClient() {
   return shared_context_->CreateGPUTimingClient();
 }
 

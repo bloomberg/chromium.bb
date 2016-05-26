@@ -10,7 +10,7 @@
 
 #include "base/time/time.h"
 
-namespace gfx {
+namespace gl {
 class GPUTimingClient;
 class GPUTimer;
 }
@@ -41,7 +41,7 @@ struct Measurement {
 // creation up to when Record is called.
 class MeasurementTimers {
  public:
-  explicit MeasurementTimers(gfx::GPUTimingClient* gpu_timing_client);
+  explicit MeasurementTimers(gl::GPUTimingClient* gpu_timing_client);
   void Record();
   Measurement GetAsMeasurement(const std::string& name);
   ~MeasurementTimers();
@@ -49,7 +49,7 @@ class MeasurementTimers {
  private:
   base::TimeTicks wall_time_start_;
   base::ThreadTicks cpu_time_start_;
-  std::unique_ptr<gfx::GPUTimer> gpu_timer_;
+  std::unique_ptr<gl::GPUTimer> gpu_timer_;
 
   base::TimeDelta wall_time_;
   base::TimeDelta cpu_time_;

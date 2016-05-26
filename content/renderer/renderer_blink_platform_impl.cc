@@ -1085,7 +1085,7 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   constexpr bool automatic_flushes = true;
   constexpr bool support_locking = false;
   // Prefer discrete GPU for WebGL.
-  constexpr gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
+  constexpr gl::GpuPreference gpu_preference = gl::PreferDiscreteGpu;
 
   scoped_refptr<ContextProviderCommandBuffer> provider(
       new ContextProviderCommandBuffer(

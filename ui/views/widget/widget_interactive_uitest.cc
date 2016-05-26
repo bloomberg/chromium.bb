@@ -281,7 +281,7 @@ class WidgetTestInteractive : public WidgetTest {
     // On mus these tests run as part of views::ViewsTestSuite which already
     // does this initialization.
     if (!IsMus()) {
-      gfx::GLSurfaceTestSupport::InitializeOneOff();
+      gl::GLSurfaceTestSupport::InitializeOneOff();
       ui::RegisterPathProvider();
       base::FilePath ui_test_pak_path;
       ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
@@ -1304,7 +1304,7 @@ class WidgetCaptureTest : public ViewsTestBase {
     // On mus these tests run as part of views::ViewsTestSuite which already
     // does this initialization.
     if (!IsMus()) {
-      gfx::GLSurfaceTestSupport::InitializeOneOff();
+      gl::GLSurfaceTestSupport::InitializeOneOff();
       ui::RegisterPathProvider();
       base::FilePath ui_test_pak_path;
       ASSERT_TRUE(PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
