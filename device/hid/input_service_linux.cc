@@ -10,9 +10,11 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
+#include "device/core/device_monitor_linux.h"
 #include "device/udev_linux/udev.h"
 
 namespace device {
@@ -89,6 +91,7 @@ class InputServiceLinuxImpl : public InputServiceLinux,
   // Implements DeviceMonitorLinux::Observer:
   void OnDeviceAdded(udev_device* device) override;
   void OnDeviceRemoved(udev_device* device) override;
+  void WillDestroyMonitorMessageLoop() override;
 
  private:
   friend class InputServiceLinux;
@@ -96,22 +99,21 @@ class InputServiceLinuxImpl : public InputServiceLinux,
   InputServiceLinuxImpl();
   ~InputServiceLinuxImpl() override;
 
+  ScopedObserver<DeviceMonitorLinux, DeviceMonitorLinux::Observer> observer_;
+
   DISALLOW_COPY_AND_ASSIGN(InputServiceLinuxImpl);
 };
 
-InputServiceLinuxImpl::InputServiceLinuxImpl() {
+InputServiceLinuxImpl::InputServiceLinuxImpl() : observer_(this) {
   base::ThreadRestrictions::AssertIOAllowed();
-  base::MessageLoop::current()->AddDestructionObserver(this);
 
-  DeviceMonitorLinux::GetInstance()->AddObserver(this);
-  DeviceMonitorLinux::GetInstance()->Enumerate(base::Bind(
-      &InputServiceLinuxImpl::OnDeviceAdded, base::Unretained(this)));
+  DeviceMonitorLinux* monitor = DeviceMonitorLinux::GetInstance();
+  observer_.Add(monitor);
+  monitor->Enumerate(base::Bind(&InputServiceLinuxImpl::OnDeviceAdded,
+                                base::Unretained(this)));
 }
 
 InputServiceLinuxImpl::~InputServiceLinuxImpl() {
-  if (DeviceMonitorLinux::HasInstance())
-    DeviceMonitorLinux::GetInstance()->RemoveObserver(this);
-  base::MessageLoop::current()->RemoveDestructionObserver(this);
 }
 
 void InputServiceLinuxImpl::OnDeviceAdded(udev_device* device) {
@@ -159,6 +161,11 @@ void InputServiceLinuxImpl::OnDeviceRemoved(udev_device* device) {
   const char* devnode = udev_device_get_devnode(device);
   if (devnode)
     RemoveDevice(devnode);
+}
+
+void InputServiceLinuxImpl::WillDestroyMonitorMessageLoop() {
+  DCHECK(CalledOnValidThread());
+  g_input_service_linux_ptr.Get().reset(nullptr);
 }
 
 }  // namespace
@@ -230,11 +237,6 @@ bool InputServiceLinux::GetDeviceInfo(const std::string& id,
     return false;
   *info = it->second;
   return true;
-}
-
-void InputServiceLinux::WillDestroyCurrentMessageLoop() {
-  DCHECK(CalledOnValidThread());
-  g_input_service_linux_ptr.Get().reset(NULL);
 }
 
 void InputServiceLinux::AddDevice(const InputDeviceInfo& info) {

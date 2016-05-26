@@ -26,6 +26,17 @@
       ],
       'dependencies': [
         '../../base/base.gyp:base',
+      ],
+      'conditions': [
+        ['use_udev==1', {
+          'dependencies': [
+            '../udev_linux/udev.gyp:udev_linux',
+          ],
+          'sources': [
+            'device_monitor_linux.cc',
+            'device_monitor_linux.h',
+          ],
+        }],
       ]
     },
     {

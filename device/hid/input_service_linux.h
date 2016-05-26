@@ -12,17 +12,15 @@
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "device/hid/device_monitor_linux.h"
 
 namespace device {
 
 // This class provides information and notifications about
 // connected/disconnected input/HID devices. This class is *NOT*
 // thread-safe and all methods must be called from the FILE thread.
-class InputServiceLinux : public base::MessageLoop::DestructionObserver {
+class InputServiceLinux {
  public:
   struct InputDeviceInfo {
     enum Subsystem { SUBSYSTEM_HID, SUBSYSTEM_INPUT, SUBSYSTEM_UNKNOWN };
@@ -46,7 +44,6 @@ class InputServiceLinux : public base::MessageLoop::DestructionObserver {
     bool is_touchscreen : 1;
   };
 
-
   using DeviceMap = base::hash_map<std::string, InputDeviceInfo>;
 
   class Observer {
@@ -57,7 +54,7 @@ class InputServiceLinux : public base::MessageLoop::DestructionObserver {
   };
 
   InputServiceLinux();
-  ~InputServiceLinux() override;
+  virtual ~InputServiceLinux();
 
   static InputServiceLinux* GetInstance();
   static bool HasInstance();
@@ -74,11 +71,7 @@ class InputServiceLinux : public base::MessageLoop::DestructionObserver {
   // modify |info|.
   bool GetDeviceInfo(const std::string& id, InputDeviceInfo* info) const;
 
-  // Implements base::MessageLoop::DestructionObserver
-  void WillDestroyCurrentMessageLoop() override;
-
  protected:
-
   void AddDevice(const InputDeviceInfo& info);
   void RemoveDevice(const std::string& id);
 

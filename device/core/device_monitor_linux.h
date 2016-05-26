@@ -14,6 +14,7 @@
 #include "base/message_loop/message_pump_libevent.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
+#include "device/core/device_core_export.h"
 #include "device/udev_linux/scoped_udev.h"
 
 struct udev_device;
@@ -23,8 +24,9 @@ namespace device {
 // This class listends for notifications from libudev about
 // connected/disconnected devices. This class is *NOT* thread-safe and
 // all methods must be accessed from the FILE thread.
-class DeviceMonitorLinux : public base::MessageLoop::DestructionObserver,
-                           public base::MessagePumpLibevent::Watcher {
+class DEVICE_CORE_EXPORT DeviceMonitorLinux
+    : public base::MessageLoop::DestructionObserver,
+      public base::MessagePumpLibevent::Watcher {
  public:
   typedef base::Callback<void(udev_device* device)> EnumerateCallback;
 
@@ -33,12 +35,12 @@ class DeviceMonitorLinux : public base::MessageLoop::DestructionObserver,
     virtual ~Observer() {}
     virtual void OnDeviceAdded(udev_device* device) = 0;
     virtual void OnDeviceRemoved(udev_device* device) = 0;
+    virtual void WillDestroyMonitorMessageLoop() = 0;
   };
 
   DeviceMonitorLinux();
 
   static DeviceMonitorLinux* GetInstance();
-  static bool HasInstance();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

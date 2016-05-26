@@ -46,8 +46,6 @@ source_set("hid") {
 
   if (is_linux && use_udev) {
     sources += [
-      "device_monitor_linux.cc",
-      "device_monitor_linux.h",
       "fake_input_service_linux.cc",
       "fake_input_service_linux.h",
       "hid_service_linux.cc",

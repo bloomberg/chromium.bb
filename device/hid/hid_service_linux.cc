@@ -25,7 +25,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
-#include "device/hid/device_monitor_linux.h"
+#include "device/core/device_monitor_linux.h"
 #include "device/hid/hid_connection_linux.h"
 #include "device/hid/hid_device_info_linux.h"
 #include "device/udev_linux/scoped_udev.h"
@@ -66,9 +66,7 @@ struct HidServiceLinux::ConnectParams {
   base::File device_file;
 };
 
-class HidServiceLinux::FileThreadHelper
-    : public DeviceMonitorLinux::Observer,
-      public base::MessageLoop::DestructionObserver {
+class HidServiceLinux::FileThreadHelper : public DeviceMonitorLinux::Observer {
  public:
   FileThreadHelper(base::WeakPtr<HidServiceLinux> service,
                    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
@@ -76,15 +74,11 @@ class HidServiceLinux::FileThreadHelper
 
   ~FileThreadHelper() override {
     DCHECK(thread_checker_.CalledOnValidThread());
-    base::MessageLoop::current()->RemoveDestructionObserver(this);
   }
 
   static void Start(std::unique_ptr<FileThreadHelper> self) {
     base::ThreadRestrictions::AssertIOAllowed();
     self->thread_checker_.DetachFromThread();
-    // |self| must be added as a destruction observer first so that it will be
-    // notified before DeviceMonitorLinux.
-    base::MessageLoop::current()->AddDestructionObserver(self.get());
 
     DeviceMonitorLinux* monitor = DeviceMonitorLinux::GetInstance();
     self->observer_.Add(monitor);
@@ -193,8 +187,7 @@ class HidServiceLinux::FileThreadHelper
     }
   }
 
-  // base::MessageLoop::DestructionObserver:
-  void WillDestroyCurrentMessageLoop() override {
+  void WillDestroyMonitorMessageLoop() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     delete this;
   }

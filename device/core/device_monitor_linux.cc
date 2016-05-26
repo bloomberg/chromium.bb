@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/hid/device_monitor_linux.h"
+#include "device/core/device_monitor_linux.h"
 
 #include <memory>
 
@@ -53,37 +53,27 @@ DeviceMonitorLinux::DeviceMonitorLinux() : monitor_fd_(-1) {
   }
 
   if (!base::MessageLoopForIO::current()->WatchFileDescriptor(
-          monitor_fd_,
-          true,
-          base::MessageLoopForIO::WATCH_READ,
-          &monitor_watcher_,
-          this)) {
+          monitor_fd_, true /* persistent */,
+          base::MessageLoopForIO::WATCH_READ, &monitor_watcher_, this)) {
     return;
   }
 }
 
 // static
 DeviceMonitorLinux* DeviceMonitorLinux::GetInstance() {
-  if (!HasInstance())
+  if (!g_device_monitor_linux_ptr.Get().get())
     g_device_monitor_linux_ptr.Get().reset(new DeviceMonitorLinux());
-  return g_device_monitor_linux_ptr.Get().get();
-}
-
-// static
-bool DeviceMonitorLinux::HasInstance() {
   return g_device_monitor_linux_ptr.Get().get();
 }
 
 void DeviceMonitorLinux::AddObserver(Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (observer)
-    observers_.AddObserver(observer);
+  observers_.AddObserver(observer);
 }
 
 void DeviceMonitorLinux::RemoveObserver(Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (observer)
-    observers_.RemoveObserver(observer);
+  observers_.RemoveObserver(observer);
 }
 
 ScopedUdevDevicePtr DeviceMonitorLinux::GetDeviceFromPath(
@@ -110,7 +100,7 @@ void DeviceMonitorLinux::Enumerate(const EnumerateCallback& callback) {
 
   // This list is managed by |enumerate|.
   udev_list_entry* devices = udev_enumerate_get_list_entry(enumerate.get());
-  for (udev_list_entry* i = devices; i != NULL;
+  for (udev_list_entry* i = devices; i != nullptr;
        i = udev_list_entry_get_next(i)) {
     ScopedUdevDevicePtr device(
         udev_device_new_from_syspath(udev_.get(), udev_list_entry_get_name(i)));
@@ -121,7 +111,8 @@ void DeviceMonitorLinux::Enumerate(const EnumerateCallback& callback) {
 
 void DeviceMonitorLinux::WillDestroyCurrentMessageLoop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  g_device_monitor_linux_ptr.Get().reset(NULL);
+  FOR_EACH_OBSERVER(Observer, observers_, WillDestroyMonitorMessageLoop());
+  g_device_monitor_linux_ptr.Get().reset(nullptr);
 }
 
 void DeviceMonitorLinux::OnFileCanReadWithoutBlocking(int fd) {
