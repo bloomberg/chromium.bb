@@ -517,7 +517,6 @@
         'test/web_test_suite.mm',
         'test/wk_web_view_crash_utils.h',
         'test/wk_web_view_crash_utils.mm',
-        '<(SHARED_INTERMEDIATE_DIR)/ios/web/test/mojo_test.mojom.cc',
       ],
     },
     {
