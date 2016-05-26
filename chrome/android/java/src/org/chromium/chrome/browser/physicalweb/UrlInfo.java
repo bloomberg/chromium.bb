@@ -16,14 +16,17 @@ class UrlInfo implements Comparable<UrlInfo> {
     private static final String URL_KEY = "url";
     private static final String DISTANCE_KEY = "distance";
     private static final String SCAN_TIMESTAMP_KEY = "scan_timestamp";
+    private static final String HAS_BEEN_DISPLAYED_KEY = "has_been_displayed";
     private final String mUrl;
-    private final double mDistance;
-    private final long mScanTimestamp;
+    private double mDistance;
+    private long mScanTimestamp;
+    private boolean mHasBeenDisplayed;
 
     public UrlInfo(String url, double distance, long scanTimestamp) {
         mUrl = url;
         mDistance = distance;
         mScanTimestamp = scanTimestamp;
+        mHasBeenDisplayed = false;
     }
 
     /**
@@ -42,11 +45,28 @@ class UrlInfo implements Comparable<UrlInfo> {
     }
 
     /**
-     * Gets the distance of the URL from the scanner in meters..
+     * Sets the distance of the URL from the scanner in meters.
+     * @param distance The estimated distance of the URL from the scanner in meters.
+     */
+    public void setDistance(double distance) {
+        mDistance = distance;
+    }
+
+    /**
+     * Gets the distance of the URL from the scanner in meters.
      * @return The estimated distance of the URL from the scanner in meters.
      */
     public double getDistance() {
         return mDistance;
+    }
+
+    /**
+     * Sets the timestamp of when the URL was last scanned.
+     * This timestamp should be recorded using System.currentTimeMillis().
+     * @param scanTimestamp the new timestamp.
+     */
+    public void setScanTimestamp(long scanTimestamp) {
+        mScanTimestamp = scanTimestamp;
     }
 
     /**
@@ -59,6 +79,21 @@ class UrlInfo implements Comparable<UrlInfo> {
     }
 
     /**
+     * Marks this URL as having been displayed to the user.
+     */
+    public void setHasBeenDisplayed() {
+        mHasBeenDisplayed = true;
+    }
+
+    /**
+     * Tells if we've displayed this URL.
+     * @return Whether we've displayed this URL.
+     */
+    public boolean hasBeenDisplayed() {
+        return mHasBeenDisplayed;
+    }
+
+    /**
      * Creates a JSON object that represents this data structure.
      * @return a JSON serialization of this data structure.
      * @throws JSONException if the values cannot be deserialized.
@@ -67,7 +102,8 @@ class UrlInfo implements Comparable<UrlInfo> {
         return new JSONObject()
                 .put(URL_KEY, mUrl)
                 .put(DISTANCE_KEY, mDistance)
-                .put(SCAN_TIMESTAMP_KEY, mScanTimestamp);
+                .put(SCAN_TIMESTAMP_KEY, mScanTimestamp)
+                .put(HAS_BEEN_DISPLAYED_KEY, mHasBeenDisplayed);
     }
 
     /**
@@ -77,10 +113,14 @@ class UrlInfo implements Comparable<UrlInfo> {
      * @throws JSONException if the values cannot be serialized.
      */
     public static UrlInfo jsonDeserialize(JSONObject jsonObject) throws JSONException {
-        return new UrlInfo(
+        UrlInfo urlInfo = new UrlInfo(
                 jsonObject.getString(URL_KEY),
                 jsonObject.getDouble(DISTANCE_KEY),
                 jsonObject.getLong(SCAN_TIMESTAMP_KEY));
+        if (jsonObject.optBoolean(HAS_BEEN_DISPLAYED_KEY, false)) {
+            urlInfo.setHasBeenDisplayed();
+        }
+        return urlInfo;
     }
 
     /**
@@ -92,6 +132,7 @@ class UrlInfo implements Comparable<UrlInfo> {
         int hash = 31 + mUrl.hashCode();
         hash = hash * 31 + (int) mDistance;
         hash = hash * 31 + (int) mScanTimestamp;
+        hash = hash * 31 + (mHasBeenDisplayed ? 1 : 0);
         return hash;
     }
 
@@ -135,6 +176,11 @@ class UrlInfo implements Comparable<UrlInfo> {
             return compareValue;
         }
 
+        compareValue = Boolean.compare(mHasBeenDisplayed, mHasBeenDisplayed);
+        if (compareValue != 0) {
+            return compareValue;
+        }
+
         return 0;
     }
 
@@ -143,6 +189,7 @@ class UrlInfo implements Comparable<UrlInfo> {
      */
     @Override
     public String toString() {
-        return String.format(Locale.getDefault(), "%s %f %d", mUrl, mDistance, mScanTimestamp);
+        return String.format(Locale.getDefault(), "%s %f %d %b",
+                mUrl, mDistance, mScanTimestamp, mHasBeenDisplayed);
     }
 }

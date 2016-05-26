@@ -23,11 +23,13 @@ public class UrlInfoTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         mReferenceUrlInfo = new UrlInfo(URL, 99.5, 42);
+        mReferenceUrlInfo.setHasBeenDisplayed();
         // Because we can't print JSON sorted by keys, the order is important here.
         mReferenceJsonObject = new JSONObject("{"
                 + "    \"url\": \"" + URL + "\","
                 + "    \"distance\": 99.5,"
-                + "    \"scan_timestamp\": 42"
+                + "    \"scan_timestamp\": 42,"
+                + "    \"has_been_displayed\": true"
                 + "}");
     }
 

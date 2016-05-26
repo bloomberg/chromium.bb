@@ -28,7 +28,7 @@ public class UrlManagerTest extends InstrumentationTestCase {
     private static final String DESC1 = "Example Website";
     private static final String URL2 = "https://google.com/";
     private static final String TITLE2 = "Google";
-    private static final String DESC2 = "Search the Web";
+    private static final String DESC2 = "Search the web";
     private static final String PREF_PHYSICAL_WEB = "physical_web";
     private static final int PHYSICAL_WEB_OFF = 0;
     private static final int PHYSICAL_WEB_ON = 1;
@@ -220,6 +220,55 @@ public class UrlManagerTest extends InstrumentationTestCase {
         // Make sure only URL2 is still in the cache.
         assertFalse(mUrlManager.containsInAnyCache(URL1));
         assertTrue(mUrlManager.containsInAnyCache(URL2));
+    }
+
+    @SmallTest
+    public void testAddUrlInCacheWithOthersMakesNoNotification() throws Exception {
+        addPwsResult1();
+        addPwsResult2();
+        addPwsResult1();
+        mUrlManager.addUrl(URL1);
+        mUrlManager.addUrl(URL2);
+        mUrlManager.removeUrl(URL1);
+        getInstrumentation().waitForIdleSync();
+        mMockNotificationManagerProxy.cancelAll();
+        mUrlManager.addUrl(URL1);
+        getInstrumentation().waitForIdleSync();
+
+        // Make sure that no notification is shown.
+        List<NotificationEntry> notifications = mMockNotificationManagerProxy.getNotifications();
+        assertEquals(0, notifications.size());
+    }
+
+    @SmallTest
+    public void testAddUrlInCacheWithNoOthersMakesNotification() throws Exception {
+        addPwsResult1();
+        addPwsResult1();
+        mUrlManager.addUrl(URL1);
+        mUrlManager.removeUrl(URL1);
+        getInstrumentation().waitForIdleSync();
+        mMockNotificationManagerProxy.cancelAll();
+        mUrlManager.addUrl(URL1);
+        getInstrumentation().waitForIdleSync();
+
+        // Make sure that a notification was shown.
+        List<NotificationEntry> notifications = mMockNotificationManagerProxy.getNotifications();
+        assertEquals(1, notifications.size());
+    }
+
+    @SmallTest
+    public void testAddUrlNotInCacheWithOthersMakesNotification() throws Exception {
+        addPwsResult1();
+        addPwsResult2();
+        mUrlManager.addUrl(URL1);
+        getInstrumentation().waitForIdleSync();
+        mMockNotificationManagerProxy.cancelAll();
+        mUrlManager.addUrl(URL2);
+        getInstrumentation().waitForIdleSync();
+
+        // Make sure that a notification was shown.
+        List<NotificationEntry> notifications = mMockNotificationManagerProxy.getNotifications();
+        assertEquals(1, notifications.size());
     }
 
     @SmallTest

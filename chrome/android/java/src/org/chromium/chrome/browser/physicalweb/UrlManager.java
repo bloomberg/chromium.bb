@@ -151,9 +151,7 @@ class UrlManager {
     @VisibleForTesting
     public void addUrl(UrlInfo urlInfo) {
         Log.d(TAG, "URL found: %s", urlInfo);
-        mUrlsSortedByTimestamp.remove(urlInfo.getUrl());
-        mUrlInfoMap.put(urlInfo.getUrl(), urlInfo);
-        mUrlsSortedByTimestamp.add(urlInfo.getUrl());
+        urlInfo = updateCacheEntry(urlInfo);
         garbageCollect();
         putCachedUrlInfoMap();
 
@@ -164,19 +162,12 @@ class UrlManager {
         mNearbyUrls.add(urlInfo.getUrl());
         putCachedNearbyUrls();
 
-        boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
-        if (!isOnboarding && !mResolvedUrls.contains(urlInfo.getUrl())) {
+        if (!PhysicalWeb.isOnboarding(mContext) && !mResolvedUrls.contains(urlInfo.getUrl())) {
             // We need to resolve the URL.
             resolveUrl(urlInfo);
             return;
         }
-        notifyNewDisplayableUrl(urlInfo);
-
-        // Only trigger the notification if we did not previously have a displayable URL
-        // (i.e., we have exactly 1 displayble URL).
-        if (getUrls(isOnboarding).size() == 1) {
-            showNotification();
-        }
+        registerNewDisplayableUrl(urlInfo);
     }
 
     /**
@@ -286,6 +277,10 @@ class UrlManager {
         return result;
     }
 
+    /**
+     * Adds a URL that has been resolved by the PWS.
+     * @param urlInfo This needs to be a UrlInfo that exists in mUrlInfoMap
+     */
     private void addResolvedUrl(UrlInfo urlInfo) {
         Log.d(TAG, "PWS resolved: %s", urlInfo.getUrl());
         if (mResolvedUrls.contains(urlInfo.getUrl())) {
@@ -298,13 +293,7 @@ class UrlManager {
         if (!mNearbyUrls.contains(urlInfo.getUrl())) {
             return;
         }
-        notifyNewDisplayableUrl(urlInfo);
-
-        // Only trigger the notification if we did not previously have a displayable URL
-        // (i.e., we have exactly 1 displayble URL).
-        if (getUrls(PhysicalWeb.isOnboarding(mContext)).size() == 1) {
-            showNotification();
-        }
+        registerNewDisplayableUrl(urlInfo);
     }
 
     private void removeResolvedUrl(UrlInfo url) {
@@ -396,6 +385,28 @@ class UrlManager {
         Intent intent = new Intent(mContext, PhysicalWebOptInActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(mContext, 0, intent, 0);
         return pendingIntent;
+    }
+
+    /**
+     * Updates a cache entry with new information.
+     * When we reencounter a URL, a subset of its metadata should update.  Only distance and
+     * scanTimestamp fall into this category.
+     * @param urlInfo This should be a freshly discovered UrlInfo, though it does not have to be
+     * previously undiscovered.
+     * @return The updated cache entry
+     */
+    private UrlInfo updateCacheEntry(UrlInfo urlInfo) {
+        UrlInfo currentUrlInfo = mUrlInfoMap.get(urlInfo.getUrl());
+        if (currentUrlInfo == null) {
+            mUrlInfoMap.put(urlInfo.getUrl(), urlInfo);
+            currentUrlInfo = urlInfo;
+        } else {
+            mUrlsSortedByTimestamp.remove(urlInfo.getUrl());
+            currentUrlInfo.setScanTimestamp(urlInfo.getScanTimestamp());
+            currentUrlInfo.setDistance(urlInfo.getDistance());
+        }
+        mUrlsSortedByTimestamp.add(urlInfo.getUrl());
+        return currentUrlInfo;
     }
 
     private void resolveUrl(final UrlInfo url) {
@@ -536,13 +547,26 @@ class UrlManager {
         alarmManager.cancel(pendingIntent);
     }
 
-    private void notifyNewDisplayableUrl(UrlInfo urlInfo) {
+    private void registerNewDisplayableUrl(UrlInfo urlInfo) {
+        // Notify listeners about the new displayable URL.
         Collection<UrlInfo> urlInfos = new ArrayList<>();
         urlInfos.add(urlInfo);
         Collection<UrlInfo> wrappedUrlInfos = Collections.unmodifiableCollection(urlInfos);
         for (Listener observer : mObservers) {
             observer.onDisplayableUrlsAdded(wrappedUrlInfos);
         }
+
+        // Only trigger the notification if we know we didn't have a notification up already
+        // (i.e., we have exactly 1 displayble URL) or this URL doesn't exist in the cache
+        // (and hence the user hasn't swiped away a notification for this URL recently).
+        if (getUrls(PhysicalWeb.isOnboarding(mContext)).size() != 1
+                && urlInfo.hasBeenDisplayed()) {
+            return;
+        }
+
+        // Show a notification and mark the URL as displayed.
+        showNotification();
+        urlInfo.setHasBeenDisplayed();
     }
 
     private void garbageCollect() {
