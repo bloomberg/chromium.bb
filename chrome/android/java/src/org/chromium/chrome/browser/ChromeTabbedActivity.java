@@ -56,7 +56,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.document.DocumentUma;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -378,10 +377,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         if (getActivityTab() == null) mLayoutManager.showOverview(false);
 
         resetSavedInstanceState();
-
-        if (FeatureUtilities.isDocumentModeEligible(this)) {
-            DocumentUma.recordInDocumentMode(false);
-        }
     }
 
     @Override

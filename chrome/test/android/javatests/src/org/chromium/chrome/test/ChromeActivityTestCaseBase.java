@@ -52,7 +52,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
@@ -377,44 +376,16 @@ public abstract class ChromeActivityTestCaseBase<T extends ChromeActivity>
     public Tab loadUrlInNewTab(final String url, final boolean incognito)
             throws InterruptedException {
         Tab tab = null;
-        if (FeatureUtilities.isDocumentMode(getInstrumentation().getTargetContext())) {
-            Runnable activityTrigger = new Runnable() {
+        try {
+            tab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
                 @Override
-                public void run() {
-                    ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                        @Override
-                        public void run() {
-                            AsyncTabCreationParams asyncParams = new AsyncTabCreationParams(
-                                    new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL));
-                            ChromeLauncherActivity.launchDocumentInstance(
-                                    getActivity(), incognito, asyncParams);
-                        }
-                    });
-                }
-            };
-            final DocumentActivity activity = ActivityUtils.waitForActivity(
-                    getInstrumentation(),
-                    incognito ? IncognitoDocumentActivity.class : DocumentActivity.class,
-                    activityTrigger);
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return activity.getActivityTab() != null;
+                public Tab call() throws Exception {
+                    return getActivity().getTabCreator(incognito)
+                            .launchUrl(url, TabLaunchType.FROM_LINK);
                 }
             });
-            tab = activity.getActivityTab();
-        } else {
-            try {
-                tab = ThreadUtils.runOnUiThreadBlocking(new Callable<Tab>() {
-                    @Override
-                    public Tab call() throws Exception {
-                        return getActivity().getTabCreator(incognito)
-                                .launchUrl(url, TabLaunchType.FROM_LINK);
-                    }
-                });
-            } catch (ExecutionException e) {
-                fail("Failed to create new tab");
-            }
+        } catch (ExecutionException e) {
+            fail("Failed to create new tab");
         }
         ChromeTabUtils.waitForTabPageLoaded(tab, url);
         getInstrumentation().waitForIdleSync();

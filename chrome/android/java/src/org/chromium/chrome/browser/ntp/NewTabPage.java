@@ -6,10 +6,8 @@ package org.chromium.chrome.browser.ntp;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
@@ -30,14 +28,12 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
-import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.favicon.FaviconHelper.IconAvailabilityCallback;
@@ -72,10 +68,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
-import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.NetworkChangeNotifier;
@@ -219,15 +212,6 @@ public class NewTabPage
         dialog.show();
     }
 
-    public static void launchRecentTabsDialog(Activity activity, Tab tab) {
-        DocumentRecentTabsManager manager = new DocumentRecentTabsManager(tab, activity);
-        NativePage page = new RecentTabsPage(activity, manager);
-        page.updateForUrl(UrlConstants.RECENT_TABS_URL);
-        Dialog dialog = new NativePageDialog(activity, page);
-        manager.setDialog(dialog);
-        dialog.show();
-    }
-
     @VisibleForTesting
     static void setMostVisitedSitesForTests(MostVisitedSites mostVisitedSitesForTests) {
         sMostVisitedSitesForTests = mostVisitedSitesForTests;
@@ -302,27 +286,12 @@ public class NewTabPage
             } else {
                 return false;
             }
-            if (FeatureUtilities.isDocumentMode(mActivity)) {
-                ActivityManager am =
-                        (ActivityManager) mActivity.getSystemService(Activity.ACTIVITY_SERVICE);
-                DocumentTabModel tabModel =
-                        ChromeApplication.getDocumentTabModelSelector().getModel(false);
-                for (ActivityManager.AppTask task : am.getAppTasks()) {
-                    Intent baseIntent = DocumentUtils.getBaseIntentFromTask(task);
-                    int tabId = ActivityDelegate.getTabIdFromIntent(baseIntent);
-                    String tabUrl = tabModel.getCurrentUrlForDocument(tabId);
-                    if (matchURLs(tabUrl, url, matchByHost)) {
-                        task.moveToFront();
-                        return true;
-                    }
-                }
-            } else {
-                TabModel tabModel = mTabModelSelector.getModel(false);
-                for (int i = tabModel.getCount() - 1; i >= 0; --i) {
-                    if (matchURLs(tabModel.getTabAt(i).getUrl(), url, matchByHost)) {
-                        TabModelUtils.setIndex(tabModel, i);
-                        return true;
-                    }
+
+            TabModel tabModel = mTabModelSelector.getModel(false);
+            for (int i = tabModel.getCount() - 1; i >= 0; --i) {
+                if (matchURLs(tabModel.getTabAt(i).getUrl(), url, matchByHost)) {
+                    TabModelUtils.setIndex(tabModel, i);
+                    return true;
                 }
             }
             return false;
@@ -400,11 +369,7 @@ public class NewTabPage
         public void navigateToRecentTabs() {
             if (mIsDestroyed) return;
             RecordUserAction.record("MobileNTPSwitchToOpenTabs");
-            if (FeatureUtilities.isDocumentMode(mActivity)) {
-                launchRecentTabsDialog(mActivity, mTab);
-            } else {
-                mTab.loadUrl(new LoadUrlParams(UrlConstants.RECENT_TABS_URL));
-            }
+            mTab.loadUrl(new LoadUrlParams(UrlConstants.RECENT_TABS_URL));
         }
 
         @Override

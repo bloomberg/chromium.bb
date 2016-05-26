@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.bookmarks.BookmarkPage;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebDiagnosticsPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /**
  * Creates NativePage objects to show chrome-native:// URLs using the native Android view system.
@@ -42,9 +41,8 @@ public class NativePageFactory {
         }
 
         protected NativePage buildRecentTabsPage(Activity activity, Tab tab) {
-            RecentTabsManager recentTabsManager = FeatureUtilities.isDocumentMode(activity)
-                    ? new DocumentRecentTabsManager(tab, activity)
-                    : new RecentTabsManager(tab, tab.getProfile(), activity);
+            RecentTabsManager recentTabsManager =
+                    new RecentTabsManager(tab, tab.getProfile(), activity);
             return new RecentTabsPage(activity, recentTabsManager);
         }
 

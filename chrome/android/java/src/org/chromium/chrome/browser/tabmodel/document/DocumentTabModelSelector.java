@@ -5,20 +5,14 @@
 package org.chromium.chrome.browser.tabmodel.document;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RecentTaskInfo;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Build;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
@@ -30,22 +24,21 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorBase;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 /**
+ * Deprecated.  Kept around only for migration.
+ *
  * Stores DocumentTabModels for Chrome Activities running in Document-mode.
  * Also manages the transfer of data from one DocumentActivity to another, e.g. WebContents that are
  * created by one Activity but need to be loaded in another Tab.
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-public class DocumentTabModelSelector extends TabModelSelectorBase
-        implements ActivityStateListener, TabCreatorManager {
+public class DocumentTabModelSelector extends TabModelSelectorBase implements TabCreatorManager {
     public static final String PREF_PACKAGE = "com.google.android.apps.chrome.document";
     public static final String PREF_IS_INCOGNITO_SELECTED = "is_incognito_selected";
 
     /**
      * Overrides Delegates used by the DocumentTabModels.
      */
-    private static final Object ACTIVITY_DELEGATE_FOR_TESTS_LOCK = new Object();
     private static final Object STORAGE_DELEGATE_FOR_TESTS_LOCK = new Object();
-    private static ActivityDelegate sActivityDelegateForTests;
     private static StorageDelegate sStorageDelegateForTests;
 
     /**
@@ -90,8 +83,7 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
     public DocumentTabModelSelector(ActivityDelegate activityDelegate,
             StorageDelegate storageDelegate, TabDelegate regularTabDelegate,
             TabDelegate incognitoTabDelegate) {
-        mActivityDelegate =
-                sActivityDelegateForTests == null ? activityDelegate : sActivityDelegateForTests;
+        mActivityDelegate = activityDelegate;
         mStorageDelegate =
                 sStorageDelegateForTests == null ? storageDelegate : sStorageDelegateForTests;
         mRegularTabDelegate = regularTabDelegate;
@@ -106,9 +98,6 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
                 DocumentTabModel incognitoModel = new DocumentTabModelImpl(mActivityDelegate,
                         mStorageDelegate, DocumentTabModelSelector.this, true, sPrioritizedTabId,
                         context);
-                if (mRegularTabModel.isNativeInitialized()) {
-                    incognitoModel.initializeNative();
-                }
                 return incognitoModel;
             }
 
@@ -125,8 +114,6 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
         SharedPreferences prefs = context.getSharedPreferences(PREF_PACKAGE, Context.MODE_PRIVATE);
         boolean startIncognito = prefs.getBoolean(PREF_IS_INCOGNITO_SELECTED, false);
         initialize(startIncognito, mRegularTabModel, mIncognitoTabModel);
-
-        ApplicationStatus.registerStateListenerForAllActivities(this);
     }
 
     @Override
@@ -164,17 +151,6 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
     }
 
     @Override
-    public void onActivityStateChange(Activity activity, int newState) {
-        if (!mActivityDelegate.isDocumentActivity(activity)) return;
-
-        // Tabs swiped away when their Activity is dead don't trigger destruction notifications.
-        if (newState == ActivityState.STARTED || newState == ActivityState.DESTROYED) {
-            mRegularTabModel.updateRecentlyClosed();
-            mIncognitoTabModel.updateRecentlyClosed();
-        }
-    }
-
-    @Override
     public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
             boolean incognito) {
         TabDelegate delegate = getTabCreator(incognito);
@@ -201,46 +177,6 @@ public class DocumentTabModelSelector extends TabModelSelectorBase
     @Override
     public DocumentTabModel getModelForTabId(int id) {
         return (DocumentTabModel) super.getModelForTabId(id);
-    }
-
-    /**
-     * Alerts the TabModels that the native library is ready.
-     */
-    public void onNativeLibraryReady() {
-        mRegularTabModel.initializeNative();
-        mIncognitoTabModel.initializeNative();
-    }
-
-    /**
-     * Generates an ID for a new Tab.  Makes sure the DocumentTabModels are loaded beforehand to
-     * ensure that the ID counter is properly initialized.
-     * @return ID to use for the new Tab.
-     */
-    public int generateValidTabId() {
-        return TabIdManager.getInstance().generateValidId(Tab.INVALID_TAB_ID);
-    }
-
-    /**
-     * Creates a data string which stores the base information we need to relaunch a task: a unique
-     * identifier and the URL to load.
-     * @param id ID of the tab in the DocumentActivity.
-     * @param initialUrl URL to load in the DocumentActivity.
-     * @return a Uri that has the identifier and the URL mashed together.
-     */
-    public static Uri createDocumentDataString(int id, String initialUrl) {
-        return new Uri.Builder().scheme(UrlConstants.DOCUMENT_SCHEME).authority(String.valueOf(id))
-                .query(initialUrl).build();
-    }
-
-    /**
-     * Overrides the regular ActivityDelegate in the constructor.  MUST be called before the
-     * DocumentTabModelSelector instance is created to take effect.
-     */
-    @VisibleForTesting
-    public static void setActivityDelegateForTests(ActivityDelegate delegate) {
-        synchronized (ACTIVITY_DELEGATE_FOR_TESTS_LOCK) {
-            sActivityDelegateForTests = delegate;
-        }
     }
 
     /**

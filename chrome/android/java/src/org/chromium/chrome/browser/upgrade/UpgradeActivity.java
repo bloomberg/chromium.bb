@@ -42,7 +42,7 @@ public class UpgradeActivity extends AppCompatActivity {
     public static void launchInstance(Activity activity, Intent originalIntent) {
         Intent intent = new Intent();
         intent.setClass(activity, UpgradeActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         intent.putExtra(UpgradeActivity.EXTRA_INTENT_TO_REFIRE, originalIntent);
         activity.startActivity(intent);
         activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);

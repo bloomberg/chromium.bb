@@ -454,6 +454,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Android.StrictMode.DocumentModeSharedPrefs" units="ms">
+  <obsolete>
+    Deprecated 05/2016 in Issue 582539 with the removal of document mode.
+  </obsolete>
   <owner>hartmanng@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -463,6 +466,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Android.StrictMode.DocumentTabStateLoad" units="ms">
+  <obsolete>
+    Deprecated 05/2016 in Issue 582539 with the removal of document mode.
+  </obsolete>
   <owner>wnwen@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>

@@ -4,11 +4,8 @@
 
 package org.chromium.chrome.browser.tabmodel.document;
 
-import android.content.Intent;
-
 import junit.framework.Assert;
 
-import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabList;
@@ -156,92 +153,8 @@ public class MockDocumentTabModel implements DocumentTabModel {
     }
 
     @Override
-    public void initializeNative() {
-        Assert.fail();
-    }
-
-    @Override
-    public boolean isNativeInitialized() {
-        Assert.fail();
-        return false;
-    }
-
-    @Override
     public String getInitialUrlForDocument(int tabId) {
         Assert.fail();
         return null;
-    }
-
-    @Override
-    public String getCurrentUrlForDocument(int tabId) {
-        Assert.fail();
-        return null;
-    }
-
-    @Override
-    public boolean isTabStateReady(int tabId) {
-        Assert.fail();
-        return false;
-    }
-
-    @Override
-    public TabState getTabStateForDocument(int tabId) {
-        Assert.fail();
-        return null;
-    }
-
-    @Override
-    public boolean hasEntryForTabId(int tabId) {
-        Assert.fail();
-        return false;
-    }
-
-    @Override
-    public boolean isRetargetable(int tabId) {
-        Assert.fail();
-        return false;
-    }
-
-    @Override
-    public boolean closeTabAt(int index) {
-        Assert.fail();
-        return false;
-    }
-
-    @Override
-    public void updateRecentlyClosed() {
-        Assert.fail();
-    }
-
-    @Override
-    public void updateEntry(Intent intent, Tab tab) {
-        Assert.fail();
-    }
-
-    @Override
-    public void addTab(Intent intent, Tab tab) {
-        Assert.fail();
-    }
-
-    @Override
-    public int getCurrentInitializationStage() {
-        Assert.fail();
-        return 0;
-    }
-
-    @Override
-    public void addInitializationObserver(InitializationObserver observer) {
-        Assert.fail();
-    }
-
-    @Override
-    public boolean setLastShownId(int id) {
-        Assert.fail();
-        return false;
-    }
-
-    @Override
-    public void startTabStateLoad() {
-        Assert.fail();
     }
 }
