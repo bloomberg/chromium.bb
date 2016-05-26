@@ -19,6 +19,10 @@
 #include "net/disk_cache/blockfile/in_flight_io.h"
 #include "net/disk_cache/blockfile/rankings.h"
 
+namespace tracked_objects {
+class Location;
+}
+
 namespace disk_cache {
 
 class BackendImpl;
@@ -229,7 +233,8 @@ class InFlightBackendIO : public InFlightIO {
   void OnOperationComplete(BackgroundIO* operation, bool cancel) override;
 
  private:
-  void PostOperation(BackendIO* operation);
+  void PostOperation(const tracked_objects::Location& from_here,
+                     BackendIO* operation);
 
   BackendImpl* backend_;
   scoped_refptr<base::SingleThreadTaskRunner> background_thread_;
