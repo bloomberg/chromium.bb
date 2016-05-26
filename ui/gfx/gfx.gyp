@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 {
-  'includes': {
+  'includes': [
     '../../mojo/mojo_variables.gypi',
-  },
+  ],
   'variables': {
     'chromium_code': 1,
   },
