@@ -33,6 +33,10 @@
 #define IDC_RELOAD_BYPASSING_CACHE      33007
 #define IDC_LOAD_NEW_TAB_PAGE           33008
 #define IDC_RELOAD_CLEARING_CACHE       33009
+// Temporary commands to capture the old Back/Forward shortcuts and tell users
+// the new shortcut. May also trigger Back/Forward action if the
+// BackspaceGoesBack field trial is enabled.
+// TODO(mgiuca): Remove these in M54 (https://crbug.com/610039).
 #define IDC_BACKSPACE_BACK              33010
 #define IDC_BACKSPACE_FORWARD           33011
 

@@ -82,6 +82,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
+#include "chrome/browser/ui/views/new_back_shortcut_bubble.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
@@ -948,7 +949,13 @@ void BrowserView::UpdateExclusiveAccessExitBubbleContent(
   if (bubble_type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE ||
       ShouldUseImmersiveFullscreenForUrl(url)) {
     exclusive_access_bubble_.reset();
-  } else if (exclusive_access_bubble_.get()) {
+    return;
+  }
+
+  // Hide the backspace shortcut bubble, to avoid overlapping.
+  new_back_shortcut_bubble_.reset();
+
+  if (exclusive_access_bubble_) {
     exclusive_access_bubble_->UpdateContent(url, bubble_type);
   } else {
     exclusive_access_bubble_.reset(
@@ -975,6 +982,16 @@ bool BrowserView::IsFullscreen() const {
 
 bool BrowserView::IsFullscreenBubbleVisible() const {
   return exclusive_access_bubble_ != nullptr;
+}
+
+void BrowserView::ShowNewBackShortcutBubble(bool forward) {
+  // Hide the exclusive access bubble, to avoid overlapping.
+  exclusive_access_bubble_.reset();
+
+  if (new_back_shortcut_bubble_)
+    new_back_shortcut_bubble_->UpdateContent(forward);
+  else
+    new_back_shortcut_bubble_.reset(new NewBackShortcutBubble(this, forward));
 }
 
 void BrowserView::RestoreFocus() {

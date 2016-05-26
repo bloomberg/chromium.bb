@@ -146,6 +146,10 @@ class BrowserWindow : public ui::BaseWindow {
   // Returns true if the fullscreen bubble is visible.
   virtual bool IsFullscreenBubbleVisible() const = 0;
 
+  // Shows a notice teaching the user the new shortcut for going Back or
+  // Forward.
+  virtual void ShowNewBackShortcutBubble(bool forward) = 0;
+
   // Returns the size of WebContents in the browser. This may be called before
   // the TabStripModel has an active tab.
   virtual gfx::Size GetContentsSize() const = 0;

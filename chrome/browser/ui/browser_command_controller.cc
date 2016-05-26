@@ -321,14 +321,20 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
   switch (id) {
     // Navigation commands
     case IDC_BACKSPACE_BACK:
-      if (!base::FeatureList::IsEnabled(kBackspaceGoesBackFeature))
+      if (!base::FeatureList::IsEnabled(kBackspaceGoesBackFeature)) {
+        browser_->window()->ShowNewBackShortcutBubble(false);
         break;
+      }
+      // FALL THROUGH
     case IDC_BACK:
       GoBack(browser_, disposition);
       break;
     case IDC_BACKSPACE_FORWARD:
-      if (!base::FeatureList::IsEnabled(kBackspaceGoesBackFeature))
+      if (!base::FeatureList::IsEnabled(kBackspaceGoesBackFeature)) {
+        browser_->window()->ShowNewBackShortcutBubble(true);
         break;
+      }
+      // FALL THROUGH
     case IDC_FORWARD:
       GoForward(browser_, disposition);
       break;

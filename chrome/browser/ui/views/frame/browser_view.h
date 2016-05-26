@@ -53,6 +53,7 @@ class DownloadShelfView;
 class ExclusiveAccessBubbleViews;
 class InfoBarContainerView;
 class LocationBarView;
+class NewBackShortcutBubble;
 class StatusBubbleViews;
 class TabStrip;
 class ToolbarView;
@@ -286,6 +287,7 @@ class BrowserView : public BrowserWindow,
   bool ShouldHideUIForFullscreen() const override;
   bool IsFullscreen() const override;
   bool IsFullscreenBubbleVisible() const override;
+  void ShowNewBackShortcutBubble(bool forward) override;
   LocationBar* GetLocationBar() const override;
   void SetFocusToLocationBar(bool select_all) override;
   void UpdateReloadStopState(bool is_loading, bool force) override;
@@ -664,6 +666,8 @@ class BrowserView : public BrowserWindow,
   bool in_process_fullscreen_;
 
   std::unique_ptr<ExclusiveAccessBubbleViews> exclusive_access_bubble_;
+
+  std::unique_ptr<NewBackShortcutBubble> new_back_shortcut_bubble_;
 
 #if defined(OS_WIN)
   // Helper class to listen for completion of first page load.

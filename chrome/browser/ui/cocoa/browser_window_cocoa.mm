@@ -433,6 +433,11 @@ bool BrowserWindowCocoa::IsFullscreenBubbleVisible() const {
   return false;  // Currently only called from toolkit-views website_settings.
 }
 
+void BrowserWindowCocoa::ShowNewBackShortcutBubble(bool forward) {
+  // TODO(mgiuca): Implement new back shortcut bubble Mac.
+  // https://crbug.com/610039.
+}
+
 LocationBar* BrowserWindowCocoa::GetLocationBar() const {
   return [controller_ locationBarBridge];
 }

@@ -28,16 +28,22 @@ const int kOuterPaddingVertPx = 8;
 // Partially-transparent background color.
 const SkColor kBackgroundColor = SkColorSetARGB(0xcc, 0x28, 0x2c, 0x32);
 
+// Spacing around the key name.
+const int kKeyNameMarginHorizPx = 7;
+const int kKeyNameBorderPx = 1;
+const int kKeyNameCornerRadius = 2;
+const int kKeyNamePaddingPx = 5;
+
 }  // namespace
 
 // Class containing the instruction text. Contains fancy styling on the keyboard
 // key (not just a simple label).
 class SubtleNotificationView::InstructionView : public views::View {
  public:
-  // Creates an InstructionView with specific text. |text| may contain a single
-  // segment delimited by a pair of pipes ('|'); this segment will be displayed
-  // as a keyboard key. e.g., "Press |Esc| to exit" will have "Esc" rendered as
-  // a key.
+  // Creates an InstructionView with specific text. |text| may contain one or
+  // more segments delimited by a pair of pipes ('|'); each of these segments
+  // will be displayed as a keyboard key. e.g., "Press |Alt|+|Q| to exit" will
+  // have "Alt" and "Q" rendered as keys.
   InstructionView(const base::string16& text,
                   const gfx::FontList& font_list,
                   SkColor foreground_color,
@@ -46,10 +52,16 @@ class SubtleNotificationView::InstructionView : public views::View {
   void SetText(const base::string16& text);
 
  private:
-  views::Label* before_key_;
-  views::Label* key_name_label_;
-  views::View* key_name_;
-  views::Label* after_key_;
+  // Adds a label to the end of the notification text. If |format_as_key|,
+  // surrounds the label in a rounded-rect border to indicate that it is a
+  // keyboard key.
+  void AddTextSegment(const base::string16& text, bool format_as_key);
+
+  const gfx::FontList& font_list_;
+  SkColor foreground_color_;
+  SkColor background_color_;
+
+  base::string16 text_;
 
   DISALLOW_COPY_AND_ASSIGN(InstructionView);
 };
@@ -58,70 +70,69 @@ SubtleNotificationView::InstructionView::InstructionView(
     const base::string16& text,
     const gfx::FontList& font_list,
     SkColor foreground_color,
-    SkColor background_color) {
-  // Spacing around the key name.
-  const int kKeyNameMarginHorizPx = 7;
-  const int kKeyNameBorderPx = 1;
-  const int kKeyNameCornerRadius = 2;
-  const int kKeyNamePaddingPx = 5;
-
+    SkColor background_color)
+    : font_list_(font_list),
+      foreground_color_(foreground_color),
+      background_color_(background_color) {
   // The |between_child_spacing| is the horizontal margin of the key name.
   views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
                                                   0, 0, kKeyNameMarginHorizPx);
   SetLayoutManager(layout);
-
-  before_key_ = new views::Label(base::string16(), font_list);
-  before_key_->SetEnabledColor(foreground_color);
-  before_key_->SetBackgroundColor(background_color);
-  AddChildView(before_key_);
-
-  key_name_label_ = new views::Label(base::string16(), font_list);
-  key_name_label_->SetEnabledColor(foreground_color);
-  key_name_label_->SetBackgroundColor(background_color);
-
-  key_name_ = new views::View;
-  views::BoxLayout* key_name_layout = new views::BoxLayout(
-      views::BoxLayout::kHorizontal, kKeyNamePaddingPx, 0, 0);
-  key_name_layout->set_minimum_cross_axis_size(
-      key_name_label_->GetPreferredSize().height() + kKeyNamePaddingPx * 2);
-  key_name_->SetLayoutManager(key_name_layout);
-  key_name_->AddChildView(key_name_label_);
-  // The key name has a border around it.
-  std::unique_ptr<views::Border> border(views::Border::CreateRoundedRectBorder(
-      kKeyNameBorderPx, kKeyNameCornerRadius, foreground_color));
-  key_name_->SetBorder(std::move(border));
-  AddChildView(key_name_);
-
-  after_key_ = new views::Label(base::string16(), font_list);
-  after_key_->SetEnabledColor(foreground_color);
-  after_key_->SetBackgroundColor(background_color);
-  AddChildView(after_key_);
 
   SetText(text);
 }
 
 void SubtleNotificationView::InstructionView::SetText(
     const base::string16& text) {
+  // Avoid replacing the contents with the same text.
+  if (text == text_)
+    return;
+
+  RemoveAllChildViews(true);
+
   // Parse |text|, looking for pipe-delimited segment.
   std::vector<base::string16> segments =
       base::SplitString(text, base::ASCIIToUTF16("|"), base::TRIM_WHITESPACE,
                         base::SPLIT_WANT_ALL);
-  // Expect 1 or 3 pieces (either no pipe-delimited segments, or one).
-  DCHECK(segments.size() <= 1 || segments.size() == 3);
+  // SplitString() returns empty strings for zero-length segments, so given an
+  // even number of pipes, there should always be an odd number of segments.
+  // The exception is if |text| is entirely empty, in which case the returned
+  // list is also empty (rather than containing a single empty string).
+  DCHECK(segments.empty() || segments.size() % 2 == 1);
 
-  before_key_->SetText(segments.size() ? segments[0] : base::string16());
+  // Add text segment, alternating between non-key (no border) and key (border)
+  // formatting.
+  bool format_as_key = false;
+  for (const auto& segment : segments) {
+    AddTextSegment(segment, format_as_key);
+    format_as_key = !format_as_key;
+  }
 
-  if (segments.size() < 3) {
-    key_name_->SetVisible(false);
-    after_key_->SetVisible(false);
+  text_ = text;
+}
+
+void SubtleNotificationView::InstructionView::AddTextSegment(
+    const base::string16& text, bool format_as_key) {
+  views::Label* label = new views::Label(text, font_list_);
+  label->SetEnabledColor(foreground_color_);
+  label->SetBackgroundColor(background_color_);
+  if (!format_as_key) {
+    AddChildView(label);
     return;
   }
 
-  before_key_->SetText(segments[0]);
-  key_name_label_->SetText(segments[1]);
-  key_name_->SetVisible(true);
-  after_key_->SetVisible(true);
-  after_key_->SetText(segments[2]);
+  views::View* key = new views::View;
+  views::BoxLayout* key_name_layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, kKeyNamePaddingPx, 0, 0);
+  key_name_layout->set_minimum_cross_axis_size(
+      label->GetPreferredSize().height() + kKeyNamePaddingPx * 2);
+  key->SetLayoutManager(key_name_layout);
+  key->AddChildView(label);
+  // The key name has a border around it.
+  std::unique_ptr<views::Border> border(views::Border::CreateRoundedRectBorder(
+      kKeyNameBorderPx, kKeyNameCornerRadius, foreground_color_));
+  key->SetBorder(std::move(border));
+  AddChildView(key);
 }
 
 SubtleNotificationView::SubtleNotificationView(

@@ -2149,6 +2149,8 @@
       'browser/ui/views/login_handler_views.cc',
       'browser/ui/views/login_view.cc',
       'browser/ui/views/login_view.h',
+      'browser/ui/views/new_back_shortcut_bubble.cc',
+      'browser/ui/views/new_back_shortcut_bubble.h',
       'browser/ui/views/new_task_manager_view.cc',
       'browser/ui/views/new_task_manager_view.h',
       'browser/ui/views/subtle_notification_view.cc',
