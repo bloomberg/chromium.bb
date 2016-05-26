@@ -623,15 +623,13 @@ void AddLinkedSuggestionToList(const int error_code,
                                bool standalone_suggestion) {
   GURL learn_more_url;
   base::string16 suggestion_string = standalone_suggestion ?
-      l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY) :
       l10n_util::GetStringUTF16(
-          IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY_STANDALONE);
+          IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY_STANDALONE) :
+      l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY);
 
   switch (error_code) {
     case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
       learn_more_url = GURL(kWeakDHKeyLearnMoreUrl);
-      suggestion_string = l10n_util::GetStringUTF16(
-          IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY);
       break;
     case net::ERR_TOO_MANY_REDIRECTS:
       learn_more_url = GURL(kRedirectLoopLearnMoreUrl);
@@ -725,12 +723,12 @@ void GetSuggestionsSummaryList(int error_code,
   if (IsOnlySuggestion(suggestions, SUGGEST_LEARNMORE)) {
     DCHECK(suggestions_summary_list->empty());
     AddLinkedSuggestionToList(error_code, locale, suggestions_summary_list,
-                              false);
+                              true);
     return;
   }
   if (IsSuggested(suggestions, SUGGEST_LEARNMORE)) {
     AddLinkedSuggestionToList(error_code, locale, suggestions_summary_list,
-                              true);
+                              false);
   }
 
   if (suggestions & SUGGEST_DISABLE_EXTENSION) {
