@@ -16,7 +16,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
-import org.chromium.base.test.util.UrlUtils;
 import org.chromium.test.reporter.TestStatusReporter;
 
 import java.io.File;
@@ -160,7 +159,7 @@ public class NativeTestActivity extends Activity {
 
     private void runTests() {
         nativeRunTests(mCommandLineFlags.toString(), mCommandLineFilePath, mStdoutFilePath,
-                mStdoutFifo, getApplicationContext(), UrlUtils.getIsolatedTestRoot());
+                mStdoutFifo, getApplicationContext());
         finish();
         mReporter.testRunFinished(Process.myPid());
     }
@@ -173,5 +172,5 @@ public class NativeTestActivity extends Activity {
     }
 
     private native void nativeRunTests(String commandLineFlags, String commandLineFilePath,
-            String stdoutFilePath, boolean stdoutFifo, Context appContext, String testDataDir);
+            String stdoutFilePath, boolean stdoutFifo, Context appContext);
 }

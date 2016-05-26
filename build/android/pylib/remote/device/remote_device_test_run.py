@@ -230,8 +230,6 @@ class RemoteDeviceTestRun(test_run.TestRun):
 
     self._app_id = self._UploadAppToDevice(app_path)
 
-    # TODO(agrieve): If AMP is ever ressurected, this needs to be changed to put
-    #     test files under /sdcard/gtestdata.  http://crbug.com/607169
     data_deps = self._test_instance.GetDataDependencies()
     if data_deps:
       with tempfile.NamedTemporaryFile(suffix='.zip') as test_with_deps:

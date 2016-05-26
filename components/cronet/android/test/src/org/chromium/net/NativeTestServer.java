@@ -7,7 +7,6 @@ package org.chromium.net;
 import android.content.Context;
 
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.test.util.UrlUtils;
 
 /**
  * Wrapper class to start an in-process native test server, and get URLs
@@ -21,7 +20,7 @@ public final class NativeTestServer {
     public static boolean startNativeTestServer(Context context) {
         TestFilesInstaller.installIfNeeded(context);
         return nativeStartNativeTestServer(
-                TestFilesInstaller.getInstalledPath(context), UrlUtils.getIsolatedTestRoot());
+                TestFilesInstaller.getInstalledPath(context));
     }
 
     public static void shutdownNativeTestServer() {
@@ -83,7 +82,7 @@ public final class NativeTestServer {
         return nativeIsDataReductionProxySupported();
     }
 
-    private static native boolean nativeStartNativeTestServer(String filePath, String testDataDir);
+    private static native boolean nativeStartNativeTestServer(String filePath);
     private static native void nativeShutdownNativeTestServer();
     private static native String nativeGetEchoBodyURL();
     private static native String nativeGetEchoHeaderURL(String header);

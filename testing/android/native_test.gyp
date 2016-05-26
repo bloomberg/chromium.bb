@@ -59,7 +59,6 @@
             'on_device_instrumentation.gyp:reporter_java',
             '../../base/base.gyp:base_native_libraries_gen',
             '../../base/base.gyp:base_java',
-            '../../base/base.gyp:base_java_test_support',
           ],
           'variables': {
             'chromium_code': '1',
