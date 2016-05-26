@@ -75,5 +75,7 @@ FAIL classList.add should treat \n as a space assert_equals: expected "a b" but 
 FAIL classList.add should treat \f as a space assert_equals: expected "a b" but got "a\fb"
 PASS classList.length must be read-only 
 PASS classList must have [PutForwards=value] 
+FAIL classList.replace should work foo.classList.replace is not a function
+PASS classList.supports should throw 
 Harness: the test ran to completion.
 

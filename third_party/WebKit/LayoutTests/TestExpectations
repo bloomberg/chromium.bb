@@ -1296,13 +1296,13 @@ crbug.com/600261 imported/wpt/mediacapture-streams/MediaStream-MediaElement-srcO
 
 crbug.com/605525 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
 
-crbug.com/603703 [ Linux Mac ] imported/wpt/web-animations/animation-timeline/document-timeline.html [ Failure Pass ]
+crbug.com/603703 [ Linux Mac ] imported/wpt/web-animations/interfaces/AnimationTimeline/document-timeline.html [ Failure Pass ]
 
-crbug.com/600248 imported/wpt/web-animations/animation-effect-timing/endDelay.html [ Failure ]
-crbug.com/600248 imported/wpt/web-animations/animation/constructor.html [ Failure Timeout ]
-crbug.com/600248 imported/wpt/web-animations/animation/finished.html [ Pass Failure ]
-crbug.com/600248 imported/wpt/web-animations/animation/oncancel.html [ Pass Failure ]
-crbug.com/600248 imported/wpt/web-animations/animation/onfinish.html [ Pass Failure ]
+crbug.com/600248 imported/wpt/web-animations/interfaces/AnimationEffectTiming/endDelay.html [ Failure ]
+crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/constructor.html [ Failure Timeout ]
+crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/finished.html [ Pass Failure ]
+crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/oncancel.html [ Pass Failure ]
+crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/onfinish.html [ Pass Failure ]
 
 crbug.com/611658 [ Win7 ] fast/forms/text/text-font-height-mismatch.html [ Failure ]
 crbug.com/611658 [ Win7 ] fast/text/emphasis-combined-text.html [ Failure ]

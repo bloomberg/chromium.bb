@@ -1,0 +1,35 @@
+This is a testharness.js-based test.
+FAIL non-animatable property 'animation' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationDelay' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationDirection' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationDuration' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationFillMode' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationIterationCount' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationName' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationPlayState' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationTimingFunction' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'transition' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'transitionDelay' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'transitionDuration' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'transitionProperty' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'transitionTimingFunction' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'display' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'unsupportedProperty' is not accessed when using a property-indexed keyframe object KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animation' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationDelay' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationDirection' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationDuration' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationFillMode' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationIterationCount' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationName' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationPlayState' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'animationTimingFunction' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'transition' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'transitionDelay' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'transitionDuration' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'transitionProperty' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'transitionTimingFunction' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'display' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+FAIL non-animatable property 'unsupportedProperty' is not accessed when using a keyframe sequence KeyframeEffectReadOnly is not defined
+Harness: the test ran to completion.
+

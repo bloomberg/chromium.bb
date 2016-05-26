@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+FAIL Setting the start time of an animation without an active timeline Animation is not defined
+FAIL Setting an unresolved start time an animation without an active timeline does not clear the current time Animation is not defined
+FAIL Setting the start time clears the hold time Animation is not defined
+FAIL Setting an unresolved start time sets the hold time Animation is not defined
+FAIL Setting the start time resolves a pending ready promise Animation is not defined
+FAIL Setting the start time resolves a pending pause task Animation is not defined
+FAIL Setting the start time updates the finished state Animation is not defined
+Harness: the test ran to completion.
+

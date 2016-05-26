@@ -1,0 +1,30 @@
+CONSOLE WARNING: The <keygen> element is deprecated and will be removed in M54, around October 2016. See https://www.chromestatus.com/features/5716060992962560 for more details.
+This is a testharness.js-based test.
+PASS button.form 
+PASS fieldset.form 
+PASS input.form 
+PASS keygen.form 
+PASS object.form 
+PASS output.form 
+PASS select.form 
+PASS textarea.form 
+FAIL label.form assert_equals: label.form expected null but got Element node <form id="form">
+<p><button id="button">button</button>
+<...
+FAIL label-form.form assert_equals: label.form expected null but got Element node <form id="form">
+<p><button id="button">button</button>
+<...
+FAIL label-form-form2.form assert_equals: label.form expected null but got Element node <form id="form2"></form>
+PASS label-with-control.form 
+PASS label-for.form 
+FAIL label-with-progress.form assert_equals: Sanity check: label.control.form expected (object) null but got (undefined) undefined
+FAIL label-with-meter.form assert_equals: Sanity check: label.control.form expected (object) null but got (undefined) undefined
+FAIL label-for-control-form-in-form.form assert_equals: label.form expected Element node <form id="form2"></form> but got Element node <form id="form">
+<p><button id="button">button</button>
+<...
+FAIL label-for-control-form.form assert_equals: label.form expected Element node <form id="form2"></form> but got null
+FAIL label-in-table.form assert_equals: label.form expected null but got Element node <form id="form3"></form>
+PASS label-in-table-with-control.form 
+PASS label-in-table-for.form 
+Harness: the test ran to completion.
+

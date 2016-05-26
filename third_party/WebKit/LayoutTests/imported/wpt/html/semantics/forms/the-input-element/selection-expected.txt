@@ -28,22 +28,22 @@ PASS input type search should support all selection attributes and methods
 PASS input type url should support all selection attributes and methods 
 PASS input type tel should support all selection attributes and methods 
 PASS input type password should support all selection attributes and methods 
-PASS input type hidden should not support variable-length selections 
-PASS input type email should not support variable-length selections 
-PASS input type date should not support variable-length selections 
-PASS input type month should not support variable-length selections 
-PASS input type week should not support variable-length selections 
-PASS input type time should not support variable-length selections 
-PASS input type datetime-local should not support variable-length selections 
-PASS input type number should not support variable-length selections 
-PASS input type range should not support variable-length selections 
-PASS input type color should not support variable-length selections 
-PASS input type checkbox should not support variable-length selections 
-PASS input type radio should not support variable-length selections 
-PASS input type file should not support variable-length selections 
-PASS input type submit should not support variable-length selections 
-PASS input type image should not support variable-length selections 
-PASS input type reset should not support variable-length selections 
-PASS input type button should not support variable-length selections 
+FAIL input type hidden should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('hidden') does not support selection.
+FAIL input type email should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('email') does not support selection.
+FAIL input type date should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('date') does not support selection.
+FAIL input type month should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('month') does not support selection.
+FAIL input type week should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('week') does not support selection.
+FAIL input type time should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('time') does not support selection.
+FAIL input type datetime-local should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('datetime-local') does not support selection.
+FAIL input type number should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('number') does not support selection.
+FAIL input type range should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('range') does not support selection.
+FAIL input type color should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('color') does not support selection.
+FAIL input type checkbox should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('checkbox') does not support selection.
+FAIL input type radio should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('radio') does not support selection.
+FAIL input type file should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('file') does not support selection.
+FAIL input type submit should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('submit') does not support selection.
+FAIL input type image should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('image') does not support selection.
+FAIL input type reset should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('reset') does not support selection.
+FAIL input type button should not support variable-length selections Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('button') does not support selection.
 Harness: the test ran to completion.
 
