@@ -8,7 +8,7 @@
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/widget/widget.h"

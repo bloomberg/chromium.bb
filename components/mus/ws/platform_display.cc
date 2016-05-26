@@ -22,7 +22,6 @@
 #include "components/mus/ws/server_window_surface.h"
 #include "components/mus/ws/server_window_surface_manager.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "mojo/converters/input_events/mojo_extended_key_event_data.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
@@ -35,6 +34,7 @@
 #include "ui/display/display.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/platform_window/platform_ime_controller.h"
 #include "ui/platform_window/platform_window.h"
 

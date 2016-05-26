@@ -16,11 +16,11 @@ component("input_events") {
   deps = [
     "//base",
     "//components/mus/public/interfaces",
-    "//mojo/converters/geometry",
     "//mojo/public/c/system:for_component",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//ui/gfx/geometry",
-    "//ui/mojo/geometry:interfaces",
+    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojo:interfaces",
   ]
 }

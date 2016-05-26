@@ -6,8 +6,8 @@
 #define MOJO_CONVERTERS_TRANSFORM_TRANSFORM_TYPE_CONVERTERS_H_
 
 #include "mojo/converters/transform/mojo_transform_export.h"
+#include "ui/gfx/geometry/mojo/geometry.mojom.h"
 #include "ui/gfx/transform.h"
-#include "ui/mojo/geometry/geometry.mojom.h"
 
 namespace mojo {
 

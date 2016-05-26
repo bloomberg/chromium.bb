@@ -45,14 +45,14 @@ source_set("gles2") {
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/command_buffer/service",
     "//gpu/config:config",
-    "//mojo/converters/geometry",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojo:interfaces",
     "//ui/gl",
     "//ui/gl/init",
-    "//ui/mojo/geometry:interfaces",
   ]
 
   if (use_ozone) {

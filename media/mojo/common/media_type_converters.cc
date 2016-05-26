@@ -25,8 +25,8 @@
 #include "media/base/video_frame.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/public/cpp/system/buffer.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mojo {
 

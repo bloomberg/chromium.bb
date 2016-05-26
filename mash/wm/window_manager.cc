@@ -22,7 +22,7 @@
 #include "mash/wm/property_util.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "mash/wm/root_window_controller.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mash {
 namespace wm {

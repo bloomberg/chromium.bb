@@ -14,11 +14,11 @@
 #endif
 
 #include "components/mus/public/interfaces/input_events.mojom.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/mojo_extended_key_event_data.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mojo {
 namespace {

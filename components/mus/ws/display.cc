@@ -22,9 +22,9 @@
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mus {
 namespace ws {

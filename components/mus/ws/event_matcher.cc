@@ -4,8 +4,8 @@
 
 #include "components/mus/ws/event_matcher.h"
 
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mus {
 namespace ws {

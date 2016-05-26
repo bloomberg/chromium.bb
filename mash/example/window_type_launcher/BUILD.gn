@@ -30,7 +30,6 @@ executable("window_type_launcher") {
     "//mash/public/interfaces",
     "//mash/session/public/interfaces",
     "//mojo/common:common_base",
-    "//mojo/converters/geometry",
     "//mojo/edk/system",
     "//mojo/public/cpp/bindings",
     "//services/shell/public/cpp",
@@ -41,6 +40,7 @@ executable("window_type_launcher") {
     "//ui/aura",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/gfx/geometry/mojo",
     "//ui/views",
     "//ui/views/mus:for_shared_library",
   ]

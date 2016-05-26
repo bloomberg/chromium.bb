@@ -20,9 +20,9 @@ source_set("common") {
     "//media",
     "//media/mojo/interfaces",
     "//mojo/common",
-    "//mojo/converters/geometry",
     "//mojo/public/c/system:for_component",
     "//ui/gfx/geometry",
-    "//ui/mojo/geometry:interfaces",
+    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojo:interfaces",
   ]
 }

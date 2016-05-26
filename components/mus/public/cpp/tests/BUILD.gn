@@ -21,8 +21,8 @@ source_set("unittest_support") {
   deps = [
     "//base",
     "//components/mus/public/cpp",
-    "//mojo/converters/geometry",
     "//testing/gtest",
+    "//ui/gfx/geometry/mojo",
   ]
 }
 
@@ -65,7 +65,6 @@ test("mus_public_unittests") {
     "//components/mus/common:mus_common",
     "//components/mus/public/cpp",
     "//mojo/common:common_base",
-    "//mojo/converters/geometry",
     "//mojo/converters/input_events",
     "//mojo/edk/system",
     "//mojo/public/cpp/system",
@@ -74,7 +73,8 @@ test("mus_public_unittests") {
     "//ui/events",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
-    "//ui/mojo/geometry:interfaces",
+    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojo:interfaces",
   ]
 
   if (use_x11) {

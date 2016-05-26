@@ -10,9 +10,9 @@ component("display") {
   ]
   deps = [
     "//components/mus/public/interfaces",
-    "//mojo/converters/geometry",
     "//mojo/public/c/system:for_component",
     "//ui/display",
+    "//ui/gfx/geometry/mojo",
   ]
 
   defines = [ "MOJO_DISPLAY_IMPLEMENTATION" ]

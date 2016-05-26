@@ -1,18 +1,18 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_CONVERTERS_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
-#define MOJO_CONVERTERS_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
+#ifndef UI_GFX_GEOMETRY_MOJO_GEOMETRY_TYPE_CONVERTERS_H_
+#define UI_GFX_GEOMETRY_MOJO_GEOMETRY_TYPE_CONVERTERS_H_
 
-#include "mojo/converters/geometry/mojo_geometry_export.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/mojo/geometry.mojom.h"
+#include "ui/gfx/geometry/mojo/mojo_geometry_export.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/mojo/geometry/geometry.mojom.h"
 
 namespace mojo {
 
@@ -99,4 +99,4 @@ struct MOJO_GEOMETRY_EXPORT TypeConverter<gfx::Insets, InsetsPtr> {
 
 }  // namespace mojo
 
-#endif  // MOJO_CONVERTERS_GEOMETRY_GEOMETRY_TYPE_CONVERTERS_H_
+#endif  // UI_GFX_GEOMETRY_MOJO_GEOMETRY_TYPE_CONVERTERS_H_

@@ -14,9 +14,9 @@
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/window_coordinate_conversions.h"
 #include "components/mus/ws/window_finder.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 

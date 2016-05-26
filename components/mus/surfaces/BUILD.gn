@@ -31,13 +31,13 @@ source_set("surfaces") {
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
-    "//mojo/converters/geometry",
     "//mojo/converters/surfaces",
     "//services/shell/public/cpp",
     "//services/tracing/public/cpp",
     "//ui/gfx",
+    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojo:interfaces",
     "//ui/gl",
-    "//ui/mojo/geometry:interfaces",
   ]
 
   if (use_ozone) {

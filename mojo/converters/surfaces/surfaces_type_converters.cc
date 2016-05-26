@@ -24,9 +24,9 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/surfaces/surface_id_allocator.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/custom_surface_converter.h"
 #include "mojo/converters/transform/transform_type_converters.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 using mus::mojom::Color;
 using mus::mojom::ColorPtr;

@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'includes': {
+    '../../mojo/mojo_variables.gypi',
+  },
   'variables': {
     'chromium_code': 1,
   },
@@ -65,6 +68,43 @@
       ],
       'includes': [
         '../../build/android/increase_size_for_speed.gypi',
+      ],
+    },
+    {
+      # GN version: //ui/gfx/geometry/mojo:interfaces
+      'target_name': 'mojo_geometry_bindings_mojom',
+      'type': 'none',
+      'variables': {
+        'mojom_files': [
+          'geometry/mojo/geometry.mojom',
+        ],
+      },
+      'includes': [ '../../mojo/mojom_bindings_generator_explicit.gypi' ],
+    },
+    {
+      'target_name': 'mojo_geometry_bindings',
+      'type': 'static_library',
+      'dependencies': [
+        'mojo_geometry_bindings_mojom',
+        '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+      ],
+    },
+    {
+      # GN version: //ui/gfx/geometry/mojo
+      'target_name': 'mojo_geometry_lib',
+      'type': '<(component)',
+      'defines': [
+        'MOJO_GEOMETRY_IMPLEMENTATION',
+      ],
+      'dependencies': [
+        'mojo_geometry_bindings',
+        'gfx_geometry',
+        '<(mojo_system_for_component)',
+      ],
+      'sources': [
+        'geometry/mojo/geometry_type_converters.cc',
+        'geometry/mojo/geometry_type_converters.h',
+        'geometry/mojo/mojo_geometry_export.h',
       ],
     },
     {

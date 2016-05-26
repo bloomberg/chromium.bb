@@ -4,8 +4,8 @@
 
 #include "ui/mojo/display/display_type_converters.h"
 
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "ui/display/display.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mojo {
 

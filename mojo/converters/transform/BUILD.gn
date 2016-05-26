@@ -11,7 +11,7 @@ component("transform") {
   deps = [
     "//mojo/public/c/system:for_component",
     "//skia",
-    "//ui/mojo/geometry:interfaces",
+    "//ui/gfx/geometry/mojo:interfaces",
   ]
 
   defines = [ "MOJO_TRANSFORM_IMPLEMENTATION" ]

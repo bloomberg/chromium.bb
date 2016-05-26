@@ -14,8 +14,8 @@ mojo_native_application("test_wm") {
     "//base",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
-    "//mojo/converters/geometry",
     "//services/shell/public/cpp",
+    "//ui/gfx/geometry/mojo",
     "//ui/mojo/display",
   ]
 

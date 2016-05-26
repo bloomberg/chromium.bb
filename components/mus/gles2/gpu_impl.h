@@ -13,7 +13,7 @@
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "ui/mojo/geometry/geometry.mojom.h"
+#include "ui/gfx/geometry/mojo/geometry.mojom.h"
 
 namespace mus {
 

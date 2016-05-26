@@ -18,9 +18,9 @@ component("surfaces") {
   defines = [ "MOJO_SURFACES_IMPLEMENTATION" ]
 
   public_deps = [
-    "//mojo/converters/geometry",
     "//mojo/converters/transform",
     "//ui/gfx",
+    "//ui/gfx/geometry/mojo",
   ]
 
   deps = [

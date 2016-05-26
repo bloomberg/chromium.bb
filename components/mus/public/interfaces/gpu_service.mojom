@@ -8,7 +8,7 @@ import "components/mus/public/interfaces/channel_handle.mojom";
 import "components/mus/public/interfaces/gpu.mojom";
 import "components/mus/public/interfaces/gpu_memory_buffer.mojom";
 import "gpu/ipc/common/sync_token.mojom";
-import "ui/mojo/geometry/geometry.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 
 interface GpuService {
   // Tells the GPU service to create a new channel for communication with a

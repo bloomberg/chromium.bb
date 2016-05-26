@@ -11,7 +11,7 @@
 #include "media/base/renderer.h"
 #include "media/mojo/services/demuxer_stream_provider_shim.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace media {
 

@@ -15,7 +15,7 @@
 #include "media/base/video_renderer_sink.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
 #include "media/renderers/video_overlay_factory.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace media {
 

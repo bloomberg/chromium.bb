@@ -1,4 +1,4 @@
 include_rules = [
   "+ui/gfx/transform.h",
-  "+ui/mojo/geometry",
+  "+ui/gfx/geometry/mojo",
 ]

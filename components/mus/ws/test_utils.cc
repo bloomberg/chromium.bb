@@ -11,9 +11,9 @@
 #include "components/mus/ws/server_window_surface_manager_test_api.h"
 #include "components/mus/ws/window_manager_access_policy.h"
 #include "components/mus/ws/window_manager_factory_service.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mus {
 namespace ws {

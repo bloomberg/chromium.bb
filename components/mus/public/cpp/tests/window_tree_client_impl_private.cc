@@ -6,8 +6,8 @@
 
 #include "components/mus/public/cpp/lib/window_tree_client_impl.h"
 #include "components/mus/public/cpp/window.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mus {
 

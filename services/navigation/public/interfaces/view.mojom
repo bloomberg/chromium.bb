@@ -5,7 +5,7 @@
 module navigation.mojom;
 
 import "components/mus/public/interfaces/window_tree.mojom";
-import "ui/mojo/geometry/geometry.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojo/url.mojom";
 
 interface ViewFactory {

@@ -30,7 +30,7 @@
         '../services/shell/shell_public.gyp:shell_public',
         '../skia/skia.gyp:skia_mojo',
         '../third_party/WebKit/public/blink.gyp:mojo_bindings',
-        '../ui/mojo/geometry/mojo_bindings.gyp:mojo_geometry_bindings',
+        '../ui/gfx/gfx.gyp:mojo_geometry_bindings',
       ],
       'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
     },

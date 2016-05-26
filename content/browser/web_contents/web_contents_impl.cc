@@ -115,7 +115,6 @@
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "mojo/common/url_type_converters.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "net/base/url_util.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_transaction_factory.h"
@@ -126,6 +125,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_tree_combiner.h"
 #include "ui/base/layout.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_ANDROID)

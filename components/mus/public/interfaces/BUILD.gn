@@ -39,7 +39,7 @@ mojom("interfaces") {
 
   deps = [
     "//gpu/ipc/common:interfaces",
-    "//ui/mojo/geometry:interfaces",
+    "//ui/gfx/geometry/mojo:interfaces",
     "//ui/mojo/ime:interfaces",
   ]
 }

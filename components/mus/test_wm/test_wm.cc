@@ -7,13 +7,13 @@
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/shell/public/cpp/application_runner.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "ui/display/display.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/mojo/display/display_type_converters.h"
 
 namespace mus {

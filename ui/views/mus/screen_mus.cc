@@ -4,12 +4,12 @@
 
 #include "ui/views/mus/screen_mus.h"
 
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/display/display_finder.h"
 #include "ui/display/display_observer.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/mojo/display/display_type_converters.h"
 #include "ui/views/mus/screen_mus_delegate.h"
 #include "ui/views/mus/window_manager_frame_values.h"

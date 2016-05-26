@@ -57,7 +57,6 @@ source_set("cpp") {
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
-    "//mojo/converters/geometry",
     "//mojo/converters/input_events",
     "//mojo/converters/surfaces",
     "//mojo/public/cpp/bindings:bindings",
@@ -66,7 +65,8 @@ source_set("cpp") {
     "//services/shell/public/interfaces",
     "//ui/events",
     "//ui/gfx/geometry",
-    "//ui/mojo/geometry:interfaces",
+    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojo:interfaces",
   ]
 
   data_deps = [

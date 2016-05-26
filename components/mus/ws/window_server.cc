@@ -22,10 +22,10 @@
 #include "components/mus/ws/window_server_delegate.h"
 #include "components/mus/ws/window_tree.h"
 #include "components/mus/ws/window_tree_binding.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "services/shell/public/cpp/connection.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace mus {

@@ -15,9 +15,9 @@
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/test_change_tracker.h"
-#include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/shell/public/cpp/shell_test.h"
+#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 using mojo::Array;
 using mojo::Callback;

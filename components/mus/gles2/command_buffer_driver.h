@@ -22,10 +22,10 @@
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/geometry/mojo/geometry.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
-#include "ui/mojo/geometry/geometry.mojom.h"
 
 namespace gfx {
 class GLContext;

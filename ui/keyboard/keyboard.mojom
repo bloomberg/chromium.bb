@@ -4,7 +4,7 @@
 
 module keyboard.mojom;
 
-import "ui/mojo/geometry/geometry.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 
 interface KeyboardObserver {
   // Sent any time state changes in the keyboard.
