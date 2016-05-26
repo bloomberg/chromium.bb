@@ -16,9 +16,11 @@ class Document;
 class FilterOperations;
 class SVGFilterElement;
 
-class CORE_EXPORT SVGResourceClient : DocumentResourceClient {
+class CORE_EXPORT SVGResourceClient : public DocumentResourceClient {
+    USING_PRE_FINALIZER(SVGResourceClient, clearFilterReferences);
 public:
-    virtual ~SVGResourceClient();
+    SVGResourceClient();
+    ~SVGResourceClient() override;
     void addFilterReferences(const FilterOperations&, const Document&);
     void clearFilterReferences();
 
@@ -29,9 +31,11 @@ public:
     void notifyFinished(Resource*) override;
     String debugName() const override { return "SVGResourceClient"; }
 
+    DECLARE_TRACE();
+
 private:
-    PersistentHeapHashSet<WeakMember<SVGFilterElement>> m_internalFilterReferences;
-    PersistentHeapVector<Member<DocumentResource>> m_externalFilterReferences;
+    HeapHashSet<WeakMember<SVGFilterElement>> m_internalFilterReferences;
+    HeapVector<Member<DocumentResource>> m_externalFilterReferences;
 };
 
 } // namespace blink

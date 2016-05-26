@@ -10,6 +10,11 @@
 
 namespace blink {
 
+SVGResourceClient::SVGResourceClient()
+{
+    ThreadState::current()->registerPreFinalizer(this);
+}
+
 SVGResourceClient::~SVGResourceClient()
 {
 }
@@ -68,6 +73,13 @@ void SVGResourceClient::filterWillBeDestroyed(SVGFilterElement* filter)
 void SVGResourceClient::notifyFinished(Resource*)
 {
     filterNeedsInvalidation();
+}
+
+DEFINE_TRACE(SVGResourceClient)
+{
+    visitor->trace(m_internalFilterReferences);
+    visitor->trace(m_externalFilterReferences);
+    DocumentResourceClient::trace(visitor);
 }
 
 } // namespace blink

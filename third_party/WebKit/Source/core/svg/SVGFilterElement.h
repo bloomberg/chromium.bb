@@ -77,7 +77,7 @@ private:
     Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_filterUnits;
     Member<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>> m_primitiveUnits;
 
-    HashSet<SVGResourceClient*> m_clientsToAdd;
+    HeapHashSet<WeakMember<SVGResourceClient>> m_clientsToAdd;
 };
 
 } // namespace blink

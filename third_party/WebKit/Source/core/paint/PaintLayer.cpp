@@ -186,6 +186,8 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
 
 PaintLayer::~PaintLayer()
 {
+    if (m_rareData && m_rareData->filterInfo)
+        m_rareData->filterInfo->clearLayer();
     if (layoutObject()->frame() && layoutObject()->frame()->page()) {
         if (ScrollingCoordinator* scrollingCoordinator = layoutObject()->frame()->page()->scrollingCoordinator())
             scrollingCoordinator->willDestroyLayer(this);
@@ -2661,7 +2663,7 @@ PaintLayerFilterInfo& PaintLayer::ensureFilterInfo()
 {
     PaintLayerRareData& rareData = ensureRareData();
     if (!rareData.filterInfo)
-        rareData.filterInfo = adoptPtr(new PaintLayerFilterInfo(this));
+        rareData.filterInfo = new PaintLayerFilterInfo(this);
     return *rareData.filterInfo;
 }
 

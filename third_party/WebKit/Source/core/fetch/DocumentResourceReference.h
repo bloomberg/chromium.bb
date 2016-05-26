@@ -27,18 +27,33 @@
 #define DocumentResourceReference_h
 
 #include "core/fetch/DocumentResource.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
-class DocumentResourceReference final : public DocumentResourceClient {
-    USING_FAST_MALLOC(DocumentResourceReference);
+class DocumentResourceReference final : public GarbageCollectedFinalized<DocumentResourceReference>, public DocumentResourceClient {
+    USING_GARBAGE_COLLECTED_MIXIN(DocumentResourceReference);
+    USING_PRE_FINALIZER(DocumentResourceReference, removeSelf);
 public:
-    DocumentResourceReference(DocumentResource* document) : m_document(document) { m_document->addClient(this); }
-    ~DocumentResourceReference() override { m_document->removeClient(this); }
+    DocumentResourceReference(DocumentResource* document)
+        : m_document(document)
+    {
+        ThreadState::current()->registerPreFinalizer(this);
+        m_document->addClient(this);
+    }
+    ~DocumentResourceReference() override {}
     DocumentResource* document() { return m_document.get(); }
+    DEFINE_INLINE_TRACE()
+    {
+        visitor->trace(m_document);
+        DocumentResourceClient::trace(visitor);
+    }
+
 private:
+    void removeSelf() { m_document->removeClient(this); }
+
     String debugName() const override { return "DocumentResourceReference"; }
-    Persistent<DocumentResource> m_document;
+    Member<DocumentResource> m_document;
 };
 
 } // namespace blink

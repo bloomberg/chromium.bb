@@ -149,7 +149,6 @@ void CanvasRenderingContext2D::dispose()
 {
     if (m_pruneLocalFontCacheScheduled)
         Platform::current()->currentThread()->removeTaskObserver(this);
-    clearFilterReferences();
 }
 
 void CanvasRenderingContext2D::validateStateStack()
@@ -217,6 +216,7 @@ DEFINE_TRACE(CanvasRenderingContext2D)
     visitor->trace(m_hitRegionManager);
     CanvasRenderingContext::trace(visitor);
     BaseRenderingContext2D::trace(visitor);
+    SVGResourceClient::trace(visitor);
 }
 
 void CanvasRenderingContext2D::dispatchContextLostEvent(Timer<CanvasRenderingContext2D>*)

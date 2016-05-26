@@ -143,7 +143,7 @@ FilterOperations FilterOperationResolver::createFilterOperations(StyleResolverSt
                 if (!svgDocumentValue->loadRequested())
                     state.elementStyleResources().addPendingSVGDocument(operation, svgDocumentValue);
                 else if (svgDocumentValue->cachedSVGDocument())
-                    ReferenceFilterBuilder::setDocumentResourceReference(operation, adoptPtr(new DocumentResourceReference(svgDocumentValue->cachedSVGDocument())));
+                    ReferenceFilterBuilder::setDocumentResourceReference(operation, new DocumentResourceReference(svgDocumentValue->cachedSVGDocument()));
             }
             operations.operations().append(operation);
             continue;

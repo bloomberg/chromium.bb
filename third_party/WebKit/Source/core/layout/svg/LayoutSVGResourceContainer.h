@@ -23,6 +23,7 @@
 #include "core/layout/svg/LayoutSVGHiddenContainer.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGResourceClient.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -105,7 +106,7 @@ private:
     // 22 padding bits available
 
     HashSet<LayoutObject*> m_clients;
-    HashSet<SVGResourceClient*> m_resourceClients;
+    PersistentHeapHashSet<WeakMember<SVGResourceClient>> m_resourceClients;
 };
 
 inline LayoutSVGResourceContainer* getLayoutSVGResourceContainerById(TreeScope& treeScope, const AtomicString& id)

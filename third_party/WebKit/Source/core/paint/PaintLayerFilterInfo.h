@@ -51,9 +51,9 @@ class PaintLayer;
 // painting non-hardware accelerated filters (FilterEffect). Hardware
 // accelerated CSS filters use CompositorFilterOperations, that is backed by cc.
 //
-class PaintLayerFilterInfo final : public SVGResourceClient {
-    USING_FAST_MALLOC(PaintLayerFilterInfo);
+class PaintLayerFilterInfo final : public GarbageCollectedFinalized<PaintLayerFilterInfo>, public SVGResourceClient {
     WTF_MAKE_NONCOPYABLE(PaintLayerFilterInfo);
+    USING_GARBAGE_COLLECTED_MIXIN(PaintLayerFilterInfo);
 public:
     explicit PaintLayerFilterInfo(PaintLayer*);
     ~PaintLayerFilterInfo() override;
@@ -62,12 +62,16 @@ public:
     void setBuilder(FilterEffectBuilder*);
 
     void updateReferenceFilterClients(const FilterOperations&);
+    void clearLayer() { m_layer = nullptr; }
 
     void filterNeedsInvalidation() override;
 
+    DECLARE_TRACE();
+
 private:
+    // |clearLayer| must be called before *m_layer becomes invalid.
     PaintLayer* m_layer;
-    Persistent<FilterEffectBuilder> m_builder;
+    Member<FilterEffectBuilder> m_builder;
 };
 
 } // namespace blink

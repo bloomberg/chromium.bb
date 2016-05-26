@@ -98,6 +98,7 @@ DEFINE_TRACE(SVGUseElement)
     visitor->trace(m_resource);
     SVGGraphicsElement::trace(visitor);
     SVGURIReference::trace(visitor);
+    DocumentResourceClient::trace(visitor);
 }
 
 #if ENABLE(ASSERT)

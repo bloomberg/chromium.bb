@@ -35,14 +35,11 @@
 
 namespace blink {
 
-PaintLayerFilterInfo::PaintLayerFilterInfo(PaintLayer* layer)
-    : m_layer(layer)
-{
-}
+PaintLayerFilterInfo::PaintLayerFilterInfo(PaintLayer* layer) : m_layer(layer) {}
 
 PaintLayerFilterInfo::~PaintLayerFilterInfo()
 {
-    clearFilterReferences();
+    DCHECK(!m_layer);
 }
 
 void PaintLayerFilterInfo::setBuilder(FilterEffectBuilder* builder)
@@ -58,7 +55,14 @@ void PaintLayerFilterInfo::updateReferenceFilterClients(const FilterOperations& 
 
 void PaintLayerFilterInfo::filterNeedsInvalidation()
 {
-    m_layer->filterNeedsPaintInvalidation();
+    if (m_layer)
+        m_layer->filterNeedsPaintInvalidation();
+}
+
+DEFINE_TRACE(PaintLayerFilterInfo)
+{
+    visitor->trace(m_builder);
+    SVGResourceClient::trace(visitor);
 }
 
 } // namespace blink

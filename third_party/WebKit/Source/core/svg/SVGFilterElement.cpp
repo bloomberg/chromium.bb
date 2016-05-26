@@ -69,6 +69,7 @@ DEFINE_TRACE(SVGFilterElement)
     visitor->trace(m_height);
     visitor->trace(m_filterUnits);
     visitor->trace(m_primitiveUnits);
+    visitor->trace(m_clientsToAdd);
     SVGElement::trace(visitor);
     SVGURIReference::trace(visitor);
 }

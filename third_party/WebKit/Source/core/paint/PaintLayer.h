@@ -133,7 +133,7 @@ struct PaintLayerRareData {
 
     OwnPtr<PaintLayerReflectionInfo> reflectionInfo;
 
-    OwnPtr<PaintLayerFilterInfo> filterInfo;
+    Persistent<PaintLayerFilterInfo> filterInfo;
 
     // The accumulated subpixel offset of a composited layer's composited bounds compared to absolute coordinates.
     LayoutSize subpixelAccumulation;

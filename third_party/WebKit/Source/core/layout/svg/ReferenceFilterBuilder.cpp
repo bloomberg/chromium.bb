@@ -41,7 +41,7 @@ namespace blink {
 
 namespace {
 
-using ResourceReferenceMap = PersistentHeapHashMap<WeakMember<const FilterOperation>, OwnPtr<DocumentResourceReference>>;
+using ResourceReferenceMap = PersistentHeapHashMap<WeakMember<const FilterOperation>, Member<DocumentResourceReference>>;
 
 ResourceReferenceMap& documentResourceReferences()
 {
@@ -56,10 +56,10 @@ DocumentResourceReference* ReferenceFilterBuilder::documentResourceReference(con
     return documentResourceReferences().get(filterOperation);
 }
 
-void ReferenceFilterBuilder::setDocumentResourceReference(const FilterOperation* filterOperation, PassOwnPtr<DocumentResourceReference> documentResourceReference)
+void ReferenceFilterBuilder::setDocumentResourceReference(const FilterOperation* filterOperation, DocumentResourceReference* documentResourceReference)
 {
     ASSERT(!documentResourceReferences().contains(filterOperation));
-    documentResourceReferences().add(filterOperation, std::move(documentResourceReference));
+    documentResourceReferences().add(filterOperation, documentResourceReference);
 }
 
 Filter* ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect* previousEffect, const ReferenceFilterOperation& filterOperation, const FloatSize* referenceBoxSize, const SkPaint* fillPaint, const SkPaint* strokePaint)
