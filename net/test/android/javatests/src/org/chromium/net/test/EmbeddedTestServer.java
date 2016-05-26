@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Environment;
 import android.os.IBinder;
 import android.os.RemoteException;
 
@@ -194,19 +195,17 @@ public class EmbeddedTestServer {
      *  On returning, the server is ready for use.
      *
      *  @param context The context in which the server will run.
-     *  @param directory The directory from which files should be served.
+     *  @param directory The directory from which files should be served. This must be
+     *      Environment.getExternalStorageDirectory().
      *  @return The created server.
      */
     public static EmbeddedTestServer createAndStartFileServer(Context context, File directory)
             throws InterruptedException {
-        EmbeddedTestServer server = new EmbeddedTestServer();
-        server.initializeNative(context);
-        server.serveFilesFromDirectory(directory);
-        if (!server.start()) {
-            throw new EmbeddedTestServerFailure(
-                    "Failed to start serving files from " + directory.getPath());
+        // TODO(jbudorick): Update all callers to use createAndStartDefaultServer() directly.
+        if (!directory.equals(Environment.getExternalStorageDirectory())) {
+            throw new IllegalArgumentException("Expected directory to be ExternalStorageDirectory");
         }
-        return server;
+        return createAndStartDefaultServer(context);
     }
 
     /** Create and initialize a server with the default handlers.

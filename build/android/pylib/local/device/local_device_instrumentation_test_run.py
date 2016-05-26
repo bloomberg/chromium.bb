@@ -4,6 +4,7 @@
 
 import logging
 import os
+import posixpath
 import re
 import time
 
@@ -58,11 +59,11 @@ class LocalDeviceInstrumentationTestRun(
     return self._test_instance.suite
 
   def SetUp(self):
-    def substitute_external_storage(d, external_storage):
+    def substitute_device_root(d, device_root):
       if not d:
-        return external_storage
+        return device_root
       elif isinstance(d, list):
-        return '/'.join(p if p else external_storage for p in d)
+        return posixpath.join(p if p else device_root for p in d)
       else:
         return d
 
@@ -106,14 +107,19 @@ class LocalDeviceInstrumentationTestRun(
                                 check_return=True)
 
       def push_test_data():
-        external_storage = dev.GetExternalStoragePath()
+        device_root = posixpath.join(dev.GetExternalStoragePath(),
+                                     'chromium_tests_root')
         host_device_tuples_substituted = [
-            (h, substitute_external_storage(d, external_storage))
+            (h, substitute_device_root(d, device_root))
             for h, d in host_device_tuples]
         logging.info('instrumentation data deps:')
         for h, d in host_device_tuples_substituted:
           logging.info('%r -> %r', h, d)
-        dev.PushChangedFiles(host_device_tuples_substituted)
+        dev.PushChangedFiles(host_device_tuples_substituted,
+                             delete_device_stale=True)
+        if not host_device_tuples_substituted:
+          dev.RunShellCommand(['rm', '-rf', device_root], check_return=True)
+          dev.RunShellCommand(['mkdir', '-p', device_root], check_return=True)
 
       def create_flag_changer():
         if self._test_instance.flags:
