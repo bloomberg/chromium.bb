@@ -43,7 +43,6 @@ extern const char kPrivetActionComplete[];
 extern const char kPrivetActionCancel[];
 
 extern const char kPrivetDefaultDeviceType[];
-extern const char kPrivetSubtypeTemplate[];
 
 extern const char kPrivetTypePrinter[];
 

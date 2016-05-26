@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory.h"
 #include "chrome/browser/printing/cloud_print/privet_http_impl.h"
@@ -73,8 +74,7 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
 
   std::unique_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
       const std::string& name) override {
-    return std::unique_ptr<PrivetHTTPResolution>(
-        new MockResolution(name, request_context_.get()));
+    return base::WrapUnique(new MockResolution(name, request_context_.get()));
   }
 
  private:
@@ -124,13 +124,11 @@ class PrivetNotificationsListenerTest : public ::testing::Test {
 };
 
 TEST_F(PrivetNotificationsListenerTest, DisappearReappearTest) {
-
   EXPECT_CALL(mock_delegate_, PrivetNotify(
       1,
       true));
 
   notification_listener_->DeviceChanged(
-      true,
       kExampleDeviceName,
       description_);
 
@@ -142,14 +140,12 @@ TEST_F(PrivetNotificationsListenerTest, DisappearReappearTest) {
       kExampleDeviceName);
 
   notification_listener_->DeviceChanged(
-      true,
       kExampleDeviceName,
       description_);
 
   description_.id = kExampleDeviceID;
 
   notification_listener_->DeviceChanged(
-      true,
       kExampleDeviceName,
       description_);
 }
@@ -160,7 +156,6 @@ TEST_F(PrivetNotificationsListenerTest, RegisterTest) {
       true));
 
   notification_listener_->DeviceChanged(
-      true,
       kExampleDeviceName,
       description_);
 
@@ -171,14 +166,12 @@ TEST_F(PrivetNotificationsListenerTest, RegisterTest) {
   description_.id = kExampleDeviceID;
 
   notification_listener_->DeviceChanged(
-      true,
       kExampleDeviceName,
       description_);
 }
 
 TEST_F(PrivetNotificationsListenerTest, HighUptimeTest) {
   notification_listener_->DeviceChanged(
-      true,
       kExampleDeviceName,
       description_);
 
@@ -187,14 +180,12 @@ TEST_F(PrivetNotificationsListenerTest, HighUptimeTest) {
   description_.id = kExampleDeviceID;
 
   notification_listener_->DeviceChanged(
-      true,
       kExampleDeviceName,
       description_);
 }
 
 TEST_F(PrivetNotificationsListenerTest, HTTPErrorTest) {
   notification_listener_->DeviceChanged(
-      true,
       kExampleDeviceName,
       description_);
 
@@ -208,7 +199,6 @@ TEST_F(PrivetNotificationsListenerTest, HTTPErrorTest) {
 
 TEST_F(PrivetNotificationsListenerTest, DictionaryErrorTest) {
   notification_listener_->DeviceChanged(
-      true,
       kExampleDeviceName,
       description_);
 

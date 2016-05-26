@@ -79,7 +79,6 @@ class PrintPreviewHandler
 #if defined(ENABLE_SERVICE_DISCOVERY)
   // PrivetLocalPrinterLister::Delegate implementation.
   void LocalPrinterChanged(
-      bool added,
       const std::string& name,
       bool has_local_printing,
       const cloud_print::DeviceDescription& description) override;

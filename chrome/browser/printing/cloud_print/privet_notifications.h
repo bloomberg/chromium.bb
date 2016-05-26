@@ -43,10 +43,10 @@ class PrivetNotificationsListener  {
    public:
     virtual ~Delegate() {}
 
-    // Notify user of the existence of device |device_name|.
+    // Notify user that printer(s) have been added or removed.
     virtual void PrivetNotify(int devices_active, bool added) = 0;
 
-    // Remove the noitification for |device_name| if it still exists.
+    // Notify user that all printers have been removed.
     virtual void PrivetRemoveNotification() = 0;
   };
 
@@ -58,8 +58,7 @@ class PrivetNotificationsListener  {
   // These two methods are akin to those of PrivetDeviceLister::Delegate. The
   // user of PrivetNotificationListener should create a PrivetDeviceLister and
   // forward device notifications to the PrivetNotificationLister.
-  void DeviceChanged(bool added,
-                     const std::string& name,
+  void DeviceChanged(const std::string& name,
                      const DeviceDescription& description);
   void DeviceRemoved(const std::string& name);
   virtual void DeviceCacheFlushed();
@@ -86,7 +85,7 @@ class PrivetNotificationsListener  {
 
   void NotifyDeviceRemoved();
 
-  Delegate* delegate_;
+  Delegate* const delegate_;
   std::unique_ptr<PrivetDeviceLister> device_lister_;
   std::unique_ptr<PrivetHTTPAsynchronousFactory> privet_http_factory_;
   DeviceContextMap devices_seen_;
@@ -103,16 +102,14 @@ class PrivetNotificationService
   ~PrivetNotificationService() override;
 
   // PrivetDeviceLister::Delegate implementation:
-  void DeviceChanged(bool added,
-                     const std::string& name,
+  void DeviceChanged(const std::string& name,
                      const DeviceDescription& description) override;
   void DeviceRemoved(const std::string& name) override;
+  void DeviceCacheFlushed() override;
 
   // PrivetNotificationListener::Delegate implementation:
   void PrivetNotify(int devices_active, bool added) override;
-
   void PrivetRemoveNotification() override;
-  void DeviceCacheFlushed() override;
 
   static bool IsEnabled();
   static bool IsForced();
@@ -122,7 +119,7 @@ class PrivetNotificationService
   void OnNotificationsEnabledChanged();
   void StartLister();
 
-  content::BrowserContext* profile_;
+  content::BrowserContext* const profile_;
   std::unique_ptr<PrivetDeviceLister> device_lister_;
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
@@ -143,12 +140,13 @@ class PrivetNotificationDelegate : public NotificationDelegate {
   void ButtonClick(int button_index) override;
 
  private:
+  // Refcounted.
+  ~PrivetNotificationDelegate() override;
+
   void OpenTab(const GURL& url);
   void DisableNotifications();
 
-  ~PrivetNotificationDelegate() override;
-
-  content::BrowserContext* profile_;
+  content::BrowserContext* const profile_;
 };
 
 }  // namespace cloud_print

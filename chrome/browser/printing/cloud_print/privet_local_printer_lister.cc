@@ -51,29 +51,28 @@ void PrivetLocalPrinterLister::Stop() {
 }
 
 void PrivetLocalPrinterLister::DeviceChanged(
-    bool added,
     const std::string& name,
     const DeviceDescription& description) {
   if (description.type != kPrivetTypePrinter)
     return;
 
-  DeviceContextMap::iterator i = device_contexts_.find(name);
-
-  if (i != device_contexts_.end()) {
-    i->second->description = description;
-    delegate_->LocalPrinterChanged(added, name, i->second->has_local_printing,
+  DeviceContextMap::iterator it = device_contexts_.find(name);
+  if (it != device_contexts_.end()) {
+    it->second->description = description;
+    delegate_->LocalPrinterChanged(name, it->second->has_local_printing,
                                    description);
-  } else {
-    linked_ptr<DeviceContext> context(new DeviceContext);
-    context->has_local_printing = false;
-    context->description = description;
-    context->privet_resolution = privet_http_factory_->CreatePrivetHTTP(name);
-    device_contexts_[name] = context;
-    context->privet_resolution->Start(
-        description.address,
-        base::Bind(&PrivetLocalPrinterLister::OnPrivetResolved,
-                   base::Unretained(this), name));
+    return;
   }
+
+  linked_ptr<DeviceContext> context(new DeviceContext);
+  context->has_local_printing = false;
+  context->description = description;
+  context->privet_resolution = privet_http_factory_->CreatePrivetHTTP(name);
+  device_contexts_[name] = context;
+  context->privet_resolution->Start(
+      description.address,
+      base::Bind(&PrivetLocalPrinterLister::OnPrivetResolved,
+                 base::Unretained(this), name));
 }
 
 void PrivetLocalPrinterLister::DeviceCacheFlushed() {
@@ -89,16 +88,14 @@ void PrivetLocalPrinterLister::OnPrivetResolved(
     device_contexts_.erase(name);
     return;
   }
-  DeviceContextMap::iterator i = device_contexts_.find(http_client->GetName());
-  DCHECK(i != device_contexts_.end());
+  DeviceContextMap::iterator it = device_contexts_.find(http_client->GetName());
+  DCHECK(it != device_contexts_.end());
 
-  i->second->info_operation = http_client->CreateInfoOperation(
-      base::Bind(&PrivetLocalPrinterLister::OnPrivetInfoDone,
-                 base::Unretained(this),
-                 i->second.get(),
-                 http_client->GetName()));
-  i->second->privet_client = std::move(http_client);
-  i->second->info_operation->Start();
+  it->second->info_operation = http_client->CreateInfoOperation(base::Bind(
+      &PrivetLocalPrinterLister::OnPrivetInfoDone, base::Unretained(this),
+      it->second.get(), http_client->GetName()));
+  it->second->privet_client = std::move(http_client);
+  it->second->info_operation->Start();
 }
 
 void PrivetLocalPrinterLister::OnPrivetInfoDone(
@@ -106,35 +103,35 @@ void PrivetLocalPrinterLister::OnPrivetInfoDone(
     const std::string& name,
     const base::DictionaryValue* json_value) {
   bool has_local_printing = false;
-  const base::ListValue* api_list = NULL;
+  const base::ListValue* api_list = nullptr;
   if (json_value && json_value->GetList(kPrivetInfoKeyAPIList, &api_list)) {
-    for (size_t i = 0; i < api_list->GetSize(); i++) {
+    for (size_t i = 0; i < api_list->GetSize(); ++i) {
       std::string api;
       api_list->GetString(i, &api);
       if (api == kPrivetSubmitdocPath) {
         has_local_printing = true;
+        break;
       }
     }
   }
 
   context->has_local_printing = has_local_printing;
-  delegate_->LocalPrinterChanged(true, name, has_local_printing,
+  delegate_->LocalPrinterChanged(name, has_local_printing,
                                  context->description);
 }
 
 void PrivetLocalPrinterLister::DeviceRemoved(const std::string& device_name) {
-  DeviceContextMap::iterator i = device_contexts_.find(device_name);
-  if (i != device_contexts_.end()) {
-    device_contexts_.erase(i);
+  DeviceContextMap::iterator it = device_contexts_.find(device_name);
+  if (it != device_contexts_.end()) {
+    device_contexts_.erase(it);
     delegate_->LocalPrinterRemoved(device_name);
   }
 }
 
 const DeviceDescription* PrivetLocalPrinterLister::GetDeviceDescription(
     const std::string& name) {
-  DeviceContextMap::iterator i = device_contexts_.find(name);
-  if (i == device_contexts_.end()) return NULL;
-  return &i->second->description;
+  DeviceContextMap::iterator it = device_contexts_.find(name);
+  return (it != device_contexts_.end()) ? &it->second->description : nullptr;
 }
 
 }  // namespace cloud_print

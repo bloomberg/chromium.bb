@@ -88,7 +88,6 @@ PrivetNotificationsListener::~PrivetNotificationsListener() {
 }
 
 void PrivetNotificationsListener::DeviceChanged(
-    bool added,
     const std::string& name,
     const DeviceDescription& description) {
   ReportPrivetUmaEvent(PRIVET_DEVICE_CHANGED);
@@ -210,10 +209,9 @@ PrivetNotificationService::~PrivetNotificationService() {
 }
 
 void PrivetNotificationService::DeviceChanged(
-    bool added,
     const std::string& name,
     const DeviceDescription& description) {
-  privet_notifications_listener_->DeviceChanged(added, name, description);
+  privet_notifications_listener_->DeviceChanged(name, description);
 }
 
 void PrivetNotificationService::DeviceRemoved(const std::string& name) {

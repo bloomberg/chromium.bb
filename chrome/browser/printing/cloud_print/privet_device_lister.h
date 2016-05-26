@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "base/callback.h"
-#include "base/time/time.h"
 #include "chrome/browser/printing/cloud_print/device_description.h"
 
 namespace cloud_print {
@@ -20,8 +18,8 @@ class PrivetDeviceLister {
 
   class Delegate {
    public:
-    virtual void DeviceChanged(bool added,
-                               const std::string& name,
+    virtual ~Delegate() {}
+    virtual void DeviceChanged(const std::string& name,
                                const DeviceDescription& description) = 0;
     virtual void DeviceRemoved(const std::string& name) = 0;
     virtual void DeviceCacheFlushed() = 0;

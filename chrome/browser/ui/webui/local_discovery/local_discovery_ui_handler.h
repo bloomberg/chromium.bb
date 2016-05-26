@@ -67,7 +67,6 @@ class LocalDiscoveryUIHandler
 
   // PrivetDeviceLister::Delegate implementation.
   void DeviceChanged(
-      bool added,
       const std::string& name,
       const cloud_print::DeviceDescription& description) override;
   void DeviceRemoved(const std::string& name) override;

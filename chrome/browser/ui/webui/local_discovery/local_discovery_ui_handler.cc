@@ -342,7 +342,6 @@ void LocalDiscoveryUIHandler::OnConfirmDone(GCDApiFlow::Status status) {
 }
 
 void LocalDiscoveryUIHandler::DeviceChanged(
-    bool added,
     const std::string& name,
     const DeviceDescription& description) {
   device_descriptions_[name] = description;

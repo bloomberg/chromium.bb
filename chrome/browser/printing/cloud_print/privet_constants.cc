@@ -42,7 +42,6 @@ const char kPrivetActionComplete[] = "complete";
 const char kPrivetActionCancel[] = "cancel";
 
 const char kPrivetDefaultDeviceType[] = "_privet._tcp.local";
-const char kPrivetSubtypeTemplate[] = "%s._sub._privet._tcp.local";
 
 const char kPrivetTypePrinter[] = "printer";
 

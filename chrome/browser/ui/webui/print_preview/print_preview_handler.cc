@@ -1527,7 +1527,6 @@ void PrintPreviewHandler::StartPrivetLister(const scoped_refptr<
 }
 
 void PrintPreviewHandler::LocalPrinterChanged(
-    bool added,
     const std::string& name,
     bool has_local_printing,
     const cloud_print::DeviceDescription& description) {

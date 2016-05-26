@@ -22,13 +22,7 @@ class PrivetDeviceListerImpl
  public:
   PrivetDeviceListerImpl(
       local_discovery::ServiceDiscoveryClient* service_discovery_client,
-      PrivetDeviceLister::Delegate* delegate,
-      const std::string& subtype);
-
-  PrivetDeviceListerImpl(
-      local_discovery::ServiceDiscoveryClient* service_discovery_client,
       PrivetDeviceLister::Delegate* delegate);
-
   ~PrivetDeviceListerImpl() override;
 
   // PrivetDeviceLister:
