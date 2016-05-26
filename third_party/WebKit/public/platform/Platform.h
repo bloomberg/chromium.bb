@@ -91,7 +91,6 @@ class WebMediaStream;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebMediaStreamTrack;
-class WebMemoryDumpProvider;
 class WebMessagePortChannel;
 class WebMimeRegistry;
 class WebNotificationManager;
@@ -417,16 +416,6 @@ public:
     // that script for more details.  Intended use is:
     // recordAction(UserMetricsAction("MyAction"))
     virtual void recordAction(const UserMetricsAction&) { }
-
-    // Registers a memory dump provider. The WebMemoryDumpProvider::onMemoryDump
-    // method will be called on the same thread that called the
-    // registerMemoryDumpProvider() method. |name| is used for debugging
-    // (duplicates are allowed) and must be a long-lived C string.
-    // See crbug.com/458295 for design docs.
-    virtual void registerMemoryDumpProvider(blink::WebMemoryDumpProvider*, const char* name);
-
-    // Must be called on the thread that called registerMemoryDumpProvider().
-    virtual void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider*);
 
     class TraceLogEnabledStateObserver {
     public:

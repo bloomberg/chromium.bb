@@ -33,7 +33,7 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
 #include "public/platform/WebDataConsumerHandle.h"
-#include "public/platform/WebMemoryDumpProvider.h"
+#include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashSet.h"

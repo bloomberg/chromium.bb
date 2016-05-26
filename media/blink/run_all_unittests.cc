@@ -71,9 +71,6 @@ class TestBlinkPlatformSupport : NON_EXPORTED_BASE(public blink::Platform) {
   ~TestBlinkPlatformSupport() override;
 
   blink::WebThread* currentThread() override { return &m_currentThread; }
-  void registerMemoryDumpProvider(blink::WebMemoryDumpProvider*,
-                                  const char* name) override {}
-  void unregisterMemoryDumpProvider(blink::WebMemoryDumpProvider*) override {}
 
  private:
   CurrentThreadMock m_currentThread;

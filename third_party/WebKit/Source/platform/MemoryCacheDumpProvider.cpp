@@ -5,7 +5,6 @@
 #include "platform/MemoryCacheDumpProvider.h"
 
 #include "platform/web_process_memory_dump_impl.h"
-#include "public/platform/WebMemoryDumpProvider.h"
 
 namespace blink {
 

@@ -8,7 +8,6 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/BlinkGC.h"
-#include "public/platform/WebMemoryDumpProvider.h"
 #include "wtf/Allocator.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/WTFString.h"

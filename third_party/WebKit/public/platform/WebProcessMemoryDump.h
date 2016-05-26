@@ -7,7 +7,6 @@
 
 #include "WebCommon.h"
 #include "WebMemoryAllocatorDump.h"
-#include "WebMemoryDumpProvider.h"
 #include "WebString.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
 
@@ -26,6 +25,15 @@ class TraceEventMemoryOverhead;
 } // namespace base
 
 namespace blink {
+
+// Used to specify the type of memory dump the WebProcessMemoryDump should
+// generate on dump requests.
+// TODO(hajimehoshi): Remove this and use base::trace_event::
+// MemoryDumpLevelOfDetail instead.
+enum class WebMemoryDumpLevelOfDetail {
+    Light,
+    Detailed
+};
 
 // A container which holds all the dumps for the various allocators for a given
 // process. Embedders of WebMemoryDumpProvider are expected to populate a
