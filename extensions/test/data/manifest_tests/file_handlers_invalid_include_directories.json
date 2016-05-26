@@ -13,19 +13,9 @@
         "text/*"
       ]
     },
-    "image": {
-      "types": [
-        "image/*"
-      ],
-      "extensions": [
-        ".png",
-        ".gif"
-      ],
-      "verb": "add_to"
-    },
     "directories": {
-      "extensions": ["*/*"],
-      "include_directories": true
+      "extensions": ["*"],
+      "include_directories": "invalid_value"
     }
   }
 }

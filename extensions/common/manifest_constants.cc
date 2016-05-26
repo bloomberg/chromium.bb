@@ -49,6 +49,7 @@ const char kFileFilters[] = "file_filters";
 const char kFileBrowserHandlers[] = "file_browser_handlers";
 const char kFileHandlers[] = "file_handlers";
 const char kFileHandlerExtensions[] = "extensions";
+const char kFileHandlerIncludeDirectories[] = "include_directories";
 const char kFileHandlerTypes[] = "types";
 const char kFileHandlerVerb[] = "verb";
 const char kGlobal[] = "global";

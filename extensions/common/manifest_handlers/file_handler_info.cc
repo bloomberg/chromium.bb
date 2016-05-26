@@ -93,8 +93,8 @@ bool LoadFileHandler(const std::string& handler_id,
   }
 
   handler.include_directories = false;
-  if (handler_info.HasKey("include_directories") &&
-      !handler_info.GetBoolean("include_directories",
+  if (handler_info.HasKey(keys::kFileHandlerIncludeDirectories) &&
+      !handler_info.GetBoolean(keys::kFileHandlerIncludeDirectories,
                                &handler.include_directories)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidFileHandlerIncludeDirectories, handler_id);
@@ -152,6 +152,7 @@ bool LoadFileHandler(const std::string& handler_id,
        it.Advance()) {
     if (it.key() != keys::kFileHandlerExtensions &&
         it.key() != keys::kFileHandlerTypes &&
+        it.key() != keys::kFileHandlerIncludeDirectories &&
         it.key() != keys::kFileHandlerVerb) {
       install_warnings->push_back(
           InstallWarning(base::StringPrintf(kNotRecognized, it.key().c_str()),

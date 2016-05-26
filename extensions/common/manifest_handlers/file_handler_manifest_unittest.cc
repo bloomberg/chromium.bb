@@ -30,6 +30,8 @@ TEST_F(FileHandlersManifestTest, InvalidFileHandlers) {
                errors::kInvalidFileHandlerExtensionElement),
       Testcase("file_handlers_invalid_too_many.json",
                errors::kInvalidFileHandlersTooManyTypesAndExtensions),
+      Testcase("file_handlers_invalid_include_directories.json",
+               errors::kInvalidFileHandlerIncludeDirectories),
       Testcase("file_handlers_invalid_verb.json",
                errors::kInvalidFileHandlerVerb),
   };
@@ -44,9 +46,16 @@ TEST_F(FileHandlersManifestTest, ValidFileHandlers) {
   const FileHandlersInfo* handlers =
       FileHandlers::GetFileHandlers(extension.get());
   ASSERT_TRUE(handlers != NULL);
-  ASSERT_EQ(2U, handlers->size());
+  ASSERT_EQ(3U, handlers->size());
 
   FileHandlerInfo handler = handlers->at(0);
+  EXPECT_EQ("directories", handler.id);
+  EXPECT_EQ(0U, handler.types.size());
+  EXPECT_EQ(1U, handler.extensions.size());
+  EXPECT_EQ(1U, handler.extensions.count("*/*"));
+  EXPECT_EQ(true, handler.include_directories);
+
+  handler = handlers->at(1);
   EXPECT_EQ("image", handler.id);
   EXPECT_EQ(1U, handler.types.size());
   EXPECT_EQ(1U, handler.types.count("image/*"));
@@ -55,7 +64,7 @@ TEST_F(FileHandlersManifestTest, ValidFileHandlers) {
   EXPECT_EQ(1U, handler.extensions.count(".gif"));
   EXPECT_EQ("add_to", handler.verb);
 
-  handler = handlers->at(1);
+  handler = handlers->at(2);
   EXPECT_EQ("text", handler.id);
   EXPECT_EQ(1U, handler.types.size());
   EXPECT_EQ(1U, handler.types.count("text/*"));

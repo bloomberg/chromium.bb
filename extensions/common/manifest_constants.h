@@ -51,6 +51,7 @@ extern const char kEventRules[];
 extern const char kFileAccessList[];
 extern const char kFileHandlers[];
 extern const char kFileHandlerExtensions[];
+extern const char kFileHandlerIncludeDirectories[];
 extern const char kFileHandlerTypes[];
 extern const char kFileHandlerVerb[];
 extern const char kFileFilters[];
