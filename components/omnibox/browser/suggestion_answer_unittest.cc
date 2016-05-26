@@ -199,7 +199,7 @@ TEST(SuggestionAnswerTest, URLPresent) {
 TEST(SuggestionAnswerTest, ValidPropertyValues) {
   std::string json =
       "{ \"l\": ["
-      "  { \"il\": { \"t\": [{ \"t\": \"text\", \"tt\": 8 }, "
+      "  { \"il\": { \"t\": [{ \"t\": \"text\", \"tt\": 8, \"ln\": 3 }, "
       "                      { \"t\": \"moar text\", \"tt\": 0 }], "
       "              \"i\": { \"d\": \"//example.com/foo.jpg\" } } }, "
       "  { \"il\": { \"t\": [{ \"t\": \"other text\", \"tt\": 5 }], "
@@ -215,8 +215,11 @@ TEST(SuggestionAnswerTest, ValidPropertyValues) {
   EXPECT_EQ(2U, first_line.text_fields().size());
   EXPECT_EQ(base::UTF8ToUTF16("text"), first_line.text_fields()[0].text());
   EXPECT_EQ(8, first_line.text_fields()[0].type());
+  EXPECT_TRUE(first_line.text_fields()[0].has_num_lines());
+  EXPECT_EQ(3, first_line.text_fields()[0].num_lines());
   EXPECT_EQ(base::UTF8ToUTF16("moar text"), first_line.text_fields()[1].text());
   EXPECT_EQ(0, first_line.text_fields()[1].type());
+  EXPECT_FALSE(first_line.text_fields()[1].has_num_lines());
 
   EXPECT_FALSE(first_line.additional_text());
   EXPECT_FALSE(first_line.status_text());

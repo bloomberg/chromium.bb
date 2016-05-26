@@ -18,14 +18,15 @@ namespace {
 
 // All of these are defined here (even though most are only used once each) so
 // the format details are easy to locate and update or compare to the spec doc.
-static const char kAnswerJsonLines[] = "l";
-static const char kAnswerJsonImageLine[] = "il";
-static const char kAnswerJsonText[] = "t";
-static const char kAnswerJsonAdditionalText[] = "at";
-static const char kAnswerJsonStatusText[] = "st";
-static const char kAnswerJsonTextType[] = "tt";
-static const char kAnswerJsonImage[] = "i";
-static const char kAnswerJsonImageData[] = "i.d";
+static constexpr char kAnswerJsonLines[] = "l";
+static constexpr char kAnswerJsonImageLine[] = "il";
+static constexpr char kAnswerJsonText[] = "t";
+static constexpr char kAnswerJsonAdditionalText[] = "at";
+static constexpr char kAnswerJsonStatusText[] = "st";
+static constexpr char kAnswerJsonTextType[] = "tt";
+static constexpr char kAnswerJsonNumLines[] = "ln";
+static constexpr char kAnswerJsonImage[] = "i";
+static constexpr char kAnswerJsonImageData[] = "i.d";
 
 void AppendWithSpace(const SuggestionAnswer::TextField* text,
                      base::string16* output) {
@@ -40,7 +41,8 @@ void AppendWithSpace(const SuggestionAnswer::TextField* text,
 
 // SuggestionAnswer::TextField -------------------------------------------------
 
-SuggestionAnswer::TextField::TextField() : type_(-1) {}
+SuggestionAnswer::TextField::TextField()
+    : type_(-1), has_num_lines_(false), num_lines_(1) {}
 SuggestionAnswer::TextField::~TextField() {}
 
 // static
@@ -49,13 +51,18 @@ bool SuggestionAnswer::TextField::ParseTextField(
   bool parsed = field_json->GetString(kAnswerJsonText, &text_field->text_) &&
       !text_field->text_.empty() &&
       field_json->GetInteger(kAnswerJsonTextType, &text_field->type_);
-  if (parsed)
+  if (parsed) {
     text_field->text_ = net::UnescapeForHTML(text_field->text_);
+    text_field->has_num_lines_ =
+        field_json->GetInteger(kAnswerJsonNumLines, &text_field->num_lines_);
+  }
   return parsed;
 }
 
 bool SuggestionAnswer::TextField::Equals(const TextField& field) const {
-  return type_ == field.type_ && text_ == field.text_;
+  return type_ == field.type_ && text_ == field.text_ &&
+         has_num_lines_ == field.has_num_lines_ &&
+         (!has_num_lines_ || num_lines_ == field.num_lines_);
 }
 
 // SuggestionAnswer::ImageLine -------------------------------------------------

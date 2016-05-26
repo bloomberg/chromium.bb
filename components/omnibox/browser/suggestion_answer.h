@@ -75,12 +75,16 @@ class SuggestionAnswer {
 
     const base::string16& text() const { return text_; }
     int type() const { return type_; }
+    bool has_num_lines() const { return has_num_lines_; }
+    int num_lines() const { return num_lines_; }
 
     bool Equals(const TextField& field) const;
 
    private:
     base::string16 text_;
     int type_;
+    bool has_num_lines_;
+    int num_lines_;
 
     FRIEND_TEST_ALL_PREFIXES(SuggestionAnswerTest, DifferentValuesAreUnequal);
 
