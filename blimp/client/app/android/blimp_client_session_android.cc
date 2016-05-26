@@ -58,6 +58,10 @@ BlimpClientSessionAndroid::BlimpClientSessionAndroid(
           base::android::ConvertJavaStringToUTF8(jassigner_url))) {
   java_obj_.Reset(env, jobj);
 
+  // Send OS info before creating any tab.
+  GetSettingsFeature()->SendUserAgentOSVersionInfo(
+      GetOSVersionInfoForUserAgent());
+
   // Create a single tab's WebContents.
   // TODO(kmarshall): Remove this once we add tab-literacy to Blimp.
   GetTabControlFeature()->CreateTab(kDummyTabId);
@@ -81,9 +85,6 @@ BlimpClientSessionAndroid::~BlimpClientSessionAndroid() {}
 void BlimpClientSessionAndroid::OnConnected() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BlimpClientSession_onConnected(env, java_obj_.obj());
-
-  GetSettingsFeature()->SendUserAgentOSVersionInfo(
-      GetOSVersionInfoForUserAgent());
 }
 
 void BlimpClientSessionAndroid::OnDisconnected(int result) {

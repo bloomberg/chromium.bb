@@ -316,6 +316,7 @@ source_set("session") {
     ":app_switches",
     ":app_ui",
     ":common",
+    ":common_user_agent",
     ":feature",
     "//base",
     "//blimp/common",

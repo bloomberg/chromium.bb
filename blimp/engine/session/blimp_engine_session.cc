@@ -22,6 +22,7 @@
 #include "blimp/engine/app/ui/blimp_window_tree_client.h"
 #include "blimp/engine/app/ui/blimp_window_tree_host.h"
 #include "blimp/engine/common/blimp_browser_context.h"
+#include "blimp/engine/common/blimp_user_agent.h"
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_message_multiplexer.h"
 #include "blimp/net/blimp_message_thread_pipe.h"
@@ -328,6 +329,11 @@ bool BlimpEngineSession::CreateWebContents(const int target_tab_id) {
   std::unique_ptr<content::WebContents> new_contents =
       base::WrapUnique(content::WebContents::Create(create_params));
   PlatformSetContents(std::move(new_contents));
+
+  // Transfer over the user agent override. The default user agent does not
+  // have client IO info.
+  web_contents_->SetUserAgentOverride(GetBlimpEngineUserAgent());
+
   return true;
 }
 
@@ -366,6 +372,8 @@ void BlimpEngineSession::LoadUrl(const int target_tab_id, const GURL& url) {
   content::NavigationController::LoadURLParams params(url);
   params.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
+  params.override_user_agent =
+    content::NavigationController::UA_OVERRIDE_TRUE;
   web_contents_->GetController().LoadURLWithParams(params);
   web_contents_->Focus();
 }
@@ -530,6 +538,8 @@ content::WebContents* BlimpEngineSession::OpenURLFromTab(
   load_url_params.should_replace_current_entry =
       params.should_replace_current_entry;
   load_url_params.is_renderer_initiated = params.is_renderer_initiated;
+  load_url_params.override_user_agent =
+    content::NavigationController::UA_OVERRIDE_TRUE;
 
   source->GetController().LoadURLWithParams(load_url_params);
   return source;
