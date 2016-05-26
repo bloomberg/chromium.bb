@@ -15,22 +15,27 @@ base::TimeDelta InvalidRTT() {
 }
 
 NetworkQuality::NetworkQuality()
-    : NetworkQuality(InvalidRTT(), kInvalidThroughput) {}
+    : NetworkQuality(InvalidRTT(), InvalidRTT(), kInvalidThroughput) {}
 
-NetworkQuality::NetworkQuality(const base::TimeDelta& rtt,
+NetworkQuality::NetworkQuality(const base::TimeDelta& http_rtt,
+                               const base::TimeDelta& transport_rtt,
                                int32_t downstream_throughput_kbps)
-    : rtt_(rtt), downstream_throughput_kbps_(downstream_throughput_kbps) {
-  DCHECK_GE(rtt_, base::TimeDelta());
+    : http_rtt_(http_rtt),
+      transport_rtt_(transport_rtt),
+      downstream_throughput_kbps_(downstream_throughput_kbps) {
   DCHECK_GE(downstream_throughput_kbps_, 0);
 }
 
 NetworkQuality::NetworkQuality(const NetworkQuality& other)
-    : NetworkQuality(other.rtt_, other.downstream_throughput_kbps_) {}
+    : NetworkQuality(other.http_rtt_,
+                     other.transport_rtt_,
+                     other.downstream_throughput_kbps_) {}
 
 NetworkQuality::~NetworkQuality() {}
 
 NetworkQuality& NetworkQuality::operator=(const NetworkQuality& other) {
-  rtt_ = other.rtt_;
+  http_rtt_ = other.http_rtt_;
+  transport_rtt_ = other.transport_rtt_;
   downstream_throughput_kbps_ = other.downstream_throughput_kbps_;
   return *this;
 }

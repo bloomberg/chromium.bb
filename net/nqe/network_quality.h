@@ -31,10 +31,12 @@ const int32_t kInvalidThroughput = 0;
 class NET_EXPORT_PRIVATE NetworkQuality {
  public:
   NetworkQuality();
-  // |rtt| is the estimate of the round trip time.
-  // |downstream_throughput_kbps| is the estimate of the downstream
+  // |http_rtt| is the estimate of the round trip time at the HTTP layer.
+  // |transport_rtt| is the estimate of the round trip time at the transport
+  // layer. |downstream_throughput_kbps| is the estimate of the downstream
   // throughput in kilobits per second.
-  NetworkQuality(const base::TimeDelta& rtt,
+  NetworkQuality(const base::TimeDelta& http_rtt,
+                 const base::TimeDelta& transport_rtt,
                  int32_t downstream_throughput_kbps);
   NetworkQuality(const NetworkQuality& other);
   ~NetworkQuality();
@@ -42,7 +44,10 @@ class NET_EXPORT_PRIVATE NetworkQuality {
   NetworkQuality& operator=(const NetworkQuality& other);
 
   // Returns the estimate of the round trip time at the HTTP layer.
-  const base::TimeDelta& rtt() const { return rtt_; }
+  const base::TimeDelta& http_rtt() const { return http_rtt_; }
+
+  // Returns the estimate of the round trip time at the transport layer.
+  const base::TimeDelta& transport_rtt() const { return transport_rtt_; }
 
   // Returns the estimate of the downstream throughput in Kbps (Kilobits per
   // second).
@@ -52,7 +57,10 @@ class NET_EXPORT_PRIVATE NetworkQuality {
 
  private:
   // Estimated round trip time at the HTTP layer.
-  base::TimeDelta rtt_;
+  base::TimeDelta http_rtt_;
+
+  // Estimated round trip time at the transport layer.
+  base::TimeDelta transport_rtt_;
 
   // Estimated downstream throughput in kilobits per second.
   int32_t downstream_throughput_kbps_;

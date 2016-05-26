@@ -461,7 +461,7 @@ bool DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
   int32_t kbps = INT32_MAX;
 
   bool is_network_quality_available =
-      network_quality_estimator->GetURLRequestRTTEstimate(&rtt) &&
+      network_quality_estimator->GetHttpRTTEstimate(&rtt) &&
       network_quality_estimator->GetDownlinkThroughputKbpsEstimate(&kbps);
 
   // True only if the network is currently estimated to be slower than the
@@ -795,7 +795,7 @@ void DataReductionProxyConfig::RecordAutoLoFiAccuracyRate(
     return;
 
   base::TimeDelta rtt_since_last_page_load;
-  if (!network_quality_estimator->GetRecentURLRequestRTTMedian(
+  if (!network_quality_estimator->GetRecentHttpRTTMedian(
           last_query_, &rtt_since_last_page_load)) {
     return;
   }

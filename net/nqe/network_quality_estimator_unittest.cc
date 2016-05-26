@@ -114,12 +114,12 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
     url_rtt_ = url_rtt;
   }
 
-  bool GetURLRequestRTTEstimate(base::TimeDelta* rtt) const override {
+  bool GetHttpRTTEstimate(base::TimeDelta* rtt) const override {
     if (url_rtt_set_) {
       *rtt = url_rtt_;
       return true;
     }
-    return NetworkQualityEstimator::GetURLRequestRTTEstimate(rtt);
+    return NetworkQualityEstimator::GetHttpRTTEstimate(rtt);
   }
 
   void set_downlink_throughput_kbps(int32_t downlink_throughput_kbps) {
@@ -232,7 +232,7 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
 
   base::TimeDelta rtt;
   int32_t kbps;
-  EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
 
   TestDelegate test_delegate;
@@ -247,7 +247,7 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   base::RunLoop().Run();
 
   // Both RTT and downstream throughput should be updated.
-  EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
   EXPECT_FALSE(estimator.GetTransportRTTEstimate(&rtt));
 
@@ -279,7 +279,7 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
 
   histogram_tester.ExpectTotalCount("NQE.TransportRTT.Percentile50.Unknown", 0);
 
-  EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
 
   estimator.SimulateNetworkChangeTo(
@@ -287,7 +287,7 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 1);
   histogram_tester.ExpectTotalCount("NQE.FastestRTT.Unknown", 1);
 
-  EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
 }
 
@@ -297,7 +297,7 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
 
   base::TimeDelta rtt;
   int32_t kbps;
-  EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
 
   TestDelegate test_delegate;
@@ -312,14 +312,14 @@ TEST(NetworkQualityEstimatorTest, StoreObservations) {
         estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
     request->Start();
     base::RunLoop().Run();
-    EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
+    EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
     EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
   }
 
   // Verify that the stored observations are cleared on network change.
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test-2");
-  EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
 }
 
@@ -395,7 +395,7 @@ TEST(NetworkQualityEstimatorTest, ObtainOperatingParams) {
   TestNetworkQualityEstimator estimator(variation_params);
 
   base::TimeDelta rtt;
-  EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
   int32_t kbps;
   EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
 
@@ -408,7 +408,7 @@ TEST(NetworkQualityEstimatorTest, ObtainOperatingParams) {
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test-1");
 
-  EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
   EXPECT_EQ(200, kbps);
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(2000), rtt);
@@ -416,7 +416,8 @@ TEST(NetworkQualityEstimatorTest, ObtainOperatingParams) {
 
   // Peak network quality should not be affected by the network quality
   // estimator field trial.
-  EXPECT_EQ(nqe::internal::InvalidRTT(), estimator.peak_network_quality_.rtt());
+  EXPECT_EQ(nqe::internal::InvalidRTT(),
+            estimator.peak_network_quality_.http_rtt());
   EXPECT_EQ(nqe::internal::kInvalidThroughput,
             estimator.peak_network_quality_.downstream_throughput_kbps());
 
@@ -425,7 +426,7 @@ TEST(NetworkQualityEstimatorTest, ObtainOperatingParams) {
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_2G, "test-2");
 
-  EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
   EXPECT_EQ(300, kbps);
 
@@ -433,7 +434,7 @@ TEST(NetworkQualityEstimatorTest, ObtainOperatingParams) {
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_3G, "test-3");
 
-  EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
 }
 
@@ -493,12 +494,12 @@ TEST(NetworkQualityEstimatorTest, Offline) {
 TEST(NetworkQualityEstimatorTest, ObtainThresholdsOnlyRTT) {
   std::map<std::string, std::string> variation_params;
 
-  variation_params["Offline.ThresholdMedianURLRTTMsec"] = "4000";
-  variation_params["Slow2G.ThresholdMedianURLRTTMsec"] = "2000";
-  variation_params["2G.ThresholdMedianURLRTTMsec"] = "1000";
-  variation_params["3G.ThresholdMedianURLRTTMsec"] = "500";
-  variation_params["4G.ThresholdMedianURLRTTMsec"] = "300";
-  variation_params["Broadband.ThresholdMedianURLRTTMsec"] = "100";
+  variation_params["Offline.ThresholdMedianHttpRTTMsec"] = "4000";
+  variation_params["Slow2G.ThresholdMedianHttpRTTMsec"] = "2000";
+  variation_params["2G.ThresholdMedianHttpRTTMsec"] = "1000";
+  variation_params["3G.ThresholdMedianHttpRTTMsec"] = "500";
+  variation_params["4G.ThresholdMedianHttpRTTMsec"] = "300";
+  variation_params["Broadband.ThresholdMedianHttpRTTMsec"] = "100";
 
   TestNetworkQualityEstimator estimator(variation_params);
 
@@ -537,12 +538,12 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsOnlyRTT) {
 TEST(NetworkQualityEstimatorTest, ObtainThresholdsRTTandThroughput) {
   std::map<std::string, std::string> variation_params;
 
-  variation_params["Offline.ThresholdMedianURLRTTMsec"] = "4000";
-  variation_params["Slow2G.ThresholdMedianURLRTTMsec"] = "2000";
-  variation_params["2G.ThresholdMedianURLRTTMsec"] = "1000";
-  variation_params["3G.ThresholdMedianURLRTTMsec"] = "500";
-  variation_params["4G.ThresholdMedianURLRTTMsec"] = "300";
-  variation_params["Broadband.ThresholdMedianURLRTTMsec"] = "100";
+  variation_params["Offline.ThresholdMedianHttpRTTMsec"] = "4000";
+  variation_params["Slow2G.ThresholdMedianHttpRTTMsec"] = "2000";
+  variation_params["2G.ThresholdMedianHttpRTTMsec"] = "1000";
+  variation_params["3G.ThresholdMedianHttpRTTMsec"] = "500";
+  variation_params["4G.ThresholdMedianHttpRTTMsec"] = "300";
+  variation_params["Broadband.ThresholdMedianHttpRTTMsec"] = "100";
 
   variation_params["Offline.ThresholdMedianKbps"] = "10";
   variation_params["Slow2G.ThresholdMedianKbps"] = "100";
@@ -684,7 +685,7 @@ TEST(NetworkQualityEstimatorTest, TestCaching) {
 
   base::TimeDelta rtt;
   int32_t kbps;
-  EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
   EXPECT_EQ(1, kbps);
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(1000), rtt);
@@ -698,7 +699,7 @@ TEST(NetworkQualityEstimatorTest, TestCaching) {
 
   // Read the network quality for (3G, "test-1").
   EXPECT_TRUE(estimator.ReadCachedNetworkQualityEstimate());
-  EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
   EXPECT_EQ(2, kbps);
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(500), rtt);
@@ -813,7 +814,7 @@ TEST(NetworkQualityEstimatorTest, TestGetMedianRTTSince) {
   const struct {
     base::TimeTicks start_timestamp;
     bool expect_network_quality_available;
-    base::TimeDelta expected_url_request_rtt;
+    base::TimeDelta expected_http_rtt;
     base::TimeDelta expected_transport_rtt;
     int32_t expected_downstream_throughput;
   } tests[] = {
@@ -829,12 +830,12 @@ TEST(NetworkQualityEstimatorTest, TestGetMedianRTTSince) {
   };
 
   for (const auto& test : tests) {
-    base::TimeDelta url_request_rtt;
+    base::TimeDelta http_rtt;
     base::TimeDelta transport_rtt;
     int32_t downstream_throughput_kbps;
-    EXPECT_EQ(test.expect_network_quality_available,
-              estimator.GetRecentURLRequestRTTMedian(test.start_timestamp,
-                                                     &url_request_rtt));
+    EXPECT_EQ(
+        test.expect_network_quality_available,
+        estimator.GetRecentHttpRTTMedian(test.start_timestamp, &http_rtt));
     EXPECT_EQ(test.expect_network_quality_available,
               estimator.GetRecentTransportRTTMedian(test.start_timestamp,
                                                     &transport_rtt));
@@ -843,7 +844,7 @@ TEST(NetworkQualityEstimatorTest, TestGetMedianRTTSince) {
                   test.start_timestamp, &downstream_throughput_kbps));
 
     if (test.expect_network_quality_available) {
-      EXPECT_EQ(test.expected_url_request_rtt, url_request_rtt);
+      EXPECT_EQ(test.expected_http_rtt, http_rtt);
       EXPECT_EQ(test.expected_transport_rtt, transport_rtt);
       EXPECT_EQ(test.expected_downstream_throughput,
                 downstream_throughput_kbps);
@@ -927,7 +928,7 @@ TEST(NetworkQualityEstimatorTest, InvalidExternalEstimateProvider) {
   EXPECT_EQ(
       1U,
       invalid_external_estimate_provider->get_downstream_throughput_count());
-  EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
   histogram_tester.ExpectTotalCount("NQE.ExternalEstimateProviderStatus", 3);
 
@@ -1039,7 +1040,7 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProvider) {
 
   base::TimeDelta rtt;
   int32_t kbps;
-  EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_FALSE(estimator.GetTransportRTTEstimate(&rtt));
   EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
 
@@ -1080,7 +1081,7 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProvider) {
   // provider must increment.
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test-1");
-  EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
   EXPECT_EQ(
       2U, test_external_estimate_provider->get_time_since_last_update_count());
@@ -1118,7 +1119,7 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProvider) {
 
   // Estimates are unavailable because external estimate provider never
   // notifies network quality estimator of the updated estimates.
-  EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
 }
 
@@ -1142,7 +1143,7 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProviderMergeEstimates) {
   base::TimeDelta rtt;
   // Estimate provided by network quality estimator should match the estimate
   // provided by external estimate provider.
-  EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_EQ(external_estimate_provider_rtt, rtt);
 
   int32_t kbps;
@@ -1159,7 +1160,7 @@ TEST(NetworkQualityEstimatorTest, TestExternalEstimateProviderMergeEstimates) {
   request->Start();
   base::RunLoop().Run();
 
-  EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_NE(external_estimate_provider_rtt, rtt);
 
   EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
@@ -1190,7 +1191,7 @@ TEST(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
         test.allow_small_localhost_requests);
 
     base::TimeDelta rtt;
-    EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
+    EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
     int32_t kbps;
     EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
 
@@ -1206,7 +1207,7 @@ TEST(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
     base::RunLoop().Run();
 
     EXPECT_EQ(test.allow_small_localhost_requests,
-              estimator.GetURLRequestRTTEstimate(&rtt));
+              estimator.GetHttpRTTEstimate(&rtt));
     EXPECT_EQ(test.allow_small_localhost_requests,
               estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
   }
@@ -1243,7 +1244,7 @@ TEST(NetworkQualityEstimatorTest, TestObservers) {
 
   // Both RTT and downstream throughput should be updated.
   base::TimeDelta rtt;
-  EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
 
   int32_t throughput;
   EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&throughput));
@@ -1324,7 +1325,7 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
 
   EXPECT_EQ(0U, rtt_observer.observations().size());
   base::TimeDelta rtt;
-  EXPECT_FALSE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_FALSE(estimator.GetTransportRTTEstimate(&rtt));
 
   // Send two requests. Verify that the completion of each request generates at
@@ -1352,7 +1353,7 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
                       before_count_tcp_rtt_observations)
         << i;
   }
-  EXPECT_TRUE(estimator.GetURLRequestRTTEstimate(&rtt));
+  EXPECT_TRUE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_TRUE(estimator.GetTransportRTTEstimate(&rtt));
 
   estimator.SimulateNetworkChangeTo(

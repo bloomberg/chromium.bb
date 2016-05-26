@@ -149,7 +149,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // at the HTTP layer measures the time from when the request was sent (this
   // happens after the connection is established) to the time when the response
   // headers were received.
-  virtual bool GetURLRequestRTTEstimate(base::TimeDelta* rtt) const
+  virtual bool GetHttpRTTEstimate(base::TimeDelta* rtt) const
       WARN_UNUSED_RESULT;
 
   // Returns true if the RTT is available and sets |rtt| to the RTT estimated at
@@ -182,8 +182,8 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // layer measures the time from when the request was sent (this happens after
   // the connection is established) to the time when the response headers were
   // received.
-  virtual bool GetRecentURLRequestRTTMedian(const base::TimeTicks& start_time,
-                                            base::TimeDelta* rtt) const
+  virtual bool GetRecentHttpRTTMedian(const base::TimeTicks& start_time,
+                                      base::TimeDelta* rtt) const
       WARN_UNUSED_RESULT;
 
   // Returns true if the median RTT at the transport layer is available and sets
@@ -384,9 +384,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   void NotifyObserversOfThroughput(const ThroughputObservation& observation);
 
-  // Records the UMA related to the RTT at the URLRequest layer.
-  void RecordURLRequestRTTUMA(int32_t estimated_value_msec,
-                              int32_t actual_value_msec) const;
+  // Records the UMA related to the RTT at the HTTP layer.
+  void RecordHttpRTTUMA(int32_t estimated_value_msec,
+                        int32_t actual_value_msec) const;
 
   // Returns true only if the |request| can be used for RTT estimation.
   bool RequestProvidesRTTObservation(const URLRequest& request) const;
