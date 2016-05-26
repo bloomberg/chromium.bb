@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/metrics/histogram.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
@@ -83,34 +82,6 @@ display::Display::TouchSupport GetInternalDisplayTouchSupport() {
       return it->touch_support();
   }
   return display::Display::TOUCH_SUPPORT_UNAVAILABLE;
-}
-
-void ComputeEventLatencyOS(const base::NativeEvent& native_event) {
-  base::TimeDelta current_time = EventTimeForNow();
-  base::TimeDelta time_stamp = EventTimeFromNative(native_event);
-  base::TimeDelta delta = current_time - time_stamp;
-
-  EventType type = EventTypeFromNative(native_event);
-  switch (type) {
-    case ET_MOUSEWHEEL:
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.MOUSE_WHEEL",
-                                  delta.InMicroseconds(), 1, 1000000, 50);
-      return;
-    case ET_TOUCH_MOVED:
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_MOVED",
-                                  delta.InMicroseconds(), 1, 1000000, 50);
-      return;
-    case ET_TOUCH_PRESSED:
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_PRESSED",
-                                  delta.InMicroseconds(), 1, 1000000, 50);
-      return;
-    case ET_TOUCH_RELEASED:
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_RELEASED",
-                                  delta.InMicroseconds(), 1, 1000000, 50);
-      return;
-    default:
-      return;
-  }
 }
 
 }  // namespace ui

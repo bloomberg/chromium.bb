@@ -12321,11 +12321,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Event.Latency.OS" units="microseconds">
-  <owner>sahel@chromium.org</owner>
-  <summary>Time between input event received by OS and sent to Chrome.</summary>
-</histogram>
-
 <histogram name="Event.Latency.QueueingTime.TouchMoveDefaultAllowed"
     units="microseconds">
   <owner>tdresser@chromium.org</owner>
@@ -92511,14 +92506,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="90"/>
   <suffix name="100"/>
   <affected-histogram name="SiteEngagementService.EngagementScoreBucket"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="EventLatencyOS" separator=".">
-  <suffix name="MOUSE_WHEEL"/>
-  <suffix name="TOUCH_MOVED"/>
-  <suffix name="TOUCH_PRESSED"/>
-  <suffix name="TOUCH_RELEASED"/>
-  <affected-histogram name="Event.Latency.OS"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ExitFunnels" separator=".">

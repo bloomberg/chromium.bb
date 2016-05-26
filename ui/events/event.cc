@@ -357,7 +357,6 @@ Event::Event(const base::NativeEvent& native_event,
       static_cast<base::HistogramBase::Sample>(delta.InMicroseconds());
   UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser", delta_sample, 1, 1000000,
                               100);
-  ComputeEventLatencyOS(native_event);
 
   // Though it seems inefficient to generate the string twice, the first
   // instance will be used only for DCHECK builds and the second won't be
