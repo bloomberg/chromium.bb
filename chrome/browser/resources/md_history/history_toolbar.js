@@ -59,7 +59,8 @@ Polymer({
     groupedRange: {
       type: Number,
       value: 0,
-      reflectToAttribute: true
+      reflectToAttribute: true,
+      notify: true
     },
 
     // The start time of the query range.

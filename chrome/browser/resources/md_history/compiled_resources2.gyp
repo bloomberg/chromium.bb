@@ -16,11 +16,22 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'grouped_list',
+      'dependencies': [
+        '<(DEPTH)/third_party/polymer/v1_0/components-chromium/iron-collapse/compiled_resources2.gyp:iron-collapse-extracted',
+        'constants',
+        'history_item',
+        '../history/compiled_resources2.gyp:externs',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'history_item',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:icon',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:util',
+        'constants',
         '../history/compiled_resources2.gyp:externs',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],

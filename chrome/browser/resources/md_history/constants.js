@@ -11,3 +11,12 @@
  * @const
  */
 var BROWSING_GAP_TIME = 15 * 60 * 1000;
+
+/**
+ * @enum {number}
+ */
+var HistoryRange = {
+  ALL_TIME: 0,
+  WEEK: 1,
+  MONTH: 2
+};

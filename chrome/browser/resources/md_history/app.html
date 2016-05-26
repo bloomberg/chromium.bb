@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
+<link rel="import" href="chrome://history/grouped_list.html">
 <link rel="import" href="chrome://history/history_list.html">
 <link rel="import" href="chrome://history/history_toolbar.html">
 <link rel="import" href="chrome://history/synced_device_manager.html">
@@ -25,13 +26,15 @@
       }
 
       history-list,
-      #history-synced-device-manager {
+      history-synced-device-manager,
+      history-grouped-list {
         flex: 1 0 0;
       }
 
       #content {
         display: flex;
         flex: 1 0 0;
+        overflow: hidden;
       }
 
       history-toolbar {
@@ -39,19 +42,28 @@
       }
     </style>
     <history-toolbar id="toolbar" searching="[[queryState_.querying]]"
+        is-grouped-mode="{{grouped_}}"
+        grouped-range="{{queryState_.range}}"
         search-term="{{queryState_.searchTerm}}"
-        query-start-time="[[queryState_.queryStartTime]]"
-        query-end-time="[[queryState_.queryEndTime]]">
+        query-start-time="[[queryState_.info.queryStartTime]]"
+        query-end-time="[[queryState_.info.queryEndTime]]">
     </history-toolbar>
 
     <div id="main-container">
-      <history-side-bar id="history-side-bar" selected-page="{{selectedPage}}">
+      <history-side-bar id="history-side-bar" selected-page="{{selectedPage_}}">
       </history-side-bar>
       <iron-pages id="content" attr-for-selected="id"
-          selected="{{selectedPage}}">
+          selected="[[getSelectedPage(selectedPage_, queryState_.range)]]">
         <history-list id="history-list" querying="[[queryState_.querying]]"
-            searched-term="{{queryState_.info.term}}">
-        </history-list>
+            searched-term="[[queryState_.info.term]]"></history-list>
+        <template is="dom-if" if="[[grouped_]]">
+          <history-grouped-list id="history-grouped-list"
+              range="[[queryState_.range]]"
+              query-start-time="[[queryState_.info.queryStartTime]]"
+              query-end-time="[[queryState_.info.queryEndTime]]"
+              searched-term="[[queryState_.info.term]]">
+          </history-grouped-list>
+        </template>
         <history-synced-device-manager id="history-synced-device-manager">
         </history-synced-device-manager>
       </iron-pages>

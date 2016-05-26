@@ -6,7 +6,9 @@
  * @typedef {{querying: boolean,
  *            searchTerm: string,
  *            results: ?Array<!HistoryEntry>,
- *            info: ?HistoryQuery}}
+ *            info: ?HistoryQuery,
+ *            range: HistoryRange,
+ *            groupedOffset: number}}
  */
 var QueryState;
 
@@ -15,12 +17,22 @@ Polymer({
 
   properties: {
     // The id of the currently selected page.
-    selectedPage: {
+    selectedPage_: {
       type: String,
-      value: 'history-list'
     },
 
+    // Whether domain-grouped history is enabled.
+    grouped_: Boolean,
+
+    // Whether the first set of results have returned.
+    firstLoad_: { type: Boolean, value: true },
+
+    // True if the history queries are disabled.
+    queryingDisabled_: Boolean,
+
     /** @type {!QueryState} */
+    // TODO(calamity): Split out readOnly data into a separate property which is
+    // only set on result return.
     queryState_: {
       type: Object,
       value: function() {
@@ -30,6 +42,9 @@ Polymer({
           searchTerm: '',
           results: null,
           info: null,
+          range: HistoryRange.ALL_TIME,
+          // TODO(calamity): Make history toolbar buttons change the offset.
+          groupedOffset: 0,
         };
       }
     },
@@ -37,6 +52,7 @@ Polymer({
 
   observers: [
     'searchTermChanged_(queryState_.searchTerm)',
+    'groupedRangeChanged_(queryState_.range)',
   ],
 
   // TODO(calamity): Replace these event listeners with data bound properties.
@@ -49,7 +65,7 @@ Polymer({
   },
 
   ready: function() {
-    this.$.toolbar.isGroupedMode = loadTimeData.getBoolean('groupByDomain');
+    this.grouped_ = loadTimeData.getBoolean('groupByDomain');
   },
 
   /**
@@ -87,8 +103,22 @@ Polymer({
     /** @type {HistoryListElement} */(this.$['history-list']).deleteSelected();
   },
 
-  loadMoreHistory_: function() {
-    this.queryHistory(true);
+  initializeResults_: function(info, results) {
+    if (results.length == 0)
+      return;
+
+    var currentDate = results[0].dateRelativeDay;
+
+    for (var i = 0; i < results.length; i++) {
+      // Sets the default values for these fields to prevent undefined types.
+      results[i].selected = false;
+      results[i].readableTimestamp =
+          info.term == '' ? results[i].dateTimeOfDay : results[i].dateShort;
+
+      if (results[i].dateRelativeDay != currentDate) {
+        currentDate = results[i].dateRelativeDay;
+      }
+    }
   },
 
   /**
@@ -97,9 +127,17 @@ Polymer({
    * @param {!Array<HistoryEntry>} results A list of results.
    */
   historyResult: function(info, results) {
-    this.set('queryState_.querying', false);
-    this.set('queryState_.results', results);
+    this.firstLoad_ = false;
     this.set('queryState_.info', info);
+    this.set('queryState_.results', results);
+    this.set('queryState_.querying', false);
+
+    this.initializeResults_(info, results);
+
+    if (this.grouped_ && this.queryState_.range != HistoryRange.ALL_TIME) {
+      this.$$('history-grouped-list').historyData = results;
+      return;
+    }
 
     var list = /** @type {HistoryListElement} */(this.$['history-list']);
     list.addNewResults(results);
@@ -115,21 +153,43 @@ Polymer({
     this.$.toolbar.setSearchTerm(e.detail.domain);
   },
 
-  searchTermChanged_: function() {
+  searchTermChanged_: function(searchTerm) {
     this.queryHistory(false);
   },
 
+  groupedRangeChanged_: function(range) {
+    this.queryHistory(false);
+  },
+
+  loadMoreHistory_: function() {
+    this.queryHistory(true);
+  },
+
+  /**
+   * Queries the history backend for results based on queryState_.
+   * @param {boolean} incremental Whether the new query should continue where
+   *    the previous query stopped.
+   */
   queryHistory: function(incremental) {
+    if (this.queryingDisabled_ || this.firstLoad_)
+      return;
+
+    this.set('queryState_.querying', true);
+
+    var queryState = this.queryState_;
+
     var lastVisitTime = 0;
     if (incremental) {
-      var lastVisit = this.queryState_.results.slice(-1)[0];
+      var lastVisit = queryState.results.slice(-1)[0];
       lastVisitTime = lastVisit ? lastVisit.time : 0;
     }
 
-    this.set('queryState_.querying', true);
-    chrome.send(
-        'queryHistory',
-        [this.queryState_.searchTerm, 0, 0, lastVisitTime, RESULTS_PER_PAGE]);
+    var maxResults =
+      queryState.range == HistoryRange.ALL_TIME ? RESULTS_PER_PAGE : 0;
+    chrome.send('queryHistory', [
+      queryState.searchTerm, queryState.groupedOffset, Number(queryState.range),
+      lastVisitTime, maxResults
+    ]);
   },
 
   /**
@@ -147,5 +207,12 @@ Polymer({
     var syncedDeviceManager =
         /** @type {HistorySyncedDeviceManagerElement} */(syncedDeviceElem);
     syncedDeviceManager.setSyncedHistory(sessionList);
-  }
+  },
+
+  getSelectedPage: function(selectedPage, range) {
+    if (selectedPage == 'history-list' && range != HistoryRange.ALL_TIME)
+      return 'history-grouped-list';
+
+    return selectedPage;
+  },
 });

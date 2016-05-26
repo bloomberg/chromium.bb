@@ -29,6 +29,7 @@ MaterialHistoryBrowserTest.prototype = {
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'test_util.js',
     'browser_service_test.js',
+    'history_grouped_list_test.js',
     'history_item_test.js',
     'history_list_test.js',
     'history_overflow_menu_test.js',
@@ -43,13 +44,20 @@ MaterialHistoryBrowserTest.prototype = {
 
     suiteSetup(function() {
       // Wait for the top-level app element to be upgraded.
-      return waitForUpgrade($('history-app'));
+      return waitForUpgrade($('history-app')).then(function() {
+        $('history-app').queryingDisabled_ = true;
+      });
     });
   },
 };
 
 TEST_F('MaterialHistoryBrowserTest', 'BrowserServiceTest', function() {
   md_history.browser_service_test.registerTests();
+  mocha.run();
+});
+
+TEST_F('MaterialHistoryBrowserTest', 'HistoryGroupedListTest', function() {
+  md_history.history_grouped_list_test.registerTests();
   mocha.run();
 });
 

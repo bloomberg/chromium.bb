@@ -5,14 +5,16 @@
 cr.define('md_history.history_list_test', function() {
   function registerTests() {
     suite('history-list', function() {
+      var app;
       var element;
       var toolbar;
       var TEST_HISTORY_RESULTS;
       var ADDITIONAL_RESULTS;
 
       suiteSetup(function() {
-        element = $('history-app').$['history-list'];
-        toolbar = $('history-app').$['toolbar'];
+        app = $('history-app');
+        element = app.$['history-list'];
+        toolbar = app.$['toolbar'];
 
         TEST_HISTORY_RESULTS = [
           createHistoryEntry('2016-03-15', 'https://www.google.com'),
@@ -30,7 +32,7 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('cancelling selection of multiple items', function(done) {
-        element.addNewResults(TEST_HISTORY_RESULTS);
+        app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
         flush(function() {
           var items = Polymer.dom(element.root)
               .querySelectorAll('history-item');
@@ -62,7 +64,7 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('setting first and last items', function(done) {
-        element.addNewResults(TEST_HISTORY_RESULTS);
+        app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
 
         flush(function() {
           var items =
@@ -80,8 +82,8 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('updating history results', function(done) {
-        element.addNewResults(TEST_HISTORY_RESULTS);
-        element.addNewResults(ADDITIONAL_RESULTS);
+        app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+        app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
 
         flush(function() {
           var items =
@@ -100,8 +102,8 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('deleting multiple items from view', function(done) {
-        element.addNewResults(TEST_HISTORY_RESULTS);
-        element.addNewResults(ADDITIONAL_RESULTS);
+        app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
+        app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
         flush(function() {
           items = Polymer.dom(element.root).querySelectorAll('history-item');
 
@@ -133,7 +135,7 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('search results display with correct item title', function(done) {
-        element.addNewResults(
+        app.historyResult(createHistoryInfo(),
             [createHistoryEntry('2016-03-15', 'https://www.google.com')]);
         element.searchedTerm = 'Google';
 
@@ -154,13 +156,13 @@ cr.define('md_history.history_list_test', function() {
       });
 
       test('correct display message when no history available', function(done) {
-        element.addNewResults([]);
+        app.historyResult(createHistoryInfo(), []);
 
         flush(function() {
           assertFalse(element.$['no-results'].hidden);
           assertTrue(element.$['infinite-list'].hidden);
 
-          element.addNewResults(TEST_HISTORY_RESULTS);
+          app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
 
           flush(function() {
             assertTrue(element.$['no-results'].hidden);

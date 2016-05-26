@@ -31,13 +31,17 @@
       paper-item:hover {
         background: #eaeaea;
       }
+
+      history-item {
+        --history-item-padding-side: var(--card-padding-side);
+      }
     </style>
     <div id="no-results" class="centered-message"
-        hidden$="{{hasResults(historyData_.length)}}">
+        hidden$="[[hasResults(historyData_.length)]]">
       {{noResultsMessage_(searchedTerm, querying)}}
     </div>
     <iron-list items="{{historyData_}}" as="item" id="infinite-list"
-        hidden$="{{!hasResults(historyData_.length)}}">
+        hidden$="[[!hasResults(historyData_.length)]]">
       <template>
         <history-item item="[[item]]"
             starred="[[item.starred]]"

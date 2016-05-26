@@ -55,3 +55,19 @@ function createSearchEntry(timestamp, urlStr) {
 
   return entry;
 }
+
+/**
+ * Create a simple HistoryInfo.
+ * @param {?string} searchTerm The search term that the info has. Will be empty
+ *     string if not specified.
+ * @return {!HistoryInfo}
+ */
+function createHistoryInfo(searchTerm) {
+  return {
+    finished: true,
+    hasSyncedResults: false,
+    queryEndTime: 'Monday',
+    queryStartTime: 'Tuesday',
+    term: searchTerm || ''
+  };
+}

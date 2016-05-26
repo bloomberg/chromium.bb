@@ -80,6 +80,9 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
                           IDR_MD_HISTORY_BROWSER_SERVICE_JS);
   source->AddResourcePath("constants.html", IDR_MD_HISTORY_CONSTANTS_HTML);
   source->AddResourcePath("constants.js", IDR_MD_HISTORY_CONSTANTS_JS);
+  source->AddResourcePath("grouped_list.html",
+                          IDR_MD_HISTORY_GROUPED_LIST_HTML);
+  source->AddResourcePath("grouped_list.js", IDR_MD_HISTORY_GROUPED_LIST_JS);
   source->AddResourcePath("history_item.html",
                           IDR_MD_HISTORY_HISTORY_ITEM_HTML);
   source->AddResourcePath("history_item.js", IDR_MD_HISTORY_HISTORY_ITEM_JS);

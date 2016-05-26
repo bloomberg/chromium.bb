@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/html/util.html">
+<link rel="import" href="chrome://history/constants.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
 <dom-module id="history-item">
@@ -15,13 +16,13 @@
       :host {
         @apply(--layout-center);
         @apply(--layout-vertical);
-        padding: 0 var(--card-padding-side);
+        padding: 0 var(--history-item-padding-side, 0);
       }
 
       #main-container {
         background: #fff;
         border-color: var(--card-border-color);
-        border-style: solid;
+        border-style: var(--border-style, solid);
         border-width: 0 1px;
         max-width: var(--card-max-width);
         min-width: var(--card-min-width);
@@ -34,7 +35,7 @@
 
       :host([is-card-end]) #main-container {
         border-bottom-width: 2px;
-        margin-bottom: 20px;
+        margin-bottom: var(--card-padding-between);
       }
 
       #date-accessed {
@@ -52,11 +53,11 @@
       }
 
       :host([is-card-start]) #item-container {
-        padding-top: 8px;
+        padding-top: var(--card-first-last-item-padding);
       }
 
       :host([is-card-end]) #item-container {
-        padding-bottom: 8px;
+        padding-bottom: var(--card-first-last-item-padding);
       }
 
       #title-and-domain {

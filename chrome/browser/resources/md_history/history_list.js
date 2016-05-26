@@ -86,6 +86,7 @@ Polymer({
    * @param {!Array<!HistoryEntry>} historyResults The new history results.
    */
   addNewResults: function(historyResults) {
+    var results = historyResults.slice();
     /** @type {IronScrollThresholdElement} */(this.$['scroll-threshold'])
         .clearTriggers();
 
@@ -94,27 +95,6 @@ Polymer({
       if (this.historyData_)
         this.splice('historyData_', 0, this.historyData_.length);
       this.lastSearchedTerm_ = this.searchedTerm;
-    }
-
-    if (historyResults.length == 0)
-      return;
-
-    // Creates a copy of historyResults to prevent accidentally modifying this
-    // field.
-    var results = historyResults.slice();
-
-    var currentDate = results[0].dateRelativeDay;
-
-    for (var i = 0; i < results.length; i++) {
-      // Sets the default values for these fields to prevent undefined types.
-      results[i].selected = false;
-      results[i].readableTimestamp =
-          this.searchedTerm == '' ?
-              results[i].dateTimeOfDay : results[i].dateShort;
-
-      if (results[i].dateRelativeDay != currentDate) {
-        currentDate = results[i].dateRelativeDay;
-      }
     }
 
     if (this.historyData_) {
@@ -217,17 +197,8 @@ Polymer({
    * @private
    */
   needsTimeGap_: function(item, index, length) {
-    if (index >= length - 1 || length == 0)
-      return false;
-
-    var currentItem = this.historyData_[index];
-    var nextItem = this.historyData_[index + 1];
-
-    if (this.searchedTerm)
-      return currentItem.dateShort != nextItem.dateShort;
-
-    return currentItem.time - nextItem.time > BROWSING_GAP_TIME &&
-        currentItem.dateRelativeDay == nextItem.dateRelativeDay;
+    return md_history.HistoryItem.needsTimeGap(
+        this.historyData_, index, this.searchedTerm);
   },
 
   hasResults: function(historyDataLength) {

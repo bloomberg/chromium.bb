@@ -5,13 +5,15 @@
 cr.define('md_history.history_toolbar_test', function() {
   function registerTests() {
     suite('history-toolbar', function() {
+      var app;
       var element;
       var toolbar;
       var TEST_HISTORY_RESULTS;
 
       suiteSetup(function() {
-        element = $('history-app').$['history-list'];
-        toolbar = $('history-app').$['toolbar'];
+        app = $('history-app');
+        element = app.$['history-list'];
+        toolbar = app.$['toolbar'];
         TEST_HISTORY_RESULTS =
             [createHistoryEntry('2016-03-15', 'https://google.com')];
       });
@@ -43,6 +45,7 @@ cr.define('md_history.history_toolbar_test', function() {
       });
 
       test('search term gathered correctly from toolbar', function(done) {
+        app.queryingDisabled_ = false;
         registerMessageCallback('queryHistory', this, function (info) {
           assertEquals(info[0], 'Test');
           done();
@@ -52,6 +55,7 @@ cr.define('md_history.history_toolbar_test', function() {
       });
 
       test('more from this site sends and sets correct data', function(done) {
+        app.queryingDisabled_ = false;
         registerMessageCallback('queryHistory', this, function (info) {
           assertEquals('example.com', info[0]);
           flush(function() {
