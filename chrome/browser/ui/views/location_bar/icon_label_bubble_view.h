@@ -123,14 +123,6 @@ class IconLabelBubbleView : public views::InkDropHostView {
   views::ImageView* image_;
   views::Label* label_;
 
-  // How much horizontal padding (fully-transparent columns) is inside the
-  // image.  These are subtracted from the desired padding values when
-  // calculating the padding around the image, so that the image always appears
-  // to have the same visible padding no matter what its composition is.  Only
-  // used in MD.
-  int builtin_leading_padding_;
-  int builtin_trailing_padding_;
-
   bool is_extension_icon_;
 
   // This is only used in pre-MD. In MD, the background color is derived from

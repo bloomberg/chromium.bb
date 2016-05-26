@@ -270,6 +270,10 @@ void Canvas::DrawPoint(const Point& p1, const SkPaint& paint) {
 }
 
 void Canvas::DrawLine(const Point& p1, const Point& p2, SkColor color) {
+  DrawLine(PointF(p1), PointF(p2), color);
+}
+
+void Canvas::DrawLine(const PointF& p1, const PointF& p2, SkColor color) {
   SkPaint paint;
   paint.setColor(color);
   paint.setStrokeWidth(SkIntToScalar(1));
@@ -277,8 +281,14 @@ void Canvas::DrawLine(const Point& p1, const Point& p2, SkColor color) {
 }
 
 void Canvas::DrawLine(const Point& p1, const Point& p2, const SkPaint& paint) {
-  canvas_->drawLine(SkIntToScalar(p1.x()), SkIntToScalar(p1.y()),
-                    SkIntToScalar(p2.x()), SkIntToScalar(p2.y()), paint);
+  DrawLine(PointF(p1), PointF(p2), paint);
+}
+
+void Canvas::DrawLine(const PointF& p1,
+                      const PointF& p2,
+                      const SkPaint& paint) {
+  canvas_->drawLine(SkFloatToScalar(p1.x()), SkFloatToScalar(p1.y()),
+                    SkFloatToScalar(p2.x()), SkFloatToScalar(p2.y()), paint);
 }
 
 void Canvas::DrawCircle(const Point& center_point,

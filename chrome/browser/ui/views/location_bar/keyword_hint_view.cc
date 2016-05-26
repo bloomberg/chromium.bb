@@ -14,6 +14,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/icon_label_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -25,54 +26,39 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 
 namespace {
 
-// For MD, the tab key looks just like other omnibox chips.
-class TabKeyBubbleView : public IconLabelBubbleView {
+// This view sort of looks like a tab key.
+class TabKeyBubbleView : public views::Label {
  public:
-  TabKeyBubbleView(const gfx::FontList& font_list,
-                   SkColor text_color,
-                   SkColor background_color);
+  TabKeyBubbleView();
   ~TabKeyBubbleView() override;
 
  private:
-  // IconLabelBubbleView:
-  SkColor GetTextColor() const override;
-  SkColor GetBorderColor() const override;
-  bool ShouldShowBackground() const override;
-
-  SkColor text_color_;
+  // views::Label:
+  gfx::Size GetPreferredSize() const override;
 
   DISALLOW_COPY_AND_ASSIGN(TabKeyBubbleView);
 };
 
-TabKeyBubbleView::TabKeyBubbleView(const gfx::FontList& font_list,
-                                   SkColor text_color,
-                                   SkColor background_color)
-    : IconLabelBubbleView(0,
-                          font_list,
-                          background_color,
-                          false),
-      text_color_(text_color) {
-  SetLabel(l10n_util::GetStringUTF16(IDS_APP_TAB_KEY));
+TabKeyBubbleView::TabKeyBubbleView()
+    : views::Label(l10n_util::GetStringUTF16(IDS_APP_TAB_KEY)) {
+  SetBorder(views::Border::CreateEmptyBorder(
+      gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING), 0)));
 }
 
 TabKeyBubbleView::~TabKeyBubbleView() {}
 
-SkColor TabKeyBubbleView::GetTextColor() const {
-  return text_color_;
-}
-
-SkColor TabKeyBubbleView::GetBorderColor() const {
-  return text_color_;
-}
-
-bool TabKeyBubbleView::ShouldShowBackground() const {
-  return true;
+gfx::Size TabKeyBubbleView::GetPreferredSize() const {
+  gfx::Size size = views::Label::GetPreferredSize();
+  size.Enlarge(2 * GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING), 0);
+  return size;
 }
 
 }  // namespace
@@ -91,8 +77,17 @@ KeywordHintView::KeywordHintView(Profile* profile,
   leading_label_ =
       CreateLabel(font_list, text_color, background_color);
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    tab_key_view_ =
-        new TabKeyBubbleView(bubble_font_list, text_color, background_color);
+    TabKeyBubbleView* tab_key = new TabKeyBubbleView();
+    tab_key->SetFontList(bubble_font_list);
+    tab_key->SetEnabledColor(text_color);
+    bool inverted = color_utils::IsDark(background_color);
+    SkColor tab_bg_color =
+        inverted ? SK_ColorWHITE : SkColorSetA(text_color, 0x13);
+    SkColor tab_border_color = inverted ? SK_ColorWHITE : text_color;
+    tab_key->SetBackgroundColor(tab_bg_color);
+    tab_key->set_background(
+        new BackgroundWith1PxBorder(tab_bg_color, tab_border_color));
+    tab_key_view_ = tab_key;
   } else {
     views::ImageView* tab_image = new views::ImageView();
     tab_image->SetImage(

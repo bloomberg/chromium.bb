@@ -106,7 +106,11 @@ namespace {
 const SkColor kBorderColor = SkColorSetA(SK_ColorBLACK, 0x4D);
 
 int GetEditLeadingInternalSpace() {
-  // The textfield has 1 px of whitespace before the text in the RTL case only.
+  // The textfield has 1 px of whitespace before the text.
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return 1;
+
+  // For legacy reasons, we only apply this in the RTL case in pre-MD.
   return base::i18n::IsRTL() ? 1 : 0;
 }
 
@@ -218,10 +222,13 @@ void LocationBarView::Init() {
   const int bubble_height = location_height - (bubble_padding * 2);
   gfx::FontList bubble_font_list =
       font_list.DeriveWithHeightUpperBound(bubble_height);
+  gfx::FontList chip_font_list = ui::MaterialDesignController::IsModeMaterial()
+                                     ? font_list
+                                     : bubble_font_list;
 
   const SkColor background_color = GetColor(BACKGROUND);
   location_icon_view_ =
-      new LocationIconView(bubble_font_list, background_color, this);
+      new LocationIconView(chip_font_list, background_color, this);
   location_icon_view_->set_drag_controller(this);
   AddChildView(location_icon_view_);
 
@@ -248,7 +255,7 @@ void LocationBarView::Init() {
 
   const SkColor selected_text_color = GetColor(TEXT);
   selected_keyword_view_ = new SelectedKeywordView(
-      bubble_font_list, selected_text_color, background_color, profile());
+      chip_font_list, selected_text_color, background_color, profile());
   AddChildView(selected_keyword_view_);
 
   suggested_text_view_ = new views::Label(base::string16(), font_list);
@@ -269,7 +276,7 @@ void LocationBarView::Init() {
   for (ContentSettingImageModel* model : models.get()) {
     // ContentSettingImageView takes ownership of its model.
     ContentSettingImageView* image_view = new ContentSettingImageView(
-        model, this, bubble_font_list, background_color);
+        model, this, chip_font_list, background_color);
     content_setting_views_.push_back(image_view);
     image_view->SetVisible(false);
     AddChildView(image_view);
@@ -330,7 +337,8 @@ SkColor LocationBarView::GetColor(
 
     case EV_BUBBLE_TEXT_AND_BORDER:
       return ui::MaterialDesignController::IsModeMaterial()
-                 ? gfx::kGoogleGreen700
+                 ? GetSecureTextColor(
+                       GetToolbarModel()->GetSecurityLevel(false))
                  : SkColorSetRGB(7, 149, 0);
   }
   NOTREACHED();
@@ -348,13 +356,19 @@ SkColor LocationBarView::GetSecureTextColor(
   if ((security_level == security_state::SecurityStateModel::EV_SECURE) ||
       (security_level == security_state::SecurityStateModel::SECURE) ||
       (security_level == security_state::SecurityStateModel::SECURITY_ERROR)) {
-    const bool md = ui::MaterialDesignController::IsModeMaterial();
-    if (md && color_utils::IsDark(GetColor(BACKGROUND)))
-      return text_color;
-    if (security_level == security_state::SecurityStateModel::SECURITY_ERROR)
-      text_color = md ? gfx::kGoogleRed700 : SkColorSetRGB(162, 0, 0);
-    else
+    if (ui::MaterialDesignController::IsModeMaterial()) {
+      if (color_utils::IsDark(GetColor(BACKGROUND)))
+        return text_color;
+      if (security_level == security_state::SecurityStateModel::SECURITY_ERROR)
+        text_color = gfx::kGoogleRed700;
+      else
+        text_color = gfx::kGoogleGreen700;
+    } else if (security_level ==
+               security_state::SecurityStateModel::SECURITY_ERROR) {
+      text_color = SkColorSetRGB(162, 0, 0);
+    } else {
       text_color = GetColor(EV_BUBBLE_TEXT_AND_BORDER);
+    }
   }
   return color_utils::GetReadableColor(text_color, GetColor(BACKGROUND));
 }
@@ -849,22 +863,15 @@ void LocationBarView::RefreshLocationIcon() {
     return;
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    gfx::VectorIconId icon_id = gfx::VectorIconId::VECTOR_ICON_NONE;
     const int kIconSize = 16;
-    SkColor icon_color = gfx::kPlaceholderColor;
-    if (ShouldShowEVBubble()) {
-      icon_id = gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID_IN_CHIP;
-      icon_color = location_icon_view_->GetTextColor();
-    } else {
-      icon_id = omnibox_view_->GetVectorIcon();
-      security_state::SecurityStateModel::SecurityLevel security_level =
-          GetToolbarModel()->GetSecurityLevel(false);
-      icon_color = (security_level == security_state::SecurityStateModel::NONE)
-                       ? color_utils::DeriveDefaultIconColor(GetColor(TEXT))
-                       : GetSecureTextColor(security_level);
-    }
-    location_icon_view_->SetImage(
-        gfx::CreateVectorIcon(icon_id, kIconSize, icon_color));
+    security_state::SecurityStateModel::SecurityLevel security_level =
+        GetToolbarModel()->GetSecurityLevel(false);
+    SkColor icon_color =
+        (security_level == security_state::SecurityStateModel::NONE)
+            ? color_utils::DeriveDefaultIconColor(GetColor(TEXT))
+            : GetSecureTextColor(security_level);
+    location_icon_view_->SetImage(gfx::CreateVectorIcon(
+        omnibox_view_->GetVectorIcon(), kIconSize, icon_color));
   } else {
     location_icon_view_->SetImage(
         *GetThemeProvider()->GetImageSkiaNamed(omnibox_view_->GetIcon()));

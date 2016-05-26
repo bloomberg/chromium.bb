@@ -25,6 +25,7 @@ class Rect;
 class RectF;
 class FontList;
 class Point;
+class PointF;
 class Size;
 class Transform;
 
@@ -241,9 +242,11 @@ class GFX_EXPORT Canvas {
 
   // Draws a single pixel line with the specified color.
   void DrawLine(const Point& p1, const Point& p2, SkColor color);
+  void DrawLine(const PointF& p1, const PointF& p2, SkColor color);
 
   // Draws a line with the given |paint| parameters.
   void DrawLine(const Point& p1, const Point& p2, const SkPaint& paint);
+  void DrawLine(const PointF& p1, const PointF& p2, const SkPaint& paint);
 
   // Draws a circle with the given |paint| parameters.
   void DrawCircle(const Point& center_point,

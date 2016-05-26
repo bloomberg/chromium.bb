@@ -12,13 +12,18 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_util.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/painter.h"
 
 namespace {
+
+// Extra padding to place at the end of the chip when the label is showing.
+const int kExtraTrailingPadding = 7;
 
 SkColor CalculateImageColor(gfx::ImageSkia* image) {
   // We grab the color of the middle pixel of the image, which we treat as
@@ -38,8 +43,6 @@ IconLabelBubbleView::IconLabelBubbleView(int contained_image,
     : background_painter_(nullptr),
       image_(new views::ImageView()),
       label_(new views::Label(base::string16(), font_list)),
-      builtin_leading_padding_(0),
-      builtin_trailing_padding_(0),
       is_extension_icon_(false),
       parent_background_color_(parent_background_color) {
   if (contained_image) {
@@ -63,9 +66,11 @@ IconLabelBubbleView::IconLabelBubbleView(int contained_image,
   // child views in the location bar have the same height. The visible height of
   // the bubble should be smaller, so use an empty border to shrink down the
   // content bounds so the background gets painted correctly.
-  const int padding = GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING);
-  SetBorder(
-      views::Border::CreateEmptyBorder(gfx::Insets(padding, 0, padding, 0)));
+  SetBorder(views::Border::CreateEmptyBorder(
+      gfx::Insets(GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING), 0)));
+
+  // Flip the canvas in MD RTL so the separator is drawn on the correct side.
+  EnableCanvasFlippingForRTLUI(ui::MaterialDesignController::IsModeMaterial());
 }
 
 IconLabelBubbleView::~IconLabelBubbleView() {
@@ -98,13 +103,6 @@ void IconLabelBubbleView::SetLabel(const base::string16& label) {
 
 void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
   image_->SetImage(image_skia);
-
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    gfx::GetVisibleMargins(image_skia, &builtin_leading_padding_,
-                           &builtin_trailing_padding_);
-    if (base::i18n::IsRTL())
-      std::swap(builtin_leading_padding_, builtin_trailing_padding_);
-  }
 }
 
 bool IconLabelBubbleView::ShouldShowBackground() const {
@@ -189,15 +187,10 @@ void IconLabelBubbleView::OnNativeThemeChanged(
     const ui::NativeTheme* native_theme) {
   label_->SetEnabledColor(GetTextColor());
 
-  if (!ui::MaterialDesignController::IsModeMaterial())
-    return;
-
-  bool inverted = color_utils::IsDark(GetParentBackgroundColor());
-  SkColor border_color = inverted ? SK_ColorWHITE : GetBorderColor();
-  SkColor background_color =
-      inverted ? SK_ColorWHITE : SkColorSetA(border_color, 0x13);
-  set_background(new BackgroundWith1PxBorder(background_color, border_color));
-  SetLabelBackgroundColor(background_color);
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    label_->SetBackgroundColor(GetParentBackgroundColor());
+    SchedulePaint();
+  }
 }
 
 void IconLabelBubbleView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
@@ -236,6 +229,9 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
   // is necessary to animate |total_width| even when the background is hidden
   // as long as the animation is still shrinking.
   if (ShouldShowBackground() || shrinking) {
+    const int extra_trailing_padding =
+        ui::MaterialDesignController::IsModeMaterial() ? kExtraTrailingPadding
+                                                       : 0;
     // |multiplier| grows from zero to one, stays equal to one and then shrinks
     // to zero again. The view width should correspondingly grow from zero to
     // fully showing both label and icon, stay there, then shrink to just large
@@ -243,7 +239,8 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
     // zero, since this would mean the view would completely disappear and then
     // pop back to an icon after the animation finishes.
     const int max_width = MinimumWidthForImageWithBackgroundShown() +
-                          GetInternalSpacing() + label_width;
+                          GetInternalSpacing() + label_width +
+                          extra_trailing_padding;
     const int current_width = WidthMultiplier() * max_width;
     size.set_width(shrinking ? std::max(current_width, size.width())
                              : current_width);
@@ -271,14 +268,8 @@ void IconLabelBubbleView::SetLabelBackgroundColor(
 }
 
 int IconLabelBubbleView::GetOuterPadding(bool leading) const {
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    // The apparent leading and trailing padding should be equal, so we need to
-    // subtract the amount of built-in padding in the image.  This will mean
-    // that the actual padding + the padding inside the image add up to the same
-    // amount of padding as on the trailing edge of the bubble.
-    return GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING) -
-           (leading ? builtin_leading_padding_ : 0);
-  }
+  if (ui::MaterialDesignController::IsModeMaterial())
+    return GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING);
 
   return GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING) -
          GetLayoutConstant(LOCATION_BAR_BUBBLE_HORIZONTAL_PADDING) +
@@ -288,8 +279,7 @@ int IconLabelBubbleView::GetOuterPadding(bool leading) const {
 int IconLabelBubbleView::GetInternalSpacing() const {
   return image_->GetPreferredSize().IsEmpty()
              ? 0
-             : (GetLayoutConstant(ICON_LABEL_VIEW_INTERNAL_SPACING) -
-                builtin_trailing_padding_);
+             : GetLayoutConstant(ICON_LABEL_VIEW_INTERNAL_SPACING);
 }
 
 const char* IconLabelBubbleView::GetClassName() const {
@@ -303,6 +293,36 @@ void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
     views::Painter::PaintPainterAt(canvas, background_painter_.get(),
                                    GetContentsBounds());
   }
-  if (background())
-    background()->Paint(canvas, this);
+
+  // In MD, draw a separator and not a background.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    const SkColor plain_text_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_TextfieldDefaultColor);
+    const SkColor separator_color = SkColorSetA(
+        plain_text_color, color_utils::IsDark(plain_text_color) ? 0x59 : 0xCC);
+
+    // Amount of padding that is built into the whatever view comes after this
+    // one in the location bar (e.g. omnibox textfield).
+    int post_chip_spacing =
+        GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING);
+    // Amount of space to leave after the separator (dp).
+    const int kPostSeparatorSpacing =
+        (GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING) +
+         kExtraTrailingPadding + post_chip_spacing) /
+            2 -
+        post_chip_spacing;
+    // Height of the separator (dp).
+    const int kSeparatorHeight = 16;
+    gfx::Rect bounds(GetLocalBounds());
+    bounds.Inset(kPostSeparatorSpacing,
+                 (bounds.height() - kSeparatorHeight) / 2);
+
+    // 1px at all scale factors.
+    gfx::ScopedCanvas scoped_canvas(canvas);
+    const float scale = canvas->UndoDeviceScaleFactor();
+    const gfx::RectF pixel_aligned_bounds =
+        gfx::ScaleRect(gfx::RectF(bounds), scale) - gfx::Vector2dF(0.5f, 0);
+    canvas->DrawLine(pixel_aligned_bounds.top_right(),
+                     pixel_aligned_bounds.bottom_right(), separator_color);
+  }
 }
