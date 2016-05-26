@@ -11,9 +11,6 @@
 #include "base/macros.h"
 #include "components/filesystem/files_test_base.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/util/capture_util.h"
-
-using mojo::Capture;
 
 namespace filesystem {
 namespace {

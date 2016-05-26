@@ -178,7 +178,6 @@ mojo_native_application("media") {
     ":services",
     "//base",
     "//media",
-    "//mojo/logging",
     "//mojo/public/c/system:for_shared_library",
     "//services/shell/public/cpp:sources",
   ]

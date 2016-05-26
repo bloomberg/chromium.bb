@@ -1390,7 +1390,6 @@
         '../ipc/ipc.gyp:test_support_ipc',
         '../media/media.gyp:media_test_support',
         '../media/media.gyp:shared_memory_support',
-        '../mojo/mojo_base.gyp:mojo_test_support',
         '../mojo/mojo_edk.gyp:mojo_common_test_support',
         '../mojo/mojo_edk.gyp:mojo_system_impl',
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',

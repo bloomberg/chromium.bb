@@ -464,7 +464,6 @@ test("content_browsertests") {
     "//mojo/edk/test:test_support",
     "//mojo/public/cpp/bindings",
     "//mojo/public/js",
-    "//mojo/test:test_support",
     "//net:test_support",
     "//services/shell/public/cpp",
     "//storage/browser",

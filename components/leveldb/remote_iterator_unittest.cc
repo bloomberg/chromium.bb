@@ -8,14 +8,16 @@
 #include "components/leveldb/public/cpp/remote_iterator.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/util/capture_util.h"
 #include "services/shell/public/cpp/shell_connection.h"
 #include "services/shell/public/cpp/shell_test.h"
 
-using mojo::Capture;
-
 namespace leveldb {
 namespace {
+
+template <typename T1>
+mojo::Callback<void(T1)> Capture(T1* t1) {
+  return [t1](T1 got_t1) { *t1 = std::move(got_t1); };
+}
 
 class RemoteIteratorTest : public shell::test::ShellTest {
  public:

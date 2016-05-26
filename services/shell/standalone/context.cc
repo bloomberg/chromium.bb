@@ -28,7 +28,6 @@
 #include "components/tracing/tracing_switches.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "mojo/util/filename_util.h"
 #include "services/catalog/catalog.h"
 #include "services/catalog/store.h"
 #include "services/shell/connect_params.h"

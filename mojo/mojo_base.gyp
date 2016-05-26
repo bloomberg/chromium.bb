@@ -153,19 +153,6 @@
         'common/common_type_converters_unittest.cc',
       ],
     },
-    {
-      # GN version: //mojo/test:test_support
-      'target_name': 'mojo_test_support',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
-      'sources': [
-        'test/test_utils.h',
-        'test/test_utils_posix.cc',
-        'test/test_utils_win.cc',
-      ],
-    },
   ],
   'conditions': [
     ['OS=="android"', {

@@ -4,10 +4,10 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "media/mojo/services/mojo_media_application.h"
 #include "media/mojo/services/test_mojo_media_client.h"
-#include "mojo/logging/init_logging.h"
 #include "mojo/public/c/system/main.h"
 #include "services/shell/public/cpp/application_runner.h"
 
@@ -26,7 +26,10 @@ MojoResult MojoMain(MojoHandle mojo_handle) {
   // Enable logging.
   base::AtExitManager at_exit;
   shell::ApplicationRunner::InitBaseCommandLine();
-  mojo::InitLogging();
+
+  logging::LoggingSettings settings;
+  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  logging::InitLogging(settings);
 
   shell::ApplicationRunner runner(new media::MojoMediaApplication(
       base::WrapUnique(new media::TestMojoMediaClient()),

@@ -12,9 +12,6 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "mojo/util/capture_util.h"
-
-using mojo::Capture;
 
 namespace filesystem {
 namespace {

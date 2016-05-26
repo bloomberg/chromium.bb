@@ -31,11 +31,20 @@
 #include "content/test/data/web_ui_test_mojo_bindings.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace content {
 namespace {
+
+base::FilePath GetFilePathForJSResource(const std::string& path) {
+  std::string binding_path = "gen/" + path + ".js";
+#if defined(OS_WIN)
+  base::ReplaceChars(binding_path, "//", "\\", &binding_path);
+#endif
+  base::FilePath exe_dir;
+  PathService::Get(base::DIR_EXE, &exe_dir);
+  return exe_dir.AppendASCII(binding_path);
+}
 
 bool got_message = false;
 
@@ -45,8 +54,7 @@ bool GetResource(const std::string& id,
                  const WebUIDataSource::GotDataCallback& callback) {
   if (id.find(".mojom") != std::string::npos) {
     std::string contents;
-    CHECK(base::ReadFileToString(mojo::test::GetFilePathForJSResource(id),
-                                 &contents))
+    CHECK(base::ReadFileToString(GetFilePathForJSResource(id), &contents))
         << id;
     base::RefCountedString* ref_contents = new base::RefCountedString;
     ref_contents->data() = contents;
@@ -189,8 +197,7 @@ bool IsGeneratedResourceAvailable(const std::string& resource_path) {
   // files. If the bindings file doesn't exist assume we're on such a bot and
   // pass.
   // TODO(sky): remove this conditional when isolates support copying from gen.
-  const base::FilePath test_file_path(
-      mojo::test::GetFilePathForJSResource(resource_path));
+  const base::FilePath test_file_path(GetFilePathForJSResource(resource_path));
   if (base::PathExists(test_file_path))
     return true;
   LOG(WARNING) << " mojom binding file doesn't exist, assuming on isolate";

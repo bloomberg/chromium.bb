@@ -10,15 +10,26 @@
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/util/capture_util.h"
 #include "services/shell/public/cpp/shell_connection.h"
 #include "services/shell/public/cpp/shell_test.h"
 
 using filesystem::mojom::FileError;
-using mojo::Capture;
 
 namespace leveldb {
 namespace {
+
+template <typename T1>
+mojo::Callback<void(T1)> Capture(T1* t1) {
+  return [t1](T1 got_t1) { *t1 = std::move(got_t1); };
+}
+
+template <typename T1, typename T2>
+mojo::Callback<void(T1, T2)> Capture(T1* t1, T2* t2) {
+  return [t1, t2](T1 got_t1, T2 got_t2) {
+    *t1 = std::move(got_t1);
+    *t2 = std::move(got_t2);
+  };
+}
 
 class LevelDBServiceTest : public shell::test::ShellTest {
  public:
@@ -43,7 +54,7 @@ class LevelDBServiceTest : public shell::test::ShellTest {
   // since |ASSERT_...()| doesn't work with return values.
   void GetTempDirectory(filesystem::mojom::DirectoryPtr* directory) {
     FileError error = FileError::FAILED;
-    files()->OpenTempDirectory(GetProxy(directory), mojo::Capture(&error));
+    files()->OpenTempDirectory(GetProxy(directory), Capture(&error));
     ASSERT_TRUE(files().WaitForIncomingResponse());
     ASSERT_EQ(FileError::OK, error);
   }
