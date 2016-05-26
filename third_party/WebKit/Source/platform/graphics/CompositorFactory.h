@@ -37,7 +37,6 @@ public:
 
     virtual CompositorScrollOffsetAnimationCurve* createScrollOffsetAnimationCurve(
         FloatPoint targetValue,
-        CompositorAnimationCurve::TimingFunctionType,
         CompositorScrollOffsetAnimationCurve::ScrollDurationBehavior) { return nullptr; }
 
     virtual CompositorScrollOffsetAnimationCurve* createScrollOffsetAnimationCurve(

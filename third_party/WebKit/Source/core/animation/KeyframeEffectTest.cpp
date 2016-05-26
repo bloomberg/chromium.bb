@@ -106,7 +106,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation)
     EXPECT_EQ("100px", keyframe1Width->cssText());
     EXPECT_EQ("0px", keyframe2Width->cssText());
 
-    EXPECT_EQ(*(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut)), keyframes[0]->easing());
+    EXPECT_EQ(*(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_IN_OUT)), keyframes[0]->easing());
     EXPECT_EQ(*(CubicBezierTimingFunction::create(1, 1, 0.3, 0.3).get()), keyframes[1]->easing());
 }
 

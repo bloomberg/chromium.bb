@@ -388,13 +388,13 @@ PassRefPtr<TimingFunction> CSSToStyleMap::mapAnimationTimingFunction(const CSSVa
         case CSSValueLinear:
             return LinearTimingFunction::shared();
         case CSSValueEase:
-            return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease);
+            return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE);
         case CSSValueEaseIn:
-            return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn);
+            return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_IN);
         case CSSValueEaseOut:
-            return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseOut);
+            return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_OUT);
         case CSSValueEaseInOut:
-            return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut);
+            return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_IN_OUT);
         case CSSValueStepStart:
             return StepsTimingFunction::preset(StepsTimingFunction::StepPosition::START);
         case CSSValueStepMiddle:

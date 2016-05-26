@@ -25,7 +25,7 @@ public:
         ScrollDurationInverseDelta
     };
 
-    CompositorScrollOffsetAnimationCurve(FloatPoint, TimingFunctionType, ScrollDurationBehavior);
+    CompositorScrollOffsetAnimationCurve(FloatPoint, ScrollDurationBehavior);
     CompositorScrollOffsetAnimationCurve(cc::ScrollOffsetAnimationCurve*);
     ~CompositorScrollOffsetAnimationCurve() override;
 

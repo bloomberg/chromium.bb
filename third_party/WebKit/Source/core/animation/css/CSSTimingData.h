@@ -29,7 +29,7 @@ public:
 
     static double initialDelay() { return 0; }
     static double initialDuration() { return 0; }
-    static PassRefPtr<TimingFunction> initialTimingFunction() { return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease); }
+    static PassRefPtr<TimingFunction> initialTimingFunction() { return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE); }
 
     template <class T> static const T& getRepeated(const Vector<T>& v, size_t index) { return v[index % v.size()]; }
 

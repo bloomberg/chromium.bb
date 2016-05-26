@@ -323,7 +323,6 @@ void ScrollAnimator::updateCompositorAnimations()
         if (!m_animationCurve) {
             m_animationCurve = adoptPtr(CompositorFactory::current().createScrollOffsetAnimationCurve(
                 compositorOffsetFromBlinkOffset(m_targetOffset),
-                CompositorAnimationCurve::TimingFunctionTypeEaseInOut,
                 m_lastGranularity == ScrollByPixel ?
                     CompositorScrollOffsetAnimationCurve::ScrollDurationInverseDelta :
                     CompositorScrollOffsetAnimationCurve::ScrollDurationConstant));

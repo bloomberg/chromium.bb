@@ -16,6 +16,23 @@ TimingFunction::TimingFunction() {}
 
 TimingFunction::~TimingFunction() {}
 
+std::unique_ptr<TimingFunction> CubicBezierTimingFunction::CreatePreset(
+    EaseType ease_type) {
+  switch (ease_type) {
+    case EaseType::EASE:
+      return EaseTimingFunction::Create();
+    case EaseType::EASE_IN:
+      return EaseInTimingFunction::Create();
+    case EaseType::EASE_OUT:
+      return EaseOutTimingFunction::Create();
+    case EaseType::EASE_IN_OUT:
+      return EaseInOutTimingFunction::Create();
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
 std::unique_ptr<CubicBezierTimingFunction>
 CubicBezierTimingFunction::Create(double x1, double y1, double x2, double y2) {
   return base::WrapUnique(new CubicBezierTimingFunction(x1, y1, x2, y2));

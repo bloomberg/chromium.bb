@@ -33,6 +33,9 @@ class CC_EXPORT TimingFunction {
 
 class CC_EXPORT CubicBezierTimingFunction : public TimingFunction {
  public:
+  enum class EaseType { EASE, EASE_IN, EASE_OUT, EASE_IN_OUT, CUSTOM };
+
+  static std::unique_ptr<TimingFunction> CreatePreset(EaseType ease_type);
   static std::unique_ptr<CubicBezierTimingFunction> Create(double x1,
                                                            double y1,
                                                            double x2,

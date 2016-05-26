@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "platform/animation/CompositorScrollOffsetAnimationCurve.h"
+#include "platform/animation/TimingFunction.h"
 
 #include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/timing_function.h"
@@ -30,11 +31,10 @@ static DurationBehavior GetDurationBehavior(CompositorScrollOffsetAnimationCurve
 
 CompositorScrollOffsetAnimationCurve::CompositorScrollOffsetAnimationCurve(
     FloatPoint targetValue,
-    TimingFunctionType timingFunction,
     ScrollDurationBehavior durationBehavior)
     : m_curve(cc::ScrollOffsetAnimationCurve::Create(
         gfx::ScrollOffset(targetValue.x(), targetValue.y()),
-        createTimingFunction(timingFunction),
+        cc::CubicBezierTimingFunction::CreatePreset(CubicBezierTimingFunction::EaseType::EASE_IN_OUT),
         GetDurationBehavior(durationBehavior)))
 {
 }

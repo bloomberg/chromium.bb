@@ -144,7 +144,7 @@ TEST(AnimationKeyframeEffectModel, CompositeEaseIn)
 {
     AnimatableValueKeyframeVector keyframes = keyframesAtZeroAndOne(pixelAnimatableValue(3.0), pixelAnimatableValue(5.0));
     keyframes[0]->setComposite(EffectModel::CompositeReplace);
-    keyframes[0]->setEasing(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn));
+    keyframes[0]->setEasing(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_IN));
     keyframes[1]->setComposite(EffectModel::CompositeReplace);
     AnimatableValueKeyframeEffectModel* effect = AnimatableValueKeyframeEffectModel::create(keyframes);
     Vector<RefPtr<Interpolation>> values;

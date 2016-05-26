@@ -25,23 +25,23 @@ void LinearTimingFunction::range(double* minValue, double* maxValue) const
 
 String CubicBezierTimingFunction::toString() const
 {
-    switch (this->subType()) {
-    case CubicBezierTimingFunction::Ease:
+    switch (this->getEaseType()) {
+    case CubicBezierTimingFunction::EaseType::EASE:
         return "ease";
-    case CubicBezierTimingFunction::EaseIn:
+    case CubicBezierTimingFunction::EaseType::EASE_IN:
         return "ease-in";
-    case CubicBezierTimingFunction::EaseOut:
+    case CubicBezierTimingFunction::EaseType::EASE_OUT:
         return "ease-out";
-    case CubicBezierTimingFunction::EaseInOut:
+    case CubicBezierTimingFunction::EaseType::EASE_IN_OUT:
         return "ease-in-out";
-    case CubicBezierTimingFunction::Custom:
+    case CubicBezierTimingFunction::EaseType::CUSTOM:
         return "cubic-bezier(" + String::numberToStringECMAScript(this->x1()) + ", " +
             String::numberToStringECMAScript(this->y1()) + ", " + String::numberToStringECMAScript(this->x2()) +
             ", " + String::numberToStringECMAScript(this->y2()) + ")";
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
+        return "";
     }
-    return "";
 }
 
 double CubicBezierTimingFunction::evaluate(double fraction, double accuracy) const
@@ -169,10 +169,10 @@ bool operator==(const CubicBezierTimingFunction& lhs, const TimingFunction& rhs)
         return false;
 
     const CubicBezierTimingFunction& ctf = toCubicBezierTimingFunction(rhs);
-    if ((lhs.subType() == CubicBezierTimingFunction::Custom) && (ctf.subType() == CubicBezierTimingFunction::Custom))
+    if ((lhs.getEaseType() == CubicBezierTimingFunction::EaseType::CUSTOM) && (ctf.getEaseType() == CubicBezierTimingFunction::EaseType::CUSTOM))
         return (lhs.x1() == ctf.x1()) && (lhs.y1() == ctf.y1()) && (lhs.x2() == ctf.x2()) && (lhs.y2() == ctf.y2());
 
-    return lhs.subType() == ctf.subType();
+    return lhs.getEaseType() == ctf.getEaseType();
 }
 
 bool operator==(const StepsTimingFunction& lhs, const TimingFunction& rhs)

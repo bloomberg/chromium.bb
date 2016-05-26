@@ -94,45 +94,32 @@ private:
 
 class PLATFORM_EXPORT CubicBezierTimingFunction final : public TimingFunction {
 public:
-    enum FunctionSubType {
-        Ease,
-        EaseIn,
-        EaseOut,
-        EaseInOut,
-        Custom
-    };
+    using EaseType = cc::CubicBezierTimingFunction::EaseType;
 
     static PassRefPtr<CubicBezierTimingFunction> create(double x1, double y1, double x2, double y2)
     {
-        return adoptRef(new CubicBezierTimingFunction(Custom, x1, y1, x2, y2));
+        return adoptRef(new CubicBezierTimingFunction(EaseType::CUSTOM, x1, y1, x2, y2));
     }
 
-    static CubicBezierTimingFunction* preset(FunctionSubType subType)
+    static CubicBezierTimingFunction* preset(EaseType easeType)
     {
-        switch (subType) {
-        case Ease:
-            {
-                DEFINE_STATIC_REF(CubicBezierTimingFunction, ease, (adoptRef(new CubicBezierTimingFunction(Ease, 0.25, 0.1, 0.25, 1.0))));
-                return ease;
-            }
-        case EaseIn:
-            {
-                DEFINE_STATIC_REF(CubicBezierTimingFunction, easeIn, (adoptRef(new CubicBezierTimingFunction(EaseIn, 0.42, 0.0, 1.0, 1.0))));
-                return easeIn;
-            }
-        case EaseOut:
-            {
-                DEFINE_STATIC_REF(CubicBezierTimingFunction, easeOut, (adoptRef(new CubicBezierTimingFunction(EaseOut, 0.0, 0.0, 0.58, 1.0))));
-                return easeOut;
-            }
-        case EaseInOut:
-            {
-                DEFINE_STATIC_REF(CubicBezierTimingFunction, easeInOut, (adoptRef(new CubicBezierTimingFunction(EaseInOut, 0.42, 0.0, 0.58, 1.0))));
-                return easeInOut;
-            }
+        DEFINE_STATIC_REF(CubicBezierTimingFunction, ease, (adoptRef(new CubicBezierTimingFunction(EaseType::EASE, 0.25, 0.1, 0.25, 1.0))));
+        DEFINE_STATIC_REF(CubicBezierTimingFunction, easeIn, (adoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN, 0.42, 0.0, 1.0, 1.0))));
+        DEFINE_STATIC_REF(CubicBezierTimingFunction, easeOut, (adoptRef(new CubicBezierTimingFunction(EaseType::EASE_OUT, 0.0, 0.0, 0.58, 1.0))));
+        DEFINE_STATIC_REF(CubicBezierTimingFunction, easeInOut, (adoptRef(new CubicBezierTimingFunction(EaseType::EASE_IN_OUT, 0.42, 0.0, 0.58, 1.0))));
+
+        switch (easeType) {
+        case EaseType::EASE:
+            return ease;
+        case EaseType::EASE_IN:
+            return easeIn;
+        case EaseType::EASE_OUT:
+            return easeOut;
+        case EaseType::EASE_IN_OUT:
+            return easeInOut;
         default:
-            ASSERT_NOT_REACHED();
-            return 0;
+            NOTREACHED();
+            return nullptr;
         }
     }
 
@@ -148,17 +135,17 @@ public:
     double x2() const { return m_x2; }
     double y2() const { return m_y2; }
 
-    FunctionSubType subType() const { return m_subType; }
+    EaseType getEaseType() const { return m_easeType; }
 
 private:
-    explicit CubicBezierTimingFunction(FunctionSubType subType, double x1, double y1, double x2, double y2)
+    explicit CubicBezierTimingFunction(EaseType easeType, double x1, double y1, double x2, double y2)
         : TimingFunction(kCubicBezierFunction)
         , m_bezier(x1, y1, x2, y2)
         , m_x1(x1)
         , m_y1(y1)
         , m_x2(x2)
         , m_y2(y2)
-        , m_subType(subType)
+        , m_easeType(easeType)
     {
     }
 
@@ -172,7 +159,7 @@ private:
     const double m_y1;
     const double m_x2;
     const double m_y2;
-    FunctionSubType m_subType;
+    const EaseType m_easeType;
 };
 
 class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {

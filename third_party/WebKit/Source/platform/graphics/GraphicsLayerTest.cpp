@@ -105,7 +105,7 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations)
     ASSERT_FALSE(m_platformLayer->hasActiveAnimationForTesting());
 
     OwnPtr<CompositorFloatAnimationCurve> curve = adoptPtr(CompositorFactory::current().createFloatAnimationCurve());
-    curve->add(CompositorFloatKeyframe(0.0, 0.0));
+    curve->addCubicBezierKeyframe(CompositorFloatKeyframe(0.0, 0.0), CubicBezierTimingFunction::EaseType::EASE);
     OwnPtr<CompositorAnimation> floatAnimation(adoptPtr(CompositorFactory::current().createAnimation(*curve, CompositorTargetProperty::OPACITY)));
     int animationId = floatAnimation->id();
 

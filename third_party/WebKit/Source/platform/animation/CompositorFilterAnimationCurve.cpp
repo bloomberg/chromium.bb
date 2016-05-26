@@ -22,15 +22,23 @@ CompositorFilterAnimationCurve::~CompositorFilterAnimationCurve()
 {
 }
 
-void CompositorFilterAnimationCurve::add(const CompositorFilterKeyframe& keyframe, TimingFunctionType type)
+void CompositorFilterAnimationCurve::addLinearKeyframe(const CompositorFilterKeyframe& keyframe)
+{
+    const cc::FilterOperations& filterOperations = keyframe.value().asFilterOperations();
+    m_curve->AddKeyframe(cc::FilterKeyframe::Create(
+        base::TimeDelta::FromSecondsD(keyframe.time()), filterOperations, nullptr));
+
+}
+
+void CompositorFilterAnimationCurve::addCubicBezierKeyframe(const CompositorFilterKeyframe& keyframe, CubicBezierTimingFunction::EaseType easeType)
 {
     const cc::FilterOperations& filterOperations = keyframe.value().asFilterOperations();
     m_curve->AddKeyframe(cc::FilterKeyframe::Create(
         base::TimeDelta::FromSecondsD(keyframe.time()), filterOperations,
-        createTimingFunction(type)));
+        cc::CubicBezierTimingFunction::CreatePreset(easeType)));
 }
 
-void CompositorFilterAnimationCurve::add(const CompositorFilterKeyframe& keyframe, double x1, double y1, double x2, double y2)
+void CompositorFilterAnimationCurve::addCubicBezierKeyframe(const CompositorFilterKeyframe& keyframe, double x1, double y1, double x2, double y2)
 {
     const cc::FilterOperations& filterOperations = keyframe.value().asFilterOperations();
     m_curve->AddKeyframe(cc::FilterKeyframe::Create(
@@ -38,7 +46,7 @@ void CompositorFilterAnimationCurve::add(const CompositorFilterKeyframe& keyfram
         cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2)));
 }
 
-void CompositorFilterAnimationCurve::add(const CompositorFilterKeyframe& keyframe, int steps, StepsTimingFunction::StepPosition stepPosition)
+void CompositorFilterAnimationCurve::addStepsKeyframe(const CompositorFilterKeyframe& keyframe, int steps, StepsTimingFunction::StepPosition stepPosition)
 {
     const cc::FilterOperations& filterOperations = keyframe.value().asFilterOperations();
     m_curve->AddKeyframe(cc::FilterKeyframe::Create(
@@ -51,9 +59,9 @@ void CompositorFilterAnimationCurve::setLinearTimingFunction()
     m_curve->SetTimingFunction(nullptr);
 }
 
-void CompositorFilterAnimationCurve::setCubicBezierTimingFunction(TimingFunctionType type)
+void CompositorFilterAnimationCurve::setCubicBezierTimingFunction(CubicBezierTimingFunction::EaseType easeType)
 {
-    m_curve->SetTimingFunction(createTimingFunction(type));
+    m_curve->SetTimingFunction(cc::CubicBezierTimingFunction::CreatePreset(easeType));
 }
 
 void CompositorFilterAnimationCurve::setCubicBezierTimingFunction(double x1, double y1, double x2, double y2)

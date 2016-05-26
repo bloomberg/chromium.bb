@@ -304,7 +304,7 @@ public:
         , m_startTime(0.0)
         , m_duration(duration)
         , m_animation(animation)
-        , m_timingFunction(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut))
+        , m_timingFunction(CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_IN_OUT))
     {
     }
 

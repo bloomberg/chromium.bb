@@ -11,8 +11,6 @@
 #include "platform/animation/TimingFunction.h"
 #include "wtf/Noncopyable.h"
 
-#include <memory>
-
 namespace cc {
 class KeyframedFloatAnimationCurve;
 }
@@ -30,17 +28,15 @@ public:
     CompositorFloatAnimationCurve();
     ~CompositorFloatAnimationCurve() override;
 
-    // Adds the keyframe with the default timing function (ease).
-    virtual void add(const CompositorFloatKeyframe&);
-    virtual void add(const CompositorFloatKeyframe&, TimingFunctionType);
+    virtual void addLinearKeyframe(const CompositorFloatKeyframe&);
+    virtual void addCubicBezierKeyframe(const CompositorFloatKeyframe&, CubicBezierTimingFunction::EaseType);
     // Adds the keyframe with a custom, bezier timing function. Note, it is
     // assumed that x0 = y0 , and x3 = y3 = 1.
-    virtual void add(const CompositorFloatKeyframe&, double x1, double y1, double x2, double y2);
-    // Adds the keyframe with a steps timing function.
-    virtual void add(const CompositorFloatKeyframe&, int steps, StepsTimingFunction::StepPosition);
+    virtual void addCubicBezierKeyframe(const CompositorFloatKeyframe&, double x1, double y1, double x2, double y2);
+    virtual void addStepsKeyframe(const CompositorFloatKeyframe&, int steps, StepsTimingFunction::StepPosition);
 
     virtual void setLinearTimingFunction();
-    virtual void setCubicBezierTimingFunction(TimingFunctionType);
+    virtual void setCubicBezierTimingFunction(CubicBezierTimingFunction::EaseType);
     virtual void setCubicBezierTimingFunction(double x1, double y1, double x2, double y2);
     virtual void setStepsTimingFunction(int numberOfSteps, StepsTimingFunction::StepPosition);
 

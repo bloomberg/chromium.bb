@@ -192,13 +192,13 @@ TEST_F(AnimationTimingInputTest, TimingInputTimingFunction)
     const RefPtr<TimingFunction> defaultTimingFunction = LinearTimingFunction::shared();
     bool success;
 
-    EXPECT_EQ(*CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease), *applyTimingInputString("easing", "ease", success).timingFunction);
+    EXPECT_EQ(*CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE), *applyTimingInputString("easing", "ease", success).timingFunction);
     EXPECT_TRUE(success);
-    EXPECT_EQ(*CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn), *applyTimingInputString("easing", "ease-in", success).timingFunction);
+    EXPECT_EQ(*CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_IN), *applyTimingInputString("easing", "ease-in", success).timingFunction);
     EXPECT_TRUE(success);
-    EXPECT_EQ(*CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseOut), *applyTimingInputString("easing", "ease-out", success).timingFunction);
+    EXPECT_EQ(*CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_OUT), *applyTimingInputString("easing", "ease-out", success).timingFunction);
     EXPECT_TRUE(success);
-    EXPECT_EQ(*CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseInOut), *applyTimingInputString("easing", "ease-in-out", success).timingFunction);
+    EXPECT_EQ(*CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseType::EASE_IN_OUT), *applyTimingInputString("easing", "ease-in-out", success).timingFunction);
     EXPECT_TRUE(success);
     EXPECT_EQ(*LinearTimingFunction::shared(), *applyTimingInputString("easing", "linear", success).timingFunction);
     EXPECT_TRUE(success);

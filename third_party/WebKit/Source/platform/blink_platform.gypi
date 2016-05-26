@@ -145,7 +145,6 @@
       'animation/AnimationUtilities.h',
       'animation/CompositorAnimation.cpp',
       'animation/CompositorAnimation.h',
-      'animation/CompositorAnimationCurve.cpp',
       'animation/CompositorAnimationCurve.h',
       'animation/CompositorAnimationDelegate.h',
       'animation/CompositorAnimationHost.cpp',

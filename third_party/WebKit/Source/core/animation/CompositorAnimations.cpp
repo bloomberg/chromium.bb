@@ -459,73 +459,36 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
 
 namespace {
 
-void getCubicBezierTimingFunctionParameters(const TimingFunction& timingFunction, bool& outCustom,
-    CompositorAnimationCurve::TimingFunctionType& outEaseSubType,
-    double& outX1, double& outY1, double& outX2, double& outY2)
-{
-    const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(timingFunction);
-    outCustom = false;
-
-    switch (cubic.subType()) {
-    case CubicBezierTimingFunction::Ease:
-        outEaseSubType = CompositorAnimationCurve::TimingFunctionTypeEase;
-        break;
-    case CubicBezierTimingFunction::EaseIn:
-        outEaseSubType = CompositorAnimationCurve::TimingFunctionTypeEaseIn;
-        break;
-    case CubicBezierTimingFunction::EaseOut:
-        outEaseSubType = CompositorAnimationCurve::TimingFunctionTypeEaseOut;
-        break;
-    case CubicBezierTimingFunction::EaseInOut:
-        outEaseSubType = CompositorAnimationCurve::TimingFunctionTypeEaseInOut;
-        break;
-    case CubicBezierTimingFunction::Custom:
-        outCustom = true;
-        outX1 = cubic.x1();
-        outY1 = cubic.y1();
-        outX2 = cubic.x2();
-        outY2 = cubic.y2();
-        break;
-    default:
-        ASSERT_NOT_REACHED();
-    }
-}
-
 template<typename PlatformAnimationCurveType, typename PlatformAnimationKeyframeType>
 void addCompositorKeyframeWithTimingFunction(PlatformAnimationCurveType& curve, const PlatformAnimationKeyframeType& keyframe, const TimingFunction* timingFunction)
 {
     if (!timingFunction) {
-        curve.add(keyframe);
+        curve.addCubicBezierKeyframe(keyframe, CubicBezierTimingFunction::EaseType::EASE);
         return;
     }
 
     switch (timingFunction->type()) {
     case TimingFunction::kLinearFunction:
-        curve.add(keyframe, CompositorAnimationCurve::TimingFunctionTypeLinear);
+        curve.addLinearKeyframe(keyframe);
         break;
 
     case TimingFunction::kCubicBezierFunction: {
-        bool custom;
-        CompositorAnimationCurve::TimingFunctionType easeSubType;
-        double x1, y1;
-        double x2, y2;
-        getCubicBezierTimingFunctionParameters(*timingFunction, custom, easeSubType, x1, y1, x2, y2);
-
-        if (custom)
-            curve.add(keyframe, x1, y1, x2, y2);
+        const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(*timingFunction);
+        if (cubic.getEaseType() == CubicBezierTimingFunction::EaseType::CUSTOM)
+            curve.addCubicBezierKeyframe(keyframe, cubic.x1(), cubic.y1(), cubic.x2(), cubic.y2());
         else
-            curve.add(keyframe, easeSubType);
+            curve.addCubicBezierKeyframe(keyframe, cubic.getEaseType());
         break;
     }
 
     case TimingFunction::kStepsFunction: {
         const StepsTimingFunction& steps = toStepsTimingFunction(*timingFunction);
-        curve.add(keyframe, steps.numberOfSteps(), steps.getStepPosition());
+        curve.addStepsKeyframe(keyframe, steps.numberOfSteps(), steps.getStepPosition());
         break;
     }
 
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 
@@ -543,16 +506,11 @@ void setTimingFunctionOnCurve(PlatformAnimationCurveType& curve, TimingFunction*
         break;
 
     case TimingFunction::kCubicBezierFunction: {
-        bool custom;
-        CompositorAnimationCurve::TimingFunctionType easeSubType;
-        double x1, y1;
-        double x2, y2;
-        getCubicBezierTimingFunctionParameters(*timingFunction, custom, easeSubType, x1, y1, x2, y2);
-
-        if (custom)
-            curve.setCubicBezierTimingFunction(x1, y1, x2, y2);
+        const CubicBezierTimingFunction& cubic = toCubicBezierTimingFunction(*timingFunction);
+        if (cubic.getEaseType() == CubicBezierTimingFunction::EaseType::CUSTOM)
+            curve.setCubicBezierTimingFunction(cubic.x1(), cubic.y1(), cubic.x2(), cubic.y2());
         else
-            curve.setCubicBezierTimingFunction(easeSubType);
+            curve.setCubicBezierTimingFunction(cubic.getEaseType());
         break;
     }
 
@@ -563,7 +521,7 @@ void setTimingFunctionOnCurve(PlatformAnimationCurveType& curve, TimingFunction*
     }
 
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 

@@ -22,20 +22,22 @@ CompositorTransformAnimationCurve::~CompositorTransformAnimationCurve()
 {
 }
 
-void CompositorTransformAnimationCurve::add(const CompositorTransformKeyframe& keyframe)
+void CompositorTransformAnimationCurve::addLinearKeyframe(const CompositorTransformKeyframe& keyframe)
 {
-    add(keyframe, TimingFunctionTypeEase);
+    const cc::TransformOperations& transformOperations = keyframe.value().asTransformOperations();
+    m_curve->AddKeyframe(cc::TransformKeyframe::Create(
+        base::TimeDelta::FromSecondsD(keyframe.time()), transformOperations, nullptr));
 }
 
-void CompositorTransformAnimationCurve::add(const CompositorTransformKeyframe& keyframe, TimingFunctionType type)
+void CompositorTransformAnimationCurve::addCubicBezierKeyframe(const CompositorTransformKeyframe& keyframe, CubicBezierTimingFunction::EaseType easeType)
 {
     const cc::TransformOperations& transformOperations = keyframe.value().asTransformOperations();
     m_curve->AddKeyframe(cc::TransformKeyframe::Create(
         base::TimeDelta::FromSecondsD(keyframe.time()), transformOperations,
-        createTimingFunction(type)));
+        cc::CubicBezierTimingFunction::CreatePreset(easeType)));
 }
 
-void CompositorTransformAnimationCurve::add(const CompositorTransformKeyframe& keyframe,  double x1, double y1, double x2, double y2)
+void CompositorTransformAnimationCurve::addCubicBezierKeyframe(const CompositorTransformKeyframe& keyframe,  double x1, double y1, double x2, double y2)
 {
     const cc::TransformOperations& transformOperations = keyframe.value().asTransformOperations();
     m_curve->AddKeyframe(cc::TransformKeyframe::Create(
@@ -43,7 +45,7 @@ void CompositorTransformAnimationCurve::add(const CompositorTransformKeyframe& k
         cc::CubicBezierTimingFunction::Create(x1, y1, x2, y2)));
 }
 
-void CompositorTransformAnimationCurve::add(const CompositorTransformKeyframe& keyframe, int steps, StepsTimingFunction::StepPosition stepPosition)
+void CompositorTransformAnimationCurve::addStepsKeyframe(const CompositorTransformKeyframe& keyframe, int steps, StepsTimingFunction::StepPosition stepPosition)
 {
     const cc::TransformOperations& transformOperations = keyframe.value().asTransformOperations();
     m_curve->AddKeyframe(cc::TransformKeyframe::Create(
@@ -56,9 +58,9 @@ void CompositorTransformAnimationCurve::setLinearTimingFunction()
     m_curve->SetTimingFunction(nullptr);
 }
 
-void CompositorTransformAnimationCurve::setCubicBezierTimingFunction(TimingFunctionType type)
+void CompositorTransformAnimationCurve::setCubicBezierTimingFunction(CubicBezierTimingFunction::EaseType easeType)
 {
-    m_curve->SetTimingFunction(createTimingFunction(type));
+    m_curve->SetTimingFunction(cc::CubicBezierTimingFunction::CreatePreset(easeType));
 }
 
 void CompositorTransformAnimationCurve::setCubicBezierTimingFunction(double x1, double y1, double x2, double y2)

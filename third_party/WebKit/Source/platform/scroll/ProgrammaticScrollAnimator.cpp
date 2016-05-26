@@ -52,7 +52,6 @@ void ProgrammaticScrollAnimator::animateToOffset(FloatPoint offset)
     m_targetOffset = offset;
     m_animationCurve = adoptPtr(CompositorFactory::current().createScrollOffsetAnimationCurve(
         compositorOffsetFromBlinkOffset(m_targetOffset),
-        CompositorAnimationCurve::TimingFunctionTypeEaseInOut,
         CompositorScrollOffsetAnimationCurve::ScrollDurationDeltaBased));
 
     m_scrollableArea->registerForAnimation();

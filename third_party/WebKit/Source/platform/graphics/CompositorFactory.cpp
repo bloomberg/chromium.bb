@@ -29,11 +29,9 @@ public:
 
     CompositorScrollOffsetAnimationCurve* createScrollOffsetAnimationCurve(
         FloatPoint targetValue,
-        CompositorAnimationCurve::TimingFunctionType timingFunctionType,
         CompositorScrollOffsetAnimationCurve::ScrollDurationBehavior durationBehavior)
     {
-        return new CompositorScrollOffsetAnimationCurve(targetValue, timingFunctionType,
-            durationBehavior);
+        return new CompositorScrollOffsetAnimationCurve(targetValue, durationBehavior);
     }
 
     CompositorScrollOffsetAnimationCurve* createScrollOffsetAnimationCurve(
