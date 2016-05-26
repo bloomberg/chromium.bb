@@ -190,14 +190,6 @@ void NodeController::ReservePort(const std::string& token,
   base::AutoLock lock(reserved_ports_lock_);
   auto result = reserved_ports_.insert(std::make_pair(token, port));
   DCHECK(result.second);
-
-  // Safeguard against unpredictable and exceptional cases where a reservation
-  // holder may disappear without ever claiming their reservation.
-  io_task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&NodeController::CancelReservation,
-                 base::Unretained(this), token),
-      base::TimeDelta::FromMinutes(1));
 }
 
 void NodeController::MergePortIntoParent(const std::string& token,
@@ -545,19 +537,6 @@ void NodeController::DropAllPeers() {
 
   if (destroy_on_io_thread_shutdown_)
     delete this;
-}
-
-void NodeController::CancelReservation(const std::string& token) {
-  ports::PortRef reserved_port;
-  {
-    base::AutoLock lock(reserved_ports_lock_);
-    auto iter = reserved_ports_.find(token);
-    if (iter == reserved_ports_.end())  // Already claimed!
-      return;
-    reserved_port = iter->second;
-    reserved_ports_.erase(iter);
-  }
-  node_->ClosePort(reserved_port);
 }
 
 void NodeController::GenerateRandomPortName(ports::PortName* port_name) {

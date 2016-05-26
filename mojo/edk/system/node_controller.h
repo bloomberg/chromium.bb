@@ -137,7 +137,6 @@ class NodeController : public ports::NodeDelegate,
                        ports::ScopedMessage message);
   void AcceptIncomingMessages();
   void DropAllPeers();
-  void CancelReservation(const std::string& token);
 
   // ports::NodeDelegate:
   void GenerateRandomPortName(ports::PortName* port_name) override;
