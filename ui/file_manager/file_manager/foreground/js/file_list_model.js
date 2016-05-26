@@ -142,12 +142,13 @@ FileListModel.prototype.getFolderCount = function() {
 };
 
 /**
- * Returns true if image files are dominant in this file list.
+ * Returns true if image files are dominant in this file list (i.e. 80% or more
+ * files are images).
  * @return {boolean}
  */
 FileListModel.prototype.isImageDominant = function() {
-  return this.numFiles_ >= 0 &&
-      this.numImageFiles_ / this.numFiles_ >= 0.8;
+  return this.numFiles_ > 0 &&
+      this.numImageFiles_ * 10 >= this.numFiles_ * 8;
 };
 
 /**
