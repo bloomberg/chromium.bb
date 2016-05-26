@@ -10,6 +10,10 @@
 #include "net/base/int128.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using net::uint128;
+using net::uint128_pod;
+using net::kuint128max;
+
 TEST(Int128, AllTests) {
   uint128 zero(0);
   uint128 one(1);
