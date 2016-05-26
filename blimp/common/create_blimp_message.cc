@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "blimp/common/proto/blimp_message.pb.h"
+#include "blimp/common/proto/blob_channel.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
 #include "blimp/common/proto/input.pb.h"
 #include "blimp/common/proto/render_widget.pb.h"
@@ -77,6 +78,13 @@ std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     EngineSettingsMessage** engine_settings) {
   std::unique_ptr<BlimpMessage> output(new BlimpMessage);
   *engine_settings = output->mutable_settings()->mutable_engine_settings();
+  return output;
+}
+
+std::unique_ptr<BlimpMessage> CreateBlimpMessage(
+    BlobChannelMessage** blob_channel_message) {
+  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
+  *blob_channel_message = output->mutable_blob_channel();
   return output;
 }
 

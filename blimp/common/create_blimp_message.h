@@ -15,6 +15,7 @@
 namespace blimp {
 
 class BlimpMessage;
+class BlobChannelMessage;
 class CompositorMessage;
 class EngineSettingsMessage;
 class ImeMessage;
@@ -65,6 +66,9 @@ BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateBlimpMessage(
 
 BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateBlimpMessage(
     EngineSettingsMessage** engine_settings);
+
+BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateBlimpMessage(
+    BlobChannelMessage** blob_channel_message);
 
 BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateStartConnectionMessage(
     const std::string& client_token,

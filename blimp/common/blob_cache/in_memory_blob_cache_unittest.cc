@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "blimp/common/blob_cache/blob_cache.h"
 #include "blimp/common/blob_cache/in_memory_blob_cache.h"
+#include "blimp/common/blob_cache/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blimp {
@@ -20,10 +21,6 @@ const char kFoo[] = "foo";
 const char kBar[] = "bar";
 const char kDeadbeef[] = "\xde\xad\xbe\xef";
 const char kForbiddenCode[] = "\x4b\x1d\xc0\xd3";
-
-BlobDataPtr CreateBlobDataPtr(const std::string& data) {
-  return new BlobData(data);
-}
 
 class InMemoryBlobCacheTest : public testing::Test {
  public:

@@ -6,46 +6,64 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "blimp/common/blob_cache/blob_cache.h"
 
 namespace blimp {
+namespace {
 
-BlobChannelReceiver::Delegate::Delegate() {}
+// Takes incoming blobs from |delegate_| stores them in |cache_|, and provides
+// callers a getter interface for accessing blobs from |cache_|.
+class BLIMP_NET_EXPORT BlobChannelReceiverImpl : public BlobChannelReceiver {
+ public:
+  BlobChannelReceiverImpl(std::unique_ptr<BlobCache> cache,
+                          std::unique_ptr<Delegate> delegate);
+  ~BlobChannelReceiverImpl() override;
 
-BlobChannelReceiver::Delegate::~Delegate() {
-  DCHECK(!receiver_);
+  // BlobChannelReceiver implementation.
+  BlobDataPtr Get(const BlobId& id) override;
+  void OnBlobReceived(const BlobId& id, BlobDataPtr data) override;
+
+ private:
+  std::unique_ptr<BlobCache> cache_;
+  std::unique_ptr<Delegate> delegate_;
+
+  // Guards against concurrent access to |cache_|.
+  base::Lock cache_lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(BlobChannelReceiverImpl);
+};
+
+}  // namespace
+
+// static
+std::unique_ptr<BlobChannelReceiver> BlobChannelReceiver::Create(
+    std::unique_ptr<BlobCache> cache,
+    std::unique_ptr<Delegate> delegate) {
+  return base::WrapUnique(
+      new BlobChannelReceiverImpl(std::move(cache), std::move(delegate)));
 }
 
-void BlobChannelReceiver::Delegate::SetReceiver(BlobChannelReceiver* receiver) {
-  receiver_ = receiver;
-}
-
-void BlobChannelReceiver::Delegate::OnBlobReceived(const BlobId& id,
-                                                   BlobDataPtr data) {
-  if (receiver_) {
-    receiver_->OnBlobReceived(id, data);
-  }
-}
-
-BlobChannelReceiver::BlobChannelReceiver(std::unique_ptr<BlobCache> cache,
-                                         std::unique_ptr<Delegate> delegate)
+BlobChannelReceiverImpl::BlobChannelReceiverImpl(
+    std::unique_ptr<BlobCache> cache,
+    std::unique_ptr<Delegate> delegate)
     : cache_(std::move(cache)), delegate_(std::move(delegate)) {
   DCHECK(cache_);
+
   delegate_->SetReceiver(this);
 }
 
-BlobChannelReceiver::~BlobChannelReceiver() {
-  delegate_->SetReceiver(nullptr);
-}
+BlobChannelReceiverImpl::~BlobChannelReceiverImpl() {}
 
-BlobDataPtr BlobChannelReceiver::Get(const BlobId& id) {
+BlobDataPtr BlobChannelReceiverImpl::Get(const BlobId& id) {
   DVLOG(2) << "Get blob: " << id;
 
   base::AutoLock lock(cache_lock_);
   return cache_->Get(id);
 }
 
-void BlobChannelReceiver::OnBlobReceived(const BlobId& id, BlobDataPtr data) {
+void BlobChannelReceiverImpl::OnBlobReceived(const BlobId& id,
+                                             BlobDataPtr data) {
   DVLOG(2) << "Blob received: " << id;
 
   base::AutoLock lock(cache_lock_);

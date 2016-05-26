@@ -60,6 +60,11 @@ MATCHER_P(BufferEqualsProto, message, "") {
   return expected_serialized == actual_serialized;
 }
 
+// Checks if the contents of a BlobDataPtr match the string |expected|.
+MATCHER_P(BlobDataPtrEqualsString, expected, "") {
+  return expected == arg->data;
+}
+
 // GMock action that writes data from a string to an IOBuffer.
 //
 //   buf_idx (template parameter 0): 0-based index of the IOBuffer arg.

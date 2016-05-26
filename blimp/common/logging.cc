@@ -12,8 +12,10 @@
 #include "base/json/string_escape.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 
 namespace blimp {
@@ -248,6 +250,28 @@ class TabControlLogExtractor : public LogExtractor {
   }
 };
 
+// Logs fields from BLOB_CHANNEL messages.
+class BlobChannelLogExtractor : public LogExtractor {
+  void ExtractFields(const BlimpMessage& message,
+                     LogFields* output) const override {
+    switch (message.blob_channel().type_case()) {
+      case BlobChannelMessage::TypeCase::kTransferBlob:
+        AddField("subtype", "TRANSFER_BLOB", output);
+        AddField("id",
+                 base::HexEncode(
+                     message.blob_channel().transfer_blob().blob_id().data(),
+                     message.blob_channel().transfer_blob().blob_id().size()),
+                 output);
+        AddField("payload_size",
+                 message.blob_channel().transfer_blob().payload().size(),
+                 output);
+        break;
+      case BlobChannelMessage::TypeCase::TYPE_NOT_SET:  // unknown
+        break;
+    }
+  }
+};
+
 // No fields are extracted from |message|.
 class NullLogExtractor : public LogExtractor {
   void ExtractFields(const BlimpMessage& message,
@@ -271,6 +295,8 @@ BlimpMessageLogger::BlimpMessageLogger() {
              base::WrapUnique(new SettingsLogExtractor));
   AddHandler("TAB_CONTROL", BlimpMessage::kTabControl,
              base::WrapUnique(new TabControlLogExtractor));
+  AddHandler("BLOB_CHANNEL", BlimpMessage::kBlobChannel,
+             base::WrapUnique(new BlobChannelLogExtractor));
 }
 
 BlimpMessageLogger::~BlimpMessageLogger() {}

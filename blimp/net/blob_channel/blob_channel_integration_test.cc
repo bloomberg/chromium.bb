@@ -12,6 +12,7 @@
 #include "blimp/common/blob_cache/test_util.h"
 #include "blimp/net/blob_channel/blob_channel_receiver.h"
 #include "blimp/net/blob_channel/blob_channel_sender.h"
+#include "blimp/net/blob_channel/mock_blob_channel_receiver.h"
 #include "blimp/net/test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,30 +30,19 @@ const char kBlobPayload[] = "bar1";
 // after |this| is deleted.
 class SenderDelegateProxy : public BlobChannelSender::Delegate {
  public:
-  SenderDelegateProxy() {}
+  explicit SenderDelegateProxy(BlobChannelReceiver* receiver)
+      : receiver_(receiver) {}
   ~SenderDelegateProxy() override {}
 
-  // Returns a receiver object that will receive proxied calls sent to |this|.
-  std::unique_ptr<BlobChannelReceiver::Delegate> GetReceiverDelegate() {
-    DCHECK(!receiver_);
-    receiver_ = new ReceiverDelegate;
-    return base::WrapUnique(receiver_);
-  }
-
  private:
-  class ReceiverDelegate : public BlobChannelReceiver::Delegate {
-   public:
-    using BlobChannelReceiver::Delegate::OnBlobReceived;
-  };
-
   // BlobChannelSender implementation.
   void DeliverBlob(const BlobId& id, BlobDataPtr data) override {
     base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&ReceiverDelegate::OnBlobReceived,
+        FROM_HERE, base::Bind(&BlobChannelReceiver::OnBlobReceived,
                               base::Unretained(receiver_), id, data));
   }
 
-  ReceiverDelegate* receiver_ = nullptr;
+  BlobChannelReceiver* receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(SenderDelegateProxy);
 };
@@ -62,18 +52,28 @@ class SenderDelegateProxy : public BlobChannelSender::Delegate {
 class BlobChannelIntegrationTest : public testing::Test {
  public:
   BlobChannelIntegrationTest() {
-    std::unique_ptr<SenderDelegateProxy> sender_delegate(
-        new SenderDelegateProxy);
-    receiver_.reset(
-        new BlobChannelReceiver(base::WrapUnique(new InMemoryBlobCache),
-                                sender_delegate->GetReceiverDelegate()));
-    sender_.reset(new BlobChannelSender(base::WrapUnique(new InMemoryBlobCache),
-                                        std::move(sender_delegate)));
+    BlobChannelReceiver* stored_receiver;
+    std::unique_ptr<MockBlobChannelReceiverDelegate> receiver_delegate(
+        new MockBlobChannelReceiverDelegate);
+    receiver_delegate_ = receiver_delegate.get();
+
+    EXPECT_CALL(*receiver_delegate, SetReceiver(_))
+        .WillOnce(SaveArg<0>(&stored_receiver));
+
+    receiver_ = BlobChannelReceiver::Create(
+        base::WrapUnique(new InMemoryBlobCache), std::move(receiver_delegate));
+
+    EXPECT_EQ(receiver_.get(), stored_receiver);
+
+    sender_.reset(new BlobChannelSender(
+        base::WrapUnique(new InMemoryBlobCache),
+        base::WrapUnique(new SenderDelegateProxy(receiver_.get()))));
   }
 
   ~BlobChannelIntegrationTest() override {}
 
  protected:
+  MockBlobChannelReceiverDelegate* receiver_delegate_;
   std::unique_ptr<BlobChannelReceiver> receiver_;
   std::unique_ptr<BlobChannelSender> sender_;
   base::MessageLoop message_loop_;

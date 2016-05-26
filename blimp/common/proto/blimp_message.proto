@@ -23,6 +23,7 @@ syntax = "proto2";
 
 option optimize_for = LITE_RUNTIME;
 
+import "blob_channel.proto";
 import "compositor.proto";
 import "ime.proto";
 import "input.proto";
@@ -61,6 +62,7 @@ message BlimpMessage {
     ProtocolControlMessage protocol_control = 45;
     ImeMessage ime = 46;
     SettingsMessage settings = 47;
+    BlobChannelMessage blob_channel = 48;
   }
 }
 

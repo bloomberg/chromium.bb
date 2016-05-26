@@ -27,6 +27,10 @@ component("net") {
     "blob_channel/blob_channel_receiver.h",
     "blob_channel/blob_channel_sender.cc",
     "blob_channel/blob_channel_sender.h",
+    "blob_channel/helium_blob_receiver_delegate.cc",
+    "blob_channel/helium_blob_receiver_delegate.h",
+    "blob_channel/helium_blob_sender_delegate.cc",
+    "blob_channel/helium_blob_sender_delegate.h",
     "browser_connection_handler.cc",
     "browser_connection_handler.h",
     "client_connection_manager.cc",
@@ -84,6 +88,8 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "blob_channel/mock_blob_channel_receiver.cc",
+    "blob_channel/mock_blob_channel_receiver.h",
     "test_common.cc",
     "test_common.h",
   ]
@@ -110,6 +116,7 @@ source_set("unit_tests") {
     "blob_channel/blob_channel_integration_test.cc",
     "blob_channel/blob_channel_receiver_unittest.cc",
     "blob_channel/blob_channel_sender_unittest.cc",
+    "blob_channel/helium_blob_channel_unittest.cc",
     "browser_connection_handler_unittest.cc",
     "client_connection_manager_unittest.cc",
     "compressed_packet_unittest.cc",

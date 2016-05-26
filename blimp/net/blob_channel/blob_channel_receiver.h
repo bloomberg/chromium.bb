@@ -16,52 +16,31 @@ namespace blimp {
 
 class BlobCache;
 
-// Receives blobs from a remote sender.
 class BLIMP_NET_EXPORT BlobChannelReceiver {
  public:
   class Delegate {
    public:
-    Delegate();
-    virtual ~Delegate();
-
-   protected:
-    // Forwards incoming blob data to |receiver_|.
-    void OnBlobReceived(const BlobId& id, BlobDataPtr data);
-
-   private:
-    friend class BlobChannelReceiver;
+    virtual ~Delegate() {}
 
     // Sets the Receiver object which will take incoming blobs.
-    void SetReceiver(BlobChannelReceiver* receiver);
-
-    BlobChannelReceiver* receiver_ = nullptr;
-
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
+    virtual void SetReceiver(BlobChannelReceiver* receiver) = 0;
   };
 
-  BlobChannelReceiver(std::unique_ptr<BlobCache> cache,
-                      std::unique_ptr<Delegate> delegate);
-  ~BlobChannelReceiver();
+  virtual ~BlobChannelReceiver() {}
+
+  // Constructs a BlobChannelReceiverImpl object for use.
+  static std::unique_ptr<BlobChannelReceiver> Create(
+      std::unique_ptr<BlobCache> cache,
+      std::unique_ptr<Delegate> delegate);
 
   // Gets a blob from the BlobChannel.
   // Returns nullptr if the blob is not available in the channel.
   // Can be accessed concurrently from any thread. Calling code must ensure that
   // the object instance outlives all calls to Get().
-  BlobDataPtr Get(const BlobId& id);
-
- private:
-  friend class Delegate;
+  virtual BlobDataPtr Get(const BlobId& id) = 0;
 
   // Called by Delegate::OnBlobReceived() when a blob arrives over the channel.
-  void OnBlobReceived(const BlobId& id, BlobDataPtr data);
-
-  std::unique_ptr<BlobCache> cache_;
-  std::unique_ptr<Delegate> delegate_;
-
-  // Guards against concurrent access to |cache_|.
-  base::Lock cache_lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(BlobChannelReceiver);
+  virtual void OnBlobReceived(const BlobId& id, BlobDataPtr data) = 0;
 };
 
 }  // namespace blimp

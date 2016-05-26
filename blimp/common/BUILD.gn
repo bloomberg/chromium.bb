@@ -66,6 +66,7 @@ source_set("unit_tests") {
 
   deps = [
     ":common",
+    ":test_support",
     "//base",
     "//blimp/common/proto",
     "//blimp/net:test_support",

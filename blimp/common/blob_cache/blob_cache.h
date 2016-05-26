@@ -14,8 +14,11 @@
 namespace blimp {
 
 using BlobId = std::string;
-using BlobData = base::RefCountedData<const std::string>;
-using BlobDataPtr = scoped_refptr<BlobData>;
+using BlobData = base::RefCountedData<std::string>;
+
+// Immutable, ref-counted representation of blob payloads, suitable for sharing
+// across threads.
+using BlobDataPtr = scoped_refptr<const BlobData>;
 
 // An interface for a cache of blobs.
 class BLIMP_COMMON_EXPORT BlobCache {

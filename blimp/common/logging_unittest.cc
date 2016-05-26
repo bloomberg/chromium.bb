@@ -7,8 +7,10 @@
 
 #include "base/at_exit.h"
 #include "base/strings/stringprintf.h"
+#include "blimp/common/create_blimp_message.h"
 #include "blimp/common/logging.h"
 #include "blimp/common/proto/blimp_message.pb.h"
+#include "blimp/common/proto/blob_channel.pb.h"
 #include "blimp/net/test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -218,6 +220,18 @@ TEST_F(LoggingTest, RenderWidget) {
   deleted_msg.mutable_render_widget()->set_type(RenderWidgetMessage::DELETED);
   VerifyLogOutput("type=RENDER_WIDGET subtype=DELETED render_widget_id=123",
                   deleted_msg);
+}
+
+TEST_F(LoggingTest, BlobChannel) {
+  BlobChannelMessage* blob_message = nullptr;
+  std::unique_ptr<BlimpMessage> blimp_message =
+      CreateBlimpMessage(&blob_message);
+  blob_message->mutable_transfer_blob()->set_blob_id("AAA");
+  blob_message->mutable_transfer_blob()->set_payload("123");
+
+  VerifyLogOutput(
+      "type=BLOB_CHANNEL subtype=TRANSFER_BLOB id=\"414141\" payload_size=3",
+      *blimp_message);
 }
 
 TEST_F(LoggingTest, Settings) {

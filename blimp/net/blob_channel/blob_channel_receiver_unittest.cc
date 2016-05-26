@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "blimp/common/blob_cache/mock_blob_cache.h"
 #include "blimp/net/blob_channel/blob_channel_receiver.h"
+#include "blimp/net/blob_channel/mock_blob_channel_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,6 +19,7 @@ namespace {
 
 using testing::_;
 using testing::Return;
+using testing::SaveArg;
 
 const char kBlobId[] = "blob-1";
 const char kBlobPayload[] = "blob-1-payload";
@@ -31,26 +33,26 @@ MATCHER_P(BlobDataEqual, expected, "") {
   return expected->data == arg->data;
 }
 
-class NullBlobReceiverDelegate : public BlobChannelReceiver::Delegate {
- public:
-  using BlobChannelReceiver::Delegate::OnBlobReceived;
-};
-
 class BlobChannelReceiverTest : public testing::Test {
  public:
-  BlobChannelReceiverTest()
-      : delegate_(new NullBlobReceiverDelegate),
-        cache_(new testing::StrictMock<MockBlobCache>),
-        blob_receiver_(new BlobChannelReceiver(base::WrapUnique(cache_),
-                                               base::WrapUnique(delegate_)))
+  BlobChannelReceiverTest() : cache_(new testing::StrictMock<MockBlobCache>) {
+    BlobChannelReceiver* stored_receiver;
+    std::unique_ptr<MockBlobChannelReceiverDelegate> receiver_delegate(
+        new MockBlobChannelReceiverDelegate);
+    receiver_delegate_ = receiver_delegate.get();
 
-  {}
+    EXPECT_CALL(*receiver_delegate, SetReceiver(_))
+        .WillOnce(SaveArg<0>(&stored_receiver));
+
+    blob_receiver_ = BlobChannelReceiver::Create(base::WrapUnique(cache_),
+                                                 std::move(receiver_delegate));
+  }
 
   ~BlobChannelReceiverTest() override {}
 
-  NullBlobReceiverDelegate* delegate_;
   testing::StrictMock<MockBlobCache>* cache_;
   std::unique_ptr<BlobChannelReceiver> blob_receiver_;
+  MockBlobChannelReceiverDelegate* receiver_delegate_;
 };
 
 TEST_F(BlobChannelReceiverTest, GetKnownBlob) {
@@ -69,7 +71,7 @@ TEST_F(BlobChannelReceiverTest, GetFromDelegateReceiveMethod) {
   EXPECT_CALL(*cache_, Put(kBlobId, BlobDataEqual(payload)));
   EXPECT_CALL(*cache_, Get(kBlobId)).WillOnce(Return(payload));
 
-  delegate_->OnBlobReceived(kBlobId, payload);
+  blob_receiver_->OnBlobReceived(kBlobId, payload);
 
   auto result = blob_receiver_->Get(kBlobId);
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
@@ -90,6 +91,14 @@ TEST(CreateBlimpMessageTest, StartConnectionMessage) {
             message->protocol_control().start_connection().client_token());
   EXPECT_EQ(protocol_version,
             message->protocol_control().start_connection().protocol_version());
+}
+
+TEST(CreateBlimpMessageTest, BlobChannelMessage) {
+  BlobChannelMessage* details;
+  std::unique_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
+  ASSERT_TRUE(message);
+  EXPECT_EQ(details, &message->blob_channel());
+  EXPECT_EQ(BlimpMessage::kBlobChannel, message->feature_case());
 }
 
 }  // namespace
