@@ -9,8 +9,6 @@ import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.ServiceConnection;
 
-import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.testing.local.CustomShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.webapk.lib.runtime_library.IWebApkApi;
@@ -35,18 +33,17 @@ public class WebApkServiceConnectionManagerTest {
     private ShadowApplication mShadowApplication;
     private WebApkServiceConnectionManager mConnectionManager;
 
-    private class TestCallback extends Callback<IWebApkApi> {
+    private class TestCallback implements WebApkServiceConnectionManager.ConnectionCallback {
         public boolean mGotResult = false;
 
         @Override
-        public void onResult(IWebApkApi api) {
+        public void onConnected(IWebApkApi api) {
             mGotResult = true;
         }
     }
 
     @Before
     public void setUp() {
-        ContextUtils.initApplicationContextForTests(Robolectric.application);
         mShadowApplication = Robolectric.shadowOf(Robolectric.application);
         mConnectionManager = new WebApkServiceConnectionManager();
     }
@@ -60,8 +57,8 @@ public class WebApkServiceConnectionManagerTest {
         TestCallback callback1 = new TestCallback();
         TestCallback callback2 = new TestCallback();
 
-        mConnectionManager.connect(WEB_APK_PACKAGE, callback1);
-        mConnectionManager.connect(WEB_APK_PACKAGE, callback2);
+        mConnectionManager.connect(Robolectric.application, WEB_APK_PACKAGE, callback1);
+        mConnectionManager.connect(Robolectric.application, WEB_APK_PACKAGE, callback2);
 
         // Only one connection should have been created.
         Assert.assertEquals(WEB_APK_PACKAGE, getNextStartedServicePackage());
@@ -109,12 +106,11 @@ public class WebApkServiceConnectionManagerTest {
         }
 
         AsyncBindContext asyncBindContext = new AsyncBindContext();
-        ContextUtils.initApplicationContextForTests(asyncBindContext);
 
         TestCallback callback1 = new TestCallback();
         TestCallback callback2 = new TestCallback();
-        mConnectionManager.connect(WEB_APK_PACKAGE, callback1);
-        mConnectionManager.connect(WEB_APK_PACKAGE, callback2);
+        mConnectionManager.connect(asyncBindContext, WEB_APK_PACKAGE, callback1);
+        mConnectionManager.connect(asyncBindContext, WEB_APK_PACKAGE, callback2);
 
         // The connection has not been established yet. Neither of the callbacks should have been
         // called.
@@ -132,12 +128,12 @@ public class WebApkServiceConnectionManagerTest {
      */
     @Test
     public void testDisconnectConnect() throws Exception {
-        mConnectionManager.connect(WEB_APK_PACKAGE, new TestCallback());
+        mConnectionManager.connect(Robolectric.application, WEB_APK_PACKAGE, new TestCallback());
         Assert.assertEquals(WEB_APK_PACKAGE, getNextStartedServicePackage());
         Assert.assertEquals(null, getNextStartedServicePackage());
 
-        mConnectionManager.disconnect(WEB_APK_PACKAGE);
-        mConnectionManager.connect(WEB_APK_PACKAGE, new TestCallback());
+        mConnectionManager.disconnect(Robolectric.application, WEB_APK_PACKAGE);
+        mConnectionManager.connect(Robolectric.application, WEB_APK_PACKAGE, new TestCallback());
         Assert.assertEquals(WEB_APK_PACKAGE, getNextStartedServicePackage());
         Assert.assertEquals(null, getNextStartedServicePackage());
     }

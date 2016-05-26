@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.notifications;
 
 import android.os.RemoteException;
 
-import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
 import org.chromium.webapk.lib.runtime_library.IWebApkApi;
@@ -19,11 +19,12 @@ public class WebApkNotificationClient {
     private static final String TAG = "cr_WebApk";
 
     // Callback which catches RemoteExceptions thrown due to IWebApkApi failure.
-    private abstract static class ApiUseCallback extends Callback<IWebApkApi> {
+    private abstract static class ApiUseCallback
+            implements WebApkServiceConnectionManager.ConnectionCallback {
         public abstract void useApi(IWebApkApi api) throws RemoteException;
 
         @Override
-        public void onResult(IWebApkApi api) {
+        public void onConnected(IWebApkApi api) {
             try {
                 useApi(api);
             } catch (RemoteException e) {
@@ -48,7 +49,8 @@ public class WebApkNotificationClient {
             }
         };
 
-        WebApkServiceConnectionManager.getInstance().connect(webApkPackage, connectionCallback);
+        WebApkServiceConnectionManager.getInstance().connect(
+                ContextUtils.getApplicationContext(), webApkPackage, connectionCallback);
     }
 
     /**
@@ -62,6 +64,7 @@ public class WebApkNotificationClient {
                 api.cancelNotification(platformTag, platformID);
             }
         };
-        WebApkServiceConnectionManager.getInstance().connect(webApkPackage, connectionCallback);
+        WebApkServiceConnectionManager.getInstance().connect(
+                ContextUtils.getApplicationContext(), webApkPackage, connectionCallback);
     }
 }
