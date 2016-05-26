@@ -679,14 +679,8 @@ void MediaCodecPlayer::OnPermissionDecided(bool granted) {
       }
       break;
 
-    case kStatePaused:
-    case kStateWaitingForSeek:
-    case kStateError:
-      break;  // ignore
-
     default:
-      NOTREACHED() << __FUNCTION__ << ": wrong state " << AsString(state_);
-      break;
+      break;  // ignore
   }
 }
 
