@@ -8,9 +8,7 @@ if (window.testRunner) {
 
 function clickLink() {
     var link = document.getElementById("anchorLink");
-    eventSender.mouseMoveTo(link.offsetLeft + 2, link.offsetTop + 2);
-    eventSender.mouseDown(); 
-    eventSender.mouseUp(); 
+    link.click();
 }
 
 function run() {

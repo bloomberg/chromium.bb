@@ -373,7 +373,8 @@ bool isEnterKeyKeydownEvent(Event* event)
 
 bool isLinkClick(Event* event)
 {
-    return event->type() == EventTypeNames::click && (!event->isMouseEvent() || toMouseEvent(event)->button() != RightButton);
+    // Allow detail <= 1 so that synthetic clicks work. They may have detail == 0.
+    return event->type() == EventTypeNames::click && (!event->isMouseEvent() || (toMouseEvent(event)->button() != RightButton && toMouseEvent(event)->detail() <= 1));
 }
 
 bool HTMLAnchorElement::willRespondToMouseClickEvents()
