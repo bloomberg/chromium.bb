@@ -105,8 +105,7 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // Callback for |video_frame_stream_| to deliver decoded video frames and
   // report video decoding status.
-  void FrameReady(uint32_t sequence_token,
-                  VideoFrameStream::Status status,
+  void FrameReady(VideoFrameStream::Status status,
                   const scoped_refptr<VideoFrame>& frame);
 
   // Helper method for enqueueing a frame to |alogorithm_|.
@@ -239,12 +238,6 @@ class MEDIA_EXPORT VideoRendererImpl
   };
   State state_;
 
-  // An integer that represents how many times the video frame stream has been
-  // reset. This is useful when doing video frame copies asynchronously since we
-  // want to discard video frames that might be received after the stream has
-  // been reset.
-  uint32_t sequence_token_;
-
   // Keep track of the outstanding read on the VideoFrameStream. Flushing can
   // only complete once the read has completed.
   bool pending_read_;
@@ -293,6 +286,12 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<VideoRendererImpl> weak_factory_;
+
+  // Weak factory used to invalidate certain queued callbacks on reset().
+  // This is useful when doing video frame copies asynchronously since we
+  // want to discard video frames that might be received after the stream has
+  // been reset.
+  base::WeakPtrFactory<VideoRendererImpl> frame_callback_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoRendererImpl);
 };

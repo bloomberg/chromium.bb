@@ -1062,7 +1062,7 @@ TEST_F(VideoRendererImplAsyncAddFrameReadyTest, InitializeAndStartPlayingFrom) {
   Destroy();
 }
 
-TEST_F(VideoRendererImplAsyncAddFrameReadyTest, SequenceTokenDiscardOneFrame) {
+TEST_F(VideoRendererImplAsyncAddFrameReadyTest, WeakFactoryDiscardsOneFrame) {
   Initialize();
   QueueFrames("0 10 20 30");
   StartPlayingFrom(0);
