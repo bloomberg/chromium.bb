@@ -8,7 +8,8 @@
  *            results: ?Array<!HistoryEntry>,
  *            info: ?HistoryQuery,
  *            range: HistoryRange,
- *            groupedOffset: number}}
+ *            groupedOffset: number,
+ *            sessionList: ?Array<!ForeignSession>}}
  */
 var QueryState;
 
@@ -17,9 +18,7 @@ Polymer({
 
   properties: {
     // The id of the currently selected page.
-    selectedPage_: {
-      type: String,
-    },
+    selectedPage_: String,
 
     // Whether domain-grouped history is enabled.
     grouped_: Boolean,
@@ -45,6 +44,7 @@ Polymer({
           range: HistoryRange.ALL_TIME,
           // TODO(calamity): Make history toolbar buttons change the offset.
           groupedOffset: 0,
+          sessionList: null,
         };
       }
     },
@@ -201,12 +201,7 @@ Polymer({
     if (!isTabSyncEnabled)
       return;
 
-    // TODO(calamity): Add a 'no synced devices' message when sessions are
-    // empty.
-    var syncedDeviceElem = this.$['history-synced-device-manager'];
-    var syncedDeviceManager =
-        /** @type {HistorySyncedDeviceManagerElement} */(syncedDeviceElem);
-    syncedDeviceManager.setSyncedHistory(sessionList);
+    this.set('queryState_.sessionList', sessionList);
   },
 
   getSelectedPage: function(selectedPage, range) {
@@ -215,4 +210,8 @@ Polymer({
 
     return selectedPage;
   },
+
+  syncedTabsSelected_(selectedPage) {
+    return selectedPage == 'history-synced-device-manager';
+  }
 });

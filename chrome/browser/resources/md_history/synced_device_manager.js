@@ -16,10 +16,18 @@ Polymer({
 
   properties: {
     /**
+     * @type {?Array<!ForeignSession>}
+     */
+    sessionList: {
+      type: Array,
+      observer: 'setSyncedHistory',
+    },
+
+    /**
      * An array of synced devices with synced tab data.
      * @type {!Array<!ForeignDeviceInternal>}
      */
-    syncedDevices: {
+    syncedDevices_: {
       type: Array,
       value: function() { return []; }
     }
@@ -57,20 +65,23 @@ Polymer({
    * @param {!Array<!ForeignSession>} sessionList
    */
   setSyncedHistory: function(sessionList) {
+    if (!sessionList)
+      return;
+
     // First, update any existing devices that have changed.
-    var updateCount = Math.min(sessionList.length, this.syncedDevices.length);
+    var updateCount = Math.min(sessionList.length, this.syncedDevices_.length);
     for (var i = 0; i < updateCount; i++) {
-      var oldDevice = this.syncedDevices[i];
+      var oldDevice = this.syncedDevices_[i];
       if (oldDevice.tag != sessionList[i].tag ||
           oldDevice.timestamp != sessionList[i].timestamp) {
         this.splice(
-            'syncedDevices', i, 1, this.createInternalDevice_(sessionList[i]));
+            'syncedDevices_', i, 1, this.createInternalDevice_(sessionList[i]));
       }
     }
 
     // Then, append any new devices.
     for (var i = updateCount; i < sessionList.length; i++) {
-      this.push('syncedDevices', this.createInternalDevice_(sessionList[i]));
+      this.push('syncedDevices_', this.createInternalDevice_(sessionList[i]));
     }
   }
 });

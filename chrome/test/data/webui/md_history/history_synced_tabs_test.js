@@ -30,12 +30,18 @@ cr.define('md_history.history_synced_tabs_test', function() {
     suite('synced-tabs', function() {
       var app;
       var element;
-      var sidebarElement;
 
-      suiteSetup(function() {
+      suiteSetup(function(done) {
         app = $('history-app');
-        element = app.$['history-synced-device-manager'];
-        sidebarElement = app.$['history-side-bar'];
+        // Not rendered until selected.
+        assertEquals(null, app.$$('#history-synced-device-manager'));
+
+        app.selectedPage_ = 'history-synced-device-manager';
+        flush(function() {
+          element = app.$$('#history-synced-device-manager');
+          assertTrue(!!element);
+          done();
+        });
       });
 
       test('single card, single window', function(done) {

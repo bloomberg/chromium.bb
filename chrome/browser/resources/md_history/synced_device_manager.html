@@ -15,7 +15,7 @@
         padding-top: var(--first-card-padding-top);
       }
     </style>
-    <template is="dom-repeat" items="[[syncedDevices]]" as="syncedDevice">
+    <template is="dom-repeat" items="[[syncedDevices_]]" as="syncedDevice">
       <history-synced-device-card device="[[syncedDevice.device]]"
           last-update-time="[[syncedDevice.lastUpdateTime]]"
           tabs="[[syncedDevice.tabs]]">
