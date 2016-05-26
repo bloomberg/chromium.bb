@@ -88,6 +88,10 @@
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/ui/browser_dialogs.h"
+#endif
+
 #if defined(ENABLE_APP_LIST)
 #include "ui/app_list/app_list_switches.h"
 #endif
@@ -1576,9 +1580,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_APP_WINDOW_CYCLING_DESCRIPTION, kOsMac,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppWindowCycling,
                                switches::kDisableAppWindowCycling)},
-    {"mac-views-dialogs", IDS_FLAGS_MAC_VIEWS_DIALOGS_NAME,
-     IDS_FLAGS_MAC_VIEWS_DIALOGS_DESCRIPTION, kOsMac,
-     SINGLE_VALUE_TYPE(switches::kEnableMacViewsDialogs)},
+    {"mac-views-native-dialogs", IDS_FLAGS_MAC_VIEWS_NATIVE_DIALOGS_NAME,
+     IDS_FLAGS_MAC_VIEWS_NATIVE_DIALOGS_DESCRIPTION, kOsMac,
+     FEATURE_VALUE_TYPE(chrome::kMacViewsNativeDialogs)},
+    {"mac-views-webui-dialogs", IDS_FLAGS_MAC_VIEWS_WEBUI_DIALOGS_NAME,
+     IDS_FLAGS_MAC_VIEWS_WEBUI_DIALOGS_DESCRIPTION, kOsMac,
+     FEATURE_VALUE_TYPE(chrome::kMacViewsWebUIDialogs)},
 #endif
 #if defined(ENABLE_WEBVR)
     {"enable-webvr", IDS_FLAGS_WEBVR_NAME, IDS_FLAGS_WEBVR_DESCRIPTION, kOsAll,

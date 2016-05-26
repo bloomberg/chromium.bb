@@ -1168,10 +1168,6 @@ const char kEnableHostedAppsInWindows[] = "enable-hosted-apps-in-windows";
 const char kEnableMacViewsNativeAppWindows[] =
     "enable-mac-views-native-app-windows";
 
-// Causes Chrome to use an equivalent toolkit-views version of a browser dialog
-// when available, rather than a Cocoa one.
-const char kEnableMacViewsDialogs[] = "enable-mac-views-dialogs";
-
 // Enables Translate experimental new UX which replaces the infobar.
 const char kEnableTranslateNewUX[] = "enable-translate-new-ux";
 

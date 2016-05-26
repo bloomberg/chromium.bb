@@ -346,7 +346,6 @@ extern const char kEnableFullscreenLowPowerMode[];
 extern const char kEnableFullscreenTabDetaching[];
 extern const char kEnableHostedAppsInWindows[];
 extern const char kEnableMacViewsNativeAppWindows[];
-extern const char kEnableMacViewsDialogs[];
 extern const char kEnableTranslateNewUX[];
 extern const char kMetricsClientID[];
 extern const char kRelauncherProcess[];
