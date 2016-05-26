@@ -374,7 +374,6 @@ class SpdyFramerTestUtil {
 
    private:
     SpdyMajorVersion version_;
-    TestHeadersHandler* headers_handler_;
     std::unique_ptr<char[]> buffer_;
     size_t size_;
     bool finished_;

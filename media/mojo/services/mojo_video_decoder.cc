@@ -24,6 +24,7 @@ MojoVideoDecoder::MojoVideoDecoder(
       gpu_factories_(gpu_factories),
       remote_decoder_info_(remote_decoder.PassInterface()),
       binding_(this) {
+  (void)gpu_factories_;
   DVLOG(1) << __FUNCTION__;
 }
 

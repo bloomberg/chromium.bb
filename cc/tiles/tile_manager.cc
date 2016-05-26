@@ -57,8 +57,6 @@ class RasterTaskImpl : public TileTask {
                  uint64_t source_prepare_tiles_id,
                  Tile* tile,
                  uint64_t new_content_id,
-                 uint64_t previous_content_id,
-                 uint64_t resource_content_id,
                  int source_frame_number,
                  std::unique_ptr<RasterBuffer> raster_buffer,
                  TileTask::Vector* dependencies,
@@ -76,8 +74,6 @@ class RasterTaskImpl : public TileTask {
         source_prepare_tiles_id_(source_prepare_tiles_id),
         tile_(tile),
         new_content_id_(new_content_id),
-        previous_content_id_(previous_content_id),
-        resource_content_id_(resource_content_id),
         source_frame_number_(source_frame_number),
         raster_buffer_(std::move(raster_buffer)) {}
 
@@ -123,8 +119,6 @@ class RasterTaskImpl : public TileTask {
   uint64_t source_prepare_tiles_id_;
   Tile* tile_;
   uint64_t new_content_id_;
-  uint64_t previous_content_id_;
-  uint64_t resource_content_id_;
   int source_frame_number_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
 
@@ -946,8 +940,8 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       tile->invalidated_content_rect(), tile->contents_scale(),
       playback_settings, prioritized_tile.priority().resolution,
       tile->layer_id(), prepare_tiles_count_, tile, tile->id(),
-      tile->invalidated_id(), resource_content_id, tile->source_frame_number(),
-      std::move(raster_buffer), &decode_tasks, supports_concurrent_execution));
+      tile->source_frame_number(), std::move(raster_buffer), &decode_tasks,
+      supports_concurrent_execution));
 }
 
 void TileManager::OnRasterTaskCompleted(
