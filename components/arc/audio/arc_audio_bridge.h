@@ -17,12 +17,21 @@ namespace arc {
 
 class ArcAudioBridge : public ArcService,
                        public ArcBridgeService::Observer,
+                       public mojom::AudioHost,
                        public chromeos::CrasAudioHandler::AudioObserver {
  public:
   explicit ArcAudioBridge(ArcBridgeService* bridge_service);
   ~ArcAudioBridge() override;
 
+  // ArcBridgeService::Observer overrides.
+  void OnAudioInstanceReady() override;
+
+  // mojom::AudioHost overrides.
+  void ShowVolumeControls() override;
+
  private:
+  mojo::Binding<mojom::AudioHost> binding_;
+
   chromeos::CrasAudioHandler* cras_audio_handler_ = nullptr;
 
   // chromeos::CrasAudioHandler::AudioObserver overrides.

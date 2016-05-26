@@ -4,13 +4,15 @@
 
 #include "components/arc/audio/arc_audio_bridge.h"
 
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "base/logging.h"
 #include "chromeos/audio/audio_device.h"
 
 namespace arc {
 
 ArcAudioBridge::ArcAudioBridge(ArcBridgeService* bridge_service)
-    : ArcService(bridge_service) {
+    : ArcService(bridge_service), binding_(this) {
   arc_bridge_service()->AddObserver(this);
   if (chromeos::CrasAudioHandler::IsInitialized()) {
     cras_audio_handler_ = chromeos::CrasAudioHandler::Get();
@@ -23,6 +25,27 @@ ArcAudioBridge::~ArcAudioBridge() {
   if (cras_audio_handler_ && chromeos::CrasAudioHandler::IsInitialized()) {
     cras_audio_handler_->RemoveAudioObserver(this);
   }
+}
+
+void ArcAudioBridge::OnAudioInstanceReady() {
+  mojom::AudioInstance* audio_instance =
+      arc_bridge_service()->audio_instance();
+  if (!audio_instance) {
+    LOG(ERROR) << "OnAudioInstanceReady called, "
+               << "but no audio instance found";
+    return;
+  }
+  if (arc_bridge_service()->audio_version() < 1) {
+    LOG(WARNING) << "Audio instance is too old and does not support Init()";
+    return;
+  }
+  audio_instance->Init(binding_.CreateInterfacePtrAndBind());
+}
+
+void ArcAudioBridge::ShowVolumeControls() {
+  VLOG(2) << "ArcAudioBridge::ShowVolumeControls";
+  ash::Shell::GetInstance()->system_tray_notifier()->
+      NotifyAudioOutputVolumeChanged(0, 0);
 }
 
 void ArcAudioBridge::OnAudioNodesChanged() {

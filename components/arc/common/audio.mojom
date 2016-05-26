@@ -11,9 +11,17 @@ enum AudioSwitch {
   SW_MICROPHONE_INSERT = 0x04
 };
 
+interface AudioHost {
+  // Tells the host to show the volume controls.
+  ShowVolumeControls();
+};
+
 interface AudioInstance {
+  // Establishes full-duplex communication with the host.
+  [MinVersion=1] Init@1(AudioHost host);
+
   // Notify plug states of headphone, microphone, etc.  Each switch state is
   // represented by the corresponding bit, if the bit is set then the switch
   // is plugged/inserted.
-  NotifySwitchState(uint32 state);
+  NotifySwitchState@0(uint32 state);
 };
