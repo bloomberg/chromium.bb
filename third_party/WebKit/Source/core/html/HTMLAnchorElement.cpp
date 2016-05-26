@@ -362,6 +362,8 @@ void HTMLAnchorElement::handleClick(Event* event)
         }
         if (hasRel(RelationNoOpener))
             frameRequest.setShouldSetOpener(NeverSetOpener);
+        // TODO(japhet): Link clicks can be emulated via JS without a user gesture.
+        // Why doesn't this go through NavigationScheduler?
         frame->loader().load(frameRequest);
     }
 }

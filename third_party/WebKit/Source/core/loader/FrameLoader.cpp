@@ -1421,7 +1421,10 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
         return;
 
     m_frame->document()->cancelParsing();
-    detachDocumentLoader(m_provisionalDocumentLoader);
+    if (m_provisionalDocumentLoader) {
+        FrameNavigationDisabler navigationDisabler(*m_frame);
+        detachDocumentLoader(m_provisionalDocumentLoader);
+    }
 
     // beforeunload fired above, and detaching a DocumentLoader can fire
     // events, which can detach this frame.
