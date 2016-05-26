@@ -134,9 +134,16 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   bool RunPlatformAppTestWithArg(
       const std::string& extension_name, const char* custom_arg);
 
+
   // Similar to RunPlatformAppTest, with custom |flags| (as defined in the Flags
   // enum). The kFlagLaunchPlatformApp flag is automatically added.
   bool RunPlatformAppTestWithFlags(const std::string& extension_name,
+                                   int flags);
+
+  // Similar to RunPlatformAppTestWithFlags above, except it has an additional
+  // string argument |customArg| to the test config object.
+  bool RunPlatformAppTestWithFlags(const std::string& extension_name,
+                                   const char* custom_arg,
                                    int flags);
 
   // Start the test server, and store details of its state.  Those details

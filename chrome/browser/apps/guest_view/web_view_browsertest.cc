@@ -1653,16 +1653,11 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, PRE_StoragePersistence) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // We don't care where the main browser is on this test.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  // Start the app for the pre-test.
-  LoadAndLaunchPlatformApp("web_view/storage_persistence",
-                           "WebViewTest.LAUNCHED");
-
-  // Send a message to run the PRE_StoragePersistence part of the test.
-  SendMessageToEmbedder("run-pre-test");
-
-  ExtensionTestMessageListener test_passed_listener("WebViewTest.PASSED",
-                                                    false);
-  EXPECT_TRUE(test_passed_listener.WaitUntilSatisfied());
+  // Since this test is PRE_ step, we need file access.
+  ASSERT_TRUE(RunPlatformAppTestWithFlags(
+      "platform_apps/web_view/storage_persistence", "PRE_StoragePersistence",
+      kFlagEnableFileAccess))
+      << message_;
 }
 
 // This is the post-reset portion of the StoragePersistence test.  See
@@ -1671,16 +1666,13 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, StoragePersistence) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   // We don't care where the main browser is on this test.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-  // Start the app for the pre-test.
-  LoadAndLaunchPlatformApp("web_view/storage_persistence",
-                           "WebViewTest.LAUNCHED");
 
-  // Send a message to run the StoragePersistence part of the test.
-  SendMessageToEmbedder("run-test");
-
-  ExtensionTestMessageListener test_passed_listener("WebViewTest.PASSED",
-                                                    false);
-  EXPECT_TRUE(test_passed_listener.WaitUntilSatisfied());
+  // Since this test has PRE_ step, we need file access (possibly because we
+  // need to access previous profile).
+  ASSERT_TRUE(RunPlatformAppTestWithFlags(
+      "platform_apps/web_view/storage_persistence", "StoragePersistence",
+      kFlagEnableFileAccess))
+      << message_;
 }
 
 // This tests DOM storage isolation for packaged apps with webview tags. It

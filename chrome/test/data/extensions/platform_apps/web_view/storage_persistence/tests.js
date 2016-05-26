@@ -153,14 +153,6 @@ function createStoragePersistenceTests(webviews, url) {
   return linkTestsAndReturnFirst(tests);
 }
 
-function onSuccess() {
-  chrome.test.sendMessage('WebViewTest.PASSED');
-}
-
-function onFailure() {
-  chrome.test.sendMessage('WebViewTest.FAILURE');
-}
-
 // Handles the |consolemessage| event for a webview.
 function onConsoleMessage(e) {
   console.log(this.id + ':' + e.message);
@@ -198,27 +190,10 @@ function runTest(port, testName) {
   var test = (testName === 'PRE_StoragePersistence') ?
       createPreStoragePersistenceTests(webviews, url) :
       createStoragePersistenceTests(webviews, url);
-  test.run(onSuccess, onFailure);
+  test.run(chrome.test.succeed, chrome.test.fail);
 }
 
-function run(testName) {
-  chrome.test.getConfig(function(config) {
-    runTest(config.testServer.port, testName);
-  });
-}
-
-window.onAppCommand = function(command) {
-  switch(command) {
-    case 'run-pre-test':
-      run('PRE_StoragePersistence');
-      break;
-    case 'run-test':
-      run('StoragePersistence');
-      break;
-    default:
-      onFailure();
-  }
-}
-
-// Send a message to C++ side to announce test launched.
-chrome.test.sendMessage('WebViewTest.LAUNCHED');
+chrome.test.getConfig(function(config) {
+  var testName = config.customArg;
+  runTest(config.testServer.port, testName);
+});
