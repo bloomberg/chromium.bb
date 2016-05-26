@@ -6,6 +6,7 @@
 #define BASE_TEMPLATE_UTIL_H_
 
 #include <stddef.h>
+#include <iosfwd>
 #include <type_traits>
 #include <utility>
 
@@ -57,6 +58,15 @@ struct IsAssignableImpl
 template <class Lvalue, class Rvalue>
 struct IsAssignableImpl<Lvalue, Rvalue, true> : public std::false_type {};
 
+// Uses expression SFINAE to detect whether using operator<< would work.
+template <typename T, typename = void>
+struct SupportsOstreamOperator : std::false_type {};
+template <typename T>
+struct SupportsOstreamOperator<T,
+                               decltype(void(std::declval<std::ostream&>()
+                                             << std::declval<T>()))>
+    : std::true_type {};
+
 }  // namespace internal
 
 // TODO(crbug.com/554293): Remove this when all platforms have this in the std
@@ -81,6 +91,26 @@ struct is_move_assignable
     : public is_assignable<typename std::add_lvalue_reference<T>::type,
                            const typename std::add_rvalue_reference<T>::type> {
 };
+
+// underlying_type produces the integer type backing an enum type.
+// This hacks around libstdc++ 4.6 missing std::underlying_type, while we need
+// to support it.
+// TODO(crbug.com/554293): Remove this when all platforms have this in the std
+// namespace.
+#define CR_GLIBCXX_4_7_0 20120322
+#define CR_GLIBCXX_4_5_4 20120702
+#define CR_GLIBCXX_4_6_4 20121127
+#if defined(__GLIBCXX__) &&                                               \
+    (__GLIBCXX__ < CR_GLIBCXX_4_7_0 || __GLIBCXX__ == CR_GLIBCXX_4_5_4 || \
+     __GLIBCXX__ == CR_GLIBCXX_4_6_4)
+template <typename T>
+struct underlying_type {
+  using type = __underlying_type(T);
+};
+#else
+template <typename T>
+using underlying_type = std::underlying_type<T>;
+#endif
 
 }  // namespace base
 

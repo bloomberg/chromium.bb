@@ -251,6 +251,13 @@ TEST_F(LoggingTest, Dcheck) {
   DCHECK_NE(p_not_null, nullptr);
   DCHECK_NE(nullptr, p_not_null);
   EXPECT_EQ(0, log_sink_call_count);
+
+  // Test DCHECK on a scoped enum.
+  enum class Animal { DOG, CAT };
+  DCHECK_EQ(Animal::DOG, Animal::DOG);
+  EXPECT_EQ(0, log_sink_call_count);
+  DCHECK_EQ(Animal::DOG, Animal::CAT);
+  EXPECT_EQ(DCHECK_IS_ON() ? 1 : 0, log_sink_call_count);
 }
 
 TEST_F(LoggingTest, DcheckReleaseBehavior) {
