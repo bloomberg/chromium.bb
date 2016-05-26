@@ -125,6 +125,7 @@ std::unique_ptr<LayerImpl> LayerImpl::RemoveChildForTesting(LayerImpl* child) {
   auto it = std::find(children_.begin(), children_.end(), child);
   if (it != children_.end())
     children_.erase(it);
+  layer_tree_impl()->property_trees()->RemoveIdFromIdToIndexMaps(child->id());
   return layer_tree_impl_->RemoveLayer(child->id());
 }
 
@@ -607,24 +608,23 @@ int LayerImpl::num_copy_requests_in_target_subtree() {
 }
 
 void LayerImpl::UpdatePropertyTreeTransform() {
-  if (transform_tree_index_ != -1) {
-    TransformTree& transform_tree =
-        layer_tree_impl()->property_trees()->transform_tree;
-    TransformNode* node = transform_tree.Node(transform_tree_index_);
+  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
+  if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
+                                       id())) {
     // A LayerImpl's own current state is insufficient for determining whether
     // it owns a TransformNode, since this depends on the state of the
     // corresponding Layer at the time of the last commit. For example, a
     // transform animation might have been in progress at the time the last
     // commit started, but might have finished since then on the compositor
     // thread.
-    if (node->owner_id != id())
-      return;
+    TransformNode* node = property_trees->transform_tree.Node(
+        property_trees->transform_id_to_index_map[id()]);
     if (node->data.local != transform_) {
       node->data.local = transform_;
       node->data.needs_local_transform_update = true;
       node->data.transform_changed = true;
-      layer_tree_impl()->property_trees()->changed = true;
-      transform_tree.set_needs_update(true);
+      property_trees->changed = true;
+      property_trees->transform_tree.set_needs_update(true);
       // TODO(ajuma): The current criteria for creating clip nodes means that
       // property trees may need to be rebuilt when the new transform isn't
       // axis-aligned wrt the old transform (see Layer::SetTransform). Since
@@ -636,10 +636,11 @@ void LayerImpl::UpdatePropertyTreeTransform() {
 }
 
 void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
-  if (transform_tree_index_ != -1) {
-    TransformTree& transform_tree =
-        layer_tree_impl()->property_trees()->transform_tree;
-    TransformNode* node = transform_tree.Node(transform_tree_index_);
+  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
+  if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
+                                       id())) {
+    TransformNode* node = property_trees->transform_tree.Node(
+        property_trees->transform_id_to_index_map[id()]);
     // A LayerImpl's own current state is insufficient for determining whether
     // it owns a TransformNode, since this depends on the state of the
     // corresponding Layer at the time of the last commit. For example, if
@@ -649,8 +650,6 @@ void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
     // activation (and, in that case, the LayerImpl will no longer own a
     // TransformNode, unless it has non-animation-related reasons for owning a
     // node).
-    if (node->owner_id != id())
-      return;
     if (node->data.has_potential_animation != is_animated) {
       node->data.has_potential_animation = is_animated;
       if (is_animated) {
@@ -672,29 +671,26 @@ void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
         node->data.has_only_translation_animations = true;
       }
 
-      transform_tree.set_needs_update(true);
+      property_trees->transform_tree.set_needs_update(true);
       layer_tree_impl()->set_needs_update_draw_properties();
     }
   }
 }
 
 void LayerImpl::UpdatePropertyTreeOpacity() {
-  if (effect_tree_index_ != -1) {
-    EffectTree& effect_tree = layer_tree_impl()->property_trees()->effect_tree;
-    if (effect_tree_index_ >= static_cast<int>(effect_tree.size()))
-      return;
-    EffectNode* node = effect_tree.Node(effect_tree_index_);
+  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
+  if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id())) {
     // A LayerImpl's own current state is insufficient for determining whether
     // it owns an OpacityNode, since this depends on the state of the
     // corresponding Layer at the time of the last commit. For example, an
     // opacity animation might have been in progress at the time the last commit
     // started, but might have finished since then on the compositor thread.
-    if (node->owner_id != id() || node->data.opacity == opacity_)
-      return;
+    EffectNode* node = property_trees->effect_tree.Node(
+        property_trees->effect_id_to_index_map[id()]);
     node->data.opacity = opacity_;
     node->data.effect_changed = true;
-    layer_tree_impl()->property_trees()->changed = true;
-    effect_tree.set_needs_update(true);
+    property_trees->changed = true;
+    property_trees->effect_tree.set_needs_update(true);
   }
 }
 
@@ -720,7 +716,8 @@ void LayerImpl::OnFilterAnimated(const FilterOperations& filters) {
     layer_tree_impl()->set_needs_update_draw_properties();
     EffectTree& effect_tree = layer_tree_impl()->property_trees()->effect_tree;
     EffectNode* node = effect_tree.Node(effect_tree_index_);
-    DCHECK_EQ(node->owner_id, id());
+    DCHECK(layer_tree_impl()->property_trees()->IsInIdToIndexMap(
+        PropertyTrees::TreeType::EFFECT, id()));
     node->data.effect_changed = true;
     layer_tree_impl()->property_trees()->changed = true;
     effect_tree.set_needs_update(true);
@@ -761,14 +758,13 @@ void LayerImpl::OnScrollOffsetAnimated(const gfx::ScrollOffset& scroll_offset) {
 void LayerImpl::OnTransformIsCurrentlyAnimatingChanged(
     bool is_currently_animating) {
   DCHECK(layer_tree_impl_);
-  TransformTree& transform_tree =
-      layer_tree_impl_->property_trees()->transform_tree;
-  TransformNode* node = transform_tree.Node(transform_tree_index());
-  if (!node)
+  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
+  if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
+                                        id()))
     return;
-
-  if (node->owner_id == id())
-    node->data.is_currently_animating = is_currently_animating;
+  TransformNode* node = property_trees->transform_tree.Node(
+      property_trees->transform_id_to_index_map[id()]);
+  node->data.is_currently_animating = is_currently_animating;
 }
 
 void LayerImpl::OnTransformIsPotentiallyAnimatingChanged(
@@ -780,22 +776,25 @@ void LayerImpl::OnTransformIsPotentiallyAnimatingChanged(
 void LayerImpl::OnOpacityIsCurrentlyAnimatingChanged(
     bool is_currently_animating) {
   DCHECK(layer_tree_impl_);
-  EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
-  EffectNode* node = effect_tree.Node(effect_tree_index());
+  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
+  if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
+    return;
+  EffectNode* node = property_trees->effect_tree.Node(
+      property_trees->effect_id_to_index_map[id()]);
 
-  if (node->owner_id == id())
-    node->data.is_currently_animating_opacity = is_currently_animating;
+  node->data.is_currently_animating_opacity = is_currently_animating;
 }
 
 void LayerImpl::OnOpacityIsPotentiallyAnimatingChanged(
     bool has_potential_animation) {
   DCHECK(layer_tree_impl_);
-  EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
-  EffectNode* node = effect_tree.Node(effect_tree_index());
-  if (node->owner_id == id()) {
-    node->data.has_potential_opacity_animation = has_potential_animation;
-    effect_tree.set_needs_update(true);
-  }
+  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
+  if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
+    return;
+  EffectNode* node = property_trees->effect_tree.Node(
+      property_trees->effect_id_to_index_map[id()]);
+  node->data.has_potential_opacity_animation = has_potential_animation;
+  property_trees->effect_tree.set_needs_update(true);
 }
 
 bool LayerImpl::IsActive() const {
@@ -845,7 +844,8 @@ void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
     // If layer is clipping, then update the clip node using the new bounds.
     ClipNode* clip_node = property_trees->clip_tree.Node(clip_tree_index());
     if (clip_node) {
-      DCHECK(id() == clip_node->owner_id);
+      DCHECK(property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::CLIP,
+                                              id()));
       clip_node->data.clip = gfx::RectF(
           gfx::PointF() + offset_to_transform_parent(), gfx::SizeF(bounds()));
       property_trees->clip_tree.set_needs_update(true);
@@ -1131,16 +1131,14 @@ gfx::ScrollOffset LayerImpl::CurrentScrollOffset() const {
 void LayerImpl::UpdatePropertyTreeScrollOffset() {
   // TODO(enne): in the future, scrolling should update the scroll tree
   // directly instead of going through layers.
-  if (transform_tree_index_ != -1) {
-    TransformTree& transform_tree =
-        layer_tree_impl()->property_trees()->transform_tree;
-    TransformNode* node = transform_tree.Node(transform_tree_index_);
-    gfx::ScrollOffset current_offset = CurrentScrollOffset();
-    if (node->data.scroll_offset != current_offset) {
-      node->data.scroll_offset = current_offset;
-      node->data.needs_local_transform_update = true;
-      transform_tree.set_needs_update(true);
-    }
+  TransformTree& transform_tree =
+      layer_tree_impl()->property_trees()->transform_tree;
+  TransformNode* node = transform_tree.Node(transform_tree_index_);
+  gfx::ScrollOffset current_offset = CurrentScrollOffset();
+  if (node->data.scroll_offset != current_offset) {
+    node->data.scroll_offset = current_offset;
+    node->data.needs_local_transform_update = true;
+    transform_tree.set_needs_update(true);
   }
 }
 
