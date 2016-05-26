@@ -17,6 +17,7 @@
 #include "modules/canvas2d/CanvasPattern.h"
 #include "modules/canvas2d/CanvasStyle.h"
 #include "modules/canvas2d/Path2D.h"
+#include "platform/Histogram.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
@@ -988,6 +989,62 @@ void BaseRenderingContext2D::drawImage(ExecutionContext* executionContext, Canva
     if (!drawingCanvas())
         return;
 
+    // TODO(xidachen): After collecting some data, come back and prune off
+    // the ones that is not needed.
+    Optional<ScopedUsHistogramTimer> timer;
+    if (imageBuffer() && imageBuffer()->isAccelerated()) {
+        if (imageSource->isVideoElement()) {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterVideoGPU, new CustomCountHistogram("Blink.Canvas.DrawImage.Video.GPU", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterVideoGPU);
+        } else if (imageSource->isCanvasElement()) {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterCanvasGPU, new CustomCountHistogram("Blink.Canvas.DrawImage.Canvas.GPU", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterCanvasGPU);
+        } else if (imageSource->isSVGSource()) {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterSVGGPU, new CustomCountHistogram("Blink.Canvas.DrawImage.SVG.GPU", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterSVGGPU);
+        } else if (imageSource->isImageBitmap()) {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterImageBitmapGPU, new CustomCountHistogram("Blink.Canvas.DrawImage.ImageBitmap.GPU", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterImageBitmapGPU);
+        } else {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterOthersGPU, new CustomCountHistogram("Blink.Canvas.DrawImage.Others.GPU", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterOthersGPU);
+        }
+    } else if (imageBuffer() && imageBuffer()->isRecording()) {
+        if (imageSource->isVideoElement()) {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterVideoDisplayList, new CustomCountHistogram("Blink.Canvas.DrawImage.Video.DisplayList", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterVideoDisplayList);
+        } else if (imageSource->isCanvasElement()) {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterCanvasDisplayList, new CustomCountHistogram("Blink.Canvas.DrawImage.Canvas.DisplayList", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterCanvasDisplayList);
+        } else if (imageSource->isSVGSource()) {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterSVGDisplayList, new CustomCountHistogram("Blink.Canvas.DrawImage.SVG.DisplayList", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterSVGDisplayList);
+        } else if (imageSource->isImageBitmap()) {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterImageBitmapDisplayList, new CustomCountHistogram("Blink.Canvas.DrawImage.ImageBitmap.DisplayList", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterImageBitmapDisplayList);
+        } else {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterOthersDisplayList, new CustomCountHistogram("Blink.Canvas.DrawImage.Others.DisplayList", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterOthersDisplayList);
+        }
+    } else {
+        if (imageSource->isVideoElement()) {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterVideoCPU, new CustomCountHistogram("Blink.Canvas.DrawImage.Video.CPU", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterVideoCPU);
+        } else if (imageSource->isCanvasElement()) {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterCanvasCPU, new CustomCountHistogram("Blink.Canvas.DrawImage.Canvas.CPU", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterCanvasCPU);
+        } else if (imageSource->isSVGSource()) {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterSVGCPU, new CustomCountHistogram("Blink.Canvas.DrawImage.SVG.CPU", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterSVGCPU);
+        } else if (imageSource->isImageBitmap()) {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterImageBitmapCPU, new CustomCountHistogram("Blink.Canvas.DrawImage.ImageBitmap.CPU", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterImageBitmapCPU);
+        } else {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterOthersCPU, new CustomCountHistogram("Blink.Canvas.DrawImage.Others.CPU", 0, 10000000, 50));
+            timer.emplace(scopedUsCounterOthersCPU);
+        }
+    }
+
     RefPtr<Image> image;
     FloatSize defaultObjectSize(width(), height());
     SourceImageStatus sourceImageStatus = InvalidSourceImageStatus;
@@ -1190,6 +1247,18 @@ ImageData* BaseRenderingContext2D::createImageData(double sw, double sh, Excepti
 
 ImageData* BaseRenderingContext2D::getImageData(double sx, double sy, double sw, double sh, ExceptionState& exceptionState) const
 {
+    Optional<ScopedUsHistogramTimer> timer;
+    if (imageBuffer() && imageBuffer()->isAccelerated()) {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterGPU, new CustomCountHistogram("Blink.Canvas.GetImageData.GPU", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterGPU);
+    } else if (imageBuffer() && imageBuffer()->isRecording()) {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterDisplayList, new CustomCountHistogram("Blink.Canvas.GetImageData.DisplayList", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterDisplayList);
+    } else {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterCPU, new CustomCountHistogram("Blink.Canvas.GetImageData.CPU", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterCPU);
+    }
+
     if (!originClean())
         exceptionState.throwSecurityError("The canvas has been tainted by cross-origin data.");
     else if (!sw || !sh)
@@ -1243,6 +1312,18 @@ void BaseRenderingContext2D::putImageData(ImageData* data, double dx, double dy,
 
 void BaseRenderingContext2D::putImageData(ImageData* data, double dx, double dy, double dirtyX, double dirtyY, double dirtyWidth, double dirtyHeight, ExceptionState& exceptionState)
 {
+    Optional<ScopedUsHistogramTimer> timer;
+    if (imageBuffer() && imageBuffer()->isAccelerated()) {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterGPU, new CustomCountHistogram("Blink.Canvas.PutImageData.GPU", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterGPU);
+    } else if (imageBuffer() && imageBuffer()->isRecording()) {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterDisplayList, new CustomCountHistogram("Blink.Canvas.PutImageData.DisplayList", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterDisplayList);
+    } else {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterCPU, new CustomCountHistogram("Blink.Canvas.PutImageData.CPU", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterCPU);
+    }
+
     if (data->data()->bufferBase()->isNeutered()) {
         exceptionState.throwDOMException(InvalidStateError, "The source data has been neutered.");
         return;

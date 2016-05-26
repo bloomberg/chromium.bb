@@ -3445,6 +3445,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent initializing WindowProxy during a page loading.</summary>
 </histogram>
 
+<histogram name="Blink.Canvas.DrawImage" units="microseconds">
+  <owner>junov@chromium.org</owner>
+  <summary>Time spent on 2D canvas drawImage API call.</summary>
+</histogram>
+
+<histogram name="Blink.Canvas.GetImageData" units="microseconds">
+  <owner>junov@chromium.org</owner>
+  <summary>Time spent on 2D canvas getImageData API call.</summary>
+</histogram>
+
+<histogram name="Blink.Canvas.PutImageData" units="microseconds">
+  <owner>junov@chromium.org</owner>
+  <summary>Time spent on 2D canvas putImageData API call.</summary>
+</histogram>
+
+<histogram name="Blink.Canvas.ToDataURL" units="microseconds">
+  <owner>junov@chromium.org</owner>
+  <summary>Time spent on 2D canvas toDataURL API call.</summary>
+</histogram>
+
 <histogram name="Blink.Compositing.UpdateTime" units="microseconds">
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -91253,6 +91273,40 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="WebRTC.Stun.BatchSuccessPercent.NonSymNAT"/>
   <affected-histogram name="WebRTC.Stun.BatchSuccessPercent.SymNAT"/>
   <affected-histogram name="WebRTC.Stun.BatchSuccessPercent.UnknownNAT"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="BlinkCanvasDrawImageType" separator=".">
+  <suffix name="Canvas"/>
+  <suffix name="ImageBitmap"/>
+  <suffix name="Others"/>
+  <suffix name="SVG"/>
+  <suffix name="Video"/>
+  <affected-histogram name="Blink.Canvas.DrawImage"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="BlinkCanvasDurationBySource" separator=".">
+  <suffix name="CPU"/>
+  <suffix name="DisplayList"/>
+  <suffix name="GPU"/>
+  <affected-histogram name="Blink.Canvas.DrawImage.Canvas"/>
+  <affected-histogram name="Blink.Canvas.DrawImage.ImageBitmap"/>
+  <affected-histogram name="Blink.Canvas.DrawImage.Others"/>
+  <affected-histogram name="Blink.Canvas.DrawImage.SVG"/>
+  <affected-histogram name="Blink.Canvas.DrawImage.Video"/>
+  <affected-histogram name="Blink.Canvas.GetImageData"/>
+  <affected-histogram name="Blink.Canvas.PutImageData"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="BlinkCanvasToDataURLTime" separator=".">
+  <suffix name="BMP"/>
+  <suffix name="GIF"/>
+  <suffix name="ICON"/>
+  <suffix name="JPEG"/>
+  <suffix name="PNG"/>
+  <suffix name="TIFF"/>
+  <suffix name="Unknown"/>
+  <suffix name="WEBP"/>
+  <affected-histogram name="Blink.Canvas.ToDataURL"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="BlinkGCReason">

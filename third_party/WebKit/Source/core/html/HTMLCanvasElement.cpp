@@ -612,6 +612,36 @@ String HTMLCanvasElement::toDataURL(const String& mimeType, const ScriptValue& q
         exceptionState.throwSecurityError("Tainted canvases may not be exported.");
         return String();
     }
+    Optional<ScopedUsHistogramTimer> timer;
+    String lowercaseMimeType = mimeType.lower();
+    if (mimeType.isNull())
+        lowercaseMimeType = DefaultMimeType;
+    if (lowercaseMimeType == "image/png") {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterPNG, new CustomCountHistogram("Blink.Canvas.ToDataURL.PNG", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterPNG);
+    } else if (lowercaseMimeType == "image/jpeg") {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterJPEG, new CustomCountHistogram("Blink.Canvas.ToDataURL.JPEG", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterJPEG);
+    } else if (lowercaseMimeType == "image/webp") {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterWEBP, new CustomCountHistogram("Blink.Canvas.ToDataURL.WEBP", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterWEBP);
+    } else if (lowercaseMimeType == "image/gif") {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterGIF, new CustomCountHistogram("Blink.Canvas.ToDataURL.GIF", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterGIF);
+    } else if (lowercaseMimeType == "image/bmp" || lowercaseMimeType == "image/x-windows-bmp") {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterBMP, new CustomCountHistogram("Blink.Canvas.ToDataURL.BMP", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterBMP);
+    } else if (lowercaseMimeType == "image/x-icon") {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterICON, new CustomCountHistogram("Blink.Canvas.ToDataURL.ICON", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterICON);
+    } else if (lowercaseMimeType == "image/tiff" || lowercaseMimeType == "image/x-tiff") {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterTIFF, new CustomCountHistogram("Blink.Canvas.ToDataURL.TIFF", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterTIFF);
+    } else {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, scopedUsCounterUnknown, new CustomCountHistogram("Blink.Canvas.ToDataURL.Unknown", 0, 10000000, 50));
+        timer.emplace(scopedUsCounterUnknown);
+    }
+
     double quality = UndefinedQualityValue;
     if (!qualityArgument.isEmpty()) {
         v8::Local<v8::Value> v8Value = qualityArgument.v8Value();
