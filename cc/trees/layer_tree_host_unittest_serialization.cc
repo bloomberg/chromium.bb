@@ -58,7 +58,8 @@ class LayerTreeHostSerializationTest : public testing::Test {
 
     std::unordered_set<Layer*> layers_that_should_push_properties_src =
         layer_tree_host_src_->LayersThatShouldPushProperties();
-    layer_tree_host_src_->ToProtobufForCommit(&proto);
+    std::vector<std::unique_ptr<SwapPromise>> swap_promises;
+    layer_tree_host_src_->ToProtobufForCommit(&proto, &swap_promises);
     layer_tree_host_dst_->FromProtobufForCommit(proto);
 
     EXPECT_EQ(layer_tree_host_src_->needs_full_tree_sync_,

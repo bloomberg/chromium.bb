@@ -403,7 +403,11 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Serializes the parts of this LayerTreeHost that is needed for a commit to a
   // protobuf message. Not all members are serialized as they are not helpful
   // for remote usage.
-  void ToProtobufForCommit(proto::LayerTreeHost* proto);
+  // The |swap_promise_list_| is transferred to the serializer in
+  // |swap_promises|.
+  void ToProtobufForCommit(
+      proto::LayerTreeHost* proto,
+      std::vector<std::unique_ptr<SwapPromise>>* swap_promises);
 
   // Deserializes the protobuf into this LayerTreeHost before a commit. The
   // expected input is a serialized remote LayerTreeHost. After deserializing

@@ -14,6 +14,7 @@
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/engine/feature/engine_render_widget_feature.h"
 #include "blimp/engine/feature/engine_settings_feature.h"
+#include "blimp/engine/session/page_load_tracker.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/connection_error_observer.h"
 #include "content/public/browser/invalidate_type.h"
@@ -72,7 +73,8 @@ class BlimpEngineSession
       public content::WebContentsDelegate,
       public content::WebContentsObserver,
       public ui::InputMethodObserver,
-      public EngineRenderWidgetFeature::RenderWidgetMessageDelegate {
+      public EngineRenderWidgetFeature::RenderWidgetMessageDelegate,
+      public PageLoadTrackerClient {
  public:
   using GetPortCallback = base::Callback<void(uint16_t)>;
 
@@ -146,8 +148,6 @@ class BlimpEngineSession
       const std::vector<uint8_t>& proto) override;
   void NavigationStateChanged(content::WebContents* source,
                               content::InvalidateTypes changed_flags) override;
-  void LoadProgressChanged(content::WebContents* source,
-                           double progress) override;
 
   // ui::InputMethodObserver overrides.
   void OnTextInputTypeChanged(const ui::TextInputClient* client) override;
@@ -164,12 +164,11 @@ class BlimpEngineSession
                              content::RenderViewHost* new_host) override;
   void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
 
+  // PageLoadTrackerClient implementation.
+  void SendPageLoadStatusUpdate(PageLoadStatus load_status) override;
+
   // Sets up and owns |new_contents|.
   void PlatformSetContents(std::unique_ptr<content::WebContents> new_contents);
-
-  // Stores the value of the last page load completed update sent to the client.
-  // This field is used per tab.
-  bool last_page_load_completed_value_;
 
   // Presents the client's single screen.
   // Screen should be deleted after browser context (crbug.com/613372).
@@ -197,6 +196,10 @@ class BlimpEngineSession
 
   // Only one web_contents is supported for blimp 0.5
   std::unique_ptr<content::WebContents> web_contents_;
+
+  // Tracks the page load status for a tab. Each PageLoadTracker is tied to a
+  // WebContents.
+  std::unique_ptr<PageLoadTracker> page_load_tracker_;
 
   // Manages all global settings for the engine session.
   SettingsManager* settings_manager_;

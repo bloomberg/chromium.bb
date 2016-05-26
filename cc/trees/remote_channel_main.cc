@@ -177,12 +177,25 @@ void RemoteChannelMain::StartCommitOnImpl(
   to_impl_proto->set_message_type(proto::CompositorMessageToImpl::START_COMMIT);
   proto::StartCommit* start_commit_message =
       to_impl_proto->mutable_start_commit_message();
+  std::vector<std::unique_ptr<SwapPromise>> swap_promises;
   layer_tree_host->ToProtobufForCommit(
-      start_commit_message->mutable_layer_tree_host());
+      start_commit_message->mutable_layer_tree_host(), &swap_promises);
 
   VLOG(1) << "Sending commit message to client. Commit bytes size: "
           << proto.ByteSize();
   SendMessageProto(proto);
+
+  // Activate the swap promises after the commit is queued.
+  // In the threaded compositor, activation implies that the pending tree on the
+  // impl thread has been activated. While the impl thread for the remote
+  // compositor is on the client, the embedder still expects to receive these
+  // events in order to drive decisions that depend on impl frame production.
+  // So we dispatch these events after a commit message is sent to the client.
+  // Sending the commit message implies that a visual update has been queued for
+  // the client, which is the closest we can come to offering an indicator akin
+  // to an impl frame queued for display.
+  for (const auto& swap_promise : swap_promises)
+    swap_promise->DidActivate();
 
   // In order to avoid incurring the overhead for the client to send us a
   // message for when a frame to be committed is drawn we inform the embedder

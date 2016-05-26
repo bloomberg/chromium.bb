@@ -230,6 +230,8 @@ BlimpEngineSession::~BlimpEngineSession() {
 
   window_tree_host_->GetInputMethod()->RemoveObserver(this);
 
+  page_load_tracker_.reset();
+
   // Ensure that all WebContents are torn down first, since teardown will
   // trigger RenderViewDeleted callbacks to their observers.
   web_contents_.reset();
@@ -602,33 +604,6 @@ void BlimpEngineSession::NavigationStateChanged(
                                              net::CompletionCallback());
 }
 
-void BlimpEngineSession::LoadProgressChanged(
-    content::WebContents* source, double progress) {
-  if (source != web_contents_.get())
-    return;
-
-  bool page_load_completed = (progress == 1.0);
-
-  // If the client has been notified of a page load completed change, avoid
-  // sending another message. For the first navigation, the initial value used
-  // by the client is already false.
-  if (last_page_load_completed_value_ == page_load_completed)
-    return;
-
-  NavigationMessage* navigation_message = nullptr;
-  std::unique_ptr<BlimpMessage> message =
-      CreateBlimpMessage(&navigation_message, kDummyTabId);
-  navigation_message->set_type(NavigationMessage::NAVIGATION_STATE_CHANGED);
-  NavigationStateChangeMessage* details =
-      navigation_message->mutable_navigation_state_changed();
-  details->set_page_load_completed(page_load_completed);
-
-  navigation_message_sender_->ProcessMessage(std::move(message),
-                                             net::CompletionCallback());
-
-  last_page_load_completed_value_ = page_load_completed;
-}
-
 void BlimpEngineSession::RenderViewCreated(
     content::RenderViewHost* render_view_host) {
   render_widget_feature_.OnRenderWidgetCreated(kDummyTabId,
@@ -650,12 +625,37 @@ void BlimpEngineSession::RenderViewDeleted(
                                                render_view_host->GetWidget());
 }
 
+void BlimpEngineSession::SendPageLoadStatusUpdate(PageLoadStatus load_status) {
+  bool page_load_completed = false;
+
+  switch (load_status) {
+    case PageLoadStatus::LOADING:
+      page_load_completed = false;
+      break;
+    case PageLoadStatus::LOADED:
+      page_load_completed = true;
+      break;
+  }
+
+  NavigationMessage* navigation_message = nullptr;
+  std::unique_ptr<BlimpMessage> message =
+      CreateBlimpMessage(&navigation_message, kDummyTabId);
+  navigation_message->set_type(NavigationMessage::NAVIGATION_STATE_CHANGED);
+  NavigationStateChangeMessage* details =
+      navigation_message->mutable_navigation_state_changed();
+  details->set_page_load_completed(page_load_completed);
+
+  navigation_message_sender_->ProcessMessage(std::move(message),
+                                             net::CompletionCallback());
+}
+
 void BlimpEngineSession::PlatformSetContents(
     std::unique_ptr<content::WebContents> new_contents) {
   new_contents->SetDelegate(this);
   Observe(new_contents.get());
   web_contents_ = std::move(new_contents);
 
+  page_load_tracker_.reset(new PageLoadTracker(web_contents_.get(), this));
   aura::Window* parent = window_tree_host_->window();
   aura::Window* content = web_contents_->GetNativeView();
   if (!parent->Contains(content))

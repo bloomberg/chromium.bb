@@ -945,6 +945,9 @@ void RenderWidgetHostImpl::OnFirstPaintAfterLoad() {
   } else {
     received_paint_after_load_ = true;
   }
+
+  if (delegate_)
+    delegate_->OnFirstPaintAfterLoad(this);
 }
 
 void RenderWidgetHostImpl::ForwardMouseEvent(const WebMouseEvent& mouse_event) {

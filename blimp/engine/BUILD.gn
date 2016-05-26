@@ -308,6 +308,8 @@ source_set("session") {
   sources = [
     "session/blimp_engine_session.cc",
     "session/blimp_engine_session.h",
+    "session/page_load_tracker.cc",
+    "session/page_load_tracker.h",
   ]
 
   deps = [

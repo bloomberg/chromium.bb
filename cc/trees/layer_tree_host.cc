@@ -1500,7 +1500,9 @@ bool LayerTreeHost::IsRemoteClient() const {
          task_runner_provider_->HasImplThread();
 }
 
-void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) {
+void LayerTreeHost::ToProtobufForCommit(
+    proto::LayerTreeHost* proto,
+    std::vector<std::unique_ptr<SwapPromise>>* swap_promises) {
   // Not all fields are serialized, as they are either not needed for a commit,
   // or implementation isn't ready yet.
   // Unsupported items:
@@ -1522,6 +1524,9 @@ void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) {
   //   LayerTreeHost.
   // TODO(nyquist): Figure out how to support animations. See crbug.com/570376.
   TRACE_EVENT0("cc.remote", "LayerTreeHost::ToProtobufForCommit");
+  swap_promises->swap(swap_promise_list_);
+  DCHECK(swap_promise_list_.empty());
+
   proto->set_needs_full_tree_sync(needs_full_tree_sync_);
   proto->set_needs_meta_info_recomputation(needs_meta_info_recomputation_);
   proto->set_source_frame_number(source_frame_number_);

@@ -2381,6 +2381,12 @@ void WebContentsImpl::SendScreenRects() {
     browser_plugin_embedder_->DidSendScreenRects();
 }
 
+void WebContentsImpl::OnFirstPaintAfterLoad(
+    RenderWidgetHostImpl* render_widget_host) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidFirstPaintAfterLoad(render_widget_host));
+}
+
 BrowserAccessibilityManager*
     WebContentsImpl::GetRootBrowserAccessibilityManager() {
   RenderFrameHostImpl* rfh = GetMainFrame();
