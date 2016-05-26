@@ -141,7 +141,6 @@ private:
     bool m_readyToShutdown = false;
     bool m_pausedInDebugger = false;
     bool m_runningDebuggerTask = false;
-    bool m_shouldTerminateV8Execution = false;
 
     OwnPtr<InspectorTaskRunner> m_inspectorTaskRunner;
     OwnPtr<WorkerMicrotaskRunner> m_microtaskRunner;
@@ -150,8 +149,7 @@ private:
     WorkerReportingProxy& m_workerReportingProxy;
 
     // This lock protects |m_workerGlobalScope|, |m_terminated|,
-    // |m_readyToShutdown|, |m_runningDebuggerTask|,
-    // |m_shouldTerminateV8Execution| and |m_microtaskRunner|.
+    // |m_readyToShutdown|, |m_runningDebuggerTask| and |m_microtaskRunner|.
     Mutex m_threadStateMutex;
 
     Persistent<WorkerGlobalScope> m_workerGlobalScope;

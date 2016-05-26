@@ -74,8 +74,7 @@ public:
                 // |m_workerThread| will eventually be requested to terminate.
                 m_workerThread->workerReportingProxy().workerGlobalScopeClosed();
 
-                // Dispose WorkerGlobalScope to stop associated ActiveDOMObjects
-                // and close the event queue.
+                // Stop further worker tasks to run after this point.
                 m_workerThread->prepareForShutdownOnWorkerThread();
             }
         }
@@ -143,36 +142,32 @@ void WorkerThread::terminate()
     if (!m_workerGlobalScope)
         return;
 
-    if (!m_readyToShutdown) {
-        // Ensure that tasks are being handled by thread event loop. If script
-        // execution weren't forbidden, a while(1) loop in JS could keep the
-        // thread alive forever.
-        // If |m_readyToShutdown| is set, the worker thread has already noticed
-        // that the thread is about to be terminated and the worker global scope
-        // is already disposed, so we don't have to explicitly terminate the
-        // execution.
-        m_workerGlobalScope->scriptController()->willScheduleExecutionTermination();
+    // Determine if we should terminate the isolate so that the task can
+    // be handled by thread event loop. If script execution weren't forbidden,
+    // a while(1) loop in JS could keep the thread alive forever.
+    //
+    // (1) |m_readyToShutdown|: It this is set, the worker thread has already
+    // noticed that the thread is about to be terminated and the worker global
+    // scope is already disposed, so we don't have to explicitly terminate the
+    // isolate.
+    //
+    // (2) |workerScriptCount() == 1|: If other WorkerGlobalScopes are running
+    // on the worker thread, we should not terminate the isolate. This condition
+    // is not entirely correct because other scripts can be being initialized or
+    // terminated simuletaneously. Though this function itself is protected by a
+    // mutex, it is possible that |workerScriptCount()| here is not consistent
+    // with that in |initialize| and |shutdown|.
+    //
+    // (3) |m_runningDebuggerTask|: Terminating during debugger task may lead to
+    // crash due to heavy use of v8 api in debugger. Any debugger task is
+    // guaranteed to finish, so we can wait for the completion.
+    bool shouldTerminateIsolate = !m_readyToShutdown && (workerBackingThread().workerScriptCount() == 1) && !m_runningDebuggerTask;
 
-        // This condition is not entirely correct because other scripts can
-        // be being initialized or terminated simuletaneously. Though this
-        // function itself is protected by a mutex, it is possible that
-        // |workerScriptCount()| here is not consistent with that in
-        // |initialize| and |shutdown|.
-        if (workerBackingThread().workerScriptCount() == 1) {
-            if (m_runningDebuggerTask) {
-                // Terminating during debugger task may lead to crash due to
-                // heavy use of v8 api in debugger. Any debugger task is
-                // guaranteed to finish, so we can postpone termination after
-                // task has finished.
-                // Note: m_runningDebuggerTask and m_shouldTerminateV8Execution
-                // access must be guarded by the lock.
-                m_shouldTerminateV8Execution = true;
-            } else {
-                // TODO(yhirano): TerminateExecution should be called more
-                // carefully (https://crbug.com/413518).
-                isolate()->TerminateExecution();
-            }
-        }
+    if (shouldTerminateIsolate) {
+        // TODO(yhirano): TerminateExecution should be called more
+        // carefully (https://crbug.com/413518).
+        m_workerGlobalScope->scriptController()->willScheduleExecutionTermination();
+        isolate()->TerminateExecution();
     }
 
     m_inspectorTaskRunner->kill();
@@ -448,11 +443,13 @@ void WorkerThread::runDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThreadClos
     {
         MutexLocker lock(m_threadStateMutex);
         m_runningDebuggerTask = false;
-        if (m_shouldTerminateV8Execution) {
-            m_shouldTerminateV8Execution = false;
-            isolate()->TerminateExecution();
-        }
+
+        if (!m_terminated)
+            return;
+        // terminate() was called. Shutdown sequence will start soon.
     }
+    // Stop further worker tasks to run after this point.
+    prepareForShutdownOnWorkerThread();
 }
 
 void WorkerThread::runDebuggerTaskDontWaitOnWorkerThread()
