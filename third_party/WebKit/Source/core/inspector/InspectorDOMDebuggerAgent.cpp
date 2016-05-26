@@ -570,7 +570,7 @@ void InspectorDOMDebuggerAgent::removeXHRBreakpoint(ErrorString* errorString, co
     didRemoveBreakpoint();
 }
 
-void InspectorDOMDebuggerAgent::willSendXMLHttpRequest(const String& url)
+void InspectorDOMDebuggerAgent::willSendXMLHttpOrFetchNetworkRequest(const String& url)
 {
     String breakpointURL;
     if (m_state->booleanProperty(DOMDebuggerAgentState::pauseOnAllXHRs, false))

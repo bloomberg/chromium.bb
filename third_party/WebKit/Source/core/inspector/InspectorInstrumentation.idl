@@ -116,7 +116,7 @@ class XMLHttpRequest;
     void willPopShadowRoot([Keep] Element* host, ShadowRoot*);
 
     [DOMDebugger]
-    void willSendXMLHttpRequest(ExecutionContext*, const String& url);
+    void willSendXMLHttpOrFetchNetworkRequest(ExecutionContext*, const String& url);
 
     [DOMDebugger]
     void didFireWebGLError(Element*, const String& errorName);

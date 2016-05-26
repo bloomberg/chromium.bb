@@ -650,7 +650,7 @@ bool XMLHttpRequest::initSend(ExceptionState& exceptionState)
 
 void XMLHttpRequest::send(const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormData& body, ExceptionState& exceptionState)
 {
-    InspectorInstrumentation::willSendXMLHttpRequest(getExecutionContext(), url());
+    InspectorInstrumentation::willSendXMLHttpOrFetchNetworkRequest(getExecutionContext(), url());
 
     if (body.isNull()) {
         send(String(), exceptionState);
