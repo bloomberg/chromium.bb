@@ -84,6 +84,7 @@ public:
     WaitableEvent* terminationEvent() { return m_terminationEvent.get(); }
 
     bool isCurrentThread();
+
     WorkerLoaderProxy* workerLoaderProxy() const
     {
         RELEASE_ASSERT(m_workerLoaderProxy);
@@ -128,13 +129,12 @@ private:
 
     std::unique_ptr<CrossThreadClosure> createWorkerThreadTask(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
 
-    // Called on the worker thread.
-    void initialize(PassOwnPtr<WorkerThreadStartupData>);
-    void performTask(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
-    void prepareForShutdown();
-    void performShutdown();
-    void runDebuggerTask(std::unique_ptr<CrossThreadClosure>);
-    void runDebuggerTaskDontWait();
+    void initializeOnWorkerThread(PassOwnPtr<WorkerThreadStartupData>);
+    void prepareForShutdownOnWorkerThread();
+    void performShutdownOnWorkerThread();
+    void performTaskOnWorkerThread(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
+    void runDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure>);
+    void runDebuggerTaskDontWaitOnWorkerThread();
 
     bool m_started = false;
     bool m_terminated = false;
