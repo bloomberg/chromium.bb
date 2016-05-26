@@ -727,6 +727,8 @@ source_set("test_support") {
     "test/test_texture.h",
     "test/test_tile_priorities.cc",
     "test/test_tile_priorities.h",
+    "test/test_tile_task_runner.cc",
+    "test/test_tile_task_runner.h",
     "test/test_web_graphics_context_3d.cc",
     "test/test_web_graphics_context_3d.h",
     "test/threaded_channel_for_test.cc",
