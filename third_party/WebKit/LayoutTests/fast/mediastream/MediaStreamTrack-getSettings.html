@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+
+promise_test(function() {
+  return navigator.mediaDevices.getUserMedia({audio: true})
+      .then(function(s) {
+    settings = s.getAudioTracks()[0].getSettings();
+    assert_greater_than(Object.keys(settings).length, 0);
+  });
+}, 'An audio track returns settings');
+
+promise_test(function() {
+  return navigator.mediaDevices.getUserMedia({video: true})
+      .then(function(s) {
+    settings = s.getVideoTracks()[0].getSettings();
+    assert_greater_than(Object.keys(settings).length, 0);
+  });
+}, 'A video track returns settings');
+
+</script>

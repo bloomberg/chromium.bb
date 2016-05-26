@@ -35,9 +35,11 @@
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
 #include "modules/mediastream/MediaStreamTrackSourcesRequestImpl.h"
+#include "modules/mediastream/MediaTrackSettings.h"
 #include "modules/mediastream/UserMediaController.h"
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "platform/mediastream/MediaStreamComponent.h"
+#include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebSourceInfo.h"
 #include "wtf/Assertions.h"
 
@@ -177,6 +179,16 @@ void MediaStreamTrack::getConstraints(MediaTrackConstraints& constraints)
 void MediaStreamTrack::setConstraints(const WebMediaConstraints& constraints)
 {
     m_constraints = constraints;
+}
+
+void MediaStreamTrack::getSettings(MediaTrackSettings& settings)
+{
+    WebMediaStreamTrack::Settings platformSettings;
+    m_component->getSettings(platformSettings);
+    if (platformSettings.hasFrameRate()) {
+        settings.setFrameRate(platformSettings.frameRate);
+    }
+    settings.setDeviceId(platformSettings.deviceId);
 }
 
 bool MediaStreamTrack::ended() const

@@ -65,7 +65,7 @@ void CreateNativeAudioMediaStreamTrack(
 
 void CreateNativeVideoMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
-  DCHECK(track.getExtraData() == NULL);
+  DCHECK(track.getTrackData() == NULL);
   blink::WebMediaStreamSource source = track.source();
   DCHECK_EQ(source.getType(), blink::WebMediaStreamSource::TypeVideo);
   MediaStreamVideoSource* native_source =
@@ -80,10 +80,9 @@ void CreateNativeVideoMediaStreamTrack(
   blink::WebMediaConstraints constraints = source.constraints();
   if (constraints.isNull())
     constraints.initialize();
-  writable_track.setExtraData(
-      new MediaStreamVideoTrack(native_source, constraints,
-                                MediaStreamVideoSource::ConstraintsCallback(),
-                                track.isEnabled()));
+  writable_track.setTrackData(new MediaStreamVideoTrack(
+      native_source, constraints, MediaStreamVideoSource::ConstraintsCallback(),
+      track.isEnabled()));
 }
 
 }  // namespace
@@ -97,7 +96,7 @@ MediaStreamCenter::~MediaStreamCenter() {}
 void MediaStreamCenter::didCreateMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   DVLOG(1) << "MediaStreamCenter::didCreateMediaStreamTrack";
-  DCHECK(!track.isNull() && !track.getExtraData());
+  DCHECK(!track.isNull() && !track.getTrackData());
   DCHECK(!track.source().isNull());
 
   switch (track.source().getType()) {
@@ -139,7 +138,7 @@ MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack(
     const blink::WebMediaStreamTrack& track) {
   DVLOG(1) << "MediaStreamCenter::createWebAudioSourceFromMediaStreamTrack";
   MediaStreamTrack* media_stream_track =
-      static_cast<MediaStreamTrack*>(track.getExtraData());
+      static_cast<MediaStreamTrack*>(track.getTrackData());
   if (!media_stream_track) {
     DLOG(ERROR) << "Native track missing for webaudio source.";
     return nullptr;

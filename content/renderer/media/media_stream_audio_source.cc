@@ -58,7 +58,7 @@ bool MediaStreamAudioSource::ConnectToTrack(
   // Create and initialize a new MediaStreamAudioTrack and pass ownership of it
   // to the WebMediaStreamTrack.
   blink::WebMediaStreamTrack mutable_blink_track = blink_track;
-  mutable_blink_track.setExtraData(
+  mutable_blink_track.setTrackData(
       CreateMediaStreamAudioTrack(blink_track.id().utf8()).release());
 
   // Propagate initial "enabled" state.

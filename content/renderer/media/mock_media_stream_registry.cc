@@ -72,7 +72,7 @@ void MockMediaStreamRegistry::AddVideoTrack(const std::string& track_id) {
   MediaStreamVideoTrack* native_track = new MediaStreamVideoTrack(
       native_source, constraints, MediaStreamVideoSource::ConstraintsCallback(),
       true /* enabled */);
-  blink_track.setExtraData(native_track);
+  blink_track.setTrackData(native_track);
   test_stream_.addTrack(blink_track);
 }
 

@@ -288,7 +288,7 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
   web_track->initialize(webkit_source);
   blink::WebMediaConstraints constraints;
   constraints.initialize();
-  web_track->setExtraData(new MediaStreamVideoTrack(
+  web_track->setTrackData(new MediaStreamVideoTrack(
       media_stream_source.release(), constraints,
       MediaStreamVideoSource::ConstraintsCallback(), true));
 }

@@ -18,7 +18,7 @@ namespace content {
 // It is owned by blink::WebMediaStreamTrack as
 // blink::WebMediaStreamTrack::ExtraData.
 class CONTENT_EXPORT MediaStreamTrack
-    : NON_EXPORTED_BASE(public blink::WebMediaStreamTrack::ExtraData) {
+    : NON_EXPORTED_BASE(public blink::WebMediaStreamTrack::TrackData) {
  public:
   explicit MediaStreamTrack(bool is_local_track);
   ~MediaStreamTrack() override;
@@ -28,6 +28,9 @@ class CONTENT_EXPORT MediaStreamTrack
   virtual void SetEnabled(bool enabled) = 0;
 
   virtual void Stop() = 0;
+
+  // TODO(hta): Make method pure virtual when all tracks have the method.
+  void getSettings(blink::WebMediaStreamTrack::Settings& settings) override {}
 
   bool is_local_track() const { return is_local_track_; }
 

@@ -167,7 +167,7 @@ class RemoteVideoTrackAdapter
     MediaStreamVideoTrack* media_stream_track =
         new MediaStreamVideoTrack(video_source.release(), constraints,
             MediaStreamVideoSource::ConstraintsCallback(), enabled);
-    webkit_track()->setExtraData(media_stream_track);
+    webkit_track()->setTrackData(media_stream_track);
   }
 };
 

@@ -932,7 +932,7 @@ VideoTrackRecorder::VideoTrackRecorder(
     : track_(track) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!track_.isNull());
-  DCHECK(track_.getExtraData());
+  DCHECK(track_.getTrackData());
 
   const auto& vea_supported_profile = CodecIdToVEAProfile(codec);
   // TODO(emircan): Prioritize software based encoders in lower resolutions.

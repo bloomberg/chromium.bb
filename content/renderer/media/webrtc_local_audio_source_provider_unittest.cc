@@ -33,7 +33,7 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
                             false /* remote */);
     blink_track_.initialize(blink::WebString::fromUTF8("audio_track"),
                             audio_source);
-    blink_track_.setExtraData(new MediaStreamAudioTrack(true));
+    blink_track_.setTrackData(new MediaStreamAudioTrack(true));
     source_provider_.reset(new WebRtcLocalAudioSourceProvider(blink_track_));
     source_provider_->SetSinkParamsForTesting(sink_params_);
     source_provider_->OnSetFormat(source_params_);

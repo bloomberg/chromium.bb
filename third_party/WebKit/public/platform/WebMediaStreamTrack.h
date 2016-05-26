@@ -28,10 +28,12 @@
 #include "WebCommon.h"
 #include "WebNonCopyable.h"
 #include "WebPrivatePtr.h"
+#include "WebString.h"
 
 namespace blink {
 
 class MediaStreamComponent;
+class MediaStreamTrack;
 class WebAudioSourceProvider;
 class WebMediaStream;
 class WebMediaStreamSource;
@@ -39,10 +41,22 @@ class WebString;
 
 class WebMediaStreamTrack {
 public:
-    class ExtraData {
+    struct Settings {
+        bool hasFrameRate()
+        {
+            return frameRate >= 0.0;
+        }
+        // The variables are read from
+        // MediaStreamTrack::GetSettings only.
+        double frameRate = -1.0;
+        WebString deviceId;
+    };
+
+    class TrackData {
     public:
-        ExtraData() { }
-        virtual ~ExtraData() { }
+        TrackData() {}
+        virtual ~TrackData() {}
+        virtual void getSettings(Settings&) = 0;
     };
 
     WebMediaStreamTrack() { }
@@ -70,10 +84,10 @@ public:
 
     // Extra data associated with this WebMediaStream.
     // If non-null, the extra data pointer will be deleted when the object is destroyed.
-    // Setting the extra data pointer will cause any existing non-null
-    // extra data pointer to be deleted.
-    BLINK_PLATFORM_EXPORT ExtraData* getExtraData() const;
-    BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
+    // Setting the track data pointer will cause any existing non-null
+    // track data pointer to be deleted.
+    BLINK_PLATFORM_EXPORT TrackData* getTrackData() const;
+    BLINK_PLATFORM_EXPORT void setTrackData(TrackData*);
 
     // The lifetime of the WebAudioSourceProvider should outlive the
     // WebMediaStreamTrack, and clients are responsible for calling

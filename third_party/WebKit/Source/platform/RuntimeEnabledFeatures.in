@@ -120,6 +120,7 @@ MediaCaptureFromVideo status=test
 MediaConstraints status=experimental
 MediaDevices status=stable
 MediaDocumentDownloadButton
+MediaGetSettings status=test
 MediaRecorder status=stable
 MediaSession
 MediaSourceExperimental status=experimental

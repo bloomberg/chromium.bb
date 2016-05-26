@@ -65,7 +65,7 @@ class VideoTrackRecorderTest
     track_ = new MediaStreamVideoTrack(mock_source_, constraints,
                                        MediaStreamSource::ConstraintsCallback(),
                                        true /* enabled */);
-    blink_track_.setExtraData(track_);
+    blink_track_.setTrackData(track_);
 
     video_track_recorder_.reset(new VideoTrackRecorder(
         GetParam() /* codec */, blink_track_,

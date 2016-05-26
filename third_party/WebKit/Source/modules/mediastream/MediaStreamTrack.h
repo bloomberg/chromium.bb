@@ -42,6 +42,7 @@ class AudioSourceProvider;
 class ExceptionState;
 class MediaTrackConstraints;
 class MediaStreamTrackSourcesCallback;
+class MediaTrackSettings;
 
 class MODULES_EXPORT MediaStreamTrack
     : public EventTargetWithInlineData
@@ -75,6 +76,8 @@ public:
     // This function is called when constrains have been successfully applied.
     // Called from UserMediaRequest when it succeeds. It is not IDL-exposed.
     void setConstraints(const WebMediaConstraints&);
+
+    void getSettings(MediaTrackSettings&);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(mute);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute);

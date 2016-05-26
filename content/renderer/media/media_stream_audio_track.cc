@@ -31,7 +31,7 @@ MediaStreamAudioTrack* MediaStreamAudioTrack::From(
       track.source().getType() != blink::WebMediaStreamSource::TypeAudio) {
     return nullptr;
   }
-  return static_cast<MediaStreamAudioTrack*>(track.getExtraData());
+  return static_cast<MediaStreamAudioTrack*>(track.getTrackData());
 }
 
 void MediaStreamAudioTrack::AddSink(MediaStreamAudioSink* sink) {
@@ -129,6 +129,12 @@ void MediaStreamAudioTrack::OnData(const media::AudioBus& audio_bus,
     }
     deliverer_.OnData(*silent_bus_, reference_time);
   }
+}
+
+void MediaStreamAudioTrack::getSettings(
+    blink::WebMediaStreamTrack::Settings& settings) {
+  // TODO(hta): Extract the real value.
+  settings.deviceId = blink::WebString("audio device ID");
 }
 
 }  // namespace content

@@ -88,7 +88,7 @@ void ImageCaptureFrameGrabber::grabFrame(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!!callbacks);
 
-  DCHECK(track && !track->isNull() && track->getExtraData());
+  DCHECK(track && !track->isNull() && track->getTrackData());
   DCHECK_EQ(blink::WebMediaStreamSource::TypeVideo, track->source().getType());
 
   ScopedWebCallbacks<WebImageCaptureGrabFrameCallbacks> scoped_callbacks =

@@ -35,14 +35,21 @@ namespace blink {
 
 namespace {
 
-class ExtraDataContainer : public MediaStreamComponent::ExtraData {
-public:
-    explicit ExtraDataContainer(PassOwnPtr<WebMediaStreamTrack::ExtraData> extraData) : m_extraData(std::move(extraData)) { }
+    class TrackDataContainer : public MediaStreamComponent::TrackData {
+    public:
+        explicit TrackDataContainer(PassOwnPtr<WebMediaStreamTrack::TrackData> extraData)
+            : m_extraData(std::move(extraData))
+        {
+        }
 
-    WebMediaStreamTrack::ExtraData* getExtraData() { return m_extraData.get(); }
+        WebMediaStreamTrack::TrackData* getTrackData() { return m_extraData.get(); }
+        void getSettings(WebMediaStreamTrack::Settings& settings)
+        {
+            m_extraData->getSettings(settings);
+        }
 
-private:
-    OwnPtr<WebMediaStreamTrack::ExtraData> m_extraData;
+    private:
+        OwnPtr<WebMediaStreamTrack::TrackData> m_extraData;
 };
 
 } // namespace
@@ -102,19 +109,19 @@ WebMediaStreamSource WebMediaStreamTrack::source() const
     return WebMediaStreamSource(m_private->source());
 }
 
-WebMediaStreamTrack::ExtraData* WebMediaStreamTrack::getExtraData() const
+WebMediaStreamTrack::TrackData* WebMediaStreamTrack::getTrackData() const
 {
-    MediaStreamComponent::ExtraData* data = m_private->getExtraData();
+    MediaStreamComponent::TrackData* data = m_private->getTrackData();
     if (!data)
         return 0;
-    return static_cast<ExtraDataContainer*>(data)->getExtraData();
+    return static_cast<TrackDataContainer*>(data)->getTrackData();
 }
 
-void WebMediaStreamTrack::setExtraData(ExtraData* extraData)
+void WebMediaStreamTrack::setTrackData(TrackData* extraData)
 {
     ASSERT(!m_private.isNull());
 
-    m_private->setExtraData(adoptPtr(new ExtraDataContainer(adoptPtr(extraData))));
+    m_private->setTrackData(adoptPtr(new TrackDataContainer(adoptPtr(extraData))));
 }
 
 void WebMediaStreamTrack::setSourceProvider(WebAudioSourceProvider* provider)

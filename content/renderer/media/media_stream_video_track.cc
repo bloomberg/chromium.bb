@@ -202,10 +202,8 @@ blink::WebMediaStreamTrack MediaStreamVideoTrack::CreateVideoTrack(
     bool enabled) {
   blink::WebMediaStreamTrack track;
   track.initialize(source->owner());
-  track.setExtraData(new MediaStreamVideoTrack(source,
-                                               constraints,
-                                               callback,
-                                               enabled));
+  track.setTrackData(
+      new MediaStreamVideoTrack(source, constraints, callback, enabled));
   return track;
 }
 
@@ -216,7 +214,7 @@ MediaStreamVideoTrack* MediaStreamVideoTrack::GetVideoTrack(
       track.source().getType() != blink::WebMediaStreamSource::TypeVideo) {
     return nullptr;
   }
-  return static_cast<MediaStreamVideoTrack*>(track.getExtraData());
+  return static_cast<MediaStreamVideoTrack*>(track.getTrackData());
 }
 
 MediaStreamVideoTrack::MediaStreamVideoTrack(
@@ -288,6 +286,17 @@ void MediaStreamVideoTrack::Stop() {
     source_ = NULL;
   }
   OnReadyStateChanged(blink::WebMediaStreamSource::ReadyStateEnded);
+}
+
+void MediaStreamVideoTrack::getSettings(
+    blink::WebMediaStreamTrack::Settings& settings) {
+  if (source_) {
+    const media::VideoCaptureFormat* format = source_->GetCurrentFormat();
+    if (format)
+      settings.frameRate = format->frame_rate;
+  }
+  // TODO(hta): Extract the real value.
+  settings.deviceId = blink::WebString("video device ID");
 }
 
 void MediaStreamVideoTrack::OnReadyStateChanged(

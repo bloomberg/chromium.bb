@@ -35,6 +35,7 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/mediastream/MediaStreamSource.h"
 #include "public/platform/WebAudioSourceProvider.h"
+#include "public/platform/WebMediaStreamTrack.h"
 
 namespace blink {
 
@@ -54,13 +55,13 @@ MediaStreamComponent::MediaStreamComponent(const String& id, MediaStreamSource* 
     , m_enabled(true)
     , m_muted(false)
 {
-    ASSERT(m_id.length());
+    DCHECK(m_id.length());
     ThreadState::current()->registerPreFinalizer(this);
 }
 
 void MediaStreamComponent::dispose()
 {
-    m_extraData.reset();
+    m_trackData.reset();
 }
 
 void MediaStreamComponent::AudioSourceProviderImpl::wrap(WebAudioSourceProvider* provider)
@@ -69,9 +70,15 @@ void MediaStreamComponent::AudioSourceProviderImpl::wrap(WebAudioSourceProvider*
     m_webAudioSourceProvider = provider;
 }
 
+void MediaStreamComponent::getSettings(WebMediaStreamTrack::Settings& settings)
+{
+    DCHECK(m_trackData);
+    m_trackData->getSettings(settings);
+}
+
 void MediaStreamComponent::AudioSourceProviderImpl::provideInput(AudioBus* bus, size_t framesToProcess)
 {
-    ASSERT(bus);
+    DCHECK(bus);
     if (!bus)
         return;
 
