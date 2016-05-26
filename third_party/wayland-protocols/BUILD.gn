@@ -127,3 +127,24 @@ source_set("alpha_compositing_protocol") {
 
   public_configs = [ ":alpha_compositing_protocol_config" ]
 }
+
+config("remote_shell_protocol_config") {
+  include_dirs = [ "include/protocol" ]
+}
+
+source_set("remote_shell_protocol") {
+  sources = [
+    "include/protocol/remote-shell-unstable-v1-client-protocol.h",
+    "include/protocol/remote-shell-unstable-v1-server-protocol.h",
+    "protocol/remote-shell-protocol.c",
+  ]
+
+  deps = [
+    "//third_party/wayland:wayland_util",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":remote_shell_protocol_config" ]
+}

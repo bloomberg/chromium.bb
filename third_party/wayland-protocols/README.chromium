@@ -34,4 +34,7 @@ To import a new snapshot of wayland-protocols:
     wayland-scanner code < */alpha-compositing/alpha-compositing-unstable-v1.xml > protocol/alpha-compositing-protocol.c
     wayland-scanner server-header < unstable/alpha-compositing/alpha-compositing-unstable-v1.xml > include/protocol/alpha-compositing-unstable-v1-server-protocol.h
     wayland-scanner client-header < unstable/alpha-compositing/alpha-compositing-unstable-v1.xml > include/protocol/alpha-compositing-unstable-v1-client-protocol.h
+    wayland-scanner code < */remote-shell/remote-shell-unstable-v1.xml > protocol/remote-shell-protocol.c
+    wayland-scanner server-header < unstable/remote-shell/remote-shell-unstable-v1.xml > include/protocol/remote-shell-unstable-v1-server-protocol.h
+    wayland-scanner client-header < unstable/remote-shell/remote-shell-unstable-v1.xml > include/protocol/remote-shell-unstable-v1-client-protocol.h
 - Update this README to reflect the new version number.

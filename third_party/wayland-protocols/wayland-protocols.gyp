@@ -124,5 +124,25 @@
         ],
       },
     },
+    {
+      'target_name': 'remote_shell_protocol',
+      'type': 'static_library',
+      'dependencies' : [
+        '../wayland/wayland.gyp:wayland_util',
+      ],
+      'sources': [
+        'include/protocol/remote-shell-unstable-v1-client-protocol.h',
+        'include/protocol/remote-shell-unstable-v1-server-protocol.h',
+        'protocol/remote-shell-protocol.c',
+      ],
+      'include_dirs': [
+        'include/protocol',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          'include/protocol',
+        ],
+      },
+    },
   ],
 }
