@@ -371,6 +371,28 @@ TEST_F(BackgroundContentsServiceNotificationTest, TestShowBalloon) {
   EXPECT_FALSE(notification->icon().IsEmpty());
 }
 
+TEST_F(BackgroundContentsServiceNotificationTest, TestShowBalloonShutdown) {
+  scoped_refptr<extensions::Extension> extension =
+      extension_test_util::LoadManifest("image_loading_tracker", "app.json");
+  ASSERT_TRUE(extension.get());
+  ASSERT_TRUE(extension->GetManifestData("icons"));
+
+  std::string notification_id = BackgroundContentsService::
+      GetNotificationDelegateIdForExtensionForTesting(extension->id());
+
+  static_cast<TestingBrowserProcess*>(g_browser_process)->SetShuttingDown(true);
+  BackgroundContentsService::ShowBalloonForTesting(extension.get(), profile());
+  base::RunLoop().RunUntilIdle();
+  static_cast<TestingBrowserProcess*>(g_browser_process)
+      ->SetShuttingDown(false);
+
+  const Notification* notification =
+      g_browser_process->notification_ui_manager()->FindById(notification_id,
+                                                             profile());
+
+  ASSERT_EQ(nullptr, notification);
+}
+
 // Verify if a test notification can show the default extension icon for
 // a crash notification for an extension without icon.
 TEST_F(BackgroundContentsServiceNotificationTest, TestShowBalloonNoIcon) {

@@ -140,6 +140,7 @@ class TestingBrowserProcess : public BrowserProcess {
   void SetNotificationPlatformBridge(
       std::unique_ptr<NotificationPlatformBridge> notification_platform_bridge);
   void SetRapporService(rappor::RapporService* rappor_service);
+  void SetShuttingDown(bool is_shutting_down);
   void ShutdownBrowserPolicyConnector();
 
  private:
@@ -149,6 +150,7 @@ class TestingBrowserProcess : public BrowserProcess {
 
   std::unique_ptr<content::NotificationService> notification_service_;
   std::string app_locale_;
+  bool is_shutting_down_;
 
   std::unique_ptr<policy::BrowserPolicyConnector> browser_policy_connector_;
   bool created_browser_policy_connector_ = false;

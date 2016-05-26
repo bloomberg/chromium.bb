@@ -65,6 +65,7 @@ void TestingBrowserProcess::DeleteInstance() {
 TestingBrowserProcess::TestingBrowserProcess()
     : notification_service_(content::NotificationService::Create()),
       app_locale_("en"),
+      is_shutting_down_(false),
       local_state_(nullptr),
       io_thread_(nullptr),
       system_request_context_(nullptr),
@@ -243,7 +244,7 @@ void TestingBrowserProcess::CreateDevToolsAutoOpener() {
 }
 
 bool TestingBrowserProcess::IsShuttingDown() {
-  return false;
+  return is_shutting_down_;
 }
 
 printing::PrintJobManager* TestingBrowserProcess::print_job_manager() {
@@ -421,6 +422,10 @@ void TestingBrowserProcess::SetSafeBrowsingService(
 void TestingBrowserProcess::SetRapporService(
     rappor::RapporService* rappor_service) {
   rappor_service_ = rappor_service;
+}
+
+void TestingBrowserProcess::SetShuttingDown(bool is_shutting_down) {
+  is_shutting_down_ = is_shutting_down;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

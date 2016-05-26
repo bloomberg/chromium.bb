@@ -165,6 +165,9 @@ void NotificationImageReady(
     scoped_refptr<CrashNotificationDelegate> delegate,
     Profile* profile,
     const gfx::Image& icon) {
+  if (g_browser_process->IsShuttingDown())
+    return;
+
   gfx::Image notification_icon(icon);
   if (notification_icon.IsEmpty()) {
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
