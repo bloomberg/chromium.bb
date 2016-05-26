@@ -98,6 +98,7 @@ cr.define('cr.icon', function() {
   }
 
   return {
+    getSupportedScaleFactors: getSupportedScaleFactors,
     getProfileAvatarIcon: getProfileAvatarIcon,
     getFaviconImageSet: getFaviconImageSet,
   };

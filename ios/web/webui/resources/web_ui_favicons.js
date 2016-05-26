@@ -28,7 +28,7 @@ window['chrome']['requestFavicon'] = function(el, imageSet) {
   var faviconUrl = '';
   for (var i = 0; i < cssUrls.length; ++i) {
     var scaleFactorExp = /(\d)x$/;
-    var scaleFactor = getSupportedScaleFactors()[0];
+    var scaleFactor = cr.icon.getSupportedScaleFactors()[0];
     if (parseInt(scaleFactorExp.exec(cssUrls[i])[1], 10) === scaleFactor) {
       var urlExp = /url\(\"(.+)\"\)/;
       faviconUrl = urlExp.exec(cssUrls[i])[1];
