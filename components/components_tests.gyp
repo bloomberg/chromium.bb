@@ -1496,6 +1496,7 @@
             'arc/ime/arc_ime_service_unittest.cc',
             'arc/intent_helper/activity_icon_loader_unittest.cc',
             'arc/intent_helper/font_size_util_unittest.cc',
+            'arc/intent_helper/link_handler_model_impl_unittest.cc',
             'pairing/message_buffer_unittest.cc',
             'timers/alarm_timer_unittest.cc',
             'wifi_sync/wifi_config_delegate_chromeos_unittest.cc',

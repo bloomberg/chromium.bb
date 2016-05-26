@@ -31,11 +31,19 @@ class LinkHandlerModelImpl : public ash::LinkHandlerModel {
   // the caller should delete |this| object.
   bool Init(const GURL& url);
 
+  static GURL RewriteUrlFromQueryIfAvailableForTesting(const GURL& url);
+
  private:
   mojom::IntentHelperInstance* GetIntentHelper();
   void OnUrlHandlerList(mojo::Array<mojom::UrlHandlerInfoPtr> handlers);
   void NotifyObserver(
       std::unique_ptr<ActivityIconLoader::ActivityToIconsMap> icons);
+
+  // Checks if the |url| matches the following pattern:
+  //   "http(s)://<valid_google_hostname>/url?...&url=<valid_url>&..."
+  // If it does, creates a new GURL object from the <valid_url> and returns it.
+  // Otherwise, returns the original |url| as-us.
+  static GURL RewriteUrlFromQueryIfAvailable(const GURL& url);
 
   base::ObserverList<Observer> observer_list_;
 
