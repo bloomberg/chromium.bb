@@ -25323,6 +25323,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.AlternativeServiceTypeForRequest"
+    enum="AlternativeServiceType">
+  <owner>bnc@chromium.org</owner>
+  <summary>
+    Information about the AlternativeService used for each request.
+  </summary>
+</histogram>
+
 <histogram name="Net.AsyncResourceHandler_PendingDataCount">
   <obsolete>
     Deprecated 03/2015.
@@ -63139,6 +63147,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="ALTERNATE_PROTOCOL_USAGE_LOST_RACE"/>
   <int value="3" label="ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING"/>
   <int value="4" label="ALTERNATE_PROTOCOL_USAGE_BROKEN"/>
+</enum>
+
+<enum name="AlternativeServiceType" type="int">
+  <int value="0" label="No alternative service"/>
+  <int value="1" label="QUIC, destination same as origin"/>
+  <int value="2" label="QUIC, destination different from origin"/>
+  <int value="3" label="Not QUIC, destination same as origin"/>
+  <int value="4" label="Not QUIC, destination different from origin"/>
 </enum>
 
 <enum name="AndroidActivityId" type="int">
