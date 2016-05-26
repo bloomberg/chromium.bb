@@ -67,8 +67,11 @@ const char kAlsaCheckCloseTimeout[] = "alsa-check-close-timeout";
 // Optional flag to set a fixed sample rate for the alsa device.
 const char kAlsaFixedOutputSampleRate[] = "alsa-fixed-output-sample-rate";
 
-// KB of memory to treat as unavailable to cast_shell when computing memory
-// pressure level.
+// Some platforms typically have very little 'free' memory, but plenty is
+// available in buffers+cached.  For such platforms, configure this amount
+// as the portion of buffers+cached memory that should be treated as
+// unavailable.  If this switch is not used, a simple pressure heuristic based
+// purely on free memory will be used.
 const char kMemPressureSystemReservedKb[] = "mem-pressure-system-reserved-kb";
 
 }  // namespace switches

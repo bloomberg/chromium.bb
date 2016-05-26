@@ -21,8 +21,13 @@ namespace {
 // Memory thresholds (as fraction of total memory) for memory pressure levels.
 // See more detailed description of pressure heuristic in PollPressureLevel.
 // TODO(halliwell): tune thresholds based on data.
-constexpr float kCriticalMemoryThreshold = 0.2f;
-constexpr float kModerateMemoryThreshold = 0.3f;
+constexpr float kCriticalMemoryFraction = 0.2f;
+constexpr float kModerateMemoryFraction = 0.3f;
+
+// Memory thresholds in MB for the simple heuristic based on 'free' memory.
+constexpr int kCriticalFreeMemoryKB = 20 * 1024;
+constexpr int kModerateFreeMemoryKB = 30 * 1024;
+
 constexpr int kPollingIntervalMS = 5000;
 
 int GetSystemReservedKb() {
@@ -59,25 +64,27 @@ void CastMemoryPressureMonitor::PollPressureLevel() {
   if (!base::GetSystemMemoryInfo(&info)) {
     LOG(ERROR) << "GetSystemMemoryInfo failed";
   } else {
-    // 'buffers' and 'cached' memory is included in free memory calculation,
-    // because the kernel can typically free some of it when necessary;
-    // using just 'free' memory would lead to us being in memory pressure state
-    // nearly all of the time.
-    // However, some cached memory cannot be reclaimed, and even when it can,
-    // it can cause performance problems.  To counter this, the memory pressure
-    // thresholds should be high enough that we take action well before running
-    // out of all available memory.
-    // 'system reserved kb' allows OEMs to customise when memory pressure is
-    // triggered.
-    const float max_free =
-        info.free + info.buffers + info.cached - system_reserved_kb_;
-    const float total = info.total - system_reserved_kb_;
-    DCHECK(total > 0);
+    if (system_reserved_kb_ == 0) {
+      // System reserved memory not configured: we have no idea how much of
+      // buffers+cached is safe to treat as usable, so use a simple heuristic
+      // based purely on 'free' memory.
+      if (info.free < kCriticalFreeMemoryKB)
+        level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
+      else if (info.free < kModerateFreeMemoryKB)
+        level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
+    } else {
+      // Platform has configured the 'reserved' memory; treat buffers plus
+      // cached minus reserved as available.
+      const float max_free =
+          info.free + info.buffers + info.cached - system_reserved_kb_;
+      const float total = info.total - system_reserved_kb_;
+      DCHECK(total > 0);
 
-    if ((max_free / total) < kCriticalMemoryThreshold)
-      level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
-    else if ((max_free / total) < kModerateMemoryThreshold)
-      level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
+      if ((max_free / total) < kCriticalMemoryFraction)
+        level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL;
+      else if ((max_free / total) < kModerateMemoryFraction)
+        level = base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE;
+    }
   }
 
   UpdateMemoryPressureLevel(level);
