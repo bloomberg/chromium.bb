@@ -33,6 +33,8 @@ settings.BluetoothAddDeviceBehavior = {
     },
   },
 
+  observers: ['deviceListChanged_(deviceList.*)'],
+
   /** @private */
   adapterStateChanged_: function() {
     if (!this.adapterState.powered)
@@ -323,6 +325,11 @@ Polymer({
   properties: {
     /** Which version of this dialog to show (adding or pairing). */
     dialogType: String,
+  },
+
+  /** @private */
+  deviceListChanged_: function(e) {
+    this.$.dialog.notifyResize();
   },
 
   /**
