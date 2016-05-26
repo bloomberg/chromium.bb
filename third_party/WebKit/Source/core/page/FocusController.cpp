@@ -128,7 +128,7 @@ void ScopedFocusNavigation::setCurrentElement(Element* element)
 
 void ScopedFocusNavigation::moveToNext()
 {
-    ASSERT(m_current);
+    DCHECK(m_current);
     if (m_rootSlot) {
         if (m_slotFallbackTraversal) {
             m_current = ElementTraversal::next(*m_current, m_rootSlot);
@@ -146,7 +146,7 @@ void ScopedFocusNavigation::moveToNext()
 
 void ScopedFocusNavigation::moveToPrevious()
 {
-    ASSERT(m_current);
+    DCHECK(m_current);
     if (m_rootSlot) {
         if (m_slotFallbackTraversal) {
             m_current = ElementTraversal::previous(*m_current, m_rootSlot);
@@ -219,7 +219,7 @@ Element* ScopedFocusNavigation::owner() const
 {
     if (m_rootSlot)
         return m_rootSlot;
-    ASSERT(m_rootNode);
+    DCHECK(m_rootNode);
     if (m_rootNode->isShadowRoot()) {
         ShadowRoot& shadowRoot = toShadowRoot(*m_rootNode);
         return shadowRoot.isYoungest() ? &shadowRoot.host() : shadowRoot.shadowInsertionPointOfYoungerShadowRoot();
@@ -250,27 +250,27 @@ ScopedFocusNavigation ScopedFocusNavigation::ownedByNonFocusableFocusScopeOwner(
         return ScopedFocusNavigation::ownedByShadowHost(element);
     if (isShadowInsertionPointFocusScopeOwner(element))
         return ScopedFocusNavigation::ownedByShadowInsertionPoint(toHTMLShadowElement(element));
-    ASSERT(isHTMLSlotElement(element));
+    DCHECK(isHTMLSlotElement(element));
     return ScopedFocusNavigation::ownedByHTMLSlotElement(toHTMLSlotElement(element));
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::ownedByShadowHost(const Element& element)
 {
-    ASSERT(isShadowHost(element));
+    DCHECK(isShadowHost(element));
     return ScopedFocusNavigation(*&element.shadow()->youngestShadowRoot(), nullptr);
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::ownedByIFrame(const HTMLFrameOwnerElement& frame)
 {
-    ASSERT(frame.contentFrame());
-    ASSERT(frame.contentFrame()->isLocalFrame());
+    DCHECK(frame.contentFrame());
+    DCHECK(frame.contentFrame()->isLocalFrame());
     toLocalFrame(frame.contentFrame())->document()->updateDistribution();
     return ScopedFocusNavigation(*toLocalFrame(frame.contentFrame())->document(), nullptr);
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::ownedByShadowInsertionPoint(HTMLShadowElement& shadowInsertionPoint)
 {
-    ASSERT(isShadowInsertionPointFocusScopeOwner(shadowInsertionPoint));
+    DCHECK(isShadowInsertionPointFocusScopeOwner(shadowInsertionPoint));
     return ScopedFocusNavigation(*shadowInsertionPoint.olderShadowRoot(), nullptr);
 }
 
@@ -328,7 +328,7 @@ inline void dispatchFocusEvent(const Document& document, Element& focusedElement
 
 inline void dispatchEventsOnWindowAndFocusedElement(Document* document, bool focused)
 {
-    ASSERT(document);
+    DCHECK(document);
     // If we have a focused element we should dispatch blur on it before we blur the window.
     // If we have a focused element we should dispatch focus on it after we focus the window.
     // https://bugs.webkit.org/show_bug.cgi?id=27105
@@ -630,7 +630,7 @@ Element* findFocusableElementDescendingDownIntoFrameDocument(WebFocusType type, 
         Element* foundElement = findFocusableElementRecursively(type, scope);
         if (!foundElement)
             break;
-        ASSERT(element != foundElement);
+        DCHECK_NE(element, foundElement);
         element = foundElement;
     }
     return element;
@@ -689,7 +689,7 @@ Element* findFocusableElementAcrossFocusScopes(WebFocusType type, ScopedFocusNav
 
 inline Element* adjustToElement(Node* node, WebFocusType type)
 {
-    ASSERT(type == WebFocusTypeForward || type == WebFocusTypeBackward);
+    DCHECK(type == WebFocusTypeForward || type == WebFocusTypeBackward);
     if (!node)
         return nullptr;
     if (node->isElementNode())
@@ -719,7 +719,7 @@ FocusController* FocusController::create(Page* page)
 
 void FocusController::setFocusedFrame(Frame* frame, bool notifyEmbedder)
 {
-    ASSERT(!frame || frame->page() == m_page);
+    DCHECK(!frame || frame->page() == m_page);
     if (m_focusedFrame == frame || (m_isChangingFocusedFrame && frame))
         return;
 
@@ -752,7 +752,7 @@ void FocusController::setFocusedFrame(Frame* frame, bool notifyEmbedder)
 
 void FocusController::focusDocumentView(Frame* frame, bool notifyEmbedder)
 {
-    ASSERT(!frame || frame->page() == m_page);
+    DCHECK(!frame || frame->page() == m_page);
     if (m_focusedFrame == frame)
         return;
 
@@ -777,7 +777,7 @@ void FocusController::focusDocumentView(Frame* frame, bool notifyEmbedder)
 
 LocalFrame* FocusController::focusedFrame() const
 {
-    // TODO(alexmos): Strengthen this to ASSERT that whoever called this really
+    // TODO(alexmos): Strengthen this to DCHECK that whoever called this really
     // expected a LocalFrame. Refactor call sites so that the rare cases that
     // need to know about focused RemoteFrames use a separate accessor (to be
     // added).
@@ -806,7 +806,7 @@ HTMLFrameOwnerElement* FocusController::focusedFrameOwnerElement(LocalFrame& cur
     Frame* focusedFrame = m_focusedFrame.get();
     for (; focusedFrame; focusedFrame = focusedFrame->tree().parent()) {
         if (focusedFrame->tree().parent() == &currentFrame) {
-            ASSERT(focusedFrame->owner()->isLocal());
+            DCHECK(focusedFrame->owner()->isLocal());
             return focusedFrame->deprecatedLocalOwner();
         }
     }
@@ -875,7 +875,7 @@ bool FocusController::advanceFocus(WebFocusType type, bool initialFocus, InputDe
     case WebFocusTypeDown:
         return advanceFocusDirectionally(type);
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 
     return false;
@@ -889,7 +889,7 @@ bool FocusController::advanceFocusAcrossFrames(WebFocusType type, RemoteFrame* f
     // element of the child frame.
     Element* start = nullptr;
     if (from->tree().parent() == to) {
-        ASSERT(from->owner()->isLocal());
+        DCHECK(from->owner()->isLocal());
         start = toHTMLFrameOwnerElement(from->owner());
     }
 
@@ -897,7 +897,7 @@ bool FocusController::advanceFocusAcrossFrames(WebFocusType type, RemoteFrame* f
 }
 
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 inline bool isNonFocusableShadowHost(const Element& element)
 {
     return isShadowHostWithoutCustomFocusLogic(element) && !element.isFocusable();
@@ -906,12 +906,14 @@ inline bool isNonFocusableShadowHost(const Element& element)
 
 bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* start, WebFocusType type, bool initialFocus, InputDeviceCapabilities* sourceCapabilities)
 {
-    ASSERT(frame);
+    DCHECK(frame);
     Document* document = frame->document();
     document->updateDistribution();
 
     Element* current = start;
-    ASSERT(!current || !isNonFocusableShadowHost(*current));
+#if DCHECK_IS_ON()
+    DCHECK(!current || !isNonFocusableShadowHost(*current));
+#endif
     if (!current && !initialFocus)
         current = document->sequentialFocusNavigationStartingPoint(type);
 
@@ -977,7 +979,7 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
         return true;
     }
 
-    ASSERT(element->isFocusable());
+    DCHECK(element->isFocusable());
 
     // FIXME: It would be nice to just be able to call setFocusedElement(element)
     // here, but we can't do that because some elements (e.g. HTMLInputElement
@@ -1004,21 +1006,21 @@ bool FocusController::advanceFocusInDocumentOrder(LocalFrame* frame, Element* st
 Element* FocusController::findFocusableElement(WebFocusType type, Element& element)
 {
     // FIXME: No spacial navigation code yet.
-    ASSERT(type == WebFocusTypeForward || type == WebFocusTypeBackward);
+    DCHECK(type == WebFocusTypeForward || type == WebFocusTypeBackward);
     ScopedFocusNavigation scope = ScopedFocusNavigation::createFor(element);
     return findFocusableElementAcrossFocusScopes(type, scope);
 }
 
 Element* FocusController::findFocusableElementInShadowHost(const Element& shadowHost)
 {
-    ASSERT(shadowHost.authorShadowRoot());
+    DCHECK(shadowHost.authorShadowRoot());
     ScopedFocusNavigation scope = ScopedFocusNavigation::ownedByShadowHost(shadowHost);
     return findFocusableElementAcrossFocusScopes(WebFocusTypeForward, scope);
 }
 
 static bool relinquishesEditingFocus(const Element& element)
 {
-    ASSERT(element.hasEditableStyle());
+    DCHECK(element.hasEditableStyle());
     return element.document().frame() && element.rootEditableElement();
 }
 
@@ -1121,8 +1123,8 @@ void FocusController::setActive(bool active)
 
 static void updateFocusCandidateIfNeeded(WebFocusType type, const FocusCandidate& current, FocusCandidate& candidate, FocusCandidate& closest)
 {
-    ASSERT(candidate.visibleNode->isElementNode());
-    ASSERT(candidate.visibleNode->layoutObject());
+    DCHECK(candidate.visibleNode->isElementNode());
+    DCHECK(candidate.visibleNode->layoutObject());
 
     // Ignore iframes that don't have a src attribute
     if (frameOwnerElement(candidate) && (!frameOwnerElement(candidate)->contentFrame() || candidate.rect.isEmpty()))
@@ -1216,9 +1218,9 @@ bool FocusController::advanceFocusDirectionallyInContainer(Node* container, cons
 
     HTMLFrameOwnerElement* frameElement = frameOwnerElement(focusCandidate);
     // If we have an iframe without the src attribute, it will not have a contentFrame().
-    // We ASSERT here to make sure that
+    // We DCHECK here to make sure that
     // updateFocusCandidateIfNeeded() will never consider such an iframe as a candidate.
-    ASSERT(!frameElement || frameElement->contentFrame());
+    DCHECK(!frameElement || frameElement->contentFrame());
     if (frameElement && frameElement->contentFrame()->isLocalFrame()) {
         if (focusCandidate.isOffscreenAfterScrolling) {
             scrollInDirection(&focusCandidate.visibleNode->document(), type);
@@ -1257,7 +1259,7 @@ bool FocusController::advanceFocusDirectionallyInContainer(Node* container, cons
 
     // We found a new focus node, navigate to it.
     Element* element = toElement(focusCandidate.focusableNode);
-    ASSERT(element);
+    DCHECK(element);
 
     element->focus(FocusParams(SelectionBehaviorOnFocus::Reset, type, nullptr));
     return true;
@@ -1269,7 +1271,7 @@ bool FocusController::advanceFocusDirectionally(WebFocusType type)
     if (!focusedOrMainFrame()->isLocalFrame())
         return false;
     LocalFrame* curFrame = toLocalFrame(focusedOrMainFrame());
-    ASSERT(curFrame);
+    DCHECK(curFrame);
 
     Document* focusedDocument = curFrame->document();
     if (!focusedDocument)
