@@ -343,6 +343,10 @@ const char kStopNotify[] = "StopNotify";
 // Bluetooth GATT Characteristic signals.
 const char kValueUpdatedSignal[] = "ValueUpdated";
 
+// Possible keys for option dict used in ReadValue and WriteValue.
+const char kOptionOffset[] = "offset";
+const char kOptionDevice[] = "device";
+
 // Bluetooth GATT Characteristic properties.
 const char kUUIDProperty[] = "UUID";
 const char kServiceProperty[] = "Service";
@@ -377,6 +381,10 @@ const char kBluetoothGattDescriptorInterface[] = "org.bluez.GattDescriptor1";
 // Bluetooth GATT Descriptor methods.
 const char kReadValue[] = "ReadValue";
 const char kWriteValue[] = "WriteValue";
+
+// Possible keys for option dict used in ReadValue and WriteValue.
+const char kOptionOffset[] = "offset";
+const char kOptionDevice[] = "device";
 
 // Bluetooth GATT Descriptor properties.
 const char kUUIDProperty[] = "UUID";
