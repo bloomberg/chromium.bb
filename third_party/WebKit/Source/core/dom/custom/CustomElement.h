@@ -6,6 +6,7 @@
 #define CustomElement_h
 
 #include "core/CoreExport.h"
+#include "core/dom/Document.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/AtomicString.h"
 
@@ -23,8 +24,8 @@ public:
     static bool shouldCreateCustomElement(Document&, const AtomicString& localName);
     static bool shouldCreateCustomElement(Document&, const QualifiedName&);
 
-    static HTMLElement* createCustomElement(Document&, const AtomicString& localName);
-    static HTMLElement* createCustomElement(Document&, const QualifiedName&);
+    static HTMLElement* createCustomElement(Document&, const AtomicString& localName, CreateElementFlags);
+    static HTMLElement* createCustomElement(Document&, const QualifiedName&, CreateElementFlags);
 };
 
 } // namespace blink

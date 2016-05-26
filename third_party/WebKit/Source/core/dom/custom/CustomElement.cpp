@@ -63,13 +63,14 @@ bool CustomElement::shouldCreateCustomElement(Document& document, const Qualifie
         && tagName.namespaceURI() == HTMLNames::xhtmlNamespaceURI;
 }
 
-HTMLElement* CustomElement::createCustomElement(Document& document, const AtomicString& localName)
+HTMLElement* CustomElement::createCustomElement(Document& document, const AtomicString& localName, CreateElementFlags flags)
 {
     return createCustomElement(document,
-        QualifiedName(nullAtom, document.convertLocalName(localName), HTMLNames::xhtmlNamespaceURI));
+        QualifiedName(nullAtom, document.convertLocalName(localName), HTMLNames::xhtmlNamespaceURI),
+        flags);
 }
 
-HTMLElement* CustomElement::createCustomElement(Document& document, const QualifiedName& tagName)
+HTMLElement* CustomElement::createCustomElement(Document& document, const QualifiedName& tagName, CreateElementFlags flags)
 {
     DCHECK(shouldCreateCustomElement(document, tagName));
 

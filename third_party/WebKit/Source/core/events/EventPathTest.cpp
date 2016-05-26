@@ -30,7 +30,7 @@ void EventPathTest::SetUp()
 
 TEST_F(EventPathTest, ShouldBeEmptyForPseudoElementWithoutParentElement)
 {
-    Element* div = document().createElement(HTMLNames::divTag, false);
+    Element* div = document().createElement(HTMLNames::divTag, CreatedByCreateElement);
     PseudoElement* pseudo = PseudoElement::create(div, PseudoIdFirstLetter);
     pseudo->dispose();
     EventPath eventPath(*pseudo);

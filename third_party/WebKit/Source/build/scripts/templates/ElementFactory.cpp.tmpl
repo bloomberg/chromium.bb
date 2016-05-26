@@ -29,7 +29,7 @@ typedef {{namespace}}Element* (*ConstructorFunction)(
     {% if namespace == 'HTML' %}
     HTMLFormElement*,
     {% endif %}
-    bool createdByParser);
+    CreateElementFlags);
 
 typedef HashMap<AtomicString, ConstructorFunction> FunctionMap;
 
@@ -41,7 +41,7 @@ static {{namespace}}Element* {{tag|symbol}}Constructor(
     {% if namespace == 'HTML' %}
     HTMLFormElement* formElement,
     {% endif %}
-    bool createdByParser)
+    CreateElementFlags flags)
 {
     {% if tag.runtimeEnabled %}
     if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
@@ -51,7 +51,7 @@ static {{namespace}}Element* {{tag|symbol}}Constructor(
         {%- if tag.multipleTagNames %}{{tag|symbol}}Tag, {% endif -%}
         document
         {%- if namespace == 'HTML' and tag.constructorNeedsFormElement %}, formElement{% endif -%}
-        {%- if tag.constructorNeedsCreatedByParser %}, createdByParser{% endif -%}
+        {%- if tag.constructorNeedsCreatedByParser %}, flags & CreatedByParser{% endif -%}
     );
 }
 {% endfor %}
@@ -82,16 +82,16 @@ static void create{{namespace}}FunctionMap()
     {% if namespace == 'HTML' %}
     HTMLFormElement* formElement,
     {% endif %}
-    bool createdByParser)
+    CreateElementFlags flags)
 {
     if (!g_constructors)
         create{{namespace}}FunctionMap();
     if (ConstructorFunction function = g_constructors->get(localName))
-        return function(document, {% if namespace == 'HTML' %}formElement, {% endif %}createdByParser);
+        return function(document, {% if namespace == 'HTML' %}formElement, {% endif %}flags);
 
     {% if namespace == 'HTML' %}
     if (CustomElement::shouldCreateCustomElement(document, localName))
-        return CustomElement::createCustomElement(document, localName);
+        return CustomElement::createCustomElement(document, localName, flags);
     {% endif %}
 
     if (document.registrationContext() && V0CustomElement::isValidName(localName)) {

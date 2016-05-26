@@ -979,7 +979,7 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName, const Atom
     m_sawFirstElement = true;
 
     QualifiedName qName(prefix, localName, adjustedURI);
-    Element* newElement = m_currentNode->document().createElement(qName, true);
+    Element* newElement = m_currentNode->document().createElement(qName, CreatedByParser);
     if (!newElement) {
         stopParsing();
         return;

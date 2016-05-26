@@ -666,7 +666,7 @@ Element* Document::createElement(const AtomicString& name, ExceptionState& excep
     }
 
     if (isXHTMLDocument() || isHTMLDocument())
-        return HTMLElementFactory::createHTMLElement(convertLocalName(name), *this, 0, false);
+        return HTMLElementFactory::createHTMLElement(convertLocalName(name), *this, 0, CreatedByCreateElement);
 
     return Element::create(QualifiedName(nullAtom, name, nullAtom), this);
 }
@@ -681,7 +681,7 @@ Element* Document::createElement(const AtomicString& localName, const AtomicStri
     Element* element;
 
     if (CustomElement::shouldCreateCustomElement(*this, localName)) {
-        element = CustomElement::createCustomElement(*this, localName);
+        element = CustomElement::createCustomElement(*this, localName, CreatedByCreateElement);
     } else if (V0CustomElement::isValidName(localName) && registrationContext()) {
         element = registrationContext()->createCustomTagElement(*this, QualifiedName(nullAtom, convertLocalName(localName), xhtmlNamespaceURI));
     } else {
@@ -717,7 +717,7 @@ Element* Document::createElementNS(const AtomicString& namespaceURI, const Atomi
     if (qName == QualifiedName::null())
         return nullptr;
 
-    return createElement(qName, false);
+    return createElement(qName, CreatedByCreateElement);
 }
 
 Element* Document::createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, const AtomicString& typeExtension, ExceptionState& exceptionState)
@@ -728,11 +728,11 @@ Element* Document::createElementNS(const AtomicString& namespaceURI, const Atomi
 
     Element* element;
     if (CustomElement::shouldCreateCustomElement(*this, qName))
-        element = CustomElement::createCustomElement(*this, qName);
+        element = CustomElement::createCustomElement(*this, qName, CreatedByCreateElement);
     else if (V0CustomElement::isValidName(qName.localName()) && registrationContext())
         element = registrationContext()->createCustomTagElement(*this, qName);
     else
-        element = createElement(qName, false);
+        element = createElement(qName, CreatedByCreateElement);
 
     if (!typeExtension.isEmpty())
         V0CustomElementRegistrationContext::setIsAttributeAndTypeExtension(element, typeExtension);
@@ -883,7 +883,7 @@ Node* Document::importNode(Node* importedNode, bool deep, ExceptionState& except
             exceptionState.throwDOMException(NamespaceError, "The imported node has an invalid namespace.");
             return nullptr;
         }
-        Element* newElement = createElement(oldElement->tagQName(), false);
+        Element* newElement = createElement(oldElement->tagQName(), CreatedByImportNode);
 
         newElement->cloneDataFromElement(*oldElement);
 
@@ -988,15 +988,15 @@ bool Document::hasValidNamespaceForAttributes(const QualifiedName& qName)
 }
 
 // FIXME: This should really be in a possible ElementFactory class
-Element* Document::createElement(const QualifiedName& qName, bool createdByParser)
+Element* Document::createElement(const QualifiedName& qName, CreateElementFlags flags)
 {
     Element* e = nullptr;
 
     // FIXME: Use registered namespaces and look up in a hash to find the right factory.
     if (qName.namespaceURI() == xhtmlNamespaceURI)
-        e = HTMLElementFactory::createHTMLElement(qName.localName(), *this, 0, createdByParser);
+        e = HTMLElementFactory::createHTMLElement(qName.localName(), *this, 0, flags);
     else if (qName.namespaceURI() == SVGNames::svgNamespaceURI)
-        e = SVGElementFactory::createSVGElement(qName.localName(), *this, createdByParser);
+        e = SVGElementFactory::createSVGElement(qName.localName(), *this, flags);
 
     if (e)
         m_sawElementsInKnownNamespaces = true;

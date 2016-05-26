@@ -501,7 +501,7 @@ void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& exceptionStat
 
     if (diff < 0) { // Add dummy elements.
         do {
-            appendChild(document().createElement(optionTag, false), exceptionState);
+            appendChild(document().createElement(optionTag, CreatedByCreateElement), exceptionState);
             if (exceptionState.hadException())
                 break;
         } while (++diff);

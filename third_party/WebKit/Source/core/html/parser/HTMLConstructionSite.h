@@ -234,6 +234,7 @@ private:
 
     void findFosterSite(HTMLConstructionSiteTask&);
 
+    CreateElementFlags getCreateElementFlags() const;
     HTMLElement* createHTMLElement(AtomicHTMLToken*);
     Element* createElement(AtomicHTMLToken*, const AtomicString& namespaceURI);
 

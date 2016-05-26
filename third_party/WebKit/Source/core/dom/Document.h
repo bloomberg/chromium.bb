@@ -214,6 +214,23 @@ enum ShadowCascadeOrder {
     ShadowCascadeV1
 };
 
+enum CreateElementFlags {
+    CreatedByParser = 1 << 0,
+    // Synchronous custom elements flag:
+    // https://dom.spec.whatwg.org/#concept-create-element
+    SynchronousCustomElements = 0 << 1,
+    AsynchronousCustomElements = 1 << 1,
+
+    // Aliases by callers.
+    // Clone a node: https://dom.spec.whatwg.org/#concept-node-clone
+    CreatedByCloneNode = AsynchronousCustomElements,
+    CreatedByImportNode = CreatedByCloneNode,
+    // https://dom.spec.whatwg.org/#dom-document-createelement
+    CreatedByCreateElement = SynchronousCustomElements,
+    // https://html.spec.whatwg.org/#create-an-element-for-the-token
+    CreatedByFragmentParser = CreatedByParser | AsynchronousCustomElements,
+};
+
 using DocumentClassFlags = unsigned char;
 
 class CORE_EXPORT Document : public ContainerNode, public TreeScope, public SecurityContext, public ExecutionContext, public Supplementable<Document> {
@@ -292,7 +309,7 @@ public:
     Attr* createAttributeNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState&, bool shouldIgnoreNamespaceChecks = false);
     Node* importNode(Node* importedNode, bool deep, ExceptionState&);
     Element* createElementNS(const AtomicString& namespaceURI, const AtomicString& qualifiedName, ExceptionState&);
-    Element* createElement(const QualifiedName&, bool createdByParser);
+    Element* createElement(const QualifiedName&, CreateElementFlags);
 
     Element* elementFromPoint(int x, int y) const;
     HeapVector<Member<Element>> elementsFromPoint(int x, int y) const;

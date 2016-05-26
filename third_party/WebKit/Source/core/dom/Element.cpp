@@ -268,7 +268,7 @@ Element* Element::cloneElementWithoutChildren()
 
 Element* Element::cloneElementWithoutAttributesAndChildren()
 {
-    return document().createElement(tagQName(), false);
+    return document().createElement(tagQName(), CreatedByCloneNode);
 }
 
 Attr* Element::detachAttribute(size_t index)
