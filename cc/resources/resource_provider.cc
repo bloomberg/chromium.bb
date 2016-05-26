@@ -527,9 +527,7 @@ bool ResourceProvider::IsResourceFormatSupported(ResourceFormat format) const {
 bool ResourceProvider::InUseByConsumer(ResourceId id) {
   Resource* resource = GetResource(id);
   return resource->lock_for_read_count > 0 || resource->exported_count > 0 ||
-         resource->lost ||
-         (resource->gpu_memory_buffer &&
-          resource->gpu_memory_buffer->IsInUseByMacOSWindowServer());
+         resource->lost;
 }
 
 bool ResourceProvider::IsLost(ResourceId id) {
@@ -1003,10 +1001,7 @@ void ResourceProvider::UnlockForRead(ResourceId id) {
 
 ResourceProvider::Resource* ResourceProvider::LockForWrite(ResourceId id) {
   Resource* resource = GetResource(id);
-  // TODO(ccameron): The allowance for IsInUseByMacOSWindowServer should not
-  // be needed.
-  // http://crbug.com/577121
-  DCHECK(CanLockForWrite(id) || IsInUseByMacOSWindowServer(id));
+  DCHECK(CanLockForWrite(id));
   DCHECK_NE(Resource::NEEDS_WAIT, resource->synchronization_state());
   resource->locked_for_write = true;
   resource->SetLocallyUsed();
@@ -1017,20 +1012,12 @@ bool ResourceProvider::CanLockForWrite(ResourceId id) {
   Resource* resource = GetResource(id);
   return !resource->locked_for_write && !resource->lock_for_read_count &&
          !resource->exported_count && resource->origin == Resource::INTERNAL &&
-         !resource->lost && ReadLockFenceHasPassed(resource) &&
-         !(resource->gpu_memory_buffer &&
-           resource->gpu_memory_buffer->IsInUseByMacOSWindowServer());
+         !resource->lost && ReadLockFenceHasPassed(resource);
 }
 
 bool ResourceProvider::IsOverlayCandidate(ResourceId id) {
   Resource* resource = GetResource(id);
   return resource->is_overlay_candidate;
-}
-
-bool ResourceProvider::IsInUseByMacOSWindowServer(ResourceId id) {
-  Resource* resource = GetResource(id);
-  return resource->gpu_memory_buffer &&
-         resource->gpu_memory_buffer->IsInUseByMacOSWindowServer();
 }
 
 void ResourceProvider::UnlockForWrite(ResourceProvider::Resource* resource) {

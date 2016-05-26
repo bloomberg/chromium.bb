@@ -197,55 +197,6 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, ReuseFirstResource) {
   EXPECT_NE(frame->mailbox_holder(0).sync_token, sync_token);
 }
 
-TEST_F(GpuMemoryBufferVideoFramePoolTest, DoNotReuseInUse) {
-  scoped_refptr<VideoFrame> software_frame = CreateTestYUVVideoFrame(10);
-  scoped_refptr<VideoFrame> frame;
-  scoped_refptr<VideoFrame> frame2;
-
-  // Allocate a frame.
-  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
-      software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
-  RunUntilIdle();
-  EXPECT_NE(software_frame.get(), frame.get());
-  gpu::Mailbox mailbox = frame->mailbox_holder(0).mailbox;
-  const gpu::SyncToken sync_token = frame->mailbox_holder(0).sync_token;
-  EXPECT_EQ(3u, gles2_->gen_textures);
-
-  // Allocate a second frame.
-  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
-      software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame2));
-  RunUntilIdle();
-  EXPECT_NE(software_frame.get(), frame2.get());
-  EXPECT_NE(mailbox, frame2->mailbox_holder(0).mailbox);
-  EXPECT_EQ(6u, gles2_->gen_textures);
-
-  // Allow the frames to be recycled.
-  frame = nullptr;
-  frame2 = nullptr;
-  RunUntilIdle();
-
-  // Set all buffers to be in use, so the next hardware frame will require
-  // a new allocation.
-  mock_gpu_factories_->SetGpuMemoryBuffersInUseByMacOSWindowServer(true);
-  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
-      software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame));
-  RunUntilIdle();
-  EXPECT_NE(software_frame.get(), frame.get());
-  EXPECT_EQ(9u, gles2_->gen_textures);
-  EXPECT_NE(frame->mailbox_holder(0).mailbox, mailbox);
-  EXPECT_NE(frame->mailbox_holder(0).sync_token, sync_token);
-
-  // Set the buffers no longer in use, so no new allocations will be made.
-  mock_gpu_factories_->SetGpuMemoryBuffersInUseByMacOSWindowServer(false);
-  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
-      software_frame, base::Bind(MaybeCreateHardwareFrameCallback, &frame2));
-  RunUntilIdle();
-  EXPECT_NE(software_frame.get(), frame2.get());
-  EXPECT_EQ(9u, gles2_->gen_textures);
-  EXPECT_NE(frame->mailbox_holder(0).mailbox, mailbox);
-  EXPECT_NE(frame->mailbox_holder(0).sync_token, sync_token);
-}
-
 TEST_F(GpuMemoryBufferVideoFramePoolTest, DropResourceWhenSizeIsDifferent) {
   scoped_refptr<VideoFrame> frame;
   gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(

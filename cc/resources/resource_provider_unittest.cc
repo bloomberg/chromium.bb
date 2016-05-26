@@ -3707,33 +3707,6 @@ TEST(ResourceProviderTest, TextureAllocationChunkSize) {
   }
 }
 
-TEST_P(ResourceProviderTest, GpuMemoryBufferInUse) {
-  if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
-    return;
-
-  gfx::Size size(1, 1);
-  ResourceFormat format = RGBA_8888;
-  size_t pixel_size = TextureSizeBytes(size, format);
-  ASSERT_EQ(4U, pixel_size);
-
-  ResourceId id = resource_provider_->CreateResource(
-      size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format);
-
-  gfx::GpuMemoryBuffer* gpu_memory_buffer = nullptr;
-  {
-    ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
-        resource_provider_.get(), id);
-    gpu_memory_buffer = lock.GetGpuMemoryBuffer();
-    EXPECT_TRUE(lock.GetGpuMemoryBuffer());
-  }
-  EXPECT_TRUE(resource_provider_->CanLockForWrite(id));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(id));
-  gpu_memory_buffer_manager_->SetGpuMemoryBufferIsInUseByMacOSWindowServer(
-      gpu_memory_buffer, true);
-  EXPECT_FALSE(resource_provider_->CanLockForWrite(id));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(id));
-}
-
 TEST_P(ResourceProviderTest, GpuMemoryBufferReadLockFail) {
   if (GetParam() != ResourceProvider::RESOURCE_TYPE_GL_TEXTURE)
     return;

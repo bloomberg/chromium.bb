@@ -86,17 +86,7 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   struct FrameResources {
     explicit FrameResources(const gfx::Size& size) : size(size) {}
     void SetIsInUse(bool in_use) { in_use_ = in_use; }
-    bool IsInUse() const {
-      if (in_use_)
-        return true;
-      for (const PlaneResource& plane_resource : plane_resources) {
-        if (plane_resource.gpu_memory_buffer &&
-            plane_resource.gpu_memory_buffer->IsInUseByMacOSWindowServer()) {
-          return true;
-        }
-      }
-      return false;
-    }
+    bool IsInUse() const { return in_use_; }
 
     const gfx::Size size;
     PlaneResource plane_resources[VideoFrame::kMaxPlanes];
