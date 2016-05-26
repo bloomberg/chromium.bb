@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/mus/public/cpp/gles2_context.h"
+#include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
+#include "components/mus/public/cpp/surfaces/surfaces_utils.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_surface.h"
-#include "mojo/converters/surfaces/surfaces_type_converters.h"
-#include "mojo/converters/surfaces/surfaces_utils.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 

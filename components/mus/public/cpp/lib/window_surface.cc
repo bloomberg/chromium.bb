@@ -5,8 +5,8 @@
 #include "components/mus/public/cpp/window_surface.h"
 
 #include "base/memory/ptr_util.h"
+#include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "components/mus/public/cpp/window_surface_client.h"
-#include "mojo/converters/surfaces/surfaces_type_converters.h"
 
 namespace mus {
 

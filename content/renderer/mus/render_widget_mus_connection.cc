@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "components/mus/public/cpp/context_provider.h"
 #include "components/mus/public/cpp/output_surface.h"
+#include "components/mus/public/cpp/surfaces/surfaces_utils.h"
 #include "components/mus/public/interfaces/command_buffer.mojom.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
@@ -18,7 +19,6 @@
 #include "content/renderer/mus/compositor_mus_connection.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "mojo/converters/surfaces/surfaces_utils.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 

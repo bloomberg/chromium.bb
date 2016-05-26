@@ -8,8 +8,8 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/output_surface_client.h"
+#include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "components/mus/public/cpp/window_surface.h"
-#include "mojo/converters/surfaces/surfaces_type_converters.h"
 
 namespace mus {
 

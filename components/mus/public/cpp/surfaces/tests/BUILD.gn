@@ -11,10 +11,9 @@ test("mojo_surfaces_lib_unittests") {
     "//base/test:test_support",
     "//cc",
     "//cc/surfaces",
+    "//components/mus/public/cpp/surfaces",
     "//components/mus/public/interfaces",
     "//gpu",
-    "//mojo/converters/surfaces",
-    "//mojo/converters/transform",
     "//mojo/edk/test:run_all_unittests",
     "//skia",
     "//testing/gtest",
@@ -23,6 +22,7 @@ test("mojo_surfaces_lib_unittests") {
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/geometry/mojo:interfaces",
+    "//ui/gfx/mojo",
   ]
 
   sources = [

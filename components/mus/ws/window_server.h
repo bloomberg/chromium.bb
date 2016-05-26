@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/mus/public/cpp/surfaces/custom_surface_converter.h"
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
@@ -25,7 +26,6 @@
 #include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/user_id_tracker.h"
 #include "components/mus/ws/window_manager_factory_registry.h"
-#include "mojo/converters/surfaces/custom_surface_converter.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/binding.h"
 

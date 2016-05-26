@@ -7,11 +7,11 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
+#include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/server_window_surface_manager.h"
-#include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mus {

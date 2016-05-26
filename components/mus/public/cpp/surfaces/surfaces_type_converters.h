@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_CONVERTERS_SURFACES_SURFACES_TYPE_CONVERTERS_H_
-#define MOJO_CONVERTERS_SURFACES_SURFACES_TYPE_CONVERTERS_H_
+#ifndef COMPONENTS_MUS_PUBLIC_CPP_SURFACES_SURFACES_TYPE_CONVERTERS_H_
+#define COMPONENTS_MUS_PUBLIC_CPP_SURFACES_SURFACES_TYPE_CONVERTERS_H_
 
 #include <memory>
 
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/surfaces/surface_id.h"
+#include "components/mus/public/cpp/surfaces/mojo_surfaces_export.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
 #include "components/mus/public/interfaces/quads.mojom.h"
 #include "components/mus/public/interfaces/surface_id.mojom.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "mojo/converters/surfaces/mojo_surfaces_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
@@ -157,4 +157,4 @@ struct MOJO_SURFACES_EXPORT TypeConverter<std::unique_ptr<cc::CompositorFrame>,
 
 }  // namespace mojo
 
-#endif  // MOJO_CONVERTERS_SURFACES_SURFACES_TYPE_CONVERTERS_H_
+#endif  // COMPONENTS_MUS_PUBLIC_CPP_SURFACES_SURFACES_TYPE_CONVERTERS_H_

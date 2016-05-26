@@ -16,9 +16,9 @@ component("bitmap_uploader") {
   deps = [
     "//base",
     "//components/mus/public/cpp",
+    "//components/mus/public/cpp/surfaces",
     "//components/mus/public/interfaces",
     "//gpu",
-    "//mojo/converters/surfaces",
     "//mojo/public/c/system:for_component",
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",

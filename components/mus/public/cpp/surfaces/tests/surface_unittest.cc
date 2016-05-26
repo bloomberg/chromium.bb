@@ -13,15 +13,15 @@
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/resource_provider.h"
+#include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "mojo/converters/surfaces/surfaces_type_converters.h"
-#include "mojo/converters/transform/transform_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/mojo/geometry_type_converters.h"
+#include "ui/gfx/mojo/transform_type_converters.h"
 
 using mus::mojom::Color;
 using mus::mojom::ColorPtr;

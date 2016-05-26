@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_CONVERTERS_SURFACES_SURFACES_UTILS_H_
-#define MOJO_CONVERTERS_SURFACES_SURFACES_UTILS_H_
+#ifndef COMPONENTS_MUS_PUBLIC_CPP_SURFACES_SURFACES_UTILS_H_
+#define COMPONENTS_MUS_PUBLIC_CPP_SURFACES_SURFACES_UTILS_H_
 
+#include "components/mus/public/cpp/surfaces/mojo_surfaces_export.h"
 #include "components/mus/public/interfaces/quads.mojom.h"
-#include "mojo/converters/surfaces/mojo_surfaces_export.h"
 
 namespace gfx {
 class Rect;
@@ -27,4 +27,4 @@ MOJO_SURFACES_EXPORT mus::mojom::PassPtr CreateDefaultPass(
 
 }  // namespace mojo
 
-#endif  // MOJO_CONVERTERS_SURFACES_SURFACES_UTILS_H_
+#endif  // COMPONENTS_MUS_PUBLIC_CPP_SURFACES_SURFACES_UTILS_H_

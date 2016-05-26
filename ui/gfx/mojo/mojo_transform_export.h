@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_CONVERTERS_TRANSFORM_MOJO_TRANSFORM_EXPORT_H_
-#define MOJO_CONVERTERS_TRANSFORM_MOJO_TRANSFORM_EXPORT_H_
+#ifndef UI_GFX_MOJO_MOJO_TRANSFORM_EXPORT_H_
+#define UI_GFX_MOJO_MOJO_TRANSFORM_EXPORT_H_
 
 #if defined(COMPONENT_BUILD)
 
@@ -29,4 +29,4 @@
 #define MOJO_TRANSFORM_EXPORT
 #endif
 
-#endif  // MOJO_CONVERTERS_TRANSFORM_MOJO_TRANSFORM_EXPORT_H_
+#endif  // UI_GFX_MOJO_MOJO_TRANSFORM_EXPORT_H_

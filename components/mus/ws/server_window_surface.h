@@ -12,10 +12,10 @@
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_id_allocator.h"
+#include "components/mus/public/cpp/surfaces/custom_surface_converter.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/ids.h"
-#include "mojo/converters/surfaces/custom_surface_converter.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace mus {

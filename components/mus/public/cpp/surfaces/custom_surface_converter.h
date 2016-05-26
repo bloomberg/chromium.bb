@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_CONVERTERS_SURFACES_CUSTOM_SURFACE_CONVERTER_H_
-#define MOJO_CONVERTERS_SURFACES_CUSTOM_SURFACE_CONVERTER_H_
+#ifndef COMPONENTS_MUS_PUBLIC_CPP_SURFACES_CUSTOM_SURFACE_CONVERTER_H_
+#define COMPONENTS_MUS_PUBLIC_CPP_SURFACES_CUSTOM_SURFACE_CONVERTER_H_
+
+#include "components/mus/public/interfaces/compositor_frame.mojom.h"
+#include "components/mus/public/interfaces/quads.mojom.h"
 
 namespace cc {
 class RenderPass;
@@ -28,4 +31,4 @@ class CustomSurfaceConverter {
 
 } // namespace mojo
 
-#endif  // MOJO_CONVERTERS_SURFACES_CUSTOM_SURFACE_CONVERTER_H_
+#endif  // COMPONENTS_MUS_PUBLIC_CPP_SURFACES_CUSTOM_SURFACE_CONVERTER_H_

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_CONVERTERS_TRANSFORM_TRANSFORM_TYPE_CONVERTERS_H_
-#define MOJO_CONVERTERS_TRANSFORM_TRANSFORM_TYPE_CONVERTERS_H_
+#ifndef UI_GFX_MOJO_TRANSFORM_TYPE_CONVERTERS_H_
+#define UI_GFX_MOJO_TRANSFORM_TYPE_CONVERTERS_H_
 
-#include "mojo/converters/transform/mojo_transform_export.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom.h"
+#include "ui/gfx/mojo/mojo_transform_export.h"
 #include "ui/gfx/transform.h"
 
 namespace mojo {
@@ -22,4 +22,4 @@ struct MOJO_TRANSFORM_EXPORT TypeConverter<gfx::Transform, TransformPtr> {
 
 }  // namespace mojo
 
-#endif  // MOJO_CONVERTERS_TRANSFORM_TRANSFORM_TYPE_CONVERTERS_H_
+#endif  // UI_GFX_MOJO_TRANSFORM_TYPE_CONVERTERS_H_

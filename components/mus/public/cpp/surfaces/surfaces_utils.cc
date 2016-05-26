@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/converters/surfaces/surfaces_utils.h"
+#include "components/mus/public/cpp/surfaces/surfaces_utils.h"
 
-#include "mojo/converters/transform/transform_type_converters.h"
 #include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/mojo/transform_type_converters.h"
 #include "ui/gfx/transform.h"
 
 using mus::mojom::Pass;

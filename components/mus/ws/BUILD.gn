@@ -96,11 +96,11 @@ source_set("lib") {
     "//cc/surfaces:surface_id",
     "//components/mus/common:mus_common",
     "//components/mus/gles2",
+    "//components/mus/public/cpp/surfaces",
     "//components/mus/public/interfaces",
     "//components/mus/surfaces",
     "//mojo/common:common_base",
     "//mojo/converters/ime",
-    "//mojo/converters/surfaces",
     "//mojo/public/cpp/bindings:callback",
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
@@ -211,7 +211,6 @@ test("mus_ws_unittests") {
     "//components/mus/public/cpp/tests:test_support",
     "//components/mus/public/interfaces",
     "//components/mus/surfaces",
-    "//mojo/converters/transform",
     "//mojo/public/cpp/bindings:bindings",
     "//services/shell/public/cpp:shell_test_support",
     "//services/shell/public/cpp:sources",
@@ -227,6 +226,7 @@ test("mus_ws_unittests") {
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/geometry/mojo:interfaces",
     "//ui/gfx/geometry/mojo:util",
+    "//ui/gfx/mojo",
     "//ui/gl",
   ]
 
