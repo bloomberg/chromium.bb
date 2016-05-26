@@ -40,13 +40,13 @@ def CleanupLeftoverProcesses(devices):
   device_utils.RestartServer()
 
   def cleanup_device(d):
-    d.WaitUntilFullyBooted()
-    d.RestartAdbd()
     try:
+      d.WaitUntilFullyBooted()
+      d.RestartAdbd()
       d.EnableRoot()
+      d.WaitUntilFullyBooted()
     except device_errors.CommandFailedError:
-      logging.exception('Failed to enable root')
-    d.WaitUntilFullyBooted()
+      logging.exception('Failed to clean up device. Attempting to continue.')
 
   device_utils.DeviceUtils.parallel(devices).pMap(cleanup_device)
 
