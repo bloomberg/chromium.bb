@@ -18,10 +18,10 @@ namespace usb {
   enum RequestType {standard, class, vendor, reserved};
   enum TransferType {control, interrupt, isochronous, bulk};
 
-  // For isochronous mode, SynchronizationType and UsageType map to their
-  // namesakes within the USB specification.
+  // For interrupt and isochronous modes, SynchronizationType and UsageType map
+  // to their namesakes within the USB specification.
   enum SynchronizationType {asynchronous, adaptive, synchronous};
-  enum UsageType {data, feedback, explicitFeedback};
+  enum UsageType {data, feedback, explicitFeedback, periodic, notification};
 
   dictionary Device {
     // An opaque ID for the USB device. It remains unchanged until the device is

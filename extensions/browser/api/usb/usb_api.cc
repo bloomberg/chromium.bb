@@ -311,6 +311,12 @@ UsageType ConvertUsageTypeToApi(const UsbUsageType& input) {
       return usb::USAGE_TYPE_FEEDBACK;
     case device::USB_USAGE_EXPLICIT_FEEDBACK:
       return usb::USAGE_TYPE_EXPLICITFEEDBACK;
+    case device::USB_USAGE_PERIODIC:
+      return usb::USAGE_TYPE_PERIODIC;
+    case device::USB_USAGE_NOTIFICATION:
+      return usb::USAGE_TYPE_NOTIFICATION;
+    case device::USB_USAGE_RESERVED:
+      return usb::USAGE_TYPE_NONE;
     default:
       NOTREACHED();
       return usb::USAGE_TYPE_NONE;
