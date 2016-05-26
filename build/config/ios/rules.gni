@@ -230,7 +230,7 @@ template("ios_app_bundle") {
 #       by performing variable substitutions.
 #
 # For more information, see "gn help executable".
-template("ios_appext_bundle") {
+template("ios_appex_bundle") {
   ios_app_bundle(target_name) {
     forward_variables_from(invoker,
                            "*",
@@ -238,7 +238,7 @@ template("ios_appext_bundle") {
                              "bundle_extension",
                              "product_type",
                            ])
-    bundle_extension = ".appext"
+    bundle_extension = ".appex"
     product_type = "com.apple.product-type.app-extension"
 
     # Add linker flags required for an application extension (determined by
