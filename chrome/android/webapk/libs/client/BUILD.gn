@@ -18,8 +18,10 @@ android_library("client") {
 }
 
 junit_binary("webapk_client_junit_tests") {
-  java_files =
-      [ "junit/src/org/chromium/webapk/lib/client/WebApkValidatorTest.java" ]
+  java_files = [
+    "junit/src/org/chromium/webapk/lib/client/WebApkServiceConnectionManagerTest.java",
+    "junit/src/org/chromium/webapk/lib/client/WebApkValidatorTest.java",
+  ]
   deps = [
     ":client",
     "//base:base_junit_test_support",
