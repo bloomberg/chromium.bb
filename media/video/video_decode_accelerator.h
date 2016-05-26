@@ -240,18 +240,16 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   virtual void AssignPictureBuffers(
       const std::vector<PictureBuffer>& buffers) = 0;
 
-  // Imports |gpu_memory_buffer_handles| as backing memory for picture buffer
-  // associated with |picture_buffer_id|. The n-th element in
-  // |gpu_memory_buffer_handles| should be a handle to a GpuMemoryBuffer backing
-  // the n-th plane of the PictureBuffer. This can only be be used if the VDA
+  // Imports |gpu_memory_buffer_handle| as backing memory for picture buffer
+  // associated with |picture_buffer_id|. This can only be be used if the VDA
   // has been Initialize()d with config.output_mode = IMPORT, and should be
   // preceded by a call to AssignPictureBuffers() to set up the number of
   // PictureBuffers and their details.
-  // After this call, the VDA becomes the owner of the GpuMemoryBufferHandles,
-  // and is responsible for closing them after use, also on import failure.
+  // After this call, the VDA becomes the owner of the GpuMemoryBufferHandle,
+  // and is responsible for closing it after use, also on import failure.
   virtual void ImportBufferForPicture(
       int32_t picture_buffer_id,
-      const std::vector<gfx::GpuMemoryBufferHandle>& gpu_memory_buffer_handles);
+      const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle);
 
   // Sends picture buffers to be reused by the decoder. This needs to be called
   // for each buffer that has been processed so that decoder may know onto which

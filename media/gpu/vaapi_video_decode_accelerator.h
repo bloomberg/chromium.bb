@@ -68,9 +68,9 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
 #if defined(USE_OZONE)
-  void ImportBufferForPicture(int32_t picture_buffer_id,
-                              const std::vector<gfx::GpuMemoryBufferHandle>&
-                                  gpu_memory_buffer_handles) override;
+  void ImportBufferForPicture(
+      int32_t picture_buffer_id,
+      const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) override;
 #endif
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;

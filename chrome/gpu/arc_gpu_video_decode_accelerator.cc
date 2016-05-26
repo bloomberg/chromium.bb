@@ -273,7 +273,7 @@ void ArcGpuVideoDecodeAccelerator::UseBuffer(PortType port,
             base::FileDescriptor(info.handle.release(), true));
         handle.native_pixmap_handle.strides.push_back(info.stride);
 #endif
-        vda_->ImportBufferForPicture(index, {handle});
+        vda_->ImportBufferForPicture(index, handle);
       } else {
         vda_->ReusePictureBuffer(index);
       }

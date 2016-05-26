@@ -50,9 +50,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   void Decode(const media::BitstreamBuffer& bitstream_buffer) override;
   void AssignPictureBuffers(
       const std::vector<media::PictureBuffer>& buffers) override;
-  void ImportBufferForPicture(int32_t picture_buffer_id,
-                              const std::vector<gfx::GpuMemoryBufferHandle>&
-                                  gpu_memory_buffer_handles) override;
+  void ImportBufferForPicture(
+      int32_t picture_buffer_id,
+      const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) override;
   void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;

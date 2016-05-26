@@ -1666,17 +1666,15 @@ void V4L2SliceVideoDecodeAccelerator::AssignEGLImage(
 
 void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
     int32_t picture_buffer_id,
-    const std::vector<gfx::GpuMemoryBufferHandle>& gpu_memory_buffer_handles) {
+    const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
   auto passed_dmabuf_fds(base::WrapUnique(new std::vector<base::ScopedFD>()));
 #if defined(USE_OZONE)
-  for (const auto& handle : gpu_memory_buffer_handles) {
-    int fd = -1;
-    fd = handle.native_pixmap_handle.fds[0].fd;
-    DCHECK_NE(fd, -1);
-    passed_dmabuf_fds->push_back(base::ScopedFD(fd));
+  for (const auto& fd : gpu_memory_buffer_handle.native_pixmap_handle.fds) {
+    DCHECK_NE(fd.fd, -1);
+    passed_dmabuf_fds->push_back(base::ScopedFD(fd.fd));
   }
 #endif
 

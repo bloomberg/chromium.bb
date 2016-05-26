@@ -289,7 +289,7 @@ class TextureRef : public base::RefCounted<TextureRef> {
       media::VideoPixelFormat pixel_format,
       const gfx::Size& size);
 
-  std::vector<gfx::GpuMemoryBufferHandle> ExportGpuMemoryBufferHandles() const;
+  gfx::GpuMemoryBufferHandle ExportGpuMemoryBufferHandle() const;
 
   int32_t texture_id() const { return texture_id_; }
 
@@ -360,21 +360,18 @@ scoped_refptr<TextureRef> TextureRef::CreatePreallocated(
   return texture_ref;
 }
 
-std::vector<gfx::GpuMemoryBufferHandle>
-TextureRef::ExportGpuMemoryBufferHandles() const {
-  std::vector<gfx::GpuMemoryBufferHandle> handles;
+gfx::GpuMemoryBufferHandle TextureRef::ExportGpuMemoryBufferHandle() const {
+  gfx::GpuMemoryBufferHandle handle;
 #if defined(USE_OZONE)
   CHECK(pixmap_);
   int duped_fd = HANDLE_EINTR(dup(pixmap_->GetDmaBufFd(0)));
   LOG_ASSERT(duped_fd != -1) << "Failed duplicating dmabuf fd";
-  gfx::GpuMemoryBufferHandle handle;
   handle.type = gfx::OZONE_NATIVE_PIXMAP;
   handle.native_pixmap_handle.fds.emplace_back(
       base::FileDescriptor(duped_fd, true));
   handle.native_pixmap_handle.strides.push_back(pixmap_->GetDmaBufPitch(0));
-  handles.push_back(handle);
 #endif
-  return handles;
+  return handle;
 }
 
 // Client that can accept callbacks from a VideoDecodeAccelerator and is used by
@@ -693,11 +690,10 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
       TextureRefMap::iterator texture_it = active_textures_.find(buffer.id());
       ASSERT_NE(active_textures_.end(), texture_it);
 
-      std::vector<gfx::GpuMemoryBufferHandle> handles =
-          texture_it->second->ExportGpuMemoryBufferHandles();
-      LOG_ASSERT(!handles.empty()) << "Failed producing GMB handles";
-
-      decoder_->ImportBufferForPicture(buffer.id(), handles);
+      const gfx::GpuMemoryBufferHandle& handle =
+          texture_it->second->ExportGpuMemoryBufferHandle();
+      LOG_ASSERT(!handle.is_null()) << "Failed producing GMB handle";
+      decoder_->ImportBufferForPicture(buffer.id(), handle);
     }
   }
 }

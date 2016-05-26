@@ -792,49 +792,48 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
 }
 
 #if defined(USE_OZONE)
-static void CloseGpuMemoryBuferHandles(
-    const std::vector<gfx::GpuMemoryBufferHandle>& handles) {
-  for (const auto& handle : handles) {
+static void CloseGpuMemoryBufferHandle(
+    const gfx::GpuMemoryBufferHandle& handle) {
+  for (const auto& fd : handle.native_pixmap_handle.fds) {
     // Close the fd by wrapping it in a ScopedFD and letting
     // it fall out of scope.
-    DCHECK_EQ(1u, handle.native_pixmap_handle.fds.size());
-    base::ScopedFD fd(handle.native_pixmap_handle.fds[0].fd);
+    base::ScopedFD scoped_fd(fd.fd);
   }
 }
 
 void VaapiVideoDecodeAccelerator::ImportBufferForPicture(
     int32_t picture_buffer_id,
-    const std::vector<gfx::GpuMemoryBufferHandle>& gpu_memory_buffer_handles) {
+    const gfx::GpuMemoryBufferHandle& gpu_memory_buffer_handle) {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
   DVLOG(2) << "Importing picture id: " << picture_buffer_id;
 
   if (output_mode_ != Config::OutputMode::IMPORT) {
-    CloseGpuMemoryBuferHandles(gpu_memory_buffer_handles);
+    CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
     LOG(ERROR) << "Cannot import in non-import mode";
     NotifyError(INVALID_ARGUMENT);
     return;
   }
 
-  if (gpu_memory_buffer_handles.size() != 1) {
-    CloseGpuMemoryBuferHandles(gpu_memory_buffer_handles);
-    LOG(ERROR) << "Buffers backed by multiple handles unsupported";
+  if (gpu_memory_buffer_handle.native_pixmap_handle.fds.size() != 1) {
+    CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
+    LOG(ERROR) << "Handles backed by multple fds unsupported";
     NotifyError(INVALID_ARGUMENT);
     return;
   }
 
   VaapiPicture* picture = PictureById(picture_buffer_id);
   if (!picture) {
-    CloseGpuMemoryBuferHandles(gpu_memory_buffer_handles);
+    CloseGpuMemoryBufferHandle(gpu_memory_buffer_handle);
     LOG(ERROR) << "Invalid picture_buffer_id";
     NotifyError(INVALID_ARGUMENT);
     return;
   }
 
   if (!picture->ImportGpuMemoryBufferHandle(kOutputPictureFormat,
-                                            gpu_memory_buffer_handles[0])) {
+                                            gpu_memory_buffer_handle)) {
     // ImportGpuMemoryBufferHandle will close the handles even on failure, so
     // we don't need to do this ourselves.
-    LOG(ERROR) << "Failed to import GpuMemoryBufferHandles";
+    LOG(ERROR) << "Failed to import GpuMemoryBufferHandle";
     NotifyError(PLATFORM_FAILURE);
     return;
   }
