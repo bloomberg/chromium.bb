@@ -24,6 +24,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/tabbed_pane/tabbed_pane.h"
@@ -72,16 +73,43 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(description_label_);
 
+  const SkColor bg_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_MenuBackgroundColor);
+
   if (screen_list) {
     source_types_.push_back(DesktopMediaID::TYPE_SCREEN);
 
+    const DesktopMediaSourceViewStyle kSingleScreenStyle(
+        1,                                       // columns
+        gfx::Size(360, 280),                     // item_size
+        gfx::Rect(),                             // label_rect
+        gfx::HorizontalAlignment::ALIGN_CENTER,  // text_alignment
+        gfx::Rect(20, 20, 320, 240),             // image_rect
+        4,                                       // selection_border_thickness
+        5);                                      // focus_rectangle_inset
+
+    const DesktopMediaSourceViewStyle kGenericScreenStyle(
+        2,                                       // columns
+        gfx::Size(270, 220),                     // item_size
+        gfx::Rect(15, 165, 240, 40),             // label_rect
+        gfx::HorizontalAlignment::ALIGN_CENTER,  // text_alignment
+        gfx::Rect(15, 15, 240, 150),             // image_rect
+        2,                                       // selection_border_thickness
+        5);                                      // focus_rectangle_inset
+
     views::ScrollView* screen_scroll_view =
         views::ScrollView::CreateScrollViewWithBorder();
-    list_views_.push_back(
-        new DesktopMediaListView(this, std::move(screen_list)));
+    list_views_.push_back(new DesktopMediaListView(
+        this, std::move(screen_list), kGenericScreenStyle, kSingleScreenStyle));
 
     screen_scroll_view->SetContents(list_views_.back());
-    screen_scroll_view->ClipHeightTo(kListItemHeight, kListItemHeight * 2);
+    screen_scroll_view->ClipHeightTo(
+        kGenericScreenStyle.item_size.height(),
+        kGenericScreenStyle.item_size.height() * 2);
+    screen_scroll_view->set_hide_horizontal_scrollbar(true);
+    screen_scroll_view->set_background(
+        views::Background::CreateSolidBackground(bg_color));
+
     pane_->AddTab(
         l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_SCREEN),
         screen_scroll_view);
@@ -90,13 +118,26 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 
   if (window_list) {
     source_types_.push_back(DesktopMediaID::TYPE_WINDOW);
+
+    const DesktopMediaSourceViewStyle kWindowStyle(
+        3,                                       // columns
+        gfx::Size(180, 160),                     // item_size
+        gfx::Rect(10, 110, 160, 40),             // label_rect
+        gfx::HorizontalAlignment::ALIGN_CENTER,  // text_alignment
+        gfx::Rect(8, 8, 164, 104),               // image_rect
+        2,                                       // selection_border_thickness
+        5);                                      // focus_rectangle_inset
+
     views::ScrollView* window_scroll_view =
         views::ScrollView::CreateScrollViewWithBorder();
-    list_views_.push_back(
-        new DesktopMediaListView(this, std::move(window_list)));
-
+    list_views_.push_back(new DesktopMediaListView(this, std::move(window_list),
+                                                   kWindowStyle, kWindowStyle));
     window_scroll_view->SetContents(list_views_.back());
-    window_scroll_view->ClipHeightTo(kListItemHeight, kListItemHeight * 2);
+    window_scroll_view->ClipHeightTo(kWindowStyle.item_size.height(),
+                                     kWindowStyle.item_size.height() * 2);
+    window_scroll_view->set_hide_horizontal_scrollbar(true);
+    window_scroll_view->set_background(
+        views::Background::CreateSolidBackground(bg_color));
 
     pane_->AddTab(
         l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_WINDOW),
@@ -106,12 +147,27 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
 
   if (tab_list) {
     source_types_.push_back(DesktopMediaID::TYPE_WEB_CONTENTS);
+
+    const DesktopMediaSourceViewStyle kTabStyle(
+        1,                                     // columns
+        gfx::Size(600, 30),                    // item_size
+        gfx::Rect(46, 0, 490, 30),             // label_rect
+        gfx::HorizontalAlignment::ALIGN_LEFT,  // text_alignment
+        gfx::Rect(10, 2, 26, 26),              // image_rect
+        1,                                     // selection_border_thickness
+        0);                                    // focus_rectangle_inset
+
     views::ScrollView* tab_scroll_view =
         views::ScrollView::CreateScrollViewWithBorder();
-    list_views_.push_back(new DesktopMediaListView(this, std::move(tab_list)));
+    list_views_.push_back(new DesktopMediaListView(this, std::move(tab_list),
+                                                   kTabStyle, kTabStyle));
 
     tab_scroll_view->SetContents(list_views_.back());
-    tab_scroll_view->ClipHeightTo(kListItemHeight, kListItemHeight * 2);
+    tab_scroll_view->ClipHeightTo(kTabStyle.item_size.height(),
+                                  kTabStyle.item_size.height() * 2);
+    tab_scroll_view->set_hide_horizontal_scrollbar(true);
+    tab_scroll_view->set_background(
+        views::Background::CreateSolidBackground(bg_color));
 
     pane_->AddTab(
         l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_TAB),
@@ -142,7 +198,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
   // If |parent_web_contents| is set and it's not a background page then the
   // picker will be shown modal to the web contents. Otherwise the picker is
   // shown in a separate window.
-  views::Widget* widget = NULL;
+  views::Widget* widget = nullptr;
   bool modal_dialog =
       parent_web_contents &&
       !parent_web_contents->GetDelegate()->IsNeverVisible(parent_web_contents);
@@ -150,7 +206,7 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
     widget =
         constrained_window::ShowWebModalDialogViews(this, parent_web_contents);
   } else {
-    widget = DialogDelegate::CreateDialogWidget(this, context, NULL);
+    widget = DialogDelegate::CreateDialogWidget(this, context, nullptr);
     widget->Show();
   }
 
@@ -206,7 +262,7 @@ void DesktopMediaPickerDialogView::SwitchSourceType(int index) {
 }
 
 void DesktopMediaPickerDialogView::DetachParent() {
-  parent_ = NULL;
+  parent_ = nullptr;
 }
 
 gfx::Size DesktopMediaPickerDialogView::GetPreferredSize() const {
@@ -225,7 +281,7 @@ base::string16 DesktopMediaPickerDialogView::GetWindowTitle() const {
 bool DesktopMediaPickerDialogView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
-    return list_views_[pane_->selected_tab_index()]->GetSelection() != NULL;
+    return list_views_[pane_->selected_tab_index()]->GetSelection() != nullptr;
   return true;
 }
 
@@ -309,7 +365,7 @@ DesktopMediaListView* DesktopMediaPickerDialogView::GetMediaListViewForTesting()
 DesktopMediaSourceView*
 DesktopMediaPickerDialogView::GetMediaSourceViewForTesting(int index) const {
   if (list_views_[pane_->selected_tab_index()]->child_count() <= index)
-    return NULL;
+    return nullptr;
 
   return reinterpret_cast<DesktopMediaSourceView*>(
       list_views_[pane_->selected_tab_index()]->child_at(index));
@@ -332,7 +388,7 @@ views::TabbedPane* DesktopMediaPickerDialogView::GetPaneForTesting() const {
   return pane_;
 }
 
-DesktopMediaPickerViews::DesktopMediaPickerViews() : dialog_(NULL) {}
+DesktopMediaPickerViews::DesktopMediaPickerViews() : dialog_(nullptr) {}
 
 DesktopMediaPickerViews::~DesktopMediaPickerViews() {
   if (dialog_) {
@@ -362,7 +418,7 @@ void DesktopMediaPickerViews::Show(
 void DesktopMediaPickerViews::NotifyDialogResult(DesktopMediaID source) {
   // Once this method is called the |dialog_| will close and destroy itself.
   dialog_->DetachParent();
-  dialog_ = NULL;
+  dialog_ = nullptr;
 
   DCHECK(!callback_.is_null());
 

@@ -23,11 +23,17 @@ const int kDesktopMediaSourceViewGroupId = 1;
 
 DesktopMediaListView::DesktopMediaListView(
     DesktopMediaPickerDialogView* parent,
-    std::unique_ptr<DesktopMediaList> media_list)
-    : parent_(parent), media_list_(std::move(media_list)), weak_factory_(this) {
-  media_list_->SetThumbnailSize(
-      gfx::Size(DesktopMediaPickerDialogView::kThumbnailWidth,
-                DesktopMediaPickerDialogView::kThumbnailHeight));
+    std::unique_ptr<DesktopMediaList> media_list,
+    DesktopMediaSourceViewStyle generic_style,
+    DesktopMediaSourceViewStyle single_style)
+    : parent_(parent),
+      media_list_(std::move(media_list)),
+      single_style_(single_style),
+      generic_style_(generic_style),
+      active_style_(&single_style_),
+      weak_factory_(this) {
+  SetStyle(&single_style_);
+
   SetFocusBehavior(FocusBehavior::ALWAYS);
 }
 
@@ -55,15 +61,14 @@ DesktopMediaSourceView* DesktopMediaListView::GetSelection() {
     if (source_view->is_selected())
       return source_view;
   }
-  return NULL;
+  return nullptr;
 }
 
 gfx::Size DesktopMediaListView::GetPreferredSize() const {
   int total_rows =
-      (child_count() + DesktopMediaPickerDialogView::kListColumns - 1) /
-      DesktopMediaPickerDialogView::kListColumns;
-  return gfx::Size(DesktopMediaPickerDialogView::kTotalListWidth,
-                   DesktopMediaPickerDialogView::kListItemHeight * total_rows);
+      (child_count() + active_style_->columns - 1) / active_style_->columns;
+  return gfx::Size(active_style_->columns * active_style_->item_size.width(),
+                   total_rows * active_style_->item_size.height());
 }
 
 void DesktopMediaListView::Layout() {
@@ -71,30 +76,26 @@ void DesktopMediaListView::Layout() {
   int y = 0;
 
   for (int i = 0; i < child_count(); ++i) {
-    if (x + DesktopMediaPickerDialogView::kListItemWidth >
-        DesktopMediaPickerDialogView::kTotalListWidth) {
+    if (i > 0 && i % active_style_->columns == 0) {
       x = 0;
-      y += DesktopMediaPickerDialogView::kListItemHeight;
+      y += active_style_->item_size.height();
     }
 
-    View* source_view = child_at(i);
-    source_view->SetBounds(x, y, DesktopMediaPickerDialogView::kListItemWidth,
-                           DesktopMediaPickerDialogView::kListItemHeight);
+    child_at(i)->SetBounds(x, y, active_style_->item_size.width(),
+                           active_style_->item_size.height());
 
-    x += DesktopMediaPickerDialogView::kListItemWidth;
+    x += active_style_->item_size.width();
   }
-
-  y += DesktopMediaPickerDialogView::kListItemHeight;
 }
 
 bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
   int position_increment = 0;
   switch (event.key_code()) {
     case ui::VKEY_UP:
-      position_increment = -DesktopMediaPickerDialogView::kListColumns;
+      position_increment = -active_style_->columns;
       break;
     case ui::VKEY_DOWN:
-      position_increment = DesktopMediaPickerDialogView::kListColumns;
+      position_increment = active_style_->columns;
       break;
     case ui::VKEY_LEFT:
       position_increment = -1;
@@ -108,7 +109,7 @@ bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
 
   if (position_increment != 0) {
     DesktopMediaSourceView* selected = GetSelection();
-    DesktopMediaSourceView* new_selected = NULL;
+    DesktopMediaSourceView* new_selected = nullptr;
 
     if (selected) {
       int index = GetIndexOf(selected);
@@ -137,20 +138,26 @@ bool DesktopMediaListView::OnKeyPressed(const ui::KeyEvent& event) {
 
 void DesktopMediaListView::OnSourceAdded(DesktopMediaList* list, int index) {
   const DesktopMediaList::Source& source = media_list_->GetSource(index);
+
+  // We are going to have a second item, apply the generic style.
+  if (child_count() == 1)
+    SetStyle(&generic_style_);
+
   DesktopMediaSourceView* source_view =
-      new DesktopMediaSourceView(this, source.id);
+      new DesktopMediaSourceView(this, source.id, *active_style_);
+
   source_view->SetName(source.name);
   source_view->SetGroup(kDesktopMediaSourceViewGroupId);
   AddChildViewAt(source_view, index);
 
-  PreferredSizeChanged();
-
-  if (child_count() % DesktopMediaPickerDialogView::kListColumns == 1)
+  if ((child_count() - 1) % active_style_->columns == 0)
     parent_->OnMediaListRowsChanged();
 
   // Auto select the first screen.
   if (index == 0 && source.id.type == DesktopMediaID::TYPE_SCREEN)
     source_view->RequestFocus();
+
+  PreferredSizeChanged();
 
   std::string autoselect_source =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -172,6 +179,7 @@ void DesktopMediaListView::OnSourceRemoved(DesktopMediaList* list, int index) {
   DCHECK(view);
   DCHECK_EQ(view->GetClassName(),
             DesktopMediaSourceView::kDesktopMediaSourceViewClassName);
+
   bool was_selected = view->is_selected();
   RemoveChildView(view);
   delete view;
@@ -179,10 +187,14 @@ void DesktopMediaListView::OnSourceRemoved(DesktopMediaList* list, int index) {
   if (was_selected)
     OnSelectionChanged();
 
-  PreferredSizeChanged();
-
-  if (child_count() % DesktopMediaPickerDialogView::kListColumns == 0)
+  if (child_count() % active_style_->columns == 0)
     parent_->OnMediaListRowsChanged();
+
+  // Apply single-item styling when the second source is removed.
+  if (child_count() == 1)
+    SetStyle(&single_style_);
+
+  PreferredSizeChanged();
 }
 
 void DesktopMediaListView::OnSourceMoved(DesktopMediaList* list,
@@ -213,4 +225,17 @@ void DesktopMediaListView::OnSourceThumbnailChanged(DesktopMediaList* list,
 void DesktopMediaListView::AcceptSelection() {
   OnSelectionChanged();
   OnDoubleClick();
+}
+
+void DesktopMediaListView::SetStyle(DesktopMediaSourceViewStyle* style) {
+  active_style_ = style;
+  media_list_->SetThumbnailSize(gfx::Size(
+      style->image_rect.width() - 2 * style->selection_border_thickness,
+      style->image_rect.height() - 2 * style->selection_border_thickness));
+
+  for (int i = 0; i < child_count(); i++) {
+    DesktopMediaSourceView* source_view =
+        static_cast<DesktopMediaSourceView*>(child_at(i));
+    source_view->SetStyle(*active_style_);
+  }
 }

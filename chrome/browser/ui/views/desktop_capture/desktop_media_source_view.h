@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_DESKTOP_CAPTURE_DESKTOP_MEDIA_SOURCE_VIEW_H_
 
 #include "content/public/browser/desktop_media_id.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -15,13 +16,41 @@ class Label;
 
 class DesktopMediaListView;
 
+// Controls the appearance of DesktopMediaSourceView.
+struct DesktopMediaSourceViewStyle {
+  DesktopMediaSourceViewStyle(const DesktopMediaSourceViewStyle& style);
+  DesktopMediaSourceViewStyle(int columns,
+                              const gfx::Size& item_size,
+                              const gfx::Rect& label_rect,
+                              gfx::HorizontalAlignment text_alignment,
+                              const gfx::Rect& image_rect,
+                              int selection_border_thickness,
+                              int focus_rectangle_inset);
+
+  int columns;
+
+  gfx::Size item_size;
+
+  gfx::Rect label_rect;
+  gfx::HorizontalAlignment text_alignment;
+
+  gfx::Rect image_rect;
+  int selection_border_thickness;
+
+  int focus_rectangle_inset;
+};
+
 // View used for each item in DesktopMediaListView. Shows a single desktop media
 // source as a thumbnail with the title under it.
 class DesktopMediaSourceView : public views::View {
  public:
   DesktopMediaSourceView(DesktopMediaListView* parent,
-                         content::DesktopMediaID source_id);
+                         content::DesktopMediaID source_id,
+                         DesktopMediaSourceViewStyle style);
   ~DesktopMediaSourceView() override;
+
+  // Used to update the style when the number of available items changes.
+  void SetStyle(DesktopMediaSourceViewStyle style);
 
   // Updates thumbnail and title from |source|.
   void SetName(const base::string16& name);
@@ -35,13 +64,14 @@ class DesktopMediaSourceView : public views::View {
 
   // views::View interface.
   const char* GetClassName() const override;
-  void Layout() override;
   views::View* GetSelectedViewForGroup(int group) override;
   bool IsGroupFocusTraversable() const override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   static const char* kDesktopMediaSourceViewClassName;
@@ -52,9 +82,13 @@ class DesktopMediaSourceView : public views::View {
   // (if any).
   void SetSelected(bool selected);
 
+  // Updates hover state of the element, and the appearance.
+  void SetHovered(bool hovered);
+
   DesktopMediaListView* parent_;
   content::DesktopMediaID source_id_;
 
+  DesktopMediaSourceViewStyle style_;
   views::ImageView* image_view_;
   views::Label* label_;
 

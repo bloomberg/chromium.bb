@@ -68,16 +68,6 @@ class DesktopMediaPickerDialogView : public views::DialogDelegateView,
       content::DesktopMediaID::Type source_type) const;
   views::TabbedPane* GetPaneForTesting() const;
 
-  static const int kThumbnailWidth = 160;
-  static const int kThumbnailHeight = 100;
-  static const int kThumbnailMargin = 10;
-  static const int kLabelHeight = 40;
-  static const int kListItemWidth = kThumbnailMargin * 2 + kThumbnailWidth;
-  static const int kListItemHeight =
-      kThumbnailMargin * 2 + kThumbnailHeight + kLabelHeight;
-  static const int kListColumns = 3;
-  static const int kTotalListWidth = kListColumns * kListItemWidth;
-
  private:
   void SwitchSourceType(int index);
 

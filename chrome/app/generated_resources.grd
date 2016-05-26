@@ -13809,9 +13809,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_DESTOP_MEDIA_PICKER_VIRTUAL_SCREEN_NAME" desc="The name of the virtual display which is shown in the picker">
         Virtual Display
       </message>
-      <message name="IDS_DESKTOP_MEDIA_PICKER_CHROME_TAB_TITLE" desc="Chrome tab's title shown in window picker dialog">
-        Tab: <ph name="CHROME_TAB_TITLE">$1<ex>YouTube</ex></ph>
-      </message>
 
       <!-- Local Device Discovery display strings -->
       <if expr="enable_service_discovery">

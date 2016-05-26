@@ -330,7 +330,7 @@ TEST_F(TabDesktopMediaListTest, UpdateTitle) {
 
   base::MessageLoop::current()->Run();
 
-  EXPECT_EQ(list_->GetSource(0).name, base::UTF8ToUTF16("Tab: New test tab"));
+  EXPECT_EQ(list_->GetSource(0).name, base::UTF8ToUTF16("New test tab"));
 
   list_.reset();
 }

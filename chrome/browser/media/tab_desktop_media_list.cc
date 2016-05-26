@@ -33,34 +33,16 @@ gfx::ImageSkia CreateEnclosedFaviconImage(gfx::Size size,
 
   // Create a bitmap.
   SkBitmap result;
-  result.allocN32Pixels(size.width(), size.height(), true);
+  result.allocN32Pixels(size.width(), size.height(), false);
   SkCanvas canvas(result);
-
-  // White background.
-  canvas.drawARGB(255, 255, 255, 255);
-
-  // Black border.
-  const int thickness = 5;
-  SkPaint paint;
-  paint.setARGB(255, 0, 0, 0);
-  paint.setStyle(SkPaint::kStroke_Style);
-  paint.setStrokeWidth(thickness);
-  canvas.drawRectCoords(thickness,                    // left
-                        thickness,                    // top
-                        result.width() - thickness,   // right
-                        result.height() - thickness,  // bottom
-                        paint);
+  canvas.clear(SK_ColorTRANSPARENT);
 
   // Draw the favicon image into the center of result image. If the favicon is
   // too big, scale it down.
   gfx::Size fill_size = favicon.size();
-  const double fraction = 0.75;
-  if (result.width() * fraction < favicon.width() ||
-      result.height() * fraction < favicon.height()) {
-    gfx::Size target_size(result.width() * fraction,
-                          result.height() * fraction);
-    fill_size = media::ScaleSizeToFitWithinTarget(favicon.size(), target_size);
-  }
+  if (result.width() < favicon.width() || result.height() < favicon.height())
+    fill_size = media::ScaleSizeToFitWithinTarget(favicon.size(), size);
+
   gfx::Rect center_rect(result.width(), result.height());
   center_rect.ClampToCenteredSize(fill_size);
   SkRect dest_rect =
@@ -122,13 +104,10 @@ void TabDesktopMediaList::Refresh() {
           content::WebContentsMediaCaptureId(main_frame->GetProcess()->GetID(),
                                              main_frame->GetRoutingID()));
 
-      // Create display tab title.
-      const base::string16 title = l10n_util::GetStringFUTF16(
-          IDS_DESKTOP_MEDIA_PICKER_CHROME_TAB_TITLE, contents->GetTitle());
-
       // Get tab's last active time stamp.
       const base::TimeTicks t = contents->GetLastActiveTime();
-      tab_map.insert(std::make_pair(t, SourceDescription(media_id, title)));
+      tab_map.insert(
+          std::make_pair(t, SourceDescription(media_id, contents->GetTitle())));
 
       // Get favicon for tab.
       favicon::FaviconDriver* favicon_driver =
