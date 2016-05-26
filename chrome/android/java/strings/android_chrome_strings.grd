@@ -1752,6 +1752,12 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_SIGNIN_ADD_ACCOUNT" desc="Text for adding another Google Account">
         Add account
       </message>
+      <message name="IDS_SIGNIN_OPEN_ADD_GOOGLE_ACCOUNT_PAGE_FAILED" desc="Message for openning add Google Account page in device's Settings app failed">
+        Add a Google Account from the Accounts page in your device's Settings app.
+      </message>
+      <message name="IDS_SIGNIN_OPEN_SETTINGS_ACCOUNTS" desc="Text for button to open Accounts page in device's Settings app">
+        Open settings
+      </message>      
       <message name="IDS_MAKE_CHROME_YOURS" desc="Title for the signin promo that prompts the user to sign in to Chrome to have a personalized experirence. [CHAR-LIMIT=24]">
         Make Chrome yours
       </message>
