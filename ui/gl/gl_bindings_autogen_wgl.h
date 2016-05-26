@@ -26,6 +26,10 @@ typedef BOOL(GL_BINDING_CALL* wglCopyContextProc)(HGLRC hglrcSrc,
                                                   HGLRC hglrcDst,
                                                   UINT mask);
 typedef HGLRC(GL_BINDING_CALL* wglCreateContextProc)(HDC hdc);
+typedef HGLRC(GL_BINDING_CALL* wglCreateContextAttribsARBProc)(
+    HDC hDC,
+    HGLRC hShareContext,
+    const int* attribList);
 typedef HGLRC(GL_BINDING_CALL* wglCreateLayerContextProc)(HDC hdc,
                                                           int iLayerPlane);
 typedef HPBUFFERARB(GL_BINDING_CALL* wglCreatePbufferARBProc)(
@@ -52,6 +56,7 @@ typedef BOOL(GL_BINDING_CALL* wglSwapIntervalEXTProc)(int interval);
 typedef BOOL(GL_BINDING_CALL* wglSwapLayerBuffersProc)(HDC hdc, UINT fuPlanes);
 
 struct ExtensionsWGL {
+  bool b_WGL_ARB_create_context;
   bool b_WGL_ARB_extensions_string;
   bool b_WGL_ARB_pbuffer;
   bool b_WGL_ARB_pixel_format;
@@ -63,6 +68,7 @@ struct ProcsWGL {
   wglChoosePixelFormatARBProc wglChoosePixelFormatARBFn;
   wglCopyContextProc wglCopyContextFn;
   wglCreateContextProc wglCreateContextFn;
+  wglCreateContextAttribsARBProc wglCreateContextAttribsARBFn;
   wglCreateLayerContextProc wglCreateLayerContextFn;
   wglCreatePbufferARBProc wglCreatePbufferARBFn;
   wglDeleteContextProc wglDeleteContextFn;
@@ -93,6 +99,9 @@ class GL_EXPORT WGLApi {
                                          UINT* num_formats) = 0;
   virtual BOOL wglCopyContextFn(HGLRC hglrcSrc, HGLRC hglrcDst, UINT mask) = 0;
   virtual HGLRC wglCreateContextFn(HDC hdc) = 0;
+  virtual HGLRC wglCreateContextAttribsARBFn(HDC hDC,
+                                             HGLRC hShareContext,
+                                             const int* attribList) = 0;
   virtual HGLRC wglCreateLayerContextFn(HDC hdc, int iLayerPlane) = 0;
   virtual HPBUFFERARB wglCreatePbufferARBFn(HDC hDC,
                                             int iPixelFormat,
@@ -122,6 +131,8 @@ class GL_EXPORT WGLApi {
   ::gl::g_current_wgl_context->wglChoosePixelFormatARBFn
 #define wglCopyContext ::gl::g_current_wgl_context->wglCopyContextFn
 #define wglCreateContext ::gl::g_current_wgl_context->wglCreateContextFn
+#define wglCreateContextAttribsARB \
+  ::gl::g_current_wgl_context->wglCreateContextAttribsARBFn
 #define wglCreateLayerContext \
   ::gl::g_current_wgl_context->wglCreateLayerContextFn
 #define wglCreatePbufferARB ::gl::g_current_wgl_context->wglCreatePbufferARBFn

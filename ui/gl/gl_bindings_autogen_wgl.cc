@@ -29,6 +29,7 @@ void DriverWGL::InitializeStaticBindings() {
       reinterpret_cast<wglCopyContextProc>(GetGLProcAddress("wglCopyContext"));
   fn.wglCreateContextFn = reinterpret_cast<wglCreateContextProc>(
       GetGLProcAddress("wglCreateContext"));
+  fn.wglCreateContextAttribsARBFn = 0;
   fn.wglCreateLayerContextFn = reinterpret_cast<wglCreateLayerContextProc>(
       GetGLProcAddress("wglCreateLayerContext"));
   fn.wglCreatePbufferARBFn = 0;
@@ -62,6 +63,8 @@ void DriverWGL::InitializeExtensionBindings() {
   extensions += " ";
   ALLOW_UNUSED_LOCAL(extensions);
 
+  ext.b_WGL_ARB_create_context =
+      extensions.find("WGL_ARB_create_context ") != std::string::npos;
   ext.b_WGL_ARB_extensions_string =
       extensions.find("WGL_ARB_extensions_string ") != std::string::npos;
   ext.b_WGL_ARB_pbuffer =
@@ -78,6 +81,13 @@ void DriverWGL::InitializeExtensionBindings() {
     fn.wglChoosePixelFormatARBFn =
         reinterpret_cast<wglChoosePixelFormatARBProc>(
             GetGLProcAddress("wglChoosePixelFormatARB"));
+  }
+
+  debug_fn.wglCreateContextAttribsARBFn = 0;
+  if (ext.b_WGL_ARB_create_context) {
+    fn.wglCreateContextAttribsARBFn =
+        reinterpret_cast<wglCreateContextAttribsARBProc>(
+            GetGLProcAddress("wglCreateContextAttribsARB"));
   }
 
   debug_fn.wglCreatePbufferARBFn = 0;
@@ -160,6 +170,20 @@ static HGLRC GL_BINDING_CALL Debug_wglCreateContext(HDC hdc) {
                  << "(" << hdc << ")");
   DCHECK(g_driver_wgl.debug_fn.wglCreateContextFn != nullptr);
   HGLRC result = g_driver_wgl.debug_fn.wglCreateContextFn(hdc);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+static HGLRC GL_BINDING_CALL
+Debug_wglCreateContextAttribsARB(HDC hDC,
+                                 HGLRC hShareContext,
+                                 const int* attribList) {
+  GL_SERVICE_LOG("wglCreateContextAttribsARB"
+                 << "(" << hDC << ", " << hShareContext << ", "
+                 << static_cast<const void*>(attribList) << ")");
+  DCHECK(g_driver_wgl.debug_fn.wglCreateContextAttribsARBFn != nullptr);
+  HGLRC result = g_driver_wgl.debug_fn.wglCreateContextAttribsARBFn(
+      hDC, hShareContext, attribList);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }
@@ -331,6 +355,10 @@ void DriverWGL::InitializeDebugBindings() {
     debug_fn.wglCreateContextFn = fn.wglCreateContextFn;
     fn.wglCreateContextFn = Debug_wglCreateContext;
   }
+  if (!debug_fn.wglCreateContextAttribsARBFn) {
+    debug_fn.wglCreateContextAttribsARBFn = fn.wglCreateContextAttribsARBFn;
+    fn.wglCreateContextAttribsARBFn = Debug_wglCreateContextAttribsARB;
+  }
   if (!debug_fn.wglCreateLayerContextFn) {
     debug_fn.wglCreateLayerContextFn = fn.wglCreateLayerContextFn;
     fn.wglCreateLayerContextFn = Debug_wglCreateLayerContext;
@@ -415,6 +443,13 @@ BOOL WGLApiBase::wglCopyContextFn(HGLRC hglrcSrc, HGLRC hglrcDst, UINT mask) {
 
 HGLRC WGLApiBase::wglCreateContextFn(HDC hdc) {
   return driver_->fn.wglCreateContextFn(hdc);
+}
+
+HGLRC WGLApiBase::wglCreateContextAttribsARBFn(HDC hDC,
+                                               HGLRC hShareContext,
+                                               const int* attribList) {
+  return driver_->fn.wglCreateContextAttribsARBFn(hDC, hShareContext,
+                                                  attribList);
 }
 
 HGLRC WGLApiBase::wglCreateLayerContextFn(HDC hdc, int iLayerPlane) {
@@ -504,6 +539,13 @@ BOOL TraceWGLApi::wglCopyContextFn(HGLRC hglrcSrc, HGLRC hglrcDst, UINT mask) {
 HGLRC TraceWGLApi::wglCreateContextFn(HDC hdc) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglCreateContext")
   return wgl_api_->wglCreateContextFn(hdc);
+}
+
+HGLRC TraceWGLApi::wglCreateContextAttribsARBFn(HDC hDC,
+                                                HGLRC hShareContext,
+                                                const int* attribList) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::wglCreateContextAttribsARB")
+  return wgl_api_->wglCreateContextAttribsARBFn(hDC, hShareContext, attribList);
 }
 
 HGLRC TraceWGLApi::wglCreateLayerContextFn(HDC hdc, int iLayerPlane) {

@@ -16,6 +16,9 @@ BOOL wglChoosePixelFormatARBFn(HDC dc,
                                UINT* num_formats) override;
 BOOL wglCopyContextFn(HGLRC hglrcSrc, HGLRC hglrcDst, UINT mask) override;
 HGLRC wglCreateContextFn(HDC hdc) override;
+HGLRC wglCreateContextAttribsARBFn(HDC hDC,
+                                   HGLRC hShareContext,
+                                   const int* attribList) override;
 HGLRC wglCreateLayerContextFn(HDC hdc, int iLayerPlane) override;
 HPBUFFERARB wglCreatePbufferARBFn(HDC hDC,
                                   int iPixelFormat,
