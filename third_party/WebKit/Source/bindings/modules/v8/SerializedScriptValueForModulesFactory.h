@@ -17,7 +17,6 @@ public:
     SerializedScriptValueForModulesFactory() : SerializedScriptValueFactory() { }
 
     PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, Transferables*, WebBlobInfoArray*, ExceptionState&) override;
-    PassRefPtr<SerializedScriptValue> create(v8::Isolate*, const String&) override;
 
 protected:
     ScriptValueSerializer::Status doSerialize(v8::Local<v8::Value>, SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, BlobDataHandleMap&, v8::TryCatch&, String& errorMessage, v8::Isolate*) override;
@@ -28,4 +27,3 @@ protected:
 } // namespace blink
 
 #endif // SerializedScriptValueForModulesFactory_h
-

@@ -58,8 +58,41 @@
 
 namespace blink {
 
+PassRefPtr<SerializedScriptValue> SerializedScriptValue::create()
+{
+    return adoptRef(new SerializedScriptValue);
+}
+
+PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(const String& data)
+{
+    return adoptRef(new SerializedScriptValue(data));
+}
+
+PassRefPtr<SerializedScriptValue> SerializedScriptValue::create(const char* data, size_t length)
+{
+    if (!data)
+        return create();
+
+    // Decode wire data from big endian to host byte order.
+    DCHECK(!(length % sizeof(UChar)));
+    size_t stringLength = length / sizeof(UChar);
+    StringBuffer<UChar> buffer(stringLength);
+    const UChar* src = reinterpret_cast<const UChar*>(data);
+    UChar* dst = buffer.characters();
+    for (size_t i = 0; i < stringLength; i++)
+        dst[i] = ntohs(src[i]);
+
+    return adoptRef(new SerializedScriptValue(String::adopt(buffer)));
+}
+
 SerializedScriptValue::SerializedScriptValue()
     : m_externallyAllocatedMemory(0)
+{
+}
+
+SerializedScriptValue::SerializedScriptValue(const String& wireData)
+    : m_data(wireData.isolatedCopy())
+    , m_externallyAllocatedMemory(0)
 {
 }
 
@@ -213,12 +246,6 @@ void SerializedScriptValue::transferArrayBuffers(v8::Isolate* isolate, const Arr
 
     }
     m_arrayBufferContentsArray = std::move(contents);
-}
-
-SerializedScriptValue::SerializedScriptValue(const String& wireData)
-    : m_externallyAllocatedMemory(0)
-{
-    m_data = wireData.isolatedCopy();
 }
 
 v8::Local<v8::Value> SerializedScriptValue::deserialize(MessagePortArray* messagePorts)

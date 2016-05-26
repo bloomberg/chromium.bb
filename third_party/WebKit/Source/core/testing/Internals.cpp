@@ -2162,7 +2162,7 @@ DOMArrayBuffer* Internals::serializeObject(PassRefPtr<SerializedScriptValue> val
 PassRefPtr<SerializedScriptValue> Internals::deserializeBuffer(DOMArrayBuffer* buffer) const
 {
     String value(static_cast<const UChar*>(buffer->data()), buffer->byteLength() / sizeof(UChar));
-    return SerializedScriptValueFactory::instance().createFromWire(value);
+    return SerializedScriptValue::create(value);
 }
 
 void Internals::forceReload(bool bypassCache)

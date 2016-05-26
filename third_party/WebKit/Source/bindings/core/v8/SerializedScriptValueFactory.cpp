@@ -19,7 +19,7 @@ SerializedScriptValueFactory* SerializedScriptValueFactory::m_instance = 0;
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, SerializedScriptValueWriter& writer, Transferables* transferables, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
 {
-    RefPtr<SerializedScriptValue> serializedValue = create();
+    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create();
     ScriptValueSerializer::Status status;
     String errorMessage;
     {
@@ -70,42 +70,12 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isola
     return create(isolate, value.v8Value(), nullptr, blobInfo, exceptionState);
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::createFromWire(const String& data)
-{
-    return adoptRef(new SerializedScriptValue(data));
-}
-
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::createFromWireBytes(const char* data, size_t length)
-{
-    // Decode wire data from big endian to host byte order.
-    ASSERT(!(length % sizeof(UChar)));
-    size_t stringLength = length / sizeof(UChar);
-    StringBuffer<UChar> buffer(stringLength);
-    const UChar* src = reinterpret_cast<const UChar*>(data);
-    UChar* dst = buffer.characters();
-    for (size_t i = 0; i < stringLength; i++)
-        dst[i] = ntohs(src[i]);
-
-    return createFromWire(String::adopt(buffer));
-}
-
 PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(const String& data)
 {
-    return create(v8::Isolate::GetCurrent(), data);
-}
-
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isolate* isolate, const String& data)
-{
-    ASSERT_NOT_REACHED();
     SerializedScriptValueWriter writer;
     writer.writeWebCoreString(data);
     String wireData = writer.takeWireString();
-    return createFromWire(wireData);
-}
-
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create()
-{
-    return adoptRef(new SerializedScriptValue());
+    return SerializedScriptValue::create(wireData);
 }
 
 void SerializedScriptValueFactory::transferData(SerializedScriptValue* serializedValue, SerializedScriptValueWriter& writer, Transferables* transferables, ExceptionState& exceptionState, v8::Isolate* isolate)

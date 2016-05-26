@@ -72,6 +72,10 @@ public:
     static const int varIntShift = 7;
     static const int varIntMask = (1 << varIntShift) - 1;
 
+    static PassRefPtr<SerializedScriptValue> create();
+    static PassRefPtr<SerializedScriptValue> create(const String&);
+    static PassRefPtr<SerializedScriptValue> create(const char* data, size_t length);
+
     virtual ~SerializedScriptValue();
 
     static PassRefPtr<SerializedScriptValue> nullValue();

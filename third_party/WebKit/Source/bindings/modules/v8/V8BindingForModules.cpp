@@ -319,7 +319,7 @@ static v8::Local<v8::Value> deserializeIDBValueData(v8::Isolate* isolate, const 
         return v8::Null(isolate);
 
     const SharedBuffer* valueData = value->data();
-    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValueFactory::instance().createFromWireBytes(valueData->data(), valueData->size());
+    RefPtr<SerializedScriptValue> serializedValue = SerializedScriptValue::create(valueData->data(), valueData->size());
     return serializedValue->deserialize(isolate, nullptr, value->blobInfo());
 }
 

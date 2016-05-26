@@ -175,7 +175,7 @@ static bool tryGetMessageFrom(WebMessagePortChannel& webChannel, RefPtr<Serializ
         for (size_t i = 0; i < webChannels.size(); ++i)
             (*channels)[i] = adoptPtr(webChannels[i]);
     }
-    message = SerializedScriptValueFactory::instance().createFromWire(messageString);
+    message = SerializedScriptValue::create(messageString);
     return true;
 }
 

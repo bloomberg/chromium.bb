@@ -39,7 +39,7 @@ namespace blink {
 
 WebSerializedScriptValue WebSerializedScriptValue::fromString(const WebString& s)
 {
-    return SerializedScriptValueFactory::instance().createFromWire(s);
+    return SerializedScriptValue::create(s);
 }
 
 WebSerializedScriptValue WebSerializedScriptValue::serialize(v8::Local<v8::Value> value)
@@ -53,7 +53,7 @@ WebSerializedScriptValue WebSerializedScriptValue::serialize(v8::Local<v8::Value
 
 WebSerializedScriptValue WebSerializedScriptValue::createInvalid()
 {
-    return SerializedScriptValueFactory::instance().create();
+    return SerializedScriptValue::create();
 }
 
 void WebSerializedScriptValue::reset()

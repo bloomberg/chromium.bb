@@ -398,7 +398,7 @@ void ServiceWorkerContainer::dispatchMessageEvent(std::unique_ptr<WebServiceWork
         return;
 
     MessagePortArray* ports = MessagePort::toMessagePortArray(getExecutionContext(), webChannels);
-    RefPtr<SerializedScriptValue> value = SerializedScriptValueFactory::instance().createFromWire(message);
+    RefPtr<SerializedScriptValue> value = SerializedScriptValue::create(message);
     ServiceWorker* source = ServiceWorker::from(getExecutionContext(), adoptPtr(handle.release()));
     dispatchEvent(ServiceWorkerMessageEvent::create(ports, value, source, getExecutionContext()->getSecurityOrigin()->toString()));
 }

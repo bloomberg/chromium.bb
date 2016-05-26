@@ -17,14 +17,6 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create
     return SerializedScriptValueFactory::create(isolate, value, writer, transferables, blobInfo, exceptionState);
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueForModulesFactory::create(v8::Isolate* isolate, const String& data)
-{
-    SerializedScriptValueWriterForModules writer;
-    writer.writeWebCoreString(data);
-    String wireData = writer.takeWireString();
-    return createFromWire(wireData);
-}
-
 ScriptValueSerializer::Status SerializedScriptValueForModulesFactory::doSerialize(v8::Local<v8::Value> value, SerializedScriptValueWriter& writer, Transferables* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, String& errorMessage, v8::Isolate* isolate)
 {
     ScriptValueSerializerForModules serializer(writer, transferables, blobInfo, blobDataHandles, tryCatch, ScriptState::current(isolate));
@@ -49,4 +41,3 @@ v8::Local<v8::Value> SerializedScriptValueForModulesFactory::deserialize(String&
 }
 
 } // namespace blink
-

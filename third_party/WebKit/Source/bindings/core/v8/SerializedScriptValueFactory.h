@@ -27,11 +27,7 @@ public:
     virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, Transferables*, WebBlobInfoArray*, ExceptionState&);
     PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, ExceptionState&);
     PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, Transferables*, ExceptionState&);
-    PassRefPtr<SerializedScriptValue> createFromWire(const String&);
-    PassRefPtr<SerializedScriptValue> createFromWireBytes(const char* data, size_t length);
     PassRefPtr<SerializedScriptValue> create(const String&);
-    virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*, const String&);
-    PassRefPtr<SerializedScriptValue> create();
     PassRefPtr<SerializedScriptValue> create(v8::Isolate*, const ScriptValue&, WebBlobInfoArray*, ExceptionState&);
 
     // Never throws exceptions.
