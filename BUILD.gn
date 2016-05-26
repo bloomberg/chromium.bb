@@ -240,6 +240,8 @@ group("both_gn_and_gyp") {
       "//ios/chrome/app",
       "//ios/chrome/browser",
       "//ios/chrome/common",
+      "//ios/chrome/share_extension:packed_resources",
+      "//ios/chrome/today_extension:packed_resources",
       "//ios/net:ios_net_unittests",
       "//ios/public/provider/chrome/browser",
       "//ios/public/provider/web",

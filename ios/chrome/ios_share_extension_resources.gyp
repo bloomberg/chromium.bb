@@ -10,6 +10,7 @@
   },
   'targets': [
     {
+      # GN version: //ios/chrome/share_extensions:resources
       'target_name': 'ios_share_extension_resources',
       'type': 'none',
       'dependencies': [
@@ -17,6 +18,7 @@
       ],
     },
     {
+      # GN version: //ios/chrome/share_extensions/strings
       'target_name': 'ios_share_extension_strings_gen',
       'type': 'none',
       'hard_dependency': 1,
@@ -43,6 +45,7 @@
       }
     },
     {
+      # GN version: //ios/chrome/share_extensions:packed_resources
       'target_name': 'ios_share_extension_packed_resources',
       'type': 'none',
       'dependencies': [
