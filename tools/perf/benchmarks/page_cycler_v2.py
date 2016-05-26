@@ -25,7 +25,7 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
     tbm_options.SetTimelineBasedMetric('firstPaintMetric')
     return tbm_options
 
-class PageCyclerTypical25(_PageCyclerV2):
+class PageCyclerV2Typical25(_PageCyclerV2):
   """Page load time benchmark for a 25 typical web pages.
 
   Designed to represent typical, not highly optimized or highly popular web
