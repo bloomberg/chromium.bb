@@ -1328,6 +1328,12 @@ class DownloadProtectionService::PPAPIDownloadRequest
       base::ResetAndReturn(&callback_).Run(response);
     fetcher_.reset();
     weakptr_factory_.InvalidateWeakPtrs();
+
+    // If the request is being destroyed, don't notify the service_. It already
+    // knows.
+    if (reason == RequestOutcome::REQUEST_DESTROYED)
+      return;
+
     service_->PPAPIDownloadCheckRequestFinished(this);
     // |this| is deleted.
   }
