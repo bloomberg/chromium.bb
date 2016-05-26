@@ -65,11 +65,7 @@ TEST_F(BookmarkBarFolderButtonCellTest, FaviconPositioning) {
   float icon_x_with_title = ([cell imageRectForBounds:rect]).origin.x;
   float cell_width_with_title = ([cell cellSize]).width;
 
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    EXPECT_GT(icon_x_without_title, icon_x_with_title);
-  } else {
-    EXPECT_LT(icon_x_without_title, icon_x_with_title);
-  }
+  EXPECT_LT(icon_x_without_title, icon_x_with_title);
   EXPECT_LT(cell_width_without_title, cell_width_with_title);
 
   [folder_cell setBookmarkCellText:@"" image:image];

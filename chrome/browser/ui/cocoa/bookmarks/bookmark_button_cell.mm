@@ -25,8 +25,8 @@ namespace {
 
 const int kHierarchyButtonXMargin = 4;
 const int kIconTextSpacer = 4;
-const int kTextRightPadding = 1;
-const int kIconLeftPadding = 1;
+const int kTextRightPadding = 3;
+const int kIconLeftPadding = 3;
 
 const int kDefaultFontSize = 12;
 
@@ -330,9 +330,6 @@ const int kDefaultFontSize = 12;
           [title sizeWithAttributes:[self titleTextAttributes]].width;
       cellSize.width +=
           kIconTextSpacer + std::ceil(textWidth) + kTextRightPadding;
-    } else {
-      // Make buttons without visible titles 20pts wide (18 plus padding).
-      cellSize.width = 18;
     }
   }
 
@@ -348,7 +345,9 @@ const int kDefaultFontSize = 12;
   // left edge, but only if there's a visible title.
   if (ui::MaterialDesignController::IsModeMaterial()) {
     imageRect.origin.y -= 1;
-    imageRect.origin.x += kIconLeftPadding;
+    if ([[self visibleTitle] length]) {
+      imageRect.origin.x += kIconLeftPadding;
+    }
   }
   return imageRect;
 }

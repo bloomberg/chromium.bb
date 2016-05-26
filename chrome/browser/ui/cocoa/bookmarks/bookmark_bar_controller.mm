@@ -255,7 +255,7 @@ CGFloat BookmarkHorizontalPadding() {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     return 1.0;
   }
-  return 4.0;
+  return 10.0;
 }
 
 CGFloat BookmarkVerticalPadding() {
@@ -510,11 +510,6 @@ CGFloat BookmarkRightMargin() {
 
     originalImportBookmarksRect_.origin.x += kMaterialBookmarksTextfieldOffsetX;
     [[buttonView_ importBookmarksButton] setFrame:originalImportBookmarksRect_];
-
-    // Move the chevron button up 2pts from its position in the xib.
-    NSRect chevronButtonFrame = [offTheSideButton_ frame];
-    chevronButtonFrame.origin.y += 2;
-    [offTheSideButton_ setFrame:chevronButtonFrame];
   }
 
   // To make life happier when the bookmark bar is floating, the chevron is a
