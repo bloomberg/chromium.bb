@@ -53,6 +53,7 @@ public:
     // This class represents whatever data the Web layer uses to represent
     // a track. It needs to be able to answer the getSettings question.
     class TrackData {
+        USING_FAST_MALLOC(TrackData);
     public:
         virtual void getSettings(WebMediaStreamTrack::Settings&) = 0;
         virtual ~TrackData() {}
