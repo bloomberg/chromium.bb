@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/network/network_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/ash_strings.h"
 #include "grit/theme_resources.h"
@@ -31,11 +32,14 @@ const char HatsNotificationController::kNotificationId[] = "hats_notification";
 
 HatsNotificationController::HatsNotificationController(Profile* profile)
     : profile_(profile) {
-  std::unique_ptr<Notification> notification(CreateNotification());
-  g_browser_process->notification_ui_manager()->Add(*notification, profile_);
+  // Add self as an observer to be notified when an internet connection is
+  // available.
+  network_portal_detector::GetInstance()->AddAndFireObserver(this);
 }
 
-HatsNotificationController::~HatsNotificationController() {}
+HatsNotificationController::~HatsNotificationController() {
+  network_portal_detector::GetInstance()->RemoveObserver(this);
+}
 
 // static
 // TODO(malaykeshav): Implement this stub.
@@ -54,6 +58,27 @@ void HatsNotificationController::ButtonClick(int button_index) {}
 
 // message_center::NotificationDelegate override:
 void HatsNotificationController::Close(bool by_user) {}
+
+// NetworkPortalDetector::Observer override:
+void HatsNotificationController::OnPortalDetectionCompleted(
+    const NetworkState* network,
+    const NetworkPortalDetector::CaptivePortalState& state) {
+  VLOG(1) << "HatsController::OnPortalDetectionCompleted(): "
+          << "network=" << (network ? network->path() : "") << ", "
+          << "state.status=" << state.status << ", "
+          << "state.response_code=" << state.response_code;
+  // Return if device is not connected to the internet.
+  if (state.status != NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE)
+    return;
+  // Remove self as an observer to no longer receive network change updates.
+  network_portal_detector::GetInstance()->RemoveObserver(this);
+  ShowNotification();
+}
+
+void HatsNotificationController::ShowNotification() {
+  std::unique_ptr<Notification> notification(CreateNotification());
+  g_browser_process->notification_ui_manager()->Add(*notification, profile_);
+}
 
 Notification* HatsNotificationController::CreateNotification() {
   message_center::RichNotificationData optional;
