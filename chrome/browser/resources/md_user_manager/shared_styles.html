@@ -6,6 +6,13 @@
         --page-width: 624px;
         --primary-text-color: var(--paper-grey-800);
         --title-icon-color: var(--paper-grey-500);
+        --action-button: {
+          border-radius: 2px;
+          line-height: 20px;
+          margin: 0;
+          min-width: 52px;
+          padding: 6px 16px;
+        };
       }
 
       a,
@@ -18,11 +25,7 @@
       }
 
       paper-button.action {
-        border-radius: 2px;
-        line-height: 32px;
-        margin: 0;
-        min-width: 52px;
-        padding: 0 16px;
+        @apply(--action-button);
       }
 
       paper-button.action.primary {
