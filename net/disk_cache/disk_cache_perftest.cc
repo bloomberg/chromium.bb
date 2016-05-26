@@ -24,6 +24,7 @@
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/disk_cache_test_base.h"
 #include "net/disk_cache/disk_cache_test_util.h"
+#include "net/disk_cache/simple/simple_backend_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -235,11 +236,16 @@ void DiskCachePerfTest::CacheBackendPerformance() {
   InitCache();
   EXPECT_TRUE(TimeWrite());
 
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  base::MessageLoop::current()->RunUntilIdle();
+
   ResetAndEvictSystemDiskCache();
   EXPECT_TRUE(TimeRead(WhatToRead::HEADERS_ONLY,
                        "Read disk cache headers only (cold)"));
   EXPECT_TRUE(TimeRead(WhatToRead::HEADERS_ONLY,
                        "Read disk cache headers only (warm)"));
+
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
   base::MessageLoop::current()->RunUntilIdle();
 
   ResetAndEvictSystemDiskCache();
@@ -247,6 +253,8 @@ void DiskCachePerfTest::CacheBackendPerformance() {
       TimeRead(WhatToRead::HEADERS_AND_BODY, "Read disk cache entries (cold)"));
   EXPECT_TRUE(
       TimeRead(WhatToRead::HEADERS_AND_BODY, "Read disk cache entries (warm)"));
+
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
   base::MessageLoop::current()->RunUntilIdle();
 }
 
