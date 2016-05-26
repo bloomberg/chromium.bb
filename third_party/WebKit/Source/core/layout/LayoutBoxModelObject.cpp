@@ -434,11 +434,20 @@ void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRe
 
 void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayItemClient& displayItemClient, PaintInvalidationReason invalidationReason) const
 {
+    displayItemClient.setDisplayItemsUncached();
+
+    // We need to inform the GraphicsLayer about this paint invalidation only when we are tracking
+    // paint invalidation or ENABLE(ASSERT).
+#if !ENABLE(ASSERT)
+    if (!frameView()->isTrackingPaintInvalidations())
+        return;
+#endif
+
     if (layer()->groupedMapping()) {
         if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
-            squashingLayer->invalidateDisplayItemClient(displayItemClient, invalidationReason);
+            squashingLayer->displayItemClientWasInvalidated(displayItemClient, invalidationReason);
     } else if (CompositedLayerMapping* compositedLayerMapping = layer()->compositedLayerMapping()) {
-        compositedLayerMapping->invalidateDisplayItemClient(displayItemClient, invalidationReason);
+        compositedLayerMapping->displayItemClientWasInvalidated(displayItemClient, invalidationReason);
     }
 }
 

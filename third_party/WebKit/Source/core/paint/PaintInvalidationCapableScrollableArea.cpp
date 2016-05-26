@@ -58,7 +58,7 @@ static void invalidatePaintOfScrollbarIfNeeded(Scrollbar* scrollbar, GraphicsLay
         newPaintInvalidationRect = scrollControlPaintInvalidationRect(scrollbar->frameRect(), box, paintInvalidationState);
 
     bool needsPaintInvalidation = needsPaintInvalidationArg;
-    if (graphicsLayer) {
+    if (needsPaintInvalidation && graphicsLayer) {
         // If the scrollbar needs paint invalidation but didn't change location/size or the scrollbar is an
         // overlay scrollbar (paint invalidation rect is empty), invalidating the graphics layer is enough
         // (which has been done in ScrollableArea::setScrollbarNeedsPaintInvalidation()).
@@ -66,8 +66,7 @@ static void invalidatePaintOfScrollbarIfNeeded(Scrollbar* scrollbar, GraphicsLay
         // of the scrollbar on the box's paint invalidation container to ensure newly expanded/shrunk areas
         // of the box to be invalidated.
         needsPaintInvalidation = false;
-
-        graphicsLayer->invalidateDisplayItemClient(*graphicsLayer, PaintInvalidationScroll);
+        DCHECK(!graphicsLayer->drawsContent() || graphicsLayer->getPaintController().cacheIsEmpty());
     }
 
     // Invalidate the box's display item client if the box's padding box size is affected by change of the

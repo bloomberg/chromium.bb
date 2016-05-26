@@ -1230,11 +1230,20 @@ void LayoutObject::invalidatePaintUsingContainer(const LayoutBoxModelObject& pai
 void LayoutObject::invalidateDisplayItemClient(const DisplayItemClient& displayItemClient) const
 {
     if (PaintLayer* paintingLayer = this->paintingLayer()) {
+        paintingLayer->setNeedsRepaint();
+
+#if !ENABLE(ASSERT)
+        // This is a fast path when we don't need to inform the GraphicsLayer about this paint invalidation.
+        FrameView* frameView = this->frameView();
+        if (!frameView || !frameView->isTrackingPaintInvalidations()) {
+            displayItemClient.setDisplayItemsUncached();
+            return;
+        }
+#endif
         // This is valid because we want to invalidate the client in the display item list of the current backing.
         DisableCompositingQueryAsserts disabler;
         if (const PaintLayer* paintInvalidationLayer = paintingLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
             paintInvalidationLayer->layoutObject()->invalidateDisplayItemClientOnBacking(displayItemClient, PaintInvalidationFull);
-        paintingLayer->setNeedsRepaint();
     }
 }
 

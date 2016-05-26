@@ -2897,8 +2897,10 @@ void FrameView::setTracksPaintInvalidations(bool trackPaintInvalidations)
     for (Frame* frame = m_frame->tree().top(); frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
-        if (LayoutViewItem layoutView = toLocalFrame(frame)->contentLayoutItem())
+        if (LayoutViewItem layoutView = toLocalFrame(frame)->contentLayoutItem()) {
+            layoutView.frameView()->m_isTrackingPaintInvalidations = trackPaintInvalidations;
             layoutView.compositor()->setTracksPaintInvalidations(trackPaintInvalidations);
+        }
     }
 
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),

@@ -42,10 +42,6 @@ public:
         return adoptPtr(new PaintController());
     }
 
-    // These methods are called during paint invalidation (or paint if SlimmingPaintV2 is on).
-
-    void invalidate(const DisplayItemClient&);
-    void invalidateUntracked(const DisplayItemClient&);
     void invalidateAll();
 
     // Record when paint offsets change during paint.
@@ -143,6 +139,10 @@ public:
 #ifndef NDEBUG
     void showDebugData() const;
 #endif
+
+    // This is called only if we are tracking paint invalidation for testing, or DCHECK_IS_ON()
+    // for error checking and debugging.
+    void displayItemClientWasInvalidated(const DisplayItemClient&);
 
 #if DCHECK_IS_ON()
     bool hasInvalidations() { return !m_invalidations.isEmpty(); }

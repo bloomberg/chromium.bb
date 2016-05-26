@@ -128,26 +128,19 @@ void PaintController::endScope()
     endSkippingCache();
 }
 
-void PaintController::invalidate(const DisplayItemClient& client)
+void PaintController::displayItemClientWasInvalidated(const DisplayItemClient& client)
 {
 #if DCHECK_IS_ON()
     // Slimming paint v1 CompositedLayerMapping may invalidate client on extra layers.
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() || clientCacheIsValid(client))
         m_invalidations.append(client.debugName());
-#endif
 
-    invalidateUntracked(client);
-    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_trackedPaintInvalidationObjects)
-        m_trackedPaintInvalidationObjects->append(client.debugName());
-}
-
-void PaintController::invalidateUntracked(const DisplayItemClient& client)
-{
-    // This can be called during painting, but we can't invalidate already painted clients.
-    client.setDisplayItemsUncached();
-#if DCHECK_IS_ON()
+    // Should not invalidate already painted clients.
     DCHECK(!m_newDisplayItemIndicesByClient.contains(&client));
 #endif
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled() && m_trackedPaintInvalidationObjects)
+        m_trackedPaintInvalidationObjects->append(client.debugName());
 }
 
 void PaintController::invalidateAll()
@@ -174,7 +167,8 @@ bool PaintController::clientCacheIsValid(const DisplayItemClient& client) const
 void PaintController::invalidatePaintOffset(const DisplayItemClient& client)
 {
     DCHECK(RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
-    invalidate(client);
+    displayItemClientWasInvalidated(client);
+    client.setDisplayItemsUncached();
 
 #if DCHECK_IS_ON()
     DCHECK(!paintOffsetWasInvalidated(client));

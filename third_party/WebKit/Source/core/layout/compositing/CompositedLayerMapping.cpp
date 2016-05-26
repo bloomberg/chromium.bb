@@ -2108,10 +2108,10 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, P
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }
 
-void CompositedLayerMapping::invalidateDisplayItemClient(const DisplayItemClient& displayItemClient, PaintInvalidationReason paintInvalidationReason)
+void CompositedLayerMapping::displayItemClientWasInvalidated(const DisplayItemClient& displayItemClient, PaintInvalidationReason paintInvalidationReason)
 {
     ApplyToGraphicsLayers(this, [&displayItemClient, paintInvalidationReason](GraphicsLayer* layer) {
-        layer->invalidateDisplayItemClient(displayItemClient, paintInvalidationReason);
+        layer->displayItemClientWasInvalidated(displayItemClient, paintInvalidationReason);
     }, ApplyToContentLayers);
 }
 

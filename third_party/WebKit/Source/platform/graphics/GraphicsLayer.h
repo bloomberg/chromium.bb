@@ -186,7 +186,9 @@ public:
 
     void setContentsNeedsDisplay();
 
-    void invalidateDisplayItemClient(const DisplayItemClient&, PaintInvalidationReason);
+    // This is called only if we are tracking paint invalidation for testing, or ENABLE(ASSERT)
+    // for error checking and debugging.
+    void displayItemClientWasInvalidated(const DisplayItemClient&, PaintInvalidationReason);
 
     // Set that the position/size of the contents (image or video).
     void setContentsRect(const IntRect&);

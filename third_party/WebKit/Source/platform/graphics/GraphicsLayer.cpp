@@ -343,7 +343,6 @@ bool GraphicsLayer::paintWithoutCommit(const IntRect* interestRect, GraphicsCont
         && !m_client->needsRepaint(*this)
         && !getPaintController().cacheIsEmpty()
         && m_previousInterestRect == *interestRect) {
-        ASSERT(!getPaintController().hasInvalidations());
         return false;
     }
 
@@ -554,8 +553,8 @@ void GraphicsLayer::trackPaintInvalidation(const DisplayItemClient& client, cons
     ASSERT(isTrackingPaintInvalidations());
 
     Vector<PaintInvalidationInfo>& infos = paintInvalidationTrackingMap().add(this, Vector<PaintInvalidationInfo>()).storedValue->value;
-    // Omit the entry for invalidateDisplayItemClient() if the last entry is for the same client.
-    // This is to avoid duplicated entries for setNeedsDisplayInRect() and invalidateDisplayItemClient().
+    // Omit the entry for trackObjectPaintInvalidation() if the last entry is for the same client.
+    // This is to avoid duplicated entries for setNeedsDisplayInRect() and trackObjectPaintInvalidation().
     if (rect.isEmpty() && !infos.isEmpty() && infos.last().client == &client)
         return;
 
@@ -878,9 +877,8 @@ void GraphicsLayer::setSize(const FloatSize& size)
     // Note that we don't resize m_contentsLayer. It's up the caller to do that.
 
 #ifndef NDEBUG
-    // The red debug fill needs to be invalidated if the layer resizes.
-    if (m_paintController)
-        m_paintController->invalidateUntracked(*this);
+    // The red debug fill and needs to be invalidated if the layer resizes.
+    setDisplayItemsUncached();
 #endif
 }
 
@@ -1072,12 +1070,12 @@ void GraphicsLayer::setNeedsDisplayInRect(const IntRect& rect, PaintInvalidation
         trackPaintInvalidation(client, rect, invalidationReason);
 }
 
-void GraphicsLayer::invalidateDisplayItemClient(const DisplayItemClient& displayItemClient, PaintInvalidationReason invalidationReason)
+void GraphicsLayer::displayItemClientWasInvalidated(const DisplayItemClient& displayItemClient, PaintInvalidationReason invalidationReason)
 {
     if (!drawsContent())
         return;
 
-    getPaintController().invalidate(displayItemClient);
+    getPaintController().displayItemClientWasInvalidated(displayItemClient);
 
     if (isTrackingPaintInvalidations())
         trackPaintInvalidation(displayItemClient, FloatRect(), invalidationReason);

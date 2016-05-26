@@ -129,7 +129,9 @@ public:
     // LayoutRect is in the coordinate space of the layer's layout object.
     void setContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason, const DisplayItemClient&);
 
-    void invalidateDisplayItemClient(const DisplayItemClient&, PaintInvalidationReason);
+    // This is called only if we are tracking paint invalidation for testing, or ENABLE(ASSERT)
+    // for error checking and debugging.
+    void displayItemClientWasInvalidated(const DisplayItemClient&, PaintInvalidationReason);
 
     // Notification from the layoutObject that its content changed.
     void contentChanged(ContentChangeType);
