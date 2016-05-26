@@ -379,13 +379,17 @@ class CommandLineControlledExecutionTest(TaskManagerTestCase):
     self.assertEqual(0, self.Execute('-d'))
 
   def testRegex(self):
-    self.assertEqual(0, self.Execute('-e', 'b', 'd'))
+    self.assertEqual(0, self.Execute('-e', 'b', '-e', 'd'))
     self.assertEqual(1, self.Execute('-e', r'\d'))
 
   def testFreezing(self):
     self.assertEqual(0, self.Execute('-f', r'\d'))
     self.TouchOutputFile('c')
     self.assertEqual(0, self.Execute('-f', 'c'))
+
+  def testDontFreezeUnreachableTasks(self):
+    self.TouchOutputFile('c')
+    self.assertEqual(0, self.Execute('-e', 'e', '-f', 'c', '-f', 'd'))
 
   def testTaskFailure(self):
     self.with_raise_exception_task = True

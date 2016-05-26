@@ -62,6 +62,7 @@ Example:
 import argparse
 import logging
 import os
+import re
 import subprocess
 import sys
 
@@ -70,6 +71,9 @@ import common_util
 
 _TASK_GRAPH_DOTFILE_NAME = 'tasks_graph.dot'
 _TASK_GRAPH_PNG_NAME = 'tasks_graph.png'
+_TASK_RESUME_ARGUMENTS_FILE = 'resume.txt'
+
+FROMFILE_PREFIX_CHARS = '@'
 
 
 class TaskError(Exception):
@@ -309,6 +313,9 @@ def CommandLineParser():
   """Creates command line arguments parser meant to be used as a parent parser
   for any entry point that use the ExecuteWithCommandLine() function.
 
+  The root parser must be created with:
+    fromfile_prefix_chars=FROMFILE_PREFIX_CHARS.
+
   Returns:
     The command line arguments parser.
   """
@@ -316,10 +323,10 @@ def CommandLineParser():
   parser.add_argument('-d', '--dry-run', action='store_true',
                       help='Only prints the deps of tasks to build.')
   parser.add_argument('-e', '--to-execute', metavar='REGEX', type=str,
-                      nargs='+', dest='run_regexes', default=[],
+                      action='append', dest='run_regexes', default=[],
                       help='Regex selecting tasks to execute.')
   parser.add_argument('-f', '--to-freeze', metavar='REGEX', type=str,
-                      nargs='+', dest='frozen_regexes', default=[],
+                      action='append', dest='frozen_regexes', default=[],
                       help='Regex selecting tasks to not execute.')
   parser.add_argument('-o', '--output', type=str, required=True,
                       help='Path of the output directory.')
@@ -327,17 +334,6 @@ def CommandLineParser():
       help='Outputs the {} and {} file in the output directory.'
            ''.format(_TASK_GRAPH_DOTFILE_NAME, _TASK_GRAPH_PNG_NAME))
   return parser
-
-
-def _GetCommandLineArgumentsStr(final_task_regexes, frozen_tasks):
-  arguments = []
-  if frozen_tasks:
-    arguments.append('-f')
-    arguments.extend([task.name for task in frozen_tasks])
-  if final_task_regexes:
-    arguments.append('-e')
-    arguments.extend(final_task_regexes)
-  return subprocess.list2cmdline(arguments)
 
 
 def ExecuteWithCommandLine(args, default_final_tasks):
@@ -356,30 +352,27 @@ def ExecuteWithCommandLine(args, default_final_tasks):
   run_regexes = [common_util.VerboseCompileRegexOrAbort(e)
                    for e in args.run_regexes]
 
-  # Traverse the graph in the normal execution order starting from
-  # |default_final_tasks| in case of command line regex selection.
-  tasks = []
-  if frozen_regexes or run_regexes:
-    tasks = GenerateScenario(default_final_tasks, frozen_tasks=set())
-
-  # Lists frozen tasks
-  frozen_tasks = set()
-  if frozen_regexes:
-    for task in tasks:
-      for regex in frozen_regexes:
-        if regex.search(task.name):
-          frozen_tasks.add(task)
-          break
-
   # Lists final tasks.
   final_tasks = default_final_tasks
   if run_regexes:
     final_tasks = []
+    # Traverse the graph in the normal execution order starting from
+    # |default_final_tasks| in case of command line regex selection.
+    tasks = GenerateScenario(default_final_tasks, frozen_tasks=set())
     # Order of run regexes prevails on the traversing order of tasks.
     for regex in run_regexes:
       for task in tasks:
         if regex.search(task.name):
           final_tasks.append(task)
+
+  # Lists parents of |final_tasks| to freeze.
+  frozen_tasks = set()
+  if frozen_regexes:
+    for task in GenerateScenario(final_tasks, frozen_tasks=set()):
+      for regex in frozen_regexes:
+        if regex.search(task.name):
+          frozen_tasks.add(task)
+          break
 
   # Create the scenario.
   scenario = GenerateScenario(final_tasks, frozen_tasks)
@@ -410,14 +403,16 @@ def ExecuteWithCommandLine(args, default_final_tasks):
       try:
         task.Execute()
       except:
+        resume_path = os.path.join(args.output, _TASK_RESUME_ARGUMENTS_FILE)
+        resume_additonal_arguments = []
+        for task in ListResumingTasksToFreeze(
+            scenario, final_tasks, task):
+          resume_additonal_arguments.extend(['-f', re.escape(task.name)])
+        with open(resume_path, 'w') as file_output:
+          file_output.write('\n'.join(resume_additonal_arguments))
         print '# Looks like something went wrong in \'{}\''.format(task.name)
         print '#'
-        print '# To re-execute only this task, add the following parameters:'
-        print '#   ' + _GetCommandLineArgumentsStr(
-            [task.name], task._dependencies)
-        print '#'
-        print '# To resume from this task, add the following parameters:'
-        print '#   ' + _GetCommandLineArgumentsStr(args.run_regexes,
-            ListResumingTasksToFreeze(scenario, final_tasks, task))
+        print '# To resume from this task, append the following parameter:'
+        print '#   ' + FROMFILE_PREFIX_CHARS + resume_path
         raise
   return 0

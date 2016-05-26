@@ -87,7 +87,8 @@ def _ArgumentParser():
   plumbing_parser = OPTIONS.GetParentParser('plumbing options')
 
   # Main parser
-  parser = argparse.ArgumentParser(parents=[plumbing_parser])
+  parser = argparse.ArgumentParser(parents=[plumbing_parser],
+      fromfile_prefix_chars=task_manager.FROMFILE_PREFIX_CHARS)
   subparsers = parser.add_subparsers(dest='subcommand', help='subcommand line')
 
   # Record test trace subcommand.
