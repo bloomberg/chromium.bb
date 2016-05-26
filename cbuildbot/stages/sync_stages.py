@@ -1356,9 +1356,11 @@ class PreCQLauncherStage(SyncStage):
 
     # Create a list of disjoint transactions to test.
     manifest = git.ManifestCheckout.Cached(self._build_root)
+    logging.info('Creating disjoint transactions.')
     plans = pool.CreateDisjointTransactions(
         manifest, screened_changes,
         max_txn_length=self.MAX_PATCHES_PER_TRYBOT_RUN)
+    logging.info('Created %s disjoint transactions.', len(plans))
     for plan in plans:
       # If any of the CLs in the plan is not yet screened, wait for them to
       # be screened.
