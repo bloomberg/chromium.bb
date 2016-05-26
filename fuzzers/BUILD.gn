@@ -36,6 +36,7 @@ fuzzer_test("icu_number_format_fuzzer") {
     "icu_number_format_fuzzer.cc",
   ]
   deps = [
+    "//base",
     "//base:i18n",
     "//third_party/icu",
   ]
@@ -46,6 +47,7 @@ fuzzer_test("icu_break_iterator_fuzzer") {
     "icu_break_iterator_fuzzer.cc",
   ]
   deps = [
+    "//base",
     "//base:i18n",
     "//third_party/icu",
   ]
@@ -56,6 +58,7 @@ fuzzer_test("icu_ucasemap_fuzzer") {
     "icu_ucasemap_fuzzer.cc",
   ]
   deps = [
+    "//base",
     "//base:i18n",
     "//third_party/icu",
   ]
