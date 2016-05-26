@@ -1564,11 +1564,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_WEBRTC_DTLS12_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableWebRtcDtls12)},
 #endif
-#if defined(ENABLE_WEBRTC)
-    {"enable-webrtc-ecdsa", IDS_FLAGS_WEBRTC_ECDSA_NAME,
-     IDS_FLAGS_WEBRTC_ECDSA_DESCRIPTION, kOsAll,
-     FEATURE_VALUE_TYPE(features::kWebRtcEcdsaDefault)},
-#endif
 #if defined(OS_MACOSX)
     {"app-info-dialog", IDS_FLAGS_APP_INFO_DIALOG_NAME,
      IDS_FLAGS_APP_INFO_DIALOG_DESCRIPTION, kOsMac,
