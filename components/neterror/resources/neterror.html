@@ -19,7 +19,7 @@
       <div id="main-message">
         <h1 jsselect="heading" jsvalues=".innerHTML:msg"></h1>
         <p jsselect="summary" jsvalues=".innerHTML:msg"></p>
-        <div id="suggestions-list"
+        <div id="suggestions-list" style="display:none"
             jsdisplay="(suggestionsSummaryList && suggestionsSummaryList.length)">
           <p jsvalues=".innerHTML:suggestionsSummaryListHeader"></p>
           <ul jsvalues=".className:suggestionsSummaryList.length == 1 ? 'single-suggestion' : ''">
