@@ -258,6 +258,8 @@ void FrameLoader::saveScrollState()
 
 void FrameLoader::dispatchUnloadEvent()
 {
+    NavigationCounterForUnload counter;
+
     // If the frame is unloading, the provisional loader should no longer be
     // protected. It will be detached soon.
     m_protectProvisionalLoader = false;

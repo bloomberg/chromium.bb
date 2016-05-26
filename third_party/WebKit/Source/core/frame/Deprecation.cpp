@@ -390,6 +390,9 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::UntrustedEventDefaultHandled:
         return String::format("A DOM event generated from JavaScript has triggered a default action inside the browser. This behavior is non-standard and will be removed in %s. See https://www.chromestatus.com/features/5718803933560832 for more details.", milestoneString(53));
 
+    case UseCounter::UnloadHandler_Navigation:
+        return "Navigating in the unload handler is deprecated and will be removed.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();

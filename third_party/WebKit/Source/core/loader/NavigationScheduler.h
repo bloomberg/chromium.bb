@@ -110,6 +110,25 @@ private:
     static unsigned s_navigationDisableCount;
 };
 
+class CORE_EXPORT NavigationCounterForUnload {
+    WTF_MAKE_NONCOPYABLE(NavigationCounterForUnload);
+    STACK_ALLOCATED();
+public:
+    NavigationCounterForUnload()
+    {
+        s_inUnloadHandler++;
+    }
+    ~NavigationCounterForUnload()
+    {
+        DCHECK(s_inUnloadHandler);
+        s_inUnloadHandler--;
+    }
+    static bool inUnloadHandler() { return !!s_inUnloadHandler; }
+
+private:
+    static unsigned s_inUnloadHandler;
+};
+
 } // namespace blink
 
 #endif // NavigationScheduler_h

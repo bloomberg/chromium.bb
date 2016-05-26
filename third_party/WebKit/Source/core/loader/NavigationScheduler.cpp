@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "core/events/Event.h"
 #include "core/fetch/ResourceLoaderOptions.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFormElement.h"
@@ -56,6 +57,7 @@
 namespace blink {
 
 unsigned NavigationDisablerForBeforeUnload::s_navigationDisableCount = 0;
+unsigned NavigationCounterForUnload::s_inUnloadHandler = 0;
 
 class ScheduledNavigation : public GarbageCollectedFinalized<ScheduledNavigation> {
     WTF_MAKE_NONCOPYABLE(ScheduledNavigation);
@@ -347,6 +349,9 @@ void NavigationScheduler::scheduleLocationChange(Document* originDocument, const
     if (originDocument->getSecurityOrigin()->canAccess(m_frame->document()->getSecurityOrigin())) {
         KURL parsedURL(ParsedURLString, url);
         if (parsedURL.hasFragmentIdentifier() && equalIgnoringFragmentIdentifier(m_frame->document()->url(), parsedURL)) {
+            if (NavigationCounterForUnload::inUnloadHandler())
+                Deprecation::countDeprecation(m_frame, UseCounter::UnloadHandler_Navigation);
+
             FrameLoadRequest request(originDocument, m_frame->document()->completeURL(url), "_self");
             request.setReplacesCurrentItem(replacesCurrentItem);
             if (replacesCurrentItem)

@@ -1192,6 +1192,7 @@ public:
         OpacityWithPreserve3DQuirk = 1376,
         CSSSelectorPseudoReadOnly = 1377,
         CSSSelectorPseudoReadWrite = 1378,
+        UnloadHandler_Navigation = 1379,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
