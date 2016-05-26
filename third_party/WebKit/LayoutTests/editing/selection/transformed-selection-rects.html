@@ -14,17 +14,17 @@
       font-weight: bold;
     }
   </style>
-<script src="../editing.js" language="JavaScript" type="text/JavaScript" ></script>
 <script>
 if (window.internals)
     internals.settings.setEditingBehavior('mac');
 function editingTest() {
     if (window.testRunner)
         window.testRunner.dumpSelectionRect();
-        
+
+    var selection = window.getSelection();
     var testNode = document.getElementById('test');
-    setSelectionCommand(testNode, 0, testNode, 0);
-    extendSelectionForwardByWordCommand();
+    selection.collapse(testNode, 0);
+    selection.modify('extend', 'forward', 'word');
 }
 </script>
 </head>
@@ -35,7 +35,7 @@ function editingTest() {
     <p>Lorem ipsum <span id="test">dolor sit amet, consectetur adipisicing</span> elit.</p>
   </div>
 
-<script>runEditingTest()</script>
+<script>editingTest()</script>
 </body>
 
 </html>
