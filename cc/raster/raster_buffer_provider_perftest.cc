@@ -129,7 +129,7 @@ class PerfImageDecodeTaskImpl : public TileTask {
   void RunOnWorkerThread() override {}
 
   // Overridden from TileTask:
-  void OnTaskCompleted() override { state().Reset(); }
+  void OnTaskCompleted() override {}
 
  protected:
   ~PerfImageDecodeTaskImpl() override {}
@@ -165,8 +165,6 @@ class PerfRasterTaskImpl : public TileTask {
   void OnTaskCompleted() override {
     if (helper_)
       helper_->ReleaseBufferForRaster(std::move(raster_buffer_));
-
-    state().Reset();
   }
 
  protected:
@@ -222,6 +220,27 @@ class RasterBufferProviderPerfTestBase {
       raster_tasks->push_back(
           new PerfRasterTaskImpl(helper, std::move(resource),
                                  std::move(raster_buffer), &dependencies));
+    }
+  }
+
+  void ResetRasterTasks(const RasterTaskVector& raster_tasks) {
+    for (auto& raster_task : raster_tasks) {
+      for (auto& decode_task : raster_task->dependencies())
+        decode_task->state().Reset();
+
+      raster_task->state().Reset();
+    }
+  }
+
+  void CancelRasterTasks(const RasterTaskVector& raster_tasks) {
+    for (auto& raster_task : raster_tasks) {
+      for (auto& decode_task : raster_task->dependencies()) {
+        if (!decode_task->state().IsCanceled())
+          decode_task->state().DidCancel();
+      }
+
+      if (!raster_task->state().IsCanceled())
+        raster_task->state().DidCancel();
     }
   }
 
@@ -346,6 +365,7 @@ class RasterBufferProviderPerfTest
     timer_.Reset();
     do {
       graph.Reset();
+      ResetRasterTasks(raster_tasks);
       BuildTileTaskGraph(&graph, raster_tasks);
       tile_task_manager_->ScheduleTasks(&graph);
       tile_task_manager_->CheckForCompletedTasks();
@@ -355,6 +375,7 @@ class RasterBufferProviderPerfTest
     TaskGraph empty;
     tile_task_manager_->ScheduleTasks(&empty);
     RunMessageLoopUntilAllTasksHaveCompleted();
+    tile_task_manager_->CheckForCompletedTasks();
 
     perf_test::PrintResult("schedule_tasks", TestModifierString(), test_name,
                            timer_.LapsPerSecond(), "runs/s", true);
@@ -379,6 +400,8 @@ class RasterBufferProviderPerfTest
     timer_.Reset();
     do {
       graph.Reset();
+      // Reset the tasks as for scheduling new state tasks are needed.
+      ResetRasterTasks(raster_tasks[count % kNumVersions]);
       BuildTileTaskGraph(&graph, raster_tasks[count % kNumVersions]);
       tile_task_manager_->ScheduleTasks(&graph);
       tile_task_manager_->CheckForCompletedTasks();
@@ -389,6 +412,7 @@ class RasterBufferProviderPerfTest
     TaskGraph empty;
     tile_task_manager_->ScheduleTasks(&empty);
     RunMessageLoopUntilAllTasksHaveCompleted();
+    tile_task_manager_->CheckForCompletedTasks();
 
     perf_test::PrintResult("schedule_alternate_tasks", TestModifierString(),
                            test_name, timer_.LapsPerSecond(), "runs/s", true);
@@ -525,6 +549,8 @@ class RasterBufferProviderCommonPerfTest
       BuildTileTaskGraph(&graph, raster_tasks);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
+
+    CancelRasterTasks(raster_tasks);
 
     perf_test::PrintResult("build_raster_task_graph", "", test_name,
                            timer_.LapsPerSecond(), "runs/s", true);

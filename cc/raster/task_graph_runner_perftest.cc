@@ -76,6 +76,10 @@ class TaskGraphRunnerPerfTest : public testing::Test {
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
+    CancelTasks(leaf_tasks);
+    CancelTasks(tasks);
+    CancelTasks(top_level_tasks);
+
     perf_test::PrintResult("build_task_graph",
                            TestModifierString(),
                            test_name,
@@ -149,9 +153,9 @@ class TaskGraphRunnerPerfTest : public testing::Test {
       graph.Reset();
       // Reset tasks as we are not letting them execute, they get cancelled
       // when next ScheduleTasks() happens.
-      ResetTasks(&top_level_tasks[current_version]);
-      ResetTasks(&tasks[current_version]);
-      ResetTasks(&leaf_tasks[current_version]);
+      ResetTasks(top_level_tasks[current_version]);
+      ResetTasks(tasks[current_version]);
+      ResetTasks(leaf_tasks[current_version]);
       BuildTaskGraph(top_level_tasks[current_version], tasks[current_version],
                      leaf_tasks[current_version], &graph);
       task_graph_runner_->ScheduleTasks(namespace_token_, &graph);
@@ -192,14 +196,16 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     timer_.Reset();
     do {
       graph.Reset();
+      // Tasks run have finished state. Reset them to be considered as new for
+      // scheduling again.
+      ResetTasks(top_level_tasks);
+      ResetTasks(tasks);
+      ResetTasks(leaf_tasks);
       BuildTaskGraph(top_level_tasks, tasks, leaf_tasks, &graph);
       task_graph_runner_->ScheduleTasks(namespace_token_, &graph);
       task_graph_runner_->RunUntilIdle();
       CollectCompletedTasks(&completed_tasks);
       completed_tasks.clear();
-      ResetTasks(&top_level_tasks);
-      ResetTasks(&tasks);
-      ResetTasks(&leaf_tasks);
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
@@ -221,12 +227,14 @@ class TaskGraphRunnerPerfTest : public testing::Test {
       tasks->push_back(make_scoped_refptr(new PerfTaskImpl));
   }
 
-  void ResetTasks(PerfTaskImpl::Vector* tasks) {
-    for (PerfTaskImpl::Vector::iterator it = tasks->begin(); it != tasks->end();
-         ++it) {
-      PerfTaskImpl* task = it->get();
+  void CancelTasks(const PerfTaskImpl::Vector& tasks) {
+    for (auto& task : tasks)
+      task->state().DidCancel();
+  }
+
+  void ResetTasks(const PerfTaskImpl::Vector& tasks) {
+    for (auto& task : tasks)
       task->Reset();
-    }
   }
 
   void BuildTaskGraph(const PerfTaskImpl::Vector& top_level_tasks,
@@ -272,11 +280,6 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     DCHECK(completed_tasks->empty());
     task_graph_runner_->CollectCompletedTasks(namespace_token_,
                                               completed_tasks);
-    for (auto& task : *completed_tasks) {
-      // Reset task state as same task would be reused as if new.
-      task->state().Reset();
-    }
-
     return completed_tasks->size();
   }
 
