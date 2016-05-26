@@ -254,7 +254,7 @@ TEST_F(ImageQualityControllerTest, DontRestartTimerUnlessAdvanced)
 
     // Paint once. This will kick off a timer to see if we resize it during that timer's execution.
     mockTimer->setTime(0.1);
-    EXPECT_EQ(false, controller()->shouldPaintAtLowQuality(*img, testImage.get(), testImage.get(), LayoutSize(2, 2), 0.1));
+    EXPECT_FALSE(controller()->shouldPaintAtLowQuality(*img, testImage.get(), testImage.get(), LayoutSize(2, 2), 0.1));
     EXPECT_EQ(ImageQualityController::cLowQualityTimeThreshold, mockTimer->nextFireInterval());
 
     // Go into low-quality mode now that the size changed.

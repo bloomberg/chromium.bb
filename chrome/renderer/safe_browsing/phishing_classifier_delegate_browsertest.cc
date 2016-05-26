@@ -81,7 +81,7 @@ class FakeRenderThread : public ChromeMockRenderThread {
     if (verdict.ParseFromString(verdict_str)) {
       EXPECT_EQ("http://host.com/", verdict.url());
       EXPECT_EQ(0.8f, verdict.client_score());
-      EXPECT_EQ(false, verdict.is_phishing());
+      EXPECT_FALSE(verdict.is_phishing());
     } else {
       NOTREACHED() << "Cannot parse IPC content. Test failed.";
     }

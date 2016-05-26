@@ -85,7 +85,7 @@ TEST(JsonConverterTest, OldJsonToDisplayLayout) {
   EXPECT_TRUE(JsonToDisplayLayout(*read_value, &read_layout));
   EXPECT_EQ(true, read_layout.mirrored);
   EXPECT_EQ(1, read_layout.primary_id);
-  EXPECT_EQ(false, read_layout.default_unified);
+  EXPECT_FALSE(read_layout.default_unified);
   ASSERT_EQ(1u, read_layout.placement_list.size());
   EXPECT_EQ(display::DisplayPlacement::BOTTOM,
             read_layout.placement_list[0].position);

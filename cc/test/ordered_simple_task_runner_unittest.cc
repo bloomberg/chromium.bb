@@ -15,7 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 // We pass EXPECT_TRUE / EXPECT_FALSE macros rather than a boolean as on some
-// compilers EXPECT_EQ(false, XXXX) fails to compile as  gtest tries to convert
+// compilers EXPECT_EQ(false, XXXX) fails to compile as gtest tries to convert
 // the false value to null causing a -Werror=conversion-null error.
 #define RUN_AND_CHECK_RESULT(                             \
     tasks_remain_expect_macro, run_func, expected_result) \
