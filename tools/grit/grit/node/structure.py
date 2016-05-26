@@ -138,6 +138,9 @@ class StructureNode(base.Node):
              # output of platform.system().
              'run_command_on_platforms' : '',
              'allowexternalscript': 'false',
+             # preprocess takes the same code path as flattenhtml, but it
+             # disables any processing/inlining outside of <if> and <include>.
+             'preprocess': 'false',
              'flattenhtml': 'false',
              'fallback_to_low_resolution': 'default',
              # TODO(joi) this is a hack - should output all generated files

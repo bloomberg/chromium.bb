@@ -35,6 +35,7 @@ class IncludeNode(base.Node):
       filename = self.ToRealPath(self.GetInputPath())
       self._flattened_data = (
           grit.format.html_inline.InlineToString(filename, self,
+              preprocess_only=False,
               allow_external_script=allow_external_script))
     return self._flattened_data
 

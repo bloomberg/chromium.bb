@@ -128,8 +128,9 @@ class InlinedData:
     self.inlined_files = inlined_files
 
 def DoInline(
-    input_filename, grd_node, allow_external_script=False, names_only=False,
-    rewrite_function=None, filename_expansion_function=None):
+    input_filename, grd_node, allow_external_script=False,
+    preprocess_only=False, names_only=False, rewrite_function=None,
+    filename_expansion_function=None):
   """Helper function that inlines the resources in a specified file.
 
   Reads input_filename, finds all the src attributes and attempts to
@@ -139,6 +140,7 @@ def DoInline(
   Args:
     input_filename: name of file to read in
     grd_node: html node from the grd file for this include tag
+    preprocess_only: Skip all HTML processing, only handle <if> and <include>.
     names_only: |nil| will be returned for the inlined contents (faster).
     rewrite_function: function(filepath, text, distribution) which will be
         called to rewrite html content before inlining images.
@@ -234,7 +236,7 @@ def DoInline(
       return ""
 
     return pattern % InlineToString(
-        filepath, grd_node, allow_external_script,
+        filepath, grd_node, allow_external_script=allow_external_script,
         filename_expansion_function=filename_expansion_function)
 
   def InlineIncludeFiles(src_match):
@@ -319,17 +321,18 @@ def DoInline(
   # going to throw out anyway.
   flat_text = CheckConditionalElements(flat_text)
 
-  if not allow_external_script:
-    # We need to inline css and js before we inline images so that image
-    # references gets inlined in the css and js
-    flat_text = re.sub('<script (?P<attrs1>.*?)src="(?P<filename>[^"\']*)"' +
-                       '(?P<attrs2>.*?)></script>',
-                       InlineScript,
-                       flat_text)
+  if not preprocess_only:
+    if not allow_external_script:
+      # We need to inline css and js before we inline images so that image
+      # references gets inlined in the css and js
+      flat_text = re.sub('<script (?P<attrs1>.*?)src="(?P<filename>[^"\']*)"' +
+                         '(?P<attrs2>.*?)></script>',
+                         InlineScript,
+                         flat_text)
 
-  flat_text = _STYLESHEET_RE.sub(
-      lambda m: InlineCSSFile(m, '<style>%s</style>'),
-      flat_text)
+    flat_text = _STYLESHEET_RE.sub(
+        lambda m: InlineCSSFile(m, '<style>%s</style>'),
+        flat_text)
 
   flat_text = _INCLUDE_RE.sub(InlineIncludeFiles, flat_text)
 
@@ -337,24 +340,25 @@ def DoInline(
   # of the text we just inlined.
   flat_text = CheckConditionalElements(flat_text)
 
-  # Allow custom modifications before inlining images.
-  if rewrite_function:
-    flat_text = rewrite_function(input_filepath, flat_text, distribution)
+  if not preprocess_only:
+    # Allow custom modifications before inlining images.
+    if rewrite_function:
+      flat_text = rewrite_function(input_filepath, flat_text, distribution)
+    flat_text = _SRC_RE.sub(SrcReplace, flat_text)
 
-  flat_text = _SRC_RE.sub(SrcReplace, flat_text)
+    # TODO(arv): Only do this inside <style> tags.
+    flat_text = InlineCSSImages(flat_text)
 
-  # TODO(arv): Only do this inside <style> tags.
-  flat_text = InlineCSSImages(flat_text)
-
-  flat_text = _ICON_RE.sub(SrcReplace, flat_text)
+    flat_text = _ICON_RE.sub(SrcReplace, flat_text)
 
   if names_only:
     flat_text = None  # Will contains garbage if the flag is set anyway.
   return InlinedData(flat_text, inlined_files)
 
 
-def InlineToString(input_filename, grd_node, allow_external_script=False,
-                   rewrite_function=None, filename_expansion_function=None):
+def InlineToString(input_filename, grd_node, preprocess_only = False,
+                   allow_external_script=False, rewrite_function=None,
+                   filename_expansion_function=None):
   """Inlines the resources in a specified file and returns it as a string.
 
   Args:
@@ -367,6 +371,7 @@ def InlineToString(input_filename, grd_node, allow_external_script=False,
     return DoInline(
         input_filename,
         grd_node,
+        preprocess_only=preprocess_only,
         allow_external_script=allow_external_script,
         rewrite_function=rewrite_function,
         filename_expansion_function=filename_expansion_function).inlined_data
@@ -404,6 +409,7 @@ def GetResourceFilenames(filename,
         filename,
         None,
         names_only=True,
+        preprocess_only=False,
         allow_external_script=allow_external_script,
         rewrite_function=rewrite_function,
         filename_expansion_function=filename_expansion_function).inlined_files
