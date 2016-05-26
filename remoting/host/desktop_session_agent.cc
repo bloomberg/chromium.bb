@@ -326,18 +326,18 @@ void DesktopSessionAgent::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
 
   last_frame_.reset(frame);
 
-  current_size_ = frame->size();
-
   // Serialize webrtc::DesktopFrame.
   SerializedDesktopFrame serialized_frame;
-  serialized_frame.shared_buffer_id = frame->shared_memory()->id();
-  serialized_frame.bytes_per_row = frame->stride();
-  serialized_frame.dimensions = frame->size();
-  serialized_frame.capture_time_ms = frame->capture_time_ms();
-  serialized_frame.dpi = frame->dpi();
-  for (webrtc::DesktopRegion::Iterator i(frame->updated_region());
-       !i.IsAtEnd(); i.Advance()) {
-    serialized_frame.dirty_region.push_back(i.rect());
+  if (frame) {
+    serialized_frame.shared_buffer_id = frame->shared_memory()->id();
+    serialized_frame.bytes_per_row = frame->stride();
+    serialized_frame.dimensions = frame->size();
+    serialized_frame.capture_time_ms = frame->capture_time_ms();
+    serialized_frame.dpi = frame->dpi();
+    for (webrtc::DesktopRegion::Iterator i(frame->updated_region());
+         !i.IsAtEnd(); i.Advance()) {
+      serialized_frame.dirty_region.push_back(i.rect());
+    }
   }
 
   SendToNetwork(base::WrapUnique(

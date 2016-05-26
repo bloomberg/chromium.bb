@@ -471,6 +471,15 @@ void DesktopSessionProxy::OnCaptureCompleted(
     const SerializedDesktopFrame& serialized_frame) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
+  --pending_capture_frame_requests_;
+
+  // If the input serialized_frame does not have a screen size, it means the
+  // capturer returns a nullptr for OnCaptureCompleted call.
+  if (serialized_frame.dimensions.is_empty()) {
+    video_capturer_->OnCaptureCompleted(nullptr);
+    return;
+  }
+
   // Assume that |serialized_frame| is well-formed because it was received from
   // a more privileged process.
   scoped_refptr<IpcSharedBufferCore> shared_buffer_core =
@@ -488,7 +497,6 @@ void DesktopSessionProxy::OnCaptureCompleted(
     frame->mutable_updated_region()->AddRect(serialized_frame.dirty_region[i]);
   }
 
-  --pending_capture_frame_requests_;
   video_capturer_->OnCaptureCompleted(std::move(frame));
 }
 

@@ -182,9 +182,6 @@ class DesktopSessionAgent
   // the network process connects to the pipe.
   base::File desktop_pipe_;
 
-  // Size of the most recent captured video frame.
-  webrtc::DesktopSize current_size_;
-
   // True if the desktop session agent has been started.
   bool started_ = false;
 
