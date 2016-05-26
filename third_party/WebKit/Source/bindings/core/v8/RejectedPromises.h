@@ -5,6 +5,7 @@
 #ifndef RejectedPromises_h
 #define RejectedPromises_h
 
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/fetch/AccessControlStatus.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
@@ -17,7 +18,6 @@ class PromiseRejectMessage;
 
 namespace blink {
 
-class ScriptCallStack;
 class ScriptState;
 
 class RejectedPromises final : public RefCounted<RejectedPromises> {
@@ -31,7 +31,7 @@ public:
     ~RejectedPromises();
     void dispose();
 
-    void rejectedWithNoHandler(ScriptState*, v8::PromiseRejectMessage, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>, AccessControlStatus);
+    void rejectedWithNoHandler(ScriptState*, v8::PromiseRejectMessage, const String& errorMessage, PassOwnPtr<SourceLocation>, AccessControlStatus);
     void handlerAdded(v8::PromiseRejectMessage);
 
     void processQueue();

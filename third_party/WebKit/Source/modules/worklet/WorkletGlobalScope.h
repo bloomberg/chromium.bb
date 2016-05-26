@@ -5,7 +5,6 @@
 #ifndef WorkletGlobalScope_h
 #define WorkletGlobalScope_h
 
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
@@ -58,7 +57,7 @@ public:
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) final;
     void addConsoleMessage(ConsoleMessage*) final;
-    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) final;
+    void logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation>) final;
 
     DECLARE_VIRTUAL_TRACE();
 

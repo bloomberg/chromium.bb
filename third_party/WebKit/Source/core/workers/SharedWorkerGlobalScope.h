@@ -64,7 +64,7 @@ public:
 
 private:
     SharedWorkerGlobalScope(const String& name, const KURL&, const String& userAgent, SharedWorkerThread*, PassOwnPtr<SecurityOrigin::PrivilegeData>, WorkerClients*);
-    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) override;
+    void logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation>) override;
 
     String m_name;
 };

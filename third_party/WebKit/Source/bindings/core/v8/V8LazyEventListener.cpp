@@ -30,9 +30,9 @@
 
 #include "bindings/core/v8/V8LazyEventListener.h"
 
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8Document.h"
@@ -221,7 +221,7 @@ void V8LazyEventListener::fireErrorEvent(v8::Local<v8::Context> v8Context, Execu
     else if (message->IsSharedCrossOrigin())
         accessControlStatus = SharableCrossOrigin;
 
-    executionContext->reportException(event, 0, nullptr, accessControlStatus);
+    executionContext->reportException(event, SourceLocation::create(m_sourceURL, lineNumber, columnNumber, nullptr), accessControlStatus);
 }
 
 } // namespace blink

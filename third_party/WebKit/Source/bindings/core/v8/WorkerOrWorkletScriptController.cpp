@@ -30,10 +30,10 @@
 
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8DedicatedWorkerGlobalScope.h"
 #include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8Initializer.h"
@@ -283,7 +283,7 @@ bool WorkerOrWorkletScriptController::evaluate(const ScriptSourceCode& sourceCod
                 event = state.m_errorEventFromImportedScript.release();
             else
                 event = ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, m_world.get());
-            m_globalScope->reportException(event, 0, nullptr, NotSharableCrossOrigin);
+            m_globalScope->reportException(event, SourceLocation::create(event->filename(), event->lineno(), event->colno(), nullptr), NotSharableCrossOrigin);
         }
         return false;
     }

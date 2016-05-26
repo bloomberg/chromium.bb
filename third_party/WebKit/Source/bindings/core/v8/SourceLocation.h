@@ -25,6 +25,8 @@ public:
     // Shortcut when location is unknown. Tries to capture call stack or parsing location if available.
     static PassOwnPtr<SourceLocation> capture(ExecutionContext* = nullptr);
 
+    static PassOwnPtr<SourceLocation> fromMessage(v8::Isolate*, v8::Local<v8::Message>, ExecutionContext*);
+
     static PassOwnPtr<SourceLocation> create(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId = 0);
     ~SourceLocation();
 

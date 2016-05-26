@@ -4,6 +4,7 @@
 
 #include "modules/worklet/WorkletGlobalScope.h"
 
+#include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/frame/FrameConsole.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -74,9 +75,9 @@ void WorkletGlobalScope::addConsoleMessage(ConsoleMessage* consoleMessage)
     frame()->console().addMessage(consoleMessage);
 }
 
-void WorkletGlobalScope::logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack> callStack)
+void WorkletGlobalScope::logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation> location)
 {
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, columnNumber, callStack, scriptId);
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, std::move(location));
     addConsoleMessage(consoleMessage);
 }
 

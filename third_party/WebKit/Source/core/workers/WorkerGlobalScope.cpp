@@ -29,9 +29,9 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScheduledAction.h"
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/dom/ActiveDOMObject.h"
@@ -83,7 +83,6 @@ WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, W
     , m_timers(Platform::current()->currentThread()->scheduler()->timerTaskRunner()->adoptClone())
     , m_timeOrigin(timeOrigin)
     , m_messageStorage(ConsoleMessageStorage::create())
-    , m_workerExceptionUniqueIdentifier(0)
 {
     setSecurityOrigin(SecurityOrigin::create(url));
     if (starterOriginPrivilageData)
@@ -278,13 +277,9 @@ EventTarget* WorkerGlobalScope::errorEventTarget()
     return this;
 }
 
-void WorkerGlobalScope::logExceptionToConsole(const String& errorMessage, int, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack> callStack)
+void WorkerGlobalScope::logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation> location)
 {
-    unsigned long exceptionId = ++m_workerExceptionUniqueIdentifier;
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, columnNumber, callStack);
-    m_pendingMessages.set(exceptionId, consoleMessage);
-
-    thread()->workerReportingProxy().reportException(errorMessage, lineNumber, columnNumber, sourceURL, exceptionId);
+    thread()->workerReportingProxy().reportException(errorMessage, std::move(location));
 }
 
 void WorkerGlobalScope::reportBlockedScriptExecutionToInspector(const String& directiveText)
@@ -360,11 +355,9 @@ ConsoleMessageStorage* WorkerGlobalScope::messageStorage()
     return m_messageStorage.get();
 }
 
-void WorkerGlobalScope::exceptionHandled(int exceptionId, bool isHandled)
+void WorkerGlobalScope::exceptionUnhandled(const String& errorMessage, PassOwnPtr<SourceLocation> location)
 {
-    ConsoleMessage* consoleMessage = m_pendingMessages.take(exceptionId);
-    if (!isHandled)
-        addConsoleMessage(consoleMessage);
+    addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, std::move(location)));
 }
 
 bool WorkerGlobalScope::isSecureContext(String& errorMessage, const SecureContextCheck privilegeContextCheck) const
@@ -415,7 +408,6 @@ DEFINE_TRACE(WorkerGlobalScope)
     visitor->trace(m_workerClients);
     visitor->trace(m_timers);
     visitor->trace(m_messageStorage);
-    visitor->trace(m_pendingMessages);
     visitor->trace(m_eventListeners);
     ExecutionContext::trace(visitor);
     EventTargetWithInlineData::trace(visitor);

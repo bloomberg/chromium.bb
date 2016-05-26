@@ -40,15 +40,6 @@
 
 namespace blink {
 
-PassRefPtr<ScriptCallStack> ScriptCallStack::create(v8::Isolate* isolate, v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize)
-{
-    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    if (!data->threadDebugger())
-        return nullptr;
-    std::unique_ptr<V8StackTrace> stack = data->threadDebugger()->debugger()->createStackTrace(stackTrace, maxStackSize);
-    return stack ? adoptRef(new ScriptCallStack(std::move(stack))) : nullptr;
-}
-
 PassRefPtr<ScriptCallStack> ScriptCallStack::capture(size_t maxStackSize)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();

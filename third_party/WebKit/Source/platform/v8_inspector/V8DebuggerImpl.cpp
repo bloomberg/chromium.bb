@@ -725,10 +725,10 @@ v8::Local<v8::Script> V8DebuggerImpl::compileInternalScript(v8::Local<v8::Contex
     return script;
 }
 
-std::unique_ptr<V8StackTrace> V8DebuggerImpl::createStackTrace(v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize)
+std::unique_ptr<V8StackTrace> V8DebuggerImpl::createStackTrace(v8::Local<v8::StackTrace> stackTrace)
 {
     V8DebuggerAgentImpl* agent = findEnabledDebuggerAgent(m_isolate->GetCurrentContext());
-    return V8StackTraceImpl::create(agent, stackTrace, maxStackSize);
+    return V8StackTraceImpl::create(agent, stackTrace, V8StackTrace::maxCallStackSizeToCapture);
 }
 
 std::unique_ptr<V8InspectorSession> V8DebuggerImpl::connect(int contextGroupId, V8InspectorSessionClient* client, const String16* state)

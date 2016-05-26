@@ -4,6 +4,7 @@
 
 #include "bindings/core/v8/SourceLocation.h"
 
+#include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
@@ -63,6 +64,37 @@ PassOwnPtr<SourceLocation> SourceLocation::capture(ExecutionContext* executionCo
     }
 
     return SourceLocation::create(executionContext ? executionContext->url().getString() : "", 0, 0, std::move(stackTrace));
+}
+
+// static
+PassOwnPtr<SourceLocation> SourceLocation::fromMessage(v8::Isolate* isolate, v8::Local<v8::Message> message, ExecutionContext* executionContext)
+{
+    v8::Local<v8::StackTrace> stack = message->GetStackTrace();
+    std::unique_ptr<V8StackTrace> stackTrace = nullptr;
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    if (data && data->threadDebugger())
+        stackTrace = data->threadDebugger()->debugger()->createStackTrace(stack);
+
+    int scriptId = message->GetScriptOrigin().ScriptID()->Value();
+    if (!stack.IsEmpty() && stack->GetFrameCount() > 0) {
+        int topScriptId = stack->GetFrame(0)->GetScriptId();
+        if (topScriptId == scriptId)
+            scriptId = 0;
+    }
+
+    int lineNumber = 0;
+    int columnNumber = 0;
+    if (v8Call(message->GetLineNumber(isolate->GetCurrentContext()), lineNumber)
+        && v8Call(message->GetStartColumn(isolate->GetCurrentContext()), columnNumber))
+        ++columnNumber;
+
+    if ((!scriptId || !lineNumber) && stackTrace && !stackTrace->isEmpty())
+        return adoptPtr(new SourceLocation(stackTrace->topSourceURL(), stackTrace->topLineNumber(), stackTrace->topColumnNumber(), std::move(stackTrace), 0));
+
+    String url = toCoreStringWithUndefinedOrNullCheck(message->GetScriptOrigin().ResourceName());
+    if (url.isNull())
+        url = executionContext->url();
+    return adoptPtr(new SourceLocation(url, lineNumber, columnNumber, std::move(stackTrace), scriptId));
 }
 
 // static

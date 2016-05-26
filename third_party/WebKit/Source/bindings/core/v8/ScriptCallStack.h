@@ -43,7 +43,6 @@ class TracedValue;
 
 class CORE_EXPORT ScriptCallStack final : public RefCounted<ScriptCallStack> {
 public:
-    static PassRefPtr<ScriptCallStack> create(v8::Isolate*, v8::Local<v8::StackTrace>, size_t maxStackSize = V8StackTrace::maxCallStackSizeToCapture);
     static PassRefPtr<ScriptCallStack> capture(size_t maxStackSize = V8StackTrace::maxCallStackSizeToCapture);
     static PassRefPtr<ScriptCallStack> captureForConsole();
 

@@ -212,7 +212,7 @@ void WebSharedWorkerImpl::resumeStartup()
 
 // WorkerReportingProxy --------------------------------------------------------
 
-void WebSharedWorkerImpl::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId)
+void WebSharedWorkerImpl::reportException(const String& errorMessage, PassOwnPtr<SourceLocation>)
 {
     // Not suppported in SharedWorker.
 }

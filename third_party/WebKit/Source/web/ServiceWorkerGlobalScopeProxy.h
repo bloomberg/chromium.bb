@@ -83,7 +83,7 @@ public:
     void dispatchSyncEvent(int, const WebString& tag, LastChanceOption) override;
 
     // WorkerReportingProxy overrides:
-    void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) override;
+    void reportException(const String& errorMessage, PassOwnPtr<SourceLocation>) override;
     void reportConsoleMessage(ConsoleMessage*) override;
     void postMessageToPageInspector(const String&) override;
     void postWorkerConsoleAgentEnabled() override { }

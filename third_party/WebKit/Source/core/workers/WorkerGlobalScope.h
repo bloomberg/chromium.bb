@@ -141,7 +141,7 @@ public:
     void addConsoleMessage(ConsoleMessage*) final;
     ConsoleMessageStorage* messageStorage();
 
-    void exceptionHandled(int exceptionId, bool isHandled);
+    void exceptionUnhandled(const String& errorMessage, PassOwnPtr<SourceLocation>);
 
     virtual void scriptLoaded(size_t scriptSize, size_t cachedMetadataSize) { }
 
@@ -156,7 +156,7 @@ protected:
     WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, WorkerClients*);
     void applyContentSecurityPolicyFromVector(const Vector<CSPHeaderAndType>& headers);
 
-    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) override;
+    void logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation>) override;
     void addMessageToWorkerConsole(ConsoleMessage*);
     void setV8CacheOptions(V8CacheOptions v8CacheOptions) { m_v8CacheOptions = v8CacheOptions; }
 
@@ -201,8 +201,6 @@ private:
 
     Member<ConsoleMessageStorage> m_messageStorage;
 
-    unsigned long m_workerExceptionUniqueIdentifier;
-    HeapHashMap<unsigned long, Member<ConsoleMessage>> m_pendingMessages;
     HeapListHashSet<Member<V8AbstractEventListener>> m_eventListeners;
 };
 

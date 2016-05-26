@@ -72,7 +72,7 @@ V8StackTraceImpl::Frame::~Frame()
 {
 }
 
-// buildInspectorObject() and ScriptCallStack's toTracedValue() should set the same fields.
+// buildInspectorObject() and SourceLocation's toTracedValue() should set the same fields.
 // If either of them is modified, the other should be also modified.
 std::unique_ptr<protocol::Runtime::CallFrame> V8StackTraceImpl::Frame::buildInspectorObject() const
 {

@@ -933,7 +933,7 @@ public:
     void cancelIdleCallback(int id);
 
     EventTarget* errorEventTarget() final;
-    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) final;
+    void logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation>) final;
 
     void initDNSPrefetch();
 

@@ -5,7 +5,6 @@
 #include "bindings/core/v8/RejectedPromises.h"
 
 #include "bindings/core/v8/ScopedPersistent.h"
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -27,9 +26,9 @@ static const unsigned maxReportedHandlersPendingResolution = 1000;
 
 class RejectedPromises::Message final {
 public:
-    static PassOwnPtr<Message> create(ScriptState* scriptState, v8::Local<v8::Promise> promise, v8::Local<v8::Value> exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
+    static PassOwnPtr<Message> create(ScriptState* scriptState, v8::Local<v8::Promise> promise, v8::Local<v8::Value> exception, const String& errorMessage, PassOwnPtr<SourceLocation> location, AccessControlStatus corsStatus)
     {
-        return adoptPtr(new Message(scriptState, promise, exception, errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack, corsStatus));
+        return adoptPtr(new Message(scriptState, promise, exception, errorMessage, std::move(location), corsStatus));
     }
 
     bool isCollected()
@@ -86,12 +85,12 @@ public:
             else if (embedderErrorMessage.startsWith("Uncaught "))
                 embedderErrorMessage.insert(" (in promise)", 8);
 
-            ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, embedderErrorMessage, m_resourceName, m_lineNumber, m_columnNumber, m_callStack, m_scriptId, arguments);
+            ConsoleMessage* consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, embedderErrorMessage, std::move(m_location), arguments);
             m_consoleMessageId = consoleMessage->assignMessageId();
             executionContext->addConsoleMessage(consoleMessage);
         }
 
-        m_callStack.clear();
+        m_location.clear();
     }
 
     void revoke()
@@ -146,16 +145,13 @@ public:
     }
 
 private:
-    Message(ScriptState* scriptState, v8::Local<v8::Promise> promise, v8::Local<v8::Value> exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
+    Message(ScriptState* scriptState, v8::Local<v8::Promise> promise, v8::Local<v8::Value> exception, const String& errorMessage, PassOwnPtr<SourceLocation> location, AccessControlStatus corsStatus)
         : m_scriptState(scriptState)
         , m_promise(scriptState->isolate(), promise)
         , m_exception(scriptState->isolate(), exception)
         , m_errorMessage(errorMessage)
-        , m_resourceName(resourceName)
-        , m_scriptId(scriptId)
-        , m_lineNumber(lineNumber)
-        , m_columnNumber(columnNumber)
-        , m_callStack(callStack)
+        , m_resourceName(location->url())
+        , m_location(std::move(location))
         , m_consoleMessageId(0)
         , m_collected(false)
         , m_shouldLogToConsole(true)
@@ -179,10 +175,7 @@ private:
     ScopedPersistent<v8::Value> m_exception;
     String m_errorMessage;
     String m_resourceName;
-    int m_scriptId;
-    int m_lineNumber;
-    int m_columnNumber;
-    RefPtr<ScriptCallStack> m_callStack;
+    OwnPtr<SourceLocation> m_location;
     unsigned m_consoleMessageId;
     bool m_collected;
     bool m_shouldLogToConsole;
@@ -197,9 +190,9 @@ RejectedPromises::~RejectedPromises()
 {
 }
 
-void RejectedPromises::rejectedWithNoHandler(ScriptState* scriptState, v8::PromiseRejectMessage data, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
+void RejectedPromises::rejectedWithNoHandler(ScriptState* scriptState, v8::PromiseRejectMessage data, const String& errorMessage, PassOwnPtr<SourceLocation> location, AccessControlStatus corsStatus)
 {
-    m_queue.append(Message::create(scriptState, data.GetPromise(), data.GetValue(), errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack, corsStatus));
+    m_queue.append(Message::create(scriptState, data.GetPromise(), data.GetValue(), errorMessage, std::move(location), corsStatus));
 }
 
 void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data)

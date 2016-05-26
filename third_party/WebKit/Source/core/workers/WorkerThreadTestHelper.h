@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "bindings/core/v8/ScriptCallStack.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -53,7 +53,11 @@ public:
     MockWorkerReportingProxy() { }
     ~MockWorkerReportingProxy() override { }
 
-    MOCK_METHOD5(reportException, void(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId));
+    MOCK_METHOD2(reportExceptionMock, void(const String& errorMessage, SourceLocation*));
+    void reportException(const String& errorMessage, PassOwnPtr<SourceLocation> location)
+    {
+        reportExceptionMock(errorMessage, location.get());
+    }
     MOCK_METHOD1(reportConsoleMessage, void(ConsoleMessage*));
     MOCK_METHOD1(postMessageToPageInspector, void(const String&));
     MOCK_METHOD0(postWorkerConsoleAgentEnabled, void());
@@ -148,7 +152,7 @@ public:
         return EventTargetNames::DedicatedWorkerGlobalScope;
     }
 
-    void logExceptionToConsole(const String&, int, const String&, int, int, PassRefPtr<ScriptCallStack>) override
+    void logExceptionToConsole(const String&, PassOwnPtr<SourceLocation>) override
     {
     }
 

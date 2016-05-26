@@ -114,7 +114,7 @@ public:
     void didExecuteScript(v8::Local<v8::Context>) override;
     void idleStarted() override;
     void idleFinished() override;
-    std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>, size_t maxStackSize) override;
+    std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>) override;
     std::unique_ptr<V8StackTrace> captureStackTrace(size_t maxStackSize) override;
 
     using ContextByIdMap = protocol::HashMap<int, std::unique_ptr<InspectedContext>>;

@@ -5,6 +5,7 @@
 #include "modules/compositorworker/CompositorWorkerThread.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "core/dom/CompositorProxyClient.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -35,7 +36,7 @@ public:
     }
 
     // (Empty) WorkerReportingProxy implementation:
-    virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId) {}
+    virtual void reportException(const String& errorMessage, PassOwnPtr<SourceLocation>) {}
     void reportConsoleMessage(ConsoleMessage*) override {}
     void postMessageToPageInspector(const String&) override {}
     void postWorkerConsoleAgentEnabled() override {}

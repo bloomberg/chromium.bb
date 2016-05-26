@@ -68,11 +68,11 @@ ConsoleMessage* ConsoleMessage::createForConsoleAPI(MessageLevel level, MessageT
 }
 
 // static
-ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, PassOwnPtr<SourceLocation> location)
+ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, PassOwnPtr<SourceLocation> location, ScriptArguments* arguments)
 {
     if (!location)
-        return new ConsoleMessage(source, level, message, String(), 0, 0, nullptr, 0, nullptr);
-    return new ConsoleMessage(source, level, message, location->url(), location->lineNumber(), location->columnNumber(), location->takeStackTrace(), location->scriptId(), nullptr);
+        return new ConsoleMessage(source, level, message, String(), 0, 0, nullptr, 0, arguments);
+    return new ConsoleMessage(source, level, message, location->url(), location->lineNumber(), location->columnNumber(), location->takeStackTrace(), location->scriptId(), arguments);
 }
 
 // static

@@ -47,7 +47,7 @@ public:
     static bool isCommandLineAPIMethod(const String16& name);
     static bool isCommandLineAPIGetter(const String16& name);
 
-    virtual std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>, size_t maxStackSize) = 0;
+    virtual std::unique_ptr<V8StackTrace> createStackTrace(v8::Local<v8::StackTrace>) = 0;
     virtual std::unique_ptr<V8StackTrace> captureStackTrace(size_t maxStackSize) = 0;
 };
 

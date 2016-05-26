@@ -55,7 +55,7 @@ class ExecutionContextTask;
 class LocalDOMWindow;
 class PublicURLManager;
 class SecurityOrigin;
-class ScriptCallStack;
+class SourceLocation;
 
 class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier, public Supplementable<ExecutionContext> {
     WTF_MAKE_NONCOPYABLE(ExecutionContext);
@@ -104,10 +104,10 @@ public:
     KURL contextCompleteURL(const String& url) const { return virtualCompleteURL(url); }
 
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
-    void reportException(ErrorEvent*, int scriptId, PassRefPtr<ScriptCallStack>, AccessControlStatus);
+    void reportException(ErrorEvent*, PassOwnPtr<SourceLocation>, AccessControlStatus);
 
     virtual void addConsoleMessage(ConsoleMessage*) = 0;
-    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
+    virtual void logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation>) = 0;
 
     PublicURLManager& publicURLManager();
 

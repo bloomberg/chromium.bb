@@ -52,10 +52,10 @@ namespace blink {
 
 namespace {
 
-void processExceptionOnWorkerGlobalScope(int exceptionId, bool handled, ExecutionContext* scriptContext)
+void processUnhandledExceptionOnWorkerGlobalScope(const String& errorMessage, PassOwnPtr<SourceLocation> location, ExecutionContext* scriptContext)
 {
     WorkerGlobalScope* globalScope = toWorkerGlobalScope(scriptContext);
-    globalScope->exceptionHandled(exceptionId, handled);
+    globalScope->exceptionUnhandled(errorMessage, std::move(location));
 }
 
 void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels, InProcessWorkerObjectProxy* workerObjectProxy, ExecutionContext* scriptContext)
@@ -158,7 +158,7 @@ void InProcessWorkerMessagingProxy::postTaskToLoader(std::unique_ptr<ExecutionCo
     getExecutionContext()->postTask(BLINK_FROM_HERE, std::move(task));
 }
 
-void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int exceptionId)
+void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, PassOwnPtr<SourceLocation> location)
 {
     DCHECK(isParentContextThread());
     if (!m_workerObject)
@@ -170,9 +170,9 @@ void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, 
     // because terminated workers no longer deliver messages (section 4.6 of the
     // WebWorker spec), but they do report exceptions.
 
-    ErrorEvent* event = ErrorEvent::create(errorMessage, sourceURL, lineNumber, columnNumber, nullptr);
-    DispatchEventResult dispatchResult = m_workerObject->dispatchEvent(event);
-    postTaskToWorkerGlobalScope(createCrossThreadTask(&processExceptionOnWorkerGlobalScope, exceptionId, dispatchResult != DispatchEventResult::NotCanceled));
+    ErrorEvent* event = ErrorEvent::create(errorMessage, location->url(), location->lineNumber(), location->columnNumber(), nullptr);
+    if (m_workerObject->dispatchEvent(event) == DispatchEventResult::NotCanceled)
+        postTaskToWorkerGlobalScope(createCrossThreadTask(&processUnhandledExceptionOnWorkerGlobalScope, errorMessage, passed(std::move(location))));
 }
 
 void InProcessWorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, int lineNumber, const String& sourceURL)

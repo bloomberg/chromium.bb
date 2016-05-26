@@ -30,6 +30,7 @@
 
 #include "web/ServiceWorkerGlobalScopeProxy.h"
 
+#include "bindings/core/v8/SourceLocation.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
@@ -210,9 +211,9 @@ void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebStri
     workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 
-void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL, int)
+void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, PassOwnPtr<SourceLocation> location)
 {
-    client().reportException(errorMessage, lineNumber, columnNumber, sourceURL);
+    client().reportException(errorMessage, location->lineNumber(), location->columnNumber(), location->url());
 }
 
 void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(ConsoleMessage* consoleMessage)

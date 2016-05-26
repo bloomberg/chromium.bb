@@ -27,7 +27,7 @@
 
 #include "core/dom/ExecutionContext.h"
 
-#include "bindings/core/v8/ScriptCallStack.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/EventTarget.h"
@@ -43,22 +43,14 @@ namespace blink {
 class ExecutionContext::PendingException {
     WTF_MAKE_NONCOPYABLE(PendingException);
 public:
-    PendingException(const String& errorMessage, int lineNumber, int columnNumber, int scriptId, const String& sourceURL, PassRefPtr<ScriptCallStack> callStack)
+    PendingException(const String& errorMessage, PassOwnPtr<SourceLocation> location)
         : m_errorMessage(errorMessage)
-        , m_lineNumber(lineNumber)
-        , m_columnNumber(columnNumber)
-        , m_scriptId(scriptId)
-        , m_sourceURL(sourceURL)
-        , m_callStack(callStack)
+        , m_location(std::move(location))
     {
     }
 
     String m_errorMessage;
-    int m_lineNumber;
-    int m_columnNumber;
-    int m_scriptId;
-    String m_sourceURL;
-    RefPtr<ScriptCallStack> m_callStack;
+    OwnPtr<SourceLocation> m_location;
 };
 
 ExecutionContext::ExecutionContext()
@@ -146,25 +138,25 @@ bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, Access
     return !(getSecurityOrigin()->canRequestNoSuborigin(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
 }
 
-void ExecutionContext::reportException(ErrorEvent* errorEvent, int scriptId, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
+void ExecutionContext::reportException(ErrorEvent* errorEvent, PassOwnPtr<SourceLocation> location, AccessControlStatus corsStatus)
 {
     if (m_inDispatchErrorEvent) {
         if (!m_pendingExceptions)
             m_pendingExceptions = adoptPtr(new Vector<OwnPtr<PendingException>>());
-        m_pendingExceptions->append(adoptPtr(new PendingException(errorEvent->messageForConsole(), errorEvent->lineno(), errorEvent->colno(), scriptId, errorEvent->filename(), callStack)));
+        m_pendingExceptions->append(adoptPtr(new PendingException(errorEvent->messageForConsole(), std::move(location))));
         return;
     }
 
     // First report the original exception and only then all the nested ones.
     if (!dispatchErrorEvent(errorEvent, corsStatus))
-        logExceptionToConsole(errorEvent->messageForConsole(), scriptId, errorEvent->filename(), errorEvent->lineno(), errorEvent->colno(), callStack);
+        logExceptionToConsole(errorEvent->messageForConsole(), std::move(location));
 
     if (!m_pendingExceptions)
         return;
 
     for (size_t i = 0; i < m_pendingExceptions->size(); i++) {
         PendingException* e = m_pendingExceptions->at(i).get();
-        logExceptionToConsole(e->m_errorMessage, e->m_scriptId, e->m_sourceURL, e->m_lineNumber, e->m_columnNumber, e->m_callStack);
+        logExceptionToConsole(e->m_errorMessage, std::move(e->m_location));
     }
     m_pendingExceptions.reset();
 }
