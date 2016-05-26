@@ -21,10 +21,6 @@ crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-multiframe.html [
 crbug.com/563265 editing/spelling/spellcheck-editable-on-focus-sync.html [ Skip ]
 crbug.com/563265 editing/spelling/spelling-unified-emulation.html [ Skip ]
 
-# TODO(wangxianzhu): Remove paint/invalidation/spv2.
-crbug.com/524134 paint/invalidation/spv2 [ Skip ]
-crbug.com/524134 virtual/spv2/paint/invalidation/spv2 [ Skip ]
-
 crbug.com/524134 virtual/spv2/paint/invalidation/invalidate-after-composited-scroll.html [ Failure ]
 crbug.com/524134 virtual/spv2/fast/repaint/focus-ring-on-continuation-move.html [ Failure ]
 crbug.com/524236 virtual/spv2/compositing/overflow/updating-scrolling-content.html [ Failure ]

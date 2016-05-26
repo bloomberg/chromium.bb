@@ -1,2 +1,0 @@
-["LayoutBlockFlow (positioned) DIV id='composited-box'",
- "LayoutBlockFlow DIV class='child'"]

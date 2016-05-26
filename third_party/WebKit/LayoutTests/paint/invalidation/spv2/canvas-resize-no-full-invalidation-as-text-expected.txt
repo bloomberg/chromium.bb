@@ -1,1 +1,0 @@
-["LayoutHTMLCanvas (positioned) CANVAS id='canvas'"]
