@@ -104,6 +104,7 @@ import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
 import org.chromium.ui.WindowOpenDisposition;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
@@ -371,6 +372,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     private View mSadTabView;
 
     private final int mDefaultThemeColor;
+    private int mThemeColor;
 
     private ChromeDownloadDelegate mDownloadDelegate;
 
@@ -560,6 +562,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                     PolicyAuditor.nativeGetCertificateFailure(getWebContents()),
                     getApplicationContext());
             updateFullscreenEnabledState();
+            updateThemeColorIfNeeded();
+        }
+
+        @Override
+        public void onUrlUpdated(Tab tab) {
+            updateThemeColorIfNeeded();
         }
 
         @Override
@@ -630,9 +638,11 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mDefaultThemeColor = mIncognito
                     ? ApiCompatibilityUtils.getColor(resources, R.color.incognito_primary_color)
                     : ApiCompatibilityUtils.getColor(resources, R.color.default_primary_color);
+            mThemeColor = calculateThemeColor();
         } else {
             mIdealFaviconSize = 16;
             mDefaultThemeColor = 0;
+            mThemeColor = mDefaultThemeColor;
         }
 
         // Restore data from the TabState, if it existed.
@@ -1051,9 +1061,48 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      *         security state.
      */
     public int getThemeColor() {
+        return mThemeColor;
+    }
+
+    private int calculateThemeColor() {
+        // Theme color support is currently disabled for tablets.
+        if (DeviceFormFactor.isTablet(getApplicationContext())) return getDefaultThemeColor();
+
         if (isNativePage()) return mNativePage.getThemeColor();
-        if (mWebContentsObserver != null) return mWebContentsObserver.getThemeColor();
-        return mDefaultThemeColor;
+
+        int themeColor = getDefaultThemeColor();
+        if (getWebContents() != null) themeColor = getWebContents().getThemeColor();
+
+        // Do not apply the theme color if there are any security issues on the page.
+        int securityLevel = getSecurityLevel();
+        if (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
+                || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
+                || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING) {
+            themeColor = getDefaultThemeColor();
+        }
+
+        if (isShowingInterstitialPage()) themeColor = getDefaultThemeColor();
+
+        if (themeColor == Color.TRANSPARENT) themeColor = getDefaultThemeColor();
+        if (isIncognito()) themeColor = getDefaultThemeColor();
+
+        // Ensure there is no alpha component to the theme color as that is not supported in the
+        // dependent UI.
+        themeColor |= 0xFF000000;
+        return themeColor;
+    }
+
+    /**
+     * Determines if the theme color has changed and notifies the listeners if it has.
+     */
+    void updateThemeColorIfNeeded() {
+        int themeColor = calculateThemeColor();
+        if (themeColor == mThemeColor) return;
+        mThemeColor = themeColor;
+        RewindableIterator<TabObserver> observers = getTabObservers();
+        while (observers.hasNext()) {
+            observers.next().onDidChangeThemeColor(this, themeColor);
+        }
     }
 
     /**
@@ -1315,9 +1364,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         // Notifying of theme color change before content change because some of
         // the observers depend on the theme information being correct in
         // onContentChanged().
-        for (TabObserver observer : mObservers) {
-            observer.onDidChangeThemeColor(this, mDefaultThemeColor);
-        }
+        updateThemeColorIfNeeded();
         notifyContentChanged();
         destroyNativePageInternal(previousNativePage);
     }
@@ -1800,6 +1847,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             mSwipeRefreshHandler = new SwipeRefreshHandler(mThemedApplicationContext);
             mSwipeRefreshHandler.setContentViewCore(mContentViewCore);
 
+            updateThemeColorIfNeeded();
             notifyContentChanged();
 
             // For browser tabs, we want to set accessibility focus to the page
@@ -2457,8 +2505,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         destroyNativePageInternal(previousNativePage);
-        mWebContentsObserver.didChangeThemeColor(
-                getWebContents().getThemeColor(mDefaultThemeColor));
         for (TabObserver observer : mObservers) {
             observer.onWebContentsSwapped(this, didStartLoad, didFinishLoad);
         }

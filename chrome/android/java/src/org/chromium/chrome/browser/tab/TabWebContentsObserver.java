@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.tab;
 
-import android.content.Context;
-import android.graphics.Color;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.view.View;
@@ -23,10 +21,8 @@ import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
-import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
-import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.concurrent.TimeUnit;
 
@@ -65,12 +61,10 @@ public class TabWebContentsObserver extends WebContentsObserver {
     private static final int TAB_RENDERER_EXIT_STATUS_MAX = 6;
 
     private final Tab mTab;
-    private int mThemeColor;
 
     public TabWebContentsObserver(WebContents webContents, Tab tab) {
         super(webContents);
         mTab = tab;
-        mThemeColor = mTab.getDefaultThemeColor();
     }
 
     @Override
@@ -267,32 +261,14 @@ public class TabWebContentsObserver extends WebContentsObserver {
 
     @Override
     public void didChangeThemeColor(int color) {
-        int securityLevel = mTab.getSecurityLevel();
-        if (securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
-                || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
-                || securityLevel == ConnectionSecurityLevel.SECURITY_POLICY_WARNING) {
-            color = mTab.getDefaultThemeColor();
-        }
-        if (mTab.isShowingInterstitialPage()) color = mTab.getDefaultThemeColor();
-        if (!isThemeColorEnabled(mTab.getApplicationContext())) {
-            color = mTab.getDefaultThemeColor();
-        }
-        if (color == Color.TRANSPARENT) color = mTab.getDefaultThemeColor();
-        if (mTab.isIncognito()) color = mTab.getDefaultThemeColor();
-        color |= 0xFF000000;
-        if (mTab.getThemeColor() == color) return;
-        mThemeColor = color;
-        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-        while (observers.hasNext()) {
-            observers.next().onDidChangeThemeColor(mTab, mTab.getThemeColor());
-        }
+        mTab.updateThemeColorIfNeeded();
     }
 
     @Override
     public void didAttachInterstitialPage() {
         mTab.getInfoBarContainer().setVisibility(View.INVISIBLE);
         mTab.showRenderedPage();
-        didChangeThemeColor(mTab.getDefaultThemeColor());
+        mTab.updateThemeColorIfNeeded();
 
         RewindableIterator<TabObserver> observers = mTab.getTabObservers();
         while (observers.hasNext()) {
@@ -312,7 +288,7 @@ public class TabWebContentsObserver extends WebContentsObserver {
     @Override
     public void didDetachInterstitialPage() {
         mTab.getInfoBarContainer().setVisibility(View.VISIBLE);
-        didChangeThemeColor(mTab.getWebContents().getThemeColor(mTab.getDefaultThemeColor()));
+        mTab.updateThemeColorIfNeeded();
 
         RewindableIterator<TabObserver> observers = mTab.getTabObservers();
         while (observers.hasNext()) {
@@ -340,16 +316,5 @@ public class TabWebContentsObserver extends WebContentsObserver {
         MediaCaptureNotificationService.updateMediaNotificationForTab(
                 mTab.getApplicationContext(), mTab.getId(), false, false, mTab.getUrl());
         super.destroy();
-    }
-
-    /**
-     * @return The theme-color for this web contents.
-     */
-    int getThemeColor() {
-        return mThemeColor;
-    }
-
-    private static boolean isThemeColorEnabled(Context context) {
-        return !DeviceFormFactor.isTablet(context);
     }
 }

@@ -285,12 +285,14 @@ public interface WebContents extends Parcelable {
     boolean hasAccessedInitialDocument();
 
     /**
-     * This returns the theme color as set by the theme-color meta tag after getting rid of the
-     * alpha.
-     * @param defaultColor The default color to be returned if the cached color is not valid.
+     * This returns the theme color as set by the theme-color meta tag.
+     * <p>
+     * The color returned may retain non-fully opaque alpha components.  A value of
+     * {@link android.graphics.Color#TRANSPARENT} means there was no theme color specified.
+     *
      * @return The theme color for the content as set by the theme-color meta tag.
      */
-    int getThemeColor(int defaultColor);
+    int getThemeColor();
 
     /**
      * Requests a snapshop of accessibility tree. The result is provided asynchronously

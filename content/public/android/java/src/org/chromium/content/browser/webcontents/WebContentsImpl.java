@@ -5,7 +5,6 @@
 package org.chromium.content.browser.webcontents;
 
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Parcel;
@@ -349,11 +348,8 @@ import java.util.UUID;
     }
 
     @Override
-    public int getThemeColor(int defaultColor) {
-        int color = nativeGetThemeColor(mNativeWebContentsAndroid);
-        if (color == Color.TRANSPARENT) return defaultColor;
-
-        return (color | 0xFF000000);
+    public int getThemeColor() {
+        return nativeGetThemeColor(mNativeWebContentsAndroid);
     }
 
     @Override
