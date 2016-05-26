@@ -11,9 +11,11 @@
 """
 
 import optparse
+import os
 import re
 import subprocess
 import sys
+import traceback
 
 
 def ImportProtoModules(paths):
@@ -93,6 +95,7 @@ def PrunePlatformSettings(file_type, default_settings, platform_type):
 
 def FilterPbForPlatform(full_pb, platform_type):
   """ Return a filtered protobuf for this platform_type """
+  assert type(platform_type) is int, "Bad platform_type type"
 
   new_pb = config_pb2.DownloadFileTypeConfig();
   new_pb.CopyFrom(full_pb)
@@ -127,25 +130,59 @@ def FilterPbForPlatform(full_pb, platform_type):
   return new_pb
 
 
-def GeneratBinaryProtos(opts):
-  # Read the ASCII
-  ifile = open(opts.infile, 'r')
-  ascii_pb_str = ifile.read()
-  ifile.close()
-
-  # Parse it into a structure PB
-  pb = config_pb2.DownloadFileTypeConfig()
-  text_format.Merge(ascii_pb_str, pb)
-
-  ValidatePb(pb);
-  platform_type = PlatformTypes()[opts.type]
-  filtered_pb = FilterPbForPlatform(pb, platform_type);
+def FilterForPlatformAndWrite(full_pb, platform_type, outfile):
+  """ Filter and write out a file for this platform """
+  # Filter it
+  filtered_pb = FilterPbForPlatform(full_pb, platform_type);
 
   # Serialize it
   binary_pb_str = filtered_pb.SerializeToString()
 
   # Write it to disk
-  open(opts.outfile, 'wb').write(binary_pb_str)
+  open(outfile, 'wb').write(binary_pb_str)
+
+
+def MakeSubDirs(outfile):
+  """ Make the subdirectories needed to create file |outfile| """
+  dirname = os.path.dirname(outfile)
+  if not os.path.exists(dirname):
+    os.makedirs(dirname)
+
+
+def GenerateBinaryProtos(opts):
+  """ Read the ASCII proto and generate one or more binary protos. """
+  # Read the ASCII
+  ifile = open(opts.infile, 'r')
+  ascii_pb_str = ifile.read()
+  ifile.close()
+
+  # Parse it into a structured PB
+  full_pb = config_pb2.DownloadFileTypeConfig()
+  text_format.Merge(ascii_pb_str, full_pb)
+
+  ValidatePb(full_pb);
+
+  if opts.type is not None:
+    # Just one platform type
+    platform_enum = PlatformTypes()[opts.type]
+    outfile = os.path.join(opts.outdir, opts.outbasename)
+    FilterForPlatformAndWrite(full_pb, platform_enum, outfile)
+  else:
+    # Make a separate file for each platform
+    for platform_type, platform_enum in PlatformTypes().iteritems():
+      # e.g. .../all/77/chromeos/download_file_types.pb
+      outfile = os.path.join(opts.outdir,
+                             str(full_pb.version_id),
+                             platform_type,
+                             opts.outbasename)
+      MakeSubDirs(outfile)
+      FilterForPlatformAndWrite(full_pb, platform_enum, outfile)
+
+    print "\n\nTo push these files, run the following:"
+    print ("python " +
+           "chrome/browser/resources/safe_browsing/push_file_type_proto.py " +
+           "-d " + os.path.abspath(opts.outdir))
+    print "\n\n"
 
 
 def main():
@@ -155,44 +192,59 @@ def main():
                      help='Wrap this script in another python '
                      'execution to disable site-packages.  This is a '
                      'fix for http://crbug.com/605592')
+
+  parser.add_option('-a', '--all', action="store_true", default=False,
+                     help='Write a separate file for every platform. '
+                    'Outfile must have a %d for version and %s for platform.')
   parser.add_option('-t', '--type',
                     help='The platform type. One of android, chromeos, ' +
                     'linux, mac, win')
   parser.add_option('-i', '--infile',
                     help='The ASCII DownloadFileType-proto file to read.')
-  parser.add_option('-o', '--outfile',
-                    help='The binary file to write to.')
+  parser.add_option('-d', '--outdir',
+                    help='Directory underwhich binary file(s) will be written')
+  parser.add_option('-o', '--outbasename',
+                    help='Basename of the binary file to write to.')
   parser.add_option('-p', '--path', action="append",
                     help='Repeat this as needed.  Directory(s) containing ' +
                     'the download_file_types_pb2.py and ' +
                     'google.protobuf.text_format modules')
   (opts, args) = parser.parse_args()
-  if opts.infile is None or opts.outfile is None:
+  if opts.infile is None or opts.outdir is None or opts.outbasename is None:
     parser.print_help()
     return 1
 
   if opts.wrap:
     # Run this script again with different args to the interpreter.
     command = [sys.executable, '-S', '-s', sys.argv[0]]
-    command += ['-t', opts.type]
+    if opts.type is not None:
+      command += ['-t', opts.type]
+    if opts.all:
+      command += ['-a']
     command += ['-i', opts.infile]
-    command += ['-o', opts.outfile]
+    command += ['-d', opts.outdir]
+    command += ['-o', opts.outbasename]
     for path in opts.path:
       command += ['-p', path]
     sys.exit(subprocess.call(command))
 
   ImportProtoModules(opts.path)
 
-  if (opts.type not in PlatformTypes()):
+  if (not opts.all and opts.type not in PlatformTypes()):
     print "ERROR: Unknown platform type '%s'" % opts.type
     parser.print_help()
     return 1
 
+  if (bool(opts.all) == bool(opts.type)):
+    print "ERROR: Need exactly one of --type or --all"
+    parser.print_help()
+    return 1
+
   try:
-    GeneratBinaryProtos(opts)
+    GenerateBinaryProtos(opts)
   except Exception as e:
-    print "ERROR: Failed to render binary version of %s:\n  %s\n" % (
-        opts.infile, str(e))
+    print "ERROR: Failed to render binary version of %s:\n  %s\n%s" % (
+        opts.infile, str(e), traceback.format_exc())
     return 1
 
 

@@ -3,16 +3,26 @@
 This describes how to adjust file-type download behavior in
 Chrome including interactions with Safe Browsing. The metadata described
 here, and stored in `download_file_types.asciipb`, will be both baked into
-Chrome released and pushable to Chrome between releases. http://crbug.com/596555
+Chrome released and pushable to Chrome between releases (via
+`FileTypePolicies` class).  http://crbug.com/596555
 
 Rendered version of this file: https://chromium.googlesource.com/chromium/src/+/master/chrome/browser/resources/safe_browsing/README.md
 
 
-## Procedure for adding a new type
-  * Edit `download_file_types.asciipb`, edit `download_stats.cc` (necessary
-    until it gets replaced), and update `histograms.xml`
-  * Get it reviewed, submit.
-  * Push via component update (PROCEDURE TBD)
+## Procedure for adding/modifying file type(s)
+  * **Edit** `download_file_types.asciipb` and update `histograms.xml`
+  * Get it reviewed, **submit.**
+  * **Push** it to all users via component update:
+    * Wait 1-3 day for this to run on Canary to verify it doesn't crash Chrome.
+    * In a synced checkout, generate protos for all platforms:
+        * % `ninja -C out-gn/Debug
+         chrome/browser/resources/safe_browsing:make_all_file_types_protobuf`
+    * That will instruct you to run another command to push the files to GCS.
+      You must a member of chrome-file-type-policies-pushers@google.com to have
+      access to the GCS bucket.
+    * The Component Updater system will notice those files and push them to
+      users withing ~6 hours. If not, contact `waffles@.`
+
 
 ## Guidelines for a DownloadFileType entry:
 See `download_file_types.proto` for all fields.

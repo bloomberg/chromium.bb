@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# TODO(nparker): reduce the duplication between these two, somehow.
+
 # Generate the binary proto form of "file_types" from the ascii proto.
 action("make_file_types_protobuf") {
   script = "gen_file_type_proto.py"
@@ -10,7 +12,8 @@ action("make_file_types_protobuf") {
   # chrome/browser/browser_resources.grd will look for it.
 
   input_filename = "download_file_types.asciipb"
-  output_filename = "$target_gen_dir/download_file_types.pb"
+  output_dir = target_gen_dir
+  output_basename = "download_file_types.pb"
   python_path_root = "$root_build_dir/pyproto"
   python_path_safe_browsing = "$python_path_root/chrome/common/safe_browsing"
 
@@ -32,18 +35,16 @@ action("make_file_types_protobuf") {
   }
 
   inputs = [
-    script,
     input_filename,
   ]
 
-  # This script requires the generated python proto code
   deps = [
     "//chrome/common/safe_browsing:proto",
     "//third_party/protobuf:py_proto",
   ]
 
   outputs = [
-    output_filename,
+    "$output_dir/$output_basename",
   ]
 
   args = [
@@ -52,8 +53,51 @@ action("make_file_types_protobuf") {
     target_arch,
     "-i",
     rebase_path(input_filename, root_build_dir),
+    "-d",
+    rebase_path(output_dir, root_build_dir),
     "-o",
-    rebase_path(output_filename, root_build_dir),
+    output_basename,
+    "-p",
+    rebase_path(python_path_root, root_build_dir),
+    "-p",
+    rebase_path(python_path_safe_browsing, root_build_dir),
+  ]
+}
+
+# Generate the binary proto for ALL platforms.  This is only run manually
+# when pushing the files to GCS for the component-updater to pick up.
+action("make_all_file_types_protobuf") {
+  script = "gen_file_type_proto.py"
+
+  input_filename = "download_file_types.asciipb"
+  output_dir = "$target_gen_dir/all"
+  output_basename = "download_file_types.pb"
+  python_path_root = "$root_build_dir/pyproto"
+  python_path_safe_browsing = "$python_path_root/chrome/common/safe_browsing"
+
+  inputs = [
+    input_filename,
+  ]
+
+  deps = [
+    "//chrome/common/safe_browsing:proto",
+    "//third_party/protobuf:py_proto",
+  ]
+
+  # A directory, since we can't derive the actual file names here.
+  outputs = [
+    output_dir,
+  ]
+
+  args = [
+    "-w",
+    "-a",
+    "-i",
+    rebase_path(input_filename, root_build_dir),
+    "-d",
+    rebase_path(output_dir, root_build_dir),
+    "-o",
+    output_basename,
     "-p",
     rebase_path(python_path_root, root_build_dir),
     "-p",

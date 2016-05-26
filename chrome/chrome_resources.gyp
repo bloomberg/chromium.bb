@@ -313,7 +313,8 @@
           'variables' : {
             'script_file':'browser/resources/safe_browsing/gen_file_type_proto.py',
             'asciipb_file' : 'browser/resources/safe_browsing/download_file_types.asciipb',
-            'output_file' : '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/safe_browsing/download_file_types.pb',
+            'output_dir' : '<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/safe_browsing',
+            'output_basename' : 'download_file_types.pb',
             'conditions': [
               ['OS=="android"', {
                 'platform': 'android'
@@ -336,14 +337,15 @@
             '<(asciipb_file)',
           ],
           'outputs': [
-            '<(output_file)',
+            '<(output_dir)/<(output_basename)',
           ],
           'action': [
             'python',
             '<(script_file)',
             '-w',
             '-i', '<(asciipb_file)',
-            '-o', '<(output_file)',
+            '-d', '<(output_dir)',
+            '-o', '<(output_basename)',
             '-t', '<(platform)',
             '-p', '<(PRODUCT_DIR)/pyproto',
             '-p', '<(PRODUCT_DIR)/pyproto/chrome/common/safe_browsing',
