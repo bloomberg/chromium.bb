@@ -207,7 +207,7 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest,
 
   // AudioConverter::InputCallback overrides:
   double ProvideInput(media::AudioBus* dest,
-                      base::TimeDelta /* buffer_delay */) override {
+                      uint32_t /* frames_delayed */) override {
     // Copy any saved samples we have to the output bus.
     const int remaining_frames =
         saved_samples_->frames() - saved_samples_index_;

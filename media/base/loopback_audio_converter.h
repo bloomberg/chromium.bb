@@ -35,8 +35,7 @@ class LoopbackAudioConverter : public AudioConverter::InputCallback {
   bool empty() { return audio_converter_.empty(); }
 
  private:
-  double ProvideInput(AudioBus* audio_bus,
-                      base::TimeDelta buffer_delay) override;
+  double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
 
   AudioConverter audio_converter_;
 

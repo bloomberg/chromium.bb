@@ -47,8 +47,7 @@ class MEDIA_EXPORT VirtualAudioOutputStream
 
  private:
   // AudioConverter::InputCallback:
-  double ProvideInput(AudioBus* audio_bus,
-                      base::TimeDelta buffer_delay) override;
+  double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
 
   const AudioParameters params_;
   // Pointer to the VirtualAudioInputStream to attach to when Start() is called.

@@ -105,7 +105,7 @@ void VirtualAudioInputStream::PumpAudio() {
     base::AutoLock scoped_lock(converter_network_lock_);
     // Because the audio is being looped-back, the delay until it will be played
     // out is zero.
-    mixer_.ConvertWithDelay(base::TimeDelta(), audio_bus_.get());
+    mixer_.ConvertWithDelay(0, audio_bus_.get());
   }
   // Because the audio is being looped-back, the delay since since it was
   // recorded is zero.

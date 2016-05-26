@@ -51,7 +51,7 @@ class WiFiDisplayAudioEncoderLPCM final
 
   // media::AudioConverter::InputCallback
   double ProvideInput(media::AudioBus* audio_bus,
-                      base::TimeDelta buffer_delay) override;
+                      uint32_t frames_delayed) override;
 
   LPCMAudioStreamDescriptor::SamplingFrequency GetOutputSamplingFrequency()
       const;
@@ -205,7 +205,7 @@ void WiFiDisplayAudioEncoderLPCM::OnSetFormat(
 
 // Called on real-time audio thread by |converter_| invoked by |OnData|.
 double WiFiDisplayAudioEncoderLPCM::ProvideInput(media::AudioBus* audio_bus,
-                                                 base::TimeDelta buffer_delay) {
+                                                 uint32_t frames_delayed) {
   DCHECK(current_input_bus_);
   current_input_bus_->CopyTo(audio_bus);
   current_input_bus_ = nullptr;

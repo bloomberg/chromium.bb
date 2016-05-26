@@ -223,7 +223,7 @@ int FileSource::OnMoreData(AudioBus* audio_bus,
 }
 
 double FileSource::ProvideInput(AudioBus* audio_bus_into_converter,
-                                base::TimeDelta buffer_delay) {
+                                uint32_t frames_delayed) {
   // Unfilled frames will be zeroed by CopyTo.
   size_t bytes_written;
   wav_audio_handler_->CopyTo(audio_bus_into_converter, wav_file_read_pos_,

@@ -51,8 +51,7 @@ class MEDIA_EXPORT AudioBufferConverter : public AudioConverter::InputCallback {
 
  private:
   // Callback to provide data to the AudioConverter
-  double ProvideInput(AudioBus* audio_bus,
-                      base::TimeDelta buffer_delay) override;
+  double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
 
   // Reset the converter in response to a configuration change.
   void ResetConverter(const scoped_refptr<AudioBuffer>& input_buffer);

@@ -108,8 +108,8 @@ class FakeMediaSource : public media::AudioConverter::InputCallback {
   void Decode(bool decode_audio);
 
   // media::AudioConverter::InputCallback implementation.
-  double ProvideInput(media::AudioBus* output_bus, base::TimeDelta buffer_delay)
-      final;
+  double ProvideInput(media::AudioBus* output_bus,
+                      uint32_t frames_delayed) final;
 
   AVStream* av_audio_stream();
   AVStream* av_video_stream();

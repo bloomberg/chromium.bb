@@ -48,7 +48,7 @@ class SpeechRecognizerImpl::OnDataConverter
 
  private:
   // media::AudioConverter::InputCallback implementation.
-  double ProvideInput(AudioBus* dest, base::TimeDelta buffer_delay) override;
+  double ProvideInput(AudioBus* dest, uint32_t frames_delayed) override;
 
   // Handles resampling, buffering, and channel mixing between input and output
   // parameters.
@@ -160,7 +160,8 @@ scoped_refptr<AudioChunk> SpeechRecognizerImpl::OnDataConverter::Convert(
 }
 
 double SpeechRecognizerImpl::OnDataConverter::ProvideInput(
-    AudioBus* dest, base::TimeDelta buffer_delay) {
+    AudioBus* dest,
+    uint32_t frames_delayed) {
   // Read from the input bus to feed the converter.
   input_bus_->CopyTo(dest);
   // Indicate that the recorded audio has in fact been used by the converter.

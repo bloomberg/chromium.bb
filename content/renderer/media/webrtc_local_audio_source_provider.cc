@@ -130,8 +130,8 @@ void WebRtcLocalAudioSourceProvider::provideInput(
   audio_converter_->Convert(output_wrapper_.get());
 }
 
-double WebRtcLocalAudioSourceProvider::ProvideInput(
-    media::AudioBus* audio_bus, base::TimeDelta buffer_delay) {
+double WebRtcLocalAudioSourceProvider::ProvideInput(media::AudioBus* audio_bus,
+                                                    uint32_t frames_delayed) {
   if (fifo_->frames() >= audio_bus->frames()) {
     fifo_->Consume(audio_bus, 0, audio_bus->frames());
   } else {

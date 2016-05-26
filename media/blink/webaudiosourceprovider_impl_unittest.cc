@@ -197,7 +197,7 @@ TEST_F(WebAudioSourceProviderImplTest, ProvideInput) {
   bus2->Zero();
   wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
   ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
-  ASSERT_EQ(fake_callback_.last_audio_delay_milliseconds(), -1);
+  ASSERT_EQ(fake_callback_.last_frames_delayed(), -1);
 
   wasp_impl_->Start();
 
@@ -205,7 +205,7 @@ TEST_F(WebAudioSourceProviderImplTest, ProvideInput) {
   bus1->channel(0)[0] = 1;
   wasp_impl_->provideInput(audio_data, params_.frames_per_buffer());
   ASSERT_TRUE(CompareBusses(bus1.get(), bus2.get()));
-  ASSERT_EQ(fake_callback_.last_audio_delay_milliseconds(), -1);
+  ASSERT_EQ(fake_callback_.last_frames_delayed(), -1);
 
   wasp_impl_->Play();
 

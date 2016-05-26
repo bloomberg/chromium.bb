@@ -135,13 +135,7 @@ int AudioRendererMixer::Render(AudioBus* audio_bus,
     playing_ = false;
   }
 
-  // TODO(chcunningham): Delete this conversion and change ConvertWith delay to
-  // expect a count of frames delayed instead of TimeDelta (less precise).
-  // See http://crbug.com/587522.
-  base::TimeDelta audio_delay = base::TimeDelta::FromMicroseconds(
-      std::round(frames_delayed * output_params_.GetMicrosecondsPerFrame()));
-
-  master_converter_.ConvertWithDelay(audio_delay, audio_bus);
+  master_converter_.ConvertWithDelay(frames_delayed, audio_bus);
   return audio_bus->frames();
 }
 

@@ -79,8 +79,7 @@ class MEDIA_EXPORT AudioRendererMixerInput
   double volume_;
 
   // AudioConverter::InputCallback implementation.
-  double ProvideInput(AudioBus* audio_bus,
-                      base::TimeDelta buffer_delay) override;
+  double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
 
   // Callbacks provided during construction which allow AudioRendererMixerInput
   // to retrieve a mixer during Initialize() and notify when it's done with it.

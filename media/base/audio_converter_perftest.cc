@@ -20,8 +20,7 @@ class NullInputProvider : public AudioConverter::InputCallback {
   NullInputProvider() {}
   ~NullInputProvider() override {}
 
-  double ProvideInput(AudioBus* audio_bus,
-                      base::TimeDelta buffer_delay) override {
+  double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override {
     audio_bus->Zero();
     return 1;
   }

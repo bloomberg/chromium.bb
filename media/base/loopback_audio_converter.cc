@@ -15,8 +15,8 @@ LoopbackAudioConverter::LoopbackAudioConverter(
 LoopbackAudioConverter::~LoopbackAudioConverter() {}
 
 double LoopbackAudioConverter::ProvideInput(AudioBus* audio_bus,
-                                            base::TimeDelta buffer_delay) {
-  audio_converter_.ConvertWithDelay(buffer_delay, audio_bus);
+                                            uint32_t frames_delayed) {
+  audio_converter_.ConvertWithDelay(frames_delayed, audio_bus);
   return 1.0;
 }
 

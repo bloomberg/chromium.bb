@@ -160,13 +160,7 @@ void AudioRendererMixerInput::SwitchOutputDevice(
 }
 
 double AudioRendererMixerInput::ProvideInput(AudioBus* audio_bus,
-                                             base::TimeDelta buffer_delay) {
-  // TODO(chcunningham): Delete this conversion and change ProvideInput to more
-  // precisely describe delay as a count of frames delayed instead of TimeDelta.
-  // See http://crbug.com/587522.
-  uint32_t frames_delayed = std::round(buffer_delay.InMicroseconds() /
-                                       params_.GetMicrosecondsPerFrame());
-
+                                             uint32_t frames_delayed) {
   int frames_filled = callback_->Render(audio_bus, frames_delayed, 0);
 
   // AudioConverter expects unfilled frames to be zeroed.

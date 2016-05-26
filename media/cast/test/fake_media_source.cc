@@ -592,7 +592,7 @@ void FakeMediaSource::Decode(bool decode_audio) {
 }
 
 double FakeMediaSource::ProvideInput(media::AudioBus* output_bus,
-                                   base::TimeDelta buffer_delay) {
+                                     uint32_t frames_delayed) {
   if (audio_fifo_->frames() >= output_bus->frames()) {
     audio_fifo_->Consume(output_bus, 0, output_bus->frames());
     return 1.0;

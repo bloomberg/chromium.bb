@@ -75,7 +75,7 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
   // This function is triggered by provideInput()on the WebAudio audio thread,
   // so it has been under the protection of |lock_|.
   double ProvideInput(media::AudioBus* audio_bus,
-                      base::TimeDelta buffer_delay) override;
+                      uint32_t frames_delayed) override;
 
   // Method to allow the unittests to inject its own sink parameters to avoid
   // query the hardware.

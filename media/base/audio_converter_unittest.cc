@@ -216,21 +216,20 @@ TEST(AudioConverterTest, AudioDelayAndDiscreteChannelCount) {
   converter.AddInput(&callback);
   converter.Convert(audio_bus.get());
 
-  // Calculate the expected buffer delay for given AudioParameters.
-  double input_sample_rate = input_parameters.sample_rate();
-  int fill_count =
-      (output_parameters.frames_per_buffer() * input_sample_rate /
-       output_parameters.sample_rate()) / input_parameters.frames_per_buffer();
+  // double input_sample_rate = input_parameters.sample_rate();
+  // int fill_count =
+  //     (output_parameters.frames_per_buffer() * input_sample_rate /
+  //      output_parameters.sample_rate()) /
+  //      input_parameters.frames_per_buffer();
+  //
+  // This magic number is the accumulated MultiChannelResampler delay after
+  // |fill_count| (4) callbacks to provide input. The number of frames delayed
+  // is an implementation detail of the SincResampler chunk size (480 for the
+  // first two callbacks, 512 for the last two callbacks). See
+  // SincResampler.ChunkSize().
+  int kExpectedDelay = 992;
 
-  base::TimeDelta input_frame_duration = base::TimeDelta::FromMicroseconds(
-      base::Time::kMicrosecondsPerSecond / input_sample_rate);
-
-  int expected_last_delay_milliseconds =
-      fill_count * input_parameters.frames_per_buffer() *
-      input_frame_duration.InMillisecondsF();
-
-  EXPECT_EQ(expected_last_delay_milliseconds,
-            callback.last_audio_delay_milliseconds());
+  EXPECT_EQ(kExpectedDelay, callback.last_frames_delayed());
   EXPECT_EQ(input_parameters.channels(), callback.last_channel_count());
 }
 

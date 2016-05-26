@@ -49,8 +49,7 @@ class OnMoreDataConverter
 
  private:
   // AudioConverter::InputCallback implementation.
-  double ProvideInput(AudioBus* audio_bus,
-                      base::TimeDelta buffer_delay) override;
+  double ProvideInput(AudioBus* audio_bus, uint32_t frames_delayed) override;
 
   // Ratio of input bytes to output bytes used to correct playback delay with
   // regard to buffering and resampling.
@@ -63,7 +62,7 @@ class OnMoreDataConverter
   // playback delay by ProvideInput() and passed on to |source_callback_|.
   uint32_t current_total_bytes_delay_;
 
-  const int input_bytes_per_second_;
+  const int input_bytes_per_frame_;
 
   // Handles resampling, buffering, and channel mixing between input and output
   // parameters.
@@ -347,7 +346,7 @@ OnMoreDataConverter::OnMoreDataConverter(const AudioParameters& input_params,
     : io_ratio_(static_cast<double>(input_params.GetBytesPerSecond()) /
                 output_params.GetBytesPerSecond()),
       source_callback_(nullptr),
-      input_bytes_per_second_(input_params.GetBytesPerSecond()),
+      input_bytes_per_frame_(input_params.GetBytesPerFrame()),
       audio_converter_(input_params, output_params, false),
       error_occurred_(false) {}
 
@@ -386,13 +385,13 @@ int OnMoreDataConverter::OnMoreData(AudioBus* dest,
 }
 
 double OnMoreDataConverter::ProvideInput(AudioBus* dest,
-                                         base::TimeDelta buffer_delay) {
-  // Adjust playback delay to include |buffer_delay|.
+                                         uint32_t frames_delayed) {
+  // Adjust playback delay to include |frames_delayed|.
   // TODO(dalecurtis): Stop passing bytes around, it doesn't make sense since
   // AudioBus is just float data.  Use TimeDelta instead.
   uint32_t new_total_bytes_delay = base::saturated_cast<uint32_t>(
-      io_ratio_ * (current_total_bytes_delay_ +
-                   buffer_delay.InSecondsF() * input_bytes_per_second_));
+      io_ratio_ *
+      (current_total_bytes_delay_ + frames_delayed * input_bytes_per_frame_));
 
   // Retrieve data from the original callback.
   const int frames =

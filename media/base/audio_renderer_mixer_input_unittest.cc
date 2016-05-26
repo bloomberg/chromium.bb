@@ -80,7 +80,7 @@ class AudioRendererMixerInputTest : public testing::Test {
   }
 
   double ProvideInput() {
-    return mixer_input_->ProvideInput(audio_bus_.get(), base::TimeDelta());
+    return mixer_input_->ProvideInput(audio_bus_.get(), 0);
   }
 
   MOCK_METHOD3(RemoveMixer,

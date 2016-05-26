@@ -56,8 +56,9 @@ class MEDIA_EXPORT AudioConverter {
     // volume level of the provided audio data.  If a volume level of zero is
     // returned no further processing will be done on the provided data, else
     // the volume level will be used to scale the provided audio data.
+    // |frames_delayed| is given in terms of the input sample rate.
     virtual double ProvideInput(AudioBus* audio_bus,
-                                base::TimeDelta buffer_delay) = 0;
+                                uint32_t frames_delayed) = 0;
 
    protected:
     virtual ~InputCallback() {}
@@ -74,10 +75,11 @@ class MEDIA_EXPORT AudioConverter {
                  bool disable_fifo);
   ~AudioConverter();
 
-  // Converts audio from all inputs into the |dest|. If an |initial_delay| is
-  // specified, it will be propagated to each input.
+  // Converts audio from all inputs into the |dest|. If |frames_delayed| is
+  // specified, it will be propagated to each input. Count of frames must be
+  // given in terms of the output sample rate.
   void Convert(AudioBus* dest);
-  void ConvertWithDelay(const base::TimeDelta& initial_delay, AudioBus* dest);
+  void ConvertWithDelay(uint32_t frames_delayed, AudioBus* dest);
 
   // Adds or removes an input from the converter.  RemoveInput() will call
   // Reset() if no inputs remain after the specified input is removed.
@@ -133,10 +135,9 @@ class MEDIA_EXPORT AudioConverter {
   bool downmix_early_;
 
   // Used to calculate buffer delay information for InputCallbacks.
-  base::TimeDelta input_frame_duration_;
-  base::TimeDelta output_frame_duration_;
-  base::TimeDelta initial_delay_;
-  int resampler_frame_delay_;
+  uint32_t initial_frames_delayed_;
+  uint32_t resampler_frames_delayed_;
+  const double io_sample_rate_ratio_;
 
   // Number of channels of input audio data.  Set during construction via the
   // value from the input AudioParameters class.  Preserved to recreate internal

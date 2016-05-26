@@ -62,7 +62,7 @@ class CONTENT_EXPORT SpeechRecognitionAudioSink
 
   // media::AudioConverter::Inputcallback implementation.
   double ProvideInput(media::AudioBus* audio_bus,
-                      base::TimeDelta buffer_delay) override;
+                      uint32_t frames_delayed) override;
 
   // Returns the pointer to the audio input buffer mapped in the shared memory.
   media::AudioInputBuffer* GetAudioInputBuffer() const;

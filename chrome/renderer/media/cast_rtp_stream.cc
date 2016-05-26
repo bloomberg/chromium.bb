@@ -569,7 +569,7 @@ class CastAudioSink : public base::SupportsWeakPtr<CastAudioSink>,
 
   // Called on real-time audio thread.
   double ProvideInput(media::AudioBus* audio_bus,
-                      base::TimeDelta buffer_delay) override {
+                      uint32_t frames_delayed) override {
     DCHECK(current_input_bus_);
     current_input_bus_->CopyTo(audio_bus);
     current_input_bus_ = nullptr;

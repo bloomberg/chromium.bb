@@ -119,7 +119,7 @@ class AudioTrackRecorder::AudioEncoder
 
   // media::AudioConverted::InputCallback implementation.
   double ProvideInput(media::AudioBus* audio_bus,
-                      base::TimeDelta buffer_delay) override;
+                      uint32_t frames_delayed) override;
 
   void DestroyExistingOpusEncoder();
 
@@ -277,7 +277,7 @@ void AudioTrackRecorder::AudioEncoder::EncodeAudio(
 
 double AudioTrackRecorder::AudioEncoder::ProvideInput(
     media::AudioBus* audio_bus,
-    base::TimeDelta buffer_delay) {
+    uint32_t frames_delayed) {
   fifo_->Consume(audio_bus, 0, audio_bus->frames());
   return 1.0;  // Return volume greater than zero to indicate we have more data.
 }
