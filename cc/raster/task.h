@@ -15,11 +15,27 @@
 namespace cc {
 class Task;
 
-// States to manage life cycle of a task. Task gets created with NEW state and
-// concludes either in FINISHED or CANCELLED state. So possible life cycle
-// paths for task are -
-//   NEW -> SCHEDULED -> RUNNING -> FINISHED
-//   NEW -> SCHEDULED -> CANCELED
+// This class provides states to manage life cycle of a task and given below is
+// how it is used by TaskGraphWorkQueue to process life cycle of a task.
+// Task is in NEW state when it is created. When task is added to
+// |ready_to_run_tasks| then its state is changed to SCHEDULED. Task can be
+// canceled from NEW state (not yet scheduled to run) or from SCHEDULED state,
+// when new ScheduleTasks() is triggered and its state is changed to CANCELED.
+// When task is about to run it is added |running_tasks| and its state is
+// changed to RUNNING. Once task finishes running, its state is changed to
+// FINISHED. Both CANCELED and FINISHED tasks are added to |completed_tasks|.
+//                ╔═════╗
+//         +------║ NEW ║------+
+//         |      ╚═════╝      |
+//         v                   v
+//   ┌───────────┐        ╔══════════╗
+//   │ SCHEDULED │------> ║ CANCELED ║
+//   └───────────┘        ╚══════════╝
+//         |
+//         v
+//    ┌─────────┐         ╔══════════╗
+//    │ RUNNING │-------> ║ FINISHED ║
+//    └─────────┘         ╚══════════╝
 class CC_EXPORT TaskState {
  public:
   bool IsScheduled() const;

@@ -272,6 +272,11 @@ class TaskGraphRunnerPerfTest : public testing::Test {
     DCHECK(completed_tasks->empty());
     task_graph_runner_->CollectCompletedTasks(namespace_token_,
                                               completed_tasks);
+    for (auto& task : *completed_tasks) {
+      // Reset task state as same task would be reused as if new.
+      task->state().Reset();
+    }
+
     return completed_tasks->size();
   }
 

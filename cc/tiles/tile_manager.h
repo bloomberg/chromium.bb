@@ -197,6 +197,11 @@ class CC_EXPORT TileManager {
     return has_scheduled_tile_tasks_;
   }
 
+  void OnRasterTaskCompleted(std::unique_ptr<RasterBuffer> raster_buffer,
+                             Tile* tile,
+                             Resource* resource,
+                             bool was_canceled);
+
  protected:
   TileManager(TileManagerClient* client,
               scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -243,11 +248,6 @@ class CC_EXPORT TileManager {
     int64_t memory_bytes_;
     int resource_count_;
   };
-
-  void OnRasterTaskCompleted(
-      Tile::Id tile,
-      Resource* resource,
-      bool was_canceled);
 
   void FreeResourcesForTile(Tile* tile);
   void FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(Tile* tile);

@@ -41,25 +41,24 @@ SkMatrix CreateMatrix(const SkSize& scale, bool is_decomposable) {
 }
 
 void ScheduleTask(TileTask* task) {
-  task->WillSchedule();
-  task->ScheduleOnOriginThread(nullptr);
-  task->DidSchedule();
+  task->state().DidSchedule();
 }
 
+// Before running the task it must be scheduled. Call ScheduleTask() before
+// calling this function.
 void RunTask(TileTask* task) {
-  // TODO(prashant.n): Once ScheduleOnOriginThread() and
-  // CompleteOnOriginThread() functions are removed, modify this function
-  // accordingly. (crbug.com/599863)
-  task->state().DidSchedule();
   task->state().DidStart();
   task->RunOnWorkerThread();
   task->state().DidFinish();
 }
 
 void CompleteTask(TileTask* task) {
-  task->WillComplete();
-  task->CompleteOnOriginThread(nullptr);
-  task->DidComplete();
+  DCHECK(task->state().IsFinished() || task->state().IsCanceled());
+  task->OnTaskCompleted();
+}
+
+void CancelTask(TileTask* task) {
+  task->state().DidCancel();
 }
 
 void ProcessTask(TileTask* task) {
@@ -163,7 +162,7 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageAlreadyDecodedAndLocked) {
   RunTask(task->dependencies()[0].get());
 
   // Cancel the upload.
-  ScheduleTask(task.get());
+  CancelTask(task.get());
   CompleteTask(task.get());
 
   // Get the image again - we should have an upload task, but no dependent
@@ -207,7 +206,7 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageAlreadyDecodedNotLocked) {
   ProcessTask(task->dependencies()[0].get());
 
   // Cancel the upload.
-  ScheduleTask(task.get());
+  CancelTask(task.get());
   CompleteTask(task.get());
 
   // Unref the image.
@@ -282,7 +281,6 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
   EXPECT_TRUE(task);
 
   ProcessTask(task->dependencies()[0].get());
-  ScheduleTask(task.get());
 
   scoped_refptr<TileTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(
@@ -290,7 +288,8 @@ TEST(GpuImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(another_task.get() == task.get());
 
-  // Didn't run the task, complete it (it was canceled).
+  // Didn't run the task, so cancel it.
+  CancelTask(task.get());
   CompleteTask(task.get());
 
   // Fully cancel everything (so the raster would unref things).
@@ -330,7 +329,6 @@ TEST(GpuImageDecodeControllerTest,
   EXPECT_TRUE(task);
 
   ProcessTask(task->dependencies()[0].get());
-  ScheduleTask(task.get());
 
   scoped_refptr<TileTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(
@@ -338,7 +336,8 @@ TEST(GpuImageDecodeControllerTest,
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(another_task.get() == task.get());
 
-  // Didn't run the task, complete it (it was canceled).
+  // Didn't run the task, so cancel it.
+  CancelTask(task.get());
   CompleteTask(task.get());
 
   // Note that here, everything is reffed, but a new task is created. This is
@@ -377,8 +376,8 @@ TEST(GpuImageDecodeControllerTest, NoTaskForImageAlreadyFailedDecoding) {
   EXPECT_TRUE(task);
 
   ProcessTask(task->dependencies()[0].get());
-  ScheduleTask(task.get());
-  // Didn't run the task, complete it (it was canceled).
+  // Didn't run the task, so cancel it.
+  CancelTask(task.get());
   CompleteTask(task.get());
 
   controller.SetImageDecodingFailedForTesting(draw_image);
@@ -688,9 +687,9 @@ TEST(GpuImageDecodeControllerTest, CanceledTasksDoNotCountAgainstBudget) {
   EXPECT_TRUE(task);
   EXPECT_TRUE(need_unref);
 
-  ScheduleTask(task->dependencies()[0].get());
+  CancelTask(task->dependencies()[0].get());
   CompleteTask(task->dependencies()[0].get());
-  ScheduleTask(task.get());
+  CancelTask(task.get());
   CompleteTask(task.get());
 
   controller.UnrefImage(draw_image);

@@ -75,8 +75,7 @@ class ImageDecodeTaskImpl : public TileTask {
   }
 
   // Overridden from TileTask:
-  void ScheduleOnOriginThread(RasterBufferProvider* provider) override {}
-  void CompleteOnOriginThread(RasterBufferProvider* provider) override {
+  void OnTaskCompleted() override {
     controller_->RemovePendingTask(image_key_);
   }
 

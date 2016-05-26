@@ -16,29 +16,26 @@ FakeTileTaskManagerImpl::FakeTileTaskManagerImpl(
     std::unique_ptr<RasterBufferProvider> raster_buffer_provider)
     : raster_buffer_provider_(std::move(raster_buffer_provider)) {}
 
-FakeTileTaskManagerImpl::~FakeTileTaskManagerImpl() {}
+FakeTileTaskManagerImpl::~FakeTileTaskManagerImpl() {
+  DCHECK_EQ(0u, completed_tasks_.size());
+}
 
 void FakeTileTaskManagerImpl::ScheduleTasks(TaskGraph* graph) {
   for (const auto& node : graph->nodes) {
     TileTask* task = static_cast<TileTask*>(node.task);
-
-    task->WillSchedule();
-    task->ScheduleOnOriginThread(raster_buffer_provider_.get());
-    task->DidSchedule();
-
+    // Cancel the task and append to |completed_tasks_|.
+    task->state().DidCancel();
     completed_tasks_.push_back(task);
   }
 }
 
 void FakeTileTaskManagerImpl::CheckForCompletedTasks() {
-  for (Task::Vector::iterator it = completed_tasks_.begin();
-       it != completed_tasks_.end(); ++it) {
-    TileTask* task = static_cast<TileTask*>(it->get());
-
-    task->WillComplete();
-    task->CompleteOnOriginThread(raster_buffer_provider_.get());
-    task->DidComplete();
+  for (auto& task : completed_tasks_) {
+    DCHECK(task->state().IsFinished() || task->state().IsCanceled());
+    TileTask* tile_task = static_cast<TileTask*>(task.get());
+    tile_task->OnTaskCompleted();
   }
+
   completed_tasks_.clear();
 }
 

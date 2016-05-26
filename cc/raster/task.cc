@@ -13,6 +13,9 @@ TaskState::TaskState() : value_(Value::NEW) {}
 TaskState::~TaskState() {
   DCHECK(value_ != Value::RUNNING)
       << "Running task should never get destroyed.";
+  // TODO(prashant.n): Remove NEW, once all the tests follow the task life
+  // cycle correctly. Few tests still do not take care of task states.
+  // crbug.com/613814.
   DCHECK(value_ == Value::NEW || value_ == Value::FINISHED ||
          value_ == Value::CANCELED)
       << "Task, if scheduled, should get concluded either in FINISHED or "
@@ -26,9 +29,11 @@ bool TaskState::IsScheduled() const {
 bool TaskState::IsRunning() const {
   return value_ == Value::RUNNING;
 }
+
 bool TaskState::IsFinished() const {
   return value_ == Value::FINISHED;
 }
+
 bool TaskState::IsCanceled() const {
   return value_ == Value::CANCELED;
 }
@@ -58,7 +63,7 @@ void TaskState::DidFinish() {
 
 void TaskState::DidCancel() {
   DCHECK(value_ == Value::NEW || value_ == Value::SCHEDULED)
-      << "Task should be scheduled and not running to get canceled.";
+      << "Task should be either new or scheduled to get canceled.";
   value_ = Value::CANCELED;
 }
 

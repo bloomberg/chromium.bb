@@ -1719,23 +1719,6 @@ TEST_F(ActivationTasksDoNotBlockReadyToDrawTest,
   run_loop.Run();
 }
 
-// Fake TileTaskManager that just cancels all scheduled tasks immediately.
-class CancellingTileTaskManager : public FakeTileTaskManagerImpl {
- public:
-  CancellingTileTaskManager() {}
-  ~CancellingTileTaskManager() override {}
-
-  void ScheduleTasks(TaskGraph* graph) override {
-    // Just call CompleteOnOriginThread on each item in the queue. As none of
-    // these items have run yet, they will be treated as cancelled tasks.
-    for (const auto& node : graph->nodes) {
-      static_cast<TileTask*>(node.task)->CompleteOnOriginThread(
-          raster_buffer_provider_.get());
-    }
-  }
-  void CheckForCompletedTasks() override {}
-};
-
 class PartialRasterTileManagerTest : public TileManagerTest {
  public:
   LayerTreeSettings CreateSettings() override {
@@ -1748,11 +1731,11 @@ class PartialRasterTileManagerTest : public TileManagerTest {
 // Ensures that if a raster task is cancelled, it gets returned to the resource
 // pool with an invalid content ID, not with its invalidated content ID.
 TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
-  // Create a CancellingTaskRunner and set it on the tile manager so that all
+  // Create a FakeTileTaskManagerImpl and set it on the tile manager so that all
   // scheduled work is immediately cancelled.
-  CancellingTileTaskManager cancelling_task_manager;
-  host_impl()->tile_manager()->SetTileTaskManagerForTesting(
-      &cancelling_task_manager);
+
+  FakeTileTaskManagerImpl tile_task_manager;
+  host_impl()->tile_manager()->SetTileTaskManagerForTesting(&tile_task_manager);
 
   // Pick arbitrary IDs - they don't really matter as long as they're constant.
   const int kLayerId = 7;
@@ -1786,7 +1769,7 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
   EXPECT_FALSE(queue->IsEmpty());
   queue->Top().tile()->SetInvalidated(gfx::Rect(), kInvalidatedId);
 
-  // PrepareTiles to schedule tasks. Due to the CancellingTileTaskManager,
+  // PrepareTiles to schedule tasks. Due to the FakeTileTaskManagerImpl,
   // these tasks will immediately be canceled.
   host_impl()->tile_manager()->PrepareTiles(host_impl()->global_tile_state());
 
@@ -1796,7 +1779,7 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
   EXPECT_FALSE(host_impl()->resource_pool()->TryAcquireResourceWithContentId(
       kInvalidatedId));
 
-  // Free our host_impl_ before the cancelling_task_manager we passed it, as it
+  // Free our host_impl_ before the tile_task_manager we passed it, as it
   // will use that class in clean up.
   TakeHostImpl();
 }
@@ -1831,17 +1814,6 @@ class VerifyResourceContentIdTileTaskManager : public FakeTileTaskManagerImpl {
             new VerifyResourceContentIdRasterBufferProvider(
                 expected_resource_id))) {}
   ~VerifyResourceContentIdTileTaskManager() override {}
-
-  void ScheduleTasks(TaskGraph* graph) override {
-    for (const auto& node : graph->nodes) {
-      TileTask* task = static_cast<TileTask*>(node.task);
-      // Triggers a call to AcquireBufferForRaster.
-      task->ScheduleOnOriginThread(raster_buffer_provider_.get());
-      // Calls TileManager as though task was cancelled.
-      task->CompleteOnOriginThread(raster_buffer_provider_.get());
-    }
-  }
-  void CheckForCompletedTasks() override {}
 };
 
 // Runs a test to ensure that partial raster is either enabled or disabled,

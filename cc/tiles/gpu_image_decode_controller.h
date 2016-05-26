@@ -80,8 +80,10 @@ class CC_EXPORT GpuImageDecodeController
   // Called by Decode / Upload tasks.
   void DecodeImage(const DrawImage& image);
   void UploadImage(const DrawImage& image);
-  void DecodeTaskCompleted(const DrawImage& image);
-  void UploadTaskCompleted(const DrawImage& image);
+
+  // Called by Decode / Upload tasks when tasks are finished.
+  void OnImageDecodeTaskCompleted(const DrawImage& image);
+  void OnImageUploadTaskCompleted(const DrawImage& image);
 
   // For testing only.
   void SetCachedItemLimitForTesting(size_t limit) {

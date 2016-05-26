@@ -76,9 +76,8 @@ class ImageDecodeTaskImpl : public TileTask {
   }
 
   // Overridden from TileTask:
-  void ScheduleOnOriginThread(RasterBufferProvider* provider) override {}
-  void CompleteOnOriginThread(RasterBufferProvider* provider) override {
-    controller_->DecodeTaskCompleted(image_);
+  void OnTaskCompleted() override {
+    controller_->OnImageDecodeTaskCompleted(image_);
   }
 
  protected:
@@ -119,9 +118,9 @@ class ImageUploadTaskImpl : public TileTask {
     controller_->UploadImage(image_);
   }
 
-  void ScheduleOnOriginThread(RasterBufferProvider* provider) override {}
-  void CompleteOnOriginThread(RasterBufferProvider* provider) override {
-    controller_->UploadTaskCompleted(image_);
+  // Overridden from TileTask:
+  void OnTaskCompleted() override {
+    controller_->OnImageUploadTaskCompleted(image_);
   }
 
  protected:
@@ -443,7 +442,7 @@ void GpuImageDecodeController::UploadImage(const DrawImage& draw_image) {
   UploadImageIfNecessary(draw_image, found->second.get());
 }
 
-void GpuImageDecodeController::DecodeTaskCompleted(
+void GpuImageDecodeController::OnImageDecodeTaskCompleted(
     const DrawImage& draw_image) {
   base::AutoLock lock(lock_);
   // Decode task is complete, remove it from our list of pending tasks.
@@ -454,7 +453,7 @@ void GpuImageDecodeController::DecodeTaskCompleted(
   UnrefImageDecode(draw_image);
 }
 
-void GpuImageDecodeController::UploadTaskCompleted(
+void GpuImageDecodeController::OnImageUploadTaskCompleted(
     const DrawImage& draw_image) {
   base::AutoLock lock(lock_);
   // Upload task is complete, remove it from our list of pending tasks.

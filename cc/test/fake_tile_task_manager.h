@@ -10,7 +10,8 @@
 
 namespace cc {
 
-// Fake TileTaskManager.
+// This class immediately cancels the scheduled work, i.e. in ScheduleTasks()
+// it cancels all the tasks.
 class FakeTileTaskManagerImpl : public TileTaskManager {
  public:
   FakeTileTaskManagerImpl();

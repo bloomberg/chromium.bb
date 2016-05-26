@@ -41,9 +41,12 @@ DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
     "Compositing.%s.RasterTask.RasterUs",
     "Compositing.%s.RasterTask.RasterPixelsPerMs");
 
+// TODO(prashant.n): Separate out members needed in RunOnWorkerThread() and
+// OnTaskCompleted() in RasterTaskImpl. crbug.com/613812.
 class RasterTaskImpl : public TileTask {
  public:
-  RasterTaskImpl(const Resource* resource,
+  RasterTaskImpl(TileManager* tile_manager,
+                 Resource* resource,
                  scoped_refptr<RasterSource> raster_source,
                  const gfx::Rect& content_rect,
                  const gfx::Rect& invalid_content_rect,
@@ -52,15 +55,16 @@ class RasterTaskImpl : public TileTask {
                  TileResolution tile_resolution,
                  int layer_id,
                  uint64_t source_prepare_tiles_id,
-                 const void* tile,
+                 Tile* tile,
                  uint64_t new_content_id,
                  uint64_t previous_content_id,
                  uint64_t resource_content_id,
                  int source_frame_number,
-                 const base::Callback<void(bool)>& reply,
+                 std::unique_ptr<RasterBuffer> raster_buffer,
                  TileTask::Vector* dependencies,
                  bool supports_concurrent_execution)
       : TileTask(supports_concurrent_execution, dependencies),
+        tile_manager_(tile_manager),
         resource_(resource),
         raster_source_(std::move(raster_source)),
         content_rect_(content_rect),
@@ -75,7 +79,7 @@ class RasterTaskImpl : public TileTask {
         previous_content_id_(previous_content_id),
         resource_content_id_(resource_content_id),
         source_frame_number_(source_frame_number),
-        reply_(reply) {}
+        raster_buffer_(std::move(raster_buffer)) {}
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
@@ -98,21 +102,17 @@ class RasterTaskImpl : public TileTask {
   }
 
   // Overridden from TileTask:
-  void ScheduleOnOriginThread(RasterBufferProvider* provider) override {
-    DCHECK(!raster_buffer_);
-    raster_buffer_ = provider->AcquireBufferForRaster(
-        resource_, resource_content_id_, previous_content_id_);
-  }
-  void CompleteOnOriginThread(RasterBufferProvider* provider) override {
-    provider->ReleaseBufferForRaster(std::move(raster_buffer_));
-    reply_.Run(!state().IsFinished());
+  void OnTaskCompleted() override {
+    tile_manager_->OnRasterTaskCompleted(std::move(raster_buffer_), tile_,
+                                         resource_, state().IsCanceled());
   }
 
  protected:
   ~RasterTaskImpl() override { DCHECK(!raster_buffer_); }
 
  private:
-  const Resource* resource_;
+  TileManager* tile_manager_;
+  Resource* resource_;
   scoped_refptr<RasterSource> raster_source_;
   gfx::Rect content_rect_;
   gfx::Rect invalid_content_rect_;
@@ -121,12 +121,11 @@ class RasterTaskImpl : public TileTask {
   TileResolution tile_resolution_;
   int layer_id_;
   uint64_t source_prepare_tiles_id_;
-  const void* tile_;
+  Tile* tile_;
   uint64_t new_content_id_;
   uint64_t previous_content_id_;
   uint64_t resource_content_id_;
   int source_frame_number_;
-  const base::Callback<void(bool)> reply_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(RasterTaskImpl);
@@ -188,7 +187,7 @@ void InsertNodeForDecodeTask(TaskGraph* graph,
   if (task->dependencies().size()) {
     DCHECK_EQ(task->dependencies().size(), 1u);
     auto* dependency = task->dependencies()[0].get();
-    if (!dependency->HasCompleted()) {
+    if (!dependency->state().IsFinished()) {
       InsertNodeForDecodeTask(graph, dependency, use_foreground_category,
                               priority);
       graph->edges.push_back(TaskGraph::Edge(dependency, task));
@@ -213,7 +212,7 @@ void InsertNodesForRasterTask(TaskGraph* graph,
     TileTask* decode_task = it->get();
 
     // Skip if already decoded.
-    if (decode_task->HasCompleted())
+    if (decode_task->state().IsFinished())
       continue;
 
     dependencies++;
@@ -267,8 +266,7 @@ class TaskSetFinishedTaskImpl : public TileTask {
   }
 
   // Overridden from TileTask:
-  void ScheduleOnOriginThread(RasterBufferProvider* provider) override {}
-  void CompleteOnOriginThread(RasterBufferProvider* provider) override {}
+  void OnTaskCompleted() override {}
 
  protected:
   ~TaskSetFinishedTaskImpl() override {}
@@ -508,7 +506,6 @@ void TileManager::Flush() {
   }
 
   tile_task_manager_->CheckForCompletedTasks();
-
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
   TRACE_EVENT_INSTANT1("cc", "DidFlush", TRACE_EVENT_SCOPE_THREAD, "stats",
@@ -803,7 +800,25 @@ void TileManager::ScheduleTasks(
       tile->raster_task_ = CreateRasterTask(prioritized_tile);
 
     TileTask* task = tile->raster_task_.get();
-    DCHECK(!task->HasCompleted());
+
+    // The canceled state implies that task is completed as canceled. The task
+    // is modified to canceled state in TaskGraphWorkQueue::ScheduleTasks() with
+    // lock acquired. Canceled task gets collected before next scheduling,
+    // TileManager::ScheduleTasks(), happens. So if tile which had task canceled
+    // would get new raster task. As worker and origin threads run parallely,
+    // the tasks may be finished during schedule. Avoid sheduling raster tasks
+    // which have finished and those tasks should have all their dependencies
+    // finished. If task gets finished after it is checked, then it gets skipped
+    // in TaskGraphWorkQueue::ScheduleTasks().
+    DCHECK(!task->state().IsCanceled());
+    if (task->state().IsFinished()) {
+#if DCHECK_IS_ON()
+      // Check if there is any dependency which is not finished.
+      for (auto& decode_task : task->dependencies())
+        DCHECK(decode_task->state().IsFinished());
+#endif
+      continue;
+    }
 
     if (tile->required_for_activation()) {
       required_for_activate_count++;
@@ -923,25 +938,28 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   }
 
   bool supports_concurrent_execution = !use_gpu_rasterization_;
+  std::unique_ptr<RasterBuffer> raster_buffer =
+      tile_task_manager_->GetRasterBufferProvider()->AcquireBufferForRaster(
+          resource, resource_content_id, tile->invalidated_id());
   return make_scoped_refptr(new RasterTaskImpl(
-      resource, prioritized_tile.raster_source(), tile->content_rect(),
+      this, resource, prioritized_tile.raster_source(), tile->content_rect(),
       tile->invalidated_content_rect(), tile->contents_scale(),
       playback_settings, prioritized_tile.priority().resolution,
-      tile->layer_id(), prepare_tiles_count_, static_cast<const void*>(tile),
-      tile->id(), tile->invalidated_id(), resource_content_id,
-      tile->source_frame_number(),
-      base::Bind(&TileManager::OnRasterTaskCompleted, base::Unretained(this),
-                 tile->id(), resource),
-      &decode_tasks, supports_concurrent_execution));
+      tile->layer_id(), prepare_tiles_count_, tile, tile->id(),
+      tile->invalidated_id(), resource_content_id, tile->source_frame_number(),
+      std::move(raster_buffer), &decode_tasks, supports_concurrent_execution));
 }
 
 void TileManager::OnRasterTaskCompleted(
-    Tile::Id tile_id,
+    std::unique_ptr<RasterBuffer> raster_buffer,
+    Tile* tile,
     Resource* resource,
     bool was_canceled) {
-  DCHECK(tiles_.find(tile_id) != tiles_.end());
+  DCHECK(tile);
+  DCHECK(tiles_.find(tile->id()) != tiles_.end());
+  tile_task_manager_->GetRasterBufferProvider()->ReleaseBufferForRaster(
+      std::move(raster_buffer));
 
-  Tile* tile = tiles_[tile_id];
   TileDrawInfo& draw_info = tile->draw_info();
   DCHECK(tile->raster_task_.get());
   orphan_tasks_.push_back(tile->raster_task_);

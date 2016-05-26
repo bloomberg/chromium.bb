@@ -10,7 +10,6 @@
 #include "cc/raster/task.h"
 
 namespace cc {
-class RasterBufferProvider;
 
 class CC_EXPORT TileTask : public Task {
  public:
@@ -25,16 +24,9 @@ class CC_EXPORT TileTask : public Task {
     return supports_concurrent_execution_;
   }
 
-  virtual void ScheduleOnOriginThread(RasterBufferProvider* provider) = 0;
-  virtual void CompleteOnOriginThread(RasterBufferProvider* provider) = 0;
-
-  void WillSchedule();
-  void DidSchedule();
-  bool HasBeenScheduled() const;
-
-  void WillComplete();
-  void DidComplete();
-  bool HasCompleted() const;
+  // This function should be called from origin thread to process the completion
+  // of the task.
+  virtual void OnTaskCompleted() = 0;
 
  protected:
   explicit TileTask(bool supports_concurrent_execution);
@@ -43,8 +35,6 @@ class CC_EXPORT TileTask : public Task {
 
   const bool supports_concurrent_execution_;
   TileTask::Vector dependencies_;
-  bool did_schedule_;
-  bool did_complete_;
 };
 
 }  // namespace cc

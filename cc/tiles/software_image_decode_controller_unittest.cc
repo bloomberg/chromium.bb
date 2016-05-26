@@ -637,9 +637,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyDecoded) {
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
 
-  task->WillSchedule();
-  task->ScheduleOnOriginThread(nullptr);
-  task->DidSchedule();
+  // TODO(prashant.n): Implement proper task life cycle. crbug.com/599863.
   task->RunOnWorkerThread();
 
   scoped_refptr<TileTask> another_task;
@@ -648,9 +646,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyDecoded) {
   EXPECT_TRUE(need_unref);
   EXPECT_FALSE(another_task);
 
-  task->WillComplete();
-  task->CompleteOnOriginThread(nullptr);
-  task->DidComplete();
+  task->OnTaskCompleted();
 
   controller.UnrefImage(draw_image);
   controller.UnrefImage(draw_image);
@@ -671,9 +667,6 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyPrerolled) {
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
 
-  task->WillSchedule();
-  task->ScheduleOnOriginThread(nullptr);
-  task->DidSchedule();
   task->RunOnWorkerThread();
 
   scoped_refptr<TileTask> another_task;
@@ -682,9 +675,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageAlreadyPrerolled) {
   EXPECT_TRUE(need_unref);
   EXPECT_FALSE(another_task);
 
-  task->WillComplete();
-  task->CompleteOnOriginThread(nullptr);
-  task->DidComplete();
+  task->OnTaskCompleted();
 
   scoped_refptr<TileTask> third_task;
   need_unref = controller.GetTaskForImageAndRef(
@@ -712,10 +703,6 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
 
-  task->WillSchedule();
-  task->ScheduleOnOriginThread(nullptr);
-  task->DidSchedule();
-
   scoped_refptr<TileTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(
       draw_image, ImageDecodeController::TracingInfo(), &another_task);
@@ -723,9 +710,7 @@ TEST(SoftwareImageDecodeControllerTest, GetTaskForImageCanceledGetsNewTask) {
   EXPECT_TRUE(another_task.get() == task.get());
 
   // Didn't run the task, complete it (it was canceled).
-  task->WillComplete();
-  task->CompleteOnOriginThread(nullptr);
-  task->DidComplete();
+  task->OnTaskCompleted();
 
   // Fully cancel everything (so the raster would unref things).
   controller.UnrefImage(draw_image);
@@ -758,10 +743,6 @@ TEST(SoftwareImageDecodeControllerTest,
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
 
-  task->WillSchedule();
-  task->ScheduleOnOriginThread(nullptr);
-  task->DidSchedule();
-
   scoped_refptr<TileTask> another_task;
   need_unref = controller.GetTaskForImageAndRef(
       draw_image, ImageDecodeController::TracingInfo(), &another_task);
@@ -769,9 +750,7 @@ TEST(SoftwareImageDecodeControllerTest,
   EXPECT_TRUE(another_task.get() == task.get());
 
   // Didn't run the task, complete it (it was canceled).
-  task->WillComplete();
-  task->CompleteOnOriginThread(nullptr);
-  task->DidComplete();
+  task->OnTaskCompleted();
 
   // Note that here, everything is reffed, but a new task is created. This is
   // possible with repeated schedule/cancel operations.
@@ -803,15 +782,9 @@ TEST(SoftwareImageDecodeControllerTest, GetDecodedImageForDraw) {
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
 
-  task->WillSchedule();
-  task->ScheduleOnOriginThread(nullptr);
-  task->DidSchedule();
-
   task->RunOnWorkerThread();
 
-  task->WillComplete();
-  task->CompleteOnOriginThread(nullptr);
-  task->DidComplete();
+  task->OnTaskCompleted();
 
   DecodedDrawImage decoded_draw_image =
       controller.GetDecodedImageForDraw(draw_image);
@@ -844,15 +817,9 @@ TEST(SoftwareImageDecodeControllerTest,
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
 
-  task->WillSchedule();
-  task->ScheduleOnOriginThread(nullptr);
-  task->DidSchedule();
-
   task->RunOnWorkerThread();
 
-  task->WillComplete();
-  task->CompleteOnOriginThread(nullptr);
-  task->DidComplete();
+  task->OnTaskCompleted();
 
   DecodedDrawImage decoded_draw_image =
       controller.GetDecodedImageForDraw(draw_image);
@@ -952,15 +919,9 @@ TEST(SoftwareImageDecodeControllerTest,
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
 
-  task->WillSchedule();
-  task->ScheduleOnOriginThread(nullptr);
-  task->DidSchedule();
-
   task->RunOnWorkerThread();
 
-  task->WillComplete();
-  task->CompleteOnOriginThread(nullptr);
-  task->DidComplete();
+  task->OnTaskCompleted();
 
   DecodedDrawImage another_decoded_draw_image =
       controller.GetDecodedImageForDraw(draw_image);
@@ -1005,19 +966,13 @@ TEST(SoftwareImageDecodeControllerTest,
   EXPECT_TRUE(need_unref);
   EXPECT_TRUE(task);
 
-  task->WillSchedule();
-  task->ScheduleOnOriginThread(nullptr);
-  task->DidSchedule();
-
   // If we finish the draw here, then we will use it for the locked decode
   // instead of decoding again.
   controller.DrawWithImageFinished(draw_image, decoded_draw_image);
 
   task->RunOnWorkerThread();
 
-  task->WillComplete();
-  task->CompleteOnOriginThread(nullptr);
-  task->DidComplete();
+  task->OnTaskCompleted();
 
   DecodedDrawImage another_decoded_draw_image =
       controller.GetDecodedImageForDraw(draw_image);
