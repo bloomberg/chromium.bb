@@ -53,6 +53,7 @@ gfx::Rect ScreenUtil::GetDisplayWorkAreaBoundsInParent(aura::Window* window) {
                                    .work_area());
 }
 
+// static
 gfx::Rect ScreenUtil::GetShelfDisplayBoundsInRoot(aura::Window* window) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   if (display_manager->IsInUnifiedMode()) {
@@ -65,19 +66,17 @@ gfx::Rect ScreenUtil::GetShelfDisplayBoundsInRoot(aura::Window* window) {
     gfx::SizeF size(first.size());
     size.Scale(scale, scale);
     return gfx::Rect(gfx::ToCeiledSize(size));
-  } else {
-    if (window->GetRootWindow()->bounds().IsEmpty()) {
-      // TODO(sad): This only happens when running with mustash, since the
-      // root-window here refers to the shelf Widget, which has not been
-      // sized/positioned yet. Use the bounds of the display in this case.
-      // Ideally, we would not run this code at all for mustash.
-      NOTIMPLEMENTED();
-      display::Display display =
-          display::Screen::GetScreen()->GetDisplayNearestWindow(window);
-      return gfx::Rect(display.size());
-    }
-    return window->GetRootWindow()->bounds();
   }
+
+  if (Shell::GetInstance()->in_mus()) {
+    // In mus the RootWindow is the widget's root window, so use the display
+    // bounds.
+    display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(window);
+    return display.bounds();
+  }
+
+  return window->GetRootWindow()->bounds();
 }
 
 // static

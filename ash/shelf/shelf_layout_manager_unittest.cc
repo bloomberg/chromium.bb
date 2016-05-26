@@ -242,6 +242,7 @@ class ShelfLayoutObserverTest : public ShelfLayoutManagerObserver {
   bool changed_auto_hide_state() const { return changed_auto_hide_state_; }
 
  private:
+  // ShelfLayoutManagerObserver:
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override {
     changed_auto_hide_state_ = true;
   }

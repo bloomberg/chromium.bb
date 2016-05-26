@@ -12,6 +12,8 @@
 namespace ash {
 namespace shell {
 
+// TODO(jamescook): Replace with TestShelfDelegate so we don't have to maintain
+// two stub implementations.
 class ShelfDelegateImpl : public ShelfDelegate {
  public:
   ShelfDelegateImpl();
@@ -22,6 +24,8 @@ class ShelfDelegateImpl : public ShelfDelegate {
   void OnShelfDestroyed(Shelf* shelf) override;
   void OnShelfAlignmentChanged(Shelf* shelf) override;
   void OnShelfAutoHideBehaviorChanged(Shelf* shelf) override;
+  void OnShelfAutoHideStateChanged(Shelf* shelf) override;
+  void OnShelfVisibilityStateChanged(Shelf* shelf) override;
   ShelfID GetShelfIDForAppID(const std::string& app_id) override;
   bool HasShelfIDToAppIDMapping(ShelfID id) const override;
   const std::string& GetAppIDForShelfID(ShelfID id) override;

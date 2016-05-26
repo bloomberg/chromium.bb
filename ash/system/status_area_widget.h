@@ -74,6 +74,8 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
 
   // Overridden from views::Widget:
   void OnNativeWidgetActivationChanged(bool active) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
   void AddSystemTray();

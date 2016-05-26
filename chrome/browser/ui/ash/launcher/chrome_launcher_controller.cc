@@ -986,6 +986,11 @@ void ChromeLauncherController::OnShelfAutoHideBehaviorChanged(
                                     shelf->auto_hide_behavior());
 }
 
+void ChromeLauncherController::OnShelfAutoHideStateChanged(ash::Shelf* shelf) {}
+
+void ChromeLauncherController::OnShelfVisibilityStateChanged(
+    ash::Shelf* shelf) {}
+
 void ChromeLauncherController::ShelfItemAdded(int index) {
   // The app list launcher can get added to the shelf after we applied the
   // preferences. In that case the item might be at the wrong spot. As such we

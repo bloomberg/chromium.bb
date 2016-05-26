@@ -31,6 +31,12 @@ class ASH_EXPORT ShelfDelegate {
   // Called when |shelf|'s auto-hide behavior changes.
   virtual void OnShelfAutoHideBehaviorChanged(Shelf* shelf) = 0;
 
+  // Called when |shelf|'s auto-hide state changes.
+  virtual void OnShelfAutoHideStateChanged(Shelf* shelf) = 0;
+
+  // Called when |shelf|'s visibility state is committed.
+  virtual void OnShelfVisibilityStateChanged(Shelf* shelf) = 0;
+
   // Get the shelf ID from an application ID.
   virtual ShelfID GetShelfIDForAppID(const std::string& app_id) = 0;
 

@@ -99,6 +99,10 @@ void TestShelfDelegate::OnShelfAlignmentChanged(Shelf* shelf) {}
 
 void TestShelfDelegate::OnShelfAutoHideBehaviorChanged(Shelf* shelf) {}
 
+void TestShelfDelegate::OnShelfAutoHideStateChanged(Shelf* shelf) {}
+
+void TestShelfDelegate::OnShelfVisibilityStateChanged(Shelf* shelf) {}
+
 ShelfID TestShelfDelegate::GetShelfIDForAppID(const std::string& app_id) {
   for (auto const& iter : shelf_id_to_app_id_map_) {
     if (iter.second == app_id)

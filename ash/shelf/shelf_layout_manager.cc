@@ -18,6 +18,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_bezel_event_filter.h"
 #include "ash/shelf/shelf_constants.h"
+#include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_widget.h"
@@ -100,7 +101,9 @@ const int ShelfLayoutManager::kShelfItemInset = 3;
 
 // ShelfLayoutManager::AutoHideEventFilter -------------------------------------
 
-// Notifies ShelfLayoutManager any time the mouse moves.
+// Notifies ShelfLayoutManager any time the mouse moves. Not used on mash.
+// TODO(jamescook): Delete this once the mash implementation handles drags on
+// and off the shelf.
 class ShelfLayoutManager::AutoHideEventFilter : public ui::EventHandler {
  public:
   explicit AutoHideEventFilter(ShelfLayoutManager* shelf);
@@ -116,7 +119,6 @@ class ShelfLayoutManager::AutoHideEventFilter : public ui::EventHandler {
  private:
   ShelfLayoutManager* shelf_;
   bool in_mouse_drag_;
-  ShelfGestureHandler gesture_handler_;
   DISALLOW_COPY_AND_ASSIGN(AutoHideEventFilter);
 };
 
@@ -139,18 +141,12 @@ void ShelfLayoutManager::AutoHideEventFilter::OnMouseEvent(
                     (in_mouse_drag_ && event->type() != ui::ET_MOUSE_RELEASED &&
                      event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)) &&
       !shelf_->IsShelfWindow(static_cast<aura::Window*>(event->target()));
-  if (event->type() == ui::ET_MOUSE_MOVED)
-    shelf_->UpdateAutoHideState();
-  return;
+  shelf_->UpdateAutoHideForMouseEvent(event);
 }
 
 void ShelfLayoutManager::AutoHideEventFilter::OnGestureEvent(
     ui::GestureEvent* event) {
-  aura::Window* target_window = static_cast<aura::Window*>(event->target());
-  if (shelf_->IsShelfWindow(target_window)) {
-    if (gesture_handler_.ProcessGestureEvent(*event, target_window))
-      event->StopPropagation();
-  }
+  shelf_->UpdateAutoHideForGestureEvent(event);
 }
 
 // ShelfLayoutManager:UpdateShelfObserver --------------------------------------
@@ -262,6 +258,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
 }
 
 void ShelfLayoutManager::PrepareForShutdown() {
+  in_shutdown_ = true;
   // Clear all event filters, otherwise sometimes those filters may catch
   // synthesized mouse event and cause crashes during the shutdown.
   set_workspace_controller(NULL);
@@ -288,6 +285,12 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() {
       gfx::Rect(rect.x(), rect.y(), kShelfSize, rect.height()),
       gfx::Rect(rect.right() - kShelfSize, rect.y(), kShelfSize,
                 rect.height()));
+}
+
+gfx::Size ShelfLayoutManager::GetPreferredSize() {
+  TargetBounds target_bounds;
+  CalculateTargetBounds(state_, &target_bounds);
+  return target_bounds.shelf_bounds_in_root.size();
 }
 
 void ShelfLayoutManager::LayoutShelf() {
@@ -374,6 +377,31 @@ void ShelfLayoutManager::UpdateAutoHideState() {
     }
   } else {
     StopAutoHideTimer();
+  }
+}
+
+void ShelfLayoutManager::UpdateAutoHideForMouseEvent(ui::MouseEvent* event) {
+  // Don't update during shutdown because synthetic mouse events (e.g. mouse
+  // exit) may be generated during status area widget teardown.
+  if (visibility_state() != SHELF_AUTO_HIDE || in_shutdown_)
+    return;
+
+  if (event->type() == ui::ET_MOUSE_MOVED ||
+      event->type() == ui::ET_MOUSE_ENTERED ||
+      event->type() == ui::ET_MOUSE_EXITED) {
+    UpdateAutoHideState();
+  }
+}
+
+void ShelfLayoutManager::UpdateAutoHideForGestureEvent(
+    ui::GestureEvent* event) {
+  if (visibility_state() != SHELF_AUTO_HIDE || in_shutdown_)
+    return;
+
+  aura::Window* target_window = static_cast<aura::Window*>(event->target());
+  if (IsShelfWindow(target_window)) {
+    if (gesture_handler_.ProcessGestureEvent(*event, target_window))
+      event->StopPropagation();
   }
 }
 
@@ -581,13 +609,17 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                     WillChangeVisibilityState(visibility_state));
 
-  if (state.visibility_state == SHELF_AUTO_HIDE) {
-    // When state is SHELF_AUTO_HIDE we need to track when the mouse is over the
-    // shelf to unhide it. AutoHideEventFilter does that for us.
-    if (!auto_hide_event_filter_)
-      auto_hide_event_filter_.reset(new AutoHideEventFilter(this));
-  } else {
-    auto_hide_event_filter_.reset(NULL);
+  // mash does not support global event handlers. It uses events on the shelf
+  // and status area widgets to update auto-hide.
+  if (!Shell::GetInstance()->in_mus()) {
+    if (state.visibility_state == SHELF_AUTO_HIDE) {
+      // When state is SHELF_AUTO_HIDE we need to track when the mouse is over
+      // the shelf to unhide it. AutoHideEventFilter does that for us.
+      if (!auto_hide_event_filter_)
+        auto_hide_event_filter_.reset(new AutoHideEventFilter(this));
+    } else {
+      auto_hide_event_filter_.reset(NULL);
+    }
   }
 
   StopAutoHideTimer();
@@ -635,12 +667,19 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
   UpdateBoundsAndOpacity(target_bounds, true,
       delay_background_change ? update_shelf_observer_ : NULL);
 
+  // The delegate must be notified after |state_| is updated so that it can
+  // query the new target bounds.
+  ShelfDelegate* shelf_delegate = Shell::GetInstance()->GetShelfDelegate();
+  if (old_state.visibility_state != state_.visibility_state)
+    shelf_delegate->OnShelfVisibilityStateChanged(shelf_->shelf());
+
   // OnAutoHideStateChanged Should be emitted when:
   //  - firstly state changed to auto-hide from other state
   //  - or, auto_hide_state has changed
   if ((old_state.visibility_state != state_.visibility_state &&
        state_.visibility_state == SHELF_AUTO_HIDE) ||
       old_state.auto_hide_state != state_.auto_hide_state) {
+    shelf_delegate->OnShelfAutoHideStateChanged(shelf_->shelf());
     FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_,
                       OnAutoHideStateChanged(state_.auto_hide_state));
   }
@@ -999,22 +1038,25 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
        shelf_->status_area_widget()->IsActive()))
     return SHELF_AUTO_HIDE_SHOWN;
 
-  const std::vector<aura::Window*> windows =
-      shell->mru_window_tracker()->BuildWindowListIgnoreModal();
+  // TODO(jamescook): Track visible windows on mash via ShelfDelegate.
+  if (!Shell::GetInstance()->in_mus()) {
+    const std::vector<aura::Window*> windows =
+        shell->mru_window_tracker()->BuildWindowListIgnoreModal();
 
-  // Process the window list and check if there are any visible windows.
-  bool visible_window = false;
-  for (size_t i = 0; i < windows.size(); ++i) {
-    if (windows[i] && windows[i]->IsVisible() &&
-        !wm::GetWindowState(windows[i])->IsMinimized() &&
-        root_window_ == windows[i]->GetRootWindow()) {
-      visible_window = true;
-      break;
+    // Process the window list and check if there are any visible windows.
+    bool visible_window = false;
+    for (size_t i = 0; i < windows.size(); ++i) {
+      if (windows[i] && windows[i]->IsVisible() &&
+          !wm::GetWindowState(windows[i])->IsMinimized() &&
+          root_window_ == windows[i]->GetRootWindow()) {
+        visible_window = true;
+        break;
+      }
     }
+    // If there are no visible windows do not hide the shelf.
+    if (!visible_window)
+      return SHELF_AUTO_HIDE_SHOWN;
   }
-  // If there are no visible windows do not hide the shelf.
-  if (!visible_window)
-    return SHELF_AUTO_HIDE_SHOWN;
 
   if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS)
     return gesture_drag_auto_hide_state_;

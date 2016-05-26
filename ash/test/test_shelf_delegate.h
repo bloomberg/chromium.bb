@@ -55,6 +55,8 @@ class TestShelfDelegate : public ShelfDelegate, public aura::WindowObserver {
   void OnShelfDestroyed(Shelf* shelf) override;
   void OnShelfAlignmentChanged(Shelf* shelf) override;
   void OnShelfAutoHideBehaviorChanged(Shelf* shelf) override;
+  void OnShelfAutoHideStateChanged(Shelf* shelf) override;
+  void OnShelfVisibilityStateChanged(Shelf* shelf) override;
   ShelfID GetShelfIDForAppID(const std::string& app_id) override;
   bool HasShelfIDToAppIDMapping(ShelfID id) const override;
   const std::string& GetAppIDForShelfID(ShelfID id) override;

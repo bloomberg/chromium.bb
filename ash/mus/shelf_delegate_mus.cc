@@ -193,6 +193,9 @@ ShelfDelegateMus::ShelfDelegateMus(ShelfModel* model)
 
 ShelfDelegateMus::~ShelfDelegateMus() {}
 
+///////////////////////////////////////////////////////////////////////////////
+// ShelfDelegate:
+
 void ShelfDelegateMus::OnShelfCreated(Shelf* shelf) {
   SetShelfPreferredSizes(shelf);
 }
@@ -225,6 +228,16 @@ void ShelfDelegateMus::OnShelfAutoHideBehaviorChanged(Shelf* shelf) {
       });
 }
 
+void ShelfDelegateMus::OnShelfAutoHideStateChanged(Shelf* shelf) {
+  // Push the new preferred size to the window manager. For example, when the
+  // shelf is auto-hidden it becomes a very short "light bar".
+  SetShelfPreferredSizes(shelf);
+}
+
+void ShelfDelegateMus::OnShelfVisibilityStateChanged(Shelf* shelf) {
+  SetShelfPreferredSizes(shelf);
+}
+
 ShelfID ShelfDelegateMus::GetShelfIDForAppID(const std::string& app_id) {
   if (app_id_to_shelf_id_.count(app_id))
     return app_id_to_shelf_id_[app_id];
@@ -253,6 +266,9 @@ bool ShelfDelegateMus::IsAppPinned(const std::string& app_id) {
 void ShelfDelegateMus::UnpinAppWithID(const std::string& app_id) {
   NOTIMPLEMENTED();
 }
+
+///////////////////////////////////////////////////////////////////////////////
+// mash::shelf::mojom::ShelfController:
 
 void ShelfDelegateMus::AddObserver(
     mash::shelf::mojom::ShelfObserverAssociatedPtrInfo observer) {
@@ -451,7 +467,7 @@ void ShelfDelegateMus::SetShelfPreferredSizes(Shelf* shelf) {
   ShelfWidget* widget = shelf->shelf_widget();
   ShelfLayoutManager* layout_manager = widget->shelf_layout_manager();
   mus::Window* window = aura::GetMusWindow(widget->GetNativeWindow());
-  gfx::Size size = layout_manager->GetIdealBounds().size();
+  gfx::Size size = layout_manager->GetPreferredSize();
   window->SetSharedProperty<gfx::Size>(
       mus::mojom::WindowManager::kPreferredSize_Property, size);
 

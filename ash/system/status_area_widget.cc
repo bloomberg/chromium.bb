@@ -133,6 +133,18 @@ void StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
     status_area_widget_delegate_->SetPaneFocusAndFocusDefault();
 }
 
+void StatusAreaWidget::OnMouseEvent(ui::MouseEvent* event) {
+  Widget::OnMouseEvent(event);
+  if (Shell::GetInstance()->in_mus() && shelf_widget_->shelf_layout_manager())
+    shelf_widget_->shelf_layout_manager()->UpdateAutoHideForMouseEvent(event);
+}
+
+void StatusAreaWidget::OnGestureEvent(ui::GestureEvent* event) {
+  Widget::OnGestureEvent(event);
+  if (Shell::GetInstance()->in_mus() && shelf_widget_->shelf_layout_manager())
+    shelf_widget_->shelf_layout_manager()->UpdateAutoHideForGestureEvent(event);
+}
+
 void StatusAreaWidget::AddSystemTray() {
   system_tray_ = new SystemTray(this);
   status_area_widget_delegate_->AddTray(system_tray_);

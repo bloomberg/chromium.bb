@@ -21,6 +21,10 @@ void ShelfDelegateImpl::OnShelfAlignmentChanged(Shelf* shelf) {}
 
 void ShelfDelegateImpl::OnShelfAutoHideBehaviorChanged(Shelf* shelf) {}
 
+void ShelfDelegateImpl::OnShelfAutoHideStateChanged(Shelf* shelf) {}
+
+void ShelfDelegateImpl::OnShelfVisibilityStateChanged(Shelf* shelf) {}
+
 ShelfID ShelfDelegateImpl::GetShelfIDForAppID(const std::string& app_id) {
   return 0;
 }

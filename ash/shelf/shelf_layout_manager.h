@@ -18,6 +18,7 @@
 #include "ash/wm/common/background_animator.h"
 #include "ash/wm/common/dock/docked_window_layout_manager_observer.h"
 #include "ash/wm/common/workspace/workspace_types.h"
+#include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "ash/wm/lock_state_observer.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -58,6 +59,7 @@ FORWARD_DECLARE_TEST(WebNotificationTrayTest, PopupAndFullscreen);
 // layout to the status area.
 // To respond to bounds changes in the status area StatusAreaLayoutManager works
 // closely with ShelfLayoutManager.
+// On mus, widget bounds management is handled by the window manager.
 class ASH_EXPORT ShelfLayoutManager
     : public ash::ShellObserver,
       public aura::client::ActivationChangeObserver,
@@ -101,6 +103,9 @@ class ASH_EXPORT ShelfLayoutManager
   // Returns the ideal bounds of the shelf assuming it is visible.
   gfx::Rect GetIdealBounds();
 
+  // Returns the preferred size of the shelf for the target visibility state.
+  gfx::Size GetPreferredSize();
+
   // Returns the docked area bounds.
   const gfx::Rect& dock_bounds() const { return dock_bounds_; }
 
@@ -122,6 +127,12 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Invoked by the shelf when the auto-hide state may have changed.
   void UpdateAutoHideState();
+
+  // Updates the auto-hide state for certain events. In classic ash these come
+  // from an EventHandler. In mash these come from events that hit the shelf
+  // widget and status tray widget.
+  void UpdateAutoHideForMouseEvent(ui::MouseEvent* event);
+  void UpdateAutoHideForGestureEvent(ui::GestureEvent* event);
 
   ShelfVisibilityState visibility_state() const {
     return state_.visibility_state;
@@ -335,6 +346,8 @@ class ASH_EXPORT ShelfLayoutManager
   // UpdateBoundsAndOpacity() again from SetChildBounds().
   bool updating_bounds_;
 
+  bool in_shutdown_ = false;
+
   // Current state.
   State state_;
 
@@ -352,13 +365,15 @@ class ASH_EXPORT ShelfLayoutManager
   bool mouse_over_shelf_when_auto_hide_timer_started_;
 
   // EventFilter used to detect when user moves the mouse over the shelf to
-  // trigger showing the shelf.
+  // trigger showing the shelf. Used in classic ash.
   std::unique_ptr<AutoHideEventFilter> auto_hide_event_filter_;
 
   // EventFilter used to detect when user issues a gesture on a bezel sensor.
   std::unique_ptr<ShelfBezelEventFilter> bezel_event_filter_;
 
   base::ObserverList<ShelfLayoutManagerObserver> observers_;
+
+  ShelfGestureHandler gesture_handler_;
 
   // The shelf reacts to gesture-drags, and can be set to auto-hide for certain
   // gestures. Some shelf behaviour (e.g. visibility state, background color

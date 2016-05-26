@@ -251,6 +251,8 @@ class ChromeLauncherController
   void OnShelfDestroyed(ash::Shelf* shelf) override;
   void OnShelfAlignmentChanged(ash::Shelf* shelf) override;
   void OnShelfAutoHideBehaviorChanged(ash::Shelf* shelf) override;
+  void OnShelfAutoHideStateChanged(ash::Shelf* shelf) override;
+  void OnShelfVisibilityStateChanged(ash::Shelf* shelf) override;
   ash::ShelfID GetShelfIDForAppID(const std::string& app_id) override;
   bool HasShelfIDToAppIDMapping(ash::ShelfID id) const override;
   const std::string& GetAppIDForShelfID(ash::ShelfID id) override;

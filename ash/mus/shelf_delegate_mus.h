@@ -20,6 +20,8 @@ class ShelfModel;
 
 namespace sysui {
 
+// Manages communication between the ash_sysui shelf, the window manager, and
+// the browser.
 class ShelfDelegateMus : public ShelfDelegate,
                          public mash::shelf::mojom::ShelfController,
                          public mash::wm::mojom::UserWindowObserver {
@@ -33,6 +35,8 @@ class ShelfDelegateMus : public ShelfDelegate,
   void OnShelfDestroyed(Shelf* shelf) override;
   void OnShelfAlignmentChanged(Shelf* shelf) override;
   void OnShelfAutoHideBehaviorChanged(Shelf* shelf) override;
+  void OnShelfAutoHideStateChanged(Shelf* shelf) override;
+  void OnShelfVisibilityStateChanged(Shelf* shelf) override;
   ShelfID GetShelfIDForAppID(const std::string& app_id) override;
   bool HasShelfIDToAppIDMapping(ShelfID id) const override;
   const std::string& GetAppIDForShelfID(ShelfID id) override;
