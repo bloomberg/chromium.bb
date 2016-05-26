@@ -184,7 +184,7 @@ enum <i>enumname</i> : <i>base-type</i></code></td>
 <td><code>[<i>captures</i>](<i>params</i>) -&gt; <i>ret</i> { <i>body</i> }</code></td>
 <td>Anonymous functions</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/lambda">Lambda functions</a></td>
-<td>Do not bind or store lambdas; use <code>base::Bind</code> and <code>base::Callback</code> instead, because they offer protection against a large class of object lifetime mistakes. Don't use default captures (<code>[=]</code>, <code>[&amp;]</code> &ndash; <a href="https://google.github.io/styleguide/cppguide.html#Lambda_expressions">Google Style Guide</a>). Lambdas are typically useful as a parameter to methods or functions that will use them immediately, such as those in <code>&lt;algorithm&gt;</code>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/D9UnnxBnciQ">Discussion thread</a></td>
+<td>Do not bind or store lambdas outside the lifetime of the stack frame they are defined in; use <code>base::Bind</code> and <code>base::Callback</code> instead, because they offer protection against a large class of object lifetime mistakes. Don't use default captures (<code>[=]</code>, <code>[&amp;]</code> &ndash; <a href="https://google.github.io/styleguide/cppguide.html#Lambda_expressions">Google Style Guide</a>). Lambdas are typically useful as a parameter to methods or functions that will use them immediately, such as those in <code>&lt;algorithm&gt;</code>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/D9UnnxBnciQ">Discussion thread</a></td>
 </tr>
 
 <tr>
