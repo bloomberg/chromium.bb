@@ -6,7 +6,6 @@
 
 #include "cc/layers/layer.h"
 #include "chrome/browser/android/compositor/layer/content_layer.h"
-#include "chrome/browser/android/compositor/layer/toolbar_layer.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "content/public/browser/android/compositor.h"
@@ -121,62 +120,6 @@ void StaticTabSceneLayer::UpdateTabLayer(
       filters.Append(cc::FilterOperation::CreateBrightnessFilter(brightness_));
     layer_->SetFilters(filters);
   }
-}
-
-void StaticTabSceneLayer::UpdateToolbarLayer(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& object,
-    const JavaParamRef<jobject>& jresource_manager,
-    jint toolbar_resource_id,
-    jint toolbar_background_color,
-    jint url_bar_resource_id,
-    jfloat url_bar_alpha,
-    jfloat top_offset,
-    bool visible,
-    bool show_shadow) {
-  // If the toolbar layer has not been created yet, create it.
-  if (!toolbar_layer_) {
-    ui::ResourceManager* resource_manager =
-        ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
-    toolbar_layer_ = ToolbarLayer::Create(resource_manager);
-    toolbar_layer_->layer()->SetHideLayerAndSubtree(true);
-    layer_->AddChild(toolbar_layer_->layer());
-  }
-
-  toolbar_layer_->layer()->SetHideLayerAndSubtree(!visible);
-  if (visible) {
-    toolbar_layer_->layer()->SetPosition(gfx::PointF(0, top_offset));
-    // If we're at rest, hide the shadow.  The Android view should be drawing.
-    bool clip_shadow = top_offset >= 0.f && !show_shadow;
-    toolbar_layer_->PushResource(toolbar_resource_id, toolbar_background_color,
-                                 false, SK_ColorWHITE, url_bar_resource_id,
-                                 url_bar_alpha, false, clip_shadow);
-  }
-}
-
-void StaticTabSceneLayer::UpdateProgressBar(JNIEnv* env,
-                                       const JavaParamRef<jobject>& object,
-                                       jint progress_bar_x,
-                                       jint progress_bar_y,
-                                       jint progress_bar_width,
-                                       jint progress_bar_height,
-                                       jint progress_bar_color,
-                                       jint progress_bar_background_x,
-                                       jint progress_bar_background_y,
-                                       jint progress_bar_background_width,
-                                       jint progress_bar_background_height,
-                                       jint progress_bar_background_color) {
-  if (!toolbar_layer_) return;
-  toolbar_layer_->UpdateProgressBar(progress_bar_x,
-                                    progress_bar_y,
-                                    progress_bar_width,
-                                    progress_bar_height,
-                                    progress_bar_color,
-                                    progress_bar_background_x,
-                                    progress_bar_background_y,
-                                    progress_bar_background_width,
-                                    progress_bar_background_height,
-                                    progress_bar_background_color);
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {

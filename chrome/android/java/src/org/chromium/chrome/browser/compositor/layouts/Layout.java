@@ -1131,6 +1131,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
         // filter added should have the first chance to intercept any touch events.
         for (int i = mSceneOverlays.size() - 1; i >= 0; i--) {
             EventFilter eventFilter = mSceneOverlays.get(i).getEventFilter();
+            if (eventFilter == null) continue;
             if (offsets != null) eventFilter.setCurrentMotionEventOffsets(offsets.x, offsets.y);
             if (eventFilter.onInterceptTouchEvent(e, isKeyboardShowing)) return eventFilter;
         }
@@ -1145,7 +1146,8 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     /**
      * Build a {@link SceneLayer} if it hasn't already been built, and update it and return it.
      *
-     * @param contentViewport   A viewport in which to display content.
+     * @param viewport          A viewport in which to display content.
+     * @param contentViewport   The visible section of the viewport.
      * @param layerTitleCache   A layer title cache.
      * @param tabContentManager A tab content manager.
      * @param resourceManager   A resource manager.
@@ -1153,10 +1155,9 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @return                  A {@link SceneLayer} that represents the content for this
      *                          {@link Layout}.
      */
-    public final SceneLayer getUpdatedSceneLayer(Rect viewport,
-            Rect contentViewport, LayerTitleCache layerTitleCache,
-            TabContentManager tabContentManager, ResourceManager resourceManager,
-            ChromeFullscreenManager fullscreenManager) {
+    public final SceneLayer getUpdatedSceneLayer(Rect viewport, Rect contentViewport,
+            LayerTitleCache layerTitleCache, TabContentManager tabContentManager,
+            ResourceManager resourceManager, ChromeFullscreenManager fullscreenManager) {
         updateSceneLayer(viewport, contentViewport, layerTitleCache, tabContentManager,
                 resourceManager, fullscreenManager);
 

@@ -71,7 +71,7 @@ public class StaticLayout extends Layout {
         mHandler = new Handler();
         mUnstallRunnable = new UnstallRunnable();
         mUnstalling = false;
-        mSceneLayer = new StaticTabSceneLayer(context, R.id.control_container);
+        mSceneLayer = new StaticTabSceneLayer(R.id.control_container);
     }
 
     /**
@@ -235,9 +235,6 @@ public class StaticLayout extends Layout {
 
         mSceneLayer.update(dpToPx, contentViewport, layerTitleCache, tabContentManager,
                 fullscreenManager, layoutTab);
-        mSceneLayer.updateToolbarLayer(dpToPx, mRenderHost.getTopControlsBackgroundColor(),
-                mRenderHost.getTopControlsUrlBarAlpha(), fullscreenManager, resourceManager,
-                forceHideTopControlsAndroidView(), getSizingFlags());
 
         // TODO(dtrainor): Find the best way to properly track this metric for cold starts.
         // We should probably erase the thumbnail when we select a tab that we need to restore.

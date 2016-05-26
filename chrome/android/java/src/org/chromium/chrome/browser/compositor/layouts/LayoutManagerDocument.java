@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandl
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EmptyEdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
+import org.chromium.chrome.browser.compositor.scene_layer.ToolbarSceneLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManagerDelegate;
@@ -68,6 +69,7 @@ public class LayoutManagerDocument extends LayoutManager
     private final ContextualSearchPanel mContextualSearchPanel;
     private final ReaderModePanel mReaderModePanel;
     private final OverlayPanelManager mOverlayPanelManager;
+    private final ToolbarSceneLayer mToolbarOverlay;
     /** A delegate for interacting with the Contextual Search manager. */
     protected ContextualSearchManagementDelegate mContextualSearchDelegate;
 
@@ -83,6 +85,8 @@ public class LayoutManagerDocument extends LayoutManager
         super(host);
         mContext = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
+
+        mToolbarOverlay = new ToolbarSceneLayer(mContext, this, renderHost);
 
         // Build Event Filter Handlers
         mGestureHandler = new GestureHandlerLayoutDelegate(this);
@@ -219,8 +223,12 @@ public class LayoutManagerDocument extends LayoutManager
     /**
      * Add any {@link SceneOverlay}s to the layout. This can be used to add the overlays in a
      * particular order.
+     * Classes that override this method should be careful about the order that
+     * overlays are added and when super is called (i.e. cases where one overlay needs to be
+     * on top of another positioned.
      */
     protected void addAllSceneOverlays() {
+        addGlobalSceneOverlay(mToolbarOverlay);
         mStaticLayout.addSceneOverlay(mContextualSearchPanel);
         mStaticLayout.addSceneOverlay(mReaderModePanel);
     }

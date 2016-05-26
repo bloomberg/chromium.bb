@@ -208,6 +208,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/compositor/scene_layer/StaticTabSceneLayer.java",
   "java/src/org/chromium/chrome/browser/compositor/scene_layer/TabListSceneLayer.java",
   "java/src/org/chromium/chrome/browser/compositor/scene_layer/TabStripSceneLayer.java",
+  "java/src/org/chromium/chrome/browser/compositor/scene_layer/ToolbarSceneLayer.java",
   "java/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulator.java",
   "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuHelper.java",
   "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuItemDelegate.java",

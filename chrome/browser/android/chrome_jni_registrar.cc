@@ -29,6 +29,7 @@
 #include "chrome/browser/android/compositor/scene_layer/static_tab_scene_layer.h"
 #include "chrome/browser/android/compositor/scene_layer/tab_list_scene_layer.h"
 #include "chrome/browser/android/compositor/scene_layer/tab_strip_scene_layer.h"
+#include "chrome/browser/android/compositor/scene_layer/toolbar_scene_layer.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_manager.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_tab_helper.h"
@@ -373,6 +374,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"TabWebContentsDelegateAndroid", RegisterTabWebContentsDelegateAndroid},
     {"TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register},
     {"ToolbarModelAndroid", ToolbarModelAndroid::RegisterToolbarModelAndroid},
+    {"ToolbarSceneLayer", RegisterToolbarSceneLayer},
     {"TranslateInfoBarDelegate", RegisterTranslateInfoBarDelegate},
     {"TtsPlatformImpl", TtsPlatformImplAndroid::Register},
     {"UmaSessionStats", RegisterUmaSessionStats},
