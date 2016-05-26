@@ -13,6 +13,8 @@ from loading_graph_view import LoadingGraphView
 import loading_trace
 import metrics
 from network_activity_lens import NetworkActivityLens
+import prefetch_view
+import request_dependencies_lens
 from user_satisfied_lens import (
     FirstTextPaintLens, FirstContentfulPaintLens, FirstSignificantPaintLens)
 
@@ -28,11 +30,14 @@ class LoadingReport(object):
       tracking_rules: ([str]) List of tracking filtering rules.
     """
     self.trace = trace
-    self._text_msec = FirstTextPaintLens(self.trace).SatisfiedMs()
-    self._contentful_paint_msec = (
-        FirstContentfulPaintLens(self.trace).SatisfiedMs())
-    self._significant_paint_msec = (
-        FirstSignificantPaintLens(self.trace).SatisfiedMs())
+
+    first_text_paint_lens = FirstTextPaintLens(self.trace)
+    first_contentful_paint_lens = FirstContentfulPaintLens(self.trace)
+    first_significant_paint_lens = FirstSignificantPaintLens(self.trace)
+
+    self._text_msec = first_text_paint_lens.SatisfiedMs()
+    self._contentful_paint_msec = first_contentful_paint_lens.SatisfiedMs()
+    self._significant_paint_msec = first_significant_paint_lens.SatisfiedMs()
 
     navigation_start_events = trace.tracing_track.GetMatchingEvents(
         'blink.user_timing', 'navigationStart')
@@ -59,6 +64,20 @@ class LoadingReport(object):
         self._significant_paint_msec)
     self._transfer_size = metrics.TotalTransferSize(trace)[1]
 
+    dependencies_lens = request_dependencies_lens.RequestDependencyLens(
+        self.trace)
+    requests = self.trace.request_track.GetEvents()
+    preloaded_requests = \
+       prefetch_view.PrefetchSimulationView.PreloadedRequests(
+           requests[0], dependencies_lens, self.trace)
+    self._first_text_preloaded_requests = LoadingReport._ComputePreloadInfo(
+        preloaded_requests, first_text_paint_lens)
+    self._contentful_preloaded_requests = LoadingReport._ComputePreloadInfo(
+        preloaded_requests, first_contentful_paint_lens)
+    self._significant_preloaded_requests = LoadingReport._ComputePreloadInfo(
+        preloaded_requests, first_significant_paint_lens)
+    self._preloaded_requests = len(preloaded_requests)
+
     activity = ActivityLens(trace)
     self._cpu_busyness = self._ComputeCpuBusyness(activity)
 
@@ -84,6 +103,13 @@ class LoadingReport(object):
         'plt_ms': self._load_end_msec - self._navigation_start_msec,
         'contentful_byte_frac': self._contentful_byte_frac,
         'significant_byte_frac': self._significant_byte_frac,
+        'preloaded_requests': self._preloaded_requests,
+        'first_text_preloaded_requests':
+            self._first_text_preloaded_requests,
+        'contentful_preloaded_requests':
+            self._contentful_preloaded_requests,
+        'significant_preloaded_requests':
+            self._significant_preloaded_requests,
 
         # Take the first (earliest) inversions.
         'contentful_inversion': (self._contentful_inversion[0].url
@@ -104,6 +130,12 @@ class LoadingReport(object):
     """Returns a LoadingReport from a trace filename."""
     trace = loading_trace.LoadingTrace.FromJsonFile(filename)
     return LoadingReport(trace, ad_rules_filename, tracking_rules_filename)
+
+  @classmethod
+  def _ComputePreloadInfo(cls, preloaded_requests, user_lens):
+    preloaded_critical_requests = [r for r in preloaded_requests
+          if r in user_lens.CriticalRequests()]
+    return len(preloaded_critical_requests)
 
   @classmethod
   def _AdRequestsReport(
