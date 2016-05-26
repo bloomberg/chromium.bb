@@ -34,7 +34,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/VisualViewport.h"
-#include "core/layout/LayoutView.h"
 #include "core/page/Page.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"

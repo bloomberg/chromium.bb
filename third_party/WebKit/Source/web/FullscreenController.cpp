@@ -37,6 +37,7 @@
 #include "core/frame/PageScaleConstraintsSet.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/layout/LayoutFullScreen.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/web/WebFrameClient.h"

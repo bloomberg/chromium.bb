@@ -30,19 +30,12 @@
 
 #include "public/web/WebLeakDetector.h"
 
-#include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8GCController.h"
-#include "core/dom/ActiveDOMObject.h"
-#include "core/dom/Document.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/inspector/InstanceCounters.h"
-#include "core/layout/LayoutObject.h"
 #include "core/workers/WorkerThread.h"
-#include "modules/webaudio/AudioNode.h"
 #include "platform/Timer.h"
-#include "public/web/WebDocument.h"
 #include "public/web/WebFrame.h"
 #include "web/WebLocalFrameImpl.h"
 

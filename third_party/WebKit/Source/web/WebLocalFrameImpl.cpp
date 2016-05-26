@@ -134,7 +134,6 @@
 #include "core/input/EventHandler.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/api/LayoutViewItem.h"
