@@ -502,21 +502,13 @@ CGFloat BookmarkRightMargin() {
   originalNoItemsRect_ = [[buttonView_ noItemTextfield] frame];
   originalImportBookmarksRect_ = [[buttonView_ importBookmarksButton] frame];
   if (isModeMaterial) {
-    // Bookmark buttons are shorter and start farther from the bookmark bar's
-    // left edge so adjust the positions of the noItems and importBookmarks
-    // textfields.
+    // Bookmark buttons start farther from the bookmark bar's left edge so
+    // adjust the positions of the noItems and importBookmarks textfields.
     const CGFloat kMaterialBookmarksTextfieldOffsetX = 14;
-    const CGFloat kMaterialBookmarksTextfieldOffsetY = -2;
-    originalNoItemsRect_.origin =
-        NSOffsetRect(originalNoItemsRect_,
-                     kMaterialBookmarksTextfieldOffsetX,
-                     kMaterialBookmarksTextfieldOffsetY).origin;
+    originalNoItemsRect_.origin.x += kMaterialBookmarksTextfieldOffsetX;
     [[buttonView_ noItemTextfield] setFrame:originalNoItemsRect_];
 
-    originalImportBookmarksRect_.origin =
-        NSOffsetRect(originalImportBookmarksRect_,
-                     kMaterialBookmarksTextfieldOffsetX,
-                     kMaterialBookmarksTextfieldOffsetY).origin;
+    originalImportBookmarksRect_.origin.x += kMaterialBookmarksTextfieldOffsetX;
     [[buttonView_ importBookmarksButton] setFrame:originalImportBookmarksRect_];
   }
 
