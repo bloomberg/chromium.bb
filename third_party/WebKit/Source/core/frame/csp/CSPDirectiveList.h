@@ -71,6 +71,9 @@ public:
     bool allowStyleHash(const CSPHashValue&, ContentSecurityPolicy::InlineType) const;
     bool allowDynamic() const;
 
+    bool strictMixedContentChecking() const { return m_strictMixedContentCheckingEnforced; }
+    void reportMixedContent(const KURL& mixedURL) const;
+
     const String& evalDisabledErrorMessage() const { return m_evalDisabledErrorMessage; }
     ReflectedXSSDisposition getReflectedXSSDisposition() const { return m_reflectedXSSDisposition; }
     ReferrerPolicy getReferrerPolicy() const { return m_referrerPolicy; }

@@ -1,22 +1,23 @@
+<?php
+  header("Content-Security-Policy-Report-Only: block-all-mixed-content");
+?>
 <!doctype html>
-<meta http-equiv="Content-Security-Policy" content="block-all-mixed-content">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <body>
 <script>
     async_test(t => {
         var i = document.createElement('img');
-        i.onload = t.assert_unreached;
-        i.onerror = t.step_func_done(_ => {
-            assert_equals(0, i.naturalWidth);
-            assert_equals(0, i.naturalHeight);
+        i.onerror = t.assert_unreached;
+        i.onload = t.step_func_done(_ => {
+            assert_equals(128, i.naturalWidth);
+            assert_equals(128, i.naturalHeight);
         });
         i.src = "http://127.0.0.1:8080/security/resources/compass.jpg?t=1";
-    }, "Mixed images are blocked in the presence of 'block-all-mixed-content'.");
+    }, "Mixed images are allowed in the presence of 'block-all-mixed-content' in report-only mode.");
 
     async_test(t => {
         var i = document.createElement('img');
-        i.onload = t.assert_unreached;
         document.addEventListener('securitypolicyviolation', t.step_func_done(e => {
             var expectations = {
                 'documentURI': document.location.toString(),

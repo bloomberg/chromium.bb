@@ -245,6 +245,10 @@ public:
     // on the floor if no such context is available).
     void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, ViolationType, LocalFrame* = nullptr);
 
+    // Called when mixed content is detected on a page; will trigger a violation report if
+    // the 'block-all-mixed-content' directive is specified for a policy.
+    void reportMixedContent(const KURL& mixedURL);
+
     void reportBlockedScriptExecutionToInspector(const String& directiveText) const;
 
     const KURL url() const;

@@ -315,6 +315,8 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
         return false;
 
     MixedContentChecker::count(mixedFrame, requestContext);
+    if (ContentSecurityPolicy* policy = frame->securityContext()->contentSecurityPolicy())
+        policy->reportMixedContent(url);
 
     Settings* settings = mixedFrame->settings();
     // Use the current local frame's client; the embedder doesn't
@@ -405,6 +407,8 @@ bool MixedContentChecker::shouldBlockWebSocket(LocalFrame* frame, const KURL& ur
 
     UseCounter::count(mixedFrame, UseCounter::MixedContentPresent);
     UseCounter::count(mixedFrame, UseCounter::MixedContentWebSocket);
+    if (ContentSecurityPolicy* policy = frame->securityContext()->contentSecurityPolicy())
+        policy->reportMixedContent(url);
 
     Settings* settings = mixedFrame->settings();
     // Use the current local frame's client; the embedder doesn't

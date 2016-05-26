@@ -917,6 +917,12 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     didSendViolationReport(stringifiedReport);
 }
 
+void ContentSecurityPolicy::reportMixedContent(const KURL& mixedURL)
+{
+    for (const auto& policy : m_policies)
+        policy->reportMixedContent(mixedURL);
+}
+
 void ContentSecurityPolicy::reportInvalidReferrer(const String& invalidValue)
 {
     logToConsole("The 'referrer' Content Security Policy directive has the invalid value \"" + invalidValue + "\". Valid values are \"no-referrer\", \"no-referrer-when-downgrade\", \"origin\", \"origin-when-cross-origin\", and \"unsafe-url\".");
