@@ -31,6 +31,31 @@ class TestFilePathImpl : public TestFilePath {
   mojo::Binding<TestFilePath> binding_;
 };
 
+class TestTimeImpl : public TestTime {
+ public:
+  explicit TestTimeImpl(TestTimeRequest request)
+      : binding_(this, std::move(request)) {}
+
+  // TestTime implementation:
+  void BounceTime(const base::Time& in,
+                  const BounceTimeCallback& callback) override {
+    callback.Run(in);
+  }
+
+  void BounceTimeDelta(const base::TimeDelta& in,
+                  const BounceTimeDeltaCallback& callback) override {
+    callback.Run(in);
+  }
+
+  void BounceTimeTicks(const base::TimeTicks& in,
+                  const BounceTimeTicksCallback& callback) override {
+    callback.Run(in);
+  }
+
+ private:
+  mojo::Binding<TestTime> binding_;
+};
+
 class TestValueImpl : public TestValue {
  public:
   explicit TestValueImpl(TestValueRequest request)
@@ -75,6 +100,54 @@ TEST_F(CommonCustomTypesTest, FilePath) {
 
   ptr->BounceFilePath(file, [&run_loop, &file](const base::FilePath& out) {
     EXPECT_EQ(file, out);
+    run_loop.Quit();
+  });
+
+  run_loop.Run();
+}
+
+TEST_F(CommonCustomTypesTest, Time) {
+  base::RunLoop run_loop;
+
+  TestTimePtr ptr;
+  TestTimeImpl impl(GetProxy(&ptr));
+
+  base::Time t = base::Time::Now();
+
+  ptr->BounceTime(t, [&run_loop, &t](const base::Time& out) {
+    EXPECT_EQ(t, out);
+    run_loop.Quit();
+  });
+
+  run_loop.Run();
+}
+
+TEST_F(CommonCustomTypesTest, TimeDelta) {
+  base::RunLoop run_loop;
+
+  TestTimePtr ptr;
+  TestTimeImpl impl(GetProxy(&ptr));
+
+  base::TimeDelta t = base::TimeDelta::FromDays(123);
+
+  ptr->BounceTimeDelta(t, [&run_loop, &t](const base::TimeDelta& out) {
+    EXPECT_EQ(t, out);
+    run_loop.Quit();
+  });
+
+  run_loop.Run();
+}
+
+TEST_F(CommonCustomTypesTest, TimeTicks) {
+  base::RunLoop run_loop;
+
+  TestTimePtr ptr;
+  TestTimeImpl impl(GetProxy(&ptr));
+
+  base::TimeTicks t = base::TimeTicks::Now();
+
+  ptr->BounceTimeTicks(t, [&run_loop, &t](const base::TimeTicks& out) {
+    EXPECT_EQ(t, out);
     run_loop.Quit();
   });
 

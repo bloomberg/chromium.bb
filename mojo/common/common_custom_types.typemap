@@ -5,7 +5,8 @@
 mojom = "//mojo/common/common_custom_types.mojom"
 public_headers = [
   "//base/files/file_path.h",
-  "//base/values.h"
+  "//base/values.h",
+  "//base/time/time.h",
 ]
 traits_headers = [ "//ipc/ipc_message_utils.h" ]
 deps = [
@@ -16,4 +17,7 @@ type_mappings = [
   "mojo.common.mojom.FilePath=base::FilePath",
   "mojo.common.mojom.DictionaryValue=base::DictionaryValue",
   "mojo.common.mojom.ListValue=base::ListValue",
+  "mojo.common.mojom.Time=base::Time",
+  "mojo.common.mojom.TimeDelta=base::TimeDelta",
+  "mojo.common.mojom.TimeTicks=base::TimeTicks",
 ]

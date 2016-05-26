@@ -11,6 +11,14 @@ interface TestFilePath {
       => (mojo.common.mojom.FilePath out);
 };
 
+interface TestTime {
+  BounceTime(mojo.common.mojom.Time time) => (mojo.common.mojom.Time time);
+  BounceTimeDelta(mojo.common.mojom.TimeDelta time_delta)
+      => (mojo.common.mojom.TimeDelta time_delta);
+  BounceTimeTicks(mojo.common.mojom.TimeTicks time_ticks)
+      => (mojo.common.mojom.TimeTicks time_ticks);
+};
+
 interface TestValue {
   BounceDictionaryValue(mojo.common.mojom.DictionaryValue in)
       => (mojo.common.mojom.DictionaryValue out);
