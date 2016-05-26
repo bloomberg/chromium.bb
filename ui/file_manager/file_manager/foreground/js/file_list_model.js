@@ -97,6 +97,14 @@ FileListModel.prototype.prepareSort = function(field, callback) {
 
 /**
  * Removes and adds items to the model.
+ *
+ * The implementation is similar to cr.ui.ArrayDataModel.splice(), but this has
+ * a Files app specific optimization, which sorts only the new items and merge
+ * sorted lists.
+ * Note that this implementation assumes following conditions.
+ * - The list is always sorted.
+ * - FileListModel does't have to do anything in prepareSort().
+ *
  * @param {number} index The index of the item to update.
  * @param {number} deleteCount The number of items to remove.
  * @param {...*} var_args The items to add.
@@ -104,15 +112,119 @@ FileListModel.prototype.prepareSort = function(field, callback) {
  * @override
  */
 FileListModel.prototype.splice = function(index, deleteCount, var_args) {
-  for (var i = index; i < index + deleteCount; i++) {
-    if (i >= 0 && i < this.length)
-      this.onRemoveEntryFromList_(/** @type {!Entry} */ (this.item(i)));
+  var insertPos = Math.max(0, Math.min(index, this.indexes_.length));
+  deleteCount = Math.min(deleteCount, this.indexes_.length - insertPos);
+
+  for (var i = insertPos; i < insertPos + deleteCount; i++) {
+    this.onRemoveEntryFromList_(this.array_[this.indexes_[i]]);
   }
   for (var i = 2; i < arguments.length; i++) {
     this.onAddEntryToList_(arguments[i]);
   }
 
-  return cr.ui.ArrayDataModel.prototype.splice.apply(this, arguments);
+  // Prepare a comparison function to sort the list.
+  var comp = null;
+  if (this.sortStatus.field && this.compareFunctions_) {
+    var compareFunction = this.compareFunctions_[this.sortStatus.field];
+    if (compareFunction) {
+      var dirMultiplier = this.sortStatus.direction === 'desc' ? -1 : 1;
+      comp = function(a, b) {
+        return compareFunction(a, b) * dirMultiplier;
+      };
+    }
+  }
+
+  // Store the given new items in |newItems| and sort it before marge them to
+  // the existing list.
+  var newItems = [];
+  for (var i = 0; i < arguments.length - 2; i++)
+    newItems.push(arguments[i + 2]);
+  if (comp)
+    newItems.sort(comp);
+
+  // Creating a list of existing items.
+  // This doesn't include items which should be deleted by this splice() call.
+  var deletedItems = [];
+  var currentItems = [];
+  for (var i = 0; i < this.indexes_.length; i++) {
+    var item = this.array_[this.indexes_[i]];
+    if (insertPos <= i && i < insertPos + deleteCount) {
+      deletedItems.push(item);
+    } else {
+      currentItems.push(item);
+    }
+  }
+
+  // Initialize splice permutation with -1s.
+  // Values of undeleted items will be filled in following merge step.
+  var permutation = new Array(this.indexes_.length);
+  for (var i = 0; i < permutation.length; i++)
+    permutation[i] = -1;
+
+  // Merge the list of existing item and the list of new items.
+  this.indexes_ = [];
+  this.array_ = [];
+  var p = 0;
+  var q = 0;
+  while (p < currentItems.length || q < newItems.length) {
+    var currentIndex = p + q;
+    this.indexes_.push(currentIndex);
+    // Determine which should be inserted to the resulting list earlier, the
+    // smallest item of unused current items or the smallest item of unused new
+    // items.
+    var shouldPushCurrentItem;
+    if (q === newItems.length) {
+      shouldPushCurrentItem = true;
+    } else if (p === currentItems.length) {
+      shouldPushCurrentItem = false;
+    } else {
+      if (comp) {
+        shouldPushCurrentItem = comp(currentItems[p], newItems[q]) <= 0;
+      } else {
+        // If the comparater is not defined, new items should be inserted to the
+        // insertion position. That is, the current items before insertion
+        // position should be pushed to the resulting list earlier.
+        shouldPushCurrentItem = p < insertPos;
+      }
+    }
+    if (shouldPushCurrentItem) {
+      this.array_.push(currentItems[p]);
+      if (p < insertPos) {
+        permutation[p] = currentIndex;
+      } else {
+        permutation[p + deleteCount] = currentIndex;
+      }
+      p++;
+    } else {
+      this.array_.push(newItems[q]);
+      q++;
+    }
+  }
+
+  // Calculate the index property of splice event.
+  // If no item is inserted, it is simply the insertion/deletion position.
+  // If at least one item is inserted, it should be the resulting index of the
+  // item which is inserted first.
+  var spliceIndex = insertPos;
+  if (arguments.length > 2) {
+    for (var i = 0; i < this.indexes_.length; i++) {
+      if (this.array_[this.indexes_[i]] === arguments[2]) {
+        spliceIndex = i;
+        break;
+      }
+    }
+  }
+
+  // Dispatch permute/splice event.
+  this.dispatchPermutedEvent_(permutation);
+  // TODO(arv): Maybe unify splice and change events?
+  var spliceEvent = new Event('splice');
+  spliceEvent.removed = deletedItems;
+  spliceEvent.added = Array.prototype.slice.call(arguments, 2);
+  spliceEvent.index = spliceIndex;
+  this.dispatchEvent(spliceEvent);
+
+  return deletedItems;
 };
 
 /**
