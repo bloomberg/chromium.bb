@@ -11,13 +11,12 @@ waterfall up and running, and triaging performance test failures and flakes.
 *   [Handle Test Failures](#testfailures)
 *   [Follow up on failures](#followup)
 
-##<a name="waterfallstate"></a> Understanding the Waterfall State
+## Understanding the Waterfall State
 
 Everyone can view the chromium.perf waterfall at
 https://build.chromium.org/p/chromium.perf/, but for Googlers it is recommended
-that you use the url **[https://uberchromegw.corp.google.com/i/chromium.perf/]
-(https://uberchromegw.corp.google.com/i/chromium.perf/)** instead. The reason
-for this is that in order to make the performance tests as realistic as
+that you use the url https://uberchromegw.corp.google.com/i/chromium.perf/ instead.
+The reason for this is that in order to make the performance tests as realistic as
 possible, the chromium.perf waterfall runs release official builds of Chrome.
 But the logs from release official builds may leak info from our partners that
 we do not have permission to share outside of Google. So the logs are available
@@ -52,9 +51,9 @@ Please also check the recent
 **[perf-sheriffs@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/perf-sheriffs)**
 postings for important announcements about bot turndowns and other known issues.
 
-##<a name="botfailures"></a> Handle Device and Bot Failures
+## Handle Device and Bot Failures
 
-###<a name="offline"></a> Offline Buildslaves
+### Offline Buildslaves
 
 Some build configurations, in particular the perf builders and trybots, have
 multiple machines attached. If one or more of the machines go down, there are
@@ -73,7 +72,7 @@ for at least an hour. To get it running again,
 [file a bug](https://bugs.chromium.org/p/chromium/issues/entry?labels=Pri-1,Performance-BotHealth,Infra-Troopers,OS-?&comment=Hostname:&summary=Buildslave+offline+on+chromium.perf)
 against the current trooper and read [go/bug-a-trooper](http://go/bug-a-trooper) for contacting troopers.
 
-###<a name="purplebots"></a> Purple bots
+### Purple bots
 
 When a bot goes purple, it's usually because of an infrastructure failure
 outside of the tests. But you should first check the logs of a purple bot to
@@ -86,7 +85,7 @@ with
 which will automatically add the bug to the trooper queue. Be sure to note
 which step is failing, and paste any relevant info from the logs into the bug. Also be sure to read [go/bug-a-trooper](http://go/bug-a-trooper) for contacting troopers.
 
-###<a name="devicefailures"></a> Android Device failures
+### Android Device failures
 
 There are two types of device failures:
 
@@ -130,7 +129,7 @@ Here are the common components you should also use:
 
  If you still need help, ask the speed infra chat, or escalate to sullivan@.
 
-###<a name="clobber"></a> Clobbering
+### Clobbering
 
 Sometimes when a compile step is failing, you may be asked to clobber
 [example](https://bugs.chromium.org/p/chromium/issues/detail?id=598955#c7).
@@ -143,7 +142,7 @@ Steps to clobber:
     clobber with crbug id if possible, and checking the **"Clobber"** box.
 4.  Click the "Force Build" button.
 
-##<a name="testfailures"></a> Handle Test Failures
+## Handle Test Failures
 
 You want to keep the waterfall green! So any bot that is red or purple needs to
 be investigated. When a test fails:
@@ -189,7 +188,7 @@ be investigated. When a test fails:
         the logs alone. On other platforms, Devtools will produce tab
         screenshots as long as the tab did not crash.
 
-###<a name="telemetryfailures"></a> Disabling Telemetry Tests
+### Disabling Telemetry Tests
 
 If the test is a telemetry test, its name will have a '.' in it, such as
 `thread_times.key_mobile_sites` or `page_cycler.top_10`. The part before the
@@ -233,13 +232,13 @@ bot.
 Disabling CLs can be TBR-ed to anyone in [tools/perf/OWNERS](https://code.google.com/p/chromium/codesearch#chromium/src/tools/perf/OWNERS),
 but please do **not** submit with NOTRY=true.
 
-###<a name="otherfailures"></a> Disabling Other Tests
+### Disabling Other Tests
 
 Non-telemetry tests are configured in [chromium.perf.json](https://code.google.com/p/chromium/codesearch#chromium/src/testing/buildbot/chromium.perf.json).
 You can TBR any of the per-file OWNERS, but please do **not** submit with
 NOTRY=true.
 
-##<a name="followup"></a> Follow up on failures
+## Follow up on failures
 
 **[Pri-0 bugs](https://bugs.chromium.org/p/chromium/issues/list?can=2&q=label%3APerformance-BotHealth+label%3APri-0)**
 should have an owner or contact on speed infra team and be worked on as top
