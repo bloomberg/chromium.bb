@@ -52,6 +52,10 @@
         '../../../base/base.gyp:base',
         '../../../skia/skia.gyp:skia',
         'app_list_presenter',
+
+        # Temporary dependency to fix compile flake in http://crbug.com/611898.
+        # TODO(tapted): Remove once http://crbug.com/612382 is fixed.
+        '../../accessibility/accessibility.gyp:ax_gen',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
@@ -75,6 +79,10 @@
         '../app_list.gyp:app_list_test_support',
         'app_list_presenter',
         'app_list_presenter_test_support',
+
+        # Temporary dependency to fix compile flake in http://crbug.com/611898.
+        # TODO(tapted): Remove once http://crbug.com/612382 is fixed.
+        '../../accessibility/accessibility.gyp:ax_gen',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.

@@ -50,6 +50,10 @@ source_set("test_support") {
   sources = [
     "test/app_list_presenter_impl_test_api.cc",
     "test/app_list_presenter_impl_test_api.h",
+
+    # Temporary dependency to fix compile flake in http://crbug.com/611898.
+    # TODO(tapted): Remove once http://crbug.com/612382 is fixed.
+    "//ui/accessibility:ax_gen",
   ]
 
   public_deps = [
@@ -80,6 +84,10 @@ test("app_list_presenter_unittests") {
     "//ui/base",
     "//ui/gl:test_support",
     "//ui/wm:wm",
+
+    # Temporary dependency to fix compile flake in http://crbug.com/611898.
+    # TODO(tapted): Remove once http://crbug.com/612382 is fixed.
+    "//ui/accessibility:ax_gen",
   ]
 
   data_deps = [
