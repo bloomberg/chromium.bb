@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -197,6 +198,7 @@ namespace profiles {
 struct IconResourceInfo {
   int resource_id;
   const char* filename;
+  int label_id;
 };
 
 const int kAvatarIconWidth = 38;
@@ -220,7 +222,7 @@ const size_t kDefaultAvatarIconsCount = 27;
 const size_t kGenericAvatarIconsCount = 8;
 
 // The avatar used as a placeholder (grey silhouette).
-const size_t kPlaceholderAvatarIcon = 26;
+const size_t kPlaceholderAvatarIndex = 26;
 
 gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
                               bool is_rectangle,
@@ -302,7 +304,7 @@ size_t GetGenericAvatarIconCount() {
 }
 
 size_t GetPlaceholderAvatarIndex() {
-  return kPlaceholderAvatarIcon;
+  return kPlaceholderAvatarIndex;
 }
 
 int GetPlaceholderAvatarIconResourceID() {
@@ -312,33 +314,85 @@ int GetPlaceholderAvatarIconResourceID() {
 const IconResourceInfo* GetDefaultAvatarIconResourceInfo(size_t index) {
   CHECK_LT(index, kDefaultAvatarIconsCount);
   static const IconResourceInfo resource_info[kDefaultAvatarIconsCount] = {
-      {IDR_PROFILE_AVATAR_0, "avatar_generic.png"},
-      {IDR_PROFILE_AVATAR_1, "avatar_generic_aqua.png"},
-      {IDR_PROFILE_AVATAR_2, "avatar_generic_blue.png"},
-      {IDR_PROFILE_AVATAR_3, "avatar_generic_green.png"},
-      {IDR_PROFILE_AVATAR_4, "avatar_generic_orange.png"},
-      {IDR_PROFILE_AVATAR_5, "avatar_generic_purple.png"},
-      {IDR_PROFILE_AVATAR_6, "avatar_generic_red.png"},
-      {IDR_PROFILE_AVATAR_7, "avatar_generic_yellow.png"},
-      {IDR_PROFILE_AVATAR_8, "avatar_secret_agent.png"},
-      {IDR_PROFILE_AVATAR_9, "avatar_superhero.png"},
-      {IDR_PROFILE_AVATAR_10, "avatar_volley_ball.png"},
-      {IDR_PROFILE_AVATAR_11, "avatar_businessman.png"},
-      {IDR_PROFILE_AVATAR_12, "avatar_ninja.png"},
-      {IDR_PROFILE_AVATAR_13, "avatar_alien.png"},
-      {IDR_PROFILE_AVATAR_14, "avatar_smiley.png"},
-      {IDR_PROFILE_AVATAR_15, "avatar_flower.png"},
-      {IDR_PROFILE_AVATAR_16, "avatar_pizza.png"},
-      {IDR_PROFILE_AVATAR_17, "avatar_soccer.png"},
-      {IDR_PROFILE_AVATAR_18, "avatar_burger.png"},
-      {IDR_PROFILE_AVATAR_19, "avatar_cat.png"},
-      {IDR_PROFILE_AVATAR_20, "avatar_cupcake.png"},
-      {IDR_PROFILE_AVATAR_21, "avatar_dog.png"},
-      {IDR_PROFILE_AVATAR_22, "avatar_horse.png"},
-      {IDR_PROFILE_AVATAR_23, "avatar_margarita.png"},
-      {IDR_PROFILE_AVATAR_24, "avatar_note.png"},
-      {IDR_PROFILE_AVATAR_25, "avatar_sun_cloud.png"},
-      {IDR_PROFILE_AVATAR_26, NULL},
+      {IDR_PROFILE_AVATAR_0,
+       "avatar_generic.png",
+       IDS_DEFAULT_AVATAR_LABEL_0},
+      {IDR_PROFILE_AVATAR_1,
+       "avatar_generic_aqua.png",
+       IDS_DEFAULT_AVATAR_LABEL_1},
+      {IDR_PROFILE_AVATAR_2,
+       "avatar_generic_blue.png",
+       IDS_DEFAULT_AVATAR_LABEL_2},
+      {IDR_PROFILE_AVATAR_3,
+       "avatar_generic_green.png",
+       IDS_DEFAULT_AVATAR_LABEL_3},
+      {IDR_PROFILE_AVATAR_4,
+       "avatar_generic_orange.png",
+       IDS_DEFAULT_AVATAR_LABEL_4},
+      {IDR_PROFILE_AVATAR_5,
+       "avatar_generic_purple.png",
+       IDS_DEFAULT_AVATAR_LABEL_5},
+      {IDR_PROFILE_AVATAR_6,
+       "avatar_generic_red.png",
+       IDS_DEFAULT_AVATAR_LABEL_6},
+      {IDR_PROFILE_AVATAR_7,
+       "avatar_generic_yellow.png",
+       IDS_DEFAULT_AVATAR_LABEL_7},
+      {IDR_PROFILE_AVATAR_8,
+       "avatar_secret_agent.png",
+       IDS_DEFAULT_AVATAR_LABEL_8},
+      {IDR_PROFILE_AVATAR_9,
+       "avatar_superhero.png",
+       IDS_DEFAULT_AVATAR_LABEL_9},
+      {IDR_PROFILE_AVATAR_10,
+       "avatar_volley_ball.png",
+       IDS_DEFAULT_AVATAR_LABEL_10},
+      {IDR_PROFILE_AVATAR_11,
+       "avatar_businessman.png",
+       IDS_DEFAULT_AVATAR_LABEL_11},
+      {IDR_PROFILE_AVATAR_12,
+       "avatar_ninja.png",
+       IDS_DEFAULT_AVATAR_LABEL_12},
+      {IDR_PROFILE_AVATAR_13,
+       "avatar_alien.png",
+       IDS_DEFAULT_AVATAR_LABEL_13},
+      {IDR_PROFILE_AVATAR_14,
+       "avatar_smiley.png",
+       IDS_DEFAULT_AVATAR_LABEL_14},
+      {IDR_PROFILE_AVATAR_15,
+       "avatar_flower.png",
+       IDS_DEFAULT_AVATAR_LABEL_15},
+      {IDR_PROFILE_AVATAR_16,
+       "avatar_pizza.png",
+       IDS_DEFAULT_AVATAR_LABEL_16},
+      {IDR_PROFILE_AVATAR_17,
+       "avatar_soccer.png",
+       IDS_DEFAULT_AVATAR_LABEL_17},
+      {IDR_PROFILE_AVATAR_18,
+       "avatar_burger.png",
+       IDS_DEFAULT_AVATAR_LABEL_18},
+      {IDR_PROFILE_AVATAR_19,
+       "avatar_cat.png",
+       IDS_DEFAULT_AVATAR_LABEL_19},
+      {IDR_PROFILE_AVATAR_20,
+       "avatar_cupcake.png",
+       IDS_DEFAULT_AVATAR_LABEL_20},
+      {IDR_PROFILE_AVATAR_21,
+       "avatar_dog.png",
+       IDS_DEFAULT_AVATAR_LABEL_21},
+      {IDR_PROFILE_AVATAR_22,
+       "avatar_horse.png",
+       IDS_DEFAULT_AVATAR_LABEL_22},
+      {IDR_PROFILE_AVATAR_23,
+       "avatar_margarita.png",
+       IDS_DEFAULT_AVATAR_LABEL_23},
+      {IDR_PROFILE_AVATAR_24,
+       "avatar_note.png",
+       IDS_DEFAULT_AVATAR_LABEL_24},
+      {IDR_PROFILE_AVATAR_25,
+       "avatar_sun_cloud.png",
+       IDS_DEFAULT_AVATAR_LABEL_25},
+      {IDR_PROFILE_AVATAR_26, NULL, -1},
   };
   return &resource_info[index];
 }
@@ -348,7 +402,7 @@ int GetDefaultAvatarIconResourceIDAtIndex(size_t index) {
 }
 
 const char* GetDefaultAvatarIconFileNameAtIndex(size_t index) {
-  CHECK_NE(index, kPlaceholderAvatarIcon);
+  CHECK_NE(index, kPlaceholderAvatarIndex);
   return GetDefaultAvatarIconResourceInfo(index)->filename;
 }
 
@@ -363,6 +417,11 @@ base::FilePath GetPathOfHighResAvatarAtIndex(size_t index) {
 std::string GetDefaultAvatarIconUrl(size_t index) {
   CHECK(IsDefaultAvatarIconIndex(index));
   return base::StringPrintf("%s%" PRIuS, kDefaultUrlPrefix, index);
+}
+
+int GetDefaultAvatarLabelResourceIDAtIndex(size_t index) {
+  CHECK_NE(index, kPlaceholderAvatarIndex);
+  return GetDefaultAvatarIconResourceInfo(index)->label_id;
 }
 
 bool IsDefaultAvatarIconIndex(size_t index) {

@@ -81,6 +81,9 @@ int GetDefaultAvatarIconResourceIDAtIndex(size_t index);
 // Gets the resource filename of the default avatar icon at |index|.
 const char* GetDefaultAvatarIconFileNameAtIndex(size_t index);
 
+// Gets the resource ID of the default avatar label at |index|.
+int GetDefaultAvatarLabelResourceIDAtIndex(size_t index);
+
 // Gets the full path of the high res avatar icon at |index|.
 base::FilePath GetPathOfHighResAvatarAtIndex(size_t index);
 

@@ -180,8 +180,15 @@ void SigninCreateProfileHandler::RequestDefaultProfileIcons(
   for (size_t i = 0; i < profiles::GetDefaultAvatarIconCount() &&
                      i != placeholder_avatar_index;
        i++) {
-    std::string url = profiles::GetDefaultAvatarIconUrl(i);
-    image_url_list.AppendString(url);
+    std::unique_ptr<base::DictionaryValue> avatar_info(
+        new base::DictionaryValue());
+    avatar_info->SetString("url", profiles::GetDefaultAvatarIconUrl(i));
+    avatar_info->SetString(
+        "label",
+        l10n_util::GetStringUTF16(
+            profiles::GetDefaultAvatarLabelResourceIDAtIndex(i)));
+
+    image_url_list.Append(std::move(avatar_info));
   }
 
   web_ui()->CallJavascriptFunction("cr.webUIListenerCallback",

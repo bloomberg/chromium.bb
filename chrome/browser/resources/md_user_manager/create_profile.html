@@ -174,10 +174,11 @@
           no-label-float auto-validate>
       </paper-input>
       <div id="icons">
-        <template is="dom-repeat" items="[[availableIconUrls_]]">
-          <paper-button toggles on-tap="onIconTap_" data-icon-url$="[[item]]"
-              active="[[isActiveIcon_(item, profileIconUrl_)]]">
-            <img src="[[item]]">
+        <template is="dom-repeat" items="[[availableIcons_]]">
+          <paper-button toggles on-tap="onIconTap_"
+              data-icon-url$="[[item.url]]"
+              active="[[isActiveIcon_(item.url, profileIconUrl_)]]">
+            <img src="[[item.url]]" alt="[[item.label]]">
           </paper-button>
         </template>
       </div>

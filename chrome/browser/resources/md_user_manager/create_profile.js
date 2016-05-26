@@ -6,6 +6,10 @@
  * @fileoverview 'create-profile' is a page that contains controls for creating
  * a (optionally supervised) profile, including choosing a name, and an avatar.
  */
+
+/** @typedef {{url: string, label:string}} */
+var AvatarIcon;
+
 (function() {
 /**
  * Sentinel signed-in user's index value.
@@ -32,10 +36,10 @@ Polymer({
     },
 
     /**
-     * The list of available profile icon URLs.
-     * @private {!Array<string>}
+     * The list of available profile icon Urls and labels.
+     * @private {!Array<!AvatarIcon>}
      */
-    availableIconUrls_: {
+    availableIcons_: {
       type: Array,
       value: function() { return []; }
     },
@@ -164,12 +168,12 @@ Polymer({
 
   /**
    * Handler for when the profile icons are pushed from the browser.
-   * @param {!Array<string>} iconUrls
+   * @param {!Array<!AvatarIcon>} icons
    * @private
    */
-  handleProfileIcons_: function(iconUrls) {
-    this.availableIconUrls_ = iconUrls;
-    this.profileIconUrl_ = iconUrls[0];
+  handleProfileIcons_: function(icons) {
+    this.availableIcons_ = icons;
+    this.profileIconUrl_ = icons[0].url;
   },
 
   /**
