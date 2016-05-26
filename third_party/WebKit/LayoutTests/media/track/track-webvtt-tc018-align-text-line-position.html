@@ -1,94 +1,56 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests cue alignment, line and text position from settings.</title>
+<script src="track-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<video>
+    <track src="captions-webvtt/tc018-align-text-line-position.vtt">
+    <track src="captions-webvtt/tc018-align-text-line-position-bad.vtt">
+</video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-        <script src=../media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    var trackElements = document.querySelectorAll("track");
+    assert_equals(trackElements.length, video.textTracks.length);
+    for (var i = 0; i < trackElements.length; i++)
+        trackElements[i].onload = t.step_func(trackLoaded);
 
-            var numberOfTrackTests = 2;
+    enableAllTextTracks(video.textTracks);
 
-            function trackLoaded()
-            {
-                numberOfTracksLoaded++;
-                if (numberOfTracksLoaded == numberOfTrackTests) {
-                    testTrack(0);
-                    testTrackError(1);
-                }
-            }
+    var numberOfTracksLoaded = 0;
+    function trackLoaded() {
+        numberOfTracksLoaded++;
+        if (numberOfTracksLoaded != 2)
+            return;
 
+        testTrack(0);
+        testTrackError(1);
+        t.done();
+    }
 
-            function testTrack(i)
-            {
-                findMediaElement();
-                var expected =
-                {
-                    length : 5,
-                    tests:
-                    [
-                        {
-                            property : "align",
-                            values : ["start", "start", "middle", "end", "middle"],
-                        },
-                        {
-                            property : "position",
-                            values : [10, "auto", 80, 30, 60],
-                        },
-                        {
-                            property : "line",
-                            values : [0, 0, 80, 5, -3],
-                        },
-                        {
-                            property : "snapToLines",
-                            values : [false, true, false, true, true],
-                        },
-                    ],
-                };
-                testCues(i, expected);
+    function testTrack(index) {
+        var expected = [
+            { align : "start",  position : 10,     line : 0,  snapToLines : false },
+            { align : "start",  position : "auto", line : 0,  snapToLines : true  },
+            { align : "middle", position : 80,     line : 80, snapToLines : false },
+            { align : "end",    position : 30,     line : 5,  snapToLines : true  },
+            { align : "middle", position : 60,     line : -3, snapToLines : true  }
+        ];
+        var properties = [ "align", "position", "line", "snapToLines" ];
 
-                allTestsEnded();
-            }
+        assert_cues_match(video.textTracks[index].cues, expected, properties);
+    }
 
-            function testTrackError(i)
-            {
-                findMediaElement();
-                var expected =
-                {
-                    length : 3,
-                    tests:
-                    [
-                        {
-                            property : "align",
-                            values : ["middle", "end", "middle"],
-                        },
-                        {
-                            property : "position",
-                            values : ["auto", 0, 60],
-                        },
-                        {
-                            property : "line",
-                            values : ["auto", "auto", -3],
-                        },
-                        {
-                            property : "snapToLines",
-                            values : [true, true, true],
-                        },
-                    ],
-                };
-                testCues(i, expected);
+    function testTrackError(index) {
+        var expected = [
+            { align : "middle", position : "auto", line : "auto", snapToLines : true },
+            { align : "end",    position : 0,      line : "auto", snapToLines : true },
+            { align : "middle", position : 60,     line : -3,     snapToLines : true }
+        ];
+        var properties = [ "align", "position", "line", "snapToLines" ];
 
-                allTestsEnded();
-            }
-        </script>
-    </head>
-    <body onload="enableAllTextTracks()">
-        <p>Tests cue alignment, line and text position from settings.</p>
-        <video>
-            <track src="captions-webvtt/tc018-align-text-line-position.vtt" onload="trackLoaded()">
-            <track src="captions-webvtt/tc018-align-text-line-position-bad.vtt" onload="trackLoaded()">
-        </video>
-    </body>
-</html>
+        assert_cues_match(video.textTracks[index].cues, expected, properties);
+    }
+});
+</script>

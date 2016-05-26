@@ -15,3 +15,13 @@ function assert_cues_equal(cues, expected) {
         assert_equals(cues[i].text, expected[i].text);
     }
 }
+
+function assert_cues_match(cues, expected, properties) {
+    assert_equals(cues.length, expected.length);
+    for (var i = 0; i < cues.length; i++) {
+        var cue = cues[i];
+        var expectedItem = expected[i];
+        for (var property of properties)
+            assert_equals(cue[property], expectedItem[property]);
+    }
+}
