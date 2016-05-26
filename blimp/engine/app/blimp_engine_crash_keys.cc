@@ -65,6 +65,9 @@ size_t RegisterEngineCrashKeys() {
         crash_keys::kSmallSize},
       { "initrf_root_process_is_live", crash_keys::kSmallSize},
       { "initrf_root_proxy_is_live", crash_keys::kSmallSize},
+
+      // Temporary for https://crbug.com/612711.
+      { "aci_wrong_sp_extension_id", crash_keys::kSmallSize },
     };
 
   return base::debug::InitCrashKeys(engine_keys, arraysize(engine_keys),

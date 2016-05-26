@@ -186,6 +186,9 @@ size_t RegisterChromeCrashKeys() {
     { "initrf_root_is_in_same_site_instance_as_parent", kSmallSize},
     { "initrf_root_process_is_live", kSmallSize},
     { "initrf_root_proxy_is_live", kSmallSize},
+
+    // Temporary for https://crbug.com/612711.
+    { "aci_wrong_sp_extension_id", kSmallSize },
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering
