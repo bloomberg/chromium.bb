@@ -194,6 +194,15 @@ _BANNED_CPP_FUNCTIONS = (
       ),
     ),
     (
+      'setMatrixClip',
+      (
+        'Overriding setMatrixClip() is prohibited; ',
+        'the base function is deprecated. ',
+      ),
+      True,
+      (),
+    ),
+    (
       'skia::RefPtr',
       (
         'The use of skia::RefPtr is prohibited. ',
