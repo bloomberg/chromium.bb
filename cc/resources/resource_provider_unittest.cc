@@ -1540,7 +1540,7 @@ TEST_P(ResourceProviderTest, TransferInvalidSoftware) {
                                                   &list);
     ASSERT_EQ(1u, list.size());
     // Make invalid.
-    list[0].mailbox_holder.mailbox.name[1] = 5;
+    list[0].mailbox_holder.mailbox.name[1] ^= 0xff;
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
     resource_provider_->ReceiveFromChild(child_id, list);
   }
