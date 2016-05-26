@@ -34,7 +34,13 @@ shouldBeEqualToNumber("context.length", 512);
 shouldNotThrow("context = new OfflineAudioContext(2, 512, 96000)");
 // Make sure we throw exceptions for non-finite sample rates.
 shouldThrow("context = new OfflineAudioContext(1, 0, NaN)");
-shouldThrow("context = new OfflineAudioContext(1, 0, Infinite)");
+shouldThrow("context = new OfflineAudioContext(1, 0, Infinity)");
+// Verify channel counts and other destination attributes are set correctly.
+shouldNotThrow("context = new OfflineAudioContext(7, 512, 48000)");
+shouldBeEqualToNumber("context.destination.channelCount", 7);
+shouldBeEqualToNumber("context.destination.maxChannelCount", 7);
+shouldBeEqualToString("context.destination.channelCountMode", "explicit");
+shouldBeEqualToString("context.destination.channelInterpretation", "speakers");
 </script>
 </body>
 </html>

@@ -24,7 +24,12 @@ PASS context.length = 99 did not throw exception.
 PASS context.length is 512
 PASS context = new OfflineAudioContext(2, 512, 96000) did not throw exception.
 PASS context = new OfflineAudioContext(1, 0, NaN) threw exception TypeError: Failed to construct 'OfflineAudioContext': The provided float value is non-finite..
-PASS context = new OfflineAudioContext(1, 0, Infinite) threw exception ReferenceError: Infinite is not defined.
+PASS context = new OfflineAudioContext(1, 0, Infinity) threw exception TypeError: Failed to construct 'OfflineAudioContext': The provided float value is non-finite..
+PASS context = new OfflineAudioContext(7, 512, 48000) did not throw exception.
+PASS context.destination.channelCount is 7
+PASS context.destination.maxChannelCount is 7
+PASS context.destination.channelCountMode is "explicit"
+PASS context.destination.channelInterpretation is "speakers"
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -53,6 +53,7 @@ public:
     // AudioDestinationHandler
     void startRendering() override;
     void stopRendering() override;
+    unsigned long maxChannelCount() const override;
 
     float sampleRate()  const override { return m_renderTarget->sampleRate(); }
 

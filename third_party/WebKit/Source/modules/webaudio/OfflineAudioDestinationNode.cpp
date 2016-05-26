@@ -49,6 +49,11 @@ OfflineAudioDestinationHandler::OfflineAudioDestinationHandler(AudioNode& node, 
 {
     m_renderBus = AudioBus::create(renderTarget->numberOfChannels(), renderQuantumSize);
     m_framesToProcess = m_renderTarget->length();
+
+    // Node-specific defaults.
+    m_channelCount = m_renderTarget->numberOfChannels();
+    m_channelCountMode = Explicit;
+    m_channelInterpretation = AudioBus::Speakers;
 }
 
 PassRefPtr<OfflineAudioDestinationHandler> OfflineAudioDestinationHandler::create(AudioNode& node, AudioBuffer* renderTarget)
@@ -89,6 +94,11 @@ void OfflineAudioDestinationHandler::uninitialize()
 OfflineAudioContext* OfflineAudioDestinationHandler::context() const
 {
     return static_cast<OfflineAudioContext*>(AudioDestinationHandler::context());
+}
+
+unsigned long OfflineAudioDestinationHandler::maxChannelCount() const
+{
+    return m_channelCount;
 }
 
 void OfflineAudioDestinationHandler::startRendering()
