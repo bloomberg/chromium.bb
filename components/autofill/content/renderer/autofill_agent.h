@@ -127,6 +127,15 @@ class AutofillAgent : public content::RenderFrameObserver,
   void FocusedNodeChanged(const blink::WebNode& node) override;
   void OnDestruct() override;
 
+  // Fires IPC messages for a given form submission. Will always fire
+  // AutofillHostMsg_WillSubmitForm,  and will also fire
+  // AutofillHostMsg_FormSubmitted if |form_submitted| is true. Respects
+  // submitted_forms_ contents to ensure no duplicate submissions of
+  // AutofillHostMsg_WillSubmitForm.
+  void FireHostSubmitEvents(const blink::WebFormElement& form,
+                            bool form_submitted);
+  void FireHostSubmitEvents(const FormData& form_data, bool form_submitted);
+
   // Shuts the AutofillAgent down on RenderFrame deletion. Safe to call multiple
   // times.
   void Shutdown();

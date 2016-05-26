@@ -248,36 +248,11 @@ void AutofillAgent::DidFinishDocumentLoad() {
 }
 
 void AutofillAgent::WillSendSubmitEvent(const WebFormElement& form) {
-  FormData form_data;
-  if (!form_util::ExtractFormData(form, &form_data))
-    return;
-
-  // The WillSendSubmitEvent function is called when there is a submit handler
-  // on the form, such as in the case of (but not restricted to)
-  // JavaScript-submitted forms. Sends a WillSubmitForm message to the browser
-  // and remembers for which form it did that in the current frame load, so that
-  // no additional message is sent if AutofillAgent::WillSubmitForm() is called
-  // (which is itself not guaranteed if the submit event is prevented by
-  // JavaScript).
-  if (!submitted_forms_.count(form_data)) {
-    Send(new AutofillHostMsg_WillSubmitForm(routing_id(), form_data,
-                                            base::TimeTicks::Now()));
-    submitted_forms_.insert(form_data);
-  }
+  FireHostSubmitEvents(form, /*form_submitted=*/false);
 }
 
 void AutofillAgent::WillSubmitForm(const WebFormElement& form) {
-  FormData form_data;
-  if (!form_util::ExtractFormData(form, &form_data))
-    return;
-
-  // If WillSubmitForm message had not been sent for this form, send it.
-  if (!submitted_forms_.count(form_data)) {
-    Send(new AutofillHostMsg_WillSubmitForm(routing_id(), form_data,
-                                            base::TimeTicks::Now()));
-  }
-
-  Send(new AutofillHostMsg_FormSubmitted(routing_id(), form_data));
+  FireHostSubmitEvents(form, /*form_submitted=*/true);
 }
 
 void AutofillAgent::DidChangeScrollOffset() {
@@ -320,6 +295,30 @@ void AutofillAgent::FocusedNodeChanged(const WebNode& node) {
 void AutofillAgent::OnDestruct() {
   Shutdown();
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+}
+
+void AutofillAgent::FireHostSubmitEvents(const WebFormElement& form,
+                                         bool form_submitted) {
+  FormData form_data;
+  if (!form_util::ExtractFormData(form, &form_data))
+    return;
+
+  FireHostSubmitEvents(form_data, form_submitted);
+}
+
+void AutofillAgent::FireHostSubmitEvents(const FormData& form_data,
+                                         bool form_submitted) {
+  // We remember when we have fired this IPC for this form in this frame load,
+  // because forms with a submit handler may fire both WillSendSubmitEvent
+  // and WillSubmitForm, and we don't want duplicate messages.
+  if (!submitted_forms_.count(form_data)) {
+    Send(new AutofillHostMsg_WillSubmitForm(routing_id(), form_data,
+                                            base::TimeTicks::Now()));
+    submitted_forms_.insert(form_data);
+  }
+
+  if (form_submitted)
+    Send(new AutofillHostMsg_FormSubmitted(routing_id(), form_data));
 }
 
 void AutofillAgent::Shutdown() {
@@ -597,18 +596,16 @@ void AutofillAgent::OnPreviewPasswordSuggestion(
 }
 
 void AutofillAgent::OnSamePageNavigationCompleted() {
-  if (last_interacted_form_.isNull())
-    return;
+  if (!last_interacted_form_.isNull()) {
+    // Assume form submission only if the form is now gone, either invisible or
+    // removed from the DOM.
+    if (form_util::AreFormContentsVisible(last_interacted_form_))
+      return;
 
-  // Assume form submission only if the form is now gone, either invisible or
-  // removed from the DOM.
-  if (form_util::AreFormContentsVisible(last_interacted_form_))
-    return;
-
-  // Could not find a visible form equal to our saved form, assume submission.
-  WillSendSubmitEvent(last_interacted_form_);
-  WillSubmitForm(last_interacted_form_);
-  last_interacted_form_.reset();
+    FireHostSubmitEvents(last_interacted_form_, /*form_submitted=*/true);
+    last_interacted_form_.reset();
+  }
+  // TODO(tmartino): Else, try using Synthetic Form from form_cache.
 }
 
 void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
