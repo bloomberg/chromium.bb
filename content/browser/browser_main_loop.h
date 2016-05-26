@@ -186,6 +186,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   //   PreCreateThreads()
   //   CreateThreads()
   //   BrowserThreadsStarted()
+  //   PreMainMessageLoopRun()
 
   // Members initialized on construction ---------------------------------------
   const MainFunctionParams& parameters_;
