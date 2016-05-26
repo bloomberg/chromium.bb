@@ -250,6 +250,10 @@ class CONTENT_EXPORT InputRouterImpl
   // to avoid races in bookkeeping when starting a new fling.
   int active_renderer_fling_count_;
 
+  // Whether the TouchScrollStarted event has been sent for the current
+  // gesture scroll yet.
+  bool touch_scroll_started_sent_;
+
   MouseWheelEventQueue wheel_event_queue_;
   TouchEventQueue touch_event_queue_;
   GestureEventQueue gesture_event_queue_;

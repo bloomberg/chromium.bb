@@ -386,6 +386,7 @@ WebInputEventResult PointerEventManager::handleTouchEvents(
 
     if (event.type() == PlatformEvent::TouchScrollStarted) {
         blockTouchPointers();
+        m_touchEventManager.setTouchScrollStarted();
         return WebInputEventResult::HandledSystem;
     }
 

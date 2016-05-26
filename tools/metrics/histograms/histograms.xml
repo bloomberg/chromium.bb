@@ -73848,6 +73848,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1377" label="CSSSelectorPseudoReadOnly"/>
   <int value="1378" label="CSSSelectorPseudoReadWrite"/>
   <int value="1379" label="UnloadHandler_Navigation"/>
+  <int value="1380" label="TouchStartUserGestureUtilized"/>
+  <int value="1381" label="TouchMoveUserGestureUtilized"/>
+  <int value="1382" label="TouchEndDuringScrollUserGestureUtilized"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

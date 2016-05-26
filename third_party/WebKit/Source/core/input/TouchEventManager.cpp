@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/events/TouchEvent.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -222,6 +223,10 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
                 EventHandler::toWebInputEventResult(domDispatchResult));
         }
     }
+
+    if (allTouchesReleased)
+        m_touchScrollStarted = false;
+
     return eventResult;
 }
 
@@ -411,10 +416,31 @@ bool TouchEventManager::reHitTestTouchPointsIfNeeded(
     return true;
 }
 
+// TODO(rbyers): Replace with AutoReset as base/WTF unification permits.
+class CurrentEventHolder {
+    // Always stack allocated to ensure lifetime doesn't exceed that of target
+    DISALLOW_NEW();
+public:
+    CurrentEventHolder(PlatformEvent::EventType& target, PlatformEvent::EventType value)
+    : m_target(target)
+    {
+        m_target = value;
+    }
+    ~CurrentEventHolder()
+    {
+        m_target = PlatformEvent::NoType;
+    }
+private:
+    PlatformEvent::EventType& m_target;
+};
+
 WebInputEventResult TouchEventManager::handleTouchEvent(
     const PlatformTouchEvent& event,
     HeapVector<TouchInfo>& touchInfos)
 {
+    // Track the current event for the scope of this function.
+    CurrentEventHolder holder(m_currentEvent, event.type());
+
     if (!reHitTestTouchPointsIfNeeded(event, touchInfos))
         return WebInputEventResult::NotHandled;
 
@@ -455,12 +481,13 @@ WebInputEventResult TouchEventManager::handleTouchEvent(
     OwnPtr<UserGestureIndicator> gestureIndicator;
     if (isTap || isSameOrigin) {
         UserGestureUtilizedCallback* callback = 0;
-        if (!isTap) {
-            // This is some other touch event that we currently consider a user gesture.  So
-            // use a UserGestureUtilizedCallback to get metrics.
-            callback = &m_touchSequenceDocument->frame()->eventHandler();
+        // These are cases we'd like to migrate to not hold a user gesture.
+        if (event.type() == PlatformEvent::TouchStart
+            || event.type() == PlatformEvent::TouchMove
+            || (event.type() == PlatformEvent::TouchEnd && m_touchScrollStarted)) {
+            // Collect metrics in userGestureUtilized().
+            callback = this;
         }
-
         if (m_touchSequenceUserGestureToken)
             gestureIndicator = adoptPtr(new UserGestureIndicator(m_touchSequenceUserGestureToken.release(), callback));
         else
@@ -479,6 +506,8 @@ void TouchEventManager::clear()
     m_regionForTouchID.clear();
     m_touchPressed = false;
     m_waitingForFirstTouchMove = false;
+    m_touchScrollStarted = false;
+    m_currentEvent = PlatformEvent::NoType;
 }
 
 bool TouchEventManager::isAnyTouchActive() const
@@ -491,6 +520,30 @@ DEFINE_TRACE(TouchEventManager)
     visitor->trace(m_frame);
     visitor->trace(m_touchSequenceDocument);
     visitor->trace(m_targetForTouchID);
+}
+
+void TouchEventManager::userGestureUtilized()
+{
+    // This is invoked for UserGestureIndicators created in TouchEventManger::handleTouchEvent which perhaps
+    // represent touch actions which shouldn't be considered a user-gesture.  Trigger a UseCounter based
+    // on the touch event that's currently being dispatched.
+    UseCounter::Feature feature;
+
+    switch (m_currentEvent) {
+    case PlatformEvent::TouchStart:
+        feature = UseCounter::TouchStartUserGestureUtilized;
+        break;
+    case PlatformEvent::TouchMove:
+        feature = UseCounter::TouchMoveUserGestureUtilized;
+        break;
+    case PlatformEvent::TouchEnd:
+        feature = UseCounter::TouchEndDuringScrollUserGestureUtilized;
+        break;
+    default:
+        NOTREACHED();
+        return;
+    }
+    Deprecation::countDeprecation(m_frame, feature);
 }
 
 } // namespace blink

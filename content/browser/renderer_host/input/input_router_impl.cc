@@ -83,6 +83,7 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       current_ack_source_(ACK_SOURCE_NONE),
       flush_requested_(false),
       active_renderer_fling_count_(0),
+      touch_scroll_started_sent_(false),
       wheel_event_queue_(this,
                          UseGestureBasedWheelScrolling(),
                          kDefaultWheelScrollTransactionMs),
@@ -161,8 +162,18 @@ void InputRouterImpl::SendGestureEvent(
   wheel_event_queue_.OnGestureScrollEvent(gesture_event);
 
   if (gesture_event.event.sourceDevice == blink::WebGestureDeviceTouchscreen) {
-    if (gesture_event.event.type == blink::WebInputEvent::GestureScrollBegin)
+    if (gesture_event.event.type == blink::WebInputEvent::GestureScrollBegin) {
+      touch_scroll_started_sent_ = false;
+    } else if(!touch_scroll_started_sent_
+        && gesture_event.event.type ==
+            blink::WebInputEvent::GestureScrollUpdate) {
+      // A touch scroll hasn't really started until the first
+      // GestureScrollUpdate event.  Eg. if the page consumes all touchmoves
+      // then no scrolling really ever occurs (even though we still send
+      // GestureScrollBegin).
       touch_event_queue_.PrependTouchScrollNotification();
+      touch_scroll_started_sent_ = true;
+    }
     touch_event_queue_.OnGestureScrollEvent(gesture_event);
   }
 

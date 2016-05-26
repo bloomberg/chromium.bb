@@ -1092,7 +1092,6 @@ public:
         InvalidReportUriDirectiveInMetaCSP = 1281,
         InvalidSandboxDirectiveInMetaCSP = 1282,
         InvalidFrameAncestorsDirectiveInMetaCSP = 1283,
-        TouchDragUserGestureUsed = 1284,
         DocumentCreateEventForeignFetchEvent = 1286,
         SVGCalcModeDiscrete = 1287,
         SVGCalcModeLinear = 1288,
@@ -1188,7 +1187,12 @@ public:
         OpacityWithPreserve3DQuirk = 1376,
         CSSSelectorPseudoReadOnly = 1377,
         CSSSelectorPseudoReadWrite = 1378,
+        // The above items are available in M52 branch
+
         UnloadHandler_Navigation = 1379,
+        TouchStartUserGestureUtilized = 1380,
+        TouchMoveUserGestureUtilized = 1381,
+        TouchEndDuringScrollUserGestureUtilized = 1382,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

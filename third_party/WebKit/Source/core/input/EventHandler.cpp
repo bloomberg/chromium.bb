@@ -3638,13 +3638,6 @@ WebInputEventResult EventHandler::handleTouchEvent(const PlatformTouchEvent& eve
     return m_pointerEventManager.handleTouchEvents(event);
 }
 
-void EventHandler::userGestureUtilized()
-{
-    // This is invoked for UserGestureIndicators created in TouchEventManger::handleTouchEvent which perhaps
-    // represent touch actions which shouldn't be considered a user-gesture.
-    UseCounter::count(m_frame, UseCounter::TouchDragUserGestureUsed);
-}
-
 void EventHandler::setLastKnownMousePosition(const PlatformMouseEvent& event)
 {
     m_mousePositionIsUnknown = false;
