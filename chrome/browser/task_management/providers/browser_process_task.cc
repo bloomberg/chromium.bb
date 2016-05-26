@@ -55,6 +55,11 @@ BrowserProcessTask::BrowserProcessTask()
 BrowserProcessTask::~BrowserProcessTask() {
 }
 
+bool BrowserProcessTask::IsKillable() {
+  // Never kill the browser process.
+  return false;
+}
+
 void BrowserProcessTask::Kill() {
   // Never kill the browser process.
 }

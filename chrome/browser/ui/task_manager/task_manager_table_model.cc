@@ -715,9 +715,8 @@ void TaskManagerTableModel::UpdateRefreshTypes(int column_id, bool visibility) {
     RemoveRefreshType(type);
 }
 
-bool TaskManagerTableModel::IsBrowserProcess(int row_index) const {
-  return observed_task_manager()->GetProcessId(tasks_[row_index]) ==
-      base::GetCurrentProcId();
+bool TaskManagerTableModel::IsTaskKillable(int row_index) const {
+  return observed_task_manager()->IsTaskKillable(tasks_[row_index]);
 }
 
 void TaskManagerTableModel::RetrieveSavedColumnsSettingsAndUpdateTable() {

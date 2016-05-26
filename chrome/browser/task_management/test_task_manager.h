@@ -23,6 +23,7 @@ class TestTaskManager : public TaskManagerInterface {
 
   // task_management::TaskManagerInterface:
   void ActivateTask(TaskId task_id) override;
+  bool IsTaskKillable(TaskId task_id) override;
   void KillTask(TaskId task_id) override;
   double GetCpuUsage(TaskId task_id) const override;
   int64_t GetPhysicalMemoryUsage(TaskId task_id) const override;

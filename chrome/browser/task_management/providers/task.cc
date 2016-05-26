@@ -58,6 +58,10 @@ base::string16 Task::GetProfileNameFromProfile(Profile* profile) {
 void Task::Activate() {
 }
 
+bool Task::IsKillable() {
+  return true;
+}
+
 void Task::Kill() {
   DCHECK_NE(process_id(), base::GetCurrentProcId());
   base::Process process = base::Process::Open(process_id());

@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/common/process.mojom.h"
 #include "content/public/common/child_process_host.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -28,10 +29,12 @@ base::string16 MakeTitle(const std::string& process_name) {
 ArcProcessTask::ArcProcessTask(
     base::ProcessId pid,
     base::ProcessId nspid,
-    const std::string& process_name)
+    const std::string& process_name,
+    arc::mojom::ProcessState process_state)
     : Task(MakeTitle(process_name), process_name, nullptr, pid),
       nspid_(nspid),
-      process_name_(process_name) {
+      process_name_(process_name),
+      process_state_(process_state) {
 }
 
 ArcProcessTask::~ArcProcessTask() {
@@ -44,6 +47,11 @@ Task::Type ArcProcessTask::GetType() const {
 int ArcProcessTask::GetChildProcessUniqueID() const {
   // ARC process is not a child process of the browser.
   return content::ChildProcessHost::kInvalidUniqueID;
+}
+
+bool ArcProcessTask::IsKillable() {
+  // Do not kill persistent processes.
+  return process_state_ > arc::mojom::ProcessState::PERSISTENT_UI;
 }
 
 void ArcProcessTask::Kill() {
@@ -59,6 +67,10 @@ void ArcProcessTask::Kill() {
   }
   arc_process_instance->KillProcess(
       nspid_, "Killed manually from Task Manager");
+}
+
+void ArcProcessTask::SetProcessState(arc::mojom::ProcessState process_state) {
+  process_state_ = process_state;
 }
 
 }  // namespace task_management

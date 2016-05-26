@@ -75,6 +75,10 @@ void TaskManagerImpl::ActivateTask(TaskId task_id) {
   GetTaskByTaskId(task_id)->Activate();
 }
 
+bool TaskManagerImpl::IsTaskKillable(TaskId task_id) {
+  return GetTaskByTaskId(task_id)->IsKillable();
+}
+
 void TaskManagerImpl::KillTask(TaskId task_id) {
   GetTaskByTaskId(task_id)->Kill();
 }

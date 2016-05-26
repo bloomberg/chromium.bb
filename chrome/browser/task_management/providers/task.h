@@ -61,6 +61,9 @@ class Task {
   // (if possible).
   virtual void Activate();
 
+  // Returns if the task should be killable from the Task Manager UI.
+  virtual bool IsKillable();
+
   // Kills this task.
   virtual void Kill();
 

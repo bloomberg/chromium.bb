@@ -19,6 +19,10 @@ TestTaskManager::~TestTaskManager() {
 void TestTaskManager::ActivateTask(TaskId task_id) {
 }
 
+bool TestTaskManager::IsTaskKillable(TaskId task_id) {
+  return true;
+}
+
 void TestTaskManager::KillTask(TaskId task_id) {
 }
 

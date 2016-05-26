@@ -206,7 +206,7 @@ bool NewTaskManagerView::IsDialogButtonEnabled(ui::DialogButton button) const {
   const ui::ListSelectionModel::SelectedIndices& selections(
       tab_table_->selection_model().selected_indices());
   for (const auto& selection : selections) {
-    if (table_model_->IsBrowserProcess(selection))
+    if (!table_model_->IsTaskKillable(selection))
       return false;
   }
 

@@ -87,8 +87,8 @@ class TaskManagerTableModel
   // type will be enabled or disabled.
   void UpdateRefreshTypes(int column_id, bool visibility);
 
-  // Checks if the task at |row_index| is running on the browser process.
-  bool IsBrowserProcess(int row_index) const;
+  // Checks if the task at |row_index| is killable.
+  bool IsTaskKillable(int row_index) const;
 
   // Restores the saved columns settings from a previous session into
   // |columns_settings_| and updates the table view.

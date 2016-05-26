@@ -62,6 +62,9 @@ class TaskManagerInterface {
   // possible.
   virtual void ActivateTask(TaskId task_id) = 0;
 
+  // Returns if the task is killable.
+  virtual bool IsTaskKillable(TaskId task_id) = 0;
+
   // Kills the task with |task_id|.
   virtual void KillTask(TaskId task_id) = 0;
 

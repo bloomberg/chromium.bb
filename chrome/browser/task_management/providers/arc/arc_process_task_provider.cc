@@ -17,6 +17,7 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/arc/arc_process.h"
 #include "chrome/browser/chromeos/arc/arc_process_service.h"
+#include "components/arc/common/process.mojom.h"
 
 namespace task_management {
 
@@ -55,28 +56,34 @@ void ArcProcessTaskProvider::OnUpdateProcessList(
   // ArcProcessTaskProvider.
 
   set<ProcessId> nspid_to_remove;
-  for (const auto& it : nspid_to_task_)
-    nspid_to_remove.insert(it.first);
+  for (const auto& entry : nspid_to_task_)
+    nspid_to_remove.insert(entry.first);
 
-  for (const auto& it : processes) {
-    if (nspid_to_remove.erase(it.nspid) == 0) {
+  for (const auto& entry : processes) {
+    if (nspid_to_remove.erase(entry.nspid) == 0) {
       // New arc process.
-      std::unique_ptr<ArcProcessTask>& task = nspid_to_task_[it.nspid];
+      std::unique_ptr<ArcProcessTask>& task = nspid_to_task_[entry.nspid];
       // After calling NotifyObserverTaskAdded(), the raw pointer of |task| is
       // remebered somewhere else. One should not (implicitly) delete the
       // referenced object before calling NotifyObserverTaskRemoved() first
       // (crbug.com/587707).
       DCHECK(!task.get()) <<
           "Task with the same pid should not be added twice.";
-      task.reset(new ArcProcessTask(it.pid, it.nspid, it.process_name));
+      task.reset(new ArcProcessTask(
+          entry.pid, entry.nspid, entry.process_name, entry.process_state));
       NotifyObserverTaskAdded(task.get());
+    } else {
+      // Update process state of existing process.
+      std::unique_ptr<ArcProcessTask>& task = nspid_to_task_[entry.nspid];
+      DCHECK(task.get());
+      task->SetProcessState(entry.process_state);
     }
   }
 
-  for (const auto& it : nspid_to_remove) {
+  for (const auto& entry : nspid_to_remove) {
     // Stale arc process.
-    NotifyObserverTaskRemoved(nspid_to_task_[it].get());
-    nspid_to_task_.erase(it);
+    NotifyObserverTaskRemoved(nspid_to_task_[entry].get());
+    nspid_to_task_.erase(entry);
   }
   ScheduleNextRequest();
 }

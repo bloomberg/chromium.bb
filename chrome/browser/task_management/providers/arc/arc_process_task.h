@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/task_management/providers/task.h"
+#include "components/arc/common/process.mojom.h"
 
 namespace task_management {
 
@@ -18,13 +19,17 @@ class ArcProcessTask : public Task {
   ArcProcessTask(
       base::ProcessId pid,
       base::ProcessId nspid,
-      const std::string& process_name);
+      const std::string& process_name,
+      arc::mojom::ProcessState process_state);
   ~ArcProcessTask() override;
 
   // task_management::Task:
   Type GetType() const override;
   int GetChildProcessUniqueID() const override;
+  bool IsKillable() override;
   void Kill() override;
+
+  void SetProcessState(arc::mojom::ProcessState process_state);
 
   base::ProcessId nspid() const { return nspid_; }
   const std::string& process_name() const { return process_name_; }
@@ -32,6 +37,7 @@ class ArcProcessTask : public Task {
  private:
   const base::ProcessId nspid_;
   const std::string process_name_;
+  arc::mojom::ProcessState process_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcProcessTask);
 };
