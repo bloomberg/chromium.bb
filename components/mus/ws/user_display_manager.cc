@@ -75,6 +75,19 @@ void UserDisplayManager::OnMouseCursorLocationChanged(const gfx::Point& point) {
   }
 }
 
+void UserDisplayManager::OnDisplayUpdate(Display* display) {
+  for (const WindowManagerState* wms : GetWindowManagerStatesForUser()) {
+    if (wms->display() == display) {
+      display_manager_observers_.ForAllPtrs(
+          [this, &wms](mojom::DisplayManagerObserver* observer) {
+            CallOnDisplayChanged(wms, observer);
+          });
+      if (test_observer_)
+        CallOnDisplayChanged(wms, test_observer_);
+    }
+  }
+}
+
 mojo::ScopedSharedBufferHandle UserDisplayManager::GetCursorLocationMemory() {
   if (!cursor_location_memory_) {
     // Create our shared memory segment to share the cursor state with our
@@ -152,7 +165,7 @@ void UserDisplayManager::CallOnDisplays(
 }
 
 void UserDisplayManager::CallOnDisplayChanged(
-    WindowManagerState* wms,
+    const WindowManagerState* wms,
     mojom::DisplayManagerObserver* observer) {
   mojo::Array<mojom::DisplayPtr> displays(1);
   displays[0] = wms->ToMojomDisplay();

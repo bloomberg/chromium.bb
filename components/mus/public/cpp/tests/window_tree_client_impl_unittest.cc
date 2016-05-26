@@ -733,7 +733,7 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindow) {
 
   mojom::WindowDataPtr data = mojom::WindowData::New();
   data->window_id = server_id(root2);
-  data->viewport_metrics = mojom::ViewportMetrics::New();
+  data->display_id = 1;
   setup.window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
                                                 false);
 
@@ -767,8 +767,7 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindowGetsPropertiesFromData) {
 
   mojom::WindowDataPtr data = mojom::WindowData::New();
   data->window_id = server_id(root2);
-  data->viewport_metrics = mojom::ViewportMetrics::New();
-  data->viewport_metrics->size_in_pixels = mojo::Size::From(gfx::Size(1, 2));
+  data->display_id = 1;
   data->bounds = mojo::Rect::From(gfx::Rect(1, 2, 3, 4));
   data->visible = true;
   setup.window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
@@ -777,8 +776,7 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindowGetsPropertiesFromData) {
   // Make sure all the properties took.
   EXPECT_TRUE(root2->IsDrawn());
   EXPECT_TRUE(root2->visible());
-  EXPECT_EQ(gfx::Size(1, 2),
-            root2->viewport_metrics().size_in_pixels.To<gfx::Size>());
+  EXPECT_EQ(1, root2->display_id());
   EXPECT_EQ(gfx::Rect(1, 2, 3, 4), root2->bounds());
 }
 
@@ -826,9 +824,8 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindowGetsAllChangesInFlight) {
   // Ack the new window top level window. Vis and bounds shouldn't change.
   mojom::WindowDataPtr data = mojom::WindowData::New();
   data->window_id = server_id(root2);
-  data->viewport_metrics = mojom::ViewportMetrics::New();
-  data->viewport_metrics->size_in_pixels = mojo::Size::From(gfx::Size(1, 2));
   data->bounds = mojo::Rect::From(gfx::Rect(1, 2, 3, 4));
+  data->display_id = 1;
   data->visible = true;
   data->properties["xx"] = mojo::Array<uint8_t>::From(std::string("server_xx"));
   data->properties["yy"] = mojo::Array<uint8_t>::From(std::string("server_yy"));
@@ -839,8 +836,7 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindowGetsAllChangesInFlight) {
   // not in flight.
   EXPECT_TRUE(WindowPrivate(root2).parent_drawn());
   EXPECT_FALSE(root2->visible());
-  EXPECT_EQ(gfx::Size(1, 2),
-            root2->viewport_metrics().size_in_pixels.To<gfx::Size>());
+  EXPECT_EQ(1, root2->display_id());
   EXPECT_EQ(gfx::Rect(5, 6, 7, 8), root2->bounds());
   EXPECT_EQ(2u, root2->shared_properties().size());
   ASSERT_TRUE(root2->HasSharedProperty("yy"));
@@ -900,7 +896,7 @@ TEST_F(WindowTreeClientImplTest, TopLevelWindowDestroyedBeforeCreateComplete) {
 
   mojom::WindowDataPtr data = mojom::WindowData::New();
   data->window_id = server_id(root2);
-  data->viewport_metrics = mojom::ViewportMetrics::New();
+  data->display_id = 1;
 
   // Destroy the window before the server has a chance to ack the window
   // creation.

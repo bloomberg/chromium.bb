@@ -296,10 +296,6 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
                               uint32_t transient_window_id) override;
   void OnTransientWindowRemoved(uint32_t window_id,
                                 uint32_t transient_window_id) override;
-  void OnWindowViewportMetricsChanged(
-      mojo::Array<uint32_t> window_ids,
-      mojom::ViewportMetricsPtr old_metrics,
-      mojom::ViewportMetricsPtr new_metrics) override;
   void OnWindowHierarchyChanged(
       uint32_t window,
       uint32_t old_parent,

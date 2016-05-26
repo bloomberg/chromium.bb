@@ -53,6 +53,9 @@ class DisplayManager {
   const std::set<Display*>& displays() { return displays_; }
   std::set<const Display*> displays() const;
 
+  // Notifies when something about the Display changes.
+  void OnDisplayUpdate(Display* display);
+
   // Returns the Display that contains |window|, or null if |window| is not
   // attached to a display.
   Display* GetDisplayContaining(ServerWindow* window);

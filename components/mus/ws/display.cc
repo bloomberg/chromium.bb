@@ -310,9 +310,7 @@ void Display::OnViewportMetricsChanged(
     for (auto& pair : window_manager_state_map_)
       pair.second->root()->SetBounds(wm_bounds);
   }
-  // TODO(sky): if bounds changed, then need to update
-  // Display/WindowManagerState appropriately (e.g. notify observers).
-  window_server_->ProcessViewportMetricsChanged(this, old_metrics, new_metrics);
+  display_manager()->OnDisplayUpdate(this);
 }
 
 void Display::OnCompositorFrameDrawn() {

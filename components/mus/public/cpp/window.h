@@ -70,6 +70,8 @@ class Window {
   void set_local_id(int id) { local_id_ = id; }
   int local_id() const { return local_id_; }
 
+  int64_t display_id() const { return display_id_; }
+
   // Geometric disposition relative to parent window.
   const gfx::Rect& bounds() const { return bounds_; }
   void SetBounds(const gfx::Rect& bounds);
@@ -107,10 +109,6 @@ class Window {
   // A Window is drawn if the Window and all its ancestors are visible and the
   // Window is attached to the root.
   bool IsDrawn() const;
-
-  const mojom::ViewportMetrics& viewport_metrics() {
-    return *viewport_metrics_;
-  }
 
   std::unique_ptr<WindowSurface> RequestSurface(mojom::SurfaceType type);
 
@@ -271,9 +269,8 @@ class Window {
   void LocalSetClientArea(
       const gfx::Insets& new_client_area,
       const std::vector<gfx::Rect>& additional_client_areas);
-  void LocalSetViewportMetrics(const mojom::ViewportMetrics& old_metrics,
-                               const mojom::ViewportMetrics& new_metrics);
   void LocalSetParentDrawn(bool drawn);
+  void LocalSetDisplay(int64_t display_id);
   void LocalSetVisible(bool visible);
   void LocalSetOpacity(float opacity);
   void LocalSetPredefinedCursor(mojom::Cursor cursor_id);
@@ -331,10 +328,9 @@ class Window {
   std::vector<gfx::Rect> additional_client_areas_;
   std::unique_ptr<gfx::Rect> hit_test_mask_;
 
-  mojom::ViewportMetricsPtr viewport_metrics_;
-
   bool visible_;
   float opacity_;
+  int64_t display_id_;
 
   mojom::Cursor cursor_id_;
 

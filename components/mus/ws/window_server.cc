@@ -427,16 +427,6 @@ void WindowServer::SetPaintCallback(
   window_paint_callback_ = callback;
 }
 
-void WindowServer::ProcessViewportMetricsChanged(
-    Display* display,
-    const mojom::ViewportMetrics& old_metrics,
-    const mojom::ViewportMetrics& new_metrics) {
-  for (auto& pair : tree_map_) {
-    pair.second->ProcessViewportMetricsChanged(
-        display, old_metrics, new_metrics, IsOperationSource(pair.first));
-  }
-}
-
 bool WindowServer::GetAndClearInFlightWindowManagerChange(
     uint32_t window_manager_change_id,
     InFlightWindowManagerChange* change) {

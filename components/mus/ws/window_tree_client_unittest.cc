@@ -28,7 +28,6 @@ using shell::ShellClient;
 using mojo::String;
 using mus::mojom::ErrorCode;
 using mus::mojom::EventPtr;
-using mus::mojom::ViewportMetricsPtr;
 using mus::mojom::WindowDataPtr;
 using mus::mojom::WindowTree;
 using mus::mojom::WindowTreeClient;
@@ -322,12 +321,6 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   void OnTransientWindowRemoved(uint32_t window_id,
                                 uint32_t transient_window_id) override {
     tracker()->OnTransientWindowRemoved(window_id, transient_window_id);
-  }
-  void OnWindowViewportMetricsChanged(mojo::Array<uint32_t> window_ids,
-                                      ViewportMetricsPtr old_metrics,
-                                      ViewportMetricsPtr new_metrics) override {
-    // Don't track the metrics as they are available at an indeterministic time
-    // on Android.
   }
   void OnWindowHierarchyChanged(Id window,
                                 Id old_parent,

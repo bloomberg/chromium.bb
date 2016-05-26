@@ -48,6 +48,9 @@ class UserDisplayManager : public mojom::DisplayManager {
   // event.
   void OnMouseCursorLocationChanged(const gfx::Point& point);
 
+  // Called when something about the display (e.g. pixel-ratio, size) changes.
+  void OnDisplayUpdate(Display* display);
+
   // Returns a read-only handle to the shared memory which contains the global
   // mouse cursor position. Each call returns a new handle.
   mojo::ScopedSharedBufferHandle GetCursorLocationMemory();
@@ -65,7 +68,7 @@ class UserDisplayManager : public mojom::DisplayManager {
   void CallOnDisplays(mojom::DisplayManagerObserver* observer);
 
   // Calls observer->OnDisplaysChanged() with the display for |display|.
-  void CallOnDisplayChanged(WindowManagerState* wms,
+  void CallOnDisplayChanged(const WindowManagerState* wms,
                             mojom::DisplayManagerObserver* observer);
 
   // Overriden from mojom::DisplayManager:

@@ -28,7 +28,6 @@ enum ChangeType {
   // TODO(sky): nuke NODE.
   CHANGE_TYPE_NODE_ADD_TRANSIENT_WINDOW,
   CHANGE_TYPE_NODE_BOUNDS_CHANGED,
-  CHANGE_TYPE_NODE_VIEWPORT_METRICS_CHANGED,
   CHANGE_TYPE_NODE_HIERARCHY_CHANGED,
   CHANGE_TYPE_NODE_REMOVE_TRANSIENT_WINDOW_FROM_PARENT,
   CHANGE_TYPE_NODE_REORDERED,
@@ -145,8 +144,6 @@ class TestChangeTracker {
   void OnWindowBoundsChanged(Id window_id,
                              mojo::RectPtr old_bounds,
                              mojo::RectPtr new_bounds);
-  void OnWindowViewportMetricsChanged(mojom::ViewportMetricsPtr old_bounds,
-                                      mojom::ViewportMetricsPtr new_bounds);
   void OnWindowHierarchyChanged(Id window_id,
                                 Id old_parent_id,
                                 Id new_parent_id,

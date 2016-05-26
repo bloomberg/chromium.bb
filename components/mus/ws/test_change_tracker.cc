@@ -72,10 +72,6 @@ std::string ChangeToDescription(const Change& change,
           RectToString(change.bounds).c_str(),
           RectToString(change.bounds2).c_str());
 
-    case CHANGE_TYPE_NODE_VIEWPORT_METRICS_CHANGED:
-      // TODO(sky): Not implemented.
-      return "ViewportMetricsChanged";
-
     case CHANGE_TYPE_NODE_HIERARCHY_CHANGED:
       return base::StringPrintf(
           "HierarchyChanged window=%s old_parent=%s new_parent=%s",
@@ -305,15 +301,6 @@ void TestChangeTracker::OnLostCapture(Id window_id) {
   Change change;
   change.type = CHANGE_TYPE_LOST_CAPTURE;
   change.window_id = window_id;
-  AddChange(change);
-}
-
-void TestChangeTracker::OnWindowViewportMetricsChanged(
-    mojom::ViewportMetricsPtr old_metrics,
-    mojom::ViewportMetricsPtr new_metrics) {
-  Change change;
-  change.type = CHANGE_TYPE_NODE_VIEWPORT_METRICS_CHANGED;
-  // NOT IMPLEMENTED
   AddChange(change);
 }
 

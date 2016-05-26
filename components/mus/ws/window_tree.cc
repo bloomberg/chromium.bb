@@ -27,6 +27,7 @@
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "mojo/converters/ime/ime_type_converters.h"
+#include "ui/display/display.h"
 #include "ui/events/mojo/input_events_type_converters.h"
 #include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/platform_window/text_input_state.h"
@@ -429,27 +430,6 @@ void WindowTree::ProcessClientAreaChanged(
   client()->OnClientAreaChanged(
       client_window_id.id, mojo::Insets::From(new_client_area),
       mojo::Array<mojo::RectPtr>::From(new_additional_client_areas));
-}
-
-void WindowTree::ProcessViewportMetricsChanged(
-    Display* display,
-    const mojom::ViewportMetrics& old_metrics,
-    const mojom::ViewportMetrics& new_metrics,
-    bool originated_change) {
-  mojo::Array<Id> window_ids;
-  for (const ServerWindow* root : roots_) {
-    if (GetDisplay(root) == display) {
-      ClientWindowId client_window_id;
-      const bool known = IsWindowKnown(root, &client_window_id);
-      DCHECK(known);
-      window_ids.push_back(client_window_id.id);
-    }
-  }
-  if (window_ids.size() == 0u)
-    return;
-
-  client()->OnWindowViewportMetricsChanged(
-      std::move(window_ids), old_metrics.Clone(), new_metrics.Clone());
 }
 
 void WindowTree::ProcessWillChangeWindowHierarchy(
@@ -871,6 +851,15 @@ mojom::WindowDataPtr WindowTree::WindowToWindowData(
     const ServerWindow* window) {
   DCHECK(IsWindowKnown(window));
   const ServerWindow* parent = window->parent();
+
+  // Get the associated display before |parent| may be reset.
+  int64_t display_id = display::Display::kInvalidDisplayID;
+  const Display* display = display_manager()->GetDisplayContaining(window);
+  if (!display && parent)
+    display = display_manager()->GetDisplayContaining(parent);
+  if (display)
+    display_id = display->id();
+
   // If the parent isn't known, it means the parent is not visible to us (not
   // in roots), and should not be sent over.
   if (parent && !IsWindowKnown(parent))
@@ -884,8 +873,7 @@ mojom::WindowDataPtr WindowTree::WindowToWindowData(
   window_data->properties =
       mojo::Map<String, Array<uint8_t>>::From(window->properties());
   window_data->visible = window->visible();
-  window_data->viewport_metrics =
-      window_server_->GetViewportMetricsForWindow(window);
+  window_data->display_id = display_id;
   return window_data;
 }
 

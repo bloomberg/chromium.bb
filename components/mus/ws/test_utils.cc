@@ -224,14 +224,6 @@ void TestWindowTreeClient::OnTransientWindowRemoved(
     uint32_t window_id,
     uint32_t transient_window_id) {}
 
-void TestWindowTreeClient::OnWindowViewportMetricsChanged(
-    mojo::Array<uint32_t> window_ids,
-    mojom::ViewportMetricsPtr old_metrics,
-    mojom::ViewportMetricsPtr new_metrics) {
-  tracker_.OnWindowViewportMetricsChanged(std::move(old_metrics),
-                                          std::move(new_metrics));
-}
-
 void TestWindowTreeClient::OnWindowHierarchyChanged(
     uint32_t window,
     uint32_t old_parent,

@@ -21,6 +21,7 @@
 #include "components/mus/public/cpp/window_surface.h"
 #include "components/mus/public/cpp/window_tracker.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
+#include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -474,16 +475,6 @@ std::string Window::GetName() const {
 ////////////////////////////////////////////////////////////////////////////////
 // Window, protected:
 
-namespace {
-
-mojom::ViewportMetricsPtr CreateEmptyViewportMetrics() {
-  mojom::ViewportMetricsPtr metrics = mojom::ViewportMetrics::New();
-  metrics->size_in_pixels = mojo::Size::New();
-  return metrics;
-}
-
-}  // namespace
-
 Window::Window() : Window(nullptr, static_cast<Id>(-1)) {}
 
 Window::~Window() {
@@ -549,9 +540,9 @@ Window::Window(WindowTreeConnection* connection, Id id)
       // Matches aura, see aura::Window for details.
       observers_(base::ObserverList<WindowObserver>::NOTIFY_EXISTING_ONLY),
       input_event_handler_(nullptr),
-      viewport_metrics_(CreateEmptyViewportMetrics()),
       visible_(false),
       opacity_(1.0f),
+      display_id_(display::Display::kInvalidDisplayID),
       cursor_id_(mojom::Cursor::CURSOR_NULL),
       parent_drawn_(false) {}
 
@@ -675,14 +666,10 @@ void Window::LocalSetClientArea(
                                               old_additional_client_areas));
 }
 
-void Window::LocalSetViewportMetrics(
-    const mojom::ViewportMetrics& old_metrics,
-    const mojom::ViewportMetrics& new_metrics) {
-  // TODO(eseidel): We could check old_metrics against viewport_metrics_.
-  viewport_metrics_ = new_metrics.Clone();
-  FOR_EACH_OBSERVER(
-      WindowObserver, observers_,
-      OnWindowViewportMetricsChanged(this, old_metrics, new_metrics));
+void Window::LocalSetDisplay(int64_t display_id) {
+  display_id_ = display_id;
+  // TODO(sad): Notify observers (of this window, and of the descendant windows)
+  // when a window moves from one display into another. https://crbug.com/614887
 }
 
 void Window::LocalSetParentDrawn(bool value) {

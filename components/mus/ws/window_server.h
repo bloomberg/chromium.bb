@@ -173,9 +173,6 @@ class WindowServer : public ServerWindowDelegate,
       const gfx::Insets& new_client_area,
       const std::vector<gfx::Rect>& new_additional_client_areas);
   void ProcessLostCapture(const ServerWindow* window);
-  void ProcessViewportMetricsChanged(Display* display,
-                                     const mojom::ViewportMetrics& old_metrics,
-                                     const mojom::ViewportMetrics& new_metrics);
   void ProcessWillChangeWindowHierarchy(const ServerWindow* window,
                                         const ServerWindow* new_parent,
                                         const ServerWindow* old_parent);

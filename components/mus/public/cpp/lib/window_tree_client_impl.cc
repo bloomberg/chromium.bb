@@ -51,8 +51,7 @@ Window* AddWindowToConnection(WindowTreeClientImpl* client,
   private_window.set_connection(client);
   private_window.set_server_id(window_data->window_id);
   private_window.set_visible(window_data->visible);
-  private_window.LocalSetViewportMetrics(mojom::ViewportMetrics(),
-                                         *window_data->viewport_metrics);
+  private_window.LocalSetDisplay(window_data->display_id);
   private_window.set_properties(
       window_data->properties
           .To<std::map<std::string, std::vector<uint8_t>>>());
@@ -722,11 +721,10 @@ void WindowTreeClientImpl::OnTopLevelCreated(uint32_t change_id,
   Window* window = change->window();
   WindowPrivate window_private(window);
 
-  // Drawn state and ViewportMetrics always come from the server (they can't
-  // be modified locally).
+  // Drawn state and display-id always come from the server (they can't be
+  // modified locally).
   window_private.LocalSetParentDrawn(drawn);
-  window_private.LocalSetViewportMetrics(mojom::ViewportMetrics(),
-                                         *data->viewport_metrics);
+  window_private.LocalSetDisplay(data->display_id);
 
   // The default visibilty is false, we only need update visibility if it
   // differs from that.
@@ -817,30 +815,6 @@ void WindowTreeClientImpl::OnTransientWindowRemoved(
   // with an in flight delete from the server.
   if (window && transient_window)
     WindowPrivate(window).LocalRemoveTransientWindow(transient_window);
-}
-
-namespace {
-
-void SetViewportMetricsOnDecendants(Window* root,
-                                    const mojom::ViewportMetrics& old_metrics,
-                                    const mojom::ViewportMetrics& new_metrics) {
-  WindowPrivate(root).LocalSetViewportMetrics(old_metrics, new_metrics);
-  const Window::Children& children = root->children();
-  for (size_t i = 0; i < children.size(); ++i)
-    SetViewportMetricsOnDecendants(children[i], old_metrics, new_metrics);
-}
-
-}  // namespace
-
-void WindowTreeClientImpl::OnWindowViewportMetricsChanged(
-    mojo::Array<uint32_t> window_ids,
-    mojom::ViewportMetricsPtr old_metrics,
-    mojom::ViewportMetricsPtr new_metrics) {
-  for (size_t i = 0; i < window_ids.size(); ++i) {
-    Window* window = GetWindowByServerId(window_ids[i]);
-    if (window)
-      SetViewportMetricsOnDecendants(window, *old_metrics, *new_metrics);
-  }
 }
 
 void WindowTreeClientImpl::OnWindowHierarchyChanged(

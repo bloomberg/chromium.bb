@@ -29,7 +29,7 @@ struct WindowData {
   // True if this window is visible. The window may not be drawn on screen (see
   // OnWindowParentDrawnStateChanged() for details).
   bool visible;
-  ViewportMetrics viewport_metrics;
+  int64 display_id;
 };
 
 enum ErrorCode {
@@ -322,16 +322,6 @@ interface WindowTreeClient {
 
   OnTransientWindowRemoved(uint32 window_id,
                            uint32 transient_window_id);
-
-  // Invoked when the viewport metrics for the specified windows have changed.
-  // This is only sent for the roots, not for every window, it is expected
-  // clients propagate this to the tree.
-  // TODO(sky): rather than passing viewportmetrics like this, perhaps each
-  // window should know the display it is on, and the viewportmetrics of the
-  // display may change.
-  OnWindowViewportMetricsChanged(array<uint32> window_ids,
-                                 ViewportMetrics old_metrics,
-                                 ViewportMetrics new_metrics);
 
   // Invoked when a change is done to the hierarchy. A value of 0 is used to
   // identify a null window. For example, if the old_parent is NULL, 0 is

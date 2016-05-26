@@ -43,8 +43,7 @@ PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
   gfx::AcceleratedWidget accelerated_widget =
       static_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
 #endif
-  delegate_->OnAcceleratedWidgetAvailable(
-      accelerated_widget, mus_window_->viewport_metrics().device_pixel_ratio);
+  delegate_->OnAcceleratedWidgetAvailable(accelerated_widget, 1.f);
 
   if (connector) {
     bitmap_uploader_.reset(new bitmap_uploader::BitmapUploader(mus_window_));

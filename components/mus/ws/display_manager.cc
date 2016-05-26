@@ -72,6 +72,11 @@ std::set<const Display*> DisplayManager::displays() const {
   return ret_value;
 }
 
+void DisplayManager::OnDisplayUpdate(Display* display) {
+  for (const auto& pair : user_display_managers_)
+    pair.second->OnDisplayUpdate(display);
+}
+
 Display* DisplayManager::GetDisplayContaining(ServerWindow* window) {
   return const_cast<Display*>(
       static_cast<const DisplayManager*>(this)->GetDisplayContaining(window));

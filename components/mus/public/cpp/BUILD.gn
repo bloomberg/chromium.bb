@@ -62,6 +62,7 @@ source_set("cpp") {
     "//mojo/public/cpp/system",
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
+    "//ui/display",
     "//ui/events",
     "//ui/events/mojo",
     "//ui/gfx/geometry",

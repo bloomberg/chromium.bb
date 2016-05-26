@@ -178,10 +178,6 @@ class WindowTree : public mojom::WindowTree,
       const gfx::Insets& new_client_area,
       const std::vector<gfx::Rect>& new_additional_client_areas,
       bool originated_change);
-  void ProcessViewportMetricsChanged(Display* display,
-                                     const mojom::ViewportMetrics& old_metrics,
-                                     const mojom::ViewportMetrics& new_metrics,
-                                     bool originated_change);
   void ProcessWillChangeWindowHierarchy(const ServerWindow* window,
                                         const ServerWindow* new_parent,
                                         const ServerWindow* old_parent,

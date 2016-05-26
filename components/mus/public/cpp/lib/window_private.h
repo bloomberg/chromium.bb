@@ -49,9 +49,8 @@ class WindowPrivate {
     window_->properties_ = data;
   }
 
-  void LocalSetViewportMetrics(const mojom::ViewportMetrics& old_metrics,
-                               const mojom::ViewportMetrics& new_metrics) {
-    window_->LocalSetViewportMetrics(new_metrics, new_metrics);
+  void LocalSetDisplay(int64_t new_display) {
+    window_->LocalSetDisplay(new_display);
   }
 
   void LocalDestroy() { window_->LocalDestroy(); }
