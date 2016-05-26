@@ -5,6 +5,8 @@
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
+    // We have different console output in --site-per-process mode. See https://crbug.com/614413.
+    testRunner.setDumpConsoleMessages(false);
     testRunner.waitUntilDone();
 }
  

@@ -1,10 +1,6 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
-# https://crbug.com/614413 - line numbers missing from FrameMsg_PostMessage_Params.
-http/tests/security/postMessage/target-origin.html [ Failure ]
-http/tests/security/postMessage/invalid-origin-throws-exception.html [ Failure ]
-
 # https://crbug.com/611838 - regression when geolocation tests use JS mock.
 http/tests/security/powerfulFeatureRestrictions/geolocation-on-secure-origin-in-insecure-origin.html [ Timeout ]
 
