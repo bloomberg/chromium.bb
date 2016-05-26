@@ -18,6 +18,8 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/DataUseTabUIManager_jni.h"
+#include "net/android/network_library.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -173,6 +175,14 @@ ScopedJavaLocalRef<jstring> GetDataUseUIString(
   DCHECK_LT(message_id, DATA_USE_UI_MESSAGE_MAX);
   return base::android::ConvertUTF8ToJavaString(
       env, l10n_util::GetStringUTF8(data_use_ui_message_id_map[message_id]));
+}
+
+// static
+jboolean IsNonRoamingCellularConnection(JNIEnv* env,
+                                        const JavaParamRef<jclass>& clazz) {
+  return net::NetworkChangeNotifier::IsConnectionCellular(
+             net::NetworkChangeNotifier::GetConnectionType()) &&
+         !net::android::GetIsRoaming();
 }
 
 bool RegisterDataUseTabUIManager(JNIEnv* env) {
