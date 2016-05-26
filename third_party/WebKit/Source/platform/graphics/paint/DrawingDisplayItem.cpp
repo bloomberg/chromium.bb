@@ -6,6 +6,7 @@
 
 #include "platform/graphics/GraphicsContext.h"
 #include "public/platform/WebDisplayItemList.h"
+#include "third_party/skia/include/core/SkPictureAnalyzer.h"
 
 #if ENABLE(ASSERT)
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -31,6 +32,11 @@ void DrawingDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, W
 bool DrawingDisplayItem::drawsContent() const
 {
     return m_picture;
+}
+
+void DrawingDisplayItem::analyzeForGpuRasterization(SkPictureGpuAnalyzer& analyzer) const
+{
+    analyzer.analyzePicture(m_picture.get());
 }
 
 #ifndef NDEBUG

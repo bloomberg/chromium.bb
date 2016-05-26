@@ -49,6 +49,8 @@ public:
 
     bool knownToBeOpaque() const { ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled()); return m_knownToBeOpaque; }
 
+    void analyzeForGpuRasterization(SkPictureGpuAnalyzer&) const override;
+
 #if ENABLE(ASSERT)
     UnderInvalidationCheckingMode getUnderInvalidationCheckingMode() const { return m_underInvalidationCheckingMode; }
     bool equals(const DisplayItem& other) const final;

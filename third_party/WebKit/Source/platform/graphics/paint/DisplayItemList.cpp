@@ -16,8 +16,9 @@ namespace blink {
 
 DisplayItem& DisplayItemList::appendByMoving(DisplayItem& item, const IntRect& visualRect, SkPictureGpuAnalyzer& gpuAnalyzer)
 {
-    if (item.isDrawing())
-        gpuAnalyzer.analyze(static_cast<const DrawingDisplayItem&>(item).picture());
+    // No reason to continue the analysis once we have a veto.
+    if (gpuAnalyzer.suitableForGpuRasterization())
+        item.analyzeForGpuRasterization(gpuAnalyzer);
 
 #ifndef NDEBUG
     String originalDebugString = item.asDebugString();

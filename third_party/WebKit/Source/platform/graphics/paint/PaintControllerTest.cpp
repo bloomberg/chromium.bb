@@ -7,6 +7,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/CachedDisplayItem.h"
+#include "platform/graphics/paint/ClipPathDisplayItem.h"
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
@@ -903,6 +904,29 @@ TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationSinglePictureManyPat
     EXPECT_TRUE(SubsequenceRecorder::useCachedSubsequenceIfPossible(context, container));
     getPaintController().commitNewDisplayItems(LayoutSize());
     EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
+}
+
+TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationConcaveClipPath)
+{
+    Path path;
+    path.addLineTo(FloatPoint(50, 50));
+    path.addLineTo(FloatPoint(100, 0));
+    path.addLineTo(FloatPoint(50, 100));
+    path.closeSubpath();
+
+    FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
+    GraphicsContext context(getPaintController());
+
+    // Run twice for empty/non-empty m_currentPaintArtifact coverage.
+    for (int i = 0; i < 2; ++i) {
+        for (int j = 0; j < 50; ++j)
+            getPaintController().createAndAppend<BeginClipPathDisplayItem>(client, path);
+        drawRect(context, client, backgroundDrawingType, FloatRect(0, 0, 100, 100));
+        for (int j = 0; j < 50; ++j)
+            getPaintController().createAndAppend<EndClipPathDisplayItem>(client);
+        getPaintController().commitNewDisplayItems(LayoutSize());
+        EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
+    }
 }
 
 } // namespace blink

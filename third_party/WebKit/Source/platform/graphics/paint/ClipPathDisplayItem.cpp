@@ -7,6 +7,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Path.h"
 #include "public/platform/WebDisplayItemList.h"
+#include "third_party/skia/include/core/SkPictureAnalyzer.h"
 #include "third_party/skia/include/core/SkScalar.h"
 
 namespace blink {
@@ -20,6 +21,11 @@ void BeginClipPathDisplayItem::replay(GraphicsContext& context) const
 void BeginClipPathDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
     list->appendClipPathItem(visualRect, m_clipPath, SkRegion::kIntersect_Op, true);
+}
+
+void BeginClipPathDisplayItem::analyzeForGpuRasterization(SkPictureGpuAnalyzer& analyzer) const
+{
+    analyzer.analyzeClipPath(m_clipPath, SkRegion::kIntersect_Op, true);
 }
 
 void EndClipPathDisplayItem::replay(GraphicsContext& context) const

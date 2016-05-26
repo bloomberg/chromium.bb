@@ -22,6 +22,8 @@ public:
     void replay(GraphicsContext&) const override;
     void appendToWebDisplayItemList(const IntRect&, WebDisplayItemList*) const override;
 
+    void analyzeForGpuRasterization(SkPictureGpuAnalyzer&) const override;
+
 private:
     const SkPath m_clipPath;
 #ifndef NDEBUG

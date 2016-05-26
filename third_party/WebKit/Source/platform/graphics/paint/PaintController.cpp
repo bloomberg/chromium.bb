@@ -306,8 +306,9 @@ void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutOb
 
         for (const auto& item : m_newDisplayItemList) {
             m_newDisplayItemList.appendVisualRect(visualRectForDisplayItem(item, offsetFromLayoutObject));
-            if (item.isDrawing())
-                gpuAnalyzer.analyze(static_cast<const DrawingDisplayItem&>(item).picture());
+            // No reason to continue the analysis once we have a veto.
+            if (gpuAnalyzer.suitableForGpuRasterization())
+                item.analyzeForGpuRasterization(gpuAnalyzer);
         }
         m_currentPaintArtifact = PaintArtifact(std::move(m_newDisplayItemList), m_newPaintChunks.releasePaintChunks(), gpuAnalyzer.suitableForGpuRasterization());
         m_newDisplayItemList = DisplayItemList(kInitialDisplayItemListCapacityBytes);

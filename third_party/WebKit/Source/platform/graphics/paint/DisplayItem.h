@@ -18,6 +18,7 @@
 #include "wtf/text/WTFString.h"
 #endif
 
+class SkPictureGpuAnalyzer;
 
 namespace blink {
 
@@ -349,6 +350,9 @@ public:
     bool hasValidClient() const { return m_client; }
 
     virtual bool drawsContent() const { return false; }
+
+    // Override to implement specific analysis strategies.
+    virtual void analyzeForGpuRasterization(SkPictureGpuAnalyzer&) const { }
 
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);
