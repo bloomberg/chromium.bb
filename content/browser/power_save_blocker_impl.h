@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/public/browser/power_save_blocker.h"
 
@@ -18,9 +20,12 @@ class WebContents;
 
 class PowerSaveBlockerImpl : public PowerSaveBlocker {
  public:
-  PowerSaveBlockerImpl(PowerSaveBlockerType type,
-                       Reason reason,
-                       const std::string& description);
+  PowerSaveBlockerImpl(
+      PowerSaveBlockerType type,
+      Reason reason,
+      const std::string& description,
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner);
   ~PowerSaveBlockerImpl() override;
 
 #if defined(OS_ANDROID)
@@ -51,6 +56,9 @@ class PowerSaveBlockerImpl : public PowerSaveBlocker {
   // block system suspend when screen saver / display sleep is blocked.
   scoped_refptr<Delegate> freedesktop_suspend_delegate_;
 #endif
+
+  scoped_refptr<base::SequencedTaskRunner> ui_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PowerSaveBlockerImpl);
 };

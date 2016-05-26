@@ -25,11 +25,15 @@ class PowerSaveBlockerImpl::Delegate
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
 
-PowerSaveBlockerImpl::PowerSaveBlockerImpl(PowerSaveBlockerType type,
-                                           Reason reason,
-                                           const std::string& description)
-    : delegate_(new Delegate()) {
-}
+PowerSaveBlockerImpl::PowerSaveBlockerImpl(
+    PowerSaveBlockerType type,
+    Reason reason,
+    const std::string& description,
+    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> blocking_task_runner)
+    : delegate_(new Delegate()),
+      ui_task_runner_(ui_task_runner),
+      blocking_task_runner_(blocking_task_runner) {}
 
 PowerSaveBlockerImpl::~PowerSaveBlockerImpl() { }
 

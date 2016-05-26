@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "content/browser/power_save_blocker_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/power_save_blocker.h"
+#include "content/public/browser/power_save_blocker_factory.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/service_registry.h"
@@ -61,7 +61,7 @@ bool WakeLockServiceContext::HasWakeLockForTests() const {
 
 void WakeLockServiceContext::CreateWakeLock() {
   DCHECK(!wake_lock_);
-  wake_lock_ = PowerSaveBlocker::Create(
+  wake_lock_ = CreatePowerSaveBlocker(
       PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
       PowerSaveBlocker::kReasonOther, "Wake Lock API");
 

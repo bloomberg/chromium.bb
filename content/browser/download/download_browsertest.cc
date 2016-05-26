@@ -32,7 +32,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/download_danger_type.h"
-#include "content/public/browser/power_save_blocker.h"
+#include "content/public/browser/power_save_blocker_factory.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/content_features.h"
@@ -254,7 +254,7 @@ DownloadFile* DownloadFileWithDelayFactory::CreateFile(
     std::unique_ptr<ByteStreamReader> stream,
     const net::BoundNetLog& bound_net_log,
     base::WeakPtr<DownloadDestinationObserver> observer) {
-  std::unique_ptr<PowerSaveBlocker> psb(PowerSaveBlocker::Create(
+  std::unique_ptr<PowerSaveBlocker> psb(CreatePowerSaveBlocker(
       PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       PowerSaveBlocker::kReasonOther, "Download in progress"));
   return new DownloadFileWithDelay(std::move(save_info),
@@ -350,7 +350,7 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
       std::unique_ptr<ByteStreamReader> stream,
       const net::BoundNetLog& bound_net_log,
       base::WeakPtr<DownloadDestinationObserver> observer) override {
-    std::unique_ptr<PowerSaveBlocker> psb(PowerSaveBlocker::Create(
+    std::unique_ptr<PowerSaveBlocker> psb(CreatePowerSaveBlocker(
         PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
         PowerSaveBlocker::kReasonOther, "Download in progress"));
     return new CountingDownloadFile(std::move(save_info),

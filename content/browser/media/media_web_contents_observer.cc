@@ -13,6 +13,7 @@
 #include "content/browser/power_save_blocker_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_player_delegate_messages.h"
+#include "content/public/browser/power_save_blocker_factory.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message_macros.h"
@@ -180,7 +181,7 @@ void MediaWebContentsObserver::ClearPowerSaveBlockers(
 
 void MediaWebContentsObserver::CreateAudioPowerSaveBlocker() {
   DCHECK(!audio_power_save_blocker_);
-  audio_power_save_blocker_ = PowerSaveBlocker::Create(
+  audio_power_save_blocker_ = CreatePowerSaveBlocker(
       PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
       PowerSaveBlocker::kReasonAudioPlayback, "Playing audio");
 }
@@ -188,7 +189,7 @@ void MediaWebContentsObserver::CreateAudioPowerSaveBlocker() {
 void MediaWebContentsObserver::CreateVideoPowerSaveBlocker() {
   DCHECK(!video_power_save_blocker_);
   DCHECK(!active_video_players_.empty());
-  video_power_save_blocker_ = PowerSaveBlocker::Create(
+  video_power_save_blocker_ = CreatePowerSaveBlocker(
       PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
       PowerSaveBlocker::kReasonVideoPlayback, "Playing video");
 #if defined(OS_ANDROID)
