@@ -44,9 +44,4 @@ extern NSString* const kDidSeeMemoryWarningShortlyBeforeTerminating;
 
 @end
 
-@interface PreviousSessionInfo (TestingOnly)
-@property(nonatomic, assign) BOOL didSeeMemoryWarningShortlyBeforeTerminating;
-+ (void)resetSharedInstanceForTesting;
-@end
-
 #endif  // IOS_CHROME_BROWSER_METRICS_PREVIOUS_SESSION_INFO_H_

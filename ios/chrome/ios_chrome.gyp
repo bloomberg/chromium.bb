@@ -379,6 +379,7 @@
         'browser/metrics/mobile_session_shutdown_metrics_provider.mm',
         'browser/metrics/previous_session_info.h',
         'browser/metrics/previous_session_info.mm',
+        'browser/metrics/previous_session_info_private.h',
         'browser/net/chrome_cookie_store_ios_client.h',
         'browser/net/chrome_cookie_store_ios_client.mm',
         'browser/net/connection_type_observer_bridge.h',

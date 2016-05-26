@@ -244,6 +244,7 @@ source_set("browser") {
     "metrics/mobile_session_shutdown_metrics_provider.mm",
     "metrics/previous_session_info.h",
     "metrics/previous_session_info.mm",
+    "metrics/previous_session_info_private.h",
     "net/chrome_cookie_store_ios_client.h",
     "net/chrome_cookie_store_ios_client.mm",
     "net/connection_type_observer_bridge.h",

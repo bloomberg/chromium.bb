@@ -8,6 +8,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/version_info/version_info.h"
+#import "ios/chrome/browser/metrics/previous_session_info_private.h"
 
 namespace {
 
