@@ -213,6 +213,8 @@ WebURL RewriteAbsolutePathInWPT(const std::string& utf8_url) {
   const int kFileSchemeLen = arraysize(kFileScheme) - 1;
   if (utf8_url.compare(0, kFileSchemeLen, kFileScheme, kFileSchemeLen) != 0)
     return WebURL();
+  if (utf8_url.find("/LayoutTests/") != std::string::npos)
+    return WebURL();
 #if defined(OS_WIN)
   // +3 for a drive letter, :, and /.
   const int kFileSchemeAndDriveLen = kFileSchemeLen + 3;

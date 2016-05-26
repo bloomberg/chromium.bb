@@ -132,6 +132,8 @@ class TestRunner : public WebTestRunner {
   bool shouldDumpSpellCheckCallbacks() const;
   bool shouldWaitUntilExternalURLLoad() const;
   const std::set<std::string>* httpHeadersToClear() const;
+  bool did_request_after_reset() const { return did_request_after_reset_; }
+  void set_did_request_after_reset() { did_request_after_reset_ = true; }
 
   // To be called when |frame| starts loading - TestRunner will check if
   // there is currently no top-loading-frame being tracked and if so, then it
@@ -636,6 +638,9 @@ class TestRunner : public WebTestRunner {
   blink::WebView* previously_focused_view_;
 
   std::set<blink::WebWidget*> widgets_with_scheduled_animations_;
+
+  // True if we requested any resource after Reset().
+  bool did_request_after_reset_;
 
   base::WeakPtrFactory<TestRunner> weak_factory_;
 

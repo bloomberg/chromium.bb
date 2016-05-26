@@ -598,6 +598,10 @@ void WebFrameTestClient::willSendRequest(
     }
   }
 
+  if (!test_runner_->did_request_after_reset()) {
+    test_runner_->set_did_request_after_reset();
+    return;
+  }
   // Set the new substituted URL.
   request.setURL(
       delegate_->RewriteLayoutTestsURL(request.url().string().utf8()));
