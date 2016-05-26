@@ -109,4 +109,18 @@ TEST_F(LayoutObjectTest, ContainingBlockAbsoluteLayoutObjectShouldNotBeNonStatic
     EXPECT_EQ(layoutObject->containingBlock(), bodyLayoutObject);
 }
 
+TEST_F(LayoutObjectTest, PaintingLayerOfOverflowClipLayerUnderColumnSpanAll)
+{
+    setBodyInnerHTML(
+        "<div id='columns' style='columns: 3'>"
+        "  <div style='column-span: all'>"
+        "    <div id='overflow-clip-layer' style='height: 100px; overflow: hidden'></div>"
+        "  </div>"
+        "</div>");
+
+    LayoutObject* overflowClipObject = getLayoutObjectByElementId("overflow-clip-layer");
+    LayoutBlock* columns = toLayoutBlock(getLayoutObjectByElementId("columns"));
+    EXPECT_EQ(columns->layer(), overflowClipObject->paintingLayer());
+}
+
 } // namespace blink

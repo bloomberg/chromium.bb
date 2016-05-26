@@ -612,8 +612,8 @@ PaintLayer* LayoutObject::enclosingLayer() const
 PaintLayer* LayoutObject::paintingLayer() const
 {
     for (const LayoutObject* current = this; current; current = current->isColumnSpanAll() ? current->containingBlock() : current->parent()) {
-        if (current->hasLayer())
-            return toLayoutBoxModelObject(current)->layer()->enclosingSelfPaintingLayer();
+        if (current->hasLayer() && toLayoutBoxModelObject(current)->layer()->isSelfPaintingLayer())
+            return toLayoutBoxModelObject(current)->layer();
     }
     return nullptr;
 }
