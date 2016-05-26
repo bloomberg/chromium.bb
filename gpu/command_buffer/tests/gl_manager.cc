@@ -185,7 +185,8 @@ GLManager::Options::Options()
       lose_context_when_out_of_memory(false),
       context_lost_allowed(false),
       context_type(gles2::CONTEXT_TYPE_OPENGLES2),
-      force_shader_name_hashing(false) {}
+      force_shader_name_hashing(false),
+      multisampled(false) {}
 
 GLManager::GLManager()
     : sync_point_manager_(nullptr),
@@ -286,6 +287,8 @@ void GLManager::InitializeWithCommandLine(
   attribs.depth_size = 16;
   attribs.stencil_size = 8;
   attribs.context_type = options.context_type;
+  attribs.samples = options.multisampled ? 4 : 0;
+  attribs.sample_buffers = options.multisampled ? 1 : 0;
 
   if (!context_group) {
     GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);

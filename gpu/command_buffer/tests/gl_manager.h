@@ -75,6 +75,8 @@ class GLManager : private GpuControl {
     gles2::ContextType context_type;
     // Force shader name hashing for all context types.
     bool force_shader_name_hashing;
+    // Whether the buffer is multisampled.
+    bool multisampled;
   };
   GLManager();
   ~GLManager() override;

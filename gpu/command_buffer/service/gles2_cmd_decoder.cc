@@ -2055,9 +2055,12 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   GLsizei offscreen_target_samples_;
   GLboolean offscreen_target_buffer_preserved_;
 
-  // The copy that is saved when SwapBuffers is called.
-  std::unique_ptr<BackFramebuffer> offscreen_saved_frame_buffer_;
+  // The saved copy of the backbuffer after a call to SwapBuffers.
   std::unique_ptr<BackTexture> offscreen_saved_color_texture_;
+
+  // For simplicity, |offscreen_saved_color_texture_| is always bound to
+  // |offscreen_saved_frame_buffer_|.
+  std::unique_ptr<BackFramebuffer> offscreen_saved_frame_buffer_;
   scoped_refptr<TextureRef>
       offscreen_saved_color_texture_info_;
 
@@ -4229,7 +4232,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   state_.indexed_uniform_buffer_bindings = nullptr;
 
   if (offscreen_saved_color_texture_info_.get()) {
-    DCHECK(offscreen_target_color_texture_);
+    DCHECK(offscreen_saved_color_texture_);
     DCHECK_EQ(offscreen_saved_color_texture_info_->service_id(),
               offscreen_saved_color_texture_->id());
     offscreen_saved_color_texture_->Invalidate();
@@ -4411,7 +4414,9 @@ void GLES2DecoderImpl::TakeFrontBuffer(const Mailbox& mailbox) {
   mailbox_manager()->ProduceTexture(
       mailbox, offscreen_saved_color_texture_info_->texture());
 
-  // Save the BackTexture and TextureRef.
+  // Save the BackTexture and TextureRef. There's no need to update
+  // |offscreen_saved_frame_buffer_| since CreateBackTexture() will take care of
+  // that.
   SavedBackTexture save;
   save.back_texture.swap(offscreen_saved_color_texture_);
   save.texture_ref = offscreen_saved_color_texture_info_;
@@ -4452,6 +4457,8 @@ void GLES2DecoderImpl::CreateBackTexture() {
       continue;
     offscreen_saved_color_texture_ = std::move(it->back_texture);
     offscreen_saved_color_texture_info_ = it->texture_ref;
+    offscreen_saved_frame_buffer_->AttachRenderTexture(
+        offscreen_saved_color_texture_.get());
     saved_back_textures_.erase(it);
     return;
   }
@@ -13245,6 +13252,8 @@ void GLES2DecoderImpl::DoSwapBuffers() {
         offscreen_saved_color_texture_.swap(offscreen_target_color_texture_);
         offscreen_target_frame_buffer_->AttachRenderTexture(
             offscreen_target_color_texture_.get());
+        offscreen_saved_frame_buffer_->AttachRenderTexture(
+            offscreen_saved_color_texture_.get());
       }
 
       // Ensure the side effects of the copy are visible to the parent

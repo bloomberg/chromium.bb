@@ -56,7 +56,7 @@ uint32_t ReadTexel(GLuint id, GLint x, GLint y) {
 
 class GLTextureMailboxTest : public testing::Test {
  protected:
-  void SetUp() override {
+  void SetUpContexts() {
     gl1_.Initialize(GLManager::Options());
     GLManager::Options options;
     options.share_mailbox_manager = &gl1_;
@@ -96,6 +96,7 @@ class GLTextureMailboxTest : public testing::Test {
 };
 
 TEST_F(GLTextureMailboxTest, ProduceAndConsumeTexture) {
+  SetUpContexts();
   gl1_.MakeCurrent();
 
   GLbyte mailbox1[GL_MAILBOX_SIZE_CHROMIUM];
@@ -140,6 +141,7 @@ TEST_F(GLTextureMailboxTest, ProduceAndConsumeTexture) {
 }
 
 TEST_F(GLTextureMailboxTest, ProduceAndConsumeTextureRGB) {
+  SetUpContexts();
   gl1_.MakeCurrent();
 
   GLbyte mailbox1[GL_MAILBOX_SIZE_CHROMIUM];
@@ -184,6 +186,7 @@ TEST_F(GLTextureMailboxTest, ProduceAndConsumeTextureRGB) {
 }
 
 TEST_F(GLTextureMailboxTest, ProduceAndConsumeTextureDirect) {
+  SetUpContexts();
   gl1_.MakeCurrent();
 
   GLbyte mailbox1[GL_MAILBOX_SIZE_CHROMIUM];
@@ -225,6 +228,7 @@ TEST_F(GLTextureMailboxTest, ProduceAndConsumeTextureDirect) {
 }
 
 TEST_F(GLTextureMailboxTest, ConsumeTextureValidatesKey) {
+  SetUpContexts();
   GLuint tex;
   glGenTextures(1, &tex);
 
@@ -253,6 +257,7 @@ TEST_F(GLTextureMailboxTest, ConsumeTextureValidatesKey) {
 }
 
 TEST_F(GLTextureMailboxTest, SharedTextures) {
+  SetUpContexts();
   gl1_.MakeCurrent();
   GLuint tex1;
   glGenTextures(1, &tex1);
@@ -351,6 +356,7 @@ TEST_F(GLTextureMailboxTest, SharedTextures) {
 }
 
 TEST_F(GLTextureMailboxTest, TakeFrontBuffer) {
+  SetUpContexts();
   gl1_.MakeCurrent();
   Mailbox mailbox;
   glGenMailboxCHROMIUM(mailbox.name);
@@ -412,6 +418,7 @@ TEST_F(GLTextureMailboxTest, TakeFrontBuffer) {
 // The client, represented by |gl2_|, will request 5 frontbuffers, and then
 // start returning them.
 TEST_F(GLTextureMailboxTest, FrontBufferCache) {
+  SetUpContexts();
   gl1_.MakeCurrent();
 
   std::vector<Mailbox> mailboxes;
@@ -451,6 +458,7 @@ TEST_F(GLTextureMailboxTest, FrontBufferCache) {
 // Then the size of the buffer will be changed. All cached frontbuffers should
 // be discarded.
 TEST_F(GLTextureMailboxTest, FrontBufferChangeSize) {
+  SetUpContexts();
   gl1_.MakeCurrent();
 
   std::vector<Mailbox> mailboxes;
@@ -471,7 +479,59 @@ TEST_F(GLTextureMailboxTest, FrontBufferChangeSize) {
   EXPECT_EQ(0u, gl1_.decoder()->GetSavedBackTextureCountForTest());
 }
 
+// The client, represented by |gl2_|, will request and return 5 frontbuffers.
+// Then |gl1_| will start drawing with a different color. The returned
+// frontbuffers should pick up the new color.
+TEST_F(GLTextureMailboxTest, FrontBufferChangeColor) {
+  GLManager::Options options1;
+  options1.multisampled = true;
+  gl1_.Initialize(options1);
+
+  GLManager::Options options2;
+  options2.share_mailbox_manager = &gl1_;
+  gl2_.Initialize(options2);
+
+  gl1_.MakeCurrent();
+  std::vector<Mailbox> mailboxes;
+  for (int i = 0; i < 5; ++i) {
+    Mailbox mailbox = TakeAndConsumeMailbox();
+    mailboxes.push_back(mailbox);
+  }
+
+  for (int i = 0; i < 5; ++i) {
+    gl1_.decoder()->ReturnFrontBuffer(mailboxes[i], false);
+  }
+  mailboxes.clear();
+
+  for (int i = 0; i < 5; ++i) {
+    glClearColor(1, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ::gles2::GetGLContext()->SwapBuffers();
+
+    Mailbox mailbox;
+    glGenMailboxCHROMIUM(mailbox.name);
+    gl1_.decoder()->TakeFrontBuffer(mailbox);
+
+    // Normally, consumers of TakeFrontBuffer() must supply their own
+    // synchronization mechanism. For this test, just use a glFinish().
+    glFinish();
+
+    gl2_.MakeCurrent();
+    GLuint tex;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+
+    EXPECT_EQ(0xFF0000FFu, ReadTexel(tex, 0, 0));
+
+    glDeleteTextures(1, &tex);
+    glFlush();
+    gl1_.MakeCurrent();
+  }
+}
+
 TEST_F(GLTextureMailboxTest, ProduceTextureDirectInvalidTarget) {
+  SetUpContexts();
   gl1_.MakeCurrent();
 
   GLbyte mailbox1[GL_MAILBOX_SIZE_CHROMIUM];
@@ -498,6 +558,7 @@ TEST_F(GLTextureMailboxTest, ProduceTextureDirectInvalidTarget) {
 // http://crbug.com/281565
 #if !defined(OS_ANDROID)
 TEST_F(GLTextureMailboxTest, TakeFrontBufferMultipleContexts) {
+  SetUpContexts();
   gl1_.MakeCurrent();
   Mailbox mailbox[2];
   glGenMailboxCHROMIUM(mailbox[0].name);
