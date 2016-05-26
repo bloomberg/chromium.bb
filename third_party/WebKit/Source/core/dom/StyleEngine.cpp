@@ -255,7 +255,7 @@ void StyleEngine::clearMediaQueryRuleSetOnTreeScopeStyleSheets(UnorderedTreeScop
 {
     for (TreeScope* treeScope : treeScopes) {
         DCHECK(treeScope != m_document);
-        ShadowTreeStyleSheetCollection* collection = static_cast<ShadowTreeStyleSheetCollection*>(styleSheetCollectionFor(*treeScope));
+        ShadowTreeStyleSheetCollection* collection = toShadowTreeStyleSheetCollection(styleSheetCollectionFor(*treeScope));
         DCHECK(collection);
         collection->clearMediaQueryRuleSetStyleSheets();
     }
@@ -280,7 +280,7 @@ void StyleEngine::updateStyleSheetsInImport(DocumentStyleSheetCollector& parentC
 void StyleEngine::updateActiveStyleSheetsInShadow(StyleResolverUpdateMode updateMode, TreeScope* treeScope, UnorderedTreeScopeSet& treeScopesRemoved)
 {
     DCHECK_NE(treeScope, m_document);
-    ShadowTreeStyleSheetCollection* collection = static_cast<ShadowTreeStyleSheetCollection*>(styleSheetCollectionFor(*treeScope));
+    ShadowTreeStyleSheetCollection* collection = toShadowTreeStyleSheetCollection(styleSheetCollectionFor(*treeScope));
     DCHECK(collection);
     collection->updateActiveStyleSheets(*this, updateMode);
     if (!collection->hasStyleSheetCandidateNodes()) {

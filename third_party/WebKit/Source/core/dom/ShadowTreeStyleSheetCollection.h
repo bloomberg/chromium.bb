@@ -43,6 +43,8 @@ public:
 
     void updateActiveStyleSheets(StyleEngine&, StyleResolverUpdateMode);
 
+    bool isShadowTreeStyleSheetCollection() const final { return true; }
+
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         TreeScopeStyleSheetCollection::trace(visitor);
@@ -51,6 +53,8 @@ public:
 private:
     void collectStyleSheets(StyleEngine&, StyleSheetCollection&);
 };
+
+DEFINE_TYPE_CASTS(ShadowTreeStyleSheetCollection, TreeScopeStyleSheetCollection, value, value->isShadowTreeStyleSheetCollection(), value.isShadowTreeStyleSheetCollection());
 
 } // namespace blink
 

@@ -52,6 +52,8 @@ public:
 
     void clearMediaQueryRuleSetStyleSheets();
 
+    virtual bool isShadowTreeStyleSheetCollection() const { return false; }
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
