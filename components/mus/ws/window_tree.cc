@@ -26,8 +26,8 @@
 #include "components/mus/ws/window_server.h"
 #include "components/mus/ws/window_tree_binding.h"
 #include "mojo/converters/ime/ime_type_converters.h"
-#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
+#include "ui/events/mojo/input_events_type_converters.h"
 #include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/platform_window/text_input_state.h"
 

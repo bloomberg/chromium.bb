@@ -1,15 +1,15 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_CONVERTERS_INPUT_EVENTS_INPUT_EVENTS_TYPE_CONVERTERS_H_
-#define MOJO_CONVERTERS_INPUT_EVENTS_INPUT_EVENTS_TYPE_CONVERTERS_H_
+#ifndef UI_EVENTS_MOJO_INPUT_EVENTS_TYPE_CONVERTERS_H_
+#define UI_EVENTS_MOJO_INPUT_EVENTS_TYPE_CONVERTERS_H_
 
 #include <memory>
 
 #include "components/mus/public/interfaces/input_events.mojom.h"
-#include "mojo/converters/input_events/mojo_input_events_export.h"
 #include "ui/events/event.h"
+#include "ui/events/mojo/mojo_input_events_export.h"
 
 namespace mojo {
 
@@ -46,4 +46,4 @@ struct MOJO_INPUT_EVENTS_EXPORT
 
 }  // namespace mojo
 
-#endif  // MOJO_CONVERTERS_INPUT_EVENTS_INPUT_EVENTS_TYPE_CONVERTERS_H_
+#endif  // UI_EVENTS_MOJO_INPUT_EVENTS_TYPE_CONVERTERS_H_

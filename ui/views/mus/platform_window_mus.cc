@@ -9,8 +9,8 @@
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
-#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/base/view_prop.h"
+#include "ui/events/mojo/input_events_type_converters.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/views/mus/window_manager_connection.h"
 

@@ -26,12 +26,12 @@ source_set("mus") {
     "//content/public/common:common_sources",
     "//mojo/common",
     "//mojo/converters/blink",
-    "//mojo/converters/input_events",
     "//mojo/converters/surfaces",
     "//services/shell/public/cpp",
     "//third_party/WebKit/public:blink",
     "//ui/events:events",
     "//ui/events:events_base",
+    "//ui/events/mojo",
     "//ui/gfx/geometry/mojo",
   ]
 }

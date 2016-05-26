@@ -18,11 +18,11 @@
 #include "mash/wm/root_windows_observer.h"
 #include "mash/wm/shelf_layout_impl.h"
 #include "mash/wm/user_window_controller_impl.h"
-#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "ui/events/event.h"
+#include "ui/events/mojo/input_events_type_converters.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/mus/screen_mus.h"
 

@@ -21,10 +21,10 @@
 #include "components/mus/public/cpp/window_tracker.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "mojo/common/common_type_converters.h"
-#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/mojo/input_events_type_converters.h"
 #include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gfx/geometry/rect.h"
 

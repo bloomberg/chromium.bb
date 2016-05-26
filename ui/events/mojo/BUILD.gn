@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 
 # GYP version: mojo/mojo_converters.gypi:mojo_input_events_lib
-component("input_events") {
+component("mojo") {
+  output_name = "input_events"
   sources = [
     "input_events_type_converters.cc",
     "mojo_extended_key_event_data.cc",

@@ -1,8 +1,8 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/converters/input_events/input_events_type_converters.h"
+#include "ui/events/mojo/input_events_type_converters.h"
 
 #include <stdint.h>
 
@@ -14,10 +14,10 @@
 #endif
 
 #include "components/mus/public/interfaces/input_events.mojom.h"
-#include "mojo/converters/input_events/mojo_extended_key_event_data.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/mojo/mojo_extended_key_event_data.h"
 #include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mojo {

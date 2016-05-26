@@ -1,16 +1,17 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_CONVERTERS_INPUT_EVENTS_MOJO_EXTENDED_KEY_EVENT_DATA_H_
-#define MOJO_CONVERTERS_INPUT_EVENTS_MOJO_EXTENDED_KEY_EVENT_DATA_H_
+#ifndef UI_EVENTS_MOJO_MOJO_EXTENDED_KEY_EVENT_DATA_H_
+#define UI_EVENTS_MOJO_MOJO_EXTENDED_KEY_EVENT_DATA_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "mojo/converters/input_events/mojo_input_events_export.h"
 #include "ui/events/event.h"
+#include "ui/events/mojo/mojo_input_events_export.h"
 
+// TODO(beng): should be ui namespace
 namespace mojo {
 
 // A structure to store all mojo specific data on a KeyEvent.
@@ -39,4 +40,4 @@ class MOJO_INPUT_EVENTS_EXPORT MojoExtendedKeyEventData
 
 }  // namespace mojo
 
-#endif  // MOJO_CONVERTERS_INPUT_EVENTS_MOJO_EXTENDED_KEY_EVENT_DATA_H_
+#endif  // UI_EVENTS_MOJO_MOJO_EXTENDED_KEY_EVENT_DATA_H_

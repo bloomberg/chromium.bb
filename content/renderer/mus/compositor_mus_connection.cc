@@ -9,8 +9,8 @@
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "mojo/converters/blink/blink_input_events_type_converters.h"
-#include "mojo/converters/input_events/input_events_type_converters.h"
 #include "ui/events/latency_info.h"
+#include "ui/events/mojo/input_events_type_converters.h"
 
 using mus::mojom::EventResult;
 
