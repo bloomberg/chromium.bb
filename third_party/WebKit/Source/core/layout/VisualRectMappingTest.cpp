@@ -231,8 +231,8 @@ TEST_F(VisualRectMappingTest, ContainerOverflowScroll)
         "</div>");
 
     LayoutBlock* container = toLayoutBlock(getLayoutObjectByElementId("container"));
-    EXPECT_EQ(LayoutUnit(0), container->scrollTop());
-    EXPECT_EQ(LayoutUnit(0), container->scrollLeft());
+    EXPECT_EQ(LayoutUnit(), container->scrollTop());
+    EXPECT_EQ(LayoutUnit(), container->scrollLeft());
     container->setScrollTop(LayoutUnit(7));
     container->setScrollLeft(LayoutUnit(8));
     document().view()->updateAllLifecyclePhases();
@@ -287,7 +287,7 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowScroll)
         "</div>");
 
     LayoutBlock* container = toLayoutBlock(getLayoutObjectByElementId("container"));
-    EXPECT_EQ(LayoutUnit(0), container->scrollTop());
+    EXPECT_EQ(LayoutUnit(), container->scrollTop());
     // The initial scroll offset is to the left-most because of flipped blocks writing mode.
     // 150 = total_layout_overflow(100 + 100) - width(50)
     EXPECT_EQ(LayoutUnit(150), container->scrollLeft());
@@ -350,8 +350,8 @@ TEST_F(VisualRectMappingTest, ContainerOverflowHidden)
         "</div>");
 
     LayoutBlock* container = toLayoutBlock(getLayoutObjectByElementId("container"));
-    EXPECT_EQ(LayoutUnit(0), container->scrollTop());
-    EXPECT_EQ(LayoutUnit(0), container->scrollLeft());
+    EXPECT_EQ(LayoutUnit(), container->scrollTop());
+    EXPECT_EQ(LayoutUnit(), container->scrollLeft());
     container->setScrollTop(LayoutUnit(27));
     container->setScrollLeft(LayoutUnit(28));
     document().view()->updateAllLifecyclePhases();
@@ -382,7 +382,7 @@ TEST_F(VisualRectMappingTest, ContainerFlippedWritingModeAndOverflowHidden)
         "</div>");
 
     LayoutBlock* container = toLayoutBlock(getLayoutObjectByElementId("container"));
-    EXPECT_EQ(LayoutUnit(0), container->scrollTop());
+    EXPECT_EQ(LayoutUnit(), container->scrollTop());
     // The initial scroll offset is to the left-most because of flipped blocks writing mode.
     // 150 = total_layout_overflow(100 + 100) - width(50)
     EXPECT_EQ(LayoutUnit(150), container->scrollLeft());
@@ -420,7 +420,7 @@ TEST_F(VisualRectMappingTest, ContainerAndTargetDifferentFlippedWritingMode)
         "</div>");
 
     LayoutBlock* container = toLayoutBlock(getLayoutObjectByElementId("container"));
-    EXPECT_EQ(LayoutUnit(0), container->scrollTop());
+    EXPECT_EQ(LayoutUnit(), container->scrollTop());
     // The initial scroll offset is to the left-most because of flipped blocks writing mode.
     // 150 = total_layout_overflow(100 + 100) - width(50)
     EXPECT_EQ(LayoutUnit(150), container->scrollLeft());

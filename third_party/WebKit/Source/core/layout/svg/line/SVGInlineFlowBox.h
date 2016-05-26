@@ -29,7 +29,6 @@ class SVGInlineFlowBox final : public InlineFlowBox {
 public:
     SVGInlineFlowBox(LineLayoutItem item)
         : InlineFlowBox(item)
-        , m_logicalHeight(0)
     {
     }
 

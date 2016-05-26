@@ -40,7 +40,6 @@ static_assert(sizeof(SVGInlineTextBox) == sizeof(ExpectedSVGInlineTextBoxSize), 
 
 SVGInlineTextBox::SVGInlineTextBox(LineLayoutItem item, int start, unsigned short length)
     : InlineTextBox(item, start, length)
-    , m_logicalHeight(0)
     , m_startsNewTextChunk(false)
 {
 }

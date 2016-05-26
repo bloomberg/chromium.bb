@@ -39,7 +39,6 @@ public:
         : m_lastFloat(nullptr)
         , m_endLine(nullptr)
         , m_floatIndex(0)
-        , m_endLineLogicalTop(0)
         , m_endLineMatched(false)
         , m_hasInlineChild(false)
         , m_isFullLayout(fullLayout)

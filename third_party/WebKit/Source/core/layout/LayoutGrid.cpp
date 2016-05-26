@@ -43,11 +43,7 @@ class GridItemWithSpan;
 class GridTrack {
 public:
     GridTrack()
-        : m_baseSize(0)
-        , m_growthLimit(0)
-        , m_plannedSize(0)
-        , m_sizeDuringDistribution(0)
-        , m_infinitelyGrowable(false)
+        : m_infinitelyGrowable(false)
     {
     }
 

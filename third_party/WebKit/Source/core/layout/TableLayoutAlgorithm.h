@@ -42,7 +42,7 @@ public:
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minWidth, LayoutUnit& maxWidth) = 0;
     virtual LayoutUnit scaledWidthFromPercentColumns()
     {
-        return LayoutUnit(0);
+        return LayoutUnit();
     }
     virtual void applyPreferredLogicalWidthQuirks(LayoutUnit& minWidth, LayoutUnit& maxWidth) const = 0;
     virtual void layout() = 0;

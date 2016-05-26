@@ -50,12 +50,6 @@ RootInlineBox::RootInlineBox(LineLayoutItem block)
     : InlineFlowBox(block)
     , m_lineBreakPos(0)
     , m_lineBreakObj(nullptr)
-    , m_lineTop(0)
-    , m_lineBottom(0)
-    , m_lineTopWithLeading(0)
-    , m_lineBottomWithLeading(0)
-    , m_selectionBottom(0)
-    , m_paginationStrut(0)
 {
     setIsHorizontal(block.isHorizontalWritingMode());
 }

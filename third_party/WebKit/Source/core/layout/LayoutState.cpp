@@ -111,7 +111,6 @@ LayoutState::LayoutState(LayoutObject& root)
     , m_containingBlockLogicalWidthChanged(false)
     , m_flowThread(nullptr)
     , m_next(root.view()->layoutState())
-    , m_pageLogicalHeight(0)
     , m_layoutObject(root)
 {
     ASSERT(!m_next);

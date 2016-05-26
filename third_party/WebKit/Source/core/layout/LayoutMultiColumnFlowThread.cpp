@@ -36,7 +36,6 @@ namespace blink {
 LayoutMultiColumnFlowThread::LayoutMultiColumnFlowThread()
     : m_lastSetWorkedOn(nullptr)
     , m_columnCount(1)
-    , m_columnHeightAvailable(0)
     , m_columnHeightsChanged(false)
     , m_progressionIsInline(true)
     , m_isBeingEvacuated(false)

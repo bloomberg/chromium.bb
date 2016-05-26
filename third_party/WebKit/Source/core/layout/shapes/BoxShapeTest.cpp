@@ -93,7 +93,7 @@ TEST_F(BoxShapeTest, zeroRadii)
     EXPECT_FALSE(shape->lineOverlapsShapeMarginBounds(LayoutUnit(100), LayoutUnit(200)));
 
     TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-9), LayoutUnit(1), -10, 110);
-    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-10), LayoutUnit(0), -10, 110);
+    TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-10), LayoutUnit(), -10, 110);
     TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(-10), LayoutUnit(200), -10, 110);
     TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(5), LayoutUnit(10), -10, 110);
     TEST_EXCLUDED_INTERVAL(shape, LayoutUnit(59), LayoutUnit(1), -10, 110);

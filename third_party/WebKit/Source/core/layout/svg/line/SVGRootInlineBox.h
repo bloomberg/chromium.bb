@@ -31,7 +31,6 @@ class SVGRootInlineBox final : public RootInlineBox {
 public:
     SVGRootInlineBox(LineLayoutItem block)
         : RootInlineBox(block)
-        , m_logicalHeight(0)
     {
     }
 
