@@ -4,10 +4,11 @@
 
 import copy
 import json
+import sys
 import unittest
 
 from request_track import (TimeBetween, Request, CachingPolicy, RequestTrack,
-                           Timing)
+                           Timing, _ParseStringToInt)
 
 
 class TimeBetweenTestCase(unittest.TestCase):
@@ -84,6 +85,47 @@ class RequestTestCase(unittest.TestCase):
                       r.GetRawResponseHeaders())
 
 
+class ParseStringToIntTestCase(unittest.TestCase):
+  def runTest(self):
+    MININT = -sys.maxint - 1
+    # Same test cases as in string_number_conversions_unittest.cc
+    CASES = [
+        ("0", 0),
+        ("42", 42),
+        ("-2147483648", -2147483648),
+        ("2147483647", 2147483647),
+        ("-2147483649", -2147483649),
+        ("-99999999999", -99999999999),
+        ("2147483648", 2147483648),
+        ("99999999999", 99999999999),
+        ("9223372036854775807", sys.maxint),
+        ("-9223372036854775808", MININT),
+        ("09", 9),
+        ("-09", -9),
+        ("", 0),
+        (" 42", 42),
+        ("42 ", 42),
+        ("0x42", 0),
+        ("\t\n\v\f\r 42", 42),
+        ("blah42", 0),
+        ("42blah", 42),
+        ("blah42blah", 0),
+        ("-273.15", -273),
+        ("+98.6", 98),
+        ("--123", 0),
+        ("++123", 0),
+        ("-+123", 0),
+        ("+-123", 0),
+        ("-", 0),
+        ("-9223372036854775809", MININT),
+        ("-99999999999999999999", MININT),
+        ("9223372036854775808", sys.maxint),
+        ("99999999999999999999", sys.maxint)]
+    for string, expected_int in CASES:
+      parsed_int = _ParseStringToInt(string)
+      self.assertEquals(expected_int, parsed_int)
+
+
 class CachingPolicyTestCase(unittest.TestCase):
   _REQUEST = {
       'encoded_data_length': 14726,
@@ -132,7 +174,7 @@ class CachingPolicyTestCase(unittest.TestCase):
 
   def testPolicyMaxAge(self):
     r = self._MakeRequest()
-    r.response_headers['Cache-Control'] = 'whatever,max-age=1000,whatever'
+    r.response_headers['Cache-Control'] = 'whatever,max-age=  1000,whatever'
     self.assertEqual(
         CachingPolicy.VALIDATION_NONE,
         CachingPolicy(r).PolicyAtDate(r.wall_time))
@@ -149,7 +191,7 @@ class CachingPolicyTestCase(unittest.TestCase):
         CachingPolicy.VALIDATION_NONE,
         CachingPolicy(r).PolicyAtDate(r.wall_time))
     # Max-Age < age
-    r.response_headers['Cache-Control'] = 'whatever,max-age=100,whatever'
+    r.response_headers['Cache-Control'] = 'whatever,max-age=100crap,whatever'
     self.assertEqual(
         CachingPolicy.VALIDATION_SYNC,
         CachingPolicy(r).PolicyAtDate(r.wall_time + 2))

@@ -16,6 +16,7 @@ import hashlib
 import json
 import logging
 import re
+import sys
 import urlparse
 
 import devtools_monitor
@@ -381,6 +382,26 @@ class Request(object):
     return json.dumps(self.ToJsonDict(), sort_keys=True, indent=2)
 
 
+def _ParseStringToInt(string):
+  """Parses a string to an integer like base::StringToInt64().
+
+  Returns:
+    Parsed integer.
+  """
+  string = string.strip()
+  while string:
+    try:
+      parsed_integer = int(string)
+      if parsed_integer > sys.maxint:
+        return sys.maxint
+      if parsed_integer < -sys.maxint - 1:
+        return -sys.maxint - 1
+      return parsed_integer
+    except ValueError:
+      string = string[:-1]
+  return 0
+
+
 class CachingPolicy(object):
   """Represents the caching policy at an arbitrary time for a cached response.
   """
@@ -452,11 +473,11 @@ class CachingPolicy(object):
         'Cache-Control', 'must-revalidate')
     swr_header = r.GetCacheControlDirective('stale-while-revalidate')
     if not must_revalidate and swr_header:
-      result[1] = int(swr_header)
+      result[1] = _ParseStringToInt(swr_header)
 
     max_age_header = r.GetCacheControlDirective('max-age')
     if max_age_header:
-      result[0] = int(max_age_header)
+      result[0] = _ParseStringToInt(max_age_header)
       return result
 
     date = self._GetDateValue('Date') or self._response_time
