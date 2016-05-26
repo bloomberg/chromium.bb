@@ -190,6 +190,9 @@
       <structure name="IDR_SETTINGS_MAIN_PAGE_BEHAVIOR_JS"
                  file="settings_page/main_page_behavior.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_SETTINGS_ROOT_CSS_HTML"
+                 file="settings_root_css.html"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_SETTINGS_SHARED_CSS_HTML"
                  file="settings_shared_css.html"
                  type="chrome_html" />
