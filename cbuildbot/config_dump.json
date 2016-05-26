@@ -24864,38 +24864,6 @@
             "x86-alex"
         ]
     },
-    "x86-alex-release-group": {
-        "_template": "release",
-        "boards": [
-            "x86-alex"
-        ],
-        "child_configs": [
-            {
-                "_template": "release",
-                "boards": [
-                    "x86-alex"
-                ],
-                "grouped": true,
-                "name": "x86-alex-release"
-            },
-            {
-                "_template": "release",
-                "boards": [
-                    "x86-alex_he"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk": false,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "hw_tests": [],
-                "name": "x86-alex_he-release",
-                "paygen_skip_testing": true,
-                "unittests": null,
-                "upload_hw_test_artifacts": false,
-                "vm_tests": []
-            }
-        ]
-    },
     "x86-alex-toolchain-gcc": {
         "_template": "gcc",
         "boards": [
@@ -25032,15 +25000,10 @@
         "boards": [
             "x86-alex_he"
         ],
-        "build_packages_in_background": true,
         "buildslave_type": "gce_beefy",
         "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
-        "hw_tests": [],
         "important": true,
-        "paygen_skip_testing": true,
-        "unittests": null,
-        "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
     "x86-alex_he-release-afdo": {
@@ -25580,38 +25543,6 @@
             "x86-zgb"
         ]
     },
-    "x86-zgb-release-group": {
-        "_template": "release",
-        "boards": [
-            "x86-zgb"
-        ],
-        "child_configs": [
-            {
-                "_template": "release",
-                "boards": [
-                    "x86-zgb"
-                ],
-                "grouped": true,
-                "name": "x86-zgb-release"
-            },
-            {
-                "_template": "release",
-                "boards": [
-                    "x86-zgb_he"
-                ],
-                "build_packages_in_background": true,
-                "chrome_sdk": false,
-                "chrome_sdk_build_chrome": false,
-                "grouped": true,
-                "hw_tests": [],
-                "name": "x86-zgb_he-release",
-                "paygen_skip_testing": true,
-                "unittests": null,
-                "upload_hw_test_artifacts": false,
-                "vm_tests": []
-            }
-        ]
-    },
     "x86-zgb-tot-chrome-pfq-informational": {
         "_template": "chrome-pfq-informational",
         "boards": [
@@ -25730,15 +25661,10 @@
         "boards": [
             "x86-zgb_he"
         ],
-        "build_packages_in_background": true,
         "buildslave_type": "gce_beefy",
         "chrome_sdk": false,
         "chrome_sdk_build_chrome": false,
-        "hw_tests": [],
         "important": true,
-        "paygen_skip_testing": true,
-        "unittests": null,
-        "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
     "x86-zgb_he-release-afdo": {

@@ -2327,38 +2327,6 @@ def GetConfig():
       branch_util_test=True,
   )
 
-  ### Release config groups.
-
-  site_config.AddGroup(
-      'x86-alex-release-group',
-      site_config.Add(
-          'x86-alex-release', _release,
-          boards=['x86-alex'],
-      ),
-      site_config.Add(
-          'x86-alex_he-release', _grouped_variant_release,
-          boards=['x86-alex_he'],
-          hw_tests=[],
-          upload_hw_test_artifacts=False,
-          paygen_skip_testing=True,
-      ),
-  )
-
-  site_config.AddGroup(
-      'x86-zgb-release-group',
-      site_config.Add(
-          'x86-zgb-release', _release,
-          boards=['x86-zgb'],
-      ),
-      site_config.Add(
-          'x86-zgb_he-release', _grouped_variant_release,
-          boards=['x86-zgb_he'],
-          hw_tests=[],
-          upload_hw_test_artifacts=False,
-          paygen_skip_testing=True,
-      ),
-  )
-
   ### Release AFDO configs.
 
   release_afdo = _release.derive(
