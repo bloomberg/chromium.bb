@@ -211,6 +211,12 @@ void UsbDeviceHandleUsbfs::FileThreadHelper::OnFileCanWriteWithoutBlocking(
       if (errno == EAGAIN)
         break;
       USB_PLOG(DEBUG) << "Failed to reap urbs";
+      if (errno == ENODEV) {
+        // Device has disconnected. Stop watching the file descriptor to avoid
+        // looping until |device_handle_| is closed.
+        file_watcher_.StopWatchingFileDescriptor();
+        break;
+      }
     } else {
       urbs.push_back(urb);
     }
