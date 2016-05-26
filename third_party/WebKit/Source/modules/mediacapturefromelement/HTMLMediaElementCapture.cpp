@@ -6,8 +6,6 @@
 
 #include "core/dom/ExceptionCode.h"
 #include "core/html/HTMLMediaElement.h"
-#include "core/html/track/AudioTrackList.h"
-#include "core/html/track/VideoTrackList.h"
 #include "modules/encryptedmedia/HTMLMediaElementEncryptedMedia.h"
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "modules/mediastream/MediaStream.h"
@@ -39,14 +37,17 @@ MediaStream* HTMLMediaElementCapture::captureStream(HTMLMediaElement& element, E
         return MediaStream::create(element.getExecutionContext(), MediaStreamRegistry::registry().lookupMediaStreamDescriptor(element.currentSrc().getString()));
     }
 
+    // TODO(mcasas): Only <video> tags are supported at the moment.
+    if (element.isHTMLAudioElement()) {
+        NOTIMPLEMENTED();
+        return nullptr;
+    }
+
     WebMediaStream webStream;
     webStream.initialize(WebVector<WebMediaStreamTrack>(), WebVector<WebMediaStreamTrack>());
     MediaStreamCenter::instance().didCreateMediaStream(webStream);
 
-    if (element.hasVideo())
-        Platform::current()->createHTMLVideoElementCapturer(&webStream, element.webMediaPlayer());
-    if (element.hasAudio())
-        Platform::current()->createHTMLAudioElementCapturer(&webStream, element.webMediaPlayer());
+    Platform::current()->createHTMLVideoElementCapturer(&webStream, element.webMediaPlayer());
     return MediaStream::create(element.getExecutionContext(), webStream);
 }
 

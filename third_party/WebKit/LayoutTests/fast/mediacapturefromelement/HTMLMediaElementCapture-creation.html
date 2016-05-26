@@ -2,8 +2,7 @@
 <script src=../../resources/testharness.js></script>
 <script src=../../resources/testharnessreport.js></script>
 <script>
-
-// Run captureStream() on <video>/<audio>s and inspect the generated Stream.
+// Run createStream() on <video>s and <audio>s.
 
 test(function() {
   var video = document.createElement('video');
@@ -17,30 +16,49 @@ test(function() {
                 "captureStream() cannot be created out of a source-less <audio>" );
 }, 'check that captureStream() raises an exception on an <audio> with no source.');
 
-var makeAsyncTest = function(filename, num_video_tracks, num_audio_tracks) {
-  async_test(function() {
-    var video = document.createElement('video');
-    video.src = "../../http/tests/media/resources/media-source/webm/" + filename;
-    video.onerror = this.unreached_func("<video> error");
+test(function() {
+  var video = document.createElement('video');
+  video.src = "file:///super_duper_videos/amazing_video.webm";
+  video.onloadstart = function() {
+    var stream = video.captureStream();
 
-    video.onloadedmetadata = this.step_func_done(function() {
-      assert_equals(video.audioTracks.length, num_audio_tracks);
-      assert_equals(video.videoTracks.length, num_video_tracks);
+    assert_not_equals(stream, null);
+    assert_equals(1, stream.getVideoTracks().length);
+    assert_equals(0, stream.getAudioTracks().length);
+  }
+}, 'check <video> captureStream().');
 
-      var stream = video.captureStream();
-      assert_not_equals(stream, null, "error generating stream");
+test(function() {
+  var audio = document.createElement('audio');
+  audio.src = "file:///super_duper_videos/amazing_audio_file.webm";
+  audio.onloadstart = function() {
+    var stream = audio.captureStream();
 
-      assert_equals(stream.getAudioTracks().length, num_audio_tracks);
-      assert_equals(stream.getVideoTracks().length, num_video_tracks);
-    });
+    // TODO(mcasas): http://crbug.com/575492, implement <audio>.captureStream().
+    assert_equals(stream, null);
+  };
+}, 'check <audio> captureStream().');
 
-    video.load();
-  }), "<video>.captureStream()";
-};
+test(function() {
+  var video = document.createElement('video');
 
-generate_tests(makeAsyncTest,
-               [[ "video-only", "test-v-128k-320x240-24fps-8kfr.webm", 1, 0 ],
-                [ "audio-only", "test-a-128k-44100Hz-1ch.webm", 0, 1 ],
-                [ "video+audio", "test.webm", 1, 1 ]]);
+  const onEncrypted = this.step_func_done();
+
+  assert_equals(null, video.error);
+  assert_equals(null, video.mediaKeys);
+  video.onencrypted = onEncrypted;
+
+  navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+      return access.createMediaKeys();
+  }).then(function(mediaKeys) {
+      return video.setMediaKeys(mediaKeys);
+  }).then(function(result) {
+      video.src = "../../media/content/test-encrypted.webm";
+      assert_throws("NotSupportedError",
+                    function() { var stream = video.captureStream(); },
+                    "Cannot create a captureStream() out of a protected <video>");
+  });
+
+}, 'check <video> captureStream() fails on an encrypted/protected media');
 
 </script>

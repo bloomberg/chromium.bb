@@ -50,21 +50,17 @@ class AutoTryLock {
 
 // TeeFilter is a RenderCallback implementation that allows for a client to get
 // a copy of the data being rendered by the |renderer_| on Render(). This class
-// also holds on to the necessary audio parameters.
+// also holds to the necessary audio parameters.
 class WebAudioSourceProviderImpl::TeeFilter
     : public AudioRendererSink::RenderCallback {
  public:
-  TeeFilter() : renderer_(nullptr), channels_(0), sample_rate_(0) {}
-  ~TeeFilter() override {}
-
-  void Initialize(AudioRendererSink::RenderCallback* renderer,
-                  int channels,
-                  int sample_rate) {
-    DCHECK(renderer);
-    renderer_ = renderer;
-    channels_ = channels;
-    sample_rate_ = sample_rate;
+  TeeFilter(AudioRendererSink::RenderCallback* renderer,
+            int channels,
+            int sample_rate)
+      : renderer_(renderer), channels_(channels), sample_rate_(sample_rate) {
+    DCHECK(renderer_);
   }
+  ~TeeFilter() override {}
 
   // AudioRendererSink::RenderCallback implementation.
   // These are forwarders to |renderer_| and are here to allow for a client to
@@ -74,19 +70,19 @@ class WebAudioSourceProviderImpl::TeeFilter
              uint32_t frames_skipped) override;
   void OnRenderError() override;
 
-  bool IsInitialized() const { return !!renderer_; }
   int channels() const { return channels_; }
   int sample_rate() const { return sample_rate_; }
-  void set_copy_audio_bus_callback(const CopyAudioCB& callback) {
+  void set_copy_audio_bus_callback(
+      const WebAudioSourceProviderImpl::CopyAudioCB& callback) {
     copy_audio_bus_callback_ = callback;
   }
 
  private:
-  AudioRendererSink::RenderCallback* renderer_;
-  int channels_;
-  int sample_rate_;
+  AudioRendererSink::RenderCallback* const renderer_;
+  const int channels_;
+  const int sample_rate_;
 
-  CopyAudioCB copy_audio_bus_callback_;
+  WebAudioSourceProviderImpl::CopyAudioCB copy_audio_bus_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TeeFilter);
 };
@@ -97,7 +93,6 @@ WebAudioSourceProviderImpl::WebAudioSourceProviderImpl(
       state_(kStopped),
       client_(nullptr),
       sink_(sink),
-      tee_filter_(new TeeFilter()),
       weak_factory_(this) {}
 
 WebAudioSourceProviderImpl::~WebAudioSourceProviderImpl() {
@@ -116,11 +111,12 @@ void WebAudioSourceProviderImpl::setClient(
     set_format_cb_ = BindToCurrentLoop(base::Bind(
         &WebAudioSourceProviderImpl::OnSetFormat, weak_factory_.GetWeakPtr()));
 
-    // If |tee_filter_| is Initialize()d - then run |set_format_cb_| to send
-    // |client_| the current format info. Otherwise |set_format_cb_| will get
-    // called when Initialize() is called. Note: Always using |set_format_cb_|
-    // ensures we have the same locking order when calling into |client_|.
-    if (tee_filter_->IsInitialized())
+    // If |tee_filter_| is set, it means we have been Initialize()d - then run
+    // |set_format_cb_| to send |client_| the current format info. Otherwise
+    // |set_format_cb_| will get called when Initialize() is called.
+    // Note: Always using |set_format_cb_| ensures we have the same locking
+    // order when calling into |client_|.
+    if (tee_filter_)
       base::ResetAndReturn(&set_format_cb_).Run();
   } else if (!client && client_) {
     // Restore normal playback.
@@ -155,6 +151,7 @@ void WebAudioSourceProviderImpl::provideInput(
   }
 
   DCHECK(client_);
+  DCHECK(tee_filter_);
   DCHECK_EQ(tee_filter_->channels(), bus_wrapper_->channels());
   const int frames = tee_filter_->Render(bus_wrapper_.get(), 0, 0);
   if (frames < incoming_number_of_frames)
@@ -224,7 +221,8 @@ void WebAudioSourceProviderImpl::Initialize(const AudioParameters& params,
   base::AutoLock auto_lock(sink_lock_);
   DCHECK_EQ(state_, kStopped);
 
-  tee_filter_->Initialize(renderer, params.channels(), params.sample_rate());
+  tee_filter_ = base::WrapUnique(
+      new TeeFilter(renderer, params.channels(), params.sample_rate()));
 
   sink_->Initialize(params, tee_filter_.get());
 
@@ -235,10 +233,6 @@ void WebAudioSourceProviderImpl::Initialize(const AudioParameters& params,
 void WebAudioSourceProviderImpl::SetCopyAudioCallback(
     const CopyAudioCB& callback) {
   DCHECK(!callback.is_null());
-
-  // Use |sink_lock_| to protect |tee_filter_| too since they go in lockstep.
-  base::AutoLock auto_lock(sink_lock_);
-
   DCHECK(tee_filter_);
   tee_filter_->set_copy_audio_bus_callback(callback);
 }
@@ -246,10 +240,6 @@ void WebAudioSourceProviderImpl::SetCopyAudioCallback(
 void WebAudioSourceProviderImpl::ClearCopyAudioCallback() {
   DCHECK(tee_filter_);
   tee_filter_->set_copy_audio_bus_callback(CopyAudioCB());
-}
-
-int WebAudioSourceProviderImpl::RenderForTesting(AudioBus* audio_bus) {
-  return tee_filter_->Render(audio_bus, 0, 0);
 }
 
 void WebAudioSourceProviderImpl::OnSetFormat() {
@@ -261,11 +251,13 @@ void WebAudioSourceProviderImpl::OnSetFormat() {
   client_->setFormat(tee_filter_->channels(), tee_filter_->sample_rate());
 }
 
+int WebAudioSourceProviderImpl::RenderForTesting(AudioBus* audio_bus) {
+  return tee_filter_->Render(audio_bus, 0, 0);
+}
+
 int WebAudioSourceProviderImpl::TeeFilter::Render(AudioBus* audio_bus,
                                                   uint32_t delay_milliseconds,
                                                   uint32_t frames_skipped) {
-  DCHECK(IsInitialized());
-
   const int num_rendered_frames =
       renderer_->Render(audio_bus, delay_milliseconds, frames_skipped);
 
@@ -281,7 +273,6 @@ int WebAudioSourceProviderImpl::TeeFilter::Render(AudioBus* audio_bus,
 }
 
 void WebAudioSourceProviderImpl::TeeFilter::OnRenderError() {
-  DCHECK(IsInitialized());
   renderer_->OnRenderError();
 }
 
