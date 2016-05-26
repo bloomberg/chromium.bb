@@ -103,9 +103,9 @@ std::unique_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
     return nullptr;
   }
 
-  return base::WrapUnique(
-      new ShellSurface(surface, nullptr, gfx::Rect(), true, true,
-                       ash::kShellWindowId_DefaultContainer));
+  return base::WrapUnique(new ShellSurface(
+      surface, nullptr, gfx::Rect(), true /* activatable */,
+      true /* resizeable */, ash::kShellWindowId_DefaultContainer));
 }
 
 std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
@@ -127,7 +127,8 @@ std::unique_ptr<ShellSurface> Display::CreatePopupShellSurface(
 
   return base::WrapUnique(
       new ShellSurface(surface, parent, gfx::Rect(position, gfx::Size(1, 1)),
-                       false, true, ash::kShellWindowId_DefaultContainer));
+                       false /* activatable */, true /* resizeable */,
+                       ash::kShellWindowId_DefaultContainer));
 }
 
 std::unique_ptr<ShellSurface> Display::CreateRemoteShellSurface(
@@ -142,7 +143,8 @@ std::unique_ptr<ShellSurface> Display::CreateRemoteShellSurface(
   }
 
   return base::WrapUnique(new ShellSurface(surface, nullptr, gfx::Rect(1, 1),
-                                           true, true, container));
+                                           true /* activatable */,
+                                           false /* resizeable */, container));
 }
 
 std::unique_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,
