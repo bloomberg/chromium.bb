@@ -415,7 +415,6 @@ Polymer({
   ready: function() {
     this.elementReadyTimeMs_ = performance.now();
     this.showSinkList_();
-    this.putSearchAtBottom_();
 
     Polymer.RenderStatus.afterNextRender(this, function() {
       // Import the elements that aren't needed at startup. This reduces
@@ -430,6 +429,9 @@ Polymer({
           return;
         }
         that.updateElementPositioning_();
+        if (that.currentView_ == media_router.MediaRouterView.SINK_LIST) {
+          that.putSearchAtBottom_();
+        }
       };
       this.importHref('chrome://resources/polymer/v1_0/neon-animation/' +
           'web-animations.html', onload);
