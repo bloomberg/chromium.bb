@@ -13,6 +13,8 @@
 #include "base/observer_list.h"
 
 @class ChromeIdentity;
+@class ChromeIdentityInteractionManager;
+@protocol ChromeIdentityInteractionManagerDelegate;
 @class NSArray;
 @class NSDate;
 @class NSError;
@@ -20,6 +22,8 @@
 @class UIImage;
 
 namespace ios {
+
+class ChromeBrowserState;
 
 // Callback passed to method |SigninIdentity()|.
 typedef void (^SigninIdentityCallback)(ChromeIdentity* identity,
@@ -82,6 +86,13 @@ class ChromeIdentityService {
 
   ChromeIdentityService();
   virtual ~ChromeIdentityService();
+
+  // Returns a newly created and autoreleased ChromeIdentityInteractionManager
+  // with |delegate| as its delegate.
+  virtual ChromeIdentityInteractionManager*
+  CreateChromeIdentityInteractionManager(
+      ios::ChromeBrowserState* browser_state,
+      id<ChromeIdentityInteractionManagerDelegate> delegate) const;
 
   // Returns YES if |identity| is valid and if the service has it in its list of
   // identitites.
