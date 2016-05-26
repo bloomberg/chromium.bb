@@ -47802,6 +47802,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Scheduling.PendingTreeDuration" units="microseconds">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    Time between creating a pending tree and activating that tree. This differs
+    from Scheduling.ActivateDuration in that it includes time taken to raster
+    the pending tree, not just the time to activate it.
+
+    The interval is recorded each time a pending tree is activated.
+  </summary>
+</histogram>
+
 <histogram name="Scheduling.PrepareTilesDuration" units="microseconds">
   <owner>brianderson@chromium.org</owner>
   <summary>
@@ -91590,6 +91601,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Scheduling.BeginMainFrameStartToCommitDuration"/>
   <affected-histogram name="Scheduling.CommitInterval"/>
   <affected-histogram name="Scheduling.DrawInterval"/>
+  <affected-histogram name="Scheduling.PendingTreeDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CompositorTimingHistorySubcategory" separator=".">

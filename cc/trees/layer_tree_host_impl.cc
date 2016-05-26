@@ -164,6 +164,9 @@ void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
 
 }  // namespace
 
+DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeDurationHistogramTimer,
+                                  "Scheduling.%s.PendingTreeDuration");
+
 LayerTreeHostImpl::FrameData::FrameData()
     : render_surface_layer_list(nullptr), has_no_damage(false) {}
 
@@ -1960,11 +1963,18 @@ void LayerTreeHostImpl::CreatePendingTree() {
 
   client_->OnCanDrawStateChanged(CanDraw());
   TRACE_EVENT_ASYNC_BEGIN0("cc", "PendingTree:waiting", pending_tree_.get());
+
+  DCHECK(!pending_tree_duration_timer_);
+  pending_tree_duration_timer_.reset(new PendingTreeDurationHistogramTimer());
 }
 
 void LayerTreeHostImpl::ActivateSyncTree() {
   if (pending_tree_) {
     TRACE_EVENT_ASYNC_END0("cc", "PendingTree:waiting", pending_tree_.get());
+
+    DCHECK(pending_tree_duration_timer_);
+    // Reset will call the destructor and log the timer histogram.
+    pending_tree_duration_timer_.reset();
 
     // Process any requests in the UI resource queue.  The request queue is
     // given in LayerTreeHost::FinishCommitOnImplThread.  This must take place

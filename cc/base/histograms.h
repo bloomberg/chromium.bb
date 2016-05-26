@@ -50,14 +50,14 @@ const char* GetClientNameForMetrics();
 //
 #define DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(class_name, time_histogram,  \
                                                area_histogram)              \
-  class class_name : public ::cc::ScopedUMAHistogramAreaTimerBase {         \
+  class class_name : public ScopedUMAHistogramAreaTimerBase {               \
    public:                                                                  \
     ~class_name();                                                          \
   };                                                                        \
   class_name::~class_name() {                                               \
     Sample time_sample;                                                     \
     Sample area_sample;                                                     \
-    const char* client_name = ::cc::GetClientNameForMetrics();              \
+    const char* client_name = GetClientNameForMetrics();                    \
     if (client_name && GetHistogramValues(&time_sample, &area_sample)) {    \
       /* GetClientNameForMetrics only returns one non-null value over */    \
       /* the lifetime of the process, so these histogram names are */       \
@@ -66,6 +66,26 @@ const char* GetClientNameForMetrics();
                            time_sample);                                    \
       UMA_HISTOGRAM_COUNTS(base::StringPrintf(area_histogram, client_name), \
                            area_sample);                                    \
+    }                                                                       \
+  }
+
+// Version of the above macro for cases which only care about time, not area.
+#define DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(class_name, time_histogram)       \
+  class class_name : public ScopedUMAHistogramAreaTimerBase {               \
+   public:                                                                  \
+    ~class_name();                                                          \
+  };                                                                        \
+  class_name::~class_name() {                                               \
+    Sample time_sample;                                                     \
+    Sample area_sample;                                                     \
+    const char* client_name = GetClientNameForMetrics();                    \
+    if (client_name && GetHistogramValues(&time_sample, &area_sample)) {    \
+      DCHECK_EQ(0, area_sample);                                            \
+      /* GetClientNameForMetrics only returns one non-null value over */    \
+      /* the lifetime of the process, so these histogram names are */       \
+      /* runtime constant. */                                               \
+      UMA_HISTOGRAM_COUNTS(base::StringPrintf(time_histogram, client_name), \
+                           time_sample);                                    \
     }                                                                       \
   }
 

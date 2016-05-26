@@ -61,6 +61,7 @@ class LayerImpl;
 class LayerTreeImpl;
 class MemoryHistory;
 class PageScaleAnimation;
+class PendingTreeDurationHistogramTimer;
 class PictureLayerImpl;
 class RasterTilePriorityQueue;
 class TileTaskManager;
@@ -852,6 +853,8 @@ class CC_EXPORT LayerTreeHostImpl
   bool has_fixed_raster_scale_blurry_content_;
   std::bitset<kFixedRasterScaleAttemptedScaleChangeHistoryCount>
       fixed_raster_scale_attempted_scale_change_history_;
+  std::unique_ptr<PendingTreeDurationHistogramTimer>
+      pending_tree_duration_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };
