@@ -1,5 +1,7 @@
 <?php
-header("Content-Security-Policy: script-src 'nonce-abcd1234'");
+# Note that the frame-ancestors directive is part of a *second* header and
+# policy, not the first policy with the script-src.
+header("Content-Security-Policy: script-src 'nonce-abcd1234', frame-ancestors 'self'");
 header("Content-Security-Policy-Report-Only: script-src 'self'");
 ?>
 <!DOCTYPE html>
@@ -11,5 +13,5 @@ header("Content-Security-Policy-Report-Only: script-src 'self'");
 <script nonce="abcd1234">
     test(_ => {
       assert_true(true);
-    }, "This script block has a matching nonce, and should execute.");  
+    }, "This script block has a matching nonce, and should execute.");
 </script>

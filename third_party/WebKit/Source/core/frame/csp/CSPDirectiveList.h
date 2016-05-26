@@ -25,6 +25,12 @@ class ContentSecurityPolicy;
 class CORE_EXPORT CSPDirectiveList : public GarbageCollectedFinalized<CSPDirectiveList> {
     WTF_MAKE_NONCOPYABLE(CSPDirectiveList);
 public:
+    enum class NoncePolicyDisposition {
+        NoDirective = 0,
+        Allowed,
+        Denied
+    };
+
     static CSPDirectiveList* create(ContentSecurityPolicy*, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
     void parse(const UChar* begin, const UChar* end);
@@ -59,8 +65,8 @@ public:
     // because a child frame can't manipulate the URL of a cross-origin
     // parent.
     bool allowAncestors(LocalFrame*, const KURL&, ContentSecurityPolicy::ReportingStatus) const;
-    bool allowScriptNonce(const String&) const;
-    bool allowStyleNonce(const String&) const;
+    NoncePolicyDisposition allowScriptNonce(const String&) const;
+    NoncePolicyDisposition allowStyleNonce(const String&) const;
     bool allowScriptHash(const CSPHashValue&, ContentSecurityPolicy::InlineType) const;
     bool allowStyleHash(const CSPHashValue&, ContentSecurityPolicy::InlineType) const;
     bool allowDynamic() const;

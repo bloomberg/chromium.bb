@@ -417,14 +417,20 @@ bool CSPDirectiveList::allowAncestors(LocalFrame* frame, const KURL& url, Conten
     return reportingStatus == ContentSecurityPolicy::SendReport ? checkAncestorsAndReportViolation(m_frameAncestors.get(), frame, url) : checkAncestors(m_frameAncestors.get(), frame);
 }
 
-bool CSPDirectiveList::allowScriptNonce(const String& nonce) const
+CSPDirectiveList::NoncePolicyDisposition CSPDirectiveList::allowScriptNonce(const String& nonce) const
 {
-    return checkNonce(operativeDirective(m_scriptSrc.get()), nonce);
+    SourceListDirective* directive = operativeDirective(m_scriptSrc.get());
+    if (!directive)
+        return NoncePolicyDisposition::NoDirective;
+    return checkNonce(directive, nonce) ? NoncePolicyDisposition::Allowed : NoncePolicyDisposition::Denied;
 }
 
-bool CSPDirectiveList::allowStyleNonce(const String& nonce) const
+CSPDirectiveList::NoncePolicyDisposition CSPDirectiveList::allowStyleNonce(const String& nonce) const
 {
-    return checkNonce(operativeDirective(m_styleSrc.get()), nonce);
+    SourceListDirective* directive = operativeDirective(m_styleSrc.get());
+    if (!directive)
+        return NoncePolicyDisposition::NoDirective;
+    return checkNonce(directive, nonce) ? NoncePolicyDisposition::Allowed : NoncePolicyDisposition::Denied;
 }
 
 bool CSPDirectiveList::allowScriptHash(const CSPHashValue& hashValue, ContentSecurityPolicy::InlineType type) const

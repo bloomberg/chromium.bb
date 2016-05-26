@@ -391,7 +391,7 @@ bool isAllowedByAllWithContextAndContent(const CSPDirectiveListVector& policies,
     return isAllowed;
 }
 
-template<bool (CSPDirectiveList::*allowed)(const String&) const>
+template<CSPDirectiveList::NoncePolicyDisposition (CSPDirectiveList::*allowed)(const String&) const>
 bool isAllowedByAllWithNonce(const CSPDirectiveListVector& policies, const String& nonce)
 {
     bool isExplicitlyAllowed = false;
@@ -402,9 +402,11 @@ bool isAllowedByAllWithNonce(const CSPDirectiveListVector& policies, const Strin
         // better fix would be to delay the nonce processing until such time as the whitelist
         // processing fails. https://crbug.com/611652
         if (policy.get()->headerType() == ContentSecurityPolicyHeaderTypeEnforce) {
-            if (!(policy.get()->*allowed)(nonce))
+            CSPDirectiveList::NoncePolicyDisposition policyDisposition = (policy.get()->*allowed)(nonce);
+            if (policyDisposition == CSPDirectiveList::NoncePolicyDisposition::Denied)
                 return false;
-            isExplicitlyAllowed = true;
+            if (policyDisposition == CSPDirectiveList::NoncePolicyDisposition::Allowed)
+                isExplicitlyAllowed = true;
         }
     }
     return isExplicitlyAllowed;
