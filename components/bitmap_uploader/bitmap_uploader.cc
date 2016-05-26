@@ -45,10 +45,10 @@ void BitmapUploader::Init(shell::Connector* connector) {
   surface_->set_client(this);
 
   connector->ConnectToInterface("mojo:mus", &gpu_service_);
-  mus::mojom::CommandBufferPtr gles2_client;
-  gpu_service_->CreateOffscreenGLES2Context(GetProxy(&gles2_client));
-  gles2_context_.reset(new mus::GLES2Context(
-      std::vector<int32_t>(), gles2_client.PassInterface().PassHandle()));
+  mus::mojom::CommandBufferPtr command_buffer_ptr;
+  gpu_service_->CreateOffscreenGLES2Context(GetProxy(&command_buffer_ptr));
+  gles2_context_.reset(new mus::GLES2Context(std::vector<int32_t>(),
+                                             std::move(command_buffer_ptr)));
   DCHECK(gles2_context_->Initialize());
 }
 

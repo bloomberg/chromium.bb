@@ -27,7 +27,7 @@ namespace mus {
 class GLES2Context {
  public:
   explicit GLES2Context(const std::vector<int32_t>& attribs,
-                        mojo::ScopedMessagePipeHandle command_buffer_handle);
+                        mus::mojom::CommandBufferPtr command_buffer_ptr);
   virtual ~GLES2Context();
   bool Initialize();
 

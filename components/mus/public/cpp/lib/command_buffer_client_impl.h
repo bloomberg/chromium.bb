@@ -33,7 +33,7 @@ class CommandBufferClientImpl : public mus::mojom::CommandBufferClient,
  public:
   explicit CommandBufferClientImpl(
       const std::vector<int32_t>& attribs,
-      mojo::ScopedMessagePipeHandle command_buffer_handle);
+      mus::mojom::CommandBufferPtr command_buffer_ptr);
   ~CommandBufferClientImpl() override;
   bool Initialize();
 

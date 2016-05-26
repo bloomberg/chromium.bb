@@ -63,11 +63,12 @@ void InitializeCallback(mus::mojom::CommandBufferInitializeResultPtr* output,
 
 CommandBufferClientImpl::CommandBufferClientImpl(
     const std::vector<int32_t>& attribs,
-    mojo::ScopedMessagePipeHandle command_buffer_handle)
+    mus::mojom::CommandBufferPtr command_buffer_ptr)
     : gpu_control_client_(nullptr),
       destroyed_(false),
       attribs_(attribs),
       client_binding_(this),
+      command_buffer_(std::move(command_buffer_ptr)),
       command_buffer_id_(),
       shared_state_(NULL),
       last_put_offset_(-1),
@@ -75,8 +76,6 @@ CommandBufferClientImpl::CommandBufferClientImpl(
       next_image_id_(0),
       next_fence_sync_release_(1),
       flushed_fence_sync_release_(0) {
-  command_buffer_.Bind(mojo::InterfacePtrInfo<mus::mojom::CommandBuffer>(
-      std::move(command_buffer_handle), 0u));
   command_buffer_.set_connection_error_handler(
       [this]() { Destroyed(gpu::error::kUnknown, gpu::error::kLostContext); });
 }

@@ -18,8 +18,8 @@
 namespace mus {
 
 GLES2Context::GLES2Context(const std::vector<int32_t>& attribs,
-                           mojo::ScopedMessagePipeHandle command_buffer_handle)
-    : command_buffer_(attribs, std::move(command_buffer_handle)) {}
+                           mus::mojom::CommandBufferPtr command_buffer_ptr)
+    : command_buffer_(attribs, std::move(command_buffer_ptr)) {}
 
 GLES2Context::~GLES2Context() {}
 

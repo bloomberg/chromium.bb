@@ -18,8 +18,11 @@ ContextProvider::ContextProvider(
 }
 
 bool ContextProvider::BindToCurrentThread() {
-  std::unique_ptr<GLES2Context> context(new GLES2Context(
-      std::vector<int32_t>(), std::move(command_buffer_handle_)));
+  mojom::CommandBufferPtr command_buffer_ptr;
+  command_buffer_ptr.Bind(mojo::InterfacePtrInfo<mus::mojom::CommandBuffer>(
+      std::move(command_buffer_handle_), 0u));
+  std::unique_ptr<GLES2Context> context(
+      new GLES2Context(std::vector<int32_t>(), std::move(command_buffer_ptr)));
   if (context->Initialize())
     context_ = std::move(context);
   return !!context_;
