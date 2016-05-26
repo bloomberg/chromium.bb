@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.ui.base.PageTransition;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -885,5 +886,27 @@ public class IntentHandler {
             return sPendingReferrer.second;
         }
         return null;
+    }
+
+    /**
+     * Some applications may request to load the URL with a particular transition type.
+     * @param context The application context.
+     * @param intent Intent causing the URL load, may be null.
+     * @param defaultTransition The transition to return if none specified in the intent.
+     * @return The transition type to use for loading the URL.
+     */
+    public static int getTransitionTypeFromIntent(Context context, Intent intent,
+            int defaultTransition) {
+        if (intent == null) return defaultTransition;
+        int transitionType = IntentUtils.safeGetIntExtra(
+                intent, IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, PageTransition.LINK);
+        if (transitionType == PageTransition.TYPED) {
+            return transitionType;
+        } else if (transitionType != PageTransition.LINK
+                && isIntentChromeOrFirstParty(intent, context)) {
+            // 1st party applications may specify any transition type.
+            return transitionType;
+        }
+        return defaultTransition;
     }
 }

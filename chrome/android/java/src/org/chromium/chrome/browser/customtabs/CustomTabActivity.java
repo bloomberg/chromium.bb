@@ -460,8 +460,9 @@ public class CustomTabActivity extends ChromeActivity {
                     .getReferrerForSession(mSession));
         }
         // See ChromeTabCreator#getTransitionType(). This marks the navigation chain as starting
-        // from an external intent.
-        params.setTransitionType(PageTransition.LINK | PageTransition.FROM_API);
+        // from an external intent (unless otherwise specified by an extra in the intent).
+        params.setTransitionType(IntentHandler.getTransitionTypeFromIntent(this, intent,
+                PageTransition.LINK | PageTransition.FROM_API));
         mTabObserver.trackNextPageLoadFromTimestamp(timeStamp);
         if (mShouldReplaceCurrentEntry) params.setShouldReplaceCurrentEntry(true);
         if (mShouldReplaceCurrentEntry

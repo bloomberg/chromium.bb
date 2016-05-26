@@ -743,9 +743,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     if (currentTab != null) {
                         currentTab.getTabRedirectHandler().updateIntent(intent);
                         int transitionType = PageTransition.LINK | PageTransition.FROM_API;
-                        LoadUrlParams loadUrlParams = new LoadUrlParams(url, transitionType);
+                        LoadUrlParams loadUrlParams = new LoadUrlParams(url);
                         loadUrlParams.setIntentReceivedTimestamp(mIntentHandlingTimeMs);
                         loadUrlParams.setHasUserGesture(hasUserGesture);
+                        loadUrlParams.setTransitionType(IntentHandler.getTransitionTypeFromIntent(
+                                getApplicationContext(), intent, transitionType));
                         currentTab.loadUrl(loadUrlParams);
                         RecordUserAction.record("MobileTabClobbered");
                     } else {
