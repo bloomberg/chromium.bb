@@ -11,6 +11,7 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content.browser.DownloadInfo;
 
@@ -38,14 +39,14 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     private final Object mLock = new Object();
     @Nullable private DownloadNotificationService mBoundService;
     private boolean mServiceStarted;
-    private Set<Integer> mActiveNotificationIds = new HashSet<Integer>();
+    private Set<String> mActiveDownloads = new HashSet<String>();
     private List<PendingNotificationInfo> mPendingNotifications =
             new ArrayList<PendingNotificationInfo>();
 
     /**
      * Pending download notifications to be posted.
      */
-    private static class PendingNotificationInfo {
+    static class PendingNotificationInfo {
         // Pending download notifications to be posted.
         public final int type;
         public final DownloadInfo downloadInfo;
@@ -53,6 +54,8 @@ public class SystemDownloadNotifier implements DownloadNotifier {
         public long startTime;
         public boolean isAutoResumable;
         public boolean canDownloadWhileMetered;
+        public boolean canResolve;
+        public long systemDownloadId;
 
         public PendingNotificationInfo(int type, DownloadInfo downloadInfo) {
             this.type = type;
@@ -137,7 +140,7 @@ public class SystemDownloadNotifier implements DownloadNotifier {
      */
     private void stopServiceIfNeeded() {
         assert Thread.holdsLock(mLock);
-        if (mActiveNotificationIds.isEmpty() && mServiceStarted) {
+        if (mActiveDownloads.isEmpty() && mServiceStarted) {
             stopService();
             mServiceStarted = false;
         }
@@ -166,20 +169,22 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     }
 
     @Override
-    public void cancelNotification(int notificationId, String downloadGuid) {
-        DownloadInfo info = new DownloadInfo.Builder()
-                .setNotificationId(notificationId)
+    public void notifyDownloadCanceled(String downloadGuid) {
+        DownloadInfo downloadInfo = new DownloadInfo.Builder()
                 .setDownloadGuid(downloadGuid)
                 .build();
         updateDownloadNotification(
-                new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_CANCEL, info));
+                new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_CANCEL, downloadInfo));
     }
 
     @Override
-    public void notifyDownloadSuccessful(DownloadInfo downloadInfo, Intent intent) {
+    public void notifyDownloadSuccessful(DownloadInfo downloadInfo, long systemDownloadId,
+            boolean canResolve, Intent intent) {
         PendingNotificationInfo info =
                 new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_SUCCESS, downloadInfo);
         info.intent = intent;
+        info.canResolve = canResolve;
+        info.systemDownloadId = systemDownloadId;
         updateDownloadNotification(info);
     }
 
@@ -214,18 +219,37 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     }
 
     /**
+     * Called when a successful notification is shown.
+     * @param info Pending notification information to be handled.
+     * @param notificationId ID of the notification.
+     */
+    @VisibleForTesting
+    void onSuccessNotificationShown(
+            final PendingNotificationInfo notificationInfo, final int notificationId) {
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                DownloadManagerService.getDownloadManagerService(
+                        mApplicationContext).onSuccessNotificationShown(
+                                notificationInfo.downloadInfo, notificationInfo.canResolve,
+                                notificationId, notificationInfo.systemDownloadId);
+            }
+        });
+    }
+
+    /**
      * Updates the download notification if the notification service is started. Otherwise,
      * wait for the notification service to become ready.
      * @param info Pending notification information to be handled.
      */
-    private void updateDownloadNotification(PendingNotificationInfo notificationInfo) {
+    private void updateDownloadNotification(final PendingNotificationInfo notificationInfo) {
         synchronized (mLock) {
             startAndBindToServiceIfNeeded();
-            DownloadInfo info = notificationInfo.downloadInfo;
+            final DownloadInfo info = notificationInfo.downloadInfo;
             if (notificationInfo.type == DOWNLOAD_NOTIFICATION_TYPE_PROGRESS) {
-                mActiveNotificationIds.add(info.getNotificationId());
+                mActiveDownloads.add(info.getDownloadGuid());
             } else if (notificationInfo.type != DOWNLOAD_NOTIFICATION_TYPE_RESUME_ALL) {
-                mActiveNotificationIds.remove(info.getNotificationId());
+                mActiveDownloads.remove(info.getDownloadGuid());
             }
             if (mBoundService == null) {
                 // We need to wait for the service to connect before we can handle
@@ -235,7 +259,7 @@ public class SystemDownloadNotifier implements DownloadNotifier {
             } else {
                 switch (notificationInfo.type) {
                     case DOWNLOAD_NOTIFICATION_TYPE_PROGRESS:
-                        mBoundService.notifyDownloadProgress(info.getNotificationId(),
+                        mBoundService.notifyDownloadProgress(
                                 info.getDownloadGuid(), info.getFileName(),
                                 info.getPercentCompleted(), info.getTimeRemainingInMillis(),
                                 notificationInfo.startTime, info.isResumable(),
@@ -247,20 +271,19 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                                 info.getDownloadGuid(), notificationInfo.isAutoResumable);
                         break;
                     case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
-                        mBoundService.notifyDownloadSuccessful(
-                                info.getNotificationId(), info.getDownloadGuid(),
-                                info.getFileName(), notificationInfo.intent);
+                        final int notificationId = mBoundService.notifyDownloadSuccessful(
+                                info.getDownloadGuid(), info.getFileName(),
+                                notificationInfo.intent);
+                        onSuccessNotificationShown(notificationInfo, notificationId);
                         stopServiceIfNeeded();
                         break;
                     case DOWNLOAD_NOTIFICATION_TYPE_FAILURE:
                         mBoundService.notifyDownloadFailed(
-                                info.getNotificationId(), info.getDownloadGuid(),
-                                info.getFileName());
+                                info.getDownloadGuid(), info.getFileName());
                         stopServiceIfNeeded();
                         break;
                     case DOWNLOAD_NOTIFICATION_TYPE_CANCEL:
-                        mBoundService.cancelNotification(
-                                info.getNotificationId(), info.getDownloadGuid());
+                        mBoundService.notifyDownloadCanceled(info.getDownloadGuid());
                         stopServiceIfNeeded();
                         break;
                     case DOWNLOAD_NOTIFICATION_TYPE_RESUME_ALL:

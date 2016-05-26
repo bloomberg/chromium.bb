@@ -155,26 +155,26 @@ public class DownloadNotificationServiceTest extends
 
         DownloadNotificationService service = bindNotificationService();
         String guid3 = UUID.randomUUID().toString();
-        service.notifyDownloadProgress(1, guid3, "test", 1, 1L, 1L, true, true);
+        service.notifyDownloadProgress(guid3, "test", 1, 1L, 1L, true, true);
         assertEquals(3, getService().getNotificationIds().size());
-        assertTrue(getService().getNotificationIds().contains(1));
+        int lastNotificationId = getService().getLastAddedNotificationId();
         Set<String> entries = DownloadManagerService.getStoredDownloadInfo(
                 sharedPrefs, DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(3, entries.size());
 
-        service.notifyDownloadSuccessful(3, guid1, "success", null);
+        service.notifyDownloadSuccessful(guid1, "success", null);
         entries = DownloadManagerService.getStoredDownloadInfo(
                 sharedPrefs, DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(2, entries.size());
 
-        service.notifyDownloadFailed(4, guid2, "failed");
+        service.notifyDownloadFailed(guid2, "failed");
         entries = DownloadManagerService.getStoredDownloadInfo(
                 sharedPrefs, DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS);
         assertEquals(1, entries.size());
 
-        service.cancelNotification(1, guid3);
+        service.notifyDownloadCanceled(guid3);
         assertEquals(2, getService().getNotificationIds().size());
-        assertFalse(getService().getNotificationIds().contains(1));
+        assertFalse(getService().getNotificationIds().contains(lastNotificationId));
     }
 
     /**
@@ -187,9 +187,8 @@ public class DownloadNotificationServiceTest extends
         startNotificationService();
         DownloadNotificationService service = bindNotificationService();
         String guid = UUID.randomUUID().toString();
-        service.notifyDownloadSuccessful(1, guid, "test", null);
+        service.notifyDownloadSuccessful(guid, "test", null);
         assertEquals(1, getService().getNotificationIds().size());
-        assertTrue(getService().getNotificationIds().contains(1));
     }
 
     /**

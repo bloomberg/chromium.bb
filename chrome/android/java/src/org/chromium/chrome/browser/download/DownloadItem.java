@@ -39,16 +39,6 @@ public class DownloadItem {
     }
 
     /**
-     * @return notification ID for this download.
-     */
-    public int getNotificationId() {
-        if (mUseAndroidDownloadManager) {
-            return (int) mDownloadId;
-        }
-        return mDownloadInfo.getNotificationId();
-    }
-
-    /**
      * @return System download ID from the Android DownloadManager.
      */
     public long getSystemDownloadId() {

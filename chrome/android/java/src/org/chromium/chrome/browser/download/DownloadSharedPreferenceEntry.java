@@ -102,7 +102,6 @@ public class DownloadSharedPreferenceEntry {
         DownloadInfo info = new DownloadInfo.Builder()
                 .setDownloadGuid(downloadGuid)
                 .setFileName(fileName)
-                .setNotificationId(notificationId)
                 .setIsResumable(isResumable)
                 .build();
         return new DownloadItem(false, info);

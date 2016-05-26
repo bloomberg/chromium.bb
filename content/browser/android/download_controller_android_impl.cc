@@ -478,7 +478,7 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
       Java_DownloadController_onDownloadUpdated(
           env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
           jmime_type.obj(), jfilename.obj(), jpath.obj(),
-          item->GetReceivedBytes(), item->GetId(), jguid.obj(),
+          item->GetReceivedBytes(), jguid.obj(),
           item->PercentComplete(), time_delta.InMilliseconds(),
           item->HasUserGesture(), item->IsPaused(),
           item->GetBrowserContext()->IsOffTheRecord());
@@ -493,13 +493,12 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
       Java_DownloadController_onDownloadCompleted(
           env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
           jmime_type.obj(), jfilename.obj(), jpath.obj(),
-          item->GetReceivedBytes(), item->GetId(), jguid.obj(),
+          item->GetReceivedBytes(), jguid.obj(),
           joriginal_url.obj(), jreferrer_url.obj(), item->HasUserGesture());
       break;
     case DownloadItem::CANCELLED:
       Java_DownloadController_onDownloadCancelled(
-          env, GetJavaObject()->Controller(env).obj(), item->GetId(),
-          jguid.obj());
+          env, GetJavaObject()->Controller(env).obj(), jguid.obj());
       break;
     case DownloadItem::INTERRUPTED:
       // When device loses/changes network, we get a NETWORK_TIMEOUT,
@@ -508,7 +507,7 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
       Java_DownloadController_onDownloadInterrupted(
           env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
           jmime_type.obj(), jfilename.obj(), jpath.obj(),
-          item->GetReceivedBytes(), item->GetId(), jguid.obj(),
+          item->GetReceivedBytes(), jguid.obj(),
           item->CanResume(), IsInterruptedDownloadAutoResumable(item),
           item->GetBrowserContext()->IsOffTheRecord());
       item->RemoveObserver(this);

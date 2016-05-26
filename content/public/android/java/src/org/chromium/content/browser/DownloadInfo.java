@@ -18,7 +18,6 @@ public final class DownloadInfo {
     private final String mReferer;
     private final String mOriginalUrl;
     private final long mContentLength;
-    private final int mNotificationId;
     private final String mDownloadGuid;
     private final boolean mHasUserGesture;
     private final String mContentDisposition;
@@ -40,7 +39,6 @@ public final class DownloadInfo {
         mReferer = builder.mReferer;
         mOriginalUrl = builder.mOriginalUrl;
         mContentLength = builder.mContentLength;
-        mNotificationId = builder.mNotificationId;
         mDownloadGuid = builder.mDownloadGuid;
         mHasUserGesture = builder.mHasUserGesture;
         mIsGETRequest = builder.mIsGETRequest;
@@ -96,10 +94,6 @@ public final class DownloadInfo {
         return mIsGETRequest;
     }
 
-    public int getNotificationId() {
-        return mNotificationId;
-    }
-
     public String getDownloadGuid() {
         return mDownloadGuid;
     }
@@ -150,7 +144,6 @@ public final class DownloadInfo {
         private String mOriginalUrl;
         private long mContentLength;
         private boolean mIsGETRequest;
-        private int mNotificationId;
         private String mDownloadGuid;
         private boolean mHasUserGesture;
         private String mContentDisposition;
@@ -212,11 +205,6 @@ public final class DownloadInfo {
 
         public Builder setIsGETRequest(boolean isGETRequest) {
             mIsGETRequest = isGETRequest;
-            return this;
-        }
-
-        public Builder setNotificationId(int notificationId) {
-            mNotificationId = notificationId;
             return this;
         }
 
@@ -282,7 +270,6 @@ public final class DownloadInfo {
                     .setReferer(downloadInfo.getReferer())
                     .setOriginalUrl(downloadInfo.getOriginalUrl())
                     .setContentLength(downloadInfo.getContentLength())
-                    .setNotificationId(downloadInfo.getNotificationId())
                     .setDownloadGuid(downloadInfo.getDownloadGuid())
                     .setHasUserGesture(downloadInfo.hasUserGesture())
                     .setContentDisposition(downloadInfo.getContentDisposition())

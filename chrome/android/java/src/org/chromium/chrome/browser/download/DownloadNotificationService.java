@@ -54,14 +54,18 @@ public class DownloadNotificationService extends Service {
     static final int INVALID_DOWNLOAD_PERCENTAGE = -1;
     @VisibleForTesting
     static final String PENDING_DOWNLOAD_NOTIFICATIONS = "PendingDownloadNotifications";
-    private static final String NOTIFICATION_NAMESPACE = "DownloadNotificationService";
+    static final String NOTIFICATION_NAMESPACE = "DownloadNotificationService";
     private static final String TAG = "DownloadNotification";
+    private static final String NEXT_DOWNLOAD_NOTIFICATION_ID = "NextDownloadNotificationId";
+    // Notification Id starting value, to avoid conflicts from IDs used in prior versions.
+    private static final int STARTING_NOTIFICATION_ID = 1000000;
     private final IBinder mBinder = new LocalBinder();
     private final List<DownloadSharedPreferenceEntry> mDownloadSharedPreferenceEntries =
             new ArrayList<DownloadSharedPreferenceEntry>();
     private NotificationManager mNotificationManager;
     private SharedPreferences mSharedPrefs;
     private Context mContext;
+    private int mNextNotificationId;
 
     /**
      * Class for clients to access.
@@ -99,6 +103,9 @@ public class DownloadNotificationService extends Service {
             pauseAllDownloads();
             stopSelf();
         }
+        mNextNotificationId = mSharedPrefs.getInt(
+                NEXT_DOWNLOAD_NOTIFICATION_ID, STARTING_NOTIFICATION_ID);
+
     }
 
     @Override
@@ -119,7 +126,6 @@ public class DownloadNotificationService extends Service {
 
     /**
      * Add a in-progress download notification.
-     * @param notificationId Notification ID of the download.
      * @param downloadGuid GUID of the download.
      * @param fileName File name of the download.
      * @param percentage Percentage completed. Value should be between 0 to 100 if
@@ -129,8 +135,8 @@ public class DownloadNotificationService extends Service {
      * @param isResumable Whether the download can be resumed.
      * @param canDownloadWhileMetered Whether the download can happen in metered network.
      */
-    public void notifyDownloadProgress(int notificationId, String downloadGuid, String fileName,
-            int percentage, long timeRemainingInMillis, long startTime, boolean isResumable,
+    public void notifyDownloadProgress(String downloadGuid, String fileName, int percentage,
+            long timeRemainingInMillis, long startTime, boolean isResumable,
             boolean canDownloadWhileMetered) {
         boolean indeterminate = percentage == INVALID_DOWNLOAD_PERCENTAGE;
         NotificationCompat.Builder builder = buildNotification(
@@ -149,6 +155,7 @@ public class DownloadNotificationService extends Service {
                 builder.setContentInfo(percentText);
             }
         }
+        int notificationId = getNotificationId(downloadGuid);
         addOrReplaceSharedPreferenceEntry(new DownloadSharedPreferenceEntry(
                 notificationId, isResumable, canDownloadWhileMetered, downloadGuid, fileName));
         if (startTime > 0) builder.setWhen(startTime);
@@ -176,12 +183,23 @@ public class DownloadNotificationService extends Service {
 
     /**
      * Cancel a download notification.
-     * @param notificationId Notification ID of the download.
+     * @notificationId Notification ID of the download
      * @param downloadGuid GUID of the download.
      */
-    public void cancelNotification(int notificationId, String downloadGuid) {
-        mNotificationManager.cancel(NOTIFICATION_NAMESPACE, notificationId);
+    @VisibleForTesting
+    void cancelNotification(int notificaitonId, String downloadGuid) {
+        mNotificationManager.cancel(NOTIFICATION_NAMESPACE, notificaitonId);
         removeSharedPreferenceEntry(downloadGuid);
+    }
+
+    /**
+     * Called when a download is canceled.
+     * @param downloadGuid GUID of the download.
+     */
+    public void notifyDownloadCanceled(String downloadGuid) {
+        DownloadSharedPreferenceEntry entry = getDownloadSharedPreferenceEntry(downloadGuid);
+        if (entry == null) return;
+        cancelNotification(entry.notificationId, downloadGuid);
     }
 
     /**
@@ -217,13 +235,14 @@ public class DownloadNotificationService extends Service {
 
     /**
      * Add a download successful notification.
-     * @param notificationId Notification ID of the download.
      * @param downloadGuid GUID of the download.
      * @param fileName GUID of the download.
      * @param intent Intent to launch when clicking the notification.
+     * @return ID of the successful download notification. Used for removing the notification when
+     *         user click on the snackbar.
      */
-    public void notifyDownloadSuccessful(int notificationId, String downloadGuid, String fileName,
-            Intent intent) {
+    public int notifyDownloadSuccessful(String downloadGuid, String fileName, Intent intent) {
+        int notificationId = getNotificationId(downloadGuid);
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.stat_sys_download_done, fileName,
                 mContext.getResources().getString(R.string.download_notification_completed));
@@ -233,15 +252,16 @@ public class DownloadNotificationService extends Service {
         }
         updateNotification(notificationId, builder.build());
         removeSharedPreferenceEntry(downloadGuid);
+        return notificationId;
     }
 
     /**
      * Add a download failed notification.
-     * @param notificationId Notification ID of the download.
      * @param downloadGuid GUID of the download.
      * @param fileName GUID of the download.
      */
-    public void notifyDownloadFailed(int notificationId, String downloadGuid, String fileName) {
+    public void notifyDownloadFailed(String downloadGuid, String fileName) {
+        int notificationId = getNotificationId(downloadGuid);
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.stat_sys_download_done, fileName,
                 mContext.getResources().getString(R.string.download_notification_failed));
@@ -305,10 +325,12 @@ public class DownloadNotificationService extends Service {
                 intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_NAME);
         DownloadSharedPreferenceEntry entry = null;
         if (intent.getAction() == ACTION_DOWNLOAD_PAUSE) {
-            notifyDownloadPaused(guid, false);
             // If browser process already goes away, the download should have already paused. Do
             // nothing in that case.
-            if (!DownloadManagerService.hasDownloadManagerService()) return;
+            if (!DownloadManagerService.hasDownloadManagerService()) {
+                notifyDownloadPaused(guid, false);
+                return;
+            }
         } else if (intent.getAction() == ACTION_DOWNLOAD_RESUME) {
             entry = getDownloadSharedPreferenceEntry(guid);
             boolean metered = DownloadManagerService.isActiveNetworkMetered(mContext);
@@ -349,9 +371,8 @@ public class DownloadNotificationService extends Service {
                         break;
                     case ACTION_DOWNLOAD_RESUME:
                         assert item != null;
-                        notifyDownloadProgress(notificationId, guid, fileName,
-                                INVALID_DOWNLOAD_PERCENTAGE, 0, 0, true,
-                                canDownloadWhileMetered);
+                        notifyDownloadProgress(guid, fileName, INVALID_DOWNLOAD_PERCENTAGE, 0, 0,
+                                true, canDownloadWhileMetered);
                         service.resumeDownload(item, true);
                         break;
                     default:
@@ -458,8 +479,8 @@ public class DownloadNotificationService extends Service {
         for (int i = 0; i < mDownloadSharedPreferenceEntries.size(); ++i) {
             DownloadSharedPreferenceEntry entry = mDownloadSharedPreferenceEntries.get(i);
             if (!entry.canDownloadWhileMetered && isNetworkMetered) continue;
-            notifyDownloadProgress(entry.notificationId, entry.downloadGuid, entry.fileName,
-                    INVALID_DOWNLOAD_PERCENTAGE, 0, 0, true, entry.canDownloadWhileMetered);
+            notifyDownloadProgress(entry.downloadGuid, entry.fileName, INVALID_DOWNLOAD_PERCENTAGE,
+                    0, 0, true, entry.canDownloadWhileMetered);
             service.resumeDownload(entry.buildDownloadItem(), false);
         }
     }
@@ -506,5 +527,21 @@ public class DownloadNotificationService extends Service {
         }
         DownloadManagerService.storeDownloadInfo(
                 mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS, entries);
+    }
+
+    /**
+     * Return the notification ID for the given download GUID.
+     * @return notification ID to be used.
+     */
+    private int getNotificationId(String downloadGuid) {
+        DownloadSharedPreferenceEntry entry = getDownloadSharedPreferenceEntry(downloadGuid);
+        if (entry != null) return entry.notificationId;
+        int notificationId = mNextNotificationId;
+        mNextNotificationId = mNextNotificationId == Integer.MAX_VALUE
+                ? STARTING_NOTIFICATION_ID : mNextNotificationId + 1;
+        SharedPreferences.Editor editor = mSharedPrefs.edit();
+        editor.putInt(NEXT_DOWNLOAD_NOTIFICATION_ID, mNextNotificationId);
+        editor.apply();
+        return notificationId;
     }
 }

@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.download;
 
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.Context;
-import android.util.Pair;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
@@ -18,8 +18,21 @@ import org.chromium.content.browser.DownloadInfo;
  * Class for displaying a snackbar when a download completes.
  */
 public class DownloadSnackbarController implements SnackbarManager.SnackbarController {
+    public static final int INVALID_NOTIFICATION_ID = -1;
     private static final int SNACKBAR_DURATION_IN_MILLISECONDS = 5000;
     private final Context mContext;
+
+    private static class ActionDataInfo {
+        public final DownloadInfo downloadInfo;
+        public final int notificationId;
+        public final long systemDownloadId;
+
+        ActionDataInfo(DownloadInfo downloadInfo, int notificationId, long systemDownloadId) {
+            this.downloadInfo = downloadInfo;
+            this.notificationId = notificationId;
+            this.systemDownloadId = systemDownloadId;
+        }
+    }
 
     public DownloadSnackbarController(Context context) {
         mContext = context;
@@ -32,11 +45,15 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
             DownloadManagerService.openDownloadsPage(mContext);
             return;
         }
-        Pair<DownloadInfo, Long> download = (Pair<DownloadInfo, Long>) actionData;
+        ActionDataInfo download = (ActionDataInfo) actionData;
         DownloadManagerService manager = DownloadManagerService.getDownloadManagerService(mContext);
-        manager.openDownloadedContent(download.second);
-        manager.cancelNotification(
-                download.first.getNotificationId(), download.first.getDownloadGuid());
+        manager.openDownloadedContent(download.systemDownloadId);
+        if (download.notificationId != INVALID_NOTIFICATION_ID) {
+            NotificationManager notificationManager =
+                    (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.cancel(
+                    DownloadNotificationService.NOTIFICATION_NAMESPACE, download.notificationId);
+        }
     }
 
     @Override
@@ -47,24 +64,25 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
      * Called to display the download succeeded snackbar.
      *
      * @param downloadInfo Info of the download.
+     * @param notificationId Notification Id of the successful download.
      * @param downloadId Id of the download from Android DownloadManager.
      * @param canBeResolved Whether the download can be resolved to any activity.
      */
     public void onDownloadSucceeded(
-            DownloadInfo downloadInfo, final long downloadId, boolean canBeResolved) {
+            DownloadInfo downloadInfo, int notificationId, long downloadId, boolean canBeResolved) {
         if (getSnackbarManager() == null) return;
         Snackbar snackbar = Snackbar.make(
                 mContext.getString(R.string.download_succeeded_message, downloadInfo.getFileName()),
                 this, Snackbar.TYPE_NOTIFICATION, Snackbar.UMA_DOWNLOAD_SUCCEEDED);
         // TODO(qinmin): Coalesce snackbars if multiple downloads finish at the same time.
         snackbar.setDuration(SNACKBAR_DURATION_IN_MILLISECONDS).setSingleLine(false);
-        Pair<DownloadInfo, Long> actionData = null;
+        ActionDataInfo info = null;
         if (canBeResolved) {
-            actionData = Pair.create(downloadInfo, downloadId);
+            info = new ActionDataInfo(downloadInfo, notificationId, downloadId);
         }
         // Show downloads app if the download cannot be resolved to any activity.
         snackbar.setAction(
-                mContext.getString(R.string.open_downloaded_label), actionData);
+                mContext.getString(R.string.open_downloaded_label), info);
         getSnackbarManager().showSnackbar(snackbar);
     }
 
