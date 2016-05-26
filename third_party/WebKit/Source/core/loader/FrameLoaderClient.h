@@ -36,6 +36,7 @@
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/frame/FrameClient.h"
 #include "core/html/LinkResource.h"
+#include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
 #include "platform/heap/Handle.h"
@@ -53,6 +54,7 @@ namespace blink {
 class Document;
 class DocumentLoader;
 class FetchRequest;
+struct FrameLoadRequest;
 class HTMLFormElement;
 class HTMLFrameElementBase;
 class HTMLFrameOwnerElement;

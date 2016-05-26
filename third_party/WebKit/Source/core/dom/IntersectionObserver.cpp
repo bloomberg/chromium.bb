@@ -16,6 +16,8 @@
 #include "core/dom/IntersectionObserverInit.h"
 #include "core/dom/NodeIntersectionObserverData.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalDOMWindow.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutView.h"
 #include "core/timing/DOMWindowPerformance.h"

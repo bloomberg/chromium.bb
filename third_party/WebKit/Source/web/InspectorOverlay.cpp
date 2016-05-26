@@ -37,6 +37,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorOverlayHost.h"

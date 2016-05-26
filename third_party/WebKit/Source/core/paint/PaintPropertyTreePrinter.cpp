@@ -5,6 +5,7 @@
 #include "core/paint/PaintPropertyTreePrinter.h"
 
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/ObjectPaintProperties.h"
 

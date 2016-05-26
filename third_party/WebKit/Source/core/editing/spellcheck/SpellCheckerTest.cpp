@@ -6,6 +6,7 @@
 
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/Editor.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 
 namespace blink {

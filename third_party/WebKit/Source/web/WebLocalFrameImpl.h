@@ -52,6 +52,7 @@ class ChromePrintContext;
 class IntSize;
 class KURL;
 class Range;
+class ScrollableArea;
 class SharedWorkerRepositoryClientImpl;
 class TextFinder;
 class WebAutofillClient;

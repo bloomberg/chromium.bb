@@ -35,6 +35,7 @@
 #include "core/css/parser/SizesAttributeParser.h"
 #include "core/dom/Document.h"
 #include "core/fetch/IntegrityMetadata.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/SubresourceIntegrity.h"
 #include "core/html/CrossOriginAttribute.h"

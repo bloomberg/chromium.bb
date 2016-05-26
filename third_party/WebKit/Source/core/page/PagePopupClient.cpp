@@ -31,6 +31,7 @@
 #include "core/page/PagePopupClient.h"
 
 #include "core/dom/NodeComputedStyle.h"
+#include "core/frame/LocalFrame.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/StringBuilder.h"
 

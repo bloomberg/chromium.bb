@@ -31,7 +31,6 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
-#include "core/animation/AnimationClock.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/DocumentEncodingData.h"
 #include "core/dom/DocumentInit.h"
@@ -47,14 +46,10 @@
 #include "core/fetch/ClientHintsPreferences.h"
 #include "core/frame/DOMTimerCoordinator.h"
 #include "core/frame/HostsUsingFeatures.h"
-#include "core/frame/LocalDOMWindow.h"
-#include "core/frame/VisualViewport.h"
-#include "core/html/CollectionType.h"
 #include "core/html/parser/ParserSynchronizationPolicy.h"
 #include "core/page/PageVisibilityState.h"
 #include "platform/Length.h"
 #include "platform/Timer.h"
-#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "public/platform/WebFocusType.h"
@@ -65,6 +60,7 @@
 
 namespace blink {
 
+class AnimationClock;
 class AnimationTimeline;
 class AXObjectCache;
 class Attr;
@@ -128,6 +124,7 @@ class IntersectionObserverController;
 class LayoutPoint;
 class LayoutViewItem;
 class LiveNodeListBase;
+class LocalDOMWindow;
 class Locale;
 class LocalFrame;
 class Location;
@@ -169,6 +166,7 @@ class TouchList;
 class TransformSource;
 class TreeWalker;
 class VisitedLinkState;
+class VisualViewport;
 class WebGLRenderingContext;
 enum class SelectionBehaviorOnFocus;
 struct AnnotatedRegionValue;

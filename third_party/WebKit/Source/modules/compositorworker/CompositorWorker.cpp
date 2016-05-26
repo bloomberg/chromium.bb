@@ -8,6 +8,7 @@
 #include "core/dom/CompositorProxyClient.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/LocalFrame.h"
 #include "core/page/ChromeClient.h"
 #include "core/workers/WorkerClients.h"
 #include "modules/EventTargetModules.h"

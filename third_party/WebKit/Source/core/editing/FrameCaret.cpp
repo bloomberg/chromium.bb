@@ -25,6 +25,8 @@
 
 #include "core/editing/FrameCaret.h"
 
+#include "core/frame/LocalFrame.h"
+
 namespace blink {
 
 FrameCaret::FrameCaret(LocalFrame* frame)

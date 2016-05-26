@@ -5,6 +5,7 @@
 #include "core/layout/PaintInvalidationState.h"
 
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutPart.h"

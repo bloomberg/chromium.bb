@@ -35,6 +35,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
 #include "core/loader/EmptyClients.h"
 #include "wtf/Assertions.h"
 

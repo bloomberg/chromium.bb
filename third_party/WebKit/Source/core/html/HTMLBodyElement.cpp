@@ -31,7 +31,7 @@
 #include "core/css/parser/CSSParser.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/StyleChangeReason.h"
-#include "core/frame/UseCounter.h"
+#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 

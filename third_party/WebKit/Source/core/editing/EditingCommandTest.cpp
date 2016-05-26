@@ -5,6 +5,7 @@
 #include "core/editing/EditingTestBase.h"
 #include "core/editing/Editor.h"
 #include "core/editing/commands/EditorCommandNames.h"
+#include "core/frame/LocalFrame.h"
 #include "public/platform/WebEditingCommandType.h"
 #include "wtf/StringExtras.h"
 

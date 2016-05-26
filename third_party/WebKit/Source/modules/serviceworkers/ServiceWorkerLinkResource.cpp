@@ -5,6 +5,7 @@
 #include "modules/serviceworkers/ServiceWorkerLinkResource.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/loader/FrameLoaderClient.h"

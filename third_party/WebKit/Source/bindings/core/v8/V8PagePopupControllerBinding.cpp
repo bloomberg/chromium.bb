@@ -9,6 +9,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/page/PagePopupController.h"
 #include "core/page/PagePopupSupplement.h"
 #include "platform/TraceEvent.h"

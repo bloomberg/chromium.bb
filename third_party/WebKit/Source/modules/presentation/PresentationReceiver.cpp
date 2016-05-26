@@ -8,6 +8,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/EventTargetModules.h"
 
 namespace blink {

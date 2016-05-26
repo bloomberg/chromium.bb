@@ -10,6 +10,8 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/Text.h"
 #include "core/frame/FrameHost.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/VisualViewport.h"
 #include "core/html/HTMLHeadElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMetaElement.h"

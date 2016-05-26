@@ -5,6 +5,7 @@
 #include "core/frame/TopControls.h"
 
 #include "core/frame/FrameHost.h"
+#include "core/frame/VisualViewport.h"
 #include "core/page/ChromeClient.h"
 #include "platform/geometry/FloatSize.h"
 #include <algorithm> // for std::min and std::max

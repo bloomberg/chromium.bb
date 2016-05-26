@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Document.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/page/Page.h"
 #include "public/platform/Platform.h"
 
