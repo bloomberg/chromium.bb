@@ -8,13 +8,13 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/local_discovery/service_discovery_client.h"
@@ -120,8 +120,8 @@ class ServiceWatcherImpl : public ServiceWatcher,
     bool has_srv_;
   };
 
-  typedef std::map<std::string, linked_ptr<ServiceListeners> >
-      ServiceListenersMap;
+  using ServiceListenersMap =
+      std::map<std::string, std::unique_ptr<ServiceListeners>>;
 
   void ReadCachedServices();
   void AddService(const std::string& service);
@@ -142,7 +142,7 @@ class ServiceWatcherImpl : public ServiceWatcher,
 
   void SendQuery(int next_timeout_seconds, bool force_update);
 
-  std::string service_type_;
+  const std::string service_type_;
   ServiceListenersMap services_;
   std::unique_ptr<net::MDnsTransaction> transaction_network_;
   std::unique_ptr<net::MDnsTransaction> transaction_cache_;
@@ -152,7 +152,7 @@ class ServiceWatcherImpl : public ServiceWatcher,
   bool started_;
   bool actively_refresh_services_;
 
-  net::MDnsClient* mdns_client_;
+  net::MDnsClient* const mdns_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWatcherImpl);
 };
@@ -169,7 +169,6 @@ class ServiceResolverImpl
 
   // ServiceResolver implementation:
   void StartResolving() override;
-
   std::string GetName() const override;
 
  private:
@@ -208,7 +207,7 @@ class ServiceResolverImpl
   bool CreateSrvTransaction();
   void CreateATransaction();
 
-  std::string service_name_;
+  const std::string service_name_;
   ResolveCompleteCallback callback_;
 
   bool metadata_resolved_;
@@ -220,7 +219,7 @@ class ServiceResolverImpl
 
   ServiceDescription service_staging_;
 
-  net::MDnsClient* mdns_client_;
+  net::MDnsClient* const mdns_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceResolverImpl);
 };
@@ -235,7 +234,7 @@ class LocalDomainResolverImpl : public LocalDomainResolver {
 
   void Start() override;
 
-  const std::string& domain() { return domain_; }
+  const std::string& domain() const { return domain_; }
 
  private:
   void OnTransactionComplete(
@@ -248,7 +247,7 @@ class LocalDomainResolverImpl : public LocalDomainResolver {
 
   void SendResolvedAddresses();
 
-  std::string domain_;
+  const std::string domain_;
   net::AddressFamily address_family_;
   IPAddressCallback callback_;
 
@@ -257,7 +256,7 @@ class LocalDomainResolverImpl : public LocalDomainResolver {
 
   int transactions_finished_;
 
-  net::MDnsClient* mdns_client_;
+  net::MDnsClient* const mdns_client_;
 
   net::IPAddress address_ipv4_;
   net::IPAddress address_ipv6_;

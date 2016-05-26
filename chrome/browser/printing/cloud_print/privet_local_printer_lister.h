@@ -9,7 +9,6 @@
 #include <memory>
 #include <string>
 
-#include "base/memory/linked_ptr.h"
 #include "chrome/browser/local_discovery/service_discovery_client.h"
 #include "chrome/browser/printing/cloud_print/privet_device_lister.h"
 #include "chrome/browser/printing/cloud_print/privet_http.h"
@@ -54,7 +53,8 @@ class PrivetLocalPrinterLister : PrivetDeviceLister::Delegate {
  private:
   struct DeviceContext;
 
-  typedef std::map<std::string, linked_ptr<DeviceContext> > DeviceContextMap;
+  using DeviceContextMap =
+      std::map<std::string, std::unique_ptr<DeviceContext>>;
 
   void OnPrivetInfoDone(DeviceContext* context,
                         const std::string& name,

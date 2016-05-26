@@ -64,12 +64,14 @@ void PrivetLocalPrinterLister::DeviceChanged(
     return;
   }
 
-  linked_ptr<DeviceContext> context(new DeviceContext);
+  std::unique_ptr<DeviceContext> context(new DeviceContext);
   context->has_local_printing = false;
   context->description = description;
   context->privet_resolution = privet_http_factory_->CreatePrivetHTTP(name);
-  device_contexts_[name] = context;
-  context->privet_resolution->Start(
+
+  DeviceContext* context_ptr = context.get();
+  device_contexts_[name] = std::move(context);
+  context_ptr->privet_resolution->Start(
       description.address,
       base::Bind(&PrivetLocalPrinterLister::OnPrivetResolved,
                  base::Unretained(this), name));
@@ -121,11 +123,9 @@ void PrivetLocalPrinterLister::OnPrivetInfoDone(
 }
 
 void PrivetLocalPrinterLister::DeviceRemoved(const std::string& device_name) {
-  DeviceContextMap::iterator it = device_contexts_.find(device_name);
-  if (it != device_contexts_.end()) {
-    device_contexts_.erase(it);
+  size_t removed = device_contexts_.erase(device_name);
+  if (removed)
     delegate_->LocalPrinterRemoved(device_name);
-  }
 }
 
 const DeviceDescription* PrivetLocalPrinterLister::GetDeviceDescription(
