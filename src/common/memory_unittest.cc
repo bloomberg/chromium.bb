@@ -38,13 +38,13 @@ typedef testing::Test PageAllocatorTest;
 
 TEST(PageAllocatorTest, Setup) {
   PageAllocator allocator;
-  EXPECT_EQ(0, allocator.pages_allocated());
+  EXPECT_EQ(0U, allocator.pages_allocated());
 }
 
 TEST(PageAllocatorTest, SmallObjects) {
   PageAllocator allocator;
 
-  EXPECT_EQ(0, allocator.pages_allocated());
+  EXPECT_EQ(0U, allocator.pages_allocated());
   for (unsigned i = 1; i < 1024; ++i) {
     uint8_t *p = reinterpret_cast<uint8_t*>(allocator.Alloc(i));
     ASSERT_FALSE(p == NULL);
@@ -55,10 +55,10 @@ TEST(PageAllocatorTest, SmallObjects) {
 TEST(PageAllocatorTest, LargeObject) {
   PageAllocator allocator;
 
-  EXPECT_EQ(0, allocator.pages_allocated());
+  EXPECT_EQ(0U, allocator.pages_allocated());
   uint8_t *p = reinterpret_cast<uint8_t*>(allocator.Alloc(10000));
   ASSERT_FALSE(p == NULL);
-  EXPECT_EQ(3, allocator.pages_allocated());
+  EXPECT_EQ(3U, allocator.pages_allocated());
   for (unsigned i = 1; i < 10; ++i) {
     uint8_t *p = reinterpret_cast<uint8_t*>(allocator.Alloc(i));
     ASSERT_FALSE(p == NULL);
@@ -79,7 +79,7 @@ TEST(WastefulVectorTest, Setup) {
 
 TEST(WastefulVectorTest, Simple) {
   PageAllocator allocator_;
-  EXPECT_EQ(0, allocator_.pages_allocated());
+  EXPECT_EQ(0U, allocator_.pages_allocated());
   wasteful_vector<unsigned> v(&allocator_);
 
   for (unsigned i = 0; i < 256; ++i) {
@@ -89,7 +89,7 @@ TEST(WastefulVectorTest, Simple) {
   }
   ASSERT_FALSE(v.empty());
   ASSERT_EQ(v.size(), 256u);
-  EXPECT_EQ(1, allocator_.pages_allocated());
+  EXPECT_EQ(1U, allocator_.pages_allocated());
   for (unsigned i = 0; i < 256; ++i)
     ASSERT_EQ(v[i], i);
 }
@@ -97,7 +97,7 @@ TEST(WastefulVectorTest, Simple) {
 TEST(WastefulVectorTest, UsesPageAllocator) {
   PageAllocator allocator_;
   wasteful_vector<unsigned> v(&allocator_);
-  EXPECT_EQ(1, allocator_.pages_allocated());
+  EXPECT_EQ(1U, allocator_.pages_allocated());
 
   v.push_back(1);
   ASSERT_TRUE(allocator_.OwnsPointer(&v[0]));
@@ -105,20 +105,20 @@ TEST(WastefulVectorTest, UsesPageAllocator) {
 
 TEST(WastefulVectorTest, AutoWastefulVector) {
   PageAllocator allocator_;
-  EXPECT_EQ(0, allocator_.pages_allocated());
+  EXPECT_EQ(0U, allocator_.pages_allocated());
 
   auto_wasteful_vector<unsigned, 4> v(&allocator_);
-  EXPECT_EQ(0, allocator_.pages_allocated());
+  EXPECT_EQ(0U, allocator_.pages_allocated());
 
   v.push_back(1);
-  EXPECT_EQ(0, allocator_.pages_allocated());
+  EXPECT_EQ(0U, allocator_.pages_allocated());
   EXPECT_FALSE(allocator_.OwnsPointer(&v[0]));
 
   v.resize(4);
-  EXPECT_EQ(0, allocator_.pages_allocated());
+  EXPECT_EQ(0U, allocator_.pages_allocated());
   EXPECT_FALSE(allocator_.OwnsPointer(&v[0]));
 
   v.resize(10);
-  EXPECT_EQ(1, allocator_.pages_allocated());
+  EXPECT_EQ(1U, allocator_.pages_allocated());
   EXPECT_TRUE(allocator_.OwnsPointer(&v[0]));
 }
