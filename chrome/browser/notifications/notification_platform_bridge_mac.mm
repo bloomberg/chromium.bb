@@ -19,9 +19,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/url_formatter/elide_url.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 @class NSUserNotification;
 @class NSUserNotificationCenter;
@@ -82,14 +84,14 @@ void NotificationPlatformBridgeMac::Display(const std::string& notification_id,
   [builder setTitle:base::SysUTF16ToNSString(notification.title())];
   [builder setContextMessage:base::SysUTF16ToNSString(notification.message())];
 
-  // TODO(miguelg): try to elide the origin perhaps See NSString
-  // stringWithFormat. It seems that the informativeText font is constant.
-  NSString* subtitle =
+  base::string16 subtitle =
       notification.context_message().empty()
-          ? base::SysUTF8ToNSString(notification.origin_url().spec())
-          : base::SysUTF16ToNSString(notification.context_message());
+          ? url_formatter::FormatOriginForSecurityDisplay(
+                url::Origin(notification.origin_url()),
+                url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS)
+          : notification.context_message();
 
-  [builder setSubTitle:subtitle];
+  [builder setSubTitle:base::SysUTF16ToNSString(subtitle)];
   if (!notification.icon().IsEmpty()) {
     [builder setIcon:notification.icon().ToNSImage()];
   }
