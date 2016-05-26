@@ -280,6 +280,7 @@ class NET_EXPORT NetLog {
   // Warning: |name| and |value| must remain valid for the life of the callback.
   static ParametersCallback StringCallback(const char* name,
                                            const std::string* value);
+  static ParametersCallback StringCallback(const char* name, const char* value);
 
   // Same as above, but takes in a UTF16 string.
   static ParametersCallback StringCallback(const char* name,
