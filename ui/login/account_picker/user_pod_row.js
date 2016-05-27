@@ -88,11 +88,11 @@ cr.define('login', function() {
    * @const
    */
   var UserPodTabOrder = {
-    POD_INPUT: 1,        // Password input fields (and whole pods themselves).
-    POD_CUSTOM_ICON: 2,  // Pod custom icon next to passwrod input field.
+    POD_INPUT: 1,        // Password input field, Action box menu button, and
+                         // the pod itself.
+    POD_CUSTOM_ICON: 2,  // Pod custom icon next to password input field.
     HEADER_BAR: 3,       // Buttons on the header bar (Shutdown, Add User).
-    ACTION_BOX: 4,       // Action box buttons.
-    PAD_MENU_ITEM: 5     // User pad menu items (Remove this user).
+    PAD_MENU_ITEM: 4     // User pad menu items (Remove this user).
   };
 
   /**
@@ -706,7 +706,7 @@ cr.define('login', function() {
     /** @override */
     decorate: function() {
       this.tabIndex = UserPodTabOrder.POD_INPUT;
-      this.actionBoxAreaElement.tabIndex = UserPodTabOrder.ACTION_BOX;
+      this.actionBoxAreaElement.tabIndex = UserPodTabOrder.POD_INPUT;
 
       this.addEventListener('keydown', this.handlePodKeyDown_.bind(this));
       this.addEventListener('click', this.handleClickOnPod_.bind(this));
