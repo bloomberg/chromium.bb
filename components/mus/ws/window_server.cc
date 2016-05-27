@@ -215,22 +215,6 @@ bool WindowServer::DidTreeMessageClient(ClientSpecificId id) const {
   return current_operation_ && current_operation_->DidMessageTree(id);
 }
 
-mojom::ViewportMetricsPtr WindowServer::GetViewportMetricsForWindow(
-    const ServerWindow* window) {
-  const Display* display = display_manager_->GetDisplayContaining(window);
-  if (display)
-    return display->GetViewportMetrics().Clone();
-
-  if (!display_manager_->displays().empty())
-    return (*display_manager_->displays().begin())
-        ->GetViewportMetrics()
-        .Clone();
-
-  mojom::ViewportMetricsPtr metrics = mojom::ViewportMetrics::New();
-  metrics->size_in_pixels = mojo::Size::New();
-  return metrics;
-}
-
 const WindowTree* WindowServer::GetTreeWithRoot(
     const ServerWindow* window) const {
   if (!window)

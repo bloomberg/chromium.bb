@@ -15,12 +15,6 @@ import "components/mus/public/interfaces/window_manager_constants.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/platform_window/mojo/text_input_state.mojom";
 
-struct ViewportMetrics {
-  mojo.Size size_in_pixels;
-  // A value of 0 indicates the real value is not yet available.
-  float device_pixel_ratio = 0.0;
-};
-
 struct WindowData {
   uint32 parent_id;
   uint32 window_id;

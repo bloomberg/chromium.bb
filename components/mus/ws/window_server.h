@@ -119,11 +119,6 @@ class WindowServer : public ServerWindowDelegate,
   // Returns true if OnTreeMessagedClient() was invoked for id.
   bool DidTreeMessageClient(ClientSpecificId id) const;
 
-  // Returns the metrics of the viewport where the provided |window| is
-  // displayed.
-  mojom::ViewportMetricsPtr GetViewportMetricsForWindow(
-      const ServerWindow* window);
-
   // Returns the WindowTree that has |id| as a root.
   WindowTree* GetTreeWithRoot(const ServerWindow* window) {
     return const_cast<WindowTree*>(

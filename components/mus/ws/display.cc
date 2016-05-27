@@ -91,8 +91,7 @@ mojom::DisplayPtr Display::ToMojomDisplay() const {
   display_ptr->bounds->height = root_->bounds().size().height();
   // TODO(sky): window manager needs an API to set the work area.
   display_ptr->work_area = display_ptr->bounds.Clone();
-  display_ptr->device_pixel_ratio =
-      platform_display_->GetViewportMetrics().device_pixel_ratio;
+  display_ptr->device_pixel_ratio = platform_display_->GetDeviceScaleFactor();
   display_ptr->rotation = platform_display_->GetRotation();
   // TODO(sky): make this real.
   display_ptr->is_primary = true;
@@ -121,10 +120,6 @@ void Display::ScheduleSurfaceDestruction(ServerWindow* window) {
     return;
   windows_needing_frame_destruction_.insert(window);
   window->AddObserver(this);
-}
-
-const mojom::ViewportMetrics& Display::GetViewportMetrics() const {
-  return platform_display_->GetViewportMetrics();
 }
 
 ServerWindow* Display::GetRootWithId(const WindowId& id) {
@@ -292,20 +287,19 @@ void Display::OnDisplayClosed() {
   display_manager()->DestroyDisplay(this);
 }
 
-void Display::OnViewportMetricsChanged(
-    const mojom::ViewportMetrics& old_metrics,
-    const mojom::ViewportMetrics& new_metrics) {
+void Display::OnViewportMetricsChanged(const ViewportMetrics& old_metrics,
+                                       const ViewportMetrics& new_metrics) {
   if (!root_) {
     root_.reset(window_server_->CreateServerWindow(
         display_manager()->GetAndAdvanceNextRootId(),
         ServerWindow::Properties()));
-    root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels.To<gfx::Size>()));
+    root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels));
     root_->SetVisible(true);
     focus_controller_.reset(new FocusController(this, root_.get()));
     focus_controller_->AddObserver(this);
     InitWindowManagersIfNecessary();
   } else {
-    root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels.To<gfx::Size>()));
+    root_->SetBounds(gfx::Rect(new_metrics.size_in_pixels));
     const gfx::Rect wm_bounds(root_->bounds().size());
     for (auto& pair : window_manager_state_map_)
       pair.second->root()->SetBounds(wm_bounds);

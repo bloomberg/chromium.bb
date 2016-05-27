@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_MUS_WS_PLATFORM_DISPLAY_DELEGATE_H_
 #define COMPONENTS_MUS_WS_PLATFORM_DISPLAY_DELEGATE_H_
 
-#include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/ids.h"
 
 namespace ui {
@@ -17,6 +16,7 @@ namespace mus {
 namespace ws {
 
 class ServerWindow;
+struct ViewportMetrics;
 
 // PlatformDisplayDelegate is implemented by an object that manages the
 // lifetime of a PlatformDisplay, forwards events to the appropriate windows,
@@ -36,9 +36,8 @@ class PlatformDisplayDelegate {
   virtual void OnNativeCaptureLost() = 0;
 
   // Signals that the metrics of this display's viewport has changed.
-  virtual void OnViewportMetricsChanged(
-      const mojom::ViewportMetrics& old_metrics,
-      const mojom::ViewportMetrics& new_metrics) = 0;
+  virtual void OnViewportMetricsChanged(const ViewportMetrics& old_metrics,
+                                        const ViewportMetrics& new_metrics) = 0;
 
   // Called when a compositor frame is finished drawing.
   virtual void OnCompositorFrameDrawn() = 0;

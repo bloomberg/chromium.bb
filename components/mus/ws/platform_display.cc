@@ -175,16 +175,14 @@ DefaultPlatformDisplay::DefaultPlatformDisplay(
       cursor_loader_(ui::CursorLoader::Create()),
 #endif
       weak_factory_(this) {
-  metrics_.size_in_pixels = mojo::Size::New();
-  metrics_.size_in_pixels->width = init_params.display_bounds.width();
-  metrics_.size_in_pixels->height = init_params.display_bounds.height();
+  metrics_.size_in_pixels = init_params.display_bounds.size();
   // TODO(rjkroege): Preserve the display_id when Ozone platform can use it.
 }
 
 void DefaultPlatformDisplay::Init(PlatformDisplayDelegate* delegate) {
   delegate_ = delegate;
 
-  gfx::Rect bounds(metrics_.size_in_pixels.To<gfx::Size>());
+  gfx::Rect bounds(metrics_.size_in_pixels);
 #if defined(OS_WIN)
   platform_window_.reset(new ui::WinWindow(this, bounds));
 #elif defined(USE_X11)
@@ -257,8 +255,8 @@ void DefaultPlatformDisplay::SetCursorById(int32_t cursor_id) {
 #endif
 }
 
-const mojom::ViewportMetrics& DefaultPlatformDisplay::GetViewportMetrics() {
-  return metrics_;
+float DefaultPlatformDisplay::GetDeviceScaleFactor() {
+  return metrics_.device_scale_factor;
 }
 
 mojom::Rotation DefaultPlatformDisplay::GetRotation() {
@@ -316,19 +314,16 @@ void DefaultPlatformDisplay::WantToDraw() {
 }
 
 void DefaultPlatformDisplay::UpdateMetrics(const gfx::Size& size,
-                                           float device_pixel_ratio) {
+                                           float device_scale_factor) {
   if (display::Display::HasForceDeviceScaleFactor())
-    device_pixel_ratio = display::Display::GetForcedDeviceScaleFactor();
-  if (metrics_.size_in_pixels.To<gfx::Size>() == size &&
-      metrics_.device_pixel_ratio == device_pixel_ratio)
+    device_scale_factor = display::Display::GetForcedDeviceScaleFactor();
+  if (metrics_.size_in_pixels == size &&
+      metrics_.device_scale_factor == device_scale_factor)
     return;
-  mojom::ViewportMetrics old_metrics;
-  old_metrics.size_in_pixels = metrics_.size_in_pixels.Clone();
-  old_metrics.device_pixel_ratio = metrics_.device_pixel_ratio;
 
-  metrics_.size_in_pixels = mojo::Size::From(size);
-  metrics_.device_pixel_ratio = device_pixel_ratio;
-
+  ViewportMetrics old_metrics = metrics_;
+  metrics_.size_in_pixels = size;
+  metrics_.device_scale_factor = device_scale_factor;
   delegate_->OnViewportMetricsChanged(old_metrics, metrics_);
 }
 
@@ -336,7 +331,7 @@ std::unique_ptr<cc::CompositorFrame>
 DefaultPlatformDisplay::GenerateCompositorFrame() {
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->damage_rect = dirty_rect_;
-  render_pass->output_rect = gfx::Rect(metrics_.size_in_pixels.To<gfx::Size>());
+  render_pass->output_rect = gfx::Rect(metrics_.size_in_pixels);
 
   std::set<WindowId> referenced_window_ids;
   DrawWindowTree(render_pass.get(), delegate_->GetRootWindow(), gfx::Vector2d(),
@@ -344,7 +339,7 @@ DefaultPlatformDisplay::GenerateCompositorFrame() {
 
   std::unique_ptr<cc::DelegatedFrameData> frame_data(
       new cc::DelegatedFrameData);
-  frame_data->device_scale_factor = metrics_.device_pixel_ratio;
+  frame_data->device_scale_factor = metrics_.device_scale_factor;
   frame_data->render_pass_list.push_back(std::move(render_pass));
 
   std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
@@ -353,7 +348,7 @@ DefaultPlatformDisplay::GenerateCompositorFrame() {
 }
 
 void DefaultPlatformDisplay::OnBoundsChanged(const gfx::Rect& new_bounds) {
-  UpdateMetrics(new_bounds.size(), metrics_.device_pixel_ratio);
+  UpdateMetrics(new_bounds.size(), metrics_.device_scale_factor);
 }
 
 void DefaultPlatformDisplay::OnDamageRect(const gfx::Rect& damaged_region) {
@@ -417,13 +412,13 @@ void DefaultPlatformDisplay::OnLostCapture() {
 
 void DefaultPlatformDisplay::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget,
-    float device_pixel_ratio) {
+    float device_scale_factor) {
   if (widget != gfx::kNullAcceleratedWidget) {
     display_compositor_.reset(
         new DisplayCompositor(base::ThreadTaskRunnerHandle::Get(), widget,
                               gpu_state_, surfaces_state_));
   }
-  UpdateMetrics(metrics_.size_in_pixels.To<gfx::Size>(), device_pixel_ratio);
+  UpdateMetrics(metrics_.size_in_pixels, device_scale_factor);
 }
 
 void DefaultPlatformDisplay::OnAcceleratedWidgetDestroyed() {

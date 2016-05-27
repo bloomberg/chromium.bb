@@ -83,9 +83,6 @@ class Display : public PlatformDisplayDelegate,
   // drawn, otherwise destruction is immediate.
   void ScheduleSurfaceDestruction(ServerWindow* window);
 
-  // Returns the metrics for this viewport.
-  const mojom::ViewportMetrics& GetViewportMetrics() const;
-
   mojom::Rotation GetRotation() const;
 
   WindowServer* window_server() { return window_server_; }
@@ -162,9 +159,8 @@ class Display : public PlatformDisplayDelegate,
   void OnEvent(const ui::Event& event) override;
   void OnNativeCaptureLost() override;
   void OnDisplayClosed() override;
-  void OnViewportMetricsChanged(
-      const mojom::ViewportMetrics& old_metrics,
-      const mojom::ViewportMetrics& new_metrics) override;
+  void OnViewportMetricsChanged(const ViewportMetrics& old_metrics,
+                                const ViewportMetrics& new_metrics) override;
   void OnCompositorFrameDrawn() override;
 
   // FocusControllerDelegate:
