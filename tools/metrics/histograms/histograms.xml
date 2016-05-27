@@ -24524,6 +24524,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Navigation.Scheduled.MaybeCausedAbort"
+    enum="ScheduledNavigationType">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    window.location and other scheduled navigation changes can cause the current
+    provisional load to be aborted. Many times these are initiated without user
+    gesture. This histogram logs counts of the various aborters.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.Scheduled.MaybeCausedAbort.Time" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    window.location and other scheduled navigation changes can cause the current
+    provisional load to be aborted. Many times these are initiated without user
+    gesture. This histogram logs the time between the aborted navigation start
+    and the scheduled navigation start, if the aborted navigation has a non-zero
+    navigationStart value.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.SchemePerUniqueOrigin" enum="NavigationScheme">
   <owner>palmer@chromium.org</owner>
   <owner>felt@chromium.org</owner>
@@ -86084,6 +86105,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="5" label="FAILED_VERSION_CHECK"/>
   <int value="6" label="FAILED_DEFAULT_SETTING_SET"/>
   <int value="7" label="FAILED_WRONG_SETTINGS_COUNT"/>
+</enum>
+
+<enum name="ScheduledNavigationType" type="int">
+  <int value="0" label="(no gesture) ScheduledReload"/>
+  <int value="1" label="(no gesture) ScheduledFormSubmission"/>
+  <int value="2" label="(no gesture) ScheduledURLNavigation"/>
+  <int value="3" label="(no gesture) ScheduledRedirect"/>
+  <int value="4" label="(no gesture) ScheduledLocationChange"/>
+  <int value="5" label="(no gesture) ScheduledPageBlock"/>
+  <int value="6" label="(gesture) ScheduledReload"/>
+  <int value="7" label="(gesture) ScheduledFormSubmission"/>
+  <int value="8" label="(gesture) ScheduledURLNavigation"/>
+  <int value="9" label="(gesture) ScheduledRedirect"/>
+  <int value="10" label="(gesture) ScheduledLocationChange"/>
+  <int value="11" label="(gesture) ScheduledPageBlock"/>
 </enum>
 
 <enum name="ScrollThread" type="int">

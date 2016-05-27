@@ -39,6 +39,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormSubmission.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -46,6 +47,7 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/page/Page.h"
+#include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
@@ -55,6 +57,42 @@
 #include "wtf/CurrentTime.h"
 
 namespace blink {
+
+namespace {
+
+// Add new scheduled navigation types before ScheduledLastEntry
+enum ScheduledNavigationType {
+    ScheduledReload,
+    ScheduledFormSubmission,
+    ScheduledURLNavigation,
+    ScheduledRedirect,
+    ScheduledLocationChange,
+    ScheduledPageBlock,
+
+    ScheduledLastEntry
+};
+
+// If the current frame has a provisional document loader, a scheduled
+// navigation might abort that load. Log those occurrences until
+// crbug.com/557430 is resolved.
+void maybeLogScheduledNavigationClobber(ScheduledNavigationType type, LocalFrame* frame, const FrameLoadRequest& request, UserGestureIndicator* gestureIndicator)
+{
+    if (!frame->loader().provisionalDocumentLoader())
+        return;
+    // Include enumeration values userGesture variants.
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, scheduledNavigationClobberHistogram, ("Navigation.Scheduled.MaybeCausedAbort", ScheduledNavigationType::ScheduledLastEntry * 2));
+
+    UserGestureToken* gestureToken = gestureIndicator->currentToken();
+    int value = gestureToken->hasGestures() ? type + ScheduledLastEntry : type;
+    scheduledNavigationClobberHistogram.count(value);
+
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, scheduledClobberAbortTimeHistogram, ("Navigation.Scheduled.MaybeCausedAbort.Time", 1, 10000, 50));
+    double navigationStart = frame->loader().provisionalDocumentLoader()->timing().navigationStart();
+    if (navigationStart)
+        scheduledClobberAbortTimeHistogram.count(monotonicallyIncreasingTime() - navigationStart);
+}
+
+} // namespace
 
 unsigned NavigationDisablerForBeforeUnload::s_navigationDisableCount = 0;
 unsigned NavigationCounterForUnload::s_inUnloadHandler = 0;
@@ -123,6 +161,9 @@ protected:
         FrameLoadRequest request(originDocument(), m_url, "_self", m_shouldCheckMainWorldContentSecurityPolicy);
         request.setReplacesCurrentItem(replacesCurrentItem());
         request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
+
+        ScheduledNavigationType type = isLocationChange() ? ScheduledNavigationType::ScheduledLocationChange : ScheduledNavigationType::ScheduledURLNavigation;
+        maybeLogScheduledNavigationClobber(type, frame, request, gestureIndicator.get());
         frame->loader().load(request);
     }
 
@@ -150,6 +191,7 @@ public:
         if (equalIgnoringFragmentIdentifier(frame->document()->url(), request.resourceRequest().url()))
             request.resourceRequest().setCachePolicy(WebCachePolicy::ValidatingCacheData);
         request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
+        maybeLogScheduledNavigationClobber(ScheduledNavigationType::ScheduledRedirect, frame, request, gestureIndicator.get());
         frame->loader().load(request);
     }
 
@@ -188,6 +230,7 @@ public:
             return;
         FrameLoadRequest request = FrameLoadRequest(nullptr, resourceRequest);
         request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
+        maybeLogScheduledNavigationClobber(ScheduledNavigationType::ScheduledReload, frame, request, gestureIndicator.get());
         frame->loader().load(request, FrameLoadTypeReload);
     }
 
@@ -212,6 +255,7 @@ public:
         FrameLoadRequest request(originDocument(), url(), substituteData);
         request.setReplacesCurrentItem(true);
         request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
+        maybeLogScheduledNavigationClobber(ScheduledNavigationType::ScheduledPageBlock, frame, request, gestureIndicator.get());
         frame->loader().load(request);
     }
 private:
@@ -237,6 +281,7 @@ public:
         frameRequest.setReplacesCurrentItem(replacesCurrentItem());
         frameRequest.setTriggeringEvent(m_submission->event());
         frameRequest.setForm(m_submission->form());
+        maybeLogScheduledNavigationClobber(ScheduledNavigationType::ScheduledFormSubmission, frame, frameRequest, gestureIndicator.get());
         frame->loader().load(frameRequest);
     }
 
