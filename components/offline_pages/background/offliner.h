@@ -17,11 +17,12 @@ class Offliner {
  public:
   // Status of processing an offline page request.
   enum class RequestStatus {
-    UNKNOWN,   // No status determined/reported yet.
-    LOADED,    // Page loaded but not (yet) saved.
-    SAVED,     // Offline page snapshot saved.
-    CANCELED,  // Request was canceled.
-    FAILED,    // Request failed.
+    UNKNOWN,      // No status determined/reported yet.
+    LOADED,       // Page loaded but not (yet) saved.
+    SAVED,        // Offline page snapshot saved.
+    CANCELED,     // Request was canceled.
+    FAILED,       // Failed to load page.
+    FAILED_SAVE,  // Failed to save loaded page.
     // TODO(dougarnett): Define a retry-able failure status.
   };
 
@@ -34,7 +35,8 @@ class Offliner {
   virtual ~Offliner() {}
 
   // Processes |request| to load and save an offline page.
-  // Returns whether the request was accepted or not.
+  // Returns whether the request was accepted or not. |callback| is guaranteed
+  // to be called if the request was accepted and |Cancel()| is not called.
   virtual bool LoadAndSave(
       const SavePageRequest& request,
       const CompletionCallback& callback) = 0;
