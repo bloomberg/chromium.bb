@@ -82,4 +82,12 @@ TEST(CSSParserFastPathsTest, ParseTransformNotFastPath)
     ASSERT_EQ(nullptr, value);
 }
 
+TEST(CSSParserFastPathsTest, ParseInvalidTransform)
+{
+    CSSValue* value = CSSParserFastPaths::maybeParseValue(CSSPropertyTransform, "rotateX(1deg", HTMLStandardMode);
+    ASSERT_EQ(nullptr, value);
+    value = CSSParserFastPaths::maybeParseValue(CSSPropertyTransform, "translateZ(1px) (1px, 1px) rotateX(1deg", HTMLStandardMode);
+    ASSERT_EQ(nullptr, value);
+}
+
 } // namespace blink
