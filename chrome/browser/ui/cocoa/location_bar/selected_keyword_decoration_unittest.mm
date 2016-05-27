@@ -47,8 +47,13 @@ class SelectedKeywordDecorationTest : public CocoaTest {
 TEST_F(SelectedKeywordDecorationTest, UsesPartialKeywordIfNarrow) {
 
   const base::string16 kKeyword = base::ASCIIToUTF16("Engine");
-  NSString* const kFullString = @"Search Engine:";
-  NSString* const kPartialString = @"Search En\u2026:";  // ellipses
+  NSString* const kFullString = ui::MaterialDesignController::IsModeMaterial()
+                                    ? @"Search Engine"
+                                    : @"Search Engine:";
+  NSString* const kPartialString =
+      ui::MaterialDesignController::IsModeMaterial()
+          ? @"Search En\u2026"
+          : @"Search En\u2026:";  // ellipses
 
   decoration_.SetKeyword(kKeyword, false);
 
