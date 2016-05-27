@@ -67,8 +67,6 @@
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutPart.h"
-#include "core/layout/LayoutTheme.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/EditorClient.h"
 #include "core/page/FocusController.h"
@@ -405,19 +403,6 @@ static bool removingNodeRemovesPosition(Node& node, const Position& position)
     return element.isShadowIncludingInclusiveAncestorOf(position.anchorNode());
 }
 
-// TODO(yoiciho): We should move this function to FrameCaret.cpp
-void FrameCaret::nodeWillBeRemoved(Node& node)
-{
-    if (node != m_previousCaretNode)
-        return;
-    // Hits in ManualTests/caret-paint-after-last-text-is-removed.html
-    DisableCompositingQueryAsserts disabler;
-    invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
-    m_previousCaretNode = nullptr;
-    m_previousCaretRect = LayoutRect();
-    m_previousCaretVisibility = CaretVisibility::Hidden;
-}
-
 void FrameSelection::nodeWillBeRemoved(Node& node)
 {
     // There can't be a selection inside a fragment, so if a fragment's node is being removed,
@@ -682,14 +667,6 @@ void FrameSelection::clear()
     setSelection(VisibleSelection());
 }
 
-// TODO(yoiciho): We should move this function to FrameCaret.cpp
-void FrameCaret::prepareForDestruction()
-{
-    m_caretPosition = PositionWithAffinity();
-    m_caretBlinkTimer.stop();
-    m_previousCaretNode.clear();
-}
-
 void FrameSelection::prepareForDestruction()
 {
     m_originalBase = VisiblePosition();
@@ -713,56 +690,10 @@ LayoutBlock* FrameSelection::caretLayoutObject() const
     return CaretBase::caretLayoutObject(selection().start().anchorNode());
 }
 
-// TODO(yoiciho): We should move this function to FrameCaret.cpp
-IntRect FrameCaret::absoluteCaretBounds()
-{
-    DCHECK_NE(m_frame->document()->lifecycle().state(), DocumentLifecycle::InPaintInvalidation);
-    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-    if (!isActive()) {
-        clearCaretRect();
-    } else {
-        if (enclosingTextFormControl(m_caretPosition.position()))
-            updateCaretRect(PositionWithAffinity(isVisuallyEquivalentCandidate(m_caretPosition.position()) ? m_caretPosition.position() : Position(), m_caretPosition.affinity()));
-        else
-            updateCaretRect(createVisiblePosition(m_caretPosition));
-    }
-    return absoluteBoundsForLocalRect(m_caretPosition.position().anchorNode(), localCaretRectWithoutUpdate());
-}
-
 IntRect FrameSelection::absoluteCaretBounds()
 {
     DCHECK(selection().isValidFor(*m_frame->document()));
     return m_frameCaret->absoluteCaretBounds();
-}
-
-// TODO(yoiciho): We should move this function to FrameCaret.cpp
-void FrameCaret::invalidateCaretRect(const VisibleSelection& selection)
-{
-    if (!m_caretRectDirty)
-        return;
-    m_caretRectDirty = false;
-
-    DCHECK(selection.isValidFor(*m_frame->document()));
-    LayoutObject* layoutObject = nullptr;
-    LayoutRect newRect;
-    if (selection.isCaret())
-        newRect = localCaretRectOfPosition(PositionWithAffinity(selection.start(), selection.affinity()), layoutObject);
-    Node* newNode = layoutObject ? layoutObject->node() : nullptr;
-
-    if (!m_caretBlinkTimer.isActive()
-        && newNode == m_previousCaretNode
-        && newRect == m_previousCaretRect
-        && getCaretVisibility() == m_previousCaretVisibility)
-        return;
-
-    LayoutViewItem view = m_frame->document()->layoutViewItem();
-    if (m_previousCaretNode && (shouldRepaintCaret(*m_previousCaretNode) || shouldRepaintCaret(view)))
-        invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
-    if (newNode && (shouldRepaintCaret(*newNode) || shouldRepaintCaret(view)))
-        invalidateLocalCaretRect(newNode, newRect);
-    m_previousCaretNode = newNode;
-    m_previousCaretRect = newRect;
-    m_previousCaretVisibility = getCaretVisibility();
 }
 
 void FrameSelection::invalidateCaretRect()
@@ -770,28 +701,9 @@ void FrameSelection::invalidateCaretRect()
     m_frameCaret->invalidateCaretRect(selection());
 }
 
-// TODO(yoiciho): We should move this function to FrameCaret.cpp
-void FrameCaret::dataWillChange(const CharacterData& node)
-{
-    if (node == m_previousCaretNode) {
-        // This invalidation is eager, and intentionally uses stale state.
-        DisableCompositingQueryAsserts disabler;
-        invalidateLocalCaretRect(m_previousCaretNode.get(), m_previousCaretRect);
-    }
-}
-
 void FrameSelection::dataWillChange(const CharacterData& node)
 {
     m_frameCaret->dataWillChange(node);
-}
-
-// TODO(yoiciho): We should move this function to FrameCaret.cpp
-void FrameCaret::paintCaret(GraphicsContext& context, const LayoutPoint& paintOffset, const VisibleSelection& selection)
-{
-    if (selection.isCaret() && m_shouldPaintCaret) {
-        updateCaretRect(PositionWithAffinity(selection.start(), selection.affinity()));
-        CaretBase::paintCaret(selection.start().anchorNode(), context, paintOffset);
-    }
 }
 
 void FrameSelection::paintCaret(GraphicsContext& context, const LayoutPoint& paintOffset)
@@ -1055,11 +967,6 @@ bool FrameSelection::isFocusedAndActive() const
     return m_focused && m_frame->page() && m_frame->page()->focusController().isActive();
 }
 
-inline static bool shouldStopBlinkingDueToTypingCommand(LocalFrame* frame)
-{
-    return frame->editor().lastEditCommand() && frame->editor().lastEditCommand()->shouldStopCaretBlinking();
-}
-
 bool FrameSelection::isAppearanceDirty() const
 {
     return m_pendingSelection->hasPendingSelection();
@@ -1070,42 +977,6 @@ void FrameSelection::commitAppearanceIfNeeded(LayoutView& layoutView)
     return m_pendingSelection->commit(layoutView);
 }
 
-// TODO(yoiciho): We should move this function to FrameCaret.cpp
-void FrameCaret::startBlinkCaret()
-{
-    // Start blinking with a black caret. Be sure not to restart if we're
-    // already blinking in the right location.
-    if (m_caretBlinkTimer.isActive())
-        return;
-
-    if (double blinkInterval = LayoutTheme::theme().caretBlinkInterval())
-        m_caretBlinkTimer.startRepeating(blinkInterval, BLINK_FROM_HERE);
-
-    m_shouldPaintCaret = true;
-    setCaretRectNeedsUpdate();
-
-}
-
-// TODO(yoiciho): We should move this function to FrameCaret.cpp
-void FrameCaret::updateAppearance()
-{
-    // Paint a block cursor instead of a caret in overtype mode unless the caret is at the end of a line (in this case
-    // the FrameSelection will paint a blinking caret as usual).
-    bool paintBlockCursor = m_shouldShowBlockCursor && isActive() && !isLogicalEndOfLine(createVisiblePosition(m_caretPosition));
-
-    bool shouldBlink = !paintBlockCursor && shouldBlinkCaret();
-
-    // If the caret moved, stop the blink timer so we can restart with a
-    // black caret in the new location.
-    if (!shouldBlink || shouldStopBlinkingDueToTypingCommand(m_frame))
-        stopCaretBlinkTimer();
-
-    // Start blinking with a black caret. Be sure not to restart if we're
-    // already blinking in the right location.
-    if (shouldBlink)
-        startBlinkCaret();
-}
-
 void FrameSelection::updateAppearance()
 {
     m_frameCaret->updateAppearance();
@@ -1113,56 +984,6 @@ void FrameSelection::updateAppearance()
     if (m_frame->contentLayoutItem().isNull())
         return;
     m_pendingSelection->setHasPendingSelection();
-}
-
-// TODO(yoiciho): We should move this function to FrameCaret.cpp
-void FrameCaret::setCaretVisibility(CaretVisibility visibility)
-{
-    if (getCaretVisibility() == visibility)
-        return;
-
-    CaretBase::setCaretVisibility(visibility);
-
-    updateAppearance();
-}
-
-// TODO(yoiciho): We should move this function to FrameCaret.cpp
-bool FrameCaret::shouldBlinkCaret() const
-{
-    if (!caretIsVisible() || !isActive())
-        return false;
-
-    if (m_frame->settings() && m_frame->settings()->caretBrowsingEnabled())
-        return false;
-
-    Element* root = rootEditableElementOf(m_caretPosition.position());
-    if (!root)
-        return false;
-
-    Element* focusedElement = root->document().focusedElement();
-    if (!focusedElement)
-        return false;
-
-    return focusedElement->isShadowIncludingInclusiveAncestorOf(m_caretPosition.position().anchorNode());
-}
-
-// TODO(yoiciho): We should move this function to FrameCaret.cpp
-void FrameCaret::caretBlinkTimerFired(Timer<FrameCaret>*)
-{
-    DCHECK(caretIsVisible());
-    if (isCaretBlinkingSuspended() && m_shouldPaintCaret)
-        return;
-    m_shouldPaintCaret = !m_shouldPaintCaret;
-    setCaretRectNeedsUpdate();
-}
-
-// TODO(yoiciho): We should move this function to FrameCaret.cpp
-void FrameCaret::stopCaretBlinkTimer()
-{
-    if (m_caretBlinkTimer.isActive() || m_shouldPaintCaret)
-        setCaretRectNeedsUpdate();
-    m_shouldPaintCaret = false;
-    m_caretBlinkTimer.stop();
 }
 
 void FrameSelection::notifyLayoutObjectOfSelectionChange(EUserTriggered userTriggered)
@@ -1363,16 +1184,6 @@ bool FrameSelection::shouldShowBlockCursor() const
     return m_frameCaret->shouldShowBlockCursor();
 }
 
-// TODO(yoiciho): We should move this function to FrameCaret.cpp
-void FrameCaret::setShouldShowBlockCursor(bool shouldShowBlockCursor)
-{
-    m_shouldShowBlockCursor = shouldShowBlockCursor;
-
-    m_frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-
-    updateAppearance();
-}
-
 // TODO(yoichio): We should have LocalFrame having FrameCaret,
 // Editor and PendingSelection using FrameCaret directly
 // and get rid of this.
@@ -1431,17 +1242,6 @@ DEFINE_TRACE(FrameSelection)
     visitor->trace(m_originalBaseInFlatTree);
     visitor->trace(m_typingStyle);
     visitor->trace(m_frameCaret);
-}
-
-// TODO(yoiciho): We should move this function to FrameCaret.cpp
-void FrameCaret::setCaretRectNeedsUpdate()
-{
-    if (m_caretRectDirty)
-        return;
-    m_caretRectDirty = true;
-
-    if (Page* page = m_frame->page())
-        page->animator().scheduleVisualUpdate(m_frame->localFrameRoot());
 }
 
 void FrameSelection::scheduleVisualUpdate() const
