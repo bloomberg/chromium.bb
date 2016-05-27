@@ -458,7 +458,7 @@ void PointerEventManager::dispatchTouchPointerEvents(
         WebInputEventResult result = WebInputEventResult::NotHandled;
 
         // Do not send pointer events for stationary touches or null targetFrame
-        if (touchInfo.touchNode
+        if (touchInfo.touchNode && touchInfo.targetFrame
             && touchPoint.state() != PlatformTouchPoint::TouchStationary
             && !m_inCanceledStateForPointerTypeTouch) {
             FloatPoint pagePoint = touchInfo.targetFrame->view()
