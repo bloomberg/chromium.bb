@@ -68,7 +68,7 @@ set FIND_EXE=%SYSTEMROOT%\System32\find.exe
 reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | %FIND_EXE% /i "x86" > NUL && (set OS_BITS=32) || (set OS_BITS=64)
 
 if not exist "%WIN_TOOLS_ROOT_DIR%\.git_bleeding_edge" (
-  set GIT_VERSION=2.7.4
+  set GIT_VERSION=2.8.3
 ) else (
   set GIT_VERSION=2.8.3
 )
