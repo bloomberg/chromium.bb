@@ -4,7 +4,6 @@
 
 #include "platform/graphics/CompositorFilterOperations.h"
 
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 
 namespace blink {
