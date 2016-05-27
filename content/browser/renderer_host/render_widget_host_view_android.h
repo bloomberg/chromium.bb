@@ -324,6 +324,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   bool SyncCompositorOnMessageReceived(const IPC::Message& message);
 
+  void ComputeEventLatencyOSTouchHistograms(const ui::MotionEvent& event);
+
   // The model object.
   RenderWidgetHostImpl* host_;
 

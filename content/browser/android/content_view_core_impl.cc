@@ -58,6 +58,7 @@
 #include "ui/android/window_android.h"
 #include "ui/events/android/motion_event_android.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/events/event_utils.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -1038,6 +1039,13 @@ jboolean ContentViewCoreImpl::SendMouseWheelEvent(
 
   if (!ticks_x && !ticks_y)
     return false;
+
+  // Compute Event.Latency.OS.MOUSE_WHEEL histogram.
+  base::TimeDelta current_time = ui::EventTimeForNow();
+  base::TimeDelta event_time = base::TimeDelta::FromMilliseconds(time_ms);
+  base::TimeDelta delta = current_time - event_time;
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.MOUSE_WHEEL",
+      delta.InMicroseconds(), 1, 1000000, 50);
 
   blink::WebMouseWheelEvent event = WebMouseWheelEventBuilder::Build(
       ticks_x, ticks_y, pixels_per_tick / dpi_scale(), time_ms / 1000.0,

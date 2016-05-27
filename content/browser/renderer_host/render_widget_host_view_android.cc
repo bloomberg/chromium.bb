@@ -705,6 +705,8 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
   if (!host_)
     return false;
 
+  ComputeEventLatencyOSTouchHistograms(event);
+
   // If a browser-based widget consumes the touch event, it's critical that
   // touch event interception be disabled. This avoids issues with
   // double-handling for embedder-detected gestures like side swipe.
@@ -2025,6 +2027,29 @@ void RenderWidgetHostViewBase::GetDefaultScreenInfo(
   results->depth = info.GetBitsPerPixel();
   results->depthPerComponent = info.GetBitsPerComponent();
   results->isMonochrome = (results->depthPerComponent == 0);
+}
+
+void RenderWidgetHostViewAndroid::ComputeEventLatencyOSTouchHistograms(
+      const ui::MotionEvent& event) {
+  base::TimeTicks event_time = event.GetEventTime();
+  base::TimeDelta delta = base::TimeTicks::Now() - event_time;
+  switch (event.GetAction()) {
+    case ui::MotionEvent::ACTION_DOWN:
+    case ui::MotionEvent::ACTION_POINTER_DOWN:
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_PRESSED",
+                                  delta.InMicroseconds(), 1, 1000000, 50);
+      return;
+    case ui::MotionEvent::ACTION_MOVE:
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_MOVED",
+                                  delta.InMicroseconds(), 1, 1000000, 50);
+      return;
+    case ui::MotionEvent::ACTION_UP:
+    case ui::MotionEvent::ACTION_POINTER_UP:
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.OS.TOUCH_RELEASED",
+                                  delta.InMicroseconds(), 1, 1000000, 50);
+    default:
+      return;
+  }
 }
 
 }  // namespace content
