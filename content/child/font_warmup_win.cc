@@ -24,7 +24,7 @@
 #include "base/win/windows_version.h"
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "skia/ext/fontmgr_default_win.h"
-#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 
@@ -103,11 +103,11 @@ class FakeGdiObject : public base::RefCountedThreadSafe<FakeGdiObject> {
   FakeGdiObject(uint32_t magic, void* handle)
       : handle_(handle), magic_(magic) {}
 
-  void set_typeface(const skia::RefPtr<SkTypeface>& typeface) {
-    typeface_ = typeface;
+  void set_typeface(sk_sp<SkTypeface> typeface) {
+    typeface_ = std::move(typeface);
   }
 
-  skia::RefPtr<SkTypeface> typeface() { return typeface_; }
+  sk_sp<SkTypeface> typeface() { return typeface_; }
   void* handle() { return handle_; }
   uint32_t magic() { return magic_; }
 
@@ -117,7 +117,7 @@ class FakeGdiObject : public base::RefCountedThreadSafe<FakeGdiObject> {
 
   void* handle_;
   uint32_t magic_;
-  skia::RefPtr<SkTypeface> typeface_;
+  sk_sp<SkTypeface> typeface_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeGdiObject);
 };
@@ -193,7 +193,7 @@ base::LazyInstance<FakeGdiObjectFactory>::Leaky g_fake_gdi_object_factory =
 const uint32_t kFakeDCMagic = 'fkdc';
 const uint32_t kFakeFontMagic = 'fkft';
 
-skia::RefPtr<SkTypeface> GetTypefaceFromLOGFONT(const LOGFONTW* log_font) {
+sk_sp<SkTypeface> GetTypefaceFromLOGFONT(const LOGFONTW* log_font) {
   CHECK(g_warmup_fontmgr);
   int weight = log_font->lfWeight;
   if (weight == FW_DONTCARE)
@@ -205,7 +205,7 @@ skia::RefPtr<SkTypeface> GetTypefaceFromLOGFONT(const LOGFONTW* log_font) {
 
   std::string family_name = base::WideToUTF8(log_font->lfFaceName);
   ppapi::ProxyAutoLock lock;  // Needed for DirectWrite font proxy.
-  return skia::AdoptRef(
+  return sk_sp<SkTypeface>(
       g_warmup_fontmgr->matchFamilyStyle(family_name.c_str(), style));
 }
 
@@ -219,13 +219,13 @@ HFONT WINAPI CreateFontIndirectWPatch(const LOGFONTW* log_font) {
   if (!log_font)
     return nullptr;
 
-  skia::RefPtr<SkTypeface> typeface = GetTypefaceFromLOGFONT(log_font);
+  sk_sp<SkTypeface> typeface = GetTypefaceFromLOGFONT(log_font);
   if (!typeface)
     return nullptr;
 
   scoped_refptr<FakeGdiObject> ret =
       g_fake_gdi_object_factory.Get().Create(kFakeFontMagic);
-  ret->set_typeface(typeface);
+  ret->set_typeface(std::move(typeface));
 
   return static_cast<HFONT>(ret->handle());
 }
@@ -252,7 +252,7 @@ int WINAPI EnumFontFamiliesExWPatch(HDC dc_handle,
   if (!log_font || !enum_callback)
     return 1;
 
-  skia::RefPtr<SkTypeface> typeface = GetTypefaceFromLOGFONT(log_font);
+  sk_sp<SkTypeface> typeface = GetTypefaceFromLOGFONT(log_font);
   if (!typeface)
     return 1;
 
@@ -278,7 +278,7 @@ DWORD WINAPI GetFontDataPatch(HDC dc_handle,
   if (!dc_obj)
     return GDI_ERROR;
 
-  skia::RefPtr<SkTypeface> typeface = dc_obj->typeface();
+  sk_sp<SkTypeface> typeface = dc_obj->typeface();
   if (!typeface)
     return GDI_ERROR;
 
@@ -312,10 +312,10 @@ HGDIOBJ WINAPI SelectObjectPatch(HDC dc_handle, HGDIOBJ object_handle) {
 
   // Construct a new fake font object to handle the old font if there's one.
   scoped_refptr<FakeGdiObject> new_font_obj;
-  skia::RefPtr<SkTypeface> old_typeface = dc_obj->typeface();
+  sk_sp<SkTypeface> old_typeface = dc_obj->typeface();
   if (old_typeface) {
     new_font_obj = g_fake_gdi_object_factory.Get().Create(kFakeFontMagic);
-    new_font_obj->set_typeface(old_typeface);
+    new_font_obj->set_typeface(std::move(old_typeface));
   }
   dc_obj->set_typeface(font_obj->typeface());
 

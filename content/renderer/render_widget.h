@@ -39,7 +39,6 @@
 #include "third_party/WebKit/public/web/WebTouchAction.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 #include "third_party/WebKit/public/web/WebWidgetClient.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_types.h"

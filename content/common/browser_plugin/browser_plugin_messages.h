@@ -20,7 +20,6 @@
 #include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebDragStatus.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

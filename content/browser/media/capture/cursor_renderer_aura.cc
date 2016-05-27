@@ -11,6 +11,7 @@
 
 #include "base/logging.h"
 #include "base/time/default_tick_clock.h"
+#include "skia/ext/image_operations.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"

@@ -19,7 +19,9 @@
 #include "third_party/WebKit/public/platform/WebCanvasCaptureHandler.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
-#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
+
+class SkImage;
 
 namespace content {
 

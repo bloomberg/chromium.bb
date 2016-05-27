@@ -11,9 +11,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;

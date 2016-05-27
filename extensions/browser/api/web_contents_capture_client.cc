@@ -11,6 +11,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/constants.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/codec/jpeg_codec.h"

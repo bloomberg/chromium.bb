@@ -13,7 +13,7 @@
 #include "content/browser/media/capture/cursor_renderer.h"
 #include "content/common/content_export.h"
 #include "media/base/video_frame.h"
-#include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/events/event_handler.h"

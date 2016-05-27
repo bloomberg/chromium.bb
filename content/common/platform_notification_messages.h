@@ -15,7 +15,6 @@
 #include "content/public/common/platform_notification_data.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 // Singly-included section for type definitions.
 #ifndef CONTENT_COMMON_PLATFORM_NOTIFICATION_MESSAGES_H_

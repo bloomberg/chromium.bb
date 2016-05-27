@@ -14,7 +14,8 @@
 #include "base/macros.h"
 #include "base/pickle.h"
 #include "base/threading/simple_thread.h"
-#include "skia/ext/skia_utils_base.h"
+
+class SkString;
 
 namespace content {
 

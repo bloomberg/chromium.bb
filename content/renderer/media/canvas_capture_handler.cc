@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/libyuv/include/libyuv.h"
+#include "third_party/skia/include/core/SkImage.h"
 
 namespace {
 

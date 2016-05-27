@@ -12,6 +12,7 @@
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "media/base/limits.h"
 #include "media/blink/webmediaplayer_impl.h"
+#include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"

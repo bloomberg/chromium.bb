@@ -23,9 +23,9 @@
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
-#include "skia/ext/refptr.h"
 #include "skia/ext/skia_utils_base.h"
 #include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
@@ -123,13 +123,13 @@ SkMemoryStream* FontConfigIPC::mapFileDescriptorToStream(int fd) {
   mapped_font_file->Initialize(base::File(fd));
   DCHECK(mapped_font_file->IsValid());
 
-  auto data = skia::AdoptRef(
-      SkData::NewWithProc(mapped_font_file->data(), mapped_font_file->length(),
-                          &DestroyMemoryMappedFile, mapped_font_file.get()));
+  sk_sp<SkData> data =
+      SkData::MakeWithProc(mapped_font_file->data(), mapped_font_file->length(),
+                           &DestroyMemoryMappedFile, mapped_font_file.get());
   if (!data)
     return nullptr;
   ignore_result(mapped_font_file.release()); // Ownership transferred to SkDataB
-  return new SkMemoryStream(data.get());
+  return new SkMemoryStream(std::move(data));
 }
 
 SkStreamAsset* FontConfigIPC::openStream(const FontIdentity& identity) {
@@ -168,7 +168,7 @@ SkTypeface* FontConfigIPC::createTypeface(
   SkStreamAsset* typeface_stream = openStream(identity);
   if (!typeface_stream)
     return nullptr;
-  skia::RefPtr<SkTypeface> typeface_from_stream = skia::AdoptRef(
+  sk_sp<SkTypeface> typeface_from_stream(
       SkTypeface::CreateFromStream(typeface_stream, identity.fTTCIndex));
   auto mapped_typefaces_insert_it =
       mapped_typefaces_.Put(identity, typeface_from_stream);

@@ -9,7 +9,7 @@
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "skia/ext/refptr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
@@ -71,7 +71,7 @@ class FontConfigIPC : public SkFontConfigInterface {
   // frequency of ttc indices is very low, and style is not used by clients of
   // this API, this seems okay.
   base::HashingMRUCache<FontIdentity,
-                        skia::RefPtr<SkTypeface>,
+                        sk_sp<SkTypeface>,
                         SkFontConfigInterfaceFontIdentityHash>
       mapped_typefaces_;
 

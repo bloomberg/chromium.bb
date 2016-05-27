@@ -15,6 +15,8 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebHeap.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 using ::testing::_;
 using ::testing::InSequence;

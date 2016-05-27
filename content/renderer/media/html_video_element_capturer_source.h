@@ -13,9 +13,9 @@
 #include "media/base/video_capturer_source.h"
 #include "media/base/video_frame_pool.h"
 #include "media/base/video_types.h"
-#include "skia/ext/platform_canvas.h"
-#include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
 class WebMediaPlayer;

@@ -55,7 +55,6 @@
 #include "third_party/WebKit/public/web/WebSharedWorkerCreationContextType.h"
 #include "third_party/WebKit/public/web/WebSharedWorkerCreationErrors.h"
 #include "third_party/WebKit/public/web/WebTextDirection.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_base_types.h"

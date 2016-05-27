@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/extension.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace extensions {
 
