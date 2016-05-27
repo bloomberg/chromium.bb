@@ -10,8 +10,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/values.h"
 #include "dbus/bus.h"
 #include "dbus/object_manager.h"
+#include "dbus/values_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace bluez {
@@ -99,6 +101,11 @@ class BluetoothGattDescriptorClientImpl
         bluetooth_gatt_descriptor::kBluetoothGattDescriptorInterface,
         bluetooth_gatt_descriptor::kReadValue);
 
+    // Append empty option dict
+    dbus::MessageWriter writer(&method_call);
+    base::DictionaryValue dict;
+    dbus::AppendValueData(&writer, dict);
+
     object_proxy->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::Bind(&BluetoothGattDescriptorClientImpl::OnValueSuccess,
@@ -124,6 +131,10 @@ class BluetoothGattDescriptorClientImpl
         bluetooth_gatt_descriptor::kWriteValue);
     dbus::MessageWriter writer(&method_call);
     writer.AppendArrayOfBytes(value.data(), value.size());
+
+    // Append empty option dict
+    base::DictionaryValue dict;
+    dbus::AppendValueData(&writer, dict);
 
     object_proxy->CallMethodWithErrorCallback(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
