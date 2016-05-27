@@ -15,6 +15,7 @@ import sys
 import tempfile
 import time
 
+from utils import file_path
 
 # This works around file locking issue on Windows specifically in the case of
 # long lived child processes.
@@ -199,6 +200,7 @@ def prepare_logging(filename, root=None):
   # Setup up logging to a constant file so we can debug issues where
   # the results aren't properly sent to the result URL.
   if filename:
+    file_path.ensure_tree(os.path.dirname(os.path.abspath(unicode(filename))))
     try:
       rotating_file = NoInheritRotatingFileHandler(
           filename, maxBytes=10 * 1024 * 1024, backupCount=5,

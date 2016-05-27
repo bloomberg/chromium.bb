@@ -144,6 +144,7 @@ def process_command(command, out_dir):
   """Replaces isolated specific variables in a command line."""
   def fix(arg):
     if ISOLATED_OUTDIR_PARAMETER in arg:
+      assert out_dir
       arg = arg.replace(ISOLATED_OUTDIR_PARAMETER, out_dir)
       # Replace slashes only if ISOLATED_OUTDIR_PARAMETER is present
       # because of arguments like '${ISOLATED_OUTDIR}/foo/bar'
@@ -349,7 +350,7 @@ def map_and_run(
     root_dir = os.path.dirname(cache.cache_dir) if cache.cache_dir else None
     prefix = u'isolated_'
   run_dir = make_temp_dir(prefix + u'run', root_dir)
-  out_dir = make_temp_dir(prefix + u'out', root_dir)
+  out_dir = make_temp_dir(prefix + u'out', root_dir) if storage else None
   tmp_dir = make_temp_dir(prefix + u'tmp', root_dir)
   cwd = run_dir
 
@@ -431,13 +432,15 @@ def map_and_run(
               result['exit_code'] = 1
 
       # This deletes out_dir if leak_temp_dir is not set.
-      result['outputs_ref'], success, result['stats']['upload'] = (
-          delete_and_upload(storage, out_dir, leak_temp_dir))
+      if out_dir:
+        result['outputs_ref'], success, result['stats']['upload'] = (
+            delete_and_upload(storage, out_dir, leak_temp_dir))
       if not success and result['exit_code'] == 0:
         result['exit_code'] = 1
     except Exception as e:
       # Swallow any exception in the main finally clause.
-      logging.exception('Leaking out_dir %s: %s', out_dir, e)
+      if out_dir:
+        logging.exception('Leaking out_dir %s: %s', out_dir, e)
       result['internal_failure'] = str(e)
   return result
 
