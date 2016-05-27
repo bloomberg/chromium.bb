@@ -16,10 +16,10 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_checker.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
@@ -698,7 +698,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   // keep getting more bitstreams from the client, and throttle them by using
   // |bitstreams_notified_in_advance_|.
   // TODO(dwkang): check if there is a way to remove this workaround.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
                  weak_this_factory_.GetWeakPtr(), bitstream_buffer.id()));
@@ -779,7 +779,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
         // size update in |SendDecodedFrameToClient| and https://crbug/587994.
         if (output_picture_buffers_.empty() && !picturebuffers_requested_) {
           picturebuffers_requested_ = true;
-          base::MessageLoop::current()->PostTask(
+          base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
               base::Bind(&AndroidVideoDecodeAccelerator::RequestPictureBuffers,
                          weak_this_factory_.GetWeakPtr()));
@@ -919,7 +919,7 @@ void AndroidVideoDecodeAccelerator::Decode(
   // happen on older devices where configuration changes require a codec reset.
   if (codec_needs_reset_) {
     DCHECK_EQ(drain_type_, DRAIN_TYPE_NONE);
-    ResetCodecState(base::Closure());
+    ResetCodecState();
   }
 
   if (bitstream_buffer.id() >= 0 && bitstream_buffer.size() > 0) {
@@ -934,7 +934,7 @@ void AndroidVideoDecodeAccelerator::Decode(
     POST_ERROR(INVALID_ARGUMENT,
                "Invalid bistream_buffer, id: " << bitstream_buffer.id());
   } else {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
                    weak_this_factory_.GetWeakPtr(), bitstream_buffer.id()));
@@ -1142,8 +1142,7 @@ void AndroidVideoDecodeAccelerator::OnDrainCompleted() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If we were waiting for an EOS, clear the state and reset the MediaCodec
-  // as normal. Otherwise, enter the ERROR state which will force destruction
-  // of MediaCodec during ResetCodecState().
+  // as normal.
   //
   // Some Android platforms seem to send an EOS buffer even when we're not
   // expecting it. In this case, destroy and reset the codec but don't notify
@@ -1153,20 +1152,23 @@ void AndroidVideoDecodeAccelerator::OnDrainCompleted() {
     case DRAIN_TYPE_NONE:
       // Unexpected EOS.
       state_ = ERROR;
-      ResetCodecState(base::Closure());
+      ResetCodecState();
       break;
     case DRAIN_FOR_FLUSH:
-      ResetCodecState(media::BindToCurrentLoop(
-          base::Bind(&AndroidVideoDecodeAccelerator::NotifyFlushDone,
-                     weak_this_factory_.GetWeakPtr())));
+      ResetCodecState();
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyFlushDone,
+                                weak_this_factory_.GetWeakPtr()));
       break;
     case DRAIN_FOR_RESET:
-      ResetCodecState(media::BindToCurrentLoop(
-          base::Bind(&AndroidVideoDecodeAccelerator::NotifyResetDone,
-                     weak_this_factory_.GetWeakPtr())));
+      ResetCodecState();
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyResetDone,
+                                weak_this_factory_.GetWeakPtr()));
       break;
     case DRAIN_FOR_DESTROY:
-      base::MessageLoop::current()->PostTask(
+      ResetCodecState();
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::ActualDestroy,
                                 weak_this_factory_.GetWeakPtr()));
       break;
@@ -1174,18 +1176,14 @@ void AndroidVideoDecodeAccelerator::OnDrainCompleted() {
   drain_type_ = DRAIN_TYPE_NONE;
 }
 
-void AndroidVideoDecodeAccelerator::ResetCodecState(
-    const base::Closure& done_cb) {
+void AndroidVideoDecodeAccelerator::ResetCodecState() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If there is already a reset in flight, then that counts.  This can really
   // only happen if somebody calls Reset.
   // If the surface is destroyed there's nothing to do.
-  if (state_ == WAITING_FOR_CODEC || state_ == SURFACE_DESTROYED) {
-    if (!done_cb.is_null())
-      done_cb.Run();
+  if (state_ == WAITING_FOR_CODEC || state_ == SURFACE_DESTROYED)
     return;
-  }
 
   bitstream_buffers_in_decoder_.clear();
 
@@ -1207,8 +1205,6 @@ void AndroidVideoDecodeAccelerator::ResetCodecState(
   codec_needs_reset_ = false;
   if (drain_type_ == DRAIN_FOR_FLUSH && !did_codec_error_happen) {
     codec_needs_reset_ = true;
-    if (!done_cb.is_null())
-      done_cb.Run();
     return;
   }
 
@@ -1240,9 +1236,6 @@ void AndroidVideoDecodeAccelerator::ResetCodecState(
     // output buffers it has currently.
     ConfigureMediaCodecAsynchronously();
   }
-
-  if (!done_cb.is_null())
-    done_cb.Run();
 }
 
 void AndroidVideoDecodeAccelerator::Reset() {
@@ -1256,7 +1249,7 @@ void AndroidVideoDecodeAccelerator::Reset() {
     pending_bitstream_records_.pop();
 
     if (bitstream_buffer_id != -1) {
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
                      weak_this_factory_.GetWeakPtr(), bitstream_buffer_id));
@@ -1277,9 +1270,10 @@ void AndroidVideoDecodeAccelerator::Reset() {
     // Postpone ResetCodecState() after the drain.
     StartCodecDrain(DRAIN_FOR_RESET);
   } else {
-    ResetCodecState(media::BindToCurrentLoop(
-        base::Bind(&AndroidVideoDecodeAccelerator::NotifyResetDone,
-                   weak_this_factory_.GetWeakPtr())));
+    ResetCodecState();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&AndroidVideoDecodeAccelerator::NotifyResetDone,
+                              weak_this_factory_.GetWeakPtr()));
   }
 }
 
@@ -1413,7 +1407,7 @@ void AndroidVideoDecodeAccelerator::OnFrameAvailable() {
 void AndroidVideoDecodeAccelerator::PostError(
     const ::tracked_objects::Location& from_here,
     media::VideoDecodeAccelerator::Error error) {
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       from_here,
       base::Bind(&AndroidVideoDecodeAccelerator::NotifyError,
                  weak_this_factory_.GetWeakPtr(), error, error_sequence_token_),

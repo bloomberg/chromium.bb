@@ -334,9 +334,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   // Resets MediaCodec and buffers/containers used for storing output. These
   // components need to be reset upon EOS to decode a later stream. Input state
   // (e.g. queued BitstreamBuffers) is not reset, as input following an EOS
-  // is still valid and should be processed. Upon competion calls |done_cb| that
-  // can be a null callback.
-  void ResetCodecState(const base::Closure& done_cb);
+  // is still valid and should be processed.
+  void ResetCodecState();
 
   // Registered to be called when surfaces are being destroyed. If |surface_id|
   // is our surface, we should release the MediaCodec before returning from
