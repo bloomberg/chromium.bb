@@ -371,6 +371,9 @@ const char kTestCrosGaiaIdMigrationStarted[] = "started";
 const char kEnableSystemTimezoneAutomaticDetectionPolicy[] =
     "enable-system-timezone-automatic-detection";
 
+// This flag enables material design OOBE UI.
+const char kEnableMdOobe[] = "enable-md-oobe";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }

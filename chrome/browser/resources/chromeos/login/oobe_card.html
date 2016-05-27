@@ -1,0 +1,41 @@
+<!-- Copyright 2016 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+
+<!--
+  Simple OOBE card which should be used for OOBE UI elements.
+  It has blue header and grey footer.
+
+  Example:
+    <oobe-card>
+      <div class="header flex vertical layout end-justified start">
+        ...
+      </div>
+      <oobe-input-form class="footer" ...>
+      </oobe-input-form>
+    </oobe-card>
+
+  Add class |header| to all which you want to go inside blue header.  Similar
+  with class |footer|.
+-->
+<dom-module name="oobe-card">
+  <link rel="stylesheet" href="oobe_card.css">
+  <template>
+    <div class="oobe-header vertical layout relative">
+      <div class="header-container flex vertical layout relative">
+        <content select=".header"></content>
+      </div>
+    </div>
+    <div class="oobe-footer flex vertical layout">
+      <div class="footer-container flex vertical layout">
+        <content select=".footer"></content>
+      </div>
+      <div id="bottom-overlay" class="overlay"></div>
+    </div>
+    <div id="full-overlay" class="overlay"></div>
+  </template>
+</dom-module>
+

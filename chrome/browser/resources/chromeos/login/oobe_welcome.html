@@ -1,0 +1,32 @@
+<!-- Copyright 2016 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+
+<dom-module name="oobe-welcome-md">
+  <link rel="stylesheet" href="oobe_welcome.css">
+  <template>
+    <oobe-card class="fit">
+      <div class="header flex vertical layout end-justified start">
+        <h1 class="welcome-message" i18n-content="networkScreenGreeting"></h1>
+      </div>
+      <div class="footer flex vertical layout justified">
+        <div class="welcome-next flex vertical layout center">
+          <oobe-next-button id="welcomeNextButton" on-tap="onWelcomeNextButtonClicked_"></oobe-next-button>
+        </div>
+        <div class="flex horizontal layout justified">
+          <div class="buttonbox layout vertical">
+            <iron-icon icon="icons:language" class="bottom-button self-center"></iron-icon>
+            <div id="currentLanguage">[[currentLanguage]]</div>
+          </div>
+          <div class="buttonbox layout vertical">
+            <iron-icon icon="icons:accessibility" class="bottom-button self-center"></iron-icon>
+            <div id="accessibilityLabel" i18n-content="accessibilityLink"></div>
+          </div>
+        </div>
+      </div>
+    </oobe-card>
+  </template>
+</dom-module>
+

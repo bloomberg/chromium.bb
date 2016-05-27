@@ -21,3 +21,6 @@
 <include src="saml_interstitial.js">
 <include src="throbber_notice.js">
 <include src="navigation_bar.js">
+<include src="oobe_buttons.js">
+<include src="oobe_card.js">
+<include src="oobe_welcome.js">

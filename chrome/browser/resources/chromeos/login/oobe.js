@@ -28,6 +28,9 @@ cr.define('cr.ui.Oobe', function() {
      * Elements with optionGroupName are considered option group.
      * @param {string} callback Callback name which should be send to Chrome or
      * an empty string if the event listener shouldn't be added.
+     *
+     * Note: do not forget to update getSelectedTitle() below if this is
+     * updated!
      */
     setupSelect: function(select, list, callback) {
       select.innerHTML = '';
@@ -60,6 +63,26 @@ cr.define('cr.ui.Oobe', function() {
             runCallback();
         });
       }
+    },
+
+    /**
+     * Returns title of the selected option (see setupSelect() above).
+     * @param {!Object} list The same as in setupSelect() above.
+     */
+    getSelectedTitle: function(list) {
+      var firstTitle = '';
+      for (var i = 0; i < list.length; ++i) {
+        var item = list[i];
+        if (item.optionGroupName)
+          continue;
+
+        if (!firstTitle)
+          firstTitle = item.title;
+
+        if (item.selected)
+          return item.title;
+      }
+      return firstTitle;
     },
 
     /**
@@ -280,6 +303,19 @@ cr.define('cr.ui.Oobe', function() {
       Oobe.setupSelect($('language-select'), data.languageList);
       Oobe.setupSelect($('keyboard-select'), data.inputMethodsList);
       Oobe.setupSelect($('timezone-select'), data.timezoneList);
+
+      // ---------- Welcome screen
+      $('oobe-welcome-md').currentLanguage =
+          Oobe.getSelectedTitle(data.languageList);
+
+      if (data.newOobeUI == 'on') {
+        $('oobe-connect').hidden = true;
+        $('oobe-welcome-md').hidden = false;
+      } else {
+        $('oobe-connect').hidden = false;
+        $('oobe-welcome-md').hidden = true;
+      }
+      // ----------
 
       // Update localized content of the screens.
       Oobe.updateLocalizedContent();

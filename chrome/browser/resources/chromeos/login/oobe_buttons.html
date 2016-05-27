@@ -1,0 +1,49 @@
+<!-- Copyright 2016 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-fab/paper-fab.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+
+<!--
+  Material design button that shows a forward arrow, typically used for
+  navigating to the next page/screen.
+
+  Attributes:
+    'disabled' - button is disabled when the attribute is set.
+
+  Example:
+    <oobe-next-button></oobe-next-button>
+-->
+<dom-module id="oobe-next-button">
+  <link rel="stylesheet" href="oobe_next_button.css">
+  <template>
+      <paper-fab icon="arrow-forward" disabled="[[disabled]]"></paper-fab>
+  </template>
+</dom-module>
+
+<!--
+  Material design button that shows an icon.
+
+  Example:
+    <oobe-icon-button icon="close"></oobe-icon-button>
+
+  Attributes:
+    'icon' - a name of icon from material design set to show on button.
+    'disabled' - button is disabled when the attribute is set.
+    'aria-label' - accessibility label.
+-->
+<dom-module id="oobe-icon-button">
+  <link rel="stylesheet" href="oobe_icon_button.css">
+  <template>
+    <div on-click="onClick_" on-tap="onClick_">
+      <paper-icon-button id="iconButton" icon="[[icon]]" disabled="[[disabled]]"
+          aria-label="[[ariaLabel]]">
+      </paper-icon-button>
+    </div>
+  </template>
+</dom-module>
+

@@ -1,0 +1,26 @@
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+   Use of this source code is governed by a BSD-style license that can be
+   found in the LICENSE file. */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  font-size: 18px;
+  overflow: hidden;
+  position: relative;
+}
+
+#oobe-welcome-md .buttonbox {
+  font-size: 32px;
+  padding: 15px 24px 24px;
+  width: 100px;
+}
+
+#oobe-welcome-md .welcome-next {
+  padding: 15px 24px 24px;
+}
+
+#oobe-welcome-md .bottom-button {
+    --iron-icon-height: 32px;
+    --iron-icon-width: 32px;
+}
