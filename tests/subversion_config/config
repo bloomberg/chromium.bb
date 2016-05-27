@@ -6,7 +6,7 @@
 store-passwords=yes
 
 [miscellany]
-global-ignores = *.pyc *.user *.suo *.bak *~ #*# *.ncb *.o *.lo *.la .*~ .#* .DS_Store .*.swp *.scons *.mk *.Makefile *.sln *.vcproj *.rules SConstruct *.xcodeproj
+global-ignores = *.pyc *.user *.suo *.bak *~ #*# *.ncb *.o *.lo *.la .*~ .#* .DS_Store .*.swp *.mk *.Makefile *.sln *.vcproj *.rules SConstruct *.xcodeproj
 enable-auto-props = yes
 
 [auto-props]
