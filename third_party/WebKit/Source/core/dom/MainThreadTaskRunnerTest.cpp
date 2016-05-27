@@ -46,7 +46,7 @@ static void markBoolean(bool* toBeMarked)
 TEST(MainThreadTaskRunnerTest, PostTask)
 {
     NullExecutionContext* context = new NullExecutionContext();
-    MainThreadTaskRunner* runner = MainThreadTaskRunner::create(context);
+    OwnPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context);
     bool isMarked = false;
 
     runner->postTask(BLINK_FROM_HERE, createSameThreadTask(&markBoolean, &isMarked));
@@ -58,7 +58,7 @@ TEST(MainThreadTaskRunnerTest, PostTask)
 TEST(MainThreadTaskRunnerTest, SuspendTask)
 {
     NullExecutionContext* context = new NullExecutionContext();
-    MainThreadTaskRunner* runner = MainThreadTaskRunner::create(context);
+    OwnPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context);
     bool isMarked = false;
 
     context->setTasksNeedSuspension(true);
@@ -76,7 +76,7 @@ TEST(MainThreadTaskRunnerTest, SuspendTask)
 TEST(MainThreadTaskRunnerTest, RemoveRunner)
 {
     NullExecutionContext* context = new NullExecutionContext();
-    MainThreadTaskRunner* runner = MainThreadTaskRunner::create(context);
+    OwnPtr<MainThreadTaskRunner> runner = MainThreadTaskRunner::create(context);
     bool isMarked = false;
 
     context->setTasksNeedSuspension(true);

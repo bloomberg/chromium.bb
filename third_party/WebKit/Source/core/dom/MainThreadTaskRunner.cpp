@@ -39,6 +39,7 @@ MainThreadTaskRunner::MainThreadTaskRunner(ExecutionContext* context)
     : m_context(context)
     , m_pendingTasksTimer(this, &MainThreadTaskRunner::pendingTasksTimerFired)
     , m_suspended(false)
+    , m_weakFactory(this)
 {
 }
 
@@ -46,16 +47,11 @@ MainThreadTaskRunner::~MainThreadTaskRunner()
 {
 }
 
-DEFINE_TRACE(MainThreadTaskRunner)
-{
-    visitor->trace(m_context);
-}
-
 void MainThreadTaskRunner::postTaskInternal(const WebTraceLocation& location, std::unique_ptr<ExecutionContextTask> task, bool isInspectorTask)
 {
     Platform::current()->mainThread()->getWebTaskRunner()->postTask(location, threadSafeBind(
         &MainThreadTaskRunner::perform,
-        CrossThreadWeakPersistentThisPointer<MainThreadTaskRunner>(this),
+        m_weakFactory.createWeakPtr(),
         passed(std::move(task)),
         isInspectorTask));
 }
@@ -74,6 +70,11 @@ void MainThreadTaskRunner::postInspectorTask(const WebTraceLocation& location, s
 
 void MainThreadTaskRunner::perform(std::unique_ptr<ExecutionContextTask> task, bool isInspectorTask)
 {
+    // If the owner m_context is about to be swept then it
+    // is no longer safe to access.
+    if (ThreadHeap::willObjectBeLazilySwept(m_context.get()))
+        return;
+
     if (!isInspectorTask && (m_context->tasksNeedSuspension() || !m_pendingTasks.isEmpty())) {
         m_pendingTasks.append(std::move(task));
         return;
@@ -101,6 +102,11 @@ void MainThreadTaskRunner::resume()
 
 void MainThreadTaskRunner::pendingTasksTimerFired(Timer<MainThreadTaskRunner>*)
 {
+    // If the owner m_context is about to be swept then it
+    // is no longer safe to access.
+    if (ThreadHeap::willObjectBeLazilySwept(m_context.get()))
+        return;
+
     while (!m_pendingTasks.isEmpty()) {
         std::unique_ptr<ExecutionContextTask> task = std::move(m_pendingTasks[0]);
         m_pendingTasks.remove(0);

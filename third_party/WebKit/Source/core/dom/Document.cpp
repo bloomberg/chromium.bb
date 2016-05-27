@@ -5967,7 +5967,6 @@ DEFINE_TRACE(Document)
     visitor->trace(m_mediaQueryMatcher);
     visitor->trace(m_scriptedAnimationController);
     visitor->trace(m_scriptedIdleTaskController);
-    visitor->trace(m_taskRunner);
     visitor->trace(m_textAutosizer);
     visitor->trace(m_registrationContext);
     visitor->trace(m_customElementMicrotaskRunQueue);

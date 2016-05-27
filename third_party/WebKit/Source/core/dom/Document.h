@@ -1364,7 +1364,7 @@ private:
 
     Member<ScriptedAnimationController> m_scriptedAnimationController;
     Member<ScriptedIdleTaskController> m_scriptedIdleTaskController;
-    Member<MainThreadTaskRunner> m_taskRunner;
+    OwnPtr<MainThreadTaskRunner> m_taskRunner;
     Member<TextAutosizer> m_textAutosizer;
 
     Member<V0CustomElementRegistrationContext> m_registrationContext;

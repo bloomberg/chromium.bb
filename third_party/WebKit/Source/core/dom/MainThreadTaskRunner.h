@@ -33,16 +33,18 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
+#include "wtf/WeakPtr.h"
 
 namespace blink {
 
 class ExecutionContext;
 class ExecutionContextTask;
 
-class CORE_EXPORT MainThreadTaskRunner final : public GarbageCollectedFinalized<MainThreadTaskRunner> {
+class CORE_EXPORT MainThreadTaskRunner final {
+    USING_FAST_MALLOC(MainThreadTaskRunner);
     WTF_MAKE_NONCOPYABLE(MainThreadTaskRunner);
 public:
-    static MainThreadTaskRunner* create(ExecutionContext*);
+    static PassOwnPtr<MainThreadTaskRunner> create(ExecutionContext*);
 
     ~MainThreadTaskRunner();
 
@@ -62,15 +64,18 @@ private:
 
     void postTaskInternal(const WebTraceLocation&, std::unique_ptr<ExecutionContextTask>, bool isInspectorTask);
 
-    Member<ExecutionContext> m_context;
+    // Untraced back reference to the owner Document;
+    // this object has identical lifetime to it.
+    UntracedMember<ExecutionContext> m_context;
     Timer<MainThreadTaskRunner> m_pendingTasksTimer;
     Vector<std::unique_ptr<ExecutionContextTask>> m_pendingTasks;
     bool m_suspended;
+    WeakPtrFactory<MainThreadTaskRunner> m_weakFactory;
 };
 
-inline MainThreadTaskRunner* MainThreadTaskRunner::create(ExecutionContext* context)
+inline PassOwnPtr<MainThreadTaskRunner> MainThreadTaskRunner::create(ExecutionContext* context)
 {
-    return new MainThreadTaskRunner(context);
+    return adoptPtr(new MainThreadTaskRunner(context));
 }
 
 } // namespace blink
