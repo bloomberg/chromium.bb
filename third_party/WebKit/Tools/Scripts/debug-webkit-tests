@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Runs run-webkit-tests and attaches a debugger to the first renderer process.
+# Runs run-webkit-tests and attaches a debugger to the single renderer process.
 
 if [ $# -eq 0 ]; then
   echo "usage: $(basename $0) [run-webkit-tests args...] test-path/test-name.html"
@@ -37,7 +37,9 @@ fi
 
 # Kill existing matching renderers before we begin to ensure a clean run.
 pkill -f "$RENDERER_REGEX"
-$SCRIPTS_DIR/run-webkit-tests --time-out-ms=100000000 --additional-driver-flag=--no-sandbox --additional-driver-flag=--renderer-startup-dialog $* &
+
+# Run with a single child process as this script attaches only to the first renderer.
+$SCRIPTS_DIR/run-webkit-tests --child-processes=1 --time-out-ms=100000000 --additional-driver-flag=--no-sandbox --additional-driver-flag=--renderer-startup-dialog $* &
 
 wait_renderer_pid() {
   for i in {1..200}; do
