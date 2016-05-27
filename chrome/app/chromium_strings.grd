@@ -1117,6 +1117,25 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         Important security improvements and new features are available in the latest version.
       </message>
 
+      <!-- Critical Notification bubble -->
+      <message name="IDS_CRITICAL_NOTIFICATION_HEADLINE" desc="The headline for the critical notification">
+        {SECONDS, plural,
+         =1 {Chromium will restart in 1 second.}
+         other {Chromium will restart in # seconds.}}
+      </message>
+      <message name="IDS_CRITICAL_NOTIFICATION_HEADLINE_ALTERNATE" desc="The headline for the critical notification when the countdown reaches 0 (will only be seen if an onbeforeunload handler on a web page cancels the shutdown sequence.">
+        You should restart Chromium now.
+      </message>
+      <message name="IDS_CRITICAL_NOTIFICATION_TEXT" desc="The text of the critical update notification">
+        A special security update for Chromium was just applied; you should restart now for it to take effect (we'll restore your tabs).
+      </message>
+      <message name="IDS_CRITICAL_NOTIFICATION_RESTART" desc="The restart button label">
+        OK - Restart now
+      </message>
+      <message name="IDS_CRITICAL_NOTIFICATION_DISMISS" desc="The dismiss button label">
+        Don't restart
+      </message>
+
       <!-- Dialog that asks whether user wants to participate in Safe Browsing Extended Reporting -->
       <message name="IDS_FEEDBACK_SERVICE_DIALOG_TITLE" desc="Title of the dialog asking whether the user wants to upload suspected malicious files for analysis">
         Help make Chromium better

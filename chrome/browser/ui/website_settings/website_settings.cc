@@ -730,16 +730,12 @@ void WebsiteSettings::PresentSiteData() {
 
   // Add first party cookie and site data counts.
   WebsiteSettingsUI::CookieInfo cookie_info;
-  cookie_info.cookie_source =
-      l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_FIRST_PARTY_SITE_DATA);
   cookie_info.allowed = allowed_objects.GetObjectCountForDomain(site_url_);
   cookie_info.blocked = blocked_objects.GetObjectCountForDomain(site_url_);
   cookie_info.is_first_party = true;
   cookie_info_list.push_back(cookie_info);
 
   // Add third party cookie counts.
-  cookie_info.cookie_source = l10n_util::GetStringUTF8(
-     IDS_WEBSITE_SETTINGS_THIRD_PARTY_SITE_DATA);
   cookie_info.allowed = allowed_objects.GetObjectCount() - cookie_info.allowed;
   cookie_info.blocked = blocked_objects.GetObjectCount() - cookie_info.blocked;
   cookie_info.is_first_party = false;

@@ -49,8 +49,6 @@ class WebsiteSettingsUI {
   struct CookieInfo {
     CookieInfo();
 
-    // String describing the cookie source.
-    std::string cookie_source;
     // The number of allowed cookies.
     int allowed;
     // The number of blocked cookies.

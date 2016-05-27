@@ -11,7 +11,6 @@
 #include "base/i18n/rtl.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/certificate_viewer.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
@@ -942,13 +941,11 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   base::string16 thirdPartyLabelText;
   for (const auto& i : cookieInfoList) {
     if (i.is_first_party) {
-      firstPartyLabelText =
-          l10n_util::GetStringFUTF16(IDS_WEBSITE_SETTINGS_FIRST_PARTY_SITE_DATA,
-                                     base::IntToString16(i.allowed));
+      firstPartyLabelText = l10n_util::GetPluralStringFUTF16(
+          IDS_WEBSITE_SETTINGS_FIRST_PARTY_SITE_DATA, i.allowed);
     } else {
-      thirdPartyLabelText =
-          l10n_util::GetStringFUTF16(IDS_WEBSITE_SETTINGS_THIRD_PARTY_SITE_DATA,
-                                     base::IntToString16(i.allowed));
+      thirdPartyLabelText = l10n_util::GetPluralStringFUTF16(
+          IDS_WEBSITE_SETTINGS_THIRD_PARTY_SITE_DATA, i.allowed);
     }
   }
 

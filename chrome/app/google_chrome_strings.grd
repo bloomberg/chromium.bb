@@ -1104,18 +1104,37 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@example.com</
         Chrome could not update itself to the latest version, so you are missing out on awesome new features and security fixes. You need to update Chrome.
       </message>
 
-       <!-- Upgrade recovery bubble -->
-       <message name="IDS_RUN_RECOVERY" desc="Text for the button the user clicks to recover Chrome and its updater.">
-         Update Chrome
-       </message>
-       <message name="IDS_DECLINE_RECOVERY" desc="Text for the button the user clicks to decline recovery request.">
-         No, thanks
-       </message>
+      <!-- Upgrade recovery bubble -->
+      <message name="IDS_RUN_RECOVERY" desc="Text for the button the user clicks to recover Chrome and its updater.">
+        Update Chrome
+      </message>
+      <message name="IDS_DECLINE_RECOVERY" desc="Text for the button the user clicks to decline recovery request.">
+        No, thanks
+      </message>
       <message name="IDS_RECOVERY_BUBBLE_TITLE" desc="Text for the title of the chrome recovery bubble view.">
         Chrome is out of date
       </message>
       <message name="IDS_RECOVERY_BUBBLE_TEXT" desc="Text for the chrome recovery bubble view full description.">
         Important security improvements and new features are available in the latest version.
+      </message>
+
+      <!-- Critical Notification bubble -->
+      <message name="IDS_CRITICAL_NOTIFICATION_HEADLINE" desc="The headline for the critical notification">
+        {SECONDS, plural,
+         =1 {Google Chrome will restart in 1 second.}
+         other {Google Chrome will restart in # seconds.}}
+      </message>
+      <message name="IDS_CRITICAL_NOTIFICATION_HEADLINE_ALTERNATE" desc="The headline for the critical notification when the countdown reaches 0 (will only be seen if an onbeforeunload handler on a web page cancels the shutdown sequence.">
+        You should restart Google Chrome now.
+      </message>
+      <message name="IDS_CRITICAL_NOTIFICATION_TEXT" desc="The text of the critical update notification">
+        A special security update for Google Chrome was just applied; you should restart now for it to take effect (we'll restore your tabs).
+      </message>
+      <message name="IDS_CRITICAL_NOTIFICATION_RESTART" desc="The restart button label">
+        OK - Restart now
+      </message>
+      <message name="IDS_CRITICAL_NOTIFICATION_DISMISS" desc="The dismiss button label">
+        Don't restart
       </message>
 
       <!-- Dialog that asks whether user wants to participate in Safe Browsing Extended Reporting -->

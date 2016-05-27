@@ -389,10 +389,10 @@ are declared in build/common.gypi.
         This site might try to trick you to steal your information (examples: passwords, messages, or credit cards).
       </message>
       <message name="IDS_WEBSITE_SETTINGS_FIRST_PARTY_SITE_DATA" desc="The label of the counts for allowed and blocked cookies and site data for the top-level origin (i.e. the origin in the Omnibox).">
-        <ph name="COUNT">$1<ex>6</ex></ph> from this site
+        {NUM_COOKIES, plural, =1 {1 from this site} other {# from this site}}
       </message>
       <message name="IDS_WEBSITE_SETTINGS_THIRD_PARTY_SITE_DATA" desc="The label of the counts for allowed and blocked third party cookies and site data.">
-        <ph name="COUNT">$1<ex>6</ex></ph> from other sites
+        {NUM_COOKIES, plural, =1 {1 from other sites} other {# from other sites}}
       </message>
       <message name="IDS_WEBSITE_SETTINGS_MENU_ITEM_DEFAULT_ALLOW" desc="The text of the menu item of a permissions menu on the Website Settings UI that resets the setting to the default setting which is allow.">
         Use global default (Allow)
@@ -8910,23 +8910,6 @@ I don't think this site should be blocked!
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY_EV_CT_INVALID" desc="The text of the identity section when the page is secured with an EV cert, but it contains a Signed Certificate Timestamp from a known Certificate Transparency log that failed to verify.">
         The identity of <ph name="ORGANIZATION">$1<ex>Google</ex></ph> at <ph name="LOCALITY">$2<ex>Mountain View, CA US</ex></ph> has been verified by <ph name="ISSUER">$3<ex>VeriSign</ex></ph>. Certificate Transparency information was supplied by the server, but it was invalid.
-      </message>
-
-      <!-- Critical Notification Bubble -->
-      <message name="IDS_CRITICAL_NOTIFICATION_HEADLINE" desc="The headline for the critical notification">
-        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will restart in <ph name="SECONDS">$2<ex>10</ex></ph> seconds.
-      </message>
-      <message name="IDS_CRITICAL_NOTIFICATION_HEADLINE_ALTERNATE" desc="The headline for the critical notification when the countdown reaches 0 (will only be seen if an onbeforeunload handler on a web page cancels the shutdown sequence.">
-        You should restart <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> now.
-      </message>
-      <message name="IDS_CRITICAL_NOTIFICATION_TEXT" desc="The text of the critical update notification">
-        A special security update for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> was just applied; you should restart now for it to take effect (we'll restore your tabs).
-      </message>
-      <message name="IDS_CRITICAL_NOTIFICATION_RESTART" desc="The restart button label">
-        OK - Restart now
-      </message>
-      <message name="IDS_CRITICAL_NOTIFICATION_DISMISS" desc="The dismiss button label">
-        Don't restart
       </message>
 
       <!-- Screen Capture strings -->

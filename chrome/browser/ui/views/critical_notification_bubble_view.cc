@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/critical_notification_bubble_view.h"
 
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -83,13 +82,10 @@ void CriticalNotificationBubbleView::OnCountdown() {
 
 base::string16 CriticalNotificationBubbleView::GetWindowTitle() const {
   int seconds = GetRemainingTime();
-  return seconds > 0 ? l10n_util::GetStringFUTF16(
-                           IDS_CRITICAL_NOTIFICATION_HEADLINE,
-                           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-                           base::IntToString16(seconds))
-                     : l10n_util::GetStringFUTF16(
-                           IDS_CRITICAL_NOTIFICATION_HEADLINE_ALTERNATE,
-                           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  return seconds > 0 ? l10n_util::GetPluralStringFUTF16(
+                           IDS_CRITICAL_NOTIFICATION_HEADLINE, seconds)
+                     : l10n_util::GetStringUTF16(
+                           IDS_CRITICAL_NOTIFICATION_HEADLINE_ALTERNATE);
 }
 
 gfx::ImageSkia CriticalNotificationBubbleView::GetWindowIcon() {
@@ -139,8 +135,7 @@ void CriticalNotificationBubbleView::Init() {
   views::Label* message = new views::Label();
   message->SetMultiLine(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  message->SetText(l10n_util::GetStringFUTF16(IDS_CRITICAL_NOTIFICATION_TEXT,
-      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
+  message->SetText(l10n_util::GetStringUTF16(IDS_CRITICAL_NOTIFICATION_TEXT));
   message->SizeToFit(views::Widget::GetLocalizedContentsWidth(
       IDS_CRUCIAL_NOTIFICATION_BUBBLE_WIDTH_CHARS));
   AddChildView(message);
