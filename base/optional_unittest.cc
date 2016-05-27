@@ -22,6 +22,9 @@ class TestObject {
     COPY_CONSTRUCTED,
     MOVE_CONSTRUCTED,
     MOVED_FROM,
+    COPY_ASSIGNED,
+    MOVE_ASSIGNED,
+    SWAPPED,
   };
 
   TestObject() : foo_(0), bar_(0.0), state_(State::DEFAULT_CONSTRUCTED) {}
@@ -42,8 +45,24 @@ class TestObject {
   TestObject& operator=(const TestObject& other) {
     foo_ = other.foo_;
     bar_ = other.bar_;
-    state_ = State::COPY_CONSTRUCTED;
+    state_ = State::COPY_ASSIGNED;
     return *this;
+  }
+
+  TestObject& operator=(TestObject&& other) {
+    foo_ = other.foo_;
+    bar_ = other.bar_;
+    state_ = State::MOVE_ASSIGNED;
+    other.state_ = State::MOVED_FROM;
+    return *this;
+  }
+
+  void Swap(TestObject* other) {
+    using std::swap;
+    swap(foo_, other->foo_);
+    swap(bar_, other->bar_);
+    state_ = State::SWAPPED;
+    other->state_ = State::SWAPPED;
   }
 
   bool operator==(const TestObject& other) const {
@@ -59,7 +78,23 @@ class TestObject {
   State state_;
 };
 
+// Implementing Swappable concept.
+void swap(TestObject& lhs, TestObject& rhs) {
+  lhs.Swap(&rhs);
+}
+
+class NonTriviallyDestructible {
+  ~NonTriviallyDestructible() {}
+};
+
 }  // anonymous namespace
+
+static_assert(is_trivially_destructible<Optional<int>>::value,
+              "OptionalIsTriviallyDestructible");
+
+static_assert(
+    !is_trivially_destructible<Optional<NonTriviallyDestructible>>::value,
+    "OptionalIsTriviallyDestructible");
 
 TEST(OptionalTest, DefaultConstructor) {
   {
@@ -215,6 +250,11 @@ TEST(OptionalTest, ConstructorForwardArguments) {
   }
 }
 
+TEST(OptionalTest, NulloptConstructor) {
+  Optional<int> a = base::nullopt;
+  EXPECT_FALSE(a);
+}
+
 TEST(OptionalTest, AssignValue) {
   {
     Optional<float> a;
@@ -239,6 +279,16 @@ TEST(OptionalTest, AssignValue) {
   {
     Optional<TestObject> a;
     EXPECT_FALSE(!!a);
+    a = TestObject(3, 0.1);
+    EXPECT_TRUE(!!a);
+
+    Optional<TestObject> b(TestObject(3, 0.1));
+    EXPECT_TRUE(a == b);
+  }
+
+  {
+    Optional<TestObject> a = TestObject(4, 1.0);
+    EXPECT_TRUE(!!a);
     a = TestObject(3, 0.1);
     EXPECT_TRUE(!!a);
 
@@ -270,6 +320,16 @@ TEST(OptionalTest, AssignObject) {
 
   {
     Optional<TestObject> a;
+    Optional<TestObject> b(TestObject(3, 0.1));
+    a = b;
+
+    EXPECT_TRUE(!!a);
+    EXPECT_TRUE(a.value() == TestObject(3, 0.1));
+    EXPECT_TRUE(a == b);
+  }
+
+  {
+    Optional<TestObject> a(TestObject(4, 1.0));
     Optional<TestObject> b(TestObject(3, 0.1));
     a = b;
 
@@ -310,6 +370,19 @@ TEST(OptionalTest, AssignObject_rvalue) {
     EXPECT_TRUE(TestObject(3, 0.1) == a.value());
 
     EXPECT_EQ(TestObject::State::MOVE_CONSTRUCTED, a->state());
+    EXPECT_EQ(TestObject::State::MOVED_FROM, b->state());
+  }
+
+  {
+    Optional<TestObject> a(TestObject(4, 1.0));
+    Optional<TestObject> b(TestObject(3, 0.1));
+    a = std::move(b);
+
+    EXPECT_TRUE(!!a);
+    EXPECT_TRUE(!!b);
+    EXPECT_TRUE(TestObject(3, 0.1) == a.value());
+
+    EXPECT_EQ(TestObject::State::MOVE_ASSIGNED, a->state());
     EXPECT_EQ(TestObject::State::MOVED_FROM, b->state());
   }
 }
@@ -452,6 +525,8 @@ TEST(OptionalTest, Swap_bothValue) {
   EXPECT_TRUE(!!b);
   EXPECT_TRUE(TestObject(1, 0.3) == a.value_or(TestObject(42, 0.42)));
   EXPECT_TRUE(TestObject(0, 0.1) == b.value_or(TestObject(42, 0.42)));
+  EXPECT_EQ(TestObject::State::SWAPPED, a->state());
+  EXPECT_EQ(TestObject::State::SWAPPED, b->state());
 }
 
 TEST(OptionalTest, Emplace) {
@@ -1136,7 +1211,7 @@ TEST(OptionalTest, MakeOptional) {
     EXPECT_TRUE(!!o);
     EXPECT_TRUE(TestObject(0, 0.42) == *o);
     EXPECT_EQ(TestObject::State::MOVED_FROM, value.state());
-    EXPECT_EQ(TestObject::State::COPY_CONSTRUCTED, o->state());
+    EXPECT_EQ(TestObject::State::MOVE_ASSIGNED, o->state());
 
     EXPECT_EQ(TestObject::State::MOVE_CONSTRUCTED,
               base::make_optional(std::move(value))->state());
@@ -1184,6 +1259,8 @@ TEST(OptionalTest, NonMemberSwap_bothValue) {
   EXPECT_TRUE(!!b);
   EXPECT_TRUE(TestObject(1, 0.3) == a.value_or(TestObject(42, 0.42)));
   EXPECT_TRUE(TestObject(0, 0.1) == b.value_or(TestObject(42, 0.42)));
+  EXPECT_EQ(TestObject::State::SWAPPED, a->state());
+  EXPECT_EQ(TestObject::State::SWAPPED, b->state());
 }
 
 TEST(OptionalTest, Hash_OptionalReflectsInternal) {

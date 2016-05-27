@@ -111,5 +111,19 @@ static_assert(
 static_assert(std::is_same<underlying_type<ScopedEnum>::type, int>::value,
               "scoped enum defaults to int");
 
+struct TriviallyDestructible {
+  int field;
+};
+
+class NonTriviallyDestructible {
+  ~NonTriviallyDestructible() {}
+};
+
+static_assert(is_trivially_destructible<int>::value, "IsTriviallyDestructible");
+static_assert(is_trivially_destructible<TriviallyDestructible>::value,
+              "IsTriviallyDestructible");
+static_assert(!is_trivially_destructible<NonTriviallyDestructible>::value,
+              "IsTriviallyDestructible");
+
 }  // namespace
 }  // namespace base
