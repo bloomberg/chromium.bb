@@ -122,8 +122,10 @@ public:
     // MUST NOT be used in the real-time audio context.
     void offlineLock();
 
+#if ENABLE(ASSERT)
     // Returns true if this thread owns the context's lock.
     bool isGraphOwner();
+#endif
 
     class MODULES_EXPORT AutoLocker {
         STACK_ALLOCATED();

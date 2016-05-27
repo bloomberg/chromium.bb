@@ -195,14 +195,14 @@ void DeferredTaskHandler::removeChangedChannelCountMode(AudioHandler* node)
 
 void DeferredTaskHandler::addChangedChannelInterpretation(AudioHandler* node)
 {
-    DCHECK(isGraphOwner());
-    DCHECK(isMainThread());
+    ASSERT(isGraphOwner());
+    ASSERT(isMainThread());
     m_deferredChannelInterpretationChange.add(node);
 }
 
 void DeferredTaskHandler::removeChangedChannelInterpretation(AudioHandler* node)
 {
-    DCHECK(isGraphOwner());
+    ASSERT(isGraphOwner());
 
     m_deferredChannelInterpretationChange.remove(node);
 }
@@ -218,7 +218,7 @@ void DeferredTaskHandler::updateChangedChannelCountMode()
 
 void DeferredTaskHandler::updateChangedChannelInterpretation()
 {
-    DCHECK(isGraphOwner());
+    ASSERT(isGraphOwner());
 
     for (AudioHandler* node : m_deferredChannelInterpretationChange)
         node->updateChannelInterpretation();
