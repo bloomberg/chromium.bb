@@ -651,8 +651,27 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     int request_id =
         version_->StartRequest(ServiceWorkerMetrics::EventType::INSTALL,
                                CreateReceiver(BrowserThread::UI, done, result));
-    version_->DispatchSimpleEvent<ServiceWorkerHostMsg_InstallEventFinished>(
-        request_id, ServiceWorkerMsg_InstallEvent(request_id));
+    version_->DispatchEvent<ServiceWorkerHostMsg_InstallEventFinished>(
+        request_id, ServiceWorkerMsg_InstallEvent(request_id),
+        base::Bind(&self::ReceiveInstallEventOnIOThread, this, done, result));
+  }
+
+  void ReceiveInstallEventOnIOThread(const base::Closure& done,
+                                     ServiceWorkerStatusCode* out_result,
+                                     int request_id,
+                                     blink::WebServiceWorkerEventResult result,
+                                     bool has_fetch_handler) {
+    version_->FinishRequest(
+        request_id, result == blink::WebServiceWorkerEventResultCompleted);
+    version_->set_has_fetch_handler(has_fetch_handler);
+
+    ServiceWorkerStatusCode status = SERVICE_WORKER_OK;
+    if (result == blink::WebServiceWorkerEventResultRejected)
+      status = SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
+
+    *out_result = status;
+    if (!done.is_null())
+      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, done);
   }
 
   void StoreOnIOThread(const base::Closure& done,
@@ -864,6 +883,18 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
                        InstallWithWaitUntil_Fulfilled) {
   InstallTestHelper("/service_worker/worker_install_fulfilled.js",
                     SERVICE_WORKER_OK);
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       InstallWithFetchHandler) {
+  InstallTestHelper("/service_worker/fetch_event.js", SERVICE_WORKER_OK);
+  EXPECT_TRUE(version_->has_fetch_handler());
+}
+
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
+                       InstallWithoutFetchHandler) {
+  InstallTestHelper("/service_worker/worker.js", SERVICE_WORKER_OK);
+  EXPECT_FALSE(version_->has_fetch_handler());
 }
 
 // Check that ServiceWorker script requests set a "Service-Worker: script"

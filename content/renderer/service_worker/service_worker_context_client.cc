@@ -497,7 +497,7 @@ void ServiceWorkerContextClient::didHandleInstallEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
   Send(new ServiceWorkerHostMsg_InstallEventFinished(
-      GetRoutingID(), request_id, result));
+      GetRoutingID(), request_id, result, proxy_->hasFetchEventHandler()));
 }
 
 void ServiceWorkerContextClient::didHandleFetchEvent(int request_id) {

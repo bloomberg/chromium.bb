@@ -223,10 +223,9 @@ void EmbeddedWorkerTestHelper::OnInstallEvent(int embedded_worker_id,
   // The installing worker may have been doomed and terminated.
   if (!registry()->GetWorker(embedded_worker_id))
     return;
-  SimulateSend(
-      new ServiceWorkerHostMsg_InstallEventFinished(
-          embedded_worker_id, request_id,
-          blink::WebServiceWorkerEventResultCompleted));
+  SimulateSend(new ServiceWorkerHostMsg_InstallEventFinished(
+      embedded_worker_id, request_id,
+      blink::WebServiceWorkerEventResultCompleted, true));
 }
 
 void EmbeddedWorkerTestHelper::OnFetchEvent(

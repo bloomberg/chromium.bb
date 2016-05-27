@@ -81,6 +81,7 @@ public:
     void dispatchNotificationCloseEvent(int, int64_t notificationID, const WebNotificationData&) override;
     void dispatchPushEvent(int, const WebString& data) override;
     void dispatchSyncEvent(int, const WebString& tag, LastChanceOption) override;
+    bool hasFetchEventHandler() override;
 
     // WorkerReportingProxy overrides:
     void reportException(const String& errorMessage, PassOwnPtr<SourceLocation>) override;

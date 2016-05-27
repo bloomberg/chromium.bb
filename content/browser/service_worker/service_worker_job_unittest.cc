@@ -1414,9 +1414,9 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
                       int request_id) override {
     if (!install_callback_.is_null())
       install_callback_.Run();
-    SimulateSend(
-        new ServiceWorkerHostMsg_InstallEventFinished(
-            embedded_worker_id, request_id, install_event_result_));
+    SimulateSend(new ServiceWorkerHostMsg_InstallEventFinished(
+        embedded_worker_id, request_id, install_event_result_,
+        has_fetch_handler_));
   }
   void OnActivateEvent(int embedded_worker_id, int request_id) override {
     SimulateSend(
@@ -1433,11 +1433,15 @@ class EventCallbackHelper : public EmbeddedWorkerTestHelper {
   void set_activate_event_result(blink::WebServiceWorkerEventResult result) {
     activate_event_result_ = result;
   }
+  void set_has_fetch_handler(bool has_fetch_handler) {
+    has_fetch_handler_ = has_fetch_handler;
+  }
 
  private:
   base::Closure install_callback_;
   blink::WebServiceWorkerEventResult install_event_result_;
   blink::WebServiceWorkerEventResult activate_event_result_;
+  bool has_fetch_handler_ = true;
 };
 
 TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall) {
@@ -1550,6 +1554,27 @@ TEST_F(ServiceWorkerJobTest, RemoveControlleeDuringInstall_RejectActivate) {
   EXPECT_EQ(ServiceWorkerVersion::REDUNDANT, old_version->status());
 
   FindRegistrationForPattern(pattern, SERVICE_WORKER_OK);
+}
+
+TEST_F(ServiceWorkerJobTest, HasFetchHandler) {
+  EventCallbackHelper* helper = new EventCallbackHelper;
+  helper_.reset(helper);
+
+  GURL pattern("http://www.example.com/");
+  GURL script("http://www.example.com/service_worker.js");
+  scoped_refptr<ServiceWorkerRegistration> registration;
+
+  helper->set_has_fetch_handler(true);
+  RunRegisterJob(pattern, script);
+  registration = FindRegistrationForPattern(pattern);
+  EXPECT_TRUE(registration->active_version()->has_fetch_handler());
+  RunUnregisterJob(pattern);
+
+  helper->set_has_fetch_handler(false);
+  RunRegisterJob(pattern, script);
+  registration = FindRegistrationForPattern(pattern);
+  EXPECT_FALSE(registration->active_version()->has_fetch_handler());
+  RunUnregisterJob(pattern);
 }
 
 TEST_F(ServiceWorkerJobTest, Update_PauseAfterDownload) {

@@ -62,6 +62,8 @@ public:
     virtual void dispatchNotificationCloseEvent(int eventID, int64_t notificationID, const WebNotificationData&) = 0;
     virtual void dispatchPushEvent(int eventID, const WebString& data) = 0;
 
+    virtual bool hasFetchEventHandler() = 0;
+
     enum LastChanceOption {
         IsNotLastChance,
         IsLastChance

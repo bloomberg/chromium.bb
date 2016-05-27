@@ -242,9 +242,11 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerHostMsg_SetVersionId,
 
 // Informs the browser that event handling has finished.
 // Routed to the target ServiceWorkerVersion.
-IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_InstallEventFinished,
+IPC_MESSAGE_ROUTED3(ServiceWorkerHostMsg_InstallEventFinished,
                     int /* request_id */,
-                    blink::WebServiceWorkerEventResult)
+                    blink::WebServiceWorkerEventResult,
+                    bool /* has_fetch_event_handler */)
+
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_ActivateEventFinished,
                     int /* request_id */,
                     blink::WebServiceWorkerEventResult)

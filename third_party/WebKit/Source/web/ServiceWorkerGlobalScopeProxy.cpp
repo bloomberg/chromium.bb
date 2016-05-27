@@ -211,6 +211,12 @@ void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID, const WebStri
     workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 
+bool ServiceWorkerGlobalScopeProxy::hasFetchEventHandler()
+{
+    DCHECK(m_workerGlobalScope);
+    return m_workerGlobalScope->hasEventListeners(EventTypeNames::fetch);
+}
+
 void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, PassOwnPtr<SourceLocation> location)
 {
     client().reportException(errorMessage, location->lineNumber(), location->columnNumber(), location->url());

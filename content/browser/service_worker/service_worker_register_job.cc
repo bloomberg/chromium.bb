@@ -410,7 +410,7 @@ void ServiceWorkerRegisterJob::InstallAndContinue() {
       ServiceWorkerMetrics::EventType::INSTALL,
       base::Bind(&ServiceWorkerRegisterJob::DispatchInstallEvent,
                  weak_factory_.GetWeakPtr()),
-      base::Bind(&ServiceWorkerRegisterJob::OnInstallFinished,
+      base::Bind(&ServiceWorkerRegisterJob::OnInstallFailed,
                  weak_factory_.GetWeakPtr()));
 
   // A subsequent registration job may terminate our installing worker. It can
@@ -427,30 +427,59 @@ void ServiceWorkerRegisterJob::DispatchInstallEvent() {
       << "Worker stopped too soon after it was started.";
   int request_id = new_version()->StartRequest(
       ServiceWorkerMetrics::EventType::INSTALL,
+      base::Bind(&ServiceWorkerRegisterJob::OnInstallFailed,
+                 weak_factory_.GetWeakPtr()));
+  new_version()->DispatchEvent<ServiceWorkerHostMsg_InstallEventFinished>(
+      request_id, ServiceWorkerMsg_InstallEvent(request_id),
       base::Bind(&ServiceWorkerRegisterJob::OnInstallFinished,
                  weak_factory_.GetWeakPtr()));
-  new_version()->DispatchSimpleEvent<ServiceWorkerHostMsg_InstallEventFinished>(
-      request_id, ServiceWorkerMsg_InstallEvent(request_id));
 }
 
 void ServiceWorkerRegisterJob::OnInstallFinished(
-    ServiceWorkerStatusCode status) {
-  ServiceWorkerMetrics::RecordInstallEventStatus(status);
+    int request_id,
+    blink::WebServiceWorkerEventResult result,
+    bool has_fetch_handler) {
+  new_version()->FinishRequest(
+      request_id, result == blink::WebServiceWorkerEventResultCompleted);
+
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  switch (result) {
+    case blink::WebServiceWorkerEventResultCompleted:
+      status = SERVICE_WORKER_OK;
+      break;
+    case blink::WebServiceWorkerEventResultRejected:
+      status = SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
+      break;
+    default:
+      NOTREACHED();
+  }
 
   if (status != SERVICE_WORKER_OK) {
-    // "8. If installFailed is true, then:..."
-    Complete(status, std::string("ServiceWorker failed to install: ") +
-                         ServiceWorkerStatusToString(status));
+    OnInstallFailed(status);
     return;
   }
 
+  ServiceWorkerMetrics::RecordInstallEventStatus(status);
+
   SetPhase(STORE);
   DCHECK(!registration()->last_update_check().is_null());
+  new_version()->set_has_fetch_handler(has_fetch_handler);
   context_->storage()->StoreRegistration(
       registration(),
       new_version(),
       base::Bind(&ServiceWorkerRegisterJob::OnStoreRegistrationComplete,
                  weak_factory_.GetWeakPtr()));
+}
+
+void ServiceWorkerRegisterJob::OnInstallFailed(ServiceWorkerStatusCode status) {
+  ServiceWorkerMetrics::RecordInstallEventStatus(status);
+
+  if (status != SERVICE_WORKER_OK) {
+    Complete(status, std::string("ServiceWorker failed to install: ") +
+                         ServiceWorkerStatusToString(status));
+  } else {
+    NOTREACHED() << "OnInstallFailed should not handle SERVICE_WORKER_OK";
+  }
 }
 
 void ServiceWorkerRegisterJob::OnStoreRegistrationComplete(

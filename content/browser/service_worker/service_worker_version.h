@@ -137,6 +137,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   }
   ServiceWorkerVersionInfo GetInfo();
   Status status() const { return status_; }
+  bool has_fetch_handler() const { return has_fetch_handler_; }
+  void set_has_fetch_handler(bool has_fetch_handler) {
+    has_fetch_handler_ = has_fetch_handler;
+  }
 
   const std::vector<GURL>& foreign_fetch_scopes() const {
     return foreign_fetch_scopes_;
@@ -603,6 +607,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   const GURL scope_;
   std::vector<GURL> foreign_fetch_scopes_;
   std::vector<url::Origin> foreign_fetch_origins_;
+  bool has_fetch_handler_ = true;
 
   Status status_ = NEW;
   std::unique_ptr<EmbeddedWorkerInstance> embedded_worker_;
