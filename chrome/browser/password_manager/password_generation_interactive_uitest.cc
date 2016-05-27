@@ -85,6 +85,8 @@ class PasswordGenerationInteractiveTest :
     ChromePasswordManagerClient* client =
         ChromePasswordManagerClient::FromWebContents(WebContents());
     client->HidePasswordGenerationPopup();
+
+    autofill::test::ReenableSystemServices();
   }
 
   std::string GetFieldValue(const std::string& field_id) {

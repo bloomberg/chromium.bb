@@ -164,6 +164,8 @@ class AutofillMergeTest : public DataDrivenTest,
   // testing::Test:
   void SetUp() override;
 
+  void TearDown() override;
+
   // DataDrivenTest:
   void GenerateResults(const std::string& input, std::string* output) override;
 
@@ -194,7 +196,11 @@ AutofillMergeTest::~AutofillMergeTest() {
 }
 
 void AutofillMergeTest::SetUp() {
-  test::DisableSystemServices(NULL);
+  test::DisableSystemServices(nullptr);
+}
+
+void AutofillMergeTest::TearDown() {
+  test::ReenableSystemServices();
 }
 
 void AutofillMergeTest::GenerateResults(const std::string& input,

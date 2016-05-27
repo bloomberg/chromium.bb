@@ -54,6 +54,22 @@ source_set("os_crypt") {
   }
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "os_crypt_mocker.cc",
+    "os_crypt_mocker.h",
+  ]
+  deps = [
+    ":os_crypt",
+    "//base",
+  ]
+  if (is_desktop_linux && use_glib) {
+    deps += [ "//third_party/libsecret" ]
+    defines = [ "USE_LIBSECRET" ]
+  }
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -63,8 +79,14 @@ source_set("unit_tests") {
   ]
   deps = [
     ":os_crypt",
+    ":test_support",
     "//base",
     "//crypto",
     "//testing/gtest",
   ]
+
+  if (is_desktop_linux && use_glib) {
+    deps += [ "//third_party/libsecret" ]
+    defines = [ "USE_LIBSECRET" ]
+  }
 }

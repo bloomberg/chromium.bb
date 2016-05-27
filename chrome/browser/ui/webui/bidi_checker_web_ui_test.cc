@@ -287,6 +287,10 @@ static void SetupSettingsAutofillPageTest(Profile* profile,
   personal_data_manager->AddProfile(autofill_profile);
 }
 
+static void TearDownSettingsAutofillPageTest() {
+  autofill::test::ReenableSystemServices();
+}
+
 // http://crbug.com/94642
 IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestLTR,
                        DISABLED_TestSettingsAutofillPage) {
@@ -310,6 +314,7 @@ IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestLTR,
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kAutofillSubPage);
   RunBidiCheckerOnPage(url);
+  TearDownSettingsAutofillPageTest();
 }
 
 // http://crbug.com/94642
@@ -331,6 +336,7 @@ IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestRTL,
   std::string url(chrome::kChromeUISettingsFrameURL);
   url += std::string(chrome::kAutofillSubPage);
   RunBidiCheckerOnPage(url);
+  TearDownSettingsAutofillPageTest();
 }
 
 IN_PROC_BROWSER_TEST_F(DISABLED_WebUIBidiCheckerBrowserTestLTR,

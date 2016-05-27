@@ -13,7 +13,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/pref_service.h"
 #include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -21,6 +21,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 class LocalAuthTest : public testing::Test {
+ public:
+  LocalAuthTest() { OSCryptMocker::SetUpWithSingleton(); }
+
+  ~LocalAuthTest() override { OSCryptMocker::TearDown(); }
+
+ private:
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
@@ -33,10 +39,6 @@ TEST_F(LocalAuthTest, SetAndCheckCredentials) {
   ASSERT_TRUE(testing_profile_manager.profile_attributes_storage()->
       GetProfileAttributesWithPath(prof->GetPath(), &entry));
   EXPECT_EQ("", entry->GetLocalAuthCredentials());
-
-#if defined(OS_MACOSX)
-  OSCrypt::UseMockKeychain(true);
-#endif
 
   std::string password("Some Password");
   EXPECT_FALSE(LocalAuth::ValidateLocalAuthCredentials(prof, password));
@@ -69,10 +71,6 @@ TEST_F(LocalAuthTest, SetUpgradeAndCheckCredentials) {
       TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(testing_profile_manager.SetUp());
   Profile* prof = testing_profile_manager.CreateTestingProfile("p1");
-
-#if defined(OS_MACOSX)
-  OSCrypt::UseMockKeychain(true);
-#endif
 
   std::string password("Some Password");
   ProfileAttributesEntry* entry;

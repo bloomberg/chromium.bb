@@ -7,7 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "components/signin/core/browser/webdata/token_service_table.h"
 #include "components/webdata/common/web_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,9 +21,7 @@ class TokenServiceTableTest : public testing::Test {
 
  protected:
   void SetUp() override {
-#if defined(OS_MACOSX)
-    OSCrypt::UseMockKeychain(true);
-#endif
+    OSCryptMocker::SetUpWithSingleton();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.path().AppendASCII("TestWebDatabase");
 
@@ -32,6 +30,8 @@ class TokenServiceTableTest : public testing::Test {
     db_->AddTable(table_.get());
     ASSERT_EQ(sql::INIT_OK, db_->Init(file_));
   }
+
+  void TearDown() override { OSCryptMocker::TearDown(); }
 
   base::FilePath file_;
   base::ScopedTempDir temp_dir_;

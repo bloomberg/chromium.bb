@@ -66,7 +66,7 @@
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -262,9 +262,7 @@ void SyncTest::SetUp() {
     LOG(FATAL) << "Cannot run sync tests without GAIA credentials.";
 
   // Mock the Mac Keychain service.  The real Keychain can block on user input.
-#if defined(OS_MACOSX)
-  OSCrypt::UseMockKeychain(true);
-#endif
+  OSCryptMocker::SetUpWithSingleton();
 
   // Start up a sync test server if one is needed and setup mock gaia responses.
   // Note: This must be done prior to the call to SetupClients() because we want
@@ -287,6 +285,9 @@ void SyncTest::TearDown() {
 
   // Stop the local sync test server. This is a no-op if one wasn't started.
   TearDownLocalTestServer();
+
+  // Return OSCrypt to its real behaviour
+  OSCryptMocker::TearDown();
 
   fake_server_.reset();
 }
@@ -480,7 +481,7 @@ bool SyncTest::SetupClients() {
 
   // Create the required number of sync profiles, browsers and clients.
   profiles_.resize(num_clients_);
-  profile_delegates_.resize(num_clients_ + 1); // + 1 for the verifier.
+  profile_delegates_.resize(num_clients_ + 1);  // + 1 for the verifier.
   tmp_profile_paths_.resize(num_clients_);
   browsers_.resize(num_clients_);
   clients_.resize(num_clients_);

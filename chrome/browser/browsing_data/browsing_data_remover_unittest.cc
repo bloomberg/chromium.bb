@@ -58,6 +58,7 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -681,6 +682,7 @@ class RemoveAutofillTester : public autofill::PersonalDataManagerObserver {
 
   ~RemoveAutofillTester() override {
     personal_data_manager_->RemoveObserver(this);
+    autofill::test::ReenableSystemServices();
   }
 
   // Returns true if there are autofill profiles.
@@ -978,7 +980,11 @@ class RemovePasswordsTester {
         PasswordStoreFactory::GetInstance()
             ->GetForProfile(testing_profile, ServiceAccessType::EXPLICIT_ACCESS)
             .get());
+
+    OSCryptMocker::SetUpWithSingleton();
   }
+
+  ~RemovePasswordsTester() { OSCryptMocker::TearDown(); }
 
   password_manager::MockPasswordStore* store() { return store_; }
 

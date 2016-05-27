@@ -240,7 +240,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/invalidation/impl",
-    "//components/os_crypt",
+    "//components/os_crypt:test_support",
     "//components/pref_registry:test_support",
     "//components/prefs:test_support",
     "//components/signin/core/browser:test_support",

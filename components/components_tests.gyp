@@ -1153,6 +1153,7 @@
         'components.gyp:open_from_clipboard',
         'components.gyp:open_from_clipboard_test_support',
         'components.gyp:os_crypt',
+        'components.gyp:os_crypt_test_support',
         'components.gyp:password_manager_core_browser',
         'components.gyp:password_manager_core_browser_test_support',
         'components.gyp:password_manager_sync_browser',

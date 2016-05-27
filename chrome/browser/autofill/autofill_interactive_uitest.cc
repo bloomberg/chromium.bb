@@ -258,6 +258,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
             ->DriverForFrame(web_contents->GetMainFrame())
             ->autofill_manager();
     autofill_manager->client()->HideAutofillPopup();
+    test::ReenableSystemServices();
   }
 
   content::WebContents* GetWebContents() {

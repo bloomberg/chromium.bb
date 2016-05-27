@@ -20,7 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/password_manager/password_store_mac_internal.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -215,7 +215,7 @@ void PasswordStoreMacTestDelegate::Initialize() {
 
   // Ensure that LoginDatabase will use the mock keychain if it needs to
   // encrypt/decrypt a password.
-  OSCrypt::UseMockKeychain(true);
+  OSCryptMocker::SetUpWithSingleton();
   login_db_.reset(new LoginDatabase(test_login_db_file_path()));
   ASSERT_TRUE(login_db_->Init());
 
@@ -230,6 +230,7 @@ void PasswordStoreMacTestDelegate::Initialize() {
 void PasswordStoreMacTestDelegate::ClosePasswordStore() {
   store_->ShutdownOnUIThread();
   FinishAsyncProcessing();
+  OSCryptMocker::TearDown();
 }
 
 base::FilePath PasswordStoreMacTestDelegate::test_login_db_file_path() const {
@@ -1254,7 +1255,7 @@ class PasswordStoreMacTest : public testing::Test {
 
     // Ensure that LoginDatabase will use the mock keychain if it needs to
     // encrypt/decrypt a password.
-    OSCrypt::UseMockKeychain(true);
+    OSCryptMocker::SetUpWithSingleton();
     login_db_.reset(
         new password_manager::LoginDatabase(test_login_db_file_path()));
     thread_.reset(new base::Thread("Chrome_PasswordStore_Thread"));
@@ -1279,6 +1280,7 @@ class PasswordStoreMacTest : public testing::Test {
     if (histogram_tester_) {
       histogram_tester_->ExpectTotalCount("OSX.Keychain.Access", 0);
     }
+    OSCryptMocker::TearDown();
   }
 
   static void InitLoginDatabase(password_manager::LoginDatabase* login_db) {

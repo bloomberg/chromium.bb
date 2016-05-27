@@ -7,7 +7,7 @@
 #include <string>
 
 #include "build/build_config.h"
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sync_driver {
@@ -22,17 +22,16 @@ class SystemEncryptorTest : public testing::Test {
 };
 
 TEST_F(SystemEncryptorTest, EncryptDecrypt) {
-#if defined(OS_MACOSX)
   // SystemEncryptor ends up needing access to the keychain on OS X,
   // so use the mock keychain to prevent prompts.
-  ::OSCrypt::UseMockKeychain(true);
-#endif
+  ::OSCryptMocker::SetUpWithSingleton();
   std::string ciphertext;
   EXPECT_TRUE(encryptor_.EncryptString(kPlaintext, &ciphertext));
   EXPECT_NE(kPlaintext, ciphertext);
   std::string plaintext;
   EXPECT_TRUE(encryptor_.DecryptString(ciphertext, &plaintext));
   EXPECT_EQ(kPlaintext, plaintext);
+  ::OSCryptMocker::TearDown();
 }
 
 }  // namespace

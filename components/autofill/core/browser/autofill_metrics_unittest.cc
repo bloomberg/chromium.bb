@@ -368,6 +368,7 @@ void AutofillMetricsTest::TearDown() {
   account_tracker_->Shutdown();
   account_tracker_.reset();
   signin_client_.reset();
+  test::ReenableSystemServices();
 }
 
 void AutofillMetricsTest::EnableWalletSync() {

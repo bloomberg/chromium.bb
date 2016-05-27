@@ -49,7 +49,7 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "components/google/core/browser/google_util.h"
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -220,12 +220,10 @@ void InProcessBrowserTest::SetUp() {
   }
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(OS_MACOSX)
-  // Always use the MockKeychain if OS encription is used (which is when
-  // anything sensitive gets stored, including Cookies).  Without this,
-  // many tests will hang waiting for a user to approve KeyChain access.
-  OSCrypt::UseMockKeychain(true);
-#endif
+  // Always use a mocked password storage if OS encryption is used (which is
+  // when anything sensitive gets stored, including Cookies). Without this on
+  // Mac, many tests will hang waiting for a user to approve KeyChain access.
+  OSCryptMocker::SetUpWithSingleton();
 
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalService::set_state_for_testing(
@@ -345,6 +343,7 @@ void InProcessBrowserTest::TearDown() {
   com_initializer_.reset();
 #endif
   BrowserTestBase::TearDown();
+  OSCryptMocker::TearDown();
 }
 
 void InProcessBrowserTest::CloseBrowserSynchronously(Browser* browser) {

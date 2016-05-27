@@ -11,19 +11,16 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
 class OSCryptTest : public testing::Test {
  public:
-  OSCryptTest() {}
+  OSCryptTest() { OSCryptMocker::SetUpWithSingleton(); }
 
-  void SetUp() override {
-#if defined(OS_MACOSX)
-    OSCrypt::UseMockKeychain(true);
-#endif
-  }
+  ~OSCryptTest() override { OSCryptMocker::TearDown(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OSCryptTest);

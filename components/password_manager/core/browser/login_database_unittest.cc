@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -20,6 +21,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "sql/connection.h"
 #include "sql/statement.h"
@@ -27,10 +29,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
-
-#if defined(OS_MACOSX)
-#include "components/os_crypt/os_crypt.h"
-#endif
 
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
@@ -83,11 +81,11 @@ template<class T> T GetFirstColumn(const sql::Statement& s) {
 
 template<> int64_t GetFirstColumn(const sql::Statement& s) {
   return s.ColumnInt64(0);
-};
+}
 
 template<> std::string GetFirstColumn(const sql::Statement& s) {
   return s.ColumnString(0);
-};
+}
 
 bool AddZeroClickableLogin(LoginDatabase* db,
                            const std::string& unique_string) {
@@ -120,13 +118,13 @@ class LoginDatabaseTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.path().AppendASCII("TestMetadataStoreMacDatabase");
-#if defined(OS_MACOSX)
-    OSCrypt::UseMockKeychain(true);
-#endif  // defined(OS_MACOSX)
+    OSCryptMocker::SetUpWithSingleton();
 
     db_.reset(new LoginDatabase(file_));
     ASSERT_TRUE(db_->Init());
   }
+
+  void TearDown() override { OSCryptMocker::TearDown(); }
 
   LoginDatabase& db() { return *db_; }
 
@@ -1503,10 +1501,10 @@ class LoginDatabaseMigrationTest : public testing::TestWithParam<int> {
                                   .AppendASCII("data")
                                   .AppendASCII("password_manager");
     database_path_ = temp_dir_.path().AppendASCII("test.db");
-#if defined(OS_MACOSX)
-    OSCrypt::UseMockKeychain(true);
-#endif  // defined(OS_MACOSX)
+    OSCryptMocker::SetUpWithSingleton();
   }
+
+  void TearDown() override { OSCryptMocker::TearDown(); }
 
   // Creates the databse from |sql_file|.
   void CreateDatabase(base::StringPiece sql_file) {

@@ -18,7 +18,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
@@ -310,9 +310,11 @@ void SetCreditCardInfo(CreditCard* credit_card,
 
 void DisableSystemServices(PrefService* prefs) {
   // Use a mock Keychain rather than the OS one to store credit card data.
-#if defined(OS_MACOSX)
-  OSCrypt::UseMockKeychain(true);
-#endif  // defined(OS_MACOSX)
+  OSCryptMocker::SetUpWithSingleton();
+}
+
+void ReenableSystemServices() {
+  OSCryptMocker::TearDown();
 }
 
 void SetServerCreditCards(AutofillTable* table,

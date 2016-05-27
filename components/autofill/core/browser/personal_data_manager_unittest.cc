@@ -7,6 +7,8 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <list>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -32,6 +34,7 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
@@ -103,6 +106,7 @@ class PersonalDataManagerTest : public testing::Test {
   PersonalDataManagerTest() : autofill_table_(nullptr) {}
 
   void SetUp() override {
+    OSCryptMocker::SetUpWithSingleton();
     prefs_ = test::PrefServiceForTesting();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath path = temp_dir_.path().AppendASCII("TestWebDB");
@@ -144,6 +148,9 @@ class PersonalDataManagerTest : public testing::Test {
     account_tracker_->Shutdown();
     account_tracker_.reset();
     signin_client_.reset();
+
+    test::DisableSystemServices(prefs_.get());
+    OSCryptMocker::TearDown();
   }
 
   void ResetPersonalDataManager(UserMode user_mode) {

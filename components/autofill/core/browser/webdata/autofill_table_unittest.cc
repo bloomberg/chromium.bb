@@ -4,6 +4,9 @@
 
 #include <stddef.h>
 
+#include <map>
+#include <set>
+#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -31,7 +34,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "components/webdata/common/web_database.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -123,9 +126,7 @@ class AutofillTableTest : public testing::Test {
 
  protected:
   void SetUp() override {
-#if defined(OS_MACOSX)
-    OSCrypt::UseMockKeychain(true);
-#endif
+    OSCryptMocker::SetUpWithSingleton();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     file_ = temp_dir_.path().AppendASCII("TestWebDatabase");
 
@@ -134,6 +135,8 @@ class AutofillTableTest : public testing::Test {
     db_->AddTable(table_.get());
     ASSERT_EQ(sql::INIT_OK, db_->Init(file_));
   }
+
+  void TearDown() override { OSCryptMocker::TearDown(); }
 
   base::FilePath file_;
   base::ScopedTempDir temp_dir_;

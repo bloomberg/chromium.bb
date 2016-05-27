@@ -15,7 +15,7 @@
 #include "chrome/browser/password_manager/password_store_mac.h"
 #include "chrome/browser/password_manager/password_store_mac_internal.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "components/os_crypt/os_crypt.h"
+#include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -140,7 +140,7 @@ PasswordStoreProxyMacTest::PasswordStoreProxyMacTest() {
                             static_cast<int>(GetParam()));
   // Ensure that LoginDatabase will use the mock keychain if it needs to
   // encrypt/decrypt a password.
-  OSCrypt::UseMockKeychain(true);
+  OSCryptMocker::SetUpWithSingleton();
 }
 
 PasswordStoreProxyMacTest::~PasswordStoreProxyMacTest() {
@@ -154,6 +154,7 @@ void PasswordStoreProxyMacTest::SetUp() {
 
 void PasswordStoreProxyMacTest::TearDown() {
   ClosePasswordStore();
+  OSCryptMocker::TearDown();
 }
 
 void PasswordStoreProxyMacTest::CreateAndInitPasswordStore(

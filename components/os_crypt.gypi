@@ -75,5 +75,29 @@
         }],
       ],
     },
+    {
+      'target_name': 'os_crypt_test_support',
+      'type': 'static_library',
+      'sources': [
+        "os_crypt/os_crypt_mocker.cc",
+        "os_crypt/os_crypt_mocker.h",
+      ],
+      'dependencies': [
+        '../base/base.gyp:base',
+      ],
+      'conditions': [
+        ['OS=="linux" and chromeos!=1 and use_glib==1', {
+          'defines': [
+            'USE_LIBSECRET',
+          ],
+          'include_dirs' : [
+            '../third_party/libsecret/'
+          ],
+          'dependencies': [
+            '../build/linux/system.gyp:glib',
+          ],
+        }],
+      ]
+    }
   ],
 }

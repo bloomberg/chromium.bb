@@ -863,6 +863,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
       upload_histogram->SnapshotSamples();
   EXPECT_EQ(0, snapshot->GetCount(0 /* failure */));
   EXPECT_EQ(2, snapshot->GetCount(1 /* success */));
+
+  autofill::test::ReenableSystemServices();
 }
 #endif
 
