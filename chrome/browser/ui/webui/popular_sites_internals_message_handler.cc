@@ -61,10 +61,10 @@ void PopularSitesInternalsMessageHandler::HandleRegisterForEvents(
 
   Profile* profile = Profile::FromWebUI(web_ui());
   popular_sites_.reset(new PopularSites(
-      profile->GetPrefs(), TemplateURLServiceFactory::GetForProfile(profile),
+      content::BrowserThread::GetBlockingPool(), profile->GetPrefs(),
+      TemplateURLServiceFactory::GetForProfile(profile),
       g_browser_process->variations_service(), profile->GetRequestContext(),
-      ChromePopularSites::GetDirectory(), std::string(), std::string(),
-      false,
+      ChromePopularSites::GetDirectory(), std::string(), std::string(), false,
       base::Bind(&PopularSitesInternalsMessageHandler::OnPopularSitesAvailable,
                  base::Unretained(this), false)));
 }
@@ -97,13 +97,15 @@ void PopularSitesInternalsMessageHandler::HandleUpdate(
   args->GetString(0, &url);
   if (!url.empty()) {
     popular_sites_.reset(new PopularSites(
-        prefs, profile->GetRequestContext(), ChromePopularSites::GetDirectory(),
+        content::BrowserThread::GetBlockingPool(), prefs,
+        profile->GetRequestContext(), ChromePopularSites::GetDirectory(),
         url_formatter::FixupURL(url, std::string()), callback));
     return;
   }
 
   popular_sites_.reset(new PopularSites(
-      prefs, TemplateURLServiceFactory::GetForProfile(profile),
+      content::BrowserThread::GetBlockingPool(), prefs,
+      TemplateURLServiceFactory::GetForProfile(profile),
       g_browser_process->variations_service(), profile->GetRequestContext(),
       ChromePopularSites::GetDirectory(), std::string(), std::string(), true,
       callback));

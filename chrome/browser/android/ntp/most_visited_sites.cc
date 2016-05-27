@@ -22,12 +22,10 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
-#include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "url/gurl.h"
 
-using content::BrowserThread;
 using history::TopSites;
 using suggestions::ChromeSuggestion;
 using suggestions::SuggestionsProfile;
@@ -63,10 +61,10 @@ enum MostVisitedTileType {
     NUM_TILE_TYPES,
 };
 
+// May only be called from blocking thread pool.
 std::unique_ptr<SkBitmap> MaybeFetchLocalThumbnail(
     const GURL& url,
     const scoped_refptr<TopSites>& top_sites) {
-  DCHECK_CURRENTLY_ON(BrowserThread::DB);
   scoped_refptr<base::RefCountedMemory> image;
   std::unique_ptr<SkBitmap> bitmap;
   if (top_sites && top_sites->GetPageThumbnail(url, false, &image))
@@ -169,6 +167,7 @@ MostVisitedSites::Suggestion&
 MostVisitedSites::Suggestion::operator=(Suggestion&&) = default;
 
 MostVisitedSites::MostVisitedSites(
+    scoped_refptr<base::SequencedWorkerPool> blocking_pool,
     PrefService* prefs,
     const TemplateURLService* template_url_service,
     variations::VariationsService* variations_service,
@@ -192,6 +191,9 @@ MostVisitedSites::MostVisitedSites(
       recorded_uma_(false),
       scoped_observer_(this),
       mv_source_(SUGGESTIONS_SERVICE),
+      blocking_pool_(std::move(blocking_pool)),
+      blocking_runner_(blocking_pool_->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)),
       weak_ptr_factory_(this) {
   supervisor_->SetObserver(this);
 }
@@ -209,8 +211,8 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
   if (ShouldShowPopularSites() &&
       NeedPopularSites(prefs_, num_sites_)) {
     popular_sites_.reset(new PopularSites(
-        prefs_, template_url_service_, variations_service_, download_context_,
-        popular_sites_directory_, GetPopularSitesCountry(),
+        blocking_pool_, prefs_, template_url_service_, variations_service_,
+        download_context_, popular_sites_directory_, GetPopularSitesCountry(),
         GetPopularSitesVersion(), false,
         base::Bind(&MostVisitedSites::OnPopularSitesAvailable,
                    base::Unretained(this))));
@@ -242,11 +244,10 @@ void MostVisitedSites::SetMostVisitedURLsObserver(Observer* observer,
 
 void MostVisitedSites::GetURLThumbnail(const GURL& url,
                                        const ThumbnailCallback& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
-  // TODO(treib): Move this to the blocking pool? Doesn't seem related to DB.
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::DB, FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      blocking_runner_.get(), FROM_HERE,
       base::Bind(&MaybeFetchLocalThumbnail, url, top_sites_),
       base::Bind(&MostVisitedSites::OnLocalThumbnailFetched,
                  weak_ptr_factory_.GetWeakPtr(), url, callback));
@@ -256,7 +257,7 @@ void MostVisitedSites::OnLocalThumbnailFetched(
     const GURL& url,
     const ThumbnailCallback& callback,
     std::unique_ptr<SkBitmap> bitmap) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (bitmap.get()) {
     callback.Run(true /* is_local_thumbnail */, bitmap.get());
     return;
@@ -294,7 +295,7 @@ void MostVisitedSites::OnObtainedThumbnail(bool is_local_thumbnail,
                                            const ThumbnailCallback& callback,
                                            const GURL& url,
                                            const gfx::Image& image) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(thread_checker_.CalledOnValidThread());
   const SkBitmap* bitmap = nullptr;
   if (!image.IsEmpty())
     bitmap = image.ToSkBitmap();

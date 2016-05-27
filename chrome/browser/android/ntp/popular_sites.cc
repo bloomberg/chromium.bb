@@ -29,11 +29,9 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/service/variations_service.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 
-using content::BrowserThread;
 using net::URLFetcher;
 using variations::VariationsService;
 
@@ -186,16 +184,19 @@ PopularSites::Site::Site(const Site& other) = default;
 
 PopularSites::Site::~Site() {}
 
-PopularSites::PopularSites(PrefService* prefs,
-                           const TemplateURLService* template_url_service,
-                           VariationsService* variations_service,
-                           net::URLRequestContextGetter* download_context,
-                           const base::FilePath& directory,
-                           const std::string& variation_param_country,
-                           const std::string& variation_param_version,
-                           bool force_download,
-                           const FinishedCallback& callback)
-    : PopularSites(prefs,
+PopularSites::PopularSites(
+    const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
+    PrefService* prefs,
+    const TemplateURLService* template_url_service,
+    VariationsService* variations_service,
+    net::URLRequestContextGetter* download_context,
+    const base::FilePath& directory,
+    const std::string& variation_param_country,
+    const std::string& variation_param_version,
+    bool force_download,
+    const FinishedCallback& callback)
+    : PopularSites(blocking_pool,
+                   prefs,
                    download_context,
                    directory,
                    GetCountryToUse(prefs,
@@ -207,12 +208,15 @@ PopularSites::PopularSites(PrefService* prefs,
                    force_download,
                    callback) {}
 
-PopularSites::PopularSites(PrefService* prefs,
-                           net::URLRequestContextGetter* download_context,
-                           const base::FilePath& directory,
-                           const GURL& url,
-                           const FinishedCallback& callback)
-    : PopularSites(prefs,
+PopularSites::PopularSites(
+    const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
+    PrefService* prefs,
+    net::URLRequestContextGetter* download_context,
+    const base::FilePath& directory,
+    const GURL& url,
+    const FinishedCallback& callback)
+    : PopularSites(blocking_pool,
+                   prefs,
                    download_context,
                    directory,
                    std::string(),
@@ -244,14 +248,16 @@ void PopularSites::RegisterProfilePrefs(
   user_prefs->RegisterStringPref(kPopularSitesVersionPref, std::string());
 }
 
-PopularSites::PopularSites(PrefService* prefs,
-                           net::URLRequestContextGetter* download_context,
-                           const base::FilePath& directory,
-                           const std::string& country,
-                           const std::string& version,
-                           const GURL& override_url,
-                           bool force_download,
-                           const FinishedCallback& callback)
+PopularSites::PopularSites(
+    const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
+    PrefService* prefs,
+    net::URLRequestContextGetter* download_context,
+    const base::FilePath& directory,
+    const std::string& country,
+    const std::string& version,
+    const GURL& override_url,
+    bool force_download,
+    const FinishedCallback& callback)
     : callback_(callback),
       is_fallback_(false),
       pending_country_(country),
@@ -261,11 +267,9 @@ PopularSites::PopularSites(PrefService* prefs,
                       : directory.AppendASCII(kPopularSitesLocalFilename)),
       prefs_(prefs),
       download_context_(download_context),
-      runner_(
-          BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)),
+      blocking_runner_(blocking_pool->GetTaskRunnerWithShutdownBehavior(
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)),
       weak_ptr_factory_(this) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const base::Time last_download_time = base::Time::FromInternalValue(
       prefs_->GetInt64(kPopularSitesLastDownloadPref));
   const base::TimeDelta time_since_last_download =
@@ -281,8 +285,8 @@ PopularSites::PopularSites(PrefService* prefs,
 
   // No valid path to save to. Immediately post failure.
   if (local_path_.empty()) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback_, false));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  base::Bind(callback_, false));
     return;
   }
 
@@ -297,7 +301,7 @@ PopularSites::PopularSites(PrefService* prefs,
   std::unique_ptr<std::string> file_data(new std::string);
   std::string* file_data_ptr = file_data.get();
   base::PostTaskAndReplyWithResult(
-      runner_.get(), FROM_HERE,
+      blocking_runner_.get(), FROM_HERE,
       base::Bind(&base::ReadFileToString, local_path_, file_data_ptr),
       base::Bind(&PopularSites::OnReadFileDone, weak_ptr_factory_.GetWeakPtr(),
                  url, base::Passed(std::move(file_data))));
@@ -350,7 +354,7 @@ void PopularSites::OnURLFetchComplete(const net::URLFetcher* source) {
 
 void PopularSites::OnJsonSanitized(const std::string& valid_minified_json) {
   base::PostTaskAndReplyWithResult(
-      runner_.get(), FROM_HERE,
+      blocking_runner_.get(), FROM_HERE,
       base::Bind(&base::ImportantFileWriter::WriteFileAtomically, local_path_,
                  valid_minified_json),
       base::Bind(&PopularSites::OnFileWriteDone, weak_ptr_factory_.GetWeakPtr(),
@@ -378,7 +382,7 @@ void PopularSites::OnFileWriteDone(const std::string& json, bool success) {
 
 void PopularSites::ParseSiteList(const std::string& json) {
   base::PostTaskAndReplyWithResult(
-      runner_.get(), FROM_HERE, base::Bind(&ParseJson, json),
+      blocking_runner_.get(), FROM_HERE, base::Bind(&ParseJson, json),
       base::Bind(&PopularSites::OnJsonParsed, weak_ptr_factory_.GetWeakPtr()));
 }
 

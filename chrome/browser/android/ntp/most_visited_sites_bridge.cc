@@ -24,6 +24,7 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "components/history/core/browser/top_sites.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
 #include "jni/MostVisitedSites_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -34,6 +35,7 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
+using content::BrowserThread;
 using suggestions::SuggestionsServiceFactory;
 
 namespace {
@@ -162,7 +164,8 @@ void MostVisitedSitesBridge::JavaObserver::OnPopularURLsAvailable(
 
 MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
     : supervisor_(profile),
-      most_visited_(profile->GetPrefs(),
+      most_visited_(BrowserThread::GetBlockingPool(),
+                    profile->GetPrefs(),
                     TemplateURLServiceFactory::GetForProfile(profile),
                     g_browser_process->variations_service(),
                     profile->GetRequestContext(),

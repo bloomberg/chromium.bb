@@ -128,7 +128,8 @@ class MostVisitedSites : public history::TopSitesObserver,
     DISALLOW_COPY_AND_ASSIGN(Suggestion);
   };
 
-  MostVisitedSites(PrefService* prefs,
+  MostVisitedSites(scoped_refptr<base::SequencedWorkerPool> blocking_pool,
+                   PrefService* prefs,
                    const TemplateURLService* template_url_service,
                    variations::VariationsService* variations_service,
                    net::URLRequestContextGetter* download_context,
@@ -274,6 +275,10 @@ class MostVisitedSites : public history::TopSitesObserver,
   std::unique_ptr<PopularSites> popular_sites_;
 
   SuggestionsVector current_suggestions_;
+
+  base::ThreadChecker thread_checker_;
+  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
+  scoped_refptr<base::TaskRunner> blocking_runner_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<MostVisitedSites> weak_ptr_factory_;

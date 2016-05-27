@@ -64,16 +64,16 @@ class PopularSites : public net::URLFetcherDelegate {
 
   using FinishedCallback = base::Callback<void(bool /* success */)>;
 
-  // Must only be instantiated on the UI thread. When the suggestions have been
-  // fetched (from cache or URL) and parsed, invokes |callback|, also on the UI
-  // thread.
+  // When the suggestions have been fetched (from cache or URL) and parsed,
+  // invokes |callback|, on the same thread as the caller.
   //
   // Set |force_download| to enforce re-downloading the suggestions file, even
   // if it already exists on disk.
   //
   // TODO(treib): PopularSites should query the variation params itself instead
   // of having them passed in.
-  PopularSites(PrefService* prefs,
+  PopularSites(const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
+               PrefService* prefs,
                const TemplateURLService* template_url_service,
                variations::VariationsService* variations_service,
                net::URLRequestContextGetter* download_context,
@@ -85,7 +85,8 @@ class PopularSites : public net::URLFetcherDelegate {
 
   // This fetches the popular sites from a given url and is only used for
   // debugging through the popular-sites-internals page.
-  PopularSites(PrefService* prefs,
+  PopularSites(const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
+               PrefService* prefs,
                net::URLRequestContextGetter* download_context,
                const base::FilePath& directory,
                const GURL& url,
@@ -106,7 +107,8 @@ class PopularSites : public net::URLFetcherDelegate {
       user_prefs::PrefRegistrySyncable* user_prefs);
 
  private:
-  PopularSites(PrefService* prefs,
+  PopularSites(const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
+               PrefService* prefs,
                net::URLRequestContextGetter* download_context,
                const base::FilePath& directory,
                const std::string& country,
@@ -147,7 +149,7 @@ class PopularSites : public net::URLFetcherDelegate {
   PrefService* prefs_;
   net::URLRequestContextGetter* download_context_;
 
-  scoped_refptr<base::TaskRunner> runner_;
+  scoped_refptr<base::TaskRunner> blocking_runner_;
 
   base::WeakPtrFactory<PopularSites> weak_ptr_factory_;
 
