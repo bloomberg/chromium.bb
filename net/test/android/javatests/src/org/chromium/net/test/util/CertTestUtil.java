@@ -6,7 +6,7 @@ package org.chromium.net.test.util;
 
 import android.util.Base64;
 
-import org.chromium.base.PathUtils;
+import org.chromium.base.test.util.UrlUtils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -23,7 +23,7 @@ public class CertTestUtil {
      * The location of the directory that contains certificates for testing.
      */
     public static final String CERTS_DIRECTORY =
-            PathUtils.getExternalStorageDirectory() + "/net/data/ssl/certificates/";
+            UrlUtils.getIsolatedTestFilePath("net/data/ssl/certificates/");
 
     private static final String BEGIN_MARKER = "-----BEGIN CERTIFICATE-----";
     private static final String END_MARKER = "-----END CERTIFICATE-----";

@@ -444,7 +444,7 @@ bool PathProvider(int key, base::FilePath* result) {
 #if defined(OS_ANDROID)
       // On Android, our tests don't have permission to write to DIR_MODULE.
       // gtest/test_runner.py pushes data to external storage.
-      if (!PathService::Get(base::DIR_ANDROID_EXTERNAL_STORAGE, &cur))
+      if (!PathService::Get(base::DIR_SOURCE_ROOT, &cur))
         return false;
 #else
       if (!PathService::Get(base::DIR_MODULE, &cur))

@@ -8,6 +8,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/test/test_support_android.h"
 #include "base/trace_event/trace_event.h"
 #include "net/test/jni/EmbeddedTestServerImpl_jni.h"
 
@@ -69,8 +70,13 @@ void EmbeddedTestServerAndroid::Destroy(JNIEnv* env,
   delete this;
 }
 
-static void Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
+static void Init(JNIEnv* env,
+                 const JavaParamRef<jobject>& jobj,
+                 const JavaParamRef<jstring>& jtest_data_dir) {
   TRACE_EVENT0("native", "EmbeddedTestServerAndroid::Init");
+  base::FilePath test_data_dir(
+      base::android::ConvertJavaStringToUTF8(env, jtest_data_dir));
+  base::InitAndroidTestPaths(test_data_dir);
   new EmbeddedTestServerAndroid(env, jobj);
 }
 

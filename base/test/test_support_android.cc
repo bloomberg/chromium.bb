@@ -18,6 +18,8 @@
 
 namespace {
 
+base::FilePath* g_test_data_dir = nullptr;
+
 struct RunState {
   RunState(base::MessagePump::Delegate* delegate, int run_depth)
       : delegate(delegate),
@@ -132,13 +134,14 @@ std::unique_ptr<base::MessagePump> CreateMessagePumpForUIStub() {
   return std::unique_ptr<base::MessagePump>(new MessagePumpForUIStub());
 };
 
-// Provides the test path for DIR_MODULE and DIR_ANDROID_APP_DATA.
+// Provides the test path for DIR_SOURCE_ROOT and DIR_ANDROID_APP_DATA.
 bool GetTestProviderPath(int key, base::FilePath* result) {
   switch (key) {
-    case base::DIR_ANDROID_APP_DATA: {
-      // For tests, app data is put in external storage.
-      return base::android::GetExternalStorageDirectory(result);
-    }
+    case base::DIR_ANDROID_APP_DATA:
+    case base::DIR_SOURCE_ROOT:
+      CHECK(g_test_data_dir != nullptr);
+      *result = *g_test_data_dir;
+      return true;
     default:
       return false;
   }
@@ -166,8 +169,13 @@ void InitAndroidTestLogging() {
                        false);   // Tick count
 }
 
-void InitAndroidTestPaths() {
-  InitPathProvider(DIR_MODULE);
+void InitAndroidTestPaths(const FilePath& test_data_dir) {
+  if (g_test_data_dir) {
+    CHECK(test_data_dir == *g_test_data_dir);
+    return;
+  }
+  g_test_data_dir = new FilePath(test_data_dir);
+  InitPathProvider(DIR_SOURCE_ROOT);
   InitPathProvider(DIR_ANDROID_APP_DATA);
 }
 
@@ -179,7 +187,6 @@ void InitAndroidTestMessageLoop() {
 void InitAndroidTest() {
   if (!base::AndroidIsChildProcess()) {
     InitAndroidTestLogging();
-    InitAndroidTestPaths();
   }
   InitAndroidTestMessageLoop();
 }

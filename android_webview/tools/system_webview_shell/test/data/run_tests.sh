@@ -5,8 +5,8 @@
 # found in the LICENSE file.
 
 PACKAGE_NAME="org.chromium.webview_shell.test"
-DEVICE_WEBVIEW_TEST_PATH=\
-    "/sdcard/android_webview/tools/system_webview_shell/test/data/"
+DEVICE_WEBVIEW_TEST_PATH="/sdcard/chromium_tests_root/android_webview/tools/"
+DEVICE_WEBVIEW_TEST_PATH+="system_webview_shell/test/data/"
 TESTRUNNER="../../../../build/android/test_runner.py"
 
 $TESTRUNNER instrumentation \

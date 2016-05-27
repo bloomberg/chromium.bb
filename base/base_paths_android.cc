@@ -38,8 +38,10 @@ bool PathProviderAndroid(int key, FilePath* result) {
     case base::DIR_MODULE:
       return base::android::GetNativeLibraryDirectory(result);
     case base::DIR_SOURCE_ROOT:
-      // This const is only used for tests.
-      return base::android::GetExternalStorageDirectory(result);
+      // Used only by tests.
+      // In that context, hooked up via base/test/test_support_android.cc.
+      NOTIMPLEMENTED();
+      return false;
     case base::DIR_USER_DESKTOP:
       // Android doesn't support GetUserDesktop.
       NOTIMPLEMENTED();
