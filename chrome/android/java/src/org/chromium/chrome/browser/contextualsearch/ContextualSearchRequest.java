@@ -35,6 +35,7 @@ class ContextualSearchRequest {
     private static final String GWS_QUERY_PARAM = "q";
     private static final String CTXS_PARAM_PATTERN = "(ctxs=[^&]+)";
     private static final String CTXR_PARAM = "ctxr";
+    private static final String PF_PARAM = "(\\&pf=\\w)";
     private static final String CTXS_TWO_REQUEST_PROTOCOL = "2";
     private static final String CTXSL_TRANS_PARAM = "ctxsl_trans";
     private static final String CTXSL_TRANS_PARAM_VALUE = "1";
@@ -136,11 +137,13 @@ class ContextualSearchRequest {
      * @return The formatted Search URL.
      */
     String getSearchUrlForPromotion() {
+        setNormalPriority();
         String searchUrl = getSearchUrl();
 
         URL url;
         try {
-            url = new URL(searchUrl.replaceAll(CTXS_PARAM_PATTERN, CTXR_PARAM));
+            url = new URL(searchUrl.replaceAll(CTXS_PARAM_PATTERN, CTXR_PARAM)
+                    .replaceAll(PF_PARAM, ""));
         } catch (MalformedURLException e) {
             url = null;
         }
