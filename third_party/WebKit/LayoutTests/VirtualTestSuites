@@ -220,6 +220,11 @@
   },
   {
     "prefix": "spv2",
+    "base": "fast/css",
+    "args": ["--enable-slimming-paint-v2"]
+  },
+  {
+    "prefix": "spv2",
     "base": "fast/overflow",
     "args": ["--enable-slimming-paint-v2"]
   },

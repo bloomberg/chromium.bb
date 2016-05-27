@@ -403,6 +403,20 @@ crbug.com/589265 virtual/spv2/fast/overflow/scroll-nested-positioned-layer-in-ov
 crbug.com/589265 virtual/spv2/fast/overflow/scrollbar-position-update.html [ Failure ]
 crbug.com/589265 virtual/spv2/compositing/geometry/root-layer-update.html [ Failure ]
 
+# There are still a few real non-scrollbar failures in fast/block/positioning that need to be investigated.
+crbug.com/614257 virtual/spv2/fast/block/positioning/058.html [ Pass ]
+crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-ltr-2.html [ Pass ]
+crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-ltr-3.html [ Pass ]
+crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-ltr.html [ Pass ]
+crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-rtl-2.html [ Pass ]
+crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-rtl-3.html [ Pass ]
+crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-rtl.html [ Pass ]
+crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-short-ltr.html [ Pass ]
+crbug.com/614257 virtual/spv2/fast/block/positioning/absolute-in-inline-short-rtl.html [ Pass ]
+crbug.com/614257 virtual/spv2/fast/block/positioning/hiding-inside-relpositioned-inline.html [ Pass ]
+crbug.com/614257 virtual/spv2/fast/css/abs-pos-child-inside-rel-pos-inline-001.html [ Pass ]
+crbug.com/614257 virtual/spv2/fast/css/abs-pos-child-inside-rel-pos-inline-offset-001.html [ Pass ]
+
 # Implement scrollbars in FramePainter for SPv2
 crbug.com/589279 virtual/spv2/fast/overflow/006.html [ Failure ]
 crbug.com/589279 virtual/spv2/fast/overflow/hidden-viewport-x.html [ Failure ]

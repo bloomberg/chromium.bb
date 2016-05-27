@@ -7,6 +7,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutPart.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
@@ -25,6 +26,7 @@ struct PaintPropertyTreeBuilderContext {
         : currentTransform(nullptr)
         , currentClip(nullptr)
         , transformForAbsolutePosition(nullptr)
+        , containerForAbsolutePosition(nullptr)
         , clipForAbsolutePosition(nullptr)
         , transformForFixedPosition(nullptr)
         , clipForFixedPosition(nullptr)
@@ -51,6 +53,7 @@ struct PaintPropertyTreeBuilderContext {
     // are included in the additional context too.
     TransformPaintPropertyNode* transformForAbsolutePosition;
     LayoutPoint paintOffsetForAbsolutePosition;
+    LayoutObject* containerForAbsolutePosition;
     ClipPaintPropertyNode* clipForAbsolutePosition;
 
     TransformPaintPropertyNode* transformForFixedPosition;
@@ -113,7 +116,9 @@ void PaintPropertyTreeBuilder::walk(FrameView& frameView, const PaintPropertyTre
     frameScroll.translate(-scrollOffset.width(), -scrollOffset.height());
     RefPtr<TransformPaintPropertyNode> newTransformNodeForScrollTranslation = TransformPaintPropertyNode::create(frameScroll, FloatPoint3D(), newTransformNodeForPreTranslation);
     localContext.currentTransform = localContext.transformForAbsolutePosition = newTransformNodeForScrollTranslation.get();
-    localContext.paintOffset = localContext.paintOffsetForAbsolutePosition = LayoutPoint();
+    localContext.paintOffset = LayoutPoint();
+    localContext.paintOffsetForAbsolutePosition = LayoutPoint();
+    localContext.containerForAbsolutePosition = nullptr;
 
     frameView.setPreTranslation(newTransformNodeForPreTranslation.release());
     frameView.setScrollTranslation(newTransformNodeForScrollTranslation.release());
@@ -334,6 +339,7 @@ void PaintPropertyTreeBuilder::updateOutOfFlowContext(LayoutObject& object, Pain
         context.transformForAbsolutePosition = context.currentTransform;
         context.paintOffsetForAbsolutePosition = context.paintOffset;
         context.clipForAbsolutePosition = context.currentClip;
+        context.containerForAbsolutePosition = &object;
     }
 
     // TODO(pdr): Remove the !object.isLayoutView() condition when removing FrameView
@@ -379,11 +385,20 @@ static void deriveBorderBoxFromContainerContext(const LayoutObject& object, Pain
     case RelativePosition:
         context.paintOffset += boxModelObject.offsetForInFlowPosition();
         break;
-    case AbsolutePosition:
+    case AbsolutePosition: {
         context.currentTransform = context.transformForAbsolutePosition;
         context.paintOffset = context.paintOffsetForAbsolutePosition;
+
+        // Absolutely positioned content in an inline should be positioned relative to the inline.
+        LayoutObject* container = context.containerForAbsolutePosition;
+        if (container && container->isInFlowPositioned() && container->isLayoutInline()) {
+            DCHECK(object.isBox());
+            context.paintOffset += toLayoutInline(container)->offsetForInFlowPositionedInline(toLayoutBox(object));
+        }
+
         context.currentClip = context.clipForAbsolutePosition;
         break;
+    }
     case StickyPosition:
         context.paintOffset += boxModelObject.offsetForInFlowPosition();
         break;
