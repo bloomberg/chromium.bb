@@ -9,10 +9,10 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
+#include "platform/WebMemoryAllocatorDump.h"
 #include "platform/heap/Handle.h"
 #include "platform/web_process_memory_dump_impl.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebMemoryAllocatorDump.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
 

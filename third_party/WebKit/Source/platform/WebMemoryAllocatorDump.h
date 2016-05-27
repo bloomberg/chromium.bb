@@ -5,8 +5,8 @@
 #ifndef WebMemoryAllocatorDump_h
 #define WebMemoryAllocatorDump_h
 
-#include "WebCommon.h"
-#include "WebString.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
 
 namespace blink {
 typedef uint64_t WebMemoryAllocatorDumpGuid;

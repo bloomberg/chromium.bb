@@ -8,7 +8,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/trace_event/memory_dump_request_args.h"
-#include "public/platform/WebProcessMemoryDump.h"
+#include "platform/WebProcessMemoryDump.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 

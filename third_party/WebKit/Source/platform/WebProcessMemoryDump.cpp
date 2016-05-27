@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "public/platform/WebMemoryAllocatorDump.h"
+#include "platform/WebProcessMemoryDump.h"
 
 namespace blink {
 
-WebMemoryAllocatorDump::~WebMemoryAllocatorDump()
+WebProcessMemoryDump::~WebProcessMemoryDump()
 {
 }
 

@@ -38,7 +38,6 @@
 #include "platform/network/HTTPParsers.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebProcessMemoryDump.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebSecurityOrigin.h"
 #include "wtf/CurrentTime.h"

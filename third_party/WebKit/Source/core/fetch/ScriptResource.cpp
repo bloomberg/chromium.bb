@@ -32,7 +32,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/SharedBuffer.h"
-#include "public/platform/WebProcessMemoryDump.h"
+#include "platform/WebProcessMemoryDump.h"
 
 namespace blink {
 

@@ -26,7 +26,7 @@
 
 #include "platform/SharedBuffer.h"
 
-#include "public/platform/WebProcessMemoryDump.h"
+#include "platform/WebProcessMemoryDump.h"
 #include "wtf/text/UTF8.h"
 #include "wtf/text/Unicode.h"
 

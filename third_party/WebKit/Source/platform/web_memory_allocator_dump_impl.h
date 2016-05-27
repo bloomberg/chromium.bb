@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "public/platform/WebMemoryAllocatorDump.h"
+#include "platform/WebMemoryAllocatorDump.h"
 
 namespace base {
 namespace trace_event {

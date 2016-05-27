@@ -8,8 +8,8 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "platform/PlatformExport.h"
+#include "platform/WebProcessMemoryDump.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebProcessMemoryDump.h"
 #include "wtf/Allocator.h"
 
 namespace blink {

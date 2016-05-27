@@ -5,10 +5,10 @@
 #ifndef WebProcessMemoryDump_h
 #define WebProcessMemoryDump_h
 
-#include "WebCommon.h"
-#include "WebMemoryAllocatorDump.h"
-#include "WebString.h"
 #include "base/trace_event/heap_profiler_allocation_context.h"
+#include "platform/WebMemoryAllocatorDump.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
 
 class SkTraceMemoryDump;
 
