@@ -158,8 +158,8 @@ public:
 #endif
     static void PrintTo(const VisibleSelectionTemplate&, std::ostream*);
 
-    void setStartRespectingGranularity(TextGranularity, EWordSide = RightWordIfOnBoundary);
-    void setEndRespectingGranularity(TextGranularity, EWordSide = RightWordIfOnBoundary);
+    void setStartRespectingGranularity(TextGranularity);
+    void setEndRespectingGranularity(TextGranularity);
 
 private:
     friend class SelectionAdjuster;

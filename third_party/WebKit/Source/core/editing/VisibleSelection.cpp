@@ -338,7 +338,7 @@ void VisibleSelectionTemplate<Strategy>::setBaseAndExtentToDeepEquivalents()
 }
 
 template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::setStartRespectingGranularity(TextGranularity granularity, EWordSide wordSide)
+void VisibleSelectionTemplate<Strategy>::setStartRespectingGranularity(TextGranularity granularity)
 {
     DCHECK(m_base.isNotNull());
     DCHECK(m_extent.isNotNull());
@@ -357,7 +357,7 @@ void VisibleSelectionTemplate<Strategy>::setStartRespectingGranularity(TextGranu
         // Edge case: If the caret is after the last word in a paragraph, select from the the end of the
         // last word to the line break (also RightWordIfOnBoundary);
         const VisiblePositionTemplate<Strategy> visibleStart = createVisiblePosition(m_start, m_affinity);
-        EWordSide side = wordSide;
+        EWordSide side = RightWordIfOnBoundary;
         if (isEndOfEditableOrNonEditableContent(visibleStart) || (isEndOfLine(visibleStart) && !isStartOfLine(visibleStart) && !isEndOfParagraph(visibleStart)))
             side = LeftWordIfOnBoundary;
         m_start = startOfWord(visibleStart, side).deepEquivalent();
@@ -398,7 +398,7 @@ void VisibleSelectionTemplate<Strategy>::setStartRespectingGranularity(TextGranu
 }
 
 template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::setEndRespectingGranularity(TextGranularity granularity, EWordSide wordSide)
+void VisibleSelectionTemplate<Strategy>::setEndRespectingGranularity(TextGranularity granularity)
 {
     DCHECK(m_base.isNotNull());
     DCHECK(m_extent.isNotNull());
@@ -420,7 +420,7 @@ void VisibleSelectionTemplate<Strategy>::setEndRespectingGranularity(TextGranula
         // from the the end of the last word to the line break (also
         // |RightWordIfOnBoundary|);
         const VisiblePositionTemplate<Strategy> originalEnd = createVisiblePosition(m_end, m_affinity);
-        EWordSide side = wordSide;
+        EWordSide side = RightWordIfOnBoundary;
         if (isEndOfEditableOrNonEditableContent(originalEnd) || (isEndOfLine(originalEnd) && !isStartOfLine(originalEnd) && !isEndOfParagraph(originalEnd)))
             side = LeftWordIfOnBoundary;
 
