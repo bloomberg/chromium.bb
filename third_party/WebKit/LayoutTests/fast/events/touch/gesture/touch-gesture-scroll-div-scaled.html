@@ -117,17 +117,15 @@ function runTest()
         description('This tests gesture event scrolling of an overflow div with page scale.');
 
         if (checkTestDependencies()) {
-            debug("set PreferCompositingToLCDTextEnabled false");
-            window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
-            scrollAmountX = ['45', '45'];
-            scrollAmountY = ['0', '47'];
-            firstGestureScroll();
-
-            debug("set PreferCompositingToLCDTextEnabled true");
-            window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-            scrollAmountX = ['90', '90'];
-            scrollAmountY = ['47.5', '95'];
-            gesturesOccurred = 0;
+            if (window.internals.runtimeFlags.fractionalScrollOffsetsEnabled) {
+                debug("fractional scroll mode");
+                window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+                scrollAmountX = ['90', '90'];
+                scrollAmountY = ['47.5', '95'];
+            } else {
+                scrollAmountX = ['45', '45'];
+                scrollAmountY = ['0', '47'];
+            }
             firstGestureScroll();
         } else
             exitIfNecessary();

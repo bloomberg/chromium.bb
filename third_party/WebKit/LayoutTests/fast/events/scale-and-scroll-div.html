@@ -27,7 +27,7 @@
       var scrollDistance = 10;
       var expectedScrollDistance;
       var scrollBox;
-      var integerScrollOffset = false;
+      var integerScrollOffset = true;
 
       function scroll(scaleFactor) {
           if (integerScrollOffset)
@@ -88,12 +88,10 @@
          if (window.eventSender && window.internals) {
             description('This tests that a div scrolled by gesture touch while the page is scaled still scrolls at the rate of the touch');
 
-            window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-            integerScrollOffset = false;
-            test();
-
-            window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
-            integerScrollOffset = true;
+            if (window.internals.runtimeFlags.fractionalScrollOffsetsEnabled) {
+                window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+                integerScrollOffset = false;
+            }
             test();
 
           } else {

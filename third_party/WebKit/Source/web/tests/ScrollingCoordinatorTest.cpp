@@ -153,6 +153,9 @@ TEST_F(ScrollingCoordinatorTest, fastScrollingCanBeDisabledWithSetting)
 
 TEST_F(ScrollingCoordinatorTest, fastFractionalScrollingDiv)
 {
+    bool origFractionalOffsetsEnabled = RuntimeEnabledFeatures::fractionalScrollOffsetsEnabled();
+    RuntimeEnabledFeatures::setFractionalScrollOffsetsEnabled(true);
+
     registerMockedHttpURLLoad("fractional-scroll-div.html");
     navigateTo(m_baseURL + "fractional-scroll-div.html");
     forceFullCompositingUpdate();
@@ -182,6 +185,8 @@ TEST_F(ScrollingCoordinatorTest, fastFractionalScrollingDiv)
     ASSERT_TRUE(webScrollLayer);
     ASSERT_NEAR(1.2, webScrollLayer->scrollPositionDouble().x, 0.01);
     ASSERT_NEAR(1.2, webScrollLayer->scrollPositionDouble().y, 0.01);
+
+    RuntimeEnabledFeatures::setFractionalScrollOffsetsEnabled(origFractionalOffsetsEnabled);
 }
 
 static WebLayer* webLayerFromElement(Element* element)

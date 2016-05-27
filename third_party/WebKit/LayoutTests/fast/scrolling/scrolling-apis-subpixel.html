@@ -72,16 +72,16 @@ function testPageZoom(zoom) {
     testScroll(4.5, 4.5);
 }
 
-debug("set PreferCompositingToLCDTextEnabled true");
-window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-testScroll(4.2, 4.2);
-testPageZoom(2);
-
-// If there is no browser zoom, floating point scroll offsets are truncated.
-// If there is browser zoom, we can still get fractional scroll offsets
-// through JS.
-debug("set PreferCompositingToLCDTextEnabled false");
+// By default we don't yet get fractional scroll offsets with more
+// granularity than the page zoom factor.
 window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
 testScroll(4.2, 4);
 testPageZoom(2);
+
+if (window.internals.runtimeFlags.fractionalScrollOffsetsEnabled) {
+    debug("Full fractional scroll offsets enabled");
+    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+    testScroll(4.2, 4.2);
+    testPageZoom(2);
+}
 </script>

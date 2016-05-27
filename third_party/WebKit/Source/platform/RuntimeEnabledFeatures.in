@@ -113,7 +113,7 @@ LinkPreconnect status=stable
 LinkPreload status=stable
 LinkHeader status=stable
 LinkServiceWorker status=experimental
-FractionalScrollOffsets status=experimental
+FractionalScrollOffsets
 MediaCapture
 MediaCaptureFromCanvas status=stable
 MediaCaptureFromVideo status=test

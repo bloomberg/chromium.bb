@@ -7,7 +7,7 @@
 description("Verifies that document scrolling supports fractional offset.");
 
 var floatPrecision = 0.00001;
-var useIntegerScrollOffset = false;
+var useIntegerScrollOffset = true;
 function checkScrollOffset(offset_x, offset_y)
 {
     if (useIntegerScrollOffset) {
@@ -35,13 +35,11 @@ function scroll()
 function runTest()
 {
     if (window.eventSender) {
-      debug("set PreferCompositingToLCDTextEnabled true");
-      window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-      scroll();
-
-      debug("set PreferCompositingToLCDTextEnabled false");
-      window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
-      useIntegerScrollOffset = true;
+      if (window.internals.runtimeFlags.fractionalScrollOffsetsEnabled) {
+          debug("fractional scroll offset mode");
+          window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+          useIntegerScrollOffset = true;
+      }
       scroll();
     }
 }
