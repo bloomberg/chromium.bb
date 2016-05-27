@@ -313,6 +313,57 @@ page](https://github.com/quarnster/SublimeClang).
 your settings file will print more to the console (accessed with ``Ctrl + ` ``)
 which can be helpful when debugging.
 
+### Mac (not working)
+
+1.  Install cmake if you don't already have it
+1.  Install XCode
+1.  Copy libclang.dylib from XCode to the SublimeClang/internals folder:
+
+    ```shell
+    cd ~/Library/Application\ Support/Sublime\ Text\ 3/Packages
+    git clone --recursive https://github.com/quarnster/SublimeClang SublimeClang
+    cd SublimeClang
+    cp /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib internals/libclang.dylib
+    # Remove i386 from the build file since XCode's libclang.dylib is only a 64-bit version
+    sed -ie 's/CMAKE_OSX_ARCHITECTURES i386 x86_64/CMAKE_OSX_ARCHITECTURES x86_64/' src/CMakeLists.txt
+    # Copy libclang.dylib to the internals dir
+    # Make the project - should be really quick, since libclang.dylib is already built
+    cd src && mkdir build && cd build
+    cmake ..
+    make
+    ```
+
+1.  The rest of the instructions are the same, but when adding your project
+    settings, add these extra arguments to `sublimeclang_options`:
+
+    ```json
+    "sublimeclang_options":
+    [
+      ...
+      // MAC-ONLY: Include these options, replacing the paths with the correct installed SDK
+      "-isystem", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/",
+      "-isystem", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/c++/4.2.1",
+      "-F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/System/Library/Frameworks/",
+      "isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk",
+      "-mmacosx-version-min=10.7",
+      "-stdlib=libc++",
+      "-isystem", "/usr/include",
+      "-isystem", "/usr/include/c++/*",
+    ]
+    ```
+
+### Windows (not working)
+
+You'll need cl.exe which can be installed with [the Visual C++ Build Tools
+2015](https://blogs.msdn.microsoft.com/vcblog/2016/03/31/announcing-the-official-release-of-the-visual-c-build-tools-2015/).
+You should have cl.exe on your `$PATH`, which you can get by running `C:\Program
+Files (x86)\Microsoft Visual C++ Build Tools\Visual C++ 2015 x64 Native Build
+Tools Command Prompt`.
+
+Then you'll need a copy of libclang.so, which can be found on the [LLVM
+website](http://llvm.org/releases/download.html). The instructions should be the
+same as Linux from there.
+
 ## Alternative: Code Completion with Ctags
 
 For a fast way to look up symbols, we recommend installing the CTags plugin.
@@ -371,57 +422,6 @@ then add to your `Preferences > Keybindings - User` file:
 
 You can then press those key combinations to compile the current file in the
 given target build.
-
-### Mac (not working)
-
-1.  Install cmake if you don't already have it
-1.  Install XCode
-1.  Copy libclang.dylib from XCode to the SublimeClang/internals folder:
-
-    ```shell
-    cd ~/Library/Application\ Support/Sublime\ Text\ 3/Packages
-    git clone --recursive https://github.com/quarnster/SublimeClang SublimeClang
-    cd SublimeClang
-    cp /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang.dylib internals/libclang.dylib
-    # Remove i386 from the build file since XCode's libclang.dylib is only a 64-bit version
-    sed -ie 's/CMAKE_OSX_ARCHITECTURES i386 x86_64/CMAKE_OSX_ARCHITECTURES x86_64/' src/CMakeLists.txt
-    # Copy libclang.dylib to the internals dir
-    # Make the project - should be really quick, since libclang.dylib is already built
-    cd src && mkdir build && cd build
-    cmake ..
-    make
-    ```
-
-1.  The rest of the instructions are the same, but when adding your project
-    settings, add these extra arguments to `sublimeclang_options`:
-
-    ```json
-    "sublimeclang_options":
-    [
-      ...
-      // MAC-ONLY: Include these options, replacing the paths with the correct installed SDK
-      "-isystem", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/",
-      "-isystem", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/usr/include/c++/4.2.1",
-      "-F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk/System/Library/Frameworks/",
-      "isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.10.sdk",
-      "-mmacosx-version-min=10.7",
-      "-stdlib=libc++",
-      "-isystem", "/usr/include",
-      "-isystem", "/usr/include/c++/*",
-    ]
-    ```
-
-### Windows (not working)
-
-You'll need cl.exe which can be installed with [the Visual C++ Build Tools
-2015](https://blogs.msdn.microsoft.com/vcblog/2016/03/31/announcing-the-official-release-of-the-visual-c-build-tools-2015/).
-You should have cl.exe on your `$PATH`, which you can get by running `C:\Program
-Files (x86)\Microsoft Visual C++ Build Tools\Visual C++ 2015 x64 Native Build
-Tools Command Prompt`.
-
-Then you'll need a copy of libclang.so, which can be found on the [LLVM
-website](http://llvm.org/releases/download.html). The instructions should be the
-same as Linux from there.
 
 ## Building inside Sublime
 
