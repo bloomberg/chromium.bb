@@ -36,10 +36,6 @@
 #include "device/core/device_info_query_win.h"
 #endif  // OS_WIN
 
-#if defined(USE_UDEV)
-#include "device/udev_linux/scoped_udev.h"
-#endif  // USE_UDEV
-
 using net::IOBufferWithSize;
 
 namespace device {
@@ -198,81 +194,6 @@ void OnDeviceOpenedReadDescriptors(
     failure_closure.Run();
   }
 }
-
-#if defined(USE_UDEV)
-
-void EnumerateUdevDevice(scoped_refptr<UsbDeviceImpl> device,
-                         bool read_bos_descriptors,
-                         scoped_refptr<base::SequencedTaskRunner> task_runner,
-                         const base::Closure& success_closure,
-                         const base::Closure& failure_closure) {
-  ScopedUdevPtr udev(udev_new());
-  ScopedUdevEnumeratePtr udev_enumerate(udev_enumerate_new(udev.get()));
-
-  udev_enumerate_add_match_subsystem(udev_enumerate.get(), "usb");
-  if (udev_enumerate_scan_devices(udev_enumerate.get()) != 0) {
-    task_runner->PostTask(FROM_HERE, failure_closure);
-    return;
-  }
-
-  std::string bus_number =
-      base::UintToString(libusb_get_bus_number(device->platform_device()));
-  std::string device_address =
-      base::UintToString(libusb_get_device_address(device->platform_device()));
-  udev_list_entry* devices =
-      udev_enumerate_get_list_entry(udev_enumerate.get());
-  for (udev_list_entry* i = devices; i != NULL;
-       i = udev_list_entry_get_next(i)) {
-    ScopedUdevDevicePtr udev_device(
-        udev_device_new_from_syspath(udev.get(), udev_list_entry_get_name(i)));
-    if (udev_device) {
-      const char* value =
-          udev_device_get_sysattr_value(udev_device.get(), "busnum");
-      if (!value || bus_number != value) {
-        continue;
-      }
-      value = udev_device_get_sysattr_value(udev_device.get(), "devnum");
-      if (!value || device_address != value) {
-        continue;
-      }
-
-      value = udev_device_get_sysattr_value(udev_device.get(), "manufacturer");
-      if (value) {
-        device->set_manufacturer_string(base::UTF8ToUTF16(value));
-      }
-      value = udev_device_get_sysattr_value(udev_device.get(), "product");
-      if (value) {
-        device->set_product_string(base::UTF8ToUTF16(value));
-      }
-      value = udev_device_get_sysattr_value(udev_device.get(), "serial");
-      if (value) {
-        device->set_serial_number(base::UTF8ToUTF16(value));
-      }
-
-      value = udev_device_get_devnode(udev_device.get());
-      if (value) {
-        device->set_device_path(value);
-
-        if (read_bos_descriptors) {
-          task_runner->PostTask(
-              FROM_HERE,
-              base::Bind(&UsbDevice::Open, device,
-                         base::Bind(&OnDeviceOpenedReadDescriptors, 0, 0, 0,
-                                    true, success_closure, failure_closure)));
-        } else {
-          task_runner->PostTask(FROM_HERE, success_closure);
-        }
-        return;
-      }
-
-      break;
-    }
-  }
-
-  task_runner->PostTask(FROM_HERE, failure_closure);
-}
-
-#endif  // USE_UDEV
 
 }  // namespace
 
@@ -523,12 +444,6 @@ void UsbServiceImpl::EnumerateDevice(PlatformUsbDevice platform_device,
         platform_device, refresh_complete);
     bool read_bos_descriptors = descriptor.bcdUSB >= kUsbVersion2_1;
 
-#if defined(USE_UDEV)
-    blocking_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&EnumerateUdevDevice, device, read_bos_descriptors,
-                   task_runner_, add_device, enumeration_failed));
-#else
     if (descriptor.iManufacturer == 0 && descriptor.iProduct == 0 &&
         descriptor.iSerialNumber == 0 && !read_bos_descriptors) {
       // Don't bother disturbing the device if it has no descriptors to offer.
@@ -539,7 +454,6 @@ void UsbServiceImpl::EnumerateDevice(PlatformUsbDevice platform_device,
                               descriptor.iSerialNumber, read_bos_descriptors,
                               add_device, enumeration_failed));
     }
-#endif
   } else {
     USB_LOG(EVENT) << "Failed to get device descriptor: "
                    << ConvertPlatformUsbErrorToString(rv);

@@ -19,7 +19,6 @@
         'device_usb_mojo_bindings',
         '../../components/components.gyp:device_event_log_component',
         '../../net/net.gyp:net',
-        '../../third_party/libusb/libusb.gyp:libusb',
         '../core/core.gyp:device_core',
       ],
       'include_dirs': [
@@ -38,26 +37,20 @@
         'mojo/permission_provider.h',
         'usb_configuration_android.cc',
         'usb_configuration_android.h',
-        'usb_context.cc',
-        'usb_context.h',
         'usb_descriptors.cc',
         'usb_descriptors.h',
-        'usb_device_impl.cc',
-        'usb_device_impl.h',
+        'usb_device_linux.cc',
+        'usb_device_linux.h',
         'usb_device.cc',
         'usb_device.h',
         'usb_device_android.cc',
         'usb_device_android.h',
         'usb_device_filter.cc',
         'usb_device_filter.h',
-        'usb_device_handle_impl.cc',
-        'usb_device_handle_impl.h',
         'usb_device_handle.cc',
         'usb_device_handle.h',
         'usb_endpoint_android.cc',
         'usb_endpoint_android.h',
-        'usb_error.cc',
-        'usb_error.h',
         'usb_ids.cc',
         'usb_ids.h',
         'usb_interface_android.cc',
@@ -66,8 +59,6 @@
         'usb_service.h',
         'usb_service_android.cc',
         'usb_service_android.h',
-        'usb_service_impl.cc',
-        'usb_service_impl.h',
         'webusb_descriptors.cc',
         'webusb_descriptors.h',
       ],
@@ -96,6 +87,10 @@
       ],
       'conditions': [
         ['use_udev == 1', {
+          'sources': [
+            'usb_service_linux.cc',
+            'usb_service_linux.h',
+          ],
           'dependencies': [
             '../udev_linux/udev.gyp:udev_linux',
           ],
@@ -105,15 +100,12 @@
             'device_usb_java',
             'device_usb_jni_headers',
           ],
-          'dependencies!': [
+        }],
+        ['OS=="win" or OS=="mac"', {
+          'dependencies': [
             '../../third_party/libusb/libusb.gyp:libusb',
           ],
           'sources': [
-            'usb_device_handle_usbfs.cc',
-            'usb_device_handle_usbfs.h',
-          ],
-          # These sources are libusb-specific.
-          'sources!': [
             'usb_context.cc',
             'usb_context.h',
             'usb_device_handle_impl.cc',
@@ -124,22 +116,18 @@
             'usb_error.h',
             'usb_service_impl.cc',
             'usb_service_impl.h',
-          ]
+          ],
+        }],
+        ['OS=="linux" or OS=="android"', {
+          'sources': [
+            'usb_device_handle_usbfs.cc',
+            'usb_device_handle_usbfs.h',
+          ],
         }],
         ['chromeos==1', {
           'dependencies': [
             '../../chromeos/chromeos.gyp:chromeos',
           ],
-        }],
-        ['OS=="linux"', {
-          'sources': [
-            'usb_device_handle_usbfs.cc',
-            'usb_device_handle_usbfs.h',
-          ],
-          'sources!': [
-            'usb_device_handle_impl.cc',
-            'usb_device_handle_impl.h',
-          ]
         }]
       ]
     },

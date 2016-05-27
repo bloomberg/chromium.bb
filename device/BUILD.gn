@@ -140,7 +140,7 @@ test("device_unittests") {
   }
 
   # UsbContext is a libusb-specific object.
-  if (!is_android && !is_ios) {
+  if (is_mac || is_win) {
     sources += [ "usb/usb_context_unittest.cc" ]
     deps += [ "//third_party/libusb" ]
   }

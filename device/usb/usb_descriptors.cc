@@ -313,6 +313,9 @@ void UsbConfigDescriptor::AssignFirstInterfaceNumbers() {
 
 UsbDeviceDescriptor::UsbDeviceDescriptor() {}
 
+UsbDeviceDescriptor::UsbDeviceDescriptor(const UsbDeviceDescriptor& other) =
+    default;
+
 UsbDeviceDescriptor::~UsbDeviceDescriptor() {}
 
 bool UsbDeviceDescriptor::Parse(const std::vector<uint8_t>& buffer) {

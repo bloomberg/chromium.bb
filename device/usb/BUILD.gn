@@ -30,6 +30,8 @@ source_set("usb") {
     "usb_device_filter.h",
     "usb_device_handle.cc",
     "usb_device_handle.h",
+    "usb_device_linux.cc",
+    "usb_device_linux.h",
     "usb_endpoint_android.cc",
     "usb_endpoint_android.h",
     "usb_ids.cc",
@@ -55,16 +57,18 @@ source_set("usb") {
   ]
 
   if (use_udev) {
+    sources += [
+      "usb_service_linux.cc",
+      "usb_service_linux.h",
+    ]
     deps += [ "//device/udev_linux" ]
   }
 
   if (is_android) {
     deps += [ ":jni_headers" ]
-    sources += [
-      "usb_device_handle_usbfs.cc",
-      "usb_device_handle_usbfs.h",
-    ]
-  } else {
+  }
+
+  if (is_win || is_mac) {
     sources += [
       "usb_context.cc",
       "usb_context.h",
@@ -81,14 +85,10 @@ source_set("usb") {
     deps += [ "//third_party/libusb" ]
   }
 
-  if (is_linux || is_chromeos) {
+  if (is_android || is_chromeos || is_linux) {
     sources += [
       "usb_device_handle_usbfs.cc",
       "usb_device_handle_usbfs.h",
-    ]
-    sources -= [
-      "usb_device_handle_impl.cc",
-      "usb_device_handle_impl.h",
     ]
   }
 

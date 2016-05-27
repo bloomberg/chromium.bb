@@ -116,6 +116,7 @@ struct UsbConfigDescriptor {
 
 struct UsbDeviceDescriptor {
   UsbDeviceDescriptor();
+  UsbDeviceDescriptor(const UsbDeviceDescriptor& other);
   ~UsbDeviceDescriptor();
 
   // Parses |buffer| for USB descriptors. Any configuration descriptors found

@@ -20,20 +20,9 @@
 #include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_context.h"
 #include "device/usb/usb_descriptors.h"
+#include "device/usb/usb_device_handle_impl.h"
 #include "device/usb/usb_error.h"
 #include "third_party/libusb/src/libusb/libusb.h"
-
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_LINUX)
-#include "device/usb/usb_device_handle_usbfs.h"
-#else
-#include "device/usb/usb_device_handle_impl.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/permission_broker_client.h"
-#include "dbus/file_descriptor.h"  // nogncheck
-#endif  // defined(OS_CHROMEOS)
 
 namespace device {
 
@@ -116,34 +105,12 @@ UsbDeviceImpl::~UsbDeviceImpl() {
   libusb_unref_device(platform_device_);
 }
 
-#if defined(OS_CHROMEOS)
-
-void UsbDeviceImpl::CheckUsbAccess(const ResultCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  chromeos::PermissionBrokerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
-  DCHECK(client) << "Could not get permission broker client.";
-  client->CheckPathAccess(device_path_, callback);
-}
-
-#endif  // defined(OS_CHROMEOS)
-
 void UsbDeviceImpl::Open(const OpenCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-#if defined(OS_CHROMEOS)
-  chromeos::PermissionBrokerClient* client =
-      chromeos::DBusThreadManager::Get()->GetPermissionBrokerClient();
-  DCHECK(client) << "Could not get permission broker client.";
-  client->OpenPath(
-      device_path_,
-      base::Bind(&UsbDeviceImpl::OnOpenRequestComplete, this, callback),
-      base::Bind(&UsbDeviceImpl::OnOpenRequestError, this, callback));
-#else
   blocking_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&UsbDeviceImpl::OpenOnBlockingThread, this, callback));
-#endif  // defined(OS_CHROMEOS)
 }
 
 void UsbDeviceImpl::HandleClosed(UsbDeviceHandle* handle) {
@@ -219,53 +186,6 @@ void UsbDeviceImpl::RefreshActiveConfiguration() {
   libusb_free_config_descriptor(platform_config);
 }
 
-#if defined(OS_CHROMEOS)
-
-void UsbDeviceImpl::OnOpenRequestComplete(const OpenCallback& callback,
-                                          dbus::FileDescriptor fd) {
-  blocking_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&UsbDeviceImpl::OpenOnBlockingThreadWithFd, this,
-                            base::Passed(&fd), callback));
-}
-
-void UsbDeviceImpl::OnOpenRequestError(const OpenCallback& callback,
-                                       const std::string& error_name,
-                                       const std::string& error_message) {
-  USB_LOG(EVENT) << "Permission broker failed to open the device: "
-                 << error_name << ": " << error_message;
-  callback.Run(nullptr);
-}
-
-void UsbDeviceImpl::OpenOnBlockingThreadWithFd(dbus::FileDescriptor fd,
-                                               const OpenCallback& callback) {
-  fd.CheckValidity();
-  if (fd.is_valid()) {
-    base::ScopedFD scoped_fd(fd.TakeValue());
-    task_runner_->PostTask(FROM_HERE,
-                           base::Bind(&UsbDeviceImpl::Opened, this,
-                                      base::Passed(&scoped_fd), callback));
-  } else {
-    USB_LOG(EVENT) << "Did not get valid device handle from permission broker.";
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
-  }
-}
-
-#else
-#if defined(OS_LINUX)
-
-void UsbDeviceImpl::OpenOnBlockingThread(const OpenCallback& callback) {
-  base::ScopedFD fd(HANDLE_EINTR(open(device_path_.c_str(), O_RDWR)));
-  if (fd.is_valid()) {
-    task_runner_->PostTask(FROM_HERE, base::Bind(&UsbDeviceImpl::Opened, this,
-                                                 base::Passed(&fd), callback));
-  } else {
-    USB_PLOG(EVENT) << "Failed to open device";
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, nullptr));
-  }
-}
-
-#else
-
 void UsbDeviceImpl::OpenOnBlockingThread(const OpenCallback& callback) {
   PlatformUsbDeviceHandle handle;
   const int rv = libusb_open(platform_device_, &handle);
@@ -279,21 +199,6 @@ void UsbDeviceImpl::OpenOnBlockingThread(const OpenCallback& callback) {
   }
 }
 
-#endif  // defined(OS_LINUX)
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_LINUX)
-
-void UsbDeviceImpl::Opened(base::ScopedFD fd, const OpenCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  scoped_refptr<UsbDeviceHandle> device_handle =
-      new UsbDeviceHandleUsbfs(this, std::move(fd), blocking_task_runner_);
-  handles_.push_back(device_handle.get());
-  callback.Run(device_handle);
-}
-
-#else
-
 void UsbDeviceImpl::Opened(PlatformUsbDeviceHandle platform_handle,
                            const OpenCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -302,7 +207,5 @@ void UsbDeviceImpl::Opened(PlatformUsbDeviceHandle platform_handle,
   handles_.push_back(device_handle.get());
   callback.Run(device_handle);
 }
-
-#endif  // defined(OS_LINUX)
 
 }  // namespace device

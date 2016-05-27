@@ -25,7 +25,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
-#include "device/usb/usb_device_impl.h"
+#include "device/usb/usb_device_linux.h"
 #include "net/base/io_buffer.h"
 
 namespace device {
@@ -347,7 +347,7 @@ void UsbDeviceHandleUsbfs::Close() {
   for (const auto& transfer : transfers_)
     CancelTransfer(transfer.get(), USB_TRANSFER_CANCELLED);
 #if !defined(OS_ANDROID)
-  static_cast<UsbDeviceImpl*>(device_.get())->HandleClosed(this);
+  static_cast<UsbDeviceLinux*>(device_.get())->HandleClosed(this);
 #endif
   device_ = nullptr;
   blocking_task_runner_->PostTask(
@@ -554,7 +554,7 @@ void UsbDeviceHandleUsbfs::SetConfigurationComplete(
     const ResultCallback& callback) {
   if (success && device_) {
 #if !defined(OS_ANDROID)
-    static_cast<UsbDeviceImpl*>(device_.get())
+    static_cast<UsbDeviceLinux*>(device_.get())
         ->ActiveConfigurationChanged(configuration_value);
 #endif
     // TODO(reillyg): If all interfaces are unclaimed before a new configuration
