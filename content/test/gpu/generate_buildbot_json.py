@@ -744,6 +744,14 @@ TELEMETRY_TESTS = {
   },
   'maps_pixel_test': {
     'target_name': 'maps',
+    'args': [
+      '--os-type',
+      '${os_type}',
+      '--build-revision',
+      '${got_revision}',
+      '--test-machine-name',
+      '${buildername}',
+    ],
     'tester_configs': [
       {
         'allow_on_android': True,

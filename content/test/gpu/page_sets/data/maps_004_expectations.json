@@ -3,11 +3,11 @@
     "comment": "scale factor overrides",
     "scale_factor_overrides": [
       {
-        "machine_name": "Nexus 6",
+        "machine_name": "Android Debug (Nexus 6)",
         "scale_factor": 1.47436
       },
       {
-        "machine_name": "Nexus 9",
+        "machine_name": "Android Debug (Nexus 9)",
         "scale_factor": 1.566
       }
     ]

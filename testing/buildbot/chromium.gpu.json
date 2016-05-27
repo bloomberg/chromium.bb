@@ -157,7 +157,13 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--os-type",
+          "linux",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -471,7 +477,13 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--os-type",
+          "linux",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -769,7 +781,13 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--os-type",
+          "mac",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -1083,7 +1101,13 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--os-type",
+          "mac",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -1388,7 +1412,13 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--os-type",
+          "mac",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -1716,7 +1746,13 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--os-type",
+          "mac",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -2020,7 +2056,13 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--os-type",
+          "win",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -2334,7 +2376,13 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--os-type",
+          "win",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",
@@ -2648,7 +2696,13 @@
           "--show-stdout",
           "--browser=release",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
+          "--os-type",
+          "win",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "maps_pixel_test",

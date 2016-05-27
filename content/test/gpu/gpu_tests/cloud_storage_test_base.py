@@ -33,7 +33,10 @@ def _CompareScreenshotSamples(screenshot, expectations, device_pixel_ratio,
     for expectation in expectations:
       if "scale_factor_overrides" in expectation:
         for override in expectation["scale_factor_overrides"]:
-          if override["machine_name"] in test_machine_name:
+          # Require exact match to avoid confusion, because some
+          # machine models and names might be subsets of others
+          # (e.g. Nexus 5 vs Nexus 5X).
+          if override["machine_name"] == test_machine_name:
             logging.warning('Overriding device_pixel_ratio ' +
                             str(device_pixel_ratio) + ' with scale factor ' +
                             str(override["scale_factor"]))
