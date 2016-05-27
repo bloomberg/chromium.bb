@@ -103,11 +103,12 @@ inline v8::Local<T> v8CallOrCrash(v8::MaybeLocal<T> maybeLocal)
     return maybeLocal.ToLocalChecked();
 }
 
-// The last "else" is to avoid dangling else problem.
-#define V8_CALL(outVariable, handle, methodCall, failureExpression)                \
-    if (handle.IsEmpty() || !v8Call(handle->methodCall, outVariable)) { \
-        failureExpression;                                                         \
-    } else
+#define V8_CALL(outVariable, handle, methodCall, failureExpression) \
+    do { \
+        if (handle.IsEmpty() || !v8Call(handle->methodCall, outVariable)) { \
+            failureExpression; \
+        } \
+    } while (0)
 
 } // namespace blink
 
