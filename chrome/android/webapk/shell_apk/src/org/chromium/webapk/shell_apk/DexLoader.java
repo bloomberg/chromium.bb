@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Creates ClassLoader for .dex file in a remote Context's APK.
@@ -55,15 +56,10 @@ public class DexLoader {
                 return null;
             }
 
-            InputStream inputStream;
-            try {
-                inputStream = remoteContext.getAssets().open(dexName);
-            } catch (Exception e) {
+            if (!extractAsset(remoteContext, dexName, localDexFile)) {
                 Log.w(TAG, "Could not extract dex from assets");
-                e.printStackTrace();
                 return null;
             }
-            copyFromInputStream(inputStream, localDexFile);
         }
 
         File localOptimizedDir = new File(localDexDir, "optimized");
@@ -103,24 +99,41 @@ public class DexLoader {
     }
 
     /**
-     * Copies an InputStream to a file.
-     * @param inputStream
-     * @param outFile The destination file.
+     * Extracts an asset from {@link context}'s APK to a file.
+     * @param context
+     * @param assetName Name of the asset to extract.
+     * @param destFile File to extract the asset to.
+     * @return true on success.
      */
-    private static void copyFromInputStream(InputStream inputStream, File outFile) {
-        try (FileOutputStream outputStream = new FileOutputStream(outFile)) {
+    private static boolean extractAsset(Context context, String assetName, File destFile) {
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        try {
+            inputStream = context.getAssets().open(assetName);
+            outputStream = new FileOutputStream(destFile);
             byte[] buffer = new byte[BUFFER_SIZE];
             int count = 0;
             while ((count = inputStream.read(buffer, 0, BUFFER_SIZE)) != -1) {
                 outputStream.write(buffer, 0, count);
             }
+            inputStream.close();
+            outputStream.close();
+            return true;
         } catch (IOException e) {
-        } finally {
-            try {
-                inputStream.close();
-            } catch (Exception e) {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException ex) {
+                }
+            }
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException ex) {
+                }
             }
         }
+        return false;
     }
 
     /**
