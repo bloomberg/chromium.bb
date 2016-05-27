@@ -13,6 +13,9 @@ using LifetimeType = offline_pages::LifetimePolicy::LifetimeType;
 namespace offline_pages {
 
 namespace {
+// TODO(romax): These should be moved to a centralized file.
+// Any changes to these well-known namespaces should also be reflected in
+// OfflinePagesNamespace (histograms.xml) for consistency.
 const char kBookmarkNamespace[] = "bookmark";
 const char kLastNNamespace[] = "last_n";
 }  // namespace

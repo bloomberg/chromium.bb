@@ -94931,7 +94931,7 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <histogram_suffixes name="OfflinePagesNamespace" separator=".">
   <suffix name="bookmark" label="Offline bookmark cache"/>
-  <suffix name="last-n" label="Offline recent pages"/>
+  <suffix name="last_n" label="Offline recent pages"/>
   <affected-histogram name="OfflinePages.DeletePage.AccessCount"/>
   <affected-histogram name="OfflinePages.DeletePage.LastOpenToCreated"/>
   <affected-histogram name="OfflinePages.DeletePage.PageSize"/>
