@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef StyleCalcLength_h
-#define StyleCalcLength_h
+#ifndef CSSCalcLength_h
+#define CSSCalcLength_h
 
 #include "core/css/cssom/CSSLengthValue.h"
 #include "wtf/BitVector.h"
@@ -13,12 +13,12 @@ namespace blink {
 class CalcDictionary;
 class CSSSimpleLength;
 
-class CORE_EXPORT StyleCalcLength final : public CSSLengthValue {
+class CORE_EXPORT CSSCalcLength final : public CSSLengthValue {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static StyleCalcLength* create(const CSSLengthValue*);
-    static StyleCalcLength* create(const CalcDictionary&, ExceptionState&);
-    static StyleCalcLength* create(const CSSLengthValue* length, ExceptionState&)
+    static CSSCalcLength* create(const CSSLengthValue*);
+    static CSSCalcLength* create(const CalcDictionary&, ExceptionState&);
+    static CSSCalcLength* create(const CSSLengthValue* length, ExceptionState&)
     {
         return create(length);
     }
@@ -60,9 +60,9 @@ protected:
     CSSLengthValue* divideInternal(double, ExceptionState&) override;
 
 private:
-    StyleCalcLength();
-    StyleCalcLength(const StyleCalcLength& other);
-    StyleCalcLength(const CSSSimpleLength& other);
+    CSSCalcLength();
+    CSSCalcLength(const CSSCalcLength& other);
+    CSSCalcLength(const CSSSimpleLength& other);
 
     static int indexForUnit(CSSPrimitiveValue::UnitType);
     static CSSPrimitiveValue::UnitType unitFromIndex(int index)
@@ -97,7 +97,7 @@ private:
 };
 
 #define DEFINE_CALC_LENGTH_TYPE_CASTS(argumentType) \
-    DEFINE_TYPE_CASTS(StyleCalcLength, argumentType, value, \
+    DEFINE_TYPE_CASTS(CSSCalcLength, argumentType, value, \
         value->type() == CSSLengthValue::StyleValueType::CalcLengthType, \
         value.type() == CSSLengthValue::StyleValueType::CalcLengthType)
 

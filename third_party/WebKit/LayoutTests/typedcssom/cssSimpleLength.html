@@ -23,7 +23,7 @@ test(function() {
 
   var result = simpleLength1.add(simpleLength2);
 
-  assert_true(result instanceof CalcLength);
+  assert_true(result instanceof CSSCalcLength);
   assert_equals(result.px, 5.1);
   assert_equals(result.percent, 10);
 }, 'Test that adding CSSSimpleLengths with different units produces a calc length with the correct values.');
@@ -47,7 +47,7 @@ test(function() {
 
   var result = simpleLength1.subtract(simpleLength2);
 
-  assert_true(result instanceof CalcLength);
+  assert_true(result instanceof CSSCalcLength);
   assert_equals(result.px, 5.1);
   assert_equals(result.percent, -10);
 }, 'Test that subtracting CSSSimpleLengths with different units produces a calc length with the correct values.');

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/StyleCalcLength.h"
+#include "core/css/cssom/CSSCalcLength.h"
 
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -12,32 +12,32 @@
 
 namespace blink {
 
-StyleCalcLength::StyleCalcLength() : m_values(CSSLengthValue::kNumSupportedUnits), m_hasValues(CSSLengthValue::kNumSupportedUnits) {}
+CSSCalcLength::CSSCalcLength() : m_values(CSSLengthValue::kNumSupportedUnits), m_hasValues(CSSLengthValue::kNumSupportedUnits) {}
 
-StyleCalcLength::StyleCalcLength(const StyleCalcLength& other) :
+CSSCalcLength::CSSCalcLength(const CSSCalcLength& other) :
     m_values(other.m_values),
     m_hasValues(other.m_hasValues)
 {}
 
-StyleCalcLength::StyleCalcLength(const CSSSimpleLength& other) :
+CSSCalcLength::CSSCalcLength(const CSSSimpleLength& other) :
     m_values(CSSLengthValue::kNumSupportedUnits), m_hasValues(CSSLengthValue::kNumSupportedUnits)
 {
     set(other.value(), other.lengthUnit());
 }
 
-StyleCalcLength* StyleCalcLength::create(const CSSLengthValue* length)
+CSSCalcLength* CSSCalcLength::create(const CSSLengthValue* length)
 {
     if (length->type() == SimpleLengthType) {
         const CSSSimpleLength* simpleLength = toCSSSimpleLength(length);
-        return new StyleCalcLength(*simpleLength);
+        return new CSSCalcLength(*simpleLength);
     }
 
-    return new StyleCalcLength(*toStyleCalcLength(length));
+    return new CSSCalcLength(*toCSSCalcLength(length));
 }
 
-StyleCalcLength* StyleCalcLength::create(const CalcDictionary& dictionary, ExceptionState& exceptionState)
+CSSCalcLength* CSSCalcLength::create(const CalcDictionary& dictionary, ExceptionState& exceptionState)
 {
-    StyleCalcLength* result = new StyleCalcLength();
+    CSSCalcLength* result = new CSSCalcLength();
     int numSet = 0;
 
 #define setFromDictValue(name, camelName, primitiveName) \
@@ -63,19 +63,19 @@ StyleCalcLength* StyleCalcLength::create(const CalcDictionary& dictionary, Excep
     setFromDictValue(pt, Pt, Points)
 
     if (numSet == 0) {
-        exceptionState.throwTypeError("Must specify at least one value in CalcDictionary for creating a CalcLength.");
+        exceptionState.throwTypeError("Must specify at least one value in CalcDictionary for creating a CSSCalcLength.");
     }
     return result;
 }
 
-bool StyleCalcLength::containsPercent() const
+bool CSSCalcLength::containsPercent() const
 {
     return has(CSSPrimitiveValue::UnitType::Percentage);
 }
 
-CSSLengthValue* StyleCalcLength::addInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* CSSCalcLength::addInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
 {
-    StyleCalcLength* result = StyleCalcLength::create(other, exceptionState);
+    CSSCalcLength* result = CSSCalcLength::create(other, exceptionState);
     for (int i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
         if (hasAtIndex(i)) {
             result->setAtIndex(getAtIndex(i) + result->getAtIndex(i), i);
@@ -84,11 +84,11 @@ CSSLengthValue* StyleCalcLength::addInternal(const CSSLengthValue* other, Except
     return result;
 }
 
-CSSLengthValue* StyleCalcLength::subtractInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
+CSSLengthValue* CSSCalcLength::subtractInternal(const CSSLengthValue* other, ExceptionState& exceptionState)
 {
-    StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
+    CSSCalcLength* result = CSSCalcLength::create(this, exceptionState);
     if (other->type() == CalcLengthType) {
-        const StyleCalcLength* o = toStyleCalcLength(other);
+        const CSSCalcLength* o = toCSSCalcLength(other);
         for (unsigned i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
             if (o->hasAtIndex(i)) {
                 result->setAtIndex(getAtIndex(i) - o->getAtIndex(i), i);
@@ -101,9 +101,9 @@ CSSLengthValue* StyleCalcLength::subtractInternal(const CSSLengthValue* other, E
     return result;
 }
 
-CSSLengthValue* StyleCalcLength::multiplyInternal(double x, ExceptionState& exceptionState)
+CSSLengthValue* CSSCalcLength::multiplyInternal(double x, ExceptionState& exceptionState)
 {
-    StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
+    CSSCalcLength* result = CSSCalcLength::create(this, exceptionState);
     for (unsigned i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
         if (hasAtIndex(i)) {
             result->setAtIndex(getAtIndex(i) * x, i);
@@ -112,9 +112,9 @@ CSSLengthValue* StyleCalcLength::multiplyInternal(double x, ExceptionState& exce
     return result;
 }
 
-CSSLengthValue* StyleCalcLength::divideInternal(double x, ExceptionState& exceptionState)
+CSSLengthValue* CSSCalcLength::divideInternal(double x, ExceptionState& exceptionState)
 {
-    StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
+    CSSCalcLength* result = CSSCalcLength::create(this, exceptionState);
     for (unsigned i = 0; i < CSSLengthValue::kNumSupportedUnits; ++i) {
         if (hasAtIndex(i)) {
             result->setAtIndex(getAtIndex(i) / x, i);
@@ -123,7 +123,7 @@ CSSLengthValue* StyleCalcLength::divideInternal(double x, ExceptionState& except
     return result;
 }
 
-CSSValue* StyleCalcLength::toCSSValue() const
+CSSValue* CSSCalcLength::toCSSValue() const
 {
     // Create a CSS Calc Value, then put it into a CSSPrimitiveValue
     CSSCalcExpressionNode* node = nullptr;
@@ -143,7 +143,7 @@ CSSValue* StyleCalcLength::toCSSValue() const
     return CSSPrimitiveValue::create(CSSCalcValue::create(node));
 }
 
-int StyleCalcLength::indexForUnit(CSSPrimitiveValue::UnitType unit)
+int CSSCalcLength::indexForUnit(CSSPrimitiveValue::UnitType unit)
 {
     return (static_cast<int>(unit) - static_cast<int>(CSSPrimitiveValue::UnitType::Percentage));
 }

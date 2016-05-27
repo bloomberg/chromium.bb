@@ -5,9 +5,9 @@
 <script>
 
 test(function() {
-  var calcLength = new CalcLength({px: 10, percent: 3.2});
+  var calcLength = new CSSCalcLength({px: 10, percent: 3.2});
   assert_throws(null, function() { new Perspective(calcLength) });
-}, "Constructor should throw an error for CalcLengths with a percentage type");
+}, "Constructor should throw an error for CSSCalcLengths with a percentage type");
 
 test(function() {
   var simpleLength = new CSSSimpleLength(10, 'percent');
@@ -16,7 +16,7 @@ test(function() {
 
 test(function() {
   var simpleLength = new CSSSimpleLength(10, 'px');
-  var calcLength = new CalcLength({px: 10, em: 3.2});
+  var calcLength = new CSSCalcLength({px: 10, em: 3.2});
   var perspectiveTransformSimple = new Perspective(simpleLength);
   var perspectiveTransformCalc = new Perspective(calcLength);
 

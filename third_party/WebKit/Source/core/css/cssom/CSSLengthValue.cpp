@@ -6,9 +6,9 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSPrimitiveValueUnitTrie.h"
+#include "core/css/cssom/CSSCalcLength.h"
 #include "core/css/cssom/CSSSimpleLength.h"
 #include "core/css/cssom/CalcDictionary.h"
-#include "core/css/cssom/StyleCalcLength.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
@@ -36,7 +36,7 @@ CSSLengthValue* CSSLengthValue::from(double value, const String& type, Exception
 
 CSSLengthValue* CSSLengthValue::from(const CalcDictionary& dictionary, ExceptionState& exceptionState)
 {
-    return StyleCalcLength::create(dictionary, exceptionState);
+    return CSSCalcLength::create(dictionary, exceptionState);
 }
 
 CSSLengthValue* CSSLengthValue::add(const CSSLengthValue* other, ExceptionState& exceptionState)
@@ -44,7 +44,7 @@ CSSLengthValue* CSSLengthValue::add(const CSSLengthValue* other, ExceptionState&
     if (type() == other->type() || type() == CalcLengthType)
         return addInternal(other, exceptionState);
 
-    StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
+    CSSCalcLength* result = CSSCalcLength::create(this, exceptionState);
     return result->add(other, exceptionState);
 }
 
@@ -53,7 +53,7 @@ CSSLengthValue* CSSLengthValue::subtract(const CSSLengthValue* other, ExceptionS
     if (type() == other->type() || type() == CalcLengthType)
         return subtractInternal(other, exceptionState);
 
-    StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
+    CSSCalcLength* result = CSSCalcLength::create(this, exceptionState);
     return result->subtract(other, exceptionState);
 }
 

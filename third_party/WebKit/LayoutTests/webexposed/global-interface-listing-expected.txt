@@ -403,6 +403,24 @@ interface CSSAngleValue : StyleValue
     getter radians
     getter turns
     method constructor
+interface CSSCalcLength : CSSLengthValue
+    attribute @@toStringTag
+    getter ch
+    getter cm
+    getter em
+    getter ex
+    getter in
+    getter mm
+    getter pc
+    getter percent
+    getter pt
+    getter px
+    getter rem
+    getter vh
+    getter vmax
+    getter vmin
+    getter vw
+    method constructor
 interface CSSFontFaceRule : CSSRule
     attribute @@toStringTag
     getter style
@@ -577,24 +595,6 @@ interface CacheStorage
     method keys
     method match
     method open
-interface CalcLength : CSSLengthValue
-    attribute @@toStringTag
-    getter ch
-    getter cm
-    getter em
-    getter ex
-    getter in
-    getter mm
-    getter pc
-    getter percent
-    getter pt
-    getter px
-    getter rem
-    getter vh
-    getter vmax
-    getter vmin
-    getter vw
-    method constructor
 interface CanvasCaptureMediaStreamTrack : MediaStreamTrack
     attribute @@toStringTag
     getter canvas

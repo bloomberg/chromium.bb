@@ -12,10 +12,10 @@ test(function() {
 
 test(function() {
   var result = CSSLengthValue.from({px: 1, percent: 2.5});
-  assert_true(result instanceof CalcLength);
+  assert_true(result instanceof CSSCalcLength);
   assert_equals(result.px, 1);
   assert_equals(result.percent, 2.5);
-}, "Test that CSSLengthValue's static from(CalcDictionary dictionary) method produces a CalcLength.");
+}, "Test that CSSLengthValue's static from(CalcDictionary dictionary) method produces a CSSCalcLength.");
 
 </script>
 <body>
