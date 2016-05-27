@@ -262,7 +262,10 @@ const AcceleratorData kDebugAcceleratorData[] = {
      MAGNIFY_SCREEN_ZOOM_OUT},
     {true, ui::VKEY_BRIGHTNESS_UP, ui::EF_CONTROL_DOWN, MAGNIFY_SCREEN_ZOOM_IN},
     // Extra shortcuts to lock the screen on linux desktop.
-    {true, ui::VKEY_L, ui::EF_ALT_DOWN, LOCK_SCREEN},
+    {true, ui::VKEY_L, ui::EF_ALT_DOWN, LOCK_PRESSED},
+    {false, ui::VKEY_L, ui::EF_ALT_DOWN, LOCK_RELEASED},
+    {true, ui::VKEY_P, ui::EF_ALT_DOWN, POWER_PRESSED},
+    {false, ui::VKEY_P, ui::EF_ALT_DOWN, POWER_RELEASED},
     {true, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_PRESSED},
     {false, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_RELEASED},
     {true, ui::VKEY_D, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,

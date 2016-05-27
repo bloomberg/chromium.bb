@@ -41,10 +41,8 @@ void ShelfLockingManager::SessionStateChanged(
 }
 
 void ShelfLockingManager::OnLockStateEvent(EventType event) {
-  // This is only called when locking the screen; there is no unlock event here.
-  // It's also called when the screen lock animation begins and should help the
-  // shelf appear locked much earlier than ShellObserver::OnLockStateChanged.
-  screen_locked_ = true;
+  // Lock when the animation starts, ignoring pre-lock. There's no unlock event.
+  screen_locked_ |= event == EVENT_LOCK_ANIMATION_STARTED;
   UpdateLockedState();
 }
 
