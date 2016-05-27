@@ -28,6 +28,8 @@ cr.define('settings', function() {
     /** @override */
     getInfo: function(callback) {
       setTimeout(function() {
+        // Create a shallow copy to trigger Polymer data binding updates.
+        var displays;
         if (this.fakeDisplays.length > 0 &&
             this.fakeDisplays[0].mirroringSourceId) {
           // When mirroring is enabled, send only the info for the display
@@ -35,10 +37,11 @@ cr.define('settings', function() {
           var display =
               this.getFakeDisplay_(this.fakeDisplays[0].mirroringSourceId);
           assert(!!display);
-          callback([display]);
+          displays = [display];
         } else {
-          callback(this.fakeDisplays);
+          displays = this.fakeDisplays.slice();
         }
+        callback(displays);
         this.getInfoCalled.resolve();
         // Reset the promise resolver.
         this.getInfoCalled = new PromiseResolver();

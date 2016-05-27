@@ -43,6 +43,11 @@ CrSettingsBrowserTest.prototype = {
     PolymerTest.prototype.setUp.call(this);
     // We aren't loading the main document.
     this.accessibilityAuditConfig.ignoreSelectors('humanLangMissing', 'html');
+
+    // TODO(michaelpg): Re-enable after bringing in fix for
+    // https://github.com/PolymerElements/paper-slider/issues/131.
+    this.accessibilityAuditConfig.ignoreSelectors(
+        'badAriaAttributeValue', 'paper-slider');
   },
 };
 
@@ -437,6 +442,7 @@ CrSettingsDevicePageTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    ROOT_PATH + 'ui/webui/resources/js/assert.js',
     '../fake_chrome_event.js',
     'fake_settings_private.js',
     'fake_system_display.js',
@@ -444,8 +450,16 @@ CrSettingsDevicePageTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsDevicePageTest', 'DevicePage', function() {
-  mocha.run();
+TEST_F('CrSettingsDevicePageTest', 'DisplayTest', function() {
+  mocha.grep(assert(device_page_tests.TestNames.Display)).run();
+});
+
+TEST_F('CrSettingsDevicePageTest', 'KeyboardTest', function() {
+  mocha.grep(assert(device_page_tests.TestNames.Keyboard)).run();
+});
+
+TEST_F('CrSettingsDevicePageTest', 'TouchpadTest', function() {
+  mocha.grep(assert(device_page_tests.TestNames.Touchpad)).run();
 });
 GEN('#endif');
 
