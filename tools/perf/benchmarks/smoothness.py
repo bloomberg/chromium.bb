@@ -178,7 +178,7 @@ class SmoothnessKeySilkCases(_Smoothness):
     return stories
 
 
-@benchmark.Enabled('android', 'mac')
+@benchmark.Enabled('android')
 class SmoothnessGpuRasterizationTop25(_Smoothness):
   """Measures rendering statistics for the top 25 with GPU rasterization.
   """
@@ -198,6 +198,9 @@ class SmoothnessGpuRasterizationTop25(_Smoothness):
               possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
 
 
+# Although GPU rasterization is enabled on Mac, it is blacklisted for certain
+# path cases, so it is still valuable to run both the GPU and non-GPU versions
+# of this benchmark on Mac.
 class SmoothnessGpuRasterizationToughPathRenderingCases(_Smoothness):
   """Tests a selection of pages with SVG and 2D canvas paths with GPU
   rasterization.
@@ -213,6 +216,9 @@ class SmoothnessGpuRasterizationToughPathRenderingCases(_Smoothness):
     return 'smoothness.gpu_rasterization.tough_path_rendering_cases'
 
 
+# With GPU Raster enabled on Mac, there's no reason to run this benchmark in
+# addition to SmoothnessFiltersCases.
+@benchmark.Disabled('mac')
 class SmoothnessGpuRasterizationFiltersCases(_Smoothness):
   """Tests a selection of pages with SVG and CSS filter effects with GPU
   rasterization.
@@ -276,7 +282,7 @@ class SmoothnessToughPinchZoomCases(_Smoothness):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/564008
 
 
-@benchmark.Enabled('chromeos', 'mac')
+@benchmark.Enabled('mac')
 class SmoothnessDesktopToughPinchZoomCases(_Smoothness):
   """Measures rendering statistics for pinch-zooming in the tough pinch zoom
   cases. Uses lower zoom levels customized for desktop limits.
@@ -310,24 +316,6 @@ class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
   @classmethod
   def ShouldDisable(cls, possible_browser):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/564008
-
-
-@benchmark.Enabled('chromeos', 'mac')
-class SmoothnessGpuRasterizationDesktopToughPinchZoomCases(_Smoothness):
-  """Measures rendering statistics for pinch-zooming in the tough pinch zoom
-  cases with GPU rasterization. Uses lower zoom levels customized for desktop
-  limits.
-  """
-  tag = 'gpu_rasterization'
-  test = smoothness.Smoothness
-  page_set = page_sets.DesktopToughPinchZoomCasesPageSet
-
-  def SetExtraBrowserOptions(self, options):
-    silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
-
-  @classmethod
-  def Name(cls):
-    return 'smoothness.gpu_rasterization.desktop_tough_pinch_zoom_cases'
 
 
 @benchmark.Enabled('android', 'chromeos')
@@ -382,7 +370,7 @@ class SmoothnessToughScrollingCases(_Smoothness):
     return 'smoothness.tough_scrolling_cases'
 
 
-@benchmark.Enabled('android', 'mac')
+@benchmark.Enabled('android')
 class SmoothnessGpuRasterizationToughScrollingCases(_Smoothness):
   tag = 'gpu_rasterization'
   test = smoothness.Smoothness
