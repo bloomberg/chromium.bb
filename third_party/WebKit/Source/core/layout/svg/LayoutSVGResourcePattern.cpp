@@ -143,9 +143,7 @@ SVGPaintServer LayoutSVGResourcePattern::preparePaintServer(const LayoutObject& 
     if (!patternData || !patternData->pattern)
         return SVGPaintServer::invalid();
 
-    patternData->pattern->setPatternSpaceTransform(patternData->transform);
-
-    return SVGPaintServer(patternData->pattern);
+    return SVGPaintServer(patternData->pattern, patternData->transform);
 }
 
 const LayoutSVGResourceContainer* LayoutSVGResourcePattern::resolveContentElement() const

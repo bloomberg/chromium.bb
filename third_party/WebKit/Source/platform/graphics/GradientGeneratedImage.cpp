@@ -42,7 +42,8 @@ void GradientGeneratedImage::draw(SkCanvas* canvas, const SkPaint& paint, const 
     canvas->concat(transform);
 
     SkPaint gradientPaint(paint);
-    m_gradient->applyToPaint(gradientPaint);
+    // TODO(fmalita): use the shader matrix instead of changing global canvas state.
+    m_gradient->applyToPaint(gradientPaint, SkMatrix::I());
 
     canvas->drawRect(visibleRect, gradientPaint);
 }
@@ -50,28 +51,16 @@ void GradientGeneratedImage::draw(SkCanvas* canvas, const SkPaint& paint, const 
 void GradientGeneratedImage::drawTile(GraphicsContext& context, const FloatRect& srcRect)
 {
     SkPaint gradientPaint(context.fillPaint());
-    m_gradient->applyToPaint(gradientPaint);
+    m_gradient->applyToPaint(gradientPaint, SkMatrix::I());
 
     context.drawRect(srcRect, gradientPaint);
 }
 
 bool GradientGeneratedImage::applyShader(SkPaint& paint, const SkMatrix* localMatrix)
 {
-    AffineTransform transform;
-    if (localMatrix) {
-        transform.setMatrix(
-            localMatrix->getScaleX(), localMatrix->getSkewY(),
-            localMatrix->getSkewX(), localMatrix->getScaleY(),
-            localMatrix->getTranslateX(), localMatrix->getTranslateY());
-    }
-
     DCHECK(m_gradient);
-    // TODO(fmalita): remove the transform from gradient/pattern state, and pass the matrix to
-    // applyToPaint if needed.
-    const AffineTransform previousTransform = m_gradient->gradientSpaceTransform();
-    m_gradient->setGradientSpaceTransform(transform);
-    m_gradient->applyToPaint(paint);
-    m_gradient->setGradientSpaceTransform(previousTransform);
+    // TODO(fmalita): pass a const SkMatrix& to applyShader.
+    m_gradient->applyToPaint(paint, localMatrix ? *localMatrix : SkMatrix::I());
 
     return true;
 }

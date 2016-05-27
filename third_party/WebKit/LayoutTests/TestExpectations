@@ -132,6 +132,11 @@ crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-d
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
+# https://codereview.chromium.org/2007553002/
+crbug.com/614368 fast/gradients/css3-radial-gradients4.html [ NeedsRebaseline ]
+crbug.com/614368 fast/gradients/css3-repeating-radial-gradients.html [ NeedsRebaseline ]
+crbug.com/614368 fast/gradients/unprefixed-repeating-radial-gradients.html [ NeedsRebaseline ]
+
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html [ Pass Failure ]

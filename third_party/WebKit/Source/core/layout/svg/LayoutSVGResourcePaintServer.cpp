@@ -35,14 +35,16 @@ SVGPaintServer::SVGPaintServer(Color color)
 {
 }
 
-SVGPaintServer::SVGPaintServer(PassRefPtr<Gradient> gradient)
+SVGPaintServer::SVGPaintServer(PassRefPtr<Gradient> gradient, const AffineTransform& transform)
     : m_gradient(gradient)
+    , m_transform(transform)
     , m_color(Color::black)
 {
 }
 
-SVGPaintServer::SVGPaintServer(PassRefPtr<Pattern> pattern)
+SVGPaintServer::SVGPaintServer(PassRefPtr<Pattern> pattern, const AffineTransform& transform)
     : m_pattern(pattern)
+    , m_transform(transform)
     , m_color(Color::black)
 {
 }
@@ -52,9 +54,9 @@ void SVGPaintServer::applyToSkPaint(SkPaint& paint, float paintAlpha)
     SkColor baseColor = m_gradient || m_pattern ? SK_ColorBLACK : m_color.rgb();
     paint.setColor(scaleAlpha(baseColor, paintAlpha));
     if (m_pattern) {
-        m_pattern->applyToPaint(paint);
+        m_pattern->applyToPaint(paint, affineTransformToSkMatrix(m_transform));
     } else if (m_gradient) {
-        m_gradient->applyToPaint(paint);
+        m_gradient->applyToPaint(paint, affineTransformToSkMatrix(m_transform));
     } else {
         paint.setShader(nullptr);
     }
@@ -63,10 +65,7 @@ void SVGPaintServer::applyToSkPaint(SkPaint& paint, float paintAlpha)
 void SVGPaintServer::prependTransform(const AffineTransform& transform)
 {
     ASSERT(m_gradient || m_pattern);
-    if (m_pattern)
-        m_pattern->setPatternSpaceTransform(transform * m_pattern->patternSpaceTransform());
-    else
-        m_gradient->setGradientSpaceTransform(transform * m_gradient->gradientSpaceTransform());
+    m_transform = transform * m_transform;
 }
 
 static SVGPaintDescription requestPaint(const LayoutObject& object, const ComputedStyle& style, LayoutSVGResourceMode mode)

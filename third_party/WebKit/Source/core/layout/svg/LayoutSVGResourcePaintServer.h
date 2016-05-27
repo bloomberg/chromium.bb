@@ -24,6 +24,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/Gradient.h"
 #include "platform/graphics/Pattern.h"
+#include "platform/transforms/AffineTransform.h"
 #include "wtf/Allocator.h"
 
 class SkPaint;
@@ -43,8 +44,8 @@ class SVGPaintServer {
     STACK_ALLOCATED();
 public:
     explicit SVGPaintServer(Color);
-    explicit SVGPaintServer(PassRefPtr<Gradient>);
-    explicit SVGPaintServer(PassRefPtr<Pattern>);
+    SVGPaintServer(PassRefPtr<Gradient>, const AffineTransform&);
+    SVGPaintServer(PassRefPtr<Pattern>, const AffineTransform&);
 
     static SVGPaintServer requestForLayoutObject(const LayoutObject&, const ComputedStyle&, LayoutSVGResourceMode);
     static bool existsForLayoutObject(const LayoutObject&, const ComputedStyle&, LayoutSVGResourceMode);
@@ -60,6 +61,7 @@ public:
 private:
     RefPtr<Gradient> m_gradient;
     RefPtr<Pattern> m_pattern;
+    AffineTransform m_transform; // Used for gradient/pattern shaders.
     Color m_color;
 };
 

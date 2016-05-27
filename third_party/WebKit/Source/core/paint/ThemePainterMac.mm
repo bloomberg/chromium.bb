@@ -359,7 +359,7 @@ bool ThemePainterMac::paintSliderTrack(const LayoutObject& o, const PaintInfo& p
     FloatRoundedRect borderRRect(borderRect, borderRadius, borderRadius, borderRadius, borderRadius);
     paintInfo.context.setStrokeThickness(LayoutThemeMac::sliderTrackBorderWidth);
     SkPaint borderPaint(paintInfo.context.strokePaint());
-    borderGradient->applyToPaint(borderPaint);
+    borderGradient->applyToPaint(borderPaint, SkMatrix::I());
     paintInfo.context.drawRRect(borderRRect, borderPaint);
 
     return false;
@@ -423,7 +423,7 @@ bool ThemePainterMac::paintSliderThumb(const LayoutObject& o, const PaintInfo& p
     fillGradient->addColorStop(0.52, fillGradientLowerMiddleColor);
     fillGradient->addColorStop(1.0, fillGradientBottomColor);
     SkPaint fillPaint(paintInfo.context.fillPaint());
-    fillGradient->applyToPaint(fillPaint);
+    fillGradient->applyToPaint(fillPaint, SkMatrix::I());
     paintInfo.context.drawOval(borderBounds, fillPaint);
 
     RefPtr<Gradient> borderGradient = Gradient::create(fillBounds.minXMinYCorner(), fillBounds.minXMaxYCorner());
@@ -431,7 +431,7 @@ bool ThemePainterMac::paintSliderThumb(const LayoutObject& o, const PaintInfo& p
     borderGradient->addColorStop(1.0, borderGradientBottomColor);
     paintInfo.context.setStrokeThickness(LayoutThemeMac::sliderThumbBorderWidth);
     SkPaint borderPaint(paintInfo.context.strokePaint());
-    borderGradient->applyToPaint(borderPaint);
+    borderGradient->applyToPaint(borderPaint, SkMatrix::I());
     paintInfo.context.drawOval(borderBounds, borderPaint);
 
     if (LayoutTheme::isFocused(o)) {

@@ -30,12 +30,10 @@ ImagePattern::ImagePattern(PassRefPtr<Image> image, RepeatMode repeatMode)
     }
 }
 
-sk_sp<SkShader> ImagePattern::createShader() const
+sk_sp<SkShader> ImagePattern::createShader(const SkMatrix& localMatrix) const
 {
     if (!m_tileImage)
         return SkShader::MakeColorShader(SK_ColorTRANSPARENT);
-
-    SkMatrix localMatrix = affineTransformToSkMatrix(m_patternSpaceTransformation);
 
     if (isRepeatXY()) {
         // Fast path: for repeatXY we just return a shader from the original image.

@@ -31,6 +31,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include <algorithm>
@@ -84,7 +85,7 @@ void Gradient::addColorStop(const Gradient::ColorStop& stop)
     }
 
     m_stops.append(stop);
-    m_gradient.reset();
+    m_cachedShader.reset();
 }
 
 void Gradient::sortStopsIfNecessary()
@@ -103,7 +104,7 @@ void Gradient::sortStopsIfNecessary()
 void Gradient::setSpreadMethod(GradientSpreadMethod spreadMethod)
 {
     // FIXME: Should it become necessary, allow calls to this method after m_gradient has been set.
-    ASSERT(!m_gradient);
+    DCHECK(!m_cachedShader);
 
     if (m_spreadMethod == spreadMethod)
         return;
@@ -117,16 +118,7 @@ void Gradient::setDrawsInPMColorSpace(bool drawInPMColorSpace)
         return;
 
     m_drawInPMColorSpace = drawInPMColorSpace;
-    m_gradient.reset();
-}
-
-void Gradient::setGradientSpaceTransform(const AffineTransform& gradientSpaceTransformation)
-{
-    if (m_gradientSpaceTransformation == gradientSpaceTransformation)
-        return;
-
-    m_gradientSpaceTransformation = gradientSpaceTransformation;
-    m_gradient.reset();
+    m_cachedShader.reset();
 }
 
 // Determine the total number of stops needed, including pseudo-stops at the
@@ -189,7 +181,7 @@ static void fillStops(const Gradient::ColorStop* stopData,
     }
 }
 
-sk_sp<SkShader> Gradient::createShader()
+sk_sp<SkShader> Gradient::createShader(const SkMatrix& localMatrix)
 {
     sortStopsIfNecessary();
     ASSERT(m_stopsSorted);
@@ -218,31 +210,35 @@ sk_sp<SkShader> Gradient::createShader()
     sk_sp<SkShader> shader;
     uint32_t shouldDrawInPMColorSpace = m_drawInPMColorSpace ? SkGradientShader::kInterpolateColorsInPremul_Flag : 0;
     if (m_radial) {
-        if (aspectRatio() != 1) {
+        SkMatrix adjustedLocalMatrix = localMatrix;
+
+        if (m_aspectRatio != 1) {
             // CSS3 elliptical gradients: apply the elliptical scaling at the
             // gradient center point.
-            m_gradientSpaceTransformation.translate(m_p0.x(), m_p0.y());
-            m_gradientSpaceTransformation.scale(1, 1 / aspectRatio());
-            m_gradientSpaceTransformation.translate(-m_p0.x(), -m_p0.y());
+            adjustedLocalMatrix.preTranslate(m_p0.x(), m_p0.y());
+            adjustedLocalMatrix.preScale(1, 1 / m_aspectRatio);
+            adjustedLocalMatrix.preTranslate(-m_p0.x(), -m_p0.y());
             ASSERT(m_p0 == m_p1);
         }
-        SkMatrix localMatrix = affineTransformToSkMatrix(m_gradientSpaceTransformation);
 
         // Since the two-point radial gradient is slower than the plain radial,
         // only use it if we have to.
         if (m_p0 == m_p1 && m_r0 <= 0.0f) {
-            shader = SkGradientShader::MakeRadial(m_p1.data(), m_r1, colors.data(), pos.data(), static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace, &localMatrix);
+            shader = SkGradientShader::MakeRadial(m_p1.data(), m_r1, colors.data(), pos.data(),
+                static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace, &adjustedLocalMatrix);
         } else {
             // The radii we give to Skia must be positive. If we're given a
             // negative radius, ask for zero instead.
             SkScalar radius0 = m_r0 >= 0.0f ? WebCoreFloatToSkScalar(m_r0) : 0;
             SkScalar radius1 = m_r1 >= 0.0f ? WebCoreFloatToSkScalar(m_r1) : 0;
-            shader = SkGradientShader::MakeTwoPointConical(m_p0.data(), radius0, m_p1.data(), radius1, colors.data(), pos.data(), static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace, &localMatrix);
+            shader = SkGradientShader::MakeTwoPointConical(m_p0.data(), radius0, m_p1.data(),
+                radius1, colors.data(), pos.data(), static_cast<int>(countUsed), tile,
+                shouldDrawInPMColorSpace, &adjustedLocalMatrix);
         }
     } else {
         SkPoint pts[2] = { m_p0.data(), m_p1.data() };
-        SkMatrix localMatrix = affineTransformToSkMatrix(m_gradientSpaceTransformation);
-        shader = SkGradientShader::MakeLinear(pts, colors.data(), pos.data(), static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace, &localMatrix);
+        shader = SkGradientShader::MakeLinear(pts, colors.data(), pos.data(),
+            static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace, &localMatrix);
     }
 
     if (!shader) {
@@ -253,12 +249,12 @@ sk_sp<SkShader> Gradient::createShader()
     return shader;
 }
 
-void Gradient::applyToPaint(SkPaint& paint)
+void Gradient::applyToPaint(SkPaint& paint, const SkMatrix& localMatrix)
 {
-    if (!m_gradient)
-        m_gradient = createShader();
+    if (!m_cachedShader || localMatrix != m_cachedShader->getLocalMatrix())
+        m_cachedShader = createShader(localMatrix);
 
-    paint.setShader(m_gradient);
+    paint.setShader(m_cachedShader);
 
     // Legacy behavior: gradients are always dithered.
     paint.setDither(true);

@@ -93,9 +93,7 @@ SVGPaintServer LayoutSVGResourceGradient::preparePaintServer(const LayoutObject&
     if (!gradientData->gradient)
         return SVGPaintServer::invalid();
 
-    gradientData->gradient->setGradientSpaceTransform(gradientData->userspaceTransform);
-
-    return SVGPaintServer(gradientData->gradient);
+    return SVGPaintServer(gradientData->gradient, gradientData->userspaceTransform);
 }
 
 bool LayoutSVGResourceGradient::isChildAllowed(LayoutObject* child, const ComputedStyle&) const

@@ -16,7 +16,7 @@ public:
     ~PicturePattern() override;
 
 protected:
-    sk_sp<SkShader> createShader() const override;
+    sk_sp<SkShader> createShader(const SkMatrix&) const override;
 
 private:
     PicturePattern(PassRefPtr<SkPicture>, RepeatMode);

@@ -34,6 +34,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "modules/canvas2d/CanvasGradient.h"
 #include "modules/canvas2d/CanvasPattern.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "wtf/PassRefPtr.h"
 
@@ -117,10 +118,10 @@ void CanvasStyle::applyToPaint(SkPaint& paint) const
         paint.setShader(nullptr);
         break;
     case Gradient:
-        getCanvasGradient()->getGradient()->applyToPaint(paint);
+        getCanvasGradient()->getGradient()->applyToPaint(paint, SkMatrix::I());
         break;
     case ImagePattern:
-        getCanvasPattern()->getPattern()->applyToPaint(paint);
+        getCanvasPattern()->getPattern()->applyToPaint(paint, affineTransformToSkMatrix(getCanvasPattern()->getTransform()));
         break;
     default:
         ASSERT_NOT_REACHED();
