@@ -5,6 +5,7 @@ package org.chromium.chrome.browser.ntp.snippets;
 
 import android.graphics.Bitmap;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 
 /**
@@ -24,6 +25,9 @@ public class SnippetArticle implements NewTabPageListItem {
 
     /** Bitmap of the thumbnail, fetched lazily, when the RecyclerView wants to show the snippet. */
     private Bitmap mThumbnailBitmap;
+
+    /** Stores whether impression of this article has been tracked already. */
+    private boolean mImpressionTracked;
 
     /**
      * Creates a SnippetArticle object that will hold the data
@@ -78,5 +82,19 @@ public class SnippetArticle implements NewTabPageListItem {
     /** Sets the thumbnail bitmap for this article. */
     public void setThumbnailBitmap(Bitmap bitmap) {
         mThumbnailBitmap = bitmap;
+    }
+
+    /** Tracks impression of this NTP snippet. */
+    public void trackImpression() {
+        // Track UMA only upon the first impression per life-time of this object.
+        if (mImpressionTracked) return;
+
+        RecordHistogram.recordSparseSlowlyHistogram("NewTabPage.Snippets.CardShown", mPosition);
+        mImpressionTracked = true;
+    }
+
+    /** Returns whether impression of this SnippetArticle has already been tracked. */
+    public boolean impressionTracked() {
+        return mImpressionTracked;
     }
 }

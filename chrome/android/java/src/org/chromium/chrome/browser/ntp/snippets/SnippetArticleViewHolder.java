@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.ntp.snippets;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
@@ -16,6 +17,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -51,6 +53,8 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
     private FetchImageCallback mImageCallback;
     private long mPublishTimestampMilliseconds;
     private float mScore;
+    private SnippetArticle mArticle;
+    private ViewTreeObserver.OnPreDrawListener mPreDrawObserver;
 
     public String mUrl;
     public int mPosition;
@@ -72,7 +76,7 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
      * @param cardView The View for the snippet card
      * @param manager The SnippetsManager object used to open an article
      */
-    public SnippetArticleViewHolder(View cardView, NewTabPageManager manager) {
+    public SnippetArticleViewHolder(final View cardView, NewTabPageManager manager) {
         super(cardView);
 
         mNewTabPageManager = manager;
@@ -81,15 +85,32 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
         mHeadlineTextView = (TextView) cardView.findViewById(R.id.article_headline);
         mPublisherTextView = (TextView) cardView.findViewById(R.id.article_publisher);
         mArticleSnippetTextView = (TextView) cardView.findViewById(R.id.article_snippet);
+
+        mPreDrawObserver = new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                if (mArticle != null && !mArticle.impressionTracked()) {
+                    Rect r = new Rect(0, 0, cardView.getWidth(), cardView.getHeight());
+                    cardView.getParent().getChildVisibleRect(cardView, r, null);
+                    // Track impression if at least one third of the snippet is shown.
+                    if (r.height() >= cardView.getHeight() / 3) mArticle.trackImpression();
+                }
+                // Proceed with the current drawing pass.
+                return true;
+            }
+        };
+
+        // Listen to onPreDraw only if this view is potentially visible (attached to the window).
         cardView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override
             public void onViewAttachedToWindow(View v) {
-                RecordHistogram.recordSparseSlowlyHistogram(
-                        "NewTabPage.Snippets.CardShown", mPosition);
+                cardView.getViewTreeObserver().addOnPreDrawListener(mPreDrawObserver);
             }
 
             @Override
-            public void onViewDetachedFromWindow(View v) {}
+            public void onViewDetachedFromWindow(View v) {
+                cardView.getViewTreeObserver().removeOnPreDrawListener(mPreDrawObserver);
+            }
         });
     }
 
@@ -120,33 +141,33 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
 
     @Override
     public void onBindViewHolder(NewTabPageListItem article) {
-        SnippetArticle item = (SnippetArticle) article;
+        mArticle = (SnippetArticle) article;
 
-        mHeadlineTextView.setText(item.mTitle);
-        String publisherAttribution = String.format(PUBLISHER_FORMAT_STRING, item.mPublisher,
-                DateUtils.getRelativeTimeSpanString(
-                        item.mTimestamp, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS));
+        mHeadlineTextView.setText(mArticle.mTitle);
+        String publisherAttribution = String.format(PUBLISHER_FORMAT_STRING, mArticle.mPublisher,
+                DateUtils.getRelativeTimeSpanString(mArticle.mTimestamp, System.currentTimeMillis(),
+                        DateUtils.MINUTE_IN_MILLIS));
         mPublisherTextView.setText(BidiFormatter.getInstance().unicodeWrap(publisherAttribution));
 
-        mArticleSnippetTextView.setText(item.mPreviewText);
-        mUrl = item.mUrl;
-        mPosition = item.mPosition;
-        mPublishTimestampMilliseconds = item.mTimestamp;
-        mScore = item.mScore;
+        mArticleSnippetTextView.setText(mArticle.mPreviewText);
+        mUrl = mArticle.mUrl;
+        mPosition = mArticle.mPosition;
+        mPublishTimestampMilliseconds = mArticle.mTimestamp;
+        mScore = mArticle.mScore;
 
         // If there's still a pending thumbnail fetch, cancel it.
         cancelImageFetch();
 
         // If the article has a thumbnail already, reuse it. Otherwise start a fetch.
-        if (item.getThumbnailBitmap() != null) {
-            mThumbnailView.setImageBitmap(item.getThumbnailBitmap());
+        if (mArticle.getThumbnailBitmap() != null) {
+            mThumbnailView.setImageBitmap(mArticle.getThumbnailBitmap());
         } else {
             mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
-            mImageCallback = new FetchImageCallback(this, item);
-            mNewTabPageManager.fetchSnippetImage(item, mImageCallback);
+            mImageCallback = new FetchImageCallback(this, mArticle);
+            mNewTabPageManager.fetchSnippetImage(mArticle, mImageCallback);
         }
 
-        updateFavicon(item);
+        updateFavicon(mArticle);
     }
 
     private static class FetchImageCallback extends Callback<Bitmap> {

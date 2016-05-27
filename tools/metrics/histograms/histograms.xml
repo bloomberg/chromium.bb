@@ -33945,9 +33945,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="NewTabPage.Snippets.CardShown">
   <owner>knn@chromium.org</owner>
   <summary>
-    Android: The position of the snippets card that is shown on the NTP.
-    Depending on the device screen size only some of the cards will be shown
-    unless the users scrolls through.
+    Android: The position of the snippets card that is shown on the NTP. Each
+    snippet (its position) is recorded whenever at least 1/3 of it height
+    becomes visible by scrolling through the NTP. Each snippet is recorded at
+    most once for a given instance of NTP and a given data set of snippets that
+    is shown. We track the position the snippet had in the list when NTP was
+    loaded. This tracked position is thus different from the position observed
+    by the user whenever before scrolling down to the given snippet, the user
+    discards some snippets in the top of the list. Previously (in the code
+    before 2016/05/27), this histogram was recorded each time a snippet became
+    visible (e.g. by scrolling up and down) at least by 1px; the first snippet
+    was thus recorded even without scrolling down.
   </summary>
 </histogram>
 
