@@ -109,7 +109,7 @@ enum peer_item_flags {
 struct rdp_peers_item {
 	int flags;
 	freerdp_peer *peer;
-	struct weston_seat seat;
+	struct weston_seat *seat;
 
 	struct wl_list link;
 };
@@ -640,9 +640,10 @@ rdp_peer_context_free(freerdp_peer* client, RdpPeerContext* context)
 	}
 
 	if (context->item.flags & RDP_PEER_ACTIVATED) {
-		weston_seat_release_keyboard(&context->item.seat);
-		weston_seat_release_pointer(&context->item.seat);
-		weston_seat_release(&context->item.seat);
+		weston_seat_release_keyboard(context->item.seat);
+		weston_seat_release_pointer(context->item.seat);
+		/* XXX we should weston_seat_release(context->item.seat); here
+		 * but it would crash on reconnect */
 	}
 
 	Stream_Free(context->encode_stream, TRUE);
@@ -911,9 +912,16 @@ xf_peer_activate(freerdp_peer* client)
 	else
 		snprintf(seat_name, sizeof(seat_name), "RDP peer @%s", settings->ClientAddress);
 
-	weston_seat_init(&peersItem->seat, b->compositor, seat_name);
-	weston_seat_init_keyboard(&peersItem->seat, keymap);
-	weston_seat_init_pointer(&peersItem->seat);
+	peersItem->seat = zalloc(sizeof(*peersItem->seat));
+	if (!peersItem->seat) {
+		xkb_keymap_unref(keymap);
+		weston_log("unable to create a weston_seat\n");
+		return FALSE;
+	}
+
+	weston_seat_init(peersItem->seat, b->compositor, seat_name);
+	weston_seat_init_keyboard(peersItem->seat, keymap);
+	weston_seat_init_pointer(peersItem->seat);
 
 	peersItem->flags |= RDP_PEER_ACTIVATED;
 
@@ -952,7 +960,7 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 	if (flags & PTR_FLAGS_MOVE) {
 		output = peerContext->rdpBackend->output;
 		if (x < output->base.width && y < output->base.height) {
-			notify_motion_absolute(&peerContext->item.seat, weston_compositor_get_time(),
+			notify_motion_absolute(peerContext->item.seat, weston_compositor_get_time(),
 					x, y);
 			need_frame = true;
 		}
@@ -966,7 +974,7 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 		button = BTN_MIDDLE;
 
 	if (button) {
-		notify_button(&peerContext->item.seat, weston_compositor_get_time(), button,
+		notify_button(peerContext->item.seat, weston_compositor_get_time(), button,
 			(flags & PTR_FLAGS_DOWN) ? WL_POINTER_BUTTON_STATE_PRESSED : WL_POINTER_BUTTON_STATE_RELEASED
 		);
 		need_frame = true;
@@ -991,13 +999,13 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 		weston_event.discrete = (int)value;
 		weston_event.has_discrete = true;
 
-		notify_axis(&peerContext->item.seat, weston_compositor_get_time(),
+		notify_axis(peerContext->item.seat, weston_compositor_get_time(),
 			    &weston_event);
 		need_frame = true;
 	}
 
 	if (need_frame)
-		notify_pointer_frame(&peerContext->item.seat);
+		notify_pointer_frame(peerContext->item.seat);
 
 	FREERDP_CB_RETURN(TRUE);
 }
@@ -1010,7 +1018,7 @@ xf_extendedMouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 
 	output = peerContext->rdpBackend->output;
 	if (x < output->base.width && y < output->base.height) {
-		notify_motion_absolute(&peerContext->item.seat, weston_compositor_get_time(),
+		notify_motion_absolute(peerContext->item.seat, weston_compositor_get_time(),
 				x, y);
 	}
 
@@ -1073,7 +1081,7 @@ xf_input_keyboard_event(rdpInput *input, UINT16 flags, UINT16 code)
 
 		/*weston_log("code=%x ext=%d vk_code=%x scan_code=%x\n", code, (flags & KBD_FLAGS_EXTENDED) ? 1 : 0,
 				vk_code, scan_code);*/
-		notify_key(&peerContext->item.seat, weston_compositor_get_time(),
+		notify_key(peerContext->item.seat, weston_compositor_get_time(),
 					scan_code - 8, keyState, STATE_UPDATE_AUTOMATIC);
 	}
 
