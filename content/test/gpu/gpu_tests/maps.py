@@ -43,6 +43,15 @@ class MapsValidator(cloud_storage_test_base.ValidatorBase):
       raise page_test.Failure('Could not capture screenshot')
 
     dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
+    print 'Maps\' devicePixelRatio is ' + str(dpr)
+    # Even though the Maps test uses a fixed devicePixelRatio so that
+    # it fetches all of the map tiles at the same resolution, on two
+    # different devices with the same devicePixelRatio (a Retina
+    # MacBook Pro and a Nexus 9), different scale factors of the final
+    # screenshot are observed. Hack around this by specifying a scale
+    # factor for these bots in the test expectations. This relies on
+    # the test-machine-name argument being specified on the command
+    # line.
     expected = self._ReadPixelExpectations(page)
     self._ValidateScreenshotSamples(
         page.display_name, screenshot, expected, dpr)
@@ -80,13 +89,13 @@ class MapsValidator(cloud_storage_test_base.ValidatorBase):
 class MapsPage(gpu_test_base.PageBase):
   def __init__(self, story_set, base_dir, expectations):
     super(MapsPage, self).__init__(
-        url='http://localhost:10020/tracker.html',
+        url='http://localhost:8000/performance.html',
         page_set=story_set,
         base_dir=base_dir,
-        name='Maps.maps_002',
+        name='Maps.maps_004',
         make_javascript_deterministic=False,
         expectations=expectations)
-    self.pixel_expectations = 'data/maps_002_expectations.json'
+    self.pixel_expectations = 'data/maps_004_expectations.json'
 
   def RunNavigateSteps(self, action_runner):
     super(MapsPage, self).RunNavigateSteps(action_runner)
@@ -95,7 +104,20 @@ class MapsPage(gpu_test_base.PageBase):
 
 
 class Maps(cloud_storage_test_base.TestBase):
-  """Google Maps pixel tests."""
+  """Google Maps pixel tests.
+
+  Note: the WPR for this test was recorded from the smoothness.maps
+  benchmark's similar page. The Maps team gave us a build of their
+  test. The only modification to the test was to config.js, where the
+  width and height query args were set to 800 by 600. The WPR was
+  recorded with:
+
+  tools/perf/record_wpr smoothness_maps --browser=system --upload
+
+  Then the maps_???.wpr.sha1 and maps.json were copied from
+  tools/perf/page_sets/data into content/test/gpu/page_sets/data. The
+  same sha1 file and json file need to be copied into both of these
+  directories in any CL which updates the recording."""
   test = MapsValidator
 
   @classmethod

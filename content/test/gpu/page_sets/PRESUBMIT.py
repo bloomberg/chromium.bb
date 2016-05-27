@@ -2,6 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Presubmit script for changes affecting content/test/gpu/page_sets/.
+
+See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
+for more details about the presubmit API built into depot_tools.
+"""
+
+import os
 import sys
 
 
@@ -10,82 +17,68 @@ def _GetChromiumSrcDir(input_api):
       input_api.PresubmitLocalPath(), '..', '..', '..', '..'))
 
 
-def LoadSupport(input_api):
-  if 'cloud_storage' not in globals():
-    # Avoid leaking changes to global sys.path.
-    _old_sys_path = sys.path
-    try:
-      catapult_base_path = input_api.os_path.join(
-          _GetChromiumSrcDir(input_api), 'third_party', 'catapult',
-          'catapult_base')
-      sys.path = [catapult_base_path] + sys.path
-      from catapult_base import cloud_storage
-      globals()['cloud_storage'] = cloud_storage
-    finally:
-      sys.path = _old_sys_path
-
-  return globals()['cloud_storage']
-
-
-def _GetFilesNotInCloud(input_api):
-  """Searches for .sha1 files and checks to see if they have already
-  been uploaded Cloud Storage. Returns a list of those that have not.
-  """
-  hash_paths = []
-  for affected_file in input_api.AffectedFiles(include_deletes=False):
-    hash_path = affected_file.AbsoluteLocalPath()
-    _, extension = input_api.os_path.splitext(hash_path)
-    if extension == '.sha1':
-      hash_paths.append(hash_path)
-  if not hash_paths:
-    return []
-
-  cloud_storage = LoadSupport(input_api)
-
-  # Look in both buckets, in case the user uploaded the file manually.
-  hashes_in_cloud_storage = cloud_storage.List(cloud_storage.PUBLIC_BUCKET)
+def _CheckWprShaFiles(input_api, output_api):
+  """Check whether the wpr sha files have matching URLs."""
+  old_sys_path = sys.path
   try:
-    hashes_in_cloud_storage += cloud_storage.List(cloud_storage.INTERNAL_BUCKET)
-  except (cloud_storage.PermissionError, cloud_storage.CredentialsError):
-    pass
+    catapult_base_path = input_api.os_path.join(
+        _GetChromiumSrcDir(input_api), 'third_party', 'catapult',
+        'catapult_base')
+    sys.path.insert(1, catapult_base_path)
+    from catapult_base import cloud_storage  # pylint: disable=import-error
+  finally:
+    sys.path = old_sys_path
 
-  files = []
-  for hash_path in hash_paths:
-    file_hash = cloud_storage.ReadHash(hash_path)
-    if file_hash not in hashes_in_cloud_storage:
-      files.append((hash_path, file_hash))
-
-  return files
-
-
-def _VerifyFilesInCloud(input_api, output_api):
-  """Fails presubmit if any .sha1 files have not been previously uploaded to
-  Cloud storage.
-  """
   results = []
-  hash_paths = _GetFilesNotInCloud(input_api)
-  file_paths = []
-  for hash_path, _ in hash_paths:
-    results.append(output_api.PresubmitError(
-        'Attemping to commit hash file, but corresponding '
-        'data file is not in Cloud Storage: %s' % hash_path))
-    file_paths.append(input_api.os_path.splitext(hash_path)[0])
+  for affected_file in input_api.AffectedFiles(include_deletes=False):
+    filename = affected_file.AbsoluteLocalPath()
+    if not filename.endswith('wpr.sha1'):
+      continue
+    expected_hash = cloud_storage.ReadHash(filename)
+    is_wpr_file_uploaded = any(
+        cloud_storage.Exists(bucket, expected_hash)
+        for bucket in cloud_storage.BUCKET_ALIASES.itervalues())
+    if not is_wpr_file_uploaded:
+      wpr_filename = filename[:-5]
+      results.append(output_api.PresubmitError(
+          'The file matching %s is not in Cloud Storage yet.\n'
+          'You can upload your new WPR archive file with the command:\n'
+          'depot_tools/upload_to_google_storage.py --bucket '
+          '<Your pageset\'s bucket> %s.\nFor more info: see '
+          'http://www.chromium.org/developers/telemetry/'
+          'record_a_page_set#TOC-Upload-the-recording-to-Cloud-Storage' %
+          (filename, wpr_filename)))
+  return results
 
-  if len(file_paths) > 0:
-    upload_script_path = input_api.os_path.join(
-        _GetChromiumSrcDir(input_api), 'tools', 'telemetry', 'cloud_storage')
-    results.append(output_api.PresubmitError(
-          'To upload missing files, Run: \n'
-          '%s upload %s google-only' %
-          (upload_script_path, ' '.join(file_paths))))
+
+def _CheckJson(input_api, output_api):
+  """Checks whether JSON files in this change can be parsed."""
+  for affected_file in input_api.AffectedFiles(include_deletes=False):
+    filename = affected_file.AbsoluteLocalPath()
+    if os.path.splitext(filename)[1] != '.json':
+      continue
+    try:
+      input_api.json.load(open(filename))
+    except ValueError:
+      return [output_api.PresubmitError('Error parsing JSON in %s!' % filename)]
+  return []
+
+
+def _CommonChecks(input_api, output_api):
+  """Performs common checks, which includes running pylint."""
+  results = []
+  results.extend(_CheckWprShaFiles(input_api, output_api))
+  results.extend(_CheckJson(input_api, output_api))
   return results
 
 
 def CheckChangeOnUpload(input_api, output_api):
-  results = _VerifyFilesInCloud(input_api, output_api)
+  results = []
+  results.extend(_CommonChecks(input_api, output_api))
   return results
 
 
 def CheckChangeOnCommit(input_api, output_api):
-  results = _VerifyFilesInCloud(input_api, output_api)
+  results = []
+  results.extend(_CommonChecks(input_api, output_api))
   return results

@@ -12,6 +12,4 @@ class MapsExpectations(GpuTestExpectations):
     # self.Fail('Maps.maps_001',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
 
-    # Android
-    self.Fail('Maps.maps_002',
-              ['android'], bug=611932)
+    pass

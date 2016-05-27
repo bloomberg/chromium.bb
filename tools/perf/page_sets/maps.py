@@ -12,9 +12,8 @@ class MapsPage(page_module.Page):
 
   def __init__(self, page_set):
     super(MapsPage, self).__init__(
-      url='http://localhost:10020/tracker.html',
+      url='http://localhost:8000/performance.html',
       page_set=page_set,
-      name='Maps.maps_002',
       shared_page_state_class=(
           webgl_supported_shared_state.WebGLSupportedSharedState))
     self.archive_data_file = 'data/maps.json'
@@ -30,7 +29,8 @@ class MapsPage(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
     with action_runner.CreateInteraction('MapAnimation'):
-      action_runner.WaitForJavaScriptCondition('window.testDone', 120)
+      action_runner.WaitForJavaScriptCondition(
+        'window.testMetrics != undefined', 120)
 
 
 class MapsPageSet(story.StorySet):
