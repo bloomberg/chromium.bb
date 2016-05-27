@@ -80,7 +80,7 @@ ScopedJavaSurface ScopedJavaSurface::AcquireExternalSurface(jobject surface) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> surface_ref;
   surface_ref.Reset(env, surface);
-  gl::ScopedJavaSurface scoped_surface(surface_ref);
+  ScopedJavaSurface scoped_surface(surface_ref);
   scoped_surface.auto_release_ = false;
   scoped_surface.is_protected_ = true;
   return scoped_surface;

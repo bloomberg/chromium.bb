@@ -20,7 +20,7 @@ class GLSurfaceOverlay {
  public:
   GLSurfaceOverlay(int z_order,
                    gfx::OverlayTransform transform,
-                   gl::GLImage* image,
+                   GLImage* image,
                    const gfx::Rect& bounds_rect,
                    const gfx::RectF& crop_rect);
   GLSurfaceOverlay(const GLSurfaceOverlay& other);
@@ -33,7 +33,7 @@ class GLSurfaceOverlay {
  private:
   int z_order_;
   gfx::OverlayTransform transform_;
-  scoped_refptr<gl::GLImage> image_;
+  scoped_refptr<GLImage> image_;
   gfx::Rect bounds_rect_;
   gfx::RectF crop_rect_;
 };

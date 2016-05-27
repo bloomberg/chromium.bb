@@ -139,7 +139,7 @@ bool GLContextCGL::Initialize(GLSurface* compatible_surface,
 
 void GLContextCGL::Destroy() {
   if (yuv_to_rgb_converter_) {
-    gl::ScopedCGLSetCurrentContext(static_cast<CGLContextObj>(context_));
+    ScopedCGLSetCurrentContext(static_cast<CGLContextObj>(context_));
     yuv_to_rgb_converter_.reset();
   }
   if (discrete_pixelformat_) {
@@ -201,9 +201,9 @@ bool GLContextCGL::ForceGpuSwitchIfNeeded() {
   return true;
 }
 
-gl::YUVToRGBConverter* GLContextCGL::GetYUVToRGBConverter() {
+YUVToRGBConverter* GLContextCGL::GetYUVToRGBConverter() {
   if (!yuv_to_rgb_converter_)
-    yuv_to_rgb_converter_.reset(new gl::YUVToRGBConverter);
+    yuv_to_rgb_converter_.reset(new YUVToRGBConverter);
   return yuv_to_rgb_converter_.get();
 }
 

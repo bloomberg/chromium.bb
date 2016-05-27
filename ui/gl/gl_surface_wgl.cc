@@ -337,7 +337,7 @@ PbufferGLSurfaceWGL::~PbufferGLSurfaceWGL() {
 bool PbufferGLSurfaceWGL::Initialize(GLSurface::Format format) {
   DCHECK(!device_context_);
 
-  if (!gl::g_driver_wgl.fn.wglCreatePbufferARBFn) {
+  if (!g_driver_wgl.fn.wglCreatePbufferARBFn) {
     LOG(ERROR) << "wglCreatePbufferARB not available.";
     Destroy();
     return false;

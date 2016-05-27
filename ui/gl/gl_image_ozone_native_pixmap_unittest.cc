@@ -22,9 +22,8 @@ class GLImageOzoneNativePixmapTestDelegate {
   GLImageOzoneNativePixmapTestDelegate() {
     client_pixmap_factory_ = ui::ClientNativePixmapFactory::Create();
   }
-  scoped_refptr<gl::GLImage> CreateSolidColorImage(
-      const gfx::Size& size,
-      const uint8_t color[4]) const {
+  scoped_refptr<GLImage> CreateSolidColorImage(const gfx::Size& size,
+                                               const uint8_t color[4]) const {
     ui::SurfaceFactoryOzone* surface_factory =
         ui::OzonePlatform::GetInstance()->GetSurfaceFactoryOzone();
     scoped_refptr<ui::NativePixmap> pixmap =
@@ -43,8 +42,8 @@ class GLImageOzoneNativePixmapTestDelegate {
       client_pixmap->Unmap();
     }
 
-    scoped_refptr<gl::GLImageOzoneNativePixmap> image(
-        new gl::GLImageOzoneNativePixmap(size, GL_RGBA));
+    scoped_refptr<GLImageOzoneNativePixmap> image(
+        new GLImageOzoneNativePixmap(size, GL_RGBA));
     EXPECT_TRUE(image->Initialize(pixmap.get(), pixmap->GetBufferFormat()));
     return image;
   }

@@ -53,7 +53,7 @@ void GLFenceEGL::ClientWait() {
 }
 
 void GLFenceEGL::ServerWait() {
-  if (!gl::g_driver_egl.ext.b_EGL_KHR_wait_sync) {
+  if (!g_driver_egl.ext.b_EGL_KHR_wait_sync) {
     ClientWait();
     return;
   }

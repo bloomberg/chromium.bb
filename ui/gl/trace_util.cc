@@ -40,4 +40,4 @@ base::trace_event::MemoryAllocatorDumpGuid GetGLRenderbufferGUIDForTracing(
                          share_group_guid, renderbuffer_id));
 }
 
-}  // namespace ui
+}  // namespace gl

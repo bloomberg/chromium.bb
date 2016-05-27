@@ -51,10 +51,10 @@ GLuint LoadFragmentShader(unsigned target, const gfx::Size& size) {
   );
   // clang-format on
 
-  bool is_gles = gl::GetGLImplementation() == gl::kGLImplementationEGLGLES2;
+  bool is_gles = GetGLImplementation() == kGLImplementationEGLGLES2;
   switch (target) {
     case GL_TEXTURE_2D:
-      return gl::GLHelper::LoadShader(
+      return GLHelper::LoadShader(
           GL_FRAGMENT_SHADER,
           base::StringPrintf("%s\n"
                              "#define SamplerType sampler2D\n"
@@ -65,7 +65,7 @@ GLuint LoadFragmentShader(unsigned target, const gfx::Size& size) {
                              kFragmentShader)
               .c_str());
     case GL_TEXTURE_RECTANGLE_ARB:
-      return gl::GLHelper::LoadShader(
+      return GLHelper::LoadShader(
           GL_FRAGMENT_SHADER,
           base::StringPrintf("%s\n"
                              "#extension GL_ARB_texture_rectangle : require\n"
@@ -98,10 +98,9 @@ void DrawTextureQuad(GLenum target, const gfx::Size& size) {
   );
   // clang-format on
 
-  GLuint vertex_shader =
-      gl::GLHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
+  GLuint vertex_shader = GLHelper::LoadShader(GL_VERTEX_SHADER, kVertexShader);
   GLuint fragment_shader = LoadFragmentShader(target, size);
-  GLuint program = gl::GLHelper::SetupProgram(vertex_shader, fragment_shader);
+  GLuint program = GLHelper::SetupProgram(vertex_shader, fragment_shader);
   EXPECT_NE(program, 0u);
   glUseProgram(program);
 
@@ -109,8 +108,8 @@ void DrawTextureQuad(GLenum target, const gfx::Size& size) {
   ASSERT_NE(sampler_location, -1);
   glUniform1i(sampler_location, 0);
 
-  GLuint vertex_buffer = gl::GLHelper::SetupQuadVertexBuffer();
-  gl::GLHelper::DrawQuad(vertex_buffer);
+  GLuint vertex_buffer = GLHelper::SetupQuadVertexBuffer();
+  GLHelper::DrawQuad(vertex_buffer);
 
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
@@ -127,8 +126,8 @@ class GLImageTest : public testing::Test {
   void SetUp() override {
     GLImageTestSupport::InitializeGL();
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
-    context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
-                                         gl::PreferIntegratedGpu);
+    context_ =
+        gl::init::CreateGLContext(nullptr, surface_.get(), PreferIntegratedGpu);
     context_->MakeCurrent(surface_.get());
   }
   void TearDown() override {
@@ -139,8 +138,8 @@ class GLImageTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<gl::GLSurface> surface_;
-  scoped_refptr<gl::GLContext> context_;
+  scoped_refptr<GLSurface> surface_;
+  scoped_refptr<GLContext> context_;
   GLImageTestDelegate delegate_;
 };
 
@@ -153,13 +152,13 @@ TYPED_TEST_P(GLImageTest, CreateAndDestroy) {
 
   // Create a small solid color green image of preferred format. This must
   // succeed in order for a GLImage to be conformant.
-  scoped_refptr<gl::GLImage> small_image =
+  scoped_refptr<GLImage> small_image =
       this->delegate_.CreateSolidColorImage(small_image_size, image_color);
   ASSERT_TRUE(small_image);
 
   // Create a large solid color green image of preferred format. This must
   // succeed in order for a GLImage to be conformant.
-  scoped_refptr<gl::GLImage> large_image =
+  scoped_refptr<GLImage> large_image =
       this->delegate_.CreateSolidColorImage(large_image_size, image_color);
   ASSERT_TRUE(large_image);
 
@@ -201,7 +200,7 @@ TYPED_TEST_P(GLImageZeroInitializeTest, ZeroInitialize) {
   glViewport(0, 0, image_size.width(), image_size.height());
 
   // Create an uninitialized image of preferred format.
-  scoped_refptr<gl::GLImage> image = this->delegate_.CreateImage(image_size);
+  scoped_refptr<GLImage> image = this->delegate_.CreateImage(image_size);
 
   // Create a texture that |image| will be bound to.
   GLenum target = this->delegate_.GetTextureTarget();
@@ -248,7 +247,7 @@ TYPED_TEST_P(GLImageBindTest, BindTexImage) {
 
   // Create a solid color green image of preferred format. This must succeed
   // in order for a GLImage to be conformant.
-  scoped_refptr<gl::GLImage> image =
+  scoped_refptr<GLImage> image =
       this->delegate_.CreateSolidColorImage(image_size, image_color);
   ASSERT_TRUE(image);
 
@@ -299,7 +298,7 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
 
   // Create a solid color green image of preferred format. This must succeed
   // in order for a GLImage to be conformant.
-  scoped_refptr<gl::GLImage> image =
+  scoped_refptr<GLImage> image =
       this->delegate_.CreateSolidColorImage(image_size, image_color);
   ASSERT_TRUE(image);
 

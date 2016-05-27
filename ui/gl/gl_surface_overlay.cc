@@ -14,7 +14,7 @@ namespace gl {
 
 GLSurfaceOverlay::GLSurfaceOverlay(int z_order,
                                    gfx::OverlayTransform transform,
-                                   gl::GLImage* image,
+                                   GLImage* image,
                                    const gfx::Rect& bounds_rect,
                                    const gfx::RectF& crop_rect)
     : z_order_(z_order),

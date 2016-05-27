@@ -108,7 +108,7 @@ GLImageGLX::~GLImageGLX() {
 }
 
 bool GLImageGLX::Initialize(XID pixmap) {
-  if (!gl::GLSurfaceGLX::IsTextureFromPixmapSupported()) {
+  if (!GLSurfaceGLX::IsTextureFromPixmapSupported()) {
     DVLOG(0) << "GLX_EXT_texture_from_pixmap not supported.";
     return false;
   }

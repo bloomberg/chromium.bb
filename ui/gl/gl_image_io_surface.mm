@@ -246,7 +246,7 @@ bool GLImageIOSurface::BindTexImage(unsigned target) {
   }
 
   CGLContextObj cgl_context =
-      static_cast<CGLContextObj>(gl::GLContext::GetCurrent()->GetHandle());
+      static_cast<CGLContextObj>(GLContext::GetCurrent()->GetHandle());
 
   DCHECK(io_surface_);
   CGLError cgl_error =
@@ -273,14 +273,13 @@ bool GLImageIOSurface::CopyTexImage(unsigned target) {
     return false;
   }
 
-  gl::GLContext* gl_context = gl::GLContext::GetCurrent();
+  GLContext* gl_context = GLContext::GetCurrent();
   DCHECK(gl_context);
 
-  gl::YUVToRGBConverter* yuv_to_rgb_converter =
-      gl_context->GetYUVToRGBConverter();
+  YUVToRGBConverter* yuv_to_rgb_converter = gl_context->GetYUVToRGBConverter();
   DCHECK(yuv_to_rgb_converter);
 
-  gl::ScopedSetGLToRealGLApi scoped_set_gl_api;
+  ScopedSetGLToRealGLApi scoped_set_gl_api;
 
   // Note that state restoration is done explicitly instead of scoped binders to
   // avoid https://crbug.com/601729.

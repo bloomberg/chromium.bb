@@ -14,7 +14,7 @@ namespace gl {
 // Lightweight GLContext stub implementation that returns a constructed
 // extensions string.  We use this to create a context that we can use to
 // initialize GL extensions with, without actually creating a platform context.
-class GL_EXPORT GLContextStubWithExtensions : public gl::GLContextStub {
+class GL_EXPORT GLContextStubWithExtensions : public GLContextStub {
  public:
   GLContextStubWithExtensions() {}
   std::string GetExtensions() override;

@@ -92,7 +92,7 @@ std::string GLContext::GetGLRenderer() {
   return std::string(renderer ? renderer : "");
 }
 
-gl::YUVToRGBConverter* GLContext::GetYUVToRGBConverter() {
+YUVToRGBConverter* GLContext::GetYUVToRGBConverter() {
   return nullptr;
 }
 
@@ -107,7 +107,7 @@ bool GLContext::HasExtension(const char* name) {
 }
 
 const GLVersionInfo* GLContext::GetVersionInfo() {
-  if(!version_info_) {
+  if (!version_info_) {
     std::string version = GetGLVersion();
     std::string renderer = GetGLRenderer();
     version_info_ = base::WrapUnique(new GLVersionInfo(
@@ -213,7 +213,7 @@ void GLContext::SetRealGLApi() {
 GLContextReal::GLContextReal(GLShareGroup* share_group)
     : GLContext(share_group) {}
 
-scoped_refptr<gl::GPUTimingClient> GLContextReal::CreateGPUTimingClient() {
+scoped_refptr<GPUTimingClient> GLContextReal::CreateGPUTimingClient() {
   if (!gpu_timing_) {
     gpu_timing_.reset(GPUTiming::CreateGPUTiming(this));
   }

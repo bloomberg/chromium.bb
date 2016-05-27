@@ -38,7 +38,7 @@ class GPUTimingTest : public testing::Test {
     surface_ = nullptr;
     if (setup_) {
       MockGLInterface::SetGLInterface(NULL);
-      gl::ClearGLBindings();
+      ClearGLBindings();
     }
     setup_ = false;
     cpu_time_bounded_ = false;
@@ -56,7 +56,7 @@ class GPUTimingTest : public testing::Test {
     context_ = new GLContextStubWithExtensions;
     context_->AddExtensionsString(gl_extensions);
     context_->SetGLVersionString(gl_version);
-    surface_ = new gl::GLSurfaceStub;
+    surface_ = new GLSurfaceStub;
     context_->MakeCurrent(surface_.get());
     gpu_timing_fake_queries_.Reset();
     GLSurfaceTestSupport::InitializeDynamicMockBindings(context_.get());
@@ -82,7 +82,7 @@ class GPUTimingTest : public testing::Test {
   bool cpu_time_bounded_ = false;
   std::unique_ptr<::testing::StrictMock<MockGLInterface>> gl_;
   scoped_refptr<GLContextStubWithExtensions> context_;
-  scoped_refptr<gl::GLSurfaceStub> surface_;
+  scoped_refptr<GLSurfaceStub> surface_;
   GPUTimingFake gpu_timing_fake_queries_;
 };
 
@@ -214,4 +214,4 @@ TEST_F(GPUTimingTest, QueryTimestampUsingElapsedARBTest) {
   EXPECT_EQ(begin_cpu_time, end);
 }
 
-}  // namespace gpu
+}  // namespace gl

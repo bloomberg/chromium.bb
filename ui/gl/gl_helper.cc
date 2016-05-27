@@ -73,7 +73,7 @@ GLuint GLHelper::SetupProgram(GLuint vertex_shader, GLuint fragment_shader) {
 GLuint GLHelper::SetupQuadVertexBuffer() {
   GLuint vertex_buffer = 0;
   glGenBuffersARB(1, &vertex_buffer);
-  gl::ScopedBufferBinder buffer_binder(GL_ARRAY_BUFFER, vertex_buffer);
+  ScopedBufferBinder buffer_binder(GL_ARRAY_BUFFER, vertex_buffer);
   GLfloat data[] = {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f};
   glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
   return vertex_buffer;
@@ -81,15 +81,15 @@ GLuint GLHelper::SetupQuadVertexBuffer() {
 
 // static
 void GLHelper::DrawQuad(GLuint vertex_buffer) {
-  gl::ScopedBufferBinder buffer_binder(GL_ARRAY_BUFFER, vertex_buffer);
-  gl::ScopedVertexAttribArray vertex_attrib_array(0, 2, GL_FLOAT, GL_FALSE,
-                                                  sizeof(GLfloat) * 2, 0);
-  gl::ScopedCapability disable_blending(GL_BLEND, GL_FALSE);
-  gl::ScopedCapability disable_culling(GL_CULL_FACE, GL_FALSE);
-  gl::ScopedCapability disable_dithering(GL_DITHER, GL_FALSE);
-  gl::ScopedCapability disable_depth_test(GL_DEPTH_TEST, GL_FALSE);
-  gl::ScopedCapability disable_scissor_test(GL_SCISSOR_TEST, GL_FALSE);
-  gl::ScopedColorMask color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  ScopedBufferBinder buffer_binder(GL_ARRAY_BUFFER, vertex_buffer);
+  ScopedVertexAttribArray vertex_attrib_array(0, 2, GL_FLOAT, GL_FALSE,
+                                              sizeof(GLfloat) * 2, 0);
+  ScopedCapability disable_blending(GL_BLEND, GL_FALSE);
+  ScopedCapability disable_culling(GL_CULL_FACE, GL_FALSE);
+  ScopedCapability disable_dithering(GL_DITHER, GL_FALSE);
+  ScopedCapability disable_depth_test(GL_DEPTH_TEST, GL_FALSE);
+  ScopedCapability disable_scissor_test(GL_SCISSOR_TEST, GL_FALSE);
+  ScopedColorMask color_mask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }

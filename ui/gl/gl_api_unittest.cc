@@ -27,7 +27,7 @@ class GLContextFake : public GLContext {
   void ReleaseCurrent(GLSurface* surface) override {}
   bool IsCurrent(GLSurface* surface) override { return true; }
   void* GetHandle() override { return NULL; }
-  scoped_refptr<gl::GPUTimingClient> CreateGPUTimingClient() override {
+  scoped_refptr<GPUTimingClient> CreateGPUTimingClient() override {
     return NULL;
   }
   void OnSetSwapInterval(int interval) override {}

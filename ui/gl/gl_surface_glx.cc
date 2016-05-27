@@ -115,7 +115,7 @@ GLXFBConfig GetConfigForWindow(Display* display,
   return nullptr;
 }
 
-class OMLSyncControlVSyncProvider : public gl::SyncControlVSyncProvider {
+class OMLSyncControlVSyncProvider : public SyncControlVSyncProvider {
  public:
   explicit OMLSyncControlVSyncProvider(GLXWindow glx_window)
       : SyncControlVSyncProvider(),
@@ -554,7 +554,7 @@ void* NativeViewGLSurfaceGLX::GetHandle() {
 }
 
 bool NativeViewGLSurfaceGLX::SupportsPostSubBuffer() {
-  return gl::g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer;
+  return g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer;
 }
 
 void* NativeViewGLSurfaceGLX::GetConfig() {
@@ -567,7 +567,7 @@ gfx::SwapResult NativeViewGLSurfaceGLX::PostSubBuffer(int x,
                                                       int y,
                                                       int width,
                                                       int height) {
-  DCHECK(gl::g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer);
+  DCHECK(g_driver_glx.ext.b_GLX_MESA_copy_sub_buffer);
   glXCopySubBufferMESA(g_display, GetDrawableHandle(), x, y, width, height);
   return gfx::SwapResult::SWAP_ACK;
 }

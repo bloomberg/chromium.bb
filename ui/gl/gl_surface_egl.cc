@@ -126,7 +126,7 @@ bool g_egl_surfaceless_context_supported = false;
 bool g_egl_surface_orientation_supported = false;
 bool g_use_direct_composition = false;
 
-class EGLSyncControlVSyncProvider : public gl::SyncControlVSyncProvider {
+class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
  public:
   explicit EGLSyncControlVSyncProvider(EGLSurface surface)
       : SyncControlVSyncProvider(),
@@ -662,7 +662,7 @@ bool NativeViewGLSurfaceEGL::Initialize(
     egl_window_attributes.push_back(size_.height());
   }
 
-  if (gl::g_driver_egl.ext.b_EGL_NV_post_sub_buffer) {
+  if (g_driver_egl.ext.b_EGL_NV_post_sub_buffer) {
     egl_window_attributes.push_back(EGL_POST_SUB_BUFFER_SUPPORTED_NV);
     egl_window_attributes.push_back(EGL_TRUE);
   }
@@ -699,7 +699,7 @@ bool NativeViewGLSurfaceEGL::Initialize(
     return false;
   }
 
-  if (gl::g_driver_egl.ext.b_EGL_NV_post_sub_buffer) {
+  if (g_driver_egl.ext.b_EGL_NV_post_sub_buffer) {
     EGLint surfaceVal;
     EGLBoolean retVal = eglQuerySurface(
         GetDisplay(), surface_, EGL_POST_SUB_BUFFER_SUPPORTED_NV, &surfaceVal);
@@ -898,7 +898,7 @@ gfx::VSyncProvider* NativeViewGLSurfaceEGL::GetVSyncProvider() {
 bool NativeViewGLSurfaceEGL::ScheduleOverlayPlane(
     int z_order,
     gfx::OverlayTransform transform,
-    gl::GLImage* image,
+    GLImage* image,
     const gfx::Rect& bounds_rect,
     const gfx::RectF& crop_rect) {
 #if !defined(OS_ANDROID)
@@ -1056,10 +1056,10 @@ void* PbufferGLSurfaceEGL::GetShareHandle() {
   NOTREACHED();
   return NULL;
 #else
-  if (!gl::g_driver_egl.ext.b_EGL_ANGLE_query_surface_pointer)
+  if (!g_driver_egl.ext.b_EGL_ANGLE_query_surface_pointer)
     return NULL;
 
-  if (!gl::g_driver_egl.ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle)
+  if (!g_driver_egl.ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle)
     return NULL;
 
   void* handle;

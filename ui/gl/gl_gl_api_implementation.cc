@@ -34,7 +34,7 @@ static GLVersionInfo* g_version_info = NULL;
 namespace {
 
 static inline GLenum GetInternalFormat(GLenum internal_format) {
-  if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2) {
+  if (GetGLImplementation() != kGLImplementationEGLGLES2) {
     if (internal_format == GL_BGRA_EXT || internal_format == GL_BGRA8_EXT)
       return GL_RGBA8;
   }
@@ -48,8 +48,8 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
   GLenum gl_internal_format = GetInternalFormat(internal_format);
 
   // g_version_info must be initialized when this function is bound.
-  DCHECK(gl::g_version_info);
-  if (gl::g_version_info->is_es3) {
+  DCHECK(g_version_info);
+  if (g_version_info->is_es3) {
     if (internal_format == GL_RED_EXT) {
       // GL_EXT_texture_rg case in ES2.
       switch (type) {
@@ -87,8 +87,8 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
     }
   }
 
-  if (type == GL_FLOAT && gl::g_version_info->is_angle &&
-      gl::g_version_info->is_es && gl::g_version_info->major_version == 2) {
+  if (type == GL_FLOAT && g_version_info->is_angle && g_version_info->is_es &&
+      g_version_info->major_version == 2) {
     // It's possible that the texture is using a sized internal format, and
     // ANGLE exposing GLES2 API doesn't support those.
     // TODO(oetuaho@nvidia.com): Remove these conversions once ANGLE has the
@@ -106,8 +106,8 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
     }
   }
 
-  if (gl::g_version_info->IsAtLeastGL(2, 1) ||
-      gl::g_version_info->IsAtLeastGLES(3, 0)) {
+  if (g_version_info->IsAtLeastGL(2, 1) ||
+      g_version_info->IsAtLeastGLES(3, 0)) {
     switch (internal_format) {
       case GL_SRGB_EXT:
         gl_internal_format = GL_SRGB8;
@@ -120,7 +120,7 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
     }
   }
 
-  if (gl::g_version_info->is_es)
+  if (g_version_info->is_es)
     return gl_internal_format;
 
   if (type == GL_FLOAT) {
@@ -175,9 +175,9 @@ static inline GLenum GetTexInternalFormat(GLenum internal_format,
 static inline GLenum GetTexFormat(GLenum format) {
   GLenum gl_format = format;
 
-  DCHECK(gl::g_version_info);
-  if (gl::g_version_info->IsAtLeastGL(2, 1) ||
-      gl::g_version_info->IsAtLeastGLES(3, 0)) {
+  DCHECK(g_version_info);
+  if (g_version_info->IsAtLeastGL(2, 1) ||
+      g_version_info->IsAtLeastGLES(3, 0)) {
     switch (format) {
       case GL_SRGB_EXT:
         gl_format = GL_RGB;
@@ -194,11 +194,11 @@ static inline GLenum GetTexFormat(GLenum format) {
 }
 
 static inline GLenum GetTexType(GLenum type) {
-  if (gl::GetGLImplementation() != gl::kGLImplementationEGLGLES2) {
+  if (GetGLImplementation() != kGLImplementationEGLGLES2) {
     if (type == GL_HALF_FLOAT_OES)
       return GL_HALF_FLOAT_ARB;
-   }
-   return type;
+  }
+  return type;
 }
 
 static void GL_BINDING_CALL CustomTexImage2D(
@@ -516,7 +516,7 @@ void RealGLApi::glFinishFn() {
 void RealGLApi::InitializeFilteredExtensions() {
   if (disabled_exts_.size()) {
     filtered_exts_.clear();
-    if (gl::WillUseGLGetStringForExtensions()) {
+    if (WillUseGLGetStringForExtensions()) {
       filtered_exts_str_ =
           FilterGLExtensionList(reinterpret_cast<const char*>(
                                     GLApiBase::glGetStringFn(GL_EXTENSIONS)),

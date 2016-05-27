@@ -105,15 +105,14 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   gfx::VSyncProvider* GetVSyncProvider() override;
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,
-                            gl::GLImage* image,
+                            GLImage* image,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override;
   bool FlipsVertically() const override;
   bool BuffersFlipped() const override;
 
   // Create a NativeViewGLSurfaceEGL with an externally provided
-  // gfx::VSyncProvider.
-  // Takes ownership of the gfx::VSyncProvider.
+  // gfx::VSyncProvider. Takes ownership of the gfx::VSyncProvider.
   virtual bool Initialize(std::unique_ptr<gfx::VSyncProvider> sync_provider);
 
   // Takes care of the platform dependant bits, of any, for creating the window.

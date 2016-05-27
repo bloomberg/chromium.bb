@@ -198,14 +198,14 @@ gfx::VSyncProvider* GLSurface::GetVSyncProvider() {
 
 bool GLSurface::ScheduleOverlayPlane(int z_order,
                                      gfx::OverlayTransform transform,
-                                     gl::GLImage* image,
+                                     GLImage* image,
                                      const gfx::Rect& bounds_rect,
                                      const gfx::RectF& crop_rect) {
   NOTIMPLEMENTED();
   return false;
 }
 
-bool GLSurface::ScheduleCALayer(gl::GLImage* contents_image,
+bool GLSurface::ScheduleCALayer(GLImage* contents_image,
                                 const gfx::RectF& contents_rect,
                                 float opacity,
                                 unsigned background_color,
@@ -381,7 +381,7 @@ gfx::VSyncProvider* GLSurfaceAdapter::GetVSyncProvider() {
 
 bool GLSurfaceAdapter::ScheduleOverlayPlane(int z_order,
                                             gfx::OverlayTransform transform,
-                                            gl::GLImage* image,
+                                            GLImage* image,
                                             const gfx::Rect& bounds_rect,
                                             const gfx::RectF& crop_rect) {
   return surface_->ScheduleOverlayPlane(

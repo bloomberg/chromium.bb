@@ -32,8 +32,6 @@
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_egl.h"
 
-using gl::GLImage;
-
 namespace gl {
 
 namespace {
@@ -76,7 +74,7 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
                     gfx::AcceleratedWidget widget);
 
   // GLSurface:
-  bool Initialize(gl::GLSurface::Format format) override;
+  bool Initialize(GLSurface::Format format) override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
               bool has_alpha) override;
@@ -109,7 +107,7 @@ GLSurfaceOzoneEGL::GLSurfaceOzoneEGL(
       ozone_surface_(std::move(ozone_surface)),
       widget_(widget) {}
 
-bool GLSurfaceOzoneEGL::Initialize(gl::GLSurface::Format format) {
+bool GLSurfaceOzoneEGL::Initialize(GLSurface::Format format) {
   format_ = format;
   return Initialize(ozone_surface_->CreateVSyncProvider());
 }
@@ -190,7 +188,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
                             gfx::AcceleratedWidget widget);
 
   // GLSurface:
-  bool Initialize(gl::GLSurface::Format format) override;
+  bool Initialize(GLSurface::Format format) override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
               bool has_alpha) override;
@@ -273,7 +271,7 @@ GLSurfaceOzoneSurfaceless::GLSurfaceOzoneSurfaceless(
   unsubmitted_frames_.push_back(new PendingFrame());
 }
 
-bool GLSurfaceOzoneSurfaceless::Initialize(gl::GLSurface::Format format) {
+bool GLSurfaceOzoneSurfaceless::Initialize(GLSurface::Format format) {
   if (!SurfacelessEGL::Initialize(format))
     return false;
   vsync_provider_ = ozone_surface_->CreateVSyncProvider();
@@ -578,15 +576,15 @@ void GLSurfaceOzoneSurfacelessSurfaceImpl::SwapBuffersAsync(
 void GLSurfaceOzoneSurfacelessSurfaceImpl::Destroy() {
   if (!context_)
     return;
-  scoped_refptr<gl::GLContext> previous_context = gl::GLContext::GetCurrent();
-  scoped_refptr<gl::GLSurface> previous_surface;
+  scoped_refptr<GLContext> previous_context = GLContext::GetCurrent();
+  scoped_refptr<GLSurface> previous_surface;
 
   bool was_current = previous_context && previous_context->IsCurrent(nullptr) &&
-                     gl::GLSurface::GetCurrent() == this;
+                     GLSurface::GetCurrent() == this;
   if (!was_current) {
     // Only take a reference to previous surface if it's not |this|
     // because otherwise we can take a self reference from our own dtor.
-    previous_surface = gl::GLSurface::GetCurrent();
+    previous_surface = GLSurface::GetCurrent();
     context_->MakeCurrent(this);
   }
 

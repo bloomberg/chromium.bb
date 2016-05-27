@@ -150,7 +150,7 @@ void* GLContextWGL::GetHandle() {
 
 void GLContextWGL::OnSetSwapInterval(int interval) {
   DCHECK(IsCurrent(nullptr));
-  if (gl::g_driver_wgl.ext.b_WGL_EXT_swap_control) {
+  if (g_driver_wgl.ext.b_WGL_EXT_swap_control) {
     wglSwapIntervalEXT(interval);
   } else {
       LOG(WARNING) <<

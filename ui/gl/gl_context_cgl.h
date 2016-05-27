@@ -31,7 +31,7 @@ class GLContextCGL : public GLContextReal {
   void OnSetSwapInterval(int interval) override;
   void SetSafeToForceGpuSwitch() override;
   bool ForceGpuSwitchIfNeeded() override;
-  gl::YUVToRGBConverter* GetYUVToRGBConverter() override;
+  YUVToRGBConverter* GetYUVToRGBConverter() override;
 
  protected:
   ~GLContextCGL() override;
@@ -42,7 +42,7 @@ class GLContextCGL : public GLContextReal {
 
   void* context_;
   GpuPreference gpu_preference_;
-  std::unique_ptr<gl::YUVToRGBConverter> yuv_to_rgb_converter_;
+  std::unique_ptr<YUVToRGBConverter> yuv_to_rgb_converter_;
 
   CGLPixelFormatObj discrete_pixelformat_;
 

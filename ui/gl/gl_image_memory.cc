@@ -305,7 +305,7 @@ std::unique_ptr<uint8_t[]> GLES2Data(const gfx::Size& size,
       size_t gles2_data_stride =
           RowSizeForBufferFormat(size.width(), format, 0);
       if (stride == gles2_data_stride ||
-          gl::g_driver_gl.ext.b_GL_EXT_unpack_subimage)
+          g_driver_gl.ext.b_GL_EXT_unpack_subimage)
         return nullptr;  // No data conversion needed
 
       std::unique_ptr<uint8_t[]> gles2_data(
@@ -410,7 +410,7 @@ bool GLImageMemory::CopyTexImage(unsigned target) {
     GLint data_row_length = DataRowLength(stride_, format_);
     std::unique_ptr<uint8_t[]> gles2_data;
 
-    if (gl::GLContext::GetCurrent()->GetVersionInfo()->is_es) {
+    if (GLContext::GetCurrent()->GetVersionInfo()->is_es) {
       gles2_data = GLES2Data(size_, format_, stride_, memory_, &data_format,
                              &data_type, &data_row_length);
     }
@@ -460,7 +460,7 @@ bool GLImageMemory::CopyTexSubImage(unsigned target,
     GLint data_row_length = DataRowLength(stride_, format_);
     std::unique_ptr<uint8_t[]> gles2_data;
 
-    if (gl::GLContext::GetCurrent()->GetVersionInfo()->is_es) {
+    if (GLContext::GetCurrent()->GetVersionInfo()->is_es) {
       gles2_data = GLES2Data(rect.size(), format_, stride_, data, &data_format,
                              &data_type, &data_row_length);
     }

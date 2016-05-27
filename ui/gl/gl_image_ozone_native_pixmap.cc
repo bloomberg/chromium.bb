@@ -91,7 +91,7 @@ EGLint FourCC(gfx::BufferFormat format) {
 
 GLImageOzoneNativePixmap::GLImageOzoneNativePixmap(const gfx::Size& size,
                                                    unsigned internalformat)
-    : gl::GLImageEGL(size), internalformat_(internalformat) {}
+    : GLImageEGL(size), internalformat_(internalformat) {}
 
 GLImageOzoneNativePixmap::~GLImageOzoneNativePixmap() {
 }
@@ -101,8 +101,8 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
   DCHECK(!pixmap_);
   if (pixmap->GetEGLClientBuffer()) {
     EGLint attrs[] = {EGL_IMAGE_PRESERVED_KHR, EGL_TRUE, EGL_NONE};
-    if (!gl::GLImageEGL::Initialize(EGL_NATIVE_PIXMAP_KHR,
-                                    pixmap->GetEGLClientBuffer(), attrs)) {
+    if (!GLImageEGL::Initialize(EGL_NATIVE_PIXMAP_KHR,
+                                pixmap->GetEGLClientBuffer(), attrs)) {
       return false;
     }
   } else if (pixmap->AreDmaBufFdsValid()) {
@@ -138,9 +138,9 @@ bool GLImageOzoneNativePixmap::Initialize(ui::NativePixmap* pixmap,
     }
     attrs.push_back(EGL_NONE);
 
-    if (!gl::GLImageEGL::Initialize(EGL_LINUX_DMA_BUF_EXT,
-                                    static_cast<EGLClientBuffer>(nullptr),
-                                    &attrs[0])) {
+    if (!GLImageEGL::Initialize(EGL_LINUX_DMA_BUF_EXT,
+                                static_cast<EGLClientBuffer>(nullptr),
+                                &attrs[0])) {
       return false;
     }
   }
@@ -154,7 +154,7 @@ unsigned GLImageOzoneNativePixmap::GetInternalFormat() {
 }
 
 void GLImageOzoneNativePixmap::Destroy(bool have_context) {
-  gl::GLImageEGL::Destroy(have_context);
+  GLImageEGL::Destroy(have_context);
 }
 
 bool GLImageOzoneNativePixmap::CopyTexImage(unsigned target) {

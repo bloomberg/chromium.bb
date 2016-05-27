@@ -171,13 +171,13 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // |bounds_rect|.
   virtual bool ScheduleOverlayPlane(int z_order,
                                     gfx::OverlayTransform transform,
-                                    gl::GLImage* image,
+                                    GLImage* image,
                                     const gfx::Rect& bounds_rect,
                                     const gfx::RectF& crop_rect);
 
   // Schedule a CALayer to be shown at swap time.
   // All arguments correspond to their CALayer properties.
-  virtual bool ScheduleCALayer(gl::GLImage* contents_image,
+  virtual bool ScheduleCALayer(GLImage* contents_image,
                                const gfx::RectF& contents_rect,
                                float opacity,
                                unsigned background_color,
@@ -284,7 +284,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   gfx::VSyncProvider* GetVSyncProvider() override;
   bool ScheduleOverlayPlane(int z_order,
                             gfx::OverlayTransform transform,
-                            gl::GLImage* image,
+                            GLImage* image,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override;
   bool IsSurfaceless() const override;
