@@ -10,6 +10,8 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../net/net.gyp:net',
+        'client_update_protocol'
       ],
       'include_dirs': [
         '..',
