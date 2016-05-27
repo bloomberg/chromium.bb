@@ -308,10 +308,6 @@
         <structure type="chrome_scaled_image" name="IDR_HOME_P" file="common/browser_home_pressed.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_HOTWORD_NOTIFICATION_ICON" file="common/notification_hotword_icon.png" />
-      <if expr="not is_android and not is_ios">
-        <!-- TODO(estade): replace with vector image when one's available. -->
-        <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_MENU_INCOGNITO" file="common/incognito.png" />
-      </if>
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_ACCOUNT_BUTTON_ERROR" file="legacy/avatar_menu_auth_error.png" />
         <structure type="chrome_scaled_image" name="IDR_ICON_PROFILES_AVATAR_BUTTON_ERROR" file="legacy/avatar_button_auth_error.png" />

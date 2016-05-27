@@ -10783,11 +10783,8 @@ I don't think this site should be blocked!
         <message name="IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE" desc="The Learn More link in the avatar tutorial bubble.">
           Learn more
         </message>
-        <message name="IDS_PROFILES_SWITCH_USERS_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
-          Switch person
-        </message>
-        <message name="IDS_PROFILES_GO_INCOGNITO_BUTTON" desc="Button in the avatar menu bubble view for launching an incognito browser.">
-          Go incognito
+        <message name="IDS_PROFILES_MANAGE_USERS_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
+          Manage people
         </message>
       </if>
       <if expr="use_titlecase">
@@ -10803,11 +10800,8 @@ I don't think this site should be blocked!
         <message name="IDS_PROFILES_PROFILE_TUTORIAL_LEARN_MORE" desc="The Learn More link in the avatar tutorial bubble.">
           Learn More
         </message>
-        <message name="IDS_PROFILES_SWITCH_USERS_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
-          Switch Person
-        </message>
-        <message name="IDS_PROFILES_GO_INCOGNITO_BUTTON" desc="Button in the avatar menu bubble view for launching an incognito browser.">
-          Go Incognito
+        <message name="IDS_PROFILES_MANAGE_USERS_BUTTON" desc="Button in the avatar menu bubble view for launching the user manager.">
+          Manage People
         </message>
       </if>
       <message name="IDS_PROFILES_SWITCH_TO_PROFILE_ACCESSIBLE_NAME" desc="Description of the switch to profile button. This is used for accessibility.">

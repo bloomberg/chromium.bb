@@ -699,7 +699,6 @@ void ProfileChooserView::ResetView() {
   current_profile_photo_ = NULL;
   current_profile_name_ = NULL;
   users_button_ = NULL;
-  go_incognito_button_ = NULL;
   lock_button_ = NULL;
   add_account_link_ = NULL;
   gaia_signin_cancel_button_ = NULL;
@@ -912,10 +911,6 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
                         profiles::USER_MANAGER_SELECT_PROFILE_NO_ACTION);
     }
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_OPEN_USER_MANAGER);
-  } else if (sender == go_incognito_button_) {
-    DCHECK(ShouldShowGoIncognito());
-    chrome::NewIncognitoWindow(browser_);
-    PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_GO_INCOGNITO);
   } else if (sender == lock_button_) {
     profiles::LockProfile(browser_->profile());
     PostActionPerformed(ProfileMetrics::PROFILE_DESKTOP_MENU_LOCK);
@@ -1501,26 +1496,13 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock) {
 
   base::string16 text = browser_->profile()->IsGuestSession() ?
       l10n_util::GetStringUTF16(IDS_PROFILES_EXIT_GUEST) :
-      l10n_util::GetStringUTF16(IDS_PROFILES_SWITCH_USERS_BUTTON);
+      l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON);
   const int kIconSize = 16;
   users_button_ = new BackgroundColorHoverButton(
       this, text, gfx::CreateVectorIcon(gfx::VectorIconId::ACCOUNT_BOX,
                                         kIconSize, gfx::kChromeIconGrey));
   layout->StartRow(1, 0);
   layout->AddView(users_button_);
-
-  if (ShouldShowGoIncognito()) {
-    layout->StartRow(1, 0);
-    layout->AddView(new views::Separator(views::Separator::HORIZONTAL));
-
-    ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-    go_incognito_button_ = new BackgroundColorHoverButton(
-        this,
-        l10n_util::GetStringUTF16(IDS_PROFILES_GO_INCOGNITO_BUTTON),
-        *rb->GetImageSkiaNamed(IDR_ICON_PROFILES_MENU_INCOGNITO));
-    layout->StartRow(1, 0);
-    layout->AddView(go_incognito_button_);
-  }
 
   if (display_lock) {
     layout->StartRow(1, 0);

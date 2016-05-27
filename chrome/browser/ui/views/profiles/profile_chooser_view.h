@@ -247,7 +247,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
 
   // Action buttons.
   views::LabelButton* users_button_;
-  views::LabelButton* go_incognito_button_;
   views::LabelButton* lock_button_;
   views::Link* add_account_link_;
 
