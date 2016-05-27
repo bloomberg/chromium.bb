@@ -73,7 +73,11 @@ ImageBuffer* OffscreenCanvasRenderingContext2D::imageBuffer() const
         // TODO: crbug.com/593514 Add support for GPU rendering
         OffscreenCanvasRenderingContext2D* nonConstThis = const_cast<OffscreenCanvasRenderingContext2D*>(this);
         nonConstThis->m_imageBuffer = ImageBuffer::create(IntSize(width(), height()), m_hasAlpha ? NonOpaque : Opaque, InitializeImagePixels);
-        // TODO: crbug.com/593349 Restore matrix and clip state on the new ImageBuffer.
+
+        if (m_needsMatrixClipRestore) {
+            restoreMatrixClipStack(m_imageBuffer->canvas());
+            nonConstThis->m_needsMatrixClipRestore = false;
+        }
     }
 
     return m_imageBuffer.get();
@@ -88,6 +92,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::transferToImageBitmap(ExceptionS
     RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(skImage.release());
     image->setOriginClean(this->originClean());
     m_imageBuffer.reset(); // "Transfer" means no retained buffer
+    m_needsMatrixClipRestore = true;
     return ImageBitmap::create(image.release());
 }
 

@@ -4081,6 +4081,7 @@ interface OffscreenCanvasRenderingContext2D
     method beginPath
     method bezierCurveTo
     method clearRect
+    method clip
     method closePath
     method constructor
     method createImageData

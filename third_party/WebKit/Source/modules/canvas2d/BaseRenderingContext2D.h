@@ -157,6 +157,8 @@ public:
 
     virtual bool isContextLost() const = 0;
 
+    void restoreMatrixClipStack(SkCanvas*) const;
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:

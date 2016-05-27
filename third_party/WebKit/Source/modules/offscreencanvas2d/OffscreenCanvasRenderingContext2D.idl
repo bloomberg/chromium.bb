@@ -29,6 +29,8 @@
     void fill(Path2D path, optional CanvasFillRule winding);
     void stroke();
     void stroke(Path2D path);
+    void clip();
+    void clip(Path2D path);
 
     // drawing images
     [CallWith=ExecutionContext, RaisesException] void drawImage(CanvasImageSource image, unrestricted double x, unrestricted double y);

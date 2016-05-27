@@ -289,17 +289,7 @@ void CanvasRenderingContext2D::reset()
 
 void CanvasRenderingContext2D::restoreCanvasMatrixClipStack(SkCanvas* c) const
 {
-    if (!c)
-        return;
-    HeapVector<Member<CanvasRenderingContext2DState>>::const_iterator currState;
-    ASSERT(m_stateStack.begin() < m_stateStack.end());
-    for (currState = m_stateStack.begin(); currState < m_stateStack.end(); currState++) {
-        c->setMatrix(SkMatrix::I());
-        currState->get()->playbackClips(c);
-        c->setMatrix(affineTransformToSkMatrix(currState->get()->transform()));
-        c->save();
-    }
-    c->restore();
+    restoreMatrixClipStack(c);
 }
 
 bool CanvasRenderingContext2D::shouldAntialias() const

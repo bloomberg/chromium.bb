@@ -79,6 +79,7 @@ protected:
 
 private:
     bool m_hasAlpha;
+    bool m_needsMatrixClipRestore = false;
     OwnPtr<ImageBuffer> m_imageBuffer;
 };
 
