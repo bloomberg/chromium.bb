@@ -108,7 +108,13 @@ bool ExclusiveAccessManager::IsExperimentalKeyboardLockUIEnabled() {
 
 // static
 bool ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled() {
+#if defined(OS_MACOSX)
+  // Always enabled on Mac (the mouse cursor tracking required to implement the
+  // non-simplified version is not implemented).
+  return true;
+#else
   return base::FeatureList::IsEnabled(features::kSimplifiedFullscreenUI);
+#endif
 }
 
 void ExclusiveAccessManager::OnTabDeactivated(WebContents* web_contents) {
