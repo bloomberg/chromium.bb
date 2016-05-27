@@ -14,6 +14,11 @@
 namespace gl {
 namespace {
 
+// These values are picked so that RGB -> YUV on the CPU converted
+// back to RGB on the GPU produces the original RGB values without
+// any error.
+const uint8_t kYuvImageColor[] = {0x10, 0x20, 0, 0xFF};
+
 template <gfx::BufferFormat format>
 class GLImageIOSurfaceTestDelegate {
  public:
@@ -52,6 +57,7 @@ class GLImageIOSurfaceTestDelegate {
   }
 
   unsigned GetTextureTarget() const { return GL_TEXTURE_RECTANGLE_ARB; }
+  const uint8_t* GetImageColor() { return kYuvImageColor; }
 };
 
 using GLImageTestTypes = testing::Types<

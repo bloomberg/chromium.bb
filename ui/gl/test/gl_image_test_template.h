@@ -148,7 +148,7 @@ TYPED_TEST_CASE_P(GLImageTest);
 TYPED_TEST_P(GLImageTest, CreateAndDestroy) {
   const gfx::Size small_image_size(4, 4);
   const gfx::Size large_image_size(512, 512);
-  const uint8_t image_color[] = {0, 0xff, 0, 0xff};
+  const uint8_t* image_color = this->delegate_.GetImageColor();
 
   // Create a small solid color green image of preferred format. This must
   // succeed in order for a GLImage to be conformant.
@@ -237,7 +237,7 @@ TYPED_TEST_CASE_P(GLImageBindTest);
 
 TYPED_TEST_P(GLImageBindTest, BindTexImage) {
   const gfx::Size image_size(256, 256);
-  const uint8_t image_color[] = {0x10, 0x20, 0, 0xff};
+  const uint8_t* image_color = this->delegate_.GetImageColor();
 
   GLuint framebuffer =
       GLTestHelper::SetupFramebuffer(image_size.width(), image_size.height());
@@ -284,10 +284,7 @@ TYPED_TEST_CASE_P(GLImageCopyTest);
 
 TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   const gfx::Size image_size(256, 256);
-  // These values are picked so that RGB -> YUV on the CPU converted
-  // back to RGB on the GPU produces the original RGB values without
-  // any error.
-  const uint8_t image_color[] = {0x10, 0x20, 0, 0xff};
+  const uint8_t* image_color = this->delegate_.GetImageColor();
   const uint8_t texture_color[] = {0, 0, 0xff, 0xff};
 
   GLuint framebuffer =

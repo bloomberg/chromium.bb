@@ -14,6 +14,8 @@
 namespace gl {
 namespace {
 
+const uint8_t kGreen[] = {0x0, 0xFF, 0x0, 0xFF};
+
 template <gfx::BufferFormat format>
 class GLImageRefCountedMemoryTestDelegate {
  public:
@@ -34,6 +36,7 @@ class GLImageRefCountedMemoryTestDelegate {
   }
 
   unsigned GetTextureTarget() const { return GL_TEXTURE_2D; }
+  const uint8_t* GetImageColor() { return kGreen; }
 };
 
 using GLImageTestTypes = testing::Types<

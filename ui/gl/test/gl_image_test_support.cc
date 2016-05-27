@@ -44,6 +44,12 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
                                               const uint8_t color[4],
                                               uint8_t* data) {
   switch (format) {
+    case gfx::BufferFormat::R_8:
+      DCHECK_EQ(0, plane);
+      for (int y = 0; y < height; ++y) {
+        memset(&data[y * stride], color[0], width);
+      }
+      return;
     case gfx::BufferFormat::BGR_565:
       DCHECK_EQ(0, plane);
       for (int y = 0; y < height; ++y) {
@@ -130,7 +136,6 @@ void GLImageTestSupport::SetBufferDataToColor(int width,
     case gfx::BufferFormat::DXT1:
     case gfx::BufferFormat::DXT5:
     case gfx::BufferFormat::ETC1:
-    case gfx::BufferFormat::R_8:
     case gfx::BufferFormat::RGBA_4444:
     case gfx::BufferFormat::UYVY_422:
     case gfx::BufferFormat::YUV_420:

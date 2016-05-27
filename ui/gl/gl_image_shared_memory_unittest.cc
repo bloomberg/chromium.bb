@@ -14,6 +14,8 @@
 namespace gl {
 namespace {
 
+const uint8_t kGreen[] = {0x0, 0x20, 0x0, 0xFF};
+
 template <gfx::BufferFormat format>
 class GLImageSharedMemoryTestDelegate {
  public:
@@ -39,6 +41,7 @@ class GLImageSharedMemoryTestDelegate {
   }
 
   unsigned GetTextureTarget() const { return GL_TEXTURE_2D; }
+  const uint8_t* GetImageColor() { return kGreen; }
 };
 
 using GLImageTestTypes = testing::Types<
@@ -89,6 +92,7 @@ class GLImageSharedMemoryPoolTestDelegate {
   }
 
   unsigned GetTextureTarget() const { return GL_TEXTURE_2D; }
+  const uint8_t* GetImageColor() { return kGreen; }
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemoryPool,
