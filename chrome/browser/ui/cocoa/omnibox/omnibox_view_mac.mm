@@ -581,15 +581,6 @@ void OmniboxViewMac::ApplyTextAttributes(
                            value:@"en_US_POSIX"
                            range:as_entire_string];
 
-  // Under Material Design, force the text to be a single color white editing.
-  if (ui::MaterialDesignController::IsModeMaterial() &&
-      [field_ currentEditor]) {
-    [attributedString addAttribute:NSForegroundColorAttributeName
-                             value:HostTextColor(in_dark_mode)
-                             range:as_entire_string];
-    return;
-  }
-
   url::Component scheme, host;
   AutocompleteInput::ParseForEmphasizeComponents(
       display_text, ChromeAutocompleteSchemeClassifier(profile_), &scheme,
