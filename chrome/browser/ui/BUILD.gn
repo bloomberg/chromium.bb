@@ -197,6 +197,7 @@ source_set("ui") {
     deps += [
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//chrome/common:features",
+      "//components/chooser_controller:chooser_controller",
       "//components/copresence",
       "//components/feedback/proto",
       "//components/proximity_auth/webui",

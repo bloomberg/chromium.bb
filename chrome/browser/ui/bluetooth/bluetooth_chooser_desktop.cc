@@ -4,17 +4,16 @@
 
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
 
-#include "chrome/browser/ui/bluetooth/bluetooth_chooser_bubble_controller.h"
+#include "base/logging.h"
+#include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
 
 BluetoothChooserDesktop::BluetoothChooserDesktop(
-    const content::BluetoothChooser::EventHandler& event_handler)
-    : event_handler_(event_handler),
-      bluetooth_chooser_bubble_controller_(nullptr) {}
-
-BluetoothChooserDesktop::~BluetoothChooserDesktop() {
-  if (bluetooth_chooser_bubble_controller_)
-    bluetooth_chooser_bubble_controller_->set_bluetooth_chooser(nullptr);
+    BluetoothChooserController* bluetooth_chooser_controller)
+    : bluetooth_chooser_controller_(bluetooth_chooser_controller) {
+  DCHECK(bluetooth_chooser_controller_);
 }
+
+BluetoothChooserDesktop::~BluetoothChooserDesktop() {}
 
 void BluetoothChooserDesktop::SetAdapterPresence(AdapterPresence presence) {}
 
@@ -22,17 +21,9 @@ void BluetoothChooserDesktop::ShowDiscoveryState(DiscoveryState state) {}
 
 void BluetoothChooserDesktop::AddDevice(const std::string& device_id,
                                         const base::string16& device_name) {
-  if (bluetooth_chooser_bubble_controller_)
-    bluetooth_chooser_bubble_controller_->AddDevice(device_id, device_name);
+  bluetooth_chooser_controller_->AddDevice(device_id, device_name);
 }
 
 void BluetoothChooserDesktop::RemoveDevice(const std::string& device_id) {
-  if (bluetooth_chooser_bubble_controller_)
-    bluetooth_chooser_bubble_controller_->RemoveDevice(device_id);
-}
-
-void BluetoothChooserDesktop::CallEventHandler(
-    content::BluetoothChooser::Event event,
-    const std::string& device_id) {
-  event_handler_.Run(event, device_id);
+  bluetooth_chooser_controller_->RemoveDevice(device_id);
 }

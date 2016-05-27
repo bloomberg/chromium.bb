@@ -91,7 +91,7 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
-#include "chrome/browser/ui/bluetooth/bluetooth_chooser_bubble_controller.h"
+#include "chrome/browser/ui/bluetooth/bluetooth_chooser_controller.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -142,6 +142,7 @@
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/unload_controller.h"
 #include "chrome/browser/ui/validation_message_bubble.h"
+#include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
 #include "chrome/browser/ui/website_settings/permission_bubble_manager.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
@@ -1324,23 +1325,20 @@ void Browser::ShowCertificateViewerInDevTools(
 std::unique_ptr<content::BluetoothChooser> Browser::RunBluetoothChooser(
     content::RenderFrameHost* frame,
     const content::BluetoothChooser::EventHandler& event_handler) {
-  std::unique_ptr<BluetoothChooserDesktop> bluetooth_chooser_desktop(
-      new BluetoothChooserDesktop(event_handler));
-  std::unique_ptr<BluetoothChooserBubbleController> bubble_controller(
-      new BluetoothChooserBubbleController(frame));
-  BluetoothChooserBubbleController* bubble_controller_ptr =
-      bubble_controller.get();
+  std::unique_ptr<BluetoothChooserController> bluetooth_chooser_controller(
+      new BluetoothChooserController(frame, event_handler));
 
-  // Wire the ChooserBubbleController to the BluetoothChooser.
-  bluetooth_chooser_desktop->set_bluetooth_chooser_bubble_controller(
-      bubble_controller_ptr);
-  bubble_controller->set_bluetooth_chooser(bluetooth_chooser_desktop.get());
+  std::unique_ptr<BluetoothChooserDesktop> bluetooth_chooser_desktop(
+      new BluetoothChooserDesktop(bluetooth_chooser_controller.get()));
+
+  std::unique_ptr<ChooserBubbleDelegate> chooser_bubble_delegate(
+      new ChooserBubbleDelegate(frame,
+                                std::move(bluetooth_chooser_controller)));
 
   Browser* browser = chrome::FindBrowserWithWebContents(
       WebContents::FromRenderFrameHost(frame));
-  BubbleReference bubble_reference =
-      browser->GetBubbleManager()->ShowBubble(std::move(bubble_controller));
-  bubble_controller_ptr->set_bubble_reference(bubble_reference);
+  BubbleReference bubble_reference = browser->GetBubbleManager()->ShowBubble(
+      std::move(chooser_bubble_delegate));
 
   return std::move(bluetooth_chooser_desktop);
 }

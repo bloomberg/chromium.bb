@@ -149,6 +149,7 @@
     ['OS != "ios" and OS != "android"', {
       'includes': [
         'audio_modem.gypi',
+        'chooser_controller.gypi',
         'copresence.gypi',
         'feedback.gypi',
         'proximity_auth.gypi',

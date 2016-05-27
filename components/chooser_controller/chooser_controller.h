@@ -1,35 +1,32 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_CHOOSER_BUBBLE_CONTROLLER_H_
-#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_CHOOSER_BUBBLE_CONTROLLER_H_
+#ifndef COMPONENTS_CHOOSER_CONTROLLER_CHOOSER_CONTROLLER_H_
+#define COMPONENTS_CHOOSER_CONTROLLER_CHOOSER_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/bubble/bubble_delegate.h"
 
-class Browser;
-class GURL;
+namespace content {
+class RenderFrameHost;
+}
 
 namespace url {
 class Origin;
 }
 
-// Subclass ChooserBubbleController to implement a chooser bubble, which has
-// some introductory text and a list of options that users can pick one of.
-// Create an instance of your subclass and pass it to
-// BubbleManager::ShowBubble() to show the bubble. Your subclass must define
-// the set of options users can pick from; the actions taken after users
-// select an item or press the 'Cancel' button or the bubble is closed.
-// You can also override GetName() to identify the bubble you define for
-// collecting metrics.
-// After Select/Cancel/Close is called, this object is destroyed and call back
-// into it is not allowed.
-class ChooserBubbleController : public BubbleDelegate {
+// Subclass ChooserController to implement a chooser, which has some
+// introductory text and a list of options that users can pick one of.
+// Your subclass must define the set of options users can pick from;
+// the actions taken after users select an item or press the 'Cancel'
+// button or the chooser is closed.
+// After Select/Cancel/Close is called, this object is destroyed and
+// calls back into it are not allowed.
+class ChooserController {
  public:
-  explicit ChooserBubbleController(content::RenderFrameHost* owner);
-  ~ChooserBubbleController() override;
+  explicit ChooserController(content::RenderFrameHost* owner);
+  virtual ~ChooserController();
 
   // Since the set of options can change while the UI is visible an
   // implementation should register an observer.
@@ -55,23 +52,15 @@ class ChooserBubbleController : public BubbleDelegate {
     virtual ~Observer() {}
   };
 
-  // Return the origin URL to be displayed on the bubble title.
+  // Return the origin URL to be displayed on the chooser title.
   url::Origin GetOrigin() const;
-
-  // Open help center URL.
-  void OpenHelpCenterUrl() const;
-
-  // BubbleDelegate:
-  std::string GetName() const override;
-  std::unique_ptr<BubbleUi> BuildBubbleUi() override;
-  const content::RenderFrameHost* OwningFrame() const override;
 
   // The number of options users can pick from. For example, it can be
   // the number of USB/Bluetooth device names which are listed in the
-  // chooser bubble so that users can grant permission.
+  // chooser so that users can grant permission.
   virtual size_t NumOptions() const = 0;
 
-  // The |index|th option string which is listed in the chooser bubble.
+  // The |index|th option string which is listed in the chooser.
   virtual const base::string16& GetOption(size_t index) const = 0;
 
   // These three functions are called just before this object is destroyed:
@@ -86,19 +75,18 @@ class ChooserBubbleController : public BubbleDelegate {
   // closes without the user taking an explicit action.
   virtual void Close() = 0;
 
-  // Get help center URL.
-  virtual GURL GetHelpCenterUrl() const = 0;
+  // Open help center URL.
+  virtual void OpenHelpCenterUrl() const = 0;
 
   // Only one observer may be registered at a time.
   void set_observer(Observer* observer) { observer_ = observer; }
   Observer* observer() const { return observer_; }
 
  private:
-  Browser* browser_;
   const content::RenderFrameHost* const owning_frame_;
   Observer* observer_ = nullptr;
 
-  DISALLOW_COPY_AND_ASSIGN(ChooserBubbleController);
+  DISALLOW_COPY_AND_ASSIGN(ChooserController);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_CHOOSER_BUBBLE_CONTROLLER_H_
+#endif  // COMPONENTS_CHOOSER_CONTROLLER_CHOOSER_CONTROLLER_H_

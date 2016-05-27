@@ -8,7 +8,8 @@
 
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_bubble_manager.h"
-#include "chrome/browser/usb/usb_chooser_bubble_controller.h"
+#include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
+#include "chrome/browser/usb/usb_chooser_controller.h"
 #include "components/bubble/bubble_controller.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -33,14 +34,14 @@ void WebUsbChooserService::GetPermission(
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host_);
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  std::unique_ptr<UsbChooserBubbleController> bubble_controller(
-      new UsbChooserBubbleController(render_frame_host_,
-                                     std::move(device_filters),
-                                     render_frame_host_, callback));
-  UsbChooserBubbleController* bubble_controller_ptr = bubble_controller.get();
-  BubbleReference bubble_reference =
-      browser->GetBubbleManager()->ShowBubble(std::move(bubble_controller));
-  bubble_controller_ptr->set_bubble_reference(bubble_reference);
+  std::unique_ptr<UsbChooserController> usb_chooser_controller(
+      new UsbChooserController(render_frame_host_, std::move(device_filters),
+                               render_frame_host_, callback));
+  std::unique_ptr<ChooserBubbleDelegate> chooser_bubble_delegate(
+      new ChooserBubbleDelegate(render_frame_host_,
+                                std::move(usb_chooser_controller)));
+  BubbleReference bubble_reference = browser->GetBubbleManager()->ShowBubble(
+      std::move(chooser_bubble_delegate));
   bubbles_.push_back(bubble_reference);
 }
 
