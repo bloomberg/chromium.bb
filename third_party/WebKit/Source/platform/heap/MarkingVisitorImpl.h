@@ -41,6 +41,9 @@ protected:
         ASSERT(ThreadState::current()->isInGC());
         ASSERT(toDerived()->getMarkingMode() != Visitor::WeakProcessing);
 
+        // A GC should only mark the objects that belong in its heap.
+        DCHECK(&pageFromObject(objectPointer)->arena()->getThreadState()->heap() == &toDerived()->heap());
+
         header->mark();
 
         if (callback)

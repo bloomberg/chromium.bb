@@ -326,6 +326,7 @@ Address ThreadHeap::checkAndMarkPointer(Visitor* visitor, Address address)
         ASSERT(page->contains(address));
         ASSERT(!page->orphaned());
         ASSERT(!m_heapDoesNotContainCache->lookup(address));
+        DCHECK(&visitor->heap() == &page->arena()->getThreadState()->heap());
         page->checkAndMarkPointer(visitor, address);
         return address;
     }

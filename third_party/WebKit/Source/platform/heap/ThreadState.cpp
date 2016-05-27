@@ -112,9 +112,6 @@ ThreadState::ThreadState(bool perThreadHeapEnabled)
     ASSERT(!**s_threadSpecific);
     **s_threadSpecific = this;
 
-    // TODO(keishi) Remove when per thread heap is ready.
-    CHECK(!m_perThreadHeapEnabled);
-
     if (m_perThreadHeapEnabled) {
         m_heap = new ThreadHeap();
     } else if (isMainThread()) {
