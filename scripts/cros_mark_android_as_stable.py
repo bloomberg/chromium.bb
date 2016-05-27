@@ -19,6 +19,7 @@ from __future__ import print_function
 import filecmp
 import glob
 import os
+import re
 
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
@@ -58,7 +59,7 @@ def IsBuildIdValid(bucket_url, build_branch, build_id):
   """
   gs_context = gs.GSContext()
   subpaths_dict = {}
-  for build, target in constants.ANDROID_BUILD_TARGETS.iteritems():
+  for build, (target, _) in constants.ANDROID_BUILD_TARGETS.iteritems():
     build_dir = '%s-%s' % (build_branch, target)
     build_id_path = os.path.join(bucket_url, build_dir, build_id)
 
@@ -81,12 +82,10 @@ def IsBuildIdValid(bucket_url, build_branch, build_id):
 
     # Look for a zipfile ending in the build_id number.
     try:
-      for zipfile in gs_context.List(subpath_dir):
-        if zipfile.url.endswith('.zip'):
-          break
+      gs_context.List(subpath_dir)
     except gs.GSNoSuchKey:
       logging.warn(
-          'Did not find a zipfile for build id [%s] in directory [%s].',
+          'Did not find a file for build id [%s] in directory [%s].',
           build_id, subpath_dir)
       return None
 
@@ -111,7 +110,7 @@ def GetLatestBuild(bucket_url, build_branch):
   gs_context = gs.GSContext()
   common_build_ids = None
   # Find builds for each target.
-  for target in constants.ANDROID_BUILD_TARGETS.itervalues():
+  for target, _ in constants.ANDROID_BUILD_TARGETS.itervalues():
     build_dir = '-'.join((build_branch, target))
     base_path = os.path.join(bucket_url, build_dir)
     build_ids = []
@@ -194,22 +193,22 @@ def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
   """
   gs_context = gs.GSContext()
   for build, subpath in subpaths.iteritems():
-    target = constants.ANDROID_BUILD_TARGETS[build]
+    target, pattern = constants.ANDROID_BUILD_TARGETS[build]
     build_dir = '%s-%s' % (build_branch, target)
     android_dir = os.path.join(android_bucket_url, build_dir, build_id, subpath)
     arc_dir = os.path.join(arc_bucket_url, build_dir, build_id)
 
-    # Copy all zip files from android_dir to arc_dir, setting ACLs.
-    for zipfile in gs_context.List(android_dir):
-      if zipfile.url.endswith('.zip'):
-        zipname = os.path.basename(zipfile.url)
-        arc_path = os.path.join(arc_dir, zipname)
+    # Copy all target files from android_dir to arc_dir, setting ACLs.
+    for targetfile in gs_context.List(android_dir):
+      if re.search(pattern, targetfile.url):
+        basename = os.path.basename(targetfile.url)
+        arc_path = os.path.join(arc_dir, basename)
         acl = acls[build]
         needs_copy = True
 
         # Check a pre-existing file with the original source.
         if gs_context.Exists(arc_path):
-          if (gs_context.Stat(zipfile.url).hash_crc32c !=
+          if (gs_context.Stat(targetfile.url).hash_crc32c !=
               gs_context.Stat(arc_path).hash_crc32c):
             logging.warn('Removing incorrect file %s', arc_path)
             gs_context.Remove(arc_path)
@@ -225,8 +224,9 @@ def CopyToArcBucket(android_bucket_url, build_branch, build_id, subpaths,
         # - rerunning the copy in case one of the googlestorage_acl_X.txt
         #   files changes (e.g. we add a new variant which reuses a build).
         if needs_copy:
-          logging.info('Copying %s -> %s (acl %s)', zipfile.url, arc_path, acl)
-          gs_context.Copy(zipfile.url, arc_path, version=0)
+          logging.info('Copying %s -> %s (acl %s)',
+                       targetfile.url, arc_path, acl)
+          gs_context.Copy(targetfile.url, arc_path, version=0)
         gs_context.ChangeACL(arc_path, acl_args_file=acl)
 
 
@@ -309,7 +309,7 @@ def MarkAndroidEBuildAsStable(stable_candidate, unstable_ebuild, android_pn,
     new_ebuild_path = os.path.join(package_dir, '%s.ebuild' % pf)
 
   variables = {'BASE_URL': arc_bucket_url}
-  for build, target in constants.ANDROID_BUILD_TARGETS.iteritems():
+  for build, (target, _) in constants.ANDROID_BUILD_TARGETS.iteritems():
     variables[build + '_TARGET'] = '%s-%s' % (build_branch, target)
 
   portage_util.EBuild.MarkAsStable(

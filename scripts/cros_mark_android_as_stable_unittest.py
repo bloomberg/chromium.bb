@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import itertools
 import mock
 import os
 
@@ -80,6 +81,7 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
         'ARM': self.arm_acl,
         'X86': self.x86_acl,
         'CTS': self.cts_acl,
+        'SDK_TOOLS': self.cts_acl,
     }
 
     osutils.WriteFile(self.arm_acl, self.arm_acl_data, makedirs=True)
@@ -101,57 +103,76 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
             self.old_version, self.old2_version, self.new_version,
             self.partial_new_version
         ],
+        'SDK_TOOLS': [
+            self.old_version, self.old2_version, self.new_version,
+            self.partial_new_version
+        ],
     }
     for build_type, builds in builds.iteritems():
-      url = self.makeSrcTargetUrl(constants.ANDROID_BUILD_TARGETS[build_type])
+      url = self.makeSrcTargetUrl(
+          constants.ANDROID_BUILD_TARGETS[build_type][0])
       builds = '\n'.join(os.path.join(url, version) for version in builds)
       self.gs_mock.AddCmdResult(['ls', '--', url], output=builds)
 
     for version in [self.old_version, self.old2_version, self.new_version]:
-      for target in constants.ANDROID_BUILD_TARGETS.itervalues():
-        self.setupMockBuild(target, version)
+      for key in constants.ANDROID_BUILD_TARGETS.iterkeys():
+        self.setupMockBuild(key, version)
     self.new_subpaths = {
         'ARM': 'linux-cheets_arm-userdebug100',
         'X86': 'linux-cheets_x86-userdebug100',
         'CTS': 'linux-cts100',
+        'SDK_TOOLS': 'linux-static_sdk_tools100',
     }
 
-    self.setupMockBuild(constants.ANDROID_BUILD_TARGETS['ARM'],
-                        self.partial_new_version)
-    self.setupMockBuild(constants.ANDROID_BUILD_TARGETS['X86'],
-                        self.partial_new_version, False)
-    self.setupMockBuild(constants.ANDROID_BUILD_TARGETS['CTS'],
-                        self.partial_new_version)
+    self.setupMockBuild('ARM', self.partial_new_version)
+    self.setupMockBuild('X86', self.partial_new_version, valid=False)
+    self.setupMockBuild('CTS', self.partial_new_version)
+    self.setupMockBuild('SDK_TOOLS', self.partial_new_version)
 
-    for target in constants.ANDROID_BUILD_TARGETS.itervalues():
-      self.setupMockBuild(target, self.not_new_version, False)
+    for key in constants.ANDROID_BUILD_TARGETS.iterkeys():
+      self.setupMockBuild(key, self.not_new_version, False)
 
-  def setupMockBuild(self, target, version, valid=True):
+  def setupMockBuild(self, key, version, valid=True):
     """Helper to mock a build."""
     def _RaiseGSNoSuchKey(*_args, **_kwargs):
       raise gs.GSNoSuchKey('file does not exist')
+
+    target = constants.ANDROID_BUILD_TARGETS[key][0]
     src_url = self.makeSrcUrl(target, version)
     if valid:
       # Show source subpath directory.
       src_subdir = os.path.join(src_url, self.makeSubpath(target, version))
       self.gs_mock.AddCmdResult(['ls', '--', src_url], output=src_subdir)
 
-      # Show zipfile.
-      zipname = 'file-%s.zip' % version
-      src_zip = os.path.join(src_subdir, zipname)
-      self.gs_mock.AddCmdResult(['ls', '--', src_subdir], output=src_zip)
-      self.gs_mock.AddCmdResult(['stat', '--', src_zip],
-                                output=(self.STAT_OUTPUT) % src_url)
+      # Show files.
+      mock_file_template_list = {
+          'ARM': ['file-%(version)s.zip'],
+          'X86': ['file-%(version)s.zip'],
+          'CTS': ['android-cts.zip'],
+          'SDK_TOOLS': ['aapt', 'adb']
+      }
+      filelist = [template % {'version': version}
+                  for template in mock_file_template_list[key]]
+      src_filelist = [os.path.join(src_subdir, filename)
+                      for filename in filelist]
+      self.gs_mock.AddCmdResult(['ls', '--', src_subdir],
+                                output='\n'.join(src_filelist))
+      for src_file in src_filelist:
+        self.gs_mock.AddCmdResult(['stat', '--', src_file],
+                                  output=(self.STAT_OUTPUT) % src_url)
 
       # Show nothing in destination.
       dst_url = self.makeDstUrl(target, version)
-      dst_zip = os.path.join(dst_url, zipname)
-      self.gs_mock.AddCmdResult(['stat', '--', dst_zip],
-                                side_effect=_RaiseGSNoSuchKey)
+      dst_filelist = [os.path.join(dst_url, filename)
+                      for filename in filelist]
+      for dst_file in dst_filelist:
+        self.gs_mock.AddCmdResult(['stat', '--', dst_file],
+                                  side_effect=_RaiseGSNoSuchKey)
       logging.warn('mocking no %s', dst_url)
 
       # Allow copying of source to dest.
-      self.gs_mock.AddCmdResult(['cp', '-v', '--', src_zip, dst_zip])
+      for src_file, dst_file in itertools.izip(src_filelist, dst_filelist):
+        self.gs_mock.AddCmdResult(['cp', '-v', '--', src_file, dst_file])
     else:
       self.gs_mock.AddCmdResult(['ls', '--', src_url],
                                 side_effect=_RaiseGSNoSuchKey)
@@ -184,10 +205,11 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
                                                           self.build_branch,
                                                           self.old_version)
     self.assertTrue(subpaths)
-    self.assertEquals(len(subpaths), 3)
+    self.assertEquals(len(subpaths), 4)
     self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-userdebug25')
     self.assertEquals(subpaths['X86'], 'linux-cheets_x86-userdebug25')
     self.assertEquals(subpaths['CTS'], 'linux-cts25')
+    self.assertEquals(subpaths['SDK_TOOLS'], 'linux-static_sdk_tools25')
 
     subpaths = cros_mark_android_as_stable.IsBuildIdValid(self.bucket_url,
                                                           self.build_branch,
@@ -220,10 +242,11 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
         self.bucket_url, self.build_branch)
     self.assertEqual(version, self.new_version)
     self.assertTrue(subpaths)
-    self.assertEquals(len(subpaths), 3)
+    self.assertEquals(len(subpaths), 4)
     self.assertEquals(subpaths['ARM'], 'linux-cheets_arm-userdebug100')
     self.assertEquals(subpaths['X86'], 'linux-cheets_x86-userdebug100')
     self.assertEquals(subpaths['CTS'], 'linux-cts100')
+    self.assertEquals(subpaths['SDK_TOOLS'], 'linux-static_sdk_tools100')
 
   def testCopyToArcBucket(self):
     """Test copying of images to ARC bucket."""
