@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/surfaces/compositor_frame_sink_factory_impl.h"
+#include "components/mus/gpu/display_compositor/compositor_frame_sink_factory_impl.h"
 
 #include "base/memory/ptr_util.h"
 #include "cc/surfaces/surface_id.h"
-#include "components/mus/surfaces/compositor_frame_sink_impl.h"
+#include "components/mus/gpu/display_compositor/compositor_frame_sink_impl.h"
 
 namespace mus {
 namespace gpu {

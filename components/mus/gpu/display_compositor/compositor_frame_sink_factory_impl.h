@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_SURFACES_COMPOSITOR_FRAME_SINK_FACTORY_IMPL_H_
-#define COMPONENTS_MUS_SURFACES_COMPOSITOR_FRAME_SINK_FACTORY_IMPL_H_
+#ifndef COMPONENTS_MUS_GPU_DISPLAY_COMPOSITOR_COMPOSITOR_FRAME_SINK_FACTORY_IMPL_H_
+#define COMPONENTS_MUS_GPU_DISPLAY_COMPOSITOR_COMPOSITOR_FRAME_SINK_FACTORY_IMPL_H_
 
 #include "cc/surfaces/surface_id_allocator.h"
+#include "components/mus/gpu/display_compositor/compositor_frame_sink_delegate.h"
 #include "components/mus/public/interfaces/gpu/display_compositor.mojom.h"
-#include "components/mus/surfaces/compositor_frame_sink_delegate.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -52,4 +52,4 @@ class CompositorFrameSinkFactoryImpl : public mojom::CompositorFrameSinkFactory,
 }  // namespace gpu
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_SURFACES_COMPOSITOR_FRAME_SINK_FACTORY_IMPL_H_
+#endif  // COMPONENTS_MUS_GPU_DISPLAY_COMPOSITOR_COMPOSITOR_FRAME_SINK_FACTORY_IMPL_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_SURFACES_COMPOSITOR_FRAME_SINK_IMPL_H_
-#define COMPONENTS_MUS_SURFACES_COMPOSITOR_FRAME_SINK_IMPL_H_
+#ifndef COMPONENTS_MUS_GPU_DISPLAY_COMPOSITOR_COMPOSITOR_FRAME_SINK_IMPL_H_
+#define COMPONENTS_MUS_GPU_DISPLAY_COMPOSITOR_COMPOSITOR_FRAME_SINK_IMPL_H_
 
 #include "base/memory/ref_counted.h"
 #include "cc/scheduler/begin_frame_source.h"
@@ -71,4 +71,4 @@ class CompositorFrameSinkImpl : public cc::SurfaceFactoryClient,
 }  // namespace gpu
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_SURFACES_COMPOSITOR_FRAME_SINK_IMPL_H_
+#endif  // COMPONENTS_MUS_GPU_DISPLAY_COMPOSITOR_COMPOSITOR_FRAME_SINK_IMPL_H_

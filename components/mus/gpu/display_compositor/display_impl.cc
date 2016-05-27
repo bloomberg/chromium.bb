@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/surfaces/display_impl.h"
+#include "components/mus/gpu/display_compositor/display_impl.h"
 
-#include "components/mus/surfaces/compositor_frame_sink_impl.h"
+#include "components/mus/gpu/display_compositor/compositor_frame_sink_impl.h"
 
 namespace mus {
 namespace gpu {

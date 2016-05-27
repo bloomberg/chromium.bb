@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_SURFACES_DISPLAY_IMPL_H_
-#define COMPONENTS_MUS_SURFACES_DISPLAY_IMPL_H_
+#ifndef COMPONENTS_MUS_GPU_DISPLAY_COMPOSITOR_DISPLAY_IMPL_H_
+#define COMPONENTS_MUS_GPU_DISPLAY_COMPOSITOR_DISPLAY_IMPL_H_
 
+#include "components/mus/gpu/display_compositor/compositor_frame_sink_delegate.h"
 #include "components/mus/public/interfaces/gpu/display_compositor_host.mojom.h"
-#include "components/mus/surfaces/compositor_frame_sink_delegate.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -41,4 +41,4 @@ class DisplayImpl : public mojom::Display, public CompositorFrameSinkDelegate {
 }  // namespace gpu
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_SURFACES_DISPLAY_IMPL_H_
+#endif  // COMPONENTS_MUS_GPU_DISPLAY_COMPOSITOR_DISPLAY_IMPL_H_

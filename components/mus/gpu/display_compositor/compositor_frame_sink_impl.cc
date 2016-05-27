@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/surfaces/compositor_frame_sink_impl.h"
+#include "components/mus/gpu/display_compositor/compositor_frame_sink_impl.h"
 
 #include "cc/surfaces/surface_factory.h"
+#include "components/mus/gpu/display_compositor/compositor_frame_sink_delegate.h"
 #include "components/mus/public/cpp/surfaces/surfaces_type_converters.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
-#include "components/mus/surfaces/compositor_frame_sink_delegate.h"
 
 namespace mus {
 namespace gpu {

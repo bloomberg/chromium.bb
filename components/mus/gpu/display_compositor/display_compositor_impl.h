@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_SURFACES_DISPLAY_COMPOSITOR_IMPL_H_
-#define COMPONENTS_MUS_SURFACES_DISPLAY_COMPOSITOR_IMPL_H_
+#ifndef COMPONENTS_MUS_GPU_DISPLAY_COMPOSITOR_DISPLAY_COMPOSITOR_IMPL_H_
+#define COMPONENTS_MUS_GPU_DISPLAY_COMPOSITOR_DISPLAY_COMPOSITOR_IMPL_H_
 
 #include "components/mus/public/interfaces/gpu/display_compositor.mojom.h"
 #include "components/mus/public/interfaces/gpu/display_compositor_host.mojom.h"
@@ -34,4 +34,4 @@ class DisplayCompositorImpl : public mojom::DisplayCompositor {
 }  // namespace gpu
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_SURFACES_DISPLAY_COMPOSITOR_IMPL_H_
+#endif  // COMPONENTS_MUS_GPU_DISPLAY_COMPOSITOR_DISPLAY_COMPOSITOR_IMPL_H_
