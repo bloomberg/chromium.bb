@@ -206,7 +206,7 @@ test("views_mus_unittests") {
 
   data_deps = [
     ":unittests_manifest",
-    "//mash/wm",
+    "//components/mus/test_wm",
   ]
 
   if (is_win) {
@@ -266,7 +266,7 @@ test("views_mus_interactive_ui_tests") {
 
   data_deps = [
     ":interactive_ui_tests_manifest",
-    "//mash/wm",
+    "//components/mus/test_wm",
   ]
 
   if (is_win) {

@@ -53,6 +53,7 @@ class TestWM : public shell::ShellClient,
   // mus::WindowTreeDelegate:
   void OnEmbed(mus::Window* root) override {
     root_ = root;
+    window_manager_client_->AddActivationParent(root_);
     mus::mojom::FrameDecorationValuesPtr frame_decoration_values =
         mus::mojom::FrameDecorationValues::New();
     frame_decoration_values->normal_client_area_insets =
