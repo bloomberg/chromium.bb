@@ -200,6 +200,19 @@ class PageTrackTest(unittest.TestCase):
     self.assertEquals(4, metrics['first_layout'])
     self.assertEquals(11, metrics['first_contentful_paint'])
 
+  def testExtractDefaultMetricsBestEffort(self):
+    metrics = puller._ExtractDefaultMetrics(LoadingTrace([
+        {'ph': 'R', 'ts': 10000, 'args': {'frame': '0'}, 'cat': _BLINK_CAT,
+            'name': _UNLOAD},
+        {'ph': 'R', 'ts': 11000, 'args': {'frame': '0'}, 'cat': 'whatever',
+            'name': _START}]))
+    self.assertEquals(4, len(metrics))
+    self.assertEquals(puller._FAILED_CSV_VALUE, metrics['total_load'])
+    self.assertEquals(puller._FAILED_CSV_VALUE, metrics['js_onload_event'])
+    self.assertEquals(puller._FAILED_CSV_VALUE, metrics['first_layout'])
+    self.assertEquals(puller._FAILED_CSV_VALUE,
+                      metrics['first_contentful_paint'])
+
   def testExtractMemoryMetrics(self):
     metrics = puller._ExtractMemoryMetrics(LoadingTrace(
         _MINIMALIST_TRACE_EVENTS))

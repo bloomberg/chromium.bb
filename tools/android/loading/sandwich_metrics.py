@@ -162,21 +162,24 @@ def _ExtractDefaultMetrics(loading_trace):
   Returns:
     Dictionary with all trace extracted fields set.
   """
+  END_REQUEST_EVENTS = [
+      ('first_layout', 'requestStart', 'firstLayout'),
+      ('first_contentful_paint', 'requestStart', 'firstContentfulPaint'),
+      ('total_load', 'requestStart', 'loadEventEnd'),
+      ('js_onload_event', 'loadEventStart', 'loadEventEnd')]
   web_page_tracked_events = _GetWebPageTrackedEvents(
       loading_trace.tracing_track)
-  assert len(web_page_tracked_events) == len(_TRACKED_EVENT_NAMES)
-  request_start_time = web_page_tracked_events['requestStart'].start_msec
-  return {
-    'first_layout': (web_page_tracked_events['firstLayout'].start_msec -
-                     request_start_time),
-    'first_contentful_paint': (
-        web_page_tracked_events['firstContentfulPaint'].start_msec -
-        request_start_time),
-    'total_load': (web_page_tracked_events['loadEventEnd'].start_msec -
-                   request_start_time),
-    'js_onload_event': (web_page_tracked_events['loadEventEnd'].start_msec -
-                        web_page_tracked_events['loadEventStart'].start_msec)
-  }
+  metrics = {}
+  for metric_name, start_event_name, end_event_name in END_REQUEST_EVENTS:
+    try:
+      metrics[metric_name] = (
+          web_page_tracked_events[end_event_name].start_msec -
+          web_page_tracked_events[start_event_name].start_msec)
+    except KeyError as error:
+      logging.error('could not extract metric %s: missing trace event: %s' % (
+          metric_name, str(error)))
+      metrics[metric_name] = _FAILED_CSV_VALUE
+  return metrics
 
 
 def _ExtractMemoryMetrics(loading_trace):
