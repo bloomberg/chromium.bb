@@ -82,15 +82,6 @@ class MemoryBenchmarkTop10Mobile(_MemoryInfra):
         'com.google.android.deskclock')
 
 
-#TODO(perezju): Remove when all bots are updated to the new benchmark name.
-@benchmark.Disabled('all')
-class MemoryHealthPlan(MemoryBenchmarkTop10Mobile):
-  """Alias of memory.top_10_mobile. (Deprecated)"""
-  @classmethod
-  def Name(cls):
-    return 'memory.memory_health_plan'
-
-
 # TODO(bashi): Workaround for http://crbug.com/532075.
 # @benchmark.Enabled('android') shouldn't be needed.
 @benchmark.Enabled('android')
