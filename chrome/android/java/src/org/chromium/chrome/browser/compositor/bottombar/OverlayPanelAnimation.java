@@ -36,40 +36,29 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      */
     public static final long BASE_ANIMATION_DURATION_MS = 218;
 
-    /**
-     * The maximum animation duration in milliseconds.
-     */
+    /** The maximum animation duration in milliseconds. */
     public static final long MAXIMUM_ANIMATION_DURATION_MS = 350;
 
-    /**
-     * The minimum animation duration in milliseconds.
-     */
+    /** The minimum animation duration in milliseconds. */
     private static final long MINIMUM_ANIMATION_DURATION_MS = Math.round(7 * 1000 / 60);
 
-    /**
-     * Average animation velocity in dps per second.
-     */
+    /** Average animation velocity in dps per second. */
     private static final float INITIAL_ANIMATION_VELOCITY_DP_PER_SECOND = 1750f;
 
-    /**
-     * The PanelState to which the Panel is being animated.
-     */
+    /** The PanelState to which the Panel is being animated. */
     private PanelState mAnimatingState;
 
-    /**
-     * The StateChangeReason for which the Panel is being animated.
-     */
+    /** The StateChangeReason for which the Panel is being animated. */
     private StateChangeReason mAnimatingStateReason;
 
-    /**
-     * The animation set.
-     */
+    /** The animation set. */
     private ChromeAnimation<Animatable<?>> mLayoutAnimations;
 
-    /**
-     * The {@link LayoutUpdateHost} used to request a new frame to be updated and rendered.
-     */
+    /** The {@link LayoutUpdateHost} used to request a new frame to be updated and rendered. */
     private final LayoutUpdateHost mUpdateHost;
+
+    /** Whether there are animations in progress. */
+    private boolean mAnimationInProgress = false;
 
     // ============================================================================================
     // Constructor
@@ -389,7 +378,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      */
     public boolean onUpdateAnimation(long time, boolean jumpToEnd) {
         boolean finished = true;
-        if (mLayoutAnimations != null) {
+        if (mLayoutAnimations != null && mAnimationInProgress) {
             if (jumpToEnd) {
                 finished = mLayoutAnimations.finished();
                 mLayoutAnimations.updateAndFinish();
@@ -402,6 +391,8 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
                 onAnimationFinished();
             }
             requestUpdate();
+
+            mAnimationInProgress = !finished;
         }
         return finished;
     }
@@ -478,6 +469,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      * already finished or doesn't exist, the animation set is also started.
      */
     protected void addToAnimation(ChromeAnimation.Animation<Animatable<?>> component) {
+        mAnimationInProgress = true;
         if (mLayoutAnimations == null || mLayoutAnimations.finished()) {
             onAnimationStarted();
             mLayoutAnimations = new ChromeAnimation<Animatable<?>>();
