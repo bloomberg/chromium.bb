@@ -12,7 +12,6 @@
 
 using mus::mojom::Pass;
 using mus::mojom::PassPtr;
-using mus::mojom::RenderPassId;
 using mus::mojom::SharedQuadState;
 using mus::mojom::SharedQuadStatePtr;
 
@@ -33,10 +32,10 @@ SharedQuadStatePtr CreateDefaultSQS(const gfx::Size& size) {
 
 PassPtr CreateDefaultPass(int id, const gfx::Rect& rect) {
   PassPtr pass = Pass::New();
-  RenderPassId render_pass_id;
+  cc::RenderPassId render_pass_id;
   render_pass_id.layer_id = 1;
   render_pass_id.index = id;
-  pass->id = render_pass_id.Clone();
+  pass->id = render_pass_id;
   pass->output_rect = Rect::From(rect);
   pass->damage_rect = Rect::From(rect);
   pass->transform_to_root_target = Transform::From(gfx::Transform());

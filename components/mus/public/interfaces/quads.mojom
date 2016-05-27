@@ -4,6 +4,7 @@
 
 module mus.mojom;
 
+import "cc/ipc/render_pass_id.mojom";
 import "cc/ipc/surface_id.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -31,13 +32,8 @@ struct DebugBorderQuadState {
 // TODO(jamesr): Populate subtype fields.
 struct IoSurfaceContentQuadState {};
 
-struct RenderPassId {
-  int32 layer_id;
-  uint32 index;
-};
-
 struct RenderPassQuadState {
-  RenderPassId render_pass_id;
+  cc.mojom.RenderPassId render_pass_id;
 
   // If nonzero, resource id of mask to use when drawing this pass.
   uint32 mask_resource_id;
@@ -220,7 +216,7 @@ struct SharedQuadState {
 };
 
 struct Pass {
-  RenderPassId id;
+  cc.mojom.RenderPassId id;
   mojo.Rect output_rect;
   mojo.Rect damage_rect;
   mojo.Transform transform_to_root_target;

@@ -43,18 +43,6 @@ struct MOJO_SURFACES_EXPORT TypeConverter<SkColor, mus::mojom::ColorPtr> {
 };
 
 template <>
-struct MOJO_SURFACES_EXPORT
-    TypeConverter<mus::mojom::RenderPassIdPtr, cc::RenderPassId> {
-  static mus::mojom::RenderPassIdPtr Convert(const cc::RenderPassId& input);
-};
-
-template <>
-struct MOJO_SURFACES_EXPORT
-    TypeConverter<cc::RenderPassId, mus::mojom::RenderPassIdPtr> {
-  static cc::RenderPassId Convert(const mus::mojom::RenderPassIdPtr& input);
-};
-
-template <>
 struct MOJO_SURFACES_EXPORT TypeConverter<mus::mojom::QuadPtr, cc::DrawQuad> {
   static mus::mojom::QuadPtr Convert(const cc::DrawQuad& input);
 };

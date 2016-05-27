@@ -40,8 +40,6 @@ using mus::mojom::Pass;
 using mus::mojom::PassPtr;
 using mus::mojom::Quad;
 using mus::mojom::QuadPtr;
-using mus::mojom::RenderPassId;
-using mus::mojom::RenderPassIdPtr;
 using mus::mojom::RenderPassQuadState;
 using mus::mojom::RenderPassQuadStatePtr;
 using mus::mojom::ResourceFormat;
@@ -132,12 +130,9 @@ bool ConvertDrawQuad(const QuadPtr& input,
       gfx::PointF filter_scale_as_point =
           render_pass_quad_state->filters_scale.To<gfx::PointF>();
       render_pass_quad->SetAll(
-          sqs,
-          input->rect.To<gfx::Rect>(),
-          input->opaque_rect.To<gfx::Rect>(),
-          input->visible_rect.To<gfx::Rect>(),
-          input->needs_blending,
-          render_pass_quad_state->render_pass_id.To<cc::RenderPassId>(),
+          sqs, input->rect.To<gfx::Rect>(), input->opaque_rect.To<gfx::Rect>(),
+          input->visible_rect.To<gfx::Rect>(), input->needs_blending,
+          render_pass_quad_state->render_pass_id,
           render_pass_quad_state->mask_resource_id,
           mask_uv_scale_as_point.OffsetFromOrigin(),
           render_pass_quad_state->mask_texture_size.To<gfx::Size>(),
@@ -260,23 +255,6 @@ SkColor TypeConverter<SkColor, ColorPtr>::Convert(const ColorPtr& input) {
 }
 
 // static
-RenderPassIdPtr TypeConverter<RenderPassIdPtr, cc::RenderPassId>::Convert(
-    const cc::RenderPassId& input) {
-  RenderPassIdPtr pass_id(RenderPassId::New());
-  pass_id->layer_id = input.layer_id;
-  DCHECK_LE(input.index,
-            static_cast<size_t>(std::numeric_limits<uint32_t>::max()));
-  pass_id->index = static_cast<uint32_t>(input.index);
-  return pass_id;
-}
-
-// static
-cc::RenderPassId TypeConverter<cc::RenderPassId, RenderPassIdPtr>::Convert(
-    const RenderPassIdPtr& input) {
-  return cc::RenderPassId(input->layer_id, input->index);
-}
-
-// static
 QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
     const cc::DrawQuad& input) {
   QuadPtr quad = Quad::New();
@@ -304,8 +282,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
       const cc::RenderPassDrawQuad* render_pass_quad =
           cc::RenderPassDrawQuad::MaterialCast(&input);
       RenderPassQuadStatePtr pass_state = RenderPassQuadState::New();
-      pass_state->render_pass_id =
-          RenderPassId::From(render_pass_quad->render_pass_id);
+      pass_state->render_pass_id = render_pass_quad->render_pass_id;
       pass_state->mask_resource_id = render_pass_quad->mask_resource_id();
       pass_state->mask_uv_scale = PointF::From(
           gfx::PointAtOffsetFromOrigin(render_pass_quad->mask_uv_scale));
@@ -417,7 +394,7 @@ TypeConverter<mus::mojom::SharedQuadStatePtr, cc::SharedQuadState>::Convert(
 PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
     const cc::RenderPass& input) {
   PassPtr pass = Pass::New();
-  pass->id = RenderPassId::From(input.id);
+  pass->id = input.id;
   pass->output_rect = Rect::From(input.output_rect);
   pass->damage_rect = Rect::From(input.damage_rect);
   pass->transform_to_root_target =
@@ -457,8 +434,7 @@ std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
     CustomSurfaceConverter* custom_converter) {
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create(
       input->shared_quad_states.size(), input->quads.size());
-  pass->SetAll(input->id.To<cc::RenderPassId>(),
-               input->output_rect.To<gfx::Rect>(),
+  pass->SetAll(input->id, input->output_rect.To<gfx::Rect>(),
                input->damage_rect.To<gfx::Rect>(),
                input->transform_to_root_target.To<gfx::Transform>(),
                input->has_transparent_background);

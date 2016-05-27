@@ -35,8 +35,6 @@ using mus::mojom::Pass;
 using mus::mojom::PassPtr;
 using mus::mojom::Quad;
 using mus::mojom::QuadPtr;
-using mus::mojom::RenderPassId;
-using mus::mojom::RenderPassIdPtr;
 using mus::mojom::RenderPassQuadState;
 using mus::mojom::RenderPassQuadStatePtr;
 using mus::mojom::ResourceFormat;
@@ -173,9 +171,8 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
   mus_texture_state->background_color = Color::New();
   mus_texture_quad->texture_quad_state = std::move(mus_texture_state);
   PassPtr mus_pass = Pass::New();
-  mus_pass->id = RenderPassId::New();
-  mus_pass->id->layer_id = 1;
-  mus_pass->id->index = 1u;
+  mus_pass->id.layer_id = 1;
+  mus_pass->id.index = 1u;
   mus_pass->quads.push_back(std::move(mus_texture_quad));
   SharedQuadStatePtr mus_sqs = SharedQuadState::New();
   mus_pass->shared_quad_states.push_back(std::move(mus_sqs));
@@ -193,9 +190,8 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyBackgroundColor) {
   mus_texture_state->vertex_opacity = mojo::Array<float>::New(4);
   mus_texture_quad->texture_quad_state = std::move(mus_texture_state);
   PassPtr mus_pass = Pass::New();
-  mus_pass->id = RenderPassId::New();
-  mus_pass->id->layer_id = 1;
-  mus_pass->id->index = 1u;
+  mus_pass->id.layer_id = 1;
+  mus_pass->id.index = 1u;
   mus_pass->quads.push_back(std::move(mus_texture_quad));
   SharedQuadStatePtr mus_sqs = SharedQuadState::New();
   mus_pass->shared_quad_states.push_back(std::move(mus_sqs));
@@ -304,7 +300,7 @@ TEST(SurfaceLibTest, RenderPass) {
 
   PassPtr mus_pass = Pass::From(*pass);
   ASSERT_FALSE(mus_pass.is_null());
-  EXPECT_EQ(6u, mus_pass->id->index);
+  EXPECT_EQ(6u, mus_pass->id.index);
   EXPECT_TRUE(Rect::From(output_rect).Equals(mus_pass->output_rect));
   EXPECT_TRUE(Rect::From(damage_rect).Equals(mus_pass->damage_rect));
   EXPECT_TRUE(Transform::From(transform_to_root_target)

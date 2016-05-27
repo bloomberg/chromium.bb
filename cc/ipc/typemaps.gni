@@ -2,4 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//cc/ipc/surface_id.typemap" ]
+typemaps = [
+  "//cc/ipc/render_pass_id.typemap",
+  "//cc/ipc/surface_id.typemap",
+]

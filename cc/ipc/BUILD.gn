@@ -36,6 +36,7 @@ component("ipc") {
 
 mojom("interfaces") {
   sources = [
+    "render_pass_id.mojom",
     "surface_id.mojom",
   ]
 }
