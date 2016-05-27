@@ -229,15 +229,17 @@ void WallpaperSetWallpaperFunction::GenerateThumbnail(
 void WallpaperSetWallpaperFunction::ThumbnailGenerated(
     base::RefCountedBytes* original_data,
     base::RefCountedBytes* thumbnail_data) {
-  BinaryValue* original_result = BinaryValue::CreateWithCopiedBuffer(
-      reinterpret_cast<const char*>(original_data->front()),
-      original_data->size());
-  BinaryValue* thumbnail_result = BinaryValue::CreateWithCopiedBuffer(
-      reinterpret_cast<const char*>(thumbnail_data->front()),
-      thumbnail_data->size());
+  std::unique_ptr<BinaryValue> original_result =
+      base::WrapUnique(BinaryValue::CreateWithCopiedBuffer(
+          reinterpret_cast<const char*>(original_data->front()),
+          original_data->size()));
+  std::unique_ptr<BinaryValue> thumbnail_result =
+      base::WrapUnique(BinaryValue::CreateWithCopiedBuffer(
+          reinterpret_cast<const char*>(thumbnail_data->front()),
+          thumbnail_data->size()));
 
   if (params_->details.thumbnail) {
-    SetResult(base::WrapUnique(thumbnail_result));
+    SetResult(base::WrapUnique(thumbnail_result->DeepCopy()));
     SendResponse(true);
   }
 
@@ -248,8 +250,8 @@ void WallpaperSetWallpaperFunction::ThumbnailGenerated(
     extensions::EventRouter* event_router =
         extensions::EventRouter::Get(profile);
     std::unique_ptr<base::ListValue> event_args(new base::ListValue());
-    event_args->Append(original_result);
-    event_args->Append(thumbnail_result);
+    event_args->Append(original_result->DeepCopy());
+    event_args->Append(thumbnail_result->DeepCopy());
     event_args->Append(new base::StringValue(
         extensions::api::wallpaper::ToString(params_->details.layout)));
     // Setting wallpaper from right click menu in 'Files' app is a feature that
