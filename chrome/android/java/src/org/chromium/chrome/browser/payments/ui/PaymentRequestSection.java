@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
 import android.text.style.StyleSpan;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridLayout;
@@ -24,6 +25,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -292,10 +294,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
     private ImageView createAndAddChevron(ViewGroup parent) {
         Resources resources = parent.getResources();
-        TintedDrawable chevron =
-                TintedDrawable.constructTintedDrawable(resources, R.drawable.ic_expanded);
-        chevron.setTint(ApiCompatibilityUtils.getColorStateList(
-                resources, R.color.payments_section_chevron));
+        TintedDrawable chevron = TintedDrawable.constructTintedDrawable(
+                resources, R.drawable.ic_expanded, R.color.payments_section_chevron);
 
         ImageView view = new ImageView(parent.getContext());
         view.setImageDrawable(chevron);
@@ -507,50 +507,90 @@ public abstract class PaymentRequestSection extends LinearLayout {
      */
     public static class OptionSection extends PaymentRequestSection implements OnClickListener {
         /** Displays a row representing a selectable option. */
-        private class OptionRow extends LinearLayout {
+        private class OptionRow {
             private final PaymentOption mOption;
-            private final RadioButton mRadioButton;
+            private final View mButton;
+            private final TextView mLabel;
+            private final View mIcon;
 
-            public OptionRow(Context context, PaymentOption item, boolean isSelected) {
-                super(context);
-                setGravity(Gravity.CENTER_VERTICAL);
+            public OptionRow(
+                    GridLayout parent, int rowIndex, PaymentOption item, boolean isSelected) {
+                boolean iconExists = item != null && item.getDrawableIconId() != 0;
                 mOption = item;
-
-                // The radio button hugs left.
-                mRadioButton = new RadioButton(context);
-                mRadioButton.setChecked(isSelected);
-                LinearLayout.LayoutParams radioParams = new LinearLayout.LayoutParams(
-                        LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-                ApiCompatibilityUtils.setMarginEnd(radioParams, mLargeSpacing);
-                addView(mRadioButton, radioParams);
-
-                // The description takes up all leftover space.
-                TextView descriptionView = new TextView(context);
-                descriptionView.setText(convertOptionToString(item));
-                ApiCompatibilityUtils.setTextAppearance(
-                        descriptionView, R.style.PaymentsUiSectionDefaultText);
-                LinearLayout.LayoutParams descriptionParams =
-                        new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT);
-                descriptionParams.weight = 1;
-                addView(descriptionView, descriptionParams);
-
-                // If there's an icon to display, it floats to the right of everything.
-                int resourceId = item.getDrawableIconId();
-                if (resourceId != 0) createAndAddLogoView(this, resourceId, mLargeSpacing);
-
-                // Making the radio button unclickable makes clicks fall through to the row.
-                mRadioButton.setClickable(false);
-                setOnClickListener(OptionSection.this);
+                mButton = createButton(parent, rowIndex, isSelected);
+                mLabel = createLabel(parent, rowIndex, iconExists);
+                mIcon = iconExists ? createIcon(parent, rowIndex) : null;
             }
 
             /** Sets the selected state of this item, alerting the delegate if selected. */
             public void setChecked(boolean isChecked) {
-                mRadioButton.setChecked(isChecked);
+                if (mOption == null) return;
 
+                ((RadioButton) mButton).setChecked(isChecked);
                 if (isChecked) {
                     updateSelectedItem(mOption);
                     mDelegate.onPaymentOptionChanged(OptionSection.this, mOption);
                 }
+            }
+
+            private View createButton(GridLayout parent, int rowIndex, boolean isSelected) {
+                Context context = parent.getContext();
+
+                // Show a radio button indicating whether the PaymentOption is selected.
+                RadioButton button = new RadioButton(context);
+                button.setChecked(isSelected);
+                View view = button;
+
+                // The button hugs left.
+                GridLayout.LayoutParams buttonParams = new GridLayout.LayoutParams(
+                        GridLayout.spec(rowIndex, 1, GridLayout.CENTER),
+                        GridLayout.spec(0, 1, GridLayout.CENTER));
+                buttonParams.topMargin = mVerticalMargin;
+                ApiCompatibilityUtils.setMarginEnd(buttonParams, mLargeSpacing);
+                parent.addView(view, buttonParams);
+
+                view.setOnClickListener(OptionSection.this);
+                return view;
+            }
+
+            private TextView createLabel(GridLayout parent, int rowIndex, boolean iconExists) {
+                Context context = parent.getContext();
+
+                // Show the string representing the PaymentOption.
+                TextView labelView = new TextView(context);
+                ApiCompatibilityUtils.setTextAppearance(
+                        labelView, R.style.PaymentsUiSectionDefaultText);
+                labelView.setText(convertOptionToString(mOption));
+
+                // The label spans two columns if no icon exists.  Setting the view width to 0
+                // forces it to stretch.
+                GridLayout.LayoutParams labelParams = new GridLayout.LayoutParams(
+                        GridLayout.spec(rowIndex, 1, GridLayout.CENTER),
+                        GridLayout.spec(1, iconExists ? 1 : 2, GridLayout.FILL));
+                labelParams.topMargin = mVerticalMargin;
+                labelParams.width = 0;
+                parent.addView(labelView, labelParams);
+
+                labelView.setOnClickListener(OptionSection.this);
+                return labelView;
+            }
+
+            private View createIcon(GridLayout parent, int rowIndex) {
+                // The icon has a pre-defined width.
+                ImageView icon = new ImageView(parent.getContext());
+                icon.setBackgroundResource(R.drawable.payments_ui_logo_bg);
+                icon.setImageResource(mOption.getDrawableIconId());
+                icon.setMaxWidth(mIconMaxWidth);
+
+                // The icon floats to the right of everything.
+                GridLayout.LayoutParams iconParams = new GridLayout.LayoutParams(
+                        GridLayout.spec(rowIndex, 1, GridLayout.CENTER), GridLayout.spec(2, 1));
+                iconParams.topMargin = mVerticalMargin;
+                ApiCompatibilityUtils.setMarginStart(iconParams, mLargeSpacing);
+                parent.addView(icon, iconParams);
+
+                icon.setOnClickListener(OptionSection.this);
+                return icon;
             }
         }
 
@@ -560,8 +600,14 @@ public abstract class PaymentRequestSection extends LinearLayout {
         /** Top and bottom margins for each item. */
         private final int mVerticalMargin;
 
+        /** All the possible PaymentOptions in Layout form. */
+        private final ArrayList<OptionRow> mOptionRows = new ArrayList<OptionRow>();
+
+        /** Width that the icon takes. */
+        private final int mIconMaxWidth;
+
         /** Layout containing all the {@link OptionRow}s. */
-        private LinearLayout mOptionLayout;
+        private GridLayout mOptionLayout;
 
         /**
          * Constructs an OptionSection.
@@ -577,6 +623,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
             mVerticalMargin = context.getResources().getDimensionPixelSize(
                     R.dimen.payments_section_small_spacing);
             mEmptyLabel = emptyLabel;
+            mIconMaxWidth = context.getResources().getDimensionPixelSize(
+                    R.dimen.payments_section_logo_width);
             setSummaryText(emptyLabel, null);
         }
 
@@ -584,10 +632,18 @@ public abstract class PaymentRequestSection extends LinearLayout {
         public void onClick(View v) {
             if (!mDelegate.isAcceptingUserInput()) return;
 
-            for (int i = 0; i < mOptionLayout.getChildCount(); i++) {
-                OptionRow row = (OptionRow) mOptionLayout.getChildAt(i);
-                row.setChecked(v == row || v == row.mRadioButton);
+            for (int i = 0; i < mOptionRows.size(); i++) {
+                OptionRow row = mOptionRows.get(i);
+
+                boolean wasClicked = row.mButton == v || row.mLabel == v || row.mIcon == v;
+                row.setChecked(wasClicked);
             }
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(MotionEvent event) {
+            // Allow touches to propagate to children only if the layout can be interacted with.
+            return !mDelegate.isAcceptingUserInput();
         }
 
         @Override
@@ -599,8 +655,8 @@ public abstract class PaymentRequestSection extends LinearLayout {
         protected void createMainSectionContent(LinearLayout mainSectionLayout) {
             Context context = mainSectionLayout.getContext();
 
-            mOptionLayout = new LinearLayout(context);
-            mOptionLayout.setOrientation(VERTICAL);
+            mOptionLayout = new GridLayout(context);
+            mOptionLayout.setColumnCount(3);
             mainSectionLayout.addView(mOptionLayout, new LinearLayout.LayoutParams(
                     LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         }
@@ -641,16 +697,12 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
         private void updateOptionList(SectionInformation information, PaymentOption selectedItem) {
             mOptionLayout.removeAllViews();
-            if (information.isEmpty()) return;
+            mOptionRows.clear();
 
+            // List out known payment options.
             for (int i = 0; i < information.getSize(); i++) {
                 PaymentOption item = information.getItem(i);
-                OptionRow row = new OptionRow(getContext(), item, item == selectedItem);
-                LinearLayout.LayoutParams rowParams = new LinearLayout.LayoutParams(
-                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-                rowParams.topMargin = mVerticalMargin;
-                rowParams.bottomMargin = mVerticalMargin;
-                mOptionLayout.addView(row, rowParams);
+                mOptionRows.add(new OptionRow(mOptionLayout, i, item, item == selectedItem));
             }
         }
 
