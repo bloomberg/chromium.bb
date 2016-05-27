@@ -1984,6 +1984,8 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
         EXPECT_EQ(1.25f, impl->active_tree()->current_page_scale_factor());
         EndTest();
         break;
+      case 3:
+        break;
       default:
         NOTREACHED();
     }

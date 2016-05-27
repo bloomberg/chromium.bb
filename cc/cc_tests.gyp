@@ -264,6 +264,8 @@
       'test/pixel_comparator.h',
       'test/pixel_test.cc',
       'test/pixel_test.h',
+      'test/pixel_test_delegating_output_surface.cc',
+      'test/pixel_test_delegating_output_surface.h',
       'test/pixel_test_output_surface.cc',
       'test/pixel_test_output_surface.h',
       'test/pixel_test_software_output_device.cc',

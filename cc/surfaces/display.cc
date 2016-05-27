@@ -57,8 +57,7 @@ Display::Display(DisplayClient* client,
       device_scale_factor_(1.f),
       swapped_since_resize_(false),
       vsync_begin_frame_source_(nullptr),
-      observed_begin_frame_source_(nullptr),
-      texture_mailbox_deleter_(new TextureMailboxDeleter(nullptr)) {
+      observed_begin_frame_source_(nullptr) {
   surface_manager_->AddObserver(this);
 }
 
@@ -103,10 +102,24 @@ void Display::CreateScheduler(base::SingleThreadTaskRunner* task_runner) {
 
 bool Display::Initialize(std::unique_ptr<OutputSurface> output_surface,
                          base::SingleThreadTaskRunner* task_runner) {
+  DCHECK(!output_surface_);
   output_surface_ = std::move(output_surface);
   if (!output_surface_->BindToClient(this))
     return false;
+  texture_mailbox_deleter_.reset(new TextureMailboxDeleter(task_runner));
   CreateScheduler(task_runner);
+  return true;
+}
+
+bool Display::InitializeSynchronous(
+    std::unique_ptr<OutputSurface> output_surface,
+    base::SingleThreadTaskRunner* task_runner) {
+  DCHECK(!output_surface_);
+  output_surface_ = std::move(output_surface);
+  if (!output_surface_->BindToClient(this))
+    return false;
+  texture_mailbox_deleter_.reset(new TextureMailboxDeleter(task_runner));
+  // No scheduler created here.
   return true;
 }
 
@@ -200,6 +213,8 @@ void Display::InitializeRenderer() {
       return;
     renderer_ = std::move(renderer);
   }
+
+  renderer_->SetEnlargePassTextureAmount(enlarge_texture_amount_);
 
   resource_provider_ = std::move(resource_provider);
   // TODO(jbauman): Outputting an incomplete quad list doesn't work when using

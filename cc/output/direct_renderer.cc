@@ -141,11 +141,6 @@ DirectRenderer::DirectRenderer(RendererClient* client,
 
 DirectRenderer::~DirectRenderer() {}
 
-void DirectRenderer::SetEnlargePassTextureAmountForTesting(
-    const gfx::Vector2d& amount) {
-  enlarge_pass_texture_amount_ = amount;
-}
-
 void DirectRenderer::DecideRenderPassAllocationsForFrame(
     const RenderPassList& render_passes_in_draw_order) {
   std::unordered_map<RenderPassId, gfx::Size, RenderPassIdHash>
@@ -536,8 +531,8 @@ bool DirectRenderer::UseRenderPass(DrawingFrame* frame,
   DCHECK(texture);
 
   gfx::Size size = RenderPassTextureSize(render_pass);
-  size.Enlarge(enlarge_pass_texture_amount_.x(),
-               enlarge_pass_texture_amount_.y());
+  size.Enlarge(enlarge_pass_texture_amount_.width(),
+               enlarge_pass_texture_amount_.height());
   if (!texture->id()) {
     texture->Allocate(size,
                       ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER,

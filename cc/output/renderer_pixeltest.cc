@@ -1702,7 +1702,7 @@ TYPED_TEST(RendererPixelTest, EnlargedRenderPassTexture) {
   pass_list.push_back(std::move(child_pass));
   pass_list.push_back(std::move(root_pass));
 
-  this->renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
+  this->renderer_->SetEnlargePassTextureAmount(gfx::Size(50, 75));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,
@@ -1764,7 +1764,7 @@ TYPED_TEST(RendererPixelTest, EnlargedRenderPassTextureWithAntiAliasing) {
   pass_list.push_back(std::move(child_pass));
   pass_list.push_back(std::move(root_pass));
 
-  this->renderer_->SetEnlargePassTextureAmountForTesting(gfx::Vector2d(50, 75));
+  this->renderer_->SetEnlargePassTextureAmount(gfx::Size(50, 75));
 
   EXPECT_TRUE(this->RunPixelTest(
       &pass_list,

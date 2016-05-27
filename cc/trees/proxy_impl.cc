@@ -309,9 +309,13 @@ void ProxyImpl::CommitVSyncParameters(base::TimeTicks timebase,
 }
 
 void ProxyImpl::SetBeginFrameSource(BeginFrameSource* source) {
-  // TODO(enne): this overrides any preexisting begin frame source.  Those
-  // other sources will eventually be removed and this will be the only path.
-  scheduler_->SetBeginFrameSource(source);
+  // During shutdown, destroying the OutputSurface may unset the
+  // BeginFrameSource.
+  if (scheduler_) {
+    // TODO(enne): this overrides any preexisting begin frame source.  Those
+    // other sources will eventually be removed and this will be the only path.
+    scheduler_->SetBeginFrameSource(source);
+  }
 }
 
 void ProxyImpl::SetEstimatedParentDrawTime(base::TimeDelta draw_time) {

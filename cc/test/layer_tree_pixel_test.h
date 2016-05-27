@@ -40,8 +40,8 @@ class LayerTreePixelTest : public LayerTreeTest {
   LayerTreePixelTest();
   ~LayerTreePixelTest() override;
 
+  void InitializeSettings(LayerTreeSettings* settings) override;
   std::unique_ptr<OutputSurface> CreateOutputSurface() override;
-  void WillCommitCompleteOnThread(LayerTreeHostImpl* impl) override;
 
   virtual std::unique_ptr<CopyOutputRequest> CreateCopyOutputRequest();
 
@@ -81,7 +81,7 @@ class LayerTreePixelTest : public LayerTreeTest {
 
   void Finish();
 
-  void set_enlarge_texture_amount(const gfx::Vector2d& enlarge_texture_amount) {
+  void set_enlarge_texture_amount(const gfx::Size& enlarge_texture_amount) {
     enlarge_texture_amount_ = enlarge_texture_amount;
   }
 
@@ -99,7 +99,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   std::unique_ptr<SkBitmap> result_bitmap_;
   std::vector<scoped_refptr<TextureLayer>> texture_layers_;
   int pending_texture_mailbox_callbacks_;
-  gfx::Vector2d enlarge_texture_amount_;
+  gfx::Size enlarge_texture_amount_;
 };
 
 }  // namespace cc

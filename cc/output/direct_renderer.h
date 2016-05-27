@@ -61,7 +61,12 @@ class CC_EXPORT DirectRenderer : public Renderer {
     CALayerOverlayList ca_layer_overlay_list;
   };
 
-  void SetEnlargePassTextureAmountForTesting(const gfx::Vector2d& amount);
+  // Allow tests to enlarge the texture size of non-root render passes to
+  // verify cases where the texture doesn't match the render pass size.
+  void SetEnlargePassTextureAmount(const gfx::Size& amount) {
+    enlarge_pass_texture_amount_ = amount;
+  }
+
   void DoDrawPolygon(const DrawPolygon& poly,
                      DrawingFrame* frame,
                      const gfx::Rect& render_pass_scissor,
@@ -162,7 +167,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
   gfx::Rect current_window_space_viewport_;
 
  private:
-  gfx::Vector2d enlarge_pass_texture_amount_;
+  gfx::Size enlarge_pass_texture_amount_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectRenderer);
 };

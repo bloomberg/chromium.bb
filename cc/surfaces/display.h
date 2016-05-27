@@ -61,6 +61,10 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
 
   bool Initialize(std::unique_ptr<OutputSurface> output_surface,
                   base::SingleThreadTaskRunner* task_runner);
+  // When this variant is used, no DisplayScheduler is created, and the caller
+  // is responsible for calling DrawAndSwap when required.
+  bool InitializeSynchronous(std::unique_ptr<OutputSurface> output_surface,
+                             base::SingleThreadTaskRunner* task_runner);
 
   // device_scale_factor is used to communicate to the external window system
   // what scale this was rendered at.
@@ -99,6 +103,11 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   // SurfaceDamageObserver implementation.
   void OnSurfaceDamaged(SurfaceId surface, bool* changed) override;
 
+  void SetEnlargePassTextureAmountForTesting(
+      const gfx::Size& enlarge_texture_amount) {
+    enlarge_texture_amount_ = enlarge_texture_amount;
+  }
+
  protected:
   // Virtual for tests.
   virtual void CreateScheduler(base::SingleThreadTaskRunner* task_runner);
@@ -117,6 +126,7 @@ class CC_SURFACES_EXPORT Display : public DisplaySchedulerClient,
   float device_scale_factor_;
   bool swapped_since_resize_;
   gfx::Rect external_clip_;
+  gfx::Size enlarge_texture_amount_;
   bool output_is_secure_ = false;
 
   std::unique_ptr<OutputSurface> output_surface_;

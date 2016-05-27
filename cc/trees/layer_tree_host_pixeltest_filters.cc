@@ -676,7 +676,7 @@ class EnlargedTextureWithAlphaThresholdFilter
     background->AddChild(filter_layer);
 
     // Force the allocation a larger textures.
-    set_enlarge_texture_amount(gfx::Vector2d(50, 50));
+    set_enlarge_texture_amount(gfx::Size(50, 50));
 
     RunPixelTest(test_type, background, image_name);
   }
@@ -728,7 +728,7 @@ class EnlargedTextureWithCropOffsetFilter
     background->AddChild(filter_layer);
 
     // Force the allocation a larger textures.
-    set_enlarge_texture_amount(gfx::Vector2d(50, 50));
+    set_enlarge_texture_amount(gfx::Size(50, 50));
 
     RunPixelTest(test_type, background, image_name);
   }
@@ -770,7 +770,7 @@ class BlurFilterWithClip : public LayerTreeHostFiltersPixelTest {
     filter_layer->SetFilters(filters);
 
     // Force the allocation a larger textures.
-    set_enlarge_texture_amount(gfx::Vector2d(50, 50));
+    set_enlarge_texture_amount(gfx::Size(50, 50));
 
 #if defined(OS_WIN)
     // Windows has 1880 pixels off by 1: crbug.com/259915
