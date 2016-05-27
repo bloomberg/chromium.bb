@@ -411,6 +411,13 @@ Tag: v1.1.4
 Revision: e9d582733fab4d0698c680047d7faaab1a35196c
 Tree link: https://github.com/PolymerElements/paper-toolbar/tree/v1.1.4
 
+Name: paper-tooltip
+Version: 1.1.2
+Repository: git://github.com/PolymerElements/paper-tooltip.git
+Tag: v1.1.2
+Revision: 6be894127678900f6e506b56fc9622ab768c03aa
+Tree link: https://github.com/PolymerElements/paper-tooltip/tree/v1.1.2
+
 Name: polymer
 Version: 1.4.0
 Repository: git://github.com/Polymer/polymer.git
