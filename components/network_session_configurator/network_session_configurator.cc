@@ -157,8 +157,7 @@ void ConfigureSpdyParams(const base::CommandLine& command_line,
 void ConfigureAltSvcParams(const base::CommandLine& command_line,
                            base::StringPiece altsvc_trial_group,
                            net::HttpNetworkSession::Params* params) {
-  if (command_line.HasSwitch(switches::kEnableAlternativeServices) ||
-      altsvc_trial_group.starts_with(kAltSvcFieldTrialEnabledPrefix)) {
+  if (altsvc_trial_group.starts_with(kAltSvcFieldTrialEnabledPrefix)) {
     params->parse_alternative_services = true;
     return;
   }
@@ -221,16 +220,10 @@ bool ShouldQuicDisableConnectionPooling(
 bool ShouldQuicEnableAlternativeServicesForDifferentHost(
     const base::CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
-  // TODO(bnc): Remove inaccurately named "use_alternative_services" parameter.
-  return command_line.HasSwitch(switches::kEnableAlternativeServices) ||
-         base::LowerCaseEqualsASCII(
-             GetVariationParam(quic_trial_params, "use_alternative_services"),
-             "true") ||
-         base::LowerCaseEqualsASCII(
-             GetVariationParam(
-                 quic_trial_params,
-                 "enable_alternative_service_with_different_host"),
-             "true");
+  return !base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params,
+                        "enable_alternative_service_with_different_host"),
+      "false");
 }
 
 bool ShouldEnableQuicPortSelection(const base::CommandLine& command_line) {
@@ -447,13 +440,9 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
   params->disable_quic_on_timeout_with_open_streams =
       ShouldDisableQuicWhenConnectionTimesOutWithOpenStreams(quic_trial_params);
 
-  if (ShouldQuicEnableAlternativeServicesForDifferentHost(command_line,
-                                                          quic_trial_params)) {
-    params->enable_alternative_service_with_different_host = true;
-    params->parse_alternative_services = true;
-  } else {
-    params->enable_alternative_service_with_different_host = false;
-  }
+  params->enable_alternative_service_with_different_host =
+      ShouldQuicEnableAlternativeServicesForDifferentHost(command_line,
+                                                          quic_trial_params);
 
   if (params->enable_quic) {
     params->quic_always_require_handshake_confirmation =

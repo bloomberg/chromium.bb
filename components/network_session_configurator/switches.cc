@@ -16,9 +16,6 @@ const char kDisableQuic[] = "disable-quic";
 // This only has an effect if QUIC protocol is enabled.
 const char kDisableQuicPortSelection[] = "disable-quic-port-selection";
 
-// Enables support for HTTP alternative services.
-const char kEnableAlternativeServices[] = "enable-alternative-services";
-
 // Enables the QUIC protocol.  This is a temporary testing flag.
 const char kEnableQuic[] = "enable-quic";
 

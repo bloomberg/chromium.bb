@@ -10,7 +10,6 @@ namespace switches {
 extern const char kDisableHttp2[];
 extern const char kDisableQuicPortSelection[];
 extern const char kDisableQuic[];
-extern const char kEnableAlternativeServices[];
 extern const char kEnableQuicPortSelection[];
 extern const char kEnableQuic[];
 extern const char kIgnoreCertificateErrors[];
