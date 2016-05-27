@@ -412,7 +412,7 @@ class LocalChromeController(ChromeControllerBase):
     self._using_temp_profile_dir = self._profile_dir is None
     if self._using_temp_profile_dir:
       self._profile_dir = tempfile.mkdtemp(suffix='.profile')
-    self._chrome_env_override = None
+    self._chrome_env_override = {}
     self._metadata['platform'] = {
         'os': platform.system()[0] + '-' + platform.release(),
         'product_model': 'unknown'
@@ -432,7 +432,14 @@ class LocalChromeController(ChromeControllerBase):
     chrome_path = OPTIONS.LocalBinary('chrome')
     for process in psutil.process_iter():
       try:
-        if process.exe() == chrome_path:
+        process_bin_path = None
+        # In old versions of psutil, process.exe is a member, in newer ones it's
+        # a method.
+        if type(process.exe) == str:
+          process_bin_path = process.exe
+        else:
+          process_bin_path = process.exe()
+        if os.path.abspath(process_bin_path) == os.path.abspath(chrome_path):
           process.terminate()
           killed_count += 1
           try:
@@ -475,7 +482,7 @@ class LocalChromeController(ChromeControllerBase):
         tempfile.NamedTemporaryFile(prefix="chrome_controller_", suffix='.log')
     chrome_process = None
     try:
-      chrome_env_override = self._chrome_env_override.copy() or {}
+      chrome_env_override = self._chrome_env_override.copy()
       if self._wpr_attributes:
         chrome_env_override.update(self._wpr_attributes.chrome_env_override)
 
