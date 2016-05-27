@@ -2245,11 +2245,6 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
         // Implied minimum size of Grid items.
         computedValues.m_extent = constrainLogicalWidthByMinMax(minPreferredLogicalWidth(), containerWidthInInlineDirection, cb);
     } else {
-        if (!hasPerpendicularContainingBlock && cb->isFlexItem() && styleToUse.logicalWidth().hasPercent() && !isOutOfFlowPositioned()) {
-            LayoutUnit stretchedWidth = toLayoutFlexibleBox(cb->parent())->childLogicalWidthForPercentageResolution(*cb);
-            if (stretchedWidth != LayoutUnit(-1))
-                containerWidthInInlineDirection = stretchedWidth;
-        }
         LayoutUnit preferredWidth = computeLogicalWidthUsing(MainOrPreferredSize, styleToUse.logicalWidth(), containerWidthInInlineDirection, cb);
         computedValues.m_extent = constrainLogicalWidthByMinMax(preferredWidth, containerWidthInInlineDirection, cb);
     }

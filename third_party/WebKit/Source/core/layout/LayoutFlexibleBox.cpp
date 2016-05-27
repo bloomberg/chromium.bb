@@ -761,7 +761,7 @@ bool LayoutFlexibleBox::mainAxisLengthIsDefinite(const LayoutBox& child, const L
     if (flexBasis.hasPercent()) {
         return isColumnFlow() ?
             child.computePercentageLogicalHeight(flexBasis) != -1 :
-            hasDefiniteLogicalWidth();
+            true;
     }
     return true;
 }
@@ -772,7 +772,7 @@ bool LayoutFlexibleBox::crossAxisLengthIsDefinite(const LayoutBox& child, const 
         return false;
     if (length.hasPercent()) {
         return hasOrthogonalFlow(child) ?
-            hasDefiniteLogicalWidth() :
+            true :
             child.computePercentageLogicalHeight(length) != -1;
     }
     // TODO(cbiesinger): Eventually we should support other types of sizes here. Requires updating
@@ -1107,40 +1107,6 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(const LayoutBox& child
     return std::max(childSize, minExtent);
 }
 
-LayoutUnit LayoutFlexibleBox::computeDefiniteLogicalWidth()
-{
-    const Length& widthLength = styleRef().logicalWidth();
-    if (widthLength.hasPercent() && !hasDefiniteLogicalWidth())
-        return LayoutUnit(-1);
-
-    if (widthLength.isAuto()) {
-        // We can still have a definite width even with width: auto if we're a flex item ourselves
-        if (!isFlexItem())
-            return LayoutUnit(-1);
-        return toLayoutFlexibleBox(parent())->childLogicalWidthForPercentageResolution(*this);
-    }
-    LogicalExtentComputedValues computedValues;
-    computeLogicalWidth(computedValues);
-    return computedValues.m_extent;
-}
-
-LayoutUnit LayoutFlexibleBox::computeDefiniteLogicalHeight()
-{
-    const Length& heightLength = styleRef().logicalHeight();
-    if (heightLength.hasPercent()) {
-        return computePercentageLogicalHeight(heightLength);
-    }
-    if (heightLength.isAuto()) {
-        // We can still have a definite height even with height: auto if we're a flex item ourselves
-        if (!isFlexItem())
-            return LayoutUnit(-1);
-        return toLayoutFlexibleBox(parent())->childLogicalHeightForPercentageResolution(*this);
-    }
-    LogicalExtentComputedValues computedValues;
-    computeLogicalHeight(LayoutUnit(-1), LayoutUnit(), computedValues);
-    return computedValues.m_extent;
-}
-
 LayoutUnit LayoutFlexibleBox::crossSizeForPercentageResolution(const LayoutBox& child)
 {
     if (alignmentForChild(child) != ItemPositionStretch)
@@ -1185,13 +1151,6 @@ LayoutUnit LayoutFlexibleBox::mainSizeForPercentageResolution(const LayoutBox& c
 LayoutUnit LayoutFlexibleBox::childLogicalHeightForPercentageResolution(const LayoutBox& child)
 {
     if (!hasOrthogonalFlow(child))
-        return crossSizeForPercentageResolution(child);
-    return mainSizeForPercentageResolution(child);
-}
-
-LayoutUnit LayoutFlexibleBox::childLogicalWidthForPercentageResolution(const LayoutBox& child)
-{
-    if (hasOrthogonalFlow(child))
         return crossSizeForPercentageResolution(child);
     return mainSizeForPercentageResolution(child);
 }
