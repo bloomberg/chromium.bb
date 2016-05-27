@@ -24,7 +24,7 @@ base::trace_event::BlameContext* GetParentBlameContext(
 
 const char kFrameBlameContextCategory[] = "blink";
 const char kFrameBlameContextName[] = "FrameBlameContext";
-const char kFrameBlameContextType[] = "Frame";
+const char kFrameBlameContextType[] = "RenderFrame";
 const char kFrameBlameContextScope[] = "RenderFrame";
 
 FrameBlameContext::FrameBlameContext(RenderFrameImpl* render_frame,
