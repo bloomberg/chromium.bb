@@ -2122,6 +2122,8 @@
       'data/ssl/certificates/reject_intranet_hosts.pem',
       'data/ssl/certificates/root_ca_cert.pem',
       'data/ssl/certificates/salesforce_com_test.pem',
+      'data/ssl/certificates/self-signed-invalid-name.pem',
+      'data/ssl/certificates/self-signed-invalid-sig.pem',
       'data/ssl/certificates/sha1_2016.pem',
       'data/ssl/certificates/sha1_dec_2015.pem',
       'data/ssl/certificates/sha1_jan_2016.pem',

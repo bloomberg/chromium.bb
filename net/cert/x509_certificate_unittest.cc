@@ -748,6 +748,16 @@ TEST(X509CertificateTest, IsSelfSigned) {
       ImportCertFromFile(certs_dir, "aia-root.pem"));
   ASSERT_NE(static_cast<X509Certificate*>(NULL), self_signed.get());
   EXPECT_TRUE(X509Certificate::IsSelfSigned(self_signed->os_cert_handle()));
+
+  scoped_refptr<X509Certificate> bad_name(
+      ImportCertFromFile(certs_dir, "self-signed-invalid-name.pem"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), bad_name.get());
+  EXPECT_FALSE(X509Certificate::IsSelfSigned(bad_name->os_cert_handle()));
+
+  scoped_refptr<X509Certificate> bad_sig(
+      ImportCertFromFile(certs_dir, "self-signed-invalid-sig.pem"));
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), bad_sig.get());
+  EXPECT_FALSE(X509Certificate::IsSelfSigned(bad_sig->os_cert_handle()));
 }
 
 TEST(X509CertificateTest, IsIssuedByEncodedWithIntermediates) {

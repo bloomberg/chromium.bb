@@ -279,3 +279,9 @@ unit tests.
      containing the intermediate, which can be served via a URLRequestFilter.
      aia-intermediate.der is stored in DER form for convenience, since that is
      the form expected of certificates discovered via AIA.
+
+===== From net/data/ssl/scripts/generate-self-signed-certs.sh
+ - self-signed-invalid-name.pem
+ - self-signed-invalid-sig.pem
+     Two "self-signed" certificates with mismatched names or an invalid
+     signature, respectively.

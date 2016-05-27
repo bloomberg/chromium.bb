@@ -32,6 +32,20 @@ L  = Mountain View
 O  = Test CA
 CN = localhost
 
+[req_self_signed_a]
+C  = US
+ST = Michigan
+L  = Ann Arbor
+O  = Test Self-Signed
+CN = SS A
+
+[req_self_signed_b]
+C  = US
+ST = Michigan
+L  = Ann Arbor
+O  = Test Self-Signed
+CN = SS B
+
 [req_punycode_dn]
 CN = xn--wgv71a119e.com
 
