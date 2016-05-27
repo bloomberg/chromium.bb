@@ -695,7 +695,7 @@ void ThreadHeap::reportMemoryUsageForTracing()
 #endif
 
     bool gcTracingEnabled;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED("blink_gc", &gcTracingEnabled);
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"), &gcTracingEnabled);
     if (!gcTracingEnabled)
         return;
 
