@@ -86,3 +86,18 @@ Correct mapping for <static>
 Correct mapping for <1>
 Correct mapping for <return>
 
+Running: classExpression
+====== 8< ------
+new (class {
+    constructor() {
+        debugger
+    }
+}
+)
+
+------ >8 ======
+Correct mapping for <new>
+Correct mapping for <class>
+Correct mapping for <constructor>
+Correct mapping for <debugger>
+

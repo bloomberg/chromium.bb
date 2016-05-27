@@ -46,7 +46,13 @@ function test()
         {
             var mappingQueries = ["Employer", "static", "1", "return"];
             testJSFormatter("class Employer{static count(){this._counter = (this._counter || 0) + 1; return this._counter;}}", mappingQueries, next);
-        }
+        },
+
+        function classExpression(next)
+        {
+            var mappingQueries = ["new", "class", "constructor", "debugger"];
+            testJSFormatter("new(class{constructor(){debugger}})", mappingQueries, next);
+        },
     ]);
 }
 
