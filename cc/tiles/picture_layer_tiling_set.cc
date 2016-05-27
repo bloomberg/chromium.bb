@@ -474,8 +474,9 @@ void PictureLayerTilingSet::UpdatePriorityRects(
   // We keep things as floats in here.
   if (!visible_rect_in_layer_space.IsEmpty()) {
     gfx::RectF eventually_rectf(visible_rect_in_layer_space);
-    eventually_rectf.Inset(-tiling_interest_area_padding_,
-                           -tiling_interest_area_padding_);
+    eventually_rectf.Inset(
+        -tiling_interest_area_padding_ / ideal_contents_scale,
+        -tiling_interest_area_padding_ / ideal_contents_scale);
     if (eventually_rectf.Intersects(
             gfx::RectF(gfx::SizeF(raster_source_->GetSize())))) {
       visible_rect_in_layer_space_ = visible_rect_in_layer_space;

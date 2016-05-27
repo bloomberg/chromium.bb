@@ -85,6 +85,9 @@ LayerTreeSettings::LayerTreeSettings()
       max_untiled_layer_size(gfx::Size(512, 512)),
       minimum_occlusion_tracking_size(gfx::Size(160, 160)),
       // 3000 pixels should give sufficient area for prepainting.
+      // Note this value is specified with an ideal contents scale in mind. That
+      // is, the ideal tiling would use this value as the padding.
+      // TODO(vmpstr): Figure out a better number that doesn't depend on scale.
       tiling_interest_area_padding(3000),
       skewport_target_time_in_seconds(1.0f),
       skewport_extrapolation_limit_in_screen_pixels(2000),
