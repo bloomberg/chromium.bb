@@ -9,4 +9,4 @@ deps = [
   "//gpu/ipc/common:command_buffer_traits",
 ]
 
-type_mappings = [ "gpu.mojom.SyncToken=gpu::SyncToken" ]
+type_mappings = [ "gpu.mojom.SyncToken=::gpu::SyncToken" ]
