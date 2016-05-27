@@ -9,6 +9,8 @@ a {
 }
 
 ------ >8 ======
+Correct mapping for <pre-comment>
+Correct mapping for <post-comment>
 
 Running: testComplexCSS
 ====== 8< ------
@@ -57,7 +59,7 @@ Running: testFormatInlinedStyles
         }
 
         @media screen {
-            a {
+            a.b {
                 color: red;
                 text-decoration: none
             }
@@ -76,6 +78,25 @@ div {
 
 ------ >8 ======
 Correct mapping for <div>
+Correct mapping for <color>
+Correct mapping for <red>
+
+Running: testComplexSelector
+====== 8< ------
+a.b.c:hover,.d.e.f.g::before,h.i {
+    color: red;
+}
+
+------ >8 ======
+Correct mapping for <a>
+Correct mapping for <.b>
+Correct mapping for <.c>
+Correct mapping for <.d>
+Correct mapping for <.e>
+Correct mapping for <.f>
+Correct mapping for <.g>
+Correct mapping for <h>
+Correct mapping for <.i>
 Correct mapping for <color>
 Correct mapping for <red>
 

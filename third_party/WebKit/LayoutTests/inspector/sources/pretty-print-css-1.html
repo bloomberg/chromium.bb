@@ -15,7 +15,7 @@ function test()
         function testSimpleCSS(next)
         {
             var content = "a { /* pre-comment */ color /* after name */ : /* before value */ red /* post-comment */ }";
-            testCSSFormatter(content, [], next);
+            testCSSFormatter(content, ["pre-comment", "post-comment"], next);
         },
 
         function testComplexCSS(next)
@@ -42,7 +42,7 @@ function test()
 
         function testFormatInlinedStyles(next)
         {
-            var content = "<html><body><style>@-webkit-keyframes{from{left: 0} to{left:100px;}}</style><style>badbraces { }} @media screen{a{color:red;text-decoration: none}}</style></body></html>";
+            var content = "<html><body><style>@-webkit-keyframes{from{left: 0} to{left:100px;}}</style><style>badbraces { }} @media screen{a.b{color:red;text-decoration: none}}</style></body></html>";
             InspectorTest.testPrettyPrint("text/html", content, [], next);
         },
 
@@ -50,6 +50,13 @@ function test()
         {
             var mappingQueries = ["div", "color", "red"];
             testCSSFormatter("\n\ndiv { color: red; }", mappingQueries, next);
+        },
+
+        function testComplexSelector(next)
+        {
+            var css = "a.b.c:hover,.d.e.f.g::before,h.i{color:red;}";
+            var mappingQueries = ["a",".b",".c",".d",".e",".f",".g","h",".i","color","red"];
+            testCSSFormatter(css, mappingQueries, next);
         },
     ]);
 }
