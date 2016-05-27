@@ -92,9 +92,16 @@ void HtmlVideoElementCapturerSource::StartCapture(
     return;
   }
   const blink::WebSize resolution = web_media_player_->naturalSize();
+  // TODO(mcasas): Don't use CreatePlatformCanvas here: http://crbug.com/615454.
   canvas_ = sk_sp<SkCanvas>(skia::CreatePlatformCanvas(resolution.width,
                                resolution.height,
-                               true /* is_opaque */));
+                               true /* is_opaque */,
+                               0 /* data */,
+                               skia::RETURN_NULL_ON_FAILURE));
+  if (!canvas_){
+    running_callback_.Run(false);
+    return;
+  }
 
   new_frame_callback_ = new_frame_callback;
   // Force |capture_frame_rate_| to be in between k{Min,Max}FramesPerSecond.

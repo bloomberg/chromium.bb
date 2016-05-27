@@ -177,6 +177,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void createHTMLVideoElementCapturer(
       blink::WebMediaStream* web_media_stream,
       blink::WebMediaPlayer* web_media_player) override;
+  void createHTMLAudioElementCapturer(
+      blink::WebMediaStream* web_media_stream,
+      blink::WebMediaPlayer* web_media_player) override;
   blink::WebImageCaptureFrameGrabber* createImageCaptureFrameGrabber() override;
   blink::WebGraphicsContext3DProvider* createOffscreenGraphicsContext3DProvider(
       const blink::Platform::ContextAttributes& attributes,
