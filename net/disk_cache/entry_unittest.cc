@@ -4220,6 +4220,33 @@ TEST_F(DiskCacheEntryTest, SimpleCacheReadWithoutKeySHA256) {
                                      stream_1_data.size()));
 }
 
+TEST_F(DiskCacheEntryTest, SimpleCacheDoubleOpenWithoutKeySHA256) {
+  // This test runs as APP_CACHE to make operations more synchronous.
+  SetCacheType(net::APP_CACHE);
+  SetSimpleCacheMode();
+  InitCache();
+  disk_cache::Entry* entry;
+  std::string key("a key");
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+  entry->Close();
+
+  base::RunLoop().RunUntilIdle();
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(
+      disk_cache::simple_util::RemoveKeySHA256FromEntry(key, cache_path_));
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry));
+  entry->Close();
+
+  base::RunLoop().RunUntilIdle();
+  disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(net::OK, OpenEntry(key, &entry));
+  entry->Close();
+}
+
 TEST_F(DiskCacheEntryTest, SimpleCacheReadCorruptKeySHA256) {
   // This test runs as APP_CACHE to make operations more synchronous.
   SetCacheType(net::APP_CACHE);

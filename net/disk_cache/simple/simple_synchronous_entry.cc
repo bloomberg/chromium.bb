@@ -687,24 +687,6 @@ void SimpleSynchronousEntry::Close(
     std::unique_ptr<std::vector<CRCRecord>> crc32s_to_write,
     net::GrowableIOBuffer* stream_0_data) {
   DCHECK(stream_0_data);
-  // Write stream 0 data.
-  int stream_0_offset = entry_stat.GetOffsetInFile(key_.size(), 0, 0);
-  if (files_[0].Write(stream_0_offset, stream_0_data->data(),
-                      entry_stat.data_size(0)) !=
-      entry_stat.data_size(0)) {
-    RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
-    DVLOG(1) << "Could not write stream 0 data.";
-    Doom();
-  }
-  net::SHA256HashValue hash_value;
-  CalculateSHA256OfKey(key_, &hash_value);
-  if (files_[0].Write(stream_0_offset + entry_stat.data_size(0),
-                      reinterpret_cast<char*>(hash_value.data),
-                      sizeof(hash_value)) != sizeof(hash_value)) {
-    RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
-    DVLOG(1) << "Could not write stream 0 data.";
-    Doom();
-  }
 
   for (std::vector<CRCRecord>::const_iterator it = crc32s_to_write->begin();
        it != crc32s_to_write->end(); ++it) {
@@ -712,6 +694,26 @@ void SimpleSynchronousEntry::Close(
     const int file_index = GetFileIndexFromStreamIndex(stream_index);
     if (empty_file_omitted_[file_index])
       continue;
+
+    if (stream_index == 0) {
+      // Write stream 0 data.
+      int stream_0_offset = entry_stat.GetOffsetInFile(key_.size(), 0, 0);
+      if (files_[0].Write(stream_0_offset, stream_0_data->data(),
+                          entry_stat.data_size(0)) != entry_stat.data_size(0)) {
+        RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
+        DVLOG(1) << "Could not write stream 0 data.";
+        Doom();
+      }
+      net::SHA256HashValue hash_value;
+      CalculateSHA256OfKey(key_, &hash_value);
+      if (files_[0].Write(stream_0_offset + entry_stat.data_size(0),
+                          reinterpret_cast<char*>(hash_value.data),
+                          sizeof(hash_value)) != sizeof(hash_value)) {
+        RecordCloseResult(cache_type_, CLOSE_RESULT_WRITE_FAILURE);
+        DVLOG(1) << "Could not write stream 0 data.";
+        Doom();
+      }
+    }
 
     SimpleFileEOF eof_record;
     eof_record.stream_size = entry_stat.data_size(stream_index);
