@@ -116,6 +116,9 @@ AutofillManager.prototype = {
    */
   getAddressList: assertNotReached,
 
+  /** @param {!AutofillManager.AddressEntry} address The address to remove.  */
+  removeAddress: assertNotReached,
+
   /**
    * Add an observer to the list of credit cards.
    * @param {function(!Array<!AutofillManager.CreditCardEntry>):void} listener
@@ -133,6 +136,12 @@ AutofillManager.prototype = {
    * @param {function(!Array<!AutofillManager.CreditCardEntry>):void} callback
    */
   getCreditCardList: assertNotReached,
+
+  /**
+   * @param {!AutofillManager.CreditCardEntry} creditCard The credit card to
+   *     remove.
+   */
+  removeCreditCard: assertNotReached,
 };
 
 /**
@@ -232,6 +241,11 @@ AutofillManagerImpl.prototype = {
   },
 
   /** @override */
+  removeAddress: function(address) {
+    chrome.autofillPrivate.removeEntry(/** @type {string} */(address.guid));
+  },
+
+  /** @override */
   addCreditCardListChangedListener: function(listener) {
     chrome.autofillPrivate.onCreditCardListChanged.addListener(listener);
   },
@@ -244,6 +258,11 @@ AutofillManagerImpl.prototype = {
   /** @override */
   getCreditCardList: function(callback) {
     chrome.autofillPrivate.getCreditCardList(callback);
+  },
+
+  /** @override */
+  removeCreditCard: function(creditCard) {
+    chrome.autofillPrivate.removeEntry(/** @type {string} */(creditCard.guid));
   },
 };
 
@@ -304,6 +323,8 @@ Polymer({
  },
 
   listeners: {
+    'remove-address': 'removeAddress_',
+    'remove-credit-card': 'removeCreditCard_',
     'remove-password-exception': 'removePasswordException_',
     'remove-saved-password': 'removeSavedPassword_',
     'show-password': 'showPassword_',
@@ -389,6 +410,24 @@ Polymer({
    */
   removeSavedPassword_: function(event) {
     this.passwordManager_.removeSavedPassword(event.detail);
+  },
+
+  /**
+   * Listens for the remove-address event, and calls the private API.
+   * @param {!Event} event
+   * @private
+   */
+  removeAddress_: function(event) {
+    this.autofillManager_.removeAddress(event.detail);
+  },
+
+  /**
+   * Listens for the remove-credit-card event, and calls the private API.
+   * @param {!Event} event
+   * @private
+   */
+  removeCreditCard_: function(event) {
+    this.autofillManager_.removeCreditCard(event.detail);
   },
 
   /**

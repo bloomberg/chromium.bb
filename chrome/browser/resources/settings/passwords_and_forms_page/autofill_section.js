@@ -94,8 +94,9 @@
      * @private
      */
     onMenuRemoveAddressTap_: function() {
-      // TODO(hcarmona): implement removing an address.
-      this.$.addressSharedMenu.closeMenu();
+      var menu = this.$.addressSharedMenu;
+      this.fire('remove-address', menu.itemData);
+      menu.closeMenu();
     },
 
     /**
@@ -139,8 +140,9 @@
      * @private
      */
     onMenuRemoveCreditCardTap_: function() {
-      // TODO(hcarmona): implement removing a credit card.
-      this.$.creditCardSharedMenu.closeMenu();
+      var menu = this.$.creditCardSharedMenu;
+      this.fire('remove-credit-card', menu.itemData);
+      menu.closeMenu();
     },
 
     /**
