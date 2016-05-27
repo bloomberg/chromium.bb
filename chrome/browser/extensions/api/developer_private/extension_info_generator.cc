@@ -4,7 +4,9 @@
 
 #include "chrome/browser/extensions/api/developer_private/extension_info_generator.h"
 
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/callback_helpers.h"
@@ -285,6 +287,8 @@ void ExtensionInfoGenerator::CreateExtensionsInfo(
   if (include_disabled) {
     add_to_list(registry->disabled_extensions(),
                 developer::EXTENSION_STATE_DISABLED);
+    add_to_list(registry->blacklisted_extensions(),
+                developer::EXTENSION_STATE_BLACKLISTED);
   }
   if (include_terminated) {
     add_to_list(registry->terminated_extensions(),
@@ -316,6 +320,9 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   // Blacklist text.
   int blacklist_text = -1;
   switch (extension_prefs_->GetExtensionBlacklistState(extension.id())) {
+    case BLACKLISTED_MALWARE:
+      blacklist_text = IDS_OPTIONS_BLACKLISTED_MALWARE;
+      break;
     case BLACKLISTED_SECURITY_VULNERABILITY:
       blacklist_text = IDS_OPTIONS_BLACKLISTED_SECURITY_VULNERABILITY;
       break;

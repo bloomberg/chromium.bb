@@ -86,7 +86,8 @@ namespace developerPrivate {
   enum ExtensionState {
     ENABLED,
     DISABLED,
-    TERMINATED
+    TERMINATED,
+    BLACKLISTED
   };
 
   enum CommandScope {

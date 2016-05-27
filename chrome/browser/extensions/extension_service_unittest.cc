@@ -6510,6 +6510,47 @@ TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
       ExtensionPrefs::Get(profile())->IsBlacklistedExtensionAcknowledged(id));
 }
 
+// Test that we won't allow enabling a blacklisted extension.
+TEST_F(ExtensionServiceTest, CannotEnableBlacklistedExtension) {
+  InitializeGoodInstalledExtensionService();
+  service()->Init();
+  ASSERT_FALSE(registry()->enabled_extensions().is_empty());
+
+  // Blacklist the first extension; then try enabling it.
+  std::string id = (*(registry()->enabled_extensions().begin()))->id();
+  service()->BlacklistExtensionForTest(id);
+  EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
+  EXPECT_FALSE(registry()->disabled_extensions().Contains(id));
+  service()->EnableExtension(id);
+  EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
+  EXPECT_FALSE(registry()->disabled_extensions().Contains(id));
+  EXPECT_TRUE(registry()->blacklisted_extensions().Contains(id));
+  EXPECT_TRUE(ExtensionPrefs::Get(profile())->IsExtensionBlacklisted(id));
+
+  service()->DisableExtension(id, Extension::DISABLE_USER_ACTION);
+  EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
+  EXPECT_FALSE(registry()->disabled_extensions().Contains(id));
+  EXPECT_TRUE(registry()->blacklisted_extensions().Contains(id));
+  EXPECT_TRUE(ExtensionPrefs::Get(profile())->IsExtensionBlacklisted(id));
+}
+
+// Make sure we can uninstall a blacklisted extension
+TEST_F(ExtensionServiceTest, UninstallBlacklistedExtension) {
+  InitializeGoodInstalledExtensionService();
+  service()->Init();
+  ASSERT_FALSE(registry()->enabled_extensions().is_empty());
+
+  // Blacklist the first extension; then try uninstalling it.
+  std::string id = (*(registry()->enabled_extensions().begin()))->id();
+  service()->BlacklistExtensionForTest(id);
+  EXPECT_NE(nullptr, registry()->GetInstalledExtension(id));
+  base::string16 error;
+  EXPECT_TRUE(service()->UninstallExtension(
+      id, extensions::UNINSTALL_REASON_USER_INITIATED,
+      base::Bind(&base::DoNothing), nullptr));
+  EXPECT_EQ(nullptr, registry()->GetInstalledExtension(id));
+}
+
 // Tests a profile being destroyed correctly disables extensions.
 TEST_F(ExtensionServiceTest, DestroyingProfileClearsExtensions) {
   InitializeEmptyExtensionService();

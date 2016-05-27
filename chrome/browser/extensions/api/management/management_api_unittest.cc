@@ -221,6 +221,60 @@ TEST_F(ManagementApiUnitTest, ManagementUninstall) {
   }
 }
 
+// Tests uninstalling a blacklisted extension via management.uninstall.
+TEST_F(ManagementApiUnitTest, ManagementUninstallBlacklisted) {
+  scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
+  service()->AddExtension(extension.get());
+  std::string id = extension->id();
+
+  service()->BlacklistExtensionForTest(id);
+  EXPECT_NE(nullptr, registry()->GetInstalledExtension(id));
+
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+  ExtensionFunction::ScopedUserGestureForTests scoped_user_gesture;
+  scoped_refptr<UIThreadExtensionFunction> function(
+      new ManagementUninstallFunction());
+  base::ListValue uninstall_args;
+  uninstall_args.AppendString(id);
+  EXPECT_TRUE(RunFunction(function, uninstall_args)) << function->GetError();
+
+  EXPECT_EQ(nullptr, registry()->GetInstalledExtension(id));
+}
+
+TEST_F(ManagementApiUnitTest, ManagementEnableOrDisableBlacklisted) {
+  scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
+  service()->AddExtension(extension.get());
+  std::string id = extension->id();
+
+  service()->BlacklistExtensionForTest(id);
+  EXPECT_NE(nullptr, registry()->GetInstalledExtension(id));
+
+  scoped_refptr<UIThreadExtensionFunction> function;
+
+  // Test enabling it.
+  {
+    base::ListValue enable_args;
+    enable_args.AppendString(id);
+    enable_args.AppendBoolean(true);
+    function = new ManagementSetEnabledFunction();
+    EXPECT_TRUE(RunFunction(function, enable_args)) << function->GetError();
+    EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
+    EXPECT_FALSE(registry()->disabled_extensions().Contains(id));
+  }
+
+  // Test disabling it
+  {
+    base::ListValue disable_args;
+    disable_args.AppendString(id);
+    disable_args.AppendBoolean(false);
+
+    function = new ManagementSetEnabledFunction();
+    EXPECT_TRUE(RunFunction(function, disable_args)) << function->GetError();
+    EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
+    EXPECT_FALSE(registry()->disabled_extensions().Contains(id));
+  }
+}
+
 // Tests enabling an extension via management API after it was disabled due to
 // permission increase.
 TEST_F(ManagementApiUnitTest, SetEnabledAfterIncreasedPermissions) {

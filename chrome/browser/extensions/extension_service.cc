@@ -752,6 +752,8 @@ bool ExtensionService::UninstallExtension(
   // Unload before doing more cleanup to ensure that nothing is hanging on to
   // any of these resources.
   UnloadExtension(extension->id(), UnloadedExtensionInfo::REASON_UNINSTALL);
+  if (registry_->blacklisted_extensions().Contains(extension->id()))
+    registry_->RemoveBlacklisted(extension->id());
 
   // Tell the backend to start deleting installed extensions on the file thread.
   if (!Manifest::IsUnpackedLocation(extension->location())) {
@@ -828,7 +830,8 @@ bool ExtensionService::IsExtensionEnabled(
 void ExtensionService::EnableExtension(const std::string& extension_id) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (IsExtensionEnabled(extension_id))
+  if (IsExtensionEnabled(extension_id) ||
+      extension_prefs_->IsExtensionBlacklisted(extension_id))
     return;
   const Extension* extension =
       registry_->disabled_extensions().GetByID(extension_id);
@@ -861,6 +864,9 @@ void ExtensionService::EnableExtension(const std::string& extension_id) {
 void ExtensionService::DisableExtension(const std::string& extension_id,
                                         int disable_reasons) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (extension_prefs_->IsExtensionBlacklisted(extension_id))
+    return;
 
   // The extension may have been disabled already. Just add the disable reasons.
   if (!IsExtensionEnabled(extension_id)) {

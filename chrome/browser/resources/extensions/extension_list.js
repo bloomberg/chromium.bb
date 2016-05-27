@@ -756,7 +756,9 @@ cr.define('extensions', function() {
             extension.disableReasons.suspiciousInstall ||
             extension.disableReasons.corruptInstall ||
             extension.disableReasons.updateRequired ||
-            extension.dependentExtensions.length > 0;
+            extension.dependentExtensions.length > 0 ||
+            extension.state ==
+                chrome.developerPrivate.ExtensionState.BLACKLISTED;
         item.querySelector('input').disabled = enableCheckboxDisabled;
         item.querySelector('input').checked = isActive;
       });

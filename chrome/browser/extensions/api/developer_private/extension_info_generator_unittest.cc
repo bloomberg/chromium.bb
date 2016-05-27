@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/developer_private/extension_info_generator.h"
 
+#include <string>
 #include <utility>
 
 #include "base/callback_helpers.h"
@@ -49,6 +50,18 @@ std::unique_ptr<base::DictionaryValue> DeserializeJSONTestData(
   return base::DictionaryValue::From(deserializer.Deserialize(nullptr, error));
 }
 
+// Returns a pointer to the ExtensionInfo for an extension with |id| if it
+// is present in |list|.
+const developer::ExtensionInfo* GetInfoFromList(
+    const ExtensionInfoGenerator::ExtensionInfoList& list,
+    const std::string& id) {
+  for (const auto& item : list) {
+    if (item.id == id)
+      return &item;
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
@@ -62,8 +75,8 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
     InitializeEmptyExtensionService();
   }
 
-  void OnInfosGenerated(std::unique_ptr<developer::ExtensionInfo>* info_out,
-                        ExtensionInfoGenerator::ExtensionInfoList list) {
+  void OnInfoGenerated(std::unique_ptr<developer::ExtensionInfo>* info_out,
+                       ExtensionInfoGenerator::ExtensionInfoList list) {
     EXPECT_EQ(1u, list.size());
     if (!list.empty())
       info_out->reset(new developer::ExtensionInfo(std::move(list[0])));
@@ -79,11 +92,30 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
         new ExtensionInfoGenerator(browser_context()));
     generator->CreateExtensionInfo(
         extension_id,
-        base::Bind(&ExtensionInfoGeneratorUnitTest::OnInfosGenerated,
-                   base::Unretained(this),
-                   base::Unretained(&info)));
+        base::Bind(&ExtensionInfoGeneratorUnitTest::OnInfoGenerated,
+                   base::Unretained(this), base::Unretained(&info)));
     run_loop.Run();
     return info;
+  }
+
+  void OnInfosGenerated(ExtensionInfoGenerator::ExtensionInfoList* out,
+                        ExtensionInfoGenerator::ExtensionInfoList list) {
+    *out = std::move(list);
+    base::ResetAndReturn(&quit_closure_).Run();
+  }
+
+  ExtensionInfoGenerator::ExtensionInfoList GenerateExtensionsInfo() {
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    ExtensionInfoGenerator generator(browser_context());
+    ExtensionInfoGenerator::ExtensionInfoList result;
+    generator.CreateExtensionsInfo(
+        true, /* include_disabled */
+        true, /* include_terminated */
+        base::Bind(&ExtensionInfoGeneratorUnitTest::OnInfosGenerated,
+                   base::Unretained(this), base::Unretained(&result)));
+    run_loop.Run();
+    return result;
   }
 
   const scoped_refptr<const Extension> CreateExtension(
@@ -405,6 +437,37 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
   info = GenerateExtensionInfo(all_urls_extension->id());
   EXPECT_FALSE(info->run_on_all_urls.is_enabled);
   EXPECT_TRUE(info->run_on_all_urls.is_active);
+}
+
+// Tests that blacklisted extensions are returned by the ExtensionInfoGenerator.
+TEST_F(ExtensionInfoGeneratorUnitTest, Blacklisted) {
+  const scoped_refptr<const Extension> extension1 =
+      CreateExtension("test1", base::WrapUnique(new base::ListValue()));
+  const scoped_refptr<const Extension> extension2 =
+      CreateExtension("test2", base::WrapUnique(new base::ListValue()));
+
+  std::string id1 = extension1->id();
+  std::string id2 = extension2->id();
+  ASSERT_NE(id1, id2);
+
+  ExtensionInfoGenerator::ExtensionInfoList info_list =
+      GenerateExtensionsInfo();
+  const developer::ExtensionInfo* info1 = GetInfoFromList(info_list, id1);
+  const developer::ExtensionInfo* info2 = GetInfoFromList(info_list, id2);
+  ASSERT_NE(nullptr, info1);
+  ASSERT_NE(nullptr, info2);
+  EXPECT_EQ(developer::EXTENSION_STATE_ENABLED, info1->state);
+  EXPECT_EQ(developer::EXTENSION_STATE_ENABLED, info2->state);
+
+  service()->BlacklistExtensionForTest(id1);
+
+  info_list = GenerateExtensionsInfo();
+  info1 = GetInfoFromList(info_list, id1);
+  info2 = GetInfoFromList(info_list, id2);
+  ASSERT_NE(nullptr, info1);
+  ASSERT_NE(nullptr, info2);
+  EXPECT_EQ(developer::EXTENSION_STATE_BLACKLISTED, info1->state);
+  EXPECT_EQ(developer::EXTENSION_STATE_ENABLED, info2->state);
 }
 
 }  // namespace extensions

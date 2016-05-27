@@ -127,6 +127,7 @@ chrome.developerPrivate.ExtensionState = {
   ENABLED: 'ENABLED',
   DISABLED: 'DISABLED',
   TERMINATED: 'TERMINATED',
+  BLACKLISTED: 'BLACKLISTED',
 };
 
 /**
