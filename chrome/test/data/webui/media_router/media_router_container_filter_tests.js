@@ -609,6 +609,39 @@ cr.define('media_router_container_filter', function() {
         });
       });
 
+      // Tests that filter view is not entered when switching between windows or
+      // tabs with keyboard focus on the search input and the container is
+      // currently in sink-list view.
+      test('switching window focus does not change view', function(done) {
+        container.allSinks = fakeSinkList;
+        MockInteractions.tap(container.$$('#sink-search-icon'));
+        chainOnAnimationPromise(function() {
+          checkCurrentView(media_router.MediaRouterView.FILTER);
+          pressEscapeOnElement(container);
+          chainOnAnimationPromise(function() {
+            var searchInput = container.$$('#sink-search-input');
+            checkCurrentView(media_router.MediaRouterView.SINK_LIST);
+            assertEquals(container.shadowRoot.activeElement, searchInput);
+            var blur = new FocusEvent('blur');
+            var focus = new FocusEvent('focus');
+            // When this window loses focus, the active element receives a blur
+            // event then the window receives a blur event. When the window
+            // gains focus again, the window receives a focus event first then
+            // the active element receives a focus event. Finally the setTimeout
+            // lets these events run and we check the resulting state of the
+            // dialog.
+            searchInput.dispatchEvent(blur);
+            window.dispatchEvent(blur);
+            window.dispatchEvent(focus);
+            searchInput.dispatchEvent(focus);
+            setTimeout(function() {
+              checkCurrentView(media_router.MediaRouterView.SINK_LIST);
+              done();
+            });
+          });
+        });
+      });
+
       // Tests that compareSearchMatches_ works correctly for zero and one
       // substring matches from the filter text. Earlier, longer matches should
       // be ordered first, in that priority order.
