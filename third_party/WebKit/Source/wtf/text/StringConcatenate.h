@@ -171,13 +171,9 @@ public:
 
     bool is8Bit() { return false; }
 
-#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
     NO_RETURN_DUE_TO_CRASH void writeTo(LChar*)
-#else
-    void writeTo(LChar*)
-#endif
     {
-        CHECK(false);
+        RELEASE_ASSERT(false);
     }
 
     void writeTo(UChar* destination);

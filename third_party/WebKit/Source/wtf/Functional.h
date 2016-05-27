@@ -306,7 +306,7 @@ protected:
         // must be called and destructed on the thread where it is created.
         // If it is intended to be used cross-thread, use
         // blink::threadSafeBind() or blink::createCrossThreadTask() instead.
-        CHECK_EQ(m_createdThread, currentThread());
+        RELEASE_ASSERT(m_createdThread == currentThread());
     }
 
 private:

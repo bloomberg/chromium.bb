@@ -43,7 +43,7 @@ public:
 
     void append(const T& item)
     {
-        CHECK_LT(m_count, m_capacity);
+        RELEASE_ASSERT(m_count < m_capacity);
         ASSERT(!item.isLastInArray());
         m_array->at(m_count++) = item;
         if (m_count == m_capacity)
@@ -52,7 +52,7 @@ public:
 
     typename ArrayType<T>::Allocator::PassPtr release()
     {
-        CHECK_EQ(m_count, m_capacity);
+        RELEASE_ASSERT(m_count == m_capacity);
         assertValid();
         return ArrayType<T>::Allocator::release(m_array);
     }

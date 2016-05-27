@@ -406,7 +406,7 @@ void AtomicString::remove(StringImpl* r)
         iterator = findString<LChar>(r);
     else
         iterator = findString<UChar>(r);
-    CHECK(iterator != atomicStrings().end());
+    RELEASE_ASSERT(iterator != atomicStrings().end());
     atomicStrings().remove(iterator);
 }
 

@@ -424,7 +424,7 @@ public:
 private:
     template<typename CharType> static size_t allocationSize(unsigned length)
     {
-        CHECK_LE(length, (std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(CharType));
+        RELEASE_ASSERT(length <= ((std::numeric_limits<unsigned>::max() - sizeof(StringImpl)) / sizeof(CharType)));
         return sizeof(StringImpl) + length * sizeof(CharType);
     }
 
@@ -665,7 +665,7 @@ inline unsigned lengthOfNullTerminatedString(const UChar* string)
     size_t length = 0;
     while (string[length] != UChar(0))
         ++length;
-    CHECK_LE(length, std::numeric_limits<unsigned>::max());
+    RELEASE_ASSERT(length <= std::numeric_limits<unsigned>::max());
     return static_cast<unsigned>(length);
 }
 

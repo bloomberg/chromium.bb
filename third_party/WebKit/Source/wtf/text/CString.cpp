@@ -36,7 +36,7 @@ namespace WTF {
 
 PassRefPtr<CStringBuffer> CStringBuffer::createUninitialized(size_t length)
 {
-    CHECK_LT(length, numeric_limits<unsigned>::max() - sizeof(CStringBuffer));
+    RELEASE_ASSERT(length < (numeric_limits<unsigned>::max() - sizeof(CStringBuffer)));
 
     // The +1 is for the terminating NUL character.
     size_t size = sizeof(CStringBuffer) + length + 1;

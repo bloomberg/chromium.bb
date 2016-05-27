@@ -84,13 +84,13 @@ public:
 
     T& at(size_t i)
     {
-        CHECK_LT(i, size());
+        RELEASE_ASSERT(i < size());
         size_t right = m_buffer.capacity() - m_start;
         return i < right ? m_buffer.buffer()[m_start + i] : m_buffer.buffer()[i - right];
     }
     const T& at(size_t i) const
     {
-        CHECK_LT(i, size());
+        RELEASE_ASSERT(i < size());
         size_t right = m_buffer.capacity() - m_start;
         return i < right ? m_buffer.buffer()[m_start + i] : m_buffer.buffer()[i - right];
     }
@@ -574,14 +574,14 @@ inline void DequeIteratorBase<T, inlineCapacity, Allocator>::decrement()
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline T* DequeIteratorBase<T, inlineCapacity, Allocator>::after() const
 {
-    CHECK_NE(m_index, m_deque->m_end);
+    RELEASE_ASSERT(m_index != m_deque->m_end);
     return &m_deque->m_buffer.buffer()[m_index];
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline T* DequeIteratorBase<T, inlineCapacity, Allocator>::before() const
 {
-    CHECK_NE(m_index, m_deque->m_start);
+    RELEASE_ASSERT(m_index != m_deque->m_start);
     if (!m_index)
         return &m_deque->m_buffer.buffer()[m_deque->m_buffer.capacity() - 1];
     return &m_deque->m_buffer.buffer()[m_index - 1];

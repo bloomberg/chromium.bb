@@ -56,7 +56,7 @@ public:
     template<typename T>
     static size_t quantizedSize(size_t count)
     {
-        CHECK_LE(count, kGenericMaxDirectMapped / sizeof(T));
+        RELEASE_ASSERT(count <= kGenericMaxDirectMapped / sizeof(T));
         return partitionAllocActualSize(Partitions::bufferPartition(), count * sizeof(T));
     }
     template <typename T>

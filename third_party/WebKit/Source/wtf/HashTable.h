@@ -629,7 +629,7 @@ void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocato
         newCapacity = KeyTraits::minimumTableSize;
 
     if (newCapacity > capacity()) {
-        CHECK(!static_cast<int>(newCapacity >> 31)); // HashTable capacity should not overflow 32bit int.
+        RELEASE_ASSERT(!static_cast<int>(newCapacity >> 31)); // HashTable capacity should not overflow 32bit int.
         rehash(newCapacity, 0);
     }
 }
@@ -1053,7 +1053,7 @@ Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Alloca
         newSize = m_tableSize;
     } else {
         newSize = m_tableSize * 2;
-        CHECK_GT(newSize, m_tableSize);
+        RELEASE_ASSERT(newSize > m_tableSize);
     }
 
     return rehash(newSize, entry);
