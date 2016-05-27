@@ -7,8 +7,6 @@ package org.chromium.chrome.test;
 import android.text.TextUtils;
 import android.view.View;
 
-import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -25,7 +23,6 @@ import java.util.concurrent.TimeoutException;
  * The base class of the ChromeTabbedActivity specific tests. It provides the common methods
  * to access the ChromeTabbedActivity UI.
  */
-@CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
 public abstract class ChromeTabbedActivityTestBase extends
         ChromeActivityTestCaseBase<ChromeTabbedActivity> {
     private static final String TAG = "ChromeTabbedActivityTestBase";

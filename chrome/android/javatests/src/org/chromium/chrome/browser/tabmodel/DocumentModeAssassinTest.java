@@ -16,7 +16,6 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.chrome.browser.TabState;
-import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin.DocumentModeAssassinForTesting;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin.DocumentModeAssassinObserver;
@@ -373,8 +372,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                assertEquals(DocumentModeManager.OPTED_OUT_OF_DOCUMENT_MODE,
-                        DocumentModeManager.getInstance(mContext).getOptOutStateForTesting());
+                assertTrue(DocumentModeAssassin.isOptedOutOfDocumentMode());
             }
         });
     }

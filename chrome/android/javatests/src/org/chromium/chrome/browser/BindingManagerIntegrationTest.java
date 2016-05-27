@@ -42,7 +42,6 @@ import java.util.concurrent.Callable;
  * Integration tests for the BindingManager API. This test plants a mock BindingManager
  * implementation and verifies that the signals it relies on are correctly delivered.
  */
-@CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)  // crbug.com/414719
 public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static class MockBindingManager implements BindingManager {

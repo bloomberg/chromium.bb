@@ -111,7 +111,6 @@ public class ContextMenuTest extends DownloadTestBase {
 
     @MediumTest
     @Feature({"Browser"})
-    @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
     public void testLongPressOnImage() throws InterruptedException, TimeoutException {
         checkOpenImageInNewTab(
                 "testImage", "/chrome/test/data/android/contextmenu/test_image.png");
@@ -256,7 +255,6 @@ public class ContextMenuTest extends DownloadTestBase {
      */
     @LargeTest
     @Feature({"Browser"})
-    @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
     public void testOpenLinksInNewTabsAndVerifyTabIndexOrdering()
             throws InterruptedException, TimeoutException {
         TabModel tabModel = getActivity().getCurrentTabModel();

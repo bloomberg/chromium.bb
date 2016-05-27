@@ -20,12 +20,6 @@ import java.util.Locale;
  * ChromePreferenceManager stores and retrieves various values in Android shared preferences.
  */
 public class ChromePreferenceManager {
-    /**
-     * Preference that denotes that Chrome has attempted to migrate from tabbed mode to document
-     * mode.
-     */
-    public static final String MIGRATION_ON_UPGRADE_ATTEMPTED = "migration_on_upgrade_attempted";
-
     private static final String TAG = "preferences";
 
     private static final String PROMOS_SKIPPED_ON_FIRST_START = "promos_skipped_on_first_start";
@@ -122,22 +116,6 @@ public class ChromePreferenceManager {
 
     private String failureUploadKey(@ProcessType String process) {
         return process.toLowerCase(Locale.US) + FAILURE_UPLOAD_SUFFIX;
-    }
-
-    /**
-     * @return Whether we have attempted to migrate tabbed state to document mode after OS upgrade.
-     */
-    public boolean hasAttemptedMigrationOnUpgrade() {
-        return mSharedPreferences.getBoolean(MIGRATION_ON_UPGRADE_ATTEMPTED, false);
-    }
-
-    /**
-     * Mark that we have made an attempt to migrate tabbed state to document mode after OS upgrade.
-     */
-    public void setAttemptedMigrationOnUpgrade() {
-        SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
-        sharedPreferencesEditor.putBoolean(MIGRATION_ON_UPGRADE_ATTEMPTED, true);
-        sharedPreferencesEditor.apply();
     }
 
     /**

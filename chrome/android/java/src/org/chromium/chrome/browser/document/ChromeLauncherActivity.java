@@ -5,17 +5,12 @@
 package org.chromium.chrome.browser.document;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.ActivityManager;
-import android.app.ActivityManager.AppTask;
-import android.app.ActivityManager.RecentTaskInfo;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -52,7 +47,6 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.upgrade.UpgradeActivity;
@@ -63,7 +57,6 @@ import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 
 import java.lang.ref.WeakReference;
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -151,7 +144,6 @@ public class ChromeLauncherActivity extends Activity
         // show homepage, which might require reading PartnerBrowserCustomizations provider.
         PartnerBrowserCustomizations.initializeAsync(getApplicationContext(),
                 PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS);
-        maybePerformMigrationTasks();
         recordIntentMetrics();
 
         mIsInLegacyMultiInstanceMode =
@@ -259,18 +251,6 @@ public class ChromeLauncherActivity extends Activity
 
             // TODO(aruslan): FAIL.
             ApiCompatibilityUtils.finishAndRemoveTask(this);
-        }
-    }
-
-    /**
-     * If we have just opted in or opted out of document mode, perform pending migration tasks
-     * such as cleaning up the recents.
-     */
-    private void maybePerformMigrationTasks() {
-        if (DocumentModeManager.getInstance(this).isOptOutCleanUpPending()) {
-            cleanUpChromeRecents(
-                    DocumentModeManager.getInstance(this).isOptedOutOfDocumentMode());
-            DocumentModeManager.getInstance(this).setOptOutCleanUpPending(false);
         }
     }
 
@@ -480,31 +460,6 @@ public class ChromeLauncherActivity extends Activity
             MultiWindowUtils.getInstance().makeLegacyMultiInstanceIntent(this, newIntent);
         }
         startActivity(newIntent);
-    }
-
-    /**
-     * On opting out, remove all the old tasks from the recents.
-     * @param fromDocument Whether any possible migration was from document mode to classic.
-     */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private void cleanUpChromeRecents(boolean fromDocument) {
-        ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        List<ActivityManager.AppTask> taskList = am.getAppTasks();
-        PackageManager pm = getPackageManager();
-        for (int i = 0; i < taskList.size(); i++) {
-            AppTask task = taskList.get(i);
-            String className = DocumentUtils.getTaskClassName(task, pm);
-            if (className == null) continue;
-
-            RecentTaskInfo taskInfo = DocumentUtils.getTaskInfoFromTask(task);
-            if (taskInfo == null) continue;
-
-            // Skip the document activities if we are migrating from classic to document.
-            boolean skip = !fromDocument && DocumentActivity.isDocumentActivity(className);
-            if (!skip && (taskInfo.id != getTaskId())) {
-                taskList.get(i).finishAndRemoveTask();
-            }
-        }
     }
 
     /**

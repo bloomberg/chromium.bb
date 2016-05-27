@@ -9,12 +9,10 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 
 import org.chromium.base.Log;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
@@ -317,7 +315,6 @@ public class DownloadTest extends DownloadTestBase {
         });
     }
 
-    @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
     @DisabledTest(message = "crbug.com/606798")
     @MediumTest
     @Feature({"Downloads"})

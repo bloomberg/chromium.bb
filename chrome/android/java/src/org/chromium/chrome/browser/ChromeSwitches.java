@@ -52,9 +52,6 @@ public abstract class ChromeSwitches {
     public static final String DISABLE_EXTERNAL_INTENT_REQUESTS =
             "disable-external-intent-requests";
 
-    /** Disable document mode. */
-    public static final String DISABLE_DOCUMENT_MODE = "disable-document-mode";
-
     /** Disable Contextual Search. */
     public static final String DISABLE_CONTEXTUAL_SEARCH = "disable-contextual-search";
 

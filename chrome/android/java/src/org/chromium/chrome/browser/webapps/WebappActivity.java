@@ -175,7 +175,8 @@ public class WebappActivity extends FullScreenActivity {
      * Saves the tab data out to a file.
      */
     void saveState(File activityDirectory) {
-        File tabFile = getTabFile(activityDirectory, getActivityTab().getId());
+        String tabFileName = TabState.getTabStateFilename(getActivityTab().getId(), false);
+        File tabFile = new File(activityDirectory, tabFileName);
 
         FileOutputStream foutput = null;
         // Temporarily allowing disk access while fixing. TODO: http://crbug.com/525781

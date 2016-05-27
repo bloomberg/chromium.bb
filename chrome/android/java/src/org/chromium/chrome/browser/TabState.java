@@ -188,7 +188,7 @@ public class TabState {
      * @param encrypted Whether the file is encrypted or not.
      * @return TabState that has been restored, or null if it failed.
      */
-    public static TabState readState(FileInputStream input, boolean encrypted) throws IOException {
+    private static TabState readState(FileInputStream input, boolean encrypted) throws IOException {
         DataInputStream stream = null;
         if (encrypted) {
             Cipher cipher = CipherFactory.getInstance().getCipher(Cipher.DECRYPT_MODE);

@@ -21,7 +21,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.browser.TabTitleObserver;
@@ -162,8 +161,7 @@ public class PrintingControllerTest extends ChromeActivityTestCaseBase<ChromeAct
      * @SmallTest
      * @Feature({"Printing"})
      */
-    @CommandLineFlags.Add(
-            {ContentSwitches.DISABLE_POPUP_BLOCKING, ChromeSwitches.DISABLE_DOCUMENT_MODE})
+    @CommandLineFlags.Add(ContentSwitches.DISABLE_POPUP_BLOCKING)
     @DisabledTest
     public void testPrintClosedWindow() throws Throwable {
         if (!ApiCompatibilityUtils.isPrintingSupported()) return;

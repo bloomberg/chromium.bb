@@ -8,8 +8,6 @@ import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.Log;
-import org.chromium.base.StreamUtil;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -27,9 +25,6 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContentsObserver;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 /**
  * Base class for task-focused activities that need to display web content in a nearly UI-less
@@ -121,22 +116,12 @@ public abstract class FullScreenActivity extends ChromeActivity {
         }
 
         if (tabId != Tab.INVALID_TAB_ID && tabUrl != null && getActivityDirectory() != null) {
-            FileInputStream stream = null;
-            try {
-                // Restore the tab.
-                stream = new FileInputStream(getTabFile(getActivityDirectory(), tabId));
-                TabState tabState = TabState.readState(stream, false);
-                tab = new Tab(tabId, Tab.INVALID_TAB_ID, false, this, getWindowAndroid(),
-                        TabLaunchType.FROM_RESTORE,
-                        TabCreationState.FROZEN_ON_RESTORE, tabState);
-                unfreeze = true;
-            } catch (FileNotFoundException exception) {
-                Log.e(TAG, "Failed to restore tab state.", exception);
-            } catch (IOException exception) {
-                Log.e(TAG, "Failed to restore tab state.", exception);
-            } finally {
-                StreamUtil.closeQuietly(stream);
-            }
+            // Restore the tab.
+            TabState tabState = TabState.restoreTabState(getActivityDirectory(), tabId);
+            tab = new Tab(tabId, Tab.INVALID_TAB_ID, false, this, getWindowAndroid(),
+                    TabLaunchType.FROM_RESTORE,
+                    TabCreationState.FROZEN_ON_RESTORE, tabState);
+            unfreeze = true;
         }
 
         if (tab == null) {
@@ -172,13 +157,6 @@ public abstract class FullScreenActivity extends ChromeActivity {
      */
     protected File getActivityDirectory() {
         return null;
-    }
-
-    /**
-     * @return {@link File} pointing at the tab state for this Activity.
-     */
-    protected static File getTabFile(File activityDirectory, int tabId) {
-        return new File(activityDirectory, TabState.getTabStateFilename(tabId, false));
     }
 
     @Override
