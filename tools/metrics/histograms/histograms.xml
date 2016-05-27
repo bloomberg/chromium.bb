@@ -95174,6 +95174,22 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PageLoad.Timing2.ParseStartToFirstContentfulPaint"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="PageLoadMetricsClients.Reload" separator="."
+    ordering="prefix">
+  <suffix name="Clients.Reload"
+      label="PageLoadMetrics from a page that is reloaded"/>
+  <affected-histogram
+      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="PageLoadMetricsClients.Reload.UserGesture"
+    separator=".">
+  <suffix name="UserGesture"
+      label="PageLoadMetrics from a page that is reloaded by a user gesture"/>
+  <affected-histogram
+      name="PageLoad.Clients.Reload.PaintTiming.NavigationToFirstContentfulPaint"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="PageLoadType">
   <suffix name="HistoryLoad"
       label="but only for user pressing back or forward"/>
