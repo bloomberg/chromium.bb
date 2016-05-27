@@ -197,9 +197,28 @@ public:
         releaseStore(reinterpret_cast<void* volatile*>(&persistentNode), nullptr);
     }
 
+    class LockScope final {
+        STACK_ALLOCATED();
+    public:
+        LockScope(CrossThreadPersistentRegion& persistentRegion)
+            : m_persistentRegion(persistentRegion)
+        {
+            m_persistentRegion.lock();
+        }
+        ~LockScope()
+        {
+            m_persistentRegion.unlock();
+        }
+    private:
+        CrossThreadPersistentRegion& m_persistentRegion;
+    };
+
     void tracePersistentNodes(Visitor* visitor)
     {
-        MutexLocker lock(m_mutex);
+        // If this assert triggers, you're tracing without being in a LockScope.
+#if ENABLE(ASSERT)
+        DCHECK(m_mutex.locked());
+#endif
         m_persistentRegion->tracePersistentNodes(visitor, CrossThreadPersistentRegion::shouldTracePersistentNode);
     }
 
@@ -208,6 +227,18 @@ public:
     static bool shouldTracePersistentNode(Visitor*, PersistentNode*);
 
 private:
+    friend class LockScope;
+
+    void lock()
+    {
+        m_mutex.lock();
+    }
+
+    void unlock()
+    {
+        m_mutex.unlock();
+    }
+
     // We don't make CrossThreadPersistentRegion inherit from PersistentRegion
     // because we don't want to virtualize performance-sensitive methods
     // such as PersistentRegion::allocate/freePersistentNode.

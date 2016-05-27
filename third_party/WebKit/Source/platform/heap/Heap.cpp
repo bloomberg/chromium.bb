@@ -517,18 +517,27 @@ void ThreadHeap::collectGarbage(BlinkGC::StackState stackState, BlinkGC::GCType 
     if (gcType != BlinkGC::TakeSnapshot)
         state->heap().resetHeapCounters();
 
-    // 1. Trace persistent roots.
-    state->heap().visitPersistentRoots(visitor.get());
+    {
+        // Access to the CrossThreadPersistentRegion has to be prevented while
+        // marking and global weak processing is in progress. If not, threads
+        // not attached to Oilpan and participating in this GC are able
+        // to allocate & free PersistentNodes, something the marking phase isn't
+        // capable of handling.
+        CrossThreadPersistentRegion::LockScope persistentLock(ProcessHeap::crossThreadPersistentRegion());
 
-    // 2. Trace objects reachable from the stack.  We do this independent of the
-    // given stackState since other threads might have a different stack state.
-    state->heap().visitStackRoots(visitor.get());
+        // 1. Trace persistent roots.
+        state->heap().visitPersistentRoots(visitor.get());
 
-    // 3. Transitive closure to trace objects including ephemerons.
-    state->heap().processMarkingStack(visitor.get());
+        // 2. Trace objects reachable from the stack.  We do this independent of the
+        // given stackState since other threads might have a different stack state.
+        state->heap().visitStackRoots(visitor.get());
 
-    state->heap().postMarkingProcessing(visitor.get());
-    state->heap().globalWeakProcessing(visitor.get());
+        // 3. Transitive closure to trace objects including ephemerons.
+        state->heap().processMarkingStack(visitor.get());
+
+        state->heap().postMarkingProcessing(visitor.get());
+        state->heap().globalWeakProcessing(visitor.get());
+    }
 
     // Now we can delete all orphaned pages because there are no dangling
     // pointers to the orphaned pages.  (If we have such dangling pointers,
