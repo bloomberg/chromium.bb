@@ -23,9 +23,9 @@ _COMMAND_LINE_FLAGS_SUPPORTED = True
 
 _MAX_INLINE_FLAGS_LENGTH = 50  # Arbitrarily chosen.
 _EXTRA_COMMAND_LINE_FILE = (
-    'org.chromium.native_test.NativeTestActivity.CommandLineFile')
+    'org.chromium.native_test.NativeTest.CommandLineFile')
 _EXTRA_COMMAND_LINE_FLAGS = (
-    'org.chromium.native_test.NativeTestActivity.CommandLineFlags')
+    'org.chromium.native_test.NativeTest.CommandLineFlags')
 _EXTRA_TEST_LIST = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner'
         '.TestList')

@@ -77,7 +77,7 @@ _EXTRA_NATIVE_TEST_ACTIVITY = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner.'
         'NativeTestActivity')
 _EXTRA_RUN_IN_SUB_THREAD = (
-    'org.chromium.native_test.NativeTestActivity.RunInSubThread')
+    'org.chromium.native_test.NativeTest.RunInSubThread')
 EXTRA_SHARD_NANO_TIMEOUT = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner.'
         'ShardNanoTimeout')

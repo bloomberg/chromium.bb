@@ -23,10 +23,24 @@ found in the LICENSE file.
 
     <application android:label="NativeTests"
             android:name="org.chromium.base.BaseChromiumApplication">
+        {% if use_native_activity == 'true' %}
+        <activity android:name=".NativeUnitTestNativeActivity"
+                android:label="NativeTest"
+                android:configChanges="orientation|keyboardHidden"
+                android:process=":test_process">
+            {% if is_component_build == 'true' %}
+            <meta-data android:name="android.app.lib_name"
+                       android:value="{{ native_library_name }}.cr" />
+            {% else %}
+            <meta-data android:name="android.app.lib_name"
+                       android:value="{{ native_library_name }}" />
+            {% endif %}
+        {% else %}
         <activity android:name=".NativeUnitTestActivity"
                 android:label="NativeTest"
                 android:configChanges="orientation|keyboardHidden"
                 android:process=":test_process">
+        {% endif %}
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

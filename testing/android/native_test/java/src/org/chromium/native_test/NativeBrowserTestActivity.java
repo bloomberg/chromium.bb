@@ -4,6 +4,7 @@
 
 package org.chromium.native_test;
 
+import android.app.Activity;
 import android.os.Bundle;
 
 import org.chromium.base.Log;
@@ -13,8 +14,7 @@ import java.io.File;
 /**
  * An {@link android.app.Activity} for running native browser tests.
  */
-public abstract class NativeBrowserTestActivity extends NativeTestActivity {
-
+public abstract class NativeBrowserTestActivity extends Activity {
     private static final String TAG = "cr_NativeTest";
 
     private static final String BROWSER_TESTS_FLAGS[] = {
@@ -25,9 +25,13 @@ public abstract class NativeBrowserTestActivity extends NativeTestActivity {
         "--use-fake-device-for-media-stream"
     };
 
+    private NativeTest mTest = new NativeTest();
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        mTest.preCreate(this);
         super.onCreate(savedInstanceState);
+        mTest.postCreate(this);
         for (String flag : BROWSER_TESTS_FLAGS) {
             appendCommandLineFlags(flag);
         }
@@ -38,6 +42,11 @@ public abstract class NativeBrowserTestActivity extends NativeTestActivity {
         deletePrivateDataDirectory();
         initializeBrowserProcess();
         super.onStart();
+        mTest.postStart(this, false);
+    }
+
+    public void appendCommandLineFlags(String flags) {
+        mTest.appendCommandLineFlags(flags);
     }
 
     /** Deletes a file or directory along with any of its children.

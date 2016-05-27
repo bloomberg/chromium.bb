@@ -63,6 +63,7 @@ template("_gen_isolate") {
 # set.
 # Variable:
 #   use_raw_android_executable: Use executable() rather than android_apk().
+#   use_native_activity: Test implements ANativeActivity_onCreate().
 template("test") {
   if (is_android) {
     import("//build/config/android/config.gni")
@@ -162,6 +163,7 @@ template("test") {
         "proguard_enabled",
         "use_default_launcher",
         "write_asset_list",
+        "use_native_activity",
       ]
       shared_library(_library_target) {
         # Configs will always be defined since we set_defaults in BUILDCONFIG.gn.

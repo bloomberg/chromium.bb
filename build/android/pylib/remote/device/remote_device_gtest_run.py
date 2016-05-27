@@ -15,7 +15,7 @@ from pylib.remote.device import remote_device_test_run
 
 
 _EXTRA_COMMAND_LINE_FILE = (
-    'org.chromium.native_test.NativeTestActivity.CommandLineFile')
+    'org.chromium.native_test.NativeTest.CommandLineFile')
 
 
 class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):

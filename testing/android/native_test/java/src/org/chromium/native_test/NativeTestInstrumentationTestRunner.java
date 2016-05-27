@@ -39,7 +39,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *  An Instrumentation that runs tests based on NativeTestActivity.
+ *  An Instrumentation that runs tests based on NativeTest.
  */
 public class NativeTestInstrumentationTestRunner extends Instrumentation {
 
@@ -232,7 +232,7 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
         return false;
     }
 
-    /** Starts the NativeTestActivty.
+    /** Starts the NativeTest Activity.
      */
     private class ShardStarter implements Runnable {
         @Override
@@ -243,9 +243,9 @@ public class NativeTestInstrumentationTestRunner extends Instrumentation {
             i.putExtras(mTransparentArguments);
             if (mShards != null && !mShards.isEmpty()) {
                 ArrayList<String> shard = mShards.remove();
-                i.putStringArrayListExtra(NativeTestActivity.EXTRA_SHARD, shard);
+                i.putStringArrayListExtra(NativeTest.EXTRA_SHARD, shard);
             }
-            i.putExtra(NativeTestActivity.EXTRA_STDOUT_FILE, mStdoutFile.getAbsolutePath());
+            i.putExtra(NativeTest.EXTRA_STDOUT_FILE, mStdoutFile.getAbsolutePath());
             getContext().startActivity(i);
         }
     }

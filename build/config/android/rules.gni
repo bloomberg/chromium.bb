@@ -2120,6 +2120,7 @@ template("instrumentation_test_apk") {
 #             of the unittests_dep target postfixed with "_apk"
 #   use_default_launcher: Whether the default activity (NativeUnitTestActivity)
 #     should be used for launching tests.
+#   use_native_activity: Test implements ANativeActivity_onCreate().
 #
 # Example
 #   unittest_apk("foo_unittests_apk") {
@@ -2127,20 +2128,45 @@ template("instrumentation_test_apk") {
 #     unittests_dep = ":foo_unittests"
 #   }
 template("unittest_apk") {
+  assert(defined(invoker.unittests_dep), "Need unittests_dep for $target_name")
+
+  test_suite_name = get_label_info(invoker.unittests_dep, "name")
+
+  # This trivial assert is needed in case both unittests_binary and apk_name
+  # are defined, as otherwise test_suite_name would not be used.
+  assert(test_suite_name != "")
+
+  _use_native_activity =
+      defined(invoker.use_native_activity) && invoker.use_native_activity
+  _android_manifest = "$target_gen_dir/$target_name/AndroidManifest.xml"
+
+  # This trivial assert is needed in case android_manifest is defined,
+  # as otherwise _use_native_activity and _android_manifest would not be used.
+  assert(_use_native_activity != "" && _android_manifest != "")
+
+  if (!defined(invoker.android_manifest)) {
+    jinja_template("${target_name}_manifest") {
+      if (!defined(invoker.unittests_binary)) {
+        native_library_name = test_suite_name
+      } else {
+        native_library_name = invoker.unittests_binary
+      }
+      input = "//testing/android/native_test/java/AndroidManifest.xml.jinja2"
+      output = _android_manifest
+      variables = [
+        "is_component_build=${is_component_build}",
+        "native_library_name=${native_library_name}",
+        "use_native_activity=${_use_native_activity}",
+      ]
+    }
+  }
+
   android_apk(target_name) {
     set_sources_assignment_filter([])
     data_deps = []
     deps = []
     forward_variables_from(invoker, "*")
     testonly = true
-
-    assert(defined(unittests_dep), "Need unittests_dep for $target_name")
-
-    test_suite_name = get_label_info(unittests_dep, "name")
-
-    # This trivial assert is needed in case both unittests_binary and apk_name
-    # are defined, as otherwise test_suite_name would not be used.
-    assert(test_suite_name != "")
 
     if (defined(invoker.proguard_enabled) && invoker.proguard_enabled) {
       assert(invoker.proguard_configs != [])
@@ -2153,8 +2179,8 @@ template("unittest_apk") {
     }
 
     if (!defined(android_manifest)) {
-      android_manifest =
-          "//testing/android/native_test/java/AndroidManifest.xml"
+      deps += [ ":${target_name}_manifest" ]
+      android_manifest = _android_manifest
     }
 
     if (!defined(unittests_binary)) {

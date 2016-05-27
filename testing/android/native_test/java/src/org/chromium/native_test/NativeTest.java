@@ -23,22 +23,20 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- *  Android's NativeActivity is mostly useful for pure-native code.
- *  Our tests need to go up to our own java classes, which is not possible using
- *  the native activity class loader.
+ *  Helper to run tests inside Activity or NativeActivity.
  */
 @JNINamespace("testing::android")
-public class NativeTestActivity extends Activity {
+public class NativeTest {
     public static final String EXTRA_COMMAND_LINE_FILE =
-            "org.chromium.native_test.NativeTestActivity.CommandLineFile";
+            "org.chromium.native_test.NativeTest.CommandLineFile";
     public static final String EXTRA_COMMAND_LINE_FLAGS =
-            "org.chromium.native_test.NativeTestActivity.CommandLineFlags";
+            "org.chromium.native_test.NativeTest.CommandLineFlags";
     public static final String EXTRA_RUN_IN_SUB_THREAD =
-            "org.chromium.native_test.NativeTestActivity.RunInSubThread";
+            "org.chromium.native_test.NativeTest.RunInSubThread";
     public static final String EXTRA_SHARD =
-            "org.chromium.native_test.NativeTestActivity.Shard";
+            "org.chromium.native_test.NativeTest.Shard";
     public static final String EXTRA_STDOUT_FILE =
-            "org.chromium.native_test.NativeTestActivity.StdoutFile";
+            "org.chromium.native_test.NativeTest.StdoutFile";
 
     private static final String TAG = "cr_NativeTest";
 
@@ -68,22 +66,22 @@ public class NativeTestActivity extends Activity {
         }
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        ChromiumMultiDexInstaller.install(this);
-        super.onCreate(savedInstanceState);
+    public void preCreate(Activity activity) {
+        ChromiumMultiDexInstaller.install(activity);
+    }
 
+    public void postCreate(Activity activity) {
         CommandLine.init(new String[]{});
 
-        parseArgumentsFromIntent(getIntent());
-        mReporter = new TestStatusReporter(this);
+        parseArgumentsFromIntent(activity, activity.getIntent());
+        mReporter = new TestStatusReporter(activity);
         mReporter.testRunStarted(Process.myPid());
         Thread.setDefaultUncaughtExceptionHandler(
                 new ReportingUncaughtExceptionHandler(mReporter,
                         Thread.getDefaultUncaughtExceptionHandler()));
     }
 
-    private void parseArgumentsFromIntent(Intent intent) {
+    private void parseArgumentsFromIntent(Activity activity, Intent intent) {
         Log.i(TAG, "Extras:");
         Bundle extras = intent.getExtras();
         if (extras != null) {
@@ -124,25 +122,22 @@ public class NativeTestActivity extends Activity {
 
         mStdoutFilePath = intent.getStringExtra(EXTRA_STDOUT_FILE);
         if (mStdoutFilePath == null) {
-            mStdoutFilePath = new File(getFilesDir(), "test.fifo").getAbsolutePath();
+            mStdoutFilePath = new File(activity.getFilesDir(), "test.fifo").getAbsolutePath();
             mStdoutFifo = true;
         }
     }
 
-    protected void appendCommandLineFlags(String flags) {
+    public void appendCommandLineFlags(String flags) {
         mCommandLineFlags.append(" ").append(flags);
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        if (mRunInSubThread) {
+    public void postStart(final Activity activity, boolean forceRunInSubThread) {
+        if (mRunInSubThread || forceRunInSubThread) {
             // Create a new thread and run tests on it.
             new Thread() {
                 @Override
                 public void run() {
-                    runTests();
+                    runTests(activity);
                 }
             }.start();
         } else {
@@ -151,16 +146,16 @@ public class NativeTestActivity extends Activity {
             new Handler().post(new Runnable() {
                 @Override
                 public void run() {
-                    runTests();
+                    runTests(activity);
                 }
             });
         }
     }
 
-    private void runTests() {
+    private void runTests(Activity activity) {
         nativeRunTests(mCommandLineFlags.toString(), mCommandLineFilePath, mStdoutFilePath,
-                mStdoutFifo, getApplicationContext());
-        finish();
+                mStdoutFifo, activity.getApplicationContext());
+        activity.finish();
         mReporter.testRunFinished(Process.myPid());
     }
 

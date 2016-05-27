@@ -25,7 +25,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "gtest/gtest.h"
-#include "jni/NativeTestActivity_jni.h"
+#include "jni/NativeTest_jni.h"
 #include "testing/android/native_test/native_test_util.h"
 
 // The main function of the program to be wrapped as a test apk.
