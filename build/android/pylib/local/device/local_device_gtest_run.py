@@ -350,7 +350,7 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
 
     # Parse the output.
     # TODO(jbudorick): Transition test scripts away from parsing stdout.
-    results = self._test_instance.ParseGTestOutput(output)
+    results = gtest_test_instance.ParseGTestOutput(output)
 
     # Check whether there are any crashed testcases.
     self._crashes.update(r.GetName() for r in results

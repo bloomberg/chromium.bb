@@ -82,7 +82,7 @@ class RemoteDeviceGtestTestRun(remote_device_test_run.RemoteDeviceTestRun):
     output = self._results['results']['output'].splitlines()
     output = (l[len(self._INSTRUMENTATION_STREAM_LEADER):] for l in output
               if l.startswith(self._INSTRUMENTATION_STREAM_LEADER))
-    results_list = self._test_instance.ParseGTestOutput(output)
+    results_list = gtest_test_instance.ParseGTestOutput(output)
     results.AddResults(results_list)
 
     self._DetectPlatformErrors(results)

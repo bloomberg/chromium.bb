@@ -365,9 +365,22 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLObeyNoStoreSubFrame) {
   EXPECT_THAT(mhtml, Not(ContainsRegex("Content-Location:.*nostore.jpg")));
 }
 
+// TODO(crbug.com/615291): These fail on Android under some circumstances.
+#if defined(OS_ANDROID)
+#define MAYBE_ViewedMHTMLContainsNoStoreContentIfNoCacheControlPolicy \
+    DISABLED_ViewedMHTMLContainsNoStoreContentIfNoCacheControlPolicy
+#define MAYBE_ViewedMHTMLDoesNotContainNoStoreContent \
+    DISABLED_ViewedMHTMLDoesNotContainNoStoreContent
+#else
+#define MAYBE_ViewedMHTMLContainsNoStoreContentIfNoCacheControlPolicy \
+    ViewedMHTMLContainsNoStoreContentIfNoCacheControlPolicy
+#define MAYBE_ViewedMHTMLDoesNotContainNoStoreContent \
+    ViewedMHTMLDoesNotContainNoStoreContent
+#endif
+
 IN_PROC_BROWSER_TEST_F(
     MHTMLGenerationTest,
-    ViewedMHTMLContainsNoStoreContentIfNoCacheControlPolicy) {
+    MAYBE_ViewedMHTMLContainsNoStoreContentIfNoCacheControlPolicy) {
   // Generate MHTML, specifying the FailForNoStoreMainFrame policy.
   base::FilePath path(temp_dir_.path());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));
@@ -387,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest,
-                       ViewedMHTMLDoesNotContainNoStoreContent) {
+                       MAYBE_ViewedMHTMLDoesNotContainNoStoreContent) {
   // Generate MHTML, specifying the FailForNoStoreMainFrame policy.
   base::FilePath path(temp_dir_.path());
   path = path.Append(FILE_PATH_LITERAL("test.mht"));

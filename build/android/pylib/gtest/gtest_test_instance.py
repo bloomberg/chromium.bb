@@ -98,8 +98,6 @@ _RE_TEST_ERROR = re.compile(r'FAILURES!!! Tests run: \d+,'
 _RE_TEST_CURRENTLY_RUNNING = re.compile(r'\[ERROR:.*?\]'
                                     r' Currently running: (.*)')
 
-# TODO(jbudorick): Make this a class method of GtestTestInstance once
-# test_package_apk and test_package_exe are gone.
 def ParseGTestListTests(raw_list):
   """Parses a raw test list as provided by --gtest_list_tests.
 
@@ -131,6 +129,66 @@ def ParseGTestListTests(raw_list):
       test_name = test.split()[0]
       ret += [current + test_name]
   return ret
+
+
+def ParseGTestOutput(output):
+  """Parses raw gtest output and returns a list of results.
+
+  Args:
+    output: A list of output lines.
+  Returns:
+    A list of base_test_result.BaseTestResults.
+  """
+  log = []
+  result_type = None
+  results = []
+  test_name = None
+
+  def handle_possibly_unknown_test():
+    if test_name is not None:
+      results.append(base_test_result.BaseTestResult(
+          test_name, base_test_result.ResultType.UNKNOWN, 0,
+          log=('\n'.join(log) if log else '')))
+
+  for l in output:
+    logging.info(l)
+    matcher = _RE_TEST_STATUS.match(l)
+    if matcher:
+      if matcher.group(1) == 'RUN':
+        handle_possibly_unknown_test()
+        log = []
+      elif matcher.group(1) == 'OK':
+        result_type = base_test_result.ResultType.PASS
+      elif matcher.group(1) == 'FAILED':
+        result_type = base_test_result.ResultType.FAIL
+      elif matcher.group(1) == 'CRASHED':
+        result_type = base_test_result.ResultType.CRASH
+      # Be aware that test name and status might not appear on same line.
+      test_name = matcher.group(2) if matcher.group(2) else test_name
+      duration = int(matcher.group(3)) if matcher.group(3) else 0
+
+    else:
+      # Needs another matcher here to match crashes, like those of DCHECK.
+      matcher = _RE_TEST_CURRENTLY_RUNNING.match(l)
+      if matcher:
+        test_name = matcher.group(1)
+        result_type = base_test_result.ResultType.CRASH
+        duration = 0 # Don't know.
+
+    if log is not None:
+      log.append(l)
+
+    if result_type:
+      results.append(base_test_result.BaseTestResult(
+          test_name, result_type, duration,
+          log=('\n'.join(log) if log else '')))
+      log = None
+      result_type = None
+      test_name = None
+
+  handle_possibly_unknown_test()
+
+  return results
 
 
 class GtestTestInstance(test_instance.TestInstance):
@@ -350,54 +408,6 @@ class GtestTestInstance(test_instance.TestInstance):
             if l and not l.startswith('#')]
 
     return '*-%s' % ':'.join(disabled_filter_items)
-
-  # pylint: disable=no-self-use
-  def ParseGTestOutput(self, output):
-    """Parses raw gtest output and returns a list of results.
-
-    Args:
-      output: A list of output lines.
-    Returns:
-      A list of base_test_result.BaseTestResults.
-    """
-    log = []
-    result_type = None
-    results = []
-    test_name = None
-    for l in output:
-      logging.info(l)
-      matcher = _RE_TEST_STATUS.match(l)
-      if matcher:
-        # Be aware that test name and status might not appear on same line.
-        test_name = matcher.group(2) if matcher.group(2) else test_name
-        duration = int(matcher.group(3)) if matcher.group(3) else 0
-        if matcher.group(1) == 'RUN':
-          log = []
-        elif matcher.group(1) == 'OK':
-          result_type = base_test_result.ResultType.PASS
-        elif matcher.group(1) == 'FAILED':
-          result_type = base_test_result.ResultType.FAIL
-        elif matcher.group(1) == 'CRASHED':
-          result_type = base_test_result.ResultType.CRASH
-
-      # Needs another matcher here to match crashes, like those of DCHECK.
-      matcher = _RE_TEST_CURRENTLY_RUNNING.match(l)
-      if matcher:
-        test_name = matcher.group(1)
-        result_type = base_test_result.ResultType.CRASH
-        duration = 0 # Don't know.
-
-      if log is not None:
-        log.append(l)
-
-      if result_type:
-        results.append(base_test_result.BaseTestResult(
-            test_name, result_type, duration,
-            log=('\n'.join(log) if log else '')))
-        log = None
-        result_type = None
-
-    return results
 
   #override
   def TearDown(self):
