@@ -115,6 +115,13 @@ CONTENT_EXPORT extern const char kEnableExperimentalWebPlatformFeatures[];
 CONTENT_EXPORT extern const char kEnableFeatures[];
 CONTENT_EXPORT extern const char kEnableWasm[];
 CONTENT_EXPORT extern const char kEnableWebBluetooth[];
+CONTENT_EXPORT extern const char kEnableWebFontsInterventionV2[];
+CONTENT_EXPORT extern const char
+    kEnableWebFontsInterventionV2SwitchValueEnabledWith2G[];
+CONTENT_EXPORT extern const char
+    kEnableWebFontsInterventionV2SwitchValueEnabledWithSlow2G[];
+CONTENT_EXPORT extern const char
+    kEnableWebFontsInterventionV2SwitchValueDisabled[];
 CONTENT_EXPORT extern const char kEnableGpuAsyncWorkerContext[];
 CONTENT_EXPORT extern const char kEnableGpuMemoryBufferCompositorResources[];
 CONTENT_EXPORT extern const char kEnableGpuMemoryBufferVideoFrames[];

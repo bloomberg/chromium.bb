@@ -9,15 +9,49 @@
 #include "core/css/CSSFontSelector.h"
 #include "core/dom/Document.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/page/NetworkStateNotifier.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "public/platform/WebEffectiveConnectionType.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
+
+namespace {
+
+    bool isEffectiveConnectionTypeSlowFor(Document* document)
+    {
+        WebEffectiveConnectionType type = document->frame()->loader().client()->getEffectiveConnectionType();
+
+        WebEffectiveConnectionType thresholdType = RuntimeEnabledFeatures::webFontsInterventionV2With2GEnabled()
+            ? WebEffectiveConnectionType::Type2G
+            : WebEffectiveConnectionType::TypeSlow2G;
+
+        return WebEffectiveConnectionType::TypeOffline <= type && type <= thresholdType;
+    }
+
+    bool isConnectionTypeSlow()
+    {
+        return networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
+    }
+
+    bool shouldTriggerWebFontsIntervention(Document* document, FontDisplay display)
+    {
+        if (RuntimeEnabledFeatures::webFontsInterventionTriggerEnabled())
+            return true;
+
+        bool isV2Enabled = RuntimeEnabledFeatures::webFontsInterventionV2With2GEnabled() || RuntimeEnabledFeatures::webFontsInterventionV2WithSlow2GEnabled();
+
+        bool networkIsSlow = isV2Enabled ? isEffectiveConnectionTypeSlowFor(document) : isConnectionTypeSlow();
+
+        return networkIsSlow && display == FontDisplayAuto;
+    }
+
+} // namespace
 
 RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, CSSFontSelector* fontSelector, FontDisplay display)
     : m_font(font)
@@ -29,9 +63,8 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, CSSFontSelector* 
     ThreadState::current()->registerPreFinalizer(this);
     m_font->addClient(this);
 
-    // TODO(crbug.com/578029): Connect NQE signal for V2 mode.
-    bool triggered = RuntimeEnabledFeatures::webFontsInterventionV2Enabled() ? false : networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
-    if (RuntimeEnabledFeatures::webFontsInterventionTriggerEnabled() || (triggered && display == FontDisplayAuto)) {
+    if (shouldTriggerWebFontsIntervention(m_fontSelector->document(), display)) {
+
         m_isInterventionTriggered = true;
         m_period = SwapPeriod;
         m_fontSelector->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, InfoMessageLevel, "Slow network is detected. Fallback font will be used while loading: " + m_font->url().elidedString()));

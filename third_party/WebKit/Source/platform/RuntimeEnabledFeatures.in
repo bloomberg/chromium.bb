@@ -232,6 +232,7 @@ ScrollCustomization
 ScrollRestoration status=stable
 VisualViewportAPI status=experimental
 WakeLock status=experimental
-WebFontsInterventionV2
+WebFontsInterventionV2With2G
+WebFontsInterventionV2WithSlow2G
 WebFontsInterventionTrigger
 Worklet status=test

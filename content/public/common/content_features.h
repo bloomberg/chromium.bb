@@ -34,7 +34,6 @@ CONTENT_EXPORT extern const base::Feature kPointerEvents;
 CONTENT_EXPORT extern const base::Feature kScrollAnchoring;
 CONTENT_EXPORT extern const base::Feature kStaleWhileRevalidate;
 CONTENT_EXPORT extern const base::Feature kTokenBinding;
-CONTENT_EXPORT extern const base::Feature kWebFontsInterventionV2;
 CONTENT_EXPORT extern const base::Feature kWebRtcEcdsaDefault;
 CONTENT_EXPORT extern const base::Feature kWebUsb;
 

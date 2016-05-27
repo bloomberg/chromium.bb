@@ -177,11 +177,32 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisablePresentationAPI))
     WebRuntimeFeatures::enablePresentationAPI(false);
 
-  if (base::FeatureList::IsEnabled(features::kWebFontsInterventionV2)) {
-    WebRuntimeFeatures::enableWebFontsInterventionV2(true);
-    if (command_line.HasSwitch(switches::kEnableWebFontsInterventionTrigger))
-      WebRuntimeFeatures::enableWebFontsInterventionTrigger(true);
+  const std::string webfonts_intervention_v2_group_name =
+      base::FieldTrialList::FindFullName("WebFontsInterventionV2");
+  const std::string webfonts_intervention_v2_about_flag =
+      command_line.GetSwitchValueASCII(switches::kEnableWebFontsInterventionV2);
+  if (!webfonts_intervention_v2_about_flag.empty()) {
+    WebRuntimeFeatures::enableWebFontsInterventionV2With2G(
+        webfonts_intervention_v2_about_flag.compare(
+            switches::kEnableWebFontsInterventionV2SwitchValueEnabledWith2G) ==
+        0);
+    WebRuntimeFeatures::enableWebFontsInterventionV2WithSlow2G(
+        webfonts_intervention_v2_about_flag.compare(
+            switches::
+                kEnableWebFontsInterventionV2SwitchValueEnabledWithSlow2G) ==
+        0);
+  } else {
+    WebRuntimeFeatures::enableWebFontsInterventionV2With2G(base::StartsWith(
+        webfonts_intervention_v2_group_name,
+        switches::kEnableWebFontsInterventionV2SwitchValueEnabledWith2G,
+        base::CompareCase::INSENSITIVE_ASCII));
+    WebRuntimeFeatures::enableWebFontsInterventionV2WithSlow2G(base::StartsWith(
+        webfonts_intervention_v2_group_name,
+        switches::kEnableWebFontsInterventionV2SwitchValueEnabledWithSlow2G,
+        base::CompareCase::INSENSITIVE_ASCII));
   }
+  if (command_line.HasSwitch(switches::kEnableWebFontsInterventionTrigger))
+    WebRuntimeFeatures::enableWebFontsInterventionTrigger(true);
 
   if (base::FeatureList::IsEnabled(features::kScrollAnchoring))
     WebRuntimeFeatures::enableScrollAnchoring(true);

@@ -371,6 +371,14 @@ const char kEnableFeatures[] = "enable-features";
 // Enable Web Bluetooth.
 const char kEnableWebBluetooth[] = "enable-web-bluetooth";
 
+// WebFonts intervention v2 flag and values.
+const char kEnableWebFontsInterventionV2[] = "enable-webfonts-intervention-v2";
+const char kEnableWebFontsInterventionV2SwitchValueEnabledWith2G[] =
+    "enabled-2g";
+const char kEnableWebFontsInterventionV2SwitchValueEnabledWithSlow2G[] =
+    "enabled-slow2g";
+const char kEnableWebFontsInterventionV2SwitchValueDisabled[] = "disabled";
+
 // Makes the GL worker context run asynchronously by using a separate stream.
 const char kEnableGpuAsyncWorkerContext[] = "enable-gpu-async-worker-context";
 
