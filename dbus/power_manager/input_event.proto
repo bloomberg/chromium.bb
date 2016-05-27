@@ -18,6 +18,8 @@ message InputEvent {
     POWER_BUTTON_UP = 1;
     LID_OPEN = 2;
     LID_CLOSED = 3;
+    TABLET_MODE_ON = 4;
+    TABLET_MODE_OFF = 5;
   }
   optional Type type = 1;
 
