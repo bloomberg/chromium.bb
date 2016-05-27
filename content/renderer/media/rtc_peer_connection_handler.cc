@@ -722,15 +722,6 @@ void ConvertConstraintsToWebrtcOfferOptions(
 base::LazyInstance<std::set<RTCPeerConnectionHandler*> >::Leaky
     g_peer_connection_handlers = LAZY_INSTANCE_INITIALIZER;
 
-void OverrideDefaultCertificate(
-    webrtc::PeerConnectionInterface::RTCConfiguration* config) {
-  if (rtc::KT_DEFAULT != rtc::KT_ECDSA && config->certificates.empty()) {
-    rtc::scoped_refptr<rtc::RTCCertificate> certificate =
-        PeerConnectionDependencyFactory::GenerateDefaultCertificate();
-    config->certificates.push_back(certificate);
-  }
-}
-
 }  // namespace
 
 // Implementation of LocalRTCStatsRequest.
@@ -961,7 +952,6 @@ bool RTCPeerConnectionHandler::initialize(
 
   webrtc::PeerConnectionInterface::RTCConfiguration config;
   GetNativeRtcConfiguration(server_configuration, &config);
-  OverrideDefaultCertificate(&config);
 
   // Choose between RTC smoothness algorithm and prerenderer smoothing.
   // Prerenderer smoothing is turned on if RTC smoothness is turned off.
@@ -998,7 +988,6 @@ bool RTCPeerConnectionHandler::InitializeForTest(
   DCHECK(thread_checker_.CalledOnValidThread());
   webrtc::PeerConnectionInterface::RTCConfiguration config;
   GetNativeRtcConfiguration(server_configuration, &config);
-  OverrideDefaultCertificate(&config);
 
   peer_connection_observer_ = new Observer(weak_factory_.GetWeakPtr());
   CopyConstraintsIntoRtcConfiguration(options, &config);

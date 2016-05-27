@@ -67,9 +67,6 @@ class CONTENT_EXPORT PeerConnectionDependencyFactory
   blink::WebRTCPeerConnectionHandler* CreateRTCPeerConnectionHandler(
       blink::WebRTCPeerConnectionHandlerClient* client);
 
-  // Generate an ECDSA certificate.
-  static rtc::scoped_refptr<rtc::RTCCertificate> GenerateDefaultCertificate();
-
   // Asks the PeerConnection factory to create a Local MediaStream object.
   virtual scoped_refptr<webrtc::MediaStreamInterface>
       CreateLocalMediaStream(const std::string& label);
