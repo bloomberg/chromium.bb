@@ -11,11 +11,9 @@ https://docs.google.com/document/d/1EZQX-x3eEphXupiX-Hq7T4Afju5_sIdxPWYetj7ynd0
 from core import perf_benchmark
 import page_sets
 
-from telemetry import benchmark
 from telemetry.page import cache_temperature
 from telemetry.timeline import tracing_category_filter
 from telemetry.web_perf import timeline_based_measurement
-
 
 class _PageCyclerV2(perf_benchmark.PerfBenchmark):
   def CreateTimelineBasedMeasurementOptions(self):
@@ -27,8 +25,6 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
     tbm_options.SetTimelineBasedMetric('firstPaintMetric')
     return tbm_options
 
-
-@benchmark.Disabled('all')  # crbug.com/615178
 class PageCyclerV2Typical25(_PageCyclerV2):
   """Page load time benchmark for a 25 typical web pages.
 
