@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_interfaces.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mojo_host_type_converters.h"
 
@@ -59,9 +60,16 @@ void MojoHostResolverImpl::Resolve(
     interfaces::HostResolverRequestInfoPtr request_info,
     interfaces::HostResolverRequestClientPtr client) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  Job* job = new Job(this, resolver_,
-                     request_info->To<net::HostResolver::RequestInfo>(),
-                     net_log_, std::move(client));
+  HostResolver::RequestInfo host_request_info =
+      request_info->To<net::HostResolver::RequestInfo>();
+  if (host_request_info.is_my_ip_address()) {
+    // The proxy resolver running inside a sandbox may not be able to get the
+    // correct host name. Instead, fill it ourself if the request is for our own
+    // IP address.
+    host_request_info.set_host_port_pair(HostPortPair(GetHostName(), 80));
+  }
+  Job* job = new Job(this, resolver_, host_request_info, net_log_,
+                     std::move(client));
   pending_jobs_.insert(job);
   job->Start();
 }
