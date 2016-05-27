@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/i18n/icu_util.h"
 #include "base/location.h"
@@ -37,44 +36,9 @@
 #include "services/shell/runner/host/native_application_support.h"
 #include "services/shell/runner/init.h"
 
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
-#include "base/rand_util.h"
-#include "base/sys_info.h"
-#include "services/shell/runner/host/linux_sandbox.h"
-#endif
-
-#if defined(OS_MACOSX)
-#include "services/shell/runner/host/mach_broker.h"
-#endif
-
 namespace shell {
 
 namespace {
-
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
-std::unique_ptr<LinuxSandbox> InitializeSandbox() {
-  using sandbox::syscall_broker::BrokerFilePermission;
-  // Warm parts of base in the copy of base in the mojo runner.
-  base::RandUint64();
-  base::SysInfo::AmountOfPhysicalMemory();
-  base::SysInfo::MaxSharedMemorySize();
-  base::SysInfo::NumberOfProcessors();
-
-  // TODO(erg,jln): Allowing access to all of /dev/shm/ makes it easy to
-  // spy on other shared memory using processes. This is a temporary hack
-  // so that we have some sandbox until we have proper shared memory
-  // support integrated into mojo.
-  std::vector<BrokerFilePermission> permissions;
-  permissions.push_back(
-      BrokerFilePermission::ReadWriteCreateUnlinkRecursive("/dev/shm/"));
-  std::unique_ptr<LinuxSandbox> sandbox(new LinuxSandbox(permissions));
-  sandbox->Warmup();
-  sandbox->EngageNamespaceSandbox();
-  sandbox->EngageSeccompSandbox();
-  sandbox->Seal();
-  return sandbox;
-}
-#endif
 
 void RunNativeLibrary(base::NativeLibrary app_library,
                       mojom::ShellClientRequest shell_client_request) {
@@ -90,9 +54,6 @@ int ChildProcessMain() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
-  std::unique_ptr<LinuxSandbox> sandbox;
-#endif
   base::NativeLibrary app_library = 0;
   // Load the application library before we engage the sandbox.
   base::FilePath app_library_path =
@@ -103,22 +64,7 @@ int ChildProcessMain() {
   if (app_library)
     CallLibraryEarlyInitialization(app_library);
 
-#if defined(OS_MACOSX)
-  // Send our task port to the parent.
-  MachBroker::SendTaskPortToParent();
-#endif
-
-#if !defined(OFFICIAL_BUILD)
-  // Initialize stack dumping just before initializing sandbox to make
-  // sure symbol names in all loaded libraries will be cached.
-  base::debug::EnableInProcessStackDumping();
-#endif
-#if defined(OS_LINUX) && !defined(OS_ANDROID)
-  if (command_line.HasSwitch(switches::kEnableSandbox))
-    sandbox = InitializeSandbox();
-#endif
-
-  ChildProcessMain(base::Bind(&RunNativeLibrary, app_library));
+  ChildProcessMainWithCallback(base::Bind(&RunNativeLibrary, app_library));
 
   return 0;
 }

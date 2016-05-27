@@ -12,9 +12,10 @@ namespace shell {
 
 // Child processes call this to establish the connection to the shell and obtain
 // the ShellClientRequest. Once the connection has been established |callback|
-// is run. ChildProcessMain() returns once the the callback completes.
+// is run. ChildProcessMainWithCallback() returns once the the callback
+// completes.
 using RunCallback = base::Callback<void(mojom::ShellClientRequest)>;
-void ChildProcessMain(const RunCallback& callback);
+void ChildProcessMainWithCallback(const RunCallback& callback);
 
 }  // namespace shell
 

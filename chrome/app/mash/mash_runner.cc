@@ -196,7 +196,7 @@ void MashRunner::RunMain() {
 
 void MashRunner::RunChild() {
   base::i18n::InitializeICU();
-  shell::ChildProcessMain(
+  shell::ChildProcessMainWithCallback(
       base::Bind(&MashRunner::StartChildApp, base::Unretained(this)));
 }
 
