@@ -351,8 +351,8 @@ private:
     // The logical offset of each row from the top of the section.
     //
     // Note that this Vector has one more entry than the number of rows so that
-    // we can keep track of the final size of the section
-    // (m_rowPos[m_grid.size() + 1]).
+    // we can keep track of the final size of the section. That is,
+    // m_rowPos[m_grid.size()] is a valid entry.
     //
     // To know a row's height at |rowIndex|, use the formula:
     // m_rowPos[rowIndex + 1] - m_rowPos[rowIndex]
