@@ -34,6 +34,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "media/cdm/cdm_paths.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
@@ -474,6 +475,11 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
 #if defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesPluginsBlockedTest,
                        WidevineCdm) {
+  // Check that Widevine CDM is available and registered.
+  base::FilePath adapter_path =
+      GetPepperCdmPath(kWidevineCdmBaseDirectory, kWidevineCdmAdapterFileName);
+  EXPECT_TRUE(base::PathExists(adapter_path)) << adapter_path.MaybeAsASCII();
+  EXPECT_TRUE(IsPepperCdmRegistered(kWidevineCdmPluginMimeType));
   RunLoadPepperPluginTest(kWidevineCdmPluginMimeType, true);
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE) && !defined(OS_CHROMEOS)
@@ -499,6 +505,11 @@ IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
 #if defined(WIDEVINE_CDM_AVAILABLE)
 IN_PROC_BROWSER_TEST_F(PepperContentSettingsSpecialCasesJavaScriptBlockedTest,
                        WidevineCdm) {
+  // Check that Widevine CDM is available and registered.
+  base::FilePath adapter_path =
+      GetPepperCdmPath(kWidevineCdmBaseDirectory, kWidevineCdmAdapterFileName);
+  EXPECT_TRUE(base::PathExists(adapter_path)) << adapter_path.MaybeAsASCII();
+  EXPECT_TRUE(IsPepperCdmRegistered(kWidevineCdmPluginMimeType));
   RunJavaScriptBlockedTest("load_widevine_no_js.html", true);
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
