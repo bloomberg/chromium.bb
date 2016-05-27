@@ -8,9 +8,11 @@
 #include <vector>
 
 #include "base/android/jni_android.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/ui/passwords/manage_passwords_state.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace content {
 class WebContents;
@@ -18,11 +20,10 @@ class WebContents;
 
 // Native counterpart for the android dialog which informs user about auto
 // sign-in feature and allows to turn it off.
-class AutoSigninFirstRunDialogAndroid {
+class AutoSigninFirstRunDialogAndroid : public content::WebContentsObserver {
  public:
   explicit AutoSigninFirstRunDialogAndroid(content::WebContents* web_contents);
 
-  ~AutoSigninFirstRunDialogAndroid();
   void Destroy(JNIEnv* env, jobject obj);
 
   void ShowDialog();
@@ -39,8 +40,16 @@ class AutoSigninFirstRunDialogAndroid {
   // Opts user out of the auto sign-in feature.
   void OnTurnOffClicked(JNIEnv* env, jobject obj);
 
+  // content::WebContentsObserver overrides:
+  void WebContentsDestroyed() override;
+  void WasHidden() override;
+
  private:
+  ~AutoSigninFirstRunDialogAndroid() override;
+
   content::WebContents* web_contents_;
+
+  base::android::ScopedJavaGlobalRef<jobject> dialog_jobject_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoSigninFirstRunDialogAndroid);
 };
