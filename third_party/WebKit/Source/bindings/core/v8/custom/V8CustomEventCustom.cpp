@@ -57,7 +57,7 @@ static void storeDetail(ScriptState* scriptState, CustomEvent* impl, v8::Local<v
     // |detail| and store it in |impl| so that we can clone |detail|
     // when the getter of |detail| is called in the main world later.
     if (DOMWrapperWorld::current(scriptState->isolate()).isIsolatedWorld())
-        impl->setSerializedDetail(SerializedScriptValueFactory::instance().createAndSwallowExceptions(scriptState->isolate(), detail));
+        impl->setSerializedDetail(SerializedScriptValue::serializeAndSwallowExceptions(scriptState->isolate(), detail));
 }
 
 void V8CustomEvent::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -125,7 +125,7 @@ void V8CustomEvent::detailAttributeGetterCustom(const v8::FunctionCallbackInfo<v
     } else if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld()) {
         v8::Local<v8::Value> mainWorldDetail = V8HiddenValue::getHiddenValueFromMainWorldWrapper(scriptState, event, V8HiddenValue::detail(info.GetIsolate()));
         if (!mainWorldDetail.IsEmpty()) {
-            event->setSerializedDetail(SerializedScriptValueFactory::instance().createAndSwallowExceptions(info.GetIsolate(), mainWorldDetail));
+            event->setSerializedDetail(SerializedScriptValue::serializeAndSwallowExceptions(info.GetIsolate(), mainWorldDetail));
             detail = event->serializedDetail()->deserialize();
         }
     }

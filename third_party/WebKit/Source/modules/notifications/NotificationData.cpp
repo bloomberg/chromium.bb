@@ -75,7 +75,7 @@ WebNotificationData createWebNotificationData(ExecutionContext* executionContext
         const ScriptValue& data = options.data();
         v8::Isolate* isolate = data.isolate();
         DCHECK(isolate->InContext());
-        RefPtr<SerializedScriptValue> serializedScriptValue = SerializedScriptValueFactory::instance().create(isolate, data.v8Value(), nullptr, nullptr, exceptionState);
+        RefPtr<SerializedScriptValue> serializedScriptValue = SerializedScriptValue::serialize(isolate, data.v8Value(), nullptr, nullptr, exceptionState);
         if (exceptionState.hadException())
             return WebNotificationData();
 

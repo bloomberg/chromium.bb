@@ -1046,7 +1046,7 @@ static void serializedScriptValueAttributeAttributeSetter(v8::Local<v8::Value> v
     v8::Local<v8::Object> holder = info.Holder();
     ExceptionState exceptionState(ExceptionState::SetterContext, "serializedScriptValueAttribute", "TestObject", holder, info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(holder);
-    RefPtr<SerializedScriptValue> cppValue = SerializedScriptValueFactory::instance().create(info.GetIsolate(), v8Value, nullptr, nullptr, exceptionState);
+    RefPtr<SerializedScriptValue> cppValue = SerializedScriptValue::serialize(info.GetIsolate(), v8Value, nullptr, nullptr, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     impl->setSerializedScriptValueAttribute(cppValue);
@@ -7049,7 +7049,7 @@ static void voidMethodSerializedScriptValueArgMethod(const v8::FunctionCallbackI
     TestObject* impl = V8TestObject::toImpl(info.Holder());
     RefPtr<SerializedScriptValue> serializedScriptValueArg;
     {
-        serializedScriptValueArg = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], nullptr, nullptr, exceptionState);
+        serializedScriptValueArg = SerializedScriptValue::serialize(info.GetIsolate(), info[0], nullptr, nullptr, exceptionState);
         if (exceptionState.throwIfNeeded())
             return;
     }
@@ -10160,7 +10160,7 @@ void postMessageImpl(const char* interfaceName, TestObject* instance, const v8::
             return;
         }
     }
-    RefPtr<SerializedScriptValue> message = SerializedScriptValueFactory::instance().create(info.GetIsolate(), info[0], &transferables, nullptr, exceptionState);
+    RefPtr<SerializedScriptValue> message = SerializedScriptValue::serialize(info.GetIsolate(), info[0], &transferables, nullptr, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
     // FIXME: Only pass context/exceptionState if instance really requires it.

@@ -63,7 +63,7 @@ v8::Local<v8::Value> ScriptValue::v8ValueFor(ScriptState* targetScriptState) con
 
     ASSERT(isolate->InContext());
     v8::Local<v8::Value> value = m_value->newLocal(isolate);
-    RefPtr<SerializedScriptValue> serialized = SerializedScriptValueFactory::instance().createAndSwallowExceptions(isolate, value);
+    RefPtr<SerializedScriptValue> serialized = SerializedScriptValue::serializeAndSwallowExceptions(isolate, value);
     return serialized->deserialize();
 }
 

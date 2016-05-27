@@ -53,12 +53,6 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isola
     return create(isolate, value, writer, transferables, blobInfo, exceptionState);
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::createAndSwallowExceptions(v8::Isolate* isolate, v8::Local<v8::Value> value)
-{
-    TrackExceptionState exceptionState;
-    return create(isolate, value, nullptr, nullptr, exceptionState);
-}
-
 PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(const String& data)
 {
     SerializedScriptValueWriter writer;

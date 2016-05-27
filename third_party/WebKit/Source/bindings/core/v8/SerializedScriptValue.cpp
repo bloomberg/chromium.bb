@@ -58,6 +58,22 @@
 
 namespace blink {
 
+PassRefPtr<SerializedScriptValue> SerializedScriptValue::serialize(v8::Isolate* isolate, v8::Local<v8::Value> value, Transferables* transferables, WebBlobInfoArray* blobInfo, ExceptionState& exception)
+{
+    return SerializedScriptValueFactory::instance().create(isolate, value, transferables, blobInfo, exception);
+}
+
+PassRefPtr<SerializedScriptValue> SerializedScriptValue::serialize(const String& str)
+{
+    return SerializedScriptValueFactory::instance().create(str);
+}
+
+PassRefPtr<SerializedScriptValue> SerializedScriptValue::serializeAndSwallowExceptions(v8::Isolate* isolate, v8::Local<v8::Value> value)
+{
+    TrackExceptionState exceptionState;
+    return serialize(isolate, value, nullptr, nullptr, exceptionState);
+}
+
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::create()
 {
     return adoptRef(new SerializedScriptValue);
@@ -111,8 +127,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::nullValue()
 {
     SerializedScriptValueWriter writer;
     writer.writeNull();
-    String wireData = writer.takeWireString();
-    return adoptRef(new SerializedScriptValue(wireData));
+    return create(writer.takeWireString());
 }
 
 // Convert serialized string to big endian wire data.

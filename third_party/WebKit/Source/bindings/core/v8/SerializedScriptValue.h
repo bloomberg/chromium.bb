@@ -72,6 +72,11 @@ public:
     static const int varIntShift = 7;
     static const int varIntMask = (1 << varIntShift) - 1;
 
+    static PassRefPtr<SerializedScriptValue> serialize(v8::Isolate*, v8::Local<v8::Value>, Transferables*, WebBlobInfoArray*, ExceptionState&);
+    static PassRefPtr<SerializedScriptValue> serialize(const String&);
+    static PassRefPtr<SerializedScriptValue> serializeAndSwallowExceptions(v8::Isolate*, v8::Local<v8::Value>);
+
+    // TODO(peria): Make these create()s private.
     static PassRefPtr<SerializedScriptValue> create();
     static PassRefPtr<SerializedScriptValue> create(const String&);
     static PassRefPtr<SerializedScriptValue> create(const char* data, size_t length);

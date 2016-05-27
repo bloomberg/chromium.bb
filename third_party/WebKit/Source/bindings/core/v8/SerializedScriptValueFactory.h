@@ -17,46 +17,47 @@ class CORE_EXPORT SerializedScriptValueFactory {
     WTF_MAKE_NONCOPYABLE(SerializedScriptValueFactory);
     USING_FAST_MALLOC(SerializedScriptValueFactory);
 public:
-    SerializedScriptValueFactory() { }
+    // SerializedScriptValueFactory::initialize() should be invoked when Blink is initialized,
+    // i.e. initialize() in WebKit.cpp.
+    static void initialize(SerializedScriptValueFactory* newFactory)
+    {
+        DCHECK(!m_instance);
+        m_instance = newFactory;
+    }
+
+protected:
+    friend class SerializedScriptValue;
+
+    // Following 4 methods are expected to be called by SerializedScriptValue.
 
     // If a serialization error occurs (e.g., cyclic input value) this
     // function returns an empty representation, schedules a V8 exception to
     // be thrown using v8::ThrowException(), and sets |didThrow|. In this case
     // the caller must not invoke any V8 operations until control returns to
     // V8. When serialization is successful, |didThrow| is false.
-    PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, ExceptionState&);
     virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, Transferables*, WebBlobInfoArray*, ExceptionState&);
+    PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, ExceptionState&);
     PassRefPtr<SerializedScriptValue> create(const String&);
-
-    // Never throws exceptions.
-    PassRefPtr<SerializedScriptValue> createAndSwallowExceptions(v8::Isolate*, v8::Local<v8::Value>);
 
     v8::Local<v8::Value> deserialize(SerializedScriptValue*, v8::Isolate*, MessagePortArray*, const WebBlobInfoArray*);
 
+    // Following methods are expected to be called in SerializedScriptValueFactory{ForModules}.
+    SerializedScriptValueFactory() { }
+    virtual ScriptValueSerializer::Status doSerialize(v8::Local<v8::Value>, SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, BlobDataHandleMap&, v8::TryCatch&, String& errorMessage, v8::Isolate*);
+    virtual v8::Local<v8::Value> deserialize(String& data, BlobDataHandleMap& blobDataHandles, ArrayBufferContentsArray*, ImageBitmapContentsArray*, v8::Isolate*, MessagePortArray* messagePorts, const WebBlobInfoArray*);
+
+private:
     static SerializedScriptValueFactory& instance()
     {
         if (!m_instance) {
-            ASSERT_NOT_REACHED();
-            m_instance = new SerializedScriptValueFactory();
+            NOTREACHED();
+            m_instance = new SerializedScriptValueFactory;
         }
         return *m_instance;
     }
 
-    // SerializedScriptValueFactory::initialize() should be invoked when Blink is initialized,
-    // i.e. initialize() in WebKit.cpp.
-    static void initialize(SerializedScriptValueFactory* newFactory)
-    {
-        ASSERT(!m_instance);
-        m_instance = newFactory;
-    }
-
-protected:
-    virtual ScriptValueSerializer::Status doSerialize(v8::Local<v8::Value>, SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, BlobDataHandleMap&, v8::TryCatch&, String& errorMessage, v8::Isolate*);
     void transferData(SerializedScriptValue*, SerializedScriptValueWriter&, Transferables*, ExceptionState&, v8::Isolate*);
 
-    virtual v8::Local<v8::Value> deserialize(String& data, BlobDataHandleMap& blobDataHandles, ArrayBufferContentsArray*, ImageBitmapContentsArray*, v8::Isolate*, MessagePortArray* messagePorts, const WebBlobInfoArray*);
-
-private:
     static SerializedScriptValueFactory* m_instance;
 };
 

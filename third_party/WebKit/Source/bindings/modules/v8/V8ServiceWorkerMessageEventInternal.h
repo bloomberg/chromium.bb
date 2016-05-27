@@ -56,7 +56,7 @@ void V8ServiceWorkerMessageEventInternal::constructorCustom(const v8::FunctionCa
         v8::Local<v8::Value> v8Data = eventInitDict.data().v8Value();
         V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), wrapper, V8HiddenValue::data(info.GetIsolate()), v8Data);
         if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld())
-            impl->setSerializedData(SerializedScriptValueFactory::instance().createAndSwallowExceptions(info.GetIsolate(), v8Data));
+            impl->setSerializedData(SerializedScriptValue::serializeAndSwallowExceptions(info.GetIsolate(), v8Data));
     }
     v8SetReturnValue(info, wrapper);
 }
@@ -83,7 +83,7 @@ void V8ServiceWorkerMessageEventInternal::dataAttributeGetterCustom(const v8::Fu
         if (!mainWorldData.IsEmpty()) {
             // TODO(bashi): Enter the main world's ScriptState::Scope while
             // serializing the main world's value.
-            event->setSerializedData(SerializedScriptValueFactory::instance().createAndSwallowExceptions(info.GetIsolate(), mainWorldData));
+            event->setSerializedData(SerializedScriptValue::serializeAndSwallowExceptions(info.GetIsolate(), mainWorldData));
             data = event->serializedData()->deserialize();
         }
     }
