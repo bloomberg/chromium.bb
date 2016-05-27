@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.webapk.lib.common.WebApkConstants;
+import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.lang.ref.WeakReference;
 
@@ -58,25 +58,18 @@ public class WebappLauncherActivity extends Activity {
         int webappSource = webappInfo.source();
 
         if (webappId != null && webappUrl != null) {
-            String webappMacString = IntentUtils.safeGetStringExtra(
-                    intent, ShortcutHelper.EXTRA_MAC);
-            byte[] webappMac =
-                    webappMacString == null ? null : Base64.decode(webappMacString, Base64.DEFAULT);
-
             Intent launchIntent = null;
 
-            // Permit the launch to a standalone web app frame if the intent was sent by Chrome, or
-            // if the MAC is present and valid for the URL to be opened.
-            boolean isTrusted = IntentHandler.wasIntentSenderChrome(intent,
-                    ContextUtils.getApplicationContext());
-            boolean isUrlValid = (webappMac != null
-                    && WebappAuthenticator.isUrlValid(this, webappUrl, webappMac));
-            boolean isValidWebApk = isValidWebApk(webApkPackageName);
-            if (webApkPackageName != null && !isValidWebApk) {
-                isUrlValid = false;
-            }
+            // Permit the launch to a standalone web app frame if any of the following are true:
+            // - the request was for a WebAPK that is valid;
+            // - the MAC is present and valid for the homescreen shortcut to be opened;
+            // - the intent was sent by Chrome.
+            boolean isValidWebApk = isValidWebApk(webApkPackageName, webappUrl);
 
-            if (isTrusted || isUrlValid) {
+            if (isValidWebApk
+                    || isValidMacForUrl(webappUrl, IntentUtils.safeGetStringExtra(
+                            intent, ShortcutHelper.EXTRA_MAC))
+                    || wasIntentFromChrome(intent)) {
                 LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(webappUrl, webappSource);
                 launchIntent = createWebappLaunchIntent(webappInfo, isValidWebApk);
             } else {
@@ -96,6 +89,25 @@ public class WebappLauncherActivity extends Activity {
         }
 
         ApiCompatibilityUtils.finishAndRemoveTask(this);
+    }
+
+    /**
+     * Checks whether or not the MAC is present and valid for the web app shortcut.
+     *
+     * The MAC is used to prevent malicious apps from launching Chrome into a full screen
+     * Activity for phishing attacks (among other reasons).
+     *
+     * @param url The URL for the web app.
+     * @param mac MAC to compare the URL against.  See {@link WebappAuthenticator}.
+     * @return Whether the MAC is valid for the URL.
+     */
+    private boolean isValidMacForUrl(String url, String mac) {
+        return mac != null
+                && WebappAuthenticator.isUrlValid(this, url, Base64.decode(mac, Base64.DEFAULT));
+    }
+
+    private boolean wasIntentFromChrome(Intent intent) {
+        return IntentHandler.wasIntentSenderChrome(intent, ContextUtils.getApplicationContext());
     }
 
     /**
@@ -157,15 +169,26 @@ public class WebappLauncherActivity extends Activity {
     }
 
     /**
-     * Checks whether the package being targeted is a valid WebAPK.
-     * @param webapkPackageName The package name of the requested WebAPK.
+     * Checks whether the package being targeted is a valid WebAPK and whether the url supplied
+     * can be fulfilled by that WebAPK.
+     *
+     * @param webApkPackage The package name of the requested WebAPK.
+     * @param url The url to navigate to.
      * @return true iff all validation criteria are met.
      */
-    private boolean isValidWebApk(String webapkPackageName) {
-        // TODO(hanxi): Adds more validation checks. For example, whether the WebAPK is signed
-        // by the WebAPK Minting Server.
-        return CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)
-                && webapkPackageName != null
-                && webapkPackageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);
+    private boolean isValidWebApk(String webApkPackage, String url) {
+        if (!CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)
+                || webApkPackage == null) {
+            return false;
+        }
+        if (!WebApkValidator.isValidWebApk(this, webApkPackage)) {
+            Log.d(TAG, "%s is not valid WebAPK", webApkPackage);
+            return false;
+        }
+        if (!webApkPackage.equals(WebApkValidator.queryWebApkPackage(this, url))) {
+            Log.d(TAG, "%s is not within scope of %s WebAPK", url, webApkPackage);
+            return false;
+        }
+        return true;
     }
 }
