@@ -146,7 +146,7 @@ TEST(internal_screenshot)
 	/* Test dumping of non-matching images */
 	if (!match || dump_all_images) {
 		fname = screenshot_output_filename("internal-screenshot", 0);
-		write_surface_as_png(screenshot, fname);
+		write_image_as_png(screenshot->buffer->image, fname);
 	}
 
 	free(screenshot);

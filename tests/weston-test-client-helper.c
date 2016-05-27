@@ -991,6 +991,18 @@ format_cairo2pixman(cairo_format_t fmt)
 	assert(0 && "unknown Cairo pixel format");
 }
 
+static cairo_format_t
+format_pixman2cairo(pixman_format_code_t fmt)
+{
+	unsigned i;
+
+	for (i = 0; i < ARRAY_LENGTH(format_map); i++)
+		if (format_map[i].pixman == fmt)
+			return format_map[i].cairo;
+
+	assert(0 && "unknown Pixman pixel format");
+}
+
 /**
  * Compute the ROI for image comparisons
  *
@@ -1117,36 +1129,43 @@ check_images_match(pixman_image_t *img_a, pixman_image_t *img_b,
 	return true;
 }
 
-/** write_surface_as_png()
+/**
+ * Write an image into a PNG file.
  *
- * Writes out a given weston test surface to disk as a PNG image
- * using the provided filename (with path).
+ * \param image The image.
+ * \param fname The name and path for the file.
  *
- * @returns true if successfully saved file; false otherwise.
+ * \returns true if successfully saved file; false otherwise.
+ *
+ * \note Only image formats directly supported by Cairo are accepted, not all
+ * Pixman formats.
  */
 bool
-write_surface_as_png(const struct surface *weston_surface, const char *fname)
+write_image_as_png(pixman_image_t *image, const char *fname)
 {
 	cairo_surface_t *cairo_surface;
 	cairo_status_t status;
-	int bpp = 4; /* Assume ARGB */
-	int stride = bpp * weston_surface->width;
-	void *pixels;
+	cairo_format_t fmt;
 
-	pixels = pixman_image_get_data(weston_surface->buffer->image);
-	cairo_surface = cairo_image_surface_create_for_data(pixels,
-							    CAIRO_FORMAT_ARGB32,
-							    weston_surface->width,
-							    weston_surface->height,
-							    stride);
-	printf("Writing PNG to disk\n");
+	fmt = format_pixman2cairo(pixman_image_get_format(image));
+
+	cairo_surface = cairo_image_surface_create_for_data(
+			(void *)pixman_image_get_data(image),
+			fmt,
+			pixman_image_get_width(image),
+			pixman_image_get_height(image),
+			pixman_image_get_stride(image));
+
 	status = cairo_surface_write_to_png(cairo_surface, fname);
 	if (status != CAIRO_STATUS_SUCCESS) {
-		printf("Failed to save screenshot: %s\n",
-		       cairo_status_to_string(status));
+		fprintf(stderr, "Failed to save image '%s': %s\n", fname,
+			cairo_status_to_string(status));
+
 		return false;
 	}
+
 	cairo_surface_destroy(cairo_surface);
+
 	return true;
 }
 

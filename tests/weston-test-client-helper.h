@@ -202,7 +202,7 @@ check_images_match(pixman_image_t *img_a, pixman_image_t *img_b,
 		   const struct rectangle *clip);
 
 bool
-write_surface_as_png(const struct surface *weston_surface, const char *fname);
+write_image_as_png(pixman_image_t *image, const char *fname);
 
 pixman_image_t *
 load_image_from_png(const char *fname);
