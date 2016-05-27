@@ -27,9 +27,12 @@ public class PaymentInformation {
             PaymentOption defaultShippingOption, PaymentOption defaultPaymentMethod) {
         mLineItems = new ArrayList<LineItem>(1);
         mLineItems.add(totalPrice);
-        mShippingAddresses = new SectionInformation(defaultShippingAddress);
-        mShippingOptions = new SectionInformation(defaultShippingOption);
-        mPaymentMethods = new SectionInformation(defaultPaymentMethod);
+        mShippingAddresses = new SectionInformation(
+                PaymentRequestUI.TYPE_SHIPPING_ADDRESSES, defaultShippingAddress);
+        mShippingOptions = new SectionInformation(
+                PaymentRequestUI.TYPE_SHIPPING_OPTIONS, defaultShippingOption);
+        mPaymentMethods = new SectionInformation(
+                PaymentRequestUI.TYPE_PAYMENT_METHODS, defaultPaymentMethod);
     }
 
     /**

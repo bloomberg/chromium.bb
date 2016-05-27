@@ -4,7 +4,7 @@
      found in the LICENSE file. -->
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Font to use for an InfoBar's message, corresponding to Roboto Medium. -->
-    <string name="infobar_message_typeface">sans-serif-medium</string>
-    <integer name="infobar_message_textstyle">0</integer>
+    <!-- Font to use when a spec asks for "Roboto Medium". -->
+    <string name="roboto_medium_typeface">sans-serif-medium</string>
+    <integer name="roboto_medium_textstyle">0</integer>
 </resources>

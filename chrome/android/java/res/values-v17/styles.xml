@@ -460,6 +460,11 @@
         <item name="android:textSize">14sp</item>
         <item name="android:textAlignment">viewEnd</item>
     </style>
+    <style name="PaymentsUiSectionAddButtonLabel">
+        <item name="android:textColor">@color/light_active_color</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
 
     <!-- Misc styles -->
     <style name="LocationBarButton">

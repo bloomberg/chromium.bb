@@ -259,8 +259,8 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
         lp.endMargin = mBigIconMargin;
 
         Resources res = getContext().getResources();
-        String typeface = res.getString(R.string.infobar_message_typeface);
-        int textStyle = res.getInteger(R.integer.infobar_message_textstyle);
+        String typeface = res.getString(R.string.roboto_medium_typeface);
+        int textStyle = res.getInteger(R.integer.roboto_medium_textstyle);
         float textSize = res.getDimension(R.dimen.infobar_big_icon_message_size);
         mMessageTextView.setTypeface(Typeface.create(typeface, textStyle));
         mMessageTextView.setMaxLines(1);

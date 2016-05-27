@@ -102,6 +102,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         void onSectionOptionChanged(@DataType int optionType, PaymentOption option);
 
         /**
+         * Called when the user clicks on the "Add" button for a section.
+         */
+        void onSectionAddOption(@DataType int optionType);
+
+        /**
          * Called when the user clicks on the “Pay” button. At this point, the UI is disabled and is
          * showing a spinner.
          */
@@ -438,6 +443,17 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         expand(null);
 
         updatePayButtonEnabled();
+    }
+
+    @Override
+    public void onAddPaymentOption(OptionSection section) {
+        assert section != mShippingOptionSection;
+
+        if (section == mShippingAddressSection) {
+            mClient.onSectionAddOption(TYPE_SHIPPING_ADDRESSES);
+        } else if (section == mPaymentMethodSection) {
+            mClient.onSectionAddOption(TYPE_PAYMENT_METHODS);
+        }
     }
 
     /**

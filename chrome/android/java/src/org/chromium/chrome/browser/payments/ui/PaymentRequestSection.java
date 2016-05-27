@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.payments.ui;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextUtils.TruncateAt;
@@ -16,6 +17,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -72,6 +74,9 @@ public abstract class PaymentRequestSection extends LinearLayout {
          * @param option  {@link PaymentOption} that was selected.
          */
         void onPaymentOptionChanged(OptionSection section, PaymentOption option);
+
+        /** Called when the user requests adding a new PaymentOption to a given section. */
+        void onAddPaymentOption(OptionSection section);
 
         /** Checks whether or not the user should be allowed to click on controls. */
         boolean isAcceptingUserInput();
@@ -503,6 +508,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
      * . O Option 1                                              ICON 1 |                |         .
      * . O Option 2                                              ICON 2 |                |         .
      * . O Option 3                                              ICON 3 |                |         .
+     * . + ADD THING                                                    |                |         .
      * .............................................................................................
      */
     public static class OptionSection extends PaymentRequestSection implements OnClickListener {
@@ -533,13 +539,30 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 }
             }
 
+            /** Change the label for the option. */
+            public void setLabel(int stringId) {
+                mLabel.setText(stringId);
+            }
+
             private View createButton(GridLayout parent, int rowIndex, boolean isSelected) {
                 Context context = parent.getContext();
+                View view;
 
-                // Show a radio button indicating whether the PaymentOption is selected.
-                RadioButton button = new RadioButton(context);
-                button.setChecked(isSelected);
-                View view = button;
+                if (mOption == null) {
+                    // Show an add button.
+                    TintedDrawable tintedPlus = TintedDrawable.constructTintedDrawable(
+                            context.getResources(), R.drawable.plus, R.color.light_active_color);
+                    ImageButton button = new ImageButton(context);
+                    button.setBackground(null);
+                    button.setImageDrawable(tintedPlus);
+                    button.setPadding(0, 0, 0, 0);
+                    view = button;
+                } else {
+                    // Show a radio button indicating whether the PaymentOption is selected.
+                    RadioButton button = new RadioButton(context);
+                    button.setChecked(isSelected);
+                    view = button;
+                }
 
                 // The button hugs left.
                 GridLayout.LayoutParams buttonParams = new GridLayout.LayoutParams(
@@ -555,12 +578,27 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
             private TextView createLabel(GridLayout parent, int rowIndex, boolean iconExists) {
                 Context context = parent.getContext();
+                Resources resources = context.getResources();
 
-                // Show the string representing the PaymentOption.
                 TextView labelView = new TextView(context);
-                ApiCompatibilityUtils.setTextAppearance(
-                        labelView, R.style.PaymentsUiSectionDefaultText);
-                labelView.setText(convertOptionToString(mOption));
+                if (mOption == null) {
+                    // Shows string saying that the user can add a new option, e.g. credit card no.
+                    String typeface = resources.getString(R.string.roboto_medium_typeface);
+                    int textStyle = resources.getInteger(R.integer.roboto_medium_textstyle);
+                    int buttonHeight = resources.getDimensionPixelSize(
+                            R.dimen.payments_section_add_button_height);
+
+                    ApiCompatibilityUtils.setTextAppearance(
+                            labelView, R.style.PaymentsUiSectionAddButtonLabel);
+                    labelView.setMinimumHeight(buttonHeight);
+                    labelView.setGravity(Gravity.CENTER_VERTICAL);
+                    labelView.setTypeface(Typeface.create(typeface, textStyle));
+                } else {
+                    // Show the string representing the PaymentOption.
+                    ApiCompatibilityUtils.setTextAppearance(
+                            labelView, R.style.PaymentsUiSectionDefaultText);
+                    labelView.setText(convertOptionToString(mOption));
+                }
 
                 // The label spans two columns if no icon exists.  Setting the view width to 0
                 // forces it to stretch.
@@ -600,7 +638,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
         /** Top and bottom margins for each item. */
         private final int mVerticalMargin;
 
-        /** All the possible PaymentOptions in Layout form. */
+        /** All the possible PaymentOptions in Layout form, then one row for adding new options. */
         private final ArrayList<OptionRow> mOptionRows = new ArrayList<OptionRow>();
 
         /** Width that the icon takes. */
@@ -636,7 +674,11 @@ public abstract class PaymentRequestSection extends LinearLayout {
                 OptionRow row = mOptionRows.get(i);
 
                 boolean wasClicked = row.mButton == v || row.mLabel == v || row.mIcon == v;
-                row.setChecked(wasClicked);
+                if (row.mOption == null) {
+                    if (wasClicked) mDelegate.onAddPaymentOption(this);
+                } else {
+                    row.setChecked(wasClicked);
+                }
             }
         }
 
@@ -703,6 +745,12 @@ public abstract class PaymentRequestSection extends LinearLayout {
             for (int i = 0; i < information.getSize(); i++) {
                 PaymentOption item = information.getItem(i);
                 mOptionRows.add(new OptionRow(mOptionLayout, i, item, item == selectedItem));
+            }
+
+            // If the user is allowed to add new options, show the button for it.
+            if (information.getAddStringId() != 0) {
+                mOptionRows.add(new OptionRow(mOptionLayout, information.getSize(), null, false));
+                mOptionRows.get(mOptionRows.size() - 1).setLabel(information.getAddStringId());
             }
         }
 

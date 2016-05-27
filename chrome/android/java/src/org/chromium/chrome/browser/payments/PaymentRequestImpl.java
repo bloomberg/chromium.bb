@@ -19,6 +19,9 @@ import org.chromium.chrome.browser.payments.ui.PaymentInformation;
 import org.chromium.chrome.browser.payments.ui.PaymentOption;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.autofill.AutofillCreditCardEditor;
+import org.chromium.chrome.browser.preferences.autofill.AutofillProfileEditor;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content.browser.ContentViewCore;
@@ -184,14 +187,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
         }
 
-        if (addresses.isEmpty()) {
-            mShippingAddressesSection = new SectionInformation();
-        } else if (mShippingOptionsSection.getSelectedItem() != null) {
-            mShippingAddressesSection = new SectionInformation(0, addresses);
-        } else {
-            mShippingAddressesSection =
-                    new SectionInformation(SectionInformation.NO_SELECTION, addresses);
+        int selectedIndex = SectionInformation.NO_SELECTION;
+        if (!addresses.isEmpty() && mShippingOptionsSection.getSelectedItem() != null) {
+            selectedIndex = 0;
         }
+        mShippingAddressesSection = new SectionInformation(
+                PaymentRequestUI.TYPE_SHIPPING_ADDRESSES, selectedIndex, addresses);
 
         mPendingApps = new ArrayList<>(mApps);
         mPendingInstruments = new ArrayList<>();
@@ -209,7 +210,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             }
         }
 
-        if (!isGettingInstruments) mPaymentMethodsSection = new SectionInformation();
+        if (!isGettingInstruments) {
+            mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.TYPE_PAYMENT_METHODS);
+        }
 
         mUI = PaymentRequestUI.show(mContext, this, requestShipping, mMerchantName, mOrigin);
         if (mFavicon != null) mUI.setTitleBitmap(mFavicon);
@@ -318,7 +321,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
             String itemsCurrencyCode, PaymentDetails details) {
         // Shipping options are optional.
         if (details.shippingOptions == null || details.shippingOptions.length == 0) {
-            return new SectionInformation();
+            return new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_OPTIONS);
         }
 
         CurrencyStringFormatter formatter =
@@ -364,8 +367,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                     formatter.format(option.amount.value), PaymentOption.NO_ICON));
         }
 
-        return new SectionInformation(result.size() == 1 ? 0 : SectionInformation.NO_SELECTION,
-                result);
+        return new SectionInformation(PaymentRequestUI.TYPE_SHIPPING_OPTIONS,
+                result.size() == 1 ? 0 : SectionInformation.NO_SELECTION, result);
     }
 
     private JSONObject getValidatedData(Set<String> supportedMethods, String stringifiedData) {
@@ -464,6 +467,18 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
     }
 
+
+    @Override
+    public void onSectionAddOption(@PaymentRequestUI.DataType int optionType) {
+        // TODO(rouslan, dfalcantara): Make this code do something more useful.
+        if (optionType == PaymentRequestUI.TYPE_SHIPPING_ADDRESSES) {
+            PreferencesLauncher.launchSettingsPage(mContext, AutofillProfileEditor.class.getName());
+        } else if (optionType == PaymentRequestUI.TYPE_PAYMENT_METHODS) {
+            PreferencesLauncher.launchSettingsPage(
+                    mContext, AutofillCreditCardEditor.class.getName());
+        }
+    }
+
     @Override
     public void onPayClicked(PaymentOption selectedShippingAddress,
             PaymentOption selectedShippingOption, PaymentOption selectedPaymentMethod) {
@@ -533,12 +548,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         if (mPendingApps.isEmpty()) {
-            if (mPendingInstruments.isEmpty()) {
-                mPaymentMethodsSection = new SectionInformation();
-            } else {
-                mPaymentMethodsSection = new SectionInformation(0, mPendingInstruments);
-                mPendingInstruments.clear();
-            }
+            mPaymentMethodsSection = new SectionInformation(
+                    PaymentRequestUI.TYPE_PAYMENT_METHODS, 0, mPendingInstruments);
+            mPendingInstruments.clear();
 
             if (mPaymentInformationCallback != null) provideDefaultPaymentInformation();
         }
