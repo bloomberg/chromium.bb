@@ -180,6 +180,21 @@ void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
   gfx::FontList base_font = rb->GetFontList(ResourceBundle::BaseFont)
                                 .DeriveWithHeightUpperBound(kBadgeHeight);
   base::string16 utf16_text = base::UTF8ToUTF16(badge_->text);
+
+  // See if we can squeeze a slightly larger font into the badge given the
+  // actual string that is to be displayed.
+  const int kMaxIncrementAttempts = 5;
+  for (size_t i = 0; i < kMaxIncrementAttempts; ++i) {
+    int w = 0;
+    int h = 0;
+    gfx::FontList bigger_font = base_font.Derive(1, 0);
+    gfx::Canvas::SizeStringInt(utf16_text, bigger_font, &w, &h, 0,
+                               gfx::Canvas::NO_ELLIPSIS);
+    if (h > kBadgeHeight)
+      break;
+    base_font = bigger_font;
+  }
+
   if (ui::MaterialDesignController::IsModeMaterial()) {
     text_width =
         std::min(kMaxTextWidth, canvas->GetStringWidth(utf16_text, base_font));
