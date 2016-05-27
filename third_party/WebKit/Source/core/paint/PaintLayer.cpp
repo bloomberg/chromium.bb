@@ -2697,7 +2697,8 @@ void PaintLayer::removeAncestorOverflowLayer(const PaintLayer* removedLayer)
 void PaintLayer::updateOrRemoveFilterClients()
 {
     const auto& filter = layoutObject()->style()->filter();
-    if (filter.isEmpty() && m_rareData) {
+    if (filter.isEmpty() && m_rareData && m_rareData->filterInfo) {
+        m_rareData->filterInfo->clearLayer();
         m_rareData->filterInfo = nullptr;
     } else if (filter.hasReferenceFilter()) {
         ensureFilterInfo().updateReferenceFilterClients(filter);
