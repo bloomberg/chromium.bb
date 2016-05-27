@@ -4625,7 +4625,13 @@ TEST_F(LayerTreeHostCommonScalingTest, SurfaceLayerTransformsInHighDPI) {
   SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(100, 100), false, true,
                                false);
-  LayerImpl* parent = AddChildToRoot<LayerImpl>();
+
+  LayerImpl* page_scale = AddChildToRoot<LayerImpl>();
+  SetLayerPropertiesForTesting(page_scale, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), false, true,
+                               false);
+
+  LayerImpl* parent = AddChild<LayerImpl>(page_scale);
   parent->SetDrawsContent(true);
   SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(100, 100), false, true,
@@ -4646,6 +4652,12 @@ TEST_F(LayerTreeHostCommonScalingTest, SurfaceLayerTransformsInHighDPI) {
 
   float device_scale_factor = 2.5f;
   float page_scale_factor = 3.f;
+  root->layer_tree_impl()->SetViewportLayersFromIds(
+      Layer::INVALID_ID, page_scale->id(), Layer::INVALID_ID,
+      Layer::INVALID_ID);
+  root->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
+  root->layer_tree_impl()->BuildPropertyTreesForTesting();
+  root->layer_tree_impl()->SetPageScaleOnActiveTree(page_scale_factor);
   ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
                                  root);
 

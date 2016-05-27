@@ -178,6 +178,8 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
     bool layers_always_allowed_lcd_text) {
   root_layer->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
 
+  EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
+
   gfx::Transform identity_matrix;
   gfx::Size device_viewport_size =
       gfx::Size(root_layer->bounds().width() * device_scale_factor,

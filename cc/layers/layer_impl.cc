@@ -1397,7 +1397,7 @@ float LayerImpl::GetIdealContentsScale() const {
   }
 
   gfx::Vector2dF transform_scales = MathUtil::ComputeTransform2dScaleComponents(
-      DrawTransform(), default_scale);
+      ScreenSpaceTransform(), default_scale);
   return std::max(transform_scales.x(), transform_scales.y());
 }
 

@@ -533,6 +533,8 @@ crbug.com/517840 imported/wpt/webrtc/rtcpeerconnection/rtcpeerconnection-idl.htm
 crbug.com/603997 compositing/overflow/clear-scroll-parent.html [ NeedsManualRebaseline ]
 crbug.com/603997 virtual/prefer_compositing_to_lcd_text/compositing/overflow/clear-scroll-parent.html [ NeedsManualRebaseline ]
 
+crbug.com/597721 compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
+
 crbug.com/552494 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 crbug.com/552494 virtual/rootlayerscrolls/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
