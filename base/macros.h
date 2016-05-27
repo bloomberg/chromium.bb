@@ -12,8 +12,6 @@
 
 #include <stddef.h>  // For size_t.
 
-#include "build/build_config.h"  // For OS_XXX.  TODO(pkasting): Remove.
-
 // Put this in the declarations for a class to be uncopyable.
 #define DISALLOW_COPY(TypeName) \
   TypeName(const TypeName&) = delete
@@ -24,10 +22,10 @@
 
 // A macro to disallow the copy constructor and operator= functions.
 // This should be used in the private: declarations for a class.
-// TODO(pkasting): Using "= delete" is Linux-specific initially to prevent
-// cross-platform code from regressing while other platforms are fixed.  Remove
-// the ifdefs here and use "= delete" on all platforms.
-#if defined(CHROMIUM_BUILD) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(pkasting): Using "= delete" is non-branded-build-specific initially to
+// limit the rollout to reduce the chance of build breakage.  Remove the ifdef
+// here and use "= delete" always.
+#if defined(CHROMIUM_BUILD)
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&) = delete;      \
   void operator=(const TypeName&) = delete
