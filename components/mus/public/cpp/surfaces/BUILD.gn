@@ -25,6 +25,7 @@ component("surfaces") {
   deps = [
     "//base",
     "//cc",
+    "//cc/ipc:interfaces",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//components/mus/public/interfaces",

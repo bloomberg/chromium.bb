@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 _typemap_imports = [
+  "//cc/ipc/typemaps.gni",
   "//components/typemaps.gni",
   "//gpu/ipc/common/typemaps.gni",
   "//media/mojo/interfaces/typemaps.gni",

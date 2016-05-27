@@ -16,7 +16,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "components/mus/public/interfaces/surface_id.mojom.h"
+#include "cc/ipc/surface_id.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/access_policy_delegate.h"
 #include "components/mus/ws/ids.h"

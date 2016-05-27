@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 component("ipc") {
   output_name = "cc_ipc"
 
@@ -29,5 +31,11 @@ component("ipc") {
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/geometry",
     "//ui/gfx/ipc/skia",
+  ]
+}
+
+mojom("interfaces") {
+  sources = [
+    "surface_id.mojom",
   ]
 }

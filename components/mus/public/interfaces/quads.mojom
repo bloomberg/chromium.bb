@@ -4,7 +4,7 @@
 
 module mus.mojom;
 
-import "components/mus/public/interfaces/surface_id.mojom";
+import "cc/ipc/surface_id.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 struct Color {
@@ -66,7 +66,7 @@ struct SolidColorQuadState {
 };
 
 struct SurfaceQuadState {
-  mus.mojom.SurfaceId surface;
+  cc.mojom.SurfaceId surface;
 };
 
 struct TextureQuadState {

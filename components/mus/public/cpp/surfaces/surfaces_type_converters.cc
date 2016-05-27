@@ -51,8 +51,6 @@ using mus::mojom::SharedQuadState;
 using mus::mojom::SharedQuadStatePtr;
 using mus::mojom::SolidColorQuadState;
 using mus::mojom::SolidColorQuadStatePtr;
-using mus::mojom::SurfaceId;
-using mus::mojom::SurfaceIdPtr;
 using mus::mojom::SurfaceQuadState;
 using mus::mojom::SurfaceQuadStatePtr;
 using mus::mojom::TextureQuadState;
@@ -174,12 +172,9 @@ bool ConvertDrawQuad(const QuadPtr& input,
       cc::SurfaceDrawQuad* surface_quad =
           render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
       surface_quad->SetAll(
-          sqs,
-          input->rect.To<gfx::Rect>(),
-          input->opaque_rect.To<gfx::Rect>(),
-          input->visible_rect.To<gfx::Rect>(),
-          input->needs_blending,
-          input->surface_quad_state->surface.To<cc::SurfaceId>());
+          sqs, input->rect.To<gfx::Rect>(), input->opaque_rect.To<gfx::Rect>(),
+          input->visible_rect.To<gfx::Rect>(), input->needs_blending,
+          input->surface_quad_state->surface);
       break;
     }
     case mus::mojom::Material::TEXTURE_CONTENT: {
@@ -251,22 +246,6 @@ bool ConvertDrawQuad(const QuadPtr& input,
 }
 
 }  // namespace
-
-// static
-SurfaceIdPtr TypeConverter<SurfaceIdPtr, cc::SurfaceId>::Convert(
-    const cc::SurfaceId& input) {
-  SurfaceIdPtr id(SurfaceId::New());
-  id->id_namespace = input.id_namespace();
-  id->local_id = input.local_id();
-  id->nonce = input.nonce();
-  return id;
-}
-
-// static
-cc::SurfaceId TypeConverter<cc::SurfaceId, SurfaceIdPtr>::Convert(
-    const SurfaceIdPtr& input) {
-  return cc::SurfaceId(input->id_namespace, input->local_id, input->nonce);
-}
 
 // static
 ColorPtr TypeConverter<ColorPtr, SkColor>::Convert(const SkColor& input) {
@@ -354,7 +333,7 @@ QuadPtr TypeConverter<QuadPtr, cc::DrawQuad>::Convert(
           cc::SurfaceDrawQuad::MaterialCast(&input);
       SurfaceQuadStatePtr surface_state =
           SurfaceQuadState::New();
-      surface_state->surface = SurfaceId::From(surface_quad->surface_id);
+      surface_state->surface = surface_quad->surface_id;
       quad->surface_quad_state = std::move(surface_state);
       break;
     }

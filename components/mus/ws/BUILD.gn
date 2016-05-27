@@ -89,9 +89,10 @@ source_set("lib") {
     "window_tree_host_factory.h",
   ]
 
-  deps = [
+  public_deps = [
     "//base",
     "//cc",
+    "//cc/ipc:interfaces",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
     "//components/mus/common:mus_common",
@@ -128,7 +129,7 @@ source_set("lib") {
       "platform_screen_impl_ozone.cc",
       "platform_screen_impl_ozone.h",
     ]
-    deps += [ "//ui/ozone:ozone" ]
+    public_deps += [ "//ui/ozone:ozone" ]
   }
 }
 

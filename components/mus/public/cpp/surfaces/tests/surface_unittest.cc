@@ -46,8 +46,6 @@ using mus::mojom::SharedQuadState;
 using mus::mojom::SharedQuadStatePtr;
 using mus::mojom::SolidColorQuadState;
 using mus::mojom::SolidColorQuadStatePtr;
-using mus::mojom::SurfaceId;
-using mus::mojom::SurfaceIdPtr;
 using mus::mojom::SurfaceQuadState;
 using mus::mojom::SurfaceQuadStatePtr;
 using mus::mojom::TextureQuadState;
@@ -63,18 +61,6 @@ using mus::mojom::YUVVideoQuadStatePtr;
 namespace mojo {
 namespace {
 
-TEST(SurfaceLibTest, SurfaceIdConverterNullId) {
-  cc::SurfaceId null_id;
-  cc::SurfaceId round_trip = SurfaceId::From(null_id).To<cc::SurfaceId>();
-  EXPECT_TRUE(round_trip.is_null());
-}
-
-TEST(SurfaceLibTest, SurfaceIdConverterValidId) {
-  cc::SurfaceId valid_id(0, 7, 0);
-  cc::SurfaceId round_trip = SurfaceId::From(valid_id).To<cc::SurfaceId>();
-  EXPECT_FALSE(round_trip.is_null());
-  EXPECT_EQ(valid_id, round_trip);
-}
 
 TEST(SurfaceLibTest, Color) {
   SkColor arbitrary_color = SK_ColorMAGENTA;
@@ -140,7 +126,7 @@ TEST_F(SurfaceLibQuadTest, SurfaceQuad) {
   EXPECT_EQ(mus::mojom::Material::SURFACE_CONTENT, mus_quad->material);
   ASSERT_TRUE(mus_quad->surface_quad_state);
   SurfaceQuadStatePtr& mus_surface_state = mus_quad->surface_quad_state;
-  EXPECT_TRUE(SurfaceId::From(arbitrary_id).Equals(mus_surface_state->surface));
+  EXPECT_EQ(arbitrary_id, mus_surface_state->surface);
 }
 
 TEST_F(SurfaceLibQuadTest, TextureQuad) {

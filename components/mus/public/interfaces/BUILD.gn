@@ -22,7 +22,6 @@ mojom("interfaces") {
     "input_key_codes.mojom",
     "mus_constants.mojom",
     "quads.mojom",
-    "surface_id.mojom",
     "user_access_manager.mojom",
     "window_manager.mojom",
     "window_manager_constants.mojom",
@@ -38,6 +37,7 @@ mojom("interfaces") {
   ]
 
   public_deps = [
+    "//cc/ipc:interfaces",
     "//gpu/ipc/common:interfaces",
     "//ui/gfx/geometry/mojo:interfaces",
     "//ui/mojo/ime:interfaces",

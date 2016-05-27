@@ -13,7 +13,6 @@
 #include "base/observer_list.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/interfaces/mus_constants.mojom.h"
-#include "components/mus/public/interfaces/surface_id.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "services/shell/public/interfaces/interface_provider.mojom.h"

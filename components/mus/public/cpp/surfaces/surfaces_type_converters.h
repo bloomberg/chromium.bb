@@ -7,13 +7,13 @@
 
 #include <memory>
 
+#include "cc/ipc/surface_id.mojom.h"
 #include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/surfaces/surface_id.h"
 #include "components/mus/public/cpp/surfaces/mojo_surfaces_export.h"
 #include "components/mus/public/interfaces/compositor_frame.mojom.h"
 #include "components/mus/public/interfaces/quads.mojom.h"
-#include "components/mus/public/interfaces/surface_id.mojom.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -31,18 +31,6 @@ class SharedQuadState;
 namespace mojo {
 
 class CustomSurfaceConverter;
-
-// Types from surface_id.mojom
-template <>
-struct MOJO_SURFACES_EXPORT
-    TypeConverter<mus::mojom::SurfaceIdPtr, cc::SurfaceId> {
-  static mus::mojom::SurfaceIdPtr Convert(const cc::SurfaceId& input);
-};
-template <>
-struct MOJO_SURFACES_EXPORT
-    TypeConverter<cc::SurfaceId, mus::mojom::SurfaceIdPtr> {
-  static cc::SurfaceId Convert(const mus::mojom::SurfaceIdPtr& input);
-};
 
 // Types from quads.mojom
 template <>

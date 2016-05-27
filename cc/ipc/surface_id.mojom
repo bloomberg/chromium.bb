@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mus.mojom;
+module cc.mojom;
 
 // A surface ID is composed of three parts: a namespace, a local ID, and a
 // nonce. The local part and nonce are allocated by the client using any scheme
