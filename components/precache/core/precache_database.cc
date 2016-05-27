@@ -12,6 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_constants.h"
+#include "components/precache/core/proto/unfinished_work.pb.h"
 #include "sql/connection.h"
 #include "sql/transaction.h"
 #include "url/gurl.h"
@@ -51,7 +52,8 @@ bool PrecacheDatabase::Init(const base::FilePath& db_path) {
     return false;
   }
 
-  if (!precache_url_table_.Init(db_.get())) {
+  if (!precache_url_table_.Init(db_.get()) ||
+      !precache_session_table_.Init(db_.get())) {
     // Raze and close the database connection to indicate that it's not usable,
     // and so that the database will be created anew next time, in case it's
     // corrupted.
@@ -257,6 +259,28 @@ void PrecacheDatabase::MaybePostFlush() {
                             weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(1));
   is_flush_posted_ = true;
+}
+
+std::unique_ptr<PrecacheUnfinishedWork>
+PrecacheDatabase::GetUnfinishedWork() {
+  std::unique_ptr<PrecacheUnfinishedWork> unfinished_work =
+      precache_session_table_.GetUnfinishedWork();
+  precache_session_table_.DeleteUnfinishedWork();
+  return unfinished_work;
+}
+
+void PrecacheDatabase::SaveUnfinishedWork(
+    std::unique_ptr<PrecacheUnfinishedWork> unfinished_work) {
+  precache_session_table_.SaveUnfinishedWork(
+      std::move(unfinished_work));
+}
+
+void PrecacheDatabase::DeleteUnfinishedWork() {
+  precache_session_table_.DeleteUnfinishedWork();
+}
+
+base::WeakPtr<PrecacheDatabase> PrecacheDatabase::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace precache

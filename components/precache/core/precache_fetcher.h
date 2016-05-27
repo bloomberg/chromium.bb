@@ -15,12 +15,17 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "components/precache/core/fetcher_pool.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace net {
 class URLRequestContextGetter;
@@ -29,6 +34,7 @@ class URLRequestContextGetter;
 namespace precache {
 
 class PrecacheConfigurationSettings;
+class PrecacheUnfinishedWork;
 
 // Visible for testing.
 extern const int kNoTracking;
@@ -59,8 +65,14 @@ extern const int kNoTracking;
 //   void PrecacheResourcesForTopURLs(
 //       net::URLRequestContextGetter* request_context,
 //       const std::list<GURL>& top_urls) {
-//     fetcher_.reset(new PrecacheFetcher(request_context, top_urls, this));
+//     fetcher_.reset(new PrecacheFetcher(...));
 //     fetcher_->Start();
+//   }
+//
+//   void Cancel() {
+//     std::unique_ptr<PrecacheUnfinishedWork> unfinished_work =
+//         fetcher_->CancelPrecaching();
+//     fetcher_.reset();
 //   }
 //
 //   virtual void OnDone() {
@@ -70,7 +82,7 @@ extern const int kNoTracking;
 //  private:
 //   std::unique_ptr<PrecacheFetcher> fetcher_;
 // };
-class PrecacheFetcher {
+class PrecacheFetcher : public base::SupportsWeakPtr<PrecacheFetcher> {
  public:
   class PrecacheDelegate {
    public:
@@ -78,20 +90,27 @@ class PrecacheFetcher {
     // were fetched or not. If the PrecacheFetcher is destroyed before OnDone is
     // called, then precaching will be canceled and OnDone will not be called.
     virtual void OnDone() = 0;
+
   };
 
   // Visible for testing.
   class Fetcher;
 
+  static void RecordCompletionStatistics(
+      const PrecacheUnfinishedWork& unfinished_work,
+      size_t remaining_manifest_urls_to_fetch,
+      size_t remaining_resource_urls_to_fetch);
+
   // Constructs a new PrecacheFetcher. The |starting_hosts| parameter is a
   // prioritized list of hosts that the user commonly visits. These hosts are
   // used by a server side component to construct a list of resource URLs that
-  // the user is likely to fetch.
-  PrecacheFetcher(const std::vector<std::string>& starting_hosts,
-                  net::URLRequestContextGetter* request_context,
-                  const GURL& config_url,
-                  const std::string& manifest_url_prefix,
-                  PrecacheDelegate* precache_delegate);
+  // the user is likely to fetch. Takes ownership of |unfinished_work|.
+  PrecacheFetcher(
+      net::URLRequestContextGetter* request_context,
+      const GURL& config_url,
+      const std::string& manifest_url_prefix,
+      std::unique_ptr<PrecacheUnfinishedWork> unfinished_work,
+      PrecacheDelegate* precache_delegate);
 
   virtual ~PrecacheFetcher();
 
@@ -100,7 +119,16 @@ class PrecacheFetcher {
   // PrecacheFetcher instance.
   void Start();
 
+  // Stops all precaching work. The PreacheFetcher should not be used after
+  // calling this method.
+  std::unique_ptr<PrecacheUnfinishedWork> CancelPrecaching();
+
  private:
+  // Notifies the precache delete that precaching is done, and report
+  // completion statistics.
+  void NotifyDone(size_t remaining_manifest_urls_to_fetch,
+                  size_t remaining_resource_urls_to_fetch);
+
   // Fetches the next resource or manifest URL, if any remain. Fetching is done
   // sequentially and depth-first: all resources are fetched for a manifest
   // before the next manifest is fetched. This is done to limit the length of
@@ -116,6 +144,9 @@ class PrecacheFetcher {
   // If the fetch of the configuration settings fails, then precaching ends.
   void OnConfigFetchComplete(const Fetcher& source);
 
+  // Constructs manifest URLs using a manifest URL prefix, and lists of hosts.
+  void DetermineManifests();
+
   // Called when a precache manifest has been fetched. Builds the list of
   // resource URLs to fetch according to the URLs in the manifest. If the fetch
   // of a manifest fails, then it skips to the next manifest.
@@ -126,10 +157,6 @@ class PrecacheFetcher {
 
   // Adds up the response sizes.
   void UpdateStats(int64_t response_bytes, int64_t network_response_bytes);
-
-  // The prioritized list of starting hosts that the server will pick resource
-  // URLs to be precached for.
-  const std::vector<std::string> starting_hosts_;
 
   // The request context used when fetching URLs.
   const scoped_refptr<net::URLRequestContextGetter> request_context_;
@@ -145,26 +172,12 @@ class PrecacheFetcher {
   // Non-owning pointer. Should not be NULL.
   PrecacheDelegate* precache_delegate_;
 
-  std::unique_ptr<PrecacheConfigurationSettings> config_;
-
-  // Tally of the total number of bytes contained in URL fetches, including
-  // config, manifests, and resources. This the number of bytes as they would be
-  // compressed over the network.
-  size_t total_response_bytes_;
-
-  // Tally of the total number of bytes received over the network from URL
-  // fetches (the same ones as in total_response_bytes_). This includes response
-  // headers and intermediate responses such as 30xs.
-  size_t network_response_bytes_;
-
-  // Time when the prefetch was started.
-  base::TimeTicks start_time_;
-
-  int num_manifest_urls_to_fetch_;
   std::list<GURL> manifest_urls_to_fetch_;
   std::list<GURL> resource_urls_to_fetch_;
 
   FetcherPool<Fetcher> pool_;
+
+  std::unique_ptr<PrecacheUnfinishedWork> unfinished_work_;
 
   DISALLOW_COPY_AND_ASSIGN(PrecacheFetcher);
 };
@@ -208,6 +221,8 @@ class PrecacheFetcher::Fetcher : public net::URLFetcherDelegate {
   const net::URLFetcher* network_url_fetcher() const {
     return network_url_fetcher_.get();
   }
+  const GURL& url() const { return url_; }
+  bool is_resource_request() const { return is_resource_request_; }
 
  private:
   enum class FetchStage { CACHE, NETWORK };

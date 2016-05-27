@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
@@ -18,6 +17,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/precache/core/precache_database.h"
 #include "components/precache/core/precache_switches.h"
+#include "components/precache/core/proto/unfinished_work.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_driver/sync_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -48,15 +48,14 @@ size_t NumTopHosts() {
 PrecacheManager::PrecacheManager(
     content::BrowserContext* browser_context,
     const sync_driver::SyncService* const sync_service,
-    const history::HistoryService* const history_service)
+    const history::HistoryService* const history_service,
+    const base::FilePath& db_path,
+    std::unique_ptr<PrecacheDatabase> precache_database)
     : browser_context_(browser_context),
       sync_service_(sync_service),
       history_service_(history_service),
-      precache_database_(new PrecacheDatabase()),
       is_precaching_(false) {
-  base::FilePath db_path(browser_context_->GetPath().Append(
-      base::FilePath(FILE_PATH_LITERAL("PrecacheDatabase"))));
-
+  precache_database_ = std::move(precache_database);
   BrowserThread::PostTask(
       BrowserThread::DB, FROM_HERE,
       base::Bind(base::IgnoreResult(&PrecacheDatabase::Init),
@@ -122,9 +121,31 @@ void PrecacheManager::StartPrecaching(
   }
   precache_completion_callback_ = precache_completion_callback;
 
-  if (IsInExperimentGroup()) {
-    is_precaching_ = true;
+  is_precaching_ = true;
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::DB,
+      FROM_HERE,
+      base::Bind(&PrecacheDatabase::GetUnfinishedWork,
+                 base::Unretained(precache_database_.get())),
+      base::Bind(&PrecacheManager::OnGetUnfinishedWorkDone, AsWeakPtr()));
+}
 
+void PrecacheManager::OnGetUnfinishedWorkDone(
+    std::unique_ptr<PrecacheUnfinishedWork> unfinished_work) {
+  if (!unfinished_work->has_start_time() ||
+      base::Time::Now() - base::Time::FromInternalValue(
+      unfinished_work->start_time()) > base::TimeDelta::FromHours(6)) {
+    PrecacheFetcher::RecordCompletionStatistics(
+        *unfinished_work,
+        unfinished_work->manifest_size(),
+        unfinished_work->resource_size());
+    unfinished_work.reset(new PrecacheUnfinishedWork());
+    unfinished_work->set_start_time(base::Time::Now().ToInternalValue());
+  }
+  unfinished_work_ = std::move(unfinished_work);
+  bool needs_top_hosts = unfinished_work_->top_host_size() == 0;
+
+  if (IsInExperimentGroup()) {
     BrowserThread::PostTask(
         BrowserThread::DB, FROM_HERE,
         base::Bind(&PrecacheDatabase::DeleteExpiredPrecacheHistory,
@@ -134,25 +155,28 @@ void PrecacheManager::StartPrecaching(
     // Request NumTopHosts() top hosts. Note that PrecacheFetcher is further
     // bound by the value of PrecacheConfigurationSettings.top_sites_count, as
     // retrieved from the server.
-    history_service_->TopHosts(
-        NumTopHosts(),
-        base::Bind(&PrecacheManager::OnHostsReceived, AsWeakPtr()));
+    if (needs_top_hosts) {
+      history_service_->TopHosts(
+          NumTopHosts(),
+          base::Bind(&PrecacheManager::OnHostsReceived, AsWeakPtr()));
+    } else {
+      InitializeAndStartFetcher();
+    }
   } else if (IsInControlGroup()) {
-    // Set is_precaching_ so that the longer delay is placed between calls to
-    // TopHosts.
-    is_precaching_ = true;
-
     // Calculate TopHosts solely for metrics purposes.
-    history_service_->TopHosts(
-        NumTopHosts(),
-        base::Bind(&PrecacheManager::OnHostsReceivedThenDone, AsWeakPtr()));
+    if (needs_top_hosts) {
+      history_service_->TopHosts(
+          NumTopHosts(),
+          base::Bind(&PrecacheManager::OnHostsReceivedThenDone, AsWeakPtr()));
+    } else {
+      OnDone();
+    }
   } else {
     if (PrecachingAllowed() != AllowedType::PENDING) {
       // We are not waiting on the sync backend to be initialized. The user
       // either is not in the field trial, or does not have sync enabled.
       // Pretend that precaching started, so that the PrecacheServiceLauncher
       // doesn't try to start it again.
-      is_precaching_ = true;
     }
 
     OnDone();
@@ -161,17 +185,26 @@ void PrecacheManager::StartPrecaching(
 
 void PrecacheManager::CancelPrecaching() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   if (!is_precaching_) {
     // Do nothing if precaching is not in progress.
     return;
   }
   is_precaching_ = false;
-
-  // Destroying the |precache_fetcher_| will cancel any fetch in progress.
-  precache_fetcher_.reset();
-
-  // Uninitialize the callback so that any scoped_refptrs in it are released.
+  // If cancellation occurs after StartPrecaching but before OnHostsReceived,
+  // is_precaching will be true, but the precache_fetcher_ will not yet be
+  // constructed.
+  if (precache_fetcher_) {
+    std::unique_ptr<PrecacheUnfinishedWork> unfinished_work =
+        precache_fetcher_->CancelPrecaching();
+    BrowserThread::PostTask(
+        BrowserThread::DB,
+        FROM_HERE,
+        base::Bind(&PrecacheDatabase::SaveUnfinishedWork,
+                   precache_database_->GetWeakPtr(),
+                   base::Passed(&unfinished_work)));
+    // Destroying the |precache_fetcher_| will cancel any fetch in progress.
+    precache_fetcher_.reset();
+  }
   precache_completion_callback_.Reset();
 }
 
@@ -250,7 +283,6 @@ void PrecacheManager::Shutdown() {
 
 void PrecacheManager::OnDone() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
   precache_fetcher_.reset();
 
   // Run completion callback if not null. It's null if the client is in the
@@ -269,25 +301,27 @@ void PrecacheManager::OnHostsReceived(
     const history::TopHostsList& host_counts) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  std::vector<std::string> hosts;
+  for (const auto& host_count : host_counts)
+    unfinished_work_->add_top_host()->set_hostname(host_count.first);
+  InitializeAndStartFetcher();
+}
+
+void PrecacheManager::InitializeAndStartFetcher() {
   if (!is_precaching_) {
     // Don't start precaching if it was canceled while waiting for the list of
     // hosts.
     return;
   }
-
-  std::vector<std::string> hosts;
-  for (const auto& host_count : host_counts)
-    hosts.push_back(host_count.first);
-
   // Start precaching.
   precache_fetcher_.reset(new PrecacheFetcher(
-      hosts,
       content::BrowserContext::GetDefaultStoragePartition(browser_context_)->
             GetURLRequestContext(),
       GURL(variations::GetVariationParamValue(
           kPrecacheFieldTrialName, kConfigURLParam)),
       variations::GetVariationParamValue(
           kPrecacheFieldTrialName, kManifestURLPrefixParam),
+      std::move(unfinished_work_),
       this));
   precache_fetcher_->Start();
 }

@@ -25,6 +25,8 @@ source_set("core") {
     "precache_database.h",
     "precache_fetcher.cc",
     "precache_fetcher.h",
+    "precache_session_table.cc",
+    "precache_session_table.h",
     "precache_switches.cc",
     "precache_switches.h",
     "precache_url_table.cc",
@@ -50,6 +52,7 @@ source_set("core") {
 proto_library("proto") {
   sources = [
     "proto/precache.proto",
+    "proto/unfinished_work.proto",
   ]
 }
 
@@ -59,6 +62,7 @@ source_set("unit_tests") {
     "fetcher_pool_unittest.cc",
     "precache_database_unittest.cc",
     "precache_fetcher_unittest.cc",
+    "precache_session_table_unittest.cc",
     "precache_url_table_unittest.cc",
   ]
 

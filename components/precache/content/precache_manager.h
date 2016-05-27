@@ -24,6 +24,7 @@
 #include "url/gurl.h"
 
 namespace base {
+class FilePath;
 class Time;
 }
 
@@ -42,6 +43,7 @@ class SyncService;
 namespace precache {
 
 class PrecacheDatabase;
+class PrecacheUnfinishedWork;
 
 // Visible for test.
 size_t NumTopHosts();
@@ -61,7 +63,9 @@ class PrecacheManager : public KeyedService,
 
   PrecacheManager(content::BrowserContext* browser_context,
                   const sync_driver::SyncService* const sync_service,
-                  const history::HistoryService* const history_service);
+                  const history::HistoryService* const history_service,
+                  const base::FilePath& db_path,
+                  std::unique_ptr<PrecacheDatabase> precache_database);
   ~PrecacheManager() override;
 
   // Returns true if the client is in the experiment group -- that is,
@@ -117,8 +121,15 @@ class PrecacheManager : public KeyedService,
   // From PrecacheFetcher::PrecacheDelegate.
   void OnDone() override;
 
+  // Callback when fetching unfinished work from storage is done.
+  void OnGetUnfinishedWorkDone(
+      std::unique_ptr<PrecacheUnfinishedWork> unfinished_work);
+
   // From history::HistoryService::TopHosts.
   void OnHostsReceived(const history::TopHostsList& host_counts);
+
+  // Initializes and Starts a PrecacheFetcher with unfinished work.
+  void InitializeAndStartFetcher();
 
   // From history::HistoryService::TopHosts. Used for the control group, which
   // gets the list of TopHosts for metrics purposes, but otherwise does nothing.
@@ -161,6 +172,9 @@ class PrecacheManager : public KeyedService,
 
   // Flag indicating whether or not precaching is currently in progress.
   bool is_precaching_;
+
+  // Work that hasn't yet finished.
+  std::unique_ptr<PrecacheUnfinishedWork> unfinished_work_;
 
   DISALLOW_COPY_AND_ASSIGN(PrecacheManager);
 };

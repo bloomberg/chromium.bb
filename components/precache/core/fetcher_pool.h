@@ -67,6 +67,10 @@ class FetcherPool {
   // Returns true iff the pool can accept a new element.
   bool IsAvailable() const { return max_size_ > elements_.size(); }
 
+  const std::unordered_map<const T*, std::unique_ptr<T>>& elements() const {
+    return elements_;
+  }
+
  private:
   const size_t max_size_;
   std::unordered_map<const T*, std::unique_ptr<T>> elements_;

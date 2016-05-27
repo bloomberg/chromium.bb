@@ -4,12 +4,16 @@
 
 #include "chrome/browser/precache/precache_manager_factory.h"
 
+#include <memory>
+
+#include "base/files/file_path.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/precache/content/precache_manager.h"
+#include "components/precache/core/precache_database.h"
 #include "content/public/browser/browser_context.h"
 
 namespace precache {
@@ -37,13 +41,18 @@ PrecacheManagerFactory::~PrecacheManagerFactory() {
 
 KeyedService* PrecacheManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* browser_context) const {
+  std::unique_ptr<PrecacheDatabase> precache_database(
+      new PrecacheDatabase());
+  base::FilePath db_path(browser_context->GetPath().Append(
+      base::FilePath(FILE_PATH_LITERAL("PrecacheDatabase"))));
   return new PrecacheManager(
       browser_context,
       ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
           browser_context),
       HistoryServiceFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context),
-          ServiceAccessType::IMPLICIT_ACCESS));
+          ServiceAccessType::IMPLICIT_ACCESS),
+      db_path, std::move(precache_database));
 }
 
 }  // namespace precache
