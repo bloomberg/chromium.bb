@@ -69914,6 +69914,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              SAML login pages"/>
   <int value="329" label="Permit locking the screen"/>
   <int value="330" label="Set certificate availability for ARC-apps"/>
+  <int value="331" label="Define domains allowed to access Google Apps"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

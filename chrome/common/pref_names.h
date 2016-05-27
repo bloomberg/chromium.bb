@@ -309,6 +309,7 @@ extern const char kAllowDeletingBrowserHistory[];
 extern const char kForceGoogleSafeSearch[];
 extern const char kForceYouTubeSafetyMode[];
 extern const char kForceSessionSync[];
+extern const char kAllowedDomainsForApps[];
 extern const char kDeleteTimePeriod[];
 extern const char kLastClearBrowsingDataTime[];
 extern const char kClearBrowsingDataHistoryNoticeShownTimes[];

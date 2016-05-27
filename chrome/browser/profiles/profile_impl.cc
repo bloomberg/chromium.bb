@@ -326,6 +326,7 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kForceGoogleSafeSearch, false);
   registry->RegisterBooleanPref(prefs::kForceYouTubeSafetyMode, false);
   registry->RegisterBooleanPref(prefs::kForceSessionSync, false);
+  registry->RegisterStringPref(prefs::kAllowedDomainsForApps, std::string());
   registry->RegisterIntegerPref(
       prefs::kProfileAvatarIndex,
       -1,

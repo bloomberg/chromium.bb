@@ -923,6 +923,11 @@ const char kForceYouTubeSafetyMode[] = "settings.force_youtube_safety_mode";
 // (for supervised users).
 const char kForceSessionSync[] = "settings.history_recorded";
 
+// Comma separated list of domain names (e.g. "google.com,school.edu").
+// When this pref is set, the user will be able to access Google Apps
+// only using an account that belongs to one of the domains from this pref.
+const char kAllowedDomainsForApps[] = "settings.allowed_domains_for_apps";
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Linux specific preference on whether we should match the system theme.
 const char kUsesSystemTheme[] = "extensions.theme.use_system";

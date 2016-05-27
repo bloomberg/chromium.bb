@@ -347,9 +347,10 @@ IOThread::IOThread(
           local_state));
   ChromeNetworkDelegate::InitializePrefsOnUIThread(
       &system_enable_referrers_,
-      NULL,
-      NULL,
-      NULL,
+      nullptr,
+      nullptr,
+      nullptr,
+      nullptr,
       local_state);
   ssl_config_service_manager_.reset(
       ssl_config::SSLConfigServiceManager::CreateDefaultManager(

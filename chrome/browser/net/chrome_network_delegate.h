@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "components/data_use_measurement/content/data_use_measurement.h"
 #include "components/metrics/data_use_tracker.h"
+#include "components/prefs/pref_member.h"
 #include "net/base/network_delegate_impl.h"
 
 class ChromeExtensionsNetworkDelegate;
@@ -117,6 +118,11 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
     force_youtube_safety_mode_ = force_youtube_safety_mode;
   }
 
+  void set_allowed_domains_for_apps(
+      StringPrefMember* allowed_domains_for_apps) {
+    allowed_domains_for_apps_ = allowed_domains_for_apps;
+  }
+
   void set_domain_reliability_monitor(
       domain_reliability::DomainReliabilityMonitor* monitor) {
     domain_reliability_monitor_ = monitor;
@@ -134,6 +140,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
       BooleanPrefMember* enable_do_not_track,
       BooleanPrefMember* force_google_safe_search,
       BooleanPrefMember* force_youtube_safety_mode,
+      StringPrefMember* allowed_domains_for_apps,
       PrefService* pref_service);
 
   // When called, all file:// URLs will now be accessible.  If this is not
@@ -207,6 +214,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   BooleanPrefMember* enable_do_not_track_;
   BooleanPrefMember* force_google_safe_search_;
   BooleanPrefMember* force_youtube_safety_mode_;
+  StringPrefMember* allowed_domains_for_apps_;
 
   // Weak, owned by our owner.
   const policy::URLBlacklistManager* url_blacklist_manager_;

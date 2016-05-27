@@ -293,6 +293,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       enable_do_not_track_(NULL),
       force_google_safe_search_(NULL),
       force_youtube_safety_mode_(NULL),
+      allowed_domains_for_apps_(nullptr),
       url_blacklist_manager_(NULL),
       domain_reliability_monitor_(NULL),
       data_use_measurement_(metrics_data_use_forwarder),
@@ -342,6 +343,7 @@ void ChromeNetworkDelegate::InitializePrefsOnUIThread(
     BooleanPrefMember* enable_do_not_track,
     BooleanPrefMember* force_google_safe_search,
     BooleanPrefMember* force_youtube_safety_mode,
+    StringPrefMember* allowed_domains_for_apps,
     PrefService* pref_service) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   enable_referrers->Init(prefs::kEnableReferrers, pref_service);
@@ -361,6 +363,11 @@ void ChromeNetworkDelegate::InitializePrefsOnUIThread(
     force_youtube_safety_mode->Init(prefs::kForceYouTubeSafetyMode,
                                     pref_service);
     force_youtube_safety_mode->MoveToThread(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
+  }
+  if (allowed_domains_for_apps) {
+    allowed_domains_for_apps->Init(prefs::kAllowedDomainsForApps, pref_service);
+    allowed_domains_for_apps->MoveToThread(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   }
 }
@@ -440,6 +447,14 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
   tracked_objects::ScopedTracker tracking_profile5(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "456327 URLRequest::ChromeNetworkDelegate::OnBeforeURLRequest 5"));
+
+  if (allowed_domains_for_apps_ &&
+      !allowed_domains_for_apps_->GetValue().empty() &&
+      request->url().DomainIs("google.com")) {
+    request->SetExtraRequestHeaderByName("X-GoogApps-Allowed-Domains",
+                                         allowed_domains_for_apps_->GetValue(),
+                                         true);
+  }
 
   if (connect_interceptor_)
     connect_interceptor_->WitnessURLRequest(request);

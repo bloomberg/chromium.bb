@@ -528,6 +528,7 @@ class ProfileIOData {
   mutable BooleanPrefMember force_google_safesearch_;
   mutable BooleanPrefMember force_youtube_safety_mode_;
   mutable BooleanPrefMember safe_browsing_enabled_;
+  mutable StringPrefMember allowed_domains_for_apps_;
   mutable BooleanPrefMember sync_disabled_;
   mutable BooleanPrefMember signin_allowed_;
   mutable IntegerPrefMember network_prediction_options_;

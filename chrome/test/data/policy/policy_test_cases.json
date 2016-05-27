@@ -1887,6 +1887,36 @@
     ]
   },
 
+  "AllowedDomainsForApps": {
+    "pref": "settings.allowed_domains_for_apps",
+    "test_policy": { "AllowedDomainsForApps": "google.com,mit.edu" },
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "pref_mappings": [
+      { "pref": "settings.allowed_domains_for_apps"
+      }
+    ]
+  },
+
+  "AllowedDomainsForApps": {
+    "pref": "settings.allowed_domains_for_apps",
+    "test_policy": { "AllowedDomainsForApps": "google.com,mit.edu" },
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "pref_mappings": [
+      { "pref": "settings.allowed_domains_for_apps"
+      }
+    ]
+  },
+
+  "AllowedDomainsForApps": {
+    "pref": "settings.allowed_domains_for_apps",
+    "test_policy": { "AllowedDomainsForApps": "google.com,mit.edu" },
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "pref_mappings": [
+      { "pref": "settings.allowed_domains_for_apps"
+      }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

@@ -349,6 +349,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAllowDinosaurEasterEgg,
     prefs::kAllowDinosaurEasterEgg,
     base::Value::TYPE_BOOLEAN },
+  { key::kAllowedDomainsForApps,
+    prefs::kAllowedDomainsForApps,
+    base::Value::TYPE_STRING },
 
 #if defined(ENABLE_SPELLCHECK)
   { key::kSpellCheckServiceEnabled,

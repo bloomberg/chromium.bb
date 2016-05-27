@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 330
+#   For your editing convenience: highest ID currently used: 331
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -8544,6 +8544,41 @@
       'desc': '''If set to SyncDisabled or not configured, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> certificates are not available for ARC-apps.
 
       If set to CopyCaCerts, all ONC-installed CA certificates with <ph name="WEB_TRUSTED_BIT">Web TrustBit</ph> are available for ARC-apps.''',
+    },
+    {
+      'name': 'AllowedDomainsForApps',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['chrome.*:51-', 'chrome_os:51-', 'android:51-'],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 'managedchrome.com,gmail.com',
+      'id': 331,
+      'caption': '''Define domains allowed to access Google Apps''',
+      'tags': ['filtering'],
+      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s
+      restricted log in feature in Google Apps and prevents users from
+      changing this setting.
+
+      If you define this setting, the user will only be able to access
+      Google Apps (such as Gmail) using accounts from the specified domains.
+
+      This setting will NOT prevent the user from loging in on a managed device
+      that requires Google authentication. The user will still be allowed to
+      sign in to accounts from other domains, but they will receive an error
+      when trying to use Google Apps with those accounts.
+
+      If you leave this setting empty/not-configured, the user will be able to
+      access Google Apps with any account.
+
+      This policy causes the X-GoogApps-Allowed-Domains header to be appended to
+      all HTTP and HTTPS requests to all google.com domains, as described in
+      https://support.google.com/a/answer/1668854.
+
+      Users cannot change or override this setting.''',
     },
   ],
   'messages': {

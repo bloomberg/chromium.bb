@@ -36,6 +36,7 @@
 #include "content/public/common/resource_type.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/request_priority.h"
+#include "net/http/http_request_headers.h"
 #include "net/socket/socket_test_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -149,7 +150,7 @@ class ChromeNetworkDelegateTest : public testing::Test {
 
   void SetUp() override {
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
-        &enable_referrers_, nullptr, nullptr, nullptr,
+        &enable_referrers_, nullptr, nullptr, nullptr, nullptr,
         profile_.GetTestingPrefService());
     profile_manager_.reset(
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
@@ -329,21 +330,49 @@ TEST_F(ChromeNetworkDelegateTest, ReportOffTheRecordDataUseToAggregator) {
             fake_aggregator.off_the_record_rx_bytes());
 }
 
-class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
+class ChromeNetworkDelegatePolicyTest : public testing::Test {
  public:
-  ChromeNetworkDelegateSafeSearchTest()
+  ChromeNetworkDelegatePolicyTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
 #if defined(ENABLE_EXTENSIONS)
     forwarder_ = new extensions::EventRouterForwarder();
 #endif
   }
 
+ protected:
+   void SetDelegate(net::NetworkDelegate* delegate) {
+     context_.set_network_delegate(delegate);
+   }
+
+  extensions::EventRouterForwarder* forwarder() {
+#if defined(ENABLE_EXTENSIONS)
+    return forwarder_.get();
+#else
+    return nullptr;
+#endif
+  }
+
+  content::TestBrowserThreadBundle thread_bundle_;
+#if defined(ENABLE_EXTENSIONS)
+  scoped_refptr<extensions::EventRouterForwarder> forwarder_;
+#endif
+  TestingProfile profile_;
+  BooleanPrefMember enable_referrers_;
+  net::TestURLRequestContext context_;
+  net::TestDelegate delegate_;
+  DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegatePolicyTest);
+};
+
+class ChromeNetworkDelegateSafeSearchTest :
+    public ChromeNetworkDelegatePolicyTest {
+ public:
   void SetUp() override {
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
         &enable_referrers_,
-        NULL,
+        nullptr,
         &force_google_safe_search_,
         &force_youtube_safety_mode_,
+        nullptr,
         profile_.GetTestingPrefService());
   }
 
@@ -362,11 +391,6 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
                      bool youtube_safety_mode) {
     force_google_safe_search_.SetValue(google_safe_search);
     force_youtube_safety_mode_.SetValue(youtube_safety_mode);
-  }
-
-  void SetDelegate(net::NetworkDelegate* delegate) {
-    network_delegate_ = delegate;
-    context_.set_network_delegate(network_delegate_);
   }
 
   // Does a request to an arbitrary URL and verifies that the SafeSearch
@@ -389,26 +413,8 @@ class ChromeNetworkDelegateSafeSearchTest : public testing::Test {
   }
 
  private:
-  extensions::EventRouterForwarder* forwarder() {
-#if defined(ENABLE_EXTENSIONS)
-    return forwarder_.get();
-#else
-    return NULL;
-#endif
-  }
-
-  content::TestBrowserThreadBundle thread_bundle_;
-#if defined(ENABLE_EXTENSIONS)
-  scoped_refptr<extensions::EventRouterForwarder> forwarder_;
-#endif
-  TestingProfile profile_;
-  BooleanPrefMember enable_referrers_;
   BooleanPrefMember force_google_safe_search_;
   BooleanPrefMember force_youtube_safety_mode_;
-  std::unique_ptr<net::URLRequest> request_;
-  net::TestURLRequestContext context_;
-  net::NetworkDelegate* network_delegate_;
-  net::TestDelegate delegate_;
 };
 
 TEST_F(ChromeNetworkDelegateSafeSearchTest, SafeSearch) {
@@ -423,6 +429,94 @@ TEST_F(ChromeNetworkDelegateSafeSearchTest, SafeSearch) {
 
     QueryURL(google_safe_search, youtube_safety_mode);
   }
+}
+
+class ChromeNetworkDelegateAllowedDomainsTest :
+    public ChromeNetworkDelegatePolicyTest {
+ public:
+
+  void SetUp() override {
+    ChromeNetworkDelegate::InitializePrefsOnUIThread(
+        &enable_referrers_,
+        nullptr,
+        nullptr,
+        nullptr,
+        &allowed_domains_for_apps_,
+        profile_.GetTestingPrefService());
+  }
+
+ protected:
+  std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate() {
+    std::unique_ptr<ChromeNetworkDelegate> network_delegate(
+        new ChromeNetworkDelegate(forwarder(), &enable_referrers_,
+                                  metrics::UpdateUsagePrefCallbackType()));
+    network_delegate->set_allowed_domains_for_apps(&allowed_domains_for_apps_);
+    return std::move(network_delegate);
+  }
+
+  // Will set the AllowedDomainsForApps policy to have the value of |allowed|.
+  // Will make a request to |url| and check the headers in request.
+  // If |expected| is passed as false, this routine verifies that no
+  // X-GoogApps-Allowed-Domains header is set. If |expected| is passed as true,
+  // this routine verifies that the X-GoogApps-Allowed-Domains header is set and
+  // the value is identical to |allowed|.
+  void CheckAllowedDomainsHeaders(const std::string& allowed,
+                                  const GURL& url,
+                                  bool expected) {
+    allowed_domains_for_apps_.SetValue(allowed);
+
+    std::unique_ptr<net::URLRequest> request(context_.CreateRequest(
+        url, net::DEFAULT_PRIORITY, &delegate_));
+
+    request->Start();
+    base::RunLoop().RunUntilIdle();
+
+    net::HttpRequestHeaders request_headers = request->extra_request_headers();
+
+    const char allowed_domains_header_name[] = "X-GoogApps-Allowed-Domains";
+    EXPECT_EQ(expected, request_headers.HasHeader(allowed_domains_header_name));
+
+    if (expected) {
+      std::string header_value;
+      request_headers.GetHeader(allowed_domains_header_name, &header_value);
+      EXPECT_EQ(allowed, header_value);
+    }
+  }
+
+ private:
+  StringPrefMember allowed_domains_for_apps_;
+};
+
+// Test the use case when the AllowedDomainsForApps policy is set and
+// a request is done to Google servers. We expect the request
+// headers to contain X-GoogApps-Allowed-Domains key and its value to be equal
+// to the value from the policy.
+TEST_F(ChromeNetworkDelegateAllowedDomainsTest, AllowedDomainsIncluded) {
+  std::unique_ptr<net::NetworkDelegate> delegate(CreateNetworkDelegate());
+  SetDelegate(delegate.get());
+
+  CheckAllowedDomainsHeaders("gmail.com,mit.edu", GURL("http://google.com"),
+                             true);
+}
+
+// Test the use case when the AllowedDomainsForApps policy is empty and
+// a request is done to Google servers. We expect the request
+// headers to not contain X-GoogApps-Allowed-Domains key because the policy
+// is not set.
+TEST_F(ChromeNetworkDelegateAllowedDomainsTest, AllowedDomainsEmpty) {
+  std::unique_ptr<net::NetworkDelegate> delegate(CreateNetworkDelegate());
+  SetDelegate(delegate.get());
+  CheckAllowedDomainsHeaders("", GURL("http://google.com"), false);
+}
+
+// Test the use case when the AllowedDomainsForApps policy is set and
+// a request is done to a non-Google domain. We expect the request
+// headers to not contain X-GoogApps-Allowed-Domains key because the
+// accessed URL is not from google.com domain.
+TEST_F(ChromeNetworkDelegateAllowedDomainsTest, AllowedDomainsNonGoogleUrl) {
+  std::unique_ptr<net::NetworkDelegate> delegate(CreateNetworkDelegate());
+  SetDelegate(delegate.get());
+  CheckAllowedDomainsHeaders("google.com", GURL("http://example.com"), false);
 }
 
 // Privacy Mode disables Channel Id if cookies are blocked (cr223191)
@@ -442,7 +536,7 @@ class ChromeNetworkDelegatePrivacyModeTest : public testing::Test {
 
   void SetUp() override {
     ChromeNetworkDelegate::InitializePrefsOnUIThread(
-        &enable_referrers_, NULL, NULL, NULL,
+        &enable_referrers_, nullptr, nullptr, nullptr, nullptr,
         profile_.GetTestingPrefService());
   }
 
