@@ -29926,6 +29926,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SpdyPriorityCount">
+  <obsolete>
+    Removed 2016-05-26.
+  </obsolete>
   <owner>rch@chromium.org</owner>
   <summary>The count of streams at each priority over Spdy sessions.</summary>
 </histogram>

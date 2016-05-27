@@ -950,10 +950,6 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
   *stream = new_stream->GetWeakPtr();
   InsertCreatedStream(std::move(new_stream));
 
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Net.SpdyPriorityCount",
-      static_cast<int>(request.priority()), 0, 10, 11);
-
   return OK;
 }
 
