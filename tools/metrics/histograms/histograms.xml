@@ -91161,7 +91161,12 @@ To add a new entry, add it with any value and run test to compute valid value.
 </histogram_suffixes>
 
 <histogram_suffixes name="AndroidTabPersistentStoreTime" separator=".">
-  <suffix name="CleanupAllEncryptedTime"/>
+  <suffix name="CleanupAllEncryptedTime">
+    <obsolete>
+      Original code deleted in a refactoring.
+    </obsolete>
+  </suffix>
+  <suffix name="LoadStateInternalPrefetchTime"/>
   <suffix name="LoadStateInternalTime"/>
   <suffix name="LoadStateTime"/>
   <suffix name="ReadSavedStateTime"/>

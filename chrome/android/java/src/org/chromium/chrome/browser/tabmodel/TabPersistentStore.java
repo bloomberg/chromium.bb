@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -65,6 +66,9 @@ public class TabPersistentStore extends TabPersister {
 
     private static final String PREF_HAS_COMPUTED_MAX_ID =
             "org.chromium.chrome.browser.tabmodel.TabPersistentStore.HAS_COMPUTED_MAX_ID";
+
+    private static final String PREF_HAS_RUN_FILE_MIGRATION =
+            "org.chromium.chrome.browser.tabmodel.TabPersistentStore.HAS_RUN_FILE_MIGRATION";
 
     /** Prevents two copies of the Migration task from being created. */
     private static final Object MIGRATION_LOCK = new Object();
@@ -135,8 +139,12 @@ public class TabPersistentStore extends TabPersister {
         }
     }
 
-    private static FileMigrationTask sMigrationTask = null;
-    private static File sBaseStateDirectory;
+    private static class BaseStateDirectoryHolder {
+        @VisibleForTesting
+        private static File sDirectory = getOrCreateBaseStateDirectory();
+    }
+
+    private static AsyncTask<Void, Void, Void> sMigrationTask = null;
 
     private final TabModelSelector mTabModelSelector;
     private final TabCreatorManager mTabCreatorManager;
@@ -164,6 +172,7 @@ public class TabPersistentStore extends TabPersister {
     private SparseIntArray mIncognitoTabsRestored;
 
     private SharedPreferences mPreferences;
+    private AsyncTask<Void, Void, DataInputStream> mPrefetchSaveStateTask;
 
 
     /**
@@ -185,16 +194,8 @@ public class TabPersistentStore extends TabPersister {
         mSelectorIndex = selectorIndex;
         mObserver = observer;
         mPreferences = ContextUtils.getAppSharedPreferences();
-        createMigrationTask();
-    }
-
-    private final void createMigrationTask() {
-        synchronized (MIGRATION_LOCK) {
-            if (sMigrationTask == null) {
-                sMigrationTask = new FileMigrationTask();
-                sMigrationTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-            }
-        }
+        startMigrationTaskIfNecessary();
+        startPrefetchTask();
     }
 
     @Override
@@ -206,35 +207,12 @@ public class TabPersistentStore extends TabPersister {
     }
 
     /**
-     * Sets where the base state directory is.  If overriding this value, set it before
-     * instantiating TabPersistentStore.
-     */
-    @VisibleForTesting
-    public static void setBaseStateDirectory(File directory) {
-        sBaseStateDirectory = directory;
-    }
-
-    /**
-     * Folder that all metadata for the TabModels should be located. Each subdirectory stores info
-     * about different instances of ChromeTabbedActivity.
-     *
-     * @return The parent state directory.
-     */
-    private static File getBaseStateDirectory() {
-        if (sBaseStateDirectory == null) {
-            Context appContext = ContextUtils.getApplicationContext();
-            setBaseStateDirectory(appContext.getDir(BASE_STATE_FOLDER, Context.MODE_PRIVATE));
-        }
-        return sBaseStateDirectory;
-    }
-
-    /**
      * The folder where the state should be saved to.
      * @param index   The TabModelSelector index.
      * @return        A file representing the directory that contains the TabModelSelector state.
      */
     public static File getOrCreateSelectorStateDirectory(int index) {
-        File file = new File(getBaseStateDirectory(), Integer.toString(index));
+        File file = new File(BaseStateDirectoryHolder.sDirectory, Integer.toString(index));
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         StrictMode.allowThreadDiskWrites();
         try {
@@ -252,7 +230,7 @@ public class TabPersistentStore extends TabPersister {
      */
     @VisibleForTesting
     public void waitForMigrationToFinish() {
-        assert sMigrationTask != null : "The migration should be initialized by now.";
+        if (sMigrationTask == null) return;
         try {
             sMigrationTask.get();
         } catch (InterruptedException e) {
@@ -367,7 +345,10 @@ public class TabPersistentStore extends TabPersister {
             assert mTabModelSelector.getModel(true).getCount() == 0;
             assert mTabModelSelector.getModel(false).getCount() == 0;
             checkAndUpdateMaxTabId();
-            readSavedStateFile(getStateDirectory(),
+            long timeWaitingForPrefetch = SystemClock.elapsedRealtime();
+            DataInputStream stream = mPrefetchSaveStateTask.get();
+            logExecutionTime("LoadStateInternalPrefetchTime", timeWaitingForPrefetch);
+            readSavedStateFile(stream,
                     createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected()));
             logExecutionTime("LoadStateInternalTime", time);
         } catch (Exception e) {
@@ -769,18 +750,28 @@ public class TabPersistentStore extends TabPersister {
      * @throws IOException
      */
     private void checkAndUpdateMaxTabId() throws IOException {
-        if (mPreferences.getBoolean(PREF_HAS_COMPUTED_MAX_ID, false)) {
-            return;
-        }
+        if (mPreferences.getBoolean(PREF_HAS_COMPUTED_MAX_ID, false)) return;
+
         int maxId = 0;
-        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/473357
+        // Calculation of the max tab ID is done only once per user and is stored in
+        // SharedPreferences afterwards.  This is done on the UI thread because it is on the
+        // critical patch to initializing the TabIdManager with the correct max tab ID.
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            File[] folders = getBaseStateDirectory().listFiles();
+            File[] folders = BaseStateDirectoryHolder.sDirectory.listFiles();
             if (folders == null) return;
             for (File folder : folders) {
                 if (!folder.isDirectory()) continue;
-                maxId = Math.max(maxId, readSavedStateFile(folder, null));
+                File stateFile = new File(folder, SAVED_STATE_FILE);
+                if (!stateFile.exists()) continue;
+                DataInputStream stream = null;
+                try {
+                    stream = new DataInputStream(new BufferedInputStream(new FileInputStream(
+                            stateFile)));
+                    maxId = Math.max(maxId, readSavedStateFile(stream, null));
+                } finally {
+                    StreamUtil.closeQuietly(stream);
+                }
             }
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
@@ -789,59 +780,42 @@ public class TabPersistentStore extends TabPersister {
         mPreferences.edit().putBoolean(PREF_HAS_COMPUTED_MAX_ID, true).apply();
     }
 
-    private int readSavedStateFile(File folder, OnTabStateReadCallback callback)
+    private int readSavedStateFile(DataInputStream stream, OnTabStateReadCallback callback)
             throws IOException {
-        DataInputStream stream = null;
-        // As we do this in startup, and restoring the tab state is critical to
-        // initializing all other state, we permit this one read.
-        // TODO(joth): An improved solution would be to pre-read the files on a background and
-        // block here waiting for that task to complete only if needed. See http://b/5518170
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            long time = SystemClock.elapsedRealtime();
-            File stateFile = new File(folder, SAVED_STATE_FILE);
-            if (!stateFile.exists()) return 0;
-
-            stream = new DataInputStream(new BufferedInputStream(new FileInputStream(stateFile)));
-
-            int nextId = 0;
-            boolean skipUrlRead = false;
-            boolean skipIncognitoCount = false;
-            final int version = stream.readInt();
-            if (version != SAVED_STATE_VERSION) {
-                // We don't support restoring Tab data from before M18.
-                if (version < 3) return 0;
-
-                // Older versions are missing newer data.
-                if (version < 5) skipIncognitoCount = true;
-                if (version < 4) skipUrlRead = true;
-            }
-
-            final int count = stream.readInt();
-            final int incognitoCount = skipIncognitoCount ? -1 : stream.readInt();
-            final int incognitoActiveIndex = stream.readInt();
-            final int standardActiveIndex = stream.readInt();
-            if (count < 0 || incognitoActiveIndex >= count || standardActiveIndex >= count) {
-                throw new IOException();
-            }
-
-            for (int i = 0; i < count; i++) {
-                int id = stream.readInt();
-                String tabUrl = skipUrlRead ? "" : stream.readUTF();
-                if (id >= nextId) nextId = id + 1;
-
-                Boolean isIncognito = (incognitoCount < 0) ? null : i < incognitoCount;
-                if (callback != null) {
-                    callback.onDetailsRead(i, id, tabUrl, isIncognito,
-                            i == standardActiveIndex, i == incognitoActiveIndex);
-                }
-            }
-            logExecutionTime("ReadSavedStateTime", time);
-            return nextId;
-        } finally {
-            StreamUtil.closeQuietly(stream);
-            StrictMode.setThreadPolicy(oldPolicy);
+        long time = SystemClock.elapsedRealtime();
+        int nextId = 0;
+        boolean skipUrlRead = false;
+        boolean skipIncognitoCount = false;
+        final int version = stream.readInt();
+        if (version != SAVED_STATE_VERSION) {
+            // We don't support restoring Tab data from before M18.
+            if (version < 3) return 0;
+            // Older versions are missing newer data.
+            if (version < 5) skipIncognitoCount = true;
+            if (version < 4) skipUrlRead = true;
         }
+
+        final int count = stream.readInt();
+        final int incognitoCount = skipIncognitoCount ? -1 : stream.readInt();
+        final int incognitoActiveIndex = stream.readInt();
+        final int standardActiveIndex = stream.readInt();
+        if (count < 0 || incognitoActiveIndex >= count || standardActiveIndex >= count) {
+            throw new IOException();
+        }
+
+        for (int i = 0; i < count; i++) {
+            int id = stream.readInt();
+            String tabUrl = skipUrlRead ? "" : stream.readUTF();
+            if (id >= nextId) nextId = id + 1;
+
+            Boolean isIncognito = (incognitoCount < 0) ? null : i < incognitoCount;
+            if (callback != null) {
+                callback.onDetailsRead(i, id, tabUrl, isIncognito,
+                        i == standardActiveIndex, i == incognitoActiveIndex);
+            }
+        }
+        logExecutionTime("ReadSavedStateTime", time);
+        return nextId;
     }
 
     private void saveNextTab() {
@@ -1052,35 +1026,47 @@ public class TabPersistentStore extends TabPersister {
         }
     }
 
-    private class FileMigrationTask extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected Void doInBackground(Void... params) {
-            File newFolder = getStateDirectory();
+    /**
+     * Users upgrading from an old version of Chrome when the state file was still in the root
+     * directory.
+     */
+    private void startMigrationTaskIfNecessary() {
+        if (mPreferences.getBoolean(PREF_HAS_RUN_FILE_MIGRATION, false)) return;
 
-            // If we already have files here just return.
-            File[] newFiles = newFolder.listFiles();
-            if (newFiles != null && newFiles.length > 0) return null;
+        synchronized (MIGRATION_LOCK) {
+            if (sMigrationTask != null) return;
+            sMigrationTask = new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                    File newFolder = getStateDirectory();
+                    File[] newFiles = newFolder.listFiles();
 
-            File oldFolder = mContext.getFilesDir();
-            File modelFile = new File(oldFolder, SAVED_STATE_FILE);
-            if (modelFile.exists()) {
-                if (!modelFile.renameTo(new File(newFolder, SAVED_STATE_FILE))) {
-                    Log.e(TAG, "Failed to rename file: " + modelFile);
-                }
-            }
+                    // Attempt migration if we have no tab state file in the new directory.
+                    if (newFiles == null || newFiles.length == 0) {
+                        File oldFolder = mContext.getFilesDir();
+                        File modelFile = new File(oldFolder, SAVED_STATE_FILE);
+                        if (modelFile.exists()) {
+                            if (!modelFile.renameTo(new File(newFolder, SAVED_STATE_FILE))) {
+                                Log.e(TAG, "Failed to rename file: " + modelFile);
+                            }
+                        }
 
-            File[] files = oldFolder.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (TabState.parseInfoFromFilename(file.getName()) != null) {
-                        if (!file.renameTo(new File(newFolder, file.getName()))) {
-                            Log.e(TAG, "Failed to rename file: " + file);
+                        File[] files = oldFolder.listFiles();
+                        if (files != null) {
+                            for (File file : files) {
+                                if (TabState.parseInfoFromFilename(file.getName()) != null) {
+                                    if (!file.renameTo(new File(newFolder, file.getName()))) {
+                                        Log.e(TAG, "Failed to rename file: " + file);
+                                    }
+                                }
+                            }
                         }
                     }
-                }
-            }
 
-            return null;
+                    mPreferences.edit().putBoolean(PREF_HAS_RUN_FILE_MIGRATION, true).apply();
+                    return null;
+                }
+            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
     }
 
@@ -1108,5 +1094,48 @@ public class TabPersistentStore extends TabPersister {
             // The tab's type is undecideable.
             return false;
         }
+    }
+
+    private void startPrefetchTask() {
+        mPrefetchSaveStateTask = new AsyncTask<Void, Void, DataInputStream>() {
+            @Override
+            protected DataInputStream doInBackground(Void... params) {
+                // This getStateDirectory should be the first call and will cache the result.
+                File stateFile = new File(getStateDirectory(), SAVED_STATE_FILE);
+                if (!stateFile.exists()) return null;
+                FileInputStream stream = null;
+                byte[] data;
+                try {
+                    stream = new FileInputStream(stateFile);
+                    data = new byte[(int) stateFile.length()];
+                    stream.read(data);
+                } catch (IOException exception) {
+                    return null;
+                } finally {
+                    StreamUtil.closeQuietly(stream);
+                }
+                return new DataInputStream(new ByteArrayInputStream(data));
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * Directory containing all data for TabModels.  Each subdirectory stores info about different
+     * TabModelSelectors, including metadata about each TabModel and TabStates for each of their
+     * tabs.
+     *
+     * @return The parent state directory.
+     */
+    private static File getOrCreateBaseStateDirectory() {
+        Context appContext = ContextUtils.getApplicationContext();
+        return appContext.getDir(BASE_STATE_FOLDER, Context.MODE_PRIVATE);
+    }
+
+    /**
+     * Sets where the base state directory is in tests.
+     */
+    @VisibleForTesting
+    public static void setBaseStateDirectoryForTests(File directory) {
+        BaseStateDirectoryHolder.sDirectory = directory;
     }
 }

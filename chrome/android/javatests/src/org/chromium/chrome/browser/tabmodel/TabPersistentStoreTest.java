@@ -231,7 +231,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         loadNativeLibraryAndInitBrowserProcess();
         mMockDirectory = new TestTabModelDirectory(getInstrumentation().getTargetContext(),
                 "TabPersistentStoreTest", Integer.toString(SELECTOR_INDEX));
-        TabPersistentStore.setBaseStateDirectory(mMockDirectory.getBaseDirectory());
+        TabPersistentStore.setBaseStateDirectoryForTests(mMockDirectory.getBaseDirectory());
     }
 
     @Override

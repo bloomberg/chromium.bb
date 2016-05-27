@@ -437,7 +437,7 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         // Load up the metadata file via a TabPersistentStore to make sure that it contains all of
         // the migrated tab information.
         loadNativeLibraryAndInitBrowserProcess();
-        TabPersistentStore.setBaseStateDirectory(mTabbedModeDirectory.getBaseDirectory());
+        TabPersistentStore.setBaseStateDirectoryForTests(mTabbedModeDirectory.getBaseDirectory());
 
         TestTabModelSelector selector = new TestTabModelSelector(mContext);
         TabPersistentStore store = selector.mTabPersistentStore;

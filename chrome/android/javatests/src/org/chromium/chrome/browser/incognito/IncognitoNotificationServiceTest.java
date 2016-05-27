@@ -127,7 +127,7 @@ public class IncognitoNotificationServiceTest extends ChromeTabbedActivityTestBa
             tabbedModeDirectory.writeTabStateFile(incognitoInfo);
         }
 
-        TabPersistentStore.setBaseStateDirectory(tabbedModeDirectory.getBaseDirectory());
+        TabPersistentStore.setBaseStateDirectoryForTests(tabbedModeDirectory.getBaseDirectory());
 
         File[] tabbedModeFiles = tabbedModeDirectory.getDataDirectory().listFiles();
         assertNotNull(tabbedModeFiles);
