@@ -138,18 +138,18 @@ bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, Access
     return !(getSecurityOrigin()->canRequestNoSuborigin(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
 }
 
-void ExecutionContext::reportException(ErrorEvent* errorEvent, PassOwnPtr<SourceLocation> location, AccessControlStatus corsStatus)
+void ExecutionContext::reportException(ErrorEvent* errorEvent, AccessControlStatus corsStatus)
 {
     if (m_inDispatchErrorEvent) {
         if (!m_pendingExceptions)
             m_pendingExceptions = adoptPtr(new Vector<OwnPtr<PendingException>>());
-        m_pendingExceptions->append(adoptPtr(new PendingException(errorEvent->messageForConsole(), std::move(location))));
+        m_pendingExceptions->append(adoptPtr(new PendingException(errorEvent->messageForConsole(), errorEvent->location()->clone())));
         return;
     }
 
     // First report the original exception and only then all the nested ones.
     if (!dispatchErrorEvent(errorEvent, corsStatus))
-        logExceptionToConsole(errorEvent->messageForConsole(), std::move(location));
+        logExceptionToConsole(errorEvent->messageForConsole(), errorEvent->location()->clone());
 
     if (!m_pendingExceptions)
         return;

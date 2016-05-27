@@ -104,7 +104,7 @@ public:
     KURL contextCompleteURL(const String& url) const { return virtualCompleteURL(url); }
 
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
-    void reportException(ErrorEvent*, PassOwnPtr<SourceLocation>, AccessControlStatus);
+    void reportException(ErrorEvent*, AccessControlStatus);
 
     virtual void addConsoleMessage(ConsoleMessage*) = 0;
     virtual void logExceptionToConsole(const String& errorMessage, PassOwnPtr<SourceLocation>) = 0;

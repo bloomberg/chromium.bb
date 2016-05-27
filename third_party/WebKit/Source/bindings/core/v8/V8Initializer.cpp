@@ -128,7 +128,7 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local
     else if (message->IsSharedCrossOrigin())
         accessControlStatus = SharableCrossOrigin;
 
-    ErrorEvent* event = ErrorEvent::create(toCoreStringWithNullCheck(message->Get()), location->url(), location->lineNumber(), location->columnNumber(), &scriptState->world());
+    ErrorEvent* event = ErrorEvent::create(toCoreStringWithNullCheck(message->Get()), std::move(location), &scriptState->world());
 
     String messageForConsole = extractMessageForConsole(isolate, data);
     if (!messageForConsole.isEmpty())
@@ -152,9 +152,9 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local
         // other isolated worlds (which means that the error events won't fire any event listeners
         // in user's scripts).
         EventDispatchForbiddenScope::AllowUserAgentEvents allowUserAgentEvents;
-        context->reportException(event, std::move(location), accessControlStatus);
+        context->reportException(event, accessControlStatus);
     } else {
-        context->reportException(event, std::move(location), accessControlStatus);
+        context->reportException(event, accessControlStatus);
     }
 }
 
@@ -400,7 +400,7 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message, v8::Local<v8:
 
     ExecutionContext* context = scriptState->getExecutionContext();
     OwnPtr<SourceLocation> location = SourceLocation::fromMessage(isolate, message, context);
-    ErrorEvent* event = ErrorEvent::create(toCoreStringWithNullCheck(message->Get()), location->url(), location->lineNumber(), location->columnNumber(), &scriptState->world());
+    ErrorEvent* event = ErrorEvent::create(toCoreStringWithNullCheck(message->Get()), std::move(location), &scriptState->world());
 
     AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
 
@@ -408,7 +408,7 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message, v8::Local<v8:
     // the error event from the v8::Message, quietly leave.
     if (!isolate->IsExecutionTerminating()) {
         V8ErrorHandler::storeExceptionOnErrorEventWrapper(scriptState, event, data, scriptState->context()->Global());
-        scriptState->getExecutionContext()->reportException(event, std::move(location), corsStatus);
+        scriptState->getExecutionContext()->reportException(event, corsStatus);
     }
 
     perIsolateData->setReportingException(false);

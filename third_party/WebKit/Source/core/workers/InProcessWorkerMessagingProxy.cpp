@@ -170,7 +170,7 @@ void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, 
     // because terminated workers no longer deliver messages (section 4.6 of the
     // WebWorker spec), but they do report exceptions.
 
-    ErrorEvent* event = ErrorEvent::create(errorMessage, location->url(), location->lineNumber(), location->columnNumber(), nullptr);
+    ErrorEvent* event = ErrorEvent::create(errorMessage, location->clone(), nullptr);
     if (m_workerObject->dispatchEvent(event) == DispatchEventResult::NotCanceled)
         postTaskToWorkerGlobalScope(createCrossThreadTask(&processUnhandledExceptionOnWorkerGlobalScope, errorMessage, passed(std::move(location))));
 }

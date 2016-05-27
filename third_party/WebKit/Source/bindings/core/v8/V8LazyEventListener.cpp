@@ -207,13 +207,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* executionConte
 
 void V8LazyEventListener::fireErrorEvent(v8::Local<v8::Context> v8Context, ExecutionContext* executionContext, v8::Local<v8::Message> message)
 {
-    String messageText = toCoreStringWithNullCheck(message->Get());
-    int lineNumber = 0;
-    int columnNumber = 0;
-    if (v8Call(message->GetLineNumber(v8Context), lineNumber)
-        && v8Call(message->GetStartColumn(v8Context), columnNumber))
-        ++columnNumber;
-    ErrorEvent* event = ErrorEvent::create(messageText, m_sourceURL, lineNumber, columnNumber, &world());
+    ErrorEvent* event = ErrorEvent::create(toCoreStringWithNullCheck(message->Get()), SourceLocation::fromMessage(isolate(), message, executionContext), &world());
 
     AccessControlStatus accessControlStatus = NotSharableCrossOrigin;
     if (message->IsOpaque())
@@ -221,7 +215,7 @@ void V8LazyEventListener::fireErrorEvent(v8::Local<v8::Context> v8Context, Execu
     else if (message->IsSharedCrossOrigin())
         accessControlStatus = SharableCrossOrigin;
 
-    executionContext->reportException(event, SourceLocation::create(m_sourceURL, lineNumber, columnNumber, nullptr), accessControlStatus);
+    executionContext->reportException(event, accessControlStatus);
 }
 
 } // namespace blink

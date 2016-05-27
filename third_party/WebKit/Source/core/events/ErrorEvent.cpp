@@ -37,9 +37,7 @@ namespace blink {
 
 ErrorEvent::ErrorEvent()
     : m_sanitizedMessage()
-    , m_fileName()
-    , m_lineNumber(0)
-    , m_columnNumber(0)
+    , m_location(SourceLocation::create(String(), 0, 0, nullptr))
     , m_world(DOMWrapperWorld::current(v8::Isolate::GetCurrent()))
 {
 }
@@ -47,29 +45,23 @@ ErrorEvent::ErrorEvent()
 ErrorEvent::ErrorEvent(const AtomicString& type, const ErrorEventInit& initializer)
     : Event(type, initializer)
     , m_sanitizedMessage()
-    , m_fileName()
-    , m_lineNumber(0)
-    , m_columnNumber(0)
     , m_world(DOMWrapperWorld::current(v8::Isolate::GetCurrent()))
 {
     if (initializer.hasMessage())
         m_sanitizedMessage = initializer.message();
-    if (initializer.hasFilename())
-        m_fileName = initializer.filename();
-    if (initializer.hasLineno())
-        m_lineNumber = initializer.lineno();
-    if (initializer.hasColno())
-        m_columnNumber = initializer.colno();
+    m_location = SourceLocation::create(
+        initializer.hasFilename() ? initializer.filename() : String(),
+        initializer.hasLineno() ? initializer.lineno() : 0,
+        initializer.hasColno() ? initializer.colno() : 0,
+        nullptr);
     if (initializer.hasError())
         m_error = initializer.error();
 }
 
-ErrorEvent::ErrorEvent(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber, DOMWrapperWorld* world)
+ErrorEvent::ErrorEvent(const String& message, PassOwnPtr<SourceLocation> location, DOMWrapperWorld* world)
     : Event(EventTypeNames::error, false, true)
     , m_sanitizedMessage(message)
-    , m_fileName(fileName)
-    , m_lineNumber(lineNumber)
-    , m_columnNumber(columnNumber)
+    , m_location(std::move(location))
     , m_world(world)
 {
 }
