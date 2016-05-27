@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.http.HttpResponseCache;
 import android.support.annotation.IntDef;
@@ -642,6 +643,7 @@ public abstract class CronetEngine {
      * @hide
      */
     @Deprecated
+    @SuppressLint("WrongConstant") // TODO(jbudorick): Remove this after rolling to the N SDK.
     public final UrlRequest createRequest(
             String url, UrlRequest.Callback callback, Executor executor) {
         return createRequest(url, callback, executor, UrlRequest.Builder.REQUEST_PRIORITY_MEDIUM);

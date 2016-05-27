@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import android.annotation.SuppressLint;
 import android.support.annotation.IntDef;
 
 import java.lang.annotation.Retention;
@@ -181,6 +182,7 @@ public abstract class BidirectionalStream {
          * @return constructed {@link BidirectionalStream} using configuration from
          *         this {@link Builder}
          */
+        @SuppressLint("WrongConstant") // TODO(jbudorick): Remove this after rolling to the N SDK.
         public BidirectionalStream build() {
             return mCronetEngine.createBidirectionalStream(mUrl, mCallback, mExecutor, mHttpMethod,
                     mRequestHeaders, mPriority, mDisableAutoFlush);
