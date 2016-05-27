@@ -135,8 +135,10 @@ struct BCMVHeader {
 
   static std::size_t size() { return 10; }
 
-  // Write the BCMV Header into |buffer|.
+  // Write the BCMV Header into |buffer|. Caller responsible for ensuring
+  // destination buffer is of size >= BCMVHeader::size().
   bool Write(PacketDataBuffer* buffer) const;
+  bool Write(uint8_t* buffer);
 };
 
 struct PesHeader {
@@ -219,6 +221,19 @@ class Webm2Pes {
   PacketDataBuffer packet_data_;
 };
 
+// Copies |raw_input_length| bytes from |raw_input| to |packet_buffer| while
+// escaping start codes. Returns true when bytes are successfully copied.
+// A start code is the 3 byte sequence 0x00 0x00 0x01. When
+// the sequence is encountered, the value 0x03 is inserted. To avoid
+// any ambiguity at reassembly time, the same is done for the sequence
+// 0x00 0x00 0x03. So, the following transformation occurs for when either
+// of the noted sequences is encountered:
+//
+//    0x00 0x00 0x01  =>  0x00 0x00 0x03 0x01
+//    0x00 0x00 0x03  =>  0x00 0x00 0x03 0x03
+bool CopyAndEscapeStartCodes(const std::uint8_t* raw_input,
+                             int raw_input_length,
+                             PacketDataBuffer* packet_buffer);
 }  // namespace libwebm
 
 #endif  // LIBWEBM_M2TS_WEBM2PES_H_

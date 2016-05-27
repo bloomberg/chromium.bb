@@ -72,10 +72,7 @@ TEST_F(Webm2PesTests, CanParseFirstPacket) {
   ASSERT_TRUE(parser()->ParseNextPacket(&header, &frame));
   EXPECT_TRUE(VerifyPacketStartCode(header));
 
-  const std::size_t kPesOptionalHeaderLength = 9;
-  const std::size_t kFirstFrameLength = 83;
-  const std::size_t kPesPayloadLength =
-      kPesOptionalHeaderLength + kFirstFrameLength;
+  const std::size_t kPesPayloadLength = 0;
   EXPECT_EQ(kPesPayloadLength, header.packet_length);
 
   EXPECT_GE(header.stream_id, kMinVideoStreamId);
@@ -94,6 +91,7 @@ TEST_F(Webm2PesTests, CanParseFirstPacket) {
   EXPECT_EQ(0, header.opt_header.unused_fields);
 
   // Test the BCMV header.
+  const std::size_t kFirstFrameLength = 83;
   const libwebm::VpxPesParser::BcmvHeader kFirstBcmvHeader(kFirstFrameLength);
   EXPECT_TRUE(header.bcmv_header.Valid());
   EXPECT_EQ(kFirstBcmvHeader, header.bcmv_header);

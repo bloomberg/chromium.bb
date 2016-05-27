@@ -34,6 +34,9 @@ bool VpxPesParser::BcmvHeader::Valid() const {
           id[0] == 'B' && id[1] == 'C' && id[2] == 'M' && id[3] == 'V');
 }
 
+// TODO(tomfinegan): Break Open() into separate functions. One that opens the
+// file, and one that reads one packet at a time. As things are files larger
+// than the maximum availble memory for the current process cannot be loaded.
 bool VpxPesParser::Open(const std::string& pes_file) {
   pes_file_size_ = static_cast<size_t>(libwebm::GetFileSize(pes_file));
   if (pes_file_size_ <= 0)
@@ -41,18 +44,38 @@ bool VpxPesParser::Open(const std::string& pes_file) {
   pes_file_data_.reserve(static_cast<size_t>(pes_file_size_));
   libwebm::FilePtr file = libwebm::FilePtr(std::fopen(pes_file.c_str(), "rb"),
                                            libwebm::FILEDeleter());
-
   int byte;
-  while ((byte = fgetc(file.get())) != EOF)
-    pes_file_data_.push_back(static_cast<std::uint8_t>(byte));
+  int zero_count = 0;
+  int bytes_skipped = 0;
+  bool skip_byte = false;
+
+  while ((byte = fgetc(file.get())) != EOF) {
+    if (zero_count >= 2) {
+      if (byte == 3) {
+        skip_byte = true;
+        zero_count = 0;
+      } else if (byte == 0) {
+        ++zero_count;
+      } else {
+        zero_count = 0;
+      }
+    }
+
+    if (!skip_byte)
+      pes_file_data_.push_back(static_cast<std::uint8_t>(byte));
+    else
+      ++bytes_skipped;
+
+    skip_byte = false;
+  }
 
   if (!feof(file.get()) || ferror(file.get()) ||
-      pes_file_size_ != pes_file_data_.size()) {
+      pes_file_size_ != pes_file_data_.size() + bytes_skipped) {
     return false;
   }
 
   read_pos_ = 0;
-  parse_state_ = kParsePesHeader;
+  parse_state_ = kFindStartCode;
   return true;
 }
 
@@ -205,8 +228,28 @@ bool VpxPesParser::ParseBcmvHeader(BcmvHeader* header) {
 
   // TODO(tomfinegan): Verify data instead of jumping to the next packet.
   read_pos_ += kBcmvHeaderSize + header->length;
-  parse_state_ = kParsePesHeader;
+  parse_state_ = kFindStartCode;
   return true;
+}
+
+bool VpxPesParser::FindStartCode(std::size_t origin, std::size_t* offset) {
+  if (read_pos_ + 2 >= pes_file_size_)
+    return false;
+
+  const std::size_t length = pes_file_size_ - origin;
+  if (length < 3)
+    return false;
+
+  const uint8_t* const data = &pes_file_data_[origin];
+  for (std::size_t i = 0; i < length - 3; ++i) {
+    if (data[i] == 0 && data[i + 1] == 0 && data[i + 2] == 1) {
+      *offset = i;
+      parse_state_ = kParsePesHeader;
+      return true;
+    }
+  }
+
+  return false;
 }
 
 int VpxPesParser::BytesAvailable() const {
@@ -214,9 +257,16 @@ int VpxPesParser::BytesAvailable() const {
 }
 
 bool VpxPesParser::ParseNextPacket(PesHeader* header, VpxFrame* frame) {
-  if (!header || !frame) {
+  if (!header || !frame || parse_state_ != kFindStartCode) {
     return false;
   }
+
+  std::size_t packet_start_pos = read_pos_;
+  if (!FindStartCode(read_pos_, &packet_start_pos)) {
+    return false;
+  }
+  read_pos_ = packet_start_pos;
+
   if (!ParsePesHeader(header)) {
     return false;
   }
