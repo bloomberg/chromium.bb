@@ -16,6 +16,8 @@ namespace content {
 
 // This class is associated with a peer connection and handles WebRTC DTLS
 // identity requests by delegating to the per-renderer WebRTCIdentityProxy.
+// TODO(hbos): Remove this store, it is no longer used.
+// See bugs.webrtc.org/5707, bugs.webrtc.org/5708.
 class PeerConnectionIdentityStore
     : public webrtc::DtlsIdentityStoreInterface {
  public:
