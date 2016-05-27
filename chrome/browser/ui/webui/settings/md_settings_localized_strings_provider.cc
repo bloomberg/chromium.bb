@@ -119,7 +119,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddString("a11yLearnMoreUrl",
                          chrome::kChromeAccessibilityHelpURL);
 
-  html_source->AddBoolean("showExperimentalA11yFeatures",
+  html_source->AddBoolean(
+      "showExperimentalA11yFeatures",
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kEnableExperimentalAccessibilityFeatures));
 #endif
@@ -127,37 +128,52 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
 
 void AddAboutStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-      {"aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM},
+    {"aboutPageTitle", IDS_SETTINGS_ABOUT_PROGRAM},
 #if defined(OS_CHROMEOS)
-      {"aboutProductTitle", IDS_PRODUCT_OS_NAME},
+    {"aboutProductTitle", IDS_PRODUCT_OS_NAME},
 #else
-      {"aboutProductTitle", IDS_PRODUCT_NAME},
+    {"aboutProductTitle", IDS_PRODUCT_NAME},
 #endif
-      {"aboutGetHelpUsingChrome", IDS_SETTINGS_GET_HELP_USING_CHROME},
+    {"aboutGetHelpUsingChrome", IDS_SETTINGS_GET_HELP_USING_CHROME},
 
 #if defined(GOOGLE_CHROME_BUILD)
-      {"aboutReportAnIssue", IDS_SETTINGS_ABOUT_PAGE_REPORT_AN_ISSUE},
+    {"aboutReportAnIssue", IDS_SETTINGS_ABOUT_PAGE_REPORT_AN_ISSUE},
 #endif
 
-      {"aboutRelaunch", IDS_SETTINGS_ABOUT_PAGE_RELAUNCH},
-      {"aboutUpgradeCheckStarted", IDS_SETTINGS_ABOUT_UPGRADE_CHECK_STARTED},
-      {"aboutUpgradeRelaunch", IDS_SETTINGS_UPGRADE_SUCCESSFUL_RELAUNCH},
-      {"aboutUpgradeUpdating", IDS_SETTINGS_UPGRADE_UPDATING},
+    {"aboutRelaunch", IDS_SETTINGS_ABOUT_PAGE_RELAUNCH},
+    {"aboutUpgradeCheckStarted", IDS_SETTINGS_ABOUT_UPGRADE_CHECK_STARTED},
+    {"aboutUpgradeRelaunch", IDS_SETTINGS_UPGRADE_SUCCESSFUL_RELAUNCH},
+    {"aboutUpgradeUpdating", IDS_SETTINGS_UPGRADE_UPDATING},
 
 #if defined(OS_CHROMEOS)
-      {"aboutChannelStable", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE},
-      {"aboutChannelBeta", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_BETA},
-      {"aboutChannelDev", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_DEV},
-      {"aboutCheckForUpdates", IDS_SETTINGS_ABOUT_PAGE_CHECK_FOR_UPDATES},
-      {"aboutCurrentlyOnChannel", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL},
-      {"aboutRelaunchAndPowerwash",
-        IDS_SETTINGS_ABOUT_PAGE_RELAUNCH_AND_POWERWASH},
-      {"aboutUpgradeUpdatingChannelSwitch",
-        IDS_SETTINGS_UPGRADE_UPDATING_CHANNEL_SWITCH},
-      {"aboutUpgradeSuccessChannelSwitch",
-        IDS_SETTINGS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH},
-#endif
+    {"aboutChannelStable", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_STABLE},
+    {"aboutChannelBeta", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_BETA},
+    {"aboutChannelDev", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_DEV},
+    {"aboutCheckForUpdates", IDS_SETTINGS_ABOUT_PAGE_CHECK_FOR_UPDATES},
+    {"aboutCurrentlyOnChannel", IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL},
+    {"aboutRelaunchAndPowerwash",
+     IDS_SETTINGS_ABOUT_PAGE_RELAUNCH_AND_POWERWASH},
+    {"aboutUpgradeUpdatingChannelSwitch",
+     IDS_SETTINGS_UPGRADE_UPDATING_CHANNEL_SWITCH},
+    {"aboutUpgradeSuccessChannelSwitch",
+     IDS_SETTINGS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH},
 
+    // About page, channel switcher dialog.
+    {"aboutChangeChannel", IDS_SETTINGS_ABOUT_PAGE_CHANGE_CHANNEL},
+    {"aboutChangeChannelAndPowerwash",
+     IDS_SETTINGS_ABOUT_PAGE_CHANGE_CHANNEL_AND_POWERWASH},
+    {"aboutDelayedWarningMessage",
+     IDS_SETTINGS_ABOUT_PAGE_DELAYED_WARNING_MESSAGE},
+    {"aboutDelayedWarningTitle", IDS_SETTINGS_ABOUT_PAGE_DELAYED_WARNING_TITLE},
+    {"aboutPowerwashWarningMessage",
+     IDS_SETTINGS_ABOUT_PAGE_POWERWASH_WARNING_MESSAGE},
+    {"aboutPowerwashWarningTitle",
+     IDS_SETTINGS_ABOUT_PAGE_POWERWASH_WARNING_TITLE},
+    {"aboutUnstableWarningMessage",
+     IDS_SETTINGS_ABOUT_PAGE_UNSTABLE_WARNING_MESSAGE},
+    {"aboutUnstableWarningTitle",
+     IDS_SETTINGS_ABOUT_PAGE_UNSTABLE_WARNING_TITLE},
+#endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -182,21 +198,21 @@ void AddAccountUITweaksStrings(content::WebUIDataSource* html_source,
 
 void AddAppearanceStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-      {"appearancePageTitle", IDS_SETTINGS_APPEARANCE},
-      {"exampleDotCom", IDS_SETTINGS_EXAMPLE_DOT_COM},
-      {"getThemes", IDS_SETTINGS_THEMES},
-      {"resetToDefaultTheme", IDS_SETTINGS_RESET_TO_DEFAULT_THEME},
-      {"showHomeButton", IDS_SETTINGS_SHOW_HOME_BUTTON},
-      {"showBookmarksBar", IDS_SETTINGS_SHOW_BOOKMARKS_BAR},
-      {"homePageNtp", IDS_SETTINGS_HOME_PAGE_NTP},
-      {"other", IDS_SETTINGS_OTHER},
-      {"changeHomePage", IDS_SETTINGS_CHANGE_HOME_PAGE},
-      {"themesGalleryUrl", IDS_THEMES_GALLERY_URL},
-      {"chooseFromWebStore", IDS_SETTINGS_WEB_STORE},
-      {"chooseFontsAndEncoding", IDS_SETTINGS_CHOOSE_FONTS_AND_ENCODING},
+    {"appearancePageTitle", IDS_SETTINGS_APPEARANCE},
+    {"exampleDotCom", IDS_SETTINGS_EXAMPLE_DOT_COM},
+    {"getThemes", IDS_SETTINGS_THEMES},
+    {"resetToDefaultTheme", IDS_SETTINGS_RESET_TO_DEFAULT_THEME},
+    {"showHomeButton", IDS_SETTINGS_SHOW_HOME_BUTTON},
+    {"showBookmarksBar", IDS_SETTINGS_SHOW_BOOKMARKS_BAR},
+    {"homePageNtp", IDS_SETTINGS_HOME_PAGE_NTP},
+    {"other", IDS_SETTINGS_OTHER},
+    {"changeHomePage", IDS_SETTINGS_CHANGE_HOME_PAGE},
+    {"themesGalleryUrl", IDS_THEMES_GALLERY_URL},
+    {"chooseFromWebStore", IDS_SETTINGS_WEB_STORE},
+    {"chooseFontsAndEncoding", IDS_SETTINGS_CHOOSE_FONTS_AND_ENCODING},
 #if defined(OS_CHROMEOS)
-      {"openWallpaperApp", IDS_SETTINGS_OPEN_WALLPAPER_APP},
-      {"setWallpaper", IDS_SETTINGS_SET_WALLPAPER},
+    {"openWallpaperApp", IDS_SETTINGS_OPEN_WALLPAPER_APP},
+    {"setWallpaper", IDS_SETTINGS_SET_WALLPAPER},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
@@ -244,7 +260,7 @@ void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"certificateManagerPageTitle", IDS_SETTINGS_CERTIFICATE_MANAGER},
       {"certificateManagerNoCertificates",
-        IDS_SETTINGS_CERTIFICATE_MANAGER_NO_CERTIFICATES},
+       IDS_SETTINGS_CERTIFICATE_MANAGER_NO_CERTIFICATES},
       {"certificateManagerYourCertificates",
        IDS_SETTINGS_CERTIFICATE_MANAGER_YOUR_CERTIFICATES},
       {"certificateManagerYourCertificatesDescription",
@@ -269,7 +285,7 @@ void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
       {"certificateManagerDone", IDS_SETTINGS_CERTIFICATE_MANAGER_DONE},
       {"certificateManagerUntrusted",
        IDS_SETTINGS_CERTIFICATE_MANAGER_UNTRUSTED},
-       // CA trust edit dialog.
+      // CA trust edit dialog.
       {"certificateManagerCaTrustEditDialogTitle",
        IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_TITLE},
       {"certificateManagerCaTrustEditDialogDescription",
@@ -282,7 +298,7 @@ void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_EMAIL},
       {"certificateManagerCaTrustEditDialogObjSign",
        IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_OBJ_SIGN},
-       // Certificate delete confirmation dialog.
+      // Certificate delete confirmation dialog.
       {"certificateManagerDeleteUserTitle",
        IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_USER_TITLE},
       {"certificateManagerDeleteUserDescription",
@@ -297,15 +313,14 @@ void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_CA_DESCRIPTION},
       {"certificateManagerDeleteOtherTitle",
        IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_OTHER_TITLE},
-       // Encrypt/decrypt password dialogs.
+      // Encrypt/decrypt password dialogs.
       {"certificateManagerEncryptPasswordTitle",
        IDS_SETTINGS_CERTIFICATE_MANAGER_ENCRYPT_PASSWORD_TITLE},
       {"certificateManagerDecryptPasswordTitle",
        IDS_SETTINGS_CERTIFICATE_MANAGER_DECRYPT_PASSWORD_TITLE},
       {"certificateManagerEncryptPasswordDescription",
        IDS_SETTINGS_CERTIFICATE_MANAGER_ENCRYPT_PASSWORD_DESCRIPTION},
-      {"certificateManagerPassword",
-       IDS_SETTINGS_CERTIFICATE_MANAGER_PASSWORD},
+      {"certificateManagerPassword", IDS_SETTINGS_CERTIFICATE_MANAGER_PASSWORD},
       {"certificateManagerConfirmPassword",
        IDS_SETTINGS_CERTIFICATE_MANAGER_CONFIRM_PASSWORD},
       {"certificateImportErrorFormat",
@@ -413,9 +428,9 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"keyRepeatRateSlow", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_RATE_SLOW},
       {"keyRepeatRateFast", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_FAST},
       {"showKeyboardShortcutsOverlay",
-        IDS_SETTINGS_KEYBOARD_SHOW_KEYBOARD_SHORTCUTS_OVERLAY},
+       IDS_SETTINGS_KEYBOARD_SHOW_KEYBOARD_SHORTCUTS_OVERLAY},
       {"keyboardShowLanguageAndInput",
-        IDS_SETTINGS_KEYBOARD_SHOW_LANGUAGE_AND_INPUT},
+       IDS_SETTINGS_KEYBOARD_SHOW_LANGUAGE_AND_INPUT},
   };
   AddLocalizedStringsBulk(html_source, keyboard_strings,
                           arraysize(keyboard_strings));
@@ -437,9 +452,8 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, display_strings,
                           arraysize(display_strings));
 
-  html_source->AddString(
-      "naturalScrollLearnMoreLink",
-      base::ASCIIToUTF16(chrome::kNaturalScrollHelpURL));
+  html_source->AddString("naturalScrollLearnMoreLink",
+                         base::ASCIIToUTF16(chrome::kNaturalScrollHelpURL));
 }
 #endif
 
@@ -516,8 +530,7 @@ void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_ERROR_TITLE},
       {"easyUnlockTurnOffErrorMessage",
        IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_ERROR_MESSAGE},
-      {"easyUnlockTurnOffRetryButton",
-       IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_RETRY},
+      {"easyUnlockTurnOffRetryButton", IDS_SETTINGS_EASY_UNLOCK_TURN_OFF_RETRY},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -924,16 +937,16 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source) {
 
 void AddUsersStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-      {"usersPageTitle", IDS_SETTINGS_USERS},
+    {"usersPageTitle", IDS_SETTINGS_USERS},
 #if defined(OS_CHROMEOS)
-      {"usersModifiedByOwnerLabel", IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL},
-      {"guestBrowsingLabel", IDS_SETTINGS_USERS_GUEST_BROWSING_LABEL},
-      {"settingsManagedLabel", IDS_SETTINGS_USERS_MANAGED_LABEL},
-      {"supervisedUsersLabel", IDS_SETTINGS_USERS_SUPERVISED_USERS_LABEL},
-      {"showOnSigninLabel", IDS_SETTINGS_USERS_SHOW_ON_SIGNIN_LABEL},
-      {"restrictSigninLabel", IDS_SETTINGS_USERS_RESTRICT_SIGNIN_LABEL},
-      {"addUsers", IDS_SETTINGS_USERS_ADD_USERS},
-      {"addUsersEmail", IDS_SETTINGS_USERS_ADD_USERS_EMAIL},
+    {"usersModifiedByOwnerLabel", IDS_SETTINGS_USERS_MODIFIED_BY_OWNER_LABEL},
+    {"guestBrowsingLabel", IDS_SETTINGS_USERS_GUEST_BROWSING_LABEL},
+    {"settingsManagedLabel", IDS_SETTINGS_USERS_MANAGED_LABEL},
+    {"supervisedUsersLabel", IDS_SETTINGS_USERS_SUPERVISED_USERS_LABEL},
+    {"showOnSigninLabel", IDS_SETTINGS_USERS_SHOW_ON_SIGNIN_LABEL},
+    {"restrictSigninLabel", IDS_SETTINGS_USERS_RESTRICT_SIGNIN_LABEL},
+    {"addUsers", IDS_SETTINGS_USERS_ADD_USERS},
+    {"addUsersEmail", IDS_SETTINGS_USERS_ADD_USERS_EMAIL},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
@@ -943,13 +956,13 @@ void AddUsersStrings(content::WebUIDataSource* html_source) {
 #if !defined(OS_CHROMEOS)
 void AddSystemStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-      {"systemPageTitle", IDS_SETTINGS_SYSTEM},
+    {"systemPageTitle", IDS_SETTINGS_SYSTEM},
 #if !defined(OS_MACOSX)
-      {"backgroundAppsLabel", IDS_SETTINGS_SYSTEM_BACKGROUND_APPS_LABEL},
+    {"backgroundAppsLabel", IDS_SETTINGS_SYSTEM_BACKGROUND_APPS_LABEL},
 #endif
-      {"hardwareAccelerationLabel",
-          IDS_SETTINGS_SYSTEM_HARDWARE_ACCELERATION_LABEL},
-      {"changeProxySettings", IDS_SETTINGS_SYSTEM_PROXY_SETTINGS_BUTTON},
+    {"hardwareAccelerationLabel",
+     IDS_SETTINGS_SYSTEM_HARDWARE_ACCELERATION_LABEL},
+    {"changeProxySettings", IDS_SETTINGS_SYSTEM_PROXY_SETTINGS_BUTTON},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

@@ -202,16 +202,8 @@ Polymer({
   isTargetChannelMoreStable_: function() {
     assert(this.currentChannel_.length > 0);
     assert(this.targetChannel_.length > 0);
-
-    // List of channels in increasing stability order.
-    var channelList = [
-      BrowserChannel.DEV,
-      BrowserChannel.BETA,
-      BrowserChannel.STABLE,
-    ];
-    var currentIndex = channelList.indexOf(this.currentChannel_);
-    var targetIndex = channelList.indexOf(this.targetChannel_);
-    return currentIndex < targetIndex;
+    return settings.isTargetChannelMoreStable(
+        this.currentChannel_, this.targetChannel_);
   },
 
   /** @private */

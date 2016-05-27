@@ -75,6 +75,24 @@ cr.define('settings', function() {
     assertNotReached();
   }
 
+  /**
+   * @param {!BrowserChannel} currentChannel
+   * @param {!BrowserChannel} targetChannel
+   * @return {boolean} Whether the target channel is more stable than the
+   *     current channel.
+   */
+  function isTargetChannelMoreStable(currentChannel, targetChannel) {
+    // List of channels in increasing stability order.
+    var channelList = [
+      BrowserChannel.DEV,
+      BrowserChannel.BETA,
+      BrowserChannel.STABLE,
+    ];
+    var currentIndex = channelList.indexOf(currentChannel);
+    var targetIndex = channelList.indexOf(targetChannel);
+    return currentIndex < targetIndex;
+  }
+
   /** @interface */
   function AboutPageBrowserProxy() {}
 
@@ -203,5 +221,6 @@ cr.define('settings', function() {
     AboutPageBrowserProxy: AboutPageBrowserProxy,
     AboutPageBrowserProxyImpl: AboutPageBrowserProxyImpl,
     browserChannelToI18nId: browserChannelToI18nId,
+    isTargetChannelMoreStable: isTargetChannelMoreStable,
   };
 });

@@ -38,6 +38,12 @@
                  flattenhtml="true"
                  allowexternalscript="true" />
       <if expr="chromeos">
+        <structure name="IDR_SETTINGS_CHANNEL_SWITCHER_DIALOG_HTML"
+                   file="about_page/channel_switcher_dialog.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_CHANNEL_SWITCHER_DIALOG_JS"
+                   file="about_page/channel_switcher_dialog.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_DETAILED_BUILD_INFO_JS"
                    file="about_page/detailed_build_info.js"
                    type="chrome_html" />

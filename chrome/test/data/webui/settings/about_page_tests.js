@@ -21,7 +21,8 @@ cr.define('settings_about_page', function() {
         'getCurrentChannel',
         'getTargetChannel',
         'getVersionInfo',
-        'getRegulatoryInfo');
+        'getRegulatoryInfo',
+        'setChannel');
     }
 
     settings.TestBrowserProxy.call(this, methodNames);
@@ -124,6 +125,12 @@ cr.define('settings_about_page', function() {
     TestAboutPageBrowserProxy.prototype.getRegulatoryInfo = function() {
       this.methodCalled('getRegulatoryInfo');
       return Promise.resolve(this.regulatoryInfo_);
+    };
+
+    /** @override */
+    TestAboutPageBrowserProxy.prototype.setChannel = function(
+        channel, isPowerwashAllowed) {
+      this.methodCalled('setChannel', [channel, isPowerwashAllowed]);
     };
   }
 
@@ -415,12 +422,119 @@ cr.define('settings_about_page', function() {
         });
       });
     }
+
+    function registerChannelSwitcherDialogTests() {
+      /**
+       * Converts an event occurrence to a promise.
+       * @param {string} eventType
+       * @param {!HTMLElement} target
+       * @return {!Promise} A promise firing once the event occurs.
+       * TODO(dpapad); Share this code with certificate_manager_page_test.js
+       * identical helper method.
+       */
+      function eventToPromise(eventType, target) {
+        return new Promise(function(resolve, reject) {
+          target.addEventListener(eventType, resolve);
+        });
+      }
+
+      suite('ChannelSwitcherDialogTest', function() {
+        var dialog = null;
+        var radioButtons = null;
+        var browserProxy = null;
+        var currentChannel = BrowserChannel.BETA;
+
+        setup(function() {
+          browserProxy = new TestAboutPageBrowserProxy();
+          browserProxy.setChannels(currentChannel, currentChannel);
+          settings.AboutPageBrowserProxyImpl.instance_ = browserProxy;
+          PolymerTest.clearBody();
+          dialog = document.createElement('settings-channel-switcher-dialog');
+          document.body.appendChild(dialog);
+
+          radioButtons = dialog.shadowRoot.querySelectorAll(
+              'paper-radio-button');
+          assertEquals(3, radioButtons.length);
+          return browserProxy.whenCalled('getCurrentChannel');
+        });
+
+        teardown(function() { dialog.remove(); });
+
+        test('Initialization', function() {
+          var radioGroup = dialog.$$('paper-radio-group');
+          assertTrue(!!radioGroup);
+          assertTrue(!!dialog.$.warning);
+          assertTrue(!!dialog.$.changeChannel);
+          assertTrue(!!dialog.$.changeChannelAndPowerwash);
+
+          // Check that upon initialization the radio button corresponding to
+          // the current release channel is pre-selected.
+          assertEquals(currentChannel, radioGroup.selected);
+          assertTrue(dialog.$.warning.hidden);
+
+          // Check that action buttons are hidden when current and target
+          // channel are the same.
+          assertTrue(dialog.$.changeChannel.hidden);
+          assertTrue(dialog.$.changeChannelAndPowerwash.hidden);
+        });
+
+        // Test case where user switches to a less stable channel.
+        test('ChangeChannel_LessStable', function() {
+          assertEquals(BrowserChannel.DEV, radioButtons.item(2).name);
+          MockInteractions.tap(radioButtons.item(2));
+          Polymer.dom.flush();
+
+          assertFalse(dialog.$.warning.hidden);
+          // Check that only the "Change channel" button becomes visible.
+          assertTrue(dialog.$.changeChannelAndPowerwash.hidden);
+          assertFalse(dialog.$.changeChannel.hidden);
+
+          var whenTargetChannelChangedFired = eventToPromise(
+              'target-channel-changed', dialog);
+
+          MockInteractions.tap(dialog.$.changeChannel);
+          return browserProxy.whenCalled('setChannel').then(function(args) {
+            assertEquals(BrowserChannel.DEV, args[0]);
+            assertFalse(args[1]);
+            return whenTargetChannelChangedFired;
+          }).then(function(event) {
+            assertEquals(BrowserChannel.DEV, event.detail);
+          });
+        });
+
+        // Test case where user switches to a more stable channel.
+        test('ChangeChannel_MoreStable', function() {
+          assertEquals(BrowserChannel.STABLE, radioButtons.item(0).name);
+          MockInteractions.tap(radioButtons.item(0));
+          Polymer.dom.flush();
+
+          assertFalse(dialog.$.warning.hidden);
+          // Check that only the "Change channel and Powerwash" button becomes
+          // visible.
+          assertFalse(dialog.$.changeChannelAndPowerwash.hidden);
+          assertTrue(dialog.$.changeChannel.hidden);
+
+          var whenTargetChannelChangedFired = eventToPromise(
+              'target-channel-changed', dialog);
+
+          MockInteractions.tap(dialog.$.changeChannelAndPowerwash);
+          return browserProxy.whenCalled('setChannel').then(function(args) {
+            assertEquals(BrowserChannel.STABLE, args[0]);
+            assertTrue(args[1]);
+            return whenTargetChannelChangedFired;
+          }).then(function(event) {
+            assertEquals(BrowserChannel.STABLE, event.detail);
+          });
+        });
+      });
+    }
   }
 
   return {
     registerTests: function() {
       if (cr.isChromeOS) {
         registerDetailedBuildInfoTests();
+        registerChannelSwitcherDialogTests();
       }
       registerAboutPageTests();
     },
