@@ -47,9 +47,6 @@ namespace blink {
 // position is not at a line break.
 #define VP_UPSTREAM_IF_POSSIBLE TextAffinity::Upstream
 
-class InlineBox;
-class Range;
-
 // |VisiblePosition| is an immutable object representing "canonical position"
 // with affinity.
 //
