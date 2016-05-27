@@ -287,3 +287,4 @@ crbug.com/594189 virtual/spv2/fast/overflow/lots-of-sibling-inline-boxes.html [ 
 
 crbug.com/601726 http/tests/incremental/frame-focus-before-load.html [ Slow ]
 
+crbug.com/611442 imported/wpt/quirks-mode/hashless-hex-color.html [ Slow ]
