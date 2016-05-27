@@ -261,6 +261,10 @@ public class ReaderModePanel extends OverlayPanel {
         } else if (mTimerRunning && !animatingToOpenState) {
             onTimerEnded();
         }
+
+        if (getPanelState() == PanelState.PEEKED) {
+            mManagerDelegate.onPeek();
+        }
     }
 
     @Override

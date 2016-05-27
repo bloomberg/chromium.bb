@@ -336,13 +336,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
     public void onClosed(StateChangeReason reason) {
         if (mReaderModePanel == null || mTabModelSelector == null) return;
 
-        if (mContainerHasInfoBars) {
-            Tab curTab = mTabModelSelector.getCurrentTab();
-            if (curTab != null) {
-                InfoBarContainer container = curTab.getInfoBarContainer();
-                if (container != null) container.setIsObscuredByOtherView(false);
-            }
-        }
+        restoreInfobars();
 
         // Only dismiss the panel if the close was a result of user interaction.
         if (reason != StateChangeReason.FLING && reason != StateChangeReason.SWIPE
@@ -360,6 +354,23 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         int currentTabId = mTabModelSelector.getCurrentTabId();
         if (!mTabStatusMap.containsKey(currentTabId)) return;
         mTabStatusMap.get(currentTabId).setIsDismissed(true);
+    }
+
+    @Override
+    public void onPeek() {
+        restoreInfobars();
+    }
+
+    /**
+     * Restore any infobars that may have been hidden by Reader Mode.
+     */
+    private void restoreInfobars() {
+        if (!mContainerHasInfoBars) return;
+        Tab curTab = mTabModelSelector.getCurrentTab();
+        if (curTab != null) {
+            InfoBarContainer container = curTab.getInfoBarContainer();
+            if (container != null) container.setIsObscuredByOtherView(false);
+        }
     }
 
     @Override

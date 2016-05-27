@@ -35,6 +35,11 @@ public interface ReaderModeManagerDelegate {
     void onClosed(StateChangeReason reason);
 
     /**
+     * Notify the manager that the panel has entered the peeking state.
+     */
+    void onPeek();
+
+    /**
      * Get the WebContents of the page that is being distilled.
      * @return The WebContents for the currently visible tab.
      */
