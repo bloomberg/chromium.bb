@@ -192,8 +192,7 @@ class InfoBarDelegate {
   // Returns true if the InfoBar should be closed automatically after the page
   // is navigated. By default this returns true if the navigation is to a new
   // page (not including reloads).  Subclasses wishing to change this behavior
-  // can override either this function or ShouldExpireInternal(), depending on
-  // what level of control they need.
+  // can override this function.
   virtual bool ShouldExpire(const NavigationDetails& details) const;
 
   // Called when the user clicks on the close button to dismiss the infobar.
