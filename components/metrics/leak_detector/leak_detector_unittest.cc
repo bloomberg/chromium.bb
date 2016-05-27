@@ -9,6 +9,7 @@
 
 #include "base/allocator/allocator_extension.h"
 #include "base/macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -75,7 +76,8 @@ class LeakDetectorTest : public ::testing::Test {
     params.set_call_stack_suspicion_threshold(
         kDefaultCallStackSuspicionThreshold);
 
-    detector_->Init(params);
+    EXPECT_TRUE(base::ThreadTaskRunnerHandle::IsSet());
+    detector_->Init(params, base::ThreadTaskRunnerHandle::Get());
   }
 
  protected:

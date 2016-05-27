@@ -11,12 +11,12 @@
 #include "base/allocator/allocator_extension.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_local.h"
 #include "components/metrics/leak_detector/custom_allocator.h"
 #include "components/metrics/leak_detector/leak_detector_impl.h"
-#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
 #include <link.h>  // for dl_iterate_phdr
@@ -160,7 +160,8 @@ LeakDetector* LeakDetector::GetInstance() {
   return g_instance.Pointer();
 }
 
-void LeakDetector::Init(const MemoryLeakReportProto::Params& params) {
+void LeakDetector::Init(const MemoryLeakReportProto::Params& params,
+                        scoped_refptr<base::TaskRunner> task_runner) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GT(params.sampling_rate(), 0);
 
@@ -175,6 +176,8 @@ void LeakDetector::Init(const MemoryLeakReportProto::Params& params) {
   // Locate the Chrome binary mapping info.
   dl_iterate_phdr(IterateLoadedObjects, &mapping);
 #endif  // defined(OS_CHROMEOS)
+
+  task_runner_ = task_runner;
 
   // CustomAllocator can use the default allocator, as long as the hook
   // functions can handle recursive calls.
@@ -320,11 +323,10 @@ void LeakDetector::NotifyObservers(
   if (reports.empty())
     return;
 
-  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&LeakDetector::NotifyObservers, base::Unretained(this),
-                   reports));
+  if (!task_runner_->RunsTasksOnCurrentThread()) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&LeakDetector::NotifyObservers,
+                                      base::Unretained(this), reports));
     return;
   }
 

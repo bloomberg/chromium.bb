@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/variations/variations_associated_data.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace metrics {
 
@@ -93,7 +94,8 @@ LeakDetectorController::LeakDetectorController()
   detector->AddObserver(this);
 
   // Leak detector parameters are stored in |params_|.
-  detector->Init(params_);
+  detector->Init(params_, content::BrowserThread::GetMessageLoopProxyForThread(
+                              content::BrowserThread::UI));
 }
 
 LeakDetectorController::~LeakDetectorController() {
