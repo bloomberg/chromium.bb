@@ -23,7 +23,6 @@ class Browser;
 class BrowserWindow;
 @class BrowserWindowController;
 class ExclusiveAccessBubbleViews;
-@class ExclusiveAccessBubbleWindowController;
 class GURL;
 
 // Component placed into a browser window controller to manage communication
@@ -39,9 +38,6 @@ class ExclusiveAccessController : public ExclusiveAccessContext,
 
   const GURL& url() const { return url_; }
   ExclusiveAccessBubbleType bubble_type() const { return bubble_type_; }
-  ExclusiveAccessBubbleWindowController* cocoa_bubble() {
-    return cocoa_bubble_;
-  }
 
   // Shows the bubble once the NSWindow has received -windowDidEnterFullScreen:.
   void Show();
@@ -98,7 +94,6 @@ class ExclusiveAccessController : public ExclusiveAccessContext,
   ExclusiveAccessBubbleType bubble_type_;
 
   std::unique_ptr<ExclusiveAccessBubbleViews> views_bubble_;
-  base::scoped_nsobject<ExclusiveAccessBubbleWindowController> cocoa_bubble_;
 
   // Used to keep track of the kShowFullscreenToolbar preference.
   PrefChangeRegistrar pref_registrar_;

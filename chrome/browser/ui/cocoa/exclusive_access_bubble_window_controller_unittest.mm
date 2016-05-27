@@ -87,43 +87,6 @@ class ExclusiveAccessBubbleWindowControllerTest : public CocoaProfileTest {
   base::scoped_nsobject<ExclusiveAccessBubbleWindowController> controller_;
 };
 
-// http://crbug.com/103912
-TEST_F(ExclusiveAccessBubbleWindowControllerTest,
-       DISABLED_DenyExitsFullscreen) {
-  NSWindow* window = browser()->window()->GetNativeWindow();
-  BrowserWindowController* bwc =
-      [BrowserWindowController browserWindowControllerForWindow:window];
-
-  [bwc showWindow:nil];
-
-  AppendTabToStrip();
-  WebContents* fullscreen_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  {
-    base::mac::ScopedNSAutoreleasePool pool;
-    content::WindowedNotificationObserver fullscreen_observer(
-        chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-        content::NotificationService::AllSources());
-    browser()->EnterFullscreenModeForTab(fullscreen_tab, GURL());
-    fullscreen_observer.Wait();
-    ASSERT_TRUE(browser()->window()->IsFullscreen());
-  }
-
-  ExclusiveAccessController* access_controller =
-      [bwc exclusiveAccessController];
-  EXPECT_TRUE(access_controller->cocoa_bubble());
-  {
-    content::WindowedNotificationObserver fullscreen_observer(
-        chrome::NOTIFICATION_FULLSCREEN_CHANGED,
-        content::NotificationService::AllSources());
-    [access_controller->cocoa_bubble() deny:nil];
-    fullscreen_observer.Wait();
-  }
-  EXPECT_FALSE(access_controller->cocoa_bubble());
-  EXPECT_FALSE(browser()->window()->IsFullscreen());
-  CloseBrowserWindow();
-}
-
 TEST_F(ExclusiveAccessBubbleWindowControllerTest, LabelWasReplaced) {
   EXPECT_FALSE([controller_ exitLabelPlaceholder]);
   EXPECT_TRUE([controller_ exitLabel]);

@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#import "chrome/browser/ui/cocoa/exclusive_access_bubble_window_controller.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
@@ -34,26 +33,11 @@ ExclusiveAccessController::ExclusiveAccessController(
 ExclusiveAccessController::~ExclusiveAccessController() {}
 
 void ExclusiveAccessController::Show() {
-  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()) {
-    views_bubble_.reset(
-        new ExclusiveAccessBubbleViews(this, url_, bubble_type_));
-    return;
-  }
-
-  [cocoa_bubble_ closeImmediately];
-  cocoa_bubble_.reset([[ExclusiveAccessBubbleWindowController alloc]
-                 initWithOwner:controller_
-      exclusive_access_manager:browser_->exclusive_access_manager()
-                       profile:browser_->profile()
-                           url:url_
-                    bubbleType:bubble_type_]);
-  [cocoa_bubble_ showWindow];
+  views_bubble_.reset(new ExclusiveAccessBubbleViews(this, url_, bubble_type_));
 }
 
 void ExclusiveAccessController::Destroy() {
   views_bubble_.reset();
-  [cocoa_bubble_ closeImmediately];
-  cocoa_bubble_.reset();
   url_ = GURL();
   bubble_type_ = EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE;
 }
@@ -61,7 +45,6 @@ void ExclusiveAccessController::Destroy() {
 void ExclusiveAccessController::Layout(CGFloat max_y) {
   if (views_bubble_)
     views_bubble_->RepositionIfVisible();
-  [cocoa_bubble_ positionInWindowAtTop:max_y];
 }
 
 Profile* ExclusiveAccessController::GetProfile() {
