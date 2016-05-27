@@ -411,7 +411,7 @@ class BuilderStageTest(AbstractStageTestCase):
         DEFAULT_BUILD_STAGE_ID)
     self.mock_cidb.FinishBuildStage.assert_called_once_with(
         DEFAULT_BUILD_STAGE_ID,
-        constants.BUILDER_STATUS_FAILED)
+        constants.BUILDER_STATUS_SKIPPED)
     self.assertFalse(self.mock_cidb.StartBuildStage.called)
 
   def testHandleExceptionException(self):
