@@ -112,6 +112,11 @@ FileTypePolicies::UpdateResult FileTypePolicies::PopulateFromBinaryPb(
 
   // Compare against existing config, if we have one.
   if (config_) {
+    // If versions are equal, we skip the update but it's not really
+    // a failure.
+    if (new_config->version_id() == config_->version_id())
+      return UpdateResult::SKIPPED_VERSION_CHECK_EQUAL;
+
     // Check that version number increases
     if (new_config->version_id() <= config_->version_id())
       return UpdateResult::FAILED_VERSION_CHECK;

@@ -50,6 +50,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/component_updater/cld_component_installer.h"
 #include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
+#include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/pepper_flash_component_installer.h"
 #include "chrome/browser/component_updater/recovery_component_installer.h"
@@ -497,6 +498,8 @@ void RegisterComponentsForUpdate() {
     RegisterSTHSetComponent(cus, path);
 #endif  // defined(OS_ANDROID)
     RegisterOriginTrialsComponent(cus, path);
+
+    RegisterFileTypePoliciesComponent(cus, path);
   }
 
 #if defined(OS_WIN)

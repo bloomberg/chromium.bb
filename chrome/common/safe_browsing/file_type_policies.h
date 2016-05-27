@@ -86,6 +86,7 @@ class FileTypePolicies {
     FAILED_VERSION_CHECK = 5,
     FAILED_DEFAULT_SETTING_SET = 6,
     FAILED_WRONG_SETTINGS_COUNT = 7,
+    SKIPPED_VERSION_CHECK_EQUAL = 8,
   };
 
   // Read data from an serialized protobuf and update the internal list

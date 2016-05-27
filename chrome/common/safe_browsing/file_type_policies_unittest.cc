@@ -207,7 +207,7 @@ TEST_F(FileTypePoliciesTest, BadUpdateFromExisting) {
             policies_.PopulateFromBinaryPb(cfg.SerializeAsString()));
 
   // Can't update to the same version
-  EXPECT_EQ(FileTypePolicies::UpdateResult::FAILED_VERSION_CHECK,
+  EXPECT_EQ(FileTypePolicies::UpdateResult::SKIPPED_VERSION_CHECK_EQUAL,
             policies_.PopulateFromBinaryPb(cfg.SerializeAsString()));
 
   // Can't go backward
