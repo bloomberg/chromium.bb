@@ -166,7 +166,8 @@ void PrintJob::Stop() {
     ControlledWorkerShutdown();
   } else {
     // Flush the cached document.
-    UpdatePrintedDocument(NULL);
+    is_job_pending_ = false;
+    UpdatePrintedDocument(nullptr);
   }
 }
 
@@ -435,7 +436,7 @@ void PrintJob::ControlledWorkerShutdown() {
 
   is_job_pending_ = false;
   registrar_.RemoveAll();
-  UpdatePrintedDocument(NULL);
+  UpdatePrintedDocument(nullptr);
 }
 
 void PrintJob::HoldUntilStopIsCalled() {
