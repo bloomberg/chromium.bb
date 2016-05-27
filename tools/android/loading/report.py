@@ -51,6 +51,7 @@ class PerUserLensReport(object):
 
     self._byte_frac = self._GenerateByteFrac(network_lens)
 
+    self._requests = len(user_lens.CriticalRequests())
     self._preloaded_requests = len(set(preloaded_requests) &
                                    set(user_lens.CriticalRequests()))
 
@@ -63,6 +64,7 @@ class PerUserLensReport(object):
 
     report['ms'] = self._satisfied_msec - self._navigation_start_msec
     report['byte_frac'] = self._byte_frac
+    report['requests'] = self._requests
     report['preloaded_requests'] = self._preloaded_requests
 
     # Take the first (earliest) inversion.
@@ -103,6 +105,7 @@ class LoadingReport(object):
     preloaded_requests = \
        prefetch_view.PrefetchSimulationView.PreloadedRequests(
            requests[0], dependencies_lens, self.trace)
+    self._requests = len(requests)
     self._preloaded_requests = len(preloaded_requests)
 
     self._user_lens_reports = {}
@@ -139,6 +142,7 @@ class LoadingReport(object):
     report = {
         'url': self.trace.url,
         'plt_ms': self._load_end_msec - self._navigation_start_msec,
+        'requests': self._requests,
         'preloaded_requests': self._preloaded_requests,
         'transfer_size': self._transfer_size}
 
@@ -164,7 +168,6 @@ class LoadingReport(object):
     requests = trace.request_track.GetEvents()
     has_rules = has_ad_rules or has_tracking_rules
     result = {
-        'request_count': len(requests),
         'ad_requests': 0 if has_ad_rules else None,
         'tracking_requests': 0 if has_tracking_rules else None,
         'ad_or_tracking_requests': 0 if has_rules else None,
