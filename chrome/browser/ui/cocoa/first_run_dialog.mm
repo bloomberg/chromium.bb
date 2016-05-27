@@ -4,7 +4,6 @@
 
 #import "chrome/browser/ui/cocoa/first_run_dialog.h"
 
-#include "base/bind.h"
 #include "base/mac/bundle_locations.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
@@ -12,24 +11,15 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
+#include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
-#include "components/metrics/metrics_pref_names.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/version_info/version_info.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
-
-#if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/browser_process.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/installer/util/google_update_settings.h"
-#include "components/prefs/pref_service.h"
-#endif
 
 @interface FirstRunDialogController (PrivateMethods)
 // Show the dialog.
@@ -73,10 +63,7 @@ bool ShowFirstRun(Profile* profile) {
   // in enterprise scenarios. If that is the case, skip the dialog entirely, as
   // it's not worth bothering the user for only the default browser question
   // (which is likely to be forced in enterprise deployments anyway).
-  const PrefService::Preference* metrics_reporting_pref =
-      g_browser_process->local_state()->FindPreference(
-          metrics::prefs::kMetricsReportingEnabled);
-  if (!metrics_reporting_pref || !metrics_reporting_pref->IsManaged()) {
+  if (!IsMetricsReportingPolicyManaged()) {
     base::scoped_nsobject<FirstRunDialogController> dialog(
         [[FirstRunDialogController alloc] init]);
 
@@ -85,8 +72,9 @@ bool ShowFirstRun(Profile* profile) {
 
     // If the dialog asked the user to opt-in for stats and crash reporting,
     // record the decision and enable the crash reporter if appropriate.
-    bool stats_enabled = [dialog.get() statsEnabled];
-    GoogleUpdateSettings::SetCollectStatsConsent(stats_enabled);
+    bool consent_given = [dialog.get() statsEnabled];
+    InitiateMetricsReportingChange(consent_given,
+                                   OnMetricsReportingCallbackType());
 
     // If selected set as default browser.
     BOOL make_default_browser = [dialog.get() makeDefaultBrowser];

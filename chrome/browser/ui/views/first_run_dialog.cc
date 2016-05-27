@@ -4,19 +4,20 @@
 
 #include "chrome/browser/ui/views/first_run_dialog.h"
 
+#include <string>
+
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/metrics/metrics_reporting_state.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
-#include "chrome/installer/util/google_update_settings.h"
 #include "components/crash/content/app/breakpad_linux.h"
-#include "components/metrics/metrics_pref_names.h"
 #include "grit/components_strings.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -29,12 +30,16 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
-#include "chrome/browser/browser_process.h"
-#include "components/prefs/pref_service.h"
-#endif
-
 using views::GridLayout;
+
+namespace {
+
+void InitCrashReporterIfEnabled(bool enabled) {
+  if (enabled)
+    breakpad::InitCrashReporter(std::string());
+}
+
+}  // namespace
 
 namespace first_run {
 
@@ -50,12 +55,7 @@ bool FirstRunDialog::Show(Profile* profile) {
 
 #if defined(GOOGLE_CHROME_BUILD)
   // If the metrics reporting is managed, we won't ask.
-  const PrefService::Preference* metrics_reporting_pref =
-      g_browser_process->local_state()->FindPreference(
-          metrics::prefs::kMetricsReportingEnabled);
-
-  if (!metrics_reporting_pref ||
-      !metrics_reporting_pref->IsManaged()) {
+  if (!IsMetricsReportingPolicyManaged()) {
     FirstRunDialog* dialog = new FirstRunDialog(profile);
     views::DialogDelegate::CreateDialogWidget(dialog, NULL, NULL)->Show();
 
@@ -116,14 +116,10 @@ views::View* FirstRunDialog::CreateExtraView() {
 bool FirstRunDialog::Accept() {
   GetWidget()->Hide();
 
-  if (report_crashes_ && report_crashes_->checked()) {
-    if (GoogleUpdateSettings::SetCollectStatsConsent(true))
-      breakpad::InitCrashReporter(std::string());
-  } else {
-    GoogleUpdateSettings::SetCollectStatsConsent(false);
-  }
+  InitiateMetricsReportingChange(report_crashes_->checked(),
+                                 base::Bind(&InitCrashReporterIfEnabled));
 
-  if (make_default_ && make_default_->checked())
+  if (make_default_->checked())
     shell_integration::SetAsDefaultBrowser();
 
   Done();

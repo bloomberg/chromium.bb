@@ -37,14 +37,6 @@ void DoPostImportPlatformSpecificTasks(Profile* profile) {
       startup_metric_utils::SetNonBrowserUIDisplayed();
     }
   }
-
-  // If stats reporting was turned on by the first run dialog then toggle
-  // the pref (on Windows, the download is tagged with enable/disable stats so
-  // this is POSIX-specific).
-  if (GoogleUpdateSettings::GetCollectStatsConsent()) {
-    g_browser_process->local_state()->SetBoolean(
-        metrics::prefs::kMetricsReportingEnabled, true);
-  }
 #endif
 }
 
