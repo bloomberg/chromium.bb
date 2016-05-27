@@ -5596,43 +5596,6 @@ Polymer({
     }
 
   };
-/**
-   * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has keyboard focus.
-   *
-   * @polymerBehavior Polymer.PaperInkyFocusBehavior
-   */
-  Polymer.PaperInkyFocusBehaviorImpl = {
-
-    observers: [
-      '_focusedChanged(receivedFocusFromKeyboard)'
-    ],
-
-    _focusedChanged: function(receivedFocusFromKeyboard) {
-      if (receivedFocusFromKeyboard) {
-        this.ensureRipple();
-      }
-      if (this.hasRipple()) {
-        this._ripple.holdDown = receivedFocusFromKeyboard;
-      }
-    },
-
-    _createRipple: function() {
-      var ripple = Polymer.PaperRippleBehavior._createRipple();
-      ripple.id = 'ink';
-      ripple.setAttribute('center', '');
-      ripple.classList.add('circle');
-      return ripple;
-    }
-
-  };
-
-  /** @polymerBehavior Polymer.PaperInkyFocusBehavior */
-  Polymer.PaperInkyFocusBehavior = [
-    Polymer.IronButtonState,
-    Polymer.IronControlState,
-    Polymer.PaperRippleBehavior,
-    Polymer.PaperInkyFocusBehaviorImpl
-  ];
 /** @polymerBehavior Polymer.PaperButtonBehavior */
   Polymer.PaperButtonBehaviorImpl = {
 
@@ -5787,6 +5750,41 @@ Polymer({
       @event transitionend
       Event param: {{node: Object}} detail Contains the animated node.
       */
+    });
+Polymer({
+      is: 'paper-icon-button-light',
+      extends: 'button',
+
+      behaviors: [
+        Polymer.PaperRippleBehavior
+      ],
+
+      listeners: {
+        'down': '_rippleDown',
+        'up': '_rippleUp',
+        'focus': '_rippleDown',
+        'blur': '_rippleUp',
+      },
+
+      _rippleDown: function() {
+        this.getRipple().downAction();
+      },
+
+      _rippleUp: function() {
+        this.getRipple().upAction();
+      },
+
+      /**
+       * @param {...*} var_args
+       */
+      ensureRipple: function(var_args) {
+        var lastRipple = this._ripple;
+        Polymer.PaperRippleBehavior.ensureRipple.apply(this, arguments);
+        if (this._ripple && this._ripple !== lastRipple) {
+          this._ripple.center = true;
+          this._ripple.classList.add('circle');
+        }
+      }
     });
 /**
  * `iron-range-behavior` provides the behavior for something with a minimum to maximum range.
@@ -6172,19 +6170,6 @@ Polymer({
 // found in the LICENSE file.
 
 cr.define('downloads', function() {
-  var InkyTextButton = Polymer({
-    is: 'inky-text-button',
-
-    behaviors: [
-      Polymer.PaperInkyFocusBehavior
-    ],
-
-    hostAttributes: {
-      role: 'button',
-      tabindex: 0,
-    },
-  });
-
   var Item = Polymer({
     is: 'downloads-item',
 
@@ -6481,10 +6466,7 @@ cr.define('downloads', function() {
     },
   });
 
-  return {
-    InkyTextButton: InkyTextButton,
-    Item: Item,
-  };
+  return {Item: Item};
 });
 /** @polymerBehavior Polymer.PaperItemBehavior */
   Polymer.PaperItemBehaviorImpl = {
@@ -10266,6 +10248,43 @@ Polymer({
 
       Polymer.PaperMenuButton = PaperMenuButton;
     })();
+/**
+   * `Polymer.PaperInkyFocusBehavior` implements a ripple when the element has keyboard focus.
+   *
+   * @polymerBehavior Polymer.PaperInkyFocusBehavior
+   */
+  Polymer.PaperInkyFocusBehaviorImpl = {
+
+    observers: [
+      '_focusedChanged(receivedFocusFromKeyboard)'
+    ],
+
+    _focusedChanged: function(receivedFocusFromKeyboard) {
+      if (receivedFocusFromKeyboard) {
+        this.ensureRipple();
+      }
+      if (this.hasRipple()) {
+        this._ripple.holdDown = receivedFocusFromKeyboard;
+      }
+    },
+
+    _createRipple: function() {
+      var ripple = Polymer.PaperRippleBehavior._createRipple();
+      ripple.id = 'ink';
+      ripple.setAttribute('center', '');
+      ripple.classList.add('circle');
+      return ripple;
+    }
+
+  };
+
+  /** @polymerBehavior Polymer.PaperInkyFocusBehavior */
+  Polymer.PaperInkyFocusBehavior = [
+    Polymer.IronButtonState,
+    Polymer.IronControlState,
+    Polymer.PaperRippleBehavior,
+    Polymer.PaperInkyFocusBehaviorImpl
+  ];
 Polymer({
       is: 'paper-icon-button',
 

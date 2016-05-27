@@ -3,19 +3,6 @@
 // found in the LICENSE file.
 
 cr.define('downloads', function() {
-  var InkyTextButton = Polymer({
-    is: 'inky-text-button',
-
-    behaviors: [
-      Polymer.PaperInkyFocusBehavior
-    ],
-
-    hostAttributes: {
-      role: 'button',
-      tabindex: 0,
-    },
-  });
-
   var Item = Polymer({
     is: 'downloads-item',
 
@@ -312,8 +299,5 @@ cr.define('downloads', function() {
     },
   });
 
-  return {
-    InkyTextButton: InkyTextButton,
-    Item: Item,
-  };
+  return {Item: Item};
 });

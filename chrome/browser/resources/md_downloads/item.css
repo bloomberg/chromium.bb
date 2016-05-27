@@ -197,10 +197,9 @@
 #remove {
   color: #969696;
   font-size: 16px;
-  height: 16px;
+  height: 32px;
   line-height: 17px;  /* TODO(dbeam): why is this necesssary? */
-  padding: 8px;
-  width: 16px;
+  width: 32px;
 }
 
 #incognito {
