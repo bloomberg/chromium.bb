@@ -15,7 +15,7 @@
 #include "components/test_runner/test_common.h"
 #include "components/test_runner/web_frame_test_proxy.h"
 #include "components/test_runner/web_test_proxy.h"
-#include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
+#include "content/browser/bluetooth/bluetooth_adapter_factory_wrapper.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/site_isolation_policy.h"
@@ -359,11 +359,8 @@ void SetBluetoothAdapter(int render_process_id,
       static_cast<RenderProcessHostImpl*>(
           RenderProcessHost::FromID(render_process_id));
 
-  BluetoothDispatcherHost* dispatcher_host =
-      render_process_host_impl->GetBluetoothDispatcherHost();
-
-  if (dispatcher_host != NULL)
-    dispatcher_host->SetBluetoothAdapterForTesting(std::move(adapter));
+  render_process_host_impl->GetBluetoothAdapterFactoryWrapper()
+      ->SetBluetoothAdapterForTesting(std::move(adapter));
 }
 
 void UseSynchronousResizeMode(RenderView* render_view, bool enable) {

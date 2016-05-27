@@ -59,6 +59,7 @@ static void canonicalizeFilter(const BluetoothScanFilter& filter, WebBluetoothSc
         canonicalizedFilter.services.assign(services);
     }
 
+    canonicalizedFilter.hasName = filter.hasName();
     if (filter.hasName()) {
         size_t nameLength = filter.name().utf8().length();
         if (nameLength > kMaxDeviceNameLength) {

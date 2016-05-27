@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "url/origin.h"
 
 namespace device {
@@ -32,12 +33,13 @@ class CONTENT_EXPORT BluetoothAllowedDevicesMap final {
   ~BluetoothAllowedDevicesMap();
 
   // Adds the Bluetooth Device with |device_address| to the map of allowed
-  // devices for that origin. Generates and returns a device id.
+  // devices for that origin. Generates and returns a device id. Because
+  // unique origins generate the same hash, unique origins are not supported.
+  // Calling this function with a unique origin will CHECK-fail.
   const std::string& AddDevice(
       const url::Origin& origin,
       const std::string& device_address,
-      const std::vector<BluetoothScanFilter>& filters,
-      const std::vector<device::BluetoothUUID>& optional_services);
+      const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options);
 
   // Removes the Bluetooth Device with |device_address| from the map of allowed
   // devices for |origin|.
@@ -69,10 +71,13 @@ class CONTENT_EXPORT BluetoothAllowedDevicesMap final {
   // generated so that an origin can't guess the id used in another origin.
   std::string GenerateDeviceId();
   void AddUnionOfServicesTo(
-      const std::vector<BluetoothScanFilter>& filters,
-      const std::vector<device::BluetoothUUID>& optional_services,
+      const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options,
       std::set<std::string>* unionOfServices);
 
+  // TODO(ortuno): Now that there is only one instance of this class per frame
+  // and that this map gets destroyed when navigating consider removing the
+  // origin mapping.
+  // http://crbug.com/610343
   std::map<url::Origin, DeviceAddressToIdMap>
       origin_to_device_address_to_id_map_;
   std::map<url::Origin, DeviceIdToAddressMap>

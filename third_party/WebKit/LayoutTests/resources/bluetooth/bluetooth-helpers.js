@@ -341,12 +341,3 @@ function generateRequestDeviceArgsWithServices(services = ['heart_rate']) {
     optionalServices: ['heart_rate']
   }];
 }
-
-// Bluetooth tests sometimes have left-over state that could leak into the
-// next test. add_result_callback which is exposed by testharness.js allows us
-// to clean up this state after each test. Once the move to Mojo is complete
-// we will no longer need to clean up the state manually.
-// https://crbug.com/508771
-add_result_callback(() => {
-  setBluetoothFakeAdapter('');
-});

@@ -37,9 +37,7 @@ class CONTENT_EXPORT WebBluetoothImpl
     : NON_EXPORTED_BASE(public blink::mojom::WebBluetoothServiceClient),
       NON_EXPORTED_BASE(public blink::WebBluetooth) {
  public:
-  WebBluetoothImpl(ServiceRegistry* service_registry,
-                   ThreadSafeSender* thread_safe_sender,
-                   int frame_routing_id);
+  WebBluetoothImpl(ServiceRegistry* service_registry);
   ~WebBluetoothImpl() override;
 
   // blink::WebBluetooth interface:
@@ -87,6 +85,10 @@ class CONTENT_EXPORT WebBluetoothImpl
   void GattServerDisconnected(const mojo::String& device_id) override;
 
   // Callbacks for WebBluetoothService calls:
+  void OnRequestDeviceComplete(
+      std::unique_ptr<blink::WebBluetoothRequestDeviceCallbacks> callbacks,
+      const blink::mojom::WebBluetoothError error,
+      blink::mojom::WebBluetoothDevicePtr device);
   void OnConnectComplete(
       std::unique_ptr<blink::WebBluetoothRemoteGATTServerConnectCallbacks>
           callbacks,
@@ -120,8 +122,6 @@ class CONTENT_EXPORT WebBluetoothImpl
       const std::string& characteristic_instance_id,
       const std::vector<uint8_t>& value);
 
-  BluetoothDispatcher* GetDispatcher();
-
   blink::mojom::WebBluetoothService& GetWebBluetoothService();
   ServiceRegistry* const service_registry_;
   blink::mojom::WebBluetoothServicePtr web_bluetooth_service_;
@@ -141,9 +141,6 @@ class CONTENT_EXPORT WebBluetoothImpl
 
   // Binding associated with |web_bluetooth_service_|.
   mojo::AssociatedBinding<blink::mojom::WebBluetoothServiceClient> binding_;
-
-  const scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-  const int frame_routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(WebBluetoothImpl);
 };

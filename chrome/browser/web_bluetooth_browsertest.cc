@@ -9,15 +9,22 @@
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
+
+using device::MockBluetoothAdapter;
+using testing::Return;
+
+typedef testing::NiceMock<MockBluetoothAdapter> NiceMockBluetoothAdapter;
 
 namespace {
 
@@ -46,11 +53,51 @@ class WebBluetoothTest : public InProcessBrowserTest {
   content::WebContents* web_contents_ = nullptr;
 };
 
+IN_PROC_BROWSER_TEST_F(WebBluetoothTest, WebBluetoothAfterCrash) {
+  // Make sure we can use Web Bluetooth after the tab crashes.
+  // Set up adapter with one device.
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(
+      new NiceMockBluetoothAdapter());
+  ON_CALL(*adapter, IsPresent()).WillByDefault(Return(false));
+
+  device::BluetoothAdapterFactory::SetAdapterForTesting(adapter);
+
+  std::string result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents_,
+      "navigator.bluetooth.requestDevice({filters: [{services: [0x180d]}]})"
+      "  .catch(e => domAutomationController.send(e.toString()));",
+      &result));
+  EXPECT_EQ("NotFoundError: Bluetooth adapter not available.", result);
+
+  // Crash the renderer process.
+  content::RenderProcessHost* process = web_contents_->GetRenderProcessHost();
+  content::RenderProcessHostWatcher crash_observer(
+      process, content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  process->Shutdown(0, false);
+  crash_observer.Wait();
+
+  // Reload tab.
+  chrome::Reload(browser(), CURRENT_TAB);
+  content::WaitForLoadStop(
+      browser()->tab_strip_model()->GetActiveWebContents());
+
+  // Use Web Bluetooth again.
+  std::string result_after_crash;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents_,
+      "navigator.bluetooth.requestDevice({filters: [{services: [0x180d]}]})"
+      "  .catch(e => domAutomationController.send(e.toString()));",
+      &result_after_crash));
+  EXPECT_EQ("NotFoundError: Bluetooth adapter not available.",
+            result_after_crash);
+}
+
 IN_PROC_BROWSER_TEST_F(WebBluetoothTest, KillSwitchShouldBlock) {
   // Fake the BluetoothAdapter to say it's present.
   scoped_refptr<device::MockBluetoothAdapter> adapter =
       new testing::NiceMock<device::MockBluetoothAdapter>;
-  EXPECT_CALL(*adapter, IsPresent()).WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*adapter, IsPresent()).WillRepeatedly(Return(true));
   device::BluetoothAdapterFactory::SetAdapterForTesting(adapter);
 
   // Turn on the global kill switch.
@@ -82,7 +129,7 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, BlacklistShouldBlock) {
   // Fake the BluetoothAdapter to say it's present.
   scoped_refptr<device::MockBluetoothAdapter> adapter =
       new testing::NiceMock<device::MockBluetoothAdapter>;
-  EXPECT_CALL(*adapter, IsPresent()).WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(*adapter, IsPresent()).WillRepeatedly(Return(true));
   device::BluetoothAdapterFactory::SetAdapterForTesting(adapter);
 
   std::map<std::string, std::string> params;

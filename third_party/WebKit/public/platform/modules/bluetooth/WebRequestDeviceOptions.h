@@ -16,6 +16,10 @@ struct WebBluetoothScanFilter {
     WebBluetoothScanFilter() { }
 
     WebVector<WebString> services;
+    // We don't allow empty services or namePrefix but we do allow
+    // an empty name so we can't use name.isEmpty() to know if
+    // the filter contains a name or not.
+    bool hasName;
     WebString name;
     WebString namePrefix;
 };

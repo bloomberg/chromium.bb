@@ -12,23 +12,20 @@
 #include "content/child/mojo/type_converters.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/public/common/service_registry.h"
-#include "content/renderer/bluetooth/bluetooth_dispatcher.h"
+#include "content/renderer/bluetooth/bluetooth_type_converters.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDevice.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothDeviceInit.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristic.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothRemoteGATTCharacteristicInit.h"
 #include "third_party/WebKit/public/platform/modules/bluetooth/WebBluetoothRemoteGATTService.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/WebRequestDeviceOptions.h"
 
 namespace content {
 
-WebBluetoothImpl::WebBluetoothImpl(ServiceRegistry* service_registry,
-                                   ThreadSafeSender* thread_safe_sender,
-                                   int frame_routing_id)
-    : service_registry_(service_registry),
-      binding_(this),
-      thread_safe_sender_(thread_safe_sender),
-      frame_routing_id_(frame_routing_id) {}
+WebBluetoothImpl::WebBluetoothImpl(ServiceRegistry* service_registry)
+    : service_registry_(service_registry), binding_(this) {}
 
 WebBluetoothImpl::~WebBluetoothImpl() {
 }
@@ -36,7 +33,11 @@ WebBluetoothImpl::~WebBluetoothImpl() {
 void WebBluetoothImpl::requestDevice(
     const blink::WebRequestDeviceOptions& options,
     blink::WebBluetoothRequestDeviceCallbacks* callbacks) {
-  GetDispatcher()->requestDevice(frame_routing_id_, options, callbacks);
+  GetWebBluetoothService().RequestDevice(
+      blink::mojom::WebBluetoothRequestDeviceOptions::From(options),
+      base::Bind(&WebBluetoothImpl::OnRequestDeviceComplete,
+                 base::Unretained(this),
+                 base::Passed(base::WrapUnique(callbacks))));
 }
 
 void WebBluetoothImpl::connect(
@@ -154,6 +155,23 @@ void WebBluetoothImpl::RemoteCharacteristicValueChanged(
                  value.PassStorage()));
 }
 
+void WebBluetoothImpl::OnRequestDeviceComplete(
+    std::unique_ptr<blink::WebBluetoothRequestDeviceCallbacks> callbacks,
+    const blink::mojom::WebBluetoothError error,
+    blink::mojom::WebBluetoothDevicePtr device) {
+  if (error == blink::mojom::WebBluetoothError::SUCCESS) {
+    blink::WebVector<blink::WebString> uuids(device->uuids.size());
+    for (size_t i = 0; i < device->uuids.size(); ++i)
+      uuids[i] = blink::WebString::fromUTF8(device->uuids[i]);
+
+    callbacks->onSuccess(base::WrapUnique(new blink::WebBluetoothDeviceInit(
+        blink::WebString::fromUTF8(device->id),
+        blink::WebString::fromUTF8(device->name), uuids)));
+  } else {
+    callbacks->onError(error);
+  }
+}
+
 void WebBluetoothImpl::GattServerDisconnected(const mojo::String& device_id) {
   auto device_iter = connected_devices_.find(device_id);
   if (device_iter != connected_devices_.end()) {
@@ -258,11 +276,6 @@ void WebBluetoothImpl::DispatchCharacteristicValueChanged(
   if (active_iter != active_characteristics_.end()) {
     active_iter->second->dispatchCharacteristicValueChanged(value);
   }
-}
-
-BluetoothDispatcher* WebBluetoothImpl::GetDispatcher() {
-  return BluetoothDispatcher::GetOrCreateThreadSpecificInstance(
-      thread_safe_sender_.get());
 }
 
 blink::mojom::WebBluetoothService& WebBluetoothImpl::GetWebBluetoothService() {

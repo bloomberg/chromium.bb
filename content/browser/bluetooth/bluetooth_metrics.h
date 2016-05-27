@@ -89,9 +89,8 @@ void RecordRequestDeviceOutcome(UMARequestDeviceOutcome outcome);
 //  - Number of optional services used.
 //  - UUID of the optional services.
 //  - Size of the union of all services.
-void RecordRequestDeviceArguments(
-    const std::vector<content::BluetoothScanFilter>& filters,
-    const std::vector<device::BluetoothUUID>& optional_services);
+void RecordRequestDeviceOptions(
+    const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options);
 
 // connectGATT() Metrics
 enum class UMAConnectGATTOutcome {

@@ -19,6 +19,7 @@
 #include "base/process/process.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
+#include "content/browser/bluetooth/bluetooth_adapter_factory_wrapper.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/power_monitor_message_broadcaster.h"
@@ -47,7 +48,6 @@ class ChannelMojoHost;
 namespace content {
 class AudioInputRendererHost;
 class AudioRendererHost;
-class BluetoothDispatcherHost;
 class BrowserCdmManager;
 class BrowserDemuxerAndroid;
 class InProcessChildThreadParams;
@@ -263,7 +263,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const override;
 
-  BluetoothDispatcherHost* GetBluetoothDispatcherHost();
+  BluetoothAdapterFactoryWrapper* GetBluetoothAdapterFactoryWrapper();
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
   // Launch the zygote early in the browser startup.
@@ -480,7 +480,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   scoped_refptr<AudioInputRendererHost> audio_input_renderer_host_;
 
-  scoped_refptr<BluetoothDispatcherHost> bluetooth_dispatcher_host_;
+  BluetoothAdapterFactoryWrapper bluetooth_adapter_factory_wrapper_;
 
 #if defined(OS_ANDROID)
   scoped_refptr<BrowserDemuxerAndroid> browser_demuxer_android_;

@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_BLUETOOTH_CACHE_QUERY_RESULT_H_
 
 #include "content/browser/bluetooth/bluetooth_metrics.h"
-#include "content/common/bluetooth/bluetooth_messages.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 
 namespace device {
 class BluetoothDevice;
@@ -18,10 +18,7 @@ namespace content {
 
 // Struct that holds the result of a cache query.
 //
-// WebBluetoothServiceImpl and BluetoothDispatcherHost have functions
-// that return a CacheQueryResult so we make a separate header for it.
-// TODO(ortuno): Move into WebBluetoothServiceImpl once we move all functions
-// off BluetoothDispatcherHost.
+// TODO(ortuno): Move into WebBluetoothServiceImpl.
 // https://crbug.com/508771
 struct CacheQueryResult {
   CacheQueryResult() : outcome(CacheQueryOutcome::SUCCESS) {}
@@ -30,21 +27,21 @@ struct CacheQueryResult {
 
   ~CacheQueryResult() {}
 
-  blink::WebBluetoothError GetWebError() const {
+  blink::mojom::WebBluetoothError GetWebError() const {
     switch (outcome) {
       case CacheQueryOutcome::SUCCESS:
       case CacheQueryOutcome::BAD_RENDERER:
         NOTREACHED();
-        return blink::WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
+        return blink::mojom::WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
       case CacheQueryOutcome::NO_DEVICE:
-        return blink::WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
+        return blink::mojom::WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
       case CacheQueryOutcome::NO_SERVICE:
-        return blink::WebBluetoothError::SERVICE_NO_LONGER_EXISTS;
+        return blink::mojom::WebBluetoothError::SERVICE_NO_LONGER_EXISTS;
       case CacheQueryOutcome::NO_CHARACTERISTIC:
-        return blink::WebBluetoothError::CHARACTERISTIC_NO_LONGER_EXISTS;
+        return blink::mojom::WebBluetoothError::CHARACTERISTIC_NO_LONGER_EXISTS;
     }
     NOTREACHED();
-    return blink::WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
+    return blink::mojom::WebBluetoothError::DEVICE_NO_LONGER_IN_RANGE;
   }
 
   device::BluetoothDevice* device = nullptr;

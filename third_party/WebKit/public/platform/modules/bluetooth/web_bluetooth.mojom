@@ -68,11 +68,28 @@ enum WebBluetoothError {
   ENUM_MAX_VALUE = REQUEST_DEVICE_WITHOUT_FRAME,
 };
 
+struct WebBluetoothScanFilter {
+  array<string>? services;
+  string? name;
+  string? name_prefix;
+};
+
+struct WebBluetoothRequestDeviceOptions {
+  array<WebBluetoothScanFilter> filters;
+  array<string> optional_services;
+};
+
 // Indicates if the function will return a single or multiple
 // GATT objects.
 enum WebBluetoothGATTQueryQuantity {
   SINGLE,
   MULTIPLE
+};
+
+struct WebBluetoothDevice {
+  string id;
+  string name;
+  array<string> uuids;
 };
 
 struct WebBluetoothRemoteGATTService {
@@ -96,6 +113,9 @@ interface WebBluetoothService {
   // client of device events e.g. when a Characteristic's value changes or when
   // a device disconnects.
   SetClient(associated WebBluetoothServiceClient client);
+
+  RequestDevice(WebBluetoothRequestDeviceOptions options)
+    => (WebBluetoothError error, WebBluetoothDevice? device);
 
   // Creates a GATT Connection to a Bluetooth Device with |device_id| if a
   // connection to the device didn't exist already. If a GATT connection existed

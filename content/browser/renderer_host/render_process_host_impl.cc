@@ -51,7 +51,6 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/blob_dispatcher_host.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
-#include "content/browser/bluetooth/bluetooth_dispatcher_host.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_main.h"
 #include "content/browser/browser_main_loop.h"
@@ -830,8 +829,6 @@ std::unique_ptr<IPC::ChannelProxy> RenderProcessHostImpl::CreateChannelProxy(
 
 void RenderProcessHostImpl::CreateMessageFilters() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const base::CommandLine& browser_command_line =
-      *base::CommandLine::ForCurrentProcess();
   AddFilter(new ResourceSchedulerFilter(GetID()));
   MediaInternals* media_internals = MediaInternals::GetInstance();
   media::AudioManager* audio_manager =
@@ -1024,17 +1021,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #if defined(OS_ANDROID)
   AddFilter(new ScreenOrientationMessageFilterAndroid());
 #endif
-
-  bool enable_web_bluetooth =
-      browser_command_line.HasSwitch(switches::kEnableWebBluetooth);
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  enable_web_bluetooth = true;
-#endif
-
-  if (enable_web_bluetooth) {
-    bluetooth_dispatcher_host_ = new BluetoothDispatcherHost(GetID());
-    AddFilter(bluetooth_dispatcher_host_.get());
-  }
 }
 
 bool RenderProcessHostImpl::SendImpl(std::unique_ptr<IPC::Message> msg,
@@ -2777,8 +2763,9 @@ void RenderProcessHostImpl::GetAudioOutputControllers(
   audio_renderer_host()->GetOutputControllers(callback);
 }
 
-BluetoothDispatcherHost* RenderProcessHostImpl::GetBluetoothDispatcherHost() {
-  return bluetooth_dispatcher_host_.get();
+BluetoothAdapterFactoryWrapper*
+RenderProcessHostImpl::GetBluetoothAdapterFactoryWrapper() {
+  return &bluetooth_adapter_factory_wrapper_;
 }
 
 void RenderProcessHostImpl::RecomputeAndUpdateWebKitPreferences() {

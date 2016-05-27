@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
-#include "content/common/bluetooth/bluetooth_scan_filter.h"
 #include "content/public/browser/content_browser_client.h"
 
 using device::BluetoothUUID;
@@ -86,10 +85,10 @@ bool BluetoothBlacklist::IsExcluded(const BluetoothUUID& uuid) const {
 }
 
 bool BluetoothBlacklist::IsExcluded(
-    const std::vector<content::BluetoothScanFilter>& filters) {
-  for (const BluetoothScanFilter& filter : filters) {
-    for (const BluetoothUUID& service : filter.services) {
-      if (IsExcluded(service)) {
+    const mojo::Array<blink::mojom::WebBluetoothScanFilterPtr>& filters) {
+  for (const blink::mojom::WebBluetoothScanFilterPtr& filter : filters) {
+    for (const std::string& service : filter->services) {
+      if (IsExcluded(BluetoothUUID(service))) {
         return true;
       }
     }
@@ -113,16 +112,15 @@ bool BluetoothBlacklist::IsExcludedFromWrites(const BluetoothUUID& uuid) const {
   return it->second == Value::EXCLUDE || it->second == Value::EXCLUDE_WRITES;
 }
 
-void BluetoothBlacklist::RemoveExcludedUuids(
-    std::vector<device::BluetoothUUID>* uuids) {
-  auto it = uuids->begin();
-  while (it != uuids->end()) {
-    if (IsExcluded(*it)) {
-      it = uuids->erase(it);
-    } else {
-      it++;
+void BluetoothBlacklist::RemoveExcludedUUIDs(
+    blink::mojom::WebBluetoothRequestDeviceOptions* options) {
+  mojo::Array<mojo::String> optional_services_blacklist_filtered;
+  for (const std::string& uuid : options->optional_services) {
+    if (!IsExcluded(BluetoothUUID(uuid))) {
+      optional_services_blacklist_filtered.push_back(uuid);
     }
   }
+  options->optional_services = std::move(optional_services_blacklist_filtered);
 }
 
 void BluetoothBlacklist::ResetToDefaultValuesForTest() {

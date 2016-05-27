@@ -13,10 +13,9 @@
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 
 namespace content {
-
-struct BluetoothScanFilter;
 
 // Implements the Web Bluetooth Blacklist policy as defined in the Web Bluetooth
 // specification:
@@ -65,7 +64,8 @@ class CONTENT_EXPORT BluetoothBlacklist final {
 
   // Returns if any UUID in a set of filters is excluded from all operations.
   // UUID must be valid.
-  bool IsExcluded(const std::vector<content::BluetoothScanFilter>&);
+  bool IsExcluded(
+      const mojo::Array<blink::mojom::WebBluetoothScanFilterPtr>& filters);
 
   // Returns if a UUID is excluded from read operations. UUID must be valid.
   bool IsExcludedFromReads(const device::BluetoothUUID&) const;
@@ -73,8 +73,10 @@ class CONTENT_EXPORT BluetoothBlacklist final {
   // Returns if a UUID is excluded from write operations. UUID must be valid.
   bool IsExcludedFromWrites(const device::BluetoothUUID&) const;
 
-  // Modifies a list of UUIDs, removing any UUIDs with Value::EXCLUDE.
-  void RemoveExcludedUuids(std::vector<device::BluetoothUUID>*);
+  // Modifies |options->optional_services|, removing any UUIDs with
+  // Value::EXCLUDE.
+  void RemoveExcludedUUIDs(
+      blink::mojom::WebBluetoothRequestDeviceOptions* options);
 
   // Size of blacklist.
   size_t size() { return blacklisted_uuids_.size(); }
