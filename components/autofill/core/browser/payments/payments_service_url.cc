@@ -36,14 +36,7 @@ bool IsPaymentsProductionEnabled() {
       base::CommandLine::ForCurrentProcess();
   std::string sandbox_enabled(
       command_line->GetSwitchValueASCII(switches::kWalletServiceUseSandbox));
-  if (!sandbox_enabled.empty())
-    return sandbox_enabled != "1";
-
-#if defined(ENABLE_PROD_WALLET_SERVICE)
-  return true;
-#else
-  return false;
-#endif
+  return sandbox_enabled.empty() || sandbox_enabled != "1";
 }
 
 GURL GetBaseSecureUrl() {

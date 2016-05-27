@@ -15,8 +15,6 @@ static_library("browser") {
     "risk/fingerprint.h",
   ]
 
-  configs += [ "//components/autofill/core/browser:payments_service" ]
-
   public_deps = [
     ":risk_proto",
     "//skia",

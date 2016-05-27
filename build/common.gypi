@@ -569,10 +569,6 @@
       # disabling depends on the platform.
       'enable_themes%': 1,
 
-      # Defaults Wallet integration in Autofill dialog to use production
-      # servers. Unofficial builds won't have the proper API keys.
-      'enable_prod_wallet_service%': 0,
-
       # Enable the task manager by default.
       'enable_task_manager%': 1,
 
@@ -821,10 +817,6 @@
           'proprietary_codecs%': 1,
         }, {
           'proprietary_codecs%': 0,
-        }],
-
-        ['buildtype=="Official"', {
-          'enable_prod_wallet_service%': 1,
         }],
 
 	# Enable Link Time Optimization for the official Linux Chrome.
@@ -1229,7 +1221,6 @@
     'enable_plugins%': '<(enable_plugins)',
     'enable_session_service%': '<(enable_session_service)',
     'enable_themes%': '<(enable_themes)',
-    'enable_prod_wallet_service%': '<(enable_prod_wallet_service)',
     'linux_use_bundled_gold%': '<(linux_use_bundled_gold)',
     'linux_use_bundled_binutils%': '<(linux_use_bundled_binutils)',
     'linux_use_gold_flags%': '<(linux_use_gold_flags)',
@@ -2938,11 +2929,6 @@
       }],
       ['enable_themes==1', {
         'defines': ['ENABLE_THEMES=1'],
-      }],
-      ['enable_prod_wallet_service==1', {
-        # In GN, this is set on the autofill tagets only. See
-        # //components/autofill/core/browser:payments_service
-        'defines': ['ENABLE_PROD_WALLET_SERVICE=1'],
       }],
       ['enable_basic_printing==1 or enable_print_preview==1', {
         # Convenience define for ENABLE_BASIC_PRINTING || ENABLE_PRINT_PREVIEW.
