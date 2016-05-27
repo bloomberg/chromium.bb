@@ -58,8 +58,6 @@ PluginsTest.prototype = {
        * @private
        */
       this.pluginsData_ = [];
-
-      this.pageProxy = null;
     };
 
     TestBrowserProxy.prototype = {
@@ -167,7 +165,7 @@ TEST_F('PluginsTest', 'Plugins', function() {
       var plugins = document.querySelectorAll('.plugin');
       assertEquals(EXPECTED_PLUGINS, plugins.length);
 
-      pageProxy.onPluginsUpdated([fakePluginData]);
+      pageImpl.onPluginsUpdated([fakePluginData]);
       plugins = document.querySelectorAll('.plugin');
       assertEquals(1, plugins.length);
     });

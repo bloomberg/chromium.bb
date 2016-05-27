@@ -148,6 +148,21 @@ define("mojo/public/js/connection", [
     return stub;
   }
 
+  /**
+   * Creates a messape pipe and links one end of the pipe to the given object.
+   * @param {!Object} obj The object to create a handle for. Must be a subclass
+   *     of an auto-generated stub class.
+   * @return {!MojoHandle} The other (not yet connected) end of the message
+   *     pipe.
+   */
+  function bindStubDerivedImpl(obj) {
+    var pipe = core.createMessagePipe();
+    var router = new Router(pipe.handle0);
+    var connection = new BaseConnection(obj, undefined, router);
+    obj.connection = connection;
+    return pipe.handle1;
+  }
+
   var exports = {};
   exports.Connection = Connection;
   exports.TestConnection = TestConnection;
@@ -156,5 +171,6 @@ define("mojo/public/js/connection", [
   exports.bindImpl = bindImpl;
   exports.bindHandleToProxy = bindHandleToProxy;
   exports.bindHandleToStub = bindHandleToStub;
+  exports.bindStubDerivedImpl = bindStubDerivedImpl;
   return exports;
 });
