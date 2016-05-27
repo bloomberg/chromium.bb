@@ -5,7 +5,8 @@
 #include "chrome/browser/ui/webui/version_ui.h"
 
 #include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
+#include "base/i18n/message_formatter.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/version_handler.h"
@@ -79,12 +80,11 @@ WebUIDataSource* CreateVersionUIDataSource() {
 
   html_source->AddLocalizedString(version_ui::kCompany,
                                   IDS_ABOUT_VERSION_COMPANY_NAME);
-  base::Time::Exploded exploded_time;
-  base::Time::Now().LocalExplode(&exploded_time);
   html_source->AddString(
       version_ui::kCopyright,
-      l10n_util::GetStringFUTF16(IDS_ABOUT_VERSION_COPYRIGHT,
-                                 base::IntToString16(exploded_time.year)));
+      base::i18n::MessageFormatter::FormatWithNumberedArgs(
+          l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_COPYRIGHT),
+          base::Time::Now()));
   html_source->AddLocalizedString(version_ui::kRevision,
                                   IDS_VERSION_UI_REVISION);
   html_source->AddString(version_ui::kCL, version_info::GetLastChange());

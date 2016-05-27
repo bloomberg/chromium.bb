@@ -322,6 +322,7 @@
           'dependencies': [
             'chrome_resources.gyp:chrome_strings',
             '../base/base.gyp:base',
+            '../base/base.gyp:base_i18n',
             '../ui/base/ui_base.gyp:ui_data_pack',
           ],
           'include_dirs': [
