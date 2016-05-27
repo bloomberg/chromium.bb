@@ -91,8 +91,11 @@ StreamTexture::~StreamTexture() {
 
 // gpu::gles2::GLStreamTextureMatrix implementation
 void StreamTexture::GetTextureMatrix(float xform[16]) {
-  UpdateTexImage();
-  surface_texture_->GetTransformMatrix(xform);
+  if (surface_texture_) {
+    UpdateTexImage();
+    surface_texture_->GetTransformMatrix(current_matrix_);
+  }
+  memcpy(xform, current_matrix_, sizeof(current_matrix_));
 }
 
 void StreamTexture::OnWillDestroyStub() {
