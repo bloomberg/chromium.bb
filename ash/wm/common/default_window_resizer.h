@@ -5,7 +5,7 @@
 #ifndef ASH_WM_COMMON_DEFAULT_WINDOW_RESIZER_H_
 #define ASH_WM_COMMON_DEFAULT_WINDOW_RESIZER_H_
 
-#include "ash/wm/common/ash_wm_common_export.h"
+#include "ash/ash_export.h"
 #include "ash/wm/common/window_resizer.h"
 #include "base/macros.h"
 
@@ -17,7 +17,7 @@ class WmGlobals;
 // WindowResizer is used by ToplevelWindowEventFilter to handle dragging, moving
 // or resizing a window. All coordinates passed to this are in the parent
 // windows coordiantes.
-class ASH_WM_COMMON_EXPORT DefaultWindowResizer : public WindowResizer {
+class ASH_EXPORT DefaultWindowResizer : public WindowResizer {
  public:
   ~DefaultWindowResizer() override;
 

@@ -81,7 +81,7 @@ source_set("lib") {
   ]
 
   deps = [
-    "//ash/wm/common:ash_wm_common",
+    "//ash",
     "//base",
     "//components/mus/common:mus_common",
     "//components/mus/public/cpp",
@@ -175,7 +175,7 @@ source_set("unittests") {
   deps = [
     ":lib",
     ":resources",
-    "//ash/wm/common:ash_wm_common",
+    "//ash",
     "//base",
     "//base/test:test_config",
     "//components/mus/common:mus_common",

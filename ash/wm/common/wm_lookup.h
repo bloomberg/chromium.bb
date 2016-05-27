@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "ash/wm/common/ash_wm_common_export.h"
+#include "ash/ash_export.h"
 
 namespace views {
 class Widget;
@@ -20,7 +20,7 @@ class WmRootWindowController;
 class WmWindow;
 
 // WmLookup is used to lookup various wm types.
-class ASH_WM_COMMON_EXPORT WmLookup {
+class ASH_EXPORT WmLookup {
  public:
   static void Set(WmLookup* lookup);
   static WmLookup* Get();

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/wm/common/ash_wm_common_export.h"
+#include "ash/ash_export.h"
 #include "ash/wm/common/drag_details.h"
 #include "ash/wm/common/window_state.h"
 #include "base/macros.h"
@@ -25,7 +25,7 @@ class WmWindow;
 // WindowResizer is used by ToplevelWindowEventFilter to handle dragging, moving
 // or resizing a window. All coordinates passed to this are in the parent
 // windows coordinates.
-class ASH_WM_COMMON_EXPORT WindowResizer {
+class ASH_EXPORT WindowResizer {
  public:
   // Constants to identify the type of resize.
   static const int kBoundsChange_None;
@@ -100,7 +100,7 @@ class ASH_WM_COMMON_EXPORT WindowResizer {
 
 // Creates a WindowResizer for |window|. Returns a unique_ptr with null if
 // |window| should not be resized nor dragged.
-ASH_WM_COMMON_EXPORT std::unique_ptr<WindowResizer> CreateWindowResizer(
+ASH_EXPORT std::unique_ptr<WindowResizer> CreateWindowResizer(
     wm::WmWindow* window,
     const gfx::Point& point_in_parent,
     int window_component,

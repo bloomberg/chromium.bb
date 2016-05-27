@@ -5,12 +5,12 @@
 #ifndef ASH_WM_COMMON_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_DELEGATE_H_
 #define ASH_WM_COMMON_WORKSPACE_WORKSPACE_LAYOUT_MANAGER_DELEGATE_H_
 
-#include "ash/wm/common/ash_wm_common_export.h"
+#include "ash/ash_export.h"
 
 namespace ash {
 namespace wm {
 
-class ASH_WM_COMMON_EXPORT WorkspaceLayoutManagerDelegate {
+class ASH_EXPORT WorkspaceLayoutManagerDelegate {
  public:
   virtual ~WorkspaceLayoutManagerDelegate() {}
 

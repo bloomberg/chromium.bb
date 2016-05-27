@@ -2016,7 +2016,6 @@
           ],
           'dependencies': [
             '../ash/ash.gyp:ash',
-            '../ash/wm/common/ash_wm_common.gyp:ash_wm_common',
             '../ui/aura/aura.gyp:aura',
             '../ui/aura/aura.gyp:aura_test_support',
           ],

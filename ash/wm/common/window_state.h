@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/wm/common/ash_wm_common_export.h"
+#include "ash/ash_export.h"
 #include "ash/wm/common/drag_details.h"
 #include "ash/wm/common/wm_types.h"
 #include "base/gtest_prod_util.h"
@@ -45,7 +45,7 @@ class WmWindow;
 // Prefer using this class instead of passing aura::Window* around in
 // ash code as this is often what you need to interact with, and
 // accessing the window using |window()| is cheap.
-class ASH_WM_COMMON_EXPORT WindowState {
+class ASH_EXPORT WindowState {
  public:
   // A subclass of State class represents one of the window's states
   // that corresponds to WindowStateType in Ash environment, e.g.

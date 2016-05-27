@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/wm/common/ash_wm_common_export.h"
+#include "ash/ash_export.h"
 #include "ash/wm/common/wm_display_observer.h"
 #include "ash/wm/common/wm_types.h"
 #include "base/callback.h"
@@ -34,8 +34,7 @@ class WmWindow;
 // WmToplevelWindowEventHandler handles dragging and resizing of top level
 // windows. WmToplevelWindowEventHandler is forwarded events, such as from an
 // EventHandler.
-class ASH_WM_COMMON_EXPORT WmToplevelWindowEventHandler
-    : public WmDisplayObserver {
+class ASH_EXPORT WmToplevelWindowEventHandler : public WmDisplayObserver {
  public:
   // Describes what triggered ending the drag.
   enum class DragResult {

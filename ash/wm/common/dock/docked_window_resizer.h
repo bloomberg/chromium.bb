@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/wm/common/ash_wm_common_export.h"
+#include "ash/ash_export.h"
 #include "ash/wm/common/dock/dock_types.h"
 #include "ash/wm/common/window_resizer.h"
 #include "base/macros.h"
@@ -23,7 +23,7 @@ class DockedWindowLayoutManager;
 
 // DockWindowResizer is used by ToplevelWindowEventFilter to handle dragging,
 // moving or resizing of a window while it is docked to the side of a screen.
-class ASH_WM_COMMON_EXPORT DockedWindowResizer : public WindowResizer {
+class ASH_EXPORT DockedWindowResizer : public WindowResizer {
  public:
   ~DockedWindowResizer() override;
 

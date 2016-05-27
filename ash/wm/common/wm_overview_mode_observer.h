@@ -5,14 +5,14 @@
 #ifndef ASH_WM_COMMON_WM_OVERVIEW_MODE_OBSERVER_H_
 #define ASH_WM_COMMON_WM_OVERVIEW_MODE_OBSERVER_H_
 
-#include "ash/wm/common/ash_wm_common_export.h"
+#include "ash/ash_export.h"
 
 namespace ash {
 namespace wm {
 
 class WmWindow;
 
-class ASH_WM_COMMON_EXPORT WmOverviewModeObserver {
+class ASH_EXPORT WmOverviewModeObserver {
  public:
   virtual void OnOverviewModeEnded() {}
 

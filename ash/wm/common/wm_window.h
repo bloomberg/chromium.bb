@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "ash/wm/common/ash_wm_common_export.h"
+#include "ash/ash_export.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "ui/base/ui_base_types.h"
@@ -44,7 +44,7 @@ class WindowState;
 
 // This class exists as a porting layer to allow ash/wm to work with
 // aura::Window or mus::Window. See aura::Window for details on the functions.
-class ASH_WM_COMMON_EXPORT WmWindow {
+class ASH_EXPORT WmWindow {
  public:
   WmWindow* GetRootWindow() {
     return const_cast<WmWindow*>(
