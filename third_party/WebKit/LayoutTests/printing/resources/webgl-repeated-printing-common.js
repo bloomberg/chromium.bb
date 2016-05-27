@@ -66,6 +66,7 @@ function fetchPixelAt(x, y, width, height, snapshot) {
 
 function completionCallback(width, height, snapshot) {
   var test = testsAndExpectations[testIndex];
+  debug('Snapshot width: ' + width + ' height: ' + height);
   debug('Test ' + testIndex + ': canvas should be ' + test['description']);
   try {
     var expectation = test['expected'];
