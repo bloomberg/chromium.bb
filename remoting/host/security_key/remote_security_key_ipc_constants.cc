@@ -4,6 +4,7 @@
 
 #include "remoting/host/security_key/remote_security_key_ipc_constants.h"
 
+#include "base/environment.h"
 #include "base/lazy_instance.h"
 
 namespace {
@@ -32,6 +33,17 @@ const std::string& GetRemoteSecurityKeyIpcChannelName() {
 void SetRemoteSecurityKeyIpcChannelNameForTest(
     const std::string& channel_name) {
   g_remote_security_key_ipc_channel_name.Get() = channel_name;
+}
+
+std::string GetChannelNamePathPrefixForTest() {
+  std::string path_prefix;
+#if defined(OS_LINUX)
+  path_prefix = "/dev/socket/";
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  if (env->GetVar(base::env_vars::kHome, &path_prefix))
+    path_prefix += "/";
+#endif
+  return path_prefix;
 }
 
 }  // namespace remoting

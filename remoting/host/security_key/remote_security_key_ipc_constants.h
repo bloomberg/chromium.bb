@@ -19,6 +19,11 @@ const std::string& GetRemoteSecurityKeyIpcChannelName();
 // Sets the name of the well-known IPC server channel for testing purposes.
 void SetRemoteSecurityKeyIpcChannelNameForTest(const std::string& channel_name);
 
+// Returns a path appropriate for placing a channel name.  Without this path
+// prefix, we may not have permission on linux to bind(2) a socket to a name in
+// the current directory.
+std::string GetChannelNamePathPrefixForTest();
+
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_SECURITY_KEY_REMOTE_SECURITY_KEY_IPC_CONSTANTS_H_

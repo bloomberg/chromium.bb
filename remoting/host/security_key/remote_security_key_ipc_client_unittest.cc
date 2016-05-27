@@ -14,6 +14,7 @@
 #include "ipc/ipc_channel.h"
 #include "remoting/host/security_key/fake_ipc_gnubby_auth_handler.h"
 #include "remoting/host/security_key/fake_remote_security_key_ipc_server.h"
+#include "remoting/host/security_key/remote_security_key_ipc_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -147,7 +148,8 @@ void RemoteSecurityKeyIpcClientTest::ClientMessageReceived(
 }
 
 std::string RemoteSecurityKeyIpcClientTest::GenerateUniqueTestChannelName() {
-  return kValidIpcChannelName + IPC::Channel::GenerateUniqueRandomChannelID();
+  return GetChannelNamePathPrefixForTest() + kValidIpcChannelName +
+         IPC::Channel::GenerateUniqueRandomChannelID();
 }
 
 void RemoteSecurityKeyIpcClientTest::EstablishConnection(bool expect_success) {
