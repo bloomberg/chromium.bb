@@ -616,6 +616,14 @@ def recipes_py(c):
   del m['infra']
   m['infra/recipes-py'] = 'got_revision'
 
+@config_ctx(config_vars={'GIT_MODE': True})
+def recipes_py_bare(c):
+  soln = c.solutions.add()
+  soln.name = 'recipes-py'
+  soln.url = ('https://chromium.googlesource.com/external/github.com/'
+              'luci/recipes-py')
+  c.got_revision_mapping['recipes-py'] = 'got_revision'
+
 @config_ctx()
 def chrome_from_buildspec(c):  # pragma: no cover
   soln = c.solutions.add()

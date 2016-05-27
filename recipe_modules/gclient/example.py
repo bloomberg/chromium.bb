@@ -45,6 +45,7 @@ TEST_CONFIGS = [
   'pdfium',
   'perf',
   'recipes_py',
+  'recipes_py_bare',
   'show_v8_revision',
   'slave_deps',
   'v8_bleeding_edge_git',
