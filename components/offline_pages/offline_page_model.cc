@@ -246,7 +246,7 @@ void OfflinePageModel::DoDeletePagesByOfflineId(
   std::vector<base::FilePath> paths_to_delete;
   for (const auto& offline_id : offline_ids) {
     auto iter = offline_pages_.find(offline_id);
-    if (iter != offline_pages_.end()) {
+    if (iter != offline_pages_.end() && !iter->second.IsExpired()) {
       paths_to_delete.push_back(iter->second.file_path);
     }
   }
@@ -508,13 +508,16 @@ void OfflinePageModel::CheckForExternalFileDeletion() {
 }
 
 void OfflinePageModel::ExpirePages(const std::vector<int64_t>& offline_ids,
-                                   const base::Time& expiration_time) {
+                                   const base::Time& expiration_time,
+                                   const base::Callback<void(bool)>& callback) {
+  std::vector<base::FilePath> paths_to_delete;
   for (int64_t offline_id : offline_ids) {
     auto iter = offline_pages_.find(offline_id);
     if (iter == offline_pages_.end())
       continue;
 
     OfflinePageItem offline_page = iter->second;
+    paths_to_delete.push_back(offline_page.file_path);
     offline_page.expiration_time = expiration_time;
 
     store_->AddOrUpdateOfflinePage(
@@ -522,6 +525,11 @@ void OfflinePageModel::ExpirePages(const std::vector<int64_t>& offline_ids,
                                  weak_ptr_factory_.GetWeakPtr(), offline_id,
                                  expiration_time));
   }
+  if (paths_to_delete.empty()) {
+    callback.Run(true);
+    return;
+  }
+  archive_manager_->DeleteMultipleArchives(paths_to_delete, callback);
 }
 
 void OfflinePageModel::OnExpirePageDone(int64_t offline_id,

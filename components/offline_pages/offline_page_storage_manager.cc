@@ -22,7 +22,6 @@ OfflinePageStorageManager::OfflinePageStorageManager(
     : client_(client),
       policy_controller_(policy_controller),
       archive_manager_(archive_manager),
-      in_progress_(false),
       clock_(new base::DefaultClock()),
       weak_ptr_factory_(this) {}
 
@@ -30,12 +29,12 @@ OfflinePageStorageManager::~OfflinePageStorageManager() {}
 
 void OfflinePageStorageManager::ClearPagesIfNeeded(
     const ClearPagesCallback& callback) {
-  if (in_progress_)
+  if (IsInProgress())
     return;
-  in_progress_ = true;
-  archive_manager_->GetStorageStats(
-      base::Bind(&OfflinePageStorageManager::OnGetStorageStatsDone,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+  clear_time_ = clock_->Now();
+  archive_manager_->GetStorageStats(base::Bind(
+      &OfflinePageStorageManager::OnGetStorageStatsDoneForClearingPages,
+      weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void OfflinePageStorageManager::SetClockForTesting(
@@ -43,52 +42,71 @@ void OfflinePageStorageManager::SetClockForTesting(
   clock_ = std::move(clock);
 }
 
-void OfflinePageStorageManager::OnGetStorageStatsDone(
+void OfflinePageStorageManager::OnGetStorageStatsDoneForClearingPages(
     const ClearPagesCallback& callback,
     const ArchiveManager::StorageStats& stats) {
-  DCHECK(in_progress_);
+  DCHECK(IsInProgress());
   ClearMode mode = ShouldClearPages(stats);
   if (mode == ClearMode::NOT_NEEDED) {
-    in_progress_ = false;
-    last_clear_time_ = clock_->Now();
+    last_clear_time_ = clear_time_;
     callback.Run(0, ClearStorageResult::UNNECESSARY);
     return;
   }
-  client_->GetAllPages(base::Bind(&OfflinePageStorageManager::OnGetAllPagesDone,
-                                  weak_ptr_factory_.GetWeakPtr(), callback,
-                                  stats));
+  client_->GetAllPages(
+      base::Bind(&OfflinePageStorageManager::OnGetAllPagesDoneForClearingPages,
+                 weak_ptr_factory_.GetWeakPtr(), callback, stats));
 }
 
-void OfflinePageStorageManager::OnGetAllPagesDone(
+void OfflinePageStorageManager::OnGetAllPagesDoneForClearingPages(
     const ClearPagesCallback& callback,
     const ArchiveManager::StorageStats& stats,
     const MultipleOfflinePageItemResult& pages) {
-  std::vector<int64_t> offline_ids;
-  GetExpiredPageIds(pages, stats, offline_ids);
-  client_->DeletePagesByOfflineId(
-      offline_ids, base::Bind(&OfflinePageStorageManager::OnExpiredPagesDeleted,
-                              weak_ptr_factory_.GetWeakPtr(), callback,
-                              static_cast<int>(offline_ids.size())));
+  std::vector<int64_t> page_ids_to_expire;
+  std::vector<int64_t> page_ids_to_remove;
+  GetPageIdsToClear(pages, stats, &page_ids_to_expire, &page_ids_to_remove);
+  client_->ExpirePages(
+      page_ids_to_expire, clear_time_,
+      base::Bind(&OfflinePageStorageManager::OnPagesExpired,
+                 weak_ptr_factory_.GetWeakPtr(), callback,
+                 page_ids_to_expire.size(), page_ids_to_remove));
 }
 
-void OfflinePageStorageManager::OnExpiredPagesDeleted(
+void OfflinePageStorageManager::OnPagesExpired(
     const ClearPagesCallback& callback,
-    int pages_cleared,
+    size_t pages_expired,
+    const std::vector<int64_t>& page_ids_to_remove,
+    bool expiration_succeeded) {
+  // We want to delete the outdated page records regardless the expiration
+  // succeeded or not.
+  client_->DeletePagesByOfflineId(
+      page_ids_to_remove,
+      base::Bind(&OfflinePageStorageManager::OnOutdatedPagesCleared,
+                 weak_ptr_factory_.GetWeakPtr(), callback, pages_expired,
+                 expiration_succeeded));
+}
+
+void OfflinePageStorageManager::OnOutdatedPagesCleared(
+    const ClearPagesCallback& callback,
+    size_t pages_cleared,
+    bool expiration_succeeded,
     DeletePageResult result) {
-  last_clear_time_ = clock_->Now();
-  ClearStorageResult clear_result = result == DeletePageResult::SUCCESS
-                                        ? ClearStorageResult::SUCCESS
-                                        : ClearStorageResult::DELETE_FAILURE;
-  in_progress_ = false;
+  ClearStorageResult clear_result = ClearStorageResult::SUCCESS;
+  if (!expiration_succeeded) {
+    clear_result = ClearStorageResult::EXPIRE_FAILURE;
+    if (result != DeletePageResult::SUCCESS)
+      clear_result = ClearStorageResult::EXPIRE_AND_DELETE_FAILURES;
+  } else if (result != DeletePageResult::SUCCESS) {
+    clear_result = ClearStorageResult::DELETE_FAILURE;
+  }
+  last_clear_time_ = clear_time_;
   callback.Run(pages_cleared, clear_result);
 }
 
-void OfflinePageStorageManager::GetExpiredPageIds(
+void OfflinePageStorageManager::GetPageIdsToClear(
     const MultipleOfflinePageItemResult& pages,
     const ArchiveManager::StorageStats& stats,
-    std::vector<int64_t>& offline_ids) {
-  base::Time now = clock_->Now();
-
+    std::vector<int64_t>* page_ids_to_expire,
+    std::vector<int64_t>* page_ids_to_remove) {
   // Creating a map from namespace to a vector of page items.
   // Sort each vector based on last accessed time and all pages after index
   // min{size(), page_limit} should be expired. And then start iterating
@@ -97,8 +115,13 @@ void OfflinePageStorageManager::GetExpiredPageIds(
   std::vector<OfflinePageItem> kept_pages;
   int64_t kept_pages_size = 0;
 
-  for (const auto& page : pages)
-    pages_map[page.client_id.name_space].push_back(page);
+  for (const auto& page : pages) {
+    if (!page.IsExpired()) {
+      pages_map[page.client_id.name_space].push_back(page);
+    } else if (clear_time_ - page.expiration_time >= kRemovePageItemInterval) {
+      page_ids_to_remove->push_back(page.offline_id);
+    }
+  }
 
   for (auto& iter : pages_map) {
     std::string name_space = iter.first;
@@ -112,18 +135,18 @@ void OfflinePageStorageManager::GetExpiredPageIds(
                 return a.last_access_time > b.last_access_time;
               });
 
-    int page_list_size = static_cast<int>(page_list.size());
-    int pos = 0;
+    size_t page_list_size = page_list.size();
+    size_t pos = 0;
     while (pos < page_list_size &&
            (policy.page_limit == kUnlimitedPages || pos < policy.page_limit) &&
-           !ShouldBeExpired(now, page_list.at(pos))) {
+           !ShouldBeExpired(page_list.at(pos))) {
       kept_pages_size += page_list.at(pos).file_size;
       kept_pages.push_back(page_list.at(pos));
       pos++;
     }
 
     for (; pos < page_list_size; pos++)
-      offline_ids.push_back(page_list.at(pos).offline_id);
+      page_ids_to_expire->push_back(page_list.at(pos).offline_id);
   }
 
   // If we're still over the clear threshold, we're going to clear remaining
@@ -139,11 +162,11 @@ void OfflinePageStorageManager::GetExpiredPageIds(
               [](const OfflinePageItem& a, const OfflinePageItem& b) -> bool {
                 return a.last_access_time < b.last_access_time;
               });
-    int kept_pages_size = static_cast<int>(kept_pages.size());
-    int pos = 0;
+    size_t kept_pages_size = kept_pages.size();
+    size_t pos = 0;
     while (pos < kept_pages_size && space_to_release > 0) {
       space_to_release -= kept_pages.at(pos).file_size;
-      offline_ids.push_back(kept_pages.at(pos).offline_id);
+      page_ids_to_expire->push_back(kept_pages.at(pos).offline_id);
       pos++;
     }
   }
@@ -165,19 +188,22 @@ OfflinePageStorageManager::ShouldClearPages(
   // If it's been more than the pre-defined interval since the last time we
   // clear the storage, we should clear pages.
   if (last_clear_time_ == base::Time() ||
-      clock_->Now() - last_clear_time_ >= kClearStorageInterval) {
+      clear_time_ - last_clear_time_ >= kClearStorageInterval) {
     return ClearMode::DEFAULT;
   }
-
   // Otherwise there's no need to clear storage right now.
   return ClearMode::NOT_NEEDED;
 }
 
-bool OfflinePageStorageManager::ShouldBeExpired(const base::Time& now,
-                                                const OfflinePageItem& page) {
+bool OfflinePageStorageManager::ShouldBeExpired(
+    const OfflinePageItem& page) const {
   const LifetimePolicy& policy =
       policy_controller_->GetPolicy(page.client_id.name_space).lifetime_policy;
-  return now - page.last_access_time >= policy.expiration_period;
+  return clear_time_ - page.last_access_time >= policy.expiration_period;
+}
+
+bool OfflinePageStorageManager::IsInProgress() const {
+  return clear_time_ > last_clear_time_;
 }
 
 }  // namespace offline_pages

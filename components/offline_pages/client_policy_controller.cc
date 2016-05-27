@@ -40,7 +40,7 @@ const OfflinePageClientPolicy ClientPolicyController::MakePolicy(
     const std::string& name_space,
     LifetimeType lifetime_type,
     const base::TimeDelta& expire_period,
-    int page_limit) {
+    size_t page_limit) {
   OfflinePageClientPolicy policy(
       {name_space, {lifetime_type, expire_period, page_limit}});
   return policy;

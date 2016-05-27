@@ -218,7 +218,8 @@ class OfflinePageModel : public KeyedService,
   // Marks pages as expired and removes their respective files from the archive
   // directory.
   void ExpirePages(const std::vector<int64_t>& offline_ids,
-                   const base::Time& expiration_time);
+                   const base::Time& expiration_time,
+                   const base::Callback<void(bool)>& callback) override;
 
   // Returns the policy controller.
   ClientPolicyController* GetPolicyController();

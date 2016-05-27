@@ -13,7 +13,7 @@
 
 namespace offline_pages {
 
-static const int kUnlimitedPages = 0;
+static const size_t kUnlimitedPages = 0;
 
 // The struct describing the lifetime policy of offline pages.
 // The following behaviors are controlled by policy:
@@ -36,7 +36,7 @@ struct LifetimePolicy {
 
   // The maximum number of pages allowed to be saved by the namespace.
   // kUnlimitedPages (defined above) means no limit set.
-  int page_limit;
+  size_t page_limit;
 };
 
 // The struct describing policies for various namespaces (Bookmark, Last-N etc.)

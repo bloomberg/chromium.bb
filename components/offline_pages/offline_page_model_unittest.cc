@@ -87,6 +87,7 @@ class OfflinePageModelTest
   void OnGetMultipleOfflinePageItemsResult(
       MultipleOfflinePageItemResult* storage,
       const MultipleOfflinePageItemResult& result);
+  void OnPagesExpired(bool result);
 
   // OfflinePageMetadataStore callbacks.
   void OnStoreUpdateDone(bool /* success */);
@@ -163,6 +164,8 @@ class OfflinePageModelTest
     return last_clear_page_result_;
   }
 
+  bool last_expire_page_result() const { return last_expire_page_result_; }
+
  private:
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -179,6 +182,7 @@ class OfflinePageModelTest
   CheckPagesExistOfflineResult last_pages_exist_result_;
   int last_cleared_pages_count_;
   DeletePageResult last_clear_page_result_;
+  bool last_expire_page_result_;
 };
 
 OfflinePageModelTest::OfflinePageModelTest()
@@ -385,6 +389,10 @@ void OfflinePageModelTest::OnGetMultipleOfflinePageItemsResult(
     MultipleOfflinePageItemResult* storage,
     const MultipleOfflinePageItemResult& result) {
   *storage = result;
+}
+
+void OfflinePageModelTest::OnPagesExpired(bool result) {
+  last_expire_page_result_ = result;
 }
 
 base::Optional<OfflinePageItem> OfflinePageModelTest::GetPagesByOnlineURL(
@@ -975,7 +983,9 @@ TEST_F(OfflinePageModelTest, ExpirePages) {
   base::Time expiration_time =
       base::Time::Now() + base::TimeDelta::FromMinutes(5);
 
-  model()->ExpirePages(pages_to_expire, expiration_time);
+  model()->ExpirePages(
+      pages_to_expire, expiration_time,
+      base::Bind(&OfflinePageModelTest::OnPagesExpired, AsWeakPtr()));
   PumpLoop();
 
   const std::vector<OfflinePageItem>& offline_pages = GetAllPages();
@@ -989,6 +999,7 @@ TEST_F(OfflinePageModelTest, ExpirePages) {
       EXPECT_FALSE(offline_page.IsExpired());
     }
   }
+  EXPECT_TRUE(last_expire_page_result());
 }
 
 TEST(CommandLineFlagsTest, OfflineBookmarks) {
