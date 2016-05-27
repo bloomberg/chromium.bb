@@ -128,6 +128,9 @@ PipelineStatus PipelineIntegrationTestBase::StartInternal(
       .Times(AnyNumber());
   EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
       .Times(AnyNumber());
+  EXPECT_CALL(*this, OnDurationChange()).Times(AtMost(1));
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(AtMost(1));
+  EXPECT_CALL(*this, OnVideoOpacityChange(_)).Times(AtMost(1));
   CreateDemuxer(std::move(data_source));
 
   if (cdm_context) {

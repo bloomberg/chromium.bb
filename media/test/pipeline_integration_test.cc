@@ -719,6 +719,9 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
         .Times(AnyNumber());
     EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
         .Times(AnyNumber());
+    EXPECT_CALL(*this, OnDurationChange()).Times(AnyNumber());
+    EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(AtMost(1));
+    EXPECT_CALL(*this, OnVideoOpacityChange(_)).Times(AtMost(1));
 
     // Encrypted content not used, so this is never called.
     EXPECT_CALL(*this, OnWaitingForDecryptionKey()).Times(0);
@@ -742,6 +745,9 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
         .Times(AnyNumber());
     EXPECT_CALL(*this, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
         .Times(AnyNumber());
+    EXPECT_CALL(*this, OnDurationChange()).Times(AnyNumber());
+    EXPECT_CALL(*this, OnVideoNaturalSizeChange(_)).Times(AtMost(1));
+    EXPECT_CALL(*this, OnVideoOpacityChange(_)).Times(AtMost(1));
     EXPECT_CALL(*this, DecryptorAttached(true));
 
     // Encrypted content used but keys provided in advance, so this is
@@ -1002,6 +1008,10 @@ TEST_F(PipelineIntegrationTest,
 TEST_F(PipelineIntegrationTest, BasicPlaybackLive) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240-live.webm", kHashed));
 
+  // Live stream does not have duration in the initialization segment.
+  // It will be set after the entire file is available.
+  EXPECT_CALL(*this, OnDurationChange()).Times(1);
+
   Play();
 
   ASSERT_TRUE(WaitUntilOnEnded());
@@ -1185,9 +1195,9 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_WebM) {
                          kAppendWholeFile);
   StartPipelineWithMediaSource(&source);
 
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(640, 360))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-640x360.webm");
-
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
 
@@ -1266,9 +1276,9 @@ TEST_F(PipelineIntegrationTest,
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   StartPipelineWithEncryptedMedia(&source, &encrypted_media);
 
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(640, 360))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-640x360-av_enc-av.webm");
-
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
 
@@ -1543,9 +1553,9 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_MP4) {
   MockMediaSource source("bear-640x360-av_frag.mp4", kMP4, kAppendWholeFile);
   StartPipelineWithMediaSource(&source);
 
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(1280, 720))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-av_frag.mp4");
-
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
 
@@ -1570,9 +1580,9 @@ TEST_F(PipelineIntegrationTest,
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   StartPipelineWithEncryptedMedia(&source, &encrypted_media);
 
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(1280, 720))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-v_frag-cenc.mp4");
-
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
 
@@ -1598,9 +1608,9 @@ TEST_F(PipelineIntegrationTest,
   FakeEncryptedMedia encrypted_media(new RotatingKeyProvidingApp());
   StartPipelineWithEncryptedMedia(&source, &encrypted_media);
 
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(1280, 720))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-v_frag-cenc-key_rotation.mp4");
-
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
 
@@ -1627,9 +1637,9 @@ TEST_F(PipelineIntegrationTest,
   FakeEncryptedMedia encrypted_media(new KeyProvidingApp());
   StartPipelineWithEncryptedMedia(&source, &encrypted_media);
 
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(1280, 720))).Times(1);
   scoped_refptr<DecoderBuffer> second_file =
       ReadTestDataFile("bear-1280x720-v_frag-cenc.mp4");
-
   source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
                       second_file->data(), second_file->data_size());
 
@@ -1794,8 +1804,6 @@ TEST_F(PipelineIntegrationTest,
 
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 TEST_F(PipelineIntegrationTest, Mp2ts_AAC_HE_SBR_Audio) {
-  EXPECT_CALL(*this, OnDurationChange()).Times(AnyNumber());
-
   MockMediaSource source("bear-1280x720-aac_he.ts", kMP2AudioSBR,
                          kAppendWholeFile);
   StartPipelineWithMediaSource(&source);
@@ -1984,7 +1992,15 @@ TEST_F(PipelineIntegrationTest, SuspendWhilePaused) {
   Play();
   ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(start_seek_time));
   Pause();
+
+  // Suspend while paused.
   ASSERT_TRUE(Suspend());
+
+  // Resuming the pipeline will create a new Renderer,
+  // which in turn will trigger video size and opacity notifications.
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(320, 240))).Times(1);
+  EXPECT_CALL(*this, OnVideoOpacityChange(true)).Times(1);
+
   ASSERT_TRUE(Resume(seek_time));
   EXPECT_GE(pipeline_->GetMediaTime(), seek_time);
   Play();
@@ -2001,6 +2017,12 @@ TEST_F(PipelineIntegrationTest, SuspendWhilePlaying) {
   Play();
   ASSERT_TRUE(WaitUntilCurrentTimeIsAfter(start_seek_time));
   ASSERT_TRUE(Suspend());
+
+  // Resuming the pipeline will create a new Renderer,
+  // which in turn will trigger video size and opacity notifications.
+  EXPECT_CALL(*this, OnVideoNaturalSizeChange(gfx::Size(320, 240))).Times(1);
+  EXPECT_CALL(*this, OnVideoOpacityChange(true)).Times(1);
+
   ASSERT_TRUE(Resume(seek_time));
   EXPECT_GE(pipeline_->GetMediaTime(), seek_time);
   ASSERT_TRUE(WaitUntilOnEnded());
