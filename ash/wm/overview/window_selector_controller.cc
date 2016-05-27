@@ -6,17 +6,14 @@
 
 #include <vector>
 
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/common/window_state.h"
-#include "ash/wm/mru_window_tracker.h"
+#include "ash/wm/common/wm_globals.h"
+#include "ash/wm/common/wm_window.h"
 #include "ash/wm/overview/window_selector.h"
-#include "ash/wm/window_util.h"
 #include "base/metrics/histogram.h"
-#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -46,8 +43,8 @@ void WindowSelectorController::ToggleOverview() {
     if (!CanSelect())
       return;
 
-    aura::Window::Windows windows =
-        ash::Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
+    std::vector<wm::WmWindow*> windows =
+        wm::WmGlobals::Get()->GetMruWindowList();
     auto end =
         std::remove_if(windows.begin(), windows.end(),
                        std::not1(std::ptr_fun(&WindowSelector::IsSelectable)));

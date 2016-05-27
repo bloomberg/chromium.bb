@@ -13,29 +13,12 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "base/compiler_specific.h"
+#include "ash/wm/common/wm_activation_observer.h"
+#include "ash/wm/common/wm_window_observer.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
-#include "ui/aura/window_observer.h"
-#include "ui/aura/window_tracker.h"
 #include "ui/display/display_observer.h"
-#include "ui/events/event_handler.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
-#include "ui/wm/public/activation_change_observer.h"
-
-namespace aura {
-class RootWindow;
-class Window;
-}
-
-namespace gfx {
-class Rect;
-}
-
-namespace ui {
-class LocatedEvent;
-}
 
 namespace views {
 class Textfield;
@@ -51,8 +34,8 @@ class WindowGrid;
 // The WindowSelector shows a grid of all of your windows, allowing to select
 // one by clicking or tapping on it.
 class ASH_EXPORT WindowSelector : public display::DisplayObserver,
-                                  public aura::WindowObserver,
-                                  public aura::client::ActivationChangeObserver,
+                                  public wm::WmWindowObserver,
+                                  public wm::WmActivationObserver,
                                   public views::TextfieldController {
  public:
   // The distance between the top edge of the screen and the bottom edge of
@@ -60,7 +43,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   static const int kTextFilterBottomEdge;
 
   // Returns true if the window can be selected in overview mode.
-  static bool IsSelectable(aura::Window* window);
+  static bool IsSelectable(wm::WmWindow* window);
 
   enum Direction {
     LEFT,
@@ -69,8 +52,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
     DOWN
   };
 
-  typedef std::vector<aura::Window*> WindowList;
-  typedef ScopedVector<WindowSelectorItem> WindowSelectorItemList;
+  using WindowList = std::vector<wm::WmWindow*>;
 
   explicit WindowSelector(WindowSelectorDelegate* delegate);
   ~WindowSelector() override;
@@ -88,7 +70,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void OnGridEmpty(WindowGrid* grid);
 
   // Activates |window|.
-  void SelectWindow(aura::Window* window);
+  void SelectWindow(wm::WmWindow* window);
 
   bool restoring_minimized_windows() const {
     return restoring_minimized_windows_;
@@ -100,17 +82,16 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
 
-  // aura::WindowObserver:
-  void OnWindowAdded(aura::Window* new_window) override;
-  void OnWindowDestroying(aura::Window* window) override;
+  // wm::WmWindowObserver:
+  void OnWindowTreeChanged(wm::WmWindow* window,
+                           const TreeChangeParams& params) override;
+  void OnWindowDestroying(wm::WmWindow* window) override;
 
-  // aura::client::ActivationChangeObserver:
-  void OnWindowActivated(
-      aura::client::ActivationChangeObserver::ActivationReason reason,
-      aura::Window* gained_active,
-      aura::Window* lost_active) override;
-  void OnAttemptToReactivateWindow(aura::Window* request_active,
-                                   aura::Window* actual_active) override;
+  // wm::WmActivationObserver
+  void OnWindowActivated(wm::WmWindow* gained_active,
+                         wm::WmWindow* lost_active) override;
+  void OnAttemptToReactivateWindow(wm::WmWindow* request_active,
+                                   wm::WmWindow* actual_active) override;
 
   // views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
@@ -121,8 +102,8 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
  private:
   friend class WindowSelectorTest;
 
-  // Begins positioning windows such that all windows are visible on the screen.
-  void StartOverview();
+  // Returns the WmWindow for |text_filter_widget_|.
+  wm::WmWindow* GetTextFilterWidgetWindow();
 
   // Position all of the windows in the overview.
   void PositionWindows(bool animate);
@@ -143,7 +124,7 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void RemoveAllObservers();
 
   // Tracks observed windows.
-  std::set<aura::Window*> observed_windows_;
+  std::set<wm::WmWindow*> observed_windows_;
 
   // Weak pointer to the selector delegate which will be called when a
   // selection is made.
@@ -152,14 +133,14 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // A weak pointer to the window which was focused on beginning window
   // selection. If window selection is canceled the focus should be restored to
   // this window.
-  aura::Window* restore_focus_window_;
+  wm::WmWindow* restore_focus_window_;
 
   // True when performing operations that may cause window activations. This is
   // used to prevent handling the resulting expected activation.
   bool ignore_activations_;
 
   // List of all the window overview grids, one for each root window.
-  ScopedVector<WindowGrid> grid_list_;
+  std::vector<std::unique_ptr<WindowGrid>> grid_list_;
 
   // Tracks the index of the root window the selection widget is in.
   size_t selected_grid_index_;

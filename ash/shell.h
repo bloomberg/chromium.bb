@@ -127,6 +127,7 @@ class ProjectingObserver;
 class ResizeShadowController;
 class ResolutionNotificationController;
 class RootWindowController;
+class ScopedOverviewAnimationSettingsFactoryAura;
 class ScopedTargetRootWindow;
 class ScreenAsh;
 class ScreenOrientationController;
@@ -667,6 +668,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // when the screen is initially created.
   static bool initially_hide_cursor_;
 
+  std::unique_ptr<ScopedOverviewAnimationSettingsFactoryAura>
+      scoped_overview_animation_settings_factory_;
   std::unique_ptr<wm::WmGlobalsAura> wm_globals_;
 
   // When no explicit target display/RootWindow is given, new windows are

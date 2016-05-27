@@ -1,0 +1,38 @@
+# See ash/README.md for details on why aura is not allowed here.
+
+include_rules = [
+  "-ash",
+  "+ash/material_design",
+  "+ash/wm/common",
+  "+ash/wm/overview",
+  # Aura files should only be included from other aura files.
+  "-ash/wm/overview/scoped_overview_animation_settings_aura.h",
+  "-ash/wm/overview/scoped_overview_animation_settings_factory_aura.h",
+  "+ash/ash_export.h",
+  "+ash/ash_switches.h",
+  "+ui",
+  "-ui/aura",
+]
+
+specific_include_rules = {
+  ".*aura\..*": [
+    "+ash/wm/aura",
+    "+ash/wm/overview",
+    "+ui/aura",
+  ],
+  # TODO(sky): refactor. Do not add more.
+  "window_selector.cc": [
+    "+ash/accessibility_delegate.h",
+    "+ash/shell.h",
+  ],
+  # TODO(sky): refactor. Do not add more.
+  "window_selector_controller.cc": [
+    "+ash/session/session_state_delegate.h",
+    "+ash/shell.h",
+    "+ash/system/tray/system_tray_delegate.h",
+  ],
+  ".*test.*": [
+    "+ash",
+    "+ui/aura",
+  ],
+}

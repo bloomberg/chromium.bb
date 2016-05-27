@@ -52,6 +52,10 @@ const int kShellWindowId_MenuContainer = 19;
 // The container for drag/drop images and tooltips.
 const int kShellWindowId_DragImageAndTooltipContainer = 20;
 
+// The container for special components overlaid onscreen, such as the
+// region selector for partial screenshots.
+const int kShellWindowId_OverlayContainer = 22;
+
 // ID of the window created by PhantomWindowController or DragWindowController.
 const int kShellWindowId_PhantomWindow = 23;
 

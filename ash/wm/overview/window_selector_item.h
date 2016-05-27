@@ -8,32 +8,29 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/wm/common/wm_window_observer.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "ui/aura/scoped_window_targeter.h"
-#include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/label_button.h"
-
-namespace aura {
-class Window;
-}
+#include "ui/views/widget/widget.h"
 
 namespace views {
-class LabelButton;
-class Widget;
+class ImageButton;
 }
 
 namespace ash {
 
 class WindowSelector;
 
+namespace wm {
+class WmWindow;
+}
+
 // This class represents an item in overview mode.
 class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
-                                      public aura::WindowObserver {
+                                      public wm::WmWindowObserver {
  public:
   class OverviewLabelButton : public views::LabelButton {
    public:
@@ -55,16 +52,16 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
     DISALLOW_COPY_AND_ASSIGN(OverviewLabelButton);
   };
 
-  WindowSelectorItem(aura::Window* window, WindowSelector* window_selector);
+  WindowSelectorItem(wm::WmWindow* window, WindowSelector* window_selector);
   ~WindowSelectorItem() override;
 
-  aura::Window* GetWindow();
+  wm::WmWindow* GetWindow();
 
   // Returns the root window on which this item is shown.
-  aura::Window* root_window() { return root_window_; }
+  wm::WmWindow* root_window() { return root_window_; }
 
   // Returns true if |target| is contained in this WindowSelectorItem.
-  bool Contains(const aura::Window* target) const;
+  bool Contains(const wm::WmWindow* target) const;
 
   // Restores and animates the managed window to it's non overview mode state.
   void RestoreWindow();
@@ -102,9 +99,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
-  void OnWindowTitleChanged(aura::Window* window) override;
+  // wm::WmWindowObserver:
+  void OnWindowDestroying(wm::WmWindow* window) override;
+  void OnWindowTitleChanged(wm::WmWindow* window) override;
 
  private:
   friend class WindowSelectorTest;
@@ -138,7 +135,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   bool dimmed_;
 
   // The root window this item is being displayed on.
-  aura::Window* root_window_;
+  wm::WmWindow* root_window_;
 
   // The contained Window's wrapper.
   ScopedTransformOverviewWindow transform_window_;

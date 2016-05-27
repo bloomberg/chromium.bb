@@ -127,16 +127,6 @@ enum UserMetricsAction {
   UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT,
   UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT,
 
-  // Thumbnail sized overview of windows triggered by pressing the overview key.
-  UMA_WINDOW_OVERVIEW,
-
-  // User selected a window in overview mode different from the
-  // previously-active window.
-  UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED,
-
-  // Selecting a window in overview mode by pressing the enter key.
-  UMA_WINDOW_OVERVIEW_ENTER_KEY,
-
   // Window selection started by beginning an alt+tab cycle. This does not count
   // each step through an alt+tab cycle.
   UMA_WINDOW_CYCLE,

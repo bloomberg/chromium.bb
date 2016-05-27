@@ -112,7 +112,8 @@ void WmRootWindowControllerMus::ConfigureWidgetInitParamsForContainer(
   DCHECK(init_params->parent_mus);
   mus::Window* new_window =
       root_window_controller_->root()->connection()->NewWindow();
-  WmWindowMus::Get(new_window)->set_widget(widget);
+  WmWindowMus::Get(new_window)
+      ->set_widget(widget, WmWindowMus::WidgetCreationType::INTERNAL);
   init_params->native_widget = new views::NativeWidgetMus(
       widget, root_window_controller_->GetConnector(), new_window,
       mus::mojom::SurfaceType::DEFAULT);

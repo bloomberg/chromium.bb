@@ -30,6 +30,7 @@
       'sources': [
         'always_on_top_controller.cc',
         'always_on_top_controller.h',
+        'ash_wm_common_export.h',
         'background_animator.cc',
         'background_animator.h',
         'container_finder.cc',

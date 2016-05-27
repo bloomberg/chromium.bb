@@ -34,6 +34,23 @@ class WmRootWindowControllerMus;
 // as an owned property).
 class WmWindowMus : public ash::wm::WmWindow, public mus::WindowObserver {
  public:
+  // Indicates the source of the widget creation.
+  enum class WidgetCreationType {
+    // The widget was created internally, and not at the request of a client.
+    // For example, overview mode creates a number of widgets. These widgets are
+    // created with a type of INTERNAL.
+    INTERNAL,
+
+    // The widget was created for a client. In other words there is a client
+    // embedded in the mus::Window. For example, when Chrome creates a new
+    // browser window the window manager is asked to create the mus::Window.
+    // The window manager creates a mus::Window and a views::Widget to show the
+    // non-client frame decorations. In this case the creation type is
+    // FOR_CLIENT.
+
+    FOR_CLIENT,
+  };
+
   explicit WmWindowMus(mus::Window* window);
   // NOTE: this class is owned by the corresponding window. You shouldn't delete
   // TODO(sky): friend deleter and make private.
@@ -55,7 +72,10 @@ class WmWindowMus : public ash::wm::WmWindow, public mus::WindowObserver {
 
   // Sets the widget associated with the window. The widget is used to query
   // state, such as min/max size. The widget is not owned by the WmWindowMus.
-  void set_widget(views::Widget* widget) { widget_ = widget; }
+  void set_widget(views::Widget* widget, WidgetCreationType type) {
+    widget_ = widget;
+    widget_creation_type_ = type;
+  }
 
   mus::Window* mus_window() { return window_; }
   const mus::Window* mus_window() const { return window_; }
@@ -81,6 +101,7 @@ class WmWindowMus : public ash::wm::WmWindow, public mus::WindowObserver {
   const ash::wm::WmWindow* GetRootWindow() const override;
   ash::wm::WmRootWindowController* GetRootWindowController() override;
   ash::wm::WmGlobals* GetGlobals() const override;
+  base::string16 GetTitle() const override;
   void SetShellWindowId(int id) override;
   int GetShellWindowId() const override;
   ash::wm::WmWindow* GetChildByShellWindowId(int id) override;
@@ -99,6 +120,10 @@ class WmWindowMus : public ash::wm::WmWindow, public mus::WindowObserver {
   gfx::Size GetMaximumSize() const override;
   bool GetTargetVisibility() const override;
   bool IsVisible() const override;
+  void SetOpacity(float opacity) override;
+  float GetTargetOpacity() const override;
+  void SetTransform(const gfx::Transform& transform) override;
+  gfx::Transform GetTargetTransform() const override;
   bool IsSystemModal() const override;
   bool GetBoolProperty(ash::wm::WmWindowProperty key) override;
   int GetIntProperty(ash::wm::WmWindowProperty key) override;
@@ -115,7 +140,11 @@ class WmWindowMus : public ash::wm::WmWindow, public mus::WindowObserver {
   ash::wm::WmLayoutManager* GetLayoutManager() override;
   void SetVisibilityAnimationType(int type) override;
   void SetVisibilityAnimationDuration(base::TimeDelta delta) override;
+  void SetVisibilityAnimationTransition(
+      ::wm::WindowVisibilityAnimationTransition transition) override;
   void Animate(::wm::WindowAnimationType type) override;
+  void StopAnimatingProperty(
+      ui::LayerAnimationElement::AnimatableProperty property) override;
   void SetBounds(const gfx::Rect& bounds) override;
   void SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
                                     base::TimeDelta delta) override;
@@ -143,6 +172,7 @@ class WmWindowMus : public ash::wm::WmWindow, public mus::WindowObserver {
   bool IsAlwaysOnTop() const override;
   void Hide() override;
   void Show() override;
+  void CloseWidget() override;
   bool IsFocused() const override;
   bool IsActive() const override;
   void Activate() override;
@@ -193,6 +223,8 @@ class WmWindowMus : public ash::wm::WmWindow, public mus::WindowObserver {
   std::unique_ptr<ash::wm::WindowState> window_state_;
 
   views::Widget* widget_ = nullptr;
+
+  WidgetCreationType widget_creation_type_ = WidgetCreationType::INTERNAL;
 
   base::ObserverList<ash::wm::WmWindowObserver> observers_;
 

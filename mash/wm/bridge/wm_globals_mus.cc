@@ -79,6 +79,10 @@ ash::wm::WmWindow* WmGlobalsMus::GetActiveWindow() {
   return GetToplevelAncestor(connection_->GetFocusedWindow());
 }
 
+ash::wm::WmWindow* WmGlobalsMus::GetPrimaryRootWindow() {
+  return root_window_controllers_[0]->GetWindow();
+}
+
 ash::wm::WmWindow* WmGlobalsMus::GetRootWindowForDisplayId(int64_t display_id) {
   return GetRootWindowControllerWithDisplayId(display_id)->GetWindow();
 }
@@ -86,6 +90,11 @@ ash::wm::WmWindow* WmGlobalsMus::GetRootWindowForDisplayId(int64_t display_id) {
 ash::wm::WmWindow* WmGlobalsMus::GetRootWindowForNewWindows() {
   NOTIMPLEMENTED();
   return root_window_controllers_[0]->GetWindow();
+}
+
+std::vector<ash::wm::WmWindow*> WmGlobalsMus::GetMruWindowList() {
+  NOTIMPLEMENTED();
+  return std::vector<ash::wm::WmWindow*>();
 }
 
 std::vector<ash::wm::WmWindow*> WmGlobalsMus::GetMruWindowListIgnoreModals() {
@@ -193,6 +202,7 @@ void WmGlobalsMus::RemoveConnectionObserver() {
   connection_ = nullptr;
 }
 
+// TODO: support OnAttemptToReactivateWindow, http://crbug.com/615114.
 void WmGlobalsMus::OnWindowTreeFocusChanged(mus::Window* gained_focus,
                                             mus::Window* lost_focus) {
   WmWindowMus* gained_active = GetToplevelAncestor(gained_focus);

@@ -582,20 +582,6 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case ash::UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT:
       base::RecordAction(base::UserMetricsAction("MaxButton_MaxRight"));
       break;
-    case ash::UMA_WINDOW_OVERVIEW:
-      base::RecordAction(
-          base::UserMetricsAction("WindowSelector_Overview"));
-      break;
-    case ash::UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED:
-      base::RecordAction(
-          base::UserMetricsAction("WindowSelector_ActiveWindowChanged"));
-      task_switch_metrics_recorder_.OnTaskSwitch(
-          TaskSwitchMetricsRecorder::OVERVIEW_MODE);
-      break;
-    case ash::UMA_WINDOW_OVERVIEW_ENTER_KEY:
-      base::RecordAction(
-          base::UserMetricsAction("WindowSelector_OverviewEnterKey"));
-      break;
     case ash::UMA_WINDOW_CYCLE:
       base::RecordAction(
           base::UserMetricsAction("WindowCycleController_Cycle"));
@@ -611,6 +597,19 @@ void UserMetricsRecorder::RecordUserMetricsAction(
       break;
     case wm::WmUserMetricsAction::DRAG_MAXIMIZE_RIGHT:
       base::RecordAction(base::UserMetricsAction("WindowDrag_MaximizeRight"));
+      break;
+    case wm::WmUserMetricsAction::WINDOW_OVERVIEW:
+      base::RecordAction(base::UserMetricsAction("WindowSelector_Overview"));
+      break;
+    case wm::WmUserMetricsAction::WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED:
+      base::RecordAction(
+          base::UserMetricsAction("WindowSelector_ActiveWindowChanged"));
+      task_switch_metrics_recorder_.OnTaskSwitch(
+          TaskSwitchMetricsRecorder::OVERVIEW_MODE);
+      break;
+    case wm::WmUserMetricsAction::WINDOW_OVERVIEW_ENTER_KEY:
+      base::RecordAction(
+          base::UserMetricsAction("WindowSelector_OverviewEnterKey"));
       break;
   }
 }

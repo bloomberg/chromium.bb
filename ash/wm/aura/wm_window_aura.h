@@ -24,7 +24,10 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
 
   // Returns a WmWindow for an aura::Window, creating if necessary. |window| may
   // be null, in which case null is returned.
-  static WmWindow* Get(aura::Window* window);
+  static WmWindow* Get(aura::Window* window) {
+    return const_cast<WmWindow*>(Get(const_cast<const aura::Window*>(window)));
+  }
+  static const WmWindow* Get(const aura::Window* window);
 
   static std::vector<WmWindow*> FromAuraWindows(
       const std::vector<aura::Window*>& aura_windows);
@@ -42,6 +45,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   const WmWindow* GetRootWindow() const override;
   WmRootWindowController* GetRootWindowController() override;
   WmGlobals* GetGlobals() const override;
+  base::string16 GetTitle() const override;
   void SetShellWindowId(int id) override;
   int GetShellWindowId() const override;
   WmWindow* GetChildByShellWindowId(int id) override;
@@ -60,6 +64,10 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   gfx::Size GetMaximumSize() const override;
   bool GetTargetVisibility() const override;
   bool IsVisible() const override;
+  void SetOpacity(float opacity) override;
+  float GetTargetOpacity() const override;
+  void SetTransform(const gfx::Transform& transform) override;
+  gfx::Transform GetTargetTransform() const override;
   bool IsSystemModal() const override;
   bool GetBoolProperty(WmWindowProperty key) override;
   int GetIntProperty(WmWindowProperty key) override;
@@ -76,7 +84,11 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   WmLayoutManager* GetLayoutManager() override;
   void SetVisibilityAnimationType(int type) override;
   void SetVisibilityAnimationDuration(base::TimeDelta delta) override;
+  void SetVisibilityAnimationTransition(
+      ::wm::WindowVisibilityAnimationTransition transition) override;
   void Animate(::wm::WindowAnimationType type) override;
+  void StopAnimatingProperty(
+      ui::LayerAnimationElement::AnimatableProperty property) override;
   void SetBounds(const gfx::Rect& bounds) override;
   void SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
                                     base::TimeDelta delta) override;
@@ -112,6 +124,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   bool IsAlwaysOnTop() const override;
   void Hide() override;
   void Show() override;
+  void CloseWidget() override;
   bool IsFocused() const override;
   bool IsActive() const override;
   void Activate() override;
@@ -139,6 +152,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
                              const gfx::Rect& new_bounds) override;
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
+  void OnWindowTitleChanged(aura::Window* window) override;
 
   aura::Window* window_;
 

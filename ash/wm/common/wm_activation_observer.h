@@ -16,7 +16,13 @@ class WmWindow;
 class ASH_WM_COMMON_EXPORT WmActivationObserver {
  public:
   virtual void OnWindowActivated(WmWindow* gained_active,
-                                 WmWindow* lost_active) = 0;
+                                 WmWindow* lost_active) {}
+
+  // Called when during window activation the currently active window is
+  // selected for activation. This can happen when a window requested for
+  // activation cannot be activated because a system modal window is active.
+  virtual void OnAttemptToReactivateWindow(WmWindow* request_active,
+                                           WmWindow* actual_active) {}
 
  protected:
   virtual ~WmActivationObserver() {}

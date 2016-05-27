@@ -50,6 +50,10 @@ WmWindow* WmGlobalsAura::GetActiveWindow() {
   return WmWindowAura::Get(wm::GetActiveWindow());
 }
 
+WmWindow* WmGlobalsAura::GetPrimaryRootWindow() {
+  return WmWindowAura::Get(Shell::GetPrimaryRootWindow());
+}
+
 WmWindow* WmGlobalsAura::GetRootWindowForDisplayId(int64_t display_id) {
   return WmWindowAura::Get(Shell::GetInstance()
                                ->window_tree_host_manager()
@@ -60,14 +64,14 @@ WmWindow* WmGlobalsAura::GetRootWindowForNewWindows() {
   return WmWindowAura::Get(Shell::GetTargetRootWindow());
 }
 
+std::vector<WmWindow*> WmGlobalsAura::GetMruWindowList() {
+  return WmWindowAura::FromAuraWindows(
+      Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList());
+}
+
 std::vector<WmWindow*> WmGlobalsAura::GetMruWindowListIgnoreModals() {
-  const std::vector<aura::Window*> windows = ash::Shell::GetInstance()
-                                                 ->mru_window_tracker()
-                                                 ->BuildWindowListIgnoreModal();
-  std::vector<WmWindow*> wm_windows(windows.size());
-  for (size_t i = 0; i < windows.size(); ++i)
-    wm_windows[i] = WmWindowAura::Get(windows[i]);
-  return wm_windows;
+  return WmWindowAura::FromAuraWindows(
+      Shell::GetInstance()->mru_window_tracker()->BuildWindowListIgnoreModal());
 }
 
 bool WmGlobalsAura::IsForceMaximizeOnFirstRun() {
@@ -83,11 +87,11 @@ bool WmGlobalsAura::IsScreenLocked() {
 }
 
 void WmGlobalsAura::LockCursor() {
-  ash::Shell::GetInstance()->cursor_manager()->LockCursor();
+  Shell::GetInstance()->cursor_manager()->LockCursor();
 }
 
 void WmGlobalsAura::UnlockCursor() {
-  ash::Shell::GetInstance()->cursor_manager()->UnlockCursor();
+  Shell::GetInstance()->cursor_manager()->UnlockCursor();
 }
 
 std::vector<WmWindow*> WmGlobalsAura::GetAllRootWindows() {
@@ -164,6 +168,14 @@ void WmGlobalsAura::OnWindowActivated(
   FOR_EACH_OBSERVER(WmActivationObserver, activation_observers_,
                     OnWindowActivated(WmWindowAura::Get(gained_active),
                                       WmWindowAura::Get(lost_active)));
+}
+
+void WmGlobalsAura::OnAttemptToReactivateWindow(aura::Window* request_active,
+                                                aura::Window* actual_active) {
+  FOR_EACH_OBSERVER(
+      WmActivationObserver, activation_observers_,
+      OnAttemptToReactivateWindow(WmWindowAura::Get(request_active),
+                                  WmWindowAura::Get(actual_active)));
 }
 
 void WmGlobalsAura::OnDisplayConfigurationChanging() {

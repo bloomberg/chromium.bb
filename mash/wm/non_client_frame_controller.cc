@@ -204,7 +204,8 @@ NonClientFrameController::NonClientFrameController(
     mus::Window* window,
     mus::WindowManagerClient* window_manager_client)
     : widget_(new views::Widget), window_(window) {
-  WmWindowMus::Get(window)->set_widget(widget_);
+  WmWindowMus::Get(window)->set_widget(
+      widget_, WmWindowMus::WidgetCreationType::FOR_CLIENT);
   window_->AddObserver(this);
 
   // To simplify things this code creates a Widget. While a Widget is created

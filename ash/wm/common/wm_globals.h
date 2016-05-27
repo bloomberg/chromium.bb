@@ -43,6 +43,8 @@ class ASH_WM_COMMON_EXPORT WmGlobals {
   virtual WmWindow* GetFocusedWindow() = 0;
   virtual WmWindow* GetActiveWindow() = 0;
 
+  virtual WmWindow* GetPrimaryRootWindow() = 0;
+
   // Returns the root window for the specified display.
   virtual WmWindow* GetRootWindowForDisplayId(int64_t display_id) = 0;
 
@@ -51,7 +53,10 @@ class ASH_WM_COMMON_EXPORT WmGlobals {
   // appropriate container in the returned window.
   virtual WmWindow* GetRootWindowForNewWindows() = 0;
 
-  // returns the list of more recently used windows excluding modals.
+  // Returns the list of most recently used windows.
+  virtual std::vector<WmWindow*> GetMruWindowList() = 0;
+
+  // Returns the list of most recently used windows excluding modals.
   virtual std::vector<WmWindow*> GetMruWindowListIgnoreModals() = 0;
 
   // Returns true if the first window shown on first run should be

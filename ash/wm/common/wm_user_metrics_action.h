@@ -11,6 +11,15 @@ namespace wm {
 enum class WmUserMetricsAction {
   DRAG_MAXIMIZE_LEFT,
   DRAG_MAXIMIZE_RIGHT,
+  // Thumbnail sized overview of windows triggered by pressing the overview key.
+  WINDOW_OVERVIEW,
+
+  // User selected a window in overview mode different from the
+  // previously-active window.
+  WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED,
+
+  // Selecting a window in overview mode by pressing the enter key.
+  WINDOW_OVERVIEW_ENTER_KEY,
 };
 
 }  // namespace wm

@@ -11,22 +11,23 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
-#include "ash/screen_util.h"
-#include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/wm/common/window_state.h"
+#include "ash/wm/common/wm_lookup.h"
+#include "ash/wm/common/wm_root_window_controller.h"
+#include "ash/wm/common/wm_screen_util.h"
+#include "ash/wm/common/wm_shell_window_ids.h"
+#include "ash/wm/common/wm_window.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_item.h"
-#include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
 #include "base/i18n/string_search.h"
 #include "base/memory/scoped_vector.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/aura/window.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/background.h"
@@ -38,7 +39,7 @@
 namespace ash {
 namespace {
 
-typedef std::vector<aura::Window*> Windows;
+using Windows = std::vector<wm::WmWindow*>;
 
 // An observer which holds onto the passed widget until the animation is
 // complete.
@@ -71,15 +72,14 @@ void CleanupWidgetAfterAnimationObserver::OnImplicitAnimationsCompleted() {
 
 // A comparator for locating a given target window.
 struct WindowSelectorItemComparator {
-  explicit WindowSelectorItemComparator(const aura::Window* target_window)
-      : target(target_window) {
-  }
+  explicit WindowSelectorItemComparator(const wm::WmWindow* target_window)
+      : target(target_window) {}
 
   bool operator()(WindowSelectorItem* window) const {
     return window->GetWindow() == target;
   }
 
-  const aura::Window* target;
+  const wm::WmWindow* target;
 };
 
 // Conceptually the window overview is a table or grid of cells having this
@@ -127,14 +127,13 @@ gfx::Vector2d GetSlideVectorForFadeIn(WindowSelector::Direction direction,
 // items in the window selection. |bounding_rect| is set to the centered
 // rectangle containing the grid and |item_size| is set to the size of each
 // individual item.
-void CalculateOverviewSizes(aura::Window* root_window,
+void CalculateOverviewSizes(wm::WmWindow* root_window,
                             size_t items,
                             gfx::Rect* bounding_rect,
                             gfx::Size* item_size) {
-  gfx::Rect total_bounds = ScreenUtil::ConvertRectToScreen(
-      root_window,
-      ScreenUtil::GetDisplayWorkAreaBoundsInParent(
-          Shell::GetContainer(root_window, kShellWindowId_DefaultContainer)));
+  gfx::Rect total_bounds = root_window->ConvertRectToScreen(
+      wm::GetDisplayWorkAreaBoundsInParent(root_window->GetChildByShellWindowId(
+          kShellWindowId_DefaultContainer)));
 
   // Reserve space at the top for the text filtering textbox to appear.
   total_bounds.Inset(
@@ -168,8 +167,8 @@ void CalculateOverviewSizes(aura::Window* root_window,
 // minimize the distance each window will travel to enter overview. For
 // equidistant windows preserves a stable order between overview sessions
 // by comparing window pointers.
-void ReorderItemsGreedyLeastMovement(std::vector<aura::Window*>* items,
-                                     aura::Window* root_window) {
+void ReorderItemsGreedyLeastMovement(std::vector<wm::WmWindow*>* items,
+                                     wm::WmWindow* root_window) {
   if (items->empty())
     return;
   gfx::Rect bounding_rect;
@@ -188,11 +187,11 @@ void ReorderItemsGreedyLeastMovement(std::vector<aura::Window*>* items,
     size_t swap_index = i;
     int64_t shortest_distance = std::numeric_limits<int64_t>::max();
     for (size_t j = i; j < items->size(); ++j) {
-      aura::Window* window = (*items)[j];
+      wm::WmWindow* window = (*items)[j];
+      const gfx::Rect screen_target_bounds =
+          window->ConvertRectToScreen(window->GetTargetBounds());
       int64_t distance =
-          (ScreenUtil::ConvertRectToScreen(window, window->GetTargetBounds())
-               .CenterPoint() -
-           overview_item_center)
+          (screen_target_bounds.CenterPoint() - overview_item_center)
               .LengthSquared();
       // We compare raw pointers to create a stable ordering given two windows
       // with the same center point.
@@ -209,12 +208,11 @@ void ReorderItemsGreedyLeastMovement(std::vector<aura::Window*>* items,
 
 }  // namespace
 
-WindowGrid::WindowGrid(aura::Window* root_window,
-                       const std::vector<aura::Window*>& windows,
+WindowGrid::WindowGrid(wm::WmWindow* root_window,
+                       const std::vector<wm::WmWindow*>& windows,
                        WindowSelector* window_selector)
-    : root_window_(root_window),
-      window_selector_(window_selector) {
-  std::vector<aura::Window*> windows_in_root;
+    : root_window_(root_window), window_selector_(window_selector) {
+  std::vector<wm::WmWindow*> windows_in_root;
   for (auto window : windows) {
     if (window->GetRootWindow() == root_window)
       windows_in_root.push_back(window);
@@ -234,17 +232,13 @@ WindowGrid::WindowGrid(aura::Window* root_window,
 }
 
 WindowGrid::~WindowGrid() {
-  for (std::set<aura::Window*>::iterator iter = observed_windows_.begin();
-       iter != observed_windows_.end(); iter++) {
-    (*iter)->RemoveObserver(this);
-  }
+  for (wm::WmWindow* window : observed_windows_)
+    window->RemoveObserver(this);
 }
 
 void WindowGrid::PrepareForOverview() {
-  for (ScopedVector<WindowSelectorItem>::iterator iter = window_list_.begin();
-       iter != window_list_.end(); ++iter) {
+  for (auto iter = window_list_.begin(); iter != window_list_.end(); ++iter)
     (*iter)->PrepareForOverview();
-  }
 }
 
 void WindowGrid::PositionWindows(bool animate) {
@@ -345,7 +339,7 @@ WindowSelectorItem* WindowGrid::SelectedWindow() const {
   return window_list_[selected_index_];
 }
 
-bool WindowGrid::Contains(const aura::Window* window) const {
+bool WindowGrid::Contains(const wm::WmWindow* window) const {
   for (const WindowSelectorItem* window_item : window_list_) {
     if (window_item->Contains(window))
       return true;
@@ -355,9 +349,8 @@ bool WindowGrid::Contains(const aura::Window* window) const {
 
 void WindowGrid::FilterItems(const base::string16& pattern) {
   base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents finder(pattern);
-  for (ScopedVector<WindowSelectorItem>::iterator iter = window_list_.begin();
-       iter != window_list_.end(); iter++) {
-    if (finder.Search((*iter)->GetWindow()->title(), nullptr, nullptr)) {
+  for (auto iter = window_list_.begin(); iter != window_list_.end(); iter++) {
+    if (finder.Search((*iter)->GetWindow()->GetTitle(), nullptr, nullptr)) {
       (*iter)->SetDimmed(false);
     } else {
       (*iter)->SetDimmed(true);
@@ -367,7 +360,7 @@ void WindowGrid::FilterItems(const base::string16& pattern) {
   }
 }
 
-void WindowGrid::OnWindowDestroying(aura::Window* window) {
+void WindowGrid::OnWindowDestroying(wm::WmWindow* window) {
   window->RemoveObserver(this);
   observed_windows_.erase(window);
   ScopedVector<WindowSelectorItem>::iterator iter =
@@ -398,17 +391,15 @@ void WindowGrid::OnWindowDestroying(aura::Window* window) {
   PositionWindows(true);
 }
 
-void WindowGrid::OnWindowBoundsChanged(aura::Window* window,
+void WindowGrid::OnWindowBoundsChanged(wm::WmWindow* window,
                                        const gfx::Rect& old_bounds,
                                        const gfx::Rect& new_bounds) {
-  ScopedVector<WindowSelectorItem>::const_iterator iter =
-      std::find_if(window_list_.begin(), window_list_.end(),
-                   WindowSelectorItemComparator(window));
+  auto iter = std::find_if(window_list_.begin(), window_list_.end(),
+                           WindowSelectorItemComparator(window));
   DCHECK(iter != window_list_.end());
 
   // Immediately finish any active bounds animation.
-  window->layer()->GetAnimator()->StopAnimatingProperty(
-      ui::LayerAnimationElement::BOUNDS);
+  window->StopAnimatingProperty(ui::LayerAnimationElement::BOUNDS);
 
   // Recompute the transform for the window.
   (*iter)->RecomputeWindowTransforms();
@@ -421,17 +412,18 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
   params.keep_on_top = false;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent = Shell::GetContainer(root_window_,
-                                      kShellWindowId_DefaultContainer);
   params.accept_events = false;
   selection_widget_->set_focus_on_creation(false);
+  root_window_->GetRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(
+          selection_widget_.get(), kShellWindowId_DefaultContainer, &params);
   selection_widget_->Init(params);
+  wm::WmWindow* selection_widget_window =
+      wm::WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
   // Disable the "bounce in" animation when showing the window.
-  ::wm::SetWindowVisibilityAnimationTransition(
-      selection_widget_->GetNativeWindow(), ::wm::ANIMATE_NONE);
+  selection_widget_window->SetVisibilityAnimationTransition(::wm::ANIMATE_NONE);
   // The selection widget should not activate the shelf when passing under it.
-  wm::GetWindowState(selection_widget_->GetNativeWindow())->
-      set_ignored_by_shelf(true);
+  selection_widget_window->GetWindowState()->set_ignored_by_shelf(true);
 
   views::View* content_view = new views::View;
   content_view->set_background(
@@ -439,19 +431,19 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
   content_view->SetBorder(views::Border::CreateSolidBorder(
       kWindowSelectionBorderThickness, kWindowSelectionBorderColor));
   selection_widget_->SetContentsView(content_view);
-  selection_widget_->GetNativeWindow()->parent()->StackChildAtBottom(
-      selection_widget_->GetNativeWindow());
+  selection_widget_window->GetParent()->StackChildAtBottom(
+      selection_widget_window);
   selection_widget_->Show();
   // New selection widget starts with 0 opacity and then fades in.
-  selection_widget_->GetNativeWindow()->layer()->SetOpacity(0);
+  selection_widget_window->SetOpacity(0);
 
   const gfx::Rect target_bounds = SelectedWindow()->target_bounds();
   gfx::Vector2d fade_out_direction =
           GetSlideVectorForFadeIn(direction, target_bounds);
   display::Display dst_display =
       display::Screen::GetScreen()->GetDisplayMatching(target_bounds);
-  selection_widget_->GetNativeWindow()->SetBoundsInScreen(
-      target_bounds - fade_out_direction, dst_display);
+  selection_widget_window->SetBoundsInScreen(target_bounds - fade_out_direction,
+                                             dst_display);
 }
 
 void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
@@ -463,12 +455,13 @@ void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
   if (selection_widget_ && (recreate_selection_widget || out_of_bounds)) {
     // Animate the old selection widget and then destroy it.
     views::Widget* old_selection = selection_widget_.get();
+    wm::WmWindow* old_selection_window =
+        wm::WmLookup::Get()->GetWindowForWidget(old_selection);
     gfx::Vector2d fade_out_direction =
-        GetSlideVectorForFadeIn(
-            direction, old_selection->GetNativeWindow()->bounds());
+        GetSlideVectorForFadeIn(direction, old_selection_window->GetBounds());
 
     ui::ScopedLayerAnimationSettings animation_settings(
-        old_selection->GetNativeWindow()->layer()->GetAnimator());
+        old_selection_window->GetLayer()->GetAnimator());
     animation_settings.SetTransitionDuration(
         base::TimeDelta::FromMilliseconds(
             kOverviewSelectorTransitionMilliseconds));
@@ -480,8 +473,8 @@ void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
     animation_settings.AddObserver(
         new CleanupWidgetAfterAnimationObserver(std::move(selection_widget_)));
     old_selection->SetOpacity(0);
-    old_selection->GetNativeWindow()->SetBounds(
-        old_selection->GetNativeWindow()->bounds() + fade_out_direction);
+    old_selection_window->SetBounds(old_selection_window->GetBounds() +
+                                    fade_out_direction);
     old_selection->Hide();
   }
   if (out_of_bounds)
@@ -499,19 +492,21 @@ void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
 
 void WindowGrid::MoveSelectionWidgetToTarget(bool animate) {
   if (animate) {
+    wm::WmWindow* selection_widget_window =
+        wm::WmLookup::Get()->GetWindowForWidget(selection_widget_.get());
     ui::ScopedLayerAnimationSettings animation_settings(
-        selection_widget_->GetNativeWindow()->layer()->GetAnimator());
+        selection_widget_window->GetLayer()->GetAnimator());
     animation_settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
         kOverviewSelectorTransitionMilliseconds));
     animation_settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
     animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     selection_widget_->SetBounds(SelectedWindow()->target_bounds());
-    selection_widget_->SetOpacity(255);
+    selection_widget_->SetOpacity(1.f);
     return;
   }
   selection_widget_->SetBounds(SelectedWindow()->target_bounds());
-  selection_widget_->SetOpacity(255);
+  selection_widget_->SetOpacity(1.f);
 }
 
 }  // namespace ash

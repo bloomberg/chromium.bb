@@ -158,6 +158,10 @@ ash::wm::WmGlobals* WmWindowMus::GetGlobals() const {
   return WmGlobalsMus::Get();
 }
 
+base::string16 WmWindowMus::GetTitle() const {
+  return GetWindowTitle(window_);
+}
+
 void WmWindowMus::SetShellWindowId(int id) {
   shell_window_id_ = id;
 }
@@ -240,12 +244,32 @@ gfx::Size WmWindowMus::GetMaximumSize() const {
 }
 
 bool WmWindowMus::GetTargetVisibility() const {
+  // TODO: need animation support: http://crbug.com/615087.
   NOTIMPLEMENTED();
   return window_->visible();
 }
 
 bool WmWindowMus::IsVisible() const {
   return window_->visible();
+}
+
+void WmWindowMus::SetOpacity(float opacity) {
+  window_->SetOpacity(opacity);
+}
+
+float WmWindowMus::GetTargetOpacity() const {
+  // TODO: need animation support: http://crbug.com/615087.
+  return window_->opacity();
+}
+
+void WmWindowMus::SetTransform(const gfx::Transform& transform) {
+  // TODO: mus needs to support transforms: http://crbug.com/615089.
+  NOTIMPLEMENTED();
+}
+
+gfx::Transform WmWindowMus::GetTargetTransform() const {
+  // TODO: need animation support: http://crbug.com/615087.
+  return gfx::Transform();
 }
 
 bool WmWindowMus::IsSystemModal() const {
@@ -273,6 +297,12 @@ bool WmWindowMus::GetBoolProperty(ash::wm::WmWindowProperty key) {
 
 int WmWindowMus::GetIntProperty(ash::wm::WmWindowProperty key) {
   if (key == ash::wm::WmWindowProperty::SHELF_ID) {
+    NOTIMPLEMENTED();
+    return 0;
+  }
+
+  if (key == ash::wm::WmWindowProperty::TOP_VIEW_INSET) {
+    // TODO: need support for TOP_VIEW_INSET: http://crbug.com/615100.
     NOTIMPLEMENTED();
     return 0;
   }
@@ -326,14 +356,29 @@ ash::wm::WmLayoutManager* WmWindowMus::GetLayoutManager() {
 }
 
 void WmWindowMus::SetVisibilityAnimationType(int type) {
+  // TODO: need animation support: http://crbug.com/615087.
   NOTIMPLEMENTED();
 }
 
 void WmWindowMus::SetVisibilityAnimationDuration(base::TimeDelta delta) {
+  // TODO: need animation support: http://crbug.com/615087.
+  NOTIMPLEMENTED();
+}
+
+void WmWindowMus::SetVisibilityAnimationTransition(
+    ::wm::WindowVisibilityAnimationTransition transition) {
+  // TODO: need animation support: http://crbug.com/615087.
   NOTIMPLEMENTED();
 }
 
 void WmWindowMus::Animate(::wm::WindowAnimationType type) {
+  // TODO: need animation support: http://crbug.com/615087.
+  NOTIMPLEMENTED();
+}
+
+void WmWindowMus::StopAnimatingProperty(
+    ui::LayerAnimationElement::AnimatableProperty property) {
+  // TODO: need animation support: http://crbug.com/615087.
   NOTIMPLEMENTED();
 }
 
@@ -351,6 +396,7 @@ void WmWindowMus::SetBounds(const gfx::Rect& bounds) {
 
 void WmWindowMus::SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
                                                base::TimeDelta delta) {
+  // TODO: need animation support: http://crbug.com/615087.
   NOTIMPLEMENTED();
   SetBounds(bounds);
 }
@@ -361,11 +407,13 @@ void WmWindowMus::SetBoundsDirect(const gfx::Rect& bounds) {
 }
 
 void WmWindowMus::SetBoundsDirectAnimated(const gfx::Rect& bounds) {
+  // TODO: need animation support: http://crbug.com/615087.
   NOTIMPLEMENTED();
   SetBoundsDirect(bounds);
 }
 
 void WmWindowMus::SetBoundsDirectCrossFade(const gfx::Rect& bounds) {
+  // TODO: need animation support: http://crbug.com/615087.
   NOTIMPLEMENTED();
   SetBoundsDirect(bounds);
 }
@@ -387,6 +435,7 @@ const gfx::Rect& WmWindowMus::GetBounds() const {
 }
 
 gfx::Rect WmWindowMus::GetTargetBounds() {
+  // TODO: need animation support: http://crbug.com/615087.
   NOTIMPLEMENTED();
   return window_->bounds();
 }
@@ -494,6 +543,15 @@ void WmWindowMus::Hide() {
 
 void WmWindowMus::Show() {
   window_->SetVisible(true);
+}
+
+void WmWindowMus::CloseWidget() {
+  DCHECK(widget_);
+  // Allow the client to service the close request for remote widgets.
+  if (widget_creation_type_ == WidgetCreationType::FOR_CLIENT)
+    window_->RequestClose();
+  else
+    widget_->Close();
 }
 
 bool WmWindowMus::IsFocused() const {

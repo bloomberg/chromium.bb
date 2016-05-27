@@ -29,6 +29,7 @@
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
+#include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 
@@ -78,15 +79,16 @@ WmWindowAura::WmWindowAura(aura::Window* window)
 }
 
 // static
-WmWindow* WmWindowAura::Get(aura::Window* window) {
+const WmWindow* WmWindowAura::Get(const aura::Window* window) {
   if (!window)
     return nullptr;
 
-  WmWindow* wm_window = window->GetProperty(kWmWindowKey);
+  const WmWindow* wm_window = window->GetProperty(kWmWindowKey);
   if (wm_window)
     return wm_window;
   // WmWindowAura is owned by the aura::Window.
-  return new WmWindowAura(window);
+  // TODO(sky): fix constness.
+  return new WmWindowAura(const_cast<aura::Window*>(window));
 }
 
 // static
@@ -115,6 +117,10 @@ WmRootWindowController* WmWindowAura::GetRootWindowController() {
 
 WmGlobals* WmWindowAura::GetGlobals() const {
   return WmGlobals::Get();
+}
+
+base::string16 WmWindowAura::GetTitle() const {
+  return window_->title();
 }
 
 void WmWindowAura::SetShellWindowId(int id) {
@@ -192,6 +198,22 @@ bool WmWindowAura::IsVisible() const {
   return window_->IsVisible();
 }
 
+void WmWindowAura::SetOpacity(float opacity) {
+  window_->layer()->SetOpacity(opacity);
+}
+
+float WmWindowAura::GetTargetOpacity() const {
+  return window_->layer()->GetTargetOpacity();
+}
+
+void WmWindowAura::SetTransform(const gfx::Transform& transform) {
+  window_->SetTransform(transform);
+}
+
+gfx::Transform WmWindowAura::GetTargetTransform() const {
+  return window_->layer()->GetTargetTransform();
+}
+
 bool WmWindowAura::IsSystemModal() const {
   return window_->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_SYSTEM;
 }
@@ -215,6 +237,9 @@ bool WmWindowAura::GetBoolProperty(WmWindowProperty key) {
 int WmWindowAura::GetIntProperty(WmWindowProperty key) {
   if (key == WmWindowProperty::SHELF_ID)
     return GetShelfIDForWindow(window_);
+
+  if (key == WmWindowProperty::TOP_VIEW_INSET)
+    return window_->GetProperty(aura::client::kTopViewInset);
 
   NOTREACHED();
   return 0;
@@ -270,8 +295,18 @@ void WmWindowAura::SetVisibilityAnimationDuration(base::TimeDelta delta) {
   ::wm::SetWindowVisibilityAnimationDuration(window_, delta);
 }
 
+void WmWindowAura::SetVisibilityAnimationTransition(
+    ::wm::WindowVisibilityAnimationTransition transition) {
+  ::wm::SetWindowVisibilityAnimationTransition(window_, transition);
+}
+
 void WmWindowAura::Animate(::wm::WindowAnimationType type) {
   ::wm::AnimateWindow(window_, type);
+}
+
+void WmWindowAura::StopAnimatingProperty(
+    ui::LayerAnimationElement::AnimatableProperty property) {
+  window_->layer()->GetAnimator()->StopAnimatingProperty(property);
 }
 
 void WmWindowAura::SetBounds(const gfx::Rect& bounds) {
@@ -450,6 +485,11 @@ void WmWindowAura::Show() {
   window_->Show();
 }
 
+void WmWindowAura::CloseWidget() {
+  DCHECK(views::Widget::GetWidgetForNativeView(window_));
+  views::Widget::GetWidgetForNativeView(window_)->Close();
+}
+
 bool WmWindowAura::IsFocused() const {
   return window_->HasFocus();
 }
@@ -553,6 +593,8 @@ void WmWindowAura::OnWindowPropertyChanged(aura::Window* window,
     wm_property = WmWindowProperty::ALWAYS_ON_TOP;
   } else if (key == kShelfID) {
     wm_property = WmWindowProperty::SHELF_ID;
+  } else if (key == aura::client::kTopViewInset) {
+    wm_property = WmWindowProperty::TOP_VIEW_INSET;
   } else {
     return;
   }
@@ -575,6 +617,10 @@ void WmWindowAura::OnWindowVisibilityChanging(aura::Window* window,
                                               bool visible) {
   FOR_EACH_OBSERVER(WmWindowObserver, observers_,
                     OnWindowVisibilityChanging(this, visible));
+}
+
+void WmWindowAura::OnWindowTitleChanged(aura::Window* window) {
+  FOR_EACH_OBSERVER(WmWindowObserver, observers_, OnWindowTitleChanged(this));
 }
 
 }  // namespace wm

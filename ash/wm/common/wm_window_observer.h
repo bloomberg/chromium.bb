@@ -45,6 +45,8 @@ class ASH_WM_COMMON_EXPORT WmWindowObserver {
 
   virtual void OnWindowVisibilityChanging(wm::WmWindow* window, bool visible) {}
 
+  virtual void OnWindowTitleChanged(wm::WmWindow* window) {}
+
  protected:
   virtual ~WmWindowObserver() {}
 };

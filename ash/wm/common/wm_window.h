@@ -9,8 +9,10 @@
 #include <vector>
 
 #include "ash/wm/common/ash_wm_common_export.h"
+#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/layer_animation_element.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/public/window_types.h"
 
@@ -22,6 +24,7 @@ namespace gfx {
 class Point;
 class Rect;
 class Size;
+class Transform;
 }
 
 namespace ui {
@@ -40,8 +43,7 @@ enum class WmWindowProperty;
 class WindowState;
 
 // This class exists as a porting layer to allow ash/wm to work with
-// aura::Window
-// or mus::Window. See aura::Window for details on the functions.
+// aura::Window or mus::Window. See aura::Window for details on the functions.
 class ASH_WM_COMMON_EXPORT WmWindow {
  public:
   WmWindow* GetRootWindow() {
@@ -53,6 +55,8 @@ class ASH_WM_COMMON_EXPORT WmWindow {
 
   // TODO(sky): fix constness.
   virtual WmGlobals* GetGlobals() const = 0;
+
+  virtual base::string16 GetTitle() const = 0;
 
   // See wm_shell_window_ids.h for list of known ids.
   virtual void SetShellWindowId(int id) = 0;
@@ -85,6 +89,12 @@ class ASH_WM_COMMON_EXPORT WmWindow {
   virtual bool GetTargetVisibility() const = 0;
 
   virtual bool IsVisible() const = 0;
+
+  virtual void SetOpacity(float opacity) = 0;
+  virtual float GetTargetOpacity() const = 0;
+
+  virtual void SetTransform(const gfx::Transform& transform) = 0;
+  virtual gfx::Transform GetTargetTransform() const = 0;
 
   virtual bool IsSystemModal() const = 0;
 
@@ -120,7 +130,11 @@ class ASH_WM_COMMON_EXPORT WmWindow {
   // |type| is WindowVisibilityAnimationType. Has to be an int to match aura.
   virtual void SetVisibilityAnimationType(int type) = 0;
   virtual void SetVisibilityAnimationDuration(base::TimeDelta delta) = 0;
+  virtual void SetVisibilityAnimationTransition(
+      ::wm::WindowVisibilityAnimationTransition transition) = 0;
   virtual void Animate(::wm::WindowAnimationType type) = 0;
+  virtual void StopAnimatingProperty(
+      ui::LayerAnimationElement::AnimatableProperty property) = 0;
 
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
   virtual void SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
@@ -161,6 +175,10 @@ class ASH_WM_COMMON_EXPORT WmWindow {
 
   virtual void Hide() = 0;
   virtual void Show() = 0;
+
+  // Requests the window to close and destroy itself. This is intended to
+  // forward to an associated widget.
+  virtual void CloseWidget() = 0;
 
   virtual bool IsFocused() const = 0;
 

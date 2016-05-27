@@ -5,30 +5,25 @@
 #ifndef ASH_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
 #define ASH_WM_OVERVIEW_SCOPED_TRANSFORM_OVERVIEW_WINDOW_H_
 
+#include <memory>
+#include <vector>
+
 #include "ash/ash_export.h"
-#include "ash/wm/overview/scoped_overview_animation_settings.h"
-#include "base/compiler_specific.h"
+#include "ash/wm/overview/overview_animation_type.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
-#include "ui/views/widget/widget.h"
 
-namespace aura {
-class Window;
-}
-
-namespace ui {
-class Layer;
-}
-
-namespace views {
-class Widget;
+namespace gfx {
+class Rect;
 }
 
 namespace ash {
 
-class ScopedWindowCopy;
+class ScopedOverviewAnimationSettings;
+
+namespace wm {
+class WmWindow;
+}
 
 // Manages a window, and it's transient children, in the overview mode. This
 // class allows transforming the windows with a helper to determine the best
@@ -36,7 +31,8 @@ class ScopedWindowCopy;
 // object.
 class ASH_EXPORT ScopedTransformOverviewWindow {
  public:
-  typedef ScopedVector<ScopedOverviewAnimationSettings> ScopedAnimationSettings;
+  using ScopedAnimationSettings =
+      std::vector<std::unique_ptr<ScopedOverviewAnimationSettings>>;
 
   // Returns |rect| having been shrunk to fit within |bounds| (preserving the
   // aspect ratio). Takes into account a window header that is |top_view_inset|
@@ -51,7 +47,7 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   static gfx::Transform GetTransformForRect(const gfx::Rect& src_rect,
                                             const gfx::Rect& dst_rect);
 
-  explicit ScopedTransformOverviewWindow(aura::Window* window);
+  explicit ScopedTransformOverviewWindow(wm::WmWindow* window);
   ~ScopedTransformOverviewWindow();
 
   gfx::Transform get_overview_transform() const { return overview_transform_; }
@@ -80,7 +76,7 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
       ScopedAnimationSettings* animation_settings);
 
   // Returns true if this window selector window contains the |target|.
-  bool Contains(const aura::Window* target) const;
+  bool Contains(const wm::WmWindow* target) const;
 
   // Returns the original target bounds of all transformed windows.
   gfx::Rect GetTargetBoundsInScreen() const;
@@ -101,13 +97,12 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
 
   // Applies the |transform| to the overview window and all of its transient
   // children.
-  void SetTransform(aura::Window* root_window,
-                    const gfx::Transform& transform);
+  void SetTransform(wm::WmWindow* root_window, const gfx::Transform& transform);
 
   // Set's the opacity of the managed windows.
   void SetOpacity(float opacity);
 
-  aura::Window* window() const { return window_; }
+  wm::WmWindow* window() const { return window_; }
 
   // Closes the transient root of the window managed by |this|.
   void Close();
@@ -117,7 +112,7 @@ class ASH_EXPORT ScopedTransformOverviewWindow {
   void ShowWindowIfMinimized();
 
   // A weak pointer to the real window in the overview.
-  aura::Window* window_;
+  wm::WmWindow* window_;
 
   // If true, the window was minimized and should be restored if the window
   // was not selected.

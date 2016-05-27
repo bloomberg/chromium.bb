@@ -14,11 +14,6 @@
 #include "ash/wm/overview/window_selector_delegate.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "ui/aura/window_observer.h"
-
-namespace aura {
-class Window;
-}
 
 namespace ash {
 class WindowSelector;

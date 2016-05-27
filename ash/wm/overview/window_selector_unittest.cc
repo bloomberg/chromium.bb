@@ -214,10 +214,11 @@ class WindowSelectorTest : public test::AshTestBase {
                                              aura::Window* window) {
     const std::vector<WindowSelectorItem*>& windows =
         GetWindowItemsForRoot(grid_index);
-    auto iter = std::find_if(windows.cbegin(), windows.cend(),
-                             [window](const WindowSelectorItem* item) {
-                               return item->Contains(window);
-                             });
+    auto iter =
+        std::find_if(windows.cbegin(), windows.cend(),
+                     [window](const WindowSelectorItem* item) {
+                       return item->Contains(wm::WmWindowAura::Get(window));
+                     });
     if (iter == windows.end())
       return nullptr;
     return *iter;
@@ -246,7 +247,7 @@ class WindowSelectorTest : public test::AshTestBase {
         ws->grid_list_[ws->selected_grid_index_]->SelectedWindow();
     if (!item)
       return nullptr;
-    return item->GetWindow();
+    return wm::WmWindowAura::GetAuraWindow(item->GetWindow());
   }
 
   bool selection_widget_active() {
@@ -275,8 +276,9 @@ class WindowSelectorTest : public test::AshTestBase {
   // screen.
   void IsWindowAndCloseButtonInScreen(aura::Window* window,
                                       WindowSelectorItem* window_item) {
-    aura::Window* root_window = window_item->root_window();
-    EXPECT_TRUE(window_item->Contains(window));
+    aura::Window* root_window =
+        wm::WmWindowAura::GetAuraWindow(window_item->root_window());
+    EXPECT_TRUE(window_item->Contains(wm::WmWindowAura::Get(window)));
     EXPECT_TRUE(root_window->GetBoundsInScreen().Contains(
         ToEnclosingRect(GetTransformedTargetBounds(window))));
     EXPECT_TRUE(root_window->GetBoundsInScreen().Contains(
@@ -416,23 +418,25 @@ TEST_F(WindowSelectorTest, MinimizeMovement) {
                          root_window->bounds().width() / 2,
                          root_window->bounds().height());
   std::unique_ptr<aura::Window> left_window(CreateWindow(left_bounds));
+  wm::WmWindow* left_window_wm = wm::WmWindowAura::Get(left_window.get());
   std::unique_ptr<aura::Window> right_window(CreateWindow(right_bounds));
+  wm::WmWindow* right_window_wm = wm::WmWindowAura::Get(right_window.get());
 
   // The window should stay on the same side of the screen regardless of which
   // one was active on entering overview mode.
   wm::GetWindowState(left_window.get())->Activate();
   ToggleOverview();
   const std::vector<WindowSelectorItem*>& overview1(GetWindowItemsForRoot(0));
-  EXPECT_EQ(overview1[0]->GetWindow(), left_window.get());
-  EXPECT_EQ(overview1[1]->GetWindow(), right_window.get());
+  EXPECT_EQ(overview1[0]->GetWindow(), left_window_wm);
+  EXPECT_EQ(overview1[1]->GetWindow(), right_window_wm);
   ToggleOverview();
 
   // Active the right window, the order should be the same.
   wm::GetWindowState(right_window.get())->Activate();
   ToggleOverview();
   const std::vector<WindowSelectorItem*>& overview2(GetWindowItemsForRoot(0));
-  EXPECT_EQ(overview2[0]->GetWindow(), left_window.get());
-  EXPECT_EQ(overview2[1]->GetWindow(), right_window.get());
+  EXPECT_EQ(overview2[0]->GetWindow(), left_window_wm);
+  EXPECT_EQ(overview2[1]->GetWindow(), right_window_wm);
   ToggleOverview();
 
   // Switch the window positions, and the order should be switched.
@@ -440,8 +444,8 @@ TEST_F(WindowSelectorTest, MinimizeMovement) {
   right_window->SetBounds(left_bounds);
   ToggleOverview();
   const std::vector<WindowSelectorItem*>& overview3(GetWindowItemsForRoot(0));
-  EXPECT_EQ(overview3[0]->GetWindow(), right_window.get());
-  EXPECT_EQ(overview3[1]->GetWindow(), left_window.get());
+  EXPECT_EQ(overview3[0]->GetWindow(), right_window_wm);
+  EXPECT_EQ(overview3[1]->GetWindow(), left_window_wm);
   ToggleOverview();
 }
 
@@ -456,7 +460,9 @@ TEST_F(WindowSelectorTest, MinimizeMovementSecondDisplay) {
   gfx::Rect left_bounds(400, 0, 200, 400);
   gfx::Rect right_bounds(600, 0, 200, 400);
   std::unique_ptr<aura::Window> left_window(CreateWindow(left_bounds));
+  wm::WmWindow* left_window_wm = wm::WmWindowAura::Get(left_window.get());
   std::unique_ptr<aura::Window> right_window(CreateWindow(right_bounds));
+  wm::WmWindow* right_window_wm = wm::WmWindowAura::Get(right_window.get());
 
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(root_windows[1], left_window->GetRootWindow());
@@ -465,16 +471,16 @@ TEST_F(WindowSelectorTest, MinimizeMovementSecondDisplay) {
   wm::GetWindowState(left_window.get())->Activate();
   ToggleOverview();
   const std::vector<WindowSelectorItem*>& overview1(GetWindowItemsForRoot(0));
-  EXPECT_EQ(overview1[0]->GetWindow(), left_window.get());
-  EXPECT_EQ(overview1[1]->GetWindow(), right_window.get());
+  EXPECT_EQ(overview1[0]->GetWindow(), left_window_wm);
+  EXPECT_EQ(overview1[1]->GetWindow(), right_window_wm);
   ToggleOverview();
 
   // Active the right window, the order should be the same.
   wm::GetWindowState(right_window.get())->Activate();
   ToggleOverview();
   const std::vector<WindowSelectorItem*>& overview2(GetWindowItemsForRoot(0));
-  EXPECT_EQ(overview2[0]->GetWindow(), left_window.get());
-  EXPECT_EQ(overview2[1]->GetWindow(), right_window.get());
+  EXPECT_EQ(overview2[0]->GetWindow(), left_window_wm);
+  EXPECT_EQ(overview2[1]->GetWindow(), right_window_wm);
   ToggleOverview();
 }
 
@@ -490,16 +496,16 @@ TEST_F(WindowSelectorTest, StableOrder) {
   wm::GetWindowState(window1.get())->Activate();
   ToggleOverview();
   const std::vector<WindowSelectorItem*>& overview1(GetWindowItemsForRoot(0));
-  int initial_order[2] = {overview1[0]->GetWindow()->id(),
-                          overview1[1]->GetWindow()->id()};
+  int initial_order[2] = {overview1[0]->GetWindow()->GetShellWindowId(),
+                          overview1[1]->GetWindow()->GetShellWindowId()};
   ToggleOverview();
 
   // Activate the other window, the order should be the same.
   wm::GetWindowState(window2.get())->Activate();
   ToggleOverview();
   const std::vector<WindowSelectorItem*>& overview2(GetWindowItemsForRoot(0));
-  EXPECT_EQ(initial_order[0], overview2[0]->GetWindow()->id());
-  EXPECT_EQ(initial_order[1], overview2[1]->GetWindow()->id());
+  EXPECT_EQ(initial_order[0], overview2[0]->GetWindow()->GetShellWindowId());
+  EXPECT_EQ(initial_order[1], overview2[1]->GetWindow()->GetShellWindowId());
   ToggleOverview();
 }
 
@@ -1291,11 +1297,14 @@ TEST_F(WindowSelectorTest, BasicTabKeyNavigation) {
   const std::vector<WindowSelectorItem*>& overview_windows =
       GetWindowItemsForRoot(0);
   SendKey(ui::VKEY_TAB);
-  EXPECT_EQ(GetSelectedWindow(), overview_windows[0]->GetWindow());
+  EXPECT_EQ(GetSelectedWindow(),
+            wm::WmWindowAura::GetAuraWindow(overview_windows[0]->GetWindow()));
   SendKey(ui::VKEY_TAB);
-  EXPECT_EQ(GetSelectedWindow(), overview_windows[1]->GetWindow());
+  EXPECT_EQ(GetSelectedWindow(),
+            wm::WmWindowAura::GetAuraWindow(overview_windows[1]->GetWindow()));
   SendKey(ui::VKEY_TAB);
-  EXPECT_EQ(GetSelectedWindow(), overview_windows[0]->GetWindow());
+  EXPECT_EQ(GetSelectedWindow(),
+            wm::WmWindowAura::GetAuraWindow(overview_windows[0]->GetWindow()));
 }
 
 // Tests traversing some windows in overview mode with the arrow keys in every
@@ -1346,7 +1355,7 @@ TEST_F(WindowSelectorTest, BasicArrowKeyNavigation) {
       EXPECT_EQ(GetSelectedWindow()->id(),
                 overview_windows[index_path_for_direction[key_index][i] - 1]
                     ->GetWindow()
-                    ->id());
+                    ->GetShellWindowId());
     }
     ToggleOverview();
   }
@@ -1372,13 +1381,17 @@ TEST_F(WindowSelectorTest, BasicMultiMonitorArrowKeyNavigation) {
   const std::vector<WindowSelectorItem*>& overview_root2 =
       GetWindowItemsForRoot(1);
   SendKey(ui::VKEY_RIGHT);
-  EXPECT_EQ(GetSelectedWindow(), overview_root1[0]->GetWindow());
+  EXPECT_EQ(GetSelectedWindow(),
+            wm::WmWindowAura::GetAuraWindow(overview_root1[0]->GetWindow()));
   SendKey(ui::VKEY_RIGHT);
-  EXPECT_EQ(GetSelectedWindow(), overview_root1[1]->GetWindow());
+  EXPECT_EQ(GetSelectedWindow(),
+            wm::WmWindowAura::GetAuraWindow(overview_root1[1]->GetWindow()));
   SendKey(ui::VKEY_RIGHT);
-  EXPECT_EQ(GetSelectedWindow(), overview_root2[0]->GetWindow());
+  EXPECT_EQ(GetSelectedWindow(),
+            wm::WmWindowAura::GetAuraWindow(overview_root2[0]->GetWindow()));
   SendKey(ui::VKEY_RIGHT);
-  EXPECT_EQ(GetSelectedWindow(), overview_root2[1]->GetWindow());
+  EXPECT_EQ(GetSelectedWindow(),
+            wm::WmWindowAura::GetAuraWindow(overview_root2[1]->GetWindow()));
 }
 
 // Tests first monitor when display order doesn't match left to right screen

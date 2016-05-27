@@ -1,0 +1,7 @@
+include_rules = [
+  "-ash",
+  "+ash/ash_export.h",
+  "+ash/ash_switches.h",
+  "+ash/material_design",
+  "+ash/test",
+]

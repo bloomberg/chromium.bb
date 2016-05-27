@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/overview/scoped_overview_animation_settings.h"
+#include "ash/wm/overview/scoped_overview_animation_settings_aura.h"
 
-#include "ash/wm/overview/overview_animation_type.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -37,11 +36,10 @@ base::TimeDelta GetAnimationDuration(OverviewAnimationType animation_type) {
 
 }  // namespace
 
-ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
+ScopedOverviewAnimationSettingsAura::ScopedOverviewAnimationSettingsAura(
     OverviewAnimationType animation_type,
     aura::Window* window)
     : animation_settings_(window->layer()->GetAnimator()) {
-
   switch (animation_type) {
     case OVERVIEW_ANIMATION_NONE:
       animation_settings_.SetPreemptionStrategy(
@@ -70,7 +68,6 @@ ScopedOverviewAnimationSettings::ScopedOverviewAnimationSettings(
       GetAnimationDuration(animation_type));
 }
 
-ScopedOverviewAnimationSettings::~ScopedOverviewAnimationSettings() {
-}
+ScopedOverviewAnimationSettingsAura::~ScopedOverviewAnimationSettingsAura() {}
 
 }  // namespace ash

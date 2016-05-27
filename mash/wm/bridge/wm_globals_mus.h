@@ -45,8 +45,10 @@ class WmGlobalsMus : public ash::wm::WmGlobals,
   // WmGlobals:
   ash::wm::WmWindow* GetFocusedWindow() override;
   ash::wm::WmWindow* GetActiveWindow() override;
+  ash::wm::WmWindow* GetPrimaryRootWindow() override;
   ash::wm::WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
   ash::wm::WmWindow* GetRootWindowForNewWindows() override;
+  std::vector<ash::wm::WmWindow*> GetMruWindowList() override;
   std::vector<ash::wm::WmWindow*> GetMruWindowListIgnoreModals() override;
   bool IsForceMaximizeOnFirstRun() override;
   bool IsUserSessionBlocked() override;

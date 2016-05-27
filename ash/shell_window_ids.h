@@ -93,8 +93,8 @@ const int kShellWindowId_ImeWindowParentContainer = 18;
 const int kShellWindowId_SettingBubbleContainer = 21;
 
 // The container for special components overlaid onscreen, such as the
-// region selector for partial screenshots.
-const int kShellWindowId_OverlayContainer = 22;
+// region selector for partial screenshots. Defined in wm_shell_window_ids.
+// const int kShellWindowId_OverlayContainer = 22;
 
 // ID of the window created by PhantomWindowController or DragWindowController.
 // Defined in wm_shell_window_ids.
@@ -180,11 +180,17 @@ static_assert((kShellWindowId_DragImageAndTooltipContainer - 1 ==
                    kShellWindowId_SettingBubbleContainer),
               "drag-image-and-tooltip between menu and settings-bubble");
 
+static_assert((kShellWindowId_OverlayContainer - 1 ==
+               kShellWindowId_SettingBubbleContainer) &&
+                  (kShellWindowId_OverlayContainer + 1 ==
+                   kShellWindowId_PhantomWindow),
+              "overlay between settings-bubble and phantom");
+
 static_assert((kShellWindowId_PhantomWindow - 1 ==
                kShellWindowId_OverlayContainer) &&
                   (kShellWindowId_PhantomWindow + 1 ==
                    kShellWindowId_MouseCursorContainer),
-              "phanton between overlay and mouse-cursor");
+              "phantom between overlay and mouse-cursor");
 
 }  // namespace ash
 

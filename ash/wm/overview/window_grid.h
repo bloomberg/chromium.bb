@@ -11,13 +11,10 @@
 #include <set>
 #include <vector>
 
+#include "ash/wm/common/wm_window_observer.h"
 #include "ash/wm/overview/window_selector.h"
 #include "base/macros.h"
-#include "ui/aura/window_observer.h"
-
-namespace aura {
-class Window;
-}
+#include "base/memory/scoped_vector.h"
 
 namespace views {
 class Widget;
@@ -47,10 +44,10 @@ class WindowSelectorItem;
 //    0, 3, 6, 1, 4, 2, 5
 // The selector is switched to the next window grid (if available) or wrapped if
 // it reaches the end of its movement sequence.
-class ASH_EXPORT WindowGrid : public aura::WindowObserver {
+class ASH_EXPORT WindowGrid : public wm::WmWindowObserver {
  public:
-  WindowGrid(aura::Window* root_window,
-             const std::vector<aura::Window*>& window_list,
+  WindowGrid(wm::WmWindow* root_window,
+             const std::vector<wm::WmWindow*>& window_list,
              WindowSelector* window_selector);
   ~WindowGrid() override;
 
@@ -71,7 +68,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver {
 
   // Returns true if a window is contained in any of the WindowSelectorItems
   // this grid owns.
-  bool Contains(const aura::Window* window) const;
+  bool Contains(const wm::WmWindow* window) const;
 
   // Dims the items whose titles do not contain |pattern| and prevents their
   // selection. The pattern has its accents removed and is converted to
@@ -89,16 +86,16 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver {
   bool is_selecting() const { return selection_widget_ != nullptr; }
 
   // Returns the root window in which the grid displays the windows.
-  const aura::Window* root_window() const { return root_window_; }
+  const wm::WmWindow* root_window() const { return root_window_; }
 
   const std::vector<WindowSelectorItem*>& window_list() const {
     return window_list_.get();
   }
 
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
+  // wm::WmWindowObserver:
+  void OnWindowDestroying(wm::WmWindow* window) override;
   // TODO(flackr): Handle window bounds changed in WindowSelectorItem.
-  void OnWindowBoundsChanged(aura::Window* window,
+  void OnWindowBoundsChanged(wm::WmWindow* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds) override;
 
@@ -121,7 +118,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver {
   const gfx::Rect GetSelectionBounds() const;
 
   // Root window the grid is in.
-  aura::Window* root_window_;
+  wm::WmWindow* root_window_;
 
   // Pointer to the window selector that spawned this grid.
   WindowSelector* window_selector_;
@@ -130,7 +127,7 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver {
   ScopedVector<WindowSelectorItem> window_list_;
 
   // Vector containing the observed windows.
-  std::set<aura::Window*> observed_windows_;
+  std::set<wm::WmWindow*> observed_windows_;
 
   // Widget that indicates to the user which is the selected window.
   std::unique_ptr<views::Widget> selection_widget_;

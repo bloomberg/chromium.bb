@@ -83,4 +83,4 @@ void MaterialDesignController::Uninitialize() {
   mode_ = Mode::UNINITIALIZED;
 }
 
-}  // namespace ui
+}  // namespace ash

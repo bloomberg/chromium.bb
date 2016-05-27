@@ -32,8 +32,10 @@ class ASH_EXPORT WmGlobalsAura : public WmGlobals,
   // WmGlobals:
   WmWindow* GetFocusedWindow() override;
   WmWindow* GetActiveWindow() override;
+  WmWindow* GetPrimaryRootWindow() override;
   WmWindow* GetRootWindowForDisplayId(int64_t display_id) override;
   WmWindow* GetRootWindowForNewWindows() override;
+  std::vector<WmWindow*> GetMruWindowList() override;
   std::vector<WmWindow*> GetMruWindowListIgnoreModals() override;
   bool IsForceMaximizeOnFirstRun() override;
   bool IsUserSessionBlocked() override;
@@ -59,6 +61,8 @@ class ASH_EXPORT WmGlobalsAura : public WmGlobals,
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
+  void OnAttemptToReactivateWindow(aura::Window* request_active,
+                                   aura::Window* actual_active) override;
 
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanging() override;
