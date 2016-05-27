@@ -31,6 +31,10 @@ New Tokens
 
         READ_WRITE_CHROMIUM 0x78F2
 
+    Accepted by the <param> parameter of GetImageivCHROMIUM:
+
+        GL_GPU_MEMORY_BUFFER_ID 0x78FD
+
 New Procedures and Functions
 
     GLuint CreateGpuMemoryBufferImageCHROMIUM(GLsizei width,
@@ -59,6 +63,12 @@ New Procedures and Functions
     copyTexSubImage2D) will perform paramter validation as if the internal
     format were RGB.
 
+    void GetImageivCHROMIUM(GLuint image_id, GLenum param, GLint* data)
+
+    When the parameter GL_GPU_MEMORY_BUFFER_ID is passed as <param>, returns the
+    id of the GpuMemoryBuffer associated with <image_id>. If the image does not
+    exist, or is not associated with a GpuMemoryBuffer, returns -1.
+
 Errors
 
     None.
@@ -71,3 +81,4 @@ Revision History
 
     9/29/2014   Documented the extension.
     4/12/2016   Added details of OS X RGB workaround.
+    5/25/2016   Added the GetImageivCHROMIUM function.

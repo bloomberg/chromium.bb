@@ -262,6 +262,11 @@ int32_t PpapiCommandBufferProxy::CreateGpuMemoryBufferImage(
   return -1;
 }
 
+int32_t PpapiCommandBufferProxy::GetImageGpuMemoryBufferId(unsigned image_id) {
+  NOTREACHED();
+  return -1;
+}
+
 bool PpapiCommandBufferProxy::Send(IPC::Message* msg) {
   DCHECK(last_state_.error == gpu::error::kNoError);
 

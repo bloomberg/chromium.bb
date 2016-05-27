@@ -6072,6 +6072,21 @@ GLuint GLES2Implementation::CreateGpuMemoryBufferImageCHROMIUM(
   return image_id;
 }
 
+void GLES2Implementation::GetImageivCHROMIUM(GLuint image_id,
+                                             GLenum param,
+                                             GLint* data) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] GetImageivCHROMIUM(" << image_id
+                     << ", " << GLES2Util::GetStringImageInternalFormat(param)
+                     << ")");
+  if (param != GL_GPU_MEMORY_BUFFER_ID) {
+    SetGLError(GL_INVALID_VALUE, "GetImageivCHROMIUM", "param");
+    *data = -1;
+    return;
+  }
+  *data = gpu_control_->GetImageGpuMemoryBufferId(image_id);
+}
+
 bool GLES2Implementation::ValidateSize(const char* func, GLsizeiptr size) {
   if (size < 0) {
     SetGLError(GL_INVALID_VALUE, func, "size < 0");

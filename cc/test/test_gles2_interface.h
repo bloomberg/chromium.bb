@@ -114,6 +114,7 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
                                             GLsizei height,
                                             GLenum internalformat,
                                             GLenum usage) override;
+  void GetImageivCHROMIUM(GLuint image_id, GLenum param, GLint* data) override;
   void BindTexImage2DCHROMIUM(GLenum target, GLint image_id) override;
   void ReleaseTexImage2DCHROMIUM(GLenum target, GLint image_id) override;
   void FramebufferRenderbuffer(GLenum target,

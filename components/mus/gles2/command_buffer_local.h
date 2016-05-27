@@ -86,6 +86,7 @@ class CommandBufferLocal : public gpu::CommandBuffer,
                                      size_t height,
                                      unsigned internal_format,
                                      unsigned usage) override;
+  int32_t GetImageGpuMemoryBufferId(unsigned image_id) override;
   void SignalQuery(uint32_t query_id, const base::Closure& callback) override;
   void SetLock(base::Lock*) override;
   void EnsureWorkVisible() override;

@@ -106,6 +106,14 @@ public:
             *value = 1024;
     }
 
+    void GetImageivCHROMIUM(GLuint imageId, GLenum pname, GLint* data) override
+    {
+        if (pname == GC3D_GPU_MEMORY_BUFFER_ID)
+            *data = 1;
+        else
+            *data = -1;
+    }
+
     void GenMailboxCHROMIUM(GLbyte* mailbox) override
     {
         ++m_currentMailboxByte;

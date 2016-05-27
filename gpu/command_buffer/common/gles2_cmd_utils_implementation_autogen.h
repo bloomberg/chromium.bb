@@ -655,6 +655,9 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         0x78FC, "GL_RGB_YCBCR_420V_CHROMIUM",
     },
     {
+        0x78FD, "GL_GPU_MEMORY_BUFFER_ID",
+    },
+    {
         0x8, "GL_CA_LAYER_EDGE_TOP_CHROMIUM",
     },
     {

@@ -270,6 +270,14 @@ int32_t CommandBufferClientImpl::CreateGpuMemoryBufferImage(
   return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
 }
 
+int32_t CommandBufferClientImpl::GetImageGpuMemoryBufferId(unsigned image_id) {
+  // TODO(erikchen): Once this class supports IOSurface GpuMemoryBuffer backed
+  // images, it will also need to keep a local cache from image id to
+  // GpuMemoryBuffer id.
+  NOTIMPLEMENTED();
+  return -1;
+}
+
 void CommandBufferClientImpl::SignalQuery(uint32_t query,
                                           const base::Closure& callback) {
   // TODO(piman)

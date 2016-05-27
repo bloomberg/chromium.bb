@@ -217,6 +217,7 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(SkImage* image, WebEx
     gl->Flush();
     gl->GenSyncTokenCHROMIUM(fenceSync, info.m_mailbox.syncToken);
     info.m_mailbox.validSyncToken = true;
+    info.m_mailbox.gpuMemoryBufferId = imageInfo.m_gpuMemoryBufferId;
 
     info.m_imageInfo = imageInfo;
     *outMailbox = info.m_mailbox;
@@ -256,7 +257,11 @@ Canvas2DLayerBridge::ImageInfo Canvas2DLayerBridge::createIOSurfaceBackedTexture
     gl->TexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     gl->BindTexImage2DCHROMIUM(target, imageId);
 
-    return Canvas2DLayerBridge::ImageInfo(imageId, textureId);
+    GLint gpuMemoryBufferId = -1;
+    gl->GetImageivCHROMIUM(imageId, GC3D_GPU_MEMORY_BUFFER_ID, &gpuMemoryBufferId);
+    DCHECK_NE(-1, gpuMemoryBufferId);
+
+    return Canvas2DLayerBridge::ImageInfo(imageId, textureId, gpuMemoryBufferId);
 }
 
 void Canvas2DLayerBridge::deleteCHROMIUMImage(ImageInfo info)
@@ -961,10 +966,14 @@ void Canvas2DLayerBridge::willOverwriteCanvas()
 }
 
 #if USE_IOSURFACE_FOR_2D_CANVAS
-Canvas2DLayerBridge::ImageInfo::ImageInfo(GLuint imageId, GLuint textureId) : m_imageId(imageId), m_textureId(textureId)
+Canvas2DLayerBridge::ImageInfo::ImageInfo(GLuint imageId, GLuint textureId, GLint gpuMemoryBufferId)
+    : m_imageId(imageId)
+    , m_textureId(textureId)
+    , m_gpuMemoryBufferId(gpuMemoryBufferId)
 {
     ASSERT(imageId);
     ASSERT(textureId);
+    DCHECK_NE(-1, gpuMemoryBufferId);
 }
 
 bool Canvas2DLayerBridge::ImageInfo::empty()

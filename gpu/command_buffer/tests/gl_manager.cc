@@ -147,7 +147,6 @@ class IOSurfaceGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
     return IOSurfaceGetWidthOfPlane(iosurface_, plane);
   }
   gfx::GpuMemoryBufferId GetId() const override {
-    NOTREACHED();
     return gfx::GpuMemoryBufferId(0);
   }
   gfx::GpuMemoryBufferHandle GetHandle() const override {
@@ -516,6 +515,7 @@ int32_t GLManager::CreateImage(ClientBuffer buffer,
   gfx::Size size(width, height);
   scoped_refptr<gl::GLImage> gl_image;
 
+  int gmb_id = -1;
 #if defined(OS_MACOSX)
   if (use_iosurface_memory_buffers_) {
     IOSurfaceGpuMemoryBuffer* gpu_memory_buffer =
@@ -528,6 +528,7 @@ int32_t GLManager::CreateImage(ClientBuffer buffer,
       return -1;
     }
     gl_image = image;
+    gmb_id = gpu_memory_buffer->GetId().id;
   }
 #endif  // defined(OS_MACOSX)
   if (!gl_image) {
@@ -548,6 +549,12 @@ int32_t GLManager::CreateImage(ClientBuffer buffer,
   gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
   DCHECK(image_manager);
   image_manager->AddImage(gl_image.get(), new_id);
+
+  if (gmb_id != -1) {
+    DCHECK(image_gmb_ids_map_.find(new_id) == image_gmb_ids_map_.end());
+    image_gmb_ids_map_[new_id] = gmb_id;
+  }
+
   return new_id;
 }
 
@@ -561,7 +568,18 @@ int32_t GLManager::CreateGpuMemoryBufferImage(size_t width,
   return CreateImage(buffer->AsClientBuffer(), width, height, internalformat);
 }
 
+int32_t GLManager::GetImageGpuMemoryBufferId(unsigned image_id) {
+  auto it = image_gmb_ids_map_.find(image_id);
+  if (it != image_gmb_ids_map_.end())
+    return it->second;
+  return -1;
+}
+
 void GLManager::DestroyImage(int32_t id) {
+  auto it = image_gmb_ids_map_.find(id);
+  if (it != image_gmb_ids_map_.end())
+    image_gmb_ids_map_.erase(it);
+
   gpu::gles2::ImageManager* image_manager = decoder_->GetImageManager();
   DCHECK(image_manager);
   image_manager->RemoveImage(id);

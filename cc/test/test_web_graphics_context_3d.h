@@ -268,6 +268,7 @@ class TestWebGraphicsContext3D {
                                                     GLsizei height,
                                                     GLenum internalformat,
                                                     GLenum usage);
+  virtual void getImageivCHROMIUM(GLuint image_id, GLenum param, GLint* data);
 
   virtual void texImageIOSurface2DCHROMIUM(GLenum target,
                                            GLsizei width,

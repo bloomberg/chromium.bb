@@ -127,18 +127,30 @@ typedef void (
 #define GL_RGB_YCBCR_420V_CHROMIUM 0x78FC
 #endif
 
+#ifndef GL_GPU_MEMORY_BUFFER_ID
+#define GL_GPU_MEMORY_BUFFER_ID 0x78FD
+#endif
+
 #ifdef GL_GLEXT_PROTOTYPES
 GL_APICALL GLuint GL_APIENTRY glCreateGpuMemoryBufferImageCHROMIUM(
     GLsizei width,
     GLsizei height,
     GLenum internalformat,
     GLenum usage);
+
+GL_APICALL void GL_APIENTRY glGetImageivCHROMIUM(
+    GLuint image_id,
+    GLenum param,
+    GLint* data);
 #endif
 typedef GLuint(GL_APIENTRYP PFNGLCREATEGPUMEMORYBUFFERIMAGECHROMIUMPROC)(
     GLsizei width,
     GLsizei height,
     GLenum internalformat,
     GLenum usage);
+typedef GLint(GL_APIENTRYP PFNGLGETIMAGEIVCHROMIUMPROC)(
+    GLuint image_id,
+    GLenum param);
 #endif  /* GL_CHROMIUM_gpu_memory_buffer_image */
 
 /* GL_CHROMIUM_map_sub */

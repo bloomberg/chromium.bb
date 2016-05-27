@@ -639,6 +639,15 @@ GLuint TestWebGraphicsContext3D::createGpuMemoryBufferImageCHROMIUM(
   return image_id;
 }
 
+void TestWebGraphicsContext3D::getImageivCHROMIUM(GLuint image_id,
+                                                  GLenum param,
+                                                  GLint* data) {
+  DCHECK_EQ(GL_GPU_MEMORY_BUFFER_ID, static_cast<int>(param));
+  base::AutoLock lock(namespace_->lock);
+  std::unordered_set<unsigned>& images = namespace_->images;
+  *data = images.find(image_id) == images.end() ? -1 : 1;
+}
+
 GLuint64 TestWebGraphicsContext3D::insertFenceSync() {
   return next_insert_fence_sync_++;
 }

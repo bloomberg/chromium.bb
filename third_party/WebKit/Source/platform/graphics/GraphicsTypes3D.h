@@ -53,6 +53,7 @@ const unsigned GC3D_COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD = 0x87EE;
 // GL_CHROMIUM_gpu_memory_buffer_image
 const unsigned GC3D_MAP_CHROMIUM = 0x78F1;
 const unsigned GC3D_SCANOUT_CHROMIUM = 0x78F2;
+const unsigned GC3D_GPU_MEMORY_BUFFER_ID = 0x78FD;
 
 namespace blink {
 

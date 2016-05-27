@@ -459,6 +459,9 @@ int32_t CommandBufferProxyImpl::CreateImage(ClientBuffer buffer,
       gpu_memory_buffer_manager->GpuMemoryBufferFromClientBuffer(buffer);
   DCHECK(gpu_memory_buffer);
 
+  DCHECK(image_gmb_ids_map_.find(new_id) == image_gmb_ids_map_.end());
+  image_gmb_ids_map_[new_id] = gpu_memory_buffer->GetId().id;
+
   // This handle is owned by the GPU process and must be passed to it or it
   // will leak. In otherwords, do not early out on error between here and the
   // sending of the CreateImage IPC below.
@@ -512,6 +515,9 @@ void CommandBufferProxyImpl::DestroyImage(int32_t id) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
+  auto it = image_gmb_ids_map_.find(id);
+  if (it != image_gmb_ids_map_.end())
+    image_gmb_ids_map_.erase(it);
   Send(new GpuCommandBufferMsg_DestroyImage(route_id_, id));
 }
 
@@ -530,6 +536,14 @@ int32_t CommandBufferProxyImpl::CreateGpuMemoryBufferImage(
     return -1;
 
   return CreateImage(buffer->AsClientBuffer(), width, height, internal_format);
+}
+
+int32_t CommandBufferProxyImpl::GetImageGpuMemoryBufferId(unsigned image_id) {
+  CheckLock();
+  auto it = image_gmb_ids_map_.find(image_id);
+  if (it != image_gmb_ids_map_.end())
+    return it->second;
+  return -1;
 }
 
 uint32_t CommandBufferProxyImpl::CreateStreamTexture(uint32_t texture_id) {

@@ -132,6 +132,7 @@ class GLManager : private GpuControl {
                                      size_t height,
                                      unsigned internalformat,
                                      unsigned usage) override;
+  int32_t GetImageGpuMemoryBufferId(unsigned image_id) override;
   void SignalQuery(uint32_t query, const base::Closure& callback) override;
   void SetLock(base::Lock*) override;
   void EnsureWorkVisible() override;
@@ -179,6 +180,9 @@ class GLManager : private GpuControl {
   uint64_t next_fence_sync_release_;
 
   bool use_iosurface_memory_buffers_ = false;
+
+  // A map from image id to GpuMemoryBuffer id.
+  std::map<int32_t, int32_t> image_gmb_ids_map_;
 
   // Used on Android to virtualize GL for all contexts.
   static int use_count_;

@@ -299,6 +299,12 @@ GLuint TestGLES2Interface::CreateGpuMemoryBufferImageCHROMIUM(
       width, height, internalformat, usage);
 }
 
+void TestGLES2Interface::GetImageivCHROMIUM(GLuint image_id,
+                                            GLenum param,
+                                            GLint* data) {
+  return test_context_->getImageivCHROMIUM(image_id, param, data);
+}
+
 void TestGLES2Interface::BindTexImage2DCHROMIUM(GLenum target, GLint image_id) {
   test_context_->bindTexImage2DCHROMIUM(target, image_id);
 }

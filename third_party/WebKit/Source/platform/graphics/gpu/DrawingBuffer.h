@@ -250,6 +250,11 @@ private:
         DISALLOW_NEW();
         GLuint textureId = 0;
         GLuint imageId = 0;
+
+        // A GpuMemoryBuffer is a concept that the compositor understands. and
+        // is able to operate on. The id is scoped to renderer process.
+        GLint gpuMemoryBufferId = -1;
+
         TextureParameters parameters;
     };
 

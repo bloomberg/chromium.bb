@@ -123,6 +123,7 @@ class GPU_EXPORT CommandBufferProxyImpl
                                      size_t height,
                                      unsigned internal_format,
                                      unsigned usage) override;
+  int32_t GetImageGpuMemoryBufferId(unsigned image_id) override;
   void SignalQuery(uint32_t query, const base::Closure& callback) override;
   void SetLock(base::Lock* lock) override;
   void EnsureWorkVisible() override;
@@ -294,6 +295,9 @@ class GPU_EXPORT CommandBufferProxyImpl
 
   SwapBuffersCompletionCallback swap_buffers_completion_callback_;
   UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;
+
+  // A map from image id to GpuMemoryBuffer id.
+  std::map<int32_t, int32_t> image_gmb_ids_map_;
 
   base::WeakPtr<CommandBufferProxyImpl> weak_this_;
   scoped_refptr<base::SequencedTaskRunner> callback_thread_;

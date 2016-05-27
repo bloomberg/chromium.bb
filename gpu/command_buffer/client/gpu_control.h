@@ -59,6 +59,11 @@ class GPU_EXPORT GpuControl {
                                              unsigned internalformat,
                                              unsigned usage) = 0;
 
+  // Returns the id of the GpuMemoryBuffer associated with the given image. If
+  // the image doesn't exist, or isn't associated with a GpuMemoryBuffer,
+  // returns -1.
+  virtual int32_t GetImageGpuMemoryBufferId(unsigned image_id) = 0;
+
   // Runs |callback| when a query created via glCreateQueryEXT() has cleared
   // passed the glEndQueryEXT() point.
   virtual void SignalQuery(uint32_t query, const base::Closure& callback) = 0;

@@ -913,6 +913,8 @@ GLuint CreateGpuMemoryBufferImageCHROMIUM(GLsizei width,
                                           GLenum internalformat,
                                           GLenum usage) override;
 
+void GetImageivCHROMIUM(GLuint image_id, GLenum param, GLint* data) override;
+
 void GetTranslatedShaderSourceANGLE(GLuint shader,
                                     GLsizei bufsize,
                                     GLsizei* length,
