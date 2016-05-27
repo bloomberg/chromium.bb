@@ -176,11 +176,13 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
         }
 
         /**
-         * Returns whether the sign-in flow activity was set but is no longer valid.
+         * Returns whether the sign-in flow activity was set but is no longer visible to the user.
          */
-        private boolean isActivityDestroyed() {
+        private boolean isActivityInvisible() {
             return activity != null
-                    && ApplicationStatus.getStateForActivity(activity) == ActivityState.DESTROYED;
+                    && (ApplicationStatus.getStateForActivity(activity) == ActivityState.STOPPED
+                               || ApplicationStatus.getStateForActivity(activity)
+                                       == ActivityState.DESTROYED);
         }
     }
 
@@ -390,7 +392,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             return;
         }
 
-        if (mSignInState.isActivityDestroyed()) {
+        if (mSignInState.isActivityInvisible()) {
             abortSignIn();
             return;
         }
@@ -417,7 +419,7 @@ public class SigninManager implements AccountTrackerService.OnSystemAccountsSeed
             return;
         }
 
-        if (mSignInState.isActivityDestroyed()) {
+        if (mSignInState.isActivityInvisible()) {
             abortSignIn();
             return;
         }
