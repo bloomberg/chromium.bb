@@ -24,7 +24,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isola
     String errorMessage;
     {
         v8::TryCatch tryCatch(isolate);
-        status = doSerialize(value, writer, transferables, blobInfo, serializedValue.get(), tryCatch, errorMessage, isolate);
+        status = doSerialize(value, writer, transferables, blobInfo, serializedValue->blobDataHandles(), tryCatch, errorMessage, isolate);
         if (status == ScriptValueSerializer::JSException) {
             // If there was a JS exception thrown, re-throw it.
             exceptionState.rethrowV8Exception(tryCatch.Exception());
@@ -53,21 +53,10 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isola
     return create(isolate, value, writer, transferables, blobInfo, exceptionState);
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isolate* isolate, v8::Local<v8::Value> value, Transferables* transferables, ExceptionState& exceptionState)
-{
-    return create(isolate, value, transferables, 0, exceptionState);
-}
-
 PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::createAndSwallowExceptions(v8::Isolate* isolate, v8::Local<v8::Value> value)
 {
     TrackExceptionState exceptionState;
-    return create(isolate, value, nullptr, exceptionState);
-}
-
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isolate* isolate, const ScriptValue& value, WebBlobInfoArray* blobInfo, ExceptionState& exceptionState)
-{
-    ASSERT(isolate->InContext());
-    return create(isolate, value.v8Value(), nullptr, blobInfo, exceptionState);
+    return create(isolate, value, nullptr, nullptr, exceptionState);
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(const String& data)
@@ -92,11 +81,6 @@ void SerializedScriptValueFactory::transferData(SerializedScriptValue* serialize
     if (exceptionState.hadException())
         return;
     serializedValue->transferOffscreenCanvas(isolate, transferables->offscreenCanvases, exceptionState);
-}
-
-ScriptValueSerializer::Status SerializedScriptValueFactory::doSerialize(v8::Local<v8::Value> value, SerializedScriptValueWriter& writer, Transferables* transferables, WebBlobInfoArray* blobInfo, SerializedScriptValue* serializedValue, v8::TryCatch& tryCatch, String& errorMessage, v8::Isolate* isolate)
-{
-    return doSerialize(value, writer, transferables, blobInfo, serializedValue->blobDataHandles(), tryCatch, errorMessage, isolate);
 }
 
 ScriptValueSerializer::Status SerializedScriptValueFactory::doSerialize(v8::Local<v8::Value> value, SerializedScriptValueWriter& writer, Transferables* transferables, WebBlobInfoArray* blobInfo, BlobDataHandleMap& blobDataHandles, v8::TryCatch& tryCatch, String& errorMessage, v8::Isolate* isolate)

@@ -72,7 +72,10 @@ WebNotificationData createWebNotificationData(ExecutionContext* executionContext
     webData.requireInteraction = options.requireInteraction();
 
     if (options.hasData()) {
-        RefPtr<SerializedScriptValue> serializedScriptValue = SerializedScriptValueFactory::instance().create(options.data().isolate(), options.data(), nullptr, exceptionState);
+        const ScriptValue& data = options.data();
+        v8::Isolate* isolate = data.isolate();
+        DCHECK(isolate->InContext());
+        RefPtr<SerializedScriptValue> serializedScriptValue = SerializedScriptValueFactory::instance().create(isolate, data.v8Value(), nullptr, nullptr, exceptionState);
         if (exceptionState.hadException())
             return WebNotificationData();
 
