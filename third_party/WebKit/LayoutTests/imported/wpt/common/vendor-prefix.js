@@ -1,3 +1,17 @@
+/*
+ * Distributed under both the W3C Test Suite License [1] and the W3C
+ * 3-clause BSD License [2]. To contribute to a W3C Test Suite, see the
+ * policies and contribution forms [3].
+ *
+ * [1] http://www.w3.org/Consortium/Legal/2008/04-testsuite-license
+ * [2] http://www.w3.org/Consortium/Legal/2008/03-bsd-license
+ * [3] http://www.w3.org/2004/10/27-testcases
+ * */
+
+/* Source: https://github.com/w3c/web-platform-tests/blob/master/common/vendor-prefix.js
+ * The file has been modified to always be on (i.e. does not require usePrefixes=1 to
+ * start replacing prefixes).  */
+
 /* Use this script when you want to test APIs that use vendor prefixes
    and define which objects need to be checked for prefixed versions, à la
    <script src="vendor-prefix.js"
@@ -64,52 +78,23 @@
         }
     }
 
-    if (location.search.indexOf('usePrefixes=1') !== -1) {
-        if (document.querySelector("script[data-prefixed-objects]")) {
-            var prefixObjectsData = document.querySelector("script[data-prefixed-objects]").dataset["prefixedObjects"];
-            try {
-                var prefixedObjects = JSON.parse(prefixObjectsData);
-            } catch (e) {
-                throw "couldn't parse data-prefixed-objects as JSON:" + e;
-            }
-            prefixedObjects.forEach(setAlias);
+    // For this version of vendor-prefixes.js, always replace the prefixes.
+    if (document.querySelector("script[data-prefixed-objects]")) {
+        var prefixObjectsData = document.querySelector("script[data-prefixed-objects]").dataset["prefixedObjects"];
+        try {
+            var prefixedObjects = JSON.parse(prefixObjectsData);
+        } catch (e) {
+            throw "couldn't parse data-prefixed-objects as JSON:" + e;
         }
-        if (document.querySelector("script[data-prefixed-prototypes]")) {
-            var prefixProtoData = document.querySelector("script[data-prefixed-prototypes]").dataset["prefixedPrototypes"];
-            try {
-                var prefixedPrototypes = JSON.parse(prefixProtoData);
-            } catch (e) {
-                throw "couldn't parse data-prefixed-prototypes as JSON:" + e;
-            }
-            prefixedPrototypes.forEach(setPrototypeAlias);
-        }
-        var ul = document.createElement("ul");
-        Object.keys(aliases).forEach(function (alias) {
-            var li = document.createElement("li");
-            li.appendChild(document.createTextNode(alias + " has been set to be an alias of vendor-prefixed " + aliases[alias]));
-            ul.appendChild(li);
-        });
-        documentingPrefixUsage.appendChild(ul);
-    } else {
-        // Document that the test can be run with prefixes enabled
-
-        var a = document.createElement('a');
-        var link = "";
-        if (location.search) {
-            link = location.search + "&usePrefixes=1";
-        } else {
-            link = "?usePrefixes=1";
-        }
-        a.setAttribute("href", link);
-        a.appendChild(document.createTextNode("with vendor prefixes enabled"));
-        documentingPrefixUsage.appendChild(document.createTextNode("The feature(s) tested here are known to have been made available via vendor prefixes; you can run this test "));
-        documentingPrefixUsage.appendChild(a);
-        documentingPrefixUsage.appendChild(document.createTextNode("."));
+        prefixedObjects.forEach(setAlias);
     }
-    var log = document.getElementById('log');
-    if (log) {
-        log.parentNode.insertBefore(documentingPrefixUsage, log);
-    } else {
-        document.body.appendChild(documentingPrefixUsage);
+    if (document.querySelector("script[data-prefixed-prototypes]")) {
+        var prefixProtoData = document.querySelector("script[data-prefixed-prototypes]").dataset["prefixedPrototypes"];
+        try {
+            var prefixedPrototypes = JSON.parse(prefixProtoData);
+        } catch (e) {
+            throw "couldn't parse data-prefixed-prototypes as JSON:" + e;
+        }
+        prefixedPrototypes.forEach(setPrototypeAlias);
     }
 })();
