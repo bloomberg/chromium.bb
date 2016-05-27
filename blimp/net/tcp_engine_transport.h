@@ -23,12 +23,15 @@ class StreamSocket;
 namespace blimp {
 
 class BlimpConnection;
+class BlimpConnectionStatistics;
 
 // BlimpTransport which listens for a TCP connection at |address|.
 class BLIMP_NET_EXPORT TCPEngineTransport : public BlimpTransport {
  public:
-  // Caller retains the ownership of |net_log|.
-  TCPEngineTransport(const net::IPEndPoint& address, net::NetLog* net_log);
+  // Caller retains the ownership of |statistics| and |net_log|.
+  TCPEngineTransport(const net::IPEndPoint& address,
+                     BlimpConnectionStatistics* statistics,
+                     net::NetLog* net_log);
   ~TCPEngineTransport() override;
 
   // BlimpTransport implementation.
@@ -42,6 +45,7 @@ class BLIMP_NET_EXPORT TCPEngineTransport : public BlimpTransport {
   void OnTCPConnectAccepted(int result);
 
   const net::IPEndPoint address_;
+  BlimpConnectionStatistics* blimp_connection_statistics_;
   net::NetLog* net_log_;
   std::unique_ptr<net::ServerSocket> server_socket_;
   std::unique_ptr<net::StreamSocket> accepted_socket_;

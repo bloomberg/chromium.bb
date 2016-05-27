@@ -21,6 +21,7 @@ class StreamSocket;
 }  // namespace net
 
 namespace blimp {
+class BlimpConnectionStatistics;
 
 // Reads opaque length-prefixed packets of bytes from a StreamSocket.
 // The header segment is 32-bit, encoded in network byte order.
@@ -30,7 +31,10 @@ class BLIMP_NET_EXPORT StreamPacketReader : public PacketReader {
  public:
   // |socket|: The socket to read packets from. The caller must ensure |socket|
   // is valid while the reader is in-use (see ReadPacket below).
-  explicit StreamPacketReader(net::StreamSocket* socket);
+  // |statistics|: Statistics collector to keep track of number of bytes read.
+  // |statistics| is expected to outlive |this|.
+  StreamPacketReader(net::StreamSocket* socket,
+                     BlimpConnectionStatistics* statistics);
 
   ~StreamPacketReader() override;
 
@@ -72,6 +76,7 @@ class BLIMP_NET_EXPORT StreamPacketReader : public PacketReader {
   scoped_refptr<net::GrowableIOBuffer> header_buffer_;
   scoped_refptr<net::GrowableIOBuffer> payload_buffer_;
   net::CompletionCallback callback_;
+  BlimpConnectionStatistics* statistics_;
 
   base::WeakPtrFactory<StreamPacketReader> weak_factory_;
 

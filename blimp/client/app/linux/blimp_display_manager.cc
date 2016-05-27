@@ -80,5 +80,7 @@ void BlimpDisplayManager::OnActivationChanged(bool active) {}
 
 void BlimpDisplayManager::OnSwapBuffersCompleted() {}
 
+void BlimpDisplayManager::DidCommitAndDrawFrame() {}
+
 }  // namespace client
 }  // namespace blimp

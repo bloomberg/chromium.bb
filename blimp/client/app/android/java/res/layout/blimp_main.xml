@@ -61,17 +61,25 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_below="@+id/toolbar"/>
+
+        <include android:id="@+id/debug_stats"
+            layout="@layout/debug_stats_overlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:visibility="invisible" />
+
         <org.chromium.blimp.input.WebInputBox
-                android:id="@+id/editText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/web_input_background"
-                android:layout_alignParentBottom="true"
-                android:layout_marginTop="45dp"
-                android:padding="10dp"
-                android:paddingTop="16dp"
-                android:inputType="text|textWebEditText"
-                android:visibility="gone"/>
+            android:id="@+id/editText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/web_input_background"
+            android:layout_alignParentBottom="true"
+            android:layout_marginTop="45dp"
+            android:padding="10dp"
+            android:paddingTop="16dp"
+            android:inputType="text|textWebEditText"
+            android:visibility="gone"/>
 
     </RelativeLayout>
 </merge>

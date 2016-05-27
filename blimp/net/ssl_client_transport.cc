@@ -21,8 +21,10 @@ namespace blimp {
 
 SSLClientTransport::SSLClientTransport(const net::IPEndPoint& ip_endpoint,
                                        scoped_refptr<net::X509Certificate> cert,
+                                       BlimpConnectionStatistics* statistics,
                                        net::NetLog* net_log)
-    : TCPClientTransport(ip_endpoint, net_log), ip_endpoint_(ip_endpoint) {
+    : TCPClientTransport(ip_endpoint, statistics, net_log),
+      ip_endpoint_(ip_endpoint) {
   // Test code may pass in a null value for |cert|. Only spin up a CertVerifier
   // if there is a cert present.
   if (cert) {

@@ -17,8 +17,13 @@
 namespace blimp {
 
 TCPEngineTransport::TCPEngineTransport(const net::IPEndPoint& address,
+                                       BlimpConnectionStatistics* statistics,
                                        net::NetLog* net_log)
-    : address_(address), net_log_(net_log) {}
+    : address_(address),
+      blimp_connection_statistics_(statistics),
+      net_log_(net_log) {
+  DCHECK(blimp_connection_statistics_);
+}
 
 TCPEngineTransport::~TCPEngineTransport() {}
 
@@ -59,8 +64,8 @@ void TCPEngineTransport::Connect(const net::CompletionCallback& callback) {
 std::unique_ptr<BlimpConnection> TCPEngineTransport::TakeConnection() {
   DCHECK(connect_callback_.is_null());
   DCHECK(accepted_socket_);
-  return base::WrapUnique(
-      new StreamSocketConnection(std::move(accepted_socket_)));
+  return base::WrapUnique(new StreamSocketConnection(
+      std::move(accepted_socket_), blimp_connection_statistics_));
 }
 
 const char* TCPEngineTransport::GetName() const {

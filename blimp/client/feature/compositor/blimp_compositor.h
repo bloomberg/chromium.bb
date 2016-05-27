@@ -52,6 +52,7 @@ class BlimpCompositorClient {
   virtual gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() = 0;
   virtual cc::ImageSerializationProcessor* GetImageSerializationProcessor() = 0;
   virtual void DidCompleteSwapBuffers() = 0;
+  virtual void DidCommitAndDrawFrame() = 0;
 
   // Should send web gesture events which could not be handled locally by the
   // compositor to the engine.

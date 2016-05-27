@@ -137,16 +137,28 @@ class RemoteChannelTestCommit : public RemoteChannelTest {
     PostSetNeedsCommitToMainThread();
   }
 
-  void SetNeedsCommitOnImpl() override { EXPECT_EQ(0, calls_received_++); }
+  void SetNeedsCommitOnImpl() override {
+    calls_received_++;
+    EXPECT_EQ(1, calls_received_);
+  }
 
-  void ReceivedBeginMainFrame() override { EXPECT_EQ(1, calls_received_++); }
+  void ReceivedBeginMainFrame() override {
+    calls_received_++;
+    EXPECT_EQ(2, calls_received_);
+  }
 
-  void StartCommitOnImpl() override { EXPECT_EQ(2, calls_received_++); }
+  void StartCommitOnImpl() override {
+    calls_received_++;
+    EXPECT_EQ(3, calls_received_);
+  }
 
-  void DidCommitAndDrawFrame() override { EXPECT_EQ(3, calls_received_++); }
+  void DidCommitAndDrawFrame() override {
+    calls_received_on_both_server_and_client_++;
+  }
 
   void DidCompleteSwapBuffers() override {
-    if (++calls_received_on_both_server_and_client_ == 2)
+    calls_received_on_both_server_and_client_++;
+    if (calls_received_on_both_server_and_client_ == 4)
       EndTest();
   }
 
@@ -157,8 +169,8 @@ class RemoteChannelTestCommit : public RemoteChannelTest {
   }
 
   void AfterTest() override {
-    EXPECT_EQ(4, calls_received_);
-    EXPECT_EQ(2, calls_received_on_both_server_and_client_);
+    EXPECT_EQ(3, calls_received_);
+    EXPECT_EQ(4, calls_received_on_both_server_and_client_);
   }
 
   const gfx::Size viewport_size_ = gfx::Size(5, 3);

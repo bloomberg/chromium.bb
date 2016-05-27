@@ -72,8 +72,9 @@ class ClientNetworkComponents : public ConnectionHandler,
                                 public ConnectionErrorObserver {
  public:
   // Can be created on any thread.
-  explicit ClientNetworkComponents(
-      std::unique_ptr<NetworkEventObserver> observer);
+  ClientNetworkComponents(
+      std::unique_ptr<NetworkEventObserver> observer,
+      std::unique_ptr<BlimpConnectionStatistics> blimp_connection_statistics);
   ~ClientNetworkComponents() override;
 
   // Sets up network components.
@@ -95,14 +96,19 @@ class ClientNetworkComponents : public ConnectionHandler,
   std::unique_ptr<BrowserConnectionHandler> connection_handler_;
   std::unique_ptr<ClientConnectionManager> connection_manager_;
   std::unique_ptr<NetworkEventObserver> network_observer_;
+  std::unique_ptr<BlimpConnectionStatistics> connection_statistics_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientNetworkComponents);
 };
 
 ClientNetworkComponents::ClientNetworkComponents(
-    std::unique_ptr<NetworkEventObserver> network_observer)
+    std::unique_ptr<NetworkEventObserver> network_observer,
+    std::unique_ptr<BlimpConnectionStatistics> statistics)
     : connection_handler_(new BrowserConnectionHandler),
-      network_observer_(std::move(network_observer)) {}
+      network_observer_(std::move(network_observer)),
+      connection_statistics_(std::move(statistics)) {
+  DCHECK(connection_statistics_);
+}
 
 ClientNetworkComponents::~ClientNetworkComponents() {}
 
@@ -121,12 +127,13 @@ void ClientNetworkComponents::ConnectWithAssignment(
     case Assignment::SSL:
       DCHECK(assignment.cert);
       connection_manager_->AddTransport(base::WrapUnique(new SSLClientTransport(
-          assignment.engine_endpoint, std::move(assignment.cert), nullptr)));
+          assignment.engine_endpoint, std::move(assignment.cert),
+          connection_statistics_.get(), nullptr)));
       transport_type = "SSL";
       break;
     case Assignment::TCP:
-      connection_manager_->AddTransport(base::WrapUnique(
-          new TCPClientTransport(assignment.engine_endpoint, nullptr)));
+      connection_manager_->AddTransport(base::WrapUnique(new TCPClientTransport(
+          assignment.engine_endpoint, connection_statistics_.get(), nullptr)));
       transport_type = "TCP";
       break;
     case Assignment::UNKNOWN:
@@ -166,13 +173,14 @@ BlimpClientSession::BlimpClientSession(const GURL& assigner_endpoint)
       render_widget_feature_(new RenderWidgetFeature),
       settings_feature_(new SettingsFeature),
       weak_factory_(this) {
-  net_components_.reset(new ClientNetworkComponents(
-      base::WrapUnique(new CrossThreadNetworkEventObserver(
-          weak_factory_.GetWeakPtr(),
-          base::SequencedTaskRunnerHandle::Get()))));
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
   io_thread_.StartWithOptions(options);
+  blimp_connection_statistics_ = new BlimpConnectionStatistics();
+  net_components_.reset(new ClientNetworkComponents(
+      base::WrapUnique(new CrossThreadNetworkEventObserver(
+          weak_factory_.GetWeakPtr(), base::SequencedTaskRunnerHandle::Get())),
+      base::WrapUnique(blimp_connection_statistics_)));
 
   assignment_source_.reset(new AssignmentSource(
       assigner_endpoint, io_thread_.task_runner(), io_thread_.task_runner()));
@@ -276,6 +284,11 @@ RenderWidgetFeature* BlimpClientSession::GetRenderWidgetFeature() const {
 
 SettingsFeature* BlimpClientSession::GetSettingsFeature() const {
   return settings_feature_.get();
+}
+
+BlimpConnectionStatistics* BlimpClientSession::GetBlimpConnectionStatistics()
+    const {
+  return blimp_connection_statistics_;
 }
 
 }  // namespace client

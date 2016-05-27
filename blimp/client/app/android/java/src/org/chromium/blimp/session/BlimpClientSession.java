@@ -47,6 +47,14 @@ public class BlimpClientSession {
          *               and their explanations.
          */
         void onDisconnected(String reason);
+
+        /**
+         * Called to update the debug UI about network statistics for the current web page.
+         * @param received Number of bytes received.
+         * @param sent Number of bytes sent.
+         * @param commit Number of commits completed.
+         */
+        void updateDebugStatsUI(int received, int sent, int commits);
     }
 
     private final String mAssignerUrl;
@@ -162,7 +170,16 @@ public class BlimpClientSession {
         return mNativeBlimpClientSessionAndroidPtr;
     }
 
+    /**
+     * Makes a JNI call to pull the debug statistics.
+     */
+    public int[] getDebugStats() {
+        if (mNativeBlimpClientSessionAndroidPtr == 0) return null;
+        return nativeGetDebugInfo(mNativeBlimpClientSessionAndroidPtr);
+    }
+
     private native long nativeInit(String assignerUrl);
     private native void nativeConnect(long nativeBlimpClientSessionAndroid, String token);
     private native void nativeDestroy(long nativeBlimpClientSessionAndroid);
+    private native int[] nativeGetDebugInfo(long nativeBlimpClientSessionAndroid);
 }
