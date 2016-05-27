@@ -728,6 +728,8 @@
       'browser/ui/views/select_file_dialog_extension.h',
       'browser/ui/views/select_file_dialog_extension_factory.cc',
       'browser/ui/views/select_file_dialog_extension_factory.h',
+      'browser/ui/webui/cast/cast_ui.cc',
+      'browser/ui/webui/cast/cast_ui.h',
     ],
     # ARC-only sources.
     'chrome_browser_ui_chromeos_arc_sources': [
@@ -1518,6 +1520,8 @@
       'browser/ui/passwords/manage_passwords_icon.cc',
       'browser/ui/passwords/manage_passwords_icon.h',
       'browser/ui/web_contents_sizer.mm',
+      'browser/ui/webui/cast/cast_ui.cc',
+      'browser/ui/webui/cast/cast_ui.h',
     ],
     'chrome_browser_ui_media_router_sources': [
       'browser/ui/toolbar/media_router_action.cc',
@@ -2552,6 +2556,8 @@
       'browser/ui/views/network_profile_bubble_view.cc',
       'browser/ui/views/uninstall_view.cc',
       'browser/ui/views/uninstall_view.h',
+      'browser/ui/webui/cast/cast_ui.cc',
+      'browser/ui/webui/cast/cast_ui.h',
       'browser/ui/webui/conflicts_ui.cc',
       'browser/ui/webui/conflicts_ui.h',
       'browser/ui/webui/set_as_default_browser_ui.cc',

@@ -188,7 +188,10 @@
       "internal": true,
       "channel": "stable",
       "contexts": ["webui"],
-      "matches": ["chrome://media-router/*"]
+      "matches": [
+        "chrome://cast/*",
+        "chrome://media-router/*"
+      ]
     }
   ],
   "events": {
@@ -208,6 +211,7 @@
       "channel": "trunk",
       "contexts": ["webui"],
       "matches": [
+        "chrome://cast/*",
         "chrome://extensions-frame/*",
         "chrome://extensions/*",
         "chrome://chrome-signin/*",

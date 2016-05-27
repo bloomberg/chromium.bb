@@ -135,6 +135,9 @@ extern const char kChromeUIWebRtcLogsURL[];
 
 #if defined(ENABLE_MEDIA_ROUTER)
 extern const char kChromeUIMediaRouterURL[];
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+extern const char kChromeUICastURL[];
+#endif
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
@@ -306,6 +309,9 @@ extern const char kChromeUIWebRtcLogsHost[];
 
 #if defined(ENABLE_MEDIA_ROUTER)
 extern const char kChromeUIMediaRouterHost[];
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+extern const char kChromeUICastHost[];
+#endif
 #endif
 
 // Options sub-pages.

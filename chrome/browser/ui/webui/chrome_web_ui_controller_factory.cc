@@ -91,9 +91,14 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #endif
 
-#if defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
+#if defined(ENABLE_MEDIA_ROUTER)
+#if !defined(OS_ANDROID)
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
+#endif
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/cast/cast_ui.h"
+#endif
 #endif
 
 #if defined(OS_ANDROID)
@@ -567,11 +572,19 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUIWebRtcLogsHost)
     return &NewWebUI<WebRtcLogsUI>;
 #endif
-#if defined(ENABLE_MEDIA_ROUTER) && !defined(OS_ANDROID)
+#if defined(ENABLE_MEDIA_ROUTER)
+#if !defined(OS_ANDROID)
   if (url.host() == chrome::kChromeUIMediaRouterHost &&
       media_router::MediaRouterEnabled(profile)) {
     return &NewWebUI<media_router::MediaRouterUI>;
   }
+#endif
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  if (url.host() == chrome::kChromeUICastHost &&
+      media_router::MediaRouterEnabled(profile)) {
+    return &NewWebUI<CastUI>;
+  }
+#endif
 #endif
   if (IsAboutUI(url))
     return &NewWebUI<AboutUI>;

@@ -518,6 +518,12 @@
       <if expr="enable_media_router">
         <part file="media_router_resources.grdp" />
       </if>
+      <if expr="enable_media_router and (chromeos or is_win or is_macosx)">
+        <include name="IDR_CAST_HTML" file="resources\cast\cast.html" type="BINDATA" />
+        <include name="IDR_CAST_CSS" file="resources\cast\cast.css" type="BINDATA" />
+        <include name="IDR_CAST_JS" file="resources\cast\cast.js" type="BINDATA" />
+        <include name="IDR_CAST_FAVICON" file="resources\cast\cast_favicon.ico" type="BINDATA" />
+      </if>
       <if expr="not is_android and not is_ios and not chromeos">
         <include name="IDR_IME_WINDOW_CLOSE" file="resources\input_ime\ime_window_close.png" type="BINDATA" />
         <include name="IDR_IME_WINDOW_CLOSE_C" file="resources\input_ime\ime_window_close_click.png" type="BINDATA" />
