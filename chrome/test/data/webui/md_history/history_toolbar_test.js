@@ -18,10 +18,10 @@ cr.define('md_history.history_toolbar_test', function() {
             [createHistoryEntry('2016-03-15', 'https://google.com')];
       });
 
-      test('selecting checkbox causes toolbar to change', function(done) {
+      test('selecting checkbox causes toolbar to change', function() {
         element.addNewResults(TEST_HISTORY_RESULTS);
 
-        flush(function() {
+        return flush().then(function() {
           var item = element.$$('history-item');
           MockInteractions.tap(item.$.checkbox);
 
@@ -39,8 +39,6 @@ cr.define('md_history.history_toolbar_test', function() {
           assertEquals(0, toolbar.count);
           // Ensure that the toolbar boolean states that no items are selected.
           assertFalse(toolbar.itemsSelected_);
-
-          done();
         });
       });
 
@@ -58,7 +56,7 @@ cr.define('md_history.history_toolbar_test', function() {
         app.queryingDisabled_ = false;
         registerMessageCallback('queryHistory', this, function (info) {
           assertEquals('example.com', info[0]);
-          flush(function() {
+          flush().then(function() {
             assertEquals(
                 'example.com',
                 toolbar.$['main-toolbar'].getSearchField().getValue());

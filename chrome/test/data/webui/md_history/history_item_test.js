@@ -27,9 +27,9 @@ cr.define('md_history.history_item_test', function() {
         ];
       });
 
-      test('basic separator insertion', function(done) {
+      test('basic separator insertion', function() {
         element.addNewResults(TEST_HISTORY_RESULTS);
-        flush(function() {
+        return flush().then(function() {
           // Check that the correct number of time gaps are inserted.
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
@@ -40,29 +40,26 @@ cr.define('md_history.history_item_test', function() {
           assertTrue(items[3].hasTimeGap);
           assertFalse(items[4].hasTimeGap);
           assertFalse(items[5].hasTimeGap);
-
-          done();
         });
       });
 
-      test('separator insertion for search', function(done) {
+      test('separator insertion for search', function() {
         element.addNewResults(SEARCH_HISTORY_RESULTS);
         element.searchedTerm = 'search';
-        flush(function() {
+
+        return flush().then(function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
 
           assertTrue(items[0].hasTimeGap);
           assertFalse(items[1].hasTimeGap);
           assertFalse(items[2].hasTimeGap);
-
-          done();
         });
       });
 
-      test('separator insertion after deletion', function(done) {
+      test('separator insertion after deletion', function() {
         element.addNewResults(TEST_HISTORY_RESULTS);
-        flush(function() {
+        return flush().then(function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
 
@@ -76,7 +73,6 @@ cr.define('md_history.history_item_test', function() {
 
           // Checks time gap separator is removed.
           assertFalse(items[2].hasTimeGap);
-          done();
         });
       });
 

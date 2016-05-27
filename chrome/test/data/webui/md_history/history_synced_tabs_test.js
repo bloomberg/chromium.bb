@@ -31,20 +31,19 @@ cr.define('md_history.history_synced_tabs_test', function() {
       var app;
       var element;
 
-      suiteSetup(function(done) {
+      suiteSetup(function() {
         app = $('history-app');
         // Not rendered until selected.
         assertEquals(null, app.$$('#history-synced-device-manager'));
 
         app.selectedPage_ = 'history-synced-device-manager';
-        flush(function() {
+        return flush().then(function() {
           element = app.$$('#history-synced-device-manager');
           assertTrue(!!element);
-          done();
         });
       });
 
-      test('single card, single window', function(done) {
+      test('single card, single window', function() {
         var sessionList = [
           createSession(
               'Nexus 5',
@@ -53,14 +52,13 @@ cr.define('md_history.history_synced_tabs_test', function() {
         ];
         setForeignSessions(sessionList, true);
 
-        flush(function() {
+        return flush().then(function() {
           var card = element.$$('history-synced-device-card');
           assertEquals(2, card.tabs.length);
-          done();
         });
       });
 
-      test('two cards, multiple windows', function(done) {
+      test('two cards, multiple windows', function() {
         var sessionList = [
           createSession(
               'Nexus 5',
@@ -76,7 +74,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
         ];
         setForeignSessions(sessionList, true);
 
-        flush(function() {
+        return flush().then(function() {
           var cards = Polymer.dom(element.root)
                           .querySelectorAll('history-synced-device-card');
           assertEquals(2, cards.length);
@@ -90,11 +88,10 @@ cr.define('md_history.history_synced_tabs_test', function() {
               2, Polymer.dom(cards[1].root)
                      .querySelectorAll('#window-separator')
                      .length);
-          done();
         });
       });
 
-      test('updating sessions', function(done) {
+      test('updating sessions', function() {
         var session1 = createSession(
             'Chromebook',
             [createWindow(['http://www.example.com', 'http://crbug.com'])]);
@@ -105,7 +102,7 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
         setForeignSessions([session1, session2], true);
 
-        flush(function() {
+        return flush().then(function() {
           var session1updated = createSession('Chromebook', [
             createWindow(['http://www.example.com', 'http://crbug.com/new']),
             createWindow(['http://web.site'])
@@ -114,27 +111,25 @@ cr.define('md_history.history_synced_tabs_test', function() {
 
           setForeignSessions([session1updated, session2], true);
 
-          flush(function() {
-            // There should only be two cards.
-            var cards = Polymer.dom(element.root)
-                .querySelectorAll('history-synced-device-card');
-            assertEquals(2, cards.length);
+          return flush();
+        }).then(function() {
+          // There should only be two cards.
+          var cards = Polymer.dom(element.root)
+              .querySelectorAll('history-synced-device-card');
+          assertEquals(2, cards.length);
 
-            // There are now 2 windows in the first device.
-            assertEquals(
-                2, Polymer.dom(cards[0].root)
-                       .querySelectorAll('#window-separator')
-                       .length);
+          // There are now 2 windows in the first device.
+          assertEquals(
+              2, Polymer.dom(cards[0].root)
+                     .querySelectorAll('#window-separator')
+                     .length);
 
-            // Check that the actual link changes.
-            assertEquals(
-                'http://crbug.com/new',
-                Polymer.dom(cards[0].root)
-                    .querySelectorAll('.website-title')[1]
-                    .textContent.trim());
-
-            done();
-          });
+          // Check that the actual link changes.
+          assertEquals(
+              'http://crbug.com/new',
+              Polymer.dom(cards[0].root)
+                  .querySelectorAll('.website-title')[1]
+                  .textContent.trim());
         });
       });
 

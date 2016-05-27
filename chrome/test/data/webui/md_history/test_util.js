@@ -6,9 +6,13 @@
  * Waits for queued up tasks to finish before proceeding. Inspired by:
  * https://github.com/Polymer/web-component-tester/blob/master/browser/environment/helpers.js#L97
  */
-function flush(callback) {
+function flush() {
   Polymer.dom.flush();
-  window.setTimeout(callback, 0);
+  // Promises have microtask timing, so we use setTimeout to explicity force a
+  // new task.
+  return new Promise(function(resolve, reject) {
+    window.setTimeout(resolve, 0);
+  });
 }
 
 /**

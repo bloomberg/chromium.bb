@@ -11,7 +11,7 @@ cr.define('md_history.history_grouped_list_test', function() {
       var SIMPLE_RESULTS;
       var PER_DAY_RESULTS;
       var PER_MONTH_RESULTS;
-      suiteSetup(function(done) {
+      suiteSetup(function() {
         app = $('history-app');
         app.grouped_ = true;
 
@@ -40,13 +40,12 @@ cr.define('md_history.history_grouped_list_test', function() {
           createHistoryEntry('2016-03-1', 'https://en.wikipedia.org'),
           createHistoryEntry('2016-03-1', 'https://en.wikipedia.org')
         ];
-        flush(function() {
+        return flush().then(function() {
           groupedList = app.$$('#history-grouped-list');
-          done();
         });
       });
 
-      test('grouped ui is shown', function(done) {
+      test('grouped ui is shown', function() {
         assertTrue(!!toolbar.$$('#grouped-buttons-container'));
 
         // History list is shown at first.
@@ -61,13 +60,12 @@ cr.define('md_history.history_grouped_list_test', function() {
 
         app.set('queryState_.range', HistoryRange.MONTH);
         assertEquals('history-grouped-list', app.$['content'].selected);
-        done();
       });
 
-      test('items grouped by domain', function(done) {
+      test('items grouped by domain', function() {
         app.set('queryState_.range', HistoryRange.WEEK);
         app.historyResult(createHistoryInfo(), SIMPLE_RESULTS);
-        flush(function() {
+        return flush().then(function() {
           var data = groupedList.groupedHistoryData_;
           // 1 card for the day with 3 domains.
           assertEquals(1, data.length);
@@ -77,14 +75,13 @@ cr.define('md_history.history_grouped_list_test', function() {
           assertEquals(2, data[0].domains[0].visits.length);
           assertEquals(1, data[0].domains[1].visits.length);
           assertEquals(1, data[0].domains[2].visits.length);
-          done();
         });
       });
 
-      test('items grouped by day in week view', function(done) {
+      test('items grouped by day in week view', function() {
         app.set('queryState_.range', HistoryRange.WEEK);
         app.historyResult(createHistoryInfo(), PER_DAY_RESULTS);
-        flush(function() {
+        return flush().then(function() {
           var data = groupedList.groupedHistoryData_;
 
           // 3 cards.
@@ -99,14 +96,13 @@ cr.define('md_history.history_grouped_list_test', function() {
 
           assertEquals(1, data[2].domains.length);
           assertEquals(1, data[2].domains[0].visits.length);
-          done();
         });
       });
 
-      test('items grouped by month in month view', function(done) {
+      test('items grouped by month in month view', function() {
         app.set('queryState_.range', HistoryRange.MONTH);
         app.historyResult(createHistoryInfo(), PER_MONTH_RESULTS);
-        flush(function() {
+        return flush().then(function() {
           var data = groupedList.groupedHistoryData_;
 
           // 1 card.
@@ -115,26 +111,23 @@ cr.define('md_history.history_grouped_list_test', function() {
           assertEquals(2, data[0].domains.length);
           assertEquals(4, data[0].domains[0].visits.length);
           assertEquals(1, data[0].domains[1].visits.length);
-
-          done();
         });
       });
 
-      test('items rendered when expanded', function(done) {
+      test('items rendered when expanded', function() {
         app.set('queryState_.range', HistoryRange.WEEK);
         app.historyResult(createHistoryInfo(), SIMPLE_RESULTS);
-        flush(function() {
-          var getItems = function() {
-            return Polymer.dom(groupedList.root)
-                .querySelectorAll('history-item');
-          };
+        var getItems = function() {
+          return Polymer.dom(groupedList.root)
+              .querySelectorAll('history-item');
+        };
 
+        return flush().then(function() {
           assertEquals(0, getItems().length);
           MockInteractions.tap(groupedList.$$('.domain-heading'));
-          flush(function() {
-            assertEquals(2, getItems().length);
-            done();
-          });
+          return flush();
+        }).then(function() {
+          assertEquals(2, getItems().length);
         });
       });
 

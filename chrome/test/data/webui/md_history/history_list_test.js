@@ -31,9 +31,9 @@ cr.define('md_history.history_list_test', function() {
         ];
       });
 
-      test('cancelling selection of multiple items', function(done) {
+      test('cancelling selection of multiple items', function() {
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-        flush(function() {
+        return flush().then(function() {
           var items = Polymer.dom(element.root)
               .querySelectorAll('history-item');
 
@@ -58,15 +58,13 @@ cr.define('md_history.history_list_test', function() {
 
           assertFalse(items[2].$.checkbox.checked);
           assertFalse(items[3].$.checkbox.checked);
-
-          done();
         });
       });
 
-      test('setting first and last items', function(done) {
+      test('setting first and last items', function() {
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
 
-        flush(function() {
+        return flush().then(function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
           assertTrue(items[0].isCardStart);
@@ -76,16 +74,14 @@ cr.define('md_history.history_list_test', function() {
           assertTrue(items[2].isCardEnd);
           assertTrue(items[3].isCardStart);
           assertTrue(items[3].isCardEnd);
-
-          done();
         });
       });
 
-      test('updating history results', function(done) {
+      test('updating history results', function() {
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
         app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
 
-        flush(function() {
+        return flush().then(function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
           assertTrue(items[3].isCardStart);
@@ -96,15 +92,13 @@ cr.define('md_history.history_list_test', function() {
 
           assertTrue(items[7].isCardStart);
           assertTrue(items[7].isCardEnd);
-
-          done();
         });
       });
 
-      test('deleting multiple items from view', function(done) {
+      test('deleting multiple items from view', function() {
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
         app.historyResult(createHistoryInfo(), ADDITIONAL_RESULTS);
-        flush(function() {
+        return flush().then(function() {
           items = Polymer.dom(element.root).querySelectorAll('history-item');
 
           element.removeDeletedHistory_([
@@ -112,34 +106,32 @@ cr.define('md_history.history_list_test', function() {
             element.historyData_[7]
           ]);
 
-          flush(function() {
-            items = Polymer.dom(element.root).querySelectorAll('history-item');
+          return flush();
+        }).then(function() {
+          items = Polymer.dom(element.root).querySelectorAll('history-item');
 
-            assertEquals(element.historyData_.length, 5);
-            assertEquals(element.historyData_[0].dateRelativeDay,
-                         '2016-03-15');
-            assertEquals(element.historyData_[2].dateRelativeDay,
-                         '2016-03-13');
-            assertEquals(element.historyData_[4].dateRelativeDay,
-                         '2016-03-11');
+          assertEquals(element.historyData_.length, 5);
+          assertEquals(element.historyData_[0].dateRelativeDay,
+                       '2016-03-15');
+          assertEquals(element.historyData_[2].dateRelativeDay,
+                       '2016-03-13');
+          assertEquals(element.historyData_[4].dateRelativeDay,
+                       '2016-03-11');
 
-            // Checks that the first and last items have been reset correctly.
-            assertTrue(items[2].isCardStart);
-            assertTrue(items[3].isCardEnd);
-            assertTrue(items[4].isCardStart);
-            assertTrue(items[4].isCardEnd)
-
-            done();
-          });
+          // Checks that the first and last items have been reset correctly.
+          assertTrue(items[2].isCardStart);
+          assertTrue(items[3].isCardEnd);
+          assertTrue(items[4].isCardStart);
+          assertTrue(items[4].isCardEnd)
         });
       });
 
-      test('search results display with correct item title', function(done) {
+      test('search results display with correct item title', function() {
         app.historyResult(createHistoryInfo(),
             [createHistoryEntry('2016-03-15', 'https://www.google.com')]);
         element.searchedTerm = 'Google';
 
-        flush(function() {
+        return flush().then(function() {
           var item = element.$$('history-item');
           assertTrue(item.isCardStart);
           var heading = item.$$('#date-accessed').textContent;
@@ -151,24 +143,21 @@ cr.define('md_history.history_list_test', function() {
 
           // Check that the search term is bolded correctly in the history-item.
           assertGT(title.innerHTML.indexOf('<b>google</b>'), -1);
-          done();
         });
       });
 
-      test('correct display message when no history available', function(done) {
+      test('correct display message when no history available', function() {
         app.historyResult(createHistoryInfo(), []);
 
-        flush(function() {
+        return flush().then(function() {
           assertFalse(element.$['no-results'].hidden);
           assertTrue(element.$['infinite-list'].hidden);
 
           app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
-
-          flush(function() {
-            assertTrue(element.$['no-results'].hidden);
-            assertFalse(element.$['infinite-list'].hidden);
-            done();
-          });
+          return flush();
+        }).then(function() {
+          assertTrue(element.$['no-results'].hidden);
+          assertFalse(element.$['infinite-list'].hidden);
         });
       });
 

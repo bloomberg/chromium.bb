@@ -22,15 +22,14 @@ cr.define('md_history.history_supervised_user_test', function() {
         app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
       });
 
-      test('checkboxes disabled for supervised user', function(done) {
-        flush(function() {
+      test('checkboxes disabled for supervised user', function() {
+        return flush().then(function() {
           var items =
               Polymer.dom(element.root).querySelectorAll('history-item');
 
           MockInteractions.tap(items[0].$['checkbox']);
 
           assertFalse(items[0].selected);
-          done();
         });
       });
 
