@@ -22,15 +22,20 @@ SharkConnectionListener::SharkConnectionListener(
 }
 
 SharkConnectionListener::~SharkConnectionListener() {
-  if (controller_)
+  if (controller_.get())
     controller_->RemoveObserver(this);
 }
 
 void SharkConnectionListener::ResetController() {
   if (controller_.get()) {
-    controller_->Reset();
     controller_->RemoveObserver(this);
+    controller_->Reset();
   }
+}
+
+BluetoothHostPairingController*
+SharkConnectionListener::GetControllerForTesting() {
+  return static_cast<BluetoothHostPairingController*>(controller_.get());
 }
 
 void SharkConnectionListener::PairingStageChanged(Stage new_stage) {

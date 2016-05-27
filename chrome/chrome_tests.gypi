@@ -750,6 +750,7 @@
       'browser/chromeos/first_run/goodies_displayer_browsertest.cc',
       'browser/chromeos/input_method/input_method_engine_browsertests.cc',
       'browser/chromeos/input_method/mode_indicator_browsertest.cc',
+      'browser/chromeos/login/bluetooth_host_pairing_browsertest.cc',
       'browser/chromeos/login/crash_restore_browsertest.cc',
       'browser/chromeos/login/demo_mode/demo_app_launcher_browsertest.cc',
       'browser/chromeos/login/easy_unlock/bootstrap_browsertest.cc',

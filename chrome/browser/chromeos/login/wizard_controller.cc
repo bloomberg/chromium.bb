@@ -557,6 +557,11 @@ void WizardController::SkipToLoginForTesting(
   OnDeviceDisabledChecked(false /* device_disabled */);
 }
 
+pairing_chromeos::SharkConnectionListener*
+WizardController::GetSharkConnectionListenerForTesting() {
+  return shark_connection_listener_.get();
+}
+
 void WizardController::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }

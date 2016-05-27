@@ -18,6 +18,8 @@ class SingleThreadTaskRunner;
 
 namespace pairing_chromeos {
 
+class BluetoothHostPairingController;
+
 // Listens for incoming connection from shark controller. If connection
 // is established, invokes callback passing HostPairingController
 // as an argument.
@@ -32,6 +34,9 @@ class SharkConnectionListener : public HostPairingController::Observer {
   ~SharkConnectionListener() override;
 
   void ResetController();
+
+  // This function is used for testing.
+  BluetoothHostPairingController* GetControllerForTesting();
 
  private:
   typedef HostPairingController::Stage Stage;

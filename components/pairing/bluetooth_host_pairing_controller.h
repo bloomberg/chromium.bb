@@ -40,9 +40,26 @@ class BluetoothHostPairingController
   using Observer = HostPairingController::Observer;
   using InputDeviceInfo = device::InputServiceLinux::InputDeviceInfo;
 
+  // An interface that is used for testing purpose.
+  class TestDelegate {
+   public:
+    virtual void OnAdapterReset() = 0;
+
+   protected:
+    TestDelegate() {}
+    virtual ~TestDelegate() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(TestDelegate);
+  };
+
   explicit BluetoothHostPairingController(
       const scoped_refptr<base::SingleThreadTaskRunner>& file_task_runner);
   ~BluetoothHostPairingController() override;
+
+  // These functions should be only used in tests.
+  void SetDelegateForTesting(TestDelegate* delegate);
+  scoped_refptr<device::BluetoothAdapter> GetAdapterForTesting();
 
  private:
   void ChangeStage(Stage new_stage);
@@ -66,6 +83,7 @@ class BluetoothHostPairingController
   void OnReceiveError(device::BluetoothSocket::ErrorReason reason,
                       const std::string& error_message);
   void PowerOffAdapterIfApplicable(const std::vector<InputDeviceInfo>& devices);
+  void ResetAdapter();
 
   // HostPairingController:
   void AddObserver(Observer* observer) override;
@@ -121,6 +139,7 @@ class BluetoothHostPairingController
   scoped_refptr<device::BluetoothSocket> service_socket_;
   scoped_refptr<device::BluetoothSocket> controller_socket_;
   std::unique_ptr<ProtoDecoder> proto_decoder_;
+  TestDelegate* delegate_ = nullptr;
 
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
   base::ThreadChecker thread_checker_;

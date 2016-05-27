@@ -111,6 +111,10 @@ class WizardController : public BaseScreenDelegate,
   // Advances to login screen. Should be used in for testing only.
   void SkipToLoginForTesting(const LoginScreenContext& context);
 
+  // Should be used for testing only.
+  pairing_chromeos::SharkConnectionListener*
+  GetSharkConnectionListenerForTesting();
+
   // Adds and removes an observer.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
