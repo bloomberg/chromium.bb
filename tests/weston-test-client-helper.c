@@ -1255,54 +1255,29 @@ load_image_from_png(const char *fname)
 	return converted;
 }
 
-/** create_screenshot_surface()
- *
- *  Allocates and initializes a weston test surface for use in
- *  storing a screenshot of the client's output.  Establishes a
- *  shm backed wl_buffer for retrieving screenshot image data
- *  from the server, sized to match the client's output display.
- *
- *  @returns stack allocated surface image, which should be
- *  free'd when done using it.
- */
-struct surface *
-create_screenshot_surface(struct client *client)
-{
-	struct surface *screenshot;
-	screenshot = zalloc(sizeof *screenshot);
-	if (screenshot == NULL)
-		return NULL;
-
-	screenshot->buffer = create_shm_buffer_a8r8g8b8(client,
-							client->output->width,
-							client->output->height);
-	screenshot->height = client->output->height;
-	screenshot->width = client->output->width;
-
-	return screenshot;
-}
-
-/** capture_screenshot_of_output()
+/**
+ * Take screenshot of a single output
  *
  * Requests a screenshot from the server of the output that the
- * client appears on.  The image data returned from the server
- * can be accessed from the screenshot surface's data member.
+ * client appears on. This implies that the compositor goes through an output
+ * repaint to provide the screenshot before this function returns. This
+ * function is therefore both a server roundtrip and a wait for a repaint.
  *
- * @returns a new surface object, which should be free'd when no
- * longer needed.
+ * @returns A new buffer object, that should be freed with buffer_destroy().
  */
-struct surface *
+struct buffer *
 capture_screenshot_of_output(struct client *client)
 {
-	struct surface *screenshot;
+	struct buffer *buffer;
 
-	/* Create a surface to hold the screenshot */
-	screenshot = create_screenshot_surface(client);
+	buffer = create_shm_buffer_a8r8g8b8(client,
+					    client->output->width,
+					    client->output->height);
 
 	client->test->buffer_copy_done = 0;
 	weston_test_capture_screenshot(client->test->weston_test,
 				       client->output->wl_output,
-				       screenshot->buffer->proxy);
+				       buffer->proxy);
 	while (client->test->buffer_copy_done == 0)
 		if (wl_display_dispatch(client->wl_display) < 0)
 			break;
@@ -1313,5 +1288,5 @@ capture_screenshot_of_output(struct client *client)
 	 * Protocol docs in the XML, comparison function docs in Doxygen style.
 	 */
 
-	return screenshot;
+	return buffer;
 }

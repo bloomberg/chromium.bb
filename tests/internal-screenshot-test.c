@@ -65,7 +65,7 @@ TEST(internal_screenshot)
 	struct buffer *buf;
 	struct client *client;
 	struct wl_surface *surface;
-	struct surface *screenshot = NULL;
+	struct buffer *screenshot = NULL;
 	pixman_image_t *reference_good = NULL;
 	pixman_image_t *reference_bad = NULL;
 	struct rectangle clip;
@@ -123,8 +123,7 @@ TEST(internal_screenshot)
 	/* Test check_images_match() without a clip.
 	 * We expect this to fail since we use a bad reference image
 	 */
-	match = check_images_match(screenshot->buffer->image,
-				   reference_bad, NULL);
+	match = check_images_match(screenshot->image, reference_bad, NULL);
 	printf("Screenshot %s reference image\n", match? "equal to" : "different from");
 	assert(!match);
 	pixman_image_unref(reference_bad);
@@ -138,18 +137,17 @@ TEST(internal_screenshot)
 	clip.width = 100;
 	clip.height = 100;
 	printf("Clip: %d,%d %d x %d\n", clip.x, clip.y, clip.width, clip.height);
-	match = check_images_match(screenshot->buffer->image,
-				   reference_good, &clip);
+	match = check_images_match(screenshot->image, reference_good, &clip);
 	printf("Screenshot %s reference image in clipped area\n", match? "matches" : "doesn't match");
 	pixman_image_unref(reference_good);
 
 	/* Test dumping of non-matching images */
 	if (!match || dump_all_images) {
 		fname = screenshot_output_filename("internal-screenshot", 0);
-		write_image_as_png(screenshot->buffer->image, fname);
+		write_image_as_png(screenshot->image, fname);
 	}
 
-	free(screenshot);
+	buffer_destroy(screenshot);
 
 	printf("Test complete\n");
 	assert(match);

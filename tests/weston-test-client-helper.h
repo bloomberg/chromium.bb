@@ -207,10 +207,7 @@ write_image_as_png(pixman_image_t *image, const char *fname);
 pixman_image_t *
 load_image_from_png(const char *fname);
 
-struct surface *
-create_screenshot_surface(struct client *client);
-
-struct surface *
+struct buffer *
 capture_screenshot_of_output(struct client *client);
 
 #endif
