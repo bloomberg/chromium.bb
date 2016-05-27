@@ -23276,7 +23276,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>kouhei@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     Value of getMemoryClass() recorded once upon startup. This is an integer,
     device-specific constant correlated with the amount of memory available on
@@ -23288,7 +23287,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>kouhei@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     Reasons behind evictions of individual tabs, recorded upon each tab
     eviction.
@@ -23299,7 +23297,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>kouhei@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     Number of loaded (memory-resident) tabs when LowMemory notification is
     delivered.
@@ -23310,7 +23307,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>kouhei@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     Time between two consecutive LowMemory notification in one foreground
     session.
@@ -23334,7 +23330,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>kouhei@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     Memory notifications delivered through system callbacks to Chrome while in
     the background.
@@ -23346,7 +23341,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>kouhei@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     Memory notifications delivered through system callbacks to Chrome while in
     the foreground - we count LowMemory notification vs particular levels of
@@ -56195,7 +56189,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Tab.StatusWhenDisplayed" enum="TabStatus">
   <owner>lliabraa@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     The status of a tab collected each time the tab is displayed on Android,
     including user switching to the tab and displays of newly created tabs, such
@@ -56205,7 +56198,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Tab.StatusWhenSwitchedBackToForeground" enum="TabStatus">
   <owner>lliabraa@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     The status of a tab collected each time the user switches to it on mobile.
     That does not include tabs being created at the time the user switches to
@@ -56217,7 +56209,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="TabStatus">
   <owner>lliabraa@chromium.org</owner>
   <owner>marq@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     The status of a tab collected each time the user switches to it on mobile
     with the data reduction proxy enabled. This is populated identically, and in
@@ -56385,7 +56376,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Tabs.CountAtStartup" units="tabs">
   <owner>lliabraa@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>The number of tabs open at cold launch.</summary>
 </histogram>
 
@@ -56691,7 +56681,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Tabs.SpeculativeRestoreApplicability"
     enum="SpeculativeRestoreApplicability">
   <owner>lliabraa@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     Applicability of speculative tab restore, recorded every time a tab is
     switched. This allows to estimate the fraction of tab restores experienced
@@ -56704,7 +56693,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Tabs.SpeculativeRestorePredictionAccuracy.SideSwipe"
     enum="SpeculativeRestorePredictionAccuracy">
   <owner>lliabraa@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     Accuracy of the tab switch predictions made when the user begins the side
     swipe gesture.
@@ -56714,7 +56702,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Tabs.SpeculativeRestorePredictionAccuracy.TabSwitcher"
     enum="SpeculativeRestorePredictionAccuracy">
   <owner>lliabraa@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     Accuracy of the tab switch predictions made when the user enters the tab
     switcher.
@@ -56724,7 +56711,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Tabs.SpeculativeRestoreTargetStatus"
     enum="SpeculativeRestoreTabStatus">
   <owner>lliabraa@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     Status of a tab recorded when the tab is targeted with speculative restore.
   </summary>
@@ -56732,7 +56718,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Tabs.SpeculativeRestoreTimeAhead.SideSwipe" units="ms">
   <owner>lliabraa@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     Time between starting the speculative load and actual tab switch for correct
     speculative load predictions made when the user begins the side swipe
@@ -56742,7 +56727,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Tabs.SpeculativeRestoreTimeAhead.TabSwitcher" units="ms">
   <owner>lliabraa@chromium.org</owner>
-  <owner>ppi@chromium.org</owner>
   <summary>
     Time between starting the speculative load and actual tab switch for correct
     speculative load predictions made when the user enters the tab switcher.
