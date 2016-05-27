@@ -300,6 +300,11 @@ void WebRuntimeFeatures::enableWebFontsInterventionTrigger(bool enable)
     RuntimeEnabledFeatures::setWebFontsInterventionTriggerEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableRenderingPipelineThrottling(bool enable)
+{
+    RuntimeEnabledFeatures::setRenderingPipelineThrottlingEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableScrollAnchoring(bool enable)
 {
     RuntimeEnabledFeatures::setScrollAnchoringEnabled(enable);

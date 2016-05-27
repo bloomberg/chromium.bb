@@ -233,6 +233,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (!base::FeatureList::IsEnabled(features::kPaintOptimizations))
     WebRuntimeFeatures::enableFeatureFromString("PaintOptimizations", false);
 
+  WebRuntimeFeatures::enableRenderingPipelineThrottling(
+    base::FeatureList::IsEnabled(features::kRenderingPipelineThrottling));
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {
