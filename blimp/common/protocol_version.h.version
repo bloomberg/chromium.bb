@@ -5,14 +5,10 @@
 #ifndef BLIMP_COMMON_PROTOCOL_VERSION_H_
 #define BLIMP_COMMON_PROTOCOL_VERSION_H_
 
-#include "blimp/common/blimp_common_export.h"
-
 namespace blimp {
 
-const int BLIMP_COMMON_EXPORT kProtocolVersion = 0;
-
-// TODO(dtrainor): Move this out or integrate this with kProtocolVersion?
-const char BLIMP_COMMON_EXPORT kEngineVersion[] = "20160209094838";
+// Latest version of the protocol supported by this build.
+const int kProtocolVersion = @BUILD@;
 
 }  // namespace blimp
 

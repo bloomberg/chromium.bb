@@ -12,6 +12,9 @@ class ConnectionErrorObserver {
   virtual ~ConnectionErrorObserver() {}
 
   // Called when a blimp connection encounters an error.
+  // Negative |error| values correspond directly to net/ error codes.
+  // Positive values indicate the EndConnection.reason code specified
+  // by the peer during a "clean" disconnection.
   virtual void OnConnectionError(int error) = 0;
 };
 

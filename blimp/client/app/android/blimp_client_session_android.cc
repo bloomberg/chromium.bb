@@ -13,7 +13,7 @@
 #include "blimp/client/feature/settings_feature.h"
 #include "blimp/client/feature/tab_control_feature.h"
 #include "blimp/client/session/assignment_source.h"
-#include "blimp/common/protocol_version.h"
+#include "components/version_info/version_info.h"
 #include "jni/BlimpClientSession_jni.h"
 #include "net/base/net_errors.h"
 
@@ -109,7 +109,9 @@ void BlimpClientSessionAndroid::OnAssignmentConnectionAttempted(
   Java_BlimpClientSession_onAssignmentReceived(
       env, java_obj_.obj(), static_cast<jint>(result),
       base::android::ConvertUTF8ToJavaString(env, engine_ip).obj(),
-      base::android::ConvertUTF8ToJavaString(env, blimp::kEngineVersion).obj());
+      base::android::ConvertUTF8ToJavaString(env,
+                                             version_info::GetVersionNumber())
+          .obj());
 
   BlimpClientSession::OnAssignmentConnectionAttempted(result, assignment);
 }

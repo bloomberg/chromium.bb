@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/version.gni")
 import("//testing/test.gni")
 
 component("common") {
@@ -21,7 +22,6 @@ component("common") {
     "get_client_token.h",
     "logging.cc",
     "logging.h",
-    "protocol_version.h",
     "switches.cc",
     "switches.h",
   ]
@@ -33,6 +33,10 @@ component("common") {
     "//blimp/common/proto",
     "//cc",
     "//crypto",
+  ]
+
+  public_deps = [
+    ":protocol_version",
   ]
 }
 
@@ -74,4 +78,9 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+}
+
+process_version("protocol_version") {
+  template_file = "protocol_version.h.version"
+  output = "$target_gen_dir/protocol_version.h"
 }

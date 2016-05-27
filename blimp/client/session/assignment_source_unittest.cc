@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -106,7 +107,7 @@ class AssignmentSourceTest : public testing::Test {
       int status,
       const std::string& response,
       const std::string& client_auth_token,
-      const std::string& protocol_version) {
+      const int protocol_version) {
     source_.GetAssignment(client_auth_token,
                           base::Bind(&AssignmentSourceTest::AssignmentResponse,
                                      base::Unretained(this)));
@@ -128,7 +129,8 @@ class AssignmentSourceTest : public testing::Test {
     std::string uploaded_protocol_version;
     EXPECT_TRUE(
         dict->GetString("protocol_version", &uploaded_protocol_version));
-    EXPECT_EQ(protocol_version, uploaded_protocol_version);
+    std::string expected_protocol_version = base::IntToString(protocol_version);
+    EXPECT_EQ(expected_protocol_version, uploaded_protocol_version);
 
     // Check that the request has a valid authentication header.
     net::HttpRequestHeaders headers;
@@ -259,7 +261,7 @@ TEST_F(AssignmentSourceTest, TestSuccess) {
 
   GetNetworkAssignmentAndWaitForResponse(
       net::HTTP_OK, net::Error::OK, ValueToString(*BuildAssignerResponse()),
-      kTestAuthToken, kEngineVersion);
+      kTestAuthToken, kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestValidAfterError) {
@@ -278,11 +280,11 @@ TEST_F(AssignmentSourceTest, TestValidAfterError) {
 
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK,
                                          net::Error::ERR_INSUFFICIENT_RESOURCES,
-                                         "", kTestAuthToken, kEngineVersion);
+                                         "", kTestAuthToken, kProtocolVersion);
 
   GetNetworkAssignmentAndWaitForResponse(
       net::HTTP_OK, net::Error::OK, ValueToString(*BuildAssignerResponse()),
-      kTestAuthToken, kEngineVersion);
+      kTestAuthToken, kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestNetworkFailure) {
@@ -290,14 +292,14 @@ TEST_F(AssignmentSourceTest, TestNetworkFailure) {
                          AssignmentSource::Result::RESULT_NETWORK_FAILURE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK,
                                          net::Error::ERR_INSUFFICIENT_RESOURCES,
-                                         "", kTestAuthToken, kEngineVersion);
+                                         "", kTestAuthToken, kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestBadRequest) {
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_BAD_REQUEST, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_BAD_REQUEST, net::Error::OK,
-                                         "", kTestAuthToken, kEngineVersion);
+                                         "", kTestAuthToken, kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestUnauthorized) {
@@ -305,14 +307,14 @@ TEST_F(AssignmentSourceTest, TestUnauthorized) {
               AssignmentResponse(
                   AssignmentSource::Result::RESULT_EXPIRED_ACCESS_TOKEN, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_UNAUTHORIZED, net::Error::OK,
-                                         "", kTestAuthToken, kEngineVersion);
+                                         "", kTestAuthToken, kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestForbidden) {
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_USER_INVALID, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_FORBIDDEN, net::Error::OK,
-                                         "", kTestAuthToken, kEngineVersion);
+                                         "", kTestAuthToken, kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestTooManyRequests) {
@@ -320,7 +322,7 @@ TEST_F(AssignmentSourceTest, TestTooManyRequests) {
                          AssignmentSource::Result::RESULT_OUT_OF_VMS, _));
   GetNetworkAssignmentAndWaitForResponse(static_cast<net::HttpStatusCode>(429),
                                          net::Error::OK, "", kTestAuthToken,
-                                         kEngineVersion);
+                                         kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestInternalServerError) {
@@ -328,7 +330,7 @@ TEST_F(AssignmentSourceTest, TestInternalServerError) {
                          AssignmentSource::Result::RESULT_SERVER_ERROR, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_INTERNAL_SERVER_ERROR,
                                          net::Error::OK, "", kTestAuthToken,
-                                         kEngineVersion);
+                                         kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestUnexpectedNetCodeFallback) {
@@ -336,7 +338,7 @@ TEST_F(AssignmentSourceTest, TestUnexpectedNetCodeFallback) {
                          AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_NOT_IMPLEMENTED,
                                          net::Error::OK, "", kTestAuthToken,
-                                         kEngineVersion);
+                                         kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestInvalidJsonResponse) {
@@ -349,7 +351,7 @@ TEST_F(AssignmentSourceTest, TestInvalidJsonResponse) {
   EXPECT_CALL(*this, AssignmentResponse(
                          AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK, response,
-                                         kTestAuthToken, kEngineVersion);
+                                         kTestAuthToken, kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestMissingResponsePort) {
@@ -359,7 +361,7 @@ TEST_F(AssignmentSourceTest, TestMissingResponsePort) {
                          AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK,
                                          ValueToString(*response),
-                                         kTestAuthToken, kEngineVersion);
+                                         kTestAuthToken, kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestInvalidIPAddress) {
@@ -370,7 +372,7 @@ TEST_F(AssignmentSourceTest, TestInvalidIPAddress) {
                          AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK,
                                          ValueToString(*response),
-                                         kTestAuthToken, kEngineVersion);
+                                         kTestAuthToken, kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestMissingCert) {
@@ -380,7 +382,7 @@ TEST_F(AssignmentSourceTest, TestMissingCert) {
                          AssignmentSource::Result::RESULT_BAD_RESPONSE, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK,
                                          ValueToString(*response),
-                                         kTestAuthToken, kEngineVersion);
+                                         kTestAuthToken, kProtocolVersion);
 }
 
 TEST_F(AssignmentSourceTest, TestInvalidCert) {
@@ -390,7 +392,7 @@ TEST_F(AssignmentSourceTest, TestInvalidCert) {
                          AssignmentSource::Result::RESULT_INVALID_CERT, _));
   GetNetworkAssignmentAndWaitForResponse(net::HTTP_OK, net::Error::OK,
                                          ValueToString(*response),
-                                         kTestAuthToken, kEngineVersion);
+                                         kTestAuthToken, kProtocolVersion);
 }
 
 }  // namespace

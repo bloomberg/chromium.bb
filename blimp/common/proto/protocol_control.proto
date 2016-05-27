@@ -19,12 +19,23 @@ message StartConnectionMessage {
   optional int32 protocol_version = 2;
 }
 
+// Indicates the reason for the peer ending the connection.
+message EndConnectionMessage {
+  enum Reason {
+    UNKNOWN = 0;
+    AUTHENTICATION_FAILED = 1;
+    PROTOCOL_MISMATCH = 2;
+  };
+  optional Reason reason = 1;
+}
+
 message ProtocolControlMessage {
   oneof connection_message {
     // Client => Server types.
     StartConnectionMessage start_connection = 41;
 
-    // Server => Client types.
+    // Bi-directional types.
     CheckpointAckMessage checkpoint_ack = 42;
+    EndConnectionMessage end_connection = 43;
   }
 }

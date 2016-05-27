@@ -44,6 +44,9 @@ class BLIMP_NET_EXPORT BlimpConnection : public ConnectionErrorObserver {
   virtual BlimpMessageProcessor* GetOutgoingMessageProcessor();
 
  protected:
+  class EndConnectionFilter;
+  friend class EndConnectionFilter;
+
   BlimpConnection();
 
   // ConnectionErrorObserver implementation.
@@ -55,6 +58,7 @@ class BLIMP_NET_EXPORT BlimpConnection : public ConnectionErrorObserver {
   std::unique_ptr<PacketWriter> writer_;
   std::unique_ptr<BlimpMessageSender> outgoing_msg_processor_;
   base::ObserverList<ConnectionErrorObserver> error_observers_;
+  std::unique_ptr<EndConnectionFilter> end_connection_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpConnection);
 };

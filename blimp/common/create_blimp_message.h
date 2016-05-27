@@ -11,6 +11,7 @@
 #include <string>
 
 #include "blimp/common/blimp_common_export.h"
+#include "blimp/common/proto/protocol_control.pb.h"
 
 namespace blimp {
 
@@ -24,7 +25,6 @@ class NavigationMessage;
 class RenderWidgetMessage;
 class SettingsMessage;
 class SizeMessage;
-class StartConnectionMessage;
 class TabControlMessage;
 
 // Suite of helper methods to simplify the repetitive task of creating
@@ -76,6 +76,9 @@ BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateStartConnectionMessage(
 
 BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateCheckpointAckMessage(
     int64_t checkpoint_id);
+
+BLIMP_COMMON_EXPORT std::unique_ptr<BlimpMessage> CreateEndConnectionMessage(
+    EndConnectionMessage::Reason reason);
 
 }  // namespace blimp
 

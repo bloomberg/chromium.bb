@@ -5,6 +5,7 @@ include_rules = [
   "-chrome",
   "+components/safe_json",
   "+components/url_formatter",
+  "+components/version_info",
   "-content",
   "+gpu",
   "+jni",

@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
+#include "blimp/common/protocol_version.h"
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_transport.h"
 #include "blimp/net/common.h"
@@ -24,6 +25,7 @@
 
 using testing::_;
 using testing::Eq;
+using testing::Return;
 using testing::SaveArg;
 
 namespace blimp {
@@ -68,11 +70,41 @@ TEST_F(EngineAuthenticationHandlerTest, AuthenticationSucceeds) {
   EXPECT_NE(nullptr, incoming_message_processor_);
 
   std::unique_ptr<BlimpMessage> blimp_message =
-      CreateStartConnectionMessage(client_token, 0);
+      CreateStartConnectionMessage(client_token, kProtocolVersion);
   net::TestCompletionCallback process_message_cb;
   incoming_message_processor_->ProcessMessage(std::move(blimp_message),
                                               process_message_cb.callback());
   EXPECT_EQ(net::OK, process_message_cb.WaitForResult());
+}
+
+TEST_F(EngineAuthenticationHandlerTest, ProtocolMismatch) {
+  const int kInvalidProtocolVersion = -1;
+
+  BlimpMessage end_connection_message;
+  MockBlimpMessageProcessor message_processor;
+  EXPECT_CALL(message_processor, MockableProcessMessage(_, _))
+      .WillOnce(SaveArg<0>(&end_connection_message));
+  EXPECT_CALL(*connection_, GetOutgoingMessageProcessor())
+      .WillOnce(Return(&message_processor));
+
+  ExpectOnConnection();
+  auth_handler_->HandleConnection(std::move(connection_));
+
+  std::unique_ptr<BlimpMessage> blimp_message =
+      CreateStartConnectionMessage(client_token, kInvalidProtocolVersion);
+  net::TestCompletionCallback process_message_cb;
+  incoming_message_processor_->ProcessMessage(std::move(blimp_message),
+                                              process_message_cb.callback());
+  EXPECT_EQ(net::OK, process_message_cb.WaitForResult());
+
+  EXPECT_EQ(BlimpMessage::kProtocolControl,
+            end_connection_message.feature_case());
+  EXPECT_EQ(
+      ProtocolControlMessage::kEndConnection,
+      end_connection_message.protocol_control().connection_message_case());
+  EXPECT_EQ(
+      EndConnectionMessage::PROTOCOL_MISMATCH,
+      end_connection_message.protocol_control().end_connection().reason());
 }
 
 TEST_F(EngineAuthenticationHandlerTest, AuthenticationFailed) {
@@ -80,7 +112,7 @@ TEST_F(EngineAuthenticationHandlerTest, AuthenticationFailed) {
   auth_handler_->HandleConnection(std::move(connection_));
 
   std::unique_ptr<BlimpMessage> blimp_message =
-      CreateStartConnectionMessage("invalid token", 0);
+      CreateStartConnectionMessage("invalid token", kProtocolVersion);
   net::TestCompletionCallback process_message_cb;
   incoming_message_processor_->ProcessMessage(std::move(blimp_message),
                                               process_message_cb.callback());
@@ -123,7 +155,7 @@ TEST_F(EngineAuthenticationHandlerTest, AuthHandlerDeletedFirst) {
   auth_handler_.reset();
 
   std::unique_ptr<BlimpMessage> blimp_message =
-      CreateStartConnectionMessage(client_token, 0);
+      CreateStartConnectionMessage(client_token, kProtocolVersion);
   net::TestCompletionCallback process_message_cb;
   incoming_message_processor_->ProcessMessage(std::move(blimp_message),
                                               process_message_cb.callback());

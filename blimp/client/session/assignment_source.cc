@@ -243,7 +243,8 @@ void AssignmentSource::QueryAssigner(const std::string& client_auth_token) {
 
   // Write the JSON for the request data.
   base::DictionaryValue dictionary;
-  dictionary.SetString(kProtocolVersionKey, blimp::kEngineVersion);
+  dictionary.SetString(kProtocolVersionKey,
+                       base::IntToString(kProtocolVersion));
   std::string json;
   base::JSONWriter::Write(dictionary, &json);
   url_fetcher_->SetUploadData("application/json", json);

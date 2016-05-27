@@ -66,7 +66,6 @@ std::unique_ptr<BlimpMessage> CreateBlimpMessage(
 }
 
 std::unique_ptr<BlimpMessage> CreateBlimpMessage(SizeMessage** size_message) {
-  DCHECK(size_message);
   TabControlMessage* control_message;
   std::unique_ptr<BlimpMessage> output = CreateBlimpMessage(&control_message);
   control_message->mutable_size();
@@ -109,11 +108,21 @@ std::unique_ptr<BlimpMessage> CreateCheckpointAckMessage(
   std::unique_ptr<BlimpMessage> output(new BlimpMessage);
 
   ProtocolControlMessage* control_message = output->mutable_protocol_control();
-  control_message->mutable_checkpoint_ack();
-
   CheckpointAckMessage* checkpoint_ack_message =
       control_message->mutable_checkpoint_ack();
   checkpoint_ack_message->set_checkpoint_id(checkpoint_id);
+
+  return output;
+}
+
+std::unique_ptr<BlimpMessage> CreateEndConnectionMessage(
+    EndConnectionMessage::Reason reason) {
+  std::unique_ptr<BlimpMessage> output(new BlimpMessage);
+
+  ProtocolControlMessage* control_message = output->mutable_protocol_control();
+  EndConnectionMessage* end_connection_message =
+      control_message->mutable_end_connection();
+  end_connection_message->set_reason(reason);
 
   return output;
 }
