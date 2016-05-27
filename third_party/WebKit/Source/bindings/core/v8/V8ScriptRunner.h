@@ -93,6 +93,8 @@ private:
         v8::Isolate* isolate = scriptState->isolate();
         v8::Local<v8::Value> undefined = v8::Undefined(isolate);
         v8::Local<v8::Value> functionValue = scriptState->getFromExtrasExports(name).v8Value();
+        if (functionValue.IsEmpty())
+            return v8::MaybeLocal<v8::Value>();
         v8::Local<v8::Function> function = functionValue.As<v8::Function>();
         return V8ScriptRunner::callInternalFunction(function, undefined, numArgs, args, isolate);
     }
