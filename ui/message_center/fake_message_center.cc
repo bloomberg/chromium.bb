@@ -42,10 +42,6 @@ bool FakeMessageCenter::IsQuietMode() const {
   return false;
 }
 
-bool FakeMessageCenter::IsLockedState() const {
-  return false;
-}
-
 bool FakeMessageCenter::HasClickedListener(const std::string& id) {
   return false;
 }
@@ -124,8 +120,6 @@ NotifierSettingsProvider* FakeMessageCenter::GetNotifierSettingsProvider() {
 
 void FakeMessageCenter::SetQuietMode(bool in_quiet_mode) {
 }
-
-void FakeMessageCenter::SetLockedState(bool locked) {}
 
 void FakeMessageCenter::EnterQuietModeWithExpire(
     const base::TimeDelta& expires_in) {

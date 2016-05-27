@@ -107,10 +107,8 @@ class FakeMessageCenterImpl : public FakeMessageCenter {
     if (type == RemoveType::NON_PINNED)
       remove_all_closable_notification_called_ = true;
   }
-  bool IsLockedState() const override { return locked_; }
   bool remove_all_closable_notification_called_ = false;
   NotificationList::Notifications visible_notifications_;
-  bool locked_ = false;
 };
 
 /* Test fixture ***************************************************************/
@@ -136,7 +134,6 @@ class MessageCenterViewTest : public views::ViewsTestBase,
   int GetNotificationCount();
   int GetCallCount(CallType type);
   int GetCalculatedMessageListViewHeight();
-  void SetLockedState(bool locked);
   Mode GetMessageCenterViewInternalMode();
   void AddNotification(std::unique_ptr<Notification> notification);
   void UpdateNotification(const std::string& notification_id,
@@ -169,7 +166,6 @@ class MessageCenterViewTest : public views::ViewsTestBase,
   views::View* MakeParent(views::View* child1, views::View* child2);
 
   NotificationList::Notifications notifications_;
-  std::unique_ptr<views::Widget> widget_;
   std::unique_ptr<MessageCenterView> message_center_view_;
   std::unique_ptr<FakeMessageCenterImpl> message_center_;
   std::map<CallType,int> callCounts_;
@@ -185,7 +181,6 @@ MessageCenterViewTest::~MessageCenterViewTest() {
 
 void MessageCenterViewTest::SetUp() {
   views::ViewsTestBase::SetUp();
-  MessageCenterView::disable_animation_for_testing = true;
   message_center_.reset(new FakeMessageCenterImpl());
 
   // Create a dummy notification.
@@ -214,18 +209,6 @@ void MessageCenterViewTest::SetUp() {
   GetMessageListView()->quit_message_loop_after_animation_for_test_ = true;
   GetMessageCenterView()->SetBounds(0, 0, 380, 600);
   message_center_view_->SetNotifications(notifications_);
-  message_center_view_->set_owned_by_client();
-
-  widget_.reset(new views::Widget());
-  views::Widget::InitParams params =
-      CreateParams(views::Widget::InitParams::TYPE_POPUP);
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.bounds = gfx::Rect(50, 50, 650, 650);
-  widget_->Init(params);
-  views::View* root = widget_->GetRootView();
-  root->AddChildView(message_center_view_.get());
-  widget_->Show();
-  widget_->Activate();
 
   // Wait until the animation finishes if available.
   if (GetAnimator()->IsAnimating())
@@ -233,8 +216,6 @@ void MessageCenterViewTest::SetUp() {
 }
 
 void MessageCenterViewTest::TearDown() {
-  widget_->CloseNow();
-  widget_.reset();
   message_center_view_.reset();
   STLDeleteElements(&notifications_);
   views::ViewsTestBase::TearDown();
@@ -275,10 +256,6 @@ int MessageCenterViewTest::GetNotificationCount() {
 
 int MessageCenterViewTest::GetCallCount(CallType type) {
   return callCounts_[type];
-}
-
-void MessageCenterViewTest::SetLockedState(bool locked) {
-  GetMessageCenterView()->OnLockedStateChanged(locked);
 }
 
 void MessageCenterViewTest::ClickOnNotification(
@@ -728,84 +705,6 @@ TEST_F(MessageCenterViewTest,
   // Hide the settings.
   GetMessageCenterView()->SetSettingsVisible(false);
   EXPECT_EQ(Mode::NOTIFICATIONS, GetMessageCenterViewInternalMode());
-}
-
-TEST_F(MessageCenterViewTest, LockScreen) {
-  const int kLockedMessageCenterViewHeight = 50;
-
-  EXPECT_TRUE(GetNotificationView(kNotificationId1)->IsDrawn());
-  EXPECT_TRUE(GetNotificationView(kNotificationId2)->IsDrawn());
-
-  // Lock!
-  SetLockedState(true);
-
-  EXPECT_FALSE(GetNotificationView(kNotificationId1)->IsDrawn());
-  EXPECT_FALSE(GetNotificationView(kNotificationId2)->IsDrawn());
-
-  GetMessageCenterView()->SizeToPreferredSize();
-  EXPECT_EQ(kLockedMessageCenterViewHeight, GetMessageCenterView()->height());
-
-  RemoveNotification(kNotificationId1, false);
-
-  GetMessageCenterView()->SizeToPreferredSize();
-  EXPECT_EQ(kLockedMessageCenterViewHeight, GetMessageCenterView()->height());
-
-  RemoveNotification(kNotificationId2, false);
-
-  GetMessageCenterView()->SizeToPreferredSize();
-  EXPECT_EQ(kLockedMessageCenterViewHeight, GetMessageCenterView()->height());
-
-  AddNotification(std::unique_ptr<Notification>(new Notification(
-      NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
-      base::UTF8ToUTF16("title1"),
-      base::UTF8ToUTF16("message"),
-      gfx::Image(), base::UTF8ToUTF16("display source"), GURL(),
-      NotifierId(NotifierId::APPLICATION, "extension_id"),
-      message_center::RichNotificationData(), NULL)));
-  EXPECT_FALSE(GetNotificationView(kNotificationId1)->IsDrawn());
-
-  GetMessageCenterView()->SizeToPreferredSize();
-  EXPECT_EQ(kLockedMessageCenterViewHeight, GetMessageCenterView()->height());
-
-  // Unlock!
-  SetLockedState(false);
-
-  EXPECT_TRUE(GetNotificationView(kNotificationId1)->IsDrawn());
-
-  GetMessageCenterView()->SizeToPreferredSize();
-  EXPECT_NE(kLockedMessageCenterViewHeight, GetMessageCenterView()->height());
-
-  // Lock!
-  SetLockedState(true);
-
-  EXPECT_FALSE(GetNotificationView(kNotificationId1)->IsDrawn());
-
-  GetMessageCenterView()->SizeToPreferredSize();
-  EXPECT_EQ(kLockedMessageCenterViewHeight, GetMessageCenterView()->height());
-}
-
-TEST_F(MessageCenterViewTest, NoNotification) {
-  const int kEmptyMessageCenterViewHeight = 50;
-
-  GetMessageCenterView()->SizeToPreferredSize();
-  EXPECT_NE(kEmptyMessageCenterViewHeight, GetMessageCenterView()->height());
-  RemoveNotification(kNotificationId1, false);
-  GetMessageCenterView()->SizeToPreferredSize();
-  EXPECT_NE(kEmptyMessageCenterViewHeight, GetMessageCenterView()->height());
-  RemoveNotification(kNotificationId2, false);
-  GetMessageCenterView()->SizeToPreferredSize();
-  EXPECT_EQ(kEmptyMessageCenterViewHeight, GetMessageCenterView()->height());
-
-  AddNotification(std::unique_ptr<Notification>(new Notification(
-      NOTIFICATION_TYPE_SIMPLE, std::string(kNotificationId1),
-      base::UTF8ToUTF16("title1"),
-      base::UTF8ToUTF16("message"),
-      gfx::Image(), base::UTF8ToUTF16("display source"), GURL(),
-      NotifierId(NotifierId::APPLICATION, "extension_id"),
-      message_center::RichNotificationData(), NULL)));
-
-  GetMessageCenterView()->SizeToPreferredSize();
-  EXPECT_NE(kEmptyMessageCenterViewHeight, GetMessageCenterView()->height());
 }
 
 }  // namespace message_center

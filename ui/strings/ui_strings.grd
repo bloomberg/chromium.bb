@@ -605,9 +605,6 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_FOOTER_TITLE" desc="The label in the footer of the message center">
         Notifications
       </message>
-      <message name="IDS_MESSAGE_CENTER_FOOTER_LOCKSCREEN" desc="The label in the footer of the message center on lock screen">
-        Sign in to view your notifications
-      </message>
       <message name="IDS_MESSAGE_CENTER_SETTINGS_BUTTON_LABEL" desc="The button label for visiting the appropriate settings page in the footer of the message center.">
         Settings
       </message>
