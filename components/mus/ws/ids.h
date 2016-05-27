@@ -17,42 +17,42 @@
 namespace mus {
 namespace ws {
 
-// Connection id is used to indicate no connection. That is, no WindowTree
-// ever gets this id.
-const ConnectionSpecificId kInvalidConnectionId = 0;
+// A client id used to indicate no client. That is, no WindowTree ever gets this
+// id.
+const ClientSpecificId kInvalidClientId = 0;
 
 // Every window has a unique id associated with it (WindowId). The id is a
-// combination of the id assigned to the connection (the high order bits) and
+// combination of the id assigned to the client (the high order bits) and
 // a unique id for the window. Each client (WindowTree) refers to the window
 // by an id assigned by the client (ClientWindowId). To facilitate this
 // WindowTree maintains a mapping between WindowId and ClientWindowId.
 //
 // This model works when the client initiates creation of windows, which is
 // the typical use case. Embed roots and the WindowManager are special, they
-// get access to windows created by other connections. These clients see the
+// get access to windows created by other clients. These clients see the
 // id assigned on the server. Such clients have to take care that they only
-// create windows using their connection id. To do otherwise could result in
+// create windows using their client id. To do otherwise could result in
 // multiple windows having the same ClientWindowId. WindowTree enforces
-// that embed roots use the connection id in creating the window id to avoid
+// that embed roots use the client id in creating the window id to avoid
 // possible conflicts.
 struct WindowId {
-  WindowId(ConnectionSpecificId connection_id, ConnectionSpecificId window_id)
-      : connection_id(connection_id), window_id(window_id) {}
-  WindowId() : connection_id(0), window_id(0) {}
+  WindowId(ClientSpecificId client_id, ClientSpecificId window_id)
+      : client_id(client_id), window_id(window_id) {}
+  WindowId() : client_id(0), window_id(0) {}
 
   bool operator==(const WindowId& other) const {
-    return other.connection_id == connection_id && other.window_id == window_id;
+    return other.client_id == client_id && other.window_id == window_id;
   }
 
   bool operator!=(const WindowId& other) const { return !(*this == other); }
 
   bool operator<(const WindowId& other) const {
-    return std::tie(connection_id, window_id) <
-           std::tie(other.connection_id, other.window_id);
+    return std::tie(client_id, window_id) <
+           std::tie(other.client_id, other.window_id);
   }
 
-  ConnectionSpecificId connection_id;
-  ConnectionSpecificId window_id;
+  ClientSpecificId client_id;
+  ClientSpecificId window_id;
 };
 
 // Used for ids assigned by the client.
@@ -75,18 +75,18 @@ inline WindowId WindowIdFromTransportId(Id id) {
   return WindowId(HiWord(id), LoWord(id));
 }
 inline Id WindowIdToTransportId(const WindowId& id) {
-  return (id.connection_id << 16) | id.window_id;
+  return (id.client_id << 16) | id.window_id;
 }
 
 // Returns a WindowId that is reserved to indicate no window. That is, no window
 // will ever be created with this id.
 inline WindowId InvalidWindowId() {
-  return WindowId(kInvalidConnectionId, 0);
+  return WindowId(kInvalidClientId, 0);
 }
 
 // Returns a root window id with a given index offset.
 inline WindowId RootWindowId(uint16_t index) {
-  return WindowId(kInvalidConnectionId, 2 + index);
+  return WindowId(kInvalidClientId, 2 + index);
 }
 
 }  // namespace ws

@@ -45,28 +45,28 @@ class Operation {
             OperationType operation_type);
   ~Operation();
 
-  ConnectionSpecificId source_tree_id() const { return source_tree_id_; }
+  ClientSpecificId source_tree_id() const { return source_tree_id_; }
 
   const OperationType& type() const { return operation_type_; }
 
   // Marks the tree with the specified id as having been sent a message
   // during the course of |this| operation.
-  void MarkTreeAsMessaged(ConnectionSpecificId tree_id) {
+  void MarkTreeAsMessaged(ClientSpecificId tree_id) {
     message_ids_.insert(tree_id);
   }
 
   // Returns true if MarkTreeAsMessaged(tree_id) was invoked.
-  bool DidMessageTree(ConnectionSpecificId tree_id) const {
+  bool DidMessageTree(ClientSpecificId tree_id) const {
     return message_ids_.count(tree_id) > 0;
   }
 
  private:
   WindowServer* const window_server_;
-  const ConnectionSpecificId source_tree_id_;
+  const ClientSpecificId source_tree_id_;
   const OperationType operation_type_;
 
   // See description of MarkTreeAsMessaged/DidMessageTree.
-  std::set<ConnectionSpecificId> message_ids_;
+  std::set<ClientSpecificId> message_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(Operation);
 };

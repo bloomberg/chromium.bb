@@ -341,19 +341,19 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
                              ServerWindow* new_focused_window) {
   // TODO(sky): focus is global, not per windowtreehost. Move.
 
-  // There are up to four connections that need to be notified:
-  // . the connection containing |old_focused_window|.
-  // . the connection with |old_focused_window| as its root.
-  // . the connection containing |new_focused_window|.
-  // . the connection with |new_focused_window| as its root.
-  // Some of these connections may be the same. The following takes care to
-  // notify each only once.
+  // There are up to four clients that need to be notified:
+  // . the client containing |old_focused_window|.
+  // . the client with |old_focused_window| as its root.
+  // . the client containing |new_focused_window|.
+  // . the client with |new_focused_window| as its root.
+  // Some of these client may be the same. The following takes care to notify
+  // each only once.
   WindowTree* owning_tree_old = nullptr;
   WindowTree* embedded_tree_old = nullptr;
 
   if (old_focused_window) {
     owning_tree_old =
-        window_server_->GetTreeWithId(old_focused_window->id().connection_id);
+        window_server_->GetTreeWithId(old_focused_window->id().client_id);
     if (owning_tree_old) {
       owning_tree_old->ProcessFocusChanged(old_focused_window,
                                            new_focused_window);
@@ -369,7 +369,7 @@ void Display::OnFocusChanged(FocusControllerChangeSource change_source,
   WindowTree* embedded_tree_new = nullptr;
   if (new_focused_window) {
     owning_tree_new =
-        window_server_->GetTreeWithId(new_focused_window->id().connection_id);
+        window_server_->GetTreeWithId(new_focused_window->id().client_id);
     if (owning_tree_new && owning_tree_new != owning_tree_old &&
         owning_tree_new != embedded_tree_old) {
       owning_tree_new->ProcessFocusChanged(old_focused_window,

@@ -66,8 +66,8 @@ class TestPlatformDisplay : public PlatformDisplay {
 
 ClientWindowId NextUnusedClientWindowId(WindowTree* tree) {
   ClientWindowId client_id;
-  for (ConnectionSpecificId id = 1;; ++id) {
-    // Used the id of the connection in the upper bits to simplify things.
+  for (ClientSpecificId id = 1;; ++id) {
+    // Used the id of the client in the upper bits to simplify things.
     const ClientWindowId client_id =
         ClientWindowId(WindowIdToTransportId(WindowId(tree->id(), id)));
     if (!tree->GetWindowByClientId(client_id))
@@ -154,13 +154,13 @@ WindowTree* TestDisplayBinding::CreateWindowTree(ServerWindow* root) {
 
 void TestWindowManager::WmCreateTopLevelWindow(
     uint32_t change_id,
-    ConnectionSpecificId requesting_client_id,
+    ClientSpecificId requesting_client_id,
     mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) {
   got_create_top_level_window_ = true;
   change_id_ = change_id;
 }
 
-void TestWindowManager::WmClientJankinessChanged(ConnectionSpecificId client_id,
+void TestWindowManager::WmClientJankinessChanged(ClientSpecificId client_id,
                                                  bool janky) {}
 
 void TestWindowManager::OnAccelerator(uint32_t id, mojom::EventPtr event) {
@@ -179,13 +179,13 @@ void TestWindowTreeClient::Bind(
   binding_.Bind(std::move(request));
 }
 
-void TestWindowTreeClient::OnEmbed(uint16_t connection_id,
+void TestWindowTreeClient::OnEmbed(uint16_t client_id,
                                    mojom::WindowDataPtr root,
                                    mus::mojom::WindowTreePtr tree,
                                    Id focused_window_id,
                                    bool drawn) {
   // TODO(sky): add test coverage of |focused_window_id|.
-  tracker_.OnEmbed(connection_id, std::move(root), drawn);
+  tracker_.OnEmbed(client_id, std::move(root), drawn);
 }
 
 void TestWindowTreeClient::OnEmbeddedAppDisconnected(uint32_t window) {
@@ -424,12 +424,12 @@ void WindowEventTargetingHelper::CreateSecondaryTree(
   child1->SetBounds(window_bounds);
   EnableHitTest(child1);
 
-  TestWindowTreeClient* embed_connection =
+  TestWindowTreeClient* embed_client =
       window_server_delegate_.last_client();
-  embed_connection->tracker()->changes()->clear();
+  embed_client->tracker()->changes()->clear();
   wm_client_->tracker()->changes()->clear();
 
-  *out_client = embed_connection;
+  *out_client = embed_client;
   *window_tree = tree1;
   *window = child1;
 }

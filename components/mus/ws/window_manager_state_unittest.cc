@@ -50,7 +50,7 @@ class WindowManagerStateTest : public testing::Test {
                                   bool in_nonclient_area,
                                   const ui::Event& event,
                                   Accelerator* accelerator);
-  void OnEventAckTimeout(ConnectionSpecificId client_id);
+  void OnEventAckTimeout(ClientSpecificId client_id);
 
   WindowTree* tree() {
     return window_event_targeting_helper_.window_server()->GetTreeWithId(1);
@@ -111,7 +111,7 @@ void WindowManagerStateTest::DispatchInputEventToWindow(
 }
 
 void WindowManagerStateTest::OnEventAckTimeout(
-    ConnectionSpecificId client_id) {
+    ClientSpecificId client_id) {
   WindowManagerStateTestApi test_api(window_manager_state_);
   test_api.OnEventAckTimeout(client_id);
 }
@@ -286,7 +286,7 @@ TEST_F(WindowManagerStateTest, AckTimeout) {
   EXPECT_EQ("InputEvent window=1,1 event_action=1",
             ChangesToDescription1(*tracker->changes())[0]);
 
-  OnEventAckTimeout(window()->id().connection_id);
+  OnEventAckTimeout(window()->id().client_id);
   EXPECT_TRUE(window_manager()->on_accelerator_called());
   EXPECT_EQ(accelerator->id(), window_manager()->on_accelerator_id());
 }

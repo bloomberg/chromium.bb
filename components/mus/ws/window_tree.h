@@ -76,7 +76,7 @@ class WindowTree : public mojom::WindowTree,
   // this WindowTree serves as the root of a WindowTreeHost.
   void ConfigureWindowManager();
 
-  ConnectionSpecificId id() const { return id_; }
+  ClientSpecificId id() const { return id_; }
 
   const UserId& user_id() const { return user_id_; }
 
@@ -111,8 +111,8 @@ class WindowTree : public mojom::WindowTree,
 
   std::set<const ServerWindow*> roots() { return roots_; }
 
-  void set_connection_name(const std::string& name) { connection_name_ = name; }
-  const std::string& connection_name() const { return connection_name_; }
+  void set_name(const std::string& name) { name_ = name; }
+  const std::string& name() const { return name_; }
 
   bool janky() const { return janky_; }
 
@@ -164,7 +164,7 @@ class WindowTree : public mojom::WindowTree,
   // Called when |tree|'s jankiness changes (see janky_ for definition).
   // Notifies the window manager client so it can update UI for the affected
   // window(s).
-  void ConnectionJankinessChanged(WindowTree* tree);
+  void ClientJankinessChanged(WindowTree* tree);
 
   // The following methods are invoked after the corresponding change has been
   // processed. They do the appropriate bookkeeping and update the client as
@@ -238,7 +238,7 @@ class WindowTree : public mojom::WindowTree,
     // The window is being removed.
     DELETED,
 
-    // Another connection is being embedded in the window.
+    // Another client is being embedded in the window.
     EMBED,
   };
 
@@ -424,10 +424,10 @@ class WindowTree : public mojom::WindowTree,
   UserId user_id_;
 
   // Id of this tree as assigned by WindowServer.
-  const ConnectionSpecificId id_;
-  std::string connection_name_;
+  const ClientSpecificId id_;
+  std::string name_;
 
-  ConnectionSpecificId next_window_id_;
+  ClientSpecificId next_window_id_;
 
   std::unique_ptr<WindowTreeBinding> binding_;
 

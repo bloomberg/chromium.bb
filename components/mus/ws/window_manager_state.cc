@@ -246,10 +246,10 @@ WindowServer* WindowManagerState::window_server() {
   return display_->window_server();
 }
 
-void WindowManagerState::OnEventAckTimeout(ConnectionSpecificId connection_id) {
-  WindowTree* hung_tree = window_server()->GetTreeWithId(connection_id);
+void WindowManagerState::OnEventAckTimeout(ClientSpecificId client_id) {
+  WindowTree* hung_tree = window_server()->GetTreeWithId(client_id);
   if (hung_tree && !hung_tree->janky())
-    tree_->ConnectionJankinessChanged(hung_tree);
+    tree_->ClientJankinessChanged(hung_tree);
   OnEventAck(tree_awaiting_input_ack_, mojom::EventResult::UNHANDLED);
 }
 
@@ -303,17 +303,17 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
   // embedded window.
   WindowTree* tree =
       in_nonclient_area
-          ? window_server()->GetTreeWithId(target->id().connection_id)
+          ? window_server()->GetTreeWithId(target->id().client_id)
           : window_server()->GetTreeWithRoot(target);
   if (!tree) {
     if (in_nonclient_area) {
       // Being the root of the tree means we may get events outside the bounds
-      // of the platform window. Because the root has a connection id of 0,
+      // of the platform window. Because the root has a client id of 0,
       // no WindowTree is found for it and we have to special case it here.
       DCHECK_EQ(target, root_.get());
       tree = tree_;
     } else {
-      tree = window_server()->GetTreeWithId(target->id().connection_id);
+      tree = window_server()->GetTreeWithId(target->id().client_id);
     }
   }
 

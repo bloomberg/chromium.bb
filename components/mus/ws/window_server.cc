@@ -36,7 +36,7 @@ WindowServer::WindowServer(
     const scoped_refptr<mus::SurfacesState>& surfaces_state)
     : delegate_(delegate),
       surfaces_state_(surfaces_state),
-      next_connection_id_(1),
+      next_client_id_(1),
       display_manager_(new DisplayManager(this)),
       current_operation_(nullptr),
       in_destructor_(false),
@@ -65,9 +65,9 @@ ServerWindow* WindowServer::CreateServerWindow(
   return window;
 }
 
-ConnectionSpecificId WindowServer::GetAndAdvanceNextConnectionId() {
-  const ConnectionSpecificId id = next_connection_id_++;
-  DCHECK_LT(id, next_connection_id_);
+ClientSpecificId WindowServer::GetAndAdvanceNextClientId() {
+  const ClientSpecificId id = next_client_id_++;
+  DCHECK_LT(id, next_client_id_);
   return id;
 }
 
@@ -165,37 +165,37 @@ void WindowServer::DestroyTree(WindowTree* tree) {
   // manager and we haven't gotten a response back yet.
   std::set<uint32_t> to_remove;
   for (auto& pair : in_flight_wm_change_map_) {
-    if (pair.second.connection_id == tree->id())
+    if (pair.second.client_id == tree->id())
       to_remove.insert(pair.first);
   }
   for (uint32_t id : to_remove)
     in_flight_wm_change_map_.erase(id);
 }
 
-WindowTree* WindowServer::GetTreeWithId(ConnectionSpecificId connection_id) {
-  auto iter = tree_map_.find(connection_id);
+WindowTree* WindowServer::GetTreeWithId(ClientSpecificId client_id) {
+  auto iter = tree_map_.find(client_id);
   return iter == tree_map_.end() ? nullptr : iter->second.get();
 }
 
-WindowTree* WindowServer::GetTreeWithConnectionName(
-    const std::string& connection_name) {
+WindowTree* WindowServer::GetTreeWithClientName(
+    const std::string& client_name) {
   for (const auto& entry : tree_map_) {
-    if (entry.second->connection_name() == connection_name)
+    if (entry.second->name() == client_name)
       return entry.second.get();
   }
   return nullptr;
 }
 
 ServerWindow* WindowServer::GetWindow(const WindowId& id) {
-  // kInvalidConnectionId is used for Display and WindowManager nodes.
-  if (id.connection_id == kInvalidConnectionId) {
+  // kInvalidClientId is used for Display and WindowManager nodes.
+  if (id.client_id == kInvalidClientId) {
     for (Display* display : display_manager_->displays()) {
       ServerWindow* window = display->GetRootWithId(id);
       if (window)
         return window;
     }
   }
-  WindowTree* tree = GetTreeWithId(id.connection_id);
+  WindowTree* tree = GetTreeWithId(id.client_id);
   return tree ? tree->GetWindow(id) : nullptr;
 }
 
@@ -206,12 +206,12 @@ void WindowServer::SchedulePaint(ServerWindow* window,
     display->SchedulePaint(window, bounds);
 }
 
-void WindowServer::OnTreeMessagedClient(ConnectionSpecificId id) {
+void WindowServer::OnTreeMessagedClient(ClientSpecificId id) {
   if (current_operation_)
     current_operation_->MarkTreeAsMessaged(id);
 }
 
-bool WindowServer::DidTreeMessageClient(ConnectionSpecificId id) const {
+bool WindowServer::DidTreeMessageClient(ClientSpecificId id) const {
   return current_operation_ && current_operation_->DidMessageTree(id);
 }
 
@@ -303,7 +303,7 @@ void WindowServer::WindowManagerChangeCompleted(
     return;
   }
 
-  WindowTree* tree = GetTreeWithId(change.connection_id);
+  WindowTree* tree = GetTreeWithId(change.client_id);
   tree->OnChangeCompleted(change.client_change_id, success);
 }
 
@@ -321,11 +321,11 @@ void WindowServer::WindowManagerCreatedTopLevelWindow(
     return;
   }
 
-  WindowTree* tree = GetTreeWithId(change.connection_id);
+  WindowTree* tree = GetTreeWithId(change.client_id);
   // The window manager should have created the window already, and it should
   // be ready for embedding.
   if (!tree->IsWaitingForNewTopLevelWindow(window_manager_change_id) ||
-      !window || window->id().connection_id != wm_tree->id() ||
+      !window || window->id().client_id != wm_tree->id() ||
       !window->children().empty() || GetTreeWithRoot(window)) {
     WindowManagerSentBogusMessage();
     return;
@@ -509,14 +509,14 @@ ServerWindow* WindowServer::FindWindowForSurface(
     mojom::SurfaceType surface_type,
     const ClientWindowId& client_window_id) {
   WindowTree* window_tree;
-  if (ancestor->id().connection_id == kInvalidConnectionId) {
+  if (ancestor->id().client_id == kInvalidClientId) {
     WindowManagerAndDisplay wm_and_display =
         display_manager_->GetWindowManagerAndDisplay(ancestor);
     window_tree = wm_and_display.window_manager_state
                       ? wm_and_display.window_manager_state->tree()
                       : nullptr;
   } else {
-    window_tree = GetTreeWithId(ancestor->id().connection_id);
+    window_tree = GetTreeWithId(ancestor->id().client_id);
   }
   if (!window_tree)
     return nullptr;

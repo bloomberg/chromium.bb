@@ -21,7 +21,7 @@ class WindowManagerAccessPolicy : public AccessPolicy {
   ~WindowManagerAccessPolicy() override;
 
   // AccessPolicy:
-  void Init(ConnectionSpecificId connection_id,
+  void Init(ClientSpecificId client_id,
             AccessPolicyDelegate* delegate) override;
   bool CanRemoveWindowFromParent(const ServerWindow* window) const override;
   bool CanAddWindow(const ServerWindow* parent,
@@ -62,9 +62,9 @@ class WindowManagerAccessPolicy : public AccessPolicy {
 
  private:
   bool IsWindowKnown(const ServerWindow* window) const;
-  bool WasCreatedByThisConnection(const ServerWindow* window) const;
+  bool WasCreatedByThisClient(const ServerWindow* window) const;
 
-  ConnectionSpecificId connection_id_ = 0u;
+  ClientSpecificId client_id_ = 0u;
   AccessPolicyDelegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerAccessPolicy);

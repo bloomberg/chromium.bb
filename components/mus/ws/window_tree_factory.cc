@@ -15,11 +15,11 @@ namespace ws {
 
 WindowTreeFactory::WindowTreeFactory(WindowServer* window_server,
                                      const UserId& user_id,
-                                     const std::string& connection_name,
+                                     const std::string& client_name,
                                      mojom::WindowTreeFactoryRequest request)
     : window_server_(window_server),
       user_id_(user_id),
-      connection_name_(connection_name),
+      client_name_(client_name),
       binding_(this, std::move(request)) {}
 
 WindowTreeFactory::~WindowTreeFactory() {}
@@ -34,7 +34,7 @@ void WindowTreeFactory::CreateWindowTree(
       new ws::DefaultWindowTreeBinding(service.get(), window_server_,
                                        std::move(tree_request),
                                        std::move(client)));
-  service->set_connection_name(connection_name_);
+  service->set_name(client_name_);
   window_server_->AddTree(std::move(service), std::move(binding), nullptr);
 }
 

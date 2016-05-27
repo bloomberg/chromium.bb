@@ -17,9 +17,8 @@ Operation::Operation(WindowTree* tree,
       source_tree_id_(tree->id()),
       operation_type_(operation_type) {
   DCHECK(operation_type != OperationType::NONE);
-  // Tell the connection manager about the operation currently in flight.
-  // The connection manager uses this information to suppress certain calls
-  // out to clients.
+  // Tell the window server about the operation currently in flight. The window
+  // server uses this information to suppress certain calls out to clients.
   window_server_->PrepareForOperation(this);
 }
 

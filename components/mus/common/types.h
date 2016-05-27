@@ -15,10 +15,10 @@ namespace mus {
 // Used to identify windows and change ids.
 typedef uint32_t Id;
 
-// Used to identify a connection as well as a connection specific window id. For
-// example, the Id for a window consists of the ConnectionSpecificId of the
-// connection and the ConnectionSpecificId of the window.
-typedef uint16_t ConnectionSpecificId;
+// Used to identify a client as well as a client-specific window id. For
+// example, the Id for a window consists of the ClientSpecificId of the client
+// and the ClientSpecificId of the window.
+typedef uint16_t ClientSpecificId;
 
 }  // namespace mus
 

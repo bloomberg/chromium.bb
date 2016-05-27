@@ -95,7 +95,7 @@ class UserDisplayManager : public mojom::DisplayManager {
   base::subtle::Atomic32 current_cursor_location_;
 
   // A handle to a shared memory buffer that is one 64 bit integer long. We
-  // share this with any connection as the same user. This buffer is lazily
+  // share this with any client as the same user. This buffer is lazily
   // created on the first access.
   mojo::ScopedSharedBufferHandle cursor_location_handle_;
 

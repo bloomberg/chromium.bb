@@ -158,7 +158,7 @@ class WindowManagerStateTestApi {
         target, in_nonclient_area, event, accelerator);
   }
 
-  void OnEventAckTimeout(ConnectionSpecificId client_id) {
+  void OnEventAckTimeout(ClientSpecificId client_id) {
     wms_->OnEventAckTimeout(client_id);
   }
 
@@ -241,9 +241,9 @@ class TestWindowManager : public mojom::WindowManager {
                      mojo::Array<uint8_t> value) override {}
   void WmCreateTopLevelWindow(
       uint32_t change_id,
-      ConnectionSpecificId requesting_client_id,
+      ClientSpecificId requesting_client_id,
       mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override;
-  void WmClientJankinessChanged(ConnectionSpecificId client_id,
+  void WmClientJankinessChanged(ClientSpecificId client_id,
                                 bool janky) override;
   void OnAccelerator(uint32_t id, mojom::EventPtr event) override;
 
@@ -274,7 +274,7 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
 
  private:
   // WindowTreeClient:
-  void OnEmbed(uint16_t connection_id,
+  void OnEmbed(uint16_t client_id,
                mojom::WindowDataPtr root,
                mus::mojom::WindowTreePtr tree,
                Id focused_window_id,
@@ -450,7 +450,7 @@ class WindowEventTargetingHelper {
   WindowServer* window_server() { return window_server_.get(); }
 
  private:
-  // TestWindowTreeClient that is used for the WM connection. Owned by
+  // TestWindowTreeClient that is used for the WM client. Owned by
   // |window_server_delegate_|
   TestWindowTreeClient* wm_client_;
   int32_t cursor_id_;

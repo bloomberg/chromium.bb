@@ -23,7 +23,7 @@ class AccessPolicy {
  public:
   virtual ~AccessPolicy() {}
 
-  virtual void Init(ConnectionSpecificId connection_id,
+  virtual void Init(ClientSpecificId client_id,
                     AccessPolicyDelegate* delegate) = 0;
 
   // Unless otherwise mentioned all arguments have been validated. That is the
@@ -62,7 +62,7 @@ class AccessPolicy {
   // displayed, visibility, locking, etc.
   virtual bool CanSetCursorProperties(const ServerWindow* window) const = 0;
 
-  // Returns whether the connection should notify on a hierarchy change.
+  // Returns whether the client should notify on a hierarchy change.
   // |new_parent| and |old_parent| are initially set to the new and old parents
   // but may be altered so that the client only sees a certain set of windows.
   virtual bool ShouldNotifyOnHierarchyChange(

@@ -406,7 +406,7 @@ void ServerWindow::BuildDebugInfo(const std::string& depth,
   std::string name = GetName();
   *result += base::StringPrintf(
       "%sid=%d,%d visible=%s bounds=%d,%d %dx%d %s\n", depth.c_str(),
-      static_cast<int>(id_.connection_id), static_cast<int>(id_.window_id),
+      static_cast<int>(id_.client_id), static_cast<int>(id_.window_id),
       visible_ ? "true" : "false", bounds_.x(), bounds_.y(), bounds_.width(),
       bounds_.height(), !name.empty() ? name.c_str() : "(no name)");
   for (const ServerWindow* child : children_)

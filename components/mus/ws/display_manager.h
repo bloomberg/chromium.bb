@@ -91,7 +91,7 @@ class DisplayManager {
   std::map<UserId, std::unique_ptr<UserDisplayManager>> user_display_managers_;
 
   // ID to use for next root node.
-  ConnectionSpecificId next_root_id_;
+  ClientSpecificId next_root_id_;
 
   uint32_t next_display_id_;
 

@@ -125,7 +125,7 @@ class WindowManagerState : public EventDispatcherDelegate {
 
   WindowServer* window_server();
 
-  void OnEventAckTimeout(ConnectionSpecificId connection_id);
+  void OnEventAckTimeout(ClientSpecificId client_id);
 
   // Schedules an event to be processed later.
   void QueueEvent(const ui::Event& event,

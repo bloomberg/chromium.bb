@@ -19,7 +19,7 @@ class WindowTreeFactory : public mus::mojom::WindowTreeFactory {
  public:
   WindowTreeFactory(WindowServer* window_server,
                     const UserId& user_id,
-                    const std::string& connection_name,
+                    const std::string& client_name,
                     mojom::WindowTreeFactoryRequest request);
  private:
   ~WindowTreeFactory() override;
@@ -30,7 +30,7 @@ class WindowTreeFactory : public mus::mojom::WindowTreeFactory {
 
   WindowServer* window_server_;
   const UserId user_id_;
-  const std::string connection_name_;
+  const std::string client_name_;
   mojo::StrongBinding<mus::mojom::WindowTreeFactory> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeFactory);

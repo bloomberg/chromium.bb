@@ -217,7 +217,7 @@ void WindowDatasToTestWindows(const Array<mojom::WindowDataPtr>& data,
 
 Change::Change()
     : type(CHANGE_TYPE_EMBED),
-      connection_id(0),
+      client_id(0),
       window_id(0),
       window_id2(0),
       window_id3(0),
@@ -237,12 +237,12 @@ TestChangeTracker::TestChangeTracker() : delegate_(NULL) {}
 
 TestChangeTracker::~TestChangeTracker() {}
 
-void TestChangeTracker::OnEmbed(ConnectionSpecificId connection_id,
+void TestChangeTracker::OnEmbed(ClientSpecificId client_id,
                                 mojom::WindowDataPtr root,
                                 bool drawn) {
   Change change;
   change.type = CHANGE_TYPE_EMBED;
-  change.connection_id = connection_id;
+  change.client_id = client_id;
   change.bool_value = drawn;
   change.windows.push_back(WindowDataToTestWindow(root));
   AddChange(change);

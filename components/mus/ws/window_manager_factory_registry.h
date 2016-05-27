@@ -31,7 +31,7 @@ class WindowManagerFactoryRegistryTestApi;
 // WindowManagerFactoryServices.
 class WindowManagerFactoryRegistry : public UserIdTrackerObserver {
  public:
-  WindowManagerFactoryRegistry(WindowServer* connection_manager,
+  WindowManagerFactoryRegistry(WindowServer* window_server,
                                UserIdTracker* tracker);
   ~WindowManagerFactoryRegistry() override;
 

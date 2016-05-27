@@ -228,16 +228,16 @@ class WindowTracker : public WindowObserver {
 // -----------------------------------------------------------------
 
 struct EmbedResult {
-  EmbedResult(WindowTreeConnection* connection, ConnectionSpecificId id)
-      : connection(connection), connection_id(id) {}
-  EmbedResult() : connection(nullptr), connection_id(0) {}
+  EmbedResult(WindowTreeConnection* connection, ClientSpecificId id)
+      : connection(connection), client_id(id) {}
+  EmbedResult() : connection(nullptr), client_id(0) {}
 
   WindowTreeConnection* connection;
 
   // The id supplied to the callback from OnEmbed(). Depending upon the
-  // access policy this may or may not match the connection id of
+  // access policy this may or may not match the client id of
   // |connection|.
-  ConnectionSpecificId connection_id;
+  ClientSpecificId client_id;
 };
 
 Window* GetFirstRoot(WindowTreeConnection* connection) {
@@ -275,7 +275,7 @@ class WindowServerTest : public WindowServerTestBase {
     if (!WindowServerTestBase::DoRunLoopWithTimeout())
       return EmbedResult();
     const EmbedResult result(embed_details_->connection,
-                             embed_details_->connection_id);
+                             embed_details_->client_id);
     embed_details_.reset();
     return result;
   }
@@ -318,8 +318,8 @@ class WindowServerTest : public WindowServerTestBase {
     // Whether a MessageLoop is running.
     bool waiting;
 
-    // Connection id supplied to the Embed() callback.
-    ConnectionSpecificId connection_id;
+    // Client id supplied to the Embed() callback.
+    ClientSpecificId client_id;
 
     // The WindowTreeConnection that resulted from the Embed(). null if |result|
     // is false.
