@@ -531,6 +531,8 @@ public:
 
     double lastFrameTimeMonotonic() const { return m_lastFrameTimeMonotonic; }
 
+    ChromeClientImpl& chromeClient() const { return *m_chromeClientImpl.get(); }
+
 private:
     InspectorOverlay* inspectorOverlay();
 

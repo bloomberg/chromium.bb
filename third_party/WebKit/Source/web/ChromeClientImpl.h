@@ -188,6 +188,8 @@ public:
 
     double lastFrameTimeMonotonic() const override;
 
+    void notifyPopupOpeningObservers() const;
+
 private:
     explicit ChromeClientImpl(WebViewImpl*);
 
@@ -195,7 +197,6 @@ private:
     void registerPopupOpeningObserver(PopupOpeningObserver*) override;
     void unregisterPopupOpeningObserver(PopupOpeningObserver*) override;
 
-    void notifyPopupOpeningObservers() const;
     void setCursor(const WebCursorInfo&, LocalFrame* localRoot);
 
     WebViewImpl* m_webView; // Weak pointer.

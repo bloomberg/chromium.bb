@@ -196,6 +196,7 @@ private:
             m_frozenViews.add(view);
             views.append(view);
             view->setIgnoreInputEvents(true);
+            view->chromeClient().notifyPopupOpeningObservers();
         }
 
         const WebFrameWidgetsSet& widgetImpls = WebFrameWidgetImpl::allInstances();
