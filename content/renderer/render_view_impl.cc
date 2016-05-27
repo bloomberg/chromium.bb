@@ -606,14 +606,19 @@ GetV8CacheStrategiesForCacheStorage() {
       *base::CommandLine::ForCurrentProcess();
   std::string v8_cache_strategies = command_line.GetSwitchValueASCII(
       switches::kV8CacheStrategiesForCacheStorage);
-  if (v8_cache_strategies.empty())
+  if (v8_cache_strategies.empty()) {
     v8_cache_strategies =
         base::FieldTrialList::FindFullName("V8CacheStrategiesForCacheStorage");
-  if (v8_cache_strategies == "none") {
+  }
+
+  if (base::StartsWith(v8_cache_strategies, "none",
+                       base::CompareCase::SENSITIVE)) {
     return WebSettings::V8CacheStrategiesForCacheStorage::None;
-  } else if (v8_cache_strategies == "normal") {
+  } else if (base::StartsWith(v8_cache_strategies, "normal",
+                              base::CompareCase::SENSITIVE)) {
     return WebSettings::V8CacheStrategiesForCacheStorage::Normal;
-  } else if (v8_cache_strategies == "aggressive") {
+  } else if (base::StartsWith(v8_cache_strategies, "aggressive",
+                              base::CompareCase::SENSITIVE)) {
     return WebSettings::V8CacheStrategiesForCacheStorage::Aggressive;
   } else {
     return WebSettings::V8CacheStrategiesForCacheStorage::Default;
