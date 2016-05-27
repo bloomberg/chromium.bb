@@ -39,13 +39,14 @@ namespace blink {
 
 class RTCIceCandidateInit;
 class ExceptionState;
+class ExecutionContext;
 class ScriptState;
 class ScriptValue;
 
 class RTCIceCandidate final : public GarbageCollectedFinalized<RTCIceCandidate>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static RTCIceCandidate* create(const RTCIceCandidateInit&, ExceptionState&);
+    static RTCIceCandidate* create(ExecutionContext*, const RTCIceCandidateInit&, ExceptionState&);
     static RTCIceCandidate* create(WebRTCICECandidate);
 
     String candidate() const;

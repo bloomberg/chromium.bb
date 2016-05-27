@@ -73877,6 +73877,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1381" label="TouchMoveUserGestureUtilized"/>
   <int value="1382" label="TouchEndDuringScrollUserGestureUtilized"/>
   <int value="1383" label="CSSSelectorPseudoDefined"/>
+  <int value="1384" label="RTCPeerConnectionAddIceCandidatePromise"/>
+  <int value="1385" label="RTCPeerConnectionAddIceCandidateLegacy"/>
+  <int value="1386" label="RTCIceCandidateDefaultSdpMLineIndex"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

@@ -66,6 +66,8 @@ public:
     BLINK_PLATFORM_EXPORT void setSdpMLineIndex(unsigned short);
 
 #if INSIDE_BLINK
+    // TODO(guidou): Support setting sdpMLineIndex to -1 to indicate the absence
+    // of a value for sdpMLineIndex. crbug.com/614958
     WebRTCICECandidate(WebString candidate, WebString sdpMid, unsigned short sdpMLineIndex)
     {
         this->initialize(candidate, sdpMid, sdpMLineIndex);

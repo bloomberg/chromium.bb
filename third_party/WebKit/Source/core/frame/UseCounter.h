@@ -1194,6 +1194,9 @@ public:
         TouchMoveUserGestureUtilized = 1381,
         TouchEndDuringScrollUserGestureUtilized = 1382,
         CSSSelectorPseudoDefined = 1383,
+        RTCPeerConnectionAddIceCandidatePromise = 1384,
+        RTCPeerConnectionAddIceCandidateLegacy = 1385,
+        RTCIceCandidateDefaultSdpMLineIndex = 1386,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

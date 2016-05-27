@@ -35,11 +35,13 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/frame/UseCounter.h"
 #include "modules/mediastream/RTCIceCandidateInit.h"
 
 namespace blink {
 
-RTCIceCandidate* RTCIceCandidate::create(const RTCIceCandidateInit& candidateInit, ExceptionState& exceptionState)
+RTCIceCandidate* RTCIceCandidate::create(ExecutionContext* context, const RTCIceCandidateInit& candidateInit, ExceptionState& exceptionState)
 {
     if (!candidateInit.hasCandidate() || !candidateInit.candidate().length()) {
         exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::incorrectPropertyType("candidate", "is not a string, or is empty."));
@@ -50,9 +52,12 @@ RTCIceCandidate* RTCIceCandidate::create(const RTCIceCandidateInit& candidateIni
     if (candidateInit.hasSdpMid())
         sdpMid = candidateInit.sdpMid();
 
+    // TODO(guidou): Change default value to -1. crbug.com/614958.
     unsigned short sdpMLineIndex = 0;
     if (candidateInit.hasSdpMLineIndex())
         sdpMLineIndex = candidateInit.sdpMLineIndex();
+    else
+        UseCounter::count(context, UseCounter::RTCIceCandidateDefaultSdpMLineIndex);
 
     return new RTCIceCandidate(WebRTCICECandidate(candidateInit.candidate(), sdpMid, sdpMLineIndex));
 }

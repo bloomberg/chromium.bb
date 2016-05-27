@@ -46,8 +46,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/VoidCallback.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -152,11 +152,18 @@ WebRTCAnswerOptions convertToWebRTCAnswerOptions(const RTCAnswerOptions& options
         options.hasVoiceActivityDetection() ? options.voiceActivityDetection() : true));
 }
 
-WebRTCICECandidate convertToWebRTCIceCandidate(const RTCIceCandidateInitOrRTCIceCandidate& candidate)
+WebRTCICECandidate convertToWebRTCIceCandidate(ExecutionContext* context, const RTCIceCandidateInitOrRTCIceCandidate& candidate)
 {
+    DCHECK(!candidate.isNull());
     if (candidate.isRTCIceCandidateInit()) {
         const RTCIceCandidateInit& iceCandidateInit = candidate.getAsRTCIceCandidateInit();
-        return WebRTCICECandidate(iceCandidateInit.candidate(), iceCandidateInit.sdpMid(), iceCandidateInit.sdpMLineIndex());
+        // TODO(guidou): Change default value to -1. crbug.com/614958.
+        unsigned short sdpMLineIndex = 0;
+        if (iceCandidateInit.hasSdpMLineIndex())
+            sdpMLineIndex = iceCandidateInit.sdpMLineIndex();
+        else
+            UseCounter::count(context, UseCounter::RTCIceCandidateDefaultSdpMLineIndex);
+        return WebRTCICECandidate(iceCandidateInit.candidate(), iceCandidateInit.sdpMid(), sdpMLineIndex);
     }
 
     DCHECK(candidate.isRTCIceCandidate());
@@ -576,7 +583,7 @@ ScriptPromise RTCPeerConnection::setLocalDescription(ScriptState* scriptState, c
     return promise;
 }
 
-ScriptPromise RTCPeerConnection::setLocalDescription(ScriptState* scriptState, RTCSessionDescription* sessionDescription, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
+ScriptPromise RTCPeerConnection::setLocalDescription(ScriptState* scriptState, const RTCSessionDescriptionInit& sessionDescriptionInit, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
 {
     ExecutionContext* context = scriptState->getExecutionContext();
     if (successCallback && errorCallback) {
@@ -591,10 +598,8 @@ ScriptPromise RTCPeerConnection::setLocalDescription(ScriptState* scriptState, R
     if (callErrorCallbackIfSignalingStateClosed(m_signalingState, errorCallback))
         return ScriptPromise::castUndefined(scriptState);
 
-    DCHECK(sessionDescription);
-
     RTCVoidRequest* request = RTCVoidRequestImpl::create(getExecutionContext(), this, successCallback, errorCallback);
-    m_peerHandler->setLocalDescription(request, sessionDescription->webSessionDescription());
+    m_peerHandler->setLocalDescription(request, WebRTCSessionDescription(sessionDescriptionInit.type(), sessionDescriptionInit.sdp()));
     return ScriptPromise::castUndefined(scriptState);
 }
 
@@ -619,7 +624,7 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(ScriptState* scriptState, 
     return promise;
 }
 
-ScriptPromise RTCPeerConnection::setRemoteDescription(ScriptState* scriptState, RTCSessionDescription* sessionDescription, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
+ScriptPromise RTCPeerConnection::setRemoteDescription(ScriptState* scriptState, const RTCSessionDescriptionInit& sessionDescriptionInit, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
 {
     ExecutionContext* context = scriptState->getExecutionContext();
     if (successCallback && errorCallback) {
@@ -634,10 +639,8 @@ ScriptPromise RTCPeerConnection::setRemoteDescription(ScriptState* scriptState, 
     if (callErrorCallbackIfSignalingStateClosed(m_signalingState, errorCallback))
         return ScriptPromise::castUndefined(scriptState);
 
-    DCHECK(sessionDescription);
-
     RTCVoidRequest* request = RTCVoidRequestImpl::create(getExecutionContext(), this, successCallback, errorCallback);
-    m_peerHandler->setRemoteDescription(request, sessionDescription->webSessionDescription());
+    m_peerHandler->setRemoteDescription(request, WebRTCSessionDescription(sessionDescriptionInit.type(), sessionDescriptionInit.sdp()));
     return ScriptPromise::castUndefined(scriptState);
 }
 
@@ -776,7 +779,7 @@ ScriptPromise RTCPeerConnection::addIceCandidate(ScriptState* scriptState, const
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
     RTCVoidRequest* request = RTCVoidRequestPromiseImpl::create(this, resolver);
-    WebRTCICECandidate webCandidate = convertToWebRTCIceCandidate(candidate);
+    WebRTCICECandidate webCandidate = convertToWebRTCIceCandidate(scriptState->getExecutionContext(), candidate);
     bool implemented = m_peerHandler->addICECandidate(request, webCandidate);
     if (!implemented)
         resolver->reject(DOMException::create(OperationError, "This operation could not be completed."));
@@ -784,17 +787,20 @@ ScriptPromise RTCPeerConnection::addIceCandidate(ScriptState* scriptState, const
     return promise;
 }
 
-ScriptPromise RTCPeerConnection::addIceCandidate(ScriptState* scriptState, RTCIceCandidate* iceCandidate, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
+ScriptPromise RTCPeerConnection::addIceCandidate(ScriptState* scriptState, const RTCIceCandidateInitOrRTCIceCandidate& candidate, VoidCallback* successCallback, RTCPeerConnectionErrorCallback* errorCallback)
 {
-    DCHECK(iceCandidate);
     DCHECK(successCallback);
     DCHECK(errorCallback);
 
     if (callErrorCallbackIfSignalingStateClosed(m_signalingState, errorCallback))
         return ScriptPromise::castUndefined(scriptState);
 
+    if (isIceCandidateMissingSdp(candidate))
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Candidate missing values for both sdpMid and sdpMLineIndex"));
+
     RTCVoidRequest* request = RTCVoidRequestImpl::create(getExecutionContext(), this, successCallback, errorCallback);
-    bool implemented = m_peerHandler->addICECandidate(request, iceCandidate->webCandidate());
+    WebRTCICECandidate webCandidate = convertToWebRTCIceCandidate(scriptState->getExecutionContext(), candidate);
+    bool implemented = m_peerHandler->addICECandidate(request, webCandidate);
     if (!implemented)
         asyncCallErrorCallback(errorCallback, DOMException::create(OperationError, "This operation could not be completed."));
 

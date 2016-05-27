@@ -80,11 +80,11 @@ public:
     ScriptPromise createAnswer(ScriptState*, RTCSessionDescriptionCallback*, RTCPeerConnectionErrorCallback*, const Dictionary&);
 
     ScriptPromise setLocalDescription(ScriptState*, const RTCSessionDescriptionInit&);
-    ScriptPromise setLocalDescription(ScriptState*, RTCSessionDescription*, VoidCallback*, RTCPeerConnectionErrorCallback*);
+    ScriptPromise setLocalDescription(ScriptState*, const RTCSessionDescriptionInit&, VoidCallback*, RTCPeerConnectionErrorCallback*);
     RTCSessionDescription* localDescription();
 
     ScriptPromise setRemoteDescription(ScriptState*, const RTCSessionDescriptionInit&);
-    ScriptPromise setRemoteDescription(ScriptState*, RTCSessionDescription*, VoidCallback*, RTCPeerConnectionErrorCallback*);
+    ScriptPromise setRemoteDescription(ScriptState*, const RTCSessionDescriptionInit&, VoidCallback*, RTCPeerConnectionErrorCallback*);
     RTCSessionDescription* remoteDescription();
 
     String signalingState() const;
@@ -96,7 +96,7 @@ public:
     static ScriptPromise generateCertificate(ScriptState*, const AlgorithmIdentifier& keygenAlgorithm, ExceptionState&);
 
     ScriptPromise addIceCandidate(ScriptState*, const RTCIceCandidateInitOrRTCIceCandidate&);
-    ScriptPromise addIceCandidate(ScriptState*, RTCIceCandidate*, VoidCallback*, RTCPeerConnectionErrorCallback*);
+    ScriptPromise addIceCandidate(ScriptState*, const RTCIceCandidateInitOrRTCIceCandidate&, VoidCallback*, RTCPeerConnectionErrorCallback*);
 
     String iceGatheringState() const;
 

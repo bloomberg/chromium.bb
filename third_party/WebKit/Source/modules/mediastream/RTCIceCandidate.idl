@@ -30,6 +30,7 @@
 
 [
     Constructor(RTCIceCandidateInit candidateInitDict),
+    ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor
 ] interface RTCIceCandidate {
     attribute DOMString candidate;

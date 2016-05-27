@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../../resources/js-test.js"></script>
+<!-- TODO(guidou): Convert test to testharness.js. crbug.com/614963 -->
 </head>
 <body>
 <script>
@@ -18,9 +19,27 @@ function onIceChange2()
     }
 }
 
-function addIceCandidateSuccess()
+function addIceCandidateSuccess1()
 {
-    testPassed("addIceCandidateSuccess was called.");
+    testPassed("addIceCandidateSuccess1 was called.");
+    shouldNotThrow('pc.addIceCandidate({candidate: "candidate", sdpMid: 0}, addIceCandidateSuccess2, unexpectedCallback);');
+}
+
+function addIceCandidateSuccess2()
+{
+    testPassed("addIceCandidateSuccess2 was called.");
+    shouldNotThrow('pc.addIceCandidate({candidate: "candidate", sdpMLineIndex: 0}, addIceCandidateSuccess3, unexpectedCallback);');
+}
+
+function addIceCandidateSuccess3()
+{
+    testPassed("addIceCandidateSuccess3 was called.");
+    shouldNotThrow('pc.addIceCandidate({candidate: "candidate", sdpMid: 0, sdpMLineIndex: 0}, addIceCandidateSuccess4, unexpectedCallback);');
+}
+
+function addIceCandidateSuccess4()
+{
+    testPassed("addIceCandidateSuccess4 was called.");
     pc.oniceconnectionstatechange = onIceChange2;
     pc.close();
 }
@@ -43,10 +62,11 @@ function onIceChange1()
     if (pc.iceConnectionState === "completed") {
         testPassed("iceConnectionState is completed");
         iceCandidate = new RTCIceCandidate({candidate:"nano nano"});
-        shouldNotThrow('pc.addIceCandidate(null, addIceCandidateSuccess, unexpectedCallback).catch(expectedTypeError);');
+        shouldNotThrow('pc.addIceCandidate(null, unexpectedCallback, unexpectedCallback).catch(expectedTypeError);');
+        shouldNotThrow('pc.addIceCandidate({candidate: "candidate"}, unexpectedCallback, unexpectedCallback).catch(expectedTypeError);');
         shouldNotThrow('pc.addIceCandidate(iceCandidate, null, unexpectedCallback).catch(expectedTypeError);');
-        shouldNotThrow('pc.addIceCandidate(iceCandidate, addIceCandidateSuccess, null).catch(expectedTypeError);');
-        shouldNotThrow('pc.addIceCandidate(iceCandidate, addIceCandidateSuccess, unexpectedCallback);');
+        shouldNotThrow('pc.addIceCandidate(iceCandidate, unexpectedCallback, null).catch(expectedTypeError);');
+        shouldNotThrow('pc.addIceCandidate(iceCandidate, addIceCandidateSuccess1, unexpectedCallback);');
     }
 }
 

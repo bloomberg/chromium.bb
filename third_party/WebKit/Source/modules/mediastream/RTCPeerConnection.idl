@@ -80,7 +80,7 @@ enum RTCIceConnectionState {
     readonly attribute RTCSessionDescription? remoteDescription;
     // readonly attribute RTCSessionDescription? currentRemoteDescription;
     // readonly attribute RTCSessionDescription? pendingRemoteDescription;
-    [CallWith=ScriptState] Promise<void> addIceCandidate ((RTCIceCandidateInit or RTCIceCandidate) candidate);
+    [CallWith=ScriptState, MeasureAs=RTCPeerConnectionAddIceCandidatePromise] Promise<void> addIceCandidate ((RTCIceCandidateInit or RTCIceCandidate) candidate);
     readonly attribute RTCSignalingState signalingState;
     readonly attribute RTCIceGatheringState iceGatheringState;
     readonly attribute RTCIceConnectionState iceConnectionState;
@@ -100,10 +100,10 @@ enum RTCIceConnectionState {
     [CallWith=ScriptState] Promise<void> createOffer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback, optional Dictionary rtcOfferOptions);
     // TODO(guidou): There should be no mediaConstraints argument.
     [CallWith=ScriptState] Promise<void> createAnswer(RTCSessionDescriptionCallback successCallback, RTCPeerConnectionErrorCallback failureCallback, optional Dictionary mediaConstraints);
-    [CallWith=ScriptState] Promise<void> setLocalDescription(RTCSessionDescription description, VoidCallback successCallback, [Default=Undefined] optional RTCPeerConnectionErrorCallback failureCallback);
+    [CallWith=ScriptState] Promise<void> setLocalDescription(RTCSessionDescriptionInit description, VoidCallback successCallback, [Default=Undefined] optional RTCPeerConnectionErrorCallback failureCallback);
     // TODO(guidou): The failureCallback argument should be non-optional.
-    [CallWith=ScriptState] Promise<void> setRemoteDescription(RTCSessionDescription description, VoidCallback successCallback, [Default=Undefined] optional RTCPeerConnectionErrorCallback failureCallback);
-    [CallWith=ScriptState] Promise<void> addIceCandidate(RTCIceCandidate candidate, VoidCallback successCallback, RTCPeerConnectionErrorCallback failureCallback);
+    [CallWith=ScriptState] Promise<void> setRemoteDescription(RTCSessionDescriptionInit description, VoidCallback successCallback, [Default=Undefined] optional RTCPeerConnectionErrorCallback failureCallback);
+    [CallWith=ScriptState, MeasureAs=RTCPeerConnectionAddIceCandidateLegacy] Promise<void> addIceCandidate((RTCIceCandidateInit or RTCIceCandidate) candidate, VoidCallback successCallback, RTCPeerConnectionErrorCallback failureCallback);
     // TODO(guidou): The selector argument should the first (nullable,
     // non-optional) argument, and there should be a third failureCallback
     // argument.
