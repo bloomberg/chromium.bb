@@ -36,12 +36,16 @@ TEST(MerkleAuditProofTest, CalculatesAuditPathLengthCorrectly) {
 }
 
 TEST(MerkleAuditProofDeathTest, DiesIfLeafIndexIsGreaterThanOrEqualToTreeSize) {
-  EXPECT_DEATH_IF_SUPPORTED(CalculateAuditPathLength(0, 0),
-                            "leaf_index < tree_size");
-  EXPECT_DEATH_IF_SUPPORTED(CalculateAuditPathLength(10, 10),
-                            "leaf_index < tree_size");
-  EXPECT_DEATH_IF_SUPPORTED(CalculateAuditPathLength(11, 10),
-                            "leaf_index < tree_size");
+#ifdef OFFICIAL_BUILD
+  // The official build does not print the reason a CHECK failed.
+  const char kErrorRegex[] = "";
+#else
+  const char kErrorRegex[] = "leaf_index < tree_size";
+#endif
+
+  EXPECT_DEATH_IF_SUPPORTED(CalculateAuditPathLength(0, 0), kErrorRegex);
+  EXPECT_DEATH_IF_SUPPORTED(CalculateAuditPathLength(10, 10), kErrorRegex);
+  EXPECT_DEATH_IF_SUPPORTED(CalculateAuditPathLength(11, 10), kErrorRegex);
 }
 
 }  // namespace
