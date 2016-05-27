@@ -92,24 +92,6 @@ CONTENT OF TEST
 
         self.verify_no_conversion_happened(converted, test_html)
 
-    def test_convert_for_webkit_harness_only(self):
-        """ Tests convert_for_webkit() using a basic JS test that uses testharness.js only and has no prefixed properties """
-
-        test_html = """<head>
-<link href="/resources/testharness.css" rel="stylesheet" type="text/css">
-<script src="/resources/testharness.js"></script>
-</head>
-"""
-        fake_dir_path = self.fake_dir_path("harnessonly")
-        converter = _W3CTestConverter(fake_dir_path, DUMMY_FILENAME, None)
-        converter.feed(test_html)
-        converter.close()
-        converted = converter.output()
-
-        self.verify_conversion_happened(converted)
-        self.verify_test_harness_paths(converter, converted[1], fake_dir_path, 1, 1)
-        self.verify_prefixed_properties(converted, [])
-
     def test_convert_for_webkit_properties_only(self):
         """ Tests convert_for_webkit() using a test that has 2 prefixed properties: 1 in a style block + 1 inline style """
 
@@ -142,99 +124,7 @@ CONTENT OF TEST
             oc.restore_output()
 
         self.verify_conversion_happened(converted)
-        self.verify_test_harness_paths(converter, converted[1], fake_dir_path, 1, 1)
         self.verify_prefixed_properties(converted, test_content[0])
-
-    def test_convert_for_webkit_harness_and_properties(self):
-        """ Tests convert_for_webkit() using a basic JS test that uses testharness.js and testharness.css and has 4 prefixed properties: 3 in a style block + 1 inline style """
-
-        test_html = """<html>
-<head>
-<link href="/resources/testharness.css" rel="stylesheet" type="text/css">
-<script src="/resources/testharness.js"></script>
-<style type="text/css">
-
-#block1 { @test0@: propvalue; }
-#block2 { @test1@: propvalue; }
-#block3 { @test2@: propvalue; }
-
-</style>
-</head>
-<body>
-<div id="elem1" style="@test3@: propvalue;"></div>
-</body>
-</html>
-"""
-        fake_dir_path = self.fake_dir_path('harnessandprops')
-        converter = _W3CTestConverter(fake_dir_path, DUMMY_FILENAME, None)
-
-        oc = OutputCapture()
-        oc.capture_output()
-        try:
-            test_content = self.generate_test_content(converter.prefixed_properties, 2, test_html)
-            converter.feed(test_content[1])
-            converter.close()
-            converted = converter.output()
-        finally:
-            oc.restore_output()
-
-        self.verify_conversion_happened(converted)
-        self.verify_test_harness_paths(converter, converted[1], fake_dir_path, 1, 1)
-        self.verify_prefixed_properties(converted, test_content[0])
-
-    def test_convert_test_harness_paths(self):
-        """ Tests convert_testharness_paths() with a test that uses multiple testharness files """
-
-        test_html = """<head>
-<link href="/resources/testharness.css" rel="stylesheet" type="text/css">
-<script src="/resources/testharness.js"></script>
-<script src="/resources/testharnessreport.js"></script>
-<script src="/resources/WebIDLParser.js"></script>
-<script src="/resources/idlharness.js"></script>
-</head>
-"""
-        fake_dir_path = self.fake_dir_path('testharnesspaths')
-        converter = _W3CTestConverter(fake_dir_path, DUMMY_FILENAME, None)
-
-        oc = OutputCapture()
-        oc.capture_output()
-        try:
-            converter.feed(test_html)
-            converter.close()
-            converted = converter.output()
-        finally:
-            oc.restore_output()
-
-        self.verify_conversion_happened(converted)
-        self.verify_test_harness_paths(converter, converted[1], fake_dir_path, 4, 1)
-
-    def test_convert_vendor_prefix_js_paths(self):
-        test_html = """<head>
-<script src="/common/vendor-prefix.js">
-</head>
-"""
-        fake_dir_path = self.fake_dir_path('adapterjspaths')
-        converter = _W3CTestConverter(fake_dir_path, DUMMY_FILENAME, None)
-
-        oc = OutputCapture()
-        oc.capture_output()
-        try:
-            converter.feed(test_html)
-            converter.close()
-            converted = converter.output()
-        finally:
-            oc.restore_output()
-
-        new_html = BeautifulSoup(converted[1])
-
-        # Verify the original paths are gone, and the new paths are present.
-        orig_path_pattern = re.compile('\"/common/vendor-prefix.js')
-        self.assertEquals(len(new_html.findAll(src=orig_path_pattern)), 0, 'vendor-prefix.js path was not converted')
-
-        resources_dir = converter.path_from_webkit_root("LayoutTests", "resources")
-        new_relpath = os.path.relpath(resources_dir, fake_dir_path)
-        relpath_pattern = re.compile(new_relpath)
-        self.assertEquals(len(new_html.findAll(src=relpath_pattern)), 1, 'vendor-prefix.js relative path not correct')
 
     def test_convert_prefixed_properties(self):
         """ Tests convert_prefixed_properties() file that has 20 properties requiring the -webkit- prefix:
@@ -385,23 +275,6 @@ CONTENT OF TEST
 
     def verify_no_conversion_happened(self, converted, original):
         self.assertEqual(converted[1], original, 'test should not have been converted')
-
-    def verify_test_harness_paths(self, converter, converted, test_path, num_src_paths, num_href_paths):
-        if isinstance(converted, basestring):
-            converted = BeautifulSoup(converted)
-
-        resources_dir = converter.path_from_webkit_root("LayoutTests", "resources")
-
-        # Verify the original paths are gone, and the new paths are present.
-        orig_path_pattern = re.compile('\"/resources/testharness')
-        self.assertEquals(len(converted.findAll(src=orig_path_pattern)), 0, 'testharness src path was not converted')
-        self.assertEquals(len(converted.findAll(href=orig_path_pattern)), 0, 'testharness href path was not converted')
-
-        new_relpath = os.path.relpath(resources_dir, test_path)
-        relpath_pattern = re.compile(new_relpath)
-        self.assertEquals(len(converted.findAll(src=relpath_pattern)), num_src_paths, 'testharness src relative path not correct')
-        self.assertEquals(len(converted.findAll(href=relpath_pattern)),
-                          num_href_paths, 'testharness href relative path not correct')
 
     def verify_prefixed_properties(self, converted, test_properties):
         self.assertEqual(len(set(converted[0])), len(set(test_properties)), 'Incorrect number of properties converted')

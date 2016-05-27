@@ -26,7 +26,7 @@
 # SUCH DAMAGE.
 
 """
- This script imports a directory of W3C tests into WebKit.
+ This script imports a directory of W3C tests into Blink.
 
  This script will import the tests into WebKit following these rules:
 
@@ -40,19 +40,16 @@
       this script would refresh files periodically.  This can also be
       overridden by a -n or --no-overwrite flag
 
-    - All files are converted to work in WebKit:
-         1. Paths to testharness.js scripts and vendor-prefix.js files are
-            modified to point to Webkit's copy of them in LayoutTests/resources,
-            using the correct relative path from the new location.
-         2. All CSS properties requiring the -webkit-vendor prefix are prefixed
-            (the list of what needs prefixes is read from Source/WebCore/CSS/CSSProperties.in).
-         3. Each reftest has its own copy of its reference file following
+    - All files are converted to work in Blink:
+         1. All CSS properties requiring the -webkit- vendor prefix are prefixed
+            (the list of what needs prefixes is read from Source/core/css/CSSProperties.in).
+         2. Each reftest has its own copy of its reference file following
             the naming conventions new-run-webkit-tests expects.
-         4. If a reference files lives outside the directory of the test that
+         3. If a reference files lives outside the directory of the test that
             uses it, it is checked for paths to support files as it will be
             imported into a different relative position to the test file
             (in the same directory).
-         5. Any tags with the class "instructions" have style="display:none" added
+         4. Any tags with the class "instructions" have style="display:none" added
             to them. Some w3c tests contain instructions to manual testers which we
             want to strip out (the test result parser only recognizes pure testharness.js
             output and not those instructions).
