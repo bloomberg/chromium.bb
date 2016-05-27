@@ -520,6 +520,10 @@ def _CreateParser():
                                 'to skip verification by the bootstrap code'))
   group.add_remote_option('--buildbot', dest='buildbot', action='store_true',
                           default=False, help='This is running on a buildbot')
+  parser.add_remote_option('--repo-cache', type='path',
+                           help='Directory from which to copy a repo checkout '
+                                'if our build root is empty, to avoid '
+                                'excessive GoB load with a fresh sync.')
   group.add_remote_option('--no-buildbot-tags', action='store_false',
                           dest='enable_buildbot_tags', default=True,
                           help='Suppress buildbot specific tags from log '
