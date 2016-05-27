@@ -11,12 +11,9 @@
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/wm/common/background_animator.h"
+#include "base/macros.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
-
-namespace aura {
-class Window;
-}
 
 namespace ash {
 class FocusCycler;
@@ -24,13 +21,16 @@ class Shelf;
 class ShelfLayoutManager;
 class StatusAreaWidget;
 class WorkspaceController;
+namespace wm {
+class WmWindow;
+}
 
 class ASH_EXPORT ShelfWidget : public views::Widget,
                                public views::WidgetObserver,
                                public ShelfLayoutManagerObserver {
  public:
-  ShelfWidget(aura::Window* shelf_container,
-              aura::Window* status_container,
+  ShelfWidget(wm::WmWindow* wm_shelf_container,
+              wm::WmWindow* wm_status_container,
               WorkspaceController* workspace_controller);
   ~ShelfWidget() override;
 
@@ -60,6 +60,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   StatusAreaWidget* status_area_widget() const { return status_area_widget_; }
 
   void CreateShelf();
+  void PostCreateShelf();
 
   // Set visibility of the shelf.
   void SetShelfVisibility(bool visible);
@@ -72,8 +73,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Called by the activation delegate, before the shelf is activated
   // when no other windows are visible.
   void WillActivateAsFallback() { activating_as_fallback_ = true; }
-
-  aura::Window* window_container() { return window_container_; }
 
   // Clean up prior to deletion.
   void Shutdown();
@@ -110,12 +109,13 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   std::unique_ptr<Shelf> shelf_;
   StatusAreaWidget* status_area_widget_;
 
-  // delegate_view_ is attached to window_container_ and is cleaned up
+  // |delegate_view_| is the contents view of this widget and is cleaned up
   // during CloseChildWindows of the associated RootWindowController.
   DelegateView* delegate_view_;
   BackgroundAnimator background_animator_;
   bool activating_as_fallback_;
-  aura::Window* window_container_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShelfWidget);
 };
 
 }  // namespace ash

@@ -4,7 +4,6 @@
 
 #include "ash/system/status_area_widget.h"
 
-#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -15,9 +14,10 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/web_notification/web_notification_tray.h"
+#include "ash/wm/common/wm_root_window_controller.h"
+#include "ash/wm/common/wm_window.h"
 #include "ash/wm/window_properties.h"
 #include "base/i18n/time_formatting.h"
-#include "ui/aura/window.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/session/logout_button_tray.h"
@@ -26,7 +26,7 @@
 
 namespace ash {
 
-StatusAreaWidget::StatusAreaWidget(aura::Window* status_container,
+StatusAreaWidget::StatusAreaWidget(wm::WmWindow* status_container,
                                    ShelfWidget* shelf_widget)
     : status_area_widget_delegate_(new StatusAreaWidgetDelegate),
       overview_button_tray_(NULL),
@@ -42,8 +42,10 @@ StatusAreaWidget::StatusAreaWidget(aura::Window* status_container,
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = status_area_widget_delegate_;
   params.name = "StatusAreaWidget";
-  params.parent = status_container;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  status_container->GetRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(
+          this, status_container->GetShellWindowId(), &params);
   Init(params);
   set_focus_on_creation(false);
   SetContentsView(status_area_widget_delegate_);

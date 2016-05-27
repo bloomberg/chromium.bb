@@ -45,7 +45,7 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
     panel_container->AddObserver(watcher_);
 
     aura::Window* container =
-        Shelf::ForWindow(root)->shelf_widget()->window_container();
+        ash::Shell::GetContainer(root, kShellWindowId_ShelfContainer);
     container->AddObserver(this);
     for (size_t i = 0; i < container->children().size(); ++i)
       container->children()[i]->AddObserver(watcher_);
@@ -57,7 +57,7 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
     panel_container->RemoveObserver(watcher_);
 
     aura::Window* container =
-        Shelf::ForWindow(root)->shelf_widget()->window_container();
+        ash::Shell::GetContainer(root, kShellWindowId_ShelfContainer);
     container->RemoveObserver(this);
     for (size_t i = 0; i < container->children().size(); ++i)
       container->children()[i]->RemoveObserver(watcher_);

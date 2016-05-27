@@ -22,10 +22,13 @@ class WebNotificationTray;
 class LogoutButtonTray;
 class VirtualKeyboardTray;
 #endif
+namespace wm {
+class WmWindow;
+}
 
 class ASH_EXPORT StatusAreaWidget : public views::Widget {
  public:
-  StatusAreaWidget(aura::Window* status_container, ShelfWidget* shelf_widget);
+  StatusAreaWidget(wm::WmWindow* status_container, ShelfWidget* shelf_widget);
   ~StatusAreaWidget() override;
 
   // Creates the SystemTray, WebNotificationTray and LogoutButtonTray.

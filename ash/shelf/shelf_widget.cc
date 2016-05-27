@@ -6,7 +6,6 @@
 
 #include "ash/ash_switches.h"
 #include "ash/focus_cycler.h"
-#include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_delegate.h"
@@ -19,8 +18,10 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/common/shelf/wm_shelf_constants.h"
 #include "ash/wm/common/shelf/wm_shelf_util.h"
+#include "ash/wm/common/wm_root_window_controller.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/workspace_controller.h"
@@ -557,19 +558,20 @@ void ShelfWidget::DelegateView::UpdateBackground(int alpha) {
   SchedulePaint();
 }
 
-ShelfWidget::ShelfWidget(aura::Window* shelf_container,
-                         aura::Window* status_container,
+ShelfWidget::ShelfWidget(wm::WmWindow* wm_shelf_container,
+                         wm::WmWindow* wm_status_container,
                          WorkspaceController* workspace_controller)
     : delegate_view_(new DelegateView(this)),
       background_animator_(delegate_view_, 0, wm::kShelfBackgroundAlpha),
-      activating_as_fallback_(false),
-      window_container_(shelf_container) {
+      activating_as_fallback_(false) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-  params.parent = shelf_container;
   params.delegate = delegate_view_;
+  wm_shelf_container->GetRootWindowController()
+      ->ConfigureWidgetInitParamsForContainer(
+          this, wm_shelf_container->GetShellWindowId(), &params);
   Init(params);
 
   // The shelf should not take focus when initially shown.
@@ -579,11 +581,13 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container,
 
   shelf_layout_manager_ = new ShelfLayoutManager(this);
   shelf_layout_manager_->AddObserver(this);
+  aura::Window* shelf_container =
+      wm::WmWindowAura::GetAuraWindow(wm_shelf_container);
   shelf_container->SetLayoutManager(shelf_layout_manager_);
   shelf_layout_manager_->set_workspace_controller(workspace_controller);
   workspace_controller->SetShelf(shelf_layout_manager_);
 
-  status_area_widget_ = new StatusAreaWidget(status_container, this);
+  status_area_widget_ = new StatusAreaWidget(wm_status_container, this);
   status_area_widget_->CreateTrayViews();
   if (Shell::GetInstance()->session_state_delegate()->
           IsActiveUserSessionStarted()) {
@@ -591,6 +595,8 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container,
   }
   Shell::GetInstance()->focus_cycler()->AddWidget(status_area_widget_);
 
+  aura::Window* status_container =
+      wm::WmWindowAura::GetAuraWindow(wm_status_container);
   status_container->SetLayoutManager(
       new StatusAreaLayoutManager(status_container, this));
 
@@ -714,8 +720,7 @@ bool ShelfWidget::GetDimsShelf() const {
 }
 
 void ShelfWidget::CreateShelf() {
-  if (shelf_)
-    return;
+  DCHECK(!shelf_);
 
   Shell* shell = Shell::GetInstance();
   ShelfDelegate* delegate = shell->GetShelfDelegate();
@@ -723,12 +728,12 @@ void ShelfWidget::CreateShelf() {
   delegate->OnShelfCreated(shelf_.get());
 
   SetFocusCycler(shell->focus_cycler());
+}
 
-  // Inform the root window controller.
-  RootWindowController::ForWindow(window_container_)->OnShelfCreated();
-
-  shelf_->SetVisible(
-      shell->session_state_delegate()->IsActiveUserSessionStarted());
+void ShelfWidget::PostCreateShelf() {
+  shelf_->SetVisible(Shell::GetInstance()
+                         ->session_state_delegate()
+                         ->IsActiveUserSessionStarted());
   shelf_layout_manager_->LayoutShelf();
   shelf_layout_manager_->UpdateAutoHideState();
   Show();

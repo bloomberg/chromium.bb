@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -16,6 +15,8 @@
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/common/wm_globals.h"
+#include "ash/wm/common/wm_window.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -91,9 +92,10 @@ class FocusCyclerTest : public AshTestBase {
   bool CreateTray() {
     if (tray_)
       return false;
-    aura::Window* parent =
-        Shell::GetPrimaryRootWindowController()->GetContainer(
-            ash::kShellWindowId_StatusContainer);
+    wm::WmWindow* parent =
+        wm::WmGlobals::Get()
+            ->GetRootWindowForNewWindows()
+            ->GetChildByShellWindowId(kShellWindowId_StatusContainer);
 
     StatusAreaWidget* widget = new StatusAreaWidget(parent, shelf_widget());
     widget->CreateTrayViews();

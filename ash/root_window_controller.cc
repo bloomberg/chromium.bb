@@ -436,7 +436,11 @@ void RootWindowController::ShowShelf() {
   shelf_widget_->status_area_widget()->Show();
 }
 
-void RootWindowController::OnShelfCreated() {
+void RootWindowController::CreateShelf() {
+  if (shelf_widget_->shelf())
+    return;
+  shelf_widget_->CreateShelf();
+
   if (panel_layout_manager_)
     panel_layout_manager_->SetShelf(shelf_widget_->shelf()->wm_shelf());
   if (docked_layout_manager_) {
@@ -448,6 +452,8 @@ void RootWindowController::OnShelfCreated() {
 
   // Notify shell observers that the shelf has been created.
   Shell::GetInstance()->OnShelfCreatedForRootWindow(GetRootWindow());
+
+  shelf_widget_->PostCreateShelf();
 }
 
 void RootWindowController::UpdateAfterLoginStatusChange(
@@ -722,7 +728,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
 
     // Create a shelf if a user is already logged in.
     if (shell->session_state_delegate()->NumberOfLoggedInUsers())
-      shelf_widget()->CreateShelf();
+      CreateShelf();
 
     // Notify shell observers about new root window.
     shell->OnRootWindowAdded(root_window);
@@ -756,9 +762,10 @@ void RootWindowController::InitLayoutManagers() {
       new AlwaysOnTopController(always_on_top_container));
 
   DCHECK(!shelf_widget_.get());
-  aura::Window* shelf_container = GetContainer(kShellWindowId_ShelfContainer);
-  // TODO(harrym): Remove when status area is view.
-  aura::Window* status_container = GetContainer(kShellWindowId_StatusContainer);
+  wm::WmWindow* shelf_container =
+      wm::WmWindowAura::Get(GetContainer(kShellWindowId_ShelfContainer));
+  wm::WmWindow* status_container =
+      wm::WmWindowAura::Get(GetContainer(kShellWindowId_StatusContainer));
   shelf_widget_.reset(new ShelfWidget(shelf_container, status_container,
                                       workspace_controller()));
   workspace_layout_manager_delegate->set_shelf(

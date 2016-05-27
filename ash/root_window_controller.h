@@ -180,8 +180,8 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Show shelf view if it was created hidden (before session has started).
   void ShowShelf();
 
-  // Called when the shelf associated with this root window is created.
-  void OnShelfCreated();
+  // Creates the shelf for this root window and notifies observers.
+  void CreateShelf();
 
   // Called when the login status changes after login (such as lock/unlock).
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.

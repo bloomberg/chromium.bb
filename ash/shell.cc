@@ -446,7 +446,7 @@ void Shell::CreateShelf() {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowControllerList::iterator iter = controllers.begin();
        iter != controllers.end(); ++iter)
-    (*iter)->shelf_widget()->CreateShelf();
+    (*iter)->CreateShelf();
 }
 
 void Shell::OnShelfCreatedForRootWindow(aura::Window* root_window) {
