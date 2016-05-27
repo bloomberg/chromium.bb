@@ -63,6 +63,15 @@ Polymer({
     },
 
     /**
+     * True if the error/warning message is displaying.
+     * @private {boolean}
+     */
+    isMessageVisble_: {
+      type: Boolean,
+      value: false
+    },
+
+    /**
      * The current error/warning message.
      * @private {string}
      */
@@ -223,7 +232,7 @@ Polymer({
       this.handleMessage_(this.i18n('custodianAccountNotSelectedError'));
     } else {
       var signedInUser = this.signedInUser_(this.signedInUserIndex_);
-      this.clearMessage_();
+      this.hideMessage_();
       this.createInProgress_ = true;
       this.browserProxy_.getExistingSupervisedUsers(signedInUser.profilePath)
           .then(this.showImportSupervisedUserPopup_.bind(this),
@@ -245,7 +254,7 @@ Polymer({
       this.handleMessage_(this.i18n('custodianAccountNotSelectedError'));
     } else {
       var signedInUser = this.signedInUser_(this.signedInUserIndex_);
-      this.clearMessage_();
+      this.hideMessage_();
       this.createInProgress_ = true;
       this.browserProxy_.getExistingSupervisedUsers(signedInUser.profilePath)
           .then(this.createProfileIfValidSupervisedUser_.bind(this),
@@ -332,7 +341,7 @@ Polymer({
       custodianProfilePath =
           this.signedInUser_(this.signedInUserIndex_).profilePath;
     }
-    this.clearMessage_();
+    this.hideMessage_();
     this.createInProgress_ = true;
     this.browserProxy_.createProfile(
         this.profileName_, this.profileIconUrl_, this.isSupervised_, '',
@@ -349,7 +358,7 @@ Polymer({
   onImportUserPopupImport_: function(event) {
     var supervisedUser = event.detail.supervisedUser;
     var signedInUser = event.detail.signedInUser;
-    this.clearMessage_();
+    this.hideMessage_();
     this.createInProgress_ = true;
     this.browserProxy_.createProfile(
         supervisedUser.name, supervisedUser.iconURL, true, supervisedUser.id,
@@ -404,11 +413,11 @@ Polymer({
   },
 
   /**
-   * Clears the warning/error message.
+   * Hides the warning/error message.
    * @private
    */
-  clearMessage_: function() {
-    this.message_ = '';
+  hideMessage_: function() {
+    this.isMessageVisble_ = false;
   },
 
   /**
@@ -419,6 +428,7 @@ Polymer({
   handleMessage_: function(message) {
     this.createInProgress_ = false;
     this.message_ = '' + message;
+    this.isMessageVisble_ = true;
   },
 
   /**

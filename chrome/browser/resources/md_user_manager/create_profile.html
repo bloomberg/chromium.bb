@@ -25,6 +25,8 @@
       }
 
       #message-container {
+        -webkit-transition: top 400ms cubic-bezier(.4, 0, .2, 1),
+                            visibility 0s linear 400ms;
         align-items: center;
         background-color: var(--paper-red-50);
         color: var(--google-red-700);
@@ -35,7 +37,15 @@
         padding: 0 16px;
         position: absolute;
         right: 0;
+        top: -40px;
+        visibility: hidden;
+      }
+
+      #message-container[visible] {
+        -webkit-transition: top 400ms cubic-bezier(.4, 0, .2, 1),
+                            visibility 0s linear 0s;
         top: 0;
+        visibility: visible;
       }
 
       #message-container iron-icon {
@@ -164,7 +174,7 @@
         width: 20px;
       }
     </style>
-    <div id="message-container" hidden="[[!message_]]">
+    <div id="message-container" visible$="[[isMessageVisble_]]">
       <iron-icon icon="cr:warning"></iron-icon>
       <span id="message" inner-h-t-m-l="[[message_]]"></span>
     </div>
