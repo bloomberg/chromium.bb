@@ -48,7 +48,7 @@ CSSStyleDeclaration* CSSFontFaceRule::style() const
 String CSSFontFaceRule::cssText() const
 {
     StringBuilder result;
-    result.appendLiteral("@font-face { ");
+    result.append("@font-face { ");
     String descs = m_fontFaceRule->properties().asText();
     result.append(descs);
     if (!descs.isEmpty())

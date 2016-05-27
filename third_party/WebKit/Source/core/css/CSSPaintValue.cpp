@@ -25,7 +25,7 @@ CSSPaintValue::~CSSPaintValue()
 String CSSPaintValue::customCSSText() const
 {
     StringBuilder result;
-    result.appendLiteral("paint(");
+    result.append("paint(");
     result.append(m_name->customCSSText());
     result.append(')');
     return result.toString();

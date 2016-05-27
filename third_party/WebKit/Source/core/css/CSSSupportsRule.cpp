@@ -43,9 +43,9 @@ String CSSSupportsRule::cssText() const
 {
     StringBuilder result;
 
-    result.appendLiteral("@supports ");
+    result.append("@supports ");
     result.append(conditionText());
-    result.appendLiteral(" {\n");
+    result.append(" {\n");
     appendCSSTextForItems(result);
     result.append('}');
 

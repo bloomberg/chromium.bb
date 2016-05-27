@@ -142,7 +142,7 @@ private:
 
     bool append(v8::Local<v8::Symbol> symbol)
     {
-        m_builder.appendLiteral("Symbol(");
+        m_builder.append("Symbol(");
         bool result = append(symbol->Name(), IgnoreUndefined);
         m_builder.append(')');
         return result;

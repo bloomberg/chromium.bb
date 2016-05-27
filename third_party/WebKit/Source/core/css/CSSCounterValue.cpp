@@ -13,18 +13,18 @@ String CSSCounterValue::customCSSText() const
 {
     StringBuilder result;
     if (separator().isEmpty())
-        result.appendLiteral("counter(");
+        result.append("counter(");
     else
-        result.appendLiteral("counters(");
+        result.append("counters(");
 
     result.append(identifier());
     if (!separator().isEmpty()) {
-        result.appendLiteral(", ");
+        result.append(", ");
         result.append(m_separator->cssText());
     }
     bool isDefaultListStyle = listStyle() == CSSValueDecimal;
     if (!isDefaultListStyle) {
-        result.appendLiteral(", ");
+        result.append(", ");
         result.append(m_listStyle->cssText());
     }
     result.append(')');

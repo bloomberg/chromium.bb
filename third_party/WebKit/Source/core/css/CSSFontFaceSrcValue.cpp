@@ -56,16 +56,16 @@ String CSSFontFaceSrcValue::customCSSText() const
 {
     StringBuilder result;
     if (isLocal()) {
-        result.appendLiteral("local(");
+        result.append("local(");
         result.append(serializeString(m_absoluteResource));
-        result.appendLiteral(")");
+        result.append(")");
     } else {
         result.append(serializeURI(m_specifiedResource));
     }
     if (!m_format.isEmpty()) {
-        result.appendLiteral(" format(");
+        result.append(" format(");
         result.append(serializeString(m_format));
-        result.appendLiteral(")");
+        result.append(")");
     }
     return result.toString();
 }

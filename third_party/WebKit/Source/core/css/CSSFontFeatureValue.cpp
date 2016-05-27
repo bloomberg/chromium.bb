@@ -41,7 +41,7 @@ String CSSFontFeatureValue::customCSSText() const
     StringBuilder builder;
     builder.append('\'');
     builder.append(m_tag);
-    builder.appendLiteral("' ");
+    builder.append("' ");
     builder.appendNumber(m_value);
     return builder.toString();
 }

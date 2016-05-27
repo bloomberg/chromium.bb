@@ -60,28 +60,28 @@ String convertHTMLTextToInterchangeFormat(const String& in, const Text& node)
                 unsigned add = count % 3;
                 switch (add) {
                 case 0:
-                    s.appendLiteral(convertedSpaceString);
+                    s.append(convertedSpaceString);
                     s.append(' ');
-                    s.appendLiteral(convertedSpaceString);
+                    s.append(convertedSpaceString);
                     add = 3;
                     break;
                 case 1:
                     if (i == 0 || i + 1 == in.length()) // at start or end of string
-                        s.appendLiteral(convertedSpaceString);
+                        s.append(convertedSpaceString);
                     else
                         s.append(' ');
                     break;
                 case 2:
                     if (i == 0) {
                         // at start of string
-                        s.appendLiteral(convertedSpaceString);
+                        s.append(convertedSpaceString);
                         s.append(' ');
                     } else if (i + 2 == in.length()) {
                         // at end of string
-                        s.appendLiteral(convertedSpaceString);
-                        s.appendLiteral(convertedSpaceString);
+                        s.append(convertedSpaceString);
+                        s.append(convertedSpaceString);
                     } else {
-                        s.appendLiteral(convertedSpaceString);
+                        s.append(convertedSpaceString);
                         s.append(' ');
                     }
                     break;

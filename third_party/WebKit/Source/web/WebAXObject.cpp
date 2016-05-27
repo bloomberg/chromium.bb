@@ -757,13 +757,13 @@ WebString WebAXObject::keyboardShortcut() const
         // should not be localized and defines the separator as "+".
         StringBuilder modifierStringBuilder;
         if (modifiers & PlatformEvent::CtrlKey)
-            modifierStringBuilder.appendLiteral("Ctrl+");
+            modifierStringBuilder.append("Ctrl+");
         if (modifiers & PlatformEvent::AltKey)
-            modifierStringBuilder.appendLiteral("Alt+");
+            modifierStringBuilder.append("Alt+");
         if (modifiers & PlatformEvent::ShiftKey)
-            modifierStringBuilder.appendLiteral("Shift+");
+            modifierStringBuilder.append("Shift+");
         if (modifiers & PlatformEvent::MetaKey)
-            modifierStringBuilder.appendLiteral("Win+");
+            modifierStringBuilder.append("Win+");
         modifierString = modifierStringBuilder.toString();
     }
 

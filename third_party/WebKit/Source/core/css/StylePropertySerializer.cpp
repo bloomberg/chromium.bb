@@ -185,7 +185,7 @@ String StylePropertySerializer::getCustomPropertyText(const PropertyValueForSeri
     result.append(':');
     result.append(value->customCSSText());
     if (property.isImportant())
-        result.appendLiteral(" !important");
+        result.append(" !important");
     result.append(';');
     return result.toString();
 }
@@ -195,7 +195,7 @@ static String getApplyAtRuleText(const CSSValue* value, bool isNotFirstDecl)
     StringBuilder result;
     if (isNotFirstDecl)
         result.append(' ');
-    result.appendLiteral("@apply ");
+    result.append("@apply ");
     result.append(toCSSCustomIdentValue(value)->value());
     result.append(';');
     return result.toString();
@@ -207,10 +207,10 @@ String StylePropertySerializer::getPropertyText(CSSPropertyID propertyID, const 
     if (isNotFirstDecl)
         result.append(' ');
     result.append(getPropertyName(propertyID));
-    result.appendLiteral(": ");
+    result.append(": ");
     result.append(value);
     if (isImportant)
-        result.appendLiteral(" !important");
+        result.append(" !important");
     result.append(';');
     return result.toString();
 }
@@ -742,9 +742,9 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
             if (!(value->isInitialValue() && toCSSInitialValue(value)->isImplicit())) {
                 if (property == CSSPropertyBackgroundSize || property == CSSPropertyWebkitMaskSize) {
                     if (foundPositionYCSSProperty || foundPositionXCSSProperty)
-                        layerResult.appendLiteral(" / ");
+                        layerResult.append(" / ");
                     else
-                        layerResult.appendLiteral(" 0% 0% / ");
+                        layerResult.append(" 0% 0% / ");
                 } else if (!layerResult.isEmpty()) {
                     // Do this second to avoid ending up with an extra space in the output if we hit the continue above.
                     layerResult.append(' ');
@@ -772,7 +772,7 @@ String StylePropertySerializer::getLayeredShorthandValue(const StylePropertyShor
         }
         if (!layerResult.isEmpty()) {
             if (!result.isEmpty())
-                result.appendLiteral(", ");
+                result.append(", ");
             result.append(layerResult);
         }
     }
@@ -839,12 +839,12 @@ static void appendBackgroundRepeatValue(StringBuilder& builder, const CSSValue& 
     if (repeatXValueId == repeatYValueId) {
         builder.append(repeatX.cssText());
     } else if (repeatXValueId == CSSValueNoRepeat && repeatYValueId == CSSValueRepeat) {
-        builder.appendLiteral("repeat-y");
+        builder.append("repeat-y");
     } else if (repeatXValueId == CSSValueRepeat && repeatYValueId == CSSValueNoRepeat) {
-        builder.appendLiteral("repeat-x");
+        builder.append("repeat-x");
     } else {
         builder.append(repeatX.cssText());
-        builder.appendLiteral(" ");
+        builder.append(" ");
         builder.append(repeatY.cssText());
     }
 }
@@ -876,7 +876,7 @@ String StylePropertySerializer::backgroundRepeatPropertyValue() const
     StringBuilder builder;
     for (size_t i = 0; i < shorthandLength; ++i) {
         if (i)
-            builder.appendLiteral(", ");
+            builder.append(", ");
 
         const CSSValue* xValue = repeatXList ? repeatXList->item(i % repeatXList->length()) : repeatX;
         const CSSValue* yValue = repeatYList ? repeatYList->item(i % repeatYList->length()) : repeatY;

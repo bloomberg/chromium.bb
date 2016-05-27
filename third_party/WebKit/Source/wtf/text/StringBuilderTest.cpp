@@ -288,7 +288,7 @@ TEST(StringBuilderTest, ToAtomicStringOnEmpty)
     }
     { // Cleared StringBuilder.
         StringBuilder builder;
-        builder.appendLiteral("WebKit");
+        builder.append("WebKit");
         builder.clear();
         AtomicString atomicString = builder.toAtomicString();
         EXPECT_EQ(emptyAtom, atomicString);

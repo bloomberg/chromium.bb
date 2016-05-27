@@ -458,8 +458,8 @@ void Text::formatForDebugger(char *buffer, unsigned length) const
     s = data();
     if (s.length() > 0) {
         if (result.length())
-            result.appendLiteral("; ");
-        result.appendLiteral("value=");
+            result.append("; ");
+        result.append("value=");
         result.append(s);
     }
 

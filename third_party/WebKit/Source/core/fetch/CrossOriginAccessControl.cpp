@@ -108,7 +108,7 @@ ResourceRequest createAccessControlPreflightRequest(const ResourceRequest& reque
         StringBuilder headerBuffer;
         for (const String& header : headers) {
             if (!headerBuffer.isEmpty())
-                headerBuffer.appendLiteral(", ");
+                headerBuffer.append(", ");
             headerBuffer.append(header);
         }
         preflightRequest.setHTTPHeaderField(HTTPNames::Access_Control_Request_Headers, AtomicString(headerBuffer.toString()));

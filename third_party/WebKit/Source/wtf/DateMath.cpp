@@ -800,7 +800,7 @@ String makeRFC2822DateString(unsigned dayOfWeek, unsigned day, unsigned month, u
 {
     StringBuilder stringBuilder;
     stringBuilder.append(weekdayName[dayOfWeek]);
-    stringBuilder.appendLiteral(", ");
+    stringBuilder.append(", ");
     stringBuilder.appendNumber(day);
     stringBuilder.append(' ');
     stringBuilder.append(monthName[month]);

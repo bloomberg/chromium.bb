@@ -109,7 +109,7 @@ public:
 
     // Returns true if succeeded, false if failed.
     static bool parse(const String&, TokenHandler&);
-    static void quoteAndAppendLiteral(const String&, StringBuilder&);
+    static void quoteAndappend(const String&, StringBuilder&);
 };
 
 } // namespace blink

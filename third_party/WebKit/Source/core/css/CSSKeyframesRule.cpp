@@ -153,15 +153,15 @@ String CSSKeyframesRule::cssText() const
 {
     StringBuilder result;
     if (isVendorPrefixed())
-        result.appendLiteral("@-webkit-keyframes ");
+        result.append("@-webkit-keyframes ");
     else
-        result.appendLiteral("@keyframes ");
+        result.append("@keyframes ");
     result.append(name());
-    result.appendLiteral(" { \n");
+    result.append(" { \n");
 
     unsigned size = length();
     for (unsigned i = 0; i < size; ++i) {
-        result.appendLiteral("  ");
+        result.append("  ");
         result.append(m_keyframesRule->keyframes()[i]->cssText());
         result.append('\n');
     }

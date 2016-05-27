@@ -43,20 +43,20 @@ namespace blink {
 String XSSInfo::buildConsoleError() const
 {
     StringBuilder message;
-    message.appendLiteral("The XSS Auditor ");
+    message.append("The XSS Auditor ");
     message.append(m_didBlockEntirePage ? "blocked access to" : "refused to execute a script in");
-    message.appendLiteral(" '");
+    message.append(" '");
     message.append(m_originalURL);
-    message.appendLiteral("' because ");
+    message.append("' because ");
     message.append(m_didBlockEntirePage ? "the source code of a script" : "its source code");
-    message.appendLiteral(" was found within the request.");
+    message.append(" was found within the request.");
 
     if (m_didSendCSPHeader)
-        message.appendLiteral(" The server sent a 'Content-Security-Policy' header requesting this behavior.");
+        message.append(" The server sent a 'Content-Security-Policy' header requesting this behavior.");
     else if (m_didSendXSSProtectionHeader)
-        message.appendLiteral(" The server sent an 'X-XSS-Protection' header requesting this behavior.");
+        message.append(" The server sent an 'X-XSS-Protection' header requesting this behavior.");
     else
-        message.appendLiteral(" The auditor was enabled as the server sent neither an 'X-XSS-Protection' nor 'Content-Security-Policy' header.");
+        message.append(" The auditor was enabled as the server sent neither an 'X-XSS-Protection' nor 'Content-Security-Policy' header.");
 
     return message.toString();
 }

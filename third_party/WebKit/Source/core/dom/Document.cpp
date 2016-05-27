@@ -4372,25 +4372,25 @@ bool Document::parseQualifiedName(const AtomicString& qualifiedName, AtomicStrin
         return true;
 
     StringBuilder message;
-    message.appendLiteral("The qualified name provided ('");
+    message.append("The qualified name provided ('");
     message.append(qualifiedName);
-    message.appendLiteral("') ");
+    message.append("') ");
 
     if (returnValue.status == QNMultipleColons) {
-        message.appendLiteral("contains multiple colons.");
+        message.append("contains multiple colons.");
     } else if (returnValue.status == QNInvalidStartChar) {
-        message.appendLiteral("contains the invalid name-start character '");
+        message.append("contains the invalid name-start character '");
         message.append(returnValue.character);
-        message.appendLiteral("'.");
+        message.append("'.");
     } else if (returnValue.status == QNInvalidChar) {
-        message.appendLiteral("contains the invalid character '");
+        message.append("contains the invalid character '");
         message.append(returnValue.character);
-        message.appendLiteral("'.");
+        message.append("'.");
     } else if (returnValue.status == QNEmptyPrefix) {
-        message.appendLiteral("has an empty namespace prefix.");
+        message.append("has an empty namespace prefix.");
     } else {
         DCHECK_EQ(returnValue.status, QNEmptyLocalName);
-        message.appendLiteral("has an empty local name.");
+        message.append("has an empty local name.");
     }
 
     if (returnValue.status == QNInvalidStartChar || returnValue.status == QNInvalidChar)

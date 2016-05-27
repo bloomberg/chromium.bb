@@ -109,7 +109,7 @@ void CSSGroupingRule::appendCSSTextForItems(StringBuilder& result) const
 {
     unsigned size = length();
     for (unsigned i = 0; i < size; ++i) {
-        result.appendLiteral("  ");
+        result.append("  ");
         result.append(item(i)->cssText());
         result.append('\n');
     }
