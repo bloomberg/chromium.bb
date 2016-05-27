@@ -1,0 +1,50 @@
+/*
+ * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* global PaymentRequest:false */
+/* global toDictionary:false */
+
+/**
+ * Launches the PaymentRequest UI that offers free shipping worldwide.
+ */
+function buy() {  // eslint-disable-line no-unused-vars
+  try {
+    var request = new PaymentRequest(
+        ['visa'], {
+          items: [{
+            id: 'total',
+            label: 'Total',
+            amount: {currency: 'USD', value: '5.00'}
+          }],
+          shippingOptions: [{
+            id: 'freeShippingOption',
+            label: 'Free global shipping',
+            amount: {currency: 'USD', value: '0'}
+          }]
+        },
+        {requestShipping: true});
+    request.show()
+        .then(function(resp) {
+          resp.complete(true)
+              .then(function() {
+                print(
+                    request.shippingOption + '<br>' +
+                    JSON.stringify(
+                        toDictionary(request.shippingAddress), undefined, 2) +
+                    '<br>' + resp.methodName + '<br>' +
+                    JSON.stringify(resp.details, undefined, 2));
+              })
+              .catch(function(error) {
+                print(error.message);
+              });
+        })
+        .catch(function(error) {
+          print(error.message);
+        });
+  } catch (error) {
+    print(error.message);
+  }
+}

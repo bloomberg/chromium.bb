@@ -1,48 +1,20 @@
 <!DOCTYPE html>
+<!--
+Copyright 2016 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
 <html>
 <head>
 <title>No Shipping Test</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<style>
-button {
-  width: 100%;
-  height: 5em;
-  font-size: 3em;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
 <button onclick="buy()" id="buy">No Shipping Test</button>
-<script>
-function print(msg) {
-  document.open();
-  document.write('<pre id="result" style="font-size: 2em;">' + msg + '</pre>');
-  document.close();
-}
-function buy() {
-  try {
-    new PaymentRequest(['visa'], {
-      'items' : [ {
-        'id' : 'total',
-        'label' : 'Total',
-        'amount' : {'currency' : 'USD', 'value' : '5.00'}
-      } ]
-    })
-        .show()
-        .then(function(resp) {
-          resp.complete(true)
-              .then(function() {
-                print(resp.methodName + '<br>' +
-                      JSON.stringify(resp.details, undefined, 2));
-              })
-              .catch(function(error) { print(error.message); });
-        })
-        .catch(function(error) { print(error.message); });
-  } catch (error) {
-    print(error.message);
-  }
-}
-</script>
+<pre id="result"></pre>
+<script src="util.js"></script>
+<script src="no_shipping.js"></script>
 </body>
 </html>
