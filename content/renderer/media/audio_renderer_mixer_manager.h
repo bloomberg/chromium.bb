@@ -6,30 +6,33 @@
 #define CONTENT_RENDERER_MEDIA_AUDIO_RENDERER_MIXER_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <string>
-#include <utility>
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
+#include "media/base/audio_renderer_mixer_pool.h"
 #include "media/base/output_device_info.h"
 #include "url/origin.h"
 
 namespace media {
-class AudioHardwareConfig;
 class AudioRendererMixer;
 class AudioRendererMixerInput;
 class AudioRendererSink;
 }
 
 namespace content {
+class AudioRendererSinkCache;
 
 // Manages sharing of an AudioRendererMixer among AudioRendererMixerInputs based
 // on their AudioParameters configuration.  Inputs with the same AudioParameters
 // configuration will share a mixer while a new AudioRendererMixer will be
-// lazily created if one with the exact AudioParameters does not exist.
+// lazily created if one with the exact AudioParameters does not exist. When an
+// AudioRendererMixer is returned by AudioRendererMixerInput, it will be deleted
+// if its only other reference is held by AudioRendererMixerManager.
 //
 // There should only be one instance of AudioRendererMixerManager per render
 // thread.
@@ -39,10 +42,12 @@ namespace content {
 // with floats.  However, bits per channel is currently used to interleave the
 // audio data by AudioOutputDevice::AudioThreadCallback::Process for consumption
 // via the shared memory.  See http://crbug.com/114700.
-class CONTENT_EXPORT AudioRendererMixerManager {
+class CONTENT_EXPORT AudioRendererMixerManager
+    : public media::AudioRendererMixerPool {
  public:
-  AudioRendererMixerManager();
-  ~AudioRendererMixerManager();
+  ~AudioRendererMixerManager() final;
+
+  static std::unique_ptr<AudioRendererMixerManager> Create();
 
   // Creates an AudioRendererMixerInput with the proper callbacks necessary to
   // retrieve an AudioRendererMixer instance from AudioRendererMixerManager.
@@ -58,21 +63,29 @@ class CONTENT_EXPORT AudioRendererMixerManager {
       const std::string& device_id,
       const url::Origin& security_origin);
 
-  // Returns a mixer instance based on AudioParameters; an existing one if one
-  // with the provided AudioParameters exists or a new one if not.
-  media::AudioRendererMixer* GetMixer(int source_render_frame_id,
-                                      const media::AudioParameters& params,
-                                      const std::string& device_id,
-                                      const url::Origin& security_origin,
-                                      media::OutputDeviceStatus* device_status);
+  // AudioRendererMixerPool implementation.
 
-  // Remove a mixer instance given a mixer if the only other reference is held
-  // by AudioRendererMixerManager.  Every AudioRendererMixer owner must call
-  // this method when it's done with a mixer.
-  void RemoveMixer(int source_render_frame_id,
+  media::AudioRendererMixer* GetMixer(
+      int source_render_frame_id,
+      const media::AudioParameters& params,
+      const std::string& device_id,
+      const url::Origin& security_origin,
+      media::OutputDeviceStatus* device_status) final;
+
+  void ReturnMixer(int source_render_frame_id,
                    const media::AudioParameters& params,
                    const std::string& device_id,
-                   const url::Origin& security_origin);
+                   const url::Origin& security_origin) final;
+
+  media::OutputDeviceInfo GetOutputDeviceInfo(
+      int source_render_frame_id,
+      int session_id,
+      const std::string& device_id,
+      const url::Origin& security_origin) final;
+
+ protected:
+  explicit AudioRendererMixerManager(
+      std::unique_ptr<AudioRendererSinkCache> sink_cache);
 
  private:
   friend class AudioRendererMixerManagerTest;
@@ -127,13 +140,19 @@ class CONTENT_EXPORT AudioRendererMixerManager {
   struct AudioRendererMixerReference {
     media::AudioRendererMixer* mixer;
     int ref_count;
+    // Mixer sink pointer, to remove a sink from cache upon mixer destruction.
+    const media::AudioRendererSink* sink_ptr;
   };
-  typedef std::map<MixerKey, AudioRendererMixerReference, MixerKeyCompare>
-      AudioRendererMixerMap;
+
+  using AudioRendererMixerMap =
+      std::map<MixerKey, AudioRendererMixerReference, MixerKeyCompare>;
 
   // Active mixers.
   AudioRendererMixerMap mixers_;
   base::Lock mixers_lock_;
+
+  // Mixer sink cache.
+  const std::unique_ptr<AudioRendererSinkCache> sink_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererMixerManager);
 };

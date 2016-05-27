@@ -9,25 +9,28 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "media/base/audio_renderer_mixer.h"
+#include "media/base/audio_renderer_mixer_pool.h"
 
 namespace media {
 
 AudioRendererMixerInput::AudioRendererMixerInput(
-    const GetMixerCB& get_mixer_cb,
-    const RemoveMixerCB& remove_mixer_cb,
+    AudioRendererMixerPool* mixer_pool,
+    int owner_id,
     const std::string& device_id,
     const url::Origin& security_origin)
-    : started_(false),
+    : mixer_pool_(mixer_pool),
+      started_(false),
       playing_(false),
       volume_(1.0f),
-      get_mixer_cb_(get_mixer_cb),
-      remove_mixer_cb_(remove_mixer_cb),
+      owner_id_(owner_id),
       device_id_(device_id),
       security_origin_(security_origin),
       mixer_(nullptr),
       callback_(nullptr),
       error_cb_(base::Bind(&AudioRendererMixerInput::OnRenderError,
-                           base::Unretained(this))) {}
+                           base::Unretained(this))) {
+  DCHECK(mixer_pool_);
+}
 
 AudioRendererMixerInput::~AudioRendererMixerInput() {
   DCHECK(!started_);
@@ -51,7 +54,8 @@ void AudioRendererMixerInput::Start() {
   DCHECK(callback_);  // Initialized.
 
   started_ = true;
-  mixer_ = get_mixer_cb_.Run(params_, device_id_, security_origin_, nullptr);
+  mixer_ = mixer_pool_->GetMixer(owner_id_, params_, device_id_,
+                                 security_origin_, nullptr);
   if (!mixer_) {
     callback_->OnRenderError();
     return;
@@ -77,7 +81,7 @@ void AudioRendererMixerInput::Stop() {
     // Stop() by an error event since it may outlive this ref-counted object. We
     // should instead have sane ownership semantics: http://crbug.com/151051
     mixer_->RemoveErrorCallback(error_cb_);
-    remove_mixer_cb_.Run(params_, device_id_, security_origin_);
+    mixer_pool_->ReturnMixer(owner_id_, params_, device_id_, security_origin_);
     mixer_ = nullptr;
   }
 
@@ -112,7 +116,10 @@ bool AudioRendererMixerInput::SetVolume(double volume) {
 }
 
 OutputDeviceInfo AudioRendererMixerInput::GetOutputDeviceInfo() {
-  return mixer_ ? mixer_->GetOutputDeviceInfo() : OutputDeviceInfo();
+  return mixer_
+             ? mixer_->GetOutputDeviceInfo()
+             : mixer_pool_->GetOutputDeviceInfo(owner_id_, 0 /* session_id */,
+                                                device_id_, security_origin_);
 }
 
 void AudioRendererMixerInput::SwitchOutputDevice(
@@ -138,8 +145,8 @@ void AudioRendererMixerInput::SwitchOutputDevice(
   }
 
   OutputDeviceStatus new_mixer_status = OUTPUT_DEVICE_STATUS_ERROR_INTERNAL;
-  AudioRendererMixer* new_mixer =
-      get_mixer_cb_.Run(params_, device_id, security_origin, &new_mixer_status);
+  AudioRendererMixer* new_mixer = mixer_pool_->GetMixer(
+      owner_id_, params_, device_id, security_origin, &new_mixer_status);
   if (new_mixer_status != OUTPUT_DEVICE_STATUS_OK) {
     callback.Run(new_mixer_status);
     return;

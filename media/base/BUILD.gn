@@ -61,6 +61,7 @@ source_set("base") {
     "audio_renderer_mixer.h",
     "audio_renderer_mixer_input.cc",
     "audio_renderer_mixer_input.h",
+    "audio_renderer_mixer_pool.h",
     "audio_renderer_sink.h",
     "audio_shifter.cc",
     "audio_shifter.h",

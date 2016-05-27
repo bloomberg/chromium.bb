@@ -27,7 +27,7 @@ class MEDIA_EXPORT AudioRendererMixer
     : NON_EXPORTED_BASE(public AudioRendererSink::RenderCallback) {
  public:
   AudioRendererMixer(const AudioParameters& output_params,
-                     const scoped_refptr<AudioRendererSink>& sink);
+                     scoped_refptr<AudioRendererSink> sink);
   ~AudioRendererMixer() override;
 
   // Add or remove a mixer input from mixing; called by AudioRendererMixerInput.
@@ -63,11 +63,11 @@ class MEDIA_EXPORT AudioRendererMixer
     return sample_rate == output_params_.sample_rate();
   }
 
-  // Output sink for this mixer.
-  scoped_refptr<AudioRendererSink> audio_sink_;
-
   // Output parameters for this mixer.
-  AudioParameters output_params_;
+  const AudioParameters output_params_;
+
+  // Output sink for this mixer.
+  const scoped_refptr<AudioRendererSink> audio_sink_;
 
   // ---------------[ All variables below protected by |lock_| ]---------------
   base::Lock lock_;

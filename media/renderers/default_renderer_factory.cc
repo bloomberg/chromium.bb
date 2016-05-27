@@ -35,12 +35,10 @@ namespace media {
 DefaultRendererFactory::DefaultRendererFactory(
     const scoped_refptr<MediaLog>& media_log,
     DecoderFactory* decoder_factory,
-    const GetGpuFactoriesCB& get_gpu_factories_cb,
-    const AudioHardwareConfig& audio_hardware_config)
+    const GetGpuFactoriesCB& get_gpu_factories_cb)
     : media_log_(media_log),
       decoder_factory_(decoder_factory),
-      get_gpu_factories_cb_(get_gpu_factories_cb),
-      audio_hardware_config_(audio_hardware_config) {}
+      get_gpu_factories_cb_(get_gpu_factories_cb) {}
 
 DefaultRendererFactory::~DefaultRendererFactory() {
 }
@@ -107,10 +105,9 @@ std::unique_ptr<Renderer> DefaultRendererFactory::CreateRenderer(
     const RequestSurfaceCB& request_surface_cb) {
   DCHECK(audio_renderer_sink);
 
-  std::unique_ptr<AudioRenderer> audio_renderer(
-      new AudioRendererImpl(media_task_runner, audio_renderer_sink,
-                            CreateAudioDecoders(media_task_runner),
-                            audio_hardware_config_, media_log_));
+  std::unique_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
+      media_task_runner, audio_renderer_sink,
+      CreateAudioDecoders(media_task_runner), media_log_));
 
   GpuVideoAcceleratorFactories* gpu_factories = nullptr;
   if (!get_gpu_factories_cb_.is_null())

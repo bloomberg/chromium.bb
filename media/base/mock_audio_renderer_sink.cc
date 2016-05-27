@@ -16,11 +16,11 @@ MockAudioRendererSink::MockAudioRendererSink(const std::string& device_id,
     : MockAudioRendererSink(
           device_id,
           device_status,
-          media::AudioParameters(media::AudioParameters::AUDIO_FAKE,
-                                 media::CHANNEL_LAYOUT_STEREO,
-                                 media::AudioParameters::kTelephoneSampleRate,
-                                 16,
-                                 1)) {}
+          AudioParameters(AudioParameters::AUDIO_FAKE,
+                          CHANNEL_LAYOUT_STEREO,
+                          AudioParameters::kTelephoneSampleRate,
+                          16,
+                          1)) {}
 
 MockAudioRendererSink::MockAudioRendererSink(
     const std::string& device_id,

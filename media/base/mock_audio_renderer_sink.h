@@ -14,8 +14,6 @@
 
 namespace media {
 
-class FakeOutputDevice;
-
 class MockAudioRendererSink : public SwitchableAudioRendererSink {
  public:
   MockAudioRendererSink();

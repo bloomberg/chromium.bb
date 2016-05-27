@@ -15,22 +15,22 @@ namespace media {
 
 enum { kPauseDelaySeconds = 10 };
 
-AudioRendererMixer::AudioRendererMixer(
-    const AudioParameters& output_params,
-    const scoped_refptr<AudioRendererSink>& sink)
-    : audio_sink_(sink),
-      output_params_(output_params),
+AudioRendererMixer::AudioRendererMixer(const AudioParameters& output_params,
+                                       scoped_refptr<AudioRendererSink> sink)
+    : output_params_(output_params),
+      audio_sink_(std::move(sink)),
       master_converter_(output_params, output_params, true),
       pause_delay_(base::TimeDelta::FromSeconds(kPauseDelaySeconds)),
       last_play_time_(base::TimeTicks::Now()),
       // Initialize |playing_| to true since Start() results in an auto-play.
       playing_(true) {
+  DCHECK(audio_sink_);
   audio_sink_->Initialize(output_params, this);
   audio_sink_->Start();
 }
 
 AudioRendererMixer::~AudioRendererMixer() {
-  // AudioRendererSinks must be stopped before being destructed.
+  // AudioRendererSink must be stopped before mixer is destructed.
   audio_sink_->Stop();
 
   // Ensure that all mixer inputs have removed themselves prior to destruction.

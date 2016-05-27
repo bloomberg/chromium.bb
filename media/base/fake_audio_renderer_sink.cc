@@ -11,16 +11,20 @@
 namespace media {
 
 FakeAudioRendererSink::FakeAudioRendererSink()
+    : FakeAudioRendererSink(
+          AudioParameters(AudioParameters::AUDIO_FAKE,
+                          CHANNEL_LAYOUT_STEREO,
+                          AudioParameters::kTelephoneSampleRate,
+                          16,
+                          1)) {}
+
+FakeAudioRendererSink::FakeAudioRendererSink(
+    const AudioParameters& hardware_params)
     : state_(kUninitialized),
-      callback_(NULL),
-      output_device_info_(
-          std::string(),
-          OUTPUT_DEVICE_STATUS_OK,
-          media::AudioParameters(media::AudioParameters::AUDIO_FAKE,
-                                 media::CHANNEL_LAYOUT_STEREO,
-                                 media::AudioParameters::kTelephoneSampleRate,
-                                 16,
-                                 1)) {}
+      callback_(nullptr),
+      output_device_info_(std::string(),
+                          OUTPUT_DEVICE_STATUS_OK,
+                          hardware_params) {}
 
 FakeAudioRendererSink::~FakeAudioRendererSink() {
   DCHECK(!callback_);

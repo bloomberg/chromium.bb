@@ -16,7 +16,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "media/base/audio_hardware_config.h"
 #include "media/base/media_log.h"
 #include "media/base/test_helpers.h"
 #include "media/blink/mock_webframeclient.h"
@@ -91,8 +90,7 @@ class WebMediaPlayerImplTest : public testing::Test {
             blink::WebLocalFrame::create(blink::WebTreeScopeType::Document,
                                          &web_frame_client_)),
         media_log_(new MediaLog()),
-        audio_parameters_(TestAudioParameters::Normal()),
-        audio_hardware_config_(audio_parameters_, audio_parameters_) {
+        audio_parameters_(TestAudioParameters::Normal()) {
     web_view_->setMainFrame(web_local_frame_);
     media_thread_.StartAndWaitForTesting();
 
@@ -100,8 +98,7 @@ class WebMediaPlayerImplTest : public testing::Test {
         web_local_frame_, &client_, nullptr,
         base::WeakPtr<WebMediaPlayerDelegate>(),
         base::WrapUnique(new DefaultRendererFactory(
-            media_log_, nullptr, DefaultRendererFactory::GetGpuFactoriesCB(),
-            audio_hardware_config_)),
+            media_log_, nullptr, DefaultRendererFactory::GetGpuFactoriesCB())),
         url_index_,
         WebMediaPlayerParams(
             WebMediaPlayerParams::DeferLoadCB(),
@@ -182,7 +179,6 @@ class WebMediaPlayerImplTest : public testing::Test {
 
   // Audio hardware configuration.
   AudioParameters audio_parameters_;
-  AudioHardwareConfig audio_hardware_config_;
 
   // The client interface used by |wmpi_|. Just a dummy for now, but later we
   // may want a mock or intelligent fake.

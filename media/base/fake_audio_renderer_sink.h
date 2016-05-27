@@ -29,6 +29,8 @@ class FakeAudioRendererSink : public AudioRendererSink {
 
   FakeAudioRendererSink();
 
+  explicit FakeAudioRendererSink(const AudioParameters& hardware_params);
+
   void Initialize(const AudioParameters& params,
                   RenderCallback* callback) override;
   void Start() override;

@@ -39,10 +39,6 @@ void TestMojoMediaClient::Initialize() {
     base::RunLoop().RunUntilIdle();
   }
 
-  audio_hardware_config_.reset(new AudioHardwareConfig(
-      audio_manager->GetInputStreamParameters(
-          AudioDeviceDescription::kDefaultDeviceId),
-      audio_manager->GetDefaultOutputStreamParameters()));
 }
 
 void TestMojoMediaClient::WillQuit() {
@@ -58,8 +54,7 @@ std::unique_ptr<RendererFactory> TestMojoMediaClient::CreateRendererFactory(
     const scoped_refptr<MediaLog>& media_log) {
   DVLOG(1) << __FUNCTION__;
   return base::WrapUnique(new DefaultRendererFactory(
-      media_log, nullptr, DefaultRendererFactory::GetGpuFactoriesCB(),
-      *audio_hardware_config_));
+      media_log, nullptr, DefaultRendererFactory::GetGpuFactoriesCB()));
 }
 
 AudioRendererSink* TestMojoMediaClient::CreateAudioRendererSink() {

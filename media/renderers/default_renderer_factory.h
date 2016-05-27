@@ -31,8 +31,7 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
 
   DefaultRendererFactory(const scoped_refptr<MediaLog>& media_log,
                          DecoderFactory* decoder_factory,
-                         const GetGpuFactoriesCB& get_gpu_factories_cb,
-                         const AudioHardwareConfig& audio_hardware_config);
+                         const GetGpuFactoriesCB& get_gpu_factories_cb);
   ~DefaultRendererFactory() final;
 
   std::unique_ptr<Renderer> CreateRenderer(
@@ -58,8 +57,6 @@ class MEDIA_EXPORT DefaultRendererFactory : public RendererFactory {
 
   // Creates factories for supporting video accelerators. May be null.
   GetGpuFactoriesCB get_gpu_factories_cb_;
-
-  const AudioHardwareConfig& audio_hardware_config_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultRendererFactory);
 };

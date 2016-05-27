@@ -202,7 +202,7 @@ bool WebAudioSourceProviderImpl::SetVolume(double volume) {
 
 media::OutputDeviceInfo WebAudioSourceProviderImpl::GetOutputDeviceInfo() {
   base::AutoLock auto_lock(sink_lock_);
-  return client_ ? media::OutputDeviceInfo() : sink_->GetOutputDeviceInfo();
+  return sink_->GetOutputDeviceInfo();
 }
 
 void WebAudioSourceProviderImpl::SwitchOutputDevice(

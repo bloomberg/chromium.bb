@@ -8,8 +8,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "content/renderer/media/audio_device_factory.h"
+#include "content/renderer/media/audio_renderer_sink_cache.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/audio_renderer_mixer.h"
@@ -17,7 +18,11 @@
 
 namespace content {
 
-AudioRendererMixerManager::AudioRendererMixerManager() {}
+AudioRendererMixerManager::AudioRendererMixerManager(
+    std::unique_ptr<AudioRendererSinkCache> sink_cache)
+    : sink_cache_(std::move(sink_cache)) {
+  DCHECK(sink_cache_);
+}
 
 AudioRendererMixerManager::~AudioRendererMixerManager() {
   // References to AudioRendererMixers may be owned by garbage collected
@@ -25,22 +30,26 @@ AudioRendererMixerManager::~AudioRendererMixerManager() {
   // |mixers_| may leak (i.e., may be non-empty at this time) as well.
 }
 
+// static
+std::unique_ptr<AudioRendererMixerManager> AudioRendererMixerManager::Create() {
+  return base::WrapUnique(
+      new AudioRendererMixerManager(AudioRendererSinkCache::Create()));
+}
+
 media::AudioRendererMixerInput* AudioRendererMixerManager::CreateInput(
     int source_render_frame_id,
     int session_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
-  // base::Unretained() is safe since AudioRendererMixerManager lives on the
-  // renderer thread and is destroyed on renderer thread destruction.
+  // AudioRendererMixerManager lives on the renderer thread and is destroyed on
+  // renderer thread destruction, so it's safe to pass its pointer to a mixer
+  // input.
   return new media::AudioRendererMixerInput(
-      base::Bind(&AudioRendererMixerManager::GetMixer, base::Unretained(this),
-                 source_render_frame_id),
-      base::Bind(&AudioRendererMixerManager::RemoveMixer,
-                 base::Unretained(this), source_render_frame_id),
+      this, source_render_frame_id,
       media::AudioDeviceDescription::UseSessionIdToSelectDevice(session_id,
                                                                 device_id)
-          ? AudioDeviceFactory::GetOutputDeviceInfo(
-                source_render_frame_id, session_id, device_id, security_origin)
+          ? GetOutputDeviceInfo(source_render_frame_id, session_id, device_id,
+                                security_origin)
                 .device_id()
           : device_id,
       security_origin);
@@ -69,13 +78,13 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
   }
 
   scoped_refptr<media::AudioRendererSink> sink =
-      AudioDeviceFactory::NewAudioRendererMixerSink(source_render_frame_id, 0,
-                                                    device_id, security_origin);
+      sink_cache_->GetSink(source_render_frame_id, device_id, security_origin);
 
   const media::OutputDeviceInfo& device_info = sink->GetOutputDeviceInfo();
   if (device_status)
     *device_status = device_info.device_status();
   if (device_info.device_status() != media::OUTPUT_DEVICE_STATUS_OK) {
+    sink_cache_->ReleaseSink(sink.get());
     sink->Stop();
     return nullptr;
   }
@@ -109,12 +118,12 @@ media::AudioRendererMixer* AudioRendererMixerManager::GetMixer(
 
   media::AudioRendererMixer* mixer =
       new media::AudioRendererMixer(output_params, sink);
-  AudioRendererMixerReference mixer_reference = { mixer, 1 };
+  AudioRendererMixerReference mixer_reference = {mixer, 1, sink.get()};
   mixers_[key] = mixer_reference;
   return mixer;
 }
 
-void AudioRendererMixerManager::RemoveMixer(
+void AudioRendererMixerManager::ReturnMixer(
     int source_render_frame_id,
     const media::AudioParameters& params,
     const std::string& device_id,
@@ -129,9 +138,20 @@ void AudioRendererMixerManager::RemoveMixer(
   // Only remove the mixer if AudioRendererMixerManager is the last owner.
   it->second.ref_count--;
   if (it->second.ref_count == 0) {
+    // The mixer will be deleted now, so release the sink.
+    sink_cache_->ReleaseSink(it->second.sink_ptr);
     delete it->second.mixer;
     mixers_.erase(it);
   }
+}
+
+media::OutputDeviceInfo AudioRendererMixerManager::GetOutputDeviceInfo(
+    int source_render_frame_id,
+    int session_id,
+    const std::string& device_id,
+    const url::Origin& security_origin) {
+  return sink_cache_->GetSinkInfo(source_render_frame_id, session_id, device_id,
+                                  security_origin);
 }
 
 AudioRendererMixerManager::MixerKey::MixerKey(

@@ -64,7 +64,6 @@ class MEDIA_EXPORT AudioRendererImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       AudioRendererSink* sink,
       ScopedVector<AudioDecoder> decoders,
-      const AudioHardwareConfig& hardware_config,
       const scoped_refptr<MediaLog>& media_log);
   ~AudioRendererImpl() override;
 
@@ -210,12 +209,9 @@ class MEDIA_EXPORT AudioRendererImpl
 
   std::unique_ptr<AudioBufferStream> audio_buffer_stream_;
 
-  // Interface to the hardware audio params.
-  const AudioHardwareConfig& hardware_config_;
-
   scoped_refptr<MediaLog> media_log_;
 
-  // Cached copy of hardware params from |hardware_config_|.
+  // Cached copy of hardware params from |sink_|.
   AudioParameters audio_parameters_;
 
   RendererClient* client_;

@@ -26,6 +26,7 @@ class MEDIA_EXPORT ClocklessAudioSink
     : NON_EXPORTED_BASE(public AudioRendererSink) {
  public:
   ClocklessAudioSink();
+  explicit ClocklessAudioSink(const OutputDeviceInfo& device_info);
 
   // AudioRendererSink implementation.
   void Initialize(const AudioParameters& params,
@@ -50,6 +51,7 @@ class MEDIA_EXPORT ClocklessAudioSink
   ~ClocklessAudioSink() override;
 
  private:
+  const OutputDeviceInfo device_info_;
   std::unique_ptr<ClocklessAudioSinkThread> thread_;
   bool initialized_;
   bool playing_;

@@ -276,6 +276,7 @@
         'base/audio_renderer_mixer.h',
         'base/audio_renderer_mixer_input.cc',
         'base/audio_renderer_mixer_input.h',
+        'base/audio_renderer_mixer_pool.h',
         'base/audio_renderer_sink.h',
         'base/audio_shifter.cc',
         'base/audio_shifter.h',

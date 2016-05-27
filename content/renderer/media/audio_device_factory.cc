@@ -135,22 +135,16 @@ AudioDeviceFactory::NewAudioCapturerSource(int render_frame_id) {
 }
 
 // static
-// TODO(http://crbug.com/587461): Find a better way to check if device exists
-// and is authorized.
 media::OutputDeviceInfo AudioDeviceFactory::GetOutputDeviceInfo(
     int render_frame_id,
     int session_id,
     const std::string& device_id,
     const url::Origin& security_origin) {
-  scoped_refptr<media::AudioRendererSink> sink = NewFinalAudioRendererSink(
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  DCHECK(render_thread) << "RenderThreadImpl is not instantiated, or "
+                        << "GetOutputDeviceInfo() is called on a wrong thread ";
+  return render_thread->GetAudioRendererMixerManager()->GetOutputDeviceInfo(
       render_frame_id, session_id, device_id, security_origin);
-
-  const media::OutputDeviceInfo& device_info = sink->GetOutputDeviceInfo();
-
-  // TODO(olka): Cache it and reuse, http://crbug.com/586161
-  sink->Stop();  // Must be stopped.
-
-  return device_info;
 }
 
 AudioDeviceFactory::AudioDeviceFactory() {

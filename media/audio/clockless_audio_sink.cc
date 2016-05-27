@@ -75,7 +75,13 @@ class ClocklessAudioSinkThread : public base::DelegateSimpleThread::Delegate {
 };
 
 ClocklessAudioSink::ClocklessAudioSink()
-    : initialized_(false), playing_(false), hashing_(false) {}
+    : ClocklessAudioSink(OutputDeviceInfo()) {}
+
+ClocklessAudioSink::ClocklessAudioSink(const OutputDeviceInfo& device_info)
+    : device_info_(device_info),
+      initialized_(false),
+      playing_(false),
+      hashing_(false) {}
 
 ClocklessAudioSink::~ClocklessAudioSink() {}
 
@@ -122,7 +128,7 @@ bool ClocklessAudioSink::SetVolume(double volume) {
 }
 
 OutputDeviceInfo ClocklessAudioSink::GetOutputDeviceInfo() {
-  return OutputDeviceInfo();
+  return device_info_;
 }
 
 void ClocklessAudioSink::StartAudioHashForTesting() {

@@ -12,7 +12,6 @@
 #include "base/message_loop/message_loop.h"
 #include "media/audio/clockless_audio_sink.h"
 #include "media/audio/null_audio_sink.h"
-#include "media/base/audio_hardware_config.h"
 #include "media/base/demuxer.h"
 #include "media/base/media_keys.h"
 #include "media/base/null_video_sink.h"
@@ -133,7 +132,6 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
   VideoPixelFormat last_video_frame_format_;
   ColorSpace last_video_frame_color_space_;
   DummyTickClock dummy_clock_;
-  AudioHardwareConfig hardware_config_;
   PipelineMetadata metadata_;
   scoped_refptr<VideoFrame> last_frame_;
 

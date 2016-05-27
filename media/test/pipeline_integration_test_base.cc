@@ -48,8 +48,7 @@ PipelineIntegrationTestBase::PipelineIntegrationTestBase()
       ended_(false),
       pipeline_status_(PIPELINE_OK),
       last_video_frame_format_(PIXEL_FORMAT_UNKNOWN),
-      last_video_frame_color_space_(COLOR_SPACE_UNSPECIFIED),
-      hardware_config_(AudioParameters(), AudioParameters()) {
+      last_video_frame_color_space_(COLOR_SPACE_UNSPECIFIED) {
   base::MD5Init(&md5_context_);
 }
 
@@ -302,12 +301,6 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
       video_sink_.get(), std::move(video_decoders), false, nullptr,
       new MediaLog()));
 
-  if (!clockless_playback_) {
-    audio_sink_ = new NullAudioSink(message_loop_.task_runner());
-  } else {
-    clockless_audio_sink_ = new ClocklessAudioSink();
-  }
-
   ScopedVector<AudioDecoder> audio_decoders;
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
@@ -317,11 +310,17 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
 
   audio_decoders.push_back(new OpusAudioDecoder(message_loop_.task_runner()));
 
-  // Don't allow the audio renderer to resample buffers if hashing is enabled.
-  if (!hashing_enabled_) {
-    AudioParameters out_params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                               CHANNEL_LAYOUT_STEREO, 44100, 16, 512);
-    hardware_config_.UpdateOutputConfig(out_params);
+  if (!clockless_playback_) {
+    audio_sink_ = new NullAudioSink(message_loop_.task_runner());
+  } else {
+    clockless_audio_sink_ = new ClocklessAudioSink(OutputDeviceInfo(
+        "", OUTPUT_DEVICE_STATUS_OK,
+        // Don't allow the audio renderer to resample buffers if hashing is
+        // enabled:
+        hashing_enabled_
+            ? AudioParameters()
+            : AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                              CHANNEL_LAYOUT_STEREO, 44100, 16, 512)));
   }
 
   std::unique_ptr<AudioRenderer> audio_renderer(new AudioRendererImpl(
@@ -329,7 +328,7 @@ std::unique_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer() {
       (clockless_playback_)
           ? static_cast<AudioRendererSink*>(clockless_audio_sink_.get())
           : audio_sink_.get(),
-      std::move(audio_decoders), hardware_config_, new MediaLog()));
+      std::move(audio_decoders), new MediaLog()));
   if (hashing_enabled_) {
     if (clockless_playback_)
       clockless_audio_sink_->StartAudioHashForTesting();

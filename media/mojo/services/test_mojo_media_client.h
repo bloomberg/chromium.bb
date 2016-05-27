@@ -37,7 +37,6 @@ class TestMojoMediaClient : public MojoMediaClient {
 
  private:
   ScopedAudioManagerPtr audio_manager_;
-  std::unique_ptr<AudioHardwareConfig> audio_hardware_config_;
   scoped_refptr<AudioRendererSink> audio_renderer_sink_;
   std::unique_ptr<VideoRendererSink> video_renderer_sink_;
 
