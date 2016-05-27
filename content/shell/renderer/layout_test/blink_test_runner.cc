@@ -351,10 +351,14 @@ WebURL BlinkTestRunner::LocalFileToDataURL(const WebURL& file_url) {
   return WebURL(GURL(data_url_prefix + contents_base64));
 }
 
-WebURL BlinkTestRunner::RewriteLayoutTestsURL(const std::string& utf8_url) {
-  WebURL rewritten_url = RewriteAbsolutePathInWPT(utf8_url);
-  if (!rewritten_url.isEmpty())
-    return rewritten_url;
+WebURL BlinkTestRunner::RewriteLayoutTestsURL(const std::string& utf8_url,
+                                              bool is_wpt_mode) {
+  if (is_wpt_mode) {
+    WebURL rewritten_url = RewriteAbsolutePathInWPT(utf8_url);
+    if (!rewritten_url.isEmpty())
+      return rewritten_url;
+    return WebURL(GURL(utf8_url));
+  }
 
   const char kPrefix[] = "file:///tmp/LayoutTests/";
   const int kPrefixLen = arraysize(kPrefix) - 1;
@@ -549,7 +553,7 @@ std::string BlinkTestRunner::PathToLocalResource(const std::string& resource) {
     result = result.substr(0, strlen("file:///")) +
              result.substr(strlen("file:////"));
   }
-  return RewriteLayoutTestsURL(result).string().utf8();
+  return RewriteLayoutTestsURL(result, false /* is_wpt_mode */).string().utf8();
 }
 
 void BlinkTestRunner::SetLocale(const std::string& locale) {

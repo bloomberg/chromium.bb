@@ -112,6 +112,9 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
     test_runner_->setShouldGeneratePixelResults(false);
     test_runner_->setShouldDumpAsMarkup(true);
   }
+  if (spec.find("/imported/wpt/") != std::string::npos ||
+      spec.find("/imported/csswg-test/") != std::string::npos)
+    test_runner_->set_is_web_platform_tests_mode();
 }
 
 void TestInterfaces::SetAppBannerClient(AppBannerClient* app_banner_client) {

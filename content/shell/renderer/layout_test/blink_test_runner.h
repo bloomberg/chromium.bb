@@ -81,7 +81,8 @@ class BlinkTestRunner : public RenderViewObserver,
   blink::WebString GetAbsoluteWebStringFromUTF8Path(
       const std::string& utf8_path) override;
   blink::WebURL LocalFileToDataURL(const blink::WebURL& file_url) override;
-  blink::WebURL RewriteLayoutTestsURL(const std::string& utf8_url) override;
+  blink::WebURL RewriteLayoutTestsURL(const std::string& utf8_url,
+                                      bool is_wpt_mode) override;
   test_runner::TestPreferences* Preferences() override;
   void ApplyPreferences() override;
   virtual std::string makeURLErrorDescription(const blink::WebURLError& error);

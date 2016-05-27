@@ -103,8 +103,10 @@ class WebTestDelegate {
   virtual blink::WebURL LocalFileToDataURL(const blink::WebURL& file_url) = 0;
 
   // Replaces file:///tmp/LayoutTests/ with the actual path to the
-  // LayoutTests directory.
-  virtual blink::WebURL RewriteLayoutTestsURL(const std::string& utf8_url) = 0;
+  // LayoutTests directory, or rewrite URLs generated from absolute
+  // path links in web-platform-tests.
+  virtual blink::WebURL RewriteLayoutTestsURL(const std::string& utf8_url,
+                                              bool is_wpt_mode) = 0;
 
   // Manages the settings to used for layout tests.
   virtual TestPreferences* Preferences() = 0;

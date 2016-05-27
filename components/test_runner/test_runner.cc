@@ -1551,7 +1551,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
       spellcheck_(new SpellCheckClient(this)),
       chooser_count_(0),
       previously_focused_view_(nullptr),
-      did_request_after_reset_(false),
+      is_web_platform_tests_mode_(false),
       weak_factory_(this) {}
 
 TestRunner::~TestRunner() {}
@@ -1576,7 +1576,7 @@ void TestRunner::SetMainView(WebView* web_view) {
 }
 
 void TestRunner::Reset() {
-  did_request_after_reset_ = false;
+  is_web_platform_tests_mode_ = false;
   top_loading_frame_ = nullptr;
   layout_test_runtime_flags_.Reset();
   mock_screen_orientation_client_->ResetData();
