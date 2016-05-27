@@ -31,14 +31,14 @@ DisplaySnapshotVirtual::DisplaySnapshotVirtual(int64_t display_id,
                       false,
                       "Virtual display",
                       base::FilePath(),
-                      std::vector<const DisplayMode*>(),
+                      std::vector<std::unique_ptr<const DisplayMode>>(),
                       std::vector<uint8_t>(),  // Virtual displays have no EDID.
                       nullptr,
                       nullptr) {
   mode_.reset(new DisplayMode(display_size, false, 30));
-  modes_.push_back(mode_.get());
+  modes_.push_back(mode_->Clone());
 
-  native_mode_ = modes_.front();
+  native_mode_ = modes_.front().get();
 }
 
 DisplaySnapshotVirtual::~DisplaySnapshotVirtual() {}

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -147,22 +148,24 @@ class DisplayConfiguratorTest : public testing::Test {
     configurator_.set_state_controller(&state_controller_);
     configurator_.set_mirroring_controller(&mirroring_controller_);
 
-    std::vector<const DisplayMode*> modes;
-    modes.push_back(&small_mode_);
+    std::vector<std::unique_ptr<const DisplayMode>> modes;
+    modes.push_back(small_mode_.Clone());
 
     TestDisplaySnapshot* o = &outputs_[0];
-    o->set_current_mode(&small_mode_);
-    o->set_native_mode(&small_mode_);
-    o->set_modes(modes);
+    o->set_current_mode(modes.front().get());
+    o->set_native_mode(modes.front().get());
+    o->set_modes(std::move(modes));
     o->set_type(DISPLAY_CONNECTION_TYPE_INTERNAL);
     o->set_is_aspect_preserving_scaling(true);
     o->set_display_id(123);
 
+    modes.clear();
+    modes.push_back(small_mode_.Clone());
+    modes.push_back(big_mode_.Clone());
     o = &outputs_[1];
-    o->set_current_mode(&big_mode_);
-    o->set_native_mode(&big_mode_);
-    modes.push_back(&big_mode_);
-    o->set_modes(modes);
+    o->set_current_mode(modes.back().get());
+    o->set_native_mode(modes.back().get());
+    o->set_modes(std::move(modes));
     o->set_type(DISPLAY_CONNECTION_TYPE_HDMI);
     o->set_is_aspect_preserving_scaling(true);
     o->set_display_id(456);
@@ -273,7 +276,7 @@ class DisplayConfiguratorTest : public testing::Test {
 }  // namespace
 
 TEST_F(DisplayConfiguratorTest, FindDisplayModeMatchingSize) {
-  ScopedVector<const DisplayMode> modes;
+  std::vector<const DisplayMode*> modes;
 
   // Fields are width, height, interlaced, refresh rate.
   modes.push_back(new DisplayMode(gfx::Size(1920, 1200), false, 60.0));
@@ -302,7 +305,10 @@ TEST_F(DisplayConfiguratorTest, FindDisplayModeMatchingSize) {
   modes.push_back(new DisplayMode(gfx::Size(320, 200), false, 0.0));
 
   TestDisplaySnapshot output;
-  output.set_modes(modes.get());
+  std::vector<std::unique_ptr<const DisplayMode>> tmp_modes;
+  for (const DisplayMode* mode : modes)
+    tmp_modes.push_back(base::WrapUnique(mode));
+  output.set_modes(std::move(tmp_modes));
   output.set_native_mode(native_mode);
 
   // Should pick native over highest refresh rate.
@@ -562,7 +568,11 @@ TEST_F(DisplayConfiguratorTest, ConnectSecondOutput) {
   EXPECT_EQ(1, observer_.num_changes());
 
   // Get rid of shared modes to force software mirroring.
-  outputs_[1].set_modes(std::vector<const DisplayMode*>(1, &big_mode_));
+  std::vector<std::unique_ptr<const DisplayMode>> modes;
+  modes.push_back(big_mode_.Clone());
+  outputs_[1].set_current_mode(modes.front().get());
+  outputs_[1].set_native_mode(modes.front().get());
+  outputs_[1].set_modes(std::move(modes));
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
   UpdateOutputs(2, true);
   EXPECT_EQ(
@@ -715,7 +725,11 @@ TEST_F(DisplayConfiguratorTest, SetDisplayPower) {
   EXPECT_EQ(1, observer_.num_changes());
 
   // Get rid of shared modes to force software mirroring.
-  outputs_[1].set_modes(std::vector<const DisplayMode*>(1, &big_mode_));
+  std::vector<std::unique_ptr<const DisplayMode>> modes;
+  modes.push_back(big_mode_.Clone());
+  outputs_[1].set_current_mode(modes.front().get());
+  outputs_[1].set_native_mode(modes.front().get());
+  outputs_[1].set_modes(std::move(modes));
   state_controller_.set_state(MULTIPLE_DISPLAY_STATE_DUAL_MIRROR);
   observer_.Reset();
   UpdateOutputs(2, true);
@@ -986,9 +1000,15 @@ TEST_F(DisplayConfiguratorTest, Headless) {
             log_->GetActionsAndClear());
 
   // Connect an external display and check that it's configured correctly.
-  outputs_[0].set_current_mode(outputs_[1].current_mode());
-  outputs_[0].set_native_mode(outputs_[1].native_mode());
-  outputs_[0].set_modes(outputs_[1].modes());
+  std::vector<std::unique_ptr<const DisplayMode>> modes;
+  for (const std::unique_ptr<const DisplayMode>& mode : outputs_[1].modes()) {
+    modes.push_back(mode->Clone());
+    if (mode.get() == outputs_[1].current_mode())
+      outputs_[0].set_current_mode(modes.back().get());
+    if (mode.get() == outputs_[1].native_mode())
+      outputs_[0].set_native_mode(modes.back().get());
+  }
+  outputs_[0].set_modes(std::move(modes));
   outputs_[0].set_type(outputs_[1].type());
 
   UpdateOutputs(1, true);
@@ -1096,13 +1116,21 @@ TEST_F(DisplayConfiguratorTest, UpdateCachedOutputsEvenAfterFailure) {
 TEST_F(DisplayConfiguratorTest, PanelFitting) {
   // Configure the internal display to support only the big mode and the
   // external display to support only the small mode.
-  outputs_[0].set_current_mode(&big_mode_);
-  outputs_[0].set_native_mode(&big_mode_);
-  outputs_[0].set_modes(std::vector<const DisplayMode*>(1, &big_mode_));
+  std::unique_ptr<const DisplayMode> tmp_mode = big_mode_.Clone();
+  const DisplayMode* mode = tmp_mode.get();
+  std::vector<std::unique_ptr<const DisplayMode>> modes;
+  modes.push_back(std::move(tmp_mode));
+  outputs_[0].set_modes(std::move(modes));
+  outputs_[0].set_current_mode(mode);
+  outputs_[0].set_native_mode(mode);
 
-  outputs_[1].set_current_mode(&small_mode_);
-  outputs_[1].set_native_mode(&small_mode_);
-  outputs_[1].set_modes(std::vector<const DisplayMode*>(1, &small_mode_));
+  modes.clear();
+  tmp_mode = small_mode_.Clone();
+  mode = tmp_mode.get();
+  modes.push_back(std::move(tmp_mode));
+  outputs_[1].set_modes(std::move(modes));
+  outputs_[1].set_current_mode(mode);
+  outputs_[1].set_native_mode(mode);
 
   // The small mode should be added to the internal output when requesting
   // mirrored mode.
@@ -1125,15 +1153,15 @@ TEST_F(DisplayConfiguratorTest, PanelFitting) {
   // Both outputs should be using the small mode.
   ASSERT_EQ(1, observer_.num_changes());
   ASSERT_EQ(static_cast<size_t>(2), observer_.latest_outputs().size());
-  EXPECT_EQ(&small_mode_, observer_.latest_outputs()[0]->current_mode());
-  EXPECT_EQ(&small_mode_, observer_.latest_outputs()[1]->current_mode());
+  EXPECT_EQ(small_mode_.size(),
+            observer_.latest_outputs()[0]->current_mode()->size());
+  EXPECT_EQ(small_mode_.size(),
+            observer_.latest_outputs()[1]->current_mode()->size());
 
-  // Also check that the newly-added small mode is present in the internal
+  // Also test that there are 2 modes (instead of the initial one) in the
   // snapshot that was passed to the observer (http://crbug.com/289159).
   DisplaySnapshot* state = observer_.latest_outputs()[0];
-  ASSERT_NE(
-      state->modes().end(),
-      std::find(state->modes().begin(), state->modes().end(), &small_mode_));
+  ASSERT_EQ(2UL, state->modes().size());
 }
 
 TEST_F(DisplayConfiguratorTest, ContentProtection) {
@@ -1430,9 +1458,12 @@ TEST_F(DisplayConfiguratorTest, HandleConfigureCrtcFailure) {
   modes.push_back(new DisplayMode(gfx::Size(1920, 1080), false, 40.0));
 
   for (unsigned int i = 0; i < arraysize(outputs_); i++) {
-    outputs_[i].set_modes(modes.get());
-    outputs_[i].set_current_mode(modes[0]);
-    outputs_[i].set_native_mode(modes[0]);
+    std::vector<std::unique_ptr<const DisplayMode>> tmp_modes;
+    for (const DisplayMode* mode : modes)
+      tmp_modes.push_back(mode->Clone());
+    outputs_[i].set_current_mode(tmp_modes[0].get());
+    outputs_[i].set_native_mode(tmp_modes[0].get());
+    outputs_[i].set_modes(std::move(tmp_modes));
   }
 
   // First test simply fails in MULTIPLE_DISPLAY_STATE_SINGLE mode. This is

@@ -27,17 +27,19 @@ class ConfigureDisplaysTaskTest : public testing::Test {
         status_(ConfigureDisplaysTask::ERROR),
         small_mode_(gfx::Size(1366, 768), false, 60.0f),
         big_mode_(gfx::Size(2560, 1600), false, 60.0f) {
-    std::vector<const DisplayMode*> modes;
-    modes.push_back(&small_mode_);
-    displays_[0].set_current_mode(&small_mode_);
-    displays_[0].set_native_mode(&small_mode_);
-    displays_[0].set_modes(modes);
+    std::vector<std::unique_ptr<const DisplayMode>> modes;
+    modes.push_back(small_mode_.Clone());
+    displays_[0].set_current_mode(modes.front().get());
+    displays_[0].set_native_mode(modes.front().get());
+    displays_[0].set_modes(std::move(modes));
     displays_[0].set_display_id(123);
 
-    modes.push_back(&big_mode_);
-    displays_[1].set_current_mode(&big_mode_);
-    displays_[1].set_native_mode(&big_mode_);
-    displays_[1].set_modes(modes);
+    modes.clear();
+    modes.push_back(small_mode_.Clone());
+    modes.push_back(big_mode_.Clone());
+    displays_[1].set_current_mode(modes.back().get());
+    displays_[1].set_native_mode(modes.back().get());
+    displays_[1].set_modes(std::move(modes));
     displays_[1].set_display_id(456);
   }
   ~ConfigureDisplaysTaskTest() override {}

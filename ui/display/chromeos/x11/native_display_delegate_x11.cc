@@ -346,17 +346,17 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
 
   const DisplayMode* current_mode = NULL;
   const DisplayMode* native_mode = NULL;
-  std::vector<const DisplayMode*> display_modes;
+  std::vector<std::unique_ptr<const DisplayMode>> display_modes;
 
   for (int i = 0; i < info->nmode; ++i) {
     const RRMode mode = info->modes[i];
     if (modes_.find(mode) != modes_.end()) {
-      display_modes.push_back(modes_.at(mode));
+      display_modes.push_back(modes_.at(mode)->Clone());
 
       if (mode == current_mode_id)
-        current_mode = display_modes.back();
+        current_mode = display_modes.back().get();
       if (mode == native_mode_id)
-        native_mode = display_modes.back();
+        native_mode = display_modes.back().get();
     } else {
       LOG(WARNING) << "Unable to find XRRModeInfo for mode " << mode;
     }
@@ -370,7 +370,7 @@ DisplaySnapshotX11* NativeDisplayDelegateX11::InitDisplaySnapshot(
                              IsOutputAspectPreservingScaling(output),
                              has_overscan,
                              edid_parser.GetDisplayName(),
-                             display_modes,
+                             std::move(display_modes),
                              edid_parser.edid(),
                              current_mode,
                              native_mode,

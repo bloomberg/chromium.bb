@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
+
 #include "ui/ozone/common/display_snapshot_proxy.h"
 
 #include <stddef.h>
@@ -30,21 +32,21 @@ DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
                       params.has_color_correction_matrix,
                       params.display_name,
                       params.sys_path,
-                      std::vector<const DisplayMode*>(),
+                      std::vector<std::unique_ptr<const DisplayMode>>(),
                       params.edid,
                       NULL,
                       NULL),
       string_representation_(params.string_representation) {
   for (size_t i = 0; i < params.modes.size(); ++i) {
-    modes_.push_back(new DisplayModeProxy(params.modes[i]));
+    modes_.push_back(base::WrapUnique(new DisplayModeProxy(params.modes[i])));
 
     if (params.has_current_mode &&
         SameModes(params.modes[i], params.current_mode))
-      current_mode_ = modes_.back();
+      current_mode_ = modes_.back().get();
 
     if (params.has_native_mode &&
         SameModes(params.modes[i], params.native_mode))
-      native_mode_ = modes_.back();
+      native_mode_ = modes_.back().get();
   }
 
   product_id_ = params.product_id;

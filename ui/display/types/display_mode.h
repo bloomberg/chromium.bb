@@ -5,6 +5,7 @@
 #ifndef UI_DISPLAY_TYPES_DISPLAY_MODE_H_
 #define UI_DISPLAY_TYPES_DISPLAY_MODE_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
@@ -19,6 +20,7 @@ class DISPLAY_TYPES_EXPORT DisplayMode {
  public:
   DisplayMode(const gfx::Size& size, bool interlaced, float refresh_rate);
   virtual ~DisplayMode();
+  virtual std::unique_ptr<DisplayMode> Clone() const;
 
   const gfx::Size& size() const { return size_; }
   bool is_interlaced() const { return is_interlaced_; }

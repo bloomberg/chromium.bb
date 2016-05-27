@@ -32,7 +32,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
                   bool has_color_correction_matrix,
                   std::string display_name,
                   const base::FilePath& sys_path,
-                  const std::vector<const DisplayMode*>& modes,
+                  std::vector<std::unique_ptr<const DisplayMode>> modes,
                   const std::vector<uint8_t>& edid,
                   const DisplayMode* current_mode,
                   const DisplayMode* native_mode);
@@ -55,12 +55,16 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   int64_t product_id() const { return product_id_; }
   const gfx::Size& maximum_cursor_size() const { return maximum_cursor_size_; }
 
-  const std::vector<const DisplayMode*>& modes() const { return modes_; }
+  const std::vector<std::unique_ptr<const DisplayMode>>& modes() const {
+    return modes_;
+  }
   const std::vector<uint8_t>& edid() const { return edid_; }
 
   void set_current_mode(const DisplayMode* mode) { current_mode_ = mode; }
   void set_origin(const gfx::Point& origin) { origin_ = origin; }
-  void add_mode(const DisplayMode* mode) { modes_.push_back(mode); }
+  void add_mode(const DisplayMode* mode) {
+    modes_.push_back(mode->Clone());
+  }
 
   // Whether this display has advanced color correction available.
   bool has_color_correction_matrix() const {
@@ -94,7 +98,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
 
   base::FilePath sys_path_;
 
-  std::vector<const DisplayMode*> modes_;  // Not owned.
+  std::vector<std::unique_ptr<const DisplayMode>> modes_;
 
   // The display's EDID. It can be empty if nothing extracted such as in the
   // case of a virtual display.

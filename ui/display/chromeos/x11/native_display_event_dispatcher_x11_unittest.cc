@@ -24,8 +24,15 @@ DisplaySnapshotX11* CreateOutput(int64_t id,
                                  DisplayConnectionType type,
                                  RROutput output,
                                  RRCrtc crtc) {
-  static const DisplayModeX11* kDefaultDisplayMode =
-      new DisplayModeX11(gfx::Size(1, 1), false, 60.0f, 20);
+  static const DisplayModeX11 kDefaultDisplayMode(gfx::Size(1, 1),
+                                                  false,
+                                                  60.0f,
+                                                  20);
+  std::vector<std::unique_ptr<const DisplayMode>> modes;
+  const DisplayMode* mode;
+
+  modes.push_back(kDefaultDisplayMode.Clone());
+  mode = modes.front().get();
 
   DisplaySnapshotX11* snapshot = new DisplaySnapshotX11(
       id,
@@ -35,9 +42,9 @@ DisplaySnapshotX11* CreateOutput(int64_t id,
       false,
       false,
       std::string(),
-      std::vector<const DisplayMode*>(1, kDefaultDisplayMode),
+      std::move(modes),
       std::vector<uint8_t>(),
-      kDefaultDisplayMode,
+      mode,
       NULL,
       output,
       crtc,

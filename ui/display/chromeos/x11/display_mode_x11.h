@@ -22,6 +22,7 @@ class DISPLAY_EXPORT DisplayModeX11 : public DisplayMode {
                  float refresh_rate,
                  RRMode mode_id);
   ~DisplayModeX11() override;
+  std::unique_ptr<DisplayMode> Clone() const override;
 
   RRMode mode_id() const { return mode_id_; }
 

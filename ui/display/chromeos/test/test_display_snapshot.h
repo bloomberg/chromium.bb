@@ -23,16 +23,15 @@ class DISPLAY_EXPORT TestDisplaySnapshot : public DisplaySnapshot {
                       bool is_aspect_preserving_scaling,
                       int64_t product_id,
                       bool has_color_correction_matrix,
-                      const std::vector<const DisplayMode*>& modes,
+                      std::vector<std::unique_ptr<const DisplayMode>> modes,
                       const DisplayMode* current_mode,
                       const DisplayMode* native_mode);
   ~TestDisplaySnapshot() override;
 
   void set_type(DisplayConnectionType type) { type_ = type; }
-  void set_modes(const std::vector<const DisplayMode*>& modes) {
-    modes_ = modes;
+  void set_modes(std::vector<std::unique_ptr<const DisplayMode>> modes) {
+    modes_ = std::move(modes);
   }
-  void set_current_mode(const ui::DisplayMode* mode) { current_mode_ = mode; }
   void set_native_mode(const ui::DisplayMode* mode) { native_mode_ = mode; }
   void set_is_aspect_preserving_scaling(bool state) {
     is_aspect_preserving_scaling_ = state;

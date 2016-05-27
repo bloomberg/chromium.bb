@@ -154,17 +154,19 @@ class UpdateDisplayConfigurationTaskTest : public testing::Test {
         configuration_status_(false),
         display_state_(MULTIPLE_DISPLAY_STATE_INVALID),
         power_state_(chromeos::DISPLAY_POWER_ALL_ON) {
-    std::vector<const DisplayMode*> modes;
-    modes.push_back(&small_mode_);
-    displays_[0].set_current_mode(&small_mode_);
-    displays_[0].set_native_mode(&small_mode_);
-    displays_[0].set_modes(modes);
+    std::vector<std::unique_ptr<const DisplayMode>> modes;
+    modes.push_back(small_mode_.Clone());
+    displays_[0].set_current_mode(modes[0].get());
+    displays_[0].set_native_mode(modes[0].get());
+    displays_[0].set_modes(std::move(modes));
     displays_[0].set_display_id(123);
 
-    modes.push_back(&big_mode_);
-    displays_[1].set_current_mode(&big_mode_);
-    displays_[1].set_native_mode(&big_mode_);
-    displays_[1].set_modes(modes);
+    modes.clear();
+    modes.push_back(small_mode_.Clone());
+    modes.push_back(big_mode_.Clone());
+    displays_[1].set_current_mode(modes[1].get());
+    displays_[1].set_native_mode(modes[1].get());
+    displays_[1].set_modes(std::move(modes));
     displays_[1].set_display_id(456);
   }
   ~UpdateDisplayConfigurationTaskTest() override {}

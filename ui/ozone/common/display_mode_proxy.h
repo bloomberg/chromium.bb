@@ -14,10 +14,13 @@ struct DisplayMode_Params;
 
 class DisplayModeProxy : public DisplayMode {
  public:
-  DisplayModeProxy(const DisplayMode_Params& params);
+  explicit DisplayModeProxy(const DisplayMode_Params& params);
   ~DisplayModeProxy() override;
+  std::unique_ptr<DisplayMode> Clone() const override;
 
  private:
+  DisplayModeProxy(const gfx::Size& size, bool interlaced, float refresh_rate);
+
   DISALLOW_COPY_AND_ASSIGN(DisplayModeProxy);
 };
 

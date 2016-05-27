@@ -24,10 +24,10 @@ const DisplayMode* FindNextMode(const DisplaySnapshot& display_state,
   int best_mode_pixels = 0;
   const DisplayMode* best_mode = nullptr;
   int current_mode_pixels = display_mode->size().GetArea();
-  for (const DisplayMode* mode : display_state.modes()) {
+  for (const std::unique_ptr<const DisplayMode>& mode : display_state.modes()) {
     int pixel_count = mode->size().GetArea();
     if (pixel_count < current_mode_pixels && pixel_count > best_mode_pixels) {
-      best_mode = mode;
+      best_mode = mode.get();
       best_mode_pixels = pixel_count;
     }
   }

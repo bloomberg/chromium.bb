@@ -5,7 +5,7 @@
 #include "ash/display/display_change_observer_chromeos.h"
 
 #include "ash/display/display_info.h"
-#include "base/memory/scoped_vector.h"
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
@@ -18,32 +18,44 @@ typedef testing::Test DisplayChangeObserverTest;
 namespace ash {
 
 TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList) {
-  ScopedVector<const ui::DisplayMode> modes;
-  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1200), false, 60));
+  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1920, 1200), false, 60)));
 
   // All non-interlaced (as would be seen with different refresh rates).
-  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1080), false, 80));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1080), false, 70));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1080), false, 60));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1920, 1080), false, 80)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1920, 1080), false, 70)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1920, 1080), false, 60)));
 
   // Interlaced vs non-interlaced.
-  modes.push_back(new ui::DisplayMode(gfx::Size(1280, 720), true, 60));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1280, 720), false, 60));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1280, 720), true, 60)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1280, 720), false, 60)));
 
   // Interlaced only.
-  modes.push_back(new ui::DisplayMode(gfx::Size(1024, 768), true, 70));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1024, 768), true, 60));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1024, 768), true, 70)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1024, 768), true, 60)));
 
   // Mixed.
-  modes.push_back(new ui::DisplayMode(gfx::Size(1024, 600), true, 60));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1024, 600), false, 70));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1024, 600), false, 60));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1024, 600), true, 60)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1024, 600), false, 70)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1024, 600), false, 60)));
 
   // Just one interlaced mode.
-  modes.push_back(new ui::DisplayMode(gfx::Size(640, 480), true, 60));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(640, 480), true, 60)));
 
   ui::TestDisplaySnapshot display_snapshot;
-  display_snapshot.set_modes(modes.get());
+  display_snapshot.set_modes(std::move(modes));
 
   std::vector<DisplayMode> display_modes =
       DisplayChangeObserver::GetExternalDisplayModeList(display_snapshot);
@@ -74,7 +86,7 @@ TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList) {
 
   // Outputs without any modes shouldn't cause a crash.
   modes.clear();
-  display_snapshot.set_modes(modes.get());
+  display_snapshot.set_modes(std::move(modes));
 
   display_modes =
       DisplayChangeObserver::GetExternalDisplayModeList(display_snapshot);
@@ -82,17 +94,22 @@ TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList) {
 }
 
 TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList) {
-  ScopedVector<const ui::DisplayMode> modes;
+  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
   // Data picked from peppy.
-  modes.push_back(new ui::DisplayMode(gfx::Size(1366, 768), false, 60));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1024, 768), false, 60));
-  modes.push_back(new ui::DisplayMode(gfx::Size(800, 600), false, 60));
-  modes.push_back(new ui::DisplayMode(gfx::Size(600, 600), false, 56.2));
-  modes.push_back(new ui::DisplayMode(gfx::Size(640, 480), false, 59.9));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1366, 768), false, 60)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1024, 768), false, 60)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(800, 600), false, 60)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(600, 600), false, 56.2)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(640, 480), false, 59.9)));
 
   ui::TestDisplaySnapshot display_snapshot;
-  display_snapshot.set_modes(modes.get());
-  display_snapshot.set_native_mode(modes[0]);
+  display_snapshot.set_native_mode(modes[0].get());
+  display_snapshot.set_modes(std::move(modes));
 
   DisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 1366, 768));
@@ -127,15 +144,18 @@ TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList) {
 }
 
 TEST_F(DisplayChangeObserverTest, GetInternalHiDPIDisplayModeList) {
-  ScopedVector<const ui::DisplayMode> modes;
+  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
   // Data picked from peppy.
-  modes.push_back(new ui::DisplayMode(gfx::Size(2560, 1700), false, 60));
-  modes.push_back(new ui::DisplayMode(gfx::Size(2048, 1536), false, 60));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1440), false, 60));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(2560, 1700), false, 60)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(2048, 1536), false, 60)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1920, 1440), false, 60)));
 
   ui::TestDisplaySnapshot display_snapshot;
-  display_snapshot.set_modes(modes.get());
-  display_snapshot.set_native_mode(modes[0]);
+  display_snapshot.set_native_mode(modes[0].get());
+  display_snapshot.set_modes(std::move(modes));
 
   DisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 2560, 1700));
@@ -186,13 +206,14 @@ TEST_F(DisplayChangeObserverTest, GetInternalHiDPIDisplayModeList) {
 }
 
 TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList1_25) {
-  ScopedVector<const ui::DisplayMode> modes;
+  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
   // Data picked from peppy.
-  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1080), false, 60));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1920, 1080), false, 60)));
 
   ui::TestDisplaySnapshot display_snapshot;
-  display_snapshot.set_modes(modes.get());
-  display_snapshot.set_native_mode(modes[0]);
+  display_snapshot.set_native_mode(modes[0].get());
+  display_snapshot.set_modes(std::move(modes));
 
   DisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 1920, 1080));
@@ -228,34 +249,47 @@ TEST_F(DisplayChangeObserverTest, GetInternalDisplayModeList1_25) {
 }
 
 TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList4K) {
-  ScopedVector<const ui::DisplayMode> modes;
-  modes.push_back(new ui::DisplayMode(gfx::Size(3840, 2160), false, 30));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1200), false, 60));
+  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(3840, 2160), false, 30)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1920, 1200), false, 60)));
 
   // All non-interlaced (as would be seen with different refresh rates).
-  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1080), false, 80));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1080), false, 70));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1080), false, 60));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1920, 1080), false, 80)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1920, 1080), false, 70)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1920, 1080), false, 60)));
 
   // Interlaced vs non-interlaced.
-  modes.push_back(new ui::DisplayMode(gfx::Size(1280, 720), true, 60));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1280, 720), false, 60));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1280, 720), true, 60)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1280, 720), false, 60)));
 
   // Interlaced only.
-  modes.push_back(new ui::DisplayMode(gfx::Size(1024, 768), true, 70));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1024, 768), true, 60));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1024, 768), true, 70)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1024, 768), true, 60)));
 
   // Mixed.
-  modes.push_back(new ui::DisplayMode(gfx::Size(1024, 600), true, 60));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1024, 600), false, 70));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1024, 600), false, 60));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1024, 600), true, 60)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1024, 600), false, 70)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1024, 600), false, 60)));
 
   // Just one interlaced mode.
-  modes.push_back(new ui::DisplayMode(gfx::Size(640, 480), true, 60));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(640, 480), true, 60)));
 
   ui::TestDisplaySnapshot display_snapshot;
-  display_snapshot.set_modes(modes.get());
-  display_snapshot.set_native_mode(modes[0]);
+  display_snapshot.set_native_mode(modes[0].get());
+  display_snapshot.set_modes(std::move(modes));
 
   std::vector<DisplayMode> display_modes =
       DisplayChangeObserver::GetExternalDisplayModeList(display_snapshot);
@@ -307,8 +341,8 @@ TEST_F(DisplayChangeObserverTest, GetExternalDisplayModeList4K) {
 
   // Outputs without any modes shouldn't cause a crash.
   modes.clear();
-  display_snapshot.set_modes(modes.get());
   display_snapshot.set_native_mode(NULL);
+  display_snapshot.set_modes(std::move(modes));
 
   display_modes =
       DisplayChangeObserver::GetExternalDisplayModeList(display_snapshot);
@@ -357,13 +391,15 @@ TEST_F(DisplayChangeObserverTest, FindDeviceScaleFactor) {
 
 TEST_F(DisplayChangeObserverTest,
        FindExternalDisplayNativeModeWhenOverwritten) {
-  ScopedVector<const ui::DisplayMode> modes;
-  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1080), true, 60));
-  modes.push_back(new ui::DisplayMode(gfx::Size(1920, 1080), false, 60));
+  std::vector<std::unique_ptr<const ui::DisplayMode>> modes;
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1920, 1080), true, 60)));
+  modes.push_back(
+      base::WrapUnique(new ui::DisplayMode(gfx::Size(1920, 1080), false, 60)));
 
   ui::TestDisplaySnapshot display_snapshot;
-  display_snapshot.set_modes(modes.get());
-  display_snapshot.set_native_mode(modes[0]);
+  display_snapshot.set_native_mode(modes[0].get());
+  display_snapshot.set_modes(std::move(modes));
 
   std::vector<DisplayMode> display_modes =
       DisplayChangeObserver::GetExternalDisplayModeList(display_snapshot);

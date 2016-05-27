@@ -15,7 +15,7 @@ TestDisplaySnapshot::TestDisplaySnapshot()
                       false,
                       std::string(),
                       base::FilePath(),
-                      std::vector<const DisplayMode*>(),
+                      std::vector<std::unique_ptr<const DisplayMode>>(),
                       std::vector<uint8_t>(),
                       NULL,
                       NULL) {}
@@ -28,7 +28,7 @@ TestDisplaySnapshot::TestDisplaySnapshot(
     bool is_aspect_preserving_scaling,
     int64_t product_id,
     bool has_color_correction_matrix,
-    const std::vector<const DisplayMode*>& modes,
+    std::vector<std::unique_ptr<const DisplayMode>> modes,
     const DisplayMode* current_mode,
     const DisplayMode* native_mode)
     : DisplaySnapshot(display_id,
@@ -40,7 +40,7 @@ TestDisplaySnapshot::TestDisplaySnapshot(
                       has_color_correction_matrix,
                       std::string(),
                       base::FilePath(),
-                      modes,
+                      std::move(modes),
                       std::vector<uint8_t>(),
                       current_mode,
                       native_mode) {

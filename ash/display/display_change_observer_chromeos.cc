@@ -95,12 +95,12 @@ std::vector<DisplayMode> DisplayChangeObserver::GetExternalDisplayModeList(
   DisplayModeMap display_mode_map;
 
   DisplayMode native_mode;
-  for (const ui::DisplayMode* mode_info : output.modes()) {
+  for (const auto& mode_info : output.modes()) {
     const std::pair<int, int> size(mode_info->size().width(),
                                    mode_info->size().height());
     const DisplayMode display_mode(mode_info->size(), mode_info->refresh_rate(),
                                    mode_info->is_interlaced(),
-                                   output.native_mode() == mode_info);
+                                   output.native_mode() == mode_info.get());
     if (display_mode.native)
       native_mode = display_mode;
 
