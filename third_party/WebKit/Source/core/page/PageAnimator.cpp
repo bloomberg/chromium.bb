@@ -50,7 +50,8 @@ void PageAnimator::serviceScriptedAnimations(double monotonicAnimationStartTime)
             // Disallow throttling in case any script needs to do a synchronous
             // lifecycle update in other frames which are throttled.
             DocumentLifecycle::DisallowThrottlingScope noThrottlingScope(document->lifecycle());
-            document->view()->getScrollableArea()->serviceScrollAnimations(monotonicAnimationStartTime);
+            if (ScrollableArea* scrollableArea = document->view()->getScrollableArea())
+                scrollableArea->serviceScrollAnimations(monotonicAnimationStartTime);
 
             if (const FrameView::ScrollableAreaSet* animatingScrollableAreas = document->view()->animatingScrollableAreas()) {
                 // Iterate over a copy, since ScrollableAreas may deregister
