@@ -1294,8 +1294,15 @@ void RendererSchedulerImpl::OnTriedToExecuteBlockedTask(
     const TaskQueue& queue,
     const base::PendingTask& task) {
   if (!MainThreadOnly().expensive_task_blocking_allowed ||
+      MainThreadOnly().current_use_case == UseCase::TOUCHSTART ||
+      MainThreadOnly().longest_jank_free_task_duration <
+          base::TimeDelta::FromMilliseconds(kRailsResponseTimeMillis) ||
       MainThreadOnly().timer_queue_suspend_count ||
       MainThreadOnly().timer_queue_suspended_when_backgrounded) {
+    return;
+  }
+  if (!MainThreadOnly().timer_tasks_seem_expensive &&
+      !MainThreadOnly().loading_tasks_seem_expensive) {
     return;
   }
   if (!MainThreadOnly().have_reported_blocking_intervention_in_current_policy) {
@@ -1316,8 +1323,8 @@ void RendererSchedulerImpl::OnTriedToExecuteBlockedTask(
         true;
     BroadcastConsoleWarning(
         "Blink deferred a task in order to make scrolling smoother. "
-        "Your timer tasks should take less than 50ms to run to avoid this. "
-        "Please see "
+        "Your timer and network tasks should take less than 50ms to run "
+        "to avoid this. Please see "
         "https://developers.google.com/web/tools/chrome-devtools/profile/evaluate-performance/rail"
         " and https://crbug.com/574343#c40 for more information.");
   }

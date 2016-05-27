@@ -2877,6 +2877,54 @@ TEST_F(RendererSchedulerImplTest, BlockedTimerNotification_TimersSuspended) {
   EXPECT_EQ(0u, web_view_scheduler.console_warnings().size());
 }
 
+TEST_F(RendererSchedulerImplTest, BlockedTimerNotification_TOUCHSTART) {
+  // Make sure we don't report warnings about blocked tasks during TOUCHSTART.
+  WebViewSchedulerImplForTest web_view_scheduler(scheduler_.get());
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  DoMainFrame();
+  SimulateExpensiveTasks(timer_task_runner_);
+  SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::TouchStart),
+      RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+  EXPECT_EQ(UseCase::TOUCHSTART, ForceUpdatePolicyAndGetCurrentUseCase());
+
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "T1 T2");
+  RunUntilIdle();
+
+  EXPECT_EQ(0u, run_order.size());
+  EXPECT_EQ(0u, web_view_scheduler.console_warnings().size());
+}
+
+TEST_F(RendererSchedulerImplTest,
+       BlockedTimerNotification_SYNCHRONIZED_GESTURE) {
+  // Make sure we only report warnings during a high blocking threshold.
+  WebViewSchedulerImplForTest web_view_scheduler(scheduler_.get());
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  DoMainFrame();
+  SimulateExpensiveTasks(timer_task_runner_);
+  SimulateCompositorGestureStart(TouchEventPolicy::DONT_SEND_TOUCH_START);
+
+  cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
+  begin_frame_args.on_critical_path = true;
+  scheduler_->WillBeginFrame(begin_frame_args);
+
+  EXPECT_EQ(UseCase::SYNCHRONIZED_GESTURE,
+            ForceUpdatePolicyAndGetCurrentUseCase());
+
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "T1 T2");
+  RunUntilIdle();
+
+  EXPECT_EQ(0u, run_order.size());
+  EXPECT_EQ(0u, web_view_scheduler.console_warnings().size());
+}
+
 namespace {
 void SlowCountingTask(size_t* count,
                       base::SimpleTestTickClock* clock,
