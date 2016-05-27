@@ -7,7 +7,7 @@ layer at (0,0) size 785x1240 backgroundClip at (0,0) size 785x600 clip at (0,0) 
         LayoutText {#text} at (0,0) size 236x36
           text run at (0,0) width 236: "Unicode Symbols"
       LayoutBlockFlow {PRE} at (0,58.44) size 769x1092
-        LayoutText {#text} at (0,0) size 284x124
+        LayoutText {#text} at (0,0) size 291x124
           text run at (0,0) width 0: " "
           text run at (0,18) width 284: "U+16Ax \x{16A0} \x{16A1} \x{16A2} \x{16A3} \x{16A4} \x{16A5} \x{16A6} \x{16A7} \x{16A8} \x{16A9} \x{16AA} \x{16AB} \x{16AC} \x{16AD} \x{16AE} \x{16AF}"
           text run at (284,18) width 0: " "
@@ -17,8 +17,8 @@ layer at (0,0) size 785x1240 backgroundClip at (0,0) size 785x600 clip at (0,0) 
           text run at (261,54) width 0: " "
           text run at (0,72) width 274: "U+16Dx \x{16D0} \x{16D1} \x{16D2} \x{16D3} \x{16D4} \x{16D5} \x{16D6} \x{16D7} \x{16D8} \x{16D9} \x{16DA} \x{16DB} \x{16DC} \x{16DD} \x{16DE} \x{16DF}"
           text run at (274,72) width 0: " "
-          text run at (0,90) width 276: "U+16Ex \x{16E0} \x{16E1} \x{16E2} \x{16E3} \x{16E4} \x{16E5} \x{16E6} \x{16E7} \x{16E8} \x{16E9} \x{16EA} \x{16EB} \x{16EC} \x{16ED} \x{16EE} \x{16EF}"
-          text run at (276,90) width 0: " "
+          text run at (0,90) width 291: "U+16Ex \x{16E0} \x{16E1} \x{16E2} \x{16E3} \x{16E4} \x{16E5} \x{16E6} \x{16E7} \x{16E8} \x{16E9} \x{16EA} \x{16EB} \x{16EC} \x{16ED} \x{16EE} \x{16EF}"
+          text run at (291,90) width 0: " "
           text run at (0,108) width 63: "U+16Fx \x{16F0}"
           text run at (63,108) width 0: " "
         LayoutText {#text} at (0,124) size 330x144
