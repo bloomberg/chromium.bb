@@ -41,7 +41,7 @@ protected:
     explicit Worklet(ExecutionContext*);
 
 private:
-    void onResponse();
+    void onResponse(WorkerScriptLoader*);
     void onFinished(WorkerScriptLoader*, ScriptPromiseResolver*);
 
     Vector<RefPtr<WorkerScriptLoader>> m_scriptLoaders;

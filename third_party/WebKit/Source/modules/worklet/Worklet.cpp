@@ -43,16 +43,15 @@ ScriptPromise Worklet::import(ScriptState* scriptState, const String& url)
     m_scriptLoaders.append(WorkerScriptLoader::create());
     m_scriptLoaders.last()->loadAsynchronously(*getExecutionContext(), scriptURL, DenyCrossOriginRequests,
         getExecutionContext()->securityContext().addressSpace(),
-        bind(&Worklet::onResponse, this),
+        bind(&Worklet::onResponse, this, m_scriptLoaders.last().get()),
         bind(&Worklet::onFinished, this, m_scriptLoaders.last().get(), resolver));
 
     return promise;
 }
 
-void Worklet::onResponse()
+void Worklet::onResponse(WorkerScriptLoader* scriptLoader)
 {
-    // TODO(ikilpatrick): Add devtools instrumentation on worklet script
-    // resource loading.
+    InspectorInstrumentation::didReceiveScriptResponse(getExecutionContext(), scriptLoader->identifier());
 }
 
 void Worklet::onFinished(WorkerScriptLoader* scriptLoader, ScriptPromiseResolver* resolver)
