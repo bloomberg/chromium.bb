@@ -336,7 +336,19 @@ void DecoderStream<StreamType>::Decode(
   if (!decoded_frames_since_fallback_)
     pending_buffers_.push_back(buffer);
 
-  DecodeInternal(buffer);
+  // It's possible for a buffer to arrive from the demuxer right after the
+  // fallback decoder successfully completed its initialization. At this point
+  // |pending_buffers_| has already been copied to |fallback_buffers_| and we
+  // need to append it ourselves.
+  if (!fallback_buffers_.empty()) {
+    fallback_buffers_.push_back(buffer);
+
+    scoped_refptr<DecoderBuffer> temp = fallback_buffers_.front();
+    fallback_buffers_.pop_front();
+    DecodeInternal(temp);
+  } else {
+    DecodeInternal(buffer);
+  }
 }
 
 template <DemuxerStream::Type StreamType>
@@ -538,12 +550,13 @@ void DecoderStream<StreamType>::OnBufferReady(
                                      : "NULL");
 
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(pending_demuxer_read_);
   if (decoded_frames_since_fallback_) {
     DCHECK(state_ == STATE_PENDING_DEMUXER_READ || state_ == STATE_ERROR)
         << state_;
   } else {
     DCHECK(state_ == STATE_PENDING_DEMUXER_READ || state_ == STATE_ERROR ||
-           STATE_REINITIALIZING_DECODER)
+           state_ == STATE_REINITIALIZING_DECODER || state_ == STATE_NORMAL)
         << state_;
   }
   DCHECK_EQ(buffer.get() != NULL, status == DemuxerStream::kOk) << status;
@@ -581,9 +594,8 @@ void DecoderStream<StreamType>::OnBufferReady(
     return;
   }
 
-  // Decoding has been stopped (e.g due to an error).
-  if (state_ != STATE_PENDING_DEMUXER_READ) {
-    DCHECK(state_ == STATE_ERROR);
+  // Decoding has been stopped.
+  if (state_ == STATE_ERROR) {
     DCHECK(read_cb_.is_null());
 
     if (!reset_cb_.is_null()) {
