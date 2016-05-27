@@ -5,6 +5,7 @@
 #include "net/ssl/ssl_cipher_suite_names.h"
 
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -136,6 +137,43 @@ TEST(CipherSuiteNamesTest, HTTP2CipherSuites) {
       0xcca8 /* ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256 */));
   EXPECT_TRUE(IsTLSCipherSuiteAllowedByHTTP2(
       0xcca9 /* ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256 */));
+}
+
+TEST(CipherSuiteNamesTest, CECPQ1) {
+  const std::vector<uint16_t> kCECPQ1CipherSuites = {
+      0x16b7,  // TLS_CECPQ1_RSA_WITH_CHACHA20_POLY1305_SHA256 (non-standard)
+      0x16b8,  // TLS_CECPQ1_ECDSA_WITH_CHACHA20_POLY1305_SHA256 (non-standard)
+      0x16b9,  // TLS_CECPQ1_RSA_WITH_AES_256_GCM_SHA384 (non-standard)
+      0x16ba,  // TLS_CECPQ1_ECDSA_WITH_AES_256_GCM_SHA384 (non-standard)
+  };
+  const char *key_exchange, *cipher, *mac;
+  bool is_aead;
+
+  for (const uint16_t cipher_suite_id : kCECPQ1CipherSuites) {
+    SCOPED_TRACE(base::StringPrintf("cipher suite %x", cipher_suite_id));
+    EXPECT_TRUE(IsTLSCipherSuiteAllowedByHTTP2(cipher_suite_id));
+    EXPECT_TRUE(IsSecureTLSCipherSuite(cipher_suite_id));
+    SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
+                            cipher_suite_id);
+    EXPECT_TRUE(is_aead);
+    EXPECT_EQ(nullptr, mac);
+  }
+
+  SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, 0x16b7);
+  EXPECT_STREQ("CECPQ1_RSA", key_exchange);
+  EXPECT_STREQ("CHACHA20_POLY1305", cipher);
+
+  SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, 0x16b8);
+  EXPECT_STREQ("CECPQ1_ECDSA", key_exchange);
+  EXPECT_STREQ("CHACHA20_POLY1305", cipher);
+
+  SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, 0x16b9);
+  EXPECT_STREQ("CECPQ1_RSA", key_exchange);
+  EXPECT_STREQ("AES_256_GCM", cipher);
+
+  SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead, 0x16ba);
+  EXPECT_STREQ("CECPQ1_ECDSA", key_exchange);
+  EXPECT_STREQ("AES_256_GCM", cipher);
 }
 
 }  // anonymous namespace
