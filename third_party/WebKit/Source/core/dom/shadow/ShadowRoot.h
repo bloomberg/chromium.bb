@@ -114,14 +114,7 @@ public:
 
     SlotAssignment& ensureSlotAssignment();
 
-    void didAddSlot();
-    void didRemoveSlot();
-    const HeapVector<Member<HTMLSlotElement>>& descendantSlots();
-
-    void assignV1();
     void distributeV1();
-
-    HTMLSlotElement* assignedSlotFor(const Node&) const;
 
     Element* activeElement() const;
 
@@ -157,19 +150,15 @@ private:
     // ShadowRoots should never be cloned.
     Node* cloneNode(bool) override { return nullptr; }
 
-    void invalidateDescendantSlots();
-    unsigned descendantSlotCount() const;
-
     Member<ShadowRootRareDataV0> m_shadowRootRareDataV0;
     Member<StyleSheetList> m_styleSheetList;
     Member<SlotAssignment> m_slotAssignment;
-    unsigned m_numberOfStyles : 13;
+    unsigned m_numberOfStyles : 14;
     unsigned m_childShadowRootCount : 13;
     unsigned m_type : 2;
     unsigned m_registeredWithParentShadowRoot : 1;
     unsigned m_descendantInsertionPointsIsValid : 1;
     unsigned m_delegatesFocus : 1;
-    unsigned m_descendantSlotsIsValid : 1;
 };
 
 inline Element* ShadowRoot::activeElement() const

@@ -42,6 +42,7 @@
 namespace blink {
 
 class Element;
+class HTMLSlotElement;
 class TreeScope;
 
 class DocumentOrderedMap : public GarbageCollected<DocumentOrderedMap> {
@@ -57,6 +58,7 @@ public:
     Element* getElementById(const AtomicString&, const TreeScope*) const;
     const HeapVector<Member<Element>>& getAllElementsById(const AtomicString&, const TreeScope*) const;
     Element* getElementByMapName(const AtomicString&, const TreeScope*) const;
+    HTMLSlotElement* getSlotByName(const AtomicString&, const TreeScope*) const;
     Element* getElementByLowercasedMapName(const AtomicString&, const TreeScope*) const;
     Element* getElementByLabelForAttribute(const AtomicString&, const TreeScope*) const;
 

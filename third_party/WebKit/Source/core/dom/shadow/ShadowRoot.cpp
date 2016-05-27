@@ -61,7 +61,6 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
     , m_registeredWithParentShadowRoot(false)
     , m_descendantInsertionPointsIsValid(false)
     , m_delegatesFocus(false)
-    , m_descendantSlotsIsValid(false)
 {
 }
 
@@ -107,14 +106,8 @@ void ShadowRoot::setOlderShadowRoot(ShadowRoot& root)
 SlotAssignment& ShadowRoot::ensureSlotAssignment()
 {
     if (!m_slotAssignment)
-        m_slotAssignment = SlotAssignment::create();
+        m_slotAssignment = SlotAssignment::create(*this);
     return *m_slotAssignment;
-}
-
-HTMLSlotElement* ShadowRoot::assignedSlotFor(const Node& node) const
-{
-    DCHECK(m_slotAssignment);
-    return m_slotAssignment->assignedSlotFor(node);
 }
 
 Node* ShadowRoot::cloneNode(bool, ExceptionState& exceptionState)
@@ -300,63 +293,9 @@ StyleSheetList& ShadowRoot::styleSheets()
     return *m_styleSheetList;
 }
 
-void ShadowRoot::didAddSlot()
-{
-    ensureSlotAssignment().didAddSlot();
-    invalidateDescendantSlots();
-}
-
-void ShadowRoot::didRemoveSlot()
-{
-    DCHECK(m_slotAssignment);
-    m_slotAssignment->didRemoveSlot();
-    invalidateDescendantSlots();
-}
-
-void ShadowRoot::invalidateDescendantSlots()
-{
-    DCHECK(m_slotAssignment);
-    m_descendantSlotsIsValid = false;
-    m_slotAssignment->clearDescendantSlots();
-}
-
-unsigned ShadowRoot::descendantSlotCount() const
-{
-    return m_slotAssignment ? m_slotAssignment->descendantSlotCount() : 0;
-}
-
-const HeapVector<Member<HTMLSlotElement>>& ShadowRoot::descendantSlots()
-{
-    DEFINE_STATIC_LOCAL(HeapVector<Member<HTMLSlotElement>>, emptyList, (new HeapVector<Member<HTMLSlotElement>>));
-    if (m_descendantSlotsIsValid) {
-        DCHECK(m_slotAssignment);
-        return m_slotAssignment->descendantSlots();
-    }
-    if (descendantSlotCount() == 0)
-        return emptyList;
-
-    DCHECK(m_slotAssignment);
-    HeapVector<Member<HTMLSlotElement>> slots;
-    slots.reserveCapacity(descendantSlotCount());
-    for (HTMLSlotElement& slot : Traversal<HTMLSlotElement>::descendantsOf(rootNode()))
-        slots.append(&slot);
-    m_slotAssignment->setDescendantSlots(slots);
-    m_descendantSlotsIsValid = true;
-    return m_slotAssignment->descendantSlots();
-}
-
-void ShadowRoot::assignV1()
-{
-    if (!m_slotAssignment)
-        m_slotAssignment = SlotAssignment::create();
-    m_slotAssignment->resolveAssignment(*this);
-}
-
 void ShadowRoot::distributeV1()
 {
-    if (!m_slotAssignment)
-        m_slotAssignment = SlotAssignment::create();
-    m_slotAssignment->resolveDistribution(*this);
+    ensureSlotAssignment().resolveDistribution();
 }
 
 DEFINE_TRACE(ShadowRoot)

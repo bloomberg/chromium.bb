@@ -8,19 +8,17 @@
 </div>
 <script>
 'use strict';
-const numChildOfHost = 10;
-const numDivsInShadow = 100;
+const numChildOfHost = 50;
+const numDivsInShadow = 20;
 const loops = 20;
 
-for (let i = 0; i < numChildOfHost; ++i) {
-  let div = document.createElement('div');
-  div.appendChild(document.createTextNode('div' + i));
-  host.appendChild(div);
-}
-
-const slot = document.createElement('slot');
+const slot1 = document.createElement('slot');
+slot1.setAttribute('name', 'slot1');
+const slot2 = document.createElement('slot');
+slot2.setAttribute('name', 'slot2');
 const shadowRoot = host.attachShadow({mode: 'open'});
-shadowRoot.appendChild(slot);
+shadowRoot.appendChild(slot1);
+shadowRoot.appendChild(slot2);
 
 for (let i = 0; i < numDivsInShadow; ++i) {
   let div = document.createElement('div');
@@ -28,12 +26,16 @@ for (let i = 0; i < numDivsInShadow; ++i) {
 }
 
 function run() {
-  let div = document.createElement('div');
   for (let i = 0; i < loops; ++i) {
-    host.appendChild(div);
-    slot.assignedNodes({flatten: true});
-    host.removeChild(div);
-    slot.assignedNodes({flatten: true});
+    for (let j = 0; j < numChildOfHost; ++j) {
+      let div1 = document.createElement('div');
+      div1.setAttribute('slot', 'slot1');
+      host.appendChild(div1);
+      let div2 = document.createElement('div');
+      div2.setAttribute('slot', 'slot2');
+      host.appendChild(div2);
+    }
+    host.innerHTML = '';
   }
 }
 

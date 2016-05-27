@@ -59,6 +59,7 @@
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
+#include "core/dom/shadow/SlotAssignment.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/events/Event.h"
@@ -635,12 +636,10 @@ Node& Node::shadowIncludingRoot() const
     return *root;
 }
 
-#if DCHECK_IS_ON()
 bool Node::needsDistributionRecalc() const
 {
     return shadowIncludingRoot().childNeedsDistributionRecalc();
 }
-#endif
 
 void Node::updateDistribution()
 {
@@ -700,11 +699,6 @@ void Node::markAncestorsWithChildNeedsStyleInvalidation()
 void Node::markAncestorsWithChildNeedsDistributionRecalc()
 {
     ScriptForbiddenScope forbidScriptDuringRawIteration;
-    if (RuntimeEnabledFeatures::shadowDOMV1Enabled() && inShadowIncludingDocument() && !document().childNeedsDistributionRecalc()) {
-        // TODO(hayato): Support a non-document composed tree.
-        // TODO(hayato): Enqueue a task only if a 'slotchange' event listner is registered in the document composed tree.
-        Microtask::enqueueMicrotask(WTF::bind(&Document::updateDistribution, &document()));
-    }
     for (Node* node = this; node && !node->childNeedsDistributionRecalc(); node = node->parentOrShadowHostNode())
         node->setChildNeedsDistributionRecalc();
     document().scheduleLayoutTreeUpdateIfNeeded();
@@ -994,17 +988,11 @@ bool Node::isSlotOrActiveInsertionPoint() const
 
 AtomicString Node::slotName() const
 {
-    DCHECK(slottable());
+    DCHECK(isSlotable());
     if (isElementNode())
-        return normalizeSlotName(toElement(*this).fastGetAttribute(HTMLNames::slotAttr));
+        return HTMLSlotElement::normalizeSlotName(toElement(*this).fastGetAttribute(HTMLNames::slotAttr));
     DCHECK(isTextNode());
     return emptyAtom;
-}
-
-// static
-AtomicString Node::normalizeSlotName(const AtomicString& name)
-{
-    return (name.isNull() || name.isEmpty()) ? emptyAtom : name;
 }
 
 bool Node::isInV1ShadowTree() const
@@ -1035,6 +1023,13 @@ bool Node::isChildOfV0ShadowHost() const
 {
     ElementShadow* parentShadow = parentElementShadow();
     return parentShadow && !parentShadow->isV1();
+}
+
+ShadowRoot* Node::v1ShadowRootOfParent() const
+{
+    if (Element* parent = parentElement())
+        return parent->shadowRootIfV1();
+    return nullptr;
 }
 
 Element* Node::shadowHost() const
@@ -2247,20 +2242,18 @@ StaticNodeList* Node::getDestinationInsertionPoints()
 
 HTMLSlotElement* Node::assignedSlot() const
 {
-    Element* parent = parentElement();
-    ShadowRoot* root = parent ? parent->youngestShadowRoot() : nullptr;
-    if (root && root->isV1())
-        return root->assignedSlotFor(*this);
+    if (ShadowRoot* root = v1ShadowRootOfParent())
+        return root->ensureSlotAssignment().findSlot(*this);
     return nullptr;
 }
 
 HTMLSlotElement* Node::assignedSlotForBinding()
 {
     updateDistribution();
-    Element* parent = parentElement();
-    ShadowRoot* root = parent ? parent->youngestShadowRoot() : nullptr;
-    if (root && root->type() == ShadowRootType::Open)
-        return root->assignedSlotFor(*this);
+    if (ShadowRoot* root = v1ShadowRootOfParent()) {
+        if (root->type() == ShadowRootType::Open)
+            return root->ensureSlotAssignment().findSlot(*this);
+    }
     return nullptr;
 }
 
@@ -2385,12 +2378,36 @@ void Node::setV0CustomElementState(V0CustomElementState newState)
         toElement(this)->pseudoStateChanged(CSSSelector::PseudoUnresolved);
 }
 
-void Node::updateAssignmentForInsertedInto(ContainerNode* insertionPoint)
+void Node::checkSlotChange()
 {
-    if (isShadowHost(insertionPoint)) {
-        ShadowRoot* root = insertionPoint->youngestShadowRoot();
-        if (root && root->isV1())
-            root->assignV1();
+    // Common check logic is used in both cases, "after inserted" and "before removed".
+    if (!isSlotable())
+        return;
+    if (ShadowRoot* root = v1ShadowRootOfParent()) {
+        // Relevant DOM Standard:
+        // https://dom.spec.whatwg.org/#concept-node-insert
+        // - 6.1.2: If parent is a shadow host and node is a slotable, then assign a slot for node.
+        // https://dom.spec.whatwg.org/#concept-node-remove
+        // - 10. If node is assigned, then run assign slotables for node’s assigned slot.
+
+        // Although DOM Standard requires "assign a slot for node / run assign slotables" at this timing,
+        // we skip it as an optimization.
+        if (HTMLSlotElement* slot = root->ensureSlotAssignment().findSlot(*this))
+            slot->enqueueSlotChangeEvent();
+    } else {
+        // Relevant DOM Standard:
+        // https://dom.spec.whatwg.org/#concept-node-insert
+        // - 6.1.3: If parent is a slot whose assigned nodes is the empty list, then run signal a slot change for parent.
+        // https://dom.spec.whatwg.org/#concept-node-remove
+        // - 11. If parent is a slot whose assigned nodes is the empty list, then run signal a slot change for parent.
+        Element* parent = parentElement();
+        if (parent && isHTMLSlotElement(parent)) {
+            HTMLSlotElement& parentSlot = toHTMLSlotElement(*parent);
+            if (ShadowRoot* root = containingShadowRoot()) {
+                if (root && root->isV1() && !parentSlot.hasAssignedNodesSlow())
+                    parentSlot.enqueueSlotChangeEvent();
+            }
+        }
     }
 }
 

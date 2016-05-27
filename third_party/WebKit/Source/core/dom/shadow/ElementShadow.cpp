@@ -254,9 +254,7 @@ bool ElementShadow::hasSameStyles(const ElementShadow* other) const
 const InsertionPoint* ElementShadow::finalDestinationInsertionPointFor(const Node* key) const
 {
     DCHECK(key);
-#if DCHECK_IS_ON()
     DCHECK(!key->needsDistributionRecalc());
-#endif
     NodeToDestinationInsertionPoints::const_iterator it = m_nodeToInsertionPoints.find(key);
     return it == m_nodeToInsertionPoints.end() ? nullptr : it->value->last();
 }
@@ -264,9 +262,7 @@ const InsertionPoint* ElementShadow::finalDestinationInsertionPointFor(const Nod
 const DestinationInsertionPoints* ElementShadow::destinationInsertionPointsFor(const Node* key) const
 {
     DCHECK(key);
-#if DCHECK_IS_ON()
     DCHECK(!key->needsDistributionRecalc());
-#endif
     NodeToDestinationInsertionPoints::const_iterator it = m_nodeToInsertionPoints.find(key);
     return it == m_nodeToInsertionPoints.end() ? nullptr : it->value;
 }

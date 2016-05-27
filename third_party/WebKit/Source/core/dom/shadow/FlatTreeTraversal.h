@@ -125,10 +125,8 @@ private:
 
     static void assertPrecondition(const Node& node)
     {
-#if DCHECK_IS_ON()
         DCHECK(!node.needsDistributionRecalc());
         DCHECK(node.canParticipateInFlatTree());
-#endif
     }
 
     static void assertPostcondition(const Node* node)

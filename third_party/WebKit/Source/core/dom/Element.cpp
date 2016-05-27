@@ -78,6 +78,7 @@
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/dom/shadow/ShadowRootInit.h"
+#include "core/dom/shadow/SlotAssignment.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/iterators/TextIterator.h"
@@ -1145,10 +1146,9 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ol
         if (shouldInvalidateDistributionWhenAttributeChanged(parentElementShadow, name, newValue))
             parentElementShadow->setNeedsDistributionRecalc();
     }
-    if (name == HTMLNames::slotAttr && isChildOfV1ShadowHost()) {
-        parentElementShadow()->setNeedsDistributionRecalc();
-        if (oldValue != newValue)
-            parentElement()->shadowRootIfV1()->assignV1();
+    if (name == HTMLNames::slotAttr && oldValue != newValue) {
+        if (ShadowRoot* root = v1ShadowRootOfParent())
+            root->ensureSlotAssignment().hostChildSlotNameChanged(oldValue, newValue);
     }
 
     parseAttribute(name, oldValue, newValue);
@@ -1507,12 +1507,6 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 
     if (document().frame())
         document().frame()->eventHandler().elementRemoved(this);
-
-    if (HTMLSlotElement* slot = assignedSlot()) {
-        ShadowRoot* root = slot->containingShadowRoot();
-        if (root && root->isV1())
-            root->assignV1();
-    }
 }
 
 void Element::attach(const AttachContext& context)
@@ -2088,14 +2082,9 @@ void Element::childrenChanged(const ChildrenChange& change)
     if (!change.byParser && change.isChildElementChange())
         checkForSiblingStyleChanges(change.type == ElementRemoved ? SiblingElementRemoved : SiblingElementInserted, change.siblingBeforeChange, change.siblingAfterChange);
 
-    if (ElementShadow* shadow = this->shadow()) {
+    // TODO(hayato): Confirm that we can skip this if a shadow tree is v1.
+    if (ElementShadow* shadow = this->shadow())
         shadow->setNeedsDistributionRecalc();
-        if (document().shadowCascadeOrder() == ShadowCascadeOrder::ShadowCascadeV1) {
-            ShadowRoot* root = isShadowHost(*this) && shadowRoot()->isV1() ? shadowRootIfV1() : isHTMLSlotElement(*this) ? containingShadowRoot() : nullptr;
-            if (root && root->isV1())
-                root->assignV1();
-        }
-    }
 }
 
 void Element::finishParsingChildren()

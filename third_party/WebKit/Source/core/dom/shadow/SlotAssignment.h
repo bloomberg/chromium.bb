@@ -5,7 +5,12 @@
 #ifndef SlotAssignment_h
 #define SlotAssignment_h
 
+// #include "core/dom/DocumentOrderedList.h"
+#include "core/dom/DocumentOrderedMap.h"
 #include "platform/heap/Handle.h"
+#include "wtf/HashMap.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace blink {
 
@@ -13,37 +18,52 @@ class HTMLSlotElement;
 class Node;
 class ShadowRoot;
 
+// TODO(hayato): Support SlotAssignment for non-shadow trees, e.g. a document tree.
 class SlotAssignment final : public GarbageCollected<SlotAssignment> {
 public:
-    static SlotAssignment* create()
+    static SlotAssignment* create(ShadowRoot& owner)
     {
-        return new SlotAssignment;
+        return new SlotAssignment(owner);
     }
 
-    HTMLSlotElement* assignedSlotFor(const Node&) const;
-    void resolveAssignment(ShadowRoot&);
-    void resolveDistribution(ShadowRoot&);
+    // Relevant DOM Standard: https://dom.spec.whatwg.org/#find-a-slot
+    HTMLSlotElement* findSlot(const Node&);
+    HTMLSlotElement* findSlotByName(const AtomicString& slotName);
 
-    void didAddSlot() { ++m_descendantSlotCount; }
-    void didRemoveSlot() { DCHECK_GT(m_descendantSlotCount, 0u); --m_descendantSlotCount; }
-    unsigned descendantSlotCount() const { return m_descendantSlotCount; }
+    // DOM Standaard defines these two procedures:
+    // 1. https://dom.spec.whatwg.org/#assign-a-slot
+    //    void assignSlot(const Node& slottable);
+    // 2. https://dom.spec.whatwg.org/#assign-slotables
+    //    void assignSlotables(HTMLSlotElement&);
+    // As an optimization, Blink does not implement these literally.
+    // Instead, provide alternative, HTMLSlotElement::hasAssignedNodesSlow()
+    // so that slotchange can be detected.
 
-    const HeapVector<Member<HTMLSlotElement>>& descendantSlots() const { return m_descendantSlots; }
+    void resolveDistribution();
+    const HeapVector<Member<HTMLSlotElement>>& slots();
 
-    void setDescendantSlots(HeapVector<Member<HTMLSlotElement>>& slots) { m_descendantSlots.swap(slots); }
-    void clearDescendantSlots() { m_descendantSlots.clear(); }
+    void slotAdded(HTMLSlotElement&);
+    void slotRemoved(HTMLSlotElement&);
+    void slotRenamed(const AtomicString& oldName, HTMLSlotElement&);
+    void hostChildSlotNameChanged(const AtomicString& oldValue, const AtomicString& newValue);
+
+    bool findHostChildBySlotName(const AtomicString& slotName) const;
 
     DECLARE_TRACE();
 
 private:
-    SlotAssignment() { };
+    explicit SlotAssignment(ShadowRoot& owner);
 
-    void assign(Node&, HTMLSlotElement&);
-    void distribute(Node&, HTMLSlotElement&);
+    void collectSlots();
 
-    unsigned m_descendantSlotCount = 0;
-    HeapVector<Member<HTMLSlotElement>> m_descendantSlots;
-    HeapHashMap<Member<Node>, Member<HTMLSlotElement>> m_assignment;
+    void resolveAssignment();
+    void distributeTo(Node&, HTMLSlotElement&);
+
+    HeapVector<Member<HTMLSlotElement>> m_slots;
+    Member<DocumentOrderedMap> m_slotMap;
+    WeakMember<ShadowRoot> m_owner;
+    unsigned m_needsCollectSlots : 1;
+    unsigned m_slotCount : 31;
 };
 
 } // namespace blink

@@ -692,6 +692,9 @@ void ContainerNode::notifyNodeInserted(Node& root, ChildrenChangeSource source)
 #endif
     DCHECK(!root.isShadowRoot());
 
+    if (document().containsV1ShadowTree())
+        root.checkSlotChangeAfterInserted();
+
     InspectorInstrumentation::didInsertDOMNode(&root);
 
     NodeVector postInsertionNotificationTargets;

@@ -35,6 +35,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/TreeScope.h"
 #include "core/html/HTMLMapElement.h"
+#include "core/html/HTMLSlotElement.h"
 
 namespace blink {
 
@@ -73,6 +74,11 @@ inline bool keyMatchesId(const AtomicString& key, const Element& element)
 inline bool keyMatchesMapName(const AtomicString& key, const Element& element)
 {
     return isHTMLMapElement(element) && toHTMLMapElement(element).getName() == key;
+}
+
+inline bool keyMatchesSlotName(const AtomicString& key, const Element& element)
+{
+    return isHTMLSlotElement(element) && toHTMLSlotElement(element).name() == key;
 }
 
 inline bool keyMatchesLowercasedMapName(const AtomicString& key, const Element& element)
@@ -193,6 +199,16 @@ const HeapVector<Member<Element>>& DocumentOrderedMap::getAllElementsById(const 
 Element* DocumentOrderedMap::getElementByMapName(const AtomicString& key, const TreeScope* scope) const
 {
     return get<keyMatchesMapName>(key, scope);
+}
+
+// TODO(hayato): Template get<> by return type.
+HTMLSlotElement* DocumentOrderedMap::getSlotByName(const AtomicString& key, const TreeScope* scope) const
+{
+    if (Element* slot = get<keyMatchesSlotName>(key, scope)) {
+        DCHECK(isHTMLSlotElement(slot));
+        return toHTMLSlotElement(slot);
+    }
+    return nullptr;
 }
 
 Element* DocumentOrderedMap::getElementByLowercasedMapName(const AtomicString& key, const TreeScope* scope) const

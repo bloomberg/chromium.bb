@@ -3840,6 +3840,11 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode& container)
             frame->page()->dragCaretController().nodeWillBeRemoved(n);
         }
     }
+
+    if (containsV1ShadowTree()) {
+        for (Node& n : NodeTraversal::childrenOf(container))
+            n.checkSlotChangeBeforeRemoved();
+    }
 }
 
 void Document::nodeWillBeRemoved(Node& n)
@@ -3855,6 +3860,9 @@ void Document::nodeWillBeRemoved(Node& n)
         frame->selection().nodeWillBeRemoved(n);
         frame->page()->dragCaretController().nodeWillBeRemoved(n);
     }
+
+    if (containsV1ShadowTree())
+        n.checkSlotChangeBeforeRemoved();
 }
 
 void Document::dataWillChange(const CharacterData& characterData)

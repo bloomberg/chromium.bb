@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<script src='../resources/testharness.js'></script>
+<script src='../resources/testharnessreport.js'></script>
+<script src='resources/shadow-dom.js'></script>
+<!-- This is a micro benchmark to catch an unintentional regression.
+     If the reason of a regression is clear, it is okay.
+     We do not have to optimize the result of the benchmark. -->
+<div id='d1'>
+  <template data-mode='open' data-expose-as='d1_shadow'>
+    <slot name='d1-s1'></slot>
+  </template>
+  <div id='d2' slot='d1-s1'></div>
+</div>
+<script>
+'use strict';
+convertTemplatesToShadowRootsWithin(d1);
+removeWhiteSpaceOnlyTextNodes(d1);
+
+async_test((test) => {
+
+  const d1_s1 = d1_shadow.querySelector('slot');
+
+  assert_array_equals(d1_s1.assignedNodes(), [d2]);
+  assert_array_equals(d1_s1.assignedNodes({'flatten': true}), [d2]);
+
+  d1_s1.addEventListener('slotchange', (e) => {
+    test.step(() => {
+      assert_equals(e.target, d1_s1);
+      assert_array_equals(d1_s1.assignedNodes(), []);
+      assert_array_equals(d1_s1.assignedNodes({'flatten': true}), []);
+      assert_equals(e.scoped, true);
+      test.done();
+    });
+  });
+
+  d2.setAttribute('slot', 'non-exist');
+}, "slotchange event caused by renaming slot name");
+</script>

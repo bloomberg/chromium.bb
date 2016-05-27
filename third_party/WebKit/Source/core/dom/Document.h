@@ -1082,6 +1082,8 @@ public:
     ShadowCascadeOrder shadowCascadeOrder() const { return m_shadowCascadeOrder; }
     void setShadowCascadeOrder(ShadowCascadeOrder);
 
+    bool containsV1ShadowTree() const { return m_shadowCascadeOrder == ShadowCascadeOrder::ShadowCascadeV1; }
+
     void setRootScroller(Element*, ExceptionState&);
     Element* rootScroller();
 

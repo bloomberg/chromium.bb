@@ -295,10 +295,9 @@ public:
 
     bool canParticipateInFlatTree() const;
     bool isSlotOrActiveInsertionPoint() const;
-    bool slottable() const { return isElementNode() || isTextNode(); }
+    // A re-distribution across v0 and v1 shadow trees is not supported.
+    bool isSlotable() const { return isTextNode() || (isElementNode() && !isInsertionPoint()); }
     AtomicString slotName() const;
-
-    static AtomicString normalizeSlotName(const AtomicString&);
 
     bool hasCustomStyleCallbacks() const { return getFlag(HasCustomStyleCallbacksFlag); }
 
@@ -376,9 +375,7 @@ public:
     void setNeedsStyleRecalc(StyleChangeType, const StyleChangeReasonForTracing&);
     void clearNeedsStyleRecalc();
 
-#if DCHECK_IS_ON()
     bool needsDistributionRecalc() const;
-#endif
 
     bool childNeedsDistributionRecalc() const { return getFlag(ChildNeedsDistributionRecalcFlag); }
     void setChildNeedsDistributionRecalc()  { setFlag(ChildNeedsDistributionRecalcFlag); }
@@ -490,7 +487,7 @@ public:
     bool isInV0ShadowTree() const;
     bool isChildOfV1ShadowHost() const;
     bool isChildOfV0ShadowHost() const;
-    bool isSlotAssignable() const { return isTextNode() || isElementNode(); }
+    ShadowRoot* v1ShadowRootOfParent() const;
 
     bool isDocumentTypeNode() const { return getNodeType() == DOCUMENT_TYPE_NODE; }
     virtual bool childTypeAllowed(NodeType) const { return false; }
@@ -676,7 +673,8 @@ public:
 
     bool isFinishedParsingChildren() const { return getFlag(IsFinishedParsingChildrenFlag); }
 
-    void updateAssignmentForInsertedInto(ContainerNode*);
+    void checkSlotChangeAfterInserted() { checkSlotChange(); }
+    void checkSlotChangeBeforeRemoved() { checkSlotChange(); }
 
     DECLARE_VIRTUAL_TRACE();
 
@@ -796,6 +794,8 @@ private:
     // it is not safe to cache AtomicStrings because those are
     // per-thread.
     virtual String debugNodeName() const;
+
+    void checkSlotChange();
 
     enum EditableLevel { Editable, RichlyEditable };
     bool hasEditableStyle(EditableLevel, UserSelectAllTreatment = UserSelectAllIsAlwaysNonEditable) const;
