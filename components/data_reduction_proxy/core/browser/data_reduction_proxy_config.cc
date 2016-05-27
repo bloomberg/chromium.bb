@@ -357,7 +357,8 @@ bool DataReductionProxyConfig::IsDataReductionProxy(
     if (proxy_info) {
       proxy_info->proxy_servers =
           std::vector<net::ProxyServer>(proxy_it, proxy_list.end());
-      proxy_info->is_fallback = (proxy_it != proxy_list.begin());
+      proxy_info->proxy_index =
+          static_cast<size_t>(proxy_it - proxy_list.begin());
     }
     return true;
   }

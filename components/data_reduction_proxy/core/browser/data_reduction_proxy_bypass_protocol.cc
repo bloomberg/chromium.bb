@@ -119,7 +119,7 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
         net::ProxyServer::SCHEME_HTTPS, request->proxy_server()));
     data_reduction_proxy_type_info.proxy_servers.push_back(net::ProxyServer(
         net::ProxyServer::SCHEME_HTTP, request->proxy_server()));
-    data_reduction_proxy_type_info.is_fallback = false;
+    data_reduction_proxy_type_info.proxy_index = 0;
   } else {
     ReportResponseProxyServerStatusHistogram(RESPONSE_PROXY_SERVER_STATUS_DRP);
   }
@@ -130,7 +130,7 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
   // At this point, the response is expected to have the data reduction proxy
   // via header, so detect and report cases where the via header is missing.
   DataReductionProxyBypassStats::DetectAndRecordMissingViaHeaderResponseCode(
-      !data_reduction_proxy_type_info.is_fallback, response_headers);
+      data_reduction_proxy_type_info.proxy_index == 0, response_headers);
 
   // GetDataReductionProxyBypassType will only log a net_log event if a bypass
   // command was sent via the data reduction proxy headers
@@ -152,7 +152,7 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
           request->context()->proxy_service()->proxy_retry_info(), proxy_server,
           NULL)) {
     DataReductionProxyBypassStats::RecordDataReductionProxyBypassInfo(
-        !data_reduction_proxy_type_info.is_fallback,
+        data_reduction_proxy_type_info.proxy_index == 0,
         data_reduction_proxy_info->bypass_all, proxy_server, bypass_type);
   }
 

@@ -673,7 +673,8 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
           << i;
     }
 
-    EXPECT_EQ(tests[i].expected_is_fallback, proxy_type_info.is_fallback) << i;
+    EXPECT_EQ(tests[i].expected_is_fallback, proxy_type_info.proxy_index != 0)
+        << i;
   }
 }
 
@@ -688,50 +689,33 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithMutableConfig) {
   const struct {
     net::HostPortPair host_port_pair;
     bool expected_result;
-    net::ProxyServer expected_first;
-    net::ProxyServer expected_second;
-    net::ProxyServer expected_third;
-    bool expected_is_fallback;
+    std::vector<net::ProxyServer> expected_proxies;
+    size_t expected_proxy_index;
   } tests[] = {
       {
-       proxies_for_http[0].host_port_pair(),
-       true,
-       proxies_for_http[0],
-       proxies_for_http[1],
-       proxies_for_http[2],
-       false,
+          proxies_for_http[0].host_port_pair(), true,
+          std::vector<net::ProxyServer>(proxies_for_http.begin(),
+                                        proxies_for_http.end()),
+          0,
       },
       {
-       proxies_for_http[1].host_port_pair(),
-       true,
-       proxies_for_http[1],
-       proxies_for_http[2],
-       net::ProxyServer(),
-       true,
+          proxies_for_http[1].host_port_pair(), true,
+          std::vector<net::ProxyServer>(proxies_for_http.begin() + 1,
+                                        proxies_for_http.end()),
+          1,
       },
       {
-       proxies_for_http[2].host_port_pair(),
-       true,
-       proxies_for_http[2],
-       net::ProxyServer(),
-       net::ProxyServer(),
-       true,
+          proxies_for_http[2].host_port_pair(), true,
+          std::vector<net::ProxyServer>(proxies_for_http.begin() + 2,
+                                        proxies_for_http.end()),
+          2,
       },
       {
-       net::HostPortPair(),
-       false,
-       net::ProxyServer(),
-       net::ProxyServer(),
-       net::ProxyServer(),
-       false,
+          net::HostPortPair(), false, std::vector<net::ProxyServer>(), 0,
       },
       {
-       net::HostPortPair::FromString("https://otherorigin.net:443"),
-       false,
-       net::ProxyServer(),
-       net::ProxyServer(),
-       net::ProxyServer(),
-       false,
+          net::HostPortPair::FromString("https://otherorigin.net:443"), false,
+          std::vector<net::ProxyServer>(), 0,
       },
   };
 
@@ -741,21 +725,13 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithMutableConfig) {
   std::unique_ptr<DataReductionProxyConfig> config(new DataReductionProxyConfig(
       task_runner(), net_log(), std::move(config_values), configurator(),
       event_creator()));
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (const auto& test : tests) {
     DataReductionProxyTypeInfo proxy_type_info;
-    EXPECT_EQ(tests[i].expected_result,
-              config->IsDataReductionProxy(tests[i].host_port_pair,
-                                           &proxy_type_info));
-    std::vector<net::ProxyServer> expected_proxy_servers;
-    if (tests[i].expected_first.is_valid())
-      expected_proxy_servers.push_back(tests[i].expected_first);
-    if (tests[i].expected_second.is_valid())
-      expected_proxy_servers.push_back(tests[i].expected_second);
-    if (tests[i].expected_third.is_valid())
-      expected_proxy_servers.push_back(tests[i].expected_third);
+    EXPECT_EQ(test.expected_result, config->IsDataReductionProxy(
+                                        test.host_port_pair, &proxy_type_info));
     EXPECT_THAT(proxy_type_info.proxy_servers,
-                testing::ContainerEq(expected_proxy_servers))
-        << i;
+                testing::ContainerEq(test.expected_proxies));
+    EXPECT_EQ(test.expected_proxy_index, proxy_type_info.proxy_index);
   }
 }
 

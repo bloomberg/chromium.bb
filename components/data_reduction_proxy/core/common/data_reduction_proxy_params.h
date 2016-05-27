@@ -144,14 +144,14 @@ const char* GetServerExperimentsFieldTrialName();
 }  // namespace params
 
 // Contains information about a given proxy server. |proxies_for_http| contains
-// the configured data reduction proxy servers. |is_fallback| notes whether the
-// given proxy is a fallback.
+// the configured data reduction proxy servers. |proxy_index| notes the index
+// of the data reduction proxy used in the list of all data reduction proxies.
 struct DataReductionProxyTypeInfo {
   DataReductionProxyTypeInfo();
   DataReductionProxyTypeInfo(const DataReductionProxyTypeInfo& other);
   ~DataReductionProxyTypeInfo();
   std::vector<net::ProxyServer> proxy_servers;
-  bool is_fallback;
+  size_t proxy_index;
 };
 
 // Provides initialization parameters. Proxy origins, and the secure proxy

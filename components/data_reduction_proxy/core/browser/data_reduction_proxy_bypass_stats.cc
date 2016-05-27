@@ -118,16 +118,27 @@ DataReductionProxyBypassStats::~DataReductionProxyBypassStats() {
 
 void DataReductionProxyBypassStats::OnUrlRequestCompleted(
     const net::URLRequest* request, bool started) {
+  DataReductionProxyTypeInfo proxy_info;
   // Ignore requests that did not use the data reduction proxy. The check for
   // LOAD_BYPASS_PROXY is necessary because the proxy_server() in the |request|
   // might still be set to the data reduction proxy if |request| was retried
   // over direct and a network error occurred while retrying it.
   if (data_reduction_proxy_config_->WasDataReductionProxyUsed(request,
-                                                              nullptr) &&
+                                                              &proxy_info) &&
       (request->load_flags() & net::LOAD_BYPASS_PROXY) == 0 &&
       request->status().status() == net::URLRequestStatus::SUCCESS) {
     successful_requests_through_proxy_count_++;
     NotifyUnavailabilityIfChanged();
+
+    // Report the success counts.
+    UMA_HISTOGRAM_COUNTS_100(
+        "DataReductionProxy.SuccessfulRequestCompletionCounts",
+        proxy_info.proxy_index);
+    if (request->load_flags() & net::LOAD_MAIN_FRAME) {
+      UMA_HISTOGRAM_COUNTS_100(
+          "DataReductionProxy.SuccessfulRequestCompletionCounts.MainFrame",
+          proxy_info.proxy_index);
+    }
   }
 }
 
@@ -171,7 +182,7 @@ void DataReductionProxyBypassStats::OnProxyFallback(
       NotifyUnavailabilityIfChanged();
     }
 
-    if (!data_reduction_proxy_info.is_fallback) {
+    if (data_reduction_proxy_info.proxy_index == 0) {
       RecordDataReductionProxyBypassInfo(
           true, false, bypassed_proxy, BYPASS_EVENT_TYPE_NETWORK_ERROR);
       RecordDataReductionProxyBypassOnNetworkError(

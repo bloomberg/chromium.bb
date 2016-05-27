@@ -287,7 +287,7 @@ const char* GetServerExperimentsFieldTrialName() {
 
 }  // namespace params
 
-DataReductionProxyTypeInfo::DataReductionProxyTypeInfo() : is_fallback(false) {}
+DataReductionProxyTypeInfo::DataReductionProxyTypeInfo() : proxy_index(0) {}
 
 DataReductionProxyTypeInfo::DataReductionProxyTypeInfo(
     const DataReductionProxyTypeInfo& other) = default;

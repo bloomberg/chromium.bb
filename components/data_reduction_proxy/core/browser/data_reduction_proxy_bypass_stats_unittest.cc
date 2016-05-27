@@ -444,6 +444,81 @@ TEST_F(DataReductionProxyBypassStatsTest, RecordMissingViaHeaderBytes) {
   }
 }
 
+TEST_F(DataReductionProxyBypassStatsTest, SuccessfulRequestCompletion) {
+  const std::string kPrimaryHistogramName =
+      "DataReductionProxy.SuccessfulRequestCompletionCounts";
+  const std::string kPrimaryMainFrameHistogramName =
+      "DataReductionProxy.SuccessfulRequestCompletionCounts.MainFrame";
+
+  const struct {
+    bool was_proxy_used;
+    bool is_load_bypass_proxy;
+    size_t proxy_index;
+    bool is_main_frame;
+    net::Error net_error;
+  } tests[] = {{false, true, 0, true, net::OK},
+               {false, true, 0, false, net::ERR_TOO_MANY_REDIRECTS},
+               {false, false, 0, true, net::OK},
+               {false, false, 0, false, net::ERR_TOO_MANY_REDIRECTS},
+               {true, false, 0, true, net::OK},
+               {true, false, 0, true, net::ERR_TOO_MANY_REDIRECTS},
+               {true, false, 0, false, net::OK},
+               {true, false, 0, false, net::ERR_TOO_MANY_REDIRECTS},
+               {true, false, 1, true, net::OK},
+               {true, false, 1, true, net::ERR_TOO_MANY_REDIRECTS},
+               {true, false, 1, false, net::OK},
+               {true, false, 1, false, net::ERR_TOO_MANY_REDIRECTS}};
+
+  for (const auto& test : tests) {
+    base::HistogramTester histogram_tester;
+    std::unique_ptr<DataReductionProxyBypassStats> bypass_stats =
+        BuildBypassStats();
+
+    std::string response_headers(
+        "HTTP/1.1 200 OK\n"
+        "Via: 1.1 Chrome-Compression-Proxy\n");
+    std::unique_ptr<net::URLRequest> fake_request(
+        CreateURLRequestWithResponseHeaders(GURL("http://www.google.com/"),
+                                            response_headers));
+    if (test.is_load_bypass_proxy) {
+      fake_request->SetLoadFlags(fake_request->load_flags() |
+                                 net::LOAD_BYPASS_PROXY);
+    }
+    if (test.is_main_frame) {
+      fake_request->SetLoadFlags(fake_request->load_flags() |
+                                 net::LOAD_MAIN_FRAME);
+    }
+
+    if (test.net_error != net::OK)
+      fake_request->CancelWithError(static_cast<int>(test.net_error));
+
+    DataReductionProxyTypeInfo proxy_info;
+    proxy_info.proxy_index = test.proxy_index;
+    EXPECT_CALL(*config(), WasDataReductionProxyUsed(fake_request.get(),
+                                                     testing::NotNull()))
+        .WillRepeatedly(testing::DoAll(testing::SetArgPointee<1>(proxy_info),
+                                       Return(test.was_proxy_used)));
+
+    bypass_stats->OnUrlRequestCompleted(fake_request.get(), false);
+
+    if (test.was_proxy_used && !test.is_load_bypass_proxy &&
+        test.net_error == net::OK) {
+      histogram_tester.ExpectUniqueSample(kPrimaryHistogramName,
+                                          test.proxy_index, 1);
+    } else {
+      histogram_tester.ExpectTotalCount(kPrimaryHistogramName, 0);
+    }
+
+    if (test.was_proxy_used && !test.is_load_bypass_proxy &&
+        test.is_main_frame && test.net_error == net::OK) {
+      histogram_tester.ExpectUniqueSample(kPrimaryMainFrameHistogramName,
+                                          test.proxy_index, 1);
+    } else {
+      histogram_tester.ExpectTotalCount(kPrimaryMainFrameHistogramName, 0);
+    }
+  }
+}
+
 // End-to-end tests for the DataReductionProxy.BypassedBytes histograms.
 class DataReductionProxyBypassStatsEndToEndTest : public testing::Test {
  public:

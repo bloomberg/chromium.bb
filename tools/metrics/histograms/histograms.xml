@@ -7626,6 +7626,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.SuccessfulRequestCompletionCounts"
+    units="count">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Count of the number of requests that were successfully fetched via data
+    reduction proxy. The bucket represents the index of the data reduction proxy
+    in the data reduction proxy list.
+  </summary>
+</histogram>
+
+<histogram
+    name="DataReductionProxy.SuccessfulRequestCompletionCounts.MainFrame"
+    units="count">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Count of the number of main frame requests that were successfully fetched
+    via data reduction proxy. The bucket represents the index of the data
+    reduction proxy in the data reduction proxy list.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.UIAction" enum="DataReductionProxyUIAction">
   <owner>bengr@chromium.org</owner>
   <owner>megjablon@chromium.org</owner>
