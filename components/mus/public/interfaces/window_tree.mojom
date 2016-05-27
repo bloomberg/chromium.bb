@@ -13,7 +13,7 @@ import "components/mus/public/interfaces/mus_constants.mojom";
 import "components/mus/public/interfaces/window_manager.mojom";
 import "components/mus/public/interfaces/window_manager_constants.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
-import "ui/mojo/ime/text_input_state.mojom";
+import "ui/platform_window/mojo/text_input_state.mojom";
 
 struct ViewportMetrics {
   mojo.Size size_in_pixels;

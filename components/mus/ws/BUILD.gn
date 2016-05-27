@@ -101,7 +101,6 @@ source_set("lib") {
     "//components/mus/public/interfaces",
     "//components/mus/surfaces",
     "//mojo/common:common_base",
-    "//mojo/converters/ime",
     "//mojo/public/cpp/bindings:callback",
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
@@ -118,6 +117,7 @@ source_set("lib") {
     "//ui/gl",
     "//ui/platform_window",
     "//ui/platform_window:platform_impls",
+    "//ui/platform_window/mojo",
   ]
 
   if (use_ozone) {

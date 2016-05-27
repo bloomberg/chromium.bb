@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MOJO_DISPLAY_DISPLAY_TYPE_CONVERTERS_H_
-#define UI_MOJO_DISPLAY_DISPLAY_TYPE_CONVERTERS_H_
+#ifndef UI_DISPLAY_MOJO_DISPLAY_TYPE_CONVERTERS_H_
+#define UI_DISPLAY_MOJO_DISPLAY_TYPE_CONVERTERS_H_
 
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/display/display.h"
-#include "ui/mojo/display/mojo_display_export.h"
+#include "ui/display/mojo/mojo_display_export.h"
 
 namespace mojo {
 
@@ -19,4 +19,4 @@ struct MOJO_DISPLAY_EXPORT
 
 }  // namespace mojo
 
-#endif  // UI_MOJO_DISPLAY_DISPLAY_TYPE_CONVERTERS_H_
+#endif  // UI_DISPLAY_MOJO_DISPLAY_TYPE_CONVERTERS_H_

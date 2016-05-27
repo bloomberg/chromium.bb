@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/mojo/display/display_type_converters.h"
+#include "ui/display/mojo/display_type_converters.h"
 
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/mojo/geometry_type_converters.h"

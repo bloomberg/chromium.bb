@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_CONVERTERS_IME_MOJO_IME_EXPORT_H_
-#define MOJO_CONVERTERS_IME_MOJO_IME_EXPORT_H_
+#ifndef UI_PLATFORM_WINDOW_MOJO_MOJO_IME_EXPORT_H_
+#define UI_PLATFORM_WINDOW_MOJO_MOJO_IME_EXPORT_H_
 
 #if defined(COMPONENT_BUILD)
 
@@ -29,4 +29,4 @@
 #define MOJO_IME_EXPORT
 #endif
 
-#endif  // MOJO_CONVERTERS_IME_MOJO_IME_EXPORT_H_
+#endif  // UI_PLATFORM_WINDOW_MOJO_MOJO_IME_EXPORT_H_

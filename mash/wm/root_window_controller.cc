@@ -42,8 +42,8 @@
 #include "mash/wm/window_manager_application.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/shell/public/cpp/connector.h"
+#include "ui/display/mojo/display_type_converters.h"
 #include "ui/gfx/geometry/mojo/geometry_type_converters.h"
-#include "ui/mojo/display/display_type_converters.h"
 
 namespace mash {
 namespace wm {

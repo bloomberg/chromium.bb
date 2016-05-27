@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/converters/ime/ime_type_converters.h"
+#include "ui/platform_window/mojo/ime_type_converters.h"
 
 #include <stdint.h>
 

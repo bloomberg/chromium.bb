@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_MOJO_DISPLAY_MOJO_DISPLAY_EXPORT_H_
-#define UI_MOJO_DISPLAY_MOJO_DISPLAY_EXPORT_H_
+#ifndef UI_DISPLAY_MOJO_MOJO_DISPLAY_EXPORT_H_
+#define UI_DISPLAY_MOJO_MOJO_DISPLAY_EXPORT_H_
 
 #if defined(COMPONENT_BUILD)
 
@@ -29,4 +29,4 @@
 #define MOJO_DISPLAY_EXPORT
 #endif
 
-#endif  // UI_MOJO_DISPLAY_MOJO_DISPLAY_EXPORT_H_
+#endif  // UI_DISPLAY_MOJO_MOJO_DISPLAY_EXPORT_H_

@@ -2,18 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 # This target does NOT depend on skia. One can depend on this target to avoid
 # picking up a dependency on skia.
-component("ime") {
+component("mojo") {
   output_name = "mojo_ime_lib"
 
   public_deps = [
     "//ui/base/ime",
   ]
   deps = [
+    ":interfaces",
     "//base",
     "//mojo/public/c/system:for_component",
-    "//ui/mojo/ime:interfaces",
     "//ui/platform_window",
   ]
 
@@ -23,5 +25,11 @@ component("ime") {
     "ime_type_converters.cc",
     "ime_type_converters.h",
     "mojo_ime_export.h",
+  ]
+}
+
+mojom("interfaces") {
+  sources = [
+    "text_input_state.mojom",
   ]
 }

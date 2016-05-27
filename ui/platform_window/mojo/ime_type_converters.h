@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_CONVERTERS_IME_IME_TYPE_CONVERTERS_H_
-#define MOJO_CONVERTERS_IME_IME_TYPE_CONVERTERS_H_
+#ifndef UI_PLATFORM_WINDOW_MOJO_IME_TYPE_CONVERTERS_H_
+#define UI_PLATFORM_WINDOW_MOJO_IME_TYPE_CONVERTERS_H_
 
-#include "mojo/converters/ime/mojo_ime_export.h"
-#include "ui/mojo/ime/text_input_state.mojom.h"
+#include "ui/platform_window/mojo/mojo_ime_export.h"
+#include "ui/platform_window/mojo/text_input_state.mojom.h"
 #include "ui/platform_window/text_input_state.h"
 
 namespace mojo {
@@ -28,4 +28,4 @@ struct MOJO_IME_EXPORT TypeConverter<ui::TextInputState, TextInputStatePtr> {
 
 }  // namespace mojo
 
-#endif  // MOJO_CONVERTERS_IME_IME_TYPE_CONVERTERS_H_
+#endif  // UI_PLATFORM_WINDOW_MOJO_IME_TYPE_CONVERTERS_H_

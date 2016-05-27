@@ -13,8 +13,8 @@
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/shell_client.h"
 #include "ui/display/display.h"
+#include "ui/display/mojo/display_type_converters.h"
 #include "ui/gfx/geometry/mojo/geometry_type_converters.h"
-#include "ui/mojo/display/display_type_converters.h"
 
 namespace mus {
 namespace test {
