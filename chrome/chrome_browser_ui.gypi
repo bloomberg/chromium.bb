@@ -1437,6 +1437,8 @@
       'browser/ui/cocoa/browser_window_command_handler.h',
       'browser/ui/cocoa/browser_window_command_handler.mm',
       'browser/ui/cocoa/certificate_viewer_mac.mm',
+      'browser/ui/cocoa/chooser_content_view.h',
+      'browser/ui/cocoa/chooser_content_view.mm',
       'browser/ui/cocoa/chrome_command_dispatcher_delegate.h',
       'browser/ui/cocoa/chrome_command_dispatcher_delegate.mm',
       'browser/ui/cocoa/color_chooser_mac.mm',
