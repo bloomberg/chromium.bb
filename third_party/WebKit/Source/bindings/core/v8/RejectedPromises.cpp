@@ -90,7 +90,7 @@ public:
             executionContext->addConsoleMessage(consoleMessage);
         }
 
-        m_location.clear();
+        m_location.reset();
     }
 
     void revoke()
