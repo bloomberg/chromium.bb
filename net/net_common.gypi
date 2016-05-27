@@ -28,6 +28,7 @@
   ],
   'export_dependent_settings': [
     '../base/base.gyp:base',
+    '../third_party/boringssl/boringssl.gyp:boringssl',
   ],
   'conditions': [
     ['chromeos==1', {
