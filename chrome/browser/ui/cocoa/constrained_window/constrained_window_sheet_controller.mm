@@ -194,9 +194,13 @@ NSRect GetSheetParentBoundsForParentView(NSView* view) {
   [info showSheet];
 }
 
-- (void)hideSheet {
-  [[self findSheetInfoForParentView:activeView_] hideSheet];
-  activeView_.reset();
+- (void)hideSheet:(id<ConstrainedWindowSheet>)sheet {
+  ConstrainedWindowSheetInfo* info = [self findSheetInfoForSheet:sheet];
+  // Method can be called for already hidden sheet. http://crbug.com/589074.
+  if ([[info parentView] isEqual:activeView_]) {
+    [info hideSheet];
+    activeView_.reset();
+  }
 }
 
 - (void)hideSheetForFullscreenTransition {

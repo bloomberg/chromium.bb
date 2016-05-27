@@ -59,8 +59,8 @@ class WebContentsModalDialogHostCocoa;
 - (void)showSheet:(id<ConstrainedWindowSheet>)sheet
     forParentView:(NSView*)parentView;
 
-// Hides a sheet over the active view.
-- (void)hideSheet;
+// Hides |sheet| over the active view.
+- (void)hideSheet:(id<ConstrainedWindowSheet>)sheet;
 
 // Hides and unhides the sheet at the beginning and end of fullscreen
 // transition. |hideSheetForFullscreenTransition| gets called at the beginning

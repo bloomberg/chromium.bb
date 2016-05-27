@@ -145,7 +145,7 @@ void SingleWebContentsDialogManagerViewsMac::Hide() {
   NSWindow* parent_window =
       delegate_->GetWebContents()->GetTopLevelNativeWindow();
   [[ConstrainedWindowSheetController controllerForParentWindow:parent_window]
-      hideSheet];
+      hideSheet:sheet_];
 }
 
 void SingleWebContentsDialogManagerViewsMac::Close() {
