@@ -137,6 +137,14 @@ class PatchRejected(cros_patch.PatchException):
     return 'was rejected by the CQ.'
 
 
+class PatchNotEligible(cros_patch.PatchException):
+  """Raised if a patch was not eligible for transaction."""
+
+  def ShortExplanation(self):
+    return ('was not eligible (wrong manifest branch, wrong labels, or '
+            'otherwise filtered from eligible set).')
+
+
 class PatchFailedToSubmit(cros_patch.PatchException):
   """Raised if we fail to submit a change."""
 
@@ -443,6 +451,10 @@ class PatchSeries(object):
     Returns:
       A sequence of cros_patch.GitRepoPatch instances (or derivatives) that
       need to be resolved for this change to be mergable.
+
+    Raises:
+      Some variety of cros_patch.PatchException if an unsatisfiable required
+      dependency is encountered.
     """
     unsatisfied = []
     for dep in deps:
@@ -468,7 +480,7 @@ class PatchSeries(object):
         if self._is_submitting:
           raise PatchRejected(dep_change)
         else:
-          raise dep_change.GetMergeException() or PatchRejected(dep_change)
+          raise dep_change.GetMergeException() or PatchNotEligible(dep_change)
 
       unsatisfied.append(dep_change)
 
