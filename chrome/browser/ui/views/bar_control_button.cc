@@ -19,15 +19,13 @@ const int kButtonExtraTouchSize = 4;
 }  // namespace
 
 BarControlButton::BarControlButton(views::ButtonListener* listener)
-    : views::ImageButton(listener),
-      id_(gfx::VectorIconId::VECTOR_ICON_NONE),
-      ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)) {
-  set_ink_drop_delegate(ink_drop_delegate_.get());
+    : views::ImageButton(listener), id_(gfx::VectorIconId::VECTOR_ICON_NONE) {
+  set_ink_drop_delegate(
+      base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
   set_has_ink_drop_action_on_click(true);
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
   SetFocusPainter(nullptr);
-  UseMdFocusRing();
 }
 
 BarControlButton::~BarControlButton() {}

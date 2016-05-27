@@ -429,18 +429,19 @@ class InkDropLabelButton : public LabelButton {
  public:
   InkDropLabelButton()
       : LabelButton(nullptr, base::string16()),
-        test_ink_drop_delegate_(this, this) {
-    set_ink_drop_delegate(&test_ink_drop_delegate_);
+        test_ink_drop_delegate_(new TestButtonInkDropDelegate(this, this)) {
+    set_ink_drop_delegate(base::WrapUnique(test_ink_drop_delegate_));
   }
 
   ~InkDropLabelButton() override {}
 
   TestButtonInkDropDelegate* test_ink_drop_delegate() {
-    return &test_ink_drop_delegate_;
+    return test_ink_drop_delegate_;
   }
 
  private:
-  TestButtonInkDropDelegate test_ink_drop_delegate_;
+  // Weak pointer.
+  TestButtonInkDropDelegate* test_ink_drop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(InkDropLabelButton);
 };

@@ -6,6 +6,7 @@
 
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/animation/square_ink_drop_ripple.h"
 
@@ -30,9 +31,13 @@ gfx::Size CalculateLargeInkDropSize(const gfx::Size small_size) {
 const int InkDropHostView::kInkDropSmallCornerRadius = 2;
 
 InkDropHostView::InkDropHostView()
-    : ink_drop_size_(kInkDropSize, kInkDropSize) {}
+    : ink_drop_size_(kInkDropSize, kInkDropSize), destroying_(false) {}
 
-InkDropHostView::~InkDropHostView() {}
+InkDropHostView::~InkDropHostView() {
+  // TODO(bruthig): Improve InkDropImpl to be safer about calling back to
+  // potentially destroyed InkDropHosts and remove |destroying_|.
+  destroying_ = true;
+}
 
 void InkDropHostView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   SetPaintToLayer(true);
@@ -42,6 +47,11 @@ void InkDropHostView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
 }
 
 void InkDropHostView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  // No need to do anything when called during shutdown, and if a derived
+  // class has overridden Add/RemoveInkDropLayer, running this implementation
+  // would be wrong.
+  if (destroying_)
+    return;
   layer()->Remove(ink_drop_layer);
   SetPaintToLayer(false);
 }
@@ -62,6 +72,18 @@ std::unique_ptr<InkDropHover> InkDropHostView::CreateInkDropHover() const {
   return hover;
 }
 
+void InkDropHostView::OnFocus() {
+  views::View::OnFocus();
+  if (ink_drop_delegate() && ShouldShowInkDropForFocus())
+    ink_drop_delegate()->GetInkDrop()->SetFocused(true);
+}
+
+void InkDropHostView::OnBlur() {
+  views::View::OnBlur();
+  if (ink_drop_delegate() && ShouldShowInkDropForFocus())
+    ink_drop_delegate()->GetInkDrop()->SetFocused(false);
+}
+
 gfx::Point InkDropHostView::GetInkDropCenter() const {
   return GetLocalBounds().CenterPoint();
 }
@@ -69,6 +91,10 @@ gfx::Point InkDropHostView::GetInkDropCenter() const {
 SkColor InkDropHostView::GetInkDropBaseColor() const {
   NOTREACHED();
   return gfx::kPlaceholderColor;
+}
+
+bool InkDropHostView::ShouldShowInkDropForFocus() const {
+  return false;
 }
 
 }  // namespace views

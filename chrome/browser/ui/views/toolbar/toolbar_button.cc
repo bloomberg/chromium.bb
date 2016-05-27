@@ -37,11 +37,13 @@ ToolbarButton::ToolbarButton(Profile* profile,
       model_(model),
       menu_showing_(false),
       y_position_on_lbuttondown_(0),
-      ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)),
       show_menu_factory_(this) {
-  set_ink_drop_delegate(ink_drop_delegate_.get());
+  set_ink_drop_delegate(
+      base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
   set_has_ink_drop_action_on_click(true);
   set_context_menu_controller(this);
+  if (ui::MaterialDesignController::IsModeMaterial())
+    SetFocusPainter(nullptr);
 }
 
 ToolbarButton::~ToolbarButton() {}

@@ -21,12 +21,17 @@ BubbleIconView::BubbleIconView(CommandUpdater* command_updater, int command_id)
       command_updater_(command_updater),
       command_id_(command_id),
       active_(false),
-      suppress_mouse_released_action_(false),
-      ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)) {
+      suppress_mouse_released_action_(false) {
   AddChildView(image_);
   image_->set_interactive(false);
   image_->EnableCanvasFlippingForRTLUI(true);
-  image_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+  if (ui::MaterialDesignController::IsModeMaterial())
+    SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+  else
+    image_->SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+
+  set_ink_drop_delegate(
+      base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
 }
 
 BubbleIconView::~BubbleIconView() {}
@@ -72,7 +77,7 @@ bool BubbleIconView::OnMousePressed(const ui::MouseEvent& event) {
   // If the bubble is showing then don't reshow it when the mouse is released.
   suppress_mouse_released_action_ = IsBubbleShowing();
   if (!suppress_mouse_released_action_ && event.IsOnlyLeftMouseButton())
-    ink_drop_delegate_->OnAction(views::InkDropState::ACTION_PENDING);
+    ink_drop_delegate()->OnAction(views::InkDropState::ACTION_PENDING);
 
   // We want to show the bubble on mouse release; that is the standard behavior
   // for buttons.
@@ -92,8 +97,8 @@ void BubbleIconView::OnMouseReleased(const ui::MouseEvent& event) {
     return;
 
   const bool activated = HitTestPoint(event.location());
-  ink_drop_delegate_->OnAction(activated ? views::InkDropState::ACTIVATED
-                                         : views::InkDropState::HIDDEN);
+  ink_drop_delegate()->OnAction(activated ? views::InkDropState::ACTIVATED
+                                          : views::InkDropState::HIDDEN);
   if (activated)
     ExecuteCommand(EXECUTE_SOURCE_MOUSE);
   OnPressed(activated);
@@ -103,7 +108,7 @@ bool BubbleIconView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() != ui::VKEY_RETURN && event.key_code() != ui::VKEY_SPACE)
     return false;
 
-  ink_drop_delegate_->OnAction(views::InkDropState::ACTIVATED);
+  ink_drop_delegate()->OnAction(views::InkDropState::ACTIVATED);
   // As with CustomButton, return activates on key down and space activates on
   // key up.
   if (event.key_code() == ui::VKEY_RETURN)
@@ -144,7 +149,7 @@ void BubbleIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 std::unique_ptr<views::InkDropHover> BubbleIconView::CreateInkDropHover()
     const {
   // BubbleIconView views don't show hover effect.
-  return nullptr;
+  return HasFocus() ? InkDropHostView::CreateInkDropHover() : nullptr;
 }
 
 SkColor BubbleIconView::GetInkDropBaseColor() const {
@@ -152,9 +157,13 @@ SkColor BubbleIconView::GetInkDropBaseColor() const {
       ui::NativeTheme::kColorId_TextfieldDefaultColor));
 }
 
+bool BubbleIconView::ShouldShowInkDropForFocus() const {
+  return true;
+}
+
 void BubbleIconView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
-    ink_drop_delegate_->OnAction(views::InkDropState::ACTIVATED);
+    ink_drop_delegate()->OnAction(views::InkDropState::ACTIVATED);
     ExecuteCommand(EXECUTE_SOURCE_GESTURE);
     event->SetHandled();
   }
@@ -168,7 +177,7 @@ void BubbleIconView::OnWidgetVisibilityChanged(views::Widget* widget,
                                                bool visible) {
   // |widget| is a bubble that has just got shown / hidden.
   if (!visible)
-    ink_drop_delegate_->OnAction(views::InkDropState::DEACTIVATED);
+    ink_drop_delegate()->OnAction(views::InkDropState::DEACTIVATED);
 }
 
 void BubbleIconView::ExecuteCommand(ExecuteSource source) {

@@ -28,5 +28,9 @@ InkDropState TestInkDropDelegate::GetTargetInkDropState() const {
   return state_;
 }
 
+InkDrop* TestInkDropDelegate::GetInkDrop() {
+  return nullptr;
+}
+
 }  // namespace test
 }  // namespace views

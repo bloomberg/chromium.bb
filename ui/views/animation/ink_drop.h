@@ -47,6 +47,9 @@ class VIEWS_EXPORT InkDrop {
   // Enables or disables the hover state.
   virtual void SetHovered(bool is_hovered) = 0;
 
+  // Enables or disables the focus state.
+  virtual void SetFocused(bool is_focused) = 0;
+
  protected:
   InkDrop() {}
 

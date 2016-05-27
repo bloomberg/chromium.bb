@@ -62,6 +62,30 @@ TEST_F(InkDropImplTest, SetHoveredIsFadingInOrVisible) {
   EXPECT_FALSE(test_api_.IsHoverFadingInOrVisible());
 }
 
+TEST_F(InkDropImplTest, FocusAndHoverAtSameTime) {
+  ink_drop_host_.set_should_show_hover(true);
+  EXPECT_FALSE(test_api_.IsHoverFadingInOrVisible());
+
+  ink_drop_.SetFocused(true);
+  EXPECT_TRUE(test_api_.IsHoverFadingInOrVisible());
+
+  test_api_.CompleteAnimations();
+  ink_drop_.SetHovered(false);
+  EXPECT_TRUE(test_api_.IsHoverFadingInOrVisible());
+
+  test_api_.CompleteAnimations();
+  ink_drop_.SetHovered(true);
+  EXPECT_TRUE(test_api_.IsHoverFadingInOrVisible());
+
+  test_api_.CompleteAnimations();
+  ink_drop_.SetFocused(false);
+  EXPECT_TRUE(test_api_.IsHoverFadingInOrVisible());
+
+  test_api_.CompleteAnimations();
+  ink_drop_.SetHovered(false);
+  EXPECT_FALSE(test_api_.IsHoverFadingInOrVisible());
+}
+
 TEST_F(InkDropImplTest, HoverDoesntFadeInAfterAnimationIfHoverNotSet) {
   ink_drop_host_.set_should_show_hover(true);
   ink_drop_.SetHovered(false);

@@ -45,6 +45,7 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
   void AnimateToState(InkDropState ink_drop_state) override;
   void SnapToActivated() override;
   void SetHovered(bool is_hovered) override;
+  void SetFocused(bool is_focused) override;
 
  private:
   friend class test::InkDropImplTestApi;
@@ -89,13 +90,16 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
   void AnimationEnded(InkDropHover::AnimationType animation_type,
                       InkDropAnimationEndedReason reason) override;
 
-  // Enables or disables the hover state based on |is_hovered| and if an
+  // Enables or disables the hover state based on |should_highlight| and if an
   // animation is triggered it will be scheduled to have the given
   // |animation_duration|. If |explode| is true the hover will expand as it
-  // fades out. |explode| is ignored when |is_hovered| is true.
-  void SetHoveredInternal(bool is_hovered,
-                          base::TimeDelta animation_duration,
-                          bool explode);
+  // fades out. |explode| is ignored when |should_higlight| is true.
+  void SetHighlight(bool should_highlight,
+                    base::TimeDelta animation_duration,
+                    bool explode);
+
+  // Returns true if this ink drop is hovered or focused.
+  bool ShouldHighlight() const;
 
   // Starts the |hover_after_ripple_timer_| timer. This will stop the current
   // |hover_after_ripple_timer_| instance if it exists.
@@ -125,6 +129,10 @@ class VIEWS_EXPORT InkDropImpl : public InkDrop,
   // Tracks the logical hovered state of |this| as manipulated by the public
   // SetHovered() function.
   bool is_hovered_;
+
+  // Tracks the logical focused state of |this| as manipulated by the public
+  // SetFocused() function.
+  bool is_focused_;
 
   // The current InkDropRipple. Created on demand using CreateInkDropRipple().
   std::unique_ptr<InkDropRipple> ink_drop_ripple_;

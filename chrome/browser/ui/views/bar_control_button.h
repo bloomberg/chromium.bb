@@ -39,9 +39,6 @@ class BarControlButton : public views::ImageButton {
   gfx::VectorIconId id_;
   base::Callback<SkColor(void)> get_text_color_callback_;
 
-  // Controls the visual feedback for the button state.
-  std::unique_ptr<views::InkDropDelegate> ink_drop_delegate_;
-
   DISALLOW_COPY_AND_ASSIGN(BarControlButton);
 };
 

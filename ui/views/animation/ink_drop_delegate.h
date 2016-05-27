@@ -16,6 +16,8 @@ class Event;
 
 namespace views {
 
+class InkDrop;
+
 // Ink ripple animation delegate that starts and stops animations based on
 // View states and events.
 class VIEWS_EXPORT InkDropDelegate {
@@ -37,6 +39,10 @@ class VIEWS_EXPORT InkDropDelegate {
 
   // Returns the current InkDropState
   virtual InkDropState GetTargetInkDropState() const = 0;
+
+  // Returns the ink drop that this delegate controls. TODO(estade): remove the
+  // above pass throughs and convert callers to using this function.
+  virtual InkDrop* GetInkDrop() = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDropDelegate);

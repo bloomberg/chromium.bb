@@ -37,9 +37,6 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   static const CustomButton* AsCustomButton(const View* view);
   static CustomButton* AsCustomButton(View* view);
 
-  // Paint an MD-style focus ring on the given canvas at the given bounds.
-  static void PaintMdFocusRing(gfx::Canvas* canvas, View* view);
-
   ~CustomButton() override;
 
   // Get/sets the current display state of the button.
@@ -119,14 +116,11 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // Overridden from gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
 
-  InkDropDelegate* ink_drop_delegate() const { return ink_drop_delegate_; }
-
   // Overridden from View:
-  void Layout() override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
-  void OnFocus() override;
   void OnBlur() override;
+  bool ShouldShowInkDropForFocus() const override;
 
  protected:
   // Construct the Button with a Listener. See comment for Button's ctor.
@@ -160,13 +154,6 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // state). This does not take into account enabled state.
   bool ShouldEnterHoveredState();
 
-  void set_ink_drop_delegate(InkDropDelegate* ink_drop_delegate) {
-    ink_drop_delegate_ = ink_drop_delegate;
-  }
-
-  // When called, creates and uses |md_focus_ring_| instead of a focus painter.
-  void UseMdFocusRing();
-
   // Overridden from Button:
   void NotifyClick(const ui::Event& event) override;
   void OnClickCanceled(const ui::Event& event) override;
@@ -192,11 +179,6 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // See description above setter.
   bool request_focus_on_press_;
 
-  // Animation delegate for the ink drop ripple effect. It is owned by a
-  // descendant class and needs to be reset before an instance of the concrete
-  // CustomButton is destroyed.
-  InkDropDelegate* ink_drop_delegate_;
-
   // The event on which the button should notify its listener.
   NotifyAction notify_action_;
 
@@ -205,7 +187,7 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
   // TODO(bruthig): Use an InkDropAction enum and drop the flag.
   bool has_ink_drop_action_on_click_;
 
-  // The animation action to trigger on the |ink_drop_delegate_| when the button
+  // The animation action to trigger on ink_drop_delegate() when the button
   // is clicked.
   InkDropState ink_drop_action_on_click_;
 
@@ -215,11 +197,6 @@ class VIEWS_EXPORT CustomButton : public Button, public gfx::AnimationDelegate {
 
   // The color of the ripple and hover.
   SkColor ink_drop_base_color_;
-
-  // The MD-style focus ring. This is not done via a FocusPainter
-  // because it needs to paint to a layer so it can extend beyond the bounds of
-  // |this|.
-  views::View* md_focus_ring_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomButton);
 };

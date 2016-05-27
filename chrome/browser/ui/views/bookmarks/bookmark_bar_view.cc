@@ -204,9 +204,10 @@ class BookmarkButtonBase : public views::LabelButton {
  public:
   BookmarkButtonBase(views::ButtonListener* listener,
                      const base::string16& title)
-      : LabelButton(listener, title), ink_drop_delegate_(this, this) {
+      : LabelButton(listener, title) {
     SetElideBehavior(kElideBehavior);
-    set_ink_drop_delegate(&ink_drop_delegate_);
+    set_ink_drop_delegate(
+        base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
     set_has_ink_drop_action_on_click(true);
     show_animation_.reset(new gfx::SlideAnimation(this));
     if (!animations_enabled) {
@@ -261,8 +262,6 @@ class BookmarkButtonBase : public views::LabelButton {
  private:
   std::unique_ptr<gfx::SlideAnimation> show_animation_;
 
-  // Controls the visual feedback for the button state.
-  views::ButtonInkDropDelegate ink_drop_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkButtonBase);
 };
@@ -332,9 +331,9 @@ class BookmarkMenuButtonBase : public views::MenuButton {
   BookmarkMenuButtonBase(const base::string16& title,
                          views::MenuButtonListener* menu_button_listener,
                          bool show_menu_marker)
-      : MenuButton(title, menu_button_listener, show_menu_marker),
-        ink_drop_delegate_(this, this) {
-    set_ink_drop_delegate(&ink_drop_delegate_);
+      : MenuButton(title, menu_button_listener, show_menu_marker) {
+    set_ink_drop_delegate(
+        base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
@@ -358,9 +357,6 @@ class BookmarkMenuButtonBase : public views::MenuButton {
   }
 
  private:
-  // Controls the visual feedback for the button state.
-  views::ButtonInkDropDelegate ink_drop_delegate_;
-
   DISALLOW_COPY_AND_ASSIGN(BookmarkMenuButtonBase);
 };
 

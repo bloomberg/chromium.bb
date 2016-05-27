@@ -36,11 +36,18 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   static MdTextButton* CreateMdButton(ButtonListener* listener,
                                       const base::string16& text);
 
+  // Paint an MD-style focus ring on the given canvas at the given bounds.
+  static void PaintMdFocusRing(gfx::Canvas* canvas, View* view);
+
   void SetCallToAction(CallToAction cta);
 
   // LabelButton:
+  void Layout() override;
+  void OnFocus() override;
+  void OnBlur() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   SkColor GetInkDropBaseColor() const override;
+  bool ShouldShowInkDropForFocus() const override;
   void SetText(const base::string16& text) override;
   void UpdateStyleToIndicateDefaultStatus() override;
 
@@ -50,7 +57,10 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
 
   void UpdateColorsFromNativeTheme();
 
-  ButtonInkDropDelegate ink_drop_delegate_;
+  // The MD-style focus ring. This is not done via a FocusPainter
+  // because it needs to paint to a layer so it can extend beyond the bounds of
+  // |this|.
+  views::View* focus_ring_;
 
   // The call to action style for this button.
   CallToAction cta_;

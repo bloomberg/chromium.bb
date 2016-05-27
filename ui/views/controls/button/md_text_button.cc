@@ -6,6 +6,7 @@
 
 #include "base/i18n/case_conversion.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -16,6 +17,31 @@
 namespace views {
 
 namespace {
+
+// The amount to enlarge the focus border in all directions relative to the
+// button.
+const int kFocusBorderOutset = -2;
+
+// The corner radius of the focus border roundrect.
+const int kFocusBorderCornerRadius = 3;
+
+class MdFocusRing : public views::View {
+ public:
+  MdFocusRing() {
+    SetPaintToLayer(true);
+    layer()->SetFillsBoundsOpaquely(false);
+  }
+  ~MdFocusRing() override {}
+
+  bool CanProcessEventsWithinSubtree() const override { return false; }
+
+  void OnPaint(gfx::Canvas* canvas) override {
+    MdTextButton::PaintMdFocusRing(canvas, this);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MdFocusRing);
+};
 
 // Inset between clickable region border and button contents (text).
 const int kHorizontalPadding = 12;
@@ -78,12 +104,42 @@ MdTextButton* MdTextButton::CreateMdButton(ButtonListener* listener,
   return button;
 }
 
+// static
+void MdTextButton::PaintMdFocusRing(gfx::Canvas* canvas, views::View* view) {
+  SkPaint paint;
+  paint.setAntiAlias(true);
+  paint.setColor(view->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_CallToActionColor));
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(1);
+  gfx::RectF rect(view->GetLocalBounds());
+  rect.Inset(gfx::InsetsF(0.5));
+  canvas->DrawRoundRect(rect, kFocusBorderCornerRadius, paint);
+}
+
 void MdTextButton::SetCallToAction(CallToAction cta) {
   if (cta_ == cta)
     return;
 
   cta_ = cta;
   UpdateColorsFromNativeTheme();
+}
+
+void MdTextButton::Layout() {
+  LabelButton::Layout();
+  gfx::Rect focus_bounds = GetLocalBounds();
+  focus_bounds.Inset(gfx::Insets(kFocusBorderOutset));
+  focus_ring_->SetBoundsRect(focus_bounds);
+}
+
+void MdTextButton::OnFocus() {
+  LabelButton::OnFocus();
+  focus_ring_->SetVisible(true);
+}
+
+void MdTextButton::OnBlur() {
+  LabelButton::OnBlur();
+  focus_ring_->SetVisible(false);
 }
 
 void MdTextButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
@@ -93,6 +149,11 @@ void MdTextButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 
 SkColor MdTextButton::GetInkDropBaseColor() const {
   return color_utils::DeriveDefaultIconColor(label()->enabled_color());
+}
+
+bool MdTextButton::ShouldShowInkDropForFocus() const {
+  // These types of button use |focus_ring_|.
+  return false;
 }
 
 void MdTextButton::SetText(const base::string16& text) {
@@ -110,16 +171,20 @@ void MdTextButton::UpdateStyleToIndicateDefaultStatus() {
 
 MdTextButton::MdTextButton(ButtonListener* listener)
     : LabelButton(listener, base::string16()),
-      ink_drop_delegate_(this, this),
+      focus_ring_(new MdFocusRing()),
       cta_(NO_CALL_TO_ACTION) {
-  set_ink_drop_delegate(&ink_drop_delegate_);
+  set_ink_drop_delegate(
+      base::WrapUnique(new ButtonInkDropDelegate(this, this)));
   set_has_ink_drop_action_on_click(true);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetFocusForPlatform();
   SetMinSize(gfx::Size(kMinWidth, 0));
   SetFocusPainter(nullptr);
-  UseMdFocusRing();
   label()->SetAutoColorReadabilityEnabled(false);
+
+  AddChildView(focus_ring_);
+  focus_ring_->SetVisible(false);
+  set_request_focus_on_press(false);
 }
 
 MdTextButton::~MdTextButton() {}

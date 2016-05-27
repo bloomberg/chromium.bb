@@ -39,6 +39,10 @@ InkDropState ButtonInkDropDelegate::GetTargetInkDropState() const {
   return ink_drop_->GetTargetInkDropState();
 }
 
+InkDrop* ButtonInkDropDelegate::GetInkDrop() {
+  return ink_drop_.get();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ui::EventHandler:
 

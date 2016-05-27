@@ -114,6 +114,7 @@ class TestInkDropDelegateThatTracksVisibilty : public TestInkDropDelegate {
   void SnapToActivated() override { *ink_shown_ = true; }
 
   void SetHovered(bool is_hovered) override {}
+  InkDrop* GetInkDrop() override { return nullptr; }
 
  private:
   bool* ink_shown_;
@@ -126,14 +127,12 @@ class TestInkDropDelegateThatTracksVisibilty : public TestInkDropDelegate {
 class TestButtonWithInkDrop : public TestCustomButton {
  public:
   TestButtonWithInkDrop(std::unique_ptr<InkDropDelegate> ink_drop_delegate)
-      : TestCustomButton(), ink_drop_delegate_(std::move(ink_drop_delegate)) {
-    set_ink_drop_delegate(ink_drop_delegate_.get());
+      : TestCustomButton() {
+    set_ink_drop_delegate(std::move(ink_drop_delegate));
   }
   ~TestButtonWithInkDrop() override {}
 
  private:
-  std::unique_ptr<views::InkDropDelegate> ink_drop_delegate_;
-
   DISALLOW_COPY_AND_ASSIGN(TestButtonWithInkDrop);
 };
 

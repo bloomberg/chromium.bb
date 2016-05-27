@@ -116,17 +116,14 @@ class ToastOverlayButton : public views::LabelButton {
  private:
   friend class ToastOverlay;  // for ToastOverlay::ClickDismissButtonForTesting.
 
-  // Controls the visual feedback for the button state.
-  std::unique_ptr<views::InkDropDelegate> ink_drop_delegate_;
-
   DISALLOW_COPY_AND_ASSIGN(ToastOverlayButton);
 };
 
 ToastOverlayButton::ToastOverlayButton(views::ButtonListener* listener,
                                        const base::string16& text)
-    : views::LabelButton(listener, text),
-      ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)) {
-  set_ink_drop_delegate(ink_drop_delegate_.get());
+    : views::LabelButton(listener, text) {
+  set_ink_drop_delegate(
+      base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
   set_has_ink_drop_action_on_click(true);
   set_ink_drop_base_color(SK_ColorWHITE);
 

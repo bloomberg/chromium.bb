@@ -21,37 +21,22 @@ namespace {
 // not enabled.
 class InkDropStub : public InkDrop {
  public:
-  explicit InkDropStub();
-  ~InkDropStub() override;
+  InkDropStub() {}
+  ~InkDropStub() override {}
 
   // InkDrop:
-  InkDropState GetTargetInkDropState() const override;
-  bool IsVisible() const override;
-  void AnimateToState(InkDropState state) override;
-  void SnapToActivated() override;
-  void SetHovered(bool is_hovered) override;
+  InkDropState GetTargetInkDropState() const override {
+    return InkDropState::HIDDEN;
+  }
+  bool IsVisible() const override { return false; }
+  void AnimateToState(InkDropState state) override {}
+  void SnapToActivated() override {}
+  void SetHovered(bool is_hovered) override {}
+  void SetFocused(bool is_hovered) override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InkDropStub);
 };
-
-InkDropStub::InkDropStub() {}
-
-InkDropStub::~InkDropStub() {}
-
-InkDropState InkDropStub::GetTargetInkDropState() const {
-  return InkDropState::HIDDEN;
-}
-
-bool InkDropStub::IsVisible() const {
-  return false;
-}
-
-void InkDropStub::AnimateToState(InkDropState state) {}
-
-void InkDropStub::SnapToActivated() {}
-
-void InkDropStub::SetHovered(bool is_hovered) {}
 
 }  // namespace
 

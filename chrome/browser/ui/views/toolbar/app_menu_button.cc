@@ -41,9 +41,9 @@ AppMenuButton::AppMenuButton(ToolbarView* toolbar_view)
       allow_extension_dragging_(
           extensions::FeatureSwitch::extension_action_redesign()->IsEnabled()),
       margin_trailing_(0),
-      ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)),
       weak_factory_(this) {
-  set_ink_drop_delegate(ink_drop_delegate_.get());
+  set_ink_drop_delegate(
+      base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
   if (!ui::MaterialDesignController::IsModeMaterial())
     icon_painter_.reset(new AppMenuIconPainter(this));
 }
@@ -160,9 +160,12 @@ void AppMenuButton::SetTrailingMargin(int margin) {
 
   UpdateThemedBorder();
 
-  const int inset = LabelButton::kFocusRectInset;
-  SetFocusPainter(views::Painter::CreateDashedFocusPainterWithInsets(
-      gfx::Insets(inset, inset, inset, inset + margin)));
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    const int inset = LabelButton::kFocusRectInset;
+    SetFocusPainter(views::Painter::CreateDashedFocusPainterWithInsets(
+        gfx::Insets(inset, inset, inset, inset + margin)));
+  }
+
   InvalidateLayout();
 }
 

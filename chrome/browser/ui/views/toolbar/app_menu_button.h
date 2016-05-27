@@ -112,9 +112,6 @@ class AppMenuButton : public views::MenuButton,
   // a maximized state to extend to the full window width.
   int margin_trailing_;
 
-  // Controls the visual feedback for the button state.
-  std::unique_ptr<views::InkDropDelegate> ink_drop_delegate_;
-
   // Used to spawn weak pointers for delayed tasks to open the overflow menu.
   base::WeakPtrFactory<AppMenuButton> weak_factory_;
 

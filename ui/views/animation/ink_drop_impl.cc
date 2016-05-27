@@ -55,6 +55,7 @@ InkDropImpl::InkDropImpl(InkDropHost* ink_drop_host)
       root_layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
       root_layer_added_to_host_(false),
       is_hovered_(false),
+      is_focused_(false),
       hover_after_ripple_timer_(nullptr) {
   root_layer_->set_name("InkDropImpl:RootLayer");
 }
@@ -82,9 +83,9 @@ void InkDropImpl::AnimateToState(InkDropState ink_drop_state) {
     CreateInkDropRipple();
 
   if (ink_drop_state != views::InkDropState::HIDDEN) {
-    SetHoveredInternal(false, base::TimeDelta::FromMilliseconds(
-                                  kHoverFadeOutBeforeRippleDurationInMs),
-                       true);
+    SetHighlight(false, base::TimeDelta::FromMilliseconds(
+                            kHoverFadeOutBeforeRippleDurationInMs),
+                 true);
   }
 
   ink_drop_ripple_->AnimateToState(ink_drop_state);
@@ -95,19 +96,24 @@ void InkDropImpl::SnapToActivated() {
   if (!ink_drop_ripple_)
     CreateInkDropRipple();
 
-  SetHoveredInternal(false, base::TimeDelta(), false);
+  SetHighlight(false, base::TimeDelta(), false);
 
   ink_drop_ripple_->SnapToActivated();
 }
 
 void InkDropImpl::SetHovered(bool is_hovered) {
   is_hovered_ = is_hovered;
-  SetHoveredInternal(is_hovered,
-                     is_hovered ? base::TimeDelta::FromMilliseconds(
-                                      kHoverFadeInFromUserInputDurationInMs)
-                                : base::TimeDelta::FromMilliseconds(
-                                      kHoverFadeOutFromUserInputDurationInMs),
-                     false);
+  SetHighlight(ShouldHighlight(),
+               ShouldHighlight() ? base::TimeDelta::FromMilliseconds(
+                                       kHoverFadeInFromUserInputDurationInMs)
+                                 : base::TimeDelta::FromMilliseconds(
+                                       kHoverFadeOutFromUserInputDurationInMs),
+               false);
+}
+
+void InkDropImpl::SetFocused(bool is_focused) {
+  is_focused_ = is_focused;
+  SetHighlight(ShouldHighlight(), base::TimeDelta(), false);
 }
 
 void InkDropImpl::DestroyHiddenTargetedAnimations() {
@@ -208,21 +214,25 @@ void InkDropImpl::AnimationEnded(InkDropHover::AnimationType animation_type,
   }
 }
 
-void InkDropImpl::SetHoveredInternal(bool is_hovered,
-                                     base::TimeDelta animation_duration,
-                                     bool explode) {
+void InkDropImpl::SetHighlight(bool should_highlight,
+                               base::TimeDelta animation_duration,
+                               bool explode) {
   StopHoverAfterRippleTimer();
 
-  if (IsHoverFadingInOrVisible() == is_hovered)
+  if (IsHoverFadingInOrVisible() == should_highlight)
     return;
 
-  if (is_hovered) {
+  if (should_highlight) {
     CreateInkDropHover();
     if (hover_ && !IsVisible())
       hover_->FadeIn(animation_duration);
   } else {
     hover_->FadeOut(animation_duration, explode);
   }
+}
+
+bool InkDropImpl::ShouldHighlight() const {
+  return is_focused_ || is_hovered_;
 }
 
 void InkDropImpl::StartHoverAfterRippleTimer() {
@@ -244,9 +254,9 @@ void InkDropImpl::StopHoverAfterRippleTimer() {
 }
 
 void InkDropImpl::HoverAfterRippleTimerFired() {
-  SetHoveredInternal(true, base::TimeDelta::FromMilliseconds(
-                               kHoverFadeInAfterRippleDurationInMs),
-                     true);
+  SetHighlight(true, base::TimeDelta::FromMilliseconds(
+                         kHoverFadeInAfterRippleDurationInMs),
+               true);
   hover_after_ripple_timer_.reset();
 }
 

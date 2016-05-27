@@ -164,8 +164,6 @@ class ToolbarActionView : public views::MenuButton,
   // The time the popup was last closed.
   base::TimeTicks popup_closed_time_;
 
-  std::unique_ptr<views::InkDropDelegate> ink_drop_delegate_;
-
   base::WeakPtrFactory<ToolbarActionView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolbarActionView);

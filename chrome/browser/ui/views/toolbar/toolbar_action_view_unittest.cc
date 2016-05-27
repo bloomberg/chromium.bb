@@ -138,11 +138,6 @@ class TestToolbarActionView : public ToolbarActionView {
 
   ~TestToolbarActionView() override {}
 
-  // Accessors to protected ToolbarActionView methods.
-  void set_ink_drop_delegate(views::InkDropDelegate* ink_drop_delegate) {
-    ToolbarActionView::set_ink_drop_delegate(ink_drop_delegate);
-  }
-
  private:
   DISALLOW_COPY_AND_ASSIGN(TestToolbarActionView);
 };

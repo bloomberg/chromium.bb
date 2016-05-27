@@ -61,9 +61,9 @@ ToolbarActionView::ToolbarActionView(
       called_register_command_(false),
       wants_to_run_(false),
       menu_(nullptr),
-      ink_drop_delegate_(new views::ButtonInkDropDelegate(this, this)),
       weak_factory_(this) {
-  set_ink_drop_delegate(ink_drop_delegate_.get());
+  set_ink_drop_delegate(
+      base::WrapUnique(new views::ButtonInkDropDelegate(this, this)));
   set_has_ink_drop_action_on_click(true);
   set_id(VIEW_ID_BROWSER_ACTION);
   view_controller_->SetDelegate(this);

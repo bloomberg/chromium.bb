@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -107,8 +108,10 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
   label_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
 
   // Inset the button focus rect from the actual border; roughly match Windows.
-  SetFocusPainter(Painter::CreateDashedFocusPainterWithInsets(gfx::Insets(
-      kFocusRectInset, kFocusRectInset, kFocusRectInset, kFocusRectInset)));
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    SetFocusPainter(Painter::CreateDashedFocusPainterWithInsets(gfx::Insets(
+        kFocusRectInset, kFocusRectInset, kFocusRectInset, kFocusRectInset)));
+  }
 }
 
 LabelButton::~LabelButton() {}
