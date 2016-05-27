@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/default_style.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -378,7 +379,7 @@ void Label::OnPaint(gfx::Canvas* canvas) {
   } else {
     PaintText(canvas);
   }
-  if (HasFocus())
+  if (HasFocus() && !ui::MaterialDesignController::IsSecondaryUiMaterial())
     canvas->DrawFocusRect(GetFocusBounds());
 }
 

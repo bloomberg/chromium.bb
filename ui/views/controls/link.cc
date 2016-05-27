@@ -142,12 +142,14 @@ void Link::OnEnabledChanged() {
 
 void Link::OnFocus() {
   Label::OnFocus();
+  RecalculateFont();
   // We render differently focused.
   SchedulePaint();
 }
 
 void Link::OnBlur() {
   Label::OnBlur();
+  RecalculateFont();
   // We render differently focused.
   SchedulePaint();
 }
@@ -210,10 +212,15 @@ void Link::SetPressed(bool pressed) {
 }
 
 void Link::RecalculateFont() {
-  // Underline the link iff it is enabled and |underline_| is true.
+  // Underline the link if it is enabled and |underline_| is true. Also
+  // underline to indicate focus in MD.
   const int style = font_list().GetFontStyle();
-  const int intended_style = (enabled() && underline_) ?
+  const bool underline =
+      underline_ ||
+      (HasFocus() && ui::MaterialDesignController::IsSecondaryUiMaterial());
+  const int intended_style = (enabled() && underline) ?
       (style | gfx::Font::UNDERLINE) : (style & ~gfx::Font::UNDERLINE);
+
   if (style != intended_style)
     Label::SetFontList(font_list().DeriveWithStyle(intended_style));
 }

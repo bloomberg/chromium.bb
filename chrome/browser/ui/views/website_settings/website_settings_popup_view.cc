@@ -41,6 +41,7 @@
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -285,7 +286,8 @@ void PopupHeaderView::SetSecuritySummary(
 
     views::StyledLabel::RangeStyleInfo link_style =
         views::StyledLabel::RangeStyleInfo::CreateForLink();
-    link_style.font_style |= gfx::Font::FontStyle::UNDERLINE;
+    if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
+      link_style.font_style |= gfx::Font::FontStyle::UNDERLINE;
     link_style.disable_line_wrapping = false;
 
     status_->AddStyleRange(details_range, link_style);
