@@ -427,10 +427,10 @@ void PaintController::updateCacheGeneration()
         if (!displayItem.isCacheable())
             continue;
         displayItem.client().setDisplayItemsCached(m_currentCacheGeneration);
-#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-        displayItem.client().endShouldKeepAlive();
-#endif
     }
+#if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
+    DisplayItemClient::endShouldKeepAliveAllClients();
+#endif
 }
 
 #if DCHECK_IS_ON()

@@ -53,10 +53,10 @@ void DisplayItemClient::beginShouldKeepAlive() const
 #endif
 }
 
-void DisplayItemClient::endShouldKeepAlive() const
+void DisplayItemClient::endShouldKeepAliveAllClients()
 {
-    CHECK(isAlive());
-    displayItemClientsShouldKeepAlive->remove(this);
+    delete displayItemClientsShouldKeepAlive;
+    displayItemClientsShouldKeepAlive = nullptr;
 }
 
 #endif // CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS

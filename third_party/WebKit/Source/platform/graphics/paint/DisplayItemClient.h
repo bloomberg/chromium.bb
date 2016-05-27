@@ -66,8 +66,9 @@ public:
     // Called when any DisplayItem of this DisplayItemClient is added into PaintController
     // using PaintController::createAndAppend().
     void beginShouldKeepAlive() const;
-    // Called when the DisplayItems of this DisplayItemClient are committed in PaintController.
-    void endShouldKeepAlive() const;
+    // Clears all should-keep-alive DisplayItemClients. Called after PaintController commits
+    // new display items.
+    static void endShouldKeepAliveAllClients();
 #else
     virtual ~DisplayItemClient() { }
 #endif
