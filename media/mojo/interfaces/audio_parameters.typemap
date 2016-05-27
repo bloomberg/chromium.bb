@@ -5,5 +5,8 @@
 mojom = "//media/mojo/interfaces/audio_parameters.mojom"
 public_headers = [ "//media/base/audio_parameters.h" ]
 traits_headers = [ "//media/base/ipc/media_param_traits.h" ]
-deps = [ "//media/base/ipc" ]
+deps = [
+  "//media",
+  "//media/base/ipc"
+]
 type_mappings = [ "media.mojom.AudioParameters=media::AudioParameters" ]

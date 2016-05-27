@@ -186,7 +186,8 @@ component("gpu") {
                ] + get_target_outputs(":libvt_generate_stubs")
     deps += [
       ":libvt_generate_stubs",
-      "//third_party/webrtc/common_video:common_video",
+      "//third_party/webrtc/common_video",
+      "//third_party/webrtc/system_wrappers",
     ]
     libs += [
       "CoreFoundation.framework",
@@ -306,6 +307,7 @@ component("gpu") {
       ]
       if (use_x11) {
         configs += [ "//build/config/linux:x11" ]
+        deps += [ "//ui/gfx/x" ]
         sources += [
           "vaapi_tfp_picture.cc",
           "vaapi_tfp_picture.h",
@@ -349,10 +351,6 @@ component("gpu") {
       "/DELAYLOAD:mf.dll",
       "/DELAYLOAD:mfplat.dll",
     ]
-  }
-
-  if (use_x11) {
-    deps += [ "//ui/gfx/x" ]
   }
 }
 

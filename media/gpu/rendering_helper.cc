@@ -32,7 +32,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/x11_types.h"  // nogncheck
 #endif
 
 #if defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)

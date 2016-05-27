@@ -9,11 +9,14 @@ source_set("ipc") {
     "media_param_traits_macros.h",
   ]
 
+  public_deps = [
+    "//ipc",
+  ]
   deps = [
     "//base",
-    "//ipc",
     "//media",
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/geometry",
+    "//ui/gfx/ipc/skia",
   ]
 }

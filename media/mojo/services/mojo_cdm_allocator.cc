@@ -13,7 +13,6 @@
 #include "base/numerics/safe_math.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "media/cdm/cdm_helpers.h"
-#include "media/cdm/simple_cdm_buffer.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -203,7 +202,7 @@ cdm::Buffer* MojoCdmAllocator::CreateCdmBuffer(size_t capacity) {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-// Creates a new SimpleCdmVideoFrame on every request.
+// Creates a new MojoCdmVideoFrame on every request.
 std::unique_ptr<VideoFrameImpl> MojoCdmAllocator::CreateCdmVideoFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return base::WrapUnique(new MojoCdmVideoFrame(

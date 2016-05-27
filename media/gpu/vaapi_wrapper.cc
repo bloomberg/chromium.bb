@@ -23,7 +23,7 @@
 #include "ui/gl/gl_bindings.h"
 
 #if defined(USE_X11)
-#include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/x11_types.h"  // nogncheck
 #elif defined(USE_OZONE)
 #include "third_party/libva/va/drm/va_drm.h"
 #include "third_party/libva/va/va_drmcommon.h"

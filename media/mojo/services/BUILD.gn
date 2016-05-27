@@ -81,6 +81,7 @@ source_set("proxy") {
     "//mojo/public/c/system:for_component",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/interfaces",
+    "//ui/gfx/geometry/mojo",
   ]
 }
 
@@ -128,6 +129,7 @@ component("services") {
   deps = [
     "//base",
     "//media",
+    "//media:cdm_api",
     "//media:shared_memory_support",
     "//media/mojo/common",
     "//media/mojo/interfaces",
@@ -136,6 +138,7 @@ component("services") {
     "//services/shell/public/cpp",
     "//services/shell/public/cpp:sources",
     "//services/shell/public/interfaces",
+    "//ui/gfx/geometry/mojo",
     "//url",
   ]
 
