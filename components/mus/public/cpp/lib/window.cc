@@ -608,6 +608,7 @@ void Window::LocalAddChild(Window* child) {
     RemoveChildImpl(child, &child->parent_->children_);
   children_.push_back(child);
   child->parent_ = this;
+  child->display_id_ = display_id_;
 }
 
 void Window::LocalRemoveChild(Window* child) {

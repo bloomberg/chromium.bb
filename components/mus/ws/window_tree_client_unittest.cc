@@ -276,6 +276,7 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   void OnEmbed(ClientSpecificId client_id,
                WindowDataPtr root,
                mojom::WindowTreePtr tree,
+               int64_t display_id,
                Id focused_window_id,
                bool drawn) override {
     // TODO(sky): add coverage of |focused_window_id|.
@@ -296,6 +297,7 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   }
   void OnTopLevelCreated(uint32_t change_id,
                          mojom::WindowDataPtr data,
+                         int64_t display_id,
                          bool drawn) override {
     tracker()->OnTopLevelCreated(change_id, std::move(data), drawn);
   }

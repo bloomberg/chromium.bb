@@ -167,6 +167,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void OnEmbedImpl(mojom::WindowTree* window_tree,
                    ClientSpecificId client_id,
                    mojom::WindowDataPtr root_data,
+                   int64_t display_id,
                    Id focused_window_id,
                    bool drawn);
 
@@ -189,6 +190,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void OnEmbed(ClientSpecificId client_id,
                mojom::WindowDataPtr root,
                mojom::WindowTreePtr tree,
+               int64_t display_id,
                Id focused_window_id,
                bool drawn) override;
   void OnEmbeddedAppDisconnected(Id window_id) override;
@@ -196,6 +198,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void OnLostCapture(Id window_id) override;
   void OnTopLevelCreated(uint32_t change_id,
                          mojom::WindowDataPtr data,
+                         int64_t display_id,
                          bool drawn) override;
   void OnWindowBoundsChanged(Id window_id,
                              mojo::RectPtr old_bounds,

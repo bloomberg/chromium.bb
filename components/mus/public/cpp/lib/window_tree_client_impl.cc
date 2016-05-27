@@ -50,7 +50,6 @@ Window* AddWindowToClient(WindowTreeClientImpl* client,
   private_window.set_connection(client);
   private_window.set_server_id(window_data->window_id);
   private_window.set_visible(window_data->visible);
-  private_window.LocalSetDisplay(window_data->display_id);
   private_window.set_properties(
       window_data->properties
           .To<std::map<std::string, std::vector<uint8_t>>>());
@@ -546,6 +545,7 @@ Window* WindowTreeClientImpl::NewWindowImpl(
 void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
                                        ClientSpecificId client_id,
                                        mojom::WindowDataPtr root_data,
+                                       int64_t display_id,
                                        Id focused_window_id,
                                        bool drawn) {
   // WARNING: this is only called if WindowTreeClientImpl was created as the
@@ -555,6 +555,7 @@ void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
 
   DCHECK(roots_.empty());
   Window* root = AddWindowToClient(this, nullptr, root_data);
+  WindowPrivate(root).LocalSetDisplay(display_id);
   roots_.insert(root);
 
   focused_window_ = GetWindowByServerId(focused_window_id);
@@ -658,6 +659,7 @@ void WindowTreeClientImpl::RemoveObserver(
 void WindowTreeClientImpl::OnEmbed(ClientSpecificId client_id,
                                    mojom::WindowDataPtr root_data,
                                    mojom::WindowTreePtr tree,
+                                   int64_t display_id,
                                    Id focused_window_id,
                                    bool drawn) {
   DCHECK(!tree_ptr_);
@@ -669,7 +671,7 @@ void WindowTreeClientImpl::OnEmbed(ClientSpecificId client_id,
                                                tree_ptr_.associated_group()));
   }
 
-  OnEmbedImpl(tree_ptr_.get(), client_id, std::move(root_data),
+  OnEmbedImpl(tree_ptr_.get(), client_id, std::move(root_data), display_id,
               focused_window_id, drawn);
 }
 
@@ -704,6 +706,7 @@ void WindowTreeClientImpl::OnLostCapture(Id window_id) {
 
 void WindowTreeClientImpl::OnTopLevelCreated(uint32_t change_id,
                                              mojom::WindowDataPtr data,
+                                             int64_t display_id,
                                              bool drawn) {
   // The server ack'd the top level window we created and supplied the state
   // of the window at the time the server created it. For properties we do not
@@ -725,7 +728,7 @@ void WindowTreeClientImpl::OnTopLevelCreated(uint32_t change_id,
   // Drawn state and display-id always come from the server (they can't be
   // modified locally).
   window_private.LocalSetParentDrawn(drawn);
-  window_private.LocalSetDisplay(data->display_id);
+  window_private.LocalSetDisplay(display_id);
 
   // The default visibilty is false, we only need update visibility if it
   // differs from that.

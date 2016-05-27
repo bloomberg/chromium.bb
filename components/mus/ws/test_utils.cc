@@ -182,6 +182,7 @@ void TestWindowTreeClient::Bind(
 void TestWindowTreeClient::OnEmbed(uint16_t client_id,
                                    mojom::WindowDataPtr root,
                                    mus::mojom::WindowTreePtr tree,
+                                   int64_t display_id,
                                    Id focused_window_id,
                                    bool drawn) {
   // TODO(sky): add test coverage of |focused_window_id|.
@@ -200,6 +201,7 @@ void TestWindowTreeClient::OnLostCapture(Id window_id) {}
 
 void TestWindowTreeClient::OnTopLevelCreated(uint32_t change_id,
                                              mojom::WindowDataPtr data,
+                                             int64_t display_id,
                                              bool drawn) {
   tracker_.OnTopLevelCreated(change_id, std::move(data), drawn);
 }

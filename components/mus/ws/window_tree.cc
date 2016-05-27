@@ -103,6 +103,8 @@ void WindowTree::Init(std::unique_ptr<WindowTreeBinding> binding,
   GetUnknownWindowsFrom(root, &to_send);
 
   Display* display = GetDisplay(root);
+  int64_t display_id =
+      display ? display->id() : display::Display::kInvalidDisplayID;
   const ServerWindow* focused_window =
       display ? display->GetFocusedWindow() : nullptr;
   if (focused_window)
@@ -113,7 +115,7 @@ void WindowTree::Init(std::unique_ptr<WindowTreeBinding> binding,
 
   const bool drawn = root->parent() && root->parent()->IsDrawn();
   client()->OnEmbed(id_, WindowToWindowData(to_send.front()), std::move(tree),
-                    focused_window_id.id, drawn);
+                    display_id, focused_window_id.id, drawn);
 }
 
 void WindowTree::ConfigureWindowManager() {
@@ -375,9 +377,12 @@ void WindowTree::OnWindowManagerCreatedTopLevelWindow(
   window_id_to_client_id_map_[window->id()] =
       waiting_for_top_level_window_info->client_window_id;
   roots_.insert(window);
+  Display* display = GetDisplay(window);
+  int64_t display_id =
+      display ? display->id() : display::Display::kInvalidDisplayID;
   const bool drawn = window->parent() && window->parent()->IsDrawn();
   client()->OnTopLevelCreated(client_change_id, WindowToWindowData(window),
-                              drawn);
+                              display_id, drawn);
 }
 
 void WindowTree::AddActivationParent(const ClientWindowId& window_id) {
@@ -851,15 +856,6 @@ mojom::WindowDataPtr WindowTree::WindowToWindowData(
     const ServerWindow* window) {
   DCHECK(IsWindowKnown(window));
   const ServerWindow* parent = window->parent();
-
-  // Get the associated display before |parent| may be reset.
-  int64_t display_id = display::Display::kInvalidDisplayID;
-  const Display* display = display_manager()->GetDisplayContaining(window);
-  if (!display && parent)
-    display = display_manager()->GetDisplayContaining(parent);
-  if (display)
-    display_id = display->id();
-
   // If the parent isn't known, it means the parent is not visible to us (not
   // in roots), and should not be sent over.
   if (parent && !IsWindowKnown(parent))
@@ -873,7 +869,6 @@ mojom::WindowDataPtr WindowTree::WindowToWindowData(
   window_data->properties =
       mojo::Map<String, Array<uint8_t>>::From(window->properties());
   window_data->visible = window->visible();
-  window_data->display_id = display_id;
   return window_data;
 }
 

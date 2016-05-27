@@ -29,7 +29,6 @@ struct WindowData {
   // True if this window is visible. The window may not be drawn on screen (see
   // OnWindowParentDrawnStateChanged() for details).
   bool visible;
-  int64 display_id;
 };
 
 enum ErrorCode {
@@ -283,10 +282,12 @@ interface WindowTreeClient {
   // See Embed() on WindowTree for more details. |tree| will be a handle back to
   // the window manager service, unless the connection is to the root connection
   // in which case it will be null. |parent_drawn| is true if roots parent is
-  // drawn, see OnParentDrawnStateChanged() for details.
+  // drawn, see OnParentDrawnStateChanged() for details. |display_id| identifies
+  // the display this root window is on.
   OnEmbed(uint16 connection_id,
           WindowData root,
           WindowTree? tree,
+          int64 display_id,
           uint32 focused_window,
           bool parent_drawn);
 
@@ -305,8 +306,12 @@ interface WindowTreeClient {
 
   // Called in response to NewTopLevelWindow() successfully completing.
   // |parent_drawn| is true if the parent of the window is drawn, see
-  // OnDrawnStateChanged() for details.
-  OnTopLevelCreated(uint32 change_id, WindowData data, bool parent_drawn);
+  // OnDrawnStateChanged() for details. |display_id| identifies the display this
+  // window is on.
+  OnTopLevelCreated(uint32 change_id,
+                    WindowData data,
+                    int64 display_id,
+                    bool parent_drawn);
 
   // Invoked when a window's bounds have changed.
   OnWindowBoundsChanged(uint32 window,

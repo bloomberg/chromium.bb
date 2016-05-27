@@ -31,8 +31,10 @@ void WindowTreeClientImplPrivate::OnEmbed(mojom::WindowTree* window_tree) {
   root_data->bounds = mojo::Rect::From(gfx::Rect());
   root_data->properties.SetToEmpty();
   root_data->visible = true;
-  root_data->display_id = 1;
-  tree_client_impl_->OnEmbedImpl(window_tree, 1, std::move(root_data), 0, true);
+  const int64_t display_id = 1;
+  const Id focused_window_id = 0;
+  tree_client_impl_->OnEmbedImpl(window_tree, 1, std::move(root_data),
+                                 display_id, focused_window_id, true);
 }
 
 void WindowTreeClientImplPrivate::CallOnWindowInputEvent(
