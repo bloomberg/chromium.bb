@@ -66,6 +66,7 @@ TEST_F(STHDistributorTest, NotifiesOfExistingSTHs) {
   // registration were reported to the observer once registered.
   EXPECT_EQ(2u, observer.sths.size());
   EXPECT_EQ(1u, observer.sths.count(other_log));
+  distributor_.UnregisterObserver(&observer);
 }
 
 // Test that histograms are properly recorded for the STH age when an STH
@@ -124,6 +125,9 @@ TEST_F(STHDistributorTest, UpdatesObservedSTHData) {
   EXPECT_EQ(1u, new_observer.sths.size());
   EXPECT_NE(sample_sth_, new_observer.sths[GetTestPublicKeyId()]);
   EXPECT_EQ(new_sth, new_observer.sths[GetTestPublicKeyId()]);
+
+  distributor_.UnregisterObserver(&new_observer);
+  distributor_.UnregisterObserver(&observer);
 }
 
 }  // namespace
