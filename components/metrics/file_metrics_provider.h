@@ -142,8 +142,11 @@ class FileMetricsProvider : public MetricsProvider {
   // any should be processed during the next histogram collection.
   static void CheckAndMapNewMetricSourcesOnTaskRunner(SourceInfoList* sources);
 
-  // Checks a single source as part of CheckAndMapNewMetricSourcesOnTaskRunner.
-  static AccessResult CheckAndMapNewMetrics(SourceInfo* source);
+  // Checks a single |source| as part of CheckAndMapNewMetricSourcesOnTaskRunner
+  // with a |max_memory| limit on the number of bytes that can be copied into
+  // RAM (to eliminate actual disk I/O by the accessing thread).
+  static AccessResult CheckAndMapNewMetrics(SourceInfo* source,
+                                            int64_t max_memory);
 
   // Looks for the next file to read within a directory. Returns true if a
   // file was found. This is part of CheckAndMapNewMetricSourcesOnTaskRunner

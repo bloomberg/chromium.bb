@@ -64,10 +64,15 @@ class HistogramFlattenerDeltaRecorder : public base::HistogramFlattener {
   DISALLOW_COPY_AND_ASSIGN(HistogramFlattenerDeltaRecorder);
 };
 
-class FileMetricsProviderTest : public testing::Test {
+
+class FileMetricsProviderTest : public testing::TestWithParam<bool> {
  protected:
+  const size_t kSmallFileSize = 64 << 10;  // 64 KiB
+  const size_t kLargeFileSize =  2 << 20;  //  2 MiB
+
   FileMetricsProviderTest()
-      : task_runner_(new base::TestSimpleTaskRunner()),
+      : create_large_files_(GetParam()),
+        task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_),
         prefs_(new TestingPrefServiceSimple) {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -75,7 +80,10 @@ class FileMetricsProviderTest : public testing::Test {
   }
 
   ~FileMetricsProviderTest() override {
-    base::GlobalHistogramAllocator::ReleaseForTesting();
+    // If a global histogram allocator exists at this point then it likely
+    // acquired histograms that will continue to point to the released
+    // memory and potentially cause use-after-free memory corruption.
+    DCHECK(!base::GlobalHistogramAllocator::Get());
   }
 
   TestingPrefServiceSimple* prefs() { return prefs_.get(); }
@@ -107,8 +115,9 @@ class FileMetricsProviderTest : public testing::Test {
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
     // Use DCHECK so the stack-trace will indicate where this was called.
     DCHECK(writer.IsValid()) << path.value();
-    int amount = writer.Write(0, (const char*)metrics->data(), metrics->used());
-    DCHECK_EQ(static_cast<int>(metrics->used()), amount);
+    size_t file_size = create_large_files_ ? metrics->size() : metrics->used();
+    int written = writer.Write(0, (const char*)metrics->data(), file_size);
+    DCHECK_EQ(static_cast<int>(file_size), written);
   }
 
   void WriteMetricsFileAtTime(const base::FilePath& path,
@@ -124,7 +133,8 @@ class FileMetricsProviderTest : public testing::Test {
     base::GlobalHistogramAllocator::GetCreateHistogramResultHistogram();
 
     base::GlobalHistogramAllocator::CreateWithLocalMemory(
-        64 << 10, 0, kMetricsName);
+        create_large_files_ ? kLargeFileSize : kSmallFileSize,
+        0, kMetricsName);
 
     // Create both sparse and normal histograms in the allocator.
     base::SparseHistogram::FactoryGet("h0", 0)->Add(0);
@@ -140,6 +150,8 @@ class FileMetricsProviderTest : public testing::Test {
   }
 
  private:
+  const bool create_large_files_;
+
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
 
@@ -150,7 +162,12 @@ class FileMetricsProviderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(FileMetricsProviderTest);
 };
 
-TEST_F(FileMetricsProviderTest, AccessMetrics) {
+// Run all test cases with both small and large files.
+INSTANTIATE_TEST_CASE_P(SmallAndLargeFiles,
+                        FileMetricsProviderTest,
+                        testing::Bool());
+
+TEST_P(FileMetricsProviderTest, AccessMetrics) {
   ASSERT_FALSE(PathExists(metrics_file()));
 
   base::Time metrics_time = base::Time::Now() - base::TimeDelta::FromMinutes(5);
@@ -232,7 +249,7 @@ TEST_F(FileMetricsProviderTest, AccessMetrics) {
   EXPECT_FALSE(base::PathExists(metrics_file()));
 }
 
-TEST_F(FileMetricsProviderTest, AccessDirectory) {
+TEST_P(FileMetricsProviderTest, AccessDirectory) {
   ASSERT_FALSE(PathExists(metrics_file()));
 
   // Get this first so it isn't created inside the persistent allocator.
@@ -283,6 +300,11 @@ TEST_F(FileMetricsProviderTest, AccessDirectory) {
   WriteMetricsFileAtTime(metrics_files.path().AppendASCII("baz"), allocator,
                          base_time + base::TimeDelta::FromMinutes(6));
 
+  // The global allocator has to be detached here so that no metrics created
+  // by code called below get stored in it as that would make for potential
+  // use-after-free operations if that code is called again.
+  base::GlobalHistogramAllocator::ReleaseForTesting();
+
   // Register the file and allow the "checker" task to run.
   provider()->RegisterSource(metrics_files.path(),
                              FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
@@ -317,7 +339,7 @@ TEST_F(FileMetricsProviderTest, AccessDirectory) {
   EXPECT_TRUE(base::PathExists(metrics_files.path().AppendASCII("baz")));
 }
 
-TEST_F(FileMetricsProviderTest, AccessInitialMetrics) {
+TEST_P(FileMetricsProviderTest, AccessInitialMetrics) {
   ASSERT_FALSE(PathExists(metrics_file()));
   CreateMetricsFileWithHistograms(2);
 

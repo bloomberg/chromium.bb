@@ -25,6 +25,15 @@
 
 
 namespace metrics {
+namespace {
+
+// The maximum size of a file that should be copied to memory on the I/O
+// thread. The choice of this number is a trade-off between avoiding disk
+// access on the main UI thread during metrics processing and the added
+// memory cost to copy a file that might not even be fully filled.
+const int64_t kMaxCopyToMemoryFileSize = 1 << 20;  // 1 MiB
+
+}  // namespace
 
 // This structure stores all the information about the sources being monitored
 // and their current reporting state.
@@ -129,7 +138,8 @@ void FileMetricsProvider::CheckAndMapNewMetricSourcesOnTaskRunner(
   // This method has all state information passed in |sources| and is intended
   // to run on a worker thread rather than the UI thread.
   for (std::unique_ptr<SourceInfo>& source : *sources) {
-    AccessResult result = CheckAndMapNewMetrics(source.get());
+    AccessResult result =
+        CheckAndMapNewMetrics(source.get(), kMaxCopyToMemoryFileSize);
     // Some results are not reported in order to keep the dashboard clean.
     if (result != ACCESS_RESULT_DOESNT_EXIST &&
         result != ACCESS_RESULT_NOT_MODIFIED) {
@@ -152,7 +162,8 @@ void FileMetricsProvider::CheckAndMapNewMetricSourcesOnTaskRunner(
 // to run on a worker thread rather than the UI thread.
 // static
 FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapNewMetrics(
-    SourceInfo* source) {
+    SourceInfo* source,
+    int64_t max_memory) {
   DCHECK(!source->mapped);
   DCHECK(!source->allocator);
 
@@ -206,12 +217,15 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapNewMetrics(
   switch (source->type) {
     case SOURCE_HISTOGRAMS_ATOMIC_FILE:
     case SOURCE_HISTOGRAMS_ATOMIC_DIR:
-      // For an "atomic" file, copy the data into local memory but don't
+      // For an "atomic" file, maybe copy the data into local memory but don't
       // release the file so that it is held open to prevent access by other
       // processes. The copy means all I/O is done on this thread instead of
-      // the thread processing the data.
-      source->data.assign(source->mapped->data(),
-                          source->mapped->data() + source->mapped->length());
+      // the thread processing the data but also means copying to memory all
+      // of the file contents even if parts of it are empty.
+      if (info.size <= max_memory) {
+        source->data.assign(source->mapped->data(),
+                            source->mapped->data() + source->mapped->length());
+      }
       break;
   }
 
@@ -487,8 +501,9 @@ bool FileMetricsProvider::HasInitialStabilityMetrics() {
 
     // This would normally be done on a background I/O thread but there
     // hasn't been a chance to run any at the time this method is called.
-    // Do the check in-line.
-    AccessResult result = CheckAndMapNewMetrics(source);
+    // Do the check in-line. Because there is no I/O thread, there is no
+    // benefit to an immediate copy-to-memory.
+    AccessResult result = CheckAndMapNewMetrics(source, /*max_memory=*/0);
     UMA_HISTOGRAM_ENUMERATION("UMA.FileMetricsProvider.InitialAccessResult",
                               result, ACCESS_RESULT_MAX);
 
