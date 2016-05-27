@@ -85,7 +85,7 @@ void NewBackShortcutBubble::UpdateContent(bool forward) {
 
 void NewBackShortcutBubble::AnimationProgressed(
     const gfx::Animation* animation) {
-  int opacity = animation_->CurrentValueBetween(0, 255);
+  float opacity = static_cast<float>(animation_->CurrentValueBetween(0.0, 1.0));
   if (opacity == 0) {
     popup_->Hide();
   } else {

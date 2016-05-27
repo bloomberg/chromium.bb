@@ -467,6 +467,9 @@ void Layer::SetBackgroundFilters(const FilterOperations& filters) {
 
 void Layer::SetOpacity(float opacity) {
   DCHECK(IsPropertyChangeAllowed());
+  DCHECK_GE(opacity, 0.f);
+  DCHECK_LE(opacity, 1.f);
+
   if (opacity_ == opacity)
     return;
   // We need to force a property tree rebuild when opacity changes from 1 to a
@@ -1613,6 +1616,9 @@ void Layer::OnFilterAnimated(const FilterOperations& filters) {
 }
 
 void Layer::OnOpacityAnimated(float opacity) {
+  DCHECK_GE(opacity, 0.f);
+  DCHECK_LE(opacity, 1.f);
+
   if (opacity_ == opacity)
     return;
   opacity_ = opacity;

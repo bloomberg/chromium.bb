@@ -433,7 +433,7 @@ void UserView::ToggleAddUserMenuOption() {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   add_menu_option_->Init(params);
-  add_menu_option_->SetOpacity(0xFF);
+  add_menu_option_->SetOpacity(1.f);
   add_menu_option_->GetNativeWindow()->set_owned_by_parent(false);
   SetShadowType(add_menu_option_->GetNativeView(), ::wm::SHADOW_TYPE_NONE);
 

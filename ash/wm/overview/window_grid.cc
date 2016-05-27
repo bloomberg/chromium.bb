@@ -435,7 +435,7 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
       selection_widget_window);
   selection_widget_->Show();
   // New selection widget starts with 0 opacity and then fades in.
-  selection_widget_window->SetOpacity(0);
+  selection_widget_window->SetOpacity(0.f);
 
   const gfx::Rect target_bounds = SelectedWindow()->target_bounds();
   gfx::Vector2d fade_out_direction =
@@ -472,7 +472,7 @@ void WindowGrid::MoveSelectionWidget(WindowSelector::Direction direction,
     // widget) when the movement animation is complete.
     animation_settings.AddObserver(
         new CleanupWidgetAfterAnimationObserver(std::move(selection_widget_)));
-    old_selection->SetOpacity(0);
+    old_selection->SetOpacity(0.f);
     old_selection_window->SetBounds(old_selection_window->GetBounds() +
                                     fade_out_direction);
     old_selection->Hide();

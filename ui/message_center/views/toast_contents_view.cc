@@ -199,7 +199,7 @@ void ToastContentsView::OnBoundsAnimationEndedOrCancelled(
     // See crbug.com/243469
     widget->Hide();
 #if defined(OS_WIN)
-    widget->SetOpacity(0xFF);
+    widget->SetOpacity(1.f);
 #endif
 
     widget->Close();
@@ -220,9 +220,8 @@ void ToastContentsView::AnimationProgressed(const gfx::Animation* animation) {
         animated_bounds_start_, animated_bounds_end_));
     GetWidget()->SetBounds(current);
   } else if (animation == fade_animation_.get()) {
-    unsigned char opacity =
-        static_cast<unsigned char>(fade_animation_->GetCurrentValue() * 255);
-    GetWidget()->SetOpacity(opacity);
+    GetWidget()->SetOpacity(
+        static_cast<float>(fade_animation_->GetCurrentValue()));
   }
 }
 

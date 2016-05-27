@@ -80,7 +80,7 @@ DownloadStartedAnimationViews::DownloadStartedAnimationViews(
   params.accept_events = false;
   params.parent = web_contents->GetNativeView();
   popup_->Init(params);
-  popup_->SetOpacity(0x00);
+  popup_->SetOpacity(0.f);
   popup_->SetContentsView(this);
   Reposition();
   popup_->Show();
