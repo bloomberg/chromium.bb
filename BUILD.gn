@@ -449,6 +449,7 @@ group("both_gn_and_gyp") {
       "//media:media_perftests",
       "//net:dump_cache",
       "//sync:run_sync_testserver",
+      "//third_party/angle/src/tests:angle_unittests",
       "//third_party/codesighs:maptsvdifftool",
       "//third_party/libphonenumber:libphonenumber_unittests",
       "//ui/compositor:compositor_unittests",
@@ -479,7 +480,6 @@ group("both_gn_and_gyp") {
         "//net:tld_cleanup",
         "//ppapi:pepper_hash_for_uma",
         "//ppapi:ppapi_perftests",
-        "//third_party/angle/src/tests:angle_unittests",
         "//third_party/leveldatabase:env_chromium_unittests",
         "//third_party/libaddressinput:libaddressinput_unittests",
       ]
