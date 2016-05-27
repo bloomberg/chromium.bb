@@ -6,8 +6,6 @@
 
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
-#include "chrome/browser/lifetime/keep_alive_types.h"
-#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "components/signin/core/account_id/account_id.h"
 
@@ -31,9 +29,7 @@ ProfileNotification::ProfileNotification(Profile* profile,
           GetProfileNotificationId(
               notification.delegate_id(),
               NotificationUIManager::GetProfileID(profile)),
-          notification),
-      keep_alive_(new ScopedKeepAlive(KeepAliveOrigin::NOTIFICATION,
-                                      KeepAliveRestartOption::DISABLED)) {
+          notification) {
   DCHECK(profile);
 #if defined(OS_CHROMEOS)
   notification_.set_profile_id(
@@ -42,3 +38,4 @@ ProfileNotification::ProfileNotification(Profile* profile,
 }
 
 ProfileNotification::~ProfileNotification() {}
+

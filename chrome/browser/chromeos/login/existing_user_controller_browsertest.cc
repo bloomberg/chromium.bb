@@ -30,7 +30,6 @@
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/supervised_user_creation_screen_handler.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -101,14 +100,6 @@ void WaitForPermanentlyUntrustedStatusAndRun(const base::Closure& callback) {
         break;
     }
   }
-}
-
-// Clear notifications such as GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS
-// that are shown when signin in. Because the tests here manipulate the
-// message loop and don't always have have a browser window, the test runner
-// ends up clearing them at the wrong moment and crashes.
-void ClearNotifications() {
-  g_browser_process->notification_ui_manager()->CancelAll();
 }
 
 }  // namespace
@@ -260,9 +251,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
   existing_user_controller()->Login(user_context, SigninSpecifics());
 
   profile_prepared_observer.Wait();
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&ClearNotifications));
   content::RunAllPendingInMessageLoop();
 }
 
@@ -618,8 +606,6 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,
   // Timer should still be stopped after login completes.
   ASSERT_TRUE(auto_login_timer());
   EXPECT_FALSE(auto_login_timer()->IsRunning());
-
-  ClearNotifications();
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerPublicSessionTest,

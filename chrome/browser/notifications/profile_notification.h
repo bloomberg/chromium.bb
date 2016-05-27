@@ -10,8 +10,6 @@
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 
-class ScopedKeepAlive;
-
 // This class keeps a Notification objects and its corresponding Profile, so
 // that when the Notification UI manager needs to return or cancel all
 // notifications for a given Profile we have the ability to do this.
@@ -34,10 +32,6 @@ class ProfileNotification {
   ProfileID profile_id_;
 
   Notification notification_;
-
-  std::unique_ptr<ScopedKeepAlive> keep_alive_;
-
-  DISALLOW_COPY_AND_ASSIGN(ProfileNotification);
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_PROFILE_NOTIFICATION_H_
