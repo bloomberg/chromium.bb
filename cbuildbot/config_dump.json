@@ -3484,12 +3484,6 @@
         ],
         "vm_tests": []
     },
-    "beaglebone-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "beaglebone"
-        ]
-    },
     "beaglebone-pre-cq": {
         "_template": "pre-cq",
         "boards": [
@@ -3515,8 +3509,14 @@
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
         "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
+        "paygen": false,
         "rootfs_verification": false,
+        "signer_tests": false,
         "sync_chrome": false,
         "vm_tests": []
     },
@@ -3668,12 +3668,6 @@
         ],
         "vm_tests": []
     },
-    "beaglebone_servo-payloads": {
-        "_template": "payloads",
-        "boards": [
-            "beaglebone_servo"
-        ]
-    },
     "beaglebone_servo-pre-cq": {
         "_template": "pre-cq",
         "boards": [
@@ -3699,8 +3693,15 @@
         "chrome_sdk": false,
         "dev_installer_prebuilts": false,
         "image_test": false,
+        "images": [
+            "base",
+            "test"
+        ],
         "important": true,
+        "paygen": false,
+        "payload_image": "base",
         "rootfs_verification": false,
+        "signer_tests": false,
         "sync_chrome": false,
         "vm_tests": []
     },
