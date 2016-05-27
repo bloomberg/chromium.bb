@@ -27,9 +27,21 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     v8::Local<v8::Object> holder = info.Holder();
     {% endif %}
     {# impl #}
+    {% if attribute.is_save_same_object %}
+    v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "sameobject_{{attribute.name}}");
+    {
+        v8::Local<v8::Value> v8Value = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), holder, propertyName);
+        if (!v8Value.IsEmpty()) {
+            v8SetReturnValue(info, v8Value);
+            return;
+        }
+    }
+    {% endif %}
+    {% if not attribute.is_static %}
+    {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
+    {% endif %}
     {% if attribute.cached_attribute_validation_method %}
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "{{attribute.name}}");
-    {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     if (!impl->{{attribute.cached_attribute_validation_method}}()) {
         v8::Local<v8::Value> v8Value = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), holder, propertyName);
         if (!v8Value.IsEmpty() && !v8Value->IsUndefined()) {
@@ -37,8 +49,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
             return;
         }
     }
-    {% elif not attribute.is_static %}
-    {{cpp_class}}* impl = {{v8_class}}::toImpl(holder);
     {% endif %}
     {% if interface_name == 'Window' and attribute.idl_type == 'EventHandler' %}
     if (!impl->document())
@@ -122,6 +132,9 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {{attribute.cpp_value}};
     {% endif %}
     {{attribute.v8_set_return_value}};
+    {% endif %}
+    {% if attribute.is_save_same_object %}
+    V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, propertyName, info.GetReturnValue().Get());
     {% endif %}
 }
 {% endmacro %}

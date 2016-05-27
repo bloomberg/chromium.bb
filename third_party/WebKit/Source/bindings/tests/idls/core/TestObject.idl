@@ -259,7 +259,8 @@ interface TestObject {
     [Reflect=reflectUrlAttribute, URL] attribute DOMString urlStringAttribute;
     [Unforgeable] attribute long unforgeableLongAttribute;
     [Measure] attribute long measuredLongAttribute;
-    [SameObject] attribute TestInterface sameObjectAttribute;
+    [SameObject] readonly attribute TestInterface sameObjectAttribute;
+    [SameObject, SaveSameObject] readonly attribute TestInterface saveSameObjectAttribute;
     [Unscopeable] attribute long unscopeableLongAttribute;
     [Unscopeable, OriginTrialEnabled=FeatureName] attribute long unscopeableOriginTrialEnabledLongAttribute;
     [Unscopeable, RuntimeEnabled=FeatureName] attribute long unscopeableRuntimeEnabledLongAttribute;

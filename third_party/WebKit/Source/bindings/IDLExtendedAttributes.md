@@ -412,13 +412,13 @@ window.screenX; // Evaluates to 0. 0 remains.
 
 Whether `[Replaceable]` should be specified or not depends on the spec of each attribute.
 
-### [SameObject] _(m)_
+### [SameObject] _(a)_
 
 Standard: [SameObject](http://heycam.github.io/webidl/#SameObject)
 
 Summary: Signals that a `readonly` attribute that returns an object type always returns the same object.
 
-The resulting object is cached in the binding layer and re-used in later calls in order to guarantee that the attribute always returns the same object.
+This attribute has no effect on code generation and should simply be used in Blink IDL files if the specification uses it. If you want the binding layer to cache the resulting object, use `[SaveSameObject]`.
 
 ### [TreatNullAs] _(a,p)_, [TreatUndefinedAs] _(a,p)_
 
@@ -1246,6 +1246,12 @@ foo(long x);
 ```
 
 For more information, see [RuntimeEnabledFeatures](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/WebKit/Source/platform/RuntimeEnabledFeatures.in).
+
+### [SaveSameObject] _(a)_
+
+Summary: Caches the resulting object and always returns the same object.
+
+When specified, caches the resulting object and returns it in later calls so that the attribute always returns the same object. Must be accompanied with `[SameObject]`.
 
 ### [SetWrapperReferenceFrom=xxx] _(i)_
 
