@@ -300,11 +300,11 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   // buffer. Returns true if and only if all of |requested_frames| were able
   // to be consumed.
   bool ConsumeBufferedData(OutputFrames requested_frames,
-                           uint32_t delay_frames) {
+                           uint32_t frames_delayed) {
     std::unique_ptr<AudioBus> bus =
         AudioBus::Create(kChannels, requested_frames.value);
     int frames_read = 0;
-    EXPECT_TRUE(sink_->Render(bus.get(), delay_frames, &frames_read));
+    EXPECT_TRUE(sink_->Render(bus.get(), frames_delayed, &frames_read));
     return frames_read == requested_frames.value;
   }
 

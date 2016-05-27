@@ -50,7 +50,7 @@ class MockRenderCallback : public AudioRendererSink::RenderCallback {
 
   MOCK_METHOD3(Render,
                int(AudioBus* dest,
-                   uint32_t audio_delay_milliseconds,
+                   uint32_t frames_delayed,
                    uint32_t frames_skipped));
   MOCK_METHOD0(OnRenderError, void());
 };

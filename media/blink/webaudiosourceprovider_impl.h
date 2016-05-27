@@ -44,7 +44,7 @@ class MEDIA_BLINK_EXPORT WebAudioSourceProviderImpl
       NON_EXPORTED_BASE(public SwitchableAudioRendererSink) {
  public:
   using CopyAudioCB = base::Callback<void(std::unique_ptr<AudioBus>,
-                                          uint32_t delay_milliseconds,
+                                          uint32_t frames_delayed,
                                           int sample_rate)>;
 
   explicit WebAudioSourceProviderImpl(

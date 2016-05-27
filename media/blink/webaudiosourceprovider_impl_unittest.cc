@@ -90,11 +90,11 @@ class WebAudioSourceProviderImplTest
 
   // CopyAudioCB. Added forwarder method due to GMock troubles with scoped_ptr.
   MOCK_METHOD3(DoCopyAudioCB,
-               void(AudioBus*, uint32_t delay_milliseconds, int sample_rate));
+               void(AudioBus*, uint32_t frames_delayed, int sample_rate));
   void OnAudioBus(std::unique_ptr<AudioBus> bus,
-                  uint32_t delay_milliseconds,
+                  uint32_t frames_delayed,
                   int sample_rate) {
-    DoCopyAudioCB(bus.get(), delay_milliseconds, sample_rate);
+    DoCopyAudioCB(bus.get(), frames_delayed, sample_rate);
   }
 
   int Render(AudioBus* audio_bus) {

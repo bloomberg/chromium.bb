@@ -66,7 +66,7 @@ class WebAudioSourceProviderImpl::TeeFilter
   // These are forwarders to |renderer_| and are here to allow for a client to
   // get a copy of the rendered audio by SetCopyAudioCallback().
   int Render(AudioBus* audio_bus,
-             uint32_t delay_milliseconds,
+             uint32_t frames_delayed,
              uint32_t frames_skipped) override;
   void OnRenderError() override;
 
@@ -256,16 +256,16 @@ int WebAudioSourceProviderImpl::RenderForTesting(AudioBus* audio_bus) {
 }
 
 int WebAudioSourceProviderImpl::TeeFilter::Render(AudioBus* audio_bus,
-                                                  uint32_t delay_milliseconds,
+                                                  uint32_t frames_delayed,
                                                   uint32_t frames_skipped) {
   const int num_rendered_frames =
-      renderer_->Render(audio_bus, delay_milliseconds, frames_skipped);
+      renderer_->Render(audio_bus, frames_delayed, frames_skipped);
 
   if (!copy_audio_bus_callback_.is_null()) {
     std::unique_ptr<AudioBus> bus_copy =
         AudioBus::Create(audio_bus->channels(), audio_bus->frames());
     audio_bus->CopyTo(bus_copy.get());
-    copy_audio_bus_callback_.Run(std::move(bus_copy), delay_milliseconds,
+    copy_audio_bus_callback_.Run(std::move(bus_copy), frames_delayed,
                                  sample_rate_);
   }
 
