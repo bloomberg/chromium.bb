@@ -1028,6 +1028,8 @@ void Predictor::OnLookupFinished(LookupRequest* request, const GURL& url,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   LookupFinished(request, url, found);
+  if (observer_)
+    observer_->OnDnsLookupFinished(url, found);
   pending_lookups_.erase(request);
   delete request;
 

@@ -5,7 +5,6 @@
 #include "chrome/browser/net/predictor.h"
 
 #include <stddef.h>
-#include <time.h>
 
 #include <algorithm>
 #include <memory>
@@ -18,17 +17,12 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/timer/timer.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/url_info.h"
-#include "components/network_hints/common/network_hints_common.h"
 #include "content/public/test/test_browser_thread.h"
-#include "net/base/address_list.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
-#include "net/base/winsock_init.h"
-#include "net/dns/mock_host_resolver.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_service.h"
@@ -41,232 +35,17 @@ using content::BrowserThread;
 
 namespace chrome_browser_net {
 
-class WaitForResolutionHelper;
-
-class WaitForResolutionHelper {
- public:
-  WaitForResolutionHelper(Predictor* predictor,
-                          const UrlList& hosts,
-                          base::RepeatingTimer* timer,
-                          int checks_until_quit)
-      : predictor_(predictor),
-        hosts_(hosts),
-        timer_(timer),
-        checks_until_quit_(checks_until_quit) {}
-
-  void CheckIfResolutionsDone() {
-    if (--checks_until_quit_ > 0) {
-      for (UrlList::const_iterator i = hosts_.begin(); i != hosts_.end(); ++i)
-        if (predictor_->GetResolutionDuration(*i) ==
-            UrlInfo::NullDuration())
-          return;  // We don't have resolution for that host.
-    }
-
-    // When all hostnames have been resolved, or we've hit the limit,
-    // exit the loop.
-    timer_->Stop();
-    base::MessageLoop::current()->QuitWhenIdle();
-    delete timer_;
-    delete this;
-  }
-
- private:
-  Predictor* predictor_;
-  const UrlList hosts_;
-  base::RepeatingTimer* timer_;
-  int checks_until_quit_;
-};
-
 class PredictorTest : public testing::Test {
  public:
   PredictorTest()
       : ui_thread_(BrowserThread::UI, &loop_),
-        io_thread_(BrowserThread::IO, &loop_),
-        host_resolver_(new net::MockCachingHostResolver()) {
-  }
-
- protected:
-  void SetUp() override {
-#if defined(OS_WIN)
-    net::EnsureWinsockInit();
-#endif
-    Predictor::set_max_parallel_resolves(
-        Predictor::kMaxSpeculativeParallelResolves);
-    Predictor::set_max_queueing_delay(
-        Predictor::kMaxSpeculativeResolveQueueDelayMs);
-    // Since we are using a caching HostResolver, the following latencies will
-    // only be incurred by the first request, after which the result will be
-    // cached internally by |host_resolver_|.
-    net::RuleBasedHostResolverProc* rules = host_resolver_->rules();
-    rules->AddRuleWithLatency("www.google.com", "127.0.0.1", 50);
-    rules->AddRuleWithLatency("gmail.google.com.com", "127.0.0.1", 70);
-    rules->AddRuleWithLatency("mail.google.com", "127.0.0.1", 44);
-    rules->AddRuleWithLatency("gmail.com", "127.0.0.1", 63);
-  }
-
-  void WaitForResolution(Predictor* predictor, const UrlList& hosts) {
-    base::RepeatingTimer* timer = new base::RepeatingTimer();
-    // By default allow the loop to run for a minute -- 600 iterations.
-    timer->Start(FROM_HERE, TimeDelta::FromMilliseconds(100),
-                 new WaitForResolutionHelper(predictor, hosts, timer, 600),
-                 &WaitForResolutionHelper::CheckIfResolutionsDone);
-    base::MessageLoop::current()->Run();
-  }
-
-  void WaitForResolutionWithLimit(
-      Predictor* predictor, const UrlList& hosts, int limit) {
-    base::RepeatingTimer* timer = new base::RepeatingTimer();
-    timer->Start(FROM_HERE, TimeDelta::FromMilliseconds(100),
-                 new WaitForResolutionHelper(predictor, hosts, timer, limit),
-                 &WaitForResolutionHelper::CheckIfResolutionsDone);
-    base::MessageLoop::current()->Run();
-  }
+        io_thread_(BrowserThread::IO, &loop_) {}
 
  private:
-  // IMPORTANT: do not move this below |host_resolver_|; the host resolver
-  // must not outlive the message loop, otherwise bad things can happen
-  // (like posting to a deleted message loop).
   base::MessageLoopForUI loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
-
- protected:
-  std::unique_ptr<net::MockCachingHostResolver> host_resolver_;
 };
-
-//------------------------------------------------------------------------------
-
-TEST_F(PredictorTest, StartupShutdownTest) {
-  Predictor testing_master(true, true);
-  testing_master.Shutdown();
-}
-
-
-TEST_F(PredictorTest, ShutdownWhenResolutionIsPendingTest) {
-  std::unique_ptr<net::HostResolver> host_resolver(
-      new net::HangingHostResolver());
-
-  Predictor testing_master(true, true);
-  testing_master.SetHostResolver(host_resolver.get());
-
-  GURL localhost("http://localhost:80");
-  UrlList names;
-  names.push_back(localhost);
-
-  testing_master.ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
-
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
-      base::TimeDelta::FromMilliseconds(500));
-  base::MessageLoop::current()->Run();
-
-  EXPECT_FALSE(testing_master.WasFound(localhost));
-
-  testing_master.Shutdown();
-
-  // Clean up after ourselves.
-  base::MessageLoop::current()->RunUntilIdle();
-}
-
-TEST_F(PredictorTest, SingleLookupTest) {
-  Predictor testing_master(true, true);
-  testing_master.SetHostResolver(host_resolver_.get());
-
-  GURL goog("http://www.google.com:80");
-
-  UrlList names;
-  names.push_back(goog);
-
-  // Try to flood the predictor with many concurrent requests.
-  for (int i = 0; i < 10; i++)
-    testing_master.ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
-
-  WaitForResolution(&testing_master, names);
-
-  EXPECT_TRUE(testing_master.WasFound(goog));
-
-  base::MessageLoop::current()->RunUntilIdle();
-
-  EXPECT_GT(testing_master.peak_pending_lookups(), names.size() / 2);
-  EXPECT_LE(testing_master.peak_pending_lookups(), names.size());
-  EXPECT_LE(testing_master.peak_pending_lookups(),
-            testing_master.max_concurrent_dns_lookups());
-
-  testing_master.Shutdown();
-}
-
-TEST_F(PredictorTest, ConcurrentLookupTest) {
-  host_resolver_->rules()->AddSimulatedFailure("*.notfound");
-
-  Predictor testing_master(true, true);
-  testing_master.SetHostResolver(host_resolver_.get());
-
-  GURL goog("http://www.google.com:80"),
-      goog2("http://gmail.google.com.com:80"),
-      goog3("http://mail.google.com:80"),
-      goog4("http://gmail.com:80");
-  GURL bad1("http://bad1.notfound:80"),
-      bad2("http://bad2.notfound:80");
-
-  UrlList names;
-  names.push_back(goog);
-  names.push_back(goog3);
-  names.push_back(bad1);
-  names.push_back(goog2);
-  names.push_back(bad2);
-  names.push_back(goog4);
-  names.push_back(goog);
-
-  // Try to flood the predictor with many concurrent requests.
-  for (int i = 0; i < 10; i++)
-    testing_master.ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
-
-  WaitForResolution(&testing_master, names);
-
-  EXPECT_TRUE(testing_master.WasFound(goog));
-  EXPECT_TRUE(testing_master.WasFound(goog3));
-  EXPECT_TRUE(testing_master.WasFound(goog2));
-  EXPECT_TRUE(testing_master.WasFound(goog4));
-  EXPECT_FALSE(testing_master.WasFound(bad1));
-  EXPECT_FALSE(testing_master.WasFound(bad2));
-
-  base::MessageLoop::current()->RunUntilIdle();
-
-  EXPECT_FALSE(testing_master.WasFound(bad1));
-  EXPECT_FALSE(testing_master.WasFound(bad2));
-
-  EXPECT_LE(testing_master.peak_pending_lookups(), names.size());
-  EXPECT_LE(testing_master.peak_pending_lookups(),
-            testing_master.max_concurrent_dns_lookups());
-
-  testing_master.Shutdown();
-}
-
-TEST_F(PredictorTest, MassiveConcurrentLookupTest) {
-  host_resolver_->rules()->AddSimulatedFailure("*.notfound");
-
-  Predictor testing_master(true, true);
-  testing_master.SetHostResolver(host_resolver_.get());
-
-  UrlList names;
-  for (int i = 0; i < 100; i++)
-    names.push_back(GURL(
-        "http://host" + base::IntToString(i) + ".notfound:80"));
-
-  // Try to flood the predictor with many concurrent requests.
-  for (int i = 0; i < 10; i++)
-    testing_master.ResolveList(names, UrlInfo::PAGE_SCAN_MOTIVATED);
-
-  WaitForResolution(&testing_master, names);
-
-  base::MessageLoop::current()->RunUntilIdle();
-
-  EXPECT_LE(testing_master.peak_pending_lookups(), names.size());
-  EXPECT_LE(testing_master.peak_pending_lookups(),
-            testing_master.max_concurrent_dns_lookups());
-
-  testing_master.Shutdown();
-}
 
 //------------------------------------------------------------------------------
 // Functions to help synthesize and test serializations of subresource referrer
@@ -365,12 +144,14 @@ static bool GetDataFromSerialization(const GURL& motivation,
   return false;
 }
 
-//------------------------------------------------------------------------------
+TEST_F(PredictorTest, StartupShutdownTest) {
+  Predictor testing_master(true, true);
+  testing_master.Shutdown();
+}
 
 // Make sure nil referral lists really have no entries, and no latency listed.
 TEST_F(PredictorTest, ReferrerSerializationNilTest) {
   Predictor predictor(true, true);
-  predictor.SetHostResolver(host_resolver_.get());
 
   std::unique_ptr<base::ListValue> referral_list(NewEmptySerializationList());
   predictor.SerializeReferrers(referral_list.get());
@@ -387,7 +168,6 @@ TEST_F(PredictorTest, ReferrerSerializationNilTest) {
 // serialization without being changed.
 TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
   Predictor predictor(true, true);
-  predictor.SetHostResolver(host_resolver_.get());
   const GURL motivation_url("http://www.google.com:91");
   const GURL subresource_url("http://icons.google.com:90");
   const double kUseRate = 23.4;
@@ -414,7 +194,6 @@ TEST_F(PredictorTest, ReferrerSerializationSingleReferrerTest) {
 // correct order.
 TEST_F(PredictorTest, GetHtmlReferrerLists) {
   Predictor predictor(true, true);
-  predictor.SetHostResolver(host_resolver_.get());
   const double kUseRate = 23.4;
   std::unique_ptr<base::ListValue> referral_list(NewEmptySerializationList());
 
@@ -499,7 +278,6 @@ TEST_F(PredictorTest, GetHtmlReferrerLists) {
 // Make sure the Trim() functionality works as expected.
 TEST_F(PredictorTest, ReferrerSerializationTrimTest) {
   Predictor predictor(true, true);
-  predictor.SetHostResolver(host_resolver_.get());
   GURL motivation_url("http://www.google.com:110");
 
   GURL icon_subresource_url("http://icons.google.com:111");
@@ -688,7 +466,6 @@ TEST_F(PredictorTest, CanonicalizeUrl) {
 
 TEST_F(PredictorTest, DiscardPredictorResults) {
   SimplePredictor predictor(true, true);
-  predictor.SetHostResolver(host_resolver_.get());
   base::ListValue referral_list;
   predictor.SerializeReferrers(&referral_list);
   EXPECT_EQ(1U, referral_list.GetSize());

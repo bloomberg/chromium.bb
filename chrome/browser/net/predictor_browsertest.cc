@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <set>
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -16,6 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -83,12 +85,14 @@ std::unique_ptr<net::test_server::HttpResponse> RedirectForPathHandler(
 }
 
 const char kBlinkPreconnectFeature[] = "LinkPreconnect";
-const char kChromiumHostname[] = "chromium.org";
-const char kInvalidLongHostname[] = "illegally-long-hostname-over-255-"
-    "characters-should-not-send-an-ipc-message-to-the-browser-"
-    "0000000000000000000000000000000000000000000000000000000000000000000000000"
-    "0000000000000000000000000000000000000000000000000000000000000000000000000"
-    "000000000000000000000000000000000000000000000000000000.org";
+const char kChromiumUrl[] = "http://chromium.org";
+const char kInvalidLongUrl[] =
+    "http://"
+    "illegally-long-hostname-over-255-characters-should-not-send-an-ipc-"
+    "message-to-the-browser-"
+    "00000000000000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000000000000000"
+    "0000000000000000000000000000000000000000000000000000.org";
 
 // Gets notified by the EmbeddedTestServer on incoming connections being
 // accepted or read from, keeps track of them and exposes that info to
@@ -245,78 +249,6 @@ class ConnectionListener
   DISALLOW_COPY_AND_ASSIGN(ConnectionListener);
 };
 
-// Records a history of all hostnames for which resolving has been requested,
-// and immediately fails the resolution requests themselves.
-class HostResolutionRequestRecorder : public net::HostResolverProc {
- public:
-  HostResolutionRequestRecorder()
-      : HostResolverProc(NULL),
-        is_waiting_for_hostname_(false) {
-  }
-
-  int Resolve(const std::string& host,
-              net::AddressFamily address_family,
-              net::HostResolverFlags host_resolver_flags,
-              net::AddressList* addrlist,
-              int* os_error) override {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&HostResolutionRequestRecorder::AddToHistory,
-                   base::Unretained(this),
-                   host));
-    return net::ERR_NAME_NOT_RESOLVED;
-  }
-
-  int RequestedHostnameCount() const {
-    return requested_hostnames_.size();
-  }
-
-  bool HasHostBeenRequested(const std::string& hostname) const {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    return std::find(requested_hostnames_.begin(),
-                     requested_hostnames_.end(),
-                     hostname) != requested_hostnames_.end();
-  }
-
-  void WaitUntilHostHasBeenRequested(const std::string& hostname) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    DCHECK(!is_waiting_for_hostname_);
-    if (HasHostBeenRequested(hostname))
-      return;
-    waiting_for_hostname_ = hostname;
-    is_waiting_for_hostname_ = true;
-    content::RunMessageLoop();
-  }
-
- private:
-  ~HostResolutionRequestRecorder() override {}
-
-  void AddToHistory(const std::string& hostname) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    requested_hostnames_.push_back(hostname);
-    if (is_waiting_for_hostname_ && waiting_for_hostname_ == hostname) {
-      is_waiting_for_hostname_ = false;
-      waiting_for_hostname_.clear();
-      base::MessageLoop::current()->QuitWhenIdle();
-    }
-  }
-
-  // The hostname which WaitUntilHostHasBeenRequested is currently waiting for
-  // to be requested.
-  std::string waiting_for_hostname_;
-
-  // Whether WaitUntilHostHasBeenRequested is waiting for a hostname to be
-  // requested and thus is running a nested message loop.
-  bool is_waiting_for_hostname_;
-
-  // A list of hostnames for which resolution has already been requested. Only
-  // to be accessed from the UI thread.
-  std::vector<std::string> requested_hostnames_;
-
-  DISALLOW_COPY_AND_ASSIGN(HostResolutionRequestRecorder);
-};
-
 // This class intercepts URLRequests and responds with the URLRequestJob*
 // callback provided by the constructor. Note that the port of the URL must
 // match the port given in the constructor.
@@ -362,7 +294,8 @@ class CrossSitePredictorObserver
         cross_site_host_(cross_site_host),
         cross_site_learned_(0),
         cross_site_preconnected_(0),
-        same_site_preconnected_(0) {}
+        same_site_preconnected_(0),
+        dns_run_loop_(nullptr) {}
 
   void OnPreconnectUrl(
       const GURL& original_url,
@@ -402,6 +335,16 @@ class CrossSitePredictorObserver
     }
   }
 
+  void OnDnsLookupFinished(const GURL& url, bool found) override {
+    base::AutoLock lock(lock_);
+    if (found) {
+      successful_dns_lookups_.insert(url);
+    } else {
+      unsuccessful_dns_lookups_.insert(url);
+    }
+    CheckForWaitingLoop();
+  }
+
   void ResetCounts() {
     base::AutoLock lock(lock_);
     cross_site_learned_ = 0;
@@ -424,9 +367,70 @@ class CrossSitePredictorObserver
     return same_site_preconnected_;
   }
 
+  // Spins a run loop until |url| is added to one of the lookup maps.
+  void WaitUntilHostLookedUp(const GURL& url) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    base::RunLoop run_loop;
+    {
+      base::AutoLock lock(lock_);
+      DCHECK(waiting_on_dns_.is_empty());
+      DCHECK(!dns_run_loop_);
+      waiting_on_dns_ = url;
+      dns_run_loop_ = &run_loop;
+      CheckForWaitingLoop();
+    }
+    run_loop.Run();
+  }
+
+  bool HasHostBeenLookedUpLocked(const GURL& url) {
+    lock_.AssertAcquired();
+    return ContainsKey(successful_dns_lookups_, url) ||
+           ContainsKey(unsuccessful_dns_lookups_, url);
+  }
+
+  bool HasHostBeenLookedUp(const GURL& url) {
+    base::AutoLock lock(lock_);
+    return HasHostBeenLookedUpLocked(url);
+  }
+
+  void CheckForWaitingLoop() {
+    lock_.AssertAcquired();
+    if (waiting_on_dns_.is_empty())
+      return;
+    if (!HasHostBeenLookedUpLocked(waiting_on_dns_))
+      return;
+    DCHECK(dns_run_loop_);
+    DCHECK(task_runner_);
+    waiting_on_dns_ = GURL();
+    task_runner_->PostTask(FROM_HERE, dns_run_loop_->QuitClosure());
+    dns_run_loop_ = nullptr;
+  }
+
+  size_t TotalHostsLookedUp() {
+    base::AutoLock lock(lock_);
+    return successful_dns_lookups_.size() + unsuccessful_dns_lookups_.size();
+  }
+
+  // Note: this method expects the URL to have been looked up.
+  bool HostFound(const GURL& url) {
+    base::AutoLock lock(lock_);
+    EXPECT_TRUE(HasHostBeenLookedUpLocked(url)) << "Expected to have looked up "
+                                                << url.spec();
+    return ContainsKey(successful_dns_lookups_, url);
+  }
+
+  void set_task_runner(
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    task_runner_.swap(task_runner);
+  }
+
  private:
   const GURL source_host_;
   const GURL cross_site_host_;
+
+  GURL waiting_on_dns_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Protects all following members. They are read and updated from different
   // threads.
@@ -435,6 +439,10 @@ class CrossSitePredictorObserver
   int cross_site_learned_;
   int cross_site_preconnected_;
   int same_site_preconnected_;
+
+  std::set<GURL> successful_dns_lookups_;
+  std::set<GURL> unsuccessful_dns_lookups_;
+  base::RunLoop* dns_run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(CrossSitePredictorObserver);
 };
@@ -446,16 +454,27 @@ namespace chrome_browser_net {
 class PredictorBrowserTest : public InProcessBrowserTest {
  public:
   PredictorBrowserTest()
-      : startup_url_("http://host1:1"),
-        referring_url_("http://host2:1"),
-        target_url_("http://host3:1"),
-        host_resolution_request_recorder_(new HostResolutionRequestRecorder),
-        cross_site_test_server_(new net::EmbeddedTestServer()) {}
+      : startup_url_("http://host1/"),
+        referring_url_("http://host2/"),
+        target_url_("http://host3/"),
+        rule_based_resolver_proc_(new net::RuleBasedHostResolverProc(nullptr)),
+        cross_site_test_server_(new net::EmbeddedTestServer()) {
+    rule_based_resolver_proc_->AddRuleWithLatency("www.example.test",
+                                                  "127.0.0.1", 50);
+    rule_based_resolver_proc_->AddRuleWithLatency("gmail.google.com",
+                                                  "127.0.0.1", 70);
+    rule_based_resolver_proc_->AddRuleWithLatency("mail.google.com",
+                                                  "127.0.0.1", 44);
+    rule_based_resolver_proc_->AddRuleWithLatency("gmail.com", "127.0.0.1", 63);
+    rule_based_resolver_proc_->AddSimulatedFailure("*.notfound");
+    rule_based_resolver_proc_->AddRuleWithLatency("delay.google.com",
+                                                  "127.0.0.1", 1000 * 60);
+  }
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
     scoped_host_resolver_proc_.reset(new net::ScopedDefaultHostResolverProc(
-        host_resolution_request_recorder_.get()));
+        rule_based_resolver_proc_.get()));
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }
 
@@ -466,6 +485,8 @@ class PredictorBrowserTest : public InProcessBrowserTest {
         switches::kEnableBlinkFeatures, kBlinkPreconnectFeature);
     command_line->AppendSwitchASCII(switches::kEnableFeatures,
                                     "PreconnectMore");
+    command_line->AppendSwitchASCII(switches::kEnableFeatures,
+                                    "UsePredictorDNSQueue");
   }
 
   void SetUpOnMainThread() override {
@@ -488,6 +509,7 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     predictor()->SetPreconnectEnabledForTest(true);
     InstallPredictorObserver(embedded_test_server()->base_url(),
                              cross_site_test_server()->base_url());
+    observer()->set_task_runner(task_runner_);
     StartInterceptingCrossSiteOnUI();
   }
 
@@ -573,16 +595,24 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     serializer.Serialize(*list_value);
   }
 
-  bool HasHostBeenRequested(const std::string& hostname) const {
-    return host_resolution_request_recorder_->HasHostBeenRequested(hostname);
+  void WaitUntilHostsLookedUp(const network_hints::UrlList& names) {
+    for (const GURL& url : names)
+      observer()->WaitUntilHostLookedUp(url);
   }
 
-  void WaitUntilHostHasBeenRequested(const std::string& hostname) {
-    host_resolution_request_recorder_->WaitUntilHostHasBeenRequested(hostname);
+  void FloodResolveRequestsOnUIThread(const network_hints::UrlList& names) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&PredictorBrowserTest::FloodResolveRequests, this, names));
   }
 
-  int RequestedHostnameCount() const {
-    return host_resolution_request_recorder_->RequestedHostnameCount();
+  void FloodResolveRequests(const network_hints::UrlList& names) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    for (int i = 0; i < 10; i++) {
+      predictor()->DnsPrefetchMotivatedList(names,
+                                            UrlInfo::PAGE_SCAN_MOTIVATED);
+    }
   }
 
   net::EmbeddedTestServer* cross_site_test_server() {
@@ -639,6 +669,56 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     EXPECT_TRUE(test_server->FlushAllSocketsAndConnectionsOnUIThread());
   }
 
+  // Note this method also expects that all the urls (found or not) were looked
+  // up.
+  void ExpectFoundUrls(
+      const network_hints::UrlList& found_names,
+      const network_hints::UrlList& not_found_names) {
+    for (const auto& name : found_names) {
+      EXPECT_TRUE(observer()->HostFound(name)) << "Expected to have found "
+                                               << name.spec();
+    }
+    for (const auto& name : not_found_names) {
+      EXPECT_FALSE(observer()->HostFound(name)) << "Did not expect to find "
+                                                << name.spec();
+    }
+  }
+
+  // This method verifies that |url| is in the predictor's |results_| map. This
+  // is used for pending lookups, and lookups performed before the observer is
+  // attached.
+  void ExpectUrlRequestedFromPredictorOnUIThread(const GURL& url) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&PredictorBrowserTest::ExpectUrlRequestedFromPredictor,
+                   base::Unretained(this), url));
+  }
+
+  void ExpectUrlRequestedFromPredictor(const GURL& url) {
+    EXPECT_TRUE(ContainsKey(predictor()->results_, url));
+  }
+
+  void DiscardAllResultsOnUIThread() {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&Predictor::DiscardAllResults,
+                                       base::Unretained(predictor())));
+  }
+
+  void ExpectValidPeakPendingLookupsOnUI(size_t num_names_requested) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&PredictorBrowserTest::ExpectValidPeakPendingLookups,
+                   base::Unretained(this), num_names_requested));
+  }
+
+  void ExpectValidPeakPendingLookups(size_t num_names_requested) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    EXPECT_LE(predictor()->peak_pending_lookups_, num_names_requested);
+    EXPECT_LE(predictor()->peak_pending_lookups_,
+              predictor()->max_concurrent_dns_lookups());
+  }
+
   CrossSitePredictorObserver* observer() { return observer_.get(); }
 
   // Navigate to an html file on embedded_test_server and tell it to request
@@ -669,14 +749,73 @@ class PredictorBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<ConnectionListener> cross_site_connection_listener_;
 
  private:
-  scoped_refptr<HostResolutionRequestRecorder>
-      host_resolution_request_recorder_;
+  scoped_refptr<net::RuleBasedHostResolverProc> rule_based_resolver_proc_;
   std::unique_ptr<net::ScopedDefaultHostResolverProc>
       scoped_host_resolver_proc_;
   std::unique_ptr<net::EmbeddedTestServer> cross_site_test_server_;
   std::unique_ptr<CrossSitePredictorObserver> observer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
+
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, SingleLookupTest) {
+  DiscardAllResultsOnUIThread();
+  GURL url("http://www.example.test/");
+
+  // Try to flood the predictor with many concurrent requests.
+  network_hints::UrlList names{url};
+  FloodResolveRequestsOnUIThread(names);
+  observer()->WaitUntilHostLookedUp(url);
+  EXPECT_TRUE(observer()->HostFound(url));
+  ExpectValidPeakPendingLookupsOnUI(1u);
+}
+
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ConcurrentLookupTest) {
+  DiscardAllResultsOnUIThread();
+  GURL url("http://www.example.test"), goog2("http://gmail.google.com"),
+      goog3("http://mail.google.com"), goog4("http://gmail.com");
+  GURL bad1("http://bad1.notfound"), bad2("http://bad2.notfound");
+
+  UrlList found_names{url, goog3, goog2, goog4};
+  UrlList not_found_names{bad1, bad2};
+  FloodResolveRequestsOnUIThread(found_names);
+  FloodResolveRequestsOnUIThread(not_found_names);
+
+  WaitUntilHostsLookedUp(found_names);
+  WaitUntilHostsLookedUp(not_found_names);
+  ExpectFoundUrls(found_names, not_found_names);
+  ExpectValidPeakPendingLookupsOnUI(found_names.size() +
+                                    not_found_names.size());
+}
+
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, MassiveConcurrentLookupTest) {
+  DiscardAllResultsOnUIThread();
+  UrlList not_found_names;
+  for (int i = 0; i < 100; i++) {
+    not_found_names.push_back(
+        GURL(base::StringPrintf("http://host%d.notfound:80", i)));
+  }
+  FloodResolveRequestsOnUIThread(not_found_names);
+
+  WaitUntilHostsLookedUp(not_found_names);
+  ExpectFoundUrls(network_hints::UrlList(), not_found_names);
+  ExpectValidPeakPendingLookupsOnUI(not_found_names.size());
+}
+
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
+                       ShutdownWhenResolutionIsPendingTest) {
+  GURL delayed_url("http://delay.google.com:80");
+  UrlList names{delayed_url};
+
+  // Flood with delayed requests, then wait.
+  FloodResolveRequestsOnUIThread(names);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      base::TimeDelta::FromMilliseconds(500));
+  base::MessageLoop::current()->Run();
+
+  ExpectUrlRequestedFromPredictor(delayed_url);
+  EXPECT_FALSE(observer()->HasHostBeenLookedUp(delayed_url));
+}
 
 IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, SimplePreconnectOne) {
   predictor()->PreconnectUrl(
@@ -1128,24 +1267,28 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ShutdownStartupCyclePreresolve) {
   // But also make sure this data has been first loaded into the Predictor, by
   // inspecting that the Predictor starts making the expected hostname requests.
   PrepareFrameSubresources(referring_url_);
-  WaitUntilHostHasBeenRequested(startup_url_.host());
-  WaitUntilHostHasBeenRequested(target_url_.host());
+  observer()->WaitUntilHostLookedUp(target_url_);
+
+  // Verify that both urls were requested by the predictor. Note that the
+  // startup URL may be requested before the observer attaches itself.
+  ExpectUrlRequestedFromPredictor(startup_url_);
+  EXPECT_FALSE(observer()->HostFound(target_url_));
 }
 
-// Flaky on Windows: http://crbug.com/469120
-#if defined(OS_WIN)
-#define MAYBE_DnsPrefetch DISABLED_DnsPrefetch
-#else
-#define MAYBE_DnsPrefetch DnsPrefetch
-#endif
-IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, MAYBE_DnsPrefetch) {
-  int hostnames_requested_before_load = RequestedHostnameCount();
-  ui_test_utils::NavigateToURL(
-      browser(),
-      GURL(embedded_test_server()->GetURL("/predictor/dns_prefetch.html")));
-  WaitUntilHostHasBeenRequested(kChromiumHostname);
-  ASSERT_FALSE(HasHostBeenRequested(kInvalidLongHostname));
-  ASSERT_EQ(hostnames_requested_before_load + 1, RequestedHostnameCount());
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, DnsPrefetch) {
+  // Navigate once to make sure all initial hostnames are requested.
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+
+  size_t hosts_looked_up_before_load = observer()->TotalHostsLookedUp();
+
+  ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL(
+                                              "/predictor/dns_prefetch.html"));
+  observer()->WaitUntilHostLookedUp(GURL(kChromiumUrl));
+  ASSERT_FALSE(observer()->HasHostBeenLookedUp(GURL(kInvalidLongUrl)));
+
+  EXPECT_FALSE(observer()->HostFound(GURL(kChromiumUrl)));
+  ASSERT_EQ(hosts_looked_up_before_load + 1, observer()->TotalHostsLookedUp());
 }
 
 // Tests that preconnect warms up a socket connection to a test server.

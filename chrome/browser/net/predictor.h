@@ -79,6 +79,8 @@ class PredictorObserver {
                                int count) {}
   virtual void OnLearnFromNavigation(const GURL& referring_url,
                                      const GURL& target_url) {}
+
+  virtual void OnDnsLookupFinished(const GURL& url, bool found) {}
 };
 
 // Predictor is constructed during Profile construction (on the UI thread),
@@ -317,11 +319,6 @@ class Predictor {
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PredictorTest, BenefitLookupTest);
-  FRIEND_TEST_ALL_PREFIXES(PredictorTest, ShutdownWhenResolutionIsPendingTest);
-  FRIEND_TEST_ALL_PREFIXES(PredictorTest, SingleLookupTest);
-  FRIEND_TEST_ALL_PREFIXES(PredictorTest, ConcurrentLookupTest);
-  FRIEND_TEST_ALL_PREFIXES(PredictorTest, MassiveConcurrentLookupTest);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueuePushPopTest);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueueReorderTest);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, ReferrerSerializationTrimTest);
@@ -333,6 +330,7 @@ class Predictor {
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, ProxyDefinitelyNotEnabled);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, ProxyMaybeEnabled);
   friend class WaitForResolutionHelper;  // For testing.
+  friend class PredictorBrowserTest;
 
   class LookupRequest;
 
@@ -422,25 +420,6 @@ class Predictor {
   static const int64_t kDurationBetweenTrimmingIncrementsSeconds;
   // Number of referring URLs processed in an incremental trimming.
   static const size_t kUrlsTrimmedPerIncrement;
-
-  // Only for testing. Returns true if hostname has been successfully resolved
-  // (name found).
-  bool WasFound(const GURL& url) const {
-    Results::const_iterator it(results_.find(url));
-    return (it != results_.end()) &&
-            it->second.was_found();
-  }
-
-  // Only for testing. Return how long was the resolution
-  // or UrlInfo::NullDuration() if it hasn't been resolved yet.
-  base::TimeDelta GetResolutionDuration(const GURL& url) {
-    if (results_.find(url) == results_.end())
-      return UrlInfo::NullDuration();
-    return results_[url].resolve_duration();
-  }
-
-  // Only for testing;
-  size_t peak_pending_lookups() const { return peak_pending_lookups_; }
 
   // These two members call the appropriate global functions in
   // prediction_options.cc depending on which thread they are called on.
