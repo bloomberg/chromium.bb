@@ -33,6 +33,11 @@ public:
         toBlock()->invalidatePaintRectangle(layoutRect);
     }
 
+    bool recalcOverflowAfterStyleChange()
+    {
+        return toBlock()->recalcOverflowAfterStyleChange();
+    }
+
 private:
     LayoutBlock* toBlock() { return toLayoutBlock(layoutObject()); }
     const LayoutBlock* toBlock() const { return toLayoutBlock(layoutObject()); }

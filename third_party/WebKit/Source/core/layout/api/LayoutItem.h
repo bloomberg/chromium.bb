@@ -41,6 +41,11 @@ public:
         return !m_layoutObject;
     }
 
+    String debugName() const
+    {
+        return m_layoutObject->debugName();
+    }
+
     bool isDescendantOf(LayoutItem item) const
     {
         return m_layoutObject->isDescendantOf(item.layoutObject());
@@ -131,6 +136,11 @@ public:
         return m_layoutObject->needsLayout();
     }
 
+    void setNeedsLayout(LayoutInvalidationReasonForTracing reason, MarkingBehavior marking = MarkContainerChain, SubtreeLayoutScope* scope = nullptr)
+    {
+        m_layoutObject->setNeedsLayout(reason, marking, scope);
+    }
+
     void layout()
     {
         m_layoutObject->layout();
@@ -144,6 +154,11 @@ public:
     Node* node() const
     {
         return m_layoutObject->node();
+    }
+
+    Document& document() const
+    {
+        return m_layoutObject->document();
     }
 
     void updateStyleAndLayout()
@@ -186,6 +201,11 @@ public:
         return m_layoutObject->hasLayer();
     }
 
+    void setShouldDoFullPaintInvalidation(PaintInvalidationReason reason = PaintInvalidationFull)
+    {
+        m_layoutObject->setShouldDoFullPaintInvalidation(reason);
+    }
+
     void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants()
     {
         m_layoutObject->setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
@@ -204,6 +224,31 @@ public:
     void setNeedsLayoutAndPrefWidthsRecalc(LayoutInvalidationReasonForTracing reason)
     {
         m_layoutObject->setNeedsLayoutAndPrefWidthsRecalc(reason);
+    }
+
+    bool needsOverflowRecalcAfterStyleChange() const
+    {
+        return m_layoutObject->needsOverflowRecalcAfterStyleChange();
+    }
+
+    void invalidateTreeIfNeeded(const PaintInvalidationState& state)
+    {
+        m_layoutObject->invalidateTreeIfNeeded(state);
+    }
+
+    CompositingState compositingState() const
+    {
+        return m_layoutObject->compositingState();
+    }
+
+    bool mapToVisualRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& layoutRect, VisualRectFlags flags = DefaultVisualRectFlags) const
+    {
+        return m_layoutObject->mapToVisualRectInAncestorSpace(ancestor, layoutRect, flags);
+    }
+
+    Color resolveColor(int colorProperty) const
+    {
+        return m_layoutObject->resolveColor(colorProperty);
     }
 
 protected:
