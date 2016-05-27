@@ -148,19 +148,6 @@ class GPU_EXPORT CommandBufferHelper
     return space;
   }
 
-  template <typename T>
-  void ForceNullCheck(T* data) {
-#if defined(COMPILER_MSVC) && defined(ARCH_CPU_64_BITS) && !defined(__clang__)
-    // 64-bit MSVC's alias analysis was determining that the command buffer
-    // entry couldn't be NULL, so it optimized out the NULL check.
-    // Dereferencing the same datatype through a volatile pointer seems to
-    // prevent that from happening. http://crbug.com/361936
-    // TODO(jbauman): Remove once we're on VC2015, http://crbug.com/412902
-    if (data)
-      static_cast<volatile T*>(data)->header;
-#endif
-  }
-
   // Typed version of GetSpace. Gets enough room for the given type and returns
   // a reference to it.
   template <typename T>
@@ -169,7 +156,6 @@ class GPU_EXPORT CommandBufferHelper
                   "T::kArgFlags should equal cmd::kFixed");
     int32_t space_needed = ComputeNumEntries(sizeof(T));
     T* data = static_cast<T*>(GetSpace(space_needed));
-    ForceNullCheck(data);
     return data;
   }
 
@@ -180,7 +166,6 @@ class GPU_EXPORT CommandBufferHelper
                   "T::kArgFlags should equal cmd::kAtLeastN");
     int32_t space_needed = ComputeNumEntries(sizeof(T) + data_space);
     T* data = static_cast<T*>(GetSpace(space_needed));
-    ForceNullCheck(data);
     return data;
   }
 
@@ -191,7 +176,6 @@ class GPU_EXPORT CommandBufferHelper
                   "T::kArgFlags should equal cmd::kAtLeastN");
     int32_t space_needed = ComputeNumEntries(total_space);
     T* data = static_cast<T*>(GetSpace(space_needed));
-    ForceNullCheck(data);
     return data;
   }
 
