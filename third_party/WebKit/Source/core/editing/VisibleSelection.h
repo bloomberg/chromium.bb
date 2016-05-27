@@ -113,7 +113,7 @@ public:
 
     void appendTrailingWhitespace();
 
-    bool expandUsingGranularity(TextGranularity);
+    void expandUsingGranularity(TextGranularity);
 
     // TODO(yosin) Most callers probably don't want these functions, but
     // are using them for historical reasons. |toNormalizedEphemeralRange()|

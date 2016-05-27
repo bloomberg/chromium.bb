@@ -250,10 +250,10 @@ EphemeralRangeTemplate<Strategy> VisibleSelectionTemplate<Strategy>::toNormalize
 }
 
 template <typename Strategy>
-bool VisibleSelectionTemplate<Strategy>::expandUsingGranularity(TextGranularity granularity)
+void VisibleSelectionTemplate<Strategy>::expandUsingGranularity(TextGranularity granularity)
 {
     if (isNone())
-        return false;
+        return;
 
     // TODO(yosin) Do we need to check all of them?
     const PositionTemplate<Strategy>oldBase = m_base;
@@ -263,7 +263,6 @@ bool VisibleSelectionTemplate<Strategy>::expandUsingGranularity(TextGranularity 
     validate(granularity);
     if (m_base != oldBase || m_extent != oldExtent || m_start != oldStart || m_end != oldEnd)
         didChange();
-    return true;
 }
 
 template <typename Strategy>
