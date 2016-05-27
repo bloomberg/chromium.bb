@@ -283,6 +283,7 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveCategoryToString) {
       BackgroundTracingConfigImpl::BENCHMARK_IPC,
       BackgroundTracingConfigImpl::BENCHMARK_STARTUP,
       BackgroundTracingConfigImpl::BENCHMARK_BLINK_GC,
+      BackgroundTracingConfigImpl::BENCHMARK_MEMORY_HEAVY,
       BackgroundTracingConfigImpl::BENCHMARK_EXECUTION_METRIC,
       BackgroundTracingConfigImpl::BLINK_STYLE,
   };
@@ -293,6 +294,7 @@ TEST_F(BackgroundTracingConfigTest, ValidPreemptiveCategoryToString) {
                                     "BENCHMARK_IPC",
                                     "BENCHMARK_STARTUP",
                                     "BENCHMARK_BLINK_GC",
+                                    "BENCHMARK_MEMORY_HEAVY",
                                     "BENCHMARK_EXECUTION_METRIC",
                                     "BLINK_STYLE"};
   for (size_t i = 0;

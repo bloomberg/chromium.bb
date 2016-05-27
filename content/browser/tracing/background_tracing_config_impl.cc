@@ -31,6 +31,7 @@ const char kConfigCategoryBenchmarkGPU[] = "BENCHMARK_GPU";
 const char kConfigCategoryBenchmarkIPC[] = "BENCHMARK_IPC";
 const char kConfigCategoryBenchmarkStartup[] = "BENCHMARK_STARTUP";
 const char kConfigCategoryBenchmarkBlinkGC[] = "BENCHMARK_BLINK_GC";
+const char kConfigCategoryBenchmarkMemoryHeavy[] = "BENCHMARK_MEMORY_HEAVY";
 const char kConfigCategoryBenchmarkExecutionMetric[] =
     "BENCHMARK_EXECUTION_METRIC";
 const char kConfigCategoryBlinkStyle[] = "BLINK_STYLE";
@@ -59,6 +60,8 @@ std::string BackgroundTracingConfigImpl::CategoryPresetToString(
       return kConfigCategoryBenchmarkStartup;
     case BackgroundTracingConfigImpl::BENCHMARK_BLINK_GC:
       return kConfigCategoryBenchmarkBlinkGC;
+    case BackgroundTracingConfigImpl::BENCHMARK_MEMORY_HEAVY:
+      return kConfigCategoryBenchmarkMemoryHeavy;
     case BackgroundTracingConfigImpl::BENCHMARK_EXECUTION_METRIC:
       return kConfigCategoryBenchmarkExecutionMetric;
     case BackgroundTracingConfigImpl::BLINK_STYLE:
@@ -100,6 +103,11 @@ bool BackgroundTracingConfigImpl::StringToCategoryPreset(
 
   if (category_preset_string == kConfigCategoryBenchmarkBlinkGC) {
     *category_preset = BackgroundTracingConfigImpl::BENCHMARK_BLINK_GC;
+    return true;
+  }
+
+  if (category_preset_string == kConfigCategoryBenchmarkMemoryHeavy) {
+    *category_preset = BackgroundTracingConfigImpl::BENCHMARK_MEMORY_HEAVY;
     return true;
   }
 

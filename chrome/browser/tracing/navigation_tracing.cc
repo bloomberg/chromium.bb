@@ -70,6 +70,18 @@ void SetupNavigationTracing() {
     rules_dict->SetString("category", "BENCHMARK_DEEP");
     rules_list->Append(std::move(rules_dict));
   }
+  {
+    std::unique_ptr<base::DictionaryValue> rules_dict(
+        new base::DictionaryValue());
+    rules_dict->SetString("rule",
+        "MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE");
+    rules_dict->SetString("category", "BENCHMARK_MEMORY_HEAVY");
+    rules_dict->SetString("histogram_name", "V8.GCLowMemoryNotification");
+    rules_dict->SetInteger("trigger_delay", 5);
+    rules_dict->SetInteger("histogram_lower_value", 0);
+    rules_dict->SetInteger("histogram_upper_value", 10000);
+    rules_list->Append(std::move(rules_dict));
+  }
   dict.Set("configs", std::move(rules_list));
 
   std::unique_ptr<content::BackgroundTracingConfig> config(
