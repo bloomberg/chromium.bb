@@ -143,6 +143,11 @@ static void weston_mode_switch_finish(struct weston_output *output,
 	}
 }
 
+
+static void
+weston_compositor_reflow_outputs(struct weston_compositor *compositor,
+				struct weston_output *resized_output, int delta_width);
+
 WL_EXPORT int
 weston_output_mode_set_native(struct weston_output *output,
 			      struct weston_mode *mode,
@@ -150,6 +155,7 @@ weston_output_mode_set_native(struct weston_output *output,
 {
 	int ret;
 	int mode_changed = 0, scale_changed = 0;
+	int32_t old_width;
 
 	if (!output->switch_mode)
 		return -1;
@@ -165,11 +171,17 @@ weston_output_mode_set_native(struct weston_output *output,
 		}
 	}
 
+	old_width = output->width;
 	output->native_mode = mode;
 	output->native_scale = scale;
 
 	weston_mode_switch_finish(output, mode_changed, scale_changed);
 
+	if (mode_changed || scale_changed) {
+		weston_compositor_reflow_outputs(output->compositor, output, output->width - old_width);
+
+		wl_signal_emit(&output->compositor->output_resized_signal, output);
+	}
 	return 0;
 }
 
@@ -3918,23 +3930,25 @@ bind_output(struct wl_client *client,
 		wl_output_send_done(resource);
 }
 
-/* Move other outputs when one is removed so the space remains contiguos. */
+/* Move other outputs when one is resized so the space remains contiguous. */
 static void
-weston_compositor_remove_output(struct weston_compositor *compositor,
-				struct weston_output *remove_output)
+weston_compositor_reflow_outputs(struct weston_compositor *compositor,
+				struct weston_output *resized_output, int delta_width)
 {
 	struct weston_output *output;
-	int offset = 0;
+	bool start_resizing = false;
+
+	if (!delta_width)
+		return;
 
 	wl_list_for_each(output, &compositor->output_list, link) {
-		if (output == remove_output) {
-			offset = output->width;
+		if (output == resized_output) {
+			start_resizing = true;
 			continue;
 		}
 
-		if (offset > 0) {
-			weston_output_move(output,
-					   output->x - offset, output->y);
+		if (start_resizing) {
+			weston_output_move(output, output->x + delta_width, output->y);
 			output->dirty = 1;
 		}
 	}
@@ -3957,7 +3971,7 @@ weston_output_destroy(struct weston_output *output)
 
 	weston_presentation_feedback_discard_list(&output->feedback_list);
 
-	weston_compositor_remove_output(output->compositor, output);
+	weston_compositor_reflow_outputs(output->compositor, output, output->width);
 	wl_list_remove(&output->link);
 
 	wl_signal_emit(&output->compositor->output_destroyed_signal, output);
@@ -4560,6 +4574,7 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 	wl_signal_init(&ec->output_created_signal);
 	wl_signal_init(&ec->output_destroyed_signal);
 	wl_signal_init(&ec->output_moved_signal);
+	wl_signal_init(&ec->output_resized_signal);
 	wl_signal_init(&ec->session_signal);
 	ec->session_active = 1;
 

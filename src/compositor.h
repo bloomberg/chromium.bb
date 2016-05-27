@@ -744,6 +744,7 @@ struct weston_compositor {
 	struct wl_signal output_created_signal;
 	struct wl_signal output_destroyed_signal;
 	struct wl_signal output_moved_signal;
+	struct wl_signal output_resized_signal; /* callback argument: resized output */
 
 	struct wl_signal session_signal;
 	int session_active;
