@@ -10,7 +10,6 @@ WepPageReplay serving all connections.
 """
 
 import argparse
-import csv
 import json
 import logging
 import os
@@ -30,6 +29,7 @@ import devil_chromium
 
 import chrome_cache
 import common_util
+import csv_util
 import device_setup
 import emulation
 import options
@@ -124,6 +124,15 @@ def _ArgumentParser():
                           help='How many times to repeat the urls.')
   run_parser.add_argument('--swr-benchmark', action='store_true',
                           help='Run the Stale-While-Revalidate benchmarks.')
+
+  # Collect subcommand.
+  collect_csv_parser = subparsers.add_parser('collect-csv',
+      help='Collects all CSVs from Sandwich output directory into a single '
+           'CSV.')
+  collect_csv_parser.add_argument('output_dir', type=str,
+                                  help='Path to the run output directory.')
+  collect_csv_parser.add_argument('output_csv', type=argparse.FileType('w'),
+                                  help='Path to the output CSV.')
 
   return parser
 
@@ -232,6 +241,11 @@ def main(command_line_args):
     return _RecordWebServerTestTrace(args)
   if args.subcommand == 'run':
     return _RunAllMain(args)
+  if args.subcommand == 'collect-csv':
+    with args.output_csv as output_file:
+      if not csv_util.CollectCSVsFromDirectory(args.output_dir, output_file):
+        return 1
+    return 0
   assert False
 
 
