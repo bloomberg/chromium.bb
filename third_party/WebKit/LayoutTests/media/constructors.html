@@ -1,22 +1,25 @@
-<body>
-<p>Test that media constructors behave consistently.</p>
+<!DOCTYPE HTML>
+<title>Test that media constructors behave consistently.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
 <video></video>
 <audio></audio>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
 <script>
+test(function() {
     var audioJS = new Audio();
-    var videoElem = document.getElementsByTagName('video')[0];
-    var audioElem = document.getElementsByTagName('audio')[0];
-    testExpected("audioJS instanceof HTMLAudioElement", true);
-    testExpected("audioJS instanceof HTMLMediaElement", true);
-    testExpected("audioJS instanceof HTMLVideoElement", false);
-    testExpected("audioElem instanceof HTMLAudioElement", true);
-    testExpected("audioElem instanceof HTMLMediaElement", true);
-    testExpected("audioElem instanceof HTMLVideoElement", false);
-    testExpected("videoElem instanceof HTMLVideoElement", true);
-    testExpected("videoElem instanceof HTMLMediaElement", true);
-    testExpected("videoElem instanceof HTMLAudioElement", false);
-    endTest();
+    var videoElem = document.querySelector("video");
+    var audioElem = document.querySelector("audio");
+
+    assert_true(audioJS instanceof HTMLAudioElement);
+    assert_true(audioJS instanceof HTMLMediaElement);
+    assert_false(audioJS instanceof HTMLVideoElement);
+
+    assert_true(audioElem instanceof HTMLAudioElement);
+    assert_true(audioElem instanceof HTMLMediaElement);
+    assert_false(audioElem instanceof HTMLVideoElement);
+
+    assert_true(videoElem instanceof HTMLVideoElement);
+    assert_true(videoElem instanceof HTMLMediaElement);
+    assert_false(videoElem instanceof HTMLAudioElement);
+});
 </script>
