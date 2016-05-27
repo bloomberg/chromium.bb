@@ -699,6 +699,21 @@ TEST_F(TimerTest, AugmentRepeatInterval)
     EXPECT_THAT(m_runTimes, ElementsAre(m_startTime + 20.0, m_startTime + 40.0));
 }
 
+TEST_F(TimerTest, AugmentRepeatInterval_TimerFireDelayed)
+{
+    Timer<TimerTest> timer(this, &TimerTest::countingTask);
+    timer.startRepeating(10, BLINK_FROM_HERE);
+    EXPECT_FLOAT_EQ(10.0, timer.repeatInterval());
+    EXPECT_FLOAT_EQ(10.0, timer.nextFireInterval());
+
+    advanceTimeBy(123.0); // Make the timer long overdue.
+    timer.augmentRepeatInterval(10);
+
+    EXPECT_FLOAT_EQ(20.0, timer.repeatInterval());
+    // The timer is overdue so it should be scheduled to fire immediatly.
+    EXPECT_FLOAT_EQ(0.0, timer.nextFireInterval());
+}
+
 TEST_F(TimerTest, RepeatingTimerDoesNotDrift)
 {
     Timer<TimerTest> timer(this, &TimerTest::recordNextFireTimeTask);

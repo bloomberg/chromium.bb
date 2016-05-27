@@ -68,7 +68,7 @@ public:
 
     void augmentRepeatInterval(double delta) {
         double now = timerMonotonicallyIncreasingTime();
-        setNextFireTime(now, m_nextFireTime - now + delta);
+        setNextFireTime(now, std::max(m_nextFireTime - now + delta, 0.0));
         m_repeatInterval += delta;
     }
 
