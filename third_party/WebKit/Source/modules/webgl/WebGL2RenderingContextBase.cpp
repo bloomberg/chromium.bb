@@ -1072,7 +1072,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
     if (format == GL_RGBA && type == GL_UNSIGNED_BYTE && !m_unpackFlipY && !m_unpackPremultiplyAlpha) {
         needConversion = false;
     } else {
-        if (!WebGLImageConversion::extractImageData(pixels->data()->data(), pixels->size(), format, type, m_unpackFlipY, m_unpackPremultiplyAlpha, data)) {
+        if (!WebGLImageConversion::extractImageData(pixels->data()->data(), WebGLImageConversion::DataFormat::DataFormatRGBA8, pixels->size(), format, type, m_unpackFlipY, m_unpackPremultiplyAlpha, data)) {
             synthesizeGLError(GL_INVALID_VALUE, "texSubImage3D", "bad image data");
             return;
         }
@@ -1149,20 +1149,34 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
         type = GL_FLOAT;
     }
     ASSERT(bitmap->bitmapImage());
-    OwnPtr<uint8_t[]> pixelData = bitmap->copyBitmapData(bitmap->isPremultiplied() ? PremultiplyAlpha : DontPremultiplyAlpha);
+    RefPtr<SkImage> skImage = bitmap->bitmapImage()->imageForCurrentFrame();
+    SkPixmap pixmap;
+    OwnPtr<uint8_t[]> pixelData;
+    uint8_t* pixelDataPtr = nullptr;
+    bool peekSucceed = skImage->peekPixels(&pixmap);
+    if (peekSucceed) {
+        pixelDataPtr = static_cast<uint8_t*>(pixmap.writable_addr());
+    } else if (skImage->isTextureBacked()) {
+        pixelData = bitmap->copyBitmapData(bitmap->isPremultiplied() ? PremultiplyAlpha : DontPremultiplyAlpha);
+        pixelDataPtr = pixelData.get();
+    }
     Vector<uint8_t> data;
     bool needConversion = true;
-    if (format == GL_RGBA && type == GL_UNSIGNED_BYTE) {
+    bool havePeekableRGBA = (peekSucceed && pixmap.colorType() == SkColorType::kRGBA_8888_SkColorType);
+    bool isPixelDataRBGA = (havePeekableRGBA || !peekSucceed);
+    if (isPixelDataRBGA && format == GL_RGBA && type == GL_UNSIGNED_BYTE) {
         needConversion = false;
     } else {
         // In the case of ImageBitmap, we do not need to apply flipY or premultiplyAlpha.
-        if (!WebGLImageConversion::extractImageData(pixelData.get(), bitmap->size(), format, type, false, false, data)) {
+        bool isPixelDataBGRA = (peekSucceed && pixmap.colorType() == SkColorType::kBGRA_8888_SkColorType);
+        if ((isPixelDataBGRA && !WebGLImageConversion::extractImageData(pixelDataPtr, WebGLImageConversion::DataFormat::DataFormatBGRA8, bitmap->size(), format, type, false, false, data))
+            || (isPixelDataRBGA && !WebGLImageConversion::extractImageData(pixelDataPtr, WebGLImageConversion::DataFormat::DataFormatRGBA8, bitmap->size(), format, type, false, false, data))) {
             synthesizeGLError(GL_INVALID_VALUE, "texSubImage3D", "bad image data");
             return;
         }
     }
     resetUnpackParameters();
-    contextGL()->TexSubImage3D(target, level, xoffset, yoffset, zoffset, bitmap->width(), bitmap->height(), 1, format, type, needConversion ? data.data() : pixelData.get());
+    contextGL()->TexSubImage3D(target, level, xoffset, yoffset, zoffset, bitmap->width(), bitmap->height(), 1, format, type, needConversion ? data.data() : pixelDataPtr);
     restoreUnpackParameters();
 }
 

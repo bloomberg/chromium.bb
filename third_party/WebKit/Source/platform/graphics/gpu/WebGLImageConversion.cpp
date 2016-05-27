@@ -2313,6 +2313,7 @@ bool WebGLImageConversion::packImageData(
 
 bool WebGLImageConversion::extractImageData(
     const uint8_t* imageData,
+    DataFormat sourceDataFormat,
     const IntSize& imageDataSize,
     GLenum format,
     GLenum type,
@@ -2333,7 +2334,7 @@ bool WebGLImageConversion::extractImageData(
         return false;
     data.resize(packedSize);
 
-    if (!packPixels(imageData, DataFormatRGBA8, width, height, 0, format, type, premultiplyAlpha ? AlphaDoPremultiply : AlphaDoNothing, data.data(), flipY))
+    if (!packPixels(imageData, sourceDataFormat, width, height, 0, format, type, premultiplyAlpha ? AlphaDoPremultiply : AlphaDoNothing, data.data(), flipY))
         return false;
 
     return true;
