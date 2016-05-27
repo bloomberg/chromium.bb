@@ -80,6 +80,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/color_profile.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -2534,6 +2535,9 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     if (handled)
       return;
   }
+
+  // Compute Event.Latency.OS.MOUSE_WHEEL histogram.
+  ui::ComputeEventLatencyOS(event);
 
   // Use an NSEvent monitor to listen for the wheel-end end. This ensures that
   // the event is received even when the mouse cursor is no longer over the view
