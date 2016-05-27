@@ -56,14 +56,13 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   // toasts.
   typedef std::set<Notification*, CompareTimestampSerial> PopupNotifications;
 
-  explicit NotificationList();
+  explicit NotificationList(MessageCenter* message_center);
   virtual ~NotificationList();
 
-  // Affects whether or not a message has been "read". Collects the set of
-  // ids whose state have changed and set to |udpated_ids|. NULL if updated
-  // ids don't matter.
-  void SetMessageCenterVisible(bool visible,
-                               std::set<std::string>* updated_ids);
+  // Makes a message "read". Collects the set of ids whose state have changed
+  // and set to |udpated_ids|. NULL if updated ids don't matter.
+  void SetNotificationsShown(const NotificationBlockers& blockers,
+                             std::set<std::string>* updated_ids);
 
   void AddNotification(std::unique_ptr<Notification> notification);
 
@@ -137,8 +136,6 @@ class MESSAGE_CENTER_EXPORT NotificationList {
   size_t NotificationCount(const NotificationBlockers& blockers) const;
   size_t UnreadCount(const NotificationBlockers& blockers) const;
 
-  bool is_message_center_visible() const { return message_center_visible_; }
-
  private:
   friend class NotificationListTest;
   FRIEND_TEST_ALL_PREFIXES(NotificationListTest,
@@ -151,8 +148,8 @@ class MESSAGE_CENTER_EXPORT NotificationList {
 
   void PushNotification(std::unique_ptr<Notification> notification);
 
+  MessageCenter* message_center_;  // owner
   Notifications notifications_;
-  bool message_center_visible_;
   bool quiet_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationList);

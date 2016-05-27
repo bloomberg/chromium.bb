@@ -73,6 +73,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   void OnNotificationAdded(const std::string& id) override;
   void OnNotificationRemoved(const std::string& id, bool by_user) override;
   void OnNotificationUpdated(const std::string& id) override;
+  void OnLockedStateChanged(bool locked) override;
 
   // Overridden from MessageCenterController:
   void ClickOnNotification(const std::string& notification_id) override;
@@ -95,6 +96,8 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   friend class MessageCenterViewTest;
 
   enum class Mode { NOTIFICATIONS, SETTINGS, BUTTONS_ONLY };
+
+  static bool disable_animation_for_testing;
 
   void AddNotificationAt(const Notification& notification, int index);
   base::string16 GetButtonBarTitle() const;
@@ -137,6 +140,7 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
   bool is_closing_;
 
   bool is_clearing_ = false;
+  bool is_locked_ = false;
 
   // Current view mode. During animation, it is the target mode.
   Mode mode_ = Mode::BUTTONS_ONLY;

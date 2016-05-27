@@ -41,6 +41,9 @@
 
 namespace message_center {
 
+// static
+bool MessageCenterView::disable_animation_for_testing = false;
+
 namespace {
 
 const int kDefaultAnimationDurationMs = 120;
@@ -73,8 +76,9 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
       target_view_(NULL),
       target_height_(0),
       is_closing_(false),
-      mode_((!initially_settings_visible) ? Mode::BUTTONS_ONLY
-                                          : Mode::SETTINGS),
+      is_locked_(message_center_->IsLockedState()),
+      mode_((!initially_settings_visible || is_locked_) ? Mode::BUTTONS_ONLY
+                                                        : Mode::SETTINGS),
       context_menu_controller_(new MessageViewContextMenuController(this)) {
   message_center_->AddObserver(this);
   set_notify_enter_exit_on_child(true);
@@ -402,6 +406,12 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
   }
 }
 
+void MessageCenterView::OnLockedStateChanged(bool locked) {
+  is_locked_ = locked;
+  UpdateButtonBarStatus();
+  Update(true /* animate */);
+}
+
 void MessageCenterView::ClickOnNotification(
     const std::string& notification_id) {
   message_center_->ClickOnNotification(notification_id);
@@ -488,8 +498,10 @@ void MessageCenterView::AddNotificationAt(const Notification& notification,
 }
 
 base::string16 MessageCenterView::GetButtonBarTitle() const {
-  bool no_message_views = notification_views_.empty();
-  if (no_message_views && !settings_visible_)
+  if (is_locked_)
+    return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_FOOTER_LOCKSCREEN);
+
+  if (mode_ == Mode::BUTTONS_ONLY)
     return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NO_MESSAGES);
 
   return l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_FOOTER_TITLE);
@@ -507,7 +519,9 @@ void MessageCenterView::Update(bool animate) {
   if (focus_manager)
     focused_view = focus_manager->GetFocusedView();
 
-  if (settings_visible_)
+  if (is_locked_)
+    SetVisibilityMode(Mode::BUTTONS_ONLY, animate);
+  else if (settings_visible_)
     SetVisibilityMode(Mode::SETTINGS, animate);
   else if (no_message_views)
     SetVisibilityMode(Mode::BUTTONS_ONLY, animate);
@@ -561,7 +575,7 @@ void MessageCenterView::SetVisibilityMode(Mode mode, bool animate) {
   source_height_ = source_view_ ? source_view_->GetHeightForWidth(width()) : 0;
   target_height_ = target_view_ ? target_view_->GetHeightForWidth(width()) : 0;
 
-  if (!animate) {
+  if (!animate || disable_animation_for_testing) {
     AnimationEnded(NULL);
     return;
   }
@@ -603,7 +617,7 @@ void MessageCenterView::UpdateButtonBarStatus() {
   }
 
   button_bar_->SetBackArrowVisible(mode_ == Mode::SETTINGS);
-  button_bar_->SetSettingsAndQuietModeButtonsEnabled(true);
+  button_bar_->SetSettingsAndQuietModeButtonsEnabled(!is_locked_);
   button_bar_->SetTitle(GetButtonBarTitle());
 
   if (mode_ == Mode::NOTIFICATIONS) {

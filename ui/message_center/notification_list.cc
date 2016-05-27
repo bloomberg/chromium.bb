@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "ui/gfx/image/image.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_blocker.h"
@@ -54,8 +55,8 @@ bool CompareTimestampSerial::operator()(Notification* n1, Notification* n2) {
   return false;
 }
 
-NotificationList::NotificationList()
-    : message_center_visible_(false),
+NotificationList::NotificationList(MessageCenter* message_center)
+    : message_center_(message_center),
       quiet_mode_(false) {
 }
 
@@ -63,19 +64,12 @@ NotificationList::~NotificationList() {
   STLDeleteContainerPointers(notifications_.begin(), notifications_.end());
 }
 
-void NotificationList::SetMessageCenterVisible(
-    bool visible,
+void NotificationList::SetNotificationsShown(
+    const NotificationBlockers& blockers,
     std::set<std::string>* updated_ids) {
-  if (message_center_visible_ == visible)
-    return;
+  Notifications notifications = GetVisibleNotifications(blockers);
 
-  message_center_visible_ = visible;
-
-  if (!visible)
-    return;
-
-  for (Notifications::iterator iter = notifications_.begin();
-       iter != notifications_.end(); ++iter) {
+  for (auto iter = notifications.begin(); iter != notifications.end(); ++iter) {
     Notification* notification = *iter;
     bool was_popup = notification->shown_as_popup();
     bool was_read = notification->IsRead();
@@ -346,7 +340,7 @@ void NotificationList::PushNotification(
     // TODO(mukai): needs to distinguish if a notification is dismissed by
     // the quiet mode or user operation.
     notification->set_is_read(false);
-    notification->set_shown_as_popup(message_center_visible_
+    notification->set_shown_as_popup(message_center_->IsMessageCenterVisible()
                                      || quiet_mode_
                                      || notification->shown_as_popup());
   }
