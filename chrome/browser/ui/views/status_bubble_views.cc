@@ -440,12 +440,13 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
   // Make sure the text is aligned to the right on RTL UIs.
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
 
-  // Text color is the foreground tab text color at 50% alpha.
-  SkColor text_color =
-      theme_provider_->GetColor(ThemeProperties::COLOR_TAB_TEXT);
-  canvas->DrawStringRect(text_, font_list,
-                         SkColorSetA(text_color, SkColorGetA(text_color) / 2),
-                         text_bounds);
+  // Text color is the foreground tab text color at 60% alpha.
+  SkColor text_color = color_utils::AlphaBlend(
+      theme_provider_->GetColor(ThemeProperties::COLOR_TAB_TEXT), toolbar_color,
+      0x99);
+  canvas->DrawStringRect(
+      text_, font_list,
+      color_utils::GetReadableColor(text_color, toolbar_color), text_bounds);
 }
 
 
