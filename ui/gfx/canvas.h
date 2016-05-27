@@ -83,10 +83,6 @@ class GFX_EXPORT Canvas {
   // being returned.
   Canvas(const Size& size, float image_scale, bool is_opaque);
 
-  // Constructs a canvas with the size and the image_scale of the provided
-  // |image_rep|, and draws the |image_rep| into it.
-  Canvas(const ImageSkiaRep& image_rep, bool is_opaque);
-
   // Creates a Canvas backed by an |sk_canvas| with |image_scale_|.
   // |sk_canvas| is assumed to be already scaled based on |image_scale|
   // so no additional scaling is applied.

@@ -230,10 +230,9 @@ class NetworkIconImageSource : public gfx::ImageSkiaSource {
   // TODO(pkotwicz): Figure out what to do when a new image resolution becomes
   // available.
   gfx::ImageSkiaRep GetImageForScale(float scale) override {
-    gfx::ImageSkiaRep icon_rep = icon_.GetRepresentation(scale);
-    if (icon_rep.is_null())
-      return gfx::ImageSkiaRep();
-    gfx::Canvas canvas(icon_rep, false);
+    gfx::Canvas canvas(icon_.size(), scale, false);
+    canvas.DrawImageInt(icon_, 0, 0);
+
     if (badges_.top_left)
       canvas.DrawImageInt(*badges_.top_left, 0, 0);
     if (badges_.top_right)

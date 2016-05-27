@@ -42,17 +42,6 @@ Canvas::Canvas(const Size& size, float image_scale, bool is_opaque)
   canvas_->scale(scale_scalar, scale_scalar);
 }
 
-Canvas::Canvas(const ImageSkiaRep& image_rep, bool is_opaque)
-    : image_scale_(image_rep.scale()),
-      canvas_(sk_sp<SkCanvas>(
-          skia::CreatePlatformCanvas(image_rep.pixel_width(),
-                                     image_rep.pixel_height(),
-                                     is_opaque))) {
-  SkScalar scale_scalar = SkFloatToScalar(image_scale_);
-  canvas_->scale(scale_scalar, scale_scalar);
-  DrawImageInt(ImageSkia(image_rep), 0, 0);
-}
-
 Canvas::Canvas()
     : image_scale_(1.f),
       canvas_(sk_sp<SkCanvas>(skia::CreatePlatformCanvas(0, 0, false))) {}
