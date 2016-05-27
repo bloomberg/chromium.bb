@@ -8,13 +8,13 @@ vars = {
   # directories contain commits at each revision, you will need to select
   # revisions at latest revision up to a high watermark from each slice.
   # Document the high watermark here:
-  # chrome_rev: 391106
-  "build_rev": "2d2c819fe089c3e31f3dd9d3c69c5ec24318dc78", # from cr commit position 391106
-  "binutils_rev": "3a125b5a41761bc85d71aa4a478f88d667712267", # from cr commit position 378721
+  # chrome_rev: 396528
+  "build_rev": "a3802f0af222b2bcce4925e8df9b019f5a7f0263", # from cr commit position 396479
+  "binutils_rev": "8d77853bc9415bcb7bb4206fa2901de7603387db", # from cr commit position 392828
   "libcxx_static_rev": "fd8f9a82862aa40dab0c5bcdea6e498715284f5a", # from cr commit position 369150
   # NOTE: be sure to update clang_lib_version in SConstruct whenever
   # updating this clang_rev (e.g., if LLVM changes from version 3.7 to 3.8).
-  "clang_rev": "a14766ac344d97871f75e60c4dd39385a6cd2865", # from cr commit position 390875
+  "clang_rev": "ef8e028ea0f0fdf3be7be6e817e5c26c8ba7aebe", # from cr commit position 396388
 
   # NOTE!  These five should be kept up to date with their counterparts in
   # chromium/src/DEPS.
@@ -23,12 +23,12 @@ vars = {
   # in the build that goes into Chromium.  But we might as well update it too.)
   # You should now use the roll-dep script in depot_tools to do this update.
   "gtest_rev": "6f8a66431cb592dad629028a50b3dd418a408c87",
-  "gyp_rev": "e24c83726b7294179f479a683eeb351568fcc4ee",
+  "gyp_rev": "bce1c7793010574d88d7915e2d55395213ac63d1",
   "breakpad_rev": "a4eb2e302cefff9908ec955e761fef5d813d1b00", # from svn revision 1416
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': 'b4232ffa4e00eb04cb76deffe9a0c19e9b2e0e65',
+  'buildtools_revision': '06e80a0e17319868d4a9b13f9bb6a248dc8d8b20',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling lss
   # and whatever else without interference from each other.
