@@ -163,7 +163,7 @@ String extractTokenOrQuotedString(const String& headerValue, unsigned& pos)
 
 } // namespace
 
-OriginTrialContext::OriginTrialContext(ExecutionContext* host) : m_host(host)
+OriginTrialContext::OriginTrialContext(ExecutionContext* host, WebTrialTokenValidator* validator) : m_host(host), m_trialTokenValidator(validator)
 {
 }
 
@@ -178,7 +178,7 @@ OriginTrialContext* OriginTrialContext::from(ExecutionContext* host, CreateMode 
 {
     OriginTrialContext* originTrials = static_cast<OriginTrialContext*>(Supplement<ExecutionContext>::from(host, supplementName()));
     if (!originTrials && create == CreateIfNotExists) {
-        originTrials = new OriginTrialContext(host);
+        originTrials = new OriginTrialContext(host, Platform::current()->trialTokenValidator());
         Supplement<ExecutionContext>::provideTo(*host, supplementName(), originTrials);
     }
     return originTrials;
@@ -251,7 +251,7 @@ bool OriginTrialContext::featureBindingsInstalled(const String& featureName)
     return m_bindingsInstalled.contains(featureName);
 }
 
-bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
+bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* errorMessage)
 {
     if (!RuntimeEnabledFeatures::originTrialsEnabled()) {
         // Do not set an error message. When the framework is disabled, it
@@ -259,7 +259,7 @@ bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* err
         return false;
     }
 
-    WebOriginTrialTokenStatus result = checkFeatureEnabled(featureName, errorMessage, validator);
+    WebOriginTrialTokenStatus result = checkFeatureEnabled(featureName, errorMessage);
 
     // Record metrics for the enabled result, but only once per context.
     if (!m_enabledResultCountedForFeature.contains(featureName)) {
@@ -308,7 +308,7 @@ bool OriginTrialContext::isFeatureEnabled(const String& featureName, String* err
     return false;
 }
 
-WebOriginTrialTokenStatus OriginTrialContext::checkFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* validator)
+WebOriginTrialTokenStatus OriginTrialContext::checkFeatureEnabled(const String& featureName, String* errorMessage)
 {
     // Feature trials are only enabled for secure origins
     bool isSecure = errorMessage
@@ -323,11 +323,8 @@ WebOriginTrialTokenStatus OriginTrialContext::checkFeatureEnabled(const String& 
         return WebOriginTrialTokenStatus::Insecure;
     }
 
-    if (!validator) {
-        validator = Platform::current()->trialTokenValidator();
-        if (!validator) {
-            return WebOriginTrialTokenStatus::NotSupported;
-        }
+    if (!m_trialTokenValidator) {
+        return WebOriginTrialTokenStatus::NotSupported;
     }
 
     WebOriginTrialTokenStatus failedValidationResult = WebOriginTrialTokenStatus::NoTokens;
@@ -335,7 +332,7 @@ WebOriginTrialTokenStatus OriginTrialContext::checkFeatureEnabled(const String& 
     for (const String& token : m_tokens) {
         // Check with the validator service to verify the signature and that
         // the token is valid for the combination of origin and feature.
-        WebOriginTrialTokenStatus tokenResult = validator->validateToken(token, origin, featureName);
+        WebOriginTrialTokenStatus tokenResult = m_trialTokenValidator->validateToken(token, origin, featureName);
         if (tokenResult == WebOriginTrialTokenStatus::Success) {
             return WebOriginTrialTokenStatus::Success;
         }

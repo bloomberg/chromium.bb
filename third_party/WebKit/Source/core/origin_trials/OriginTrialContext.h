@@ -40,7 +40,7 @@ public:
         DontCreateIfNotExists
     };
 
-    explicit OriginTrialContext(ExecutionContext*);
+    OriginTrialContext(ExecutionContext*, WebTrialTokenValidator*);
 
     static const char* supplementName();
 
@@ -67,10 +67,8 @@ public:
 
     // Returns true if the feature should be considered enabled for the current
     // execution context. If non-null, the |errorMessage| parameter will be used
-    // to provide a message for features that are not enabled. If non-null, the
-    // optional WebTrialTokenValidator parameter will override the platform
-    // token validator object that is normally used (e.g. for testing).
-    bool isFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* = nullptr);
+    // to provide a message for features that are not enabled.
+    bool isFeatureEnabled(const String& featureName, String* errorMessage);
 
     void setFeatureBindingsInstalled(const String& featureName);
     bool featureBindingsInstalled(const String& featureName);
@@ -80,6 +78,7 @@ public:
 private:
     Member<ExecutionContext> m_host;
     Vector<String> m_tokens;
+    WebTrialTokenValidator* m_trialTokenValidator;
 
     // The public isFeatureEnabled method delegates to this method to do the
     // core logic to check if the feature can be enabled for the current
@@ -89,7 +88,7 @@ private:
     // an insecure context, it will be updated with a message. For other
     // disabled reasons, the |errorMessage| parameter will not be updated. The
     // caller is responsible for providing a message as appropriate.
-    WebOriginTrialTokenStatus checkFeatureEnabled(const String& featureName, String* errorMessage, WebTrialTokenValidator* = nullptr);
+    WebOriginTrialTokenStatus checkFeatureEnabled(const String& featureName, String* errorMessage);
 
     // Records whether a feature has been installed into the host's V8 context,
     // for each feature name.

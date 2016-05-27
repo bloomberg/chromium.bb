@@ -80,7 +80,7 @@ protected:
         : m_frameworkWasEnabled(RuntimeEnabledFeatures::originTrialsEnabled())
         , m_executionContext(new NullExecutionContext())
         , m_tokenValidator(adoptPtr(new MockTokenValidator()))
-        , m_originTrialContext(new OriginTrialContext(m_executionContext.get()))
+        , m_originTrialContext(new OriginTrialContext(m_executionContext.get(), m_tokenValidator.get()))
         , m_histogramTester(new HistogramTester())
     {
         RuntimeEnabledFeatures::setOriginTrialsEnabled(true);
@@ -106,7 +106,7 @@ protected:
         updateSecurityOrigin(origin);
         // Need at least one token to ensure the token validator is called.
         m_originTrialContext->addToken(kTokenPlaceholder);
-        return m_originTrialContext->isFeatureEnabled(featureName, errorMessage, tokenValidator());
+        return m_originTrialContext->isFeatureEnabled(featureName, errorMessage);
     }
 
     bool isFeatureEnabledWithoutErrorMessage(const String& origin, const String& featureName)
