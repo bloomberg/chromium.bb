@@ -5,6 +5,8 @@
 #ifndef CONTENT_PUBLIC_CHILD_V8_VALUE_CONVERTER_H_
 #define CONTENT_PUBLIC_CHILD_V8_VALUE_CONVERTER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "content/common/content_export.h"
 #include "v8/include/v8.h"
@@ -28,8 +30,9 @@ class CONTENT_EXPORT V8ValueConverter {
   // Extends the default behaviour of V8ValueConverter.
   class CONTENT_EXPORT Strategy {
    public:
-    typedef base::Callback<base::Value*(
-        v8::Local<v8::Value>, v8::Isolate* isolate)> FromV8ValueCallback;
+    typedef base::Callback<std::unique_ptr<base::Value>(v8::Local<v8::Value>,
+                                                        v8::Isolate* isolate)>
+        FromV8ValueCallback;
 
     virtual ~Strategy() {}
 
@@ -38,7 +41,7 @@ class CONTENT_EXPORT V8ValueConverter {
     // Use |callback| to convert any child values, as this will retain
     // the ValueConverter's internal checks for depth and cycles.
     virtual bool FromV8Object(v8::Local<v8::Object> value,
-                              base::Value** out,
+                              std::unique_ptr<base::Value>* out,
                               v8::Isolate* isolate,
                               const FromV8ValueCallback& callback) const;
 
@@ -47,7 +50,7 @@ class CONTENT_EXPORT V8ValueConverter {
     // Use |callback| to convert any child values, as this will retain
     // the ValueConverter's internal checks for depth and cycles.
     virtual bool FromV8Array(v8::Local<v8::Array> value,
-                             base::Value** out,
+                             std::unique_ptr<base::Value>* out,
                              v8::Isolate* isolate,
                              const FromV8ValueCallback& callback) const;
 
@@ -55,18 +58,18 @@ class CONTENT_EXPORT V8ValueConverter {
     // behavior. v8::Object is passed as ArrayBuffer and ArrayBufferView
     // classes are siblings.
     virtual bool FromV8ArrayBuffer(v8::Local<v8::Object> value,
-                                   base::Value** out,
+                                   std::unique_ptr<base::Value>* out,
                                    v8::Isolate* isolate) const;
 
     // If false is returned, V8ValueConverter proceeds with the default
     // behavior. This allows to intercept "non-finite" values and do something
     // with them.
     virtual bool FromV8Number(v8::Local<v8::Number> value,
-                              base::Value** out) const;
+                              std::unique_ptr<base::Value>* out) const;
 
     // If false is returned, V8ValueConverter proceeds with the default
     // behavior.
-    virtual bool FromV8Undefined(base::Value** out) const;
+    virtual bool FromV8Undefined(std::unique_ptr<base::Value>* out) const;
   };
 
   static V8ValueConverter* create();
@@ -119,9 +122,9 @@ class CONTENT_EXPORT V8ValueConverter {
   // Likewise, if an object throws while converting a property it will not be
   // converted, whereas if an array throws while converting an item it will be
   // converted to Value(TYPE_NULL).
-  // TODO(dcheng): This should return a unique_ptr.
-  virtual base::Value* FromV8Value(v8::Local<v8::Value> value,
-                                   v8::Local<v8::Context> context) const = 0;
+  virtual std::unique_ptr<base::Value> FromV8Value(
+      v8::Local<v8::Value> value,
+      v8::Local<v8::Context> context) const = 0;
 };
 
 }  // namespace content

@@ -5,6 +5,7 @@
 #include "content/renderer/web_ui_extension.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/values.h"
 #include "content/common/view_messages.h"
@@ -108,13 +109,9 @@ void WebUIExtension::Send(gin::Arguments* args) {
     }
 
     std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-
-    base::Value* value =
-        converter->FromV8Value(obj, frame->mainWorldScriptContext());
-    base::ListValue* list = NULL;
-    value->GetAsList(&list);
-    DCHECK(list);
-    content.reset(list);
+    content = base::ListValue::From(
+        converter->FromV8Value(obj, frame->mainWorldScriptContext()));
+    DCHECK(content);
   }
 
   // Send the message up to the browser.

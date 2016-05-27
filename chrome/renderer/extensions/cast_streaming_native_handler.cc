@@ -509,16 +509,14 @@ void CastStreamingNativeHandler::SetOptionsCastUdpTransport(
     return;
 
   std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  base::Value* options_value =
-      converter->FromV8Value(args[1], context()->v8_context());
-  base::DictionaryValue* options;
-  if (!options_value || !options_value->GetAsDictionary(&options)) {
-    delete options_value;
+  std::unique_ptr<base::DictionaryValue> options = base::DictionaryValue::From(
+      converter->FromV8Value(args[1], context()->v8_context()));
+  if (!options) {
     args.GetIsolate()->ThrowException(v8::Exception::TypeError(
         v8::String::NewFromUtf8(args.GetIsolate(), kUnableToConvertArgs)));
     return;
   }
-  transport->SetOptions(base::WrapUnique(options));
+  transport->SetOptions(std::move(options));
 }
 
 void CastStreamingNativeHandler::ToggleLogging(

@@ -102,8 +102,8 @@ bool DomAutomationController::SendMsg(const gin::Arguments& args) {
       (args.PeekNext()->IsString() || args.PeekNext()->IsBoolean() ||
        args.PeekNext()->IsNumber())) {
     V8ValueConverterImpl conv;
-    value.reset(
-        conv.FromV8Value(args.PeekNext(), args.isolate()->GetCurrentContext()));
+    value =
+        conv.FromV8Value(args.PeekNext(), args.isolate()->GetCurrentContext());
   } else {
     return false;
   }

@@ -55,7 +55,7 @@ ActivityLogConverterStrategy::~ActivityLogConverterStrategy() {}
 
 bool ActivityLogConverterStrategy::FromV8Object(
     v8::Local<v8::Object> value,
-    base::Value** out,
+    std::unique_ptr<base::Value>* out,
     v8::Isolate* isolate,
     const FromV8ValueCallback& callback) const {
   return FromV8Internal(value, out, isolate, callback);
@@ -63,7 +63,7 @@ bool ActivityLogConverterStrategy::FromV8Object(
 
 bool ActivityLogConverterStrategy::FromV8Array(
     v8::Local<v8::Array> value,
-    base::Value** out,
+    std::unique_ptr<base::Value>* out,
     v8::Isolate* isolate,
     const FromV8ValueCallback& callback) const {
   return FromV8Internal(value, out, isolate, callback);
@@ -71,12 +71,10 @@ bool ActivityLogConverterStrategy::FromV8Array(
 
 bool ActivityLogConverterStrategy::FromV8Internal(
     v8::Local<v8::Object> value,
-    base::Value** out,
+    std::unique_ptr<base::Value>* out,
     v8::Isolate* isolate,
     const FromV8ValueCallback& callback) const {
-  std::unique_ptr<base::Value> parsed_value;
-  parsed_value = SummarizeV8Value(isolate, value);
-  *out = parsed_value.release();
+  *out = SummarizeV8Value(isolate, value);
 
   return true;
 }

@@ -10,10 +10,12 @@
 #include <cmath>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "third_party/WebKit/public/web/WebArrayBuffer.h"
 #include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
@@ -26,7 +28,7 @@ namespace content {
 
 bool V8ValueConverter::Strategy::FromV8Object(
     v8::Local<v8::Object> value,
-    base::Value** out,
+    std::unique_ptr<base::Value>* out,
     v8::Isolate* isolate,
     const FromV8ValueCallback& callback) const {
   return false;
@@ -34,24 +36,27 @@ bool V8ValueConverter::Strategy::FromV8Object(
 
 bool V8ValueConverter::Strategy::FromV8Array(
     v8::Local<v8::Array> value,
-    base::Value** out,
+    std::unique_ptr<base::Value>* out,
     v8::Isolate* isolate,
     const FromV8ValueCallback& callback) const {
   return false;
 }
 
-bool V8ValueConverter::Strategy::FromV8ArrayBuffer(v8::Local<v8::Object> value,
-                                                   base::Value** out,
-                                                   v8::Isolate* isolate) const {
+bool V8ValueConverter::Strategy::FromV8ArrayBuffer(
+    v8::Local<v8::Object> value,
+    std::unique_ptr<base::Value>* out,
+    v8::Isolate* isolate) const {
   return false;
 }
 
-bool V8ValueConverter::Strategy::FromV8Number(v8::Local<v8::Number> value,
-                                              base::Value** out) const {
+bool V8ValueConverter::Strategy::FromV8Number(
+    v8::Local<v8::Number> value,
+    std::unique_ptr<base::Value>* out) const {
   return false;
 }
 
-bool V8ValueConverter::Strategy::FromV8Undefined(base::Value** out) const {
+bool V8ValueConverter::Strategy::FromV8Undefined(
+    std::unique_ptr<base::Value>* out) const {
   return false;
 }
 
@@ -212,7 +217,7 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToV8Value(
       ToV8ValueImpl(context->GetIsolate(), context->Global(), value));
 }
 
-base::Value* V8ValueConverterImpl::FromV8Value(
+std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8Value(
     v8::Local<v8::Value> val,
     v8::Local<v8::Context> context) const {
   v8::Context::Scope context_scope(context);
@@ -341,7 +346,7 @@ v8::Local<v8::Value> V8ValueConverterImpl::ToArrayBuffer(
       &buffer, creation_context, isolate);
 }
 
-base::Value* V8ValueConverterImpl::FromV8ValueImpl(
+std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ValueImpl(
     FromV8ValueState* state,
     v8::Local<v8::Value> val,
     v8::Isolate* isolate) const {
@@ -349,43 +354,46 @@ base::Value* V8ValueConverterImpl::FromV8ValueImpl(
 
   FromV8ValueState::Level state_level(state);
   if (state->HasReachedMaxRecursionDepth())
-    return NULL;
+    return nullptr;
 
   if (val->IsNull())
-    return base::Value::CreateNullValue().release();
+    return base::Value::CreateNullValue();
 
   if (val->IsBoolean())
-    return new base::FundamentalValue(val->ToBoolean(isolate)->Value());
+    return base::MakeUnique<base::FundamentalValue>(
+        val->ToBoolean(isolate)->Value());
 
   if (val->IsNumber() && strategy_) {
-    base::Value* out = NULL;
+    std::unique_ptr<base::Value> out;
     if (strategy_->FromV8Number(val.As<v8::Number>(), &out))
       return out;
   }
 
   if (val->IsInt32())
-    return new base::FundamentalValue(val->ToInt32(isolate)->Value());
+    return base::MakeUnique<base::FundamentalValue>(
+        val->ToInt32(isolate)->Value());
 
   if (val->IsNumber()) {
     double val_as_double = val.As<v8::Number>()->Value();
     if (!std::isfinite(val_as_double))
-      return NULL;
-    return new base::FundamentalValue(val_as_double);
+      return nullptr;
+    return base::MakeUnique<base::FundamentalValue>(val_as_double);
   }
 
   if (val->IsString()) {
     v8::String::Utf8Value utf8(val);
-    return new base::StringValue(std::string(*utf8, utf8.length()));
+    return base::MakeUnique<base::StringValue>(
+        std::string(*utf8, utf8.length()));
   }
 
   if (val->IsUndefined()) {
     if (strategy_) {
-      base::Value* out = NULL;
+      std::unique_ptr<base::Value> out;
       if (strategy_->FromV8Undefined(&out))
         return out;
     }
     // JSON.stringify ignores undefined.
-    return NULL;
+    return nullptr;
   }
 
   if (val->IsDate()) {
@@ -394,14 +402,14 @@ base::Value* V8ValueConverterImpl::FromV8ValueImpl(
       // consistent within this class.
       return FromV8Object(val->ToObject(isolate), state, isolate);
     v8::Date* date = v8::Date::Cast(*val);
-    return new base::FundamentalValue(date->ValueOf() / 1000.0);
+    return base::MakeUnique<base::FundamentalValue>(date->ValueOf() / 1000.0);
   }
 
   if (val->IsRegExp()) {
     if (!reg_exp_allowed_)
       // JSON.stringify converts to an object.
       return FromV8Object(val.As<v8::Object>(), state, isolate);
-    return new base::StringValue(*v8::String::Utf8Value(val));
+    return base::MakeUnique<base::StringValue>(*v8::String::Utf8Value(val));
   }
 
   // v8::Value doesn't have a ToArray() method for some reason.
@@ -411,7 +419,7 @@ base::Value* V8ValueConverterImpl::FromV8ValueImpl(
   if (val->IsFunction()) {
     if (!function_allowed_)
       // JSON.stringify refuses to convert function(){}.
-      return NULL;
+      return nullptr;
     return FromV8Object(val.As<v8::Object>(), state, isolate);
   }
 
@@ -422,16 +430,16 @@ base::Value* V8ValueConverterImpl::FromV8ValueImpl(
     return FromV8Object(val.As<v8::Object>(), state, isolate);
 
   LOG(ERROR) << "Unexpected v8 value type encountered.";
-  return NULL;
+  return nullptr;
 }
 
-base::Value* V8ValueConverterImpl::FromV8Array(
+std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8Array(
     v8::Local<v8::Array> val,
     FromV8ValueState* state,
     v8::Isolate* isolate) const {
   ScopedUniquenessGuard uniqueness_guard(state, val);
   if (!uniqueness_guard.is_valid())
-    return base::Value::CreateNullValue().release();
+    return base::Value::CreateNullValue();
 
   std::unique_ptr<v8::Context::Scope> scope;
   // If val was created in a different context than our current one, change to
@@ -447,12 +455,12 @@ base::Value* V8ValueConverterImpl::FromV8Array(
         base::Bind(&V8ValueConverterImpl::FromV8ValueImpl,
                    base::Unretained(this),
                    base::Unretained(state));
-    base::Value* out = NULL;
+    std::unique_ptr<base::Value> out;
     if (strategy_->FromV8Array(val, &out, isolate, callback))
       return out;
   }
 
-  base::ListValue* result = new base::ListValue();
+  std::unique_ptr<base::ListValue> result(new base::ListValue());
 
   // Only fields with integer keys are carried over to the ListValue.
   for (uint32_t i = 0; i < val->Length(); ++i) {
@@ -468,22 +476,23 @@ base::Value* V8ValueConverterImpl::FromV8Array(
       continue;
     }
 
-    base::Value* child = FromV8ValueImpl(state, child_v8, isolate);
+    std::unique_ptr<base::Value> child =
+        FromV8ValueImpl(state, child_v8, isolate);
     if (child)
-      result->Append(child);
+      result->Append(std::move(child));
     else
       // JSON.stringify puts null in places where values don't serialize, for
       // example undefined and functions. Emulate that behavior.
       result->Append(base::Value::CreateNullValue());
   }
-  return result;
+  return std::move(result);
 }
 
-base::Value* V8ValueConverterImpl::FromV8ArrayBuffer(
+std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8ArrayBuffer(
     v8::Local<v8::Object> val,
     v8::Isolate* isolate) const {
   if (strategy_) {
-    base::Value* out = NULL;
+    std::unique_ptr<base::Value> out;
     if (strategy_->FromV8ArrayBuffer(val, &out, isolate))
       return out;
   }
@@ -506,18 +515,19 @@ base::Value* V8ValueConverterImpl::FromV8ArrayBuffer(
   }
 
   if (data)
-    return base::BinaryValue::CreateWithCopiedBuffer(data, length);
+    return base::WrapUnique(
+        base::BinaryValue::CreateWithCopiedBuffer(data, length));
   else
-    return NULL;
+    return nullptr;
 }
 
-base::Value* V8ValueConverterImpl::FromV8Object(
+std::unique_ptr<base::Value> V8ValueConverterImpl::FromV8Object(
     v8::Local<v8::Object> val,
     FromV8ValueState* state,
     v8::Isolate* isolate) const {
   ScopedUniquenessGuard uniqueness_guard(state, val);
   if (!uniqueness_guard.is_valid())
-    return base::Value::CreateNullValue().release();
+    return base::Value::CreateNullValue();
 
   std::unique_ptr<v8::Context::Scope> scope;
   // If val was created in a different context than our current one, change to
@@ -533,7 +543,7 @@ base::Value* V8ValueConverterImpl::FromV8Object(
         base::Bind(&V8ValueConverterImpl::FromV8ValueImpl,
                    base::Unretained(this),
                    base::Unretained(state));
-    base::Value* out = NULL;
+    std::unique_ptr<base::Value> out;
     if (strategy_->FromV8Object(val, &out, isolate, callback))
       return out;
   }
@@ -552,7 +562,7 @@ base::Value* V8ValueConverterImpl::FromV8Object(
   // ANOTHER NOTE: returning an empty dictionary here to minimise surprise.
   // See also http://crbug.com/330559.
   if (val->InternalFieldCount())
-    return new base::DictionaryValue();
+    return base::MakeUnique<base::DictionaryValue>();
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   v8::Local<v8::Array> property_names(val->GetOwnPropertyNames());
@@ -579,8 +589,8 @@ base::Value* V8ValueConverterImpl::FromV8Object(
       child_v8 = v8::Null(isolate);
     }
 
-    std::unique_ptr<base::Value> child(
-        FromV8ValueImpl(state, child_v8, isolate));
+    std::unique_ptr<base::Value> child =
+        FromV8ValueImpl(state, child_v8, isolate);
     if (!child)
       // JSON.stringify skips properties whose values don't serialize, for
       // example undefined and functions. Emulate that behavior.
@@ -610,10 +620,10 @@ base::Value* V8ValueConverterImpl::FromV8Object(
       continue;
 
     result->SetWithoutPathExpansion(std::string(*name_utf8, name_utf8.length()),
-                                    child.release());
+                                    std::move(child));
   }
 
-  return result.release();
+  return std::move(result);
 }
 
 }  // namespace content

@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/test/values_test_util.h"
 #include "base/values.h"
@@ -180,8 +181,7 @@ class V8ValueConverterImplTest : public testing::Test {
     v8::Local<v8::Object> object(v8::Object::New(isolate_));
     object->Set(v8::String::NewFromUtf8(isolate_, "test"), val);
     std::unique_ptr<base::DictionaryValue> dictionary(
-        static_cast<base::DictionaryValue*>(
-            converter.FromV8Value(object, context)));
+        base::DictionaryValue::From(converter.FromV8Value(object, context)));
     ASSERT_TRUE(dictionary.get());
 
     if (expected_value) {
@@ -196,7 +196,7 @@ class V8ValueConverterImplTest : public testing::Test {
     v8::Local<v8::Array> array(v8::Array::New(isolate_));
     array->Set(0, val);
     std::unique_ptr<base::ListValue> list(
-        static_cast<base::ListValue*>(converter.FromV8Value(array, context)));
+        base::ListValue::From(converter.FromV8Value(array, context)));
     ASSERT_TRUE(list.get());
     if (expected_value) {
       base::Value* temp = NULL;
@@ -329,8 +329,7 @@ TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
   // Converting from v8 value should replace the foo property with null.
   V8ValueConverterImpl converter;
   std::unique_ptr<base::DictionaryValue> converted(
-      static_cast<base::DictionaryValue*>(
-          converter.FromV8Value(object, context)));
+      base::DictionaryValue::From(converter.FromV8Value(object, context)));
   EXPECT_TRUE(converted.get());
   // http://code.google.com/p/v8/issues/detail?id=1342
   // EXPECT_EQ(2u, converted->size());
@@ -374,7 +373,7 @@ TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
   // Converting from v8 value should replace the first item with null.
   V8ValueConverterImpl converter;
   std::unique_ptr<base::ListValue> converted(
-      static_cast<base::ListValue*>(converter.FromV8Value(array, context)));
+      base::ListValue::From(converter.FromV8Value(array, context)));
   ASSERT_TRUE(converted.get());
   // http://code.google.com/p/v8/issues/detail?id=1342
   EXPECT_EQ(2u, converted->GetSize());
@@ -442,8 +441,7 @@ TEST_F(V8ValueConverterImplTest, Prototype) {
 
   V8ValueConverterImpl converter;
   std::unique_ptr<base::DictionaryValue> result(
-      static_cast<base::DictionaryValue*>(
-          converter.FromV8Value(object, context)));
+      base::DictionaryValue::From(converter.FromV8Value(object, context)));
   ASSERT_TRUE(result.get());
   EXPECT_EQ(0u, result->size());
 }
@@ -609,8 +607,7 @@ TEST_F(V8ValueConverterImplTest, StripNullFromObjects) {
   converter.SetStripNullFromObjects(true);
 
   std::unique_ptr<base::DictionaryValue> result(
-      static_cast<base::DictionaryValue*>(
-          converter.FromV8Value(object, context)));
+      base::DictionaryValue::From(converter.FromV8Value(object, context)));
   ASSERT_TRUE(result.get());
   EXPECT_EQ(0u, result->size());
 }
@@ -630,8 +627,7 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
   object->Set(v8::String::NewFromUtf8(isolate_, "obj"), object);
 
   std::unique_ptr<base::DictionaryValue> object_result(
-      static_cast<base::DictionaryValue*>(
-          converter.FromV8Value(object, context)));
+      base::DictionaryValue::From(converter.FromV8Value(object, context)));
   ASSERT_TRUE(object_result.get());
   EXPECT_EQ(2u, object_result->size());
   EXPECT_TRUE(IsNull(object_result.get(), "obj"));
@@ -642,7 +638,7 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
   array->Set(1, array);
 
   std::unique_ptr<base::ListValue> list_result(
-      static_cast<base::ListValue*>(converter.FromV8Value(array, context)));
+      base::ListValue::From(converter.FromV8Value(array, context)));
   ASSERT_TRUE(list_result.get());
   EXPECT_EQ(2u, list_result->GetSize());
   EXPECT_TRUE(IsNull(list_result.get(), 1));
@@ -709,7 +705,7 @@ TEST_F(V8ValueConverterImplTest, ArrayGetters) {
 
   V8ValueConverterImpl converter;
   std::unique_ptr<base::ListValue> result(
-      static_cast<base::ListValue*>(converter.FromV8Value(array, context)));
+      base::ListValue::From(converter.FromV8Value(array, context)));
   ASSERT_TRUE(result.get());
   EXPECT_EQ(2u, result->GetSize());
 }
@@ -873,8 +869,7 @@ TEST_F(V8ValueConverterImplTest, ReuseObjects) {
 
     // The actual result.
     std::unique_ptr<base::DictionaryValue> result(
-        static_cast<base::DictionaryValue*>(
-            converter.FromV8Value(object, context)));
+        base::DictionaryValue::From(converter.FromV8Value(object, context)));
     ASSERT_TRUE(result.get());
     EXPECT_EQ(2u, result->size());
 
@@ -906,7 +901,7 @@ TEST_F(V8ValueConverterImplTest, ReuseObjects) {
 
     // The actual result.
     std::unique_ptr<base::ListValue> list_result(
-        static_cast<base::ListValue*>(converter.FromV8Value(array, context)));
+        base::ListValue::From(converter.FromV8Value(array, context)));
     ASSERT_TRUE(list_result.get());
     ASSERT_EQ(2u, list_result->GetSize());
     for (size_t i = 0; i < list_result->GetSize(); ++i) {
@@ -963,39 +958,39 @@ class V8ValueConverterOverridingStrategyForTesting
   V8ValueConverterOverridingStrategyForTesting()
       : reference_value_(NewReferenceValue()) {}
   bool FromV8Object(v8::Local<v8::Object> value,
-                    base::Value** out,
+                    std::unique_ptr<base::Value>* out,
                     v8::Isolate* isolate,
                     const FromV8ValueCallback& callback) const override {
     *out = NewReferenceValue();
     return true;
   }
   bool FromV8Array(v8::Local<v8::Array> value,
-                   base::Value** out,
+                   std::unique_ptr<base::Value>* out,
                    v8::Isolate* isolate,
                    const FromV8ValueCallback& callback) const override {
     *out = NewReferenceValue();
     return true;
   }
   bool FromV8ArrayBuffer(v8::Local<v8::Object> value,
-                         base::Value** out,
+                         std::unique_ptr<base::Value>* out,
                          v8::Isolate* isolate) const override {
     *out = NewReferenceValue();
     return true;
   }
   bool FromV8Number(v8::Local<v8::Number> value,
-                    base::Value** out) const override {
+                    std::unique_ptr<base::Value>* out) const override {
     *out = NewReferenceValue();
     return true;
   }
-  bool FromV8Undefined(base::Value** out) const override {
+  bool FromV8Undefined(std::unique_ptr<base::Value>* out) const override {
     *out = NewReferenceValue();
     return true;
   }
   base::Value* reference_value() const { return reference_value_.get(); }
 
  private:
-  static base::Value* NewReferenceValue() {
-    return new base::StringValue("strategy");
+  static std::unique_ptr<base::Value> NewReferenceValue() {
+    return base::MakeUnique<base::StringValue>("strategy");
   }
   std::unique_ptr<base::Value> reference_value_;
 };
@@ -1058,27 +1053,29 @@ class V8ValueConverterBypassStrategyForTesting
     : public V8ValueConverter::Strategy {
  public:
   bool FromV8Object(v8::Local<v8::Object> value,
-                    base::Value** out,
+                    std::unique_ptr<base::Value>* out,
                     v8::Isolate* isolate,
                     const FromV8ValueCallback& callback) const override {
     return false;
   }
   bool FromV8Array(v8::Local<v8::Array> value,
-                   base::Value** out,
+                   std::unique_ptr<base::Value>* out,
                    v8::Isolate* isolate,
                    const FromV8ValueCallback& callback) const override {
     return false;
   }
   bool FromV8ArrayBuffer(v8::Local<v8::Object> value,
-                         base::Value** out,
+                         std::unique_ptr<base::Value>* out,
                          v8::Isolate* isolate) const override {
     return false;
   }
   bool FromV8Number(v8::Local<v8::Number> value,
-                    base::Value** out) const override {
+                    std::unique_ptr<base::Value>* out) const override {
     return false;
   }
-  bool FromV8Undefined(base::Value** out) const override { return false; }
+  bool FromV8Undefined(std::unique_ptr<base::Value>* out) const override {
+    return false;
+  }
 };
 
 // Verify that having a strategy that fallbacks to default behaviour

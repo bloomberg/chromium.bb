@@ -292,7 +292,7 @@ void ScriptInjection::OnJsInjectionCompleted(
       // when encountered.
       v8::Local<v8::Context> context =
           render_frame_->GetWebFrame()->mainWorldScriptContext();
-      execution_result_.reset(v8_converter->FromV8Value(results[0], context));
+      execution_result_ = v8_converter->FromV8Value(results[0], context);
     }
     if (!execution_result_.get())
       execution_result_ = base::Value::CreateNullValue();

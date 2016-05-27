@@ -38,20 +38,19 @@ v8::Local<v8::Value> GinJavaBridgeValueConverter::ToV8Value(
 std::unique_ptr<base::Value> GinJavaBridgeValueConverter::FromV8Value(
     v8::Local<v8::Value> value,
     v8::Local<v8::Context> context) const {
-  return base::WrapUnique(converter_->FromV8Value(value, context));
+  return converter_->FromV8Value(value, context);
 }
 
 bool GinJavaBridgeValueConverter::FromV8Object(
     v8::Local<v8::Object> value,
-    base::Value** out,
+    std::unique_ptr<base::Value>* out,
     v8::Isolate* isolate,
     const FromV8ValueCallback& callback) const {
   GinJavaBridgeObject* unwrapped;
   if (!gin::ConvertFromV8(isolate, value, &unwrapped)) {
     return false;
   }
-  *out =
-      GinJavaBridgeValue::CreateObjectIDValue(unwrapped->object_id()).release();
+  *out = GinJavaBridgeValue::CreateObjectIDValue(unwrapped->object_id());
   return true;
 }
 
@@ -124,10 +123,10 @@ std::unique_ptr<TypedArraySerializer> TypedArraySerializer::Create(
 
 bool GinJavaBridgeValueConverter::FromV8ArrayBuffer(
     v8::Local<v8::Object> value,
-    base::Value** out,
+    std::unique_ptr<base::Value>* out,
     v8::Isolate* isolate) const {
   if (!value->IsTypedArray()) {
-    *out = GinJavaBridgeValue::CreateUndefinedValue().release();
+    *out = GinJavaBridgeValue::CreateUndefinedValue();
     return true;
   }
 
@@ -139,29 +138,31 @@ bool GinJavaBridgeValueConverter::FromV8ArrayBuffer(
     data_length = view.num_bytes();
   }
   if (!data) {
-    *out = GinJavaBridgeValue::CreateUndefinedValue().release();
+    *out = GinJavaBridgeValue::CreateUndefinedValue();
     return true;
   }
 
-  base::ListValue* result = new base::ListValue();
-  *out = result;
+  std::unique_ptr<base::ListValue> result(new base::ListValue);
   std::unique_ptr<TypedArraySerializer> serializer(
       TypedArraySerializer::Create(value.As<v8::TypedArray>()));
-  serializer->serializeTo(data, data_length, result);
+  serializer->serializeTo(data, data_length, result.get());
+  *out = std::move(result);
   return true;
 }
 
-bool GinJavaBridgeValueConverter::FromV8Number(v8::Local<v8::Number> value,
-                                               base::Value** out) const {
+bool GinJavaBridgeValueConverter::FromV8Number(
+    v8::Local<v8::Number> value,
+    std::unique_ptr<base::Value>* out) const {
   double double_value = value->Value();
   if (std::isfinite(double_value))
     return false;
-  *out = GinJavaBridgeValue::CreateNonFiniteValue(double_value).release();
+  *out = GinJavaBridgeValue::CreateNonFiniteValue(double_value);
   return true;
 }
 
-bool GinJavaBridgeValueConverter::FromV8Undefined(base::Value** out) const {
-  *out = GinJavaBridgeValue::CreateUndefinedValue().release();
+bool GinJavaBridgeValueConverter::FromV8Undefined(
+    std::unique_ptr<base::Value>* out) const {
+  *out = GinJavaBridgeValue::CreateUndefinedValue();
   return true;
 }
 

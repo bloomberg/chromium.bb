@@ -910,7 +910,7 @@ int GpuBenchmarking::RunMicroBenchmark(gin::Arguments* args) {
       base::WrapUnique(V8ValueConverter::create());
   v8::Local<v8::Context> v8_context = callback_and_context->GetContext();
   std::unique_ptr<base::Value> value =
-      base::WrapUnique(converter->FromV8Value(arguments, v8_context));
+      converter->FromV8Value(arguments, v8_context);
 
   return context.compositor()->ScheduleMicroBenchmark(
       name, std::move(value),
@@ -930,7 +930,7 @@ bool GpuBenchmarking::SendMessageToMicroBenchmark(
   v8::Local<v8::Context> v8_context =
       context.web_frame()->mainWorldScriptContext();
   std::unique_ptr<base::Value> value =
-      base::WrapUnique(converter->FromV8Value(message, v8_context));
+      converter->FromV8Value(message, v8_context);
 
   return context.compositor()->SendMessageToMicroBenchmark(id,
                                                            std::move(value));
