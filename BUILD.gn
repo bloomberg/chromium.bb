@@ -870,13 +870,12 @@ group("chromium_builder_perf") {
   if (!is_ios && !is_android && !is_chromecast && !is_mac) {
     deps = [
       "//cc:cc_perftests",
-      "//chrome",
       "//chrome/test:load_library_perf_tests",
       "//chrome/test:sync_performance_tests",
       "//gpu:gpu_perftests",
       "//media:media_perftests",
       "//media/midi:midi_unittests",
-      "//third_party/catapult/telemetry:bitmaptools",
+      "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
     ]
 
     if (!is_chromeos) {
