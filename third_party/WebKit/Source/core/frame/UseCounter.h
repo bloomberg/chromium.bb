@@ -1193,6 +1193,7 @@ public:
         TouchStartUserGestureUtilized = 1380,
         TouchMoveUserGestureUtilized = 1381,
         TouchEndDuringScrollUserGestureUtilized = 1382,
+        CSSSelectorPseudoDefined = 1383,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

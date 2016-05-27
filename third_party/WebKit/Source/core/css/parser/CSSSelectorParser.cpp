@@ -26,6 +26,9 @@ static void recordSelectorStats(const CSSParserContext& context, const CSSSelect
             case CSSSelector::PseudoUnresolved:
                 feature = UseCounter::CSSSelectorPseudoUnresolved;
                 break;
+            case CSSSelector::PseudoDefined:
+                feature = UseCounter::CSSSelectorPseudoDefined;
+                break;
             case CSSSelector::PseudoSlotted:
                 feature = UseCounter::CSSSelectorPseudoSlotted;
                 break;
