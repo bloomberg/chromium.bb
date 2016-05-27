@@ -365,14 +365,14 @@ public class WebViewLayoutTest
     private HashMap<String, HashSet<String>> buildHashMap(String contents) {
         String[] lineByLine = contents.split("\\n");
 
-        HashSet subset = null;
+        HashSet<String> subset = null;
         HashMap<String, HashSet<String>> interfaces = new HashMap<String, HashSet<String>>();
         for (String line : lineByLine) {
             String s = trimAndRemoveComments(line);
             if (isInterfaceOrGlobalObject(s)) {
                 subset = interfaces.get(s);
                 if (subset == null) {
-                    subset = new HashSet();
+                    subset = new HashSet<String>();
                     interfaces.put(s, subset);
                 }
             } else if (isInterfaceProperty(s) && subset != null) {

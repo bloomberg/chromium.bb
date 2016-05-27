@@ -4,6 +4,7 @@
 
 package org.chromium.webview_shell;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -73,6 +74,7 @@ public class WebViewLayoutTestActivity extends Activity {
             }
 
             @Override
+            @SuppressLint("NewApi") // PermissionRequest#deny requires API level 21.
             public void onPermissionRequest(PermissionRequest request) {
                 mConsoleLog.append("onPermissionRequest: "
                         + TextUtils.join(",", request.getResources()) + "\n");
