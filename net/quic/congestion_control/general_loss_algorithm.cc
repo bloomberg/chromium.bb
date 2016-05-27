@@ -78,7 +78,7 @@ void GeneralLossAlgorithm::DetectLosses(
       continue;
     }
 
-    if (FLAGS_quic_simplify_loss_detection && loss_type_ == kNack) {
+    if (loss_type_ == kNack) {
       // FACK based loss detection.
       if (largest_observed - packet_number >=
           kNumberOfNacksBeforeRetransmission) {
@@ -90,8 +90,7 @@ void GeneralLossAlgorithm::DetectLosses(
     // Only early retransmit(RFC5827) when the last packet gets acked and
     // there are retransmittable packets in flight.
     // This also implements a timer-protected variant of FACK.
-    if ((FLAGS_quic_simplify_loss_detection &&
-         !it->retransmittable_frames.empty() &&
+    if ((!it->retransmittable_frames.empty() &&
          unacked_packets.largest_sent_packet() == largest_observed) ||
         (loss_type_ == kTime || loss_type_ == kAdaptiveTime)) {
       QuicTime when_lost = it->sent_time.Add(loss_delay);
@@ -102,38 +101,12 @@ void GeneralLossAlgorithm::DetectLosses(
       packets_lost->push_back(std::make_pair(packet_number, it->bytes_sent));
       continue;
     }
-    if (!FLAGS_quic_simplify_loss_detection) {
-      // FACK based loss detection.
-      QUIC_BUG_IF(it->nack_count == 0 && it->sent_time.IsInitialized())
-          << "All packets less than largest observed should have been nacked."
-          << " packet_number:" << packet_number
-          << " largest_observed:" << largest_observed;
-      if (it->nack_count >= kNumberOfNacksBeforeRetransmission) {
-        packets_lost->push_back(std::make_pair(packet_number, it->bytes_sent));
-        continue;
-      }
-    }
 
     // NACK-based loss detection allows for a max reordering window of 1 RTT.
     if (it->sent_time.Add(rtt_stats.smoothed_rtt()) <
         unacked_packets.GetTransmissionInfo(largest_observed).sent_time) {
       packets_lost->push_back(std::make_pair(packet_number, it->bytes_sent));
       continue;
-    }
-
-    if (!FLAGS_quic_simplify_loss_detection &&
-        !it->retransmittable_frames.empty() &&
-        unacked_packets.largest_sent_packet() == largest_observed) {
-      // Early retransmit marks the packet as lost once 1.25RTTs have passed
-      // since the packet was sent and otherwise sets an alarm.
-      if (time >= it->sent_time.Add(loss_delay)) {
-        packets_lost->push_back(std::make_pair(packet_number, it->bytes_sent));
-      } else {
-        // Set the timeout for the earliest retransmittable packet where early
-        // retransmit applies.
-        loss_detection_timeout_ = it->sent_time.Add(loss_delay);
-        break;
-      }
     }
   }
 }

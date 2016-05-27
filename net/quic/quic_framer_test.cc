@@ -688,8 +688,6 @@ TEST_P(QuicFramerTest, PacketHeader) {
   EXPECT_FALSE(visitor_.header_->entropy_flag);
   EXPECT_EQ(0, visitor_.header_->entropy_hash);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
-  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
-  EXPECT_EQ(0u, visitor_.header_->fec_group);
 
   // Now test framing boundaries.
   for (size_t i = 0;
@@ -760,8 +758,6 @@ TEST_P(QuicFramerTest, PacketHeaderWith0ByteConnectionId) {
   EXPECT_FALSE(visitor_.header_->entropy_flag);
   EXPECT_EQ(0, visitor_.header_->entropy_hash);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
-  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
-  EXPECT_EQ(0u, visitor_.header_->fec_group);
 
   // Now test framing boundaries.
   for (size_t i = 0;
@@ -837,8 +833,6 @@ TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
   EXPECT_FALSE(visitor_.header_->entropy_flag);
   EXPECT_EQ(0, visitor_.header_->entropy_hash);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
-  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
-  EXPECT_EQ(0u, visitor_.header_->fec_group);
 
   // Now test framing boundaries.
   for (size_t i = 0;
@@ -916,8 +910,6 @@ TEST_P(QuicFramerTest, PacketHeaderWithMultipathFlag) {
   EXPECT_EQ(0, visitor_.header_->entropy_hash);
   EXPECT_EQ(kPathId, visitor_.header_->path_id);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
-  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
-  EXPECT_EQ(0u, visitor_.header_->fec_group);
 
   // Now test framing boundaries.
   for (size_t i = 0;
@@ -1001,8 +993,6 @@ TEST_P(QuicFramerTest, PacketHeaderWithBothVersionFlagAndMultipathFlag) {
   EXPECT_EQ(0, visitor_.header_->entropy_hash);
   EXPECT_EQ(kPathId, visitor_.header_->path_id);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
-  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
-  EXPECT_EQ(0u, visitor_.header_->fec_group);
 
   // Now test framing boundaries.
   for (size_t i = 0;
@@ -1243,8 +1233,6 @@ TEST_P(QuicFramerTest, PacketHeaderWith4BytePacketNumber) {
   EXPECT_FALSE(visitor_.header_->entropy_flag);
   EXPECT_EQ(0, visitor_.header_->entropy_hash);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
-  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
-  EXPECT_EQ(0u, visitor_.header_->fec_group);
 
   // Now test framing boundaries.
   for (size_t i = 0;
@@ -1316,8 +1304,6 @@ TEST_P(QuicFramerTest, PacketHeaderWith2BytePacketNumber) {
   EXPECT_FALSE(visitor_.header_->entropy_flag);
   EXPECT_EQ(0, visitor_.header_->entropy_hash);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
-  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
-  EXPECT_EQ(0u, visitor_.header_->fec_group);
 
   // Now test framing boundaries.
   for (size_t i = 0;
@@ -1389,8 +1375,6 @@ TEST_P(QuicFramerTest, PacketHeaderWith1BytePacketNumber) {
   EXPECT_FALSE(visitor_.header_->entropy_flag);
   EXPECT_EQ(0, visitor_.header_->entropy_hash);
   EXPECT_EQ(kPacketNumber, visitor_.header_->packet_number);
-  EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
-  EXPECT_EQ(0u, visitor_.header_->fec_group);
 
   // Now test framing boundaries.
   for (size_t i = 0;
@@ -4414,7 +4398,6 @@ TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
   header.fec_flag = false;
   header.entropy_flag = false;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicPaddingFrame padding_frame;
 
@@ -4482,7 +4465,6 @@ TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
   header.entropy_flag = false;
   header.public_header.packet_number_length = PACKET_4BYTE_PACKET_NUMBER;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicPaddingFrame padding_frame;
 
@@ -4548,7 +4530,6 @@ TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
   header.entropy_flag = false;
   header.public_header.packet_number_length = PACKET_2BYTE_PACKET_NUMBER;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicPaddingFrame padding_frame;
 
@@ -4614,7 +4595,6 @@ TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
   header.entropy_flag = false;
   header.public_header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicPaddingFrame padding_frame;
 
@@ -4679,7 +4659,6 @@ TEST_P(QuicFramerTest, BuildStreamFramePacket) {
   header.fec_flag = false;
   header.entropy_flag = true;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
                                StringPiece("hello world!"));
@@ -4755,7 +4734,6 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
   header.fec_flag = false;
   header.entropy_flag = true;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
                                StringPiece("hello world!"));
@@ -4828,7 +4806,6 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithMultipathFlag) {
   header.entropy_flag = true;
   header.path_id = kPathId;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
                                StringPiece("hello world!"));
@@ -4910,7 +4887,6 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithBothVersionAndMultipathFlag) {
   header.entropy_flag = true;
   header.path_id = kPathId;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
                                StringPiece("hello world!"));
@@ -5020,7 +4996,6 @@ TEST_P(QuicFramerTest, BuildAckFramePacket) {
   header.fec_flag = false;
   header.entropy_flag = true;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicAckFrame ack_frame;
   ack_frame.entropy_hash = 0x43;
@@ -5125,7 +5100,6 @@ TEST_P(QuicFramerTest, BuildTruncatedAckFrameLargePacket) {
   header.fec_flag = false;
   header.entropy_flag = true;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicAckFrame ack_frame;
   // This entropy hash is different from what shows up in the packet below,
@@ -5323,7 +5297,6 @@ TEST_P(QuicFramerTest, BuildTruncatedAckFrameSmallPacket) {
   header.fec_flag = false;
   header.entropy_flag = true;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicAckFrame ack_frame;
   // This entropy hash is different from what shows up in the packet below,
@@ -5684,7 +5657,6 @@ TEST_P(QuicFramerTest, BuildStopWaitingPacket) {
   header.fec_flag = false;
   header.entropy_flag = true;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicStopWaitingFrame stop_waiting_frame;
   stop_waiting_frame.entropy_hash = 0x14;
@@ -5735,7 +5707,6 @@ TEST_P(QuicFramerTest, BuildNewStopWaitingPacket) {
   header.fec_flag = false;
   header.entropy_flag = false;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicStopWaitingFrame stop_waiting_frame;
   stop_waiting_frame.least_unacked = kLeastUnacked;
@@ -5777,7 +5748,6 @@ TEST_P(QuicFramerTest, BuildRstFramePacketQuic) {
   header.fec_flag = false;
   header.entropy_flag = false;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicRstStreamFrame rst_frame;
   rst_frame.stream_id = kStreamId;
@@ -5851,7 +5821,6 @@ TEST_P(QuicFramerTest, BuildCloseFramePacket) {
   header.fec_flag = false;
   header.entropy_flag = true;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicConnectionCloseFrame close_frame;
   close_frame.error_code = static_cast<QuicErrorCode>(0x05060708);
@@ -5929,7 +5898,6 @@ TEST_P(QuicFramerTest, BuildGoAwayPacket) {
   header.fec_flag = false;
   header.entropy_flag = true;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicGoAwayFrame goaway_frame;
   goaway_frame.error_code = static_cast<QuicErrorCode>(0x05060708);
@@ -6011,7 +5979,6 @@ TEST_P(QuicFramerTest, BuildWindowUpdatePacket) {
   header.fec_flag = false;
   header.entropy_flag = true;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicWindowUpdateFrame window_update_frame;
   window_update_frame.stream_id = kStreamId;
@@ -6080,7 +6047,6 @@ TEST_P(QuicFramerTest, BuildBlockedPacket) {
   header.fec_flag = false;
   header.entropy_flag = true;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicBlockedFrame blocked_frame;
   blocked_frame.stream_id = kStreamId;
@@ -6142,7 +6108,6 @@ TEST_P(QuicFramerTest, BuildPingPacket) {
   header.fec_flag = false;
   header.entropy_flag = true;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicPingFrame ping_frame;
 
@@ -6202,7 +6167,6 @@ TEST_P(QuicFramerTest, BuildPathClosePacket) {
   header.entropy_flag = true;
   header.path_id = kDefaultPathId;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicPathCloseFrame path_close;
   path_close.path_id = kPathId;
@@ -6265,7 +6229,6 @@ TEST_P(QuicFramerTest, BuildMtuDiscoveryPacket) {
   header.fec_flag = false;
   header.entropy_flag = true;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicMtuDiscoveryFrame mtu_discovery_frame;
 
@@ -6702,7 +6665,6 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
   header.fec_flag = false;
   header.entropy_flag = false;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicAckFrame ack_frame;
   // Create a packet with just the ack.
@@ -6755,7 +6717,6 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
   header.fec_flag = false;
   header.entropy_flag = false;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   // Create a packet with just the ack.
   QuicAckFrame ack_frame;
@@ -6809,7 +6770,6 @@ TEST_P(QuicFramerTest, CleanTruncation) {
   header.fec_flag = false;
   header.entropy_flag = true;
   header.packet_number = kPacketNumber;
-  header.fec_group = 0;
 
   QuicAckFrame ack_frame;
   ack_frame.largest_observed = 201;

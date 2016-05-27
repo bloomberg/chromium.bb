@@ -42,7 +42,6 @@ typedef uint32_t QuicStreamId;
 typedef uint64_t QuicStreamOffset;
 typedef uint64_t QuicPacketNumber;
 typedef uint8_t QuicPathId;
-typedef QuicPacketNumber QuicFecGroupNumber;
 typedef uint64_t QuicPublicResetNonceProof;
 typedef uint8_t QuicPacketEntropyHash;
 typedef uint32_t QuicHeaderId;
@@ -79,7 +78,7 @@ const QuicByteCount kSessionReceiveWindowLimit = 24 * 1024 * 1024;  // 24 MB
 const QuicPacketCount kMinCongestionWindowForBandwidthResumption = 10;
 
 // Maximum number of tracked packets.
-const QuicPacketCount kMaxTrackedPackets = 5000;
+const QuicPacketCount kMaxTrackedPackets = 10000;
 
 // Default size of the socket receive buffer in bytes.
 const QuicByteCount kDefaultSocketReceiveBuffer = 256 * 1024;
@@ -87,9 +86,6 @@ const QuicByteCount kDefaultSocketReceiveBuffer = 256 * 1024;
 // Smaller values are ignored.
 const QuicByteCount kMinSocketReceiveBuffer = 16 * 1024;
 
-// Fraction of the receive buffer that can be used for encrypted bytes.
-// Allows a 5% overhead for IP and UDP framing, as well as ack only packets.
-static const float kUsableRecieveBufferFraction = 0.95f;
 // Fraction of the receive buffer that can be used, based on conservative
 // estimates and testing on Linux.
 // An alternative to kUsableRecieveBufferFraction.
@@ -112,8 +108,6 @@ const size_t kQuicVersionSize = 4;
 const size_t kQuicPathIdSize = 1;
 // Number of bytes reserved for private flags in the packet header.
 const size_t kPrivateFlagsSize = 1;
-// Number of bytes reserved for FEC group in the packet header.
-const size_t kFecGroupSize = 1;
 
 // Signifies that the QuicPacket will contain version of the protocol.
 const bool kIncludeVersion = true;
@@ -185,6 +179,11 @@ const int kMaxAvailableStreamsMultiplier = 10;
 // kMaxAvailableStreamsMultiplier, because RST on a promised stream my
 // create available streams entries.
 const int kMaxPromisedStreamsMultiplier = kMaxAvailableStreamsMultiplier - 1;
+
+// TCP RFC calls for 1 second RTO however Linux differs from this default and
+// define the minimum RTO to 200ms, we will use the same until we have data to
+// support a higher or lower value.
+static const int64_t kMinRetransmissionTimeMs = 200;
 
 // We define an unsigned 16-bit floating point value, inspired by IEEE floats
 // (http://en.wikipedia.org/wiki/Half_precision_floating-point_format),
@@ -270,11 +269,6 @@ enum QuicFrameType {
 enum QuicConnectionIdLength {
   PACKET_0BYTE_CONNECTION_ID = 0,
   PACKET_8BYTE_CONNECTION_ID = 8
-};
-
-enum InFecGroup {
-  NOT_IN_FEC_GROUP,
-  IN_FEC_GROUP,
 };
 
 enum QuicPacketNumberLength : int8_t {
@@ -675,6 +669,8 @@ enum QuicErrorCode {
   QUIC_CRYPTO_MESSAGE_WHILE_VALIDATING_CLIENT_HELLO = 54,
   // A server config update arrived before the handshake is complete.
   QUIC_CRYPTO_UPDATE_BEFORE_HANDSHAKE_COMPLETE = 65,
+  // CHLO cannot fit in one packet.
+  QUIC_CRYPTO_CHLO_TOO_LARGE = 90,
   // This connection involved a version negotiation which appears to have been
   // tampered with.
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
@@ -697,12 +693,8 @@ enum QuicErrorCode {
   QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM = 84,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 90,
+  QUIC_LAST_ERROR = 91,
 };
-
-// Must be updated any time a QuicErrorCode is deprecated.
-const int kDeprecatedQuicErrorCount = 4;
-const int kActiveQuicErrorCount = QUIC_LAST_ERROR - kDeprecatedQuicErrorCount;
 
 typedef char DiversificationNonce[32];
 
@@ -743,8 +735,6 @@ struct NET_EXPORT_PRIVATE QuicPacketHeader {
   bool entropy_flag;
   QuicPacketEntropyHash entropy_hash;
   bool fec_flag;
-  InFecGroup is_in_fec_group;
-  QuicFecGroupNumber fec_group;
 };
 
 struct NET_EXPORT_PRIVATE QuicPublicResetPacket {
@@ -1010,16 +1000,6 @@ struct NET_EXPORT_PRIVATE QuicAckFrame {
   NET_EXPORT_PRIVATE friend std::ostream& operator<<(std::ostream& os,
                                                      const QuicAckFrame& s);
 
-  // Path which this ack belongs to.
-  QuicPathId path_id;
-
-  // Entropy hash of all packets up to largest observed not including missing
-  // packets.
-  QuicPacketEntropyHash entropy_hash;
-
-  // Whether the ack had to be truncated when sent.
-  bool is_truncated;
-
   // The highest packet number we've observed from the peer.
   //
   // In general, this should be the largest packet number we've received.  In
@@ -1039,6 +1019,16 @@ struct NET_EXPORT_PRIVATE QuicAckFrame {
 
   // Set of packets.
   PacketNumberQueue packets;
+
+  // Path which this ack belongs to.
+  QuicPathId path_id;
+
+  // Entropy hash of all packets up to largest observed not including missing
+  // packets.
+  QuicPacketEntropyHash entropy_hash;
+
+  // Whether the ack had to be truncated when sent.
+  bool is_truncated;
 
   // If true, |packets| express missing packets. Otherwise, |packets| express
   // received packets.
@@ -1397,7 +1387,7 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
   // -1: full padding to the end of a max-sized packet
   //  0: no padding
   //  otherwise: only pad up to num_padding_bytes bytes
-  int num_padding_bytes;
+  int16_t num_padding_bytes;
   QuicPathId path_id;
   QuicPacketNumber packet_number;
   QuicPacketNumberLength packet_number_length;
@@ -1405,9 +1395,9 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
   QuicPacketEntropyHash entropy_hash;
   bool has_ack;
   bool has_stop_waiting;
+  TransmissionType transmission_type;
   QuicPathId original_path_id;
   QuicPacketNumber original_packet_number;
-  TransmissionType transmission_type;
 
   // Optional notifiers which will be informed when this packet has been ACKed.
   std::list<AckListenerWrapper> listeners;
@@ -1435,7 +1425,6 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   EncryptionLevel encryption_level;
   QuicPacketNumberLength packet_number_length;
   QuicPacketLength bytes_sent;
-  uint16_t nack_count;
   QuicTime sent_time;
   // Reason why this packet was transmitted.
   TransmissionType transmission_type;
@@ -1448,7 +1437,7 @@ struct NET_EXPORT_PRIVATE TransmissionInfo {
   // True if the packet contains stream data from the crypto stream.
   bool has_crypto_handshake;
   // Non-zero if the packet needs padding if it's retransmitted.
-  int num_padding_bytes;
+  int16_t num_padding_bytes;
   // Stores the packet number of the next retransmission of this packet.
   // Zero if the packet has not been retransmitted.
   QuicPacketNumber retransmission;

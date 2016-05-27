@@ -52,6 +52,10 @@ void PacingSender::OnCongestionEvent(bool rtt_updated,
                                      QuicByteCount bytes_in_flight,
                                      const CongestionVector& acked_packets,
                                      const CongestionVector& lost_packets) {
+  if (FLAGS_quic_allow_noprr && !lost_packets.empty()) {
+    // Clear any burst tokens when entering recovery.
+    burst_tokens_ = 0;
+  }
   sender_->OnCongestionEvent(rtt_updated, bytes_in_flight, acked_packets,
                              lost_packets);
 }

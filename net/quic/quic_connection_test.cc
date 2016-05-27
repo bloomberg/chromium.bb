@@ -469,8 +469,11 @@ class TestConnection : public QuicConnection {
   }
 
   void SetLossAlgorithm(LossDetectionInterface* loss_algorithm) {
+    // TODO(fayang): connection tests should use MockSentPacketManager.
     QuicSentPacketManagerPeer::SetLossAlgorithm(
-        QuicConnectionPeer::GetSentPacketManager(this), loss_algorithm);
+        static_cast<QuicSentPacketManager*>(
+            QuicConnectionPeer::GetSentPacketManager(this)),
+        loss_algorithm);
   }
 
   void SendPacket(EncryptionLevel level,
@@ -920,8 +923,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     header.entropy_flag = entropy_flag;
     header.path_id = path_id;
     header.packet_number = number;
-    header.is_in_fec_group = NOT_IN_FEC_GROUP;
-    header.fec_group = 0;
 
     QuicFrames frames;
     frames.push_back(QuicFrame(&frame1_));
@@ -935,8 +936,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     QuicPacketHeader header;
     header.public_header.connection_id = connection_id_;
     header.packet_number = number;
-    header.is_in_fec_group = NOT_IN_FEC_GROUP;
-    header.fec_group = 0;
 
     QuicConnectionCloseFrame qccf;
     qccf.error_code = QUIC_PEER_GOING_AWAY;
@@ -1362,7 +1361,7 @@ TEST_P(QuicConnectionTest, TruncatedAck) {
   ProcessAckPacket(&frame);
 
   // A truncated ack will not have the true largest observed.
-  EXPECT_GT(num_packets, manager_->largest_observed());
+  EXPECT_GT(num_packets, manager_->GetLargestObserved(frame.path_id));
 
   AckPacket(192, &frame);
 
@@ -1371,7 +1370,7 @@ TEST_P(QuicConnectionTest, TruncatedAck) {
   EXPECT_CALL(*loss_algorithm_, DetectLosses(_, _, _, _, _));
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _));
   ProcessAckPacket(&frame);
-  EXPECT_EQ(num_packets, manager_->largest_observed());
+  EXPECT_EQ(num_packets, manager_->GetLargestObserved(frame.path_id));
 }
 
 TEST_P(QuicConnectionTest, AckReceiptCausesAckSendBadEntropy) {
@@ -2351,7 +2350,8 @@ TEST_P(QuicConnectionTest, RetransmitWriteBlockedAckedOriginalThenSent) {
   connection_.OnCanWrite();
   // There is now a pending packet, but with no retransmittable frames.
   EXPECT_TRUE(connection_.GetRetransmissionAlarm()->IsSet());
-  EXPECT_FALSE(connection_.sent_packet_manager().HasRetransmittableFrames(2));
+  EXPECT_FALSE(connection_.sent_packet_manager().HasRetransmittableFrames(
+      ack.path_id, 2));
 }
 
 TEST_P(QuicConnectionTest, AlarmsWhenWriteBlocked) {
@@ -3438,8 +3438,8 @@ TEST_P(QuicConnectionTest, TimeoutAfter5RTOs) {
     EXPECT_TRUE(connection_.connected());
   }
 
-  EXPECT_EQ(2u, connection_.sent_packet_manager().consecutive_tlp_count());
-  EXPECT_EQ(4u, connection_.sent_packet_manager().consecutive_rto_count());
+  EXPECT_EQ(2u, connection_.sent_packet_manager().GetConsecutiveTlpCount());
+  EXPECT_EQ(4u, connection_.sent_packet_manager().GetConsecutiveRtoCount());
   // This time, we should time out.
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_TOO_MANY_RTOS, _,
                                            ConnectionCloseSource::FROM_SELF));
@@ -4768,14 +4768,20 @@ TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
 }
 
 TEST_P(QuicConnectionTest, Pacing) {
+  // static_cast here does not work if using multipath_sent_packet_manager.
+  FLAGS_quic_enable_multipath = false;
   TestConnection server(connection_id_, kSelfAddress, helper_.get(),
                         alarm_factory_.get(), writer_.get(),
                         Perspective::IS_SERVER, version());
   TestConnection client(connection_id_, kPeerAddress, helper_.get(),
                         alarm_factory_.get(), writer_.get(),
                         Perspective::IS_CLIENT, version());
-  EXPECT_FALSE(client.sent_packet_manager().using_pacing());
-  EXPECT_FALSE(server.sent_packet_manager().using_pacing());
+  EXPECT_FALSE(QuicSentPacketManagerPeer::UsingPacing(
+      static_cast<const QuicSentPacketManager*>(
+          &client.sent_packet_manager())));
+  EXPECT_FALSE(QuicSentPacketManagerPeer::UsingPacing(
+      static_cast<const QuicSentPacketManager*>(
+          &server.sent_packet_manager())));
 }
 
 TEST_P(QuicConnectionTest, WindowUpdateInstigateAcks) {

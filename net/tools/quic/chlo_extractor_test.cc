@@ -54,9 +54,6 @@ class ChloExtractorTest : public ::testing::Test {
     header_.packet_number = 1;
     header_.entropy_flag = false;
     header_.entropy_hash = 0;
-    header_.fec_flag = false;
-    header_.is_in_fec_group = NOT_IN_FEC_GROUP;
-    header_.fec_group = 0;
   }
 
   void MakePacket(QuicStreamFrame* stream_frame) {

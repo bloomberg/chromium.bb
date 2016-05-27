@@ -45,7 +45,7 @@ MATCHER(KeyEq, "") {
   return std::tr1::get<0>(arg).first == std::tr1::get<1>(arg);
 }
 
-class MockDebugDelegate : public QuicSentPacketManager::DebugDelegate {
+class MockDebugDelegate : public QuicSentPacketManagerInterface::DebugDelegate {
  public:
   MOCK_METHOD2(OnSpuriousPacketRetransmission,
                void(TransmissionType transmission_type,
@@ -97,7 +97,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<TestParams> {
     QuicSentPacketManagerPeer::SetMaxTailLossProbes(&manager_, 0);
     // Advance the time 1s so the send times are never QuicTime::Zero.
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(1000));
-    manager_.set_network_change_visitor(network_change_visitor_.get());
+    manager_.SetNetworkChangeVisitor(network_change_visitor_.get());
 
     EXPECT_CALL(*send_algorithm_, HasReliableBandwidthEstimate())
         .Times(AnyNumber());
@@ -125,9 +125,9 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<TestParams> {
     }
 
     EXPECT_TRUE(manager_.HasUnackedPackets());
-    EXPECT_EQ(packets[0], manager_.GetLeastUnacked());
+    EXPECT_EQ(packets[0], manager_.GetLeastUnacked(kDefaultPathId));
     for (size_t i = 0; i < num_packets; ++i) {
-      EXPECT_TRUE(manager_.IsUnacked(packets[i])) << packets[i];
+      EXPECT_TRUE(manager_.IsUnacked(kDefaultPathId, packets[i])) << packets[i];
     }
   }
 
@@ -137,7 +137,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<TestParams> {
         num_packets,
         QuicSentPacketManagerPeer::GetNumRetransmittablePackets(&manager_));
     for (size_t i = 0; i < num_packets; ++i) {
-      EXPECT_TRUE(manager_.HasRetransmittableFrames(packets[i]))
+      EXPECT_TRUE(manager_.HasRetransmittableFrames(kDefaultPathId, packets[i]))
           << " packets[" << i << "]:" << packets[i];
     }
   }
@@ -198,7 +198,7 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<TestParams> {
                                QuicPacketNumber new_packet_number,
                                TransmissionType transmission_type) {
     QuicSentPacketManagerPeer::MarkForRetransmission(
-        &manager_, old_packet_number, transmission_type);
+        &manager_, kDefaultPathId, old_packet_number, transmission_type);
     EXPECT_TRUE(manager_.HasPendingRetransmissions());
     PendingRetransmission next_retransmission =
         manager_.NextPendingRetransmission();
@@ -213,8 +213,8 @@ class QuicSentPacketManagerTest : public ::testing::TestWithParam<TestParams> {
     manager_.OnPacketSent(&packet, packet.path_id, old_packet_number,
                           clock_.Now(), transmission_type,
                           HAS_RETRANSMITTABLE_DATA);
-    EXPECT_TRUE(QuicSentPacketManagerPeer::IsRetransmission(&manager_,
-                                                            new_packet_number));
+    EXPECT_TRUE(QuicSentPacketManagerPeer::IsRetransmission(
+        &manager_, packet.path_id, new_packet_number));
   }
 
   SerializedPacket CreateDataPacket(QuicPacketNumber packet_number) {
@@ -333,7 +333,8 @@ TEST_P(QuicSentPacketManagerTest, IsUnAckedRetransmit) {
   SendDataPacket(1);
   RetransmitAndSendPacket(1, 2);
 
-  EXPECT_TRUE(QuicSentPacketManagerPeer::IsRetransmission(&manager_, 2));
+  EXPECT_TRUE(QuicSentPacketManagerPeer::IsRetransmission(&manager_,
+                                                          kDefaultPathId, 2));
   QuicPacketNumber unacked[] = {1, 2};
   VerifyUnackedPackets(unacked, arraysize(unacked));
   QuicPacketNumber retransmittable[] = {2};
@@ -359,7 +360,7 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAck) {
 
 TEST_P(QuicSentPacketManagerTest, RetransmitThenAckBeforeSend) {
   SendDataPacket(1);
-  QuicSentPacketManagerPeer::MarkForRetransmission(&manager_, 1,
+  QuicSentPacketManagerPeer::MarkForRetransmission(&manager_, kDefaultPathId, 1,
                                                    TLP_RETRANSMISSION);
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
 
@@ -379,7 +380,7 @@ TEST_P(QuicSentPacketManagerTest, RetransmitThenAckBeforeSend) {
 
 TEST_P(QuicSentPacketManagerTest, RetransmitThenStopRetransmittingBeforeSend) {
   SendDataPacket(1);
-  QuicSentPacketManagerPeer::MarkForRetransmission(&manager_, 1,
+  QuicSentPacketManagerPeer::MarkForRetransmission(&manager_, kDefaultPathId, 1,
                                                    TLP_RETRANSMISSION);
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
 
@@ -491,7 +492,7 @@ TEST_P(QuicSentPacketManagerTest, RetransmitTwiceThenAckFirst) {
   EXPECT_CALL(debug_delegate, OnSpuriousPacketRetransmission(TLP_RETRANSMISSION,
                                                              kDefaultLength))
       .Times(2);
-  manager_.set_debug_delegate(&debug_delegate);
+  manager_.SetDebugDelegate(&debug_delegate);
 
   SendDataPacket(1);
   RetransmitAndSendPacket(1, 2);
@@ -594,7 +595,7 @@ TEST_P(QuicSentPacketManagerTest, AckPreviousTransmissionThenTruncatedAck) {
     NackPackets(1, 2, &ack_frame);
     ExpectAck(2);
     manager_.OnIncomingAck(ack_frame, clock_.Now());
-    EXPECT_TRUE(manager_.IsUnacked(4));
+    EXPECT_TRUE(manager_.IsUnacked(kDefaultPathId, 4));
   }
 
   // Truncated ack with 4 NACKs
@@ -614,12 +615,12 @@ TEST_P(QuicSentPacketManagerTest, AckPreviousTransmissionThenTruncatedAck) {
 }
 
 TEST_P(QuicSentPacketManagerTest, GetLeastUnacked) {
-  EXPECT_EQ(1u, manager_.GetLeastUnacked());
+  EXPECT_EQ(1u, manager_.GetLeastUnacked(kDefaultPathId));
 }
 
 TEST_P(QuicSentPacketManagerTest, GetLeastUnackedUnacked) {
   SendDataPacket(1);
-  EXPECT_EQ(1u, manager_.GetLeastUnacked());
+  EXPECT_EQ(1u, manager_.GetLeastUnacked(kDefaultPathId));
 }
 
 TEST_P(QuicSentPacketManagerTest, AckAckAndUpdateRtt) {
@@ -707,10 +708,12 @@ TEST_P(QuicSentPacketManagerTest, TailLossProbeTimeout) {
   QuicPacketNumber packet_number = 1;
   SendDataPacket(packet_number);
 
+  QuicPathId path_id = kInvalidPathId;
   // The first tail loss probe retransmits 1 packet.
   manager_.OnRetransmissionTimeout();
-  EXPECT_EQ(QuicTime::Delta::Zero(),
-            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_EQ(
+      QuicTime::Delta::Zero(),
+      manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA, &path_id));
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
   manager_.MaybeRetransmitTailLossProbe();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
@@ -719,16 +722,18 @@ TEST_P(QuicSentPacketManagerTest, TailLossProbeTimeout) {
 
   // The second tail loss probe retransmits 1 packet.
   manager_.OnRetransmissionTimeout();
-  EXPECT_EQ(QuicTime::Delta::Zero(),
-            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_EQ(
+      QuicTime::Delta::Zero(),
+      manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA, &path_id));
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
   manager_.MaybeRetransmitTailLossProbe();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   RetransmitNextPacket(3);
   EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
       .WillOnce(Return(QuicTime::Delta::Infinite()));
-  EXPECT_EQ(QuicTime::Delta::Infinite(),
-            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_EQ(
+      QuicTime::Delta::Infinite(),
+      manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA, &path_id));
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   // Ack the third and ensure the first two are still pending.
@@ -770,31 +775,36 @@ TEST_P(QuicSentPacketManagerTest, TailLossProbeThenRTO) {
 
   // The first tail loss probe retransmits 1 packet.
   manager_.OnRetransmissionTimeout();
-  EXPECT_EQ(QuicTime::Delta::Zero(),
-            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  QuicPathId path_id = kInvalidPathId;
+  EXPECT_EQ(
+      QuicTime::Delta::Zero(),
+      manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA, &path_id));
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
   manager_.MaybeRetransmitTailLossProbe();
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   RetransmitNextPacket(101);
   EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
       .WillOnce(Return(QuicTime::Delta::Infinite()));
-  EXPECT_EQ(QuicTime::Delta::Infinite(),
-            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_EQ(
+      QuicTime::Delta::Infinite(),
+      manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA, &path_id));
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
   clock_.AdvanceTime(manager_.GetRetransmissionTime().Subtract(clock_.Now()));
 
   // The second tail loss probe retransmits 1 packet.
   manager_.OnRetransmissionTimeout();
-  EXPECT_EQ(QuicTime::Delta::Zero(),
-            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_EQ(
+      QuicTime::Delta::Zero(),
+      manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA, &path_id));
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
   EXPECT_TRUE(manager_.MaybeRetransmitTailLossProbe());
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   RetransmitNextPacket(102);
   EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
       .WillOnce(Return(QuicTime::Delta::Infinite()));
-  EXPECT_EQ(QuicTime::Delta::Infinite(),
-            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_EQ(
+      QuicTime::Delta::Infinite(),
+      manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA, &path_id));
 
   // Ensure the RTO is set based on the correct packet.
   rto_packet_time = clock_.Now();
@@ -840,9 +850,11 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeTimeout) {
   EXPECT_TRUE(QuicSentPacketManagerPeer::HasUnackedCryptoPackets(&manager_));
 
   // The first retransmits 2 packets.
+  QuicPathId path_id = kInvalidPathId;
   manager_.OnRetransmissionTimeout();
-  EXPECT_EQ(QuicTime::Delta::Zero(),
-            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_EQ(
+      QuicTime::Delta::Zero(),
+      manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA, &path_id));
   RetransmitNextPacket(6);
   RetransmitNextPacket(7);
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
@@ -850,8 +862,9 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeTimeout) {
 
   // The second retransmits 2 packets.
   manager_.OnRetransmissionTimeout();
-  EXPECT_EQ(QuicTime::Delta::Zero(),
-            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_EQ(
+      QuicTime::Delta::Zero(),
+      manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA, &path_id));
   RetransmitNextPacket(8);
   RetransmitNextPacket(9);
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
@@ -906,7 +919,7 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeTimeoutVersionNegotiation) {
   RetransmitNextPacket(12);
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
-  EXPECT_EQ(1u, manager_.GetLeastUnacked());
+  EXPECT_EQ(1u, manager_.GetLeastUnacked(kDefaultPathId));
   // Least unacked isn't raised until an ack is received, so ack the
   // crypto packets.
   QuicPacketNumber acked[] = {8, 9};
@@ -916,7 +929,7 @@ TEST_P(QuicSentPacketManagerTest, CryptoHandshakeTimeoutVersionNegotiation) {
     NackPackets(i, i + 1, &ack_frame);
   }
   manager_.OnIncomingAck(ack_frame, clock_.ApproximateNow());
-  EXPECT_EQ(10u, manager_.GetLeastUnacked());
+  EXPECT_EQ(10u, manager_.GetLeastUnacked(kDefaultPathId));
 }
 
 TEST_P(QuicSentPacketManagerTest, CryptoHandshakeSpuriousRetransmission) {
@@ -1019,7 +1032,7 @@ TEST_P(QuicSentPacketManagerTest,
 
 TEST_P(QuicSentPacketManagerTest, RetransmissionTimeout) {
   StrictMock<MockDebugDelegate> debug_delegate;
-  manager_.set_debug_delegate(&debug_delegate);
+  manager_.SetDebugDelegate(&debug_delegate);
 
   // Send 100 packets.
   const size_t kNumSentPackets = 100;
@@ -1230,16 +1243,19 @@ TEST_P(QuicSentPacketManagerTest, GetTransmissionTimeTailLossProbe) {
   // Retransmit the packet by invoking the retransmission timeout.
   clock_.AdvanceTime(expected_tlp_delay);
   manager_.OnRetransmissionTimeout();
-  EXPECT_EQ(QuicTime::Delta::Zero(),
-            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  QuicPathId path_id = kInvalidPathId;
+  EXPECT_EQ(
+      QuicTime::Delta::Zero(),
+      manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA, &path_id));
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
   EXPECT_TRUE(manager_.MaybeRetransmitTailLossProbe());
   EXPECT_TRUE(manager_.HasPendingRetransmissions());
   RetransmitNextPacket(3);
   EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
       .WillOnce(Return(QuicTime::Delta::Infinite()));
-  EXPECT_EQ(QuicTime::Delta::Infinite(),
-            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_EQ(
+      QuicTime::Delta::Infinite(),
+      manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA, &path_id));
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
 
   expected_time = clock_.Now().Add(expected_tlp_delay);
@@ -1613,6 +1629,7 @@ TEST_P(QuicSentPacketManagerTest, NegotiateUndoFromOptionsAtClient) {
 
 TEST_P(QuicSentPacketManagerTest,
        NegotiateConservativeReceiveWindowFromOptions) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_ignore_srbf, false);
   EXPECT_EQ(kDefaultSocketReceiveBuffer,
             QuicSentPacketManagerPeer::GetReceiveWindow(&manager_));
 
@@ -1633,11 +1650,13 @@ TEST_P(QuicSentPacketManagerTest,
             QuicSentPacketManagerPeer::GetReceiveWindow(&manager_));
 
   // Ensure the smaller send window only allows 16 packets to be sent.
+  QuicPathId path_id = kInvalidPathId;
   for (QuicPacketNumber i = 1; i <= 16; ++i) {
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
         .WillOnce(Return(QuicTime::Delta::Zero()));
     EXPECT_EQ(QuicTime::Delta::Zero(),
-              manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+              manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA,
+                                     &path_id));
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, BytesInFlight(), i, kDefaultLength,
                              HAS_RETRANSMITTABLE_DATA))
@@ -1648,20 +1667,24 @@ TEST_P(QuicSentPacketManagerTest,
   }
   EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
       .WillOnce(Return(QuicTime::Delta::Infinite()));
-  EXPECT_EQ(QuicTime::Delta::Infinite(),
-            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_EQ(
+      QuicTime::Delta::Infinite(),
+      manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA, &path_id));
 }
 
 TEST_P(QuicSentPacketManagerTest, ReceiveWindowLimited) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_ignore_srbf, false);
   EXPECT_EQ(kDefaultSocketReceiveBuffer,
             QuicSentPacketManagerPeer::GetReceiveWindow(&manager_));
 
   // Ensure the smaller send window only allows 256 * 0.95 packets to be sent.
+  QuicPathId path_id = kInvalidPathId;
   for (QuicPacketNumber i = 1; i <= 244; ++i) {
     EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
         .WillOnce(Return(QuicTime::Delta::Zero()));
     EXPECT_EQ(QuicTime::Delta::Zero(),
-              manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+              manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA,
+                                     &path_id));
     EXPECT_CALL(*send_algorithm_,
                 OnPacketSent(_, BytesInFlight(), i, kDefaultLength,
                              HAS_RETRANSMITTABLE_DATA))
@@ -1672,8 +1695,9 @@ TEST_P(QuicSentPacketManagerTest, ReceiveWindowLimited) {
   }
   EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _))
       .WillOnce(Return(QuicTime::Delta::Infinite()));
-  EXPECT_EQ(QuicTime::Delta::Infinite(),
-            manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA));
+  EXPECT_EQ(
+      QuicTime::Delta::Infinite(),
+      manager_.TimeUntilSend(clock_.Now(), HAS_RETRANSMITTABLE_DATA, &path_id));
 }
 
 TEST_P(QuicSentPacketManagerTest, UseInitialRoundTripTimeToSend) {
@@ -1711,16 +1735,16 @@ TEST_P(QuicSentPacketManagerTest, ConnectionMigrationUnspecifiedChange) {
   EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
 
   QuicSentPacketManagerPeer::SetConsecutiveRtoCount(&manager_, 1);
-  EXPECT_EQ(1u, manager_.consecutive_rto_count());
+  EXPECT_EQ(1u, manager_.GetConsecutiveRtoCount());
   QuicSentPacketManagerPeer::SetConsecutiveTlpCount(&manager_, 2);
-  EXPECT_EQ(2u, manager_.consecutive_tlp_count());
+  EXPECT_EQ(2u, manager_.GetConsecutiveTlpCount());
 
   EXPECT_CALL(*send_algorithm_, OnConnectionMigration());
-  manager_.OnConnectionMigration(UNSPECIFIED_CHANGE);
+  manager_.OnConnectionMigration(kDefaultPathId, UNSPECIFIED_CHANGE);
 
   EXPECT_EQ(default_init_rtt, rtt_stats->initial_rtt_us());
-  EXPECT_EQ(0u, manager_.consecutive_rto_count());
-  EXPECT_EQ(0u, manager_.consecutive_tlp_count());
+  EXPECT_EQ(0u, manager_.GetConsecutiveRtoCount());
+  EXPECT_EQ(0u, manager_.GetConsecutiveTlpCount());
 }
 
 TEST_P(QuicSentPacketManagerTest, ConnectionMigrationIPSubnetChange) {
@@ -1730,15 +1754,15 @@ TEST_P(QuicSentPacketManagerTest, ConnectionMigrationIPSubnetChange) {
   EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
 
   QuicSentPacketManagerPeer::SetConsecutiveRtoCount(&manager_, 1);
-  EXPECT_EQ(1u, manager_.consecutive_rto_count());
+  EXPECT_EQ(1u, manager_.GetConsecutiveRtoCount());
   QuicSentPacketManagerPeer::SetConsecutiveTlpCount(&manager_, 2);
-  EXPECT_EQ(2u, manager_.consecutive_tlp_count());
+  EXPECT_EQ(2u, manager_.GetConsecutiveTlpCount());
 
-  manager_.OnConnectionMigration(IPV4_SUBNET_CHANGE);
+  manager_.OnConnectionMigration(kDefaultPathId, IPV4_SUBNET_CHANGE);
 
   EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
-  EXPECT_EQ(1u, manager_.consecutive_rto_count());
-  EXPECT_EQ(2u, manager_.consecutive_tlp_count());
+  EXPECT_EQ(1u, manager_.GetConsecutiveRtoCount());
+  EXPECT_EQ(2u, manager_.GetConsecutiveTlpCount());
 }
 
 TEST_P(QuicSentPacketManagerTest, ConnectionMigrationPortChange) {
@@ -1748,15 +1772,15 @@ TEST_P(QuicSentPacketManagerTest, ConnectionMigrationPortChange) {
   EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
 
   QuicSentPacketManagerPeer::SetConsecutiveRtoCount(&manager_, 1);
-  EXPECT_EQ(1u, manager_.consecutive_rto_count());
+  EXPECT_EQ(1u, manager_.GetConsecutiveRtoCount());
   QuicSentPacketManagerPeer::SetConsecutiveTlpCount(&manager_, 2);
-  EXPECT_EQ(2u, manager_.consecutive_tlp_count());
+  EXPECT_EQ(2u, manager_.GetConsecutiveTlpCount());
 
-  manager_.OnConnectionMigration(PORT_CHANGE);
+  manager_.OnConnectionMigration(kDefaultPathId, PORT_CHANGE);
 
   EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt_us());
-  EXPECT_EQ(1u, manager_.consecutive_rto_count());
-  EXPECT_EQ(2u, manager_.consecutive_tlp_count());
+  EXPECT_EQ(1u, manager_.GetConsecutiveRtoCount());
+  EXPECT_EQ(2u, manager_.GetConsecutiveTlpCount());
 }
 
 }  // namespace

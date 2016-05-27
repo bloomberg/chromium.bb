@@ -92,7 +92,6 @@ std::unique_ptr<base::Value> NetLogQuicPacketHeaderCallback(
   dict->SetString("packet_number", base::Uint64ToString(header->packet_number));
   dict->SetInteger("entropy_flag", header->entropy_flag);
   dict->SetInteger("fec_flag", header->fec_flag);
-  dict->SetInteger("fec_group", static_cast<int>(header->fec_group));
   return std::move(dict);
 }
 

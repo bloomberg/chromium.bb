@@ -861,10 +861,10 @@ void QuicChromiumClientSession::OnConnectionClosed(
             connection()->sent_packet_manager().HasUnackedPackets());
         UMA_HISTOGRAM_COUNTS(
             "Net.QuicSession.TimedOutWithOpenStreams.ConsecutiveRTOCount",
-            connection()->sent_packet_manager().consecutive_rto_count());
+            connection()->sent_packet_manager().GetConsecutiveRtoCount());
         UMA_HISTOGRAM_COUNTS(
             "Net.QuicSession.TimedOutWithOpenStreams.ConsecutiveTLPCount",
-            connection()->sent_packet_manager().consecutive_tlp_count());
+            connection()->sent_packet_manager().GetConsecutiveTlpCount());
       }
       if (connection()->sent_packet_manager().HasUnackedPackets()) {
         UMA_HISTOGRAM_TIMES(

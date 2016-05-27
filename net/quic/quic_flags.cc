@@ -99,9 +99,6 @@ bool FLAGS_quic_no_lower_bw_resumption_limit = true;
 // the initial flight has been acked.
 bool FLAGS_quic_sslr_limit_reduction = true;
 
-// Simplify QUIC's loss detection by combining time and nack based portions.
-bool FLAGS_quic_simplify_loss_detection = true;
-
 // If true, respect any configured max pacing rate.
 bool FLAGS_quic_max_pacing_rate = true;
 
@@ -138,3 +135,14 @@ bool FLAGS_quic_detect_memory_corrpution = true;
 // If true, QUIC public reset packets will have the \"pre-v33\" public header
 // flags.
 bool FLAGS_quic_use_old_public_reset_packets = true;
+
+// Ignore the peer's recieve buffer size and instead set max CWND based on the
+// amount of data the sender is willing to have in flight.
+bool FLAGS_quic_ignore_srbf = false;
+
+// Allow the NPRR connection option which reduces QUIC\'s pacing rate during
+// recovery instead of PRR.
+bool FLAGS_quic_allow_noprr = true;
+
+// If true, multi-packet CHLOs are explicitly disallowed.
+bool FLAGS_quic_disallow_multi_packet_chlo = true;

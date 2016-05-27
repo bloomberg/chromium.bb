@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_data_writer.h"
@@ -165,6 +166,23 @@ bool QuicPacketCreator::ConsumeData(QuicStreamId id,
     return false;
   }
   CreateStreamFrame(id, iov, iov_offset, offset, fin, frame);
+  // Explicitly disallow multi-packet CHLOs.
+  if (FLAGS_quic_disallow_multi_packet_chlo && id == kCryptoStreamId &&
+      frame->stream_frame->data_length >= sizeof(kCHLO) &&
+      strncmp(frame->stream_frame->data_buffer,
+              reinterpret_cast<const char*>(&kCHLO), sizeof(kCHLO)) == 0) {
+    DCHECK_EQ(static_cast<size_t>(0), iov_offset);
+    if (frame->stream_frame->data_length < iov.iov->iov_len) {
+      const string error_details = "Client hello won't fit in a single packet.";
+      QUIC_BUG << error_details << " Constructed stream frame length: "
+               << frame->stream_frame->data_length
+               << " CHLO length: " << iov.iov->iov_len;
+      delegate_->OnUnrecoverableError(QUIC_CRYPTO_CHLO_TOO_LARGE, error_details,
+                                      ConnectionCloseSource::FROM_SELF);
+      delete frame->stream_frame;
+      return false;
+    }
+  }
   if (!AddFrame(*frame, /*save_retransmittable_frames=*/true)) {
     // Fails if we try to write unencrypted stream data.
     delete frame->stream_frame;
@@ -506,8 +524,6 @@ void QuicPacketCreator::FillPacketHeader(QuicPacketHeader* header) {
   header->packet_number = ++packet_.packet_number;
   header->public_header.packet_number_length = packet_.packet_number_length;
   header->entropy_flag = random_bool_source_->RandBool();
-  header->is_in_fec_group = NOT_IN_FEC_GROUP;
-  header->fec_group = 0;
 }
 
 bool QuicPacketCreator::ShouldRetransmit(const QuicFrame& frame) {

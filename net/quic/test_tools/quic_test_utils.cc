@@ -337,9 +337,9 @@ void PacketSavingConnection::SendOrQueuePacket(SerializedPacket* packet) {
       QuicUtils::CopyBuffer(*packet), packet->encrypted_length, true));
   // Transfer ownership of the packet to the SentPacketManager and the
   // ack notifier to the AckNotifierManager.
-  sent_packet_manager_.OnPacketSent(packet, kInvalidPathId, 0, QuicTime::Zero(),
-                                    NOT_RETRANSMISSION,
-                                    HAS_RETRANSMITTABLE_DATA);
+  sent_packet_manager_->OnPacketSent(packet, kInvalidPathId, 0,
+                                     QuicTime::Zero(), NOT_RETRANSMISSION,
+                                     HAS_RETRANSMITTABLE_DATA);
 }
 
 MockQuicSession::MockQuicSession(QuicConnection* connection)
@@ -591,8 +591,6 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   header.entropy_flag = false;
   header.entropy_hash = 0;
   header.fec_flag = false;
-  header.is_in_fec_group = NOT_IN_FEC_GROUP;
-  header.fec_group = 0;
   QuicStreamFrame stream_frame(1, false, 0, StringPiece(data));
   QuicFrame frame(&stream_frame);
   QuicFrames frames;
@@ -643,8 +641,6 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   header.entropy_flag = false;
   header.entropy_hash = 0;
   header.fec_flag = false;
-  header.is_in_fec_group = NOT_IN_FEC_GROUP;
-  header.fec_group = 0;
   QuicStreamFrame stream_frame(1, false, 0, StringPiece(data));
   QuicFrame frame(&stream_frame);
   QuicFrames frames;
@@ -739,7 +735,6 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
   header.entropy_flag = false;
   header.entropy_hash = 0;
   header.fec_flag = false;
-  header.fec_group = 0;
 
   QuicStreamFrame stream_frame(kCryptoStreamId, false, 0,
                                data->AsStringPiece());

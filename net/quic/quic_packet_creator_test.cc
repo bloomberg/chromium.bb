@@ -1190,6 +1190,26 @@ TEST_P(QuicPacketCreatorTest, AddUnencryptedStreamDataClosesConnection) {
                 "Cannot send stream data without encryption.");
 }
 
+TEST_P(QuicPacketCreatorTest, ChloTooLarge) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_disallow_multi_packet_chlo, true);
+  CryptoHandshakeMessage message;
+  message.set_tag(kCHLO);
+  message.set_minimum_size(kMaxPacketSize);
+  CryptoFramer framer;
+  std::unique_ptr<QuicData> message_data;
+  message_data.reset(framer.ConstructHandshakeMessage(message));
+
+  struct iovec iov;
+  QuicIOVector data_iovec(::net::MakeIOVector(
+      StringPiece(message_data->data(), message_data->length()), &iov));
+  QuicFrame frame;
+  EXPECT_CALL(delegate_,
+              OnUnrecoverableError(QUIC_CRYPTO_CHLO_TOO_LARGE, _, _));
+  EXPECT_DFATAL(
+      creator_.ConsumeData(1u, data_iovec, 0u, 0u, false, false, &frame),
+      "Client hello won't fit in a single packet.");
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace net

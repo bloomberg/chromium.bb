@@ -42,9 +42,6 @@ class NET_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Returns true if the packet |packet_number| is unacked.
   bool IsUnacked(QuicPacketNumber packet_number) const;
 
-  // Sets the nack count to the max of the current nack count and |min_nacks|.
-  void NackPacket(QuicPacketNumber packet_number, uint16_t min_nacks);
-
   // Notifies all the AckListeners attached to the |info| and
   // clears them to ensure they're not notified again.
   void NotifyAndClearListeners(std::list<AckListenerWrapper>* ack_listeners,

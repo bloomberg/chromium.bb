@@ -139,15 +139,6 @@ bool QuicUnackedPacketMap::HasRetransmittableFrames(
               .retransmittable_frames.empty();
 }
 
-void QuicUnackedPacketMap::NackPacket(QuicPacketNumber packet_number,
-                                      uint16_t min_nacks) {
-  DCHECK(!FLAGS_quic_simplify_loss_detection);
-  DCHECK_GE(packet_number, least_unacked_);
-  DCHECK_LT(packet_number, least_unacked_ + unacked_packets_.size());
-  unacked_packets_[packet_number - least_unacked_].nack_count = max(
-      min_nacks, unacked_packets_[packet_number - least_unacked_].nack_count);
-}
-
 void QuicUnackedPacketMap::RemoveRetransmittability(TransmissionInfo* info) {
   while (info->retransmission != 0) {
     const QuicPacketNumber retransmission = info->retransmission;

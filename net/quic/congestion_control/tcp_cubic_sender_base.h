@@ -143,6 +143,9 @@ class NET_EXPORT_PRIVATE TcpCubicSenderBase : public SendAlgorithmInterface {
   // When true, exit slow start with large cutback of congestion window.
   bool slow_start_large_reduction_;
 
+  // When true, use unity pacing instead of PRR.
+  bool no_prr_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TcpCubicSenderBase);
 };

@@ -47,7 +47,6 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakePingPacket(
   header.packet_number = num;
   header.entropy_flag = false;
   header.fec_flag = false;
-  header.fec_group = 0;
 
   QuicPingFrame ping;
   return std::unique_ptr<QuicReceivedPacket>(
@@ -76,7 +75,6 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
   header.packet_number = num;
   header.entropy_flag = false;
   header.fec_flag = false;
-  header.fec_group = 0;
 
   QuicRstStreamFrame rst(stream_id, error_code, bytes_written);
   DVLOG(1) << "Adding frame: " << QuicFrame(&rst);
@@ -101,7 +99,6 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   header.packet_number = num;
   header.entropy_flag = false;
   header.fec_flag = false;
-  header.fec_group = 0;
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
   ack.ack_delay_time = QuicTime::Delta::Zero();
@@ -154,7 +151,6 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   header.packet_number = num;
   header.entropy_flag = false;
   header.fec_flag = false;
-  header.fec_group = 0;
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
   ack.ack_delay_time = ack_delay_time;
@@ -203,7 +199,6 @@ QuicTestPacketMaker::MakeConnectionClosePacket(QuicPacketNumber num) {
   header.packet_number = num;
   header.entropy_flag = false;
   header.fec_flag = false;
-  header.fec_group = 0;
 
   QuicConnectionCloseFrame close;
   close.error_code = QUIC_CRYPTO_VERSION_NOT_SUPPORTED;
@@ -224,7 +219,6 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeGoAwayPacket(
   header.packet_number = num;
   header.entropy_flag = false;
   header.fec_flag = false;
-  header.fec_group = 0;
 
   QuicGoAwayFrame goaway;
   goaway.error_code = error_code;
@@ -259,7 +253,6 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
   header.packet_number = packet_number;
   header.entropy_flag = false;
   header.fec_flag = false;
-  header.fec_group = 0;
 
   QuicAckFrame ack(MakeAckFrame(largest_received));
   ack.ack_delay_time = QuicTime::Delta::Zero();
@@ -621,7 +614,6 @@ void QuicTestPacketMaker::InitializeHeader(QuicPacketNumber packet_number,
   header_.public_header.version_flag = should_include_version;
   header_.public_header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
   header_.packet_number = packet_number;
-  header_.fec_group = 0;
   header_.entropy_flag = false;
   header_.fec_flag = false;
 }

@@ -47,6 +47,8 @@ class TcpCubicSenderPacketsPeer : public TcpCubicSenderPackets {
 
   QuicPacketCount congestion_window() { return congestion_window_; }
 
+  QuicPacketCount max_congestion_window() { return max_tcp_congestion_window_; }
+
   QuicPacketCount slowstart_threshold() { return slowstart_threshold_; }
 
   const HybridSlowStart& hybrid_slow_start() const {
@@ -927,6 +929,36 @@ TEST_F(TcpCubicSenderPacketsTest, PaceBelowCWND) {
       sender_->TimeUntilSend(QuicTime::Zero(), 4 * kDefaultTCPMSS).IsZero());
 }
 
+TEST_F(TcpCubicSenderPacketsTest, NoPRR) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_allow_noprr, true);
+  QuicTime::Delta rtt = QuicTime::Delta::FromMilliseconds(100);
+  sender_->rtt_stats_.UpdateRtt(rtt, QuicTime::Delta::Zero(), QuicTime::Zero());
+
+  sender_->SetNumEmulatedConnections(1);
+  // Verify that kCOPT: kNPRR allows all packets to be sent, even if only one
+  // ack has been received.
+  QuicTagVector options;
+  options.push_back(kNPRR);
+  QuicConfig config;
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  sender_->SetFromConfig(config, Perspective::IS_SERVER);
+  SendAvailableSendWindow();
+  LoseNPackets(9);
+  AckNPackets(1);
+
+  // We should now have fallen out of slow start with a reduced window.
+  EXPECT_EQ(kRenoBeta * kDefaultWindowTCP, sender_->GetCongestionWindow());
+  const QuicPacketCount window_in_packets =
+      kRenoBeta * kDefaultWindowTCP / kDefaultTCPMSS;
+  const QuicBandwidth expected_pacing_rate =
+      QuicBandwidth::FromBytesAndTimeDelta(kRenoBeta * kDefaultWindowTCP,
+                                           sender_->rtt_stats_.smoothed_rtt());
+  EXPECT_EQ(expected_pacing_rate, sender_->PacingRate());
+  EXPECT_EQ(window_in_packets,
+            static_cast<uint64_t>(SendAvailableSendWindow()));
+  EXPECT_EQ(expected_pacing_rate, sender_->PacingRate());
+}
+
 TEST_F(TcpCubicSenderPacketsTest, ResetAfterConnectionMigration) {
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
   EXPECT_EQ(kMaxCongestionWindowPackets, sender_->slowstart_threshold());
@@ -959,6 +991,25 @@ TEST_F(TcpCubicSenderPacketsTest, ResetAfterConnectionMigration) {
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
   EXPECT_EQ(kMaxCongestionWindowPackets, sender_->slowstart_threshold());
   EXPECT_FALSE(sender_->hybrid_slow_start().started());
+}
+
+TEST_F(TcpCubicSenderPacketsTest, DefaultMaxCwnd) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_ignore_srbf, true);
+  RttStats rtt_stats;
+  QuicConnectionStats stats;
+  std::unique_ptr<SendAlgorithmInterface> sender(SendAlgorithmInterface::Create(
+      &clock_, &rtt_stats, kCubic, &stats, kInitialCongestionWindow));
+
+  SendAlgorithmInterface::CongestionVector acked_packets;
+  SendAlgorithmInterface::CongestionVector missing_packets;
+  for (uint64_t i = 1; i < kDefaultMaxCongestionWindowPackets; ++i) {
+    acked_packets.clear();
+    acked_packets.push_back(std::make_pair(i, 1350));
+    sender->OnCongestionEvent(true, sender->GetCongestionWindow(),
+                              acked_packets, missing_packets);
+  }
+  EXPECT_EQ(kDefaultMaxCongestionWindowPackets,
+            sender->GetCongestionWindow() / kDefaultTCPMSS);
 }
 
 }  // namespace test

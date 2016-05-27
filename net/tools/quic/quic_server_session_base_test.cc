@@ -393,6 +393,9 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
   // and we don't have any other data to write.
 
   // Client has sent kBWRE connection option to trigger bandwidth resumption.
+  // Disable this flag because if connection uses multipath sent packet manager,
+  // static_cast here does not work.
+  FLAGS_quic_enable_multipath = false;
   QuicTagVector copt;
   copt.push_back(kBWRE);
   QuicConfigPeer::SetReceivedConnectionOptions(session_->config(), copt);
@@ -412,7 +415,8 @@ TEST_P(QuicServerSessionBaseTest, BandwidthEstimates) {
 
   // Set some initial bandwidth values.
   QuicSentPacketManager* sent_packet_manager =
-      QuicConnectionPeer::GetSentPacketManager(session_->connection());
+      static_cast<QuicSentPacketManager*>(
+          QuicConnectionPeer::GetSentPacketManager(session_->connection()));
   QuicSustainedBandwidthRecorder& bandwidth_recorder =
       QuicSentPacketManagerPeer::GetBandwidthRecorder(sent_packet_manager);
   // Seed an rtt measurement equal to the initial default rtt.

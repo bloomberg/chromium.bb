@@ -365,8 +365,8 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_config_.SetInitialSessionFlowControlWindowToSend(window);
   }
 
-  const QuicSentPacketManager* GetSentPacketManagerFromFirstServerSession()
-      const {
+  const QuicSentPacketManagerInterface*
+  GetSentPacketManagerFromFirstServerSession() const {
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
     QuicSession* session = dispatcher->session_map().begin()->second;
@@ -1200,6 +1200,9 @@ TEST_P(EndToEndTest, NegotiateMaxOpenStreams) {
 
 TEST_P(EndToEndTest, NegotiateCongestionControl) {
   ValueRestore<bool> old_flag(&FLAGS_quic_allow_bbr, true);
+  // Disable this flag because if connection uses multipath sent packet manager,
+  // static_cast here does not work.
+  FLAGS_quic_enable_multipath = false;
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
 
@@ -1220,7 +1223,8 @@ TEST_P(EndToEndTest, NegotiateCongestionControl) {
 
   EXPECT_EQ(expected_congestion_control_type,
             QuicSentPacketManagerPeer::GetSendAlgorithm(
-                *GetSentPacketManagerFromFirstServerSession())
+                *static_cast<const QuicSentPacketManager*>(
+                    GetSentPacketManagerFromFirstServerSession()))
                 ->GetCongestionControlType());
 }
 
@@ -1250,15 +1254,15 @@ TEST_P(EndToEndTest, ClientSuggestsRTT) {
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
   ASSERT_EQ(1u, dispatcher->session_map().size());
-  const QuicSentPacketManager& client_sent_packet_manager =
+  const QuicSentPacketManagerInterface& client_sent_packet_manager =
       client_->client()->session()->connection()->sent_packet_manager();
-  const QuicSentPacketManager& server_sent_packet_manager =
-      *GetSentPacketManagerFromFirstServerSession();
+  const QuicSentPacketManagerInterface* server_sent_packet_manager =
+      GetSentPacketManagerFromFirstServerSession();
 
   EXPECT_EQ(kInitialRTT,
             client_sent_packet_manager.GetRttStats()->initial_rtt_us());
   EXPECT_EQ(kInitialRTT,
-            server_sent_packet_manager.GetRttStats()->initial_rtt_us());
+            server_sent_packet_manager->GetRttStats()->initial_rtt_us());
   server_thread_->Resume();
 }
 
@@ -1278,7 +1282,7 @@ TEST_P(EndToEndTest, MaxInitialRTT) {
       QuicServerPeer::GetDispatcher(server_thread_->server());
   ASSERT_EQ(1u, dispatcher->session_map().size());
   QuicSession* session = dispatcher->session_map().begin()->second;
-  const QuicSentPacketManager& client_sent_packet_manager =
+  const QuicSentPacketManagerInterface& client_sent_packet_manager =
       client_->client()->session()->connection()->sent_packet_manager();
 
   // Now that acks have been exchanged, the RTT estimate has decreased on the
@@ -1308,9 +1312,9 @@ TEST_P(EndToEndTest, MinInitialRTT) {
       QuicServerPeer::GetDispatcher(server_thread_->server());
   ASSERT_EQ(1u, dispatcher->session_map().size());
   QuicSession* session = dispatcher->session_map().begin()->second;
-  const QuicSentPacketManager& client_sent_packet_manager =
+  const QuicSentPacketManagerInterface& client_sent_packet_manager =
       client_->client()->session()->connection()->sent_packet_manager();
-  const QuicSentPacketManager& server_sent_packet_manager =
+  const QuicSentPacketManagerInterface& server_sent_packet_manager =
       session->connection()->sent_packet_manager();
 
   // Now that acks have been exchanged, the RTT estimate has decreased on the
