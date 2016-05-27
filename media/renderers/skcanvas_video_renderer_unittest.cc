@@ -15,6 +15,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -519,9 +520,8 @@ void MailboxHoldersReleased(const gpu::SyncToken& sync_token) {}
 // Test that SkCanvasVideoRendererTest::Paint doesn't crash when GrContext is
 // abandoned.
 TEST_F(SkCanvasVideoRendererTest, ContextLost) {
-  skia::RefPtr<const GrGLInterface> null_interface =
-      skia::AdoptRef(GrGLCreateNullInterface());
-  auto gr_context = skia::AdoptRef(GrContext::Create(
+  sk_sp<const GrGLInterface> null_interface(GrGLCreateNullInterface());
+  sk_sp<GrContext> gr_context(GrContext::Create(
       kOpenGL_GrBackend,
       reinterpret_cast<GrBackendContext>(null_interface.get())));
   gr_context->abandonContext();

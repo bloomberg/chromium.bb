@@ -18,8 +18,8 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_rotation.h"
 #include "media/filters/context_3d.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 
 class SkCanvas;
@@ -86,7 +86,7 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
 
  private:
   // Last image used to draw to the canvas.
-  skia::RefPtr<SkImage> last_image_;
+  sk_sp<SkImage> last_image_;
   // Timestamp of the videoframe used to generate |last_image_|.
   base::TimeDelta last_timestamp_ = media::kNoTimestamp();
   // If |last_image_| is not used for a while, it's deleted to save memory.
