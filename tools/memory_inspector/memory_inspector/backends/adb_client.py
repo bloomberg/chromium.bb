@@ -156,7 +156,7 @@ class ADBDevice(object):
 
   def WaitForDevice(self):
     with ADBHostSession() as s:
-      s.SendCmd('host-serial:%s:wait-for-any' % self.serial)
+      s.SendCmd('host-serial:%s:wait-for-any-device' % self.serial)
       return s.ReadAll() == 'OKAY'
 
   def RestartShellAsRoot(self):
