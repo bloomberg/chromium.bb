@@ -203,7 +203,7 @@ LayoutUnit LayoutListMarker::getWidthOfTextWithSuffix() const
     if (m_text.isEmpty())
         return LayoutUnit();
     const Font& font = style()->font();
-    LayoutUnit itemWidth = LayoutUnit(font.width(m_text));
+    LayoutUnit itemWidth = LayoutUnit(font.width(TextRun(m_text)));
     // TODO(wkorman): Look into constructing a text run for both text and suffix
     // and painting them together.
     UChar suffix[2] = { ListMarkerText::suffix(style()->listStyleType(), m_listItem->value()), ' ' };

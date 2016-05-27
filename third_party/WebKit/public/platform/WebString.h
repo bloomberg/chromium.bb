@@ -120,6 +120,8 @@ public:
     BLINK_COMMON_EXPORT WebString& operator=(const WTF::String&);
     BLINK_COMMON_EXPORT operator WTF::String() const;
 
+    BLINK_COMMON_EXPORT operator WTF::StringView() const;
+
     BLINK_COMMON_EXPORT WebString(const WTF::AtomicString&);
     BLINK_COMMON_EXPORT WebString& operator=(const WTF::AtomicString&);
     BLINK_COMMON_EXPORT operator WTF::AtomicString() const;

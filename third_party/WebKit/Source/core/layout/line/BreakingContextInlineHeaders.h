@@ -650,7 +650,7 @@ ALWAYS_INLINE bool BreakingContext::hyphenate(LineLayoutText text,
         return false;
 
     unsigned prefixLength = hyphenation.lastHyphenLocation(
-        text.text().createView(start, len),
+        StringView(text.text(), start, len),
         std::min(maxPrefixLength, len - Hyphenation::minimumSuffixLength) + 1);
     if (!prefixLength || prefixLength < Hyphenation::minimumPrefixLength)
         return false;

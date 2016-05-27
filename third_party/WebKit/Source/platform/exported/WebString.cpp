@@ -33,6 +33,7 @@
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringUTF8Adaptor.h"
+#include "wtf/text/StringView.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -131,6 +132,11 @@ WebString& WebString::operator=(const WTF::String& s)
 WebString::operator WTF::String() const
 {
     return m_private.get();
+}
+
+WebString::operator WTF::StringView() const
+{
+    return StringView(m_private.get());
 }
 
 WebString::WebString(const WTF::AtomicString& s)
