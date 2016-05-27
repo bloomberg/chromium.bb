@@ -91,9 +91,8 @@ Polymer({
     this.searchTerm = search;
     var searchField = /** @type {!CrToolbarElement} */(this.$['main-toolbar'])
                           .getSearchField();
-    searchField.showAndFocus().then(function(showing) {
-      if (showing) searchField.setValue(search);
-    });
+    searchField.showAndFocus();
+    searchField.setValue(search);
   },
 
   /**

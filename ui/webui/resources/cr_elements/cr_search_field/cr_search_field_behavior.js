@@ -63,25 +63,14 @@ var CrSearchFieldBehavior = {
     this.delegate_ = delegate;
   },
 
-  /** @return {!Promise<boolean>} */
   showAndFocus: function() {
     this.showingSearch = true;
-    return this.focus_();
+    this.focus_();
   },
 
-  /**
-   * @return {!Promise<boolean>}
-   * @private
-   */
+  /** @private */
   focus_: function() {
-    return new Promise(function(resolve) {
-      this.async(function() {
-        if (this.showingSearch) {
-          this.$.searchInput.focus();
-        }
-        resolve(this.showingSearch);
-      });
-    }.bind(this));
+    this.$.searchInput.focus();
   },
 
   /** @private */
