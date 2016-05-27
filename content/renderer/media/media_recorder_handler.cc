@@ -39,7 +39,7 @@ media::VideoCodec CodecIdToMediaVideoCodec(VideoTrackRecorder::CodecId id) {
     case VideoTrackRecorder::CodecId::VP8:
       return media::kCodecVP8;
     case VideoTrackRecorder::CodecId::VP9:
-      return media::kCodecVP8;
+      return media::kCodecVP9;
     case VideoTrackRecorder::CodecId::H264:
       return media::kCodecH264;
   }
