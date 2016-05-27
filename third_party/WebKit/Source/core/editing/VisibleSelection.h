@@ -158,9 +158,6 @@ public:
 #endif
     static void PrintTo(const VisibleSelectionTemplate&, std::ostream*);
 
-    void setStartRespectingGranularity(TextGranularity);
-    void setEndRespectingGranularity(TextGranularity);
-
 private:
     friend class SelectionAdjuster;
 
@@ -170,6 +167,8 @@ private:
     void setBaseAndExtentToDeepEquivalents();
     void adjustSelectionToAvoidCrossingShadowBoundaries();
     void adjustSelectionToAvoidCrossingEditingBoundaries();
+    void setEndRespectingGranularity(TextGranularity);
+    void setStartRespectingGranularity(TextGranularity);
     void updateSelectionType();
 
     // We need to store these as Positions because VisibleSelection is
