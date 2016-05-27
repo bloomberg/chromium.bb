@@ -35,6 +35,7 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.sync.PassphraseType;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -186,8 +187,10 @@ public class PassphraseDialogFragment extends DialogFragment implements OnClickL
                         recordPassphraseDialogDismissal(PASSPHRASE_DIALOG_RESET_LINK);
                         Uri syncDashboardUrl = Uri.parse(
                                 context.getText(R.string.sync_dashboard_url).toString());
-                        Intent intent = CustomTabsIntent.getViewIntentWithNoSession(
-                                BuildInfo.getPackageName(context), syncDashboardUrl);
+                        Intent intent = new Intent(Intent.ACTION_VIEW, syncDashboardUrl);
+                        intent.setPackage(BuildInfo.getPackageName(context));
+                        IntentUtils.safePutBinderExtra(
+                                intent, CustomTabsIntent.EXTRA_SESSION, null);
                         context.startActivity(intent);
                     }
                 }));

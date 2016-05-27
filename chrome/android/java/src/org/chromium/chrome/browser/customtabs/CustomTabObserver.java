@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.app.Application;
-import android.os.IBinder;
 import android.os.SystemClock;
 import android.support.customtabs.CustomTabsCallback;
+import android.support.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  */
 class CustomTabObserver extends EmptyTabObserver {
     private CustomTabsConnection mCustomTabsConnection;
-    private IBinder mSession;
+    private CustomTabsSessionToken mSession;
     private long mIntentReceivedTimestamp;
     private long mPageLoadStartedTimestamp;
 
@@ -32,7 +32,7 @@ class CustomTabObserver extends EmptyTabObserver {
     private static final int STATE_WAITING_LOAD_FINISH = 2;
     private int mCurrentState;
 
-    public CustomTabObserver(Application application, IBinder session) {
+    public CustomTabObserver(Application application, CustomTabsSessionToken session) {
         mCustomTabsConnection = CustomTabsConnection.getInstance(application);
         mSession = session;
         resetPageLoadTracking();

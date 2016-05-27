@@ -3,9 +3,6 @@
 # found in the LICENSE file.
 
 chrome_java_sources = [
-  "java/src/android/support/customtabs/CustomTabsCallback.java",
-  "java/src/android/support/customtabs/CustomTabsIntent.java",
-  "java/src/android/support/customtabs/CustomTabsService.java",
   "java/src/com/google/android/apps/chrome/appwidget/bookmarks/BookmarkThumbnailWidgetProvider.java",
   "java/src/org/chromium/chrome/browser/ActivityTabTaskDescriptionHelper.java",
   "java/src/org/chromium/chrome/browser/ActivityTaskDescriptionIconGenerator.java",

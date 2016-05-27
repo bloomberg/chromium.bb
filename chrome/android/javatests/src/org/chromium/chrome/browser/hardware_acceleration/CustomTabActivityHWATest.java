@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.hardware_acceleration;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestBase;
+import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 
 /**
  * Tests that CustomTabActivity is hardware accelerated only high-end devices.
@@ -16,7 +16,8 @@ public class CustomTabActivityHWATest extends CustomTabActivityTestBase {
 
     @SmallTest
     public void testHardwareAcceleration() throws Exception {
-        CustomTabActivity activity = getActivity();
-        Utils.assertHardwareAcceleration(activity);
+        startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                getInstrumentation().getTargetContext(), "about:blank"));
+        Utils.assertHardwareAcceleration(getActivity());
     }
 }

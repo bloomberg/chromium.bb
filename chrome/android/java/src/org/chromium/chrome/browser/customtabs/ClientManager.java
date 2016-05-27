@@ -10,13 +10,12 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.os.SystemClock;
-import android.support.customtabs.ICustomTabsCallback;
+import android.support.customtabs.CustomTabsCallback;
+import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
 
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
@@ -47,12 +46,14 @@ class ClientManager {
     @VisibleForTesting static final int SESSION_WARMUP = 4;
     @VisibleForTesting static final int SESSION_WARMUP_COUNT = 5;
 
+    /** To be called when a client gets disconnected. */
+    public interface DisconnectCallback { public void run(CustomTabsSessionToken session); }
+
     /** Per-session values. */
     private static class SessionParams {
         public final int uid;
+        public final DisconnectCallback disconnectCallback;
         public final String packageName;
-        public final ICustomTabsCallback callback;
-        public final IBinder.DeathRecipient deathRecipient;
         public boolean mIgnoreFragments;
         private boolean mShouldHideDomain;
         private boolean mShouldPrerenderOnCellular;
@@ -60,12 +61,10 @@ class ClientManager {
         private String mPredictedUrl;
         private long mLastMayLaunchUrlTimestamp;
 
-        public SessionParams(Context context, int uid, ICustomTabsCallback callback,
-                IBinder.DeathRecipient deathRecipient) {
+        public SessionParams(Context context, int uid, DisconnectCallback callback) {
             this.uid = uid;
             packageName = getPackageName(context, uid);
-            this.callback = callback;
-            this.deathRecipient = deathRecipient;
+            disconnectCallback = callback;
         }
 
         private static String getPackageName(Context context, int uid) {
@@ -97,11 +96,8 @@ class ClientManager {
         }
     }
 
-    /** To be called when a client gets disconnected. */
-    public interface DisconnectCallback { public void run(IBinder session); }
-
     private final Context mContext;
-    private final Map<IBinder, SessionParams> mSessionParams = new HashMap<>();
+    private final Map<CustomTabsSessionToken, SessionParams> mSessionParams = new HashMap<>();
     private final SparseBooleanArray mUidHasCalledWarmup = new SparseBooleanArray();
     private boolean mWarmupHasBeenCalled = false;
 
@@ -112,37 +108,17 @@ class ClientManager {
 
     /** Creates a new session.
      *
-     * @param cb Callback provided by the client.
+     * @param session Session provided by the client.
      * @param uid Client UID, as returned by Binder.getCallingUid(),
      * @param onDisconnect To be called on the UI thread when a client gets disconnected.
      * @return true for success.
      */
     public boolean newSession(
-            ICustomTabsCallback cb, int uid, final DisconnectCallback onDisconnect) {
-        if (cb == null) return false;
-        final IBinder session = cb.asBinder();
-        IBinder.DeathRecipient deathRecipient = new IBinder.DeathRecipient() {
-            @Override
-            public void binderDied() {
-                ThreadUtils.postOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        cleanupSession(session);
-                        onDisconnect.run(session);
-                    }
-                });
-            }
-        };
-        SessionParams params = new SessionParams(mContext, uid, cb, deathRecipient);
+            CustomTabsSessionToken session, int uid, DisconnectCallback onDisconnect) {
+        if (session == null) return false;
+        SessionParams params = new SessionParams(mContext, uid, onDisconnect);
         synchronized (this) {
             if (mSessionParams.containsKey(session)) return false;
-            try {
-                session.linkToDeath(deathRecipient, 0);
-            } catch (RemoteException e) {
-                // The return code doesn't matter, because this executes when
-                // the caller has died.
-                return false;
-            }
             mSessionParams.put(session, params);
         }
         return true;
@@ -164,7 +140,7 @@ class ClientManager {
      * @return true if speculation is allowed.
      */
     public synchronized boolean updateStatsAndReturnWhetherAllowed(
-            IBinder session, int uid, String url) {
+            CustomTabsSessionToken session, int uid, String url) {
         SessionParams params = mSessionParams.get(session);
         if (params == null || params.uid != uid) return false;
         params.setPredictionMetrics(url, SystemClock.elapsedRealtime());
@@ -173,7 +149,7 @@ class ClientManager {
     }
 
     @VisibleForTesting
-    synchronized int getWarmupState(IBinder session) {
+    synchronized int getWarmupState(CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         boolean hasValidSession = params != null;
         boolean hasUidCalledWarmup = hasValidSession && mUidHasCalledWarmup.get(params.uid);
@@ -190,7 +166,7 @@ class ClientManager {
     }
 
     @VisibleForTesting
-    synchronized int getPredictionOutcome(IBinder session, String url) {
+    synchronized int getPredictionOutcome(CustomTabsSessionToken session, String url) {
         SessionParams params = mSessionParams.get(session);
         if (params == null) return NO_PREDICTION;
 
@@ -206,7 +182,7 @@ class ClientManager {
     /**
      * Registers that a client has launched a URL inside a Custom Tab.
      */
-    public synchronized void registerLaunch(IBinder session, String url) {
+    public synchronized void registerLaunch(CustomTabsSessionToken session, String url) {
         int outcome = getPredictionOutcome(session, url);
         RecordHistogram.recordEnumeratedHistogram(
                 "CustomTabs.PredictionStatus", outcome, PREDICTION_STATUS_COUNT);
@@ -228,7 +204,7 @@ class ClientManager {
     /**
      * @return The referrer that is associated with the client owning given session.
      */
-    public synchronized Referrer getReferrerForSession(IBinder session) {
+    public synchronized Referrer getReferrerForSession(CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         if (params == null) return null;
         final String packageName = params.packageName;
@@ -238,24 +214,23 @@ class ClientManager {
     /**
      * @return The package name associated with the client owning the given session.
      */
-    public synchronized String getClientPackageNameForSession(IBinder session) {
+    public synchronized String getClientPackageNameForSession(CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         return params == null ? null : params.packageName;
     }
 
     /**
-     * @return The callback {@link IBinder} for the given session.
+     * @return The callback {@link CustomTabsSessionToken} for the given session.
      */
-    public synchronized ICustomTabsCallback getCallbackForSession(IBinder session) {
-        SessionParams params = mSessionParams.get(session);
-        return params != null ? params.callback : null;
+    public synchronized CustomTabsCallback getCallbackForSession(CustomTabsSessionToken session) {
+        return session != null ? session.getCallback() : null;
     }
 
     /**
      * @return Whether the urlbar should be hidden for the session on first page load. Urls are
      *         foced to show up after the user navigates away.
      */
-    public synchronized boolean shouldHideDomainForSession(IBinder session) {
+    public synchronized boolean shouldHideDomainForSession(CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         return params != null ? params.mShouldHideDomain : false;
     }
@@ -263,7 +238,7 @@ class ClientManager {
     /**
      * Sets whether the urlbar should be hidden for a given session.
      */
-    public synchronized void setHideDomainForSession(IBinder session, boolean hide) {
+    public synchronized void setHideDomainForSession(CustomTabsSessionToken session, boolean hide) {
         SessionParams params = mSessionParams.get(session);
         if (params != null) params.mShouldHideDomain = hide;
     }
@@ -271,13 +246,14 @@ class ClientManager {
     /**
      * @return Whether the fragment should be ignored for prerender matching.
      */
-    public synchronized boolean getIgnoreFragmentsForSession(IBinder session) {
+    public synchronized boolean getIgnoreFragmentsForSession(CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         return params == null ? false : params.mIgnoreFragments;
     }
 
     /** Sets whether the fragment should be ignored for prerender matching. */
-    public synchronized void setIgnoreFragmentsForSession(IBinder session, boolean value) {
+    public synchronized void setIgnoreFragmentsForSession(
+            CustomTabsSessionToken session, boolean value) {
         SessionParams params = mSessionParams.get(session);
         if (params != null) params.mIgnoreFragments = value;
     }
@@ -285,7 +261,8 @@ class ClientManager {
     /**
      * @return Whether prerender should be turned on for cellular networks for given session.
      */
-    public synchronized boolean shouldPrerenderOnCellularForSession(IBinder session) {
+    public synchronized boolean shouldPrerenderOnCellularForSession(
+            CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         return params != null ? params.mShouldPrerenderOnCellular : false;
     }
@@ -293,13 +270,14 @@ class ClientManager {
     /**
      * Sets whether prerender should be turned on for mobile networks for given session.
      */
-    public synchronized void setPrerenderCellularForSession(IBinder session, boolean prerender) {
+    public synchronized void setPrerenderCellularForSession(
+            CustomTabsSessionToken session, boolean prerender) {
         SessionParams params = mSessionParams.get(session);
         if (params != null) params.mShouldPrerenderOnCellular = prerender;
     }
 
     /** Tries to bind to a client to keep it alive, and returns true for success. */
-    public synchronized boolean keepAliveForSession(IBinder session, Intent intent) {
+    public synchronized boolean keepAliveForSession(CustomTabsSessionToken session, Intent intent) {
         // When an application is bound to a service, its priority is raised to
         // be at least equal to the application's one. This binds to a dummy
         // service (no calls to this service are made).
@@ -334,7 +312,7 @@ class ClientManager {
     }
 
     /** Unbind from the KeepAlive service for a client. */
-    public synchronized void dontKeepAliveForSession(IBinder session) {
+    public synchronized void dontKeepAliveForSession(CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         if (params == null || params.getKeepAliveConnection() == null) return;
         ServiceConnection connection = params.getKeepAliveConnection();
@@ -361,16 +339,19 @@ class ClientManager {
      * Cleans up all data associated with all sessions.
      */
     public synchronized void cleanupAll() {
-        List<IBinder> sessions = new ArrayList<>(mSessionParams.keySet());
-        for (IBinder session : sessions) cleanupSession(session);
+        List<CustomTabsSessionToken> sessions = new ArrayList<>(mSessionParams.keySet());
+        for (CustomTabsSessionToken session : sessions) cleanupSession(session);
     }
 
-    private synchronized void cleanupSession(IBinder session) {
+    /**
+     * Handle any clean up left after a session is destroyed.
+     * @param session The session that has been destroyed.
+     */
+    public synchronized void cleanupSession(CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         if (params == null) return;
         mSessionParams.remove(session);
+        if (params.disconnectCallback != null) params.disconnectCallback.run(session);
         mUidHasCalledWarmup.delete(params.uid);
-        IBinder binder = params.callback.asBinder();
-        binder.unlinkToDeath(params.deathRecipient, 0);
     }
 }

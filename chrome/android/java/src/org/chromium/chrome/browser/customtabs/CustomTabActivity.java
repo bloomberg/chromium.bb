@@ -13,6 +13,7 @@ import android.os.IBinder;
 import android.os.StrictMode;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
+import android.support.customtabs.CustomTabsSessionToken;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -55,7 +56,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.findinpage.FindToolbarManager;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -79,7 +79,7 @@ public class CustomTabActivity extends ChromeActivity {
 
     private FindToolbarManager mFindToolbarManager;
     private CustomTabIntentDataProvider mIntentDataProvider;
-    private IBinder mSession;
+    private CustomTabsSessionToken mSession;
     private CustomTabContentHandler mCustomTabContentHandler;
     private Tab mMainTab;
     private CustomTabBottomBarDelegate mBottomBarDelegate;
@@ -127,7 +127,7 @@ public class CustomTabActivity extends ChromeActivity {
             return false;
         }
 
-        IBinder session = IntentUtils.safeGetBinderExtra(intent, CustomTabsIntent.EXTRA_SESSION);
+        CustomTabsSessionToken session = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         if (session == null || !session.equals(sActiveContentHandler.getSession())) return false;
 
         String url = IntentHandler.getUrlFromIntent(intent);
@@ -145,7 +145,8 @@ public class CustomTabActivity extends ChromeActivity {
      * @param description The new content description for the action button.
      * @return Whether the update is successful.
      */
-    static boolean updateCustomButton(IBinder session, int id, Bitmap bitmap, String description) {
+    static boolean updateCustomButton(
+            CustomTabsSessionToken session, int id, Bitmap bitmap, String description) {
         ThreadUtils.assertOnUiThread();
         // Do nothing if there is no activity or the activity does not belong to this session.
         if (sActiveContentHandler == null || !sActiveContentHandler.getSession().equals(session)) {
@@ -159,7 +160,8 @@ public class CustomTabActivity extends ChromeActivity {
      * if true, updates {@link RemoteViews} on the secondary toolbar.
      * @return Whether the update is successful.
      */
-    static boolean updateRemoteViews(IBinder session, RemoteViews remoteViews, int[] clickableIDs,
+    static boolean updateRemoteViews(
+            CustomTabsSessionToken session, RemoteViews remoteViews, int[] clickableIDs,
             PendingIntent pendingIntent) {
         ThreadUtils.assertOnUiThread();
         // Do nothing if there is no activity or the activity does not belong to this session.
@@ -297,7 +299,7 @@ public class CustomTabActivity extends ChromeActivity {
             }
 
             @Override
-            public IBinder getSession() {
+            public CustomTabsSessionToken getSession() {
                 return mSession;
             }
 

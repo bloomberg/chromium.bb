@@ -16,8 +16,8 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.customtabs.CustomTabsIntent;
+import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.View;
@@ -70,7 +70,7 @@ public class CustomTabIntentDataProvider {
             ANIMATION_BUNDLE_PREFIX + "animEnterRes";
     private static final String BUNDLE_EXIT_ANIMATION_RESOURCE =
             ANIMATION_BUNDLE_PREFIX + "animExitRes";
-    private final IBinder mSession;
+    private final CustomTabsSessionToken mSession;
     private final Intent mKeepAliveServiceIntent;
     private final int mTitleVisibilityState;
     private int mToolbarColor;
@@ -100,7 +100,7 @@ public class CustomTabIntentDataProvider {
      */
     public CustomTabIntentDataProvider(Intent intent, Context context) {
         if (intent == null) assert false;
-        mSession = IntentUtils.safeGetBinderExtra(intent, CustomTabsIntent.EXTRA_SESSION);
+        mSession = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
         parseHerbExtras(intent, context);
 
         retrieveCustomButtons(intent, context);
@@ -202,7 +202,7 @@ public class CustomTabIntentDataProvider {
     /**
      * @return The session specified in the intent, or null.
      */
-    public IBinder getSession() {
+    public CustomTabsSessionToken getSession() {
         return mSession;
     }
 

@@ -154,7 +154,7 @@
 -dontnote org.chromium.chrome.browser.util.IntentUtils
 
 # Needed to compile ChromeTest.apk
--keep class android.support.customtabs.ICustomTabsCallback** {
+-keep class android.support.customtabs.** {
   *;
 }
 

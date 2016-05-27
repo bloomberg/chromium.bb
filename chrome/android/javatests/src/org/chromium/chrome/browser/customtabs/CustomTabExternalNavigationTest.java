@@ -66,7 +66,7 @@ public class CustomTabExternalNavigationTest extends CustomTabActivityTestBase {
     public void startMainActivity() throws InterruptedException {
         super.startMainActivity();
         startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
-                getInstrumentation().getTargetContext(), mTestServer.getURL(TEST_PATH), null));
+                getInstrumentation().getTargetContext(), mTestServer.getURL(TEST_PATH)));
         Tab tab = getActivity().getActivityTab();
         TabDelegateFactory delegateFactory = tab.getDelegateFactory();
         assert delegateFactory instanceof CustomTabDelegateFactory;

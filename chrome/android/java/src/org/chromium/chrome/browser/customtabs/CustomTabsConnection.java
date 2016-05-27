@@ -18,13 +18,12 @@ import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.Process;
 import android.os.StrictMode;
+import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsService;
-import android.support.customtabs.ICustomTabsCallback;
-import android.support.customtabs.ICustomTabsService;
+import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 import android.view.WindowManager;
 import android.widget.RemoteViews;
@@ -70,7 +69,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Note: This class is meant to be package private, and is public to be
  * accessible from {@link ChromeApplication}.
  */
-public class CustomTabsConnection extends ICustomTabsService.Stub {
+public class CustomTabsConnection {
     private static final String TAG = "ChromeConnection";
     private static final String LOG_SERVICE_REQUESTS = "custom-tabs-log-service-requests";
     @VisibleForTesting
@@ -82,14 +81,14 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
 
     @VisibleForTesting
     static final class PrerenderedUrlParams {
-        public final IBinder mSession;
+        public final CustomTabsSessionToken mSession;
         public final WebContents mWebContents;
         public final String mUrl;
         public final String mReferrer;
         public final Bundle mExtras;
 
-        PrerenderedUrlParams(IBinder session, WebContents webContents, String url, String referrer,
-                Bundle extras) {
+        PrerenderedUrlParams(CustomTabsSessionToken session, WebContents webContents,
+                String url, String referrer, Bundle extras) {
             mSession = session;
             mWebContents = webContents;
             mUrl = url;
@@ -147,21 +146,20 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         }
     }
 
-    @Override
-    public boolean newSession(ICustomTabsCallback callback) {
-        boolean success = newSessionInternal(callback);
+    public boolean newSession(CustomTabsSessionToken session) {
+        boolean success = newSessionInternal(session);
         logCall("newSession()", success);
         return success;
     }
 
-    private boolean newSessionInternal(ICustomTabsCallback callback) {
+    private boolean newSessionInternal(CustomTabsSessionToken session) {
         ClientManager.DisconnectCallback onDisconnect = new ClientManager.DisconnectCallback() {
             @Override
-            public void run(IBinder session) {
+            public void run(CustomTabsSessionToken session) {
                 cancelPrerender(session);
             }
         };
-        return mClientManager.newSession(callback, Binder.getCallingUid(), onDisconnect);
+        return mClientManager.newSession(session, Binder.getCallingUid(), onDisconnect);
     }
 
     /** Warmup activities that should only happen once. */
@@ -190,7 +188,6 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
                 context, R.layout.custom_tabs_control_container);
     }
 
-    @Override
     public boolean warmup(long flags) {
         boolean success = warmupInternal(true);
         logCall("warmup()", success);
@@ -264,8 +261,8 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
      * - An empty URL cancels the current prerender if any.
      * - If prerendering is not possible, makes sure that there is a spare renderer.
      */
-    private void highConfidenceMayLaunchUrl(
-            IBinder session, int uid, String url, Bundle extras, List<Bundle> otherLikelyBundles) {
+    private void highConfidenceMayLaunchUrl(CustomTabsSessionToken session,
+            int uid, String url, Bundle extras, List<Bundle> otherLikelyBundles) {
         ThreadUtils.assertOnUiThread();
         if (TextUtils.isEmpty(url)) {
             cancelPrerender(session);
@@ -318,16 +315,15 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         return atLeastOneUrl;
     }
 
-    @Override
-    public boolean mayLaunchUrl(ICustomTabsCallback callback, Uri url, Bundle extras,
+    public boolean mayLaunchUrl(CustomTabsSessionToken session, Uri url, Bundle extras,
             List<Bundle> otherLikelyBundles) {
-        boolean success = mayLaunchUrlInternal(callback, url, extras, otherLikelyBundles);
+        boolean success = mayLaunchUrlInternal(session, url, extras, otherLikelyBundles);
         logCall("mayLaunchUrl()", success);
         return success;
     }
 
-    private boolean mayLaunchUrlInternal(ICustomTabsCallback callback, Uri url, final Bundle extras,
-            final List<Bundle> otherLikelyBundles) {
+    private boolean mayLaunchUrlInternal(final CustomTabsSessionToken session, Uri url,
+            final Bundle extras, final List<Bundle> otherLikelyBundles) {
         final boolean lowConfidence =
                 (url == null || TextUtils.isEmpty(url.toString())) && otherLikelyBundles != null;
         final String urlString = checkAndConvertUri(url);
@@ -340,7 +336,6 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         // which is not necessarily the case yet.
         if (!warmupInternal(false)) return false; // Also does the foreground check.
 
-        final IBinder session = callback.asBinder();
         final int uid = Binder.getCallingUid();
         // TODO(lizeb): Also throttle low-confidence mode.
         if (!lowConfidence
@@ -360,7 +355,6 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         return true;
     }
 
-    @Override
     public Bundle extraCommand(String commandName, Bundle args) {
         return null;
     }
@@ -387,8 +381,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         if (webContents != null) webContents.destroy();
     }
 
-    @Override
-    public boolean updateVisuals(final ICustomTabsCallback callback, Bundle bundle) {
+    public boolean updateVisuals(final CustomTabsSessionToken session, Bundle bundle) {
         final Bundle actionButtonBundle = IntentUtils.safeGetBundle(bundle,
                 CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE);
         boolean result = true;
@@ -403,7 +396,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
                     result &= ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                         @Override
                         public Boolean call() throws Exception {
-                            return CustomTabActivity.updateCustomButton(callback.asBinder(), id,
+                            return CustomTabActivity.updateCustomButton(session, id,
                                     bitmap, description);
                         }
                     });
@@ -423,7 +416,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
                 result &= ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
-                        return CustomTabActivity.updateRemoteViews(callback.asBinder(),
+                        return CustomTabActivity.updateRemoteViews(session,
                                 remoteViews, clickableIDs, pendingIntent);
                     }
                 });
@@ -439,7 +432,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
      *
      * This is used for accounting.
      */
-    void registerLaunch(IBinder session, String url) {
+    void registerLaunch(CustomTabsSessionToken session, String url) {
         mClientManager.registerLaunch(session, url);
     }
 
@@ -474,7 +467,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
      * @param referrer The referrer to use for |url|.
      * @return The prerendered WebContents, or null.
      */
-    WebContents takePrerenderedUrl(IBinder session, String url, String referrer) {
+    WebContents takePrerenderedUrl(CustomTabsSessionToken session, String url, String referrer) {
         ThreadUtils.assertOnUiThread();
         if (mPrerender == null || session == null || !session.equals(mPrerender.mSession)) {
             return null;
@@ -497,40 +490,40 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     }
 
     /** Returns the URL prerendered for a session, or null. */
-    String getPrerenderedUrl(IBinder session) {
+    String getPrerenderedUrl(CustomTabsSessionToken session) {
         if (mPrerender == null || session == null || !session.equals(mPrerender.mSession)) {
             return null;
         }
         return mPrerender.mUrl;
     }
 
-    /** See {@link ClientManager#getReferrerForSession(IBinder)} */
-    public Referrer getReferrerForSession(IBinder session) {
+    /** See {@link ClientManager#getReferrerForSession(CustomTabsSessionToken)} */
+    public Referrer getReferrerForSession(CustomTabsSessionToken session) {
         return mClientManager.getReferrerForSession(session);
     }
 
-    /** @see ClientManager#shouldHideDomainForSession(IBinder) */
-    public boolean shouldHideDomainForSession(IBinder session) {
+    /** @see ClientManager#shouldHideDomainForSession(CustomTabsSessionToken) */
+    public boolean shouldHideDomainForSession(CustomTabsSessionToken session) {
         return mClientManager.shouldHideDomainForSession(session);
     }
 
-    /** @see ClientManager#shouldPrerenderOnCellularForSession(IBinder) */
-    public boolean shouldPrerenderOnCellularForSession(IBinder session) {
+    /** @see ClientManager#shouldPrerenderOnCellularForSession(CustomTabsSessionToken) */
+    public boolean shouldPrerenderOnCellularForSession(CustomTabsSessionToken session) {
         return mClientManager.shouldPrerenderOnCellularForSession(session);
     }
 
-    /** See {@link ClientManager#getClientPackageNameForSession(IBinder)} */
-    public String getClientPackageNameForSession(IBinder session) {
+    /** See {@link ClientManager#getClientPackageNameForSession(CustomTabsSessionToken)} */
+    public String getClientPackageNameForSession(CustomTabsSessionToken session) {
         return mClientManager.getClientPackageNameForSession(session);
     }
 
     @VisibleForTesting
-    void setIgnoreUrlFragmentsForSession(IBinder session, boolean value) {
+    void setIgnoreUrlFragmentsForSession(CustomTabsSessionToken session, boolean value) {
         mClientManager.setIgnoreFragmentsForSession(session, value);
     }
 
     @VisibleForTesting
-    boolean getIgnoreUrlFragmentsForSession(IBinder session) {
+    boolean getIgnoreUrlFragmentsForSession(CustomTabsSessionToken session) {
         return mClientManager.getIgnoreFragmentsForSession(session);
     }
 
@@ -548,20 +541,20 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
      * @param session The session that corresponding custom tab is assigned.
      * @param intent The intent that launched the custom tab.
      */
-    void showSignInToastIfNecessary(IBinder session, Intent intent) { }
+    void showSignInToastIfNecessary(CustomTabsSessionToken session, Intent intent) { }
 
     /**
      * Notifies the application of a navigation event.
      *
-     * Delivers the {@link ICustomTabsConnectionCallback#onNavigationEvent}
+     * Delivers the {@link CustomTabsConnectionCallback#onNavigationEvent}
      * callback to the application.
      *
      * @param session The Binder object identifying the session.
      * @param navigationEvent The navigation event code, defined in {@link CustomTabsCallback}
      * @return true for success.
      */
-    boolean notifyNavigationEvent(IBinder session, int navigationEvent) {
-        ICustomTabsCallback callback = mClientManager.getCallbackForSession(session);
+    boolean notifyNavigationEvent(CustomTabsSessionToken session, int navigationEvent) {
+        CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
         if (callback == null) return false;
         try {
             callback.onNavigationEvent(navigationEvent, null);
@@ -585,7 +578,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
      * @param intent Intent describing the service to bind to.
      * @return true for success.
      */
-    boolean keepAliveForSession(IBinder session, Intent intent) {
+    boolean keepAliveForSession(CustomTabsSessionToken session, Intent intent) {
         return mClientManager.keepAliveForSession(session, intent);
     }
 
@@ -596,7 +589,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
      *
      * @param session The Binder object identifying the session.
      */
-    void dontKeepAliveForSession(IBinder session) {
+    void dontKeepAliveForSession(CustomTabsSessionToken session) {
         mClientManager.dontKeepAliveForSession(session);
     }
 
@@ -672,7 +665,15 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         mClientManager.cleanupAll();
     }
 
-    private boolean mayPrerender(IBinder session) {
+    /**
+     * Handle any clean up left after a session is destroyed.
+     * @param session The session that has been destroyed.
+     */
+    void cleanUpSession(CustomTabsSessionToken session) {
+        mClientManager.cleanupSession(session);
+    }
+
+    private boolean mayPrerender(CustomTabsSessionToken session) {
         if (FieldTrialList.findFullName("CustomTabs").equals("DisablePrerender")) return false;
         if (!DeviceClassManager.enablePrerendering()) return false;
         // TODO(yusufo): The check for prerender in PrivacyManager now checks for the network
@@ -687,7 +688,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
     }
 
     /** Cancels a prerender for a given session, or any session if null. */
-    void cancelPrerender(IBinder session) {
+    void cancelPrerender(CustomTabsSessionToken session) {
         ThreadUtils.assertOnUiThread();
         if (mPrerender != null && (session == null || session.equals(mPrerender.mSession))) {
             mExternalPrerenderHandler.cancelCurrentPrerender();
@@ -705,7 +706,8 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
      * @param uid UID of the caller.
      * @return true if a prerender has been initiated.
      */
-    private boolean prerenderUrl(IBinder session, String url, Bundle extras, int uid) {
+    private boolean prerenderUrl(
+            CustomTabsSessionToken session, String url, Bundle extras, int uid) {
         ThreadUtils.assertOnUiThread();
         // TODO(lizeb): Prerendering through ChromePrerenderService is
         // incompatible with prerendering through this service. Remove this

@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.customtabs;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.IBinder;
+import android.support.customtabs.CustomTabsSessionToken;
 import android.widget.RemoteViews;
 
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -30,7 +30,7 @@ public interface CustomTabContentHandler {
     /**
      * @return The session this {@link CustomTabContentHandler} is associated with.
      */
-    IBinder getSession();
+    CustomTabsSessionToken getSession();
 
     /**
      * Check whether an intent is valid or should be ignored within this content handler.
