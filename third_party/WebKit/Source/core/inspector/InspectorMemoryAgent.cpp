@@ -46,10 +46,7 @@ void InspectorMemoryAgent::getDOMCounters(ErrorString*, int* documents, int* nod
     *jsEventListeners = InstanceCounters::counterValue(InstanceCounters::JSEventListenerCounter);
 }
 
-InspectorMemoryAgent::InspectorMemoryAgent()
-    : InspectorBaseAgent<InspectorMemoryAgent, protocol::Memory::Frontend>("Memory")
-{
-}
+InspectorMemoryAgent::InspectorMemoryAgent() = default;
 
 } // namespace blink
 

@@ -65,8 +65,7 @@ static bool hadException(ExceptionState& exceptionState, ErrorString* errorStrin
 }
 
 InspectorDOMStorageAgent::InspectorDOMStorageAgent(Page* page)
-    : InspectorBaseAgent<InspectorDOMStorageAgent, protocol::DOMStorage::Frontend>("DOMStorage")
-    , m_page(page)
+    : m_page(page)
     , m_isEnabled(false)
 {
 }

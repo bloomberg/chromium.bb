@@ -38,8 +38,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
-#include "platform/inspector_protocol/Dispatcher.h"
-#include "platform/inspector_protocol/Frontend.h"
+#include "platform/inspector_protocol/DispatcherBase.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "wtf/PassOwnPtr.h"
@@ -86,7 +85,7 @@ void WorkerInspectorController::dispatchMessageFromFrontend(const String& messag
     if (!m_session)
         return;
     protocol::String16 method;
-    if (!protocol::Dispatcher::getCommandName(message, &method))
+    if (!protocol::DispatcherBase::getCommandName(message, &method))
         return;
     m_session->dispatchProtocolMessage(method, message);
 }

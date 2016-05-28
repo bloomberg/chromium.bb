@@ -37,8 +37,7 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
     , m_client(client)
     , m_customObjectFormatterEnabled(false)
     , m_instrumentationCounter(0)
-    , m_frontend(new protocol::Frontend(client))
-    , m_dispatcher(protocol::Dispatcher::create(client))
+    , m_dispatcher(client)
     , m_state(nullptr)
     , m_runtimeAgent(nullptr)
     , m_debuggerAgent(nullptr)
@@ -55,17 +54,17 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
         m_state = protocol::DictionaryValue::create();
     }
 
-    m_runtimeAgent = wrapUnique(new V8RuntimeAgentImpl(this, protocol::Runtime::Frontend::from(m_frontend.get()), agentState("Runtime")));
-    m_dispatcher->registerAgent(static_cast<protocol::Runtime::Backend*>(m_runtimeAgent.get()));
+    m_runtimeAgent = wrapUnique(new V8RuntimeAgentImpl(this, client, agentState(protocol::Runtime::Metainfo::domainName)));
+    protocol::Runtime::Dispatcher::wire(&m_dispatcher, m_runtimeAgent.get());
 
-    m_debuggerAgent = wrapUnique(new V8DebuggerAgentImpl(this, protocol::Debugger::Frontend::from(m_frontend.get()), agentState("Debugger")));
-    m_dispatcher->registerAgent(static_cast<protocol::Debugger::Backend*>(m_debuggerAgent.get()));
+    m_debuggerAgent = wrapUnique(new V8DebuggerAgentImpl(this, client, agentState(protocol::Debugger::Metainfo::domainName)));
+    protocol::Debugger::Dispatcher::wire(&m_dispatcher, m_debuggerAgent.get());
 
-    m_heapProfilerAgent = wrapUnique(new V8HeapProfilerAgentImpl(this, protocol::HeapProfiler::Frontend::from(m_frontend.get()), agentState("HeapProfiler")));
-    m_dispatcher->registerAgent(static_cast<protocol::HeapProfiler::Backend*>(m_heapProfilerAgent.get()));
+    m_profilerAgent = wrapUnique(new V8ProfilerAgentImpl(this, client, agentState(protocol::Profiler::Metainfo::domainName)));
+    protocol::Profiler::Dispatcher::wire(&m_dispatcher, m_profilerAgent.get());
 
-    m_profilerAgent = wrapUnique(new V8ProfilerAgentImpl(this, protocol::Profiler::Frontend::from(m_frontend.get()), agentState("Profiler")));
-    m_dispatcher->registerAgent(static_cast<protocol::Profiler::Backend*>(m_profilerAgent.get()));
+    m_heapProfilerAgent = wrapUnique(new V8HeapProfilerAgentImpl(this, client, agentState(protocol::HeapProfiler::Metainfo::domainName)));
+    protocol::HeapProfiler::Dispatcher::wire(&m_dispatcher, m_heapProfilerAgent.get());
 
     if (savedState) {
         m_runtimeAgent->restore();
@@ -77,16 +76,12 @@ V8InspectorSessionImpl::V8InspectorSessionImpl(V8DebuggerImpl* debugger, int con
 
 V8InspectorSessionImpl::~V8InspectorSessionImpl()
 {
-    m_dispatcher->clearFrontend();
-    m_dispatcher.reset();
-
     ErrorString errorString;
     m_profilerAgent->disable(&errorString);
     m_heapProfilerAgent->disable(&errorString);
     m_debuggerAgent->disable(&errorString);
     m_runtimeAgent->disable(&errorString);
 
-    m_frontend.reset();
     discardInjectedScripts();
     m_debugger->disconnect(this);
 }
@@ -247,7 +242,7 @@ void V8InspectorSessionImpl::changeInstrumentationCounter(int delta)
 
 void V8InspectorSessionImpl::dispatchProtocolMessage(const String16& message)
 {
-    m_dispatcher->dispatch(message);
+    m_dispatcher.dispatch(message);
 }
 
 String16 V8InspectorSessionImpl::stateJSON()

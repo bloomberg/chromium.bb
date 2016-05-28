@@ -18,8 +18,7 @@ class InspectedFrames;
 class InspectorWorkerAgent;
 
 class CORE_EXPORT InspectorTracingAgent final
-    : public InspectorBaseAgent<InspectorTracingAgent, protocol::Tracing::Frontend>
-    , public protocol::Tracing::Backend {
+    : public InspectorBaseAgent<protocol::Tracing::Metainfo> {
     WTF_MAKE_NONCOPYABLE(InspectorTracingAgent);
 public:
     class Client {

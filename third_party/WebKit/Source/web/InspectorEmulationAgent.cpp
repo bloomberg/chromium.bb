@@ -27,8 +27,7 @@ InspectorEmulationAgent* InspectorEmulationAgent::create(WebLocalFrameImpl* webL
 }
 
 InspectorEmulationAgent::InspectorEmulationAgent(WebLocalFrameImpl* webLocalFrameImpl, Client* client)
-    : InspectorBaseAgent<InspectorEmulationAgent, protocol::Emulation::Frontend>("Emulation")
-    , m_webLocalFrameImpl(webLocalFrameImpl)
+    : m_webLocalFrameImpl(webLocalFrameImpl)
     , m_client(client)
 {
 }

@@ -59,7 +59,6 @@
 #include "core/page/Page.h"
 #include "core/xmlhttprequest/XMLHttpRequest.h"
 #include "platform/blob/BlobData.h"
-#include "platform/inspector_protocol/Frontend.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceError.h"
@@ -1113,8 +1112,7 @@ void InspectorResourceAgent::removeFinishedReplayXHRFired(Timer<InspectorResourc
 }
 
 InspectorResourceAgent::InspectorResourceAgent(InspectedFrames* inspectedFrames)
-    : InspectorBaseAgent<InspectorResourceAgent, protocol::Network::Frontend>("Network")
-    , m_inspectedFrames(inspectedFrames)
+    : m_inspectedFrames(inspectedFrames)
     , m_resourcesData(NetworkResourcesData::create(maximumTotalBufferSize, maximumResourceBufferSize))
     , m_pendingRequest(nullptr)
     , m_isRecalculatingStyle(false)

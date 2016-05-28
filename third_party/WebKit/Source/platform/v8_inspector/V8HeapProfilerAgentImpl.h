@@ -6,9 +6,8 @@
 #define V8HeapProfilerAgentImpl_h
 
 #include "platform/inspector_protocol/Allocator.h"
-#include "platform/inspector_protocol/Backend.h"
-#include "platform/inspector_protocol/Frontend.h"
 #include "platform/inspector_protocol/String16.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 
 namespace blink {
 
@@ -19,7 +18,7 @@ using protocol::Maybe;
 class V8HeapProfilerAgentImpl : public protocol::HeapProfiler::Backend {
     PROTOCOL_DISALLOW_COPY(V8HeapProfilerAgentImpl);
 public:
-    V8HeapProfilerAgentImpl(V8InspectorSessionImpl*, protocol::HeapProfiler::Frontend*, protocol::DictionaryValue* state);
+    V8HeapProfilerAgentImpl(V8InspectorSessionImpl*, protocol::FrontendChannel*, protocol::DictionaryValue* state);
     ~V8HeapProfilerAgentImpl() override;
     void restore();
 
@@ -48,7 +47,7 @@ private:
 
     V8InspectorSessionImpl* m_session;
     v8::Isolate* m_isolate;
-    protocol::HeapProfiler::Frontend* m_frontend;
+    protocol::HeapProfiler::Frontend m_frontend;
     protocol::DictionaryValue* m_state;
     bool m_hasTimer;
 };

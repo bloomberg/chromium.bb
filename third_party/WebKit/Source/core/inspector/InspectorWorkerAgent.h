@@ -43,8 +43,7 @@ class KURL;
 class WorkerInspectorProxy;
 
 class CORE_EXPORT InspectorWorkerAgent final
-    : public InspectorBaseAgent<InspectorWorkerAgent, protocol::Worker::Frontend>
-    , public protocol::Worker::Backend
+    : public InspectorBaseAgent<protocol::Worker::Metainfo>
     , public WorkerInspectorProxy::PageInspector {
     WTF_MAKE_NONCOPYABLE(InspectorWorkerAgent);
 public:

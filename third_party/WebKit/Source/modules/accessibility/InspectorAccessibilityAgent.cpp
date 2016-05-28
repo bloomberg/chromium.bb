@@ -359,8 +359,7 @@ std::unique_ptr<AXNode> buildObjectForNode(Node* node, AXObject* axObject, AXObj
 } // namespace
 
 InspectorAccessibilityAgent::InspectorAccessibilityAgent(Page* page, InspectorDOMAgent* domAgent)
-    : InspectorBaseAgent<InspectorAccessibilityAgent, protocol::Accessibility::Frontend>("Accessibility")
-    , m_page(page)
+    : m_page(page)
     , m_domAgent(domAgent)
 {
 }

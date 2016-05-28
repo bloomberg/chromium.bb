@@ -5,10 +5,9 @@
 #ifndef V8DebuggerAgentImpl_h
 #define V8DebuggerAgentImpl_h
 
-#include "platform/inspector_protocol/Backend.h"
 #include "platform/inspector_protocol/Collections.h"
-#include "platform/inspector_protocol/Frontend.h"
 #include "platform/inspector_protocol/String16.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 
 namespace blink {
@@ -42,7 +41,7 @@ public:
         MonitorCommandBreakpointSource
     };
 
-    V8DebuggerAgentImpl(V8InspectorSessionImpl*, protocol::Debugger::Frontend*, protocol::DictionaryValue* state);
+    V8DebuggerAgentImpl(V8InspectorSessionImpl*, protocol::FrontendChannel*, protocol::DictionaryValue* state);
     ~V8DebuggerAgentImpl() override;
     void restore();
 
@@ -207,7 +206,7 @@ private:
     V8InspectorSessionImpl* m_session;
     bool m_enabled;
     protocol::DictionaryValue* m_state;
-    protocol::Debugger::Frontend* m_frontend;
+    protocol::Debugger::Frontend m_frontend;
     v8::Isolate* m_isolate;
     v8::Global<v8::Context> m_pausedContext;
     JavaScriptCallFrames m_pausedCallFrames;

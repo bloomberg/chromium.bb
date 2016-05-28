@@ -36,7 +36,7 @@ class ConsoleMessage;
 class ConsoleMessageStorage;
 class V8InspectorSession;
 
-class CORE_EXPORT InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent, protocol::Console::Frontend>, public protocol::Console::Backend {
+class CORE_EXPORT InspectorConsoleAgent : public InspectorBaseAgent<protocol::Console::Metainfo> {
     WTF_MAKE_NONCOPYABLE(InspectorConsoleAgent);
 public:
     ~InspectorConsoleAgent() override;

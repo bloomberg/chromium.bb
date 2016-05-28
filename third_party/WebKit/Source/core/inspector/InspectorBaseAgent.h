@@ -34,9 +34,7 @@
 #include "core/CoreExport.h"
 #include "core/InstrumentingAgents.h"
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/Backend.h"
-#include "platform/inspector_protocol/Dispatcher.h"
-#include "platform/inspector_protocol/Frontend.h"
+#include "platform/inspector_protocol/DispatcherBase.h"
 #include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/inspector_protocol/Values.h"
 #include "wtf/Forward.h"
@@ -54,39 +52,40 @@ public:
     virtual ~InspectorAgent() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
-    virtual void disable(ErrorString*) { }
     virtual void restore() { }
     virtual void didCommitLoadForLocalFrame(LocalFrame*) { }
     virtual void flushPendingProtocolNotifications() { }
 
-    virtual void init(InstrumentingAgents*, protocol::Frontend*, protocol::Dispatcher*, protocol::DictionaryValue*) = 0;
+    virtual void init(InstrumentingAgents*, protocol::UberDispatcher*, protocol::DictionaryValue*) = 0;
     virtual void dispose() = 0;
 };
 
-template<typename AgentClass, typename FrontendClass>
-class InspectorBaseAgent : public InspectorAgent {
+template<typename DomainMetainfo>
+class InspectorBaseAgent : public InspectorAgent, public DomainMetainfo::BackendClass {
 public:
     ~InspectorBaseAgent() override { }
 
-    void init(InstrumentingAgents* instrumentingAgents, protocol::Frontend* frontend, protocol::Dispatcher* dispatcher, protocol::DictionaryValue* state) override
+    void init(InstrumentingAgents* instrumentingAgents, protocol::UberDispatcher* dispatcher, protocol::DictionaryValue* state) override
     {
         m_instrumentingAgents = instrumentingAgents;
-        m_frontend = FrontendClass::from(frontend);
-        dispatcher->registerAgent(static_cast<AgentClass*>(this));
+        m_frontend.reset(new typename DomainMetainfo::FrontendClass(dispatcher->channel()));
+        DomainMetainfo::DispatcherClass::wire(dispatcher, this);
 
-        m_state = state->getObject(m_name);
+        m_state = state->getObject(DomainMetainfo::domainName);
         if (!m_state) {
             std::unique_ptr<protocol::DictionaryValue> newState = protocol::DictionaryValue::create();
             m_state = newState.get();
-            state->setObject(m_name, std::move(newState));
+            state->setObject(DomainMetainfo::domainName, std::move(newState));
         }
     }
+
+    void disable(ErrorString*) override { }
 
     void dispose() override
     {
         ErrorString error;
         disable(&error);
-        m_frontend = nullptr;
+        m_frontend.reset();
         m_state = nullptr;
         m_instrumentingAgents = nullptr;
     }
@@ -98,20 +97,14 @@ public:
     }
 
 protected:
-    explicit InspectorBaseAgent(const String& name)
-        : InspectorAgent()
-        , m_name(name)
-        , m_frontend(nullptr)
-    {
-    }
+    InspectorBaseAgent() { }
 
-    FrontendClass* frontend() const { return m_frontend; }
+    typename DomainMetainfo::FrontendClass* frontend() const { return m_frontend.get(); }
     Member<InstrumentingAgents> m_instrumentingAgents;
     protocol::DictionaryValue* m_state;
 
 private:
-    String m_name;
-    FrontendClass* m_frontend;
+    std::unique_ptr<typename DomainMetainfo::FrontendClass> m_frontend;
 };
 
 } // namespace blink

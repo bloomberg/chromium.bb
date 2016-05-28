@@ -60,9 +60,8 @@ class Node;
 class LayoutObject;
 
 class CORE_EXPORT InspectorCSSAgent final
-    : public InspectorBaseAgent<InspectorCSSAgent, protocol::CSS::Frontend>
+    : public InspectorBaseAgent<protocol::CSS::Metainfo>
     , public InspectorDOMAgent::DOMListener
-    , public protocol::CSS::Backend
     , public InspectorStyleSheetBase::Listener {
     WTF_MAKE_NONCOPYABLE(InspectorCSSAgent);
     USING_GARBAGE_COLLECTED_MIXIN(InspectorCSSAgent);

@@ -41,7 +41,7 @@ namespace blink {
 class InspectedFrames;
 
 
-class MODULES_EXPORT InspectorIndexedDBAgent final : public InspectorBaseAgent<InspectorIndexedDBAgent, protocol::IndexedDB::Frontend>, public protocol::IndexedDB::Backend {
+class MODULES_EXPORT InspectorIndexedDBAgent final : public InspectorBaseAgent<protocol::IndexedDB::Metainfo> {
 public:
     static InspectorIndexedDBAgent* create(InspectedFrames*);
 

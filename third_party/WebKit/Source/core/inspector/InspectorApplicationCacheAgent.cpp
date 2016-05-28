@@ -40,8 +40,7 @@ static const char applicationCacheAgentEnabled[] = "applicationCacheAgentEnabled
 }
 
 InspectorApplicationCacheAgent::InspectorApplicationCacheAgent(InspectedFrames* inspectedFrames)
-    : InspectorBaseAgent<InspectorApplicationCacheAgent, protocol::ApplicationCache::Frontend>("ApplicationCache")
-    , m_inspectedFrames(inspectedFrames)
+    : m_inspectedFrames(inspectedFrames)
 {
 }
 

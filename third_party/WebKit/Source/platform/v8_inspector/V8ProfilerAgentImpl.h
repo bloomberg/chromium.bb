@@ -6,9 +6,8 @@
 #define V8ProfilerAgentImpl_h
 
 #include "platform/inspector_protocol/Allocator.h"
-#include "platform/inspector_protocol/Backend.h"
-#include "platform/inspector_protocol/Frontend.h"
 #include "platform/inspector_protocol/String16.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 
 namespace v8 {
 class Isolate;
@@ -21,7 +20,7 @@ class V8InspectorSessionImpl;
 class V8ProfilerAgentImpl : public protocol::Profiler::Backend {
     PROTOCOL_DISALLOW_COPY(V8ProfilerAgentImpl);
 public:
-    V8ProfilerAgentImpl(V8InspectorSessionImpl*, protocol::Profiler::Frontend*, protocol::DictionaryValue* state);
+    V8ProfilerAgentImpl(V8InspectorSessionImpl*, protocol::FrontendChannel*, protocol::DictionaryValue* state);
     ~V8ProfilerAgentImpl() override;
 
     bool enabled() const { return m_enabled; }
@@ -47,7 +46,7 @@ private:
     V8InspectorSessionImpl* m_session;
     v8::Isolate* m_isolate;
     protocol::DictionaryValue* m_state;
-    protocol::Profiler::Frontend* m_frontend;
+    protocol::Profiler::Frontend m_frontend;
     bool m_enabled;
     bool m_recordingCPUProfile;
     class ProfileDescriptor;

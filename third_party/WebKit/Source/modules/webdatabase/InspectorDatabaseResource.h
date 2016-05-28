@@ -32,7 +32,7 @@
 #define InspectorDatabaseResource_h
 
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/Frontend.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 

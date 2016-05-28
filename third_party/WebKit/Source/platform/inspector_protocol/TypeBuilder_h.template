@@ -9,7 +9,10 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/inspector_protocol/Array.h"
+#include "platform/inspector_protocol/BackendCallback.h"
+#include "platform/inspector_protocol/DispatcherBase.h"
 #include "platform/inspector_protocol/ErrorSupport.h"
+#include "platform/inspector_protocol/FrontendChannel.h"
 #include "platform/inspector_protocol/Maybe.h"
 #include "platform/inspector_protocol/Object.h"
 #include "platform/inspector_protocol/String16.h"
@@ -23,9 +26,9 @@ namespace protocol {
 
 {% for domain in api.domains %}
 
-// ------------- Forward declarations and typedefs.
-
 namespace {{domain.domain}} {
+
+// ------------- Forward and enum declarations.
   {% for type in domain.types %}
     {% if type.type == "object" %}
       {% if "properties" in type %}
@@ -40,32 +43,20 @@ using {{type.id}} = Object;
 using {{type.id}} = {{resolve_type(type).type}};
     {% endif %}
   {% endfor %}
-} // {{domain.domain}}
-{% endfor %}
-
-// ------------- Enum values from types.
-{% for domain in api.domains %}
   {% for type in domain.types %}
     {% if "enum" in type %}
 
-namespace {{domain.domain}} {
 namespace {{type.id}}Enum {
       {% for literal in type.enum %}
 PLATFORM_EXPORT extern const char* {{ literal | dash_to_camelcase}};
       {% endfor %}
 } // {{type.id}}Enum
-} // {{domain.domain}}
     {% endif %}
   {% endfor %}
-{% endfor %}
-
-// ------------- Enum values from params.
-{% for domain in api.domains %}
   {% for command in join_arrays(domain, ["commands", "events"]) %}
     {% for param in join_arrays(command, ["parameters", "returns"]) %}
       {% if "enum" in param %}
 
-namespace {{domain.domain}} {
 namespace {{command.name | to_title_case}} {
 namespace {{param.name | to_title_case}}Enum {
         {% for literal in param.enum %}
@@ -73,16 +64,11 @@ PLATFORM_EXPORT extern const char* {{ literal | dash_to_camelcase}};
         {% endfor %}
 } // {{param.name | to_title_case}}Enum
 } // {{command.name | to_title_case }}
-} // {{domain.domain}}
       {% endif %}
     {% endfor %}
   {% endfor %}
-{% endfor %}
 
 // ------------- Type and builder declarations.
-{% for domain in api.domains %}
-
-namespace {{domain.domain}} {
   {% for type in domain.types %}
     {% if not (type.type == "object") or not ("properties" in type) %}{% continue %}{% endif %}
     {% set type_def = type_definition(domain.domain + "." + type.id)%}
@@ -187,7 +173,102 @@ private:
 
   {% endfor %}
 
-} // {{domain.domain}}
+// ------------- Backend interface.
+
+class PLATFORM_EXPORT Backend {
+public:
+  {% for command in domain.commands %}
+    {% if "redirect" in command %}{% continue %}{% endif %}
+    {% if ("handlers" in command) and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
+    {% if "async" in command %}
+    class PLATFORM_EXPORT {{command.name | to_title_case}}Callback : public BackendCallback {
+    public:
+        virtual void sendSuccess(
+            {%- for parameter in command.returns -%}
+              {%- if "optional" in parameter -%}
+            const Maybe<{{resolve_type(parameter).raw_type}}>& {{parameter.name}}
+              {%- else -%}
+                {{resolve_type(parameter).pass_type}} {{parameter.name}}
+              {%- endif -%}
+              {%- if not loop.last -%}, {% endif -%}
+            {%- endfor -%}
+        ) = 0;
+    };
+    {% endif %}
+    virtual void {{command.name}}(ErrorString*
+    {%- for parameter in command.parameters -%}
+        {%- if "optional" in parameter -%}
+        , const Maybe<{{resolve_type(parameter).raw_type}}>& in_{{parameter.name}}
+        {%- else -%}
+        , {{resolve_type(parameter).pass_type}} in_{{parameter.name}}
+        {%- endif -%}
+    {%- endfor -%}
+    {%- if "async" in command -%}
+        , std::unique_ptr<{{command.name | to_title_case}}Callback> callback
+    {%- else -%}
+      {%- for parameter in command.returns -%}
+        {%- if "optional" in parameter -%}
+        , Maybe<{{resolve_type(parameter).raw_type}}>* out_{{parameter.name}}
+        {%- else -%}
+        , {{resolve_type(parameter).type}}* out_{{parameter.name}}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+    ) = 0;
+  {% endfor %}
+
+  {% if not has_disable(domain.commands) %}
+    virtual void disable(ErrorString*) { }
+  {% endif %}
+
+protected:
+    virtual ~Backend() { }
+};
+
+// ------------- Frontend interface.
+
+class PLATFORM_EXPORT Frontend {
+public:
+    Frontend(FrontendChannel* frontendChannel) : m_frontendChannel(frontendChannel) { }
+  {% for event in domain.events %}
+    {% if "handlers" in event and not ("renderer" in event["handlers"]) %}{% continue %}{% endif %}
+    void {{event.name}}(
+    {%- for parameter in event.parameters -%}
+      {%- if "optional" in parameter -%}
+        const Maybe<{{resolve_type(parameter).raw_type}}>& {{parameter.name}} = Maybe<{{resolve_type(parameter).raw_type}}>()
+      {%- else -%}
+        {{resolve_type(parameter).pass_type}} {{parameter.name}}
+      {%- endif -%}{%- if not loop.last -%}, {% endif -%}
+    {%- endfor -%}
+    );
+  {% endfor %}
+
+    void flush() { m_frontendChannel->flushProtocolNotifications(); }
+private:
+    FrontendChannel* m_frontendChannel;
+};
+
+// ------------- Dispatcher.
+
+class PLATFORM_EXPORT Dispatcher {
+public:
+    static void wire(UberDispatcher*, blink::protocol::{{domain.domain}}::Backend*);
+
+private:
+    Dispatcher() { }
+};
+
+// ------------- Metainfo.
+
+class PLATFORM_EXPORT Metainfo {
+public:
+    using BackendClass = Backend;
+    using FrontendClass = Frontend;
+    using DispatcherClass = Dispatcher;
+    static const char domainName[];
+};
+
+} // namespace {{domain.domain}}
 {% endfor %}
 
 } // namespace protocol

@@ -332,8 +332,7 @@ String InspectorPageAgent::cachedResourceTypeJson(const Resource& cachedResource
 }
 
 InspectorPageAgent::InspectorPageAgent(InspectedFrames* inspectedFrames, Client* client, InspectorResourceContentLoader* resourceContentLoader, V8InspectorSession* v8Session)
-    : InspectorBaseAgent<InspectorPageAgent, protocol::Page::Frontend>("Page")
-    , m_inspectedFrames(inspectedFrames)
+    : m_inspectedFrames(inspectedFrames)
     , m_v8Session(v8Session)
     , m_client(client)
     , m_lastScriptIdentifier(0)

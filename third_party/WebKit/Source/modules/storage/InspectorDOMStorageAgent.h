@@ -47,7 +47,7 @@ class DictionaryValue;
 }
 
 
-class MODULES_EXPORT InspectorDOMStorageAgent final : public InspectorBaseAgent<InspectorDOMStorageAgent, protocol::DOMStorage::Frontend>, public protocol::DOMStorage::Backend {
+class MODULES_EXPORT InspectorDOMStorageAgent final : public InspectorBaseAgent<protocol::DOMStorage::Metainfo> {
 public:
     static InspectorDOMStorageAgent* create(Page* page)
     {

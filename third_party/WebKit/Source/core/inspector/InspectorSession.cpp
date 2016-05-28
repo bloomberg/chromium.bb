@@ -10,7 +10,6 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "platform/inspector_protocol/Backend.h"
 #include "platform/inspector_protocol/Parser.h"
 #include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
@@ -30,8 +29,7 @@ InspectorSession::InspectorSession(Client* client, InspectedFrames* inspectedFra
     , m_disposed(false)
     , m_inspectedFrames(inspectedFrames)
     , m_instrumentingAgents(instrumentingAgents)
-    , m_inspectorFrontend(new protocol::Frontend(this))
-    , m_inspectorBackendDispatcher(protocol::Dispatcher::create(this))
+    , m_inspectorBackendDispatcher(new protocol::UberDispatcher(this))
 {
     InspectorInstrumentation::frontendCreated();
 
@@ -58,7 +56,7 @@ InspectorSession::~InspectorSession()
 void InspectorSession::append(InspectorAgent* agent)
 {
     m_agents.append(agent);
-    agent->init(m_instrumentingAgents.get(), m_inspectorFrontend.get(), m_inspectorBackendDispatcher.get(), m_state.get());
+    agent->init(m_instrumentingAgents.get(), m_inspectorBackendDispatcher.get(), m_state.get());
 }
 
 void InspectorSession::restore()
@@ -72,11 +70,9 @@ void InspectorSession::dispose()
 {
     DCHECK(!m_disposed);
     m_disposed = true;
-    m_inspectorBackendDispatcher->clearFrontend();
     m_inspectorBackendDispatcher.reset();
     for (size_t i = m_agents.size(); i > 0; i--)
         m_agents[i - 1]->dispose();
-    m_inspectorFrontend.reset();
     m_agents.clear();
     m_v8Session.reset();
     DCHECK(!isInstrumenting());

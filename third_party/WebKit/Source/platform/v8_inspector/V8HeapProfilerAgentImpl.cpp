@@ -149,10 +149,10 @@ private:
 
 } // namespace
 
-V8HeapProfilerAgentImpl::V8HeapProfilerAgentImpl(V8InspectorSessionImpl* session, protocol::HeapProfiler::Frontend* frontend, protocol::DictionaryValue* state)
+V8HeapProfilerAgentImpl::V8HeapProfilerAgentImpl(V8InspectorSessionImpl* session, protocol::FrontendChannel* frontendChannel, protocol::DictionaryValue* state)
     : m_session(session)
     , m_isolate(session->debugger()->isolate())
-    , m_frontend(frontend)
+    , m_frontend(frontendChannel)
     , m_state(state)
     , m_hasTimer(false)
 {
@@ -165,7 +165,7 @@ V8HeapProfilerAgentImpl::~V8HeapProfilerAgentImpl()
 void V8HeapProfilerAgentImpl::restore()
 {
     if (m_state->booleanProperty(HeapProfilerAgentState::heapProfilerEnabled, false))
-        m_frontend->resetProfiles();
+        m_frontend.resetProfiles();
     if (m_state->booleanProperty(HeapProfilerAgentState::heapObjectsTrackingEnabled, false))
         startTrackingHeapObjectsInternal(m_state->booleanProperty(HeapProfilerAgentState::allocationTrackingEnabled, false));
 #if V8_MAJOR_VERSION >= 5
@@ -226,7 +226,7 @@ void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const p
     }
     std::unique_ptr<HeapSnapshotProgress> progress;
     if (reportProgress.fromMaybe(false))
-        progress = wrapUnique(new HeapSnapshotProgress(m_frontend));
+        progress = wrapUnique(new HeapSnapshotProgress(&m_frontend));
 
     GlobalObjectNameResolver resolver(m_session);
     const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(progress.get(), &resolver);
@@ -234,7 +234,7 @@ void V8HeapProfilerAgentImpl::takeHeapSnapshot(ErrorString* errorString, const p
         *errorString = "Failed to take heap snapshot";
         return;
     }
-    HeapSnapshotOutputStream stream(m_frontend);
+    HeapSnapshotOutputStream stream(&m_frontend);
     snapshot->Serialize(&stream);
     const_cast<v8::HeapSnapshot*>(snapshot)->Delete();
 }
@@ -302,11 +302,9 @@ void V8HeapProfilerAgentImpl::getHeapObjectId(ErrorString* errorString, const St
 
 void V8HeapProfilerAgentImpl::requestHeapStatsUpdate()
 {
-    if (!m_frontend)
-        return;
-    HeapStatsStream stream(m_frontend);
+    HeapStatsStream stream(&m_frontend);
     v8::SnapshotObjectId lastSeenObjectId = m_isolate->GetHeapProfiler()->GetHeapStats(&stream);
-    m_frontend->lastSeenObjectId(lastSeenObjectId, m_session->debugger()->client()->currentTimeMS());
+    m_frontend.lastSeenObjectId(lastSeenObjectId, m_session->debugger()->client()->currentTimeMS());
 }
 
 // static

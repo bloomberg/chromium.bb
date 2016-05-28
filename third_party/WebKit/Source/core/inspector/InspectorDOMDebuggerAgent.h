@@ -53,8 +53,7 @@ class DictionaryValue;
 }
 
 class CORE_EXPORT InspectorDOMDebuggerAgent final
-    : public InspectorBaseAgent<InspectorDOMDebuggerAgent, protocol::DOMDebugger::Frontend>
-    , public protocol::DOMDebugger::Backend {
+    : public InspectorBaseAgent<protocol::DOMDebugger::Metainfo> {
     WTF_MAKE_NONCOPYABLE(InspectorDOMDebuggerAgent);
 public:
     static void eventListenersInfoForTarget(v8::Isolate*, v8::Local<v8::Value>, V8EventListenerInfoList& listeners);

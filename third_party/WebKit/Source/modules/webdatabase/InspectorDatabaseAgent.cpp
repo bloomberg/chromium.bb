@@ -247,8 +247,7 @@ void InspectorDatabaseAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 }
 
 InspectorDatabaseAgent::InspectorDatabaseAgent(Page* page)
-    : InspectorBaseAgent<InspectorDatabaseAgent, protocol::Database::Frontend>("Database")
-    , m_page(page)
+    : m_page(page)
     , m_enabled(false)
 {
 }

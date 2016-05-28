@@ -577,8 +577,7 @@ InspectorIndexedDBAgent* InspectorIndexedDBAgent::create(InspectedFrames* inspec
 }
 
 InspectorIndexedDBAgent::InspectorIndexedDBAgent(InspectedFrames* inspectedFrames)
-    : InspectorBaseAgent<InspectorIndexedDBAgent, protocol::IndexedDB::Frontend>("IndexedDB")
-    , m_inspectedFrames(inspectedFrames)
+    : m_inspectedFrames(inspectedFrames)
 {
 }
 

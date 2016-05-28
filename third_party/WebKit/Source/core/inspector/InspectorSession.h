@@ -7,8 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/Dispatcher.h"
-#include "platform/inspector_protocol/Frontend.h"
+#include "platform/inspector_protocol/DispatcherBase.h"
 #include "platform/inspector_protocol/FrontendChannel.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/public/V8InspectorSessionClient.h"
@@ -89,8 +88,7 @@ private:
     bool m_disposed;
     Member<InspectedFrames> m_inspectedFrames;
     Member<InstrumentingAgents> m_instrumentingAgents;
-    std::unique_ptr<protocol::Frontend> m_inspectorFrontend;
-    std::unique_ptr<protocol::Dispatcher> m_inspectorBackendDispatcher;
+    std::unique_ptr<protocol::UberDispatcher> m_inspectorBackendDispatcher;
     std::unique_ptr<protocol::DictionaryValue> m_state;
     HeapVector<Member<InspectorAgent>> m_agents;
     Vector<protocol::String16> m_notificationQueue;

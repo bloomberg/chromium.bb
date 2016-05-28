@@ -88,6 +88,30 @@ def output_file(file_name):
     return open(file_name, "w")
 
 
+def topsort_domains():
+    domains = {}
+    for domain in json_api["domains"]:
+        domains[domain["domain"]] = domain
+
+    processed = set()
+    result = []
+
+    def process(name):
+        if name in processed:
+            return
+        domain = domains[name]
+        deps = []
+        if "depends" in domain:
+            for dep in domain["depends"]:
+                process(dep)
+        result.append(domain)
+        processed.add(name)
+
+    for domain in json_api["domains"]:
+        process(domain["domain"])
+    json_api["domains"] = result
+
+
 def patch_full_qualified_refs():
     def patch_full_qualified_refs_in_domain(json, domain_name):
         if isinstance(json, list):
@@ -239,6 +263,7 @@ def create_type_definitions():
             else:
                 type_definitions[domain["domain"] + "." + type["id"]] = create_primitive_type_definition(type["type"])
 
+topsort_domains()
 patch_full_qualified_refs()
 create_type_definitions()
 
@@ -261,6 +286,13 @@ def join_arrays(dict, keys):
         if key in dict:
             result += dict[key]
     return result
+
+
+def has_disable(commands):
+    for command in commands:
+        if command["name"] == "disable":
+            return True
+    return False
 
 
 if os.path.exists(__file__):
@@ -292,7 +324,8 @@ def generate(class_name):
         "api": json_api,
         "join_arrays": join_arrays,
         "resolve_type": resolve_type,
-        "type_definition": type_definition
+        "type_definition": type_definition,
+        "has_disable": has_disable
     }
     h_template = jinja_env.get_template(h_template_name)
     cpp_template = jinja_env.get_template(cpp_template_name)
@@ -305,7 +338,4 @@ def generate(class_name):
 
 
 jinja_env = initialize_jinja_env(output_dirname)
-generate("Backend")
-generate("Dispatcher")
-generate("Frontend")
 generate("TypeBuilder")

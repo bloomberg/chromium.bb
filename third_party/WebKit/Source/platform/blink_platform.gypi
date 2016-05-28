@@ -841,6 +841,8 @@
       'inspector_protocol/BackendCallback.h',
       'inspector_protocol/Collections.h',
       'inspector_protocol/CollectionsWTF.h',
+      'inspector_protocol/DispatcherBase.cpp',
+      'inspector_protocol/DispatcherBase.h',
       'inspector_protocol/ErrorSupport.cpp',
       'inspector_protocol/ErrorSupport.h',
       'inspector_protocol/Maybe.h',

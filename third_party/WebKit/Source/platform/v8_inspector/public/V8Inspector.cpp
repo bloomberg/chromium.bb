@@ -5,7 +5,7 @@
 
 #include "platform/v8_inspector/public/V8Inspector.h"
 
-#include "platform/inspector_protocol/Dispatcher.h"
+#include "platform/inspector_protocol/DispatcherBase.h"
 #include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "platform/v8_inspector/public/V8DebuggerAgent.h"

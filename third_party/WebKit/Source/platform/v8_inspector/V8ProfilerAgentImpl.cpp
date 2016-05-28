@@ -121,11 +121,11 @@ public:
     String16 m_title;
 };
 
-V8ProfilerAgentImpl::V8ProfilerAgentImpl(V8InspectorSessionImpl* session, protocol::Profiler::Frontend* frontend, protocol::DictionaryValue* state)
+V8ProfilerAgentImpl::V8ProfilerAgentImpl(V8InspectorSessionImpl* session, protocol::FrontendChannel* frontendChannel, protocol::DictionaryValue* state)
     : m_session(session)
     , m_isolate(m_session->debugger()->isolate())
     , m_state(state)
-    , m_frontend(frontend)
+    , m_frontend(frontendChannel)
     , m_enabled(false)
     , m_recordingCPUProfile(false)
 {
@@ -139,18 +139,16 @@ void V8ProfilerAgentImpl::consoleProfile(const String16& title)
 {
     if (!m_enabled)
         return;
-    DCHECK(m_frontend);
     String16 id = nextProfileId();
     m_startedProfiles.append(ProfileDescriptor(id, title));
     startProfiling(id);
-    m_frontend->consoleProfileStarted(id, currentDebugLocation(m_session->debugger()), title);
+    m_frontend.consoleProfileStarted(id, currentDebugLocation(m_session->debugger()), title);
 }
 
 void V8ProfilerAgentImpl::consoleProfileEnd(const String16& title)
 {
     if (!m_enabled)
         return;
-    DCHECK(m_frontend);
     String16 id;
     String16 resolvedTitle;
     // Take last started profile if no title was passed.
@@ -176,7 +174,7 @@ void V8ProfilerAgentImpl::consoleProfileEnd(const String16& title)
     if (!profile)
         return;
     std::unique_ptr<protocol::Debugger::Location> location = currentDebugLocation(m_session->debugger());
-    m_frontend->consoleProfileFinished(id, std::move(location), std::move(profile), resolvedTitle);
+    m_frontend.consoleProfileFinished(id, std::move(location), std::move(profile), resolvedTitle);
 }
 
 void V8ProfilerAgentImpl::enable(ErrorString*)

@@ -7,8 +7,7 @@
 
 #include "platform/inspector_protocol/Allocator.h"
 #include "platform/inspector_protocol/Collections.h"
-#include "platform/inspector_protocol/Dispatcher.h"
-#include "platform/inspector_protocol/Frontend.h"
+#include "platform/inspector_protocol/DispatcherBase.h"
 #include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
@@ -82,8 +81,7 @@ private:
     bool m_customObjectFormatterEnabled;
     int m_instrumentationCounter;
 
-    std::unique_ptr<protocol::Frontend> m_frontend;
-    std::unique_ptr<protocol::Dispatcher> m_dispatcher;
+    protocol::UberDispatcher m_dispatcher;
     std::unique_ptr<protocol::DictionaryValue> m_state;
 
     std::unique_ptr<V8RuntimeAgentImpl> m_runtimeAgent;

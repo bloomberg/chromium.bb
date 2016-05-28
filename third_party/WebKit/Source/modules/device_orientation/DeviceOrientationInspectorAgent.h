@@ -15,7 +15,7 @@ class DeviceOrientationController;
 class Page;
 
 
-class MODULES_EXPORT DeviceOrientationInspectorAgent final : public InspectorBaseAgent<DeviceOrientationInspectorAgent, protocol::DeviceOrientation::Frontend>, public protocol::DeviceOrientation::Backend {
+class MODULES_EXPORT DeviceOrientationInspectorAgent final : public InspectorBaseAgent<protocol::DeviceOrientation::Metainfo> {
     WTF_MAKE_NONCOPYABLE(DeviceOrientationInspectorAgent);
 public:
     static DeviceOrientationInspectorAgent* create(Page*);

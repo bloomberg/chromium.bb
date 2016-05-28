@@ -42,7 +42,7 @@ class InspectedFrames;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 
-class CORE_EXPORT InspectorInputAgent final : public InspectorBaseAgent<InspectorInputAgent, protocol::Input::Frontend>, public protocol::Input::Backend {
+class CORE_EXPORT InspectorInputAgent final : public InspectorBaseAgent<protocol::Input::Metainfo> {
     WTF_MAKE_NONCOPYABLE(InspectorInputAgent);
 public:
     static InspectorInputAgent* create(InspectedFrames* inspectedFrames)

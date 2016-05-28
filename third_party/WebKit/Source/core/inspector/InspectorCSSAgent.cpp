@@ -611,8 +611,7 @@ CSSMediaRule* InspectorCSSAgent::asCSSMediaRule(CSSRule* rule)
 }
 
 InspectorCSSAgent::InspectorCSSAgent(InspectorDOMAgent* domAgent, InspectedFrames* inspectedFrames, InspectorResourceAgent* resourceAgent, InspectorResourceContentLoader* resourceContentLoader, InspectorResourceContainer* resourceContainer)
-    : InspectorBaseAgent<InspectorCSSAgent, protocol::CSS::Frontend>("CSS")
-    , m_domAgent(domAgent)
+    : m_domAgent(domAgent)
     , m_inspectedFrames(inspectedFrames)
     , m_resourceAgent(resourceAgent)
     , m_resourceContentLoader(resourceContentLoader)

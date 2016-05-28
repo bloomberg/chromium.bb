@@ -70,7 +70,7 @@ class PlatformTouchEvent;
 class InspectorRevalidateDOMTask;
 class ShadowRoot;
 
-class CORE_EXPORT InspectorDOMAgent final : public InspectorBaseAgent<InspectorDOMAgent, protocol::DOM::Frontend>, public protocol::DOM::Backend {
+class CORE_EXPORT InspectorDOMAgent final : public InspectorBaseAgent<protocol::DOM::Metainfo> {
     WTF_MAKE_NONCOPYABLE(InspectorDOMAgent);
 public:
     struct CORE_EXPORT DOMListener : public GarbageCollectedMixin {
