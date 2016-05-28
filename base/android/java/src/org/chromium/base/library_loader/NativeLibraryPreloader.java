@@ -10,5 +10,5 @@ import android.content.Context;
  * This is interface to preload the native library before calling System.loadLibrary.
  */
 public abstract class NativeLibraryPreloader {
-    public abstract void loadLibrary(Context context);
+    public abstract int loadLibrary(Context context);
 }

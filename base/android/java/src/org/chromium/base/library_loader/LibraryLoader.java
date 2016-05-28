@@ -86,6 +86,11 @@ public class LibraryLoader {
     // will be reported via UMA. Set once when the libraries are done loading.
     private long mLibraryLoadTimeMs;
 
+    // The return value of NativeLibraryPreloader.loadLibrary(), which will be reported
+    // via UMA, it is initialized to the invalid value which shouldn't showup in UMA
+    // report.
+    private int mLibraryPreloaderStatus = -1;
+
     /**
      * Set native library preloader, if set, the NativeLibraryPreloader.loadLibrary will be invoked
      * before calling System.loadLibrary, this only applies when not using the chromium linker.
@@ -282,7 +287,7 @@ public class LibraryLoader {
                     linker.finishLibraryLoad();
                 } else {
                     if (sLibraryPreloader != null) {
-                        sLibraryPreloader.loadLibrary(context);
+                        mLibraryPreloaderStatus = sLibraryPreloader.loadLibrary(context);
                     }
                     // Load libraries using the system linker.
                     for (String library : NativeLibraries.LIBRARIES) {
@@ -383,6 +388,9 @@ public class LibraryLoader {
                                                               getLibraryLoadFromApkStatus(context),
                                                               mLibraryLoadTimeMs);
         }
+        if (sLibraryPreloader != null) {
+            nativeRecordLibraryPreloaderBrowserHistogram(mLibraryPreloaderStatus);
+        }
     }
 
     // Returns the device's status for loading a library directly from the APK file.
@@ -408,6 +416,9 @@ public class LibraryLoader {
             nativeRegisterChromiumAndroidLinkerRendererHistogram(requestedSharedRelro,
                                                                  loadAtFixedAddressFailed,
                                                                  mLibraryLoadTimeMs);
+        }
+        if (sLibraryPreloader != null) {
+            nativeRegisterLibraryPreloaderRendererHistogram(mLibraryPreloaderStatus);
         }
     }
 
@@ -442,6 +453,10 @@ public class LibraryLoader {
             int libraryLoadFromApkStatus,
             long libraryLoadTime);
 
+    // Method called to record the return value of NativeLibraryPreloader.loadLibrary for the main
+    // browser process.
+    private native void nativeRecordLibraryPreloaderBrowserHistogram(int status);
+
     // Method called to register (for later recording) statistics about the Chromium linker
     // operation for a renderer process. Indicates whether the linker attempted relro sharing,
     // and if it did, whether the library failed to load at a fixed address. Also records the
@@ -450,6 +465,10 @@ public class LibraryLoader {
             boolean requestedSharedRelro,
             boolean loadAtFixedAddressFailed,
             long libraryLoadTime);
+
+    // Method called to register (for later recording) the return value of
+    // NativeLibraryPreloader.loadLibrary for a renderer process.
+    private native void nativeRegisterLibraryPreloaderRendererHistogram(int status);
 
     // Get the version of the native library. This is needed so that we can check we
     // have the right version before initializing the (rest of the) JNI.

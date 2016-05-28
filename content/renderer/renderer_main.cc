@@ -149,8 +149,8 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::StatisticsRecorder::Initialize();
 
 #if defined(OS_ANDROID)
-  // If we have a pending chromium android linker histogram, record it.
-  base::android::RecordChromiumAndroidLinkerRendererHistogram();
+  // If we have any pending LibraryLoader histograms, record them.
+  base::android::RecordLibraryLoaderRendererHistograms();
 #endif
 
   std::unique_ptr<scheduler::RendererScheduler> renderer_scheduler(

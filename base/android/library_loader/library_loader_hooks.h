@@ -27,9 +27,10 @@ enum LibraryProcessType {
   PROCESS_WEBVIEW_CHILD = 4,
 };
 
-// Record any pending renderer histogram value as a histogram.  Pending values
-// are set by RegisterChromiumAndroidLinkerRendererHistogram.
-BASE_EXPORT void RecordChromiumAndroidLinkerRendererHistogram();
+// Record any pending renderer histogram value as histograms.  Pending values
+// are set by RegisterChromiumAndroidLinkerRendererHistogram and
+// RegisterLibraryPreloaderRendererHistogram.
+BASE_EXPORT void RecordLibraryLoaderRendererHistograms();
 
 // Registers the callbacks that allows the entry point of the library to be
 // exposed to the calling java code.  This handles only registering the

@@ -404,6 +404,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.NativeLibraryPreloader.Result.Browser"
+    enum="NativeLibraryPreloaderResult">
+  <owner>michaelbai@chromium.org</owner>
+  <summary>
+    The return value of NativeLibraryPreloader.loadLibrary() in browser process,
+    is recorded once per browser process start.
+  </summary>
+</histogram>
+
+<histogram name="Android.NativeLibraryPreloader.Result.Renderer"
+    enum="NativeLibraryPreloaderResult">
+  <owner>michaelbai@chromium.org</owner>
+  <summary>
+    The return value of NativeLibraryPreloader.loadLibrary() in renderer
+    process, is recorded once per renderer process start.
+  </summary>
+</histogram>
+
 <histogram name="Android.NTP.Impression" enum="NTPImpressionType">
   <owner>finkm@chromium.org</owner>
   <summary>
@@ -80812,6 +80830,19 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="NaClValidationCacheEnum" type="int">
   <int value="0" label="Miss"/>
   <int value="1" label="Hit"/>
+</enum>
+
+<enum name="NativeLibraryPreloaderResult" type="int">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="WRONG_PACKAGE_NAME"/>
+  <int value="2" label="ADDRESS_SPACE_NOT_RESERVED"/>
+  <int value="3" label="FAILED_WAITING_FOR_RELRO"/>
+  <int value="4" label="FAILED_LISTING_WEBVIEW_PACKAGES"/>
+  <int value="5" label="FAILED_TO_OPEN_RELRO_FILE"/>
+  <int value="6" label="FAILED_TO_LOAD_LIBRARY"/>
+  <int value="7" label="FAILED_JNI_CALL"/>
+  <int value="8" label="FAILED_WAITING_FOR_WEBVIEW_REASON_UNKNOWN"/>
+  <int value="10" label="FAILED_TO_FIND_NAMESPACE"/>
 </enum>
 
 <enum name="NatTypeCounters" type="int">
