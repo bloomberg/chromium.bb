@@ -295,7 +295,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void RemoveAdapter();
 
   // Announce to observers a change in the adapter state.
-  void PoweredChanged(bool powered);
   void DiscoverableChanged(bool discoverable);
   void DiscoveringChanged(bool discovering);
   void PresentChanged(bool present);

@@ -471,7 +471,7 @@ void BluetoothTestAndroid::OnFakeAdapterStateChanged(
     JNIEnv* env,
     const JavaParamRef<jobject>& caller,
     const bool powered) {
-  adapter_->NotifyAdapterStateChanged(powered);
+  adapter_->NotifyAdapterPoweredChanged(powered);
 }
 
 }  // namespace device

@@ -4311,7 +4311,7 @@ TEST_F(BluetoothBlueZTest, Shutdown) {
   // SetAdapter will DCHECK after Shutdown().
   // SetDefaultAdapterName will DCHECK after Shutdown().
   // RemoveAdapter will DCHECK after Shutdown().
-  adapter_bluez->PoweredChanged(false);
+  adapter_bluez->NotifyAdapterPoweredChanged(false);
   adapter_bluez->DiscoverableChanged(false);
   adapter_bluez->DiscoveringChanged(false);
   adapter_bluez->PresentChanged(false);

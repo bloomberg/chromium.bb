@@ -159,7 +159,7 @@ BluetoothDevice::PairingDelegate* BluetoothAdapter::DefaultPairingDelegate() {
   return pairing_delegates_.front().first;
 }
 
-void BluetoothAdapter::NotifyAdapterStateChanged(bool powered) {
+void BluetoothAdapter::NotifyAdapterPoweredChanged(bool powered) {
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     AdapterPoweredChanged(this, powered));
 }

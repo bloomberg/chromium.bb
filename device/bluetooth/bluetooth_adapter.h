@@ -440,7 +440,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       const std::string& identifier) const = 0;
 
   // The following methods are used to send various events to observers.
-  void NotifyAdapterStateChanged(bool powered);
+  void NotifyAdapterPoweredChanged(bool powered);
   void NotifyDeviceChanged(BluetoothDevice* device);
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)

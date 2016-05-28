@@ -480,7 +480,7 @@ void BluetoothAdapterBlueZ::AdapterPropertyChanged(
           ->GetProperties(object_path_);
 
   if (property_name == properties->powered.name()) {
-    PoweredChanged(properties->powered.value());
+    NotifyAdapterPoweredChanged(properties->powered.value());
   } else if (property_name == properties->discoverable.name()) {
     DiscoverableChanged(properties->discoverable.value());
   } else if (property_name == properties->discovering.name()) {
@@ -879,7 +879,7 @@ void BluetoothAdapterBlueZ::SetAdapter(const dbus::ObjectPath& object_path) {
   PresentChanged(true);
 
   if (properties->powered.value())
-    PoweredChanged(true);
+    NotifyAdapterPoweredChanged(true);
   if (properties->discoverable.value())
     DiscoverableChanged(true);
   if (properties->discovering.value())
@@ -940,7 +940,7 @@ void BluetoothAdapterBlueZ::RemoveAdapter() {
   object_path_ = dbus::ObjectPath("");
 
   if (properties->powered.value())
-    PoweredChanged(false);
+    NotifyAdapterPoweredChanged(false);
   if (properties->discoverable.value())
     DiscoverableChanged(false);
   if (properties->discovering.value())
@@ -958,11 +958,6 @@ void BluetoothAdapterBlueZ::RemoveAdapter() {
   }
 
   PresentChanged(false);
-}
-
-void BluetoothAdapterBlueZ::PoweredChanged(bool powered) {
-  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                    AdapterPoweredChanged(this, powered));
 }
 
 void BluetoothAdapterBlueZ::DiscoverableChanged(bool discoverable) {
