@@ -1173,6 +1173,7 @@ FcDirCacheLock (const FcChar8 *dir,
 	if (!cache_hashed)
 	    break;
 	fd = FcOpen ((const char *)cache_hashed, O_RDWR);
+	FcStrFree (cache_hashed);
 	/* No caches in that directory. simply retry with another one */
 	if (fd != -1)
 	{
@@ -1196,6 +1197,7 @@ FcDirCacheLock (const FcChar8 *dir,
     FcStrListDone (list);
     return fd;
 bail:
+    FcStrListDone (list);
     if (fd != -1)
 	close (fd);
     return -1;
