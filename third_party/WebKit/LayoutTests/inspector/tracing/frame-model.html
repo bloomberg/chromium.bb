@@ -276,7 +276,7 @@ function test()
         ],
     };
 
-    var frameModel = new WebInspector.TimelineFrameModel();
+    var frameModel = new WebInspector.TimelineFrameModel(event => WebInspector.TimelineUIUtils.eventStyle(event).category.name);
 
     function loadEvents(events)
     {

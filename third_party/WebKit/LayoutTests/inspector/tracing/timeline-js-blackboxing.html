@@ -284,7 +284,8 @@ function test()
 
     Runtime.experiments.enableForTest("blackboxJSFramesOnTimeline");
     var timelineModel = InspectorTest.createTimelineModelWithEvents(rawTraceEvents);
-    var dataProvider = new WebInspector.TimelineFlameChartDataProvider(timelineModel, new WebInspector.TimelineFrameModel(), new WebInspector.TimelineIRModel(), WebInspector.panels.timeline._filters);
+    var frameModel = new WebInspector.TimelineFrameModel(event => WebInspector.TimelineUIUtils.eventStyle(event).category.name);
+    var dataProvider = new WebInspector.TimelineFlameChartDataProvider(timelineModel, frameModel, new WebInspector.TimelineIRModel(), WebInspector.panels.timeline._filters);
 
     InspectorTest.addResult("\nBlackboxed url: lib_script.js");
     WebInspector.blackboxManager._blackboxURL("lib_script.js");
