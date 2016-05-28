@@ -18,7 +18,6 @@ import unittest
 
 import devil_chromium
 from devil import base_error
-from devil import devil_env
 from devil.android import device_blacklist
 from devil.android import device_errors
 from devil.android import device_utils
@@ -98,7 +97,7 @@ def AddCommonOptions(parser):
   group.add_argument('-e', '--environment', default='local',
                      choices=constants.VALID_ENVIRONMENTS,
                      help='Test environment to run in (default: %(default)s).')
-  group.add_argument('--adb-path',
+  group.add_argument('--adb-path', type=os.path.abspath,
                      help=('Specify the absolute path of the adb binary that '
                            'should be used.'))
   group.add_argument('--json-results-file', '--test-launcher-summary-output',
@@ -140,17 +139,9 @@ def ProcessCommonOptions(args):
   if args.output_directory:
     constants.SetOutputDirectory(args.output_directory)
 
-  devil_custom_deps = None
-  if args.adb_path:
-    devil_custom_deps = {
-      'adb': {
-        devil_env.GetPlatform(): [args.adb_path]
-      }
-    }
-
   devil_chromium.Initialize(
       output_directory=constants.GetOutDirectory(),
-      custom_deps=devil_custom_deps)
+      adb_path=args.adb_path)
 
   # Some things such as Forwarder require ADB to be in the environment path.
   adb_dir = os.path.dirname(constants.GetAdbPath())

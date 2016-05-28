@@ -9,6 +9,7 @@
 #
 # Assumes tombstone file was created with current symbols.
 
+import argparse
 import datetime
 import logging
 import multiprocessing
@@ -16,7 +17,6 @@ import os
 import re
 import subprocess
 import sys
-import optparse
 
 import devil_chromium
 
@@ -173,12 +173,12 @@ def _ResolveTombstones(jobs, tombstones):
       logging.info(line)
 
 
-def _GetTombstonesForDevice(device, options):
+def _GetTombstonesForDevice(device, args):
   """Returns a list of tombstones on a given device.
 
   Args:
     device: An instance of DeviceUtils.
-    options: command line arguments from OptParse
+    args: command line arguments
   """
   ret = []
   all_tombstones = list(_ListTombstones(device))
@@ -190,7 +190,7 @@ def _GetTombstonesForDevice(device, options):
   all_tombstones.sort(cmp=lambda a, b: cmp(b[1], a[1]))
 
   # Only resolve the most recent unless --all-tombstones given.
-  tombstones = all_tombstones if options.all_tombstones else [all_tombstones[0]]
+  tombstones = all_tombstones if args.all_tombstones else [all_tombstones[0]]
 
   device_now = _GetDeviceDateTime(device)
   try:
@@ -200,7 +200,7 @@ def _GetTombstonesForDevice(device, options):
                'device_now': device_now,
                'time': tombstone_time,
                'file': tombstone_file,
-               'stack': options.stack,
+               'stack': args.stack,
                'data': _GetTombstoneData(device, tombstone_file)}]
   except device_errors.CommandFailedError:
     for line in device.RunShellCommand(
@@ -210,7 +210,7 @@ def _GetTombstonesForDevice(device, options):
     raise
 
   # Erase all the tombstones if desired.
-  if options.wipe_tombstones:
+  if args.wipe_tombstones:
     for tombstone_file, _ in all_tombstones:
       _EraseTombstone(device, tombstone_file)
 
@@ -223,39 +223,41 @@ def main():
   logging.getLogger().addHandler(custom_handler)
   logging.getLogger().setLevel(logging.INFO)
 
-  parser = optparse.OptionParser()
-  parser.add_option('--device',
-                    help='The serial number of the device. If not specified '
-                         'will use all devices.')
-  parser.add_option('--blacklist-file', help='Device blacklist JSON file.')
-  parser.add_option('-a', '--all-tombstones', action='store_true',
-                    help="""Resolve symbols for all tombstones, rather than just
-                         the most recent""")
-  parser.add_option('-s', '--stack', action='store_true',
-                    help='Also include symbols for stack data')
-  parser.add_option('-w', '--wipe-tombstones', action='store_true',
-                    help='Erase all tombstones from device after processing')
-  parser.add_option('-j', '--jobs', type='int',
-                    default=4,
-                    help='Number of jobs to use when processing multiple '
-                         'crash stacks.')
-  parser.add_option('--output-directory',
-                    help='Path to the root build directory.')
-  options, _ = parser.parse_args()
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--device',
+                      help='The serial number of the device. If not specified '
+                           'will use all devices.')
+  parser.add_argument('--blacklist-file', help='Device blacklist JSON file.')
+  parser.add_argument('-a', '--all-tombstones', action='store_true',
+                      help='Resolve symbols for all tombstones, rather than '
+                           'just the most recent.')
+  parser.add_argument('-s', '--stack', action='store_true',
+                      help='Also include symbols for stack data')
+  parser.add_argument('-w', '--wipe-tombstones', action='store_true',
+                      help='Erase all tombstones from device after processing')
+  parser.add_argument('-j', '--jobs', type=int,
+                      default=4,
+                      help='Number of jobs to use when processing multiple '
+                           'crash stacks.')
+  parser.add_argument('--output-directory',
+                      help='Path to the root build directory.')
+  parser.add_argument('--adb-path', type=os.path.abspath,
+                      help='Path to the adb binary.')
+  args = parser.parse_args()
 
-  devil_chromium.Initialize()
+  devil_chromium.Initialize(adb_path=args.adb_path)
 
-  blacklist = (device_blacklist.Blacklist(options.blacklist_file)
-               if options.blacklist_file
+  blacklist = (device_blacklist.Blacklist(args.blacklist_file)
+               if args.blacklist_file
                else None)
 
-  if options.output_directory:
-    constants.SetOutputDirectory(options.output_directory)
+  if args.output_directory:
+    constants.SetOutputDirectory(args.output_directory)
   # Do an up-front test that the output directory is known.
   constants.CheckOutputDirectory()
 
-  if options.device:
-    devices = [device_utils.DeviceUtils(options.device)]
+  if args.device:
+    devices = [device_utils.DeviceUtils(args.device)]
   else:
     devices = device_utils.DeviceUtils.HealthyDevices(blacklist)
 
@@ -264,9 +266,9 @@ def main():
   # http://bugs.python.org/issue7980
   tombstones = []
   for device in devices:
-    tombstones += _GetTombstonesForDevice(device, options)
+    tombstones += _GetTombstonesForDevice(device, args)
 
-  _ResolveTombstones(options.jobs, tombstones)
+  _ResolveTombstones(args.jobs, tombstones)
 
 
 if __name__ == '__main__':

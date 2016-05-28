@@ -27,7 +27,6 @@ import time
 import _strptime  # pylint: disable=unused-import
 
 import devil_chromium
-from devil import devil_env
 from devil.android import battery_utils
 from devil.android import device_blacklist
 from devil.android import device_errors
@@ -545,15 +544,7 @@ def main():
 
   run_tests_helper.SetLogLevel(args.verbose)
 
-  devil_custom_deps = None
-  if args.adb_path:
-    devil_custom_deps = {
-      'adb': {
-        devil_env.GetPlatform(): [args.adb_path],
-      },
-    }
-
-  devil_chromium.Initialize(custom_deps=devil_custom_deps)
+  devil_chromium.Initialize(adb_path=args.adb_path)
 
   try:
     return ProvisionDevices(args)
