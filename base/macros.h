@@ -22,18 +22,9 @@
 
 // A macro to disallow the copy constructor and operator= functions.
 // This should be used in the private: declarations for a class.
-// TODO(pkasting): Using "= delete" is non-branded-build-specific initially to
-// limit the rollout to reduce the chance of build breakage.  Remove the ifdef
-// here and use "= delete" always.
-#if defined(CHROMIUM_BUILD)
 #define DISALLOW_COPY_AND_ASSIGN(TypeName) \
   TypeName(const TypeName&) = delete;      \
   void operator=(const TypeName&) = delete
-#else
-#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
-  TypeName(const TypeName&);               \
-  void operator=(const TypeName&)
-#endif
 
 // A macro to disallow all the implicit constructors, namely the
 // default constructor, copy constructor and operator= functions.
