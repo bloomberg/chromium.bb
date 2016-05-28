@@ -553,10 +553,14 @@ TextRun InlineTextBox::constructTextRun(const ComputedStyle& style, const Font& 
 {
     ASSERT(getLineLayoutItem().text());
 
-    String string = getLineLayoutItem().text();
+    StringView string = getLineLayoutItem().text().createView();
     unsigned startPos = start();
     unsigned length = len();
-    return constructTextRun(style, font, StringView(string, startPos, length), getLineLayoutItem().textLength() - startPos, charactersWithHyphen);
+
+    if (string.length() != length || startPos)
+        string.narrow(startPos, length);
+
+    return constructTextRun(style, font, string, getLineLayoutItem().textLength() - startPos, charactersWithHyphen);
 }
 
 TextRun InlineTextBox::constructTextRun(const ComputedStyle& style, const Font& font, StringView string, int maximumLength, StringBuilder* charactersWithHyphen) const
@@ -566,7 +570,7 @@ TextRun InlineTextBox::constructTextRun(const ComputedStyle& style, const Font& 
         charactersWithHyphen->reserveCapacity(string.length() + hyphenString.length());
         charactersWithHyphen->append(string);
         charactersWithHyphen->append(hyphenString);
-        string = charactersWithHyphen->toString();
+        string = charactersWithHyphen->toString().createView();
         maximumLength = string.length();
     }
 

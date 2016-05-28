@@ -29,7 +29,6 @@
 
 #include "wtf/WTFExport.h"
 #include "wtf/text/AtomicString.h"
-#include "wtf/text/StringView.h"
 #include "wtf/text/WTFString.h"
 
 namespace WTF {
@@ -51,6 +50,26 @@ public:
 
     ALWAYS_INLINE void append(const char* characters, unsigned length) { append(reinterpret_cast<const LChar*>(characters), length); }
 
+    void append(const String& string)
+    {
+        if (!string.length())
+            return;
+
+        // If we're appending to an empty string, and there is not a buffer (reserveCapacity has not been called)
+        // then just retain the string.
+        if (!m_length && !m_buffer) {
+            m_string = string;
+            m_length = string.length();
+            m_is8Bit = m_string.is8Bit();
+            return;
+        }
+
+        if (string.is8Bit())
+            append(string.characters8(), string.length());
+        else
+            append(string.characters16(), string.length());
+    }
+
     void append(const StringBuilder& other)
     {
         if (!other.m_length)
@@ -70,9 +89,7 @@ public:
             append(other.characters16(), other.m_length);
     }
 
-    // TODO(esprehn): This method is just duplicating what StringView itself
-    // does. Remove it and replace callers with append(StringView(string, offset, length)).
-    void append(const StringView& string, unsigned offset, unsigned length)
+    void append(const String& string, unsigned offset, unsigned length)
     {
         if (!string.length())
             return;
@@ -96,6 +113,12 @@ public:
             append(string.characters8(), string.length());
         else
             append(string.characters16(), string.length());
+    }
+
+    void append(const char* characters)
+    {
+        if (characters)
+            append(characters, strlen(characters));
     }
 
     void append(UChar c)

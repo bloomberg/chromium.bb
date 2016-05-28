@@ -139,9 +139,7 @@ void MHTMLArchive::generateMHTMLPart(
     ASSERT(contentID.isEmpty() || contentID[0] == '<');
 
     StringBuilder stringBuilder;
-    stringBuilder.append("--");
-    stringBuilder.append(boundary);
-    stringBuilder.append("\r\n");
+    stringBuilder.append("--" + boundary + "\r\n");
 
     stringBuilder.appendLiteral("Content-Type: ");
     stringBuilder.append(resource.mimeType);
@@ -167,7 +165,7 @@ void MHTMLArchive::generateMHTMLPart(
 
     if (!resource.url.protocolIsAbout()) {
         stringBuilder.appendLiteral("Content-Location: ");
-        stringBuilder.append(resource.url.getString());
+        stringBuilder.append(resource.url);
         stringBuilder.appendLiteral("\r\n");
     }
 

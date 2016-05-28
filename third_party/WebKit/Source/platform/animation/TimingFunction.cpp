@@ -127,9 +127,7 @@ String StepsTimingFunction::toString() const
         builder.append("step-");
         builder.append(positionString);
     } else {
-        builder.append("steps(");
-        builder.append(String::numberToStringECMAScript(this->numberOfSteps()));
-        builder.append(", ");
+        builder.append("steps(" + String::numberToStringECMAScript(this->numberOfSteps()) + ", ");
         builder.append(positionString);
         builder.append(')');
     }

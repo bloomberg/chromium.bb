@@ -23,7 +23,6 @@
 
 #include "wtf/Allocator.h"
 #include "wtf/text/AtomicString.h"
-#include "wtf/text/StringView.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -90,11 +89,8 @@ struct CSSParserString {
         return is8Bit() ? WTF::equalIgnoringASCIICase(characters8(), match, length()) : WTF::equalIgnoringASCIICase(characters16(), match, length());
     }
 
-    // TODO(esprehn): Remove both of these implicit operators, they're very expensive.
     operator String() const { return is8Bit() ? String(m_data.characters8, m_length) : StringImpl::create8BitIfPossible(m_data.characters16, m_length); }
     operator AtomicString() const { return is8Bit() ? AtomicString(m_data.characters8, m_length) : AtomicString(m_data.characters16, m_length); }
-
-    operator StringView() const { return is8Bit() ? StringView(m_data.characters8, m_length) : StringView(m_data.characters16, m_length); }
 
     union {
         const LChar* characters8;
