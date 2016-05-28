@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
 
 /**
  * An Activity is designed for WebAPKs (native Android apps) and displays a webapp in a nearly
@@ -38,5 +40,13 @@ public class WebApkActivity extends WebappActivity {
         // TODO(hanxi): Removes this function and use {@link WebApkActivity}'s implementation
         // when WebAPKs are registered in WebappRegistry.
         initializeSplashScreenWidgets(backgroundColor, null);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        String packageName = getWebappInfo().webApkPackageName();
+        WebApkServiceConnectionManager.getInstance().disconnect(
+                ContextUtils.getApplicationContext(), packageName);
     }
 }
