@@ -103,8 +103,7 @@ using base::scoped_nsobject;
 - (void)removeService:(CBService*)service {
   base::scoped_nsobject<CBService> serviceToRemove(service,
                                                    base::scoped_policy::RETAIN);
-  [_services.get() removeObject:serviceToRemove];
-  NSAssert(serviceToRemove, @"Unknown service to remove %@", service);
+  DCHECK(serviceToRemove);
   [_services.get() removeObject:serviceToRemove];
   // -[CBPeripheralDelegate peripheral:didModifyServices:] is only available
   // with 10.9. It is safe to call this method (even if chrome is running on
