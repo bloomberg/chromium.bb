@@ -586,9 +586,18 @@
     This clears synced data from all devices.
   </message>
 
-  <!-- Cloud Print -->
-  <message name="IDS_SETTINGS_GOOGLE_CLOUD_PRINT" desc="Label for the Google cloud print page and menu option.">
-    Google cloud print
+  <!-- Printing -->
+  <message name="IDS_SETTINGS_PRINTING" desc="Title of the printing page and navigation item to get there.">
+    Printing
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_CLOUD_PRINT_LEARN_MORE_LABEL" desc="Label for the link that teaches users how to use Google Cloud Print">
+    Set up or manage printers in Google Cloud Print.
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_NOTIFICATIONS_LABEL" desc="Label for the checkbox which enabled notifications when new printers are added to the user's network">
+    Show notifications when new printers are detected on the network
+  </message>
+  <message name="IDS_SETTINGS_PRINTING_MANAGE_CLOUD_PRINT_DEVICES" desc="Text for the button which allows users to manager their Google Cloud Print devices">
+    Manage Cloud Print devices
   </message>
 
   <!-- Downloads Page -->

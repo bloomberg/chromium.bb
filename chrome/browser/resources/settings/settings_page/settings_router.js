@@ -447,6 +447,12 @@ Polymer({
       subpage: [],
     },
     {
+      url: '/printing',
+      page: 'advanced',
+      section: 'printing',
+      subpage: [],
+    },
+    {
       url: '/accessibility',
       page: 'advanced',
       section: 'a11y',

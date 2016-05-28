@@ -145,13 +145,15 @@
             $i18n{languagesPageTitle}
           </div>
           <div data-section="downloads" on-tap="openPage_">
-            <iron-icon icon="cr:file-download">
-            </iron-icon>
+            <iron-icon icon="cr:file-download"></iron-icon>
             $i18n{downloadsPageTitle}
           </div>
+          <div data-section="printing" on-tap="openPage_">
+            <iron-icon icon="settings:print"></iron-icon>
+            $i18n{printingPageTitle}
+          </div>
           <div data-section="a11y" on-tap="openPage_">
-            <iron-icon icon="settings:accessibility">
-            </iron-icon>
+            <iron-icon icon="settings:accessibility"></iron-icon>
             $i18n{a11yPageTitle}
           </div>
 <if expr="not chromeos">

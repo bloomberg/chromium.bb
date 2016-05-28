@@ -365,14 +365,6 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
                           arraysize(localized_strings));
 }
 
-void AddCloudPrintStrings(content::WebUIDataSource* html_source) {
-  LocalizedString localized_strings[] = {
-      {"googleCloudPrint", IDS_SETTINGS_GOOGLE_CLOUD_PRINT},
-  };
-  AddLocalizedStringsBulk(html_source, localized_strings,
-                          arraysize(localized_strings));
-}
-
 #if !defined(OS_CHROMEOS)
 void AddDefaultBrowserStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
@@ -780,6 +772,23 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
       base::ASCIIToUTF16(chrome::kGoogleAccountActivityControlsURL));
 }
 
+void AddPrintingStrings(content::WebUIDataSource* html_source) {
+  LocalizedString localized_strings[] = {
+      {"printingPageTitle", IDS_SETTINGS_PRINTING},
+      {"printingCloudPrintLearnMoreLabel",
+       IDS_SETTINGS_PRINTING_CLOUD_PRINT_LEARN_MORE_LABEL},
+      {"printingNotificationsLabel", IDS_SETTINGS_PRINTING_NOTIFICATIONS_LABEL},
+      {"printingManageCloudPrintDevices",
+       IDS_SETTINGS_PRINTING_MANAGE_CLOUD_PRINT_DEVICES},
+  };
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          arraysize(localized_strings));
+
+  html_source->AddString("devicesUrl", chrome::kChromeUIDevicesURL);
+  html_source->AddString("printingCloudPrintLearnMoreUrl",
+                         chrome::kCloudPrintLearnMoreURL);
+}
+
 void AddPrivacyStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"privacyPageTitle", IDS_SETTINGS_PRIVACY},
@@ -1024,7 +1033,6 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddCertificateManagerStrings(html_source);
 #endif
   AddClearBrowsingDataStrings(html_source);
-  AddCloudPrintStrings(html_source);
 #if !defined(OS_CHROMEOS)
   AddDefaultBrowserStrings(html_source);
 #endif
@@ -1045,6 +1053,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddOnStartupStrings(html_source);
   AddPasswordsAndFormsStrings(html_source);
   AddPeopleStrings(html_source);
+  AddPrintingStrings(html_source);
   AddPrivacyStrings(html_source);
   AddResetStrings(html_source);
   AddSearchEnginesStrings(html_source);

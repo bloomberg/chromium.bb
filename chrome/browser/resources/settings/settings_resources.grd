@@ -553,6 +553,12 @@
       <structure name="IDR_SETTINGS_PREFS_TYPES_JS"
                  file="prefs/prefs_types.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_PRINTING_PAGE_HTML"
+                 file="printing_page/printing_page.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_PRINTING_PAGE_JS"
+                 file="printing_page/printing_page.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PRIVACY_PAGE_HTML"
                  file="privacy_page/privacy_page.html"
                  type="chrome_html"

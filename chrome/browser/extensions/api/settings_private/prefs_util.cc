@@ -96,6 +96,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)["gdata.disabled"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
+  // Printing settings.
+  (*s_whitelist)["local_discovery.notifications_enabled"] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+
   (*s_whitelist)["enable_do_not_track"] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)["homepage"] = settings_private::PrefType::PREF_TYPE_URL;

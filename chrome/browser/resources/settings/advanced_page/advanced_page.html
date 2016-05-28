@@ -3,6 +3,7 @@
 <link rel="import" href="/downloads_page/downloads_page.html">
 <link rel="import" href="/languages_page/languages_page.html">
 <link rel="import" href="/passwords_and_forms_page/passwords_and_forms_page.html">
+<link rel="import" href="/printing_page/printing_page.html">
 <link rel="import" href="/privacy_page/privacy_page.html">
 <link rel="import" href="/reset_page/reset_page.html">
 <link rel="import" href="/settings_page/main_page_behavior.html">
@@ -77,9 +78,12 @@
           </settings-downloads-page>
         </settings-section>
       </template>
-
-      <!-- TODO(dschuyler): Add Google Cloud Print section here. -->
-
+      <template is="dom-if" if="[[showPage(pageVisibility.printing)]]" restamp>
+        <settings-section page-title="$i18n{printingPageTitle}"
+            current-route="[[currentRoute]]" section="printing">
+          <settings-printing-page prefs="{{prefs}}"></settings-printing-page>
+        </settings-section>
+      </template>
       <template is="dom-if" if="[[showPage(pageVisibility.a11y)]]" restamp>
         <settings-section page-title="$i18n{a11yPageTitle}"
             current-route="[[currentRoute]]" section="a11y">
