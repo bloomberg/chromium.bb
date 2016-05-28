@@ -700,6 +700,13 @@ void NetworkQualityEstimator::RecordMetricsOnConnectionTypeChanged() const {
 NetworkQualityEstimator::EffectiveConnectionType
 NetworkQualityEstimator::GetEffectiveConnectionType() const {
   DCHECK(thread_checker_.CalledOnValidThread());
+  return GetRecentEffectiveConnectionType(base::TimeTicks());
+}
+
+NetworkQualityEstimator::EffectiveConnectionType
+NetworkQualityEstimator::GetRecentEffectiveConnectionType(
+    const base::TimeTicks& start_time) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // If the device is currently offline, then return
   // EFFECTIVE_CONNECTION_TYPE_OFFLINE.
@@ -707,11 +714,11 @@ NetworkQualityEstimator::GetEffectiveConnectionType() const {
     return EFFECTIVE_CONNECTION_TYPE_OFFLINE;
 
   base::TimeDelta http_rtt = nqe::internal::InvalidRTT();
-  if (!GetHttpRTTEstimate(&http_rtt))
+  if (!GetRecentHttpRTTMedian(start_time, &http_rtt))
     http_rtt = nqe::internal::InvalidRTT();
 
   int32_t kbps = nqe::internal::kInvalidThroughput;
-  if (!GetDownlinkThroughputKbpsEstimate(&kbps))
+  if (!GetRecentMedianDownlinkThroughputKbps(start_time, &kbps))
     kbps = nqe::internal::kInvalidThroughput;
 
   if (http_rtt == nqe::internal::InvalidRTT() &&
@@ -736,6 +743,7 @@ NetworkQualityEstimator::GetEffectiveConnectionType() const {
         connection_thresholds_[i].downstream_throughput_kbps() !=
             nqe::internal::kInvalidThroughput &&
         kbps <= connection_thresholds_[i].downstream_throughput_kbps();
+
     // Return |type| as the effective connection type if the current network's
     // RTT is worse than the threshold RTT for |type|, or if the current
     // network's throughput is lower than the threshold throughput for |type|.
@@ -751,40 +759,19 @@ NetworkQualityEstimator::GetEffectiveConnectionType() const {
 
 bool NetworkQualityEstimator::GetHttpRTTEstimate(base::TimeDelta* rtt) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::vector<NetworkQualityObservationSource> disallowed_observation_sources;
-  disallowed_observation_sources.push_back(
-      NETWORK_QUALITY_OBSERVATION_SOURCE_TCP);
-  disallowed_observation_sources.push_back(
-      NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC);
-  *rtt = GetRTTEstimateInternal(disallowed_observation_sources,
-                                base::TimeTicks(), 50);
-  return (*rtt != nqe::internal::InvalidRTT());
+  return GetRecentHttpRTTMedian(base::TimeTicks(), rtt);
 }
 
 bool NetworkQualityEstimator::GetTransportRTTEstimate(
     base::TimeDelta* rtt) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::vector<NetworkQualityObservationSource> disallowed_observation_sources;
-  disallowed_observation_sources.push_back(
-      NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST);
-  // Disallow external estimate provider since it provides RTT at HTTP layer.
-  disallowed_observation_sources.push_back(
-      NETWORK_QUALITY_OBSERVATION_SOURCE_EXTERNAL_ESTIMATE);
-  disallowed_observation_sources.push_back(
-      NETWORK_QUALITY_OBSERVATION_SOURCE_CACHED_ESTIMATE);
-  disallowed_observation_sources.push_back(
-      NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_FROM_PLATFORM);
-
-  *rtt = GetRTTEstimateInternal(disallowed_observation_sources,
-                                base::TimeTicks(), 50);
-  return (*rtt != nqe::internal::InvalidRTT());
+  return GetRecentTransportRTTMedian(base::TimeTicks(), rtt);
 }
 
 bool NetworkQualityEstimator::GetDownlinkThroughputKbpsEstimate(
     int32_t* kbps) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  *kbps = GetDownlinkThroughputKbpsEstimateInternal(base::TimeTicks(), 50);
-  return (*kbps != nqe::internal::kInvalidThroughput);
+  return GetRecentMedianDownlinkThroughputKbps(base::TimeTicks(), kbps);
 }
 
 bool NetworkQualityEstimator::GetRecentHttpRTTMedian(

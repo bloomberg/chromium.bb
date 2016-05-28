@@ -65,7 +65,7 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
                                 allow_local_host_requests_for_tests,
                                 allow_smaller_responses_for_tests),
         current_network_simulated_(false),
-        url_rtt_set_(false),
+        http_rtt_set_(false),
         downlink_throughput_kbps_set_(false) {
     // Set up embedded test server.
     embedded_test_server_.ServeFilesFromDirectory(
@@ -109,17 +109,26 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
     return embedded_test_server_.GetURL("/echo.html");
   }
 
-  void set_url_rtt(const base::TimeDelta& url_rtt) {
-    url_rtt_set_ = true;
-    url_rtt_ = url_rtt;
+  void set_http_rtt(const base::TimeDelta& http_rtt) {
+    http_rtt_set_ = true;
+    http_rtt_ = http_rtt;
   }
 
   bool GetHttpRTTEstimate(base::TimeDelta* rtt) const override {
-    if (url_rtt_set_) {
-      *rtt = url_rtt_;
+    if (http_rtt_set_) {
+      *rtt = http_rtt_;
       return true;
     }
     return NetworkQualityEstimator::GetHttpRTTEstimate(rtt);
+  }
+
+  bool GetRecentHttpRTTMedian(const base::TimeTicks& start_time,
+                              base::TimeDelta* rtt) const override {
+    if (http_rtt_set_) {
+      *rtt = http_rtt_;
+      return true;
+    }
+    return NetworkQualityEstimator::GetRecentHttpRTTMedian(start_time, rtt);
   }
 
   void set_downlink_throughput_kbps(int32_t downlink_throughput_kbps) {
@@ -133,6 +142,16 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
       return true;
     }
     return NetworkQualityEstimator::GetDownlinkThroughputKbpsEstimate(kbps);
+  }
+
+  bool GetRecentMedianDownlinkThroughputKbps(const base::TimeTicks& start_time,
+                                             int32_t* kbps) const override {
+    if (downlink_throughput_kbps_set_) {
+      *kbps = downlink_throughput_kbps_;
+      return true;
+    }
+    return NetworkQualityEstimator::GetRecentMedianDownlinkThroughputKbps(
+        start_time, kbps);
   }
 
   using NetworkQualityEstimator::ReadCachedNetworkQualityEstimate;
@@ -158,8 +177,8 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   NetworkChangeNotifier::ConnectionType current_network_type_;
   std::string current_network_id_;
 
-  bool url_rtt_set_;
-  base::TimeDelta url_rtt_;
+  bool http_rtt_set_;
+  base::TimeDelta http_rtt_;
 
   bool downlink_throughput_kbps_set_;
   int32_t downlink_throughput_kbps_;
@@ -459,7 +478,7 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsNone) {
   };
 
   for (const auto& test : tests) {
-    estimator.set_url_rtt(base::TimeDelta::FromMilliseconds(test.rtt_msec));
+    estimator.set_http_rtt(base::TimeDelta::FromMilliseconds(test.rtt_msec));
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -528,7 +547,7 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsOnlyRTT) {
   };
 
   for (const auto& test : tests) {
-    estimator.set_url_rtt(base::TimeDelta::FromMilliseconds(test.rtt_msec));
+    estimator.set_http_rtt(base::TimeDelta::FromMilliseconds(test.rtt_msec));
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
 }
@@ -587,7 +606,7 @@ TEST(NetworkQualityEstimatorTest, ObtainThresholdsRTTandThroughput) {
   };
 
   for (const auto& test : tests) {
-    estimator.set_url_rtt(base::TimeDelta::FromMilliseconds(test.rtt_msec));
+    estimator.set_http_rtt(base::TimeDelta::FromMilliseconds(test.rtt_msec));
     estimator.set_downlink_throughput_kbps(test.downlink_throughput_kbps);
     EXPECT_EQ(test.expected_conn_type, estimator.GetEffectiveConnectionType());
   }
@@ -779,37 +798,71 @@ TEST(NetworkQualityEstimatorTest, TestLRUCacheMaximumSize) {
   }
 }
 
-TEST(NetworkQualityEstimatorTest, TestGetMedianRTTSince) {
+TEST(NetworkQualityEstimatorTest, TestGetMetricsSince) {
   std::map<std::string, std::string> variation_params;
+
+  const base::TimeDelta rtt_threshold_4g =
+      base::TimeDelta::FromMilliseconds(30);
+  const base::TimeDelta rtt_threshold_broadband =
+      base::TimeDelta::FromMilliseconds(1);
+
+  variation_params["4G.ThresholdMedianHttpRTTMsec"] =
+      base::IntToString(rtt_threshold_4g.InMilliseconds());
+  variation_params["Broadband.ThresholdMedianHttpRTTMsec"] =
+      base::IntToString(rtt_threshold_broadband.InMilliseconds());
+  variation_params["HalfLifeSeconds"] = "300000";
+
   TestNetworkQualityEstimator estimator(variation_params);
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeTicks old = now - base::TimeDelta::FromMilliseconds(1);
   ASSERT_NE(old, now);
 
+  estimator.SimulateNetworkChangeTo(
+      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, "test");
+
+  const int32_t old_downlink_kbps = 1;
+  const base::TimeDelta old_url_rtt = base::TimeDelta::FromMilliseconds(1);
+  const base::TimeDelta old_tcp_rtt = base::TimeDelta::FromMilliseconds(10);
+
+  DCHECK_LT(old_url_rtt, rtt_threshold_4g);
+  DCHECK_LT(old_tcp_rtt, rtt_threshold_4g);
+
   // First sample has very old timestamp.
-  estimator.downstream_throughput_kbps_observations_.AddObservation(
-      NetworkQualityEstimator::ThroughputObservation(
-          1, old, NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
-  estimator.rtt_observations_.AddObservation(
-      NetworkQualityEstimator::RttObservation(
-          base::TimeDelta::FromMilliseconds(1), old,
-          NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
-  estimator.rtt_observations_.AddObservation(
-      NetworkQualityEstimator::RttObservation(
-          base::TimeDelta::FromMilliseconds(10), old,
-          NETWORK_QUALITY_OBSERVATION_SOURCE_TCP));
+  for (size_t i = 0; i < 2; ++i) {
+    estimator.downstream_throughput_kbps_observations_.AddObservation(
+        NetworkQualityEstimator::ThroughputObservation(
+            old_downlink_kbps, old,
+            NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
+    estimator.rtt_observations_.AddObservation(
+        NetworkQualityEstimator::RttObservation(
+            old_url_rtt, old, NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
+    estimator.rtt_observations_.AddObservation(
+        NetworkQualityEstimator::RttObservation(
+            old_tcp_rtt, old, NETWORK_QUALITY_OBSERVATION_SOURCE_TCP));
+  }
+
+  const int32_t new_downlink_kbps = 100;
+  const base::TimeDelta new_url_rtt = base::TimeDelta::FromMilliseconds(100);
+  const base::TimeDelta new_tcp_rtt = base::TimeDelta::FromMilliseconds(1000);
+
+  DCHECK_NE(old_downlink_kbps, new_downlink_kbps);
+  DCHECK_NE(old_url_rtt, new_url_rtt);
+  DCHECK_NE(old_tcp_rtt, new_tcp_rtt);
+  DCHECK_GT(new_url_rtt, rtt_threshold_4g);
+  DCHECK_GT(new_tcp_rtt, rtt_threshold_4g);
+  DCHECK_GT(new_url_rtt, rtt_threshold_broadband);
+  DCHECK_GT(new_tcp_rtt, rtt_threshold_broadband);
 
   estimator.downstream_throughput_kbps_observations_.AddObservation(
       NetworkQualityEstimator::ThroughputObservation(
-          100, now, NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
-  estimator.rtt_observations_.AddObservation(
-      NetworkQualityEstimator::RttObservation(
-          base::TimeDelta::FromMilliseconds(100), now,
+          new_downlink_kbps, now,
           NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
   estimator.rtt_observations_.AddObservation(
       NetworkQualityEstimator::RttObservation(
-          base::TimeDelta::FromMilliseconds(1000), now,
-          NETWORK_QUALITY_OBSERVATION_SOURCE_TCP));
+          new_url_rtt, now, NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST));
+  estimator.rtt_observations_.AddObservation(
+      NetworkQualityEstimator::RttObservation(
+          new_tcp_rtt, now, NETWORK_QUALITY_OBSERVATION_SOURCE_TCP));
 
   const struct {
     base::TimeTicks start_timestamp;
@@ -817,18 +870,20 @@ TEST(NetworkQualityEstimatorTest, TestGetMedianRTTSince) {
     base::TimeDelta expected_http_rtt;
     base::TimeDelta expected_transport_rtt;
     int32_t expected_downstream_throughput;
+    NetworkQualityEstimator::EffectiveConnectionType
+        expected_effective_connection_type;
   } tests[] = {
       {now + base::TimeDelta::FromSeconds(10), false,
        base::TimeDelta::FromMilliseconds(0),
-       base::TimeDelta::FromMilliseconds(0), 0},
-      {now, true, base::TimeDelta::FromMilliseconds(100),
-       base::TimeDelta::FromMilliseconds(1000), 100},
-      {now - base::TimeDelta::FromMicroseconds(500), true,
-       base::TimeDelta::FromMilliseconds(100),
-       base::TimeDelta::FromMilliseconds(1000), 100},
+       base::TimeDelta::FromMilliseconds(0), 0,
+       NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_BROADBAND},
+      {now, true, new_url_rtt, new_tcp_rtt, new_downlink_kbps,
+       NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_4G},
+      {old - base::TimeDelta::FromMicroseconds(500), true, old_url_rtt,
+       old_tcp_rtt, old_downlink_kbps,
+       NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_BROADBAND},
 
   };
-
   for (const auto& test : tests) {
     base::TimeDelta http_rtt;
     base::TimeDelta transport_rtt;
@@ -848,6 +903,9 @@ TEST(NetworkQualityEstimatorTest, TestGetMedianRTTSince) {
       EXPECT_EQ(test.expected_transport_rtt, transport_rtt);
       EXPECT_EQ(test.expected_downstream_throughput,
                 downstream_throughput_kbps);
+      EXPECT_EQ(
+          test.expected_effective_connection_type,
+          estimator.GetRecentEffectiveConnectionType(test.start_timestamp));
     }
   }
 }

@@ -280,7 +280,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestCaching);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            TestLRUCacheMaximumSize);
-  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestGetMedianRTTSince);
+  FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestGetMetricsSince);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest,
                            TestExternalEstimateProviderMergeEstimates);
 
@@ -354,6 +354,11 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Adds the default median RTT and downstream throughput estimate for the
   // current connection type to the observation buffer.
   void AddDefaultEstimates();
+
+  // Returns the effective type of the current connection based on only the
+  // samples observed after |start_time|.
+  EffectiveConnectionType GetRecentEffectiveConnectionType(
+      const base::TimeTicks& start_time) const;
 
   // Returns an estimate of network quality at the specified |percentile|.
   // |disallowed_observation_sources| is the list of observation sources that
