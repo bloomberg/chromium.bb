@@ -13,9 +13,15 @@
 namespace exo {
 namespace {
 
-using SubSurfaceTest = test::ExoTestBase;
+class SubSurfaceTest : public test::ExoTestBase,
+                       public ::testing::WithParamInterface<bool> {
+  void SetUp() override {
+    Surface::SetUseSurfaceLayer(GetParam());
+    test::ExoTestBase::SetUp();
+  }
+};
 
-TEST_F(SubSurfaceTest, SetPosition) {
+TEST_P(SubSurfaceTest, SetPosition) {
   std::unique_ptr<Surface> parent(new Surface);
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<SubSurface> sub_surface(
@@ -44,7 +50,7 @@ TEST_F(SubSurfaceTest, SetPosition) {
   EXPECT_EQ(gfx::Point().ToString(), surface->bounds().origin().ToString());
 }
 
-TEST_F(SubSurfaceTest, PlaceAbove) {
+TEST_P(SubSurfaceTest, PlaceAbove) {
   std::unique_ptr<Surface> parent(new Surface);
   std::unique_ptr<Surface> surface1(new Surface);
   std::unique_ptr<Surface> surface2(new Surface);
@@ -75,7 +81,7 @@ TEST_F(SubSurfaceTest, PlaceAbove) {
   EXPECT_EQ(surface1.get(), parent->children()[1]);
 }
 
-TEST_F(SubSurfaceTest, PlaceBelow) {
+TEST_P(SubSurfaceTest, PlaceBelow) {
   std::unique_ptr<Surface> parent(new Surface);
   std::unique_ptr<Surface> surface1(new Surface);
   std::unique_ptr<Surface> surface2(new Surface);
@@ -106,7 +112,7 @@ TEST_F(SubSurfaceTest, PlaceBelow) {
   EXPECT_EQ(surface1.get(), parent->children()[1]);
 }
 
-TEST_F(SubSurfaceTest, SetCommitBehavior) {
+TEST_P(SubSurfaceTest, SetCommitBehavior) {
   std::unique_ptr<Surface> parent(new Surface);
   std::unique_ptr<Surface> child(new Surface);
   std::unique_ptr<Surface> grandchild(new Surface);
@@ -147,6 +153,8 @@ TEST_F(SubSurfaceTest, SetCommitBehavior) {
   // grandchild to take effect when synchronous is disabled.
   EXPECT_EQ(position2.ToString(), grandchild->bounds().origin().ToString());
 }
+
+INSTANTIATE_TEST_CASE_P(, SubSurfaceTest, ::testing::Bool());
 
 }  // namespace
 }  // namespace exo

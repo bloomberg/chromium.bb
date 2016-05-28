@@ -15,6 +15,7 @@
         '../ash/ash.gyp:ash',
         '../base/base.gyp:base',
         '../cc/cc.gyp:cc',
+        '../cc/cc.gyp:cc_surfaces',
         '../gpu/gpu.gyp:gpu',
         '../skia/skia.gyp:skia',
         '../ui/aura/aura.gyp:aura',

@@ -13,13 +13,19 @@
 namespace exo {
 namespace {
 
-using SurfaceTest = test::ExoTestBase;
+class SurfaceTest : public test::ExoTestBase,
+                    public ::testing::WithParamInterface<bool> {
+  void SetUp() override {
+    Surface::SetUseSurfaceLayer(GetParam());
+    test::ExoTestBase::SetUp();
+  }
+};
 
 void ReleaseBuffer(int* release_buffer_call_count) {
   (*release_buffer_call_count)++;
 }
 
-TEST_F(SurfaceTest, Attach) {
+TEST_P(SurfaceTest, Attach) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -46,7 +52,7 @@ TEST_F(SurfaceTest, Attach) {
   ASSERT_EQ(1, release_buffer_call_count);
 }
 
-TEST_F(SurfaceTest, Damage) {
+TEST_P(SurfaceTest, Damage) {
   gfx::Size buffer_size(256, 256);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -69,7 +75,7 @@ void SetFrameTime(base::TimeTicks* result, base::TimeTicks frame_time) {
   *result = frame_time;
 }
 
-TEST_F(SurfaceTest, RequestFrameCallback) {
+TEST_P(SurfaceTest, RequestFrameCallback) {
   std::unique_ptr<Surface> surface(new Surface);
 
   base::TimeTicks frame_time;
@@ -81,7 +87,7 @@ TEST_F(SurfaceTest, RequestFrameCallback) {
   EXPECT_TRUE(frame_time.is_null());
 }
 
-TEST_F(SurfaceTest, SetOpaqueRegion) {
+TEST_P(SurfaceTest, SetOpaqueRegion) {
   std::unique_ptr<Surface> surface(new Surface);
 
   // Setting a non-empty opaque region should succeed.
@@ -91,7 +97,7 @@ TEST_F(SurfaceTest, SetOpaqueRegion) {
   surface->SetOpaqueRegion(SkRegion(SkIRect::MakeEmpty()));
 }
 
-TEST_F(SurfaceTest, SetInputRegion) {
+TEST_P(SurfaceTest, SetInputRegion) {
   std::unique_ptr<Surface> surface(new Surface);
 
   // Setting a non-empty input region should succeed.
@@ -101,7 +107,7 @@ TEST_F(SurfaceTest, SetInputRegion) {
   surface->SetInputRegion(SkRegion(SkIRect::MakeEmpty()));
 }
 
-TEST_F(SurfaceTest, SetBufferScale) {
+TEST_P(SurfaceTest, SetBufferScale) {
   gfx::Size buffer_size(512, 512);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -118,7 +124,7 @@ TEST_F(SurfaceTest, SetBufferScale) {
       surface->bounds().size().ToString());
 }
 
-TEST_F(SurfaceTest, SetViewport) {
+TEST_P(SurfaceTest, SetViewport) {
   gfx::Size buffer_size(1, 1);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -133,7 +139,7 @@ TEST_F(SurfaceTest, SetViewport) {
   EXPECT_EQ(viewport.ToString(), surface->bounds().size().ToString());
 }
 
-TEST_F(SurfaceTest, SetCrop) {
+TEST_P(SurfaceTest, SetCrop) {
   gfx::Size buffer_size(16, 16);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -146,7 +152,11 @@ TEST_F(SurfaceTest, SetCrop) {
   EXPECT_EQ(crop_size.ToString(), surface->bounds().size().ToString());
 }
 
-TEST_F(SurfaceTest, SetOnlyVisibleOnSecureOutput) {
+TEST_P(SurfaceTest, SetOnlyVisibleOnSecureOutput) {
+  // SurfaceLayer doesn't have texture mailbox, so it can't be tested this
+  // way.
+  if (GetParam())
+    return;
   gfx::Size buffer_size(1, 1);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -166,7 +176,7 @@ TEST_F(SurfaceTest, SetOnlyVisibleOnSecureOutput) {
   release_callback->Run(gpu::SyncToken(), false);
 }
 
-TEST_F(SurfaceTest, SetBlendMode) {
+TEST_P(SurfaceTest, SetBlendMode) {
   gfx::Size buffer_size(1, 1);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -179,7 +189,7 @@ TEST_F(SurfaceTest, SetBlendMode) {
   EXPECT_TRUE(surface->layer()->fills_bounds_opaquely());
 }
 
-TEST_F(SurfaceTest, SetAlpha) {
+TEST_P(SurfaceTest, SetAlpha) {
   gfx::Size buffer_size(1, 1);
   std::unique_ptr<Buffer> buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
@@ -190,12 +200,14 @@ TEST_F(SurfaceTest, SetAlpha) {
   surface->Commit();
 }
 
-TEST_F(SurfaceTest, Commit) {
+TEST_P(SurfaceTest, Commit) {
   std::unique_ptr<Surface> surface(new Surface);
 
   // Calling commit without a buffer should succeed.
   surface->Commit();
 }
+
+INSTANTIATE_TEST_CASE_P(, SurfaceTest, ::testing::Bool());
 
 }  // namespace
 }  // namespace exo

@@ -12,10 +12,20 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/quads/render_pass.h"
+#include "cc/quads/shared_quad_state.h"
+#include "cc/quads/solid_color_draw_quad.h"
+#include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/single_release_callback.h"
+#include "cc/surfaces/surface.h"
+#include "cc/surfaces/surface_factory.h"
+#include "cc/surfaces/surface_id_allocator.h"
+#include "cc/surfaces/surface_manager.h"
 #include "components/exo/buffer.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_targeter.h"
@@ -28,6 +38,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 
@@ -127,7 +138,47 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
 };
 
+void SatisfyCallback(cc::SurfaceManager* manager,
+                     cc::SurfaceSequence sequence) {
+  std::vector<uint32_t> sequences;
+  sequences.push_back(sequence.sequence);
+  manager->DidSatisfySequences(sequence.id_namespace, &sequences);
+}
+
+void RequireCallback(cc::SurfaceManager* manager,
+                     cc::SurfaceId id,
+                     cc::SurfaceSequence sequence) {
+  cc::Surface* surface = manager->GetSurfaceForId(id);
+  if (!surface) {
+    LOG(ERROR) << "Attempting to require callback on nonexistent surface";
+    return;
+  }
+  surface->AddDestructionDependency(sequence);
+}
+
 }  // namespace
+
+SurfaceFactoryOwner::SurfaceFactoryOwner() {}
+SurfaceFactoryOwner::~SurfaceFactoryOwner() {}
+
+void SurfaceFactoryOwner::ReturnResources(
+    const cc::ReturnedResourceArray& resources) {
+  scoped_refptr<SurfaceFactoryOwner> holder(this);
+  for (auto& resource : resources) {
+    auto it = release_callbacks_.find(resource.id);
+    DCHECK(it != release_callbacks_.end());
+    it->second.second->Run(resource.sync_token, resource.lost);
+    release_callbacks_.erase(it);
+  }
+}
+void SurfaceFactoryOwner::WillDrawSurface(cc::SurfaceId id,
+                                          const gfx::Rect& damage_rect) {
+  if (surface_)
+    surface_->WillDraw(id);
+}
+
+void SurfaceFactoryOwner::SetBeginFrameSource(
+    cc::BeginFrameSource* begin_frame_source) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Surface, public:
@@ -152,7 +203,20 @@ Surface::Surface()
   Init(ui::LAYER_SOLID_COLOR);
   SetEventTargeter(base::WrapUnique(new CustomWindowTargeter));
   set_owned_by_parent(false);
-  AddObserver(this);
+  surface_manager_ =
+      aura::Env::GetInstance()->context_factory()->GetSurfaceManager();
+  if (use_surface_layer_) {
+    factory_owner_ = make_scoped_refptr(new SurfaceFactoryOwner);
+    factory_owner_->surface_ = this;
+    factory_owner_->id_allocator_ =
+        aura::Env::GetInstance()->context_factory()->CreateSurfaceIdAllocator();
+    factory_owner_->surface_factory_.reset(
+        new cc::SurfaceFactory(surface_manager_, factory_owner_.get()));
+  }
+
+  if (!factory_owner_) {
+    AddObserver(this);
+  }
 }
 
 Surface::~Surface() {
@@ -160,7 +224,11 @@ Surface::~Surface() {
 
   layer()->SetShowSolidColorContent();
 
-  RemoveObserver(this);
+  if (factory_owner_) {
+    factory_owner_->surface_ = nullptr;
+  } else {
+    RemoveObserver(this);
+  }
   if (compositor_)
     compositor_->RemoveObserver(this);
 
@@ -171,11 +239,19 @@ Surface::~Surface() {
                                  frame_callbacks_);
   for (const auto& frame_callback : active_frame_callbacks_)
     frame_callback.Run(base::TimeTicks());
+
+  if (!surface_id_.is_null())
+    factory_owner_->surface_factory_->Destroy(surface_id_);
 }
 
 // static
 Surface* Surface::AsSurface(const aura::Window* window) {
   return window->GetProperty(kSurfaceKey);
+}
+
+// static
+void Surface::SetUseSurfaceLayer(bool use_surface_layer) {
+  use_surface_layer_ = use_surface_layer;
 }
 
 void Surface::Attach(Buffer* buffer) {
@@ -348,10 +424,7 @@ void Surface::Commit() {
     CommitSurfaceHierarchy();
 }
 
-void Surface::CommitSurfaceHierarchy() {
-  DCHECK(needs_commit_surface_hierarchy_);
-  needs_commit_surface_hierarchy_ = false;
-
+void Surface::CommitLayerContents() {
   // We update contents if Attach() has been called since last commit.
   if (has_pending_contents_) {
     has_pending_contents_ = false;
@@ -417,8 +490,10 @@ void Surface::CommitSurfaceHierarchy() {
     pending_damage_.setEmpty();
   }
 
-  // Update current input region.
-  input_region_ = pending_input_region_;
+  if (layer()->has_external_content()) {
+    layer()->SetTextureAlpha(pending_alpha_);
+    alpha_ = pending_alpha_;
+  }
 
   // Move pending frame callbacks to the end of |frame_callbacks_|.
   frame_callbacks_.splice(frame_callbacks_.end(), pending_frame_callbacks_);
@@ -430,10 +505,166 @@ void Surface::CommitSurfaceHierarchy() {
       pending_blend_mode_ == SkXfermode::kSrc_Mode ||
       pending_opaque_region_.contains(
           gfx::RectToSkIRect(gfx::Rect(layer()->size()))));
-  if (layer()->has_external_content()) {
-    layer()->SetTextureAlpha(pending_alpha_);
+}
+
+void Surface::CommitSurfaceContents() {
+  // We update contents if Attach() has been called since last commit.
+  if (has_pending_contents_) {
+    has_pending_contents_ = false;
+
+    current_buffer_ = pending_buffer_;
+    pending_buffer_.reset();
+
+    bool secure_output_only = pending_only_visible_on_secure_output_;
+    pending_only_visible_on_secure_output_ = false;
+
+    cc::TextureMailbox texture_mailbox;
+    std::unique_ptr<cc::SingleReleaseCallback> texture_mailbox_release_callback;
+    if (current_buffer_) {
+      texture_mailbox_release_callback = current_buffer_->ProduceTextureMailbox(
+          &texture_mailbox, secure_output_only, false);
+    }
+
+    cc::SurfaceId old_surface_id = surface_id_;
+    surface_id_ = factory_owner_->id_allocator_->GenerateId();
+    factory_owner_->surface_factory_->Create(surface_id_);
+
+    gfx::Size buffer_size = texture_mailbox.size_in_pixels();
+    gfx::SizeF scaled_buffer_size(
+        gfx::ScaleSize(gfx::SizeF(buffer_size), 1.0f / pending_buffer_scale_));
+
+    gfx::Size layer_size;  // Size of the output layer, in DIP.
+    if (!pending_viewport_.IsEmpty()) {
+      layer_size = pending_viewport_;
+    } else if (!pending_crop_.IsEmpty()) {
+      DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(pending_crop_.width()) ||
+                           !gfx::IsExpressibleAsInt(pending_crop_.height()))
+          << "Crop rectangle size (" << pending_crop_.size().ToString()
+          << ") most be expressible using integers when viewport is not set";
+      layer_size = gfx::ToCeiledSize(pending_crop_.size());
+    } else {
+      layer_size = gfx::ToCeiledSize(scaled_buffer_size);
+    }
+
+    // TODO(jbauman): Figure out how this interacts with the pixel size of
+    // CopyOutputRequests on the layer.
+    float contents_surface_to_layer_scale = 1.0;
+    gfx::Size contents_surface_size = layer_size;
+
+    gfx::PointF uv_top_left(0.f, 0.f);
+    gfx::PointF uv_bottom_right(1.f, 1.f);
+    if (!pending_crop_.IsEmpty()) {
+      uv_top_left = pending_crop_.origin();
+
+      uv_top_left.Scale(1.f / scaled_buffer_size.width(),
+                        1.f / scaled_buffer_size.height());
+      uv_bottom_right = pending_crop_.bottom_right();
+      uv_bottom_right.Scale(1.f / scaled_buffer_size.width(),
+                            1.f / scaled_buffer_size.height());
+    }
+
+    // pending_damage_ is in Surface coordinates.
+    gfx::Rect damage_rect = gfx::SkIRectToRect(pending_damage_.getBounds());
+
+    std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
+    render_pass->SetAll(cc::RenderPassId(1, 1),
+                        gfx::Rect(contents_surface_size), damage_rect,
+                        gfx::Transform(), false);
+
+    gfx::Rect quad_rect = gfx::Rect(contents_surface_size);
+    cc::SharedQuadState* quad_state =
+        render_pass->CreateAndAppendSharedQuadState();
+    quad_state->quad_layer_bounds = contents_surface_size;
+    quad_state->visible_quad_layer_rect = quad_rect;
+    quad_state->opacity = alpha_;
     alpha_ = pending_alpha_;
+
+    bool frame_is_opaque = false;
+
+    std::unique_ptr<cc::DelegatedFrameData> delegated_frame(
+        new cc::DelegatedFrameData);
+    if (texture_mailbox_release_callback) {
+      cc::TransferableResource resource;
+      resource.id = next_resource_id_++;
+      resource.format = cc::RGBA_8888;
+      resource.filter =
+          texture_mailbox.nearest_neighbor() ? GL_NEAREST : GL_LINEAR;
+      resource.size = texture_mailbox.size_in_pixels();
+      resource.mailbox_holder = gpu::MailboxHolder(texture_mailbox.mailbox(),
+                                                   texture_mailbox.sync_token(),
+                                                   texture_mailbox.target());
+      resource.is_overlay_candidate = texture_mailbox.is_overlay_candidate();
+
+      cc::TextureDrawQuad* texture_quad =
+          render_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
+      float vertex_opacity[4] = {1.0, 1.0, 1.0, 1.0};
+      gfx::Rect opaque_rect;
+      frame_is_opaque =
+          pending_blend_mode_ == SkXfermode::kSrc_Mode ||
+          pending_opaque_region_.contains(gfx::RectToSkIRect(quad_rect));
+      if (frame_is_opaque) {
+        opaque_rect = quad_rect;
+      } else if (pending_opaque_region_.isRect()) {
+        opaque_rect = gfx::SkIRectToRect(pending_opaque_region_.getBounds());
+      }
+
+      texture_quad->SetNew(quad_state, quad_rect, opaque_rect, quad_rect,
+                           resource.id, true, uv_top_left, uv_bottom_right,
+                           SK_ColorTRANSPARENT, vertex_opacity, false, false,
+                           secure_output_only);
+
+      factory_owner_->release_callbacks_[resource.id] = std::make_pair(
+          factory_owner_, std::move(texture_mailbox_release_callback));
+      delegated_frame->resource_list.push_back(resource);
+    } else {
+      cc::SolidColorDrawQuad* solid_quad =
+          render_pass->CreateAndAppendDrawQuad<cc::SolidColorDrawQuad>();
+      solid_quad->SetNew(quad_state, quad_rect, quad_rect, SK_ColorBLACK,
+                         false);
+      frame_is_opaque = true;
+    }
+
+    delegated_frame->render_pass_list.push_back(std::move(render_pass));
+    std::unique_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+    frame->delegated_frame_data = std::move(delegated_frame);
+
+    factory_owner_->surface_factory_->SubmitCompositorFrame(
+        surface_id_, std::move(frame), cc::SurfaceFactory::DrawCallback());
+
+    if (!old_surface_id.is_null()) {
+      factory_owner_->surface_factory_->SetPreviousFrameSurface(surface_id_,
+                                                                old_surface_id);
+      factory_owner_->surface_factory_->Destroy(old_surface_id);
+    }
+
+    layer()->SetShowSurface(
+        surface_id_,
+        base::Bind(&SatisfyCallback, base::Unretained(surface_manager_)),
+        base::Bind(&RequireCallback, base::Unretained(surface_manager_)),
+        contents_surface_size, contents_surface_to_layer_scale, layer_size);
+    layer()->SetBounds(gfx::Rect(layer()->bounds().origin(), layer_size));
+    layer()->SetFillsBoundsOpaquely(alpha_ == 1.0f && frame_is_opaque);
+
+    // Reset damage.
+    pending_damage_.setEmpty();
   }
+  // Move pending frame callbacks to the end of active_frame_callbacks_
+  active_frame_callbacks_.splice(active_frame_callbacks_.end(),
+                                 pending_frame_callbacks_);
+}
+
+void Surface::CommitSurfaceHierarchy() {
+  DCHECK(needs_commit_surface_hierarchy_);
+  needs_commit_surface_hierarchy_ = false;
+
+  if (factory_owner_) {
+    CommitSurfaceContents();
+  } else {
+    CommitLayerContents();
+  }
+
+  // Update current input region.
+  input_region_ = pending_input_region_;
 
   // Synchronize window hierarchy. This will position and update the stacking
   // order of all sub-surfaces after committing all pending state of sub-surface
@@ -542,6 +773,7 @@ std::unique_ptr<base::trace_event::TracedValue> Surface::AsTracedValue() const {
 
 void Surface::OnWindowAddedToRootWindow(aura::Window* window) {
   DCHECK(!compositor_);
+  DCHECK(!factory_owner_);
   compositor_ = layer()->GetCompositor();
   compositor_->AddObserver(this);
 }
@@ -557,6 +789,7 @@ void Surface::OnWindowRemovingFromRootWindow(aura::Window* window,
 // ui::CompositorObserver overrides:
 
 void Surface::OnCompositingDidCommit(ui::Compositor* compositor) {
+  DCHECK(!factory_owner_);
   // Move frame callbacks to the end of |active_frame_callbacks_|.
   active_frame_callbacks_.splice(active_frame_callbacks_.end(),
                                  frame_callbacks_);
@@ -613,5 +846,14 @@ void Surface::OnCompositingShuttingDown(ui::Compositor* compositor) {
   compositor->RemoveObserver(this);
   compositor_ = nullptr;
 }
+
+void Surface::WillDraw(cc::SurfaceId id) {
+  while (!active_frame_callbacks_.empty()) {
+    active_frame_callbacks_.front().Run(base::TimeTicks::Now());
+    active_frame_callbacks_.pop_front();
+  }
+}
+
+bool Surface::use_surface_layer_ = false;
 
 }  // namespace exo

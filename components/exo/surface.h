@@ -11,8 +11,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "cc/surfaces/surface_factory_client.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/aura/window.h"
@@ -26,6 +28,11 @@ class TracedValue;
 }
 }
 
+namespace cc {
+class SurfaceFactory;
+enum class SurfaceDrawStatus;
+}
+
 namespace gfx {
 class Path;
 }
@@ -34,6 +41,35 @@ namespace exo {
 class Buffer;
 class SurfaceDelegate;
 class SurfaceObserver;
+class Surface;
+
+// This class owns the SurfaceFactory and keeps track of references to the
+// contents of Buffers. It's keeped alive by references from
+// release_callbacks_. It's destroyed when its owning Surface is destroyed and
+// the last outstanding release callback is called.
+class SurfaceFactoryOwner : public base::RefCounted<SurfaceFactoryOwner>,
+                            public cc::SurfaceFactoryClient {
+ public:
+  SurfaceFactoryOwner();
+
+  // Overridden from cc::SurfaceFactoryClient:
+  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
+  void WillDrawSurface(cc::SurfaceId id, const gfx::Rect& damage_rect) override;
+  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
+
+ private:
+  friend class base::RefCounted<SurfaceFactoryOwner>;
+  friend class Surface;
+  ~SurfaceFactoryOwner() override;
+
+  std::map<int,
+           std::pair<scoped_refptr<SurfaceFactoryOwner>,
+                     std::unique_ptr<cc::SingleReleaseCallback>>>
+      release_callbacks_;
+  std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
+  std::unique_ptr<cc::SurfaceFactory> surface_factory_;
+  Surface* surface_;
+};
 
 // This class represents a rectangular area that is displayed on the screen.
 // It has a location, size and pixel contents.
@@ -46,6 +82,9 @@ class Surface : public aura::Window,
 
   // Type-checking downcast routine.
   static Surface* AsSurface(const aura::Window* window);
+
+  // Sets whether to put the contents in a SurfaceLayer or a TextureLayer.
+  static void SetUseSurfaceLayer(bool use_surface_layer);
 
   // Set a buffer as the content of this surface. A buffer can only be attached
   // to one surface at a time.
@@ -161,13 +200,25 @@ class Surface : public aura::Window,
   void OnCompositingLockStateChanged(ui::Compositor* compositor) override {}
   void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
+  void WillDraw(cc::SurfaceId surface_id);
+
  private:
   bool needs_commit_surface_hierarchy() const {
     return needs_commit_surface_hierarchy_;
   }
 
+  // Commit the current attached buffer to a TextureLayer.
+  void CommitLayerContents();
+
+  // Commit the current attached buffer to a SurfaceLayer.
+  void CommitSurfaceContents();
+
   // This returns true when the surface has some contents assigned to it.
   bool has_contents() const { return !!current_buffer_; }
+
+  // This is true if the buffer contents should be put in a SurfaceLayer
+  // rather than a TextureLayer.
+  static bool use_surface_layer_;
 
   // This is true when Attach() has been called and new contents should take
   // effect next time Commit() is called.
@@ -175,6 +226,16 @@ class Surface : public aura::Window,
 
   // The buffer that will become the content of surface when Commit() is called.
   base::WeakPtr<Buffer> pending_buffer_;
+
+  cc::SurfaceManager* surface_manager_;
+
+  scoped_refptr<SurfaceFactoryOwner> factory_owner_;
+
+  // The Surface Id currently attached to the window.
+  cc::SurfaceId surface_id_;
+
+  // The next resource id the buffer will be attached to.
+  int next_resource_id_ = 0;
 
   // The damage region to schedule paint for when Commit() is called.
   SkRegion pending_damage_;

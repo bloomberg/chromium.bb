@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/wm/common/wm_shell_window_ids.h"
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -28,10 +29,15 @@
 
 namespace exo {
 
+const char kUseExoSurfaceLayer[] = "use-exo-surface-layer";
+
 ////////////////////////////////////////////////////////////////////////////////
 // Display, public:
 
-Display::Display() {}
+Display::Display() {
+  Surface::SetUseSurfaceLayer(
+      base::CommandLine::ForCurrentProcess()->HasSwitch(kUseExoSurfaceLayer));
+}
 
 Display::~Display() {}
 

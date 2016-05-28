@@ -36,6 +36,7 @@ source_set("exo") {
     "//ash",
     "//base",
     "//cc",
+    "//cc/surfaces:surfaces",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
     "//skia",
