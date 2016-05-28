@@ -9,6 +9,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/json/string_escape.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
@@ -466,8 +467,10 @@ void DevToolsUIBindings::DispatchProtocolMessage(
   DCHECK(agent_host == agent_host_.get());
 
   if (message.length() < kMaxMessageChunkSize) {
-    base::string16 javascript = base::UTF8ToUTF16(
-        "DevToolsAPI.dispatchMessage(" + message + ");");
+    std::string param;
+    base::EscapeJSONString(message, true, &param);
+    base::string16 javascript =
+        base::UTF8ToUTF16("DevToolsAPI.dispatchMessage(" + param + ");");
     web_contents_->GetMainFrame()->ExecuteJavaScript(javascript);
     return;
   }
