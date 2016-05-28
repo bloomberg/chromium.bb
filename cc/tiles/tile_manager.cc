@@ -18,6 +18,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/threading/thread_checker.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/histograms.h"
 #include "cc/debug/devtools_instrumentation.h"
@@ -41,41 +42,36 @@ DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
     "Compositing.%s.RasterTask.RasterUs",
     "Compositing.%s.RasterTask.RasterPixelsPerMs");
 
-// TODO(prashant.n): Separate out members needed in RunOnWorkerThread() and
-// OnTaskCompleted() in RasterTaskImpl. crbug.com/613812.
 class RasterTaskImpl : public TileTask {
  public:
   RasterTaskImpl(TileManager* tile_manager,
+                 Tile* tile,
                  Resource* resource,
                  scoped_refptr<RasterSource> raster_source,
-                 const gfx::Rect& content_rect,
-                 const gfx::Rect& invalid_content_rect,
-                 float contents_scale,
                  const RasterSource::PlaybackSettings& playback_settings,
                  TileResolution tile_resolution,
-                 int layer_id,
                  uint64_t source_prepare_tiles_id,
-                 Tile* tile,
-                 uint64_t new_content_id,
-                 int source_frame_number,
                  std::unique_ptr<RasterBuffer> raster_buffer,
                  TileTask::Vector* dependencies,
                  bool supports_concurrent_execution)
       : TileTask(supports_concurrent_execution, dependencies),
         tile_manager_(tile_manager),
+        tile_(tile),
         resource_(resource),
         raster_source_(std::move(raster_source)),
-        content_rect_(content_rect),
-        invalid_content_rect_(invalid_content_rect),
-        contents_scale_(contents_scale),
+        content_rect_(tile->content_rect()),
+        invalid_content_rect_(tile->invalidated_content_rect()),
+        contents_scale_(tile->contents_scale()),
         playback_settings_(playback_settings),
         tile_resolution_(tile_resolution),
-        layer_id_(layer_id),
+        layer_id_(tile->layer_id()),
         source_prepare_tiles_id_(source_prepare_tiles_id),
-        tile_(tile),
-        new_content_id_(new_content_id),
-        source_frame_number_(source_frame_number),
-        raster_buffer_(std::move(raster_buffer)) {}
+        tile_tracing_id_(static_cast<void*>(tile)),
+        new_content_id_(tile->id()),
+        source_frame_number_(tile->source_frame_number()),
+        raster_buffer_(std::move(raster_buffer)) {
+    DCHECK(origin_thread_checker_.CalledOnValidThread());
+  }
 
   // Overridden from Task:
   void RunOnWorkerThread() override {
@@ -86,7 +82,7 @@ class RasterTaskImpl : public TileTask {
     DCHECK(raster_buffer_);
 
     frame_viewer_instrumentation::ScopedRasterTask raster_task(
-        tile_, tile_resolution_, source_frame_number_, layer_id_);
+        tile_tracing_id_, tile_resolution_, source_frame_number_, layer_id_);
     ScopedRasterTaskTimer timer;
     timer.SetArea(content_rect_.size().GetArea());
 
@@ -99,16 +95,29 @@ class RasterTaskImpl : public TileTask {
 
   // Overridden from TileTask:
   void OnTaskCompleted() override {
+    DCHECK(origin_thread_checker_.CalledOnValidThread());
+
     tile_manager_->OnRasterTaskCompleted(std::move(raster_buffer_), tile_,
                                          resource_, state().IsCanceled());
   }
 
  protected:
-  ~RasterTaskImpl() override { DCHECK(!raster_buffer_); }
+  ~RasterTaskImpl() override {
+    DCHECK(origin_thread_checker_.CalledOnValidThread());
+    DCHECK(!raster_buffer_);
+  }
 
  private:
+  base::ThreadChecker origin_thread_checker_;
+
+  // The following members are needed for processing completion of this task on
+  // origin thread. These are not thread-safe and should be accessed only in
+  // origin thread. Ensure their access by checking CalledOnValidThread().
   TileManager* tile_manager_;
+  Tile* tile_;
   Resource* resource_;
+
+  // The following members should be used for running the task.
   scoped_refptr<RasterSource> raster_source_;
   gfx::Rect content_rect_;
   gfx::Rect invalid_content_rect_;
@@ -117,7 +126,7 @@ class RasterTaskImpl : public TileTask {
   TileResolution tile_resolution_;
   int layer_id_;
   uint64_t source_prepare_tiles_id_;
-  Tile* tile_;
+  void* tile_tracing_id_;
   uint64_t new_content_id_;
   int source_frame_number_;
   std::unique_ptr<RasterBuffer> raster_buffer_;
@@ -936,12 +945,9 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
       tile_task_manager_->GetRasterBufferProvider()->AcquireBufferForRaster(
           resource, resource_content_id, tile->invalidated_id());
   return make_scoped_refptr(new RasterTaskImpl(
-      this, resource, prioritized_tile.raster_source(), tile->content_rect(),
-      tile->invalidated_content_rect(), tile->contents_scale(),
-      playback_settings, prioritized_tile.priority().resolution,
-      tile->layer_id(), prepare_tiles_count_, tile, tile->id(),
-      tile->source_frame_number(), std::move(raster_buffer), &decode_tasks,
-      supports_concurrent_execution));
+      this, tile, resource, prioritized_tile.raster_source(), playback_settings,
+      prioritized_tile.priority().resolution, prepare_tiles_count_,
+      std::move(raster_buffer), &decode_tasks, supports_concurrent_execution));
 }
 
 void TileManager::OnRasterTaskCompleted(
