@@ -77,6 +77,9 @@ class Pointer : public ui::EventHandler,
   // The location of the pointer in the current focus surface.
   gfx::PointF location_;
 
+  // The scale applied to the cursor to compensate for the UI scale.
+  float cursor_scale_;
+
   // The position of the pointer surface relative to the pointer location.
   gfx::Point hotspot_;
 

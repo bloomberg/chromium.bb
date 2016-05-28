@@ -4,22 +4,41 @@
 
 #include "components/exo/pointer.h"
 
+#include "ash/display/display_info.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/surface.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/views/widget/widget.h"
 
 namespace exo {
+namespace {
+
+// Synthesized events typically lack floating point precision so to avoid
+// generating mouse event jitter we consider the location of these events
+// to be the same as |location| if floored values match.
+bool SameLocation(const ui::LocatedEvent* event, const gfx::PointF& location) {
+  if (event->flags() & ui::EF_IS_SYNTHESIZED)
+    return event->location() == gfx::ToFlooredPoint(location);
+
+  return event->location_f() == location;
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // Pointer, public:
 
 Pointer::Pointer(PointerDelegate* delegate)
-    : delegate_(delegate), surface_(nullptr), focus_(nullptr) {
+    : delegate_(delegate),
+      surface_(nullptr),
+      focus_(nullptr),
+      cursor_scale_(1.0f) {
   ash::Shell::GetInstance()->AddPreTargetHandler(this);
 }
 
@@ -112,7 +131,7 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       // here as mouse movement can generate both "moved" and "entered" events
       // but OnPointerMotion should only be called if location changed since
       // OnPointerEnter was called.
-      if (focus_ && event->location_f() != location_) {
+      if (focus_ && !SameLocation(event, location_)) {
         delegate_->OnPointerMotion(event->time_stamp(), event->location_f());
         delegate_->OnPointerFrame();
         location_ = event->location_f();
@@ -161,10 +180,31 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
   if (focus_) {
     if (!widget_)
       CreatePointerWidget();
-    widget_->SetBounds(
-        gfx::Rect(focus_->GetBoundsInScreen().origin() +
-                      gfx::ToRoundedVector2d(location_.OffsetFromOrigin()),
-                  gfx::Size(1, 1)));
+
+    // Update cursor location if mouse event caused it to change.
+    gfx::Point mouse_location = aura::Env::GetInstance()->last_mouse_location();
+    if (mouse_location != widget_->GetNativeWindow()->bounds().origin()) {
+      gfx::Rect bounds = widget_->GetNativeWindow()->bounds();
+      bounds.set_origin(mouse_location);
+      widget_->GetNativeWindow()->SetBounds(bounds);
+    }
+
+    // Update cursor scale if the effective UI scale has changed since last
+    // mouse event.
+    display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(
+            widget_->GetNativeWindow());
+    float ui_scale = ash::Shell::GetInstance()
+                         ->display_manager()
+                         ->GetDisplayInfo(display.id())
+                         .GetEffectiveUIScale();
+    if (ui_scale != cursor_scale_) {
+      gfx::Transform transform;
+      transform.Scale(ui_scale, ui_scale);
+      widget_->GetNativeWindow()->SetTransform(transform);
+      cursor_scale_ = ui_scale;
+    }
+
     if (!widget_->IsVisible())
       widget_->Show();
   } else {
