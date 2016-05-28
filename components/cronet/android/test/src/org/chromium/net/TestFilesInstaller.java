@@ -8,14 +8,12 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
 
+import org.chromium.base.FileUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 /**
  * Helper class to install test files.
@@ -69,7 +67,7 @@ public final class TestFilesInstaller {
         String root = PathUtils.getDataDirectory(context);
         if (files.length == 0) {
             // The path is a file, so copy the file now.
-            copyTestFile(assetManager, path, root + "/" + path);
+            copyTestFile(context, path, root + "/" + path);
         } else {
             // The path is a directory, so recursively handle its files, since
             // the directory can contain subdirectories.
@@ -88,29 +86,21 @@ public final class TestFilesInstaller {
     }
     /**
      * Copies a file from assets to the device's file system.
-     * @param assetManager AssetManager of the application.
+     * @param context
      * @param srcFilePath the source file path in assets.
      * @param destFilePath the destination file path.
      * @throws IllegalStateException if the destination file already exists.
      */
     @SuppressFBWarnings("OBL_UNSATISFIED_OBLIGATION_EXCEPTION_EDGE")
-    private static void copyTestFile(AssetManager assetManager,
-                                     String srcFilePath,
-                                     String destFilePath) throws IOException {
+    private static void copyTestFile(Context context, String srcFilePath, String destFilePath)
+            throws IOException {
         File destFile = new File(destFilePath);
         if (destFile.exists()) {
-            throw new IllegalStateException(srcFilePath + " already exists");
+            throw new IllegalStateException(srcFilePath + " already exists.");
         }
-        OutputStream out = new FileOutputStream(destFilePath);
-        InputStream in = assetManager.open(srcFilePath);
 
-        byte[] buffer = new byte[1024];
-        int read;
-        while ((read = in.read(buffer)) != -1) {
-            out.write(buffer, 0, read);
+        if (!FileUtils.extractAsset(context, srcFilePath, destFile)) {
+            throw new IOException("Could not extract asset " + srcFilePath + ".");
         }
-        in.close();
-        out.flush();
-        out.close();
     }
 }

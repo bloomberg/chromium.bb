@@ -13,11 +13,10 @@ import org.chromium.base.FileUtils;
 import org.chromium.webapk.lib.client.DexOptimizer;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
+/**
+ * Service which extracts a dex file from parent APK and optimizes it.
+ */
 public class DexOptimizerServiceImpl extends Service {
     private static int sCounter = 0;
 
@@ -46,7 +45,8 @@ public class DexOptimizerServiceImpl extends Service {
                 ++sCounter;
 
                 File dexFile = new File(getDir(DEX_DIR, Context.MODE_PRIVATE), dexName);
-                if (!extractAsset(DEX_ASSET_NAME, dexFile)) {
+                if (!FileUtils.extractAsset(
+                            DexOptimizerServiceImpl.this, DEX_ASSET_NAME, dexFile)) {
                     return null;
                 }
 
@@ -61,27 +61,6 @@ public class DexOptimizerServiceImpl extends Service {
                     return null;
                 }
                 return dexFile.getPath();
-            }
-
-
-            /**
-             * Extracts an asset from the app's APK to a file.
-             * @param assetName Name of the asset to extract.
-             * @param dest File to extract the asset to.
-             * @return true on success.
-             */
-            public boolean extractAsset(String assetName, File dest) {
-                try (InputStream inputStream = getAssets().open(assetName);
-                    OutputStream outputStream = new FileOutputStream(dest)) {
-                    byte[] buffer = new byte[16 * 1024];
-                    int c;
-                    while ((c = inputStream.read(buffer, 0, buffer.length)) != -1) {
-                        outputStream.write(buffer, 0, c);
-                    }
-                } catch (IOException e) {
-                    return false;
-                }
-                return true;
             }
         };
     }

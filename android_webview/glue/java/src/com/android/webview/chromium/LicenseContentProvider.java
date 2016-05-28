@@ -12,12 +12,10 @@ import android.net.Uri;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
-import java.io.BufferedOutputStream;
+import org.chromium.base.FileUtils;
+
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 /**
  * Content provider for the OSS licenses file.
@@ -48,17 +46,7 @@ public class LicenseContentProvider extends ContentProvider {
     private AssetFileDescriptor extractAsset(String name) throws IOException {
         File extractedFile = new File(getContext().getCacheDir(), name);
         if (!extractedFile.exists()) {
-            InputStream inputStream = null;
-            OutputStream outputStream = null;
-            try {
-                inputStream = getContext().getAssets().open(name);
-                outputStream = new BufferedOutputStream(
-                        new FileOutputStream(extractedFile.getAbsolutePath()));
-                copyStreams(inputStream, outputStream);
-            } finally {
-                if (inputStream != null) inputStream.close();
-                if (outputStream != null) outputStream.close();
-            }
+            FileUtils.extractAsset(getContext(), name, extractedFile);
         }
         ParcelFileDescriptor parcelFd =
                 ParcelFileDescriptor.open(extractedFile, ParcelFileDescriptor.MODE_READ_ONLY);
@@ -66,14 +54,6 @@ public class LicenseContentProvider extends ContentProvider {
             return new AssetFileDescriptor(parcelFd, 0, parcelFd.getStatSize());
         }
         return null;
-    }
-
-    private static void copyStreams(InputStream in, OutputStream out) throws IOException {
-        byte[] buffer = new byte[8192];
-        int c;
-        while ((c = in.read(buffer)) != -1) {
-            out.write(buffer, 0, c);
-        }
     }
 
     @Override
