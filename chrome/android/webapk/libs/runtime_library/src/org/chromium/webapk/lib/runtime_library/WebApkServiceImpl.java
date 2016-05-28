@@ -7,11 +7,14 @@ package org.chromium.webapk.lib.runtime_library;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.os.Bundle;
 
 /**
  * Implements services offered by the WebAPK to Chrome.
  */
 public class WebApkServiceImpl extends IWebApkApi.Stub {
+
+    public static final String KEY_SMALL_ICON_ID = "small_icon_id";
 
     private static final String TAG = "WebApkServiceImpl";
 
@@ -25,11 +28,11 @@ public class WebApkServiceImpl extends IWebApkApi.Stub {
     /**
      * Creates an instance of WebApkServiceImpl.
      * @param context
-     * @param smallIconId Id of icon to represent notifications in status bar.
+     * @param bundle Bundle with additional constructor parameters.
      */
-    public WebApkServiceImpl(Context context, int smallIconId) {
+    public WebApkServiceImpl(Context context, Bundle bundle) {
         mContext = context;
-        mSmallIconId = smallIconId;
+        mSmallIconId = bundle.getInt(KEY_SMALL_ICON_ID);
     }
 
     @Override

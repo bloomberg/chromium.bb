@@ -7,6 +7,7 @@ package org.chromium.webapk.shell_apk;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -28,6 +29,8 @@ public class WebApkServiceFactory extends Service {
     private static final String WEBAPK_SERVICE_IMPL_CLASS_NAME =
             "org.chromium.webapk.lib.runtime_library.WebApkServiceImpl";
 
+    private static final String KEY_SMALL_ICON_ID = "small_icon_id";
+
     /*
      * ClassLoader for loading {@link WEBAPK_SERVICE_IMPL_CLASS_NAME}. Static so that all
      * {@link WebApkServiceFactory} service instatiations use the same ClassLoader during the app's
@@ -47,9 +50,10 @@ public class WebApkServiceFactory extends Service {
             Class<?> webApkServiceImplClass =
                     webApkClassLoader.loadClass(WEBAPK_SERVICE_IMPL_CLASS_NAME);
             Constructor<?> webApkServiceImplConstructor =
-                    webApkServiceImplClass.getConstructor(Context.class, int.class);
-            return (IBinder) webApkServiceImplConstructor.newInstance(
-                    new Object[] {this, R.drawable.app_icon});
+                    webApkServiceImplClass.getConstructor(Context.class, Bundle.class);
+            Bundle bundle = new Bundle();
+            bundle.putInt(KEY_SMALL_ICON_ID, R.drawable.app_icon);
+            return (IBinder) webApkServiceImplConstructor.newInstance(new Object[] {this, bundle});
         } catch (Exception e) {
             Log.w(TAG, "Unable to create WebApkServiceImpl.");
             e.printStackTrace();
