@@ -485,6 +485,9 @@ float TextAutosizer::inflate(LayoutObject* parent, SubtreeLayoutScope* layouter,
         }
     }
 
+    if (m_pageInfo.m_hasAutosized)
+        UseCounter::count(*m_document, UseCounter::TextAutosizing);
+
     return multiplier;
 }
 

@@ -234,6 +234,7 @@ public:
         UnprefixedImageSmoothingEnabled = 268,
         // The above items are available in M34 branch.
 
+        TextAutosizing = 274,
         HTMLAnchorElementPingAttribute = 276,
         SVGClassName = 279,
         HTMLMediaElementSeekToFragmentStart = 281,
