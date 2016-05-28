@@ -55,94 +55,101 @@
         margin-bottom: 12px;
       }
     </style>
-    <settings-section page-title="$i18n{aboutPageTitle}"
-        current-route="[[currentRoute]]" section="about">
-      <settings-animated-pages id="pages" current-route="{{currentRoute}}"
-          section="about">
-        <neon-animatable id="main">
-          <div class="settings-box">
-            <img id="product-logo"
-                srcset="chrome://theme/current-channel-logo@1x 1x,
-                        chrome://theme/current-channel-logo@2x 2x" alt="">
-            <span>$i18n{aboutProductTitle}</span>
-          </div>
-          <div class="settings-box two-line">
-            <div hidden="[[!shouldShowUpdateStatus_(currentUpdateStatusEvent_)]]">
-              <iron-icon
-                  icon$="[[getIcon_(currentUpdateStatusEvent_)]]"
-                  src="[[getIconSrc_(currentUpdateStatusEvent_)]]">
-              </iron-icon>
+    <div data-page="about">
+      <settings-section page-title="$i18n{aboutPageTitle}"
+          current-route="[[currentRoute]]" section="about">
+        <settings-animated-pages id="pages" current-route="{{currentRoute}}"
+            section="about">
+          <neon-animatable id="main">
+            <div class="settings-box">
+              <img id="product-logo"
+                  srcset="chrome://theme/current-channel-logo@1x 1x,
+                          chrome://theme/current-channel-logo@2x 2x" alt="">
+              <span>$i18n{aboutProductTitle}</span>
             </div>
-            <div class="start">
-              <div hidden="[[!shouldShowUpdateStatus_(currentUpdateStatusEvent_)]]">
-                [[getUpdateStatusMessage_(currentUpdateStatusEvent_)]]
+            <div class="settings-box two-line">
+              <div hidden="[[!shouldShowUpdateStatus_(
+                  currentUpdateStatusEvent_)]]">
+                <iron-icon
+                    icon$="[[getIcon_(currentUpdateStatusEvent_)]]"
+                    src="[[getIconSrc_(currentUpdateStatusEvent_)]]">
+                </iron-icon>
               </div>
-              <div class="secondary">$i18n{aboutBrowserVersion}</div>
-            </div>
-            <paper-button id="relaunch" class="secondary-action"
-                hidden="[[!shouldShowRelaunch_(currentUpdateStatusEvent_)]]"
-                on-tap="onRelaunchTap_">
-              $i18n{aboutRelaunch}
-            </paper-button>
+              <div class="start">
+                <div hidden="[[!shouldShowUpdateStatus_(
+                    currentUpdateStatusEvent_)]]">
+                  [[getUpdateStatusMessage_(currentUpdateStatusEvent_)]]
+                </div>
+                <div class="secondary">$i18n{aboutBrowserVersion}</div>
+              </div>
+              <paper-button id="relaunch" class="secondary-action"
+                  hidden="[[!shouldShowRelaunch_(currentUpdateStatusEvent_)]]"
+                  on-tap="onRelaunchTap_">
+                $i18n{aboutRelaunch}
+              </paper-button>
 <if expr="chromeos">
-            <paper-button id="relaunchAndPowerwash" class="secondary-action"
-                hidden="[[!shouldShowRelaunchAndPowerwash_(currentUpdateStatusEvent_)]]"
-                on-tap="onRelaunchAndPowerwashTap_">
-              $i18n{aboutRelaunchAndPowerwash}
-            </paper-button>
-            <paper-button id="checkForUpdates" class="secondary-action"
-                hidden="[[!shouldShowCheckUpdates_(currentUpdateStatusEvent_)]]"
-                on-tap="onCheckUpdatesTap_">
-              $i18n{aboutCheckForUpdates}
-            </paper-button>
+              <paper-button id="relaunchAndPowerwash" class="secondary-action"
+                  hidden="[[!shouldShowRelaunchAndPowerwash_(
+                    currentUpdateStatusEvent_)]]"
+                  on-tap="onRelaunchAndPowerwashTap_">
+                $i18n{aboutRelaunchAndPowerwash}
+              </paper-button>
+              <paper-button id="checkForUpdates" class="secondary-action"
+                  hidden="[[!shouldShowCheckUpdates_(
+                    currentUpdateStatusEvent_)]]"
+                  on-tap="onCheckUpdatesTap_">
+                $i18n{aboutCheckForUpdates}
+              </paper-button>
 </if>
-          </div>
-          <div id="help" class="settings-box two-line" on-tap="onHelpTap_">
-            $i18n{aboutGetHelpUsingChrome}
-          </div>
+            </div>
+            <div id="help" class="settings-box two-line" on-tap="onHelpTap_">
+              $i18n{aboutGetHelpUsingChrome}
+            </div>
 <if expr="_google_chrome">
-          <div id="reportIssue" class="settings-box" on-tap="onReportIssueTap_">
-            $i18n{aboutReportAnIssue}
-          </div>
+            <div id="reportIssue" class="settings-box"
+                on-tap="onReportIssueTap_">
+              $i18n{aboutReportAnIssue}
+            </div>
 </if>
 <if expr="chromeos">
-          <div class="settings-box" on-tap="onDetailedBuildInfoTap_">
-            <!-- TODO(dpapad): Localize string. -->
-            Detailed build info
-          </div>
-</if>
-          <div class="settings-box product-info">
-            <div class="info-section">
-              <div class="secondary">$i18n{aboutProductTitle}</div>
-              <div class="secondary">$i18n{aboutProductCopyright}</div>
+            <div class="settings-box" on-tap="onDetailedBuildInfoTap_">
+              <!-- TODO(dpapad): Localize string. -->
+              Detailed build info
             </div>
+</if>
+            <div class="settings-box product-info">
+              <div class="info-section">
+                <div class="secondary">$i18n{aboutProductTitle}</div>
+                <div class="secondary">$i18n{aboutProductCopyright}</div>
+              </div>
 
-            <div class="info-section">
-              <div class="secondary">$i18nRaw{aboutProductLicense}</div>
+              <div class="info-section">
+                <div class="secondary">$i18nRaw{aboutProductLicense}</div>
 <if expr="chromeos">
-              <div class="secondary">$i18nRaw{aboutProductOsLicense}</div>
+                <div class="secondary">$i18nRaw{aboutProductOsLicense}</div>
+</if>
+              </div>
+<if expr="_google_chrome">
+              <div class="secondary">$i18nRaw{aboutProductTos}</div>
 </if>
             </div>
-<if expr="_google_chrome">
-            <div class="secondary">$i18nRaw{aboutProductTos}</div>
-</if>
-          </div>
 <if expr="chromeos">
-          <div class="settings-box product-info" id="regulatoryInfo"
-              hidden$="[[!shouldShowRegulatoryInfo_(regulatoryInfo_)]]">
-            <img src="[[regulatoryInfo_.url]]" alt="[[regulatoryInfo_.text]]">
-          </div>
+            <div class="settings-box product-info" id="regulatoryInfo"
+                hidden$="[[!shouldShowRegulatoryInfo_(regulatoryInfo_)]]">
+              <img src="[[regulatoryInfo_.url]]" alt="[[regulatoryInfo_.text]]">
+            </div>
 </if>
-        </neon-animatable>
+          </neon-animatable>
 <if expr="chromeos">
-        <template is="dom-if" name="detailed-build-info">
-          <settings-subpage page-title="Detailed build information">
-            <settings-detailed-build-info></settings-detailed-build-info>
-          </settings-subpage>
-        </template>
+          <template is="dom-if" name="detailed-build-info">
+            <settings-subpage page-title="Detailed build information">
+              <settings-detailed-build-info></settings-detailed-build-info>
+            </settings-subpage>
+          </template>
 </if>
-      </settings-animated-pages>
-    </settings-section>
+        </settings-animated-pages>
+      </settings-section>
+    </div>
   </template>
   <script src="about_page.js"></script>
 </dom-module>

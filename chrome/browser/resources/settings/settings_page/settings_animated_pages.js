@@ -146,8 +146,16 @@ Polymer({
    * Buttons in this pageset should use this method to transition to subpages.
    */
   setSubpageChain: function(subpage) {
+    var node = window.event.currentTarget;
+    var page;
+    while (node) {
+      if (node.dataset && node.dataset.page)
+        page = node.dataset.page;
+      // A shadow root has a |host| rather than a |parentNode|.
+      node = node.host || node.parentNode;
+    }
     this.currentRoute = {
-      page: this.currentRoute.page,
+      page: page,
       section: subpage.length > 0 ? this.section : '',
       subpage: subpage,
     };
