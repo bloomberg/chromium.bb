@@ -371,6 +371,7 @@
         ['OS=="win"', {
           'dependencies': [
             '../chrome/chrome.gyp:installer_util_unittests',
+            '../chrome/chrome.gyp:install_static_unittests',
             '../chrome/chrome.gyp:setup_unittests',
             # ../chrome/test/mini_installer requires mini_installer.
             '../chrome/installer/mini_installer.gyp:mini_installer',

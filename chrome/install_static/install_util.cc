@@ -7,7 +7,10 @@
 #include <windows.h>
 #include <assert.h>
 #include <algorithm>
+#include <iostream>
+#include <iterator>
 #include <memory>
+#include <sstream>
 
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -93,7 +96,7 @@ void Trace(const wchar_t* format_string, ...) {
 bool ReadKeyValueString(bool system_install, const wchar_t* key_path,
                         const wchar_t* guid, const wchar_t* value_to_read,
                         base::string16* value_out) {
-  HKEY key = NULL;
+  HKEY key = nullptr;
   value_out->clear();
 
   base::string16 full_key_path(key_path);
@@ -144,7 +147,7 @@ bool ReadKeyValueString(bool system_install, const wchar_t* key_path,
 bool ReadKeyValueDW(bool system_install, const wchar_t* key_path,
                     base::string16 guid, const wchar_t* value_to_read,
                     DWORD* value_out) {
-  HKEY key = NULL;
+  HKEY key = nullptr;
   *value_out = 0;
 
   base::string16 full_key_path(key_path);
@@ -255,41 +258,6 @@ base::string16 GetCurrentProcessExePath() {
   return exe_path;
 }
 
-// UTF8 to UTF16 and vice versa conversion helpers. We cannot use the base
-// string conversion utilities here as they bring about a dependency on
-// user32.dll which is not allowed in this file.
-
-// Convert a UTF16 string to an UTF8 string.
-std::string utf16_to_utf8(const base::string16 &source) {
-  if (source.empty())
-    return std::string();
-  int size = ::WideCharToMultiByte(CP_UTF8, 0, &source[0],
-      static_cast<int>(source.size()), nullptr, 0, nullptr, nullptr);
-  std::string result(size, '\0');
-  if (::WideCharToMultiByte(CP_UTF8, 0, &source[0],
-          static_cast<int>(source.size()), &result[0], size, nullptr,
-          nullptr) != size) {
-    assert(false);
-    return std::string();
-  }
-  return result;
-}
-
-// Convert a UTF8 string to a UTF16 string.
-base::string16 utf8_to_string16(const std::string &source) {
-  if (source.empty())
-    return base::string16();
-  int size = ::MultiByteToWideChar(CP_UTF8, 0, &source[0],
-      static_cast<int>(source.size()), nullptr, 0);
-  base::string16 result(size, L'\0');
-  if (::MultiByteToWideChar(CP_UTF8, 0, &source[0],
-          static_cast<int>(source.size()), &result[0], size) != size) {
-    assert(false);
-    return base::string16();
-  }
-  return result;
-}
-
 bool RecursiveDirectoryCreate(const base::string16& full_path) {
   // If the path exists, we've succeeded if it's a directory, failed otherwise.
   const wchar_t* full_path_str = full_path.c_str();
@@ -318,7 +286,7 @@ bool RecursiveDirectoryCreate(const base::string16& full_path) {
       return false;
     }
   }
-  if (!::CreateDirectory(full_path_str, NULL)) {
+  if (!::CreateDirectory(full_path_str, nullptr)) {
     DWORD error_code = ::GetLastError();
     if (error_code == ERROR_ALREADY_EXISTS) {
       DWORD file_attributes = ::GetFileAttributes(full_path_str);
@@ -419,10 +387,25 @@ bool MatchPatternImpl(const base::string16& source,
   return false;
 }
 
+// Defines the type of whitespace characters typically found in strings.
+constexpr char kWhiteSpaces[] = " \t\n\r\f\v";
+
+// Trim whitespaces from left & right
+void Trim(std::string* str) {
+  str->erase(str->find_last_not_of(kWhiteSpaces) + 1);
+  str->erase(0, str->find_first_not_of(kWhiteSpaces));
+}
+
+bool IsValidNumber(const std::string& str) {
+  if (str.empty())
+    return false;
+  return std::all_of(str.begin(), str.end(), ::isdigit);
+}
+
 }  // namespace
 
 bool IsSxSChrome(const wchar_t* exe_path) {
-  return wcsstr(exe_path, L"Chrome SxS\\Application") != NULL;
+  return wcsstr(exe_path, L"Chrome SxS\\Application") != nullptr;
 }
 
 bool IsSystemInstall(const wchar_t* exe_path) {
@@ -463,7 +446,7 @@ bool GetCollectStatsConsentForTesting(const base::string16& exe_path) {
 }
 
 bool ReportingIsEnforcedByPolicy(bool* metrics_is_enforced_by_policy) {
-  HKEY key = NULL;
+  HKEY key = nullptr;
   DWORD value = 0;
   BYTE* value_bytes = reinterpret_cast<BYTE*>(&value);
   DWORD size = sizeof(value);
@@ -497,7 +480,7 @@ void InitializeProcessType() {
   typedef bool (*IsSandboxedProcessFunc)();
   IsSandboxedProcessFunc is_sandboxed_process_func =
       reinterpret_cast<IsSandboxedProcessFunc>(
-          GetProcAddress(GetModuleHandle(NULL), "IsSandboxedProcess"));
+          GetProcAddress(GetModuleHandle(nullptr), "IsSandboxedProcess"));
   if (is_sandboxed_process_func && is_sandboxed_process_func()) {
     g_process_type = ProcessType::NON_BROWSER_PROCESS;
     return;
@@ -575,25 +558,25 @@ bool GetDefaultCrashDumpLocation(base::string16* crash_dir) {
 
 
 std::string GetEnvironmentString(const std::string& variable_name) {
-  DWORD value_length = ::GetEnvironmentVariable(
-      utf8_to_string16(variable_name).c_str(), NULL, 0);
+  DWORD value_length =
+      ::GetEnvironmentVariable(UTF8ToUTF16(variable_name).c_str(), nullptr, 0);
   if (value_length == 0)
     return std::string();
   std::unique_ptr<wchar_t[]> value(new wchar_t[value_length]);
-  ::GetEnvironmentVariable(utf8_to_string16(variable_name).c_str(),
-      value.get(), value_length);
-  return utf16_to_utf8(value.get());
+  ::GetEnvironmentVariable(UTF8ToUTF16(variable_name).c_str(), value.get(),
+                           value_length);
+  return UTF16ToUTF8(value.get());
 }
 
 bool SetEnvironmentString(const std::string& variable_name,
                           const std::string& new_value) {
-  return !!SetEnvironmentVariable(utf8_to_string16(variable_name).c_str(),
-      utf8_to_string16(new_value).c_str());
+  return !!SetEnvironmentVariable(UTF8ToUTF16(variable_name).c_str(),
+                                  UTF8ToUTF16(new_value).c_str());
 }
 
 bool HasEnvironmentVariable(const std::string& variable_name) {
-  return !!::GetEnvironmentVariable(utf8_to_string16(variable_name).c_str(),
-      NULL, 0);
+  return !!::GetEnvironmentVariable(UTF8ToUTF16(variable_name).c_str(), nullptr,
+                                    0);
 }
 
 bool GetExecutableVersionDetails(const base::string16& exe_path,
@@ -712,7 +695,7 @@ std::string GetGoogleUpdateVersion() {
                          nullptr,
                          kRegGoogleUpdateVersion,
                          &update_version)) {
-    return utf16_to_utf8(update_version);
+    return UTF16ToUTF8(update_version);
   }
   return std::string();
 }
@@ -741,6 +724,131 @@ bool MatchPattern(const base::string16& source,
                   const base::string16& pattern) {
   assert(pattern.find(L"**") == base::string16::npos);
   return MatchPatternImpl(source, pattern, 0, 0);
+}
+
+std::string UTF16ToUTF8(const base::string16& source) {
+  if (source.empty() ||
+      static_cast<int>(source.size()) > std::numeric_limits<int>::max()) {
+    return std::string();
+  }
+  int size = ::WideCharToMultiByte(CP_UTF8, 0, &source[0],
+                                   static_cast<int>(source.size()), nullptr, 0,
+                                   nullptr, nullptr);
+  std::string result(size, '\0');
+  if (::WideCharToMultiByte(CP_UTF8, 0, &source[0],
+                            static_cast<int>(source.size()), &result[0], size,
+                            nullptr, nullptr) != size) {
+    assert(false);
+    return std::string();
+  }
+  return result;
+}
+
+base::string16 UTF8ToUTF16(const std::string& source) {
+  if (source.empty() ||
+      static_cast<int>(source.size()) > std::numeric_limits<int>::max()) {
+    return base::string16();
+  }
+  int size = ::MultiByteToWideChar(CP_UTF8, 0, &source[0],
+                                   static_cast<int>(source.size()), nullptr, 0);
+  base::string16 result(size, L'\0');
+  if (::MultiByteToWideChar(CP_UTF8, 0, &source[0],
+                            static_cast<int>(source.size()), &result[0],
+                            size) != size) {
+    assert(false);
+    return base::string16();
+  }
+  return result;
+}
+
+std::vector<std::string> TokenizeString(const std::string& str,
+                                        char delimiter,
+                                        bool trim_spaces) {
+  std::vector<std::string> tokens;
+  std::istringstream buffer(str);
+  for (std::string token; std::getline(buffer, token, delimiter);) {
+    if (trim_spaces)
+      Trim(&token);
+    tokens.push_back(token);
+  }
+  return tokens;
+}
+
+bool CompareVersionStrings(const std::string& version1,
+                           const std::string& version2,
+                           int* result) {
+  if (version1.empty() || version2.empty())
+    return false;
+
+  // Tokenize both version strings with "." as the separator. If either of
+  // the returned token lists are empty then bail.
+  std::vector<std::string> version1_components =
+      TokenizeString(version1, '.', false);
+  if (version1_components.empty())
+    return false;
+
+  std::vector<std::string> version2_components =
+      TokenizeString(version2, '.', false);
+  if (version2_components.empty())
+    return false;
+
+  // You may have less tokens in either string. Use the minimum of the number
+  // of tokens as the initial count.
+  const size_t count =
+      std::min(version1_components.size(), version2_components.size());
+  for (size_t i = 0; i < count; ++i) {
+    // If either of the version components don't contain valid numeric digits
+    // bail.
+    if (!IsValidNumber(version1_components[i]) ||
+        !IsValidNumber(version2_components[i])) {
+      return false;
+    }
+
+    int version1_component = std::stoi(version1_components[i]);
+    int version2_component = std::stoi(version2_components[i]);
+
+    if (version1_component > version2_component) {
+      *result = 1;
+      return true;
+    }
+
+    if (version1_component < version2_component) {
+      *result = -1;
+      return true;
+    }
+  }
+
+  // Handle remaining tokens. Here if we have non zero tokens remaining in the
+  // version 1 list then it means that the version1 string is larger. If the
+  // version 1 token list has tokens left, then if either of these tokens is
+  // greater than 0 then it means that the version1 string is smaller than the
+  // version2 string.
+  if (version1_components.size() > version2_components.size()) {
+    for (size_t i = count; i < version1_components.size(); ++i) {
+      // If the version components don't contain valid numeric digits bail.
+      if (!IsValidNumber(version1_components[i]))
+        return false;
+
+      if (std::stoi(version1_components[i]) > 0) {
+        *result = 1;
+        return true;
+      }
+    }
+  } else if (version1_components.size() < version2_components.size()) {
+    for (size_t i = count; i < version2_components.size(); ++i) {
+      // If the version components don't contain valid numeric digits bail.
+      if (!IsValidNumber(version2_components[i]))
+        return false;
+
+      if (std::stoi(version2_components[i]) > 0) {
+        *result = -1;
+        return true;
+      }
+    }
+  }
+  // Here it means that both versions are equal.
+  *result = 0;
+  return true;
 }
 
 }  // namespace install_static

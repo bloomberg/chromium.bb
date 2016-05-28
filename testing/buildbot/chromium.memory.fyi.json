@@ -271,6 +271,7 @@
       "gpu_ipc_service_unittests",
       "gpu_unittests",
       "installer_util_unittests",
+      "install_static_unittests",
       "ipc_tests",
       "jingle_unittests",
       "libaddressinput_unittests",
@@ -332,6 +333,7 @@
       "google_apis_unittests",
       "gfx_unittests",
       "installer_util_unittests",
+      "install_static_unittests",
       "keyboard_unittests",
       "unit_tests",
       "chrome_app_unittests",
@@ -2289,6 +2291,9 @@
         "test": "installer_util_unittests"
       },
       {
+        "test": "install_static_unittests"
+      },
+      {
         "test": "keyboard_unittests"
       }
     ]
@@ -2378,6 +2383,9 @@
       },
       {
         "test": "installer_util_unittests"
+      },
+      {
+        "test": "install_static_unittests"
       },
       {
         "test": "ipc_tests"
@@ -2514,6 +2522,9 @@
       },
       {
         "test": "installer_util_unittests"
+      },
+      {
+        "test": "install_static_unittests"
       },
       {
         "test": "ipc_tests"

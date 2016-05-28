@@ -204,6 +204,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "install_static_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "installer_util_unittests"
       },
       {
@@ -627,6 +633,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gpu_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "install_static_unittests"
       },
       {
         "swarming": {
@@ -1079,6 +1091,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "install_static_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "installer_util_unittests"
       },
       {
@@ -1518,6 +1536,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "install_static_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "installer_util_unittests"
       },
       {
@@ -1903,6 +1927,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gpu_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "install_static_unittests"
       },
       {
         "swarming": {

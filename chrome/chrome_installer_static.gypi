@@ -46,7 +46,41 @@
             },
           },
         },
+        {
+          'target_name': 'install_static_unittests',
+          'type': 'executable',
+          'sources': [
+            'install_static/install_util_unittest.cc',
+          ],
+          'include_dirs': [
+            '..',
+            '<(SHARED_INTERMEDIATE_DIR)',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:run_all_unittests',
+            '../base/base.gyp:test_support_base',
+            'chrome.gyp:install_static_util',
+            '../testing/gmock.gyp:gmock',
+            '../testing/gtest.gyp:gtest',
+          ],
+        },
       ],
+    }],
+    ['OS=="win" and test_isolation_mode != "noop"', {
+      'targets': [
+        {
+          'target_name': 'install_static_unittests_run',
+          'type': 'none',
+          'dependencies': [
+            'install_static_unittests',
+           ],
+           'includes': [ '../build/isolate.gypi' ],
+           'sources': [
+             'install_static/install_static_unittests.isolate'
+           ],
+         }, 
+       ],
     }],
     ['OS=="win" and target_arch=="ia32"', {
       'targets': [

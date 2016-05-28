@@ -577,6 +577,7 @@ group("both_gn_and_gyp") {
   if (is_win) {
     deps += [
       "//base:pe_image_test",
+      "//chrome/install_static:install_static_unittests",
       "//chrome/installer/setup:setup_unittests",
       "//chrome_elf:chrome_elf_unittests",
       "//chrome_elf:dll_hash_main",

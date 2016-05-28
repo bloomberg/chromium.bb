@@ -399,23 +399,4 @@ INSTANTIATE_TEST_CASE_P(GoogleChrome, ChromeElfUtilTest,
                                          testing::Values("user", "system"),
                                          testing::Values("single", "multi")));
 
-// Tests the MatchPattern function in the install_static library.
-// TODO(ananta)
-// Move this to install_static_unittests.
-// http://crbug.com/604923
-TEST(MiscUtilTest, InstallStaticMatchPattern) {
-  EXPECT_TRUE(install_static::MatchPattern(L"", L""));
-  EXPECT_TRUE(install_static::MatchPattern(L"", L"*"));
-  EXPECT_FALSE(install_static::MatchPattern(L"", L"*a"));
-  EXPECT_FALSE(install_static::MatchPattern(L"", L"abc"));
-  EXPECT_TRUE(install_static::MatchPattern(L"Hello1234", L"He??o*1*"));
-  EXPECT_TRUE(install_static::MatchPattern(L"Foo", L"F*?"));
-  EXPECT_TRUE(install_static::MatchPattern(L"Foo", L"F*"));
-  EXPECT_FALSE(install_static::MatchPattern(L"Foo", L"F*b"));
-  EXPECT_TRUE(install_static::MatchPattern(L"abcd", L"*c*d"));
-  EXPECT_TRUE(install_static::MatchPattern(L"abcd", L"*?c*d"));
-  EXPECT_FALSE(install_static::MatchPattern(L"abcd", L"abcd*efgh"));
-  EXPECT_TRUE(install_static::MatchPattern(L"foobarabc", L"*bar*"));
-}
-
 }  // namespace

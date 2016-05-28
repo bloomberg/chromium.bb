@@ -29,3 +29,19 @@ static_library("install_static_util") {
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
 }
+
+test("install_static_unittests") {
+  output_name = "install_static_unittests"
+  sources = [
+    "install_util_unittest.cc",
+  ]
+  include_dirs = [ "$target_gen_dir" ]
+  deps = [
+    "//base",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//chrome/install_static:install_static_util",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

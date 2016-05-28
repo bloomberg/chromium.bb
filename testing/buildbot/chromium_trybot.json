@@ -206,6 +206,12 @@
     },
     {
       "platforms": [
+        "win"
+      ],
+      "test": "install_static_unittests"
+    },
+    {
+      "platforms": [
         "linux"
       ],
       "test": "ipc_mojo_unittests"

@@ -9,6 +9,9 @@
 #ifndef CHROME_INSTALL_STATIC_INSTALL_UTIL_H_
 #define CHROME_INSTALL_STATIC_INSTALL_UTIL_H_
 
+#include <string>
+#include <vector>
+
 #include "base/strings/string16.h"
 
 namespace install_static {
@@ -155,6 +158,28 @@ base::string16 GetBrowserCrashDumpAttemptsRegistryPath();
 // something in the middle of the string then you need to specify the pattern
 // as '*xyz*'.
 bool MatchPattern(const base::string16& source, const base::string16& pattern);
+
+// UTF8 to UTF16 and vice versa conversion helpers.
+base::string16 UTF8ToUTF16(const std::string& source);
+
+std::string UTF16ToUTF8(const base::string16& source);
+
+// Tokenizes a string |str| based on single character delimiter.
+// The tokens are returned in a vector. The |trim_spaces| parameter indicates
+// whether the function should optionally trim spaces throughout the string.
+std::vector<std::string> TokenizeString(const std::string& str,
+                                        char delimiter,
+                                        bool trim_spaces);
+
+// Compares version strings of the form "X.X.X.X" and returns the result of the
+// comparison in the |result| parameter. The result is as below:
+// 0 if the versions are equal.
+// -1 if version1 < version2.
+// 1 if version1 > version2.
+// Returns true on success, false on invalid strings being passed, etc.
+bool CompareVersionStrings(const std::string& version1,
+                           const std::string& version2,
+                           int* result);
 
 // Caches the |ProcessType| of the current process.
 extern ProcessType g_process_type;

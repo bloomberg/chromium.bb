@@ -390,6 +390,9 @@ class ChromeTests:
   def TestInstallerUtil(self):
     return self.SimpleTest("installer_util", "installer_util_unittests")
 
+  def TestInstallStatic(self):
+    return self.SimpleTest("install_static", "install_static_unittests")
+
   def TestJingle(self):
     return self.SimpleTest("chrome", "jingle_unittests")
 
@@ -678,6 +681,7 @@ class ChromeTests:
     "ipc": TestIpc,              "ipc_tests": TestIpc,
     "installer_util": TestInstallerUtil,
     "installer_util_unittests": TestInstallerUtil,
+    "install_static_unittests": TestInstallStatic,
     "interactive_ui": TestInteractiveUI,
     "jingle": TestJingle,        "jingle_unittests": TestJingle,
     "keyboard": TestKeyboard,    "keyboard_unittests": TestKeyboard,

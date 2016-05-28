@@ -522,6 +522,7 @@
           'dependencies': [
             '../base/base.gyp:pe_image_test',
             '../chrome/chrome.gyp:installer_util_unittests',
+            '../chrome/chrome.gyp:install_static_unittests',
             '../chrome/chrome.gyp:setup',
             '../chrome/chrome.gyp:setup_unittests',
             '../chrome/installer/mini_installer.gyp:mini_installer',
