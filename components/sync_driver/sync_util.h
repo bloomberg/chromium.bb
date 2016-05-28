@@ -16,12 +16,19 @@ class CommandLine;
 }
 
 namespace internal {
+
 // Default sync server URL. Visible for testing.
 extern const char* kSyncServerUrl;
 
 // Sync server URL for dev channel users. Visible for testing.
 extern const char* kSyncDevServerUrl;
-}
+
+// Formats user agent string from system string and channel. Visible for
+// testing.
+std::string FormatUserAgentForSync(const std::string& system,
+                                   version_info::Channel channel);
+
+}  // namespace internal
 
 GURL GetSyncServiceURL(const base::CommandLine& command_line,
                        version_info::Channel channel);
@@ -29,8 +36,6 @@ GURL GetSyncServiceURL(const base::CommandLine& command_line,
 // Helper to construct a user agent string (ASCII) suitable for use by
 // the syncapi for any HTTP communication. This string is used by the sync
 // backend for classifying client types when calculating statistics.
-std::string MakeDesktopUserAgentForSync(version_info::Channel channel);
-std::string MakeUserAgentForSync(const std::string& system,
-                                 version_info::Channel channel);
+std::string MakeUserAgentForSync(version_info::Channel channel, bool is_tablet);
 
 #endif  // COMPONENTS_SYNC_DRIVER_SYNC_UTIL_H_

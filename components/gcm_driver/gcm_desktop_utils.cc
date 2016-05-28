@@ -78,7 +78,10 @@ std::string GetChannelStatusRequestUrl(version_info::Channel channel) {
 }
 
 std::string GetUserAgent(version_info::Channel channel) {
-  return MakeDesktopUserAgentForSync(channel);
+  // TODO(pavely): Fix hardcoded is_tablet value in following call to
+  // MakeUserAgentForSync. Current implementation returns iPhone UserAgent for
+  // iPad devices.
+  return MakeUserAgentForSync(channel, false);
 }
 
 }  // namespace

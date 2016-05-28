@@ -54,23 +54,7 @@ const sync_driver::DeviceInfo* LocalDeviceInfoProviderImpl::GetLocalDeviceInfo()
 
 std::string LocalDeviceInfoProviderImpl::GetSyncUserAgent() const {
   DCHECK(CalledOnValidThread());
-#if defined(OS_CHROMEOS)
-  return MakeUserAgentForSync("CROS ", channel_);
-#elif defined(OS_ANDROID)
-  if (is_tablet_) {
-    return MakeUserAgentForSync("ANDROID-TABLET ", channel_);
-  } else {
-    return MakeUserAgentForSync("ANDROID-PHONE ", channel_);
-  }
-#elif defined(OS_IOS)
-  if (is_tablet_) {
-    return MakeUserAgentForSync("IOS-TABLET ", channel_);
-  } else {
-    return MakeUserAgentForSync("IOS-PHONE ", channel_);
-  }
-#else
-  return MakeDesktopUserAgentForSync(channel_);
-#endif
+  return MakeUserAgentForSync(channel_, is_tablet_);
 }
 
 std::string LocalDeviceInfoProviderImpl::GetLocalSyncCacheGUID() const {

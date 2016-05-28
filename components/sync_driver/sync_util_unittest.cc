@@ -41,9 +41,9 @@ TEST(SyncUtilTest, GetSyncServiceURLWithBadCommandLineSwitch) {
               internal::kSyncDevServerUrl == url);
 }
 
-TEST(SyncUtilTest, MakeUserAgentForSync) {
+TEST(SyncUtilTest, FormatUserAgentForSync) {
   std::string user_agent =
-      MakeUserAgentForSync("TEST", version_info::Channel::UNKNOWN);
+      internal::FormatUserAgentForSync("TEST", version_info::Channel::UNKNOWN);
   ASSERT_TRUE(base::StartsWith(user_agent, "Chrome TEST",
                                base::CompareCase::SENSITIVE));
 }

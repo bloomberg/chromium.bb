@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "components/sync_driver/local_device_info_provider_impl.h"
 #include "components/sync_driver/sync_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -514,12 +513,9 @@ void WebHistoryService::QueryOtherFormsOfBrowsingHistory(
   Request* request = CreateRequest(url, completion_callback);
 
   // Set the Sync-specific user agent.
-  // TODO(pavely): Refactor LocalDeviceInfoProviderImpl::GetSyncUserAgent()
-  // to a standalone function.
-  browser_sync::LocalDeviceInfoProviderImpl local_device_info_provider_(
-      channel, std::string() /* version (unused) */,
-      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
-  request->SetUserAgent(local_device_info_provider_.GetSyncUserAgent());
+  std::string user_agent = MakeUserAgentForSync(
+      channel, ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET);
+  request->SetUserAgent(user_agent);
 
   pending_other_forms_of_browsing_history_requests_.insert(request);
 

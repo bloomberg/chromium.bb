@@ -10,10 +10,62 @@
 #include "components/sync_driver/sync_driver_switches.h"
 #include "url/gurl.h"
 
+namespace {
+
+// Returns string that represents system in UserAgent.
+std::string GetSystemString(bool is_tablet) {
+  std::string system;
+#if defined(OS_CHROMEOS)
+  system = "CROS ";
+#elif defined(OS_ANDROID)
+  if (is_tablet) {
+    system = "ANDROID-TABLET ";
+  } else {
+    system = "ANDROID-PHONE ";
+  }
+#elif defined(OS_IOS)
+  if (is_tablet) {
+    system = "IOS-TABLET ";
+  } else {
+    system = "IOS-PHONE ";
+  }
+#elif defined(OS_WIN)
+  system = "WIN ";
+#elif defined(OS_LINUX)
+  system = "LINUX ";
+#elif defined(OS_FREEBSD)
+  system = "FREEBSD ";
+#elif defined(OS_OPENBSD)
+  system = "OPENBSD ";
+#elif defined(OS_MACOSX)
+  system = "MAC ";
+#endif
+  return system;
+}
+
+}  // namespace
+
 namespace internal {
+
 const char* kSyncServerUrl = "https://clients4.google.com/chrome-sync";
 
 const char* kSyncDevServerUrl = "https://clients4.google.com/chrome-sync/dev";
+
+std::string FormatUserAgentForSync(const std::string& system,
+                                   version_info::Channel channel) {
+  std::string user_agent;
+  user_agent = "Chrome ";
+  user_agent += system;
+  user_agent += version_info::GetVersionNumber();
+  user_agent += " (" + version_info::GetLastChange() + ")";
+  if (!version_info::IsOfficialBuild()) {
+    user_agent += "-devel";
+  } else {
+    user_agent += " channel(" + version_info::GetChannelString(channel) + ")";
+  }
+  return user_agent;
+}
+
 }  // namespace internal
 
 GURL GetSyncServiceURL(const base::CommandLine& command_line,
@@ -47,33 +99,8 @@ GURL GetSyncServiceURL(const base::CommandLine& command_line,
   return result;
 }
 
-std::string MakeDesktopUserAgentForSync(version_info::Channel channel) {
-  std::string system = "";
-#if defined(OS_WIN)
-  system = "WIN ";
-#elif defined(OS_LINUX)
-  system = "LINUX ";
-#elif defined(OS_FREEBSD)
-  system = "FREEBSD ";
-#elif defined(OS_OPENBSD)
-  system = "OPENBSD ";
-#elif defined(OS_MACOSX)
-  system = "MAC ";
-#endif
-  return MakeUserAgentForSync(system, channel);
-}
-
-std::string MakeUserAgentForSync(const std::string& system,
-                                 version_info::Channel channel) {
-  std::string user_agent;
-  user_agent = "Chrome ";
-  user_agent += system;
-  user_agent += version_info::GetVersionNumber();
-  user_agent += " (" + version_info::GetLastChange() + ")";
-  if (!version_info::IsOfficialBuild()) {
-    user_agent += "-devel";
-  } else {
-    user_agent += " channel(" + version_info::GetChannelString(channel) + ")";
-  }
-  return user_agent;
+std::string MakeUserAgentForSync(version_info::Channel channel,
+                                 bool is_tablet) {
+  std::string system = GetSystemString(is_tablet);
+  return internal::FormatUserAgentForSync(system, channel);
 }

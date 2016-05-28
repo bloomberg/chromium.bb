@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_IMPL_H_
 #define COMPONENTS_SYNC_DRIVER_LOCAL_DEVICE_INFO_PROVIDER_IMPL_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
