@@ -64,6 +64,7 @@ android_apk("webapk") {
     "src/org/chromium/webapk/shell_apk/WebApkServiceFactory.java",
   ]
   deps = [
+    ":dex_loader_lib",
     ":shell_apk_manifest",
     ":shell_apk_resources",
     "//chrome/android/webapk/libs/common",

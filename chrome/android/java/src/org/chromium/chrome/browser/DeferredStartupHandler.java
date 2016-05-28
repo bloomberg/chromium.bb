@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.PowerMonitor;
 import org.chromium.base.SysUtils;
@@ -27,6 +28,7 @@ import org.chromium.chrome.browser.precache.PrecacheLauncher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.webapps.WebApkVersionManager;
 import org.chromium.content.browser.ChildProcessLauncher;
 
 import java.util.concurrent.TimeUnit;
@@ -96,6 +98,10 @@ public class DeferredStartupHandler {
 
                     // Initialize whether or not precaching is enabled.
                     PrecacheLauncher.updatePrecachingEnabled(application);
+
+                    if (CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK)) {
+                        WebApkVersionManager.updateWebApksIfNeeded();
+                    }
 
                     return null;
                 } finally {

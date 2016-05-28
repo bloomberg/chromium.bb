@@ -379,6 +379,7 @@ android_assets("chrome_public_apk_assets") {
   deps = [
     "//chrome:packed_extra_resources",
     "//chrome:packed_resources",
+    "//chrome/android/webapk/libs/runtime_library:runtime_library_assets",
     "//third_party/icu:icu_assets",
     "//v8:v8_external_startup_data_assets",
   ]

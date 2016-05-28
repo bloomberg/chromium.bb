@@ -13,7 +13,19 @@ android_aidl("webapk_service_aidl") {
 }
 
 android_library("runtime_library") {
+  dex_path = "$target_gen_dir/web_apk.dex"
   java_files =
       [ "src/org/chromium/webapk/lib/runtime_library/WebApkServiceImpl.java" ]
   srcjar_deps = [ ":webapk_service_aidl" ]
+}
+
+android_assets("runtime_library_assets") {
+  sources = [
+    "$target_gen_dir/web_apk.dex",
+  ]
+  disable_compression = true
+
+  deps = [
+    ":runtime_library",
+  ]
 }
