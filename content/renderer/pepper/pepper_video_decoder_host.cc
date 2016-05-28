@@ -351,6 +351,7 @@ int32_t PepperVideoDecoderHost::OnHostMsgReset(
 
 void PepperVideoDecoderHost::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
+    media::VideoPixelFormat format,
     uint32_t textures_per_buffer,
     const gfx::Size& dimensions,
     uint32_t texture_target) {

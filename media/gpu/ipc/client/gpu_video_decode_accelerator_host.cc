@@ -211,6 +211,7 @@ void GpuVideoDecodeAcceleratorHost::OnBitstreamBufferProcessed(
 
 void GpuVideoDecodeAcceleratorHost::OnProvidePictureBuffer(
     uint32_t num_requested_buffers,
+    VideoPixelFormat format,
     uint32_t textures_per_buffer,
     const gfx::Size& dimensions,
     uint32_t texture_target) {
@@ -224,8 +225,9 @@ void GpuVideoDecodeAcceleratorHost::OnProvidePictureBuffer(
   }
 
   if (client_) {
-    client_->ProvidePictureBuffers(num_requested_buffers, textures_per_buffer,
-                                   dimensions, texture_target);
+    client_->ProvidePictureBuffers(num_requested_buffers, format,
+                                   textures_per_buffer, dimensions,
+                                   texture_target);
   }
 }
 

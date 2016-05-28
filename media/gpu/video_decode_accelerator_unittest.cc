@@ -420,6 +420,7 @@ class GLRenderingVDAClient
   // VideoDecodeAccelerator::Client implementation.
   // The heart of the Client.
   void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
+                             VideoPixelFormat format,
                              uint32_t textures_per_buffer,
                              const gfx::Size& dimensions,
                              uint32_t texture_target) override;
@@ -494,6 +495,7 @@ class GLRenderingVDAClient
   media::VideoCodecProfile profile_;
   int fake_decoder_;
   GLenum texture_target_;
+  VideoPixelFormat pixel_format_;
   bool suppress_rendering_;
   std::vector<base::TimeTicks> frame_delivery_times_;
   int delay_reuse_after_frame_num_;
@@ -572,6 +574,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       num_done_bitstream_buffers_(0),
       fake_decoder_(fake_decoder),
       texture_target_(0),
+      pixel_format_(PIXEL_FORMAT_UNKNOWN),
       suppress_rendering_(suppress_rendering),
       delay_reuse_after_frame_num_(delay_reuse_after_frame_num),
       decode_calls_per_second_(decode_calls_per_second),
@@ -639,6 +642,7 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
 
 void GLRenderingVDAClient::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
+    VideoPixelFormat pixel_format,
     uint32_t textures_per_buffer,
     const gfx::Size& dimensions,
     uint32_t texture_target) {
@@ -648,6 +652,12 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
   std::vector<media::PictureBuffer> buffers;
 
   requested_num_of_buffers += kExtraPictureBuffers;
+  if (pixel_format == media::PIXEL_FORMAT_UNKNOWN)
+    pixel_format = media::PIXEL_FORMAT_ARGB;
+
+  LOG_ASSERT((pixel_format_ == PIXEL_FORMAT_UNKNOWN) ||
+             (pixel_format_ == pixel_format));
+  pixel_format_ = pixel_format;
 
   texture_target_ = texture_target;
   for (uint32_t i = 0; i < requested_num_of_buffers; ++i) {
@@ -663,9 +673,6 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
                    base::Unretained(rendering_helper_), texture_id);
 
     if (g_test_import) {
-      media::VideoPixelFormat pixel_format = decoder_->GetOutputFormat();
-      if (pixel_format == media::PIXEL_FORMAT_UNKNOWN)
-        pixel_format = media::PIXEL_FORMAT_ARGB;
       texture_ref = TextureRef::CreatePreallocated(
           texture_id, delete_texture_cb, pixel_format, dimensions);
     } else {

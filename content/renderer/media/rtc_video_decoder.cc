@@ -66,6 +66,7 @@ RTCVideoDecoder::RTCVideoDecoder(webrtc::VideoCodecType type,
       video_codec_type_(type),
       factories_(factories),
       decoder_texture_target_(0),
+      pixel_format_(media::PIXEL_FORMAT_UNKNOWN),
       next_picture_buffer_id_(0),
       state_(UNINITIALIZED),
       decode_complete_callback_(nullptr),
@@ -311,6 +312,7 @@ int32_t RTCVideoDecoder::Release() {
 }
 
 void RTCVideoDecoder::ProvidePictureBuffers(uint32_t count,
+                                            media::VideoPixelFormat format,
                                             uint32_t textures_per_buffer,
                                             const gfx::Size& size,
                                             uint32_t texture_target) {
@@ -324,6 +326,17 @@ void RTCVideoDecoder::ProvidePictureBuffers(uint32_t count,
   std::vector<uint32_t> texture_ids;
   std::vector<gpu::Mailbox> texture_mailboxes;
   decoder_texture_target_ = texture_target;
+
+  if (format == media::PIXEL_FORMAT_UNKNOWN)
+    format = media::PIXEL_FORMAT_ARGB;
+
+  if ((pixel_format_ != media::PIXEL_FORMAT_UNKNOWN) &&
+      (format != pixel_format_)) {
+    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+    return;
+  }
+
+  pixel_format_ = format;
   if (!factories_->CreateTextures(count,
                                   size,
                                   &texture_ids,
@@ -400,12 +413,8 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
     return;
   }
 
-  media::VideoPixelFormat pixel_format = vda_->GetOutputFormat();
-  if (pixel_format == media::PIXEL_FORMAT_UNKNOWN)
-    pixel_format = media::PIXEL_FORMAT_ARGB;
-
   scoped_refptr<media::VideoFrame> frame =
-      CreateVideoFrame(picture, pb, timestamp, visible_rect, pixel_format);
+      CreateVideoFrame(picture, pb, timestamp, visible_rect, pixel_format_);
   if (!frame) {
     NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
     return;

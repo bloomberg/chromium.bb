@@ -77,6 +77,7 @@ GpuVideoDecoder::GpuVideoDecoder(GpuVideoAcceleratorFactories* factories,
       state_(kNormal),
       request_surface_cb_(request_surface_cb),
       decoder_texture_target_(0),
+      pixel_format_(PIXEL_FORMAT_UNKNOWN),
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
       available_pictures_(0),
@@ -435,6 +436,7 @@ int GpuVideoDecoder::GetMaxDecodeRequests() const {
 }
 
 void GpuVideoDecoder::ProvidePictureBuffers(uint32_t count,
+                                            VideoPixelFormat format,
                                             uint32_t textures_per_buffer,
                                             const gfx::Size& size,
                                             uint32_t texture_target) {
@@ -445,6 +447,19 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32_t count,
   std::vector<uint32_t> texture_ids;
   std::vector<gpu::Mailbox> texture_mailboxes;
   decoder_texture_target_ = texture_target;
+
+  if (format == PIXEL_FORMAT_UNKNOWN) {
+    format = IsOpaque(config_.format()) ? PIXEL_FORMAT_XRGB : PIXEL_FORMAT_ARGB;
+  }
+
+  // TODO(jbauman): Move decoder_texture_target_ and pixel_format_ to the
+  // picture buffer. http://crbug.com/614789
+  if ((pixel_format_ != PIXEL_FORMAT_UNKNOWN) && (pixel_format_ != format)) {
+    NotifyError(VideoDecodeAccelerator::PLATFORM_FAILURE);
+    return;
+  }
+
+  pixel_format_ = format;
   if (!factories_->CreateTextures(count * textures_per_buffer, size,
                                   &texture_ids, &texture_mailboxes,
                                   decoder_texture_target_)) {
@@ -549,12 +564,6 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
 
   DCHECK(decoder_texture_target_);
 
-  VideoPixelFormat pixel_format = vda_->GetOutputFormat();
-  if (pixel_format == PIXEL_FORMAT_UNKNOWN) {
-    pixel_format =
-        IsOpaque(config_.format()) ? PIXEL_FORMAT_XRGB : PIXEL_FORMAT_ARGB;
-  }
-
   gpu::MailboxHolder mailbox_holders[VideoFrame::kMaxPlanes];
   for (size_t i = 0; i < pb.texture_ids().size(); ++i) {
     mailbox_holders[i] = gpu::MailboxHolder(
@@ -562,7 +571,7 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   }
 
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTextures(
-      pixel_format, mailbox_holders,
+      pixel_format_, mailbox_holders,
       base::Bind(&ReleaseMailboxTrampoline, factories_->GetTaskRunner(),
                  base::Bind(&GpuVideoDecoder::ReleaseMailbox,
                             weak_factory_.GetWeakPtr(), factories_,

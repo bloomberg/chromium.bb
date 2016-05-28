@@ -218,6 +218,7 @@ void GpuVideoDecodeAccelerator::NotifyInitializationComplete(bool success) {
 
 void GpuVideoDecodeAccelerator::ProvidePictureBuffers(
     uint32_t requested_num_of_buffers,
+    VideoPixelFormat format,
     uint32_t textures_per_buffer,
     const gfx::Size& dimensions,
     uint32_t texture_target) {
@@ -228,7 +229,7 @@ void GpuVideoDecodeAccelerator::ProvidePictureBuffers(
     return;
   }
   if (!Send(new AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers(
-          host_route_id_, requested_num_of_buffers, textures_per_buffer,
+          host_route_id_, requested_num_of_buffers, format, textures_per_buffer,
           dimensions, texture_target))) {
     DLOG(ERROR) << "Send(AcceleratedVideoDecoderHostMsg_ProvidePictureBuffers) "
                 << "failed";

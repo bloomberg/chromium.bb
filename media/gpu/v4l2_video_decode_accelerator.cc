@@ -519,10 +519,6 @@ bool V4L2VideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
   return true;
 }
 
-media::VideoPixelFormat V4L2VideoDecodeAccelerator::GetOutputFormat() const {
-  return V4L2Device::V4L2PixFmtToVideoPixelFormat(egl_image_format_fourcc_);
-}
-
 // static
 media::VideoDecodeAccelerator::SupportedProfiles
 V4L2VideoDecodeAccelerator::GetSupportedProfiles() {
@@ -2036,10 +2032,15 @@ bool V4L2VideoDecodeAccelerator::CreateOutputBuffers() {
   DVLOG(3) << "CreateOutputBuffers(): ProvidePictureBuffers(): "
            << "buffer_count=" << buffer_count
            << ", coded_size=" << egl_image_size_.ToString();
+
+  DCHECK(egl_image_format_fourcc_);
+  VideoPixelFormat pixel_format =
+      V4L2Device::V4L2PixFmtToVideoPixelFormat(egl_image_format_fourcc_);
+
   child_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&Client::ProvidePictureBuffers, client_, buffer_count, 1,
-                 egl_image_size_, device_->GetTextureTarget()));
+      FROM_HERE, base::Bind(&Client::ProvidePictureBuffers, client_,
+                            buffer_count, pixel_format, 1, egl_image_size_,
+                            device_->GetTextureTarget()));
 
   // Wait for the client to call AssignPictureBuffers() on the Child thread.
   // We do this, because if we continue decoding without finishing buffer

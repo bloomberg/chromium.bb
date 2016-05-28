@@ -952,7 +952,7 @@ void AndroidVideoDecodeAccelerator::DecodeBuffer(
 
 void AndroidVideoDecodeAccelerator::RequestPictureBuffers() {
   if (client_) {
-    client_->ProvidePictureBuffers(kNumPictureBuffers, 1,
+    client_->ProvidePictureBuffers(kNumPictureBuffers, PIXEL_FORMAT_UNKNOWN, 1,
                                    strategy_->GetPictureBufferSize(),
                                    strategy_->GetTextureTarget());
   }
