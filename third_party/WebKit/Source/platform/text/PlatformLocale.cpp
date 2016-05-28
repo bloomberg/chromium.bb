@@ -224,13 +224,13 @@ String Locale::weekFormatInLDML()
     for (unsigned i = 0; i + 1 < length; ++i) {
         if (templ[i] == '$' && (templ[i + 1] == '1' || templ[i + 1] == '2')) {
             if (literalStart < i)
-                DateTimeFormat::quoteAndappend(templ.substring(literalStart, i - literalStart), builder);
+                DateTimeFormat::quoteAndAppendLiteral(templ.substring(literalStart, i - literalStart), builder);
             builder.append(templ[++i] == '1' ? "yyyy" : "ww");
             literalStart = i + 1;
         }
     }
     if (literalStart < length)
-        DateTimeFormat::quoteAndappend(templ.substring(literalStart, length - literalStart), builder);
+        DateTimeFormat::quoteAndAppendLiteral(templ.substring(literalStart, length - literalStart), builder);
     return builder.toString();
 }
 

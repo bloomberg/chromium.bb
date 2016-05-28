@@ -46,9 +46,9 @@ void maybeEmitNamedValue(StringBuilder& builder, bool emit, const char* name, T 
     if (!emit)
         return;
     if (builder.length() > 1)
-        builder.append(", ");
+        builder.appendLiteral(", ");
     builder.append(name);
-    builder.append(": ");
+    builder.appendLiteral(": ");
     builder.appendNumber(value);
 }
 
@@ -57,13 +57,13 @@ void maybeEmitNamedBoolean(StringBuilder& builder, bool emit, const char* name, 
     if (!emit)
         return;
     if (builder.length() > 1)
-        builder.append(", ");
+        builder.appendLiteral(", ");
     builder.append(name);
-    builder.append(": ");
+    builder.appendLiteral(": ");
     if (value)
-        builder.append("true");
+        builder.appendLiteral("true");
     else
-        builder.append("false");
+        builder.appendLiteral("false");
 }
 
 } // namespace
@@ -128,12 +128,12 @@ const String WebMediaConstraintsPrivate::toString() const
         builder.append(basic().toString());
         if (!advanced().isEmpty()) {
             if (builder.length() > 1)
-                builder.append(", ");
-            builder.append("advanced: [");
+                builder.appendLiteral(", ");
+            builder.appendLiteral("advanced: [");
             bool first = true;
             for (const auto& constraintSet : advanced()) {
                 if (!first)
-                    builder.append(", ");
+                    builder.appendLiteral(", ");
                 builder.append('{');
                 builder.append(constraintSet.toString());
                 builder.append('}');
@@ -302,11 +302,11 @@ WebString StringConstraint::toString() const
     StringBuilder builder;
     builder.append('{');
     if (!m_ideal.isEmpty()) {
-        builder.append("ideal: [");
+        builder.appendLiteral("ideal: [");
         bool first = true;
         for (const auto& iter : m_ideal) {
             if (!first)
-                builder.append(", ");
+                builder.appendLiteral(", ");
             builder.append('"');
             builder.append(iter);
             builder.append('"');
@@ -316,12 +316,12 @@ WebString StringConstraint::toString() const
     }
     if (!m_exact.isEmpty()) {
         if (builder.length() > 1)
-            builder.append(", ");
-        builder.append("exact: [");
+            builder.appendLiteral(", ");
+        builder.appendLiteral("exact: [");
         bool first = true;
         for (const auto& iter : m_exact) {
             if (!first)
-                builder.append(", ");
+                builder.appendLiteral(", ");
             builder.append('"');
             builder.append(iter);
             builder.append('"');
@@ -488,9 +488,9 @@ WebString WebMediaTrackConstraintSet::toString() const
     for (const auto& constraint : allConstraints()) {
         if (!constraint->isEmpty()) {
             if (!first)
-                builder.append(", ");
+                builder.appendLiteral(", ");
             builder.append(constraint->name());
-            builder.append(": ");
+            builder.appendLiteral(": ");
             builder.append(constraint->toString());
             first = false;
         }

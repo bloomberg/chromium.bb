@@ -596,20 +596,20 @@ String CSSLinearGradientValue::customCSSText() const
 {
     StringBuilder result;
     if (m_gradientType == CSSDeprecatedLinearGradient) {
-        result.append("-webkit-gradient(linear, ");
+        result.appendLiteral("-webkit-gradient(linear, ");
         result.append(m_firstX->cssText());
         result.append(' ');
         result.append(m_firstY->cssText());
-        result.append(", ");
+        result.appendLiteral(", ");
         result.append(m_secondX->cssText());
         result.append(' ');
         result.append(m_secondY->cssText());
         appendCSSTextForDeprecatedColorStops(result);
     } else if (m_gradientType == CSSPrefixedLinearGradient) {
         if (m_repeating)
-            result.append("-webkit-repeating-linear-gradient(");
+            result.appendLiteral("-webkit-repeating-linear-gradient(");
         else
-            result.append("-webkit-linear-gradient(");
+            result.appendLiteral("-webkit-linear-gradient(");
 
         if (m_angle)
             result.append(m_angle->cssText());
@@ -629,7 +629,7 @@ String CSSLinearGradientValue::customCSSText() const
 
         for (unsigned i = 0; i < m_stops.size(); i++) {
             const CSSGradientColorStop& stop = m_stops[i];
-            result.append(", ");
+            result.appendLiteral(", ");
             result.append(stop.m_color->cssText());
             if (stop.m_position) {
                 result.append(' ');
@@ -638,9 +638,9 @@ String CSSLinearGradientValue::customCSSText() const
         }
     } else {
         if (m_repeating)
-            result.append("repeating-linear-gradient(");
+            result.appendLiteral("repeating-linear-gradient(");
         else
-            result.append("linear-gradient(");
+            result.appendLiteral("linear-gradient(");
 
         bool wroteSomething = false;
 
@@ -648,7 +648,7 @@ String CSSLinearGradientValue::customCSSText() const
             result.append(m_angle->cssText());
             wroteSomething = true;
         } else if ((m_firstX || m_firstY) && !(!m_firstX && m_firstY && m_firstY->isPrimitiveValue() && toCSSPrimitiveValue(m_firstY.get())->getValueID() == CSSValueBottom)) {
-            result.append("to ");
+            result.appendLiteral("to ");
             if (m_firstX && m_firstY) {
                 result.append(m_firstX->cssText());
                 result.append(' ');
@@ -661,12 +661,12 @@ String CSSLinearGradientValue::customCSSText() const
         }
 
         if (wroteSomething)
-            result.append(", ");
+            result.appendLiteral(", ");
 
         for (unsigned i = 0; i < m_stops.size(); i++) {
             const CSSGradientColorStop& stop = m_stops[i];
             if (i)
-                result.append(", ");
+                result.appendLiteral(", ");
             if (stop.m_color)
                 result.append(stop.m_color->cssText());
             if (stop.m_color && stop.m_position)
@@ -858,19 +858,19 @@ inline void CSSGradientValue::appendCSSTextForDeprecatedColorStops(StringBuilder
 {
     for (unsigned i = 0; i < m_stops.size(); i++) {
         const CSSGradientColorStop& stop = m_stops[i];
-        result.append(", ");
+        result.appendLiteral(", ");
         if (stop.m_position->getDoubleValue() == 0) {
-            result.append("from(");
+            result.appendLiteral("from(");
             result.append(stop.m_color->cssText());
             result.append(')');
         } else if (stop.m_position->getDoubleValue() == 1) {
-            result.append("to(");
+            result.appendLiteral("to(");
             result.append(stop.m_color->cssText());
             result.append(')');
         } else {
-            result.append("color-stop(");
+            result.appendLiteral("color-stop(");
             result.appendNumber(stop.m_position->getDoubleValue());
-            result.append(", ");
+            result.appendLiteral(", ");
             result.append(stop.m_color->cssText());
             result.append(')');
         }
@@ -882,24 +882,24 @@ String CSSRadialGradientValue::customCSSText() const
     StringBuilder result;
 
     if (m_gradientType == CSSDeprecatedRadialGradient) {
-        result.append("-webkit-gradient(radial, ");
+        result.appendLiteral("-webkit-gradient(radial, ");
         result.append(m_firstX->cssText());
         result.append(' ');
         result.append(m_firstY->cssText());
-        result.append(", ");
+        result.appendLiteral(", ");
         result.append(m_firstRadius->cssText());
-        result.append(", ");
+        result.appendLiteral(", ");
         result.append(m_secondX->cssText());
         result.append(' ');
         result.append(m_secondY->cssText());
-        result.append(", ");
+        result.appendLiteral(", ");
         result.append(m_secondRadius->cssText());
         appendCSSTextForDeprecatedColorStops(result);
     } else if (m_gradientType == CSSPrefixedRadialGradient) {
         if (m_repeating)
-            result.append("-webkit-repeating-radial-gradient(");
+            result.appendLiteral("-webkit-repeating-radial-gradient(");
         else
-            result.append("-webkit-radial-gradient(");
+            result.appendLiteral("-webkit-radial-gradient(");
 
         if (m_firstX && m_firstY) {
             result.append(m_firstX->cssText());
@@ -910,24 +910,23 @@ String CSSRadialGradientValue::customCSSText() const
          else if (m_firstY)
             result.append(m_firstY->cssText());
         else
-            result.append("center");
+            result.appendLiteral("center");
 
         if (m_shape || m_sizingBehavior) {
-            result.append(", ");
+            result.appendLiteral(", ");
             if (m_shape) {
                 result.append(m_shape->cssText());
                 result.append(' ');
-            } else {
-                result.append("ellipse ");
-            }
+            } else
+                result.appendLiteral("ellipse ");
 
             if (m_sizingBehavior)
                 result.append(m_sizingBehavior->cssText());
             else
-                result.append("cover");
+                result.appendLiteral("cover");
 
         } else if (m_endHorizontalSize && m_endVerticalSize) {
-            result.append(", ");
+            result.appendLiteral(", ");
             result.append(m_endHorizontalSize->cssText());
             result.append(' ');
             result.append(m_endVerticalSize->cssText());
@@ -935,7 +934,7 @@ String CSSRadialGradientValue::customCSSText() const
 
         for (unsigned i = 0; i < m_stops.size(); i++) {
             const CSSGradientColorStop& stop = m_stops[i];
-            result.append(", ");
+            result.appendLiteral(", ");
             result.append(stop.m_color->cssText());
             if (stop.m_position) {
                 result.append(' ');
@@ -944,16 +943,16 @@ String CSSRadialGradientValue::customCSSText() const
         }
     } else {
         if (m_repeating)
-            result.append("repeating-radial-gradient(");
+            result.appendLiteral("repeating-radial-gradient(");
         else
-            result.append("radial-gradient(");
+            result.appendLiteral("radial-gradient(");
 
         bool wroteSomething = false;
 
         // The only ambiguous case that needs an explicit shape to be provided
         // is when a sizing keyword is used (or all sizing is omitted).
         if (m_shape && m_shape->getValueID() != CSSValueEllipse && (m_sizingBehavior || (!m_sizingBehavior && !m_endHorizontalSize))) {
-            result.append("circle");
+            result.appendLiteral("circle");
             wroteSomething = true;
         }
 
@@ -976,7 +975,7 @@ String CSSRadialGradientValue::customCSSText() const
         if (m_firstX || m_firstY) {
             if (wroteSomething)
                 result.append(' ');
-            result.append("at ");
+            result.appendLiteral("at ");
             if (m_firstX && m_firstY) {
                 result.append(m_firstX->cssText());
                 result.append(' ');
@@ -989,12 +988,12 @@ String CSSRadialGradientValue::customCSSText() const
         }
 
         if (wroteSomething)
-            result.append(", ");
+            result.appendLiteral(", ");
 
         for (unsigned i = 0; i < m_stops.size(); i++) {
             const CSSGradientColorStop& stop = m_stops[i];
             if (i)
-                result.append(", ");
+                result.appendLiteral(", ");
             if (stop.m_color)
                 result.append(stop.m_color->cssText());
             if (stop.m_color && stop.m_position)

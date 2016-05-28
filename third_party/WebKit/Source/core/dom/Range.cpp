@@ -1313,14 +1313,14 @@ void Range::formatForDebugger(char* buffer, unsigned length) const
 
     const int FormatBufferSize = 1024;
     char s[FormatBufferSize];
-    result.append("from offset ");
+    result.appendLiteral("from offset ");
     result.appendNumber(m_start.offset());
-    result.append(" of ");
+    result.appendLiteral(" of ");
     m_start.container()->formatForDebugger(s, FormatBufferSize);
     result.append(s);
-    result.append(" to offset ");
+    result.appendLiteral(" to offset ");
     result.appendNumber(m_end.offset());
-    result.append(" of ");
+    result.appendLiteral(" of ");
     m_end.container()->formatForDebugger(s, FormatBufferSize);
     result.append(s);
 

@@ -226,7 +226,7 @@ String LayoutTheme::extraDefaultStyleSheet()
 {
     StringBuilder runtimeCSS;
     if (RuntimeEnabledFeatures::contextMenuEnabled())
-        runtimeCSS.append("menu[type=\"popup\" i] { display: none; }");
+        runtimeCSS.appendLiteral("menu[type=\"popup\" i] { display: none; }");
     return runtimeCSS.toString();
 }
 

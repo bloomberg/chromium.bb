@@ -43,17 +43,17 @@ static String buildCircleString(const String& radius, const String& centerX, con
     char at[] = "at";
     char separator[] = " ";
     StringBuilder result;
-    result.append("circle(");
+    result.appendLiteral("circle(");
     if (!radius.isNull())
         result.append(radius);
 
     if (!centerX.isNull() || !centerY.isNull()) {
         if (!radius.isNull())
-            result.append(separator);
+            result.appendLiteral(separator);
         result.append(at);
-        result.append(separator);
+        result.appendLiteral(separator);
         result.append(centerX);
-        result.append(separator);
+        result.appendLiteral(separator);
         result.append(centerY);
     }
     result.append(')');
@@ -136,7 +136,7 @@ static String buildEllipseString(const String& radiusX, const String& radiusY, c
     char at[] = "at";
     char separator[] = " ";
     StringBuilder result;
-    result.append("ellipse(");
+    result.appendLiteral("ellipse(");
     bool needsSeparator = false;
     if (!radiusX.isNull()) {
         result.append(radiusX);
@@ -144,18 +144,18 @@ static String buildEllipseString(const String& radiusX, const String& radiusY, c
     }
     if (!radiusY.isNull()) {
         if (needsSeparator)
-            result.append(separator);
+            result.appendLiteral(separator);
         result.append(radiusY);
         needsSeparator = true;
     }
 
     if (!centerX.isNull() || !centerY.isNull()) {
         if (needsSeparator)
-            result.append(separator);
-        result.append(at);
-        result.append(separator);
+            result.appendLiteral(separator);
+        result.appendLiteral(at);
+        result.appendLiteral(separator);
         result.append(centerX);
-        result.append(separator);
+        result.appendLiteral(separator);
         result.append(centerY);
     }
     result.append(')');
@@ -225,13 +225,13 @@ static String buildPolygonString(const WindRule& windRule, const Vector<String>&
     result.reserveCapacity(length);
 
     if (windRule == RULE_EVENODD)
-        result.append(evenOddOpening);
+        result.appendLiteral(evenOddOpening);
     else
-        result.append(nonZeroOpening);
+        result.appendLiteral(nonZeroOpening);
 
     for (size_t i = 0; i < points.size(); i += 2) {
         if (i)
-            result.append(commaSeparator);
+            result.appendLiteral(commaSeparator);
         result.append(points[i]);
         result.append(' ');
         result.append(points[i + 1]);
@@ -290,21 +290,21 @@ static String buildInsetString(const String& top, const String& right, const Str
     char separator[] = " ";
     char cornersSeparator[] = "round";
     StringBuilder result;
-    result.append(opening);
+    result.appendLiteral(opening);
     result.append(top);
     bool showLeftArg = !left.isNull() && left != right;
     bool showBottomArg = !bottom.isNull() && (bottom != top || showLeftArg);
     bool showRightArg = !right.isNull() && (right != top || showBottomArg);
     if (showRightArg) {
-        result.append(separator);
+        result.appendLiteral(separator);
         result.append(right);
     }
     if (showBottomArg) {
-        result.append(separator);
+        result.appendLiteral(separator);
         result.append(bottom);
     }
     if (showLeftArg) {
-        result.append(separator);
+        result.appendLiteral(separator);
         result.append(left);
     }
 
@@ -316,19 +316,19 @@ static String buildInsetString(const String& top, const String& right, const Str
         areDefaultCornerRadii &= buildInsetRadii(verticalRadii, topLeftRadiusHeight, topRightRadiusHeight, bottomRightRadiusHeight, bottomLeftRadiusHeight);
 
         if (!areDefaultCornerRadii) {
-            result.append(separator);
-            result.append(cornersSeparator);
+            result.appendLiteral(separator);
+            result.appendLiteral(cornersSeparator);
 
             for (size_t i = 0; i < horizontalRadii.size(); ++i) {
-                result.append(separator);
+                result.appendLiteral(separator);
                 result.append(horizontalRadii[i]);
             }
             if (horizontalRadii != verticalRadii) {
-                result.append(separator);
-                result.append("/");
+                result.appendLiteral(separator);
+                result.appendLiteral("/");
 
                 for (size_t i = 0; i < verticalRadii.size(); ++i) {
-                    result.append(separator);
+                    result.appendLiteral(separator);
                     result.append(verticalRadii[i]);
                 }
             }

@@ -244,7 +244,7 @@ static bool isASCIIAlphabetOrQuote(UChar ch)
     return isASCIIAlpha(ch) || ch == '\'';
 }
 
-void DateTimeFormat::quoteAndappend(const String& literal, StringBuilder& buffer)
+void DateTimeFormat::quoteAndAppendLiteral(const String& literal, StringBuilder& buffer)
 {
     if (literal.length() <= 0)
         return;
@@ -263,7 +263,7 @@ void DateTimeFormat::quoteAndappend(const String& literal, StringBuilder& buffer
 
     for (unsigned i = 0; i < literal.length(); ++i) {
         if (literal[i] == '\'') {
-            buffer.append("''");
+            buffer.appendLiteral("''");
         } else {
             String escaped = literal.substring(i);
             escaped.replace("'", "''");

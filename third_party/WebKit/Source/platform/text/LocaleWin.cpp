@@ -169,7 +169,7 @@ static void commitLiteralToken(StringBuilder& literalBuffer, StringBuilder& conv
 {
     if (literalBuffer.length() <= 0)
         return;
-    DateTimeFormat::quoteAndappend(literalBuffer.toString(), converted);
+    DateTimeFormat::quoteAndAppendLiteral(literalBuffer.toString(), converted);
     literalBuffer.clear();
 }
 
@@ -233,9 +233,9 @@ static String convertWindowsDateTimeFormat(const String& format)
                 if (count <= 2)
                     converted.append(format, symbolStart, count);
                 else if (count == 3)
-                    converted.append("EEE");
+                    converted.appendLiteral("EEE");
                 else
-                    converted.append("EEEE");
+                    converted.appendLiteral("EEEE");
             } else if (ch == 'g') {
                 if (count == 1) {
                     converted.append('G');
@@ -381,7 +381,7 @@ String LocaleWin::shortTimeFormat()
         format = getLocaleInfoString(LOCALE_STIMEFORMAT);
         StringBuilder builder;
         builder.append(getLocaleInfoString(LOCALE_STIME));
-        builder.append("ss");
+        builder.appendLiteral("ss");
         size_t pos = format.reverseFind(builder.toString());
         if (pos != kNotFound)
             format.remove(pos, builder.length());

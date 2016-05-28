@@ -502,10 +502,10 @@ AtomicString SecurityOrigin::toRawAtomicString() const
 void SecurityOrigin::buildRawString(StringBuilder& builder, bool includeSuborigin) const
 {
     builder.append(m_protocol);
-    builder.append("://");
+    builder.appendLiteral("://");
     if (includeSuborigin && hasSuborigin()) {
         builder.append(m_suborigin.name());
-        builder.append("_");
+        builder.appendLiteral("_");
     }
     builder.append(m_host);
 

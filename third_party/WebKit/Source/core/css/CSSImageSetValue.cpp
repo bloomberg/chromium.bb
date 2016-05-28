@@ -137,7 +137,7 @@ String CSSImageSetValue::customCSSText() const
     size_t i = 0;
     while (i < length) {
         if (i > 0)
-            result.append(", ");
+            result.appendLiteral(", ");
 
         const CSSValue* imageValue = item(i);
         result.append(imageValue->cssText());

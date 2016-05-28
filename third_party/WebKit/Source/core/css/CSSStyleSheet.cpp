@@ -330,7 +330,7 @@ int CSSStyleSheet::addRule(const String& selector, const String& style, int inde
 {
     StringBuilder text;
     text.append(selector);
-    text.append(" { ");
+    text.appendLiteral(" { ");
     text.append(style);
     if (!style.isEmpty())
         text.append(' ');

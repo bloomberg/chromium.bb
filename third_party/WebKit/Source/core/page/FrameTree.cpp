@@ -179,9 +179,9 @@ AtomicString FrameTree::calculateUniqueNameForChildFrame(
         uniqueName.append(frame->tree().uniqueName());
     }
 
-    uniqueName.append("/<!--frame");
+    uniqueName.appendLiteral("/<!--frame");
     uniqueName.appendNumber(childCount() - (existingChildFrame ? 1 : 0));
-    uniqueName.append("-->-->");
+    uniqueName.appendLiteral("-->-->");
 
     return uniqueName.toAtomicString();
 }

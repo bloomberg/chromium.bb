@@ -952,19 +952,19 @@ String Internals::viewportAsText(Document* document, float, int availableWidth, 
 
     StringBuilder builder;
 
-    builder.append("viewport size ");
+    builder.appendLiteral("viewport size ");
     builder.append(String::number(constraints.layoutSize.width()));
     builder.append('x');
     builder.append(String::number(constraints.layoutSize.height()));
 
-    builder.append(" scale ");
+    builder.appendLiteral(" scale ");
     builder.append(String::number(constraints.initialScale));
-    builder.append(" with limits [");
+    builder.appendLiteral(" with limits [");
     builder.append(String::number(constraints.minimumScale));
-    builder.append(", ");
+    builder.appendLiteral(", ");
     builder.append(String::number(constraints.maximumScale));
 
-    builder.append("] and userScalable ");
+    builder.appendLiteral("] and userScalable ");
     builder.append(description.userZoom ? "true" : "false");
 
     return builder.toString();
@@ -2099,21 +2099,21 @@ String Internals::getCurrentCursorInfo()
     Cursor cursor = frame()->page()->chromeClient().lastSetCursorForTesting();
 
     StringBuilder result;
-    result.append("type=");
+    result.appendLiteral("type=");
     result.append(cursorTypeToString(cursor.getType()));
-    result.append(" hotSpot=");
+    result.appendLiteral(" hotSpot=");
     result.appendNumber(cursor.hotSpot().x());
     result.append(',');
     result.appendNumber(cursor.hotSpot().y());
     if (cursor.getImage()) {
         IntSize size = cursor.getImage()->size();
-        result.append(" image=");
+        result.appendLiteral(" image=");
         result.appendNumber(size.width());
         result.append('x');
         result.appendNumber(size.height());
     }
     if (cursor.imageScaleFactor() != 1) {
-        result.append(" scale=");
+        result.appendLiteral(" scale=");
         NumberToStringBuffer buffer;
         result.append(numberToFixedPrecisionString(cursor.imageScaleFactor(), 8, buffer, true));
     }

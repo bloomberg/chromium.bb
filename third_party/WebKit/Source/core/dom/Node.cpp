@@ -1511,13 +1511,13 @@ String Node::debugName() const
     if (isElementNode()) {
         const Element& thisElement = toElement(*this);
         if (thisElement.hasID()) {
-            name.append(" id=\'");
+            name.appendLiteral(" id=\'");
             name.append(thisElement.getIdAttribute());
             name.append('\'');
         }
 
         if (thisElement.hasClass()) {
-            name.append(" class=\'");
+            name.appendLiteral(" class=\'");
             for (size_t i = 0; i < thisElement.classNames().size(); ++i) {
                 if (i > 0)
                     name.append(' ');
@@ -1576,9 +1576,9 @@ static void appendAttributeDesc(const Node* node, StringBuilder& stringBuilder, 
         return;
 
     stringBuilder.append(attrDesc);
-    stringBuilder.append("=\"");
+    stringBuilder.appendLiteral("=\"");
     stringBuilder.append(attr);
-    stringBuilder.append("\"");
+    stringBuilder.appendLiteral("\"");
 }
 
 void Node::showNode(const char* prefix) const
@@ -1604,9 +1604,9 @@ void Node::showNode(const char* prefix) const
         appendAttributeDesc(this, attrs, classAttr, " CLASS");
         appendAttributeDesc(this, attrs, styleAttr, " STYLE");
         if (hasEditableStyle())
-            attrs.append(" (editable)");
+            attrs.appendLiteral(" (editable)");
         if (document().focusedElement() == this)
-            attrs.append(" (focused)");
+            attrs.appendLiteral(" (focused)");
         WTFLogAlways("%s%s\t%p%s\n", prefix, nodeName().utf8().data(), this, attrs.toString().utf8().data());
     }
 }

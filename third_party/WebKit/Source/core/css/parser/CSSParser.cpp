@@ -171,11 +171,11 @@ bool CSSParser::parseSystemColor(Color& color, const String& colorString)
 CSSValue* CSSParser::parseFontFaceDescriptor(CSSPropertyID propertyID, const String& propertyValue, const CSSParserContext& context)
 {
     StringBuilder builder;
-    builder.append("@font-face { ");
+    builder.appendLiteral("@font-face { ");
     builder.append(getPropertyNameString(propertyID));
-    builder.append(" : ");
+    builder.appendLiteral(" : ");
     builder.append(propertyValue);
-    builder.append("; }");
+    builder.appendLiteral("; }");
     StyleRuleBase* rule = parseRule(context, nullptr, builder.toString());
     if (!rule || !rule->isFontFaceRule())
         return nullptr;

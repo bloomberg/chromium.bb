@@ -133,11 +133,11 @@ void CSSCrossfadeValue::dispose()
 String CSSCrossfadeValue::customCSSText() const
 {
     StringBuilder result;
-    result.append("-webkit-cross-fade(");
+    result.appendLiteral("-webkit-cross-fade(");
     result.append(m_fromValue->cssText());
-    result.append(", ");
+    result.appendLiteral(", ");
     result.append(m_toValue->cssText());
-    result.append(", ");
+    result.appendLiteral(", ");
     result.append(m_percentageValue->cssText());
     result.append(')');
     return result.toString();

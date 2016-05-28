@@ -75,12 +75,12 @@ void CSSPageRule::setSelectorText(const String& selectorText)
 String CSSPageRule::cssText() const
 {
     StringBuilder result;
-    result.append("@page ");
+    result.appendLiteral("@page ");
     String pageSelectors = selectorText();
     result.append(pageSelectors);
     if (!pageSelectors.isEmpty())
-        result.append(" ");
-    result.append("{ ");
+        result.appendLiteral(" ");
+    result.appendLiteral("{ ");
     String decls = m_pageRule->properties().asText();
     result.append(decls);
     if (!decls.isEmpty())

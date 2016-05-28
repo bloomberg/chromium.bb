@@ -999,7 +999,7 @@ String Decimal::toString() const
             return builder.toString();
         }
 
-        builder.append("0.");
+        builder.appendLiteral("0.");
         for (int i = adjustedExponent + 1; i < 0; ++i)
             builder.append('0');
 

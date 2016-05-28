@@ -238,9 +238,9 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
         responseIsValid = charset.isEmpty() || equalIgnoringCase(charset, "UTF-8");
         if (!responseIsValid) {
             StringBuilder message;
-            message.append("EventSource's response has a charset (\"");
+            message.appendLiteral("EventSource's response has a charset (\"");
             message.append(charset);
-            message.append("\") that is not UTF-8. Aborting the connection.");
+            message.appendLiteral("\") that is not UTF-8. Aborting the connection.");
             // FIXME: We are missing the source line.
             getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message.toString()));
         }
@@ -248,9 +248,9 @@ void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& resp
         // To keep the signal-to-noise ratio low, we only log 200-response with an invalid MIME type.
         if (statusCode == 200 && !mimeTypeIsValid) {
             StringBuilder message;
-            message.append("EventSource's response has a MIME type (\"");
+            message.appendLiteral("EventSource's response has a MIME type (\"");
             message.append(response.mimeType());
-            message.append("\") that is not \"text/event-stream\". Aborting the connection.");
+            message.appendLiteral("\") that is not \"text/event-stream\". Aborting the connection.");
             // FIXME: We are missing the source line.
             getExecutionContext()->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, message.toString()));
         }

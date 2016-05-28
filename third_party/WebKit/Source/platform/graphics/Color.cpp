@@ -198,19 +198,19 @@ String Color::serializedAsCSSComponentValue() const
     result.reserveCapacity(32);
     bool colorHasAlpha = hasAlpha();
     if (colorHasAlpha)
-        result.append("rgba(");
+        result.appendLiteral("rgba(");
     else
-        result.append("rgb(");
+        result.appendLiteral("rgb(");
 
     result.appendNumber(static_cast<unsigned char>(red()));
-    result.append(", ");
+    result.appendLiteral(", ");
 
     result.appendNumber(static_cast<unsigned char>(green()));
-    result.append(", ");
+    result.appendLiteral(", ");
 
     result.appendNumber(static_cast<unsigned char>(blue()));
     if (colorHasAlpha) {
-        result.append(", ");
+        result.appendLiteral(", ");
 
         NumberToStringBuffer buffer;
         const char* alphaString = numberToFixedPrecisionString(alpha() / 255.0f, 6, buffer, true);
@@ -236,13 +236,13 @@ String Color::serialized() const
     StringBuilder result;
     result.reserveCapacity(28);
 
-    result.append("rgba(");
+    result.appendLiteral("rgba(");
     result.appendNumber(red());
-    result.append(", ");
+    result.appendLiteral(", ");
     result.appendNumber(green());
-    result.append(", ");
+    result.appendLiteral(", ");
     result.appendNumber(blue());
-    result.append(", ");
+    result.appendLiteral(", ");
 
     if (!alpha())
         result.append('0');

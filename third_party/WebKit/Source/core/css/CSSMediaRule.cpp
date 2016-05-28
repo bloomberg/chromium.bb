@@ -44,12 +44,12 @@ MediaQuerySet* CSSMediaRule::mediaQueries() const
 String CSSMediaRule::cssText() const
 {
     StringBuilder result;
-    result.append("@media ");
+    result.appendLiteral("@media ");
     if (mediaQueries()) {
         result.append(mediaQueries()->mediaText());
         result.append(' ');
     }
-    result.append("{ \n");
+    result.appendLiteral("{ \n");
     appendCSSTextForItems(result);
     result.append('}');
     return result.toString();

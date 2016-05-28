@@ -32,11 +32,11 @@ protected:
     HTMLFormElement* populateForm(const char* enctype, const char* html)
     {
         StringBuilder b;
-        b.append("<!DOCTYPE html><html><body><form id='theForm' enctype='");
+        b.appendLiteral("<!DOCTYPE html><html><body><form id='theForm' enctype='");
         b.append(enctype);
-        b.append("'>");
+        b.appendLiteral("'>");
         b.append(html);
-        b.append("</form></body></html>");
+        b.appendLiteral("</form></body></html>");
         document().documentElement()->setInnerHTML(b.toString(), ASSERT_NO_EXCEPTION);
         document().view()->updateAllLifecyclePhases();
         HTMLFormElement* form = toHTMLFormElement(document().getElementById("theForm"));

@@ -141,6 +141,9 @@ public:
         append(U16_TRAIL(c));
     }
 
+    template<unsigned charactersCount>
+    ALWAYS_INLINE void appendLiteral(const char (&characters)[charactersCount]) { append(characters, charactersCount - 1); }
+
     void appendNumber(int);
     void appendNumber(unsigned);
     void appendNumber(long);

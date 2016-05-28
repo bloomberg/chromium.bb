@@ -416,14 +416,14 @@ String CanvasRenderingContext2D::font() const
     const FontDescription& fontDescription = state().font().getFontDescription();
 
     if (fontDescription.style() == FontStyleItalic)
-        serializedFont.append("italic ");
+        serializedFont.appendLiteral("italic ");
     if (fontDescription.weight() == FontWeightBold)
-        serializedFont.append("bold ");
+        serializedFont.appendLiteral("bold ");
     if (fontDescription.variantCaps() == FontDescription::SmallCaps)
-        serializedFont.append("small-caps ");
+        serializedFont.appendLiteral("small-caps ");
 
     serializedFont.appendNumber(fontDescription.computedPixelSize());
-    serializedFont.append("px");
+    serializedFont.appendLiteral("px");
 
     const FontFamily& firstFontFamily = fontDescription.family();
     for (const FontFamily* fontFamily = &firstFontFamily; fontFamily; fontFamily = fontFamily->next()) {

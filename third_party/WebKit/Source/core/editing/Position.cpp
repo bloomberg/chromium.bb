@@ -594,12 +594,12 @@ void PositionTemplate<Strategy>::formatForDebugger(char* buffer, unsigned length
     StringBuilder result;
 
     if (isNull()) {
-        result.append("<null>");
+        result.appendLiteral("<null>");
     } else {
         char s[1024];
-        result.append("offset ");
+        result.appendLiteral("offset ");
         result.appendNumber(m_offset);
-        result.append(" of ");
+        result.appendLiteral(" of ");
         anchorNode()->formatForDebugger(s, sizeof(s));
         result.append(s);
     }

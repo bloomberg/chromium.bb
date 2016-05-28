@@ -146,14 +146,14 @@ void SerializerMarkupAccumulator::appendElement(StringBuilder& result, Element& 
 
     // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an element like this, without special cases for XHTML
     if (isHTMLHeadElement(element)) {
-        result.append("<meta http-equiv=\"Content-Type\" content=\"");
+        result.appendLiteral("<meta http-equiv=\"Content-Type\" content=\"");
         appendAttributeValue(result, m_document->suggestedMIMEType());
-        result.append("; charset=");
+        result.appendLiteral("; charset=");
         appendAttributeValue(result, m_document->characterSet());
         if (m_document->isXHTMLDocument())
-            result.append("\" />");
+            result.appendLiteral("\" />");
         else
-            result.append("\">");
+            result.appendLiteral("\">");
     }
 
     // FIXME: For object (plugins) tags and video tag we could replace them by an image of their current contents.
@@ -227,9 +227,9 @@ void SerializerMarkupAccumulator::appendRewrittenAttribute(
     // TODO(tiger): Refactor MarkupAccumulator so it is easier to append an attribute like this.
     out.append(' ');
     out.append(attributeName);
-    out.append("=\"");
+    out.appendLiteral("=\"");
     appendAttributeValue(out, attributeValue);
-    out.append("\"");
+    out.appendLiteral("\"");
 }
 
 // TODO(tiger): Right now there is no support for rewriting URLs inside CSS
@@ -308,9 +308,9 @@ void FrameSerializer::serializeFrame(const LocalFrame& frame)
 void FrameSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet, const KURL& url)
 {
     StringBuilder cssText;
-    cssText.append("@charset \"");
+    cssText.appendLiteral("@charset \"");
     cssText.append(styleSheet.contents()->charset().lower());
-    cssText.append("\";\n\n");
+    cssText.appendLiteral("\";\n\n");
 
     for (unsigned i = 0; i < styleSheet.length(); ++i) {
         CSSRule* rule = styleSheet.item(i);
@@ -318,7 +318,7 @@ void FrameSerializer::serializeCSSStyleSheet(CSSStyleSheet& styleSheet, const KU
         if (!itemText.isEmpty()) {
             cssText.append(itemText);
             if (i < styleSheet.length() - 1)
-                cssText.append("\n\n");
+                cssText.appendLiteral("\n\n");
         }
 
         // Some rules have resources associated with them that we need to retrieve.

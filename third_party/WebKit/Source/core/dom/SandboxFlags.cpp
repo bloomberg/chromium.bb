@@ -67,7 +67,7 @@ SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy, String& invalidT
             flags &= ~SandboxPresentation;
         } else {
             if (numberOfTokenErrors)
-                tokenErrors.append(", '");
+                tokenErrors.appendLiteral(", '");
             else
                 tokenErrors.append('\'');
             tokenErrors.append(sandboxToken);
@@ -78,9 +78,9 @@ SandboxFlags parseSandboxPolicy(const SpaceSplitString& policy, String& invalidT
 
     if (numberOfTokenErrors) {
         if (numberOfTokenErrors > 1)
-            tokenErrors.append(" are invalid sandbox flags.");
+            tokenErrors.appendLiteral(" are invalid sandbox flags.");
         else
-            tokenErrors.append(" is an invalid sandbox flag.");
+            tokenErrors.appendLiteral(" is an invalid sandbox flag.");
         invalidTokensErrorMessage = tokenErrors.toString();
     }
 

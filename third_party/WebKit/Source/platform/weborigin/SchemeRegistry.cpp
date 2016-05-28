@@ -354,7 +354,7 @@ String SchemeRegistry::listOfCORSEnabledURLSchemes()
     }
     for (const auto& scheme : schemes) {
         if (addSeparator)
-            builder.append(", ");
+            builder.appendLiteral(", ");
         else
             addSeparator = true;
 

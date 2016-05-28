@@ -105,20 +105,20 @@ void MHTMLArchive::generateMHTMLHeader(
         now.hour(), now.minute(), now.second(), 0);
 
     StringBuilder stringBuilder;
-    stringBuilder.append("From: <Saved by Blink>\r\n");
-    stringBuilder.append("Subject: ");
+    stringBuilder.appendLiteral("From: <Saved by Blink>\r\n");
+    stringBuilder.appendLiteral("Subject: ");
     // We replace non ASCII characters with '?' characters to match IE's behavior.
     stringBuilder.append(replaceNonPrintableCharacters(title));
-    stringBuilder.append("\r\nDate: ");
+    stringBuilder.appendLiteral("\r\nDate: ");
     stringBuilder.append(dateString);
-    stringBuilder.append("\r\nMIME-Version: 1.0\r\n");
-    stringBuilder.append("Content-Type: multipart/related;\r\n");
-    stringBuilder.append("\ttype=\"");
+    stringBuilder.appendLiteral("\r\nMIME-Version: 1.0\r\n");
+    stringBuilder.appendLiteral("Content-Type: multipart/related;\r\n");
+    stringBuilder.appendLiteral("\ttype=\"");
     stringBuilder.append(mimeType);
-    stringBuilder.append("\";\r\n");
-    stringBuilder.append("\tboundary=\"");
+    stringBuilder.appendLiteral("\";\r\n");
+    stringBuilder.appendLiteral("\tboundary=\"");
     stringBuilder.append(boundary);
-    stringBuilder.append("\"\r\n\r\n");
+    stringBuilder.appendLiteral("\"\r\n\r\n");
 
     // We use utf8() below instead of ascii() as ascii() replaces CRLFs with ??
     // (we still only have put ASCII characters in it).
@@ -143,14 +143,14 @@ void MHTMLArchive::generateMHTMLPart(
     stringBuilder.append(boundary);
     stringBuilder.append("\r\n");
 
-    stringBuilder.append("Content-Type: ");
+    stringBuilder.appendLiteral("Content-Type: ");
     stringBuilder.append(resource.mimeType);
-    stringBuilder.append("\r\n");
+    stringBuilder.appendLiteral("\r\n");
 
     if (!contentID.isEmpty()) {
-        stringBuilder.append("Content-ID: ");
+        stringBuilder.appendLiteral("Content-ID: ");
         stringBuilder.append(contentID);
-        stringBuilder.append("\r\n");
+        stringBuilder.appendLiteral("\r\n");
     }
 
     const char* contentEncoding = 0;
@@ -161,17 +161,17 @@ void MHTMLArchive::generateMHTMLPart(
     else
         contentEncoding = base64;
 
-    stringBuilder.append("Content-Transfer-Encoding: ");
+    stringBuilder.appendLiteral("Content-Transfer-Encoding: ");
     stringBuilder.append(contentEncoding);
-    stringBuilder.append("\r\n");
+    stringBuilder.appendLiteral("\r\n");
 
     if (!resource.url.protocolIsAbout()) {
-        stringBuilder.append("Content-Location: ");
+        stringBuilder.appendLiteral("Content-Location: ");
         stringBuilder.append(resource.url.getString());
-        stringBuilder.append("\r\n");
+        stringBuilder.appendLiteral("\r\n");
     }
 
-    stringBuilder.append("\r\n");
+    stringBuilder.appendLiteral("\r\n");
 
     CString asciiString = stringBuilder.toString().utf8();
     outputBuffer.append(asciiString.data(), asciiString.length());

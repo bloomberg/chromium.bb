@@ -721,11 +721,11 @@ String nodePositionAsStringForTesting(Node* node)
     for (Node* n = node; n; n = parent) {
         parent = n->parentOrShadowHostNode();
         if (n != node)
-            result.append(" of ");
+            result.appendLiteral(" of ");
         if (parent) {
             if (body && n == body) {
                 // We don't care what offset body may be in the document.
-                result.append("body");
+                result.appendLiteral("body");
                 break;
             }
             if (n->isShadowRoot()) {
@@ -733,14 +733,14 @@ String nodePositionAsStringForTesting(Node* node)
                 result.append(getTagName(n));
                 result.append('}');
             } else {
-                result.append("child ");
+                result.appendLiteral("child ");
                 result.appendNumber(n->nodeIndex());
-                result.append(" {");
+                result.appendLiteral(" {");
                 result.append(getTagName(n));
                 result.append('}');
             }
         } else {
-            result.append("document");
+            result.appendLiteral("document");
         }
     }
 

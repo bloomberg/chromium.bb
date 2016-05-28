@@ -917,14 +917,14 @@ void VisibleSelectionTemplate<Strategy>::formatForDebugger(char* buffer, unsigne
     String s;
 
     if (isNone()) {
-        result.append("<none>");
+        result.appendLiteral("<none>");
     } else {
         const int FormatBufferSize = 1024;
         char s[FormatBufferSize];
-        result.append("from ");
+        result.appendLiteral("from ");
         start().formatForDebugger(s, FormatBufferSize);
         result.append(s);
-        result.append(" to ");
+        result.appendLiteral(" to ");
         end().formatForDebugger(s, FormatBufferSize);
         result.append(s);
     }

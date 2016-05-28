@@ -149,7 +149,7 @@ String WebFrameSerializerImpl::preActionBeforeSerializeOpenTag(
             result.append(WebFrameSerializer::generateMarkOfTheWebDeclaration(param->url));
         } else if (isHTMLBaseElement(*element)) {
             // Comment the BASE tag when serializing dom.
-            result.append("<!--");
+            result.appendLiteral("<!--");
         }
     } else {
         // Write XML declaration.
@@ -161,13 +161,13 @@ String WebFrameSerializerImpl::preActionBeforeSerializeOpenTag(
                 xmlEncoding = param->document->encodingName();
             if (xmlEncoding.isEmpty())
                 xmlEncoding = UTF8Encoding().name();
-            result.append("<?xml version=\"");
+            result.appendLiteral("<?xml version=\"");
             result.append(param->document->xmlVersion());
-            result.append("\" encoding=\"");
+            result.appendLiteral("\" encoding=\"");
             result.append(xmlEncoding);
             if (param->document->xmlStandalone())
-                result.append("\" standalone=\"yes");
-            result.append("\"?>\n");
+                result.appendLiteral("\" standalone=\"yes");
+            result.appendLiteral("\"?>\n");
         }
         // Add doc type declaration if original document has it.
         if (!param->haveSeenDocType) {
@@ -237,7 +237,7 @@ String WebFrameSerializerImpl::postActionAfterSerializeEndTag(
         return result.toString();
     // Comment the BASE tag when serializing DOM.
     if (isHTMLBaseElement(*element)) {
-        result.append("-->");
+        result.appendLiteral("-->");
         // Append a new base tag declaration.
         result.append(WebFrameSerializer::generateBaseTagDeclaration(
             param->document->baseTarget()));
@@ -284,7 +284,7 @@ void WebFrameSerializerImpl::appendAttribute(
     const String& attrValue) {
     result.append(' ');
     result.append(attrName);
-    result.append("=\"");
+    result.appendLiteral("=\"");
     if (isHTMLDocument)
         result.append(m_htmlEntities.convertEntitiesInString(attrValue));
     else
@@ -381,7 +381,7 @@ void WebFrameSerializerImpl::endTagToString(
         return;
     // Write end tag when element has child/children.
     if (element->hasChildren() || param->haveAddedContentsBeforeEnd) {
-        result.append("</");
+        result.appendLiteral("</");
         result.append(element->nodeName().lower());
         result.append('>');
     } else {
@@ -391,13 +391,13 @@ void WebFrameSerializerImpl::endTagToString(
             // FIXME: This code is horribly wrong.  WebFrameSerializerImpl must die.
             if (!element->isHTMLElement() || !toHTMLElement(element)->ieForbidsInsertHTML()) {
                 // We need to write end tag when it is required.
-                result.append("</");
+                result.appendLiteral("</");
                 result.append(element->nodeName().lower());
                 result.append('>');
             }
         } else {
             // For xml base document.
-            result.append(" />");
+            result.appendLiteral(" />");
         }
     }
     // Do post action for end tag.

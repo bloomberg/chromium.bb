@@ -312,7 +312,7 @@ static inline void recordFormStructure(const HTMLFormElement& form, StringBuilde
     // 2 is enough to distinguish forms in webkit.org/b/91209#c0
     const size_t namedControlsToBeRecorded = 2;
     const FormAssociatedElement::List& controls = form.associatedElements();
-    builder.append(" [");
+    builder.appendLiteral(" [");
     for (size_t i = 0, namedControls = 0; i < controls.size() && namedControls < namedControlsToBeRecorded; ++i) {
         if (!controls[i]->isFormControlElementWithState())
             continue;
@@ -363,7 +363,7 @@ const AtomicString& FormKeyGenerator::formKey(const HTMLFormControlElementWithSt
 
     StringBuilder formKeyBuilder;
     formKeyBuilder.append(signature);
-    formKeyBuilder.append(" #");
+    formKeyBuilder.appendLiteral(" #");
     formKeyBuilder.appendNumber(nextIndex);
     FormToKeyMap::AddResult addFormKeyresult = m_formToKeyMap.add(form, formKeyBuilder.toAtomicString());
     return addFormKeyresult.storedValue->value;
