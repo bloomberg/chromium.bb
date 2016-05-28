@@ -59,7 +59,7 @@ public class InterestsServiceTest extends NativeLibraryTestBase {
                             public void onSystemAccountsChanged() {}
                         });
                 SigninTestUtil.setUpAuthForTest(getInstrumentation());
-                mAccount = SigninTestUtil.get().addAndSignInTestAccount();
+                mAccount = SigninTestUtil.addAndSignInTestAccount();
             }
         });
 

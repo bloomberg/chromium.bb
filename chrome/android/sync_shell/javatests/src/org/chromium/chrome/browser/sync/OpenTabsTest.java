@@ -75,7 +75,7 @@ public class OpenTabsTest extends SyncTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
         mClientName = getClientName();
         mSessionTagCounter = 0;
     }

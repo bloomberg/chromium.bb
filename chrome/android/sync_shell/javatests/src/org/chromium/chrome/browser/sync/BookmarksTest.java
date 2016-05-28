@@ -84,7 +84,7 @@ public class BookmarksTest extends SyncTestBase {
                 mBookmarkBridge.loadEmptyPartnerBookmarkShimForTesting();
             }
         });
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
         // Make sure initial state is clean.
         assertClientBookmarkCount(0);
         assertServerBookmarkCountWithName(0, TITLE);
