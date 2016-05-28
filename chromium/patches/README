@@ -5,6 +5,10 @@ Upstream cherry-picks:
   542f725964e52201000ec34e2f23229cf534ad3a - avformat/oggdec security fix.
   ea791c080dd5494b3bee0c618a3f52e371b5f320 - avformat/utils security fix.
   2875745d354ab0ebc4af1ebaca5c5a8d26ccdc03 - avformat/utils security fix v2.
+  17d320800b70a78f4e90cd96564154e829db8b8d - avformat/movenc security fix.
+  1a82d2cf8fb6a7e854e7548dfcf73c3d046b34ac - avformat/oggparseopus security fix.
+  c1ed78a591f68f3c81eded0bfaac313937ffa3b6 - avformat/utils security fix.
+  2be3007ed55f1513bcae3d2a076e71878f48eb03 - avformat/utils security fix.
 
 Autorename:
   autorename_* files are renamed copies of various files that would cause
