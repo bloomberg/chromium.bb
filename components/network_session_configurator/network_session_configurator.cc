@@ -45,20 +45,6 @@ const char kSpdyFieldTrialSpdy31GroupNamePrefix[] = "Spdy31Enabled";
 const char kSpdyFieldTrialSpdy4GroupNamePrefix[] = "Spdy4Enabled";
 const char kSpdyFieldTrialParametrizedPrefix[] = "Parametrized";
 
-// The AltSvc trial controls whether Alt-Svc headers are parsed.
-// Disabled:
-//     Alt-Svc headers are not parsed.
-//     Alternate-Protocol headers are parsed.
-// Enabled:
-//     Alt-Svc headers are parsed, but only same-host entries are used by
-//     default.  (Use "enable_alternative_service_with_different_host" QUIC
-//     parameter to enable entries with different hosts.)
-//     Alternate-Protocol headers are ignored for responses that have an Alt-Svc
-//     header.
-const char kAltSvcFieldTrialName[] = "ParseAltSvc";
-const char kAltSvcFieldTrialDisabledPrefix[] = "AltSvcDisabled";
-const char kAltSvcFieldTrialEnabledPrefix[] = "AltSvcEnabled";
-
 // Field trial for NPN.
 const char kNpnTrialName[] = "NPN";
 const char kNpnTrialEnabledGroupNamePrefix[] = "Enable";
@@ -151,18 +137,6 @@ void ConfigureSpdyParams(const base::CommandLine& command_line,
     // and enable_spdy31, can it be eliminated?
     net::HttpStreamFactory::set_spdy_enabled(spdy_enabled);
     return;
-  }
-}
-
-void ConfigureAltSvcParams(const base::CommandLine& command_line,
-                           base::StringPiece altsvc_trial_group,
-                           net::HttpNetworkSession::Params* params) {
-  if (altsvc_trial_group.starts_with(kAltSvcFieldTrialEnabledPrefix)) {
-    params->parse_alternative_services = true;
-    return;
-  }
-  if (altsvc_trial_group.starts_with(kAltSvcFieldTrialDisabledPrefix)) {
-    params->parse_alternative_services = false;
   }
 }
 
@@ -546,10 +520,6 @@ void ParseFieldTrialsAndCommandLineInternal(
   // Always fetch the field trial groups to ensure they are reported correctly.
   // The command line flags will be associated with a group that is reported so
   // long as trial is actually queried.
-
-  std::string altsvc_trial_group =
-      base::FieldTrialList::FindFullName(kAltSvcFieldTrialName);
-  ConfigureAltSvcParams(command_line, altsvc_trial_group, params);
 
   std::string quic_trial_group =
       base::FieldTrialList::FindFullName(kQuicFieldTrialName);

@@ -108,7 +108,6 @@ struct SpdyNetworkTransactionTestParams {
 
 void UpdateSpdySessionDependencies(SpdyNetworkTransactionTestParams test_params,
                                    SpdySessionDependencies* session_deps) {
-  session_deps->parse_alternative_services = true;
   session_deps->enable_alternative_service_with_different_host = true;
   if (test_params.ssl_type == HTTP_SPDY_VIA_ALT_SVC) {
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);

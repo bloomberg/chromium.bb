@@ -206,7 +206,6 @@ struct SpdySessionDependencies {
   size_t stream_max_recv_window_size;
   SpdySession::TimeFunc time_func;
   std::unique_ptr<ProxyDelegate> proxy_delegate;
-  bool parse_alternative_services;
   bool enable_alternative_service_with_different_host;
   NetLog* net_log;
 };

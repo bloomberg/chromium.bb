@@ -94,8 +94,6 @@ class NET_EXPORT HttpNetworkSession
     size_t spdy_stream_max_recv_window_size;
     // Source of time for SPDY connections.
     SpdySessionPool::TimeFunc time_func;
-    // Whether to parse Alt-Svc headers.
-    bool parse_alternative_services;
     // Whether to enable Alt-Svc entries with hostname different than that of
     // the origin.
     bool enable_alternative_service_with_different_host;

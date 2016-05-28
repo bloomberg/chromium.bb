@@ -322,7 +322,6 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   params.http_server_properties = main_context_->http_server_properties();
   params.net_log = main_context_->net_log();
   params.enable_http2 = http2_enabled();
-  params.parse_alternative_services = true;
   params.enable_quic = quic_enabled();
 
   for (const auto& quic_hint : quic_hints_) {

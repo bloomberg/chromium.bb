@@ -436,9 +436,6 @@ NET_EXPORT std::unique_ptr<base::DictionaryValue> GetNetInfo(
     status_dict->SetBoolean("enable_http2",
                             http_network_session->params().enable_http2 &&
                                 HttpStreamFactory::spdy_enabled());
-    status_dict->SetBoolean(
-        "use_alternative_services",
-        http_network_session->params().parse_alternative_services);
 
     NextProtoVector alpn_protos;
     http_network_session->GetAlpnProtos(&alpn_protos);

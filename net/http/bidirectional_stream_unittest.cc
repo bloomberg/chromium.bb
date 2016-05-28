@@ -1467,7 +1467,6 @@ TEST_F(BidirectionalStreamTest, TestHonorAlternativeServiceHeader) {
   url::SchemeHostPort server("https", "www.example.org", 443);
   SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
                      PRIVACY_MODE_DISABLED);
-  session_deps_.parse_alternative_services = true;
   // Enable QUIC so that the alternative service header can be added to
   // HttpServerProperties.
   session_deps_.enable_quic = true;

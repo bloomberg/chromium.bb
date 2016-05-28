@@ -91,7 +91,6 @@ class NET_EXPORT URLRequestContextBuilder {
     uint16_t testing_fixed_https_port;
     bool enable_spdy31;
     bool enable_http2;
-    bool parse_alternative_services;
     bool enable_alternative_service_with_different_host;
     bool enable_quic;
     std::string quic_user_agent_id;

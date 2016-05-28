@@ -349,7 +349,6 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
       stream_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
-      parse_alternative_services(true),
       enable_alternative_service_with_different_host(true),
       net_log(NULL) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
@@ -388,7 +387,6 @@ SpdySessionDependencies::SpdySessionDependencies(
       stream_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
       time_func(&base::TimeTicks::Now),
-      parse_alternative_services(true),
       enable_alternative_service_with_different_host(true),
       net_log(NULL) {
   DCHECK(next_proto_is_spdy(protocol)) << "Invalid protocol: " << protocol;
@@ -441,7 +439,6 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
       session_deps->stream_max_recv_window_size;
   params.time_func = session_deps->time_func;
   params.proxy_delegate = session_deps->proxy_delegate.get();
-  params.parse_alternative_services = session_deps->parse_alternative_services;
   params.enable_alternative_service_with_different_host =
       session_deps->enable_alternative_service_with_different_host;
   params.net_log = session_deps->net_log;
