@@ -75,12 +75,16 @@ class OfflinePageStorageManager {
     EXPIRE_FAILURE,              // Expiration failed.
     DELETE_FAILURE,              // Deletion failed.
     EXPIRE_AND_DELETE_FAILURES,  // Both expiration and deletion failed.
+    // NOTE: always keep this entry at the end. Add new result types only
+    // immediately above this line. Make sure to update the corresponding
+    // histogram enum accordingly.
+    RESULT_COUNT,
   };
 
   // Callback used when calling ClearPagesIfNeeded.
   // size_t: the number of expired pages.
   // ClearStorageResult: result of expiring pages in storage.
-  typedef base::Callback<void(size_t, ClearStorageResult)> ClearPagesCallback;
+  typedef base::Callback<void(size_t, ClearStorageResult)> ClearStorageCallback;
 
   explicit OfflinePageStorageManager(Client* client,
                                      ClientPolicyController* policy_controller,
@@ -93,7 +97,7 @@ class OfflinePageStorageManager {
   // It clears the storage (expire pages) when it's using more disk space than a
   // certain limit, or the time elapsed from last time clearing is longer than a
   // certain interval. Both values are defined above.
-  void ClearPagesIfNeeded(const ClearPagesCallback& callback);
+  void ClearPagesIfNeeded(const ClearStorageCallback& callback);
 
   // Sets the clock for testing.
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
@@ -111,23 +115,23 @@ class OfflinePageStorageManager {
 
   // Callback called after getting storage stats from archive manager.
   void OnGetStorageStatsDoneForClearingPages(
-      const ClearPagesCallback& callback,
+      const ClearStorageCallback& callback,
       const ArchiveManager::StorageStats& pages);
 
   // Callback called after getting all pages from client.
   void OnGetAllPagesDoneForClearingPages(
-      const ClearPagesCallback& callback,
+      const ClearStorageCallback& callback,
       const ArchiveManager::StorageStats& storage_stats,
       const MultipleOfflinePageItemResult& pages);
 
   // Callback called after expired pages have been deleted.
-  void OnPagesExpired(const ClearPagesCallback& callback,
+  void OnPagesExpired(const ClearStorageCallback& callback,
                       size_t pages_to_clear,
                       const std::vector<int64_t>& page_ids_to_remove,
                       bool expiration_succeeded);
 
   // Callback called after clearing outdated pages from client.
-  void OnOutdatedPagesCleared(const ClearPagesCallback& callback,
+  void OnOutdatedPagesCleared(const ClearStorageCallback& callback,
                               size_t pages_cleared,
                               bool expiration_succeeded,
                               DeletePageResult result);

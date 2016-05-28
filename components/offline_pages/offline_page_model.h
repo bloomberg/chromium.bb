@@ -340,6 +340,14 @@ class OfflinePageModel : public KeyedService,
                         const base::Time& expiration_time,
                         bool success);
 
+  // Clears expired pages if there are any.
+  void ClearStorageIfNeeded(
+      const OfflinePageStorageManager::ClearStorageCallback& callback);
+
+  // Callback completing storage clearing.
+  void OnStorageCleared(size_t expired_page_count,
+                        OfflinePageStorageManager::ClearStorageResult result);
+
   void RunWhenLoaded(const base::Closure& job);
 
   // Persistent store for offline page metadata.

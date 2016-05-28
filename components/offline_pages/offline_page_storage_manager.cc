@@ -28,7 +28,7 @@ OfflinePageStorageManager::OfflinePageStorageManager(
 OfflinePageStorageManager::~OfflinePageStorageManager() {}
 
 void OfflinePageStorageManager::ClearPagesIfNeeded(
-    const ClearPagesCallback& callback) {
+    const ClearStorageCallback& callback) {
   if (IsInProgress())
     return;
   clear_time_ = clock_->Now();
@@ -43,7 +43,7 @@ void OfflinePageStorageManager::SetClockForTesting(
 }
 
 void OfflinePageStorageManager::OnGetStorageStatsDoneForClearingPages(
-    const ClearPagesCallback& callback,
+    const ClearStorageCallback& callback,
     const ArchiveManager::StorageStats& stats) {
   DCHECK(IsInProgress());
   ClearMode mode = ShouldClearPages(stats);
@@ -58,7 +58,7 @@ void OfflinePageStorageManager::OnGetStorageStatsDoneForClearingPages(
 }
 
 void OfflinePageStorageManager::OnGetAllPagesDoneForClearingPages(
-    const ClearPagesCallback& callback,
+    const ClearStorageCallback& callback,
     const ArchiveManager::StorageStats& stats,
     const MultipleOfflinePageItemResult& pages) {
   std::vector<int64_t> page_ids_to_expire;
@@ -72,7 +72,7 @@ void OfflinePageStorageManager::OnGetAllPagesDoneForClearingPages(
 }
 
 void OfflinePageStorageManager::OnPagesExpired(
-    const ClearPagesCallback& callback,
+    const ClearStorageCallback& callback,
     size_t pages_expired,
     const std::vector<int64_t>& page_ids_to_remove,
     bool expiration_succeeded) {
@@ -86,7 +86,7 @@ void OfflinePageStorageManager::OnPagesExpired(
 }
 
 void OfflinePageStorageManager::OnOutdatedPagesCleared(
-    const ClearPagesCallback& callback,
+    const ClearStorageCallback& callback,
     size_t pages_cleared,
     bool expiration_succeeded,
     DeletePageResult result) {

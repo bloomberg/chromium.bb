@@ -25,10 +25,19 @@
 #include "url/gurl.h"
 
 using ArchiverResult = offline_pages::OfflinePageArchiver::ArchiverResult;
+using ClearStorageCallback =
+    offline_pages::OfflinePageStorageManager::ClearStorageCallback;
+using ClearStorageResult =
+    offline_pages::OfflinePageStorageManager::ClearStorageResult;
 
 namespace offline_pages {
 
 namespace {
+
+// The delay used to schedule the first clear storage request for storage
+// manager after the model is loaded.
+const base::TimeDelta kStorageManagerStartingDelay =
+    base::TimeDelta::FromSeconds(20);
 
 // This enum is used in an UMA histogram. Hence the entries here shouldn't
 // be deleted or re-ordered and new ones should be added to the end.
@@ -535,11 +544,24 @@ void OfflinePageModel::ExpirePages(const std::vector<int64_t>& offline_ids,
 void OfflinePageModel::OnExpirePageDone(int64_t offline_id,
                                         const base::Time& expiration_time,
                                         bool success) {
-  // TODO(romax): Report UMA about successful expiration.
-  if (success) {
-    auto iter = offline_pages_.find(offline_id);
-    if (iter != offline_pages_.end())
-      iter->second.expiration_time = expiration_time;
+  UMA_HISTOGRAM_BOOLEAN("OfflinePages.ExpirePage.StoreUpdateResult", success);
+  if (!success)
+    return;
+  const auto& iter = offline_pages_.find(offline_id);
+  if (iter != offline_pages_.end()) {
+    iter->second.expiration_time = expiration_time;
+    ClientId client_id = iter->second.client_id;
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        AddHistogramSuffix(client_id, "OfflinePages.ExpirePage.PageLifetime")
+            .c_str(),
+        (expiration_time - iter->second.creation_time).InMinutes(), 1,
+        base::TimeDelta::FromDays(30).InMinutes(), 50);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        AddHistogramSuffix(client_id,
+                           "OfflinePages.ExpirePage.TimeSinceLastAccess")
+            .c_str(),
+        (expiration_time - iter->second.last_access_time).InMinutes(), 1,
+        base::TimeDelta::FromDays(30).InMinutes(), 50);
   }
 }
 
@@ -666,6 +688,13 @@ void OfflinePageModel::OnLoadDone(
   FOR_EACH_OBSERVER(Observer, observers_, OfflinePageModelLoaded(this));
 
   CheckForExternalFileDeletion();
+
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&OfflinePageModel::ClearStorageIfNeeded,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            base::Bind(&OfflinePageModel::OnStorageCleared,
+                                       weak_ptr_factory_.GetWeakPtr())),
+      kStorageManagerStartingDelay);
 }
 
 void OfflinePageModel::InformSavePageDone(const SavePageCallback& callback,
@@ -678,6 +707,11 @@ void OfflinePageModel::InformSavePageDone(const SavePageCallback& callback,
       static_cast<int>(SavePageResult::RESULT_COUNT));
   archive_manager_->GetStorageStats(
       base::Bind(&ReportStorageHistogramsAfterSave));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&OfflinePageModel::ClearStorageIfNeeded,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            base::Bind(&OfflinePageModel::OnStorageCleared,
+                                       weak_ptr_factory_.GetWeakPtr())));
   callback.Run(result, offline_id);
 }
 
@@ -855,6 +889,23 @@ void OfflinePageModel::CacheLoadedData(
     offline_pages_[offline_page.offline_id] = offline_page;
 }
 
+void OfflinePageModel::ClearStorageIfNeeded(
+    const ClearStorageCallback& callback) {
+  storage_manager_->ClearPagesIfNeeded(callback);
+}
+
+void OfflinePageModel::OnStorageCleared(size_t expired_page_count,
+                                        ClearStorageResult result) {
+  UMA_HISTOGRAM_ENUMERATION("OfflinePages.ClearStorageResult",
+                            static_cast<int>(result),
+                            static_cast<int>(ClearStorageResult::RESULT_COUNT));
+  if (expired_page_count > 0) {
+    UMA_HISTOGRAM_COUNTS("OfflinePages.ExpirePage.BatchSize",
+                         static_cast<int32_t>(expired_page_count));
+  }
+}
+
+// static
 int64_t OfflinePageModel::GenerateOfflineId() {
   return base::RandGenerator(std::numeric_limits<int64_t>::max()) + 1;
 }

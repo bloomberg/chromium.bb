@@ -34802,6 +34802,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Status code of wiping out the offline page data.</summary>
 </histogram>
 
+<histogram name="OfflinePages.ClearStorageResult"
+    enum="OfflinePagesClearStorageResult">
+  <owner>romax@chromium.org</owner>
+  <summary>Result of asking storage manager to clear storage.</summary>
+</histogram>
+
 <histogram name="OfflinePages.DeletePage.AccessCount">
   <owner>jianli@chromium.org</owner>
   <summary>
@@ -34883,6 +34889,31 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>dougarnett@chromium.org</owner>
   <summary>
     Whether a user-edited bookmark URL had a saved offline page.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.ExpirePage.BatchSize">
+  <owner>romax@chromium.org</owner>
+  <summary>Number of pages that are expired in a batch.</summary>
+</histogram>
+
+<histogram name="OfflinePages.ExpirePage.PageLifetime" units="minutes">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Length of time between when an offline page was created and was expired.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.ExpirePage.StoreUpdateResult"
+    enum="BooleanSuccess">
+  <owner>romax@chromium.org</owner>
+  <summary>Result of updating expired page in store.</summary>
+</histogram>
+
+<histogram name="OfflinePages.ExpirePage.TimeSinceLastAccess" units="minutes">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Length of time between when an offline page was last opened and was expired.
   </summary>
 </histogram>
 
@@ -81714,6 +81745,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Store reload failed"/>
 </enum>
 
+<enum name="OfflinePagesClearStorageResult" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unnecessary to clean"/>
+  <int value="2" label="Page expiration failed"/>
+  <int value="3" label="Page record deletion failed"/>
+  <int value="4" label="Both expiration and deletion failed"/>
+</enum>
+
 <enum name="OfflinePagesDeletePageResult" type="int">
   <int value="0" label="Success"/>
   <int value="1" label="Cancelled"/>
@@ -94995,6 +95034,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="OfflinePages.DeletePage.LastOpenToCreated"/>
   <affected-histogram name="OfflinePages.DeletePage.PageSize"/>
   <affected-histogram name="OfflinePages.DeletePage.TimeSinceLastOpen"/>
+  <affected-histogram name="OfflinePages.ExpirePage.PageLifetime"/>
+  <affected-histogram name="OfflinePages.ExpirePage.TimeSinceLastAccess"/>
   <affected-histogram name="OfflinePages.FirstOpenSinceCreated"/>
   <affected-histogram name="OfflinePages.OpenSinceLastOpen"/>
   <affected-histogram name="OfflinePages.PageLifetime"/>
