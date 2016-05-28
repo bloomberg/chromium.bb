@@ -19,6 +19,10 @@ struct StructWithTraits {
   array<NestedStructWithTraits> f_struct_array;
 };
 
+struct StructWithTraitsContainer {
+  StructWithTraits f_struct;
+};
+
 struct PassByValueStructWithTraits {
   handle f_handle;
 };

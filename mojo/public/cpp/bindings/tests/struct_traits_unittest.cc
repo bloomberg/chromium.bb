@@ -242,6 +242,16 @@ TEST_F(StructTraitsTest, EchoStructWithTraits) {
   loop.Run();
 }
 
+TEST_F(StructTraitsTest, CloneStructWithTraitsContainer) {
+  StructWithTraitsContainerPtr container = StructWithTraitsContainer::New();
+  container->f_struct.set_uint32(7);
+  container->f_struct.set_uint64(42);
+  StructWithTraitsContainerPtr cloned_container = container.Clone();
+  EXPECT_EQ(7u, cloned_container->f_struct.get_uint32());
+  EXPECT_EQ(42u, cloned_container->f_struct.get_uint64());
+
+}
+
 TEST_F(StructTraitsTest, EchoPassByValueStructWithTraits) {
   MessagePipe mp;
   PassByValueStructWithTraitsImpl input;

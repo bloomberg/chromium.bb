@@ -33,9 +33,25 @@ class {{struct.name}} {
   {{struct.name}}();
   ~{{struct.name}}();
 
-{%  if struct|is_cloneable_kind %}
-  {{struct.name}}Ptr Clone() const;
-{%- endif %}
+  // Clone() is a template so it is only instantiated if it is used. Thus, the
+  // bindings generator does not need to know whether typemapped native types
+  // support operator=.
+  template <typename StructPtrType = {{struct.name}}Ptr>
+  {{struct.name}}Ptr Clone() const {
+    // Use StructPtrType to prevent the compiler from trying to compile this
+    // without being asked.
+    StructPtrType rv(New());
+{%-   for field in struct.fields %}
+{%-     if field.kind|is_object_kind and not field.kind|is_string_kind and
+            not field.kind|is_typemapped_kind %}
+    rv->{{field.name}} = {{field.name}}.Clone();
+{%-     else %}
+    rv->{{field.name}} = {{field.name}};
+{%-     endif %}
+{%-   endfor %}
+    return rv;
+  }
+
   // Equals() is a template so it is only instantiated if it is used. Thus, the
   // bindings generator does not need to know whether typemapped native types
   // support operator==.
