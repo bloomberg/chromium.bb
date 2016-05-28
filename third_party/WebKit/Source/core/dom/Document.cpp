@@ -4092,6 +4092,10 @@ String Document::cookie(ExceptionState& exceptionState) const
         return String();
     }
 
+    // Suborigins are cookie-averse and thus should always return the empty string
+    if (getSecurityOrigin()->hasSuborigin())
+        return String();
+
     KURL cookieURL = this->cookieURL();
     if (cookieURL.isEmpty())
         return String();
@@ -4117,6 +4121,10 @@ void Document::setCookie(const String& value, ExceptionState& exceptionState)
             exceptionState.throwSecurityError("Access is denied for this document.");
         return;
     }
+
+    // Suborigins are cookie-averse and thus setting should be a no-op.
+    if (getSecurityOrigin()->hasSuborigin())
+        return;
 
     KURL cookieURL = this->cookieURL();
     if (cookieURL.isEmpty())
