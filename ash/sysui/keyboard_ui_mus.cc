@@ -42,7 +42,7 @@ bool KeyboardUIMus::IsEnabled() {
 void KeyboardUIMus::OnKeyboardStateChanged(bool is_enabled,
                                            bool is_visible,
                                            uint64_t display_id,
-                                           mojo::RectPtr bounds) {
+                                           const gfx::Rect& bounds) {
   if (is_enabled_ == is_enabled)
     return;
 

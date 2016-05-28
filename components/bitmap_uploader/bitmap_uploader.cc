@@ -15,7 +15,6 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_surface.h"
 #include "services/shell/public/cpp/connector.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace bitmap_uploader {
 namespace {
@@ -98,12 +97,10 @@ void BitmapUploader::Upload() {
 
   if (bitmap_.get()) {
     gpu::gles2::GLES2Interface* gl = gles2_context_->interface();
-    mojo::Size bitmap_size;
-    bitmap_size.width = width_;
-    bitmap_size.height = height_;
+    gfx::Size bitmap_size(width_, height_);
     GLuint texture_id = BindTextureForSize(bitmap_size);
-    gl->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, bitmap_size.width,
-                      bitmap_size.height, TextureFormat(), GL_UNSIGNED_BYTE,
+    gl->TexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, bitmap_size.width(),
+                      bitmap_size.height(), TextureFormat(), GL_UNSIGNED_BYTE,
                       &((*bitmap_)[0]));
 
     gpu::Mailbox mailbox;
@@ -122,7 +119,7 @@ void BitmapUploader::Upload() {
     resource_to_texture_id_map_[resource->id] = texture_id;
     resource->format = mus::mojom::ResourceFormat::RGBA_8888;
     resource->filter = GL_LINEAR;
-    resource->size = bitmap_size.Clone();
+    resource->size = bitmap_size;
     resource->mailbox_holder =
         gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D);
     resource->read_lock_fences_enabled = false;
@@ -132,26 +129,24 @@ void BitmapUploader::Upload() {
     mus::mojom::QuadPtr quad = mus::mojom::Quad::New();
     quad->material = mus::mojom::Material::TEXTURE_CONTENT;
 
-    mojo::RectPtr rect = mojo::Rect::New();
+    gfx::Size rect_size;
     if (width_ <= bounds.width() && height_ <= bounds.height()) {
-      rect->width = width_;
-      rect->height = height_;
+      rect_size.SetSize(width_, height_);
     } else {
       // The source bitmap is larger than the viewport. Resize it while
       // maintaining the aspect ratio.
       float width_ratio = static_cast<float>(width_) / bounds.width();
       float height_ratio = static_cast<float>(height_) / bounds.height();
       if (width_ratio > height_ratio) {
-        rect->width = bounds.width();
-        rect->height = height_ / width_ratio;
+        rect_size.SetSize(bounds.width(), height_ / width_ratio);
       } else {
-        rect->height = bounds.height();
-        rect->width = width_ / height_ratio;
+        rect_size.SetSize(width_ / height_ratio, bounds.height());
       }
     }
-    quad->rect = rect.Clone();
-    quad->opaque_rect = rect.Clone();
-    quad->visible_rect = rect.Clone();
+    gfx::Rect rect(rect_size);
+    quad->rect = rect;
+    quad->opaque_rect = rect;
+    quad->visible_rect = rect;
     quad->needs_blending = true;
     quad->shared_quad_state_index = 0u;
 
@@ -159,10 +154,8 @@ void BitmapUploader::Upload() {
         mus::mojom::TextureQuadState::New();
     texture_state->resource_id = resource->id;
     texture_state->premultiplied_alpha = true;
-    texture_state->uv_top_left = mojo::PointF::New();
-    texture_state->uv_bottom_right = mojo::PointF::New();
-    texture_state->uv_bottom_right->x = 1.f;
-    texture_state->uv_bottom_right->y = 1.f;
+    texture_state->uv_top_left.SetPoint(0.f, 0.f);
+    texture_state->uv_bottom_right.SetPoint(1.f, 1.f);
     texture_state->background_color = mus::mojom::Color::New();
     texture_state->background_color->rgba = g_transparent_color;
     for (int i = 0; i < 4; ++i)
@@ -177,9 +170,8 @@ void BitmapUploader::Upload() {
   if (color_ != g_transparent_color) {
     mus::mojom::QuadPtr quad = mus::mojom::Quad::New();
     quad->material = mus::mojom::Material::SOLID_COLOR;
-    quad->rect = mojo::Rect::From(bounds);
-    quad->opaque_rect = mojo::Rect::New();
-    quad->visible_rect = mojo::Rect::From(bounds);
+    quad->rect = bounds;
+    quad->visible_rect = bounds;
     quad->needs_blending = true;
     quad->shared_quad_state_index = 0u;
 
@@ -199,14 +191,14 @@ void BitmapUploader::Upload() {
   surface_->SubmitCompositorFrame(std::move(frame), mojo::Closure());
 }
 
-uint32_t BitmapUploader::BindTextureForSize(const mojo::Size size) {
+uint32_t BitmapUploader::BindTextureForSize(const gfx::Size& size) {
   gpu::gles2::GLES2Interface* gl = gles2_context_->interface();
   // TODO(jamesr): Recycle textures.
   GLuint texture = 0u;
   gl->GenTextures(1, &texture);
   gl->BindTexture(GL_TEXTURE_2D, texture);
-  gl->TexImage2D(GL_TEXTURE_2D, 0, TextureFormat(), size.width, size.height, 0,
-                 TextureFormat(), GL_UNSIGNED_BYTE, 0);
+  gl->TexImage2D(GL_TEXTURE_2D, 0, TextureFormat(), size.width(), size.height(),
+                 0, TextureFormat(), GL_UNSIGNED_BYTE, 0);
   gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   return texture;
 }

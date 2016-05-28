@@ -22,7 +22,6 @@
 #include "mash/wm/property_util.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "mash/wm/root_window_controller.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mash {
 namespace wm {
@@ -65,10 +64,8 @@ void WindowManager::Initialize(RootWindowController* root_controller,
       mus::mojom::FrameDecorationValues::New();
   const gfx::Insets client_area_insets =
       NonClientFrameController::GetPreferredClientAreaInsets();
-  frame_decoration_values->normal_client_area_insets =
-      mojo::Insets::From(client_area_insets);
-  frame_decoration_values->maximized_client_area_insets =
-      mojo::Insets::From(client_area_insets);
+  frame_decoration_values->normal_client_area_insets = client_area_insets;
+  frame_decoration_values->maximized_client_area_insets = client_area_insets;
   frame_decoration_values->max_title_bar_button_width =
       NonClientFrameController::GetMaxTitleBarButtonWidth();
   window_manager_client_->SetFrameDecorationValues(

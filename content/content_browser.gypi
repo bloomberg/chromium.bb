@@ -66,7 +66,7 @@
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/gfx/gfx.gyp:gfx_range',
-    '../ui/gfx/gfx.gyp:mojo_geometry_lib',
+    '../ui/gfx/gfx.gyp:mojo_geometry_bindings',
     '../ui/resources/ui_resources.gyp:ui_resources',
     '../ui/snapshot/snapshot.gyp:snapshot',
     '../ui/surface/surface.gyp:surface',

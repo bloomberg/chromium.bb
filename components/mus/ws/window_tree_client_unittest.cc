@@ -17,13 +17,11 @@
 #include "components/mus/ws/test_change_tracker.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/shell/public/cpp/shell_test.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 using mojo::Array;
 using mojo::Callback;
 using shell::Connection;
 using mojo::InterfaceRequest;
-using mojo::RectPtr;
 using shell::ShellClient;
 using mojo::String;
 using mus::mojom::ErrorCode;
@@ -302,20 +300,19 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
     tracker()->OnTopLevelCreated(change_id, std::move(data), drawn);
   }
   void OnWindowBoundsChanged(Id window_id,
-                             RectPtr old_bounds,
-                             RectPtr new_bounds) override {
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override {
     // The bounds of the root may change during startup on Android at random
     // times. As this doesn't matter, and shouldn't impact test exepctations,
     // it is ignored.
     if (window_id == root_window_id_ && !track_root_bounds_changes_)
       return;
-    tracker()->OnWindowBoundsChanged(window_id, std::move(old_bounds),
-                                     std::move(new_bounds));
+    tracker()->OnWindowBoundsChanged(window_id, old_bounds, new_bounds);
   }
   void OnClientAreaChanged(
       uint32_t window_id,
-      mojo::InsetsPtr new_client_area,
-      mojo::Array<mojo::RectPtr> new_additional_client_areas) override {}
+      const gfx::Insets& new_client_area,
+      mojo::Array<gfx::Rect> new_additional_client_areas) override {}
   void OnTransientWindowAdded(uint32_t window_id,
                               uint32_t transient_window_id) override {
     tracker()->OnTransientWindowAdded(window_id, transient_window_id);
@@ -392,7 +389,7 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   // mojom::WindowManager:
   void WmSetBounds(uint32_t change_id,
                    uint32_t window_id,
-                   mojo::RectPtr bounds) override {
+                   const gfx::Rect& bounds) override {
     window_manager_client_->WmResponse(change_id, false);
   }
   void WmSetProperty(uint32_t change_id,
@@ -1208,8 +1205,7 @@ TEST_F(WindowTreeClientTest, SetWindowBounds) {
 
   wt_client2_->set_track_root_bounds_changes(true);
 
-  wt1()->SetWindowBounds(10, window_1_1,
-                         mojo::Rect::From(gfx::Rect(0, 0, 100, 100)));
+  wt1()->SetWindowBounds(10, window_1_1, gfx::Rect(0, 0, 100, 100));
   ASSERT_TRUE(wt_client1()->WaitForChangeCompleted(10));
 
   wt_client2_->WaitForChangeCount(1);
@@ -1219,8 +1215,7 @@ TEST_F(WindowTreeClientTest, SetWindowBounds) {
 
   // Should not be possible to change the bounds of a window created by another
   // client.
-  wt2()->SetWindowBounds(11, window_1_1,
-                         mojo::Rect::From(gfx::Rect(0, 0, 0, 0)));
+  wt2()->SetWindowBounds(11, window_1_1, gfx::Rect(0, 0, 0, 0));
   ASSERT_FALSE(wt_client2()->WaitForChangeCompleted(11));
 }
 
@@ -1957,8 +1952,7 @@ TEST_F(WindowTreeClientTest, Ids) {
   changes1()->clear();
 
   // Change the bounds of window_2_101 and make sure server gets it.
-  wt2()->SetWindowBounds(11, window_2_101,
-                         mojo::Rect::From(gfx::Rect(1, 2, 3, 4)));
+  wt2()->SetWindowBounds(11, window_2_101, gfx::Rect(1, 2, 3, 4));
   ASSERT_TRUE(wt_client2()->WaitForChangeCompleted(11));
   wt_client1()->WaitForChangeCount(1);
   EXPECT_EQ("BoundsChanged window=" + IdToString(window_2_101_in_ws1) +

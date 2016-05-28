@@ -22,7 +22,6 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/gfx/favicon_size.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "url/url_constants.h"
@@ -222,7 +221,7 @@ void ImageDownloaderImpl::ReplyDownloadResult(
     const DownloadImageCallback& callback) {
   callback.Run(http_status_code,
                mojo::Array<skia::mojom::BitmapPtr>::From(result_images),
-               mojo::Array<mojo::SizePtr>::From(result_original_image_sizes));
+               result_original_image_sizes);
 }
 
 }  // namespace content

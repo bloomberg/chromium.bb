@@ -16,7 +16,6 @@
 #include "components/mus/ws/window_finder.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/mojo/input_events_type_converters.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 

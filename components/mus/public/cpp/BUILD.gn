@@ -67,7 +67,6 @@ source_set("cpp") {
     "//ui/events/mojo",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
-    "//ui/gfx/geometry/mojo:interfaces",
   ]
 
   data_deps = [

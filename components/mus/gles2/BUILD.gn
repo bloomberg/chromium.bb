@@ -50,7 +50,6 @@ source_set("gles2") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
-    "//ui/gfx/geometry/mojo:interfaces",
     "//ui/gl",
     "//ui/gl/init",
   ]

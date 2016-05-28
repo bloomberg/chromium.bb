@@ -49,6 +49,9 @@ class Array {
   explicit Array(size_t size) : vec_(size), is_null_(false) {}
   ~Array() {}
 
+  // Copies the contents of |other| into this array.
+  Array(const std::vector<T>& other) : vec_(other), is_null_(false) {}
+
   // Moves the contents of |other| into this array.
   Array(std::vector<T>&& other) : vec_(std::move(other)), is_null_(false) {}
   Array(Array&& other) : is_null_(true) { Take(&other); }

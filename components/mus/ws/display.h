@@ -135,7 +135,7 @@ class Display : public PlatformDisplayDelegate,
   void UpdateNativeCursor(int32_t cursor_id);
 
   // mojom::WindowTreeHost:
-  void SetSize(mojo::SizePtr size) override;
+  void SetSize(const gfx::Size& size) override;
   void SetTitle(const mojo::String& title) override;
 
  private:

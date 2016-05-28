@@ -22,7 +22,7 @@ void GpuServiceMus::EstablishGpuChannel(
 
 void GpuServiceMus::CreateGpuMemoryBuffer(
     mojom::GpuMemoryBufferIdPtr id,
-    mojo::SizePtr size,
+    const gfx::Size& size,
     mojom::BufferFormat format,
     mojom::BufferUsage usage,
     uint64_t surface_id,
@@ -33,7 +33,7 @@ void GpuServiceMus::CreateGpuMemoryBuffer(
 void GpuServiceMus::CreateGpuMemoryBufferFromHandle(
     mojom::GpuMemoryBufferHandlePtr buffer_handle,
     mojom::GpuMemoryBufferIdPtr id,
-    mojo::SizePtr size,
+    const gfx::Size& size,
     mojom::BufferFormat format,
     const mojom::GpuService::CreateGpuMemoryBufferFromHandleCallback&
         callback) {

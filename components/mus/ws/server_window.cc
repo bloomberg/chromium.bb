@@ -13,7 +13,6 @@
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/server_window_observer.h"
 #include "components/mus/ws/server_window_surface_manager.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mus {
 

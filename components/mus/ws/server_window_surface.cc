@@ -12,7 +12,6 @@
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_delegate.h"
 #include "components/mus/ws/server_window_surface_manager.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mus {
 namespace ws {
@@ -52,7 +51,7 @@ ServerWindowSurface::~ServerWindowSurface() {
 void ServerWindowSurface::SubmitCompositorFrame(
     mojom::CompositorFramePtr frame,
     const SubmitCompositorFrameCallback& callback) {
-  gfx::Size frame_size = frame->passes[0]->output_rect.To<gfx::Rect>().size();
+  gfx::Size frame_size = frame->passes[0]->output_rect.size();
   if (!surface_id_.is_null()) {
     // If the size of the CompostiorFrame has changed then destroy the existing
     // Surface and create a new one of the appropriate size.
@@ -136,18 +135,16 @@ bool ServerWindowSurface::ConvertSurfaceDrawQuad(
   cc::SurfaceDrawQuad* surface_quad =
       render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
   if (default_surface) {
-    surface_quad->SetAll(sqs, input->rect.To<gfx::Rect>(),
-                         input->opaque_rect.To<gfx::Rect>(),
-                         input->visible_rect.To<gfx::Rect>(),
-                         input->needs_blending, default_surface->id());
+    surface_quad->SetAll(sqs, input->rect, input->opaque_rect,
+                         input->visible_rect, input->needs_blending,
+                         default_surface->id());
   }
   if (underlay_surface) {
     cc::SurfaceDrawQuad* underlay_quad =
         render_pass->CreateAndAppendDrawQuad<cc::SurfaceDrawQuad>();
-    underlay_quad->SetAll(sqs, input->rect.To<gfx::Rect>(),
-                          input->opaque_rect.To<gfx::Rect>(),
-                          input->visible_rect.To<gfx::Rect>(),
-                          input->needs_blending, underlay_surface->id());
+    underlay_quad->SetAll(sqs, input->rect, input->opaque_rect,
+                          input->visible_rect, input->needs_blending,
+                          underlay_surface->id());
   }
   return true;
 }

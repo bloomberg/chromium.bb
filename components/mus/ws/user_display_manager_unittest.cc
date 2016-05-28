@@ -81,11 +81,7 @@ class TestDisplayManagerObserver : public mojom::DisplayManagerObserver {
 };
 
 mojom::FrameDecorationValuesPtr CreateDefaultFrameDecorationValues() {
-  mojom::FrameDecorationValuesPtr frame_decoration_values =
-      mojom::FrameDecorationValues::New();
-  frame_decoration_values->normal_client_area_insets = mojo::Insets::New();
-  frame_decoration_values->maximized_client_area_insets = mojo::Insets::New();
-  return frame_decoration_values;
+  return mojom::FrameDecorationValues::New();
 }
 
 }  // namespace

@@ -350,7 +350,7 @@ class WindowTree : public mojom::WindowTree,
                         uint32_t observer_id) override;
   void SetWindowBounds(uint32_t change_id,
                        Id window_id,
-                       mojo::RectPtr bounds) override;
+                       const gfx::Rect& bounds) override;
   void SetWindowVisibility(uint32_t change_id,
                            Id window_id,
                            bool visible) override;
@@ -382,9 +382,9 @@ class WindowTree : public mojom::WindowTree,
                              mojom::EventResult result) override;
   void SetClientArea(
       Id transport_window_id,
-      mojo::InsetsPtr insets,
-      mojo::Array<mojo::RectPtr> transport_additional_client_areas) override;
-  void SetHitTestMask(Id transport_window_id, mojo::RectPtr mask) override;
+      const gfx::Insets& insets,
+      mojo::Array<gfx::Rect> transport_additional_client_areas) override;
+  void SetHitTestMask(Id transport_window_id, const gfx::Rect& mask) override;
   void GetWindowManagerClient(
       mojo::AssociatedInterfaceRequest<mojom::WindowManagerClient> internal)
       override;
@@ -403,7 +403,7 @@ class WindowTree : public mojom::WindowTree,
       Id window_id,
       int32_t x_offset,
       int32_t y_offset,
-      mojo::InsetsPtr hit_area) override;
+      const gfx::Insets& hit_area) override;
   void WmResponse(uint32_t change_id, bool response) override;
   void WmRequestClose(Id transport_window_id) override;
   void WmSetFrameDecorationValues(

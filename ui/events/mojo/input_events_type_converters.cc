@@ -18,7 +18,6 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/mojo/mojo_extended_key_event_data.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mojo {
 namespace {

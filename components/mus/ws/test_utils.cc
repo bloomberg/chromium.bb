@@ -13,7 +13,6 @@
 #include "components/mus/ws/window_manager_factory_service.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mus {
 namespace ws {
@@ -206,16 +205,16 @@ void TestWindowTreeClient::OnTopLevelCreated(uint32_t change_id,
 }
 
 void TestWindowTreeClient::OnWindowBoundsChanged(uint32_t window,
-                                                 mojo::RectPtr old_bounds,
-                                                 mojo::RectPtr new_bounds) {
+                                                 const gfx::Rect& old_bounds,
+                                                 const gfx::Rect& new_bounds) {
   tracker_.OnWindowBoundsChanged(window, std::move(old_bounds),
                                  std::move(new_bounds));
 }
 
 void TestWindowTreeClient::OnClientAreaChanged(
     uint32_t window_id,
-    mojo::InsetsPtr new_client_area,
-    mojo::Array<mojo::RectPtr> new_additional_client_areas) {}
+    const gfx::Insets& new_client_area,
+    mojo::Array<gfx::Rect> new_additional_client_areas) {}
 
 void TestWindowTreeClient::OnTransientWindowAdded(
     uint32_t window_id,

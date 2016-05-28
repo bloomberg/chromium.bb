@@ -26,7 +26,6 @@
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "media/mojo/interfaces/demuxer_stream.mojom.h"
 #include "mojo/public/cpp/system/buffer.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mojo {
 
@@ -551,9 +550,9 @@ TypeConverter<media::mojom::VideoDecoderConfigPtr, media::VideoDecoderConfig>::
   config->format = static_cast<media::mojom::VideoFormat>(input.format());
   config->color_space =
       static_cast<media::mojom::ColorSpace>(input.color_space());
-  config->coded_size = Size::From(input.coded_size());
-  config->visible_rect = Rect::From(input.visible_rect());
-  config->natural_size = Size::From(input.natural_size());
+  config->coded_size = input.coded_size();
+  config->visible_rect = input.visible_rect();
+  config->natural_size = input.natural_size();
   if (!input.extra_data().empty()) {
     config->extra_data = mojo::Array<uint8_t>::From(input.extra_data());
   }
@@ -567,14 +566,13 @@ media::VideoDecoderConfig
 TypeConverter<media::VideoDecoderConfig, media::mojom::VideoDecoderConfigPtr>::
     Convert(const media::mojom::VideoDecoderConfigPtr& input) {
   media::VideoDecoderConfig config;
-  config.Initialize(
-      static_cast<media::VideoCodec>(input->codec),
-      static_cast<media::VideoCodecProfile>(input->profile),
-      static_cast<media::VideoPixelFormat>(input->format),
-      static_cast<media::ColorSpace>(input->color_space),
-      input->coded_size.To<gfx::Size>(), input->visible_rect.To<gfx::Rect>(),
-      input->natural_size.To<gfx::Size>(), input->extra_data.storage(),
-      input->encryption_scheme.To<media::EncryptionScheme>());
+  config.Initialize(static_cast<media::VideoCodec>(input->codec),
+                    static_cast<media::VideoCodecProfile>(input->profile),
+                    static_cast<media::VideoPixelFormat>(input->format),
+                    static_cast<media::ColorSpace>(input->color_space),
+                    input->coded_size, input->visible_rect, input->natural_size,
+                    input->extra_data.storage(),
+                    input->encryption_scheme.To<media::EncryptionScheme>());
   return config;
 }
 
@@ -695,9 +693,9 @@ TypeConverter<media::mojom::VideoFramePtr, scoped_refptr<media::VideoFrame>>::
   CHECK(duplicated_handle.is_valid());
 
   frame->format = static_cast<media::mojom::VideoFormat>(input->format());
-  frame->coded_size = Size::From(input->coded_size());
-  frame->visible_rect = Rect::From(input->visible_rect());
-  frame->natural_size = Size::From(input->natural_size());
+  frame->coded_size = input->coded_size();
+  frame->visible_rect = input->visible_rect();
+  frame->natural_size = input->natural_size();
   frame->timestamp_usec = input->timestamp().InMicroseconds();
   frame->frame_data = std::move(duplicated_handle);
   frame->frame_data_size = input_frame->MappedSize();
@@ -718,9 +716,8 @@ TypeConverter<scoped_refptr<media::VideoFrame>, media::mojom::VideoFramePtr>::
     return media::VideoFrame::CreateEOSFrame();
 
   return media::MojoSharedBufferVideoFrame::Create(
-      static_cast<media::VideoPixelFormat>(input->format),
-      input->coded_size.To<gfx::Size>(), input->visible_rect.To<gfx::Rect>(),
-      input->natural_size.To<gfx::Size>(), std::move(input->frame_data),
+      static_cast<media::VideoPixelFormat>(input->format), input->coded_size,
+      input->visible_rect, input->natural_size, std::move(input->frame_data),
       base::saturated_cast<size_t>(input->frame_data_size),
       base::saturated_cast<size_t>(input->y_offset),
       base::saturated_cast<size_t>(input->u_offset),

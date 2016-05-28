@@ -5,7 +5,6 @@
 #include "ui/display/mojo/display_type_converters.h"
 
 #include "ui/display/display.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mojo {
 
@@ -17,8 +16,8 @@ TypeConverter<display::Display, mus::mojom::DisplayPtr>::Convert(
     return display::Display();
 
   display::Display result(input->id);
-  gfx::Rect pixel_bounds = input->bounds.To<gfx::Rect>();
-  gfx::Rect pixel_work_area = input->work_area.To<gfx::Rect>();
+  gfx::Rect pixel_bounds = input->bounds;
+  gfx::Rect pixel_work_area = input->work_area;
   float pixel_ratio = input->device_pixel_ratio;
 
   gfx::Rect dip_bounds =

@@ -234,7 +234,7 @@ class TestWindowManager : public mojom::WindowManager {
   // WindowManager:
   void WmSetBounds(uint32_t change_id,
                    uint32_t window_id,
-                   mojo::RectPtr bounds) override {}
+                   const gfx::Rect& bounds) override {}
   void WmSetProperty(uint32_t change_id,
                      uint32_t window_id,
                      const mojo::String& name,
@@ -288,12 +288,12 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
                          int64_t display_id,
                          bool drawn) override;
   void OnWindowBoundsChanged(uint32_t window,
-                             mojo::RectPtr old_bounds,
-                             mojo::RectPtr new_bounds) override;
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
   void OnClientAreaChanged(
       uint32_t window_id,
-      mojo::InsetsPtr new_client_area,
-      mojo::Array<mojo::RectPtr> new_additional_client_areas) override;
+      const gfx::Insets& new_client_area,
+      mojo::Array<gfx::Rect> new_additional_client_areas) override;
   void OnTransientWindowAdded(uint32_t window_id,
                               uint32_t transient_window_id) override;
   void OnTransientWindowRemoved(uint32_t window_id,

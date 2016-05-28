@@ -44,7 +44,7 @@
     '../ui/gfx/gfx.gyp:gfx',
     '../ui/gfx/gfx.gyp:gfx_geometry',
     '../ui/gfx/gfx.gyp:gfx_range',
-    '../ui/gfx/gfx.gyp:mojo_geometry_lib',
+    '../ui/gfx/gfx.gyp:mojo_geometry_bindings',
     '../ui/native_theme/native_theme.gyp:native_theme',
     '../ui/surface/surface.gyp:surface',
     '../url/ipc/url_ipc.gyp:url_ipc',

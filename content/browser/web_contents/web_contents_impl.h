@@ -866,7 +866,7 @@ class CONTENT_EXPORT WebContentsImpl
                           const GURL& image_url,
                           int32_t http_status_code,
                           mojo::Array<skia::mojom::BitmapPtr> images,
-                          mojo::Array<mojo::SizePtr> original_image_sizes);
+                          mojo::Array<gfx::Size> original_image_sizes);
 
   // Callback function when showing JavaScript dialogs.  Takes in a routing ID
   // pair to identify the RenderFrameHost that opened the dialog, because it's

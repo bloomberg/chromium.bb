@@ -20,6 +20,11 @@ struct Size {
   int32 height;
 };
 
+struct SizeF {
+  int32 width;
+  int32 height;
+};
+
 struct Rect {
   int32 x;
   int32 y;
@@ -44,4 +49,11 @@ struct Insets {
   int32 left;
   int32 bottom;
   int32 right;
+};
+
+struct InsetsF {
+  float top;
+  float left;
+  float bottom;
+  float right;
 };

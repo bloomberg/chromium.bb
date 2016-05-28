@@ -25,7 +25,6 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/mojo/input_events_type_converters.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace mus {
@@ -188,8 +187,7 @@ TEST_F(WindowTreeClientImplTest, SetBoundsFailedWithPendingChange) {
   // Simulate the server responding with a bounds change.
   const gfx::Rect server_changed_bounds(gfx::Rect(0, 0, 101, 102));
   setup.window_tree_client()->OnWindowBoundsChanged(
-      server_id(root), mojo::Rect::From(original_bounds),
-      mojo::Rect::From(server_changed_bounds));
+      server_id(root), original_bounds, server_changed_bounds);
 
   // This shouldn't trigger the bounds changing yet.
   EXPECT_EQ(new_bounds, root->bounds());
@@ -201,8 +199,7 @@ TEST_F(WindowTreeClientImplTest, SetBoundsFailedWithPendingChange) {
 
   // Simulate server changing back to original bounds. Should take immediately.
   setup.window_tree_client()->OnWindowBoundsChanged(
-      server_id(root), mojo::Rect::From(server_changed_bounds),
-      mojo::Rect::From(original_bounds));
+      server_id(root), server_changed_bounds, original_bounds);
   EXPECT_EQ(original_bounds, root->bounds());
 }
 
@@ -767,7 +764,7 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindowGetsPropertiesFromData) {
 
   mojom::WindowDataPtr data = mojom::WindowData::New();
   data->window_id = server_id(root2);
-  data->bounds = mojo::Rect::From(gfx::Rect(1, 2, 3, 4));
+  data->bounds.SetRect(1, 2, 3, 4);
   data->visible = true;
   const int64_t display_id = 1;
   setup.window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
@@ -824,7 +821,7 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindowGetsAllChangesInFlight) {
   // Ack the new window top level window. Vis and bounds shouldn't change.
   mojom::WindowDataPtr data = mojom::WindowData::New();
   data->window_id = server_id(root2);
-  data->bounds = mojo::Rect::From(gfx::Rect(1, 2, 3, 4));
+  data->bounds.SetRect(1, 2, 3, 4);
   data->visible = true;
   data->properties["xx"] = mojo::Array<uint8_t>::From(std::string("server_xx"));
   data->properties["yy"] = mojo::Array<uint8_t>::From(std::string("server_yy"));

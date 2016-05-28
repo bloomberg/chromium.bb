@@ -20,6 +20,7 @@
           'common/storage_partition_service.mojom',
         ],
         'mojom_typemaps': [
+          '../ui/gfx/geometry/mojo/geometry.typemap',
           '../url/mojo/gurl.typemap',
           '../url/mojo/origin.typemap',
         ],

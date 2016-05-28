@@ -28,7 +28,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/layer.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/widget/widget.h"

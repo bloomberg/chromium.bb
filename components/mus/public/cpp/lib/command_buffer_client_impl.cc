@@ -212,9 +212,7 @@ int32_t CommandBufferClientImpl::CreateImage(ClientBuffer buffer,
                                              unsigned internalformat) {
   int32_t new_id = ++next_image_id_;
 
-  mojo::SizePtr size = mojo::Size::New();
-  size->width = static_cast<int32_t>(width);
-  size->height = static_cast<int32_t>(height);
+  gfx::Size size(static_cast<int32_t>(width), static_cast<int32_t>(height));
 
   mus::MojoGpuMemoryBufferImpl* gpu_memory_buffer =
       mus::MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);

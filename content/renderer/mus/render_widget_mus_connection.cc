@@ -20,7 +20,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "services/shell/public/cpp/connector.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace content {
 

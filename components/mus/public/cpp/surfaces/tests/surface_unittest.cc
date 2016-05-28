@@ -20,7 +20,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkXfermode.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gfx/mojo/transform_type_converters.h"
 
 using mus::mojom::Color;
@@ -102,9 +101,9 @@ TEST_F(SurfaceLibQuadTest, ColorQuad) {
   QuadPtr mus_quad = Quad::From<cc::DrawQuad>(*color_quad);
   ASSERT_FALSE(mus_quad.is_null());
   EXPECT_EQ(mus::mojom::Material::SOLID_COLOR, mus_quad->material);
-  EXPECT_TRUE(Rect::From(rect).Equals(mus_quad->rect));
-  EXPECT_TRUE(Rect::From(opaque_rect).Equals(mus_quad->opaque_rect));
-  EXPECT_TRUE(Rect::From(visible_rect).Equals(mus_quad->visible_rect));
+  EXPECT_EQ(rect, mus_quad->rect);
+  EXPECT_EQ(opaque_rect, mus_quad->opaque_rect);
+  EXPECT_EQ(visible_rect, mus_quad->visible_rect);
   EXPECT_EQ(needs_blending, mus_quad->needs_blending);
   ASSERT_TRUE(mus_quad->solid_color_quad_state);
   SolidColorQuadStatePtr& mus_color_state = mus_quad->solid_color_quad_state;
@@ -152,9 +151,8 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
   TextureQuadStatePtr& mus_texture_state = mus_quad->texture_quad_state;
   EXPECT_EQ(resource_id, mus_texture_state->resource_id);
   EXPECT_EQ(premultiplied_alpha, mus_texture_state->premultiplied_alpha);
-  EXPECT_TRUE(PointF::From(uv_top_left).Equals(mus_texture_state->uv_top_left));
-  EXPECT_TRUE(
-      PointF::From(uv_bottom_right).Equals(mus_texture_state->uv_bottom_right));
+  EXPECT_EQ(uv_top_left, mus_texture_state->uv_top_left);
+  EXPECT_EQ(uv_bottom_right, mus_texture_state->uv_bottom_right);
   EXPECT_TRUE(Color::From(background_color)
                   .Equals(mus_texture_state->background_color));
   for (size_t i = 0; i < 4; ++i) {
@@ -221,10 +219,9 @@ TEST(SurfaceLibTest, SharedQuadState) {
   ASSERT_FALSE(mus_sqs.is_null());
   EXPECT_TRUE(Transform::From(quad_to_target_transform)
                   .Equals(mus_sqs->quad_to_target_transform));
-  EXPECT_TRUE(Size::From(quad_layer_bounds).Equals(mus_sqs->quad_layer_bounds));
-  EXPECT_TRUE(Rect::From(visible_quad_layer_rect)
-                  .Equals(mus_sqs->visible_quad_layer_rect));
-  EXPECT_TRUE(Rect::From(clip_rect).Equals(mus_sqs->clip_rect));
+  EXPECT_EQ(quad_layer_bounds, mus_sqs->quad_layer_bounds);
+  EXPECT_EQ(visible_quad_layer_rect, mus_sqs->visible_quad_layer_rect);
+  EXPECT_EQ(clip_rect, mus_sqs->clip_rect);
   EXPECT_EQ(is_clipped, mus_sqs->is_clipped);
   EXPECT_EQ(opacity, mus_sqs->opacity);
   EXPECT_EQ(sorting_context_id, mus_sqs->sorting_context_id);
@@ -301,8 +298,8 @@ TEST(SurfaceLibTest, RenderPass) {
   PassPtr mus_pass = Pass::From(*pass);
   ASSERT_FALSE(mus_pass.is_null());
   EXPECT_EQ(6u, mus_pass->id.index);
-  EXPECT_TRUE(Rect::From(output_rect).Equals(mus_pass->output_rect));
-  EXPECT_TRUE(Rect::From(damage_rect).Equals(mus_pass->damage_rect));
+  EXPECT_EQ(output_rect, mus_pass->output_rect);
+  EXPECT_EQ(damage_rect, mus_pass->damage_rect);
   EXPECT_TRUE(Transform::From(transform_to_root_target)
                   .Equals(mus_pass->transform_to_root_target));
   EXPECT_EQ(has_transparent_background, mus_pass->has_transparent_background);
@@ -391,7 +388,7 @@ TEST(SurfaceLibTest, TransferableResource) {
   EXPECT_EQ(id, mus_resource->id);
   EXPECT_EQ(static_cast<ResourceFormat>(format), mus_resource->format);
   EXPECT_EQ(filter, mus_resource->filter);
-  EXPECT_TRUE(Size::From(size).Equals(mus_resource->size));
+  EXPECT_EQ(size, mus_resource->size);
   EXPECT_EQ(is_software, mus_resource->is_software);
 
   cc::TransferableResource round_trip_resource =
@@ -451,9 +448,9 @@ TEST_F(SurfaceLibQuadTest, DebugBorderQuad) {
   QuadPtr mus_quad = Quad::From<cc::DrawQuad>(*debug_border_quad);
   ASSERT_FALSE(mus_quad.is_null());
   EXPECT_EQ(mus::mojom::Material::DEBUG_BORDER, mus_quad->material);
-  EXPECT_TRUE(Rect::From(rect).Equals(mus_quad->rect));
-  EXPECT_TRUE(Rect::From(opaque_rect).Equals(mus_quad->opaque_rect));
-  EXPECT_TRUE(Rect::From(visible_rect).Equals(mus_quad->visible_rect));
+  EXPECT_EQ(rect, mus_quad->rect);
+  EXPECT_EQ(opaque_rect, mus_quad->opaque_rect);
+  EXPECT_EQ(visible_rect, mus_quad->visible_rect);
   EXPECT_EQ(needs_blending, mus_quad->needs_blending);
   ASSERT_TRUE(mus_quad->debug_border_quad_state);
   DebugBorderQuadStatePtr& mus_debug_border_state =

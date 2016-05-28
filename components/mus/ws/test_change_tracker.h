@@ -75,8 +75,8 @@ struct Change {
   Id window_id;
   Id window_id2;
   Id window_id3;
-  mojo::Rect bounds;
-  mojo::Rect bounds2;
+  gfx::Rect bounds;
+  gfx::Rect bounds2;
   int32_t event_action;
   uint32_t event_observer_id;
   mojo::String embed_url;
@@ -142,8 +142,8 @@ class TestChangeTracker {
   void OnTransientWindowAdded(Id window_id, Id transient_window_id);
   void OnTransientWindowRemoved(Id window_id, Id transient_window_id);
   void OnWindowBoundsChanged(Id window_id,
-                             mojo::RectPtr old_bounds,
-                             mojo::RectPtr new_bounds);
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds);
   void OnWindowHierarchyChanged(Id window_id,
                                 Id old_parent_id,
                                 Id new_parent_id,

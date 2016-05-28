@@ -28,6 +28,6 @@ mojom("interfaces") {
   }
 
   deps = [
-    "//ui/gfx/geometry/mojo:interfaces",
+    "//ui/gfx/geometry/mojo",
   ]
 }

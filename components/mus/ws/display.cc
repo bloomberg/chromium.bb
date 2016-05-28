@@ -24,7 +24,6 @@
 #include "mojo/common/common_type_converters.h"
 #include "services/shell/public/interfaces/connector.mojom.h"
 #include "ui/base/cursor/cursor.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mus {
 namespace ws {
@@ -83,14 +82,11 @@ mojom::DisplayPtr Display::ToMojomDisplay() const {
   mojom::DisplayPtr display_ptr = mojom::Display::New();
   display_ptr = mojom::Display::New();
   display_ptr->id = id_;
-  display_ptr->bounds = mojo::Rect::New();
   // TODO(sky): Display should know it's origin.
-  display_ptr->bounds->x = 0;
-  display_ptr->bounds->y = 0;
-  display_ptr->bounds->width = root_->bounds().size().width();
-  display_ptr->bounds->height = root_->bounds().size().height();
+  display_ptr->bounds.SetRect(0, 0, root_->bounds().size().width(),
+                              root_->bounds().size().height());
   // TODO(sky): window manager needs an API to set the work area.
-  display_ptr->work_area = display_ptr->bounds.Clone();
+  display_ptr->work_area = display_ptr->bounds;
   display_ptr->device_pixel_ratio = platform_display_->GetDeviceScaleFactor();
   display_ptr->rotation = platform_display_->GetRotation();
   // TODO(sky): make this real.
@@ -98,10 +94,6 @@ mojom::DisplayPtr Display::ToMojomDisplay() const {
   // TODO(sky): make this real.
   display_ptr->touch_support = mojom::TouchSupport::UNKNOWN;
   display_ptr->frame_decoration_values = mojom::FrameDecorationValues::New();
-  display_ptr->frame_decoration_values->normal_client_area_insets =
-      mojo::Insets::New();
-  display_ptr->frame_decoration_values->maximized_client_area_insets =
-      mojo::Insets::New();
   return display_ptr;
 }
 
@@ -217,8 +209,8 @@ void Display::UpdateNativeCursor(int32_t cursor_id) {
   }
 }
 
-void Display::SetSize(mojo::SizePtr size) {
-  platform_display_->SetViewportSize(size.To<gfx::Size>());
+void Display::SetSize(const gfx::Size& size) {
+  platform_display_->SetViewportSize(size);
 }
 
 void Display::SetTitle(const mojo::String& title) {

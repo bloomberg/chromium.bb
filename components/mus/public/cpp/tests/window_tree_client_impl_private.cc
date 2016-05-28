@@ -7,7 +7,6 @@
 #include "components/mus/public/cpp/lib/window_tree_client_impl.h"
 #include "components/mus/public/cpp/window.h"
 #include "ui/events/mojo/input_events_type_converters.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mus {
 
@@ -28,7 +27,6 @@ void WindowTreeClientImplPrivate::OnEmbed(mojom::WindowTree* window_tree) {
   mojom::WindowDataPtr root_data(mojom::WindowData::New());
   root_data->parent_id = 0;
   root_data->window_id = 1;
-  root_data->bounds = mojo::Rect::From(gfx::Rect());
   root_data->properties.SetToEmpty();
   root_data->visible = true;
   const int64_t display_id = 1;

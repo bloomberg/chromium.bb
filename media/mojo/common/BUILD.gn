@@ -23,6 +23,5 @@ source_set("common") {
     "//mojo/public/c/system:for_component",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
-    "//ui/gfx/geometry/mojo:interfaces",
   ]
 }

@@ -22,6 +22,6 @@ component("mojo") {
     "//ui/events:dom_keycode_converter",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
-    "//ui/gfx/geometry/mojo:interfaces",
+    "//ui/gfx/geometry/mojo",
   ]
 }

@@ -10,7 +10,6 @@
 #include "ui/display/display_finder.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/mojo/display_type_converters.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/views/mus/screen_mus_delegate.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 
@@ -27,9 +26,8 @@ struct TypeConverter<views::WindowManagerFrameValues,
   static views::WindowManagerFrameValues Convert(
       const mus::mojom::FrameDecorationValuesPtr& input) {
     views::WindowManagerFrameValues result;
-    result.normal_insets = input->normal_client_area_insets.To<gfx::Insets>();
-    result.maximized_insets =
-        input->maximized_client_area_insets.To<gfx::Insets>();
+    result.normal_insets = input->normal_client_area_insets;
+    result.maximized_insets = input->maximized_client_area_insets;
     result.max_title_bar_button_width = input->max_title_bar_button_width;
     return result;
   }

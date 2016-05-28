@@ -30,7 +30,7 @@ class GpuServiceMus : public mojom::GpuService,
 
   void CreateGpuMemoryBuffer(
       mojom::GpuMemoryBufferIdPtr id,
-      mojo::SizePtr size,
+      const gfx::Size& size,
       mojom::BufferFormat format,
       mojom::BufferUsage usage,
       uint64_t surface_id,
@@ -40,7 +40,7 @@ class GpuServiceMus : public mojom::GpuService,
   void CreateGpuMemoryBufferFromHandle(
       mojom::GpuMemoryBufferHandlePtr buffer_handle,
       mojom::GpuMemoryBufferIdPtr id,
-      mojo::SizePtr size,
+      const gfx::Size& size,
       mojom::BufferFormat format,
       const mojom::GpuService::CreateGpuMemoryBufferFromHandleCallback&
           callback) override;

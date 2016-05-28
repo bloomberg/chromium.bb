@@ -115,14 +115,14 @@ void CommandBufferImpl::DestroyTransferBuffer(int32_t id) {
 void CommandBufferImpl::CreateImage(int32_t id,
                                     mojo::ScopedHandle memory_handle,
                                     int32_t type,
-                                    mojo::SizePtr size,
+                                    const gfx::Size& size,
                                     int32_t format,
                                     int32_t internal_format) {
   gpu_state_->command_buffer_task_runner()->PostTask(
       driver_.get(),
       base::Bind(&CommandBufferImpl::CreateImageOnGpuThread,
                  base::Unretained(this), id, base::Passed(&memory_handle), type,
-                 base::Passed(&size), format, internal_format));
+                 size, format, internal_format));
 }
 
 void CommandBufferImpl::DestroyImage(int32_t id) {
@@ -250,7 +250,7 @@ bool CommandBufferImpl::DestroyTransferBufferOnGpuThread(int32_t id) {
 bool CommandBufferImpl::CreateImageOnGpuThread(int32_t id,
                                                mojo::ScopedHandle memory_handle,
                                                int32_t type,
-                                               mojo::SizePtr size,
+                                               const gfx::Size& size,
                                                int32_t format,
                                                int32_t internal_format) {
   DCHECK(driver_->IsScheduled());

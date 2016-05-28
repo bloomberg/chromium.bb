@@ -19,7 +19,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"

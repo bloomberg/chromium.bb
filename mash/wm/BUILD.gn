@@ -196,8 +196,6 @@ source_set("unittests") {
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
-    "//ui/gfx/geometry/mojo:interfaces",
-    "//ui/gfx/geometry/mojo:util",
     "//ui/views/mus",
   ]
 

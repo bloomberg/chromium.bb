@@ -42,12 +42,11 @@ class TestWindowTree : public mojom::WindowTree {
   void DeleteWindow(uint32_t change_id, uint32_t window_id) override;
   void SetWindowBounds(uint32_t change_id,
                        uint32_t window_id,
-                       mojo::RectPtr bounds) override;
-  void SetClientArea(
-      uint32_t window_id,
-      mojo::InsetsPtr insets,
-      mojo::Array<mojo::RectPtr> additional_client_areas) override;
-  void SetHitTestMask(uint32_t window_id, mojo::RectPtr mask) override;
+                       const gfx::Rect& bounds) override;
+  void SetClientArea(uint32_t window_id,
+                     const gfx::Insets& insets,
+                     mojo::Array<gfx::Rect> additional_client_areas) override;
+  void SetHitTestMask(uint32_t window_id, const gfx::Rect& mask) override;
   void SetWindowVisibility(uint32_t change_id,
                            uint32_t window_id,
                            bool visible) override;

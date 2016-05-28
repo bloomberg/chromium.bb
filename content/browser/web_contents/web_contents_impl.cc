@@ -125,7 +125,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_tree_combiner.h"
 #include "ui/base/layout.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gl/gl_switches.h"
 
 #if defined(OS_ANDROID)
@@ -4848,12 +4847,11 @@ void WebContentsImpl::OnDidDownloadImage(
     const GURL& image_url,
     int32_t http_status_code,
     mojo::Array<skia::mojom::BitmapPtr> images,
-    mojo::Array<mojo::SizePtr> original_image_sizes) {
+    mojo::Array<gfx::Size> original_image_sizes) {
   const std::vector<SkBitmap> bitmaps = images.To<std::vector<SkBitmap>>();
-  const std::vector<gfx::Size> sizes =
-      original_image_sizes.To<std::vector<gfx::Size>>();
 
-  callback.Run(id, http_status_code, image_url, bitmaps, sizes);
+  callback.Run(id, http_status_code, image_url, bitmaps,
+               original_image_sizes.PassStorage());
 }
 
 void WebContentsImpl::OnDialogClosed(int render_process_id,

@@ -5,7 +5,6 @@
 #include "components/mus/ws/event_matcher.h"
 
 #include "ui/events/mojo/input_events_type_converters.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mus {
 namespace ws {
@@ -70,7 +69,7 @@ EventMatcher::EventMatcher(const mojom::EventMatcher& matcher)
   }
   if (matcher.pointer_location_matcher) {
     fields_to_match_ |= POINTER_LOCATION;
-    pointer_region_ = matcher.pointer_location_matcher->region.To<gfx::RectF>();
+    pointer_region_ = matcher.pointer_location_matcher->region;
   }
 }
 

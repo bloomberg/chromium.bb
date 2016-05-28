@@ -36,7 +36,6 @@ source_set("surfaces") {
     "//services/tracing/public/cpp",
     "//ui/gfx",
     "//ui/gfx/geometry/mojo",
-    "//ui/gfx/geometry/mojo:interfaces",
     "//ui/gl",
   ]
 

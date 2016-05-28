@@ -22,7 +22,6 @@
 #include "services/tracing/public/cpp/tracing_impl.h"
 #include "ui/aura/mus/mus_util.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gfx/paint_throbber.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -112,11 +111,11 @@ class UI : public views::WidgetDelegateView,
   void ViewCreated(navigation::mojom::ViewPtr view,
                    navigation::mojom::ViewClientRequest request,
                    bool is_popup,
-                   mojo::RectPtr initial_rect,
+                   const gfx::Rect& initial_rect,
                    bool user_gesture) override {
     views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
         new UI(webtest_, std::move(view), std::move(request)), nullptr,
-        initial_rect.To<gfx::Rect>());
+        initial_rect);
     window->Show();
     webtest_->AddWindow(window);
   }

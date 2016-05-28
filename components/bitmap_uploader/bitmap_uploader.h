@@ -59,7 +59,7 @@ class BITMAP_UPLOADER_EXPORT BitmapUploader
  private:
   void Upload();
 
-  uint32_t BindTextureForSize(const mojo::Size size);
+  uint32_t BindTextureForSize(const gfx::Size& size);
 
   uint32_t TextureFormat() const {
     return format_ == BGRA ? GL_BGRA_EXT : GL_RGBA;
@@ -77,7 +77,6 @@ class BITMAP_UPLOADER_EXPORT BitmapUploader
   std::unique_ptr<mus::WindowSurface> surface_;
   std::unique_ptr<mus::GLES2Context> gles2_context_;
 
-  mojo::Size size_;
   uint32_t color_;
   int width_;
   int height_;

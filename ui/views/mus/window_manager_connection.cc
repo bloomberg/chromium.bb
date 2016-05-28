@@ -17,7 +17,6 @@
 #include "services/shell/public/cpp/connection.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/events/devices/device_data_manager.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/pointer_watcher.h"

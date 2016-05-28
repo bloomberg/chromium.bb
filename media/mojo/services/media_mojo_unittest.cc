@@ -48,13 +48,7 @@ class MockRendererClient : public mojom::RendererClient {
   MOCK_METHOD0(OnEnded, void());
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD1(OnVideoOpacityChange, void(bool opaque));
-
-  // TODO(alokp): gmock does not support move-only function arguments.
-  // Convert this into MOCK_METHOD after gmock implements this feature.
-  // https://github.com/google/googletest/issues/395
-  // If we need to use this mock method before the gmock bug gets fixed, we
-  // would need to define a MOCK_METHOD using non movable type which calls this.
-  void OnVideoNaturalSizeChange(mojo::SizePtr size) override {}
+  MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size& size));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRendererClient);

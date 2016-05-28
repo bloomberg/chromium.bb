@@ -113,7 +113,6 @@ source_set("lib") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
-    "//ui/gfx/geometry/mojo:interfaces",
     "//ui/gl",
     "//ui/platform_window",
     "//ui/platform_window:platform_impls",
@@ -162,7 +161,7 @@ source_set("test_support") {
     "//components/mus/public/interfaces",
     "//mojo/common",
     "//mojo/public/cpp/bindings:bindings",
-    "//ui/gfx/geometry/mojo:interfaces",
+    "//ui/gfx/geometry/mojo",
   ]
 }
 
@@ -225,8 +224,6 @@ test("mus_ws_unittests") {
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
-    "//ui/gfx/geometry/mojo:interfaces",
-    "//ui/gfx/geometry/mojo:util",
     "//ui/gfx/mojo",
     "//ui/gl",
   ]

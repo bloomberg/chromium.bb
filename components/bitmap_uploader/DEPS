@@ -3,8 +3,6 @@ include_rules = [
   "+gpu/GLES2",
   "+services/shell/public",
   "+mojo/common",
-  "+mojo/converters/geometry",
-  "+mojo/converters/surfaces",
   "+mojo/public",
   "+ui/gfx/geometry",
 ]

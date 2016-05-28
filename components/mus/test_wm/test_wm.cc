@@ -14,7 +14,6 @@
 #include "services/shell/public/cpp/shell_client.h"
 #include "ui/display/display.h"
 #include "ui/display/mojo/display_type_converters.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace mus {
 namespace test {
@@ -56,10 +55,6 @@ class TestWM : public shell::ShellClient,
     window_manager_client_->AddActivationParent(root_);
     mus::mojom::FrameDecorationValuesPtr frame_decoration_values =
         mus::mojom::FrameDecorationValues::New();
-    frame_decoration_values->normal_client_area_insets =
-        mojo::Insets::From(gfx::Insets());
-    frame_decoration_values->maximized_client_area_insets =
-        mojo::Insets::From(gfx::Insets());
     frame_decoration_values->max_title_bar_button_width = 0;
     window_manager_client_->SetFrameDecorationValues(
         std::move(frame_decoration_values));

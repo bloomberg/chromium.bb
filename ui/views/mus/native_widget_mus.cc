@@ -27,7 +27,6 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gfx/path.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/platform_window/platform_window_delegate.h"

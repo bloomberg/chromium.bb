@@ -45,17 +45,18 @@ void TestWindowTree::DeleteWindow(uint32_t change_id, uint32_t window_id) {}
 
 void TestWindowTree::SetWindowBounds(uint32_t change_id,
                                      uint32_t window_id,
-                                     mojo::RectPtr bounds) {
+                                     const gfx::Rect& bounds) {
   got_change_ = true;
   change_id_ = change_id;
 }
 
 void TestWindowTree::SetClientArea(
     uint32_t window_id,
-    mojo::InsetsPtr insets,
-    mojo::Array<mojo::RectPtr> additional_client_areas) {}
+    const gfx::Insets& insets,
+    mojo::Array<gfx::Rect> additional_client_areas) {}
 
-void TestWindowTree::SetHitTestMask(uint32_t window_id, mojo::RectPtr mask) {}
+void TestWindowTree::SetHitTestMask(uint32_t window_id, const gfx::Rect& mask) {
+}
 
 void TestWindowTree::SetWindowVisibility(uint32_t change_id,
                                          uint32_t window_id,

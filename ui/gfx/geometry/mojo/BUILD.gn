@@ -6,38 +6,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 # This target does NOT depend on skia. One can depend on this target to avoid
 # picking up a dependency on skia.
-component("mojo") {
-  output_name = "mojo_geometry_lib"
-
-  public_deps = [
-    "//ui/gfx/geometry",
-  ]
-  deps = [
-    "//mojo/public/c/system:for_component",
-    "//ui/gfx/geometry/mojo:interfaces",
-  ]
-
-  defines = [ "MOJO_GEOMETRY_IMPLEMENTATION" ]
-
-  sources = [
-    "geometry_type_converters.cc",
-    "geometry_type_converters.h",
-    "mojo_geometry_export.h",
-  ]
-}
-
-mojom("interfaces") {
+mojom("mojo") {
   sources = [
     "geometry.mojom",
-  ]
-}
-
-source_set("util") {
-  sources = [
-    "geometry_util.h",
-  ]
-
-  deps = [
-    ":interfaces",
   ]
 }

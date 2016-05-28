@@ -35,7 +35,7 @@ class KeyboardUIMus : public KeyboardUI,
   void OnKeyboardStateChanged(bool is_enabled,
                               bool is_visible,
                               uint64_t display_id,
-                              mojo::RectPtr bounds) override;
+                              const gfx::Rect& bounds) override;
 
  private:
   bool is_enabled_;

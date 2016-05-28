@@ -26,7 +26,6 @@
 #include "ui/events/event.h"
 #include "ui/events/mojo/input_events_type_converters.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace mus {
@@ -54,8 +53,7 @@ Window* AddWindowToClient(WindowTreeClientImpl* client,
       window_data->properties
           .To<std::map<std::string, std::vector<uint8_t>>>());
   client->AddWindow(window);
-  private_window.LocalSetBounds(gfx::Rect(),
-                                window_data->bounds.To<gfx::Rect>());
+  private_window.LocalSetBounds(gfx::Rect(), window_data->bounds);
   if (parent)
     WindowPrivate(parent).LocalAddChild(window);
   return window;
@@ -262,8 +260,7 @@ void WindowTreeClientImpl::SetBounds(Window* window,
   DCHECK(tree_);
   const uint32_t change_id = ScheduleInFlightChange(
       base::WrapUnique(new InFlightBoundsChange(window, old_bounds)));
-  tree_->SetWindowBounds(change_id, server_id(window),
-                         mojo::Rect::From(bounds));
+  tree_->SetWindowBounds(change_id, server_id(window), bounds);
 }
 
 void WindowTreeClientImpl::SetCapture(Window* window) {
@@ -295,19 +292,17 @@ void WindowTreeClientImpl::SetClientArea(
     const gfx::Insets& client_area,
     const std::vector<gfx::Rect>& additional_client_areas) {
   DCHECK(tree_);
-  tree_->SetClientArea(
-      window_id, mojo::Insets::From(client_area),
-      mojo::Array<mojo::RectPtr>::From(additional_client_areas));
+  tree_->SetClientArea(window_id, client_area, additional_client_areas);
 }
 
 void WindowTreeClientImpl::SetHitTestMask(Id window_id, const gfx::Rect& mask) {
   DCHECK(tree_);
-  tree_->SetHitTestMask(window_id, mojo::Rect::From(mask));
+  tree_->SetHitTestMask(window_id, mask);
 }
 
 void WindowTreeClientImpl::ClearHitTestMask(Id window_id) {
   DCHECK(tree_);
-  tree_->SetHitTestMask(window_id, nullptr);
+  tree_->SetHitTestMask(window_id, {});
 }
 
 void WindowTreeClientImpl::SetFocus(Window* window) {
@@ -742,7 +737,7 @@ void WindowTreeClientImpl::OnTopLevelCreated(uint32_t change_id,
       window_private.LocalSetVisible(true);
   }
 
-  const gfx::Rect bounds(data->bounds.To<gfx::Rect>());
+  const gfx::Rect bounds(data->bounds);
   {
     InFlightBoundsChange bounds_change(window, bounds);
     InFlightChange* current_change =
@@ -773,28 +768,27 @@ void WindowTreeClientImpl::OnTopLevelCreated(uint32_t change_id,
 }
 
 void WindowTreeClientImpl::OnWindowBoundsChanged(Id window_id,
-                                                 mojo::RectPtr old_bounds,
-                                                 mojo::RectPtr new_bounds) {
+                                                 const gfx::Rect& old_bounds,
+                                                 const gfx::Rect& new_bounds) {
   Window* window = GetWindowByServerId(window_id);
   if (!window)
     return;
 
-  InFlightBoundsChange new_change(window, new_bounds.To<gfx::Rect>());
+  InFlightBoundsChange new_change(window, new_bounds);
   if (ApplyServerChangeToExistingInFlightChange(new_change))
     return;
 
-  WindowPrivate(window)
-      .LocalSetBounds(old_bounds.To<gfx::Rect>(), new_bounds.To<gfx::Rect>());
+  WindowPrivate(window).LocalSetBounds(old_bounds, new_bounds);
 }
 
 void WindowTreeClientImpl::OnClientAreaChanged(
     uint32_t window_id,
-    mojo::InsetsPtr new_client_area,
-    mojo::Array<mojo::RectPtr> new_additional_client_areas) {
+    const gfx::Insets& new_client_area,
+    mojo::Array<gfx::Rect> new_additional_client_areas) {
   Window* window = GetWindowByServerId(window_id);
   if (window) {
     WindowPrivate(window).LocalSetClientArea(
-        new_client_area.To<gfx::Insets>(),
+        new_client_area,
         new_additional_client_areas.To<std::vector<gfx::Rect>>());
   }
 }
@@ -1014,17 +1008,17 @@ void WindowTreeClientImpl::RequestClose(uint32_t window_id) {
 
 void WindowTreeClientImpl::WmSetBounds(uint32_t change_id,
                                        Id window_id,
-                                       mojo::RectPtr transit_bounds) {
+                                       const gfx::Rect& transit_bounds) {
   Window* window = GetWindowByServerId(window_id);
   bool result = false;
   if (window) {
     DCHECK(window_manager_delegate_);
-    gfx::Rect bounds = transit_bounds.To<gfx::Rect>();
+    gfx::Rect bounds = transit_bounds;
     result = window_manager_delegate_->OnWmSetBounds(window, &bounds);
     if (result) {
       // If the resulting bounds differ return false. Returning false ensures
       // the client applies the bounds we set below.
-      result = bounds == transit_bounds.To<gfx::Rect>();
+      result = bounds == transit_bounds;
       window->SetBounds(bounds);
     }
   }
@@ -1137,8 +1131,7 @@ void WindowTreeClientImpl::SetUnderlaySurfaceOffsetAndExtendedHitArea(
     const gfx::Insets& hit_area) {
   if (window_manager_internal_client_) {
     window_manager_internal_client_->SetUnderlaySurfaceOffsetAndExtendedHitArea(
-        server_id(window), offset.x(), offset.y(),
-        mojo::Insets::From(hit_area));
+        server_id(window), offset.x(), offset.y(), hit_area);
   }
 }
 

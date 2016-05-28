@@ -15,7 +15,6 @@
 #include "media/base/video_renderer_sink.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
 #include "media/renderers/video_overlay_factory.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 
 namespace media {
 
@@ -185,14 +184,13 @@ void MojoRendererImpl::OnError() {
   client_->OnError(PIPELINE_ERROR_DECODE);
 }
 
-void MojoRendererImpl::OnVideoNaturalSizeChange(mojo::SizePtr size) {
-  gfx::Size new_size = size.To<gfx::Size>();
-  DVLOG(2) << __FUNCTION__ << ": " << new_size.ToString();
+void MojoRendererImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
+  DVLOG(2) << __FUNCTION__ << ": " << size.ToString();
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   video_renderer_sink_->PaintSingleFrame(
-      video_overlay_factory_->CreateFrame(new_size));
-  client_->OnVideoNaturalSizeChange(new_size);
+      video_overlay_factory_->CreateFrame(size));
+  client_->OnVideoNaturalSizeChange(size);
 }
 
 void MojoRendererImpl::OnVideoOpacityChange(bool opaque) {

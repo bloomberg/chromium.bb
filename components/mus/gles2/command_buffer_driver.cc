@@ -27,7 +27,6 @@
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/buffer_format_util.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
@@ -218,7 +217,7 @@ void CommandBufferDriver::DestroyTransferBuffer(int32_t id) {
 void CommandBufferDriver::CreateImage(int32_t id,
                                       mojo::ScopedHandle memory_handle,
                                       int32_t type,
-                                      mojo::SizePtr size,
+                                      const gfx::Size& size,
                                       int32_t format,
                                       int32_t internal_format) {
   DCHECK(CalledOnValidThread());
@@ -238,8 +237,7 @@ void CommandBufferDriver::CreateImage(int32_t id,
     return;
   }
 
-  gfx::Size gfx_size = size.To<gfx::Size>();
-  if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(gfx_size, gpu_format)) {
+  if (!gpu::IsImageSizeValidForGpuMemoryBufferFormat(size, gpu_format)) {
     LOG(ERROR) << "Invalid image size for format.";
     return;
   }
@@ -270,11 +268,11 @@ void CommandBufferDriver::CreateImage(int32_t id,
 #endif
 
   scoped_refptr<gl::GLImageSharedMemory> image =
-      new gl::GLImageSharedMemory(gfx_size, internal_format);
+      new gl::GLImageSharedMemory(size, internal_format);
   // TODO(jam): also need a mojo enum for this enum
   if (!image->Initialize(
           handle, gfx::GpuMemoryBufferId(id), gpu_format, 0,
-          gfx::RowSizeForBufferFormat(gfx_size.width(), gpu_format, 0))) {
+          gfx::RowSizeForBufferFormat(size.width(), gpu_format, 0))) {
     NOTREACHED();
     return;
   }

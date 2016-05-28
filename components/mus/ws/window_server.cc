@@ -25,7 +25,6 @@
 #include "components/mus/ws/window_tree_binding.h"
 #include "services/shell/public/cpp/connection.h"
 #include "ui/events/mojo/input_events_type_converters.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace mus {

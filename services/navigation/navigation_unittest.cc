@@ -49,7 +49,7 @@ class NavigationTest : public shell::test::ShellTest,
   void ViewCreated(mojom::ViewPtr,
                    mojom::ViewClientRequest,
                    bool,
-                   mojo::RectPtr,
+                   const gfx::Rect&,
                    bool) override {}
   void Close() override {}
 

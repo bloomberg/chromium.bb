@@ -59,7 +59,7 @@ class CommandBufferImpl : public mojom::CommandBuffer,
   void CreateImage(int32_t id,
                    mojo::ScopedHandle memory_handle,
                    int32_t type,
-                   mojo::SizePtr size,
+                   const gfx::Size& size,
                    int32_t format,
                    int32_t internal_format) override;
   void DestroyImage(int32_t id) override;
@@ -101,7 +101,7 @@ class CommandBufferImpl : public mojom::CommandBuffer,
   bool CreateImageOnGpuThread(int32_t id,
                               mojo::ScopedHandle memory_handle,
                               int32_t type,
-                              mojo::SizePtr size,
+                              const gfx::Size& size,
                               int32_t format,
                               int32_t internal_format);
   bool DestroyImageOnGpuThread(int32_t id);

@@ -1,0 +1,27 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+mojom = "//ui/gfx/geometry/mojo/geometry.mojom"
+public_headers = [
+  "//ui/gfx/geometry/point.h",
+  "//ui/gfx/geometry/point_f.h",
+  "//ui/gfx/geometry/size.h",
+  "//ui/gfx/geometry/rect.h",
+  "//ui/gfx/geometry/rect_f.h",
+  "//ui/gfx/geometry/insets.h",
+]
+traits_headers = [ "//ui/gfx/geometry/mojo/geometry_struct_traits.h" ]
+deps = [
+  "//ui/gfx/geometry",
+]
+type_mappings = [
+  "mojo.Point=gfx::Point",
+  "mojo.PointF=gfx::PointF",
+  "mojo.Size=gfx::Size",
+  "mojo.SizeF=gfx::SizeF",
+  "mojo.Rect=gfx::Rect",
+  "mojo.RectF=gfx::RectF",
+  "mojo.Insets=gfx::Insets",
+  "mojo.InsetsF=gfx::InsetsF",
+]

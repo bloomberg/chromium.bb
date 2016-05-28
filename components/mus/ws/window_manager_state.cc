@@ -145,7 +145,7 @@ void WindowManagerState::AddSystemModalWindow(ServerWindow* window) {
 mojom::DisplayPtr WindowManagerState::ToMojomDisplay() const {
   mojom::DisplayPtr display_ptr = display_->ToMojomDisplay();
   // TODO(sky): set work area.
-  display_ptr->work_area = display_ptr->bounds.Clone();
+  display_ptr->work_area = display_ptr->bounds;
   display_ptr->frame_decoration_values = frame_decoration_values_.Clone();
   return display_ptr;
 }
@@ -172,8 +172,6 @@ WindowManagerState::WindowManagerState(Display* display,
       event_dispatcher_(this),
       weak_factory_(this) {
   frame_decoration_values_ = mojom::FrameDecorationValues::New();
-  frame_decoration_values_->normal_client_area_insets = mojo::Insets::New();
-  frame_decoration_values_->maximized_client_area_insets = mojo::Insets::New();
   frame_decoration_values_->max_title_bar_button_width = 0u;
 
   root_.reset(window_server()->CreateServerWindow(

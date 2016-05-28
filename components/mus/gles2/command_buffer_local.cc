@@ -233,9 +233,7 @@ int32_t CommandBufferLocal::CreateImage(ClientBuffer buffer,
                                         unsigned internal_format) {
   DCHECK(CalledOnValidThread());
   int32_t new_id = ++next_image_id_;
-  mojo::SizePtr size = mojo::Size::New();
-  size->width = static_cast<int32_t>(width);
-  size->height = static_cast<int32_t>(height);
+  gfx::Size size(static_cast<int32_t>(width), static_cast<int32_t>(height));
 
   mus::MojoGpuMemoryBufferImpl* gpu_memory_buffer =
       mus::MojoGpuMemoryBufferImpl::FromClientBuffer(buffer);
@@ -511,7 +509,7 @@ bool CommandBufferLocal::CreateImageOnGpuThread(
     int32_t id,
     mojo::ScopedHandle memory_handle,
     int32_t type,
-    mojo::SizePtr size,
+    const gfx::Size& size,
     int32_t format,
     int32_t internal_format) {
   DCHECK(driver_->IsScheduled());

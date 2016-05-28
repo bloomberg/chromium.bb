@@ -8,7 +8,6 @@
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/gfx/geometry/mojo/geometry_type_converters.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/mus/native_widget_mus.h"
 #include "ui/views/widget/widget.h"
@@ -71,8 +70,7 @@ void ViewImpl::AddNewContents(content::WebContents* source,
   mojom::ViewPtr view;
   mojom::ViewRequest view_request = GetProxy(&view);
   client_->ViewCreated(std::move(view), GetProxy(&client),
-                       disposition == NEW_POPUP, mojo::Rect::From(initial_rect),
-                       user_gesture);
+                       disposition == NEW_POPUP, initial_rect, user_gesture);
   ViewImpl* impl =
       new ViewImpl(connector_, new_contents->GetBrowserContext(),
                    std::move(client), std::move(view_request), ref_->Clone());
