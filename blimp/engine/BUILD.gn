@@ -261,6 +261,8 @@ source_set("feature") {
     "feature/engine_render_widget_feature.h",
     "feature/engine_settings_feature.cc",
     "feature/engine_settings_feature.h",
+    "feature/geolocation/blimp_location_provider.cc",
+    "feature/geolocation/blimp_location_provider.h",
   ]
 
   deps = [
