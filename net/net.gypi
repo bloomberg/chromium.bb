@@ -1354,6 +1354,7 @@
       'base/upload_bytes_element_reader_unittest.cc',
       'base/upload_file_element_reader_unittest.cc',
       'base/url_util_unittest.cc',
+      'cert/ct_known_logs_unittest.cc',
       'cert/ct_policy_enforcer_unittest.cc',
       'cert/cert_verifier_unittest.cc',
       'cert/cert_verify_proc_unittest.cc',
