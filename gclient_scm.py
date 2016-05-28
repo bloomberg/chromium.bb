@@ -173,19 +173,24 @@ class SCMWrapper(object):
     # Get the second token of the first line of the log.
     return log.splitlines()[0].split(' ', 1)[1]
 
+  def GetCacheMirror(self):
+    if (getattr(self, 'cache_dir', None)):
+      url, _ = gclient_utils.SplitUrlRevision(self.url)
+      return git_cache.Mirror(url)
+    return None
+
   def GetActualRemoteURL(self, options):
     """Attempt to determine the remote URL for this SCMWrapper."""
     # Git
     if os.path.exists(os.path.join(self.checkout_path, '.git')):
       actual_remote_url = self._get_first_remote_url(self.checkout_path)
 
-      # If a cache_dir is used, obtain the actual remote URL from the cache.
-      if getattr(self, 'cache_dir', None):
-        url, _ = gclient_utils.SplitUrlRevision(self.url)
-        mirror = git_cache.Mirror(url)
-        if (mirror.exists() and mirror.mirror_path.replace('\\', '/') ==
-            actual_remote_url.replace('\\', '/')):
-          actual_remote_url = self._get_first_remote_url(mirror.mirror_path)
+      mirror = self.GetCacheMirror()
+      # If the cache is used, obtain the actual remote URL from there.
+      if (mirror and mirror.exists() and
+          mirror.mirror_path.replace('\\', '/') ==
+          actual_remote_url.replace('\\', '/')):
+        actual_remote_url = self._get_first_remote_url(mirror.mirror_path)
       return actual_remote_url
 
     # Svn

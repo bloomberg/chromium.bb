@@ -1233,12 +1233,19 @@ solutions = [
             dep.url, self.root_dir, dep.name, self.outbuf)
         actual_url = scm.GetActualRemoteURL(self._options)
         if actual_url and not scm.DoesRemoteURLMatch(self._options):
+          mirror = scm.GetCacheMirror()
+          if mirror:
+            mirror_string = '%s (exists=%s)' % (mirror.mirror_path,
+                                                mirror.exists())
+          else:
+            mirror_string = 'not used'
           raise gclient_utils.Error('''
 Your .gclient file seems to be broken. The requested URL is different from what
 is actually checked out in %(checkout_path)s.
 
 The .gclient file contains:
-%(expected_url)s (%(expected_scm)s)
+URL: %(expected_url)s (%(expected_scm)s)
+Cache mirror: %(mirror_string)s
 
 The local checkout in %(checkout_path)s reports:
 %(actual_url)s (%(actual_scm)s)
@@ -1250,6 +1257,7 @@ want to set 'managed': False in .gclient.
 '''  % {'checkout_path': os.path.join(self.root_dir, dep.name),
         'expected_url': dep.url,
         'expected_scm': gclient_scm.GetScmName(dep.url),
+        'mirror_string' : mirror_string,
         'actual_url': actual_url,
         'actual_scm': gclient_scm.GetScmName(actual_url)})
 
