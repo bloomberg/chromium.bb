@@ -13,8 +13,8 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContents.VisualStateCallback;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.parameter.ParameterizedTest;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -92,9 +92,9 @@ public class AwContentsRenderTest extends AwTestBase {
         assertNull(mContentsClient.getPictureListenerHelper().getPicture());
     }
 
-    // @SmallTest
-    // @Feature({"AndroidWebView"})
-    @DisabledTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @ParameterizedTest.Set
     public void testForceDrawWhenInvisible() throws Throwable {
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 "data:text/html,<html><head><style>body {background-color:#227788}</style></head>"
