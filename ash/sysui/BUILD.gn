@@ -74,7 +74,7 @@ mojo_application_manifest("manifest") {
   source = "manifest.json"
 }
 
-mojo_native_application("mus") {
+mojo_native_application("sysui") {
   output_name = "ash_sysui"
   sources = [
     "main.cc",

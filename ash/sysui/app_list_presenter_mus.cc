@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/app_list_presenter_mus.h"
+#include "ash/sysui/app_list_presenter_mus.h"
 
 #include "services/shell/public/cpp/connector.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_KEYBOARD_UI_MUS_H_
-#define ASH_MUS_KEYBOARD_UI_MUS_H_
+#ifndef ASH_SYSUI_KEYBOARD_UI_MUS_H_
+#define ASH_SYSUI_KEYBOARD_UI_MUS_H_
 
 #include <memory>
 
@@ -21,10 +21,10 @@ namespace ash {
 class KeyboardUIMus : public KeyboardUI,
                       public keyboard::mojom::KeyboardObserver {
  public:
-  explicit KeyboardUIMus(shell::Connector* connector);
+  explicit KeyboardUIMus(::shell::Connector* connector);
   ~KeyboardUIMus() override;
 
-  static std::unique_ptr<KeyboardUI> Create(shell::Connector* connector);
+  static std::unique_ptr<KeyboardUI> Create(::shell::Connector* connector);
 
   // KeyboardUI:
   void Hide() override;
@@ -48,4 +48,4 @@ class KeyboardUIMus : public KeyboardUI,
 
 }  // namespace ash
 
-#endif  // ASH_MUS_KEYBOARD_UI_MUS_H_
+#endif  // ASH_SYSUI_KEYBOARD_UI_MUS_H_

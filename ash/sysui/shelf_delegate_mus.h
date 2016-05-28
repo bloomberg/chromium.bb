@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_SHELF_DELEGATE_MUS_H_
-#define ASH_MUS_SHELF_DELEGATE_MUS_H_
+#ifndef ASH_SYSUI_SHELF_DELEGATE_MUS_H_
+#define ASH_SYSUI_SHELF_DELEGATE_MUS_H_
 
 #include <map>
 
@@ -89,4 +89,4 @@ class ShelfDelegateMus : public ShelfDelegate,
 }  // namespace sysui
 }  // namespace ash
 
-#endif  // ASH_MUS_SHELF_DELEGATE_MUS_H_
+#endif  // ASH_SYSUI_SHELF_DELEGATE_MUS_H_

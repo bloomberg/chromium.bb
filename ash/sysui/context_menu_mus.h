@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_CONTEXT_MENU_MUS_H_
-#define ASH_MUS_CONTEXT_MENU_MUS_H_
+#ifndef ASH_SYSUI_CONTEXT_MENU_MUS_H_
+#define ASH_SYSUI_CONTEXT_MENU_MUS_H_
 
 #include "ash/shelf/shelf_alignment_menu.h"
 #include "base/macros.h"
@@ -43,4 +43,4 @@ class ContextMenuMus : public ui::SimpleMenuModel,
 
 }  // namespace ash
 
-#endif  // ASH_MUS_CONTEXT_MENU_MUS_H_
+#endif  // ASH_SYSUI_CONTEXT_MENU_MUS_H_

@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/shell_delegate_mus.h"
+#include "ash/sysui/shell_delegate_mus.h"
 
 #include "ash/default_accessibility_delegate.h"
 #include "ash/default_user_wallpaper_delegate.h"
 #include "ash/gpu_support_stub.h"
 #include "ash/media_delegate.h"
-#include "ash/mus/app_list_presenter_mus.h"
-#include "ash/mus/container_delegate_mus.h"
-#include "ash/mus/context_menu_mus.h"
-#include "ash/mus/pointer_watcher_delegate_mus.h"
-#include "ash/mus/shelf_delegate_mus.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/system/tray/default_system_tray_delegate.h"
+#include "ash/sysui/app_list_presenter_mus.h"
+#include "ash/sysui/container_delegate_mus.h"
+#include "ash/sysui/context_menu_mus.h"
+#include "ash/sysui/pointer_watcher_delegate_mus.h"
+#include "ash/sysui/shelf_delegate_mus.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "components/user_manager/user_info_impl.h"

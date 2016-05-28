@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/context_menu_mus.h"
+#include "ash/sysui/context_menu_mus.h"
 
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shelf/shelf.h"

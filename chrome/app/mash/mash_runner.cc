@@ -4,7 +4,7 @@
 
 #include "chrome/app/mash/mash_runner.h"
 
-#include "ash/mus/sysui_application.h"
+#include "ash/sysui/sysui_application.h"
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/command_line.h"

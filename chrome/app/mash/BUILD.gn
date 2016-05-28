@@ -10,7 +10,7 @@ source_set("mash") {
     "mash_runner.h",
   ]
   deps = [
-    "//ash/mus:lib",
+    "//ash/sysui:lib",
     "//base:i18n",
     "//components/mus:lib",
     "//content/public/common",
@@ -42,7 +42,7 @@ mojo_application_manifest("manifest") {
   application_name = "chrome_mash"
   source = "chrome_mash_manifest.json"
   deps = [
-    "//ash/mus:manifest",
+    "//ash/sysui:manifest",
     "//components/mus:manifest",
     "//mash/app_driver:manifest",
     "//mash/quick_launch:manifest",

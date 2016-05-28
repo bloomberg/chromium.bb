@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_APP_LIST_PRESENTER_MUS_H_
-#define ASH_MUS_APP_LIST_PRESENTER_MUS_H_
+#ifndef ASH_SYSUI_APP_LIST_PRESENTER_MUS_H_
+#define ASH_SYSUI_APP_LIST_PRESENTER_MUS_H_
 
 #include "base/macros.h"
 #include "ui/app_list/presenter/app_list_presenter.h"
@@ -41,4 +41,4 @@ class AppListPresenterMus : public app_list::AppListPresenter {
 
 }  // namespace ash
 
-#endif  // ASH_MUS_APP_LIST_PRESENTER_MUS_H_
+#endif  // ASH_SYSUI_APP_LIST_PRESENTER_MUS_H_

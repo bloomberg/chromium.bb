@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_MUS_STUB_CONTEXT_FACTORY_H_
-#define ASH_MUS_STUB_CONTEXT_FACTORY_H_
+#ifndef ASH_SYSUI_STUB_CONTEXT_FACTORY_H_
+#define ASH_SYSUI_STUB_CONTEXT_FACTORY_H_
 
 #include <memory>
 
@@ -54,4 +54,4 @@ class StubContextFactory : public ui::ContextFactory {
 }  // namespace sysui
 }  // namespace ash
 
-#endif  // ASH_MUS_STUB_CONTEXT_FACTORY_H_
+#endif  // ASH_SYSUI_STUB_CONTEXT_FACTORY_H_

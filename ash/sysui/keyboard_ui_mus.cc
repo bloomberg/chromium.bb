@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/keyboard_ui_mus.h"
+#include "ash/sysui/keyboard_ui_mus.h"
 
 #include "ash/keyboard/keyboard_ui_observer.h"
 #include "ash/shell.h"

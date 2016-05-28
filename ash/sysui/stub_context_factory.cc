@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/stub_context_factory.h"
+#include "ash/sysui/stub_context_factory.h"
 
 #include "base/memory/ptr_util.h"
 #include "cc/output/context_provider.h"

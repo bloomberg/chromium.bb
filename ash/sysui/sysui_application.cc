@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/mus/sysui_application.h"
+#include "ash/sysui/sysui_application.h"
 
 #include <map>
 #include <set>
@@ -13,15 +13,15 @@
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_platform.h"
 #include "ash/material_design/material_design_controller.h"
-#include "ash/mus/app_list_presenter_mus.h"
-#include "ash/mus/keyboard_ui_mus.h"
-#include "ash/mus/shelf_delegate_mus.h"
-#include "ash/mus/shell_delegate_mus.h"
-#include "ash/mus/stub_context_factory.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/shell_window_ids.h"
+#include "ash/sysui/app_list_presenter_mus.h"
+#include "ash/sysui/keyboard_ui_mus.h"
+#include "ash/sysui/shelf_delegate_mus.h"
+#include "ash/sysui/shell_delegate_mus.h"
+#include "ash/sysui/stub_context_factory.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
