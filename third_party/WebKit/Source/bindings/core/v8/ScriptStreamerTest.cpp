@@ -39,6 +39,12 @@ public:
         ScriptStreamer::setSmallScriptThresholdForTesting(0);
     }
 
+    ~ScriptStreamingTest()
+    {
+        if (m_pendingScript)
+            m_pendingScript->dispose();
+    }
+
     ScriptState* getScriptState() const { return m_scope.getScriptState(); }
     v8::Isolate* isolate() const { return m_scope.isolate(); }
 

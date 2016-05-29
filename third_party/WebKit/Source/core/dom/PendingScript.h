@@ -31,6 +31,7 @@
 #include "core/fetch/ResourceOwner.h"
 #include "core/fetch/ScriptResource.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Noncopyable.h"
 #include "wtf/text/TextPosition.h"
 
 namespace blink {
@@ -46,12 +47,10 @@ class ScriptSourceCode;
 // lifetime in order to guarantee that the data buffer will not be purged.
 class CORE_EXPORT PendingScript final : public GarbageCollectedFinalized<PendingScript>, public ResourceOwner<ScriptResource> {
     USING_GARBAGE_COLLECTED_MIXIN(PendingScript);
-    USING_PRE_FINALIZER(PendingScript, dispose);
+    WTF_MAKE_NONCOPYABLE(PendingScript);
 public:
     static PendingScript* create(Element*, ScriptResource*);
     ~PendingScript() override;
-
-    PendingScript& operator=(const PendingScript&);
 
     TextPosition startingPosition() const { return m_startingPosition; }
     void setStartingPosition(const TextPosition& position) { m_startingPosition = position; }
