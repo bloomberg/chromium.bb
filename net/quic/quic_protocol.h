@@ -696,6 +696,10 @@ enum QuicErrorCode {
   QUIC_LAST_ERROR = 91,
 };
 
+// Must be updated any time a QuicErrorCode is deprecated.
+const int kDeprecatedQuicErrorCount = 4;
+const int kActiveQuicErrorCount = QUIC_LAST_ERROR - kDeprecatedQuicErrorCount;
+
 typedef char DiversificationNonce[32];
 
 struct NET_EXPORT_PRIVATE QuicPacketPublicHeader {

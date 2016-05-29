@@ -235,6 +235,9 @@ const struct QuicErrorMapping {
   { net::QUIC_LAST_ERROR, "quic.last_error"}
 };
 
+static_assert(arraysize(kQuicErrorMap) == net::kActiveQuicErrorCount,
+              "quic_error_map is not in sync with quic protocol!");
+
 }  // namespace
 
 // static
