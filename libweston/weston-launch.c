@@ -577,8 +577,8 @@ setup_tty(struct weston_launch *wl, const char *tty)
 	return 0;
 }
 
-static void
-setup_session(struct weston_launch *wl)
+static int
+setup_session(struct weston_launch *wl, char **child_argv)
 {
 	char **env;
 	char *term;
@@ -608,6 +608,17 @@ setup_session(struct weston_launch *wl)
 		}
 		free(env);
 	}
+
+	/*
+	 * We open a new session, so it makes sense
+	 * to run a new login shell
+	 */
+	child_argv[0] = "/bin/sh";
+	child_argv[1] = "-l";
+	child_argv[2] = "-c";
+	child_argv[3] = BINDIR "/weston \"$@\"";
+	child_argv[4] = "weston";
+	return 5;
 }
 
 static void
@@ -626,12 +637,19 @@ launch_compositor(struct weston_launch *wl, int argc, char *argv[])
 {
 	char *child_argv[MAX_ARGV_SIZE];
 	sigset_t mask;
-	int i;
+	int o, i;
 
 	if (wl->verbose)
 		printf("weston-launch: spawned weston with pid: %d\n", getpid());
-	if (wl->new_user)
-		setup_session(wl);
+	if (wl->new_user) {
+		o = setup_session(wl, child_argv);
+	} else {
+		child_argv[0] = BINDIR "/weston";
+		o = 1;
+	}
+	for (i = 0; i < argc; ++i)
+		child_argv[o + i] = argv[i];
+	child_argv[o + i] = NULL;
 
 	if (geteuid() == 0)
 		drop_privileges(wl);
@@ -648,14 +666,6 @@ launch_compositor(struct weston_launch *wl, int argc, char *argv[])
 	sigaddset(&mask, SIGINT);
 	sigprocmask(SIG_UNBLOCK, &mask, NULL);
 
-	child_argv[0] = "/bin/sh";
-	child_argv[1] = "-l";
-	child_argv[2] = "-c";
-	child_argv[3] = BINDIR "/weston \"$@\"";
-	child_argv[4] = "weston";
-	for (i = 0; i < argc; ++i)
-		child_argv[5 + i] = argv[i];
-	child_argv[5 + i] = NULL;
 
 	execv(child_argv[0], child_argv);
 	error(1, errno, "exec failed");
