@@ -83,6 +83,13 @@ typedef enum {
 	QCMS_TRC_USHORT,     // 0.16 fixed point.
 } qcms_trc_type;
 
+/* Output data of specific channel curve for qcms_profile_get_parametric_curve() */
+typedef enum {
+	QCMS_TRC_RED,
+	QCMS_TRC_GREEN,
+	QCMS_TRC_BLUE,
+} qcms_trc_channel;
+
 typedef struct {
 	double x;
 	double y;
@@ -133,6 +140,8 @@ size_t qcms_profile_get_vcgt_channel_length(qcms_profile *profile);
 qcms_bool qcms_profile_get_vcgt_rgb_channels(qcms_profile *profile, unsigned short *data);
 
 float qcms_profile_ntsc_relative_gamut_size(qcms_profile *profile);
+
+size_t qcms_profile_get_parametric_curve(qcms_profile *profile, qcms_trc_channel channel, float data[7]);
 
 qcms_transform* qcms_transform_create(
 		qcms_profile *in, qcms_data_type in_type,
