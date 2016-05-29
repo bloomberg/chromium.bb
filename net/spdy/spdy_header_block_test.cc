@@ -101,6 +101,9 @@ TEST(SpdyHeaderBlockTest, Equality) {
 
   EXPECT_EQ(block1, block2);
   EXPECT_NE(block1, block3);
+
+  block2["baz"] = "qux";
+  EXPECT_NE(block1, block2);
 }
 
 }  // namespace net

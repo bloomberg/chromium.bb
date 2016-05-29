@@ -163,7 +163,7 @@ SpdyHeaderBlock& SpdyHeaderBlock::operator=(const SpdyHeaderBlock& other) {
 }
 
 bool SpdyHeaderBlock::operator==(const SpdyHeaderBlock& other) const {
-  return std::equal(begin(), end(), other.begin());
+  return size() == other.size() && std::equal(begin(), end(), other.begin());
 }
 
 bool SpdyHeaderBlock::operator!=(const SpdyHeaderBlock& other) const {
