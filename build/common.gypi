@@ -5639,18 +5639,6 @@
           # See http://bugs.icu-project.org/trac/ticket/11122
           4595,
         ],
-        'conditions': [
-          ['full_wpo_on_official==1', {
-            # Disable Warning 4702 ("Unreachable code") for the WPO/PGO
-            # builds. Probably anything that this would catch that
-            # wouldn't be caught in a normal build isn't going to
-            # actually be a bug, so the incremental value of C4702 for
-            # PGO builds is likely very small.
-            'msvs_disabled_warnings': [
-              4702
-            ],
-          }],
-        ],
         'msvs_settings': {
           'VCCLCompilerTool': {
             'AdditionalOptions': ['/MP'],

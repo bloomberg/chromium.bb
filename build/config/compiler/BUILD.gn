@@ -1246,15 +1246,7 @@ if (is_win) {
 config("optimize") {
   if (is_win) {
     if (is_official_build && full_wpo_on_official) {
-      common_optimize_on_cflags += [
-        "/GL",  # Whole program optimization.
-
-        # Disable Warning 4702 ("Unreachable code") for the WPO/PGO builds.
-        # Probably anything that this would catch that wouldn't be caught in a
-        # normal build isn't going to actually be a bug, so the incremental
-        # value of C4702 for PGO builds is likely very small.
-        "/wd4702",
-      ]
+      common_optimize_on_cflags += [ "/GL" ]
     }
 
     # Favor size over speed, /O1 must be before the common flags. The GYP
