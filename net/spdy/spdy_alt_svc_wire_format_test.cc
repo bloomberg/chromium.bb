@@ -84,24 +84,24 @@ void FuzzHeaderFieldValue(
   if (i & 1 << 4) {
     header_field_value->append("; J=s");
   }
-  if (i & 1 << 6) {
+  if (i & 1 << 5) {
     expected_altsvc->version.push_back(24);
     header_field_value->append("; v=\"24\"");
   }
-  if (i & 1 << 7) {
+  if (i & 1 << 6) {
     expected_altsvc->max_age = 999999999;
     header_field_value->append("; Ma=999999999");
   }
-  if (i & 1 << 9) {
+  if (i & 1 << 7) {
     header_field_value->append(";");
   }
-  if (i & 1 << 10) {
+  if (i & 1 << 8) {
     header_field_value->append(" ");
   }
-  if (i & 1 << 11) {
+  if (i & 1 << 9) {
     header_field_value->append(",");
   }
-  if (i & 1 << 12) {
+  if (i & 1 << 10) {
     header_field_value->append(" ");
   }
 }
@@ -126,7 +126,7 @@ void FuzzAlternativeService(int i,
     altsvc->max_age = 1111;
     expected_header_field_value->append("; ma=1111");
   }
-  if (i & 1 << 3) {
+  if (i & 1 << 2) {
     altsvc->version.push_back(24);
     altsvc->version.push_back(25);
     expected_header_field_value->append("; v=\"24,25\"");
@@ -162,7 +162,7 @@ TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValueClear) {
 // parameters, duplicate parameters, trailing space, trailing alternate service
 // separator, etc.  Single alternative service at a time.
 TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValue) {
-  for (int i = 0; i < 1 << 13; ++i) {
+  for (int i = 0; i < 1 << 11; ++i) {
     std::string header_field_value;
     SpdyAltSvcWireFormat::AlternativeService expected_altsvc;
     FuzzHeaderFieldValue(i, &header_field_value, &expected_altsvc);
@@ -196,7 +196,7 @@ TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValue) {
 // parameters, duplicate parameters, trailing space, trailing alternate service
 // separator, etc.  Possibly multiple alternative service at a time.
 TEST(SpdyAltSvcWireFormatTest, ParseHeaderFieldValueMultiple) {
-  for (int i = 0; i < 1 << 13;) {
+  for (int i = 0; i < 1 << 11;) {
     std::string header_field_value;
     SpdyAltSvcWireFormat::AlternativeServiceVector expected_altsvc_vector;
     // This will generate almost two hundred header field values with two,
@@ -254,7 +254,7 @@ TEST(SpdyAltSvcWireFormatTest, SerializeEmptyHeaderFieldValue) {
 // each
 // parameter.  Single alternative service at a time.
 TEST(SpdyAltSvcWireFormatTest, RoundTrip) {
-  for (int i = 0; i < 1 << 4; ++i) {
+  for (int i = 0; i < 1 << 3; ++i) {
     SpdyAltSvcWireFormat::AlternativeService altsvc;
     std::string expected_header_field_value;
     FuzzAlternativeService(i, &altsvc, &expected_header_field_value);
@@ -285,7 +285,7 @@ TEST(SpdyAltSvcWireFormatTest, RoundTrip) {
 TEST(SpdyAltSvcWireFormatTest, RoundTripMultiple) {
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
   std::string expected_header_field_value;
-  for (int i = 0; i < 1 << 4; ++i) {
+  for (int i = 0; i < 1 << 3; ++i) {
     SpdyAltSvcWireFormat::AlternativeService altsvc;
     FuzzAlternativeService(i, &altsvc, &expected_header_field_value);
     altsvc_vector.push_back(altsvc);
