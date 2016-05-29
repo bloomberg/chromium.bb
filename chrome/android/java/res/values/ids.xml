@@ -52,4 +52,7 @@
     <!-- Keyboard shortcuts -->
     <item type="id" name="focus_url_bar" />
     <item type="id" name="show_menu" />
+
+    <!-- PaymentRequest -->
+    <item type="id" name="payments_left_summary_label" />
 </resources>

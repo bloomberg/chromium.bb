@@ -834,6 +834,11 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         return mDialog;
     }
 
+    @VisibleForTesting
+    public ViewGroup getShippingAddressSectionForTest() {
+        return mShippingAddressSection;
+    }
+
     private void notifyReadyForInput() {
         if (mObserverForTest != null && isAcceptingUserInput()) {
             mObserverForTest.onPaymentRequestReadyForInput(this);

@@ -5,10 +5,12 @@
 package org.chromium.chrome.browser.payments;
 
 import android.widget.EditText;
+import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
@@ -23,6 +25,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -97,6 +100,16 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeA
             }
         });
         helper.waitForCallback(callCount);
+    }
+
+    protected String getAddressSectionLabel() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+            @Override
+            public String call() {
+                return ((TextView) mUI.getShippingAddressSectionForTest().findViewById(
+                        R.id.payments_left_summary_label)).getText().toString();
+            }
+        });
     }
 
     protected void typeInCardUnmaskDialogAndWait(final int resourceId, final String input,

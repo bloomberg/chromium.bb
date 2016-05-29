@@ -250,6 +250,7 @@ public abstract class PaymentRequestSection extends LinearLayout {
 
         // Create the two TextViews for showing the summary text.
         mSummaryLeftTextView = new TextView(getContext());
+        mSummaryLeftTextView.setId(R.id.payments_left_summary_label);
         ApiCompatibilityUtils.setTextAppearance(
                 mSummaryLeftTextView, R.style.PaymentsUiSectionDefaultText);
 
