@@ -359,11 +359,8 @@ void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(Resource* resource
 {
     // TODO(yoav): Test that non-blocking resources (video/audio/track) continue to not-block even after being preloaded and discovered.
     if (resource && resource->loader() && resource->isLoadEventBlockingResourceType() && resource->isLinkPreload() && !request.forPreload()) {
-        if (m_nonBlockingLoaders)
-            m_nonBlockingLoaders->remove(resource->loader());
-        if (!m_loaders)
-            m_loaders = ResourceLoaderSet::create();
-        m_loaders->add(resource->loader());
+        m_nonBlockingLoaders.remove(resource->loader());
+        m_loaders.add(resource->loader());
     }
 }
 
@@ -818,7 +815,7 @@ void ResourceFetcher::reloadImagesIfNotDeferred()
 
 int ResourceFetcher::requestCount() const
 {
-    return m_loaders ? m_loaders->size() : 0;
+    return m_loaders.size();
 }
 
 void ResourceFetcher::preloadStarted(Resource* resource)
@@ -880,8 +877,8 @@ void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, in
         moveResourceLoaderToNonBlocking(resource->loader());
     else
         removeResourceLoader(resource->loader());
-    DCHECK(!m_loaders || !m_loaders->contains(resource->loader()));
-    DCHECK(finishReason == DidFinishFirstPartInMultipart || !m_nonBlockingLoaders || !m_nonBlockingLoaders->contains(resource->loader()));
+    DCHECK(!m_loaders.contains(resource->loader()));
+    DCHECK(finishReason == DidFinishFirstPartInMultipart || !m_nonBlockingLoaders.contains(resource->loader()));
 
     if (OwnPtr<ResourceTimingInfo> info = m_resourceTimingInfoMap.take(resource)) {
         if (resource->response().isHTTP() && resource->response().httpStatusCode() < 400) {
@@ -943,23 +940,16 @@ void ResourceFetcher::acceptDataFromThreadedReceiver(unsigned long identifier, c
 
 void ResourceFetcher::moveResourceLoaderToNonBlocking(ResourceLoader* loader)
 {
-    if (!m_nonBlockingLoaders)
-        m_nonBlockingLoaders = ResourceLoaderSet::create();
-    m_nonBlockingLoaders->add(loader);
-    m_loaders->remove(loader);
+    m_nonBlockingLoaders.add(loader);
+    m_loaders.remove(loader);
 }
 
 void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceLoader* loader, ResourceRequest& request)
 {
-    if (resource->shouldBlockLoadEvent()) {
-        if (!m_loaders)
-            m_loaders = ResourceLoaderSet::create();
-        m_loaders->add(loader);
-    } else {
-        if (!m_nonBlockingLoaders)
-            m_nonBlockingLoaders = ResourceLoaderSet::create();
-        m_nonBlockingLoaders->add(loader);
-    }
+    if (resource->shouldBlockLoadEvent())
+        m_loaders.add(loader);
+    else
+        m_nonBlockingLoaders.add(loader);
 
     context().willStartLoadingResource(resource, request);
     storeResourceTimingInitiatorInformation(resource);
@@ -969,33 +959,29 @@ void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceLoade
 
 void ResourceFetcher::removeResourceLoader(ResourceLoader* loader)
 {
-    if (m_loaders && m_loaders->contains(loader))
-        m_loaders->remove(loader);
-    else if (m_nonBlockingLoaders && m_nonBlockingLoaders->contains(loader))
-        m_nonBlockingLoaders->remove(loader);
+    if (m_loaders.contains(loader))
+        m_loaders.remove(loader);
+    else if (m_nonBlockingLoaders.contains(loader))
+        m_nonBlockingLoaders.remove(loader);
     else
         ASSERT_NOT_REACHED();
 }
 
 void ResourceFetcher::stopFetching()
 {
-    if (m_nonBlockingLoaders)
-        m_nonBlockingLoaders->cancelAll();
-    if (m_loaders)
-        m_loaders->cancelAll();
+    m_nonBlockingLoaders.cancelAll();
+    m_loaders.cancelAll();
 }
 
 bool ResourceFetcher::isFetching() const
 {
-    return m_loaders && !m_loaders->isEmpty();
+    return !m_loaders.isEmpty();
 }
 
 void ResourceFetcher::setDefersLoading(bool defers)
 {
-    if (m_loaders)
-        m_loaders->setAllDefersLoading(defers);
-    if (m_nonBlockingLoaders)
-        m_nonBlockingLoaders->setAllDefersLoading(defers);
+    m_loaders.setAllDefersLoading(defers);
+    m_nonBlockingLoaders.setAllDefersLoading(defers);
 }
 
 bool ResourceFetcher::defersLoading() const

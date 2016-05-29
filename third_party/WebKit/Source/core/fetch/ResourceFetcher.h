@@ -33,6 +33,7 @@
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceLoaderOptions.h"
+#include "core/fetch/ResourceLoaderSet.h"
 #include "core/fetch/SubstituteData.h"
 #include "platform/Timer.h"
 #include "platform/network/ResourceError.h"
@@ -55,7 +56,6 @@ class ScriptResource;
 class XSLStyleSheetResource;
 class KURL;
 class ResourceTimingInfo;
-class ResourceLoaderSet;
 
 // The ResourceFetcher provides a per-context interface to the MemoryCache
 // and enforces a bunch of security checks and rules for resource revalidation.
@@ -193,8 +193,8 @@ private:
 
     Vector<OwnPtr<ResourceTimingInfo>> m_scheduledResourceTimingReports;
 
-    Member<ResourceLoaderSet> m_loaders;
-    Member<ResourceLoaderSet> m_nonBlockingLoaders;
+    ResourceLoaderSet m_loaders;
+    ResourceLoaderSet m_nonBlockingLoaders;
 
     // Used in hit rate histograms.
     class DeadResourceStatsRecorder {

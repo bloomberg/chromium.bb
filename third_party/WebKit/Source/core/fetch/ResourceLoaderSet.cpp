@@ -34,11 +34,6 @@
 
 namespace blink {
 
-ResourceLoaderSet* ResourceLoaderSet::create()
-{
-    return new ResourceLoaderSet;
-}
-
 DEFINE_TRACE(ResourceLoaderSet)
 {
     visitor->trace(m_set);

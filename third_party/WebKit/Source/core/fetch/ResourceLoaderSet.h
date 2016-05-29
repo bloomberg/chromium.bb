@@ -33,14 +33,20 @@
 
 #include "core/fetch/ResourceLoader.h"
 #include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class ResourceLoaderSet final : public GarbageCollected<ResourceLoaderSet> {
+class ResourceLoaderSet final {
+    DISALLOW_NEW();
+    WTF_MAKE_NONCOPYABLE(ResourceLoaderSet);
 public:
+    ResourceLoaderSet()
+    {
+    }
+
     using SetType = HeapHashSet<Member<ResourceLoader>>;
 
-    static ResourceLoaderSet* create();
     DECLARE_TRACE();
 
     void add(ResourceLoader* loader) { m_set.add(loader); }
