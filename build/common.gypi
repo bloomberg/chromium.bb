@@ -5546,6 +5546,16 @@
               4702, # unreachable code
             ],
           }],
+          ['full_wpo_on_official==1', {
+            # Disable Warning 4702 ("Unreachable code") for the WPO/PGO
+            # builds. Probably anything that this would catch that
+            # wouldn't be caught in a normal build isn't going to
+            # actually be a bug, so the incremental value of C4702 for
+            # PGO builds is likely very small.
+            'msvs_disabled_warnings': [
+              4702
+            ],
+          }],
         ],
         # Add extra include directories here that need to be in front of the
         # installed and packaged include directories. This may be needed in
