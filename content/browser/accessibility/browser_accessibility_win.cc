@@ -3604,18 +3604,6 @@ void BrowserAccessibilityWin::UpdateStep3FireEvents(bool is_subtree_creation) {
     if (ia_state() != old_win_attributes_->ia_state)
       FireNativeEvent(EVENT_OBJECT_STATECHANGE);
 
-    // Normally focus events are handled elsewhere, however
-    // focus for managed descendants is platform-specific.
-    // Fire a focus event if the focused descendant in a multi-select
-    // list box changes.
-    if (GetRole() == ui::AX_ROLE_LIST_BOX_OPTION &&
-        (ia_state() & STATE_SYSTEM_FOCUSABLE) &&
-        (ia_state() & STATE_SYSTEM_SELECTABLE) &&
-        (ia_state() & STATE_SYSTEM_FOCUSED) &&
-        !(old_win_attributes_->ia_state & STATE_SYSTEM_FOCUSED)) {
-      FireNativeEvent(EVENT_OBJECT_FOCUS);
-    }
-
     // Handle selection being added or removed.
     bool is_selected_now = (ia_state() & STATE_SYSTEM_SELECTED) != 0;
     bool was_selected_before =

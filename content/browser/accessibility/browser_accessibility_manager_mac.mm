@@ -132,14 +132,20 @@ ui::AXTreeUpdate
 }
 
 BrowserAccessibility* BrowserAccessibilityManagerMac::GetFocus() {
+  BrowserAccessibility* focus = BrowserAccessibilityManager::GetFocus();
+
   // On Mac, list boxes should always get focus on the whole list, otherwise
   // information about the number of selected items will never be reported.
-  BrowserAccessibility* node = BrowserAccessibilityManager::GetFocus();
-  if (node && node->GetRole() == ui::AX_ROLE_LIST_BOX)
-    return node;
+  // For editable combo boxes, focus should stay on the combo box so the user
+  // will not be taken out of the combo box while typing.
+  if (focus && (focus->GetRole() == ui::AX_ROLE_LIST_BOX ||
+                (focus->GetRole() == ui::AX_ROLE_COMBO_BOX &&
+                 focus->HasState(ui::AX_STATE_EDITABLE)))) {
+    return focus;
+  }
 
   // For other roles, follow the active descendant.
-  return GetActiveDescendantFocus(node);
+  return GetActiveDescendant(focus);
 }
 
 void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
@@ -148,20 +154,6 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
     BrowserAccessibility* node) {
   if (!node->IsNative())
     return;
-
-  if (event_type == ui::AX_EVENT_FOCUS) {
-    BrowserAccessibility* active_descendant = GetActiveDescendantFocus(node);
-    if (active_descendant)
-      node = active_descendant;
-
-    if (node->GetRole() == ui::AX_ROLE_LIST_BOX_OPTION &&
-        node->HasState(ui::AX_STATE_SELECTED) &&
-        node->GetParent() &&
-        node->GetParent()->GetRole() == ui::AX_ROLE_LIST_BOX) {
-      node = node->GetParent();
-      SetFocus(*node);
-    }
-  }
 
   auto native_node = ToBrowserAccessibilityCocoa(node);
   DCHECK(native_node);
@@ -178,7 +170,10 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
         // the combo box where the user might be typing.
         mac_notification = NSAccessibilitySelectedChildrenChangedNotification;
       } else {
-        mac_notification = NSAccessibilityFocusedUIElementChangedNotification;
+        // In all other cases we should post
+        // |NSAccessibilityFocusedUIElementChangedNotification|, but this is
+        // handled elsewhere.
+        return;
       }
       break;
     case ui::AX_EVENT_AUTOCORRECTION_OCCURED:

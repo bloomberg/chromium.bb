@@ -387,18 +387,12 @@ void BrowserAccessibilityManager::OnAccessibilityEvents(
     if (event_type == ui::AX_EVENT_FOCUS ||
         event_type == ui::AX_EVENT_BLUR) {
       if (osk_state_ != OSK_DISALLOWED_BECAUSE_TAB_HIDDEN &&
-          osk_state_ != OSK_DISALLOWED_BECAUSE_TAB_JUST_APPEARED)
+          osk_state_ != OSK_DISALLOWED_BECAUSE_TAB_JUST_APPEARED) {
         osk_state_ = OSK_ALLOWED;
+      }
 
-      bool is_menu_list_option =
-          node->data().role == ui::AX_ROLE_MENU_LIST_OPTION;
-
-      // Skip all focus events other than ones on menu list options;
-      // we've already handled them, above. Menu list options are a weird
-      // exception because the menu list itself has focus but we need to fire
-      // focus events on the individual options.
-      if (!is_menu_list_option)
-        continue;
+      // We already handled all focus events above.
+      continue;
     }
 
     // Fire the native event.
@@ -489,19 +483,35 @@ void BrowserAccessibilityManager::ActivateFindInPageResult(
       node);
 }
 
-BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendantFocus(
+BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendant(
     BrowserAccessibility* focus) {
   if (!focus)
-    return NULL;
+    return nullptr;
 
-  int active_descendant_id;
+  int32_t active_descendant_id;
+  BrowserAccessibility* active_descendant = nullptr;
   if (focus->GetIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID,
                              &active_descendant_id)) {
-    BrowserAccessibility* active_descendant =
-        focus->manager()->GetFromID(active_descendant_id);
-    if (active_descendant)
-      return active_descendant;
+    active_descendant = focus->manager()->GetFromID(active_descendant_id);
   }
+
+  if (focus->GetRole() == ui::AX_ROLE_POP_UP_BUTTON) {
+    BrowserAccessibility* child = focus->InternalGetChild(0);
+    if (child && child->GetRole() == ui::AX_ROLE_MENU_LIST_POPUP) {
+      // The active descendant is found on the menu list popup, i.e. on the
+      // actual list and not on the button that opens it.
+      // If there is no active descendant, focus should stay on the button so
+      // that Windows screen readers would enable their virtual cursor.
+      if (child->GetIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID,
+                                 &active_descendant_id)) {
+        active_descendant = child->manager()->GetFromID(active_descendant_id);
+      }
+    }
+  }
+
+  if (active_descendant)
+    return active_descendant;
+
   return focus;
 }
 
@@ -521,6 +531,9 @@ BrowserAccessibility* BrowserAccessibilityManager::GetFocus() {
   BrowserAccessibilityManager* focused_manager = nullptr;
   if (focused_tree_id)
     focused_manager =BrowserAccessibilityManager::FromID(focused_tree_id);
+
+  // BrowserAccessibilityManager::FromID(focused_tree_id) may return nullptr
+  // if the tree is not created or has been destroyed.
   if (!focused_manager)
     focused_manager = root_manager;
 

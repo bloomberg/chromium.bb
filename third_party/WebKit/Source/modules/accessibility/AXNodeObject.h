@@ -65,7 +65,7 @@ protected:
     virtual AccessibilityRole nativeAccessibilityRoleIgnoringAria() const;
     String accessibilityDescriptionForElements(HeapVector<Member<Element>> &elements) const;
     void alterSliderValue(bool increase);
-    AXObject* activeDescendant() const override;
+    AXObject* activeDescendant() override;
     String ariaAccessibilityDescription() const;
     String ariaAutoComplete() const;
     AccessibilityRole determineAriaRoleAttribute() const;

@@ -1,0 +1,20 @@
+<!--
+@MAC-DENY:AXLayoutComplete*
+-->
+<!DOCTYPE html>
+<html>
+<body>
+<input role="combobox" type="search" aria-expanded="true" aria-haspopup="true"
+    aria-autocomplete="list" aria-activedescendant="option1" aria-owns="list">
+<ul id="list" role="listbox">
+<li id="option1" role="option">Apple</li>
+<li id="option2" role="option">Orange</li>
+<li id="option3" role="option">Banana</li>
+</ul>
+<script>
+  function go() {
+    document.querySelector('input').focus();
+  }
+</script>
+</body>
+</html>

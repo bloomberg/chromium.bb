@@ -145,7 +145,7 @@ void AXNodeObject::alterSliderValue(bool increase)
     axObjectCache().postNotification(getNode(), AXObjectCacheImpl::AXValueChanged);
 }
 
-AXObject* AXNodeObject::activeDescendant() const
+AXObject* AXNodeObject::activeDescendant()
 {
     if (!getNode() || !getNode()->isElementNode())
         return nullptr;

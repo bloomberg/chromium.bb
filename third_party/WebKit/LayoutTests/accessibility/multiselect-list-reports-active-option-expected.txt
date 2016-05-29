@@ -25,9 +25,12 @@ PASS accessibleTwo.isSelected is true
 PASS accessibleTwo.isSelectedOptionActive is false
 PASS accessibleThree.isSelected is true
 PASS accessibleThree.isSelectedOptionActive is true
+List notification: ActiveDescendantChanged
 List notification: SelectedChildrenChanged
 List notification: SelectedChildrenChanged
+List notification: ActiveDescendantChanged
 List notification: SelectedChildrenChanged
+List notification: ActiveDescendantChanged
 
 TEST COMPLETE
 

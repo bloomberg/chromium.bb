@@ -10,7 +10,12 @@
   <option>Banana</option>
 </select>
 <script>
-  document.querySelector('select').focus();
+  var comboBox = document.querySelector('select');
+  comboBox.focus();
+  // Expand the combo box.
+  var clickEvent = document.createEvent('MouseEvents');
+  clickEvent.initMouseEvent('mousedown', true, true, window);
+  comboBox.dispatchEvent(clickEvent);
   function go() {
     document.querySelector('select').selectedIndex = 1;
   }
