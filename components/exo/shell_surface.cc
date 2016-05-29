@@ -389,16 +389,6 @@ std::unique_ptr<base::trace_event::TracedValue> ShellSurface::AsTracedValue()
 void ShellSurface::OnSurfaceCommit() {
   surface_->CommitSurfaceHierarchy();
 
-  // Apply new window geometry. Widget origin needs to be adjusted to avoid
-  // having changes to geometry origin cause a change of the surface position
-  // on screen.
-  if (widget_ && pending_geometry_.origin() != geometry_.origin()) {
-    gfx::Rect new_widget_bounds = widget_->GetNativeWindow()->bounds();
-    new_widget_bounds.Offset(pending_geometry_.origin() - geometry_.origin());
-    widget_->SetBounds(new_widget_bounds);
-  }
-  geometry_ = pending_geometry_;
-
   if (enabled() && !widget_)
     CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
 
@@ -411,6 +401,16 @@ void ShellSurface::OnSurfaceCommit() {
   resize_component_ = pending_resize_component_;
 
   if (widget_) {
+    // Apply new window geometry. Widget origin needs to be adjusted to avoid
+    // having changes to geometry origin cause a change of the surface position
+    // on screen.
+    if (pending_geometry_.origin() != geometry_.origin()) {
+      gfx::Rect new_widget_bounds = widget_->GetNativeWindow()->bounds();
+      new_widget_bounds.Offset(pending_geometry_.origin() - geometry_.origin());
+      widget_->SetBounds(new_widget_bounds);
+    }
+    geometry_ = pending_geometry_;
+
     UpdateWidgetBounds();
 
     gfx::Point surface_origin = GetSurfaceOrigin();
