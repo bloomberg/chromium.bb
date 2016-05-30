@@ -1710,18 +1710,16 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
 
     GridPosition startPosition = isForColumns ? child.style()->gridColumnStart() : child.style()->gridRowStart();
     GridPosition endPosition = isForColumns ? child.style()->gridColumnEnd() : child.style()->gridRowEnd();
-    int firstExplicitLine = smallestStart;
-    size_t autoRepeatCount = autoRepeatCountForDirection(direction);
-    int lastExplicitLine = (isForColumns ? GridPositionsResolver::explicitGridColumnCount(styleRef(), autoRepeatCount) : GridPositionsResolver::explicitGridRowCount(styleRef(), autoRepeatCount)) + smallestStart;
+    int lastLine = isForColumns ? gridColumnCount() : gridRowCount();
 
     bool startIsAuto = startPosition.isAuto()
         || (startPosition.isNamedGridArea() && !NamedLineCollection::isValidNamedLineOrArea(startPosition.namedGridLine(), styleRef(), GridPositionsResolver::initialPositionSide(direction)))
-        || (startLine < firstExplicitLine)
-        || (startLine > lastExplicitLine);
+        || (startLine < 0)
+        || (startLine > lastLine);
     bool endIsAuto = endPosition.isAuto()
         || (endPosition.isNamedGridArea() && !NamedLineCollection::isValidNamedLineOrArea(endPosition.namedGridLine(), styleRef(), GridPositionsResolver::finalPositionSide(direction)))
-        || (endLine < firstExplicitLine)
-        || (endLine > lastExplicitLine);
+        || (endLine < 0)
+        || (endLine > lastLine);
 
     LayoutUnit start;
     if (!startIsAuto) {
@@ -1747,7 +1745,7 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
         }
 
         // These vectors store line positions including gaps, but we shouldn't consider them for the edges of the grid.
-        if (endLine > firstExplicitLine && endLine < lastExplicitLine) {
+        if (endLine > 0 && endLine < lastLine) {
             end -= guttersSize(direction, 2);
             end -= isForColumns ? m_offsetBetweenColumns : m_offsetBetweenRows;
         }
@@ -1764,7 +1762,7 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
         } else {
             offset = translateRTLCoordinate(m_columnPositions[endLine]) - borderLogicalLeft();
 
-            if (endLine > firstExplicitLine && endLine < lastExplicitLine) {
+            if (endLine > 0 && endLine < lastLine) {
                 offset += guttersSize(direction, 2);
                 offset += isForColumns ? m_offsetBetweenColumns : m_offsetBetweenRows;
             }
