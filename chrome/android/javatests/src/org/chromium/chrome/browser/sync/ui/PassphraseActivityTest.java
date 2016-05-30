@@ -42,7 +42,7 @@ public class PassphraseActivityTest extends NativeLibraryTestBase {
         // Clear ProfileSyncService in case it was mocked.
         ProfileSyncService.overrideForTests(null);
         super.tearDown();
-        SigninTestUtil.get().resetSigninState();
+        SigninTestUtil.resetSigninState();
     }
 
     /**
@@ -52,7 +52,7 @@ public class PassphraseActivityTest extends NativeLibraryTestBase {
     @Feature({"Sync"})
     public void testCallbackAfterBackgrounded() throws Exception {
         getInstrumentation().waitForIdleSync();
-        SigninTestUtil.get().addAndSignInTestAccount();
+        SigninTestUtil.addAndSignInTestAccount();
 
         // Override before creating the activity so we know initialized is false.
         overrideProfileSyncService();

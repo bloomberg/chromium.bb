@@ -127,7 +127,7 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
                 FakeServerHelper.deleteFakeServer();
             }
         });
-        SigninTestUtil.get().resetSigninState();
+        SigninTestUtil.resetSigninState();
 
         super.tearDown();
     }
@@ -139,12 +139,12 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     protected Account setUpTestAccount() {
-        Account account = SigninTestUtil.get().addAndSignInTestAccount();
-        SyncTestUtil.verifySyncIsSignedOut();
+        Account account = SigninTestUtil.addTestAccount();
+        assertFalse(SyncTestUtil.isSyncRequested());
         return account;
     }
 
-    protected Account setUpTestAccountAndSignInToSync() throws InterruptedException {
+    protected Account setUpTestAccountAndSignIn() throws InterruptedException {
         Account account = setUpTestAccount();
         signIn(account);
         return account;
@@ -181,7 +181,9 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
                 SigninManager.get(mContext).signIn(account, null, null);
             }
         });
-        SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
+        SyncTestUtil.waitForSyncActive();
+        SyncTestUtil.triggerSyncAndWaitForCompletion();
+        assertEquals(account, SigninTestUtil.getCurrentAccount());
     }
 
     protected void signOut() throws InterruptedException {
@@ -198,7 +200,8 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
             }
         });
         assertTrue(s.tryAcquire(SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS));
-        SyncTestUtil.verifySyncIsSignedOut();
+        assertNull(SigninTestUtil.getCurrentAccount());
+        assertFalse(SyncTestUtil.isSyncRequested());
     }
 
     protected void clearServerData() throws InterruptedException {

@@ -48,12 +48,12 @@ public class SupervisedUserContentProviderTest extends ChromeActivityTestCaseBas
                        .authority(mAuthority)
                        .path("authorized")
                        .build();
-        SigninTestUtil.get().resetSigninState();
+        SigninTestUtil.resetSigninState();
     }
 
     @Override
     public void tearDown() throws Exception {
-        SigninTestUtil.get().resetSigninState();
+        SigninTestUtil.resetSigninState();
         super.tearDown();
     }
 
@@ -99,7 +99,7 @@ public class SupervisedUserContentProviderTest extends ChromeActivityTestCaseBas
 
     @SmallTest
     public void testWithSupervisedUser() throws RemoteException, ExecutionException {
-        final Account account = SigninTestUtil.get().addAndSignInTestAccount();
+        final Account account = SigninTestUtil.addAndSignInTestAccount();
         assertNotNull(account);
         assertTrue(ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
 

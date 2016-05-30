@@ -103,7 +103,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testSyncSwitch() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         final SwitchPreference syncSwitch = getSyncSwitch(fragment);
@@ -124,7 +124,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testOpeningSettingsDoesntEnableSync() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
         stopSync();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         closeFragment(fragment);
@@ -137,7 +137,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testOpeningSettingsDoesntStartBackend() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
         stopSync();
         startSyncCustomizationFragment();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -152,7 +152,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testDefaultControlStatesWithSyncOffThenOn() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
         stopSync();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOffState(fragment);
@@ -164,7 +164,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testDefaultControlStatesWithSyncOnThenOff() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOnState(fragment);
@@ -175,7 +175,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testSyncEverythingAndDataTypes() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         SwitchPreference syncEverything = getSyncEverything(fragment);
@@ -200,7 +200,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testSettingDataTypes() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         SwitchPreference syncEverything = getSyncEverything(fragment);
@@ -232,7 +232,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationChecked() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(true);
 
@@ -249,7 +249,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationUnchecked() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(false);
 
@@ -268,7 +268,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationCheckboxDisablesPaymentsIntegration() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(true);
 
@@ -288,7 +288,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationCheckboxEnablesPaymentsIntegration() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(false);
 
@@ -308,7 +308,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationCheckboxClearsServerAutofillCreditCards() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(true);
 
@@ -334,7 +334,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testSyncSwitchClearsServerAutofillCreditCards() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(true);
 
@@ -360,7 +360,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationDisabledByAutofillSyncCheckbox() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(true);
 
@@ -385,7 +385,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testPaymentsIntegrationEnabledByAutofillSyncCheckbox() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
 
         setPaymentsIntegrationEnabled(false);
 
@@ -415,7 +415,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testChoosePassphraseTypeWhenSyncIsOff() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         Preference encryption = getEncryption(fragment);
@@ -439,7 +439,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testEnterPassphraseWhenSyncIsOff() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         stopSync();
@@ -460,7 +460,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     public void testPassphraseDialogDismissed() throws Exception {
         final FakeProfileSyncService pss = overrideProfileSyncService();
 
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         // Trigger PassphraseDialogFragment to be shown when taping on Encryption.
         pss.setPassphraseRequiredForDecryption(true);
@@ -491,7 +491,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testPassphraseCreation() throws Exception {
-        setUpTestAccountAndSignInToSync();
+        setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
         final SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
