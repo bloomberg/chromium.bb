@@ -80,6 +80,9 @@ private:
     Response(ExecutionContext*, FetchResponseData*);
     Response(ExecutionContext*, FetchResponseData*, Headers*);
 
+    void installBody();
+    void refreshBody(ScriptState*);
+
     const Member<FetchResponseData> m_response;
     const Member<Headers> m_headers;
 };

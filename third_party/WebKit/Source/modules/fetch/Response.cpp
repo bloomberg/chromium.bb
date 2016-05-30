@@ -246,6 +246,7 @@ Response* Response::create(ScriptState* scriptState, BodyStreamBuffer* body, con
             return nullptr;
         }
         r->m_response->replaceBodyStreamBuffer(body);
+        r->refreshBody(scriptState);
         if (!contentType.isEmpty() && !r->m_response->headerList()->has("Content-Type"))
             r->m_response->headerList()->append("Content-Type", contentType);
     }
@@ -364,6 +365,7 @@ Response* Response::clone(ScriptState* scriptState, ExceptionState& exceptionSta
     }
 
     FetchResponseData* response = m_response->clone(scriptState);
+    refreshBody(scriptState);
     Headers* headers = Headers::create(response->headerList());
     headers->setGuard(m_headers->getGuard());
     return new Response(getExecutionContext(), response, headers);
@@ -398,6 +400,7 @@ Response::Response(ExecutionContext* context, FetchResponseData* response, Heade
     , m_response(response)
     , m_headers(headers)
 {
+    installBody();
 }
 
 bool Response::hasBody() const
@@ -418,6 +421,29 @@ String Response::mimeType() const
 String Response::internalMIMEType() const
 {
     return m_response->internalMIMEType();
+}
+
+void Response::installBody()
+{
+    if (!internalBodyBuffer())
+        return;
+    refreshBody(internalBodyBuffer()->scriptState());
+}
+
+void Response::refreshBody(ScriptState* scriptState)
+{
+    ScriptState::Scope scope(scriptState);
+    v8::Local<v8::Value> bodyBuffer = toV8(internalBodyBuffer(), scriptState);
+    v8::Local<v8::Value> response = toV8(this, scriptState);
+    if (response.IsEmpty()) {
+        // |toV8| can return an empty handle when the worker is terminating.
+        // We don't want the renderer to crash in such cases.
+        // TODO(yhirano): Delete this block after the graceful shutdown
+        // mechanism is introduced.
+        return;
+    }
+    DCHECK(response->IsObject());
+    V8HiddenValue::setHiddenValue(scriptState, response.As<v8::Object>(), V8HiddenValue::internalBodyBuffer(scriptState->isolate()), bodyBuffer);
 }
 
 DEFINE_TRACE(Response)

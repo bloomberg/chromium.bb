@@ -74,6 +74,7 @@ private:
     static Request* createRequestWithRequestOrString(ScriptState*, Request*, const String&, RequestInit&, ExceptionState&);
 
     String mimeType() const override;
+    void refreshBody(ScriptState*);
 
     const Member<FetchRequestData> m_request;
     const Member<Headers> m_headers;

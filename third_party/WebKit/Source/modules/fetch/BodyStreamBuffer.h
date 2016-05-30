@@ -63,6 +63,7 @@ public:
     bool isStreamLocked();
     bool isStreamDisturbed();
     void closeAndLockAndDisturb();
+    ScriptState* scriptState() { return m_scriptState.get(); }
 
     DEFINE_INLINE_TRACE()
     {

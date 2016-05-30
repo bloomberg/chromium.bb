@@ -353,8 +353,10 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
     }
 
     // "Set |r|'s request's body to |temporaryBody|.
-    if (temporaryBody)
+    if (temporaryBody) {
         r->m_request->setBuffer(temporaryBody);
+        r->refreshBody(scriptState);
+    }
 
     // "Set |r|'s MIME type to the result of extracting a MIME type from |r|'s
     // request's header list."
@@ -368,6 +370,7 @@ Request* Request::createRequestWithRequestOrString(ScriptState* scriptState, Req
         // "Set |input|'s request's body to a new body whose stream is
         // |dummyStream|."
         inputRequest->m_request->setBuffer(dummyStream);
+        inputRequest->refreshBody(scriptState);
         // "Let |reader| be the result of getting reader from |dummyStream|."
         // "Read all bytes from |dummyStream| with |reader|."
         inputRequest->bodyBuffer()->closeAndLockAndDisturb();
@@ -422,6 +425,7 @@ Request::Request(ScriptState* scriptState, FetchRequestData* request, Headers* h
     , m_request(request)
     , m_headers(headers)
 {
+    refreshBody(scriptState);
 }
 
 Request::Request(ScriptState* scriptState, FetchRequestData* request)
@@ -627,6 +631,7 @@ Request* Request::clone(ScriptState* scriptState, ExceptionState& exceptionState
     }
 
     FetchRequestData* request = m_request->clone(scriptState);
+    refreshBody(scriptState);
     Headers* headers = Headers::create(request->headerList());
     headers->setGuard(m_headers->getGuard());
     return new Request(scriptState, request, headers);
@@ -635,7 +640,12 @@ Request* Request::clone(ScriptState* scriptState, ExceptionState& exceptionState
 FetchRequestData* Request::passRequestData(ScriptState* scriptState)
 {
     ASSERT(!bodyUsed());
-    return m_request->pass(scriptState);
+    FetchRequestData* data = m_request->pass(scriptState);
+    refreshBody(scriptState);
+    // |data|'s buffer('s js wrapper) has no retainer, but it's OK because
+    // the only caller is the fetch function and it uses the body buffer
+    // immediately.
+    return data;
 }
 
 bool Request::hasBody() const
@@ -664,6 +674,22 @@ void Request::populateWebServiceWorkerRequest(WebServiceWorkerRequest& webReques
 String Request::mimeType() const
 {
     return m_request->mimeType();
+}
+
+void Request::refreshBody(ScriptState* scriptState)
+{
+    ScriptState::Scope scope(scriptState);
+    v8::Local<v8::Value> bodyBuffer = toV8(this->bodyBuffer(), scriptState);
+    v8::Local<v8::Value> request = toV8(this, scriptState);
+    if (request.IsEmpty()) {
+        // |toV8| can return an empty handle when the worker is terminating.
+        // We don't want the renderer to crash in such cases.
+        // TODO(yhirano): Delete this block after the graceful shutdown
+        // mechanism is introduced.
+        return;
+    }
+    DCHECK(request->IsObject());
+    V8HiddenValue::setHiddenValue(scriptState, request.As<v8::Object>(), V8HiddenValue::internalBodyBuffer(scriptState->isolate()), bodyBuffer);
 }
 
 DEFINE_TRACE(Request)
