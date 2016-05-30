@@ -4,10 +4,11 @@
 
 #include "dbus/values_util.h"
 
-#include <memory>
+#include <utility>
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "dbus/message.h"
 
@@ -24,10 +25,10 @@ bool IsExactlyRepresentableByDouble(T value) {
 // Pops values from |reader| and appends them to |list_value|.
 bool PopListElements(MessageReader* reader, base::ListValue* list_value) {
   while (reader->HasMoreData()) {
-    base::Value* element_value = PopDataAsValue(reader);
+    std::unique_ptr<base::Value> element_value = PopDataAsValue(reader);
     if (!element_value)
       return false;
-    list_value->Append(element_value);
+    list_value->Append(std::move(element_value));
   }
   return true;
 }
@@ -55,10 +56,10 @@ bool PopDictionaryEntries(MessageReader* reader,
       base::JSONWriter::Write(*key, &key_string);
     }
     // Get the value and set the key-value pair.
-    base::Value* value = PopDataAsValue(&entry_reader);
+    std::unique_ptr<base::Value> value = PopDataAsValue(&entry_reader);
     if (!value)
       return false;
-    dictionary_value->SetWithoutPathExpansion(key_string, value);
+    dictionary_value->SetWithoutPathExpansion(key_string, std::move(value));
   }
   return true;
 }
@@ -88,8 +89,8 @@ std::string GetTypeSignature(const base::Value& value) {
 
 }  // namespace
 
-base::Value* PopDataAsValue(MessageReader* reader) {
-  base::Value* result = NULL;
+std::unique_ptr<base::Value> PopDataAsValue(MessageReader* reader) {
+  std::unique_ptr<base::Value> result;
   switch (reader->GetDataType()) {
     case Message::INVALID_DATA:
       // Do nothing.
@@ -97,37 +98,39 @@ base::Value* PopDataAsValue(MessageReader* reader) {
     case Message::BYTE: {
       uint8_t value = 0;
       if (reader->PopByte(&value))
-        result = new base::FundamentalValue(value);
+        result = base::MakeUnique<base::FundamentalValue>(value);
       break;
     }
     case Message::BOOL: {
       bool value = false;
       if (reader->PopBool(&value))
-        result = new base::FundamentalValue(value);
+        result = base::MakeUnique<base::FundamentalValue>(value);
       break;
     }
     case Message::INT16: {
       int16_t value = 0;
       if (reader->PopInt16(&value))
-        result = new base::FundamentalValue(value);
+        result = base::MakeUnique<base::FundamentalValue>(value);
       break;
     }
     case Message::UINT16: {
       uint16_t value = 0;
       if (reader->PopUint16(&value))
-        result = new base::FundamentalValue(value);
+        result = base::MakeUnique<base::FundamentalValue>(value);
       break;
     }
     case Message::INT32: {
       int32_t value = 0;
       if (reader->PopInt32(&value))
-        result = new base::FundamentalValue(value);
+        result = base::MakeUnique<base::FundamentalValue>(value);
       break;
     }
     case Message::UINT32: {
       uint32_t value = 0;
-      if (reader->PopUint32(&value))
-        result = new base::FundamentalValue(static_cast<double>(value));
+      if (reader->PopUint32(&value)) {
+        result = base::MakeUnique<base::FundamentalValue>(
+            static_cast<double>(value));
+      }
       break;
     }
     case Message::INT64: {
@@ -135,7 +138,8 @@ base::Value* PopDataAsValue(MessageReader* reader) {
       if (reader->PopInt64(&value)) {
         DLOG_IF(WARNING, !IsExactlyRepresentableByDouble(value)) <<
             value << " is not exactly representable by double";
-        result = new base::FundamentalValue(static_cast<double>(value));
+        result = base::MakeUnique<base::FundamentalValue>(
+            static_cast<double>(value));
       }
       break;
     }
@@ -144,26 +148,27 @@ base::Value* PopDataAsValue(MessageReader* reader) {
       if (reader->PopUint64(&value)) {
         DLOG_IF(WARNING, !IsExactlyRepresentableByDouble(value)) <<
             value << " is not exactly representable by double";
-        result = new base::FundamentalValue(static_cast<double>(value));
+        result = base::MakeUnique<base::FundamentalValue>(
+            static_cast<double>(value));
       }
       break;
     }
     case Message::DOUBLE: {
       double value = 0;
       if (reader->PopDouble(&value))
-        result = new base::FundamentalValue(value);
+        result = base::MakeUnique<base::FundamentalValue>(value);
       break;
     }
     case Message::STRING: {
       std::string value;
       if (reader->PopString(&value))
-        result = new base::StringValue(value);
+        result = base::MakeUnique<base::StringValue>(value);
       break;
     }
     case Message::OBJECT_PATH: {
       ObjectPath value;
       if (reader->PopObjectPath(&value))
-        result = new base::StringValue(value.value());
+        result = base::MakeUnique<base::StringValue>(value.value());
       break;
     }
     case Message::UNIX_FD: {
@@ -180,11 +185,11 @@ base::Value* PopDataAsValue(MessageReader* reader) {
           std::unique_ptr<base::DictionaryValue> dictionary_value(
               new base::DictionaryValue);
           if (PopDictionaryEntries(&sub_reader, dictionary_value.get()))
-            result = dictionary_value.release();
+            result = std::move(dictionary_value);
         } else {
           std::unique_ptr<base::ListValue> list_value(new base::ListValue);
           if (PopListElements(&sub_reader, list_value.get()))
-            result = list_value.release();
+            result = std::move(list_value);
         }
       }
       break;
@@ -194,7 +199,7 @@ base::Value* PopDataAsValue(MessageReader* reader) {
       if (reader->PopStruct(&sub_reader)) {
         std::unique_ptr<base::ListValue> list_value(new base::ListValue);
         if (PopListElements(&sub_reader, list_value.get()))
-          result = list_value.release();
+          result = std::move(list_value);
       }
       break;
     }

@@ -325,7 +325,7 @@ void ShillClientUnittestBase::ExpectDictionaryValueArgument(
       case dbus::Message::BOOL:
       case dbus::Message::INT32:
       case dbus::Message::STRING:
-        value.reset(dbus::PopDataAsValue(&variant_reader));
+        value = dbus::PopDataAsValue(&variant_reader);
         break;
       default:
         NOTREACHED();
