@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-tabs/paper-tabs.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
+<link rel="import" href="chrome://history/icons.html">
 <link rel="import" href="chrome://history/shared_style.html">
 
 <dom-module id="history-toolbar">
@@ -144,12 +145,12 @@
           <span id="grouped-date">
             {{getHistoryInterval_(queryStartTime, queryEndTime)}}
           </span>
-          <paper-icon-button icon="today" alt="$i18n{rangeToday}"
+          <paper-icon-button icon="history:today" alt="$i18n{rangeToday}"
               title="$i18n{rangeToday}"></paper-icon-button>
-          <paper-icon-button icon="hardware:keyboard-arrow-left"
+          <paper-icon-button icon="history:chevron-left"
               alt="$i18n{rangePrevious}" title="$i18n{rangePrevious}"
               class="rtl-reversible"></paper-icon-button>
-          <paper-icon-button icon="hardware:keyboard-arrow-right"
+          <paper-icon-button icon="cr:chevron-right"
               alt="$i18n{rangeNext}" title="$i18n{rangeNext}"
               class="rtl-reversible"></paper-icon-button>
         </div>
