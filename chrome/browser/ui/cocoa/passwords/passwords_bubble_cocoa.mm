@@ -4,9 +4,11 @@
 
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_cocoa.h"
 
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #include "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_controller.h"
@@ -100,13 +102,15 @@ void ManagePasswordsBubbleCocoa::OnClose() {
 // static
 void ManagePasswordsBubbleCocoa::Show(content::WebContents* webContents,
                                       bool user_action) {
-  if (bubble_ && (bubble_->webContents_ != webContents)) {
-    // The bubble is currently shown for some other tab. We should close it now
-    // and open for |webContents|.
+  if (bubble_) {
+    // The bubble is currently shown. It's to be reopened with the new content.
+    // Disable closing animation so that it's destroyed immediately.
+    InfoBubbleWindow* window = base::mac::ObjCCastStrict<InfoBubbleWindow>(
+        [bubble_->controller_ window]);
+    [window setAllowedAnimations:info_bubble::kAnimateNone];
     bubble_->Close();
   }
-  if (bubble_)
-    return;
+  DCHECK(!bubble_);
 
   NSWindow* window = [webContents->GetNativeView() window];
   if (!window) {
