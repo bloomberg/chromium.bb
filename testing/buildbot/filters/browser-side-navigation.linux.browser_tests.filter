@@ -138,6 +138,7 @@
 -MimeHandlerViewTest.Iframe
 -MimeHandlerViewTest.NonAsciiHeaders
 -NewTabUIBrowserTest.ShowIncognito
+-NewTaskManagerViewTest.SelectionConsistency
 -OptionsWebUIExtendedTest.OverlayBackToChild
 -PasswordManagerBrowserTestBase.*
 -PDFExtensionTest.Basic
@@ -164,9 +165,9 @@
 -PhishingClassifierTest.TestClassificationWhenPostRequest
 -PlatformAppBrowserTest.ActiveAppsAreRecorded
 -PlatformAppUrlRedirectorBrowserTest.PrerenderedClickInTabIntercepted
--PolicyTest.FullscreenAllowedApp
--PolicyTest.HomepageLocation
+-PolicyTest.*
 -PolicyUITest.ExtensionLoadAndSendPolicy
+-PredictorBrowserTest.RendererInitiatedNavigationPreconnect
 -PrerenderBrowserTest.PrerenderCrossProcessServerRedirect
 -PrerenderBrowserTest.PrerenderCrossProcessServerRedirectNoHang
 -PrerenderBrowserTest.PrerenderSafeBrowsingClientRedirect
@@ -297,12 +298,7 @@
 -SecurityStateModelLoadingTest.NavigationStateChanges
 -SessionRestoreTest.RestoreWebUISettings
 -SessionRestoreTest.RestoreForeignTab
--SSLUITest.BadCertFollowedByGoodCert
--SSLUITest.TestBadFrameNavigation
--SSLUITest.TestBadHTTPSDownload
--SSLUITest.TestGoodFrameNavigation
--SSLUITest.TestHTTPSExpiredCertAndGoBackViaButton
--SSLUITest.TestUnsafeContentsWithUserException
+-SSLUITest.*
 -SSLUITestWithClientCert.TestWSSClientCert
 -StreamsPrivateApiTest.Abort
 -StreamsPrivateApiTest.FileURL
@@ -313,6 +309,7 @@
 -TaskManagerBrowserTest.*
 -TemplateURLScraperTest.ScrapeWithOnSubmit
 -UnloadTest.CrossSiteInfiniteBeforeUnloadAsync
+-WebBluetoothTest.WebBluetoothAfterCrash
 -WebNavigationApiTest.Crash
 -WebNavigationApiTest.CrossProcess
 -WebNavigationApiTest.CrossProcessAbort
