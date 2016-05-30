@@ -1,61 +1,42 @@
-<!doctype html>
-<html>
-    <head>
-        <title>Test that the overlay cast button fades at the right time (neither too soon nor too late).</title>
-        <script src="../resources/testharness.js"></script>
-        <script src="../resources/testharnessreport.js"></script>
-        <script src="media-file.js"></script>
-        <script src="media-controls.js"></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src="video-test.js"></script>
-    </head>
-    <body>
-        <video loop></video>
-        <script>
-        var controls;
-        var test;
-        // The cast button should be visible for at least the controlsMouseMovementTimeout, and no more
-        // than that plus the fadeout time. Allow 500ms margin at either side.
-        var hideTimeoutLowerBound = controlsMouseMovementTimeoutMs - 500;
-        var hideTimeoutUpperBound = controlsMouseMovementTimeoutMs + controlsFadeOutDurationMs + 500;
-        function overlayCastButton(element)
-        {
-            var controlID = "-internal-media-controls-overlay-cast-button";
-            var button = mediaControlsElement(window.internals.shadowRoot(element).firstChild, controlID);
-            return button;
-        }
-        async_test(function(t)
-        {
-            findMediaElement();
-            video.src = findMediaFile("video", "content/test");
-            video.addEventListener("playing", t.step_func(function()
-            {
-                setTimeout(t.step_func(function()
-                {
-                    button = overlayCastButton(video);
-                    // Now should have cast button
-                    style = window.getComputedStyle(button);
-                    visibility = style.getPropertyValue("visibility");
-                    display = style.getPropertyValue("display");
-                    assert_true(((display != "none")) && (visibility == "visible"),
-                            "button should exist, display = \"" + display + '\"');
-                }), hideTimeoutLowerBound);
-                setTimeout(t.step_func(function()
-                {
-                    button = overlayCastButton(video);
-                    // Cast button shoud be gone
-                    style = window.getComputedStyle(button);
-                    visibility = style.getPropertyValue("visibility");
-                    display = style.getPropertyValue("display");
-                    assert_false(((display != "none")) && (visibility == "visible"),
-                            "button should not exist, display = \"" + display + '\"');
-                    t.done();
-                }), hideTimeoutUpperBound);
-            }));
-            internals.mediaPlayerRemoteRouteAvailabilityChanged(video, true);
-            video.play();
-        });
-        </script>
-    </body>
-</html>
+<!DOCTYPE html>
+<title>Test that the overlay cast button fades at the right time (neither too soon nor too late).</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script src="media-controls.js"></script>
+<video loop></video>
+<script>
+async_test(function(t) {
+    // The cast button should be visible for at least the controlsMouseMovementTimeout,
+    // and no more than that plus the fadeout time. Allow 500ms margin at either side.
+    var hideTimeoutLowerBound = controlsMouseMovementTimeoutMs - 500;
+    var hideTimeoutUpperBound = controlsMouseMovementTimeoutMs + controlsFadeOutDurationMs + 500;
+    
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "content/test");
+    
+    video.onplaying = t.step_func(function() {
+        setTimeout(t.step_func(function() {
+            // Cast button should be visible
+            assert_true(isCastButtonVisible(), "button should exist");
+        }), hideTimeoutLowerBound);
+        
+        setTimeout(t.step_func_done(function() {
+            // Cast button should be gone
+            assert_false(isCastButtonVisible(), "button should not exist");
+        }), hideTimeoutUpperBound);
+    });
+
+    internals.mediaPlayerRemoteRouteAvailabilityChanged(video, true);
+    video.play();
+
+    function isCastButtonVisible() {
+        var controlID = "-internal-media-controls-overlay-cast-button";
+        var button = mediaControlsElement(internals.shadowRoot(video).firstChild, controlID);
+        var style = getComputedStyle(button);
+        var visibility = style.getPropertyValue("visibility");
+        var display = style.getPropertyValue("display");
+        return (display != "none" && visibility == "visible");
+    }
+});
+</script>

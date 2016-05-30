@@ -1,52 +1,29 @@
-<!doctype html>
-<html>
-    <head>
-        <title>This tests that controls do not fade out when the video is playing remotely.</title>
-        <script src="../resources/testharness.js"></script>
-        <script src="../resources/testharnessreport.js"></script>
-        <script src="media-file.js"></script>
-        <script src="media-controls.js"></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src="video-test.js"></script>
-    </head>
-    <body>
-        <video controls loop></video>
-        <script>
-        var controls;
-        var test;
+<!DOCTYPE html>
+<title>This tests that controls do not fade out when the video is playing remotely.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script src="media-controls.js"></script>
+<video controls loop></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "content/test");
 
-        function playing()
-        {
-            internals.mediaPlayerPlayingRemotelyChanged(video, true);
-            runAfterHideMediaControlsTimerFired(function()
-            {
-                controls = mediaControlsButton(video, "panel");
-                testExpected("getComputedStyle(controls).opacity", 1);
+    video.onplaying = t.step_func(function() {
+        internals.mediaPlayerPlayingRemotelyChanged(video, true);
+        runAfterHideMediaControlsTimerFired(function() {
+            var controls = mediaControlsButton(video, "panel");
+            assert_equals(getComputedStyle(controls).opacity, "1");
 
-                consoleWrite("");
-
-                internals.mediaPlayerPlayingRemotelyChanged(video, false);
-                runAfterHideMediaControlsTimerFired(function()
-                {
-                    testExpected("getComputedStyle(controls).opacity", 0);
-
-                    consoleWrite("");
-
-                    test.done();
-                },
-                video);
+            internals.mediaPlayerPlayingRemotelyChanged(video, false);
+            runAfterHideMediaControlsTimerFired(function() {
+                assert_equals(getComputedStyle(controls).opacity, "0");
+                t.done();
             }, video);
-        }
+        }, video);
+    });
 
-        async_test(function(t)
-        {
-            test = t;
-            findMediaElement();
-            video.src = findMediaFile("video", "content/test");
-            video.addEventListener("playing", playing);
-            video.play();
-        });
-        </script>
-    </body>
-</html>
+    video.play();
+});
+</script>
