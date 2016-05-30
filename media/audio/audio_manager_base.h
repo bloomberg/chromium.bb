@@ -38,9 +38,12 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) override;
   AudioOutputStream* MakeAudioOutputStream(
       const AudioParameters& params,
-      const std::string& device_id) override;
-  AudioInputStream* MakeAudioInputStream(const AudioParameters& params,
-                                         const std::string& device_id) override;
+      const std::string& device_id,
+      const LogCallback& log_callback) override;
+  AudioInputStream* MakeAudioInputStream(
+      const AudioParameters& params,
+      const std::string& device_id,
+      const LogCallback& log_callback) override;
   AudioOutputStream* MakeAudioOutputStreamProxy(
       const AudioParameters& params,
       const std::string& device_id) override;
@@ -68,21 +71,27 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   // Creates the output stream for the |AUDIO_PCM_LINEAR| format. The legacy
   // name is also from |AUDIO_PCM_LINEAR|.
   virtual AudioOutputStream* MakeLinearOutputStream(
-      const AudioParameters& params) = 0;
+      const AudioParameters& params,
+      const LogCallback& log_callback) = 0;
 
   // Creates the output stream for the |AUDIO_PCM_LOW_LATENCY| format.
   virtual AudioOutputStream* MakeLowLatencyOutputStream(
       const AudioParameters& params,
-      const std::string& device_id) = 0;
+      const std::string& device_id,
+      const LogCallback& log_callback) = 0;
 
   // Creates the input stream for the |AUDIO_PCM_LINEAR| format. The legacy
   // name is also from |AUDIO_PCM_LINEAR|.
   virtual AudioInputStream* MakeLinearInputStream(
-      const AudioParameters& params, const std::string& device_id) = 0;
+      const AudioParameters& params,
+      const std::string& device_id,
+      const LogCallback& log_callback) = 0;
 
   // Creates the input stream for the |AUDIO_PCM_LOW_LATENCY| format.
   virtual AudioInputStream* MakeLowLatencyInputStream(
-      const AudioParameters& params, const std::string& device_id) = 0;
+      const AudioParameters& params,
+      const std::string& device_id,
+      const LogCallback& log_callback) = 0;
 
   // Get number of input or output streams.
   int input_stream_count() const { return num_input_streams_; }

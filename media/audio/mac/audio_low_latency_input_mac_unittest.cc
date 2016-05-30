@@ -134,7 +134,8 @@ class MacAudioInputTest : public testing::Test {
     AudioInputStream* ais = audio_manager_->MakeAudioInputStream(
         AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY,
                         CHANNEL_LAYOUT_STEREO, fs, 16, samples_per_packet),
-        AudioDeviceDescription::kDefaultDeviceId);
+        AudioDeviceDescription::kDefaultDeviceId,
+        base::Bind(&MacAudioInputTest::OnLogMessage, base::Unretained(this)));
     EXPECT_TRUE(ais);
     return ais;
   }
@@ -147,13 +148,17 @@ class MacAudioInputTest : public testing::Test {
     AudioInputStream* ais = audio_manager_->MakeAudioInputStream(
         AudioParameters(AudioParameters::AUDIO_PCM_LOW_LATENCY, channel_layout,
                         fs, 16, samples_per_packet),
-        AudioDeviceDescription::kDefaultDeviceId);
+        AudioDeviceDescription::kDefaultDeviceId,
+        base::Bind(&MacAudioInputTest::OnLogMessage, base::Unretained(this)));
     EXPECT_TRUE(ais);
     return ais;
   }
 
+  void OnLogMessage(const std::string& message) { log_message_ = message; }
+
   base::MessageLoop message_loop_;
   ScopedAudioManagerPtr audio_manager_;
+  std::string log_message_;
 };
 
 // Test Create(), Close().
@@ -216,6 +221,8 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyMonoRecording) {
   run_loop.Run();
   ais->Stop();
   ais->Close();
+
+  EXPECT_FALSE(log_message_.empty());
 }
 
 // Verify that recording starts and stops correctly in mono using mocked sink.
@@ -249,6 +256,8 @@ TEST_F(MacAudioInputTest, AUAudioInputStreamVerifyStereoRecording) {
   run_loop.Run();
   ais->Stop();
   ais->Close();
+
+  EXPECT_FALSE(log_message_.empty());
 }
 
 // This test is intended for manual tests and should only be enabled

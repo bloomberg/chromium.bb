@@ -30,6 +30,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "media/audio/audio_io.h"
+#include "media/audio/audio_manager.h"
 #include "media/base/audio_parameters.h"
 
 namespace media {
@@ -73,7 +74,8 @@ class AUHALStream : public AudioOutputStream {
   // It will often be the default output device.
   AUHALStream(AudioManagerMac* manager,
               const AudioParameters& params,
-              AudioDeviceID device);
+              AudioDeviceID device,
+              const AudioManager::LogCallback& log_callback);
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioOutputStream::Close().
   ~AUHALStream() override;
@@ -213,6 +215,9 @@ class AUHALStream : public AudioOutputStream {
 
   // Used to defer Start() to workaround http://crbug.com/160920.
   base::CancelableClosure deferred_start_cb_;
+
+  // Callback to send statistics info.
+  AudioManager::LogCallback log_callback_;
 
   // Used to make sure control functions (Start(), Stop() etc) are called on the
   // right thread.

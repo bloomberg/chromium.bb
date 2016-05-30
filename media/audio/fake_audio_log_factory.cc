@@ -24,6 +24,7 @@ class FakeAudioLogImpl : public AudioLog {
   void OnSetVolume(int component_id, double volume) override {}
   void OnSwitchOutputDevice(int component_id,
                             const std::string& device_id) override {}
+  void OnLogMessage(int component_id, const std::string& message) override {}
 };
 
 FakeAudioLogFactory::FakeAudioLogFactory() {}

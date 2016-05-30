@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -27,8 +28,9 @@ ACTION(ZeroBuffer) {
   arg0->Zero();
 }
 
-ACTION_P(SignalEvent, event) {
-  event->Signal();
+ACTION_P3(MaybeSignalEvent, counter, signal_at_count, event) {
+  if (++(*counter) == signal_at_count)
+    event->Signal();
 }
 
 class AUHALStreamTest : public testing::Test {
@@ -45,17 +47,21 @@ class AUHALStreamTest : public testing::Test {
 
   AudioOutputStream* Create() {
     return manager_->MakeAudioOutputStream(
-        manager_->GetDefaultOutputStreamParameters(), "");
+        manager_->GetDefaultOutputStreamParameters(), "",
+        base::Bind(&AUHALStreamTest::OnLogMessage, base::Unretained(this)));
   }
 
   bool OutputDevicesAvailable() {
     return manager_->HasAudioOutputDevices();
   }
 
+  void OnLogMessage(const std::string& message) { log_message_ = message; }
+
  protected:
   base::TestMessageLoop message_loop_;
   ScopedAudioManagerPtr manager_;
   MockAudioSourceCallback source_;
+  std::string log_message_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AUHALStreamTest);
@@ -87,16 +93,24 @@ TEST_F(AUHALStreamTest, CreateOpenStartStopClose) {
   AudioOutputStream* stream = Create();
   EXPECT_TRUE(stream->Open());
 
-  // Wait for the first data callback from the OS.
+  // Wait for the first two data callback from the OS.
   base::WaitableEvent event(false, false);
+  int callback_counter = 0;
+  const int number_of_callbacks = 2;
   EXPECT_CALL(source_, OnMoreData(_, _, _))
-      .WillOnce(DoAll(ZeroBuffer(), SignalEvent(&event), Return(0)));
+      .Times(number_of_callbacks)
+      .WillRepeatedly(DoAll(
+          ZeroBuffer(),
+          MaybeSignalEvent(&callback_counter, number_of_callbacks, &event),
+          Return(0)));
   EXPECT_CALL(source_, OnError(_)).Times(0);
   stream->Start(&source_);
   event.Wait();
 
   stream->Stop();
   stream->Close();
+
+  EXPECT_FALSE(log_message_.empty());
 }
 
 }  // namespace media

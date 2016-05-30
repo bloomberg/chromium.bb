@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/mac/audio_manager_mac.h"
@@ -39,7 +40,8 @@ static void WrapBufferList(AudioBufferList* buffer_list,
 
 AUHALStream::AUHALStream(AudioManagerMac* manager,
                          const AudioParameters& params,
-                         AudioDeviceID device)
+                         AudioDeviceID device,
+                         const AudioManager::LogCallback& log_callback)
     : manager_(manager),
       params_(params),
       output_channels_(params_.channels()),
@@ -57,7 +59,8 @@ AUHALStream::AUHALStream(AudioManagerMac* manager,
       last_number_of_frames_(0),
       total_lost_frames_(0),
       largest_glitch_frames_(0),
-      glitches_detected_(0) {
+      glitches_detected_(0),
+      log_callback_(log_callback) {
   // We must have a manager.
   DCHECK(manager_);
 
@@ -390,16 +393,19 @@ void AUHALStream::ReportAndResetStats() {
   UMA_HISTOGRAM_CUSTOM_COUNTS("Media.Audio.Render.Glitches", glitches_detected_,
                               0, 999999, 100);
 
+  auto lost_frames_ms = (total_lost_frames_ * 1000) / params_.sample_rate();
+  std::string log_message = base::StringPrintf(
+      "AU out: Total glitches=%d. Total frames lost=%d (%d ms).",
+      glitches_detected_, total_lost_frames_, lost_frames_ms);
+  log_callback_.Run(log_message);
+
   if (glitches_detected_ != 0) {
-    auto lost_frames_ms = (total_lost_frames_ * 1000) / params_.sample_rate();
     UMA_HISTOGRAM_COUNTS("Media.Audio.Render.LostFramesInMs", lost_frames_ms);
     auto largest_glitch_ms =
         (largest_glitch_frames_ * 1000) / params_.sample_rate();
     UMA_HISTOGRAM_COUNTS("Media.Audio.Render.LargestGlitchMs",
                          largest_glitch_ms);
-    DLOG(WARNING) << "Total glitches=" << glitches_detected_
-                  << ". Total frames lost=" << total_lost_frames_ << " ("
-                  << lost_frames_ms;
+    DLOG(WARNING) << log_message;
   }
 
   number_of_frames_requested_ = 0;

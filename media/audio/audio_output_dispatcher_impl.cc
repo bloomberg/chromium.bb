@@ -146,8 +146,12 @@ bool AudioOutputDispatcherImpl::HasOutputProxies() const {
 
 bool AudioOutputDispatcherImpl::CreateAndOpenStream() {
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  const int stream_id = audio_stream_id_++;
   AudioOutputStream* stream = audio_manager_->MakeAudioOutputStream(
-      params_, device_id_);
+      params_, device_id_,
+      base::Bind(&AudioLog::OnLogMessage, base::Unretained(audio_log_.get()),
+                 stream_id));
   if (!stream)
     return false;
 
@@ -156,7 +160,6 @@ bool AudioOutputDispatcherImpl::CreateAndOpenStream() {
     return false;
   }
 
-  const int stream_id = audio_stream_id_++;
   audio_stream_ids_[stream] = stream_id;
   audio_log_->OnCreated(
       stream_id, params_, device_id_);
