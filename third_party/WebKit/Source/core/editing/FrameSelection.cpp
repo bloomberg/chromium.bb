@@ -698,7 +698,7 @@ IntRect FrameSelection::absoluteCaretBounds()
 
 void FrameSelection::invalidateCaretRect()
 {
-    m_frameCaret->invalidateCaretRect(selection());
+    m_frameCaret->invalidateCaretRect();
 }
 
 void FrameSelection::dataWillChange(const CharacterData& node)
@@ -708,7 +708,7 @@ void FrameSelection::dataWillChange(const CharacterData& node)
 
 void FrameSelection::paintCaret(GraphicsContext& context, const LayoutPoint& paintOffset)
 {
-    m_frameCaret->paintCaret(context, paintOffset, selection());
+    m_frameCaret->paintCaret(context, paintOffset);
 }
 
 bool FrameSelection::contains(const LayoutPoint& point)

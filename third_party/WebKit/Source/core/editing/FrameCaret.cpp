@@ -140,17 +140,26 @@ void FrameCaret::setCaretRectNeedsUpdate()
         page->animator().scheduleVisualUpdate(m_frame->localFrameRoot());
 }
 
-void FrameCaret::invalidateCaretRect(const VisibleSelection& selection)
+bool FrameCaret::caretPositionIsValidForDocument(const Document& document) const
+{
+    if (!isActive())
+        return true;
+
+    return m_caretPosition.position().document() == document
+        && !m_caretPosition.position().isOrphan();
+}
+
+void FrameCaret::invalidateCaretRect()
 {
     if (!m_caretRectDirty)
         return;
     m_caretRectDirty = false;
 
-    DCHECK(selection.isValidFor(*m_frame->document()));
+    DCHECK(caretPositionIsValidForDocument(*m_frame->document()));
     LayoutObject* layoutObject = nullptr;
     LayoutRect newRect;
-    if (selection.isCaret())
-        newRect = localCaretRectOfPosition(PositionWithAffinity(selection.start(), selection.affinity()), layoutObject);
+    if (isActive())
+        newRect = localCaretRectOfPosition(m_caretPosition, layoutObject);
     Node* newNode = layoutObject ? layoutObject->node() : nullptr;
 
     if (!m_caretBlinkTimer.isActive()
@@ -193,12 +202,13 @@ void FrameCaret::setShouldShowBlockCursor(bool shouldShowBlockCursor)
     updateAppearance();
 }
 
-void FrameCaret::paintCaret(GraphicsContext& context, const LayoutPoint& paintOffset, const VisibleSelection& selection)
+void FrameCaret::paintCaret(GraphicsContext& context, const LayoutPoint& paintOffset)
 {
-    if (selection.isCaret() && m_shouldPaintCaret) {
-        updateCaretRect(PositionWithAffinity(selection.start(), selection.affinity()));
-        CaretBase::paintCaret(selection.start().anchorNode(), context, paintOffset);
-    }
+    if (!(isActive() && m_shouldPaintCaret))
+        return;
+
+    updateCaretRect(m_caretPosition);
+    CaretBase::paintCaret(m_caretPosition.position().anchorNode(), context, paintOffset);
 }
 
 void FrameCaret::dataWillChange(const CharacterData& node)

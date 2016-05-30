@@ -27,7 +27,6 @@
 #define FrameCaret_h
 
 #include "core/editing/CaretBase.h"
-#include "core/editing/VisibleSelection.h"
 #include "platform/geometry/IntRect.h"
 
 namespace blink {
@@ -52,13 +51,13 @@ public:
     void setCaretVisibility(CaretVisibility) override;
     bool isCaretBoundsDirty() const { return m_caretRectDirty; }
     void setCaretRectNeedsUpdate();
-    void invalidateCaretRect(const VisibleSelection&);
+    void invalidateCaretRect();
     IntRect absoluteCaretBounds();
 
     bool shouldShowBlockCursor() const { return m_shouldShowBlockCursor; }
     void setShouldShowBlockCursor(bool);
 
-    void paintCaret(GraphicsContext&, const LayoutPoint&, const VisibleSelection&);
+    void paintCaret(GraphicsContext&, const LayoutPoint&);
 
     void dataWillChange(const CharacterData&);
     void nodeWillBeRemoved(Node&);
@@ -74,6 +73,7 @@ public:
 private:
     bool shouldBlinkCaret() const;
     void caretBlinkTimerFired(Timer<FrameCaret>*);
+    bool caretPositionIsValidForDocument(const Document&) const;
 
     PositionWithAffinity m_caretPosition;
     const Member<LocalFrame> m_frame;
