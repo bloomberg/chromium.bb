@@ -43,19 +43,19 @@ struct fd_device * kgsl_device_new(int fd);
 struct fd_device * msm_device_new(int fd);
 
 static void
-add_bucket(struct fd_device *dev, int size)
+add_bucket(struct fd_bo_cache *cache, int size)
 {
-	unsigned int i = dev->num_buckets;
+	unsigned int i = cache->num_buckets;
 
-	assert(i < ARRAY_SIZE(dev->cache_bucket));
+	assert(i < ARRAY_SIZE(cache->cache_bucket));
 
-	list_inithead(&dev->cache_bucket[i].list);
-	dev->cache_bucket[i].size = size;
-	dev->num_buckets++;
+	list_inithead(&cache->cache_bucket[i].list);
+	cache->cache_bucket[i].size = size;
+	cache->num_buckets++;
 }
 
 static void
-init_cache_buckets(struct fd_device *dev)
+fd_bo_cache_init(struct fd_bo_cache *cache)
 {
 	unsigned long size, cache_max_size = 64 * 1024 * 1024;
 
@@ -67,16 +67,16 @@ init_cache_buckets(struct fd_device *dev)
 	 * width/height alignment and rounding of sizes to pages will
 	 * get us useful cache hit rates anyway)
 	 */
-	add_bucket(dev, 4096);
-	add_bucket(dev, 4096 * 2);
-	add_bucket(dev, 4096 * 3);
+	add_bucket(cache, 4096);
+	add_bucket(cache, 4096 * 2);
+	add_bucket(cache, 4096 * 3);
 
 	/* Initialize the linked lists for BO reuse cache. */
 	for (size = 4 * 4096; size <= cache_max_size; size *= 2) {
-		add_bucket(dev, size);
-		add_bucket(dev, size + size * 1 / 4);
-		add_bucket(dev, size + size * 2 / 4);
-		add_bucket(dev, size + size * 3 / 4);
+		add_bucket(cache, size);
+		add_bucket(cache, size + size * 1 / 4);
+		add_bucket(cache, size + size * 2 / 4);
+		add_bucket(cache, size + size * 3 / 4);
 	}
 }
 
@@ -113,7 +113,7 @@ struct fd_device * fd_device_new(int fd)
 	dev->fd = fd;
 	dev->handle_table = drmHashCreate();
 	dev->name_table = drmHashCreate();
-	init_cache_buckets(dev);
+	fd_bo_cache_init(&dev->bo_cache);
 
 	return dev;
 }
@@ -137,7 +137,7 @@ struct fd_device * fd_device_ref(struct fd_device *dev)
 
 static void fd_device_del_impl(struct fd_device *dev)
 {
-	fd_cleanup_bo_cache(dev, 0);
+	fd_cleanup_bo_cache(&dev->bo_cache, 0);
 	drmHashDestroy(dev->handle_table);
 	drmHashDestroy(dev->name_table);
 	if (dev->closefd)

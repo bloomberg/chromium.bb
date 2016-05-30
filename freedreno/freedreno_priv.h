@@ -68,6 +68,12 @@ struct fd_bo_bucket {
 	struct list_head list;
 };
 
+struct fd_bo_cache {
+	struct fd_bo_bucket cache_bucket[14 * 4];
+	int num_buckets;
+	time_t time;
+};
+
 struct fd_device {
 	int fd;
 	atomic_t refcnt;
@@ -85,14 +91,12 @@ struct fd_device {
 
 	const struct fd_device_funcs *funcs;
 
-	struct fd_bo_bucket cache_bucket[14 * 4];
-	int num_buckets;
-	time_t time;
+	struct fd_bo_cache bo_cache;
 
 	int closefd;        /* call close(fd) upon destruction */
 };
 
-drm_private void fd_cleanup_bo_cache(struct fd_device *dev, time_t time);
+drm_private void fd_cleanup_bo_cache(struct fd_bo_cache *cache, time_t time);
 
 /* for where @table_lock is already held: */
 drm_private void fd_device_del_locked(struct fd_device *dev);
