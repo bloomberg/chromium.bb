@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/field_trial.h"
-#include "base/process/process.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/renderer/render_thread_observer.h"
 
@@ -62,9 +61,7 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   void OnSetContentSettingRules(const RendererContentSettingRules& rules);
   void OnGetCacheResourceStats();
   void OnSetFieldTrialGroup(const std::string& fiel_trial_name,
-                            const std::string& group_name,
-                            base::ProcessId sender_pid,
-                            int32_t debug_token);
+                            const std::string& group_name);
 
   static bool is_incognito_process_;
   std::unique_ptr<content::ResourceDispatcherDelegate> resource_delegate_;

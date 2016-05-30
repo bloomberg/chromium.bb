@@ -347,20 +347,6 @@ class BASE_EXPORT FieldTrialList {
   // Destructor Release()'s references to all registered FieldTrial instances.
   ~FieldTrialList();
 
-  // TODO(asvitkine): Temporary function to diagnose http://crbug.com/359406.
-  // Remove when that bug is fixed. This enables using a global map that checks
-  // the state of field trials between possible FieldTrialList instances. If
-  // enabled, a CHECK will be hit if it's seen that a field trial is given a
-  // different state then what was specified to a renderer process launch
-  // command line.
-  static void EnableGlobalStateChecks();
-
-  // TODO(asvitkine): Temporary function to diagnose http://crbug.com/359406.
-  // Remove when that bug is fixed. This returns a unique token generated during
-  // FieldTrialList construction. This is used to verify that this value stays
-  // consistent between renderer process invocations.
-  static int32_t GetDebugToken();
-
   // Get a FieldTrial instance from the factory.
   //
   // |name| is used to register the instance with the FieldTrialList class,

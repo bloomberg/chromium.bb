@@ -24,7 +24,6 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -327,49 +326,9 @@ void ChromeRenderThreadObserver::OnSetContentSettingRules(
 
 void ChromeRenderThreadObserver::OnSetFieldTrialGroup(
     const std::string& field_trial_name,
-    const std::string& group_name,
-    base::ProcessId sender_pid,
-    int32_t debug_token) {
-  // Check that the sender's PID doesn't change between messages. We expect
-  // these IPCs to always be delivered from the same browser process, whose pid
-  // should not change.
-  // TODO(asvitkine): Remove this after http://crbug.com/359406 is fixed.
-  static base::ProcessId sender_pid_cached = sender_pid;
-  CHECK_EQ(sender_pid_cached, sender_pid) << sender_pid_cached << "/"
-                                          << sender_pid;
-  // Check that the sender's debug_token doesn't change between messages.
-  // TODO(asvitkine): Remove this after http://crbug.com/359406 is fixed.
-  static int32_t debug_token_cached = debug_token;
-  CHECK_EQ(debug_token_cached, debug_token) << debug_token_cached << "/"
-                                            << debug_token;
-  // The debug token should also correspond to what was specified on the
-  // --force-fieldtrials command line for DebugToken trial.
-  const std::string debug_token_trial_value =
-      base::FieldTrialList::FindFullName("DebugToken");
-  if (!debug_token_trial_value.empty()) {
-    CHECK_EQ(base::IntToString(debug_token), debug_token_trial_value)
-        << debug_token << "/" << debug_token_trial_value;
-  }
-
+    const std::string& group_name) {
   base::FieldTrial* trial =
       base::FieldTrialList::CreateFieldTrial(field_trial_name, group_name);
-  // TODO(asvitkine): Remove this after http://crbug.com/359406 is fixed.
-  if (!trial) {
-    // Log the --force-fieldtrials= switch value for debugging purposes. Take
-    // its substring starting with the trial name, since otherwise the end of
-    // it can get truncated in the dump.
-    std::string switch_substr = base::CommandLine::ForCurrentProcess()->
-        GetSwitchValueASCII(switches::kForceFieldTrials);
-    size_t index = switch_substr.find(field_trial_name);
-    if (index != std::string::npos) {
-      // If possible, log the string one char before the trial name, as there
-      // may be a leading * to indicate it should be activated.
-      switch_substr = switch_substr.substr(index > 0 ? index - 1 : index);
-    }
-    CHECK(trial) << field_trial_name << ":" << group_name << "=>"
-                 << base::FieldTrialList::FindFullName(field_trial_name)
-                 << " ] " << switch_substr;
-  }
   // Ensure the trial is marked as "used" by calling group() on it if it is
   // marked as activated.
   trial->group();
