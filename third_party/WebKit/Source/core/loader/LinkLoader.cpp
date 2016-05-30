@@ -288,7 +288,7 @@ static Resource* preloadIfNeeded(const LinkRelAttribute& relAttribute, const KUR
     }
     ResourceRequest resourceRequest(document.completeURL(href));
     ResourceFetcher::determineRequestContext(resourceRequest, resourceType, false);
-    FetchRequest linkRequest(resourceRequest, FetchInitiatorTypeNames::link);
+    FetchRequest linkRequest(resourceRequest, FetchInitiatorTypeNames::link, document.encodingName());
 
     linkRequest.setPriority(document.fetcher()->loadPriority(resourceType, linkRequest));
     if (crossOrigin != CrossOriginAttributeNotSet)
