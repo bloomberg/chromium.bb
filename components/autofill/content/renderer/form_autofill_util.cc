@@ -71,6 +71,10 @@ enum FieldFilterMask {
                                      FILTER_NON_FOCUSABLE_ELEMENTS,
 };
 
+// If true, operations causing layout computation should be avoided. Set by
+// ScopedLayoutPreventer.
+bool g_prevent_layout = false;
+
 void TruncateString(base::string16* str, size_t max_length) {
   if (str->length() > max_length)
     str->resize(max_length);
@@ -822,6 +826,9 @@ void ForEachMatchingFormFieldCommon(
          element->getAttribute(kPlaceholder) != element->value()))
       continue;
 
+    DCHECK(!g_prevent_layout || !(filters & FILTER_NON_FOCUSABLE_ELEMENTS))
+        << "The callsite of this code wanted to both prevent layout and check "
+           "isFocusable. Pick one.";
     if (((filters & FILTER_DISABLED_ELEMENTS) && !element->isEnabled()) ||
         ((filters & FILTER_READONLY_ELEMENTS) && element->isReadOnly()) ||
         // See description for FILTER_NON_FOCUSABLE_ELEMENTS.
@@ -1172,6 +1179,18 @@ GURL StripAuthAndParams(const GURL& gurl) {
 
 }  // namespace
 
+ScopedLayoutPreventer::ScopedLayoutPreventer() {
+  DCHECK(!g_prevent_layout) << "Is any other instance of ScopedLayoutPreventer "
+                               "alive in the same process?";
+  g_prevent_layout = true;
+}
+
+ScopedLayoutPreventer::~ScopedLayoutPreventer() {
+  DCHECK(g_prevent_layout) << "Is any other instance of ScopedLayoutPreventer "
+                              "alive in the same process?";
+  g_prevent_layout = false;
+}
+
 bool ExtractFormData(const WebFormElement& form_element, FormData* data) {
   return WebFormElementToFormData(
       form_element, WebFormControlElement(),
@@ -1374,7 +1393,8 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
       IsTextAreaElement(element) ||
       IsSelectElement(element)) {
     field->is_autofilled = element.isAutofilled();
-    field->is_focusable = element.isFocusable();
+    if (!g_prevent_layout)
+      field->is_focusable = element.isFocusable();
     field->should_autocomplete = element.autoComplete();
     field->text_direction = element.directionForFormData() ==
         "rtl" ? base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT;

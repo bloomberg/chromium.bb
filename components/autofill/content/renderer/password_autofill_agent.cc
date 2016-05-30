@@ -1136,6 +1136,7 @@ void PasswordAutofillAgent::DidFinishDocumentLoad() {
   // The |frame| contents have been parsed, but not yet rendered.  Let the
   // PasswordManager know that forms are loaded, even though we can't yet tell
   // whether they're visible.
+  form_util::ScopedLayoutPreventer layout_preventer;
   SendPasswordForms(false);
 }
 
