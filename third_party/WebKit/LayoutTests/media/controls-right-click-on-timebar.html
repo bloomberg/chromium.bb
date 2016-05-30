@@ -1,59 +1,30 @@
-<html>
-    <head>
-        <title>right click on timebar test</title>
-        <script src=media-controls.js></script>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script>
-            if (window.testRunner)
-                testRunner.dumpAsText();
+<!DOCTYPE html>
+<title>Test that right clicking on the timebar does not cause a seek.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script src="media-controls.js"></script>
+<video controls></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
 
-            function click()
-            {
-                if (window.eventSender) {
-                    var seekCoords;
-                    try {
-                        seekCoords = mediaControlsButtonCoordinates(video, "timeline");
-                    } catch (exception) {
-                        failTest(exception.description);
-                        return;
-                    }
-                    var x = seekCoords[0];
-                    var y = seekCoords[1];
+    video.onplaying = t.step_func(function() {
+        setTimeout(t.step_func(click), 100);
+    });
 
-                    eventSender.mouseMoveTo(x, y);
-                    eventSender.contextClick();
-                }
-                window.setTimeout("endTest()", 200);
-            }
+    video.onseeked = t.unreached_func();
 
-            function playing()
-            {
-                window.setTimeout("click()", 100);
-            }
+    video.autoplay = true;
+    video.src = findMediaFile("video", "content/test");
 
-            function seeked()
-            {
-                failTest("Should not seek.");
-            }
+    function click() {
+        var seekCoords = mediaControlsButtonCoordinates(video, "timeline");
 
-            function start()
-            {
-                findMediaElement();
-                waitForEvent('playing', playing);
-                waitForEvent('seeked', seeked);
-                run("video.autoplay = true");
-                disableFullTestDetailsPrinting();
-                runSilently("video.src = '" + findMediaFile("video", "content/test") + "'");
-                enableFullTestDetailsPrinting();
-            }
-        </script>
-    </head>
+        eventSender.mouseMoveTo(seekCoords[0], seekCoords[1]);
+        eventSender.contextClick();
 
-    <body onload="start()">
-    <p>Test that right clicking on the timebar does not cause a seek.</p>
-    <video controls></video>
-    </body>
-</html>
+        setTimeout(t.step_func_done(), 200);
+    }
+});
+</script>

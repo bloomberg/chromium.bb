@@ -1,43 +1,37 @@
-<!doctype html>
-<html>
-    <head>
-        <title>media controls volume slider keyboard navigation</title>
-        <script src="media-file.js"></script>
-        <script src="media-controls.js"></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src="video-test.js"></script>
-    </head>
-    <body>
-        <audio controls></audio>
-        <script>
-            findMediaElement();
-            audio.src = findMediaFile("audio", "content/test");
-            testExpected("audio.volume", 1);
-            waitForEvent("loadedmetadata", function()
-            {
-                // Focus the volume slider.
-                var button = mediaControlsButton(audio, "volume-slider");
-                button.focus();
+<!DOCTYPE html>
+<title>Test media controls volume slider keyboard navigation</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script src="media-controls.js"></script>
+<audio controls></audio>
+<script>
+async_test(function(t) {
+    var audio = document.querySelector("audio");
+    audio.src = findMediaFile("audio", "content/test");
+    assert_equals(audio.volume, 1);
 
-                // 'Left' reduces volume.
-                eventSender.keyDown('leftArrow');
-                testExpected("audio.volume", 1, '<');
+    audio.onloadedmetadata = t.step_func(function() {
+        // Focus the volume slider.
+        mediaControlsButton(audio, "volume-slider").focus();
 
-                // 'Right' reduces volume (same step as 'Left', but opposite sign).
-                eventSender.keyDown('rightArrow');
-                testExpected("audio.volume", 1);
+        // 'Left' reduces volume.
+        eventSender.keyDown("leftArrow");
+        assert_less_than(audio.volume, 1);
 
-                // 'Home' sets minimum volume (0).
-                eventSender.keyDown('home');
-                testExpected("audio.volume", 0);
+        // 'Right' increases volume (same step as 'Left', but opposite sign).
+        eventSender.keyDown("rightArrow");
+        assert_equals(audio.volume, 1);
 
-                // 'End' sets maximum volume (1).
-                eventSender.keyDown('end');
-                testExpected("audio.volume", 1);
+        // 'Home' sets minimum volume (0).
+        eventSender.keyDown("home");
+        assert_equals(audio.volume, 0);
 
-                waitForEventAndEnd("volumechange");
-            });
-        </script>
-    </body>
-</html>
+        // 'End' sets maximum volume (1).
+        eventSender.keyDown("end");
+        assert_equals(audio.volume, 1);
+
+        audio.onvolumechange = t.step_func_done();
+    });
+});
+</script>
