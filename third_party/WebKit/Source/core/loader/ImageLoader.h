@@ -96,6 +96,11 @@ public:
         return m_hasPendingErrorEvent;
     }
 
+    bool hadError() const
+    {
+        return !m_failedLoadURL.isEmpty();
+    }
+
     void dispatchPendingEvent(ImageEventSender*);
 
     static void dispatchPendingLoadEvents();

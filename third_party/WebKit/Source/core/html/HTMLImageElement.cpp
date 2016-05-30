@@ -466,6 +466,10 @@ const String& HTMLImageElement::currentSrc() const
 {
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/edits.html#dom-img-currentsrc
     // The currentSrc IDL attribute must return the img element's current request's current URL.
+
+    // Return the picked URL string in case of load error.
+    if (imageLoader().hadError())
+        return m_bestFitImageURL;
     // Initially, the pending request turns into current request when it is either available or broken.
     // We use the image's dimensions as a proxy to it being in any of these states.
     if (!imageLoader().image() || !imageLoader().image()->getImage() || !imageLoader().image()->getImage()->width())
