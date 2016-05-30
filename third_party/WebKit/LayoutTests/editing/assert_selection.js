@@ -366,6 +366,23 @@ class Serializer {
 
   /**
    * @private
+   * @param {!HTMLElement} parentNode
+   * @param {number} childIndex
+   */
+  handleSelection(parentNode, childIndex) {
+    if (parentNode === this.selection_.focusNode &&
+        childIndex === this.selection_.focusOffset) {
+      this.emit('|');
+      return;
+    }
+    if (parentNode === this.selection_.anchorNode &&
+        childIndex === this.selection_.anchorOffset) {
+      this.emit('^');
+    }
+  }
+
+  /**
+   * @private
    * @param {!CharacterData} node
    */
   handleCharacterData(node) {
@@ -416,17 +433,8 @@ class Serializer {
   /**
    * @private
    * @param {!HTMLElement} element
-   * @param {number} nodeIndex
    */
-  handleElementNode(element, nodeIndex) {
-    if (element.parenNode === this.selection_.focusNode &&
-        nodeIndex === this.selection_.focusOffset) {
-      this.emit('|');
-    } else if (
-        element === this.selection_.anchorNode &&
-        nodeIndex === this.selection_.anchorOffset) {
-      this.emit('^');
-    }
+  handleElementNode(element) {
     /** @type {string} */
     const tagName = element.tagName.toLowerCase();
     this.emit(`<${tagName}`);
@@ -445,34 +453,50 @@ class Serializer {
         HTML5_VOID_ELEMENTS.has(tagName)) {
       return;
     }
-    /** @type {number} */
-    let childIndex = 0;
-    for (const child of Array.from(element.childNodes)) {
-      this.serializeInternal(child, childIndex);
-      ++childIndex;
-    }
+    this.serializeChildren(element);
     this.emit(`</${tagName}>`);
   }
 
   /**
    * @public
-   * @param {!HTMLElement} element
+   * @param {!HTMLDocument} document
    */
-  serialize(element) {
+  serialize(document) {
     if (this.selection_.isNone)
-      return node.outerHTML;
-    this.serializeInternal(element, 0);
+      return document.body.firstChild.outerHTML;
+    this.serializeChildren(document.body);
     return this.strings_.join('');
   }
 
   /**
    * @private
-   * @param {!Node} node
-   * @param {number} nodeIndex
+   * @param {!HTMLElement} element
    */
-  serializeInternal(node, nodeIndex) {
+  serializeChildren(element) {
+    /** @type {!Array<!Node>} */
+    const childNodes = Array.from(element.childNodes);
+    if (childNodes.length === 0) {
+      this.handleSelection(element, 0);
+      return;
+    }
+
+    /** @type {number} */
+    let childIndex = 0;
+    for (const child of childNodes) {
+      this.handleSelection(element, childIndex);
+      this.serializeInternal(child, childIndex);
+      ++childIndex;
+    }
+    this.handleSelection(element, childIndex);
+  }
+
+  /**
+   * @private
+   * @param {!Node} node
+   */
+  serializeInternal(node) {
     if (isElement(node))
-      return this.handleElementNode(node, nodeIndex);
+      return this.handleElementNode(node);
     if (isCharacterData(node))
       return this.handleCharacterData(node);
     throw new Error(`Unexpected node ${node}`);
@@ -521,6 +545,11 @@ class Sample {
       throw new Error(
           `You should have at most one anchor marker "^" in "${sampleText}".`);
     }
+    if (anchorMarker >= 0 && focusMarker >= 0 &&
+        (anchorMarker + 1 === focusMarker || anchorMarker - 1 === focusMarker)) {
+      throw new Error(
+          `You should have focus marker and should not have anchor marker if and only if selection is a caret in "${sampleText}".`);
+    }
     this.document_.body.innerHTML = sampleText;
     /** @type {!SampleSelection} */
     const selection = Parser.parse(this.document_.body);
@@ -544,7 +573,7 @@ class Sample {
     const selection = SampleSelection.fromDOMSelection(this.selection_);
     /** @type {!Serializer} */
     const serializer = new Serializer(selection);
-    return serializer.serialize(this.document_.body.firstChild);
+    return serializer.serialize(this.document_);
   }
 }
 
@@ -570,6 +599,33 @@ function assembleDescription() {
 }
 
 /**
+ * @param {string} expectedText
+ */
+function checkExpectedText(expectedText) {
+  /** @type {number} */
+  const anchorOffset = expectedText.indexOf('^');
+  /** @type {number} */
+  const focusOffset = expectedText.indexOf('|');
+  if (anchorOffset != expectedText.lastIndexOf('^')) {
+      throw new Error(
+        `You should have at most one anchor marker "^" in "${expectedText}".`);
+  }
+  if (focusOffset != expectedText.lastIndexOf('|')) {
+      throw new Error(
+        `You should have at most one focus marker "|" in "${expectedText}".`);
+  }
+  if (anchorOffset >= 0 && focusOffset < 0) {
+    throw new Error(
+        `You should have a focus marker "|" in "${expectedText}".`);
+  }
+  if (anchorOffset >= 0 && focusOffset >= 0 &&
+     (anchorOffset + 1 === focusOffset || anchorOffset - 1 === focusOffset)) {
+    throw new Error(
+        `You should have focus marker and should not have anchor marker if and only if selection is a caret in "${expectedText}".`);
+  }
+}
+
+/**
  * @param {string} inputText
  * @param {function(!Selection)|string}
  * @param {string} expectedText
@@ -580,14 +636,7 @@ function assertSelection(
   /** @type {string} */
   const description =
       opt_description === '' ? assembleDescription() : opt_description;
-  if (expectedText.indexOf('^') != expectedText.lastIndexOf('^')) {
-      throw new Error(
-          `You should have at most one anchor marker "^" in "${expectedText}".`);
-  }
-  if (expectedText.indexOf('|') != expectedText.lastIndexOf('|')) {
-      throw new Error(
-          `You should have at most one focus marker "|" in "${expectedText}".`);
-  }
+  checkExpectedText(expectedText);
   const sample = new Sample(inputText);
   if (typeof(tester) === 'function') {
     tester.call(window, sample.selection);
@@ -601,7 +650,7 @@ function assertSelection(
   const actualText = sample.serialize();
   // We keep sample HTML when assertion is false for ease of debugging test
   // case.
-  if (actualText == expectedText)
+  if (actualText === expectedText)
     sample.remove();
   assert_equals(actualText, expectedText, description);
 }

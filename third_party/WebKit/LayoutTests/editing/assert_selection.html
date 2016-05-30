@@ -1,0 +1,112 @@
+<!doctype html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="assert_selection.js"></script>
+<div id="log"></div>
+<script>
+function checked_assert_selection(input, command, output) {
+    try {
+        assert_selection(input, command, output);
+    } catch (exception) {
+        return exception.message;
+    }
+    return 'no exception';
+}
+
+test(() => {
+    assert_selection('|foo', 'noop', '|foo');
+    assert_selection('f|oo', 'noop', 'f|oo');
+    assert_selection('foo|', 'noop', 'foo|');
+    assert_selection('^foo|', 'noop', '^foo|');
+    assert_selection('f^oo|', 'noop', 'f^oo|');
+    assert_selection('f^o|o', 'noop', 'f^o|o');
+    assert_selection('|foo^', 'noop', '|foo^');
+    assert_selection(
+        '|foo^',
+        selection => selection.modify('extend', 'forward', 'character'),
+        'f|oo^', 'selection.modify');
+    assert_selection(
+        '<div contenteditable>^foo|</div>',
+        'bold',
+        '<div contenteditable><b>^foo|</b></div>',
+        'execCommand');
+}, 'markers in text');
+
+test(() => {
+    assert_selection('|<img>', 'noop', '|<img>');
+    assert_selection('^<img>|', 'noop', '^<img>|');
+    assert_selection('|<img>^', 'noop', '|<img>^');
+    assert_selection('<a>|<br></a>', 'noop', '<a>|<br></a>');
+    assert_selection('<a><img>|</a>', 'noop', '<a><img>|</a>');
+    assert_selection('<a>^<img>|</a>', 'noop', '<a>^<img>|</a>');
+    assert_selection('<a>|<img>^</a>', 'noop', '<a>|<img>^</a>');
+    assert_selection('<a><img>|<img></a>', 'noop', '<a><img>|<img></a>');
+    assert_selection('<a><img>|<img>^</a>', 'noop', '<a><img>|<img>^</a>');
+    assert_selection('<a><img>^<img>|</a>', 'noop', '<a><img>^<img>|</a>');
+}, 'markers at element');
+
+test(() => {
+    assert_selection(
+        '|<table><tr><td>foo</td></tr></table>', 'noop',
+        '|<table><tbody><tr><td>foo</td></tr></tbody></table>');
+    assert_selection(
+        '<table><tr><td>foo</td></tr></table>|', 'noop',
+        '<table><tbody><tr><td>foo</td></tr></tbody></table>|');
+    assert_selection(
+        '^<table><tr><td>foo</td></tr></table>|', 'noop',
+        '^<table><tbody><tr><td>foo</td></tr></tbody></table>|');
+    assert_selection(
+        '|<table><tr><td>foo</td></tr></table>^', 'noop',
+        '|<table><tbody><tr><td>foo</td></tr></tbody></table>^');
+}, 'markers around table');
+
+test(() => {
+    assert_equals(checked_assert_selection('foo', 'noop', 'baz'),
+        'You should specify caret position in "foo".');
+}, 'no marker in input');
+
+test(() => {
+    assert_equals(checked_assert_selection('fo|o', 'noop', 'fo|o'),
+        'no exception');
+}, 'no marker in output');
+
+test(() => {
+    assert_equals(checked_assert_selection('fo|o|', 'noop', 'foo'),
+        'You should have at least one focus marker "|" in "fo|o|".');
+}, 'multiple focus markers in input');
+
+test(() => {
+    assert_equals(checked_assert_selection('fo|o', 'noop', '|fo|o'),
+        'You should have at most one focus marker "|" in "|fo|o".');
+}, 'multiple focus markers in output');
+
+test(() => {
+    assert_equals(checked_assert_selection('^fo|o^', 'noop', 'foo'),
+        'You should have at most one anchor marker "^" in "^fo|o^".');
+}, 'multiple anchor markers in input');
+
+test(() => {
+    assert_equals(checked_assert_selection('fo|o', 'noop', '^fo|o^'),
+        'You should have at most one anchor marker "^" in "^fo|o^".');
+}, 'multiple anchor markers in output');
+
+test(() => {
+    assert_equals(checked_assert_selection('^foo', 'noop', 'baz'),
+        'You should specify caret position in "^foo".');
+}, 'anchor marker only in input');
+
+test(() => {
+    assert_equals(checked_assert_selection('|foo', 'noop', 'b^az'),
+        'You should have a focus marker "|" in "b^az".');
+}, 'anchor marker only in output');
+
+test(() => {
+    assert_equals(checked_assert_selection('^|foo', 'noop', 'baz'),
+        'You should have focus marker and should not have anchor marker if and only if selection is a caret in "^|foo".');
+}, 'anchor == foucs in input');
+
+test(() => {
+    assert_equals(checked_assert_selection('|foo', 'noop', 'b^|az'),
+        'You should have focus marker and should not have anchor marker if and only if selection is a caret in "b^|az".');
+}, 'anchor == foucs in output');
+</script>
