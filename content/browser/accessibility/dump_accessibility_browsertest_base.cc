@@ -267,12 +267,10 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     // We won't get the correct coordinate transformations for
     // out-of-process iframes until each frame's surface is ready.
     RenderFrameHostImpl* current_frame_host = node->current_frame_host();
-    if (!current_frame_host)
+    if (!current_frame_host || !current_frame_host->is_local_root())
       continue;
-    RenderWidgetHostImpl* rwh = current_frame_host->GetRenderWidgetHost();
-    if (!rwh)
-      continue;
-    RenderWidgetHostViewBase* rwhv = rwh->GetView();
+    RenderWidgetHostViewBase* rwhv =
+        static_cast<RenderWidgetHostViewBase*>(current_frame_host->GetView());
     if (rwhv && rwhv->IsChildFrameForTesting()) {
       SurfaceHitTestReadyNotifier notifier(
           static_cast<RenderWidgetHostViewChildFrame*>(rwhv));

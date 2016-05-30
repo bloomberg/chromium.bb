@@ -457,17 +457,24 @@ ServiceRegistry* RenderFrameHostImpl::GetServiceRegistry() {
 blink::WebPageVisibilityState RenderFrameHostImpl::GetVisibilityState() {
   // Works around the crashes seen in https://crbug.com/501863, where the
   // active WebContents from a browser iterator may contain a render frame
-  // detached from the frame tree.
-  RenderWidgetHostView* view = RenderFrameHostImpl::GetView();
-  if (!view || !view->GetRenderWidgetHost())
+  // detached from the frame tree. This tries to find a RenderWidgetHost
+  // attached to an ancestor frame, and defaults to visibility hidden if
+  // it fails.
+  // TODO(yfriedman, peter): Ideally this would never be called on an
+  // unattached frame and we could omit this check. See
+  // https://crbug.com/615867.
+  RenderFrameHostImpl* frame = this;
+  while (frame) {
+    if (frame->render_widget_host_)
+      break;
+    frame = frame->GetParent();
+  }
+  if (!frame)
     return blink::WebPageVisibilityStateHidden;
 
-  // TODO(mlamouri,kenrb): call GetRenderWidgetHost() directly when it stops
-  // returning nullptr in some cases. See https://crbug.com/455245.
   blink::WebPageVisibilityState visibility_state =
-      RenderWidgetHostImpl::From(view->GetRenderWidgetHost())->is_hidden()
-          ? blink::WebPageVisibilityStateHidden
-          : blink::WebPageVisibilityStateVisible;
+      GetRenderWidgetHost()->is_hidden() ? blink::WebPageVisibilityStateHidden
+                                         : blink::WebPageVisibilityStateVisible;
   GetContentClient()->browser()->OverridePageVisibilityState(this,
                                                              &visibility_state);
   return visibility_state;
@@ -1177,19 +1184,19 @@ void RenderFrameHostImpl::OnUpdateState(const PageState& state) {
 }
 
 RenderWidgetHostImpl* RenderFrameHostImpl::GetRenderWidgetHost() {
-  return render_widget_host_;
-}
-
-RenderWidgetHostView* RenderFrameHostImpl::GetView() {
   RenderFrameHostImpl* frame = this;
   while (frame) {
     if (frame->render_widget_host_)
-      return frame->render_widget_host_->GetView();
-    frame = static_cast<RenderFrameHostImpl*>(frame->GetParent());
+      return frame->render_widget_host_;
+    frame = frame->GetParent();
   }
 
   NOTREACHED();
   return nullptr;
+}
+
+RenderWidgetHostView* RenderFrameHostImpl::GetView() {
+  return GetRenderWidgetHost()->GetView();
 }
 
 GlobalFrameRoutingId RenderFrameHostImpl::GetGlobalFrameRoutingId() {
@@ -2382,10 +2389,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
 }
 
 bool RenderFrameHostImpl::IsFocused() {
-  // TODO(mlamouri,kenrb): call GetRenderWidgetHost() directly when it stops
-  // returning nullptr in some cases. See https://crbug.com/455245.
-  return RenderWidgetHostImpl::From(
-            GetView()->GetRenderWidgetHost())->is_focused() &&
+  return GetRenderWidgetHost()->is_focused() &&
          frame_tree_->GetFocusedFrame() &&
          (frame_tree_->GetFocusedFrame() == frame_tree_node() ||
           frame_tree_->GetFocusedFrame()->IsDescendantOf(frame_tree_node()));

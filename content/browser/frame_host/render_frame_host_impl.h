@@ -252,10 +252,23 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // TODO(clamy): Remove this once PlzNavigate ships.
   void set_is_loading(bool is_loading) { is_loading_ = is_loading; }
 
-  // This returns the RenderFrameHost's owned RenderWidgetHost if it has one,
-  // or else it returns nullptr.
-  // If the RenderFrameHost is the page's main frame, this returns instead a
-  // pointer to the RenderViewHost (which inherits RenderWidgetHost).
+  // Returns true if this is a top-level frame, or if this frame's RenderFrame
+  // is in a different process from its parent frame. Local roots are
+  // distinguished by owning a RenderWidgetHost, which manages input events
+  // and painting for this frame and its contiguous local subtree in the
+  // renderer process.
+  bool is_local_root() { return !!render_widget_host_; }
+
+  // Returns the RenderWidgetHostImpl attached to this frame or the nearest
+  // ancestor frame, which could potentially be the root. For most input
+  // and rendering related purposes, GetView() should be preferred and
+  // RenderWidgetHostViewBase methods used. GetRenderWidgetHost() will not
+  // return a nullptr, whereas GetView() potentially will (for instance,
+  // after a renderer crash).
+  //
+  // This method crashes if this RenderFrameHostImpl does not own a
+  // a RenderWidgetHost and nor does any of its ancestors. That would
+  // typically mean that the frame has been detached from the frame tree.
   RenderWidgetHostImpl* GetRenderWidgetHost();
 
   GlobalFrameRoutingId GetGlobalFrameRoutingId();

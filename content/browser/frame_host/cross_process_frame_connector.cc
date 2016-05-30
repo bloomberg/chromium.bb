@@ -277,7 +277,7 @@ void CrossProcessFrameConnector::SetRect(const gfx::Rect& frame_rect) {
   if (view_) {
     view_->SetBounds(frame_rect);
 
-    // Out-of-process iframes nested underneath this one implicitly have their
+    // Other local root frames nested underneath this one implicitly have their
     // view rects changed when their ancestor is repositioned, and therefore
     // need to have their screen rects updated.
     FrameTreeNode* proxy_node =
@@ -286,8 +286,7 @@ void CrossProcessFrameConnector::SetRect(const gfx::Rect& frame_rect) {
         old_rect.y() != child_frame_rect_.y()) {
       for (FrameTreeNode* node :
            proxy_node->frame_tree()->SubtreeNodes(proxy_node)) {
-        if (node != proxy_node &&
-            node->current_frame_host()->GetRenderWidgetHost())
+        if (node != proxy_node && node->current_frame_host()->is_local_root())
           node->current_frame_host()->GetRenderWidgetHost()->SendScreenRects();
       }
     }

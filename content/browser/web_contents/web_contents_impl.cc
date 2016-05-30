@@ -2365,7 +2365,7 @@ void WebContentsImpl::OnMoveValidationMessage(
 
 void WebContentsImpl::SendScreenRects() {
   for (FrameTreeNode* node : frame_tree_.Nodes()) {
-    if (node->current_frame_host()->GetRenderWidgetHost())
+    if (node->current_frame_host()->is_local_root())
       node->current_frame_host()->GetRenderWidgetHost()->SendScreenRects();
   }
 
