@@ -20,6 +20,7 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "jni/AccountChooserDialog_jni.h"
@@ -223,16 +224,27 @@ void AccountChooserDialogAndroid::ChooseCredential(
     size_t index,
     password_manager::CredentialType type) {
   using namespace password_manager;
+  password_manager::metrics_util::AccountChooserUserAction action;
   if (type == CredentialType::CREDENTIAL_TYPE_EMPTY) {
     passwords_data_.ChooseCredential(nullptr);
-    return;
+    action = password_manager::metrics_util::ACCOUNT_CHOOSER_DISMISSED;
+  } else {
+    action = password_manager::metrics_util::ACCOUNT_CHOOSER_CREDENTIAL_CHOSEN;
+    const auto& credentials_forms =
+        (type == CredentialType::CREDENTIAL_TYPE_PASSWORD)
+            ? local_credentials_forms()
+            : federated_credentials_forms();
+    if (index < credentials_forms.size()) {
+      passwords_data_.ChooseCredential(credentials_forms[index]);
+    }
   }
-  const auto& credentials_forms =
-      (type == CredentialType::CREDENTIAL_TYPE_PASSWORD)
-          ? local_credentials_forms()
-          : federated_credentials_forms();
-  if (index < credentials_forms.size()) {
-    passwords_data_.ChooseCredential(credentials_forms[index]);
+
+  if (local_credentials_forms().size() == 1) {
+    password_manager::metrics_util::LogAccountChooserUserActionOneAccount(
+        action);
+  } else {
+    password_manager::metrics_util::LogAccountChooserUserActionManyAccounts(
+        action);
   }
 }
 
