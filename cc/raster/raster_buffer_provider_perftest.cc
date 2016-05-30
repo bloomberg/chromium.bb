@@ -121,9 +121,31 @@ static const int kTimeLimitMillis = 2000;
 static const int kWarmupRuns = 5;
 static const int kTimeCheckInterval = 10;
 
-class PerfImageDecodeTaskImpl : public TileTask {
+class PerfTileTask : public TileTask {
  public:
-  PerfImageDecodeTaskImpl() : TileTask(true) {}
+  PerfTileTask() : TileTask(true) {}
+  explicit PerfTileTask(TileTask::Vector* dependencies)
+      : TileTask(true, dependencies) {}
+
+  void Reset() {
+    did_complete_ = false;
+    state().Reset();
+  }
+
+  void Cancel() {
+    if (!state().IsCanceled())
+      state().DidCancel();
+
+    did_complete_ = true;
+  }
+
+ protected:
+  ~PerfTileTask() override {}
+};
+
+class PerfImageDecodeTaskImpl : public PerfTileTask {
+ public:
+  PerfImageDecodeTaskImpl() {}
 
   // Overridden from Task:
   void RunOnWorkerThread() override {}
@@ -147,13 +169,13 @@ class PerfRasterBufferProviderHelper {
   virtual void ReleaseBufferForRaster(std::unique_ptr<RasterBuffer> buffer) = 0;
 };
 
-class PerfRasterTaskImpl : public TileTask {
+class PerfRasterTaskImpl : public PerfTileTask {
  public:
   PerfRasterTaskImpl(PerfRasterBufferProviderHelper* helper,
                      std::unique_ptr<ScopedResource> resource,
                      std::unique_ptr<RasterBuffer> raster_buffer,
                      TileTask::Vector* dependencies)
-      : TileTask(true, dependencies),
+      : PerfTileTask(dependencies),
         helper_(helper),
         resource_(std::move(resource)),
         raster_buffer_(std::move(raster_buffer)) {}
@@ -226,21 +248,18 @@ class RasterBufferProviderPerfTestBase {
   void ResetRasterTasks(const RasterTaskVector& raster_tasks) {
     for (auto& raster_task : raster_tasks) {
       for (auto& decode_task : raster_task->dependencies())
-        decode_task->state().Reset();
+        static_cast<PerfTileTask*>(decode_task.get())->Reset();
 
-      raster_task->state().Reset();
+      static_cast<PerfTileTask*>(raster_task.get())->Reset();
     }
   }
 
   void CancelRasterTasks(const RasterTaskVector& raster_tasks) {
     for (auto& raster_task : raster_tasks) {
-      for (auto& decode_task : raster_task->dependencies()) {
-        if (!decode_task->state().IsCanceled())
-          decode_task->state().DidCancel();
-      }
+      for (auto& decode_task : raster_task->dependencies())
+        static_cast<PerfTileTask*>(decode_task.get())->Cancel();
 
-      if (!raster_task->state().IsCanceled())
-        raster_task->state().DidCancel();
+      static_cast<PerfTileTask*>(raster_task.get())->Cancel();
     }
   }
 

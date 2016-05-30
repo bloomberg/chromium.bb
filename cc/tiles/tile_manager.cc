@@ -97,6 +97,9 @@ class RasterTaskImpl : public TileTask {
   void OnTaskCompleted() override {
     DCHECK(origin_thread_checker_.CalledOnValidThread());
 
+    // Here calling state().IsCanceled() is thread-safe, because this task is
+    // already concluded as FINISHED or CANCELLED and no longer will be worked
+    // upon by task graph runner.
     tile_manager_->OnRasterTaskCompleted(std::move(raster_buffer_), tile_,
                                          resource_, state().IsCanceled());
   }
@@ -190,7 +193,7 @@ void InsertNodeForDecodeTask(TaskGraph* graph,
   if (task->dependencies().size()) {
     DCHECK_EQ(task->dependencies().size(), 1u);
     auto* dependency = task->dependencies()[0].get();
-    if (!dependency->state().IsFinished()) {
+    if (!dependency->HasCompleted()) {
       InsertNodeForDecodeTask(graph, dependency, use_foreground_category,
                               priority);
       graph->edges.push_back(TaskGraph::Edge(dependency, task));
@@ -215,7 +218,7 @@ void InsertNodesForRasterTask(TaskGraph* graph,
     TileTask* decode_task = it->get();
 
     // Skip if already decoded.
-    if (decode_task->state().IsFinished())
+    if (decode_task->HasCompleted())
       continue;
 
     dependencies++;
@@ -804,24 +807,7 @@ void TileManager::ScheduleTasks(
 
     TileTask* task = tile->raster_task_.get();
 
-    // The canceled state implies that task is completed as canceled. The task
-    // is modified to canceled state in TaskGraphWorkQueue::ScheduleTasks() with
-    // lock acquired. Canceled task gets collected before next scheduling,
-    // TileManager::ScheduleTasks(), happens. So if tile which had task canceled
-    // would get new raster task. As worker and origin threads run parallely,
-    // the tasks may be finished during schedule. Avoid sheduling raster tasks
-    // which have finished and those tasks should have all their dependencies
-    // finished. If task gets finished after it is checked, then it gets skipped
-    // in TaskGraphWorkQueue::ScheduleTasks().
-    DCHECK(!task->state().IsCanceled());
-    if (task->state().IsFinished()) {
-#if DCHECK_IS_ON()
-      // Check if there is any dependency which is not finished.
-      for (auto& decode_task : task->dependencies())
-        DCHECK(decode_task->state().IsFinished());
-#endif
-      continue;
-    }
+    DCHECK(!task->HasCompleted());
 
     if (tile->required_for_activation()) {
       required_for_activate_count++;

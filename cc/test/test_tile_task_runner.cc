@@ -35,6 +35,7 @@ void TestTileTaskRunner::CompleteTask(TileTask* task) {
   DCHECK(task);
   DCHECK(task->state().IsFinished() || task->state().IsCanceled());
   task->OnTaskCompleted();
+  task->DidComplete();
 }
 
 }  // namespace cc

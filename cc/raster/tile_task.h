@@ -28,6 +28,9 @@ class CC_EXPORT TileTask : public Task {
   // of the task.
   virtual void OnTaskCompleted() = 0;
 
+  void DidComplete();
+  bool HasCompleted() const;
+
  protected:
   explicit TileTask(bool supports_concurrent_execution);
   TileTask(bool supports_concurrent_execution, TileTask::Vector* dependencies);
@@ -35,6 +38,7 @@ class CC_EXPORT TileTask : public Task {
 
   const bool supports_concurrent_execution_;
   TileTask::Vector dependencies_;
+  bool did_complete_;
 };
 
 }  // namespace cc

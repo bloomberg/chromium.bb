@@ -34,6 +34,7 @@ void FakeTileTaskManagerImpl::CheckForCompletedTasks() {
     DCHECK(task->state().IsFinished() || task->state().IsCanceled());
     TileTask* tile_task = static_cast<TileTask*>(task.get());
     tile_task->OnTaskCompleted();
+    tile_task->DidComplete();
   }
 
   completed_tasks_.clear();
