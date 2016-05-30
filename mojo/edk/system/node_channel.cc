@@ -416,7 +416,7 @@ void NodeChannel::OnChannelMessage(const void* payload,
         handle.owning_process = remote_process_handle_;
       if (!Channel::Message::RewriteHandles(remote_process_handle_,
                                             base::GetCurrentProcessHandle(),
-                                            handles->data(), handles->size())) {
+                                            handles.get())) {
         DLOG(ERROR) << "Received one or more invalid handles.";
       }
     } else if (handles) {
@@ -728,11 +728,13 @@ void NodeChannel::WriteChannelMessage(Channel::MessagePtr message) {
 
     // Rewrite outgoing handles if we have a handle to the destination process.
     if (remote_process_handle != base::kNullProcessHandle) {
-      if (!message->RewriteHandles(base::GetCurrentProcessHandle(),
-                                   remote_process_handle, message->handles(),
-                                   message->num_handles())) {
+      ScopedPlatformHandleVectorPtr handles = message->TakeHandles();
+      if (!Channel::Message::RewriteHandles(base::GetCurrentProcessHandle(),
+                                            remote_process_handle,
+                                            handles.get())) {
         DLOG(ERROR) << "Failed to duplicate one or more outgoing handles.";
       }
+      message->SetHandles(std::move(handles));
     }
   }
 #elif defined(OS_MACOSX) && !defined(OS_IOS)

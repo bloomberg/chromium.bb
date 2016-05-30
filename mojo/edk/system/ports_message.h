@@ -25,12 +25,15 @@ class PortsMessage : public ports::Message {
 
   ~PortsMessage() override;
 
-  PlatformHandle* handles() { return channel_message_->handles(); }
   size_t num_handles() const { return channel_message_->num_handles(); }
   bool has_handles() const { return channel_message_->has_handles(); }
 
   void SetHandles(ScopedPlatformHandleVectorPtr handles) {
     channel_message_->SetHandles(std::move(handles));
+  }
+
+  ScopedPlatformHandleVectorPtr TakeHandles() {
+    return channel_message_->TakeHandles();
   }
 
   Channel::MessagePtr TakeChannelMessage() {

@@ -289,6 +289,8 @@ MojoResult MessagePipeDispatcher::ReadMessage(
         dispatcher_headers + header->num_dispatchers);
     size_t port_index = 0;
     size_t platform_handle_index = 0;
+    ScopedPlatformHandleVectorPtr msg_handles = msg->TakeHandles();
+    const size_t num_msg_handles = msg_handles ? msg_handles->size() : 0;
     for (size_t i = 0; i < header->num_dispatchers; ++i) {
       const DispatcherHeader& dh = dispatcher_headers[i];
       Type type = static_cast<Type>(dh.type);
@@ -305,13 +307,14 @@ MojoResult MessagePipeDispatcher::ReadMessage(
 
       size_t next_platform_handle_index =
           platform_handle_index + dh.num_platform_handles;
-      if (msg->num_handles() < next_platform_handle_index ||
+      if (num_msg_handles < next_platform_handle_index ||
           next_platform_handle_index < platform_handle_index) {
         return MOJO_RESULT_UNKNOWN;
       }
 
       PlatformHandle* out_handles =
-          msg->num_handles() ? msg->handles() + platform_handle_index : nullptr;
+          num_msg_handles ? msg_handles->data() + platform_handle_index
+                          : nullptr;
       dispatchers[i].dispatcher = Dispatcher::Deserialize(
           type, dispatcher_data, dh.num_bytes, msg->ports() + port_index,
           dh.num_ports, out_handles, dh.num_platform_handles);

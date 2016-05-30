@@ -922,14 +922,15 @@ void NodeController::OnRelayPortsMessage(const ports::NodeName& from_node,
   // Note that we explicitly mark the handles as being owned by the sending
   // process before rewriting them, in order to accommodate RewriteHandles'
   // internal sanity checks.
-  for (size_t i = 0; i < message->num_handles(); ++i)
-    message->handles()[i].owning_process = from_process;
+  ScopedPlatformHandleVectorPtr handles = message->TakeHandles();
+  for (size_t i = 0; i < handles->size(); ++i)
+    (*handles)[i].owning_process = from_process;
   if (!Channel::Message::RewriteHandles(from_process,
                                         base::GetCurrentProcessHandle(),
-                                        message->handles(),
-                                        message->num_handles())) {
+                                        handles.get())) {
     DLOG(ERROR) << "Failed to relay one or more handles.";
   }
+  message->SetHandles(std::move(handles));
 #else
   MachPortRelay* relay = GetMachPortRelay();
   if (!relay) {

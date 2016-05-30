@@ -121,12 +121,18 @@ class ChannelWin : public Channel,
       ScopedPlatformHandleVectorPtr* handles) override {
     if (num_handles > std::numeric_limits<uint16_t>::max())
       return false;
-    size_t handles_size = sizeof(PlatformHandle) * num_handles;
+    using HandleEntry = Channel::Message::HandleEntry;
+    size_t handles_size = sizeof(HandleEntry) * num_handles;
     if (handles_size > extra_header_size)
       return false;
     DCHECK(extra_header);
     handles->reset(new PlatformHandleVector(num_handles));
-    memcpy((*handles)->data(), extra_header, handles_size);
+    const HandleEntry* extra_header_handles =
+        reinterpret_cast<const HandleEntry*>(extra_header);
+    for (size_t i = 0; i < num_handles; i++) {
+      (*handles)->at(i).handle = reinterpret_cast<HANDLE>(
+          static_cast<uintptr_t>(extra_header_handles[i].handle));
+    }
     return true;
   }
 

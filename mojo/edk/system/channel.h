@@ -91,6 +91,14 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
     };
     static_assert(sizeof(MachPortsExtraHeader) == 2,
                   "sizeof(MachPortsExtraHeader) must be 2 bytes");
+#elif defined(OS_WIN)
+    struct HandleEntry {
+      // The windows HANDLE. HANDLEs are guaranteed to fit inside 32-bits.
+      // See: https://msdn.microsoft.com/en-us/library/aa384203(VS.85).aspx
+      uint32_t handle;
+    };
+    static_assert(sizeof(HandleEntry) == 4,
+                  "sizeof(HandleEntry) must be 4 bytes");
 #endif
 #pragma pack(pop)
 
@@ -128,7 +136,6 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
 
     size_t num_handles() const { return header_->num_handles; }
     bool has_handles() const { return header_->num_handles > 0; }
-    PlatformHandle* handles();
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     bool has_mach_ports() const;
 #endif
@@ -151,8 +158,7 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
     // duplication.
     static bool RewriteHandles(base::ProcessHandle from_process,
                                base::ProcessHandle to_process,
-                               PlatformHandle* handles,
-                               size_t num_handles);
+                               PlatformHandleVector* handles);
 #endif
 
    private:
@@ -161,14 +167,12 @@ class Channel : public base::RefCountedThreadSafe<Channel> {
     char* data_;
     Header* header_;
 
+    ScopedPlatformHandleVectorPtr handle_vector_;
+
 #if defined(OS_WIN)
     // On Windows, handles are serialised into the extra header section.
-    PlatformHandle* handles_ = nullptr;
-#else
-    ScopedPlatformHandleVectorPtr handle_vector_;
-#endif
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+    HandleEntry* handles_ = nullptr;
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
     // On OSX, handles are serialised into the extra header section.
     MachPortsExtraHeader* mach_ports_header_ = nullptr;
 #endif

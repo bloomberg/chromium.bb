@@ -17,6 +17,8 @@
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mach_logging.h"
+#elif defined(OS_WIN)
+#include "base/win/win_util.h"
 #endif
 
 namespace mojo {
@@ -47,8 +49,8 @@ Channel::Message::Message(size_t payload_size,
 
   size_t extra_header_size = 0;
 #if defined(OS_WIN)
-  // On Windows we serialize platform handles into the extra header space.
-  extra_header_size = max_handles_ * sizeof(PlatformHandle);
+  // On Windows we serialize HANDLEs into the extra header space.
+  extra_header_size = max_handles_ * sizeof(HandleEntry);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   // On OSX, some of the platform handles may be mach ports, which are
   // serialised into the message buffer. Since there could be a mix of fds and
@@ -95,10 +97,10 @@ Channel::Message::Message(size_t payload_size,
 
   if (max_handles_ > 0) {
 #if defined(OS_WIN)
-    handles_ = reinterpret_cast<PlatformHandle*>(mutable_extra_header());
+    handles_ = reinterpret_cast<HandleEntry*>(mutable_extra_header());
     // Initialize all handles to invalid values.
     for (size_t i = 0; i < max_handles_; ++i)
-      handles()[i] = PlatformHandle();
+      handles_[i].handle = base::win::HandleToUint32(INVALID_HANDLE_VALUE);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
     mach_ports_header_ =
         reinterpret_cast<MachPortsExtraHeader*>(mutable_extra_header());
@@ -113,11 +115,6 @@ Channel::Message::Message(size_t payload_size,
 }
 
 Channel::Message::~Message() {
-#if defined(OS_WIN)
-  // On POSIX the ScopedPlatformHandleVectorPtr will do this for us.
-  for (size_t i = 0; i < header_->num_handles; ++i)
-    handles()[i].CloseIfNecessary();
-#endif
   base::AlignedFree(data_);
 }
 
@@ -148,7 +145,7 @@ Channel::MessagePtr Channel::Message::Deserialize(const void* data,
 
   uint32_t extra_header_size = header->num_header_bytes - sizeof(Header);
 #if defined(OS_WIN)
-  uint32_t max_handles = extra_header_size / sizeof(PlatformHandle);
+  uint32_t max_handles = extra_header_size / sizeof(HandleEntry);
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   uint32_t max_handles = (extra_header_size - sizeof(MachPortsExtraHeader)) /
       sizeof(MachPortsEntry);
@@ -180,6 +177,15 @@ Channel::MessagePtr Channel::Message::Deserialize(const void* data,
   }
 
   message->header_->num_handles = header->num_handles;
+#if defined(OS_WIN)
+  ScopedPlatformHandleVectorPtr handles(
+      new PlatformHandleVector(header->num_handles));
+  for (size_t i = 0; i < header->num_handles; i++) {
+    (*handles)[i].handle = reinterpret_cast<HANDLE>(
+        static_cast<uintptr_t>(message->handles_[i].handle));
+  }
+  message->SetHandles(std::move(handles));
+#endif
 
   return message;
 #endif
@@ -191,25 +197,6 @@ size_t Channel::Message::payload_size() const {
 #else
   return size_ - header_->num_header_bytes;
 #endif
-}
-
-PlatformHandle* Channel::Message::handles() {
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-  // Old semantics for ChromeOS and Android.
-  if (header_->num_handles == 0)
-    return nullptr;
-  CHECK(handle_vector_);
-  return handle_vector_->data();
-#else
-  if (max_handles_ == 0)
-    return nullptr;
-#if defined(OS_WIN)
-  return handles_;
-#else
-  CHECK(handle_vector_);
-  return handle_vector_->data();
-#endif  // defined(OS_WIN)
-#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -245,12 +232,11 @@ void Channel::Message::SetHandles(ScopedPlatformHandleVectorPtr new_handles) {
 
   CHECK(new_handles && new_handles->size() <= max_handles_);
   header_->num_handles = static_cast<uint16_t>(new_handles->size());
-#if defined(OS_WIN)
-  memcpy(handles(), new_handles->data(),
-         sizeof(PlatformHandle) * new_handles->size());
-  new_handles->clear();
-#else
   std::swap(handle_vector_, new_handles);
+#if defined(OS_WIN)
+  memset(handles_, 0, extra_header_size());
+  for (size_t i = 0; i < handle_vector_->size(); i++)
+    handles_[i].handle = base::win::HandleToUint32((*handle_vector_)[i].handle);
 #endif  // defined(OS_WIN)
 #endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
@@ -276,16 +262,7 @@ void Channel::Message::SetHandles(ScopedPlatformHandleVectorPtr new_handles) {
 }
 
 ScopedPlatformHandleVectorPtr Channel::Message::TakeHandles() {
-#if defined(OS_WIN)
-  if (header_->num_handles == 0)
-    return ScopedPlatformHandleVectorPtr();
-  ScopedPlatformHandleVectorPtr moved_handles(
-      new PlatformHandleVector(header_->num_handles));
-  for (size_t i = 0; i < header_->num_handles; ++i)
-    std::swap(moved_handles->at(i), handles()[i]);
-  header_->num_handles = 0;
-  return moved_handles;
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   if (mach_ports_header_) {
     for (size_t i = 0; i < max_handles_; ++i) {
       mach_ports_header_->entries[i] =
@@ -330,29 +307,28 @@ ScopedPlatformHandleVectorPtr Channel::Message::TakeHandlesForTransport() {
 // static
 bool Channel::Message::RewriteHandles(base::ProcessHandle from_process,
                                       base::ProcessHandle to_process,
-                                      PlatformHandle* handles,
-                                      size_t num_handles) {
+                                      PlatformHandleVector* handles) {
   bool success = true;
-  for (size_t i = 0; i < num_handles; ++i) {
-    if (!handles[i].is_valid()) {
+  for (size_t i = 0; i < handles->size(); ++i) {
+    if (!(*handles)[i].is_valid()) {
       DLOG(ERROR) << "Refusing to duplicate invalid handle.";
       continue;
     }
-    DCHECK_EQ(handles[i].owning_process, from_process);
+    DCHECK_EQ((*handles)[i].owning_process, from_process);
     BOOL result = DuplicateHandle(
-        from_process, handles[i].handle, to_process,
-        &handles[i].handle, 0, FALSE,
+        from_process, (*handles)[i].handle, to_process,
+        &(*handles)[i].handle, 0, FALSE,
         DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
     if (result) {
-      handles[i].owning_process = to_process;
+      (*handles)[i].owning_process = to_process;
     } else {
       success = false;
 
       // If handle duplication fails, the source handle will already be closed
       // due to DUPLICATE_CLOSE_SOURCE. Replace the handle in the message with
       // an invalid handle.
-      handles[i].handle = INVALID_HANDLE_VALUE;
-      handles[i].owning_process = base::GetCurrentProcessHandle();
+      (*handles)[i].handle = INVALID_HANDLE_VALUE;
+      (*handles)[i].owning_process = base::GetCurrentProcessHandle();
     }
   }
   return success;
