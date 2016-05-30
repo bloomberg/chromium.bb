@@ -21,7 +21,6 @@ class ProfileInfoCache;
 class ProfileAttributesStorage;
 class ProfileManager;
 class TestingBrowserProcess;
-class TestingProfile;
 
 namespace syncable_prefs {
 class PrefServiceSyncable;
@@ -105,16 +104,22 @@ class TestingProfileManager {
   // Helper accessors.
   const base::FilePath& profiles_dir();
   ProfileManager* profile_manager();
-  ProfileInfoCache* profile_info_cache();
   ProfileAttributesStorage* profile_attributes_storage();
 
  private:
+  friend class ProfileAttributesStorageTest;
+  friend class ProfileInfoCacheTest;
+  friend class ProfileNameVerifierObserver;
+
   typedef std::map<std::string, TestingProfile*> TestingProfilesMap;
 
   // Does the actual ASSERT-checked SetUp work. This function cannot have a
   // return value, so it sets the |called_set_up_| flag on success and that is
   // returned in the public SetUp.
   void SetUpInternal();
+
+  // Deprecated helper accessor. Use profile_attributes_storage() instead.
+  ProfileInfoCache* profile_info_cache();
 
   // Whether SetUp() was called to put the object in a valid state.
   bool called_set_up_;

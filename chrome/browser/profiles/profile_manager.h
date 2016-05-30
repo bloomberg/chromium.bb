@@ -180,11 +180,6 @@ class ProfileManager : public base::NonThreadSafe,
   // system.
   base::FilePath GenerateNextProfileDirectoryPath();
 
-  // Returns a ProfileInfoCache object which can be used to get information
-  // about profiles without having to load them from disk.
-  // Deprecated, use GetProfileAttributesStorage() instead.
-  ProfileInfoCache& GetProfileInfoCache();
-
   // Returns a ProfileAttributesStorage object which can be used to get
   // information about profiles without having to load them from disk.
   ProfileAttributesStorage& GetProfileAttributesStorage();
@@ -321,6 +316,11 @@ class ProfileManager : public base::NonThreadSafe,
   // also return a profile that is not fully initialized yet, so this method
   // should be used carefully.
   Profile* GetProfileByPathInternal(const base::FilePath& path) const;
+
+  // Returns a ProfileInfoCache object which can be used to get information
+  // about profiles without having to load them from disk.
+  // Deprecated, use GetProfileAttributesStorage() instead.
+  ProfileInfoCache& GetProfileInfoCache();
 
   // Adds |profile| to the profile attributes storage if it hasn't been added
   // yet.
