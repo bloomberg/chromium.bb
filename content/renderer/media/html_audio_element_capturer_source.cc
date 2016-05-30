@@ -65,11 +65,12 @@ void HtmlAudioElementCapturerSource::EnsureSourceIsStopped() {
 
 void HtmlAudioElementCapturerSource::OnAudioBus(
     std::unique_ptr<media::AudioBus> audio_bus,
-    uint32_t delay_milliseconds,
+    uint32_t frames_delayed,
     int sample_rate) {
   const base::TimeTicks capture_time =
       base::TimeTicks::Now() -
-      base::TimeDelta::FromMilliseconds(delay_milliseconds);
+      base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond *
+                                        frames_delayed / sample_rate);
 
   if (sample_rate != last_sample_rate_ ||
       audio_bus->channels() != last_num_channels_ ||

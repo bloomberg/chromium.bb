@@ -43,7 +43,7 @@ class CONTENT_EXPORT HtmlAudioElementCapturerSource final
 
   // To act as an WebAudioSourceProviderImpl::CopyAudioCB.
   void OnAudioBus(std::unique_ptr<media::AudioBus> audio_bus,
-                  uint32_t delay_milliseconds,
+                  uint32_t frames_delayed,
                   int sample_rate);
 
   scoped_refptr<media::WebAudioSourceProviderImpl> audio_source_;
