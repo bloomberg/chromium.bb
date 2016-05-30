@@ -754,6 +754,7 @@ bool SharedPersistentMemoryAllocator::IsSharedMemoryAcceptable(
 }
 
 
+#if !defined(OS_NACL)
 //----- FilePersistentMemoryAllocator ------------------------------------------
 
 FilePersistentMemoryAllocator::FilePersistentMemoryAllocator(
@@ -778,5 +779,6 @@ bool FilePersistentMemoryAllocator::IsFileAcceptable(
     bool read_only) {
   return IsMemoryAcceptable(file.data(), file.length(), 0, read_only);
 }
+#endif  // !defined(OS_NACL)
 
 }  // namespace base

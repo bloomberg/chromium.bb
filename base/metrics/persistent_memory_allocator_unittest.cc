@@ -582,6 +582,7 @@ TEST(SharedPersistentMemoryAllocatorTest, CreationTest) {
 }
 
 
+#if !defined(OS_NACL)
 //----- FilePersistentMemoryAllocator ------------------------------------------
 
 TEST(FilePersistentMemoryAllocatorTest, CreationTest) {
@@ -784,5 +785,6 @@ TEST(FilePersistentMemoryAllocatorTest, AcceptableTest) {
     }
   }
 }
+#endif  // !defined(OS_NACL)
 
 }  // namespace base

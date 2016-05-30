@@ -385,6 +385,7 @@ class BASE_EXPORT SharedPersistentMemoryAllocator
 };
 
 
+#if !defined(OS_NACL)  // NACL doesn't support any kind of file access in build.
 // This allocator takes a memory-mapped file object and performs allocation
 // from it. The allocator takes ownership of the file object.
 class BASE_EXPORT FilePersistentMemoryAllocator
@@ -411,6 +412,7 @@ class BASE_EXPORT FilePersistentMemoryAllocator
 
   DISALLOW_COPY_AND_ASSIGN(FilePersistentMemoryAllocator);
 };
+#endif  // !defined(OS_NACL)
 
 }  // namespace base
 
