@@ -6,34 +6,37 @@
 <script src="/resources/testharnessreport.js"></script>
 <body>
 <script>
-    async_test(t => {
-        var i = document.createElement('img');
-        i.onerror = t.assert_unreached;
-        i.onload = t.step_func_done(_ => {
-            assert_equals(128, i.naturalWidth);
-            assert_equals(128, i.naturalHeight);
-        });
-        i.src = "http://127.0.0.1:8080/security/resources/compass.jpg?t=1";
-    }, "Mixed images are allowed in the presence of 'block-all-mixed-content' in report-only mode.");
+    function waitForEvent(t, el, name) {
+        return new EventWatcher(t, el, [name]).wait_for(name);
+    }
 
     async_test(t => {
         var i = document.createElement('img');
-        document.addEventListener('securitypolicyviolation', t.step_func_done(e => {
-            var expectations = {
-                'documentURI': document.location.toString(),
-                'referrer': document.referrer,
-                'blockedURI': 'http://127.0.0.1:8080',
-                'violatedDirective': 'block-all-mixed-content',
-                'effectiveDirective': 'block-all-mixed-content',
-                'originalPolicy': 'block-all-mixed-content',
-                'sourceFile': '',
-                'lineNumber': 0,
-                'columnNumber': 0,
-                'statusCode': 0
-            };
-            for (key in expectations)
-                assert_equals(expectations[key], e[key], key);
-        }));
-        i.src = "http://127.0.0.1:8080/security/resources/compass.jpg?t=2";
-    }, "Mixed images generate CSP violation reports in the presence of 'block-all-mixed-content'.");
+        i.onerror = t.unreached_func();
+
+        Promise.all([
+            waitForEvent(t, i, 'load').then(_ => {
+                assert_equals(128, i.naturalWidth);
+                assert_equals(128, i.naturalHeight);
+            }),
+            waitForEvent(t, document, 'securitypolicyviolation').then(e => {
+                var expectations = {
+                    'documentURI': document.location.toString(),
+                    'referrer': document.referrer,
+                    'blockedURI': 'http://127.0.0.1:8080/security/resources/compass.jpg?t=1',
+                    'violatedDirective': 'block-all-mixed-content',
+                    'effectiveDirective': 'block-all-mixed-content',
+                    'originalPolicy': 'block-all-mixed-content',
+                    'sourceFile': '',
+                    'lineNumber': 0,
+                    'columnNumber': 0,
+                    'statusCode': 0
+                };
+                for (key in expectations)
+                    assert_equals(expectations[key], e[key], key);
+            })
+        ]).then(t.step_func_done());
+
+        i.src = "http://127.0.0.1:8080/security/resources/compass.jpg?t=1";
+    }, "Mixed images are allowed and generate CSP violation reports in the presence of 'block-all-mixed-content' in report-only mode.");
 </script>

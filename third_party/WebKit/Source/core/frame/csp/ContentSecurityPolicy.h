@@ -238,11 +238,11 @@ public:
     // If a frame is passed in, the report will be sent using it as a context. If no frame is
     // passed in, the report will be sent via this object's |m_executionContext| (or dropped
     // on the floor if no such context is available).
-    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, ViolationType, LocalFrame* = nullptr);
+    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, ViolationType, LocalFrame* = nullptr, RedirectStatus = RedirectStatus::FollowedRedirect);
 
     // Called when mixed content is detected on a page; will trigger a violation report if
     // the 'block-all-mixed-content' directive is specified for a policy.
-    void reportMixedContent(const KURL& mixedURL);
+    void reportMixedContent(const KURL& mixedURL, RedirectStatus);
 
     void reportBlockedScriptExecutionToInspector(const String& directiveText) const;
 

@@ -49,6 +49,7 @@
 #include "platform/MIMETypeFromURL.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/Widget.h"
+#include "platform/network/ResourceRequest.h"
 #include "platform/plugins/PluginData.h"
 #include "public/platform/WebURLRequest.h"
 
@@ -567,7 +568,7 @@ bool HTMLPlugInElement::allowedToLoadObject(const KURL& url, const String& mimeT
     }
     // If the URL is empty, a plugin could still be instantiated if a MIME-type
     // is specified.
-    return (!mimeType.isEmpty() && url.isEmpty()) || !MixedContentChecker::shouldBlockFetch(frame, WebURLRequest::RequestContextObject, WebURLRequest::FrameTypeNone, url);
+    return (!mimeType.isEmpty() && url.isEmpty()) || !MixedContentChecker::shouldBlockFetch(frame, WebURLRequest::RequestContextObject, WebURLRequest::FrameTypeNone, ResourceRequest::RedirectStatus::NoRedirect, url);
 }
 
 bool HTMLPlugInElement::allowedToLoadPlugin(const KURL& url, const String& mimeType)

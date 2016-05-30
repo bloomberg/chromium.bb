@@ -307,7 +307,7 @@ void MixedContentChecker::count(Frame* frame, WebURLRequest::RequestContext requ
 }
 
 // static
-bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::RequestContext requestContext, WebURLRequest::FrameType frameType, const KURL& url, MixedContentChecker::ReportingStatus reportingStatus)
+bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::RequestContext requestContext, WebURLRequest::FrameType frameType, ResourceRequest::RedirectStatus redirectStatus, const KURL& url, MixedContentChecker::ReportingStatus reportingStatus)
 {
     Frame* effectiveFrame = effectiveFrameForFrameType(frame, frameType);
     Frame* mixedFrame = inWhichFrameIsContentMixed(effectiveFrame, frameType, url);
@@ -316,7 +316,7 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
 
     MixedContentChecker::count(mixedFrame, requestContext);
     if (ContentSecurityPolicy* policy = frame->securityContext()->contentSecurityPolicy())
-        policy->reportMixedContent(url);
+        policy->reportMixedContent(url, redirectStatus);
 
     Settings* settings = mixedFrame->settings();
     // Use the current local frame's client; the embedder doesn't
@@ -408,7 +408,7 @@ bool MixedContentChecker::shouldBlockWebSocket(LocalFrame* frame, const KURL& ur
     UseCounter::count(mixedFrame, UseCounter::MixedContentPresent);
     UseCounter::count(mixedFrame, UseCounter::MixedContentWebSocket);
     if (ContentSecurityPolicy* policy = frame->securityContext()->contentSecurityPolicy())
-        policy->reportMixedContent(url);
+        policy->reportMixedContent(url, ResourceRequest::RedirectStatus::NoRedirect);
 
     Settings* settings = mixedFrame->settings();
     // Use the current local frame's client; the embedder doesn't

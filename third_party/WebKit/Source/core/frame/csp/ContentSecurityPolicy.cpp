@@ -780,16 +780,23 @@ void ContentSecurityPolicy::setInsecureRequestsPolicy(SecurityContext::InsecureR
         m_insecureRequestsPolicy = policy;
 }
 
-static String stripURLForUseInReport(Document* document, const KURL& url)
+static String stripURLForUseInReport(Document* document, const KURL& url, RedirectStatus redirectStatus)
 {
     if (!url.isValid())
         return String();
     if (!url.isHierarchical() || url.protocolIs("file"))
         return url.protocol();
-    return document->getSecurityOrigin()->canRequest(url) ? url.strippedForUseAsReferrer() : SecurityOrigin::create(url)->toString();
+    if (redirectStatus == RedirectStatus::NoRedirect || document->getSecurityOrigin()->canRequest(url)) {
+        // 'KURL::strippedForUseAsReferrer()' dumps 'String()' for non-webby URLs.
+        // It's better for developers if we return the origin of those URLs rather
+        // than nothing.
+        if (url.protocolIsInHTTPFamily())
+            return url.strippedForUseAsReferrer();
+    }
+    return SecurityOrigin::create(url)->toString();
 }
 
-static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventInit& init, Document* document, const String& directiveText, const String& effectiveDirective, const KURL& blockedURL, const String& header)
+static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventInit& init, Document* document, const String& directiveText, const String& effectiveDirective, const KURL& blockedURL, const String& header, RedirectStatus redirectStatus)
 {
     if (equalIgnoringCase(effectiveDirective, ContentSecurityPolicy::FrameAncestors)) {
         // If this load was blocked via 'frame-ancestors', then the URL of |document| has not yet
@@ -799,7 +806,7 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
         init.setBlockedURI(blockedURL.getString());
     } else {
         init.setDocumentURI(document->url().getString());
-        init.setBlockedURI(stripURLForUseInReport(document, blockedURL));
+        init.setBlockedURI(stripURLForUseInReport(document, blockedURL, redirectStatus));
     }
     init.setReferrer(document->referrer());
     init.setViolatedDirective(directiveText);
@@ -816,13 +823,13 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
     OwnPtr<SourceLocation> location = SourceLocation::capture(document);
     if (location->lineNumber()) {
         KURL source = KURL(ParsedURLString, location->url());
-        init.setSourceFile(stripURLForUseInReport(document, source));
+        init.setSourceFile(stripURLForUseInReport(document, source, redirectStatus));
         init.setLineNumber(location->lineNumber());
         init.setColumnNumber(location->columnNumber());
     }
 }
 
-void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, ViolationType violationType, LocalFrame* contextFrame)
+void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, ViolationType violationType, LocalFrame* contextFrame, RedirectStatus redirectStatus)
 {
     ASSERT(violationType == URLViolation || blockedURL.isEmpty());
 
@@ -847,7 +854,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
         return;
 
     SecurityPolicyViolationEventInit violationData;
-    gatherSecurityPolicyViolationEventData(violationData, document, directiveText, effectiveDirective, blockedURL, header);
+    gatherSecurityPolicyViolationEventData(violationData, document, directiveText, effectiveDirective, blockedURL, header, redirectStatus);
 
     frame->localDOMWindow()->enqueueDocumentEvent(SecurityPolicyViolationEvent::create(EventTypeNames::securitypolicyviolation, violationData));
 
@@ -917,10 +924,10 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     didSendViolationReport(stringifiedReport);
 }
 
-void ContentSecurityPolicy::reportMixedContent(const KURL& mixedURL)
+void ContentSecurityPolicy::reportMixedContent(const KURL& mixedURL, RedirectStatus redirectStatus)
 {
     for (const auto& policy : m_policies)
-        policy->reportMixedContent(mixedURL);
+        policy->reportMixedContent(mixedURL, redirectStatus);
 }
 
 void ContentSecurityPolicy::reportInvalidReferrer(const String& invalidValue)

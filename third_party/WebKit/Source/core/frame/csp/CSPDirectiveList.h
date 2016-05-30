@@ -73,7 +73,7 @@ public:
     bool allowDynamic() const;
 
     bool strictMixedContentChecking() const { return m_strictMixedContentCheckingEnforced; }
-    void reportMixedContent(const KURL& mixedURL) const;
+    void reportMixedContent(const KURL& mixedURL, ResourceRequest::RedirectStatus) const;
 
     const String& evalDisabledErrorMessage() const { return m_evalDisabledErrorMessage; }
     ReflectedXSSDisposition getReflectedXSSDisposition() const { return m_reflectedXSSDisposition; }
@@ -111,7 +111,7 @@ private:
 
     SourceListDirective* operativeDirective(SourceListDirective*) const;
     SourceListDirective* operativeDirective(SourceListDirective*, SourceListDirective* override) const;
-    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL) const;
+    void reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, ResourceRequest::RedirectStatus) const;
     void reportViolationWithFrame(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, LocalFrame*) const;
     void reportViolationWithLocation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const String& contextURL, const WTF::OrdinalNumber& contextLine) const;
     void reportViolationWithState(const String& directiveText, const String& effectiveDirective, const String& message, const KURL& blockedURL, ScriptState*, const ContentSecurityPolicy::ExceptionStatus) const;

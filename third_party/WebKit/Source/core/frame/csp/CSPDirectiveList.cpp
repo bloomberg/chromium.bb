@@ -74,11 +74,11 @@ CSPDirectiveList* CSPDirectiveList::create(ContentSecurityPolicy* policy, const 
     return directives;
 }
 
-void CSPDirectiveList::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL) const
+void CSPDirectiveList::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, ResourceRequest::RedirectStatus redirectStatus) const
 {
     String message = m_reportOnly ? "[Report Only] " + consoleMessage : consoleMessage;
     m_policy->logToConsole(ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message));
-    m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportEndpoints, m_header, ContentSecurityPolicy::URLViolation);
+    m_policy->reportViolation(directiveText, effectiveDirective, message, blockedURL, m_reportEndpoints, m_header, ContentSecurityPolicy::URLViolation, nullptr, redirectStatus);
 }
 
 void CSPDirectiveList::reportViolationWithFrame(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, LocalFrame* frame) const
@@ -139,10 +139,10 @@ bool CSPDirectiveList::checkDynamic(SourceListDirective* directive) const
     return !directive || directive->allowDynamic();
 }
 
-void CSPDirectiveList::reportMixedContent(const KURL& mixedURL) const
+void CSPDirectiveList::reportMixedContent(const KURL& mixedURL, ResourceRequest::RedirectStatus redirectStatus) const
 {
     if (strictMixedContentChecking())
-        m_policy->reportViolation(ContentSecurityPolicy::BlockAllMixedContent, ContentSecurityPolicy::BlockAllMixedContent, String(), mixedURL, m_reportEndpoints, m_header, ContentSecurityPolicy::URLViolation);
+        m_policy->reportViolation(ContentSecurityPolicy::BlockAllMixedContent, ContentSecurityPolicy::BlockAllMixedContent, String(), mixedURL, m_reportEndpoints, m_header, ContentSecurityPolicy::URLViolation, nullptr, redirectStatus);
 }
 
 bool CSPDirectiveList::checkSource(SourceListDirective* directive, const KURL& url, ResourceRequest::RedirectStatus redirectStatus) const
@@ -217,7 +217,10 @@ bool CSPDirectiveList::checkMediaTypeAndReportViolation(MediaListDirective* dire
     if (typeAttribute.isEmpty())
         message = message + " When enforcing the 'plugin-types' directive, the plugin's media type must be explicitly declared with a 'type' attribute on the containing element (e.g. '<object type=\"[TYPE GOES HERE]\" ...>').";
 
-    reportViolation(directive->text(), ContentSecurityPolicy::PluginTypes, message + "\n", KURL());
+    // 'RedirectStatus::NoRedirect' is safe here, as we do the media type check before actually
+    // loading data; this means that we shouldn't leak redirect targets, as we won't have had a
+    // chance to redirect yet.
+    reportViolation(directive->text(), ContentSecurityPolicy::PluginTypes, message + "\n", KURL(), ResourceRequest::RedirectStatus::NoRedirect);
     return denyIfEnforcingPolicy();
 }
 
@@ -287,7 +290,7 @@ bool CSPDirectiveList::checkSourceAndReportViolation(SourceListDirective* direct
     if (directive == m_defaultSrc)
         suffix = suffix + " Note that '" + effectiveDirective + "' was not explicitly set, so 'default-src' is used as a fallback.";
 
-    reportViolation(directive->text(), effectiveDirective, prefix + url.elidedString() + "' because it violates the following Content Security Policy directive: \"" + directive->text() + "\"." + suffix + "\n", url);
+    reportViolation(directive->text(), effectiveDirective, prefix + url.elidedString() + "' because it violates the following Content Security Policy directive: \"" + directive->text() + "\"." + suffix + "\n", url, redirectStatus);
     return denyIfEnforcingPolicy();
 }
 

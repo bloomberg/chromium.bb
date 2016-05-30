@@ -59,10 +59,10 @@ public:
     };
 
     enum ReportingStatus { SendReport, SuppressReport };
-    static bool shouldBlockFetch(LocalFrame*, WebURLRequest::RequestContext, WebURLRequest::FrameType, const KURL&, ReportingStatus = SendReport);
+    static bool shouldBlockFetch(LocalFrame*, WebURLRequest::RequestContext, WebURLRequest::FrameType, ResourceRequest::RedirectStatus, const KURL&, ReportingStatus = SendReport);
     static bool shouldBlockFetch(LocalFrame* frame, const ResourceRequest& request, const KURL& url, ReportingStatus status = SendReport)
     {
-        return shouldBlockFetch(frame, request.requestContext(), request.frameType(), url, status);
+        return shouldBlockFetch(frame, request.requestContext(), request.frameType(), request.redirectStatus(), url, status);
     }
 
     static bool shouldBlockWebSocket(LocalFrame*, const KURL&, ReportingStatus = SendReport);
