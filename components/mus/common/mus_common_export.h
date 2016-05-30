@@ -8,14 +8,14 @@
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
-#if defined(MUS_IPC_IMPLEMENTATION)
+#if defined(MUS_COMMON_IMPLEMENTATION)
 #define MUS_COMMON_EXPORT __declspec(dllexport)
 #else
 #define MUS_COMMON_EXPORT __declspec(dllimport)
-#endif  // defined(MUS_IPC_IMPLEMENTATION)
+#endif  // defined(MUS_COMMON_IMPLEMENTATION)
 
 #else  // defined(WIN32)
-#if defined(MUS_IPC_IMPLEMENTATION)
+#if defined(MUS_COMMON_IMPLEMENTATION)
 #define MUS_COMMON_EXPORT __attribute__((visibility("default")))
 #else
 #define MUS_COMMON_EXPORT

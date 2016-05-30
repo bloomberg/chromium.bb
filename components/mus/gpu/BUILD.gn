@@ -4,7 +4,6 @@
 
 import("//mojo/public/mojo_application_manifest.gni")
 import("//testing/test.gni")
-import("//build/config/ui.gni")
 
 source_set("gpu") {
   output_name = "mus_gpu"
@@ -12,8 +11,6 @@ source_set("gpu") {
   sources = [
     "gpu_service_mus.cc",
     "gpu_service_mus.h",
-    "gpu_type_converters.cc",
-    "gpu_type_converters.h",
   ]
 
   deps = [
@@ -34,19 +31,11 @@ group("tests") {
 }
 
 test("mus_gpu_unittests") {
-  sources = [
-    "gpu_type_converters_unittest.cc",
-    "run_all_shelltests.cc",
-  ]
-
   deps = [
     ":gpu",
     "//base",
-    "//base/test:test_support",
+    "//components/mus/common:run_all_shelltests",
     "//ipc",
-    "//mojo/edk/system",
-    "//services/shell/background:lib",
-    "//services/shell/background:main",
     "//testing/gtest",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
@@ -55,10 +44,6 @@ test("mus_gpu_unittests") {
   data_deps = [
     ":mus_gpu_unittests_app_manifest",
   ]
-
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  }
 }
 
 mojo_application_manifest("mus_gpu_unittests_app_manifest") {

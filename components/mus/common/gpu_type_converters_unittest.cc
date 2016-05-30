@@ -6,7 +6,7 @@
 
 #include "base/files/scoped_file.h"
 #include "build/build_config.h"
-#include "components/mus/gpu/gpu_type_converters.h"
+#include "components/mus/common/gpu_type_converters.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"

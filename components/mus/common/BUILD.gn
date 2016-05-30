@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+import("//mojo/public/mojo_application_manifest.gni")
 import("//testing/test.gni")
 
 component("mus_common") {
@@ -11,6 +13,8 @@ component("mus_common") {
     "event_param_traits.cc",
     "event_param_traits.h",
     "event_param_traits_macros.h",
+    "gpu_type_converters.cc",
+    "gpu_type_converters.h",
     "mus_common_export.h",
     "switches.cc",
     "switches.h",
@@ -19,7 +23,7 @@ component("mus_common") {
     "util.h",
   ]
 
-  defines = [ "MUS_IPC_IMPLEMENTATION" ]
+  defines = [ "MUS_COMMON_IMPLEMENTATION" ]
 
   deps = [
     "//components/mus/public/interfaces",
@@ -35,17 +39,37 @@ component("mus_common") {
   ]
 }
 
+source_set("run_all_shelltests") {
+  testonly = true
+
+  sources = [
+    "run_all_shelltests.cc",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+    "//mojo/edk/system",
+    "//services/shell/background:main",
+  ]
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
+  }
+}
+
 test("mus_common_unittests") {
   sources = [
     "event_param_traits_unittest.cc",
+    "gpu_type_converters_unittest.cc",
   ]
   public_deps = [
     ":mus_common",
   ]
   deps = [
+    ":run_all_shelltests",
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_config",
+    "//components/mus/public/interfaces",
     "//ipc:ipc",
     "//mojo/edk/test:test_support",
     "//testing/gtest",
@@ -53,4 +77,9 @@ test("mus_common_unittests") {
     "//ui/gfx:test_support",
     "//ui/gfx/ipc",
   ]
+}
+
+mojo_application_manifest("mus_common_unittests_app_manifest") {
+  application_name = "mus_common_unittests_app"
+  source = "mus_common_unittests_app_manifest.json"
 }
