@@ -53,14 +53,6 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(v8::Isola
     return create(isolate, value, writer, transferables, blobInfo, exceptionState);
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValueFactory::create(const String& data)
-{
-    SerializedScriptValueWriter writer;
-    writer.writeWebCoreString(data);
-    String wireData = writer.takeWireString();
-    return SerializedScriptValue::create(wireData);
-}
-
 void SerializedScriptValueFactory::transferData(SerializedScriptValue* serializedValue, SerializedScriptValueWriter& writer, Transferables* transferables, ExceptionState& exceptionState, v8::Isolate* isolate)
 {
     serializedValue->setData(writer.takeWireString());

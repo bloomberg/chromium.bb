@@ -37,7 +37,6 @@ protected:
     // V8. When serialization is successful, |didThrow| is false.
     virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, Transferables*, WebBlobInfoArray*, ExceptionState&);
     PassRefPtr<SerializedScriptValue> create(v8::Isolate*, v8::Local<v8::Value>, SerializedScriptValueWriter&, Transferables*, WebBlobInfoArray*, ExceptionState&);
-    PassRefPtr<SerializedScriptValue> create(const String&);
 
     v8::Local<v8::Value> deserialize(SerializedScriptValue*, v8::Isolate*, MessagePortArray*, const WebBlobInfoArray*);
 

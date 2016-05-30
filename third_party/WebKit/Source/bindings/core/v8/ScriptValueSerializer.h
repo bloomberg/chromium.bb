@@ -110,8 +110,13 @@ public:
     {
     }
 
-    // Write functions for primitive types.
+    // TODO(peria): Protect this mehtod.
+    String takeWireString();
 
+protected:
+    friend class ScriptValueSerializer;
+
+    // Write functions for primitive types.
     void writeUndefined();
     void writeNull();
     void writeTrue();
@@ -149,7 +154,6 @@ public:
     void writeObject(uint32_t numProperties);
     void writeSparseArray(uint32_t numProperties, uint32_t length);
     void writeDenseArray(uint32_t numProperties, uint32_t length);
-    String takeWireString();
     void writeReferenceCount(uint32_t numberOfReferences);
     void writeGenerateFreshObject();
     void writeGenerateFreshSparseArray(uint32_t length);
@@ -159,7 +163,6 @@ public:
     void writeMap(uint32_t length);
     void writeSet(uint32_t length);
 
-protected:
     void doWriteFile(const File&);
     void doWriteArrayBuffer(const DOMArrayBuffer&);
     void doWriteString(const char* data, int length);
@@ -215,6 +218,9 @@ public:
 
     Status serialize(v8::Local<v8::Value>);
     String errorMessage() { return m_errorMessage; }
+
+    static String serializeWTFString(const String&);
+    static String serializeNullValue();
 
 protected:
     class StateBase {

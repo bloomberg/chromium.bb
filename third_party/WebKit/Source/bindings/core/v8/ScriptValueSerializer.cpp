@@ -762,6 +762,22 @@ ScriptValueSerializer::Status ScriptValueSerializer::serialize(v8::Local<v8::Val
     return m_status;
 }
 
+// static
+String ScriptValueSerializer::serializeWTFString(const String& data)
+{
+    SerializedScriptValueWriter valueWriter;
+    valueWriter.writeWebCoreString(data);
+    return valueWriter.takeWireString();
+}
+
+// static
+String ScriptValueSerializer::serializeNullValue()
+{
+    SerializedScriptValueWriter valueWriter;
+    valueWriter.writeNull();
+    return valueWriter.takeWireString();
+}
+
 ScriptValueSerializer::StateBase* ScriptValueSerializer::doSerialize(v8::Local<v8::Value> value, ScriptValueSerializer::StateBase* next)
 {
     m_writer.writeReferenceCount(m_nextObjectReference);

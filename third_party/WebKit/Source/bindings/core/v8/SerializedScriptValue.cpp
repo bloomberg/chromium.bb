@@ -65,7 +65,7 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::serialize(v8::Isolate* 
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::serialize(const String& str)
 {
-    return SerializedScriptValueFactory::instance().create(str);
+    return create(ScriptValueSerializer::serializeWTFString(str));
 }
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::serializeAndSwallowExceptions(v8::Isolate* isolate, v8::Local<v8::Value> value)
@@ -125,9 +125,7 @@ SerializedScriptValue::~SerializedScriptValue()
 
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::nullValue()
 {
-    SerializedScriptValueWriter writer;
-    writer.writeNull();
-    return create(writer.takeWireString());
+    return create(ScriptValueSerializer::serializeNullValue());
 }
 
 // Convert serialized string to big endian wire data.
