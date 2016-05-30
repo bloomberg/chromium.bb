@@ -4203,6 +4203,20 @@ TEST_F(PersonalDataManagerTest, SaveImportedProfile) {
        ProfileFields(),
        {{ADDRESS_HOME_LINE1, "123 Zoo St"}, {ADDRESS_HOME_LINE2, "unit 5"}}},
 
+      // Tests that saving an identical profile with accented characters in
+      // the two address lines results in a merge and that the original address
+      // gets overwritten.
+      {ProfileFields(),
+       {{ADDRESS_HOME_LINE1, "123 Zôö St"}, {ADDRESS_HOME_LINE2, "üñìt 5"}},
+       {{ADDRESS_HOME_LINE1, "123 Zôö St"}, {ADDRESS_HOME_LINE2, "üñìt 5"}}},
+
+      // Tests that saving an identical profile without accented characters in
+      // the two address lines results in a merge and that the original address
+      // gets overwritten.
+      {{{ADDRESS_HOME_LINE1, "123 Zôö St"}, {ADDRESS_HOME_LINE2, "üñìt 5"}},
+       ProfileFields(),
+       {{ADDRESS_HOME_LINE1, "123 Zoo St"}, {ADDRESS_HOME_LINE2, "unit 5"}}},
+
       // Tests that saving an identical profile except that the address line 1
       // is in the address line 2 results in a merge and that the original
       // address lines do not get overwritten.

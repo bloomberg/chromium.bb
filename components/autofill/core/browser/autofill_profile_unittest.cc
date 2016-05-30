@@ -1153,6 +1153,10 @@ TEST(AutofillProfileTest, CanonicalizeProfileString) {
   EXPECT_EQ(ASCIIToUTF16("1600 amphitheatre pkwy app 2"),
             AutofillProfile::CanonicalizeProfileString(
                 ASCIIToUTF16("1600 amphitheatre pkwy \n App. 2")));
+
+  // Diacritics removed.
+  EXPECT_EQ(UTF8ToUTF16("まeoa정"),
+            AutofillProfile::CanonicalizeProfileString(UTF8ToUTF16("まéÖä정")));
 }
 
 TEST(AutofillProfileTest, SaveAdditionalInfo_Name_AddingNameFull) {
@@ -1196,7 +1200,8 @@ TEST(AutofillProfileTest, SaveAdditionalInfo_Name_KeepNameFull) {
 
 // Tests the merging of two similar profiles results in the second profile's
 // non-empty fields overwriting the initial profiles values.
-TEST(AutofillProfileTest, SaveAdditionalInfo_Name_DifferentCaseNoNameFull) {
+TEST(AutofillProfileTest,
+     SaveAdditionalInfo_Name_DifferentCaseAndDiacriticsNoNameFull) {
   AutofillProfile a;
 
   a.SetRawInfo(NAME_FIRST, base::ASCIIToUTF16("marion"));
@@ -1205,19 +1210,19 @@ TEST(AutofillProfileTest, SaveAdditionalInfo_Name_DifferentCaseNoNameFull) {
   a.SetRawInfo(NAME_FULL, base::ASCIIToUTF16("marion mitchell morrison"));
 
   AutofillProfile b = a;
-  b.SetRawInfo(NAME_FIRST, base::ASCIIToUTF16("Marion"));
-  b.SetRawInfo(NAME_MIDDLE, base::ASCIIToUTF16("Mitchell"));
-  b.SetRawInfo(NAME_LAST, base::ASCIIToUTF16("Morrison"));
-  b.SetRawInfo(NAME_FULL, base::ASCIIToUTF16(""));
+  b.SetRawInfo(NAME_FIRST, UTF8ToUTF16("Märion"));
+  b.SetRawInfo(NAME_MIDDLE, UTF8ToUTF16("Mitchéll"));
+  b.SetRawInfo(NAME_LAST,UTF8ToUTF16("Morrison"));
+  b.SetRawInfo(NAME_FULL, UTF8ToUTF16(""));
 
   EXPECT_TRUE(a.SaveAdditionalInfo(b, "en-US"));
 
   // The first, middle and last names should have their first letter in
-  // uppercase.
-  EXPECT_EQ(base::ASCIIToUTF16("Marion"), a.GetRawInfo(NAME_FIRST));
-  EXPECT_EQ(base::ASCIIToUTF16("Mitchell"), a.GetRawInfo(NAME_MIDDLE));
-  EXPECT_EQ(base::ASCIIToUTF16("Morrison"), a.GetRawInfo(NAME_LAST));
-  EXPECT_EQ(base::ASCIIToUTF16("marion mitchell morrison"),
+  // uppercase and have acquired diacritics.
+  EXPECT_EQ(UTF8ToUTF16("Märion"), a.GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(UTF8ToUTF16("Mitchéll"), a.GetRawInfo(NAME_MIDDLE));
+  EXPECT_EQ(UTF8ToUTF16("Morrison"), a.GetRawInfo(NAME_LAST));
+  EXPECT_EQ(UTF8ToUTF16("marion mitchell morrison"),
             a.GetRawInfo(NAME_FULL));
 }
 

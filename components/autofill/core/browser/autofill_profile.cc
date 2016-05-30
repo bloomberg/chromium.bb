@@ -36,6 +36,8 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "grit/components_strings.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
+#include "third_party/icu/source/common/unicode/utypes.h"
+#include "third_party/icu/source/i18n/unicode/translit.h"
 #include "third_party/libaddressinput/chromium/addressinput_util.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
@@ -234,6 +236,27 @@ class FindByPhone {
   std::string country_code_;
   std::string app_locale_;
 };
+
+base::string16 NormalizeForComparison(const base::string16& text) {
+  using icu::UnicodeString;
+  using icu::Transliterator;
+
+  // Use ICU transliteration to remove diacritics and fold case.
+  // See http://userguide.icu-project.org/transforms/general
+  UErrorCode status = U_ZERO_ERROR;
+  std::unique_ptr<Transliterator> transliterator(Transliterator::createInstance(
+      "NFD; [:Nonspacing Mark:] Remove; Lower; NFC", UTRANS_FORWARD, status));
+  if (U_FAILURE(status) || transliterator == nullptr) {
+    LOG(ERROR) << "Failed to create ICU Transliterator: "
+               << u_errorName(status);
+    return text;
+  }
+
+  UnicodeString value = UnicodeString(text.data(), text.length());
+  transliterator->transliterate(value);
+
+  return base::string16(value.getBuffer(), value.length());
+}
 
 }  // namespace
 
@@ -794,44 +817,40 @@ base::string16 AutofillProfile::CanonicalizeProfileString(
   base::string16 ret;
   ret.reserve(str.size());
 
-  bool previous_was_whitespace = false;
-
-  // This algorithm isn't designed to be perfect, we could get arbitrarily
+  // This algorithm is not designed to be perfect, we could get arbitrarily
   // fancy here trying to canonicalize address lines. Instead, this is designed
-  // to handle common cases for all types of data (addresses and names)
-  // without the need of domain-specific logic.
-  base::i18n::UTF16CharIterator iter(&str);
-  while (!iter.end()) {
+  // to handle common cases for all types of data (addresses and names) without
+  // the need of domain-specific logic.
+  //
+  // 1. Convert punctuation to spaces and normalize all whitespace to spaces.
+  //    This will convert "Mid-Island Plz." -> "Mid Island Plz " (the trailing
+  //    space will be trimmed off outside of the end of the loop).
+  //
+  // 2. Collapse consecutive punctuation/whitespace characters to a single
+  //    space. We pretend the string has already started with whitespace in
+  //    order to trim leading spaces.
+  //
+  // 3. Remove diacritics (accents and other non-spacing marks) and perform
+  //    case folding to lower-case.
+
+  bool previous_was_whitespace = true;
+  for (base::i18n::UTF16CharIterator iter(&str); !iter.end(); iter.Advance()) {
     switch (u_charType(iter.get())) {
+      // Punctuation
       case U_DASH_PUNCTUATION:
       case U_START_PUNCTUATION:
       case U_END_PUNCTUATION:
       case U_CONNECTOR_PUNCTUATION:
       case U_OTHER_PUNCTUATION:
-        // Convert punctuation to spaces. This will convert "Mid-Island Plz."
-        // -> "Mid Island Plz" (the trailing space will be trimmed off at the
-        // end of the loop).
-        if (!previous_was_whitespace) {
-          ret.push_back(' ');
-          previous_was_whitespace = true;
-        }
-        break;
-
+      // Whitespace
       case U_CONTROL_CHAR:  // To escape the '\n' character.
       case U_SPACE_SEPARATOR:
       case U_LINE_SEPARATOR:
       case U_PARAGRAPH_SEPARATOR:
-        // Convert sequences of spaces to single spaces.
         if (!previous_was_whitespace) {
           ret.push_back(' ');
           previous_was_whitespace = true;
         }
-        break;
-
-      case U_UPPERCASE_LETTER:
-      case U_TITLECASE_LETTER:
-        previous_was_whitespace = false;
-        base::WriteUnicodeCharacter(u_tolower(iter.get()), &ret);
         break;
 
       default:
@@ -839,14 +858,14 @@ base::string16 AutofillProfile::CanonicalizeProfileString(
         base::WriteUnicodeCharacter(iter.get(), &ret);
         break;
     }
-    iter.Advance();
   }
 
   // Trim off trailing whitespace if we left one.
-  if (previous_was_whitespace)
+  if (previous_was_whitespace && !ret.empty())
     ret.resize(ret.size() - 1);
 
-  return ret;
+  // Remove diacritics and perform case folding.
+  return NormalizeForComparison(ret);
 }
 
 // static
