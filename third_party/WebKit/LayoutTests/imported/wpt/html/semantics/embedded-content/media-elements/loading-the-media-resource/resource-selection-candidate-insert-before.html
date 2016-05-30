@@ -19,9 +19,9 @@ var t = async_test(function(t) {
   v.appendChild(createSource('#a')); // invokes resource selection
 });
 </script>
-<!--  now resource selection algorithm will continue its sync section (the </script> tag below provides a stable state)  -->
-<!--  #a is candidate  -->
-<!--  pointer is between #a and the end of the list  -->
+<!-- now resource selection algorithm will continue its sync section (the </script> tag below provides a stable state) -->
+<!-- #a is candidate -->
+<!-- pointer is between #a and the end of the list -->
 <script>
 t.step(function() {
   v.insertBefore(createSource('#b'), v.firstChild); // pointer is unchanged, #a is still candidate

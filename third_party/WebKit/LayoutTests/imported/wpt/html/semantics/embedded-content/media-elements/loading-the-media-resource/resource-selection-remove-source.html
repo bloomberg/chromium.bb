@@ -14,8 +14,8 @@ var t = async_test(function(t) {
   assert_equals(v.networkState, v.NETWORK_NO_SOURCE, 'networkState after removing the source element');
 });
 </script>
-<!--  now resource selection will continue its sync section (the </script> tag below provides a stable state)  -->
-<!--  will find neither src nor source, so sets networkState to NETWORK_EMPTY  -->
+<!-- now resource selection will continue its sync section (the </script> tag below provides a stable state) -->
+<!-- will find neither src nor source, so sets networkState to NETWORK_EMPTY -->
 <script>
 t.step(function() {
   assert_equals(v.networkState, v.NETWORK_EMPTY, 'networkState after letting the sync section of resource selection run');

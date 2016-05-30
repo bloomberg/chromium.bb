@@ -276,7 +276,7 @@ class TestImporter(object):
                 elif 'jstest' in test_info.keys():
                     jstests += 1
                     total_tests += 1
-                    copy_list.append({'src': fullpath, 'dest': filename})
+                    copy_list.append({'src': fullpath, 'dest': filename, 'is_jstest': True})
                 else:
                     total_tests += 1
                     copy_list.append({'src': fullpath, 'dest': filename})
@@ -365,7 +365,7 @@ class TestImporter(object):
                 # Only html, xml, or css should be converted
                 # FIXME: Eventually, so should js when support is added for this type of conversion
                 mimetype = mimetypes.guess_type(orig_filepath)
-                if 'html' in str(mimetype[0]) or 'xml' in str(mimetype[0]) or 'css' in str(mimetype[0]):
+                if 'is_jstest' not in file_to_copy and ('html' in str(mimetype[0]) or 'xml' in str(mimetype[0]) or 'css' in str(mimetype[0])):
                     converted_file = convert_for_webkit(new_path, filename=orig_filepath,
                                                         reference_support_info=reference_support_info)
 
