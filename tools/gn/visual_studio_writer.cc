@@ -432,7 +432,7 @@ bool VisualStudioWriter::WriteProjectFileContents(
           properties->SubElement("OutDir");
       path_output.WriteDir(out_dir->StartContent(false),
                            build_settings_->build_dir(),
-                           PathOutput::DIR_NO_LAST_SLASH);
+                           PathOutput::DIR_INCLUDE_LAST_SLASH);
     }
     properties->SubElement("TargetName")->Text("$(ProjectName)");
     if (target->output_type() != Target::GROUP) {
