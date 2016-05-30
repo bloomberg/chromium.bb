@@ -2164,43 +2164,6 @@
    fun:_ZN5blink17WebLocalFrameImpl16createChildFrameERKN7blink16FrameLoadRequestEPNS1_21HTMLFrameOwnerElementE
 }
 {
-   bug_385396a
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN5blink11RenderLayer7hitTestERKNS_14HitTestRequestERKNS_15HitTestLocationERNS_13HitTestResultE
-   fun:_ZN5blink10RenderView7hitTestERKNS_14HitTestRequestERKNS_15HitTestLocationERNS_13HitTestResultE
-   fun:_ZN5blink10RenderView7hitTestERKNS_14HitTestRequestERNS_13HitTestResultE
-   ...
-   fun:_ZN5blink12EventHandler18handleGestureEventERKNS_20PlatformGestureEventE
-   fun:_ZN5blink11WebViewImpl18handleGestureEventERKNS_15WebGestureEventE
-}
-{
-   bug_385396b
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN5blink11LayoutPointC*ERKNS_8IntPointE
-   ...
-   fun:_ZN5blink12EventHandler18handleGestureEventERKNS_20PlatformGestureEventE
-   fun:_ZN5blink11WebViewImpl18handleGestureEventERKNS_15WebGestureEventE
-}
-{
-   bug_385396c
-   Memcheck:Uninitialized
-   fun:_ZNK5blink7IntRect8containsEii
-   ...
-   fun:_ZN5blink12EventHandler18handleGestureEventERKNS_20PlatformGestureEventE
-   fun:_ZN5blink11WebViewImpl18handleGestureEventERKNS_15WebGestureEventE
-}
-{
-   bug_385396d
-   Memcheck:Uninitialized
-   fun:_ZNK7blink10LayoutUnit5floorEv
-   ...
-   fun:_ZN5blink12EventHandler18handleGestureEventERKNS_20PlatformGestureEventE
-   fun:_ZN5blink11WebViewImpl18handleGestureEventERKNS_15WebGestureEventE
-   fun:_ZN5blink18PageWidgetDelegate16handleInputEventEPN7blink4PageERNS_22PageWidgetEventHandlerERKNS_13WebInputEventE
-}
-{
    bug_385396e
    Memcheck:Uninitialized
    fun:_ZN5blink15roundedIntPointERKNS_11LayoutPointE
