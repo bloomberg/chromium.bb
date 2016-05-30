@@ -694,6 +694,8 @@ public:
     ThreadState* getThreadState() { return m_threadState; }
     int arenaIndex() const { return m_index; }
 
+    Address allocateLargeObject(size_t allocationSize, size_t gcInfoIndex);
+
 protected:
     BasePage* m_firstPage;
     BasePage* m_firstUnsweptPage;

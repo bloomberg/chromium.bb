@@ -343,6 +343,16 @@ void BaseArena::completeSweep()
     ThreadHeap::reportMemoryUsageForTracing();
 }
 
+Address BaseArena::allocateLargeObject(size_t allocationSize, size_t gcInfoIndex)
+{
+    // TODO(sof): should need arise, support eagerly finalized large objects.
+    CHECK(arenaIndex() != BlinkGC::EagerSweepArenaIndex);
+    LargeObjectArena* largeObjectArena = static_cast<LargeObjectArena*>(getThreadState()->arena(BlinkGC::LargeObjectArenaIndex));
+    Address largeObject = largeObjectArena -> allocateLargeObjectPage(allocationSize, gcInfoIndex);
+    ASAN_MARK_LARGE_VECTOR_CONTAINER(this, largeObject);
+    return largeObject;
+}
+
 NormalPageArena::NormalPageArena(ThreadState* state, int index)
     : BaseArena(state, index)
     , m_currentAllocationPoint(nullptr)
@@ -682,14 +692,8 @@ Address NormalPageArena::outOfLineAllocate(size_t allocationSize, size_t gcInfoI
     ASSERT(allocationSize >= allocationGranularity);
 
     // 1. If this allocation is big enough, allocate a large object.
-    if (allocationSize >= largeObjectSizeThreshold) {
-        // TODO(sof): support eagerly finalized large objects, if ever needed.
-        RELEASE_ASSERT(arenaIndex() != BlinkGC::EagerSweepArenaIndex);
-        LargeObjectArena* largeObjectArena = static_cast<LargeObjectArena*>(getThreadState()->arena(BlinkGC::LargeObjectArenaIndex));
-        Address largeObject = largeObjectArena->allocateLargeObjectPage(allocationSize, gcInfoIndex);
-        ASAN_MARK_LARGE_VECTOR_CONTAINER(this, largeObject);
-        return largeObject;
-    }
+    if (allocationSize >= largeObjectSizeThreshold)
+        return allocateLargeObject(allocationSize, gcInfoIndex);
 
     // 2. Try to allocate from a free list.
     updateRemainingAllocationSize();
