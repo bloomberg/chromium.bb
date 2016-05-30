@@ -58,9 +58,17 @@ class GoogleInstanceHelper(object):
     """Returns the name of the instance group associated with tag."""
     return 'group-' + tag
 
-  def CreateTemplate(self, tag, bucket):
-    """Creates an instance template for instances identified by tag and using
-    bucket for deployment. Returns True if successful.
+  def CreateTemplate(self, tag, bucket, task_dir):
+    """Creates an instance template for instances identified by tag.
+
+    Args:
+      tag: (string) Tag associated to a task.
+      bucket: (string) Root bucket where the deployment is located.
+      task_dir: (string) Subdirectory of |bucket| where task data is read and
+                         written.
+
+    Returns:
+      boolean: True if successful.
     """
     image_url = self._COMPUTE_API_ROOT + \
                 'ubuntu-os-cloud/global/images/ubuntu-1404-trusty-v20160406'
@@ -93,6 +101,8 @@ class GoogleInstanceHelper(object):
             'metadata': { 'items': [
                 {'key': 'cloud-storage-path',
                  'value': bucket},
+                {'key': 'task-dir',
+                 'value': task_dir},
                 {'key': 'startup-script-url',
                  'value': 'gs://%s/deployment/startup-script.sh' % bucket},
                 {'key': 'taskqueue-tag', 'value': tag}]}}}

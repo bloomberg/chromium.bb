@@ -39,14 +39,15 @@ class ClovisTask(object):
     try:
       data = json.loads(json_dict)
       action = data['action']
+      action_params = data['action_params']
       # Vaidate the format.
       if action == 'trace':
-        action_params = data['action_params']
         urls = action_params['urls']
         if (type(urls) is not list) or (len(urls) == 0):
           return None
       elif action == 'report':
-        action_params = data.get('action_params')
+        if not action_params.get('trace_bucket'):
+          return None
       else:
         # When more actions are supported, check that they are valid here.
         return None

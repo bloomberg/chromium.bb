@@ -15,8 +15,6 @@ BIGQUERY_TABLE_TEMPLATE = 'report'
 
 # Prefix for the loading trace database files.
 TRACE_DATABASE_PREFIX = 'trace_database'
-# Name of the directory where traces are located.
-TRACE_DIR = 'trace'
 
 
 def GetBigQueryTableID(tag):

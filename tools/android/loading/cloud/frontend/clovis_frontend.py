@@ -98,7 +98,7 @@ def Finalize(tag, email_address, status, task_url):
   deferred.defer(DeleteInstanceGroup, tag)
 
 
-def CreateInstanceTemplate(task):
+def CreateInstanceTemplate(task, task_dir):
   """Create the Compute Engine instance template that will be used to create the
   instances.
   """
@@ -111,7 +111,8 @@ def CreateInstanceTemplate(task):
   if not bucket:
     clovis_logger.error('Missing bucket in backend_params.')
     return False
-  return instance_helper.CreateTemplate(task.BackendParams()['tag'], bucket)
+  return instance_helper.CreateTemplate(task.BackendParams()['tag'], bucket,
+                                        task_dir)
 
 
 def CreateInstances(task):
@@ -163,13 +164,19 @@ def SplitClovisTask(task):
   """
   # For report task, need to find the traces first.
   if task.Action() == 'report':
-    bucket = task.BackendParams().get('storage_bucket')
-    if not bucket:
-      clovis_logger.error('Missing storage bucket for report task.')
+    trace_bucket = task.ActionParams().get('trace_bucket')
+    if not trace_bucket:
+      clovis_logger.error('Missing trace bucket for report task.')
       return None
-    traces = GetTracePaths(bucket)
+
+    # Allow passing the trace bucket as absolute or relative to the base bucket.
+    base_bucket = task.BackendParams().get('storage_bucket', '')
+    if not trace_bucket.startswith(base_bucket):
+      trace_bucket = os.path.join(base_bucket, trace_bucket)
+
+    traces = GetTracePaths(trace_bucket)
     if not traces:
-      clovis_logger.error('No traces found in bucket: ' + bucket)
+      clovis_logger.error('No traces found in bucket: ' + trace_bucket)
       return None
     task.ActionParams()['traces'] = traces
 
@@ -202,7 +209,7 @@ def GetTracePaths(bucket):
 
   This function assumes a specific structure for the files in the bucket. These
   assumptions must match the behavior of the backend:
-  - The trace databases are located under the TRACE_DIR directory in the bucket.
+  - The trace databases are located in the bucket.
   - The trace databases files are the only objects with the
     TRACE_DATABASE_PREFIX prefix in their name.
 
@@ -210,8 +217,7 @@ def GetTracePaths(bucket):
     list: The list of paths to traces, as strings.
   """
   traces = []
-  prefix = os.path.join('/', bucket, common.clovis_paths.TRACE_DIR,
-                        common.clovis_paths.TRACE_DATABASE_PREFIX)
+  prefix = os.path.join('/', bucket, common.clovis_paths.TRACE_DATABASE_PREFIX)
   file_stats = cloudstorage.listbucket(prefix)
 
   for file_stat in file_stats:
@@ -250,9 +256,20 @@ def StartFromJsonString(http_body_str):
   task_tag = task.BackendParams()['tag']
   clovis_logger.info('Start processing %s task with tag %s.' % (task.Action(),
                                                                 task_tag))
+  # Compute the task directory.
+  task_dir_components = []
+  user_email = email_helper.GetUserEmail()
+  user_name = user_email[:user_email.find('@')]
+  if user_name:
+    task_dir_components.append(user_name)
+  task_name = task.BackendParams().get('task_name')
+  if task_name:
+    task_dir_components.append(task_name)
+  task_dir_components.append(task_tag)
+  task_dir = os.path.join(task.Action(), '_'.join(task_dir_components))
 
   # Create the instance template if required.
-  if not CreateInstanceTemplate(task):
+  if not CreateInstanceTemplate(task, task_dir):
     return Render('Template creation failed.', memory_logs)
 
   # Build the URL where the result will live.
@@ -260,7 +277,8 @@ def StartFromJsonString(http_body_str):
   if task.Action() == 'trace':
     bucket = task.BackendParams().get('storage_bucket')
     if bucket:
-      task_url = 'https://console.cloud.google.com/storage/' + bucket
+      task_url = 'https://console.cloud.google.com/storage/%s/%s' % (bucket,
+                                                                     task_dir)
   elif task.Action() == 'report':
     task_url = common.clovis_paths.GetBigQueryTableURL(project_name, task_tag)
   else:
@@ -285,7 +303,6 @@ def StartFromJsonString(http_body_str):
   clovis_logger.info('Creating worker polling task.')
   first_poll_delay_minutes = 10
   timeout_hours = task.BackendParams().get('timeout_hours', 5)
-  user_email = email_helper.GetUserEmail()
   deferred.defer(PollWorkers, task_tag, time.time(), timeout_hours, user_email,
                  task_url, _countdown=(60 * first_poll_delay_minutes))
 

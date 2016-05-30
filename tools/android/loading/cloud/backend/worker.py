@@ -42,9 +42,9 @@ class Worker(object):
     if self._self_destruct and not self._instance_name:
       self._logger.error('Self destruction requires an instance name.')
 
-    # Separate the cloud storage path into the bucket and the base path under
+    # Separate the task storage path into the bucket and the base path under
     # the bucket.
-    storage_path_components = config['cloud_storage_path'].split('/')
+    storage_path_components = config['task_storage_path'].split('/')
     self._bucket_name = storage_path_components[0]
     self._base_path_in_bucket = ''
     if len(storage_path_components) > 1:

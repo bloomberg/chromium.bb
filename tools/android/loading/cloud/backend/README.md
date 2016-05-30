@@ -60,9 +60,10 @@ gcloud compute instances create $INSTANCE_NAME \
  --image ubuntu-14-04 \
  --zone europe-west1-c \
  --scopes cloud-platform,https://www.googleapis.com/auth/cloud-taskqueue \
- --metadata cloud-storage-path=$CLOUD_STORAGE_PATH,taskqueue-tag=some_tag \
+ --metadata \
+    cloud-storage-path=$CLOUD_STORAGE_PATH,task-dir=dir,taskqueue-tag=tag \
  --metadata-from-file \
-     startup-script=$CHROMIUM_SRC/tools/android/loading/cloud/backend/startup-script.sh
+    startup-script=$CHROMIUM_SRC/tools/android/loading/cloud/backend/startup-script.sh
 ```
 
 If you are debbugging, you probably want to set additional metadata:
@@ -98,8 +99,8 @@ gcloud compute instances get-serial-port-output $INSTANCE_NAME
 dictionary with the keys:
 
 -   `project_name` (string): Name of the Google Cloud project
--   `cloud_storage_path` (string): Path in Google Storage where generated traces
-    will be stored.
+-   `task_storage_path` (string): Path in Google Storage where task output is
+    generated.
 -   `binaries_path` (string): Path to the executables (Containing chrome).
 -   `src_path` (string): Path to the Chromium source directory.
 -   `taskqueue_tag` (string): Tag used by the worker when pulling tasks from
@@ -108,7 +109,7 @@ dictionary with the keys:
      and tracking filtering rules.
 -   `instance_name` (string, optional): Name of the Compute Engine instance this
     script is running on.
--   `worker_log_file` (string, optional): Path to the log file capturing the
+-   `worker_log_path` (string, optional): Path to the log file capturing the
     output of `worker.py`, to be uploaded to Cloud Storage.
 -   `self_destruct` (boolean, optional): Whether the worker will destroy the
     Compute Engine instance when there are no remaining tasks to process. This

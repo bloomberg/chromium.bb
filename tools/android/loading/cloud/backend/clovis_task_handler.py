@@ -31,11 +31,10 @@ class ClovisTaskHandler(object):
       instance_name(str, optional): Name of the ComputeEngine instance.
     """
     self._failure_database = failure_database
-    trace_path = os.path.join(base_path, 'trace')
     self._handlers = {
         'trace': TraceTaskHandler(
-            trace_path, failure_database, google_storage_accessor,
-            binaries_path, logger, instance_name),
+            base_path, failure_database, google_storage_accessor, binaries_path,
+            logger, instance_name),
         'report': ReportTaskHandler(
             project_name, failure_database, google_storage_accessor,
             bigquery_service, logger, ad_rules_filename,

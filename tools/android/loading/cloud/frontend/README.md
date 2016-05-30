@@ -21,6 +21,8 @@ following keys:
 -   `storage_bucket` (string): Name of the storage bucket used by the backend
     instances. Backend code and data must have been previously deployed to this
     bucket using the `deploy.sh` [script][4].
+-   `task_name` (string, opitonal): Name of the task, used to build the name of
+    the output directory.
 -   `tag` (string, optional): tag internally used to associate tasks to backend
     ComputeEngine instances. This parameter should not be set in general, as it
     is mostly exposed for development purposes. If this parameter is not
@@ -42,10 +44,11 @@ running Chrome.
 
 ### Parameters for the `report` action
 
-Finds all the traces in the bucket (specified in the backend parameters) and
-generates a report in BigQuery.
+Finds all the traces in the specified bucket and generates a report in BigQuery.
 
-This action has no parameters.
+- `trace_bucket` (string): Name of the storage bucket where trace databases can
+  be found. It can be either absolute or relative to the `storage_bucket`
+  specified in the backend parameters.
 
 This requires an existing `clovis_dataset.report` BigQuery table that will be
 used as a template. The schema of this template is not updated automatically and
