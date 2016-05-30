@@ -31,6 +31,7 @@
 #include "components/translate/core/common/translate_switches.h"
 #include "components/translate/core/common/translate_util.h"
 #include "google_apis/google_api_keys.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 
@@ -88,6 +89,11 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
       language_state_.IsPageTranslated()) {
     return;
   }
+
+  // Also, skip if the connection is currently offline - initiation doesn't make
+  // sense there, either.
+  if (net::NetworkChangeNotifier::IsOffline())
+    return;
 
   if (!ignore_missing_key_for_testing_ &&
       !::google_apis::HasKeysConfigured()) {
