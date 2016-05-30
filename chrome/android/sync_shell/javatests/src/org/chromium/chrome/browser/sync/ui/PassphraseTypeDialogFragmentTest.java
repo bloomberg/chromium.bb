@@ -11,13 +11,14 @@ import android.widget.ListView;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.sync.SyncTestBase;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.sync.PassphraseType;
 
 /**
  * Tests to make sure that PassphraseTypeDialogFragment presents the correct options.
  */
-public class PassphraseTypeDialogFragmentTest extends SyncTestBase {
+public class PassphraseTypeDialogFragmentTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private static final String TAG = "PassphraseTypeDialogFragmentTest";
 
     private static final boolean ENABLED = true;
@@ -37,6 +38,15 @@ public class PassphraseTypeDialogFragmentTest extends SyncTestBase {
     }
 
     private PassphraseTypeDialogFragment mTypeFragment;
+
+    public PassphraseTypeDialogFragmentTest() {
+        super(ChromeActivity.class);
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
+    }
 
     @SmallTest
     @Feature({"Sync"})

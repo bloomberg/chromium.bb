@@ -262,7 +262,7 @@ public class ClearBrowsingDataPreferencesTest
      */
     @SmallTest
     public void testFooterNonsigned() throws Exception {
-        SigninTestUtil.resetSigninState();
+        SigninTestUtil.get().resetSigninState();
 
         final Preferences preferences =
                 startPreferences(ClearBrowsingDataPreferences.class.getName());
@@ -289,7 +289,7 @@ public class ClearBrowsingDataPreferencesTest
     @MediumTest
     public void testFooterSigned() throws Exception {
         // Sign in.
-        SigninTestUtil.addAndSignInTestAccount();
+        SigninTestUtil.get().addAndSignInTestAccount();
 
         final Preferences preferences =
                 startPreferences(ClearBrowsingDataPreferences.class.getName());
@@ -386,7 +386,7 @@ public class ClearBrowsingDataPreferencesTest
     @LargeTest
     public void testDialogAboutOtherFormsOfBrowsingHistory() throws Exception {
         // Sign in.
-        SigninTestUtil.addAndSignInTestAccount();
+        SigninTestUtil.get().addAndSignInTestAccount();
         OtherFormsOfHistoryDialogFragment.clearShownPreferenceForTesting(getActivity());
 
         // History is not selected. We still need to select some other datatype, otherwise the

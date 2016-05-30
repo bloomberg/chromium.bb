@@ -28,8 +28,10 @@ public final class SigninTestUtil {
 
     private static final String DEFAULT_ACCOUNT = "test@gmail.com";
 
-    private static Context sContext;
-    private static MockAccountManager sAccountManager;
+    private static SigninTestUtil sInstance;
+
+    private Context mContext;
+    private MockAccountManager mAccountManager;
 
     /**
      * Sets up the test authentication environment.
@@ -37,38 +39,42 @@ public final class SigninTestUtil {
      * This must be called before native is loaded.
      */
     public static void setUpAuthForTest(Instrumentation instrumentation) {
-        assert sContext == null;
-        sContext = instrumentation.getTargetContext();
-        sAccountManager = new MockAccountManager(sContext, instrumentation.getContext());
-        AccountManagerHelper.overrideAccountManagerHelperForTests(sContext, sAccountManager);
+        assert sInstance == null;
+        sInstance = new SigninTestUtil(instrumentation);
+    }
+
+    /**
+     * Get the object created in setUpAuthForTest.
+     */
+    public static SigninTestUtil get() {
+        assert sInstance != null;
+        return sInstance;
+    }
+
+    private SigninTestUtil(Instrumentation instrumentation) {
+        mContext = instrumentation.getTargetContext();
+        mAccountManager = new MockAccountManager(mContext, instrumentation.getContext());
+        AccountManagerHelper.overrideAccountManagerHelperForTests(mContext, mAccountManager);
         overrideAccountIdProvider();
         resetSigninState();
     }
 
     /**
-     * Returns the currently signed in account.
-     */
-    public static Account getCurrentAccount() {
-        assert sContext != null;
-        return ChromeSigninController.get(sContext).getSignedInUser();
-    }
-
-    /**
      * Add an account with the default name.
      */
-    public static Account addTestAccount() {
+    public Account addTestAccount() {
         return addTestAccount(DEFAULT_ACCOUNT);
     }
 
     /**
      * Add an account with a given name.
      */
-    public static Account addTestAccount(String name) {
+    public Account addTestAccount(String name) {
         Account account = createTestAccount(name);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                AccountTrackerService.get(sContext).invalidateAccountSeedStatus(true);
+                AccountTrackerService.get(mContext).invalidateAccountSeedStatus(true);
             }
         });
         return account;
@@ -77,28 +83,27 @@ public final class SigninTestUtil {
     /**
      * Add and sign in an account with the default name.
      */
-    public static Account addAndSignInTestAccount() {
+    public Account addAndSignInTestAccount() {
         Account account = createTestAccount(DEFAULT_ACCOUNT);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ChromeSigninController.get(sContext).setSignedInAccountName(DEFAULT_ACCOUNT);
-                AccountTrackerService.get(sContext).invalidateAccountSeedStatus(true);
+                ChromeSigninController.get(mContext).setSignedInAccountName(DEFAULT_ACCOUNT);
+                AccountTrackerService.get(mContext).invalidateAccountSeedStatus(true);
             }
         });
         return account;
     }
 
-    private static Account createTestAccount(String accountName) {
-        assert sContext != null;
+    private Account createTestAccount(String accountName) {
         Account account = AccountManagerHelper.createAccountFromName(accountName);
         AccountHolder.Builder accountHolder =
                 AccountHolder.create().account(account).alwaysAccept(true);
-        sAccountManager.addAccountHolderExplicitly(accountHolder.build());
+        mAccountManager.addAccountHolderExplicitly(accountHolder.build());
         return account;
     }
 
-    private static void overrideAccountIdProvider() {
+    private void overrideAccountIdProvider() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -121,14 +126,12 @@ public final class SigninTestUtil {
      * Should be called at setUp and tearDown so that the signin state is not leaked across tests.
      * The setUp call is implicit inside the constructor.
      */
-    public static void resetSigninState() {
+    public void resetSigninState() {
         // Clear cached signed account name and accounts list.
-        ChromeSigninController.get(sContext).setSignedInAccountName(null);
+        ChromeSigninController.get(mContext).setSignedInAccountName(null);
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putStringSet(OAuth2TokenService.STORED_ACCOUNTS_KEY, new HashSet<String>())
                 .apply();
     }
-
-    private SigninTestUtil() {}
 }

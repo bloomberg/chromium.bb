@@ -21,6 +21,8 @@ import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.sync.AndroidSyncSettings;
+import org.chromium.sync.signin.ChromeSigninController;
 
 /**
  * Tests for the first run experience.
@@ -43,13 +45,13 @@ public class FirstRunTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testSignIn() throws Exception {
-        Account testAccount = SigninTestUtil.addTestAccount();
-        assertNull(SigninTestUtil.getCurrentAccount());
-        assertFalse(SyncTestUtil.isSyncRequested());
-
+        Account testAccount = SigninTestUtil.get().addTestAccount();
+        SyncTestUtil.verifySyncIsSignedOut();
+        assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
         processFirstRun(testAccount.name, ShowSettings.NO);
-        assertEquals(testAccount, SigninTestUtil.getCurrentAccount());
-        SyncTestUtil.waitForSyncActive();
+        assertEquals(
+                testAccount.name, ChromeSigninController.get(mContext).getSignedInAccountName());
+        SyncTestUtil.verifySyncIsActiveForAccount(mContext, testAccount);
     }
 
     // Test that signing in and opening settings through FirstRun signs in and doesn't fully start
@@ -57,12 +59,13 @@ public class FirstRunTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testSignInWithOpenSettings() throws Exception {
-        final Account testAccount = SigninTestUtil.addTestAccount();
+        final Account testAccount = SigninTestUtil.get().addTestAccount();
         final Preferences prefActivity = processFirstRun(testAccount.name, ShowSettings.YES);
 
         // User should be signed in and the sync backend should initialize, but sync should not
         // become fully active until the settings page is closed.
-        assertEquals(testAccount, SigninTestUtil.getCurrentAccount());
+        assertEquals(
+                testAccount.name, ChromeSigninController.get(mContext).getSignedInAccountName());
         SyncTestUtil.waitForBackendInitialized();
         assertFalse(SyncTestUtil.isSyncActive());
 
@@ -80,11 +83,13 @@ public class FirstRunTest extends SyncTestBase {
     @SmallTest
     @Feature({"Sync"})
     public void testNoSignIn() throws Exception {
-        SigninTestUtil.addTestAccount();
-        assertFalse(SyncTestUtil.isSyncRequested());
+        SigninTestUtil.get().addTestAccount();
+        SyncTestUtil.verifySyncIsSignedOut();
+        assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
         processFirstRun(null, ShowSettings.NO);
-        assertNull(SigninTestUtil.getCurrentAccount());
-        assertFalse(SyncTestUtil.isSyncRequested());
+        assertNull(ChromeSigninController.get(mContext).getSignedInAccountName());
+        SyncTestUtil.verifySyncIsSignedOut();
+        assertFalse(AndroidSyncSettings.isChromeSyncEnabled(mContext));
     }
 
     /**

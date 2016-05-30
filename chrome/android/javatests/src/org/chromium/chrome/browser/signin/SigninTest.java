@@ -286,7 +286,7 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     public void testConsumerSignin() throws InterruptedException {
-        Account testAccount = SigninTestUtil.addTestAccount();
+        Account testAccount = SigninTestUtil.get().addTestAccount();
 
         // Sign in to that account.
         boolean isManaged = false;

@@ -62,7 +62,7 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
     @MediumTest
     @Feature({"Sync"})
     public void testGetsKey() throws Throwable {
-        Account account = setUpTestAccountAndSignIn();
+        Account account = setUpTestAccountAndSignInToSync();
         assertEquals(0, mListener.callCount());
         encryptWithPassphrase(PASSPHRASE);
         waitForCallCount(1);
@@ -76,12 +76,12 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
     @MediumTest
     @Feature({"Sync"})
     public void testClearData() throws Throwable {
-        setUpTestAccountAndSignIn();
+        setUpTestAccountAndSignInToSync();
         assertEquals(0, mListener.callCount());
         encryptWithPassphrase(PASSPHRASE);
         waitForCallCount(1);
         clearServerData();
-        setUpTestAccountAndSignIn();
+        setUpTestAccountAndSignInToSync();
         encryptWithPassphrase(PASSPHRASE);
         waitForCallCount(2);
     }
