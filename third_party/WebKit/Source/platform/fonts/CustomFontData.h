@@ -41,8 +41,6 @@ public:
     virtual bool shouldSkipDrawing() const { return false; }
     virtual void clearFontFaceSource() { }
 
-    virtual void initializeFontData(SimpleFontData*, float) { }
-
 protected:
     CustomFontData() { }
 };

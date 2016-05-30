@@ -78,8 +78,6 @@ SimpleFontData::SimpleFontData(PassRefPtr<CustomFontData> customData, float font
     , m_hasVerticalGlyphs(false)
     , m_customFontData(customData)
 {
-    if (m_customFontData)
-        m_customFontData->initializeFontData(this, fontSize);
 }
 
 void SimpleFontData::platformInit()
