@@ -752,6 +752,8 @@ source_set("test_support") {
     "browser_state/test_chrome_browser_state.mm",
     "browser_state/test_chrome_browser_state_isolated_context.h",
     "browser_state/test_chrome_browser_state_isolated_context.mm",
+    "browser_state/test_chrome_browser_state_manager.cc",
+    "browser_state/test_chrome_browser_state_manager.h",
     "geolocation/test_location_manager.h",
     "geolocation/test_location_manager.mm",
     "net/mock_image_fetcher.h",
