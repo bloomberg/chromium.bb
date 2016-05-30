@@ -13,9 +13,11 @@ import devtools_monitor
 
 
 _DISABLED_CATEGORIES = ('cc',) # Contains a lot of events, none of which we use.
+QUEUING_CATEGORY = 'disabled-by-default-loading.resource'
 INITIAL_CATEGORIES = (
     ('toplevel', 'blink', 'v8', 'java', 'devtools.timeline',
      'blink.user_timing', 'blink.net', 'disabled-by-default-blink.debug.layout')
+    + (QUEUING_CATEGORY,)
     + tuple('-' + cat for cat in _DISABLED_CATEGORIES))
 
 
