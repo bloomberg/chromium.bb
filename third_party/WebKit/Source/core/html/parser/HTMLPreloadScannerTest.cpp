@@ -338,9 +338,17 @@ TEST_F(HTMLPreloadScannerTest, testPicture)
     TestCase testCases[] = {
         {"http://example.test", "<picture><source srcset='srcset_bla.gif'><img src='bla.gif'></picture>", "srcset_bla.gif", "http://example.test/", Resource::Image, 0},
         {"http://example.test", "<picture><source sizes='50vw' srcset='srcset_bla.gif'><img src='bla.gif'></picture>", "srcset_bla.gif", "http://example.test/", Resource::Image, 250},
-        {"http://example.test", "<picture><source sizes='50vw' srcset='srcset_bla.gif'><img sizes='50w' src='bla.gif'></picture>", "srcset_bla.gif", "http://example.test/", Resource::Image, 250},
-        {"http://example.test", "<picture><source srcset='srcset_bla.gif' sizes='50vw'><img sizes='50w' src='bla.gif'></picture>", "srcset_bla.gif", "http://example.test/", Resource::Image, 250},
-        {"http://example.test", "<picture><source srcset='srcset_bla.gif'><img sizes='50w' src='bla.gif'></picture>", "srcset_bla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<picture><source sizes='50vw' srcset='srcset_bla.gif'><img sizes='50vw' src='bla.gif'></picture>", "srcset_bla.gif", "http://example.test/", Resource::Image, 250},
+        {"http://example.test", "<picture><source srcset='srcset_bla.gif' sizes='50vw'><img sizes='50vw' src='bla.gif'></picture>", "srcset_bla.gif", "http://example.test/", Resource::Image, 250},
+        {"http://example.test", "<picture><source srcset='srcset_bla.gif'><img sizes='50vw' src='bla.gif'></picture>", "srcset_bla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<picture><source media='(max-width: 900px)' srcset='srcset_bla.gif'><img sizes='50vw' srcset='bla.gif 500w'></picture>", "srcset_bla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<picture><source media='(max-width: 400px)' srcset='srcset_bla.gif'><img sizes='50vw' srcset='bla.gif 500w'></picture>", "bla.gif", "http://example.test/", Resource::Image, 250},
+        {"http://example.test", "<picture><source type='image/webp' srcset='srcset_bla.gif'><img sizes='50vw' srcset='bla.gif 500w'></picture>", "srcset_bla.gif", "http://example.test/", Resource::Image, 0},
+        {"http://example.test", "<picture><source type='image/jp2' srcset='srcset_bla.gif'><img sizes='50vw' srcset='bla.gif 500w'></picture>", "bla.gif", "http://example.test/", Resource::Image, 250},
+        {"http://example.test", "<picture><source media='(max-width: 900px)' type='image/jp2' srcset='srcset_bla.gif'><img sizes='50vw' srcset='bla.gif 500w'></picture>", "bla.gif", "http://example.test/", Resource::Image, 250},
+        {"http://example.test", "<picture><source type='image/webp' media='(max-width: 400px)' srcset='srcset_bla.gif'><img sizes='50vw' srcset='bla.gif 500w'></picture>", "bla.gif", "http://example.test/", Resource::Image, 250},
+        {"http://example.test", "<picture><source type='image/jp2' media='(max-width: 900px)' srcset='srcset_bla.gif'><img sizes='50vw' srcset='bla.gif 500w'></picture>", "bla.gif", "http://example.test/", Resource::Image, 250},
+        {"http://example.test", "<picture><source media='(max-width: 400px)' type='image/webp' srcset='srcset_bla.gif'><img sizes='50vw' srcset='bla.gif 500w'></picture>", "bla.gif", "http://example.test/", Resource::Image, 250},
     };
 
     for (const auto& testCase : testCases)

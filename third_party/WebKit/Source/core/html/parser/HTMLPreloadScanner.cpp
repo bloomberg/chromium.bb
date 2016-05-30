@@ -140,11 +140,10 @@ public:
     StartTagScanner(const StringImpl* tagImpl, MediaValuesCached* mediaValues)
         : m_tagImpl(tagImpl)
         , m_linkIsStyleSheet(false)
-        , m_linkTypeIsMissingOrSupportedStyleSheet(true)
         , m_linkIsPreconnect(false)
         , m_linkIsPreload(false)
         , m_linkIsImport(false)
-        , m_matchedMediaAttribute(true)
+        , m_matched(true)
         , m_inputIsImage(false)
         , m_sourceSize(0)
         , m_sourceSizeSet(false)
@@ -193,7 +192,7 @@ public:
 
     void handlePictureSourceURL(PictureData& pictureData)
     {
-        if (match(m_tagImpl, sourceTag) && m_matchedMediaAttribute && pictureData.sourceURL.isEmpty()) {
+        if (match(m_tagImpl, sourceTag) && m_matched && pictureData.sourceURL.isEmpty()) {
             pictureData.sourceURL = m_srcsetImageCandidate.toString();
             pictureData.sourceSizeSet = m_sourceSizeSet;
             pictureData.sourceSize = m_sourceSize;
@@ -212,7 +211,7 @@ public:
             if (isLinkRelPreload()) {
                 requestType = PreloadRequest::RequestTypeLinkRelPreload;
             }
-            if (!shouldPreload() || !m_matchedMediaAttribute) {
+            if (!shouldPreload()) {
                 return nullptr;
             }
         }
@@ -308,13 +307,13 @@ private:
             m_linkIsPreload = rel.isLinkPreload();
             m_linkIsImport = rel.isImport();
         } else if (match(attributeName, mediaAttr)) {
-            m_matchedMediaAttribute = mediaAttributeMatches(*m_mediaValues, attributeValue);
+            m_matched &= mediaAttributeMatches(*m_mediaValues, attributeValue);
         } else if (match(attributeName, crossoriginAttr)) {
             setCrossOrigin(attributeValue);
         } else if (match(attributeName, asAttr)) {
             m_asAttributeValue = attributeValue;
         } else if (match(attributeName, typeAttr)) {
-            m_linkTypeIsMissingOrSupportedStyleSheet = MIMETypeRegistry::isSupportedStyleSheetMIMEType(ContentType(attributeValue).type());
+            m_matched &= MIMETypeRegistry::isSupportedStyleSheetMIMEType(ContentType(attributeValue).type());
         }
     }
 
@@ -342,7 +341,9 @@ private:
             }
         } else if (match(attributeName, mediaAttr)) {
             // FIXME - Don't match media multiple times.
-            m_matchedMediaAttribute = mediaAttributeMatches(*m_mediaValues, attributeValue);
+            m_matched &= mediaAttributeMatches(*m_mediaValues, attributeValue);
+        } else if (match(attributeName, typeAttr)) {
+            m_matched &= MIMETypeRegistry::isSupportedImagePrefixedMIMEType(ContentType(attributeValue).type());
         }
     }
 
@@ -428,9 +429,9 @@ private:
     {
         if (m_urlToLoad.isEmpty())
             return false;
-        if (match(m_tagImpl, linkTag) && !m_linkIsStyleSheet && !m_linkIsImport && !m_linkIsPreload)
+        if (!m_matched)
             return false;
-        if (match(m_tagImpl, linkTag) && m_linkIsStyleSheet && !m_linkTypeIsMissingOrSupportedStyleSheet)
+        if (match(m_tagImpl, linkTag) && !m_linkIsStyleSheet && !m_linkIsImport && !m_linkIsPreload)
             return false;
         if (match(m_tagImpl, inputTag) && !m_inputIsImage)
             return false;
@@ -457,11 +458,10 @@ private:
     ImageCandidate m_srcsetImageCandidate;
     String m_charset;
     bool m_linkIsStyleSheet;
-    bool m_linkTypeIsMissingOrSupportedStyleSheet;
     bool m_linkIsPreconnect;
     bool m_linkIsPreload;
     bool m_linkIsImport;
-    bool m_matchedMediaAttribute;
+    bool m_matched;
     bool m_inputIsImage;
     String m_imgSrcUrl;
     String m_srcsetAttributeValue;
