@@ -110,8 +110,7 @@ class AudioInputTest : public testing::Test {
     AudioParameters params = audio_manager_->GetInputStreamParameters(
         AudioDeviceDescription::kDefaultDeviceId);
     audio_input_stream_ = audio_manager_->MakeAudioInputStream(
-        params, AudioDeviceDescription::kDefaultDeviceId,
-        AudioManager::LogCallback());
+        params, AudioDeviceDescription::kDefaultDeviceId);
     EXPECT_TRUE(audio_input_stream_);
   }
 

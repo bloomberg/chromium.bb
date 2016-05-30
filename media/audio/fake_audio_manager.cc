@@ -35,29 +35,25 @@ bool FakeAudioManager::HasAudioInputDevices() { return false; }
 
 // Implementation of AudioManagerBase.
 AudioOutputStream* FakeAudioManager::MakeLinearOutputStream(
-    const AudioParameters& params,
-    const LogCallback& log_callback) {
+    const AudioParameters& params) {
   return FakeAudioOutputStream::MakeFakeStream(this, params);
 }
 
 AudioOutputStream* FakeAudioManager::MakeLowLatencyOutputStream(
     const AudioParameters& params,
-    const std::string& device_id,
-    const LogCallback& log_callback) {
+    const std::string& device_id) {
   return FakeAudioOutputStream::MakeFakeStream(this, params);
 }
 
 AudioInputStream* FakeAudioManager::MakeLinearInputStream(
     const AudioParameters& params,
-    const std::string& device_id,
-    const LogCallback& log_callback) {
+    const std::string& device_id) {
   return FakeAudioInputStream::MakeFakeStream(this, params);
 }
 
 AudioInputStream* FakeAudioManager::MakeLowLatencyInputStream(
     const AudioParameters& params,
-    const std::string& device_id,
-    const LogCallback& log_callback) {
+    const std::string& device_id) {
   return FakeAudioInputStream::MakeFakeStream(this, params);
 }
 

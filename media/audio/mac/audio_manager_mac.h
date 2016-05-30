@@ -46,20 +46,16 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
 
   // Implementation of AudioManagerBase.
   AudioOutputStream* MakeLinearOutputStream(
-      const AudioParameters& params,
-      const LogCallback& log_callback) override;
+      const AudioParameters& params) override;
   AudioOutputStream* MakeLowLatencyOutputStream(
       const AudioParameters& params,
-      const std::string& device_id,
-      const LogCallback& log_callback) override;
+      const std::string& device_id) override;
   AudioInputStream* MakeLinearInputStream(
       const AudioParameters& params,
-      const std::string& device_id,
-      const LogCallback& log_callback) override;
+      const std::string& device_id) override;
   AudioInputStream* MakeLowLatencyInputStream(
       const AudioParameters& params,
-      const std::string& device_id,
-      const LogCallback& log_callback) override;
+      const std::string& device_id) override;
   std::string GetDefaultOutputDeviceID() override;
 
   // Used to track destruction of input and output streams.

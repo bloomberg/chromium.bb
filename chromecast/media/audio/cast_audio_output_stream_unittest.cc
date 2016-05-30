@@ -235,9 +235,8 @@ class CastAudioOutputStreamTest : public ::testing::Test {
   }
 
   ::media::AudioOutputStream* CreateStream() {
-    return audio_manager_->MakeAudioOutputStream(
-        GetAudioParams(), kDefaultDeviceId,
-        ::media::AudioManager::LogCallback());
+    return audio_manager_->MakeAudioOutputStream(GetAudioParams(),
+                                                 kDefaultDeviceId);
   }
 
   // Runs the messsage loop for duration equivalent to the given number of

@@ -335,8 +335,7 @@ std::string AudioManagerWin::GetAssociatedOutputDeviceID(
 // mode.
 // - PCMWaveOutAudioOutputStream: Based on the waveOut API.
 AudioOutputStream* AudioManagerWin::MakeLinearOutputStream(
-    const AudioParameters& params,
-    const LogCallback& log_callback) {
+    const AudioParameters& params) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
   if (params.channels() > kWinMaxChannels)
     return NULL;
@@ -354,8 +353,7 @@ AudioOutputStream* AudioManagerWin::MakeLinearOutputStream(
 // - WASAPIAudioOutputStream: Based on Core Audio (WASAPI) API.
 AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
     const AudioParameters& params,
-    const std::string& device_id,
-    const LogCallback& log_callback) {
+    const std::string& device_id) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   if (params.channels() > kWinMaxChannels)
     return NULL;
@@ -386,9 +384,7 @@ AudioOutputStream* AudioManagerWin::MakeLowLatencyOutputStream(
 // Factory for the implementations of AudioInputStream for AUDIO_PCM_LINEAR
 // mode.
 AudioInputStream* AudioManagerWin::MakeLinearInputStream(
-    const AudioParameters& params,
-    const std::string& device_id,
-    const LogCallback& log_callback) {
+    const AudioParameters& params, const std::string& device_id) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
   return CreatePCMWaveInAudioInputStream(params, device_id);
 }
@@ -396,9 +392,7 @@ AudioInputStream* AudioManagerWin::MakeLinearInputStream(
 // Factory for the implementations of AudioInputStream for
 // AUDIO_PCM_LOW_LATENCY mode.
 AudioInputStream* AudioManagerWin::MakeLowLatencyInputStream(
-    const AudioParameters& params,
-    const std::string& device_id,
-    const LogCallback& log_callback) {
+    const AudioParameters& params, const std::string& device_id) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   DVLOG(1) << "MakeLowLatencyInputStream: " << device_id;
   AudioInputStream* stream = NULL;

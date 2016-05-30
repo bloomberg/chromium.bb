@@ -45,20 +45,16 @@ class CastAudioManager : public ::media::AudioManagerBase {
  private:
   // AudioManagerBase implementation.
   ::media::AudioOutputStream* MakeLinearOutputStream(
-      const ::media::AudioParameters& params,
-      const ::media::AudioManager::LogCallback& log_callback) override;
+      const ::media::AudioParameters& params) override;
   ::media::AudioOutputStream* MakeLowLatencyOutputStream(
       const ::media::AudioParameters& params,
-      const std::string& device_id,
-      const ::media::AudioManager::LogCallback& log_callback) override;
+      const std::string& device_id) override;
   ::media::AudioInputStream* MakeLinearInputStream(
       const ::media::AudioParameters& params,
-      const std::string& device_id,
-      const ::media::AudioManager::LogCallback& log_callback) override;
+      const std::string& device_id) override;
   ::media::AudioInputStream* MakeLowLatencyInputStream(
       const ::media::AudioParameters& params,
-      const std::string& device_id,
-      const ::media::AudioManager::LogCallback& log_callback) override;
+      const std::string& device_id) override;
   ::media::AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
       const ::media::AudioParameters& input_params) override;
