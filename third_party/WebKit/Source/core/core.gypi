@@ -1219,6 +1219,7 @@
             'css/CSSShadowValue.h',
             'css/CSSStringValue.cpp',
             'css/CSSStringValue.h',
+            'css/CSSStyleDeclaration.cpp',
             'css/CSSStyleDeclaration.h',
             'css/CSSStyleRule.cpp',
             'css/CSSStyleRule.h',
