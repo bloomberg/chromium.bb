@@ -9,7 +9,8 @@
 namespace ui {
 
 StubWindow::StubWindow(PlatformWindowDelegate* delegate) : delegate_(delegate) {
-  delegate_->OnAcceleratedWidgetAvailable(gfx::kNullAcceleratedWidget, 1.f);
+  if (delegate_)
+    delegate_->OnAcceleratedWidgetAvailable(gfx::kNullAcceleratedWidget, 1.f);
 }
 
 StubWindow::~StubWindow() {
@@ -22,14 +23,16 @@ void StubWindow::Hide() {
 }
 
 void StubWindow::Close() {
-  delegate_->OnClosed();
+  if (delegate_)
+    delegate_->OnClosed();
 }
 
 void StubWindow::SetBounds(const gfx::Rect& bounds) {
   if (bounds_ == bounds)
     return;
   bounds_ = bounds;
-  delegate_->OnBoundsChanged(bounds);
+  if (delegate_)
+    delegate_->OnBoundsChanged(bounds);
 }
 
 gfx::Rect StubWindow::GetBounds() {

@@ -30,7 +30,6 @@
 #include "ui/gfx/path.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/platform_window/platform_window_delegate.h"
-#include "ui/views/mus/platform_window_mus.h"
 #include "ui/views/mus/surface_context_factory.h"
 #include "ui/views/mus/window_manager_constants_converters.h"
 #include "ui/views/mus/window_manager_frame_values.h"
@@ -412,6 +411,12 @@ class NativeWidgetMus::MusWindowObserver : public mus::WindowObserver {
     DCHECK_EQ(mus_window(), window);
     platform_window_delegate()->OnClosed();
   }
+  void OnWindowBoundsChanging(mus::Window* window,
+                              const gfx::Rect& old_bounds,
+                              const gfx::Rect& new_bounds) override {
+    DCHECK_EQ(window, mus_window());
+    window_tree_host()->SetBounds(new_bounds);
+  }
   void OnWindowFocusChanged(mus::Window* gained_focus,
                             mus::Window* lost_focus) override {
     if (gained_focus == mus_window())
@@ -638,6 +643,7 @@ NonClientFrameView* NativeWidgetMus::CreateNonClientFrameView() {
 
 void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   NativeWidgetAura::RegisterNativeWidgetForWindow(this, content_);
+  aura::Window* hosted_window = window_tree_host_->window();
 
   ownership_ = params.ownership;
   window_->SetCanFocus(params.activatable ==
@@ -645,17 +651,15 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
 
   window_tree_host_->AddObserver(this);
   window_tree_host_->InitHost();
-  window_tree_host_->window()->SetProperty(kMusWindow, window_);
+  hosted_window->SetProperty(kMusWindow, window_);
 
   focus_client_.reset(
-      new wm::FocusController(new FocusRulesImpl(window_tree_host_->window())));
+      new wm::FocusController(new FocusRulesImpl(hosted_window)));
 
-  aura::client::SetFocusClient(window_tree_host_->window(),
-                               focus_client_.get());
-  aura::client::SetActivationClient(window_tree_host_->window(),
-                                    focus_client_.get());
+  aura::client::SetFocusClient(hosted_window, focus_client_.get());
+  aura::client::SetActivationClient(hosted_window, focus_client_.get());
   screen_position_client_.reset(new ScreenPositionClientMus(window_));
-  aura::client::SetScreenPositionClient(window_tree_host_->window(),
+  aura::client::SetScreenPositionClient(hosted_window,
                                         screen_position_client_.get());
 
   // TODO(erg): Remove this check when mash/wm/frame/move_event_handler.cc's
@@ -664,17 +668,14 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   if (surface_type_ == mus::mojom::SurfaceType::DEFAULT) {
     cursor_manager_.reset(new wm::CursorManager(
         base::WrapUnique(new NativeCursorManagerMus(window_))));
-    aura::client::SetCursorClient(window_tree_host_->window(),
-                                  cursor_manager_.get());
+    aura::client::SetCursorClient(hosted_window, cursor_manager_.get());
   }
 
-  window_tree_client_.reset(
-      new NativeWidgetMusWindowTreeClient(window_tree_host_->window()));
-  window_tree_host_->window()->AddPreTargetHandler(focus_client_.get());
-  window_tree_host_->window()->SetLayoutManager(
-      new ContentWindowLayoutManager(window_tree_host_->window(), content_));
-  capture_client_.reset(
-      new MusCaptureClient(window_tree_host_->window(), content_, window_));
+  window_tree_client_.reset(new NativeWidgetMusWindowTreeClient(hosted_window));
+  hosted_window->AddPreTargetHandler(focus_client_.get());
+  hosted_window->SetLayoutManager(
+      new ContentWindowLayoutManager(hosted_window, content_));
+  capture_client_.reset(new MusCaptureClient(hosted_window, content_, window_));
 
   content_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
   content_->Init(ui::LAYER_TEXTURED);
@@ -682,7 +683,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
     content_->Show();
   content_->SetTransparent(true);
   content_->SetFillsBoundsCompletely(false);
-  window_tree_host_->window()->AddChild(content_);
+  hosted_window->AddChild(content_);
 
   // Set-up transiency if appropriate.
   if (params.parent && !params.child) {
@@ -889,8 +890,9 @@ void NativeWidgetMus::SetBounds(const gfx::Rect& bounds) {
   if (!max_size.IsEmpty())
     size.SetToMin(max_size);
   size.SetToMax(min_size);
-  window_tree_host_->SetBounds(gfx::Rect(bounds.origin(), size));
   window_->SetBounds(gfx::Rect(bounds.origin(), size));
+  // Observer on |window_tree_host_| expected to synchronously update bounds.
+  DCHECK(window_->bounds() == window_tree_host_->GetBounds());
 }
 
 void NativeWidgetMus::SetSize(const gfx::Size& size) {
@@ -1029,11 +1031,11 @@ void NativeWidgetMus::Restore() {
 }
 
 void NativeWidgetMus::SetFullscreen(bool fullscreen) {
-  if (!window_tree_host_ || IsFullscreen() == fullscreen)
+  if (IsFullscreen() == fullscreen)
     return;
   if (fullscreen) {
     show_state_before_fullscreen_ = mus_window_observer_->show_state();
-    window_tree_host_->platform_window()->ToggleFullscreen();
+    // TODO(markdittmer): Fullscreen not implemented in mus::Window.
   } else {
     switch (show_state_before_fullscreen_) {
       case mus::mojom::ShowState::MAXIMIZED:
