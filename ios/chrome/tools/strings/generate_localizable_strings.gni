@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/compiled_action.gni")
+
 # Help template to define a data_bundle with localized strings for use by
 # the iOS system from packed locale.pak files.
 #
@@ -37,11 +39,6 @@ template("generate_localizable_strings") {
   assert(defined(invoker.packed_locales),
          "packed_locales needs to be defined for ${target_name}")
 
-  _tool_target = "//ios/chrome/tools/strings" +
-                 ":generate_localizable_strings(${host_toolchain})"
-  _tool_path = get_label_info(_tool_target, "root_out_dir") +
-               "/generate_localizable_strings"
-
   _target_name = target_name
 
   _bundle_targets = []
@@ -65,33 +62,35 @@ template("generate_localizable_strings") {
     }
   }
 
-  action("${_target_name}_generate") {
+  compiled_action("${_target_name}_generate") {
     forward_variables_from(invoker, [ "testonly" ])
 
     visibility = _bundle_targets
-    script = "//ios/chrome/tools/strings/generate_localizable_strings.py"
-    deps = invoker.deps + [ _tool_target ]
+    deps = invoker.deps
+    tool = "//ios/chrome/tools/strings:generate_localizable_strings"
 
     outputs = []
-    sources = [
+    inputs = [
       invoker.config_file,
     ]
 
     foreach(locale, invoker.packed_locales) {
-      sources += [ "${invoker.datapack_dir}/${locale}.lproj/locale.pak" ]
+      inputs += [ "${invoker.datapack_dir}/${locale}.lproj/locale.pak" ]
       foreach(filename, invoker.output_filenames) {
         outputs += [ "${target_gen_dir}/${locale}.lproj/$filename" ]
       }
     }
 
-    args = rebase_path([
-                         _tool_path,
-                         invoker.config_file,
-                         root_gen_dir,
-                         invoker.datapack_dir,
-                         target_gen_dir,
-                       ],
-                       root_out_dir) + invoker.packed_locales
+    args = [
+             "-c",
+             rebase_path(invoker.config_file, root_build_dir),
+             "-I",
+             rebase_path(root_gen_dir, root_build_dir),
+             "-p",
+             rebase_path(invoker.datapack_dir, root_build_dir),
+             "-o",
+             rebase_path(target_gen_dir, root_build_dir),
+           ] + invoker.packed_locales
   }
 
   group(_target_name) {
