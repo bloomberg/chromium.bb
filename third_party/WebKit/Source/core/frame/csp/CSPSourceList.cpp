@@ -44,7 +44,7 @@ CSPSourceList::CSPSourceList(ContentSecurityPolicy* policy, const String& direct
 {
 }
 
-bool CSPSourceList::matches(const KURL& url, ContentSecurityPolicy::RedirectStatus redirectStatus) const
+bool CSPSourceList::matches(const KURL& url, ResourceRequest::RedirectStatus redirectStatus) const
 {
     // The CSP spec specifically states that data:, blob:, and filesystem URLs
     // should not be captured by a '*" source
@@ -524,7 +524,7 @@ void CSPSourceList::addSourceHash(const ContentSecurityPolicyHashAlgorithm& algo
     m_hashAlgorithmsUsed |= algorithm;
 }
 
-bool CSPSourceList::hasSourceMatchInList(const KURL& url, ContentSecurityPolicy::RedirectStatus redirectStatus) const
+bool CSPSourceList::hasSourceMatchInList(const KURL& url, ResourceRequest::RedirectStatus redirectStatus) const
 {
     for (size_t i = 0; i < m_list.size(); ++i) {
         if (m_list[i]->matches(url, redirectStatus))

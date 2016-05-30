@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,12 +63,12 @@ TEST_F(CSPSourceTest, RedirectMatching)
     KURL base;
     CSPSource source(csp.get(), "http", "example.com", 8000, "/bar/", CSPSource::NoWildcard, CSPSource::NoWildcard);
 
-    EXPECT_TRUE(source.matches(KURL(base, "http://example.com:8000/"), ContentSecurityPolicy::DidRedirect));
-    EXPECT_TRUE(source.matches(KURL(base, "http://example.com:8000/foo"), ContentSecurityPolicy::DidRedirect));
-    EXPECT_TRUE(source.matches(KURL(base, "https://example.com:8000/foo"), ContentSecurityPolicy::DidRedirect));
+    EXPECT_TRUE(source.matches(KURL(base, "http://example.com:8000/"), ResourceRequest::RedirectStatus::FollowedRedirect));
+    EXPECT_TRUE(source.matches(KURL(base, "http://example.com:8000/foo"), ResourceRequest::RedirectStatus::FollowedRedirect));
+    EXPECT_TRUE(source.matches(KURL(base, "https://example.com:8000/foo"), ResourceRequest::RedirectStatus::FollowedRedirect));
 
-    EXPECT_FALSE(source.matches(KURL(base, "http://not-example.com:8000/foo"), ContentSecurityPolicy::DidRedirect));
-    EXPECT_FALSE(source.matches(KURL(base, "http://example.com:9000/foo/"), ContentSecurityPolicy::DidNotRedirect));
+    EXPECT_FALSE(source.matches(KURL(base, "http://not-example.com:8000/foo"), ResourceRequest::RedirectStatus::FollowedRedirect));
+    EXPECT_FALSE(source.matches(KURL(base, "http://example.com:9000/foo/"), ResourceRequest::RedirectStatus::NoRedirect));
 }
 
 TEST_F(CSPSourceTest, InsecureSourceMatchesSecure)

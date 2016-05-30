@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/heap/Handle.h"
+#include "platform/network/ResourceRequest.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
 
@@ -24,7 +25,7 @@ public:
     };
 
     CSPSource(ContentSecurityPolicy*, const String& scheme, const String& host, int port, const String& path, WildcardDisposition hostWildcard, WildcardDisposition portWildcard);
-    bool matches(const KURL&, ContentSecurityPolicy::RedirectStatus = ContentSecurityPolicy::DidNotRedirect) const;
+    bool matches(const KURL&, ResourceRequest::RedirectStatus = ResourceRequest::RedirectStatus::NoRedirect) const;
 
     DECLARE_TRACE();
 

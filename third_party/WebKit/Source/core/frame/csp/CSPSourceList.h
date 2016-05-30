@@ -10,6 +10,7 @@
 #include "platform/Crypto.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
+#include "platform/network/ResourceRequest.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
 
@@ -27,7 +28,7 @@ public:
 
     void parse(const UChar* begin, const UChar* end);
 
-    bool matches(const KURL&, ContentSecurityPolicy::RedirectStatus = ContentSecurityPolicy::DidNotRedirect) const;
+    bool matches(const KURL&, ResourceRequest::RedirectStatus = ResourceRequest::RedirectStatus::NoRedirect) const;
     bool allowInline() const;
     bool allowEval() const;
     bool allowDynamic() const;
@@ -56,7 +57,7 @@ private:
     void addSourceNonce(const String& nonce);
     void addSourceHash(const ContentSecurityPolicyHashAlgorithm&, const DigestValue& hash);
 
-    bool hasSourceMatchInList(const KURL&, ContentSecurityPolicy::RedirectStatus) const;
+    bool hasSourceMatchInList(const KURL&, ResourceRequest::RedirectStatus) const;
 
     Member<ContentSecurityPolicy> m_policy;
     HeapVector<Member<CSPSource>> m_list;

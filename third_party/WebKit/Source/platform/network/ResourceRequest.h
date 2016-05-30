@@ -65,6 +65,8 @@ struct CrossThreadResourceRequestData;
 class PLATFORM_EXPORT ResourceRequest final {
     DISALLOW_NEW();
 public:
+    enum class RedirectStatus { FollowedRedirect, NoRedirect };
+
     class ExtraData : public RefCounted<ExtraData> {
     public:
         virtual ~ExtraData() { }
@@ -241,8 +243,8 @@ public:
     InputToLoadPerfMetricReportPolicy inputPerfMetricReportPolicy() const { return m_inputPerfMetricReportPolicy; }
     void setInputPerfMetricReportPolicy(InputToLoadPerfMetricReportPolicy inputPerfMetricReportPolicy) { m_inputPerfMetricReportPolicy = inputPerfMetricReportPolicy; }
 
-    void setFollowedRedirect(bool followed) { m_followedRedirect = followed; }
-    bool followedRedirect() const { return m_followedRedirect; }
+    void setRedirectStatus(RedirectStatus status) { m_redirectStatus = status; }
+    RedirectStatus redirectStatus() const { return m_redirectStatus; }
 
 private:
     void initialize(const KURL&);
@@ -289,7 +291,7 @@ private:
 
     static double s_defaultTimeoutInterval;
 
-    bool m_followedRedirect;
+    RedirectStatus m_redirectStatus;
 };
 
 struct CrossThreadResourceRequestData {
@@ -331,7 +333,7 @@ public:
     double m_uiStartTime;
     bool m_isExternalRequest;
     InputToLoadPerfMetricReportPolicy m_inputPerfMetricReportPolicy;
-    bool m_followedRedirect;
+    ResourceRequest::RedirectStatus m_redirectStatus;
 };
 
 } // namespace blink

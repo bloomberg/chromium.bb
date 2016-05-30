@@ -117,7 +117,7 @@ void ResourceLoader::willFollowRedirect(WebURLLoader*, WebURLRequest& passedNewR
 
     ResourceRequest& newRequest(passedNewRequest.toMutableResourceRequest());
     const ResourceResponse& redirectResponse(passedRedirectResponse.toResourceResponse());
-    newRequest.setFollowedRedirect(true);
+    newRequest.setRedirectStatus(ResourceRequest::RedirectStatus::FollowedRedirect);
 
     if (m_fetcher->willFollowRedirect(m_resource.get(), newRequest, redirectResponse)) {
         m_resource->willFollowRedirect(newRequest, redirectResponse);

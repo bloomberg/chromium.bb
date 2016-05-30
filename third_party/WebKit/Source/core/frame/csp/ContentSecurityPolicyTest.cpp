@@ -91,10 +91,10 @@ TEST_F(ContentSecurityPolicyTest, CopyStateFrom)
 
     ContentSecurityPolicy* csp2 = ContentSecurityPolicy::create();
     csp2->copyStateFrom(csp.get());
-    EXPECT_FALSE(csp2->allowScriptFromSource(exampleUrl, ContentSecurityPolicy::DidNotRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(csp2->allowScriptFromSource(exampleUrl, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
     EXPECT_TRUE(csp2->allowPluginType("application/x-type-1", "application/x-type-1", exampleUrl, ContentSecurityPolicy::SuppressReport));
-    EXPECT_TRUE(csp2->allowImageFromSource(exampleUrl, ContentSecurityPolicy::DidNotRedirect, ContentSecurityPolicy::SuppressReport));
-    EXPECT_FALSE(csp2->allowImageFromSource(notExampleUrl, ContentSecurityPolicy::DidNotRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(csp2->allowImageFromSource(exampleUrl, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(csp2->allowImageFromSource(notExampleUrl, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
     EXPECT_FALSE(csp2->allowPluginType("application/x-type-2", "application/x-type-2", exampleUrl, ContentSecurityPolicy::SuppressReport));
 }
 
@@ -108,10 +108,10 @@ TEST_F(ContentSecurityPolicyTest, CopyPluginTypesFrom)
 
     ContentSecurityPolicy* csp2 = ContentSecurityPolicy::create();
     csp2->copyPluginTypesFrom(csp.get());
-    EXPECT_TRUE(csp2->allowScriptFromSource(exampleUrl, ContentSecurityPolicy::DidNotRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(csp2->allowScriptFromSource(exampleUrl, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
     EXPECT_TRUE(csp2->allowPluginType("application/x-type-1", "application/x-type-1", exampleUrl, ContentSecurityPolicy::SuppressReport));
-    EXPECT_TRUE(csp2->allowImageFromSource(exampleUrl, ContentSecurityPolicy::DidNotRedirect, ContentSecurityPolicy::SuppressReport));
-    EXPECT_TRUE(csp2->allowImageFromSource(notExampleUrl, ContentSecurityPolicy::DidNotRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(csp2->allowImageFromSource(exampleUrl, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(csp2->allowImageFromSource(notExampleUrl, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
     EXPECT_FALSE(csp2->allowPluginType("application/x-type-2", "application/x-type-2", exampleUrl, ContentSecurityPolicy::SuppressReport));
 }
 
@@ -205,9 +205,9 @@ TEST_F(ContentSecurityPolicyTest, ObjectSrc)
     KURL url(KURL(), "https://example.test");
     csp->bindToExecutionContext(document.get());
     csp->didReceiveHeader("object-src 'none';", ContentSecurityPolicyHeaderTypeEnforce, ContentSecurityPolicyHeaderSourceMeta);
-    EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextObject, url, ContentSecurityPolicy::DidNotRedirect, ContentSecurityPolicy::SuppressReport));
-    EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextEmbed, url, ContentSecurityPolicy::DidNotRedirect, ContentSecurityPolicy::SuppressReport));
-    EXPECT_TRUE(csp->allowRequest(WebURLRequest::RequestContextPlugin, url, ContentSecurityPolicy::DidNotRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextObject, url, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_FALSE(csp->allowRequest(WebURLRequest::RequestContextEmbed, url, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
+    EXPECT_TRUE(csp->allowRequest(WebURLRequest::RequestContextPlugin, url, ResourceRequest::RedirectStatus::NoRedirect, ContentSecurityPolicy::SuppressReport));
 }
 
 } // namespace blink

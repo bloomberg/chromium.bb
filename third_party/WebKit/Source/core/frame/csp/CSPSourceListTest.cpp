@@ -7,6 +7,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/csp/CSPSource.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -187,14 +188,14 @@ TEST_F(CSPSourceListTest, RedirectMatching)
     CSPSourceList sourceList(csp.get(), "script-src");
     parseSourceList(sourceList, sources);
 
-    EXPECT_TRUE(sourceList.matches(KURL(base, "http://example1.com/foo/"), ContentSecurityPolicy::DidRedirect));
-    EXPECT_TRUE(sourceList.matches(KURL(base, "http://example1.com/bar/"), ContentSecurityPolicy::DidRedirect));
-    EXPECT_TRUE(sourceList.matches(KURL(base, "http://example2.com/bar/"), ContentSecurityPolicy::DidRedirect));
-    EXPECT_TRUE(sourceList.matches(KURL(base, "http://example2.com/foo/"), ContentSecurityPolicy::DidRedirect));
-    EXPECT_TRUE(sourceList.matches(KURL(base, "https://example1.com/foo/"), ContentSecurityPolicy::DidRedirect));
-    EXPECT_TRUE(sourceList.matches(KURL(base, "https://example1.com/bar/"), ContentSecurityPolicy::DidRedirect));
+    EXPECT_TRUE(sourceList.matches(KURL(base, "http://example1.com/foo/"), ResourceRequest::RedirectStatus::FollowedRedirect));
+    EXPECT_TRUE(sourceList.matches(KURL(base, "http://example1.com/bar/"), ResourceRequest::RedirectStatus::FollowedRedirect));
+    EXPECT_TRUE(sourceList.matches(KURL(base, "http://example2.com/bar/"), ResourceRequest::RedirectStatus::FollowedRedirect));
+    EXPECT_TRUE(sourceList.matches(KURL(base, "http://example2.com/foo/"), ResourceRequest::RedirectStatus::FollowedRedirect));
+    EXPECT_TRUE(sourceList.matches(KURL(base, "https://example1.com/foo/"), ResourceRequest::RedirectStatus::FollowedRedirect));
+    EXPECT_TRUE(sourceList.matches(KURL(base, "https://example1.com/bar/"), ResourceRequest::RedirectStatus::FollowedRedirect));
 
-    EXPECT_FALSE(sourceList.matches(KURL(base, "http://example3.com/foo/"), ContentSecurityPolicy::DidRedirect));
+    EXPECT_FALSE(sourceList.matches(KURL(base, "http://example3.com/foo/"), ResourceRequest::RedirectStatus::FollowedRedirect));
 }
 
 } // namespace blink

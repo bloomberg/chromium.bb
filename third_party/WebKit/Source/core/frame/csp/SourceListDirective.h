@@ -7,8 +7,8 @@
 
 #include "core/frame/csp/CSPDirective.h"
 #include "core/frame/csp/CSPSourceList.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
+#include "platform/network/ResourceRequest.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
 
@@ -23,7 +23,7 @@ public:
     SourceListDirective(const String& name, const String& value, ContentSecurityPolicy*);
     DECLARE_TRACE();
 
-    bool allows(const KURL&, blink::ContentSecurityPolicy::RedirectStatus) const;
+    bool allows(const KURL&, ResourceRequest::RedirectStatus) const;
     bool allowInline() const;
     bool allowEval() const;
     bool allowDynamic() const;
