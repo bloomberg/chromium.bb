@@ -1331,9 +1331,14 @@ CustomElementsRegistry* LocalDOMWindow::customElements(ScriptState* scriptState)
 {
     if (!scriptState->world().isMainWorld())
         return nullptr;
+    return customElements();
+}
+
+CustomElementsRegistry* LocalDOMWindow::customElements() const
+{
     if (!m_customElements)
-        m_customElements = CustomElementsRegistry::create(scriptState, document()->registrationContext());
-    return m_customElements.get();
+        m_customElements = CustomElementsRegistry::create(document()->registrationContext());
+    return m_customElements;
 }
 
 void LocalDOMWindow::addedEventListener(const AtomicString& eventType, RegisteredEventListener& registeredListener)

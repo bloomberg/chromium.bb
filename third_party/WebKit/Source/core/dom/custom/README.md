@@ -8,27 +8,46 @@ Contact Dominic Cooney
 ([dominicc@chromium.org](mailto:dominicc@chromium.org)) with
 questions.
 
+### Code Location
+
+The custom elements implementation is split between core/dom and
+bindings/core/v8.
+
 ## Design
 
 ### Some Important Classes
 
 ###### CustomElementDefinition
 
-The definition of one &lsquo;class&rsquo; of element; it consists of a
-tag name, and a prototype.
+The definition of one &lsquo;class&rsquo; of element. This type is
+abstract to permit different kinds of definitions, although at the
+moment there is only one: ScriptCustomElementDefinition.
+
+ScriptCustomElementDefinition is linked to its constructor by an ID
+number. The ID number is stored in a map, keyed by constructor, in a
+hidden value of the CustomElementsRegistry wrapper. The ID is an index
+into a list of definitions stored in V8PerContextData.
+
+###### CustomElementDescriptor
+
+A tuple of local name, and custom element name. For autonomous custom
+elements, these strings are the same; for customized built-in elements
+these strings will be different. In that case, the local name is the
+element's tag name and the custom element name is related to the value
+of the &ldquo;is&rdquo; attribute.
 
 ###### CustomElementsRegistry
 
-Implements the `window.customElements` property. This maintains a list
-of definitions, and a mapping from constructors to an index in this
-list. The same map also has indexes as keys and prototypes as values.
+Implements the `window.customElements` property. This maintains the
+set of registered names. The wrapper of this object is used by
+ScriptCustomElementDefinition to cache state in V8.
 
 ###### V8HTMLElement Constructor
 
 The `HTMLElement` interface constructor. When a custom element is
 created from JavaScript all we have to go on is the constructor (in
-`new.target`); this uses CustomElementRegistry&rsquo;s map to find
-which definition and prototype to use.
+`new.target`); this uses ScriptCustomElementDefinition's state to find
+the definition to use.
 
 ### Memory Management
 
@@ -38,7 +57,8 @@ the parser. On the other hand, we must not leak when a window can no
 longer run script.
 
 We use a V8HiddenValue on the CustomElementsRegistry wrapper which
-points to a map that keeps constructors and prototypes alive.
+points to a map that keeps constructors and prototypes alive. See
+ScriptCustomElementDefinition.
 
 ## Style Guide
 

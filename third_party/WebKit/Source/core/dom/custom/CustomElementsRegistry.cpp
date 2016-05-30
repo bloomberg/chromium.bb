@@ -4,44 +4,26 @@
 
 #include "core/dom/custom/CustomElementsRegistry.h"
 
-// TODO(dominicc): Stop including Document.h when
-// v0CustomElementIsDefined has been removed.
-#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/ScriptValue.h"
-#include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8BindingMacros.h"
-#include "bindings/core/v8/V8HiddenValue.h"
+#include "bindings/core/v8/ScriptCustomElementDefinitionBuilder.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementRegistrationOptions.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/custom/CustomElement.h"
 #include "core/dom/custom/CustomElementDefinition.h"
+#include "core/dom/custom/CustomElementDefinitionBuilder.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
-#include "core/dom/custom/V0CustomElementRegistry.h"
 
 namespace blink {
 
 CustomElementsRegistry* CustomElementsRegistry::create(
-    ScriptState* scriptState,
     V0CustomElementRegistrationContext* v0)
 {
-    DCHECK(scriptState->world().isMainWorld());
+    // TODO(dominicc): The window could install a new document; add a signal
+    // when a window installs a new document to notify that V0 context, too.
     CustomElementsRegistry* registry = new CustomElementsRegistry(v0);
     if (v0)
         v0->setV1(registry);
-
-    v8::Isolate* isolate = scriptState->isolate();
-    v8::Local<v8::Object> wrapper =
-        toV8(registry, scriptState).As<v8::Object>();
-    v8::Local<v8::String> name =
-        V8HiddenValue::customElementsRegistryMap(isolate);
-    v8::Local<v8::Map> map = v8::Map::New(isolate);
-    bool didSetPrototype =
-        V8HiddenValue::setHiddenValue(scriptState, wrapper, name, map);
-    DCHECK(didSetPrototype);
-
     return registry;
 }
 
@@ -51,30 +33,37 @@ CustomElementsRegistry::CustomElementsRegistry(
 {
 }
 
-// http://w3c.github.io/webcomponents/spec/custom/#dfn-element-definition
-void CustomElementsRegistry::define(ScriptState* scriptState,
-    const AtomicString& name, const ScriptValue& constructorScriptValue,
-    const ElementRegistrationOptions& options, ExceptionState& exceptionState)
+DEFINE_TRACE(CustomElementsRegistry)
 {
-    DCHECK(scriptState->world().isMainWorld());
-    v8::Isolate* isolate = scriptState->isolate();
-    v8::Local<v8::Context> context = scriptState->context();
+    visitor->trace(m_definitions);
+    visitor->trace(m_v0);
+}
 
-    v8::Local<v8::Value> constructorValue = constructorScriptValue.v8Value();
-    if (!constructorValue->IsFunction()) {
-        // Not even a function.
-        exceptionState.throwTypeError(
-            "constructor argument is not a constructor");
-        return;
-    }
-    v8::Local<v8::Object> constructor = constructorValue.As<v8::Object>();
-    if (!constructor->IsConstructor()) {
-        exceptionState.throwTypeError(
-            "constructor argument is not a constructor");
-        return;
-    }
+void CustomElementsRegistry::define(
+    ScriptState* scriptState,
+    const AtomicString& name,
+    const ScriptValue& constructor,
+    const ElementRegistrationOptions& options,
+    ExceptionState& exceptionState)
+{
+    ScriptCustomElementDefinitionBuilder builder(
+        scriptState,
+        this,
+        constructor,
+        exceptionState);
+    define(name, builder, options, exceptionState);
+}
 
-    // Raise an exception if the name is not valid.
+// http://w3c.github.io/webcomponents/spec/custom/#dfn-element-definition
+void CustomElementsRegistry::define(
+    const AtomicString& name,
+    CustomElementDefinitionBuilder& builder,
+    const ElementRegistrationOptions& options,
+    ExceptionState& exceptionState)
+{
+    if (!builder.checkConstructorIntrinsics())
+        return;
+
     if (!CustomElement::isValidName(name)) {
         exceptionState.throwDOMException(
             SyntaxError,
@@ -82,7 +71,6 @@ void CustomElementsRegistry::define(ScriptState* scriptState,
         return;
     }
 
-    // Raise an exception if the name is already in use.
     if (nameIsDefined(name) || v0NameIsDefined(name)) {
         exceptionState.throwDOMException(
             NotSupportedError,
@@ -90,13 +78,8 @@ void CustomElementsRegistry::define(ScriptState* scriptState,
         return;
     }
 
-    // Raise an exception if the constructor is already registered.
-    if (definitionForConstructor(scriptState, constructor)) {
-        exceptionState.throwDOMException(
-            NotSupportedError,
-            "this constructor has already been used with this registry");
+    if (!builder.checkConstructorNotRegistered())
         return;
-    }
 
     // TODO(dominicc): Implement steps:
     // 5: localName
@@ -106,106 +89,40 @@ void CustomElementsRegistry::define(ScriptState* scriptState,
     // TODO(dominicc): Add a test where the prototype getter destroys
     // the context.
 
-    v8::TryCatch tryCatch(isolate);
-    v8::Local<v8::String> prototypeString =
-        v8AtomicString(isolate, "prototype");
-    v8::Local<v8::Value> prototypeValue;
-    if (!v8Call(
-        constructor->Get(context, prototypeString), prototypeValue)) {
-        DCHECK(tryCatch.HasCaught());
-        tryCatch.ReThrow();
+    if (!builder.checkPrototype())
         return;
-    }
-    if (!prototypeValue->IsObject()) {
-        DCHECK(!tryCatch.HasCaught());
-        exceptionState.throwTypeError("constructor prototype is not an object");
-        return;
-    }
-    v8::Local<v8::Object> prototype = prototypeValue.As<v8::Object>();
 
     // TODO(dominicc): Implement steps:
     // 12-13: connected callback
     // 14-15: disconnected callback
     // 16-17: attribute changed callback
 
-    Id id = m_definitions.size();
-    v8::Local<v8::Value> idValue = v8::Integer::NewFromUnsigned(isolate, id);
-    m_definitions.append(new CustomElementDefinition(
-        this,
-        id,
-        CustomElementDescriptor(name, name)));
-    // This map is stored in a hidden reference from the
-    // CustomElementsRegistry wrapper.
-    v8::Local<v8::Map> map = idMap(scriptState);
-    // The map keeps the constructor and prototypes alive.
-    v8CallOrCrash(map->Set(context, constructor, idValue));
-    v8CallOrCrash(map->Set(context, idValue, prototype));
-    m_names.add(name);
+    // TODO(dominicc): Add a test where retrieving the prototype
+    // recursively calls define with the same name.
+
+    CustomElementDescriptor descriptor(name, name);
+    CustomElementDefinition* definition = builder.build(descriptor);
+    CHECK(!exceptionState.hadException());
+    CHECK(definition->descriptor() == descriptor);
+    DefinitionMap::AddResult result =
+        m_definitions.add(descriptor.name(), definition);
+    CHECK(result.isNewEntry);
 
     // TODO(dominicc): Implement steps:
     // 20: when-defined promise processing
-    DCHECK(!tryCatch.HasCaught() || tryCatch.HasTerminated());
 }
 
-CustomElementDefinition* CustomElementsRegistry::definitionForConstructor(
-    ScriptState* scriptState,
-    v8::Local<v8::Value> constructor)
+bool CustomElementsRegistry::v0NameIsDefined(const AtomicString& name) const
 {
-    Id id;
-    if (!idForConstructor(scriptState, constructor, id))
-        return nullptr;
-    return m_definitions[id];
-}
-
-v8::Local<v8::Object> CustomElementsRegistry::prototype(
-    ScriptState* scriptState,
-    const CustomElementDefinition& def)
-{
-    v8::Local<v8::Value> idValue =
-        v8::Integer::NewFromUnsigned(scriptState->isolate(), def.id());
-    return v8CallOrCrash(
-        idMap(scriptState)->Get(scriptState->context(), idValue))
-        .As<v8::Object>();
-}
-
-bool CustomElementsRegistry::nameIsDefined(const AtomicString& name) const
-{
-    return m_names.contains(name);
-}
-
-v8::Local<v8::Map> CustomElementsRegistry::idMap(ScriptState* scriptState)
-{
-    DCHECK(scriptState->world().isMainWorld());
-    v8::Local<v8::Object> wrapper =
-        toV8(this, scriptState).As<v8::Object>();
-    v8::Local<v8::String> name = V8HiddenValue::customElementsRegistryMap(
-        scriptState->isolate());
-    return V8HiddenValue::getHiddenValue(scriptState, wrapper, name)
-        .As<v8::Map>();
-}
-
-bool CustomElementsRegistry::idForConstructor(
-    ScriptState* scriptState,
-    v8::Local<v8::Value> constructor,
-    Id& id)
-{
-    v8::Local<v8::Value> entry = v8CallOrCrash(
-        idMap(scriptState)->Get(scriptState->context(), constructor));
-    if (!entry->IsUint32())
+    if (!m_v0)
         return false;
-    id = v8CallOrCrash(entry->Uint32Value(scriptState->context()));
-    return true;
+    return m_v0->nameIsDefined(name);
 }
 
-bool CustomElementsRegistry::v0NameIsDefined(const AtomicString& name)
+CustomElementDefinition* CustomElementsRegistry::definitionForName(
+    const AtomicString& name) const
 {
-    return m_v0.get() && m_v0->nameIsDefined(name);
-}
-
-DEFINE_TRACE(CustomElementsRegistry)
-{
-    visitor->trace(m_definitions);
-    visitor->trace(m_v0);
+    return m_definitions.get(name);
 }
 
 } // namespace blink

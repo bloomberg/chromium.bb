@@ -2632,6 +2632,7 @@
             'dom/custom/CustomElement.h',
             'dom/custom/CustomElementDefinition.cpp',
             'dom/custom/CustomElementDefinition.h',
+            'dom/custom/CustomElementDefinitionBuilder.h',
             'dom/custom/CustomElementUpgradeSorter.cpp',
             'dom/custom/CustomElementUpgradeSorter.h',
             'dom/custom/CustomElementDescriptor.h',

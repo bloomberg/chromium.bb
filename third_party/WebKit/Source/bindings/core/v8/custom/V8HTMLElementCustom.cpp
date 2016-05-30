@@ -6,12 +6,12 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/ScriptCustomElementDefinition.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/V8ThrowException.h"
 #include "core/dom/Document.h"
-#include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementsRegistry.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -33,9 +33,10 @@ void V8HTMLElement::constructorCustom(
     }
 
     LocalDOMWindow* window = scriptState->domWindow();
-    CustomElementDefinition* def =
-        window->customElements(scriptState)->definitionForConstructor(
+    ScriptCustomElementDefinition* def =
+        ScriptCustomElementDefinition::forConstructor(
             scriptState,
+            window->customElements(),
             info.NewTarget());
     if (!def) {
         V8ThrowException::throwTypeError(isolate, "Illegal constructor");

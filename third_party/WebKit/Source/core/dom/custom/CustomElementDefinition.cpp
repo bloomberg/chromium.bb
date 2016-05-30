@@ -7,19 +7,13 @@
 namespace blink {
 
 CustomElementDefinition::CustomElementDefinition(
-    CustomElementsRegistry* registry,
-    CustomElementsRegistry::Id id,
     const CustomElementDescriptor& descriptor)
-    : m_registry(registry)
-    , m_id(id)
-    , m_descriptor(descriptor)
+    : m_descriptor(descriptor)
 {
 }
 
-v8::Local<v8::Object> CustomElementDefinition::prototype(
-    ScriptState* scriptState) const
+CustomElementDefinition::~CustomElementDefinition()
 {
-    return m_registry->prototype(scriptState, *this);
 }
 
 } // namespace blink

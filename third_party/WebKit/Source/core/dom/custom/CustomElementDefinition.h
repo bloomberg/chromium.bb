@@ -5,35 +5,26 @@
 #ifndef CustomElementDefinition_h
 #define CustomElementDefinition_h
 
-#include "bindings/core/v8/ScopedPersistent.h"
+#include "core/CoreExport.h"
 #include "core/dom/custom/CustomElementDescriptor.h"
-#include "core/dom/custom/CustomElementsRegistry.h"
 #include "platform/heap/Handle.h"
-#include "v8.h"
+#include "wtf/Noncopyable.h"
 
 namespace blink {
 
-class CustomElementDefinition final
+class CORE_EXPORT CustomElementDefinition
     : public GarbageCollectedFinalized<CustomElementDefinition> {
+    WTF_MAKE_NONCOPYABLE(CustomElementDefinition);
 public:
-    CustomElementDefinition(
-        CustomElementsRegistry*,
-        CustomElementsRegistry::Id,
-        const CustomElementDescriptor&);
+    CustomElementDefinition(const CustomElementDescriptor&);
+    virtual ~CustomElementDefinition();
 
-    CustomElementsRegistry::Id id() const { return m_id; }
     const CustomElementDescriptor& descriptor() { return m_descriptor; }
-    v8::Local<v8::Object> prototype(ScriptState*) const;
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_registry);
-    }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
 
 private:
-    Member<CustomElementsRegistry> m_registry;
-    CustomElementsRegistry::Id m_id;
-    CustomElementDescriptor m_descriptor;
+    const CustomElementDescriptor m_descriptor;
 };
 
 } // namespace blink

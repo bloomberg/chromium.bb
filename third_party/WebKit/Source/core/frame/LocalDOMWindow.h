@@ -145,6 +145,7 @@ public:
     int requestIdleCallback(IdleRequestCallback*, const IdleRequestOptions&) override;
     void cancelIdleCallback(int id) override;
     CustomElementsRegistry* customElements(ScriptState*) const override;
+    CustomElementsRegistry* customElements() const;
 
     void registerProperty(DOMWindowProperty*);
     void unregisterProperty(DOMWindowProperty*);
