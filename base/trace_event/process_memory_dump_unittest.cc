@@ -80,30 +80,25 @@ TEST(ProcessMemoryDumpTest, Clear) {
 
 TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   std::unique_ptr<TracedValue> traced_value(new TracedValue);
-  TracedValue* heap_dumps_ptr[4];
-  std::unique_ptr<TracedValue> heap_dump;
+  hash_map<AllocationContext, AllocationMetrics> metrics_by_context;
+  metrics_by_context[AllocationContext()] = { 1, 1 };
+  TraceEventMemoryOverhead overhead;
 
-  std::unique_ptr<ProcessMemoryDump> pmd1(new ProcessMemoryDump(nullptr));
+  std::unique_ptr<ProcessMemoryDump> pmd1(
+      new ProcessMemoryDump(new MemoryDumpSessionState()));
   auto mad1_1 = pmd1->CreateAllocatorDump("pmd1/mad1");
   auto mad1_2 = pmd1->CreateAllocatorDump("pmd1/mad2");
   pmd1->AddOwnershipEdge(mad1_1->guid(), mad1_2->guid());
-  heap_dump.reset(new TracedValue);
-  heap_dumps_ptr[0] = heap_dump.get();
-  pmd1->AddHeapDump("pmd1/heap_dump1", std::move(heap_dump));
-  heap_dump.reset(new TracedValue);
-  heap_dumps_ptr[1] = heap_dump.get();
-  pmd1->AddHeapDump("pmd1/heap_dump2", std::move(heap_dump));
+  pmd1->DumpHeapUsage(metrics_by_context, overhead, "pmd1/heap_dump1");
+  pmd1->DumpHeapUsage(metrics_by_context, overhead, "pmd1/heap_dump2");
 
-  std::unique_ptr<ProcessMemoryDump> pmd2(new ProcessMemoryDump(nullptr));
+  std::unique_ptr<ProcessMemoryDump> pmd2(
+      new ProcessMemoryDump(new MemoryDumpSessionState()));
   auto mad2_1 = pmd2->CreateAllocatorDump("pmd2/mad1");
   auto mad2_2 = pmd2->CreateAllocatorDump("pmd2/mad2");
   pmd2->AddOwnershipEdge(mad2_1->guid(), mad2_2->guid());
-  heap_dump.reset(new TracedValue);
-  heap_dumps_ptr[2] = heap_dump.get();
-  pmd2->AddHeapDump("pmd2/heap_dump1", std::move(heap_dump));
-  heap_dump.reset(new TracedValue);
-  heap_dumps_ptr[3] = heap_dump.get();
-  pmd2->AddHeapDump("pmd2/heap_dump2", std::move(heap_dump));
+  pmd2->DumpHeapUsage(metrics_by_context, overhead, "pmd2/heap_dump1");
+  pmd2->DumpHeapUsage(metrics_by_context, overhead, "pmd2/heap_dump2");
 
   MemoryAllocatorDumpGuid shared_mad_guid1(1);
   MemoryAllocatorDumpGuid shared_mad_guid2(2);
@@ -141,10 +136,10 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   ASSERT_EQ(shared_mad2, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid2));
   ASSERT_TRUE(MemoryAllocatorDump::Flags::WEAK & shared_mad2->flags());
   ASSERT_EQ(4u, pmd1->heap_dumps().size());
-  ASSERT_EQ(heap_dumps_ptr[0], GetHeapDump(*pmd1, "pmd1/heap_dump1"));
-  ASSERT_EQ(heap_dumps_ptr[1], GetHeapDump(*pmd1, "pmd1/heap_dump2"));
-  ASSERT_EQ(heap_dumps_ptr[2], GetHeapDump(*pmd1, "pmd2/heap_dump1"));
-  ASSERT_EQ(heap_dumps_ptr[3], GetHeapDump(*pmd1, "pmd2/heap_dump2"));
+  ASSERT_TRUE(GetHeapDump(*pmd1, "pmd1/heap_dump1") != nullptr);
+  ASSERT_TRUE(GetHeapDump(*pmd1, "pmd1/heap_dump2") != nullptr);
+  ASSERT_TRUE(GetHeapDump(*pmd1, "pmd2/heap_dump1") != nullptr);
+  ASSERT_TRUE(GetHeapDump(*pmd1, "pmd2/heap_dump2") != nullptr);
 
   // Check that calling AsValueInto() doesn't cause a crash.
   traced_value.reset(new TracedValue);

@@ -219,21 +219,16 @@ MemoryAllocatorDump* ProcessMemoryDump::GetSharedGlobalAllocatorDump(
   return GetAllocatorDump(GetSharedGlobalAllocatorDumpName(guid));
 }
 
-void ProcessMemoryDump::AddHeapDump(const std::string& absolute_name,
-                                    std::unique_ptr<TracedValue> heap_dump) {
-  DCHECK_EQ(0ul, heap_dumps_.count(absolute_name));
-  heap_dumps_[absolute_name] = std::move(heap_dump);
-}
-
 void ProcessMemoryDump::DumpHeapUsage(
     const base::hash_map<base::trace_event::AllocationContext,
         base::trace_event::AllocationMetrics>& metrics_by_context,
     base::trace_event::TraceEventMemoryOverhead& overhead,
     const char* allocator_name) {
   if (!metrics_by_context.empty()) {
+    DCHECK_EQ(0ul, heap_dumps_.count(allocator_name));
     std::unique_ptr<TracedValue> heap_dump = ExportHeapDump(
         metrics_by_context, *session_state());
-    AddHeapDump(allocator_name, std::move(heap_dump));
+    heap_dumps_[allocator_name] = std::move(heap_dump);
   }
 
   std::string base_name = base::StringPrintf("tracing/heap_profiler_%s",

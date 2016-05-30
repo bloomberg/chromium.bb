@@ -116,14 +116,6 @@ class BASE_EXPORT ProcessMemoryDump {
   // Returns the map of the MemoryAllocatorDumps added to this dump.
   const AllocatorDumpsMap& allocator_dumps() const { return allocator_dumps_; }
 
-  // Adds a heap dump for the allocator with |absolute_name|. The |TracedValue|
-  // must have the correct format. |trace_event::HeapDumper| will generate such
-  // a value from a |trace_event::AllocationRegister|.
-  // TODO(bashi): Remove this when WebMemoryDumpProvider is gone.
-  // http://crbug.com/605822
-  void AddHeapDump(const std::string& absolute_name,
-                   std::unique_ptr<TracedValue> heap_dump);
-
   // Dumps heap usage with |allocator_name|.
   void DumpHeapUsage(const base::hash_map<base::trace_event::AllocationContext,
                                           base::trace_event::AllocationMetrics>&

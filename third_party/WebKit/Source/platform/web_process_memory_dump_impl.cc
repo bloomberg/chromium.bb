@@ -172,17 +172,7 @@ void WebProcessMemoryDumpImpl::dumpHeapUsage(
         base::trace_event::AllocationMetrics>& metrics_by_context,
     base::trace_event::TraceEventMemoryOverhead& overhead,
     const char* allocator_name) {
-  if (!metrics_by_context.empty()) {
-    scoped_refptr<base::trace_event::MemoryDumpSessionState> session_state =
-        process_memory_dump_->session_state();
-    std::unique_ptr<base::trace_event::TracedValue> heap_dump = ExportHeapDump(
-        metrics_by_context, *session_state);
-    process_memory_dump_->AddHeapDump(allocator_name, std::move(heap_dump));
-  }
-
-  std::string base_name = base::StringPrintf("tracing/heap_profiler_%s",
-                                             allocator_name);
-  overhead.DumpInto(base_name.c_str(), process_memory_dump_);
+  process_memory_dump_->DumpHeapUsage(metrics_by_context, overhead, allocator_name);
 }
 
 }  // namespace content
