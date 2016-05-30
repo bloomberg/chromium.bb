@@ -468,8 +468,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_TabindexOpenDialog TabindexOpenDialog
 #endif
+// Flaky: crbug.com/615259
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_TabindexOpenDialog,
+    DISABLED_TabindexOpenDialog,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "tabindexOpenDialogDrive"),
