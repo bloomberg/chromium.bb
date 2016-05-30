@@ -767,7 +767,9 @@ Vector<CharacterRange> Font::individualCharacterRanges(const TextRun& run) const
     // will be improved shaping in SVG when compared to HTML.
     FontCachePurgePreventer purgePreventer;
     CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
-    return shaper.individualCharacterRanges(this, run);
+    auto ranges = shaper.individualCharacterRanges(this, run);
+    DCHECK_EQ(ranges.size(), static_cast<unsigned>(run.length()));
+    return ranges;
 }
 
 float Font::floatWidthForSimpleText(const TextRun& run, HashSet<const SimpleFontData*>* fallbackFonts, FloatRect* glyphBounds) const

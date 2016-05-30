@@ -123,7 +123,13 @@ Vector<CharacterRange> CachingWordShaper::individualCharacterRanges(
     float totalWidth = shapeResultsForRun(m_shapeCache, font, run, nullptr,
         &buffer);
 
-    return buffer.individualCharacterRanges(run.direction(), totalWidth);
+    auto ranges = buffer.individualCharacterRanges(run.direction(), totalWidth);
+    // The shaper can fail to return glyph metrics for all characters (see
+    // crbug.com/613915 and crbug.com/615661) so add empty ranges to ensure all
+    // characters have an associated range.
+    while (ranges.size() < static_cast<unsigned>(run.length()))
+        ranges.append(CharacterRange(0, 0));
+    return ranges;
 }
 
 }; // namespace blink
