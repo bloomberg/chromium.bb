@@ -61,6 +61,7 @@ test("ios_chrome_unittests") {
     "browser/update_client/ios_chrome_update_query_params_delegate_unittest.cc",
     "browser/web_resource/web_resource_util_unittest.cc",
     "common/string_util_unittest.mm",
+    "test/run_all_unittests.cc",
   ]
 
   deps = [
