@@ -29,14 +29,23 @@
 #include "base/mac/mac_logging.h"
 #endif
 
+// Disable logging when fuzzing, for performance reasons.
+// WEBRTC_UNSAFE_FUZZER_MODE is defined by WebRTC's BUILD.gn when
+// built with use_libfuzzer or use_drfuzz.
+#if defined(WEBRTC_UNSAFE_FUZZER_MODE)
+#define WEBRTC_ENABLE_LOGGING false
+#else
+#define WEBRTC_ENABLE_LOGGING true
+#endif
+
 // From this file we can't use VLOG since it expands into usage of the __FILE__
 // macro (for correct filtering). The actual logging call from DIAGNOSTIC_LOG in
 // ~DiagnosticLogMessage. Note that the second parameter to the LAZY_STREAM
-// macro is true since the filter check has already been done for
+// macro is not used since the filter check has already been done for
 // DIAGNOSTIC_LOG.
 #define LOG_LAZY_STREAM_DIRECT(file_name, line_number, sev)              \
   LAZY_STREAM(logging::LogMessage(file_name, line_number, sev).stream(), \
-                  true)
+                  WEBRTC_ENABLE_LOGGING)
 
 namespace rtc {
 
