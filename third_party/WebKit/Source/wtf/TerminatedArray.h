@@ -74,8 +74,8 @@ private:
     // of TerminateArray and manage their lifetimes.
     struct Allocator {
         STATIC_ONLY(Allocator);
-        typedef PassOwnPtr<TerminatedArray> PassPtr;
-        typedef OwnPtr<TerminatedArray> Ptr;
+        using PassPtr = PassOwnPtr<TerminatedArray>;
+        using Ptr = OwnPtr<TerminatedArray>;
 
         static PassPtr release(Ptr& ptr)
         {

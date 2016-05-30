@@ -4,13 +4,13 @@
 #ifndef TerminatedArrayBuilder_h
 #define TerminatedArrayBuilder_h
 
-#include "wtf/OwnPtr.h"
+#include "wtf/Allocator.h"
 
 namespace WTF {
 
 template<typename T, template <typename> class ArrayType = TerminatedArray>
 class TerminatedArrayBuilder {
-    DISALLOW_NEW();
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(TerminatedArrayBuilder);
 public:
     explicit TerminatedArrayBuilder(typename ArrayType<T>::Allocator::PassPtr array)

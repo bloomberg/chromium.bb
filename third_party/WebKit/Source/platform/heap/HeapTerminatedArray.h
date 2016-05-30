@@ -27,13 +27,13 @@ public:
 
 private:
     // Allocator describes how HeapTerminatedArrayBuilder should create new intances
-    // of TerminateArray and manage their lifetimes.
+    // of HeapTerminatedArray and manage their lifetimes.
     struct Allocator final {
         STATIC_ONLY(Allocator);
-        typedef HeapTerminatedArray* PassPtr;
-        typedef HeapTerminatedArray* Ptr;
+        using PassPtr = HeapTerminatedArray*;
+        using Ptr = Member<HeapTerminatedArray>;
 
-        static PassPtr release(Ptr ptr)
+        static PassPtr release(Ptr& ptr)
         {
             return ptr;
         }
