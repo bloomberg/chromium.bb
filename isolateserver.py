@@ -33,6 +33,7 @@ from utils import logging_utils
 from utils import lru
 from utils import net
 from utils import on_error
+from utils import subprocess42
 from utils import threading_utils
 from utils import tools
 
@@ -2268,6 +2269,7 @@ def main(args):
 
 
 if __name__ == '__main__':
+  subprocess42.inhibit_os_error_reporting()
   fix_encoding.fix_encoding()
   tools.disable_buffering()
   colorama.init()

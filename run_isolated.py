@@ -623,6 +623,7 @@ def main(args):
 
 
 if __name__ == '__main__':
+  subprocess42.inhibit_os_error_reporting()
   # Ensure that we are always running with the correct encoding.
   fix_encoding.fix_encoding()
   sys.exit(main(sys.argv[1:]))

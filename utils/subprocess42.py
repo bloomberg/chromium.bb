@@ -31,6 +31,7 @@ import contextlib
 import errno
 import os
 import signal
+import sys
 import threading
 import time
 
@@ -44,7 +45,12 @@ from subprocess import list2cmdline
 MAX_SIZE = 16384
 
 
+# Set to True when inhibit_crash_dump() has been called.
+_OS_ERROR_REPORTING_INHIBITED = False
+
+
 if subprocess.mswindows:
+  import ctypes
   import msvcrt  # pylint: disable=F0401
   from ctypes import wintypes
   from ctypes import windll
@@ -601,3 +607,31 @@ def call_with_timeout(args, timeout, **kwargs):
     proc.kill()
     proc.wait()
   return out, err, proc.returncode, proc.duration()
+
+
+def inhibit_os_error_reporting():
+  """Inhibits error reporting UI and core files.
+
+  This function should be called as early as possible in the process lifetime.
+  """
+  global _OS_ERROR_REPORTING_INHIBITED
+  if not _OS_ERROR_REPORTING_INHIBITED:
+    _OS_ERROR_REPORTING_INHIBITED = True
+    if sys.platform == 'win32':
+      # Windows has a bad habit of opening a dialog when a console program
+      # crashes, rather than just letting it crash. Therefore, when a program
+      # crashes on Windows, we don't find out until the build step times out.
+      # This code prevents the dialog from appearing, so that we find out
+      # immediately and don't waste time waiting for a user to close the dialog.
+      # https://msdn.microsoft.com/en-us/library/windows/desktop/ms680621.aspx
+      SEM_FAILCRITICALERRORS = 1
+      SEM_NOGPFAULTERRORBOX = 2
+      SEM_NOALIGNMENTFAULTEXCEPT = 0x8000
+      ctypes.windll.kernel32.SetErrorMode(
+          SEM_FAILCRITICALERRORS|SEM_NOGPFAULTERRORBOX|
+            SEM_NOALIGNMENTFAULTEXCEPT)
+  # TODO(maruel): Other OSes.
+  # - OSX, need to figure out a way to make the following process tree local:
+  #     defaults write com.apple.CrashReporter UseUNC 1
+  #     defaults write com.apple.CrashReporter DialogType none
+  # - Ubuntu, disable apport if needed.
