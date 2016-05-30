@@ -211,4 +211,9 @@ DEFINE_TRACE(NodeIterator)
     NodeIteratorBase::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(NodeIterator)
+{
+    NodeIteratorBase::traceWrappers(visitor);
+}
+
 } // namespace blink

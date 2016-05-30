@@ -56,6 +56,8 @@ public:
 
     DECLARE_TRACE();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 private:
     TreeWalker(Node*, unsigned whatToShow, NodeFilter*);
 

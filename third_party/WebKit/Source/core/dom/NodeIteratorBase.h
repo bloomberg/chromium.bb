@@ -41,6 +41,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 protected:
     NodeIteratorBase(Node*, unsigned whatToShow, NodeFilter*);
     unsigned acceptNode(Node*, ExceptionState&) const;

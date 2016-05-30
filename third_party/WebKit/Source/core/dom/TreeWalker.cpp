@@ -277,4 +277,9 @@ DEFINE_TRACE(TreeWalker)
     NodeIteratorBase::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(TreeWalker)
+{
+    NodeIteratorBase::traceWrappers(visitor);
+}
+
 } // namespace blink

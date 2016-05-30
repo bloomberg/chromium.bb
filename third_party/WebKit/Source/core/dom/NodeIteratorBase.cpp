@@ -54,4 +54,9 @@ DEFINE_TRACE(NodeIteratorBase)
     visitor->trace(m_filter);
 }
 
+DEFINE_TRACE_WRAPPERS(NodeIteratorBase)
+{
+    visitor->traceWrappers(m_filter);
+}
+
 } // namespace blink

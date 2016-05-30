@@ -55,6 +55,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 private:
     NodeIterator(Node*, unsigned whatToShow, NodeFilter*);
 
