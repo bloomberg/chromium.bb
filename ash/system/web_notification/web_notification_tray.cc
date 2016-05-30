@@ -285,6 +285,10 @@ void WebNotificationTray::SetSystemTrayHeight(int height) {
   popup_alignment_delegate_->SetSystemTrayHeight(height);
 }
 
+int WebNotificationTray::system_tray_height_for_test() const {
+  return popup_alignment_delegate_->system_tray_height_for_test();
+}
+
 bool WebNotificationTray::ShowPopups() {
   if (message_center_bubble())
     return false;

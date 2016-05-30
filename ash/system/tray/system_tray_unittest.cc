@@ -16,6 +16,7 @@
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_container.h"
+#include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "base/run_loop.h"
@@ -551,6 +552,29 @@ TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedbackCancellation) {
   generator.set_current_location(move_point);
   generator.ReleaseTouch();
   EXPECT_FALSE(view->active());
+}
+
+TEST_F(SystemTrayTest, SystemTrayHeightWithBubble) {
+  StatusAreaWidget* widget = Shell::GetPrimaryRootWindowController()
+                                 ->shelf_widget()
+                                 ->status_area_widget();
+  SystemTray* tray = widget->system_tray();
+  WebNotificationTray* notification_tray =
+      tray->status_area_widget()->web_notification_tray();
+
+  // Ensure the initial system tray height is zero.
+  EXPECT_EQ(0, notification_tray->system_tray_height_for_test());
+
+  // Show the default view, ensure the system tray height is changed.
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  RunAllPendingInMessageLoop();
+  EXPECT_LT(0, notification_tray->system_tray_height_for_test());
+
+  // Hide the default view, ensure the system tray height is back to zero.
+  ASSERT_TRUE(tray->CloseSystemBubble());
+  RunAllPendingInMessageLoop();
+
+  EXPECT_EQ(0, notification_tray->system_tray_height_for_test());
 }
 #endif  // OS_CHROMEOS
 

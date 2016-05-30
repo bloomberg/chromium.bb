@@ -48,6 +48,9 @@ class ASH_EXPORT AshPopupAlignmentDelegate
   // can avoid it.
   void SetSystemTrayHeight(int height);
 
+  // Returns the current system tray height.
+  int system_tray_height_for_test() const { return system_tray_height_; }
+
   // Overridden from message_center::PopupAlignmentDelegate:
   int GetToastOriginX(const gfx::Rect& toast_bounds) const override;
   int GetBaseLine() const override;

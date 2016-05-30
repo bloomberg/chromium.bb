@@ -61,6 +61,9 @@ class ASH_EXPORT WebNotificationTray
   // shown in the system tray side.
   void SetSystemTrayHeight(int height);
 
+  // Returns the current system tray height.
+  int system_tray_height_for_test() const;
+
   // Returns true if it should block the auto hide behavior of the shelf.
   bool ShouldBlockShelfAutoHide() const;
 
