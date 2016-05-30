@@ -265,6 +265,10 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceForInternal(
       if (!HttpStreamFactory::spdy_enabled())
         continue;
 
+      // TODO(bnc): Re-enable when https://crbug.com/615413 is fixed.
+      if (origin.host() != alternative_service.host)
+        continue;
+
       // Cache this entry if we don't have a non-broken Alt-Svc yet.
       if (first_alternative_service.protocol ==
           UNINITIALIZED_ALTERNATE_PROTOCOL)
