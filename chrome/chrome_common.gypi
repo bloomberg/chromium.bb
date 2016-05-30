@@ -641,6 +641,7 @@
         'common/safe_browsing/crx_info.proto',
         'common/safe_browsing/csd.proto',
         'common/safe_browsing/download_file_types.proto',
+        'common/safe_browsing/permission_report.proto',
       ],
       'variables': {
         'proto_in_dir': 'common/safe_browsing',

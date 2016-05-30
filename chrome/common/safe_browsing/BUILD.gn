@@ -11,5 +11,6 @@ proto_library("proto") {
     "crx_info.proto",
     "csd.proto",
     "download_file_types.proto",
+    "permission_report.proto",
   ]
 }

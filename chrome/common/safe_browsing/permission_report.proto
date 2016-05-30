@@ -1,0 +1,92 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Protocol buffer for permission reports sent to the Safe Browsing client-side
+// detection (CSD) frontends. This should stay in sync with the Safe Browsing 
+// server-side protocol buffer.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package safe_browsing;
+
+// A single Permission Report sent to Safe Browsing client-side detection
+// frontends.
+message PermissionReport {
+  // The origin (scheme/host/port) of the site requesting the permission.
+  optional string origin = 1;
+
+  // The permission being requested/acted upon.
+  optional PermissionType permission = 2;
+
+  // The platform.
+  optional PlatformType platform_type = 3;
+
+  // When the request was initiated.
+  repeated RequestTrigger request_trigger = 4;
+
+  // The action the user took. Required.
+  optional Action action = 5;
+
+  // The UI used to complete the action.
+  optional SourceUI source_ui = 6;
+
+  // The relevant field trials enabled for this report.
+  // TODO(stefanocs): Update field_trials field to store hashes instead of
+  // string.
+  repeated string field_trials = 7;
+
+  // Platform
+  enum PlatformType {
+    PLATFORM_TYPE_UNSPECIFIED = 0;
+    DESKTOP_PLATFORM = 1;
+    ANDROID_PLATFORM = 2;
+  }
+
+  // Various request triggers we want to record, e.g. on page load.
+  enum RequestTrigger {
+    REQUEST_TRIGGER_UNSPECIFIED = 0;
+    ONLOAD = 1;
+    AFTER_GESTURE = 2;
+  }
+
+  // User Permission Actions. This enum is intentionally different with 
+  // the one in src/chrome/browser/permissions/permission_uma_util.h
+  enum Action {
+    // TODO(stefanocs): Add ACTION_UNSPECIFIED to the corresponding Safe
+    // Browsing logs proto.
+    ACTION_UNSPECIFIED = 0;
+    GRANTED = 1;
+    DENIED = 2;
+    DISMISSED = 3;
+    IGNORED = 4;
+    REVOKED = 5;
+  }
+
+  // Places in the UI that a permission change can occur.
+  enum SourceUI {
+    SOURCE_UI_UNSPECIFIED = 0;
+    PROMPT = 1;
+    OIB = 2;
+    // TODO(stefanocs): Remove CONTENT_SETTINGS from the corresponding Safe
+    // Browsing logs proto.
+    SITE_SETTINGS = 3;
+  }
+
+  // The various types of permissions. This should stay in sync with the
+  // corresponding Safe Browsing logs enum.
+  enum PermissionType {
+    UNKNOWN_PERMISSION = 0;
+    MIDI_SYSEX = 1;
+    PUSH_MESSAGING = 2;
+    NOTIFICATIONS = 3;
+    GEOLOCATION = 4;
+    PROTECTED_MEDIA_IDENTIFIER = 5;
+    MIDI = 6;
+    DURABLE_STORAGE = 7;
+    AUDIO_CAPTURE = 8;
+    VIDEO_CAPTURE = 9;
+  }
+}
