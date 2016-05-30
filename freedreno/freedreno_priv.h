@@ -96,7 +96,11 @@ struct fd_device {
 	int closefd;        /* call close(fd) upon destruction */
 };
 
-drm_private void fd_cleanup_bo_cache(struct fd_bo_cache *cache, time_t time);
+drm_private void fd_bo_cache_init(struct fd_bo_cache *cache);
+drm_private void fd_bo_cache_cleanup(struct fd_bo_cache *cache, time_t time);
+drm_private struct fd_bo * fd_bo_cache_alloc(struct fd_bo_cache *cache,
+		uint32_t *size, uint32_t flags);
+drm_private int fd_bo_cache_free(struct fd_bo_cache *cache, struct fd_bo *bo);
 
 /* for where @table_lock is already held: */
 drm_private void fd_device_del_locked(struct fd_device *dev);

@@ -54,7 +54,7 @@ add_bucket(struct fd_bo_cache *cache, int size)
 	cache->num_buckets++;
 }
 
-static void
+drm_private void
 fd_bo_cache_init(struct fd_bo_cache *cache)
 {
 	unsigned long size, cache_max_size = 64 * 1024 * 1024;
@@ -137,7 +137,7 @@ struct fd_device * fd_device_ref(struct fd_device *dev)
 
 static void fd_device_del_impl(struct fd_device *dev)
 {
-	fd_cleanup_bo_cache(&dev->bo_cache, 0);
+	fd_bo_cache_cleanup(&dev->bo_cache, 0);
 	drmHashDestroy(dev->handle_table);
 	drmHashDestroy(dev->name_table);
 	if (dev->closefd)

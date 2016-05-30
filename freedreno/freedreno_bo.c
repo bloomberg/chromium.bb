@@ -84,7 +84,8 @@ static struct fd_bo * bo_from_handle(struct fd_device *dev,
 }
 
 /* Frees older cached buffers.  Called under table_lock */
-drm_private void fd_cleanup_bo_cache(struct fd_bo_cache *cache, time_t time)
+drm_private void
+fd_bo_cache_cleanup(struct fd_bo_cache *cache, time_t time)
 {
 	int i;
 
@@ -168,21 +169,19 @@ static struct fd_bo *find_in_bucket(struct fd_bo_bucket *bucket, uint32_t flags)
 	return bo;
 }
 
-
-struct fd_bo *
-fd_bo_new(struct fd_device *dev, uint32_t size, uint32_t flags)
+/* NOTE: size is potentially rounded up to bucket size: */
+drm_private struct fd_bo *
+fd_bo_cache_alloc(struct fd_bo_cache *cache, uint32_t *size, uint32_t flags)
 {
 	struct fd_bo *bo = NULL;
 	struct fd_bo_bucket *bucket;
-	uint32_t handle;
-	int ret;
 
-	size = ALIGN(size, 4096);
-	bucket = get_bucket(&dev->bo_cache, size);
+	*size = ALIGN(*size, 4096);
+	bucket = get_bucket(cache, *size);
 
 	/* see if we can be green and recycle: */
 	if (bucket) {
-		size = bucket->size;
+		*size = bucket->size;
 		bo = find_in_bucket(bucket, flags);
 		if (bo) {
 			atomic_set(&bo->refcnt, 1);
@@ -190,6 +189,20 @@ fd_bo_new(struct fd_device *dev, uint32_t size, uint32_t flags)
 			return bo;
 		}
 	}
+
+	return NULL;
+}
+
+struct fd_bo *
+fd_bo_new(struct fd_device *dev, uint32_t size, uint32_t flags)
+{
+	struct fd_bo *bo = NULL;
+	uint32_t handle;
+	int ret;
+
+	bo = fd_bo_cache_alloc(&dev->bo_cache, &size, flags);
+	if (bo)
+		return bo;
 
 	ret = dev->funcs->bo_new_handle(dev, size, flags, &handle);
 	if (ret)
@@ -290,6 +303,32 @@ struct fd_bo * fd_bo_ref(struct fd_bo *bo)
 	return bo;
 }
 
+drm_private int
+fd_bo_cache_free(struct fd_bo_cache *cache, struct fd_bo *bo)
+{
+	struct fd_bo_bucket *bucket = get_bucket(cache, bo->size);
+
+	/* see if we can be green and recycle: */
+	if (bucket) {
+		struct timespec time;
+
+		clock_gettime(CLOCK_MONOTONIC, &time);
+
+		bo->free_time = time.tv_sec;
+		list_addtail(&bo->list, &bucket->list);
+		fd_bo_cache_cleanup(cache, time.tv_sec);
+
+		/* bo's in the bucket cache don't have a ref and
+		 * don't hold a ref to the dev:
+		 */
+		fd_device_del_locked(bo->dev);
+
+		return 0;
+	}
+
+	return -1;
+}
+
 void fd_bo_del(struct fd_bo *bo)
 {
 	struct fd_device *dev = bo->dev;
@@ -299,30 +338,12 @@ void fd_bo_del(struct fd_bo *bo)
 
 	pthread_mutex_lock(&table_lock);
 
-	if (bo->bo_reuse) {
-		struct fd_bo_bucket *bucket = get_bucket(&dev->bo_cache, bo->size);
-
-		/* see if we can be green and recycle: */
-		if (bucket) {
-			struct timespec time;
-
-			clock_gettime(CLOCK_MONOTONIC, &time);
-
-			bo->free_time = time.tv_sec;
-			list_addtail(&bo->list, &bucket->list);
-			fd_cleanup_bo_cache(&dev->bo_cache, time.tv_sec);
-
-			/* bo's in the bucket cache don't have a ref and
-			 * don't hold a ref to the dev:
-			 */
-
-			goto out;
-		}
-	}
+	if (bo->bo_reuse && (fd_bo_cache_free(&dev->bo_cache, bo) == 0))
+		goto out;
 
 	bo_del(bo);
-out:
 	fd_device_del_locked(dev);
+out:
 	pthread_mutex_unlock(&table_lock);
 }
 
