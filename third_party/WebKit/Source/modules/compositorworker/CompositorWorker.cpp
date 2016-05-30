@@ -13,6 +13,7 @@
 #include "core/workers/WorkerClients.h"
 #include "modules/EventTargetModules.h"
 #include "modules/compositorworker/CompositorWorkerMessagingProxy.h"
+#include "modules/compositorworker/CompositorWorkerThread.h"
 
 namespace blink {
 
@@ -30,6 +31,12 @@ CompositorWorker* CompositorWorker::create(ExecutionContext* context, const Stri
         return nullptr;
     }
     CompositorWorker* worker = new CompositorWorker(context);
+
+    // Ensure the compositor worker backing thread is ready before we try to
+    // initialize the CompositorWorker so that we can construct oilpan
+    // objects on the compositor thread referenced from the worker clients.
+    CompositorWorkerThread::ensureSharedBackingThread();
+
     if (worker->initialize(context, url, exceptionState))
         return worker;
     return nullptr;

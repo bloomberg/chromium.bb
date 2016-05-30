@@ -12,6 +12,8 @@
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/TraceEvent.h"
+#include "platform/WaitableEvent.h"
+#include "platform/WebThreadSupportingGC.h"
 #include "public/platform/Platform.h"
 
 namespace blink {
@@ -19,32 +21,98 @@ namespace blink {
 namespace {
 
 // This is a singleton class holding the compositor worker thread in this
-// renderrer process. BackingThreadHolst::m_thread will never be cleared,
-// but Oilpan and V8 are detached from the thread when the last compositor
-// worker thread is gone.
+// renderer process. BackingThreadHolder::m_thread is cleared by
+// ModulesInitializer::shutdown.
 // See WorkerThread::terminateAndWaitForAllWorkers for the process shutdown
 // case.
 class BackingThreadHolder {
 public:
     static BackingThreadHolder& instance()
     {
-        DEFINE_THREAD_SAFE_STATIC_LOCAL(BackingThreadHolder, holder, new BackingThreadHolder);
-        return holder;
+        MutexLocker locker(holderInstanceMutex());
+        return *s_instance;
+    }
+
+    static void ensureInstance()
+    {
+        if (!s_instance)
+            s_instance = new BackingThreadHolder;
+    }
+
+    static void terminateExecution()
+    {
+        MutexLocker locker(holderInstanceMutex());
+        if (s_instance && s_instance->m_initialized) {
+            s_instance->thread()->isolate()->TerminateExecution();
+            s_instance->m_terminatingExecution = true;
+        }
+    }
+
+    static void clear()
+    {
+        MutexLocker locker(holderInstanceMutex());
+        if (s_instance) {
+            DCHECK(!s_instance->m_initialized || s_instance->m_terminatingExecution);
+            s_instance->shutdownAndWait();
+            delete s_instance;
+            s_instance = nullptr;
+        }
+    }
+
+    static void createForTest()
+    {
+        MutexLocker locker(holderInstanceMutex());
+        DCHECK_EQ(nullptr, s_instance);
+        s_instance = new BackingThreadHolder(WorkerBackingThread::createForTest(Platform::current()->compositorThread()));
     }
 
     WorkerBackingThread* thread() { return m_thread.get(); }
-    void resetForTest()
-    {
-        ASSERT(!m_thread || (m_thread->workerScriptCount() == 0));
-        m_thread = nullptr;
-        m_thread = WorkerBackingThread::createForTest(Platform::current()->compositorThread());
-    }
 
 private:
-    BackingThreadHolder() : m_thread(WorkerBackingThread::create(Platform::current()->compositorThread())) {}
+    BackingThreadHolder(PassOwnPtr<WorkerBackingThread> useBackingThread = nullptr)
+        : m_thread(useBackingThread ? std::move(useBackingThread) : WorkerBackingThread::create(Platform::current()->compositorThread()))
+    {
+        DCHECK(isMainThread());
+        m_thread->backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&BackingThreadHolder::initializeOnThread, AllowCrossThreadAccess(this)));
+    }
+
+    static Mutex& holderInstanceMutex()
+    {
+        DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, holderMutex, new Mutex);
+        return holderMutex;
+    }
+
+    void initializeOnThread()
+    {
+        MutexLocker locker(holderInstanceMutex());
+        DCHECK_EQ(0u, m_thread->workerScriptCount()) << "BackingThreadHolder should be the first to attach to WorkerBackingThread";
+        m_thread->attach();
+        m_initialized = true;
+    }
+
+    void shutdownAndWait()
+    {
+        DCHECK(isMainThread());
+        WaitableEvent doneEvent;
+        m_thread->backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&BackingThreadHolder::shutdownOnThread, AllowCrossThreadAccess(this), AllowCrossThreadAccess(&doneEvent)));
+        doneEvent.wait();
+    }
+
+    void shutdownOnThread(WaitableEvent* doneEvent)
+    {
+        DCHECK_EQ(1u, m_thread->workerScriptCount()) << "BackingThreadHolder should be the last to detach from WorkerBackingThread";
+        m_thread->detach();
+        doneEvent->signal();
+    }
 
     OwnPtr<WorkerBackingThread> m_thread;
+    bool m_terminatingExecution = false;
+    bool m_initialized = false;
+
+    static BackingThreadHolder* s_instance;
 };
+
+BackingThreadHolder* BackingThreadHolder::s_instance = nullptr;
 
 } // namespace
 
@@ -77,9 +145,27 @@ WorkerGlobalScope*CompositorWorkerThread::createWorkerGlobalScope(PassOwnPtr<Wor
     return CompositorWorkerGlobalScope::create(this, std::move(startupData), m_timeOrigin);
 }
 
-void CompositorWorkerThread::resetSharedBackingThreadForTest()
+void CompositorWorkerThread::ensureSharedBackingThread()
 {
-    BackingThreadHolder::instance().resetForTest();
+    DCHECK(isMainThread());
+    BackingThreadHolder::ensureInstance();
+}
+
+void CompositorWorkerThread::terminateExecution()
+{
+    DCHECK(isMainThread());
+    BackingThreadHolder::terminateExecution();
+}
+
+void CompositorWorkerThread::clearSharedBackingThread()
+{
+    DCHECK(isMainThread());
+    BackingThreadHolder::clear();
+}
+
+void CompositorWorkerThread::createSharedBackingThreadForTest()
+{
+    BackingThreadHolder::createForTest();
 }
 
 } // namespace blink

@@ -95,7 +95,7 @@ class CompositorWorkerThreadTest : public ::testing::Test {
 public:
     void SetUp() override
     {
-        CompositorWorkerThread::resetSharedBackingThreadForTest();
+        CompositorWorkerThread::createSharedBackingThreadForTest();
         m_page = DummyPageHolder::create();
         m_objectProxy = TestCompositorWorkerObjectProxy::create(&m_page->document());
         m_securityOrigin = SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
@@ -104,7 +104,8 @@ public:
     void TearDown() override
     {
         m_page.reset();
-        CompositorWorkerThread::resetSharedBackingThreadForTest();
+        CompositorWorkerThread::terminateExecution();
+        CompositorWorkerThread::clearSharedBackingThread();
     }
 
     PassOwnPtr<CompositorWorkerThread> createCompositorWorker()
@@ -197,17 +198,17 @@ TEST_F(CompositorWorkerThreadTest, TerminateFirstAndCreateSecond)
     WebThreadSupportingGC* firstThread = &compositorWorker->workerBackingThread().backingThread();
     checkWorkerCanExecuteScript(compositorWorker.get());
 
-    ASSERT_EQ(1u, workerBackingThread->workerScriptCount());
+    ASSERT_EQ(2u, workerBackingThread->workerScriptCount());
     compositorWorker->terminateAndWait();
 
-    ASSERT_EQ(0u, workerBackingThread->workerScriptCount());
+    ASSERT_EQ(1u, workerBackingThread->workerScriptCount());
 
     // Create the second worker. The backing thread is same.
     compositorWorker = createCompositorWorker();
     WebThreadSupportingGC* secondThread = &compositorWorker->workerBackingThread().backingThread();
     EXPECT_EQ(firstThread, secondThread);
     checkWorkerCanExecuteScript(compositorWorker.get());
-    ASSERT_EQ(1u, workerBackingThread->workerScriptCount());
+    ASSERT_EQ(2u, workerBackingThread->workerScriptCount());
 
     compositorWorker->terminateAndWait();
 }
@@ -222,7 +223,7 @@ TEST_F(CompositorWorkerThreadTest, CreatingSecondDuringTerminationOfFirst)
 
     // Request termination of the first worker and create the second worker
     // as soon as possible.
-    EXPECT_EQ(1u, firstWorker->workerBackingThread().workerScriptCount());
+    EXPECT_EQ(2u, firstWorker->workerBackingThread().workerScriptCount());
     firstWorker->terminate();
     // We don't wait for its termination.
     // Note: We rely on the assumption that the termination steps don't run

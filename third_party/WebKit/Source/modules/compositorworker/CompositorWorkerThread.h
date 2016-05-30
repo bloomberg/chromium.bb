@@ -22,7 +22,13 @@ public:
     WorkerBackingThread& workerBackingThread() override;
     bool shouldAttachThreadDebugger() const override { return false; }
 
-    static void resetSharedBackingThreadForTest();
+    static void ensureSharedBackingThread();
+    static void createSharedBackingThreadForTest();
+
+    // This is called before CoreInitializer::shutdown as shutdown waits for
+    // worker threads that can be blocked by scripts.
+    static void terminateExecution();
+    static void clearSharedBackingThread();
 
 protected:
     CompositorWorkerThread(PassRefPtr<WorkerLoaderProxy>, InProcessWorkerObjectProxy&, double timeOrigin);
