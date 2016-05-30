@@ -24,7 +24,7 @@ const char* const kDefaultDeviceId =
     media::AudioDeviceDescription::kDefaultDeviceId;
 const char kAnotherDeviceId[] = "another-device-id";
 const int kRenderFrameId = 124;
-const int kDeleteTimeoutMs = 1000;
+const int kDeleteTimeoutMs = 500;
 }  // namespace
 
 class AudioRendererSinkCacheTest : public testing::Test {
