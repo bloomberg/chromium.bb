@@ -161,8 +161,7 @@ public:
         ASSERT(V8DOMWrapper::hasInternalFieldsSet(wrapper));
 
         const WrapperTypeInfo* type = toWrapperTypeInfo(wrapper);
-        if (!RuntimeEnabledFeatures::traceWrappablesEnabled()
-            && type->hasPendingActivity(wrapper)) {
+        if (type->hasPendingActivity(wrapper)) {
             // If you hit this assert, you'll need to add a [DependentiLifetime]
             // extended attribute to the DOM interface. A DOM interface that
             // overrides hasPendingActivity must be marked as [DependentLifetime].
@@ -175,16 +174,14 @@ public:
             return;
 
         if (classId == WrapperTypeInfo::NodeClassId) {
-            if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
-                ASSERT(V8Node::hasInstance(wrapper, m_isolate));
-                Node* node = V8Node::toImpl(wrapper);
-                if (node->hasEventListeners())
-                    addReferencesForNodeWithEventListeners(m_isolate, node, v8::Persistent<v8::Object>::Cast(*value));
-                Node* root = V8GCController::opaqueRootForGC(m_isolate, node);
-                m_isolate->SetObjectGroupId(*value, v8::UniqueId(reinterpret_cast<intptr_t>(root)));
-                if (m_constructRetainedObjectInfos)
-                    m_groupsWhichNeedRetainerInfo.append(root);
-            }
+            DCHECK(V8Node::hasInstance(wrapper, m_isolate));
+            Node* node = V8Node::toImpl(wrapper);
+            if (node->hasEventListeners())
+                addReferencesForNodeWithEventListeners(m_isolate, node, v8::Persistent<v8::Object>::Cast(*value));
+            Node* root = V8GCController::opaqueRootForGC(m_isolate, node);
+            m_isolate->SetObjectGroupId(*value, v8::UniqueId(reinterpret_cast<intptr_t>(root)));
+            if (m_constructRetainedObjectInfos)
+                m_groupsWhichNeedRetainerInfo.append(root);
         } else if (classId == WrapperTypeInfo::ObjectClassId) {
             type->visitDOMWrapper(m_isolate, toScriptWrappable(wrapper), v8::Persistent<v8::Object>::Cast(*value));
         } else {
@@ -258,7 +255,10 @@ void objectGroupingForMajorGC(v8::Isolate* isolate, bool constructRetainedObject
 
 void gcPrologueForMajorGC(v8::Isolate* isolate, bool constructRetainedObjectInfos)
 {
-    objectGroupingForMajorGC(isolate, constructRetainedObjectInfos);
+    // TODO(hlopko): Collect retained object infos for heap profiler
+    if (!RuntimeEnabledFeatures::traceWrappablesEnabled()) {
+        objectGroupingForMajorGC(isolate, constructRetainedObjectInfos);
+    }
 }
 
 } // namespace
