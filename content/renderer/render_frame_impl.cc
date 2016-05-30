@@ -1574,7 +1574,7 @@ void RenderFrameImpl::SetPendingNavigationParams(
   pending_navigation_params_ = std::move(navigation_params);
 }
 
-void RenderFrameImpl::OnBeforeUnload() {
+void RenderFrameImpl::OnBeforeUnload(bool is_reload) {
   TRACE_EVENT1("navigation", "RenderFrameImpl::OnBeforeUnload",
                "id", routing_id_);
   // TODO(creis): Right now, this is only called on the main frame.  Make the
@@ -1583,11 +1583,10 @@ void RenderFrameImpl::OnBeforeUnload() {
   CHECK(!frame_->parent());
 
   base::TimeTicks before_unload_start_time = base::TimeTicks::Now();
-  bool proceed = frame_->dispatchBeforeUnloadEvent();
+  bool proceed = frame_->dispatchBeforeUnloadEvent(is_reload);
   base::TimeTicks before_unload_end_time = base::TimeTicks::Now();
-  Send(new FrameHostMsg_BeforeUnload_ACK(routing_id_, proceed,
-                                         before_unload_start_time,
-                                         before_unload_end_time));
+  Send(new FrameHostMsg_BeforeUnload_ACK(
+      routing_id_, proceed, before_unload_start_time, before_unload_end_time));
 }
 
 void RenderFrameImpl::OnSwapOut(
@@ -4911,6 +4910,25 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
     return blink::WebNavigationPolicyIgnore;
   }
 
+  // Execute the BeforeUnload event. If asked not to proceed or the frame is
+  // destroyed, ignore the navigation. There is no need to execute the
+  // BeforeUnload event during a redirect, since it was already executed at the
+  // start of the navigation.
+  // PlzNavigate: this is not executed when commiting the navigation.
+  if (info.defaultPolicy == blink::WebNavigationPolicyCurrentTab &&
+      !is_redirect && (!IsBrowserSideNavigationEnabled() ||
+                       info.urlRequest.checkForBrowserSideNavigation())) {
+    // Keep a WeakPtr to this RenderFrameHost to detect if executing the
+    // BeforeUnload event destriyed this frame.
+    base::WeakPtr<RenderFrameImpl> weak_self = weak_factory_.GetWeakPtr();
+
+    if (!frame_->dispatchBeforeUnloadEvent(info.navigationType ==
+                                           blink::WebNavigationTypeReload) ||
+        !weak_self) {
+      return blink::WebNavigationPolicyIgnore;
+    }
+  }
+
   // PlzNavigate: if the navigation is not synchronous, send it to the browser.
   // This includes navigations with no request being sent to the network stack.
   if (IsBrowserSideNavigationEnabled() &&
@@ -5659,7 +5677,6 @@ void RenderFrameImpl::BeginNavigation(blink::WebURLRequest* request,
                                       bool is_client_redirect) {
   CHECK(IsBrowserSideNavigationEnabled());
   DCHECK(request);
-  // TODO(clamy): Execute the beforeunload event.
 
   // Note: At this stage, the goal is to apply all the modifications the
   // renderer wants to make to the request, and then send it to the browser, so

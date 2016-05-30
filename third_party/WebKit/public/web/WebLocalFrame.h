@@ -78,6 +78,11 @@ public:
 
     // Navigation ----------------------------------------------------------
 
+    // Runs beforeunload handlers for this frame and returns the value returned
+    // by handlers.
+    // Note: this may lead to the destruction of the frame.
+    virtual bool dispatchBeforeUnloadEvent(bool isReload) = 0;
+
     // Returns a WebURLRequest corresponding to the load of the WebHistoryItem.
     virtual WebURLRequest requestFromHistoryItem(const WebHistoryItem&, WebCachePolicy) const = 0;
 

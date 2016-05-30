@@ -180,12 +180,6 @@ WebPerformance WebRemoteFrameImpl::performance() const
     return WebPerformance();
 }
 
-bool WebRemoteFrameImpl::dispatchBeforeUnloadEvent()
-{
-    NOTREACHED();
-    return false;
-}
-
 void WebRemoteFrameImpl::dispatchUnloadEvent()
 {
     NOTREACHED();

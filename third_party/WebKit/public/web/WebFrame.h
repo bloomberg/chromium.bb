@@ -261,10 +261,6 @@ public:
 
     // Closing -------------------------------------------------------------
 
-    // Runs beforeunload handlers for this frame, returning false if a
-    // handler suppressed unloading.
-    virtual bool dispatchBeforeUnloadEvent() = 0;
-
     // Runs unload handlers for this frame.
     virtual void dispatchUnloadEvent() = 0;
 

@@ -464,7 +464,7 @@ class RenderFrameHostManagerTest : public RenderViewHostImplTestHarness {
       return frame_host;
     }
 
-    return manager->Navigate(frame_entry->url(), *frame_entry, entry);
+    return manager->Navigate(frame_entry->url(), *frame_entry, entry, false);
   }
 
   // Returns the pending RenderFrameHost.

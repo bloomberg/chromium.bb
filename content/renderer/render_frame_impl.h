@@ -738,7 +738,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnNavigate(const CommonNavigationParams& common_params,
                   const StartNavigationParams& start_params,
                   const RequestNavigationParams& request_params);
-  void OnBeforeUnload();
+  void OnBeforeUnload(bool is_reload);
   void OnSwapOut(int proxy_routing_id,
                  bool is_loading,
                  const FrameReplicationState& replicated_frame_state);

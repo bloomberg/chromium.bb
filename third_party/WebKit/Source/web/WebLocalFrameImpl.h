@@ -96,7 +96,6 @@ public:
     WebView* view() const override;
     WebDocument document() const override;
     WebPerformance performance() const override;
-    bool dispatchBeforeUnloadEvent() override;
     void dispatchUnloadEvent() override;
     void executeScript(const WebScriptSource&) override;
     void executeScriptInIsolatedWorld(
@@ -207,6 +206,7 @@ public:
     WebLocalFrame* traversePreviousLocal(bool wrap) const override;
     WebLocalFrame* traverseNextLocal(bool wrap) const override;
     void sendPings(const WebURL& destinationURL) override;
+    bool dispatchBeforeUnloadEvent(bool) override;
     WebURLRequest requestFromHistoryItem(const WebHistoryItem&, WebCachePolicy) const override;
     WebURLRequest requestForReload(WebFrameLoadType, const WebURL&) const override;
     void load(const WebURLRequest&, WebFrameLoadType, const WebHistoryItem&,

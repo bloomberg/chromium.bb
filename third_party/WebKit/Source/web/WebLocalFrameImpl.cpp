@@ -688,13 +688,6 @@ WebPerformance WebLocalFrameImpl::performance() const
     return WebPerformance(DOMWindowPerformance::performance(*(frame()->domWindow())));
 }
 
-bool WebLocalFrameImpl::dispatchBeforeUnloadEvent()
-{
-    if (!frame())
-        return true;
-    return frame()->loader().shouldClose();
-}
-
 void WebLocalFrameImpl::dispatchUnloadEvent()
 {
     if (!frame())
@@ -1828,6 +1821,14 @@ void WebLocalFrameImpl::sendPings(const WebURL& destinationURL)
     Element* anchor = m_contextMenuNode->enclosingLinkEventParentOrSelf();
     if (isHTMLAnchorElement(anchor))
         toHTMLAnchorElement(anchor)->sendPings(destinationURL);
+}
+
+bool WebLocalFrameImpl::dispatchBeforeUnloadEvent(bool isReload)
+{
+    if (!frame())
+        return true;
+
+    return frame()->loader().shouldClose(isReload);
 }
 
 WebURLRequest WebLocalFrameImpl::requestFromHistoryItem(const WebHistoryItem& item, WebCachePolicy cachePolicy) const

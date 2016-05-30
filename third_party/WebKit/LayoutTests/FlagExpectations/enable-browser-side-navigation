@@ -1,20 +1,6 @@
 # These tests currently fail when run with --enable-browser-side-navigation
 # See https://crbug.com/576261
 
-# https://crbug.com/608371: PlzNavigate: properly execute the BeforeUnload event
-  editing/pasteboard/file-drag-to-editable.html [ Crash Failure ]
-  fast/events/before-unload-forbidden-navigation.html [ Crash ]
-  fast/events/before-unload-return-value-from-listener.html [ Crash Failure ]
-  fast/events/drop-handler-should-not-stop-navigate.html [ Crash Failure ]
-  fast/loader/recursive-before-unload-crash.html [ Crash Failure ]
-  http/tests/history/back-during-beforeunload.html [ Crash ]
-  virtual/pointerevent/fast/events/before-unload-forbidden-navigation.html [ Crash ]
-  virtual/pointerevent/fast/events/before-unload-return-value-from-listener.html [ Crash Failure ]
-  virtual/pointerevent/fast/events/drop-handler-should-not-stop-navigate.html [ Crash Failure ]
-  virtual/trustedeventsdefaultaction/fast/events/before-unload-forbidden-navigation.html [ Crash ]
-  virtual/trustedeventsdefaultaction/fast/events/before-unload-return-value-from-listener.html [ Crash Failure ]
-  virtual/trustedeventsdefaultaction/fast/events/drop-handler-should-not-stop-navigate.html [ Crash Failure ]
-
 # https://crbug.com/608372: PlzNavigate: support POST navigations
   fast/forms/state-restore-skip-stateless.html [ Crash ]
   fast/forms/submit-to-url-fragment.html [ Failure ]
@@ -28,6 +14,10 @@
 
 # Failing due to error page supression in layout tests
   fast/xmlhttprequest/null-document-xmlhttprequest-open.html [ Crash Timeout ]
+
+# Failing due to extra error due to bad timing.
+  fast/events/before-unload-in-subframe.html [ Crash ]
+  virtual/trustedeventsdefaultaction/fast/events/before-unload-in-subframe.html [ Crash ]
 
 # Failing due to empty data url
   editing/execCommand/apply-style-command-crash.html [ Crash ]

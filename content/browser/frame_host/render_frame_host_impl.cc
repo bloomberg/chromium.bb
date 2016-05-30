@@ -2164,7 +2164,10 @@ void RenderFrameHostImpl::Stop() {
   Send(new FrameMsg_Stop(routing_id_));
 }
 
-void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation) {
+void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation,
+                                               bool is_reload) {
+  DCHECK(for_navigation || !is_reload);
+
   // TODO(creis): Support beforeunload on subframes.  For now just pretend that
   // the handler ran and allowed the navigation to proceed.
   if (!ShouldDispatchBeforeUnload()) {
@@ -2199,7 +2202,7 @@ void RenderFrameHostImpl::DispatchBeforeUnload(bool for_navigation) {
     render_view_host_->GetWidget()->StartHangMonitorTimeout(
         TimeDelta::FromMilliseconds(RenderViewHostImpl::kUnloadTimeoutMS));
     send_before_unload_start_time_ = base::TimeTicks::Now();
-    Send(new FrameMsg_BeforeUnload(routing_id_));
+    Send(new FrameMsg_BeforeUnload(routing_id_, is_reload));
   }
 }
 

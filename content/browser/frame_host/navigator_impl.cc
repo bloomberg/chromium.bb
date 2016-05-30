@@ -348,8 +348,9 @@ bool NavigatorImpl::NavigateToEntry(
 
   } else {
     RenderFrameHostImpl* dest_render_frame_host =
-        frame_tree_node->render_manager()->Navigate(dest_url, frame_entry,
-                                                    entry);
+        frame_tree_node->render_manager()->Navigate(
+            dest_url, frame_entry, entry,
+            reload_type != NavigationController::NO_RELOAD);
     if (!dest_render_frame_host)
       return false;  // Unable to create the desired RenderFrameHost.
 
@@ -1021,7 +1022,8 @@ void NavigatorImpl::RequestNavigation(
       ShouldMakeNetworkRequestForURL(
           navigation_request->common_params().url)) {
     navigation_request->SetWaitingForRendererResponse();
-    frame_tree_node->current_frame_host()->DispatchBeforeUnload(true);
+    frame_tree_node->current_frame_host()->DispatchBeforeUnload(
+        true, reload_type != NavigationController::NO_RELOAD);
   } else {
     navigation_request->BeginNavigation();
   }

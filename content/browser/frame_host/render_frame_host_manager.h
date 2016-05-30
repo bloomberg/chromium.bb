@@ -269,7 +269,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   // different URL than the last committed entry, without modifying it).
   RenderFrameHostImpl* Navigate(const GURL& dest_url,
                                 const FrameNavigationEntry& frame_entry,
-                                const NavigationEntryImpl& entry);
+                                const NavigationEntryImpl& entry,
+                                bool is_reload);
 
   // Instructs the various live views to stop. Called when the user directed the
   // page to stop loading.
@@ -729,7 +730,8 @@ class CONTENT_EXPORT RenderFrameHostManager
       bool dest_is_restore,
       bool dest_is_view_source_mode,
       const GlobalRequestID& transferred_request_id,
-      int bindings);
+      int bindings,
+      bool is_reload);
 
   // Updates the pending WebUI of the current RenderFrameHost for a same-site
   // navigation.

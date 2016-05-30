@@ -566,7 +566,13 @@ void TestRunnerForSpecificView::DidLosePointerLockInternal() {
 }
 
 bool TestRunnerForSpecificView::CallShouldCloseOnWebView() {
-  return web_view()->mainFrame()->dispatchBeforeUnloadEvent();
+  if (!web_view()->mainFrame()->toWebLocalFrame()) {
+    CHECK(false) << "This function cannot be called if the main frame is not a "
+                    "local frame.";
+  }
+
+  return web_view()->mainFrame()->toWebLocalFrame()->dispatchBeforeUnloadEvent(
+      false);
 }
 
 void TestRunnerForSpecificView::SetDomainRelaxationForbiddenForURLScheme(

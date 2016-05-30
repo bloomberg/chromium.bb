@@ -199,7 +199,8 @@ void RenderFrameHostManager::RemoveOuterDelegateFrame() {
 RenderFrameHostImpl* RenderFrameHostManager::Navigate(
     const GURL& dest_url,
     const FrameNavigationEntry& frame_entry,
-    const NavigationEntryImpl& entry) {
+    const NavigationEntryImpl& entry,
+    bool is_reload) {
   TRACE_EVENT1("navigation", "RenderFrameHostManager:Navigate",
                "FrameTreeNode id", frame_tree_node_->frame_tree_node_id());
   // Create a pending RenderFrameHost to use for the navigation.
@@ -208,7 +209,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
       entry.GetTransitionType(),
       entry.restore_type() != NavigationEntryImpl::RESTORE_NONE,
       entry.IsViewSourceMode(), entry.transferred_global_request_id(),
-      entry.bindings());
+      entry.bindings(), is_reload);
   if (!dest_render_frame_host)
     return nullptr;  // We weren't able to create a pending render frame host.
 
@@ -2169,7 +2170,8 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
     bool dest_is_restore,
     bool dest_is_view_source_mode,
     const GlobalRequestID& transferred_request_id,
-    int bindings) {
+    int bindings,
+    bool is_reload) {
   if (!frame_tree_node_->IsMainFrame() &&
       !CanSubframeSwapProcess(dest_url, source_instance, dest_instance)) {
     // Note: Do not add code here to determine whether the subframe should swap
@@ -2252,7 +2254,7 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
           render_frame_host_->GetRoutingID()));
       pending_render_frame_host_->SetNavigationsSuspended(true,
                                                           base::TimeTicks());
-      render_frame_host_->DispatchBeforeUnload(true);
+      render_frame_host_->DispatchBeforeUnload(true, is_reload);
     }
 
     return pending_render_frame_host_.get();

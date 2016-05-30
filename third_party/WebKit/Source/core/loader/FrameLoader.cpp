@@ -1354,6 +1354,7 @@ bool FrameLoader::shouldClose(bool isReload)
         if (i == targetFrames.size())
             shouldClose = true;
     }
+
     return shouldClose;
 }
 
@@ -1413,8 +1414,6 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest, FrameLoadType ty
     frameLoadRequest.resourceRequest().setFrameType(m_frame->isMainFrame() ? WebURLRequest::FrameTypeTopLevel : WebURLRequest::FrameTypeNested);
     ResourceRequest& request = frameLoadRequest.resourceRequest();
     if (!shouldContinueForNavigationPolicy(request, frameLoadRequest.substituteData(), nullptr, frameLoadRequest.shouldCheckMainWorldContentSecurityPolicy(), navigationType, navigationPolicy, type == FrameLoadTypeReplaceCurrentItem, frameLoadRequest.clientRedirect() == ClientRedirectPolicy::ClientRedirect))
-        return;
-    if (!shouldClose(navigationType == NavigationTypeReload))
         return;
 
     m_frame->document()->cancelParsing();

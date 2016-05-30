@@ -656,7 +656,7 @@ IPC_MESSAGE_ROUTED3(FrameMsg_Navigate,
 
 // Instructs the renderer to invoke the frame's beforeunload event handler.
 // Expects the result to be returned via FrameHostMsg_BeforeUnload_ACK.
-IPC_MESSAGE_ROUTED0(FrameMsg_BeforeUnload)
+IPC_MESSAGE_ROUTED1(FrameMsg_BeforeUnload, bool /* is_reload */)
 
 // Instructs the frame to swap out for a cross-site transition, including
 // running the unload event handler and creating a RenderFrameProxy with the

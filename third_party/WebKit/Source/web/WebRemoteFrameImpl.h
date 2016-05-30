@@ -46,7 +46,6 @@ public:
     WebView* view() const override;
     WebDocument document() const override;
     WebPerformance performance() const override;
-    bool dispatchBeforeUnloadEvent() override;
     void dispatchUnloadEvent() override;
     void executeScript(const WebScriptSource&) override;
     void executeScriptInIsolatedWorld(

@@ -398,9 +398,11 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
 
   // Runs the beforeunload handler for this frame. |for_navigation| indicates
   // whether this call is for the current frame during a cross-process
-  // navigation. False means we're closing the entire tab.
+  // navigation. False means we're closing the entire tab. |is_reload|
+  // indicates whether the navigation is a reload of the page or not. If
+  // |for_navigation| is false, |is_reload| should be false as well.
   // PlzNavigate: this call happens on all browser-initiated navigations.
-  void DispatchBeforeUnload(bool for_navigation);
+  void DispatchBeforeUnload(bool for_navigation, bool is_reload);
 
   // Simulate beforeunload ack on behalf of renderer if it's unrenresponsive.
   void SimulateBeforeUnloadAck();
