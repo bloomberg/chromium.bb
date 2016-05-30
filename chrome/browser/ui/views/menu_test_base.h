@@ -56,6 +56,8 @@ class MenuTestBase : public ViewEventTestBase,
   }
 
  protected:
+  views::MenuRunner* menu_runner() { return menu_runner_.get(); }
+
   // Called to populate the menu.
   virtual void BuildMenu(views::MenuItemView* menu) = 0;
 

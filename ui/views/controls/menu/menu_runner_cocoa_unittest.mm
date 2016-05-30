@@ -129,7 +129,10 @@ class MenuRunnerCocoaTest : public ViewsTestBase {
 
   void MenuCancelCallback() {
     runner_->Cancel();
-    EXPECT_FALSE(runner_->IsRunning());
+    // For a syncronous menu, MenuRunner::IsRunning() should return true
+    // immediately after MenuRunner::Cancel() since the menu message loop has
+    // not yet terminated. It has only been marked for termination.
+    EXPECT_TRUE(runner_->IsRunning());
   }
 
   void MenuDeleteCallback() {
