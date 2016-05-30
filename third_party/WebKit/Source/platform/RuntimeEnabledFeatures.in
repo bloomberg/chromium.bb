@@ -182,6 +182,7 @@ ScrollAnchoring settable_from_internals=True
 // Implements documentElement.scrollTop/Left and bodyElement.scrollTop/Left
 // as per the spec, matching other Web engines.
 ScrollTopLeftInterop status=experimental
+Sensor status=experimental
 ServiceWorkerClientAttributes status=stable
 ServiceWorkerClientsGetID status=stable
 ServiceWorkerWindowClientNavigate status=stable

@@ -5725,6 +5725,30 @@ interface Selection
     method setBaseAndExtent
     method setPosition
     method toString
+interface Sensor : EventTarget
+    attribute @@toStringTag
+    getter onchange
+    getter onerror
+    getter onstatechange
+    getter reading
+    getter state
+    method constructor
+    method start
+    method stop
+    setter onchange
+    setter onerror
+    setter onstatechange
+interface SensorErrorEvent : ErrorEvent
+    attribute @@toStringTag
+    method constructor
+interface SensorReading
+    attribute @@toStringTag
+    getter timeStamp
+    method constructor
+interface SensorReadingEvent : Event
+    attribute @@toStringTag
+    getter reading
+    method constructor
 interface ServiceWorker : EventTarget
     attribute @@toStringTag
     getter onerror

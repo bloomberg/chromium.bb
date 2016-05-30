@@ -1198,6 +1198,8 @@ public:
         RTCPeerConnectionAddIceCandidatePromise = 1384,
         RTCPeerConnectionAddIceCandidateLegacy = 1385,
         RTCIceCandidateDefaultSdpMLineIndex = 1386,
+        DocumentCreateEventSensorErrorEvent = 1387,
+        DocumentCreateEventSensorReadingEvent = 1388,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -34,6 +34,7 @@ modules/presentation/PresentationRequest
 modules/remoteplayback/RemotePlayback
 modules/remoteplayback/RemotePlaybackAvailability
 modules/screen_orientation/ScreenOrientation
+modules/sensor/Sensor
 modules/serviceworkers/ServiceWorker
 modules/serviceworkers/ServiceWorkerContainer
 modules/serviceworkers/ServiceWorkerGlobalScope
