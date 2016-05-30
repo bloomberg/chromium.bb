@@ -24,15 +24,6 @@ int GetNextProviderId() {
   return sequence.GetNext();  // We start at zero.
 }
 
-// When the provider is for a sandboxed iframe we use
-// kInvalidServiceWorkerProviderId as the provider type and we don't create
-// ServiceWorkerProviderContext and ServiceWorkerProviderHost.
-int GenerateProviderIdForType(const ServiceWorkerProviderType provider_type) {
-  if (provider_type == SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME)
-    return kInvalidServiceWorkerProviderId;
-  return GetNextProviderId();
-}
-
 }  // namespace
 
 void ServiceWorkerNetworkProvider::AttachToDocumentState(
@@ -121,7 +112,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     ServiceWorkerProviderType provider_type)
     : ServiceWorkerNetworkProvider(route_id,
                                    provider_type,
-                                   GenerateProviderIdForType(provider_type)) {}
+                                   GetNextProviderId()) {}
 
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider()
     : provider_id_(kInvalidServiceWorkerProviderId) {}

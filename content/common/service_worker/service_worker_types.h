@@ -66,11 +66,8 @@ enum ServiceWorkerProviderType {
   // For ServiceWorkers.
   SERVICE_WORKER_PROVIDER_FOR_CONTROLLER,
 
-  // For sandboxed frames.
-  SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME,
-
   SERVICE_WORKER_PROVIDER_TYPE_LAST =
-      SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME
+      SERVICE_WORKER_PROVIDER_FOR_CONTROLLER
 };
 
 // The enum entries below are written to histograms and thus cannot be deleted

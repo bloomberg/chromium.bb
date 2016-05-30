@@ -736,8 +736,8 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
           sender_provider_host->GetOrCreateServiceWorkerHandle(
               sender_provider_host->running_hosted_version())));
       break;
-    case SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME:
     case SERVICE_WORKER_PROVIDER_UNKNOWN:
+    default:
       NOTREACHED() << sender_provider_host->provider_type();
       break;
   }

@@ -74,7 +74,6 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
       dispatcher_host_(dispatcher_host),
       allow_association_(true) {
   DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, provider_type_);
-  DCHECK_NE(SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME, provider_type_);
 
   // PlzNavigate
   CHECK(render_process_id != ChildProcessHost::kInvalidUniqueID ||
@@ -212,7 +211,6 @@ bool ServiceWorkerProviderHost::IsProviderForClient() const {
       return true;
     case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
       return false;
-    case SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME:
     case SERVICE_WORKER_PROVIDER_UNKNOWN:
       NOTREACHED() << provider_type_;
   }
@@ -230,7 +228,6 @@ blink::WebServiceWorkerClientType ServiceWorkerProviderHost::client_type()
     case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
       return blink::WebServiceWorkerClientTypeSharedWorker;
     case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
-    case SERVICE_WORKER_PROVIDER_FOR_SANDBOXED_FRAME:
     case SERVICE_WORKER_PROVIDER_UNKNOWN:
       NOTREACHED() << provider_type_;
   }
