@@ -343,12 +343,17 @@ void GaiaCookieManagerService::AddAccountToCookieWithToken(
 }
 
 bool GaiaCookieManagerService::ListAccounts(
-    std::vector<gaia::ListedAccount>* accounts) {
-  DCHECK(accounts);
-  accounts->clear();
-
+    std::vector<gaia::ListedAccount>* accounts,
+    std::vector<gaia::ListedAccount>* signed_out_accounts) {
   if (!list_accounts_stale_) {
-    accounts->assign(listed_accounts_.begin(), listed_accounts_.end());
+    if (accounts)
+      accounts->assign(listed_accounts_.begin(), listed_accounts_.end());
+
+    if (signed_out_accounts) {
+      signed_out_accounts->assign(signed_out_accounts_.begin(),
+                                  signed_out_accounts_.end());
+    }
+
     return true;
   }
 
@@ -555,8 +560,10 @@ void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
          GaiaCookieRequestType::LIST_ACCOUNTS);
   fetcher_backoff_.InformOfRequest(true);
 
-  if (!gaia::ParseListAccountsData(data, &listed_accounts_)) {
+  if (!gaia::ParseListAccountsData(
+          data, &listed_accounts_, &signed_out_accounts_)) {
     listed_accounts_.clear();
+    signed_out_accounts_.clear();
     OnListAccountsFailure(GoogleServiceAuthError(
         GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE));
     return;
@@ -577,6 +584,7 @@ void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {
   FOR_EACH_OBSERVER(Observer, observer_list_,
       OnGaiaAccountsInCookieUpdated(
           listed_accounts_,
+          signed_out_accounts_,
           GoogleServiceAuthError(GoogleServiceAuthError::NONE)));
 }
 
@@ -602,7 +610,8 @@ void GaiaCookieManagerService::OnListAccountsFailure(
   UMA_HISTOGRAM_ENUMERATION("Signin.ListAccountsFailure",
       error.state(), GoogleServiceAuthError::NUM_STATES);
   FOR_EACH_OBSERVER(Observer, observer_list_,
-      OnGaiaAccountsInCookieUpdated(listed_accounts_, error));
+      OnGaiaAccountsInCookieUpdated(
+            listed_accounts_, signed_out_accounts_, error));
   HandleNextRequest();
 }
 

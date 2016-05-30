@@ -34,9 +34,11 @@ void OAuth2LoginVerifier::VerifyUserCookies() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::vector<gaia::ListedAccount> accounts;
-  if (cookie_manager_service_->ListAccounts(&accounts)) {
+  std::vector<gaia::ListedAccount> signed_out_accounts;
+  if (cookie_manager_service_->ListAccounts(&accounts, &signed_out_accounts)) {
     OnGaiaAccountsInCookieUpdated(
-        accounts, GoogleServiceAuthError(GoogleServiceAuthError::NONE));
+        accounts, signed_out_accounts,
+        GoogleServiceAuthError(GoogleServiceAuthError::NONE));
   }
 }
 
@@ -69,6 +71,7 @@ void OAuth2LoginVerifier::OnAddAccountToCookieCompleted(
 
 void OAuth2LoginVerifier::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
+    const std::vector<gaia::ListedAccount>& signed_out_accounts,
     const GoogleServiceAuthError& error) {
   if (error.state() == GoogleServiceAuthError::State::NONE) {
     VLOG(1) << "ListAccounts successful.";

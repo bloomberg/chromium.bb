@@ -374,6 +374,7 @@ void AboutSigninInternals::GoogleSignedOut(const std::string& account_id,
 
 void AboutSigninInternals::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& gaia_accounts,
+    const std::vector<gaia::ListedAccount>& signed_out_account,
     const GoogleServiceAuthError& error) {
   if (error.state() != GoogleServiceAuthError::NONE)
     return;

@@ -21,6 +21,7 @@ struct ListedAccount {
   std::string gaia_id;
   std::string raw_email;
   bool valid;
+  bool signed_out;
 
   ListedAccount();
   ListedAccount(const ListedAccount& other);
@@ -52,8 +53,11 @@ bool IsGaiaSignonRealm(const GURL& url);
 // email/valid pairs.  An email addresses is considered valid if a passive
 // login would succeed (i.e. the user does not need to reauthenticate).
 // If there an error parsing the JSON, then false is returned.
-bool ParseListAccountsData(
-    const std::string& data, std::vector<ListedAccount>* accounts);
+// If either |accounts| or |signed_out_accounts| is null, the corresponding
+// accounts returned from /ListAccounts will be ignored.
+bool ParseListAccountsData(const std::string& data,
+                           std::vector<ListedAccount>* accounts,
+                           std::vector<ListedAccount>* signed_out_accounts);
 
 }  // namespace gaia
 

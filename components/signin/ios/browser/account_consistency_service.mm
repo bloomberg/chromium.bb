@@ -452,6 +452,7 @@ void AccountConsistencyService::OnAddAccountToCookieCompleted(
 
 void AccountConsistencyService::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
+    const std::vector<gaia::ListedAccount>& signed_out_accounts,
     const GoogleServiceAuthError& error) {
   AddChromeConnectedCookies();
 }

@@ -96,6 +96,7 @@ void CrossDevicePromo::RemoveObserver(CrossDevicePromo::Observer* observer) {
 
 void CrossDevicePromo::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
+    const std::vector<gaia::ListedAccount>& signed_out_accounts,
     const GoogleServiceAuthError& error) {
   VLOG(1) << "CrossDevicePromo::OnGaiaAccountsInCookieUpdated. "
           << accounts.size() << " accounts with auth error " << error.state();

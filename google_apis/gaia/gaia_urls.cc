@@ -274,7 +274,9 @@ GURL GaiaUrls::ListAccountsURLWithSource(const std::string& source) {
   } else {
     std::string query = list_accounts_url_.query();
     return list_accounts_url_.Resolve(
-        base::StringPrintf("?source=%s&%s", source.c_str(), query.c_str()));
+        base::StringPrintf("?gpsia=1&source=%s&%s",
+                           source.c_str(),
+                           query.c_str()));
   }
 }
 

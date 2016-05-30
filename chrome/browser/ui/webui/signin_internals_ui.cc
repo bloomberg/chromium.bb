@@ -74,11 +74,14 @@ bool SignInInternalsUI::OverrideHandleWebUIMessage(
           *about_signin_internals->GetSigninStatus());
 
       std::vector<gaia::ListedAccount> cookie_accounts;
+      std::vector<gaia::ListedAccount> signed_out_accounts;
       GaiaCookieManagerService* cookie_manager_service =
           GaiaCookieManagerServiceFactory::GetForProfile(profile);
-      if (cookie_manager_service->ListAccounts(&cookie_accounts)) {
+      if (cookie_manager_service->ListAccounts(
+              &cookie_accounts, &signed_out_accounts)) {
         about_signin_internals->OnGaiaAccountsInCookieUpdated(
             cookie_accounts,
+            signed_out_accounts,
             GoogleServiceAuthError(GoogleServiceAuthError::NONE));
       }
 

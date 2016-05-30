@@ -992,10 +992,12 @@ void ProfileSyncService::PostBackendInitialization() {
 
   // Check for a cookie jar mismatch.
   std::vector<gaia::ListedAccount> accounts;
+  std::vector<gaia::ListedAccount> signed_out_accounts;
   GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
   if (gaia_cookie_manager_service_ &&
-      gaia_cookie_manager_service_->ListAccounts(&accounts)) {
-    OnGaiaAccountsInCookieUpdated(accounts, error);
+      gaia_cookie_manager_service_->ListAccounts(
+          &accounts, &signed_out_accounts)) {
+    OnGaiaAccountsInCookieUpdated(accounts, signed_out_accounts, error);
   }
 
   NotifyObservers();
@@ -2123,6 +2125,7 @@ void ProfileSyncService::GoogleSignedOut(const std::string& account_id,
 
 void ProfileSyncService::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
+    const std::vector<gaia::ListedAccount>& signed_out_accounts,
     const GoogleServiceAuthError& error) {
   if (!IsBackendInitialized())
     return;

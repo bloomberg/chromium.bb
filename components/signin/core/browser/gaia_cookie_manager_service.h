@@ -84,6 +84,7 @@ class GaiaCookieManagerService : public KeyedService,
     // is passed in |error|.
     virtual void OnGaiaAccountsInCookieUpdated(
         const std::vector<gaia::ListedAccount>& accounts,
+        const std::vector<gaia::ListedAccount>& signed_out_accounts,
         const GoogleServiceAuthError& error) {}
 
    protected:
@@ -168,7 +169,10 @@ class GaiaCookieManagerService : public KeyedService,
   // parameter if return is false). The parameter will be assigned the current
   // cached accounts. If the accounts are not up to date, a ListAccounts fetch
   // is sent GAIA and Observer::OnGaiaAccountsInCookieUpdated will be called.
-  bool ListAccounts(std::vector<gaia::ListedAccount>* accounts);
+  // If either of |accounts| or |signed_out_accounts| is null, the corresponding
+  // accounts returned from /ListAccounts are ignored.
+  bool ListAccounts(std::vector<gaia::ListedAccount>* accounts,
+                    std::vector<gaia::ListedAccount>* signed_out_accounts);
 
   // Triggers a ListAccounts fetch. This is public so that callers that know
   // that a check which GAIA should be done can force it.
@@ -290,6 +294,7 @@ class GaiaCookieManagerService : public KeyedService,
   bool external_cc_result_fetched_;
 
   std::vector<gaia::ListedAccount> listed_accounts_;
+  std::vector<gaia::ListedAccount> signed_out_accounts_;
 
   bool list_accounts_stale_;
 

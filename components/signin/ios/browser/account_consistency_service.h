@@ -138,6 +138,7 @@ class AccountConsistencyService : public KeyedService,
       const GoogleServiceAuthError& error) override;
   void OnGaiaAccountsInCookieUpdated(
       const std::vector<gaia::ListedAccount>& accounts,
+      const std::vector<gaia::ListedAccount>& signed_out_accounts,
       const GoogleServiceAuthError& error) override;
 
   // SigninManagerBase::Observer implementation.

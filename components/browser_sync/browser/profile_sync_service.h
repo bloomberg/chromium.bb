@@ -413,6 +413,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   // GaiaCookieManagerService::Observer implementation.
   void OnGaiaAccountsInCookieUpdated(
       const std::vector<gaia::ListedAccount>& accounts,
+      const std::vector<gaia::ListedAccount>& signed_out_accounts,
       const GoogleServiceAuthError& error) override;
 
   // Get the sync status code.

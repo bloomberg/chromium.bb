@@ -58,6 +58,7 @@ class OAuth2LoginVerifier : public GaiaCookieManagerService::Observer {
       const GoogleServiceAuthError& error) override;
   void OnGaiaAccountsInCookieUpdated(
       const std::vector<gaia::ListedAccount>& accounts,
+      const std::vector<gaia::ListedAccount>& signed_out_accounts,
       const GoogleServiceAuthError& error) override;
 
   OAuth2LoginVerifier::Delegate* delegate_;

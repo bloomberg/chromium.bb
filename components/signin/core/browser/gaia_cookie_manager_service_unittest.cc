@@ -42,8 +42,9 @@ class MockObserver : public GaiaCookieManagerService::Observer {
 
   MOCK_METHOD2(OnAddAccountToCookieCompleted,
                void(const std::string&, const GoogleServiceAuthError&));
-  MOCK_METHOD2(OnGaiaAccountsInCookieUpdated,
+  MOCK_METHOD3(OnGaiaAccountsInCookieUpdated,
                void(const std::vector<gaia::ListedAccount>&,
+                    const std::vector<gaia::ListedAccount>&,
                     const GoogleServiceAuthError&));
  private:
   GaiaCookieManagerService* helper_;
@@ -532,11 +533,13 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsFirstReturnsEmpty) {
   MockObserver observer(&helper);
 
   std::vector<gaia::ListedAccount> list_accounts;
+  std::vector<gaia::ListedAccount> signed_out_accounts;
 
   EXPECT_CALL(helper, StartFetchingListAccounts());
 
-  ASSERT_FALSE(helper.ListAccounts(&list_accounts));
+  ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
   ASSERT_TRUE(list_accounts.empty());
+  ASSERT_TRUE(signed_out_accounts.empty());
 }
 
 TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsOneAccount) {
@@ -550,16 +553,78 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsOneAccount) {
   listed_account.raw_email = "a@b.com";
   listed_account.gaia_id = "8";
   listed_account.valid = true;
+  listed_account.signed_out = false;
   expected_accounts.push_back(listed_account);
 
-  EXPECT_CALL(helper, StartFetchingListAccounts());
-  EXPECT_CALL(observer, OnGaiaAccountsInCookieUpdated(expected_accounts,
-                                                      no_error()));
+  std::vector<gaia::ListedAccount> signed_out_accounts;
+  std::vector<gaia::ListedAccount> expected_signed_out_accounts;
 
-  ASSERT_FALSE(helper.ListAccounts(&list_accounts));
+  EXPECT_CALL(helper, StartFetchingListAccounts());
+  EXPECT_CALL(observer, OnGaiaAccountsInCookieUpdated(
+      expected_accounts, expected_signed_out_accounts, no_error()));
+
+  ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
 
   SimulateListAccountsSuccess(&helper,
       "[\"f\", [[\"b\", 0, \"n\", \"a@b.com\", \"p\", 0, 0, 0, 0, 1, \"8\"]]]");
+}
+
+TEST_F(GaiaCookieManagerServiceTest, ListAccountsFindsSignedOutAccounts) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  MockObserver observer(&helper);
+
+  std::vector<gaia::ListedAccount> list_accounts;
+  std::vector<gaia::ListedAccount> expected_accounts;
+  gaia::ListedAccount listed_account;
+  listed_account.email = "a@b.com";
+  listed_account.raw_email = "a@b.com";
+  listed_account.gaia_id = "8";
+  listed_account.valid = true;
+  listed_account.signed_out = false;
+  expected_accounts.push_back(listed_account);
+
+  std::vector<gaia::ListedAccount> signed_out_accounts;
+  std::vector<gaia::ListedAccount> expected_signed_out_accounts;
+  gaia::ListedAccount signed_out_account;
+  signed_out_account.email = "c@d.com";
+  signed_out_account.raw_email = "c@d.com";
+  signed_out_account.gaia_id = "9";
+  signed_out_account.valid = true;
+  signed_out_account.signed_out = true;
+  expected_signed_out_accounts.push_back(signed_out_account);
+
+  EXPECT_CALL(helper, StartFetchingListAccounts());
+  EXPECT_CALL(observer, OnGaiaAccountsInCookieUpdated(
+      expected_accounts, expected_signed_out_accounts, no_error()));
+
+  ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
+
+  SimulateListAccountsSuccess(&helper,
+      "[\"f\","
+      "[[\"b\", 0, \"n\", \"a@b.com\", \"p\", 0, 0, 0, 0, 1, \"8\"],"
+      " [\"b\", 0, \"n\", \"c@d.com\", \"p\", 0, 0, 0, 0, 1, \"9\","
+          "null,null,null,1]]]");
+}
+
+TEST_F(GaiaCookieManagerServiceTest, ListAccountsAcceptsNull) {
+  InstrumentedGaiaCookieManagerService helper(token_service(), signin_client());
+  MockObserver observer(&helper);
+
+  ASSERT_FALSE(helper.ListAccounts(nullptr, nullptr));
+
+  SimulateListAccountsSuccess(&helper,
+      "[\"f\","
+      "[[\"b\", 0, \"n\", \"a@b.com\", \"p\", 0, 0, 0, 0, 1, \"8\"],"
+      " [\"b\", 0, \"n\", \"c@d.com\", \"p\", 0, 0, 0, 0, 1, \"9\","
+          "null,null,null,1]]]");
+
+  std::vector<gaia::ListedAccount> signed_out_accounts;
+  ASSERT_TRUE(helper.ListAccounts(nullptr, &signed_out_accounts));
+  ASSERT_EQ(1u, signed_out_accounts.size());
+
+  std::vector<gaia::ListedAccount> accounts;
+  ASSERT_TRUE(helper.ListAccounts(&accounts, nullptr));
+  ASSERT_EQ(1u, accounts.size());
 }
 
 TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChanged) {
@@ -568,26 +633,33 @@ TEST_F(GaiaCookieManagerServiceTest, ListAccountsAfterOnCookieChanged) {
 
   std::vector<gaia::ListedAccount> list_accounts;
   std::vector<gaia::ListedAccount> empty_list_accounts;
+  std::vector<gaia::ListedAccount> signed_out_accounts;
+  std::vector<gaia::ListedAccount> empty_signed_out_accounts;
 
   EXPECT_CALL(helper, StartFetchingListAccounts());
   EXPECT_CALL(observer,
-              OnGaiaAccountsInCookieUpdated(empty_list_accounts, no_error()));
-  ASSERT_FALSE(helper.ListAccounts(&list_accounts));
+              OnGaiaAccountsInCookieUpdated(
+                  empty_list_accounts, empty_signed_out_accounts, no_error()));
+  ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
   ASSERT_TRUE(list_accounts.empty());
+  ASSERT_TRUE(signed_out_accounts.empty());
   SimulateListAccountsSuccess(&helper, "[\"f\",[]]");
 
   // ListAccounts returns cached data.
-  ASSERT_TRUE(helper.ListAccounts(&list_accounts));
+  ASSERT_TRUE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
   ASSERT_TRUE(list_accounts.empty());
+  ASSERT_TRUE(signed_out_accounts.empty());
 
   EXPECT_CALL(helper, StartFetchingListAccounts());
   EXPECT_CALL(observer,
-              OnGaiaAccountsInCookieUpdated(empty_list_accounts, no_error()));
+              OnGaiaAccountsInCookieUpdated(
+                  empty_list_accounts, empty_signed_out_accounts, no_error()));
   helper.ForceOnCookieChangedProcessing();
 
   // OnCookieChanged should invalidate cached data.
-  ASSERT_FALSE(helper.ListAccounts(&list_accounts));
+  ASSERT_FALSE(helper.ListAccounts(&list_accounts, &signed_out_accounts));
   ASSERT_TRUE(list_accounts.empty());
+  ASSERT_TRUE(signed_out_accounts.empty());
   SimulateListAccountsSuccess(&helper, "[\"f\",[]]");
 }
 

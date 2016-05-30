@@ -183,9 +183,11 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   signed_in_account.gaia_id =
       GetClient(0)->service()->signin()->GetAuthenticatedAccountId();
   std::vector<gaia::ListedAccount> accounts;
+  std::vector<gaia::ListedAccount> signed_out_accounts;
   accounts.push_back(signed_in_account);
   GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
-  GetClient(0)->service()->OnGaiaAccountsInCookieUpdated(accounts, error);
+  GetClient(0)->service()->OnGaiaAccountsInCookieUpdated(
+      accounts, signed_out_accounts, error);
 
   // Trigger a sync and wait for it.
   url = GURL("http://127.0.0.1/bubba2");

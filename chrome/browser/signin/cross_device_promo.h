@@ -92,6 +92,7 @@ class CrossDevicePromo : public KeyedService,
   // Profile is considered single-user.
   void OnGaiaAccountsInCookieUpdated(
       const std::vector<gaia::ListedAccount>& accounts,
+      const std::vector<gaia::ListedAccount>& signed_out_accounts,
       const GoogleServiceAuthError& error) override;
 
   // DeviceActivityFetcher::Observer:
