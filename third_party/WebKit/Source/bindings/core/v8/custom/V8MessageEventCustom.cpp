@@ -35,17 +35,17 @@
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8Blob.h"
-#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8MessagePort.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8Window.h"
-#include "core/events/MessageEvent.h"
 
 namespace blink {
 
 void V8MessageEvent::dataAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ScriptState* scriptState = ScriptState::current(info.GetIsolate());
-    v8::Local<v8::Value> cachedData = V8HiddenValue::getHiddenValue(scriptState, info.Holder(), V8HiddenValue::data(info.GetIsolate()));
+    auto privateCachedData = V8PrivateProperty::getMessageEventCachedData(info.GetIsolate());
+    v8::Local<v8::Value> cachedData = privateCachedData.get(scriptState->context(), info.Holder());
     if (!cachedData.IsEmpty()) {
         v8SetReturnValue(info, cachedData);
         return;
@@ -70,29 +70,22 @@ void V8MessageEvent::dataAttributeGetterCustom(const v8::FunctionCallbackInfo<v8
         }
         break;
 
-    case MessageEvent::DataTypeString: {
-        result = V8HiddenValue::getHiddenValue(scriptState, info.Holder(), V8HiddenValue::stringData(info.GetIsolate()));
-        if (result.IsEmpty()) {
-            String stringValue = event->dataAsString();
-            result = v8String(info.GetIsolate(), stringValue);
-        }
+    case MessageEvent::DataTypeString:
+        result = v8String(info.GetIsolate(), event->dataAsString());
         break;
-    }
 
     case MessageEvent::DataTypeBlob:
         result = toV8(event->dataAsBlob(), info.Holder(), info.GetIsolate());
         break;
 
     case MessageEvent::DataTypeArrayBuffer:
-        result = V8HiddenValue::getHiddenValue(scriptState, info.Holder(), V8HiddenValue::arrayBufferData(info.GetIsolate()));
-        if (result.IsEmpty())
-            result = toV8(event->dataAsArrayBuffer(), info.Holder(), info.GetIsolate());
+        result = toV8(event->dataAsArrayBuffer(), info.Holder(), info.GetIsolate());
         break;
     }
 
-    // Store the result as a hidden value so this callback returns the cached
+    // Store the result as a private value so this callback returns the cached
     // result in future invocations.
-    V8HiddenValue::setHiddenValue(scriptState,  info.Holder(), V8HiddenValue::data(info.GetIsolate()), result);
+    privateCachedData.set(scriptState->context(), info.Holder(), result);
     v8SetReturnValue(info, result);
 }
 

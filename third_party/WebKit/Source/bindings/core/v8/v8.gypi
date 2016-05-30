@@ -166,6 +166,8 @@
             'V8PerIsolateData.cpp',
             'V8PerIsolateData.h',
             'V8PersistentValueVector.h',
+            'V8PrivateProperty.cpp',
+            'V8PrivateProperty.h',
             'V8ScriptRunner.cpp',
             'V8ScriptRunner.h',
             'V8StringResource.cpp',

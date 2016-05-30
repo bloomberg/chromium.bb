@@ -7,7 +7,7 @@
 
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "bindings/core/v8/SerializedScriptValueFactory.h"
-#include "bindings/core/v8/V8HiddenValue.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 
 namespace blink {
 
@@ -51,10 +51,10 @@ void V8ServiceWorkerMessageEventInternal::constructorCustom(const v8::FunctionCa
     wrapper = impl->associateWithWrapper(info.GetIsolate(), &V8TypeOf<EventType>::Type::wrapperTypeInfo, wrapper);
 
     // TODO(bashi): Workaround for http://crbug.com/529941. We need to store
-    // |data| as a hidden value to avoid cycle references.
+    // |data| as a private value to avoid cyclic references.
     if (eventInitDict.hasData()) {
         v8::Local<v8::Value> v8Data = eventInitDict.data().v8Value();
-        V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), wrapper, V8HiddenValue::data(info.GetIsolate()), v8Data);
+        V8PrivateProperty::getMessageEventCachedData(info.GetIsolate()).set(info.GetIsolate()->GetCurrentContext(), wrapper, v8Data);
         if (DOMWrapperWorld::current(info.GetIsolate()).isIsolatedWorld())
             impl->setSerializedData(SerializedScriptValue::serializeAndSwallowExceptions(info.GetIsolate(), v8Data));
     }
@@ -67,8 +67,8 @@ void V8ServiceWorkerMessageEventInternal::dataAttributeGetterCustom(const v8::Fu
     EventType* event = V8TypeOf<EventType>::Type::toImpl(info.Holder());
     v8::Isolate* isolate = info.GetIsolate();
     ScriptState* scriptState = ScriptState::current(isolate);
-    v8::Local<v8::Value> result = V8HiddenValue::getHiddenValue(scriptState, info.Holder(), V8HiddenValue::data(isolate));
-
+    auto privateCachedData = V8PrivateProperty::getMessageEventCachedData(isolate);
+    v8::Local<v8::Value> result = privateCachedData.get(scriptState->context(), info.Holder());
     if (!result.IsEmpty()) {
         v8SetReturnValue(info, result);
         return;
@@ -79,7 +79,7 @@ void V8ServiceWorkerMessageEventInternal::dataAttributeGetterCustom(const v8::Fu
         MessagePortArray ports = event->ports();
         data = serializedValue->deserialize(isolate, &ports);
     } else if (DOMWrapperWorld::current(isolate).isIsolatedWorld()) {
-        v8::Local<v8::Value> mainWorldData = V8HiddenValue::getHiddenValueFromMainWorldWrapper(scriptState, event, V8HiddenValue::data(isolate));
+        v8::Local<v8::Value> mainWorldData = privateCachedData.getFromMainWorld(scriptState, event);
         if (!mainWorldData.IsEmpty()) {
             // TODO(bashi): Enter the main world's ScriptState::Scope while
             // serializing the main world's value.
@@ -89,7 +89,7 @@ void V8ServiceWorkerMessageEventInternal::dataAttributeGetterCustom(const v8::Fu
     }
     if (data.IsEmpty())
         data = v8::Null(isolate);
-    V8HiddenValue::setHiddenValue(scriptState, info.Holder(), V8HiddenValue::data(isolate), data);
+    privateCachedData.set(scriptState->context(), info.Holder(), data);
     v8SetReturnValue(info, data);
 }
 

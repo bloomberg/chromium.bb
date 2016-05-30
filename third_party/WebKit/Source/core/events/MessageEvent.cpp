@@ -30,6 +30,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 
 namespace blink {
 
@@ -218,18 +219,18 @@ v8::Local<v8::Object> MessageEvent::associateWithWrapper(v8::Isolate* isolate, c
 
     // Ensures a wrapper is created for the data to return now so that V8 knows how
     // much memory is used via the wrapper. To keep the wrapper alive, it's set to
-    // the wrapper of the MessageEvent as a hidden value.
+    // the wrapper of the MessageEvent as a private value.
     switch (getDataType()) {
     case MessageEvent::DataTypeScriptValue:
     case MessageEvent::DataTypeSerializedScriptValue:
         break;
     case MessageEvent::DataTypeString:
-        V8HiddenValue::setHiddenValue(ScriptState::current(isolate), wrapper, V8HiddenValue::stringData(isolate), v8String(isolate, dataAsString()));
+        V8PrivateProperty::getMessageEventCachedData(isolate).set(isolate->GetCurrentContext(), wrapper, v8String(isolate, dataAsString()));
         break;
     case MessageEvent::DataTypeBlob:
         break;
     case MessageEvent::DataTypeArrayBuffer:
-        V8HiddenValue::setHiddenValue(ScriptState::current(isolate), wrapper, V8HiddenValue::arrayBufferData(isolate), toV8(dataAsArrayBuffer(), wrapper, isolate));
+        V8PrivateProperty::getMessageEventCachedData(isolate).set(isolate->GetCurrentContext(), wrapper, toV8(dataAsArrayBuffer(), wrapper, isolate));
         break;
     }
 

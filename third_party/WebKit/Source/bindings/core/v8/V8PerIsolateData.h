@@ -44,8 +44,9 @@ namespace blink {
 
 class ActiveScriptWrappable;
 class DOMDataStore;
-class ThreadDebugger;
 class StringCache;
+class ThreadDebugger;
+class V8PrivateProperty;
 struct WrapperTypeInfo;
 
 typedef WTF::Vector<DOMDataStore*> DOMDataStoreList;
@@ -114,6 +115,7 @@ public:
     void setReportingException(bool value) { m_isReportingException = value; }
 
     V8HiddenValue* hiddenValue() { return m_hiddenValue.get(); }
+    V8PrivateProperty* privateProperty() { return m_privateProperty.get(); }
 
     // Accessors to the cache of interface templates.
     v8::Local<v8::FunctionTemplate> findInterfaceTemplate(const DOMWrapperWorld&, const void* key);
@@ -169,6 +171,7 @@ private:
 
     OwnPtr<StringCache> m_stringCache;
     OwnPtr<V8HiddenValue> m_hiddenValue;
+    std::unique_ptr<V8PrivateProperty> m_privateProperty;
     ScopedPersistent<v8::Value> m_liveRoot;
     RefPtr<ScriptState> m_scriptRegexpScriptState;
 

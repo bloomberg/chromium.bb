@@ -18,7 +18,6 @@ class ScriptState;
 class ScriptWrappable;
 
 #define V8_HIDDEN_VALUES(V) \
-    V(arrayBufferData) \
     V(privateScriptObjectIsInitialized) \
     V(customElementAttachedCallback) \
     V(customElementAttributeChangedCallback) \
@@ -32,7 +31,6 @@ class ScriptWrappable;
     V(customElementsRegistryMap) \
     V(callback) \
     V(condition) \
-    V(data) \
     V(detail) \
     V(document) \
     V(error) \
@@ -43,7 +41,6 @@ class ScriptWrappable;
     V(port2) \
     V(readableStreamReaderInResponse) \
     V(state) \
-    V(stringData) \
     V(testInterfaces) \
     V(thenableHiddenPromise) \
     V(toStringString) \
