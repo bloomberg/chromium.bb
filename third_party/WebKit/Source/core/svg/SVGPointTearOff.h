@@ -54,6 +54,8 @@ public:
 
     SVGPointTearOff* matrixTransform(SVGMatrixTearOff*);
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 protected:
     SVGPointTearOff(SVGPoint*, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };

@@ -52,6 +52,8 @@ public:
     SVGTransformTearOff* createSVGTransformFromMatrix(SVGMatrixTearOff*) const;
     SVGTransformTearOff* consolidate(ExceptionState&);
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 private:
     SVGTransformListTearOff(SVGTransformList*, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
 };

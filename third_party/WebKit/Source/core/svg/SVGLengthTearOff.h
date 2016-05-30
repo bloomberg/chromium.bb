@@ -74,6 +74,8 @@ public:
 
     bool hasExposedLengthUnit();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 private:
     SVGLengthTearOff(SVGLength*, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };

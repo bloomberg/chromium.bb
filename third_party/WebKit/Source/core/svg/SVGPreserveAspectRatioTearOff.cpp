@@ -69,4 +69,9 @@ SVGPreserveAspectRatioTearOff::SVGPreserveAspectRatioTearOff(SVGPreserveAspectRa
 {
 }
 
+DEFINE_TRACE_WRAPPERS(SVGPreserveAspectRatioTearOff)
+{
+    visitor->traceWrappers(contextElement());
+}
+
 } // namespace blink

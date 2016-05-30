@@ -54,6 +54,11 @@ DEFINE_TRACE(SVGViewSpec)
     SVGFitToViewBox::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(SVGViewSpec)
+{
+    visitor->traceWrappers(m_contextElement);
+}
+
 bool SVGViewSpec::parseViewSpec(const String& spec)
 {
     if (spec.isEmpty() || !m_contextElement)

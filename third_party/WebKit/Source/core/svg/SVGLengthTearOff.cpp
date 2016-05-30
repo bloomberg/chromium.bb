@@ -236,4 +236,9 @@ SVGLengthTearOff::SVGLengthTearOff(SVGLength* target, SVGElement* contextElement
 {
 }
 
+DEFINE_TRACE_WRAPPERS(SVGLengthTearOff)
+{
+    visitor->traceWrappers(contextElement());
+}
+
 } // namespace blink

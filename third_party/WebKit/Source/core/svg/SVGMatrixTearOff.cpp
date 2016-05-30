@@ -175,4 +175,9 @@ SVGMatrixTearOff* SVGMatrixTearOff::rotateFromVector(double x, double y, Excepti
     return create(copy);
 }
 
+DEFINE_TRACE_WRAPPERS(SVGMatrixTearOff)
+{
+    visitor->traceWrappers(m_contextTransform);
+}
+
 } // namespace blink

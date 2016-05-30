@@ -56,6 +56,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
     SVGSVGElement* contextElement() { return m_contextElement.get(); }
 
 private:

@@ -71,6 +71,8 @@ public:
     void setMeetOrSlice(unsigned short, ExceptionState&);
     unsigned short meetOrSlice() { return target()->meetOrSlice(); }
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 private:
     SVGPreserveAspectRatioTearOff(SVGPreserveAspectRatio*, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };

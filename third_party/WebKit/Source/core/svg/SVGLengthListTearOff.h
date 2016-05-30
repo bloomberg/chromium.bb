@@ -46,6 +46,11 @@ public:
         return new SVGLengthListTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS()
+    {
+        visitor->traceWrappers(contextElement());
+    }
+
 private:
     SVGLengthListTearOff(SVGLengthList* target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
         : SVGListPropertyTearOffHelper<SVGLengthListTearOff, SVGLengthList>(target, contextElement, propertyIsAnimVal, attributeName)

@@ -74,7 +74,7 @@ public:
 
     virtual void commitChange();
 
-    SVGElement* contextElement()
+    SVGElement* contextElement() const
     {
         return m_contextElement;
     }

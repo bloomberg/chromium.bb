@@ -46,6 +46,11 @@ public:
         return new SVGAnimatedTransformList(contextElement, attributeName, initialValue);
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS()
+    {
+        visitor->traceWrappers(contextElement());
+    }
+
 protected:
     SVGAnimatedTransformList(SVGElement* contextElement, const QualifiedName& attributeName, SVGTransformList* initialValue)
         : SVGAnimatedProperty<SVGTransformList>(contextElement, attributeName, initialValue) { }

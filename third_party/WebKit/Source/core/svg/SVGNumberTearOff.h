@@ -45,6 +45,8 @@ public:
         return new SVGNumberTearOff(target, contextElement, propertyIsAnimVal, attributeName);
     }
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
     void setValue(float, ExceptionState&);
     float value() { return target()->value(); }
 

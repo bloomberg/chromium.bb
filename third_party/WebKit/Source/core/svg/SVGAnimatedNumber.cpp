@@ -51,4 +51,9 @@ DEFINE_TRACE(SVGAnimatedNumber)
     SVGAnimatedProperty<SVGNumber>::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(SVGAnimatedNumber)
+{
+    visitor->traceWrappers(contextElement());
+}
+
 } // namespace blink

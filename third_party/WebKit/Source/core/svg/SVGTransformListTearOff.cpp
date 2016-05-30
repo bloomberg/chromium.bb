@@ -60,4 +60,9 @@ SVGTransformTearOff* SVGTransformListTearOff::consolidate(ExceptionState& except
     return createItemTearOff(target()->consolidate());
 }
 
+DEFINE_TRACE_WRAPPERS(SVGTransformListTearOff)
+{
+    visitor->traceWrappers(contextElement());
+}
+
 } // namespace blink

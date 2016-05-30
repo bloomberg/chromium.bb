@@ -45,6 +45,11 @@ public:
         return new SVGAnimatedPreserveAspectRatio(contextElement, attributeName, initialValue);
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS()
+    {
+        visitor->traceWrappers(contextElement());
+    }
+
 protected:
     SVGAnimatedPreserveAspectRatio(SVGElement* contextElement, const QualifiedName& attributeName, SVGPreserveAspectRatio* initialValue)
         : SVGAnimatedProperty<SVGPreserveAspectRatio>(contextElement, attributeName, initialValue)

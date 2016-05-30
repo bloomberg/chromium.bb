@@ -46,6 +46,11 @@ public:
         return new SVGAnimatedNumberList(contextElement, attributeName, initialValue);
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS()
+    {
+        visitor->traceWrappers(contextElement());
+    }
+
 protected:
     SVGAnimatedNumberList(SVGElement* contextElement, const QualifiedName& attributeName, SVGNumberList* initialValue)
         : SVGAnimatedProperty<SVGNumberList>(contextElement, attributeName, initialValue) { }

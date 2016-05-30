@@ -63,6 +63,11 @@ public:
         return static_cast<const SVGEnumeration<Enum>*>(SVGAnimatedEnumerationBase::currentValue());
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS()
+    {
+        visitor->traceWrappers(contextElement());
+    }
+
 protected:
     SVGAnimatedEnumeration(SVGElement* contextElement, const QualifiedName& attributeName, SVGEnumeration<Enum>* initialValue)
         : SVGAnimatedEnumerationBase(contextElement, attributeName, initialValue)

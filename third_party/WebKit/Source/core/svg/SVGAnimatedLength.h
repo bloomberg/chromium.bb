@@ -48,6 +48,8 @@ public:
     void setDefaultValueAsString(const String&);
     SVGParsingError setBaseValueAsString(const String&) override;
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 protected:
     SVGAnimatedLength(SVGElement* contextElement, const QualifiedName& attributeName, SVGLength* initialValue)
         : SVGAnimatedProperty<SVGLength>(contextElement, attributeName, initialValue)

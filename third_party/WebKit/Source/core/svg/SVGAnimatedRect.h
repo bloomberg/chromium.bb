@@ -45,6 +45,11 @@ public:
         return new SVGAnimatedRect(contextElement, attributeName);
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS()
+    {
+        visitor->traceWrappers(contextElement());
+    }
+
 protected:
     SVGAnimatedRect(SVGElement* contextElement, const QualifiedName& attributeName)
         : SVGAnimatedProperty<SVGRect>(contextElement, attributeName, SVGRect::createInvalid())

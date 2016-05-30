@@ -140,6 +140,8 @@ public:
         return item;
     }
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 protected:
     SVGStringListTearOff(SVGStringList*, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
 };

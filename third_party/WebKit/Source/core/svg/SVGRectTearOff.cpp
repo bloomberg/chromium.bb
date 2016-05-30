@@ -85,4 +85,9 @@ void SVGRectTearOff::setHeight(float f, ExceptionState& exceptionState)
     commitChange();
 }
 
+DEFINE_TRACE_WRAPPERS(SVGRectTearOff)
+{
+    visitor->traceWrappers(contextElement());
+}
+
 } // namespace blink

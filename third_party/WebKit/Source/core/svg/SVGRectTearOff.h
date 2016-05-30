@@ -54,6 +54,8 @@ public:
     float width() { return target()->width(); }
     float height() { return target()->height(); }
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 private:
     SVGRectTearOff(SVGRect*, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName = QualifiedName::null());
 };

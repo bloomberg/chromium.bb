@@ -52,4 +52,9 @@ void SVGNumberTearOff::setValue(float f, ExceptionState& exceptionState)
     commitChange();
 }
 
+DEFINE_TRACE_WRAPPERS(SVGNumberTearOff)
+{
+    visitor->traceWrappers(contextElement());
+}
+
 } // namespace blink

@@ -69,6 +69,8 @@ public:
     String valueAsString() { return hasExposedAngleUnit() ? target()->valueAsString() : String::number(0); }
     void setValueAsString(const String&, ExceptionState&);
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 private:
     SVGAngleTearOff(SVGAngle*, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
 

@@ -39,4 +39,9 @@ SVGStringListTearOff::SVGStringListTearOff(SVGStringList* target, SVGElement* co
 {
 }
 
+DEFINE_TRACE_WRAPPERS(SVGStringListTearOff)
+{
+    visitor->traceWrappers(contextElement());
+}
+
 }

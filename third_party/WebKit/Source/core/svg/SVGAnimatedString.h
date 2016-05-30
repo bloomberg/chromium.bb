@@ -49,6 +49,8 @@ public:
     virtual void setBaseVal(const String&, ExceptionState&);
     virtual String animVal();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 protected:
     SVGAnimatedString(SVGElement* contextElement, const QualifiedName& attributeName, SVGString* initialValue)
         : SVGAnimatedProperty<SVGString>(contextElement, attributeName, initialValue)

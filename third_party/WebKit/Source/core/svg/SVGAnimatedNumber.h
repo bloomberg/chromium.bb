@@ -58,6 +58,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 protected:
     SVGAnimatedNumber(SVGElement* contextElement, const QualifiedName& attributeName, SVGNumber* initialValue)
         : SVGAnimatedProperty<SVGNumber>(contextElement, attributeName, initialValue)

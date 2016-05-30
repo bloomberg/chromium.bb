@@ -50,6 +50,11 @@ DEFINE_TRACE(SVGAnimatedAngle)
     SVGAnimatedProperty<SVGAngle>::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(SVGAnimatedAngle)
+{
+    visitor->traceWrappers(contextElement());
+}
+
 bool SVGAnimatedAngle::needsSynchronizeAttribute()
 {
     return m_orientType->needsSynchronizeAttribute()

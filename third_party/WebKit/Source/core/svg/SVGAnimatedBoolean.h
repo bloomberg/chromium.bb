@@ -45,6 +45,11 @@ public:
         return new SVGAnimatedBoolean(contextElement, attributeName, initialValue);
     }
 
+    DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS()
+    {
+        visitor->traceWrappers(contextElement());
+    }
+
 protected:
     SVGAnimatedBoolean(SVGElement* contextElement, const QualifiedName& attributeName, SVGBoolean* initialValue)
         : SVGAnimatedProperty<SVGBoolean>(contextElement, attributeName, initialValue)

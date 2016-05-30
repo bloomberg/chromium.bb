@@ -70,4 +70,9 @@ SVGPointTearOff* SVGPointTearOff::matrixTransform(SVGMatrixTearOff* matrix)
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
+DEFINE_TRACE_WRAPPERS(SVGPointTearOff)
+{
+    visitor->traceWrappers(contextElement());
+}
+
 } // namespace blink
