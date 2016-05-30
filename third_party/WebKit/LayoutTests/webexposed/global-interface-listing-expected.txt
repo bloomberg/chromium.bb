@@ -522,6 +522,12 @@ interface CSSRuleList
     method @@iterator
     method constructor
     method item
+interface CSSScale : TransformComponent
+    attribute @@toStringTag
+    getter x
+    getter y
+    getter z
+    method constructor
 interface CSSSimpleLength : CSSLengthValue
     attribute @@toStringTag
     getter type
@@ -5647,12 +5653,6 @@ interface SVGZoomEvent : UIEvent
     getter previousScale
     getter previousTranslate
     getter zoomRectScreen
-    method constructor
-interface Scale : TransformComponent
-    attribute @@toStringTag
-    getter x
-    getter y
-    getter z
     method constructor
 interface Screen
     attribute @@toStringTag

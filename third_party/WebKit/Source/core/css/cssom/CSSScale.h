@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ScaleTransformComponent_h
-#define ScaleTransformComponent_h
+#ifndef CSSScale_h
+#define CSSScale_h
 
 #include "core/css/cssom/MatrixTransformComponent.h"
 #include "core/css/cssom/TransformComponent.h"
 
 namespace blink {
 
-class CORE_EXPORT ScaleTransformComponent final : public TransformComponent {
-    WTF_MAKE_NONCOPYABLE(ScaleTransformComponent);
+class CORE_EXPORT CSSScale final : public TransformComponent {
+    WTF_MAKE_NONCOPYABLE(CSSScale);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static ScaleTransformComponent* create(double x, double y)
+    static CSSScale* create(double x, double y)
     {
-        return new ScaleTransformComponent(x, y);
+        return new CSSScale(x, y);
     }
 
-    static ScaleTransformComponent* create(double x, double y, double z)
+    static CSSScale* create(double x, double y, double z)
     {
-        return new ScaleTransformComponent(x, y, z);
+        return new CSSScale(x, y, z);
     }
 
     double x() const { return m_x; }
@@ -39,8 +39,8 @@ public:
     CSSFunctionValue* toCSSValue() const override;
 
 private:
-    ScaleTransformComponent(double x, double y) : m_x(x), m_y(y), m_z(1), m_is2D(true) { }
-    ScaleTransformComponent(double x, double y, double z) : m_x(x), m_y(y), m_z(z), m_is2D(false) { }
+    CSSScale(double x, double y) : m_x(x), m_y(y), m_z(1), m_is2D(true) { }
+    CSSScale(double x, double y, double z) : m_x(x), m_y(y), m_z(z), m_is2D(false) { }
 
     double m_x;
     double m_y;

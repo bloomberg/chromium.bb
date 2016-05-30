@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/ScaleTransformComponent.h"
+#include "core/css/cssom/CSSScale.h"
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValuePool.h"
 
 namespace blink {
 
-CSSFunctionValue* ScaleTransformComponent::toCSSValue() const
+CSSFunctionValue* CSSScale::toCSSValue() const
 {
     CSSFunctionValue* result = CSSFunctionValue::create(m_is2D ? CSSValueScale : CSSValueScale3d);
 

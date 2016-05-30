@@ -5,9 +5,8 @@
 [
     Constructor(double x, double y),
     Constructor(double x, double y, double z),
-    ImplementedAs=ScaleTransformComponent,
     RuntimeEnabled=CSSTypedOM
-] interface Scale : TransformComponent {
+] interface CSSScale : TransformComponent {
     readonly attribute double x;
     readonly attribute double y;
     readonly attribute double z;
