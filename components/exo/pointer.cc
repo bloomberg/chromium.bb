@@ -46,8 +46,10 @@ Pointer::~Pointer() {
   delegate_->OnPointerDestroying(this);
   if (surface_)
     surface_->RemoveSurfaceObserver(this);
-  if (focus_)
+  if (focus_) {
     focus_->RemoveSurfaceObserver(this);
+    focus_->UnregisterCursorProvider(this);
+  }
   if (widget_)
     widget_->CloseNow();
   ash::Shell::GetInstance()->RemovePreTargetHandler(this);
@@ -86,7 +88,22 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
                                   surface_->layer()->size()));
     if (!surface_->IsVisible())
       surface_->Show();
+
+    // Show widget now that cursor has been defined.
+    if (!widget_->IsVisible())
+      widget_->Show();
   }
+
+  // Register pointer as cursor provider now that the cursor for |focus_| has
+  // been defined.
+  focus_->RegisterCursorProvider(this);
+
+  // Update cursor in case the registration of pointer as cursor provider
+  // caused the cursor to change.
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(focus_->GetRootWindow());
+  if (cursor_client)
+    cursor_client->SetCursor(focus_->GetCursor(gfx::ToFlooredPoint(location_)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -102,6 +119,9 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
     if (focus_) {
       delegate_->OnPointerLeave(focus_);
       focus_->RemoveSurfaceObserver(this);
+      // Require SetCursor() to be called and cursor to be re-defined in
+      // response to each OnPointerEnter() call.
+      focus_->UnregisterCursorProvider(this);
       focus_ = nullptr;
     }
     // Second generate an enter event if focus moved to a new target.
@@ -204,9 +224,6 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       widget_->GetNativeWindow()->SetTransform(transform);
       cursor_scale_ = ui_scale;
     }
-
-    if (!widget_->IsVisible())
-      widget_->Show();
   } else {
     if (widget_ && widget_->IsVisible())
       widget_->Hide();

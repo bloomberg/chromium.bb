@@ -7,6 +7,7 @@
 
 #include <list>
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "base/callback.h"
@@ -39,9 +40,14 @@ class Path;
 
 namespace exo {
 class Buffer;
+class Pointer;
 class SurfaceDelegate;
 class SurfaceObserver;
 class Surface;
+
+// The pointer class is currently the only cursor provider class but this can
+// change in the future when better hardware cursor support is added.
+using CursorProvider = Pointer;
 
 // This class owns the SurfaceFactory and keeps track of references to the
 // contents of Buffers. It's keeped alive by references from
@@ -166,6 +172,14 @@ class Surface : public aura::Window,
 
   // Returns the bounds of the surface area that is not know to be transparent.
   gfx::Rect GetNonTransparentBounds() const;
+
+  // Surface does not own cursor providers. It is the responsibility of the
+  // caller to remove the cursor provider before it is destroyed.
+  void RegisterCursorProvider(CursorProvider* provider);
+  void UnregisterCursorProvider(CursorProvider* provider);
+
+  // Returns true if surface has at least one cursor provider registered.
+  bool HasCursorProvider() const;
 
   // Set the surface delegate.
   void SetSurfaceDelegate(SurfaceDelegate* delegate);
@@ -304,6 +318,9 @@ class Surface : public aura::Window,
 
   // The compsitor being observer or null if not observing a compositor.
   ui::Compositor* compositor_;
+
+  // Cursor providers. Surface does not own the cursor providers.
+  std::set<CursorProvider*> cursor_providers_;
 
   // This can be set to have some functions delegated. E.g. ShellSurface class
   // can set this to handle Commit() and apply any double buffered state it

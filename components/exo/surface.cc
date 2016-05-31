@@ -78,7 +78,10 @@ class CustomWindowDelegate : public aura::WindowDelegate {
   void OnBoundsChanged(const gfx::Rect& old_bounds,
                        const gfx::Rect& new_bounds) override {}
   gfx::NativeCursor GetCursor(const gfx::Point& point) override {
-    return ui::kCursorNone;
+    // If surface has a cursor provider then return 'none' as cursor providers
+    // are responsible for drawing cursors. Use default cursor if no cursor
+    // provider is registered.
+    return surface_->HasCursorProvider() ? ui::kCursorNone : ui::kCursorNull;
   }
   int GetNonClientComponent(const gfx::Point& point) const override {
     return HTNOWHERE;
@@ -738,6 +741,18 @@ gfx::Rect Surface::GetNonTransparentBounds() const {
   }
 
   return non_transparent_bounds;
+}
+
+void Surface::RegisterCursorProvider(Pointer* provider) {
+  cursor_providers_.insert(provider);
+}
+
+void Surface::UnregisterCursorProvider(Pointer* provider) {
+  cursor_providers_.erase(provider);
+}
+
+bool Surface::HasCursorProvider() const {
+  return !cursor_providers_.empty();
 }
 
 void Surface::SetSurfaceDelegate(SurfaceDelegate* delegate) {
