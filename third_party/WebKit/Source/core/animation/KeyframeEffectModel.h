@@ -110,9 +110,6 @@ public:
     bool snapshotNeutralCompositorKeyframes(Element&, const ComputedStyle& oldStyle, const ComputedStyle& newStyle);
     bool snapshotAllCompositorKeyframes(Element&, const ComputedStyle* baseStyle);
 
-    template<typename T>
-    inline void forEachInterpolation(const T& callback) { m_interpolationEffect.forEachInterpolation(callback); }
-
     static KeyframeVector normalizedKeyframesForInspector(const KeyframeVector& keyframes) { return normalizedKeyframes(keyframes); }
 
     bool affects(PropertyHandle property) const override

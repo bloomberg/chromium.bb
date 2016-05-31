@@ -41,13 +41,6 @@ public:
 
     void addInterpolationsFromKeyframes(PropertyHandle, const Keyframe::PropertySpecificKeyframe& keyframeA, const Keyframe::PropertySpecificKeyframe& keyframeB, double applyFrom, double applyTo);
 
-    template<typename T>
-    inline void forEachInterpolation(const T& callback)
-    {
-        for (auto& record : m_interpolations)
-            callback(*record.m_interpolation);
-    }
-
 private:
     struct InterpolationRecord {
         InterpolationRecord(PassRefPtr<Interpolation> interpolation, PassRefPtr<TimingFunction> easing, double start, double end, double applyFrom, double applyTo)
