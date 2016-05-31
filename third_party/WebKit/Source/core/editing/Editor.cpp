@@ -554,7 +554,7 @@ bool Editor::shouldDeleteRange(const EphemeralRange& range) const
     return canDeleteRange(range);
 }
 
-void Editor::notifyComponentsOnChangedSelection(const VisibleSelection& oldSelection)
+void Editor::notifyComponentsOnChangedSelection()
 {
     client().respondToChangedSelection(m_frame, frame().selection().getSelectionType());
     setStartNewKillRingSequence(true);
@@ -1311,7 +1311,7 @@ void Editor::respondToChangedSelection(const VisibleSelection& oldSelection, Fra
 {
     spellChecker().respondToChangedSelection(oldSelection, options);
     frame().inputMethodController().cancelCompositionIfSelectionIsInvalid();
-    notifyComponentsOnChangedSelection(oldSelection);
+    notifyComponentsOnChangedSelection();
 }
 
 SpellChecker& Editor::spellChecker() const
