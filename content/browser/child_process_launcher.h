@@ -16,7 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
-#include "mojo/edk/embedder/platform_channel_pair.h"
+#include "mojo/edk/embedder/scoped_platform_handle.h"
 
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_types.h"
@@ -155,8 +155,8 @@ class CONTENT_EXPORT ChildProcessLauncher : public base::NonThreadSafe {
   // shutdown. Default behavior is to terminate the child.
   const bool terminate_child_on_shutdown_;
 
-  // Platform channel used to establish Mojo IPC.
-  mojo::edk::PlatformChannelPair mojo_platform_channel_;
+  // Host side platform handle to establish Mojo IPC.
+  mojo::edk::ScopedPlatformHandle mojo_host_platform_handle_;
 
   base::WeakPtrFactory<ChildProcessLauncher> weak_factory_;
 

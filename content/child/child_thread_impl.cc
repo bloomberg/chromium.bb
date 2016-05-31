@@ -66,6 +66,7 @@
 #include "ipc/mojo/ipc_channel_mojo.h"
 #include "ipc/mojo/scoped_ipc_support.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/named_platform_channel_pair.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 
 #if defined(OS_POSIX)
@@ -228,9 +229,18 @@ base::LazyInstance<QuitClosure> g_quit_closure = LAZY_INSTANCE_INITIALIZER;
 void InitializeMojoIPCChannel() {
   mojo::edk::ScopedPlatformHandle platform_channel;
 #if defined(OS_WIN)
-  platform_channel =
-      mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
-          *base::CommandLine::ForCurrentProcess());
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      mojo::edk::PlatformChannelPair::kMojoPlatformChannelHandleSwitch)) {
+    platform_channel =
+        mojo::edk::PlatformChannelPair::PassClientHandleFromParentProcess(
+            *base::CommandLine::ForCurrentProcess());
+  } else {
+    // If this process is elevated, it will have a pipe path passed on the
+    // command line.
+    platform_channel =
+        mojo::edk::NamedPlatformChannelPair::PassClientHandleFromParentProcess(
+            *base::CommandLine::ForCurrentProcess());
+  }
 #elif defined(OS_POSIX)
   platform_channel.reset(mojo::edk::PlatformHandle(
       base::GlobalDescriptors::GetInstance()->Get(kMojoIPCChannel)));
