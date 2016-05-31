@@ -49,11 +49,15 @@ Polymer({
   sectionSelector: 'settings-section',
 
   /** @override */
-  ready: function() {
+  attached: function() {
     this.browserProxy_ = settings.AboutPageBrowserProxyImpl.getInstance();
     this.browserProxy_.pageReady();
 
 <if expr="chromeos">
+    this.addEventListener('target-channel-changed', function(e) {
+      this.targetChannel_ = e.detail;
+    }.bind(this));
+
     Promise.all([
       this.browserProxy_.getCurrentChannel(),
       this.browserProxy_.getTargetChannel(),
@@ -71,6 +75,8 @@ Polymer({
 <if expr="not chromeos">
     this.startListening_();
 </if>
+
+    this.scroller = this.parentElement;
   },
 
   /** @private */
@@ -91,11 +97,6 @@ Polymer({
       this.hasCheckedForUpdates_ = true;
 </if>
     this.currentUpdateStatusEvent_ = event;
-  },
-
-  /** @override */
-  attached: function() {
-    this.scroller = this.parentElement;
   },
 
   /** @private */
@@ -123,12 +124,11 @@ Polymer({
   shouldShowRelaunch_: function() {
     var shouldShow = false;
 <if expr="not chromeos">
-    shouldShow =
-        this.currentUpdateStatusEvent_.status == UpdateStatus.NEARLY_UPDATED;
+    shouldShow = this.checkStatus_(UpdateStatus.NEARLY_UPDATED);
 </if>
 <if expr="chromeos">
-    shouldShow = !this.isTargetChannelMoreStable_() &&
-        this.currentUpdateStatusEvent_.status == UpdateStatus.NEARLY_UPDATED;
+    shouldShow = this.checkStatus_(UpdateStatus.NEARLY_UPDATED) &&
+        !this.isTargetChannelMoreStable_();
 </if>
     return shouldShow;
   },
@@ -194,6 +194,15 @@ Polymer({
     }
   },
 
+  /**
+   * @param {!UpdateStatus} status
+   * @return {boolean}
+   * @private
+   */
+  checkStatus_: function(status) {
+    return this.currentUpdateStatusEvent_.status == status;
+  },
+
 <if expr="chromeos">
   /**
    * @return {boolean}
@@ -223,8 +232,8 @@ Polymer({
    * @private
    */
   shouldShowRelaunchAndPowerwash_: function() {
-    return this.isTargetChannelMoreStable_() &&
-        this.currentUpdateStatusEvent_.status == UpdateStatus.NEARLY_UPDATED;
+    return this.checkStatus_(UpdateStatus.NEARLY_UPDATED) &&
+        this.isTargetChannelMoreStable_();
   },
 
   /** @private */
@@ -239,7 +248,7 @@ Polymer({
    */
   shouldShowCheckUpdates_: function() {
     return !this.hasCheckedForUpdates_ ||
-        this.currentUpdateStatusEvent_.status == UpdateStatus.FAILED;
+        this.checkStatus_(UpdateStatus.FAILED);
   },
 
   /**

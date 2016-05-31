@@ -289,6 +289,29 @@ cr.define('settings_about_page', function() {
           });
         });
 
+        /**
+         * Test that buttons update as a result of receiving a
+         * 'target-channel-changed' event (normally fired from
+         * <settings-channel-switcher-dialog>).
+         */
+        test('ButtonsUpdate_TargetChannelChangedEvent', function() {
+          browserProxy.setChannels(BrowserChannel.BETA, BrowserChannel.BETA);
+          browserProxy.setUpdateStatus(UpdateStatus.NEARLY_UPDATED);
+
+          return initNewPage().then(function() {
+            assertFalse(page.$.relaunch.hidden);
+            assertTrue(page.$.relaunchAndPowerwash.hidden);
+
+            page.fire('target-channel-changed', BrowserChannel.DEV);
+            assertFalse(page.$.relaunch.hidden);
+            assertTrue(page.$.relaunchAndPowerwash.hidden);
+
+            page.fire('target-channel-changed', BrowserChannel.STABLE);
+            assertTrue(page.$.relaunch.hidden);
+            assertFalse(page.$.relaunchAndPowerwash.hidden);
+          });
+        });
+
         test('RegulatoryInfo', function() {
           var regulatoryInfo = null;
 
@@ -326,8 +349,8 @@ cr.define('settings_about_page', function() {
 
       if (!cr.isChromeOS) {
         /*
-         * Test that the "Check for updates" button updates according to
-         * incoming 'update-status-changed' events.
+         * Test that the "Relaunch" button updates according to incoming
+         * 'update-status-changed' events.
          */
         test('ButtonsUpdate', function() {
           var relaunch = page.$.relaunch;
@@ -397,7 +420,10 @@ cr.define('settings_about_page', function() {
           PolymerTest.clearBody();
         });
 
-        teardown(function() { page.remove(); });
+        teardown(function() {
+          page.remove();
+          page = null;
+        });
 
         test('Initialization', function() {
           var versionInfo = {
@@ -419,6 +445,33 @@ cr.define('settings_about_page', function() {
             assertEquals(versionInfo.osVersion, page.$.osVersion.textContent);
             assertEquals(versionInfo.osFirmware, page.$.osFirmware.textContent);
           });
+        });
+
+        /**
+         * Checks whether the "change channel" button state (enabled/disabled)
+         * correctly reflects whether the user is allowed to change channel (as
+         * dictated by the browser via loadTimeData boolean).
+         * @param {boolean} canChangeChannel Whether to simulate the case where
+         *     changing channels is allowed.
+         */
+        function checkChangeChannelButton(canChangeChannel) {
+          loadTimeData.overrideValues({
+            aboutCanChangeChannel: canChangeChannel
+          });
+          page = document.createElement('settings-detailed-build-info');
+          document.body.appendChild(page);
+
+          var changeChannelButton = page.$$('paper-button');
+          assertTrue(!!changeChannelButton);
+          assertEquals(canChangeChannel, !changeChannelButton.disabled)
+        }
+
+        test('ChangeChannel_Enabled', function() {
+          checkChangeChannelButton(true);
+        });
+
+        test('ChangeChannel_Disabled', function() {
+          checkChangeChannelButton(false);
         });
       });
     }

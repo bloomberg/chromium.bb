@@ -18,6 +18,17 @@ Polymer({
 
     /** @private */
     currentlyOnChannelText_: String,
+
+    /** @private */
+    showChannelSwitcherDialog_: Boolean,
+
+    /** @private */
+    canChangeChannel_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('aboutCanChangeChannel');
+      },
+    },
   },
 
   /** @override */
@@ -42,5 +53,20 @@ Polymer({
    */
   shouldShowVersion_: function(version) {
     return version.length > 0;
+  },
+
+  /** @private */
+  onChangeChannelTap_: function() {
+    this.showChannelSwitcherDialog_ = true;
+    // Async to wait for dialog to appear in the DOM.
+    this.async(function() {
+      var dialog = this.$$('settings-channel-switcher-dialog');
+      // Register listener to detect when the dialog is closed. Flip the boolean
+      // once closed to force a restamp next time it is shown such that the
+      // previous dialog's contents are cleared.
+      dialog.addEventListener('iron-overlay-closed', function() {
+        this.showChannelSwitcherDialog_ = false;
+      }.bind(this));
+    }.bind(this));
   },
 });

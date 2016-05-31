@@ -78,25 +78,31 @@
               <div class="start">
                 <div hidden="[[!shouldShowUpdateStatus_(
                     currentUpdateStatusEvent_)]]">
-                  [[getUpdateStatusMessage_(currentUpdateStatusEvent_)]]
+                  [[getUpdateStatusMessage_(
+                      currentUpdateStatusEvent_, targetChannel_)]]
                 </div>
                 <div class="secondary">$i18n{aboutBrowserVersion}</div>
               </div>
               <paper-button id="relaunch" class="secondary-action"
+<if expr="not chromeos">
                   hidden="[[!shouldShowRelaunch_(currentUpdateStatusEvent_)]]"
+</if>
+<if expr="chromeos">
+                  hidden="[[!shouldShowRelaunch_(
+                      currentUpdateStatusEvent_, targetChannel_)]]"
+</if>
                   on-tap="onRelaunchTap_">
                 $i18n{aboutRelaunch}
               </paper-button>
 <if expr="chromeos">
               <paper-button id="relaunchAndPowerwash" class="secondary-action"
                   hidden="[[!shouldShowRelaunchAndPowerwash_(
-                    currentUpdateStatusEvent_)]]"
+                      currentUpdateStatusEvent_, targetChannel_)]]"
                   on-tap="onRelaunchAndPowerwashTap_">
                 $i18n{aboutRelaunchAndPowerwash}
               </paper-button>
               <paper-button id="checkForUpdates" class="secondary-action"
-                  hidden="[[!shouldShowCheckUpdates_(
-                    currentUpdateStatusEvent_)]]"
+                  hidden="[[!shouldShowCheckUpdates_(currentUpdateStatusEvent_)]]"
                   on-tap="onCheckUpdatesTap_">
                 $i18n{aboutCheckForUpdates}
               </paper-button>
