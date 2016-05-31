@@ -2435,11 +2435,11 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
 
   gfx::Point cursor_screen_point = screen->GetCursorScreenPoint();
 
-#if defined(OS_WIN)
+#if !defined(OS_CHROMEOS)
   // Ignore cursor update messages if the window under the cursor is not us.
   aura::Window* window_at_screen_point = screen->GetWindowAtScreenPoint(
       cursor_screen_point);
-
+#if defined(OS_WIN)
   // On Windows we may fail to retrieve the aura Window at the current cursor
   // position. This is because the WindowFromPoint API may return the legacy
   // window which is not associated with an aura Window. In this case we need
@@ -2455,15 +2455,12 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
     window_at_screen_point = screen_win->GetNativeWindowFromHWND(
         hwnd_at_point);
   }
-
+#endif  // defined(OS_WIN)
   if (!window_at_screen_point ||
       (window_at_screen_point->GetRootWindow() != root_window)) {
     return;
   }
-#elif !defined(OS_CHROMEOS)
-  if (!screen->IsWindowUnderCursor(window_))
-    return;
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
   gfx::Point root_window_point = cursor_screen_point;
   aura::client::ScreenPositionClient* screen_position_client =
