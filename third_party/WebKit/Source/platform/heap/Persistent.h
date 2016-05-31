@@ -77,19 +77,11 @@ public:
         checkPointer();
     }
 
-    PersistentBase(WTF::HashTableDeletedValueType) : m_raw(reinterpret_cast<T*>(-1))
-    {
-        initialize();
-        checkPointer();
-    }
-
     ~PersistentBase()
     {
         uninitialize();
         m_raw = nullptr;
     }
-
-    bool isHashTableDeletedValue() const { return m_raw == reinterpret_cast<T*>(-1); }
 
     template<typename VisitorDispatcher>
     void trace(VisitorDispatcher visitor)
@@ -192,7 +184,7 @@ private:
     void initialize()
     {
         ASSERT(!m_persistentNode);
-        if (!m_raw || isHashTableDeletedValue())
+        if (!m_raw)
             return;
 
         TraceCallback traceCallback = TraceMethodDelegate<PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>, &PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>::trace>::trampoline;
@@ -229,7 +221,7 @@ private:
     void checkPointer()
     {
 #if ENABLE(ASSERT) && defined(ADDRESS_SANITIZER)
-        if (!m_raw || isHashTableDeletedValue())
+        if (!m_raw)
             return;
 
         // ThreadHeap::isHeapObjectAlive(m_raw) checks that m_raw is a traceable
@@ -271,7 +263,6 @@ public:
     Persistent(const Persistent<U>& other) : Parent(other) { }
     template<typename U>
     Persistent(const Member<U>& other) : Parent(other) { }
-    Persistent(WTF::HashTableDeletedValueType x) : Parent(x) { }
 
     template<typename U>
     Persistent& operator=(U* other)
@@ -381,7 +372,6 @@ public:
     CrossThreadPersistent(const CrossThreadPersistent<U>& other) : Parent(other) { }
     template<typename U>
     CrossThreadPersistent(const Member<U>& other) : Parent(other) { }
-    CrossThreadPersistent(WTF::HashTableDeletedValueType x) : Parent(x) { }
 
     T* atomicGet() { return Parent::atomicGet(); }
 
@@ -691,28 +681,6 @@ template<typename T, typename U> inline bool operator!=(const Persistent<T>& a, 
 } // namespace blink
 
 namespace WTF {
-
-template <typename T>
-struct PersistentHash : MemberHash<T> {
-    STATIC_ONLY(PersistentHash);
-};
-
-template <typename T>
-struct CrossThreadPersistentHash : MemberHash<T> {
-    STATIC_ONLY(CrossThreadPersistentHash);
-};
-
-template <typename T>
-struct DefaultHash<blink::Persistent<T>> {
-    STATIC_ONLY(DefaultHash);
-    using Hash = PersistentHash<T>;
-};
-
-template <typename T>
-struct DefaultHash<blink::CrossThreadPersistent<T>> {
-    STATIC_ONLY(DefaultHash);
-    using Hash = CrossThreadPersistentHash<T>;
-};
 
 template<typename T>
 struct ParamStorageTraits<blink::WeakPersistentThisPointer<T>> {

@@ -124,8 +124,7 @@ void PersistentRegion::tracePersistentNodes(Visitor* visitor, ShouldTraceCallbac
 bool CrossThreadPersistentRegion::shouldTracePersistentNode(Visitor* visitor, PersistentNode* node)
 {
     CrossThreadPersistent<DummyGCBase>* persistent = reinterpret_cast<CrossThreadPersistent<DummyGCBase>*>(node->self());
-    DCHECK(persistent);
-    DCHECK(!persistent->isHashTableDeletedValue());
+    ASSERT(persistent);
     Address rawObject = reinterpret_cast<Address>(persistent->get());
     if (!rawObject)
         return false;
