@@ -408,8 +408,6 @@ group("both_gn_and_gyp") {
     deps += [
       "//chrome:manpage",
       "//chrome:xdg_mime",
-      "//dbus:dbus_test_server",
-      "//dbus:dbus_unittests",
       "//net:disk_cache_memory_test",
       "//net:flip_in_mem_edsm_server",
       "//net:flip_in_mem_edsm_server_unittests",
@@ -418,6 +416,13 @@ group("both_gn_and_gyp") {
       "//sandbox/linux:chrome_sandbox",
       "//sandbox/linux:sandbox_linux_unittests",
     ]
+
+    if (use_dbus) {
+      deps += [
+        "//dbus:dbus_test_server",
+        "//dbus:dbus_unittests",
+      ]
+    }
 
     if (is_chromeos || use_ash) {
       deps += [ "//components/session_manager/core" ]

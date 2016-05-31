@@ -1114,10 +1114,12 @@ if (!is_android) {
         "//chromeos/ime:gencode",
         "//components/arc:arc_test_support",
         "//components/user_manager:test_support",
-        "//dbus",
-        "//dbus:test_support",
         "//ui/login:resources",
       ]
+
+      if (use_dbus) {
+        deps += [ "//dbus:test_support" ]
+      }
     } else {
       sources -= [
         "../browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_apitest.cc",
@@ -2046,11 +2048,10 @@ test("unit_tests") {
     deps += [ "//third_party/libsecret" ]
   }
   if (is_linux && use_aura) {
-    deps += [
-      "//dbus",
-      "//dbus:test_support",
-      "//ui/aura:test_support",
-    ]
+    deps += [ "//ui/aura:test_support" ]
+    if (use_dbus) {
+      deps += [ "//dbus:test_support" ]
+    }
   }
   if (is_linux && is_chrome_branded && current_cpu == "x86") {
     ldflags = [ "-Wl,--strip-debug" ]

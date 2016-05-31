@@ -509,10 +509,10 @@ source_set("ui") {
                            ".",
                            "//chrome")
     if (use_aura) {
-      deps += [
-        "//build/linux:fontconfig",
-        "//dbus",
-      ]
+      deps += [ "//build/linux:fontconfig" ]
+      if (use_dbus) {
+        deps += [ "//dbus" ]
+      }
     }
     if (use_x11) {
       sources += rebase_path(gypi_values.chrome_browser_ui_x11_sources,
