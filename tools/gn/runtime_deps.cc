@@ -104,6 +104,12 @@ void RecursiveCollectRuntimeDeps(const Target* target,
       AddIfNew(output_file.value(), target, deps, found_files);
   }
 
+  // Data dependencies.
+  for (const auto& dep_pair : target->data_deps()) {
+    RecursiveCollectRuntimeDeps(dep_pair.ptr, true,
+                                deps, seen_targets, found_files);
+  }
+
   // Do not recurse into bundle targets. A bundle's dependencies should be
   // copied into the bundle itself for run-time access.
   if (target->output_type() == Target::CREATE_BUNDLE) {
@@ -118,12 +124,6 @@ void RecursiveCollectRuntimeDeps(const Target* target,
     if (dep_pair.ptr->output_type() == Target::EXECUTABLE)
       continue;  // Skip executables that aren't data deps.
     RecursiveCollectRuntimeDeps(dep_pair.ptr, false,
-                                deps, seen_targets, found_files);
-  }
-
-  // Data dependencies.
-  for (const auto& dep_pair : target->data_deps()) {
-    RecursiveCollectRuntimeDeps(dep_pair.ptr, true,
                                 deps, seen_targets, found_files);
   }
 }

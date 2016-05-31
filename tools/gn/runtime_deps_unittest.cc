@@ -268,6 +268,8 @@ TEST(RuntimeDeps, CreateBundle) {
   // Dependency hierarchy:
   // main(exe) -> dep(bundle) -> dep(shared_library) -> dep(source set)
   //                          -> dep(bundle_data) -> dep(loadable_module)
+  //                                                      -> data(lm.data)
+  //                          -> datadep(datadep) -> data(dd.data)
 
   const SourceDir source_dir("//");
   const std::string& build_dir = setup.build_settings()->build_dir().value();
@@ -275,6 +277,7 @@ TEST(RuntimeDeps, CreateBundle) {
   Target loadable_module(setup.settings(),
                          Label(source_dir, "loadable_module"));
   InitTargetWithType(setup, &loadable_module, Target::LOADABLE_MODULE);
+  loadable_module.data().push_back("//lm.data");
   ASSERT_TRUE(loadable_module.OnResolved(&err));
 
   Target module_data(setup.settings(), Label(source_dir, "module_data"));
@@ -306,6 +309,11 @@ TEST(RuntimeDeps, CreateBundle) {
       SubstitutionPattern::MakeForTest("{{bundle_executable_dir}}")));
   ASSERT_TRUE(dylib_data.OnResolved(&err));
 
+  Target data_dep(setup.settings(), Label(source_dir, "datadep"));
+  InitTargetWithType(setup, &data_dep, Target::EXECUTABLE);
+  data_dep.data().push_back("//dd.data");
+  ASSERT_TRUE(data_dep.OnResolved(&err));
+
   Target bundle(setup.settings(), Label(source_dir, "bundle"));
   InitTargetWithType(setup, &bundle, Target::CREATE_BUNDLE);
   const std::string root_dir(build_dir + "Bundle.framework/Versions/A/");
@@ -314,6 +322,8 @@ TEST(RuntimeDeps, CreateBundle) {
   bundle.bundle_data().executable_dir() = SourceDir(root_dir + "MacOS");
   bundle.private_deps().push_back(LabelTargetPair(&dylib_data));
   bundle.private_deps().push_back(LabelTargetPair(&module_data));
+  bundle.data_deps().push_back(LabelTargetPair(&data_dep));
+  bundle.data().push_back("//b.data");
   ASSERT_TRUE(bundle.OnResolved(&err));
 
   Target main(setup.settings(), Label(source_dir, "main"));
@@ -325,14 +335,27 @@ TEST(RuntimeDeps, CreateBundle) {
       ComputeRuntimeDeps(&main);
 
   // The result should have deps of main, datadep, final_in.dat
-  ASSERT_EQ(2u, result.size()) << GetVectorDescription(result);
+  ASSERT_EQ(5u, result.size()) << GetVectorDescription(result);
 
   // The first one should always be the main exe.
   EXPECT_EQ(MakePair("./main", &main), result[0]);
 
-  // The second one should be the framework bundle, not its included
-  // loadable_module or its intermediate shared_library.
-  EXPECT_EQ(MakePair("Bundle.framework/", &bundle), result[1]);
+  // The rest of the ordering is undefined.
+
+  // The framework bundle's internal dependencies should not be incldued.
+  EXPECT_TRUE(std::find(result.begin(), result.end(),
+                        MakePair("Bundle.framework/", &bundle)) !=
+              result.end()) << GetVectorDescription(result);
+  // But direct data and data dependencies should be.
+  EXPECT_TRUE(std::find(result.begin(), result.end(),
+                        MakePair("./datadep", &data_dep)) !=
+              result.end()) << GetVectorDescription(result);
+  EXPECT_TRUE(std::find(result.begin(), result.end(),
+                        MakePair("../../dd.data", &data_dep)) !=
+              result.end()) << GetVectorDescription(result);
+  EXPECT_TRUE(std::find(result.begin(), result.end(),
+                        MakePair("../../b.data", &bundle)) !=
+              result.end()) << GetVectorDescription(result);
 }
 
 // Tests that a dependency duplicated in regular and data deps is processed
