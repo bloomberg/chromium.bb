@@ -78855,6 +78855,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="415154056" label="enable-physical-keyboard-autocorrect"/>
   <int value="416887895" label="enable-password-change-support"/>
   <int value="423615350" label="enable-tab-audio-muting"/>
+  <int value="423855924" label="enable-tab-switcher-theme-colors"/>
   <int value="446316019" label="enable-threaded-compositing"/>
   <int value="451196246" label="disable-impl-side-painting"/>
   <int value="455698038"

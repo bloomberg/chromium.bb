@@ -241,6 +241,12 @@ public abstract class ChromeSwitches {
      */
     public static final String ENABLE_WEBAPK = "enable-webapk";
 
+    /**
+     * Enables theme colors in the tab switcher.
+     */
+    public static final String ENABLE_TAB_SWITCHER_THEME_COLORS =
+            "enable-tab-switcher-theme-colors";
+
     // Prevent instantiation.
     private ChromeSwitches() {}
 }

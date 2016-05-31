@@ -18,6 +18,9 @@ import org.chromium.chrome.browser.favicon.FaviconHelper;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.resources.dynamics.BitmapDynamicResource;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -39,10 +42,10 @@ public class LayerTitleCache implements TitleCache {
 
     private FaviconHelper mFaviconHelper;
 
-    /** Responsible for building non-incognito titles. */
+    /** Responsible for building titles on light themes or standard tabs. */
     protected TitleBitmapFactory mStandardTitleBitmapFactory;
-    /** Responsible for building all incognito titles. */
-    protected TitleBitmapFactory mIncognitoTitleBitmapFactory;
+    /** Responsible for building incognito or dark theme titles. */
+    protected TitleBitmapFactory mDarkTitleBitmapFactory;
 
     /**
      * Builds an instance of the LayerTitleCache.
@@ -60,7 +63,7 @@ public class LayerTitleCache implements TitleCache {
         mFaviconSize = res.getDimensionPixelSize(R.dimen.compositor_tab_title_favicon_size);
         mStandardTitleBitmapFactory =
                 new TitleBitmapFactory(context, false, R.drawable.default_favicon);
-        mIncognitoTitleBitmapFactory =
+        mDarkTitleBitmapFactory =
                 new TitleBitmapFactory(context, true, R.drawable.default_favicon_white);
     }
 
@@ -103,10 +106,18 @@ public class LayerTitleCache implements TitleCache {
             boolean fetchFaviconFromHistory) {
         final int tabId = tab.getId();
         Bitmap originalFavicon = tab.getFavicon();
-        boolean isIncognito = tab.isIncognito();
+
+        boolean isDarkTheme = tab.isIncognito();
+        // If theme colors are enabled in the tab switcher, the theme might require lighter text.
+        if (FeatureUtilities.areTabSwitcherThemeColorsEnabled()
+                && !DeviceFormFactor.isTablet(mContext)) {
+            isDarkTheme |= ColorUtils.shoudUseLightForegroundOnBackground(tab.getThemeColor());
+        }
+
+        ColorUtils.shoudUseLightForegroundOnBackground(tab.getThemeColor());
         boolean isRtl = tab.isTitleDirectionRtl();
-        TitleBitmapFactory titleBitmapFactory =
-                tab.isIncognito() ? mIncognitoTitleBitmapFactory : mStandardTitleBitmapFactory;
+        TitleBitmapFactory titleBitmapFactory = isDarkTheme
+                ? mDarkTitleBitmapFactory : mStandardTitleBitmapFactory;
 
         Title title = mTitles.get(tabId);
         if (title == null) {
@@ -121,7 +132,7 @@ public class LayerTitleCache implements TitleCache {
 
         if (mNativeLayerTitleCache != 0) {
             nativeUpdateLayer(mNativeLayerTitleCache, tabId, title.getTitleResId(),
-                    title.getFaviconResId(), isIncognito, isRtl);
+                    title.getFaviconResId(), isDarkTheme, isRtl);
         }
         return titleString;
     }

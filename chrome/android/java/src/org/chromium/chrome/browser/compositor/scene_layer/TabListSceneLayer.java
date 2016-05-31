@@ -16,6 +16,8 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
@@ -56,10 +58,19 @@ public class TabListSceneLayer extends SceneLayer {
             assert t.isVisible() : "LayoutTab in that list should be visible";
             final float decoration = t.getDecorationAlpha();
 
+            boolean isDarkTheme = t.isIncognito();
+
+            // If theme colors are enabled in the tab switcher, the theme might require lighter
+            // text.
+            if (FeatureUtilities.areTabSwitcherThemeColorsEnabled()) {
+                isDarkTheme |= ColorUtils.shoudUseLightForegroundOnBackground(
+                        t.getToolbarBackgroundColor());
+            }
+
             int borderResource = t.isIncognito() ? R.drawable.tabswitcher_border_frame_incognito
                                                  : R.drawable.tabswitcher_border_frame;
-            int closeBtnResource = t.isIncognito() ? R.drawable.btn_tab_close_white_normal
-                                                   : R.drawable.btn_tab_close_normal;
+            int closeBtnResource = isDarkTheme ? R.drawable.btn_tab_close_white_normal
+                                               : R.drawable.btn_tab_close_normal;
             int borderColorResource =
                     t.isIncognito() ? R.color.tab_back_incognito : R.color.tab_back;
             // TODO(dtrainor, clholgat): remove "* dpToPx" once the native part fully supports dp.

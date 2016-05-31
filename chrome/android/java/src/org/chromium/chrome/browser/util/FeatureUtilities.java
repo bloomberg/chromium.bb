@@ -274,6 +274,14 @@ public class FeatureUtilities {
         }
     }
 
+    /**
+     * @return True if theme colors in the tab switcher are enabled.
+     */
+    public static boolean areTabSwitcherThemeColorsEnabled() {
+        return CommandLine.getInstance().hasSwitch(
+                ChromeSwitches.ENABLE_TAB_SWITCHER_THEME_COLORS);
+    }
+
     private static native void nativeSetDocumentModeEnabled(boolean enabled);
     private static native void nativeSetCustomTabVisible(boolean visible);
     private static native void nativeSetIsInMultiWindowMode(boolean isInMultiWindowMode);

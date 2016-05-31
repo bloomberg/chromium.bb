@@ -304,6 +304,7 @@ extern const char kEnableHungRendererInfoBar[];
 extern const char kProgressBarAnimation[];
 extern const char kEnableThemeColorInTabbedMode[];
 extern const char kEnableTabSwitcherInDocumentMode[];
+extern const char kEnableTabSwitcherThemeColors[];
 extern const char kNtpSwitchToExistingTab[];
 extern const char kForceShowUpdateMenuItem[];
 extern const char kForceShowUpdateMenuItemSummary[];

@@ -1098,6 +1098,9 @@ const char kEnableTabSwitcherInDocumentMode[] =
 
 // Switch to an existing tab for a suggestion opened from the New Tab Page.
 const char kNtpSwitchToExistingTab[] = "ntp-switch-to-existing-tab";
+
+// Enable theme colors in the tab switcher.
+const char kEnableTabSwitcherThemeColors[] = "enable-tab-switcher-theme-colors";
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_ASH)

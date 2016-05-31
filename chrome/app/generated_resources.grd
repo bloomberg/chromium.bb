@@ -6641,6 +6641,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Fast start
         </message>
       </if>
+      <if expr="is_android">
+        <message name="IDS_FLAGS_TAB_SWITCHER_THEME_COLORS_NAME" desc="Name of the flag to enable theme colors in the Android phone tab switcher." translateable="false">
+          Enable theme colors in the Android phone tab switcher.
+        </message>
+        <message name="IDS_FLAGS_TAB_SWITCHER_THEME_COLORS_DESCRIPTION" desc="The description of the flag to enable theme colors in the Android phone tab switcher." translateable="false">
+          Use the theme color specified by a web page to color the decoration around its thumbnail in the Android phone tab switcher.
+        </message>
+      </if>
       <message name="IDS_FLAGS_DISALLOW_DOC_WRITTEN_SCRIPTS_UI_NAME" desc="Name of the flag to disallow fetch of scripts inserted into the main frame by document.write.">
         Block scripts loaded via document.write
       </message>
