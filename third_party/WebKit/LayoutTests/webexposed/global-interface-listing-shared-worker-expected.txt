@@ -146,13 +146,13 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter bubbles
 [Worker]     getter cancelBubble
 [Worker]     getter cancelable
+[Worker]     getter composed
 [Worker]     getter currentTarget
 [Worker]     getter defaultPrevented
 [Worker]     getter eventPhase
 [Worker]     getter path
 [Worker]     getter relatedTargetScoped
 [Worker]     getter returnValue
-[Worker]     getter scoped
 [Worker]     getter srcElement
 [Worker]     getter target
 [Worker]     getter timeStamp

@@ -64,3 +64,69 @@ function getNodeInComposedTree(path)
     }
     return node;
 }
+
+function createTestTree(node) {
+
+  let labels = {};
+
+  function attachShadowFromTemplate(template) {
+    let parent = template.parentNode;
+    parent.removeChild(template);
+    let shadowRoot = parent.attachShadow({mode: template.getAttribute('data-mode')});
+    let label = template.getAttribute('label');
+    if (label) {
+      shadowRoot.id = label;
+      labels[label] = shadowRoot;
+    }
+    shadowRoot.appendChild(document.importNode(template.content, true));
+    return shadowRoot;
+  }
+
+  function walk(root) {
+    if (root.getAttribute && root.getAttribute('label')) {
+      labels[root.getAttribute('label')] = root;
+    }
+    for (let e of Array.from(root.querySelectorAll('[label]'))) {
+      labels[e.getAttribute('label')] = e;
+    }
+    for (let e of Array.from(root.querySelectorAll('template'))) {
+      walk(attachShadowFromTemplate(e));
+    }
+  }
+
+  walk(node.cloneNode(true));
+  return labels;
+}
+
+function dispatchEventWithLog(nodes, target, event) {
+
+  function labelFor(e) {
+    if (e.getAttribute && e.getAttribute('label')) {
+      return e.getAttribute('label');
+    }
+    return e.id || e.tagName;
+  }
+
+  let log = [];
+  let attachedNodes = [];
+  for (let label in nodes) {
+    let startingNode = nodes[label];
+    for (let node = startingNode; node; node = node.parentNode) {
+      if (attachedNodes.indexOf(node) >= 0)
+        continue;
+      let label = labelFor(node);
+      if (!label)
+        continue;
+      attachedNodes.push(node);
+      node.addEventListener(event.type, (e) => {
+        log.push([label,
+                  event.relatedTarget ? labelFor(event.relatedTarget) : null,
+                  event.composedPath().map((n) => {
+                    return labelFor(n);
+                  })]);
+      });
+    }
+  }
+  target.dispatchEvent(event);
+  return log;
+}

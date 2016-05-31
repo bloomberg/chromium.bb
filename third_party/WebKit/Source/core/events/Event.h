@@ -129,7 +129,8 @@ public:
 
     bool bubbles() const { return m_canBubble; }
     bool cancelable() const { return m_cancelable; }
-    bool scoped() const { return m_scoped; }
+    bool composed() const { return m_composed; }
+    bool isScopedInV0() const;
     bool relatedTargetScoped() const { return m_relatedTargetScoped; }
 
     // Event creation timestamp in milliseconds. If |HiResEventTimeStamp|
@@ -219,8 +220,8 @@ protected:
     Event(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget);
     Event(const AtomicString& type, bool canBubble, bool cancelable, double platformTimeStamp);
     Event(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget, double platformTimeStamp);
-    Event(const AtomicString& type, bool canBubble, bool cancelable, bool scoped);
-    Event(const AtomicString& type, bool canBubble, bool cancelable, bool scoped, bool relatedTargetScoped, double platformTimeStamp);
+    Event(const AtomicString& type, bool canBubble, bool cancelable, bool composed);
+    Event(const AtomicString& type, bool canBubble, bool cancelable, bool composed, bool relatedTargetScoped, double platformTimeStamp);
     Event(const AtomicString& type, const EventInit&);
 
     virtual void receivedTarget();
@@ -238,7 +239,7 @@ private:
     AtomicString m_type;
     unsigned m_canBubble:1;
     unsigned m_cancelable:1;
-    unsigned m_scoped:1;
+    unsigned m_composed:1;
     unsigned m_relatedTargetScoped:1;
 
     unsigned m_propagationStopped:1;

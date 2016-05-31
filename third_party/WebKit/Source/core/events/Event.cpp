@@ -34,8 +34,11 @@
 
 namespace blink {
 
-static bool defaultScopedFromEventType(const AtomicString& eventType)
+static bool isScoped(const AtomicString& eventType)
 {
+    // WebKit never allowed selectstart event to cross the the shadow DOM boundary.
+    // Changing this breaks existing sites.
+    // See https://bugs.webkit.org/show_bug.cgi?id=52195 for details.
     return (eventType == EventTypeNames::abort
         || eventType == EventTypeNames::change
         || eventType == EventTypeNames::error
@@ -55,35 +58,35 @@ Event::Event()
 }
 
 Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg)
-    : Event(eventType, canBubbleArg, cancelableArg, defaultScopedFromEventType(eventType), false, monotonicallyIncreasingTime())
+    : Event(eventType, canBubbleArg, cancelableArg, !isScoped(eventType), false, monotonicallyIncreasingTime())
 {
 }
 
 Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget)
-    : Event(eventType, canBubbleArg, cancelableArg, defaultScopedFromEventType(eventType), relatedTarget ? true : false, monotonicallyIncreasingTime())
+    : Event(eventType, canBubbleArg, cancelableArg, !isScoped(eventType), relatedTarget ? true : false, monotonicallyIncreasingTime())
 {
 }
 
 Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, double platformTimeStamp)
-    : Event(eventType, canBubbleArg, cancelableArg, defaultScopedFromEventType(eventType), false, platformTimeStamp)
+    : Event(eventType, canBubbleArg, cancelableArg, !isScoped(eventType), false, platformTimeStamp)
 {
 }
 
 Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget, double platformTimeStamp)
-    : Event(eventType, canBubbleArg, cancelableArg, defaultScopedFromEventType(eventType), relatedTarget ? true : false, platformTimeStamp)
+    : Event(eventType, canBubbleArg, cancelableArg, !isScoped(eventType), relatedTarget ? true : false, platformTimeStamp)
 {
 }
 
-Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, bool scoped)
-    : Event(eventType, canBubbleArg, cancelableArg, scoped, false, monotonicallyIncreasingTime())
+Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, bool composed)
+    : Event(eventType, canBubbleArg, cancelableArg, composed, false, monotonicallyIncreasingTime())
 {
 }
 
-Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, bool scoped, bool relatedTargetScoped, double platformTimeStamp)
+Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, bool composed, bool relatedTargetScoped, double platformTimeStamp)
     : m_type(eventType)
     , m_canBubble(canBubbleArg)
     , m_cancelable(cancelableArg)
-    , m_scoped(scoped)
+    , m_composed(composed)
     , m_relatedTargetScoped(relatedTargetScoped)
     , m_propagationStopped(false)
     , m_immediatePropagationStopped(false)
@@ -101,12 +104,17 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
 }
 
 Event::Event(const AtomicString& eventType, const EventInit& initializer)
-    : Event(eventType, initializer.bubbles(), initializer.cancelable(), initializer.scoped(), initializer.relatedTargetScoped(), monotonicallyIncreasingTime())
+    : Event(eventType, initializer.bubbles(), initializer.cancelable(), initializer.composed(), initializer.relatedTargetScoped(), monotonicallyIncreasingTime())
 {
 }
 
 Event::~Event()
 {
+}
+
+bool Event::isScopedInV0() const
+{
+    return isTrusted() && isScoped(m_type);
 }
 
 void Event::initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool cancelableArg)

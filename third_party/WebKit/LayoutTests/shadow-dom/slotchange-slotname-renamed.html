@@ -28,7 +28,6 @@ async_test((test) => {
       assert_equals(e.target, d1_s1);
       assert_array_equals(d1_s1.assignedNodes(), []);
       assert_array_equals(d1_s1.assignedNodes({'flatten': true}), []);
-      assert_equals(e.scoped, true);
       test.done();
     });
   });

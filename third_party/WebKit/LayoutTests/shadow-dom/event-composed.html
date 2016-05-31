@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="resources/shadow-dom.js"></script>
+<div id=host label=host>
+  <template label=shadowRoot data-mode=open>
+    <div label=target></div>
+  </template>
+</div>
+<script>
+function assert_event_path_equals(actual, expected) {
+  assert_equals(actual.length, expected.length);
+  for (let i = 0; i < actual.length; ++i) {
+    assert_equals(actual[i][0], expected[i][0], 'currentTarget at ' + i + ' should be same');
+    assert_equals(actual[i][1], expected[i][1], 'relatedTarget at ' + i + ' should be same');
+    assert_array_equals(actual[i][2], expected[i][2], 'composedPath at ' + i + ' should be same');
+  }
+}
+
+test(() => {
+  const e = new Event('test');
+  assert_equals(e.composed, false);
+}, 'A new events composed value should be set to false by default.');
+
+test(() => {
+  const e = new Event('test', { composed: true });
+  assert_equals(e.composed, true);
+}, 'Users should be able to set a composed value.');
+
+test(() => {
+  let nodes = createTestTree(host);
+  let log = dispatchEventWithLog(nodes, nodes.target, new Event('test', {bubbles: true}));
+  let expectedPath = ['target', 'shadowRoot'];
+  assert_event_path_equals(log,
+                           [['target', null, expectedPath],
+                            ['shadowRoot', null, expectedPath]]);
+}, 'An event should be scoped by default');
+
+test(() => {
+  let nodes = createTestTree(host);
+  let log = dispatchEventWithLog(nodes, nodes.target, new Event('test', {bubbles: true, composed: true}));
+  let expectedPath = ['target', 'shadowRoot', 'host'];
+  assert_event_path_equals(log,
+                           [['target', null, expectedPath],
+                            ['shadowRoot', null, expectedPath],
+                            ['host', null, expectedPath]]);
+}, 'An event should not be scoped if composed is specified');
+</script>

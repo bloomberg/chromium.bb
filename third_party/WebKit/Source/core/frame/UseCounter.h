@@ -952,7 +952,7 @@ public:
         V8PromiseChain = 1137,
         V8PromiseAccept = 1138,
         V8PromiseDefer = 1139,
-        EventScoped = 1140,
+        EventComposed = 1140,
         GeolocationInsecureOriginIframe = 1141,
         GeolocationSecureOriginIframe = 1142,
         RequestMIDIAccessIframe = 1143,

@@ -16,20 +16,20 @@
 var e;
 test(function() {
     e = new Event('test');
-    assert_equals(e.scoped, false);
-}, 'A new events scoped value should be set to false by default.');
+    assert_equals(e.composed, false);
+}, 'A new events composed value should be set to false by default.');
 
 test(function() {
-    e = new Event('test', { scoped: true });
-    assert_equals(e.scoped, true);
-}, 'Users should be able to set a scoped value.');
+    e = new Event('test', { composed: true });
+    assert_equals(e.composed, true);
+}, 'Users should be able to set a composed value.');
 
 var input = document.getElementById('input');
 async_test(function(t) {
     input.onselect = function(e) {
-        t.step(function() { assert_true(e.scoped); t.done(); });
+        t.step(function() { assert_false(e.composed); t.done(); });
     };
-}, 'UA select events scoped should be set to true.');
+}, 'UA select events composed should be set to false.');
 input.select();
 
 var sandbox = document.getElementById('sandbox');

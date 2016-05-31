@@ -1578,13 +1578,13 @@ interface Event
     getter bubbles
     getter cancelBubble
     getter cancelable
+    getter composed
     getter currentTarget
     getter defaultPrevented
     getter eventPhase
     getter path
     getter relatedTargetScoped
     getter returnValue
-    getter scoped
     getter srcElement
     getter target
     getter timeStamp

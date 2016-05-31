@@ -38,12 +38,10 @@ async_test((test) => {
         assert_equals(e.target, d1_s1);
         assert_array_equals(d1_s1.assignedNodes(), [d2, d3]);
         assert_array_equals(d1_s1.assignedNodes({'flatten': true}), [d2, d3]);
-        assert_array_equals(e.scoped, true);
       } else if (count_for_d1_s1 == 2) {
         assert_equals(e.target, d1_s1);
         assert_array_equals(d1_s1.assignedNodes(), [d2]);
         assert_array_equals(d1_s1.assignedNodes({'flatten': true}), [d2]);
-        assert_array_equals(e.scoped, true);
         test.done();
       }
     });
@@ -56,12 +54,10 @@ async_test((test) => {
         assert_equals(e.target, d1_d1_s1);
         assert_array_equals(d1_d1_s1.assignedNodes(), [d1_s1]);
         assert_array_equals(d1_d1_s1.assignedNodes({'flatten': true}), [d2, d3]);
-        assert_array_equals(e.scoped, true);
       } else if (count_for_d1_d1_s1 == 2){
         assert_equals(e.target, d1_d1_s1);
         assert_array_equals(d1_d1_s1.assignedNodes(), [d1_s1]);
         assert_array_equals(d1_d1_s1.assignedNodes({'flatten': true}), [d2]);
-        assert_array_equals(e.scoped, true);
         test.done();
       }
     });

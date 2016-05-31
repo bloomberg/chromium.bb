@@ -531,6 +531,17 @@ crbug.com/505364 imported/wpt/custom-elements/v0/instantiating/extensions-to-doc
 crbug.com/505364 imported/csswg-test/css-scoping-1/css-scoping-shadow-slot-display-override.html [ Failure ]
 crbug.com/505364 imported/wpt/shadow-dom/untriaged/elements-and-dom-objects/extensions-to-event-interface/event-path-001.html [ Failure ]
 crbug.com/505364 imported/wpt/shadow-dom/untriaged/events/event-dispatch/test-003.html [ Failure ]
+crbug.com/505364 imported/wpt/shadow-dom/untriaged/events/events-created-by-users-do-not-stop/test-001.html [ Skip ]
+crbug.com/505364 imported/wpt/shadow-dom/untriaged/events/events-created-by-users-do-not-stop/test-002.html [ Skip ]
+crbug.com/505364 imported/wpt/shadow-dom/untriaged/events/events-created-by-users-do-not-stop/test-003.html [ Skip ]
+crbug.com/505364 imported/wpt/shadow-dom/untriaged/events/events-created-by-users-do-not-stop/test-004.html [ Skip ]
+crbug.com/505364 imported/wpt/shadow-dom/untriaged/events/events-created-by-users-do-not-stop/test-005.html [ Skip ]
+crbug.com/505364 imported/wpt/shadow-dom/untriaged/events/events-created-by-users-do-not-stop/test-006.html [ Skip ]
+crbug.com/505364 imported/wpt/shadow-dom/untriaged/events/events-created-by-users-do-not-stop/test-007.html [ Skip ]
+crbug.com/505364 imported/wpt/shadow-dom/untriaged/events/events-created-by-users-do-not-stop/test-008.html [ Skip ]
+crbug.com/505364 imported/wpt/shadow-dom/untriaged/events/events-created-by-users-do-not-stop/test-009.html [ Skip ]
+crbug.com/505364 imported/wpt/shadow-dom/untriaged/events/event-dispatch/test-001.html [ Skip ]
+crbug.com/505364 imported/wpt/shadow-dom/untriaged/events/event-retargeting/test-004.html [ Skip ]
 
 crbug.com/517840 imported/wpt/webrtc/rtcpeerconnection/rtcpeerconnection-idl.html [ Failure Timeout ]
 
