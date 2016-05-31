@@ -368,8 +368,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
         ['mac'], bug=483282)
-    self.Fail('deqp/functional/gles3/texturestatequery.html',
-        ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/negativeshaderapi.html',
         ['mac'], bug=483282)
     self.Fail('deqp/functional/gles3/vertexarrays.html',

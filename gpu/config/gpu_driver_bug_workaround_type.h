@@ -161,6 +161,8 @@
          use_intermediary_for_copy_texture_image)            \
   GPU_OP(USE_NON_ZERO_SIZE_FOR_CLIENT_SIDE_STREAM_BUFFERS,   \
          use_non_zero_size_for_client_side_stream_buffers)   \
+  GPU_OP(USE_SHADOWED_TEX_LEVEL_PARAMS,                      \
+         use_shadowed_tex_level_params)                      \
   GPU_OP(USE_VIRTUALIZED_GL_CONTEXTS,                        \
          use_virtualized_gl_contexts)                        \
   GPU_OP(VALIDATE_MULTISAMPLE_BUFFER_ALLOCATION,             \

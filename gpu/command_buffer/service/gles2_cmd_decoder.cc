@@ -9270,6 +9270,27 @@ void GLES2DecoderImpl::GetTexParameterImpl(
         return;
       }
       break;
+    // Get the level information from the texture to avoid a Mac driver
+    // bug where they store the levels in int16_t, making values bigger
+    // than 2^15-1 overflow in the negative range.
+    case GL_TEXTURE_BASE_LEVEL:
+      if (workarounds().use_shadowed_tex_level_params) {
+        if (fparams) {
+          fparams[0] = static_cast<GLfloat>(texture->base_level());
+        } else {
+          iparams[0] = texture->base_level();
+        }
+        return;
+      }
+    case GL_TEXTURE_MAX_LEVEL:
+      if (workarounds().use_shadowed_tex_level_params) {
+        if (fparams) {
+          fparams[0] = static_cast<GLfloat>(texture->max_level());
+        } else {
+          iparams[0] = texture->max_level();
+        }
+        return;
+      }
     default:
       break;
   }

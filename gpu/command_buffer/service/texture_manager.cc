@@ -1216,7 +1216,7 @@ GLenum Texture::SetParameterf(
     case GL_TEXTURE_MAX_LEVEL:
     case GL_TEXTURE_USAGE_ANGLE:
       {
-        GLint iparam = static_cast<GLint>(param);
+        GLint iparam = static_cast<GLint>(std::round(param));
         return SetParameteri(feature_info, pname, iparam);
       }
     case GL_TEXTURE_MIN_LOD:
