@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/SkewTransformComponent.h"
+#include "core/css/cssom/CSSSkew.h"
 
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValuePool.h"
 
 namespace blink {
 
-CSSFunctionValue* SkewTransformComponent::toCSSValue() const
+CSSFunctionValue* CSSSkew::toCSSValue() const
 {
     CSSFunctionValue* result = CSSFunctionValue::create(CSSValueSkew);
     result->append(cssValuePool().createValue(m_ax, CSSPrimitiveValue::UnitType::Number));

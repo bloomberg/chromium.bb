@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SkewTransformComponent_h
-#define SkewTransformComponent_h
+#ifndef CSSSkew_h
+#define CSSSkew_h
 
 #include "core/css/cssom/MatrixTransformComponent.h"
 #include "core/css/cssom/TransformComponent.h"
 
 namespace blink {
 
-class CORE_EXPORT SkewTransformComponent final : public TransformComponent {
-    WTF_MAKE_NONCOPYABLE(SkewTransformComponent);
+class CORE_EXPORT CSSSkew final : public TransformComponent {
+    WTF_MAKE_NONCOPYABLE(CSSSkew);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static SkewTransformComponent* create(double ax, double ay)
+    static CSSSkew* create(double ax, double ay)
     {
-        return new SkewTransformComponent(ax, ay);
+        return new CSSSkew(ax, ay);
     }
 
     double ax() const { return m_ax; }
@@ -32,7 +32,7 @@ public:
     CSSFunctionValue* toCSSValue() const override;
 
 private:
-    SkewTransformComponent(double ax, double ay) : TransformComponent(), m_ax(ax), m_ay(ay) { }
+    CSSSkew(double ax, double ay) : TransformComponent(), m_ax(ax), m_ay(ay) { }
 
     double m_ax;
     double m_ay;

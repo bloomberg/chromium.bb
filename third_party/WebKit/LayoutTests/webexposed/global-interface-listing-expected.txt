@@ -534,6 +534,11 @@ interface CSSSimpleLength : CSSLengthValue
     getter value
     method constructor
     setter value
+interface CSSSkew : TransformComponent
+    attribute @@toStringTag
+    getter ax
+    getter ay
+    method constructor
 interface CSSStyleDeclaration
     attribute @@toStringTag
     getter cssFloat
@@ -5829,11 +5834,6 @@ interface SiteBoundCredential : Credential
     attribute @@toStringTag
     getter iconURL
     getter name
-    method constructor
-interface Skew : TransformComponent
-    attribute @@toStringTag
-    getter ax
-    getter ay
     method constructor
 interface SourceBuffer : EventTarget
     attribute @@toStringTag
