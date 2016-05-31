@@ -253,13 +253,13 @@ class TestSender {
 
 class TestReceiver {
  public:
-  TestReceiver() : receiver_thread_("TestReceiver"), max_value_to_receive_(-1) {
+  TestReceiver() : receiver_thread_("TestReceiver"), expected_calls_(0) {
     receiver_thread_.Start();
   }
 
   void SetUp(AssociatedInterfaceRequest<IntegerSender> request0,
              AssociatedInterfaceRequest<IntegerSender> request1,
-             int32_t max_value_to_receive,
+             size_t expected_calls,
              const base::Closure& notify_finish) {
     CHECK(receiver_thread_.task_runner()->BelongsToCurrentThread());
 
@@ -270,7 +270,7 @@ class TestReceiver {
     impl1_->set_notify_send_method_called(
         base::Bind(&TestReceiver::SendMethodCalled, base::Unretained(this)));
 
-    max_value_to_receive_ = max_value_to_receive;
+    expected_calls_ = expected_calls;
     notify_finish_ = notify_finish;
   }
 
@@ -288,12 +288,12 @@ class TestReceiver {
   void SendMethodCalled(int32_t value) {
     values_.push_back(value);
 
-    if (value >= max_value_to_receive_)
+    if (values_.size() >= expected_calls_)
       notify_finish_.Run();
   }
 
   base::Thread receiver_thread_;
-  int32_t max_value_to_receive_;
+  size_t expected_calls_;
 
   std::unique_ptr<IntegerSenderImpl> impl0_;
   std::unique_ptr<IntegerSenderImpl> impl1_;
@@ -333,8 +333,7 @@ class NotificationCounter {
   base::Closure notify_finish_;
 };
 
-// Disabled due to flakes on Windows bots. See crbug.com/615450.
-TEST_F(AssociatedInterfaceTest, DISABLED_MultiThreadAccess) {
+TEST_F(AssociatedInterfaceTest, MultiThreadAccess) {
   // Set up four associated interfaces on a message pipe. Use the inteface
   // pointers on four threads in parallel; run the interface implementations on
   // two threads. Test that multi-threaded access works.
@@ -361,7 +360,7 @@ TEST_F(AssociatedInterfaceTest, DISABLED_MultiThreadAccess) {
     senders[i].sender_thread()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&TestSender::SetUp, base::Unretained(&senders[i]),
                               base::Passed(&ptr_infos[i]), nullptr,
-                              static_cast<int32_t>(kMaxValue * (i + 1) / 4)));
+                              kMaxValue * (i + 1) / 4));
   }
 
   base::RunLoop run_loop;
@@ -375,7 +374,7 @@ TEST_F(AssociatedInterfaceTest, DISABLED_MultiThreadAccess) {
         base::Bind(&TestReceiver::SetUp, base::Unretained(&receivers[i]),
                    base::Passed(&requests[2 * i]),
                    base::Passed(&requests[2 * i + 1]),
-                   static_cast<int32_t>((i + 1) * kMaxValue / 2),
+                   static_cast<size_t>(kMaxValue / 2),
                    base::Bind(&NotificationCounter::OnGotNotification,
                               base::Unretained(&counter))));
   }
@@ -383,7 +382,7 @@ TEST_F(AssociatedInterfaceTest, DISABLED_MultiThreadAccess) {
   for (size_t i = 0; i < 4; ++i) {
     senders[i].sender_thread()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&TestSender::Send, base::Unretained(&senders[i]),
-                              static_cast<int32_t>(kMaxValue * i / 4 + 1)));
+                              kMaxValue * i / 4 + 1));
   }
 
   run_loop.Run();
@@ -456,15 +455,18 @@ TEST_F(AssociatedInterfaceTest, FIFO) {
 
   base::RunLoop run_loop;
   TestReceiver receivers[2];
+  NotificationCounter counter(
+      2, base::Bind(&AssociatedInterfaceTest::QuitRunLoop,
+                    base::Unretained(this), base::Unretained(&run_loop)));
   for (size_t i = 0; i < 2; ++i) {
     receivers[i].receiver_thread()->task_runner()->PostTask(
         FROM_HERE,
-        base::Bind(
-            &TestReceiver::SetUp, base::Unretained(&receivers[i]),
-            base::Passed(&requests[2 * i]), base::Passed(&requests[2 * i + 1]),
-            kMaxValue,
-            base::Bind(&AssociatedInterfaceTest::QuitRunLoop,
-                       base::Unretained(this), base::Unretained(&run_loop))));
+        base::Bind(&TestReceiver::SetUp, base::Unretained(&receivers[i]),
+                   base::Passed(&requests[2 * i]),
+                   base::Passed(&requests[2 * i + 1]),
+                   static_cast<size_t>(kMaxValue / 2),
+                   base::Bind(&NotificationCounter::OnGotNotification,
+                              base::Unretained(&counter))));
   }
 
   senders[0].sender_thread()->task_runner()->PostTask(
