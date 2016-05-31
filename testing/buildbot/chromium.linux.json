@@ -1,7 +1,7 @@
 {
   "Android Arm64 Builder (dbg)": {
     "additional_compile_targets": [
-      "gn_all"
+      "all"
     ]
   },
   "Android Builder": {
@@ -16,12 +16,6 @@
     ]
   },
   "Android Clang Builder (dbg)": {
-    "additional_compile_targets": [
-      "gn_all"
-    ]
-  },
-  "Android GN": {},
-  "Android GN (dbg)": {
     "additional_compile_targets": [
       "all"
     ]
