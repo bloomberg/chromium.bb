@@ -12,7 +12,7 @@ namespace blink {
 
 struct SameSizeAsScriptWrappable {
     virtual ~SameSizeAsScriptWrappable() { }
-    v8::Persistent<v8::Object> m_wrapper;
+    v8::Persistent<v8::Object> m_mainWorldWrapper;
 };
 
 static_assert(sizeof(ScriptWrappable) <= sizeof(SameSizeAsScriptWrappable), "ScriptWrappable should stay small");
@@ -39,7 +39,7 @@ v8::Local<v8::Object> ScriptWrappable::associateWithWrapper(v8::Isolate* isolate
 void ScriptWrappable::markWrapper(v8::Isolate* isolate) const
 {
     if (containsWrapper())
-        ScriptWrappableVisitor::markWrapper(&m_wrapper, isolate);
+        ScriptWrappableVisitor::markWrapper(&m_mainWorldWrapper, isolate);
 }
 
 } // namespace blink

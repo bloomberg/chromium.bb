@@ -100,24 +100,19 @@ public:
     {
         ASSERT(!wrapper.IsEmpty());
         if (UNLIKELY(containsWrapper())) {
-            wrapper = newLocalWrapper(isolate);
+            wrapper = mainWorldWrapper(isolate);
             return false;
         }
-        m_wrapper.Reset(isolate, wrapper);
-        wrapperTypeInfo->configureWrapper(&m_wrapper);
-        m_wrapper.SetWeak();
+        m_mainWorldWrapper.Reset(isolate, wrapper);
+        wrapperTypeInfo->configureWrapper(&m_mainWorldWrapper);
+        m_mainWorldWrapper.SetWeak();
         ASSERT(containsWrapper());
         return true;
     }
 
-    v8::Local<v8::Object> newLocalWrapper(v8::Isolate* isolate) const
-    {
-        return v8::Local<v8::Object>::New(isolate, m_wrapper);
-    }
-
     bool isEqualTo(const v8::Local<v8::Object>& other) const
     {
-        return m_wrapper == other;
+        return m_mainWorldWrapper == other;
     }
 
     // Provides a way to convert Node* to ScriptWrappable* without including
@@ -139,16 +134,16 @@ public:
 
     bool setReturnValue(v8::ReturnValue<v8::Value> returnValue)
     {
-        returnValue.Set(m_wrapper);
+        returnValue.Set(m_mainWorldWrapper);
         return containsWrapper();
     }
 
     void setReference(const v8::Persistent<v8::Object>& parent, v8::Isolate* isolate)
     {
-        isolate->SetReference(parent, m_wrapper);
+        isolate->SetReference(parent, m_mainWorldWrapper);
     }
 
-    bool containsWrapper() const { return !m_wrapper.IsEmpty(); }
+    bool containsWrapper() const { return !m_mainWorldWrapper.IsEmpty(); }
 
     /**
      *  Mark wrapper of this ScriptWrappable as alive in V8. Only marks
@@ -169,7 +164,18 @@ public:
     // already broken), we must not hit the RELEASE_ASSERT.
 
 private:
-    v8::Persistent<v8::Object> m_wrapper;
+    // These classes are exceptionally allowed to use mainWorldWrapper().
+    friend class DOMDataStore;
+    friend class V8HiddenValue;
+    friend class V8PrivateProperty;
+    friend class WebGLRenderingContextBase;
+
+    v8::Local<v8::Object> mainWorldWrapper(v8::Isolate* isolate) const
+    {
+        return v8::Local<v8::Object>::New(isolate, m_mainWorldWrapper);
+    }
+
+    v8::Persistent<v8::Object> m_mainWorldWrapper;
 };
 
 // Defines 'wrapperTypeInfo' virtual method which returns the WrapperTypeInfo of

@@ -6334,7 +6334,7 @@ void WebGLRenderingContextBase::preserveObjectWrapper(ScriptState* scriptState, 
         persistentCache->set(isolate, v8::Array::New(isolate));
         V8HiddenValue::setHiddenValue(
             scriptState,
-            sourceObject->newLocalWrapper(isolate),
+            sourceObject->mainWorldWrapper(isolate),
             hiddenValueName,
             persistentCache->newLocal(isolate));
         // It is important to mark the persistent cache as weak
@@ -6346,7 +6346,7 @@ void WebGLRenderingContextBase::preserveObjectWrapper(ScriptState* scriptState, 
 
     v8::Local<v8::Array> localCache = persistentCache->newLocal(isolate);
     if (targetObject) {
-        v8CallOrCrash(localCache->Set(scriptState->context(), index, targetObject->newLocalWrapper(isolate)));
+        v8CallOrCrash(localCache->Set(scriptState->context(), index, targetObject->mainWorldWrapper(isolate)));
     } else {
         v8CallOrCrash(localCache->Set(scriptState->context(), index, v8::Null(isolate)));
     }

@@ -13,7 +13,7 @@ namespace blink {
 
 v8::Local<v8::Value> V8PrivateProperty::Symbol::getFromMainWorld(ScriptState* scriptState, ScriptWrappable* scriptWrappable)
 {
-    v8::Local<v8::Object> wrapper = scriptWrappable->newLocalWrapper(scriptState->isolate());
+    v8::Local<v8::Object> wrapper = scriptWrappable->mainWorldWrapper(scriptState->isolate());
     return wrapper.IsEmpty() ? v8::Local<v8::Value>() : get(scriptState->context(), wrapper);
 }
 

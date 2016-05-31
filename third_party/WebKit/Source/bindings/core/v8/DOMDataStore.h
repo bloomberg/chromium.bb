@@ -106,7 +106,7 @@ public:
     static v8::Local<v8::Object> getWrapper(Node* node, v8::Isolate* isolate)
     {
         if (canUseScriptWrappable(node))
-            return ScriptWrappable::fromNode(node)->newLocalWrapper(isolate);
+            return ScriptWrappable::fromNode(node)->mainWorldWrapper(isolate);
         return current(isolate).get(ScriptWrappable::fromNode(node), isolate);
     }
 
@@ -149,7 +149,7 @@ public:
     v8::Local<v8::Object> get(ScriptWrappable* object, v8::Isolate* isolate)
     {
         if (m_isMainWorld)
-            return object->newLocalWrapper(isolate);
+            return object->mainWorldWrapper(isolate);
         return m_wrapperMap->newLocal(isolate, object);
     }
 
