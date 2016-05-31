@@ -621,6 +621,31 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     self.assertIs(ret.error, None)
     self.assertEqual(osutils.ReadFile(log), 'monkeys4\nmonkeys5\n')
 
+
+  @_ForceLoggingLevel
+  def testLogStdoutToFileWithOrWithoutAppend(self):
+    log = os.path.join(self.tempdir, 'output')
+    ret = cros_build_lib.RunCommand(
+        ['echo', 'monkeys'], log_stdout_to_file=log)
+    self.assertEqual(osutils.ReadFile(log), 'monkeys\n')
+    self.assertIs(ret.output, None)
+    self.assertIs(ret.error, None)
+
+    # Without append
+    ret = cros_build_lib.RunCommand(
+        ['echo', 'monkeys2'], log_stdout_to_file=log)
+    self.assertEqual(osutils.ReadFile(log), 'monkeys2\n')
+    self.assertIs(ret.output, None)
+    self.assertIs(ret.error, None)
+
+    # With append
+    ret = cros_build_lib.RunCommand(
+        ['echo', 'monkeys3'], append_to_file=True, log_stdout_to_file=log)
+    self.assertEqual(osutils.ReadFile(log), 'monkeys2\nmonkeys3\n')
+    self.assertIs(ret.output, None)
+    self.assertIs(ret.error, None)
+
+
   def _CaptureRunCommand(self, command, mute_output):
     """Capture a RunCommand() output with the specified |mute_output|.
 

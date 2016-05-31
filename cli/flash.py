@@ -433,7 +433,7 @@ class RemoteDeviceUpdater(object):
         payload_dir = self.GetPayloadDir(device)
 
         # Do auto-update
-        chromeos_AU = auto_updater.ChromiumOSUpdater(
+        chromeos_AU = auto_updater.ChromiumOSFlashUpdater(
             device, payload_dir, self.tempdir,
             do_rootfs_update=self.do_rootfs_update,
             do_stateful_update=self.do_stateful_update,

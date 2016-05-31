@@ -396,7 +396,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
                redirect_stderr=False, cwd=None, input=None, enter_chroot=False,
                shell=False, env=None, extra_env=None, ignore_sigint=False,
                combine_stdout_stderr=False, log_stdout_to_file=None,
-               chroot_args=None, debug_level=logging.INFO,
+               append_to_file=False, chroot_args=None, debug_level=logging.INFO,
                error_code_ok=False, int_timeout=1, kill_timeout=1,
                log_output=False, stdout_to_pipe=False, capture_output=False,
                quiet=False, mute_output=None):
@@ -433,6 +433,8 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
     log_stdout_to_file: If set, redirects stdout to file specified by this path.
       If |combine_stdout_stderr| is set to True, then stderr will also be logged
       to the specified file.
+    append_to_file: If True, the stdout streams are appended to the end of log
+      stdout_to_file.
     chroot_args: An array of arguments for the chroot environment wrapper.
     debug_level: The debug level of RunCommand's output.
     error_code_ok: Does not raise an exception when command returns a non-zero
@@ -493,7 +495,10 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   # what a separate process did to that file can result in a bad
   # view of the file.
   if log_stdout_to_file:
-    stdout = open(log_stdout_to_file, 'w+')
+    if append_to_file:
+      stdout = open(log_stdout_to_file, 'a+')
+    else:
+      stdout = open(log_stdout_to_file, 'w+')
   elif stdout_to_pipe:
     stdout = subprocess.PIPE
   elif redirect_stdout or mute_output or log_output:

@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import random
 import sys
 import time
 
@@ -58,6 +59,12 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
       isn't suppressed is raised.  Note that the first exception encountered
       is what's thrown.
   """
+  def delay():
+    """'Jitter' the delay, up to 50% in either direction."""
+    random_delay = random.uniform(.5 * delay_sec, 1.5 * delay_sec)
+    logging.warning('Retrying in %f seconds...', random_delay)
+    time.sleep(random_delay)
+
 
   sleep = kwargs.pop('sleep', 0)
   if max_retry < 0:
@@ -73,11 +80,16 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
 
   raise_first_exception_on_failure = kwargs.pop(
       'raise_first_exception_on_failure', True)
+  delay_sec = kwargs.pop('delay_sec', 0)
+  exception_to_raise = kwargs.pop('exception_to_raise', None)
 
   attempt = 0
 
   exc_info = None
   for attempt in xrange(max_retry + 1):
+    if attempt > 0 and delay_sec:
+      delay()
+
     if attempt and sleep:
       if backoff_factor > 1:
         sleep_time = sleep * backoff_factor ** (attempt - 1)
@@ -92,7 +104,15 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
       # Note we're not snagging BaseException, so MemoryError/KeyboardInterrupt
       # and friends don't enter this except block.
       if not handler(e):
-        raise
+        logging.debug('Encounter unexpected exception %s(%s), will not retry.',
+                      e.__class__, e)
+        if exception_to_raise:
+          raise exception_to_raise(
+              '%s, %s: %s' % (str(e), exc_info[0], exc_info[1]))
+        else:
+          raise
+
+      logging.warning('%s(%s)', e.__class__, e)
       # If raise_first_exception_on_failure, we intentionally ignore
       # any failures in later attempts since we'll throw the original
       # failure if all retries fail.
@@ -103,7 +123,10 @@ def GenericRetry(handler, max_retry, functor, *args, **kwargs):
     success_functor(attempt + 1)
     return ret
 
-  raise exc_info[0], exc_info[1], exc_info[2]
+  if exception_to_raise:
+    raise exception_to_raise('%s: %s' % (exc_info[0], exc_info[1]))
+  else:
+    raise exc_info[0], exc_info[1], exc_info[2]
 
 
 def RetryException(exc_retry, max_retry, functor, *args, **kwargs):

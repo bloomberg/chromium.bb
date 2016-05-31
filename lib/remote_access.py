@@ -371,7 +371,7 @@ class RemoteAccess(object):
     logging.info(errors[result.returncode])
     return result.returncode == 0
 
-  def RemoteReboot(self):
+  def RemoteReboot(self, timeout_sec=REBOOT_MAX_WAIT):
     """Reboot the remote device."""
     logging.info('Rebooting %s...', self.remote_host)
     if self.username != ROOT_ACCOUNT:
@@ -381,11 +381,11 @@ class RemoteAccess(object):
 
     time.sleep(CHECK_INTERVAL)
     try:
-      timeout_util.WaitForReturnTrue(self._CheckIfRebooted, REBOOT_MAX_WAIT,
+      timeout_util.WaitForReturnTrue(self._CheckIfRebooted, timeout_sec,
                                      period=CHECK_INTERVAL)
     except timeout_util.TimeoutError:
       cros_build_lib.Die('Reboot has not completed after %s seconds; giving up.'
-                         % (REBOOT_MAX_WAIT,))
+                         % (timeout_sec,))
 
   def Rsync(self, src, dest, to_local=False, follow_symlinks=False,
             recursive=True, inplace=False, verbose=False, sudo=False,
@@ -812,9 +812,9 @@ class RemoteDevice(object):
       logging.error('Error connecting to device %s', self.hostname)
       raise
 
-  def Reboot(self):
+  def Reboot(self, timeout_sec=REBOOT_MAX_WAIT):
     """Reboot the device."""
-    return self.GetAgent().RemoteReboot()
+    return self.GetAgent().RemoteReboot(timeout_sec=timeout_sec)
 
   def BaseRunCommand(self, cmd, **kwargs):
     """Executes a shell command on the device with output captured by default.

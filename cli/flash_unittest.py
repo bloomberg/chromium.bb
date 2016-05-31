@@ -24,7 +24,7 @@ from chromite.lib import remote_access
 
 class RemoteDeviceUpdaterMock(partial_mock.PartialCmdMock):
   """Mock out RemoteDeviceUpdater."""
-  TARGET = 'chromite.lib.auto_updater.ChromiumOSUpdater'
+  TARGET = 'chromite.lib.auto_updater.ChromiumOSFlashUpdater'
   ATTRS = ('UpdateStateful', 'UpdateRootfs', 'SetupRootfsUpdate',
            'RebootAndVerify')
 
