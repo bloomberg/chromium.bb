@@ -75,8 +75,6 @@ Mutex& creationMutex()
 
 }
 
-// TODO(Oilpan): avoid keeping a raw reference separate from the
-// owner one; does not enable heap-movable objects.
 MainThreadDebugger* MainThreadDebugger::s_instance = nullptr;
 
 MainThreadDebugger::MainThreadDebugger(v8::Isolate* isolate)
