@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <map>
 #include <utility>
 
@@ -660,9 +661,11 @@ void TableView::SortItemsAndUpdateMapping() {
       GroupSortHelper sort_helper(this);
       GetModelIndexToRangeStart(grouper_, RowCount(),
                                 &sort_helper.model_index_to_range_start);
-      std::sort(view_to_model_.begin(), view_to_model_.end(), sort_helper);
+      std::stable_sort(view_to_model_.begin(), view_to_model_.end(),
+                       sort_helper);
     } else {
-      std::sort(view_to_model_.begin(), view_to_model_.end(), SortHelper(this));
+      std::stable_sort(view_to_model_.begin(), view_to_model_.end(),
+                       SortHelper(this));
     }
     for (int i = 0; i < row_count; ++i)
       model_to_view_[view_to_model_[i]] = i;
