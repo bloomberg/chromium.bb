@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import sys
+import platform
+
 import command_executor
 from command_executor import Command
 from webelement import WebElement
@@ -88,6 +91,13 @@ class ChromeDriver(object):
         options['androidUseRunningApp'] = android_use_running_app
     elif chrome_binary:
       options['binary'] = chrome_binary
+
+    # TODO(samuong): speculative fix for crbug.com/611886
+    if (sys.platform.startswith('linux') and
+        platform.architecture()[0] == '32bit'):
+      if chrome_switches is None:
+        chrome_switches = []
+      chrome_switches.append('no-sandbox')
 
     if chrome_switches:
       assert type(chrome_switches) is list
