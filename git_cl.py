@@ -18,11 +18,9 @@ import logging
 import multiprocessing
 import optparse
 import os
-import Queue
 import re
 import stat
 import sys
-import tempfile
 import textwrap
 import time
 import traceback
@@ -132,7 +130,7 @@ def RunGitWithCode(args, suppress_stderr=False):
 
 
 def RunGitSilent(args):
-  """Returns stdout, suppresses stderr and ingores the return code."""
+  """Returns stdout, suppresses stderr and ignores the return code."""
   return RunGitWithCode(args, suppress_stderr=True)[1]
 
 
@@ -929,6 +927,7 @@ class Changelist(object):
 
     self.branchref = branchref
     if self.branchref:
+      assert branchref.startswith('refs/heads/')
       self.branch = ShortBranchName(self.branchref)
     else:
       self.branch = None
@@ -1449,7 +1448,7 @@ class Changelist(object):
   def __getattr__(self, attr):
     # This is because lots of untested code accesses Rietveld-specific stuff
     # directly, and it's hard to fix for sure. So, just let it work, and fix
-    # on a cases by case basis.
+    # on a case by case basis.
     return getattr(self._codereview_impl, attr)
 
 
@@ -1935,7 +1934,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       upstream_branch = ShortBranchName(upstream_branch)
       if remote is '.':
         # A local branch is being tracked.
-        local_branch = ShortBranchName(upstream_branch)
+        local_branch = upstream_branch
         if settings.GetIsSkipDependencyUpload(local_branch):
           print
           print ('Skipping dependency patchset upload because git config '
@@ -1943,7 +1942,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
           print
         else:
           auth_config = auth.extract_auth_config_from_options(options)
-          branch_cl = Changelist(branchref=local_branch,
+          branch_cl = Changelist(branchref='refs/heads/'+local_branch,
                                  auth_config=auth_config)
           branch_cl_issue_url = branch_cl.GetIssueURL()
           branch_cl_issue = branch_cl.GetIssue()
@@ -2925,21 +2924,9 @@ def color_for_status(status):
     'error': Fore.WHITE,
   }.get(status, Fore.WHITE)
 
-def fetch_cl_status(branch, auth_config=None):
-  """Fetches information for an issue and returns (branch, issue, status)."""
-  cl = Changelist(branchref=branch, auth_config=auth_config)
-  url = cl.GetIssueURL()
-  status = cl.GetStatus()
 
-  if url and (not status or status == 'error'):
-    # The issue probably doesn't exist anymore.
-    url += ' (broken)'
-
-  return (branch, url, status)
-
-def get_cl_statuses(
-    branches, fine_grained, max_processes=None, auth_config=None):
-  """Returns a blocking iterable of (branch, issue, status) for given branches.
+def get_cl_statuses(changes, fine_grained, max_processes=None):
+  """Returns a blocking iterable of (cl, status) for given branches.
 
   If fine_grained is true, this will fetch CL statuses from the server.
   Otherwise, simply indicate if there's a matching url for the given branches.
@@ -2950,50 +2937,41 @@ def get_cl_statuses(
 
   See GetStatus() for a list of possible statuses.
   """
-  def fetch(branch):
-    if not branch:
-      return None
-
-    return fetch_cl_status(branch, auth_config=auth_config)
-
   # Silence upload.py otherwise it becomes unwieldly.
   upload.verbosity = 0
 
   if fine_grained:
     # Process one branch synchronously to work through authentication, then
     # spawn processes to process all the other branches in parallel.
-    if branches:
+    if changes:
+      fetch = lambda cl: (cl, cl.GetStatus())
+      yield fetch(changes[0])
 
-      yield fetch(branches[0])
-
-      branches_to_fetch = branches[1:]
+      changes_to_fetch = changes[1:]
       pool = ThreadPool(
-          min(max_processes, len(branches_to_fetch))
+          min(max_processes, len(changes_to_fetch))
               if max_processes is not None
-              else len(branches_to_fetch))
+              else len(changes_to_fetch))
 
-      fetched_branches = set()
-      it = pool.imap_unordered(fetch, branches_to_fetch).__iter__()
+      fetched_cls = set()
+      it = pool.imap_unordered(fetch, changes_to_fetch).__iter__()
       while True:
         try:
           row = it.next(timeout=5)
         except multiprocessing.TimeoutError:
           break
 
-        fetched_branches.add(row[0])
+        fetched_cls.add(row[0])
         yield row
 
       # Add any branches that failed to fetch.
-      for b in set(branches_to_fetch) - fetched_branches:
-        cl = Changelist(branchref=b, auth_config=auth_config)
-        yield (b, cl.GetIssueURL() if b else None, 'error')
+      for cl in set(changes_to_fetch) - fetched_cls:
+        yield (cl, 'error')
 
   else:
     # Do not use GetApprovingReviewers(), since it requires an HTTP request.
-    for b in branches:
-      cl = Changelist(branchref=b, auth_config=auth_config)
-      url = cl.GetIssueURL() if b else None
-      yield (b, url, 'waiting' if url else 'error')
+    for cl in changes:
+      yield (cl, 'waiting' if cl.GetIssueURL() else 'error')
 
 
 def upload_branch_deps(cl, args):
@@ -3146,25 +3124,27 @@ def CMDstatus(parser, args):
     print('No local branch found.')
     return 0
 
-  changes = (
+  changes = [
       Changelist(branchref=b, auth_config=auth_config)
-      for b in branches.splitlines())
-  # TODO(tandrii): refactor to use CLs list instead of branches list.
-  branches = [c.GetBranch() for c in changes]
-  alignment = max(5, max(len(b) for b in branches))
+      for b in branches.splitlines()]
   print 'Branches associated with reviews:'
-  output = get_cl_statuses(branches,
+  output = get_cl_statuses(changes,
                            fine_grained=not options.fast,
-                           max_processes=options.maxjobs,
-                           auth_config=auth_config)
+                           max_processes=options.maxjobs)
 
   branch_statuses = {}
-  alignment = max(5, max(len(ShortBranchName(b)) for b in branches))
-  for branch in sorted(branches):
+  alignment = max(5, max(len(ShortBranchName(c.GetBranch())) for c in changes))
+  for cl in sorted(changes, key=lambda c: c.GetBranch()):
+    branch = cl.GetBranch()
     while branch not in branch_statuses:
-      b, i, status = output.next()
-      branch_statuses[b] = (i, status)
-    issue_url, status = branch_statuses.pop(branch)
+      c, status = output.next()
+      branch_statuses[c.GetBranch()] = status
+    status = branch_statuses.pop(branch)
+    url = cl.GetIssueURL()
+    if url and (not status or status == 'error'):
+      # The issue probably doesn't exist anymore.
+      url += ' (broken)'
+
     color = color_for_status(status)
     reset = Fore.RESET
     if not setup_color.IS_TTY:
@@ -3172,8 +3152,8 @@ def CMDstatus(parser, args):
       reset = ''
     status_str = '(%s)' % status if status else ''
     print '  %*s : %s%s %s%s' % (
-          alignment, ShortBranchName(branch), color, issue_url, status_str,
-          reset)
+          alignment, ShortBranchName(branch), color, url,
+          status_str, reset)
 
   cl = Changelist(auth_config=auth_config)
   print
