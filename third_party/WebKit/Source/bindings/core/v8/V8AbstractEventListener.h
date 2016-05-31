@@ -92,7 +92,7 @@ public:
     // value is a weak handle and so not guaranteed to stay alive.
     v8::Persistent<v8::Object>& existingListenerObjectPersistentHandle()
     {
-        return m_listener.getUnsafe();
+        return m_listener.get();
     }
 
     bool hasExistingListenerObject()

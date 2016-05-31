@@ -114,15 +114,13 @@ public:
         return m_handle == other;
     }
 
-private:
-    // FIXME: This function does an unsafe handle access. Remove it.
-    friend class V8AbstractEventListener;
-    friend class V8PerIsolateData;
-    ALWAYS_INLINE v8::Persistent<T>& getUnsafe()
+    ALWAYS_INLINE v8::Persistent<T>& get()
     {
         return m_handle;
     }
 
+
+private:
     v8::Persistent<T> m_handle;
 };
 

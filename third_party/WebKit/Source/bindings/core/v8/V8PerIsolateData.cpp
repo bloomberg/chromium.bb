@@ -179,7 +179,7 @@ v8::Persistent<v8::Value>& V8PerIsolateData::ensureLiveRoot()
 {
     if (m_liveRoot.isEmpty())
         m_liveRoot.set(isolate(), v8::Null(isolate()));
-    return m_liveRoot.getUnsafe();
+    return m_liveRoot.get();
 }
 
 // willBeDestroyed() clear things that should be cleared before
