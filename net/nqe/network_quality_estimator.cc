@@ -17,6 +17,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "net/base/load_flags.h"
@@ -252,13 +253,17 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       use_small_responses_(use_smaller_responses_for_tests),
       weight_multiplier_per_second_(
           GetWeightMultiplierPerSecond(variation_params)),
-      last_connection_change_(base::TimeTicks::Now()),
+      tick_clock_(new base::DefaultTickClock()),
+      effective_connection_type_recomputation_interval_(
+          base::TimeDelta::FromSeconds(15)),
+      last_connection_change_(tick_clock_->NowTicks()),
       current_network_id_(
           NetworkID(NetworkChangeNotifier::ConnectionType::CONNECTION_UNKNOWN,
                     std::string())),
       downstream_throughput_kbps_observations_(weight_multiplier_per_second_),
       rtt_observations_(weight_multiplier_per_second_),
       external_estimate_provider_(std::move(external_estimates_provider)),
+      effective_connection_type_(EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
       weak_ptr_factory_(this) {
   static_assert(kDefaultHalfLifeSeconds > 0,
                 "Default half life duration must be > 0");
@@ -402,7 +407,7 @@ void NetworkQualityEstimator::AddDefaultEstimates() {
       nqe::internal::InvalidRTT()) {
     RttObservation rtt_observation(
         default_observations_[current_network_id_.type].http_rtt(),
-        base::TimeTicks::Now(),
+        tick_clock_->NowTicks(),
         NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_FROM_PLATFORM);
     rtt_observations_.AddObservation(rtt_observation);
     NotifyObserversOfRTT(rtt_observation);
@@ -413,7 +418,7 @@ void NetworkQualityEstimator::AddDefaultEstimates() {
     ThroughputObservation throughput_observation(
         default_observations_[current_network_id_.type]
             .downstream_throughput_kbps(),
-        base::TimeTicks::Now(),
+        tick_clock_->NowTicks(),
         NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_FROM_PLATFORM);
     downstream_throughput_kbps_observations_.AddObservation(
         throughput_observation);
@@ -463,7 +468,7 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
     RecordMetricsOnMainFrameRequest();
   }
 
-  base::TimeTicks now = base::TimeTicks::Now();
+  const base::TimeTicks now = tick_clock_->NowTicks();
   LoadTimingInfo load_timing_info;
   request.GetLoadTimingInfo(&load_timing_info);
 
@@ -611,7 +616,7 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   CacheNetworkQualityEstimate();
 
   // Clear the local state.
-  last_connection_change_ = base::TimeTicks::Now();
+  last_connection_change_ = tick_clock_->NowTicks();
   peak_network_quality_ = nqe::internal::NetworkQuality();
   downstream_throughput_kbps_observations_.Clear();
   rtt_observations_.Clear();
@@ -636,6 +641,7 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
     AddDefaultEstimates();
   estimated_median_network_quality_ = nqe::internal::NetworkQuality();
   throughput_analyzer_->OnConnectionTypeChanged();
+  MaybeRecomputeEffectiveConnectionType();
 }
 
 void NetworkQualityEstimator::RecordMetricsOnConnectionTypeChanged() const {
@@ -798,6 +804,18 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionType(
                                               1);
 }
 
+void NetworkQualityEstimator::AddEffectiveConnectionTypeObserver(
+    EffectiveConnectionTypeObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  effective_connection_type_observer_list_.AddObserver(observer);
+}
+
+void NetworkQualityEstimator::RemoveEffectiveConnectionTypeObserver(
+    EffectiveConnectionTypeObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  effective_connection_type_observer_list_.RemoveObserver(observer);
+}
+
 bool NetworkQualityEstimator::GetHttpRTTEstimate(base::TimeDelta* rtt) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return GetRecentHttpRTTMedian(base::TimeTicks(), rtt);
@@ -950,7 +968,7 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
 
   nqe::internal::NetworkQuality network_quality(it->second.network_quality());
 
-  const base::TimeTicks now = base::TimeTicks::Now();
+  const base::TimeTicks now = tick_clock_->NowTicks();
   bool read_cached_estimate = false;
 
   if (network_quality.downstream_throughput_kbps() !=
@@ -1031,6 +1049,12 @@ const char* NetworkQualityEstimator::GetNameForEffectiveConnectionType(
   return "";
 }
 
+void NetworkQualityEstimator::SetTickClockForTesting(
+    std::unique_ptr<base::TickClock> tick_clock) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  tick_clock_ = std::move(tick_clock);
+}
+
 void NetworkQualityEstimator::CacheNetworkQualityEstimate() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_LE(cached_network_qualities_.size(),
@@ -1082,7 +1106,7 @@ void NetworkQualityEstimator::OnUpdatedRTTAvailable(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(nqe::internal::InvalidRTT(), rtt);
 
-  RttObservation observation(rtt, base::TimeTicks::Now(),
+  RttObservation observation(rtt, tick_clock_->NowTicks(),
                              ProtocolSourceToObservationSource(protocol));
   NotifyObserversOfRTT(observation);
   rtt_observations_.AddObservation(observation);
@@ -1093,6 +1117,9 @@ void NetworkQualityEstimator::NotifyObserversOfRTT(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(nqe::internal::InvalidRTT(), observation.value);
 
+  // Maybe recompute the effective connection type since a new RTT observation
+  // is available.
+  MaybeRecomputeEffectiveConnectionType();
   FOR_EACH_OBSERVER(
       RTTObserver, rtt_observer_list_,
       OnRTTObservation(observation.value.InMilliseconds(),
@@ -1104,6 +1131,9 @@ void NetworkQualityEstimator::NotifyObserversOfThroughput(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(nqe::internal::kInvalidThroughput, observation.value);
 
+  // Maybe recompute the effective connection type since a new throughput
+  // observation is available.
+  MaybeRecomputeEffectiveConnectionType();
   FOR_EACH_OBSERVER(
       ThroughputObserver, throughput_observer_list_,
       OnThroughputObservation(observation.value, observation.timestamp,
@@ -1125,11 +1155,45 @@ void NetworkQualityEstimator::OnNewThroughputObservationAvailable(
         downstream_kbps);
   }
   ThroughputObservation throughput_observation(
-      downstream_kbps, base::TimeTicks::Now(),
+      downstream_kbps, tick_clock_->NowTicks(),
       NETWORK_QUALITY_OBSERVATION_SOURCE_URL_REQUEST);
   downstream_throughput_kbps_observations_.AddObservation(
       throughput_observation);
   NotifyObserversOfThroughput(throughput_observation);
+}
+
+void NetworkQualityEstimator::MaybeRecomputeEffectiveConnectionType() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  const base::TimeTicks now = tick_clock_->NowTicks();
+  // Recompute effective connection type only if
+  // |effective_connection_type_recomputation_interval_| has passed since it was
+  // last computed or a connection change event was observed since the last
+  // computation. Strict inequalities are used to ensure that effective
+  // connection type is recomputed on connection change events even if the clock
+  // has not updated.
+  if (now - last_effective_connection_type_computation_ <
+          effective_connection_type_recomputation_interval_ &&
+      last_connection_change_ < last_effective_connection_type_computation_) {
+    return;
+  }
+
+  const EffectiveConnectionType past_type = effective_connection_type_;
+  last_effective_connection_type_computation_ = now;
+  effective_connection_type_ = GetEffectiveConnectionType();
+
+  if (past_type != effective_connection_type_)
+    NotifyObserversOfEffectiveConnectionTypeChanged();
+}
+
+void NetworkQualityEstimator::
+    NotifyObserversOfEffectiveConnectionTypeChanged() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // TODO(tbansal): Add hysteresis in the notification.
+  FOR_EACH_OBSERVER(
+      EffectiveConnectionTypeObserver, effective_connection_type_observer_list_,
+      OnEffectiveConnectionTypeChanged(effective_connection_type_));
 }
 
 }  // namespace net

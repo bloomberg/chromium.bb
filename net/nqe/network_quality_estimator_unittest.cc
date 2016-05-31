@@ -21,6 +21,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "net/base/load_flags.h"
@@ -64,7 +65,9 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
                                 variation_params,
                                 allow_local_host_requests_for_tests,
                                 allow_smaller_responses_for_tests),
-        current_network_simulated_(false),
+        effective_connection_type_set_(false),
+        effective_connection_type_(EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+        current_network_type_(NetworkChangeNotifier::CONNECTION_UNKNOWN),
         http_rtt_set_(false),
         downlink_throughput_kbps_set_(false) {
     // Set up embedded test server.
@@ -87,7 +90,6 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   // Notifies network quality estimator of change in connection.
   void SimulateNetworkChangeTo(NetworkChangeNotifier::ConnectionType type,
                                const std::string& network_id) {
-    current_network_simulated_ = true;
     current_network_type_ = type;
     current_network_id_ = network_id;
     OnConnectionTypeChanged(type);
@@ -112,6 +114,17 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   void set_http_rtt(const base::TimeDelta& http_rtt) {
     http_rtt_set_ = true;
     http_rtt_ = http_rtt;
+  }
+
+  void set_effective_connection_type(EffectiveConnectionType type) {
+    effective_connection_type_set_ = true;
+    effective_connection_type_ = type;
+  }
+
+  EffectiveConnectionType GetEffectiveConnectionType() const override {
+    if (effective_connection_type_set_)
+      return effective_connection_type_;
+    return NetworkQualityEstimator::GetEffectiveConnectionType();
   }
 
   bool GetHttpRTTEstimate(base::TimeDelta* rtt) const override {
@@ -154,25 +167,20 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
         start_time, kbps);
   }
 
+  using NetworkQualityEstimator::SetTickClockForTesting;
   using NetworkQualityEstimator::ReadCachedNetworkQualityEstimate;
   using NetworkQualityEstimator::OnConnectionTypeChanged;
 
  private:
-  // True if the network type and network id are currently simulated. This
-  // ensures that the correctness of the test does not depend on the
-  // actual network type of the device on which the test is running.
-  bool current_network_simulated_;
-
   // NetworkQualityEstimator implementation that returns the overridden network
   // id (instead of invoking platform APIs).
   NetworkQualityEstimator::NetworkID GetCurrentNetworkID() const override {
-    // GetCurrentNetworkID should be called only if the network type is
-    // currently simulated.
-    EXPECT_TRUE(current_network_simulated_);
-
     return NetworkQualityEstimator::NetworkID(current_network_type_,
                                               current_network_id_);
   }
+
+  bool effective_connection_type_set_;
+  EffectiveConnectionType effective_connection_type_;
 
   NetworkChangeNotifier::ConnectionType current_network_type_;
   std::string current_network_id_;
@@ -187,6 +195,25 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
   EmbeddedTestServer embedded_test_server_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkQualityEstimator);
+};
+
+class TestEffectiveConnectionTypeObserver
+    : public NetworkQualityEstimator::EffectiveConnectionTypeObserver {
+ public:
+  std::vector<NetworkQualityEstimator::EffectiveConnectionType>&
+  effective_connection_types() {
+    return effective_connection_types_;
+  }
+
+  // EffectiveConnectionTypeObserver implementation:
+  void OnEffectiveConnectionTypeChanged(
+      NetworkQualityEstimator::EffectiveConnectionType type) override {
+    effective_connection_types_.push_back(type);
+  }
+
+ private:
+  std::vector<NetworkQualityEstimator::EffectiveConnectionType>
+      effective_connection_types_;
 };
 
 class TestRTTObserver : public NetworkQualityEstimator::RTTObserver {
@@ -1217,7 +1244,62 @@ TEST(NetworkQualityEstimatorTest, TestThroughputNoRequestOverlap) {
   }
 }
 
-TEST(NetworkQualityEstimatorTest, TestObservers) {
+// Tests that the effective connection type is computed at the specified
+// interval, and that the observers are notified of any change.
+TEST(NetworkQualityEstimatorTest, TestEffectiveConnectionTypeObserver) {
+  std::unique_ptr<base::SimpleTestTickClock> tick_clock(
+      new base::SimpleTestTickClock());
+  base::SimpleTestTickClock* tick_clock_ptr = tick_clock.get();
+
+  TestEffectiveConnectionTypeObserver observer;
+  std::map<std::string, std::string> variation_params;
+  TestNetworkQualityEstimator estimator(variation_params);
+  estimator.AddEffectiveConnectionTypeObserver(&observer);
+  estimator.SetTickClockForTesting(std::move(tick_clock));
+
+  TestDelegate test_delegate;
+  TestURLRequestContext context(true);
+  context.set_network_quality_estimator(&estimator);
+  context.Init();
+
+  EXPECT_EQ(0U, observer.effective_connection_types().size());
+
+  estimator.set_effective_connection_type(
+      NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_2G);
+  tick_clock_ptr->Advance(base::TimeDelta::FromMinutes(60));
+
+  std::unique_ptr<URLRequest> request(context.CreateRequest(
+      estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
+  request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME);
+  request->Start();
+  base::RunLoop().Run();
+  EXPECT_EQ(1U, observer.effective_connection_types().size());
+
+  // Next request should not trigger recomputation of effective connection type
+  // since there has been no change in the clock.
+  std::unique_ptr<URLRequest> request2(context.CreateRequest(
+      estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
+  request2->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME);
+  request2->Start();
+  base::RunLoop().Run();
+  EXPECT_EQ(1U, observer.effective_connection_types().size());
+
+  // Change in connection type should send out notification to the observers.
+  estimator.set_effective_connection_type(
+      NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_3G);
+  estimator.SimulateNetworkChangeTo(NetworkChangeNotifier::CONNECTION_WIFI,
+                                    "test");
+  EXPECT_EQ(2U, observer.effective_connection_types().size());
+
+  // A change in effective connection type does not trigger notification to the
+  // observers, since it is not accompanied by any new observation or a network
+  // change event.
+  estimator.set_effective_connection_type(
+      NetworkQualityEstimator::EFFECTIVE_CONNECTION_TYPE_3G);
+  EXPECT_EQ(2U, observer.effective_connection_types().size());
+}
+
+TEST(NetworkQualityEstimatorTest, TestRttThroughputObservers) {
   TestRTTObserver rtt_observer;
   TestThroughputObserver throughput_observer;
   std::map<std::string, std::string> variation_params;

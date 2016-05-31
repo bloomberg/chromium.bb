@@ -32,6 +32,7 @@
 
 namespace base {
 class SingleThreadTaskRunner;
+class TickClock;
 }  // namespace base
 
 namespace net {
@@ -74,6 +75,32 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     EFFECTIVE_CONNECTION_TYPE_4G,
     EFFECTIVE_CONNECTION_TYPE_BROADBAND,
     EFFECTIVE_CONNECTION_TYPE_LAST,
+  };
+
+  // Observes changes in effective connection type.
+  class NET_EXPORT_PRIVATE EffectiveConnectionTypeObserver {
+   public:
+    // Notifies the observer of a change in the effective connection type.
+    // NetworkQualityEstimator computes the effective connection type once in
+    // every interval of duration
+    // |effective_connection_type_recomputation_interval_|. Additionally, when
+    // there is a change in the connection type of the device, then the
+    // effective connection type is immediately recomputed. The observer must
+    // register and unregister itself on the IO thread. All the observers would
+    // be notified on the IO thread.
+    //
+    // If the computed effective connection type is different from the
+    // previously notified effective connection type, then all the registered
+    // observers are notified of the new effective connection type.
+    virtual void OnEffectiveConnectionTypeChanged(
+        EffectiveConnectionType type) = 0;
+
+   protected:
+    EffectiveConnectionTypeObserver() {}
+    virtual ~EffectiveConnectionTypeObserver() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(EffectiveConnectionTypeObserver);
   };
 
   // Observes measurements of round trip time.
@@ -143,6 +170,16 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Returns the effective type of the current connection. Virtualized for
   // testing.
   virtual EffectiveConnectionType GetEffectiveConnectionType() const;
+
+  // Adds |observer| to the list of effective connection type observers. Must be
+  // called on the IO thread.
+  void AddEffectiveConnectionTypeObserver(
+      EffectiveConnectionTypeObserver* observer);
+
+  // Removes |observer| from the list of effective connection type observers.
+  // Must be called on the IO thread.
+  void RemoveEffectiveConnectionTypeObserver(
+      EffectiveConnectionTypeObserver* observer);
 
   // Returns true if the RTT is available and sets |rtt| to the RTT estimated at
   // the HTTP layer. Virtualized for testing. |rtt| should not be null. The RTT
@@ -273,6 +310,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   const char* GetNameForEffectiveConnectionType(
       EffectiveConnectionType type) const;
 
+  // Overrides the tick clock used by |this| for testing.
+  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, StoreObservations);
   FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, TestAddObservation);
@@ -392,6 +432,13 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Returns true only if the |request| can be used for RTT estimation.
   bool RequestProvidesRTTObservation(const URLRequest& request) const;
 
+  // Recomputes effective connection type, if it was computed more than the
+  // specified duration ago, or if there has been a connection change recently.
+  void MaybeRecomputeEffectiveConnectionType();
+
+  // Notify observers of a change in effective connection type.
+  void NotifyObserversOfEffectiveConnectionTypeChanged();
+
   // Values of external estimate provider status. This enum must remain
   // synchronized with the enum of the same name in
   // metrics/histograms/histograms.xml.
@@ -421,6 +468,16 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   // The factor by which the weight of an observation reduces every second.
   const double weight_multiplier_per_second_;
+
+  // Tick clock used by the network quality estimator.
+  std::unique_ptr<base::TickClock> tick_clock_;
+
+  // Minimum duration between two consecutive computations of effective
+  // connection type. Set to non-zero value as a performance optimization.
+  const base::TimeDelta effective_connection_type_recomputation_interval_;
+
+  // Time when the effective connection type was last computed.
+  base::TimeTicks last_effective_connection_type_computation_;
 
   // Time when last connection change was observed.
   base::TimeTicks last_connection_change_;
@@ -466,6 +523,10 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // system APIs. May be NULL.
   const std::unique_ptr<ExternalEstimateProvider> external_estimate_provider_;
 
+  // Observer list for changes in effective connection type.
+  base::ObserverList<EffectiveConnectionTypeObserver>
+      effective_connection_type_observer_list_;
+
   // Observer lists for round trip times and throughput measurements.
   base::ObserverList<RTTObserver> rtt_observer_list_;
   base::ObserverList<ThroughputObserver> throughput_observer_list_;
@@ -477,6 +538,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // |downstream_throughput_kbps_observations_|, which are later used for
   // estimating the throughput.
   std::unique_ptr<nqe::internal::ThroughputAnalyzer> throughput_analyzer_;
+
+  // Current effective connection type. It is updated on connection change
+  // events. It is also updated every time there is network traffic (provided
+  // the last computation was more than
+  // |effective_connection_type_recomputation_interval_| ago).
+  EffectiveConnectionType effective_connection_type_;
 
   base::ThreadChecker thread_checker_;
 
