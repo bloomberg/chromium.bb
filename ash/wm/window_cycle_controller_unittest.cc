@@ -27,9 +27,35 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/events/event_handler.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {
+
+namespace {
+
+class KeyEventCounter : public ui::EventHandler {
+ public:
+  KeyEventCounter() : key_events_(0) {}
+  ~KeyEventCounter() override {}
+
+  size_t GetCountAndReset() {
+    size_t count = key_events_;
+    key_events_ = 0;
+    return count;
+  }
+
+  // ui::EventHandler:
+  void OnKeyEvent(ui::KeyEvent* event) override { key_events_++; }
+
+ private:
+  size_t key_events_;
+
+  DISALLOW_COPY_AND_ASSIGN(KeyEventCounter);
+};
+
+}  // namespace
 
 using aura::test::CreateTestWindowWithId;
 using aura::test::TestWindowDelegate;
@@ -588,6 +614,26 @@ TEST_F(WindowCycleControllerTest, CycleMruPanelDestroyed) {
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   controller->StopCycling();
   EXPECT_TRUE(wm::IsActiveWindow(panel1.get()));
+}
+
+// Tests that the tab key events are not sent to the window.
+TEST_F(WindowCycleControllerTest, TabKeyNotLeaked) {
+  std::unique_ptr<Window> w0(CreateTestWindowInShellWithId(0));
+  std::unique_ptr<Window> w1(CreateTestWindowInShellWithId(1));
+  KeyEventCounter key_count;
+  w0->AddPreTargetHandler(&key_count);
+  w1->AddPreTargetHandler(&key_count);
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  wm::GetWindowState(w0.get())->Activate();
+  generator.PressKey(ui::VKEY_MENU, ui::EF_NONE);
+  EXPECT_EQ(1u, key_count.GetCountAndReset());
+  generator.PressKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  EXPECT_EQ(0u, key_count.GetCountAndReset());
+  generator.ReleaseKey(ui::VKEY_TAB, ui::EF_ALT_DOWN);
+  EXPECT_EQ(0u, key_count.GetCountAndReset());
+  generator.ReleaseKey(ui::VKEY_MENU, ui::EF_NONE);
+  EXPECT_TRUE(wm::GetWindowState(w1.get())->IsActive());
+  EXPECT_EQ(0u, key_count.GetCountAndReset());
 }
 
 }  // namespace ash

@@ -47,6 +47,9 @@ WindowCycleEventFilter::~WindowCycleEventFilter() {
 }
 
 void WindowCycleEventFilter::OnKeyEvent(ui::KeyEvent* event) {
+  // Until the alt key is released, all key events are handled by this window
+  // cycle controller: https://crbug.com/340339.
+  event->StopPropagation();
   // Views uses VKEY_MENU for both left and right Alt keys.
   if (event->key_code() == ui::VKEY_MENU &&
       event->type() == ui::ET_KEY_RELEASED) {
