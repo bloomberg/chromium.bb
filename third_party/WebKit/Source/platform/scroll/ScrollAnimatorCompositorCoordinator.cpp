@@ -40,11 +40,16 @@ void ScrollAnimatorCompositorCoordinator::dispose()
     m_compositorPlayer.reset();
 }
 
+void ScrollAnimatorCompositorCoordinator::resetAnimationIds()
+{
+    m_compositorAnimationId = 0;
+    m_compositorAnimationGroupId = 0;
+}
+
 void ScrollAnimatorCompositorCoordinator::resetAnimationState()
 {
     m_runState = RunState::Idle;
-    m_compositorAnimationId = 0;
-    m_compositorAnimationGroupId = 0;
+    resetAnimationIds();
 }
 
 bool ScrollAnimatorCompositorCoordinator::hasAnimationThatRequiresService() const
@@ -62,6 +67,7 @@ bool ScrollAnimatorCompositorCoordinator::hasAnimationThatRequiresService() cons
     case RunState::RunningOnMainThread:
     case RunState::RunningOnCompositorButNeedsUpdate:
     case RunState::RunningOnCompositorButNeedsTakeover:
+    case RunState::RunningOnCompositorButNeedsAdjustment:
     case RunState::WaitingToCancelOnCompositor:
         return true;
     }
@@ -98,7 +104,6 @@ void ScrollAnimatorCompositorCoordinator::cancelAnimation()
     case RunState::WaitingToCancelOnCompositor:
     case RunState::PostAnimationCleanup:
         break;
-    case RunState::RunningOnCompositorButNeedsTakeover:
     case RunState::WaitingToSendToCompositor:
         if (m_compositorAnimationId) {
             // We still have a previous animation running on the compositor.
@@ -111,6 +116,8 @@ void ScrollAnimatorCompositorCoordinator::cancelAnimation()
         m_runState = RunState::PostAnimationCleanup;
         break;
     case RunState::WaitingToCancelOnCompositorButNewScroll:
+    case RunState::RunningOnCompositorButNeedsAdjustment:
+    case RunState::RunningOnCompositorButNeedsTakeover:
     case RunState::RunningOnCompositorButNeedsUpdate:
     case RunState::RunningOnCompositor:
         m_runState = RunState::WaitingToCancelOnCompositor;
@@ -133,6 +140,7 @@ void ScrollAnimatorCompositorCoordinator::takeOverCompositorAnimation()
     case RunState::WaitingToSendToCompositor:
     case RunState::RunningOnMainThread:
         break;
+    case RunState::RunningOnCompositorButNeedsAdjustment:
     case RunState::RunningOnCompositorButNeedsUpdate:
     case RunState::RunningOnCompositor:
         // We call abortAnimation that makes changes to the animation running on
@@ -166,6 +174,7 @@ void ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(
     case RunState::WaitingToCancelOnCompositorButNewScroll:
         break;
     case RunState::RunningOnCompositor:
+    case RunState::RunningOnCompositorButNeedsAdjustment:
     case RunState::RunningOnCompositorButNeedsUpdate:
     case RunState::RunningOnCompositorButNeedsTakeover:
     case RunState::WaitingToCancelOnCompositor:
@@ -268,12 +277,19 @@ void ScrollAnimatorCompositorCoordinator::updateCompositorAnimations()
         if (m_implOnlyAnimationTakeover)
             host.takeOverImplOnlyScrollOffsetAnimation(elementId);
     }
-    m_implOnlyAnimationAdjustment = FloatSize();
+    m_implOnlyAnimationAdjustment = IntSize();
     m_implOnlyAnimationTakeover = false;
 }
 
+void ScrollAnimatorCompositorCoordinator::adjustAnimationAndSetScrollPosition(
+    IntSize adjustment, ScrollType scrollType) {
+    // Subclasses should override this and adjust the animation as necessary.
+    getScrollableArea()->setScrollPosition(
+        getScrollableArea()->scrollPositionDouble() + adjustment, scrollType);
+}
+
 void ScrollAnimatorCompositorCoordinator::adjustImplOnlyScrollOffsetAnimation(
-    const FloatSize& adjustment)
+    const IntSize& adjustment)
 {
     if (!getScrollableArea()->scrollAnimatorEnabled())
         return;
@@ -314,6 +330,8 @@ String ScrollAnimatorCompositorCoordinator::runStateAsText() const
         return String("RunningOnCompositorButNeedsTakeover");
     case RunState::WaitingToCancelOnCompositorButNewScroll:
         return String("WaitingToCancelOnCompositorButNewScroll");
+    case RunState::RunningOnCompositorButNeedsAdjustment:
+        return String("RunningOnCompositorButNeedsAdjustment");
     }
     ASSERT_NOT_REACHED();
     return String();

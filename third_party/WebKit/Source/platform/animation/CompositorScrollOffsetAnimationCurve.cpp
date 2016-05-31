@@ -60,6 +60,11 @@ FloatPoint CompositorScrollOffsetAnimationCurve::getValue(double time) const
     return FloatPoint(value.x(), value.y());
 }
 
+void CompositorScrollOffsetAnimationCurve::applyAdjustment(IntSize adjustment)
+{
+    m_curve->ApplyAdjustment(gfx::Vector2dF(adjustment.width(), adjustment.height()));
+}
+
 double CompositorScrollOffsetAnimationCurve::duration() const
 {
     return m_curve->Duration().InSecondsF();

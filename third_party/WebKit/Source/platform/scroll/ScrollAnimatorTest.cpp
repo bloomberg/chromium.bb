@@ -83,8 +83,29 @@ public:
     bool scrollAnimatorEnabled() const override { return m_scrollAnimatorEnabled; }
     int pageStep(ScrollbarOrientation) const override { return 0; }
 
+    void setScrollAnimator(ScrollAnimator* scrollAnimator)
+    {
+        animator = scrollAnimator;
+    }
+
+    DoublePoint scrollPositionDouble() const override
+    {
+        if (animator)
+            return animator->currentPosition();
+        return ScrollableArea::scrollPositionDouble();
+    }
+
+    void setScrollPosition(const DoublePoint& position, ScrollType type,
+        ScrollBehavior behavior = ScrollBehaviorInstant)
+    {
+        if (animator)
+            animator->setCurrentPosition(toFloatPoint(position));
+        ScrollableArea::setScrollPosition(position, type, behavior);
+    }
+
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
+        visitor->trace(animator);
         ScrollableArea::trace(visitor);
     }
 
@@ -93,6 +114,7 @@ private:
         : m_scrollAnimatorEnabled(scrollAnimatorEnabled) { }
 
     bool m_scrollAnimatorEnabled;
+    Member<ScrollAnimator> animator;
 };
 
 class TestScrollAnimator : public ScrollAnimator {
@@ -534,11 +556,11 @@ TEST(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared)
     EXPECT_FALSE(animator->hasAnimationThatRequiresService());
     EXPECT_TRUE(animator->implOnlyAnimationAdjustmentForTesting().isZero());
 
-    animator->adjustImplOnlyScrollOffsetAnimation(FloatSize(100.f, 100.f));
-    animator->adjustImplOnlyScrollOffsetAnimation(FloatSize(10.f, -10.f));
+    animator->adjustImplOnlyScrollOffsetAnimation(IntSize(100, 100));
+    animator->adjustImplOnlyScrollOffsetAnimation(IntSize(10, -10));
 
     EXPECT_TRUE(animator->hasAnimationThatRequiresService());
-    EXPECT_EQ(FloatSize(110.f, 90.f), animator->implOnlyAnimationAdjustmentForTesting());
+    EXPECT_EQ(FloatSize(110, 90), animator->implOnlyAnimationAdjustmentForTesting());
 
     animator->updateCompositorAnimations();
 
@@ -551,6 +573,57 @@ TEST(ScrollAnimatorTest, ImplOnlyAnimationUpdatesCleared)
     EXPECT_TRUE(animator->hasAnimationThatRequiresService());
     animator->updateCompositorAnimations();
     EXPECT_FALSE(animator->hasAnimationThatRequiresService());
+
+    // Forced GC in order to finalize objects depending on the mock object.
+    ThreadHeap::collectAllGarbage();
+}
+
+TEST(ScrollAnimatorTest, MainThreadAnimationTargetAdjustment)
+{
+    MockScrollableArea* scrollableArea = MockScrollableArea::create(true);
+    ScrollAnimator* animator = new ScrollAnimator(scrollableArea, getMockedTime);
+    scrollableArea->setScrollAnimator(animator);
+
+    EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1))
+        .WillRepeatedly(Return(IntPoint(-100, -100)));
+    EXPECT_CALL(*scrollableArea, maximumScrollPosition()).Times(AtLeast(1))
+        .WillRepeatedly(Return(IntPoint(1000, 1000)));
+    // Twice from tickAnimation, once from reset, and once from
+    // adjustAnimationAndSetScrollPosition.
+    EXPECT_CALL(*scrollableArea, setScrollOffset(_, _)).Times(4);
+    // One from call to userScroll and one from updateCompositorAnimations.
+    EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(2);
+    EXPECT_CALL(*scrollableArea, scheduleAnimation()).Times(AtLeast(1))
+        .WillRepeatedly(Return(true));
+
+    // Idle
+    EXPECT_FALSE(animator->hasAnimationThatRequiresService());
+    EXPECT_EQ(FloatPoint(), animator->currentPosition());
+
+    // WaitingToSendToCompositor
+    animator->userScroll(ScrollByLine, FloatSize(100, 100));
+
+    // RunningOnMainThread
+    gMockedTime += 0.05;
+    animator->updateCompositorAnimations();
+    animator->tickAnimation(getMockedTime());
+    FloatPoint pos = animator->currentPosition();
+    EXPECT_EQ(FloatPoint(100, 100), animator->desiredTargetPosition());
+    EXPECT_GT(pos.x(), 0);
+    EXPECT_GT(pos.y(), 0);
+
+    // Adjustment
+    IntSize adjustment = IntSize(10, -10);
+    animator->adjustAnimationAndSetScrollPosition(adjustment, AnchoringScroll);
+    EXPECT_EQ(pos + FloatSize(adjustment), animator->currentPosition());
+    EXPECT_EQ(FloatPoint(110, 90), animator->desiredTargetPosition());
+
+    // Animation finished
+    gMockedTime += 1.0;
+    animator->updateCompositorAnimations();
+    animator->tickAnimation(getMockedTime());
+    EXPECT_EQ(FloatPoint(110, 90), animator->currentPosition());
+    reset(*animator);
 
     // Forced GC in order to finalize objects depending on the mock object.
     ThreadHeap::collectAllGarbage();

@@ -241,22 +241,7 @@ void ScrollAnchor::restore()
 
 void ScrollAnchor::adjust(IntSize adjustment)
 {
-    DoublePoint desiredPos = m_scroller->scrollPositionDouble() + adjustment;
-    ScrollAnimatorBase* animator = m_scroller->existingScrollAnimator();
-    if (!animator || !animator->hasRunningAnimation()) {
-        m_scroller->setScrollPosition(desiredPos, AnchoringScroll);
-        animator->adjustImplOnlyScrollOffsetAnimation(FloatSize(adjustment));
-    } else {
-        // If in the middle of a scroll animation, stop the animation, make
-        // the adjustment, and continue the animation on the pending delta.
-        // TODO(skobes): This is not quite right, we are starting a new curve without
-        // saving our progress on the existing curve.
-        FloatSize pendingDelta = animator->desiredTargetPosition() -
-            FloatPoint(m_scroller->scrollPositionDouble());
-        animator->cancelAnimation();
-        m_scroller->setScrollPosition(desiredPos, AnchoringScroll);
-        animator->userScroll(ScrollByPixel, pendingDelta);
-    }
+    m_scroller->scrollAnimator().adjustAnimationAndSetScrollPosition(adjustment, AnchoringScroll);
 
     if (m_current && m_lastAdjusted.m_anchorObject != m_current.m_anchorObject) {
         m_lastAdjusted.clear();

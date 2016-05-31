@@ -33,6 +33,7 @@ public:
     virtual FloatPoint getValue(double time) const;
     virtual double duration() const;
     virtual FloatPoint targetValue() const;
+    virtual void applyAdjustment(IntSize);
     virtual void updateTarget(double time, FloatPoint newTarget);
 
     // CompositorAnimationCurve implementation.

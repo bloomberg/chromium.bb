@@ -13,6 +13,7 @@
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/heap/Handle.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
@@ -34,8 +35,6 @@ public:
     void dispose();
     String runStateAsText() const;
 
-    void adjustImplOnlyScrollOffsetAnimation(const FloatSize& adjustment);
-
     virtual bool hasRunningAnimation() const { return false; }
 
     virtual void resetAnimationState();
@@ -44,6 +43,9 @@ public:
     // and continues it on the main thread. This should only be called when in
     // DocumentLifecycle::LifecycleState::CompositingClean state.
     virtual void takeOverCompositorAnimation();
+    // Updates the scroll position of the animator's ScrollableArea by
+    // adjustment and update the target of an ongoing scroll offset animation.
+    virtual void adjustAnimationAndSetScrollPosition(IntSize adjustment, ScrollType);
     virtual void updateCompositorAnimations();
 
     virtual ScrollableArea* getScrollableArea() const = 0;
@@ -57,8 +59,10 @@ public:
 protected:
     explicit ScrollAnimatorCompositorCoordinator();
 
-    FloatSize implOnlyAnimationAdjustmentForTesting() { return m_implOnlyAnimationAdjustment; }
+    void adjustImplOnlyScrollOffsetAnimation(const IntSize& adjustment);
+    IntSize implOnlyAnimationAdjustmentForTesting() { return m_implOnlyAnimationAdjustment; }
 
+    void resetAnimationIds();
     bool addAnimation(PassOwnPtr<CompositorAnimation>);
     void removeAnimation();
     virtual void abortAnimation();
@@ -128,6 +132,11 @@ protected:
         // running animation is aborted and an animation to the new target
         // from the current position is started.
         WaitingToCancelOnCompositorButNewScroll,
+
+        // Running an animation on the compositor but an adjustment to the
+        // scroll position was made on the main thread and the animation must
+        // be updated.
+        RunningOnCompositorButNeedsAdjustment,
     };
 
     OwnPtr<CompositorAnimationPlayer> m_compositorPlayer;
@@ -138,7 +147,7 @@ protected:
 
     // An adjustment to the scroll offset on the main thread that may affect
     // impl-only scroll offset animations.
-    FloatSize m_implOnlyAnimationAdjustment;
+    IntSize m_implOnlyAnimationAdjustment;
 
     // If set to true, sends a cc::ScrollOffsetAnimationUpdate to cc which will
     // abort the impl-only scroll offset animation and continue it on main
