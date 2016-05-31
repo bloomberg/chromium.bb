@@ -333,13 +333,10 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
 - (CRWSessionEntry*)visibleEntry {
   if (_transientEntry)
     return _transientEntry.get();
-  // Only return the pending_entry for:
-  //   (a) new (non-history), browser-initiated navigations, and
-  //   (b) pending unsafe navigations (while showing the interstitial)
-  // in order to prevent URL spoof attacks.
+  // Only return the pending_entry for new (non-history), browser-initiated
+  // navigations in order to prevent URL spoof attacks.
   web::NavigationItemImpl* pendingItem = [_pendingEntry navigationItemImpl];
-  if (pendingItem &&
-      (!pendingItem->is_renderer_initiated() || pendingItem->IsUnsafe())) {
+  if (pendingItem && !pendingItem->is_renderer_initiated()) {
     return _pendingEntry.get();
   }
   return [self lastCommittedEntry];
@@ -383,18 +380,11 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   // Remove the workaround code from -presentSafeBrowsingWarningForResource:.
   CRWSessionEntry* currentEntry = self.currentEntry;
   if (currentEntry) {
-    // If the current entry is known-unsafe (and thus not visible and likely to
-    // be removed), ignore any renderer-initated updates and don't worry about
-    // sending a notification.
     web::NavigationItem* item = [currentEntry navigationItem];
-    if (item->IsUnsafe() && rendererInitiated) {
-      return;
-    }
     if (item->GetURL() == url &&
         (!PageTransitionCoreTypeIs(trans, ui::PAGE_TRANSITION_FORM_SUBMIT) ||
          PageTransitionCoreTypeIs(item->GetTransitionType(),
-                                  ui::PAGE_TRANSITION_FORM_SUBMIT) ||
-         item->IsUnsafe())) {
+                                  ui::PAGE_TRANSITION_FORM_SUBMIT))) {
       // Send the notification anyway, to preserve old behavior. It's unknown
       // whether anything currently relies on this, but since both this whole
       // hack and the content facade will both be going away, it's not worth

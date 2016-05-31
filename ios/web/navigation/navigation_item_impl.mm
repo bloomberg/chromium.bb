@@ -190,14 +190,6 @@ base::Time NavigationItemImpl::GetTimestamp() const {
   return timestamp_;
 }
 
-void NavigationItemImpl::SetUnsafe(bool is_unsafe) {
-  is_unsafe_ = is_unsafe;
-}
-
-bool NavigationItemImpl::IsUnsafe() const {
-  return is_unsafe_;
-}
-
 void NavigationItemImpl::SetIsOverridingUserAgent(
     bool is_overriding_user_agent) {
   is_overriding_user_agent_ = is_overriding_user_agent;

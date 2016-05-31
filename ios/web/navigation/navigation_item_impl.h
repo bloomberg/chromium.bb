@@ -61,8 +61,6 @@ class NavigationItemImpl : public web::NavigationItem {
   SSLStatus& GetSSL() override;
   void SetTimestamp(base::Time timestamp) override;
   base::Time GetTimestamp() const override;
-  void SetUnsafe(bool is_unsafe) override;
-  bool IsUnsafe() const override;
   void SetIsOverridingUserAgent(bool is_overriding_user_agent) override;
   bool IsOverridingUserAgent() const override;
   bool HasPostData() const override;

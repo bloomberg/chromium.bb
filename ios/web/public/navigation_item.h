@@ -103,11 +103,6 @@ class NavigationItem : public base::SupportsUserData {
   virtual void SetTimestamp(base::Time timestamp) = 0;
   virtual base::Time GetTimestamp() const = 0;
 
-  // |true| if this item contains unsafe resources and will be removed. This
-  // property doesn't get serialized.
-  virtual void SetUnsafe(bool is_unsafe) = 0;
-  virtual bool IsUnsafe() const = 0;
-
   // |true| if this item uses a desktop user agent in HTTP requests and
   // UIWebView.
   virtual void SetIsOverridingUserAgent(bool is_overriding_user_agent) = 0;
