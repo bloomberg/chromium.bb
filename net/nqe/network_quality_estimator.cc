@@ -460,6 +460,8 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
     estimated_median_network_quality_ = nqe::internal::NetworkQuality(
         estimated_http_rtt, nqe::internal::InvalidRTT(),
         downstream_throughput_kbps);
+
+    RecordMetricsOnMainFrameRequest();
   }
 
   base::TimeTicks now = base::TimeTicks::Now();
@@ -694,6 +696,35 @@ void NetworkQualityEstimator::RecordMetricsOnConnectionTypeChanged() const {
           current_network_id_.type, 10 * 1000);  // 10 seconds
       transport_rtt_percentile->Add(rtt.InMilliseconds());
     }
+  }
+}
+
+void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  base::TimeDelta http_rtt;
+  if (GetHttpRTTEstimate(&http_rtt)) {
+    // Add the 50th percentile value.
+    base::HistogramBase* rtt_percentile = GetHistogram(
+        "MainFrame.RTT.Percentile50.", current_network_id_.type, 10 * 1000);
+    rtt_percentile->Add(http_rtt.InMilliseconds());
+  }
+
+  base::TimeDelta transport_rtt;
+  if (GetTransportRTTEstimate(&transport_rtt)) {
+    // Add the 50th percentile value.
+    base::HistogramBase* transport_rtt_percentile =
+        GetHistogram("MainFrame.TransportRTT.Percentile50.",
+                     current_network_id_.type, 10 * 1000);
+    transport_rtt_percentile->Add(transport_rtt.InMilliseconds());
+  }
+
+  int32_t kbps;
+  if (GetDownlinkThroughputKbpsEstimate(&kbps)) {
+    // Add the 50th percentile value.
+    base::HistogramBase* throughput_percentile = GetHistogram(
+        "MainFrame.Kbps.Percentile50.", current_network_id_.type, 1000 * 1000);
+    throughput_percentile->Add(kbps);
   }
 }
 

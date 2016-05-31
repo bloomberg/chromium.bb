@@ -327,6 +327,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Records UMA when there is a change in connection type.
   void RecordMetricsOnConnectionTypeChanged() const;
 
+  // Records UMA on main frame requests.
+  void RecordMetricsOnMainFrameRequest() const;
+
   // Records a downstream throughput observation to the observation buffer if
   // a valid observation is available. |downstream_kbps| is the downstream
   // throughput in kilobits per second.

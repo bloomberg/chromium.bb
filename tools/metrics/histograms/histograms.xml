@@ -34550,6 +34550,38 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NQE.MainFrame.Kbps" units="Kbps">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Rough estimate of the downstream peak throughput at different percentiles.
+
+    This metric is recorded on main-frame requests.
+  </summary>
+</histogram>
+
+<histogram name="NQE.MainFrame.RTT" units="ms">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Rough estimate of the computed round trip time at the URLRequest layer at
+    different percentiles.
+
+    This metric is recorded on main-frame requests.
+  </summary>
+</histogram>
+
+<histogram name="NQE.MainFrame.TransportRTT" units="ms">
+  <owner>bengr@chromium.org</owner>
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Rough estimate of the computed round trip time at the transport layer at
+    different percentiles.
+
+    This metric is recorded on main-frame requests.
+  </summary>
+</histogram>
+
 <histogram name="NQE.PeakKbps" units="Kbps">
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
@@ -95021,6 +95053,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="NQE.TransportRTT"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="NQE.DifferentPercentiles" separator=".">
+  <suffix name="Percentile50" label="50th percentile"/>
+  <affected-histogram name="NQE.MainFrame.Kbps"/>
+  <affected-histogram name="NQE.MainFrame.RTT"/>
+  <affected-histogram name="NQE.MainFrame.TransportRTT"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="NQE.NetworkTypes" separator=".">
   <suffix name="Unknown" label="On Unknown network"/>
   <suffix name="Ethernet" label="On Ethernet network"/>
@@ -95033,6 +95072,9 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="NQE.DifferenceRTTActualAndEstimated"/>
   <affected-histogram name="NQE.DifferenceRTTEstimatedAndActual"/>
   <affected-histogram name="NQE.FastestRTT"/>
+  <affected-histogram name="NQE.MainFrame.Kbps.Percentile50"/>
+  <affected-histogram name="NQE.MainFrame.RTT.Percentile50"/>
+  <affected-histogram name="NQE.MainFrame.TransportRTT.Percentile50"/>
   <affected-histogram name="NQE.PeakKbps"/>
   <affected-histogram name="NQE.RatioEstimatedToActualRTT"/>
   <affected-histogram name="NQE.RTT.Percentile0"/>

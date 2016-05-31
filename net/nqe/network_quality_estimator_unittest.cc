@@ -301,6 +301,13 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   EXPECT_FALSE(estimator.GetHttpRTTEstimate(&rtt));
   EXPECT_FALSE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
 
+  // Verify that metrics are logged correctly on main-frame requests.
+  histogram_tester.ExpectTotalCount("NQE.MainFrame.RTT.Percentile50.Unknown",
+                                    1);
+  histogram_tester.ExpectTotalCount(
+      "NQE.MainFrame.TransportRTT.Percentile50.Unknown", 0);
+  histogram_tester.ExpectTotalCount("NQE.MainFrame.Kbps.Percentile50.Unknown",
+                                    1);
   estimator.SimulateNetworkChangeTo(
       NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI, std::string());
   histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 1);
@@ -1388,7 +1395,8 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
 
   // Send two requests. Verify that the completion of each request generates at
   // least one TCP RTT observation.
-  for (size_t i = 0; i < 2; ++i) {
+  const size_t num_requests = 2;
+  for (size_t i = 0; i < num_requests; ++i) {
     size_t before_count_tcp_rtt_observations = 0;
     for (const auto& observation : rtt_observer.observations()) {
       if (observation.source == NETWORK_QUALITY_OBSERVATION_SOURCE_TCP)
@@ -1397,6 +1405,7 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
 
     std::unique_ptr<URLRequest> request(context.CreateRequest(
         estimator.GetEchoURL(), DEFAULT_PRIORITY, &test_delegate));
+    request->SetLoadFlags(request->load_flags() | LOAD_MAIN_FRAME);
     request->Start();
     base::RunLoop().Run();
 
@@ -1424,6 +1433,10 @@ TEST(NetworkQualityEstimatorTest, MAYBE_TestTCPSocketRTT) {
   histogram_tester.ExpectTotalCount("NQE.TransportRTT.Percentile90.Unknown", 1);
   histogram_tester.ExpectTotalCount("NQE.TransportRTT.Percentile100.Unknown",
                                     1);
+
+  // Verify that metrics are logged correctly on main-frame requests.
+  histogram_tester.ExpectTotalCount(
+      "NQE.MainFrame.TransportRTT.Percentile50.Unknown", num_requests);
 }
 
 }  // namespace net
