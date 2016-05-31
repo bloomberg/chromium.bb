@@ -497,7 +497,10 @@ void VideoRendererImpl::AttemptRead_Locked() {
 }
 
 void VideoRendererImpl::OnVideoFrameStreamResetDone() {
-  base::AutoLock auto_lock(lock_);
+  // We don't need to acquire the |lock_| here, because we can only get here
+  // when Flush is in progress, so rendering and video sink must be stopped.
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(!sink_started_);
   DCHECK_EQ(kFlushing, state_);
   DCHECK(!received_end_of_stream_);
   DCHECK(!rendered_end_of_stream_);

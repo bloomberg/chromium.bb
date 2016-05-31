@@ -573,6 +573,27 @@ TEST_F(VideoRendererImplTest, FlushWithNothingBuffered) {
   Destroy();
 }
 
+// Verify that the flush callback is invoked outside of VideoRenderer lock, so
+// we should be able to call other renderer methods from the Flush callback.
+static void VideoRendererImplTest_FlushDoneCB(VideoRendererImplTest* test,
+                                              VideoRenderer* renderer,
+                                              const base::Closure& success_cb) {
+  test->QueueFrames("0 10 20 30");
+  renderer->StartPlayingFrom(base::TimeDelta::FromSeconds(0));
+  success_cb.Run();
+}
+
+TEST_F(VideoRendererImplTest, FlushCallbackNoLock) {
+  Initialize();
+  StartPlayingFrom(0);
+  WaitableMessageLoopEvent event;
+  renderer_->Flush(
+      base::Bind(&VideoRendererImplTest_FlushDoneCB, base::Unretained(this),
+                 base::Unretained(renderer_.get()), event.GetClosure()));
+  event.RunAndWait();
+  Destroy();
+}
+
 TEST_F(VideoRendererImplTest, DecodeError_Playing) {
   Initialize();
   QueueFrames("0 10 20 30");
