@@ -10,7 +10,6 @@ import functools
 import logging
 import os
 import signal
-import subprocess
 import sys
 import threading
 import time
@@ -89,7 +88,7 @@ class ThreadPoolTest(unittest.TestCase):
     self.thread_pool = threading_utils.ThreadPool(
         self.MIN_THREADS, self.MAX_THREADS, 0)
 
-  @timeout(1)
+  @timeout(10)
   def tearDown(self):
     super(ThreadPoolTest, self).tearDown()
     self.thread_pool.close()
@@ -125,66 +124,66 @@ class ThreadPoolTest(unittest.TestCase):
     with self.assertRaises(threading_utils.ThreadPoolEmpty):
       self.thread_pool.get_one_result()
 
-  @timeout(1)
+  @timeout(10)
   def test_get_one_result_ok(self):
     self.thread_pool.add_task(0, lambda: 'OK')
     self.assertEqual(self.thread_pool.get_one_result(), 'OK')
 
-  @timeout(1)
+  @timeout(10)
   def test_get_one_result_fail(self):
     # No tasks added -> get_one_result raises an exception.
     with self.assertRaises(threading_utils.ThreadPoolEmpty):
       self.thread_pool.get_one_result()
 
-  @timeout(5)
+  @timeout(30)
   def test_join(self):
     self.run_results_test(self.sleep_task(),
                           self.get_results_via_join)
 
-  @timeout(5)
+  @timeout(30)
   def test_get_one_result(self):
     self.run_results_test(self.sleep_task(),
                           self.get_results_via_get_one_result)
 
-  @timeout(5)
+  @timeout(30)
   def test_iter_results(self):
     self.run_results_test(self.sleep_task(),
                           self.get_results_via_iter_results)
 
-  @timeout(5)
+  @timeout(30)
   def test_retry_and_join(self):
     self.run_results_test(self.retrying_sleep_task(),
                           self.get_results_via_join)
 
-  @timeout(5)
+  @timeout(30)
   def test_retry_and_get_one_result(self):
     self.run_results_test(self.retrying_sleep_task(),
                           self.get_results_via_get_one_result)
 
-  @timeout(5)
+  @timeout(30)
   def test_retry_and_iter_results(self):
     self.run_results_test(self.retrying_sleep_task(),
                           self.get_results_via_iter_results)
 
-  @timeout(5)
+  @timeout(30)
   def test_none_task_and_join(self):
     self.run_results_test(self.none_task(),
                           self.get_results_via_join,
                           expected=[])
 
-  @timeout(5)
+  @timeout(30)
   def test_none_task_and_get_one_result(self):
     self.thread_pool.add_task(0, self.none_task(), 0)
     with self.assertRaises(threading_utils.ThreadPoolEmpty):
       self.thread_pool.get_one_result()
 
-  @timeout(5)
+  @timeout(30)
   def test_none_task_and_and_iter_results(self):
     self.run_results_test(self.none_task(),
                           self.get_results_via_iter_results,
                           expected=[])
 
-  @timeout(5)
+  @timeout(30)
   def test_generator_task(self):
     MULTIPLIER = 1000
     COUNT = 10
@@ -206,7 +205,7 @@ class ThreadPoolTest(unittest.TestCase):
     for results_getter in getters:
       self.run_results_test(generator_task, results_getter, args, expected)
 
-  @timeout(5)
+  @timeout(30)
   def test_concurrent_iter_results(self):
     def poller_proc(result):
       result.extend(self.thread_pool.iter_results())
@@ -233,7 +232,7 @@ class ThreadPoolTest(unittest.TestCase):
     self.assertEqual(set(args), set(all_results))
     self.assertEqual(len(args), len(all_results))
 
-  @timeout(1)
+  @timeout(10)
   def test_adding_tasks_after_close(self):
     pool = threading_utils.ThreadPool(1, 1, 0)
     pool.add_task(0, lambda: None)
@@ -241,7 +240,7 @@ class ThreadPoolTest(unittest.TestCase):
     with self.assertRaises(threading_utils.ThreadPoolClosed):
       pool.add_task(0, lambda: None)
 
-  @timeout(1)
+  @timeout(10)
   def test_double_close(self):
     pool = threading_utils.ThreadPool(1, 1, 0)
     pool.close()
@@ -268,7 +267,7 @@ class ThreadPoolTest(unittest.TestCase):
       actual = pool.join()
     self.assertEqual(['a', 'c', 'b'], actual)
 
-  @timeout(2)
+  @timeout(30)
   def test_abort(self):
     # Trigger a ridiculous amount of tasks, and abort the remaining.
     with threading_utils.ThreadPool(2, 2, 0) as pool:
