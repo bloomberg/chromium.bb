@@ -277,11 +277,22 @@ public:
     {
         static_assert(IsGarbageCollectedType<T>::value, "only objects deriving from GarbageCollected can be used.");
         BasePage* page = pageFromObject(objectPointer);
+        // Page has been swept and it is still alive.
         if (page->hasBeenSwept())
             return false;
         ASSERT(page->arena()->getThreadState()->isSweepingInProgress());
 
-        return !ThreadHeap::isHeapObjectAlive(const_cast<T*>(objectPointer));
+        // If marked and alive, the object hasn't yet been swept..and won't
+        // be once its page is processed.
+        if (ThreadHeap::isHeapObjectAlive(const_cast<T*>(objectPointer)))
+            return false;
+
+        if (page->isLargeObjectPage())
+            return true;
+
+        // If the object is unmarked, it may be on the page currently being
+        // lazily swept.
+        return page->arena()->willObjectBeLazilySwept(page, const_cast<T*>(objectPointer));
     }
 
     // Push a trace callback on the marking stack.

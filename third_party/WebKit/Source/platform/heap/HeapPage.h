@@ -494,7 +494,6 @@ public:
         return sizeof(NormalPage) + paddingSize;
     }
 
-
     NormalPageArena* arenaForNormalPage();
 
 private:
@@ -696,6 +695,8 @@ public:
 
     Address allocateLargeObject(size_t allocationSize, size_t gcInfoIndex);
 
+    bool willObjectBeLazilySwept(BasePage*, void*) const;
+
 protected:
     BasePage* m_firstPage;
     BasePage* m_firstUnsweptPage;
@@ -741,6 +742,9 @@ public:
         return header->payloadEnd() == m_currentAllocationPoint;
     }
 
+    bool isLazySweeping() const { return m_isLazySweeping; }
+    void setIsLazySweeping(bool flag) { m_isLazySweeping = flag; }
+
 private:
     void allocatePage();
     Address outOfLineAllocate(size_t allocationSize, size_t gcInfoIndex);
@@ -763,6 +767,8 @@ private:
 
     // The size of promptly freed objects in the heap.
     size_t m_promptlyFreedSize;
+
+    bool m_isLazySweeping;
 };
 
 class LargeObjectArena final : public BaseArena {
