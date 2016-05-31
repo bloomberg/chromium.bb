@@ -1007,8 +1007,8 @@ bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
 
       // Request new pictures.
       picture_size_ = frame.coded_size;
-      client_->ProvidePictureBuffers(kNumPictureBuffers, PIXEL_FORMAT_UNKNOWN,
-                                     1, coded_size_, GL_TEXTURE_RECTANGLE_ARB);
+      client_->ProvidePictureBuffers(kNumPictureBuffers, 1, coded_size_,
+                                     GL_TEXTURE_RECTANGLE_ARB);
       return false;
     }
     if (!SendFrame(frame))

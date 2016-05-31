@@ -80,6 +80,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
       const base::WeakPtr<Client>& decode_client,
       const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
       override;
+  VideoPixelFormat GetOutputFormat() const override;
 
   static media::VideoDecodeAccelerator::SupportedProfiles
   GetSupportedProfiles();

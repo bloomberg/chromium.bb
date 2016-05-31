@@ -57,8 +57,8 @@ bool FakeVideoDecodeAccelerator::Initialize(const Config& config,
   // V4L2VideoDecodeAccelerator waits until first decode call to ask for buffers
   // This class asks for it on initialization instead.
   client_ = client;
-  client_->ProvidePictureBuffers(kNumBuffers, PIXEL_FORMAT_UNKNOWN, 1,
-                                 frame_buffer_size_, kDefaultTextureTarget);
+  client_->ProvidePictureBuffers(kNumBuffers, 1, frame_buffer_size_,
+                                 kDefaultTextureTarget);
   return true;
 }
 

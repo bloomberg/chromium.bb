@@ -82,7 +82,6 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   // VideoDecodeAccelerator::Client implementation.
   void ProvidePictureBuffers(uint32_t count,
-                             media::VideoPixelFormat format,
                              uint32_t textures_per_buffer,
                              const gfx::Size& size,
                              uint32_t texture_target) override;
@@ -233,9 +232,6 @@ class CONTENT_EXPORT RTCVideoDecoder
 
   // The texture target used for decoded pictures.
   uint32_t decoder_texture_target_;
-
-  // The format of the decoded pictures.
-  media::VideoPixelFormat pixel_format_;
 
   // Metadata of the buffers that have been sent for decode.
   std::list<BufferData> input_buffer_data_;

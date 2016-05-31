@@ -44,6 +44,10 @@ GLenum VideoDecodeAccelerator::GetSurfaceInternalFormat() const {
   return GL_RGBA;
 }
 
+VideoPixelFormat VideoDecodeAccelerator::GetOutputFormat() const {
+  return PIXEL_FORMAT_UNKNOWN;
+}
+
 VideoDecodeAccelerator::SupportedProfile::SupportedProfile()
     : profile(media::VIDEO_CODEC_PROFILE_UNKNOWN), encrypted_only(false) {}
 

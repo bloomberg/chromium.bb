@@ -52,7 +52,6 @@ class ArcGpuVideoDecodeAccelerator
 
   // Implementation of the VideoDecodeAccelerator::Client interface.
   void ProvidePictureBuffers(uint32_t requested_num_of_buffers,
-                             media::VideoPixelFormat output_format,
                              uint32_t textures_per_buffer,
                              const gfx::Size& dimensions,
                              uint32_t texture_target) override;
