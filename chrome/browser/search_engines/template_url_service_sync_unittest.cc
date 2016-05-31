@@ -2272,3 +2272,13 @@ TEST_F(TemplateURLServiceSyncTest, GUIDUpdatedOnDefaultSearchChange) {
   EXPECT_EQ(kNewGUID, profile_a()->GetTestingPrefService()->GetString(
       prefs::kSyncedDefaultSearchProviderGUID));
 }
+
+TEST_F(TemplateURLServiceSyncTest, NonAsciiKeywordDoesNotCrash) {
+  model()->Add(CreateTestTemplateURL(UTF8ToUTF16("\xf0\xaf\xa6\x8d"),
+                                     "http://key1.com"));
+  syncer::SyncDataList initial_data = CreateInitialSyncData();
+
+  model()->MergeDataAndStartSyncing(
+      syncer::SEARCH_ENGINES, initial_data, PassProcessor(),
+      CreateAndPassSyncErrorFactory());
+}
