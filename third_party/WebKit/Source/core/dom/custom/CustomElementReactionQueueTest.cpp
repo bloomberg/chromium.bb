@@ -5,97 +5,12 @@
 #include "core/dom/custom/CustomElementReactionQueue.h"
 
 #include "core/dom/custom/CustomElementReaction.h"
+#include "core/dom/custom/CustomElementReactionTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/text/AtomicString.h"
 #include <initializer_list>
 #include <vector>
 
 namespace blink {
-
-class Command : public GarbageCollectedFinalized<Command> {
-    WTF_MAKE_NONCOPYABLE(Command);
-public:
-    Command() { }
-    virtual ~Command() { }
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-    virtual void run(Element*) = 0;
-};
-
-class Log : public Command {
-    WTF_MAKE_NONCOPYABLE(Log);
-public:
-    Log(char what, std::vector<char>& where) : m_what(what), m_where(where) { }
-    virtual ~Log() { }
-    void run(Element*) override { m_where.push_back(m_what); }
-private:
-    char m_what;
-    std::vector<char>& m_where;
-};
-
-class Recurse : public Command {
-    WTF_MAKE_NONCOPYABLE(Recurse);
-public:
-    Recurse(CustomElementReactionQueue* queue) : m_queue(queue) { }
-    virtual ~Recurse() { }
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        Command::trace(visitor);
-        visitor->trace(m_queue);
-    }
-    void run(Element* element) override { m_queue->invokeReactions(element); }
-private:
-    Member<CustomElementReactionQueue> m_queue;
-};
-
-class Enqueue : public Command {
-    WTF_MAKE_NONCOPYABLE(Enqueue);
-public:
-    Enqueue(CustomElementReactionQueue* queue, CustomElementReaction* reaction)
-        : m_queue(queue)
-        , m_reaction(reaction)
-    {
-    }
-    virtual ~Enqueue() { }
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        Command::trace(visitor);
-        visitor->trace(m_queue);
-        visitor->trace(m_reaction);
-    }
-    void run(Element*) override
-    {
-        m_queue->add(m_reaction);
-    }
-private:
-    Member<CustomElementReactionQueue> m_queue;
-    Member<CustomElementReaction> m_reaction;
-};
-
-class TestReaction : public CustomElementReaction {
-    WTF_MAKE_NONCOPYABLE(TestReaction);
-public:
-    TestReaction(std::initializer_list<Command*> commands)
-    {
-        // TODO(dominicc): Simply pass the initializer list when
-        // HeapVector supports initializer lists like Vector.
-        for (auto& command : commands)
-            m_commands.append(command);
-    }
-    virtual ~TestReaction() = default;
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        CustomElementReaction::trace(visitor);
-        visitor->trace(m_commands);
-    }
-    void invoke(Element* element) override
-    {
-        for (auto& command : m_commands)
-            command->run(element);
-    }
-
-private:
-    HeapVector<Member<Command>> m_commands;
-};
 
 TEST(CustomElementReactionQueueTest, invokeReactions_one)
 {

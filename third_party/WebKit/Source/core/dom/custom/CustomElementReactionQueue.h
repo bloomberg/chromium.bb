@@ -25,9 +25,10 @@ public:
 
     void add(CustomElementReaction*);
     void invokeReactions(Element*);
+    bool isEmpty() { return m_reactions.isEmpty(); }
 
 private:
-    HeapVector<Member<CustomElementReaction>> m_reactions;
+    HeapVector<Member<CustomElementReaction>, 1> m_reactions;
     size_t m_index;
 };
 
