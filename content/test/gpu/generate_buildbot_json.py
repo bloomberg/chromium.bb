@@ -602,7 +602,14 @@ COMMON_GTESTS = {
     ],
     'args': ['--use-gpu-in-tests']
   },
-  'angle_unittests': {'args': ['--use-gpu-in-tests']},
+  'angle_unittests': {
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      }
+    ],
+    'args': ['--use-gpu-in-tests']
+  },
   # Until the media-only tests are extracted from content_unittests,
   # and audio_unittests and content_unittests can be run on the commit
   # queue with --require-audio-hardware-for-testing, run them only on

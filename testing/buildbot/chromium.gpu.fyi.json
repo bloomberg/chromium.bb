@@ -4,6 +4,22 @@
   "Android Debug (Nexus 5)": {
     "gtest_tests": [
       {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        },
+        "test": "angle_unittests",
+        "use_xvfb": false
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -285,6 +301,22 @@
   },
   "Android Debug (Nexus 5X)": {
     "gtest_tests": [
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        },
+        "test": "angle_unittests",
+        "use_xvfb": false
+      },
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -568,6 +600,22 @@
   "Android Debug (Nexus 6)": {
     "gtest_tests": [
       {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        },
+        "test": "angle_unittests",
+        "use_xvfb": false
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -849,6 +897,22 @@
   },
   "Android Debug (Nexus 9)": {
     "gtest_tests": [
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "0000:0000",
+              "os": "Android"
+            }
+          ]
+        },
+        "test": "angle_unittests",
+        "use_xvfb": false
+      },
       {
         "swarming": {
           "can_use_on_swarming_builders": true,
