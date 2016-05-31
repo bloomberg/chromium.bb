@@ -113,6 +113,7 @@
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/CompositorFactory.h"
+#include "platform/graphics/CompositorMutatorClient.h"
 #include "platform/graphics/FirstPaintInvalidationTracking.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/Image.h"
@@ -153,6 +154,7 @@
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWindowFeatures.h"
 #include "web/CompositionUnderlineVectorBuilder.h"
+#include "web/CompositorMutatorImpl.h"
 #include "web/CompositorProxyClientImpl.h"
 #include "web/ContextFeaturesClientImpl.h"
 #include "web/ContextMenuAllowedScope.h"
@@ -445,6 +447,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_shouldDispatchFirstLayoutAfterFinishedLoading(false)
     , m_displayMode(WebDisplayModeBrowser)
     , m_elasticOverscroll(FloatSize())
+    , m_mutator(nullptr)
     , m_scheduler(adoptPtr(Platform::current()->currentThread()->scheduler()->createWebViewScheduler(this).release()))
     , m_lastFrameTimeMonotonic(0)
 {
@@ -2813,6 +2816,7 @@ void WebViewImpl::willCloseLayerTreeView()
     else
         setRootGraphicsLayer(nullptr);
 
+    m_mutator = nullptr;
     m_layerTreeView = nullptr;
 }
 
@@ -4548,7 +4552,12 @@ void WebViewImpl::forceNextDrawingBufferCreationToFail()
 
 CompositorProxyClient* WebViewImpl::createCompositorProxyClient()
 {
-    return new CompositorProxyClientImpl();
+    if (!m_mutator) {
+        std::unique_ptr<CompositorMutatorClient> mutatorClient = CompositorMutatorImpl::createClient();
+        m_mutator = static_cast<CompositorMutatorImpl*>(mutatorClient->mutator());
+        m_layerTreeView->setMutatorClient(std::move(mutatorClient));
+    }
+    return new CompositorProxyClientImpl(m_mutator);
 }
 
 void WebViewImpl::updatePageOverlays()

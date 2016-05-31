@@ -56,12 +56,9 @@ void CompositorWorkerGlobalScope::postMessage(ExecutionContext* executionContext
 
 int CompositorWorkerGlobalScope::requestAnimationFrame(FrameRequestCallback* callback)
 {
-    // For now, just post a task to call mutate on the compositor proxy client.
-    // TODO(flackr): Remove this as soon as CompositorProxyClient can request a
-    // compositor frame from the CompositorMutatorImpl.
-    thread()->postTask(BLINK_FROM_HERE, createSameThreadTask(&CompositorProxyClient::runAnimationFrameCallbacks,
-        CompositorProxyClient::from(clients())));
-    // TODO(flackr): Signal the compositor to call mutate on the next compositor frame.
+    const bool shouldSignal = !m_executingAnimationFrameCallbacks && m_callbackCollection.isEmpty();
+    if (shouldSignal)
+        CompositorProxyClient::from(clients())->requestAnimationFrame();
     return m_callbackCollection.registerCallback(callback);
 }
 

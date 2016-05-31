@@ -56,6 +56,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void Start(
       std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;
   void Stop() override;
+  void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
   bool SupportsImplScrolling() const override;
   bool MainFrameWillHappenForTesting() override;
   void UpdateTopControlsState(TopControlsState constraints,

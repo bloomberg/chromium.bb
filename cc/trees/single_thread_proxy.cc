@@ -369,6 +369,12 @@ void SingleThreadProxy::Stop() {
   layer_tree_host_ = NULL;
 }
 
+void SingleThreadProxy::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {
+  DCHECK(task_runner_provider_->IsMainThread());
+  DebugScopedSetImplThread impl(task_runner_provider_);
+  layer_tree_host_impl_->SetLayerTreeMutator(std::move(mutator));
+}
+
 void SingleThreadProxy::OnCanDrawStateChanged(bool can_draw) {
   TRACE_EVENT1(
       "cc", "SingleThreadProxy::OnCanDrawStateChanged", "can_draw", can_draw);

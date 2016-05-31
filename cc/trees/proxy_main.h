@@ -21,6 +21,7 @@ class AnimationEvents;
 class BeginFrameSource;
 class ChannelMain;
 class LayerTreeHost;
+class LayerTreeMutator;
 
 // This class aggregates all interactions that the impl side of the compositor
 // needs to have with the main side.
@@ -103,6 +104,7 @@ class CC_EXPORT ProxyMain : public Proxy {
       std::unique_ptr<BeginFrameSource> external_begin_frame_source) override;
   void Stop() override;
   bool SupportsImplScrolling() const override;
+  void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) override;
   bool MainFrameWillHappenForTesting() override;
   void ReleaseOutputSurface() override;
   void UpdateTopControlsState(TopControlsState constraints,

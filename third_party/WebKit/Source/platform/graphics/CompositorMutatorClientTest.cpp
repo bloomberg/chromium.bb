@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "platform/graphics/CompositorMutationsTarget.h"
+#include "platform/graphics/CompositorMutator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
@@ -15,6 +16,13 @@ using ::testing::_;
 
 namespace blink {
 namespace {
+
+class StubCompositorMutator : public CompositorMutator {
+public:
+    StubCompositorMutator() {}
+
+    bool mutate(double monotonicTimeNow) override { return false; }
+};
 
 class MockCompositoMutationsTarget : public CompositorMutationsTarget {
 public:
@@ -25,7 +33,7 @@ TEST(CompositorMutatorClient, CallbackForNonNullMutationsShouldApply)
 {
     MockCompositoMutationsTarget target;
 
-    CompositorMutatorClient client(&target);
+    CompositorMutatorClient client(new StubCompositorMutator, &target);
     OwnPtr<CompositorMutations> mutations = adoptPtr(new CompositorMutations());
     client.setMutationsForTesting(std::move(mutations));
 
@@ -36,7 +44,7 @@ TEST(CompositorMutatorClient, CallbackForNonNullMutationsShouldApply)
 TEST(CompositorMutatorClient, CallbackForNullMutationsShouldBeNoop)
 {
     MockCompositoMutationsTarget target;
-    CompositorMutatorClient client(&target);
+    CompositorMutatorClient client(new StubCompositorMutator, &target);
 
     EXPECT_CALL(target, applyMutations(_)).Times(0);
     EXPECT_TRUE(client.TakeMutations().is_null());

@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/animation/animation_events.h"
+#include "cc/animation/layer_tree_mutator.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
@@ -52,6 +53,14 @@ void ThreadedChannel::InitializeOutputSurfaceOnImpl(
   ImplThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ProxyImpl::InitializeOutputSurfaceOnImpl,
                             proxy_impl_weak_ptr_, output_surface));
+}
+
+void ThreadedChannel::InitializeMutatorOnImpl(
+    std::unique_ptr<LayerTreeMutator> mutator) {
+  ImplThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&ProxyImpl::InitializeMutatorOnImpl, proxy_impl_weak_ptr_,
+                 base::Passed(std::move(mutator))));
 }
 
 void ThreadedChannel::MainThreadHasStoppedFlingingOnImpl() {

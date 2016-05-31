@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class CompositorMutatorImpl;
 class CompositorWorkerGlobalScope;
 class WorkerGlobalScope;
 
@@ -22,7 +23,7 @@ class CompositorProxyClientImpl final : public GarbageCollected<CompositorProxyC
     USING_GARBAGE_COLLECTED_MIXIN(CompositorProxyClientImpl);
     WTF_MAKE_NONCOPYABLE(CompositorProxyClientImpl);
 public:
-    CompositorProxyClientImpl();
+    CompositorProxyClientImpl(CompositorMutatorImpl*);
     DECLARE_VIRTUAL_TRACE();
 
     // Runs the animation frame callback for the frame starting at the given time.
@@ -31,10 +32,12 @@ public:
 
     // CompositorProxyClient:
     void setGlobalScope(WorkerGlobalScope*) override;
-    void runAnimationFrameCallbacks() override;
+    void requestAnimationFrame() override;
 
 private:
     bool executeAnimationFrameCallbacks(double monotonicTimeNow);
+
+    Member<CompositorMutatorImpl> m_mutator;
 
     Member<CompositorWorkerGlobalScope> m_globalScope;
     bool m_requestedAnimationFrameCallbacks;

@@ -28,6 +28,7 @@
 
 #include "WebColor.h"
 #include "WebCommon.h"
+#include "WebCompositorMutatorClient.h"
 #include "WebEventListenerProperties.h"
 #include "WebFloatPoint.h"
 #include "WebNonCopyable.h"
@@ -144,6 +145,9 @@ public:
     // Used to update the active selection bounds.
     virtual void registerSelection(const WebSelection&) { }
     virtual void clearSelection() { }
+
+    // Mutations are plumbed back to the layer tree via the mutator client.
+    virtual void setMutatorClient(std::unique_ptr<WebCompositorMutatorClient>) { }
 
     // Input properties ---------------------------------------------------
     virtual void setEventListenerProperties(WebEventListenerClass, WebEventListenerProperties) { };

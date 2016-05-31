@@ -15,6 +15,8 @@
 
 namespace cc {
 
+class LayerTreeMutator;
+
 // ChannelMain and ChannelImpl provide an abstract communication layer for
 // the main and impl side of the compositor.
 //
@@ -34,6 +36,8 @@ class CC_EXPORT ChannelMain {
                                             TopControlsState current,
                                             bool animate) = 0;
   virtual void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface) = 0;
+  virtual void InitializeMutatorOnImpl(
+      std::unique_ptr<LayerTreeMutator> mutator) = 0;
   virtual void MainThreadHasStoppedFlingingOnImpl() = 0;
   virtual void SetInputThrottledUntilCommitOnImpl(bool is_throttled) = 0;
   virtual void SetDeferCommitsOnImpl(bool defer_commits) = 0;

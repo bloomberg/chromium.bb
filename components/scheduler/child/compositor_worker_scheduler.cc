@@ -123,9 +123,13 @@ scoped_refptr<TaskQueue> CompositorWorkerScheduler::DefaultTaskRunner() {
 
 scoped_refptr<scheduler::SingleThreadIdleTaskRunner>
 CompositorWorkerScheduler::IdleTaskRunner() {
-  // TODO(sad): Not having a task-runner for idle tasks means v8 has to fallback
-  // to inline GC, which might cause jank.
-  return nullptr;
+  // TODO(flackr): This posts idle tasks as regular tasks. We need to create
+  // an idle task runner with the semantics we want for the compositor thread
+  // which runs them after the current frame has been drawn before the next
+  // vsync. https://crbug.com/609532
+  return make_scoped_refptr(new SingleThreadIdleTaskRunner(
+      thread_->task_runner(), thread_->task_runner(), this,
+      "compositor.scheduler"));
 }
 
 bool CompositorWorkerScheduler::CanExceedIdleDeadlineIfRequired() const {
@@ -147,5 +151,16 @@ void CompositorWorkerScheduler::RemoveTaskObserver(
 }
 
 void CompositorWorkerScheduler::Shutdown() {}
+
+void CompositorWorkerScheduler::OnIdleTaskPosted() {}
+
+base::TimeTicks CompositorWorkerScheduler::WillProcessIdleTask() {
+  // TODO(flackr): Return the next frame time as the deadline instead.
+  // TODO(flackr): Ensure that oilpan GC does happen on the compositor thread
+  // even though we will have no long idle periods. https://crbug.com/609531
+  return base::TimeTicks::Now() + base::TimeDelta::FromMillisecondsD(16.7);
+}
+
+void CompositorWorkerScheduler::DidProcessIdleTask() {}
 
 }  // namespace scheduler

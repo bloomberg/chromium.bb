@@ -297,6 +297,10 @@ void RemoteChannelImpl::Stop() {
   main().remote_channel_weak_factory.InvalidateWeakPtrs();
 }
 
+void RemoteChannelImpl::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {
+  // TODO(vollick): add support for compositor worker.
+}
+
 bool RemoteChannelImpl::SupportsImplScrolling() const {
   return true;
 }

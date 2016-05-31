@@ -36,6 +36,8 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
                                             TopControlsState current,
                                             bool animate);
   virtual void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface);
+  virtual void InitializeMutatorOnImpl(
+      std::unique_ptr<LayerTreeMutator> mutator);
   virtual void MainThreadHasStoppedFlingingOnImpl();
   virtual void SetInputThrottledUntilCommitOnImpl(bool is_throttled);
   virtual void SetDeferCommitsOnImpl(bool defer_commits) const;

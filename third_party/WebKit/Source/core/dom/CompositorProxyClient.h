@@ -29,7 +29,7 @@ public:
     static const char* supplementName();
 
     virtual void setGlobalScope(WorkerGlobalScope*) = 0;
-    virtual void runAnimationFrameCallbacks() = 0;
+    virtual void requestAnimationFrame() = 0;
 };
 
 CORE_EXPORT void provideCompositorProxyClientTo(WorkerClients*, CompositorProxyClient*);

@@ -751,6 +751,11 @@ private:
 
     FloatSize m_elasticOverscroll;
 
+    // This is owned by the LayerTreeHostImpl, and should only be used on the
+    // compositor thread. The LayerTreeHostImpl is indirectly owned by this
+    // class so this pointer should be valid until this class is destructed.
+    CrossThreadPersistent<CompositorMutatorImpl> m_mutator;
+
     Persistent<EventListener> m_popupMouseWheelEventListener;
 
     WebPageImportanceSignals m_pageImportanceSignals;

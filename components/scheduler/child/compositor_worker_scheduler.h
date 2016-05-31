@@ -6,6 +6,7 @@
 #define COMPONENTS_SCHEDULER_CHILD_COMPOSITOR_WORKER_SCHEDULER_H_
 
 #include "base/macros.h"
+#include "components/scheduler/child/single_thread_idle_task_runner.h"
 #include "components/scheduler/child/worker_scheduler.h"
 #include "components/scheduler/scheduler_export.h"
 
@@ -15,7 +16,9 @@ class Thread;
 
 namespace scheduler {
 
-class SCHEDULER_EXPORT CompositorWorkerScheduler : public WorkerScheduler {
+class SCHEDULER_EXPORT CompositorWorkerScheduler
+    : public WorkerScheduler,
+      public SingleThreadIdleTaskRunner::Delegate {
  public:
   explicit CompositorWorkerScheduler(base::Thread* thread);
   ~CompositorWorkerScheduler() override;
@@ -33,6 +36,11 @@ class SCHEDULER_EXPORT CompositorWorkerScheduler : public WorkerScheduler {
   void RemoveTaskObserver(
       base::MessageLoop::TaskObserver* task_observer) override;
   void Shutdown() override;
+
+  // SingleThreadIdleTaskRunner::Delegate:
+  void OnIdleTaskPosted() override;
+  base::TimeTicks WillProcessIdleTask() override;
+  void DidProcessIdleTask() override;
 
  private:
   base::Thread* thread_;

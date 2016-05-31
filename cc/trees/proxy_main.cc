@@ -408,6 +408,11 @@ void ProxyMain::Stop() {
   started_ = false;
 }
 
+void ProxyMain::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {
+  TRACE_EVENT0("compositor-worker", "ThreadProxy::SetMutator");
+  channel_main_->InitializeMutatorOnImpl(std::move(mutator));
+}
+
 bool ProxyMain::SupportsImplScrolling() const {
   return true;
 }

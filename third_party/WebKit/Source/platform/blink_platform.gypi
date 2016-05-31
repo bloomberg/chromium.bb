@@ -573,6 +573,7 @@
       'graphics/CompositorMutableState.h',
       'graphics/CompositorMutableStateProvider.cpp',
       'graphics/CompositorMutableStateProvider.h',
+      'graphics/CompositorMutator.h',
       'graphics/ContentLayerDelegate.cpp',
       'graphics/ContentLayerDelegate.h',
       'graphics/ContiguousContainer.cpp',

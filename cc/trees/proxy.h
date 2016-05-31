@@ -26,6 +26,7 @@ class Vector2d;
 namespace cc {
 class BeginFrameSource;
 class LayerTreeDebugState;
+class LayerTreeMutator;
 class OutputSurface;
 struct RendererCapabilities;
 
@@ -71,6 +72,8 @@ class CC_EXPORT Proxy {
   virtual void Start(
       std::unique_ptr<BeginFrameSource> external_begin_frame_source) = 0;
   virtual void Stop() = 0;   // Must be called before deleting the proxy.
+
+  virtual void SetMutator(std::unique_ptr<LayerTreeMutator> mutator) = 0;
 
   virtual bool SupportsImplScrolling() const = 0;
 

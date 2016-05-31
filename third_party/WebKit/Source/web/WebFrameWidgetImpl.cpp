@@ -48,8 +48,10 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "platform/KeyboardCodes.h"
+#include "platform/graphics/CompositorMutatorClient.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/web/WebWidgetClient.h"
+#include "web/CompositorMutatorImpl.h"
 #include "web/CompositorProxyClientImpl.h"
 #include "web/ContextMenuAllowedScope.h"
 #include "web/WebDevToolsAgentImpl.h"
@@ -90,6 +92,7 @@ WebFrameWidgetsSet& WebFrameWidgetImpl::allInstances()
 WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client, WebLocalFrame* localRoot)
     : m_client(client)
     , m_localRoot(toWebLocalFrameImpl(localRoot))
+    , m_mutator(nullptr)
     , m_layerTreeView(nullptr)
     , m_rootLayer(nullptr)
     , m_rootGraphicsLayer(nullptr)
@@ -133,6 +136,7 @@ void WebFrameWidgetImpl::close()
     // deleted.
     m_client = nullptr;
 
+    m_mutator = nullptr;
     m_layerTreeView = nullptr;
     m_rootLayer = nullptr;
     m_rootGraphicsLayer = nullptr;
@@ -405,7 +409,12 @@ void WebFrameWidgetImpl::scheduleAnimation()
 
 CompositorProxyClient* WebFrameWidgetImpl::createCompositorProxyClient()
 {
-    return new CompositorProxyClientImpl();
+    if (!m_mutator) {
+        std::unique_ptr<CompositorMutatorClient> mutatorClient = CompositorMutatorImpl::createClient();
+        m_mutator = static_cast<CompositorMutatorImpl*>(mutatorClient->mutator());
+        m_layerTreeView->setMutatorClient(std::move(mutatorClient));
+    }
+    return new CompositorProxyClientImpl(m_mutator);
 }
 
 void WebFrameWidgetImpl::applyViewportDeltas(
@@ -625,6 +634,7 @@ void WebFrameWidgetImpl::willCloseLayerTreeView()
         page()->willCloseLayerTreeView(*m_layerTreeView);
 
     setIsAcceleratedCompositingActive(false);
+    m_mutator = nullptr;
     m_layerTreeView = nullptr;
     m_layerTreeViewClosed = true;
 }
@@ -997,6 +1007,7 @@ Element* WebFrameWidgetImpl::focusedElement() const
 void WebFrameWidgetImpl::initializeLayerTreeView()
 {
     if (m_client) {
+        DCHECK(!m_mutator);
         m_client->initializeLayerTreeView();
         m_layerTreeView = m_client->layerTreeView();
     }

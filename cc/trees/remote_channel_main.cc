@@ -68,6 +68,12 @@ void RemoteChannelMain::InitializeOutputSurfaceOnImpl(
   NOTREACHED() << "Should not be called on the server LayerTreeHost";
 }
 
+void RemoteChannelMain::InitializeMutatorOnImpl(
+    std::unique_ptr<LayerTreeMutator> mutator) {
+  // TODO(vollick): add support for CompositorWorker.
+  NOTIMPLEMENTED();
+}
+
 void RemoteChannelMain::MainThreadHasStoppedFlingingOnImpl() {
   proto::CompositorMessage proto;
   proto::CompositorMessageToImpl* to_impl_proto = proto.mutable_to_impl();

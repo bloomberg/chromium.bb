@@ -146,6 +146,7 @@ class CC_EXPORT LayerTreeHostImpl
       public TopControlsManagerClient,
       public ScrollbarAnimationControllerClient,
       public VideoFrameControllerClient,
+      public LayerTreeMutatorClient,
       public MutatorHostClient,
       public base::SupportsWeakPtr<LayerTreeHostImpl> {
  public:
@@ -234,6 +235,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void BeginCommit();
   virtual void CommitComplete();
   virtual void UpdateAnimationState(bool start_ready_animations);
+  bool Mutate(base::TimeTicks monotonic_time);
   void ActivateAnimations();
   void Animate();
   void AnimatePendingTreeAfterCommit();
@@ -369,6 +371,9 @@ class CC_EXPORT LayerTreeHostImpl
               const gfx::Rect& viewport,
               const gfx::Rect& clip,
               bool resourceless_software_draw) override;
+
+  // LayerTreeMutatorClient.
+  void SetNeedsMutate() override;
 
   // Called from LayerTreeImpl.
   void OnCanDrawStateChangedForTree();
@@ -606,8 +611,8 @@ class CC_EXPORT LayerTreeHostImpl
   bool ScrollAnimationCreate(ScrollNode* scroll_node,
                              const gfx::Vector2dF& scroll_amount);
 
-  void SetLayerTreeMutator(LayerTreeMutator* mutator);
-  LayerTreeMutator* mutator() { return mutator_; }
+  void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
+  LayerTreeMutator* mutator() { return mutator_.get(); }
 
   void set_fixed_raster_scale_has_blurry_content() {
     has_fixed_raster_scale_blurry_content_ = true;
@@ -848,7 +853,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   std::unique_ptr<Viewport> viewport_;
 
-  LayerTreeMutator* mutator_;
+  std::unique_ptr<LayerTreeMutator> mutator_;
 
   bool has_fixed_raster_scale_blurry_content_;
   std::bitset<kFixedRasterScaleAttemptedScaleChangeHistoryCount>

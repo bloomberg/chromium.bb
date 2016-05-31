@@ -1268,6 +1268,11 @@ SurfaceSequence LayerTreeHost::CreateSurfaceSequence() {
   return SurfaceSequence(surface_id_namespace_, next_surface_sequence_++);
 }
 
+void LayerTreeHost::SetLayerTreeMutator(
+    std::unique_ptr<LayerTreeMutator> mutator) {
+  proxy_->SetMutator(std::move(mutator));
+}
+
 Layer* LayerTreeHost::LayerById(int id) const {
   LayerIdMap::const_iterator iter = layer_id_map_.find(id);
   return iter != layer_id_map_.end() ? iter->second : NULL;

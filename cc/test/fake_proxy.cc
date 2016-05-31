@@ -4,6 +4,8 @@
 
 #include "cc/test/fake_proxy.h"
 
+#include "cc/animation/layer_tree_mutator.h"
+
 namespace cc {
 
 void FakeProxy::SetLayerTreeHost(LayerTreeHost* host) {
@@ -29,6 +31,8 @@ void FakeProxy::ReleaseOutputSurface() {}
 bool FakeProxy::BeginMainFrameRequested() const { return false; }
 
 bool FakeProxy::CommitRequested() const { return false; }
+
+void FakeProxy::SetMutator(std::unique_ptr<LayerTreeMutator> mutator) {}
 
 bool FakeProxy::SupportsImplScrolling() const {
   return true;

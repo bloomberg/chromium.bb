@@ -88,6 +88,8 @@ class CC_EXPORT ThreadedChannel : public ChannelMain, public ChannelImpl {
                                     TopControlsState current,
                                     bool animate) override;
   void InitializeOutputSurfaceOnImpl(OutputSurface* output_surface) override;
+  void InitializeMutatorOnImpl(
+      std::unique_ptr<LayerTreeMutator> mutator) override;
   void MainThreadHasStoppedFlingingOnImpl() override;
   void SetInputThrottledUntilCommitOnImpl(bool is_throttled) override;
   void SetDeferCommitsOnImpl(bool defer_commits) override;

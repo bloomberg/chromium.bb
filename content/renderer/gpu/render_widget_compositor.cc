@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_timeline.h"
+#include "cc/animation/layer_tree_mutator.h"
 #include "cc/base/switches.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/debug/layer_tree_debug_state.h"
@@ -51,6 +52,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
+#include "third_party/WebKit/public/platform/WebCompositorMutatorClient.h"
 #include "third_party/WebKit/public/platform/WebLayoutAndPaintAsyncCallback.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -726,6 +728,12 @@ void RenderWidgetCompositor::registerSelection(
 void RenderWidgetCompositor::clearSelection() {
   cc::LayerSelection empty_selection;
   layer_tree_host_->RegisterSelection(empty_selection);
+}
+
+void RenderWidgetCompositor::setMutatorClient(
+    std::unique_ptr<blink::WebCompositorMutatorClient> client) {
+  TRACE_EVENT0("compositor-worker", "RenderWidgetCompositor::setMutatorClient");
+  layer_tree_host_->SetLayerTreeMutator(std::move(client));
 }
 
 static_assert(static_cast<cc::EventListenerClass>(

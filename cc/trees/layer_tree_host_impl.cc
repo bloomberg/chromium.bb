@@ -468,6 +468,8 @@ void LayerTreeHostImpl::AnimateInternal(bool active_tree) {
   did_animate |= AnimateTopControls(monotonic_time);
 
   if (active_tree) {
+    did_animate |= Mutate(monotonic_time);
+
     // Animating stuff can change the root scroll offset, so inform the
     // synchronous input handler.
     UpdateRootLayerStateForSynchronousInputHandler();
@@ -477,6 +479,20 @@ void LayerTreeHostImpl::AnimateInternal(bool active_tree) {
       SetNeedsRedraw();
     }
   }
+}
+
+bool LayerTreeHostImpl::Mutate(base::TimeTicks monotonic_time) {
+  if (!mutator_)
+    return false;
+  TRACE_EVENT0("compositor-worker", "LayerTreeHostImpl::Mutate");
+  if (mutator_->Mutate(monotonic_time))
+    client_->SetNeedsOneBeginImplFrameOnImplThread();
+  return true;
+}
+
+void LayerTreeHostImpl::SetNeedsMutate() {
+  TRACE_EVENT0("compositor-worker", "LayerTreeHostImpl::SetNeedsMutate");
+  client_->SetNeedsOneBeginImplFrameOnImplThread();
 }
 
 bool LayerTreeHostImpl::PrepareTiles() {
@@ -2014,6 +2030,10 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     // If we commit to the active tree directly, this is already done during
     // commit.
     ActivateAnimations();
+
+    // Compositor worker operates on the active tree so we have to run again
+    // after activation.
+    Mutate(CurrentBeginFrameArgs().frame_time);
   } else {
     active_tree_->ProcessUIResourceRequestQueue();
   }
@@ -2269,10 +2289,14 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
       settings_.renderer_settings.preferred_tile_format);
 }
 
-void LayerTreeHostImpl::SetLayerTreeMutator(LayerTreeMutator* mutator) {
+void LayerTreeHostImpl::SetLayerTreeMutator(
+    std::unique_ptr<LayerTreeMutator> mutator) {
+  if (mutator == mutator_)
+    return;
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"),
                "LayerTreeHostImpl::SetLayerTreeMutator");
-  mutator_ = mutator;
+  mutator_ = std::move(mutator);
+  mutator_->SetClient(this);
 }
 
 void LayerTreeHostImpl::CleanUpTileManagerAndUIResources() {
@@ -3134,6 +3158,9 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     UpdateRootLayerStateForSynchronousInputHandler();
   }
 
+  // Update compositor worker mutations which may respond to scrolling.
+  Mutate(CurrentBeginFrameArgs().frame_time);
+
   return scroll_result;
 }
 
@@ -3881,8 +3908,11 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
     return;
 
   LayerImpl* layer = tree->LayerById(layer_id);
-  if (layer)
+  if (layer) {
     layer->OnScrollOffsetAnimated(scroll_offset);
+    // Run mutation callbacks to respond to updated scroll offset.
+    Mutate(CurrentBeginFrameArgs().frame_time);
+  }
 }
 
 bool LayerTreeHostImpl::AnimationsPreserveAxisAlignment(

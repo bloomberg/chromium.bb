@@ -67,7 +67,7 @@ public:
     TestCompositorProxyClient() {}
 
     void setGlobalScope(WorkerGlobalScope*) override {}
-    void runAnimationFrameCallbacks() override {}
+    void requestAnimationFrame() override {}
 };
 
 class CompositorWorkerTestPlatform : public TestingPlatformSupport {

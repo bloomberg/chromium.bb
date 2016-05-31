@@ -9,11 +9,14 @@
 #include "platform/TraceEvent.h"
 #include "platform/graphics/CompositorMutation.h"
 #include "platform/graphics/CompositorMutationsTarget.h"
+#include "platform/graphics/CompositorMutator.h"
 
 namespace blink {
 
-CompositorMutatorClient::CompositorMutatorClient(CompositorMutationsTarget* mutationsTarget)
-    : m_mutationsTarget(mutationsTarget)
+CompositorMutatorClient::CompositorMutatorClient(CompositorMutator* mutator, CompositorMutationsTarget* mutationsTarget)
+    : m_client(nullptr)
+    , m_mutationsTarget(mutationsTarget)
+    , m_mutator(mutator)
     , m_mutations(nullptr)
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"), "CompositorMutatorClient::CompositorMutatorClient");
@@ -22,6 +25,24 @@ CompositorMutatorClient::CompositorMutatorClient(CompositorMutationsTarget* muta
 CompositorMutatorClient::~CompositorMutatorClient()
 {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("compositor-worker"), "CompositorMutatorClient::~CompositorMutatorClient");
+}
+
+bool CompositorMutatorClient::Mutate(
+    base::TimeTicks monotonicTime)
+{
+    TRACE_EVENT0("compositor-worker", "CompositorMutatorClient::Mutate");
+    double monotonicTimeNow = (monotonicTime - base::TimeTicks()).InSecondsF();
+    if (!m_mutations)
+        m_mutations = adoptPtr(new CompositorMutations);
+    bool shouldReinvoke = m_mutator->mutate(monotonicTimeNow);
+    return shouldReinvoke;
+}
+
+void CompositorMutatorClient::SetClient(cc::LayerTreeMutatorClient* client)
+{
+    TRACE_EVENT0("compositor-worker", "CompositorMutatorClient::SetClient");
+    m_client = client;
+    setNeedsMutate();
 }
 
 base::Closure CompositorMutatorClient::TakeMutations()
@@ -33,6 +54,12 @@ base::Closure CompositorMutatorClient::TakeMutations()
     return base::Bind(&CompositorMutationsTarget::applyMutations,
         base::Unretained(m_mutationsTarget),
         base::Owned(m_mutations.leakPtr()));
+}
+
+void CompositorMutatorClient::setNeedsMutate()
+{
+    TRACE_EVENT0("compositor-worker", "CompositorMutatorClient::setNeedsMutate");
+    m_client->SetNeedsMutate();
 }
 
 void CompositorMutatorClient::setMutationsForTesting(PassOwnPtr<CompositorMutations> mutations)

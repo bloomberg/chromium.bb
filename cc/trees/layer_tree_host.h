@@ -61,6 +61,7 @@ class Layer;
 class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
 class LayerTreeHostSingleThreadClient;
+class LayerTreeMutator;
 class PropertyTrees;
 class Region;
 class RemoteProtoChannel;
@@ -344,6 +345,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool needs_meta_info_recomputation() {
     return needs_meta_info_recomputation_;
   }
+
+  void SetLayerTreeMutator(std::unique_ptr<LayerTreeMutator> mutator);
 
   Layer* LayerById(int id) const;
 

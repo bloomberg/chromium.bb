@@ -7,18 +7,21 @@
 #include "core/dom/CompositorProxy.h"
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
 #include "platform/TraceEvent.h"
+#include "web/CompositorMutatorImpl.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
 
-CompositorProxyClientImpl::CompositorProxyClientImpl()
-    : m_globalScope(nullptr)
+CompositorProxyClientImpl::CompositorProxyClientImpl(CompositorMutatorImpl* mutator)
+    : m_mutator(mutator)
+    , m_globalScope(nullptr)
 {
 }
 
 DEFINE_TRACE(CompositorProxyClientImpl)
 {
     CompositorProxyClient::trace(visitor);
+    visitor->trace(m_mutator);
     visitor->trace(m_globalScope);
 }
 
@@ -28,12 +31,14 @@ void CompositorProxyClientImpl::setGlobalScope(WorkerGlobalScope* scope)
     DCHECK(!m_globalScope);
     DCHECK(scope);
     m_globalScope = static_cast<CompositorWorkerGlobalScope*>(scope);
+    m_mutator->registerProxyClient(this);
 }
 
-void CompositorProxyClientImpl::runAnimationFrameCallbacks()
+void CompositorProxyClientImpl::requestAnimationFrame()
 {
+    TRACE_EVENT0("compositor-worker", "CompositorProxyClientImpl::requestAnimationFrame");
     m_requestedAnimationFrameCallbacks = true;
-    mutate(monotonicallyIncreasingTime());
+    m_mutator->setNeedsMutate();
 }
 
 bool CompositorProxyClientImpl::mutate(double monotonicTimeNow)

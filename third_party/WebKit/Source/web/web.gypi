@@ -15,6 +15,8 @@
       'CompositionUnderlineBuilder.h',
       'CompositionUnderlineVectorBuilder.cpp',
       'CompositionUnderlineVectorBuilder.h',
+      'CompositorMutatorImpl.cpp',
+      'CompositorMutatorImpl.h',
       'CompositorProxyClientImpl.cpp',
       'CompositorProxyClientImpl.h',
       'ContextFeaturesClientImpl.cpp',

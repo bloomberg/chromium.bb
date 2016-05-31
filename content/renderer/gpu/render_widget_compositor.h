@@ -134,6 +134,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void clearViewportLayers() override;
   void registerSelection(const blink::WebSelection& selection) override;
   void clearSelection() override;
+  void setMutatorClient(
+      std::unique_ptr<blink::WebCompositorMutatorClient>) override;
   void setEventListenerProperties(
       blink::WebEventListenerClass eventClass,
       blink::WebEventListenerProperties properties) override;

@@ -124,6 +124,13 @@ ProxyImpl::~ProxyImpl() {
   smoothness_priority_expiration_notifier_.Shutdown();
 }
 
+void ProxyImpl::InitializeMutatorOnImpl(
+    std::unique_ptr<LayerTreeMutator> mutator) {
+  TRACE_EVENT0("cc,compositor-worker", "ProxyImpl::InitializeMutatorOnImpl");
+  DCHECK(IsImplThread());
+  layer_tree_host_impl_->SetLayerTreeMutator(std::move(mutator));
+}
+
 void ProxyImpl::UpdateTopControlsStateOnImpl(TopControlsState constraints,
                                              TopControlsState current,
                                              bool animate) {
