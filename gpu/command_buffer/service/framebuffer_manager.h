@@ -53,6 +53,12 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
     virtual bool IsRenderbuffer(
         Renderbuffer* renderbuffer) const = 0;
     virtual bool Is3D() const = 0;
+
+    // If it's a 3D texture attachment, return true if
+    // FRAMEBUFFER_ATTACHMENT_TEXTURE_LAYER is smaller than the number of
+    // layers in the texture.
+    virtual bool IsLayerValid() const = 0;
+
     virtual bool CanRenderTo(const FeatureInfo* feature_info) const = 0;
     virtual void DetachFromFramebuffer(Framebuffer* framebuffer) const = 0;
     virtual bool ValidForAttachmentType(GLenum attachment_type,

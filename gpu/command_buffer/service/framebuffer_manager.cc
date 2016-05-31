@@ -97,6 +97,8 @@ class RenderbufferAttachment
     // Nothing to do for renderbuffers.
   }
 
+  bool IsLayerValid() const override { return true; }
+
   bool ValidForAttachmentType(GLenum attachment_type,
                               ContextType context_type,
                               uint32_t max_color_attachments) override {
@@ -236,6 +238,14 @@ class TextureAttachment
 
   void DetachFromFramebuffer(Framebuffer* framebuffer) const override {
     texture_ref_->texture()->DetachFromFramebuffer();
+  }
+
+  bool IsLayerValid() const override {
+    Texture* texture = texture_ref_->texture();
+    DCHECK(texture);
+    GLsizei width, height, depth;
+    return (texture->GetLevelSize(target_, level_, &width, &height, &depth) &&
+            layer_ < depth);
   }
 
   bool ValidForAttachmentType(GLenum attachment_type,
@@ -575,6 +585,9 @@ GLenum Framebuffer::IsPossiblyComplete(const FeatureInfo* feature_info) const {
     if (!attachment->ValidForAttachmentType(attachment_type,
                                             feature_info->context_type(),
                                             manager_->max_color_attachments_)) {
+      return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
+    }
+    if (!attachment->IsLayerValid()) {
       return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
     }
     if (width < 0) {
