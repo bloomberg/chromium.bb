@@ -134,6 +134,11 @@ WindowManagerConnection::~WindowManagerConnection() {
   client_.reset();
   if (created_device_data_manager_)
     ui::DeviceDataManager::DeleteInstance();
+
+  if (ViewsDelegate::GetInstance()) {
+    ViewsDelegate::GetInstance()->set_native_widget_factory(
+        ViewsDelegate::NativeWidgetFactory());
+  }
 }
 
 bool WindowManagerConnection::HasPointerWatcher() {

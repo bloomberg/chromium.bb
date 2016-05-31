@@ -42,24 +42,22 @@ class DefaultShellClient : public shell::ShellClient {
 
 class PlatformTestHelperMus : public PlatformTestHelper {
  public:
-  PlatformTestHelperMus() {
-    ViewsDelegate::GetInstance()->set_native_widget_factory(base::Bind(
-        &WindowManagerConnection::CreateNativeWidgetMus,
-        base::Unretained(WindowManagerConnection::Get()),
-        std::map<std::string, std::vector<uint8_t>>()));
+  PlatformTestHelperMus(shell::Connector* connector,
+                        const shell::Identity& identity) {
+    // It is necessary to recreate the WindowManagerConnection for each test,
+    // since a new MessageLoop is created for each test.
+    WindowManagerConnection::Create(connector, identity);
   }
-  ~PlatformTestHelperMus() override {}
+  ~PlatformTestHelperMus() override { WindowManagerConnection::Reset(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PlatformTestHelperMus);
 };
 
 std::unique_ptr<PlatformTestHelper> CreatePlatformTestHelper(
-    shell::Connector* connector,
-    const shell::Identity& identity) {
-  if (!WindowManagerConnection::Exists())
-    WindowManagerConnection::Create(connector, identity);
-  return base::WrapUnique(new PlatformTestHelperMus);
+    const shell::Identity& identity,
+    const base::Callback<shell::Connector*(void)>& callback) {
+  return base::WrapUnique(new PlatformTestHelperMus(callback.Run(), identity));
 }
 
 }  // namespace
@@ -81,7 +79,8 @@ class ShellConnection {
     // been installed first. So delay the creation until the necessary
     // dependencies have been met.
     PlatformTestHelper::set_factory(base::Bind(
-        &CreatePlatformTestHelper, shell_connector_.get(), shell_identity_));
+        &CreatePlatformTestHelper, shell_identity_,
+        base::Bind(&ShellConnection::GetConnector, base::Unretained(this))));
   }
 
   ~ShellConnection() {
@@ -95,6 +94,22 @@ class ShellConnection {
   }
 
  private:
+  shell::Connector* GetConnector() {
+    shell_connector_.reset();
+    base::WaitableEvent wait(false, false);
+    thread_.task_runner()->PostTask(FROM_HERE,
+                                    base::Bind(&ShellConnection::CloneConnector,
+                                               base::Unretained(this), &wait));
+    wait.Wait();
+    DCHECK(shell_connector_);
+    return shell_connector_.get();
+  }
+
+  void CloneConnector(base::WaitableEvent* wait) {
+    shell_connector_ = shell_connection_->connector()->Clone();
+    wait->Signal();
+  }
+
   void SetUpConnections(base::WaitableEvent* wait) {
     background_shell_.reset(new shell::BackgroundShell);
     background_shell_->Init(nullptr);
