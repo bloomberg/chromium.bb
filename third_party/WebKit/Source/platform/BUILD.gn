@@ -292,7 +292,11 @@ group("make_platform_generated") {
 # blink_platform target in blink_platform.gyp
 component("platform") {
   visibility = []  # Allow re-assignment of list.
-  visibility = [ "//third_party/WebKit/*" ]
+  visibility = [
+    "//third_party/WebKit/*",
+    "//url/mojo:url_mojom_origin_blink_cpp_sources",
+    "//url/mojo:url_mojom_gurl_blink_cpp_sources",
+  ]
   output_name = "blink_platform"
 
   sources = platform_files
@@ -565,6 +569,7 @@ test("blink_platform_unittests") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",
+    "//url/mojo:test_url_mojom_gurl_blink",
   ]
 
   data_deps = [

@@ -1217,6 +1217,7 @@
       'image-decoders/webp/WEBPImageDecoderTest.cpp',
       'inspector_protocol/ParserTest.cpp',
       'mac/VersionUtilMacTest.mm',
+      'mojo/KURLSecurityOriginTest.cpp',
       'network/EncodedFormDataTest.cpp',
       'network/HTTPParsersTest.cpp',
       'network/LinkHeaderTest.cpp',

@@ -1,0 +1,13 @@
+# Changes to IPC serialization require a security review to avoid introducing
+# new sandbox escapes.
+per-file *StructTraits.h=set noparent
+per-file *StructTraits.h=dcheng@chromium.org
+per-file *StructTraits.h=inferno@chromium.org
+per-file *StructTraits.h=jln@chromium.org
+per-file *StructTraits.h=jschuh@chromium.org
+per-file *StructTraits.h=kenrb@chromium.org
+per-file *StructTraits.h=mkwst@chromium.org
+per-file *StructTraits.h=nasko@chromium.org
+per-file *StructTraits.h=palmer@chromium.org
+per-file *StructTraits.h=tsepez@chromium.org
+per-file *StructTraits.h=wfh@chromium.org

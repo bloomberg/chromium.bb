@@ -6,7 +6,10 @@ variant = "blink"
 
 for_blink = true
 
-_typemap_imports = [ "//mojo/public/cpp/bindings/tests/blink_typemaps.gni" ]
+_typemap_imports = [
+  "//mojo/public/cpp/bindings/tests/blink_typemaps.gni",
+  "//third_party/WebKit/Source/platform/mojo/blink_typemaps.gni",
+]
 _typemaps = []
 
 foreach(typemap_import, _typemap_imports) {
