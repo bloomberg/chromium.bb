@@ -18,6 +18,7 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 
 namespace {
@@ -92,13 +93,9 @@ void HtmlVideoElementCapturerSource::StartCapture(
     return;
   }
   const blink::WebSize resolution = web_media_player_->naturalSize();
-  // TODO(mcasas): Don't use CreatePlatformCanvas here: http://crbug.com/615454.
-  canvas_ = sk_sp<SkCanvas>(skia::CreatePlatformCanvas(resolution.width,
-                               resolution.height,
-                               true /* is_opaque */,
-                               0 /* data */,
-                               skia::RETURN_NULL_ON_FAILURE));
-  if (!canvas_){
+  surface_ =
+      SkSurface::MakeRasterN32Premul(resolution.width, resolution.height);
+  if (!surface_) {
     running_callback_.Run(false);
     return;
   }
@@ -135,14 +132,15 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
   const base::TimeTicks current_time = base::TimeTicks::Now();
   const blink::WebSize resolution = web_media_player_->naturalSize();
 
+  SkCanvas* canvas = surface_->getCanvas();
   web_media_player_->paint(
-      canvas_.get(), blink::WebRect(0, 0, resolution.width, resolution.height),
+      canvas, blink::WebRect(0, 0, resolution.width, resolution.height),
       0xFF /* alpha */, SkXfermode::kSrc_Mode);
-  DCHECK_NE(kUnknown_SkColorType, canvas_->imageInfo().colorType());
-  DCHECK_EQ(canvas_->imageInfo().width(), resolution.width);
-  DCHECK_EQ(canvas_->imageInfo().height(), resolution.height);
+  DCHECK_NE(kUnknown_SkColorType, canvas->imageInfo().colorType());
+  DCHECK_EQ(canvas->imageInfo().width(), resolution.width);
+  DCHECK_EQ(canvas->imageInfo().height(), resolution.height);
 
-  const SkBitmap bitmap = skia::ReadPixels(canvas_.get());
+  const SkBitmap bitmap = skia::ReadPixels(canvas);
   DCHECK_NE(kUnknown_SkColorType, bitmap.colorType());
   DCHECK(!bitmap.drawsNothing());
   DCHECK(bitmap.getPixels());
