@@ -798,6 +798,13 @@ void FrameSelection::selectFrameElementInParentIfFullySelected()
         toLocalFrame(parent)->selection().setSelection(newSelection);
 }
 
+// Returns a shadow tree node for legacy shadow trees, a child of the
+// ShadowRoot node for new shadow trees, or 0 for non-shadow trees.
+static Node* nonBoundaryShadowTreeRootNode(const Position& position)
+{
+    return position.anchorNode() && !position.anchorNode()->isShadowRoot() ? position.anchorNode()->nonBoundaryShadowTreeRootNode() : nullptr;
+}
+
 void FrameSelection::selectAll()
 {
     Document* document = m_frame->document();
@@ -814,12 +821,12 @@ void FrameSelection::selectAll()
     Node* selectStartTarget = nullptr;
     if (isContentEditable()) {
         root = highestEditableRoot(selection().start());
-        if (Node* shadowRoot = selection().nonBoundaryShadowTreeRootNode())
+        if (Node* shadowRoot = nonBoundaryShadowTreeRootNode(selection().start()))
             selectStartTarget = shadowRoot->shadowHost();
         else
             selectStartTarget = root;
     } else {
-        root = selection().nonBoundaryShadowTreeRootNode();
+        root = nonBoundaryShadowTreeRootNode(selection().start());
         if (root) {
             selectStartTarget = root->shadowHost();
         } else {

@@ -757,12 +757,6 @@ Element* VisibleSelectionTemplate<Strategy>::rootEditableElement() const
     return rootEditableElementOf(start());
 }
 
-template <typename Strategy>
-Node* VisibleSelectionTemplate<Strategy>::nonBoundaryShadowTreeRootNode() const
-{
-    return start().anchorNode() && !start().anchorNode()->isShadowRoot() ? start().anchorNode()->nonBoundaryShadowTreeRootNode() : 0;
-}
-
 VisibleSelectionChangeObserver::VisibleSelectionChangeObserver()
 {
 }

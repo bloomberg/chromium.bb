@@ -125,9 +125,6 @@ public:
     bool isContentEditable() const;
     bool hasEditableStyle() const;
     bool isContentRichlyEditable() const;
-    // Returns a shadow tree node for legacy shadow trees, a child of the
-    // ShadowRoot node for new shadow trees, or 0 for non-shadow trees.
-    Node* nonBoundaryShadowTreeRootNode() const;
 
     bool isValidFor(const Document&) const;
     void setWithoutValidation(const PositionTemplate<Strategy>&, const PositionTemplate<Strategy>&);
