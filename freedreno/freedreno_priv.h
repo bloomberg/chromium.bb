@@ -54,6 +54,13 @@
 #include "freedreno_ringbuffer.h"
 #include "drm.h"
 
+#ifndef TRUE
+#  define TRUE 1
+#endif
+#ifndef FALSE
+#  define FALSE 0
+#endif
+
 struct fd_device_funcs {
 	int (*bo_new_handle)(struct fd_device *dev, uint32_t size,
 			uint32_t flags, uint32_t *handle);
@@ -76,6 +83,7 @@ struct fd_bo_cache {
 
 struct fd_device {
 	int fd;
+	int version;
 	atomic_t refcnt;
 
 	/* tables to keep track of bo's, to avoid "evil-twin" fd_bo objects:
@@ -139,6 +147,7 @@ struct fd_bo_funcs {
 	int (*offset)(struct fd_bo *bo, uint64_t *offset);
 	int (*cpu_prep)(struct fd_bo *bo, struct fd_pipe *pipe, uint32_t op);
 	void (*cpu_fini)(struct fd_bo *bo);
+	int (*madvise)(struct fd_bo *bo, int willneed);
 	void (*destroy)(struct fd_bo *bo);
 };
 

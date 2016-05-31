@@ -165,10 +165,18 @@ fd_bo_cache_alloc(struct fd_bo_cache *cache, uint32_t *size, uint32_t flags)
 	bucket = get_bucket(cache, *size);
 
 	/* see if we can be green and recycle: */
+retry:
 	if (bucket) {
 		*size = bucket->size;
 		bo = find_in_bucket(bucket, flags);
 		if (bo) {
+			if (bo->funcs->madvise(bo, TRUE) <= 0) {
+				/* we've lost the backing pages, delete and try again: */
+				pthread_mutex_lock(&table_lock);
+				bo_del(bo);
+				pthread_mutex_unlock(&table_lock);
+				goto retry;
+			}
 			atomic_set(&bo->refcnt, 1);
 			fd_device_ref(bo->dev);
 			return bo;
@@ -186,6 +194,8 @@ fd_bo_cache_free(struct fd_bo_cache *cache, struct fd_bo *bo)
 	/* see if we can be green and recycle: */
 	if (bucket) {
 		struct timespec time;
+
+		bo->funcs->madvise(bo, FALSE);
 
 		clock_gettime(CLOCK_MONOTONIC, &time);
 

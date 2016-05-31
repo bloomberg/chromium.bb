@@ -56,7 +56,15 @@ struct fd_device * fd_device_new(int fd)
 
 	if (!strcmp(version->name, "msm")) {
 		DEBUG_MSG("msm DRM device");
+		if (version->version_major != 1) {
+			ERROR_MSG("unsupported version: %u.%u.%u", version->version_major,
+				version->version_minor, version->version_patchlevel);
+			dev = NULL;
+			goto out;
+		}
+
 		dev = msm_device_new(fd);
+		dev->version = version->version_minor;
 #ifdef HAVE_FREEDRENO_KGSL
 	} else if (!strcmp(version->name, "kgsl")) {
 		DEBUG_MSG("kgsl DRM device");
@@ -66,6 +74,8 @@ struct fd_device * fd_device_new(int fd)
 		ERROR_MSG("unknown device: %s", version->name);
 		dev = NULL;
 	}
+
+out:
 	drmFreeVersion(version);
 
 	if (!dev)
