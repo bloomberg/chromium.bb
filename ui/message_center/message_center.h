@@ -76,6 +76,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual size_t UnreadNotificationCount() const = 0;
   virtual bool HasPopupNotifications() const = 0;
   virtual bool IsQuietMode() const = 0;
+  virtual bool IsLockedState() const = 0;
   virtual bool HasClickedListener(const std::string& id) = 0;
 
   // Find the notification with the corresponding id. Returns NULL if not found.
@@ -170,6 +171,9 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
 
   // This can be called to change the quiet mode state (without a timeout).
   virtual void SetQuietMode(bool in_quiet_mode) = 0;
+
+  // This can be called to change the lock mode state.
+  virtual void SetLockedState(bool locked) = 0;
 
   // Temporarily enables quiet mode for |expires_in| time.
   virtual void EnterQuietModeWithExpire(const base::TimeDelta& expires_in) = 0;

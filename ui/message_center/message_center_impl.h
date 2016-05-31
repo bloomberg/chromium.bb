@@ -49,6 +49,7 @@ class MessageCenterImpl : public MessageCenter,
   size_t UnreadNotificationCount() const override;
   bool HasPopupNotifications() const override;
   bool IsQuietMode() const override;
+  bool IsLockedState() const override;
   bool HasClickedListener(const std::string& id) override;
   message_center::Notification* FindVisibleNotificationById(
       const std::string& id) override;
@@ -79,6 +80,7 @@ class MessageCenterImpl : public MessageCenter,
   void SetNotifierSettingsProvider(NotifierSettingsProvider* provider) override;
   NotifierSettingsProvider* GetNotifierSettingsProvider() override;
   void SetQuietMode(bool in_quiet_mode) override;
+  void SetLockedState(bool locked) override;
   void EnterQuietModeWithExpire(const base::TimeDelta& expires_in) override;
   void RestartPopupTimers() override;
   void PausePopupTimers() override;
@@ -125,6 +127,9 @@ class MessageCenterImpl : public MessageCenter,
   std::unique_ptr<base::OneShotTimer> quiet_mode_timer_;
   NotifierSettingsProvider* settings_provider_;
   std::vector<NotificationBlocker*> blockers_;
+
+  bool locked_ = false;
+  bool visible_ = false;
 
   // Queue for the notifications to delay the addition/updates when the message
   // center is visible.

@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/message_center/fake_message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification_blocker.h"
 #include "ui/message_center/notification_types.h"
@@ -29,7 +30,8 @@ class NotificationListTest : public testing::Test {
   ~NotificationListTest() override {}
 
   void SetUp() override {
-    notification_list_.reset(new NotificationList());
+    message_center_.reset(new FakeMessageCenter());
+    notification_list_.reset(new NotificationList(message_center_.get()));
     counter_ = 0;
   }
 
@@ -103,6 +105,7 @@ class NotificationListTest : public testing::Test {
   static const char kExtensionId[];
 
  private:
+  std::unique_ptr<FakeMessageCenter> message_center_;
   std::unique_ptr<NotificationList> notification_list_;
   NotificationBlockers blockers_;
   size_t counter_;
@@ -162,9 +165,8 @@ TEST_F(NotificationListTest, MessageCenterVisible) {
   ASSERT_EQ(1u, notification_list()->UnreadCount(blockers()));
   ASSERT_EQ(1u, GetPopupCounts());
 
-  // Make the message center visible. It resets the unread count and popup
-  // counts.
-  notification_list()->SetMessageCenterVisible(true, NULL);
+  // Resets the unread count and popup counts.
+  notification_list()->SetNotificationsShown(blockers(), NULL);
   ASSERT_EQ(0u, notification_list()->UnreadCount(blockers()));
   ASSERT_EQ(0u, GetPopupCounts());
 }
@@ -309,8 +311,7 @@ TEST_F(NotificationListTest, Priority) {
   EXPECT_EQ(kMaxVisiblePopupNotifications, GetPopupCounts());
 
   // Low priority: not visible to popups.
-  notification_list()->SetMessageCenterVisible(true, NULL);
-  notification_list()->SetMessageCenterVisible(false, NULL);
+  notification_list()->SetNotificationsShown(blockers(), NULL);
   EXPECT_EQ(0u, notification_list()->UnreadCount(blockers()));
   AddPriorityNotification(LOW_PRIORITY);
   EXPECT_EQ(kMaxVisiblePopupNotifications + 2,
@@ -368,8 +369,7 @@ TEST_F(NotificationListTest, HasPopupsWithSystemPriority) {
   notification_list()->MarkSinglePopupAsShown(normal_id, false);
   notification_list()->MarkSinglePopupAsShown(system_id, false);
 
-  notification_list()->SetMessageCenterVisible(true, NULL);
-  notification_list()->SetMessageCenterVisible(false, NULL);
+  notification_list()->SetNotificationsShown(blockers(), NULL);
   EXPECT_EQ(1u, GetPopupCounts());
 
   // Mark as read -- emulation of mouse click.

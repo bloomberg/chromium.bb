@@ -305,9 +305,8 @@ void WebNotificationTray::HidePopups() {
 // Private methods.
 
 bool WebNotificationTray::ShouldShowMessageCenter() {
-  return status_area_widget()->login_status() != user::LOGGED_IN_LOCKED &&
-      !(status_area_widget()->system_tray() &&
-        status_area_widget()->system_tray()->HasNotificationBubble());
+  return !(status_area_widget()->system_tray() &&
+           status_area_widget()->system_tray()->HasNotificationBubble());
 }
 
 bool WebNotificationTray::ShouldBlockShelfAutoHide() const {
@@ -330,6 +329,7 @@ void WebNotificationTray::ShowMessageCenterBubble() {
 
 void WebNotificationTray::UpdateAfterLoginStatusChange(
     user::LoginStatus login_status) {
+  message_center()->SetLockedState(login_status == user::LOGGED_IN_LOCKED);
   OnMessageCenterTrayChanged();
 }
 
@@ -412,8 +412,7 @@ bool WebNotificationTray::IsContextMenuEnabled() const {
                                ->session_state_delegate()
                                ->IsInSecondaryLoginScreen();
 
-  return login_status != user::LOGGED_IN_NONE
-      && login_status != user::LOGGED_IN_LOCKED && !userAddingRunning;
+  return login_status != user::LOGGED_IN_NONE && !userAddingRunning;
 }
 
 message_center::MessageCenterTray* WebNotificationTray::GetMessageCenterTray() {
@@ -481,7 +480,6 @@ void WebNotificationTray::UpdateTrayContent() {
                                ->IsInSecondaryLoginScreen();
 
   SetVisible((status_area_widget()->login_status() != user::LOGGED_IN_NONE) &&
-             (status_area_widget()->login_status() != user::LOGGED_IN_LOCKED) &&
              !userAddingRunning);
   Layout();
   SchedulePaint();
