@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_NULL_VIDEO_SINK_H_
-#define MEDIA_AUDIO_NULL_VIDEO_SINK_H_
+#ifndef MEDIA_BASE_NULL_VIDEO_SINK_H_
+#define MEDIA_BASE_NULL_VIDEO_SINK_H_
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
@@ -92,4 +92,4 @@ class MEDIA_EXPORT NullVideoSink : public VideoRendererSink {
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_NULL_VIDEO_SINK_H_
+#endif  // MEDIA_BASE_NULL_VIDEO_SINK_H_

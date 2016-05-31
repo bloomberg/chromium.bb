@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_AUDIO_SHIFTER_H
-#define MEDIA_BASE_AUDIO_SHIFTER_H
+#ifndef MEDIA_BASE_AUDIO_SHIFTER_H_
+#define MEDIA_BASE_AUDIO_SHIFTER_H_
 
 #include <stddef.h>
 
@@ -140,4 +140,4 @@ private:
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_AUDIO_SHIFTER_H
+#endif  // MEDIA_BASE_AUDIO_SHIFTER_H_

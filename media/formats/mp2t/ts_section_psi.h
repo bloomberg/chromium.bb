@@ -54,5 +54,4 @@ class TsSectionPsi : public TsSection {
 }  // namespace mp2t
 }  // namespace media
 
-#endif
-
+#endif  // MEDIA_FORMATS_MP2T_TS_SECTION_PSI_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_SAMPLE_FORMAT_H
-#define MEDIA_BASE_SAMPLE_FORMAT_H
+#ifndef MEDIA_BASE_SAMPLE_FORMAT_H_
+#define MEDIA_BASE_SAMPLE_FORMAT_H_
 
 #include "media/base/media_export.h"
 
@@ -43,4 +43,4 @@ MEDIA_EXPORT bool IsInterleaved(SampleFormat sample_format);
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_SAMPLE_FORMAT_H
+#endif  // MEDIA_BASE_SAMPLE_FORMAT_H_

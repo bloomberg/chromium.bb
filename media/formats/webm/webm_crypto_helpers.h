@@ -29,4 +29,4 @@ bool WebMCreateDecryptConfig(const uint8_t* data,
 
 }  // namespace media
 
-#endif  // MEDIA_FORMATS_WEBM_WEBM_CRYPT_HELPERS_H_
+#endif  // MEDIA_FORMATS_WEBM_WEBM_CRYPTO_HELPERS_H_

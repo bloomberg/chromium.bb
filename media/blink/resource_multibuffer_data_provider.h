@@ -130,4 +130,4 @@ class MEDIA_BLINK_EXPORT ResourceMultiBufferDataProvider
 
 }  // namespace media
 
-#endif  // MEDIA_BLINK_RESOURCE_MULTIBUFFER_RESOURCE_LOADER_H_
+#endif  // MEDIA_BLINK_RESOURCE_MULTIBUFFER_DATA_PROVIDER_H_

@@ -5,8 +5,8 @@
 // Implementation of a fake VideoCaptureDevice class. Used for testing other
 // video capture classes when no real hardware is available.
 
-#ifndef MEDIA_VIDEO_CAPTURE_FAKE_VIDEO_CAPTURE_DEVICE_H_
-#define MEDIA_VIDEO_CAPTURE_FAKE_VIDEO_CAPTURE_DEVICE_H_
+#ifndef MEDIA_CAPTURE_VIDEO_FAKE_VIDEO_CAPTURE_DEVICE_H_
+#define MEDIA_CAPTURE_VIDEO_FAKE_VIDEO_CAPTURE_DEVICE_H_
 
 #include <stdint.h>
 
@@ -74,4 +74,4 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
 
 }  // namespace media
 
-#endif  // MEDIA_VIDEO_CAPTURE_FAKE_VIDEO_CAPTURE_DEVICE_H_
+#endif  // MEDIA_CAPTURE_VIDEO_FAKE_VIDEO_CAPTURE_DEVICE_H_

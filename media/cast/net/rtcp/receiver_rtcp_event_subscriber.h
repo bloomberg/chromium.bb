@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_RTCP_RECEIVER_RTCP_EVENT_SUBSCRIBER_H_
-#define MEDIA_CAST_RTCP_RECEIVER_RTCP_EVENT_SUBSCRIBER_H_
+#ifndef MEDIA_CAST_NET_RTCP_RECEIVER_RTCP_EVENT_SUBSCRIBER_H_
+#define MEDIA_CAST_NET_RTCP_RECEIVER_RTCP_EVENT_SUBSCRIBER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -103,4 +103,4 @@ class ReceiverRtcpEventSubscriber : public RawEventSubscriber {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_RTCP_RECEIVER_RTCP_EVENT_SUBSCRIBER_H_
+#endif  // MEDIA_CAST_NET_RTCP_RECEIVER_RTCP_EVENT_SUBSCRIBER_H_

@@ -37,5 +37,4 @@ class TsSectionPat : public TsSectionPsi {
 }  // namespace mp2t
 }  // namespace media
 
-#endif
-
+#endif  // MEDIA_FORMATS_MP2T_TS_SECTION_PAT_H_

@@ -4,8 +4,8 @@
 
 // Delete this file when WMPI_CAST is no longer needed.
 
-#ifndef MEDIA_BLINK_WEBMEDIAPLAYER_CAST_H_
-#define MEDIA_BLINK_WEBMEDIAPLAYER_CAST_H_
+#ifndef MEDIA_BLINK_WEBMEDIAPLAYER_CAST_ANDROID_H_
+#define MEDIA_BLINK_WEBMEDIAPLAYER_CAST_ANDROID_H_
 
 #include "base/memory/weak_ptr.h"
 #include "media/blink/media_blink_export.h"
@@ -152,4 +152,4 @@ MEDIA_BLINK_EXPORT scoped_refptr<VideoFrame> MakeTextFrameForCast(
 
 }  // namespace media
 
-#endif  // MEDIA_BLINK_WEBMEDIAPLAYER_CAST_H_
+#endif  // MEDIA_BLINK_WEBMEDIAPLAYER_CAST_ANDROID_H_

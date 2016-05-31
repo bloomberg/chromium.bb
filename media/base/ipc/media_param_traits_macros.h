@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_IPC_COMMON_MEDIA_PARAM_TRAITS_MACROS_H_
-#define MEDIA_BASE_IPC_COMMON_MEDIA_PARAM_TRAITS_MACROS_H_
+#ifndef MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_MACROS_H_
+#define MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_MACROS_H_
 
 #include "ipc/ipc_message_macros.h"
 #include "media/base/audio_parameters.h"
@@ -16,4 +16,4 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::ChannelLayout, media::CHANNEL_LAYOUT_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelFormat, media::PIXEL_FORMAT_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(media::VideoPixelStorage, media::PIXEL_STORAGE_MAX)
 
-#endif  // MEDIA_BASE_IPC_COMMON_MEDIA_PARAM_TRAITS_MACROS_H_
+#endif  // MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_MACROS_H_

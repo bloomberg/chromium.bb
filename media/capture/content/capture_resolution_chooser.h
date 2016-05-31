@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_CAPTURE_RESOLUTION_CHOOSER_H_
-#define MEDIA_CAPTURE_CAPTURE_RESOLUTION_CHOOSER_H_
+#ifndef MEDIA_CAPTURE_CONTENT_CAPTURE_RESOLUTION_CHOOSER_H_
+#define MEDIA_CAPTURE_CONTENT_CAPTURE_RESOLUTION_CHOOSER_H_
 
 #include <vector>
 
@@ -88,4 +88,4 @@ class MEDIA_EXPORT CaptureResolutionChooser {
 
 }  // namespace media
 
-#endif  // MEDIA_CAPTURE_RESOLUTION_CHOOSER_H_
+#endif  // MEDIA_CAPTURE_CONTENT_CAPTURE_RESOLUTION_CHOOSER_H_

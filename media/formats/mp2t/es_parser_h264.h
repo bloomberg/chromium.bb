@@ -91,4 +91,4 @@ class MEDIA_EXPORT EsParserH264 : public EsParser {
 }  // namespace mp2t
 }  // namespace media
 
-#endif
+#endif  // MEDIA_FORMATS_MP2T_ES_PARSER_H264_H_

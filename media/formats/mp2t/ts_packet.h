@@ -71,5 +71,4 @@ class TsPacket {
 }  // namespace mp2t
 }  // namespace media
 
-#endif
-
+#endif  // MEDIA_FORMATS_MP2T_TS_PACKET_H_

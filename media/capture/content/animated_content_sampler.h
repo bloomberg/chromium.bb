@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_ANIMATED_CONTENT_SAMPLER_H_
-#define MEDIA_CAPTURE_ANIMATED_CONTENT_SAMPLER_H_
+#ifndef MEDIA_CAPTURE_CONTENT_ANIMATED_CONTENT_SAMPLER_H_
+#define MEDIA_CAPTURE_CONTENT_ANIMATED_CONTENT_SAMPLER_H_
 
 #include <deque>
 
@@ -154,4 +154,4 @@ class MEDIA_EXPORT AnimatedContentSampler {
 
 }  // namespace media
 
-#endif  // MEDIA_CAPTURE_ANIMATED_CONTENT_SAMPLER_H_
+#endif  // MEDIA_CAPTURE_CONTENT_ANIMATED_CONTENT_SAMPLER_H_

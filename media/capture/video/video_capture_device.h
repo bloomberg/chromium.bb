@@ -9,8 +9,8 @@
 // VideoCaptureManager. Capturing is done on other threads, depending on the OS
 // specific implementation.
 
-#ifndef MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_DEVICE_H_
-#define MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_DEVICE_H_
+#ifndef MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_DEVICE_H_
+#define MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_DEVICE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -332,4 +332,4 @@ class MEDIA_EXPORT VideoCaptureDevice {
 
 }  // namespace media
 
-#endif  // MEDIA_VIDEO_CAPTURE_VIDEO_CAPTURE_DEVICE_H_
+#endif  // MEDIA_CAPTURE_VIDEO_VIDEO_CAPTURE_DEVICE_H_

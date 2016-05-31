@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_VP9_RAW_BITS_READER_
-#define MEDIA_FILTERS_VP9_RAW_BITS_READER_
+#ifndef MEDIA_FILTERS_VP9_RAW_BITS_READER_H_
+#define MEDIA_FILTERS_VP9_RAW_BITS_READER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -60,4 +60,4 @@ class MEDIA_EXPORT Vp9RawBitsReader {
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_VP9_RAW_BITS_READER_
+#endif  // MEDIA_FILTERS_VP9_RAW_BITS_READER_H_

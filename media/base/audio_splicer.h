@@ -125,4 +125,4 @@ class MEDIA_EXPORT AudioSplicer {
 
 }  // namespace media
 
-#endif
+#endif  // MEDIA_BASE_AUDIO_SPLICER_H_

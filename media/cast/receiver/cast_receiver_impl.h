@@ -116,4 +116,4 @@ class CastReceiverImpl : public CastReceiver {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_RECEIVER_CAST_RECEIVER_IMPL_
+#endif  // MEDIA_CAST_RECEIVER_CAST_RECEIVER_IMPL_H_

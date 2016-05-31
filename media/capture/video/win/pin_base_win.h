@@ -5,8 +5,8 @@
 // Implement a simple base class for a DirectShow input pin. It may only be
 // used in a single threaded apartment.
 
-#ifndef MEDIA_VIDEO_CAPTURE_WIN_PIN_BASE_WIN_H_
-#define MEDIA_VIDEO_CAPTURE_WIN_PIN_BASE_WIN_H_
+#ifndef MEDIA_CAPTURE_VIDEO_WIN_PIN_BASE_WIN_H_
+#define MEDIA_CAPTURE_VIDEO_WIN_PIN_BASE_WIN_H_
 
 // Avoid including strsafe.h via dshow as it will cause build warnings.
 #define NO_DSHOW_STRSAFE
@@ -108,4 +108,4 @@ class PinBase : public IPin,
 
 }  // namespace media
 
-#endif  // MEDIA_VIDEO_CAPTURE_WIN_PIN_BASE_WIN_H_
+#endif  // MEDIA_CAPTURE_VIDEO_WIN_PIN_BASE_WIN_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_IPC_COMMON_MEDIA_PARAM_TRAITS_H_
-#define MEDIA_BASE_IPC_COMMON_MEDIA_PARAM_TRAITS_H_
+#ifndef MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_H_
+#define MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_H_
 
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_param_traits.h"
@@ -40,4 +40,4 @@ struct ParamTraits<media::VideoCaptureFormat> {
 
 }  // namespace IPC
 
-#endif  // MEDIA_BASE_IPC_COMMON_MEDIA_PARAM_TRAITS_H_
+#endif  // MEDIA_BASE_IPC_MEDIA_PARAM_TRAITS_H_

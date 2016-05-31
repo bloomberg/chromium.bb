@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BLINK_TEST_RANDOM_H_
-#define MEDIA_BLINK_TEST_RANDOM_H_
+#ifndef MEDIA_BASE_TEST_RANDOM_H_
+#define MEDIA_BASE_TEST_RANDOM_H_
 
 #include <stdint.h>
 
@@ -42,4 +42,4 @@ class TestRandom {
 
 }  // namespace media
 
-#endif  // MEDIA_BLINK_TEST_RANDOM_H_
+#endif  // MEDIA_BASE_TEST_RANDOM_H_

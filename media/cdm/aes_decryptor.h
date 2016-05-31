@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CRYPTO_AES_DECRYPTOR_H_
-#define MEDIA_CRYPTO_AES_DECRYPTOR_H_
+#ifndef MEDIA_CDM_AES_DECRYPTOR_H_
+#define MEDIA_CDM_AES_DECRYPTOR_H_
 
 #include <stdint.h>
 
@@ -165,4 +165,4 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys,
 
 }  // namespace media
 
-#endif  // MEDIA_CRYPTO_AES_DECRYPTOR_H_
+#endif  // MEDIA_CDM_AES_DECRYPTOR_H_

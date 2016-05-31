@@ -72,4 +72,4 @@ class MEDIA_EXPORT AudioTimestampHelper {
 
 }  // namespace media
 
-#endif
+#endif  // MEDIA_BASE_AUDIO_TIMESTAMP_HELPER_H_

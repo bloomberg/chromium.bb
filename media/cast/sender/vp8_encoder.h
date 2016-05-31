@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_SENDER_CODECS_VP8_VP8_ENCODER_H_
-#define MEDIA_CAST_SENDER_CODECS_VP8_VP8_ENCODER_H_
+#ifndef MEDIA_CAST_SENDER_VP8_ENCODER_H_
+#define MEDIA_CAST_SENDER_VP8_ENCODER_H_
 
 #include <stdint.h>
 
@@ -94,4 +94,4 @@ class Vp8Encoder : public SoftwareVideoEncoder {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_SENDER_CODECS_VP8_VP8_ENCODER_H_
+#endif  // MEDIA_CAST_SENDER_VP8_ENCODER_H_

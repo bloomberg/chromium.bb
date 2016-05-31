@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_MEDIA_VT_VIDEO_DECODE_ACCELERATOR_H_
-#define CONTENT_COMMON_GPU_MEDIA_VT_VIDEO_DECODE_ACCELERATOR_H_
+#ifndef MEDIA_GPU_VT_VIDEO_DECODE_ACCELERATOR_MAC_H_
+#define MEDIA_GPU_VT_VIDEO_DECODE_ACCELERATOR_MAC_H_
 
 #include <stdint.h>
 
@@ -275,4 +275,4 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
 
 }  // namespace media
 
-#endif  // CONTENT_COMMON_GPU_MEDIA_VT_VIDEO_DECODE_ACCELERATOR_H_
+#endif  // MEDIA_GPU_VT_VIDEO_DECODE_ACCELERATOR_MAC_H_

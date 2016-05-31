@@ -51,4 +51,4 @@ typename MAP::iterator ModMapPrevious(MAP* map, typename MAP::iterator i) {
 }  // namespace cast
 }  // namespace media
 
-#endif
+#endif  // MEDIA_CAST_COMMON_MOD_UTIL_H_

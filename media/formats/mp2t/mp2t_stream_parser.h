@@ -140,5 +140,4 @@ class MEDIA_EXPORT Mp2tStreamParser : public StreamParser {
 }  // namespace mp2t
 }  // namespace media
 
-#endif
-
+#endif  // MEDIA_FORMATS_MP2T_MP2T_STREAM_PARSER_H_

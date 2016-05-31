@@ -85,4 +85,4 @@ class MEDIA_EXPORT EsParserAdts : public EsParser {
 }  // namespace mp2t
 }  // namespace media
 
-#endif
+#endif  // MEDIA_FORMATS_MP2T_ES_PARSER_ADTS_H_

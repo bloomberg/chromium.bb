@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_GPU_VT_H_
-#define MEDIA_GPU_VT_H_
+#ifndef MEDIA_GPU_VT_MAC_H_
+#define MEDIA_GPU_VT_MAC_H_
 
 // Dynamic library loader.
 #include "media/gpu/vt_stubs.h"
@@ -16,4 +16,4 @@ extern "C" {
 #include "media/gpu/vt.sig"
 }  // extern "C"
 
-#endif  // MEDIA_GPU_VT_H_
+#endif  // MEDIA_GPU_VT_MAC_H_

@@ -17,5 +17,4 @@
       } \
     } while (0)
 
-#endif
-
+#endif  // MEDIA_FORMATS_MP2T_MP2T_COMMON_H_

@@ -45,4 +45,4 @@ class BitstreamConverter
 }  // namespace mp4
 }  // namespace media
 
-#endif  // MEDIA_FORMATS_MP4_AVC_H_
+#endif  // MEDIA_FORMATS_MP4_BITSTREAM_CONVERTER_H_

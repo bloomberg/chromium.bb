@@ -5,8 +5,8 @@
 // Implement a DirectShow input pin used for receiving captured frames from
 // a DirectShow Capture filter.
 
-#ifndef MEDIA_VIDEO_CAPTURE_WIN_SINK_INPUT_PIN_WIN_H_
-#define MEDIA_VIDEO_CAPTURE_WIN_SINK_INPUT_PIN_WIN_H_
+#ifndef MEDIA_CAPTURE_VIDEO_WIN_SINK_INPUT_PIN_WIN_H_
+#define MEDIA_CAPTURE_VIDEO_WIN_SINK_INPUT_PIN_WIN_H_
 
 #include "base/macros.h"
 #include "media/base/video_capture_types.h"
@@ -53,4 +53,4 @@ class SinkInputPin : public PinBase {
 
 }  // namespace media
 
-#endif  // MEDIA_VIDEO_CAPTURE_WIN_SINK_INPUT_PIN_WIN_H_
+#endif  // MEDIA_CAPTURE_VIDEO_WIN_SINK_INPUT_PIN_WIN_H_

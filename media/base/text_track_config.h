@@ -46,4 +46,4 @@ class MEDIA_EXPORT TextTrackConfig {
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_TEXT_TRACK_H_
+#endif  // MEDIA_BASE_TEXT_TRACK_CONFIG_H_

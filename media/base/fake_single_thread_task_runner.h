@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_TEST_FAKE_TASK_RUNNER_H_
-#define MEDIA_CAST_TEST_FAKE_TASK_RUNNER_H_
+#ifndef MEDIA_BASE_FAKE_SINGLE_THREAD_TASK_RUNNER_H_
+#define MEDIA_BASE_FAKE_SINGLE_THREAD_TASK_RUNNER_H_
 
 #include <map>
 
@@ -58,4 +58,4 @@ class FakeSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
 
 }  // namespace media
 
-#endif  // MEDIA_CAST_TEST_FAKE_TASK_RUNNER_H_
+#endif  // MEDIA_BASE_FAKE_SINGLE_THREAD_TASK_RUNNER_H_

@@ -5,8 +5,8 @@
 // Implement a DirectShow sink filter used for receiving captured frames from
 // a DirectShow Capture filter.
 
-#ifndef MEDIA_VIDEO_CAPTURE_WIN_SINK_FILTER_WIN_H_
-#define MEDIA_VIDEO_CAPTURE_WIN_SINK_FILTER_WIN_H_
+#ifndef MEDIA_CAPTURE_VIDEO_WIN_SINK_FILTER_WIN_H_
+#define MEDIA_CAPTURE_VIDEO_WIN_SINK_FILTER_WIN_H_
 
 #include <windows.h>
 #include <stddef.h>
@@ -61,4 +61,4 @@ class __declspec(uuid("88cdbbdc-a73b-4afa-acbf-15d5e2ce12c3")) SinkFilter
 
 }  // namespace media
 
-#endif  // MEDIA_VIDEO_CAPTURE_WIN_SINK_FILTER_WIN_H_
+#endif  // MEDIA_CAPTURE_VIDEO_WIN_SINK_FILTER_WIN_H_

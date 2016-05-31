@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAPTURE_SMOOTH_EVENT_SAMPLER_H_
-#define MEDIA_CAPTURE_SMOOTH_EVENT_SAMPLER_H_
+#ifndef MEDIA_CAPTURE_CONTENT_SMOOTH_EVENT_SAMPLER_H_
+#define MEDIA_CAPTURE_CONTENT_SMOOTH_EVENT_SAMPLER_H_
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -51,4 +51,4 @@ class MEDIA_EXPORT SmoothEventSampler {
 
 }  // namespace media
 
-#endif  // MEDIA_CAPTURE_SMOOTH_EVENT_SAMPLER_H_
+#endif  // MEDIA_CAPTURE_CONTENT_SMOOTH_EVENT_SAMPLER_H_

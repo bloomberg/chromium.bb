@@ -92,4 +92,4 @@ class LRU {
 
 }  // namespace media
 
-#endif  // MEDIA_BLINK_LRU_H
+#endif  // MEDIA_BLINK_LRU_H_

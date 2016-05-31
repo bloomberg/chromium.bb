@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_VIDEO_CAPTURE_FILE_VIDEO_CAPTURE_DEVICE_FACTORY_H_
-#define MEDIA_VIDEO_CAPTURE_FILE_VIDEO_CAPTURE_DEVICE_FACTORY_H_
+#ifndef MEDIA_CAPTURE_VIDEO_FILE_VIDEO_CAPTURE_DEVICE_FACTORY_H_
+#define MEDIA_CAPTURE_VIDEO_FILE_VIDEO_CAPTURE_DEVICE_FACTORY_H_
 
 #include "media/capture/video/video_capture_device_factory.h"
 
@@ -28,4 +28,4 @@ class MEDIA_EXPORT FileVideoCaptureDeviceFactory
 
 }  // namespace media
 
-#endif  // MEDIA_VIDEO_CAPTURE_FILE_VIDEO_CAPTURE_DEVICE_FACTORY_H_
+#endif  // MEDIA_CAPTURE_VIDEO_FILE_VIDEO_CAPTURE_DEVICE_FACTORY_H_
