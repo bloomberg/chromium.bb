@@ -31,7 +31,6 @@ class VideoRenderer;
 }  // namespace protocol
 
 class ChromotingJniRuntime;
-class JniClient;
 class JniFrameConsumer;
 
 // ClientUserInterface that indirectly makes and receives JNI calls.
@@ -45,7 +44,6 @@ class ChromotingJniInstance
   // The instance does not take ownership of |jni_runtime|. To connect with an
   // unpaired host, pass in |pairing_id| and |pairing_secret| as empty strings.
   ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
-                        JniClient* jni_client,
                         const std::string& username,
                         const std::string& auth_token,
                         const std::string& host_jid,
@@ -149,8 +147,6 @@ class ChromotingJniInstance
 
   // Used to obtain task runner references and make calls to Java methods.
   ChromotingJniRuntime* jni_runtime_;
-
-  JniClient* jni_client_;
 
   // ID of the host we are connecting to.
   std::string host_jid_;
