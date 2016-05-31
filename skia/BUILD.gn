@@ -21,6 +21,7 @@ skia_support_pdf = !is_ios && (enable_basic_printing || enable_print_preview)
 # the OWNERS of skia.
 
 declare_args() {
+  skia_whitelist_serialized_typefaces = false
   # TODO(crbug.com/607933): Once GYP is no longer supported, port iOS to use
   # optimised skia.
   skia_build_no_opts = is_ios
@@ -186,6 +187,10 @@ config("skia_config") {
 
   if (is_win) {
     defines += [ "GR_GL_FUNCTION_TYPE=__stdcall" ]
+  }
+
+  if (skia_whitelist_serialized_typefaces) {
+    defines += [ "SK_WHITELIST_SERIALIZED_TYPEFACES" ]
   }
 }
 
