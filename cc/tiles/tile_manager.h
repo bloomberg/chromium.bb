@@ -95,11 +95,10 @@ RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats);
 // created, and unregister from the manager when they are deleted.
 class CC_EXPORT TileManager {
  public:
-  static std::unique_ptr<TileManager> Create(
-      TileManagerClient* client,
-      base::SequencedTaskRunner* task_runner,
-      size_t scheduled_raster_task_limit,
-      bool use_partial_raster);
+  TileManager(TileManagerClient* client,
+              scoped_refptr<base::SequencedTaskRunner> task_runner,
+              size_t scheduled_raster_task_limit,
+              bool use_partial_raster);
   virtual ~TileManager();
 
   // Assigns tile memory and schedules work to prepare tiles for drawing.
@@ -174,10 +173,8 @@ class CC_EXPORT TileManager {
 
   std::vector<Tile*> AllTilesForTesting() const {
     std::vector<Tile*> tiles;
-    for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end();
-         ++it) {
-      tiles.push_back(it->second);
-    }
+    for (auto& tile_pair : tiles_)
+      tiles.push_back(tile_pair.second);
     return tiles;
   }
 
@@ -203,11 +200,6 @@ class CC_EXPORT TileManager {
                              bool was_canceled);
 
  protected:
-  TileManager(TileManagerClient* client,
-              scoped_refptr<base::SequencedTaskRunner> task_runner,
-              size_t scheduled_raster_task_limit,
-              bool use_partial_raster);
-
   void FreeResourcesForReleasedTiles();
   void CleanUpReleasedTiles();
 
@@ -216,17 +208,9 @@ class CC_EXPORT TileManager {
   virtual void Release(Tile* tile);
   Tile::Id GetUniqueTileId() { return ++next_tile_id_; }
 
-  typedef std::vector<PrioritizedTile> PrioritizedTileVector;
-  typedef std::set<Tile*> TileSet;
-
   // Virtual for test
   virtual void ScheduleTasks(
-      const PrioritizedTileVector& tiles_that_need_to_be_rasterized);
-
-  void AssignGpuMemoryToTiles(
-      RasterTilePriorityQueue* raster_priority_queue,
-      size_t scheduled_raser_task_limit,
-      PrioritizedTileVector* tiles_that_need_to_be_rasterized);
+      const std::vector<PrioritizedTile>& tiles_that_need_to_be_rasterized);
 
  private:
   class MemoryUsage {
@@ -281,6 +265,7 @@ class CC_EXPORT TileManager {
 
   scoped_refptr<TileTask> CreateTaskSetFinishedTask(
       void (TileManager::*callback)());
+  std::vector<PrioritizedTile> AssignGpuMemoryToTiles();
 
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   ScheduledTasksStateAsValue() const;
@@ -294,8 +279,7 @@ class CC_EXPORT TileManager {
   const bool use_partial_raster_;
   bool use_gpu_rasterization_;
 
-  using TileMap = std::unordered_map<Tile::Id, Tile*>;
-  TileMap tiles_;
+  std::unordered_map<Tile::Id, Tile*> tiles_;
 
   bool all_tiles_that_need_to_be_rasterized_are_scheduled_;
   MemoryHistory::Entry memory_stats_from_last_assign_;
