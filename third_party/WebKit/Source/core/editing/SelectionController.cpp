@@ -197,7 +197,7 @@ void SelectionController::updateSelectionForMouseDrag(const HitTestResult& hitTe
     if (!target)
         return;
 
-    PositionWithAffinity rawTargetPosition = selection().selection().positionRespectingEditingBoundary(hitTestResult.localPoint(), target);
+    const PositionWithAffinity& rawTargetPosition = positionRespectingEditingBoundary(selection().selection().start(), hitTestResult.localPoint(), target);
     VisiblePositionInFlatTree targetPosition = createVisiblePosition(fromPositionInDOMTree<EditingInFlatTreeStrategy>(rawTargetPosition));
     // Don't modify the selection if we're not on a node.
     if (targetPosition.isNull())

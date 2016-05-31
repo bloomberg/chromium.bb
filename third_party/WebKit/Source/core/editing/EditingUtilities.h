@@ -250,6 +250,7 @@ enum WhitespacePositionOption { NotConsiderNonCollapsibleWhitespace, ConsiderNon
 Position leadingWhitespacePosition(const Position&, TextAffinity, WhitespacePositionOption = NotConsiderNonCollapsibleWhitespace);
 Position trailingWhitespacePosition(const Position&, TextAffinity, WhitespacePositionOption = NotConsiderNonCollapsibleWhitespace);
 unsigned numEnclosingMailBlockquotes(const Position&);
+PositionWithAffinity positionRespectingEditingBoundary(const Position&, const LayoutPoint& localPoint, Node* targetNode);
 void updatePositionForNodeRemoval(Position&, Node&);
 
 // -------------------------------------------------------------------------

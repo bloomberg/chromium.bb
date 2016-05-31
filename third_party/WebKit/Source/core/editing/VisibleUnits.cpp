@@ -2178,7 +2178,7 @@ VisiblePosition visiblePositionForContentsPoint(const IntPoint& contentsPoint, L
     frame->document()->layoutViewItem().hitTest(result);
 
     if (Node* node = result.innerNode())
-        return frame->selection().selection().visiblePositionRespectingEditingBoundary(result.localPoint(), node);
+        return createVisiblePosition(positionRespectingEditingBoundary(frame->selection().selection().start(), result.localPoint(), node));
     return VisiblePosition();
 }
 

@@ -734,33 +734,6 @@ void VisibleSelectionTemplate<Strategy>::adjustSelectionToAvoidCrossingEditingBo
 }
 
 template <typename Strategy>
-VisiblePositionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::visiblePositionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const
-{
-    return createVisiblePosition(positionRespectingEditingBoundary(localPoint, targetNode));
-}
-
-template <typename Strategy>
-PositionWithAffinityTemplate<Strategy> VisibleSelectionTemplate<Strategy>::positionRespectingEditingBoundary(const LayoutPoint& localPoint, Node* targetNode) const
-{
-    if (!targetNode->layoutObject())
-        return PositionWithAffinityTemplate<Strategy>();
-
-    LayoutPoint selectionEndPoint = localPoint;
-    Element* editableElement = rootEditableElement();
-
-    if (editableElement && !editableElement->contains(targetNode)) {
-        if (!editableElement->layoutObject())
-            return PositionWithAffinityTemplate<Strategy>();
-
-        FloatPoint absolutePoint = targetNode->layoutObject()->localToAbsolute(FloatPoint(selectionEndPoint));
-        selectionEndPoint = roundedLayoutPoint(editableElement->layoutObject()->absoluteToLocal(absolutePoint));
-        targetNode = editableElement;
-    }
-
-    return fromPositionInDOMTree<Strategy>(targetNode->layoutObject()->positionForPoint(selectionEndPoint));
-}
-
-template <typename Strategy>
 bool VisibleSelectionTemplate<Strategy>::isContentEditable() const
 {
     return isEditablePosition(start());

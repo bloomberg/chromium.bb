@@ -1468,6 +1468,26 @@ unsigned numEnclosingMailBlockquotes(const Position& p)
     return num;
 }
 
+PositionWithAffinity positionRespectingEditingBoundary(const Position& position, const LayoutPoint& localPoint, Node* targetNode)
+{
+    if (!targetNode->layoutObject())
+        return PositionWithAffinity();
+
+    LayoutPoint selectionEndPoint = localPoint;
+    Element* editableElement = rootEditableElementOf(position);
+
+    if (editableElement && !editableElement->contains(targetNode)) {
+        if (!editableElement->layoutObject())
+            return PositionWithAffinity();
+
+        FloatPoint absolutePoint = targetNode->layoutObject()->localToAbsolute(FloatPoint(selectionEndPoint));
+        selectionEndPoint = roundedLayoutPoint(editableElement->layoutObject()->absoluteToLocal(absolutePoint));
+        targetNode = editableElement;
+    }
+
+    return targetNode->layoutObject()->positionForPoint(selectionEndPoint);
+}
+
 void updatePositionForNodeRemoval(Position& position, Node& node)
 {
     if (position.isNull())
