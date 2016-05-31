@@ -89,7 +89,8 @@ class SafeJsonParserTest : public InProcessBrowserTest {
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 };
 
-IN_PROC_BROWSER_TEST_F(SafeJsonParserTest, Parse) {
+// Flaky in debug builds: http://crbug.com/611067
+IN_PROC_BROWSER_TEST_F(SafeJsonParserTest, DISABLED_Parse) {
   TestParse("{}");
   TestParse("choke");
   TestParse("{\"awesome\": true}");
