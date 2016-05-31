@@ -55,6 +55,45 @@ class FailureHelper : public EmbeddedWorkerTestHelper {
 
 class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
  public:
+  class ServiceWorkerRequestTestResources {
+   public:
+    ServiceWorkerRequestTestResources(
+        ServiceWorkerControlleeRequestHandlerTest* test,
+        const GURL& url,
+        ResourceType type)
+        : test_(test),
+          request_(test->url_request_context_.CreateRequest(
+              url,
+              net::DEFAULT_PRIORITY,
+              &test->url_request_delegate_)),
+          handler_(new ServiceWorkerControlleeRequestHandler(
+              test->context()->AsWeakPtr(),
+              test->provider_host_,
+              base::WeakPtr<storage::BlobStorageContext>(),
+              FETCH_REQUEST_MODE_NO_CORS,
+              FETCH_CREDENTIALS_MODE_OMIT,
+              FetchRedirectMode::FOLLOW_MODE,
+              type,
+              REQUEST_CONTEXT_TYPE_HYPERLINK,
+              REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+              scoped_refptr<ResourceRequestBody>())),
+          job_(nullptr) {}
+
+    ServiceWorkerURLRequestJob* MaybeCreateJob() {
+      job_.reset(handler_->MaybeCreateJob(request_.get(), nullptr,
+                                          &test_->mock_resource_context_));
+      return static_cast<ServiceWorkerURLRequestJob*>(job_.get());
+    }
+
+    void ResetHandler() { handler_.reset(nullptr); }
+
+   private:
+    ServiceWorkerControlleeRequestHandlerTest* test_;
+    std::unique_ptr<net::URLRequest> request_;
+    std::unique_ptr<ServiceWorkerControlleeRequestHandler> handler_;
+    std::unique_ptr<net::URLRequestJob> job_;
+  };
+
   ServiceWorkerControlleeRequestHandlerTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
@@ -131,6 +170,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
 
   // Store an activated worker.
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->set_has_fetch_handler(true);
   registration_->SetActiveVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(),
@@ -139,21 +179,9 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
   base::RunLoop().RunUntilIdle();
 
   // Conduct a main resource load.
-  const GURL kDocUrl("http://host/scope/doc");
-  std::unique_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-      kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
-  std::unique_ptr<ServiceWorkerControlleeRequestHandler> handler(
-      new ServiceWorkerControlleeRequestHandler(
-          context()->AsWeakPtr(), provider_host_,
-          base::WeakPtr<storage::BlobStorageContext>(),
-          FETCH_REQUEST_MODE_NO_CORS, FETCH_CREDENTIALS_MODE_OMIT,
-          FetchRedirectMode::FOLLOW_MODE, RESOURCE_TYPE_MAIN_FRAME,
-          REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-          scoped_refptr<ResourceRequestBody>()));
-  std::unique_ptr<net::URLRequestJob> job(
-      handler->MaybeCreateJob(request.get(), nullptr, &mock_resource_context_));
-  ServiceWorkerURLRequestJob* sw_job =
-      static_cast<ServiceWorkerURLRequestJob*>(job.get());
+  ServiceWorkerRequestTestResources test_resources(
+      this, GURL("http://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+  ServiceWorkerURLRequestJob* sw_job = test_resources.MaybeCreateJob();
 
   EXPECT_FALSE(sw_job->ShouldFallbackToNetwork());
   EXPECT_FALSE(sw_job->ShouldForwardToServiceWorker());
@@ -171,6 +199,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DisallowServiceWorker) {
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   // Store a registration that is installed but not activated yet.
   version_->SetStatus(ServiceWorkerVersion::INSTALLED);
+  version_->set_has_fetch_handler(true);
   registration_->SetWaitingVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(),
@@ -179,21 +208,9 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   base::RunLoop().RunUntilIdle();
 
   // Conduct a main resource load.
-  const GURL kDocUrl("http://host/scope/doc");
-  std::unique_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-      kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
-  std::unique_ptr<ServiceWorkerControlleeRequestHandler> handler(
-      new ServiceWorkerControlleeRequestHandler(
-          context()->AsWeakPtr(), provider_host_,
-          base::WeakPtr<storage::BlobStorageContext>(),
-          FETCH_REQUEST_MODE_NO_CORS, FETCH_CREDENTIALS_MODE_OMIT,
-          FetchRedirectMode::FOLLOW_MODE, RESOURCE_TYPE_MAIN_FRAME,
-          REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-          scoped_refptr<ResourceRequestBody>()));
-  std::unique_ptr<net::URLRequestJob> job(
-      handler->MaybeCreateJob(request.get(), nullptr, &mock_resource_context_));
-  ServiceWorkerURLRequestJob* sw_job =
-      static_cast<ServiceWorkerURLRequestJob*>(job.get());
+  ServiceWorkerRequestTestResources test_resources(
+      this, GURL("http://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+  ServiceWorkerURLRequestJob* sw_job = test_resources.MaybeCreateJob();
 
   EXPECT_FALSE(sw_job->ShouldFallbackToNetwork());
   EXPECT_FALSE(sw_job->ShouldForwardToServiceWorker());
@@ -208,7 +225,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
   EXPECT_TRUE(version_->HasControllee());
 
   // Navigations should trigger an update too.
-  handler.reset(NULL);
+  test_resources.ResetHandler();
   EXPECT_TRUE(version_->update_timer_.IsRunning());
 }
 
@@ -216,23 +233,15 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, ActivateWaitingVersion) {
 TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
   // Create an installing registration.
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
+  version_->set_has_fetch_handler(true);
   registration_->SetInstallingVersion(version_);
   context()->storage()->NotifyInstallingRegistration(registration_.get());
 
   // Conduct a main resource load.
-  const GURL kDocUrl("http://host/scope/doc");
-  std::unique_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-      kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
-  std::unique_ptr<ServiceWorkerControlleeRequestHandler> handler(
-      new ServiceWorkerControlleeRequestHandler(
-          context()->AsWeakPtr(), provider_host_,
-          base::WeakPtr<storage::BlobStorageContext>(),
-          FETCH_REQUEST_MODE_NO_CORS, FETCH_CREDENTIALS_MODE_OMIT,
-          FetchRedirectMode::FOLLOW_MODE, RESOURCE_TYPE_MAIN_FRAME,
-          REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-          scoped_refptr<ResourceRequestBody>()));
-  std::unique_ptr<net::URLRequestJob> job(
-      handler->MaybeCreateJob(request.get(), nullptr, &mock_resource_context_));
+  ServiceWorkerRequestTestResources test_resources(
+      this, GURL("http://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+  ServiceWorkerURLRequestJob* job = test_resources.MaybeCreateJob();
+
   base::RunLoop().RunUntilIdle();
 
   // The handler should have fallen back to network and destroyed the job. The
@@ -250,6 +259,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   // Store a registration so the call to FindRegistrationForDocument will read
   // from the database.
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->set_has_fetch_handler(true);
   registration_->SetActiveVersion(version_);
   context()->storage()->StoreRegistration(
       registration_.get(),
@@ -260,21 +270,9 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   registration_ = NULL;
 
   // Conduct a main resource load.
-  const GURL kDocUrl("http://host/scope/doc");
-  std::unique_ptr<net::URLRequest> request = url_request_context_.CreateRequest(
-      kDocUrl, net::DEFAULT_PRIORITY, &url_request_delegate_);
-  std::unique_ptr<ServiceWorkerControlleeRequestHandler> handler(
-      new ServiceWorkerControlleeRequestHandler(
-          context()->AsWeakPtr(), provider_host_,
-          base::WeakPtr<storage::BlobStorageContext>(),
-          FETCH_REQUEST_MODE_NO_CORS, FETCH_CREDENTIALS_MODE_OMIT,
-          FetchRedirectMode::FOLLOW_MODE, RESOURCE_TYPE_MAIN_FRAME,
-          REQUEST_CONTEXT_TYPE_HYPERLINK, REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
-          scoped_refptr<ResourceRequestBody>()));
-  std::unique_ptr<net::URLRequestJob> job(
-      handler->MaybeCreateJob(request.get(), nullptr, &mock_resource_context_));
-  ServiceWorkerURLRequestJob* sw_job =
-      static_cast<ServiceWorkerURLRequestJob*>(job.get());
+  ServiceWorkerRequestTestResources test_resources(
+      this, GURL("http://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+  ServiceWorkerURLRequestJob* sw_job = test_resources.MaybeCreateJob();
 
   EXPECT_FALSE(sw_job->ShouldFallbackToNetwork());
   EXPECT_FALSE(sw_job->ShouldForwardToServiceWorker());
@@ -287,6 +285,39 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, DeletedProviderHost) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(sw_job->ShouldFallbackToNetwork());
   EXPECT_FALSE(sw_job->ShouldForwardToServiceWorker());
+}
+
+TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoFetchHandler) {
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->set_has_fetch_handler(false);
+  registration_->SetActiveVersion(version_);
+  context()->storage()->StoreRegistration(
+      registration_.get(), version_.get(),
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  base::RunLoop().RunUntilIdle();
+
+  ServiceWorkerRequestTestResources main_test_resources(
+      this, GURL("http://host/scope/doc"), RESOURCE_TYPE_MAIN_FRAME);
+  ServiceWorkerURLRequestJob* main_job = main_test_resources.MaybeCreateJob();
+
+  EXPECT_FALSE(main_job->ShouldFallbackToNetwork());
+  EXPECT_FALSE(main_job->ShouldForwardToServiceWorker());
+  EXPECT_FALSE(version_->HasControllee());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(main_job->ShouldFallbackToNetwork());
+  EXPECT_FALSE(main_job->ShouldForwardToServiceWorker());
+  EXPECT_TRUE(version_->HasControllee());
+  EXPECT_EQ(version_, provider_host_->controlling_version());
+
+  ServiceWorkerRequestTestResources sub_test_resources(
+      this, GURL("http://host/scope/doc/subresource"), RESOURCE_TYPE_IMAGE);
+  ServiceWorkerURLRequestJob* sub_job = sub_test_resources.MaybeCreateJob();
+
+  // This job shouldn't be created because this worker doesn't have fetch
+  // handler.
+  EXPECT_EQ(nullptr, sub_job);
 }
 
 }  // namespace content
