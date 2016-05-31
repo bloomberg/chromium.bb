@@ -183,6 +183,11 @@
   "ios/web/ios_web_resources.grd": {
     "includes": [23950],
   },
+  # ios/web test strings and content/shell strings must start at the same id.
+  # App only use one file depending on whether it is iOS or other platform.
+  "ios/web/test/test_resources.grd": {
+    "includes": [24450],
+  },
   "content/shell/shell_resources.grd": {
     "includes": [24450],
   },
