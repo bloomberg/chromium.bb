@@ -64,8 +64,10 @@ class FindTrackingDelegate : public WebContentsDelegate {
                  const gfx::Rect& selection_rect,
                  int active_match_ordinal,
                  bool final_update) override {
-    matches_ = number_of_matches;
-    run_loop_.Quit();
+    if (final_update) {
+      matches_ = number_of_matches;
+      run_loop_.Quit();
+    }
   }
 
   static int global_request_id;
