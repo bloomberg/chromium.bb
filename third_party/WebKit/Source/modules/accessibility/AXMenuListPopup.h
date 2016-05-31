@@ -46,7 +46,7 @@ public:
     void didUpdateActiveOption(int optionIndex);
     void didShow();
     void didHide();
-    AXObject* activeDescendant() final;
+    AXObject* activeChild();
 
 private:
     explicit AXMenuListPopup(AXObjectCacheImpl&);

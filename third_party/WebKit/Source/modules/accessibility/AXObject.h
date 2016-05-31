@@ -773,7 +773,7 @@ public:
     virtual String stringValue() const { return String(); }
 
     // ARIA attributes.
-    virtual AXObject* activeDescendant() { return nullptr; }
+    virtual AXObject* activeDescendant() const { return nullptr; }
     virtual String ariaAutoComplete() const { return String(); }
     virtual String ariaDescribedByAttribute() const { return String(); }
     virtual void ariaFlowToElements(AXObjectVector&) const { }

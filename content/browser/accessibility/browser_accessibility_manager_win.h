@@ -43,7 +43,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
   // BrowserAccessibilityManager methods
   void UserIsReloading() override;
-  BrowserAccessibility* GetFocus() override;
   void NotifyAccessibilityEvent(
       BrowserAccessibilityEvent::Source source,
       ui::AXEvent event_type,

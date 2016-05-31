@@ -13,25 +13,18 @@ async_test(function(t)
     menulist.selectedIndex = 0;
     menulist.focus();
 
-    var eventCount = 0;
+    var result = "";
     accessibilityController.addNotificationListener(function listener(element, notification) {
-        if (notification == "ActiveDescendantChanged") {
-            assert_equals(element.role, "AXRole: AXMenuListPopup");
-            ++eventCount;
-        }
-        if (notification == "MenuListItemSelected") {
+        if (notification == "Focus") {
             assert_equals(element.role, "AXRole: AXMenuListOption");
             assert_equals(element.name, "Alicia");
-            ++eventCount;
-        }
-
-        if (eventCount == 2)
             t.done();
+        }
     });
 
     var axMenuList = accessibilityController.accessibleElementById("menulist");
     eventSender.mouseMoveTo(axMenuList.x + 10, axMenuList.y + 10);
     eventSender.mouseDown();
     eventSender.mouseUp();
-}, "menu list fires correct events on open");
+}, "menu list fires focus event on open");
 </script>

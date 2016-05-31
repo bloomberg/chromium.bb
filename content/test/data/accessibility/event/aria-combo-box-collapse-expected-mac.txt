@@ -1,2 +1,0 @@
-AXSelectedChildrenChanged on AXComboBox
-AXExpandedChanged on AXComboBox

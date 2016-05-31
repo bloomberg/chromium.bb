@@ -131,9 +131,10 @@ bool BrowserAccessibility::IsTextOnlyObject() const {
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
     uint32_t child_index) const {
+  DCHECK_LT(child_index, PlatformChildCount());
   BrowserAccessibility* result = nullptr;
 
-  if (child_index == 0 && HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID)) {
+  if (HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID)) {
     BrowserAccessibilityManager* child_manager =
         BrowserAccessibilityManager::FromID(
             GetIntAttribute(ui::AX_ATTR_CHILD_TREE_ID));

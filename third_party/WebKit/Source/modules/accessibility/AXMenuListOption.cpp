@@ -93,7 +93,7 @@ bool AXMenuListOption::isSelected() const
 {
     AXMenuListPopup* parent = static_cast<AXMenuListPopup*>(parentObject());
     if (parent && !parent->isOffScreen())
-        return parent->activeDescendant() == this;
+        return parent->activeChild() == this;
     return m_element && m_element->selected();
 }
 

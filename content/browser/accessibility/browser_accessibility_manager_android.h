@@ -77,7 +77,6 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
   bool ShouldExposePasswordText();
 
   // BrowserAccessibilityManager overrides.
-  BrowserAccessibility* GetFocus() override;
   void NotifyAccessibilityEvent(
       BrowserAccessibilityEvent::Source source,
       ui::AXEvent event_type,

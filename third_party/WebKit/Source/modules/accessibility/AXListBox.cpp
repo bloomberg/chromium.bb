@@ -61,7 +61,7 @@ AccessibilityRole AXListBox::determineAccessibilityRole()
     return ListBoxRole;
 }
 
-AXObject* AXListBox::activeDescendant()
+AXObject* AXListBox::activeDescendant() const
 {
     if (!isHTMLSelectElement(getNode()))
         return nullptr;
@@ -90,7 +90,12 @@ void AXListBox::activeIndexChanged()
     if (!select->focused())
         return;
 
-    axObjectCache().postNotification(this, AXObjectCacheImpl::AXActiveDescendantChanged);
+    if (m_activeIndex >= 0 && m_activeIndex < static_cast<int>(select->length())) {
+        HTMLOptionElement* option = select->item(m_activeIndex);
+        axObjectCache().postNotification(option, AXObjectCacheImpl::AXFocusedUIElementChanged);
+    } else {
+        axObjectCache().postNotification(this, AXObjectCacheImpl::AXFocusedUIElementChanged);
+    }
 }
 
 } // namespace blink

@@ -17,6 +17,7 @@ async_test(function(t)
 
     var gotCheckedStateChanged = false;
     var gotSelectedChildrenChanged = false;
+    var gotFocus = false;
 
     window.setTimeout(function() {
         var result = "";
@@ -29,12 +30,16 @@ async_test(function(t)
                 assert_equals(element.role, "AXRole: AXListBox");
                 gotSelectedChildrenChanged = true;
             }
-            if (gotCheckedStateChanged && gotSelectedChildrenChanged) {
+            if (notification == "Focus") {
+                assert_equals(element.role, "AXRole: AXListBoxOption");
+                gotFocus = true;
+            }
+            if (gotCheckedStateChanged && gotSelectedChildrenChanged && gotFocus) {
                 t.done();
             }
         }));
 
         listbox.selectedIndex = 1;
     }, 0);
-}, "menu list fires correct events when active index changes.");
+}, "menu list fires focus event on close");
 </script>
