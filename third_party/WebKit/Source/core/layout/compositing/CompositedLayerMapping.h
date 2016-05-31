@@ -128,10 +128,14 @@ public:
     void setContentsNeedDisplay();
     // LayoutRect is in the coordinate space of the layer's layout object.
     void setContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason, const DisplayItemClient&);
+    // Invalidates just scrolling content layers.
+    void setScrollingContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason, const DisplayItemClient&);
 
     // This is called only if we are tracking paint invalidation for testing, or ENABLE(ASSERT)
     // for error checking and debugging.
     void displayItemClientWasInvalidated(const DisplayItemClient&, PaintInvalidationReason);
+    // Invalidates just scrolling content layers.
+    void scrollingDisplayItemClientWasInvalidated(const DisplayItemClient&, PaintInvalidationReason);
 
     // Notification from the layoutObject that its content changed.
     void contentChanged(ContentChangeType);
@@ -215,6 +219,8 @@ public:
     const GraphicsLayerPaintInfo* containingSquashedLayer(const LayoutObject*, unsigned maxSquashedLayerIndex);
 
     void updateScrollingBlockSelection();
+
+    void adjustForCompositedScrolling(const GraphicsLayer*, IntSize& offset) const;
 
 private:
     IntRect recomputeInterestRect(const GraphicsLayer*) const;
@@ -440,6 +446,11 @@ private:
     LayoutRect m_compositedBounds;
 
     LayoutSize m_contentOffsetInCompositingLayer;
+
+    // We keep track of the scrolling contents offset, so that when it changes we can notify the ScrollingCoordinator, which
+    // passes on main-thread scrolling updates to the compositor.
+    DoubleSize m_scrollingContentsOffset;
+
     unsigned m_contentOffsetInCompositingLayerDirty : 1;
 
     unsigned m_pendingUpdateScope : 2;

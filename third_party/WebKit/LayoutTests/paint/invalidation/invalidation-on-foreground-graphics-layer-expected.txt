@@ -9,21 +9,42 @@
         {
           "position": [8, 8],
           "bounds": [200, 200],
+          "contentsOpaque": true,
           "shouldFlattenTransform": false,
           "drawsContent": true,
+          "backgroundColor": "#D3D3D3",
           "children": [
             {
               "bounds": [185, 185],
               "shouldFlattenTransform": false,
               "children": [
                 {
-                  "bounds": [185, 1200],
+                  "bounds": [300, 300],
                   "drawsContent": true,
                   "paintInvalidations": [
                     {
-                      "object": "LayoutBlockFlow DIV id='indicator'",
-                      "rect": [0, 0, 185, 200],
+                      "object": "LayoutBlockFlow DIV id='target'",
+                      "rect": [100, 100, 200, 200],
                       "reason": "style change"
+                    }
+                  ],
+                  "children": [
+                    {
+                      "bounds": [200, 200],
+                      "contentsOpaque": true,
+                      "drawsContent": true,
+                      "backgroundColor": "#ADD8E6"
+                    },
+                    {
+                      "bounds": [300, 300],
+                      "drawsContent": true,
+                      "paintInvalidations": [
+                        {
+                          "object": "LayoutBlockFlow DIV id='target'",
+                          "rect": [100, 100, 200, 200],
+                          "reason": "style change"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -38,14 +59,7 @@
                 },
                 {
                   "position": [185, 0],
-                  "bounds": [15, 185],
-                  "paintInvalidations": [
-                    {
-                      "object": "Vertical Scrollbar Layer",
-                      "rect": [0, 0, 15, 185],
-                      "reason": "full"
-                    }
-                  ]
+                  "bounds": [15, 185]
                 },
                 {
                   "position": [185, 185],

@@ -71,6 +71,7 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owningWebViewImpl)
     : m_node(node)
     , m_owningWebViewImpl(owningWebViewImpl)
     , m_currentGraphicsLayer(0)
+    , m_isScrollingGraphicsLayer(false)
     , m_geometryNeedsUpdate(false)
     , m_isAnimating(false)
     , m_startTime(monotonicallyIncreasingTime())
@@ -127,9 +128,12 @@ void LinkHighlightImpl::releaseResources()
 void LinkHighlightImpl::attachLinkHighlightToCompositingLayer(const LayoutBoxModelObject& paintInvalidationContainer)
 {
     GraphicsLayer* newGraphicsLayer = paintInvalidationContainer.layer()->graphicsLayerBacking();
+    m_isScrollingGraphicsLayer = false;
     // FIXME: There should always be a GraphicsLayer. See crbug.com/431961.
-    if (newGraphicsLayer && !newGraphicsLayer->drawsContent())
+    if (paintInvalidationContainer.layer()->needsCompositedScrolling() && m_node->layoutObject() != &paintInvalidationContainer) {
         newGraphicsLayer = paintInvalidationContainer.layer()->graphicsLayerBackingForScrolling();
+        m_isScrollingGraphicsLayer = true;
+    }
     if (!newGraphicsLayer)
         return;
 
@@ -221,6 +225,13 @@ bool LinkHighlightImpl::computeHighlightLayerPathAndPosition(const LayoutBoxMode
 
     for (size_t quadIndex = 0; quadIndex < quads.size(); ++quadIndex) {
         FloatQuad absoluteQuad = quads[quadIndex];
+
+        // Scrolling content layers have the same offset from layout object as the non-scrolling layers. Thus we need
+        // to adjust for their scroll offset.
+        if (m_isScrollingGraphicsLayer) {
+            DoubleSize adjustedScrollOffset = paintInvalidationContainer.layer()->getScrollableArea()->adjustedScrollOffset();
+            absoluteQuad.move(adjustedScrollOffset.width(), adjustedScrollOffset.height());
+        }
 
         // Transform node quads in target absolute coords to local coordinates in the compositor layer.
         FloatQuad transformedQuad;

@@ -25,11 +25,6 @@
           "backgroundColor": "#D3D3D3",
           "paintInvalidations": [
             {
-              "object": "LayoutText #text",
-              "rect": [0, 160, 21, 19],
-              "reason": "selection"
-            },
-            {
               "object": "InlineTextBox 'test'",
               "reason": "selection"
             },
@@ -39,6 +34,10 @@
             },
             {
               "object": "LayoutBlockFlow DIV id='target'",
+              "reason": "selection"
+            },
+            {
+              "object": "LayoutText #text",
               "reason": "selection"
             }
           ],

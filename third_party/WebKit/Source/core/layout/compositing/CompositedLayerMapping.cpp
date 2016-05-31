@@ -1007,14 +1007,14 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(const IntRect& localCo
     DoubleSize scrollingContentsOffset(overflowClipRect.location().x() - adjustedScrollOffset.width(), overflowClipRect.location().y() - adjustedScrollOffset.height());
     // The scroll offset change is compared using floating point so that fractional scroll offset
     // change can be propagated to compositor.
-    if (scrollingContentsOffset != m_scrollingContentsLayer->offsetDoubleFromLayoutObject() || scrollSize != m_scrollingContentsLayer->size()) {
+    if (scrollingContentsOffset != m_scrollingContentsOffset || scrollSize != m_scrollingContentsLayer->size()) {
         bool coordinatorHandlesOffset = compositor()->scrollingLayerDidChange(&m_owningLayer);
         m_scrollingContentsLayer->setPosition(coordinatorHandlesOffset ? FloatPoint() : FloatPoint(-toFloatSize(adjustedScrollOffset)));
     }
+    m_scrollingContentsOffset = scrollingContentsOffset;
 
     m_scrollingContentsLayer->setSize(FloatSize(scrollSize));
-    // FIXME: The paint offset and the scroll offset should really be separate concepts.
-    m_scrollingContentsLayer->setOffsetDoubleFromLayoutObject(scrollingContentsOffset, GraphicsLayer::DontSetNeedsDisplay);
+    m_scrollingContentsLayer->setOffsetDoubleFromLayoutObject(toIntSize(overflowClipRect.location()), GraphicsLayer::DontSetNeedsDisplay);
 
     if (m_foregroundLayer) {
         if (m_foregroundLayer->size() != m_scrollingContentsLayer->size())
@@ -1416,7 +1416,8 @@ enum ApplyToGraphicsLayersModeFlags {
     ApplyToMaskLayers = (1 << 4),
     ApplyToContentLayers = (1 << 5),
     ApplyToChildContainingLayers = (1 << 6), // layers between m_graphicsLayer and children
-    ApplyToAllGraphicsLayers = (ApplyToSquashingLayer | ApplyToScrollbarLayers | ApplyToBackgroundLayer | ApplyToMaskLayers | ApplyToLayersAffectedByPreserve3D | ApplyToContentLayers)
+    ApplyToScrollingContentLayers = (1 << 7),
+    ApplyToAllGraphicsLayers = (ApplyToSquashingLayer | ApplyToScrollbarLayers | ApplyToBackgroundLayer | ApplyToMaskLayers | ApplyToLayersAffectedByPreserve3D | ApplyToContentLayers | ApplyToScrollingContentLayers)
 };
 typedef unsigned ApplyToGraphicsLayersMode;
 
@@ -1433,9 +1434,9 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping, const F
         f(mapping->clippingLayer());
     if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToChildContainingLayers)) && mapping->scrollingLayer())
         f(mapping->scrollingLayer());
-    if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToContentLayers) || (mode & ApplyToChildContainingLayers)) && mapping->scrollingContentsLayer())
+    if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToContentLayers) || (mode & ApplyToChildContainingLayers) || (mode & ApplyToScrollingContentLayers)) && mapping->scrollingContentsLayer())
         f(mapping->scrollingContentsLayer());
-    if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToContentLayers)) && mapping->foregroundLayer())
+    if (((mode & ApplyToLayersAffectedByPreserve3D) || (mode & ApplyToContentLayers) || (mode & ApplyToScrollingContentLayers)) && mapping->foregroundLayer())
         f(mapping->foregroundLayer());
 
     if ((mode & ApplyToChildContainingLayers) && mapping->childTransformLayer())
@@ -2109,6 +2110,26 @@ void CompositedLayerMapping::setContentsNeedDisplayInRect(const LayoutRect& r, P
     ApplyToGraphicsLayers(this, functor, ApplyToContentLayers);
 }
 
+void CompositedLayerMapping::setScrollingContentsNeedDisplayInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason, const DisplayItemClient& client)
+{
+    // TODO(wangxianzhu): Enable the following assert after paint invalidation for spv2 is ready.
+    // ASSERT(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+
+    SetContentsNeedsDisplayInRectFunctor functor = {
+        enclosingIntRect(LayoutRect(r.location() + m_owningLayer.subpixelAccumulation(), r.size())),
+        invalidationReason,
+        client
+    };
+    ApplyToGraphicsLayers(this, functor, ApplyToScrollingContentLayers);
+}
+
+void CompositedLayerMapping::scrollingDisplayItemClientWasInvalidated(const DisplayItemClient& displayItemClient, PaintInvalidationReason paintInvalidationReason)
+{
+    ApplyToGraphicsLayers(this, [&displayItemClient, paintInvalidationReason](GraphicsLayer* layer) {
+        layer->displayItemClientWasInvalidated(displayItemClient, paintInvalidationReason);
+    }, ApplyToScrollingContentLayers);
+}
+
 void CompositedLayerMapping::displayItemClientWasInvalidated(const DisplayItemClient& displayItemClient, PaintInvalidationReason paintInvalidationReason)
 {
     ApplyToGraphicsLayers(this, [&displayItemClient, paintInvalidationReason](GraphicsLayer* layer) {
@@ -2240,6 +2261,7 @@ IntRect CompositedLayerMapping::recomputeInterestRect(const GraphicsLayer* graph
         ASSERT(graphicsLayer == m_graphicsLayer || graphicsLayer == m_scrollingContentsLayer);
         anchorLayoutObject = m_owningLayer.layoutObject();
         offsetFromAnchorLayoutObject = graphicsLayer->offsetFromLayoutObject();
+        adjustForCompositedScrolling(graphicsLayer, offsetFromAnchorLayoutObject);
     }
 
     // Start with the bounds of the graphics layer in the space of the anchor LayoutObject.
@@ -2340,6 +2362,14 @@ bool CompositedLayerMapping::needsRepaint(const GraphicsLayer& graphicsLayer) co
     return isScrollableAreaLayer(&graphicsLayer) ? true : m_owningLayer.needsRepaint();
 }
 
+void CompositedLayerMapping::adjustForCompositedScrolling(const GraphicsLayer* graphicsLayer, IntSize& offset) const
+{
+    if (graphicsLayer == m_scrollingContentsLayer.get() || graphicsLayer == m_foregroundLayer.get()) {
+        DoubleSize adjustedScrollOffset = m_owningLayer.getScrollableArea()->adjustedScrollOffset();
+        offset.expand(-adjustedScrollOffset.width(), -adjustedScrollOffset.height());
+    }
+}
+
 void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context,
     GraphicsLayerPaintingPhase graphicsLayerPaintingPhase, const IntRect& interestRect) const
 {
@@ -2386,6 +2416,7 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         paintInfo.paintLayer = &m_owningLayer;
         paintInfo.compositedBounds = compositedBounds();
         paintInfo.offsetFromLayoutObject = graphicsLayer->offsetFromLayoutObject();
+        adjustForCompositedScrolling(graphicsLayer, paintInfo.offsetFromLayoutObject);
 
         // We have to use the same root as for hit testing, because both methods can compute and cache clipRects.
         doPaintTask(paintInfo, *graphicsLayer, paintLayerFlags, context, interestRect);

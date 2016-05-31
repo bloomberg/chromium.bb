@@ -14,12 +14,6 @@
           "paintInvalidations": [
             {
               "object": "LayoutBlockFlow (positioned) DIV id='block'",
-              "rect": [300, 100, 120, 50],
-              "reason": "bounds change"
-            },
-            {
-              "object": "LayoutBlockFlow (positioned) DIV id='block'",
-              "rect": [50, 100, 120, 50],
               "reason": "bounds change"
             }
           ],

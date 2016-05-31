@@ -98,6 +98,7 @@ private:
     Persistent<Node> m_node;
     WebViewImpl* m_owningWebViewImpl;
     GraphicsLayer* m_currentGraphicsLayer;
+    bool m_isScrollingGraphicsLayer;
     OwnPtr<CompositorAnimationPlayer> m_compositorPlayer;
 
     bool m_geometryNeedsUpdate;

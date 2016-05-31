@@ -1259,7 +1259,7 @@ void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& pain
     // Don't set the flag here because getting enclosingSelfPaintLayer has cost and the caller can use
     // various ways (e.g. PaintInvalidatinState::enclosingSelfPaintingLayer()) to reduce the cost.
     ASSERT(!paintingLayer() || paintingLayer()->needsRepaint());
-    paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*this, invalidationReason);
+    paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*this, invalidationReason, this);
 }
 
 void LayoutObject::invalidateDisplayItemClientsWithPaintInvalidationState(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState& paintInvalidationState, PaintInvalidationReason invalidationReason) const
@@ -1560,22 +1560,18 @@ void LayoutObject::incrementallyInvalidatePaint(const LayoutBoxModelObject& pain
     LayoutUnit deltaRight = newBounds.maxX() - oldBounds.maxX();
     if (deltaRight > 0) {
         LayoutRect invalidationRect(oldBounds.maxX(), newBounds.y(), deltaRight, newBounds.height());
-        adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
         invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
     } else if (deltaRight < 0) {
         LayoutRect invalidationRect(newBounds.maxX(), oldBounds.y(), -deltaRight, oldBounds.height());
-        adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
         invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
     }
 
     LayoutUnit deltaBottom = newBounds.maxY() - oldBounds.maxY();
     if (deltaBottom > 0) {
         LayoutRect invalidationRect(newBounds.x(), oldBounds.maxY(), newBounds.width(), deltaBottom);
-        adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
         invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
     } else if (deltaBottom < 0) {
         LayoutRect invalidationRect(oldBounds.x(), newBounds.maxY(), oldBounds.width(), -deltaBottom);
-        adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
         invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, PaintInvalidationIncremental);
     }
 }
@@ -1585,7 +1581,6 @@ void LayoutObject::fullyInvalidatePaint(const LayoutBoxModelObject& paintInvalid
     // The following logic avoids invalidating twice if one set of bounds contains the other.
     if (!newBounds.contains(oldBounds)) {
         LayoutRect invalidationRect = oldBounds;
-        adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
         invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, invalidationReason);
 
         if (oldBounds.contains(newBounds))
@@ -1593,7 +1588,6 @@ void LayoutObject::fullyInvalidatePaint(const LayoutBoxModelObject& paintInvalid
     }
 
     LayoutRect invalidationRect = newBounds;
-    adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
     invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, invalidationReason);
 }
 
@@ -3584,7 +3578,6 @@ void LayoutObject::invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBo
     DisableCompositingQueryAsserts compositingDisabler;
 
     LayoutRect invalidationRect = previousPaintInvalidationRect();
-    adjustInvalidationRectForCompositedScrolling(invalidationRect, paintInvalidationContainer);
     invalidatePaintUsingContainer(paintInvalidationContainer, invalidationRect, reason);
     invalidateDisplayItemClients(paintInvalidationContainer, reason);
 
