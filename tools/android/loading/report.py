@@ -108,6 +108,7 @@ class LoadingReport(object):
     self._requests = len(requests)
     self._preloaded_requests = len(preloaded_requests)
     self._dns_requests, self._dns_cost_msec = metrics.DnsRequestsAndCost(trace)
+    self._connection_stats = metrics.ConnectionMetrics(trace)
 
     self._user_lens_reports = {}
     first_text_paint_lens = FirstTextPaintLens(self.trace)
@@ -159,6 +160,7 @@ class LoadingReport(object):
     report.update(self._cpu_busyness)
     report.update(self._ad_report)
     report.update(self._ads_cost)
+    report.update(self._connection_stats)
     return report
 
   @classmethod

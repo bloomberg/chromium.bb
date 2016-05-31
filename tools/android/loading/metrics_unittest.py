@@ -84,6 +84,32 @@ class MetricsTestCase(unittest.TestCase):
     self.assertEqual(1, count)
     self.assertEqual(8, cost)
 
+  def testConnectionMetrics(self):
+    requests = [request_track.Request.FromJsonDict(copy.deepcopy(self._REQUEST))
+                for _ in xrange(3)]
+    requests[0].url = 'http://chromium.org/'
+    requests[0].protocol = 'http/1.1'
+    requests[0].timing.connect_start = 12
+    requests[0].timing.connect_end = 42
+    requests[0].timing.ssl_start = 50
+    requests[0].timing.ssl_end = 70
+    requests[1].url = 'https://chromium.org/where-am-i/'
+    requests[1].protocol = 'h2'
+    requests[1].timing.connect_start = 22
+    requests[1].timing.connect_end = 73
+    requests[2].url = 'http://www.chromium.org/here/'
+    requests[2].protocol = 'http/42'
+    trace = test_utils.LoadingTraceFromEvents(requests)
+    stats = metrics.ConnectionMetrics(trace)
+    self.assertEqual(2, stats['connections'])
+    self.assertEqual(81, stats['connection_cost_ms'])
+    self.assertEqual(1, stats['ssl_connections'])
+    self.assertEqual(20, stats['ssl_cost_ms'])
+    self.assertEqual(1, stats['http11_requests'])
+    self.assertEqual(1, stats['h2_requests'])
+    self.assertEqual(0, stats['data_requests'])
+    self.assertEqual(2, stats['domains'])
+
   @classmethod
   def _MakeTrace(cls):
     request = request_track.Request.FromJsonDict(copy.deepcopy(cls._REQUEST))

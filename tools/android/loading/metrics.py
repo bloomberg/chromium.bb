@@ -9,6 +9,9 @@ shows a graph of the amount of data to download for a new visit to the same
 page, with a given time interval.
 """
 
+import collections
+import urlparse
+
 import content_classification_lens
 from request_track import CachingPolicy
 
@@ -114,6 +117,52 @@ def DnsRequestsAndCost(trace):
   dns_cost = sum(r.timing.dns_end - r.timing.dns_start
                  for r in requests_with_dns)
   return (dns_requests_count, dns_cost)
+
+
+def ConnectionMetrics(trace):
+  """Returns the connection metrics for a given trace.
+
+  Returns:
+  {
+    'connections': int,
+    'connection_cost_ms': float,
+    'ssl_connections': int,
+    'ssl_cost_ms': float,
+    'http11_requests': int,
+    'h2_requests': int,
+    'data_requests': int,
+    'domains': int
+  }
+  """
+  requests = trace.request_track.GetEvents()
+  requests_with_connect = [r for r in requests if r.timing.connect_start != -1]
+  requests_with_connect_count = len(requests_with_connect)
+  connection_cost = sum(r.timing.connect_end - r.timing.connect_start
+                        for r in requests_with_connect)
+  ssl_requests = [r for r in requests if r.timing.ssl_start != -1]
+  ssl_requests_count = len(ssl_requests)
+  ssl_cost = sum(r.timing.ssl_end - r.timing.ssl_start for r in ssl_requests)
+  requests_per_protocol = collections.defaultdict(int)
+  for r in requests:
+    requests_per_protocol[r.protocol] += 1
+
+  domains = set()
+  for r in requests:
+    if r.protocol == 'data':
+      continue
+    domain = urlparse.urlparse(r.url).hostname
+    domains.add(domain)
+
+  return {
+    'connections': requests_with_connect_count,
+    'connection_cost_ms': connection_cost,
+    'ssl_connections': ssl_requests_count,
+    'ssl_cost_ms': ssl_cost,
+    'http11_requests': requests_per_protocol['http/1.1'],
+    'h2_requests': requests_per_protocol['h2'],
+    'data_requests': requests_per_protocol['data'],
+    'domains': len(domains)
+  }
 
 
 def PlotTransferSizeVsTimeBetweenVisits(trace):
