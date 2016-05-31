@@ -67,7 +67,7 @@ class ImageManager : public image_fetcher::ImageFetcherDelegate {
   // Methods inherited from image_fetcher::ImageFetcherDelegate
 
   // Perform additional tasks when an image has been fetched.
-  void OnImageFetched(const GURL& url, const gfx::Image& image) override;
+  void OnImageFetched(const std::string& url, const gfx::Image& image) override;
 
  private:
   friend class MockImageManager;
@@ -123,7 +123,7 @@ class ImageManager : public image_fetcher::ImageFetcherDelegate {
       const GURL& url);
 
   // Save the image bitmap in the cache and in the database.
-  void SaveImage(const GURL& url, const SkBitmap& bitmap);
+  void SaveImage(const std::string& url, const SkBitmap& bitmap);
 
   // Database callback methods.
   // Will initiate loading the entries.

@@ -176,13 +176,6 @@ void InsertAllIDs(const NTPSnippet::PtrVector& snippets,
   }
 }
 
-void WrapImageFetchedCallback(
-    const NTPSnippetsService::ImageFetchedCallback& callback,
-    const GURL& snippet_id_url,
-    const gfx::Image& image) {
-  callback.Run(snippet_id_url.spec(), image);
-}
-
 }  // namespace
 
 NTPSnippetsService::NTPSnippetsService(
@@ -294,11 +287,8 @@ void NTPSnippetsService::FetchSnippetImage(
   }
 
   const NTPSnippet& snippet = *it->get();
-  // TODO(treib): Make ImageFetcher take a string instead of a GURL as an
-  // identifier.
   image_fetcher_->StartOrQueueNetworkRequest(
-      GURL(snippet.id()), snippet.salient_image_url(),
-      base::Bind(WrapImageFetchedCallback, callback));
+      snippet.id(), snippet.salient_image_url(), callback);
   // TODO(treib): Cache/persist the snippet image.
 }
 

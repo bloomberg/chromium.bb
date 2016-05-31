@@ -64,7 +64,7 @@ class ThumbnailSource : public content::URLDataSource {
   // thumbnail.
   void SendFetchedUrlImage(
       const content::URLDataSource::GotDataCallback& callback,
-      const GURL& url,
+      const std::string& url,
       const gfx::Image& image);
 
   // Raw PNG representation of the thumbnail to show when the thumbnail

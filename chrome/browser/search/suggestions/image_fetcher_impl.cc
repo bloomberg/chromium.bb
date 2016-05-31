@@ -36,8 +36,9 @@ void ImageFetcherImpl::SetImageFetcherDelegate(
 }
 
 void ImageFetcherImpl::StartOrQueueNetworkRequest(
-    const GURL& url, const GURL& image_url,
-    base::Callback<void(const GURL&, const gfx::Image&)> callback) {
+    const std::string& id,
+    const GURL& image_url,
+    base::Callback<void(const std::string&, const gfx::Image&)> callback) {
   // Before starting to fetch the image. Look for a request in progress for
   // |image_url|, and queue if appropriate.
   ImageRequestMap::iterator it = pending_net_requests_.find(image_url);
@@ -45,7 +46,7 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
     // |image_url| is not being fetched, so create a request and initiate
     // the fetch.
     ImageRequest request(new chrome::BitmapFetcher(image_url, this));
-    request.url = url;
+    request.id = id;
     request.callbacks.push_back(callback);
     request.fetcher->Init(
         url_request_context_, std::string(),
@@ -76,12 +77,12 @@ void ImageFetcherImpl::OnFetchComplete(const GURL& image_url,
     image = gfx::Image::CreateFrom1xBitmap(*bitmap);
 
   for (const auto& callback : request->callbacks) {
-    callback.Run(request->url, image);
+    callback.Run(request->id, image);
   }
 
   // Inform the ImageFetcherDelegate.
   if (delegate_) {
-    delegate_->OnImageFetched(request->url, image);
+    delegate_->OnImageFetched(request->id, image);
   }
 
   // Erase the completed ImageRequest.

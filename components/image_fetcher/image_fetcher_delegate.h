@@ -19,10 +19,11 @@ class ImageFetcherDelegate {
  public:
   ImageFetcherDelegate() {}
 
-  // Called when an image was fetched. |url| represents the website for which
-  // the image was fetched. |image| stores image data owned by the caller, and
-  // can be an empty gfx::Image.
-  virtual void OnImageFetched(const GURL& url, const gfx::Image& image) = 0;
+  // Called when an image was fetched. |id| is an identifier for the fetch (as
+  // passed to ImageFetcher::StartOrQueueNetworkRequest); |image| stores image
+  // data owned by the caller, and can be an empty gfx::Image.
+  virtual void OnImageFetched(const std::string& id,
+                              const gfx::Image& image) = 0;
 
  protected:
   virtual ~ImageFetcherDelegate() {}

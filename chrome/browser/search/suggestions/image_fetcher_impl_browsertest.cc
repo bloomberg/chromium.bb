@@ -43,7 +43,7 @@ class TestImageFetcherDelegate : public ImageFetcherDelegate {
   ~TestImageFetcherDelegate() override{};
 
   // Perform additional tasks when an image has been fetched.
-  void OnImageFetched(const GURL& url, const gfx::Image& image) override {
+  void OnImageFetched(const std::string& id, const gfx::Image& image) override {
     if (!image.IsEmpty()) {
       num_delegate_valid_called_++;
     } else {
@@ -81,7 +81,7 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
   }
 
   void OnImageAvailable(base::RunLoop* loop,
-                        const GURL& url,
+                        const std::string& id,
                         const gfx::Image& image) {
     if (!image.IsEmpty()) {
       num_callback_valid_called_++;
@@ -96,7 +96,7 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
 
     base::RunLoop run_loop;
     image_fetcher_->StartOrQueueNetworkRequest(
-        GURL(kTestUrl),
+        kTestUrl,
         image_url,
         base::Bind(&ImageFetcherImplBrowserTest::OnImageAvailable,
                    base::Unretained(this), &run_loop));

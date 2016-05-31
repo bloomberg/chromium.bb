@@ -60,7 +60,7 @@ void ThumbnailSource::StartDataRequest(
     // Otherwise, if a fallback thumbnail URL was provided, fetch it and
     // eventually return it.
     image_fetcher_->StartOrQueueNetworkRequest(
-        page_url, fallback_thumbnail_url,
+        page_url.spec(), fallback_thumbnail_url,
         base::Bind(&ThumbnailSource::SendFetchedUrlImage,
                    weak_ptr_factory_.GetWeakPtr(), callback));
   } else {
@@ -111,7 +111,7 @@ void ThumbnailSource::ExtractPageAndThumbnailUrls(
 
 void ThumbnailSource::SendFetchedUrlImage(
     const content::URLDataSource::GotDataCallback& callback,
-    const GURL& url,
+    const std::string& url,
     const gfx::Image& image) {
   // In case the image could not be retrieved an empty image is returned.
   if (image.IsEmpty()) {

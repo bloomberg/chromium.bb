@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_SUGGESTIONS_IMAGE_FETCHER_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -43,9 +44,10 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
       image_fetcher::ImageFetcherDelegate* delegate) override;
 
   void StartOrQueueNetworkRequest(
-      const GURL& url,
+      const std::string& id,
       const GURL& image_url,
-      base::Callback<void(const GURL&, const gfx::Image&)> callback) override;
+      base::Callback<void(const std::string&, const gfx::Image&)> callback)
+      override;
 
  private:
   std::unique_ptr<::ImageFetcher> imageFetcher_;

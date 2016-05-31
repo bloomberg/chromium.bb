@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SEARCH_SUGGESTIONS_IMAGE_FETCHER_IMPL_H_
 
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -36,19 +37,20 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher,
       image_fetcher::ImageFetcherDelegate* delegate) override;
 
   void StartOrQueueNetworkRequest(
-      const GURL& url,
+      const std::string& id,
       const GURL& image_url,
-      base::Callback<void(const GURL&, const gfx::Image&)> callback) override;
+      base::Callback<void(const std::string&, const gfx::Image&)> callback)
+      override;
 
  private:
   // Inherited from BitmapFetcherDelegate.
   void OnFetchComplete(const GURL& image_url, const SkBitmap* bitmap) override;
 
-  typedef std::vector<base::Callback<void(const GURL&, const gfx::Image&)> >
-      CallbackVector;
+  using CallbackVector =
+      std::vector<base::Callback<void(const std::string&, const gfx::Image&)>>;
 
-  // State related to an image fetch (associated website url, image_url,
-  // fetcher, pending callbacks).
+  // State related to an image fetch (id, image_url, fetcher, pending
+  // callbacks).
   struct ImageRequest {
     ImageRequest();
     // Struct takes ownership of |f|.
@@ -57,13 +59,13 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher,
     ~ImageRequest();
 
     void swap(ImageRequest* other) {
-      std::swap(url, other->url);
+      std::swap(id, other->id);
       std::swap(image_url, other->image_url);
       std::swap(callbacks, other->callbacks);
       std::swap(fetcher, other->fetcher);
     }
 
-    GURL url;
+    std::string id;
     GURL image_url;
     chrome::BitmapFetcher* fetcher;
     // Queue for pending callbacks, which may accumulate while the request is in
@@ -71,7 +73,7 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher,
     CallbackVector callbacks;
   };
 
-  typedef std::map<const GURL, ImageRequest> ImageRequestMap;
+  using ImageRequestMap = std::map<const GURL, ImageRequest>;
 
   // Map from each image URL to the request information (associated website
   // url, fetcher, pending callbacks).

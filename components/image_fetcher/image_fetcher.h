@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_H_
 #define COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
@@ -28,9 +30,9 @@ class ImageFetcher {
   // An empty gfx::Image will be returned to the callback in case the image
   // could not be fetched.
   virtual void StartOrQueueNetworkRequest(
-      const GURL& url,
+      const std::string& id,
       const GURL& image_url,
-      base::Callback<void(const GURL&, const gfx::Image&)> callback) = 0;
+      base::Callback<void(const std::string&, const gfx::Image&)> callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImageFetcher);

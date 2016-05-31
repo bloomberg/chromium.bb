@@ -30,6 +30,14 @@ std::unique_ptr<SkBitmap> DecodeImage(
                                            encoded_data->size());
 }
 
+// Wraps an ImageManager callback so that it can be used with the ImageFetcher.
+void WrapCallback(
+    const suggestions::ImageManager::ImageCallback& wrapped_callback,
+    const std::string& url,
+    const gfx::Image& image) {
+  wrapped_callback.Run(GURL(url), image);
+}
+
 }  // namespace
 
 namespace suggestions {
@@ -97,7 +105,8 @@ void ImageManager::GetImageForURL(const GURL& url, ImageCallback callback) {
   ServeFromCacheOrNetwork(url, image_url, callback);
 }
 
-void ImageManager::OnImageFetched(const GURL& url, const gfx::Image& image) {
+void ImageManager::OnImageFetched(const std::string& url,
+                                  const gfx::Image& image) {
   // |image| can be empty if image fetch was unsuccessful.
   if (!image.IsEmpty())
     SaveImage(url, *image.ToSkBitmap());
@@ -136,7 +145,7 @@ void ImageManager::OnCacheImageDecoded(
     callback.Run(url, gfx::Image::CreateFrom1xBitmap(*bitmap));
   } else {
     image_fetcher_->StartOrQueueNetworkRequest(
-        url, image_url, callback);
+        url.spec(), image_url, base::Bind(&WrapCallback, callback));
   }
 }
 
@@ -162,11 +171,12 @@ void ImageManager::ServeFromCacheOrNetwork(
         base::Bind(&ImageManager::OnCacheImageDecoded,
                    weak_ptr_factory_.GetWeakPtr(), url, image_url, callback));
   } else {
-    image_fetcher_->StartOrQueueNetworkRequest(url, image_url, callback);
+    image_fetcher_->StartOrQueueNetworkRequest(
+        url.spec(), image_url, base::Bind(&WrapCallback, callback));
   }
 }
 
-void ImageManager::SaveImage(const GURL& url, const SkBitmap& bitmap) {
+void ImageManager::SaveImage(const std::string& url, const SkBitmap& bitmap) {
   scoped_refptr<base::RefCountedBytes> encoded_data(
       new base::RefCountedBytes());
   if (!EncodeSkBitmapToJPEG(bitmap, &encoded_data->data())) {
@@ -174,13 +184,13 @@ void ImageManager::SaveImage(const GURL& url, const SkBitmap& bitmap) {
   }
 
   // Update the image map.
-  image_map_.insert({url.spec(), encoded_data});
+  image_map_.insert({url, encoded_data});
 
   if (!database_ready_) return;
 
   // Save the resulting bitmap to the database.
   ImageData data;
-  data.set_url(url.spec());
+  data.set_url(url);
   data.set_data(encoded_data->front(), encoded_data->size());
   std::unique_ptr<ProtoDatabase<ImageData>::KeyEntryVector> entries_to_save(
       new ProtoDatabase<ImageData>::KeyEntryVector());

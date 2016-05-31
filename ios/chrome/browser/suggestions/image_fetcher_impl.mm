@@ -32,19 +32,19 @@ void ImageFetcherImpl::SetImageFetcherDelegate(
 }
 
 void ImageFetcherImpl::StartOrQueueNetworkRequest(
-    const GURL& url,
+    const std::string& id,
     const GURL& image_url,
-    base::Callback<void(const GURL&, const gfx::Image&)> callback) {
+    base::Callback<void(const std::string&, const gfx::Image&)> callback) {
   if (image_url.is_empty()) {
     gfx::Image empty_image;
-    callback.Run(url, empty_image);
+    callback.Run(id, empty_image);
     if (delegate_) {
-      delegate_->OnImageFetched(url, empty_image);
+      delegate_->OnImageFetched(id, empty_image);
     }
     return;
   }
-  // Copy url reference so it's retained.
-  const GURL page_url(url);
+  // Copy string reference so it's retained.
+  const std::string fetch_id(id);
   ImageFetchedCallback fetcher_callback =
       ^(const GURL& original_url, int response_code, NSData* data) {
       if (data) {
@@ -52,17 +52,17 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
         UIImage* ui_image = [UIImage imageWithData:data scale:1];
         if (ui_image) {
           gfx::Image gfx_image(ui_image);
-          callback.Run(page_url, gfx_image);
+          callback.Run(fetch_id, gfx_image);
           if (delegate_) {
-            delegate_->OnImageFetched(page_url, gfx_image);
+            delegate_->OnImageFetched(fetch_id, gfx_image);
           }
           return;
         }
       }
       gfx::Image empty_image;
-      callback.Run(page_url, empty_image);
+      callback.Run(fetch_id, empty_image);
       if (delegate_) {
-        delegate_->OnImageFetched(page_url, empty_image);
+        delegate_->OnImageFetched(fetch_id, empty_image);
       }
   };
   imageFetcher_->StartDownload(image_url, fetcher_callback);
