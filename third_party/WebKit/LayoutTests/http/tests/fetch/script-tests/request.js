@@ -648,6 +648,31 @@ async_test(function(t) {
           assert_equals(result, "sample+string=1234567890");
         })
       .then(function() {
+          // Alphanumeric characters and *-._ shouldn't be percent-encoded.
+          // The others must.
+          var params = new URLSearchParams();
+          params.append('\0\x1f!)*+,-./:?[^_{~\x7f\u0080',
+                        '\0\x1f!)*+,-./:?[^_{~\x7f\u0080');
+          request = new Request(URL, {method: 'POST', body: params});
+          return request.text();
+        })
+      .then(function(result) {
+          assert_equals(
+              result,
+              "%00%1F%21%29*%2B%2C-.%2F%3A%3F%5B%5E_%7B%7E%7F%C2%80=" +
+                  "%00%1F%21%29*%2B%2C-.%2F%3A%3F%5B%5E_%7B%7E%7F%C2%80");
+        })
+      .then(function() {
+          // CR and LF shouldn't be normalized into CRLF.
+          var params = new URLSearchParams();
+          params.append('\r \n \r\n', '\r \n \r\n');
+          request = new Request(URL, {method: 'POST', body: params});
+          return request.text();
+        })
+      .then(function(result) {
+          assert_equals(result, "%0D+%0A+%0D%0A=%0D+%0A+%0D%0A");
+        })
+      .then(function() {
           t.done();
         })
       .catch(unreached_rejection(t));

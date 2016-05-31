@@ -124,7 +124,7 @@ RequestInit::RequestInit(ExecutionContext* context, const Dictionary& options, E
         contentType = AtomicString("multipart/form-data; boundary=") + formData->boundary().data();
         body = FetchFormDataConsumerHandle::create(context, formData.release());
     } else if (V8URLSearchParams::hasInstance(v8Body, isolate)) {
-        RefPtr<EncodedFormData> formData = V8URLSearchParams::toImpl(v8::Local<v8::Object>::Cast(v8Body))->encodeFormData();
+        RefPtr<EncodedFormData> formData = V8URLSearchParams::toImpl(v8::Local<v8::Object>::Cast(v8Body))->toEncodedFormData();
         contentType = AtomicString("application/x-www-form-urlencoded;charset=UTF-8");
         body = FetchFormDataConsumerHandle::create(context, formData.release());
     } else if (v8Body->IsString()) {

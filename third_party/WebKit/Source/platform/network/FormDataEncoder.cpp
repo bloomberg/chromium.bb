@@ -48,6 +48,12 @@ static inline void append(Vector<char>& buffer, const CString& string)
     buffer.append(string.data(), string.length());
 }
 
+static inline void appendPercentEncoded(Vector<char>& buffer, unsigned char c)
+{
+    append(buffer, '%');
+    appendByteAsHex(c, buffer);
+}
+
 static void appendQuotedString(Vector<char>& buffer, const CString& string)
 {
     // Append a string as a quoted value, escaping quotes and line breaks.
@@ -177,7 +183,7 @@ void FormDataEncoder::finishMultiPartHeader(Vector<char>& buffer)
     append(buffer, "\r\n\r\n");
 }
 
-void FormDataEncoder::addKeyValuePairAsFormData(Vector<char>& buffer, const CString& key, const CString& value, EncodedFormData::EncodingType encodingType)
+void FormDataEncoder::addKeyValuePairAsFormData(Vector<char>& buffer, const CString& key, const CString& value, EncodedFormData::EncodingType encodingType, Mode mode)
 {
     if (encodingType == EncodedFormData::TextPlain) {
         if (!buffer.isEmpty())
@@ -188,13 +194,13 @@ void FormDataEncoder::addKeyValuePairAsFormData(Vector<char>& buffer, const CStr
     } else {
         if (!buffer.isEmpty())
             append(buffer, '&');
-        encodeStringAsFormData(buffer, key);
+        encodeStringAsFormData(buffer, key, mode);
         append(buffer, '=');
-        encodeStringAsFormData(buffer, value);
+        encodeStringAsFormData(buffer, value, mode);
     }
 }
 
-void FormDataEncoder::encodeStringAsFormData(Vector<char>& buffer, const CString& string)
+void FormDataEncoder::encodeStringAsFormData(Vector<char>& buffer, const CString& string, Mode mode)
 {
     // Same safe characters as Netscape for compatibility.
     static const char safeCharacters[] = "-._*";
@@ -204,15 +210,20 @@ void FormDataEncoder::encodeStringAsFormData(Vector<char>& buffer, const CString
     for (unsigned i = 0; i < length; ++i) {
         unsigned char c = string.data()[i];
 
-        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || strchr(safeCharacters, c)) {
+        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || (c != '\0' && strchr(safeCharacters, c))) {
             append(buffer, c);
         } else if (c == ' ') {
             append(buffer, '+');
-        } else if (c == '\n' || (c == '\r' && (i + 1 >= length || string.data()[i + 1] != '\n'))) {
-            append(buffer, "%0D%0A");
-        } else if (c != '\r') {
-            append(buffer, '%');
-            appendByteAsHex(c, buffer);
+        } else {
+            if (mode == NormalizeCRLF) {
+                if (c == '\n' || (c == '\r' && (i + 1 >= length || string.data()[i + 1] != '\n'))) {
+                    append(buffer, "%0D%0A");
+                } else if (c != '\r') {
+                    appendPercentEncoded(buffer, c);
+                }
+            } else {
+                appendPercentEncoded(buffer, c);
+            }
         }
     }
 }

@@ -72,7 +72,7 @@ static void appendMailtoPostFormDataToURL(KURL& url, const EncodedFormData& data
 
     Vector<char> bodyData;
     bodyData.append("body=", 5);
-    FormDataEncoder::encodeStringAsFormData(bodyData, body.utf8());
+    FormDataEncoder::encodeStringAsFormData(bodyData, body.utf8(), FormDataEncoder::NormalizeCRLF);
     body = String(bodyData.data(), bodyData.size()).replace('+', "%20");
 
     StringBuilder query;

@@ -134,7 +134,7 @@ PassRefPtr<EncodedFormData> PasswordCredential::encodeFormData(String& contentTy
 
         contentType = AtomicString("application/x-www-form-urlencoded;charset=UTF-8");
 
-        return params->encodeFormData();
+        return params->toEncodedFormData();
     }
 
     // Otherwise, we'll build a multipart response.

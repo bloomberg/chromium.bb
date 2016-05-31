@@ -96,12 +96,31 @@ function urlEncodedSerialize(n) {
 for (var i = 0x00; i < 0xFF; i++) {
     // Not all bytes can appear in valid UTF-8, so some bytes aren't covered.
     // TODO(mkwst): We fail to properly encode a few bytes: https://crbug.com/557063
+    var expected = urlEncodedSerialize(i);
     test(function() {
         var params = new URLSearchParams();
         params.append('' + i, String.fromCodePoint(i));
-        assert_equals(params + '', '' + i + '=' + urlEncodedSerialize(i));
-    }, "Serialize U+00" + intToHex(i) + " -> '" + String.fromCodePoint(i) + "'");
+        assert_equals(params + '', '' + i + '=' + expected);
+    }, "Serialize U+00" + intToHex(i) + " -> '" + expected + "'");
 }
+
+test(function() {
+    var params = new URLSearchParams();
+    params.append('a', '\r');
+    assert_equals(params + '', 'a=%0D');
+}, 'Serialize \\r');
+
+test(function() {
+    var params = new URLSearchParams();
+    params.append('a', '\n');
+    assert_equals(params + '', 'a=%0A');
+}, 'Serialize \\n');
+
+test(function() {
+    var params = new URLSearchParams();
+    params.append('a', '\r\n');
+    assert_equals(params + '', 'a=%0D%0A');
+}, 'Serialize \\r\\n');
 
 test(function() {
     var params = new URLSearchParams();
@@ -143,4 +162,3 @@ test(function() {
 </script>
 </head>
 </html>
-

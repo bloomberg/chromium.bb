@@ -46,7 +46,7 @@ public:
     void setInput(const String&);
 
     // Internal helpers
-    PassRefPtr<EncodedFormData> encodeFormData() const;
+    PassRefPtr<EncodedFormData> toEncodedFormData() const;
     const Vector<std::pair<String, String>>& params() const { return m_params; }
 
 #if ENABLE(ASSERT)
@@ -63,6 +63,7 @@ private:
 
     void runUpdateSteps();
     IterationSource* startIteration(ScriptState*, ExceptionState&) override;
+    void encodeAsFormData(Vector<char>&) const;
 
     Vector<std::pair<String, String>> m_params;
 
