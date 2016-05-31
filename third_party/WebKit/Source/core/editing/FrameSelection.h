@@ -104,7 +104,7 @@ public:
 
     void moveTo(const VisiblePosition&, EUserTriggered = NotUserTriggered, CursorAlignOnScroll = CursorAlignOnScroll::IfNeeded);
     void moveTo(const VisiblePosition&, const VisiblePosition&, EUserTriggered = NotUserTriggered);
-    void moveTo(const Position&, TextAffinity, EUserTriggered = NotUserTriggered);
+    void moveTo(const Position&, TextAffinity);
 
     template <typename Strategy>
     const VisibleSelectionTemplate<Strategy>& visibleSelection() const;

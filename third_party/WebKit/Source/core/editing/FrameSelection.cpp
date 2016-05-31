@@ -175,9 +175,9 @@ void FrameSelection::moveTo(const VisiblePosition &base, const VisiblePosition &
     setSelection(VisibleSelection(base, extent, selectionHasDirection), options);
 }
 
-void FrameSelection::moveTo(const Position &pos, TextAffinity affinity, EUserTriggered userTriggered)
+void FrameSelection::moveTo(const Position &pos, TextAffinity affinity)
 {
-    SetSelectionOptions options = CloseTyping | ClearTypingStyle | userTriggered;
+    SetSelectionOptions options = CloseTyping | ClearTypingStyle;
     setSelection(VisibleSelection(pos, affinity, selection().isDirectional()), options);
 }
 
