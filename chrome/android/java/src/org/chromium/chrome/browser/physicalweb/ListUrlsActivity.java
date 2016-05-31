@@ -29,6 +29,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -133,44 +134,41 @@ public class ListUrlsActivity extends AppCompatActivity implements AdapterView.O
 
         Drawable tintedRefresh = ContextCompat.getDrawable(this, R.drawable.btn_toolbar_reload);
         tintedRefresh.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
-        MenuItem refreshItem = menu.add(R.string.physical_web_refresh)
+        menu.add(0, R.id.menu_id_refresh, 0, R.string.physical_web_refresh)
                 .setIcon(tintedRefresh)
                 .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        refreshItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                startRefresh(true, false);
-                return true;
-            }
-        });
 
-        MenuItem closeItem = menu.add(R.string.close)
+        menu.add(0, R.id.menu_id_close, 1, R.string.close)
                 .setIcon(R.drawable.btn_close)
                 .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        closeItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                finish();
-                return true;
-            }
-        });
 
         Drawable tintedSettings = ContextCompat.getDrawable(this, R.drawable.settings_cog);
         tintedSettings.setColorFilter(tintColor, PorterDuff.Mode.SRC_IN);
-        MenuItem settingsButton = menu.add(R.string.menu_preferences)
+        menu.add(0, R.id.menu_id_settings, 2, R.string.menu_preferences)
                 .setIcon(tintedSettings)
                 .setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-        settingsButton.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                        ListUrlsActivity.this, PhysicalWebPreferenceFragment.class.getName());
-                startActivity(intent);
-                return true;
-            }
-        });
 
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.menu_id_close) {
+            finish();
+            return true;
+        } else if (id == R.id.menu_id_refresh) {
+            startRefresh(true, false);
+            return true;
+        } else if (id == R.id.menu_id_settings) {
+            Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                    this, PhysicalWebPreferenceFragment.class.getName());
+            startActivity(intent);
+            return true;
+        }
+
+        Log.e(TAG, "Unknown menu item selected");
+        return super.onOptionsItemSelected(item);
     }
 
     private void foregroundSubscribe() {

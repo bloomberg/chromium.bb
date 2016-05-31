@@ -30,9 +30,12 @@
     <item type="id" name="translate_infobar_target_spinner" />
 
     <!-- Menu items IDs in Settings -->
+    <item type="id" name="menu_id_close" />
     <item type="id" name="menu_id_general_help" />
     <item type="id" name="menu_id_targeted_help" />
     <item type="id" name="menu_id_reset" />
+    <item type="id" name="menu_id_refresh" />
+    <item type="id" name="menu_id_settings" />
 
     <!-- Menu item IDs for FullscreenActivities -->
     <item type="id" name="menu_id_open_in_chrome" />
