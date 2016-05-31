@@ -60,8 +60,8 @@ UsbChooserDialogAndroid::UsbChooserDialogAndroid(
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jstring> origin_string =
       base::android::ConvertUTF16ToJavaString(
-          env, url_formatter::FormatUrlForSecurityDisplay(
-                   render_frame_host->GetLastCommittedURL()));
+          env, url_formatter::FormatUrlForSecurityDisplay(GURL(
+                   render_frame_host->GetLastCommittedOrigin().Serialize())));
   ChromeSecurityStateModelClient* security_model_client =
       ChromeSecurityStateModelClient::FromWebContents(web_contents);
   DCHECK(security_model_client);
