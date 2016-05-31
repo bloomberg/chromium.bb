@@ -818,6 +818,32 @@ v8::Local<v8::Context> toV8ContextEvenIfDetached(Frame* frame, DOMWrapperWorld& 
     return frame->windowProxy(world)->contextIfInitialized();
 }
 
+void installOriginTrialsCore(ScriptState* scriptState)
+{
+    // TODO(iclelland): Generate all of this logic at compile-time, based on the
+    // configuration of origin trial enabled attibutes and interfaces in IDL
+    // files. (crbug.com/615060)
+
+    // Initialization code for origin trials for core bindings, if necessary,
+    // should go here.
+}
+
+namespace {
+InstallOriginTrialsFunction s_installOriginTrialsFunction = &installOriginTrialsCore;
+}
+
+void installOriginTrials(ScriptState* scriptState)
+{
+    (*s_installOriginTrialsFunction)(scriptState);
+}
+
+InstallOriginTrialsFunction setInstallOriginTrialsFunction(InstallOriginTrialsFunction newInstallOriginTrialsFunction)
+{
+    InstallOriginTrialsFunction originalFunction = s_installOriginTrialsFunction;
+    s_installOriginTrialsFunction = newInstallOriginTrialsFunction;
+    return originalFunction;
+}
+
 void crashIfIsolateIsDead(v8::Isolate* isolate)
 {
     if (isolate->IsDead()) {

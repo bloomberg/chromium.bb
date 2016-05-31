@@ -33,6 +33,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/WorkerThreadDebugger.h"
+#include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerReportingProxy.h"
@@ -340,8 +341,18 @@ void WorkerThread::initializeOnWorkerThread(PassOwnPtr<WorkerThreadStartupData> 
         m_workerReportingProxy.workerGlobalScopeStarted(m_workerGlobalScope.get());
 
         WorkerOrWorkletScriptController* scriptController = m_workerGlobalScope->scriptController();
-        if (!scriptController->isExecutionForbidden())
+        if (!scriptController->isExecutionForbidden()) {
             scriptController->initializeContextIfNeeded();
+
+            // If Origin Trials have been registered before the V8 context was ready,
+            // then inject them into the context now
+            ExecutionContext* executionContext = m_workerGlobalScope->getExecutionContext();
+            if (executionContext) {
+                OriginTrialContext* originTrialContext = OriginTrialContext::from(executionContext);
+                if (originTrialContext)
+                    originTrialContext->initializePendingFeatures();
+            }
+        }
     }
 
     if (startMode == PauseWorkerGlobalScopeOnStart)

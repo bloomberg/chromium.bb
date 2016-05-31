@@ -11,6 +11,9 @@ namespace blink {
 {% if has_event_constructor %}
 class Dictionary;
 {% endif %}
+{% if attributes|origin_trial_enabled_attributes %}
+class ScriptState;
+{% endif %}
 {% if named_constructor %}
 class {{v8_class}}Constructor {
     STATIC_ONLY({{v8_class}}Constructor);
@@ -165,6 +168,9 @@ public:
     {{exported}}static void register{{method.name | blink_capitalize}}MethodForPartialInterface(void (*)(const v8::FunctionCallbackInfo<v8::Value>&));
     {% endfor %}
     {% endif %}
+    {% for group in attributes|origin_trial_enabled_attributes|groupby('origin_trial_feature_name') %}{{newline}}
+    static void install{{group.grouper}}(ScriptState*, v8::Local<v8::Object> instance);
+    {% endfor %}
     {% if has_partial_interface %}
 
 private:

@@ -18,6 +18,7 @@ void initPartialInterfacesInModules();
 void ModuleBindingsInitializer::init()
 {
     registerToExecutionContextForModules(toExecutionContextForModules);
+    registerInstallOriginTrialsForModules();
     initPartialInterfacesInModules();
     SerializedScriptValueFactory::initialize(new SerializedScriptValueForModulesFactory);
 }

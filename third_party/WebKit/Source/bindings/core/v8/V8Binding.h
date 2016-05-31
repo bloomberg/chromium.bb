@@ -69,6 +69,8 @@ class WorkerGlobalScope;
 class WorkerOrWorkletGlobalScope;
 class XPathNSResolver;
 
+using InstallOriginTrialsFunction = void (*)(ScriptState*);
+
 template <typename T>
 struct V8TypeOf {
     STATIC_ONLY(V8TypeOf);
@@ -860,6 +862,20 @@ CORE_EXPORT EventTarget* toEventTarget(v8::Isolate*, v8::Local<v8::Value>);
 // array buffer view into it.  Use allocateFlexibleArrayBufferStorage(v8Value)
 // to allocate it using alloca() in the callers stack frame.
 CORE_EXPORT void toFlexibleArrayBufferView(v8::Isolate*, v8::Local<v8::Value>, FlexibleArrayBufferView&, void* storage = nullptr);
+
+// Installs all of the origin-trial-enabled V8 bindings for the given context
+// and world, based on the trial tokens which have been added to the
+// ExecutionContext. This should be called after the V8 context has been
+// installed, but may be called multiple times, as trial tokens are
+// encountered. It indirectly calls the function set by
+// |setInstallOriginTrialsFunction|.
+CORE_EXPORT void installOriginTrials(ScriptState*);
+
+// Sets the function to be called by |installOriginTrials|. The function is
+// initially set to the private |installOriginTrialsForCore| function, but
+// can be overridden by this function. A pointer to the previously set function
+// is returned, so that functions can be chained.
+CORE_EXPORT InstallOriginTrialsFunction setInstallOriginTrialsFunction(InstallOriginTrialsFunction);
 
 // If the current context causes out of memory, JavaScript setting
 // is disabled and it returns true.

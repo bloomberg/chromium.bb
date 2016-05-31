@@ -1,4 +1,4 @@
-{% from 'utilities.cpp' import declare_enum_validation_variable, v8_value_to_local_cpp_value, check_origin_trial %}
+{% from 'utilities.cpp' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
 
 {##############################################################################}
 {% macro generate_method(method, world_suffix) %}
@@ -497,9 +497,6 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
     {% endif %}
     {% if method.deprecate_as %}
     Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{method.deprecate_as}});
-    {% endif %}
-    {% if method.origin_trial_enabled_function %}
-    {{check_origin_trial(method) | indent}}
     {% endif %}
     {% endif %}{# not method.overloads #}
     {% if world_suffix in method.activity_logging_world_list %}

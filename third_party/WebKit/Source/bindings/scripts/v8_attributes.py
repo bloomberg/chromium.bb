@@ -149,6 +149,7 @@ def attribute_context(interface, attribute):
         'on_interface': v8_utilities.on_interface(interface, attribute),
         'on_prototype': v8_utilities.on_prototype(interface, attribute),
         'origin_trial_enabled_function': v8_utilities.origin_trial_enabled_function_name(attribute),  # [OriginTrialEnabled]
+        'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(attribute),  # [OriginTrialEnabled]
         'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
         'measure_as': v8_utilities.measure_as(attribute, interface),  # [MeasureAs]
         'name': attribute.name,
@@ -176,12 +177,20 @@ def attribute_context(interface, attribute):
     if not has_custom_setter(attribute) and has_setter(interface, attribute):
         setter_context(interface, attribute, context)
 
+    # [OriginTrialEnabled]
+    # TODO(iclelland): Allow origin trials on static interfaces
+    # (crbug.com/614352)
+    if context['origin_trial_feature_name'] and context['on_interface']:
+        raise Exception('[OriginTrialEnabled] cannot be specified on static '
+                        'attributes: %s.%s' % (interface.name, attribute.name))
+
     return context
 
 
 def filter_has_accessor_configuration(attributes):
     return [attribute for attribute in attributes if
             not (attribute['exposed_test'] or
+                 attribute['origin_trial_enabled_function'] or
                  attribute['runtime_enabled_function']) and
             not attribute['is_data_type_property'] and
             attribute['should_be_exposed_to_script']]
@@ -190,9 +199,16 @@ def filter_has_accessor_configuration(attributes):
 def filter_has_attribute_configuration(attributes):
     return [attribute for attribute in attributes if
             not (attribute['exposed_test'] or
+                 attribute['origin_trial_enabled_function'] or
                  attribute['runtime_enabled_function']) and
             attribute['is_data_type_property'] and
             attribute['should_be_exposed_to_script']]
+
+
+def filter_origin_trial_enabled(attributes):
+    return [attribute for attribute in attributes if
+            attribute['origin_trial_feature_name'] and
+            not attribute['exposed_test']]
 
 
 def filter_runtime_enabled(attributes):
@@ -204,6 +220,7 @@ def filter_runtime_enabled(attributes):
 def attribute_filters():
     return {'has_accessor_configuration': filter_has_accessor_configuration,
             'has_attribute_configuration': filter_has_attribute_configuration,
+            'origin_trial_enabled_attributes': filter_origin_trial_enabled,
             'runtime_enabled_attributes': filter_runtime_enabled,
             }
 
@@ -556,4 +573,4 @@ def is_constructor_attribute(attribute):
 
 
 def update_constructor_attribute_context(interface, attribute, context):
-    context['needs_constructor_getter_callback'] = context['measure_as'] or context['deprecate_as'] or context['origin_trial_enabled_function']  # TODO(chasej): Should/can this be true when OriginTrialEnabled is inherited from containing interface?
+    context['needs_constructor_getter_callback'] = context['measure_as'] or context['deprecate_as']

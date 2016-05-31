@@ -29,6 +29,7 @@
 #include "bindings/core/v8/V8DOMConfiguration.h"
 
 #include "bindings/core/v8/V8ObjectConstructor.h"
+#include "bindings/core/v8/V8PerContextData.h"
 #include "platform/TraceEvent.h"
 
 namespace blink {
@@ -68,7 +69,16 @@ void installAttributeInternal(v8::Isolate* isolate, v8::Local<v8::Object> instan
         return;
 
     v8::Local<v8::Name> name = v8AtomicString(isolate, attribute.name);
-    v8::Local<v8::Value> data = v8::External::New(isolate, const_cast<WrapperTypeInfo*>(attribute.data));
+
+    // This method is only being used for installing interfaces which are
+    // enabled through origin trials. Assert here that it is being called with
+    // an attribute configuration for a constructor.
+    // TODO(iclelland): Relax this constraint and allow arbitrary data-type
+    // properties to be added here.
+    DCHECK_EQ(&v8ConstructorAttributeGetter, attribute.getter);
+
+    V8PerContextData* perContextData = V8PerContextData::from(isolate->GetCurrentContext());
+    v8::Local<v8::Function> data = perContextData->constructorForType(attribute.data);
 
     DCHECK(attribute.propertyLocationConfiguration);
     if (attribute.propertyLocationConfiguration & V8DOMConfiguration::OnInstance)

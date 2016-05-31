@@ -393,13 +393,20 @@ def origin_trial_enabled_function_name(definition_or_member):
                         '%s.%s' % (definition_or_member.idl_name, definition_or_member.name))
 
     if is_origin_trial_enabled:
-        includes.add('core/inspector/ConsoleMessage.h')
+        includes.add('bindings/core/v8/ScriptState.h')
         includes.add('core/origin_trials/OriginTrials.h')
 
         trial_name = extended_attributes['OriginTrialEnabled']
         return 'OriginTrials::%sEnabled' % uncapitalize(trial_name)
 
     return None
+
+
+def origin_trial_feature_name(definition_or_member):
+    extended_attributes = definition_or_member.extended_attributes
+    if 'OriginTrialEnabled' not in extended_attributes:
+        return None
+    return extended_attributes['OriginTrialEnabled']
 
 
 def runtime_feature_name(definition_or_member):

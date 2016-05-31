@@ -36,16 +36,22 @@
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "bindings/modules/v8/ToV8ForModules.h"
+#include "bindings/modules/v8/V8DedicatedWorkerGlobalScopePartial.h"
 #include "bindings/modules/v8/V8IDBCursor.h"
 #include "bindings/modules/v8/V8IDBCursorWithValue.h"
 #include "bindings/modules/v8/V8IDBDatabase.h"
 #include "bindings/modules/v8/V8IDBIndex.h"
 #include "bindings/modules/v8/V8IDBKeyRange.h"
 #include "bindings/modules/v8/V8IDBObjectStore.h"
+#include "bindings/modules/v8/V8NavigatorPartial.h"
+#include "bindings/modules/v8/V8ServiceWorkerGlobalScope.h"
+#include "bindings/modules/v8/V8SharedWorkerGlobalScopePartial.h"
+#include "bindings/modules/v8/V8WindowPartial.h"
 #include "bindings/modules/v8/V8WorkletGlobalScope.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/origin_trials/OriginTrialContext.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBKeyRange.h"
@@ -532,4 +538,46 @@ ExecutionContext* toExecutionContextForModules(v8::Local<v8::Context> context)
     return nullptr;
 }
 
+namespace {
+InstallOriginTrialsFunction s_originalInstallOriginTrialsFunction = nullptr;
+}
+
+void installOriginTrialsForModules(ScriptState* scriptState)
+{
+    // TODO(iclelland): Generate all of this logic at compile-time, based on the
+    // configuration of origin trial enabled attibutes and interfaces in IDL
+    // files. (crbug.com/615060)
+    (*s_originalInstallOriginTrialsFunction)(scriptState);
+
+    v8::Local<v8::Context> context = scriptState->context();
+    ExecutionContext* executionContext = toExecutionContext(context);
+    OriginTrialContext* originTrialContext = OriginTrialContext::from(executionContext, OriginTrialContext::DontCreateIfNotExists);
+    if (!originTrialContext)
+        return;
+
+    ScriptState::Scope scope(scriptState);
+    v8::Local<v8::Object> global = context->Global();
+    v8::Isolate* isolate = scriptState->isolate();
+
+    if (!originTrialContext->featureBindingsInstalled("DurableStorage") && (RuntimeEnabledFeatures::durableStorageEnabled() || originTrialContext->isFeatureEnabled("DurableStorage", nullptr))) {
+        if (executionContext->isDocument()) {
+            v8::Local<v8::String> navigatorName = v8::String::NewFromOneByte(isolate, reinterpret_cast<const uint8_t*>("navigator"), v8::NewStringType::kNormal).ToLocalChecked();
+            v8::Local<v8::Object> navigator = global->Get(context, navigatorName).ToLocalChecked()->ToObject();
+            V8WindowPartial::installDurableStorage(scriptState, global);
+            V8NavigatorPartial::installDurableStorage(scriptState, navigator);
+        } else if (executionContext->isSharedWorkerGlobalScope()) {
+            V8SharedWorkerGlobalScopePartial::installDurableStorage(scriptState, global);
+        } else if (executionContext->isDedicatedWorkerGlobalScope()) {
+            V8DedicatedWorkerGlobalScopePartial::installDurableStorage(scriptState, global);
+        } else if (executionContext->isServiceWorkerGlobalScope()) {
+            V8ServiceWorkerGlobalScope::installDurableStorage(scriptState, global);
+        }
+        originTrialContext->setFeatureBindingsInstalled("DurableStorage");
+    }
+}
+
+void registerInstallOriginTrialsForModules()
+{
+    s_originalInstallOriginTrialsFunction = setInstallOriginTrialsFunction(&installOriginTrialsForModules);
+}
 } // namespace blink

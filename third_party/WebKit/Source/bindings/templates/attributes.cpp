@@ -1,4 +1,4 @@
-{% from 'utilities.cpp' import declare_enum_validation_variable, v8_value_to_local_cpp_value, check_origin_trial %}
+{% from 'utilities.cpp' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
 
 {##############################################################################}
 {% macro attribute_getter(attribute, world_suffix) %}
@@ -9,9 +9,6 @@ const v8::PropertyCallbackInfo<v8::Value>& info
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %})
 {
-    {% if attribute.origin_trial_enabled_function %}
-    {{check_origin_trial(attribute) | indent}}
-    {% endif %}
     {% if attribute.is_reflect and not attribute.is_url
           and attribute.idl_type == 'DOMString' and is_node
           and not attribute.is_implemented_in_private_script %}
@@ -195,9 +192,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% if attribute.measure_as %}
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeGetter')}});
     {% endif %}
-    {% if attribute.origin_trial_enabled_function %}
-    {{check_origin_trial(attribute) | indent}}
-    {% endif %}
     {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
     ScriptState* scriptState = ScriptState::from(info.GetIsolate()->GetCurrentContext());
     V8PerContextData* contextData = scriptState->perContextData();
@@ -226,9 +220,6 @@ static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Loca
     {% endif %}
     {% if attribute.measure_as %}
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('ConstructorGetter')}});
-    {% endif %}
-    {% if attribute.origin_trial_enabled_function %}
-    {{check_origin_trial(attribute) | indent}}
     {% endif %}
     v8ConstructorAttributeGetter(property, info);
 }
@@ -429,9 +420,6 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeGetter(LocalFrame* 
     if (holder.IsEmpty())
         return false;
 
-    {% if attribute.origin_trial_enabled_function %}
-    {{check_origin_trial(attribute, "scriptState->isolate()") | indent}}
-    {% endif %}
 
     ExceptionState exceptionState(ExceptionState::GetterContext, "{{attribute.name}}", "{{cpp_class}}", scriptState->context()->Global(), scriptState->isolate());
     v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "{{cpp_class}}", "{{attribute.name}}", holder);

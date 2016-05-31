@@ -28,6 +28,7 @@
 
 namespace blink {
 
+class ScriptState;
 class V8TestObject {
     STATIC_ONLY(V8TestObject);
 public:
@@ -86,6 +87,8 @@ public:
     static void customSetterImplementedAsLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::FunctionCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     CORE_EXPORT static void preparePrototypeAndInterfaceObject(v8::Local<v8::Context>, const DOMWrapperWorld&, v8::Local<v8::Object> prototypeObject, v8::Local<v8::Function> interfaceObject, v8::Local<v8::FunctionTemplate> interfaceTemplate);
+
+    static void installFeatureName(ScriptState*, v8::Local<v8::Object> instance);
 };
 
 template <>

@@ -365,6 +365,29 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
 {% endif %}{# not is_array_buffer_or_view #}
 {% endblock %}
 {##############################################################################}
+{% block origin_trials %}
+{% from 'attributes.cpp' import attribute_configuration with context %}
+{% for group in attributes|origin_trial_enabled_attributes|groupby('origin_trial_feature_name') %}{{newline}}
+void {{v8_class_or_partial}}::install{{group.grouper}}(ScriptState* scriptState, v8::Local<v8::Object> instance)
+{
+    v8::Local<v8::Object> prototype = instance->GetPrototype()->ToObject(scriptState->isolate());
+    v8::Local<v8::Signature> signature;
+    ALLOW_UNUSED_LOCAL(signature);
+    {% for attribute in group.list | unique_by('name') | sort %}
+    {% if attribute.is_data_type_property %}
+    const V8DOMConfiguration::AttributeConfiguration attribute{{attribute.name}}Configuration = \
+        {{attribute_configuration(attribute)}};
+    V8DOMConfiguration::installAttribute(scriptState->isolate(), scriptState->world(), instance, prototype, attribute{{attribute.name}}Configuration);
+    {% else %}
+    const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration = \
+        {{attribute_configuration(attribute)}};
+    V8DOMConfiguration::installAccessor(scriptState->isolate(), scriptState->world(), instance, prototype, v8::Local<v8::Function>(), signature, accessor{{attribute.name}}Configuration);
+    {% endif %}
+    {% endfor %}
+}
+{% endfor %}
+{% endblock %}
+{##############################################################################}
 {% block get_dom_template %}{% endblock %}
 {% block get_dom_template_for_named_properties_object %}{% endblock %}
 {% block has_instance %}{% endblock %}

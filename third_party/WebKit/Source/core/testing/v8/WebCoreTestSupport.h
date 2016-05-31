@@ -35,11 +35,16 @@ class Value;
 template <class T> class Local;
 }
 
+namespace blink {
+class ScriptState;
+}
+
 namespace WebCoreTestSupport {
 
 v8::Local<v8::Value> createInternalsObject(v8::Local<v8::Context>);
 void injectInternalsObject(v8::Local<v8::Context>);
 void resetInternalsObject(v8::Local<v8::Context>);
+void installOriginTrialsForTests(blink::ScriptState*);
 
 } // namespace blink
 

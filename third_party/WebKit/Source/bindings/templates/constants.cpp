@@ -1,5 +1,3 @@
-{% from 'utilities.cpp' import check_origin_trial %}
-
 {##############################################################################}
 {% macro constant_getter_callback(constant) %}
 static void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -9,9 +7,6 @@ static void {{constant.name}}ConstantGetterCallback(v8::Local<v8::Name>, const v
     {% endif %}
     {% if constant.measure_as %}
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{constant.measure_as('ConstantGetter')}});
-    {% endif %}
-    {% if constant.origin_trial_enabled_function %}
-    {{check_origin_trial(constant) | indent}}
     {% endif %}
     {% if constant.idl_type in ('Double', 'Float') %}
     v8SetReturnValue(info, {{constant.value}});

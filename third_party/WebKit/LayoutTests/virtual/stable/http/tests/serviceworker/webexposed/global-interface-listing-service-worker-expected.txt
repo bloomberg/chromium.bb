@@ -778,7 +778,6 @@ interface webkitIDBTransaction : EventTarget
     setter oncomplete
     setter onerror
 global object
-    attribute StorageManager
     attribute console
     attribute internals
     getter caches

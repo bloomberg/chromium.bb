@@ -49,6 +49,8 @@ struct NativeValueTraits<IDBKeyRange*> {
 
 ExecutionContext* toExecutionContextForModules(v8::Local<v8::Context>);
 
+void registerInstallOriginTrialsForModules();
+
 } // namespace blink
 
 #endif // V8BindingForModules_h
