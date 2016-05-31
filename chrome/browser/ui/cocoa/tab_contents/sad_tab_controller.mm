@@ -6,7 +6,11 @@
 
 #include "base/mac/bundle_locations.h"
 #import "chrome/browser/ui/cocoa/tab_contents/sad_tab_view_cocoa.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
+
+using content::OpenURLParams;
+using content::Referrer;
 
 namespace chrome {
 
@@ -69,6 +73,12 @@ void SadTabCocoa::Close() {
 
 - (IBAction)reloadPage:(id)sender {
   webContents_->GetController().Reload(true);
+}
+
+- (void)openLearnMoreAboutCrashLink:(id)sender {
+  OpenURLParams params(GURL(chrome::kCrashReasonURL), Referrer(), CURRENT_TAB,
+                       ui::PAGE_TRANSITION_LINK, false);
+  webContents_->OpenURL(params);
 }
 
 @end

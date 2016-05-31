@@ -83,7 +83,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -184,8 +183,6 @@ using l10n_util::GetNSStringFWithFixup;
 // longer indicate that the window is shrinking from an apparent zoomed state)
 // and if it's set we continue to constrain the resize.
 
-using content::OpenURLParams;
-using content::Referrer;
 using content::RenderWidgetHostView;
 using content::WebContents;
 
@@ -1708,17 +1705,6 @@ bool IsTabDetachingInFullscreenEnabled() {
   // do this.
   if ([findBarCocoaController_ isFindBarVisible])
     [self layoutSubviews];
-}
-
-// Handle the openLearnMoreAboutCrashLink: action from SadTabView when
-// "Learn more" link in "Aw snap" page (i.e. crash page or sad tab) is
-// clicked. Decoupling the action from its target makes unit testing possible.
-- (void)openLearnMoreAboutCrashLink:(id)sender {
-  if (WebContents* contents = [self webContents]) {
-    OpenURLParams params(GURL(chrome::kCrashReasonURL), Referrer(), CURRENT_TAB,
-                         ui::PAGE_TRANSITION_LINK, false);
-    contents->OpenURL(params);
-  }
 }
 
 // Delegate method called when window did move. (See below for why we don't use
