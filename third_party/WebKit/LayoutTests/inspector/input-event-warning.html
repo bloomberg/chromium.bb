@@ -35,10 +35,9 @@ function dispatchEvents()
         new MouseEvent("mousemove", { cancelable: true, clientX: 100, clinetY: 100, movementX: 0, movementY: 0 }),
         new TouchEvent("touchstart", touchEventInit),
         new TouchEvent("touchmove", touchEventInit),
-        new TouchEvent("touchend", touchEventInit),
     ];
 
-    var eventTypes = ["wheel", "mousemove", "touchstart", "touchmove", "touchend"];
+    var eventTypes = ["wheel", "mousemove", "touchstart", "touchmove"];
     for (var type of eventTypes) {
        target.addEventListener(type, eventListener1);
        target.addEventListener(type, eventListener2);

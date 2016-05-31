@@ -65,18 +65,20 @@ Settings* windowSettings(LocalDOMWindow* executingWindow)
     return nullptr;
 }
 
+bool isScrollBlockingEvent(const AtomicString& eventType)
+{
+    return eventType == EventTypeNames::touchstart
+        || eventType == EventTypeNames::touchmove
+        || eventType == EventTypeNames::mousewheel
+        || eventType == EventTypeNames::wheel;
+}
+
 double blockedEventsWarningThreshold(const ExecutionContext* context, const Event* event)
 {
     if (!event->cancelable())
         return 0.0;
-    const AtomicString& eventType = event->type();
-    if (eventType != EventTypeNames::touchstart
-        && eventType != EventTypeNames::touchmove
-        && eventType != EventTypeNames::touchend
-        && eventType != EventTypeNames::mousewheel
-        && eventType != EventTypeNames::wheel) {
+    if (!isScrollBlockingEvent(event->type()))
         return 0.0;
-    }
 
     if (!context->isDocument())
         return 0.0;
@@ -182,8 +184,14 @@ inline LocalDOMWindow* EventTarget::executingWindow()
     return nullptr;
 }
 
-void EventTarget::setDefaultAddEventListenerOptions(AddEventListenerOptions& options)
+void EventTarget::setDefaultAddEventListenerOptions(const AtomicString& eventType, AddEventListenerOptions& options)
 {
+    if (!isScrollBlockingEvent(eventType)) {
+        if (!options.hasPassive())
+            options.setPassive(false);
+        return;
+    }
+
     if (Settings* settings = windowSettings(executingWindow())) {
         switch (settings->passiveListenerDefault()) {
         case PassiveListenerDefault::False:
@@ -219,7 +227,7 @@ bool EventTarget::addEventListener(const AtomicString& eventType, EventListener*
 {
     AddEventListenerOptions options;
     options.setCapture(useCapture);
-    setDefaultAddEventListenerOptions(options);
+    setDefaultAddEventListenerOptions(eventType, options);
     return addEventListenerInternal(eventType, listener, options);
 }
 
@@ -236,7 +244,7 @@ bool EventTarget::addEventListener(const AtomicString& eventType, EventListener*
 
 bool EventTarget::addEventListener(const AtomicString& eventType, EventListener* listener, AddEventListenerOptions& options)
 {
-    setDefaultAddEventListenerOptions(options);
+    setDefaultAddEventListenerOptions(eventType, options);
     return addEventListenerInternal(eventType, listener, options);
 }
 
