@@ -53,7 +53,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
   // Called after all the header data for HEADERS control frame is received.
   virtual void OnHeaders(SpdyStreamId stream_id,
                          bool has_priority,
-                         SpdyPriority priority,
+                         int weight,
                          SpdyStreamId parent_stream_id,
                          bool exclusive,
                          bool fin,
@@ -157,7 +157,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
   void OnSynReply(SpdyStreamId stream_id, bool fin) override;
   void OnHeaders(SpdyStreamId stream_id,
                  bool has_priority,
-                 SpdyPriority priority,
+                 int weight,
                  SpdyStreamId parent_stream_id,
                  bool exclusive,
                  bool fin,
@@ -217,7 +217,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                                     base::StringPiece debug_data) const;
   SpdySerializedFrame* CreateHeaders(SpdyStreamId stream_id,
                                      SpdyControlFlags flags,
-                                     SpdyPriority priority,
+                                     int weight,
                                      const SpdyHeaderBlock* headers);
   SpdySerializedFrame* CreateWindowUpdate(SpdyStreamId stream_id,
                                           uint32_t delta_window_size) const;
@@ -283,6 +283,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
     SpdyStreamId promised_stream_id;
     bool has_priority;
     SpdyPriority priority;
+    int weight;
     SpdyStreamId parent_stream_id;
     bool exclusive;
     bool fin;

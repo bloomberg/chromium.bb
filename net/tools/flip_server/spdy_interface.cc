@@ -285,7 +285,7 @@ void SpdySM::OnSynReply(SpdyStreamId stream_id,
 
 void SpdySM::OnHeaders(SpdyStreamId stream_id,
                        bool has_priority,
-                       SpdyPriority priority,
+                       int weight,
                        SpdyStreamId parent_stream_id,
                        bool exclusive,
                        bool fin,

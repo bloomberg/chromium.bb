@@ -81,7 +81,7 @@ std::unique_ptr<base::Value> NetLogSpdyHeadersSentCallback(
     bool fin,
     SpdyStreamId stream_id,
     bool has_priority,
-    uint32_t priority,
+    int weight,
     SpdyStreamId parent_stream_id,
     bool exclusive,
     NetLogCaptureMode capture_mode) {
@@ -92,7 +92,7 @@ std::unique_ptr<base::Value> NetLogSpdyHeadersSentCallback(
   dict->SetBoolean("has_priority", has_priority);
   if (has_priority) {
     dict->SetInteger("parent_stream_id", parent_stream_id);
-    dict->SetInteger("priority", static_cast<int>(priority));
+    dict->SetInteger("weight", weight);
     dict->SetBoolean("exclusive", exclusive);
   }
   return std::move(dict);
@@ -1119,7 +1119,7 @@ std::unique_ptr<SpdySerializedFrame> SpdySession::CreateSynStream(
     }
   } else {
     SpdyHeadersIR headers(stream_id);
-    headers.set_priority(spdy_priority);
+    headers.set_weight(Spdy3PriorityToHttp2Weight(spdy_priority));
     headers.set_has_priority(true);
 
     if (priority_dependencies_enabled_) {
@@ -1141,7 +1141,7 @@ std::unique_ptr<SpdySerializedFrame> SpdySession::CreateSynStream(
           NetLog::TYPE_HTTP2_SESSION_SEND_HEADERS,
           base::Bind(&NetLogSpdyHeadersSentCallback, &block,
                      (flags & CONTROL_FLAG_FIN) != 0, stream_id,
-                     headers.has_priority(), headers.priority(),
+                     headers.has_priority(), headers.weight(),
                      headers.parent_stream_id(), headers.exclusive()));
     }
   }
@@ -2432,7 +2432,7 @@ void SpdySession::OnSynReply(SpdyStreamId stream_id,
 
 void SpdySession::OnHeaders(SpdyStreamId stream_id,
                             bool has_priority,
-                            SpdyPriority priority,
+                            int weight,
                             SpdyStreamId parent_stream_id,
                             bool exclusive,
                             bool fin,

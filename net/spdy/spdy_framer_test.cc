@@ -117,14 +117,14 @@ class SpdyFramerTestUtil {
 
     void OnHeaders(SpdyStreamId stream_id,
                    bool has_priority,
-                   SpdyPriority priority,
+                   int weight,
                    SpdyStreamId parent_stream_id,
                    bool exclusive,
                    bool fin,
                    bool end) override {
       SpdyHeadersIR* headers = new SpdyHeadersIR(stream_id);
       headers->set_has_priority(has_priority);
-      headers->set_priority(priority);
+      headers->set_weight(weight);
       headers->set_parent_stream_id(parent_stream_id);
       headers->set_exclusive(exclusive);
       headers->set_fin(fin);
@@ -310,7 +310,7 @@ class SpdyFramerTestUtil {
 
     void OnHeaders(SpdyStreamId stream_id,
                    bool has_priority,
-                   SpdyPriority priority,
+                   int weight,
                    SpdyStreamId parent_stream_id,
                    bool exclusive,
                    bool fin,
@@ -319,7 +319,7 @@ class SpdyFramerTestUtil {
       framer.set_enable_compression(false);
       SpdyHeadersIR headers(stream_id);
       headers.set_has_priority(has_priority);
-      headers.set_priority(priority);
+      headers.set_weight(weight);
       headers.set_parent_stream_id(parent_stream_id);
       headers.set_exclusive(exclusive);
       headers.set_fin(fin);
@@ -598,13 +598,13 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
 
   void OnHeaders(SpdyStreamId stream_id,
                  bool has_priority,
-                 SpdyPriority priority,
+                 int weight,
                  SpdyStreamId parent_stream_id,
                  bool exclusive,
                  bool fin,
                  bool end) override {
     VLOG(1) << "OnHeaders(" << stream_id << ", " << has_priority << ", "
-            << priority << ", " << parent_stream_id << ", " << exclusive << ", "
+            << weight << ", " << parent_stream_id << ", " << exclusive << ", "
             << fin << ", " << end << ")";
     ++headers_frame_count_;
     InitHeaderStreaming(HEADERS, stream_id);
@@ -883,7 +883,6 @@ TEST_P(SpdyFramerTest, HeaderBlockWithEmptyCookie) {
   SpdyFramer framer(spdy_version_);
   framer.set_enable_compression(true);
   SpdyHeadersIR headers(1);
-  headers.set_priority(1);
   headers.SetHeader("cookie",
                     "=; key=value; ;  = ; foo; bar=;  ;  =   ; k2=v2 ; =");
   SpdySerializedFrame frame(framer.SerializeHeaders(headers));
@@ -906,7 +905,6 @@ TEST_P(SpdyFramerTest, HeaderBlockInBuffer) {
 
   // Encode the header block into a Headers frame.
   SpdyHeadersIR headers(1);
-  headers.set_priority(1);
   headers.SetHeader("alpha", "beta");
   headers.SetHeader("gamma", "charlie");
   headers.SetHeader("cookie", "key1=value1; key2=value2");
@@ -928,7 +926,6 @@ TEST_P(SpdyFramerTest, UndersizedHeaderBlockInBuffer) {
 
   // Encode the header block into a Headers frame.
   SpdyHeadersIR headers(1);
-  headers.set_priority(1);
   headers.SetHeader("alpha", "beta");
   headers.SetHeader("gamma", "charlie");
   SpdySerializedFrame frame(framer.SerializeHeaders(headers));
@@ -2989,8 +2986,8 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
     };
     SpdyHeadersIR headers_ir(0x7fffffff);
     headers_ir.set_fin(true);
-    headers_ir.set_priority(1);
     headers_ir.set_has_priority(true);
+    headers_ir.set_weight(220);
     headers_ir.SetHeader("bar", "foo");
     headers_ir.SetHeader("foo", "");
     SpdySerializedFrame frame(framer.SerializeHeaders(headers_ir));
@@ -3018,8 +3015,8 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
     };
     SpdyHeadersIR headers_ir(0x7fffffff);
     headers_ir.set_fin(true);
-    headers_ir.set_priority(1);
     headers_ir.set_has_priority(true);
+    headers_ir.set_weight(220);
     headers_ir.set_exclusive(true);
     headers_ir.set_parent_stream_id(0);
     headers_ir.SetHeader("bar", "foo");
@@ -3049,8 +3046,8 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
     };
     SpdyHeadersIR headers_ir(0x7fffffff);
     headers_ir.set_fin(true);
-    headers_ir.set_priority(1);
     headers_ir.set_has_priority(true);
+    headers_ir.set_weight(220);
     headers_ir.set_exclusive(false);
     headers_ir.set_parent_stream_id(0x7fffffff);
     headers_ir.SetHeader("bar", "foo");
@@ -3832,7 +3829,6 @@ TEST_P(SpdyFramerTest, ControlFrameMuchTooLarge) {
   string big_value(kBigValueSize, 'x');
   SpdyFramer framer(spdy_version_);
   SpdyHeadersIR headers(1);
-  headers.set_priority(1);
   headers.set_fin(true);
   headers.SetHeader("aa", big_value);
   SpdySerializedFrame control_frame(framer.SerializeHeaders(headers));
@@ -5171,7 +5167,7 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
 
     SpdyHeadersIR headers_ir(57);
     if (IsHttp2() && (flags & HEADERS_FLAG_PRIORITY)) {
-      headers_ir.set_priority(3);
+      headers_ir.set_weight(3);
       headers_ir.set_has_priority(true);
       headers_ir.set_parent_stream_id(5);
       headers_ir.set_exclusive(true);
@@ -5869,7 +5865,6 @@ TEST_P(SpdyFramerTest, ProcessAllInput) {
 
   // Create two input frames.
   SpdyHeadersIR headers(1);
-  headers.set_priority(1);
   headers.SetHeader("alpha", "beta");
   headers.SetHeader("gamma", "charlie");
   headers.SetHeader("cookie", "key1=value1; key2=value2");

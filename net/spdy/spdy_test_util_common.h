@@ -129,6 +129,7 @@ struct SpdyHeaderInfo {
   SpdyStreamId id;
   SpdyStreamId assoc_id;
   SpdyPriority priority;
+  int weight;
   SpdyControlFlags control_flags;
   SpdyRstStreamStatus status;
   const char* data;

@@ -979,8 +979,8 @@ class NET_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithHeaderBlockIR {
 
   bool has_priority() const { return has_priority_; }
   void set_has_priority(bool has_priority) { has_priority_ = has_priority; }
-  uint32_t priority() const { return priority_; }
-  void set_priority(SpdyPriority priority) { priority_ = priority; }
+  int weight() const { return weight_; }
+  void set_weight(int weight) { weight_ = weight; }
   SpdyStreamId parent_stream_id() const { return parent_stream_id_; }
   void set_parent_stream_id(SpdyStreamId id) { parent_stream_id_ = id; }
   bool exclusive() const { return exclusive_; }
@@ -997,8 +997,7 @@ class NET_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithHeaderBlockIR {
 
  private:
   bool has_priority_ = false;
-  // 31-bit priority.
-  uint32_t priority_ = 0;
+  int weight_ = kHttp2DefaultStreamWeight;
   SpdyStreamId parent_stream_id_ = 0;
   bool exclusive_ = false;
   bool padded_ = false;

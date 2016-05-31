@@ -197,8 +197,8 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // |stream_id| The stream receiving the header.
   // |has_priority| Whether or not the headers frame included a priority value,
   //     and, if protocol version == HTTP2, stream dependency info.
-  // |priority| If |has_priority| is true, then priority value for the receiving
-  //     stream, otherwise 0.
+  // |weight| If |has_priority| is true, then weight (in the range [1, 256])
+  //     for the receiving stream, otherwise 0.
   // |parent_stream_id| If |has_priority| is true and protocol
   //     version == HTTP2, the parent stream of the receiving stream, else 0.
   // |exclusive| If |has_priority| is true and protocol
@@ -209,7 +209,7 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   //     or true if not.
   virtual void OnHeaders(SpdyStreamId stream_id,
                          bool has_priority,
-                         SpdyPriority priority,
+                         int weight,
                          SpdyStreamId parent_stream_id,
                          bool exclusive,
                          bool fin,

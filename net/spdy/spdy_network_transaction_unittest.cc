@@ -4218,16 +4218,16 @@ TEST_P(SpdyNetworkTransactionTest, SettingsSaved) {
     return;
   }
   static const SpdyHeaderInfo kSynReplyInfo = {
-    SYN_REPLY,                              // Syn Reply
-    1,                                      // Stream ID
-    0,                                      // Associated Stream ID
-    ConvertRequestPriorityToSpdyPriority(
-        LOWEST, spdy_util_.spdy_version()),
-    CONTROL_FLAG_NONE,                      // Control Flags
-    RST_STREAM_INVALID,                     // Status
-    NULL,                                   // Data
-    0,                                      // Data Length
-    DATA_FLAG_NONE                          // Data Flags
+      SYN_REPLY,  // Syn Reply
+      1,          // Stream ID
+      0,          // Associated Stream ID
+      ConvertRequestPriorityToSpdyPriority(LOWEST, spdy_util_.spdy_version()),
+      0,                   // Weight (unused)
+      CONTROL_FLAG_NONE,   // Control Flags
+      RST_STREAM_INVALID,  // Status
+      NULL,                // Data
+      0,                   // Data Length
+      DATA_FLAG_NONE       // Data Flags
   };
 
   BoundNetLog net_log;
@@ -4328,16 +4328,16 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
     return;
   }
   static const SpdyHeaderInfo kSynReplyInfo = {
-    SYN_REPLY,                              // Syn Reply
-    1,                                      // Stream ID
-    0,                                      // Associated Stream ID
-    ConvertRequestPriorityToSpdyPriority(
-        LOWEST, spdy_util_.spdy_version()),
-    CONTROL_FLAG_NONE,                      // Control Flags
-    RST_STREAM_INVALID,                     // Status
-    NULL,                                   // Data
-    0,                                      // Data Length
-    DATA_FLAG_NONE                          // Data Flags
+      SYN_REPLY,  // Syn Reply
+      1,          // Stream ID
+      0,          // Associated Stream ID
+      ConvertRequestPriorityToSpdyPriority(LOWEST, spdy_util_.spdy_version()),
+      0,                   // Weight (unused)
+      CONTROL_FLAG_NONE,   // Control Flags
+      RST_STREAM_INVALID,  // Status
+      NULL,                // Data
+      0,                   // Data Length
+      DATA_FLAG_NONE       // Data Flags
   };
 
   BoundNetLog net_log;

@@ -14,6 +14,7 @@
 #include "net/quic/quic_header_list.h"
 #include "net/quic/quic_spdy_session.h"
 #include "net/quic/quic_time.h"
+#include "net/spdy/spdy_protocol.h"
 
 using base::StringPiece;
 using net::HTTP2;
@@ -162,7 +163,7 @@ class QuicHeadersStream::SpdyFramerVisitor
 
   void OnHeaders(SpdyStreamId stream_id,
                  bool has_priority,
-                 SpdyPriority priority,
+                 int weight,
                  SpdyStreamId parent_stream_id,
                  bool exclusive,
                  bool fin,
@@ -171,6 +172,8 @@ class QuicHeadersStream::SpdyFramerVisitor
       return;
     }
 
+    SpdyPriority priority =
+        has_priority ? Http2WeightToSpdy3Priority(weight) : 0;
     stream_->OnHeaders(stream_id, has_priority, priority, fin);
   }
 
@@ -269,7 +272,7 @@ size_t QuicHeadersStream::WriteHeaders(QuicStreamId stream_id,
   headers_frame.set_fin(fin);
   if (session()->perspective() == Perspective::IS_CLIENT) {
     headers_frame.set_has_priority(true);
-    headers_frame.set_priority(priority);
+    headers_frame.set_weight(Spdy3PriorityToHttp2Weight(priority));
   }
   SpdySerializedFrame frame(spdy_framer_.SerializeFrame(headers_frame));
   WriteOrBufferData(StringPiece(frame.data(), frame.size()), false,

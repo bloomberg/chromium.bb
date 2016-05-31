@@ -61,7 +61,7 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
 
   void OnHeaders(SpdyStreamId stream_id,
                  bool has_priority,
-                 SpdyPriority priority,
+                 int weight,
                  SpdyStreamId parent_stream_id,
                  bool exclusive,
                  bool fin,
@@ -279,7 +279,7 @@ TEST_P(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
   std::unique_ptr<SpdySerializedFrame> control_frame(
       framer.CreateHeaders(1,  // stream_id
                            CONTROL_FLAG_NONE,
-                           0,  // priority
+                           255,  // weight
                            &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 

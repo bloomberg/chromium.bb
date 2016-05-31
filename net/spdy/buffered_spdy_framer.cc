@@ -81,7 +81,7 @@ void BufferedSpdyFramer::OnSynStream(SpdyStreamId stream_id,
 
 void BufferedSpdyFramer::OnHeaders(SpdyStreamId stream_id,
                                    bool has_priority,
-                                   SpdyPriority priority,
+                                   int weight,
                                    SpdyStreamId parent_stream_id,
                                    bool exclusive,
                                    bool fin,
@@ -93,7 +93,7 @@ void BufferedSpdyFramer::OnHeaders(SpdyStreamId stream_id,
   control_frame_fields_->stream_id = stream_id;
   control_frame_fields_->has_priority = has_priority;
   if (control_frame_fields_->has_priority) {
-    control_frame_fields_->priority = priority;
+    control_frame_fields_->weight = weight;
     control_frame_fields_->parent_stream_id = parent_stream_id;
     control_frame_fields_->exclusive = exclusive;
   }
@@ -148,7 +148,7 @@ bool BufferedSpdyFramer::OnControlFrameHeaderData(SpdyStreamId stream_id,
       case HEADERS:
         visitor_->OnHeaders(control_frame_fields_->stream_id,
                             control_frame_fields_->has_priority,
-                            control_frame_fields_->priority,
+                            control_frame_fields_->weight,
                             control_frame_fields_->parent_stream_id,
                             control_frame_fields_->exclusive,
                             control_frame_fields_->fin, headers);
@@ -238,7 +238,7 @@ void BufferedSpdyFramer::OnHeaderFrameEnd(SpdyStreamId stream_id,
     case HEADERS:
       visitor_->OnHeaders(control_frame_fields_->stream_id,
                           control_frame_fields_->has_priority,
-                          control_frame_fields_->priority,
+                          control_frame_fields_->weight,
                           control_frame_fields_->parent_stream_id,
                           control_frame_fields_->exclusive,
                           control_frame_fields_->fin, coalescer_->headers());
@@ -440,13 +440,13 @@ SpdySerializedFrame* BufferedSpdyFramer::CreateGoAway(
 SpdySerializedFrame* BufferedSpdyFramer::CreateHeaders(
     SpdyStreamId stream_id,
     SpdyControlFlags flags,
-    SpdyPriority priority,
+    int weight,
     const SpdyHeaderBlock* headers) {
   SpdyHeadersIR headers_ir(stream_id);
   headers_ir.set_fin((flags & CONTROL_FLAG_FIN) != 0);
   if (flags & HEADERS_FLAG_PRIORITY) {
     headers_ir.set_has_priority(true);
-    headers_ir.set_priority(priority);
+    headers_ir.set_weight(weight);
   }
   headers_ir.set_header_block(*headers);
   return new SpdySerializedFrame(spdy_framer_.SerializeHeaders(headers_ir));

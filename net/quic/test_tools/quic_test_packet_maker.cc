@@ -378,7 +378,7 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     SpdyHeadersIR headers_frame(stream_id);
     headers_frame.set_header_block(headers);
     headers_frame.set_fin(fin);
-    headers_frame.set_priority(priority);
+    headers_frame.set_weight(Spdy3PriorityToHttp2Weight(priority));
     headers_frame.set_has_priority(true);
     spdy_frame = spdy_request_framer_.SerializeFrame(headers_frame);
   }
@@ -447,7 +447,7 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(QuicPacketNumber packet_number,
     SpdyHeadersIR headers_frame(stream_id);
     headers_frame.set_header_block(headers);
     headers_frame.set_fin(fin);
-    headers_frame.set_priority(priority);
+    headers_frame.set_weight(Spdy3PriorityToHttp2Weight(priority));
     headers_frame.set_has_priority(true);
     spdy_frame = spdy_request_framer_.SerializeFrame(headers_frame);
   }

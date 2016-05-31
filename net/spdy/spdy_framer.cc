@@ -1502,7 +1502,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
           }
           const bool has_priority =
               (current_frame_flags_ & HEADERS_FLAG_PRIORITY) != 0;
-          SpdyPriority priority = 0;
+          int weight = 0;
           uint32_t parent_stream_id = 0;
           bool exclusive = false;
           if (protocol_version_ == HTTP2 && has_priority) {
@@ -1512,10 +1512,12 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
             UnpackStreamDependencyValues(stream_dependency, &exclusive,
                                          &parent_stream_id);
 
-            uint8_t weight = 0;
-            successful_read = reader.ReadUInt8(&weight);
+            uint8_t serialized_weight = 0;
+            successful_read = reader.ReadUInt8(&serialized_weight);
             if (successful_read) {
-              priority = MapWeightToPriority(weight);
+              // Per RFC 7540 section 6.3, serialized weight value is actual
+              // value - 1.
+              weight = serialized_weight + 1;
             }
           }
           DCHECK(reader.IsDoneReading());
@@ -1532,7 +1534,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
           } else {
             visitor_->OnHeaders(
                 current_frame_stream_id_,
-                (current_frame_flags_ & HEADERS_FLAG_PRIORITY) != 0, priority,
+                (current_frame_flags_ & HEADERS_FLAG_PRIORITY) != 0, weight,
                 parent_stream_id, exclusive,
                 (current_frame_flags_ & CONTROL_FLAG_FIN) != 0,
                 expect_continuation_ == 0);
@@ -2594,12 +2596,9 @@ SpdySerializedFrame SpdyFramer::SerializeHeaders(const SpdyHeadersIR& headers) {
     size += headers.padding_payload_len();
   }
 
-  SpdyPriority priority = static_cast<SpdyPriority>(headers.priority());
+  int weight = 0;
   if (headers.has_priority()) {
-    if (headers.priority() > GetLowestPriority()) {
-      SPDY_BUG << "Priority out-of-bounds.";
-      priority = GetLowestPriority();
-    }
+    weight = ClampHttp2Weight(headers.weight());
     size += 5;
   }
 
@@ -2645,7 +2644,8 @@ SpdySerializedFrame SpdyFramer::SerializeHeaders(const SpdyHeadersIR& headers) {
     if (headers.has_priority()) {
       builder.WriteUInt32(PackStreamDependencyValues(
           headers.exclusive(), headers.parent_stream_id()));
-      builder.WriteUInt8(MapPriorityToWeight(priority));
+      // Per RFC 7540 section 6.3, serialized weight value is actual value - 1.
+      builder.WriteUInt8(weight - 1);
     }
     WritePayloadWithContinuation(&builder,
                                  hpack_encoding,
