@@ -141,6 +141,11 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     dumper_registrations_ignored_for_testing_ = ignored;
   }
 
+  // Resets the dump provider whitelist to the list given.
+  void set_dump_provider_whitelist_for_testing(const char* const* list) {
+    dump_provider_whitelist_ = list;
+  }
+
  private:
   friend std::default_delete<MemoryDumpManager>;  // For the testing instance.
   friend struct DefaultSingletonTraits<MemoryDumpManager>;
@@ -176,7 +181,8 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
     MemoryDumpProviderInfo(MemoryDumpProvider* dump_provider,
                            const char* name,
                            scoped_refptr<SequencedTaskRunner> task_runner,
-                           const MemoryDumpProvider::Options& options);
+                           const MemoryDumpProvider::Options& options,
+                           bool whitelisted_for_background_mode);
 
     MemoryDumpProvider* const dump_provider;
 
@@ -199,6 +205,9 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
     // Flagged either by the auto-disable logic or during unregistration.
     bool disabled;
+
+    // True if the dump provider is whitelisted for background mode.
+    const bool whitelisted_for_background_mode;
 
    private:
     friend class base::RefCountedThreadSafe<MemoryDumpProviderInfo>;
@@ -260,6 +269,31 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ProcessMemoryDumpAsyncState);
+  };
+
+  // Sets up periodic memory dump timers to start global dump requests based on
+  // the dump triggers from trace config.
+  class BASE_EXPORT PeriodicGlobalDumpTimer {
+   public:
+    PeriodicGlobalDumpTimer();
+    ~PeriodicGlobalDumpTimer();
+
+    void Start(const std::vector<TraceConfig::MemoryDumpConfig::Trigger>&
+                   triggers_list);
+    void Stop();
+
+    bool IsRunning();
+
+   private:
+    // Periodically called by the timer.
+    void RequestPeriodicGlobalDump();
+
+    RepeatingTimer timer_;
+    uint32_t periodic_dumps_count_;
+    uint32_t light_dump_rate_;
+    uint32_t heavy_dump_rate_;
+
+    DISALLOW_COPY_AND_ASSIGN(PeriodicGlobalDumpTimer);
   };
 
   static const int kMaxConsecutiveFailuresCount;
@@ -325,11 +359,14 @@ class BASE_EXPORT MemoryDumpManager : public TraceLog::EnabledStateObserver {
   subtle::AtomicWord memory_tracing_enabled_;
 
   // For time-triggered periodic dumps.
-  RepeatingTimer periodic_dump_timer_;
+  PeriodicGlobalDumpTimer periodic_dump_timer_;
 
   // Thread used for MemoryDumpProviders which don't specify a task runner
   // affinity.
   std::unique_ptr<Thread> dump_thread_;
+
+  // List of names of the dump providers whitelisted for background mode.
+  const char* const* dump_provider_whitelist_;
 
   // The unique id of the child process. This is created only for tracing and is
   // expected to be valid only when tracing is enabled.

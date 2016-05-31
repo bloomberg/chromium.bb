@@ -131,7 +131,8 @@ class ChildTracingTest : public content::RenderViewTest, public IPC::Listener {
   // checks that the child actually sends a response to that.
   void RequestProcessMemoryDumpAndCheckResponse(uint64_t dump_guid) {
     SimulateSyntheticMessageFromBrowser(TracingMsg_ProcessMemoryDumpRequest(
-        {dump_guid, MemoryDumpType::EXPLICITLY_TRIGGERED}));
+        {dump_guid, MemoryDumpType::EXPLICITLY_TRIGGERED,
+         MemoryDumpLevelOfDetail::DETAILED}));
 
     // Check that a child -> browser response to the local dump request is sent.
     const IPC::Message* msg =
