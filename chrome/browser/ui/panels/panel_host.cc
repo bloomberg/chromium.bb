@@ -113,8 +113,10 @@ content::WebContents* PanelHost::OpenURLFromTab(
     return NULL;
 
   // Only allow clicks on links.
-  if (params.transition != ui::PAGE_TRANSITION_LINK)
+  if (!ui::PageTransitionCoreTypeIs(params.transition,
+                                    ui::PAGE_TRANSITION_LINK)) {
     return NULL;
+  }
 
   // Force all links to open in a new tab.
   chrome::NavigateParams navigate_params(profile_,

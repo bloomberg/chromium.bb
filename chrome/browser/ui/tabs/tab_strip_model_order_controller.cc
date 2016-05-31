@@ -28,7 +28,7 @@ int TabStripModelOrderController::DetermineInsertionIndex(
 
   // NOTE: TabStripModel enforces that all non-mini-tabs occur after mini-tabs,
   // so we don't have to check here too.
-  if (transition == ui::PAGE_TRANSITION_LINK &&
+  if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK) &&
       tabstrip_->active_index() != -1) {
     if (foreground) {
       // If the page was opened in the foreground by a link click in another

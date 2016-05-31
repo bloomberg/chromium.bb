@@ -146,7 +146,8 @@ bool InstantSearchPrerenderer::UsePrerenderedPage(
 
   // Do not use prerendered page for renderer initiated search requests.
   if (params->is_renderer_initiated &&
-      params->transition == ui::PAGE_TRANSITION_LINK) {
+      ui::PageTransitionCoreTypeIs(params->transition,
+                                   ui::PAGE_TRANSITION_LINK)) {
     Cancel();
     return false;
   }

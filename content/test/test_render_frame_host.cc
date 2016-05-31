@@ -318,8 +318,8 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   url::Replacements<char> replacements;
   replacements.ClearRef();
   params.was_within_same_page =
-      transition != ui::PAGE_TRANSITION_RELOAD &&
-      transition != ui::PAGE_TRANSITION_TYPED &&
+      !ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD) &&
+      !ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) &&
       url_copy.ReplaceComponents(replacements) ==
           GetLastCommittedURL().ReplaceComponents(replacements);
 

@@ -54,7 +54,8 @@ void NavigationMetricsRecorder::DidNavigateMainFrame(
   // Record the domain and registry of the URL that resulted in a navigation to
   // a |data:| URL, either by redirects or user clicking a link.
   if (details.entry->GetVirtualURL().SchemeIs(url::kDataScheme) &&
-      params.transition != ui::PAGE_TRANSITION_TYPED &&
+      !ui::PageTransitionCoreTypeIs(params.transition,
+                                    ui::PAGE_TRANSITION_TYPED) &&
       !details.previous_url.is_empty()) {
     rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
                                             "Navigation.Scheme.Data",

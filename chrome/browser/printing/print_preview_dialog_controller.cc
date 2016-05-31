@@ -336,7 +336,8 @@ void PrintPreviewDialogController::OnNavEntryCommitted(
 
       // New |preview_dialog| is created. Don't update/erase map entry.
       if (waiting_for_new_preview_page_ &&
-          transition_type == ui::PAGE_TRANSITION_AUTO_TOPLEVEL &&
+          ui::PageTransitionCoreTypeIs(transition_type,
+                                       ui::PAGE_TRANSITION_AUTO_TOPLEVEL) &&
           nav_type == content::NAVIGATION_TYPE_NEW_PAGE) {
         waiting_for_new_preview_page_ = false;
         SaveInitiatorTitle(preview_dialog);
@@ -345,7 +346,8 @@ void PrintPreviewDialogController::OnNavEntryCommitted(
 
       // Cloud print sign-in causes a reload.
       if (!waiting_for_new_preview_page_ &&
-          transition_type == ui::PAGE_TRANSITION_RELOAD &&
+          ui::PageTransitionCoreTypeIs(transition_type,
+                                       ui::PAGE_TRANSITION_RELOAD) &&
           nav_type == content::NAVIGATION_TYPE_EXISTING_PAGE &&
           IsPrintPreviewURL(details->previous_url)) {
         return;

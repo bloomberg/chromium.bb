@@ -86,8 +86,10 @@ void ContentTranslateDriver::InitiateTranslation(const std::string& page_lang,
 bool ContentTranslateDriver::IsLinkNavigation() {
   return navigation_controller_ &&
          navigation_controller_->GetLastCommittedEntry() &&
-         navigation_controller_->GetLastCommittedEntry()->GetTransitionType() ==
-             ui::PAGE_TRANSITION_LINK;
+         ui::PageTransitionCoreTypeIs(
+             navigation_controller_->GetLastCommittedEntry()
+                 ->GetTransitionType(),
+             ui::PAGE_TRANSITION_LINK);
 }
 
 void ContentTranslateDriver::OnTranslateEnabledChanged() {
@@ -179,7 +181,8 @@ void ContentTranslateDriver::NavigationEntryCommitted(
   }
 
   // If not a reload, return.
-  if (entry->GetTransitionType() != ui::PAGE_TRANSITION_RELOAD &&
+  if (!ui::PageTransitionCoreTypeIs(entry->GetTransitionType(),
+                                    ui::PAGE_TRANSITION_RELOAD) &&
       load_details.type != content::NAVIGATION_TYPE_SAME_PAGE) {
     return;
   }
@@ -205,7 +208,8 @@ void ContentTranslateDriver::DidNavigateAnyFrame(
     const content::FrameNavigateParams& params) {
   // Let the LanguageState clear its state.
   const bool reload =
-      details.entry->GetTransitionType() == ui::PAGE_TRANSITION_RELOAD ||
+      ui::PageTransitionCoreTypeIs(details.entry->GetTransitionType(),
+                                   ui::PAGE_TRANSITION_RELOAD) ||
       details.type == content::NAVIGATION_TYPE_SAME_PAGE;
   translate_manager_->GetLanguageState().DidNavigate(
       details.is_in_page, details.is_main_frame, reload);

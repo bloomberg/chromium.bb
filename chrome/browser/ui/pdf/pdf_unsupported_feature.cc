@@ -97,7 +97,8 @@ bool PDFEnableAdobeReaderPromptClient::ShouldExpire(
       ui::PageTransitionStripQualifier(details.entry->GetTransitionType());
   // We don't want to expire on a reload, because that is how we open the PDF in
   // Reader.
-  return !details.is_in_page && transition != ui::PAGE_TRANSITION_RELOAD;
+  return !details.is_in_page &&
+         !ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD);
 }
 
 void PDFEnableAdobeReaderPromptClient::Accept() {

@@ -39,7 +39,7 @@ namespace {
 // forgotten. This is generally any navigation that isn't a link click (i.e.
 // any navigation that can be considered to be the start of a new task distinct
 // from what had previously occurred in that tab).
-bool ShouldForgetOpenersForTransition(ui::PageTransition transition) {
+bool ShouldForgetOpenersForBaseTransition(ui::PageTransition transition) {
   return transition == ui::PAGE_TRANSITION_TYPED ||
       transition == ui::PAGE_TRANSITION_AUTO_BOOKMARK ||
       transition == ui::PAGE_TRANSITION_GENERATED ||
@@ -585,7 +585,8 @@ int TabStripModel::GetIndexOfLastWebContentsOpenedBy(const WebContents* opener,
 
 void TabStripModel::TabNavigating(WebContents* contents,
                                   ui::PageTransition transition) {
-  if (ShouldForgetOpenersForTransition(transition)) {
+  if (ShouldForgetOpenersForBaseTransition(
+          ui::PageTransitionStripQualifier(transition))) {
     // Don't forget the openers if this tab is a New Tab page opened at the
     // end of the TabStrip (e.g. by pressing Ctrl+T). Give the user one
     // navigation of one of these transition types before resetting the
