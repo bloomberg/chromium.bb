@@ -33,6 +33,7 @@ class CustomTabToolbarAnimationDelegate {
     private static final int CUSTOM_TAB_TOOLBAR_FADE_DURATION_MS = 150;
 
     private final View mSecurityButton;
+    private final View mTitleUrlContainer;
     private final AnimatorSet mSecurityButtonShowAnimator;
     private final AnimatorSet mSecurityButtonHideAnimator;
 
@@ -46,6 +47,7 @@ class CustomTabToolbarAnimationDelegate {
      */
     CustomTabToolbarAnimationDelegate(View securityButton, final View titleUrlContainer) {
         mSecurityButton = securityButton;
+        mTitleUrlContainer = titleUrlContainer;
 
         mSecurityButtonShowAnimator = new AnimatorSet();
         int securityButtonWidth = securityButton.getResources()
@@ -155,22 +157,25 @@ class CustomTabToolbarAnimationDelegate {
     }
 
     /**
-     * Starts the animation to show the security button. Will do nothing if the button is already
-     * visible.
+     * Starts the animation to show the security button.
      */
     void showSecurityButton() {
-        if (mSecurityButton.getVisibility() == View.VISIBLE) return;
-        if (mSecurityButtonShowAnimator.isRunning()) mSecurityButtonShowAnimator.cancel();
+        if (mSecurityButtonShowAnimator.isStarted()) return;
         mSecurityButtonShowAnimator.start();
     }
 
     /**
-     * Starts the animation to hide the security button. Will do nothing if the button is not
-     * visible.
+     * Starts the animation to hide the security button.
      */
     void hideSecurityButton() {
-        if (mSecurityButton.getVisibility() == View.GONE) return;
-        if (mSecurityButtonHideAnimator.isRunning()) return;
+        // An optimization for the case that show and hide are called almost at the same time.
+        if (mSecurityButtonShowAnimator.isStarted()
+                && mSecurityButton.getVisibility() == View.GONE) {
+            mSecurityButtonShowAnimator.cancel();
+            mTitleUrlContainer.setTranslationX(0);
+            return;
+        }
+        if (mSecurityButtonHideAnimator.isStarted()) return;
         mSecurityButtonHideAnimator.start();
     }
 }
