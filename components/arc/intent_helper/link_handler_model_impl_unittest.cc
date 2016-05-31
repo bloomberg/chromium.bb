@@ -113,8 +113,8 @@ TEST(LinkHandlerModelImplTest, TestRewriteUrlTooLong) {
       "https%3A%2F%2Fwww.chromium.org%2F";  // 33 characters
   const int kMaxValueLen = 2048;
 
-  // Check that the rewriter works as usual when the input is less than 1024
-  // characters.
+  // Check that the rewriter works as usual when the input is less than
+  // |kMaxValueLen| characters.
   std::string path = std::string(kMaxValueLen - 34, 'a');
   GURL original(base + path);
   GURL rewritten = Rewrite(original);
