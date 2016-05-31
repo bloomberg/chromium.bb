@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "components/offline_pages/background/offliner_factory.h"
 #include "components/offline_pages/background/offliner_policy.h"
+#include "components/offline_pages/background/request_picker.h"
 #include "components/offline_pages/background/save_page_request.h"
 #include "components/offline_pages/background/scheduler.h"
 #include "components/offline_pages/offline_page_item.h"
@@ -23,8 +25,10 @@ RequestCoordinator::RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
       factory_(std::move(factory)),
       queue_(std::move(queue)),
       scheduler_(std::move(scheduler)),
-      last_offlining_status_(Offliner::RequestStatus::UNKNOWN) {
+      last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
+      weak_ptr_factory_(this) {
   DCHECK(policy_ != nullptr);
+  picker_.reset(new RequestPicker(queue_.get()));
 }
 
 RequestCoordinator::~RequestCoordinator() {}
@@ -44,12 +48,11 @@ bool RequestCoordinator::SavePageLater(
   // Put the request on the request queue.
   queue_->AddRequest(request,
                      base::Bind(&RequestCoordinator::AddRequestResultCallback,
-                                AsWeakPtr()));
+                                weak_ptr_factory_.GetWeakPtr()));
   // TODO(petewil): Do I need to persist the request in case the add fails?
 
-  // TODO(petewil): Eventually we will wait for the StartProcessing callback,
-  // but for now just kick start the request so we can test the wiring.
-  SendRequestToOffliner(request);
+  // TODO(petewil): Make a new chromium command line switch to send the request
+  // immediately for testing.  It should call SendRequestToOffliner()
 
   return true;
 }
@@ -57,7 +60,6 @@ bool RequestCoordinator::SavePageLater(
 void RequestCoordinator::AddRequestResultCallback(
     RequestQueue::AddRequestResult result,
     const SavePageRequest& request) {
-  DVLOG(2) << __FUNCTION__;
 
   // Inform the scheduler that we have an outstanding task.
   // TODO(petewil): Define proper TriggerConditions and set them.
@@ -65,8 +67,28 @@ void RequestCoordinator::AddRequestResultCallback(
   scheduler_->Schedule(conditions);
 }
 
+void RequestCoordinator::RequestPicked(const SavePageRequest& request) {
+  // Send the request on to the offliner.
+  SendRequestToOffliner(request);
+}
+
+void RequestCoordinator::RequestQueueEmpty() {
+  // TODO(petewil): return to the BackgroundScheduler by calling
+  // ProcessingDoneCallback
+}
+
 bool RequestCoordinator::StartProcessing(
     const ProcessingDoneCallback& callback) {
+  // TODO(petewil): Check existing conditions (should be passed down from
+  // BackgroundTask)
+
+  // Choose a request to process that meets the available conditions.
+  // This is an async call, and returns right away.
+  picker_->ChooseNextRequest(
+      base::Bind(&RequestCoordinator::RequestPicked,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&RequestCoordinator::RequestQueueEmpty,
+                 weak_ptr_factory_.GetWeakPtr()));
   return false;
 }
 
@@ -83,9 +105,9 @@ void RequestCoordinator::SendRequestToOffliner(const SavePageRequest& request) {
   }
 
   // Start the load and save process in the offliner (Async).
-  offliner->LoadAndSave(
-      request,
-      base::Bind(&RequestCoordinator::OfflinerDoneCallback, AsWeakPtr()));
+  offliner->LoadAndSave(request,
+                        base::Bind(&RequestCoordinator::OfflinerDoneCallback,
+                                   weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
@@ -94,6 +116,11 @@ void RequestCoordinator::OfflinerDoneCallback(const SavePageRequest& request,
            << (status == Offliner::RequestStatus::SAVED) << ", "
            << __FUNCTION__;
   last_offlining_status_ = status;
+
+  // TODO(petewil): Check time budget.  Start a request if we have time, return
+  // to the scheduler if we are out of time.
+
+  // TODO(petewil): If the request succeeded, remove it from the Queue.
 }
 
 }  // namespace offline_pages

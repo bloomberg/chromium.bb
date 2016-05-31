@@ -21,16 +21,18 @@ struct ClientId;
 class OfflinerPolicy;
 class OfflinerFactory;
 class Offliner;
+class RequestPicker;
 class SavePageRequest;
 class Scheduler;
 
 // Coordinates queueing and processing save page later requests.
-class RequestCoordinator :
-    public KeyedService,
-    public base::SupportsWeakPtr<RequestCoordinator>  {
+class RequestCoordinator : public KeyedService {
  public:
   // Callback to report when the processing of a triggered task is complete.
   typedef base::Callback<void()> ProcessingDoneCallback;
+  typedef base::Callback<void(const SavePageRequest& request)>
+      RequestPickedCallback;
+  typedef base::Callback<void()> RequestQueueEmptyCallback;
 
   RequestCoordinator(std::unique_ptr<OfflinerPolicy> policy,
                      std::unique_ptr<OfflinerFactory> factory,
@@ -69,6 +71,12 @@ class RequestCoordinator :
   void AddRequestResultCallback(RequestQueue::AddRequestResult result,
                                 const SavePageRequest& request);
 
+  // Callback from the request picker when it has chosen our next request.
+  void RequestPicked(const SavePageRequest& request);
+
+  // Callback from the request picker when no more requests are in the queue.
+  void RequestQueueEmpty();
+
   void SendRequestToOffliner(const SavePageRequest& request);
 
   void OfflinerDoneCallback(const SavePageRequest& request,
@@ -84,6 +92,10 @@ class RequestCoordinator :
   std::unique_ptr<Scheduler> scheduler_;
   // Status of the most recent offlining.
   Offliner::RequestStatus last_offlining_status_;
+  // Class to choose which request to schedule next
+  std::unique_ptr<RequestPicker> picker_;
+  // Allows us to pass a weak pointer to callbacks.
+  base::WeakPtrFactory<RequestCoordinator> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestCoordinator);
 };

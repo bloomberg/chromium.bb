@@ -64,6 +64,8 @@
         'offline_pages/background/offliner_policy.h',
         'offline_pages/background/request_coordinator.cc',
         'offline_pages/background/request_coordinator.h',
+        'offline_pages/background/request_picker.cc',
+        'offline_pages/background/request_picker.h',
         'offline_pages/background/request_queue.cc',
         'offline_pages/background/request_queue.h',
         'offline_pages/background/request_queue_in_memory_store.cc',

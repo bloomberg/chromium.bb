@@ -423,6 +423,7 @@
     ],
     'offline_pages_background_unittest_sources': [
       'offline_pages/background/request_coordinator_unittest.cc',
+      'offline_pages/background/request_picker_unittest.cc',
       'offline_pages/background/request_queue_in_memory_store_unittest.cc',
       'offline_pages/background/request_queue_unittest.cc',
       'offline_pages/background/save_page_request_unittest.cc',

@@ -172,12 +172,6 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   SchedulerStub* scheduler_stub = reinterpret_cast<SchedulerStub*>(
       coordinator()->scheduler());
   EXPECT_TRUE(scheduler_stub->schedule_called());
-
-  // Check that the offliner callback got a response.
-  EXPECT_EQ(Offliner::RequestStatus::SAVED,
-            coordinator()->last_offlining_status());
-
-  // TODO(petewil): Expect that the scheduler got notified.
 }
 
 }  // namespace offline_pages
