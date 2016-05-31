@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Aktiver mobildata</translation>
 <translation id="1621499497873603021">Gjenværende tid til batteriet er tomt – <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-enhet</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> igjen</translation>
 <translation id="1723752762323179280">Avslutter økten</translation>
 <translation id="1747827819627189109">Skjermtastaturet er aktivert</translation>
 <translation id="1812696562331527143">Inndatametoden din er endret til <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tredjepart<ph name="END_LINK" />).
@@ -117,6 +118,7 @@ Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="4421231901400348175">Deler kontroll av skjermen med <ph name="HELPER_NAME" /> via fjernhjelp.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4527045527269911712">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> til batteriet er fulladet</translation>
 <translation id="4544944664594876241">Snarveien for å låse skjermen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">søk</translation>
 <translation id="4804818685124855865">Koble fra</translation>
@@ -224,6 +226,7 @@ Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8517041960877371778">Det kan hende at din <ph name="DEVICE_TYPE" /> ikke lader når den er slått på.</translation>
 <translation id="8528322925433439945">Mobil</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> igjen</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Laveffektslader er tilkoblet</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

@@ -510,6 +510,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo bude dodržané len v prípade, ak je povolené pravidlo „DefaultSearchProviderEnabled“.</translation>
 <translation id="2682225790874070339">Zakázať v aplikácii Súbory systému <ph name="PRODUCT_OS_NAME" /> službu Disk Google</translation>
 <translation id="268577405881275241">Povoliť funkciu servera proxy na kompresiu údajov</translation>
+<translation id="2731627323327011390">Zakázať použitie certifikátov systému <ph name="PRODUCT_OS_NAME" /> v aplikáciách ARC</translation>
 <translation id="2742843273354638707">Skryje na stránke Nová karta a v spúšťači systému <ph name="PRODUCT_OS_NAME" /> aplikáciu Internetový obchod Chrome a odkaz na pätu stránky.
 
       Ak je pravidlo nastavené na hodnotu true, ikony sa skryjú.
@@ -1837,6 +1838,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
           Ak toto pravidlo nastavíte, používatelia ho budú môcť dočasne prepísať povolením alebo zakázaním lupy obrazovky. Voľba používateľa však nie je trvalá a predvolené nastavenie sa obnoví zakaždým, keď sa znova zobrazí prihlasovacia obrazovka alebo používateľ bude na prihlasovacej obrazovke nečinný po dobu jednej minúty.
 
           Ak toto pravidlo ponecháte nenastavené, bude lupa obrazovky pri prvom zobrazení prihlasovacej obrazovky zakázaná. Používatelia budú môcť lupu obrazovky kedykoľvek povoliť alebo zakázať a jej stav na prihlasovacej obrazovke sa zachová aj po zmene používateľov.</translation>
+<translation id="7249828445670652637">Povoliť certifikáty CA systému <ph name="PRODUCT_OS_NAME" /> v aplikáciách ARC</translation>
 <translation id="7258823566580374486">Povoliť blokovanie hostiteľov so vzdialeným prístupom</translation>
 <translation id="7260277299188117560">Protokol p2p na automatické aktualizácie je povolený</translation>
 <translation id="7267809745244694722">Zmena predvoleného správania klávesov pre médiá na funkčné klávesy</translation>
@@ -1956,6 +1958,17 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="7715711044277116530">Percento predĺženia oneskorenia stmavenia obrazovky v režime prezentácie</translation>
 <translation id="7717938661004793600">Konfigurujte funkcie zjednodušenia prístupu v systéme <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Určuje, či sa budú spoločnosti Google spätne nahlasovať metriky používania. Ak je pravidlo nastavené na hodnotu true, systém <ph name="PRODUCT_OS_NAME" /> bude nahlasovať metriky používania. Ak nie je nakonfigurované alebo je nastavené na hodnotu false, nahlasovanie metrík bude zakázané.</translation>
+<translation id="7723433108978650103">Blokuje prístup k webovým adresám uvedeným v zozname.
+
+      Toto pravidlo bráni používateľom načítať webové stránky zo zoznamu zakázaných webových adries. Zoznam zakázaných položiek obsahuje vzory webových adries. Tie určujú, ktoré webové adresy budú zakázané.
+
+      Vzor webovej adresy musí byť formátovaný v súlade s pokynmi na adrese https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Výnimky môžu byť definované v pravidle zoznamu povolených webových adries. Počet záznamov v týchto pravidlách je obmedzený na 1 000. Všetky ďalšie záznamy sa budú ignorovať.
+
+      Upozorňujeme, že sa neodporúča blokovať interné webové adresy „chrome://*“, pretože by to mohlo viesť k neočakávaným chybám.
+
+      Ak toto pravidlo nebude nastavené, nebude v prehliadači zakázaná žiadna webová adresa.</translation>
 <translation id="7749402620209366169">Povoľuje dvojfázové overenie totožnosti pre hostiteľov vzdialeného prístupu namiesto kódu PIN zadaného používateľom.
 
           Ak je toto nastavenie povolené, používatelia musia pri pristupovaní k hostiteľovi zadať platný dvojfázový kód.
@@ -2026,6 +2039,9 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
       Ak je toto pravidlo nenastavené, bude sa považovať hodnota TimezoneAutomaticDetectionUsersDecide za nastavenú.
 
       Ak je nastavené pravidlo SystemTimezone, toto pravidlo sa prepíše. V tomto prípade bude automatické zisťovanie časového pásma úplne zakázané.</translation>
+<translation id="787125417158068494">Ak je pravidlo nastavené na hodnotu SyncDisabled alebo nie je nakonfigurované, certifikáty systému <ph name="PRODUCT_OS_NAME" /> nie sú pre aplikácie ARC k dispozícii.
+
+      Ak je nastavené na hodnotu CopyCaCerts, všetky certifikáty CA inštalované s konfiguráciou ONC a parametrom <ph name="WEB_TRUSTED_BIT" /> sú pre aplikácie ARC k dispozícii.</translation>
 <translation id="7882585827992171421">Toto pravidlo je aktívne iba v režime určenom pre predaj.
 
       Určuje identifikátor rozšírenia, ktoré sa má použiť ako šetrič obrazovky na prihlasovacej obrazovke. Rozšírenie musí byť súčasťou balíka AppPack, ktorý bol pre túto doménu nakonfigurovaný v rámci pravidla DeviceAppPack.</translation>
@@ -2041,6 +2057,7 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Určuje, či sa pri aktualizovaní OS má použiť protokol p2p. Ak je táto možnosť nastavená na hodnotu True, zariadenia budú zdieľať aktualizácie a pokúsia sa ich sťahovať v sieti LAN, čím potenciálne znížia využitie a preťaženie rýchlosti pripojenia. Ak sa aktualizácie nedajú vykonať v sieti LAN, zariadenie ich prevezme z aktualizačného servera. Ak je táto možnosť nastavená na hodnotu False alebo nie je nakonfigurovaná, protokol p2p sa nepoužije.</translation>
 <translation id="7933141401888114454">Povoliť vytváranie kontrolovaných používateľov</translation>
+<translation id="793473937901685727">Nastaviť dostupnosť certifikátov pre aplikácie ARC</translation>
 <translation id="7936098023732125869">Aktivuje použitie predvoleného poskytovateľa vyhľadávania.
 
           Ak povolíte toto nastavenie a používateľ zadá do všeobecného poľa niečo iné ako webovú adresu, uskutoční sa predvolené vyhľadávanie.

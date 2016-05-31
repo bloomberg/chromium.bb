@@ -515,6 +515,7 @@
           See reegel kehtivad vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
 <translation id="2682225790874070339">Keelab Drive'i operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduses Failid</translation>
 <translation id="268577405881275241">Andmete tihendamise puhverserveri funktsiooni lubamine</translation>
+<translation id="2731627323327011390">Keela ARC-rakenduste jaoks operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> sertifikaatide kasutamine</translation>
 <translation id="2742843273354638707">Peitke Chrome'i veebipoe rakendus ja jaluse link uuel vahelehel ja operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> rakenduse käivitajas.
 
       Kui selle reegli olekuks määratakse Tõene, siis ikoonid peidetakse.
@@ -1834,6 +1835,7 @@
           Kui määrate reegli, saavad kasutajad selle ajutiselt alistada, lubades või keelates ekraaniluubi. Kasutaja valik pole siiski püsiv ja vaikeväärtus taastatakse, kui kuvatakse uuesti sisselogimisekraan või kui kasutaja jääb sisselogimisekraanile minutiks tegevuseta olekusse.
 
           Kui jätate reegli määramata, on ekraaniluup sisselogimisekraani esmakuvamisel keelatud. Kasutajad võivad ekraaniluubi igal ajal lubada või keelata ja selle olek on sisselogimisekraanil kasutajati püsiv.</translation>
+<translation id="7249828445670652637">Luba ARC-rakenduste jaoks operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> CA-sertifikaatide kasutamine</translation>
 <translation id="7258823566580374486">Kaugjuurdepääsu hostide varjamise lubamine</translation>
 <translation id="7260277299188117560">Lubatud p2p automaatne värskendamine</translation>
 <translation id="7267809745244694722">Meediaklahvid on vaikimisi funktsiooniklahvid</translation>
@@ -1953,6 +1955,17 @@
 <translation id="7715711044277116530">Esitlusrežiimis ekraani tumenduse viivituse skaleerimise määr protsentides</translation>
 <translation id="7717938661004793600">Seadistage teenuse <ph name="PRODUCT_OS_NAME" /> juurdepääsufunktsioonid.</translation>
 <translation id="7719251660743813569">Määrab, kas kasutusmõõdikute tulemused saadetakse Google'ile. Selle reegli lubamisel teatab <ph name="PRODUCT_OS_NAME" /> kasutusmõõdikute tulemusi. Kui jätate selle reegli seadistamata või keelate, siis keelatakse mõõdikute aruandlus.</translation>
+<translation id="7723433108978650103">Blokeerib juurdepääsu loetletud URL-idele.
+
+      See reegel keelab kasutajal laadida keelatud URL-ide loendis olevaid veebilehti. Keelatute loendis on loend URL-i mustritest, milles määratakse, millised URL-id keelatute loendisse lisatakse.
+
+      URL-i muster peab olema vormindatud saidil https://www.chromium.org/administrators/url-blacklist-filter-format olevate juhiste järgi.
+
+      Erandid saab määrata lubatud URL-ide loendi reegliga. Need reeglid kehtivad vaid 1000 kirje puhul, järgnevaid kirjeid eiratakse.
+
+      Pange tähele, et me ei soovita blokeerida sisemisi URL-e „chrome://*”, kuna see võib tekitada ootamatuid vigu.
+
+      Kui seda reeglit ei määrata, ei lisata brauseris keelatute loendisse ühtegi URL-i.</translation>
 <translation id="7749402620209366169">Lubab kaugjuurdepääsu hostide autentimiseks kasutaja määratud PIN-koodi asemel kahetasandilise autentimise.
 
           Kui seade on lubatud, siis peavad kasutajad hosti pääsemiseks esitama kehtiva kahetasandilise koodi.
@@ -2021,6 +2034,9 @@
       Kui reegel on määramata, käitub see, nagu oleks valitud seade TimezoneAutomaticDetectionUsersDecide.
 
       Kui reegel SystemTimezone on määratud, alistab see selle reegli. Sel juhul keelatakse ajavööndi automaatne tuvastamine täielikult.</translation>
+<translation id="787125417158068494">Kui määratud on reegel SyncDisabled või seda ei määrata, pole operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> sertifikaadid ARC-rakenduste jaoks saadaval.
+
+      Kui reegliks on määratud CopyCaCerts, on kõik üksusega <ph name="WEB_TRUSTED_BIT" /> ONC installitud CA-sertifikaadid ARC-rakenduste jaoks saadaval.</translation>
 <translation id="7882585827992171421">Reegel on aktiivne ainult jaerežiimis.
 
       Määrab laienduse ID, mida kasutatakse sisselogimisekraani ekraanisäästjana. Laiendus peab kuuluma AppPacki, mis on seadistatud domeenile DeviceAppPack-reegliga.</translation>
@@ -2036,6 +2052,7 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Määrab, kas OS-i värskendamise lastide jaoks kasutatakse p2p-võrgustikku. Kui väärtuseks on seatud Tõene, siis seade jagab ja proovib tarbida värskendamise laste LAN-is, vähendades potentsiaalselt Interneti-ribalaiuse kasutamist ja ummistumist. Kui värskendamise last pole LAN-is saadaval, naaseb seade allalaadimise juurde värskendusserverist. Kui väärtuseks on seatud Vale või see pole määratud, siis p2p-võrgustikku ei kasutata.</translation>
 <translation id="7933141401888114454">Järelevalvega kasutajate loomise lubamine</translation>
+<translation id="793473937901685727">Sertifikaatide saadavuse määramine ARC-rakenduste jaoks</translation>
 <translation id="7936098023732125869">Lubab vaikeotsingupakkuja kasutamise.
 
           Kui selle seade lubate, tehakse vaikeotsing, kui kasutaja sisestab omnikastikesse teksti, mis pole URL.

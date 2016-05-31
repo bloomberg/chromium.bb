@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Poslužitelj web-stranice možda je preopterećen ili je u tijeku održavanje.
         Da ne bi došlo do prevelikog prometa i pogoršanja situacije,
         zahtjevi za taj URL trenutačno se ne odobravaju.</translation>
-<translation id="1066332784716773939">Dijagnosticiraj pogreške...</translation>
 <translation id="106701514854093668">Oznake radne površine</translation>
 <translation id="1080116354587839789">Prilagođavanje širini</translation>
 <translation id="1090046120949329821">Primljeno je više zasebnih zaglavlja rasporeda sadržaja. To nije dopušteno
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Departman</translation>
 <translation id="2113977810652731515">Kartica</translation>
 <translation id="2114841414352855701">Zanemareno jer je nadjačano pravilom <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">Za pretraživanja na računalu upotrebljava se zadana tražilica (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Lokalni klijent</translation>
 <translation id="213826338245044447">Mobilne oznake</translation>
 <translation id="2148716181193084225">Danas</translation>
 <translation id="2149973817440762519">Uredi oznaku</translation>
-<translation id="2153530520610387456">Idite na
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Upravljačka ploča &gt; Mreža i internet &gt; Centar za mreže i zajedničko korištenje &gt; Otklanjanje poteškoća (pri dnu) &gt; Internetske veze.
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Potpuni administratorski pristup</translation>
 <translation id="2166378884831602661">Web-lokacija ne može pružiti sigurnu vezu</translation>
 <translation id="2171101176734966184">Pokušali ste doseći domenu <ph name="DOMAIN" />, ali poslužitelj je predstavio certifikat potpisan slabim algoritmom potpisa. Znači da su sigurnosne vjerodajnice koje je poslužitelj predstavio možda krivotvorene, a poslužitelj možda nije poslužitelj koji očekujete (možda ste u komunikaciji s napadačem).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Ta je vrijednost obustavljena za to pravilo.</translation>
 <translation id="2262243747453050782">HTTP pogreška</translation>
 <translation id="2279770628980885996">Neočekivano stanje pojavilo se dok je poslužitelj pokušavao ispuniti zahtjev.</translation>
-<translation id="2282186295770469712">Upravljaj postavkama pretraživanja</translation>
 <translation id="2282872951544483773">Nedostupni eksperimenti</translation>
 <translation id="2292556288342944218">Internetski je pristup blokiran</translation>
 <translation id="229702904922032456">Korijenski ili posrednički certifikat je istekao.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">Možete onemogućiti sve proxyje konfigurirane za vezu sa stranice postavki.</translation>
 <translation id="2950186680359523359">Poslužitelj je prekinuo vezu, a nije poslao nikakve podatke.</translation>
 <translation id="2955913368246107853">Zatvori traku za traženje</translation>
-<translation id="2957518517523241247">Idite na
-          <ph name="BEGIN_BOLD" />
-          Start &gt; Upravljačka ploča &gt; Mrežne veze &gt; Čarobnjak za novu vezu
-          <ph name="END_BOLD" />
-          da biste testirali vezu.</translation>
 <translation id="2958431318199492670">Mrežna konfiguracija nije u skladu sa standardima ONC. Dijelove konfiguracije nije moguće uvesti.</translation>
 <translation id="2969319727213777354">Za uspostavu sigurne veze sat mora biti točno postavljen jer certifikati pomoću kojih se web-lokacije međusobno identificiraju vrijede samo određeno vrijeme. Budući da vaš sat nije točan, Chrome ne može potvrditi te certifikate.</translation>
 <translation id="2972581237482394796">&amp;Vrati poništeno</translation>
@@ -297,7 +285,6 @@
 <translation id="3885155851504623709">Župa</translation>
 <translation id="3901925938762663762">Kartica je istekla</translation>
 <translation id="3903912596042358459">Poslužitelj je odbio ispuniti zahtjev.</translation>
-<translation id="3930850196944737149">Vaš je uređaj van mreže.</translation>
 <translation id="3934680773876859118">Učitavanje dokumenta PDF nije uspjelo</translation>
 <translation id="3950924596163729246">Nije moguće pristupiti mreži.</translation>
 <translation id="3963721102035795474">Način čitača</translation>
@@ -465,7 +452,6 @@
 <translation id="6040143037577758943">Zatvori</translation>
 <translation id="604124094241169006">Automatski</translation>
 <translation id="6042308850641462728">Više</translation>
-<translation id="6044718745395562198">Računalo nije povezano s internetom.</translation>
 <translation id="6060685159320643512">Oprez, ovi eksperimenti mogu ugristi</translation>
 <translation id="6093795393556121384">Kartica je potvrđena</translation>
 <translation id="6146055958333702838">Provjerite kabele i ponovo pokrenite usmjerivače, modeme ili druge mrežne
@@ -532,11 +518,6 @@
 <translation id="6830600606572693159">Web-stranica na <ph name="URL" /> trenutno nije dostupna.  Možda je preopterećena ili isključena zbog održavanja.</translation>
 <translation id="6831043979455480757">Prevedi</translation>
 <translation id="6839929833149231406">Područje</translation>
-<translation id="6851123334996048122">Idite na
-      <ph name="BEGIN_BOLD" />
-      Aplikacije &gt; Postavke sustava &gt; Mreža &gt; Pomoć
-      <ph name="END_BOLD" />
-      da biste testirali vezu.</translation>
 <translation id="6874604403660855544">&amp;Ponovi dodavanje</translation>
 <translation id="6891596781022320156">Razina pravila nije podržana.</translation>
 <translation id="6897140037006041989">Korisnički agent</translation>
@@ -618,9 +599,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Nema upravitelja</translation>
 <translation id="7758069387465995638">Vezu možda blokira vatrozid ili antivirusni softver.</translation>
-<translation id="7760914272566804712">Problem možete pokušati dijagnosticirati na sljedeći način:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Certifikat poslužitelja ne podudara se s URL-om.</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="778579833039460630">Nema primljenih podataka</translation>
@@ -660,14 +638,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="8241707690549784388">Stranica koju ste tražili koristila je podatke koje ste unijeli. Vraćanje na tu stranicu može dovesti do ponavljanja poduzete radnje. Želite li nastaviti?</translation>
 <translation id="8249320324621329438">Zadnje dohvaćanje:</translation>
 <translation id="8261506727792406068">Izbriši</translation>
-<translation id="8266098793847448402">Kliknite
-      <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
-      kliknite
-      <ph name="BEGIN_BOLD" />Pokreni<ph name="END_BOLD" />,
-      upišite
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
-      a zatim kliknite
-      <ph name="BEGIN_BOLD" />U redu<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Vaš zahtjev za pristup toj web-lokaciji poslan je korisniku <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Obratite se svojem mrežnom administratoru ako niste sigurni što to znači.</translation>
 <translation id="8293206222192510085">Dodaj oznaku</translation>

@@ -7,7 +7,6 @@
 <translation id="1055184225775184556">&amp;Vrátit přidání zpět</translation>
 <translation id="10614374240317010">Nikdy se neukládají</translation>
 <translation id="1064422015032085147">Server hostující webovou stránku je pravděpodobně přetížen nebo probíhá jeho údržba. Aby bylo zabráněno generování nadměrného provozu, který by situaci dále zhoršil, jsou požadavky na tuto adresu URL dočasně zakázány.</translation>
-<translation id="1066332784716773939">Diagnostikovat chyby...</translation>
 <translation id="106701514854093668">Záložky v PC</translation>
 <translation id="1080116354587839789">Přizpůsobit na šířku</translation>
 <translation id="1090046120949329821">Bylo přijato několik různých záhlaví Content-Disposition. Toto je z důvodu ochrany proti útokům rozdělujícím odpověď HTTP zakázáno.</translation>
@@ -101,12 +100,10 @@
 <translation id="2096368010154057602">Oddělení</translation>
 <translation id="2113977810652731515">Karta</translation>
 <translation id="2114841414352855701">Zásada ignorována, protože bylo přepsána zásadou <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">Vyhledávání na ploše používá váš výchozí vyhledávač (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Mobilní záložky</translation>
 <translation id="2148716181193084225">Dnes</translation>
 <translation id="2149973817440762519">Upravit záložku</translation>
-<translation id="2153530520610387456">Přejděte na <ph name="BEGIN_BOLD" />Start &gt; Ovládací panely &gt; Síť a Internet &gt; Centrum síťových připojení a sdílení &gt; Odstranit potíže (ve spodní části) &gt; Připojení k Internetu.<ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Úplný přístup administrátora</translation>
 <translation id="2166378884831602661">Tento web nemůže poskytnout zabezpečené připojení</translation>
 <translation id="2171101176734966184">Pokusili jste se přejít na web <ph name="DOMAIN" />, server však předložil certifikát podepsaný slabým algoritmem. To znamená, že bezpečnostní pověření předložená serverem mohou být falešná a může se jednat o úplně jiný server, než předpokládáte (můžete komunikovat s útočníkem).</translation>
@@ -118,7 +115,6 @@
 <translation id="225207911366869382">Tato hodnota již pro tuto zásadu není podporována.</translation>
 <translation id="2262243747453050782">Chyba protokolu HTTP</translation>
 <translation id="2279770628980885996">Při pokusu o splnění požadavku došlo na serveru k neočekávané situaci.</translation>
-<translation id="2282186295770469712">Spravovat nastavení vyhledávání</translation>
 <translation id="2282872951544483773">Nedostupné experimenty</translation>
 <translation id="2292556288342944218">Vaše připojení k internetu je blokováno</translation>
 <translation id="229702904922032456">Platnost kořenového nebo zprostředkujícího certifikátu vypršela.</translation>
@@ -184,7 +180,6 @@
 <translation id="2948083400971632585">Libovolné servery proxy nakonfigurované pro připojení můžete zakázat na stránce Nastavení.</translation>
 <translation id="2950186680359523359">Server ukončil spojení, aniž by odeslal jakákoli data.</translation>
 <translation id="2955913368246107853">Zavřít vyhledávací lištu</translation>
-<translation id="2957518517523241247">Otestujte připojení pomocí nabídky <ph name="BEGIN_BOLD" />Start &gt; Ovládací panely &gt; Síťová připojení &gt; Průvodce novým připojením<ph name="END_BOLD" />.</translation>
 <translation id="2958431318199492670">Konfigurace sítě nesplňuje standard ONC. Může se stát, že některé části konfigurace nebudou importovány.</translation>
 <translation id="2969319727213777354">Aby bylo možné navázat zabezpečené spojení, musejí být správně nastaveny hodiny. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro konkrétní období. Jelikož hodiny v zařízení nejsou nastaveny správně, Google Chrome tyto certifikáty nemůže ověřit.</translation>
 <translation id="2972581237482394796">&amp;Opakovat</translation>
@@ -284,7 +279,6 @@
 <translation id="3885155851504623709">Okrsek</translation>
 <translation id="3901925938762663762">Karta vypršela</translation>
 <translation id="3903912596042358459">Server odmítl požadavku vyhovět.</translation>
-<translation id="3930850196944737149">Vaše zařízení je offline.</translation>
 <translation id="3934680773876859118">Načítání dokumentu PDF se nezdařilo.</translation>
 <translation id="3950924596163729246">Nelze získat přístup k síti.</translation>
 <translation id="3963721102035795474">Režim čtečky</translation>
@@ -452,7 +446,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6040143037577758943">Zavřít</translation>
 <translation id="604124094241169006">Automaticky</translation>
 <translation id="6042308850641462728">Více</translation>
-<translation id="6044718745395562198">Váš počítač je offline.</translation>
 <translation id="6060685159320643512">Pozor, tyto experimenty mohou skončit všelijak.</translation>
 <translation id="6093795393556121384">Vaše karta je ověřena</translation>
 <translation id="6146055958333702838">Zkontrolujte všechny kabely a restartujte všechny směrovače, modemy a další síťová zařízení, která používáte.</translation>
@@ -516,7 +509,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6830600606572693159">Stránky na adrese <ph name="URL" /> nejsou v tuto chvíli k dispozici. Důvodem může být přetížení nebo provádění údržby.</translation>
 <translation id="6831043979455480757">Přeložit</translation>
 <translation id="6839929833149231406">Region</translation>
-<translation id="6851123334996048122">Otestovat připojení můžete v nabídce <ph name="BEGIN_BOLD" />Aplikace &gt; Nastavení systému &gt; Síť &gt; Průvodce<ph name="END_BOLD" />.</translation>
 <translation id="6874604403660855544">&amp;Opakovat přidání</translation>
 <translation id="6891596781022320156">Úroveň zásady není podporována.</translation>
 <translation id="6897140037006041989">User agent</translation>
@@ -598,7 +590,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Nespravováno</translation>
 <translation id="7758069387465995638">Připojení mohlo být zablokováno firewallem nebo antivirovým softwarem.</translation>
-<translation id="7760914272566804712">Problém můžete zkusit diagnostikovat pomocí následujících kroků:<ph name="LINE_BREAK" /><ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Certifikát serveru neodpovídá adrese URL.</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="778579833039460630">Nebyla přijata žádná data</translation>
@@ -638,7 +629,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8241707690549784388">Stránka, kterou hledáte, používala vámi zadané informace. Návrat na tuto stránku by mohl způsobit, že akce, kterou jste provedli, bude opakována. Přejete si pokračovat?</translation>
 <translation id="8249320324621329438">Naposledy načteno:</translation>
 <translation id="8261506727792406068">Vymazat</translation>
-<translation id="8266098793847448402">Klikněte na <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" /> a poté na <ph name="BEGIN_BOLD" />Spustit<ph name="END_BOLD" />. Zadejte příkaz <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" /> a klikněte na <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Váš požadavek na přístup k tomuto webu byl odeslán uživateli <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Pokud nevíte, co dělat, obraťte se na svého správce sítě.</translation>
 <translation id="8293206222192510085">Přidat záložku</translation>

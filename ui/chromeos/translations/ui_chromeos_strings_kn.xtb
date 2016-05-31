@@ -7,7 +7,7 @@
 <translation id="1661867754829461514">PIN ಕಾಣೆಯಾಗಿದೆ</translation>
 <translation id="1773212559869067373">ದೃಢೀಕರಣ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಸ್ಥಳೀಯವಾಗಿ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ</translation>
 <translation id="1829129547161959350">ಪೆಂಗ್ವಿನ್</translation>
-<translation id="1850504506766569011">Wi-Fi ಆಫ್ ಮಾಡಲಾಗಿದೆ.</translation>
+<translation id="1850504506766569011">ವೈ-ಫೈ ಆಫ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="2288278176040912387">ರೆಕಾರ್ಡ್ ಪ್ಲೇಯರ್</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2544853746127077729">ದೃಢೀಕರಣ ಪ್ರಮಾಣಪತ್ರವನ್ನು ನೆಟ್‌ವರ್ಕ್‌ನಿಂದ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ</translation>
@@ -30,13 +30,13 @@
 <translation id="4326192123064055915">ಕಾಫಿ</translation>
 <translation id="4387004326333427325">ದೃಢೀಕರಣ ಪ್ರಮಾಣಪತ್ರವನ್ನು ರಿಮೋಟ್ ಆಗಿ ತಿರಸ್ಕರಿಸಲಾಗಿದೆ</translation>
 <translation id="4442424173763614572">DNS ಲುಕಪ್ ವಿಫಲವಾಗಿದೆ</translation>
-<translation id="4448844063988177157">Wi-Fi ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗಾಗಿ ಹುಡುಕಲಾಗುತ್ತಿದೆ...</translation>
+<translation id="4448844063988177157">ವೈ-ಫೈ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗಾಗಿ ಹುಡುಕಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4479639480957787382">ಈಥರ್ನೆಟ್</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="4508265954913339219">ಸಕ್ರಿಯಗೊಳಿಸುವಿಕೆ ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="4559767610552730302">ಬೊಕೆ</translation>
 <translation id="4935975195727477204">ಗಜಾನಿಯಾ ಹೂ</translation>
-<translation id="5045550434625856497">ತಪ್ಪಾದ ಪಾಸ್‌ವರ್ಡ್</translation>
+<translation id="5045550434625856497">ತಪ್ಪು ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="5097002363526479830">'<ph name="NAME" />' ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಸಂಪರ್ಕಿಸಲು ವಿಫಲವಾಗಿದೆ: <ph name="DETAILS" /></translation>
 <translation id="515594325917491223">ಚದುರಂಗ</translation>
 <translation id="5257456363153333584">Dragonfly</translation>
@@ -67,7 +67,7 @@
 <translation id="8132793192354020517"><ph name="NAME" /> ಗೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ</translation>
 <translation id="8300849813060516376">OTASP ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="8372369524088641025">ಕೆಟ್ಟ WEP ಕೀ</translation>
-<translation id="8454013096329229812">Wi-Fi ಆನ್ ಮಾಡಲಾಗಿದೆ.</translation>
+<translation id="8454013096329229812">ವೈ-ಫೈ ಆನ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ಮರುಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8688591111840995413">ತಪ್ಪಾದ ಪಾಸ್‍ವರ್ಡ್</translation>
 <translation id="8714406895390098252">ಬೈಸಿಕಲ್</translation>

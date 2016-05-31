@@ -27,6 +27,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="1587223624401073077">Google Chrome inatumia kamera yako.</translation>
 <translation id="1619887657840448962">Ili kufanya Chrome salama zaidi, tumezima kiendelezi kinachofuata ambacho hakijaorodheshwa katika <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> na huenda kimeongezwa bila ridhaa yako.</translation>
 <translation id="163860049029591106">Anza kutumia Chrome OS</translation>
+<translation id="1653828314016431939">Sawa - Anzisha upya sasa</translation>
 <translation id="1682634494516646069">Google Chrome haiwezi kusoma na kuandika kwenye saraka yake ya data:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -74,6 +75,12 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="3080151273017101988">Endelea kuendesha programu zinazofanya kazi chini chini wakati Google Chrome imefungwa</translation>
 <translation id="3089968997497233615">Kuna toleo jipya na salama la Google Chrome.</translation>
 <translation id="3149510190863420837">Programu za Chrome</translation>
+<translation id="3251381707915721925">Ili uweke tovuti ambazo <ph name="NEW_PROFILE_NAME" /> anaweza kuona, unaweza kuweka vizuizi na mipangilio kwa kutembelea <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Usipobadilisha mipangilio chaguo-msingi <ph name="NEW_PROFILE_NAME" /> anaweza kuvinjari kila kitu kwenye wavuti.
+
+Ili uzuie <ph name="NEW_PROFILE_NAME" /> asifikie akaunti yako, hakikisha kuwa umefunga wasifu wako wakati hutumii Chrome. Ili ufunge wasifu wako, bofya jina lako la wasifu katika upande wa juu kulia mwa kivinjari, kisha uchague "Ondoka kwenye wasifu wa sasa."
+<ph name="BEGIN_LINK_2" />Pata maelezo zaidi<ph name="END_LINK_2" />
+
+Tafadhali angalia barua pepe yako katika <ph name="ACCOUNT_EMAIL" /> upate maagizo zaidi.</translation>
 <translation id="3282568296779691940">Ingia katika Chrome</translation>
 <translation id="3311976847535831054">Kompyuta hii haitapokea tena sasisho za Google Chrome za 32-bit. Tafadhali pata toleo jipya la Google Chrome la 64-bit.</translation>
 <translation id="3360895254066713204">Msaidizi wa Chrome</translation>
@@ -121,6 +128,7 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="4921569541910214635">Ungependa kushiriki kompyuta? Sasa unaweza kusanidi Chrome kama tu unavyoipenda.</translation>
 <translation id="4925019873400497719">Chrome ilithibitisha kuwa <ph name="ISSUER" /> ndiye mtoa cheti cha tovuti hii. Seva ilitoa maelezo ya Cheti cha Uwazi, lakini hayakuwa sahihi.</translation>
 <translation id="4953650215774548573">Weka Google Chrome iwe kivinjari chako chaguo-msingi</translation>
+<translation id="495931528404527476">Katika Chrome</translation>
 <translation id="4987308747895123092">Tafadhali funga madirisha yako yote ya Google Chrome (pamoja na yaliyo kwenye modi ya Windows) na ujaribu tena.</translation>
 <translation id="4990567037958725628">Kanari ya Google Chrome</translation>
 <translation id="5028489144783860647">Google Chrome haikuweza kusawazisha data yako. Tafadhali sasisha kauli siri yako ya Usawazishaji.</translation>
@@ -213,6 +221,7 @@ Google Chrome haiwezi kufufua mipangilio yako.</translation>
 <translation id="7808348361785373670">Ondoa kwenye Chrome...</translation>
 <translation id="7825851276765848807">Usanidi umeshindwa kwa sababu ya hitilafu isiyojulikana. Tafadhali pakua Google Chrome tena.</translation>
 <translation id="7890208801193284374">Kama unatumia kompyuta pamoja na wengine, marafiki na familia wanaweza kuvinjari tofauti na kusanidi Chrome jinsi wapendavyo.</translation>
+<translation id="795025003224538582">Usianzishe upya</translation>
 <translation id="8005540215158006229">Chrome inakaribia kuwa tayari.</translation>
 <translation id="8008534537613507642">Sakinisha Chrome Upya</translation>
 <translation id="8030318113982266900">Inasasisha kituo chako kwenda kituo cha <ph name="CHANNEL_NAME" />...</translation>

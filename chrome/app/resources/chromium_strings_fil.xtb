@@ -18,6 +18,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="151962892725702025">Hindi ma-sync ng Chromium OS ang iyong data dahil hindi available ang Pag-sync para sa iyong domain.</translation>
 <translation id="1559451348202814456">Maaaring hindi gumana nang maayos ang Chromium dahil hindi na ito sinusuportahan sa Mac OS X 10.6, 10.7 o 10.8.</translation>
 <translation id="1644918877723739397">Iiimbak ito ng Chromium gamit ang <ph name="SAVED_PASSWORD_LINK" /> at tatandaan ito sa susunod na pagkakataong kailanganin mo ito.</translation>
+<translation id="1653828314016431939">OK - I-restart ngayon</translation>
 <translation id="1668054258064581266">Pagkatapos alisin ang iyong account sa Chromium, maaaring kailangan mong i-reload ang mga nakabukas mong tab upang magkabisa.</translation>
 <translation id="1688750314291223739">I-set up ang Pag-sync upang i-save ang iyong personalized na mga tampok ng browser sa web at i-access ang mga iyon mula sa Chromium sa anumang computer.</translation>
 <translation id="1699664235656412242">Pakisara ang lahat ng window ng Chromium (kasama ang mga nasa mode na Windows 8) at subukang muli.</translation>
@@ -182,6 +183,12 @@ Hindi mabawi ng Chromium ang iyong mga setting.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Bagong window</translation>
 <translation id="734373864078049451">Makikita dito ang iyong web, mga bookmark at iba pang mga bagay-bagay sa Chromium.</translation>
+<translation id="7344413941077984497">Upang itakda kung aling mga website ang matitingnan ni <ph name="NEW_PROFILE_NAME" />, maaari mong i-configure ang mga paghihigpit at setting sa pamamagitan ng pagbisita sa <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Kung hindi mo babaguhin ang mga default na setting, maba-browse ni <ph name="NEW_PROFILE_NAME" /> ang lahat ng nasa web.
+
+Upang mapigilan si <ph name="NEW_PROFILE_NAME" /> na ma-access ang iyong account, tiyaking ila-lock mo ang iyong profile kapag hindi ka gumagamit ng Chromium. Upang gawin ito, i-click ang pangalan ng iyong profile sa kanang sulok sa itaas ng browser, at piliin ang "Lumabas at i-childlock."
+<ph name="BEGIN_LINK_2" />Matuto nang higit pa<ph name="END_LINK_2" />
+
+Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdagang tagubilin.</translation>
 <translation id="7419987137528340081">Kung gusto mong ihiwalay ang iyong umiiral nang data sa Chromium, maaari kang lumikha ng bagong user ng Chromium para kay <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Nangangailangan ang Chromium ng Windows XP o mas bago. Maaaring hindi gumana ang ilang tampok.</translation>
 <translation id="7463979740390522693">Chromium - Mga Notification (<ph name="QUANTITY" /> ang hindi pa nababasa)</translation>
@@ -196,6 +203,7 @@ Hindi mabawi ng Chromium ang iyong mga setting.</translation>
 <translation id="7747138024166251722">Hindi makalikha ng pansamantalang direktoryo ang installer. Paki-suri para sa puwang sa disk na walang laman at pahintulot upang i-install ang software.</translation>
 <translation id="7918535023914021398">Na-verify ng Chromium na ang <ph name="ISSUER" /> ang nagbigay sa certificate ng website na ito. Hindi nagbigay ang server ng anumang impormasyon tungkol sa Certificate Transparency.</translation>
 <translation id="7937630085815544518">Naka-sign in ka sa Chromium bilang <ph name="USER_EMAIL_ADDRESS" />. Pakigamit ang parehong account upang mag-sign in muli.</translation>
+<translation id="795025003224538582">Huwag i-restart</translation>
 <translation id="7962572577636132072">Awtomatikong nag-a-update ang Chromium upang palagi kang may pinakabagong bersyon.</translation>
 <translation id="7979877361127045932">Itago sa menu ng Chromium</translation>
 <translation id="8030318113982266900">Ina-update ang iyong device sa <ph name="CHANNEL_NAME" /> na channel...</translation>

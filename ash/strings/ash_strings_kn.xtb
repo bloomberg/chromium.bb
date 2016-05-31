@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="1621499497873603021">ಬ್ಯಾಟರಿ ಖಾಲಿ ಆಗುವವರೆಗೆ ಉಳಿದಿರುವ ಸಮಯ, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome ಸಾಧನ</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> ಬಾಕಿ ಉಳಿದಿದೆ</translation>
 <translation id="1723752762323179280">ಸೆಷನ್ ನಿರ್ಗಮಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="1747827819627189109">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1812696562331527143">ನಿಮ್ಮ ಇನ್‌ಪುಟ್ ವಿಧಾನವನ್ನು <ph name="INPUT_METHOD_ID" />* ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ (<ph name="BEGIN_LINK" />3ನೇ ವ್ಯಕ್ತಿ<ph name="END_LINK" />).
@@ -67,7 +68,7 @@
 <translation id="2942516765047364088">ಶೆಲ್ಫ್ ಸ್ಥಾನ</translation>
 <translation id="2946640296642327832">bluetooth ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="2963773877003373896">mod3</translation>
-<translation id="2964193600955408481">Wi-Fi ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="2964193600955408481">ವೈ-ಫೈ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="2983818520079887040">ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
 <translation id="2999742336789313416"><ph name="DOMAIN" /> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾದ ಸಾರ್ವಜನಿಕ ಸೆಶನ್ <ph name="DISPLAY_NAME" /> ಆಗಿದೆ</translation>
 <translation id="3009178788565917040">ಔಟ್‌ಪುಟ್</translation>
@@ -94,7 +95,7 @@
 <translation id="3626281679859535460">ಪ್ರಕಾಶಮಾನ</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME" />: <ph name="ANNOTATION" /></translation>
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> ರೆಸಲ್ಯೂಷನ್ ಅನ್ನು <ph name="RESOLUTION" /> ಗೆ ಬದಲಿಸಲಾಗಿದೆ</translation>
-<translation id="370649949373421643">Wi-Fi ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="370649949373421643">ವೈ-ಫೈ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="3709443003275901162">9+</translation>
 <translation id="372094107052732682">ತೊರೆಯಲು Ctrl+Shift+Q ಅನ್ನು ಎರಡು ಬಾರಿ ಒತ್ತಿರಿ.</translation>
 <translation id="3742055079367172538">ಸ್ಕ್ರಿನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಲಾಗಿದೆ</translation>
@@ -116,6 +117,7 @@
 <translation id="4421231901400348175">ರಿಮೋಟ್ ಸಹಾಯದ ಮೂಲಕ <ph name="HELPER_NAME" /> ಜೊತೆಗೆ ನಿಮ್ಮ ಪರದೆಯ ನಿಯಂತ್ರಣವನ್ನು ಹಂಚಲಾಗುತ್ತಿದೆ.</translation>
 <translation id="4430019312045809116">ವಾಲ್ಯೂಮ್</translation>
 <translation id="4527045527269911712">ಬ್ಲೂಟೂತ್‌‌ ಸಾಧನವು "<ph name="DEVICE_NAME" />" ಜೋಡಣೆಗಾಗಿ ಅನುಮತಿಯನ್ನು ಬಯಸುತ್ತದೆ.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> ಪೂರ್ಣಗೊಳ್ಳುವವರೆಗೆ</translation>
 <translation id="4544944664594876241">ಸ್ಕ್ರೀನ್ ಅನ್ನು ಲಾಕ್ ಮಾಡುವ ಶಾರ್ಟ್‌ಕಟ್ ಬದಲಾಗಿದೆ. <ph name="OLD_SHORTCUT" /> ಬದಲಿಗೆ <ph name="NEW_SHORTCUT" /> ಬಳಸಿ.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">ಡಿಸ್‌ಕನೆಕ್ಟ್</translation>
@@ -223,9 +225,10 @@
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="8517041960877371778">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಆನ್ ಮಾಡಿರುವಾಗ ಅದನ್ನು ಚಾರ್ಜ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="8528322925433439945">ಮೊಬೈಲ್...</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> ಉಳಿದಿದೆ</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್ ಸಂಪರ್ಕಪಡಿಸಲಾಗಿದೆ</translation>
-<translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="8814190375133053267">ವೈ-ಫೈ</translation>
 <translation id="882279321799040148">ವೀಕ್ಷಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="8825534185036233643">ಎರಡಕ್ಕಿಂತ ಹೆಚ್ಚಿನ ಪ್ರದರ್ಶನಗಳ ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ ಬೆಂಬಲಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="8828714802988429505">90°</translation>

@@ -18,6 +18,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="151962892725702025">Chromium OS kan je gegevens niet synchroniseren omdat synchronisatie niet beschikbaar is voor je domein.</translation>
 <translation id="1559451348202814456">Chromium werkt wellicht niet naar behoren omdat dit niet langer wordt ondersteund op Mac OS X 10.6, 10.7 en 10.8.</translation>
 <translation id="1644918877723739397">Chromium slaat dit op bij je <ph name="SAVED_PASSWORD_LINK" /> en onthoudt dit voor de volgende keer dat je het nodig hebt.</translation>
+<translation id="1653828314016431939">OK - nu opnieuw starten</translation>
 <translation id="1668054258064581266">Nadat je je account uit Chromium hebt verwijderd, moet je je geopende tabbladen mogelijk opnieuw laden om de wijzigingen door te voeren.</translation>
 <translation id="1688750314291223739">Stel synchronisatie in om je persoonlijke browserfuncties online op te slaan en toegang te hebben tot deze functies via Chromium, vanaf elke computer.</translation>
 <translation id="1699664235656412242">Sluit alle Chromium-vensters (inclusief de vensters in Windows 8-modus) en probeer het opnieuw.</translation>
@@ -182,6 +183,12 @@ Chromium kan je instellingen niet herstellen.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Nieuw venster</translation>
 <translation id="734373864078049451">Hier vind je internet, bladwijzers en andere Chromium-instellingen.</translation>
+<translation id="7344413941077984497">Als je wilt instellen welke websites <ph name="NEW_PROFILE_NAME" /> kan bekijken, kun je beperkingen en instellingen configureren door naar <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> te gaan. Als je de standaardinstellingen niet wijzigt, kan <ph name="NEW_PROFILE_NAME" /> overal op internet browsen.
+
+Als je wilt voorkomen dat <ph name="NEW_PROFILE_NAME" /> toegang krijgt tot je account, moet je ervoor zorgen dat je je profiel vergrendelt wanneer je Chromium niet gebruikt. Klik hiervoor op je profielnaam in de rechterbovenhoek van de browser en selecteer 'Afsluiten en kinderslot'.
+<ph name="BEGIN_LINK_2" />Meer informatie<ph name="END_LINK_2" />
+
+Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor verdere instructies.</translation>
 <translation id="7419987137528340081">Als je je huidige Chromium-gegevens liever gescheiden houdt, kun je een nieuwe Chromium-gebruiker maken voor <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Voor Chromium is Windows XP of hoger vereist. Sommige functies werken mogelijk niet.</translation>
 <translation id="7463979740390522693">Chromium - Meldingen (<ph name="QUANTITY" /> ongelezen)</translation>
@@ -196,6 +203,7 @@ Chromium kan je instellingen niet herstellen.</translation>
 <translation id="7747138024166251722">Het installatieprogramma kan geen tijdelijke directory maken. Controleer of je nog schijfruimte hebt en of je toestemming hebt om software te installeren.</translation>
 <translation id="7918535023914021398">Chromium heeft geverifieerd dat <ph name="ISSUER" /> het certificaat van deze website heeft uitgegeven. De server heeft geen certificaattransparantiegegevens geleverd.</translation>
 <translation id="7937630085815544518">Je bent ingelogd bij Chromium als <ph name="USER_EMAIL_ADDRESS" />. Gebruik hetzelfde account om opnieuw in te loggen.</translation>
+<translation id="795025003224538582">Niet opnieuw starten</translation>
 <translation id="7962572577636132072">Chromium wordt automatisch bijgewerkt, zodat je altijd beschikt over de nieuwste versie.</translation>
 <translation id="7979877361127045932">Verbergen in Chromium-menu</translation>
 <translation id="8030318113982266900">Je apparaat bijwerken naar <ph name="CHANNEL_NAME" /> kanaal...</translation>

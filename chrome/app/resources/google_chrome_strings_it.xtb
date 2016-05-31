@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome sta utilizzando la videocamera.</translation>
 <translation id="1619887657840448962">Per rendere Chrome più sicuro, abbiamo disattivato la seguente estensione non presente nel <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> che potrebbe essere stata aggiunta a tua insaputa.</translation>
 <translation id="163860049029591106">Inizia a utilizzare Chrome OS</translation>
+<translation id="1653828314016431939">OK - Riavvia ora</translation>
 <translation id="1682634494516646069">Google Chrome non è in grado di leggere e scrivere nella directory dei dati: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome è un browser web che apre pagine e applicazioni web con grande velocità. È veloce, stabile e facile da utilizzare. Esplora il Web in modo più sicuro grazie alla protezione contro malware e phishing incorporata in Google Chrome.</translation>
 <translation id="174539241580958092">Impossibile sincronizzare i dati in Google Chrome a causa di un errore durante l'accesso.</translation>
@@ -70,6 +71,13 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="3080151273017101988">Continua a eseguire applicazioni in background dopo la chiusura di Google Chrome</translation>
 <translation id="3089968997497233615">È disponibile una nuova versione più sicura di Google Chrome.</translation>
 <translation id="3149510190863420837">Applicazioni Chrome</translation>
+<translation id="3251381707915721925">Per impostare i siti web che potrà visitare <ph name="NEW_PROFILE_NAME" />, puoi configurare limitazioni e impostazioni visitando la pagina <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Se non cambi le impostazioni predefinite, <ph name="NEW_PROFILE_NAME" /> potrà visitare qualsiasi sito web.
+
+
+Per impedire a <ph name="NEW_PROFILE_NAME" /> di accedere al tuo account, assicurati di bloccare il tuo profilo quando non utilizzi Chromium. A tale scopo, fai clic sul nome del tuo profilo nell'angolo in alto a destra del browser e seleziona "Esci e blocca".
+<ph name="BEGIN_LINK_2" />Ulteriori informazioni<ph name="END_LINK_2" />
+
+Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Accedi a Chrome</translation>
 <translation id="3311976847535831054">Questo computer non riceverà più gli aggiornamenti di Google Chrome a 32 bit. Esegui l'upgrade a Google Chrome a 64 bit.</translation>
 <translation id="3360895254066713204">Supporto Chrome</translation>
@@ -117,6 +125,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="4921569541910214635">Condividi un computer con altre persone? Ora puoi configurare Chrome come preferisci.</translation>
 <translation id="4925019873400497719">Chrome ha verificato che <ph name="ISSUER" /> ha rilasciato il certificato del sito web. Le informazioni su Certificate Transparency fornite dal server non sono valide.</translation>
 <translation id="4953650215774548573">Imposta Google Chrome come browser predefinito</translation>
+<translation id="495931528404527476">In Chrome</translation>
 <translation id="4987308747895123092">Chiudi tutte le finestre di Google Chrome (incluse quelle in modalità Windows 8) e riprova.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Impossibile sincronizzare i dati in Google Chrome. Aggiorna la passphrase di sincronizzazione.</translation>
@@ -205,6 +214,7 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="7808348361785373670">Rimuovi da Chrome...</translation>
 <translation id="7825851276765848807">Installazione non riuscita a causa di un errore non specificato. Scarica nuovamente Google Chrome.</translation>
 <translation id="7890208801193284374">Se condividi un computer, i tuoi amici e la tua famiglia possono navigare separatamente e configurare Chrome in base alle proprie esigenze.</translation>
+<translation id="795025003224538582">Non riavviare</translation>
 <translation id="8005540215158006229">Chrome è quasi pronto.</translation>
 <translation id="8008534537613507642">Reinstalla Chrome</translation>
 <translation id="8030318113982266900">Aggiornamento del dispositivo al canale <ph name="CHANNEL_NAME" />...</translation>

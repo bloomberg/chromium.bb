@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome использует камеру.</translation>
 <translation id="1619887657840448962">Чтобы обеспечить безопасность ваших данных, некоторые расширения были отключены, так как <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> не содержит сведений о них (то есть они могли быть установлены без вашего ведома).</translation>
 <translation id="163860049029591106">Начало работы с Chrome OS</translation>
+<translation id="1653828314016431939">ОК, перезапустить сейчас</translation>
 <translation id="1682634494516646069">Браузеру Google Chrome не может выполнять операции чтения и записи в каталоге данных <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome – это быстрый и удобный браузер для работы с веб-страницами и приложениями. Он надежен и прост в использовании. Вы можете просматривать страницы в Интернете, положившись на систему защиту от вредоносного ПО и фишинга, которая уже встроена в Google Chrome.</translation>
 <translation id="174539241580958092">Google Chrome не удалось синхронизировать данные из-за ошибки входа в аккаунт.</translation>
@@ -70,6 +71,12 @@
 <translation id="3080151273017101988">Не отключать работающие в фоновом режиме сервисы при закрытии браузера</translation>
 <translation id="3089968997497233615">Доступна новая, более безопасная версия Google Chrome.</translation>
 <translation id="3149510190863420837">Приложения Chrome</translation>
+<translation id="3251381707915721925">Чтобы ограничить пользователю <ph name="NEW_PROFILE_NAME" /> доступ к каким-либо страницам, перейдите по этой ссылке: <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Если вы оставите настройки по умолчанию, <ph name="NEW_PROFILE_NAME" /> сможет открывать все сайты.
+
+Чтобы пользователь <ph name="NEW_PROFILE_NAME" /> не получил доступ к вашему аккаунту, при выходе из Chrome нажмите на свое имя профиля в правом верхнем углу экрана и выберите "Выйти и заблокировать".
+<ph name="BEGIN_LINK_2" />Подробнее…<ph name="END_LINK_2" />
+
+Дальнейшие инструкции отправлены на адрес <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Войдите в Chrome</translation>
 <translation id="3311976847535831054">Обновление 32-разрядной версии Google Chrome на этом компьютере прекращено. Установите 64-разрядную версию браузера.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -117,6 +124,7 @@
 <translation id="4921569541910214635">Пользуетесь компьютером вместе с коллегой или другом? Теперь каждый из вас сможет настроить Chrome по своему вкусу.</translation>
 <translation id="4925019873400497719">Данные Chrome подтверждают, что издатель сертификата сайта – <ph name="ISSUER" />. Сервер предоставил временные метки сертификата, однако они недействительны.</translation>
 <translation id="4953650215774548573">Сделать Google Chrome браузером по умолчанию</translation>
+<translation id="495931528404527476">В Chrome</translation>
 <translation id="4987308747895123092">Закройте все окна Google Chrome (включая открытые в режиме Windows 8) и повторите попытку.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome не удалось синхронизировать данные. Обновите кодовую фразу в Sync.</translation>
@@ -205,6 +213,7 @@
 <translation id="7808348361785373670">Удалить из Chrome</translation>
 <translation id="7825851276765848807">Не удалось выполнить установку из-за неизвестной ошибки. Скачайте Google Chrome ещё раз.</translation>
 <translation id="7890208801193284374">Если, кроме вас, компьютером пользуется кто-то ещё, например родные или друзья, они тоже смогут настроить Chrome на свой вкус.</translation>
+<translation id="795025003224538582">Не перезапускать</translation>
 <translation id="8005540215158006229">Chrome почти готов к работе.</translation>
 <translation id="8008534537613507642">Переустановить Chrome</translation>
 <translation id="8030318113982266900">Переключение устройства на канал <ph name="CHANNEL_NAME" />...</translation>

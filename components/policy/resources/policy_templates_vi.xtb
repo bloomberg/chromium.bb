@@ -512,6 +512,7 @@
           Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="2682225790874070339">Tắt Drive trong ứng dụng Tệp <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Bật tính năng proxy nén dữ liệu</translation>
+<translation id="2731627323327011390">Tắt sử dụng chứng chỉ <ph name="PRODUCT_OS_NAME" /> đối với ứng dụng ARC</translation>
 <translation id="2742843273354638707">Ẩn ứng dụng Cửa hàng Chrome trực tuyến và liên kết chân trang khỏi Trang tab mới và trình chạy ứng dụng <ph name="PRODUCT_OS_NAME" />.
 
 Khi chính sách này được đặt thành true, các biểu tượng sẽ bị ẩn. 
@@ -1831,6 +1832,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn đặt chính sách này, người dùng có thể tạm thời ghi đè chính sách bằng cách bật hoặc tắt kính lúp màn hình. Tuy nhiên, lựa chọn của người dùng sẽ không được duy trì mãi và cài đặt mặc định được khôi phục bất cứ khi nào màn hình đăng nhập mới được hiển thị hoặc người dùng không thực hiện thao tác nào trên màn hình đăng nhập trong một phút.
 
           Nếu không đặt chính sách này, kính lúp màn hình bị tắt khi màn hình đăng nhập hiển thị lần đầu. Người dùng có thể bật hoặc tắt kính lúp màn hình bất cứ lúc nào và trạng thái của kính lúp trên màn hình đăng nhập được duy trì giữa những người dùng.</translation>
+<translation id="7249828445670652637">Bật chứng chỉ CA <ph name="PRODUCT_OS_NAME" /> đối với ứng dụng ARC</translation>
 <translation id="7258823566580374486">Bật tính năng ẩn của máy chủ truy cập từ xa</translation>
 <translation id="7260277299188117560">Tự động cập nhật p2p được bật</translation>
 <translation id="7267809745244694722">Các phím phương tiện mặc định cho phím chức năng</translation>
@@ -1949,6 +1951,17 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7715711044277116530">Tỷ lệ phần trăm theo đó xác định độ trễ mờ màn hình ở chế độ bản trình bày</translation>
 <translation id="7717938661004793600">Định cấu hình tính năng trợ năng của <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Kiểm soát liệu số liệu sử dụng có được báo cáo lại cho Google hay không. Nếu được đặt thành đúng, <ph name="PRODUCT_OS_NAME" /> sẽ báo cáo số liệu sử dụng. Nếu không được định cấu hình hoặc được đặt thành sai, báo cáo số liệu sẽ bị tắt.</translation>
+<translation id="7723433108978650103">Chặn truy cập vào các URL được liệt kê.
+
+      Chính sách này ngăn người dùng tải trang web từ các URL được liệt kê trong danh sách cấm. Danh sách cấm cung cấp danh sách các mẫu URL chỉ rõ các URL sẽ được liệt kê trong danh sách cấm.
+
+      Mẫu URL phải được định dạng theo https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Các ngoại lệ có thể được xác định trong chính sách về danh sách URL cho phép. Những chính sách này được giới hạn ở 1000 mục nhập; các mục nhập tiếp theo sẽ bị bỏ qua.
+
+      Lưu ý rằng không nên chặn URL 'chrome://*' nội bộ vì điều này có thể gây ra lỗi không mong muốn.
+
+      Nếu chính sách này không được đặt, sẽ không có URL nào bị liệt kê trong danh sách cấm của trình duyệt.</translation>
 <translation id="7749402620209366169">Bật xác thực hai bước cho máy chủ truy cập từ xa thay vì mã PIN do người dùng chỉ định.
 
           Nếu cài đặt này được bật thì người dùng phải cung cấp mã xác thực hai bước hợp lệ khi truy cập vào máy chủ.
@@ -2019,6 +2032,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu không được đặt thì chính sách này sẽ hoạt động như thể TimezoneAutomaticDetectionUsersDecide được đặt.
 
       Nếu được đặt thì chính sách SystemTimezone sẽ ghi đè chính sách này. Trong trường hợp này, tính năng phát hiện múi giờ tự động sẽ hoàn toàn bị tắt.</translation>
+<translation id="787125417158068494">Nếu được đặt thành SyncDisabled hoặc không được định cấu hình, các chứng chỉ <ph name="PRODUCT_OS_NAME" /> sẽ không khả dụng cho ứng dụng ARC.
+
+      Nếu được đặt thành CopyCaCerts, tất cả các chứng chỉ CA đã cài đặt ONC có <ph name="WEB_TRUSTED_BIT" /> sẽ khả dụng cho ứng dụng ARC.</translation>
 <translation id="7882585827992171421">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
       Xác định id của tiện ích được sử dụng làm trình bảo vệ màn hình trên màn hình đăng nhập. Tiện ích phải thuộc AppPack được định cấu hình cho miền này thông qua chính sách DeviceAppPack.</translation>
@@ -2034,6 +2050,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Chỉ định có sử dụng p2p cho các phần tải dữ liệu cập nhật OS không. Nếu được đặt thành True, các thiết bị sẽ chia sẻ và cố gắng sử dụng các phần tải dữ liệu cập nhật trên LAN, có thể làm giảm nghẽn và mức sử dụng băng thông Internet. Nếu phần tải dữ liệu cập nhật không khả dụng trên LAN, thiết bị sẽ quay lại tải xuống từ máy chủ cập nhật. Nếu được đặt thành False hay không được định cấu hình, p2p sẽ không được sử dụng.</translation>
 <translation id="7933141401888114454">Cho phép tạo người dùng được giám sát</translation>
+<translation id="793473937901685727">Đặt mức độ khả dụng của chứng chỉ cho ứng dụng ARC</translation>
 <translation id="7936098023732125869">Cho phép sử dụng nhà cung cấp dịch vụ tìm kiếm mặc định.
 
           Nếu bạn bật cài đặt này, tìm kiếm mặc định được thực hiện khi người dùng nhập văn bản vào thanh địa chỉ không phải là URL.

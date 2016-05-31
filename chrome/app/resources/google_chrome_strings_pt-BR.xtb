@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">O Google Chrome está usando sua câmera.</translation>
 <translation id="1619887657840448962">Para tornar o Chrome mais seguro, desativamos a extensão a seguir, que não está listada na <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e pode ter sido adicionada sem seu conhecimento.</translation>
 <translation id="163860049029591106">Primeiros passos com o Chrome OS</translation>
+<translation id="1653828314016431939">OK - Reinicie agora</translation>
 <translation id="1682634494516646069">O Google Chrome não pode ler e gravar neste diretório de dados: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">O Google Chrome é um navegador que executa páginas e aplicativos da web em alta velocidade. É rápido, estável e fácil de usar. Navegue pela web de forma segura com proteção contra malware e phishing integrada ao Google Chrome.</translation>
 <translation id="174539241580958092">O Google Chrome não pôde sincronizar seus dados devido a um erro no login.</translation>
@@ -70,6 +71,12 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="3080151273017101988">Executar aplicativos em segundo plano quando o Google Chrome estiver fechado</translation>
 <translation id="3089968997497233615">Há uma versão nova e mais segura do Google Chrome disponível.</translation>
 <translation id="3149510190863420837">Aplicativos do Google Chrome</translation>
+<translation id="3251381707915721925">Para definir quais websites <ph name="NEW_PROFILE_NAME" /> pode ver, configure restrições e configurações acessando <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Se você não alterar as configurações padrão, <ph name="NEW_PROFILE_NAME" /> poderá procurar por tudo na Web.
+
+Para impedir que <ph name="NEW_PROFILE_NAME" /> acesse sua conta, bloqueie seu perfil quando não estiver usando o Chrome. Para fazer isso, clique no nome do perfil no canto superior direito do navegador e selecione "Sair e bloquear".
+<ph name="BEGIN_LINK_2" />Saiba mais<ph name="END_LINK_2" />
+
+Verifique seu e-mail em <ph name="ACCOUNT_EMAIL" /> para ver mais instruções.</translation>
 <translation id="3282568296779691940">Fazer login no Google Chrome</translation>
 <translation id="3311976847535831054">Este computador não receberá mais atualizações do Google Chrome de 32 bits. Faça upgrade para o Google Chrome de 64 bits.</translation>
 <translation id="3360895254066713204">Auxiliar do Google Chrome</translation>
@@ -118,6 +125,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="4921569541910214635">Você compartilha um computador? Agora é possível configurar o Google Chrome do jeito que você gosta.</translation>
 <translation id="4925019873400497719">O Chrome verificou que <ph name="ISSUER" /> emitiu o certificado deste website. O servidor forneceu informações de Transparência de certificado, mas elas eram inválidas.</translation>
 <translation id="4953650215774548573">Definir o Google Chrome como seu navegador padrão</translation>
+<translation id="495931528404527476">No Google Chrome</translation>
 <translation id="4987308747895123092">Feche todas as janelas do Google Chrome, (incluindo as que estejam no modo Windows 8) e tente novamente.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">O Google Chrome não pôde sincronizar seus dados. Atualize sua senha de sincronização.</translation>
@@ -206,6 +214,7 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="7808348361785373670">Remover do Chrome</translation>
 <translation id="7825851276765848807">Houve uma falha na instalação devido a um erro não-especificado. Faça o download do Google Chrome novamente.</translation>
 <translation id="7890208801193284374">Se você usa um computador compartilhado, seus amigos e familiares podem navegar separadamente e configurar o Google Chrome da maneira que desejarem.</translation>
+<translation id="795025003224538582">Não reiniciar</translation>
 <translation id="8005540215158006229">O Google Chrome está quase pronto.</translation>
 <translation id="8008534537613507642">Reinstalar o Google Chrome</translation>
 <translation id="8030318113982266900">Atualizando seu dispositivo para o canal <ph name="CHANNEL_NAME" />...</translation>

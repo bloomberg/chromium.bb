@@ -72,6 +72,7 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="1853692000353488670">Nieuw incognitotabblad</translation>
 <translation id="189172778771606813">Zijmenu sluiten</translation>
 <translation id="1924956916668006832">Verzendadres selecteren</translation>
+<translation id="1933845786846280168">Geselecteerd tabblad</translation>
 <translation id="194341124344773587">Schakel het recht in voor Chrome via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Wachtwoorden opslaan</translation>
 <translation id="1944384637046898011">Alles versleutelen met Google-wachtwoord vanaf <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Je kunt het Fysieke web beheren via de instellingen van Chrome.
 <translation id="2959609938957585241">Schakel in je account bij de instellingen van Android 'Gegevens automatisch synchroniseren' in om de tabbladen op je andere apparaten te bekijken.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle rechten voorbehouden.</translation>
 <translation id="2968755619301702150">Certificaatviewer</translation>
+<translation id="2979025552038692506">Geselecteerd incognitotabblad</translation>
 <translation id="2996291259634659425">Wachtwoordzin maken</translation>
 <translation id="2996809686854298943">URL vereist</translation>
 <translation id="3012408695656332380">De gegevens van dit apparaat vervangen door de gegevens van <ph name="TO_ACCOUNT" />. Je kunt je bestaande gegevens ophalen door terug te schakelen naar <ph name="FROM_ACCOUNT" />, maar gegevens die zijn gemaakt nadat je bent uitgelogd, gaan verloren.</translation>
@@ -554,6 +556,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="8073388330009372546">Openen op nieuw tabblad</translation>
 <translation id="8076014560081431679">Opgeslagen site-instellingen worden niet verwijderd en kunnen je browsegedrag weerspiegelen. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Deze content is afkomstig van <ph name="DOMAIN_NAME" />, geleverd door Google.</translation>
+<translation id="8103578431304235997">Incognitotabblad</translation>
 <translation id="8106211421800660735">Creditcardnummer</translation>
 <translation id="813082847718468539">Sitegegevens bekijken</translation>
 <translation id="8137558756159375272">Met 'Tikken om te zoeken' worden het geselecteerde woord en de huidige pagina als context naar Google Zoeken verzonden. Je kunt deze functie uitschakelen via <ph name="BEGIN_LINK" />Instellingen<ph name="END_LINK" />.</translation>

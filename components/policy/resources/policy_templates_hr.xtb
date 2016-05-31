@@ -475,6 +475,7 @@
 <translation id="267596348720209223">Određuje kodiranje znakova koje podržava davatelj usluga pretraživanja. Kodiranja su nazivi kodnih stranica poput UTF-8, GB2312 i ISO-8859-1. Isprobavaju se navedenim redoslijedom. Ovo je pravilo izborno. Ako nije postavljeno, upotrebljavat će se zadana stranica UTF-8. Ovo će se pravilo poštovati samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
 <translation id="2682225790874070339">Onemogućuje Disk u aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Omogući značajku proxyja za kompresiju podataka</translation>
+<translation id="2731627323327011390">Onemogući upotrebu <ph name="PRODUCT_OS_NAME" /> certifikata za ARC aplikacije</translation>
 <translation id="2742843273354638707">Skrivanje aplikacije Chrome web-trgovine i veze u podnožju na web-stranici nove kartice i pokretača aplikacija za <ph name="PRODUCT_OS_NAME" />.
 
       Kada je to pravilo postavljeno na točno, ikone su skrivene.
@@ -1691,6 +1692,7 @@
           Ako postavite to pravilo, korisnici ga mogu privremeno premostiti omogućujući ili onemogućujući povećalo. Međutim, korisnički odabir nije trajan i zadana se vrijednost vraća svaki put kada se zaslon za prijavu prikaže iznova ili ako taj zaslon miruje jednu minutu.
 
           Ako se to pravilo ne postavi, povećalo je onemogućeno pri prvom prikazivanju zaslona za prijavu. Korisnici mogu omogućiti ili onemogućiti povećalo u bilo kojem trenutku, a njegov status na zaslonu za prijavu zadržat će se i za sljedeće korisnike.</translation>
+<translation id="7249828445670652637">Omogući <ph name="PRODUCT_OS_NAME" /> CA certifikate za ARC aplikacije</translation>
 <translation id="7258823566580374486">Omogući skrivanje hosta za daljinski pristup</translation>
 <translation id="7260277299188117560">Omogućeno je automatsko ažuriranje p2p</translation>
 <translation id="7267809745244694722">Medijske tipke postavi kao zadane funkcijske tipke</translation>
@@ -1802,6 +1804,17 @@
 <translation id="7715711044277116530">Postotak za skaliranje odgode zatamnjenja zaslona u načinu prezentacije</translation>
 <translation id="7717938661004793600">Konfiguriranje značajki pristupačnosti proizvoda <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Kontrolira hoće li se mjerni podaci upotrebe prijavljivati Googleu. Ako je to pravilo postavljeno na "istinito", sustav <ph name="PRODUCT_OS_NAME" /> prijavljivat će mjerne podatke o upotrebi. Ako to pravilo nije konfigurirano ili je postavljeno na "lažno", prijavljivanje mjernih podataka o upotrebi bit će onemogućeno.</translation>
+<translation id="7723433108978650103">Blokira pristup navedenim URL-ovima.
+
+      To pravilo onemogućuje korisniku da učita web-stranice s nedopuštenih URL-ova. Popis nedopuštenih pruža popis uzoraka URL-ova koji sadrži URL-ove koji neće biti dopušteni.
+
+      Uzorak URL-a mora biti formatiran prema uputama na ovoj stranici https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Iznimke se mogu navesti u pravilu za popis dopuštenih URL-ova. Ta su pravila ograničena na 1000 unosa, a naknadni će se unosi zanemarivati.
+
+      Napominjemo da se ne preporučuje blokiranje internih "chrome://*" URL-ova jer to može uzrokovati neočekivane pogreške.
+
+      Ako se to pravilo ne postavi, svi će URL-ovi biti dopušteni u pregledniku.</translation>
 <translation id="7749402620209366169">Omogućuje autentifikaciju s dva čimbenika za hostove daljinskog pristupa umjesto PIN-a koji određuje korisnik.
 
           Ako je ta postavka omogućena, korisnici moraju unijeti važeći kôd s dva čimbenika kada pristupaju hostu.
@@ -1868,6 +1881,9 @@
       Ako se to pravilo ne postavi, ponašat će se kao da je postavljeno pravio TimezoneAutomaticDetectionUsersDecide.
 
       Postavljanje pravila SystemTimezone nadjačava ovo pravilo. U tom je slučaju automatsko otkrivanje vremenske zone potpuno onemogućeno.</translation>
+<translation id="787125417158068494">Ako se postavi na SyncDisabled ili se ne konfigurira, <ph name="PRODUCT_OS_NAME" /> certifikati nisu dostupni za ARC aplikacije.
+
+      Ako se postavi na CopyCaCerts, svi CA certifikati instalirani u ONC uz <ph name="WEB_TRUSTED_BIT" /> dostupni su za ARC aplikacije.</translation>
 <translation id="7882585827992171421">To je pravilo aktivno samo u prodajnom načinu.
 
       Određuje ID proširenja koje će se upotrebljavati kao čuvar zaslona na zaslonu prijave. To proširenje mora biti dijelom paketa AppPack koji se konfigurira za ovu domenu pravilom DeviceAppPack.</translation>
@@ -1883,6 +1899,7 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Određuje hoće li se p2p upotrebljavati za podatke ažuriranja OS-a. Ako je postavljeno na Točno, uređaji će dijeliti i pokušati konzumirati podatke ažuriranja na LAN-u potencijalno smanjujući potrošnju internetske propusnosti i zagušenje. Ako podaci ažuriranja nisu dostupni na LAN-u, uređaj će prijeći na preuzimanje s poslužitelja ažuriranja. Ako je postavljeno na Netočno ili nije konfigurirano, p2p se neće upotrebljavati.</translation>
 <translation id="7933141401888114454">Omogući izradu nadziranih korisnika</translation>
+<translation id="793473937901685727">Postavi dostupnost certifikata za ARC aplikacije</translation>
 <translation id="7936098023732125869">Omogućuje upotrebu zadanog davatelja usluge pretraživanja.
 
           Ako omogućite tu postavku, zadano pretraživanje izvršava se kada korisnik u višenamjenski okvir upiše tekst koji nije URL.

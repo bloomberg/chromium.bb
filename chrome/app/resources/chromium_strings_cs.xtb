@@ -18,6 +18,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="151962892725702025">Chromium OS nemůže synchronizovat data, protože Synchronizace ve vaší doméně není k dispozici.</translation>
 <translation id="1559451348202814456">Prohlížeč Chromium nemusí fungovat správně, protože v systémech Mac OS X 10.6, 10.7 a 10.8 již není podporován.</translation>
 <translation id="1644918877723739397">Prohlížeč Chromium toto heslo uloží mezi <ph name="SAVED_PASSWORD_LINK" /> a zapamatuje si jej pro příští použití.</translation>
+<translation id="1653828314016431939">OK – Restartovat</translation>
 <translation id="1668054258064581266">Odebrání účtu z aplikace Chromium se může projevit až po opětovném načtení otevřených karet.</translation>
 <translation id="1688750314291223739">Chcete-li uložit personalizované funkce prohlížeče na web a získat k nim přístup z prohlížeče Chromium v libovolném prohlížeči, nastavte synchronizaci.</translation>
 <translation id="1699664235656412242">Zavřete všechna okna prohlížeče Chromium (včetně oken v režimu Windows 8) a zkuste to znovu.</translation>
@@ -182,6 +183,12 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Nové okno</translation>
 <translation id="734373864078049451">Zde jsou k dispozici vaše weby, záložky a další obsah prohlížeče Chromium.</translation>
+<translation id="7344413941077984497">Chcete-li nastavit, které weby může uživatel <ph name="NEW_PROFILE_NAME" /> zobrazit, nakonfigurujte omezení a nastavení na stránce <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Pokud nezměníte výchozí nastavení, uživatel <ph name="NEW_PROFILE_NAME" /> na internetu bude moci prohlížet vše.
+
+Abyste uživateli <ph name="NEW_PROFILE_NAME" /> zabránili v přístupu k vašemu účtu, když Chromium nepoužíváte, nezapomeňte svůj profil uzamknout. Provedete to tak, že v pravém horním rohu prohlížeče kliknete na název svého profilu a vyberete Ukončit a použít rodičovský zámek.
+<ph name="BEGIN_LINK_2" />Další informace<ph name="END_LINK_2" />
+
+Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Pokud chcete svá stávající data prohlížeče Chromium uchovávat odděleně, můžete pro účet <ph name="USER_NAME" /> vytvořit nového uživatele prohlížeče Chromium.</translation>
 <translation id="7421823331379285070">Chromium vyžaduje operační systém Windows XP nebo novější. Některé funkce možná nebudou dostupné.</translation>
 <translation id="7463979740390522693">Chromium – oznámení (nepřečtené: <ph name="QUANTITY" />)</translation>
@@ -196,6 +203,7 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="7747138024166251722">Instalační soubor nemohl vytvořit dočasný adresář. Zkontrolujte prosím volné místo na disku a povolení instalovat software.</translation>
 <translation id="7918535023914021398">Prohlížeč Chromium ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server neposkytl žádné údaje Certificate Transparency.</translation>
 <translation id="7937630085815544518">K prohlížeči Chromium jste byli přihlášeni s účtem <ph name="USER_EMAIL_ADDRESS" />. Přihlaste se prosím znovu pomocí stejného účtu.</translation>
+<translation id="795025003224538582">Nerestartovat</translation>
 <translation id="7962572577636132072">Prohlížeč Chromium se automaticky aktualizuje, abyste vždy měli k dispozici nejnovější verzi.</translation>
 <translation id="7979877361127045932">Skrýt v nabídce Chromium</translation>
 <translation id="8030318113982266900">Aktualizace zařízení na verzi <ph name="CHANNEL_NAME" />...</translation>

@@ -72,6 +72,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1853692000353488670">Ny inkognitofane</translation>
 <translation id="189172778771606813">Lukk uttrekksmenyen</translation>
 <translation id="1924956916668006832">Velg leveringsadresse</translation>
+<translation id="1933845786846280168">Valgt fane</translation>
 <translation id="194341124344773587">Slå på tillatelsen for Chrome i <ph name="BEGIN_LINK" />Android-innstillingene<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Lagring av passord</translation>
 <translation id="1944384637046898011">Kryptér alt med Google-passord fra og med <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Du kan kontrollere det fysiske nettet i Chrome-innstillingene.
 <translation id="2959609938957585241">For å få fanene dine fra de andre enhetene du bruker, slå på «Auto-synkroniser data» i kontoinnstillingene for Android.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Med enerett.</translation>
 <translation id="2968755619301702150">Visningsprogram for sertifikater</translation>
+<translation id="2979025552038692506">Valgt inkognitofane</translation>
 <translation id="2996291259634659425">Opprett en passordfrase</translation>
 <translation id="2996809686854298943">Nettadresse kreves</translation>
 <translation id="3012408695656332380">Erstatt dataene på denne enheten med dataene fra <ph name="TO_ACCOUNT" />. Du kan hente ut de eksisterende dataene dine ved å bytte tilbake til <ph name="FROM_ACCOUNT" />, men data som er opprettet etter at du logget av, går tapt.</translation>
@@ -328,7 +330,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5317780077021120954">Lagre</translation>
 <translation id="5324858694974489420">Foreldreinnstillinger</translation>
 <translation id="5327248766486351172">Navn</translation>
-<translation id="5335288049665977812">Tillat at nettsteder kan kjøre JavaScript (anbefales)</translation>
+<translation id="5335288049665977812">Tillat nettsteder å kjøre JavaScript (anbefales)</translation>
 <translation id="5345040418939504969">Slettet <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Posisjonstilgang er også <ph name="BEGIN_LINK" />slått av for denne enheten<ph name="END_LINK" />.</translation>
 <translation id="5380554235172449987">Send aldri</translation>
@@ -554,6 +556,7 @@ Det kan hende Google-kontoen din har andre typer nettlesingslogger, for eksempel
 <translation id="8073388330009372546">Åpne bildet i en ny fane</translation>
 <translation id="8076014560081431679">Lagrede nettstedsinnstillinger slettes ikke og kan gjenspeile nettleserbruken din. <ph name="BEGIN_LINK" />Finn ut mer<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Dette innholdet er fra <ph name="DOMAIN_NAME" /> og er levert av Google.</translation>
+<translation id="8103578431304235997">Inkognitofane</translation>
 <translation id="8106211421800660735">Kredittkortnummer</translation>
 <translation id="813082847718468539">Vis nettstedsinformasjon</translation>
 <translation id="8137558756159375272">Trykk for å søke sender det valgte ordet og den aktive siden som kontekst til Google Søk. Du kan slå av dette i <ph name="BEGIN_LINK" />Innstillinger<ph name="END_LINK" />.</translation>

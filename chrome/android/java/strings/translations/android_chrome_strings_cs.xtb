@@ -72,6 +72,7 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="1853692000353488670">Nová anonymní karta</translation>
 <translation id="189172778771606813">Zavřít vysouvací panel navigace</translation>
 <translation id="1924956916668006832">Vybrat dodací adresu</translation>
+<translation id="1933845786846280168">Vybraná karta</translation>
 <translation id="194341124344773587">Oprávnění pro Chrome zapnete v <ph name="BEGIN_LINK" />Nastavení pro Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Ukládání hesel</translation>
 <translation id="1944384637046898011">Zašifrovat vše pomocí hesla Google z <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Fyzický web můžete ovládat v nastavení Chromu.
 <translation id="2959609938957585241">Chcete-li získat přístup ke kartám ze svých ostatních zařízení, zapněte v nastavení účtu Android možnost Automatická synchronizace dat.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Všechna práva vyhrazena.</translation>
 <translation id="2968755619301702150">Prohlížeč certifikátů</translation>
+<translation id="2979025552038692506">Vybraná anonymní karta</translation>
 <translation id="2996291259634659425">Vytvoření heslové fráze</translation>
 <translation id="2996809686854298943">Je požadována adresa URL</translation>
 <translation id="3012408695656332380">Nahradit data tohoto zařízení daty účtu <ph name="TO_ACCOUNT" />. Svá existující data můžete načíst přepnutím zpět na účet <ph name="FROM_ACCOUNT" />. Data, která byla vytvořena poté, co jste se odhlásili, však budou ztracena.</translation>
@@ -554,6 +556,7 @@ Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> moh
 <translation id="8073388330009372546">Otevřít na nové kartě</translation>
 <translation id="8076014560081431679">Uložená nastavení webů nebudou smazána a mohou vypovídat o vašich zvycích při prohlížení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Tento obsah pochází z domény <ph name="DOMAIN_NAME" />. Poskytováno společností Google.</translation>
+<translation id="8103578431304235997">Anonymní karta</translation>
 <translation id="8106211421800660735">Číslo platební karty</translation>
 <translation id="813082847718468539">Zobrazit informace o stránkách</translation>
 <translation id="8137558756159375272">Vyhledání klepnutím odešle vybrané slovo a aktuální stránku jako kontext do Vyhledávání Google. Tuto funkci můžete vypnout v <ph name="BEGIN_LINK" />Nastavení<ph name="END_LINK" />.</translation>

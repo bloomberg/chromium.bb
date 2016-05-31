@@ -212,6 +212,10 @@ remot de Chrome</translation>
 <translation id="6324708100353784493">Heu activat el mode d'integració amb Google Cardboard. Per utilitzar-lo, inseriu el vostre dispositiu en un visor compatible amb Google Cardboard.</translation>
 <translation id="6381670701864002291">Altres motius.</translation>
 <translation id="6398765197997659313">Surt del mode de pantalla completa</translation>
+<translation id="6408143143164565232">• Escolteu àudio des d'ordinadors Windows o Linux.
+• Suprimiu les connexions que no vulgueu mantenint premut el nom d'un ordinador.
+• Les opcions de pessigar per fer zoom i desplaçar-se amb dos dits s'han optimitzat.
+• Nova pantalla Ajuda i suggeriments.</translation>
 <translation id="6441316101718669559">Aquesta plataforma no admet la integració de l'escriptori. Podeu continuar utilitzant l'aplicació, però l'experiència de l'usuari no serà tan bona.</translation>
 <translation id="652218476070540101">S'està actualitzant el PIN d'aquest ordinador...</translation>
 <translation id="6527303717912515753">Comparteix</translation>
@@ -257,6 +261,7 @@ remot de Chrome</translation>
 <translation id="7836926030608666805">Falten alguns components necessaris. Assegureu-vos que executeu la versió més recent de Chrome i torneu-ho a provar.</translation>
 <translation id="7868137160098754906">Introduïu el vostre PIN de l'ordinador remot.</translation>
 <translation id="7869445566579231750">No teniu permís per executar aquesta aplicació.</translation>
+<translation id="7895403300744144251">Les polítiques de seguretat de l'ordinador remot no permeten les connexions des del vostre compte.</translation>
 <translation id="7948001860594368197">Opcions de pantalla</translation>
 <translation id="7970576581263377361">L'autenticació ha fallat. Torneu a iniciar la sessió a Chromium.</translation>
 <translation id="7981525049612125370">La sessió remota ha caducat.</translation>

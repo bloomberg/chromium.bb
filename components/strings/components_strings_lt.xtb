@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Serveris, priglobiantis tinklalapį, gali būti perkrautas arba vykdomi jo techninės priežiūros darbai.
         Kad negeneruotumėte per daug srauto ir nepablogintumėte situacijos,
         užklausos šiuo URL laikinai neleidžiamos.</translation>
-<translation id="1066332784716773939">Diagnozuoti klaidas...</translation>
 <translation id="106701514854093668">Žymės staliniame kompiuteryje</translation>
 <translation id="1080116354587839789">Pritaikyti pagal plotį</translation>
 <translation id="1090046120949329821">Gautos kelios skirtingos turinio išdėstymo antraštės. Tai neleidžiama siekiant
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Departamentas</translation>
 <translation id="2113977810652731515">Kortelė</translation>
 <translation id="2114841414352855701">Nepaisoma, nes buvo pakeista taikant „<ph name="POLICY_NAME" />“.</translation>
-<translation id="2122434088511736194">Vykdant paieškas staliniame kompiuteryje naudojamas numatytasis paieškos variklis („<ph name="DEFAULT_SEARCH_ENGINE_NAME" />“).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Žymės mobiliesiems</translation>
 <translation id="2148716181193084225">Šiandien</translation>
 <translation id="2149973817440762519">Redaguoti žymes</translation>
-<translation id="2153530520610387456">Eikite į
-          <ph name="BEGIN_BOLD" />
-          Pradėti &gt; Valdymo skydelis &gt; Tinklas ir internetas &gt; Tinklas ir bendrinimo centras &gt; Problemų trikčių šalinimas (apačioje) &gt; Interneto ryšys.
-          <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Visateisė administratoriaus prieiga</translation>
 <translation id="2166378884831602661">Ši svetainė negali užtikrinti saugaus ryšio</translation>
 <translation id="2171101176734966184">Bandėte pasiekti <ph name="DOMAIN" />, bet serveris pateikė sertifikatą, kuris pasirašytas naudojant nesudėtingą parašo algoritmą. Tai reiškia, kad serverio pateikti saugos kredencialai galėjo būti suklastoti ir serveris gali būti ne tas, kurio tikėjotės (gali būti, kad bendraujate su užpuoliku).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Pagal šią politiką ši vertė nepatvirtinta.</translation>
 <translation id="2262243747453050782">HTTP klaida</translation>
 <translation id="2279770628980885996">Serveriui bandant įvykdyti užklausą susidurta su nenumatyta būsena.</translation>
-<translation id="2282186295770469712">Tvarkyti paieškos nustatymus</translation>
 <translation id="2282872951544483773">Nepasiekiami eksperimentai</translation>
 <translation id="2292556288342944218">Interneto prieiga užblokuota</translation>
 <translation id="229702904922032456">Baigėsi šakninio ar tarpinio sertifikato galiojimas.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">Galite neleisti visų tarpinių serverių, jungimasis prie kurių sukonfigūruotas nustatymų puslapyje.</translation>
 <translation id="2950186680359523359">Serveris nutraukė ryšį neatsiuntęs jokių duomenų.</translation>
 <translation id="2955913368246107853">Uždaryti paieškos juostą</translation>
-<translation id="2957518517523241247">Eikite į
-          <ph name="BEGIN_BOLD" />
-          Pradėti &gt; Valdymo skydelis &gt; Tinklo ryšys &gt; Naujo ryšio vediklis
-          <ph name="END_BOLD" />,
-          jei norite patikrinti ryšį.</translation>
 <translation id="2958431318199492670">Tinklo konfigūracija neatitinka ONC standarto. Kai kurių konfigūracijos dalių neįmanoma importuoti.</translation>
 <translation id="2969319727213777354">Kad užmegztumėte saugų ryšį, turėsite tinkamai nustatyti laikrodį. To reikia, nes svetainių tapatybei įrodyti naudojami sertifikatai galioja tik tam tikru laikotarpiu. Įrenginio laikrodis nustatytas netinkamai, todėl „Google Chrome“ negali patvirtinti šių sertifikatų.</translation>
 <translation id="2972581237482394796">&amp;Atlikti iš naujo</translation>
@@ -299,7 +287,6 @@
 <translation id="3885155851504623709">Apylinkė</translation>
 <translation id="3901925938762663762">Kortelė nebegalioja</translation>
 <translation id="3903912596042358459">Serveris atsisakė įvykdyti užklausą.</translation>
-<translation id="3930850196944737149">Įrenginys neprijungtas.</translation>
 <translation id="3934680773876859118">Nepavyko įkelti PDF dokumento</translation>
 <translation id="3950924596163729246">Nepavyko pasiekti tinklo.</translation>
 <translation id="3963721102035795474">Skaitytojo režimas</translation>
@@ -467,7 +454,6 @@
 <translation id="6040143037577758943">Uždaryti</translation>
 <translation id="604124094241169006">Automatinis</translation>
 <translation id="6042308850641462728">Daugiau</translation>
-<translation id="6044718745395562198">Kompiuteris neprijungtas prie interneto.</translation>
 <translation id="6060685159320643512">Atsargiai, šie bandymai gali būti pavojingi</translation>
 <translation id="6093795393556121384">Kortelė patvirtinta</translation>
 <translation id="6146055958333702838">Patikrinkite laidus ir iš naujo paleiskite maršruto parinktuvus, modemus ar kitus
@@ -534,11 +520,6 @@
 <translation id="6830600606572693159">Šiuo metu <ph name="URL" /> tinklalapis negalimas. Jis gali būti per daug apkrautas arba neveikiantis dėl techninės priežiūros.</translation>
 <translation id="6831043979455480757">Vertėjas</translation>
 <translation id="6839929833149231406">Sritis</translation>
-<translation id="6851123334996048122">Eikite į
-          <ph name="BEGIN_BOLD" />
-          Programos &gt; Sistemos nuostatos &gt; Tinklas &gt; Pagalba man
-          <ph name="END_BOLD" />,
-          kad patikrintumėte ryšį.</translation>
 <translation id="6874604403660855544">&amp;Pridėti dar kartą</translation>
 <translation id="6891596781022320156">Politikos lygis nepalaikomas.</translation>
 <translation id="6897140037006041989">Naudotojo atstovas</translation>
@@ -620,9 +601,6 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Netvarkoma</translation>
 <translation id="7758069387465995638">Gali būti, kad užkarda arba antivirusinė programinė įranga užblokavo ryšį.</translation>
-<translation id="7760914272566804712">Galite pabandyti diagnozuoti problemą atlikę šiuos veiksmus:
-          <ph name="LINE_BREAK" />
-          <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Serverio sertifikatas neatitinka URL.</translation>
 <translation id="777702478322588152">Prefektūra</translation>
 <translation id="778579833039460630">Negauta jokių duomenų</translation>
@@ -662,14 +640,6 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="8241707690549784388">Jūsų ieškomas puslapis ieškojo informacijos, kurią įvedėte. Grįžus į tą puslapį bet kokie jūsų atliekami veiksmai gali būti kartojami. Ar norite tęsti?</translation>
 <translation id="8249320324621329438">Paskutinį kartą gauta:</translation>
 <translation id="8261506727792406068">Panaikinti</translation>
-<translation id="8266098793847448402">Spustelėkite
-          <ph name="BEGIN_BOLD" />Pradėti<ph name="END_BOLD" />,
-          spustelėkite
-          <ph name="BEGIN_BOLD" />Paleisti<ph name="END_BOLD" />,
-          įveskite
-          <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
-          ir spustelėkite
-          <ph name="BEGIN_BOLD" />Gerai<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Jūsų užklausa pasiekti šią svetainę, skirta <ph name="NAME" />, išsiųsta.</translation>
 <translation id="8289355894181816810">Jei nesate tikri, ką tai reiškia, susisiekite su tinklo administratoriumi.</translation>
 <translation id="8293206222192510085">Pridėti žymę</translation>

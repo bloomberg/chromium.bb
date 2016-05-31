@@ -18,6 +18,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="151962892725702025">Det gick inte att synkronisera data med Chromium eftersom synkronisering inte är tillgängligt för domänen.</translation>
 <translation id="1559451348202814456">Chromium kanske inte fungerar ordentligt eftersom den inte längre stöds på Mac OS X 10.6, 10.7 och 10.8.</translation>
 <translation id="1644918877723739397">Chromium sparar detta i <ph name="SAVED_PASSWORD_LINK" /> och kommer ihåg det nästa gång du behöver det.</translation>
+<translation id="1653828314016431939">OK - starta om nu</translation>
 <translation id="1668054258064581266">När du har tagit bort kontot från Chromium kan öppna flikar behöva läsas in på nytt för att ändringen ska träda i kraft.</translation>
 <translation id="1688750314291223739">Konfigurera synkronisering för att spara dina webbläsarfunktioner på webben och använda dem i Chromium på alla datorer.</translation>
 <translation id="1699664235656412242">Stäng alla Chromium-fönster (inklusive i Windows 8-läge) och försök igen.</translation>
@@ -182,6 +183,12 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Nytt fönster</translation>
 <translation id="734373864078049451">Här finns webben, bokmärken och allt annat du använder Chromium till.</translation>
+<translation id="7344413941077984497">Om du vill ange vilka webbplatser som ska vara tillåtna för <ph name="NEW_PROFILE_NAME" /> besöker du <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> och konfigurerar begränsningar och andra inställningar där. Om du inte ändrar standardinställningarna får <ph name="NEW_PROFILE_NAME" /> surfa fritt på webben.
+
+Kom ihåg att låsa din profil när du inte använder Chromium om <ph name="NEW_PROFILE_NAME" /> inte ska få tillgång till ditt konto. Gör så här: Klicka på profilnamnet i webbläsarens övre högra hörn och välj Stäng och aktivera barnspärr.
+<ph name="BEGIN_LINK_2" />Läs mer<ph name="END_LINK_2" />
+
+Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Om du vill behålla dina befintliga uppgifter för Chromium privata kan du skapa en ny Chromium-användare för <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">För Chromium krävs Windows XP eller senare. En del funktioner fungerar eventuellt inte.</translation>
 <translation id="7463979740390522693">Chromium – meddelanden (<ph name="QUANTITY" /> olästa)</translation>
@@ -196,6 +203,7 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="7747138024166251722">Det gick inte att skapa en tillfällig katalog för installationsfilen. Kontrollera diskutrymmet och att du har behörighet att installera program.</translation>
 <translation id="7918535023914021398">Chromium har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. Inga certifikattransparensuppgifter skickades från servern.</translation>
 <translation id="7937630085815544518">Du var inloggad i Chromium som <ph name="USER_EMAIL_ADDRESS" />. Använd samma konto när du loggar in igen.</translation>
+<translation id="795025003224538582">Starta inte om</translation>
 <translation id="7962572577636132072">Chromium uppdateras automatiskt så att du alltid har den senaste versionen.</translation>
 <translation id="7979877361127045932">Dölj i Chromium-menyn</translation>
 <translation id="8030318113982266900">Uppdaterar din enhet till kanalen <ph name="CHANNEL_NAME" /> ...</translation>

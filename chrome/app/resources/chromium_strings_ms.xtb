@@ -16,6 +16,7 @@
 <translation id="151962892725702025">OS Chromium tidak dapat menyegerakkan data anda kerana Segerak tidak tersedia untuk domain anda.</translation>
 <translation id="1559451348202814456">Chromium mungkin tidak akan berfungsi dengan betul kerana tidak lagi disokong pada Mac OS X 10.6, 10.7 atau 10.8.</translation>
 <translation id="1644918877723739397">Chromium akan menyimpan ini dalam <ph name="SAVED_PASSWORD_LINK" /> anda dan mengingatinya apabila anda memerlukannya nanti.</translation>
+<translation id="1653828314016431939">OK - Mulakan semula sekarang</translation>
 <translation id="1668054258064581266">Selepas mengalih keluar akaun anda daripada Chromium, anda mungkin perlu memuatkan semula tab yang dibuka untuk memberi kesan.</translation>
 <translation id="1688750314291223739">Sediakan Penyegerakan untuk menyimpan ciri penyemak imbas yang diperibadikan di web dan aksesnya dari Chromium pada mana-mana komputer.</translation>
 <translation id="1699664235656412242">Sila tutup semua tetingkap Chromium (termasuk yang di dalam mod Windows 8) dan cuba lagi.</translation>
@@ -180,6 +181,12 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Tetingkap baharu</translation>
 <translation id="734373864078049451">Web, penanda halaman dan barangan Chromium anda yang lain tinggal di sini.</translation>
+<translation id="7344413941077984497">Untuk menetapkan tapak web yang boleh dilihat oleh <ph name="NEW_PROFILE_NAME" />, anda boleh mengkonfigurasi sekatan dan tetapan dengan melawati <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Jika anda tidak menukar tetapan lalainya, <ph name="NEW_PROFILE_NAME" /> boleh menyemak imbas apa sahaja di web.
+
+Untuk menghalang <ph name="NEW_PROFILE_NAME" /> daripada mengakses akaun anda, pastikan profil anda dikunci apabila tidak menggunakan Chromium. Untuk melakukannya, klik pada nama profil anda di penjuru atas sebelah kanan penyemak imbas dan pilih "Keluar dan kunci kanak-kanak".
+<ph name="BEGIN_LINK_2" />Ketahui lebih lanjut<ph name="END_LINK_2" />
+
+Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</translation>
 <translation id="7419987137528340081">Jika anda memilih untuk menyimpan data Chromium yang sedia ada secara berasingan, anda boleh membuat pengguna Chromium baharu untuk <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium memerlukan Windows XP atau yang lebih baharu. Beberapa ciri mungkin tidak berfungsi.</translation>
 <translation id="7463979740390522693">Chromium - Pemberitahuan (<ph name="QUANTITY" /> belum dibaca)</translation>
@@ -194,6 +201,7 @@ Chromium tidak dapat mengembalikan tetapan anda.</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat mencipta direktori sementara. Sila semak ruang cakera kosong dan kebenaran untuk memasang perisian.</translation>
 <translation id="7918535023914021398">Chromium mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan sijil tapak web ini. Pelayan tidak membekalkan sebarang maklumat Ketelusan Sijil.</translation>
 <translation id="7937630085815544518">Anda telah log masuk ke Chromium sebagai <ph name="USER_EMAIL_ADDRESS" />. Sila gunakan akaun yang sama untuk log masuk lagi.</translation>
+<translation id="795025003224538582">Jangan mulakan semula</translation>
 <translation id="7962572577636132072">Chromium dikemas kini secara automatik supaya anda sentiasa mempunyai versi yang terbaharu.</translation>
 <translation id="7979877361127045932">Sembunyikan dalam menu Chromium</translation>
 <translation id="8030318113982266900">Mengemas kini peranti anda kepada saluran <ph name="CHANNEL_NAME" />...</translation>

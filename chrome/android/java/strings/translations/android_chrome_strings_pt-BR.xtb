@@ -72,6 +72,7 @@
 <translation id="1853692000353488670">Nova guia anônima</translation>
 <translation id="189172778771606813">Fechar gaveta de navegação</translation>
 <translation id="1924956916668006832">Selecionar um endereço para envio</translation>
+<translation id="1933845786846280168">Guia selecionada</translation>
 <translation id="194341124344773587">Ative a permissão para o Chrome nas <ph name="BEGIN_LINK" />configurações do Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Salvar senhas</translation>
 <translation id="1944384637046898011">Criptografar tudo com senha do Google a partir de <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@
 <translation id="2959609938957585241">Para ver as guias dos seus outros dispositivos, ative a opção "Sincronizar dados automaticamente" nas configurações de conta do Android.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos os direitos reservados.</translation>
 <translation id="2968755619301702150">Leitor de certificados</translation>
+<translation id="2979025552038692506">Guia anônima selecionada</translation>
 <translation id="2996291259634659425">Criar senha longa</translation>
 <translation id="2996809686854298943">O URL é obrigatório</translation>
 <translation id="3012408695656332380">Substitui os dados deste dispositivo com os dados da conta <ph name="TO_ACCOUNT" />. É possível recuperar os dados já existentes voltando para <ph name="FROM_ACCOUNT" />, mas os dados criados depois que você se desconectar serão perdidos.</translation>
@@ -553,6 +555,7 @@ Por exemplo, alguns websites podem responder a esta solicitação mostrando anú
 <translation id="8073388330009372546">Abrir imagem em nova guia</translation>
 <translation id="8076014560081431679">As configurações salvas em sites não são excluídas e podem refletir seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Este conteúdo é de <ph name="DOMAIN_NAME" />, veiculado pelo Google.</translation>
+<translation id="8103578431304235997">Guia anônima</translation>
 <translation id="8106211421800660735">Número do cartão de crédito</translation>
 <translation id="813082847718468539">Visualizar informações do site</translation>
 <translation id="8137558756159375272">"Toque para pesquisar" envia a palavra selecionada e a página atual como contexto para a Pesquisa Google. Desative esse recurso em <ph name="BEGIN_LINK" />Configurações<ph name="END_LINK" />.</translation>

@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome bruger dit kamera.</translation>
 <translation id="1619887657840448962">For at gøre Chrome mere sikker har vi deaktiveret følgende udvidelse, som ikke er anført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> og muligvis er blevet tilføjet, uden at du vidste det.</translation>
 <translation id="163860049029591106">Kom godt i gang med Chrome OS</translation>
+<translation id="1653828314016431939">OK, genstart nu</translation>
 <translation id="1682634494516646069">Google Chrome kan ikke læse og skrive i sin egen datamappe: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome er en webbrowser, som kører websider og applikationer med lynets hast. Den er hurtig, stabil og nem at bruge. Surf mere sikkert med indbygget beskyttelse mod malware og phishing i Google Chrome.</translation>
 <translation id="174539241580958092">Google Chrome kunne ikke synkronisere dine data på grund af en loginfejl.</translation>
@@ -70,6 +71,12 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="3080151273017101988">Fortsæt med at køre baggrundsapps, når Google Chrome er lukket</translation>
 <translation id="3089968997497233615">Der findes en ny, sikker version af Google Chrome.</translation>
 <translation id="3149510190863420837">Chrome-apps</translation>
+<translation id="3251381707915721925">Du kan angive, hvilke websites <ph name="NEW_PROFILE_NAME" /> skal kunne se, ved at konfigurere begrænsninger og indstillinger på <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Hvis du ikke ændrer standardindstillingerne, kan <ph name="NEW_PROFILE_NAME" /> besøge alle websites på nettet.
+
+Du kan forhindre <ph name="NEW_PROFILE_NAME" /> i at få adgang til din konto ved at låse din profil, når du ikke bruger Chrome. Du gør dette ved at klikke på dit profilnavn øverst til højre i browseren og vælge "Afslut, og aktivér børnesikring".
+<ph name="BEGIN_LINK_2" />Få flere oplysninger<ph name="END_LINK_2" />
+
+Gå til din e-mail på <ph name="ACCOUNT_EMAIL" /> for at få yderligere vejledning.</translation>
 <translation id="3282568296779691940">Log ind i Chrome</translation>
 <translation id="3311976847535831054">Denne computer vil ikke længere modtage 32-bit Google Chrome-opdateringer. Opgrader til 64-bit Google Chrome.</translation>
 <translation id="3360895254066713204">Hjælp til Chrome</translation>
@@ -117,6 +124,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="4921569541910214635">Deler du computer med andre? Nu kan du konfigurere Chrome, præcist som du vil.</translation>
 <translation id="4925019873400497719">Chrome bekræftede, at <ph name="ISSUER" /> har udstedt certifikatet for dette website. Serveren leverede Certificate Transparency-oplysninger, men de var ugyldige.</translation>
 <translation id="4953650215774548573">Angiv Google Chrome som din standardbrowser</translation>
+<translation id="495931528404527476">I Chrome</translation>
 <translation id="4987308747895123092">Luk alle Google Chrome-vinduer (herunder dem i Windows 8-tilstand), og prøv igen.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome kunne ikke synkronisere dine data. Opdater din adgangssætning til synkronisering.</translation>
@@ -205,6 +213,7 @@ Hvis du logger ind alligevel, flettes Chrome-oplysninger, som f.eks. bogmærker,
 <translation id="7808348361785373670">Fjern fra Chrome...</translation>
 <translation id="7825851276765848807">Installationen mislykkedes på grund af en uspecificeret fejl. Download Google Chrome igen.</translation>
 <translation id="7890208801193284374">Hvis du deler en computer, kan venner og familie browse individuelt og konfigurere Chrome, som de ønsker hver især.</translation>
+<translation id="795025003224538582">Genstart ikke</translation>
 <translation id="8005540215158006229">Chrome er næsten klar.</translation>
 <translation id="8008534537613507642">Geninstaller Chrome</translation>
 <translation id="8030318113982266900">Opdaterer din enhed til kanalen <ph name="CHANNEL_NAME" />...</translation>

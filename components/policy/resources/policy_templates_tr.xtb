@@ -521,6 +521,7 @@
           Bu politika, yalnızca 'DefaultSearchProviderEnabled' politikası etkinleştirilirse dikkate alınır.</translation>
 <translation id="2682225790874070339"><ph name="PRODUCT_OS_NAME" />, Files uygulamasında Drive'ı devre dışı bırakır</translation>
 <translation id="268577405881275241">Veri sıkıştırma proxy özelliğini etkinleştir</translation>
+<translation id="2731627323327011390">ARC uygulamalarına ilişkin <ph name="PRODUCT_OS_NAME" /> sertifikalarının kullanımını devre dışı bırak</translation>
 <translation id="2742843273354638707">Chrome Web Mağazası uygulamasını ve alt bilgi bağlantısını Yeni Sekme Sayfası'nda ve <ph name="PRODUCT_OS_NAME" /> uygulama başlatıcısında gizle.
 
       Bu politika doğru değerine ayarlandığında simgeler gizlenir.
@@ -1840,6 +1841,7 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
           Bu politika ayarlanırsa, giriş ekranı gösterildiğinde etkinleştirilen ekran büyütecinin türünü denetler. Politika "Yok" olarak ayarlanırsa, ekran büyüteci devre dışı bırakılır.
           Bu politikayı ayarlarsanız, kullanıcılar ekran büyütecini etkinleştirip veya devre dışı bırakıp geçici olarak politikayı geçersiz kılabilir. Ancak, kullanıcının seçimi kalıcı değildir ve giriş ekranı yeniden gösterildiğinde veya kullanıcı giriş ekranında bir dakika boşta kalırsa varsayılan değer geri yüklenir.
           Bu politika ayarlanmadan bırakılırsa, giriş ekranı ilk kez gösterildiğinde ekran büyüteci devre dışı olur. Kullanıcılar ekran büyütecini her zaman etkinleştirebilir veya devre dışı bırakabilir ve giriş ekranındaki ekran büyütecinin durumu kullanıcılar arasında kalıcıdır.</translation>
+<translation id="7249828445670652637">ARC uygulamalarına ilişkin <ph name="PRODUCT_OS_NAME" /> CA sertifikalarını etkinleştir</translation>
 <translation id="7258823566580374486">Uzaktan erişen ana makinelerin perdelenmesini etkinleştirme</translation>
 <translation id="7260277299188117560">p2p otomatik güncellemesi etkin</translation>
 <translation id="7267809745244694722">Medya tuşları varsayılan olarak işlev tuşlarına ayarlanır</translation>
@@ -1959,6 +1961,17 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 <translation id="7715711044277116530">Sunum modunda ekranın kararma gecikmesinin ölçekleneceği yüzde</translation>
 <translation id="7717938661004793600"><ph name="PRODUCT_OS_NAME" /> erişilebilirlik özelliklerini yapılandır.</translation>
 <translation id="7719251660743813569">Kullanım ölçümlerinin Google'a bildirilip bildirilmeyeceğini denetler. True olarak ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> kullanım ölçümlerini rapor eder. Hiç ayarlanmazsa veya false değerine ayarlanırsa, ölçüm raporlama devre dışı olur.</translation>
+<translation id="7723433108978650103">Listelenen URL'lere erişimi engeller.
+
+      Bu politika, kullanıcının kara listeye alınan URL'lerdeki web sayfalarını yüklemesini önler. Kara liste, hangi URL'lerin kara listeye alınacağını belirten URL desenlerinin listesini içerir.
+
+      https://www.chromium.org/administrators/url-blacklist-filter-format adresindeki talimatlara uygun şekilde bir URL deseninin biçimlendirilmesi gerekir.
+
+      URL beyaz liste politikasında istisnalar tanımlanabilir. Bu politikalar 1000 girişle sınırlıdır, ondan sonraki girişler yoksayılır.
+
+      Dahili "chrome://*" URL'lerinin engellenmesinin önerilmediğini unutmayın, aksi halde beklenmedik hatalar ortaya çıkabilir.
+
+      Bu politika ayarlanmazsa tarayıcıda hiçbir URL kara listeye alınmaz.</translation>
 <translation id="7749402620209366169">Uzaktan erişim ana makineleri için, kullanıcı tarafından belirlenen PIN yerine iki öğeli kimlik doğrulamayı etkinleştirir.
 
           Bu ayar etkinleştirilirse, kullanıcıların bir ana makineye erişirken geçerli bir iki öğeli kimlik doğrulama kodu sağlamaları gerekir.
@@ -2028,6 +2041,9 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
       Bu politika ayarlanmazsa TimezoneAutomaticDetectionUsersDecide değeri belirlenmiş gibi davranır.
 
       SystemTimezone politikası ayarlanırsa bu politika geçersiz kılınır. Bu durumda, otomatik saat dilimi algılama tamamen devre dışı bırakılır.</translation>
+<translation id="787125417158068494">SyncDisabled seçeneğine ayarlanırsa veya hiç yapılandırılmazsa, ARC uygulamaları için <ph name="PRODUCT_OS_NAME" /> sertifikaları kullanılamaz.
+
+      CopyCaCerts seçeneğine ayarlanırsa, ONC tarafından yüklenen ve <ph name="WEB_TRUSTED_BIT" /> içeren tüm CA sertifikaları ARC uygulamaları için kullanılabilir.</translation>
 <translation id="7882585827992171421">Bu politika yalnızca perakende modunda etkindir.
 
       Oturum açma ekranında ekran koruyucu olarak kullanılacak uzantının kimliğini belirler. Uzantı, DeviceAppPack politikası kullanılarak bu alan adı için yapılandırılmış AppPack'in bir parçası olmalıdır.</translation>
@@ -2043,6 +2059,7 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">OS güncelleme yükleri için p2p'nin kullanılıp kullanılmayacağını belirtir. Doğru seçeneğine ayarlanırsa, cihazlar LAN üzerindeki yükleri paylaşır ve kullanmaya çalışır, bu da İnternet bant genişliği kullanımını ve tıkanıklığını potansiyel olarak azaltır. Güncelleme yükü LAN'da kullanılamıyorsa, cihaz bir güncelleme sunucusundan indirme işlemine geçer. Yanlış seçeneğine ayarlanırsa veya yapılandırılmazsa p2p kullanılmaz.</translation>
 <translation id="7933141401888114454">Denetlenen kullanıcılar oluşturmayı etkinleştir</translation>
+<translation id="793473937901685727">ARC uygulamaları için sertifika kullanılabilirliğini ayarla</translation>
 <translation id="7936098023732125869">Varsayılan bir arama sağlayıcısının kullanılmasına izin verir.
 
           Bu ayarı etkinleştirirseniz, kullanıcı çok amaçlı adres çubuğuna URL dışında bir metin yazdığında varsayılan bir arama yapılır.

@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">El servidor que aloja la página web podría estar sobrecargado o en mantenimiento.
         Para evitar que se genere demasiado tráfico y empeore la situación,
         se inhabilitaron temporalmente las solicitudes a esta URL.</translation>
-<translation id="1066332784716773939">Diagnosticar errores…</translation>
 <translation id="106701514854093668">Marcadores de escritorio</translation>
 <translation id="1080116354587839789">Ajustar al ancho</translation>
 <translation id="1090046120949329821">Se recibieron varios encabezados característicos de contenido-disposición. Esta acción se prohíbe para asegurar la protección contra ataques de división de respuesta HTTP.</translation>
@@ -103,15 +102,10 @@
 <translation id="2096368010154057602">Departamento</translation>
 <translation id="2113977810652731515">Tarjeta</translation>
 <translation id="2114841414352855701">Se ignoró porque fue anulada por <ph name="POLICY_NAME" /> .</translation>
-<translation id="2122434088511736194">Las búsquedas de escritorio usan tu motor de búsqueda predeterminado (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Marcadores del celular</translation>
 <translation id="2148716181193084225">Hoy</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
-<translation id="2153530520610387456">Ve a 
-          <ph name="BEGIN_BOLD" />
-          Inicio &gt; Panel de control &gt; Redes e Internet &gt; Redes y recursos compartidos &gt; Solucionar problemas (en la parte inferior) &gt; Conexiones de Internet.
-          <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Acceso de administrador completo</translation>
 <translation id="2166378884831602661">Este sitio no puede proporcionar una conexión segura</translation>
 <translation id="2171101176734966184">Intentaste acceder a <ph name="DOMAIN" />, pero el servidor presentó un certificado firmado con un algoritmo de firma no seguro. Es posible que se hayan falsificado las credenciales de seguridad presentadas por el servidor y que este no sea el servidor esperado (es posible que hayas establecido comunicación con un atacante).</translation>
@@ -123,7 +117,6 @@
 <translation id="225207911366869382">Este valor ya no se utiliza para esta política.</translation>
 <translation id="2262243747453050782">Error de HTTP</translation>
 <translation id="2279770628980885996">Se encontró una situación inesperada mientras el servidor intentaba cumplir con la solicitud.</translation>
-<translation id="2282186295770469712">Administrar la configuración de búsqueda</translation>
 <translation id="2282872951544483773">Experimentos no disponibles</translation>
 <translation id="2292556288342944218">Se bloqueó tu acceso a Internet</translation>
 <translation id="229702904922032456">Un certificado raíz o intermedio venció.</translation>
@@ -189,11 +182,6 @@
 <translation id="2948083400971632585">Puedes inhabilitar los servidores proxy configurados para una conexión desde la página de configuración.</translation>
 <translation id="2950186680359523359">El servidor ha cerrado la conexión sin enviar ningún dato.</translation>
 <translation id="2955913368246107853">Cerrar la barra de búsqueda</translation>
-<translation id="2957518517523241247">Ve a 
-          <ph name="BEGIN_BOLD" />
-          Inicio &gt; Panel de control &gt; Conexiones de red &gt; Nuevo asistente de conexión
-          <ph name="END_BOLD" />
-          para verificar tu conexión.</translation>
 <translation id="2958431318199492670">La configuración de red no cumple con el estándar ONC. Es posible que no se importen algunas partes de la configuración.</translation>
 <translation id="2969319727213777354">Para establecer una conexión segura, el reloj se debe configurar correctamente. Esto se debe a que los certificados que usan los sitios web para su identificación solo son válidos por períodos de tiempo específicos. Debido a que la configuración del reloj del dispositivo es incorrecta, Google Chrome no puede verificar estos certificados.</translation>
 <translation id="2972581237482394796">&amp;Rehacer</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">Parroquia</translation>
 <translation id="3901925938762663762">Caducó la tarjeta.</translation>
 <translation id="3903912596042358459">El servidor se niega a cumplir esta solicitud</translation>
-<translation id="3930850196944737149">Tu equipo está sin conexión.</translation>
 <translation id="3934680773876859118">No se pudo cargar el documento PDF</translation>
 <translation id="3950924596163729246">No se puede acceder al sistema.</translation>
 <translation id="3963721102035795474">Modo de lectura</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="604124094241169006">Automático</translation>
 <translation id="6042308850641462728">Más</translation>
-<translation id="6044718745395562198">La computadora está sin conexión</translation>
 <translation id="6060685159320643512">Cuidado, estos experimentos pueden dañarte</translation>
 <translation id="6093795393556121384">Se verificó tu tarjeta.</translation>
 <translation id="6146055958333702838">Revisa los cables y reinicia los routers, módems u otros dispositivos
@@ -531,11 +517,6 @@
 <translation id="6830600606572693159">La página web en <ph name="URL" /> no está disponible en este momento. Es posible que esté sobrecargado o no disponible por mantenimiento.</translation>
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="6839929833149231406">Área</translation>
-<translation id="6851123334996048122">Ve a
-          <ph name="BEGIN_BOLD" />
-          Aplicaciones &gt; Preferencias del sistema &gt; Red &gt; Asistencia
-          <ph name="END_BOLD" />
-          para verificar tu conexión.</translation>
 <translation id="6874604403660855544">&amp;Rehacer Agregar</translation>
 <translation id="6891596781022320156">No se admite el nivel de políticas.</translation>
 <translation id="6897140037006041989">User agent</translation>
@@ -617,9 +598,6 @@
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Sin administrar</translation>
 <translation id="7758069387465995638">Es posible que un software antivirus o un firewarll hayan bloqueado la conexión.</translation>
-<translation id="7760914272566804712">Puedes intentar diagnosticar el problema mediante estos pasos:
-          <ph name="LINE_BREAK" />
-          <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">El certificado del servidor no coincide con la dirección URL.</translation>
 <translation id="777702478322588152">Prefectura</translation>
 <translation id="778579833039460630">No se ha recibido ningún dato.</translation>
@@ -659,14 +637,6 @@
 <translation id="8241707690549784388">La página que buscas ha utilizado la información que has especificado. Volver a la página podría provocar la repetición de alguna acción. ¿Deseas continuar?</translation>
 <translation id="8249320324621329438">Se obtuvo por última vez:</translation>
 <translation id="8261506727792406068">Eliminar</translation>
-<translation id="8266098793847448402">Haz clic en
-    <ph name="BEGIN_BOLD" />Inicio<ph name="END_BOLD" /> y
-    luego, en
-    <ph name="BEGIN_BOLD" />Ejecutar<ph name="END_BOLD" />.
-    Ingresa
-    <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
-    y haz clic en
-    <ph name="BEGIN_BOLD" />Aceptar<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Tu solicitud de acceso a este sitio se envió a <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Comunícate con el administrador de red si no entiendes bien lo que significa.</translation>
 <translation id="8293206222192510085">Agregar Marcador</translation>

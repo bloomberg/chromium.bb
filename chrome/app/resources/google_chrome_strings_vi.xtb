@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome đang sử dụng máy ảnh của bạn.</translation>
 <translation id="1619887657840448962">Để làm cho Chrome an toàn hơn, chúng tôi đã vô hiệu hóa tiện ích không được liệt kê trong <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> và có thể đã được thêm mà bạn không biết.</translation>
 <translation id="163860049029591106">Bắt đầu với Chrome OS</translation>
+<translation id="1653828314016431939">OK - Khởi động lại ngay bây giờ</translation>
 <translation id="1682634494516646069">Google Chrome không thể đọc và ghi vào thư mục dữ liệu:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -72,6 +73,12 @@
 <translation id="3080151273017101988">Tiếp tục chạy các ứng dụng nền khi Google Chrome đóng</translation>
 <translation id="3089968997497233615">Đã có phiên bản Google Chrome mới và an toàn hơn.</translation>
 <translation id="3149510190863420837">Ứng dụng Chrome</translation>
+<translation id="3251381707915721925">Để đặt những trang web mà <ph name="NEW_PROFILE_NAME" /> có thể xem, bạn có thể định cấu hình các hạn chế và cài đặt bằng cách truy cập <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Nếu bạn không thay đổi cài đặt mặc định thì <ph name="NEW_PROFILE_NAME" /> có thể duyệt mọi nội dung trên web.
+
+Để ngăn <ph name="NEW_PROFILE_NAME" /> truy cập vào tài khoản của bạn, hãy nhớ khóa hồ sơ khi bạn sử dụng Chrome. Để làm điều này, nhấp vào tên hồ sơ trong góc phía trên bên phải của trình duyệt, sau đó chọn "Thoát và khóa chặn trẻ em".
+<ph name="BEGIN_LINK_2" />Tìm hiểu thêm<ph name="END_LINK_2" />
+
+Vui lòng xem email của bạn tại <ph name="ACCOUNT_EMAIL" /> để biết thêm hướng dẫn.</translation>
 <translation id="3282568296779691940">Đăng nhập Chrome</translation>
 <translation id="3311976847535831054">Máy tính này sẽ không còn nhận bản cập nhật Google Chrome 32 bit nữa. Vui lòng nâng cấp lên Google Chrome 64 bit.</translation>
 <translation id="3360895254066713204">Trình trợ giúp của Chrome</translation>
@@ -120,6 +127,7 @@
 <translation id="4921569541910214635">Bạn muốn chia sẻ máy tính? Giờ đây, bạn có thể thiết lập Chrome theo cách mình muốn.</translation>
 <translation id="4925019873400497719">Chrome đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin về Tính minh mạch của chứng chỉ nhưng thông tin này không hợp lệ.</translation>
 <translation id="4953650215774548573">Đặt Google Chrome làm trình duyệt mặc định của bạn</translation>
+<translation id="495931528404527476">Trong Chrome</translation>
 <translation id="4987308747895123092">Hãy đóng tất cả cửa sổ Google Chrome (bao gồm cả những cửa sổ trong chế độ Windows 8) và thử lại.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
@@ -210,6 +218,7 @@ Một số tính năng có thể không khả dụng. Vui lòng chỉ định th
 <translation id="7808348361785373670">Xóa khỏi Chrome...</translation>
 <translation id="7825851276765848807">Không thể cài đặt do lỗi không xác định. Hãy tải xuống lại Google Chrome.</translation>
 <translation id="7890208801193284374">Nếu bạn chia sẻ máy tính, bạn bè và gia đình có thể duyệt web một cách riêng biệt và thiết lập Chrome theo ý của họ.</translation>
+<translation id="795025003224538582">Không khởi động lại</translation>
 <translation id="8005540215158006229">Chrome sắp sẵn sàng.</translation>
 <translation id="8008534537613507642">Cài đặt lại Chrome</translation>
 <translation id="8030318113982266900">Đang cập nhật thiết bị tới kênh <ph name="CHANNEL_NAME" />...</translation>

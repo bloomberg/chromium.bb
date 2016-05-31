@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">モバイル データを有効にする</translation>
 <translation id="1621499497873603021">バッテリーが空になるまであと: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome 搭載デバイス</translation>
+<translation id="1677472565718498478">あと <ph name="TIME" /></translation>
 <translation id="1723752762323179280">セッションを終了</translation>
 <translation id="1747827819627189109">画面キーボードが有効です</translation>
 <translation id="1812696562331527143">入力方法を <ph name="INPUT_METHOD_ID" />*（<ph name="BEGIN_LINK" />サードパーティ<ph name="END_LINK" />）に変更しました。
@@ -116,6 +117,7 @@
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4527045527269911712">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。</translation>
+<translation id="453661520163887813">あと <ph name="TIME" /> で充電完了</translation>
 <translation id="4544944664594876241">画面をロックするショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
 <translation id="479989351350248267">検索</translation>
 <translation id="4804818685124855865">切断</translation>
@@ -224,6 +226,7 @@ Alt+ 検索/Shift キーを押すと解除されます。</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> は電源がオンでも充電できない可能性があります。</translation>
 <translation id="8528322925433439945">モバイル...</translation>
+<translation id="8639760480004882931">バッテリー残量: <ph name="PERCENTAGE" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">低電力の充電器に接続されています</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

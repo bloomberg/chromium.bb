@@ -72,6 +72,7 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="1853692000353488670">Naujas inkognito skirtukas</translation>
 <translation id="189172778771606813">Uždaryti naršymo skydelį</translation>
 <translation id="1924956916668006832">Pasirinkti pristatymo adresą</translation>
+<translation id="1933845786846280168">Pasirinktas skirtukas</translation>
 <translation id="194341124344773587">Įjunkite „Chrome“ leidimą <ph name="BEGIN_LINK" />„Android“ nustatymuose<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Slaptažodžių išsaugojimas</translation>
 <translation id="1944384637046898011">Šifruoti viską nuo <ph name="TIME" /> taikant „Google“ slaptažodį</translation>
@@ -156,6 +157,7 @@ Fizinį žiniatinklį galite valdyti „Chrome“ nustatymuose.
 <translation id="2959609938957585241">Jei norite pasiekti skirtukus iš kitų įrenginių, „Android“ paskyros nustatymuose įjunkite parinktį „Automatiškai sinchronizuoti duomenis“.</translation>
 <translation id="2960796085439532066">Autorių teisės priklauso „Google Inc.“, <ph name="YEAR" /> m. Visos teisės saugomos.</translation>
 <translation id="2968755619301702150">Sertifikato peržiūros priemonė</translation>
+<translation id="2979025552038692506">Pasirinktas inkognito skirtukas</translation>
 <translation id="2996291259634659425">Kurkite slaptafrazę</translation>
 <translation id="2996809686854298943">Reikalingas URL</translation>
 <translation id="3012408695656332380">Šio įrenginio duomenys bus pakeisti paskyros <ph name="TO_ACCOUNT" /> duomenimis. Esamus duomenis galite gauti perjungę atgal į <ph name="FROM_ACCOUNT" />, bet po atsijungimo sukurti duomenys bus prarasti.</translation>
@@ -555,6 +557,7 @@ Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali bū
 <translation id="8073388330009372546">Atid. vaizdą nauj. skirt. lap.</translation>
 <translation id="8076014560081431679">Išsaugoti svetainių nustatymai nebus ištrinti ir gali nurodyti naršymo įpročius. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Šis turinys yra iš domeno <ph name="DOMAIN_NAME" />, kurį teikia „Google“.</translation>
+<translation id="8103578431304235997">Inkognito skirtukas</translation>
 <translation id="8106211421800660735">Kredito kortelės numeris</translation>
 <translation id="813082847718468539">Žiūrėti svetainės informaciją</translation>
 <translation id="8137558756159375272">Paieška palietus siunčia pasirinktą žodį ir esamą puslapį kaip kontekstą „Google“ paieškai. Galite išjungti šią funkciją <ph name="BEGIN_LINK" />nustatymuose<ph name="END_LINK" />.</translation>

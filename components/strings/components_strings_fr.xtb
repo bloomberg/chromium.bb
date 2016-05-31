@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Le serveur qui héberge la page Web peut être surchargé ou en cours de maintenance.
     Afin d'éviter de générer trop de trafic et d'aggraver la situation,
     les requêtes à cette URL ont été temporairement interdites.</translation>
-<translation id="1066332784716773939">Analyser les erreurs…</translation>
 <translation id="106701514854093668">Favoris sur l'ordinateur</translation>
 <translation id="1080116354587839789">Ajuster à la largeur</translation>
 <translation id="1090046120949329821">Plusieurs en-têtes Content-Disposition différents ont été reçus. Ceci n'est pas autorisé afin de se prémunir
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Département</translation>
 <translation id="2113977810652731515">Carte</translation>
 <translation id="2114841414352855701">Ignorée parce que remplacée par <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">Les recherches sur le bureau utilisent votre moteur de recherche par défaut (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Favoris sur mobile</translation>
 <translation id="2148716181193084225">Aujourd'hui</translation>
 <translation id="2149973817440762519">Modifier le favori</translation>
-<translation id="2153530520610387456">Sélectionnez
-      <ph name="BEGIN_BOLD" />
-      Démarrer &gt; Panneau de configuration &gt; Réseau et Internet &gt; Centre Réseau et partage &gt; Résolution des problèmes (en bas) &gt; Connexions Internet
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Accès administrateur complet</translation>
 <translation id="2166378884831602661">Ce site ne peut pas fournir de connexion sécurisée</translation>
 <translation id="2171101176734966184">Vous avez tenté d'accéder à <ph name="DOMAIN" />, mais le serveur a présenté un certificat signé à l'aide d'un algorithme de signature faible. Il est possible que le certificat fourni par le serveur ait été falsifié. Il se peut donc que le serveur ne soit pas celui auquel vous souhaitez accéder, et qu'il s'agisse d'une tentative de piratage.</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Cette valeur n'est plus utilisée dans le cadre de cette règle.</translation>
 <translation id="2262243747453050782">Erreur HTTP.</translation>
 <translation id="2279770628980885996">Une situation inattendue s'est produite tandis que le serveur tentait de traiter la demande.</translation>
-<translation id="2282186295770469712">Gérer les paramètres de recherche</translation>
 <translation id="2282872951544483773">Tests non disponibles.</translation>
 <translation id="2292556288342944218">Votre accès à Internet est bloqué</translation>
 <translation id="229702904922032456">Un certificat racine ou intermédiaire a expiré.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">Vous pouvez désactiver tout proxy configuré pour une connexion à partir de la page des paramètres.</translation>
 <translation id="2950186680359523359">Le serveur a mis fin à la connexion sans envoyer de données.</translation>
 <translation id="2955913368246107853">Fermer la barre de recherche</translation>
-<translation id="2957518517523241247">Sélectionnez
-      <ph name="BEGIN_BOLD" />
-      Démarrer &gt; Panneau de configuration &gt; Connexions réseau &gt; Assistant Nouvelle connexion
-      <ph name="END_BOLD" />
-      pour tester votre connexion.</translation>
 <translation id="2958431318199492670">La configuration du réseau ne respecte pas les normes de l'ONC. Il est possible que des parties de la configuration ne soient pas importées.</translation>
 <translation id="2969319727213777354">Afin d'établir une connexion sécurisée, votre horloge doit être réglée correctement. Les certificats permettant aux sites Web de s'identifier sont en effet valides pendant une période précise. Comme l'horloge de votre appareil est incorrecte, Google Chrome n'est pas en mesure de vérifier la validité des certificats.</translation>
 <translation id="2972581237482394796">&amp;Rétablir</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">Paroisse</translation>
 <translation id="3901925938762663762">La carte a expiré.</translation>
 <translation id="3903912596042358459">Le serveur a refusé d'exécuter la demande.</translation>
-<translation id="3930850196944737149">Votre périphérique n'est pas connecté.</translation>
 <translation id="3934680773876859118">Échec du chargement du document PDF</translation>
 <translation id="3950924596163729246">Impossible d'accéder au réseau.</translation>
 <translation id="3963721102035795474">Mode lecture</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="604124094241169006">Automatique</translation>
 <translation id="6042308850641462728">Plus</translation>
-<translation id="6044718745395562198">Votre ordinateur est hors connexion.</translation>
 <translation id="6060685159320643512">Attention, ces fonctionnalités expérimentales peuvent mordre.</translation>
 <translation id="6093795393556121384">Votre carte a bien été validée.</translation>
 <translation id="6146055958333702838">Vérifiez les câbles et redémarrez votre routeur, votre modem
@@ -533,11 +519,6 @@
 <translation id="6830600606572693159">La page Web <ph name="URL" /> n'est pas disponible pour le moment. Cela peut être dû à une surcharge ou à une opération de maintenance.</translation>
 <translation id="6831043979455480757">Traduire</translation>
 <translation id="6839929833149231406">Région</translation>
-<translation id="6851123334996048122">Sélectionnez
-      <ph name="BEGIN_BOLD" />
-      Applications &gt; Préférences système &gt; Réseau &gt; Assistant
-      <ph name="END_BOLD" />
-      pour tester votre connexion.</translation>
 <translation id="6874604403660855544">&amp;Rétablir l'ajout</translation>
 <translation id="6891596781022320156">Le niveau de la règle n'est pas accepté.</translation>
 <translation id="6897140037006041989">Agent utilisateur</translation>
@@ -619,9 +600,6 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Non géré</translation>
 <translation id="7758069387465995638">Il est possible qu'un pare-feu ou un logiciel antivirus ait bloqué la connexion.</translation>
-<translation id="7760914272566804712">Vous pouvez essayer de diagnostiquer le problème en procédant comme suit :
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Le certificat du serveur ne correspond pas à l'URL.</translation>
 <translation id="777702478322588152">Préfecture</translation>
 <translation id="778579833039460630">Aucune donnée reçue.</translation>
@@ -661,14 +639,6 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="8241707690549784388">La page que vous recherchez a utilisé des informations que vous avez envoyées. Si vous revenez sur cette page, chaque action précédemment effectuée sera répétée. Souhaitez-vous continuer ?</translation>
 <translation id="8249320324621329438">Dernière récupération :</translation>
 <translation id="8261506727792406068">Supprimer</translation>
-<translation id="8266098793847448402">Cliquez sur
-      <ph name="BEGIN_BOLD" />Démarrer<ph name="END_BOLD" />,
-      puis sur
-      <ph name="BEGIN_BOLD" />Exécuter<ph name="END_BOLD" />.
-      Saisissez
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
-      puis cliquez sur
-      <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Votre demande d'accès à ce site a bien été envoyée à <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Contactez votre administrateur réseau si vous n'êtes pas sûr de vous.</translation>
 <translation id="8293206222192510085">Ajouter aux favoris</translation>

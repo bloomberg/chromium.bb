@@ -518,6 +518,7 @@
           Šī politika tiek ievērota tikai tad, ja ir iespējota politika DefaultSearchProviderEnabled.</translation>
 <translation id="2682225790874070339">Tiek atspējota Diska izmantošana operētājsistēmas <ph name="PRODUCT_OS_NAME" /> lietotnē Faili.</translation>
 <translation id="268577405881275241">Iespējot datu saspiešanas starpniekservera funkciju</translation>
+<translation id="2731627323327011390">Atspējot <ph name="PRODUCT_OS_NAME" /> sertifikātu izmantošanu ARC lietotnēm</translation>
 <translation id="2742843273354638707">Paslēpt Chrome interneta veikala lietotnes un kājenes saiti Jaunas cilnes lapā un <ph name="PRODUCT_OS_NAME" /> lietotņu palaidējā.
 
       Ja šai politikai ir iestatīta vērtība Patiesa, ikonas tiek paslēptas.
@@ -1848,6 +1849,7 @@
           Ja iestatāt šo politiku, lietotāji var īslaicīgi to ignorēt, iespējojot vai atspējojot ekrāna lupu. Tomēr lietotāja izvēle nav paliekoša, un noklusējuma vērtība tiek atjaunota ikreiz, kad tiek atkārtoti parādīts pieteikšanās ekrāns vai kad lietotājs minūti ir neaktīvs pieteikšanās ekrānā.
 
           Ja šī politika nav iestatīta, ekrāna lupa tiek atspējota, kad pirmo reizi tiek parādīts pieteikšanās ekrāns. Lietotāji var jebkurā laikā iespējot vai atspējot ekrāna lupu, un tās statuss pieteikšanās ekrānā tiek saglabāts visiem lietotājiem.</translation>
+<translation id="7249828445670652637">Iespējot <ph name="PRODUCT_OS_NAME" /> CA sertifikātus ARC lietotnēm</translation>
 <translation id="7258823566580374486">Aizsegšanas režīma iespējošana attālās piekļuves saimniekdatoriem</translation>
 <translation id="7260277299188117560">Ir iespējota P2P automātiska atjaunināšana</translation>
 <translation id="7267809745244694722">Multivides taustiņu noklusējuma darbības maiņa, lai tie darbotos kā funkciju taustiņi</translation>
@@ -1973,6 +1975,17 @@
 <translation id="7715711044277116530">Aizkaves līdz ekrāna aptumšošanai norādīšana procentos (prezentācijas režīmā)</translation>
 <translation id="7717938661004793600">Konfigurējiet <ph name="PRODUCT_OS_NAME" /> pieejamības funkcijas.</translation>
 <translation id="7719251660743813569">Kontrolē to, vai lietošanas metrika tiek ziņota uzņēmumam Google. Ja politika iestatīta uz Patiesa, produkts <ph name="PRODUCT_OS_NAME" /> ziņo lietošanas metriku. Ja politika nav konfigurēta vai iestatīta uz Aplama, metrikas ziņošana ir atspējota.</translation>
+<translation id="7723433108978650103">Bloķē piekļuvi norādītajiem vietrāžiem URL.
+
+      Šī politika novērš melnajā sarakstā ievietoto vietrāžu URL tīmekļa lapu ielādi. Melnajā sarakstā ir ietvertas URL struktūras, kas norāda, kuri vietrāži URL tiks bloķēti.
+
+      URL struktūra ir jāformatē atbilstoši šīm norādēm: https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Izņēmumus var noteikt URL baltā saraksta politikā. Šajās politikās var būt ne vairāk kā 1000 ierakstu; pārējie ieraksti tiks ignorēti.
+
+      Ņemiet vērā, ka nav ieteicams bloķēt iekšējos vietrāžus URL “chrome://*”, jo tādējādi var rasties neparedzētas kļūdas.
+
+      Ja šī politika nav iestatīta, pārlūka melnajā sarakstā netiks ievietots neviens URL.</translation>
 <translation id="7749402620209366169">Iespējo divu faktoru autentifikāciju attālās piekļuves saimniekdatoriem, nevis izmanto lietotāja norādītu PIN.
 
           Ja šis iestatījums ir iespējots, lietotājiem ir jānorāda derīgs divu faktoru kods, kad tie piekļūst saimniekdatoram.
@@ -2045,6 +2058,9 @@
       Ja šī politika netiks iestatīta, tā darbosies atbilstoši iestatījumam TimezoneAutomaticDetectionUsersDecide.
 
       Ja ir iestatīta politika SystemTimezone, ar to tiks ignorēta šī politika. Tādā gadījumā automātiskā laika joslas noteikšana ir pilnībā atspējota.</translation>
+<translation id="787125417158068494">Ja politikai ir iestatīta vērtība SyncDisabled vai tā nav konfigurēta, <ph name="PRODUCT_OS_NAME" /> sertifikāti nav pieejami ARC lietotnēm.
+
+      Ja ir iestatīta vērtība CopyCaCerts, visi ONC instalētie CA sertifikāti ar <ph name="WEB_TRUSTED_BIT" /> ir pieejami ARC lietotnēm.</translation>
 <translation id="7882585827992171421">Šī politika darbojas tikai mazumtirdzniecības režīmā.
 
       Nosaka paplašinājuma ID, kas jāizmanto kā ekrānsaudzētājs pierakstīšanās ekrānā. Paplašinājumam ir jābūt daļai no AppPack, kas konfigurēts šim domēnam, izmantojot politiku DeviceAppPack.</translation>
@@ -2060,6 +2076,7 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Norāda, vai operētājsistēmas atjaunināšanas vērtumiem izmantot P2P. Ja ir iestatīta vērtība “True”, ierīces kopīgos un mēģinās izmantot atjaunināšanas vērtumus LAN tīklā, tādējādi, iespējams, samazinot interneta joslas platuma lietojumu un pārblīvi. Ja LAN tīklā nav pieejams atjaunināšanas vērtums, ierīce izmantos lejupielādi no atjaunināšanas servera. Ja ir iestatīta vērtība “False” vai šis iestatījums nav konfigurēts, P2P netiks lietots.</translation>
 <translation id="7933141401888114454">Iespējot uzraudzīto lietotāju kontu izveidi</translation>
+<translation id="793473937901685727">Iestatīt sertifikātu pieejamību ARC lietotnēm</translation>
 <translation id="7936098023732125869">Izmantojot šo politiku, var iespējot noklusējuma meklētājprogrammas lietošanu.
 
           Ja šis iestatījums ir iespējots, ierakstot universālajā lodziņā kādu citu tekstu, nevis vietrādi URL, pēc noklusējuma tiek veikta meklēšana.

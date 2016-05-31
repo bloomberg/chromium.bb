@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">سروری که این صفحه وب را میزبانی می‌کند ممکن است بیش از حد بار داشته باشد یا تحت سرویس و نگهداری باشد.
     برای جلوگیری از ایجاد ترافیک بیش از حد و بدتر شدن وضعیت،
     درخواست‌های ارسالی به این نشانی وب موقتاً رد شده‌اند.</translation>
-<translation id="1066332784716773939">تشخیص خطاها...</translation>
 <translation id="106701514854093668">نشانک‌های دسک‌تاپ</translation>
 <translation id="1080116354587839789">متناسب با پهنا</translation>
 <translation id="1090046120949329821">‏چند عنوان متمایز آرایش محتوا دریافت شد.  برای محافظت در مقابل حملات
@@ -96,7 +95,7 @@
 <translation id="2031925387125903299">این پیام را به این دلیل می‌بینید که والدینتان باید اولین باری که از سایت جدیدی بازدید می‌کنید آن را تأیید کنند.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />بررسی پروکسی و دیوار آتش<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">کد پستی</translation>
-<translation id="2065985942032347596">تأیید اعتبار لازم است</translation>
+<translation id="2065985942032347596">راستی‌آزمایی لازم است</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="20817612488360358">تنظیمات پروکسی سیستم تنظیم شده تا مورد استفاده قرار گیرد، اما یک پیکربندی مشخص برای پروکسی نیز تعیین شده است.</translation>
 <translation id="2089090684895656482">کمتر</translation>
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">حوزه</translation>
 <translation id="2113977810652731515">کارت</translation>
 <translation id="2114841414352855701">نادیده گرفته شد زیرا <ph name="POLICY_NAME" /> آن را لغو می‌کند.</translation>
-<translation id="2122434088511736194">جستجوهای دسک‌تاپ از موتور جستجوی پیش‌فرض شما استفاده می‌کند (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">نشانک‌های تلفن‌ همراه</translation>
 <translation id="2148716181193084225">امروز</translation>
 <translation id="2149973817440762519">ویرایش نشانک</translation>
-<translation id="2153530520610387456">‏به
-      <ph name="BEGIN_BOLD" />
-      Start (شروع) &gt; Control Panel (پانل کنترل) &gt; Network and Internet (شبکه و اینترنت) &gt; Network and Sharing Center (شبکه و مرکز اشتراک‌گذاری) &gt; Troubleshoot Problems (عیب‌یابی مشکلات) (در قسمت پایین) &gt; Internet Connections (اتصال‌های اینترنتی) بروید.
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">دسترسی کامل سرپرست</translation>
 <translation id="2166378884831602661">این سایت نمی‌تواند اتصالی ایمن ارائه دهد</translation>
 <translation id="2171101176734966184">شما سعی داشتید به <ph name="DOMAIN" /> دسترسی داشته باشید، اما گواهی ارائه شده از سوی سرور با استفاده از یک الگوریتم امضای ضعیف امضا شده است. یعنی ممکن است اطلاعات کاربری امنیتی ارائه شده از سوی سرور ساختگی باشد و ممکن است این سرور سروی نباشد که شما می‌خواستید (ممکن است شما با یک مهاجم در ارتباط باشید).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">این مقدار برای این خط‌مشی منسوخ شده است؟</translation>
 <translation id="2262243747453050782">‏خطای HTTP</translation>
 <translation id="2279770628980885996">هنگام تلاش سرور برای انجام این درخواست وضعیت غیرمنتظره‌ای رخ داد.</translation>
-<translation id="2282186295770469712">مدیریت تنظیمات جستجو</translation>
 <translation id="2282872951544483773">آزمایش‌های غیرقابل دسترس</translation>
 <translation id="2292556288342944218">دسترسی شما به اینترنت مسدود است</translation>
 <translation id="229702904922032456">گواهینامه واسط یا ریشه منقضی شده است.</translation>
@@ -175,7 +168,7 @@
 <translation id="2778107779445548489">این پیام را به این دلیل می‌بینید که والدینتان این سایت را مسدود کرده‌اند.</translation>
 <translation id="2784949926578158345">اتصال مجدداً برقرار شد.</translation>
 <translation id="2824775600643448204">نوار جستجو و آدرس</translation>
-<translation id="2826760142808435982">اتصال با استفاده از <ph name="CIPHER" /> رمزگذاری و تأیید اعتبار شده است و از <ph name="KX" /> به عنوان مکانیسم تبادل کلید استفاده می‌کند.</translation>
+<translation id="2826760142808435982">اتصال با استفاده از <ph name="CIPHER" /> رمزگذاری و راستی‌آزمایی شده است و از <ph name="KX" /> به عنوان مکانیسم تبادل کلید استفاده می‌کند.</translation>
 <translation id="2835170189407361413">پاک کردن فرم</translation>
 <translation id="2837049386027881519">‏با استفاده از نسخه قدیمی پروتکل TLS یا SSL باید دوباره سعی کنید اتصال را برقرار کنید. یعنی سرور از نرم‌افزار خیلی قدیمی استفاده می‌کند و ممکن است مسائل امنیتی دیگری داشته باشد.</translation>
 <translation id="284702764277384724">به نظر می‌رسد که گواهی سرور در <ph name="HOST_NAME" /> جعلی باشد.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">در صفحه تنظیمات می‌توانید همه پراکسی‌های پیکربندی شده برای هر اتصال را از کار بیاندازید.</translation>
 <translation id="2950186680359523359">سرور بدون ارسال هرگونه داده، اتصال را قطع کرد.</translation>
 <translation id="2955913368246107853">بستن نوار یافتن</translation>
-<translation id="2957518517523241247">‏برای آزمایش اتصالتان، به
-      <ph name="BEGIN_BOLD" />
-      Start (شروع) &gt; Control Panel (پانل کنترل) &gt; Network Connections (اتصالات شبکه) &gt; New Connection Wizard (برنامه نصب اتصال جدید)
-      <ph name="END_BOLD" />
-      بروید.</translation>
 <translation id="2958431318199492670">‏پیکربندی شبکه با استاندارد ONC تطابق ندارد. بخشی از پیکربندی ممکن است وارد نشود.</translation>
 <translation id="2969319727213777354">‏برای برقراری یک اتصال امن، لازم است ساعت شما درست تنظیم شده باشد. زیرا گواهی‌هایی که وب‌سایت‌ها برای شناسایی خودشان استفاده می‌کنند، تنها برای دوره‌های زمانی خاصی معتبرند. از آنجا که ساعت دستگاه شما نادرست است، Google Chrome نمی‌تواند این گواهی‌ها را تأیید کند.</translation>
 <translation id="2972581237482394796">انجام مجدد</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">استان</translation>
 <translation id="3901925938762663762">کارت منقضی شده است</translation>
 <translation id="3903912596042358459">انجام این درخواست توسط سرور رد شد.</translation>
-<translation id="3930850196944737149">دستگاه شما آفلاین است.</translation>
 <translation id="3934680773876859118">‏بارگیری سند PDF انجام نشد</translation>
 <translation id="3950924596163729246">دسترسی به شبکه امکان‌پذیر نیست.</translation>
 <translation id="3963721102035795474">حالت «خواننده»</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">بستن</translation>
 <translation id="604124094241169006">خودکار</translation>
 <translation id="6042308850641462728">بیشتر</translation>
-<translation id="6044718745395562198">رایانه شما آفلاین است.</translation>
 <translation id="6060685159320643512">مراقب باشید، این آزمایشات ممکن است خطرناک باشند</translation>
 <translation id="6093795393556121384">کارت شما تأیید شده است</translation>
 <translation id="6146055958333702838">همه کابل‌ها را بررسی کنید و همه ره‌یاب‌ها، مودم‌ها، یا دیگر دستگاه‌های
@@ -533,11 +519,6 @@
 <translation id="6830600606572693159">صفحهٔ وب موجود در <ph name="URL" /> در حال حاضر موجود نیست. ممکن است بیش از حد مشغول باشد یا برای انجام تعمیرات در دسترس نباشد.</translation>
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="6839929833149231406">منطقه حکومتی</translation>
-<translation id="6851123334996048122">‏برای آزمایش اتصالتان، به
-      <ph name="BEGIN_BOLD" />
-      Applications (برنامه‌ها) &gt; System Preferences (تنظیمات برگزیده سیستم) &gt; Network (شبکه) &gt; Assist me (کمک به من)
-      <ph name="END_BOLD" />
-      بروید.</translation>
 <translation id="6874604403660855544">&amp;انجام مجدد افزودن</translation>
 <translation id="6891596781022320156">سطح خط‌مشی پشتیبانی نمی‌شود.</translation>
 <translation id="6897140037006041989">نماینده کاربر</translation>
@@ -586,7 +567,7 @@
 <translation id="7419106976560586862">مسیر نمایه</translation>
 <translation id="7424977062513257142">صفحه جاسازی‌شده‌ای در این صفحه وب می‌گوید:</translation>
 <translation id="7441627299479586546">موضوع خط‌مشی اشتباه است</translation>
-<translation id="7445762425076701745">هویت سروری که به آن متصل شده‌اید به‌طور کامل تأیید اعتبار نمی‌شود. با استفاده از نامی به سرور متصل شده‌اید که فقط در شبکه شما معتبر است و ارائه دهنده مجوز خارجی قادر به تأیید اعتبار مالکیت آن نیست. به دلیل آنکه برخی از ارائه دهندگان مجوز بدون توجه به هر موردی، مجوزهایی را برای این نام‌ها ارائه می‌کنند، روشی برای اطمینان از این امر وجود ندارد که آیا شما به سایت مورد نظر خود متصل شده‌اید یا یک سایت مضر.</translation>
+<translation id="7445762425076701745">هویت سروری که به آن متصل شده‌اید به‌طور کامل راستی‌آزمایی نمی‌شود. با استفاده از نامی به سرور متصل شده‌اید که فقط در شبکه شما معتبر است و ارائه دهنده مجوز خارجی قادر به راستی‌آزمایی مالکیت آن نیست. به دلیل آنکه برخی از ارائه دهندگان مجوز بدون توجه به هر موردی، مجوزهایی را برای این نام‌ها ارائه می‌کنند، روشی برای اطمینان از این امر وجود ندارد که آیا شما به سایت مورد نظر خود متصل شده‌اید یا یک سایت مضر.</translation>
 <translation id="7450732239874446337">‏IO شبکه در حالت تعلیق است.</translation>
 <translation id="7481312909269577407">ارسال کردن</translation>
 <translation id="7485870689360869515">هیچ داده‌ای یافت نشد.</translation>
@@ -619,15 +600,12 @@
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">مدیریت نشده</translation>
 <translation id="7758069387465995638">دیوار آتش یا نرم‌افزار ضدویروس ممکن است مانع اتصال شده باشد.</translation>
-<translation id="7760914272566804712">با دنبال کردن مراحل زیر می‌توانید مشکل را تشخیص دهید:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">گواهی سرور با نشانی وب مطابقت ندارد.</translation>
 <translation id="777702478322588152">حوزه اداری</translation>
 <translation id="778579833039460630">داده‌ای دریافت نشد</translation>
 <translation id="7791543448312431591">افزودن</translation>
 <translation id="7793809570500803535">ممکن است صفحهٔ وب در <ph name="SITE" /> موقتاً خراب باشد یا ممکن است برای همیشه به یک آدرس وب جدید منتقل شده باشد.</translation>
-<translation id="7800304661137206267">اتصال با استفاده از <ph name="CIPHER" /> و با <ph name="MAC" /> برای تأیید اعتبار پیام و <ph name="KX" /> به‌عنوان مکانیسم تبدیل کلید رمزگذاری می‌شود.</translation>
+<translation id="7800304661137206267">اتصال با استفاده از <ph name="CIPHER" /> و با <ph name="MAC" /> برای راستی‌آزمایی پیام و <ph name="KX" /> به‌عنوان مکانیسم تبدیل کلید رمزگذاری می‌شود.</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
 <translation id="7805768142964895445">وضعیت</translation>
 <translation id="7813600968533626083">‏پیشنهاد فرم از Chrome پاک شود؟</translation>
@@ -661,14 +639,6 @@
 <translation id="8241707690549784388">صفحه‌ای که جستجو می‌کنید از اطلاعاتی استفاده می‌کند که شما وارد کرده‌اید. بازگشت به آن صفحه ممکن است باعث شود اقدامی را که قبلاً انجام دادید دوباره تکرار کنید. آیا می‌خواهید ادامه دهید؟</translation>
 <translation id="8249320324621329438">آخرین واکشی شده:</translation>
 <translation id="8261506727792406068">حذف</translation>
-<translation id="8266098793847448402">‏روی
-      <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />،
-      سپس
-      <ph name="BEGIN_BOLD" />Run<ph name="END_BOLD" /> کلیک کنید،
-      عبارت
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
-      را تایپ کنید و سپس روی
-      <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" /> کلیک کنید.</translation>
 <translation id="8279107132611114222">درخواست شما برای دسترسی به این سایت به <ph name="NAME" /> ارسال شده است.</translation>
 <translation id="8289355894181816810">اگر این موضوع را متوجه نمی‌شوید، با سرپرست شبکه‌تان تماس بگیرید.</translation>
 <translation id="8293206222192510085">افزودن نشانک</translation>
@@ -731,7 +701,7 @@
 <translation id="8988760548304185580">‏تاریخ انقضا و کد تأیید سه رقمی CVC را از پشت کارت‌تان وارد کنید</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="9001074447101275817">پروکسی <ph name="DOMAIN" /> به نام کاربری و گذرواژه نیاز دارد.</translation>
-<translation id="9013589315497579992">‏گواهی تأیید اعتبار سرویس گیرنده SSL نادرست است.</translation>
+<translation id="9013589315497579992">‏گواهی راستی‌آزمایی سرویس گیرنده SSL نادرست است.</translation>
 <translation id="901974403500617787">پرچم‌هایی که در تمام سیستم اعمال می‌شوند فقط توسط مالک قابل تنظیم هستند: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">سرور اتصال را رد کرد.</translation>
 <translation id="9020542370529661692">این صفحه به <ph name="TARGET_LANGUAGE" /> ترجمه شده است</translation>

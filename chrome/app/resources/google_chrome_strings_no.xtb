@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome bruker kameraet ditt.</translation>
 <translation id="1619887657840448962">For å gjøre Chrome tryggere har vi slått av følgende utvidelse som ikke finnes i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, og som kan ha blitt lagt til uten at du vet det.</translation>
 <translation id="163860049029591106">Kom i gang med Chrome OS</translation>
+<translation id="1653828314016431939">OK – start på nytt nå</translation>
 <translation id="1682634494516646069">Google Chrome kan ikke lese og skrive til sin egen datakatalog: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome er en nettleser som kjører nettsider og programmer i ekspressfart. Den er rask, stabil og enkel å bruke. Google Chrome har innebygd beskyttelse mot skadelig programvare og svindelforsøk (nettfisking), slik at du kan føle deg tryggere når du surfer på nettet.</translation>
 <translation id="174539241580958092">Google Chrome kunne ikke synkronisere dataene dine på grunn av en påloggingsfeil.</translation>
@@ -70,6 +71,12 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="3080151273017101988">Fortsett kjøringen av bakgrunnsprogrammer når Google Chrome er lukket</translation>
 <translation id="3089968997497233615">En ny, sikrere versjon av Google Chrome er tilgjengelig</translation>
 <translation id="3149510190863420837">Chrome-apper</translation>
+<translation id="3251381707915721925">Du kan konfigurere hvilke nettsteder <ph name="NEW_PROFILE_NAME" /> kan se, ved å angi begrensninger og innstillinger her: <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Hvis du ikke endrer standardinnstillingene, kan <ph name="NEW_PROFILE_NAME" /> surfe på hele nettet.
+
+Hvis du vil hindre <ph name="NEW_PROFILE_NAME" /> i å få tilgang til kontoen din, må du låse profilen din når du ikke bruker Chrome. For å gjøre det, klikk på profilnavnet øverst til høyre i nettleseren og velg «Avslutt og barnelås».
+<ph name="BEGIN_LINK_2" />Finn ut mer<ph name="END_LINK_2" />
+
+Vi har sendt en e-post til <ph name="ACCOUNT_EMAIL" /> med ytterligere veiledning.</translation>
 <translation id="3282568296779691940">Logg på Chrome</translation>
 <translation id="3311976847535831054">Denne maskinen mottar ikke oppdateringer for 32-bit-versjonen av Google Chrome lenger. Oppgrader til 64-bit-versjonen av Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome-hjelper</translation>
@@ -117,6 +124,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="4921569541910214635">Deler du datamaskinen din med andre? Nå kan du konfigurere Chrome akkurat slik du vil.</translation>
 <translation id="4925019873400497719">Chrome bekreftet at sertifikatet for dette nettstedet er utstedt av <ph name="ISSUER" />. Tjeneren oppga informasjon om sertifikatåpenhet, men den var ugyldig.</translation>
 <translation id="4953650215774548573">Bruk Google Chrome som standard nettleser</translation>
+<translation id="495931528404527476">I Chrome</translation>
 <translation id="4987308747895123092">Lukk alle Googler Chrome-vinduene (inkludert de i Windows 8-modus) og prøv på nytt.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome kunne ikke synkronisere dataene dine. Oppdater passordfrasen for synkronisering.</translation>
@@ -205,6 +213,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="7808348361785373670">Fjern fra Chrome</translation>
 <translation id="7825851276765848807">Installeringen mislyktes på grunn av en uspesifisert feil. Last ned Google Chrome på nytt.</translation>
 <translation id="7890208801193284374">Hvis du deler en datamaskin med andre, kan venner og familie surfe hver for seg og konfigurere Chrome akkurat slik de vil.</translation>
+<translation id="795025003224538582">Ikke start på nytt</translation>
 <translation id="8005540215158006229">Chrome er nesten klar.</translation>
 <translation id="8008534537613507642">Installer Chrome på nytt</translation>
 <translation id="8030318113982266900">Oppdaterer enheten din til <ph name="CHANNEL_NAME" />-kanalen ...</translation>

@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Ενεργοποίηση δεδομένων κινητής τηλεφωνίας</translation>
 <translation id="1621499497873603021">Χρόνος που απομένει μέχρι να αδειάσει η μπαταρία, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Συσκευή Chrome</translation>
+<translation id="1677472565718498478">Απομένουν <ph name="TIME" /></translation>
 <translation id="1723752762323179280">Έξοδος από περίοδο σύνδεσης</translation>
 <translation id="1747827819627189109">Το πληκτρολόγιο οθόνης είναι ενεργοποιημένο</translation>
 <translation id="1812696562331527143">Η μέθοδος εισαγωγής σας έχει αλλάξει σε <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />τρίτου μέρους<ph name="END_LINK" />).
@@ -116,6 +117,7 @@
 <translation id="4421231901400348175">Κοινόχρηστος έλεγχος της οθόνης σας με το χρήστη <ph name="HELPER_NAME" /> μέσω της απομακρυσμένης βοήθειας.</translation>
 <translation id="4430019312045809116">Ένταση</translation>
 <translation id="4527045527269911712">Η συσκευή Bluetooth "<ph name="DEVICE_NAME" />" ζητά δικαιώματα σύζευξης.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> για να ολοκληρωθεί η φόρτιση</translation>
 <translation id="4544944664594876241">Η συντόμευση για το κλείδωμα της οθόνης άλλαξε. Χρησιμοποιήστε το <ph name="NEW_SHORTCUT" /> αντί για το <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Αποσύνδεση</translation>
@@ -224,6 +226,7 @@
 <translation id="8428213095426709021">Ρυθμίσεις</translation>
 <translation id="8517041960877371778">Δεν είναι δυνατή η φόρτιση της συσκευής <ph name="DEVICE_TYPE" /> ενώ είναι ενεργοποιημένη.</translation>
 <translation id="8528322925433439945">Κινητή τηλεφωνία...</translation>
+<translation id="8639760480004882931">Απομένει <ph name="PERCENTAGE" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Ο συνδεδεμένος φορτιστής παρέχει χαμηλή ισχύ</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

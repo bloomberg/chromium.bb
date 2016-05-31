@@ -72,6 +72,7 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="1853692000353488670">Tab ẩn danh mới</translation>
 <translation id="189172778771606813">Đóng ngăn điều hướng</translation>
 <translation id="1924956916668006832">Chọn địa chỉ giao hàng</translation>
+<translation id="1933845786846280168">Tab được chọn</translation>
 <translation id="194341124344773587">Bật quyền cho Chrome trong <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Lưu mật khẩu</translation>
 <translation id="1944384637046898011">Mã hóa tất cả dữ liệu bằng mật khẩu Google kể từ <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="2959609938957585241">Để có các tab từ thiết bị khác của bạn, hãy bật "Tự động đồng bộ hóa dữ liệu" trong cài đặt tài khoản Android.</translation>
 <translation id="2960796085439532066">Bản quyền <ph name="YEAR" /> Google Inc. Mọi quyền được bảo lưu.</translation>
 <translation id="2968755619301702150">Trình xem chứng chỉ</translation>
+<translation id="2979025552038692506">Tab ẩn danh được chọn</translation>
 <translation id="2996291259634659425">Tạo cụm mật khẩu</translation>
 <translation id="2996809686854298943">Cần có URL</translation>
 <translation id="3012408695656332380">Thay thế dữ liệu của thiết bị này bằng dữ liệu của <ph name="TO_ACCOUNT" />. Bạn có thể truy xuất dữ liệu hiện có của mình bằng cách chuyển về <ph name="FROM_ACCOUNT" /> nhưng dữ liệu được tạo từ lúc bạn đăng xuất sẽ bị mất.</translation>
@@ -554,6 +556,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="8073388330009372546">Mở ảnh trong tab mới</translation>
 <translation id="8076014560081431679">Cài đặt trang web đã lưu sẽ không bị xóa và có thể phản ánh thói quen duyệt web của bạn. <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Nội dung này đến từ <ph name="DOMAIN_NAME" />, do Google phân phối.</translation>
+<translation id="8103578431304235997">Tab ẩn danh</translation>
 <translation id="8106211421800660735">Số thẻ tín dụng</translation>
 <translation id="813082847718468539">Xem thông tin trang web</translation>
 <translation id="8137558756159375272">Chạm để tìm kiếm sẽ gửi từ đã chọn và trang hiện tại làm ngữ cảnh cho Google Tìm kiếm. Bạn có thể tắt tính năng này trong <ph name="BEGIN_LINK" />Cài đặt<ph name="END_LINK" />.</translation>

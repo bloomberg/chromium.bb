@@ -514,6 +514,7 @@
           Kinikilala lamang ang patakarang ito kung pinagana ang patakaran ng 'DefaultSearchProviderEnabled.'</translation>
 <translation id="2682225790874070339">Dini-disable ang Drive sa <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="268577405881275241">Ine-enable ang feature na proxy ng compression ng data</translation>
+<translation id="2731627323327011390">I-disable ang paggamit ng mga certificate ng <ph name="PRODUCT_OS_NAME" /> sa mga ARC app</translation>
 <translation id="2742843273354638707">Itago ang Chrome Web Store app at link ng footer mula sa Page ng Bagong Tab at sa app launcher ng <ph name="PRODUCT_OS_NAME" />.
 
       Kapag nakatakda ang patakarang ito sa true, nakatago ang mga icon.
@@ -1842,6 +1843,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung itatakda mo ang patakarang ito, maaaring i-override ito ng mga user sa pamamagitan ng pag-enable o pag-disable sa magnifier ng screen. Gayunpaman, hindi mananaig ang napili ng user at mababalik ang default sa tuwing ipapakitang muli ang screen sa pag-login o kung manatiling idle ang user sa screen sa pag-login sa loob ng isang minuto.
 
           Kung iiwanang hindi nakatakda ang patakarang ito, madi-disable ang magnifier ng screen kapag unang ipinakita ang screen sa pag-login. Maaaring i-enable o i-disable ng mga user ang magnifier ng screen anumang oras at mananatili ang katayuan nito sa screen sa pag-login sa pagitan ng mga user.</translation>
+<translation id="7249828445670652637">I-enable ang mga CA certificate ng <ph name="PRODUCT_OS_NAME" /> sa mga ARC app</translation>
 <translation id="7258823566580374486">Paganahin ang paghadlang sa mga host ng malayuang pag-access</translation>
 <translation id="7260277299188117560">Naka-enable ang auto update p2p</translation>
 <translation id="7267809745244694722">Magde-default ang mga media key sa mga function key</translation>
@@ -1962,6 +1964,17 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7715711044277116530">Porsyento ng pag-scale sa pag-aantala ng pagdilim ng screen sa presentation mode</translation>
 <translation id="7717938661004793600">I-configure ang mga tampok sa accessibility ng <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Kinokontrol kung iniuulat pabalik sa Google ang mga sukatan ng paggamit. Kung nakatakda sa true, mag-uulat ng mga sukatan ng paggamit ang <ph name="PRODUCT_OS_NAME" />. Kung hindi naka-configure o nakatakda sa false, hindi papaganahin ang pag-uulat ng mga sukatan.</translation>
+<translation id="7723433108978650103">Bina-block ang access sa mga nakalistang URL.
+
+      Pinipigilan ng patakarang ito ang user na mag-load ng mga web page mula sa mga naka-blacklist na URL. Nagbibigay ang blacklist ng listahan ng mga pattern ng URL na tumutukoy kung aling mga URL ang iba-blacklist.
+
+      Dapat i-format ang pattern ng URL ayon sa https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Matutukoy ang mga exception sa patakaran ng whitelist ng URL. Limitado sa 1000 entry ang mga patakarang ito; babalewalain ang mga susunod na entry.
+
+      Tandaang hindi inirerekomendang i-block ang mga internal na 'chrome://*' URL dahil maaari itong magresulta sa mga hindi inaasahang error.
+
+      Kung hindi nakatakda ang patakarang ito, walang maba-blacklist na URL sa browser.</translation>
 <translation id="7749402620209366169">Pinapagana ang pagpapatotoong may dalawang salik para sa mga host ng malayuang pag-access sa halip na isang PIN na tinukoy ng user.
 
           Kung pinapagana ang setting na ito, dapat magbigay ang mga user ng wastong code na may dalawang salik kapag nag-a-access ng host.
@@ -2032,6 +2045,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hindi maitatakda ang patakarang ito, gagana ito na mukhang nakatakda ang TimezoneAutomaticDetectionUsersDecide.
 
       Kung maitatakda ang patakaran na SystemTimezone, io-override nito ang patakarang ito. Sa sitwasyong ito, ganap na naka-disable ang awtomatikong pag-detect ng timezone.</translation>
+<translation id="787125417158068494">Kung nakatakda sa SyncDisabled o hindi naka-configure, hindi available ang mga certificate ng <ph name="PRODUCT_OS_NAME" /> para sa mga ARC app.
+
+      Kung nakatakda sa CopyCaCerts, available para sa mga ARC app ang lahat ng CA certificate na may <ph name="WEB_TRUSTED_BIT" /> na na-install ng ONC.</translation>
 <translation id="7882585827992171421">Sa retail mode lamang aktibo ang patakarang ito.
 
       Tinutukoy ang id ng extension na gagamitin bilang isang screen saver sa screen sa pag-sign-in. Ang extension ay dapat na bahagi ng AppPack na naka-configure para sa domain na ito sa pamamagitan ng patakarang AppPacks.</translation>
@@ -2047,6 +2063,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Tinutukoy kung gagamitin ang p2p para sa mga payload sa pag-update ng OS. Kung nakatakda sa True, ang mga device ay magbabahagi at susubukang gamitin ang mga payload sa pag-update sa LAN, na malamang na babawasan ang paggamit at pagsikip sa Internet bandwidth. Kung hindi available sa LAN ang payload sa pag-update, babalik ang device sa pag-download mula sa server sa pag-update. Kung nakatakda sa False o hindi naka-configure, hindi gagamitin ang p2p.</translation>
 <translation id="7933141401888114454">I-enable ang paggawa ng mga pinapangasiwaang user</translation>
+<translation id="793473937901685727">Itakda ang availability ng certificate para sa mga ARC app</translation>
 <translation id="7936098023732125869">Ine-enable ang paggamit ng default na search provider.
 
           Kung ie-enable mo ang setting na ito, magsasagawa ng default na paghahanap kapag nag-type ang user ng text na hindi URL sa omnibox.

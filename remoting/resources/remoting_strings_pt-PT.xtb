@@ -212,6 +212,10 @@ Remoto do Chrome</translation>
 <translation id="6324708100353784493">Ativou o modo de integração do Google Cardboard. Para utilizar este modo, insira o seu dispositivo num visualizador compatível com o Google Cardboard.</translation>
 <translation id="6381670701864002291">Outro.</translation>
 <translation id="6398765197997659313">Sair do modo de ecrã inteiro</translation>
+<translation id="6408143143164565232">• Ouça áudio a partir de computadores com Windows ou Linux.
+• Remova ligações indesejadas ao premir sem soltar o nome do computador.
+• Funcionalidades de juntar os dedos para aumentar/diminuir o zoom e de deslocamento com dois dedos mais estáveis.
+• Novo ecrã de Ajuda e comentários.</translation>
 <translation id="6441316101718669559">A integração do ambiente de trabalho não é suportada nesta plataforma. Pode continuar a utilizar a aplicação, mas a experiência de utilizador não é a ideal.</translation>
 <translation id="652218476070540101">O PIN para este computador está a ser atualizado...</translation>
 <translation id="6527303717912515753">Partilhar</translation>
@@ -257,6 +261,7 @@ Remoto do Chrome</translation>
 <translation id="7836926030608666805">Faltam alguns componentes necessários. Certifique-se de que está a executar a versão mais recente do Chrome e tente novamente.</translation>
 <translation id="7868137160098754906">Introduza o PIN para o computador remoto.</translation>
 <translation id="7869445566579231750">Não tem autorização para executar esta aplicação.</translation>
+<translation id="7895403300744144251">As políticas de segurança do computador remoto não permitem ligações a partir da sua conta.</translation>
 <translation id="7948001860594368197">Opções de ecrã</translation>
 <translation id="7970576581263377361">Falha na autenticação. Inicie sessão novamente no Chromium.</translation>
 <translation id="7981525049612125370">A sessão remota expirou.</translation>

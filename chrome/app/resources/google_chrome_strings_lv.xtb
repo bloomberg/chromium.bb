@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Pārlūkā Google Chrome tiek izmantota kamera.</translation>
 <translation id="1619887657840448962">Lai uzlabotu Chrome drošību, mēs atspējojām tālāk norādīto paplašinājumu, kas nav norādīts vietnē <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> un iespējams, tika pievienots, jums nezinot.</translation>
 <translation id="163860049029591106">Darba sākšana operētājsistēmā Chrome OS</translation>
+<translation id="1653828314016431939">Labi — restartēt tūlīt</translation>
 <translation id="1682634494516646069">Google Chrome nevar nolasīt savu datu direktoriju un ierakstīt tajā:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -72,6 +73,12 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="3080151273017101988">Turpināt lietotņu izpildi fonā, kad Google Chrome ir aizvērts</translation>
 <translation id="3089968997497233615">Ir pieejama jauna un drošāka Google Chrome versija.</translation>
 <translation id="3149510190863420837">Chrome lietotnes</translation>
+<translation id="3251381707915721925">Lai iestatītu, kuras vietnes var skatīt lietotājs <ph name="NEW_PROFILE_NAME" />, varat konfigurēt ierobežojumus un iestatījumus vietnē <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Ja nemainīsiet noklusējuma iestatījumus, <ph name="NEW_PROFILE_NAME" /> varēs pārlūkot visu tīmekļa saturu.
+
+Lai <ph name="NEW_PROFILE_NAME" /> nevarētu piekļūt jūsu kontam, noteikti bloķējiet savu profilu, kad neizmantojat Chrome. Lai to izdarītu, pārlūka augšējā labajā malā noklikšķiniet uz sava profila vārda un atlasiet vienumu “Iziet un bloķēt”.
+<ph name="BEGIN_LINK_2" />Uzziniet vairāk<ph name="END_LINK_2" />.
+
+Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Pierakstīties pārlūkā Chrome</translation>
 <translation id="3311976847535831054">Šis dators vairs nesaņems Google Chrome 32 bitu versijas atjauninājumus. Lūdzu, jauniniet uz Google Chrome 64 bitu versiju.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -119,6 +126,7 @@ Ja pierakstīsieties tik un tā, Chrome informācija, piemēram, grāmatzīmes, 
 <translation id="4921569541910214635">Vai datoru izmanto vairāki lietotāji? Tagad varat iestatīt pārlūku Chrome atbilstoši savām vajadzībām.</translation>
 <translation id="4925019873400497719">Chrome verificēja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu. Serveris sniedza Certificate Transparency informāciju, taču tā nebija derīga.</translation>
 <translation id="4953650215774548573">Iestatīt Google Chrome kā manu noklusējuma pārlūku</translation>
+<translation id="495931528404527476">Pārlūkprogrammā Chrome</translation>
 <translation id="4987308747895123092">Lūdzu, aizveriet visus Google Chrome logus (tostarp Windows 8 režīmā atvērtos) un mēģiniet vēlreiz.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome nevarēja sinhronizēt jūsu datus. Lūdzu, atjauniniet savu sinhronizācijas ieejas frāzi.</translation>
@@ -209,6 +217,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai li
 <translation id="7808348361785373670">Noņemšana no pārlūka Chrome...</translation>
 <translation id="7825851276765848807">Instalēšana neizdevās nenoteiktas kļūdas dēļ. Lūdzu, lejupielādējiet pārlūkprogrammu Google Chrome vēlreiz.</translation>
 <translation id="7890208801193284374">Ja jūsu datoru izmanto arī jūsu draugi un ģimenes locekļi, viņi var iestatīt pārlūku Chrome atbilstoši savām vēlmēm un pārlūkot saturu atsevišķos kontos.</translation>
+<translation id="795025003224538582">Nerestartēt</translation>
 <translation id="8005540215158006229">Chrome ir gandrīz gatavs.</translation>
 <translation id="8008534537613507642">Pārinstalēt Chrome</translation>
 <translation id="8030318113982266900">Notiek ierīces atjaunināšana uz kanālu <ph name="CHANNEL_NAME" />...</translation>

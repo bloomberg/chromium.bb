@@ -16,6 +16,7 @@
 <translation id="151962892725702025">‏تعذر على نظام التشغيل Chromium مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
 <translation id="1559451348202814456">‏ربما لن يعمل Chromium بشكل صحيح لأنه لم يعد مدعومًا على أنظمة Mac OS X 10.6 أو 10.7 أو 10.8.</translation>
 <translation id="1644918877723739397">‏سيُخزن Chromium هذا في <ph name="SAVED_PASSWORD_LINK" /> وسيتذكره عندما تحتاج إليه في المرة القادمة.</translation>
+<translation id="1653828314016431939">موافق - إعادة التشغيل الآن</translation>
 <translation id="1668054258064581266">‏بعد إزالة حسابك من Chromium، قد تحتاج إلى إعادة تحميل علامات التبويب المفتوحة لتفعيلها.</translation>
 <translation id="1688750314291223739">‏يمكنك إعداد المزامنة لحفظ ميزات المتصفح المخصصة على الويب والدخول إليها من Chromium على أي كمبيوتر.</translation>
 <translation id="1699664235656412242">‏الرجاء إغلاق جميع نوافذ Chromium (بما في ذلك تلك المفتوحة في وضع Windows 8) ثم إعادة المحاولة.</translation>
@@ -180,6 +181,12 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">نافذة جديدة</translation>
 <translation id="734373864078049451">‏الويب والإشارات المرجعية وغيرها من عناصر Chromium توجد هنا.</translation>
+<translation id="7344413941077984497">‏لتعيين مواقع الويب التي يستطيع <ph name="NEW_PROFILE_NAME" /> عرضها، يُمكنك تهيئة القيود والإعدادات عن طريق الانتقال إلى <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. وفي حالة عدم تغيير الإعدادات الافتراضية، يستطيع <ph name="NEW_PROFILE_NAME" /> تصفح جميع المواقع على الويب.
+
+لمنع <ph name="NEW_PROFILE_NAME" /> من الوصول إلى حسابك، تأكد من قفل ملفك الشخصي عندما لا تستخدم Chromium. لإجراء ذلك، انقر على اسم ملفك الشخصي في الزاوية العليا اليسرى من المتصفح، وحدد "الخروج وتشغيل وضع القفل للأطفال".
+<ph name="BEGIN_LINK_2" />مزيد من المعلومات<ph name="END_LINK_2" />
+
+يُرجى التحقق من بريدك الإلكتروني على <ph name="ACCOUNT_EMAIL" /> للحصول على مزيد من التعليمات.</translation>
 <translation id="7419987137528340081">‏إذا كنت تفضل الإبقاء على بيانات Chromium الحالية بشكل منفصل، فيمكنك إنشاء حساب مستخدم Chromium جديد للمستخدم <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">‏يتطلب Chromium نظام التشغيل Windows XP أو نظام تشغيل أحدث. قد لا تعمل بعض الميزات.</translation>
 <translation id="7463979740390522693">‏Chromium - الإشعارات (<ph name="QUANTITY" /> غير مقروءة)</translation>
@@ -194,6 +201,7 @@
 <translation id="7747138024166251722">تعذر على أداة المثبِّت إنشاء دليل مؤقت. يُرجى التحقق من وجود مساحة خالية على القرص وتوفر الإذن اللازم لتثبيت البرنامج.</translation>
 <translation id="7918535023914021398">‏تحقق Chromium من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. ولم يقدم الخادم أي معلومات لشفافية الشهادة.</translation>
 <translation id="7937630085815544518">‏تم تسجيل دخولك إلى Chromium باعتبارك <ph name="USER_EMAIL_ADDRESS" />. الرجاء استخدام الحساب نفسه لتسجيل الدخول مرة أخرى.</translation>
+<translation id="795025003224538582">عدم إعادة التشغيل</translation>
 <translation id="7962572577636132072">‏يجري تحديث Chromium تلقائيًا بحيث يكون لديك أحدث إصدار.</translation>
 <translation id="7979877361127045932">‏الإخفاء في قائمة Chromium</translation>
 <translation id="8030318113982266900">جارٍ تحديث جهازك إلى قناة <ph name="CHANNEL_NAME" />...</translation>

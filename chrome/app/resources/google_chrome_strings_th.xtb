@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome ใช้กล้องของคุณอยู่</translation>
 <translation id="1619887657840448962">เพื่อให้ Chrome ปลอดภัยขึ้น เราได้ปิดส่วนขยายต่อไปนี้ซึ่งไม่ได้แสดงอยู่ใน <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> และอาจมีการเพิ่มเข้ามาโดยที่คุณไม่รู้ตัว</translation>
 <translation id="163860049029591106">เริ่มต้นใช้งาน Chrome OS</translation>
+<translation id="1653828314016431939">ตกลง - รีสตาร์ทเลย</translation>
 <translation id="1682634494516646069">Google Chrome ไม่สามารถอ่านและเขียนข้อมูลในไดเรกทอรีข้อมูล: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome คือเว็บเบราว์เซอร์ที่แสดงหน้าเว็บและแอปพลิเคชันต่างๆ ได้รวดเร็วในพริบตา โดยทำงานได้เร็ว มีเสถียรภาพ และใช้งานง่าย ช่วยให้คุณเรียกดูเว็บได้อย่างปลอดภัยมากขึ้นด้วยการป้องกันมัลแวร์และฟิชชิงซึ่งมีอยู่ใน Google Chrome</translation>
 <translation id="174539241580958092">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณเนื่องจากเกิดข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
@@ -70,6 +71,12 @@
 <translation id="3080151273017101988">เรียกใช้แอปพลิเคชันเบื้องหลังต่อไปเมื่อ Google Chrome ถูกปิดลง</translation>
 <translation id="3089968997497233615">Google Chrome มีรุ่นใหม่ที่ปลอดภัยกว่าให้ใช้งานแล้ว</translation>
 <translation id="3149510190863420837">แอป Chrome</translation>
+<translation id="3251381707915721925">ในการตั้งค่าเว็บไซต์ที่ <ph name="NEW_PROFILE_NAME" /> สามารถเข้าดูได้ คุณสามารถกำหนดค่าข้อจำกัดและการตั้งค่าโดยไปที่ <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> หากคุณไม่เปลี่ยนการตั้งค่าเริ่มต้น <ph name="NEW_PROFILE_NAME" /> จะสามารถเรียกดูทุกอย่างบนเว็บได้
+
+หากต้องการป้องกันไม่ให้ <ph name="NEW_PROFILE_NAME" /> สามารถเข้าถึงบัญชีของคุณ โปรดตรวจสอบว่าคุณได้ล็อกโปรไฟล์เวลาที่ไม่ได้ใช้ Chrome โดยทำดังนี้ คลิกชื่อโปรไฟล์ของคุณที่มุมขวาบนของเบราว์เซอร์ แล้วเลือก "ออกและล็อกป้องกันเด็ก"
+<ph name="BEGIN_LINK_2" />เรียนรู้เพิ่มเติม<ph name="END_LINK_2" />
+
+โปรดตรวจสอบอีเมลของคุณที่ <ph name="ACCOUNT_EMAIL" /> สำหรับคำแนะนำเพิ่มเติม</translation>
 <translation id="3282568296779691940">ลงชื่อเข้าใช้ Chrome</translation>
 <translation id="3311976847535831054">คอมพิวเตอร์เครื่องนี้จะไม่ได้รับการอัปเดตจาก Google Chrome แบบ 32 บิตอีกแล้ว โปรดอัปเกรดเป็น Google Chrome แบบ 64 บิต</translation>
 <translation id="3360895254066713204">ตัวช่วยเหลือของ Chrome</translation>
@@ -118,6 +125,7 @@
 <translation id="4921569541910214635">หากต้องการแชร์คอมพิวเตอร์ ตอนนี้คุณสามารถตั้งค่า Chrome ในแบบที่คุณชอบได้แล้ว</translation>
 <translation id="4925019873400497719">Chrome ยืนยันว่า <ph name="ISSUER" /> ได้ออกใบรับรองของเว็บไซต์นี้ เซิร์ฟเวอร์ได้ให้ข้อมูลความโปร่งใสของใบรับรองแล้ว แต่ข้อมูลไม่ถูกต้อง</translation>
 <translation id="4953650215774548573">ตั้ง Google Chrome เป็นเบราว์เซอร์เริ่มต้นของคุณ</translation>
+<translation id="495931528404527476">ใน Chrome</translation>
 <translation id="4987308747895123092">โปรดปิดหน้าต่าง Google Chrome ทั้งหมด (รวมทั้งในโหมด Windows 8 ด้วย) และลองอีกครั้ง</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome ไม่สามารถซิงค์ข้อมูลของคุณ โปรดอัปเดตข้อความรหัสผ่านการซิงค์</translation>
@@ -206,6 +214,7 @@
 <translation id="7808348361785373670">นำออกจาก Chrome...</translation>
 <translation id="7825851276765848807">การติดตั้งล้มเหลวเนื่องจากเกิดข้อผิดพลาดที่ไม่ระบุ โปรดดาวน์โหลด Google Chrome อีกครั้ง</translation>
 <translation id="7890208801193284374">ถ้าคุณให้ผู้อื่นใช้คอมพิวเตอร์ร่วมด้วย เพื่อนๆ และครอบครัวของคุณสามารถท่องเว็บแยกกันได้และตั้งค่า Chrome ได้ตามที่พวกเขาต้องการ</translation>
+<translation id="795025003224538582">ไม่ต้องรีสตาร์ท</translation>
 <translation id="8005540215158006229">Chrome ใกล้จะใช้งานได้แล้ว</translation>
 <translation id="8008534537613507642">ติดตั้ง Chrome ใหม่</translation>
 <translation id="8030318113982266900">กำลังอัปเดตอุปกรณ์ของคุณไปยังช่อง <ph name="CHANNEL_NAME" />...</translation>

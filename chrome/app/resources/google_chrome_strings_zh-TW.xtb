@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome 正在使用您的攝影機。</translation>
 <translation id="1619887657840448962">為了讓 Chrome 的安全性更有保障，我們停用了以下這個未列在「<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />」中的擴充功能 (它可能是在您不知情的情況下加入瀏覽器)。</translation>
 <translation id="163860049029591106">開始使用 Chrome 作業系統</translation>
+<translation id="1653828314016431939">確定 - 立即重新啟動</translation>
 <translation id="1682634494516646069">Google Chrome 無法讀取及寫入資料目錄：<ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome 瀏覽器開啟網頁和執行應用程式的速度奇快無比！除了執行速度迅速、穩定且容易使用之外，內建防護機制還可讓您安心瀏覽網頁，無需擔心受到網路釣魚與惡意軟體的威脅。</translation>
 <translation id="174539241580958092">登入時發生錯誤，因此 Google Chrome 無法同步處理您的資料。</translation>
@@ -70,6 +71,12 @@
 <translation id="3080151273017101988">Google Chrome 關閉時繼續執行背景應用程式</translation>
 <translation id="3089968997497233615">Google Chrome 推出全新版本，安全性更勝以往。</translation>
 <translation id="3149510190863420837">Chrome 應用程式</translation>
+<translation id="3251381707915721925">如要設定「<ph name="NEW_PROFILE_NAME" />」可瀏覽哪些網站，您可以前往 <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> 調整限制與設定。如果您未變更預設設定，「<ph name="NEW_PROFILE_NAME" />」將可瀏覽網路上的所有網站。
+
+如要禁止「<ph name="NEW_PROFILE_NAME" />」存取您的帳戶，當您不使用 Chrome 時，請務必鎖定您的設定檔。方法是按一下瀏覽器右上角的設定檔名稱，然後選取 [結束並執行 Childlock]。
+<ph name="BEGIN_LINK_2" />瞭解詳情<ph name="END_LINK_2" />
+
+如需進一步的操作說明，請登入您的 <ph name="ACCOUNT_EMAIL" /> 帳戶，查看系統寄給您的電子郵件。</translation>
 <translation id="3282568296779691940">登入 Chrome</translation>
 <translation id="3311976847535831054">這台電腦將不會再收到 32 位元的 Google Chrome 更新，請升級至 64 位元的 Google Chrome。</translation>
 <translation id="3360895254066713204">Chrome 小幫手</translation>
@@ -117,6 +124,7 @@
 <translation id="4921569541910214635">如果您與他人共用電腦，現在可以依自己的喜好和習慣設定 Chrome。</translation>
 <translation id="4925019873400497719">Chrome 已驗證這個網站的憑證核發者是 <ph name="ISSUER" />。該伺服器提供了 Certificate Transparency 資訊，但該資訊無效。</translation>
 <translation id="4953650215774548573">將 Google Chrome 設為預設瀏覽器</translation>
+<translation id="495931528404527476">在 Chrome 中</translation>
 <translation id="4987308747895123092">請將所有 Google Chrome 視窗 (包括在 Windows 8 模式中的視窗) 關閉，然後再試一次。</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome 無法同步處理您的資料，請更新您的同步通關密語。</translation>
@@ -207,6 +215,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7808348361785373670">從 Chrome 中移除...</translation>
 <translation id="7825851276765848807">不明錯誤導致安裝失敗，請再次下載 Google Chrome。</translation>
 <translation id="7890208801193284374">如果您與親朋好友共用電腦，人人皆可享有獨立的瀏覽空間，依照自己的偏好設定 Chrome。</translation>
+<translation id="795025003224538582">不要重新啟動</translation>
 <translation id="8005540215158006229">Chrome 即將準備就緒。</translation>
 <translation id="8008534537613507642">重新安裝 Chrome</translation>
 <translation id="8030318113982266900">正在將裝置更新至「<ph name="CHANNEL_NAME" />」版...</translation>

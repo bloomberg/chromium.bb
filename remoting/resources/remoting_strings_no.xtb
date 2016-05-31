@@ -166,7 +166,7 @@ skrivebord-vert</translation>
 <translation id="4985296110227979402">Du må først konfigurere en datamaskin for ekstern tilgang.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (ikke på nett)</translation>
 <translation id="5070121137485264635">Den eksterne verten krever at du godkjenner via et tredjepartsnettsted. For å fortsette må du gi Chrome Eksternt skrivebord ytterligere tillatelser til å åpne denne adressen:</translation>
-<translation id="507204348399810022">Er du sikker på at du vil deaktivere eksterne tilkoblinger til <ph name="HOSTNAME" />?</translation>
+<translation id="507204348399810022">Er du sikker på at du vil deaktivere eksterne forbindelser til <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Skriv inn samme PIN-kode i begge feltene.</translation>
 <translation id="5168917394043976756">Åpne uttrekksmenyen</translation>
 <translation id="5170982930780719864">Ugyldig verts-ID.</translation>
@@ -212,6 +212,10 @@ skrivebord-vert</translation>
 <translation id="6324708100353784493">Du har slått på Google Cardboard-integreringsmodus. For å bruke denne modusen, sett enheten inn i en Google Cardboard-kompatibel visningsenhet.</translation>
 <translation id="6381670701864002291">Noe annet.</translation>
 <translation id="6398765197997659313">Avslutt fullskjerm</translation>
+<translation id="6408143143164565232">• Hør lyd fra Windows- eller Linux-datamaskiner.
+• Fjern uønskede tilkoblinger ved å trykke og holde på navnene til spesifikke datamaskiner.
+• Jevnere klyp-for-å-zoome-funksjonalitet og rulling med to fingre.
+• Nytt «Hjelp og tilbakemeldinger»-vindu.</translation>
 <translation id="6441316101718669559">Denne plattformen har ikke støtte for skrivebordsintegrasjon. Du kan fortsatt bruke programmet, men brukeropplevelsen blir redusert.</translation>
 <translation id="652218476070540101">PIN-koden for denne datamaskinen oppdateres …</translation>
 <translation id="6527303717912515753">Del</translation>
@@ -257,6 +261,7 @@ skrivebord-vert</translation>
 <translation id="7836926030608666805">Det mangler noen nødvendige komponenter. Kontrollér at du kjører den nyeste versjonen av Chrome, og prøv på nytt.</translation>
 <translation id="7868137160098754906">Skriv inn PIN-koden for den eksterne datamaskinen.</translation>
 <translation id="7869445566579231750">Du har ikke tillatelse til å kjøre dette programmet.</translation>
+<translation id="7895403300744144251">Sikkerhetsinnstillingene på den eksterne datamaskinen tillater ikke tilkoblinger fra kontoen din.</translation>
 <translation id="7948001860594368197">Skjermalternativer</translation>
 <translation id="7970576581263377361">Autentiseringen mislyktes. Logg på Chromium på nytt.</translation>
 <translation id="7981525049612125370">Den eksterne økten er utløpt.</translation>

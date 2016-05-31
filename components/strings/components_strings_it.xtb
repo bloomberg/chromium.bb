@@ -7,7 +7,6 @@
 <translation id="1055184225775184556">&amp;Annulla aggiunta</translation>
 <translation id="10614374240317010">Mai salvate</translation>
 <translation id="1064422015032085147">Il server che ospita la pagina web potrebbe essere sovraccarico o in fase di manutenzione. Per evitare di generare troppo traffico e di peggiorare la situazione, le richieste relative all'URL in questione sono state temporaneamente disattivate.</translation>
-<translation id="1066332784716773939">Identificazione degli errori...</translation>
 <translation id="106701514854093668">Preferiti desktop</translation>
 <translation id="1080116354587839789">Adatta in larghezza</translation>
 <translation id="1090046120949329821">Sono state ricevute più intestazioni Content-Disposition distinte. Questo non è consentito, al fine di prevenire attacchi che dividono le risposte HTTP.</translation>
@@ -101,12 +100,10 @@
 <translation id="2096368010154057602">Dipartimento</translation>
 <translation id="2113977810652731515">Carta</translation>
 <translation id="2114841414352855701">Ignorata perché è stata sostituita da <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">Per le ricerche desktop viene utilizzato il motore di ricerca predefinito (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Preferiti su disp. mobili</translation>
 <translation id="2148716181193084225">Oggi</translation>
 <translation id="2149973817440762519">Modifica Preferito</translation>
-<translation id="2153530520610387456">Seleziona <ph name="BEGIN_BOLD" />Start &gt; Pannello di controllo &gt; Rete e Internet &gt; Centro connessioni di rete e condivisione &gt; Risoluzione problemi (in fondo) &gt; Connessioni Internet<ph name="END_BOLD" />.</translation>
 <translation id="2166049586286450108">Accesso amministrativo completo</translation>
 <translation id="2166378884831602661">Il sito non può fornire una connessione protetta</translation>
 <translation id="2171101176734966184">Hai tentato di accedere a <ph name="DOMAIN" /> ma il server ha presentato un certificato firmato utilizzando un algoritmo di firma debole. Ciò significa che le credenziali di sicurezza presentate dal server potrebbero essere state falsificate e il server potrebbe non essere quello previsto (è possibile che tu stia comunicando con un utente malintenzionato).</translation>
@@ -118,7 +115,6 @@
 <translation id="225207911366869382">Il valore specificato per la norma è obsoleto.</translation>
 <translation id="2262243747453050782">Errore HTTP</translation>
 <translation id="2279770628980885996">Si è verificata una condizione imprevista durante il tentativo del server di soddisfare la richiesta.</translation>
-<translation id="2282186295770469712">Gestisci impostazioni di ricerca</translation>
 <translation id="2282872951544483773">Esperimenti non disponibili</translation>
 <translation id="2292556288342944218">L'accesso a Internet è bloccato</translation>
 <translation id="229702904922032456">Un certificato principale o intermedio è scaduto.</translation>
@@ -184,7 +180,6 @@
 <translation id="2948083400971632585">Puoi disattivare tutti i proxy configurati per una connessione dalla pagina delle impostazioni.</translation>
 <translation id="2950186680359523359">Il server ha chiuso la connessione senza inviare dati.</translation>
 <translation id="2955913368246107853">Chiudi la barra di ricerca</translation>
-<translation id="2957518517523241247">Seleziona <ph name="BEGIN_BOLD" />Start &gt; Pannello di controllo &gt; Connessioni di rete &gt; Creazione guidata nuova connessione<ph name="END_BOLD" /> per testare la tua connessione.</translation>
 <translation id="2958431318199492670">La configurazione di rete non è conforme allo standard ONC. Parti della configurazione potrebbero non essere importate.</translation>
 <translation id="2969319727213777354">Per poter stabilire una connessione protetta, l'orologio deve essere impostato correttamente perché i certificati utilizzati dai siti web per identificarsi sono validi soltanto per determinati periodi di tempo. L'orologio del dispositivo non è impostato sull'orario corretto, pertanto Chrome non può verificare i certificati.</translation>
 <translation id="2972581237482394796">&amp;Ripeti</translation>
@@ -285,7 +280,6 @@
 <translation id="3885155851504623709">Parrocchia</translation>
 <translation id="3901925938762663762">La carta è scaduta</translation>
 <translation id="3903912596042358459">Il server ha rifiutato di soddisfare la richiesta.</translation>
-<translation id="3930850196944737149">Il dispositivo è offline.</translation>
 <translation id="3934680773876859118">Caricamento del documento PDF non riuscito</translation>
 <translation id="3950924596163729246">Impossibile accedere alla rete.</translation>
 <translation id="3963721102035795474">Modalità Reader</translation>
@@ -453,7 +447,6 @@
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="604124094241169006">Automatica</translation>
 <translation id="6042308850641462728">Più</translation>
-<translation id="6044718745395562198">Il computer è offline.</translation>
 <translation id="6060685159320643512">Attenzione, prova questi esperimenti a tuo rischio e pericolo</translation>
 <translation id="6093795393556121384">La carta è stata verificata</translation>
 <translation id="6146055958333702838">Controlla eventuali cavi e riavvia eventuali router, modem o altri dispositivi di rete in uso.</translation>
@@ -517,7 +510,6 @@
 <translation id="6830600606572693159">La pagina web all'indirizzo <ph name="URL" /> non è al momento disponibile. Potrebbe essere sovraccarica o non disponibile per manutenzione.</translation>
 <translation id="6831043979455480757">Traduci</translation>
 <translation id="6839929833149231406">Area</translation>
-<translation id="6851123334996048122">Seleziona <ph name="BEGIN_BOLD" />Applicazioni &gt; Preferenze di Sistema &gt; Network &gt; Aiutami<ph name="END_BOLD" /> per testare la tua connessione.</translation>
 <translation id="6874604403660855544">&amp;Ripeti aggiunta</translation>
 <translation id="6891596781022320156">Il livello della norma non è supportato.</translation>
 <translation id="6897140037006041989">User-agent</translation>
@@ -599,9 +591,6 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Non gestito</translation>
 <translation id="7758069387465995638">Il software antivirus o il firewall potrebbe avere bloccato la connessione.</translation>
-<translation id="7760914272566804712">Puoi provare a identificare il problema procedendo nel seguente modo:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Il certificato del server non corrisponde all'URL.</translation>
 <translation id="777702478322588152">Prefettura</translation>
 <translation id="778579833039460630">Nessun dato ricevuto</translation>
@@ -641,7 +630,6 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="8241707690549784388">La pagina a cui stai tentando di accedere utilizzava informazioni inserite da te. Tornando a quella pagina, è possibile che eventuali azioni che hai eseguito vengano ripetute. Continuare?</translation>
 <translation id="8249320324621329438">Ultimo recupero:</translation>
 <translation id="8261506727792406068">Elimina</translation>
-<translation id="8266098793847448402">Fai clic su <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />, su <ph name="BEGIN_BOLD" />Esegui<ph name="END_BOLD" />, digita <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />, quindi fai clic su <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">La tua richiesta di accesso al sito è stata inviata a <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Contatta l'amministratore di rete se non sei sicuro del significato.</translation>
 <translation id="8293206222192510085">Aggiunta preferito</translation>

@@ -475,6 +475,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="267596348720209223">Angiver tegnkodninger, der understøttes af søgemaskinen. Kodninger er tegntabelnavne såsom UTF-8, GB2312, og ISO-8859-1. De afprøves i den angivne rækkefølge. Denne politik er valgfri. Hvis den ikke er angivet, anvendes standarden, UTF-8. Denne politik respekteres kun, hvis politikken "DefaultSearchProviderEnabled" er aktiveret.</translation>
 <translation id="2682225790874070339">Deaktiverer Drev i appen Filer i <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Aktivér proxyfunktionen for datakomprimering</translation>
+<translation id="2731627323327011390">Deaktiver brug af certifikater i <ph name="PRODUCT_OS_NAME" /> til ARC-apps</translation>
 <translation id="2742843273354638707">Skjul appen Chrome Webshop og linket i sidefoden på siden Ny fane og applisten for <ph name="PRODUCT_OS_NAME" />.
 
       Hvis denne politik er angivet til Sand, skjules ikonerne.
@@ -1706,6 +1707,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           Hvis du indstiller denne politik, kan brugerne midlertidigt tilsidesætte den ved at aktivere eller deaktivere luppen. Men brugerens valg er ikke endegyldigt, og standarden gendannes, når loginskærmen vises igen, eller hvis brugeren forbliver inaktiv på skærmen i et minut.
 
           Hvis denne politik ikke indstilles, deaktiveres luppen, når loginskærmen vises første gang. Brugerne kan når som helst aktivere eller deaktivere luppen, og dens status på loginskærmen fastholdes hos brugerne.</translation>
+<translation id="7249828445670652637">Aktivér CA-certifikater i <ph name="PRODUCT_OS_NAME" /> til ARC-apps</translation>
 <translation id="7258823566580374486">Aktivér skærmning af eksterne adgangsværter</translation>
 <translation id="7260277299188117560">Automatisk opdatering af p2p er aktiveret</translation>
 <translation id="7267809745244694722">Medietaster indstilles automatisk til funktionstaster</translation>
@@ -1819,6 +1821,17 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7715711044277116530">Procentdel, som nedtoningsforsinkelsen på skærmen skaleres i præsentationstilstand</translation>
 <translation id="7717938661004793600">Konfigurer hjælpefunktioner for <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Kontrollerer, om metrics over brug rapporteres tilbage til Google. Hvis den er indstillet til sand, vil <ph name="PRODUCT_OS_NAME" /> rapportere metrics over brug. Hvis den ikke er konfigureret eller er angivet til falsk, deaktiveres metrics-rapportering.</translation>
+<translation id="7723433108978650103">Blokerer adgang til de angivne webadresser.
+
+      Denne politik forhindrer brugeren i at indlæse websider fra sortlistede webadresser. Sortlisten viser en liste over webadressemønstre, der angiver, hvilke webadresser der føjes til sortlisten.
+
+      Et webadressemønster skal formatteres i overensstemmelse med https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Undtagelser kan defineres i webadressens politik om hvidlister. Disse politikker er begrænset til 1000 poster. Efterfølgende poster ignoreres.
+
+      Bemærk, at det frarådes at blokere interne webadresser af typen "chrome://*", da dette kan føre til uventede fejl.
+
+      Hvis denne politik ikke er angivet, føjes der ikke nogen webadresser til sortlisten i browseren.</translation>
 <translation id="7749402620209366169">Aktiverer godkendelse med to faktorer for værter med fjernadgang i stedet for en brugerangivet pinkode.
 
           Hvis denne indstilling er aktiveret, skal brugerne angive en gyldig kode med to faktorer, når de forsøger at få adgang til en vært.
@@ -1887,6 +1900,9 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis politikken ikke er angivet, opfører den sig, som hvis TimezoneAutomaticDetectionUsersDecide er angivet.
 
       Hvis politikken SystemTimezone er angivet, tilsidesætter den denne politik, og automatisk registrering af tidszone deaktiveres fuldstændigt.</translation>
+<translation id="787125417158068494">Hvis den er angivet til SyncDisabled eller ikke er konfigureret, er certificater i <ph name="PRODUCT_OS_NAME" /> ikke tilgængelige for ARC-apps.
+
+      Hvis den er angivet til CopyCaCerts, er alle ONC-installered CA-certificater med <ph name="WEB_TRUSTED_BIT" /> tilgængelige for ARC-apps.</translation>
 <translation id="7882585827992171421">Denne politik er kun aktiv i detailtilstand.
 
       Bestemmer id'et for den udvidelse, der skal bruges som pauseskærm på loginskærmen. Udvidelsen skal være en del af den AppPack, der er konfigureret til dette domæne via politikken DeviceAppPack.</translation>
@@ -1902,6 +1918,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Angiver, om p2p skal anvendes til OS-opdateringsdata. Hvis denne politik angives til Sand, vil enheder dele og forsøge at forbruge opdateringsdata på LAN-netværket, hvor den potentielt kan reducere forbruget og overbelastningen af internetbåndbredden. Hvis opdateringsdata ikke er tilgængelige på LAN-netværket, vil enheden i stedet downloade fra en opdateringsserver. Hvis den angives til Falsk eller ikke konfigureres, vil p2p ikke blive anvendt.</translation>
 <translation id="7933141401888114454">Aktivér oprettelse af administrerede brugere</translation>
+<translation id="793473937901685727">Indstil certifikattilgængelighed for ARC-apps</translation>
 <translation id="7936098023732125869">Giver brugeren mulighed for at benytte en standardsøgemaskine.
 
           Hvis du aktiverer denne indstilling, foretages der en standardsøgning, når brugeren indtaster tekst i omnifeltet, som ikke er en webadresse.

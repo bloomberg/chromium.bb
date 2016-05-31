@@ -212,6 +212,10 @@ remoto de Chrome</translation>
 <translation id="6324708100353784493">Has habilitado el modo de integración de Google Cardboard. Para utilizar este modo, introduce el dispositivo en un visor que admita Google Cardboard.</translation>
 <translation id="6381670701864002291">Otro problema.</translation>
 <translation id="6398765197997659313">Salir del modo de pantalla completa</translation>
+<translation id="6408143143164565232">• Escucha audio en ordenadores Windows o Linux.
+• Elimina conexiones no deseadas manteniendo pulsado el nombre del ordenador.
+• Movimiento más suave al pellizcar la pantalla para hacer zoom y al desplazarte con dos dedos.
+• Nueva pantalla de Ayuda y sugerencias.</translation>
 <translation id="6441316101718669559">La integración del escritorio no se admite en esta plataforma. Puedes seguir utilizando la aplicación, pero la experiencia de usuario se verá afectada.</translation>
 <translation id="652218476070540101">Se está actualizando el PIN de este ordenador...</translation>
 <translation id="6527303717912515753">Compartir</translation>
@@ -257,6 +261,7 @@ remoto de Chrome</translation>
 <translation id="7836926030608666805">Faltan algunos componentes requeridos. Asegúrate de estar ejecutando la última versión de Chrome y vuelve a intentarlo.</translation>
 <translation id="7868137160098754906">Introduce tu código PIN para el ordenador remoto.</translation>
 <translation id="7869445566579231750">No tienes permiso para ejecutar esta aplicación.</translation>
+<translation id="7895403300744144251">Las políticas de seguridad del ordenador remoto no permiten conexiones desde tu cuenta.</translation>
 <translation id="7948001860594368197">Opciones de pantalla</translation>
 <translation id="7970576581263377361">Error de autenticación. Vuelve a iniciar sesión en Chromium.</translation>
 <translation id="7981525049612125370">La sesión remota ha caducado.</translation>

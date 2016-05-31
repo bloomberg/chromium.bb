@@ -7,7 +7,6 @@
 <translation id="1055184225775184556">&amp;Toevoegen ongedaan maken</translation>
 <translation id="10614374240317010">Nooit opgeslagen</translation>
 <translation id="1064422015032085147">Het is mogelijk dat de server waarop de webpagina wordt gehost, overbelast is of wordt onderhouden. Verzoeken naar deze URL zijn tijdelijk stopgezet, om te voorkomen dat er te veel verkeer wordt gegenereerd en dat het probleem nog erger wordt.</translation>
-<translation id="1066332784716773939">Een diagnose van fouten stellen...</translation>
 <translation id="106701514854093668">Desktopbladwijzers</translation>
 <translation id="1080116354587839789">Aanpassen aan breedte</translation>
 <translation id="1090046120949329821">Er zijn meerdere, verschillende Content-Disposition-headers ontvangen. Dit is niet toegestaan als bescherming tegen aanvallen die HTTP-reacties splitsen.</translation>
@@ -101,12 +100,10 @@
 <translation id="2096368010154057602">Departement</translation>
 <translation id="2113977810652731515">Kaart</translation>
 <translation id="2114841414352855701">Genegeerd omdat het werd overschreven door <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">Voor desktopzoekopdrachten wordt je standaardzoekmachine (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />) gebruikt.</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Mobiele bladwijzers</translation>
 <translation id="2148716181193084225">Vandaag</translation>
 <translation id="2149973817440762519">Bladwijzer bewerken</translation>
-<translation id="2153530520610387456">Ga naar <ph name="BEGIN_BOLD" />Start &gt; Configuratiescherm &gt; Netwerk en internet &gt; Netwerkcentrum &gt; Problemen oplossen (onderaan) &gt; Internetverbindingen<ph name="END_BOLD" />.</translation>
 <translation id="2166049586286450108">Volledige beheerderstoegang</translation>
 <translation id="2166378884831602661">Deze site kan geen beveiligde verbinding leveren</translation>
 <translation id="2171101176734966184">Je probeert <ph name="DOMAIN" /> te bereiken. De server heeft echter een certificaat geretourneerd dat een zwak ondertekeningsalgoritme gebruikt. Dit houdt in dat de betrouwbaarheidsverklaring van de server kan zijn vervalst. Het is mogelijk dat de server zelf een imitatie is (wellicht een server die je schade probeert te berokkenen).</translation>
@@ -118,7 +115,6 @@
 <translation id="225207911366869382">Deze waarde is verouderd voor dit beleid.</translation>
 <translation id="2262243747453050782">HTTP-fout</translation>
 <translation id="2279770628980885996">Er is een onverwachte voorwaarde gevonden toen de server het verzoek wilde uitvoeren.</translation>
-<translation id="2282186295770469712">Zoekinstellingen beheren</translation>
 <translation id="2282872951544483773">Onbeschikbare experimenten</translation>
 <translation id="2292556288342944218">Je toegang tot internet wordt geblokkeerd</translation>
 <translation id="229702904922032456">Een root- of tussenliggend certificaat is verlopen.</translation>
@@ -184,7 +180,6 @@
 <translation id="2948083400971632585">Via de instellingenpagina kun je proxyservers uitschakelen die voor een verbinding zijn geconfigureerd.</translation>
 <translation id="2950186680359523359">De server heeft de verbinding verbroken zonder gegevens te verzenden.</translation>
 <translation id="2955913368246107853">Zoekbalk sluiten</translation>
-<translation id="2957518517523241247">Ga naar <ph name="BEGIN_BOLD" />Start &gt; Configuratiescherm &gt; Netwerkverbindingen &gt; Wizard Nieuwe verbinding<ph name="END_BOLD" /> om je verbinding te testen.</translation>
 <translation id="2958431318199492670">De netwerkconfiguratie voldoet niet aan de ONC-standaard. Delen van de configuratie worden mogelijk niet geïmporteerd.</translation>
 <translation id="2969319727213777354">Als je een beveiligde verbinding tot stand wilt brengen, moet je klok correct zijn ingesteld. Dit moet omdat de certificaten die deze websites gebruiken om zichzelf te identificeren, slechts gedurende bepaalde perioden geldig zijn. Aangezien de klok van je apparaat niet goed is ingesteld, kan Chrome deze certificaten niet verifiëren.</translation>
 <translation id="2972581237482394796">&amp;Opnieuw</translation>
@@ -284,7 +279,6 @@
 <translation id="3885155851504623709">Gemeente</translation>
 <translation id="3901925938762663762">De kaart is verlopen</translation>
 <translation id="3903912596042358459">De server heeft het verzoek afgewezen.</translation>
-<translation id="3930850196944737149">Je apparaat is offline.</translation>
 <translation id="3934680773876859118">PDF-document kan niet worden geladen</translation>
 <translation id="3950924596163729246">Geen toegang tot het netwerk.</translation>
 <translation id="3963721102035795474">Lezermodus</translation>
@@ -452,7 +446,6 @@
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="604124094241169006">Automatisch</translation>
 <translation id="6042308850641462728">Meer</translation>
-<translation id="6044718745395562198">Je computer is offline.</translation>
 <translation id="6060685159320643512">Pas op, dit zijn geen experimenten om zonder handschoenen aan te pakken</translation>
 <translation id="6093795393556121384">Je kaart is geverifieerd</translation>
 <translation id="6146055958333702838">Controleer alle kabels en start alle routers, modems of andere netwerkapparaten die je gebruikt, opnieuw op.</translation>
@@ -516,7 +509,6 @@
 <translation id="6830600606572693159">De webpagina op <ph name="URL" /> is momenteel niet beschikbaar. De pagina bevat wellicht teveel verkeer of is offline wegens onderhoud.</translation>
 <translation id="6831043979455480757">Vertalen</translation>
 <translation id="6839929833149231406">Gebied</translation>
-<translation id="6851123334996048122">Ga naar <ph name="BEGIN_BOLD" />Applicaties &gt; Systeemvoorkeuren &gt; Netwerk &gt; Assistentie<ph name="END_BOLD" /> om je verbinding te testen.</translation>
 <translation id="6874604403660855544">&amp;Opnieuw toevoegen</translation>
 <translation id="6891596781022320156">Beleidsniveau wordt niet ondersteund.</translation>
 <translation id="6897140037006041989">User-agent</translation>
@@ -598,7 +590,6 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Niet-beheerd</translation>
 <translation id="7758069387465995638">De verbinding is mogelijk geblokkeerd door de firewall of antivirussoftware.</translation>
-<translation id="7760914272566804712">Je kunt als volgt proberen vast te stellen wat het probleem is: <ph name="LINE_BREAK" /> <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Het servercertificaat komt niet overeen met de URL.</translation>
 <translation id="777702478322588152">Prefectuur</translation>
 <translation id="778579833039460630">Geen gegevens ontvangen</translation>
@@ -638,7 +629,6 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="8241707690549784388">De pagina die je zoekt, heeft informatie gebruikt die je hebt opgegeven Als je terugkeert naar deze pagina, worden acties die je hebt uitgevoerd, mogelijk herhaald. Wil je doorgaan?</translation>
 <translation id="8249320324621329438">Laatst opgehaald:</translation>
 <translation id="8261506727792406068">Verwijderen</translation>
-<translation id="8266098793847448402">Klik op <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" /> en op <ph name="BEGIN_BOLD" />Uitvoeren<ph name="END_BOLD" />, typ <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" /> en klik op <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Je verzoek voor toegang tot deze website is verzonden naar <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Neem contact op met je netwerkbeheerder als je niet zeker weet wat dit betekent.</translation>
 <translation id="8293206222192510085">Bladwijzer toevoegen</translation>

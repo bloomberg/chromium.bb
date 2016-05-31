@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Включить мобильную передачу данных</translation>
 <translation id="1621499497873603021">Оставшееся время работы от батареи: <ph name="TIME_LEFT" />.</translation>
 <translation id="164969095109328410">Устройство Chrome</translation>
+<translation id="1677472565718498478">Ещё <ph name="TIME" /></translation>
 <translation id="1723752762323179280">Завершение сеанса</translation>
 <translation id="1747827819627189109">Экранная клавиатура включена</translation>
 <translation id="1812696562331527143">Способ ввода изменен на <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />независимый разработчик<ph name="END_LINK" />).
@@ -116,6 +117,7 @@
 <translation id="4421231901400348175">Доступ к экрану для <ph name="HELPER_NAME" /> с помощью удаленного помощника</translation>
 <translation id="4430019312045809116">Объем</translation>
 <translation id="4527045527269911712">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth.</translation>
+<translation id="453661520163887813">До полной зарядки <ph name="TIME" /></translation>
 <translation id="4544944664594876241">Изменились быстрые клавиши для блокировки экрана. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">поиск</translation>
 <translation id="4804818685124855865">Отключиться</translation>
@@ -223,6 +225,7 @@
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8517041960877371778">Не удается зарядить устройство <ph name="DEVICE_TYPE" />, пока оно включено.</translation>
 <translation id="8528322925433439945">Мобильные сети…</translation>
+<translation id="8639760480004882931">Батарея заряжена на <ph name="PERCENTAGE" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Подключено маломощное зарядное устройство</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

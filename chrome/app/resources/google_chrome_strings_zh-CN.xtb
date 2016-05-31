@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome 正在使用您的摄像头。</translation>
 <translation id="1619887657840448962">为了提高 Chrome 的安全性，我们停用了以下扩展程序（该扩展程序未列在<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中，并且可能是在您不知情的情况下添加的）。</translation>
 <translation id="163860049029591106">Chrome 操作系统使用入门</translation>
+<translation id="1653828314016431939">确定 - 立即重新启动</translation>
 <translation id="1682634494516646069">Google Chrome 无法对其数据目录 <ph name="USER_DATA_DIRECTORY" /> 执行读写操作</translation>
 <translation id="1698376642261615901">Google Chrome 浏览器是一款可高速运行网页和应用的网络浏览器。它快捷、稳定且易于使用。Google Chrome 浏览器内置的恶意软件和网上诱骗防护功能可让您更安全地浏览网页。</translation>
 <translation id="174539241580958092">由于在登录时出现错误，Google Chrome无法同步您的数据。</translation>
@@ -70,6 +71,12 @@
 <translation id="3080151273017101988">关闭 Google Chrome 后继续运行后台应用</translation>
 <translation id="3089968997497233615">Google Chrome 浏览器现已推出更安全的新版本。</translation>
 <translation id="3149510190863420837">Chrome 应用</translation>
+<translation id="3251381707915721925">要设置“<ph name="NEW_PROFILE_NAME" />”可以浏览哪些网站，请前往 <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> 指定相应限制和设置。如果您未更改默认设置，“<ph name="NEW_PROFILE_NAME" />”将可以浏览网络上的所有网站。
+
+要禁止“<ph name="NEW_PROFILE_NAME" />”访问您的帐户，请务必在不使用 Chrome 时锁定您的个人资料。为此，请点击您的个人资料名称（位于浏览器的右上角），然后选择“退出并启用 childlock 功能”。
+<ph name="BEGIN_LINK_2" />了解详情<ph name="END_LINK_2" />
+
+有关详细说明，请查看 <ph name="ACCOUNT_EMAIL" /> 中的电子邮件。</translation>
 <translation id="3282568296779691940">登录 Chrome</translation>
 <translation id="3311976847535831054">此计算机将不再接收 32 位 Google Chrome 更新。请升级到 64 位 Google Chrome。</translation>
 <translation id="3360895254066713204">Chrome 浏览器帮助应用</translation>
@@ -118,6 +125,7 @@
 <translation id="4921569541910214635">与其他人共用计算机？现在，您可以随心所欲地设置Chrome。</translation>
 <translation id="4925019873400497719">Chrome 已证实此网站的证书是由<ph name="ISSUER" />签发的。服务器提供了 Certificate Transparency 信息，但这些信息无效。</translation>
 <translation id="4953650215774548573">将Google Chrome设为默认浏览器</translation>
+<translation id="495931528404527476">在 Chrome 中</translation>
 <translation id="4987308747895123092">请关闭所有 Google Chrome 窗口（包括 Windows 8 模式下的窗口），然后重试。</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome无法同步您的数据。请更新您的同步密码。</translation>
@@ -206,6 +214,7 @@
 <translation id="7808348361785373670">从Chrome中移除…</translation>
 <translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载 Google Chrome 浏览器。</translation>
 <translation id="7890208801193284374">如果您与亲朋好友共用计算机，他们将能够使用单独的帐户进行浏览，并可随心所欲地设置Chrome。</translation>
+<translation id="795025003224538582">不重新启动</translation>
 <translation id="8005540215158006229">Chrome 浏览器即将准备就绪。</translation>
 <translation id="8008534537613507642">重新安装Chrome</translation>
 <translation id="8030318113982266900">正在将您的设备更新至“<ph name="CHANNEL_NAME" />”版…</translation>

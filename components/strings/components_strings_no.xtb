@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Det kan hende tjeneren som er vert for nettsiden, er overbelastet, eller at det utføres vedlikehold på den.
     Forespørsler til denne nettadressen er midlertidig stanset for å unngå at
     det genereres for mye trafikk og situasjonen forverres.</translation>
-<translation id="1066332784716773939">Diagnostiser feil</translation>
 <translation id="106701514854093668">Bokmerker på datamaskinen</translation>
 <translation id="1080116354587839789">Tilpass til vindusbredden</translation>
 <translation id="1090046120949329821">Mottok flere distinkte Content-Disposition-overskrifter. Dette er forbudt, for
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Avdeling</translation>
 <translation id="2113977810652731515">Kort</translation>
 <translation id="2114841414352855701">Ignorert fordi det ble overstyrt av <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">Når du søker på datamaskinen, brukes standardsøkemotoren din (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Bokmerker for mobil</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2149973817440762519">Rediger bokmerke</translation>
-<translation id="2153530520610387456">Gå til
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Kontrollpanel &gt; Nettverk og Internett &gt; Nettverks- og delingssenter &gt; Feilsøk problemer (nederst) &gt; Internett-tilkoblinger.
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Full administratortilgang</translation>
 <translation id="2166378884831602661">Dette nettstedet tilbyr ikke sikre tilkoblinger</translation>
 <translation id="2171101176734966184">Du forsøkte å gå til <ph name="DOMAIN" />, men tjeneren presenterte et sertifikat som er signert med en usikker signaturalgoritme. Dette betyr at sikkerhetslegitimasjonen tjeneren har presentert kan være forfalsket. Tjeneren kan med andre ord være enn annen tjener enn du tror (det vil si at du kanskje kommuniserer med en angriper).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Denne verdien er foreldet for denne innstillingen.</translation>
 <translation id="2262243747453050782">HTTP-feil</translation>
 <translation id="2279770628980885996">En uventet tilstand oppstod mens tjeneren forsøkte å utføre forespørselen.</translation>
-<translation id="2282186295770469712">Administrer søkeinnstillingene</translation>
 <translation id="2282872951544483773">Utilgjengelige eksperimenter</translation>
 <translation id="2292556288342944218">Internett-tilgangen din er blokkert</translation>
 <translation id="229702904922032456">Et rotsertifikat eller mellomliggende sertifikat er utløpt.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">På innstillingssiden kan du deaktivere eventuelle mellomtjenere for tilkoblinger.</translation>
 <translation id="2950186680359523359">Tjeneren lukket tilkoblingen uten å sende data.</translation>
 <translation id="2955913368246107853">Lukk søkefelt</translation>
-<translation id="2957518517523241247">Gå til
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Kontrollpanel &gt; Nettverkstilkoblinger &gt; Veiviser for ny tilkobling
-      <ph name="END_BOLD" />
-      for å teste tilkoblingen din.</translation>
 <translation id="2958431318199492670">Nettverkskonfigurasjonen overholder ikke ONC-standarden. Deler av konfigurasjonen kan muligens ikke importeres.</translation>
 <translation id="2969319727213777354">Klokken må være riktig stilt før du kan opprette sikre tilkoblinger. Grunnen til dette er at sertifikatene nettsteder identifiserer seg med, bare er gyldige i visse tidsperioder. Ettersom klokken på enheten din er feil, kan ikke Google Chrome bekrefte disse sertifikatene.</translation>
 <translation id="2972581237482394796">Gjø&amp;r om</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">Kommune</translation>
 <translation id="3901925938762663762">Kortet er utløpt</translation>
 <translation id="3903912596042358459">Tjeneren nektet å utføre forespørselen.</translation>
-<translation id="3930850196944737149">Enheten er frakoblet.</translation>
 <translation id="3934680773876859118">Kan ikke laste inn PDF-dokument</translation>
 <translation id="3950924596163729246">Får ikke tilgang til nettverket.</translation>
 <translation id="3963721102035795474">Lesermodus</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="604124094241169006">Automatisk</translation>
 <translation id="6042308850641462728">Mer</translation>
-<translation id="6044718745395562198">Datamaskinen din er ikke koblet til nettverket.</translation>
 <translation id="6060685159320643512">Vær forsiktig. Disse eksperimentene kan bite</translation>
 <translation id="6093795393556121384">Kortet er bekreftet</translation>
 <translation id="6146055958333702838">Sjekk alle kabler, og start rutere, modemer eller andre nettverksenheter
@@ -533,11 +519,6 @@
 <translation id="6830600606572693159">Nettsiden på <ph name="URL" /> er for tiden utilgjengelig. Den kan være overbelastet eller under vedlikehold.</translation>
 <translation id="6831043979455480757">Oversett</translation>
 <translation id="6839929833149231406">Område</translation>
-<translation id="6851123334996048122">Gå til
-      <ph name="BEGIN_BOLD" />
-      Programmer &gt; Systeminnstillinger &gt; Nettverk &gt; Hjelp meg
-      <ph name="END_BOLD" />
-      for å teste tilkoblingen.</translation>
 <translation id="6874604403660855544">&amp;Legg til likevel</translation>
 <translation id="6891596781022320156">Innstillingsnivået støttes ikke.</translation>
 <translation id="6897140037006041989">Brukeragent</translation>
@@ -619,9 +600,6 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Administreres ikke</translation>
 <translation id="7758069387465995638">Brannmur- eller antivirusprogramvare kan ha blokkert tilkoblingen.</translation>
-<translation id="7760914272566804712">Du kan prøve å feilsøke problemet ved å gjøre dette:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Tjenerens sertifikat samsvarer ikke med nettadressen.</translation>
 <translation id="777702478322588152">Prefektur</translation>
 <translation id="778579833039460630">Ingen data mottatt</translation>
@@ -661,14 +639,6 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="8241707690549784388">Siden du ser etter, brukte informasjon som du anga. Hvis du går tilbake til denne siden, kan det føre til at handlinger som er utført, blir gjentatt. Vil du fortsette?</translation>
 <translation id="8249320324621329438">Sist hentet:</translation>
 <translation id="8261506727792406068">Slett</translation>
-<translation id="8266098793847448402">Klikk på
-      <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
-      klikk på
-      <ph name="BEGIN_BOLD" />Kjør<ph name="END_BOLD" />,
-      skriv inn
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
-      og klikk deretter på
-      <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Forespørselen om å få tilgang til dette nettstedet er sendt til <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Kontakt nettverksadministratoren hvis du ikke er sikker på hva dette betyr.</translation>
 <translation id="8293206222192510085">Legg til bokmerke</translation>

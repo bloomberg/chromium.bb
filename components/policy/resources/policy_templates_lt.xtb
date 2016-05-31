@@ -517,6 +517,7 @@
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
 <translation id="2682225790874070339">Išjungiamas Diskas „<ph name="PRODUCT_OS_NAME" />“ programoje „Failai“</translation>
 <translation id="268577405881275241">Įgalinti duomenų glaudinimo tarpinio serverio funkciją</translation>
+<translation id="2731627323327011390">Neleisti naudoti „<ph name="PRODUCT_OS_NAME" />“ sertifikatų ARC programose</translation>
 <translation id="2742843273354638707">Slėpti „Chrome“ internetinės parduotuvės programą ir poraštės nuorodą Naujo skirtuko puslapyje ir „<ph name="PRODUCT_OS_NAME" />“ programų paleidimo priemonėje.
 
       Kai ši politika yra galiojanti, piktogramos yra slepiamos.
@@ -1852,6 +1853,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei nustatysite šią politiką, naudotojai galės laikinai jos nepaisyti įgalinę arba išjungę ekrano didinimą. Tačiau naudotojo pasirinkimas nėra ilgalaikis ir numatytasis nustatymas atkuriamas, kai iš naujo rodomas prisijungimo ekranas arba naudotojas vieną minutę neatlieka jokių veiksmų prisijungimo ekrane.
 
           Jei ši politika nenustatyta, ekrano didinimas išjungiamas, kai pirmą kartą rodomas prisijungimo ekranas. Naudotojai gali bet kada įjungti arba išjungti ekrano didinimą ir jo būsena skirtingiems naudotojams prisijungimo ekrane bus vienoda.</translation>
+<translation id="7249828445670652637">Įgalinti „<ph name="PRODUCT_OS_NAME" />“ CA sertifikatus ARC programose</translation>
 <translation id="7258823566580374486">Įgalinti nuotolinės prieigos prieglobų slėpimą</translation>
 <translation id="7260277299188117560">Įgalintas automatinis P2P naujinys</translation>
 <translation id="7267809745244694722">Medijos klavišai pagal numatytuosius nustatymus veikia kaip funkcijų klavišai</translation>
@@ -1977,6 +1979,17 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="7715711044277116530">Procentas, pagal kurį bus keičiamas ekrano užtemdymo delsos mastelis dirbant pristatymo režimu</translation>
 <translation id="7717938661004793600">Konfigūruokite „<ph name="PRODUCT_OS_NAME" />“ pasiekiamumo funkcijas.</translation>
 <translation id="7719251660743813569">Valdoma, ar naudojimo metrikos ataskaitos teikiamos atgal „Google“. Jei nustatyta į „true“ (tiesa), „<ph name="PRODUCT_OS_NAME" />“ teikiamos naudojimo metrikos ataskaitos. Jei nesukonfigūruota ar nustatyta į „false“ (netiesa), metrikos ataskaitų teikimas neleidžiamas.</translation>
+<translation id="7723433108978650103">Užblokuosite prieigą prie nurodytų URL.
+
+      Pagal šią politiką naudotojui neleidžiama įkelti tinklalapių, kurių URL įtraukti į juodąjį sąrašą. Juodajame sąraše yra URL šablonai, nurodantys URL, kuriuos reikia įtraukti į juodąjį sąrašą.
+
+      URL šablono formatas turi atitikti formatą, nurodytą adresu https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Išimtis galima apibrėžti pagal URL baltojo sąrašo politiką. Šioje politikoje gali būti iki 1 000 įrašų, o kitų įrašų nebus paisoma.
+
+      Atminkite, kad nerekomenduojame blokuoti vidinių URL „chrome://*“, nes gali kilti netikėtų klaidų.
+
+      Nenustačius šios politikos, jokie URL nebus įtraukti į naršyklės juodąjį sąrašą.</translation>
 <translation id="7749402620209366169">Įgalinamas nuotolinės prieigos prieglobų autentifikavimas dviem veiksniais vietoje naudotojo (-os) nurodyto PIN kodo naudojimo.
 
           Jei šis nustatymas įgalintas, naudotojai privalo pateikti galiojantį dviejų veiksnių kodą pasiekdami prieglobą.
@@ -2048,6 +2061,9 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei ši politika nenustatyta, aptikimas veiks taip, tarsi būtų nustatyta „TimezoneAutomaticDetectionUsersDecide“.
 
       Jei nustatyta politika „SystemTimezone“, ji nepaiso šios politikos. Tokiu atveju automatinis laiko juostos aptikimas visiškai išjungiamas.</translation>
+<translation id="787125417158068494">Nustačius „SyncDisabled“ arba nesukonfigūravus, <ph name="PRODUCT_OS_NAME" /> sertifikatų nebus galima naudoti ARC programose.
+
+      Nustačius „CopyCaCerts“, visi per ONC įdiegti CA sertifikatai su „<ph name="WEB_TRUSTED_BIT" />“ bus prieinami ARC programose.</translation>
 <translation id="7882585827992171421">Ši politika taikoma tik mažmeninės prekybos režimu.
 
       Nustatomas plėtinio, kuris turėtų būti naudojamas kaip ekrano užsklanda prisijungimo ekrane, ID. Plėtinys turi būti „AppPack“ (programų paketo), kuris sukonfigūruotas šiam domenui taikant politiką „DeviceAppPack“ (įrenginio programų paketas), dalis.</translation>
@@ -2063,6 +2079,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Nurodoma, ar P2P bus naudojamas naudingosiose OS naujinių apkrovose. Jei ši politika galioja, įrenginiai bendrins ir bandys naudoti naujinio naudingąsias apkrovas per LAN, taip potencialiai sumažindami interneto pralaidumo naudojimą ir perpildymą. Jei naujinio naudingoji apkrova nepasiekiama naudojant LAN, įrenginys vykdys atsisiuntimą iš naujinio serverio. Jei ši politika negalioja ar yra nesukonfigūruota, P2P nebus naudojama.</translation>
 <translation id="7933141401888114454">Įgalinti prižiūrimų naudotojų kūrimą</translation>
+<translation id="793473937901685727">Nustatykite, ar sertifikatai bus prieinami ARC programose</translation>
 <translation id="7936098023732125869">Įgalinamas numatytojo paieškos teikėjo naudojimas.
 
           Jei įgalinsite šį nustatymą, naudotojui į „omnibox“ vedant tekstą, kuris nėra URL, bus vykdoma numatytoji paieška.

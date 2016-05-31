@@ -72,6 +72,7 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="1853692000353488670">Új inkognitólap</translation>
 <translation id="189172778771606813">Navigációs fiók bezárása</translation>
 <translation id="1924956916668006832">Szállítási cím kiválasztása</translation>
+<translation id="1933845786846280168">Kiválasztott lap</translation>
 <translation id="194341124344773587">A Chrome-ra vonatkozó engedély aktiválása az <ph name="BEGIN_LINK" />Android beállításaiban<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Jelszavak mentése</translation>
 <translation id="1944384637046898011">Az összes titkosítása Google-jelszóval ekkortól: <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ A Fizikai webet a Chrome-beállításokban szabályozhatja.
 <translation id="2959609938957585241">Ha a többi eszközén is hozzá szeretne férni a lapjaihoz, kapcsolja be az „Adatok automatikus szinkronizálása” funkciót az Android-fiókbeállítások között.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Minden jog fenntartva.</translation>
 <translation id="2968755619301702150">Tanúsítványmegtekintő</translation>
+<translation id="2979025552038692506">Kiválasztott inkognitólap</translation>
 <translation id="2996291259634659425">Összetett jelszó létrehozása</translation>
 <translation id="2996809686854298943">URL szükséges</translation>
 <translation id="3012408695656332380">Lecseréli az eszköz adatait a(z) <ph name="TO_ACCOUNT" /> fiók adataira. Lekérheti a meglévő adatait, ha visszavált a(z) <ph name="FROM_ACCOUNT" /> fiókra, de a kijelentkezés óta keletkezett adatok elvesznek.</translation>
@@ -554,6 +556,7 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />history.google
 <translation id="8073388330009372546">Kép megnyitása új lapon</translation>
 <translation id="8076014560081431679">A mentett webhelybeállítások nem törlődnek, és tájékozódási alapul szolgálhatnak böngészési szokásait illetően. <ph name="BEGIN_LINK" />További információ.<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Ez a Google által megjelenített tartalom a(z) <ph name="DOMAIN_NAME" /> domainről származik.</translation>
+<translation id="8103578431304235997">Inkognitólap</translation>
 <translation id="8106211421800660735">Hitelkártya száma</translation>
 <translation id="813082847718468539">Az oldalinformációk megtekintése</translation>
 <translation id="8137558756159375272">Az Érintéssel keresés elküldi a kiválasztott szót és az aktuális oldalt kontextusként a Google Keresés számára. A funkciót a <ph name="BEGIN_LINK" />Beállítások<ph name="END_LINK" /> szakaszban kikapcsolhatja.</translation>

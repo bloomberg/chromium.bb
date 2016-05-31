@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">The server hosting the web page might be overloaded or under maintenance.
     In order to avoid generating too much traffic and make the situation worse,
     requests to this URL have been temporarily disallowed.</translation>
-<translation id="1066332784716773939">Diagnose errors...</translation>
 <translation id="106701514854093668">Desktop Bookmarks</translation>
 <translation id="1080116354587839789">Fit to width</translation>
 <translation id="1090046120949329821">Multiple distinct Content-Disposition headers received. This is disallowed, so as to
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Department</translation>
 <translation id="2113977810652731515">Card</translation>
 <translation id="2114841414352855701">Ignored because it was overridden by <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">Desktop searches use your default search engine (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Mobile Bookmarks</translation>
 <translation id="2148716181193084225">Today</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
-<translation id="2153530520610387456">Go to
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Control Panel &gt; Network and Internet &gt; Network and Sharing Centre &gt; Troubleshoot Problems (at the bottom) &gt; Internet Connections.
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Full Admin Access</translation>
 <translation id="2166378884831602661">This site can’t provide a secure connection</translation>
 <translation id="2171101176734966184">You attempted to reach <ph name="DOMAIN" />, but the server presented a certificate signed using a weak signature algorithm. This means that the security credentials the server presented could have been forged and the server may not be the server you expected (you may be communicating with an attacker).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">This value is deprecated for this policy.</translation>
 <translation id="2262243747453050782">HTTP error</translation>
 <translation id="2279770628980885996">An unexpected condition was encountered while the server was attempting to fulfil the request.</translation>
-<translation id="2282186295770469712">Manage search settings</translation>
 <translation id="2282872951544483773">Unavailable Experiments</translation>
 <translation id="2292556288342944218">Your Internet access is blocked</translation>
 <translation id="229702904922032456">A root or intermediate certificate has expired.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">You can disable any proxies configured for a connection from the settings page.</translation>
 <translation id="2950186680359523359">The server closed the connection without sending any data.</translation>
 <translation id="2955913368246107853">Close find bar</translation>
-<translation id="2957518517523241247">Go to
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Control Panel &gt; Network Connections &gt; New Connection Wizard
-      <ph name="END_BOLD" />
-      to test your connection.</translation>
 <translation id="2958431318199492670">The network configuration doesn't comply to the ONC standard. Parts of the configuration may not be imported.</translation>
 <translation id="2969319727213777354">To establish a secure connection, your clock needs to be set correctly. This is because the certificates that websites use to identify themselves are only valid for specific periods of time. Since your device's clock is incorrect, Google Chrome cannot verify these certificates.</translation>
 <translation id="2972581237482394796">&amp;Redo</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">Parish</translation>
 <translation id="3901925938762663762">The card is expired</translation>
 <translation id="3903912596042358459">The server refused to fulfill the request.</translation>
-<translation id="3930850196944737149">Your device is offline.</translation>
 <translation id="3934680773876859118">Failed to load PDF document</translation>
 <translation id="3950924596163729246">Unable to access the network.</translation>
 <translation id="3963721102035795474">Reader Mode</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">Close</translation>
 <translation id="604124094241169006">Automatic</translation>
 <translation id="6042308850641462728">More</translation>
-<translation id="6044718745395562198">Your computer is offline.</translation>
 <translation id="6060685159320643512">Careful, these experiments may bite</translation>
 <translation id="6093795393556121384">Your card is verified</translation>
 <translation id="6146055958333702838">Check any cables and reboot any routers, modems or other network
@@ -533,11 +519,6 @@
 <translation id="6830600606572693159">The web page at <ph name="URL" /> is currently unavailable. It may be overloaded or down for maintenance.</translation>
 <translation id="6831043979455480757">Translate</translation>
 <translation id="6839929833149231406">Area</translation>
-<translation id="6851123334996048122">Go to
-      <ph name="BEGIN_BOLD" />
-      Applications &gt; System Preferences &gt; Network &gt; Assist me
-      <ph name="END_BOLD" />
-      to test your connection.</translation>
 <translation id="6874604403660855544">&amp;Redo add</translation>
 <translation id="6891596781022320156">Policy level is not supported.</translation>
 <translation id="6897140037006041989">User Agent</translation>
@@ -619,9 +600,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Unmanaged</translation>
 <translation id="7758069387465995638">Firewall or antivirus software may have blocked the connection.</translation>
-<translation id="7760914272566804712">You can try to diagnose the problem by taking the following steps:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Server's certificate does not match the URL.</translation>
 <translation id="777702478322588152">Prefecture</translation>
 <translation id="778579833039460630">No data received</translation>
@@ -661,14 +639,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8241707690549784388">The page that you're looking for used information that you entered. Returning to that page might cause any action that you took to be repeated. Do you want to continue?</translation>
 <translation id="8249320324621329438">Last fetched:</translation>
 <translation id="8261506727792406068">Delete</translation>
-<translation id="8266098793847448402">Click
-      <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
-      click
-      <ph name="BEGIN_BOLD" />Run<ph name="END_BOLD" />,
-      type
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
-      and then click
-      <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Your request to access this site has been sent to <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Contact your network administrator if you're not sure what this means.</translation>
 <translation id="8293206222192510085">Add Bookmark</translation>

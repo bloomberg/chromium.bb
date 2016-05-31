@@ -72,6 +72,7 @@
 <translation id="1853692000353488670">새 시크릿 탭</translation>
 <translation id="189172778771606813">탐색 창 닫기</translation>
 <translation id="1924956916668006832">배송지 주소 선택</translation>
+<translation id="1933845786846280168">선택된 탭</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android 설정<ph name="END_LINK" />에서 Chrome 관련 권한을 설정합니다.</translation>
 <translation id="1943432128510653496">비밀번호 저장</translation>
 <translation id="1944384637046898011"><ph name="TIME" />에 Google 비밀번호로 전체 데이터 암호화</translation>
@@ -156,6 +157,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="2959609938957585241">다른 기기에서 탭을 가져오려면 Android 계정 설정에서 '데이터 자동 동기화'를 사용 설정하세요.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2968755619301702150">인증서 뷰어</translation>
+<translation id="2979025552038692506">선택된 시크릿 탭</translation>
 <translation id="2996291259634659425">암호 만들기</translation>
 <translation id="2996809686854298943">URL이 필요합니다.</translation>
 <translation id="3012408695656332380">이 기기의 데이터를 <ph name="TO_ACCOUNT" />의 데이터로 대체합니다. 기존 데이터는 <ph name="FROM_ACCOUNT" />(으)로 다시 전환하여 검색할 수 있지만 로그아웃한 후 만든 데이터는 저장되지 않습니다.</translation>
@@ -190,7 +192,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 
 관리 계정으로 로그인하면 사용자의 Chrome 프로필에 대한 제어 권한이 관리자에게 부여됩니다. 사용자의 Chrome 데이터는 이 계정에 영구적으로 연결되며, 이 계정의 연결을 해제하면 로컬 Chrome 데이터가 삭제됩니다.</translation>
 <translation id="3384347053049321195">이미지 공유</translation>
-<translation id="3386292677130313581">사이트에서 내 위치를 확인하도록 허용하기 전에 확인(권장)</translation>
+<translation id="3386292677130313581">사이트에서 내 위치를 파악하도록 허용하기 전에 확인(권장)</translation>
 <translation id="3387650086002190359">파일 시스템에 오류가 발생하여 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="3414952576877147120">크기:</translation>
 <translation id="3435896845095436175">사용</translation>
@@ -554,6 +556,7 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="8073388330009372546">새 탭에서 이미지 열기</translation>
 <translation id="8076014560081431679">저장된 사이트 설정은 삭제되지 않으며 인터넷 사용 습관이 반영될 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">이 콘텐츠의 출처는 Google에서 제공하는 <ph name="DOMAIN_NAME" />입니다.</translation>
+<translation id="8103578431304235997">시크릿 탭</translation>
 <translation id="8106211421800660735">신용카드 번호</translation>
 <translation id="813082847718468539">사이트 정보 보기</translation>
 <translation id="8137558756159375272">터치하여 검색에서 선택한 단어와 현재 페이지를 Google 검색에 컨텍스트로 발송하세요. <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 이 기능을 사용 중지할 수 있습니다.</translation>

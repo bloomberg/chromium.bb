@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">ድረ-ገጹን የሚያስተናግደው አገልጋይ ከልክ በላይ ጫና በዝቶበታል ወይም በጥገና ላይ ሊሆን ይችላል።
         ከልክ በላይ ብዙ ትራፊክ እንዳያፈልቅ እና ሁኔታውን ወደ ባሰ ደረጃ እንዳይሄድ ለመከላከል ሲባል፣
         ወደዚህ ዩአርኤል የሚቀርቡ ጥያቄዎች ለጊዜው አይፈቀድላቸውም።</translation>
-<translation id="1066332784716773939">ስህተቶችን መርምር...</translation>
 <translation id="106701514854093668">የዴስክቶፕ ዕልባቶች</translation>
 <translation id="1080116354587839789">ከስፋቱ ጋር አመጣጥን</translation>
 <translation id="1090046120949329821">በርካታ የተለዩ የይዘት አዝማሚያ ራስጌዎች ደርሰዋል። ይሄ የተፈቀደው
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">ክፍል</translation>
 <translation id="2113977810652731515">ካርታ</translation>
 <translation id="2114841414352855701">በ<ph name="POLICY_NAME" /> ስለተሻረ ችላ ተብሏል።</translation>
-<translation id="2122434088511736194">የዴስክቶፕ ፍለጋዎች ነባሪ የፍለጋ ፕሮግራምዎን (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />) ነው የሚጠቀሙት።</translation>
 <translation id="2128531968068887769">ቤተኛ ደንበኛ</translation>
 <translation id="213826338245044447">የተንቀሳቃሽ ስልክ ዕልባቶች</translation>
 <translation id="2148716181193084225">ዛሬ</translation>
 <translation id="2149973817440762519">እልባት አርትዕ</translation>
-<translation id="2153530520610387456">ወደ
-          <ph name="BEGIN_BOLD" />
-          ጀምር &gt; የመቆጣጠሪያ ፓነል &gt; አውታረ መረብ እና በይነመረብ &gt; የአውታረ መረብ እና ማጋሪያ ማዕከል &gt; ለችግሮች መላ ፈልግ (ከታች) &gt; የበይነመረብ ግንኙነቶች ይሂዱ።
-          <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">ሙሉ የአስተዳደር መድረሻ</translation>
 <translation id="2166378884831602661">ይህ ጣቢያ ደህንነቱ አስተማማኝ የሆነ ግንኙነት ማቅረብ አይችልም</translation>
 <translation id="2171101176734966184"><ph name="DOMAIN" />ን ለመድረስ ሞክረዋል፣ ነገር ግን አገልጋዩ ደካማ የፊርማ ስልተቀመር በመጠቀም የተፈረመ የእውቅና ማረጋገጫ ነው ያረጋገጠው። ይህም ማለት አገልጋዩ ያቀረበው የደህንነት ምስክርነቶች የተጭበረበሩ ሊሆኑ ይችላሉ፣ እናም አገልጋዩ እርስዎ የሚጠብቁት አገልጋይ ላይሆን ይችላል (ከአጥቂ ጋር እየተገናኙ ሊሆን ይችላል)።</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">ይህ ዋጋ ለዚህ መመሪያ ተቋርጧል።</translation>
 <translation id="2262243747453050782">የኤች ቲ ቲ ፒ ስህተት</translation>
 <translation id="2279770628980885996">አገልጋዩ ጥያቄውን ለማሟሟላት በሚሞክርበት ጊዜ ያልተጠበቀ ሁኔታ አጋጥሟል።</translation>
-<translation id="2282186295770469712">የፍለጋ ቅንብሮችን አቀናብር</translation>
 <translation id="2282872951544483773">የማይገኙ ሙከራዎች</translation>
 <translation id="2292556288342944218">የእርስዎ የበየነመረብ መዳረሻ ታግዷል</translation>
 <translation id="229702904922032456">የአንድ የስር ወይም መሃከል እውቅና ማረጋገጫ ጊዜው አልፎበታል።</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">ከቅንብሮች ገጽ ሆነው ማናቸውንም ለግንኙነት የተዋቀሩ ተኪዎችን ማሰናከል ይችላሉ።</translation>
 <translation id="2950186680359523359">አገልጋዩ ምንም አይነት ውሂብ ሳይልክ ግንኙነቱን ዘግቶታል።</translation>
 <translation id="2955913368246107853">አግኝ አሞሌን ዝጋ</translation>
-<translation id="2957518517523241247">ግንኙነትዎን ለመፈተሽ ወደ
-          <ph name="BEGIN_BOLD" />
-          ጀምር &gt; የመቆጣጠሪያ ፓነል &gt; የአውታረ መረብ ግንኙነቶች &gt; አዲስ ግንኙነት አዋቂ
-          <ph name="END_BOLD" />
-          ይሂዱ።</translation>
 <translation id="2958431318199492670">የአውታረ መረብ ውቅሩ በኦ ኤን ሲ መስፈርቱ አይገዛም። አንዳንድ የውቅሩ ክፍሎች ላይመጡ ይችላሉ።</translation>
 <translation id="2969319727213777354">ደህንነቱ የተጠበቀ ግንኙነት ለመመስረት የእርስዎ ሰዓት በትክክል መዋቀር አለበት። ይሄ የሆነበት ምክንያት ድር ጣቢያዎች ራሳቸውን ለማሳወቅ የሚጠቀሙባቸው የእውቅና ማረጋገጫዎች የሚሰሩት ለተወሰኑ ጊዜዎች ብቻ ስለሆነ ነው። የእርስዎ መሣሪያ ሰዓት ትክክል እንዳለመሆኑ መጠን Google Chrome እነዚህን የእውቅና ማረጋገጫዎች ሊያረጋግጥ አይችልም።</translation>
 <translation id="2972581237482394796">&amp;ድገም</translation>
@@ -297,7 +285,6 @@
 <translation id="3885155851504623709">ቤተ-ክህነት አካባቢ</translation>
 <translation id="3901925938762663762">ካርዱ አገልግሎት ጊዜው አብቅቷል</translation>
 <translation id="3903912596042358459">አገልጋዩ ጥያቄውን ማሟላት አሻፈረኝ አለ።</translation>
-<translation id="3930850196944737149">የእርስዎ መሣሪያ ከመስመር ውጪ ነው</translation>
 <translation id="3934680773876859118">የፒ ዲ ኤፍ ሰነድ መጫን አልተሳካም</translation>
 <translation id="3950924596163729246">አውታረ መረቡን መድረስ አልተቻለም።</translation>
 <translation id="3963721102035795474">የአንባቢ ሁነታ</translation>
@@ -467,7 +454,6 @@ nil</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
 <translation id="604124094241169006">ራስ-ሰር</translation>
 <translation id="6042308850641462728">ተጨማሪ</translation>
-<translation id="6044718745395562198">የእርስዎ ኮምፒውተር ከመስመር ውጭ ነው።</translation>
 <translation id="6060685159320643512">ይጠንቀቁ፣ እነዚህ ሙከራዎች ሊያስቸግሩ ይችላሉ</translation>
 <translation id="6093795393556121384">የእርስዎ ካርድ ተረጋግጧል</translation>
 <translation id="6146055958333702838">ማናቸውም ገመዶችን ይፈትሹና እየተጠቀሙ ሊሆኑ የሚችሏቸውን ማንኛውም ራውተሮች፣
@@ -533,11 +519,6 @@ nil</translation>
 <translation id="6830600606572693159"><ph name="URL" /> ላይ ያለው ድረ-ገጽ በአሁኑ ጊዜ አይገኝም።  ከአቅም በላይ ስራ በዝቶበት ወይም ለጥገና ከስራ ውጪ ተደርጎ ሊሆን ይችላል።</translation>
 <translation id="6831043979455480757">መተርጎም</translation>
 <translation id="6839929833149231406">አካባቢ</translation>
-<translation id="6851123334996048122">ግንኙነትዎን ለመሞከር ወደ
-          <ph name="BEGIN_BOLD" />
-          መተግበሪያዎች &gt; የስርዓት ምርጫዎች &gt; አውታረ መረብ &gt; እርዳኝ
-          <ph name="END_BOLD" />
-          ይሂዱ።</translation>
 <translation id="6874604403660855544">&amp;አክልን ድገም</translation>
 <translation id="6891596781022320156">የመመሪያ ደረጃ አይደገፍም።</translation>
 <translation id="6897140037006041989">የተጠቀሚ ተወካይ</translation>
@@ -619,9 +600,6 @@ nil</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">አይቀናበርም</translation>
 <translation id="7758069387465995638">የኬላ ወይም የፀረ-ቫይረስ ሶፍትዌር ግንኙነቱን አግዶት ሊሆን ይችላል።</translation>
-<translation id="7760914272566804712">የሚከተሉትን ደረጃዎች በመውሰድ ችግሩን ለመመርመር መሞከር ይችላሉ፦
-          <ph name="LINE_BREAK" />
-          <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">የአገልጋይ እውቅና ማረጋገጫ ከዩ አር ኤሉ ጋር አይዛመድም።</translation>
 <translation id="777702478322588152">የፕሪፌክት ስልጣን</translation>
 <translation id="778579833039460630">ምንም ውሂብ አልደረሰም</translation>
@@ -661,11 +639,6 @@ nil</translation>
 <translation id="8241707690549784388">እየፈለጉት ያሉት ገጽ ያስገቡትን መረጃ ተጥቅሟል። ወደዛ ገጽ መመለስ ወስደውት የነበረውን ርምጃ እንዲደገም ሊያደርግ ይችላል። ለመቀጠል ይፈልጋሉ?</translation>
 <translation id="8249320324621329438">ለመጨረሻ ጊዜ የመጣው፦</translation>
 <translation id="8261506727792406068">ሰርዝ</translation>
-<translation id="8266098793847448402"><ph name="BEGIN_BOLD" />ጀምር<ph name="END_BOLD" />ን ጠቅ ያድርጉ፣
-          <ph name="BEGIN_BOLD" />አሂድ<ph name="END_BOLD" />ን ጠቅ ያድርጉ፣
-          <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" /> ብለው ይተይቡ፣
-          ከዚያ
-          <ph name="BEGIN_BOLD" />እሺ<ph name="END_BOLD" />ን ጠቅ ያድርጉ።</translation>
 <translation id="8279107132611114222">ይህን ጣቢያ የመድረስ ጥያቄዎ ለ<ph name="NAME" /> ተልኳል።</translation>
 <translation id="8289355894181816810">ይሄ ምን ማለት እንደሆነ እርግጠኛ ካልሆኑ የአውታረ መረብ አስተዳዳሪዎን ያግኙ።</translation>
 <translation id="8293206222192510085">እልባት ያክሉ</translation>

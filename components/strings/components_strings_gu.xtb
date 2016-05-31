@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">વેબપૃષ્ઠને હોસ્ટ કરતું સર્વર ઓવરલોડ થઇ ગયું હોઇ શકે અથવા જાળવણી હેઠળ હોઇ શકે. 
     વધુ પડતો ટ્રાફિક ઉત્પન્ન થતો અને પરિસ્થિતિને વણસતી અટકાવવા માટે, આ URL ને 
     કરાયેલ વિનંતીઓને અસ્થાયી રૂપે નામંજૂર કરવામાં આવી છે.</translation>
-<translation id="1066332784716773939">ભૂલોની તપાસ કરો...</translation>
 <translation id="106701514854093668">ડેસ્કટૉપ બુકમાર્ક્સ</translation>
 <translation id="1080116354587839789">પહોળાઈ પ્રમાણે ફિટ કરો</translation>
 <translation id="1090046120949329821">બહુવિધ અલગ સામગ્રી-વર્ણન મથાળાં પ્રાપ્ત થયા.  આ HTTP પ્રતિસાદ 
@@ -104,14 +103,10 @@
 <translation id="2096368010154057602">વિભાગ</translation>
 <translation id="2113977810652731515">કાર્ડ</translation>
 <translation id="2114841414352855701">અવગણ્યું કારણ કે તે <ph name="POLICY_NAME" /> દ્વારા ઓવરરાઇડ થયું હતું.</translation>
-<translation id="2122434088511736194">ડેસ્કટૉપ શોધ તમારા ડિફોલ્ટ શોધ એંજિન (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />) નો ઉપયોગ કરે છે.</translation>
 <translation id="2128531968068887769">મૂળ ક્લાઇન્ટ</translation>
 <translation id="213826338245044447">મોબાઇલ બુકમાર્ક્સ</translation>
 <translation id="2148716181193084225">આજે</translation>
 <translation id="2149973817440762519">બુકમાર્ક સંપાદિત કરો</translation>
-<translation id="2153530520610387456"><ph name="BEGIN_BOLD" />
-      Start &gt; Control Panel &gt; Network and Internet &gt; Network and Sharing Center &gt; Troubleshoot Problems (સૌથી નીચે) &gt; Internet Connections
-      <ph name="END_BOLD" /> પર જાઓ.</translation>
 <translation id="2166049586286450108">સંપૂર્ણ વ્યવસ્થાપક ઍક્સેસ</translation>
 <translation id="2166378884831602661">આ સાઇટ એક સુરક્ષિત કનેક્શન આપી શકતી નથી</translation>
 <translation id="2171101176734966184">તમે <ph name="DOMAIN" /> પર પહોંચવાનો પ્રયાસ કર્યો, પરંતુ સર્વરે નબળા હસ્તાક્ષર અલ્ગોરિધમનો ઉપયોગ કરીને હસ્તાક્ષરિત કરેલું પ્રમાણપત્ર પ્રસ્તુત કર્યું. આનો અર્થ એ છે કે સર્વરે પ્રસ્તુત કરેલા સુરક્ષા પ્રમાણપત્રો બનાવટી હોઈ શકે છે અને તે સર્વર તમારું અપેક્ષિત સર્વર (તમે કોઈ હુમલાખોર સાથે વાર્તાલાપ કરી શકો છો) ન પણ હોય.</translation>
@@ -123,7 +118,6 @@
 <translation id="225207911366869382">આ નીતિ માટે આ મૂલ્યને નાપસંદ કરેલું છે.</translation>
 <translation id="2262243747453050782">HTTP ભૂલ</translation>
 <translation id="2279770628980885996">જ્યારે સર્વર વિનંતીને પૂરી કરવાનો પ્રયત્ન કરી રહ્યું હતું ત્યારે કોઈ અનપેક્ષિત સ્થિતિ આવી હતી.</translation>
-<translation id="2282186295770469712">શોધ સેટિંગ્સ સંચાલિત કરો</translation>
 <translation id="2282872951544483773">અનુપલબ્ધ પ્રયોગો</translation>
 <translation id="2292556288342944218">તમારી ઇન્ટરનેટ ઍક્સેસ અવરોધિત છે</translation>
 <translation id="229702904922032456">રૂટ અથવા મધ્યવર્તી પ્રમાણપત્રની સમય-સીમા સમાપ્ત થઈ.</translation>
@@ -189,11 +183,6 @@
 <translation id="2948083400971632585">તમે સેટિંગ્સ પૃષ્ઠમાંથી કનેક્શન માટે ગોઠવવામાં આવેલ કોઇપણ પ્રોક્સીઓ અક્ષમ કરી શકો છો.</translation>
 <translation id="2950186680359523359">સર્વરે કોઈપણ ડેટા મોકલ્યા વગર કનેક્શન બંધ કર્યું.</translation>
 <translation id="2955913368246107853">શોધ બાર બંધ કરો</translation>
-<translation id="2957518517523241247">તમારા કનેક્શનના પરીક્ષણ માટે
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Control Panel &gt; Network Connections &gt; New Connection Wizard
-      <ph name="END_BOLD" />
-      પર જાઓ.</translation>
 <translation id="2958431318199492670">નેટવર્ક ગોઠવણી ONC માનકનું પાલન કરતી નથી. ગોઠવણીના ભાગો આયાત કરી શકાશે નહીં.</translation>
 <translation id="2969319727213777354">એક સુરક્ષિત કનેક્શન સ્થાપિત કરવા માટે, તમારી ઘડિયાળ યોગ્ય રીતે સેટ હોવી જરૂરી છે. આનું કારણ એ કે વેબસાઇટ્સ તેઓને ઓળખવા માટે જે પ્રમાણપત્રોનો ઉપયોગ કરે છે તે ચોક્કસ સમય અવધિ માટે જ માન્ય હોય છે. તમારા ઉપકરણની ઘડિયાળ ખોટી હોવાને લીધે, Google Chrome આ પ્રમાણપત્રોને ચકાસી શકતું નથી.</translation>
 <translation id="2972581237482394796">&amp;ફરી કરો</translation>
@@ -297,7 +286,6 @@
 <translation id="3885155851504623709">પૅરિશ</translation>
 <translation id="3901925938762663762">કાર્ડની સમયસીમા સમાપ્ત થઇ ગઈ છે</translation>
 <translation id="3903912596042358459">સર્વરે વિનંતિ પૂરી કરવાનું નકાર્યું.</translation>
-<translation id="3930850196944737149">તમારું ઉપકરણ ઑફલાઇન છે.</translation>
 <translation id="3934680773876859118">PDF દસ્તાવેજ લોડ કરવામાં નિષ્ફળ રહ્યા</translation>
 <translation id="3950924596163729246">નેટવર્ક ઍક્સેસ કરવામાં અક્ષમ છે.</translation>
 <translation id="3963721102035795474">રીડર મોડ</translation>
@@ -465,7 +453,6 @@
 <translation id="6040143037577758943">બંધ કરો</translation>
 <translation id="604124094241169006">સ્વચલિત</translation>
 <translation id="6042308850641462728">વધુ</translation>
-<translation id="6044718745395562198">તમારું કમ્પ્યુટર ઑફલાઇન છે.</translation>
 <translation id="6060685159320643512">સાવચેતી રાખો, આ પ્રયોગો નુકસાનકારક હોઈ શકે છે</translation>
 <translation id="6093795393556121384">તમારું કાર્ડ ચકાસવામાં આવ્યું છે</translation>
 <translation id="6146055958333702838">કોઈપણ કેબલ્સ તપાસો અને તમે કદાચ ઉપયોગમાં લઇ રહ્યાં હોય તેવા કોઇપણ રાઉટર્સ, મૉડેમ્સ 
@@ -532,11 +519,6 @@
 <translation id="6830600606572693159"><ph name="URL" /> પરનું વેબપૃષ્ઠ હાલમાં અનુપલબ્ધ છે. તે કદાચ ઑવરલોડ થઈ ગયું છે અથવા જાળવણી કાર્ય માટે બંધ કરેલું છે.</translation>
 <translation id="6831043979455480757">અનુવાદ કરો</translation>
 <translation id="6839929833149231406">વિસ્તાર</translation>
-<translation id="6851123334996048122">તમારા કનેક્શનનું પરીક્ષણ કરવા માટે 
-      <ph name="BEGIN_BOLD" />
-      Applications &gt; System Preferences &gt; Network &gt; Assist me
-      <ph name="END_BOLD" />
-      પર જાઓ.</translation>
 <translation id="6874604403660855544">&amp;ઉમેરવું ફરી કરો</translation>
 <translation id="6891596781022320156">નીતિ સ્તર સમર્થિત નથી.</translation>
 <translation id="6897140037006041989">વપરાશકર્તા એજન્ટ</translation>
@@ -618,9 +600,6 @@
 <translation id="7733391738235763478">( <ph name="NUMBER_VISITS" /> )</translation>
 <translation id="7752995774971033316">બિનસંચાલિત</translation>
 <translation id="7758069387465995638">ફાયરવોલ અથવા એન્ટિવાયરસ સોફ્ટવેર એ કનેક્શન અવરોધિત કર્યું હોઈ શકે છે.</translation>
-<translation id="7760914272566804712">તમે નીચેના પગલાં લઇને સમસ્યાનું નિદાન કરવાનો પ્રયાસ કરી શકો છો:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">સર્વરનું પ્રમાણપત્ર URL સાથે મેળ ખાતું નથી.</translation>
 <translation id="777702478322588152">પ્રીફેચર</translation>
 <translation id="778579833039460630">ડેટા પ્રાપ્ત થયો નથી</translation>
@@ -660,13 +639,6 @@
 <translation id="8241707690549784388">તમારા દ્વારા દાખલ કરાયેલી વપરાયેલી માહિતી માટે આ પાનું તમે જોઈ રહ્યા છો. તે પૃષ્ઠ પર પાછા જવાથી એવી કોઈપણ ક્રિયા ફરીથી થઈ શકે છે જે તમે પહેલા કરી હતી. શું તમે ચાલુ રાખવા માંગો છો?</translation>
 <translation id="8249320324621329438">છેલ્લું આનયન:</translation>
 <translation id="8261506727792406068">કાઢી નાખો</translation>
-<translation id="8266098793847448402"><ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" /> 
-      ક્લિક કરો,
-      <ph name="BEGIN_BOLD" />Run<ph name="END_BOLD" /> 
-      ક્લિક કરો,
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" /> લખો, 
-      અને પછી
-      <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" /> ક્લિક કરો.</translation>
 <translation id="8279107132611114222">આ સાઇટને ઍક્સેસ કરવાની તમારી વિનંતી <ph name="NAME" /> ને મોકલવામાં આવી છે.</translation>
 <translation id="8289355894181816810">આ શું છે તે ખાતરીપૂર્વક જાણતા ન હો તો તમારા નેટવર્ક વ્યવસ્થાપકનો સંપર્ક કરો.</translation>
 <translation id="8293206222192510085">બુકમાર્ક ઉમેરો</translation>

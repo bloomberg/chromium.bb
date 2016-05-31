@@ -72,6 +72,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1853692000353488670">Bagong tab na incognito</translation>
 <translation id="189172778771606813">Isara ang navigation drawer</translation>
 <translation id="1924956916668006832">Pumili ng shipping address</translation>
+<translation id="1933845786846280168">Napiling Tab</translation>
 <translation id="194341124344773587">I-on ang pahintulot para sa Chrome sa <ph name="BEGIN_LINK" />Mga Setting ng Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">I-save ang mga password</translation>
 <translation id="1944384637046898011">I-encrypt lahat gamit ang password ng Google simula sa <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Makokontrol mo ang Pisikal na Web sa Mga Setting ng Chrome.
 <translation id="2959609938957585241">Upang makuha ang iyong mga tab mula sa iba mo pang mga device, i-on ang "I-auto sync ang data" sa mga setting ng Android account.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Nakalaan ang lahat ng karapatan.</translation>
 <translation id="2968755619301702150">Viewer ng certificate</translation>
+<translation id="2979025552038692506">Napiling Tab na Incognito</translation>
 <translation id="2996291259634659425">Gumawa ng passphrase</translation>
 <translation id="2996809686854298943">Kinakailangan ang URL</translation>
 <translation id="3012408695656332380">Palitan ng data ni <ph name="TO_ACCOUNT" /> ang data ng device na ito. Makukuha mo ang kasalukuyan mong data sa pamamagitan ng pagbalik sa <ph name="FROM_ACCOUNT" />, ngunit mawawala ang nagawang data simula noong nag-sign out ka.</translation>
@@ -554,6 +556,7 @@ Maaaring mayroong ibang mga uri ng history ng pagba-browse ang iyong Google acco
 <translation id="8073388330009372546">Buksan ang larawan sa bagong tab</translation>
 <translation id="8076014560081431679">Hindi made-delete ang mga naka-save na setting ng site at maaari nitong ipakita ang iyong mga gawi sa pagba-browse. <ph name="BEGIN_LINK" />Matuto nang higit pa<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Ang content na ito ay mula sa <ph name="DOMAIN_NAME" />, na ipinadala ng Google.</translation>
+<translation id="8103578431304235997">Tab na Incognito</translation>
 <translation id="8106211421800660735">Numero ng credit card</translation>
 <translation id="813082847718468539">Tingnan ang impormasyon ng site</translation>
 <translation id="8137558756159375272">Ipinadadala ng Pindutin upang Hanapin ang piniling salita at ang kasalukuyang page bilang konteksto sa Paghahanap sa Google. Maaari mo itong i-off sa <ph name="BEGIN_LINK" />Mga Setting<ph name="END_LINK" />.</translation>

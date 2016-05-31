@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome menggunakan kamera anda.</translation>
 <translation id="1619887657840448962">Untuk menjadikan Chrome lebih selamat, kami melumpuhkan sambungan berikut yang tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> dan mungkin telah ditambahkan tanpa pengetahuan anda.</translation>
 <translation id="163860049029591106">Bermula dengan OS Chrome</translation>
+<translation id="1653828314016431939">OK - Mulakan semula sekarang</translation>
 <translation id="1682634494516646069">Google Chrome tidak dapat membaca atau menulis pada direktori datanya: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome ialah penyemak imbas web yang menjalankan halaman web dan aplikasi dengan kelajuan kilat. Ia pantas, stabil dan mudah digunakan. Semak imbas web dengan lebih selamat dengan perlindungan daripada perisian berniat jahat dan pancingan data yang terbina dalam Google Chrome.</translation>
 <translation id="174539241580958092">Google Chrome tidak dapat menyegerakkan data anda disebabkan ralat melog masuk.</translation>
@@ -70,6 +71,12 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="3080151273017101988">Terus menjalankan apl latar belakang apabila Google Chrome ditutup</translation>
 <translation id="3089968997497233615">Terdapat versi Google Chrome baharu yang lebih selamat tersedia.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
+<translation id="3251381707915721925">Untuk menetapkan tapak web yang boleh dilihat oleh <ph name="NEW_PROFILE_NAME" />, anda boleh mengkonfigurasi sekatan dan tetapan dengan melawati <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Jika anda tidak menukar tetapan lalainya, <ph name="NEW_PROFILE_NAME" /> boleh menyemak imbas apa sahaja di web.
+
+Untuk menghalang <ph name="NEW_PROFILE_NAME" /> daripada mengakses akaun anda, pastikan profil anda dikunci apabila tidak menggunakan Chrome. Untuk melakukannya, klik pada nama profil anda di penjuru atas sebelah kanan penyemak imbas dan pilih "Keluar dan kunci kanak-kanak".
+<ph name="BEGIN_LINK_2" />Ketahui lebih lanjut<ph name="END_LINK_2" />
+
+Sila semak e-mel anda di <ph name="ACCOUNT_EMAIL" /> untuk arahan lanjut.</translation>
 <translation id="3282568296779691940">Log masuk ke Chrome</translation>
 <translation id="3311976847535831054">Komputer ini tidak akan menerima kemas kini Google Chrome 32 bit lagi. Sila tingkatkan kepada Google Chrome 64 bit.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -117,6 +124,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="4921569541910214635">Berkongsi komputer? Kini anda boleh sediakan Chrome menurut cara yang anda suka.</translation>
 <translation id="4925019873400497719">Chrome mengesahkan bahawa <ph name="ISSUER" /> mengeluarkan sijil tapak web ini. Pelayan membekalkan maklumat Ketelusan Sijil, tetapi tidak sah.</translation>
 <translation id="4953650215774548573">Tetapkan Google Chrome sebagai penyemak imbas lalai anda</translation>
+<translation id="495931528404527476">Dalam Chrome</translation>
 <translation id="4987308747895123092">Sila tutup semua tetingkap Google Chrome (termasuk yang di dalam mod Windows 8) dan cuba lagi.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome tidak dapat menyegerakkan data anda. Sila kemas kini frasa laluan Segerak anda.</translation>
@@ -205,6 +213,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="7808348361785373670">Alih keluar daripada Chrome...</translation>
 <translation id="7825851276765848807">Gagal pemasangan disebabkan ralat yang tidak dinyatakan. Sila muat turun semula Google Chrome.</translation>
 <translation id="7890208801193284374">Jika anda berkongsi komputer, rakan dan keluarga boleh menyemak imbas secara berasingan dan menyediakan Chrome sebagaimana yang mereka mahukan.</translation>
+<translation id="795025003224538582">Jangan mulakan semula</translation>
 <translation id="8005540215158006229">Chrome hampir sedia.</translation>
 <translation id="8008534537613507642">Pasang Semula Chrome</translation>
 <translation id="8030318113982266900">Mengemas kini peranti anda kepada saluran <ph name="CHANNEL_NAME" />...</translation>

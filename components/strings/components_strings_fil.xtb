@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Maaaring na-overload o kasalukuyang inaayos ang server na nagho-host sa webpage.
     Upang hindi makabuo ng masyadong maraming trapiko at lumala ang
     sitwasyon, hindi muna pinahihintulutan ang mga kahilingan sa URL na ito.</translation>
-<translation id="1066332784716773939">I-diagnose ang mga error...</translation>
 <translation id="106701514854093668">Mga Bookmark sa Desktop</translation>
 <translation id="1080116354587839789">Pagkasyahin sa lapad</translation>
 <translation id="1090046120949329821">Nakatanggap ng maraming natatanging Content-Disposition na header.  Hindi ito
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Departamento</translation>
 <translation id="2113977810652731515">Card</translation>
 <translation id="2114841414352855701">Binalewala dahil na-override ito ng <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">Ginagamit ng mga paghahanap sa desktop ang iyong default na search engine (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Mga Bookmark sa Mobile</translation>
 <translation id="2148716181193084225">Ngayon</translation>
 <translation id="2149973817440762519">I-edit ang Bookmark</translation>
-<translation id="2153530520610387456">Pumunta sa
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Control Panel &gt; Network and Internet &gt; Network and Sharing Center &gt; Troubleshoot Problems (sa ibaba) &gt; Internet Connections.
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Ganap na Access ng Admin</translation>
 <translation id="2166378884831602661">Hindi makakapagbigay ng secure na koneksyon ang site na ito</translation>
 <translation id="2171101176734966184">Tinangka mong maabot ang <ph name="DOMAIN" />, ngunit nagpakita ang server ng certificate na nilagdaan gamit ang isang mahinang signature algorithm. Nangangahulugan ito na ang mga kredensyal na pangseguridad na ipinakita ng server ay maaaring pineke, at ang server ay maaaring hindi ang server na iyong inaasahan (maaaring nakikipag-ugnay ka sa isang nang-aatake).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Hindi na gimagamit ang halagang ito para sa patakarang ito.</translation>
 <translation id="2262243747453050782">Error sa HTTP</translation>
 <translation id="2279770628980885996">Nakaranas ng hindi inaasahang kundisyon habang tinatangka ng server na maibigay ang kahilingan.</translation>
-<translation id="2282186295770469712">Pamahalaan ang mga setting ng paghahanap</translation>
 <translation id="2282872951544483773">Mga Eksperimentong Hindi Available</translation>
 <translation id="2292556288342944218">Naka-block ang iyong access sa Internet</translation>
 <translation id="229702904922032456">Nag-expire na ang isang pinagmulan o intermediate na certificate.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">Maaari mong i-disable ang anumang mga proxy na naka-configure para sa isang koneksyon mula sa pahina ng mga setting.</translation>
 <translation id="2950186680359523359">Isinara ng server ang koneksyon nang hindi nagpapadala ng anumang data.</translation>
 <translation id="2955913368246107853">Isara ang bar sa paghahanap</translation>
-<translation id="2957518517523241247">Pumunta sa
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Control Panel &gt; Network Connections &gt; New Connection Wizard
-      <ph name="END_BOLD" />
-      upang masubukan ang iyong koneksyon.</translation>
 <translation id="2958431318199492670">Hindi sumusunod ang configuration ng network sa pamantayan ng ONC. Hindi maaaring i-import ang mga bahagi ng configuration.</translation>
 <translation id="2969319727213777354">Upang makapagtatag ng secure na koneksyon, kailangang itakda nang tama ang iyong orasan. Ito ay dahil sa may-bisa lang ang mga certificate na ginagamit ng mga website upang tukuyin ang mga sarili ng mga ito sa loob ng mga partikular na tagal ng panahon. Dahil mali ang orasan ng iyong device, hindi ma-verify ng Google Chrome ang mga certificate na ito.</translation>
 <translation id="2972581237482394796">&amp;I-redo</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">Parokya</translation>
 <translation id="3901925938762663762">Na-expire na ang card</translation>
 <translation id="3903912596042358459">Hindi pumayag ang server na isagawa ang kahilingan.</translation>
-<translation id="3930850196944737149">Offline ang iyong device.</translation>
 <translation id="3934680773876859118">Nabigong i-load ang dokumentong PDF</translation>
 <translation id="3950924596163729246">Hindi ma-access ang network.</translation>
 <translation id="3963721102035795474">Reader Mode</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">Isara</translation>
 <translation id="604124094241169006">Awtomatiko</translation>
 <translation id="6042308850641462728">Higit pa</translation>
-<translation id="6044718745395562198">Offline ang iyong computer.</translation>
 <translation id="6060685159320643512">Mag-ingat, maaaring makahamak ang mga eksperimentong ito</translation>
 <translation id="6093795393556121384">Na-verify ang iyong card</translation>
 <translation id="6146055958333702838">Tingnan ang anumang mga kable at i-reboot ang anumang mga router, modem o iba
@@ -533,11 +519,6 @@
 <translation id="6830600606572693159">Kasalukuyang hindi available ang webpage sa <ph name="URL" />.  Maaaring overloaded ito o hindi pinagana para sa maintenance.</translation>
 <translation id="6831043979455480757">Isalin</translation>
 <translation id="6839929833149231406">Lugar</translation>
-<translation id="6851123334996048122">Pumunta sa
-      <ph name="BEGIN_BOLD" />
-      Applications &gt; System Preferences &gt; Network &gt; Assist me
-      <ph name="END_BOLD" />
-      upang masubukan ang iyong koneksyon.</translation>
 <translation id="6874604403660855544">&amp;Gawing muli ang pagdagdag</translation>
 <translation id="6891596781022320156">Hindi sinusuportahan ang antas ng patakaran.</translation>
 <translation id="6897140037006041989">User Agent</translation>
@@ -619,9 +600,6 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Hindi pinamamahalaan</translation>
 <translation id="7758069387465995638">Maaaring na-block ng firewall o antivirus software ang koneksyon.</translation>
-<translation id="7760914272566804712">Maaari mong subukang i-diagnose ang problema sa pamamagitan ng mga sumusunod na hakbang:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Hindi tumutugma sa URL ang certificate ng server.</translation>
 <translation id="777702478322588152">Prefecture</translation>
 <translation id="778579833039460630">Walang data na natanggap</translation>
@@ -661,14 +639,6 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="8241707690549784388">Ang pahina na hinahanap mo para sa paggamit ng impormasyon na ipinasok mo. Ang pagbalik sa pahinang iyon maaaring magsanhi ng anumang aksyon na akalo mo ay naulit. Nais mo bang ipagpatuloy?</translation>
 <translation id="8249320324621329438">Huling kinuha:</translation>
 <translation id="8261506727792406068">Burahin</translation>
-<translation id="8266098793847448402">I-click ang
-      <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
-      i-click ang
-      <ph name="BEGIN_BOLD" />Run<ph name="END_BOLD" />,
-      i-type ang
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
-      at pagkatapos ay i-click ang
-      <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Ipinadala ang iyong kahilingang i-access ang site na ito kay <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Makipag-ugnay sa administrator ng iyong network kung hindi ka sigurado kung ano ang ibig sabihin nito.</translation>
 <translation id="8293206222192510085">Magdagdag ng Bookmark</translation>

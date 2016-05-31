@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">فعال کردن داده‌های تلفن همراه</translation>
 <translation id="1621499497873603021">زمان باقیمانده تا خالی‌شدن شارژ باتری، <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">‏دستگاه Chrome</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> باقی‌مانده</translation>
 <translation id="1723752762323179280">خروج از جلسه</translation>
 <translation id="1747827819627189109">صفحه‌کلید روی صفحه فعال شد</translation>
 <translation id="1812696562331527143">‏روش ورودی شما به <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />شخص ثالث<ph name="END_LINK" />) تغییر یافت. Shift + Alt را برای تعویض فشار دهید.</translation>
@@ -115,6 +116,7 @@
 <translation id="4421231901400348175">به اشتراک گذاشتن کنترل صفحه‌تان با <ph name="HELPER_NAME" /> از طریق راهنمایی از راه دور.</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
 <translation id="4527045527269911712">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> مانده تا کامل شود</translation>
 <translation id="4544944664594876241">کلیدهای میان‌بر قفل کردن صفحه تغییر کرده است. لطفاً از <ph name="NEW_SHORTCUT" /> به جای <ph name="OLD_SHORTCUT" /> استفاده کنید.</translation>
 <translation id="479989351350248267">جستجو</translation>
 <translation id="4804818685124855865">قطع اتصال</translation>
@@ -222,6 +224,7 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8517041960877371778">ممکن است وقتی <ph name="DEVICE_TYPE" /> شما خاموش است، شارژ نشود.</translation>
 <translation id="8528322925433439945">تلفن همراه...</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> باقی‌مانده</translation>
 <translation id="8673028979667498656">‎۲۷۰°‎</translation>
 <translation id="8676770494376880701">شارژر برق متصل شده ضعیف است</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

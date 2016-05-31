@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Activați datele mobile</translation>
 <translation id="1621499497873603021">Timp rămas până la descărcarea bateriei: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispozitiv Chrome</translation>
+<translation id="1677472565718498478">Timp rămas: <ph name="TIME" /></translation>
 <translation id="1723752762323179280">Se iese din sesiune</translation>
 <translation id="1747827819627189109">Tastatură pe ecran activată</translation>
 <translation id="1812696562331527143">Metoda de introducere s-a schimbat la <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />terță parte<ph name="END_LINK" />).
@@ -116,6 +117,7 @@ Apăsați Căutare sau Shift pentru a anula.</translation>
 <translation id="4421231901400348175">În prezent, <ph name="HELPER_NAME" /> îți poate controla ecranul prin Asistență la distanță.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4527045527269911712">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> până la încărcare completă</translation>
 <translation id="4544944664594876241">Comanda rapidă pentru a bloca ecranul a fost modificată. Folosește <ph name="NEW_SHORTCUT" /> în loc de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">căutați</translation>
 <translation id="4804818685124855865">Deconectează-te</translation>
@@ -224,6 +226,7 @@ Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="8428213095426709021">Setări</translation>
 <translation id="8517041960877371778">Este posibil ca <ph name="DEVICE_TYPE" /> să nu se încarce cât timp este pornit.</translation>
 <translation id="8528322925433439945">Rețele mobile...</translation>
+<translation id="8639760480004882931">Nivelul bateriei: <ph name="PERCENTAGE" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">A fost conectat un încărcător de putere joasă</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

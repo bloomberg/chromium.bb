@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Eventuellt pågår underhåll på servern som webbsidan finns på, eller så kan servern vara överbelastad.
     För att undvika överbelastning och för att förhindra att situationen förvärras,
     har begäranden till den här webbadressen stoppats tillfälligt.</translation>
-<translation id="1066332784716773939">Diagnostisera fel ...</translation>
 <translation id="106701514854093668">Bokmärken på skrivbordet</translation>
 <translation id="1080116354587839789">Anpassa till fönstrets bredd</translation>
 <translation id="1090046120949329821">Flera rubriker med "Content-Disposition" togs emot.  Eftersom vi vill 
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Departement</translation>
 <translation id="2113977810652731515">Kort</translation>
 <translation id="2114841414352855701">Ignoreras eftersom den åsidosätts av <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">När du söker direkt från skrivbordet används standardsökmotorn (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Bokmärken i mobilen</translation>
 <translation id="2148716181193084225">Idag</translation>
 <translation id="2149973817440762519">Redigera bokmärke</translation>
-<translation id="2153530520610387456">Öppna
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Kontrollpanelen &gt; Nätverk och Internet &gt; Nätverks- och delningscenter &gt; Felsök problem (längst ned) &gt; Internetanslutningar.
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Fullständig administrativ åtkomst</translation>
 <translation id="2166378884831602661">Webbplatsen kan inte tillhandahålla en säker anslutning</translation>
 <translation id="2171101176734966184">Du försökte öppna <ph name="DOMAIN" />, men servern visade ett certifikat som signerats med en svag signaturalgoritm. Det innebär att säkerhetsuppgifterna som servern visar kan vara en förfalskning och att servern kanske inte är den server du tror (du kanske kommunicerar med en skadlig server).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Värdet är inte längre giltigt för policyn.</translation>
 <translation id="2262243747453050782">HTTP-fel</translation>
 <translation id="2279770628980885996">Ett oväntat tillstånd gjorde att servern inte kunde uppfylla begäran.</translation>
-<translation id="2282186295770469712">Hantera sökinställningar</translation>
 <translation id="2282872951544483773">Otillgängliga experiment</translation>
 <translation id="2292556288342944218">Internetanslutningen har blockerats</translation>
 <translation id="229702904922032456">Ett rotcertifikat eller indirekt certifikat har upphört att gälla.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">Du kan inaktivera alla proxyservrar som har konfigurerats för en anslutning från sidan Inställningar.</translation>
 <translation id="2950186680359523359">Servern avslutade anslutningen utan att skicka data.</translation>
 <translation id="2955913368246107853">Stäng sökfältet</translation>
-<translation id="2957518517523241247">Öppna
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Kontrollpanelen &gt; Nätverksanslutningar &gt; Guiden Ny anslutning
-      <ph name="END_BOLD" />
-      om du vill testa din anslutning.</translation>
 <translation id="2958431318199492670">Nätverkskonfigurationen uppfyller inte ONC-standarden. Det kan hända att delar av konfigurationen inte kan importeras.</translation>
 <translation id="2969319727213777354">Om du vill upprätta en säker anslutning måste klockan vara rätt inställd. Det beror på att certifikaten som webbplatserna använder för att identifiera sig har en bestämd giltighetstid. Google Chrome kan inte verifiera certifikaten eftersom klockan på enheten inte går rätt.</translation>
 <translation id="2972581237482394796">&amp;Upprepa</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">Församling</translation>
 <translation id="3901925938762663762">Kortet gäller inte längre</translation>
 <translation id="3903912596042358459">Servern vägrade att uppfylla begäran.</translation>
-<translation id="3930850196944737149">Din enhet är offline.</translation>
 <translation id="3934680773876859118">Det gick inte att läsa in PDF-dokumentet</translation>
 <translation id="3950924596163729246">Det går inte att ansluta nätverket.</translation>
 <translation id="3963721102035795474">Läsarläge</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="604124094241169006">Automatisk</translation>
 <translation id="6042308850641462728">Mer</translation>
-<translation id="6044718745395562198">Datorn är offline.</translation>
 <translation id="6060685159320643512">Försiktigt, experimenten kan vara skadliga</translation>
 <translation id="6093795393556121384">Ditt kort har verifierats</translation>
 <translation id="6146055958333702838">Kontrollera kablar och starta om routrar, modem och andra nätverksenheter
@@ -533,11 +519,6 @@
 <translation id="6830600606572693159">Webbsidan <ph name="URL" /> är inte tillgänglig just nu. Den kan vara överbelastad eller ligga nere för underhåll.</translation>
 <translation id="6831043979455480757">Översätt</translation>
 <translation id="6839929833149231406">Huvudområde</translation>
-<translation id="6851123334996048122">Öppna
-      <ph name="BEGIN_BOLD" />
-      Program &gt; Systeminställningar &gt; Nätverk &gt; Hjälp mig
-      <ph name="END_BOLD" />
-      om du vill testa din anslutning.</translation>
 <translation id="6874604403660855544">&amp;Gör om Lägg till</translation>
 <translation id="6891596781022320156">Policynivån stöds inte.</translation>
 <translation id="6897140037006041989">Användaragent</translation>
@@ -619,9 +600,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Hanteras inte</translation>
 <translation id="7758069387465995638">Anslutningen kan ha blockerats av en brandvägg eller antivirusprogram.</translation>
-<translation id="7760914272566804712">Du kan försöka felsöka problemet på följande sätt:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Servercertifikatet överensstämmer inte med webbadressen.</translation>
 <translation id="777702478322588152">Prefektur</translation>
 <translation id="778579833039460630">Inga data har tagits emot</translation>
@@ -661,14 +639,6 @@ Psst! Nästa gång kanske inkognitoläget <ph name="SHORTCUT_KEY" /> kan vara n�
 <translation id="8241707690549784388">Önskad sida använder information som du har angett. Om du återgår till sidan kan eventuella åtgärder på sidan upprepas. Vill du fortsätta?</translation>
 <translation id="8249320324621329438">Senast hämtad:</translation>
 <translation id="8261506727792406068">Radera</translation>
-<translation id="8266098793847448402">Klicka på
-      <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
-      klicka på
-      <ph name="BEGIN_BOLD" />Kör<ph name="END_BOLD" />,
-      skriv
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
-      och klicka sedan på
-      <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Din begäran om att få tillgång till denna webbplats har skickats till <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Kontakta din nätverksadministratör om du är osäker på vad det här innebär.</translation>
 <translation id="8293206222192510085">Lägg till bokmärke</translation>

@@ -166,7 +166,7 @@ Jauh Chrome</translation>
 <translation id="4985296110227979402">Anda perlu menyediakan komputer untuk akses jauh terlebih dahulu</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" /> (luar talian)</translation>
 <translation id="5070121137485264635">Hos jauh memerlukan anda membuat pengesahan pada tapak web pihak ketiga. Untuk meneruskan, anda hendaklah memberikan Desktop Jauh Chrome kebenaran tambahan untuk mengakses alamat ini:</translation>
-<translation id="507204348399810022">Adakah anda pasti mahu melumpuhkan sambungan jauh kepada <ph name="HOSTNAME" />?</translation>
+<translation id="507204348399810022">Adakah anda pasti mahu melumpuhkan sambungan jauh ke <ph name="HOSTNAME" />?</translation>
 <translation id="5156271271724754543">Sila masukkan PIN yang sama dalam kedua-dua kotak.</translation>
 <translation id="5168917394043976756">Buka laci navigasi</translation>
 <translation id="5170982930780719864">Id hos tidak sah.</translation>
@@ -212,6 +212,10 @@ Jauh Chrome</translation>
 <translation id="6324708100353784493">Anda telah mendayakan mod penyepaduan Google Cardboard. Untuk menggunakan mod ini, masukkan peranti anda dalam pemapar yang serasi dengan Google Cardboard.</translation>
 <translation id="6381670701864002291">Sesuatu yang lain.</translation>
 <translation id="6398765197997659313">Keluar daripada skrin penuh</translation>
+<translation id="6408143143164565232">• Dengar audio daripada komputer Windows atau Linux.
+• Alih keluar sambungan yang tidak dikehendaki dengan menekan lama pada nama komputer.
+• Ciri cubit untuk mengezum dan menatal menggunakan dua jari yang lebih lancar.
+• Skrin Bantuan &amp; Maklum Balas baharu.</translation>
 <translation id="6441316101718669559">Integrasi desktop tidak disokong pada platform ini. Anda masih boleh menggunakan aplikasi, tetapi pengalaman pengguna akan diturun taraf.</translation>
 <translation id="652218476070540101">PIN untuk komputer ini sedang dikemas kini…</translation>
 <translation id="6527303717912515753">Kongsi</translation>
@@ -257,6 +261,7 @@ Jauh Chrome</translation>
 <translation id="7836926030608666805">Sesetengah komponen yang diperlukan hilang. Sila pastikan anda menjalankan versi terkini Chrome dan cuba lagi.</translation>
 <translation id="7868137160098754906">Sila masukkan PIN anda untuk komputer jauh.</translation>
 <translation id="7869445566579231750">Anda tidak mempunyai kebenaran untuk menjalankan aplikasi ini.</translation>
+<translation id="7895403300744144251">Dasar keselamatan pada komputer jauh tidak membenarkan sambungan daripada akaun anda.</translation>
 <translation id="7948001860594368197">Pilihan skrin</translation>
 <translation id="7970576581263377361">Pengesahan gagal. Sila log masuk ke Chromium sekali lagi.</translation>
 <translation id="7981525049612125370">Sesi jauh telah tamat tempoh.</translation>

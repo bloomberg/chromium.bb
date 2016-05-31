@@ -517,6 +517,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Ta pravilnik velja le, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
 <translation id="2682225790874070339">Onemogoči Google Drive v aplikaciji Datoteke za <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Omogoči funkcijo stiskanja podatkov v strežniku proxy</translation>
+<translation id="2731627323327011390">Onemogočanje uporabe potrdil sistema <ph name="PRODUCT_OS_NAME" /> aplikacijam ARC</translation>
 <translation id="2742843273354638707">Skrivanje aplikacije Spletna trgovina Chrome in povezave v nogi na strani »Nov zavihek« in v zaganjalniku aplikacij v sistemu <ph name="PRODUCT_OS_NAME" />.
 
       Če je ta pravilnik nastavljen na »True«, so ikone skrite.
@@ -1851,6 +1852,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če pravilnik omogočite, ga lahko uporabniki začasno preglasijo tako, da omogočijo ali onemogočijo lupo, vendar ta nastavitev ni trajna in privzeta nastavitev se obnovi vsakič, ko je ponovno prikazan prijavni zaslon ali kadar je uporabnik eno minuto nedejaven na prijavnem zaslonu.
 
           Če pravilnik ni vklopljen, je lupa onemogočena, ko je prvič prikazan prijavni zaslon. Uporabniki lahko kadar koli omogočijo ali onemogočijo lupo, pri čemer se njegovo stanje na prijavnem zaslonu ohrani med uporabniki.</translation>
+<translation id="7249828445670652637">Omogočanje uporabe potrdil sistema <ph name="PRODUCT_OS_NAME" /> aplikacijam ARC</translation>
 <translation id="7258823566580374486">Omogočanje zakrivanja gostiteljev za oddaljeni dostop</translation>
 <translation id="7260277299188117560">Samodejno posodabljanje prek p2p omogočeno</translation>
 <translation id="7267809745244694722">Predstavnostne tipke privzeto delujejo kot funkcije tipke</translation>
@@ -1976,6 +1978,17 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7715711044277116530">Odstotek prilagoditve časovnega zamika zatemnitve zaslona v načinu predstavitve</translation>
 <translation id="7717938661004793600">Konfiguriranje funkcij za ljudi s posebnimi potrebami za <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Nadzira, ali so podatki o uporabi poslani Googlu. Če je pravilnik omogočen, <ph name="PRODUCT_OS_NAME" /> pošlje podatke o uporabi. Če ni nastavljen ali je onemogočen, podatkov ne pošilja.</translation>
+<translation id="7723433108978650103">Blokira dostop do URL-jev na seznamu.
+
+      Ta pravilnik uporabniku preprečuje nalaganje spletnih strani s seznama blokiranih URL-jev. Seznam blokiranih navaja seznam vzorcev URL-jev, ki določajo, kateri URL-ji so uvrščeni na seznam blokiranih.
+
+      Vzorec URL-ja mora biti oblikovan glede na to: https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Izjeme je mogoče določiti s pravilnikom o seznamu dovoljenih URL-jev. Ti pravilniki so omejeni na 1000 vnosov; nadaljnji vnosi bodo prezrti.
+
+      Upoštevajte, da ni priporočljivo blokirati notranjih URL-jev »chrome://*«, saj lahko to privede do nepričakovanih napak.
+
+      Če ta pravilnik ni nastavljen, ne bo noben URL uvrščen na seznam blokiranih v brskalniku.</translation>
 <translation id="7749402620209366169">Za gostitelje oddaljenega dostopa omogoča preverjanje pristnosti v dveh korakih namesto z uporabniško določenim PIN-om.
 
           Če je ta nastavitev omogočena, mora uporabnik pri dostopu do gostitelja navesti veljavno kodo v dveh korakih.
@@ -2045,6 +2058,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če ta pravilnik ni nastavljen, deluje, kot da je nastavljena možnost TimezoneAutomaticDetectionUsersDecide.
 
       Če je nastavljen pravilnik SystemTimezone, preglasi ta pravilnik. V tem primeru je samodejno zaznavanje časovnega pasu v celoti onemogočeno.</translation>
+<translation id="787125417158068494">Če je pravilnik nastavljen na »SyncDisabled« ali ni konfiguriran, potrdila sistema <ph name="PRODUCT_OS_NAME" /> niso na voljo za aplikacije ARC.
+
+      Če je pravilnik nastavljen na »CopyCaCerts«, so vsa potrdila overitelja potrdil, nameščena s pravilnikom ONC in za katera velja <ph name="WEB_TRUSTED_BIT" />, na voljo za aplikacije ARC.</translation>
 <translation id="7882585827992171421">Ta pravilnik je aktiven samo v maloprodajnem načinu.
 
       Določa ID razširitve, ki se uporabi kot ohranjevalnik zaslona na zaslonu za prijavo. Razširitev mora biti del paketa AppPack, ki je za to domeno nastavljen s pravilnikom »DeviceAppPack«.</translation>
@@ -2060,6 +2076,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Določa, ali se za prenos posodobitvenih paketov operacijskega sistema uporablja p2p. Če je nastavljeno na »True«, naprave dajo posodobitvene pakete v skupno rabo v krajevnem omrežju in jih poskušajo uporabiti ter s tem morebiti zmanjšati uporabo internetne pasovne širine in zamašitve. Če posodobitveni paket ni na voljo v krajevnem omrežju, ga naprava poskuša prenesti iz posodobitvenegea strežnika. Če je nastavljeno na »False« ali ni nastavljeno, se uporabi p2p.</translation>
 <translation id="7933141401888114454">Omogoči ustvarjanje zaščitenih uporabnikov</translation>
+<translation id="793473937901685727">Nastavitev razpoložljivosti potrdil aplikacijam ARC</translation>
 <translation id="7936098023732125869">Omogoča uporabo privzetega ponudnika iskanja.
 
           Če omogočite to nastavitev, se izvede privzeto iskanje, ko uporabnik v naslovno vrstico vtipka besedilo, ki ni URL.

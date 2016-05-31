@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Povolit mobilní datové připojení</translation>
 <translation id="1621499497873603021">Čas zbývající do vybití baterie: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Zařízení Chrome</translation>
+<translation id="1677472565718498478">Zbývající čas: <ph name="TIME" /></translation>
 <translation id="1723752762323179280">Ukončení relace</translation>
 <translation id="1747827819627189109">Softwarová klávesnice je aktivována</translation>
 <translation id="1812696562331527143">Metoda zadávání se změnila na metodu <ph name="INPUT_METHOD_ID" />* <ph name="BEGIN_LINK" />třetí strany<ph name="END_LINK" />. Přepnout ji můžete stisknutím klávesové zkratky Shift + Alt.</translation>
@@ -114,6 +115,7 @@
 <translation id="4421231901400348175">Ovládání obrazovky je prostřednictvím Vzdálené pomoci sdíleno s uživatelem <ph name="HELPER_NAME" />.</translation>
 <translation id="4430019312045809116">Hlasitost</translation>
 <translation id="4527045527269911712">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> do úplného nabití</translation>
 <translation id="4544944664594876241">Zkratka k odemknutí obrazovky se změnila. Namísto zkratky <ph name="OLD_SHORTCUT" /> používejte zkratku <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Odpojit</translation>
@@ -221,6 +223,7 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8517041960877371778">Je možné, že když bude zařízení <ph name="DEVICE_TYPE" /> zapnuté, nebude se nabíjet.</translation>
 <translation id="8528322925433439945">Mobilní sítě...</translation>
+<translation id="8639760480004882931">Zbývá <ph name="PERCENTAGE" /> %</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Byla připojena nabíječka s nízkým napětím</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

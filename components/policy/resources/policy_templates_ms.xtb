@@ -517,6 +517,7 @@
           Dasar ini hanya dihormati jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
 <translation id="2682225790874070339">Melumpuhkan Drive dalam apl Fail <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Dayakan ciri proksi pemampatan data</translation>
+<translation id="2731627323327011390">Lumpuhkan penggunaan sijil <ph name="PRODUCT_OS_NAME" /> pada apl ARC</translation>
 <translation id="2742843273354638707">Sembunyikan apl Gedung Web Chrome dan pautan pembawah daripada Halaman Tab Baharu dan pelancar apl <ph name="PRODUCT_OS_NAME" />.
 
       Apabila dasar ini ditetapkan kepada benar, ikon akan disembunyikan.
@@ -1852,6 +1853,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           Jika anda menetapkan dasar ini, pengguna boleh mengatasinya secara sementara dengan mendayakan atau melumpuhkan penggadang skrin. Walau bagaimanapun, pilihan pengguna ini tidak berterusan dan lalai dipulihkan apabila skrin log masuk dipaparkan semua atau pengguna kekal melahu pada skrin log masuk selama satu minit.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, penggadang skrin dilumpuhkan apabila skrin log masuk mula-mula dipaparkan. Pengguna boleh mendayakan atau melumpuhkan penggadang skrin pada bila-bila masa dan statusnya pada skrin log masuk yang berterusan antara pengguna.</translation>
+<translation id="7249828445670652637">Dayakan sijil CA <ph name="PRODUCT_OS_NAME" /> pada apl ARC</translation>
 <translation id="7258823566580374486">Dayakan pengadangan hos akses jauh</translation>
 <translation id="7260277299188117560">Auto kemas kini p2p didayakan</translation>
 <translation id="7267809745244694722">Kekunci media lalai kepada kekunci fungsi</translation>
@@ -1971,6 +1973,17 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7715711044277116530">Peratusan yang digunakan untuk skala kelewatan pemalapan skrin dalam mod penyampaian</translation>
 <translation id="7717938661004793600">Konfigurasi ciri kebolehcapaian <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Mengawal sama ada metrik penggunaan dilaporkan kembali kepada Google. Jika ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan melaporkan metrik penggunaan. Jika tidak dikonfigurasi atau ditetapkan kepada palsu, laporan metrik akan dilumpuhkan.</translation>
+<translation id="7723433108978650103">Menyekat akses ke URL yang disenaraikan.
+
+      Dasar ini menghalang pengguna daripada memuatkan halaman web daripada URL yang disenaraihitamkan. Senarai hitam menyediakan senarai pola URL yang menentukan URL yang akan disenaraihitamkan.
+
+      Pola URL perlu diformatkan mengikut https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Pengecualian boleh ditentukan dalam dasar senarai putih URL. Dasar ini terhad kepada 1000 entri, entri berikutnya akan diabaikan.
+
+      Harap maklum bahawa anda tidak disyorkan untuk menyekat URL 'chrome://*' dalaman memandangkan tindakan ini boleh menyebabkan ralat tidak dijangka berlaku.
+
+      Jika dasar ini tidak ditetapkan, tiada URL akan disenaraihitamkan dalam penyemak imbas.</translation>
 <translation id="7749402620209366169">Mendayakan pengesahan dua faktor untuk hos akses jauh dan bukan PIN yang ditentukan pengguna.
 
           Jika tetapan ini tidak didayakan, maka pengguna hendaklah memberikan kod dua faktor yang sah apabila mengakses hos.
@@ -2043,6 +2056,9 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini tidak ditetapkan, dasar ini akan berkelakuan seolah-olah TimezoneAutomaticDetectionUsersDecide ditetapkan.
 
       Jika dasar SystemTimezone ditetapkan, dasar tersebut akan melangkau dasar ini. Dalam hal ini, pengesanan zon waktu automatik dilumpuhkan sepenuhnya.</translation>
+<translation id="787125417158068494">Jika ditetapkan kepada SyncDisabled atau tidak dikonfigurasikan, sijil <ph name="PRODUCT_OS_NAME" /> tidak  tersedia untuk apl ARC.
+
+      Jika ditetapkan kepada CopyCaCerts, semua sijil CA yang dipasang ONC dengan <ph name="WEB_TRUSTED_BIT" /> tersedia untuk apl ARC.</translation>
 <translation id="7882585827992171421">Dasar ini aktif dalam mod runcit sahaja.
 
       Menentukan id sambungan untuk digunakan sebagai penyelamat skrin pada skrin log masuk. Sambungan mestilah sebahagian daripada AppPack yang dikonfigurasikan untuk domain ini melalui dasar DeviceAppPack.</translation>
@@ -2058,6 +2074,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Menentukan sama ada p2p akan digunakan untuk beban bayar kemas kini OS. Jika ditetapkan kepada Benar, peranti akan berkongsi dan cuba menggunakan beban bayar kemas kini pada LAN, berkemungkinan mengurangkan penggunaan dan kesesakan lebar jalur Internet. Jika beban bayar kemas kini tidak tersedia pada LAN, peranti ini akan kembali kepada memuat turun dari pelayan kemas kini. Jika ditetapkan kepada Palsu atau tidak dikonfigurasi, p2p tidak akan digunakan.</translation>
 <translation id="7933141401888114454">Dayakan penghasilan pengguna di bawah seliaan</translation>
+<translation id="793473937901685727">Tetapkan ketersediaan sijil untuk apl ARC</translation>
 <translation id="7936098023732125869">Membolehkan penggunaan penyedia carian lalai.
 
           Jika anda mendayakan tetapan ini, carian lalai dilaksanakan apabila pengguna menaip teks yang bukan URL dalam kotak omni.

@@ -212,6 +212,10 @@ Desktop Host</translation>
 <translation id="6324708100353784493">You have enabled Google Cardboard integration mode. To use this mode, insert your device into a Google Cardboard-compatible viewer.</translation>
 <translation id="6381670701864002291">Something else.</translation>
 <translation id="6398765197997659313">Exit full screen</translation>
+<translation id="6408143143164565232">• Listen to audio from Windows or Linux computers.
+• Remove unwanted connections by long-pressing on the computer name.
+• Smoother pinch-to-zoom and two-finger scrolling.
+• New Help &amp; Feedback screen.</translation>
 <translation id="6441316101718669559">Desktop integration is not supported on this platform. You can still use the application, but the user experience will be degraded.</translation>
 <translation id="652218476070540101">The PIN for this computer is being updated…</translation>
 <translation id="6527303717912515753">Share</translation>
@@ -257,6 +261,7 @@ Desktop Host</translation>
 <translation id="7836926030608666805">Some required components are missing. Please make sure that you're running the latest version of Chrome and try again.</translation>
 <translation id="7868137160098754906">Please enter your PIN for the remote computer.</translation>
 <translation id="7869445566579231750">You do not have permission to run this application.</translation>
+<translation id="7895403300744144251">Security policies on the remote computer do not allow connections from your account.</translation>
 <translation id="7948001860594368197">Screen options</translation>
 <translation id="7970576581263377361">Authentication failed. Please sign in to Chromium again.</translation>
 <translation id="7981525049612125370">The remote session has expired.</translation>

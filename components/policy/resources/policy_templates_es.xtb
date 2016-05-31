@@ -516,6 +516,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Para que se aplique esta política, se debe habilitar la política DefaultSearchProviderEnabled.</translation>
 <translation id="2682225790874070339">Inhabilita Drive en aplicación Archivos de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
+<translation id="2731627323327011390">Inhabilitar el uso de certificados de <ph name="PRODUCT_OS_NAME" /> a las aplicaciones ARC</translation>
 <translation id="2742843273354638707">Permite ocultar la aplicación Chrome Web Store y el enlace de la parte inferior de la página en la página Nueva pestaña y en el menú de aplicaciones de <ph name="PRODUCT_OS_NAME" />.
 
       Cuando se establece el valor true en esta política, se ocultan los iconos.
@@ -1838,6 +1839,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
           Si estableces esta política, los usuarios podrán anularla temporalmente habilitando o inhabilitando el aumento de pantalla. No obstante, la selección del usuario no es permanente, y se restablecerá la opción predeterminada cuando se vuelva a mostrar la pantalla de inicio de sesión o el usuario permanezca inactivo en la pantalla de inicio de sesión durante un minuto.
 
           Si no se establece esta política, se inhabilitará el aumento de pantalla la primera vez que se muestre la pantalla de inicio de sesión. Los usuarios pueden habilitar o inhabilitar el aumento de pantalla en cualquier momento, y su estado en la pantalla de inicio de sesión permanecerá entre usuarios.</translation>
+<translation id="7249828445670652637">Habilitar los certificados de CA de <ph name="PRODUCT_OS_NAME" /> a las aplicaciones ARC</translation>
 <translation id="7258823566580374486">Activar modo de cortina en hosts de acceso remoto</translation>
 <translation id="7260277299188117560">Conexión P2P para actualizaciones automáticas habilitada</translation>
 <translation id="7267809745244694722">Teclas multimedia predeterminadas para teclas de funciones</translation>
@@ -1963,6 +1965,17 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7715711044277116530">Porcentaje que permite ajustar el retraso de inactividad de la pantalla en el modo de presentación</translation>
 <translation id="7717938661004793600">Permite configurar funciones de accesibilidad de <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Permite controlar el envío de informes sobre estadísticas de uso a Google. Si el valor se establece en "true", <ph name="PRODUCT_OS_NAME" /> enviará informes sobre estadísticas de uso. Si no se configura o el valor se establece en "false", se inhabilitarán los informes estadísticos.</translation>
+<translation id="7723433108978650103">Bloquea el acceso a la lista de URLs.
+
+      Esta política evita que el usuario cargue páginas web de las URL incluidas en una lista negra. La lista negra ofrece una lista de los patrones de URL que especifican las URL que se mostrarán en una lista negra.
+
+      Un patrón de URL debe seguir el formato que se indica en la página https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Las excepciones se pueden definir en la política de listas blancas de URL. Estas políticas se limitan a 1000 entradas, y se ignorarán las entradas que superen este número.
+
+      No se recomienda bloquear las URL internas chrome://* porque podrían producirse errores inesperados.
+
+      Si no se configura esta política, no se mostrará ninguna URL en la lista negra del navegador.</translation>
 <translation id="7749402620209366169">Permite habilitar la autenticación de dos factores para los hosts de acceso remoto en lugar de un PIN especificado por el usuario.
 
          Si se habilita esta opción, los usuarios deben proporcionar un código de dos factores válido al acceder a un host.
@@ -2032,6 +2045,9 @@ Si se asigna el valor false a la política, no se proporcionará información so
       Si no se establece esta política, el comportamiento será el mismo que si se hubiera establecido el valor TimezoneAutomaticDetectionUsersDecide.
 
       Si se establece la política SystemTimezone, se anula esta política. En este caso, la detección automática de la zona horaria se inhabilita por completo.</translation>
+<translation id="787125417158068494">Si se le asigna el valor SyncDisabled o no se configura, los certificados de <ph name="PRODUCT_OS_NAME" /> no estarán disponibles para las aplicaciones ARC.
+
+      Si se le asigna el valor CopyCaCerts, todos los certificados de CA instalados en ONC con <ph name="WEB_TRUSTED_BIT" /> estarán disponibles para las aplicaciones ARC.</translation>
 <translation id="7882585827992171421">Esta política solo se encuentra activa en el modo comercial.
 
       Permite determinar el ID de la extensión que se debe utilizar como salvapantallas en la pantalla de inicio de sesión. La extensión debe formar parte del paquete AppPack configurado para ese dominio a través de la política DeviceAppPack.</translation>
@@ -2047,6 +2063,7 @@ Si se asigna el valor false a la política, no se proporcionará información so
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Especifica si la conexión P2P se debe utilizar para cargas útiles de actualizaciones del sistema operativo. Si esta política se establece en True, los dispositivos compartirán e intentarán consumir cargas útiles de actualizaciones en la red LAN, reduciendo de forma potencial la congestión y el uso del ancho de banda. Si la carga útil de actualizaciones no está disponible en la red LAN, el dispositivo deberá realizar la descarga desde un servidor de actualizaciones. Si se establece en False o no se configura, no se utilizará la conexión P2P.</translation>
 <translation id="7933141401888114454">Habilitar la creación de usuarios supervisados</translation>
+<translation id="793473937901685727">Establecer la disponibilidad del certificado para las aplicaciones ARC</translation>
 <translation id="7936098023732125869">Permite habilitar el uso de un proveedor de búsqueda predeterminado.
 
           Si habilitas esta opción, se realizará una búsqueda de forma predeterminada cuando el usuario escriba texto en el omnibox que no sea una URL.

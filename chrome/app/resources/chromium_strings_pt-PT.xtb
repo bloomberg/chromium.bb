@@ -16,6 +16,7 @@
 <translation id="151962892725702025">O SO Chromium não conseguiu sincronizar os dados porque a sincronização não está disponível para o seu domínio.</translation>
 <translation id="1559451348202814456">O Chromium pode não funcionar corretamente, uma vez que já não é suportado no Mac OS X 10.6, no Mac OS X 10.7 ou no Mac OS X 10.8.</translation>
 <translation id="1644918877723739397">O Chromium armazena esta informação nas <ph name="SAVED_PASSWORD_LINK" /> e lembra-a da próxima vez que precisar.</translation>
+<translation id="1653828314016431939">OK - Reiniciar agora</translation>
 <translation id="1668054258064581266">Depois de remover a sua conta do Chromium, poderá ter de recarregar os separadores abertos para que as alterações tenham efeito.</translation>
 <translation id="1688750314291223739">Configure a Sincronização para guardar as suas funcionalidades personalizadas do navegador para a Web e aceder às mesmas a partir do Chromium em qualquer computador.</translation>
 <translation id="1699664235656412242">Feche todas as janelas do Chromium (incluindo as que estiverem no modo Windows 8) e tente novamente.</translation>
@@ -180,6 +181,12 @@ O Chromium não consegue recuperar as suas definições.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Nova janela</translation>
 <translation id="734373864078049451">A sua Web, os seus marcadores e os seus outros itens do Chromium estão aqui.</translation>
+<translation id="7344413941077984497">Para definir que Websites <ph name="NEW_PROFILE_NAME" /> pode ver, pode configurar restrições e definições ao aceder a <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Se não alterar as predefinições, <ph name="NEW_PROFILE_NAME" /> pode procurar tudo na Web.
+
+Para evitar que <ph name="NEW_PROFILE_NAME" /> aceda à sua conta, certifique-se de que bloqueia o seu perfil quando não estiver a utilizar o Chromium. Para o fazer, clique no seu nome de perfil no canto superior direito do navegador e selecione "Sair e bloqueio para criança".
+<ph name="BEGIN_LINK_2" />Saiba mais<ph name="END_LINK_2" />
+
+Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Se preferir manter os dados do Chromium existentes em separado, pode criar um novo utilizador do Chromium para <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">O Chromium necessita do Windows XP ou posterior. Algumas funcionalidades podem não funcionar.</translation>
 <translation id="7463979740390522693">Chromium – Notificações (<ph name="QUANTITY" /> não lidas)</translation>
@@ -194,6 +201,7 @@ O Chromium não consegue recuperar as suas definições.</translation>
 <translation id="7747138024166251722">O programa de instalação não conseguiu criar um directório temporário. Verifique se há espaço livre no disco e permissão para a instalação do software.</translation>
 <translation id="7918535023914021398">O Chromium confirmou que <ph name="ISSUER" /> emitiu o certificado deste Website. O servidor não forneceu quaisquer informações de Transparência do certificado.</translation>
 <translation id="7937630085815544518">Iniciou sessão no Chromium com a conta <ph name="USER_EMAIL_ADDRESS" />. Utilize a mesma conta para iniciar sessão novamente.</translation>
+<translation id="795025003224538582">Não reiniciar</translation>
 <translation id="7962572577636132072">O Chromium é atualizado automaticamente para que tenha sempre a versão mais recente.</translation>
 <translation id="7979877361127045932">Ocultar no menu do Chromium</translation>
 <translation id="8030318113982266900">A atualizar o dispositivo para o canal <ph name="CHANNEL_NAME" />...</translation>

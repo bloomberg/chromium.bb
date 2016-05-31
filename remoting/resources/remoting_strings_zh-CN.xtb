@@ -212,6 +212,10 @@
 <translation id="6324708100353784493">您已启用 Google Cardboard 集成模式。要使用此模式，请将您的设备插入一个支持 Google Cardboard 的查看器。</translation>
 <translation id="6381670701864002291">其他。</translation>
 <translation id="6398765197997659313">退出全屏模式</translation>
+<translation id="6408143143164565232">• 聆听 Windows 或 Linux 计算机中的音频内容。
+• 长按相应的计算机名称即可移除不需要的连接。
+• 双指张合缩放和双指滚动操作更顺畅。
+• 全新的“帮助和反馈”屏幕。</translation>
 <translation id="6441316101718669559">该平台不支持桌面集成。您仍可以使用该应用，但用户体验将会受到影响。</translation>
 <translation id="652218476070540101">正在更新此计算机的 PIN…</translation>
 <translation id="6527303717912515753">分享</translation>
@@ -257,6 +261,7 @@
 <translation id="7836926030608666805">缺少某些必需的组件。请确保您运行的是最新版本的 Chrome，然后重试。</translation>
 <translation id="7868137160098754906">请为远程计算机输入PIN码。</translation>
 <translation id="7869445566579231750">您无权运行该应用。</translation>
+<translation id="7895403300744144251">这台远程计算机的安全政策不允许从您的帐户进行连接。</translation>
 <translation id="7948001860594368197">屏幕选项</translation>
 <translation id="7970576581263377361">身份验证失败。请重新登录 Chromium。</translation>
 <translation id="7981525049612125370">远程会话已过期。</translation>

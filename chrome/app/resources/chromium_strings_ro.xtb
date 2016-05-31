@@ -16,6 +16,7 @@
 <translation id="151962892725702025">Sistemul de operare Chromium nu a putut sincroniza datele, deoarece sincronizarea nu este disponibilă pentru domeniul dvs.</translation>
 <translation id="1559451348202814456">Este posibil ca Chromium să nu funcționeze corespunzător, deoarece nu mai este acceptat pe Mac OS X 10.6, 10.7 sau 10.8.</translation>
 <translation id="1644918877723739397">Chromium o va stoca în <ph name="SAVED_PASSWORD_LINK" /> și o va reține pentru data următoare când ai nevoie.</translation>
+<translation id="1653828314016431939">OK - Reporniți acum</translation>
 <translation id="1668054258064581266">După ce eliminați contul din Chromium, poate fi necesar să reîncărcați filele deschise pentru ca schimbarea să se aplice.</translation>
 <translation id="1688750314291223739">Configurați sincronizarea pentru a salva funcțiile personalizate ale browserului pe web și accesați-le din Chromium de pe orice computer.</translation>
 <translation id="1699664235656412242">Închideți toate ferestrele Chromium (inclusiv pe cele în modul Windows 8) și încercați din nou.</translation>
@@ -180,6 +181,12 @@ Chromium nu poate recupera setările.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Fereastră nouă</translation>
 <translation id="734373864078049451">Experiența web personalizată, marcajele și celelalte date Chromium chiar aici.</translation>
+<translation id="7344413941077984497">Pentru a stabili ce site-uri poate accesa utilizatorul <ph name="NEW_PROFILE_NAME" />, poți configura restricții și setări accesând <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Dacă nu modifici setările prestabilite, utilizatorul <ph name="NEW_PROFILE_NAME" /> poate naviga oriunde pe web.
+
+Pentru a împiedica utilizatorul <ph name="NEW_PROFILE_NAME" /> să îți acceseze contul, asigură-te că îți blochezi profilul când nu folosești Chromium. Pentru a face acest lucru, dă clic pe numele de profil din colțul din dreapta sus al browserului și selectează „Ieși și blochează”.
+<ph name="BEGIN_LINK_2" />Află mai multe<ph name="END_LINK_2" />
+
+Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni suplimentare.</translation>
 <translation id="7419987137528340081">Dacă preferați să păstrați separat datele Chromium existente, puteți crea un utilizator Chromium nou pentru <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium necesită Windows XP sau o versiune ulterioară. Este posibil ca unele funcții să nu fie disponibile.</translation>
 <translation id="7463979740390522693">Chromium – Notificări (<ph name="QUANTITY" /> necitite)</translation>
@@ -194,6 +201,7 @@ Chromium nu poate recupera setările.</translation>
 <translation id="7747138024166251722">Programul de instalare nu a putut crea un director temporar. Verifică dacă există suficient spațiu liber și dacă ai drepturile necesare pentru a instala software-ul.</translation>
 <translation id="7918535023914021398">Chromium s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />. Serverul nu a oferit nicio informație privind Certificate Transparency.</translation>
 <translation id="7937630085815544518">Ați fost conectat(ă) la Chromium ca <ph name="USER_EMAIL_ADDRESS" />. Utilizați același cont pentru a vă conecta din nou.</translation>
+<translation id="795025003224538582">Nu reporniți</translation>
 <translation id="7962572577636132072">Chromium se actualizează automat, deci vei avea întotdeauna cea mai recentă versiune.</translation>
 <translation id="7979877361127045932">Ascunde în meniul Chromium</translation>
 <translation id="8030318113982266900">Se actualizează dispozitivul pentru canalul <ph name="CHANNEL_NAME" />...</translation>

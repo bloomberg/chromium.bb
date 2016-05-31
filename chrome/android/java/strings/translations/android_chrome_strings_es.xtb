@@ -72,6 +72,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1853692000353488670">Nueva pestaña de incógnito</translation>
 <translation id="189172778771606813">Cerrar panel de navegación</translation>
 <translation id="1924956916668006832">Seleccionar dirección de envío</translation>
+<translation id="1933845786846280168">Pestaña seleccionada</translation>
 <translation id="194341124344773587">Activa el permiso para Chrome en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Guardar contraseñas</translation>
 <translation id="1944384637046898011">Cifrar todo con una contraseña de Google a partir del <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Puedes controlar la Web física en la configuración de Chrome.
 <translation id="2959609938957585241">Para ver las pestañas de tus otros dispositivos, activa la opción Sincronización automática en la configuración de la cuenta de Android.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos los derechos reservados.</translation>
 <translation id="2968755619301702150">Visor de certificados</translation>
+<translation id="2979025552038692506">Pestaña de incógnito seleccionada</translation>
 <translation id="2996291259634659425">Crea una frase de contraseña</translation>
 <translation id="2996809686854298943">URL necesaria</translation>
 <translation id="3012408695656332380">Sustituye los datos de este dispositivo por los de <ph name="TO_ACCOUNT" />. Puedes recuperar tus datos actuales si vuelves a cambiar a <ph name="FROM_ACCOUNT" />, aunque se perderán aquellos que se hayan creado desde que cerraste sesión.</translation>
@@ -554,6 +556,7 @@ Es posible que tu cuenta de Google tenga otras formas del historial de navegaci�
 <translation id="8073388330009372546">Abrir en pestaña nueva</translation>
 <translation id="8076014560081431679">No se eliminará la configuración guardada de los sitios web, lo cual puede reflejar tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Este contenido procede de <ph name="DOMAIN_NAME" />, publicado por Google.</translation>
+<translation id="8103578431304235997">Pestaña de incógnito</translation>
 <translation id="8106211421800660735">Número de la tarjeta de crédito</translation>
 <translation id="813082847718468539">Ver información del sitio</translation>
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Puedes desactivarla en la <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />.</translation>

@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">O servidor que aloja a página Web pode estar sobrecarregado ou em manutenção.
     Para evitar gerar demasiado tráfego e piorar a situação,
     os pedidos a este URL foram temporariamente proibidos.</translation>
-<translation id="1066332784716773939">Diagnosticar erros...</translation>
 <translation id="106701514854093668">Marcadores do Ambiente de Trabalho</translation>
 <translation id="1080116354587839789">Ajustar à largura</translation>
 <translation id="1090046120949329821">Foram recebidos vários cabeçalhos de Disposição de conteúdo distintos. Isto não é permitido como
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Departamento</translation>
 <translation id="2113977810652731515">Cartão</translation>
 <translation id="2114841414352855701">Ignorada porque foi substituída por <ph name="POLICY_NAME" /> .</translation>
-<translation id="2122434088511736194">As pesquisas no ambiente de trabalho utilizam o motor de pesquisa predefinido (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Marcadores de Telemóvel</translation>
 <translation id="2148716181193084225">Hoje</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
-<translation id="2153530520610387456">Aceda a
-      <ph name="BEGIN_BOLD" />
-      Iniciar &gt; Painel de controlo &gt; Rede e Internet &gt; Rede e centro de partilha &gt; Resolver problemas (na parte inferior) &gt; Ligações à Internet.
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Acesso de administrador total</translation>
 <translation id="2166378884831602661">Este site não consegue fornecer uma ligação segura</translation>
 <translation id="2171101176734966184">Tentou aceder a <ph name="DOMAIN" />, mas o servidor apresentou um certificado assinado utilizando um algoritmo de assinatura fraco. Significa que as credenciais de segurança apresentadas pelo servidor podem ter sido falsificadas e que o servidor pode não ser aquele que pretende (pode estar a comunicar com um utilizador mal intencionado).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Este valor está desatualizado para esta política.</translation>
 <translation id="2262243747453050782">Erro HTTP</translation>
 <translation id="2279770628980885996">Foi encontrada uma condição inesperada quando o servidor tentava satisfazer o pedido.</translation>
-<translation id="2282186295770469712">Gerir definições de pesquisa</translation>
 <translation id="2282872951544483773">Experiências Indisponíveis</translation>
 <translation id="2292556288342944218">O acesso à Internet está bloqueado</translation>
 <translation id="229702904922032456">Um certificado de raiz ou intermédio expirou.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">Pode desativar qualquer proxy configurado para uma ligação a partir da página de definições.</translation>
 <translation id="2950186680359523359">O servidor fechou a ligação sem enviar quaisquer dados.</translation>
 <translation id="2955913368246107853">Fechar barra de localização</translation>
-<translation id="2957518517523241247">Aceda a
-      <ph name="BEGIN_BOLD" />
-      Iniciar &gt; Painel de controlo &gt; Ligações de rede &gt; Assistente de nova ligação
-      <ph name="END_BOLD" />
-      para testar a ligação.</translation>
 <translation id="2958431318199492670">A configuração de rede não cumpre a norma ONC. Partes da configuração podem não ser importadas.</translation>
 <translation id="2969319727213777354">Para estabelecer uma ligação segura, o relógio tem de ser definido corretamente. Isto deve-se ao facto de os certificados que os Websites utilizam para se identificarem serem apenas válidos para períodos de tempo específicos. Uma vez que o relógio do seu dispositivo está incorreto, o Google Chrome não consegue validar estes certificados.</translation>
 <translation id="2972581237482394796">&amp;Repetir</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">Freguesia</translation>
 <translation id="3901925938762663762">O cartão expirou</translation>
 <translation id="3903912596042358459">O servidor recusou satisfazer o pedido.</translation>
-<translation id="3930850196944737149">O seu dispositivo está off-line.</translation>
 <translation id="3934680773876859118">Falha ao carregar o documento em PDF</translation>
 <translation id="3950924596163729246">Não é possível aceder à rede.</translation>
 <translation id="3963721102035795474">Modo de leitor</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="604124094241169006">Automático</translation>
 <translation id="6042308850641462728">Mais</translation>
-<translation id="6044718745395562198">O computador está offline.</translation>
 <translation id="6060685159320643512">Tenha cuidado, estas experiências podem morder</translation>
 <translation id="6093795393556121384">Cartão validado</translation>
 <translation id="6146055958333702838">Verifique os cabos e reinicie todos os routers, modems ou outros
@@ -533,11 +519,6 @@
 <translation id="6830600606572693159">De momento, a página Web em <ph name="URL" /> está indisponível. Poderá estar sobrecarregada ou em manutenção.</translation>
 <translation id="6831043979455480757">Traduzir</translation>
 <translation id="6839929833149231406">Área</translation>
-<translation id="6851123334996048122">Aceda a
-      <ph name="BEGIN_BOLD" />
-      Aplicações &gt; Preferências do sistema &gt; Rede &gt; Ajuda
-      <ph name="END_BOLD" />
-      para testar a ligação.</translation>
 <translation id="6874604403660855544">&amp;Refazer adição</translation>
 <translation id="6891596781022320156">O nível da política não é suportado.</translation>
 <translation id="6897140037006041989">Agente do utilizador</translation>
@@ -619,9 +600,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Não gerido</translation>
 <translation id="7758069387465995638">O software de firewall ou antivírus pode ter bloqueado a ligação.</translation>
-<translation id="7760914272566804712">Pode seguir as instruções abaixo para tentar diagnosticar o problema:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">O certificado do servidor não corresponde ao URL.</translation>
 <translation id="777702478322588152">Prefeitura</translation>
 <translation id="778579833039460630">Nenhum dado recebido</translation>
@@ -661,14 +639,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="8241707690549784388">A página que procura utilizou informações introduzidas por si. Regressar a essa página poderá originar a repetição de qualquer acção que tenha efetuado. Pretende continuar?</translation>
 <translation id="8249320324621329438">Última obtenção:</translation>
 <translation id="8261506727792406068">Eliminar</translation>
-<translation id="8266098793847448402">Clique em
-      <ph name="BEGIN_BOLD" />Iniciar<ph name="END_BOLD" />,
-      clique em
-      <ph name="BEGIN_BOLD" />Executar<ph name="END_BOLD" />,
-      escreva
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
-      e clique em
-      <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">O seu pedido para aceder a este site foi enviado para <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Se não tiver a certeza do que isto significa, contacte o administrador de rede.</translation>
 <translation id="8293206222192510085">Adicionar marcador</translation>

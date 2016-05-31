@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Włącz komórkową transmisję danych</translation>
 <translation id="1621499497873603021">Czas pozostały do wyczerpania baterii: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Urządzenie z Chrome</translation>
+<translation id="1677472565718498478">Pozostało <ph name="TIME" /></translation>
 <translation id="1723752762323179280">Zamykanie sesji</translation>
 <translation id="1747827819627189109">Klawiatura ekranowa włączona</translation>
 <translation id="1812696562331527143">Metoda wprowadzania została zmieniona na <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />innej firmy<ph name="END_LINK" />).
@@ -116,6 +117,7 @@ Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="4421231901400348175">Udostępnianie sterowania ekranem użytkownikowi <ph name="HELPER_NAME" /> przy użyciu pomocy zdalnej.</translation>
 <translation id="4430019312045809116">Głośność</translation>
 <translation id="4527045527269911712">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> do pełnego naładowania</translation>
 <translation id="4544944664594876241">Zmieniliśmy skrót, który blokuje ekran. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Rozłącz</translation>
@@ -224,6 +226,7 @@ Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> nie może się ładować, gdy jest włączony.</translation>
 <translation id="8528322925433439945">Komórkowe...</translation>
+<translation id="8639760480004882931">Pozostało <ph name="PERCENTAGE" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Podłączono ładowarkę o małej mocy</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

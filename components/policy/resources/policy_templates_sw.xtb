@@ -505,6 +505,7 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
           Sera hii inaheshimiwa tu ikiwa sera ya 'DefaultSearchProviderEnabled' imewezeshwa.</translation>
 <translation id="2682225790874070339">Huzima Hifadhi ya Google katika programu ya Faili ya <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Washa kipengee cha proksi cha upunguzaji wa data</translation>
+<translation id="2731627323327011390">Zima kipengele cha utumiaji wa vyeti vya <ph name="PRODUCT_OS_NAME" /> kwenye programu za ARC</translation>
 <translation id="2742843273354638707">Ficha programu ya Duka la Chrome kwenye Wavuti na kiungo cha kijachini kutoka kwenye Ukurasa wa Kichupo Kipya na kifungua programu cha <ph name="PRODUCT_OS_NAME" />.
 
       Sera hii inapowekwa kuwa ndivyo, aikoni hufichwa.
@@ -1815,6 +1816,7 @@ Kama sera hii itawekwa, itadhibiti aina ya kikuza skrini ambacho kimewashwa waka
 Kama umeweka sera hii, watumiaji wanaweza kuipuuza kwa muda kwa kuwasha au kuzima kikuza skrini. Hata hivyo, chaguo la mtumiaji haliendelei na chaguo msingi hurejeshwa tena wakati skrini ya kuingia katika akaunti inapoonyeshwa upya au mtumiaji anapobakia bila kufanya kitu kwenye skrini ya kuingia katika akaunti kwa dakika moja. 
 
 Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika akaunti itakapoonyeshwa kwanza. Watumiaji wanaweza kuwasha au kuzima kikuza skrini wakati wowote na hali yake kwenye skrini ya kuingia katika akaunti inaendelea kati ya watumiaji.</translation>
+<translation id="7249828445670652637">Washa kipengele cha vyeti vya CA vya <ph name="PRODUCT_OS_NAME" /> kwenye programu za ARC</translation>
 <translation id="7258823566580374486">Wezesha uzuiaji wa wapangishaji wa ufikiaji mbali.</translation>
 <translation id="7260277299188117560">Usasishaji kiotomatiki wa P2P umewashwa</translation>
 <translation id="7267809745244694722">Vitufe vya media huelekeza kwenye vitufe vya vitendo kwa chaguo-msingi</translation>
@@ -1940,6 +1942,17 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 <translation id="7715711044277116530">Asilimia ya kupima kuchelewesha kwa mwanga wa skrini katika modi ya wasilisho</translation>
 <translation id="7717938661004793600">Sanidi vipengele vya ufikiaji vya <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Inadhibiti iwapo metriki za matumizi zinaripotiwa tena katika Google. Ikiwa imewekwa kwenye ndivyo, <ph name="PRODUCT_OS_NAME" /> itaripoti metriki za matumizi. Ikiwa haijasanidiwa au imewekwa kuwa siyo Ndivyo, kuripoti metriki kutalemazwa.</translation>
+<translation id="7723433108978650103">Huzuia idhini ya kufikia URL zilizoorodheshwa.
+
+      Sera hii humzuia mtumiaji kupakia kurasa za wavuti kutoka kwenye URL zisizoidhinishwa. Orodha ya URL zisizoidhinishwa hutoa orodha ya ruwaza za URL ambazo hubainisha URL zitakazoondolewa kwenye orodha ya URL zilizoidhinishwa.
+
+      Lazima URL iundwe kulingana na https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Vighairi vinaweza kufafanuliwa katika sera ya URL zilizoidhinishwa. Sera hizi hazizidi 1000; sera zitakazofuata zitapuuzwa.
+
+      Kumbuka kwamba haifai kuzuia URL za 'chrome://*' za ndani kwa sababu hatua hii inaweza kusababisha hitilafu zisizotarajiwa.
+
+      Sera hii isipowekwa, hakuna URL itakayoondolewa kwenye orodha ya URL zisizoidhinishwa katika kivinjari.</translation>
 <translation id="7749402620209366169">Inawezesha uthibitishaji wa vipengee viwili kwa wapangishaji wa ufikivu wa mbali badala ya PIN iliyobainishwa na mtumiaji.
 
           Ikiwa mpangilio huu utawezeshwa, basi lazima mtumiaji atoe sababu mbili za msimbo halai anapofikia mpangishaji.
@@ -2009,6 +2022,9 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Sera hii isipowekwa, itaonekana kama kwamba TimezoneAutomaticDetectionUsersDecide imewekwa.
 
       Sera ya SystemTimezone ikiwekwa, itabatilisha sera hii. Katika hali hii kipengee cha ugunduzi wa saa za eneo kiotomatiki kitazimwa kabisa.</translation>
+<translation id="787125417158068494">Ikiwekwa kuwa SyncDisabled au isiposanidiwa, vyeti vya <ph name="PRODUCT_OS_NAME" /> havitakuwepo kwa ajili ya programu za ARC.
+
+      Ikiwekwa kuwa CopyCaCerts, vyeti vyote vya CA vilivyosakinishwa kwenye ONC vyenye <ph name="WEB_TRUSTED_BIT" /> vitapatikana kwa ajili ya programu za ARC.</translation>
 <translation id="7882585827992171421">Sera hii ni amilifu katika modi rejareja tu.
 
       Inaamua kitambulisho cha kiendelezi cha kutumiwa kama taswira ya skrini kwenye skrini ya kuingia. Lazima kiendelezi kiwe kimoja wapo cha AppPack inayosanidiwa kwa ajili ya kikoa hiki kupitia kwenye sera ya DeviceAppPack.</translation>
@@ -2024,6 +2040,7 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Hubainisha iwapo p2p itatumika kwa sasisho za data ya OS. Kama imewekwa kuwa Kweli, vifaa vitashiriki na kujaribu kusasisha data kwenye LAN, hivyo kuna uwezekano wa kupunguza matumizi ya kipimo data cha intaneti na msongamano. Kama sasisho ya data haipo kwenye LAN, kifaa kitarudia kupakua kutoka kwenye seva ya sasisho. Kama imewekwa kuwa Uongo ama haijasanidiwa, p2p haitatumika.</translation>
 <translation id="7933141401888114454">Washa uundaji wa watumiaji wanaosimamiwa</translation>
+<translation id="793473937901685727">Weka upatikanaji wa cheti kwa programu za ARC</translation>
 <translation id="7936098023732125869">Huwasha matumizi ya mtoa huduma wa utafutaji chaguo-msingi.
 
           Ukiwasha mipangilio hii, utafutaji chaguo-msingi utatekelezwa mtumiaji anapoandika maandishi katika sanduku kuu ambalo si URL.

@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome używa Twojej kamery.</translation>
 <translation id="1619887657840448962">Aby poprawić bezpieczeństwo Chrome, wyłączyliśmy to rozszerzenie. Nie jest ono dostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i mogło zostać dodane bez Twojej wiedzy.</translation>
 <translation id="163860049029591106">Pierwsze kroki z systemem operacyjnym Chrome</translation>
+<translation id="1653828314016431939">W porządku – uruchom ponownie teraz</translation>
 <translation id="1682634494516646069">Google Chrome nie może odczytać ani zapisać danych w katalogu <ph name="USER_DATA_DIRECTORY" />.</translation>
 <translation id="1698376642261615901">Google Chrome jest przeglądarką internetową, w której witryny internetowe i aplikacje są szybkie jak błyskawica. Jest szybka, stabilna i łatwa w obsłudze. Dzięki wbudowanej ochronie przed złośliwym oprogramowaniem i wyłudzaniem informacji przeglądanie internetu przy użyciu przeglądarki Google Chrome jest bezpieczniejsze.</translation>
 <translation id="174539241580958092">Google Chrome nie może zsynchronizować danych z powodu błędu podczas logowania.</translation>
@@ -70,6 +71,12 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="3080151273017101988">Kontynuuj działanie aplikacji w tle po zamknięciu przeglądarki Google Chrome</translation>
 <translation id="3089968997497233615">Dostępna jest nowa, bezpieczniejsza wersja przeglądarki Google Chrome.</translation>
 <translation id="3149510190863420837">Aplikacje Chrome</translation>
+<translation id="3251381707915721925">Aby określić, które witryny <ph name="NEW_PROFILE_NAME" /> może wyświetlać, możesz skonfigurować ograniczenia i ustawienia na stronie <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Jeśli nie zmienisz ustawień domyślnych, użytkownik <ph name="NEW_PROFILE_NAME" /> będzie mógł przeglądać wszystkie strony w internecie.
+
+Aby uniemożliwić użytkownikowi <ph name="NEW_PROFILE_NAME" /> korzystanie z Twojego konta, pamiętaj o blokowaniu profilu, gdy nie używasz Chrome. Kliknij w tym celu nazwę profilu w prawym górnym rogu przeglądarki i wybierz „Wyjdź i aktywuj blokadę dostępu dla dzieci”.
+<ph name="BEGIN_LINK_2" />Więcej informacji<ph name="END_LINK_2" />
+
+Więcej instrukcji znajdziesz w e-mailu na koncie <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Zaloguj się w Chrome</translation>
 <translation id="3311976847535831054">Ten komputer nie będzie już otrzymywać aktualizacji Google Chrome w wersji 32-bitowej. Uaktualnij Chrome do wersji 64-bitowej.</translation>
 <translation id="3360895254066713204">Pomoc Chrome</translation>
@@ -118,6 +125,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="4921569541910214635">Używasz komputera, z którego korzystają inne osoby? Teraz możesz skonfigurować Chrome tak, jak chcesz.</translation>
 <translation id="4925019873400497719">Chrome sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer dostarczył informacje o certyfikacie, korzystając z protokołu Certificate Transparency, ale były one nieprawidłowe.</translation>
 <translation id="4953650215774548573">Ustaw Google Chrome jako domyślną przeglądarkę</translation>
+<translation id="495931528404527476">W Chrome</translation>
 <translation id="4987308747895123092">Zamknij wszystkie okna Chrome (także te działające w trybie Windows 8) i spróbuj ponownie.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome nie może zsynchronizować danych. Zaktualizuj hasło synchronizacji.</translation>
@@ -206,6 +214,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="7808348361785373670">Usuń z Chrome...</translation>
 <translation id="7825851276765848807">Instalacja nie powiodła się z powodu nieokreślonego błędu. Pobierz Google Chrome ponownie.</translation>
 <translation id="7890208801193284374">Jeśli dzielisz komputer ze znajomymi lub rodziną, wszyscy możecie niezależnie przeglądać internet i po swojemu skonfigurować Chrome.</translation>
+<translation id="795025003224538582">Nie uruchamiaj ponownie</translation>
 <translation id="8005540215158006229">Chrome jest już prawie gotowy.</translation>
 <translation id="8008534537613507642">Ponownie zainstaluj Chrome</translation>
 <translation id="8030318113982266900">Aktualizuję Twoje urządzenie do kanału: <ph name="CHANNEL_NAME" />...</translation>

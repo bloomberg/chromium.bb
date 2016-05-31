@@ -72,6 +72,7 @@ Da biste upotrebljavali Fizički web, morate uključiti Bluetooth i Lokaciju.</t
 <translation id="1853692000353488670">Nova anonimna kartica</translation>
 <translation id="189172778771606813">Zatvori ladicu za navigaciju</translation>
 <translation id="1924956916668006832">Odaberite adresu za dostavu</translation>
+<translation id="1933845786846280168">Odabrana kartica</translation>
 <translation id="194341124344773587">Uključite dopuštenje za Chrome u <ph name="BEGIN_LINK" />Postavkama Androida<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Spremanje zaporki</translation>
 <translation id="1944384637046898011">Kriptiraj sve pomoću Googleove zaporke od <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Fizičkim webom možete upravljati u Chromeovim postavkama.
 <translation id="2959609938957585241">Da bi se prikazale kartice s vaših ostalih uređaja, uključite "Automatsku sinkronizaciju podataka" u postavkama računa na Androidu.</translation>
 <translation id="2960796085439532066">Autorska prava <ph name="YEAR" />. Google Inc. Sva prava pridržana.</translation>
 <translation id="2968755619301702150">Preglednik certifikata</translation>
+<translation id="2979025552038692506">Odabrana anonimna kartica</translation>
 <translation id="2996291259634659425">Stvaranje zaporke</translation>
 <translation id="2996809686854298943">Potreban URL</translation>
 <translation id="3012408695656332380">Podaci uređaja zamijenit će se podacima s računa <ph name="TO_ACCOUNT" />. Svoje postojeće podatke možete dohvatiti tako da se vratite na račun <ph name="FROM_ACCOUNT" />, ali će se izgubiti podaci koje ste izradili dok ste bili odjavljeni.</translation>
@@ -554,6 +556,7 @@ Na Google računu možda postoje drugi oblici povijesti pregledavanja, primjeric
 <translation id="8073388330009372546">Otvori sliku u novoj kartici</translation>
 <translation id="8076014560081431679">Spremljene postavke web-lokacije neće se izbrisati i mogu odražavati vaše navike prilikom pregledavanja. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Sadržaj potječe s domene <ph name="DOMAIN_NAME" />, a omogućuje ga Google.</translation>
+<translation id="8103578431304235997">Anonimna kartica</translation>
 <translation id="8106211421800660735">Broj kreditne kartice</translation>
 <translation id="813082847718468539">Prikaz informacija o web-mjestu</translation>
 <translation id="8137558756159375272">Značajka Dodirnite za pretraživanje Google pretraživanju šalje odabranu riječ i trenutačnu stranicu kao kontekst. Možete je isključiti u <ph name="BEGIN_LINK" />Postavkama<ph name="END_LINK" />.</translation>

@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Wezesha data ya simu</translation>
 <translation id="1621499497873603021">Muda unaosalia mpaka betri inapoisha, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Kifaa cha Chrome</translation>
+<translation id="1677472565718498478">Zimesalia <ph name="TIME" /></translation>
 <translation id="1723752762323179280">Inaondoka kwenye Kipindi</translation>
 <translation id="1747827819627189109">Kibodi ya skrini imewashwa</translation>
 <translation id="1812696562331527143">Mbinu yako ingizo imebadilika hadi <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />mhusika mwingine<ph name="END_LINK" />).
@@ -116,6 +117,7 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="4421231901400348175">Kushiriki udhibiti wa skrini yako na <ph name="HELPER_NAME" /> kupitia Usaidizi wa Mbali.</translation>
 <translation id="4430019312045809116">Kiwango</translation>
 <translation id="4527045527269911712">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha.</translation>
+<translation id="453661520163887813">Zimesalia <ph name="TIME" /> ili ijae</translation>
 <translation id="4544944664594876241">Njia ya mkato ya kufunga skrini imebadilika. Tafadhali tumia <ph name="NEW_SHORTCUT" /> badala ya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">tafuta</translation>
 <translation id="4804818685124855865">Tenganisha</translation>
@@ -223,6 +225,7 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="8428213095426709021">Mipangilio</translation>
 <translation id="8517041960877371778">Huenda kifaa chako cha <ph name="DEVICE_TYPE" /> kisichaji kikiwa kimewashwa.</translation>
 <translation id="8528322925433439945">Simu ya mkononi ...</translation>
+<translation id="8639760480004882931">Imebaki <ph name="PERCENTAGE" />%</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Chaja ya nguvu ya chini imeunganishwa</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

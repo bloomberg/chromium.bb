@@ -18,6 +18,7 @@
 <translation id="151962892725702025">내 도메인에서 동기화를 사용할 수 없으므로 Chromium OS에서 데이터를 동기화하지 못했습니다.</translation>
 <translation id="1559451348202814456">더 이상 Mac OS X 10.6, 10.7, 10.8에서 Chromium을 지원하지 않으므로 Chromium이 올바르게 작동하지 않을 수 있습니다.</translation>
 <translation id="1644918877723739397">Chromium은 <ph name="SAVED_PASSWORD_LINK" />에 비밀번호를 저장한 후 다음에 필요할 때 제공합니다.</translation>
+<translation id="1653828314016431939">확인 - 지금 다시 시작</translation>
 <translation id="1668054258064581266">Chromium에서 계정을 삭제한 후 열려 있는 탭을 새로고침해야 적용됩니다.</translation>
 <translation id="1688750314291223739">맞춤설정한 브라우저 기능을 웹에 저장하고 모든 컴퓨터의 Chromium에서 액세스할 수 있도록 동기화를 설정합니다.</translation>
 <translation id="1699664235656412242">Chromium 창(Windows 8 모드의 창 포함)을 모두 닫고 다시 시도해 보세요.</translation>
@@ -182,6 +183,12 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">새 창</translation>
 <translation id="734373864078049451">웹, 북마크 및 기타 Chromium 콘텐츠가 여기에 저장됩니다.</translation>
+<translation id="7344413941077984497"><ph name="NEW_PROFILE_NAME" />님이 볼 수 있는 웹사이트를 설정하려면 <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />을(를) 방문하여 제한사항 및 설정을 지정하세요. 기본 설정을 변경하지 않으면 <ph name="NEW_PROFILE_NAME" />님이 웹에서 모든 사이트를 탐색할 수 있습니다.
+
+<ph name="NEW_PROFILE_NAME" />님이 내 계정에 액세스하지 못하도록 하려면 Chromium을 사용하지 않을 때 프로필을 잠그세요. 이렇게 하려면 브라우저 오른쪽 상단에서 프로필 이름을 클릭하고 '종료 및 자녀 보호 잠금'을 선택하면 됩니다.
+<ph name="BEGIN_LINK_2" />자세히 알아보기<ph name="END_LINK_2" />
+
+자세한 안내를 보려면 <ph name="ACCOUNT_EMAIL" />에서 이메일을 확인하세요.</translation>
 <translation id="7419987137528340081">기존 Chromium 데이터를 별도로 보관하려는 경우 <ph name="USER_NAME" />의 새로운 Chromium 사용자를 만들 수 있습니다.</translation>
 <translation id="7421823331379285070">Chromium에는 Windows XP 이상이 필요합니다. 일부 기능이 작동하지 않을 수 있습니다.</translation>
 <translation id="7463979740390522693">Chromium - 알림(읽지 않은 알림 <ph name="QUANTITY" />개)</translation>
@@ -196,6 +203,7 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7747138024166251722">설치 프로그램이 임시 디렉토리를 만들지 못했습니다. 디스크 공간 및 설치 권한을 확인해 보세요.</translation>
 <translation id="7918535023914021398">Chromium에서 <ph name="ISSUER" />이(가) 이 웹사이트의 인증서를 발행했음을 확인했습니다. 서버에서 인증서 투명성 정보를 제공하지 않았습니다.</translation>
 <translation id="7937630085815544518"><ph name="USER_EMAIL_ADDRESS" />(으)로 Chromium에 로그인되어 있습니다. 같은 계정으로 다시 로그인해 주세요.</translation>
+<translation id="795025003224538582">다시 시작 안함</translation>
 <translation id="7962572577636132072">Chromium은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다.</translation>
 <translation id="7979877361127045932">Chromium 메뉴에서 숨기기</translation>
 <translation id="8030318113982266900">기기를 <ph name="CHANNEL_NAME" /> 채널로 업데이트하는 중...</translation>

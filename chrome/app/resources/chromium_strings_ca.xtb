@@ -16,6 +16,7 @@
 <translation id="151962892725702025">Chromium OS no ha pogut sincronitzar les vostres dades perquè la sincronització no està disponible per al vostre domini.</translation>
 <translation id="1559451348202814456">Pot ser que Chromium no funcioni correctament perquè ja no és compatible amb Mac OS X 10.6, 10.7 ni 10.8.</translation>
 <translation id="1644918877723739397">Chromium desarà la contrasenya a <ph name="SAVED_PASSWORD_LINK" /> i la recordarà la propera vegada que la necessiteu.</translation>
+<translation id="1653828314016431939">D'acord, reinicia ara</translation>
 <translation id="1668054258064581266">Després de suprimir el vostre compte de Chromium, pot ser que hàgiu de tornar a carregar les pestanyes obertes.</translation>
 <translation id="1688750314291223739">Configureu la sincronització per desar al web les funcions personalitzades del navegador i per accedir-hi des de qualsevol equip mitjançant Chromium.</translation>
 <translation id="1699664235656412242">Tanqueu totes les finestres de Chromium (incloses les del mode Windows 8) i torneu-ho a provar.</translation>
@@ -180,6 +181,12 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Finestra nova</translation>
 <translation id="734373864078049451">El vostre web, les adreces d'interès i altres coses de Chromium resideixen aquí.</translation>
+<translation id="7344413941077984497">Per definir quins llocs web pot veure <ph name="NEW_PROFILE_NAME" />, podeu configurar diferents restriccions i opcions a la pàgina <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Si no canvieu la configuració predeterminada, <ph name="NEW_PROFILE_NAME" /> podrà navegar per tot el web.
+
+Per impedir que <ph name="NEW_PROFILE_NAME" /> accedeixi al vostre compte, bloquegeu el vostre perfil quan no utilitzeu Chromium. Per fer-ho, feu clic al vostre nom de perfil, a l'extrem superior dret del navegador, i seleccioneu Surt i estableix el bloqueig infantil.
+<ph name="BEGIN_LINK_2" />Més informació<ph name="END_LINK_2" />
+
+Per obtenir-ne més instruccions, consulteu el correu electrònic a <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Si preferiu mantenir les dades de Chromium existents per separat, podeu crear un usuari nou de Chromium per a <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium necessita Windows XP o una versió posterior. És possible que algunes funcions no estiguin disponibles.</translation>
 <translation id="7463979740390522693">Chromium: notificacions (<ph name="QUANTITY" /> no llegides)</translation>
@@ -194,6 +201,7 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="7747138024166251722">L'instal·lador no ha pogut crear un directori temporal. Comprova que hi ha espai lliure al disc i que tens permís per instal·lar el programari.</translation>
 <translation id="7918535023914021398">Chromium ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web. El servidor no ha proporcionat informació sobre Transparència de certificats.</translation>
 <translation id="7937630085815544518">Teníeu la sessió iniciada a Chromium com a <ph name="USER_EMAIL_ADDRESS" />. Utilitzeu el mateix compte per tornar a iniciar-hi la sessió.</translation>
+<translation id="795025003224538582">No reiniciïs</translation>
 <translation id="7962572577636132072">Chromium s'actualitza automàticament perquè en tingueu sempre la versió més recent.</translation>
 <translation id="7979877361127045932">Amaga al menú de Chromium</translation>
 <translation id="8030318113982266900">S'està actualitzant el vostre dispositiu al canal <ph name="CHANNEL_NAME" />...</translation>

@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome verwendet Ihre Kamera.</translation>
 <translation id="1619887657840448962">Um Chrome sicherer zu machen, haben wir die folgende Erweiterung deaktiviert. Sie ist nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt und wurde möglicherweise ohne Ihr Wissen hinzugefügt.</translation>
 <translation id="163860049029591106">Einführung mit Chrome OS</translation>
+<translation id="1653828314016431939">OK - jetzt neu starten</translation>
 <translation id="1682634494516646069">Google Chrome kann im folgenden Datenverzeichnis weder lesen noch schreiben: <ph name="USER_DATA_DIRECTORY" />.</translation>
 <translation id="1698376642261615901">Google Chrome ist ein Webbrowser, der Webseiten und Apps in Sekundenschnelle lädt und dabei äußerst stabil und nutzerfreundlich ist. Dank des integrierten Malware- und Phishing-Schutzes können Sie bedenkenlos im Internet surfen.</translation>
 <translation id="174539241580958092">Google Chrome konnte Ihre Daten aufgrund eines Fehlers bei der Anmeldung nicht synchronisieren.</translation>
@@ -117,6 +118,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="4921569541910214635">Sie nutzen einen Computer gemeinsam mit anderen? Jetzt können Sie Chrome nach Ihren Wünschen einrichten.</translation>
 <translation id="4925019873400497719">Chrome hat verifiziert, dass <ph name="ISSUER" /> das Zertifikat dieser Website ausgestellt hat. Zwar hat der Server Informationen zur Zertifikatstransparenz bereitgestellt, diese waren jedoch ungültig.</translation>
 <translation id="4953650215774548573">Google Chrome als Standardbrowser festlegen</translation>
+<translation id="495931528404527476">In Chrome</translation>
 <translation id="4987308747895123092">Schließen Sie alle Google Chrome-Fenster einschließlich der Fenster im Windows 8-Modus und versuchen Sie es erneut.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome konnte Ihre Daten nicht synchronisieren. Bitte aktualisieren Sie Ihre Passphrase für die Synchronisierung.</translation>
@@ -205,6 +207,7 @@ Sollten Sie sich trotzdem anmelden, werden die Chrome-Daten wie Lesezeichen, Ver
 <translation id="7808348361785373670">Aus Chrome entfernen...</translation>
 <translation id="7825851276765848807">Die Installation ist aufgrund eines unbekannten Fehlers fehlgeschlagen. Laden Sie Google Chrome erneut herunter.</translation>
 <translation id="7890208801193284374">Bei gemeinsam genutzten Computern können die verschiedenen Personen separat surfen und Chrome jeweils nach ihren Wünschen einrichten.</translation>
+<translation id="795025003224538582">Nicht neu starten</translation>
 <translation id="8005540215158006229">Chrome ist gleich bereit.</translation>
 <translation id="8008534537613507642">Chrome erneut installieren</translation>
 <translation id="8030318113982266900">Ihr Gerät wird auf Kanal <ph name="CHANNEL_NAME" /> aktualisiert...</translation>

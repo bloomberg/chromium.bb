@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Povoliť mobilné dátové pripojenie</translation>
 <translation id="1621499497873603021">Čas zostávajúci do vybitia batérie: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Zariadenie Chrome</translation>
+<translation id="1677472565718498478">Zostávajúci čas: <ph name="TIME" /></translation>
 <translation id="1723752762323179280">Ukončenie relácie</translation>
 <translation id="1747827819627189109">Klávesnica na obrazovke je povolená</translation>
 <translation id="1812696562331527143">Metóda vstupu sa zmenila na <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tretia strana<ph name="END_LINK" />).
@@ -116,6 +117,7 @@ Ak ho chcete zrušiť, stlačte klávesy Hľadať alebo Shift.</translation>
 <translation id="4421231901400348175">Ovládanie obrazovky sa prostredníctvom Vzdialenej pomoci zdieľa s používateľom <ph name="HELPER_NAME" />.</translation>
 <translation id="4430019312045809116">Hlasitosť</translation>
 <translation id="4527045527269911712">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania.</translation>
+<translation id="453661520163887813">Zostávajúci čas do úplného nabitia: <ph name="TIME" /></translation>
 <translation id="4544944664594876241">Skratka uzamknutia obrazovky bola zmenená. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Odpojiť</translation>
@@ -224,6 +226,7 @@ Ak ho chcete zrušiť, stlačte klávesy Alt + Hľadať alebo Shift.</translatio
 <translation id="8428213095426709021">Nastavenia</translation>
 <translation id="8517041960877371778">Vaše zariadenie <ph name="DEVICE_TYPE" /> sa nemusí nabíjať, keď je zapnuté.</translation>
 <translation id="8528322925433439945">Mobilné siete...</translation>
+<translation id="8639760480004882931">Zostávajúca kapacita: <ph name="PERCENTAGE" /></translation>
 <translation id="8673028979667498656">270 °</translation>
 <translation id="8676770494376880701">Pripojila sa nabíjačka s nízkym výkonom</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

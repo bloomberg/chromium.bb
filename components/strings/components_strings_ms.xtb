@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Pelayan yang mengehos halaman web mungkin sarat atau sedang diselenggara.
         Untuk mengelakkan penjanaan trafik yang terlalu banyak dan menyebabkan situasi ini semakin buruk,
         permintaan ke URL ini tidak dibenarkan untuk sementara waktu.</translation>
-<translation id="1066332784716773939">Ralat diagnosis...</translation>
 <translation id="106701514854093668">Penanda Halaman Desktop</translation>
 <translation id="1080116354587839789">Muat ikut lebar</translation>
 <translation id="1090046120949329821">Berbilang pengepala Pelupusan Kandungan berbeza diterima.  Hal ini tidak dibenarkan
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Jabatan</translation>
 <translation id="2113977810652731515">Kad</translation>
 <translation id="2114841414352855701">Diabaikan kerana ia telah diatasi oleh <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">Carian Desktop menggunakan enjin carian lalai anda (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Klien Asli</translation>
 <translation id="213826338245044447">Penanda Halaman Mudah Alih</translation>
 <translation id="2148716181193084225">Hari ini</translation>
 <translation id="2149973817440762519">Edit Penanda Halaman</translation>
-<translation id="2153530520610387456">Pergi ke
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Control Panel &gt; Network and Internet &gt; Network and Sharing Center &gt; Troubleshoot Problems (di sebelah bawah) &gt; Internet Connections.
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Akses Penuh Pentadbir</translation>
 <translation id="2166378884831602661">Tapak ini tidak dapat menyediakan sambungan yang selamat</translation>
 <translation id="2171101176734966184">Anda cuba untuk mencapai <ph name="DOMAIN" />, tetapi pelayan memberikan sijil yang ditandatangani menggunakan algoritma tandatangan yang lemah. Ini bermakna bahawa bukti kelayakan keselamatan yang diberi pelayan mungkin dipalsukan dan pelayan tersebut bukan seperti yang anda jangkakan (anda mungkin berkomunikasi dengan penyerang).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Nilai ini tidak lagi digunakan untuk dasar ini.</translation>
 <translation id="2262243747453050782">Ralat HTTP</translation>
 <translation id="2279770628980885996">Keadaan tidak dijangka dihadapi apabila pelayan sedang cuba untuk memenuhi permintaan.</translation>
-<translation id="2282186295770469712">Urus tetapan carian</translation>
 <translation id="2282872951544483773">Eksperimen Tidak Tersedia</translation>
 <translation id="2292556288342944218">Akses Internet anda disekat</translation>
 <translation id="229702904922032456">Sijil akar atau perantara telah tamat tempoh.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">Anda boleh melumpuhkan sebarang proksi yang dikonfigurasi untuk sambungan dari halaman tetapan.</translation>
 <translation id="2950186680359523359">Pelayan menutup sambungan tanpa menghantar sebarang data.</translation>
 <translation id="2955913368246107853">Tutup bar cari</translation>
-<translation id="2957518517523241247">Pergi ke
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Control Panel &gt; Network Connections &gt; New Connection Wizard
-      <ph name="END_BOLD" />
-      untuk menguji sambungan anda.</translation>
 <translation id="2958431318199492670">Konfigurasi rangkaian tidak mematuhi piawaian ONC. Sebahagian konfigurasi tidak boleh diimport.</translation>
 <translation id="2969319727213777354">Untuk mewujudkan sambungan yang selamat, jam anda perlu ditetapkan dengan betul. Perkara ini perlu dilakukan kerana sijil yang digunakan laman web untuk mengenal pastinya hanya sah untuk tempoh masa yang tertentu. Memandangkan jam peranti anda tidak betul, Google Chrome tidak boleh mengesahkan sijil ini.</translation>
 <translation id="2972581237482394796">&amp;Buat Semula</translation>
@@ -299,7 +287,6 @@
 <translation id="3885155851504623709">Mukim</translation>
 <translation id="3901925938762663762">Kad telah tamat tempoh</translation>
 <translation id="3903912596042358459">Pelayan enggan memenuhi permintaan.</translation>
-<translation id="3930850196944737149">Peranti anda di luar talian.</translation>
 <translation id="3934680773876859118">Gagal untuk memuatkan dokumen PDF</translation>
 <translation id="3950924596163729246">Tidak dapat mengakses rangkaian.</translation>
 <translation id="3963721102035795474">Mod Pembaca</translation>
@@ -467,7 +454,6 @@
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="604124094241169006">Automatik</translation>
 <translation id="6042308850641462728">Lagi</translation>
-<translation id="6044718745395562198">Komputer anda di luar talian.</translation>
 <translation id="6060685159320643512">Berhati-hati, percubaan ini mungkin memudaratkan</translation>
 <translation id="6093795393556121384">Kad anda disahkan</translation>
 <translation id="6146055958333702838">Periksa mana-mana kabel dan but semula mana-mana penghala, modem atau peranti
@@ -534,11 +520,6 @@
 <translation id="6830600606572693159">Halaman web di <ph name="URL" /> kini tidak tersedia.  Ia mungkin terlebih muatan atau tergendala akibat penyelenggaraan.</translation>
 <translation id="6831043979455480757">Terjemah</translation>
 <translation id="6839929833149231406">Kawasan</translation>
-<translation id="6851123334996048122">Pergi ke
-      <ph name="BEGIN_BOLD" />
-      Applications &gt; System Preferences &gt; Network &gt; Assist me
-      <ph name="END_BOLD" />
-      untuk menguji sambungan anda.</translation>
 <translation id="6874604403660855544">&amp;Buat semula tambahkan</translation>
 <translation id="6891596781022320156">Tahap dasar tidak disokong.</translation>
 <translation id="6897140037006041989">Ejen Pengguna</translation>
@@ -620,9 +601,6 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Tidak Diurus</translation>
 <translation id="7758069387465995638">Tembok api atau perisian antivirus mungkin telah menyekat sambungan.</translation>
-<translation id="7760914272566804712">Anda boleh cuba mendiagnosis masalah dengan melakukan langkah berikut:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Sijil pelayan tidak sepadan dengan URL.</translation>
 <translation id="777702478322588152">Wilayah</translation>
 <translation id="778579833039460630">Tiada data diterima</translation>
@@ -662,14 +640,6 @@ Psst! <ph name="SHORTCUT_KEY" /> mod Inkognito mungkin akan berguna pada masa ak
 <translation id="8241707690549784388">Halaman yang anda cari untuk maklumat terpakai yang anda masukkan. Kembali ke halaman tersebut mungkin menyebabkan mana-mana tindakan yang anda ambil akan diulang. Adakah anda mahu teruskan?</translation>
 <translation id="8249320324621329438">Diambil kali terakhir:</translation>
 <translation id="8261506727792406068">Padam</translation>
-<translation id="8266098793847448402">Klik
-      <ph name="BEGIN_BOLD" />Mula<ph name="END_BOLD" />,
-      klik
-      <ph name="BEGIN_BOLD" />Jalankan<ph name="END_BOLD" />,
-      taip
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
-      dan kemudian klik
-      <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Permintaan anda untuk mengakses tapak web ini telah dihantar kepada <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Hubungi pentadbir rangkaian anda jika anda tidak pasti apa yang dimaksudkan ini.</translation>
 <translation id="8293206222192510085">Tambah Penanda Halaman</translation>

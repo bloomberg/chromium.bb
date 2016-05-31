@@ -72,6 +72,7 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="1853692000353488670">Jauna inkognito cilne</translation>
 <translation id="189172778771606813">Aizvērt navigācijas atvilktni</translation>
 <translation id="1924956916668006832">Atlasīt piegādes adresi</translation>
+<translation id="1933845786846280168">Atlasītā cilne</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" /> ieslēdziet atļauju pārlūkam Chrome.</translation>
 <translation id="1943432128510653496">Paroļu saglabāšana</translation>
 <translation id="1944384637046898011">Šifrēt visu ar Google paroli, sākot no: <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Fizisko tīmekli varat kontrolēt Chrome iestatījumos.
 <translation id="2959609938957585241">Android konta iestatījumos ieslēdziet automātisku datu sinhronizāciju, lai būtu pieejamas cilnes no citām jūsu ierīcēm.</translation>
 <translation id="2960796085439532066">Autortiesības <ph name="YEAR" /> Google Inc. Visas tiesības paturētas.</translation>
 <translation id="2968755619301702150">Sertifikātu skatītājs</translation>
+<translation id="2979025552038692506">Atlasītā inkognito cilne</translation>
 <translation id="2996291259634659425">Ieejas frāzes izveide</translation>
 <translation id="2996809686854298943">URL ir jānorāda obligāti.</translation>
 <translation id="3012408695656332380">Šīs ierīces dati tiks nomainīti ar konta <ph name="TO_ACCOUNT" /> datiem. Esošos datus varat izgūt, pārejot atpakaļ uz kontu <ph name="FROM_ACCOUNT" />, bet dati, kas tika izveidoti pēc izrakstīšanās, tiks zaudēti.</translation>
@@ -554,6 +556,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />history.google.com<ph name=
 <translation id="8073388330009372546">Atvērt attēlu jaunā cilnē</translation>
 <translation id="8076014560081431679">Saglabātie vietņu iestatījumi netiks dzēsti, un tie var atspoguļot jūsu pārlūkošanas ieradumus. <ph name="BEGIN_LINK" />Uzziniet vairāk<ph name="END_LINK" />.</translation>
 <translation id="8087000398470557479">Šis saturs ir no vietnes <ph name="DOMAIN_NAME" />, ko nodrošina Google.</translation>
+<translation id="8103578431304235997">Inkognito cilne</translation>
 <translation id="8106211421800660735">Kredītkartes numurs</translation>
 <translation id="813082847718468539">Skatīt informāciju par vietni</translation>
 <translation id="8137558756159375272">Izmantojot meklēšanu pieskaroties, atlasītais vārds un pašreiz skatītā lapa tiek nosūtīta kā konteksts pakalpojumam Google meklēšana. Varat to izslēgt lapā <ph name="BEGIN_LINK" />Iestatījumi<ph name="END_LINK" />.</translation>

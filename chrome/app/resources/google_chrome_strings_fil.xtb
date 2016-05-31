@@ -27,6 +27,7 @@ Maaaring hindi available ang ilang tampok at hindi mase-save ang mga pagbabago s
 <translation id="1587223624401073077">Ginagamit ng Google Chrome ang iyong camera.</translation>
 <translation id="1619887657840448962">Upang mas gawing ligtas ang Chrome, na-disable namin ang sumusunod na extension na hindi nakalista sa <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> na maaaring naidagdag nang hindi mo nalalalaman.</translation>
 <translation id="163860049029591106">Magsimula sa Chrome OS</translation>
+<translation id="1653828314016431939">OK - I-restart ngayon</translation>
 <translation id="1682634494516646069">Hindi makapagbasa at makapagsulat ang Google Chrome sa direktoryo nito ng data:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -74,6 +75,12 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="3080151273017101988">Magpatuloy sa pagpapatakbo ng mga app sa background kapag nakasara ang Google Chrome</translation>
 <translation id="3089968997497233615">May available na bago, mas ligtas na bersyon ng Google Chrome.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
+<translation id="3251381707915721925">Upang itakda kung aling mga website ang matitingnan ni <ph name="NEW_PROFILE_NAME" />, maaari mong i-configure ang mga paghihigpit at setting sa pamamagitan ng pagbisita sa <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Kung hindi mo babaguhin ang mga default na setting, maba-browse ni <ph name="NEW_PROFILE_NAME" /> ang lahat ng nasa web.
+
+Upang mapigilan si <ph name="NEW_PROFILE_NAME" /> na ma-access ang iyong account, tiyaking ila-lock mo ang iyong profile kapag hindi ka gumagamit ng Chrome. Upang gawin ito, i-click ang pangalan ng iyong profile sa kanang sulok sa itaas ng browser, at piliin ang "Lumabas at i-childlock."
+<ph name="BEGIN_LINK_2" />Matuto nang higit pa<ph name="END_LINK_2" />
+
+Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdagang tagubilin.</translation>
 <translation id="3282568296779691940">Mag-sign in sa Chrome</translation>
 <translation id="3311976847535831054">Hindi na tatanggap ang computer na ito ng mga update sa 32-bit na Google Chrome. Mangyaring mag-upgrade sa 64-bit na Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -121,6 +128,7 @@ Kapag nag-sign in ka pa rin, isasama sa <ph name="ACCOUNT_EMAIL_NEW" /> ang impo
 <translation id="4921569541910214635">Magbabahagi ng computer? Ngayon, maaari mong i-set up ang Chrome sa paraang gusto mo.</translation>
 <translation id="4925019873400497719">Na-verify ng Chrome na ang <ph name="ISSUER" /> ang nagbigay sa certificate ng website na ito. Nagbigay ang server ng impormasyon tungkol sa Certificate Transparency, ngunit hindi iyon wasto.</translation>
 <translation id="4953650215774548573">Itakda ang Google Chrome bilang iyong default na browser</translation>
+<translation id="495931528404527476">Sa Chrome</translation>
 <translation id="4987308747895123092">Pakisara ang lahat ng window ng Google Chrome (kasama ang mga nasa mode na Windows 8) at subukang muli.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Hindi mai-sync ng Google Chrome ang iyong data. Paki-update ang iyong passphrase sa Pag-sync.</translation>
@@ -213,6 +221,7 @@ Hindi magawang bawiin ng Google Chrome ang iyong mga setting.</translation>
 <translation id="7808348361785373670">Alisin sa Chrome...</translation>
 <translation id="7825851276765848807">Nabigo ang pag-install dahil sa hindi natukoy na error. Paki-download muli ang Google Chrome.</translation>
 <translation id="7890208801193284374">Kung nagpapahiram ka ng computer, ang mga kaibigan at kapamilya ay maaaring mag-browse nang hiwalay at i-set up ang Chrome sa paraang gusto nila.</translation>
+<translation id="795025003224538582">Huwag i-restart</translation>
 <translation id="8005540215158006229">Halos handa na ang Chrome.</translation>
 <translation id="8008534537613507642">Muling i-install ang Chrome</translation>
 <translation id="8030318113982266900">Ina-update ang iyong device sa <ph name="CHANNEL_NAME" /> na channel...</translation>

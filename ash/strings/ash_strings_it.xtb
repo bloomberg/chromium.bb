@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Attiva dati mobili</translation>
 <translation id="1621499497873603021">Tempo rimanente all'esaurimento della batteria: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> rimanenti</translation>
 <translation id="1723752762323179280">Uscita dalla sessione</translation>
 <translation id="1747827819627189109">Tastiera sullo schermo attiva</translation>
 <translation id="1812696562331527143">Il metodo di immissione è stato cambiato in <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3a parte<ph name="END_LINK" />).
@@ -116,6 +117,7 @@ Premi il tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="4421231901400348175">Condividi il controllo dello schermo con <ph name="HELPER_NAME" /> tramite Assistenza remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4527045527269911712">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> alla ricarica completa</translation>
 <translation id="4544944664594876241">La scorciatoia per bloccare lo schermo è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">ricerca</translation>
 <translation id="4804818685124855865">Disconnetti</translation>
@@ -224,6 +226,7 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8517041960877371778">Il tuo dispositivo <ph name="DEVICE_TYPE" /> potrebbe non caricarsi mentre è acceso.</translation>
 <translation id="8528322925433439945">Reti mobili...</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> rimanente</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Caricabatterie a basso consumo collegato</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

@@ -16,6 +16,7 @@
 <translation id="151962892725702025">Chromium OS tidak dapat menyinkronkan data Anda karena Sinkronisasi tidak tersedia untuk domain Anda.</translation>
 <translation id="1559451348202814456">Chromium mungkin tidak akan berfungsi dengan semestinya karena sudah tidak didukung di Mac OS X 10.6, 10.7, atau 10.8.</translation>
 <translation id="1644918877723739397">Chromium akan menyimpan ini di <ph name="SAVED_PASSWORD_LINK" /> Anda dan mengingatnya saat Anda membutuhkannya lagi.</translation>
+<translation id="1653828314016431939">Oke - Mulai ulang sekarang</translation>
 <translation id="1668054258064581266">Setelah membuang akun dari Chromium, Anda mungkin perlu memuat ulang tab terbuka untuk mulai menerapkannya.</translation>
 <translation id="1688750314291223739">Siapkan Sinkronisasi untuk menyimpan fitur browser hasil personalisasi Anda ke web dan mengaksesnya dari Chromium di komputer mana saja.</translation>
 <translation id="1699664235656412242">Tutup semua jendela Chromium (termasuk semua jendela dalam mode Windows 8) dan coba lagi.</translation>
@@ -180,6 +181,12 @@ Chromium tidak dapat memulihkan setelan Anda.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Jendela baru</translation>
 <translation id="734373864078049451">Web, bookmark, dan barang Chromium Anda lainnya tersedia di sini.</translation>
+<translation id="7344413941077984497">Untuk menyetel situs web <ph name="NEW_PROFILE_NAME" /> yang dapat melihat, Anda dapat mengonfigurasi batasan dan setelan dengan mengunjungi <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Jika Anda tidak mengubah setelan default, <ph name="NEW_PROFILE_NAME" /> dapat menjelajahi apa pun di web.
+
+Guna mencegah <ph name="NEW_PROFILE_NAME" /> mengakses akun Anda, pastikan profil terkunci saat Anda tidak menggunakan Chromium. Untuk mengunci akun, klik nama profil di pojok kanan atas browser, dan pilih "Keluar dan aktifkan kunci anak".
+<ph name="BEGIN_LINK_2" />Pelajari lebih lanjut<ph name="END_LINK_2" />
+
+Lihat email Anda di <ph name="ACCOUNT_EMAIL" /> untuk petunjuk lebih lanjut.</translation>
 <translation id="7419987137528340081">Jika Anda memilih untuk menjaga data Chromium yang sudah ada tetap terpisah, Anda dapat membuat pengguna Chromium baru untuk <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium memerlukan Windows XP atau yang lebih baru. Sebagian fitur mungkin tidak berfungsi.</translation>
 <translation id="7463979740390522693">Chromium - Notifikasi (<ph name="QUANTITY" /> belum dibaca)</translation>
@@ -194,6 +201,7 @@ Chromium tidak dapat memulihkan setelan Anda.</translation>
 <translation id="7747138024166251722">Pemasang tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk memasang perangkat lunak.</translation>
 <translation id="7918535023914021398">Chromium memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini. Server tidak memberikan informasi Transparansi Sertifikat apa pun.</translation>
 <translation id="7937630085815544518">Anda telah masuk ke Chromium sebagai <ph name="USER_EMAIL_ADDRESS" />. Gunakan akun yang sama untuk masuk kembali.</translation>
+<translation id="795025003224538582">Jangan memulai ulang</translation>
 <translation id="7962572577636132072">Chromium otomatis diperbarui sehingga Anda selalu memiliki versi terbaru.</translation>
 <translation id="7979877361127045932">Sembunyikan di menu Chromium</translation>
 <translation id="8030318113982266900">Memperbarui perangkat Anda ke saluran <ph name="CHANNEL_NAME" />...</translation>

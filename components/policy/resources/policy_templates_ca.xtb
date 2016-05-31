@@ -472,6 +472,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
 <translation id="267596348720209223">Especifica les codificacions de caràcters que admet el proveïdor de cerca. Les codificacions són noms de pàgines de codi com ara UTF-8, GB2312 i ISO-8859-1. Es proven per ordre. Aquesta política és opcional. Si no es defineix, s'utilitzarà el valor predeterminat, que és UTF-8. Aquesta política només es respecta si la política "DefaultSearchProviderEnabled" està activada.</translation>
 <translation id="2682225790874070339">Desactiva Drive a l'aplicació Fitxers de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Activa la funció del servidor intermediari de compressió de dades</translation>
+<translation id="2731627323327011390">Desactiva l'ús de certificats de <ph name="PRODUCT_OS_NAME" /> a les aplicacions ARC</translation>
 <translation id="2742843273354638707">Amaga l'aplicació Chrome Web Store i l'enllaç de la part inferior de la pàgina a la pàgina Pestanya nova i al Menú d'aplicacions de <ph name="PRODUCT_OS_NAME" />.
 
       Si aquesta política s'estableix en true, les icones s'amaguen.
@@ -1685,6 +1686,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Si establiu aquesta política, els usuaris podran ignorar-la temporalment si activen o desactiven la lupa. No obstant això, l'elecció de l'usuari no és permanent i l'estat predeterminat es restablirà quan es torni a mostrar la pantalla d'inici de la sessió o si un usuari es manté inactiu a la pantalla d'inici de la sessió durant un minut.
 
           Si no s'estableix aquesta política, la lupa es desactivarà la primera vegada que es mostri la pantalla d'inici de sessió. Els usuaris poden activar o desactivar la lupa en qualsevol moment i el seu estat a la pàgina d'inici de sessió es mantindrà entre els usuaris.</translation>
+<translation id="7249828445670652637">Activa l'ús de certificats de CA de <ph name="PRODUCT_OS_NAME" /> a les aplicacions ARC</translation>
 <translation id="7258823566580374486">Activa l'ocultació d'amfitrions d'accés remot</translation>
 <translation id="7260277299188117560">Actualització automàtica de P2P activada</translation>
 <translation id="7267809745244694722">De manera predeterminada, les tecles multimèdia actuen com les tecles de funció.</translation>
@@ -1802,6 +1804,17 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7715711044277116530">Percentatge que permet ajustar el retard d'inactivitat de la pantalla en mode de presentació</translation>
 <translation id="7717938661004793600">Permet configurar les funcions d'accessibilitat de <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Controla si es notifiquen a Google les mètriques d'ús. Si es defineix a «true» (cert), <ph name="PRODUCT_OS_NAME" /> informarà de les mètriques d'ús. Si no es configura o es defineix a «false» (fals), es desactivarà la creació d'informes de mètriques.</translation>
+<translation id="7723433108978650103">Bloqueja l'accés als URL de la llista.
+
+      Aquesta política impedeix que l'usuari carregui pàgines web d'URL inclosos en llistes negres. La llista negra facilita una llista de patrons d'URL que especifiquen quins URL s'afegiran a una llista negra.
+
+      Els patrons d'URL han de tenir el format que s'indica a la pàgina https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Es poden definir excepcions des de la política de llista blanca d'URL. Aquestes polítiques es limiten a 1.000 entrades; les posteriors s'ignoren.
+
+      Tingueu en compte que no es recomana bloquejar els URL interns del tipus "chrome://*", ja que es podrien produir errors imprevistos.
+
+      Si aquesta política no s'estableix, no s'afegirà cap URL a la llista negra del navegador.</translation>
 <translation id="7749402620209366169">Activa l'autenticació de dos factors per als amfitrions d'accés remot en lloc d'un PIN especificat per l'usuari.
 
           Si activeu aquest paràmetre, els usuaris hauran de proporcionar un codi de dos factors vàlid per accedir a un amfitrió.
@@ -1868,6 +1881,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si aquesta política no s'estableix, es comporta com si la política TimezoneAutomaticDetectionUsersDecide estigués establerta.
 
       Si s'estableix la política SystemTimezone, substitueix SystemTimezoneAutomaticDetection i la detecció automàtica de la zona horària està totalment desactivada.</translation>
+<translation id="787125417158068494">Si s'estableix en SyncDisabled o no es configura, els certificats de <ph name="PRODUCT_OS_NAME" /> no estan disponibles per a les aplicacions ARC.
+
+      Si s'estableix en CopyCaCerts, tots els certificats de CA instal·lats mitjançant fitxers ONC amb <ph name="WEB_TRUSTED_BIT" /> estan disponibles per a les aplicacions ARC.</translation>
 <translation id="7882585827992171421">Aquesta política només està activa en mode de venda.
 
       Determina l'identificador de l'extensió que s'ha d'utilitzar com a protector de pantalla a la pantalla d'inici de sessió. L'extensió ha de formar part de l'AppPack, que està configurat per a aquest domini a través de la política DeviceAppPack.</translation>
@@ -1883,6 +1899,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Permet especificar si s'utilitzarà la tecnologia d'igual a igual (P2P) per a les càrregues útils d'actualització del sistema operatiu. Si el valor s'estableix com a True, els dispositius compartiran i provaran de consumir les càrregues útils d'actualització a la xarxa LAN, amb la qual cosa és possible que es redueixi l'ús i la congestió de l'amplada de banda d'Internet. Si la càrrega útil d'actualització no està disponible a la xarxa LAN, el dispositiu farà les baixades des d'un servidor d'actualitzacions. Si el valor s'estableix com a False o si no es configura, no es farà servir P2P.</translation>
 <translation id="7933141401888114454">Activa la creació d'usuaris supervisats.</translation>
+<translation id="793473937901685727">Estableix la disponibilitat de certificats per a aplicacions ARC</translation>
 <translation id="7936098023732125869">Activa la utilització d'un proveïdor de cerca predeterminat.
 
           Si activeu aquesta opció de configuració, es duu a terme una cerca predeterminada quan l'usuari escriu un text a l'omnibox que no sigui un URL.

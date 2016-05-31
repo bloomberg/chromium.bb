@@ -16,6 +16,7 @@
 <translation id="151962892725702025">A Chromium OS nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>
 <translation id="1559451348202814456">Előfordulhat, hogy a Chromium nem fog megfelelően működni, mert a továbbiakban már nem támogatja a következő rendszereket: Mac OS X 10.6, 10.7 és 10.8.</translation>
 <translation id="1644918877723739397">A Chromium tárolja ezt a(z) <ph name="SAVED_PASSWORD_LINK" /> között, és emlékezni fog, amikor legközelebb szükség lesz rá.</translation>
+<translation id="1653828314016431939">OK -- Újraindítás most</translation>
 <translation id="1668054258064581266">Fiókjának eltávolítása után a Chromiumból előfordulhat, hogy újra kell töltenie a megnyitott lapokat ahhoz, hogy a változások életbe lépjenek.</translation>
 <translation id="1688750314291223739">A szinkronizálás beállításával személyre szabott beállításait az interneten tárolhatja, így azok elérhetők a Chromiumból bármelyik számítógépen.</translation>
 <translation id="1699664235656412242">Kérjük, zárja be az összes Chromium-ablakot (köztük a Windows 8-módban lévőket is), majd próbálja újra.</translation>
@@ -178,6 +179,12 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Új ablak</translation>
 <translation id="734373864078049451">Az Ön könyvjelzői, valamint az internetezéssel és a Chromiummal kapcsolatos egyéb dolgai vannak itt.</translation>
+<translation id="7344413941077984497">Annak szabályozásához, hogy <ph name="NEW_PROFILE_NAME" /> mely webhelyeket nézheti meg, Önnek lehetősége van korlátozásokat és beállításokat megadni a(z) <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> címen. Ha nem módosítja az alapértelmezett beállításokat, akkor <ph name="NEW_PROFILE_NAME" /> minden webhelyen böngészhet az interneten.
+
+Ha szeretné megakadályozni, hogy <ph name="NEW_PROFILE_NAME" /> hozzáférjen az Ön fiókjához, ügyeljen rá, hogy mindig zárolja profilját, amikor nem használja a Chromiumot. A zároláshoz kattintson profilja nevére a böngésző jobb felső sarkában, majd válassza a „Kilépés és gyermekzár” lehetőséget.
+<ph name="BEGIN_LINK_2" />További információ<ph name="END_LINK_2" />.
+
+További utasításokat a(z) <ph name="ACCOUNT_EMAIL" /> címére küldött e-mailekben talál.</translation>
 <translation id="7419987137528340081">Ha meglévő Chromium-adatait külön szeretné tárolni, új Chromium-felhasználót hozhat létre <ph name="USER_NAME" /> számára.</translation>
 <translation id="7421823331379285070">A Chromium Windows XP-t vagy újabb operációs rendszert igényel. Lehet, hogy korábbi verziójú operációs rendszeren néhány funkció nem fog működni.</translation>
 <translation id="7463979740390522693">Chromium – Értesítések (<ph name="QUANTITY" /> olvasatlan)</translation>
@@ -192,6 +199,7 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="7747138024166251722">A telepítőnek nem sikerült létrehoznia az ideiglenes könyvtárat. Kérjük ellenőrizze, hogy van-e elegendő hely a lemezen, és rendelkezik-e engedéllyel a szoftvertelepítésre.</translation>
 <translation id="7918535023914021398">A Chromium megerősítette, hogy a(z) <ph name="ISSUER" /> állította ki ennek a webhelynek a tanúsítványát. A szerver nem adott meg tanúsítványátláthatósági adatokat.</translation>
 <translation id="7937630085815544518"><ph name="USER_EMAIL_ADDRESS" /> néven volt bejelentkezve a Chromiumba. Kérjük, ugyanazzal a fiókkal jelentkezzen be újra.</translation>
+<translation id="795025003224538582">Ne indítsa újra</translation>
 <translation id="7962572577636132072">A Chromium automatikusan frissít, így Ön mindig a legújabb verzióval rendelkezik.</translation>
 <translation id="7979877361127045932">Elrejtés a Chromium-menüben</translation>
 <translation id="8030318113982266900">Eszköz frissítése a(z) <ph name="CHANNEL_NAME" /> csatornára...</translation>

@@ -72,6 +72,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1853692000353488670">Nueva pestaña de incógnito</translation>
 <translation id="189172778771606813">Cerrar panel lateral de navegación</translation>
 <translation id="1924956916668006832">Seleccionar la dirección de envío</translation>
+<translation id="1933845786846280168">Pestaña seleccionada</translation>
 <translation id="194341124344773587">Activa el permiso para Chrome en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Guardar contraseñas</translation>
 <translation id="1944384637046898011">Encriptar todo con la contraseña de Google a partir del <ph name="TIME" /></translation>
@@ -129,7 +130,7 @@ Puedes controlar la Web física desde la configuración de Chrome.
 <translation id="257931822824936280">Expandido; haz clic para contraer.</translation>
 <translation id="2587052924345400782">Nueva versión disponible</translation>
 <translation id="2593272815202181319">Monoespaciada</translation>
-<translation id="2621115761605608342">Permitir la ejecución de JavaScript para un sitio específico.</translation>
+<translation id="2621115761605608342">Permitir la ejecución de JavaScript para un sitio específico</translation>
 <translation id="2646820313617290661">Tus padres ayudan a administrar esta configuración.</translation>
 <translation id="2653659639078652383">Enviar</translation>
 <translation id="2677748264148917807">Abandonar</translation>
@@ -153,9 +154,10 @@ Puedes controlar la Web física desde la configuración de Chrome.
 <translation id="2903493209154104877">Direcciones</translation>
 <translation id="2913331724188855103">Permitir que todos los sitios guarden y lean datos de cookies (recomendado)</translation>
 <translation id="2956410042958133412"><ph name="PARENT_NAME_1" /> y <ph name="PARENT_NAME_2" /> administran esta cuenta.</translation>
-<translation id="2959609938957585241">Para obtener las pestañas de tus otros dispositivos, activa la opción "Sincronización automática de datos" en la configuración de la cuenta de Android.</translation>
+<translation id="2959609938957585241">Para obtener las pestañas de tus otros dispositivos, activa la opción de sincronización automática de datos en la configuración de la cuenta de Android.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Todos los derechos reservados.</translation>
 <translation id="2968755619301702150">Visualizador de certificados</translation>
+<translation id="2979025552038692506">Pestaña de incógnito seleccionada</translation>
 <translation id="2996291259634659425">Crear frase de contraseña</translation>
 <translation id="2996809686854298943">URL obligatoria</translation>
 <translation id="3012408695656332380">Reemplaza los datos de este dispositivo con los de <ph name="TO_ACCOUNT" />. Para recuperar tus datos existentes, cambia de nuevo a <ph name="FROM_ACCOUNT" />. Ten en cuenta que se perderán los datos creados desde que saliste.</translation>
@@ -555,6 +557,7 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="8073388330009372546">Abrir imagen en pestaña nueva</translation>
 <translation id="8076014560081431679">Las opciones de configuración de sitios guardadas no se borrarán y es posible que reflejen tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Este contenido es de <ph name="DOMAIN_NAME" />, publicado por Google.</translation>
+<translation id="8103578431304235997">Pestaña de incógnito</translation>
 <translation id="8106211421800660735">Número de tarjeta de crédito</translation>
 <translation id="813082847718468539">Consulta la información del sitio</translation>
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Para desactivarla, accede a <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>

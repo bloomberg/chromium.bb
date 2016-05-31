@@ -26,6 +26,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1587223624401073077">Votre webcam est en cours d'utilisation dans Google Chrome.</translation>
 <translation id="1619887657840448962">Afin de rendre Chromium plus sûr, nous avons désactivé l'extension suivante qui n'est pas répertoriée sur le <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> et qui a pu être ajoutée à votre insu.</translation>
 <translation id="163860049029591106">Premiers pas avec Google Chrome OS</translation>
+<translation id="1653828314016431939">OK – Redémarrer maintenant</translation>
 <translation id="1682634494516646069">Google Chrome ne peut pas lire et écrire dans son répertoire de données : 
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -73,6 +74,12 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="3080151273017101988">Poursuivre l'exécution d'applications en arrière-plan après la fermeture de Google Chrome</translation>
 <translation id="3089968997497233615">Une nouvelle version de Google Chrome encore plus sûre est disponible.</translation>
 <translation id="3149510190863420837">Applications Chrome</translation>
+<translation id="3251381707915721925">Pour définir les sites Web que l'utilisateur <ph name="NEW_PROFILE_NAME" /> peut consulter, vous pouvez configurer des restrictions et des paramètres sur le site <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Si vous conservez les paramètres par défaut, <ph name="NEW_PROFILE_NAME" /> peut parcourir l'ensemble des sites du Web.
+
+Pour empêcher <ph name="NEW_PROFILE_NAME" /> d'accéder à votre compte, assurez-vous de verrouiller votre profil lorsque vous n'utilisez pas Chrome. Pour ce faire, cliquez sur le nom de votre profil dans l'angle supérieur droit du navigateur, puis sélectionnez "Fermer et activer le verrouillage enfant".
+<ph name="BEGIN_LINK_2" />En savoir plus<ph name="END_LINK_2" />
+
+Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie (<ph name="ACCOUNT_EMAIL" />).</translation>
 <translation id="3282568296779691940">Connectez-vous à Chrome</translation>
 <translation id="3311976847535831054">Cet ordinateur ne recevra plus les mises à jour de Google Chrome 32 bits. Veuillez passer à Google Chrome 64 bits.</translation>
 <translation id="3360895254066713204">Aide de Chrome</translation>
@@ -121,6 +128,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="4921569541910214635">Vous partagez un ordinateur ? Vous pouvez désormais configurer Chrome selon vos besoins.</translation>
 <translation id="4925019873400497719">Il a été confirmé dans Chrome que le certificat de ce site a bien été fourni par <ph name="ISSUER" />. Des informations relatives à la transparence du certificat ont été fournies via le serveur, mais celles-ci ne sont pas valides.</translation>
 <translation id="4953650215774548573">Définir Google Chrome en tant que navigateur par défaut</translation>
+<translation id="495931528404527476">Dans Chrome</translation>
 <translation id="4987308747895123092">Veuillez fermer toutes les fenêtres de Google Chrome (y compris celles en mode Windows 8), puis réessayer.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Impossible de synchroniser vos données dans Google Chrome. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
@@ -213,6 +221,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="7808348361785373670">Supprimer de Chrome</translation>
 <translation id="7825851276765848807">Échec de l'installation en raison d'erreurs non spécifiées. Veuillez télécharger Google Chrome à nouveau.</translation>
 <translation id="7890208801193284374">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Chrome comme bon leur semble et naviguer sur le Web à leur manière.</translation>
+<translation id="795025003224538582">Ne pas redémarrer</translation>
 <translation id="8005540215158006229">Google Chrome est presque prêt</translation>
 <translation id="8008534537613507642">Réinstaller Chrome</translation>
 <translation id="8030318113982266900">Passage de votre appareil à la version <ph name="CHANNEL_NAME" />…</translation>

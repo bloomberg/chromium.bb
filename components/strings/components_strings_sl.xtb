@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Strežnik, ki gosti spletno stran, je morda preobremenjen ali poteka njegovo vzdrževanje.
         V izogib ustvarjanja preveč prometa in poslabšanja položaja,
         zahteve za ta URL začasno niso dovoljene.</translation>
-<translation id="1066332784716773939">Diagnosticiranje napak ...</translation>
 <translation id="106701514854093668">Zaznamki namizja</translation>
 <translation id="1080116354587839789">Prilagoditev prikaza širini</translation>
 <translation id="1090046120949329821">Prejetih je bilo več glav z različnimi polji Content-Disposition. To je prepovedano
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Departma</translation>
 <translation id="2113977810652731515">Kartica</translation>
 <translation id="2114841414352855701">Prezrto, ker je to preglasil pravilnik <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">Za iskanja na namizju se uporabi privzeti iskalnik (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Tehnologija Native Client</translation>
 <translation id="213826338245044447">Zaznamki mobilne naprave</translation>
 <translation id="2148716181193084225">Danes</translation>
 <translation id="2149973817440762519">Uredi zaznamek</translation>
-<translation id="2153530520610387456">Odprite
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Nadzorna plošča &gt; Omrežje in internet &gt; Središče za omrežje in skupno rabo &gt; Odpravljanje težav (na dnu) &gt; Internetne povezave.
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Polni skrbniški dostop</translation>
 <translation id="2166378884831602661">To spletno mesto ne more zagotoviti varne povezave</translation>
 <translation id="2171101176734966184">Poskusili ste dostopati do domene <ph name="DOMAIN" />, vendar ima strežnik potrdilo, podpisano s šibkim podpisnim algoritmom. To pomeni, da so varnostne poverilnice, ki jih je poslal strežnik, morda ponarejene in strežnik morda ni tisti, ki ga pričakujete (morda komunicirate z napadalcem).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Vrednost za ta pravilnik je zastarela.</translation>
 <translation id="2262243747453050782">Napaka HTTP</translation>
 <translation id="2279770628980885996">Ko je strežnik poskušal izpolniti zahtevo, je prišlo do nepričakovanega stanja.</translation>
-<translation id="2282186295770469712">Upravljanje nastavitev iskanja</translation>
 <translation id="2282872951544483773">Preizkusi, ki niso na voljo</translation>
 <translation id="2292556288342944218">Internetni dostop je blokiran</translation>
 <translation id="229702904922032456">Korensko ali vmesno potrdilo je poteklo.</translation>
@@ -191,11 +184,6 @@
 <translation id="2948083400971632585">Namestniške strežnike, konfigurirane za povezavo, lahko onemogočite na strani z nastavitvami.</translation>
 <translation id="2950186680359523359">Strežnik je prekinil povezavo, ne da bi poslal podatke.</translation>
 <translation id="2955913368246107853">Zapri vrstico za iskanje</translation>
-<translation id="2957518517523241247">Odprite
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Nadzorna plošča &gt; Omrežne povezave &gt; Čarovnik za novo povezavo
-      <ph name="END_BOLD" />,
-      da preskusite povezavo.</translation>
 <translation id="2958431318199492670">Omrežna konfiguracija ne ustreza standardu ONC. Deli konfiguracije morda niso bili uvoženi.</translation>
 <translation id="2969319727213777354">Če želite vzpostaviti varno povezavo, mora biti ura pravilno nastavljena. Potrdila, ki jih uporabljajo spletna mesta za prepoznavanje, namreč veljajo samo določen čas. Ker je ura naprave nepravilna, Google Chrome teh potrdil ne more preveriti.</translation>
 <translation id="2972581237482394796">&amp;Uveljavi</translation>
@@ -299,7 +287,6 @@
 <translation id="3885155851504623709">Okrožje</translation>
 <translation id="3901925938762663762">Kartica je potekla</translation>
 <translation id="3903912596042358459">Strežnik je zavrnil izpolnitev zahteve.</translation>
-<translation id="3930850196944737149">Naprava je brez povezave.</translation>
 <translation id="3934680773876859118">Dokumenta PDF ni bilo mogoče naložiti</translation>
 <translation id="3950924596163729246">Dostop do omrežja ni mogoč.</translation>
 <translation id="3963721102035795474">Način bralnika</translation>
@@ -467,7 +454,6 @@
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="604124094241169006">Samodejno</translation>
 <translation id="6042308850641462728">Več</translation>
-<translation id="6044718745395562198">Računalnik nima internetne povezave.</translation>
 <translation id="6060685159320643512">Previdno, ti poskusi lahko škodujejo</translation>
 <translation id="6093795393556121384">Vaša kartica je preverjena</translation>
 <translation id="6146055958333702838">Preverite kable in znova zaženite usmerjevalnike, modeme ali druge omrežne 
@@ -534,11 +520,6 @@
 <translation id="6830600606572693159">Spletna stran na naslovu <ph name="URL" /> trenutno ni na voljo. Morda je preobremenjena ali nedosegljiva zaradi vzdrževanja.</translation>
 <translation id="6831043979455480757">Prevedi</translation>
 <translation id="6839929833149231406">Območje</translation>
-<translation id="6851123334996048122">Odprite
-      <ph name="BEGIN_BOLD" />
-      Applications (Aplikacije) &gt; System Preferences (Sistemske nastavitve) &gt; Network (Omrežje) &gt; Assist me (Pomoč) 
-      <ph name="END_BOLD" />,
-      da preskusite povezavo.</translation>
 <translation id="6874604403660855544">&amp;Uveljavi dodajanje</translation>
 <translation id="6891596781022320156">Raven pravilnika ni podprta.</translation>
 <translation id="6897140037006041989">Uporabnikov posrednik</translation>
@@ -620,9 +601,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Odstranjen iz uporabe</translation>
 <translation id="7758069387465995638">Povezavo je morda blokiral požarni zid ali protivirusni program.</translation>
-<translation id="7760914272566804712">Težavo lahko poskusite ugotoviti s tem postopkom:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Potrdilo strežnika se ne ujema z URL-jem.</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="778579833039460630">Prejeti niso bili nobeni podatki</translation>
@@ -662,14 +640,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8241707690549784388">Stran, ki jo iščete, je uporabila informacije, ki ste jih vnesli. Z vrnitvijo na to stran se bodo morda ponovila vsa vaša dejanja, ki ste jih opravili. Ali želite nadaljevati?</translation>
 <translation id="8249320324621329438">Nazadnje preneseno:</translation>
 <translation id="8261506727792406068">Izbriši</translation>
-<translation id="8266098793847448402">Kliknite
-      <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
-      nato
-      <ph name="BEGIN_BOLD" />Zaženi<ph name="END_BOLD" />,
-      vnesite
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
-      in nato kliknite
-      <ph name="BEGIN_BOLD" />V redu<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Vaša zahteva za dostop do tega mesta je poslana uporabniku <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Če niste prepričani, kaj to pomeni, se obrnite na skrbnika omrežja.</translation>
 <translation id="8293206222192510085">Dodaj zaznamek</translation>

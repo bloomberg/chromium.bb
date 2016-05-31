@@ -212,6 +212,10 @@ isäntä</translation>
 <translation id="6324708100353784493">Otit käyttöön Google Cardboard -integraatiotilan. Käytä tilaa asettamalla laitteesi Google Cardboard -yhteensopivaan katselukoteloon.</translation>
 <translation id="6381670701864002291">Jokin muu syy.</translation>
 <translation id="6398765197997659313">Poistu koko näytön tilasta</translation>
+<translation id="6408143143164565232">• Kuuntele äänisisältöä Windows- tai Linux-tietokoneilta
+• Poista ei-toivotut yhteydet koskettamalla tietokoneen nimeä pitkään
+• Zoomaus nipistämällä ja vieritys kahdella sormella toimivat sujuvammin
+• Uusi Ohje ja palaute -näyttö</translation>
 <translation id="6441316101718669559">Tämä alusta ei tue työpöydän integraatiota. Voit silti käyttää sovellusta, mutta käyttökokemus on heikompi.</translation>
 <translation id="652218476070540101">Tietokoneen PIN-koodia päivitetään…</translation>
 <translation id="6527303717912515753">Jaa</translation>
@@ -257,6 +261,7 @@ isäntä</translation>
 <translation id="7836926030608666805">Jotkin vaadittavat komponentit puuttuvat. Varmista, että käytät uusinta Chrome-versiota, ja yritä uudelleen.</translation>
 <translation id="7868137160098754906">Anna etätietokoneen PIN-koodi.</translation>
 <translation id="7869445566579231750">Sinulla ei ole lupaa suorittaa tätä sovellusta.</translation>
+<translation id="7895403300744144251">Etätietokoneen suojauskäytännöt eivät salli tililtäsi saapuvia yhteyksiä.</translation>
 <translation id="7948001860594368197">Ruudun asetukset</translation>
 <translation id="7970576581263377361">Todennus epäonnistui. Kirjaudu Chromiumiin uudelleen.</translation>
 <translation id="7981525049612125370">Etäistunto on vanhentunut.</translation>

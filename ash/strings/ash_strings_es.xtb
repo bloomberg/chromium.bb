@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Habilitar datos móviles</translation>
 <translation id="1621499497873603021">Tiempo restante hasta que se agote la batería: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
+<translation id="1677472565718498478">Tiempo restante: <ph name="TIME" /></translation>
 <translation id="1723752762323179280">Saliendo de la sesión</translation>
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
 <translation id="1812696562331527143">Tu método de entrada ha cambiado a <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />externo<ph name="END_LINK" />).
@@ -116,6 +117,7 @@ Pulsa Mayús o la tecla de búsqueda para cancelar la operación.</translation>
 <translation id="4421231901400348175">Compartiendo control de la pantalla con <ph name="HELPER_NAME" /> a través de Asistencia remota.</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="4527045527269911712">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse.</translation>
+<translation id="453661520163887813">Tiempo para completar la carga: <ph name="TIME" /></translation>
 <translation id="4544944664594876241">La combinación de teclas para bloquear la pantalla ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">buscar</translation>
 <translation id="4804818685124855865">Desvincular</translation>
@@ -224,6 +226,7 @@ Pulsa Alt y la tecla de búsqueda o Mayús para cancelar la operación.</transla
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8517041960877371778">Es posible que tu <ph name="DEVICE_TYPE" /> no se cargue mientras esté encendido.</translation>
 <translation id="8528322925433439945">Redes móviles...</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Cargador de baja potencia conectado</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

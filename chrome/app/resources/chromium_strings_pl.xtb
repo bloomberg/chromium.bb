@@ -16,6 +16,7 @@
 <translation id="151962892725702025">System operacyjny Chromium nie może zsynchronizować danych, ponieważ synchronizacja jest niedostępna w Twojej domenie.</translation>
 <translation id="1559451348202814456">Chromium może działać nieprawidłowo, bo nie jest już zgodny z Mac OS X 10.6, 10.7 ani 10.8.</translation>
 <translation id="1644918877723739397">Chromium zapisze to hasło (tutaj: <ph name="SAVED_PASSWORD_LINK" />) i zapamięta je do użycia w przyszłości.</translation>
+<translation id="1653828314016431939">W porządku – uruchom ponownie teraz</translation>
 <translation id="1668054258064581266">Aby po usunięciu konta z Chromium zmiany zostały zastosowane, może być konieczne ponowne załadowanie otwartych kart.</translation>
 <translation id="1688750314291223739">Skonfiguruj synchronizację, by zapisać w internecie własne funkcje przeglądarki i mieć do nich dostęp w Chromium na każdym komputerze.</translation>
 <translation id="1699664235656412242">Zamknij wszystkie okna Chromium (także te działające w trybie Windows 8) i spróbuj ponownie.</translation>
@@ -178,6 +179,12 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Nowe okno</translation>
 <translation id="734373864078049451">Tu są Twoje strony, zakładki i inne dane z Chromium.</translation>
+<translation id="7344413941077984497">Aby określić, które witryny <ph name="NEW_PROFILE_NAME" /> może wyświetlać, możesz skonfigurować ograniczenia i ustawienia na stronie <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Jeśli nie zmienisz ustawień domyślnych, użytkownik <ph name="NEW_PROFILE_NAME" /> będzie mógł przeglądać wszystkie strony w internecie.
+
+Aby uniemożliwić użytkownikowi <ph name="NEW_PROFILE_NAME" /> korzystanie z Twojego konta, pamiętaj o blokowaniu profilu, gdy nie używasz Chromium. Kliknij w tym celu nazwę profilu w prawym górnym rogu przeglądarki i wybierz „Wyjdź i aktywuj blokadę dostępu dla dzieci”.
+<ph name="BEGIN_LINK_2" />Więcej informacji<ph name="END_LINK_2" />
+
+Więcej instrukcji znajdziesz w e-mailu na koncie <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Jeśli chcesz, by Twoje bieżące dane Chromium były przechowywane oddzielnie, możesz utworzyć nowego użytkownika Chromium dla użytkownika <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium wymaga systemu Windows XP lub nowszego. Niektóre funkcje mogą nie działać.</translation>
 <translation id="7463979740390522693">Chromium – powiadomienia (nieprzeczytane: <ph name="QUANTITY" />)</translation>
@@ -192,6 +199,7 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="7747138024166251722">Instalator nie mógł utworzyć katalogu tymczasowego. Sprawdź, czy na dysku jest dość wolnego miejsca oraz sprawdź, czy posiadasz uprawnienia do instalowania programów.</translation>
 <translation id="7918535023914021398">Chromium sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer nie dostarczył informacji o certyfikacie, korzystając z protokołu Certificate Transparency.</translation>
 <translation id="7937630085815544518">Byłeś zalogowany w Chromium jako <ph name="USER_EMAIL_ADDRESS" />. Zaloguj się ponownie, korzystając z tego samego konta.</translation>
+<translation id="795025003224538582">Nie uruchamiaj ponownie</translation>
 <translation id="7962572577636132072">Chromium aktualizuje się automatycznie, więc zawsze masz najnowszą wersję.</translation>
 <translation id="7979877361127045932">Ukryj w menu Chromium</translation>
 <translation id="8030318113982266900">Aktualizuję Twoje urządzenie do kanału: <ph name="CHANNEL_NAME" />...</translation>

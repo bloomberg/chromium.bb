@@ -72,6 +72,7 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="1853692000353488670">Pestanya d'incògnit nova</translation>
 <translation id="189172778771606813">Tanca el tauler de navegació</translation>
 <translation id="1924956916668006832">Mostra les adreces d'enviament</translation>
+<translation id="1933845786846280168">Pestanya seleccionada</translation>
 <translation id="194341124344773587">Activeu el permís per a Chrome a la <ph name="BEGIN_LINK" />configuració d'Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Desa les contrasenyes</translation>
 <translation id="1944384637046898011">Encripta totes les dades amb la contrasenya de Google del dia <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Podeu controlar el Web físic a la configuració de Chrome.
 <translation id="2959609938957585241">Per accedir a les vostres pestanyes des dels altres dispositius que tingueu, activeu Sincronitza dades automàticament a la configuració d'Android per al compte.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Tots els drets reservats.</translation>
 <translation id="2968755619301702150">Lector de certificats</translation>
+<translation id="2979025552038692506">Pestanya d'incògnit seleccionada</translation>
 <translation id="2996291259634659425">Creeu una frase de contrasenya</translation>
 <translation id="2996809686854298943">Es necessita un URL</translation>
 <translation id="3012408695656332380">Substituir les dades d'aquest dispositiu per les del compte <ph name="TO_ACCOUNT" />. Per recuperar les vostres dades actuals, podeu tornar a <ph name="FROM_ACCOUNT" />. Les dades creades després de tancar la sessió es perdran.</translation>
@@ -554,6 +556,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8073388330009372546">Obre en una pestanya nova</translation>
 <translation id="8076014560081431679">La configuració desada del lloc no se suprimirà i és possible que reflecteixi els vostres hàbits de navegació. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Aquest contingut és del domini <ph name="DOMAIN_NAME" />, publicat per Google.</translation>
+<translation id="8103578431304235997">Pestanya d'incògnit</translation>
 <translation id="8106211421800660735">Número de targeta de crèdit</translation>
 <translation id="813082847718468539">Mostra la informació del lloc</translation>
 <translation id="8137558756159375272">La funció Toca per cercar envia la paraula seleccionada i la pàgina actual com a context a la Cerca de Google. La podeu desactivar a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
@@ -605,7 +608,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="8812942424849541387">Controleu-ne el funcionament a <ph name="BEGIN_LINK1" />Configuració<ph name="END_LINK1" /></translation>
 <translation id="8820817407110198400">Adreces d'interès</translation>
 <translation id="8829678271838353305">S'havia iniciat la sessió amb <ph name="ACCOUNT_EMAIL_LAST" />. Si inicieu la sessió amb <ph name="ACCOUNT_EMAIL_NEW" />, es combinaran les dades sincronitzades, com ara les adreces d'interès, entre comptes. Per desar la informació per separat, esborreu les dades de navegació a <ph name="BEGIN_LINK" />Configuració<ph name="END_LINK" />.</translation>
-<translation id="883635517171802338">No permetis que es mostrin finestres emergents als llocs web (opció recomanada)</translation>
+<translation id="883635517171802338">Bloqueja les finestres emergents als llocs web (opció recomanada)</translation>
 <translation id="884264119367021077">Adreça d’enviament</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, pestanya</translation>
 <translation id="885701979325669005">Emmagatzematge</translation>

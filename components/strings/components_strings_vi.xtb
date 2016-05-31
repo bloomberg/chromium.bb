@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Máy chủ lưu trữ trang web có thể bị quá tải hoặc đang được bảo trì.
     Để tránh tạo quá nhiều lưu lượng và khiến tình hình tồi tệ hơn,
     tạm thời không cho phép gửi yêu cầu tới URL này</translation>
-<translation id="1066332784716773939">Chẩn đoán lỗi...</translation>
 <translation id="106701514854093668">Dấu trang máy tính</translation>
 <translation id="1080116354587839789">Vừa với chiều rộng</translation>
 <translation id="1090046120949329821">Đã nhận được nhiều tiêu đề Nội dung-Bố trí khác nhau.  Điều này không được phép nhằm
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Khu hành chính</translation>
 <translation id="2113977810652731515">Thẻ</translation>
 <translation id="2114841414352855701">Bỏ qua vì đã bị <ph name="POLICY_NAME" /> ghi đè.</translation>
-<translation id="2122434088511736194">Tìm kiếm trên máy tính để bàn sử dụng công cụ tìm kiếm mặc định của bạn (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Dấu trang di động</translation>
 <translation id="2148716181193084225">Hôm nay</translation>
 <translation id="2149973817440762519">Chỉnh sửa dấu trang</translation>
-<translation id="2153530520610387456">Chuyển tới
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Control Panel &gt; Network and Internet &gt; Network and Sharing Center &gt; Troubleshoot Problems (ở dưới cùng) &gt; Internet Connections.
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Quyền truy cập quản trị đầy đủ</translation>
 <translation id="2166378884831602661">Trang web này không thể cung cấp kết nối an toàn</translation>
 <translation id="2171101176734966184">Bạn đã cố truy cập vào <ph name="DOMAIN" /> nhưng máy chủ xuất trình một chứng chỉ được ký bằng một thuật toán chữ ký yếu. Điều này có nghĩa là giấy ủy nhiệm bảo mật mà máy chủ xuất trình có thể đã bị giả mạo và máy chủ đó có thể không phải là máy chủ mà bạn mong đợi (bạn có thể đang giao tiếp với một kẻ tấn công).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Giá trị này không được dùng cho chính sách này nữa.</translation>
 <translation id="2262243747453050782">Lỗi HTTP</translation>
 <translation id="2279770628980885996">Đã xảy ra điều kiện không mong đợi trong khi máy chủ đang cố gắng hoàn thành yêu cầu.</translation>
-<translation id="2282186295770469712">Quản lý cài đặt tìm kiếm</translation>
 <translation id="2282872951544483773">Thử nghiệm không khả dụng</translation>
 <translation id="2292556288342944218">Quyền truy cập Internet của bạn bị chặn</translation>
 <translation id="229702904922032456">Chứng chỉ sơ cấp hoặc trung cấp đã hết hạn.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">Bạn có thể tắt mọi proxy được định cấu hình cho kết nối từ trang cài đặt.</translation>
 <translation id="2950186680359523359">Máy chủ đã đóng kết nối mà không gửi bất kỳ dữ liệu nào.</translation>
 <translation id="2955913368246107853">Đóng thanh tìm</translation>
-<translation id="2957518517523241247">Chuyển tới
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Control Panel &gt; Network Connections &gt; New Connection Wizard
-      <ph name="END_BOLD" />
-      để kiểm tra kết nối của bạn.</translation>
 <translation id="2958431318199492670">Cấu hình mạng không tuân thủ tiêu chuẩn ONC. Các bộ phận của cấu hình có thể không được nhập.</translation>
 <translation id="2969319727213777354">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chrome không thể xác minh các chứng chỉ này.</translation>
 <translation id="2972581237482394796">&amp;Làm lại</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">Xã</translation>
 <translation id="3901925938762663762">Thẻ đã hết hạn</translation>
 <translation id="3903912596042358459">Máy chủ từ chối hoàn thành yêu cầu.</translation>
-<translation id="3930850196944737149">Thiết bị của bạn đang ngoại tuyến.</translation>
 <translation id="3934680773876859118">Không thể tải tài liệu PDF</translation>
 <translation id="3950924596163729246">Không thể truy cập mạng.</translation>
 <translation id="3963721102035795474">Chế độ đọc</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="604124094241169006">Tự động</translation>
 <translation id="6042308850641462728">Thêm</translation>
-<translation id="6044718745395562198">Máy tính của bạn đang ngoại tuyến.</translation>
 <translation id="6060685159320643512">Hãy cẩn thận, thử nghiệm này có thể gây lỗi</translation>
 <translation id="6093795393556121384">Thẻ của bạn đã được xác minh</translation>
 <translation id="6146055958333702838">Kiểm tra mọi dây cáp rồi khởi động lại bộ định tuyến, modem hoặc các thiết bị
@@ -533,11 +519,6 @@
 <translation id="6830600606572693159">Trang web tại <ph name="URL" /> hiện không có. Trang này có thể đã bị quá tải hoặc đang ngừng hoạt động để bảo trì.</translation>
 <translation id="6831043979455480757">Dịch</translation>
 <translation id="6839929833149231406">Khu vực</translation>
-<translation id="6851123334996048122">Chuyển tới
-      <ph name="BEGIN_BOLD" />
-      Applications &gt; System Preferences &gt; Network &gt; Assist me
-      <ph name="END_BOLD" />
-      để kiểm tra kết nối của bạn.</translation>
 <translation id="6874604403660855544">&amp;Làm lại thêm</translation>
 <translation id="6891596781022320156">Cấp chính sách không được hỗ trợ.</translation>
 <translation id="6897140037006041989">Tác nhân Người dùng</translation>
@@ -619,9 +600,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Không được quản lý</translation>
 <translation id="7758069387465995638">Tường lửa hoặc phần mềm diệt vi-rút có thể đã chặn kết nối.</translation>
-<translation id="7760914272566804712">Bạn có thể thử chẩn đoán sự cố bằng cách thực hiện các bước sau:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Chứng chỉ của máy chủ không phù hợp với URL.</translation>
 <translation id="777702478322588152">Quận</translation>
 <translation id="778579833039460630">Không nhận được dữ liệu nào</translation>
@@ -661,14 +639,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="8241707690549784388">Trang mà bạn đang tìm sử dụng thông tin bạn đã nhập vào. Việc quay lại trang đó có thể lặp lại bất kỳ tác vụ nào bạn đã thực hiện. Bạn có muốn tiếp tục không?</translation>
 <translation id="8249320324621329438">Tìm nạp lần cuối:</translation>
 <translation id="8261506727792406068">Xóa</translation>
-<translation id="8266098793847448402">Nhấp vào
-      <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
-      nhấp vào
-      <ph name="BEGIN_BOLD" />Run<ph name="END_BOLD" />,
-      nhập
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
-      sau đó nhấp vào
-      <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Yêu cầu truy cập trang web này của bạn đã được gửi tới <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Hãy liên hệ với quản trị viên mạng của bạn nếu bạn không chắc chắn về điều này có ý nghĩa gì.</translation>
 <translation id="8293206222192510085">Thêm Dấu trang</translation>

@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Omogući mobilne podatke</translation>
 <translation id="1621499497873603021">Baterija će se isprazniti za <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome uređaj</translation>
+<translation id="1677472565718498478">Još <ph name="TIME" /></translation>
 <translation id="1723752762323179280">Napuštanje sesije</translation>
 <translation id="1747827819627189109">Tipkovnica na zaslonu omogućena je</translation>
 <translation id="1812696562331527143">Vaš je način unosa promijenjen u <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />treća strana<ph name="END_LINK" />).
@@ -116,6 +117,7 @@ Pritisnite tipke Pretraživanje ili Shift da biste ju isključili.</translation>
 <translation id="4421231901400348175"><ph name="HELPER_NAME" /> i vi dijelite kontrolu nad zaslonom putem Daljinske pomoći.</translation>
 <translation id="4430019312045809116">Glasnoća</translation>
 <translation id="4527045527269911712">Bluetooth uređaj "<ph name="DEVICE_NAME" />" traži dopuštenje za uparivanje.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> do potpune napunjenosti</translation>
 <translation id="4544944664594876241">Promijenio se prečac za zaključavanje zaslona. Upotrijebite <ph name="NEW_SHORTCUT" /> umjesto <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Prekini vezu</translation>
@@ -224,6 +226,7 @@ Pritisnite tipke Alt + Pretraživanje ili Shift da biste ju isključili.</transl
 <translation id="8428213095426709021">Postavke</translation>
 <translation id="8517041960877371778">Uređaj <ph name="DEVICE_TYPE" /> možda se neće puniti dok je uključen.</translation>
 <translation id="8528322925433439945">Mobilne mreže...</translation>
+<translation id="8639760480004882931">Preostalo <ph name="PERCENTAGE" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Priključen je punjač male snage</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

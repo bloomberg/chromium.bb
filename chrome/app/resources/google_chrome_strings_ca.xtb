@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome està utilitzant la càmera.</translation>
 <translation id="1619887657840448962">Per tal que Chrome sigui més segur, hem desactivat algunes de les extensions que no figuren a <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
 <translation id="163860049029591106">Introducció a Chrome OS</translation>
+<translation id="1653828314016431939">D'acord, reinicia ara</translation>
 <translation id="1682634494516646069">Google Chrome no pot llegir ni escriure en el directori de dades: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome és un navegador web que executa pàgines web i aplicacions a gran velocitat. És ràpid, estable i fàcil d'utilitzar. Navegueu d'una manera més segura pel web amb la protecció contra programari maliciós i llocs de pesca integrada a Google Chrome.</translation>
 <translation id="174539241580958092">Google Chrome no ha pogut sincronitzar les dades a causa d'un error en iniciar la sessió.</translation>
@@ -70,6 +71,12 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="3080151273017101988">Continua executant aplicacions de segon pla en tancar Google Chrome</translation>
 <translation id="3089968997497233615">Hi ha disponible una nova versió més segura de Google Chrome.</translation>
 <translation id="3149510190863420837">Aplicacions de Chrome</translation>
+<translation id="3251381707915721925">Per definir quins llocs web pot veure <ph name="NEW_PROFILE_NAME" />, podeu configurar diferents restriccions i opcions a la pàgina <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Si no canvieu la configuració predeterminada, <ph name="NEW_PROFILE_NAME" /> podrà navegar per tot el web.
+
+Per impedir que <ph name="NEW_PROFILE_NAME" /> accedeixi al vostre compte, bloquegeu el vostre perfil quan no utilitzeu Chrome. Per fer-ho, feu clic al vostre nom de perfil, a l'extrem superior dret del navegador, i seleccioneu Surt i estableix el bloqueig infantil.
+<ph name="BEGIN_LINK_2" />Més informació<ph name="END_LINK_2" />
+
+Per obtenir-ne més instruccions, consulteu el correu electrònic a <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Inicia la sessió a Chrome</translation>
 <translation id="3311976847535831054">Aquest ordinador ja no rebrà més actualitzacions de Google Chrome de 32 bits. Feu l'actualització a Google Chrome de 64 bits.</translation>
 <translation id="3360895254066713204">Aplicació auxiliar de Chrome</translation>
@@ -117,6 +124,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="4921569541910214635">Si compartiu un ordinador, ara podeu configurar Chrome com vulgueu.</translation>
 <translation id="4925019873400497719">Chrome ha verificat que <ph name="ISSUER" /> ha emès el certificat d'aquest lloc web. El servidor ha proporcionat informació sobre Transparència de certificats, però no era vàlida.</translation>
 <translation id="4953650215774548573">Defineix Google Chrome com a navegador predeterminat</translation>
+<translation id="495931528404527476">A Chrome</translation>
 <translation id="4987308747895123092">Tanqueu totes les finestres de Google Chrome (incloses les del mode Windows 8) i torneu-ho a provar.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome no ha pogut sincronitzar les dades. Actualitzeu la frase de contrasenya de sincronització.</translation>
@@ -205,6 +213,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="7808348361785373670">Suprimeix de Chrome...</translation>
 <translation id="7825851276765848807">La instal·lació ha fallat a causa d'un error no especificat. Torneu a baixar Google Chrome.</translation>
 <translation id="7890208801193284374">Si compartiu un ordinador, els amics i els familiars poden navegar de manera independent i configurar Chrome com vulguin.</translation>
+<translation id="795025003224538582">No reiniciïs</translation>
 <translation id="8005540215158006229">Chrome ja està quasi llest</translation>
 <translation id="8008534537613507642">Torna a instal·lar Chrome</translation>
 <translation id="8030318113982266900">S'està actualitzant el vostre dispositiu al canal <ph name="CHANNEL_NAME" />...</translation>

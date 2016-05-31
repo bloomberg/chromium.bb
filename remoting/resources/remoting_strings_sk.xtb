@@ -212,6 +212,10 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="6324708100353784493">Aktivovali ste režim integrácie Google Cardboard. Ak chcete použiť tento režim, vložte svoje zariadenie do zobrazovača podporujúceho službu Google Cardboard.</translation>
 <translation id="6381670701864002291">Niečo iné.</translation>
 <translation id="6398765197997659313">Ukončiť zobrazenie na celú obrazovku</translation>
+<translation id="6408143143164565232">• Podpora zvuku z počítačov so systémom Windows alebo Linux
+• Odstránenie nechcených pripojení dlhým stlačením názvu počítača
+• Plynulejšie priblíženie stiahnutím prstov a posúvanie dvoma prstami
+• Nová obrazovka Pomocník a spätná väzba</translation>
 <translation id="6441316101718669559">Táto platforma nepodporuje integráciu stolných počítačov. Aplikáciu môžete stále používať, avšak používateľské prostredie bude znehodnotené.</translation>
 <translation id="652218476070540101">Prebieha aktualizácia kódu PIN pre tento počítač...</translation>
 <translation id="6527303717912515753">Zdieľať</translation>
@@ -257,6 +261,7 @@ Hostiteľ pracovnej plochy</translation>
 <translation id="7836926030608666805">Niektoré potrebné komponenty chýbajú. Uistite sa, že používate najnovšiu verziu prehliadača Chrome a skúste to znova.</translation>
 <translation id="7868137160098754906">Zadajte číslo PIN pre vzdialený počítač.</translation>
 <translation id="7869445566579231750">Nemáte povolenie spustiť túto aplikáciu.</translation>
+<translation id="7895403300744144251">Pravidlá zabezpečenia vzdialeného počítača nepovoľujú pripojenia z vášho účtu.</translation>
 <translation id="7948001860594368197">Možnosti obrazovky</translation>
 <translation id="7970576581263377361">Overenie zlyhalo. Prihláste sa do prehliadača Chromium a skúste to znova.</translation>
 <translation id="7981525049612125370">Vzdialená relácia vypršala.</translation>

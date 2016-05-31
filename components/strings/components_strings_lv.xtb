@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Serveris, kurā tiek mitināta tīmekļa lapa, iespējams, ir pārslogots vai notiek tā tehniskā apkope.
     Lai neradītu pārāk lielu datplūsmas apjomu un nepasliktinātu pašreizējo situāciju,
     īslaicīgi tiks noraidīti šī URL pieprasījumi.</translation>
-<translation id="1066332784716773939">Noteikt kļūdas...</translation>
 <translation id="106701514854093668">Datora grāmatzīmes</translation>
 <translation id="1080116354587839789">Ietilpināt pēc platuma</translation>
 <translation id="1090046120949329821">Saņemti vairāki satura izvietojuma virsraksti. Tas nav atļauts, lai nodrošinātu
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Departaments</translation>
 <translation id="2113977810652731515">Karte</translation>
 <translation id="2114841414352855701">Ignorēta, jo to atcēla politika <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">Datorā veiktajiem meklēšanas vaicājumiem tiek izmantota noklusējuma meklētājprogramma (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Mobilās grāmatzīmes</translation>
 <translation id="2148716181193084225">Šodien</translation>
 <translation id="2149973817440762519">Rediģēt grāmatzīmes</translation>
-<translation id="2153530520610387456">Pārejiet uz
-      <ph name="BEGIN_BOLD" />
-      Sākums &gt; Informācijas panelis &gt; Tīkls un internets &gt; Tīkla un koplietošanas centrs &gt; Problēmu novēršana (apakšdaļā) &gt; Interneta savienojumi.
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Pilna administratora piekļuve</translation>
 <translation id="2166378884831602661">Šī vietne nevar garantēt drošu savienojumu</translation>
 <translation id="2171101176734966184">Jūs mēģinājāt sasniegt domēnu <ph name="DOMAIN" />, bet serveris uzrādīja sertifikātu, kas ir parakstīts, izmantojot vāju paraksta algoritmu. Tas nozīmē, ka servera norādītie drošības akreditācijas dati var būt viltoti un šis serveris var nebūt tas serveris, kuru mēģināt sasniegt (iespējams, jūs sazināties ar uzbrucēju).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Šī vērtība vairs netiek atbalstīta šai politikai.</translation>
 <translation id="2262243747453050782">HTTP kļūda</translation>
 <translation id="2279770628980885996">Kamēr serveris mēģināja izpildīt pieprasījumu, tika konstatēts negaidīts apstāklis.</translation>
-<translation id="2282186295770469712">Pārvaldīt meklēšanas iestatījumus</translation>
 <translation id="2282872951544483773">Nepieejamie eksperimenti</translation>
 <translation id="2292556288342944218">Piekļuve internetam ir bloķēta</translation>
 <translation id="229702904922032456">Saknes sertifikāts vai starpnieksertifikāts vairs nav derīgs.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">Iestatījumu lapā varat atspējot jebkurus starpniekserverus, kas konfigurēti savienojuma izveidei.</translation>
 <translation id="2950186680359523359">Serveris pārtrauca savienojumu, nenosūtot datus.</translation>
 <translation id="2955913368246107853">Aizvērt atrašanas joslu</translation>
-<translation id="2957518517523241247">Pārejiet uz
-      <ph name="BEGIN_BOLD" />
-      Sākums &gt; Informācijas panelis &gt; Tīkla savienojumi &gt; Jauna savienojuma izveides vednis
-      <ph name="END_BOLD" />
-      un pārbaudiet savienojumu.</translation>
 <translation id="2958431318199492670">Tīkla konfigurācija neatbilst standartam ONC. Iespējams, konfigurācijas daļas netiks importētas.</translation>
 <translation id="2969319727213777354">Lai izveidotu drošu savienojumu, ir jāiestata pareizs pulksteņa laiks. Tas ir nepieciešams, jo sertifikāti, kurus vietnes izmanto, lai tiktu identificētas, ir derīgi tikai noteiktos laika periodos. Tā kā jūsu ierīces pulkstenis nav pareizs, Google Chrome nevar verificēt šos sertifikātus.</translation>
 <translation id="2972581237482394796">&amp;Pāratsaukt</translation>
@@ -297,7 +285,6 @@
 <translation id="3885155851504623709">Pagasts</translation>
 <translation id="3901925938762663762">Kartes derīguma termiņš ir beidzies.</translation>
 <translation id="3903912596042358459">Serveris atteicās izpildīt pieprasījumu.</translation>
-<translation id="3930850196944737149">Jūsu ierīce darbojas bezsaistes režīmā.</translation>
 <translation id="3934680773876859118">Neizdevās ielādēt PDF dokumentu</translation>
 <translation id="3950924596163729246">Nevar piekļūt tīklam.</translation>
 <translation id="3963721102035795474">Lasītāja režīms</translation>
@@ -465,7 +452,6 @@
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="604124094241169006">Automātiski</translation>
 <translation id="6042308850641462728">Vairāk</translation>
-<translation id="6044718745395562198">Jūsu dators ir bezsaistē.</translation>
 <translation id="6060685159320643512">Esiet uzmanīgs! Šie eksperimenti var jums kaitēt</translation>
 <translation id="6093795393556121384">Jūsu karte ir verificēta.</translation>
 <translation id="6146055958333702838">Pārbaudiet vadus un atkārtoti palaidiet maršrutētājus, modemus vai citas
@@ -532,11 +518,6 @@
 <translation id="6830600606572693159"><ph name="URL" /> tīmekļa lapa pašlaik nav pieejama.  Tā var būt pārslogota vai nedarbojas uzturēšanas darbu dēļ.</translation>
 <translation id="6831043979455480757">Tulkot</translation>
 <translation id="6839929833149231406">Apgabals</translation>
-<translation id="6851123334996048122">Pārejiet uz
-      <ph name="BEGIN_BOLD" />
-      Lietojumprogrammas &gt; Sistēmas preferences &gt; Tīkls &gt; Palīdzēt man
-      <ph name="END_BOLD" />,
-      lai pārbaudītu savienojumu.</translation>
 <translation id="6874604403660855544">&amp;Atcelt pievienošanas atsaukšanu</translation>
 <translation id="6891596781022320156">Politikas līmenis netiek atbalstīts.</translation>
 <translation id="6897140037006041989">Lietotāja aģents</translation>
@@ -618,9 +599,6 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Netiek pārvaldīts</translation>
 <translation id="7758069387465995638">Iespējams, savienojumu ir bloķējis ugunsmūris vai pretvīrusu programmatūra.</translation>
-<translation id="7760914272566804712">Lai mēģinātu noteikt problēmu, varat veikt tālāk norādītās darbības.
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Servera sertifikāts neatbilst URL.</translation>
 <translation id="777702478322588152">Prefektūra</translation>
 <translation id="778579833039460630">Dati nav saņemti</translation>
@@ -660,14 +638,6 @@ Nākamreiz jums varētu noderēt inkognito režīms (<ph name="SHORTCUT_KEY" />)
 <translation id="8241707690549784388">Lapa, ko meklējāt, izmantoja jūsu ievadīto informāciju. Atgriešanās lapā var radīt jebkuras jūsu darbības atkārtojumu. Vai vēlaties turpināt?</translation>
 <translation id="8249320324621329438">Pēdējās pirmsielādes laiks:</translation>
 <translation id="8261506727792406068">Dzēst</translation>
-<translation id="8266098793847448402">Noklikšķiniet uz
-      <ph name="BEGIN_BOLD" />Sākt<ph name="END_BOLD" />,
-      noklikšķiniet uz
-      <ph name="BEGIN_BOLD" />Izpildīt<ph name="END_BOLD" />,
-      ierakstiet
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
-      un pēc tam noklikšķiniet uz
-      <ph name="BEGIN_BOLD" />Labi<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Pieprasījums piekļūt šai vietnei ir nosūtīts lietotājam <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Sazinieties ar tīkla administratoru, ja neesat pārliecināts, ko tas nozīmē.</translation>
 <translation id="8293206222192510085">Pievienot grāmatzīmi</translation>

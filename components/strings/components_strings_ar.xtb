@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">‏قد يكون الخادم الذي يستضيف صفحة الويب زائد التحميل أو قيد الصيانة.
         ولتجنب جذب عدد زيارات كبير وتجنب جعل الموقف أكثر سوءًا،
         فقد تم عدم السماح بالطلبات إلى عنوان URL هذا مؤقتًا.</translation>
-<translation id="1066332784716773939">تشخيص الأخطاء...</translation>
 <translation id="106701514854093668">الإشارات المرجعية على سطح المكتب</translation>
 <translation id="1080116354587839789">ملاءمة مع العرض</translation>
 <translation id="1090046120949329821">‏تم تلقي عدة رؤوس مختلفة لترتيب المحتوى.  لا يُسمح بهذا
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">الإدارة</translation>
 <translation id="2113977810652731515">البطاقة</translation>
 <translation id="2114841414352855701">تم تجاهلها نظرًا لتجاوزها بواسطة <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">تستخدم عمليات بحث سطح مكتب محرك البحث الافتراضي لديك (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />)</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">الإشارات المرجعية على الجوال</translation>
 <translation id="2148716181193084225">اليوم</translation>
 <translation id="2149973817440762519">تعديل الإشارة</translation>
-<translation id="2153530520610387456">انتقل إلى
-          <ph name="BEGIN_BOLD" />
-          ابدأ &gt; لوحة التحكم &gt; الشبكة وإنترنت &gt; مركز الشبكة والمشاركة &gt; تحري الخلل وإصلاحه (في الأسفل) &gt; اتصالات الإنترنت.
-          <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">الوصول الكامل للمشرف</translation>
 <translation id="2166378884831602661">لا يمكن لموقع الويب هذا توفير اتصال آمن</translation>
 <translation id="2171101176734966184">لقد حاولت الوصول إلى <ph name="DOMAIN" />، ولكن قدَّم الخادم شهادة موقّعة باستخدام خوارزمية توقيع ضعيفة، مما يعني أن بيانات اعتماد الأمان التي قدمها الخادم من المحتمل أنه تم تزييفها، وأن الخادم قد لا يكون هو الخادم الذي تتوقعه (قد تكون على اتصال بأحد المهاجمين).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">تم تجاهل القيمة لهذه السياسة.</translation>
 <translation id="2262243747453050782">‏خطأ HTTP</translation>
 <translation id="2279770628980885996">تمت مواجهة حالة غير متوقعة بينما كان الخادم يحاول إتمام الطلب.</translation>
-<translation id="2282186295770469712">إدارة إعدادات البحث</translation>
 <translation id="2282872951544483773">التجارب غير المتاحة</translation>
 <translation id="2292556288342944218">تم حظر دخولك إلى الإنترنت</translation>
 <translation id="229702904922032456">انتهت صلاحية الشهادة الأساسية أو المتوسطة.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">يمكنك تعطيل أي خوادم وكيلة تمت تهيئتها لاتصال من صفحة الإعدادات.</translation>
 <translation id="2950186680359523359">أغلق الخادم الاتصال بدون إرسال أية بيانات.</translation>
 <translation id="2955913368246107853">إغلاق شريط البحث</translation>
-<translation id="2957518517523241247">انتقل إلى
-          <ph name="BEGIN_BOLD" />
-          البدء &gt; لوحة التحكم &gt; اتصالات الشبكة &gt; معالج اتصال جديد
-          <ph name="END_BOLD" />
-          لاختبار الاتصال.</translation>
 <translation id="2958431318199492670">‏لا تتوافق تهيئة الشبكة مع معيار ONC. قد لا يتم استيراد بعض أجزاء التهيئة.</translation>
 <translation id="2969319727213777354">‏لإنشاء اتصال آمن، فإنك بحاجة إلى ضبط ساعتك بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها تكون صالحة فقط لفترات محددة من الوقت. فإذا كانت ساعة جهازك غير صحيحة، فلن يتمكن Google Chrome من التحقق من هذه الشهادات.</translation>
 <translation id="2972581237482394796">إعا&amp;دة</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">دائرة</translation>
 <translation id="3901925938762663762">انتهت صلاحية البطاقة</translation>
 <translation id="3903912596042358459">رفض الخادم إتمام الطلب.</translation>
-<translation id="3930850196944737149">جهازك غير متصل</translation>
 <translation id="3934680773876859118">‏إخفاق تحميل مستند PDF</translation>
 <translation id="3950924596163729246">يتعذر الدخول إلى الشبكة.</translation>
 <translation id="3963721102035795474">وضع القارئ</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">إغلاق</translation>
 <translation id="604124094241169006">تلقائي</translation>
 <translation id="6042308850641462728">المزيد</translation>
-<translation id="6044718745395562198">جهاز الكمبيوتر في وضع عدم الاتصال.</translation>
 <translation id="6060685159320643512">احذر، هذه التجارب غير مضمونة النتائج</translation>
 <translation id="6093795393556121384">تم التحقق من صلاحية بطاقتك</translation>
 <translation id="6146055958333702838">تحقق من أي كابلات وأعد تشغيل أي أجهزة توجيه أو أجهزة مودم أو أجهزة شبكة
@@ -532,11 +518,6 @@
 <translation id="6830600606572693159">صفحة الويب على <ph name="URL" /> غير متاحة حاليًا.. ربما تكون هناك زيادة في تحميلها أو أنها معطلة لأسباب تتعلق بالصيانة.</translation>
 <translation id="6831043979455480757">ترجمة</translation>
 <translation id="6839929833149231406">المنطقة</translation>
-<translation id="6851123334996048122">انتقل إلى
-          <ph name="BEGIN_BOLD" />
-          التطبيقات &gt; تفضيلات النظام &gt; الشبكة &gt; مساعدتي
-          <ph name="END_BOLD" />
-          لاختبار الاتصال.</translation>
 <translation id="6874604403660855544">إعا&amp;دة الإضافة</translation>
 <translation id="6891596781022320156">مستوى السياسة غير مدعوم.</translation>
 <translation id="6897140037006041989">وكيل المستخدم</translation>
@@ -618,9 +599,6 @@
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">غير مُدار</translation>
 <translation id="7758069387465995638">ربما حظر الجدار الناري أو برامج مكافحة الفيروسات الاتصال.</translation>
-<translation id="7760914272566804712">يمكنك محاولة تشخيص المشكلة عن طريق اتباع الخطوات التالية:
-          <ph name="LINE_BREAK" />
-          <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">‏لا تتطابق شهادة الخادم مع عنوان URL.</translation>
 <translation id="777702478322588152">الإدارة الأمنية</translation>
 <translation id="778579833039460630">لم يتم تلقي أي بيانات</translation>
@@ -660,14 +638,6 @@
 <translation id="8241707690549784388">استخدمت الصفحة التي تبحث عنها المعلومات التي أدخلتها وقد يؤدّي الرجوع إليها  إلى تكرار  جميع الإجراءات السابقة. هل تريد المتابعة؟</translation>
 <translation id="8249320324621329438">تاريخ آخر عملية جلب:</translation>
 <translation id="8261506727792406068">حذف</translation>
-<translation id="8266098793847448402">‏انقر على
-          <ph name="BEGIN_BOLD" />البدء<ph name="END_BOLD" />، ثم
-          انقر على
-          <ph name="BEGIN_BOLD" />تشغيل<ph name="END_BOLD" />،
-          واكتب
-          <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />،
-          ثم انقر على
-          <ph name="BEGIN_BOLD" />موافق<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">تمّ إرسال طلبك لدخول الموقع إلى <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">اتصل بمشرف الشبكة إذا لم تكن متأكدًا مما يعنيه هذا.</translation>
 <translation id="8293206222192510085">إضافة إشارة مرجعية</translation>

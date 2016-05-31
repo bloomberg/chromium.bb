@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">मोबाइल डेटा सक्षम करें</translation>
 <translation id="1621499497873603021">बैटरी के खाली होने में शेष समय, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome डिवाइस</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> शेष</translation>
 <translation id="1723752762323179280">सत्र से निकल रहा है</translation>
 <translation id="1747827819627189109">ऑन-स्‍क्रीन कीबोर्ड सक्षम है</translation>
 <translation id="1812696562331527143">आपकी इनपुट विधि <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />तृतीय पक्ष<ph name="END_LINK" />) में बदल गई है.
@@ -116,6 +117,7 @@
 <translation id="4421231901400348175">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायक के द्वारा <ph name="HELPER_NAME" /> से साझा किया जा रहा है.</translation>
 <translation id="4430019312045809116">मात्रा</translation>
 <translation id="4527045527269911712">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है.</translation>
+<translation id="453661520163887813">पूरी तरह चार्ज होने में <ph name="TIME" /></translation>
 <translation id="4544944664594876241">स्‍क्रीन को लॉक करने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">डिस्कनेक्ट करें</translation>
@@ -223,6 +225,7 @@
 <translation id="8428213095426709021">सेटिंग्स</translation>
 <translation id="8517041960877371778">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो.</translation>
 <translation id="8528322925433439945">मोबाइल ...</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> शेष</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">कम-शक्ति वाला चार्जर</translation>
 <translation id="8814190375133053267">वाई-फ़ाई </translation>

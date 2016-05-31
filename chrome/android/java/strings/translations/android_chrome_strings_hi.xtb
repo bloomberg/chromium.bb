@@ -72,6 +72,7 @@
 <translation id="1853692000353488670">नया गुप्त टैब</translation>
 <translation id="189172778771606813">मार्गदर्शक ड्रॉवर बंद करें</translation>
 <translation id="1924956916668006832">शिपिंग पता चुनें</translation>
+<translation id="1933845786846280168">चयनित टैब</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android सेटिंग<ph name="END_LINK" /> में Chrome के लिए अनुमति चालू करें.</translation>
 <translation id="1943432128510653496">पासवर्ड सहेजें</translation>
 <translation id="1944384637046898011"><ph name="TIME" /> तक का सभी डेटा Google पासवर्ड से एन्‍क्रिप्‍ट करें</translation>
@@ -156,6 +157,7 @@
 <translation id="2959609938957585241">अपने अन्य डिवाइस से अपने टैब प्राप्त करने के लिए, Android खाता सेटिंग में "डेटा स्वत: समन्वयित करें" चालू करें.</translation>
 <translation id="2960796085439532066">कॉपीराइट <ph name="YEAR" /> Google Inc. सर्वाधिकार सुरक्षित.</translation>
 <translation id="2968755619301702150">प्रमाणपत्र व्यूअर</translation>
+<translation id="2979025552038692506">चयनित गुप्त टैब</translation>
 <translation id="2996291259634659425">पासफ़्रेज़ बनाएं</translation>
 <translation id="2996809686854298943">URL आवश्यक है</translation>
 <translation id="3012408695656332380">इस डिवाइस के डेटा को <ph name="TO_ACCOUNT" /> के डेटा से बदलें. आप <ph name="FROM_ACCOUNT" /> में वापस बदलते हुए अपना मौजूदा डेटा पुनर्प्राप्त कर सकते हैं, लेकिन आपके प्रस्थान करने के बाद से निर्मित डेटा खो जाएगा.</translation>
@@ -554,6 +556,7 @@
 <translation id="8073388330009372546">चित्र नए टैब में खोलें</translation>
 <translation id="8076014560081431679">सहेजी गई साइट सेटिंग नहीं हटाई जाएंगी और इससे आपका ब्राउज़िंग व्यवहार प्रदर्शित हो सकता है. <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">यह सामग्री <ph name="DOMAIN_NAME" /> की है जिसे Google के द्वारा वितरित किया गया है.</translation>
+<translation id="8103578431304235997">गुप्त टैब</translation>
 <translation id="8106211421800660735">क्रेडिट कार्ड संख्या</translation>
 <translation id="813082847718468539">साइट जानकारी देखें</translation>
 <translation id="8137558756159375272">खोजने के लिए स्‍पर्श करें चयनित शब्‍द और वर्तमान पृष्‍ठ को संदर्भ के रूप में Google खोज पर भेजती है. आप उसे <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में बंद कर सकते हैं.</translation>

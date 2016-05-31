@@ -72,6 +72,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1853692000353488670">Nuova scheda in incognito</translation>
 <translation id="189172778771606813">Chiudi riquadro di navigazione a scomparsa</translation>
 <translation id="1924956916668006832">Seleziona indirizzo di spedizione</translation>
+<translation id="1933845786846280168">Scheda selezionata</translation>
 <translation id="194341124344773587">Abilita l'autorizzazione per Chrome in <ph name="BEGIN_LINK" />Impostazioni Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Salva password</translation>
 <translation id="1944384637046898011">Cripta tutto con la password Google a partire dal <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Puoi gestire il Physical Web nelle impostazioni di Chrome.
 <translation id="2959609938957585241">Attiva la funzione "Sincronizzazione automatica dei dati" nelle impostazioni dell'account Android per trovare le tue schede sugli altri tuoi dispositivi.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Tutti i diritti riservati.</translation>
 <translation id="2968755619301702150">Visualizzatore certificati</translation>
+<translation id="2979025552038692506">Scheda in incognito selezionata</translation>
 <translation id="2996291259634659425">Crea passphrase</translation>
 <translation id="2996809686854298943">URL obbligatorio</translation>
 <translation id="3012408695656332380">Sostituisci i dati di questo dispositivo con quelli dell'account <ph name="TO_ACCOUNT" />. Puoi recuperare i tuoi dati esistenti tornando all'account <ph name="FROM_ACCOUNT" />, ma i dati creati dopo esserti scollegato andranno persi.</translation>
@@ -554,6 +556,7 @@ Il tuo account Google potrebbe avere altre forme di cronologia di navigazione, a
 <translation id="8073388330009372546">Immagine in nuova scheda</translation>
 <translation id="8076014560081431679">Le impostazioni del sito salvate non verranno eliminate e potrebbero rispecchiare le tue abitudini di navigazione. <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Questi contenuti derivano da <ph name="DOMAIN_NAME" /> e sono offerti da Google.</translation>
+<translation id="8103578431304235997">Scheda in incognito</translation>
 <translation id="8106211421800660735">Numero carta di credito</translation>
 <translation id="813082847718468539">Visualizza informazioni sul sito</translation>
 <translation id="8137558756159375272">La funzione Tocca per cercare invia la parola selezionata e la pagina corrente come contesto alla Ricerca Google. Puoi disattivare la funzione nelle <ph name="BEGIN_LINK" />Impostazioni<ph name="END_LINK" />.</translation>

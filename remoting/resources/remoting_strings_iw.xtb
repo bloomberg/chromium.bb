@@ -212,6 +212,10 @@ Chromoting</translation>
 <translation id="6324708100353784493">‏הפעלת את מצב האינטגרציה של Google Cardboard. כדי להשתמש במצב זה, הכנס את המכשיר למציג התואם ל-Google Cardboard.</translation>
 <translation id="6381670701864002291">משהו אחר.</translation>
 <translation id="6398765197997659313">צא ממסך מלא</translation>
+<translation id="6408143143164565232">‏• האזן לאודיו ממחשבי Windows או Linux.
+• הסר חיבורים לא רצויים באמצעות לחיצה ארוכה על שם המחשב.
+• פעולה חלקה יותר של תנועת צביטה לשינוי מרחק התצוגה וגלילה באמצעות שתי אצבעות.
+• מסך חדש לעזרה ומשוב.</translation>
 <translation id="6441316101718669559">שילוב של שולחן עבודה אינו נתמך בפלטפורמה זו. תוכל עדיין להשתמש ביישום, אבל תהיה לכך השפעה שלילית על חוויית המשתמש.</translation>
 <translation id="652218476070540101">‏ה-PIN של מחשב זה מתעדכן...</translation>
 <translation id="6527303717912515753">שתף</translation>
@@ -257,6 +261,7 @@ Chromoting</translation>
 <translation id="7836926030608666805">‏חלק מהרכיבים הדרושים חסרים. ודא שאתה משתמש בגרסה העדכנית ביותר של Chrome ונסה שוב.</translation>
 <translation id="7868137160098754906">‏הזן את מספר ה-PIN עבור המחשב המרוחק.</translation>
 <translation id="7869445566579231750">אין לך הרשאה להריץ את היישום הזה.</translation>
+<translation id="7895403300744144251">מדיניות האבטחה במחשב המרוחק אינה מתירה חיבורים מהחשבון שלך.</translation>
 <translation id="7948001860594368197">אפשרויות מסך</translation>
 <translation id="7970576581263377361">‏האימות נכשל. היכנס שוב ל-Chromium.</translation>
 <translation id="7981525049612125370">פג התוקף של ההפעלה המרוחקת.</translation>

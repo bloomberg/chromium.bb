@@ -471,6 +471,7 @@ Jos tämä asetus ei ole käytössä, käyttäjät eivät voi tulostaa tuotteest
 <translation id="267596348720209223">Määrittää hakupalvelun tukemat merkkikoodaukset. Koodaukset ovat koodisivun nimiä, kuten UTF-8, GB2312 ja ISO-8859-1. Koodauksia yritetään käyttää määritetyssä järjestyksessä. Tämä käytäntö on valinnainen, ja jos sitä ei ole määritetty, käytetään oletusasetusta (UTF-8). Tämä käytäntö on voimassa vain, jos DefaultSearchProviderEnabled-käytäntö on käytössä.</translation>
 <translation id="2682225790874070339">Poistaa Google Driven käytöstä tuotteen <ph name="PRODUCT_OS_NAME" /> Tiedostot-sovelluksesta</translation>
 <translation id="268577405881275241">Ota käyttöön tietojen pakkauksen välitysominaisuus</translation>
+<translation id="2731627323327011390">Estä ARC-sovelluksia käyttämästä <ph name="PRODUCT_OS_NAME" /> -varmenteita</translation>
 <translation id="2742843273354638707">Piilota Chrome Web Store -sovellus ja linkki Uusi välilehti -sivulla sekä tuotteen <ph name="PRODUCT_OS_NAME" /> sovellusten käynnistysohjelmassa.
 
       Kun käytännön arvo on tosi, kuvakkeet piilotetaan.
@@ -1693,6 +1694,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           Jos määrität tämän käytännön, käyttäjät voivat ohittaa sen väliaikaisesti ottamalla näytön suurentajan käyttöön tai poistamalla sen käytöstä. Käyttäjän valinta ei kuitenkaan ole pysyvä, ja oletusarvo palautetaan käyttöön aina kirjautumisnäytön tullessa näkyviin uudestaan tai käyttäjän ollessa epäaktiivinen kirjautumisnäytössä minuutin ajan.
 
           Jos tätä käytäntöä ei määritetä, näytön suurentaja ei ole käytössä kirjautumisnäytön ensimmäisellä näyttökerralla. Käyttäjät voivat ottaa näytön suurentajan käyttöön tai pois käytöstä milloin tahansa, ja sen tila kirjautumisnäytössä pysyy samana, vaikka käyttäjä vaihtuisi.</translation>
+<translation id="7249828445670652637">Salli <ph name="PRODUCT_OS_NAME" /> -CA-varmenteiden käyttö ARC-sovelluksille</translation>
 <translation id="7258823566580374486">Ota etäisäntien verhoaminen käyttöön</translation>
 <translation id="7260277299188117560">Automaattinen p2p-päivitys käytössä</translation>
 <translation id="7267809745244694722">Medianäppäimet toimivat oletuksena toimintonäppäiminä</translation>
@@ -1804,6 +1806,17 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7715711044277116530">Prosenttiosuus, jolla näytön himmennyksen viive skaalataan esitystilassa</translation>
 <translation id="7717938661004793600">Määritä tuotteen <ph name="PRODUCT_OS_NAME" /> käytettävyysominaisuudet.</translation>
 <translation id="7719251660743813569">Määrittää, lähetetäänkö Googlelle käyttötilastoja. Jos asetus on tosi, <ph name="PRODUCT_OS_NAME" /> lähettää käyttötilastoja. Jos asetus on epätosi tai sitä ei määritetä, tilastotietojen lähetys on pois käytöstä.</translation>
+<translation id="7723433108978650103">Tämä käytäntö estää luettelossa olevien URL-osoitteiden käytön.
+
+      Tämä käytäntö estää käyttäjää lataamasta verkkosivuja, joiden URL-osoitteet ovat mustalla listalla. Musta lista sisältää URL-osoitemalleja, joiden perusteella URL-osoitteita estetään.
+
+      URL-osoitemalli täytyy muotoilla osoitteessa https://www.chromium.org/administrators/url-blacklist-filter-format olevien ohjeiden mukaisesti.
+
+      Voit määrittää poikkeuksia sallittujen URL-osoitteiden luettelon käytännössä. Voit määrittää käytäntöä kohden enintään 1 000 kohdetta, niiden jälkeen lisättyjä kohteita ei huomioida.
+
+      Suosittelemme, että et estä sisäisiä chrome://*-URL-osoitteita, sillä se voi aiheuttaa odottamattomia virheitä.
+
+      Jos tätä käytäntöä ei määritetä, URL-osoitteita ei lisätä selaimen mustalle listalle.</translation>
 <translation id="7749402620209366169">Ottaa etäisännille käyttöön kahden tekijän todennuksen käyttäjän määrittämän PIN-koodin sijaan.
 
           Jos tämä asetus on käytössä, käyttäjien täytyy antaa kelvollinen kahden tekijän koodi käyttäessään isäntää.
@@ -1870,6 +1883,9 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos käytännölle ei määritetä arvoa, se käyttäytyy arvon TimezoneAutomaticDetectionUsersDecide mukaisesti.
 
       Jos SystemTimezone-käytäntö on määritetty, se ohittaa tämän käytännön. Tässä tapauksessa aikavyöhykkeen automaattinen tunnistaminen poistetaan käytöstä.</translation>
+<translation id="787125417158068494">Jos tämän käytännön arvo on SyncDisabled tai sitä ei ole määritetty, ARC-sovellukset eivät voi käyttää <ph name="PRODUCT_OS_NAME" /> -varmenteita.
+
+      Jos tämän käytännön arvo on CopyCaCerts, ARC-sovellukset voivat käyttää kaikkia ONC-asennettuja CA-varmenteita, joissa on <ph name="WEB_TRUSTED_BIT" />.</translation>
 <translation id="7882585827992171421">Tämä käytäntö toimii vain myyntitilassa.
 
       Määrittää tunnuksen perusteella laajennuksen, jota käytetään kirjautumisruudulla näytönsäästäjänä. Laajennuksen täytyy kuulua AppPack-sovelluspakettiin, joka on määritetty käytössä olevalle toimialueelle DeviceAppPack-käytännön kautta.</translation>
@@ -1885,6 +1901,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Tarkentaa, käytetäänkö p2p-menetelmää käyttöjärjestelmän päivityksen tietosisältöön. Jos määritys on Tosi, laitteet jakavat ja yrittävät käyttää päivitysten tietosisältöjä LAN-verkossa, mahdollisesti vähentäen laajakaistan käyttöä ja ruuhkaa. Jos päivityksen tietosisältö ei ole LAN-verkossa, laite palaa lataamaan päivityspalvelimelta. Jos määritys on Epätosi tai sitä ei ole asetettu, p2p-menetelmää ei käytetä.</translation>
 <translation id="7933141401888114454">Ota valvottujen käyttäjien luominen käyttöön</translation>
+<translation id="793473937901685727">Määritä ARC-sovellusten oikeus käyttää varmenteita</translation>
 <translation id="7936098023732125869">Määrittää oletushakupalvelun käytön.
 
           Jos tämä asetus on käytössä, selain suorittaa haun oletusarvoisella hakupalvelulla, jos käyttäjä kirjoittaa omniboxiin muuta tekstiä kuin URL-osoitteen.

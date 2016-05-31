@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome използва камерата ви.</translation>
 <translation id="1619887657840448962">За да направим Chrome по-безопасен, деактивирахме следното разширение, което липсва от <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> и може да е било добавено без ваше знание.</translation>
 <translation id="163860049029591106">Първи стъпки с Chrome OS</translation>
+<translation id="1653828314016431939">OK – Рестартиране сега</translation>
 <translation id="1682634494516646069">Google Chrome не може да чете и записва в директорията си за данни:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -72,6 +73,12 @@
 <translation id="3080151273017101988">Изпълняване на приложения на заден план при затворен браузър Google Chrome</translation>
 <translation id="3089968997497233615">Налице е нова, по-сигурна версия на Google Chrome.</translation>
 <translation id="3149510190863420837">Приложения в Chrome</translation>
+<translation id="3251381707915721925">За да зададете кои уебсайтове може да преглежда <ph name="NEW_PROFILE_NAME" />, посетете <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> и конфигурирайте ограничения и настройки. Ако не промените стандартните опции, <ph name="NEW_PROFILE_NAME" /> ще е в състояние да сърфира навсякъде в мрежата.
+
+За да предотвратите достъпа на <ph name="NEW_PROFILE_NAME" /> до профила си, непременно заключвайте потребителския си профил, когато не използвате Chrome. За целта кликнете върху името на потребителския си профил в горния десен ъгъл на браузъра и изберете „Изход и заключване за деца“.
+<ph name="BEGIN_LINK_2" />Научете повече<ph name="END_LINK_2" />
+
+За допълнителни инструкции, моля, проверете електронната си поща на адрес <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Вход в Chrome</translation>
 <translation id="3311976847535831054">Този компютър вече няма да получава актуализации за 32-битовата версия на Google Chrome. Моля, надстройте до 64-битовата версия на браузъра.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -119,6 +126,7 @@
 <translation id="4921569541910214635">Споделяте компютър? Вече можете да настроите Chrome точно по свой вкус.</translation>
 <translation id="4925019873400497719">Chrome потвърди, че сертификатът на този уебсайт е издаден от <ph name="ISSUER" />. Сървърът предостави информация за прозрачност на сертификата, но тя бе невалидна.</translation>
 <translation id="4953650215774548573">Задаване на Google Chrome като браузър по подразбиране</translation>
+<translation id="495931528404527476">В Chrome</translation>
 <translation id="4987308747895123092">Моля, затворете всички прозорци на Google Chrome (включително тези в режим за Windows 8) и опитайте отново.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome не можа да синхронизира данните ви. Моля, актуализирайте пропуска си за синхронизиране.</translation>
@@ -207,6 +215,7 @@
 <translation id="7808348361785373670">Премахване от Chrome...</translation>
 <translation id="7825851276765848807">Инсталацията не бе успешна поради неизвестна грешка. Моля, изтеглете отново Google Chrome.</translation>
 <translation id="7890208801193284374">Ако споделяте компютър, близките и приятелите ви могат да сърфират отделно и да настроят Chrome точно така, както искат.</translation>
+<translation id="795025003224538582">Без рестартиране</translation>
 <translation id="8005540215158006229">Chrome е почти готов.</translation>
 <translation id="8008534537613507642">Повторно инсталиране на Chrome</translation>
 <translation id="8030318113982266900">Устройството ви се актуализира до канал: <ph name="CHANNEL_NAME" />...</translation>

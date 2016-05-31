@@ -475,6 +475,7 @@
 <translation id="267596348720209223">Menentukan penyandiaksaraan karakter yang didukung oleh penyedia penelusuran. Penyandiaksaraan adalah nama-nama laman kode seperti UTF-8, GB2312, dan ISO-8859-1. Kode tersebut dicoba dalam urutan yang disediakan. Kebijakan ini bersifat opsional. Jika tidak disetel, default yang akan digunakan adalah UTF-8. Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="2682225790874070339">Menonaktifkan Drive di aplikasi File <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Aktifkan fitur proxy kompresi data</translation>
+<translation id="2731627323327011390">Menonaktifkan penggunaan sertifikat <ph name="PRODUCT_OS_NAME" /> untuk aplikasi ARC</translation>
 <translation id="2742843273354638707">Menyembunyikan aplikasi Toko Web Chrome serta tautan footer dari Laman Tab Baru dan peluncur aplikasi <ph name="PRODUCT_OS_NAME" />.
 
       Jika kebijakan ini disetel ke true, ikon akan disembunyikan.
@@ -1697,6 +1698,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           Jika Anda menyetel kebijakan ini, pengguna dapat menimpanya untuk sementara dengan mengaktifkan atau menonaktifkan lup. Namun, pilihan pengguna tidak bersifat permanen dan setelan default akan dipulihkan kapan pun layar masuk ditampilkan lagi atau pengguna tetap menganggur di layar masuk selama satu menit.
 
           Jika kebijakan ini tidak disetel, lup dinonaktifkan saat layar masuk ditampilkan untuk pertama kali. Pengguna dapat mengaktifkan atau menonaktifkan lup kapan saja dan statusnya di layar masuk bersifat permanen antar pengguna.</translation>
+<translation id="7249828445670652637">Mengaktifkan sertifikat CA <ph name="PRODUCT_OS_NAME" /> untuk aplikasi ARC</translation>
 <translation id="7258823566580374486">Mengaktifkan pemberian tirai hosting akses jarak jauh</translation>
 <translation id="7260277299188117560">Pembaruan p2p otomatis diaktifkan</translation>
 <translation id="7267809745244694722">Default tombol media ke tombol fungsi</translation>
@@ -1808,6 +1810,17 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="7715711044277116530">Persentase yang digunakan untuk menskalakan penundaan layar redup dalam mode presentasi</translation>
 <translation id="7717938661004793600">Mengonfigurasikan fitur aksesibilitas <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Mengontrol apakah metrik penggunaan dilaporkan kembali ke Google. Jika disetel ke true, <ph name="PRODUCT_OS_NAME" /> akan melaporkan metrik penggunaan. Jika tidak dikonfigurasi atau disetel ke false, pelaporan metrik akan dinonaktifkan.</translation>
+<translation id="7723433108978650103">Memblokir akses ke URL yang ada di daftar.
+
+      Kebijakan ini mencegah pengguna memuat laman web dari URL yang masuk daftar hitam. Daftar hitam memberikan daftar pola URL yang menentukan URL yang akan masuk daftar hitam.
+
+      Pola URL harus diberi format sesuai dengan https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Pengecualian dapat ditetapkan di dalam kebijakan daftar putih URL. Kebijakan ini memiliki batas 1000 entri; entri berikutnya akan diabaikan.
+
+      Perlu diketahui bahwa tidak disarankan untuk memblokir URL 'chrome://*' internal karena hal tersebut dapat menyebabkan kesalahan tak terduga.
+
+      Jika kebijakan ini tidak disetel, URL akan masuk daftar hitam di browser.</translation>
 <translation id="7749402620209366169">Mengaktifkan autentikasi dua faktor untuk hosting akses jarak jauh sebagai ganti PIN yang ditentukan pengguna.
 
           Jika setelan ini diaktifkan, maka pengguna harus memberikan kode dua faktor yang valid saat mengakses hosting.
@@ -1874,6 +1887,9 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika kebijakan ini tidak disetel, perilakunya sama dengan saat TimezoneAutomaticDetectionUsersDecide disetel.
 
       Jika kebijakan SystemTimezone disetel, kebijakan tersebut akan menggantikan kebijakan ini. Dalam kasus ini deteksi zona waktu otomatis akan dinonaktifkan sepenuhnya.</translation>
+<translation id="787125417158068494">Jika disetel ke SyncDisabled atau tidak dikonfigurasi, sertifikat <ph name="PRODUCT_OS_NAME" /> tidak tersedia untuk aplikasi ARC.
+
+      Jika disetel ke CopyCaCerts, semua sertifikat CA yang memasang ONC dengan <ph name="WEB_TRUSTED_BIT" /> tersedia untuk aplikasi ARC.</translation>
 <translation id="7882585827992171421">Kebijakan ini hanya aktif dalam mode ritel.
 
       Menentukan id ekstensi untuk digunakan sebagai tirai layar pada layar masuk. Ekstensi haruslah bagian dari AppPack yang dikonfigurasi untuk domain ini melalui kebijakan DeviceAppPack.</translation>
@@ -1889,6 +1905,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Tentukan apakah p2p akan digunakan untuk payload pembaruan OS. Jika disetel ke True, perangkat akan membagi dan berusaha menggunakan payload pembaruan pada LAN, serta berpotensi mengurangi penggunaan dan kepadatan bandwidth internet. Jika payload pembaruan tidak tersedia di LAN, perangkat tersebut akan kembali mengunduh dari server yang diperbarui. Jika disetel ke False atau tidak dikonfigurasi, p2p tidak akan digunakan.</translation>
 <translation id="7933141401888114454">Mengaktifkan pembuatan pengguna yang dilindungi</translation>
+<translation id="793473937901685727">Menyetel ketersediaan sertifikat untuk aplikasi ARC</translation>
 <translation id="7936098023732125869">Mengaktifkan penggunaan penyedia penelusuran default.
 
           Jika Anda mengaktifkan setelan ini, penelusuran default dilakukan saat pengguna mengetik teks di omnibox yang bukan merupakan URL.

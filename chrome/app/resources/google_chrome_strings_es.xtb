@@ -27,6 +27,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="1587223624401073077">Google Chrome está utilizando la cámara.</translation>
 <translation id="1619887657840448962">Para aumentar la seguridad de Chrome, hemos inhabilitado la siguiente extensión que no figura en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que puede haberse añadido sin tu conocimiento.</translation>
 <translation id="163860049029591106">Introducción a Chrome OS</translation>
+<translation id="1653828314016431939">Reiniciar ahora</translation>
 <translation id="1682634494516646069">Google Chrome no puede leer el directorio de datos ni escribir en él:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -74,6 +75,12 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
 <translation id="3089968997497233615">Hay una nueva versión más segura de Google Chrome disponible.</translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>
+<translation id="3251381707915721925">Para establecer los sitios web que <ph name="NEW_PROFILE_NAME" /> puede ver, configura restricciones y opciones a través de la página <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />.Si no cambias la configuración predeterminada, <ph name="NEW_PROFILE_NAME" /> podrá navegar por toda la Web.
+
+Para evitar que <ph name="NEW_PROFILE_NAME" /> acceda a tu cuenta, bloquea tu perfil cuando no uses Chrome. Para ello, haz clic en el nombre de tu perfil situado en la esquina superior derecha del navegador y selecciona Salir y bloquear.
+<ph name="BEGIN_LINK_2" />Más información<ph name="END_LINK_2" />
+
+Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más información.</translation>
 <translation id="3282568296779691940">Iniciar sesión en Chrome</translation>
 <translation id="3311976847535831054">Este ordenador dejará de recibir actualizaciones de Google Chrome (32 bits). Actualiza Google Chrome a la versión de 64 bits.</translation>
 <translation id="3360895254066713204">Ayudante de Chrome</translation>
@@ -121,6 +128,7 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="4921569541910214635">Si compartes un ordenador, ahora puedes configurar Chrome como quieras.</translation>
 <translation id="4925019873400497719">Chrome ha verificado que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor ha proporcionado información de Transparencia de certificados, pero no era válida.</translation>
 <translation id="4953650215774548573">Establecer Google Chrome como navegador predeterminado</translation>
+<translation id="495931528404527476">En Chrome</translation>
 <translation id="4987308747895123092">Cierra todas las ventanas de Google Chrome (incluidas las ventanas en modo Windows 8) y vuelve a intentarlo.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome no ha podido sincronizar los datos. Actualiza la frase de contraseña de sincronización.</translation>
@@ -213,6 +221,7 @@ Google Chrome no puede recuperar tu configuración.</translation>
 <translation id="7808348361785373670">Desinstalar de Chrome...</translation>
 <translation id="7825851276765848807">La instalación no se ha podido realizar a causa de un error no especificado. Vuelve a descargar Google Chrome.</translation>
 <translation id="7890208801193284374">Si compartes un ordenador, tus amigos y familiares pueden navegar de forma independiente y configurar Chrome a su gusto.</translation>
+<translation id="795025003224538582">No reiniciar</translation>
 <translation id="8005540215158006229">Chrome está casi listo</translation>
 <translation id="8008534537613507642">Reinstalar Chrome</translation>
 <translation id="8030318113982266900">Actualizando el canal del dispositivo a <ph name="CHANNEL_NAME" />...</translation>

@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Huenda seva inayopangisha ukurasa huo wa wavuti imejaa au inakarabatiwa.
         Ili uepuke kuzalisha maelezo mengi na kuharibu hali zaidi,
        maombi yanayotumwa kwenye URL hii yamesimamishwa kwa muda.</translation>
-<translation id="1066332784716773939">Gundua hitilafu...</translation>
 <translation id="106701514854093668">Alamisho za Eneokazi</translation>
 <translation id="1080116354587839789">Fanya itoshe kwenye upana</translation>
 <translation id="1090046120949329821">Vijajuu anuwai vya Mkao wa pekee wa Maudhui vimepokelewa. Hii hairuhusiwi ili 
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Idara</translation>
 <translation id="2113977810652731515">Kadi</translation>
 <translation id="2114841414352855701">Imepuuzwa kwa sababu ilifutwa na <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">Utafutaji kwenye kompyuta ya mezani hutumia mtambo chaguo-msingi wa kutafuta (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Mteja Halisi</translation>
 <translation id="213826338245044447">Alamisho kwenye Simu</translation>
 <translation id="2148716181193084225">Leo</translation>
 <translation id="2149973817440762519">Badilisha Alamisho</translation>
-<translation id="2153530520610387456">Nenda kwenye
-          <ph name="BEGIN_BOLD" />
-          Anza &gt; Paneli Dhibiti &gt; Mtandao na Intaneti &gt; Mtandao na Kituo cha Kushiriki &gt; Tatua Matatizo (sehemu ya chini) &gt; Miunganisho ya Intaneti.
-          <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Idhini Kamili ya Kufikia ya Msimamizi</translation>
 <translation id="2166378884831602661">Tovuti hii haiwezi kutoa muunganisho salama</translation>
 <translation id="2171101176734966184">Umejaribu kufikia <ph name="DOMAIN" />, lakini seva iliwasilisha cheti kilichotiwa sahihi na kanuni duni. Hii inamaanisha kuwa stakabadhi za usalama zilizowasilishwa na seva hiyo zinaweza kuwa bandia, na seva hiyo huenda ikawa sio ile uliyotarajia (unaweza kuwa unawasiliana na mshambulizi).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Thamani hii inapingwa kwa sera hii.</translation>
 <translation id="2262243747453050782">Hitilfau ya HTTP</translation>
 <translation id="2279770628980885996">Hali isiyotarajiwa ilishuhudiwa wakati seva ilipokuwa ikijaribu kutimiza ombi.</translation>
-<translation id="2282186295770469712">Dhibiti mipangilio ya utafutaji</translation>
 <translation id="2282872951544483773">Majaribio Yasiyopatikana</translation>
 <translation id="2292556288342944218">Ufikiaji wako wa intaneti umezuiwa</translation>
 <translation id="229702904922032456">Kitambulisho cha mzizi au kati kimekwisha muda.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">Unaweza kuzima proksi zozote zilizosanidiwa kwa muunganisho kutoka kwenye ukurasa wa mipangilio.</translation>
 <translation id="2950186680359523359">Seva ilifunga muunganisho bila kutuma data yoyote.</translation>
 <translation id="2955913368246107853">Funga upau wa kupata</translation>
-<translation id="2957518517523241247">Nenda kwenye
-      <ph name="BEGIN_BOLD" />
-      Anza &gt; Paneli Dhibiti &gt; Miunganisho ya Mtandao &gt; Utaratibu Uliofupishwa wa Muunganisho Mpya
-      <ph name="END_BOLD" />
-      ili kuujaribisha muunganisho wako.</translation>
 <translation id="2958431318199492670">Usanidi wa mtandao hautii kiwango cha ONC. Sehemu za usanidi haziwezi kuingizwa.</translation>
 <translation id="2969319727213777354">Ili kutambua muunganisho salama, saa yako inahitaji kusahihishwa. Hii ni kwa sababu vyeti ambavyo tovuti hutumia kujitambua ni sahihi kwa vipindi mahususi pekee. Kwa kuwa saa ya kifaa chako si sahihi, Google Chrome haiwezi kuthibitisha vyeti hivi.</translation>
 <translation id="2972581237482394796">&amp;Rudia</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">Parish</translation>
 <translation id="3901925938762663762">Kadi imekwisha muda</translation>
 <translation id="3903912596042358459">Seva ilikata kutimiza ombi.</translation>
-<translation id="3930850196944737149">Kifaa chako hakijaunganishwa kwenye mtandao.</translation>
 <translation id="3934680773876859118">Imeshindwa kupakia hati ya PDF</translation>
 <translation id="3950924596163729246">Haiwezi kufikia mtandao</translation>
 <translation id="3963721102035795474">Hali ya Usomaji</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">Funga</translation>
 <translation id="604124094241169006">Otomatiki</translation>
 <translation id="6042308850641462728">Zaidi</translation>
-<translation id="6044718745395562198">Kompyuta yako haijaunganishwa kwenye mtandao.</translation>
 <translation id="6060685159320643512">Tahadhari, majaribio haya yanaweza kusumbua</translation>
 <translation id="6093795393556121384">Kadi yako imethibitishwa</translation>
 <translation id="6146055958333702838">Angalia kebo zozote na uwashe tena kisambaza data, modemu, au vifaa vingine vyovyote vya
@@ -532,11 +518,6 @@
 <translation id="6830600606572693159">Ukurasa wa wavuti katika <ph name="URL" /> haupatikani kwa sasa. Huenda umezidishwa kiwango au unarekebishwa.</translation>
 <translation id="6831043979455480757">Tafsiri</translation>
 <translation id="6839929833149231406">Eneo</translation>
-<translation id="6851123334996048122">Nenda kwenye
-          <ph name="BEGIN_BOLD" />
-          Programu &gt; Mapendeleo ya Mfumo &gt; Mtandao &gt; Nisaidie
-          <ph name="END_BOLD" />
-          ili kuujaribisha muunganisho wako.</translation>
 <translation id="6874604403660855544">Rudia kuongeza</translation>
 <translation id="6891596781022320156">Kiwango cha sera hakitumiki.</translation>
 <translation id="6897140037006041989">Programu ya Mtumiaji</translation>
@@ -618,9 +599,6 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Haidhibitiwi</translation>
 <translation id="7758069387465995638">Huenda programu ya kinga-mtandao au kinga-virusi zimezuia muunganisho huu.</translation>
-<translation id="7760914272566804712">Unaweza kujaribu kuchunguza tatizo kwa kuchukua hatua zifuatazo:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Cheti cha seva hakilingani na URL.</translation>
 <translation id="777702478322588152">Wilaya</translation>
 <translation id="778579833039460630">Hakuna data zilizopokewa</translation>
@@ -660,14 +638,6 @@ Hebu! Huenda hali fiche <ph name="SHORTCUT_KEY" /> ikakufaa wakati ujao.</transl
 <translation id="8241707690549784388">Ukurasa unaotafuta ulitumia maelezo uliyoyaingiza. Kurudi kwenye ukurasa huo huenda kukasababisha tendo lolote ulilofanya lirudiwe. Je, ungependa kuendelea?</translation>
 <translation id="8249320324621329438">Iliyoletwa mwisho:</translation>
 <translation id="8261506727792406068">Futa</translation>
-<translation id="8266098793847448402">Bofya
-          <ph name="BEGIN_BOLD" />Anza<ph name="END_BOLD" />,
-          bofya
-          <ph name="BEGIN_BOLD" />Tekeleza<ph name="END_BOLD" />,
-          charaza
-          <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
-          kisha ubofye
-          <ph name="BEGIN_BOLD" />Sawa<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Ombi lako la kufikia tovuti hii limetumwa kwa <ph name="NAME" /> .</translation>
 <translation id="8289355894181816810">Wasiliana na msimamizi wako wa mtandao iwapo huna uhakika kile ambacho hiki kinamaanisha.</translation>
 <translation id="8293206222192510085">Ongeza Alamisho</translation>

@@ -72,6 +72,7 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="1853692000353488670">Nová karta inkognito</translation>
 <translation id="189172778771606813">Zavrieť navigačný vysúvací panel</translation>
 <translation id="1924956916668006832">Vybrať dodaciu adresu</translation>
+<translation id="1933845786846280168">Vybratá karta</translation>
 <translation id="194341124344773587">Zapnite povolenie pre Chrome v <ph name="BEGIN_LINK" />nastaveniach Androidu<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Ukladanie hesiel</translation>
 <translation id="1944384637046898011">Šifrovať všetko pomocou hesla Google od <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Predvoľby Fyzického webu môžete ovládať v Nastaveniach Chromu.
 <translation id="2959609938957585241">Ak chcete získať karty z vašich ďalších zariadení, zapnite v nastaveniach účtu Android možnosť Automaticky synchronizovať dáta.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Všetky práva vyhradené.</translation>
 <translation id="2968755619301702150">Zobrazovač certifikátov</translation>
+<translation id="2979025552038692506">Vybratá karta inkognito</translation>
 <translation id="2996291259634659425">Vytvorenie prístupovej frázy</translation>
 <translation id="2996809686854298943">Vyžaduje sa webová adresa</translation>
 <translation id="3012408695656332380">Nahraďte údaje tohto zariadenia údajmi z účtu <ph name="TO_ACCOUNT" />. Existujúce údaje môžete získať prepnutím na účet <ph name="FROM_ACCOUNT" />, ale údaje vytvorené po odhlásení stratíte.</translation>
@@ -554,6 +556,7 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="8073388330009372546">Otvoriť obrázok na novej karte</translation>
 <translation id="8076014560081431679">Uložené nastavenia webov sa neodstránia a môžu odrážať vaše návyky prehliadania. <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Tento obsah pochádza z domény <ph name="DOMAIN_NAME" /> a bol doručený Googlom.</translation>
+<translation id="8103578431304235997">Karta inkognito</translation>
 <translation id="8106211421800660735">Číslo kreditnej karty</translation>
 <translation id="813082847718468539">Zobraziť informácie o stránkach</translation>
 <translation id="8137558756159375272">Funkcia vyhľadávania klepnutím odošle vybrané slovo a súčasnú stránku ako kontext do Vyhľadávania Google. Môžete ju vypnúť v <ph name="BEGIN_LINK" />Nastaveniach<ph name="END_LINK" />.</translation>

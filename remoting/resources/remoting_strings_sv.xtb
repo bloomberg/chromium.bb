@@ -212,6 +212,10 @@ Desktop Host</translation>
 <translation id="6324708100353784493">Du har aktiverat läget för Google Cardboard-integrering. Anslut enheten till ett Google Cardboard-kompatibelt visningsprogram om du vill använda det här läget.</translation>
 <translation id="6381670701864002291">Något annat.</translation>
 <translation id="6398765197997659313">Avsluta helskärmsläge</translation>
+<translation id="6408143143164565232">• Lyssna på ljudet från Windows- eller Linux-datorer.
+• Ta bort oönskade anslutningar genom att trycka länge på datornamnet.
+• Jämnare effekt när du zoomar genom att nypa eller rullar med två fingrar.
+• Ny skärm för hjälp och feedback.</translation>
 <translation id="6441316101718669559">Integrering med skrivbordet stöds inte på den här plattformen. Du kan använda appen ändå, men användarupplevelsen försämras.</translation>
 <translation id="652218476070540101">PIN-koden för den här datorn uppdateras …</translation>
 <translation id="6527303717912515753">Dela</translation>
@@ -257,6 +261,7 @@ Desktop Host</translation>
 <translation id="7836926030608666805">Vissa obligatoriska komponenter saknas. Kontrollera att du kör den senaste versionen av Chrome och försök igen.</translation>
 <translation id="7868137160098754906">Ange din pinkod för fjärrdatorn.</translation>
 <translation id="7869445566579231750">Du har inte behörighet att köra den här appen.</translation>
+<translation id="7895403300744144251">Fjärrdatorns säkerhetspolicy tillåter inte anslutningar från ditt konto.</translation>
 <translation id="7948001860594368197">Skärmalternativ</translation>
 <translation id="7970576581263377361">Autentiseringen misslyckades. Logga in i Chromium igen.</translation>
 <translation id="7981525049612125370">Fjärrsessionen har avslutats.</translation>

@@ -16,6 +16,7 @@
 <translation id="151962892725702025">OS Chromium nije mogao sinkronizirati vaše podatke jer sinkronizacija nije dostupna za vašu domenu.</translation>
 <translation id="1559451348202814456">Chromium možda neće ispravno raditi jer više nije podržan na sustavima Mac OS X 10.6, 10.7 i 10.8.</translation>
 <translation id="1644918877723739397">Chromium će spremiti tu zaporku u vaše <ph name="SAVED_PASSWORD_LINK" /> i zapamtiti je za sljedeći put.</translation>
+<translation id="1653828314016431939">U redu - pokreni ponovo sada</translation>
 <translation id="1668054258064581266">Nakon uklanjanja računa s Chromiuma možda ćete morati ponovo učitati otvorene kartice kako bi nastupile promjene.</translation>
 <translation id="1688750314291223739">Postavite sinkronizaciju da biste spremili svoje prilagođene značajke preglednika na web i pristupali im s preglednika Chromium na bilo kojem računalu.</translation>
 <translation id="1699664235656412242">Zatvorite sve prozore u Chromiumu (uključujući i one u načinu sustava Windows 8) i pokušajte ponovo.</translation>
@@ -180,6 +181,12 @@ Chromium ne može oporaviti vaše postavke.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Novi prozor</translation>
 <translation id="734373864078049451">Ovdje se nalaze vaš web, oznake i ostali sadržaji u Chromiumu.</translation>
+<translation id="7344413941077984497">Da biste postavili koje web-lokacije <ph name="NEW_PROFILE_NAME" /> može gledati, konfigurirajte ograničenja i postavke na stranici <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Ako ne promijenite zadane postavke, <ph name="NEW_PROFILE_NAME" /> može pregledavati sve na webu.
+
+Ako ne želite da <ph name="NEW_PROFILE_NAME" /> pristupa vašem računu, zaključajte svoj profil kada ne upotrebljavate Chromium. Da biste to učinili, kliknite naziv profila u gornjem desnom kutu preglednika i odaberite "Zatvori i zaključaj".
+<ph name="BEGIN_LINK_2" />Saznajte više<ph name="END_LINK_2" />
+
+Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Ako želite da vaši postojeći podaci Chromiuma budu zasebni, možete izraditi novog korisnika Chromiuma za korisnika <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium zahtijeva Windows XP ili noviju verziju. Neke značajke možda neće raditi.</translation>
 <translation id="7463979740390522693">Chromium – obavijesti (nepročitane: <ph name="QUANTITY" />)</translation>
@@ -194,6 +201,7 @@ Chromium ne može oporaviti vaše postavke.</translation>
 <translation id="7747138024166251722">Program za instalaciju nije izradio privremeni direktorij. Provjerite ima li slobodnog prostora na disku i postoji li dopuštenje za instalaciju softvera.</translation>
 <translation id="7918535023914021398">Chromium je potvrdio da je <ph name="ISSUER" /> izdavač certifikata web-lokacije. Poslužitelj nije pružio informacije o transparentnosti certifikata.</translation>
 <translation id="7937630085815544518">Bili ste prijavljeni na Chromium kao <ph name="USER_EMAIL_ADDRESS" />. Prijavite se ponovo istim računom.</translation>
+<translation id="795025003224538582">Ne pokreći ponovo</translation>
 <translation id="7962572577636132072">Chromium se automatski ažurira tako da uvijek imate najnoviju verziju.</translation>
 <translation id="7979877361127045932">Sakrij u izborniku Chromiuma</translation>
 <translation id="8030318113982266900">Ažuriranje vašeg uređaja na kanal <ph name="CHANNEL_NAME" />...</translation>

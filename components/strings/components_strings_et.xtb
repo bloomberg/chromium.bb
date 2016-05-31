@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Veebilehte hostiv server võib olla üle koormatud või seda hooldatakse.
     Liigse liikluse tekitamise ja olukorra halvendamise vältimiseks
     on päringud sellele URL-ile ajutiselt keelatud.</translation>
-<translation id="1066332784716773939">Vigade diagnoosimine ...</translation>
 <translation id="106701514854093668">Töölaua järjehoidjad</translation>
 <translation id="1080116354587839789">Sobita laiusesse</translation>
 <translation id="1090046120949329821">Võeti vastu mitu eri sisupaigutusega päist. See on keelatud, et
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Osakond</translation>
 <translation id="2113977810652731515">Kaart</translation>
 <translation id="2114841414352855701">Seda ignoreeritakse, kuna reegel <ph name="POLICY_NAME" /> alistab selle.</translation>
-<translation id="2122434088511736194">Töölauaotsingute puhul kasutatakse teie vaikeotsingumootorit (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Mobiili järjehoidjad</translation>
 <translation id="2148716181193084225">Täna</translation>
 <translation id="2149973817440762519">Muuda järjehoidjat</translation>
-<translation id="2153530520610387456">Tehke valikud
-    <ph name="BEGIN_BOLD" />
-    Start &gt; Control Panel &gt; Network and Internet &gt; Network and Sharing Center &gt; Troubleshoot Problems (allosas) &gt; Internet Connections.
-    <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Täielik administraatorijuurdepääs</translation>
 <translation id="2166378884831602661">See sait ei saa turvalist ühendust luua</translation>
 <translation id="2171101176734966184">Püüdsite jõuda saidile <ph name="DOMAIN" />, kuid server esitas sertifikaadi, mis on allkirjastatud nõrga allkirjaalgoritmiga. See tähendab, et serveri esitatud turvamandaadid võivad olla võltsitud ning server ei pruugi olla see, mida eeldate (võimalik, et suhtlete ründajaga).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Väärtus on eeskirjade jaoks aegunud.</translation>
 <translation id="2262243747453050782">HTTP viga</translation>
 <translation id="2279770628980885996">Ajal, mil server proovis päringut täita, ilmnes ootamatu seisund.</translation>
-<translation id="2282186295770469712">Halda otsinguseadeid</translation>
 <translation id="2282872951544483773">Kättesaamatud katsetused</translation>
 <translation id="2292556288342944218">Teie juurdepääs Internetile on blokeeritud</translation>
 <translation id="229702904922032456">Juur- või kesktaseme sertifikaat on aegunud.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">Seadete lehel saate keelata kõik ühenduse jaoks konfigureeritud puhverserverid.</translation>
 <translation id="2950186680359523359">Server sulges ühenduse andmeid saatmata.</translation>
 <translation id="2955913368246107853">Sule leiuriba</translation>
-<translation id="2957518517523241247">Tehke valikud
-    <ph name="BEGIN_BOLD" />
-    Start &gt; Control Panel &gt; Network Connections &gt; New Connection Wizard
-    <ph name="END_BOLD" />
-    oma ühenduse testimiseks.</translation>
 <translation id="2958431318199492670">Võrgu seadistus ei vasta ONC standardile. On võimalik, et seadistuse mõnd osa ei saa importida.</translation>
 <translation id="2969319727213777354">Turvalise ühenduse loomiseks peab kell olema õigesti seadistatud, kuna sertifikaadid, mida veebisaidid kasutavad enda tuvastamiseks, kehtivad ainult teatud perioodi jooksul. Kuna teie seadme kell on vale, ei saa Chrome neid sertifikaate kinnitada.</translation>
 <translation id="2972581237482394796">&amp;Tee uuesti</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">Vald</translation>
 <translation id="3901925938762663762">Kaart on aegunud</translation>
 <translation id="3903912596042358459">Server keeldus päringu täitmisest.</translation>
-<translation id="3930850196944737149">Teie seade on võrguühenduseta.</translation>
 <translation id="3934680773876859118">PDF-dokumendi laadimine nurjus</translation>
 <translation id="3950924596163729246">Ei saa võrgule juurdepääsu.</translation>
 <translation id="3963721102035795474">Lugejarežiim</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">Sule</translation>
 <translation id="604124094241169006">Automaatne</translation>
 <translation id="6042308850641462728">Rohkem</translation>
-<translation id="6044718745395562198">Teie arvuti ei ole võrguga ühendatud.</translation>
 <translation id="6060685159320643512">Ettevaatust, need katsed võivad hammustada.</translation>
 <translation id="6093795393556121384">Kaart on kinnitatud</translation>
 <translation id="6146055958333702838">Kontrollige kaableid ning taaskäivitage kõik ruuterid, modemid ja muud
@@ -533,11 +519,6 @@
 <translation id="6830600606572693159">Veebileht pole aadressil <ph name="URL" /> praegu saadaval. See võib olla üle koormatud või hooldamiseks seisatud.</translation>
 <translation id="6831043979455480757">Tõlgi</translation>
 <translation id="6839929833149231406">Piirkond</translation>
-<translation id="6851123334996048122">Tehke valikud
-    <ph name="BEGIN_BOLD" />
-    Applications &gt; System Preferences &gt; Network &gt; Assist me
-    <ph name="END_BOLD" />
-    oma ühenduse testimiseks.</translation>
 <translation id="6874604403660855544">&amp;Lisa uuesti</translation>
 <translation id="6891596781022320156">Reegli taset ei toetata.</translation>
 <translation id="6897140037006041989">Kasutajaagent</translation>
@@ -619,9 +600,6 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Haldamata</translation>
 <translation id="7758069387465995638">Tulemüür või viirusetõrjetarkvara võis ühenduse blokeerida.</translation>
-<translation id="7760914272566804712">Saate proovida probleemi diagnoosida järgmiste toimingute abil.
-    <ph name="LINE_BREAK" />
-    <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Serveri sertifikaat ei vasta URL-ile.</translation>
 <translation id="777702478322588152">Prefektuur</translation>
 <translation id="778579833039460630">Andmeid ei ole vastu võetud</translation>
@@ -661,14 +639,6 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="8241707690549784388">Teie poolt otsitav lehekülg kasutas teie sisestatud andmeid. Sellele leheküljele naasmine võib kaasa tuua kõikide sooritatud tegevuste kordamise. Soovite jätkata?</translation>
 <translation id="8249320324621329438">Viimati toodud:</translation>
 <translation id="8261506727792406068">Kustuta</translation>
-<translation id="8266098793847448402">Klõpsake nupul
-    <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
-    klõpsake käsul
-    <ph name="BEGIN_BOLD" />Run<ph name="END_BOLD" />,
-    sisestage
-    <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
-    ja seejärel klõpsake nupul
-    <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Teie juurdepääsutaotlus sellele saidile saadeti kasutajale <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Kui te pole kindel, mida see tähendab, võtke ühendust oma võrguadministraatoriga.</translation>
 <translation id="8293206222192510085">Lisa järjehoidja</translation>

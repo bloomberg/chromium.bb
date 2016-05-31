@@ -18,6 +18,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="151962892725702025">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako kwa sababu Usawazishaji haupatikani kwa kikoa chako.</translation>
 <translation id="1559451348202814456">Huenda Chromium isifanye kazi vizuri kwa sababu haitumiki tena kwenye Mac OS X 10.6, 10.7, au 10.8.</translation>
 <translation id="1644918877723739397">Chromium itahifadhi nenosiri hili katika <ph name="SAVED_PASSWORD_LINK" /> na kulikumbuka wakati ujao utakapolihitaji.</translation>
+<translation id="1653828314016431939">Sawa - Anzisha upya sasa</translation>
 <translation id="1668054258064581266">Baada ya kuondoa akaunti yako kwenye Chromium, huenda ukahitajika kupakia upya vichupo vyako vilivyo wazi ili kuanza kufanya kazi.</translation>
 <translation id="1688750314291223739">Sanidi Usawazishaji ili uhifadhi vipengele vyako vya kivinjari vilivyobinafsishwa kwenye mtandao na uvifikie kutoka Chromium katika kompyuta yoyote</translation>
 <translation id="1699664235656412242">Tafadhali funga madirisha yote ya Chromium (pamoja na yaliyo kwenye modi ya Window 8) na ujaribu tena.</translation>
@@ -182,6 +183,11 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Dirisha jipya</translation>
 <translation id="734373864078049451">Wavuti, alamisho, na mambo yako mengine ya Chromium yanapatikana hapa.</translation>
+<translation id="7344413941077984497">Ili uweke tovuti ambazo <ph name="NEW_PROFILE_NAME" /> anaweza kuona, unaweza kuweka mipangilio ya vikwazo kwa kutembelea <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Usipobadilisha mipangilio chaguo-msingi, <ph name="NEW_PROFILE_NAME" /> anaweza kuvinjari kila kitu kwenye wavuti.
+
+Ili umzuie <ph name="NEW_PROFILE_NAME" /> asifikie akaunti yako, hakikisha kuwa umefunga wasifu wako wakati hutumii Chromium. Ili kufunga wasifu wako, bofya jina la wasifu wako kwenye upande wa juu kulia mwa kivinjari chako na uchague "Ondoka kwenye wasifu wa sasa."
+<ph name="BEGIN_LINK_2" />Pata maelezo zaidi<ph name="END_LINK_2" />
+Tafadhali angalia barua pepe yako katika <ph name="ACCOUNT_EMAIL" /> upate maagizo zaidi.</translation>
 <translation id="7419987137528340081">Iwapo unapendelea kutenganisha data yako iliyopo ya Chromium, unaweza kuingiza mtumiaji mpya wa Chromium kwa <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium inahitaji Windows XP au toleo la awali. Huenda vipengele vingine visifanye kazi.</translation>
 <translation id="7463979740390522693">Chromium - Arifa (<ph name="QUANTITY" /> hazijasomwa)</translation>
@@ -196,6 +202,7 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
 <translation id="7747138024166251722">Kisakinishi hakikuweza kuunda saraka la muda. Tafadhali chunguza nafasi iliyo wazi kwenye diski na ruhusa ya kusakinisha programu.</translation>
 <translation id="7918535023914021398">Chromium ilithibitisha kuwa <ph name="ISSUER" /> ndiye mtoa cheti cha tovuti hii. Seva haikutoa maelezo yoyote ya Cheti cha Uwazi.</translation>
 <translation id="7937630085815544518">Uliingia kwenye Chromium kama <ph name="USER_EMAIL_ADDRESS" />. Tafadhali tumia akaunti hiyo hiyo kuingia tena.</translation>
+<translation id="795025003224538582">Usianzishe upya</translation>
 <translation id="7962572577636132072">Chromium husasisha kiotomatiki, kwa hivyo, utakuwa na toleo jipya zaidi wakati wowote.</translation>
 <translation id="7979877361127045932">Ficha katika menyu ya Chromium</translation>
 <translation id="8030318113982266900">Inasasisha kituo chako kwenda kituo cha <ph name="CHANNEL_NAME" />...</translation>

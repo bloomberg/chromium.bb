@@ -166,7 +166,7 @@
 <translation id="4985296110227979402">먼저 컴퓨터를 원격으로 액세스할 수 있도록 설정해야 합니다.</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME" />(오프라인)</translation>
 <translation id="5070121137485264635">원격 호스트는 타사 웹사이트에 대한 인증이 필요합니다. 계속하려면 이 주소에 액세스할 수 있도록 Chrome 원격 데스크톱에 추가 권한을 허용해야 합니다.</translation>
-<translation id="507204348399810022"><ph name="HOSTNAME" />와(과)의 원격 연결을 사용 중지하시겠습니까?</translation>
+<translation id="507204348399810022"><ph name="HOSTNAME" /> 원격 연결을 사용 중지하시겠습니까?</translation>
 <translation id="5156271271724754543">두 입력란에 같은 PIN을 입력하세요.</translation>
 <translation id="5168917394043976756">탐색 창 열기</translation>
 <translation id="5170982930780719864">호스트 ID가 잘못되었습니다.</translation>
@@ -212,6 +212,10 @@
 <translation id="6324708100353784493">Google Cardboard 통합 모드를 사용하도록 설정했습니다. 이 모드를 사용하려면 Google Cardboard 호환 뷰어에 기기를 삽입하세요.</translation>
 <translation id="6381670701864002291">기타 문제</translation>
 <translation id="6398765197997659313">전체화면 닫기</translation>
+<translation id="6408143143164565232">• Windows 또는 Linux 컴퓨터에서 오디오 듣기
+• 컴퓨터 이름을 길게 눌러 원치 않는 연결 삭제
+• 더 부드러워진 손가락으로 확대/축소 및 두 손가락 스크롤
+• 새로운 도움말 및 의견 화면</translation>
 <translation id="6441316101718669559">데스크톱 통합이 이 플랫폼에서 지원되지 않습니다. 애플리케이션을 사용할 수는 있지만, 사용자 환경이 저하될 수 있습니다.</translation>
 <translation id="652218476070540101">컴퓨터의 PIN을 업데이트 중…</translation>
 <translation id="6527303717912515753">공유</translation>
@@ -257,6 +261,7 @@
 <translation id="7836926030608666805">일부 필수 구성요소가 누락되었습니다. Chrome 최신 버전을 실행하고 있는지 확인한 뒤 다시 시도해 주세요.</translation>
 <translation id="7868137160098754906">원격 컴퓨터의 PIN을 입력하세요.</translation>
 <translation id="7869445566579231750">이 애플리케이션을 실행할 수 있는 권한이 없습니다.</translation>
+<translation id="7895403300744144251">원격 컴퓨터의 보안 정책으로 인해 계정에서 연결할 수 없습니다.</translation>
 <translation id="7948001860594368197">화면 옵션</translation>
 <translation id="7970576581263377361">인증에 실패했습니다. Chromium에 다시 로그인하세요.</translation>
 <translation id="7981525049612125370">원격 세션이 만료되었습니다.</translation>

@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Verkkosivua isännöivä palvelin voi olla ylikuormitettu tai huollettavana.
     Jotta liiallinen liikenne ei pahentaisi tilannetta,
     pyynnöt tähän URL-osoitteeseen on estetty tilapäisesti.</translation>
-<translation id="1066332784716773939">Diagnosoi virheet…</translation>
 <translation id="106701514854093668">Työpöytäkirjanmerkit</translation>
 <translation id="1080116354587839789">Sovita leveyteen</translation>
 <translation id="1090046120949329821">Useita erillisiä Content-Disposition-ylätunnisteita vastaanotettu.  Tätä ei sallita
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Osasto</translation>
 <translation id="2113977810652731515">Kortti</translation>
 <translation id="2114841414352855701">Ei käytetä – käytännön <ph name="POLICY_NAME" /> ohittama.</translation>
-<translation id="2122434088511736194">Työpöytähaku käyttää oletushakukonettasi (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Asiakassovellus</translation>
 <translation id="213826338245044447">Mobiilikirjanmerkit</translation>
 <translation id="2148716181193084225">Tänään</translation>
 <translation id="2149973817440762519">Muokkaa kirjanmerkkiä</translation>
-<translation id="2153530520610387456">Siirry kohtaan
-      <ph name="BEGIN_BOLD" />
-      Käynnistä &gt; Ohjauspaneeli &gt; Verkko ja Internet &gt; Verkko- ja jakamiskeskus &gt; Tee ongelmien vianmääritys (alalaidassa) &gt; Internet-yhteydet.
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Järjestelmänvalvojan täydet käyttöoikeudet</translation>
 <translation id="2166378884831602661">Tämä sivusto ei voi tarjota suojattua yhteyttä</translation>
 <translation id="2171101176734966184">Yritit yhdistää verkkotunnukseen <ph name="DOMAIN" />, mutta palvelin esitti varmenteen, joka käyttää heikkoa allekirjoitusalgoritmia. Tämä tarkoittaa sitä, että palvelimen esittämät tunnistetiedot saattavat olla väärennettyjä. Palvelin ei siis välttämättä ole tavoittelemasi palvelin, vaan saatat viestiä hakkerin kanssa.</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Tämän käytännön arvo on vanhentunut.</translation>
 <translation id="2262243747453050782">HTTP-virhe</translation>
 <translation id="2279770628980885996">Palvelin kohtasi odottamattoman tilan yrittäessään toteuttaa pyyntöä.</translation>
-<translation id="2282186295770469712">Hallinnoi hakuasetuksia</translation>
 <translation id="2282872951544483773">Ei käytettävissä olevat kokeilut</translation>
 <translation id="2292556288342944218">Internetyhteytesi on estetty</translation>
 <translation id="229702904922032456">Pää- tai keskitason varmenne on vanhentunut.</translation>
@@ -190,10 +183,6 @@
 <translation id="2948083400971632585">Voit poistaa yhteydelle määritetyt välityspalvelimet käytöstä asetussivulla.</translation>
 <translation id="2950186680359523359">Palvelin katkaisi yhteyden lähettämättä mitään tietoja.</translation>
 <translation id="2955913368246107853">Sulje hakupalkki</translation>
-<translation id="2957518517523241247">Testaa yhteytesi kohdassa
-      <ph name="BEGIN_BOLD" />
-      Käynnistys &gt; Ohjauspaneeli &gt; Verkkoyhteydet &gt; Luo uusi yhteys.
-      <ph name="END_BOLD" /></translation>
 <translation id="2958431318199492670">Verkkoasetukset eivät noudata ONC-standardia. Kaikkia asetuksia ei välttämättä tuoda.</translation>
 <translation id="2969319727213777354">Kellosi täytyy asettaa oikeaan aikaan, jotta salattu yhteys voidaan muodostaa. Tämä johtuu siitä, että verkkosivustojen tunnistamisessa käytettävät varmenteet ovat voimassa vain tiettyinä aikoina. Chrome ei voi vahvistaa varmenteita, koska laitteesi kello on väärässä ajassa.</translation>
 <translation id="2972581237482394796">&amp;Tee uudelleen</translation>
@@ -298,7 +287,6 @@
 <translation id="3885155851504623709">Kunta</translation>
 <translation id="3901925938762663762">Kortti on vanhentunut.</translation>
 <translation id="3903912596042358459">Palvelin kieltäytyi suorittamasta pyyntöä.</translation>
-<translation id="3930850196944737149">Laitteesi on offline-tilassa.</translation>
 <translation id="3934680773876859118">PDF-asiakirjan lataaminen epäonnistui</translation>
 <translation id="3950924596163729246">Ei yhteyttä verkkoon.</translation>
 <translation id="3963721102035795474">Lukijatila</translation>
@@ -466,7 +454,6 @@
 <translation id="6040143037577758943">Sulje</translation>
 <translation id="604124094241169006">Automaattinen</translation>
 <translation id="6042308850641462728">Lisää</translation>
-<translation id="6044718745395562198">Tietokoneesi on offline-tilassa.</translation>
 <translation id="6060685159320643512">Varoitus, nämä kokeilut saattavat puraista</translation>
 <translation id="6093795393556121384">Kortti vahvistettiin.</translation>
 <translation id="6146055958333702838">Tarkista kaikki kaapelit ja käynnistä uudelleen reitittimet, modeemit ja muut
@@ -533,10 +520,6 @@
 <translation id="6830600606572693159">Verkkosivusto osoitteessa <ph name="URL" /> ei ole juuri nyt käytettävissä. Se saattaa olla ylikuormitettu tai suljettuna ylläpitotoimien vuoksi.</translation>
 <translation id="6831043979455480757">Käännä</translation>
 <translation id="6839929833149231406">Alue</translation>
-<translation id="6851123334996048122">Testaa yhteytesi kohdassa
-      <ph name="BEGIN_BOLD" />
-      Sovellukset &gt; Järjestelmän asetukset &gt; Verkko &gt; Avustus.
-      <ph name="END_BOLD" /></translation>
 <translation id="6874604403660855544">&amp;Toista lisäys</translation>
 <translation id="6891596781022320156">Käytännön tasoa ei tueta.</translation>
 <translation id="6897140037006041989">User agent</translation>
@@ -618,9 +601,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Ei hallinnoida</translation>
 <translation id="7758069387465995638">Palomuuri tai virustorjuntaohjelmisto on saattanut estää yhteyden.</translation>
-<translation id="7760914272566804712">Voit yrittää diagnosoida ongelman seuraavasti:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Palvelimen varmenne ei vastaa URL-osoitetta.</translation>
 <translation id="777702478322588152">Prefektuuri</translation>
 <translation id="778579833039460630">Ei tietoja</translation>
@@ -660,13 +640,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="8241707690549784388">Etsimäsi sivu käytti antamiasi tietoja. Sivulle palaaminen voi johtaa jokaisen tekemäsi toiminnon toistamiseen. Haluatko jatkaa?</translation>
 <translation id="8249320324621329438">Viimeksi haettu:</translation>
 <translation id="8261506727792406068">Poista</translation>
-<translation id="8266098793847448402">Valitse
-      <ph name="BEGIN_BOLD" />Käynnistä<ph name="END_BOLD" />
-       &gt;
-      <ph name="BEGIN_BOLD" />Suorita<ph name="END_BOLD" /> ja
-      kirjoita
-      <ph name="BEGIN_BOLD" />%windir%\\network diagnostic\\xpnetdiag.exe<ph name="END_BOLD" />.
-      Valitse sitten <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Pyyntösi päästä tälle sivustolle on lähetetty henkilölle <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Ota yhteyttä verkon ylläpitäjään, jos et tiedä, mitä tämä tarkoittaa.</translation>
 <translation id="8293206222192510085">Lisää kirjanmerkki</translation>

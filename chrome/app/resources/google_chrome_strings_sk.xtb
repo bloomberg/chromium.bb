@@ -27,6 +27,7 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1587223624401073077">Google Chrome používa vašu kameru.</translation>
 <translation id="1619887657840448962">Z dôvodu zvýšenia bezpečnosti prehliadača Chrome sme zakázali nasledujúce rozšírenie, ktoré nie je uvedené v službe <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohlo byť pridané bez vášho vedomia.</translation>
 <translation id="163860049029591106">Začíname so systémom OS Chrome</translation>
+<translation id="1653828314016431939">OK — reštartovať</translation>
 <translation id="1682634494516646069">Prehliadač Google Chrome nemôže čítať ani zapisovať do adresára s údajmi: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome je webový prehliadač, ktorý spúšťa webové stránky a aplikácie rýchlosťou blesku. Je rýchly, stabilný a jednoduchý. Má v sebe vstavanú ochranu pred škodlivým softvérom a neoprávneným získavaním údajov, vďaka ktorej je prehliadanie webu bezpečnejšie.</translation>
 <translation id="174539241580958092">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje z dôvodu chyby prihlásenia.</translation>
@@ -72,6 +73,12 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="3080151273017101988">Ponechať aplikácie na pozadí spustené po zatvorení prehliadača Google Chrome</translation>
 <translation id="3089968997497233615">K dispozícii je nová, bezpečnejšia verzia prehliadača Google Chrome.</translation>
 <translation id="3149510190863420837">Aplikácie Chrome</translation>
+<translation id="3251381707915721925">Ak chcete nastaviť, ktoré weby môže používateľ <ph name="NEW_PROFILE_NAME" /> zobraziť, môžete na adrese <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> nakonfigurovať obmedzenia a nastavenia. Ak nezmeníte predvolené nastavenia, používateľ <ph name="NEW_PROFILE_NAME" /> bude môcť prehliadať všetky stránky na príslušnom webe.
+
+Ak chcete profilu <ph name="NEW_PROFILE_NAME" /> zabrániť pristupovať do vášho účtu, uzamknite svoj profil, keď Chrome nepoužívate. Urobíte to tak, že kliknete na názov profilu v pravom hornom rohu tohto prehliadača a vyberiete možnosť Ukončiť a aktivovať detskú zámku.
+<ph name="BEGIN_LINK_2" />Ďalšie informácie<ph name="END_LINK_2" />
+
+Ďalšie pokyny si prečítajte v e-mailovej správe odoslanej na adresu <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Prihlásenie do prehliadača Chrome</translation>
 <translation id="3311976847535831054">Tento počítač už nebude dostávať aktualizácie pre 32-bitový prehliadač Google Chrome. Inovujte ho na 64-bitovú verziu.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -119,6 +126,7 @@ Ak sa chcete aj napriek tomu prihlásiť, informácie prehliadača Chrome, ako s
 <translation id="4921569541910214635">Zdieľať počítač? Teraz si môžete prehliadač Chrome nastaviť podľa vlastných predstáv.</translation>
 <translation id="4925019873400497719">Chrome overil, že certifikát tohto webu bol vydaný vydavateľom <ph name="ISSUER" />. Server poskytol informácie o transparentnosti certifikátu, boli však neplatné.</translation>
 <translation id="4953650215774548573">Nastaviť Google Chrome ako predvolený prehliadač</translation>
+<translation id="495931528404527476">V prehliadači Chrome</translation>
 <translation id="4987308747895123092">Zatvorte všetky okná prehliadača Google Chrome (vrátane okien v režime systému Windows 8) a skúste to znova.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Prehliadaču Google Chrome sa nepodarilo synchronizovať vaše údaje. Aktualizujte prístupovú frázu synchronizácie.</translation>
@@ -211,6 +219,7 @@ Prehliadač Google Chrome nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7808348361785373670">Odstrániť z prehliadača Chrome...</translation>
 <translation id="7825851276765848807">Inštalácia zlyhala kvôli neznámej chybe. Skúste aplikáciu Google Chrome stiahnuť znova.</translation>
 <translation id="7890208801193284374">Ak počítač zdieľate s rodinou a priateľmi, môžu v prehliadači Chrome prehliadať oddelene a tiež si ho nastaviť podľa vlastných požiadaviek.</translation>
+<translation id="795025003224538582">Nereštartovať</translation>
 <translation id="8005540215158006229">Prehliadač Chrome je takmer pripravený.</translation>
 <translation id="8008534537613507642">Preinštalovať prehliadač Chrome</translation>
 <translation id="8030318113982266900">Prebieha aktualizácia vášho zariadenia na kanál <ph name="CHANNEL_NAME" />...</translation>

@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Iespējot mobilo datu pārraidi</translation>
 <translation id="1621499497873603021">Atlikušais akumulatora darbības laiks: <ph name="TIME_LEFT" />.</translation>
 <translation id="164969095109328410">Chrome ierīce</translation>
+<translation id="1677472565718498478">Atlikušais laiks: <ph name="TIME" /></translation>
 <translation id="1723752762323179280">Iziešana no sesijas</translation>
 <translation id="1747827819627189109">Ekrāna tastatūra iespējota</translation>
 <translation id="1812696562331527143">Ievades metode ir mainīta uz <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />trešā puse<ph name="END_LINK" />).
@@ -116,6 +117,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Meklēt vai Shift.</translation>
 <translation id="4421231901400348175">Ekrāna pārvaldības koplietošana ar <ph name="HELPER_NAME" />, izmantojot attālo palīdzību.</translation>
 <translation id="4430019312045809116">Skaļums</translation>
 <translation id="4527045527269911712">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī.</translation>
+<translation id="453661520163887813">Līdz pilnai uzlādei: <ph name="TIME" /></translation>
 <translation id="4544944664594876241">Tika mainīti īsinājumtaustiņi, ar kuriem var bloķēt ekrānu. Lūdzu, turpmāk izmantojiet <ph name="NEW_SHORTCUT" />, nevis <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">meklēt</translation>
 <translation id="4804818685124855865">Atvienot</translation>
@@ -224,6 +226,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation
 <translation id="8428213095426709021">Iestatījumi</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ierīce, iespējams, netiks uzlādēta, kamēr tā būs ieslēgta.</translation>
 <translation id="8528322925433439945">Mobilās ierīces...</translation>
+<translation id="8639760480004882931">Atlicis: <ph name="PERCENTAGE" />%</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pievienots lādētājs ar mazu strāvas padevi</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

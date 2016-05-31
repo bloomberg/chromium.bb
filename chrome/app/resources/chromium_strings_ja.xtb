@@ -16,6 +16,7 @@
 <translation id="151962892725702025">お使いのドメインでは同期を利用できないため、Chromium OS はデータを同期できませんでした。</translation>
 <translation id="1559451348202814456">Mac OS X 10.6、10.7、10.8 はサポートされなくなったため、Chromium は正常に機能しない可能性があります。</translation>
 <translation id="1644918877723739397">Chromium ではこのパスワードが <ph name="SAVED_PASSWORD_LINK" />に保存され、次回の入力時に使用されます。</translation>
+<translation id="1653828314016431939">OK - 今すぐ再起動</translation>
 <translation id="1668054258064581266">Chromium からアカウントを削除したら、場合によっては開いているタブを再読み込みして変更を反映させる必要があります。</translation>
 <translation id="1688750314291223739">同期を設定すると、パーソナライズされたブラウザ機能をウェブ上に保存して、どのパソコンの Chromium からでも使用できるようになります。</translation>
 <translation id="1699664235656412242">Chromium のウィンドウ（Windows 8 モードのウィンドウを含む）をすべて閉じてからもう一度お試しください。</translation>
@@ -180,6 +181,12 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">新しいウィンドウ</translation>
 <translation id="734373864078049451">ウェブ、ブックマーク、その他の Chromium データを好みに設定できます。</translation>
+<translation id="7344413941077984497"><ph name="NEW_PROFILE_NAME" /> が閲覧できるウェブサイトを設定するには、<ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> で制限と設定を指定します。デフォルト設定のままにすると、<ph name="NEW_PROFILE_NAME" /> はウェブ上のあらゆるコンテンツを閲覧できます。
+
+ご使用のアカウントに <ph name="NEW_PROFILE_NAME" /> がアクセスできないようにするには、Chromium の使用時以外はご自分のプロフィールをロックします。それには、ブラウザ右上でご自分のプロフィール名をクリックし、[終了してチャイルドロックをかける] を選択します。
+<ph name="BEGIN_LINK_2" />詳細<ph name="END_LINK_2" />
+
+詳しくは、<ph name="ACCOUNT_EMAIL" /> 宛にメールをお送りしましたのでご確認ください。</translation>
 <translation id="7419987137528340081">既存の Chromium データを個別に保持したい場合は、<ph name="USER_NAME" /> 用の新しい Chromium ユーザーを作成できます。</translation>
 <translation id="7421823331379285070">Chromium は、Windows XP 以降が必要です。一部の機能が動作しない場合があります。</translation>
 <translation id="7463979740390522693">Chromium - お知らせ（<ph name="QUANTITY" /> 件未読）</translation>
@@ -194,6 +201,7 @@
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="7918535023914021398">Chromium で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する情報はサーバーから提供されませんでした。</translation>
 <translation id="7937630085815544518">Chromium に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
+<translation id="795025003224538582">再起動しない</translation>
 <translation id="7962572577636132072">Chromium は自動的に更新されるため、常に最新版をご利用になれます。</translation>
 <translation id="7979877361127045932">Chromium メニューで非表示</translation>
 <translation id="8030318113982266900">デバイスを <ph name="CHANNEL_NAME" /> チャンネルに更新しています...</translation>

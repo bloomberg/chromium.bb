@@ -72,6 +72,7 @@
 <translation id="1853692000353488670">Новая вкладка инкогнито</translation>
 <translation id="189172778771606813">Закрыть панель навигации</translation>
 <translation id="1924956916668006832">Выбрать адрес доставки</translation>
+<translation id="1933845786846280168">Выбранная вкладка</translation>
 <translation id="194341124344773587">Разрешение для Chrome можно предоставить в <ph name="BEGIN_LINK" />настройках Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Сохранение паролей</translation>
 <translation id="1944384637046898011">Зашифровать все с помощью пароля аккаунта Google с <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@
 <translation id="2959609938957585241">Чтобы получить доступ к вкладкам на всех ваших устройствах, включите автосинхронизацию данных в настройках аккаунта на устройстве Android.</translation>
 <translation id="2960796085439532066">© Google Inc., <ph name="YEAR" />. Все права защищены.</translation>
 <translation id="2968755619301702150">Просмотр сертификатов</translation>
+<translation id="2979025552038692506">Выбранная вкладка инкогнито</translation>
 <translation id="2996291259634659425">Придумайте кодовую фразу</translation>
 <translation id="2996809686854298943">Необходимо указать URL</translation>
 <translation id="3012408695656332380">Данные на устройстве будут заменены данными из аккаунта <ph name="TO_ACCOUNT" />. Чтобы скачать их, войдите в аккаунт <ph name="FROM_ACCOUNT" />. Обратите внимание, что контент, созданный после выхода из системы, будет удален.</translation>
@@ -554,6 +556,7 @@
 <translation id="8073388330009372546">Открыть в новой вкладке</translation>
 <translation id="8076014560081431679">Настройки сайтов не изменятся, поэтому данные о вашей работе в Интернете сохранятся. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Контент с сайта <ph name="DOMAIN_NAME" />. Получен с помощью Google.</translation>
+<translation id="8103578431304235997">Вкладка инкогнито</translation>
 <translation id="8106211421800660735">Номер карты</translation>
 <translation id="813082847718468539">Сведения о сайте</translation>
 <translation id="8137558756159375272">Функция "Нажмите для поиска" отправляет в Google выбранное слово, а также текущую страницу в качестве контекста. Включить или отключить эту функцию можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>

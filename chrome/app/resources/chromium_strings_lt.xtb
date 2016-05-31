@@ -18,6 +18,7 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="151962892725702025">„Chromium“ OS negali sinchronizuoti duomenų, nes jūsų domene sinchronizavimas nepasiekiamas.</translation>
 <translation id="1559451348202814456">„Chromium“ gali tinkamai neveikti, nes ji nebepalaikoma naudojant 10.6, 10.7 ar 10.8 versijos „Mac OS X“.</translation>
 <translation id="1644918877723739397">„Chromium“ jį išsaugos naudodama <ph name="SAVED_PASSWORD_LINK" /> ir prisimins, kai jo prireiks kitą kartą.</translation>
+<translation id="1653828314016431939">Gerai – dabar paleisti iš naujo</translation>
 <translation id="1668054258064581266">Pašalinus paskyrą iš „Chromium“, galbūt reikės iš naujo įkelti skirtukus, kad pakeitimai įsigaliotų.</translation>
 <translation id="1688750314291223739">Nustatykite sinchronizavimą, kad žiniatinklyje išsaugotumėte suasmenintas naršyklės funkcijas ir pasiektumėte jas iš „Chromium“ bet kuriuo kompiuteriu.</translation>
 <translation id="1699664235656412242">Uždarykite visus „Chromium“ langus (įskaitant atidarytus veikiant „Windows 8“ režimui) ir bandykite dar kartą.</translation>
@@ -182,6 +183,12 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Naujas langas</translation>
 <translation id="734373864078049451">Čia saugoma žiniatinklio informacija, žymės ir kiti „Chromium“ duomenys.</translation>
+<translation id="7344413941077984497">Jei norite nustatyti, kokias svetaines <ph name="NEW_PROFILE_NAME" /> gali peržiūrėti, konfigūruokite apribojimus ir nustatymus apsilankę adresu <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Jei nepakeisite numatytųjų nustatymų, <ph name="NEW_PROFILE_NAME" /> galės naršyti visą žiniatinklį.
+
+Kad <ph name="NEW_PROFILE_NAME" /> negalėtų pasiekti jūsų paskyros, būtinai užrakinkite profilį, kai nenaudojate „Chromium“. Norėdami tai atlikti, spustelėkite profilio pavadinimą viršutiniame dešiniajame naršyklės kampe ir pasirinkite „Išeiti ir saugiai užrakinti“.
+<ph name="BEGIN_LINK_2" />Sužinokite daugiau<ph name="END_LINK_2" />
+
+Patikrinkite el. pašto adresu <ph name="ACCOUNT_EMAIL" /> išsiųstą laišką, kuriame rasite daugiau instrukcijų.</translation>
 <translation id="7419987137528340081">Jei norėtumėte, kad „Chromium“ duomenys būtų saugomi atskirai, galite sukurti naują „Chromium“ naudotoją <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">„Chromium“ reikalinga „Windows XP“ ar naujesnė versija. Kai kurios funkcijos gali neveikti.</translation>
 <translation id="7463979740390522693">„Chromium“ – pranešimai (neskaitytų: <ph name="QUANTITY" />)</translation>
@@ -196,6 +203,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7747138024166251722">Diegimo programai nepavyko sukurti laikino katalogo. Patikrinkite, ar yra laisvos vietos diske ir, ar leidžiama įdiegti programinę įrangą.</translation>
 <translation id="7918535023914021398">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą. Serveris nepateikė jokios sertifikato skaidrumo informacijos.</translation>
 <translation id="7937630085815544518">Buvote prisijungę prie „Chromium“ kaip <ph name="USER_EMAIL_ADDRESS" />. Prisijungdami vėl naudokite tą pačią paskyrą.</translation>
+<translation id="795025003224538582">Nepaleisti iš naujo</translation>
 <translation id="7962572577636132072">„Chromium“ atnaujinama automatiškai, todėl visada naudojatės naujausia versija.</translation>
 <translation id="7979877361127045932">Paslėpti „Chromium“ meniu elementą</translation>
 <translation id="8030318113982266900">Atnaujinamas įrenginys į „<ph name="CHANNEL_NAME" />“ kanalą...</translation>

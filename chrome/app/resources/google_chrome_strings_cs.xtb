@@ -27,6 +27,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1587223624401073077">Google Chrome používá vaši kameru.</translation>
 <translation id="1619887657840448962">Aby byl prohlížeč Chrome bezpečnější, deaktivovali jsme následující rozšíření, které není uvedeno na webu <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> a mohlo být přidáno bez vašeho vědomí.</translation>
 <translation id="163860049029591106">Začínáme se systémem Chrome OS</translation>
+<translation id="1653828314016431939">OK – Restartovat</translation>
 <translation id="1682634494516646069">Aplikace Google Chrome nemůže číst ani zapisovat do svého datového adresáře:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -74,6 +75,12 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="3080151273017101988">Po ukončení prohlížeče Google Chrome nechat aplikace na pozadí spuštěné</translation>
 <translation id="3089968997497233615">K dispozici je nová, bezpečnější verze prohlížeče Google Chrome.</translation>
 <translation id="3149510190863420837">Aplikace Chrome</translation>
+<translation id="3251381707915721925">Chcete-li nastavit, které weby může uživatel <ph name="NEW_PROFILE_NAME" /> zobrazit, nakonfigurujte omezení a nastavení na stránce <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Pokud nezměníte výchozí nastavení, uživatel <ph name="NEW_PROFILE_NAME" /> na internetu bude moci prohlížet vše.
+
+Abyste uživateli <ph name="NEW_PROFILE_NAME" /> zabránili v přístupu k vašemu účtu, když Chrome nepoužíváte, nezapomeňte svůj profil uzamknout. Provedete to tak, že v pravém horním rohu prohlížeče kliknete na název svého profilu a vyberete Ukončit a použít rodičovský zámek.
+<ph name="BEGIN_LINK_2" />Další informace<ph name="END_LINK_2" />
+
+Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Přihlášení do Chrome</translation>
 <translation id="3311976847535831054">Tento počítač již nebude dostávat aktualizace pro 32bitovou verzi prohlížeče Google Chrome. Nainstalujte prosím 64bitovou verzi Chromu.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -121,6 +128,7 @@ Pokud se přesto přihlásíte, budou data prohlížeče Chrome (například zá
 <translation id="4921569541910214635">Sdílíte počítač s dalšími uživateli? Nyní si Chrome můžete nastavit podle svých představ.</translation>
 <translation id="4925019873400497719">Chrome ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server poskytl údaje Certificate Transparency, byly však neplatné.</translation>
 <translation id="4953650215774548573">Nastavit Google Chrome jako výchozí prohlížeč</translation>
+<translation id="495931528404527476">V Chromu</translation>
 <translation id="4987308747895123092">Zavřete všechna okna prohlížeče Google Chrome (včetně oken v režimu Windows 8) a zkuste to znovu.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome vaše data nemohl synchronizovat. Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
@@ -213,6 +221,7 @@ Aplikace Google Chrome nemůže vaše nastavení obnovit.</translation>
 <translation id="7808348361785373670">Odstranit z Chromu...</translation>
 <translation id="7825851276765848807">Instalace se z neznámého důvodu nezdařila. Stáhněte prosím aplikaci Google Chrome znovu.</translation>
 <translation id="7890208801193284374">Pokud počítač sdílíte s kamarády a členy rodiny, každý může web procházet samostatně a nastavit si Chrome podle svých požadavků.</translation>
+<translation id="795025003224538582">Nerestartovat</translation>
 <translation id="8005540215158006229">Chrome je téměř připraven.</translation>
 <translation id="8008534537613507642">Přeinstalovat Chrome</translation>
 <translation id="8030318113982266900">Aktualizace zařízení na verzi <ph name="CHANNEL_NAME" />...</translation>

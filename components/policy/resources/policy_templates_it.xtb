@@ -454,6 +454,7 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 <translation id="267596348720209223">Consente di specificare le codifiche dei caratteri supportate dal provider di ricerca. Le codifiche sono nomi di pagine codificati come UTF-8, GB2312 e ISO-8859-1. Vengono provate nell'ordine indicato. Questa norma è facoltativa. Se non viene impostata viene utilizzato il valore predefinito UTF-8. Questa norma viene rispettata soltanto se è attiva la norma "DefaultSearchProviderEnabled".</translation>
 <translation id="2682225790874070339">Consente di disattivare Drive nell'app File di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Attiva la funzione proxy di compressione dei dati</translation>
+<translation id="2731627323327011390">Disattiva l'utilizzo dei certificati <ph name="PRODUCT_OS_NAME" /> per le app ARC</translation>
 <translation id="2742843273354638707">Consente di nascondere l'app Chrome Web Store e il link nel piè di pagina nella pagina Nuova scheda e in Avvio applicazioni di <ph name="PRODUCT_OS_NAME" />.
 
       Quando questa norma è impostata su true, le icone sono nascoste.
@@ -1646,6 +1647,7 @@ Se questa norma viene impostata consente di controllare il tipo di ingrandimento
 Se la norma viene impostata, gli utenti possono ignorarla temporaneamente attivando o disattivando l'ingrandimento dello schermo. La scelta dell'utente non è però permanente e viene ripristinato il valore predefinito quando viene visualizzata di nuovo la schermata di accesso o quando l'utente rimane inattivo nella schermata di accesso per un minuto.
 
 Se la norma non viene impostata, l'ingrandimento dello schermo viene disattivato alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare l'ingrandimento dello schermo in qualsiasi momento e il relativo stato nella schermata di accesso persiste per tutti gli utenti.</translation>
+<translation id="7249828445670652637">Attiva i certificati CA <ph name="PRODUCT_OS_NAME" /> per le app ARC</translation>
 <translation id="7258823566580374486">Attiva separazione degli host di accesso remoto</translation>
 <translation id="7260277299188117560">Aggiornamento automatico p2p attivato</translation>
 <translation id="7267809745244694722">Per impostazione predefinita, i tasti multimediali si comportano come tasti funzione.</translation>
@@ -1756,6 +1758,17 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 <translation id="7715711044277116530">Percentuale di regolazione del ritardo di oscuramento dello schermo in modalità di presentazione</translation>
 <translation id="7717938661004793600">Configura le funzioni di accessibilità di <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Consente di stabilire se riferire o meno le metriche sull'utilizzo a Google. Se la norma viene impostata su true, <ph name="PRODUCT_OS_NAME" /> riferirà le metriche sull'utilizzo. Se non viene configurata o viene impostata su false, i rapporti sulle metriche verranno disattivati.</translation>
+<translation id="7723433108978650103">Consente di impedire l'accesso agli URL in elenco.
+
+      Questa norma consente di impedire all'utente di caricare le pagine web degli URL vietati. Nella lista nera è presente un elenco di pattern URL che indicano gli URL vietati.
+
+      Un pattern URL deve essere nel formato indicato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      È possibile definire eccezioni nella norma relativa alla whitelist di URL. Per queste norme è possibile definire massimo 1000 voci; le voci in più vengono ignorate.
+
+      È sconsigliato bloccare gli URL "chrome://*" interni perché potrebbero essere generati errori imprevisti.
+
+      Se questa norma non viene impostata, non sarà vietato alcun URL nel browser.</translation>
 <translation id="7749402620209366169">Consente di abilitare l'autenticazione a due fattori per gli host di accesso remoto invece di un PIN specificato dall'utente.
 
           Se questa impostazione è abilitata, gli utenti devono fornire un codice valido a due fattori quando accedono a un host.
@@ -1819,6 +1832,9 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
       Se la norma non viene impostata, verrà gestita come se fosse impostata su TimezoneAutomaticDetectionUsersDecide.
 
       Se la norma SystemTimezone è impostata, sostituisce questa norma. In questo caso il rilevamento automatico del fuso orario viene completamente disattivato.</translation>
+<translation id="787125417158068494">Se la norma viene impostata su SyncDisabled o non viene configurata, i certificati <ph name="PRODUCT_OS_NAME" /> non saranno disponibili per le app ARC.
+
+      Se viene impostata su CopyCaCerts, per le app ARC saranno disponibili tutti i certificati CA installati su ONC con <ph name="WEB_TRUSTED_BIT" />.</translation>
 <translation id="7882585827992171421">Questa norma è attiva soltanto in modalità retail.
 
       Consente di stabilire l'ID dell'estensione da utilizzare come screensaver nella schermata di accesso. L'estensione deve far parte dell'AppPack configurato per il dominio tramite la norma DeviceAppPack.</translation>
@@ -1834,6 +1850,7 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Consente di specificare se p2p deve essere utilizzato per i payload di aggiornamento del sistema operativo. Se questa norma viene impostata su True, i dispositivi condivideranno e proveranno a consumare i payload di aggiornamento sulla LAN, riducendo potenzialmente l'utilizzo e la congestione della larghezza di banda Internet. Se il payload di aggiornamento non è disponibile sulla LAN, il dispositivo ripiegherà sul download da un server di aggiornamento. Se la norma viene impostata su False o non viene configurata, non verrà utilizzato p2p.</translation>
 <translation id="7933141401888114454">Attivazione della creazione di utenti controllati</translation>
+<translation id="793473937901685727">Imposta la disponibilità dei certificati per le app ARC</translation>
 <translation id="7936098023732125869">Consente di attivare l'utilizzo di un provider di ricerca predefinito.
 
           Se questa impostazione viene attivata, viene eseguita una ricerca predefinita quando l'utente digita testo diverso da un URL nella omnibox.

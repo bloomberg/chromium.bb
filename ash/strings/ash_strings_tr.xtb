@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Mobil verileri etkinleştir</translation>
 <translation id="1621499497873603021">Pilin boşalması için kalan süre, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome cihaz</translation>
+<translation id="1677472565718498478">Kalan süre: <ph name="TIME" /></translation>
 <translation id="1723752762323179280">Oturumdan Çıkış Yapılıyor</translation>
 <translation id="1747827819627189109">Dokunmatik klavye etkin</translation>
 <translation id="1812696562331527143">Giriş yönteminiz <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3. taraf<ph name="END_LINK" />) olarak değiştirildi.
@@ -116,6 +117,7 @@ Geçiş yapmak için ÜstKrktr + Alt tuşlarına basın.</translation>
 <translation id="4421231901400348175">Ekranınızın kontrolü, Uzaktan Yardım kullanılarak <ph name="HELPER_NAME" /> ile paylaşılıyor.</translation>
 <translation id="4430019312045809116">Ses</translation>
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" adlı Bluetooth cihaz eşleme izni istiyor.</translation>
+<translation id="453661520163887813">Dolması için gereken süre: <ph name="TIME" /></translation>
 <translation id="4544944664594876241">Ekranı kilitleme kısayolu değişti. Lütfen <ph name="OLD_SHORTCUT" /> yerine <ph name="NEW_SHORTCUT" /> kısayolunu kullanın.</translation>
 <translation id="479989351350248267">ara</translation>
 <translation id="4804818685124855865">Bağlantıyı kes</translation>
@@ -225,6 +227,7 @@ Devre dışı bırakmak için Ctrl+Alt+Z tuşlarına basın.</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> cihazınız açıkken şarj olmayabilir.</translation>
 <translation id="8528322925433439945">Mobile...</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> kaldı</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Düşük güçlü şarj cihazı bağlandı</translation>
 <translation id="8814190375133053267">Kablosuz</translation>

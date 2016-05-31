@@ -72,6 +72,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1853692000353488670">Ny inkognitoflik</translation>
 <translation id="189172778771606813">Stäng navigeringspanelen</translation>
 <translation id="1924956916668006832">Välj leveransadress</translation>
+<translation id="1933845786846280168">Vald flik</translation>
 <translation id="194341124344773587">Aktivera behörighet för Chrome i <ph name="BEGIN_LINK" />Android-inställningar<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Spara lösenord</translation>
 <translation id="1944384637046898011">Kryptera alla med Google-lösenordet från <ph name="TIME" /></translation>
@@ -143,7 +144,7 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="278029852808208386">Inga Bluetooth-enheter hittades. <ph name="BEGIN_LINK" />Gör om sökningen<ph name="END_LINK" />.</translation>
 <translation id="2781389167600714117">Välj frakt</translation>
 <translation id="2811892995384186721">Visas inte enheten? <ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
-<translation id="2836148919159985482">Tryck på bakåtknappen om du vill lämna helskärmsläget.</translation>
+<translation id="2836148919159985482">Tryck på bakåtknappen för att lämna helskärmsläget.</translation>
 <translation id="2842985007712546952">Överordnad mapp</translation>
 <translation id="2870560284913253234">Webbplats</translation>
 <translation id="2888126860611144412">Om Chrome</translation>
@@ -156,6 +157,7 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="2959609938957585241">Aktivera Automatisk synkronisering av data i kontoinställningarna för Android om du vill ha samma flikar tillgängliga på alla enheter.</translation>
 <translation id="2960796085439532066">Upphovsrätt <ph name="YEAR" /> Google Inc. Med ensamrätt.</translation>
 <translation id="2968755619301702150">Certifikatvisare</translation>
+<translation id="2979025552038692506">Vald inkognitoflik</translation>
 <translation id="2996291259634659425">Skapa lösenfras</translation>
 <translation id="2996809686854298943">En webbadress måste anges.</translation>
 <translation id="3012408695656332380">Ersätt den här enhetens data med data från <ph name="TO_ACCOUNT" />. Du kan hämta befintlig data genom att byta tillbaka till <ph name="FROM_ACCOUNT" /> men data som har skapats efter att du loggade ut försvinner.</translation>
@@ -318,7 +320,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5233638681132016545">Ny flik</translation>
 <translation id="5271967389191913893">Innehållet som skulle laddas ned gick inte att öppna på enheten.</translation>
 <translation id="5275558766013849309">Flikarna visas tillsammans med aktuella appar.</translation>
-<translation id="528192093759286357">Dra uppifrån och tryck på bakåtknappen om du vill lämna helskärmsläget.</translation>
+<translation id="528192093759286357">Dra uppifrån och tryck på bakåtknappen för att lämna helskärmsläget.</translation>
 <translation id="5284584623296338184">Ändringar i bokmärken, historik, lösenord och andra inställningar synkroniseras inte längre med ditt Google-konto. Befintlig data fortsätter dock att lagras i Google-kontot.</translation>
 <translation id="5301954838959518834">OK, jag fattar</translation>
 <translation id="5302048478445481009">Språk</translation>
@@ -554,6 +556,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="8073388330009372546">Öppna bild i ny flik</translation>
 <translation id="8076014560081431679">Sparade webbplatsinställningar raderas inte och kan visa dina surfvanor. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Innehållet kommer från <ph name="DOMAIN_NAME" /> via Google.</translation>
+<translation id="8103578431304235997">Inkognitoflik</translation>
 <translation id="8106211421800660735">Kreditkortsnummer</translation>
 <translation id="813082847718468539">Visa information om webbplatsen</translation>
 <translation id="8137558756159375272">Funktionen Tryck för att söka skickar det markerade ordet till Google Sök med den aktuella sidan som kontext. Du kan stänga av funktionen i <ph name="BEGIN_LINK" />Inställningar<ph name="END_LINK" />.</translation>

@@ -27,6 +27,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1587223624401073077">Google Chrome is using your camera.</translation>
 <translation id="1619887657840448962">To make Chrome safer, we disabled the following extension that isn't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> and may have been added without your knowledge.</translation>
 <translation id="163860049029591106">Get Started with Chrome OS</translation>
+<translation id="1653828314016431939">OK - Restart now</translation>
 <translation id="1682634494516646069">Google Chrome cannot read and write to its data directory:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -74,6 +75,12 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="3080151273017101988">Continue running background apps when Google Chrome is closed</translation>
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
+<translation id="3251381707915721925">To set which websites that <ph name="NEW_PROFILE_NAME" /> can view, you can configure restrictions and settings by visiting <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. If you do not change the default settings, <ph name="NEW_PROFILE_NAME" /> can browse everything on the web.
+
+To prevent <ph name="NEW_PROFILE_NAME" /> from accessing your account, make sure that you lock your profile when you're not using Chrome. To do this, click your profile name in the upper-right corner of the browser, and select "Exit and child lock."
+<ph name="BEGIN_LINK_2" />Learn more<ph name="END_LINK_2" />
+
+Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.</translation>
 <translation id="3282568296779691940">Sign in to Chrome</translation>
 <translation id="3311976847535831054">This computer will no longer receive 32-bit Google Chrome updates. Please upgrade to 64-bit Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -121,6 +128,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="4921569541910214635">Share a computer? Now you can set up Chrome just the way you like it.</translation>
 <translation id="4925019873400497719">Chrome verified that <ph name="ISSUER" /> issued this website's certificate. The server supplied Certificate Transparency information, but it was invalid.</translation>
 <translation id="4953650215774548573">Set Google Chrome as your default browser</translation>
+<translation id="495931528404527476">In Chrome</translation>
 <translation id="4987308747895123092">Please close all Google Chrome windows (including those in Windows 8 mode) and try again.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome could not sync your data. Please update your Sync passphrase.</translation>
@@ -213,6 +221,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7808348361785373670">Remove from Chrome...</translation>
 <translation id="7825851276765848807">Installation failed due to unspecified error. Please download Google Chrome again.</translation>
 <translation id="7890208801193284374">If you share a computer, friends and family can browse separately and set up Chrome just the way they want.</translation>
+<translation id="795025003224538582">Don't restart</translation>
 <translation id="8005540215158006229">Chrome is almost ready.</translation>
 <translation id="8008534537613507642">Reinstall Chrome</translation>
 <translation id="8030318113982266900">Updating your device to <ph name="CHANNEL_NAME" /> channel...</translation>

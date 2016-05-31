@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Mobiladatok engedélyezése</translation>
 <translation id="1621499497873603021">Akkumulátor lemerüléséig hátralévő idő: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-eszköz</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> van hátra</translation>
 <translation id="1723752762323179280">Kilépés a munkamenetből</translation>
 <translation id="1747827819627189109">Képernyő-billentyűzet bekapcsolva</translation>
 <translation id="1812696562331527143">A beviteli mód a következőre változott: <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />harmadik fél<ph name="END_LINK" />).
@@ -116,6 +117,7 @@ Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="4421231901400348175">A képernyő irányításának megosztása <ph name="HELPER_NAME" /> segítővel a Távsegítség szolgáltatás keretein belül.</translation>
 <translation id="4430019312045809116">Hangerő</translation>
 <translation id="4527045527269911712">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> a teljes feltöltésig</translation>
 <translation id="4544944664594876241">Megváltozott a képernyőzárolás billentyűkódja. A <ph name="OLD_SHORTCUT" /> helyett használja a következőt: <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Kapcsolat bontása</translation>
@@ -224,6 +226,7 @@ Kikapcsolásához nyomja meg az Alt + Keresés vagy a Shift billentyűt.</transl
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8517041960877371778">Előfordulhat, hogy a(z) <ph name="DEVICE_TYPE" /> nem töltődik, amíg be van kapcsolva.</translation>
 <translation id="8528322925433439945">Mobil...</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> maradt</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Kis teljesítményű töltő csatlakoztatva</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

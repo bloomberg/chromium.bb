@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Server yang menghosting laman web mungkin kelebihan muatan atau sedang diperbaiki.
     Untuk menghindari munculnya lalu lintas yang terlalu banyak dan memperburuk keadaan,
     permintaan untuk URL ini tidak diizinkan untuk sementara.</translation>
-<translation id="1066332784716773939">Mendiagnosis kesalahan...</translation>
 <translation id="106701514854093668">Bookmark Desktop</translation>
 <translation id="1080116354587839789">Paskan dengan lebar</translation>
 <translation id="1090046120949329821">Beberapa header Disposisi Konten yang berbeda diterima.  Hal ini tidak diizinkan
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Departemen</translation>
 <translation id="2113977810652731515">Kartu</translation>
 <translation id="2114841414352855701">Diabaikan karena diganti dengan <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">Penelusuran desktop menggunakan mesin telusur default (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Bookmark Seluler</translation>
 <translation id="2148716181193084225">Hari ini</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
-<translation id="2153530520610387456">Buka
-          <ph name="BEGIN_BOLD" />
-          Start &gt; Control Panel &gt; Network and Internet &gt; Network and Sharing Center &gt; Troubleshoot Problems (di bawah) &gt; Internet Connections.
-          <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Akses Penuh Admin</translation>
 <translation id="2166378884831602661">Situs ini tidak dapat menyediakan sambungan aman</translation>
 <translation id="2171101176734966184">Anda berusaha menjangkau <ph name="DOMAIN" />, tetapi server menyajikan sertifikat yang ditandatangani menggunakan algoritme tanda tangan yang lemah. Artinya kredensial keamanan yang disajikan server mungkin telah dipalsukan, dan server tersebut mungkin bukan yang diharapkan (Anda mungkin sedang berkomunikasi dengan penyerang).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Nilai ini sudah usang untuk kebijakan ini.</translation>
 <translation id="2262243747453050782">Kesalahan HTTP</translation>
 <translation id="2279770628980885996">Kondisi yang tidak terduga terjadi ketika server berusaha memenuhi permintaan.</translation>
-<translation id="2282186295770469712">Kelola setelan penelusuran</translation>
 <translation id="2282872951544483773">Eksperimen Tidak Tersedia</translation>
 <translation id="2292556288342944218">Akses Internet Anda diblokir</translation>
 <translation id="229702904922032456">Masa berlaku sertifikat akar atau menengah telah berakhir.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">Anda dapat menonaktifkan proxy apa pun yang dikonfigurasi untuk sambungan dari laman setelan.</translation>
 <translation id="2950186680359523359">Server memutus sambungan tanpa mengirim data apa pun.</translation>
 <translation id="2955913368246107853">Tutup bilah cari</translation>
-<translation id="2957518517523241247">Buka
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Control Panel &gt; Network Connections &gt; New Connection Wizard
-      <ph name="END_BOLD" />
-      untuk menguji sambungan Anda.</translation>
 <translation id="2958431318199492670">Konfigurasi jaringan tidak mematuhi standar ONC. Bagian dari konfigurasi mungkin tidak diimpor.</translation>
 <translation id="2969319727213777354">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Itu karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Google Chrome tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="2972581237482394796">&amp;Ulang</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">Parish</translation>
 <translation id="3901925938762663762">Kartu telah habis masa berlakunya</translation>
 <translation id="3903912596042358459">Server menolak untuk memenuhi permintaan.</translation>
-<translation id="3930850196944737149">Perangkat Anda sedang offline.</translation>
 <translation id="3934680773876859118">Gagal memuat dokumen PDF</translation>
 <translation id="3950924596163729246">Tidak dapat mengakses jaringan.</translation>
 <translation id="3963721102035795474">Mode Pembaca</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="604124094241169006">Otomatis</translation>
 <translation id="6042308850641462728">Lainnya</translation>
-<translation id="6044718745395562198">Komputer Anda offline.</translation>
 <translation id="6060685159320643512">Hati-hati, eksperimen ini dapat menimbulkan masalah</translation>
 <translation id="6093795393556121384">Kartu Anda diverifikasi</translation>
 <translation id="6146055958333702838">Periksa semua kabel dan boot ulang router, modem, atau perangkat
@@ -533,11 +519,6 @@
 <translation id="6830600606572693159">Saat ini laman web di <ph name="URL" /> tidak tersedia. Mungkin laman web sedang kelebihan muatan atau terganggu karena ada perawatan.</translation>
 <translation id="6831043979455480757">Terjemahkan</translation>
 <translation id="6839929833149231406">Area</translation>
-<translation id="6851123334996048122">Buka
-      <ph name="BEGIN_BOLD" />
-      Applications &gt; System Preferences &gt; Network &gt; Assist me
-      <ph name="END_BOLD" />
-      untuk menguji sambungan Anda.</translation>
 <translation id="6874604403660855544">&amp;Ulangi penambahan</translation>
 <translation id="6891596781022320156">Tingkat kebijakan tidak didukung.</translation>
 <translation id="6897140037006041989">Agen Pengguna</translation>
@@ -619,9 +600,6 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Tidak terkelola</translation>
 <translation id="7758069387465995638">Perangkat lunak antivirus atau firewall mungkin memblokir sambungan.</translation>
-<translation id="7760914272566804712">Anda dapat mencoba mendiagnosis masalah dengan mengikuti langkah berikut:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Sertifikat server tidak cocok dengan URL.</translation>
 <translation id="777702478322588152">Prefektur</translation>
 <translation id="778579833039460630">Tidak ada data yang diterima</translation>
@@ -661,14 +639,6 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8241707690549784388">Laman yang dicari menggunakan informasi yang Anda masukkan. Kembali ke laman tersebut dapat menyebabkan pengulangan tindakan apa pun yang Anda lakukan. Apakah Anda ingin melanjutkan?</translation>
 <translation id="8249320324621329438">Terakhir diambil:</translation>
 <translation id="8261506727792406068">Hapus</translation>
-<translation id="8266098793847448402">Klik
-      <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
-      klik
-      <ph name="BEGIN_BOLD" />Run<ph name="END_BOLD" />,
-      ketik
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
-      lalu klik
-      <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Permintaan Anda untuk mengakses situs ini telah dikirim ke <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Hubungi administrator jaringan Anda jika Anda tidak yakin apa maksudnya.</translation>
 <translation id="8293206222192510085">Tambahkan Bookmark</translation>

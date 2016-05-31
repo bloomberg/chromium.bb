@@ -27,6 +27,7 @@
 <translation id="1587223624401073077">Google Chrome ካሜራዎን እየተጠቀመ ነው።</translation>
 <translation id="1619887657840448962">Chromeን ይበልጥ ደህንነቱ የተጠበቀ እንዲሆን ለማድረግ፣ በ<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ውስጥ ያልተዘረዘረውን የሚከተለውን ቅጥያ አሰናክለነዋል እና እርስዎ ሳያውቁት የታከለ ሊሆን ይችላል።</translation>
 <translation id="163860049029591106">በChrome ስርዓተ ክወና ይጀምሩ</translation>
+<translation id="1653828314016431939">እሺ - አሁን ዳግም አስጀምር</translation>
 <translation id="1682634494516646069">Google Chrome የውሂብ አቃፊውን ማንበብ እና እሱ ላይ መጻፍ አይችልም፦
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -74,6 +75,12 @@
 <translation id="3080151273017101988">Google Chrome ሲዘጋ የጀርባ መተግበሪያዎችን ማሂዱን ይቀጥሉ</translation>
 <translation id="3089968997497233615">አዲስና ደህንነቱ ይበልጥ የተጠበቀ የGoogle Chrome ስሪት ይገኛል።</translation>
 <translation id="3149510190863420837">Chrome መተግበሪያዎች</translation>
+<translation id="3251381707915721925">የትኛዎቹን ድር ጣቢያዎች <ph name="NEW_PROFILE_NAME" /> ማየት እንደሚችል ለማቀናበር <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />ን በመጎብኘት ገደቦችን እና ቅንብሮችን ማወቀር ይችላሉ። ነባሪ ቅንብሮቹን ካልለወጡ <ph name="NEW_PROFILE_NAME" /> በድር ላይ ሁሉንም ነገር ማሰስ ይችላል።
+
+<ph name="NEW_PROFILE_NAME" /> የእርስዎን መለያ እንዳይደርስበት ለመከላከል Chrome በማይጠቀሙበት ጊዜ መለያዎን መቆለፍዎን ያረጋግጡ። ይህን ለማድረግ በአሳሹ ላይኛው ቀኝ ጥግ ላይ የመገለጫ ስምዎን ጠቅ ያድርጉና «ውጣ እና የሕፃን መቆለፊያ»ን ይምረጡ።
+<ph name="BEGIN_LINK_2" />የበለጠ ለመረዳት<ph name="END_LINK_2" />
+
+ለተጨማሪ መመሪያዎች እባክዎ በ<ph name="ACCOUNT_EMAIL" /> ላይ የእርስዎን ኢሜይል ይፈትሹ።</translation>
 <translation id="3282568296779691940">Chrome ውስጥ ይግቡ</translation>
 <translation id="3311976847535831054">ይህ ኮምፒውተር ከአሁን በኋላ 32-ቢት የGoogle Chrome ዝማኔዎችን አይቀበልም። እባክዎን ወደ 64-ቢት Google Chrome ያሻሽሉ።</translation>
 <translation id="3360895254066713204">Chrome አጋዥ</translation>
@@ -121,6 +128,7 @@
 <translation id="4921569541910214635">ኮምፒውተር ይጋራሉ? አሁን Chromeን ልክ እንደሚፈልጉት አድርገው ማዋቀር ይችላሉ።</translation>
 <translation id="4925019873400497719"><ph name="ISSUER" /> የዚህን የድር ጣቢያ ምስክር ወረቀት እንደሰጠ Chrome አረጋግጧል። አገልጋዩ የምስክር ወረቀት ግልፅነት መረጃን አቅርቧል፣ ሆኖም ግን ልክ ያልሆነ ነበር።</translation>
 <translation id="4953650215774548573">Google Chromeን እንደ ነባሪ አሳሽዎ አድርገው ያቀናብሩ</translation>
+<translation id="495931528404527476">በChrome ውስጥ</translation>
 <translation id="4987308747895123092">እባክዎ ሁሉንም የGoogle Chrome መስኮቶችን (በWindows 8 ሁነታ ላይ ያሉትንም ጨምሮ) ይዝጉና እንደገና ይሞክሩ።</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome የእርስዎን ውሂብ ማመሳሰል አልቻለም። እባክዎ የእርስዎን የማመሳሰያ የይለፍ ሐረግ ያዘምኑ።</translation>
@@ -213,6 +221,7 @@ Google Chrome ቅንጅቶችዎን ማስመለስ አልቻለም።</translat
 <translation id="7808348361785373670">ከChrome አስወግድ...</translation>
 <translation id="7825851276765848807">ተለይቶ ባልታወቀ ስህተት ምክንያት ጭነት ከሽፏል። እባክዎ Google Chromeን እንደገና ያውርዱ።</translation>
 <translation id="7890208801193284374">ኮምፒውተር የሚጋሩ ከሆኑ ጓደኛዎች እና ቤተሰብ ተለይተው ሊያስሱ እና Chromeን በሚፈልጉበት መንገድ ማዋቀር ይችላሉ።</translation>
+<translation id="795025003224538582">ዳግም አታስጀምር</translation>
 <translation id="8005540215158006229">በቃ Chrome ዝግጁ ሊሆን ነው።</translation>
 <translation id="8008534537613507642">Chromeን ዳግም ጫነው</translation>
 <translation id="8030318113982266900">መሳሪያዎን ወደ <ph name="CHANNEL_NAME" /> ሰርጥ በማዘመን ላይ...</translation>

@@ -8,7 +8,6 @@
 <translation id="10614374240317010">一律不保存</translation>
 <translation id="1064422015032085147">托管该网页的服务器可能已超负荷或正在维护。
     为了避免产生过多流量，进而防止情况变得更糟，系统已暂时禁止向该网址发送请求。</translation>
-<translation id="1066332784716773939">诊断错误…</translation>
 <translation id="106701514854093668">桌面书签</translation>
 <translation id="1080116354587839789">适合窗口宽度</translation>
 <translation id="1090046120949329821">系统收到了多个不同的 Content-Disposition 标头。为了避免遭到 HTTP 响应拆分攻击，这种情况是不允许的。</translation>
@@ -102,13 +101,10 @@
 <translation id="2096368010154057602">省</translation>
 <translation id="2113977810652731515">信用卡</translation>
 <translation id="2114841414352855701">由于已被 <ph name="POLICY_NAME" /> 替换，该政策已忽略。</translation>
-<translation id="2122434088511736194">进行桌面搜索时，系统会使用您的默认搜索引擎（<ph name="DEFAULT_SEARCH_ENGINE_NAME" />）。</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">移动设备书签</translation>
 <translation id="2148716181193084225">今天</translation>
 <translation id="2149973817440762519">修改书签</translation>
-<translation id="2153530520610387456">转到<ph name="BEGIN_BOLD" />开始 &gt; 控制面板 &gt; 网络和 Internet &gt; 网络和共享中心 &gt; 疑难解答（位于底部）&gt; Internet 连接。
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">完全的管理员访问权限</translation>
 <translation id="2166378884831602661">此网站无法提供安全连接</translation>
 <translation id="2171101176734966184">您尝试访问的是 <ph name="DOMAIN" />，但是服务器出示的证书是使用弱签名算法签署的。这意味着服务器出示的安全凭据可能是伪造的，因此这可能并不是您想要访问的服务器（您可能正在与攻击者进行通信）。</translation>
@@ -120,7 +116,6 @@
 <translation id="225207911366869382">适用于该政策的此值已弃用。</translation>
 <translation id="2262243747453050782">HTTP 错误</translation>
 <translation id="2279770628980885996">服务器尝试执行请求时遇到了意外情况。</translation>
-<translation id="2282186295770469712">管理搜索设置</translation>
 <translation id="2282872951544483773">无法使用的实验功能</translation>
 <translation id="2292556288342944218">您被禁止访问互联网</translation>
 <translation id="229702904922032456">根证书或中间证书已过期。</translation>
@@ -186,7 +181,6 @@
 <translation id="2948083400971632585">您可以在设置页面中停用任何针对某个连接配置的代理。</translation>
 <translation id="2950186680359523359">服务器已断开连接，且未发送任何数据。</translation>
 <translation id="2955913368246107853">关闭查找栏</translation>
-<translation id="2957518517523241247">转到<ph name="BEGIN_BOLD" />开始 &gt; 控制面板 &gt; 网络连接 &gt; 新建连接向导<ph name="END_BOLD" />，以测试连接。</translation>
 <translation id="2958431318199492670">网络配置不符合 ONC 标准。无法导入配置的某些部分。</translation>
 <translation id="2969319727213777354">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Google Chrome 无法验证这些证书。</translation>
 <translation id="2972581237482394796">重做(&amp;R)</translation>
@@ -287,7 +281,6 @@
 <translation id="3885155851504623709">区</translation>
 <translation id="3901925938762663762">此信用卡已过期</translation>
 <translation id="3903912596042358459">服务器拒绝执行该请求。</translation>
-<translation id="3930850196944737149">您的设备处于离线状态。</translation>
 <translation id="3934680773876859118">无法加载 PDF 文档</translation>
 <translation id="3950924596163729246">无法访问网络。</translation>
 <translation id="3963721102035795474">阅读器模式</translation>
@@ -455,7 +448,6 @@
 <translation id="6040143037577758943">关闭</translation>
 <translation id="604124094241169006">自动</translation>
 <translation id="6042308850641462728">更多</translation>
-<translation id="6044718745395562198">您的计算机处于离线状态。</translation>
 <translation id="6060685159320643512">请小心，这些实验性功能可能有风险</translation>
 <translation id="6093795393556121384">您的信用卡已成功验证</translation>
 <translation id="6146055958333702838">请检查所有网线是否都已连好，然后重新启动您可能正在使用的任何路由器、调制解调器或其他网络设备。</translation>
@@ -519,7 +511,6 @@
 <translation id="6830600606572693159">网址为 <ph name="URL" /> 的网页目前无法访问。该网页可能已超载或关闭进行维护。</translation>
 <translation id="6831043979455480757">翻译</translation>
 <translation id="6839929833149231406">地域</translation>
-<translation id="6851123334996048122">转到<ph name="BEGIN_BOLD" />应用程序 &gt; 系统偏好设置 &gt; 网络 &gt; 向导<ph name="END_BOLD" />，以测试连接。</translation>
 <translation id="6874604403660855544">恢复添加(&amp;R)</translation>
 <translation id="6891596781022320156">政策级别不受支持。</translation>
 <translation id="6897140037006041989">用户代理</translation>
@@ -601,9 +592,6 @@
 <translation id="7733391738235763478">（<ph name="NUMBER_VISITS" /> 次）</translation>
 <translation id="7752995774971033316">非托管</translation>
 <translation id="7758069387465995638">防火墙或防病毒软件可能已阻止您连接到网络。</translation>
-<translation id="7760914272566804712">您可以尝试按以下步骤诊断此问题：
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">服务器的证书与网址不相符。</translation>
 <translation id="777702478322588152">县</translation>
 <translation id="778579833039460630">未收到数据</translation>
@@ -643,7 +631,6 @@
 <translation id="8241707690549784388">您所查找的网页要使用已输入的信息。返回此页可能需要重复已进行的所有操作。是否要继续操作？</translation>
 <translation id="8249320324621329438">最后一次抓取时间：</translation>
 <translation id="8261506727792406068">删除</translation>
-<translation id="8266098793847448402">依次点击<ph name="BEGIN_BOLD" />开始<ph name="END_BOLD" />和<ph name="BEGIN_BOLD" />运行<ph name="END_BOLD" />，输入 <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />，然后点击<ph name="BEGIN_BOLD" />确定<ph name="END_BOLD" />。</translation>
 <translation id="8279107132611114222">您想访问该网站的请求已发送给<ph name="NAME" />。</translation>
 <translation id="8289355894181816810">如果您不确定这是什么意思，请与您的网络管理员联系。</translation>
 <translation id="8293206222192510085">添加书签</translation>

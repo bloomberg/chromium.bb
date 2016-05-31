@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome आपके कैमरे का उपयोग कर रहा है.</translation>
 <translation id="1619887657840448962">Chrome को अधिक सुरक्षित बनाने के लिए, हमने निम्न एक्सटेंशन को अक्षम कर दिया है जो <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> में सूचीबद्ध नहीं है और आपकी जानकारी के बिना जोड़ा गया हो सकता है.</translation>
 <translation id="163860049029591106">Chrome OS के साथ आरंभ करना</translation>
+<translation id="1653828314016431939">ठीक - अब पुन: प्रारंभ करें</translation>
 <translation id="1682634494516646069">Google Chrome अपनी डेटा निर्देशिका को पढ़ और उस पर लिख नहीं सकता :\n\n<ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome एक ऐसा वेब ब्राउज़र है, जो वेब पृष्ठ और ऐप्स  को बिजली की गति से चलाता है. यह तेज़, स्थिर, और उपयोग में आसान है. Google Chrome में अंतर्निहित मैलवेयर और फ़िशिंग सुरक्षा के साथ अधिक सुरक्षित रूप से वेब ब्राउज़ करें.</translation>
 <translation id="174539241580958092">प्रवेश करने में त्रुटि के कारण Google Chrome आपका डेटा समन्‍वयित नहीं कर सका.</translation>
@@ -70,6 +71,12 @@
 <translation id="3080151273017101988">Google Chrome के बंद होने पर पृष्ठभूमि ऐप्स  चलाना जारी रखें</translation>
 <translation id="3089968997497233615">Google Chrome का एक नया, सुरक्षित वर्शन उपलब्‍ध है.</translation>
 <translation id="3149510190863420837">Chrome ऐप्स</translation>
+<translation id="3251381707915721925">यह सेट करने के लिए कि <ph name="NEW_PROFILE_NAME" /> द्वारा कौन सी वेबसाइट देखी जा सकती है, आप <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> पर जाकर प्रतिबंध और सेटिंग कॉन्फ़िगर कर सकते हैं. यदि आप डिफ़ॉल्ट सेटिंग नहीं बदलते हैं, तो <ph name="NEW_PROFILE_NAME" /> द्वारा वेब प्रोफ़ाइल पर सब कुछ ब्राउज़ किया जा सकता है.
+
+<ph name="NEW_PROFILE_NAME" /> को अपना खाता एक्सेस करने से रोकने के लिए, जब आप क्रोमियम का उपयोग नहीं कर रहे हों तो अपनी प्रोफ़ाइल को अवश्य लॉक कर दें. ऐसा करने के लिए, ब्राउज़र के ऊपर-दाएं कोने में स्थित अपना प्रोफ़ाइल नाम क्लिक करें और "बाहर निकलें और चाइल्ड लॉक करें" चुनें.
+<ph name="BEGIN_LINK_2" />अधिक जानें<ph name="END_LINK_2" />
+
+कृपया अतिरिक्त निर्देशों के लिए <ph name="ACCOUNT_EMAIL" /> पर अपना ईमेल देखें.</translation>
 <translation id="3282568296779691940">Chrome में प्रवेश करें</translation>
 <translation id="3311976847535831054">यह कंप्यूटर अब 32-बिट Google Chrome अपडेट प्राप्त नहीं करेगा. कृपया 64-बिट Google Chrome में अपग्रेड करें.</translation>
 <translation id="3360895254066713204">Chrome सहायक</translation>
@@ -117,6 +124,7 @@
 <translation id="4921569541910214635">कंप्यूटर साझा करते हैं? अब आप Chrome जैसा चाहें वैसा सेट कर सकते हैं.</translation>
 <translation id="4925019873400497719">Chrome ने सत्यापित किया है कि <ph name="ISSUER" /> ने इस वेबसाइट का प्रमाणपत्र जारी किया है. सर्वर ने प्रमाणपत्र पारदर्शिता जानकारी प्रदान की, लेकिन वह अमान्य थी.</translation>
 <translation id="4953650215774548573">Google Chrome को अपने डिफ़ॉल्ट ब्राउज़र के रूप में सेट करना</translation>
+<translation id="495931528404527476">Chrome में</translation>
 <translation id="4987308747895123092">कृपया सभी Google Chrome windows (Windows 8 मोड वाले भी) बंद कर दें और फिर से प्रयास करें.</translation>
 <translation id="4990567037958725628">Google Chrome कैनरी</translation>
 <translation id="5028489144783860647">Google Chrome आपका डेटा समन्‍वयित नहीं कर सका. कृपया अपना समन्‍वयन पासफ़्रेज़ अपडेट करें.</translation>
@@ -207,6 +215,7 @@
 <translation id="7808348361785373670">Chrome से नि‍कालें...</translation>
 <translation id="7825851276765848807">अनिर्दिष्ट त्रुटि के कारण डाउनलोड विफल हुआ. कृपया Google Chrome पुन: डाउनलोड करें.</translation>
 <translation id="7890208801193284374">यदि आप कंप्यूटर साझा करते हैं, तो मित्र और परिवार अलग-अलग ब्राउज़ कर सकते हैं और Chrome को जैसा चाहें सेट कर सकते हैं.</translation>
+<translation id="795025003224538582">पुन: प्रारंभ न करें</translation>
 <translation id="8005540215158006229">Chrome लगभग तैयार है.</translation>
 <translation id="8008534537613507642">Chrome फिर से इंस्टॉल करें</translation>
 <translation id="8030318113982266900">आपके डिवाइस को <ph name="CHANNEL_NAME" /> चैनल पर अपडेट किया जा रहा है...</translation>

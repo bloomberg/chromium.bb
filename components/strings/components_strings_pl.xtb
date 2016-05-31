@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Serwer hostujący tę stronę może być przeciążony lub w trakcie konserwacji.
     Żądania do tego adresu URL zostały tymczasowo zablokowane, by uniknąć
     nadmiernego ruchu i nie pogarszać dodatkowo sytuacji.</translation>
-<translation id="1066332784716773939">Diagnozuj błędy...</translation>
 <translation id="106701514854093668">Zakładki na komputerze</translation>
 <translation id="1080116354587839789">Dopasuj do szerokości</translation>
 <translation id="1090046120949329821">Odebrano wiele różnych nagłówków Content-Disposition. Jest to niedozwolone,
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Departament</translation>
 <translation id="2113977810652731515">Karta</translation>
 <translation id="2114841414352855701">Ignorowana, ponieważ jest zastąpiona przez <ph name="POLICY_NAME" />.</translation>
-<translation id="2122434088511736194">Wyszukiwanie z pulpitu korzysta z domyślnej wyszukiwarki (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Klient natywny</translation>
 <translation id="213826338245044447">Zakładki na komórce</translation>
 <translation id="2148716181193084225">Dzisiaj</translation>
 <translation id="2149973817440762519">Edytuj zakładkę</translation>
-<translation id="2153530520610387456">Przejdź do opcji
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Panel sterowania &gt; Sieć i Internet &gt; Centrum sieci i udostępniania &gt; Rozwiązywanie problemów (u dołu) &gt; Połączenia internetowe.
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Pełny dostęp administratora</translation>
 <translation id="2166378884831602661">Ta witryna nie umożliwia bezpiecznego połączenia</translation>
 <translation id="2171101176734966184">Próbujesz wejść na <ph name="DOMAIN" />, ale serwer przedstawił certyfikat podpisany słabym algorytmem. Oznacza to, że dane uwierzytelniające podane przez serwer mogły zostać sfałszowane, a serwer może nie być tym, którego oczekujesz (możliwe, że komunikujesz się z intruzem).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Ta wartość tej zasady została wycofana.</translation>
 <translation id="2262243747453050782">Błąd HTTP</translation>
 <translation id="2279770628980885996">Napotkano nieoczekiwaną sytuację przy próbie zrealizowania żądania przez serwer.</translation>
-<translation id="2282186295770469712">Zarządzaj ustawieniami wyszukiwania</translation>
 <translation id="2282872951544483773">Niedostępne eksperymenty</translation>
 <translation id="2292556288342944218">Masz zablokowany dostęp do internetu</translation>
 <translation id="229702904922032456">Wygasł certyfikat główny lub pośredniczący.</translation>
@@ -190,10 +183,6 @@
 <translation id="2948083400971632585">Możesz wyłączyć dowolne serwery proxy skonfigurowane dla połączenia na stronie ustawień.</translation>
 <translation id="2950186680359523359">Serwer zakończył połączenie bez wysyłania jakichkolwiek danych.</translation>
 <translation id="2955913368246107853">Zamknij pasek wyszukiwania</translation>
-<translation id="2957518517523241247">Przejdź do opcji
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Panel Sterowania &gt; Połączenia sieciowe &gt; Kreator nowego połączenia<ph name="END_BOLD" />,
-      aby przetestować swoje połączenie.</translation>
 <translation id="2958431318199492670">Konfiguracja sieci jest niezgodna ze standardem ONC. Jej fragmenty mogły nie zostać zaimportowane.</translation>
 <translation id="2969319727213777354">Aby urządzenie nawiązało bezpieczne połączenie, jego zegar musi wskazywać prawidłową godzinę. Jest to wymagane, bo certyfikaty używane do identyfikacji stron internetowych są ważne tylko przez określony czas. Zegar urządzenia jest ustawiony nieprawidłowo, więc Google Chrome nie może zweryfikować tych certyfikatów.</translation>
 <translation id="2972581237482394796">&amp;Ponów</translation>
@@ -297,7 +286,6 @@
 <translation id="3885155851504623709">Gmina</translation>
 <translation id="3901925938762663762">Karta straciła ważność</translation>
 <translation id="3903912596042358459">Serwer odmówił realizacji żądania.</translation>
-<translation id="3930850196944737149">Urządzenie nie jest połączone z internetem.</translation>
 <translation id="3934680773876859118">Nie można wczytać dokumentu PDF</translation>
 <translation id="3950924596163729246">Nie można uzyskać dostępu do sieci.</translation>
 <translation id="3963721102035795474">Tryb czytnika</translation>
@@ -465,7 +453,6 @@
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="604124094241169006">Automatyczne</translation>
 <translation id="6042308850641462728">Więcej</translation>
-<translation id="6044718745395562198">Twój komputer jest odłączony od sieci.</translation>
 <translation id="6060685159320643512">Ostrożnie, na tych eksperymentach można się sparzyć</translation>
 <translation id="6093795393556121384">Karta została zweryfikowana</translation>
 <translation id="6146055958333702838">Sprawdź wszystkie kable i uruchom ponownie wszelkie używane routery, modemy
@@ -532,10 +519,6 @@
 <translation id="6830600606572693159">Strona internetowa pod adresem <ph name="URL" /> jest obecnie niedostępna. Może być przeciążona lub wyłączona na czas konserwacji.</translation>
 <translation id="6831043979455480757">Tłumacz</translation>
 <translation id="6839929833149231406">Dzielnica</translation>
-<translation id="6851123334996048122">Przejdź do opcji
-      <ph name="BEGIN_BOLD" />
-      Aplikacje &gt; Ustawienia systemowe &gt; Sieć &gt; Pomóż mi<ph name="END_BOLD" />,
-      by przetestować swoje połączenie.</translation>
 <translation id="6874604403660855544">&amp;Ponów dodanie</translation>
 <translation id="6891596781022320156">Ten poziom zasad nie jest obsługiwany.</translation>
 <translation id="6897140037006041989">Klient</translation>
@@ -617,9 +600,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Niezarządzany</translation>
 <translation id="7758069387465995638">Połączenie mogło zostać zablokowane przez zaporę sieciową lub program antywirusowy.</translation>
-<translation id="7760914272566804712">Aby spróbować zdiagnozować problem, wykonaj te czynności:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Certyfikat serwera jest niezgodny z adresem URL.</translation>
 <translation id="777702478322588152">Prefektura</translation>
 <translation id="778579833039460630">Brak odebranych danych</translation>
@@ -659,14 +639,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="8241707690549784388">Strona, na której wyszukiwane są wprowadzone przez Ciebie informacje. Powrót do tej strony może spowodować konieczność powtórzenia wykonanych czynności. Czy chcesz kontynuować?</translation>
 <translation id="8249320324621329438">Ostatnie pobieranie:</translation>
 <translation id="8261506727792406068">Usuń</translation>
-<translation id="8266098793847448402">Kliknij
-      <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
-      następnie kliknij
-      <ph name="BEGIN_BOLD" />Uruchom<ph name="END_BOLD" />,
-      wpisz
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
-      i kliknij
-      <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Twoja prośba o dostęp to tej witryny została wysłana do: <ph name="NAME" /></translation>
 <translation id="8289355894181816810">Jeśli nie masz pewności, co to oznacza, skontaktuj się z administratorem sieci.</translation>
 <translation id="8293206222192510085">Dodaj zakładkę</translation>

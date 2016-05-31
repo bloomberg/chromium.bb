@@ -473,6 +473,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="267596348720209223">Meghatározza a keresési szolgáltató által támogatott karakterkódolásokat. A kódolások kódtáblanevek, például UTF-8, GB2312 vagy ISO-8859-1. A szolgáltató a megadott sorrendben próbálja őket használni. A házirend nem kötelező. Ha nincs beállítva, akkor a rendszer az alapértelmezés szerinti UTF-8-at használja. A házirend csak akkor teljesül, ha a "DefaultSearchProviderEnabled" házirend engedélyezve van.</translation>
 <translation id="2682225790874070339">Letiltja a Google Drive szolgáltatást a <ph name="PRODUCT_OS_NAME" /> Fájlok alkalmazásában</translation>
 <translation id="268577405881275241">Az adattömörítő proxyfunkció engedélyezése</translation>
+<translation id="2731627323327011390">A(z) <ph name="PRODUCT_OS_NAME" /> által az ARC-alkalmazásoknak kiadott CA-tanúsítványok használatának letiltása</translation>
 <translation id="2742843273354638707">A Chrome Internetes áruház alkalmazásnak és a láblécben lévő linkjének elrejtése az Új lap oldalon és a <ph name="PRODUCT_OS_NAME" /> alkalmazásindítóban.
 
       Ha a házirend igaz értékre van állítva, az ikonok rejtettek.
@@ -1694,6 +1695,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           Amennyiben beállítja ezt a házirendet, a felhasználók ideiglenesen felülbírálhatják a nagyító engedélyezésével vagy letiltásával. A felhasználó döntése azonban nem végleges, és az alapértelmezett beállítás lép érvénybe a bejelentkezési képernyő ismételt megjelenítésekor, vagy ha a felhasználó egy percig nem hajt végre semmilyen tevékenységet a bejelentkezési képernyőn.
 
           Ha nem állítja be ezt a házirendet, akkor a nagyító le lesz tiltva a bejelentkezési képernyő első megjelenítésekor. A felhasználók bármikor engedélyezhetik vagy letilthatják a nagyítót, és annak állapota mindegyik felhasználó esetében megmarad a bejelentkezési képernyőn.</translation>
+<translation id="7249828445670652637">A(z) <ph name="PRODUCT_OS_NAME" /> által az ARC-alkalmazásoknak kiadott CA-tanúsítványok engedélyezése</translation>
 <translation id="7258823566580374486">Távoli hozzáférésű gazdagépek lefüggönyözésének engedélyezése</translation>
 <translation id="7260277299188117560">Az egyenrangú kapcsolatok automatikus frissítésének engedélyezése</translation>
 <translation id="7267809745244694722">A médiabillentyűk alapértelmezés szerint a funkcióbillentyűk</translation>
@@ -1805,6 +1807,17 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="7715711044277116530">Az a százalék, amellyel a képernyő-sötétedési késleltetés skálázódik prezentációs módban</translation>
 <translation id="7717938661004793600">A <ph name="PRODUCT_OS_NAME" /> kisegítő funkcióinak konfigurálása.</translation>
 <translation id="7719251660743813569">Beállítja, hogy a használati mutatókat jelentse-e a szolgáltatás a Google-nak. Ha az értéke igaz, akkor a(z) <ph name="PRODUCT_OS_NAME" /> jelenti a felhasználói mutatókat. Ha nincs beállítva, vagy a beállítás hamis, akkor a rendszer letiltja a mutató jelentését.</translation>
+<translation id="7723433108978650103">Letiltja a hozzáférést a felsorolt URL-ekhez.
+
+      A házirend megakadályozza, hogy a felhasználó weboldalakat töltsön be a tiltólistán szereplő URL-ekről. A tiltólistán URL-minták találhatók, amelyek meghatározzák, hogy mely URL-ek lesznek letiltva.
+
+      Az URL-mintának a következőt kell követnie: https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Kivételeket az URL-ek engedélyezőlistáját meghatározó házirendben lehet megadni. Az ilyen házirendekbe legfeljebb 1000 bejegyzés vehető fel; a további bejegyzéseket figyelmen kívül hagyja a böngésző.
+
+      Fontos: Nem ajánlott tiltani a belső „chrome://*” URL-eket, mivel ez váratlan hibákat eredményezhet.
+
+      Ha ez a házirend nincs konfigurálva, akkor egyetlen URL se kerül tiltólistára a böngészőben.</translation>
 <translation id="7749402620209366169">Engedélyezi a kétlépcsős azonosítást a távoli hozzáférésű gazdagépekhez a felhasználóspecifikus PIN-kód helyett.
 
           Ha a beállítás engedélyezve van, a felhasználóknak érvényes kétlépcsős kódot kell megadniuk a gazdagéphez való hozzáféréshez.
@@ -1871,6 +1884,9 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
       Ha nincs beállítva ez a házirend, akkor úgy viselkedik, mintha a TimezoneAutomaticDetectionUsersDecide házirend lenne beállítva.
 
       Ha be van állítva a SystemTimezone házirend, akkor felülbírálja ezt a házirendet. Ebben az esetben teljes mértékben le van tiltva az automatikus időzóna-érzékelés.</translation>
+<translation id="787125417158068494">Ha a SyncDisabled beállítás van megadva, illetve a beállítás nincs konfigurálva, akkor a(z) <ph name="PRODUCT_OS_NAME" /> tanúsítványai nem hozzáférhetők az ARC-alkalmazások számára.
+
+      Ha a CopyCaCerts beállítás van megadva, akkor minden ezzel: <ph name="WEB_TRUSTED_BIT" /> rendelkező, ONC-telepítésű CA-tanúsítvány hozzáférhető az ARC-alkalmazások számára.</translation>
 <translation id="7882585827992171421">Ez a házirend csak kiállító módban aktív.
 
       Meghatározza a bejelentkezési képernyőn képernyőkímélőként használni kívánt bővítmény azonosítóját. A bővítménynek abban az alkalmazáscsomagban kell lennie, amely meg van határozva ennél a domainnél az DeviceAppPack házirend használatával.</translation>
@@ -1886,6 +1902,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Megadja, hogy a rendszer egyenrangú kapcsolatot használjon-e az operációs rendszer frissítési tartalmai esetében. Ha „igaz” értékre van állítva, az eszközök megosztják és megpróbálják felhasználni a frissítési tartalmat a helyi hálózaton, és lehetőség szerint csökkentik a felhasznált internetes sávszélességet, valamint a túlterhelést. Ha a frissítési tartalom nem érhető el a helyi hálózaton, az eszköz inkább egy frissítési szerverről végzi el a letöltést. Ha „hamis” értékre van állítva, vagy nincs beállítva, a rendszer nem használ egyenrangú kapcsolatot.</translation>
 <translation id="7933141401888114454">Felügyelt felhasználók létrehozásának engedélyezése</translation>
+<translation id="793473937901685727">Tanúsítvány rendelkezésre állásának beállítása az ARC-alkalmazások számára</translation>
 <translation id="7936098023732125869">Lehetővé teszi alapértelmezett keresésszolgáltató használatát.
 
           Ha engedélyezi ezt a beállítást, a böngésző alapértelmezett keresést hajt végre, ha a felhasználó olyan szöveget gépel be a cím- és keresősávba, amely nem URL-cím.

@@ -499,6 +499,7 @@
           Denne retningslinjen tas til etterretning bare hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
 <translation id="2682225790874070339">Deaktiverer Google Disk i Filer-appen for <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Aktiver proxy-tjenerfunksjonen for datakomprimering</translation>
+<translation id="2731627323327011390">Slå av bruken av sertifikater for <ph name="PRODUCT_OS_NAME" /> for ARC-apper</translation>
 <translation id="2742843273354638707">Skjul Chrome Nettmarked-appen og linken fra ny fane-siden og <ph name="PRODUCT_OS_NAME" /> OS-appvelgeren.
 
       Hvis denne regelen slås på («true»), skjules ikonene.
@@ -1792,6 +1793,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Hvis du angir denne innstillingen, kan brukere midlertidig overstyre den ved å slå lupen av eller på. Brukerens valg er imidlertid ikke permanent, og standardinnstillingen gjenopprettes når påloggingssiden vises på nytt, eller når brukeren har vært inaktiv på påloggingssiden i ett minutt.
 
           Hvis innstillingen ikke angis, slås lupen av når påloggingssiden vises for første gang. Brukere kan slå lupen på eller av når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
+<translation id="7249828445670652637">Slå på CA-sertifikater for <ph name="PRODUCT_OS_NAME" /> for ARC-apper</translation>
 <translation id="7258823566580374486">Aktiver begrensning (curtaining) av verter for fjerntilgang</translation>
 <translation id="7260277299188117560">Automatisk oppdatering for p2p aktivert</translation>
 <translation id="7267809745244694722">Medietaster har standardfunksjon som funksjonstaster</translation>
@@ -1917,6 +1919,17 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7715711044277116530">Prosentandelen det skaleres etter for forsinkelse av skjermdemping i presentasjonsmodus</translation>
 <translation id="7717938661004793600">Konfigurer tilgjengelighetfunksjonene for <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Kontrollerer om bruksberegninger rapporteres til Google. Hvis innstillingen er angitt som Sann, rapporterer <ph name="PRODUCT_OS_NAME" /> bruksberegninger. Hvis innstillingen ikke konfigureres eller angis som Usann, deaktiveres rapportering av beregninger.</translation>
+<translation id="7723433108978650103">Blokkerer tilgangen til de angitte nettadressene.
+
+      Denne regelen hindrer brukeren i å laste inn nettsider fra svartelistede nettadresser. Svartelisten inneholder en liste over nettadressemønstre som spesifiserer hvilke nettadresser som blir svartelistet.
+
+      Nettadressemønstrene må formateres i henhold til informasjonen på https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Du kan spesifisere unntak i URL whitelist-regelen. Disse reglene er begrenset til 1000 oppføringer, og eventuelle påfølgende oppføringer ignoreres.
+
+      Merk at du ikke bør blokkere interne «chrome://*»-nettadressr, siden det kan føre til uventede feil.
+
+      Hvis denne regelen ikke er angitt, blir ingen nettadresser svartelistet i nettleseren.</translation>
 <translation id="7749402620209366169">Aktiverer to-delt autentisering for verter med ekstern adgang i stedet for brukerangitt PIN-kode.
 
           Hvis denne innstillingen er aktivert, må brukere oppgi en gyldig to-delt kode ved lesing av en vert.
@@ -1986,6 +1999,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne regelen ikke spesifiseres, har det samme effekt som om TimezoneAutomaticDetectionUsersDecide var angitt.
 
       Hvis SystemTimezone-regelen er spesifisert, overstyrer den denne regelen. I så fall er automatisk påvisning av tidssoner slått helt av.</translation>
+<translation id="787125417158068494">Hvis denne er angitt som SyncDisabled eller ikke er konfigurert, er ikke sertifikater for <ph name="PRODUCT_OS_NAME" /> tilgjengelige for ARC-apper.
+
+      Hvis denne er angitt som CopyCaCerts, er alle ONC-installerte CA-sertifikater med <ph name="WEB_TRUSTED_BIT" /> tilgjengelige for ARC-apper.</translation>
 <translation id="7882585827992171421">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Bestemmer ID-en for utvidelsen som skal brukes som skjermsparer på påloggingssiden. Utvidelsen må være del av AppPack-elementet som er konfigurert for dette domenet gjennom DeviceAppPack-retningslinjene.</translation>
@@ -2001,6 +2017,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Angir om p2p skal brukes for nyttelast av OS-oppdatering. Hvis angitt til «True», kommer enhetene til å dele og forsøke å konsumere oppdateringsnyttelast på LAN, noe som potensielt kan redusere Internett-båndbredden og -trafikken. Hvis oppdateringsnyttelasten ikke er tilgjengelig på LAN, går enheten tilbake til å laste ned fra en oppdateringstjener. Hvis angitt til «False» eller ikke konfigurert, blir ikke p2p brukt.</translation>
 <translation id="7933141401888114454">Slå på oppretting av administrerte brukere</translation>
+<translation id="793473937901685727">Angi sertifikattilgjengeligheten for ARC-apper</translation>
 <translation id="7936098023732125869">Slår på bruk av en standard søkeleverandør.
 
           Hvis du slår på denne innstillingen, gjøres et vanlig søk når brukeren skriver inn tekst som ikke er en nettadresse, i multifunksjonsfeltet.

@@ -10,7 +10,6 @@
     oder wird u. U. gewartet. Um nicht zu viel Traffic zu generieren und die
     Situation nicht zu verschlimmern, sind Anfragen an diese URL vorübergehend
     nicht zulässig.</translation>
-<translation id="1066332784716773939">Fehlerdiagnose läuft...</translation>
 <translation id="106701514854093668">Desktop-Lesezeichen</translation>
 <translation id="1080116354587839789">An Breite anpassen</translation>
 <translation id="1090046120949329821">Mehrere unterschiedliche "Content-Disposition"-Header wurden empfangen. Dies ist
@@ -105,15 +104,10 @@
 <translation id="2096368010154057602">Verwaltungsbezirk</translation>
 <translation id="2113977810652731515">Karte</translation>
 <translation id="2114841414352855701">Wird ignoriert, da sie von <ph name="POLICY_NAME" /> außer Kraft gesetzt wurde.</translation>
-<translation id="2122434088511736194">Für Anfragen in der Desktopsuche wird die Standardsuchmaschine (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />) verwendet.</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Mobile Lesezeichen</translation>
 <translation id="2148716181193084225">Heute</translation>
 <translation id="2149973817440762519">Lesezeichen bearbeiten</translation>
-<translation id="2153530520610387456">Gehen Sie zu
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Systemsteuerung &gt; Netzwerk und Internet &gt; Netzwerk- und Freigabecenter &gt; Probleme beheben (unten) &gt; Internetverbindungen
-      <ph name="END_BOLD" />.</translation>
 <translation id="2166049586286450108">Vollständiger Administratorzugriff</translation>
 <translation id="2166378884831602661">Diese Website kann keine sichere Verbindung bereitstellen</translation>
 <translation id="2171101176734966184">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat jedoch ein Zertifikat übermittelt, das einen schwachen Signaturalgorithmus verwendet. Das bedeutet, dass die vom Server übermittelten Sicherheitsinformationen gefälscht sein könnten und es sich möglicherweise gar nicht um den erwarteten Server handelt, sondern Sie mit einem Hacker kommunizieren.</translation>
@@ -125,7 +119,6 @@
 <translation id="225207911366869382">Dieser Wert für die Richtlinie ist veraltet.</translation>
 <translation id="2262243747453050782">HTTP-Fehler</translation>
 <translation id="2279770628980885996">Beim Versuch des Servers, die Anforderung zu verarbeiten, ist eine unerwartete Bedingung aufgetreten.</translation>
-<translation id="2282186295770469712">Sucheinstellungen verwalten</translation>
 <translation id="2282872951544483773">Nicht verfügbare Experimente</translation>
 <translation id="2292556288342944218">Ihre Internetverbindung ist gesperrt</translation>
 <translation id="229702904922032456">Ein Stamm- oder Zwischenzertifikat ist abgelaufen.</translation>
@@ -191,11 +184,6 @@
 <translation id="2948083400971632585">Sie können alle für eine Verbindung konfigurierten Proxys auf der Seite "Einstellungen" deaktivieren.</translation>
 <translation id="2950186680359523359">Server hat die Verbindung geschlossen. Es wurden keine Daten gesendet.</translation>
 <translation id="2955913368246107853">Suchleiste schließen</translation>
-<translation id="2957518517523241247">Gehen Sie zu
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Systemsteuerung &gt; Netzwerkverbindungen &gt; Assistent für neue
-      Verbindungen<ph name="END_BOLD" />,
-      um Ihre Verbindung zu testen.</translation>
 <translation id="2958431318199492670">Die Netzwerkkonfiguration stimmt nicht mit dem ONC-Standard überein. Die Konfiguration wird unter Umständen nicht vollständig importiert.</translation>
 <translation id="2969319727213777354">Zum Herstellen einer sicheren Verbindung muss die Uhrzeit richtig eingestellt sein. Der Grund hierfür ist, dass Websites sich mithilfe von Zertifikaten identifizieren, die nur für einen bestimmten Zeitraum gelten. Da die Uhrzeit Ihres Geräts falsch ist, kann Google Chrome diese Zertifikate nicht bestätigen.</translation>
 <translation id="2972581237482394796">&amp;Wiederholen</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">Gemeinde</translation>
 <translation id="3901925938762663762">Die Karte ist abgelaufen.</translation>
 <translation id="3903912596042358459">Der Server hat die Verarbeitung der Anforderung verweigert.</translation>
-<translation id="3930850196944737149">Ihr Gerät ist offline.</translation>
 <translation id="3934680773876859118">Fehler beim Laden des PDF-Dokuments</translation>
 <translation id="3950924596163729246">Kein Zugriff auf das Netzwerk möglich.</translation>
 <translation id="3963721102035795474">Lesemodus</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="604124094241169006">Automatisch</translation>
 <translation id="6042308850641462728">Mehr</translation>
-<translation id="6044718745395562198">Ihr Computer ist offline.</translation>
 <translation id="6060685159320643512">Vorsichtig, diese Experimente können gefährlich sein!</translation>
 <translation id="6093795393556121384">Ihre Karte wurde bestätigt.</translation>
 <translation id="6146055958333702838">Überprüfen Sie alle Kabel und starten Sie alle verwendeten Router, Modems und
@@ -533,11 +519,6 @@
 <translation id="6830600606572693159">Die Webseite unter <ph name="URL" /> ist zurzeit nicht verfügbar. Möglicherweise ist sie überlastet oder wird gerade gewartet.</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
 <translation id="6839929833149231406">Stadtteil</translation>
-<translation id="6851123334996048122">Gehen Sie zu
-      <ph name="BEGIN_BOLD" />
-      Anwendungen &gt; Systemeinstellungen &gt; Netzwerk &gt; Assistent
-      <ph name="END_BOLD" />,
-      um Ihre Verbindung zu testen.</translation>
 <translation id="6874604403660855544">&amp;Hinzufügen wiederholen</translation>
 <translation id="6891596781022320156">Richtlinienebene wird nicht unterstützt.</translation>
 <translation id="6897140037006041989">User-Agent</translation>
@@ -619,9 +600,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Nicht verwaltet</translation>
 <translation id="7758069387465995638">Möglicherweise wurde die Verbindung von einer Firewall oder Antivirensoftware blockiert.</translation>
-<translation id="7760914272566804712">Anhand der folgenden Schritte können Sie versuchen, das Problem zu ermitteln:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Das Serverzertifikat stimmt nicht mit der URL überein.</translation>
 <translation id="777702478322588152">Präfektur</translation>
 <translation id="778579833039460630">Keine Daten empfangen</translation>
@@ -661,13 +639,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="8241707690549784388">Die gesuchte Seite hat die von Ihnen eingegebenen Informationen verwendet bzw. verarbeitet. Wenn Sie zu dieser Seite zurückgehen, wird möglicherweise eine bereits ausgeführte Aktion wiederholt. Möchten Sie fortfahren?</translation>
 <translation id="8249320324621329438">Letzter Abruf:</translation>
 <translation id="8261506727792406068">Löschen</translation>
-<translation id="8266098793847448402">Klicken Sie auf
-      <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
-      dann auf
-      <ph name="BEGIN_BOLD" />Ausführen<ph name="END_BOLD" />,
-      geben Sie <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
-      ein und klicken sie auf
-      <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Ihre Anfrage zum Zugriff auf diese Website wurde an <ph name="NAME" /> gesendet.</translation>
 <translation id="8289355894181816810">Wenn Sie weitere Informationen dazu benötigen, kann Ihnen Ihr Netzwerkadministrator weiterhelfen.</translation>
 <translation id="8293206222192510085">Lesezeichen hinzufügen</translation>
@@ -735,7 +706,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="901974403500617787">Parameter, die systemweit gelten, können nur vom Eigentümer festgelegt werden: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Server hat die Verbindung abgelehnt.</translation>
 <translation id="9020542370529661692">Die Seite wurde übersetzt und liegt nun auf <ph name="TARGET_LANGUAGE" /> vor.</translation>
-<translation id="9038649477754266430">Vervollständigungsdienst zum schnelleren Laden von Seiten verwenden</translation>
+<translation id="9038649477754266430">Vorhersagedienst zum schnelleren Laden von Seiten verwenden</translation>
 <translation id="9039213469156557790">Außerdem enthält diese Seite andere, nicht sichere Ressourcen. Diese Ressourcen können während der Übertragung von anderen Nutzern angezeigt und von Angreifern bearbeitet werden, die das Verhalten der Seite verändern.</translation>
 <translation id="9049981332609050619">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat sich jedoch mit einem ungültigen Zertifikat ausgewiesen.</translation>
 <translation id="9050666287014529139">Passphrase</translation>

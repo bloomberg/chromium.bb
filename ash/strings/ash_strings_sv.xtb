@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Aktivera mobildata</translation>
 <translation id="1621499497873603021">Tid som återstår tills batteriet är tomt: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-enhet</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> kvar</translation>
 <translation id="1723752762323179280">Sessionen avslutas</translation>
 <translation id="1747827819627189109">Skärmen på tangentbordet har aktiverats</translation>
 <translation id="1812696562331527143">Inmatningsmetoden har ändrats till <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tredje part<ph name="END_LINK" />).
@@ -115,6 +116,7 @@
 <translation id="4421231901400348175">Dela kontroll över skärmen med <ph name="HELPER_NAME" /> via Fjärrhjälp.</translation>
 <translation id="4430019312045809116">Volym</translation>
 <translation id="4527045527269911712">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> tills batteriet är fullt</translation>
 <translation id="4544944664594876241">Kortkommandot för att låsa skärmen har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">sök</translation>
 <translation id="4804818685124855865">Koppla från</translation>
@@ -222,6 +224,7 @@ Inaktivera funktionen genom att trycka på Ctrl+Alt+Z.</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> laddas eventuellt inte så länge den är på.</translation>
 <translation id="8528322925433439945">Mobil ...</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> återstår</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Laddare med låg effekt ansluten</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

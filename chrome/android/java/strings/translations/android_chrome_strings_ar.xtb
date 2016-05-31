@@ -72,6 +72,7 @@
 <translation id="1853692000353488670">علامة تبويب جديدة للتصفح المتخفي</translation>
 <translation id="189172778771606813">إغلاق لائحة التنقل</translation>
 <translation id="1924956916668006832">تحديد عنوان الشحن</translation>
+<translation id="1933845786846280168">علامة تبويب محددة</translation>
 <translation id="194341124344773587">‏تشغيل الإذن لـ Chrome في <ph name="BEGIN_LINK" />إعدادات Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">حفظ كلمات المرور</translation>
 <translation id="1944384637046898011">‏ترميز الكل باستخدام كلمة مرور Google بدءًا من <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@
 <translation id="2959609938957585241">‏للحصول على علامات التبويب من أجهزتك الأخرى، شغِّل "المزامنة التلقائية للبيانات" في إعدادات حساب Android.</translation>
 <translation id="2960796085439532066">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح شركة .Google Inc. جميع الحقوق محفوظة.</translation>
 <translation id="2968755619301702150">عارض الشهادات</translation>
+<translation id="2979025552038692506">علامة تبويب محددة للتصفح المتخفي</translation>
 <translation id="2996291259634659425">إنشاء عبارة المرور</translation>
 <translation id="2996809686854298943">‏عنوان URL المطلوب</translation>
 <translation id="3012408695656332380">استبدال بيانات هذا الجهاز ببيانات <ph name="TO_ACCOUNT" />. يمكنك استرداد بياناتك الحالية بالتبديل مرة أخرى إلى <ph name="FROM_ACCOUNT" />، ولكن سيتم فقدان البيانات التي تم إنشاؤها منذ تسجيل خروجك.</translation>
@@ -553,6 +555,7 @@
 <translation id="8073388330009372546">فتح الصورة بعلامة تبويب جديدة</translation>
 <translation id="8076014560081431679">لن يتم حذف إعدادات موقع الويب المحفوظة وقد تعكس عادات التصفح. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">‏هذا المحتوى من <ph name="DOMAIN_NAME" />، وتم عرضه من قبل Google.</translation>
+<translation id="8103578431304235997">علامة تبويب للتصفح المتخفي</translation>
 <translation id="8106211421800660735">رقم بطاقة الائتمان</translation>
 <translation id="813082847718468539">عرض معلومات الموقع</translation>
 <translation id="8137558756159375272">‏يرسل "المس للبحث" الكلمة المحددة والصفحة الحالية كسياق إلى بحث Google. يمكنك إيقافه في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>

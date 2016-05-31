@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome використовує вашу камеру.</translation>
 <translation id="1619887657840448962">Щоб зробити Chrome безпечнішим, ми вимкнули наведене нижче розширення, установлене не із сайту <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> і, можливо, додане без вашого відома.</translation>
 <translation id="163860049029591106">Початок роботи з ОС Chrome</translation>
+<translation id="1653828314016431939">OK – перезапустити зараз</translation>
 <translation id="1682634494516646069">Google Chrome не може читати та записувати у свій каталог даних: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome – це веб-переглядач, який запускає веб-сторінки та програми з блискавичною швидкістю. Він швидкий, надійний і зручний у користуванні. Вбудований у Google Chrome захист від шкідливих програм і фішингу гарантує ще більшу безпеку під час перегляду веб-сторінок.</translation>
 <translation id="174539241580958092">Google Chrome не вдалося синхронізувати ваші дані через помилку входу.</translation>
@@ -70,6 +71,12 @@
 <translation id="3080151273017101988">Продовжувати роботу фонових програм, коли Google Chrome закрито</translation>
 <translation id="3089968997497233615">Доступна нова, безпечніша версія Google Chrome.</translation>
 <translation id="3149510190863420837">Додатки Chrome</translation>
+<translation id="3251381707915721925">Щоб указати, які веб-сайти може переглядати <ph name="NEW_PROFILE_NAME" />, налаштуйте обмеження й параметри на сторінці <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Якщо не змінити налаштування за умовчанням, <ph name="NEW_PROFILE_NAME" /> зможе переглядати всі сайти в Інтернеті.
+
+Щоб користувач <ph name="NEW_PROFILE_NAME" /> не мав доступу до вашого облікового запису, блокуйте свій профіль, коли не користуєтеся Chrome. Для цього натисніть назву свого профілю у верхньому правому куті екрана й виберіть "Вийти та заблокувати".
+<ph name="BEGIN_LINK_2" />Докладніше<ph name="END_LINK_2" />
+
+Подальші вказівки надійдуть на електронну адресу <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Вхід у Chrome</translation>
 <translation id="3311976847535831054">Цей комп’ютер більше не отримуватиме оновлення для 32-розрядної версії Google Chrome. Установіть 64-розрядну версію.</translation>
 <translation id="3360895254066713204">Помічник Chrome</translation>
@@ -117,6 +124,7 @@
 <translation id="4921569541910214635">Користуєтеся комп’ютером спільно з іншими? Тепер ви можете налаштувати Chrome на свій смак.</translation>
 <translation id="4925019873400497719">Chrome підтвердив, що компанія <ph name="ISSUER" /> видала сертифікат цього веб-сайту. Сервер надав інформацію про прозорість сертифіката, але вона недійсна.</translation>
 <translation id="4953650215774548573">Зробити Google Chrome веб-переглядачем за умовчанням</translation>
+<translation id="495931528404527476">У Chrome</translation>
 <translation id="4987308747895123092">Закрийте всі вікна Google Chrome (зокрема вікна в режимі Windows 8) і повторіть спробу.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome не вдалося синхронізувати ваші дані. Оновіть свою парольну фразу для синхронізації.</translation>
@@ -205,6 +213,7 @@
 <translation id="7808348361785373670">Видалити з Chrome…</translation>
 <translation id="7825851276765848807">Програму не вдалося встановити через невизначену помилку. Завантажте Google Chrome ще раз.</translation>
 <translation id="7890208801193284374">Якщо вашим комп’ютером користуєтесь не лише ви, а й ваші друзі чи сім’я, вони можуть налаштувати Chrome на свій смак.</translation>
+<translation id="795025003224538582">Не перезапускати</translation>
 <translation id="8005540215158006229">Chrome майже готовий.</translation>
 <translation id="8008534537613507642">Перевстановити Chrome</translation>
 <translation id="8030318113982266900">Оновлення пристрою до каналу <ph name="CHANNEL_NAME" />…</translation>

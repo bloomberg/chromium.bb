@@ -72,6 +72,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="1853692000353488670">Ny inkognitofane</translation>
 <translation id="189172778771606813">Luk sidemenuen</translation>
 <translation id="1924956916668006832">Vælg leveringsadresse</translation>
+<translation id="1933845786846280168">Valgt fane</translation>
 <translation id="194341124344773587">Aktivér tilladelse for Chrome i <ph name="BEGIN_LINK" />indstillingerne for Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Gem adgangskoder</translation>
 <translation id="1944384637046898011">Kryptér alle med Google-adgangskoden fra <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 <translation id="2959609938957585241">Aktivér "Automatisk synkronisering af data" i kontoindstillingerne for Android for at få adgang til dine faner på dine andre enheder.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Alle rettigheder forbeholdes.</translation>
 <translation id="2968755619301702150">Certifikatfremviser</translation>
+<translation id="2979025552038692506">Valgt inkognitofane</translation>
 <translation id="2996291259634659425">Opret adgangssætning</translation>
 <translation id="2996809686854298943">En webadresse er påkrævet</translation>
 <translation id="3012408695656332380">Erstat denne enheds data med dataene fra <ph name="TO_ACCOUNT" />. Du kan hente dine eksisterende data ved at skifte tilbage til <ph name="FROM_ACCOUNT" />, men du mister de data, der er oprettet, efter du er logget ud.</translation>
@@ -554,6 +556,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="8073388330009372546">Åbn billede på ny fane</translation>
 <translation id="8076014560081431679">Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Dette indhold er fra <ph name="DOMAIN_NAME" />, som leveres af Google.</translation>
+<translation id="8103578431304235997">Inkognitofane</translation>
 <translation id="8106211421800660735">Kreditkortnummer</translation>
 <translation id="813082847718468539">Se websiteoplysninger</translation>
 <translation id="8137558756159375272">Funktionen "Tryk for at søge" sender det markerede ord og den aktuelle side som kontekst til Google Søgning. Du kan slå den fra under <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
@@ -570,7 +573,7 @@ Din Google-konto kan have andre former for browserhistorik, f.eks. søgninger og
 <translation id="8275818695183729150">Tillad (for søgninger i adresselinjen)</translation>
 <translation id="8283853025636624853">Synkroniserer til <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Standardfaner</translation>
-<translation id="8372893542064058268">Tillad synkronisering i baggrunden et bestemt website.</translation>
+<translation id="8372893542064058268">Tillad synkronisering i baggrunden for et bestemt website.</translation>
 <translation id="8374821112118309944">Du skal opdatere TalkBack til en nyere version.</translation>
 <translation id="8396312449826231789">Kun godkendte websites</translation>
 <translation id="8413126021676339697">Vis hele historikken</translation>

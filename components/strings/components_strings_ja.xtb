@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">ウェブページのホストサーバーがビジーであるかメンテナンス中の可能性があります。
     過剰なトラフィックにより状況が悪化するのを防ぐため、この URL へのリクエストは
     一時的に無効になっています。</translation>
-<translation id="1066332784716773939">エラーを診断...</translation>
 <translation id="106701514854093668">パソコンのブックマーク</translation>
 <translation id="1080116354587839789">ウィンドウ幅に合わせる</translation>
 <translation id="1090046120949329821">複数の異なる Content-Disposition ヘッダーを受信しました。これは、HTTP レスポンス
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">県</translation>
 <translation id="2113977810652731515">カード</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> によって上書きされるため無視されます。</translation>
-<translation id="2122434088511736194">デスクトップ検索では既定の検索エンジン（<ph name="DEFAULT_SEARCH_ENGINE_NAME" />）が使用されます。</translation>
 <translation id="2128531968068887769">ネイティブ クライアント</translation>
 <translation id="213826338245044447">モバイルのブックマーク</translation>
 <translation id="2148716181193084225">今日</translation>
 <translation id="2149973817440762519">ブックマークを編集</translation>
-<translation id="2153530520610387456">以下の順にアクセスします。
-      <ph name="BEGIN_BOLD" />
-      [スタート] &gt; [コントロール パネル] &gt; [ネットワークとインターネット] &gt; [ネットワークと共有センター] &gt; [問題のトラブルシューティング]（ウィンドウの下部）&gt; [インターネット接続]
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">すべてのデータへの管理者アクセス</translation>
 <translation id="2166378884831602661">このサイトは安全に接続できません</translation>
 <translation id="2171101176734966184"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから提示された証明書は脆弱な署名アルゴリズムを使用して署名されています。これは、サーバーから提示されたセキュリティ認証情報が偽装されている可能性を示しており、アクセスしようとしたサーバーとは異なるサーバーであるおそれがあります（悪意のあるユーザーと通信している可能性があります）。</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">この値は、このポリシーではサポートが終了しています。</translation>
 <translation id="2262243747453050782">HTTP エラーです</translation>
 <translation id="2279770628980885996">サーバーによるリクエストの実行中に、予期しない状況が発生しました。</translation>
-<translation id="2282186295770469712">検索設定を管理</translation>
 <translation id="2282872951544483773">利用できない試験運用機能</translation>
 <translation id="2292556288342944218">インターネット アクセスがブロックされています</translation>
 <translation id="229702904922032456">ルート証明書または中間証明書の期限が切れています。</translation>
@@ -190,10 +183,6 @@
 <translation id="2948083400971632585">接続用に設定されたプロキシは、設定ページで無効にできます。</translation>
 <translation id="2950186680359523359">サーバーはデータを送信せずに接続を切断しました。</translation>
 <translation id="2955913368246107853">検索バーを閉じる</translation>
-<translation id="2957518517523241247">以下の順にアクセスして接続をテストします。
-      <ph name="BEGIN_BOLD" />
-      [スタート] &gt; [コントロール パネル] &gt; [ネットワーク接続] &gt; [新しい接続ウィザード]
-      <ph name="END_BOLD" /></translation>
 <translation id="2958431318199492670">ネットワーク設定が ONC 標準に準拠していません。設定の一部がインポートされない可能性があります。</translation>
 <translation id="2969319727213777354">安全な接続を確立するには、時計が正しく設定されている必要があります。これは、ウェブサイトが自身を証明するために使用する証明書には有効期限があるためです。デバイスの時計が正しくないため、Google Chrome でこれらの証明書を確認することができません。</translation>
 <translation id="2972581237482394796">やり直し(&amp;R)</translation>
@@ -297,7 +286,6 @@
 <translation id="3885155851504623709">教区</translation>
 <translation id="3901925938762663762">カードの有効期限が切れています</translation>
 <translation id="3903912596042358459">サーバーがリクエストの実行を拒否しました。</translation>
-<translation id="3930850196944737149">端末がオフラインです。</translation>
 <translation id="3934680773876859118">PDF ドキュメントを読み込むことができませんでした</translation>
 <translation id="3950924596163729246">ネットワークにアクセスできません。</translation>
 <translation id="3963721102035795474">リーダーモード</translation>
@@ -465,7 +453,6 @@
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="604124094241169006">自動設定</translation>
 <translation id="6042308850641462728">詳細表示</translation>
-<translation id="6044718745395562198">パソコンがオフラインです。</translation>
 <translation id="6060685159320643512">これらの試験運用版は問題が発生する可能性があるため、ご利用の際には十分ご注意ください</translation>
 <translation id="6093795393556121384">カードが確認されました</translation>
 <translation id="6146055958333702838">ケーブルを確認し、使用しているネットワーク デバイス（ルーター、モデムなど）を
@@ -532,10 +519,6 @@
 <translation id="6830600606572693159">ウェブページ（<ph name="URL" />）は現在表示できません。アクセスが集中しているか、メンテナンスのために停止している可能性があります。</translation>
 <translation id="6831043979455480757">翻訳</translation>
 <translation id="6839929833149231406">地域</translation>
-<translation id="6851123334996048122">以下の順にアクセスして接続をテストします。
-      <ph name="BEGIN_BOLD" />
-      [アプリケーション] &gt; [システム環境設定] &gt; [ネットワーク] &gt; [アシスタント]
-      <ph name="END_BOLD" /></translation>
 <translation id="6874604403660855544">追加のやり直し（&amp;R）</translation>
 <translation id="6891596781022320156">ポリシーレベルがサポートされていません。</translation>
 <translation id="6897140037006041989">ユーザー エージェント</translation>
@@ -617,9 +600,6 @@
 <translation id="7733391738235763478">（<ph name="NUMBER_VISITS" />）</translation>
 <translation id="7752995774971033316">管理されていません</translation>
 <translation id="7758069387465995638">ファイアウォールまたはウイルス対策ソフトウェアによって接続がブロックされた可能性があります。</translation>
-<translation id="7760914272566804712">次の手順で問題を診断できます。
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">サーバーの証明書が URL と一致しません。</translation>
 <translation id="777702478322588152">都道府県</translation>
 <translation id="778579833039460630">データを受信して​​いません</translation>
@@ -659,9 +639,6 @@
 <translation id="8241707690549784388">検索しているページは、入力した情報を使用しています。このページに戻った場合、操作のやり直しが発生する可能性があります。続行しますか？</translation>
 <translation id="8249320324621329438">前回の取得:</translation>
 <translation id="8261506727792406068">削除</translation>
-<translation id="8266098793847448402">まず [<ph name="BEGIN_BOLD" />スタート<ph name="END_BOLD" />] をクリックして [<ph name="BEGIN_BOLD" />ファイル名を指定して実行<ph name="END_BOLD" />] をクリックし、
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" /> と入力して
-      [<ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />] をクリックします。</translation>
 <translation id="8279107132611114222">このサイトへのアクセスのリクエストが <ph name="NAME" /> さんに送信されました。</translation>
 <translation id="8289355894181816810">確認方法がわからない場合は、ネットワーク管理者までお問い合わせください。</translation>
 <translation id="8293206222192510085">ブックマークの追加</translation>

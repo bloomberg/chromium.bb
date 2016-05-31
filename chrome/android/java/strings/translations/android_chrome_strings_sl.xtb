@@ -72,6 +72,7 @@
 <translation id="1853692000353488670">Nov zavihek brez beleženja zgodovine</translation>
 <translation id="189172778771606813">Zapri predal za krmarjenje</translation>
 <translation id="1924956916668006832">Izbira naslova za pošiljanje</translation>
+<translation id="1933845786846280168">Izbrani zavihek</translation>
 <translation id="194341124344773587">V <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" /> vklopite dovoljenje za Chrome.</translation>
 <translation id="1943432128510653496">Shranjevanje gesel</translation>
 <translation id="1944384637046898011">Šifriranje vsega z geslom za Google Račun z dne <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="2959609938957585241">Če želite dostopati do zaznamkov iz drugih naprav, v nastavitvah računa za Android vklopite »Samodejno sinhroniziraj podatke«.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Vse pravice pridržane.</translation>
 <translation id="2968755619301702150">Pregledovalnik potrdil</translation>
+<translation id="2979025552038692506">Izbrani zavihek brez beleženja zgodovine</translation>
 <translation id="2996291259634659425">Ustvarjanje gesla</translation>
 <translation id="2996809686854298943">URL je obvezen</translation>
 <translation id="3012408695656332380">Zamenjava podatkov te naprave s podatki računa <ph name="TO_ACCOUNT" />. Obstoječe podatke lahko pridobite tako, da preklopite na račun <ph name="FROM_ACCOUNT" />, podatki, ki ste jih ustvarili po odjavi, pa bodo izgubljeni.</translation>
@@ -554,6 +556,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="8073388330009372546">Odpri sliko na novem zavihku</translation>
 <translation id="8076014560081431679">Shranjene nastavitve spletnih mest ne bodo izbrisane in morda odražajo vaše brskalne navade. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Ta vsebina je iz domene <ph name="DOMAIN_NAME" /> in jo prikazuje Google.</translation>
+<translation id="8103578431304235997">Zavihek brez beleženja zgodovine</translation>
 <translation id="8106211421800660735">Številka kreditne kartice</translation>
 <translation id="813082847718468539">Ogled podatkov o mestu</translation>
 <translation id="8137558756159375272">»Dotaknite se za iskanje« pošlje izbrano besedo in trenutno strank kot kontekst Iskanju Google. To lahko izklopite v <ph name="BEGIN_LINK" />nastavitvah<ph name="END_LINK" />.</translation>

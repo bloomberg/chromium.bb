@@ -484,6 +484,7 @@ Z prohlížeče <ph name="PRODUCT_NAME" /> verze 29 a novějších verzí bylo t
           Zásada bude dodržována pouze v případě, že je aktivní zásada DefaultSearchProviderEnabled.</translation>
 <translation id="2682225790874070339">Zakáže v aplikaci Soubory v systému <ph name="PRODUCT_OS_NAME" /> přístup k Disku.</translation>
 <translation id="268577405881275241">Aktivace funkce datové komprese proxy serveru</translation>
+<translation id="2731627323327011390">Zakázat aplikacím ARC používání certifikátů systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="2742843273354638707">Skryje ze stránky Nová karta a ze spouštěče aplikací systému <ph name="PRODUCT_OS_NAME" /> aplikaci Internetový obchod Chrome a odkaz na zápatí.
 
 Je-li zásada nastavena na hodnotu True, budou ikony skryty.
@@ -1793,6 +1794,7 @@ Pokud je tato zásada nastavena, ovládá typ lupy, který je aktivní, když je
 Pokud tuto zásadu nastavíte, uživatelé ji budou moci dočasně přepsat aktivací nebo deaktivací lupy. Volba uživatele nicméně nebude trvalá a po opětovném zobrazení přihlašovací obrazovky nebo nečinnosti uživatele na přihlašovací obrazovce po dobu jedné minuty se obnoví původní nastavení.
 
 Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací obrazovky lupa deaktivována. Uživatelé budou moci lupu kdykoli aktivovat nebo deaktivovat a zvolený stav na přihlašovací obrazovce přetrvá i u jiných uživatelů.</translation>
+<translation id="7249828445670652637">Povolit aplikacím ARC používání certifikátů CA systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="7258823566580374486">Povolit blokování uživatelského rozhraní hostitelů vzdáleného přístupu</translation>
 <translation id="7260277299188117560">Automatické aktualizace pomocí sítě p2p aktivovány</translation>
 <translation id="7267809745244694722">Mediální klávesy ve výchozím nastavení slouží jako funkční klávesy</translation>
@@ -1918,6 +1920,17 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 <translation id="7715711044277116530">Procento prodloužení prodlevy ztmavení obrazovky v režimu prezentace</translation>
 <translation id="7717938661004793600">Konfiguruje funkce usnadnění přístupu v systému <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Určuje, zda se budou Googlu nahlašovat metriky využití. Je-li tato zásada nastavena na hodnotu True, bude systém <ph name="PRODUCT_OS_NAME" /> hlásit metriky využití. Pokud není nastavena, nebo je nastavena na hodnotu False, budou hlášení o metrikách vypnuta.</translation>
+<translation id="7723433108978650103">Blokuje přístup k adresám URL uvedeným v seznamu.
+
+      Tato zásada uživateli zabraňuje v načítání webových stránek ze zakázaných adres URL. Seznam zakázaných položek obsahuje vzory adres URL. Ty určují, které adresy URL budou zakázány.
+
+      Vzor adres URL musí být naformátován podle pokynů na stránce https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Výjimky lze zadat v zásadě pro povolené adresy URL. Počet záznamů v těchto zásadách je omezen na 1000. Všechny další záznamy budou ignorovány.
+
+      Blokování interních adres URL s předponou „chrome://*“ nedoporučujeme, protože může vést k neočekávaným chybám.
+
+      Není-li zásada nastavena, nebude v prohlížeči zakázána žádná adresa URL.</translation>
 <translation id="7749402620209366169">Namísto kódu PIN zadaného uživatelem aktivuje dvoufázové ověření hostitelů vzdáleného přístupu.
 
           Je-li toto nastavení zapnuto, uživatelé musejí při přihlašování k hostitelskému serveru zadat platný kód dvoufázového ověření.
@@ -1985,6 +1998,9 @@ Pokud je tato zásada nastavena na hodnotu False, informace o relaci se hlásit
       Pokud tato zásada není nastavena, bude se chovat, jako by byla nastavena na možnost TimezoneAutomaticDetectionUsersDecide.
 
       Pokud je nastavena zásada SystemTimezone, má před touto zásadou přednost. V tomto případě je automatické zjišťování časového pásma zcela vypnuto.</translation>
+<translation id="787125417158068494">Pokud je tato zásada nastavena na hodnotu SyncDisabled nebo není nakonfigurována, certifikáty systému <ph name="PRODUCT_OS_NAME" /> nejsou k dispozici aplikacím ARC.
+
+      Pokud je nastavena na hodnotu CopyCaCerts, všechny certifikáty CA nainstalované prostřednictvím ONC s atributem <ph name="WEB_TRUSTED_BIT" /> jsou k dispozici aplikacím ARC.</translation>
 <translation id="7882585827992171421">Tato zásada je aktivní pouze v režimu prodeje.
 
       Určuje ID rozšíření, které se použije jako spořič obrazovky na přihlašovací obrazovce. Rozšíření musí být součásti balíčku AppPack, který je pro tuto doménu nakonfigurován v rámci zásady DeviceAppPack.</translation>
@@ -2000,6 +2016,7 @@ Pokud je tato zásada nastavena na hodnotu False, informace o relaci se hlásit
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Určuje, zda má být pro datové části aktualizací operačního systému použita síť p2p. Pokud zásadu nastavíte na hodnotu True, zařízení budou sdílet pokus o využití datových částí aktualizace v síti LAN, což může vést ke snížení zahlcení a míry využití připojení k internetu. Pokud datová část aktualizace není v síti LAN k dispozici, zařízení přepne zpět na stahování ze serveru aktualizace. Pokud tuto zásadu nenakonfigurujete nebo ji nastavíte na hodnotu False, síť p2p nebude použita.</translation>
 <translation id="7933141401888114454">Povolit vytváření dozorovaných uživatelů</translation>
+<translation id="793473937901685727">Nastavení dostupnosti certifikátů pro aplikace ARC</translation>
 <translation id="7936098023732125869">Umožňuje použít výchozího poskytovatele vyhledávání.
 
 Pokud toto nastavení aktivujete, po zadání textu do omniboxu (jiného než adresa URL) proběhne výchozí vyhledávání.

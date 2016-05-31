@@ -16,6 +16,7 @@
 <translation id="151962892725702025">‏מערכת ההפעלה של Chromium לא הצליחה לסנכרן את הנתונים שלך מפני שסנכרון אינו זמין עבור הדומיין שלך.</translation>
 <translation id="1559451348202814456">‏ייתכן ש-Chromium לא יפעל כראוי כי כבר אין בו תמיכה במערכת Mac OS X בגרסאות 10.6, 10.7 ו-10.8.</translation>
 <translation id="1644918877723739397">‏Chromium ישמור את הסיסמה הזו ב-<ph name="SAVED_PASSWORD_LINK" /> ויזכור אותה בפעם הבאה שתזדקק לה.</translation>
+<translation id="1653828314016431939">אישור - הפעל מחדש כעת</translation>
 <translation id="1668054258064581266">‏לאחר הסרת החשבון שלך מ-Chromeium, ייתכן שתידרש לטעון מחדש את הכרטיסיות הפתוחות שלך כדי שההסרה תיושם בפועל.</translation>
 <translation id="1688750314291223739">‏הגדר סנכרון כדי לשמור את תכונות הדפדפן המותאמות אישית שלך באינטרנט ולגשת אליהן מ-Chromium בכל מחשב.</translation>
 <translation id="1699664235656412242">‏סגור את כל החלונות של Chromium (כולל חלונות במצב Windows 8) ונסה שוב.</translation>
@@ -178,6 +179,12 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">חלון חדש</translation>
 <translation id="734373864078049451">‏היסטוריית האתרים, הסימניות ונתונים נוספים מ-Chromium נמצאים כאן.</translation>
+<translation id="7344413941077984497">‏כדי להגדיר אילו אתרים <ph name="NEW_PROFILE_NAME" /> יכול להציג, באפשרותך לקבוע הגבלות והגדרות מ-<ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. אם לא תשנה את הגדרות ברירת המחדל, <ph name="NEW_PROFILE_NAME" /> יוכל לגלוש בכל התוכן באינטרנט.
+
+כדי למנוע מ-<ph name="NEW_PROFILE_NAME" /> לגשת לחשבון שלך, הקפד לנעול את הפרופיל כשאינך משתמש ב-Chromium. כדי לעשות זאת, לחץ על שם הפרופיל שלך בפינה השמאלית העליונה של הדפדפן ובחר באפשרות 'צא והגדר נעילת ילדים'.
+<ph name="BEGIN_LINK_2" />למידע נוסף<ph name="END_LINK_2" />
+
+בדוק את האימייל בחשבון <ph name="ACCOUNT_EMAIL" /> לקבלת הנחיות נוספות.</translation>
 <translation id="7419987137528340081">‏אם אתה מעדיף לשמור את נתוני Chromium הקיימים שלך בנפרד, תוכל ליצור משתמש Chromium חדש עבור <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">‏Chromium דורש גרסת Windows XP או מאוחרת יותר. תכונות מסוימות עלולות שלא לפעול.</translation>
 <translation id="7463979740390522693">‏Chromium - הודעות (<ph name="QUANTITY" /> שלא נקראו)</translation>
@@ -192,6 +199,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="7747138024166251722">המתקין לא הצליח ליצור ספריה זמנית. בדוק את המקום הפנוי בדיסק ואת האישור להתקנת תוכנה.</translation>
 <translation id="7918535023914021398">‏Chromium אימת שהגורם שהנפיק את אישור האתר הזה הוא <ph name="ISSUER" />. השרת לא סיפק פרטים על שקיפות האישור.</translation>
 <translation id="7937630085815544518">‏נכנסת ל-Chromium כ-<ph name="USER_EMAIL_ADDRESS" />. השתמש באותו חשבון כדי להיכנס שוב.</translation>
+<translation id="795025003224538582">אל תבצע הפעלה מחדש</translation>
 <translation id="7962572577636132072">‏Chromium מתעדכן באופן אוטומטי כך שתמיד ברשותך הגרסה העדכנית ביותר.</translation>
 <translation id="7979877361127045932">‏הסתר בתפריט Chromium</translation>
 <translation id="8030318113982266900">מעדכן את המכשיר שלך לערוץ <ph name="CHANNEL_NAME" />...</translation>

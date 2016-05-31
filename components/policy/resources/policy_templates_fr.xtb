@@ -521,6 +521,7 @@ Cette règle est facultative. Si elle n'est pas configurée, la valeur par défa
 Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="2682225790874070339">Désactiver Drive dans l'application Fichiers de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Activer la fonctionnalité de proxy pour la compression de données</translation>
+<translation id="2731627323327011390">Désactiver l'utilisation de certificats <ph name="PRODUCT_OS_NAME" /> pour les applications ARC</translation>
 <translation id="2742843273354638707">Masque l'application Chrome Web Store et le lien de bas de page sur la page Nouvel onglet et dans le lanceur d'applications de <ph name="PRODUCT_OS_NAME" />.
 
       Lorsque cette règle est définie sur "True", les icônes sont masquées.
@@ -1858,6 +1859,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Si vous définissez cette règle, les utilisateurs peuvent l'ignorer temporairement en activant ou en désactivant la loupe. Toutefois, cette option n'est pas définitive, et la valeur par défaut est restaurée dès que l'écran de connexion est affiché de nouveau ou que l'utilisateur reste inactif pendant une minute sur l'écran de connexion.
 
           Si vous ne définissez pas cette règle, la loupe est désactivée au premier affichage de l'écran de connexion. Les utilisateurs peuvent l'activer ou la désactiver à tout moment, et son état sur l'écran de connexion est appliqué à tous les utilisateurs.</translation>
+<translation id="7249828445670652637">Activer les certificats CA <ph name="PRODUCT_OS_NAME" /> pour les applications ARC</translation>
 <translation id="7258823566580374486">Activer la protection des hôtes d'accès à distance</translation>
 <translation id="7260277299188117560">Mise à jour automatique avec connexion P2P activée</translation>
 <translation id="7267809745244694722">Les touches multimédias sont par défaut des touches de fonction</translation>
@@ -1978,6 +1980,17 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7715711044277116530">Pourcentage d'adaptation du délai d'assombrissement de l'écran en mode Présentation</translation>
 <translation id="7717938661004793600">Permet de configurer les fonctionnalités d'accessibilité de <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Détermine si les statistiques d'utilisation doivent être envoyées à Google. Si cette règle est définie sur "true", <ph name="PRODUCT_OS_NAME" /> elles le sont. Si cette règle n'est pas configurée ou si elle est définie sur "false", les rapports sur les statistiques ne sont pas envoyés.</translation>
+<translation id="7723433108978650103">Bloquer l'accès aux URL répertoriées.
+
+      Cette règle empêche l'utilisateur de charger des pages Web à partir d'URL figurant sur la liste noire. La liste noire contient une liste de formats d'URL qui définissent quelles URL sont ajoutées à la liste noire.
+
+      Le format des URL doit respecter les règles indiquées à la page https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Vous pouvez définir des exceptions dans la règle s'appliquant aux URL sur liste blanche. Ces règles étant limitées à 1 000 entrées, les entrées suivantes sont ignorées.
+
+      Sachez qu'il est déconseillé de bloquer les URL internes "chrome://*", car cela peut provoquer des erreurs inattendues.
+
+      Si cette règle n'est pas configurée, aucune URL n'est mise sur liste noire dans le navigateur.</translation>
 <translation id="7749402620209366169">Active l'authentification forte pour les hôtes d'accès à distance au lieu d'un code d'accès défini par l'utilisateur.
 
           En cas d'activation de ce paramètre, tout utilisateur accédant à un hôte doit fournir un code d'authentification forte.
@@ -2050,6 +2063,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
       Si cette règle n'est pas configurée, elle est appliquée comme si TimezoneAutomaticDetectionUsersDecide était défini.
 
       Si la règle SystemTimezone est configurée, elle remplace celle-ci. La détection automatique du fuseau horaire est alors totalement désactivée.</translation>
+<translation id="787125417158068494">Si la règle est définie sur SyncDisabled ou n'est pas configurée, les certificats <ph name="PRODUCT_OS_NAME" /> ne sont pas disponibles pour les applications ARC.
+
+      Si la règle est définie sur CopyCaCerts, tous les certificats CA installés via ONC avec <ph name="WEB_TRUSTED_BIT" /> sont disponibles pour les applications ARC.</translation>
 <translation id="7882585827992171421">Cette règle n'est active qu'en mode "point de vente".
 
        Détermine l'identifiant de l'extension à utiliser comme économiseur d'écran sur l'écran de connexion. L'extension doit faire partie de l'AppPack configuré pour ce domaine via la règle DeviceAppPack.</translation>
@@ -2065,6 +2081,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Indiquer si une connexion P2P doit être utilisée pour les charges utiles de mise à jour de l'OS. Si le paramètre est défini sur "True", les charges utiles de mise à jour sur le réseau local sont partagées et utilisées par les appareils, ce qui peut avoir pour effet de réduire la quantité de bande passante utilisée et l'encombrement sur Internet. Si la charge utile de mise à jour n'est pas disponible sur le réseau local, le téléchargement est effectué sur l'appareil à partir d'un serveur de mise à jour. Si le paramètre est défini sur "False", ou s'il n'est pas configuré, la connexion P2P n'est pas utilisée.</translation>
 <translation id="7933141401888114454">Autoriser la création de comptes utilisateurs supervisés</translation>
+<translation id="793473937901685727">Définir la disponibilité des certificats pour les applications ARC</translation>
 <translation id="7936098023732125869">Active l'utilisation d'un fournisseur de moteur de recherche par défaut.
 
           Si vous activez ce paramètre, une recherche par défaut est effectuée lorsque l'utilisateur saisit du texte autre qu'une URL dans l'omnibox.

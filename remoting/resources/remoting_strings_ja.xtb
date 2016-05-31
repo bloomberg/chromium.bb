@@ -212,6 +212,10 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="6324708100353784493">Google Cardboard 統合モードを有効にしました。このモードを使用するには、端末を Google Cardboard 対応ビューアに装着してください。</translation>
 <translation id="6381670701864002291">その他の問題。</translation>
 <translation id="6398765197997659313">全画面表示を終了</translation>
+<translation id="6408143143164565232">• Windows や Linux パソコンからの音声を聞き取る。
+• パソコン名を押し続けて不要な接続を削除。
+• ピンチしてズーム、2 本指スクロールの滑らかさが向上。
+• ヘルプとフィードバック画面の更新。</translation>
 <translation id="6441316101718669559">このプラットフォームでデスクトップの統合はサポートされていません。アプリケーションは引き続き使用できますが、ユーザー エクスペリエンスは低下します。</translation>
 <translation id="652218476070540101">このパソコン用の PIN を更新しています...</translation>
 <translation id="6527303717912515753">共有</translation>
@@ -257,6 +261,7 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="7836926030608666805">必要なコンポーネントが見つかりません。実行している Chrome のバージョンが最新であることを確認し、もう一度お試しください。</translation>
 <translation id="7868137160098754906">リモート パソコンの PIN を入力してください。</translation>
 <translation id="7869445566579231750">このアプリケーションを実行する権限がありません。</translation>
+<translation id="7895403300744144251">リモート パソコンのセキュリティ ポリシーで、ご使用のアカウントからの接続が許可されていません。</translation>
 <translation id="7948001860594368197">画面のオプション</translation>
 <translation id="7970576581263377361">認証できませんでした。Chromium にもう一度ログインしてください。</translation>
 <translation id="7981525049612125370">リモート セッションが時間切れとなりました。</translation>

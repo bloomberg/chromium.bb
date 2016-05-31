@@ -27,6 +27,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1587223624401073077">Google Chrome använder din kamera.</translation>
 <translation id="1619887657840448962">Vi har gjort Chromium säkrare genom att inaktivera följande tillägg som inte anges i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> och som kan ha lagts till utan att du vet om det.</translation>
 <translation id="163860049029591106">Komma igång med Chrome OS</translation>
+<translation id="1653828314016431939">OK - starta om nu</translation>
 <translation id="1682634494516646069">Google Chrome kan inte läsa och skriva till datakatalogen:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -74,6 +75,12 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="3080151273017101988">Fortsätt köra bakgrundsappar när Google Chrome avslutas</translation>
 <translation id="3089968997497233615">Det finns en ny, ännu säkrare version av Google Chrome.</translation>
 <translation id="3149510190863420837">Chrome-appar</translation>
+<translation id="3251381707915721925">Om du vill ange vilka webbplatser som ska vara tillåtna för <ph name="NEW_PROFILE_NAME" /> besöker du <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> och konfigurerar begränsningar och andra inställningar där. Om du inte ändrar standardinställningarna får <ph name="NEW_PROFILE_NAME" /> surfa fritt på webben.
+
+Kom ihåg att låsa din profil när du inte använder Chrome om <ph name="NEW_PROFILE_NAME" /> inte ska få tillgång till ditt konto. Gör så här: Klicka på profilnamnet i webbläsarens övre högra hörn och välj Stäng och aktivera barnspärr.
+<ph name="BEGIN_LINK_2" />Läs mer<ph name="END_LINK_2" />
+
+Ytterligare anvisningar har skickats med e-post till dig på <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Logga in i Chrome</translation>
 <translation id="3311976847535831054">Den här datorn får inte längre uppdateringar för 32-bitarsversionen av Google Chrome. Uppgradera till Google Chrome med 64 bitar.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -121,6 +128,7 @@ Om du loggar in ändå synkroniseras din information i Chrome, till exempel bokm
 <translation id="4921569541910214635">Delar du dator? Nu kan du konfigurera Chrome precis som du vill.</translation>
 <translation id="4925019873400497719">Chrome har verifierat att webbplatsens certifikat har utfärdats av <ph name="ISSUER" />. De certifikattransparensuppgifter som skickades från servern är ogiltiga.</translation>
 <translation id="4953650215774548573">Ange Google Chrome som standardwebbläsare</translation>
+<translation id="495931528404527476">I Chrome</translation>
 <translation id="4987308747895123092">Stäng alla Google Chrome-fönster (inklusive i Windows 8-läge) och försök igen.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome kunde inte synkronisera data. Uppdatera lösenfrasen för synkroniseringen.</translation>
@@ -213,6 +221,7 @@ Google Chrome kan inte återställa dina inställningar.</translation>
 <translation id="7808348361785373670">Ta bort från Chrome …</translation>
 <translation id="7825851276765848807">Installationen misslyckades på grund av ett okänt fel. Ladda ned Google Chrome igen.</translation>
 <translation id="7890208801193284374">Om du delar en dator med vänner och familj kan de konfigurera Chrome precis som de vill och surfa separat.</translation>
+<translation id="795025003224538582">Starta inte om</translation>
 <translation id="8005540215158006229">Chrome är nästan klar.</translation>
 <translation id="8008534537613507642">Installera om Chrome</translation>
 <translation id="8030318113982266900">Uppdaterar din enhet till kanalen <ph name="CHANNEL_NAME" /> ...</translation>

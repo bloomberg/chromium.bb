@@ -72,6 +72,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1853692000353488670">Nouvel onglet de navigation privée</translation>
 <translation id="189172778771606813">Fermer le panneau de navigation</translation>
 <translation id="1924956916668006832">Sélectionner une adresse de livraison</translation>
+<translation id="1933845786846280168">Onglet sélectionné</translation>
 <translation id="194341124344773587">Activer l'autorisation pour Chrome dans les <ph name="BEGIN_LINK" />paramètres Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">Enregistrer les mots de passe</translation>
 <translation id="1944384637046898011">Tout chiffrer avec le mot de passe Google à compter du <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Vous pouvez contrôler les paramètres du Web physique dans les paramètres de C
 <translation id="2959609938957585241">Activez l'option "Synchro auto des données" dans les paramètres Android de votre compte Google pour accéder à vos onglets sur vos autres appareils.</translation>
 <translation id="2960796085439532066">Copyright Google Inc. <ph name="YEAR" />. Tous droits réservés.</translation>
 <translation id="2968755619301702150">Lecteur de certificat</translation>
+<translation id="2979025552038692506">Onglet de navigation privée sélectionné</translation>
 <translation id="2996291259634659425">Créer une phrase secrète</translation>
 <translation id="2996809686854298943">Veuillez saisir une URL.</translation>
 <translation id="3012408695656332380">Remplacer les données de cet appareil par celles du compte <ph name="TO_ACCOUNT" />. Notez que vous pouvez récupérer vos données en repassant sur le compte <ph name="FROM_ACCOUNT" />. En revanche, les données créées depuis que vous vous êtes déconnecté seront perdues.</translation>
@@ -555,6 +557,7 @@ Votre compte Google conserve peut-être d'autres formes d'historique de navigati
 <translation id="8073388330009372546">Ouvrir image dans autre onglet</translation>
 <translation id="8076014560081431679">Les paramètres de site enregistrés ne seront pas supprimés et peuvent donner des indications sur vos habitudes de navigation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Ce contenu est issu de <ph name="DOMAIN_NAME" />. Il est diffusé par Google.</translation>
+<translation id="8103578431304235997">Onglet de navigation privée</translation>
 <translation id="8106211421800660735">N° de carte</translation>
 <translation id="813082847718468539">Afficher des informations à propos du site</translation>
 <translation id="8137558756159375272">La fonction "Appuyer pour rechercher" transmet le mot sélectionné et la page actuelle en tant que contexte vers la fonction de recherche Google. Vous pouvez la désactiver dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>

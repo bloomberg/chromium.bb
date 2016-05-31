@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Web sayfasını barındıran sunucu aşırı yüklenmiş veya bakımda olabilir.
     Çok fazla trafik oluşturmaktan ve durumu daha da kötüleştirmekten
     kaçınmak için, bu URL'ye gelen istekler geçici olarak reddediliyor.</translation>
-<translation id="1066332784716773939">Hataları teşhis et...</translation>
 <translation id="106701514854093668">Masaüstü Yer İşaretleri</translation>
 <translation id="1080116354587839789">Genişliğe sığdır</translation>
 <translation id="1090046120949329821">Birden fazla farklı Content-Disposition (İçerik Yetki Devri) üst bilgisi alındı. HTTP yanıtını
@@ -104,14 +103,10 @@
 <translation id="2096368010154057602">Bölüm</translation>
 <translation id="2113977810652731515">Kart</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> tarafından geçersiz kılındığı için yoksayıldı.</translation>
-<translation id="2122434088511736194">Masaüstü aramaları varsayılan arama motorunuzu (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />) kullanır.</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Mobil Yer İşaretleri</translation>
 <translation id="2148716181193084225">Bugün</translation>
 <translation id="2149973817440762519">Yer İşaretini Düzenle</translation>
-<translation id="2153530520610387456"><ph name="BEGIN_BOLD" />
-          Başlat &gt; Denetim Masası &gt; Ağ ve İnternet &gt; Ağ ve Paylaşım Merkezi &gt; Sorun Giderme (altta) &gt; İnternet Bağlantıları
-          <ph name="END_BOLD" /> seçeneğine gidin.</translation>
 <translation id="2166049586286450108">Tam Yönetici Erişimi</translation>
 <translation id="2166378884831602661">Bu site güvenli bağlantı sağlayamıyor</translation>
 <translation id="2171101176734966184"><ph name="DOMAIN" /> adresine erişme girişiminde bulundunuz ancak sunucu zayıf bir imza algoritması kullanılarak imzalanmış bir sertifika sağladı. Bu, sunucunun sağladığı güvenlik bilgilerinin sahte olabileceği anlamına gelir ve sunucu sizin beklediğiniz sunucu olmayabilir (bir saldırgan ile irtibat kuruyor olabilirsiniz).</translation>
@@ -123,7 +118,6 @@
 <translation id="225207911366869382">Bu değer bu politika için kullanımdan kaldırıldı.</translation>
 <translation id="2262243747453050782">HTTP hatası</translation>
 <translation id="2279770628980885996">Sunucu isteği gerçekleştirmeyi denerken beklenmedik bir koşulla karşılaşıldı.</translation>
-<translation id="2282186295770469712">Arama ayarlarını yönet</translation>
 <translation id="2282872951544483773">Kullanılamayan Deneyler</translation>
 <translation id="2292556288342944218">İnternet erişiminiz engellendi</translation>
 <translation id="229702904922032456">Bir kök ya da ara sertifikanın süresi geçmiş.</translation>
@@ -189,11 +183,6 @@
 <translation id="2948083400971632585">Ayarlar sayfasından, bir bağlantı için yapılandırılmış proxy'leri devre dışı bırakabilirsiniz.</translation>
 <translation id="2950186680359523359">Sunucu, hiçbir veri göndermeden bağlantıyı kapattı.</translation>
 <translation id="2955913368246107853">Bulma çubuğunu kapat</translation>
-<translation id="2957518517523241247">Bağlantınızı test etmek için
-    <ph name="BEGIN_BOLD" />
-    Başlat &gt; Denetim Masası &gt; Ağ Bağlantıları &gt; Yeni Bağlantı Sihirbazı
-    <ph name="END_BOLD" />
-    seçeneğine gidin.</translation>
 <translation id="2958431318199492670">Ağ yapılandırması ONC standardıyla uyumlu değil. Yapılandırmanın bazı bölümleri içe aktarılamaz.</translation>
 <translation id="2969319727213777354">Güvenli bir bağlantı kurmak için saatinizin doğru ayarlanmış olması gerekir. Bunun sebebi, web sitelerinin kendilerini tanımlamak için kullandıkları sertifikaların sadece belli süreler için geçerli olmasıdır. Cihazınızın saati yanlış olduğundan, Google Chrome bu sertifikaları doğrulayamıyor.</translation>
 <translation id="2972581237482394796">&amp;Yinele</translation>
@@ -297,7 +286,6 @@
 <translation id="3885155851504623709">Bucak</translation>
 <translation id="3901925938762663762">Kartın kullanım süresi doldu</translation>
 <translation id="3903912596042358459">Sunucu, isteği yerine getirmeyi reddetti.</translation>
-<translation id="3930850196944737149">Cihazınız çevrimdışı.</translation>
 <translation id="3934680773876859118">PDF dokümanı yüklenemedi</translation>
 <translation id="3950924596163729246">Ağa erişilemiyor.</translation>
 <translation id="3963721102035795474">Okuyucu Modu</translation>
@@ -465,7 +453,6 @@
 <translation id="6040143037577758943">Kapat</translation>
 <translation id="604124094241169006">Otomatik</translation>
 <translation id="6042308850641462728">Daha fazla</translation>
-<translation id="6044718745395562198">Bilgisayarınız çevrimdışı.</translation>
 <translation id="6060685159320643512">Dikkatli olun, bu deneyler canınızı yakabilir</translation>
 <translation id="6093795393556121384">Kartınız doğrulandı</translation>
 <translation id="6146055958333702838">Kabloları kontrol edin ve kullandığınız yönlendiricileri, modemleri
@@ -532,11 +519,6 @@
 <translation id="6830600606572693159"><ph name="URL" /> adresindeki web sayfası şu anda kullanılamıyor. Aşırı yüklenmiş veya bakım için kapatılmış olabilir.</translation>
 <translation id="6831043979455480757">Çevir</translation>
 <translation id="6839929833149231406">Bölge</translation>
-<translation id="6851123334996048122">Bağlantınızı test etmek için
-      <ph name="BEGIN_BOLD" />
-      Applications (Uygulamalar) &gt; System Preferences (Sistem Tercihleri) &gt; Network (Ağ) &gt; Assist me (Bana yardım et)
-      <ph name="END_BOLD" />
-      seçeneğine gidin.</translation>
 <translation id="6874604403660855544">Eklemeyi &amp;yeniden yap</translation>
 <translation id="6891596781022320156">Politika düzeyi desteklenmiyor.</translation>
 <translation id="6897140037006041989">Kullanıcı Aracısı</translation>
@@ -618,9 +600,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Yönetimden kaldırıldı</translation>
 <translation id="7758069387465995638">Bağlantıyı güvenlik duvarı veya virüsten korunma yazılımı engellemiş olabilir.</translation>
-<translation id="7760914272566804712">Aşağıdaki adımları uygulayarak bu sorunu teşhis etmeyi deneyebilirsiniz:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Sunucu sertifikası URL ile eşleşmiyor.</translation>
 <translation id="777702478322588152">İdari bölge</translation>
 <translation id="778579833039460630">Hiçbir veri alınmadı</translation>
@@ -660,14 +639,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="8241707690549784388">Aradığınız sayfa, girdiğiniz bilgileri kullandı. O sayfaya dönmeniz, gerçekleştirdiğiniz işlemlerin tekrarlanmasına yol açabilir. Devam etmek istiyor musunuz?</translation>
 <translation id="8249320324621329438">Son getirilen:</translation>
 <translation id="8261506727792406068">Sil</translation>
-<translation id="8266098793847448402"><ph name="BEGIN_BOLD" />Başlat<ph name="END_BOLD" />'ı 
-      ve sonra
-      <ph name="BEGIN_BOLD" />Çalıştır<ph name="END_BOLD" />'ı
-      tıklayın,
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
-      yazın ve
-      <ph name="BEGIN_BOLD" />Tamam<ph name="END_BOLD" />'ı
-      tıklayın.</translation>
 <translation id="8279107132611114222">Bu siteye erişim isteğiniz şu kişiye gönderildi: <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Bunun ne anlama geldiğini bilmiyorsanız ağ yöneticinizle bağlantı kurun.</translation>
 <translation id="8293206222192510085">Yer İşareti Ekle</translation>

@@ -27,6 +27,7 @@
 <translation id="1587223624401073077">Google Chrome користи камеру.</translation>
 <translation id="1619887657840448962">Да бисмо учинили Chrome безбеднијим, онемогућили смо следећи додатак који <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> не наводи и који је можда додат без вашег знања.</translation>
 <translation id="163860049029591106">Почетни кораци за Chrome ОС</translation>
+<translation id="1653828314016431939">У реду – Поново покрени одмах</translation>
 <translation id="1682634494516646069">Google Chrome не може да чита податке из свог директоријума са подацима нити да их у њих уписује:
 
 <ph name="USER_DATA_DIRECTORY" /></translation>
@@ -74,6 +75,12 @@
 <translation id="3080151273017101988">Настави са покретањем апликација у позадини када се Google Chrome затвори</translation>
 <translation id="3089968997497233615">Доступна је нова, безбеднија верзија Google Chrome прегледача.</translation>
 <translation id="3149510190863420837">Chrome апликације</translation>
+<translation id="3251381707915721925">Да бисте подесили које веб-сајтове може да прегледа <ph name="NEW_PROFILE_NAME" />, можете да конфигуришете ограничења и подешавања ако посетите <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Ако не промените подразумевана подешавања, <ph name="NEW_PROFILE_NAME" /> може да прегледа све сајтове на вебу.
+
+Да бисте спречили да <ph name="NEW_PROFILE_NAME" /> приступа вашем налогу, обавезно закључајте профил када не користите Chrome. Да бисте то урадили, кликните на име профила у горњем десном углу прегледача и изаберите „Изађи и закључај за децу“.
+<ph name="BEGIN_LINK_2" />Сазнајте више<ph name="END_LINK_2" />
+
+Потражите даља упутства у имејлу на <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Пријављивање у Chrome</translation>
 <translation id="3311976847535831054">Овај рачунар више неће добијати ажурирања за 32-битни Google Chrome. Надоградите Google Chrome на 64-битну верзију.</translation>
 <translation id="3360895254066713204">Chrome помоћник</translation>
@@ -121,6 +128,7 @@
 <translation id="4921569541910214635">Делите рачунар? Сада можете да подесите Chrome баш онако како вама одговара.</translation>
 <translation id="4925019873400497719">Chrome је верификовао да је <ph name="ISSUER" /> издао сертификат овог сајта. Сервер је послао информације о транспарентности сертификата, али оне су неважеће.</translation>
 <translation id="4953650215774548573">Подеси Google Chrome као подразумевани прегледач</translation>
+<translation id="495931528404527476">У Chrome-у</translation>
 <translation id="4987308747895123092">Затворите све Google Chrome прозоре (укључујући оне у режиму Windows 8) и покушајте поново.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome не може да синхронизује податке. Ажурирајте приступну фразу за Синхронизацију.</translation>
@@ -213,6 +221,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="7808348361785373670">Уклони из Chrome-а...</translation>
 <translation id="7825851276765848807">Инсталација није успела услед неутврђене грешке. Преузмите Google Chrome поново.</translation>
 <translation id="7890208801193284374">Ако делите рачунар, пријатељи и породица могу засебно да прегледају и да подесе Chrome баш онако како желе.</translation>
+<translation id="795025003224538582">Не покрећи поново</translation>
 <translation id="8005540215158006229">Chrome је скоро спреман.</translation>
 <translation id="8008534537613507642">Поново инсталирај Chrome</translation>
 <translation id="8030318113982266900">Ажурирање уређаја на канал <ph name="CHANNEL_NAME" />...</translation>

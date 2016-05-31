@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Aktifkan data seluler</translation>
 <translation id="1621499497873603021">Waktu yang tersisa hingga baterai kosong, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Perangkat Chrome</translation>
+<translation id="1677472565718498478">Sisa waktu <ph name="TIME" /></translation>
 <translation id="1723752762323179280">Keluar dari Sesi</translation>
 <translation id="1747827819627189109">Keyboard di layar diaktifkan</translation>
 <translation id="1812696562331527143">Metode masukan Anda telah berubah menjadi <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />pihak ketiga<ph name="END_LINK" />).
@@ -116,6 +117,7 @@ Tekan Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="4421231901400348175">Berbagi kontrol layar dengan <ph name="HELPER_NAME" /> via Remote Assistance.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4527045527269911712">Perangkat Bluetooth "<ph name="DEVICE_NAME" />" meminta izin untuk bersanding.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> hingga penuh</translation>
 <translation id="4544944664594876241">Pintasan untuk mengunci layar telah berubah. Gunakan <ph name="NEW_SHORTCUT" /> sebagai gantinya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Putuskan</translation>
@@ -224,6 +226,7 @@ Tekan Alt+Telusuri atau Shift untuk membatalkan.</translation>
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> Anda mungkin tidak diisi daya saat dinyalakan.</translation>
 <translation id="8528322925433439945">Seluler ...</translation>
+<translation id="8639760480004882931">Tersisa <ph name="PERCENTAGE" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pengisi daya rendah terpasang</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

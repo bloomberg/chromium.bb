@@ -212,6 +212,10 @@
 <translation id="6324708100353784493">您已啟用 Google Cardboard 整合模式。如要使用這個模式，請將您的裝置插入與 Google Cardboard 相容的檢視器。</translation>
 <translation id="6381670701864002291">其他。</translation>
 <translation id="6398765197997659313">退出全螢幕模式</translation>
+<translation id="6408143143164565232">• 聽取 Windows 或 Linux 電腦的音訊。
+• 長按特定電腦名稱即可移除不需要的連線。
+• 雙指撥動縮放與雙指捲動操作更順暢。
+• 更新「說明與意見回饋」畫面。</translation>
 <translation id="6441316101718669559">這個平台不支援桌面整合。您仍然可以使用該應用程式，但使用者體驗可能不如預期。</translation>
 <translation id="652218476070540101">正在更新這台電腦的 PIN...</translation>
 <translation id="6527303717912515753">分享</translation>
@@ -257,6 +261,7 @@
 <translation id="7836926030608666805">找不到部分必要元件。請確認您執行的是最新版本的 Chrome，然後再試一次。</translation>
 <translation id="7868137160098754906">請為遠端電腦輸入您的 PIN。</translation>
 <translation id="7869445566579231750">您沒有執行這個應用程式的權限。</translation>
+<translation id="7895403300744144251">遠端電腦的安全性政策禁止從您的帳戶連線。</translation>
 <translation id="7948001860594368197">螢幕選項</translation>
 <translation id="7970576581263377361">驗證失敗，請重新登入 Chromium。</translation>
 <translation id="7981525049612125370">遠端工作階段已逾時。</translation>

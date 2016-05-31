@@ -212,6 +212,10 @@ Masaüstü Ana Makinesi</translation>
 <translation id="6324708100353784493">Google Cardboard entegrasyon modunu etkinleştirdiniz. Bu modu kullanmak için cihazınızı Google Cardboard uyumlu bir görüntüleyiciye yerleştirin.</translation>
 <translation id="6381670701864002291">Başka bir şey.</translation>
 <translation id="6398765197997659313">Tam ekrandan çık</translation>
+<translation id="6408143143164565232">• Windows veya Linux bilgisayarlardan ses dinleme.
+• Bilgisayarın adına uzun süreli basarak istenmeyen bağlantıları kaldırma.
+• Parmakları sıkıştırarak yakınlaştırma ve iki parmakla kaydırma hareketlerini daha rahat yapabilme.
+• Yardım ve Geri Bildirim için yeni ekran.</translation>
 <translation id="6441316101718669559">Masaüstü entegrasyonu bu platformda desteklenmiyor. Uygulamayı kullanmaya devam edebilirsiniz, ancak kullanıcı deneyimi olumsuz etkilenecektir.</translation>
 <translation id="652218476070540101">Bu bilgisayarın PIN'i güncelleniyor…</translation>
 <translation id="6527303717912515753">Paylaş</translation>
@@ -257,6 +261,7 @@ Masaüstü Ana Makinesi</translation>
 <translation id="7836926030608666805">Bazı gerekli bileşenler eksik. Lütfen Google Chrome'un son sürümünü çalıştırdığınızdan emin olun ve tekrar deneyin.</translation>
 <translation id="7868137160098754906">Lütfen uzak bilgisayara ilişkin PIN'inizi girin.</translation>
 <translation id="7869445566579231750">Bu uygulamayı çalıştırmak için izniniz yok.</translation>
+<translation id="7895403300744144251">Uzak bilgisayardaki güvenlik politikaları, hesabınızdan bağlantı yapılmasına izin vermiyor.</translation>
 <translation id="7948001860594368197">Ekran seçenekleri</translation>
 <translation id="7970576581263377361">Kimlik doğrulama başarısız oldu. Lütfen Chromium'da tekrar oturum açın.</translation>
 <translation id="7981525049612125370">Uzak oturumun süresi sona erdi.</translation>

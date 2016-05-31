@@ -212,6 +212,10 @@ Remote Desktop</translation>
 <translation id="6324708100353784493">Bạn đã bật chế độ tích hợp Google Cardboard. Để sử dụng chế độ này, hãy cắm thiết bị của bạn vào trình xem tương thích với Google Cardboard.</translation>
 <translation id="6381670701864002291">Vấn đề khác.</translation>
 <translation id="6398765197997659313">Thoát khỏi chế độ toàn màn hình</translation>
+<translation id="6408143143164565232">• Nghe âm thanh từ máy tính Windows hoặc Linux.
+• Xóa kết nối không mong muốn bằng cách nhấn và giữ vào tên máy tính.
+• Cuộn bằng hai ngón tay và chụm để thu phóng dễ dàng hơn.
+• Màn hình Trợ giúp và phản hồi mới.</translation>
 <translation id="6441316101718669559">Tích hợp máy tính để bàn không được hỗ trợ trên nền tảng này. Bạn sẽ vẫn có thể sử dụng ứng dụng nhưng trải nghiệm người dùng sẽ bị giảm.</translation>
 <translation id="652218476070540101">Mã PIN cho máy tính này đang được cập nhật…</translation>
 <translation id="6527303717912515753">Chia sẻ</translation>
@@ -257,6 +261,7 @@ Remote Desktop</translation>
 <translation id="7836926030608666805">Thiếu một số thành phần bắt buộc. Vui lòng đảm bảo rằng bạn đang chạy phiên bản Chrome mới nhất và thử lại.</translation>
 <translation id="7868137160098754906">Hãy nhập mã PIN của bạn cho máy tính từ xa.</translation>
 <translation id="7869445566579231750">Bạn không có quyền chạy ứng dụng này.</translation>
+<translation id="7895403300744144251">Chính sách bảo mật trên máy tính từ xa không cho phép các kết nối từ tài khoản của bạn.</translation>
 <translation id="7948001860594368197">Tùy chọn màn hình</translation>
 <translation id="7970576581263377361">Xác thực bị lỗi. Vui lòng đăng nhập lại vào Chromium.</translation>
 <translation id="7981525049612125370">Phiên từ xa đã hết hạn.</translation>

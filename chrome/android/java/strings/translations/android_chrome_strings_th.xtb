@@ -72,6 +72,7 @@
 <translation id="1853692000353488670">แท็บใหม่ที่ไม่ระบุตัวตน</translation>
 <translation id="189172778771606813">ปิดลิ้นชักการนำทาง</translation>
 <translation id="1924956916668006832">เลือกที่อยู่สำหรับจัดส่ง</translation>
+<translation id="1933845786846280168">แท็บที่เลือก</translation>
 <translation id="194341124344773587">เปิดการใช้สิทธิ์สำหรับ Chrome ใน<ph name="BEGIN_LINK" />การตั้งค่า Android<ph name="END_LINK" /></translation>
 <translation id="1943432128510653496">บันทึกรหัสผ่าน</translation>
 <translation id="1944384637046898011">เข้ารหัสทั้งหมดด้วยรหัสผ่าน Google ตั้งแต่วันที่ <ph name="TIME" /></translation>
@@ -129,7 +130,7 @@
 <translation id="257931822824936280">ขยาย - คลิกเพื่อยุบ</translation>
 <translation id="2587052924345400782">มีเวอร์ชันใหม่กว่าให้ใช้งาน</translation>
 <translation id="2593272815202181319">Monospace</translation>
-<translation id="2621115761605608342">อนุญาต JavaScript สำหรับเว็บไซต์ที่เจาะจง</translation>
+<translation id="2621115761605608342">อนุญาต JavaScript สำหรับเว็บไซต์ใดเว็บไซต์หนึ่ง</translation>
 <translation id="2646820313617290661">ผู้ปกครองของคุณช่วยจัดการการตั้งค่าเหล่านี้</translation>
 <translation id="2653659639078652383">ส่ง</translation>
 <translation id="2677748264148917807">ออก</translation>
@@ -156,6 +157,7 @@
 <translation id="2959609938957585241">เปิด "ซิงค์ข้อมูลอัตโนมัติ" ในการตั้งค่าบัญชี Android เพื่อรับแท็บจากอุปกรณ์เครื่องอื่นๆ ของคุณ</translation>
 <translation id="2960796085439532066">ลิขสิทธิ์ <ph name="YEAR" /> Google Inc. สงวนลิขสิทธิ์</translation>
 <translation id="2968755619301702150">เครื่องมือดูใบรับรอง</translation>
+<translation id="2979025552038692506">แท็บที่ไม่ระบุตัวตนที่เลือก</translation>
 <translation id="2996291259634659425">สร้างรหัสผ่าน</translation>
 <translation id="2996809686854298943">ต้องระบุ URL</translation>
 <translation id="3012408695656332380">แทนที่ข้อมูลของอุปกรณ์เครื่องนี้ด้วยข้อมูลของ <ph name="TO_ACCOUNT" /> คุณสามารถดึงข้อมูลที่มีอยู่โดยเปลี่ยนกลับไปเป็น <ph name="FROM_ACCOUNT" /> แต่ข้อมูลที่สร้างขึ้นหลังจากที่คุณออกจากระบบจะสูญหายไป</translation>
@@ -554,6 +556,7 @@
 <translation id="8073388330009372546">เปิดภาพในแท็บใหม่</translation>
 <translation id="8076014560081431679">การตั้งค่าเว็บไซต์ที่บันทึกไว้จะไม่ถูกลบและอาจส่งผลกับลักษณะการท่องเว็บของคุณ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">เนื้อหานี้มาจาก <ph name="DOMAIN_NAME" /> และนำส่งโดย Google</translation>
+<translation id="8103578431304235997">แท็บที่ไม่ระบุตัวตน</translation>
 <translation id="8106211421800660735">หมายเลขบัตรเครดิต</translation>
 <translation id="813082847718468539">ดูข้อมูลเว็บไซต์</translation>
 <translation id="8137558756159375272">แตะเพื่อค้นหาจะส่งคำที่เลือกและหน้าปัจจุบันเป็นบริบทไปยัง Google Search คุณสามารถปิดคุณลักษณะนี้ใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>

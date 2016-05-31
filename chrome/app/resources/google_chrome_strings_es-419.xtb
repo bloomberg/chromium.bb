@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome está usando tu cámara.</translation>
 <translation id="1619887657840448962">Para que Chrome sea más seguro, inhabilitamos algunas extensiones que no aparecen en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y que posiblemente se hayan agregado sin tu conocimiento.</translation>
 <translation id="163860049029591106">Introducción al Sistema operativo de Chrome</translation>
+<translation id="1653828314016431939">Reiniciar ahora</translation>
 <translation id="1682634494516646069">Google Chrome no puede leer ni agregar datos al directorio de datos: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome es un navegador web que ejecuta aplicaciones y páginas web a gran velocidad. Es rápido, estable y fácil de utilizar. Navega por la Web de forma más segura con protección contra suplantación de identidad y software malicioso integrada a Google Chrome.</translation>
 <translation id="174539241580958092">Google Chrome no pudo sincronizar los datos porque se produjo un error de acceso.</translation>
@@ -70,6 +71,12 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
 <translation id="3089968997497233615">Hay disponible una versión de Google Chrome más nueva y más segura.</translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>
+<translation id="3251381707915721925">Para establecer qué sitios web puede ver <ph name="NEW_PROFILE_NAME" />, puedes configurar restricciones y definir opciones de configuración en <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Si no cambias las opciones de configuración predeterminadas, <ph name="NEW_PROFILE_NAME" /> podrá navegar en la Web sin restricciones.
+
+Para impedir que <ph name="NEW_PROFILE_NAME" /> acceda a tu cuenta, asegúrate de bloquear tu perfil cuando no uses Chrome. Para hacerlo, haz clic en tu nombre de perfil que se encuentra en la esquina superior derecha del navegador y selecciona "Salir y bloquear para niños".
+<ph name="BEGIN_LINK_2" />Más información<ph name="END_LINK_2" />
+
+Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Acceder a Chrome</translation>
 <translation id="3311976847535831054">Esta computadora ya no recibirá actualizaciones de Google Chrome de 32 bits. Actualiza a Google Chrome de 64 bits.</translation>
 <translation id="3360895254066713204">Ayuda de Chrome</translation>
@@ -117,6 +124,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="4921569541910214635">¿Compartes una computadora? Ahora puedes configurar Chrome como a ti te gusta.</translation>
 <translation id="4925019873400497719">Chrome verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor proporcionó información de transparencia de certificados que no era válida.</translation>
 <translation id="4953650215774548573">Establecer Google Chrome como navegador predeterminado</translation>
+<translation id="495931528404527476">En Chrome</translation>
 <translation id="4987308747895123092">Cierra todas las ventanas de Google Chrome (incluidas las que están en modo Windows 8) e inténtalo nuevamente.</translation>
 <translation id="4990567037958725628">Google Chrome Canario</translation>
 <translation id="5028489144783860647">Google Chrome no pudo sincronizar los datos. Actualiza la frase de contraseña de sincronización.</translation>
@@ -205,6 +213,7 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="7808348361785373670">Eliminar de Chrome…</translation>
 <translation id="7825851276765848807">La instalación falló debido a un error no especificado. Descarga Google Chrome otra vez.</translation>
 <translation id="7890208801193284374">Si compartes una computadora, tus amigos y familiares pueden navegar de forma independiente y configurar Chrome según los gustos individuales.</translation>
+<translation id="795025003224538582">No reiniciar</translation>
 <translation id="8005540215158006229">Chrome ya está casi listo.</translation>
 <translation id="8008534537613507642">Reinstalar Chrome</translation>
 <translation id="8030318113982266900">Actualizando el dispositivo al canal <ph name="CHANNEL_NAME" />…</translation>

@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome utilizează camera foto.</translation>
 <translation id="1619887657840448962">Pentru mai multă siguranță în Chrome, am dezactivat următoarea extensie care nu este inclusă în <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> și care este posibil să fi fost adăugată fără știrea ta.</translation>
 <translation id="163860049029591106">Noțiuni introductive despre sistemul de operare Chrome</translation>
+<translation id="1653828314016431939">OK - Reporniți acum</translation>
 <translation id="1682634494516646069">Google Chrome nu poate citi și scrie în directorul propriu de date: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome este un browser web care rulează pagini web și aplicații cu o viteză extraordinară. Este rapid, stabil și ușor de utilizat. Navigați pe web beneficiind de mai multă siguranță datorită protecției împotriva programelor malware și a phishingului, care este încorporată în Google Chrome.</translation>
 <translation id="174539241580958092">Google Chrome nu a putut sincroniza datele din cauza unei erori la conectare.</translation>
@@ -70,6 +71,12 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="3080151273017101988">Rulează în continuare aplicații în fundal când Google Chrome este închis</translation>
 <translation id="3089968997497233615">Google Chrome este disponibil într-o versiune nouă și mai sigură.</translation>
 <translation id="3149510190863420837">Aplicații Chrome</translation>
+<translation id="3251381707915721925">Pentru a stabili ce site-uri poate accesa utilizatorul <ph name="NEW_PROFILE_NAME" />, poți configura restricții și setări accesând <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Dacă nu modifici setările prestabilite, utilizatorul <ph name="NEW_PROFILE_NAME" /> poate naviga oriunde pe web.
+
+Pentru a împiedica utilizatorul <ph name="NEW_PROFILE_NAME" /> să îți acceseze contul, asigură-te că îți blochezi profilul când nu folosești Chrome. Pentru a face acest lucru, dă clic pe numele de profil din colțul din dreapta sus al browserului și selectează „Ieși și blochează”.
+<ph name="BEGIN_LINK_2" />Află mai multe<ph name="END_LINK_2" />
+
+Verifică e-mailul la <ph name="ACCOUNT_EMAIL" /> pentru instrucțiuni suplimentare.</translation>
 <translation id="3282568296779691940">Conectați-vă la Chrome</translation>
 <translation id="3311976847535831054">Acest computer nu va mai primi actualizări pentru Google Chrome pe 32 de biți. Fă upgrade la Google Chrome pe 64 de biți.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -117,6 +124,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="4921569541910214635">Folosești un computer în comun? Acum poți să configurezi Chrome exact cum îți place.</translation>
 <translation id="4925019873400497719">Chrome s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />. Serverul a oferit informații privind Certificate Transparency, însă acestea nu au fost valide.</translation>
 <translation id="4953650215774548573">Setați Google Chrome ca browser prestabilit</translation>
+<translation id="495931528404527476">În Chrome</translation>
 <translation id="4987308747895123092">Închideți toate ferestrele Google Chrome (inclusiv pe cele în modul Windows 8) și încercați din nou.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome nu a putut sincroniza datele. Actualizați expresia de acces pentru sincronizare.</translation>
@@ -205,6 +213,7 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="7808348361785373670">Elimină din Chrome...</translation>
 <translation id="7825851276765848807">Instalarea nu a reușit din cauza unei erori neprecizate. Descarci Google Chrome din nou.</translation>
 <translation id="7890208801193284374">Dacă permiteți accesul la un computer, familia și prietenii pot să navigheze separat și să configureze Chrome cum doresc.</translation>
+<translation id="795025003224538582">Nu reporniți</translation>
 <translation id="8005540215158006229">Chrome este aproape pregătit.</translation>
 <translation id="8008534537613507642">Reinstalați Chrome</translation>
 <translation id="8030318113982266900">Se actualizează dispozitivul pentru canalul <ph name="CHANNEL_NAME" />...</translation>

@@ -212,6 +212,10 @@ Google Chrome</translation>
 <translation id="6324708100353784493">Vous avez activé le mode d'intégration de Google Cardboard. Pour utiliser ce mode, insérez votre appareil dans une visionneuse compatible avec Google Cardboard.</translation>
 <translation id="6381670701864002291">Autre</translation>
 <translation id="6398765197997659313">Quitter le mode plein écran</translation>
+<translation id="6408143143164565232">• Écoutez des contenus audio issus d'ordinateurs Windows ou Linux.
+• Supprimez les connexions dont vous n'avez pas besoin en appuyant de manière prolongée sur le nom de l'ordinateur en question.
+• Amélioration de la fonctionnalité "Pincer pour zoomer" et du défilement à deux doigts.
+• Nouvel écran "Aide et commentaires".</translation>
 <translation id="6441316101718669559">L'intégration du Bureau est impossible sur cette plate-forme. Vous pouvez toujours utiliser l'application, mais avec une expérience utilisateur de moindre qualité.</translation>
 <translation id="652218476070540101">Mise à jour du code d'accès pour cet ordinateur en cours…</translation>
 <translation id="6527303717912515753">Partager</translation>
@@ -257,6 +261,7 @@ Google Chrome</translation>
 <translation id="7836926030608666805">Certains composants nécessaires  sont introuvables. Veuillez vous assurer que vous utilisez la dernière version de Chrome, puis réessayer.</translation>
 <translation id="7868137160098754906">Veuillez saisir le code d'accès de l'ordinateur distant.</translation>
 <translation id="7869445566579231750">Vous n'êtes pas autorisé à exécuter cette application.</translation>
+<translation id="7895403300744144251">Les règles de sécurité de l'ordinateur distant n'autorisent pas les connexions à partir de votre compte.</translation>
 <translation id="7948001860594368197">Options de l'écran</translation>
 <translation id="7970576581263377361">Échec de l'authentification. Veuillez vous connecter de nouveau à Chromium.</translation>
 <translation id="7981525049612125370">La session à distance est arrivée à expiration.</translation>

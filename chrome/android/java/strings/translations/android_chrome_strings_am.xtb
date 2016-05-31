@@ -72,6 +72,7 @@
 <translation id="1853692000353488670">አዲስ ማንነት የማያሳውቅ ትር</translation>
 <translation id="189172778771606813">የአሰሳ መሳቢያ ዝጋ</translation>
 <translation id="1924956916668006832">የመላኪያ አድራሻን ይምረጡ</translation>
+<translation id="1933845786846280168">የተመረጠው ትር</translation>
 <translation id="194341124344773587">በ<ph name="BEGIN_LINK" />Android ቅንብሮች<ph name="END_LINK" /> ውስጥ ፍቃዶችን ለChrome ያብሩ።</translation>
 <translation id="1943432128510653496">የይለፍ ቃላትን አስቀምጥ</translation>
 <translation id="1944384637046898011">ከ<ph name="TIME" /> ጀምሮ በGoogle ይለፍ ቃል አመስጥር</translation>
@@ -156,6 +157,7 @@
 <translation id="2959609938957585241">ትሮችዎን ከሌሎች መሣሪያዎችዎ ለማግኘት በAndroid የመለያ ቅንብሮች ውስጥ «ውሂብን በራስ-አስምር»ን ያብሩ።</translation>
 <translation id="2960796085439532066">የቅጂ መብት <ph name="YEAR" /> Google Inc. ሁሉም መብቶች የተጠበቁ ናቸው።</translation>
 <translation id="2968755619301702150">የእውቅና ማረጋገጫ መመልከቻ</translation>
+<translation id="2979025552038692506">የተመረጠው ማንነት የማያሳውቅ ትር</translation>
 <translation id="2996291259634659425">የይለፍ ሐረግ ይፍጠሩ</translation>
 <translation id="2996809686854298943">ዩአርኤል ያስፈልጋል</translation>
 <translation id="3012408695656332380">የዚህ መሣሪያ ውሂብ በ<ph name="TO_ACCOUNT" /> ውሂብ ይተኩት። ወደ <ph name="FROM_ACCOUNT" /> ተመልሰው በመቀየር ነባሩን ውሂብዎ ሰርስረው ማውጣት ይችላሉ፣ ነገር ግን ዘግተው ከወጡበት ጊዜ ጀምሮ የተፈጠረ ውሂብ ይጠፋል።</translation>
@@ -462,7 +464,7 @@
 <translation id="6981982820502123353">ተደራሽነት</translation>
 <translation id="6990079615885386641">መተግበሪያውን ከGoogle Play መደብር ያግኙ፦ <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">የደህንነት ሊሆኑ የሚችሉ የክስተቶች ዝርዝር በራስ-ሰር ለGoogle ሪፖርት አድርግ</translation>
-<translation id="6992289844737586249">ጣቢያዎች ማይክሮፎንዎን እንዲጠቀሙ ከመፍቀድህ በፊት ይጠይቅ (የሚመከር)</translation>
+<translation id="6992289844737586249">ጣቢያዎች ማይክሮፎንዎን እንዲጠቀሙ ከመፍቀድዎ በፊት ይጠይቅ (የሚመከር)</translation>
 <translation id="6999892069268112724">የGoogle መለያ ያረጋግጡ</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> ወርዷል</translation>
 <translation id="7022756207310403729">በአሳሽ ውስጥ ክፈት</translation>
@@ -554,6 +556,7 @@
 <translation id="8073388330009372546">ምስሉን በአዲስ ትር ውስጥ ክፈት</translation>
 <translation id="8076014560081431679">የተቀመጡ ጣቢያ ቅንብሮች አይሰረዙም፣ እና የእርስዎን የአሰሳ ልማዶች ሊያንጸባርቁ ይችሉ ይሆናል። <ph name="BEGIN_LINK" />የበለጠ ለመረዳት<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">ይህ ይዘት ከ<ph name="DOMAIN_NAME" /> የመጣ ነው፣ የተላከው በGoogle ነው።</translation>
+<translation id="8103578431304235997">ማንነት የማያሳውቅ ትር</translation>
 <translation id="8106211421800660735">የብድር ካርድ ቁጥር</translation>
 <translation id="813082847718468539">የጣቢያ መረጃን ይመልከቱ</translation>
 <translation id="8137558756159375272">ፍለጋ ላይ መንካት የተመረጠ ቃልን እና አሁን ያለውን ገጽ ወደ Google ፍለጋ ይልካል። በ<ph name="BEGIN_LINK" />ቅንብሮች<ph name="END_LINK" /> ውስጥ ሊያጠፉት ይችላሉ።</translation>

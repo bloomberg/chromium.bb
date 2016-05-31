@@ -16,6 +16,7 @@
 <translation id="151962892725702025">El Sistema operativo Chromium no pudo sincronizar los datos porque la sincronización no está disponible para el dominio.</translation>
 <translation id="1559451348202814456">Es posible que Chromium no funcione correctamente porque ya no es compatible con Mac OS X 10.6, 10.7 o 10.8.</translation>
 <translation id="1644918877723739397">Chromium la almacenará en las <ph name="SAVED_PASSWORD_LINK" /> y la recordará la próxima vez que la necesites.</translation>
+<translation id="1653828314016431939">Reiniciar ahora</translation>
 <translation id="1668054258064581266">Luego de eliminar la cuenta de Chromium, es posible que debas volver a cargar las pestañas abiertas para que se aplique el cambio.</translation>
 <translation id="1688750314291223739">Configura la sincronización para guardar tus funciones personalizadas del navegador en la Web y para acceder a ellas con Chromium desde cualquier equipo.</translation>
 <translation id="1699664235656412242">Cierra todas las ventanas de Chromium (incluidas las que están en modo Windows 8) e inténtalo nuevamente.</translation>
@@ -174,6 +175,12 @@
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
 <translation id="734373864078049451">Aquí puedes encontrar tus páginas web, marcadores y otros contenidos de Chromium.</translation>
+<translation id="7344413941077984497">Para establecer qué sitios web puede ver <ph name="NEW_PROFILE_NAME" />, puedes configurar las restricciones y las opciones de configuración en <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Si no cambias las opciones predeterminadas de configuración, <ph name="NEW_PROFILE_NAME" /> podrá navegar en la Web sin restricciones.
+
+Para impedir que <ph name="NEW_PROFILE_NAME" /> acceda a tu cuenta, asegúrate de bloquear tu perfil cuando no uses Chromium. Para hacerlo, haz clic en tu nombre de perfil que se encuentra en la esquina superior derecha del navegador y selecciona "Salir y bloquear para niños".
+<ph name="BEGIN_LINK_2" />Más información<ph name="END_LINK_2" />
+
+Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Si prefieres mantener tus datos de Chromium existentes por separado, puedes crear un nuevo usuario de Chromium para <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium requiere Windows XP o versiones posteriores. Es posible que no funcionen algunas características.</translation>
 <translation id="7463979740390522693">Chromium: notificaciones (<ph name="QUANTITY" /> sin leer)</translation>
@@ -188,6 +195,7 @@
 <translation id="7747138024166251722">El instalador no pudo crear un directorio temporal. Verifique si hay espacio disponible en el disco y cuenta con permiso para instalar software.</translation>
 <translation id="7918535023914021398">Chromium verificó que <ph name="ISSUER" /> emitió el certificado de este sitio web. El servidor no proporcionó información de transparencia de certificados.</translation>
 <translation id="7937630085815544518">Accediste a Chromium con <ph name="USER_EMAIL_ADDRESS" />. Usa la misma cuenta para volver a acceder.</translation>
+<translation id="795025003224538582">No reiniciar</translation>
 <translation id="7962572577636132072">Chromium se actualiza automáticamente para que siempre tengas la versión más reciente.</translation>
 <translation id="7979877361127045932">Ocultar en el menú de Chromium</translation>
 <translation id="8030318113982266900">Actualizando el dispositivo al canal <ph name="CHANNEL_NAME" />…</translation>

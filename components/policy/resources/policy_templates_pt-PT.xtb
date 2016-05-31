@@ -476,6 +476,7 @@
 <translation id="267596348720209223">Especifica as codificações de caracteres suportadas pelo fornecedor de pesquisas. As codificações são nomes de páginas de códigos, como UTF-8, GB2312 e ISO-8859-1, e são selecionadas por esta ordem. Esta política é opcional. Se não for definida, a codificação predefinida será UTF-8. Esta política aplica-se apenas se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="2682225790874070339">Desativa o Google Drive na aplicação Ficheiros do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Ativar a funcionalidade proxy de compressão de dados</translation>
+<translation id="2731627323327011390">Desativar a utilização de certificados do <ph name="PRODUCT_OS_NAME" /> em aplicações ARC</translation>
 <translation id="2742843273354638707">Oculta a aplicação da Web Store do Chrome e o link do rodapé da página Novo separador e do iniciador de aplicações do <ph name="PRODUCT_OS_NAME" />.
 
       Quando esta política está definida como verdadeira, os ícones estão ocultos.
@@ -1696,6 +1697,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se definir esta política, os utilizadores podem substitui-la temporariamente ativando ou desativando a lupa. No entanto, a escolha do utilizador não é persistente e a predefinição é restaurada sempre que o ecrã de início de sessão for mostrado de novo ou o utilizador permanecer inativo no ecrã de início de sessão durante um minuto.
 
           Se esta política não for definida, a lupa é desativada quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar a lupa a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
+<translation id="7249828445670652637">Ativar certificados da AC (Autoridade de certificação) do <ph name="PRODUCT_OS_NAME" /> em aplicações ARC</translation>
 <translation id="7258823566580374486">Ativar proteção de anfitriões de acesso remoto</translation>
 <translation id="7260277299188117560">Atualização automática de p2p ativada</translation>
 <translation id="7267809745244694722">Teclas multimédia predefinidas para teclas de função</translation>
@@ -1807,6 +1809,17 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7715711044277116530">Percentagem que determina a escala do atraso de esbatimento do ecrã no modo de apresentação</translation>
 <translation id="7717938661004793600">Configura as funcionalidades de acessibilidade de <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Controla se as métricas de utilização são comunicadas à Google. Se a política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> irá comunicar as métricas de utilização. Se não for configurada ou for definida como falsa, o relatório de métricas será desativado.</translation>
+<translation id="7723433108978650103">Bloqueia o acesso aos URLs listados.
+
+      Esta política impede que o utilizador carregue páginas Web a partir de URLs incluídos na lista negra. A lista negra fornece uma lista de padrões de URL que especifica que URLs são nela incluídos.
+
+      Os padrões de URL devem ser formatados de acordo com as indicações em https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      É possível definir exceções na política da lista de autorizações de URLs. Estas políticas estão limitadas a 1000 entradas; as entradas subsequentes são ignoradas.
+
+      Tenha em atenção que não é recomendado bloquear URLs "chrome://*" internos dado que isto pode causar erros inesperados.
+
+      Se esta política não for definida, a lista negra do navegador não inclui qualquer URL.</translation>
 <translation id="7749402620209366169">Ativa a autenticação de dois fatores para anfitriões de acesso remoto, em vez de um PIN especificado pelo utilizador.
 
           Se esta definição estiver ativada, os utilizadores terão de fornecer um código de dois fatores válido ao aceder a um anfitrião.
@@ -1873,6 +1886,9 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política não estiver definida, o comportamento é o mesmo como se TimezoneAutomaticDetectionUsersDecide estivesse definido.
 
       Se a política SystemTimezone estiver definida, substitui esta política. Nesse caso, a deteção automática do fuso horário está totalmente desativada.</translation>
+<translation id="787125417158068494">Se estiverem definidos para SyncDisabled ou não estiverem configurados, os certificados do <ph name="PRODUCT_OS_NAME" /> não ficam disponíveis para aplicações ARC.
+
+      Se estiverem definidos para CopyCaCerts, todos os certificados da AC (Autoridade de certificação) instalados pelo ONC com <ph name="WEB_TRUSTED_BIT" /> ficam disponíveis para aplicações ARC.</translation>
 <translation id="7882585827992171421">Esta política está ativa apenas no modo de retalho.
 
       Determina a ID da extensão a utilizar como proteção de ecrã no ecrã de início de sessão. A extensão deve ser parte do AppPack que está configurado para este domínio através da política DeviceAppPack.</translation>
@@ -1888,6 +1904,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="793134539373873765">Especifica se o p2p será utilizado para cargas úteis de atualização do SO. Se estiver definido como Verdadeiro, os dispositivos irão partilhar e tentar consumir cargas úteisde atualização na LAN, reduzindo potencialmente a utilização e o congestionamento da largura de banda da Internet. Se a carga útil de atualização não estiver disponível na LAN, o dispositivo irá regressar à transferência a partir de um servidor de atualização. Se estiver definido como Falso ou se não estiver configurado, o p2p não será utilizado.</translation>
 <translation id="7933141401888114454">Permitir a criação de utilizadores supervisionados</translation>
+<translation id="793473937901685727">Definir a disponibilidade de certificados para aplicações ARC</translation>
 <translation id="7936098023732125869">Permite a utilização de um fornecedor de pesquisa predefinido.
 
           Se ativar esta definição, é realizada uma pesquisa predefinida quando o  utilizador introduz texto na caixa geral que não seja um URL.

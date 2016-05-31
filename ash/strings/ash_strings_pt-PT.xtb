@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Ativar dados móveis</translation>
 <translation id="1621499497873603021">Tempo restante até a bateria terminar, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1723752762323179280">A sair da sessão</translation>
 <translation id="1747827819627189109">Teclado no ecrã ativado</translation>
 <translation id="1812696562331527143">O seu método de introdução foi alterado para <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />terceiros<ph name="END_LINK" />).
@@ -116,6 +117,7 @@ Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="4421231901400348175">A partilhar o controlo do seu ecrã com <ph name="HELPER_NAME" /> através da Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4527045527269911712">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> até estar totalmente carregada</translation>
 <translation id="4544944664594876241">O atalho para bloquear o ecrã foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Desligar</translation>
@@ -224,6 +226,7 @@ Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8517041960877371778">O <ph name="DEVICE_TYPE" /> pode não carregar enquanto estiver ligado.</translation>
 <translation id="8528322925433439945">Telemóvel...</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Carregador de baixo consumo ligado</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

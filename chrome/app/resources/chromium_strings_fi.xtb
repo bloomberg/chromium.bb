@@ -16,6 +16,7 @@
 <translation id="151962892725702025">Chromium-käyttöjärjestelmä ei voi synkronoida tietoja, koska synkronointi ei ole käytettävissä verkkotunnuksessasi.</translation>
 <translation id="1559451348202814456">Chromium ei välttämättä toimi oikein, koska se ei enää tue Mac OS X -versioita 10.6, 10.7 tai 10.8.</translation>
 <translation id="1644918877723739397">Chromium tallentaa salasanan <ph name="SAVED_PASSWORD_LINK" /> -ominaisuudella ja muistaa sen, kun tarvitset sitä seuraavan kerran.</translation>
+<translation id="1653828314016431939">OK - Käynnistä uudelleen nyt</translation>
 <translation id="1668054258064581266">Kun olet poistanut tilisi Chromiumista, sinun on ehkä avattava avoinna olleet välilehdet uudelleen, jotta muutos tulee voimaan.</translation>
 <translation id="1688750314291223739">Määrittämällä synkronoinnin voit tallentaa selaimesi tiedot verkkoon ja käyttää niitä minkä tahansa tietokoneen Chromiumilla.</translation>
 <translation id="1699664235656412242">Sulje kaikki Chromium-ikkunat (myös Windows 8 -tilassa käytettävät) ja yritä uudelleen.</translation>
@@ -180,6 +181,12 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Uusi ikkuna</translation>
 <translation id="734373864078049451">Tämä on verkkosi, kirjanmerkkiesi ja muun Chromium-sisältösi koti.</translation>
+<translation id="7344413941077984497">Jos haluat valita, mitä verkkosivustoja <ph name="NEW_PROFILE_NAME" /> voi katsella, määritä rajoituksia ja asetuksia osoitteessa <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Jos et muokkaa oletusasetuksia, <ph name="NEW_PROFILE_NAME" /> voi selata kaikkia verkkosivustoja.
+
+Jotta <ph name="NEW_PROFILE_NAME" /> ei voi käyttää tiliäsi, lukitse profiilisi, kun et enää käytä Chromiumia. Voit tehdä tämän klikkaamalla profiilisi nimeä selainikkunan oikeassa yläkulmassa ja valitsemalla Sulje ja aseta lapsilukko.
+<ph name="BEGIN_LINK_2" />Lisätietoja<ph name="END_LINK_2" />
+
+Lähetimme lisäohjeita sähköpostiisi osoitteeseen <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Jos haluat pitää nykyiset Chromium-tietosi erillään, voit luoda käyttäjälle <ph name="USER_NAME" /> uuden Chromium-tunnuksen.</translation>
 <translation id="7421823331379285070">Chromium vaatii Windows XP:n tai uudemman version. Kaikki ominaisuudet eivät välttämättä toimi.</translation>
 <translation id="7463979740390522693">Chromium – ilmoitukset (lukematta: <ph name="QUANTITY" />)</translation>
@@ -194,6 +201,7 @@ Chromium ei voi palauttaa asetuksiasi.</translation>
 <translation id="7747138024166251722">Asennusohjelma ei pystynyt luomaan väliaikaista hakemistoa. Tarkista, että käytettävissä on riittävästi levytilaa ja että sinulla on oikeus asentaa ohjelmia.</translation>
 <translation id="7918535023914021398">Chromium vahvisti, että <ph name="ISSUER" /> on myöntänyt tämän sivuston varmenteen. Palvelin ei lähettänyt Certificate Transparency -tietoja.</translation>
 <translation id="7937630085815544518">Chromiumiin kirjautunut käyttäjä: <ph name="USER_EMAIL_ADDRESS" />. Kirjaudu uudelleen sisään samalla tilillä.</translation>
+<translation id="795025003224538582">Älä käynnistä uudelleen</translation>
 <translation id="7962572577636132072">Chromium päivitetään automaattisesti, joten käytössäsi on aina uusin versio.</translation>
 <translation id="7979877361127045932">Piilota Chromium-valikossa</translation>
 <translation id="8030318113982266900">Päivitetään laitteeseen kanavaa <ph name="CHANNEL_NAME" />…</translation>

@@ -72,6 +72,7 @@
 <translation id="1853692000353488670">新しいシークレット タブ</translation>
 <translation id="189172778771606813">操作パネルを閉じる</translation>
 <translation id="1924956916668006832">配送先住所を選択</translation>
+<translation id="1933845786846280168">選択したタブ</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android の設定<ph name="END_LINK" />で Chrome の権限を有効にしてください。</translation>
 <translation id="1943432128510653496">パスワードを保存する</translation>
 <translation id="1944384637046898011"><ph name="TIME" />時点の Google パスワードですべてのデータを暗号化する</translation>
@@ -156,6 +157,7 @@
 <translation id="2959609938957585241">他の端末と同じタブを使用するには、Android のアカウント設定で [データの自動同期] を有効にします。</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. All rights reserved.</translation>
 <translation id="2968755619301702150">証明書ビューア</translation>
+<translation id="2979025552038692506">選択したシークレット タブ</translation>
 <translation id="2996291259634659425">パスフレーズの作成</translation>
 <translation id="2996809686854298943">URLが必要です</translation>
 <translation id="3012408695656332380">このデバイスのデータを <ph name="TO_ACCOUNT" /> のデータに置き換えます。<ph name="FROM_ACCOUNT" /> に切り替えると、既存のデータを取得することができます。ただし、ログアウト後に作成したデータは失われます。</translation>
@@ -554,6 +556,7 @@
 <translation id="8073388330009372546">新しいタブで画像を開く</translation>
 <translation id="8076014560081431679">保存済みのサイト設定は削除されず、普段の閲覧行動を反映した設定などが残る場合があります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479"><ph name="DOMAIN_NAME" /> のコンテンツを Google から配信しています。</translation>
+<translation id="8103578431304235997">シークレット タブ</translation>
 <translation id="8106211421800660735">クレジットカード番号</translation>
 <translation id="813082847718468539">サイト情報を表示</translation>
 <translation id="8137558756159375272">「タップして検索」では選択したキーワードと現在のページがコンテキストとして Google 検索に送信されます。これは [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で無効にすることができます。</translation>

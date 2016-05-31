@@ -72,6 +72,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1853692000353488670">Nowa karta incognito</translation>
 <translation id="189172778771606813">Zamknij panel nawigacji</translation>
 <translation id="1924956916668006832">Wybierz adres dostawy</translation>
+<translation id="1933845786846280168">Wybrana karta</translation>
 <translation id="194341124344773587">Przyznaj Chrome uprawnienie w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Zapisuj hasła</translation>
 <translation id="1944384637046898011">Zaszyfruj wszystko za pomocą hasła do Google z <ph name="TIME" /></translation>
@@ -153,9 +154,10 @@ Internet rzeczy możesz skonfigurować w ustawieniach Chrome.
 <translation id="2903493209154104877">Adresy</translation>
 <translation id="2913331724188855103">Zezwalaj witrynom na zapisywanie danych w plikach cookie i ich odczytywanie (zalecane)</translation>
 <translation id="2956410042958133412">Tym kontem zarządzają <ph name="PARENT_NAME_1" /> i <ph name="PARENT_NAME_2" />.</translation>
-<translation id="2959609938957585241">Aby korzystać z kart ze swoich innych urządzeń, włącz opcję „Autosynchronizacja danych” w ustawieniach konta na urządzeniu z Androidem.</translation>
+<translation id="2959609938957585241">Aby korzystać ze swoich kart na wszystkich urządzeniach, włącz opcję „Autosynchronizacja danych” w ustawieniach konta na urządzeniu z Androidem.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Wszelkie prawa zastrzeżone.</translation>
 <translation id="2968755619301702150">Przeglądarka certyfikatów</translation>
+<translation id="2979025552038692506">Wybrana karta incognito</translation>
 <translation id="2996291259634659425">Utwórz hasło</translation>
 <translation id="2996809686854298943">Wymagany adres URL</translation>
 <translation id="3012408695656332380">Zastąp dane na urządzeniu danymi z konta <ph name="TO_ACCOUNT" />. Możesz pobrać istniejące dane, przełączając się z powrotem na konto <ph name="FROM_ACCOUNT" />, jednak dane utworzone od momentu wylogowania się zostaną utracone.</translation>
@@ -554,6 +556,7 @@ Inne rodzaje historii przeglądania, takie jak wyszukiwania i aktywność w inny
 <translation id="8073388330009372546">Otwórz grafikę w nowej karcie</translation>
 <translation id="8076014560081431679">Zapisane ustawienia witryn nie zostaną usunięte i mogą zawierać informacje o Twoim korzystaniu z przeglądarki. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Treść z <ph name="DOMAIN_NAME" /> dostarczana przez Google.</translation>
+<translation id="8103578431304235997">Karta incognito</translation>
 <translation id="8106211421800660735">Numer karty kredytowej</translation>
 <translation id="813082847718468539">Wyświetl informacje o witrynie</translation>
 <translation id="8137558756159375272">Funkcja „Dotknij, by wyszukać” wysyła zaznaczone słowo i bieżącą stronę jako kontekst do wyszukiwarki Google. Możesz ją wyłączyć w <ph name="BEGIN_LINK" />ustawieniach<ph name="END_LINK" />.</translation>

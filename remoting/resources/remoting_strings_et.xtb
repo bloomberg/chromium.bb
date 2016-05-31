@@ -212,6 +212,10 @@ Desktopi host</translation>
 <translation id="6324708100353784493">Lubasite Google Cardboardi integreerimise režiimi. Selle režiimi kasutamiseks sisestage oma seade Google Cardboardiga ühilduvasse vaaturisse.</translation>
 <translation id="6381670701864002291">Midagi muud.</translation>
 <translation id="6398765197997659313">Välju täisekraanilt</translation>
+<translation id="6408143143164565232">• Kuulake heli Windowsi või Linuxi arvutitest.
+• Eemaldage soovimatud ühendused, vajutades pikalt arvuti nimel.
+• Sõrmede kokku-lahku liigutamisega suumimine ja kahe sõrmega kerimine on sujuvam.
+• Uus abi ja tagasiside ekraan.</translation>
 <translation id="6441316101718669559">Sellel platvormil ei toetata töölaua integreerimist. Saate rakendust kasutada, kuid kasutuskogemus on kehvem.</translation>
 <translation id="652218476070540101">Selle arvuti PIN-koodi värskendatakse ...</translation>
 <translation id="6527303717912515753">Jaga</translation>
@@ -257,6 +261,7 @@ Desktopi host</translation>
 <translation id="7836926030608666805">Mõned vajalikud komponendid on puudu. Veenduge, et käitaksite Chrome'i uusimat versiooni, ja proovige uuesti.</translation>
 <translation id="7868137160098754906">Sisestage kaugarvuti PIN-kood.</translation>
 <translation id="7869445566579231750">Teil puudub luba selle rakenduse käitamiseks.</translation>
+<translation id="7895403300744144251">Kaugarvuti turvareeglid ei luba teie kontolt pärinevaid ühendusi.</translation>
 <translation id="7948001860594368197">Ekraani valikud</translation>
 <translation id="7970576581263377361">Autentimine ebaõnnestus. Logige uuesti Chromiumi sisse.</translation>
 <translation id="7981525049612125370">Kaugseanss on aegunud.</translation>

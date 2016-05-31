@@ -459,6 +459,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="267596348720209223">Especifica a codificação de caracteres suportados pelo mecanismo de pesquisa. Codificações são nomes de código da página como UTF-8, GB2312 e ISO-8859-1. Eles são testados na ordem fornecida. Esta política é opcional. Se não for definida, será utilizado o padrão, UTF-8. Esta política só é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
 <translation id="2682225790874070339">Desativa o Google Drive no aplicativo Arquivos do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="268577405881275241">Ativar o recurso de proxy de compactação de dados</translation>
+<translation id="2731627323327011390">Desativar o uso de certificados do <ph name="PRODUCT_OS_NAME" /> para apps Arc</translation>
 <translation id="2742843273354638707">Oculta o link do aplicativo e do rodapé da Chrome Web Store na página "Nova guia" e no iniciador de aplicativos do <ph name="PRODUCT_OS_NAME" />.
 
       Quando esta política é definida como verdadeira, os ícones ficam ocultos.
@@ -1668,6 +1669,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Se você definir esta política, os usuários poderão substituí-la temporariamente ativando ou desativando a lupa. No entanto, a escolha do usuário não é permanente e o padrão será restaurado sempre que a tela de login for exibida novamente ou quando o usuário permanecer inativo na tela de login por um minuto.
 
           Se esta política não for definida, a lupa será desativada quando a tela de login for exibida pela primeira vez. Os usuários podem ativar ou desativar a lupa a qualquer momento e seu status na tela de login continuará entre os usuários.</translation>
+<translation id="7249828445670652637">Ativar certificados de CA (Autoridade de certificação) do <ph name="PRODUCT_OS_NAME" /> para apps ARC</translation>
 <translation id="7258823566580374486">Ativar cortinas de hosts de acesso remoto</translation>
 <translation id="7260277299188117560">Atualização automática de p2p ativada</translation>
 <translation id="7267809745244694722">Teclas de mídia padrão para teclas de função</translation>
@@ -1779,6 +1781,17 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7715711044277116530">Percentual pelo qual calcular o intervalo de escurecimento da tela no modo de apresentação</translation>
 <translation id="7717938661004793600">Configurar recursos de acessibilidade do <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7719251660743813569">Controla se as métricas de uso são informadas ao Google. Se configurada como true, o <ph name="PRODUCT_OS_NAME" /> informará as métricas de uso. Se não for configurada ou for configurada como false, a elaboração de relatórios de métricas será desativada.</translation>
+<translation id="7723433108978650103">Bloqueia o acesso aos URLs listados.
+
+      Esta política impede que o usuário carregue páginas da Web de URLs adicionados à lista negra, a qual fornece uma lista de padrões de URL que especifica quais URLs serão incluídos na lista negra.
+
+      Um padrão de URL deve ser formatado de acordo com https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Exceções podem ser definidas na política de lista de permissões de URL. Essas políticas são limitadas a 1000 entradas. Entradas subsequentes serão ignoradas.
+
+      Não é recomendado bloquear URLS "chrome://*" internos, pois isso pode causar erros inesperados.
+
+      Se esta política não for definida, nenhum URL será adicionado à lista negra no navegador.</translation>
 <translation id="7749402620209366169">Permite autenticação de dois fatores para hosts de acesso remoto em vez de PIN especificado pelo usuário. 
 
           Se esta configuração for ativada, os usuários deverão fornecer um código de dois fatores válido ao acessar um host.
@@ -1845,6 +1858,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta política não for definida, ela se comportará como se TimezoneAutomaticDetectionUsersDecide estivesse definida.
 
       Se a política SystemTimezone for definida, ela substituirá esta política. Nesse caso, a detecção automática de fuso horário será completamente desativada.</translation>
+<translation id="787125417158068494">Se ela for definida para SyncDisabled ou não for configurada, os certificados do <ph name="PRODUCT_OS_NAME" /> não ficarão disponíveis para apps ARC.
+
+      Se ela for definida para CopyCaCerts, todos os certificados CA instalados por ONC com <ph name="WEB_TRUSTED_BIT" /> ficarão disponíveis para apps ARC.</translation>
 <translation id="7882585827992171421">Esta política só fica ativada em modo de varejo.
 
       Determina a identificação da extensão a ser usada como protetor de tela na tela de login. A extensão deve ser parte do AppPack configurado para este domínio por meio da política DeviceAppPack.</translation>
@@ -1860,6 +1876,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Especifica se p2p deve ser usado para cargas de atualização do sistema operacional. Se for definido como verdadeiro, os dispositivos compartilharão e tentarão consumir as cargas de atualização na LAN, possivelmente reduzindo o uso de largura de banda de Internet e o congestionamento. Se a carga de atualização não estiver disponível na LAN, o dispositivo voltará a fazer download a partir de um servidor de atualização. Se for definido como falso ou não for configurado, o p2p não será usado.</translation>
 <translation id="7933141401888114454">Ativar a criação de usuários supervisionados</translation>
+<translation id="793473937901685727">Definir a disponibilidade do certificado para apps ARC</translation>
 <translation id="7936098023732125869">Ativa o uso de um provedor de pesquisa padrão.
 
           Se você ativa esta configuração, uma pesquisa padrão é realizada quando o usuário digita um texto que não seja um URL na omnibox.

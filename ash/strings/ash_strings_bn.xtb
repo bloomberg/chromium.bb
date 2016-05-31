@@ -4,7 +4,7 @@
 <translation id="1012876632442809908">USB-C ডিভাইস (সামনের পোর্ট)</translation>
 <translation id="1013923882670373915">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। দয়া করে ডিভাইসটিতে এই পিন কোড প্রবেশ করুন: <ph name="PINCODE" /></translation>
 <translation id="1021311941847921177">পরবর্তী ইনপুট পদ্ধতিতে পরিবর্তন করার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
-<translation id="112308213915226829">শেল্ফ স্বয়ংক্রিয়ভাবে লুকান</translation>
+<translation id="112308213915226829">তাককে স্বয়ংক্রিয়ভাবে লুকান</translation>
 <translation id="1195412055398077112">ওভারস্ক্যান</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> থেকে চার্জ হচ্ছে</translation>
 <translation id="1270290102613614947">অন-স্ক্রীন কীবোর্ড অক্ষম করা রয়েছে</translation>
@@ -13,11 +13,11 @@
 <translation id="1293264513303784526">USB-C ডিভাইস (বাম পোর্ট)</translation>
 <translation id="1330145147221172764">অন-স্ক্রিন কীবোর্ড সক্ষম করুন</translation>
 <translation id="1343000272198685031">মাইক জ্যাক</translation>
-<translation id="1346748346194534595">ডান</translation>
+<translation id="1346748346194534595">ডানে</translation>
 <translation id="137180024469554212">আবর্তন লক অক্ষম করুন</translation>
 <translation id="1383876407941801731">অনুসন্ধান</translation>
 <translation id="1426410128494586442">হ্যাঁ</translation>
-<translation id="1467432559032391204">বাম</translation>
+<translation id="1467432559032391204">বামে</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">লঞ্চার</translation>
 <translation id="1525508553941733066">খারিজ করুন</translation>
@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">মোবাইল ডেটা সক্রিয় করুন</translation>
 <translation id="1621499497873603021">ব্যাটারি শেষ হতে <ph name="TIME_LEFT" /> সময় বাকি আছে</translation>
 <translation id="164969095109328410">Chrome ডিভাইস</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> বাকি আছে</translation>
 <translation id="1723752762323179280">সেশন থেকে প্রস্থান করা হচ্ছে</translation>
 <translation id="1747827819627189109">অন-স্ক্রীন কীবোর্ড সক্ষম করা রয়েছে</translation>
 <translation id="1812696562331527143">আপনার ইনপুট পদ্ধতি <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />৩য় পক্ষ<ph name="END_LINK" />) এ পরিবর্তিত হয়েছে৷
@@ -61,10 +62,10 @@
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2805756323405976993">অ্যাপ্স</translation>
 <translation id="2819276065543622893">আপনি এখনই সাইন আউট হবেন৷</translation>
-<translation id="2825619548187458965">শেল্ফ</translation>
+<translation id="2825619548187458965">তাক</translation>
 <translation id="2844169650293029770">USB-C ডিভাইস (বাম দিকের সামনের পোর্ট)</translation>
 <translation id="2872961005593481000">বন্ধ করুন</translation>
-<translation id="2942516765047364088">শেল্ফ অবস্থান</translation>
+<translation id="2942516765047364088">তাকের অবস্থান</translation>
 <translation id="2946640296642327832">ব্লুটুথ সক্ষম করুন</translation>
 <translation id="2963773877003373896">mod3</translation>
 <translation id="2964193600955408481">ওয়াই-ফাই অক্ষম করুন</translation>
@@ -116,6 +117,7 @@ Search অথবা বাতিল করতে Shift টিপুন৷</trans
 <translation id="4421231901400348175">রিমোট সহায়কের মাধ্যমে <ph name="HELPER_NAME" />-এর সাথে আপনার স্ক্রীন নিয়ন্ত্রন ভাগ করুন৷</translation>
 <translation id="4430019312045809116">ভলিউম</translation>
 <translation id="4527045527269911712">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে।</translation>
+<translation id="453661520163887813">সম্পূর্ণ হতে <ph name="TIME" /> বাকি</translation>
 <translation id="4544944664594876241">স্ক্রীন লক করার শর্টকাটটি পরিবর্তিত হয়েছে। <ph name="OLD_SHORTCUT" /> এর পরিবর্তে দয়া করে <ph name="NEW_SHORTCUT" /> ব্যবহার করুন।</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">সংযোগ বিচ্ছিন্ন</translation>
@@ -223,6 +225,7 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8517041960877371778">আপনার <ph name="DEVICE_TYPE" /> চালু থাকা অবস্থায় চার্জ নাও হতে পারে।</translation>
 <translation id="8528322925433439945">মোবাইল ...</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> বাকি আছে</translation>
 <translation id="8673028979667498656">২৭০°</translation>
 <translation id="8676770494376880701">নিম্ন শক্তির চার্জার সংযুক্ত করা হয়েছে</translation>
 <translation id="8814190375133053267">ওয়াই-ফাই</translation>

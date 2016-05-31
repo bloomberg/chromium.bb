@@ -472,6 +472,7 @@
 <translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="2682225790874070339">停用 <ph name="PRODUCT_OS_NAME" />「檔案」應用程式中的雲端硬碟</translation>
 <translation id="268577405881275241">啟用資料壓縮 Proxy 功能</translation>
+<translation id="2731627323327011390">禁止 ARC 應用程式使用「<ph name="PRODUCT_OS_NAME" />」憑證</translation>
 <translation id="2742843273354638707">在新分頁和 <ph name="PRODUCT_OS_NAME" />應用程式啟動畫面中隱藏 Chrome 線上應用程式商店和底端連結。
 
       如果將這項政策設為 True，系統會隱藏圖示。
@@ -1689,6 +1690,7 @@
           如果您設定了這項政策，使用者可以暫時覆寫這項政策，只要啟用或停用螢幕放大鏡即可。但使用者的選擇並非永久性，只要系統再次顯示登入畫面或使用者在登入畫面閒置了一段時間，系統就會還原預設值。
 
           如果您未設定這項政策，則系統會在初次顯示登入畫面時停用螢幕放大鏡。使用者隨時都可以啟用或停用螢幕放大鏡，而螢幕放大鏡在登入畫面的狀態則視使用者的選擇而定 (均為永久性)。</translation>
+<translation id="7249828445670652637">允許 ARC 應用程式使用「<ph name="PRODUCT_OS_NAME" />」CA 憑證</translation>
 <translation id="7258823566580374486">啟用遠端存取主機遮幕</translation>
 <translation id="7260277299188117560">已啟用自動更新 P2P</translation>
 <translation id="7267809745244694722">媒體鍵預設為功能鍵</translation>
@@ -1801,6 +1803,17 @@
 <translation id="7715711044277116530">簡報模式中的螢幕調暗延遲時間延長百分比</translation>
 <translation id="7717938661004793600">設定 <ph name="PRODUCT_OS_NAME" /> 協助工具功能。</translation>
 <translation id="7719251660743813569">控制是否要將使用計量回報給 Google。如果設為 True，<ph name="PRODUCT_OS_NAME" /> 會回報使用計量。如未設定或設為 False，計量回報就會遭到停用。</translation>
+<translation id="7723433108978650103">禁止存取黑名單中的網址。
+
+      這項政策會禁止使用者瀏覽黑名單中封鎖的網址。管理員可透過黑名單提供的網址模式清單指定要列入黑名單的網址。
+
+      網址模式的格式必須符合 https://www.chromium.org/administrators/url-blacklist-filter-format 的規定。
+
+      您可以在網址許可清單政策中定義例外情況，不過最多只能指定 1000 項例外，之後加入的項目將遭到略過。
+
+      請注意，我們不建議您封鎖內部「chrome://*」網址，以免發生未預期的錯誤。
+
+      如未設定這項政策，瀏覽器就不會將任何網址列入黑名單。</translation>
 <translation id="7749402620209366169">為遠端存取主機啟用雙重驗證機制，而不採用使用者指定的 PIN。
 
           如果您啟用這項設定，則使用者在存取主機時，必須提供有效的雙重驗證碼。
@@ -1866,6 +1879,9 @@
       如果未設定這項政策，系統行為與設定 TimezoneAutomaticDetectionUsersDecide 時相同。
 
       如果設定了 SystemTimezone 政策，則會覆寫這項政策。在這種情況下，系統會全面停止自動偵測時區。</translation>
+<translation id="787125417158068494">如果設為 SyncDisabled 或未設定，ARC 應用程式將無法使用「<ph name="PRODUCT_OS_NAME" />」憑證。
+
+      如果設為 CopyCaCerts，ARC 應用程式將可使用所有 ONC 安裝的 CA 憑證 (需有「<ph name="WEB_TRUSTED_BIT" />」)。</translation>
 <translation id="7882585827992171421">這項政策僅在零售模式下有效。
 
       決定使用擴充程式 ID 當做登入畫面的螢幕保護程式。該擴充功能必須屬於您透過 DeviceAppPack 政策為這個網域設定的 AppPack。</translation>
@@ -1881,6 +1897,7 @@
           <ph name="PROXY_HELP_URL" />。</translation>
 <translation id="793134539373873765">指定是否使用 P2P 更新裝載作業系統。如果設為 True，裝置將會在 LAN 上共用並嘗試使用更新裝載，藉此降低網際網路頻寬用量及減輕壅塞。如果 LAN 上未提供更新裝載，裝置將回歸至更新伺服器進行下載。如果設為 False 或未設定，則不會使用 P2P。</translation>
 <translation id="7933141401888114454">啟用建立受監管使用者的功能</translation>
+<translation id="793473937901685727">設定 ARC 應用程式的憑證可用性</translation>
 <translation id="7936098023732125869">啟用預設搜尋引擎。
 
           如果您啟用這項設定，每當使用者在網址列中輸入文字而非網址時，系統就會執行預設搜尋。

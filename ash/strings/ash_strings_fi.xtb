@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Ota mobiilitiedonsiirto käyttöön</translation>
 <translation id="1621499497873603021">Akku on tyhjä <ph name="TIME_LEFT" /> kuluttua</translation>
 <translation id="164969095109328410">Chrome-laite</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> jäljellä</translation>
 <translation id="1723752762323179280">Käyttökerran lopettaminen</translation>
 <translation id="1747827819627189109">Ruutunäppäimistö otettiin käyttöön</translation>
 <translation id="1812696562331527143">Syöttötapa on vaihtunut. Uusi syöttötapa on <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />kolmas osapuoli<ph name="END_LINK" />).
@@ -115,6 +116,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="4421231901400348175">Näyttösi hallinta jaetaan käyttäjän <ph name="HELPER_NAME" /> kanssa Etätuen kautta.</translation>
 <translation id="4430019312045809116">Äänenvoimakkuus</translation>
 <translation id="4527045527269911712">Bluetooth-laite <ph name="DEVICE_NAME" /> pyytää lupaa laiteparin muodostamiseen.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> jäljellä, kunnes akku on täynnä</translation>
 <translation id="4544944664594876241">Näytön lukituksen pikanäppäin on muuttunut. Käytä uutta pikanäppäintä <ph name="NEW_SHORTCUT" /> vanhan (<ph name="OLD_SHORTCUT" />) sijaan.</translation>
 <translation id="479989351350248267">haku</translation>
 <translation id="4804818685124855865">Katkaise yhteys</translation>
@@ -221,6 +223,7 @@ Vaihda syöttötapaa painamalla Shift + Alt.</translation>
 <translation id="8428213095426709021">Asetukset</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ei välttämättä lataudu, kun se on käynnissä.</translation>
 <translation id="8528322925433439945">Mobiiliverkot...</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> jäljellä</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Pienitehoinen laturi kytketty</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

@@ -72,6 +72,7 @@
 <translation id="1853692000353488670">Нов раздел „инкогнито“</translation>
 <translation id="189172778771606813">Затваряне на слоя за навигация</translation>
 <translation id="1924956916668006832">Избиране на адрес за доставка</translation>
+<translation id="1933845786846280168">Избран раздел</translation>
 <translation id="194341124344773587">Включете разрешението за Chrome от <ph name="BEGIN_LINK" />настройките на Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Запазени пароли</translation>
 <translation id="1944384637046898011">Шифроване на всичко с паролата за Google от <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@
 <translation id="2959609938957585241">Включете „Авт. синхронизиране на данните“ от „Профили“ в настройките на Android, за да получите разделите си от другите си устройства.</translation>
 <translation id="2960796085439532066">Авторски права <ph name="YEAR" /> Google Inc. Всички права запазени.</translation>
 <translation id="2968755619301702150">Визуализатор на сертификатите</translation>
+<translation id="2979025552038692506">Избран раздел в режим „инкогнито“</translation>
 <translation id="2996291259634659425">Създаване на пропуск</translation>
 <translation id="2996809686854298943">Изисква се URL адрес</translation>
 <translation id="3012408695656332380">Данните на това устройство ще се заменят с тези от <ph name="TO_ACCOUNT" />. Можете да извлечете съществуващата си информация, като превключите обратно към <ph name="FROM_ACCOUNT" />, но данните, създадени след излизането от профила, ще бъдат заличени.</translation>
@@ -554,6 +556,7 @@
 <translation id="8073388330009372546">Отваряне в нов раздел</translation>
 <translation id="8076014560081431679">Запазените настройки за сайтове няма да бъдат изтрити и може да отразяват навиците ви при сърфиране. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Това съдържание се показва от Google, а източникът му е <ph name="DOMAIN_NAME" />.</translation>
+<translation id="8103578431304235997">Раздел в режим „инкогнито“</translation>
 <translation id="8106211421800660735">Номер на кредитната карта</translation>
 <translation id="813082847718468539">Преглед на информацията за сайта</translation>
 <translation id="8137558756159375272">При търсене с докосване избраната дума и текущата страница се изпращат като контекст до Google Търсене. Можете да изключите функцията от <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>

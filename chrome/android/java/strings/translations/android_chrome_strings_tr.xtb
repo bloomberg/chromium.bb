@@ -72,6 +72,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1853692000353488670">Yeni gizli sekme</translation>
 <translation id="189172778771606813">Gezinme çekmecesini kapat</translation>
 <translation id="1924956916668006832">Gönderim adresi seç</translation>
+<translation id="1933845786846280168">Seçili Sekme</translation>
 <translation id="194341124344773587"><ph name="BEGIN_LINK" />Android Ayarları<ph name="END_LINK" />'nda Chrome için izni açın.</translation>
 <translation id="1943432128510653496">Şifreleri kaydetme</translation>
 <translation id="1944384637046898011"><ph name="TIME" /> itibariyle tüm Google şifrelerini şifrele</translation>
@@ -156,6 +157,7 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 <translation id="2959609938957585241">Diğer cihazlarınızdaki sekmelerinize ulaşmak için Android hesap ayarlarından "Verileri otomatik olarak senkronize et" seçeneğini etkinleştirin.</translation>
 <translation id="2960796085439532066">Telif Hakkı <ph name="YEAR" /> Google Inc. Tüm hakları saklıdır.</translation>
 <translation id="2968755619301702150">Sertifika görüntüleyici</translation>
+<translation id="2979025552038692506">Seçili Gizli Sekme</translation>
 <translation id="2996291259634659425">Parola oluşturun</translation>
 <translation id="2996809686854298943">URL gerekli</translation>
 <translation id="3012408695656332380">Bu cihazın verilerini <ph name="TO_ACCOUNT" /> hesabının verileriyle değiştirin. Mevcut verilerinizi <ph name="FROM_ACCOUNT" /> hesabına geçerek alabilirsiniz, ancak oturumu kapatmanızdan sonra oluşturulan veriler kaybolur.</translation>
@@ -554,6 +556,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="8073388330009372546">Resmi yeni sekmede aç</translation>
 <translation id="8076014560081431679">Kayıtlı site ayarları silinmez ve web'e göz atma alışkanlıklarınızı yansıtabilir. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Bu içerik Google tarafından <ph name="DOMAIN_NAME" /> adresinden sağlanmaktadır.</translation>
+<translation id="8103578431304235997">Gizli Sekme</translation>
 <translation id="8106211421800660735">Kredi kartı numarası</translation>
 <translation id="813082847718468539">Site bilgilerini görüntüle</translation>
 <translation id="8137558756159375272">Dokun ve Ara, seçilen kelimeyi ve geçerli sayfayı Google Arama'ya bağlam olarak gönderir. Bu özelliği <ph name="BEGIN_LINK" />Ayarlar<ph name="END_LINK" />'da kapatabilirsiniz.</translation>

@@ -16,6 +16,7 @@
 <translation id="151962892725702025">Impossibile sincronizzare i dati in Chromium OS perché la sincronizzazione non è disponibile per il tuo dominio.</translation>
 <translation id="1559451348202814456">Chromium potrebbe non funzionare correttamente perché non è più supportato su Mac OS X 10.6, 10.7 o 10.8.</translation>
 <translation id="1644918877723739397">Chromium memorizzerà questa password nelle tue <ph name="SAVED_PASSWORD_LINK" /> e la ricorderà la prossima volta che ti servirà.</translation>
+<translation id="1653828314016431939">OK - Riavvia ora</translation>
 <translation id="1668054258064581266">Dopo avere rimosso il tuo account da Chromium, potresti dover ricaricare le schede aperte perché le modifiche vengano applicate.</translation>
 <translation id="1688750314291223739">Configura la sincronizzazione per salvare le funzioni personalizzate del browser sul Web e accedervi da Chromium su qualsiasi computer.</translation>
 <translation id="1699664235656412242">Chiudi tutte le finestre di Chromium (incluse quelle in modalità Windows 8) e riprova.</translation>
@@ -180,6 +181,12 @@ Chromium non è in grado di recuperare le impostazioni.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Nuova finestra</translation>
 <translation id="734373864078049451">I tuoi siti web, i tuoi segnalibri e gli altri contenuti Chromium sempre disponibili e aggiornati qui.</translation>
+<translation id="7344413941077984497">Per impostare i siti web che potrà visitare <ph name="NEW_PROFILE_NAME" />, puoi configurare limitazioni e impostazioni visitando la pagina <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Se non cambi le impostazioni predefinite, <ph name="NEW_PROFILE_NAME" /> potrà visitare qualsiasi sito web.
+
+Per impedire a <ph name="NEW_PROFILE_NAME" /> di accedere al tuo account, assicurati di bloccare il tuo profilo quando non utilizzi Chromium. A tale scopo, fai clic sul nome del tuo profilo nell'angolo in alto a destra del browser e seleziona "Esci e blocca".
+<ph name="BEGIN_LINK_2" />Ulteriori informazioni<ph name="END_LINK_2" />
+
+Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Se preferisci tenere separati i tuoi dati Chromium esistenti, puoi creare un nuovo utente Chromium per <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium richiede Windows XP o versioni successive. Alcune funzioni potrebbero non essere disponibili.</translation>
 <translation id="7463979740390522693">Chromium - Notifiche (<ph name="QUANTITY" /> da leggere)</translation>
@@ -194,6 +201,7 @@ Chromium non è in grado di recuperare le impostazioni.</translation>
 <translation id="7747138024166251722">Il programma di installazione non ha creato una directory temporanea. Verifica di disporre di spazio libero sul disco e dell'autorizzazione per l'installazione del software.</translation>
 <translation id="7918535023914021398">Chromium ha verificato che <ph name="ISSUER" /> ha rilasciato il certificato del sito web. Il server non ha fornito informazioni su Certificate Transparency.</translation>
 <translation id="7937630085815544518">Hai eseguito l'accesso a Chromium come <ph name="USER_EMAIL_ADDRESS" />. Utilizza lo stesso account per eseguire di nuovo l'accesso.</translation>
+<translation id="795025003224538582">Non riavviare</translation>
 <translation id="7962572577636132072">Chromium si aggiorna automaticamente per consentirti di avere sempre la versione più recente.</translation>
 <translation id="7979877361127045932">Nascondi in menu Chromium</translation>
 <translation id="8030318113982266900">Aggiornamento del dispositivo al canale <ph name="CHANNEL_NAME" />...</translation>

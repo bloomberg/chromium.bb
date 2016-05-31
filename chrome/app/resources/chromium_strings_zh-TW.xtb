@@ -16,6 +16,7 @@
 <translation id="151962892725702025">您的網域無法使用「同步功能」，因此 Chromium 作業系統無法同步處理您的資料。</translation>
 <translation id="1559451348202814456">Chromium 已不適用於 Mac OS X 10.6、10.7 或 10.8，因此可能無法正常運作。</translation>
 <translation id="1644918877723739397">Chromium 會將此密碼儲存在您的「<ph name="SAVED_PASSWORD_LINK" />」中，讓您在下次需要使用時套用。</translation>
+<translation id="1653828314016431939">確定 - 立即重新啟動</translation>
 <translation id="1668054258064581266">將您的帳戶從 Chromium 移除後，可能需要重新載入開啟的分頁，這項操作才會生效。</translation>
 <translation id="1688750314291223739">設定同步處理功能，即可在網路上儲存您的個人化瀏覽器功能，並且透過任何電腦從 Chromium 使用這些功能。</translation>
 <translation id="1699664235656412242">請將所有 Chromium 視窗 (包括在 Windows 8 模式中的視窗) 關閉，然後再試一次。</translation>
@@ -180,6 +181,12 @@ Chromium 無法復原您的設定。</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">新視窗</translation>
 <translation id="734373864078049451">您瀏覽的網頁、書籤和其他 Chromium 設定都在這裡。</translation>
+<translation id="7344413941077984497">如要設定「<ph name="NEW_PROFILE_NAME" />」可瀏覽哪些網站，您可以前往 <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" /> 調整限制與設定。如果您未變更預設設定，「<ph name="NEW_PROFILE_NAME" />」將可瀏覽網路上的所有網站。
+
+如要禁止「<ph name="NEW_PROFILE_NAME" />」存取您的帳戶，當您不使用 Chromium 時，請務必鎖定您的設定檔。方法是按一下瀏覽器右上角的設定檔名稱，然後選取 [結束並執行 Childlock]。
+<ph name="BEGIN_LINK_2" />瞭解詳情<ph name="END_LINK_2" />
+
+如需進一步的操作說明，請登入您的 <ph name="ACCOUNT_EMAIL" /> 帳戶，查看系統寄給您的電子郵件。</translation>
 <translation id="7419987137528340081">如果您想要另行保留現有的 Chromium 資料，可以為 <ph name="USER_NAME" /> 建立新的 Chromium 使用者。</translation>
 <translation id="7421823331379285070">Chromium 需要 Windows XP 或更新版本的作業系統，否則部分功能無法正確運作。</translation>
 <translation id="7463979740390522693">Chromium - 通知 (<ph name="QUANTITY" /> 則未讀)</translation>
@@ -194,6 +201,7 @@ Chromium 無法復原您的設定。</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>
 <translation id="7918535023914021398">Chromium 已驗證這個網站的憑證核發者是 <ph name="ISSUER" />。該伺服器未提供任何 Certificate Transparency 資訊。</translation>
 <translation id="7937630085815544518">您使用了 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入 Chromium，請使用相同帳戶重新登入。</translation>
+<translation id="795025003224538582">不要重新啟動</translation>
 <translation id="7962572577636132072">Chromium 會自動更新，隨時讓您使用最新版本。</translation>
 <translation id="7979877361127045932">在 Chromium 選單中隱藏</translation>
 <translation id="8030318113982266900">正在將裝置更新至「<ph name="CHANNEL_NAME" />」版...</translation>

@@ -17,6 +17,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="151962892725702025">Impossible de synchroniser vos données dans Chromium OS, car la synchronisation n'est pas disponible pour votre domaine.</translation>
 <translation id="1559451348202814456">Chromium risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur les versions 10.6, 10.7 et 10.8 de Mac OS X.</translation>
 <translation id="1644918877723739397">Chromium stockera ce mot de passe dans vos <ph name="SAVED_PASSWORD_LINK" /> et s'en souviendra la prochaine fois que vous en aurez besoin.</translation>
+<translation id="1653828314016431939">OK – Redémarrer maintenant</translation>
 <translation id="1668054258064581266">Une fois votre compte Chromium supprimé, vous devrez peut-être charger de nouveau les onglets ouverts pour que les modifications prennent effet.</translation>
 <translation id="1688750314291223739">Configurez la synchronisation pour enregistrer sur le Web les fonctionnalités personnalisées de votre navigateur et y accéder à partir de Chromium sur n'importe quel ordinateur.</translation>
 <translation id="1699664235656412242">Veuillez fermer toutes les fenêtres de Chromium (y compris celles en mode Windows 8), puis réessayer.</translation>
@@ -181,6 +182,12 @@ Chromium ne peut pas récupérer vos paramètres.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Nouvelle fenêtre</translation>
 <translation id="734373864078049451">Votre contenu Web, vos favoris et toutes vos données Chromium sont conservés ici.</translation>
+<translation id="7344413941077984497">Pour définir les sites Web que l'utilisateur <ph name="NEW_PROFILE_NAME" /> peut consulter, vous pouvez configurer des restrictions et des paramètres sur le site <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Si vous conservez les paramètres par défaut, <ph name="NEW_PROFILE_NAME" /> peut parcourir l'ensemble des sites du Web.
+
+Pour empêcher <ph name="NEW_PROFILE_NAME" /> d'accéder à votre compte, assurez-vous de verrouiller votre profil lorsque vous n'utilisez pas Chromium. Pour ce faire, cliquez sur le nom de votre profil dans l'angle supérieur droit du navigateur, puis sélectionnez "Fermer et activer le verrouillage enfant".
+<ph name="BEGIN_LINK_2" />En savoir plus<ph name="END_LINK_2" />
+
+Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie (<ph name="ACCOUNT_EMAIL" />).</translation>
 <translation id="7419987137528340081">Si vous préférez conserver vos données Chromium à part, vous pouvez créer un utilisateur Chromium pour <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium requiert Windows XP ou une version ultérieure. Certaines fonctionnalités risquent de ne pas fonctionner.</translation>
 <translation id="7463979740390522693">Notifications – Chromium (<ph name="QUANTITY" /> non lues)</translation>
@@ -195,6 +202,7 @@ Chromium ne peut pas récupérer vos paramètres.</translation>
 <translation id="7747138024166251722">Le programme d'installation n'a pas pu créer de répertoire temporaire. Vérifiez que le disque a suffisamment d'espace libre et que vous disposez des autorisations nécessaires pour installer le logiciel.</translation>
 <translation id="7918535023914021398">Il a été confirmé dans Chromium que le certificat de ce site a bien été fourni par <ph name="ISSUER" />. Aucune information relative à la transparence du certificat n'a été fournie via le serveur.</translation>
 <translation id="7937630085815544518">Vous étiez connecté à Chromium en tant que <ph name="USER_EMAIL_ADDRESS" />. Veuillez utiliser le même compte pour vous reconnecter.</translation>
+<translation id="795025003224538582">Ne pas redémarrer</translation>
 <translation id="7962572577636132072">Chromium est automatiquement mis à jour pour vous permettre de toujours disposer de la dernière version.</translation>
 <translation id="7979877361127045932">Masquer dans le menu Chromium</translation>
 <translation id="8030318113982266900">Passage de votre appareil à la version <ph name="CHANNEL_NAME" />…</translation>

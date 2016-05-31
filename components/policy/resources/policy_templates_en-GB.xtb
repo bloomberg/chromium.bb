@@ -517,6 +517,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
 <translation id="2682225790874070339">Disables Drive in the <ph name="PRODUCT_OS_NAME" /> Files app</translation>
 <translation id="268577405881275241">Enable the data compression proxy feature</translation>
+<translation id="2731627323327011390">Disable usage of <ph name="PRODUCT_OS_NAME" /> certificates to ARC-apps</translation>
 <translation id="2742843273354638707">Hide the Chrome Web Store app and footer link from the New Tab Page and <ph name="PRODUCT_OS_NAME" /> app launcher.
 
       When this policy is set to true, the icons are hidden.
@@ -1851,6 +1852,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If you set this policy, users can temporarily override it by enabling or disabling the screen magnifier. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
 
           If this policy is left unset, the screen magnifier is disabled when the login screen is first shown. Users can enable or disable the screen magnifier at any time and its status on the login screen is persisted between users.</translation>
+<translation id="7249828445670652637">Enable <ph name="PRODUCT_OS_NAME" /> CA certificates to ARC-apps</translation>
 <translation id="7258823566580374486">Enable curtaining of remote access hosts</translation>
 <translation id="7260277299188117560">Auto update p2p enabled</translation>
 <translation id="7267809745244694722">Media keys default to function keys</translation>
@@ -1976,6 +1978,17 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7715711044277116530">Percentage by which to scale the screen dim delay in presentation mode</translation>
 <translation id="7717938661004793600">Configure <ph name="PRODUCT_OS_NAME" /> accessibility features.</translation>
 <translation id="7719251660743813569">Controls whether usage metrics are reported back to Google. If set to true, <ph name="PRODUCT_OS_NAME" /> will report usage metrics. If not configured or set to false, metrics reporting will be disabled.</translation>
+<translation id="7723433108978650103">Blocks access to the listed URLs.
+
+      This policy prevents the user from loading web pages from blacklisted URLs. The blacklist provides a list of URL patterns that specify which URLs will be blacklisted.
+
+      A URL pattern has to be formatted according to https://www.chromium.org/administrators/url-blacklist-filter-format.
+
+      Exceptions can be defined in the URL whitelist policy. These policies are limited to 1000 entries; subsequent entries will be ignored.
+
+      Note that it is not recommended to block internal 'chrome://*' URLs since this may lead to unexpected errors.
+
+      If this policy is not set, no URL will be blacklisted in the browser.</translation>
 <translation id="7749402620209366169">Enables two-factor authentication for remote access hosts instead of a user-specified PIN.
 
           If this setting is enabled, then users must provide a valid two-factor code when accessing a host.
@@ -2048,6 +2061,9 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is not set, it will behave as if TimezoneAutomaticDetectionUsersDecide is set.
 
       If SystemTimezone policy is set, it overrides this policy. In this case automatic timezone detection is completely disabled.</translation>
+<translation id="787125417158068494">If set to SyncDisabled or not configured, <ph name="PRODUCT_OS_NAME" /> certificates are not available for ARC-apps.
+
+      If set to CopyCaCerts, all ONC-installed CA certificates with <ph name="WEB_TRUSTED_BIT" /> are available for ARC-apps.</translation>
 <translation id="7882585827992171421">This policy is active in retail mode only.
 
       Determines the id of the extension to be used as a screen saver on the sign-in screen. The extension must be part of the AppPack that is configured for this domain through the DeviceAppPack policy.</translation>
@@ -2063,6 +2079,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="793134539373873765">Specifies whether p2p is to be used for OS update payloads. If set to True, devices will share and attempt to consume update payloads on the LAN, potentially reducing Internet bandwidth usage and congestion. If the update payload is not available on the LAN, the device will fall back to downloading from an update server. If set to False or not configured, p2p will not be used.</translation>
 <translation id="7933141401888114454">Enable creation of supervised users</translation>
+<translation id="793473937901685727">Set certificate availability for ARC-apps</translation>
 <translation id="7936098023732125869">Enables the use of a default search provider.
 
           If you enable this setting, a default search is performed when the user types text in the omnibox that is not a URL.

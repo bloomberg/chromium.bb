@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Активиране на мобилните данни</translation>
 <translation id="1621499497873603021">Оставащо време до изразходването на батерията: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Устройство с Chrome</translation>
+<translation id="1677472565718498478">Оставащо време: <ph name="TIME" /></translation>
 <translation id="1723752762323179280">Излизане от сесията</translation>
 <translation id="1747827819627189109">Екранната клавиатура е активирана</translation>
 <translation id="1812696562331527143">Методът ви на въвеждане се промени на <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />трета страна<ph name="END_LINK" />).
@@ -116,6 +117,7 @@
 <translation id="4421231901400348175">Споделяте с/ъс <ph name="HELPER_NAME" /> контрола върху екрана си чрез отдалечено съдействие.</translation>
 <translation id="4430019312045809116">Звук</translation>
 <translation id="4527045527269911712">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> до пълно зареждане</translation>
 <translation id="4544944664594876241">Комбинацията за заключване на екрана е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Изключване</translation>
@@ -224,6 +226,7 @@
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8517041960877371778">Възможно е вашият <ph name="DEVICE_TYPE" /> да не се зарежда, докато е включен.</translation>
 <translation id="8528322925433439945">Мобилни мрежи...</translation>
+<translation id="8639760480004882931">Батерия: <ph name="PERCENTAGE" /></translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Свързано е зарядно устройство с малка мощност</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

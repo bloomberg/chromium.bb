@@ -72,6 +72,7 @@
 <translation id="1853692000353488670">כרטיסייה חדשה לגלישה בסתר</translation>
 <translation id="189172778771606813">סגור את חלונית ההזזה לניווט</translation>
 <translation id="1924956916668006832">בחר כתובת למשלוח</translation>
+<translation id="1933845786846280168">הכרטיסייה שנבחרה</translation>
 <translation id="194341124344773587">‏הפעל הרשאה בשביל Chrome ב<ph name="BEGIN_LINK" />הגדרות Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">שמור סיסמאות</translation>
 <translation id="1944384637046898011">‏הצפן הכל באמצעות סיסמת Google החל מ-<ph name="TIME" /></translation>
@@ -156,6 +157,7 @@
 <translation id="2959609938957585241">‏כדי לקבל את הכרטיסיות מהמכשירים האחרים שלך, הפעל את האפשרות 'סנכרון אוטומטי של נתונים' בהגדרות של חשבון Android.</translation>
 <translation id="2960796085439532066">‏זכויות יוצרים <ph name="YEAR" /> Google Inc. כל הזכויות שמורות.</translation>
 <translation id="2968755619301702150">מציג האישורים</translation>
+<translation id="2979025552038692506">כרטיסיית הגלישה בסתר שנבחרה</translation>
 <translation id="2996291259634659425">יצירת ביטוי סיסמה</translation>
 <translation id="2996809686854298943">דרושה כתובת אתר</translation>
 <translation id="3012408695656332380">החלף את נתוני המכשיר הזה בנתונים של <ph name="TO_ACCOUNT" />. תוכל לאחזר את הנתונים הקיימים שלך על-ידי מעבר חזרה אל <ph name="FROM_ACCOUNT" />, אך הנתונים שנצברו מאז שיצאת מהחשבון לא יישמרו.</translation>
@@ -258,7 +260,7 @@
 <translation id="4440256989292146959">לגלוש יותר, לשלם פחות</translation>
 <translation id="4452548195519783679">התווסף לסימניות ב-<ph name="FOLDER_NAME" /></translation>
 <translation id="4457399174246232812">מעתה ואילך, דפים בקרבת מקום באינטרנט הווירטופיזי יופיע ברשימת ההתראות</translation>
-<translation id="4479647676395637221">שאל תחילה לפני שתאפשר לאתרים להשתמש במצלמה שלך (מומלץ)</translation>
+<translation id="4479647676395637221">שאל לפני שתאפשר לאתרים להשתמש במצלמה שלך (מומלץ)</translation>
 <translation id="4498934959426056365">יצירת מפתחות</translation>
 <translation id="4508440807153586353">‏רק מי שיודע את ביטוי הסיסמה שלך יכול לקרוא את הנתונים המוצפנים. ביטוי הסיסמה לא נשלח אל Google והיא אינה מאחסנת אותו. אם תשכח את ביטוי הסיסמה או אם תרצה לשנות את ההגדרה הזו, יהיה עליך לאפס את הסינכרון. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{לפני יום}two{לפני יומיים}many{לפני # ימים}other{לפני # ימים}}</translation>
@@ -374,7 +376,7 @@
 <translation id="585027516397408832">‏חוסך הנתונים (Data Saver) מופעל</translation>
 <translation id="5860033963881614850">כבוי</translation>
 <translation id="5869522115854928033">סיסמאות שמורות</translation>
-<translation id="588563574323093535">שאל תחילה לפני שתאפשר לאתרים לעבור למסך מלא (מומלץ)</translation>
+<translation id="588563574323093535">שאל לפני שתאפשר לאתרים לעבור למסך מלא (מומלץ)</translation>
 <translation id="5899349522111170522">צור קובץ חדש</translation>
 <translation id="5902828464777634901">‏כל הנתונים המקומיים המאוחסנים על ידי האתר הזה יימחקו, כולל קובצי Cookie.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -462,7 +464,7 @@
 <translation id="6981982820502123353">נגישות</translation>
 <translation id="6990079615885386641">‏קבל את האפליקציה מחנות Google Play‏: <ph name="APP_ACTION" /></translation>
 <translation id="699220179437400583">‏דווח אוטומטית ל-Google על פרטים של בעיות אבטחה אפשריות</translation>
-<translation id="6992289844737586249">שאל תחילה לפני שתאפשר לאתרים להשתמש במיקרופון (מומלץ)</translation>
+<translation id="6992289844737586249">שאל לפני שתאפשר לאתרים להשתמש במיקרופון (מומלץ)</translation>
 <translation id="6999892069268112724">‏אישור חשבון Google</translation>
 <translation id="7021515813996758557">הורדת הקובץ <ph name="FILE_NAME" /> בוצעה</translation>
 <translation id="7022756207310403729">פתיחה בדפדפן</translation>
@@ -554,6 +556,7 @@
 <translation id="8073388330009372546">פתח את התמונה בכרטיסייה חדשה</translation>
 <translation id="8076014560081431679">הגדרות אתרים שנשמרו לא יימחקו ועשויות לשקף את הרגלי הגלישה שלך. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">‏התוכן הזה הוא מ-<ph name="DOMAIN_NAME" />, ומוגש על-ידי Google.</translation>
+<translation id="8103578431304235997">כרטיסיית גלישה בסתר</translation>
 <translation id="8106211421800660735">מספר כרטיס אשראי</translation>
 <translation id="813082847718468539">הצג נתוני אתר</translation>
 <translation id="8137558756159375272">‏'גע כדי לחפש' שולח אל חיפוש Google את המילה הנבחרת, יחד עם הדף הנוכחי בתור הקשר. תוכל לכבות זאת ב<ph name="BEGIN_LINK" />הגדרות<ph name="END_LINK" />.</translation>
@@ -633,7 +636,7 @@
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9133515669113036225">אפס את פרטי הכניסה של המכשיר</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
-<translation id="9139068048179869749">שאל תחילה לפני שתאפשר לאתרים לשלוח הודעות (מומלץ)</translation>
+<translation id="9139068048179869749">שאל לפני שתאפשר לאתרים לשלוח הודעות (מומלץ)</translation>
 <translation id="9141510419986760385">אתה מחליף חשבונות סינכרון מ-<ph name="FROM_ACCOUNT" /> ל-<ph name="TO_ACCOUNT" />. מה ברצונך לעשות עם הסימניות, ההיסטוריה, הסיסמאות ושאר ההגדרות הקיימות?</translation>
 <translation id="917685106653909562">דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
 <translation id="9187199695613236444">תצוגה מותאמת למכשירים ניידים</translation>

@@ -72,6 +72,7 @@
 <translation id="1853692000353488670">新增無痕式分頁</translation>
 <translation id="189172778771606813">關閉導覽匣</translation>
 <translation id="1924956916668006832">選擇收件地址</translation>
+<translation id="1933845786846280168">選取的分頁</translation>
 <translation id="194341124344773587">請在 <ph name="BEGIN_LINK" />Android 設定<ph name="END_LINK" />中為 Chrome 啟用這項權限。</translation>
 <translation id="1943432128510653496">儲存密碼</translation>
 <translation id="1944384637046898011">使用截至 <ph name="TIME" />前設定的 Google 密碼為所有資料加密</translation>
@@ -156,6 +157,7 @@
 <translation id="2959609938957585241">如要存取您在其他裝置上開啟的分頁，請前往 Android 帳戶設定開啟 [自動同步處理資料]。</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. 版權所有。</translation>
 <translation id="2968755619301702150">憑證檢視器</translation>
+<translation id="2979025552038692506">選取的無痕式分頁</translation>
 <translation id="2996291259634659425">建立通關密語</translation>
 <translation id="2996809686854298943">必須要有網址</translation>
 <translation id="3012408695656332380">使用 <ph name="TO_ACCOUNT" /> 的資料取代這個裝置的資料。您只要切換回 <ph name="FROM_ACCOUNT" /> 即可重新取得現有的資料，但自您登出後建立的資料則會遺失。</translation>
@@ -554,6 +556,7 @@
 <translation id="8073388330009372546">在新分頁中開啟圖片</translation>
 <translation id="8076014560081431679">已儲存的網站設定不會遭到刪除，而且可能會反映您的瀏覽習慣。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">這個內容來自 <ph name="DOMAIN_NAME" />，由 Google 所提供。</translation>
+<translation id="8103578431304235997">無痕式分頁</translation>
 <translation id="8106211421800660735">信用卡號碼</translation>
 <translation id="813082847718468539">查看網站資訊</translation>
 <translation id="8137558756159375272">「輕觸搜尋」會將選取的字詞和目前所在的網頁 (以便建立關聯) 傳送給 Google 搜尋。您可以在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中關閉這項功能。</translation>

@@ -212,6 +212,10 @@ površine Chrome</translation>
 <translation id="6324708100353784493">Omogućili ste način integracije Google Cardboarda. Da biste ga upotrebljavali, umetnite uređaj u pregledač kompatibilan s Google Cardboardom.</translation>
 <translation id="6381670701864002291">Nešto drugo.</translation>
 <translation id="6398765197997659313">Izađi iz cijelog zaslona</translation>
+<translation id="6408143143164565232">• Slušanje zvuka s Windows ili Linux računala.
+• Uklanjanje neželjenih veza duljim pritiskom na naziv računala.
+• Ujednačenije zumiranje privlačenjem prstiju i pomicanje s dva prsta.
+• Novi zaslon za pomoć i povratne informacije.</translation>
 <translation id="6441316101718669559">Ova platforma ne podržava integraciju radne površine. Aplikacija se može upotrebljavati, ali uz lošiji korisnički doživljaj.</translation>
 <translation id="652218476070540101">U tijeku je ažuriranje PIN-a za ovo računalo…</translation>
 <translation id="6527303717912515753">Podijeli</translation>
@@ -257,6 +261,7 @@ površine Chrome</translation>
 <translation id="7836926030608666805">Nedostaju neke obavezne komponente. Provjerite jeste li pokrenuli najnoviju verziju Chromea i pokušajte ponovo.</translation>
 <translation id="7868137160098754906">Unesite PIN za udaljeno računalo.</translation>
 <translation id="7869445566579231750">Nemate dopuštenje za pokretanje te aplikacije.</translation>
+<translation id="7895403300744144251">Sigurnosna pravila na udaljenom računalu ne dopuštaju povezivanje s vašeg računa.</translation>
 <translation id="7948001860594368197">Opcije zaslona</translation>
 <translation id="7970576581263377361">Autentifikacija nije uspjela. Prijavite se ponovo na Chromium.</translation>
 <translation id="7981525049612125370">Daljinska je sesija istekla.</translation>

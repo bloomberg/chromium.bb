@@ -72,6 +72,7 @@
 <translation id="1853692000353488670">新的隐身标签页</translation>
 <translation id="189172778771606813">关闭抽屉式导航栏</translation>
 <translation id="1924956916668006832">选择送货地址</translation>
+<translation id="1933845786846280168">所选的标签页</translation>
 <translation id="194341124344773587">在 <ph name="BEGIN_LINK" />Android 设置<ph name="END_LINK" />中为 Chrome 启用这项权限。</translation>
 <translation id="1943432128510653496">保存密码</translation>
 <translation id="1944384637046898011">自 <ph name="TIME" />起，使用 Google 密码加密所有数据</translation>
@@ -156,6 +157,7 @@
 <translation id="2959609938957585241">要获取您在其他设备上的标签页，请在 Android 帐号设置部分开启“自动同步数据”。</translation>
 <translation id="2960796085439532066">版权所有 <ph name="YEAR" /> Google Inc. 保留所有权利。</translation>
 <translation id="2968755619301702150">证书查看器</translation>
+<translation id="2979025552038692506">所选的隐身标签页</translation>
 <translation id="2996291259634659425">创建密码</translation>
 <translation id="2996809686854298943">必须提供网址</translation>
 <translation id="3012408695656332380">将这台设备的数据替换为 <ph name="TO_ACCOUNT" /> 的数据。您可以切换回 <ph name="FROM_ACCOUNT" /> 来获取现有数据，但自您退出后创建的数据将会丢失。</translation>
@@ -554,6 +556,7 @@
 <translation id="8073388330009372546">在新标签页中打开图片</translation>
 <translation id="8076014560081431679">已保存的网站设置将不会遭到删除，并且可能会反映您的浏览习惯。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">此内容来自 <ph name="DOMAIN_NAME" />（由 Google 提供）。</translation>
+<translation id="8103578431304235997">隐身标签页</translation>
 <translation id="8106211421800660735">信用卡号</translation>
 <translation id="813082847718468539">查看网站信息</translation>
 <translation id="8137558756159375272">“触摸搜索”会将所选字词和当前页面（作为上下文）一起发送给 Google 搜索。您可以在<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />中停用此功能。</translation>

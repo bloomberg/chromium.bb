@@ -72,6 +72,7 @@
 <translation id="1853692000353488670">Нова анонімна вкладка</translation>
 <translation id="189172778771606813">Закрити панель навігації</translation>
 <translation id="1924956916668006832">Вибрати адресу доставки</translation>
+<translation id="1933845786846280168">Вибрана вкладка</translation>
 <translation id="194341124344773587">Увімкніть дозвіл для Chrome у <ph name="BEGIN_LINK" />налаштуваннях Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Зберігання паролів</translation>
 <translation id="1944384637046898011">Зашифрувати всі дані за допомогою пароля Google із <ph name="TIME" />.</translation>
@@ -156,6 +157,7 @@
 <translation id="2959609938957585241">записі.</translation>
 <translation id="2960796085439532066">Авторське право <ph name="YEAR" /> Google Inc. Усі права захищено.</translation>
 <translation id="2968755619301702150">Перегляд сертифікатів</translation>
+<translation id="2979025552038692506">Вибрана анонімна вкладка</translation>
 <translation id="2996291259634659425">Створити парольну фразу</translation>
 <translation id="2996809686854298943">Потрібна URL-адреса</translation>
 <translation id="3012408695656332380">Дані на цьому пристрої буде замінено даними з облікового запису <ph name="TO_ACCOUNT" />. Щоб відновити наявні дані, перейдіть в обліковий запис <ph name="FROM_ACCOUNT" />. Дані, які ви створили після виходу з облікового запису, буде втрачено.</translation>
@@ -399,7 +401,7 @@
 <translation id="6140912465461743537">Країна або регіон</translation>
 <translation id="6159335304067198720">Заощадження даних: <ph name="PERCENT" /></translation>
 <translation id="6165508094623778733">Докладніше</translation>
-<translation id="6181444274883918285">вийнятків</translation>
+<translation id="6181444274883918285">Додати сайт у список винятків</translation>
 <translation id="6192792657125177640">Винятки</translation>
 <translation id="6232535412751077445">Якщо ввімкнути параметр "Не відстежувати", запит додаватиметься в трафік веб-перегляду. Результат залежатиме від того, чи реагує веб-сайт на цей запит і як тлумачиться запит.
 
@@ -554,6 +556,7 @@
 <translation id="8073388330009372546">Відкрити в новій вкладці</translation>
 <translation id="8076014560081431679">Збережені налаштування, які можуть стосуватися ваших зацікавлень в Інтернеті, не буде видалено. <ph name="BEGIN_LINK" />Докладніше<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Це вміст із сайту <ph name="DOMAIN_NAME" />, який доставляє Google.</translation>
+<translation id="8103578431304235997">Анонімна вкладка</translation>
 <translation id="8106211421800660735">Номер кредитної картки</translation>
 <translation id="813082847718468539">Перегляд інформації про сайт</translation>
 <translation id="8137558756159375272">Функція пошуку дотиком надсилає слово та поточну сторінку як додаткові дані в Пошук Google. Її можна вимкнути в <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" />.</translation>

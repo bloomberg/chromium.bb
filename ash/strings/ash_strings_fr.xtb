@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">Activer les données mobiles</translation>
 <translation id="1621499497873603021">Temps restant avant que la batterie ne soit vide : <ph name="TIME_LEFT" />.</translation>
 <translation id="164969095109328410">Appareil Google Chrome</translation>
+<translation id="1677472565718498478">Temps restant : <ph name="TIME" /></translation>
 <translation id="1723752762323179280">Fermeture de la session</translation>
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
 <translation id="1812696562331527143">Votre mode de saisie a été remplacé par <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />tiers<ph name="END_LINK" />).
@@ -116,6 +117,7 @@ Appuyez sur Search ou Maj pour le désactiver.</translation>
 <translation id="4421231901400348175">Partager le contrôle de votre écran avec <ph name="HELPER_NAME" /> via l'assistance à distance</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4527045527269911712">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer.</translation>
+<translation id="453661520163887813"><ph name="TIME" /> avant charge complète</translation>
 <translation id="4544944664594876241">Le raccourci permettant de verrouiller l'écran a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
 <translation id="479989351350248267">rechercher</translation>
 <translation id="4804818685124855865">Se déconnecter</translation>
@@ -224,6 +226,7 @@ Appuyez sur Alt + Recherche ou Maj pour le désactiver.</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8517041960877371778">Il est possible que votre appareil <ph name="DEVICE_TYPE" /> ne se recharge pas lorsqu'il est allumé.</translation>
 <translation id="8528322925433439945">Mobile…</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> restant(s)</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Chargeur de faible puissance connecté</translation>
 <translation id="8814190375133053267">Wi-Fi </translation>

@@ -18,6 +18,7 @@
 <translation id="151962892725702025">ማመሳሰል ለጎራዎ ስለማይገኝ Chromium OS ውሂብዎን ማመሳሰል አይችልም።</translation>
 <translation id="1559451348202814456">Chromium ከአሁን በኋላ በMac OS X 10.6፣ 10.7 ወይም 10.8 ላይ ከእንግዲህ ስለማይደገፍ በአግባቡ ላይሰራ ይችላል።</translation>
 <translation id="1644918877723739397">Chromium ይህን በእርስዎ <ph name="SAVED_PASSWORD_LINK" /> ውስጥ ያከማቸው እና በሚቀጥለው ጊዜ ሲፈልጉት ያስታውሰዋል።</translation>
+<translation id="1653828314016431939">እሺ - አሁን ዳግም አስጀምር</translation>
 <translation id="1668054258064581266">መለያዎን ከChromium ካስወገዱ በኋላ፣ ክፍት ትሮችዎ እንዲሰሩ መልሰው መጫን ሊኖርብዎ ይችላል።</translation>
 <translation id="1688750314291223739">ግላዊነት የተላበሰው የአሳሽ ባህሪዎችዎ ድር ላይ ለማስቀመጥና ከዚያ Chromium ካለው ማንኛውም ኮምፒውተር ለመድረስ አመሳስልን ያዋቅሩ።</translation>
 <translation id="1699664235656412242">እባክዎ ሁሉንም የChromium መስኮቶችን (በWindows 8 ሁነታ ላይ ያሉትንም ጨምሮ) ይዝጉና እንደገና ይሞክሩ።</translation>
@@ -182,6 +183,12 @@ Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">አዲሰ መስኮት</translation>
 <translation id="734373864078049451">የእርስዎ ድር፣ ዕልባቶች እና ሌሎች የChromium ነገሮች እዚህ ይኖራሉ።</translation>
+<translation id="7344413941077984497">የትኛዎቹን ድር ጣቢያዎች <ph name="NEW_PROFILE_NAME" /> ማየት እንደሚችል ለማቀናበር <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />ን በመጎብኘት ገደቦችን እና ቅንብሮችን ማወቀር ይችላሉ። ነባሪ ቅንብሮቹን ካልለወጡ <ph name="NEW_PROFILE_NAME" /> በድር ላይ ሁሉንም ነገር ማሰስ ይችላል።
+
+<ph name="NEW_PROFILE_NAME" /> የእርስዎን መለያ እንዳይደርስበት ለመከላከል Chromium በማይጠቀሙበት ጊዜ መለያዎን መቆለፍዎን ያረጋግጡ። ይህን ለማድረግ በአሳሹ ላይኛው ቀኝ ጥግ ላይ የመገለጫ ስምዎን ጠቅ ያድርጉና «ውጣ እና የሕፃን መቆለፊያ»ን ይምረጡ።
+<ph name="BEGIN_LINK_2" />የበለጠ ለመረዳት<ph name="END_LINK_2" />
+
+ለተጨማሪ መመሪያዎች እባክዎ በ<ph name="ACCOUNT_EMAIL" /> ላይ የእርስዎን ኢሜይል ይፈትሹ።</translation>
 <translation id="7419987137528340081">ነባሩ የChromium ውሂብዎን ለይተው ማስቀመጥ ከፈለጉ ለ<ph name="USER_NAME" /> አዲስ የChromium ተጠቃሚ መፍጠር ይችላሉ።</translation>
 <translation id="7421823331379285070">Chromium Windows XP ወይም ከዚያ በኋላ ይፈልጋል። አንዳንድ ባህሪያት ላይሰሩ ይችላሉ።</translation>
 <translation id="7463979740390522693">Chromium - ማሳወቂያዎች (<ph name="QUANTITY" /> ያልተነበቡ)</translation>
@@ -196,6 +203,7 @@ Chromium ቅንብሮችዎን ማስመለስ አልቻለም።</translation>
 <translation id="7747138024166251722">ጫኝው ጊዜያዊ ማውጫ መፍጠር አልቻለም። እባክዎ ነፃ የዲስክ ቦታ እና ሶፍትዌር የመጫን ፍቃድ እንዳለ ይፈትሹ።</translation>
 <translation id="7918535023914021398"><ph name="ISSUER" /> የዚህን የድር ጣቢያ ምስክር ወረቀት እንደሰጠ Chromium አረጋግጧል። አገልጋዩ ማንኛውንም የምስክር ወረቀት ግልፅነት መረጃን አላቀረበም።</translation>
 <translation id="7937630085815544518">እንደ <ph name="USER_EMAIL_ADDRESS" /> ሆነው ወደ Chromium ገብተዋል። እባክዎ እንደገና ለመግባት ተመሳሳዩን መለያ ይጠቀሙ።</translation>
+<translation id="795025003224538582">ዳግም አታስጀምር</translation>
 <translation id="7962572577636132072">Chromium በራስ-ሰር ይዘመናል፣ ስለዚህ ሁልጊዜ አዲሱ ስሪት ይኖርዎታል።</translation>
 <translation id="7979877361127045932">በChromium ምናሌ ውስጥ ደብቅ</translation>
 <translation id="8030318113982266900">መሳሪያዎን ወደ <ph name="CHANNEL_NAME" /> ሰርጥ በማዘመን ላይ...</translation>

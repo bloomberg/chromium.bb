@@ -16,6 +16,7 @@
 <translation id="151962892725702025">Chromium OS nevarēja sinhronizēt jūsu datus, jo jūsu domēnā nav pieejama sinhronizācija.</translation>
 <translation id="1559451348202814456">Iespējams, Chromium nedarbosies pareizi, jo tas vairs netiek atbalstīts operētājsistēmās Mac OS X 10.6, 10.7 un 10.8.</translation>
 <translation id="1644918877723739397">Chromium saglabās šo paroli jūsu sarakstā “<ph name="SAVED_PASSWORD_LINK" />” un atcerēsies to nākamajā reizē, kad jums tā būs nepieciešama.</translation>
+<translation id="1653828314016431939">Labi — restartēt tūlīt</translation>
 <translation id="1668054258064581266">Kad konts būs noņemts no Chromium, iespējams, būs atkārtoti jāielādē atvērtās cilnes, lai izmaiņas stātos spēkā.</translation>
 <translation id="1688750314291223739">Iestatiet sinhronizāciju, lai saglabātu savas personalizētās pārlūka funkcijas tīmeklī un piekļūtu tām no Chromium jebkurā datorā.</translation>
 <translation id="1699664235656412242">Lūdzu, aizveriet visus Chromium logus (tostarp Windows 8 režīmā atvērtos) un mēģiniet vēlreiz.</translation>
@@ -178,6 +179,12 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Jauns logs</translation>
 <translation id="734373864078049451">Šeit atrodas jūsu tīmekļa saturs, grāmatzīmes un cits Chromium saturs.</translation>
+<translation id="7344413941077984497">Lai iestatītu, kuras vietnes var skatīt lietotājs <ph name="NEW_PROFILE_NAME" />, varat konfigurēt ierobežojumus un iestatījumus vietnē <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Ja nemainīsiet noklusējuma iestatījumus, <ph name="NEW_PROFILE_NAME" /> varēs pārlūkot visu tīmekļa saturu.
+
+Lai <ph name="NEW_PROFILE_NAME" /> nevarētu piekļūt jūsu kontam, noteikti bloķējiet savu profilu, kad neizmantojat Chromium. Lai to izdarītu, pārlūka augšējā labajā stūrī noklikšķiniet uz sava profila vārda un atlasiet vienumu “Iziet un bloķēt”.
+<ph name="BEGIN_LINK_2" />Uzziniet vairāk<ph name="END_LINK_2" />.
+
+Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Ja vēlaties esošos Chromium datus glabāt atsevišķi, varat izveidot jaunu Chromium lietotāju ar lietotājvārdu <ph name="USER_NAME" />.</translation>
 <translation id="7421823331379285070">Chromium darbībai nepieciešams Windows XP vai jaunāka operētājsistēma. Dažas funkcijas var nedarboties.</translation>
 <translation id="7463979740390522693">Chrome saite — paziņojumi (nelasīti: <ph name="QUANTITY" />)</translation>
@@ -192,6 +199,7 @@ Dažas funkcijas var nebūt pieejamas. Norādiet citu profila direktoriju vai iz
 <translation id="7747138024166251722">Instalētājam neizdevās izveidot pagaidu katalogu. Lūdzu, pārbaudiet, vai diskā pietiek vietas un vai ir atļauja instalēt programmatūru.</translation>
 <translation id="7918535023914021398">Chromium verificēja, ka <ph name="ISSUER" /> izsniedza šīs vietnes sertifikātu. Serveris nesniedza nekādu Certificate Transparency informāciju.</translation>
 <translation id="7937630085815544518">Operētājsistēmā Chromium iepriekš pierakstījāties kā lietotājs <ph name="USER_EMAIL_ADDRESS" />. Lai pierakstītos vēlreiz, lūdzu, izmantojiet to pašu kontu.</translation>
+<translation id="795025003224538582">Nerestartēt</translation>
 <translation id="7962572577636132072">Pārlūks Chromium tiek atjaunināts automātiski, tādēļ jums vienmēr būs pieejama visjaunākā versija.</translation>
 <translation id="7979877361127045932">Paslēpt Chromium izvēlnē</translation>
 <translation id="8030318113982266900">Notiek ierīces atjaunināšana uz kanālu <ph name="CHANNEL_NAME" />...</translation>

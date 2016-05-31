@@ -26,6 +26,7 @@
 <translation id="1602076796624386989">મોબાઇલ ડેટા સક્ષમ કરો</translation>
 <translation id="1621499497873603021">બેટરી ખાલી થવામાં બાકી સમય, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome ઉપકરણ</translation>
+<translation id="1677472565718498478"><ph name="TIME" /> બાકી</translation>
 <translation id="1723752762323179280">સત્રથી બહાર નીકળી રહ્યાં છે</translation>
 <translation id="1747827819627189109">ઓન-સ્ક્રીન કીબોર્ડ સક્ષમ કર્યું</translation>
 <translation id="1812696562331527143">તમારી ઇનપુટ પદ્ધતિ  <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />3જા પક્ષ<ph name="END_LINK" />)માં બદલાઇ ગયેલ છે.
@@ -116,6 +117,7 @@
 <translation id="4421231901400348175">દૂરસ્થ સહાય વડે <ph name="HELPER_NAME" /> સાથે તમારી સ્ક્રીનનું નિયંત્રણ શેર કરવું.</translation>
 <translation id="4430019312045809116">વૉલ્યૂમ</translation>
 <translation id="4527045527269911712">Bluetooth ઉપકરણ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે.</translation>
+<translation id="453661520163887813">પૂર્ણપણે ચાર્જ થવામાં <ph name="TIME" /></translation>
 <translation id="4544944664594876241">સ્ક્રીનને લૉક કરવાનો શોર્ટકટ બદલાયો છે. કૃપા કરીને <ph name="OLD_SHORTCUT" /> ને બદલે <ph name="NEW_SHORTCUT" /> નો ઉપયોગ કરો.</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">ડિસ્કનેક્ટ કરો</translation>
@@ -223,6 +225,7 @@
 <translation id="8428213095426709021">સેટિંગ્સ</translation>
 <translation id="8517041960877371778">તમારું <ph name="DEVICE_TYPE" /> ચાલુ હોય ત્યારે તે ચાર્જ ન થાય તેવું બની શકે.</translation>
 <translation id="8528322925433439945">મોબાઇલ ...</translation>
+<translation id="8639760480004882931"><ph name="PERCENTAGE" /> બાકી</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">નિમ્ન-પાવર ચાર્જર કનેક્ટ કર્યું છે</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>

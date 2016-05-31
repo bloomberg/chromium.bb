@@ -25,6 +25,7 @@
 <translation id="1587223624401073077">Google Chrome upotrebljava vašu kameru.</translation>
 <translation id="1619887657840448962">Kako bismo Chrome učinili sigurnijim, onemogućili smo sljedeće proširenje koje nije navedeno na stranici <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> i možda je dodano bez vašeg znanja.</translation>
 <translation id="163860049029591106">Počnite s upotrebom OS-a Chrome</translation>
+<translation id="1653828314016431939">U redu - pokreni ponovo sada</translation>
 <translation id="1682634494516646069">Google Chrome ne može čitati iz svojeg podatkovnog direktorija niti u njega pisati: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="1698376642261615901">Google Chrome jest web-preglednik koji web-stranice i aplikacije pokreće brzinom svjetlosti. Brz je, stabilan i jednostavan za upotrebu. Sigurnije pregledavajte web uz zaštitu protiv zlonamjernog i špijunskog softvera koja je ugrađena u Google Chrome.</translation>
 <translation id="174539241580958092">Google Chrome nije mogao sinkronizirati vaše podatke zbog pogreške prilikom prijave.</translation>
@@ -70,6 +71,12 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="3080151273017101988">Nastavi prikazivati ​​pozadinske aplikacije po zatvaranju preglednika Google Chrome</translation>
 <translation id="3089968997497233615">Dostupna je nova, sigurnija verzija preglednika Google Chrome.</translation>
 <translation id="3149510190863420837">Aplikacije sustava Chrome</translation>
+<translation id="3251381707915721925">Da biste postavili koje web-lokacije <ph name="NEW_PROFILE_NAME" /> može gledati, konfigurirajte ograničenja i postavke na stranici <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Ako ne promijenite zadane postavke, <ph name="NEW_PROFILE_NAME" /> može pregledavati sve na webu.
+
+Ako ne želite da <ph name="NEW_PROFILE_NAME" /> pristupa vašem računu, zaključajte svoj profil kada ne upotrebljavate Chrome. Da biste to učinili, kliknite naziv profila u gornjem desnom kutu preglednika i odaberite "Zatvori i zaključaj".
+<ph name="BEGIN_LINK_2" />Saznajte više<ph name="END_LINK_2" />
+
+Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="3282568296779691940">Prijavite se u Chrome</translation>
 <translation id="3311976847535831054">Ovo računalo više neće primati ažuriranja za 32-bitni Google Chrome. Nadogradite na 64-bitni Google Chrome.</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -117,6 +124,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="4921569541910214635">Dijelite računalo? Sada možete prilagoditi Chrome baš kako želite.</translation>
 <translation id="4925019873400497719">Chromium je potvrdio da je <ph name="ISSUER" /> izdavač certifikata web-lokacije. Informacije o transparentnosti certifikata pružio je poslužitelj, no nisu bile važeće.</translation>
 <translation id="4953650215774548573">Postavite Google Chrome kao svoj zadani preglednik</translation>
+<translation id="495931528404527476">U Chromeu</translation>
 <translation id="4987308747895123092">Zatvorite sve prozore preglednika Google Chrome (uključujući i one u načinu sustava Windows 8) i pokušajte ponovo.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Google Chrome nije mogao sinkronizirati vaše podatke. Ažurirajte zaporku za sinkronizaciju.</translation>
@@ -205,6 +213,7 @@ Ako se ipak prijavite, podaci sustava Chrome kao što su oznake, povijest i osta
 <translation id="7808348361785373670">Ukloni iz Chromea...</translation>
 <translation id="7825851276765848807">Instalacija nije uspjela zbog neodređene pogreške. Ponovo preuzmite Google Chrome.</translation>
 <translation id="7890208801193284374">Ako dijelite računalo, prijatelji i članovi obitelji mogu zasebno pregledavati i postaviti Chrome prema svojim željama.</translation>
+<translation id="795025003224538582">Ne pokreći ponovo</translation>
 <translation id="8005540215158006229">Chrome je skoro spreman.</translation>
 <translation id="8008534537613507642">Ponovo instaliraj Chrome</translation>
 <translation id="8030318113982266900">Ažuriranje vašeg uređaja na kanal <ph name="CHANNEL_NAME" />...</translation>

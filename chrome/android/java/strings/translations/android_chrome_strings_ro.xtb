@@ -72,6 +72,7 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1853692000353488670">Filă incognito nouă</translation>
 <translation id="189172778771606813">Închide panoul de navigare</translation>
 <translation id="1924956916668006832">Selectează adresa de expediere</translation>
+<translation id="1933845786846280168">Fila selectată</translation>
 <translation id="194341124344773587">Activează permisiunea pentru Chrome din <ph name="BEGIN_LINK" />Setări Android<ph name="END_LINK" />.</translation>
 <translation id="1943432128510653496">Parole salvate</translation>
 <translation id="1944384637046898011">Criptează toate datele folosind parola Google din data de <ph name="TIME" /></translation>
@@ -156,6 +157,7 @@ Poți să controlezi Webul material din Setările Chrome.
 <translation id="2959609938957585241">Pentru a accesa filele de pe alte dispozitive, activează opțiunea „Sincronizează automat datele” în setările Android din Contul Google.</translation>
 <translation id="2960796085439532066">Copyright <ph name="YEAR" /> Google Inc. Toate drepturile rezervate.</translation>
 <translation id="2968755619301702150">Vizualizator de certificate</translation>
+<translation id="2979025552038692506">Fila incognito selectată</translation>
 <translation id="2996291259634659425">Creează o expresie de acces</translation>
 <translation id="2996809686854298943">Adresă URL obligatorie</translation>
 <translation id="3012408695656332380">Înlocuiește datele acestui dispozitiv cu datele contului <ph name="TO_ACCOUNT" />. Poți recupera datele existente comutând înapoi la <ph name="FROM_ACCOUNT" />, dar datele create după ce te-ai deconectat se vor pierde.</translation>
@@ -554,6 +556,7 @@ Contul Google poate să ofere alte forme ale istoricului de navigare, cum ar fi 
 <translation id="8073388330009372546">Vedeți imaginea în filă nouă</translation>
 <translation id="8076014560081431679">Setările salvate pentru site-uri nu vor fi șterse și pot reflecta obiceiurile de navigare. <ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /></translation>
 <translation id="8087000398470557479">Acest conținut provine de pe <ph name="DOMAIN_NAME" />, oferit de Google.</translation>
+<translation id="8103578431304235997">Filă incognito</translation>
 <translation id="8106211421800660735">Numărul cardului de credit</translation>
 <translation id="813082847718468539">Afișează informațiile privind site-ul</translation>
 <translation id="8137558756159375272">Funcția Atinge pentru a căuta trimite cuvântul selectat și pagina actuală drept context către Căutare Google. Poți dezactiva această funcție din <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>

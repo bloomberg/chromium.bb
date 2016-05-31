@@ -16,6 +16,7 @@
 <translation id="151962892725702025">Chromium OS ei saanud teie andmeid sünkroonida, sest teie domeenil pole sünkroonimine saadaval.</translation>
 <translation id="1559451348202814456">Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam operatsioonisüsteemides Mac OS X 10.6, 10.7 ega 10.8.</translation>
 <translation id="1644918877723739397">Chromium salvestab selle asukohta <ph name="SAVED_PASSWORD_LINK" /> ja peab seda meeles, kui seda järgmine kord vajate.</translation>
+<translation id="1653828314016431939">OK – taaskäivita kohe</translation>
 <translation id="1668054258064581266">Pärast konto eemaldamist Chromiumist tuleb avatud vahekaardid võib-olla uuesti laadida, et need toimiksid.</translation>
 <translation id="1688750314291223739">Seadistage sünkroonimine, et salvestada isikupärastatud brauserifunktsioonid veebi, misjuhul pääsete igast arvutist Chromiumi kaudu nende juurde.</translation>
 <translation id="1699664235656412242">Sulgege kõik Chromiumi aknad (ka Windows 8 režiimis) ja proovige uuesti.</translation>
@@ -180,6 +181,12 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Uus aken</translation>
 <translation id="734373864078049451">Siin asuvad teie veeb, järjehoidjad ja ülejäänud Chromiumi kraam.</translation>
+<translation id="7344413941077984497">Selleks et määrata, milliseid veebisaite kasutaja <ph name="NEW_PROFILE_NAME" /> võib vaadata, saate seadistada piiranguid ja seadeid, kui külastate veebilehte <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Kui te vaikeseadeid ei muuda, võib kasutaja <ph name="NEW_PROFILE_NAME" /> kõiki veebilehti sirvida.
+
+Kui soovite takistada kasutajal <ph name="NEW_PROFILE_NAME" /> teie kontole juurdepääsemist, lukustage oma profiil, kui te Chromiumi ei kasuta. Selleks klõpsake brauseri paremas ülanurgas oma profiili nimel ja valige käsk „Välju ja määra lastelukk”.
+<ph name="BEGIN_LINK_2" />Lisateave<ph name="END_LINK_2" />
+
+Edasiste juhiste nägemiseks vaadake meile aadressil <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7419987137528340081">Kui soovite olemasolevad Chromiumi andmed eraldi hoida, võite kasutajale <ph name="USER_NAME" /> luua uue Chromiumi kasutaja.</translation>
 <translation id="7421823331379285070">Chromium nõuab Windows XP-d või uuemat operatsioonisüsteemi. Mõni funktsioon ei pruugi töötada.</translation>
 <translation id="7463979740390522693">Chromium – märguanded (<ph name="QUANTITY" /> on lugemata)</translation>
@@ -194,6 +201,7 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="7747138024166251722">Installija ei suutnud luua ajutist kataloogi. Palun kontrollige vaba kettaruumi ja tarkvara installimise loa olemasolu.</translation>
 <translation id="7918535023914021398">Chromium kinnitas, et selle veebisaidi sertifikaadi andis välja väljaandja <ph name="ISSUER" />. Server ei esitanud sertifikaadi läbipaistvuse teavet.</translation>
 <translation id="7937630085815544518">Olite Chromiumisse sisse logitud kasutajana <ph name="USER_EMAIL_ADDRESS" />. Kasutage uuesti sisselogimiseks sama kontot.</translation>
+<translation id="795025003224538582">Ära taaskäivita</translation>
 <translation id="7962572577636132072">Chromium teeb värskendused automaatselt, nii et kasutate alati uusimat versiooni.</translation>
 <translation id="7979877361127045932">Chromiumi menüüs peitmine</translation>
 <translation id="8030318113982266900">Seadet värskendatakse kanalile <ph name="CHANNEL_NAME" /> ...</translation>

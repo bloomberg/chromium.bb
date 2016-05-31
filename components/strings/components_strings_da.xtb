@@ -9,7 +9,6 @@
 <translation id="1064422015032085147">Den server, der hoster websiden, kan være overbelastet eller under vedligeholdelse.
     For at undgå at generere for meget trafik og forværre situationen
     er anmodninger på denne webadresse midlertidigt blevet deaktiveret.</translation>
-<translation id="1066332784716773939">Diagnosticer fejl...</translation>
 <translation id="106701514854093668">Bogmærker på pc</translation>
 <translation id="1080116354587839789">Tilpas til bredden</translation>
 <translation id="1090046120949329821">Der er modtaget flere overskrifter med indholdsdisposition.  Dette er ikke tilladt,
@@ -104,15 +103,10 @@
 <translation id="2096368010154057602">Departement</translation>
 <translation id="2113977810652731515">Kort</translation>
 <translation id="2114841414352855701">Ignoreret, da den blev tilsidesat af <ph name="POLICY_NAME" /> .</translation>
-<translation id="2122434088511736194">Søgninger på skrivebordet bruger din standardsøgemaskine (<ph name="DEFAULT_SEARCH_ENGINE_NAME" />).</translation>
 <translation id="2128531968068887769">Native Client</translation>
 <translation id="213826338245044447">Bogmærker på mobil</translation>
 <translation id="2148716181193084225">I dag</translation>
 <translation id="2149973817440762519">Rediger bogmærke</translation>
-<translation id="2153530520610387456">Gå til
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Kontrolpanel &gt; Netværk og internet &gt; Netværks- og delingscenter &gt; Fejlfinding (nederst) &gt; Internetforbindelser.
-      <ph name="END_BOLD" /></translation>
 <translation id="2166049586286450108">Fuld administratoradgang</translation>
 <translation id="2166378884831602661">Dette website kan ikke levere en sikker forbindelse</translation>
 <translation id="2171101176734966184">Du forsøgte at få fat på <ph name="DOMAIN" />, men serveren har præsenteret et certifikat, der er signeret med en svag signaturalgoritme. Det betyder, at sikkerhedsoplysningerne fra serveren kan være forfalskede, og at serveren muligvis ikke er den server, som du har forventet (du kommunikerer muligvis med en hacker).</translation>
@@ -124,7 +118,6 @@
 <translation id="225207911366869382">Denne værdi er forældet for denne politik.</translation>
 <translation id="2262243747453050782">HTTP-fejl</translation>
 <translation id="2279770628980885996">Der opstod en uventet hændelse, mens serveren forsøgte at gennemføre anmodningen.</translation>
-<translation id="2282186295770469712">Administrer søgeindstillinger</translation>
 <translation id="2282872951544483773">Utilgængelige eksperimenter</translation>
 <translation id="2292556288342944218">Din internetadgang er blokeret</translation>
 <translation id="229702904922032456">Et rodcertifikat eller et midlertidigt certifikat er udløbet.</translation>
@@ -190,11 +183,6 @@
 <translation id="2948083400971632585">Du kan deaktivere alle proxyer, der er konfigureret for en forbindelse, fra siden Indstillinger.</translation>
 <translation id="2950186680359523359">Serveren lukkede forbindelsen uden at sende nogen data.</translation>
 <translation id="2955913368246107853">Luk søgefeltet</translation>
-<translation id="2957518517523241247">Gå til
-      <ph name="BEGIN_BOLD" />
-      Start &gt; Kontrolpanel &gt; Netværksforbindelser &gt; Guiden Ny forbindelse
-      <ph name="END_BOLD" />
-      for at teste din forbindelse.</translation>
 <translation id="2958431318199492670">Netværkskonfigurationen overholder ikke ONC-standarden. Dele af konfiguration kan muligvis ikke importeres.</translation>
 <translation id="2969319727213777354">Uret på din enhed skal være indstillet korrekt, før du kan oprette en sikker forbindelse. Dette er vigtigt, da de certifikater, websites bruger til at identificere sig selv, kun er gyldige i bestemte perioder. Da uret på din enhed er indstillet forkert, kan Chrome ikke bekræfte disse certifikater.</translation>
 <translation id="2972581237482394796">&amp;Annuller fortryd</translation>
@@ -298,7 +286,6 @@
 <translation id="3885155851504623709">Sogn</translation>
 <translation id="3901925938762663762">Kortet er udløbet</translation>
 <translation id="3903912596042358459">Serveren afviste at gennemføre anmodningen.</translation>
-<translation id="3930850196944737149">Din enhed er offline.</translation>
 <translation id="3934680773876859118">PDF-dokumentet kunne ikke indlæses</translation>
 <translation id="3950924596163729246">Der kunne ikke opnås adgang til netværket.</translation>
 <translation id="3963721102035795474">Læser-tilstand</translation>
@@ -466,7 +453,6 @@
 <translation id="6040143037577758943">Luk</translation>
 <translation id="604124094241169006">Automatisk</translation>
 <translation id="6042308850641462728">Mere</translation>
-<translation id="6044718745395562198">Din computer er offline.</translation>
 <translation id="6060685159320643512">Vær forsigtig. Disse eksperimenter kan være farlige</translation>
 <translation id="6093795393556121384">Dit kort er bekræftet</translation>
 <translation id="6146055958333702838">Kontrollér eventuelle kabler, og genstart alle routere, modemmer eller andre
@@ -533,11 +519,6 @@
 <translation id="6830600606572693159">Websiden på <ph name="URL" /> er ikke tilgængelig lige nu. Den kan enten være overbelastet eller under vedligeholdelse.</translation>
 <translation id="6831043979455480757">Oversæt</translation>
 <translation id="6839929833149231406">Område</translation>
-<translation id="6851123334996048122">Gå til
-      <ph name="BEGIN_BOLD" />
-      Applikationer &gt; Systemindstillinger &gt; Netværk&gt; Hjælp mig
-      <ph name="END_BOLD" />
-      for at teste din forbindelse.</translation>
 <translation id="6874604403660855544">&amp;Annuller fortryd tilføjelse</translation>
 <translation id="6891596781022320156">Politikniveauet understøttes ikke.</translation>
 <translation id="6897140037006041989">Brugeragent</translation>
@@ -619,9 +600,6 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Administreres ikke</translation>
 <translation id="7758069387465995638">Firewall- eller antivirussoftware kan have blokeret forbindelsen.</translation>
-<translation id="7760914272566804712">Du kan forsøge at diagnosticere problemet ved hjælp af følgende vejledning:
-      <ph name="LINE_BREAK" />
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="7761701407923456692">Serverens certifikat passer ikke til webadressen.</translation>
 <translation id="777702478322588152">Præfektur</translation>
 <translation id="778579833039460630">Ingen data modtaget</translation>
@@ -661,14 +639,6 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="8241707690549784388">Siden, du søger, benyttede oplysninger, du har indtastet. Vender du tilbage til denne side kan det betyde, at enhver handling, du har foretaget, skal gentages. Vil du fortsætte?</translation>
 <translation id="8249320324621329438">Sidste hentet:</translation>
 <translation id="8261506727792406068">Slet</translation>
-<translation id="8266098793847448402">Klik på
-      <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" />,
-      klik på
-      <ph name="BEGIN_BOLD" />Kør<ph name="END_BOLD" />,
-      indtast
-      <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
-      og klik derefter på
-      <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8279107132611114222">Din anmodning om adgang til dette website er blevet sendt til <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Kontakt din netværksadministrator, hvis du ikke er sikker på, hvad det betyder.</translation>
 <translation id="8293206222192510085">Tilføj bogmærke</translation>
