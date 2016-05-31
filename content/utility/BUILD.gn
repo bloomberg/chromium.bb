@@ -25,7 +25,6 @@ source_set("utility") {
     "//content/child",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
-    "//courgette:courgette_lib",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//sandbox",
