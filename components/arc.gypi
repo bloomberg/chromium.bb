@@ -105,6 +105,8 @@
         'arc/test/fake_arc_bridge_service.h',
         'arc/test/fake_notifications_instance.cc',
         'arc/test/fake_notifications_instance.h',
+        'arc/test/fake_policy_instance.cc',
+        'arc/test/fake_policy_instance.h',
       ],
     },
     {

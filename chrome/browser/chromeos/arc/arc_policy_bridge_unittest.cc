@@ -7,9 +7,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/arc_policy_bridge.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
+#include "components/arc/test/fake_policy_instance.h"
 #include "components/policy/core/common/mock_policy_service.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -49,10 +51,36 @@ char kFakeONC[] =
     "\"GUID\":\"{00f79111-51e0-e6e0-76b3b55450d80a1b}\"}"
     "]}";
 
-}  // namespace
-namespace arc {
+// Helper class to define the PolicyStringCallback that expects to be called
+// at least once and that expects a given string as parameter.
+class PolicyStringRunnable
+    : public arc::ArcPolicyBridge::GetPoliciesCallback::Runnable {
+ public:
+  explicit PolicyStringRunnable(mojo::String expected)
+      : expected_(std::move(expected)) {}
+  ~PolicyStringRunnable() override { EXPECT_TRUE(was_run); }
+  void Run(const mojo::String& policies) override {
+    EXPECT_EQ(expected_, policies);
+    was_run = true;
+  }
 
+ private:
+  mojo::String expected_;
+  bool was_run = false;
+};
+
+arc::ArcPolicyBridge::GetPoliciesCallback PolicyStringCallback(
+    mojo::String expected) {
+  return arc::ArcPolicyBridge::GetPoliciesCallback(
+      new PolicyStringRunnable(std::move(expected)));
+}
+
+}  // namespace
+
+using testing::_;
 using testing::ReturnRef;
+
+namespace arc {
 
 class ArcPolicyBridgeTest : public testing::Test {
  public:
@@ -68,35 +96,31 @@ class ArcPolicyBridgeTest : public testing::Test {
                 GetPolicies(policy::PolicyNamespace(
                     policy::POLICY_DOMAIN_CHROME, std::string())))
         .WillRepeatedly(ReturnRef(policy_map_));
+    EXPECT_CALL(policy_service_, AddObserver(policy::POLICY_DOMAIN_CHROME, _))
+        .Times(1);
+
+    mojom::PolicyInstancePtr policy_instance_ptr;
+    policy_instance_ = base::MakeUnique<FakePolicyInstance>(
+        GetProxy(&policy_instance_ptr), bridge_service_.get());
+    bridge_service_->OnPolicyInstanceReady(std::move(policy_instance_ptr));
+    policy_instance()->WaitForOnPolicyInstanceReady();
   }
 
  protected:
-  class PolicyStringRunnable
-      : public ArcPolicyBridge::GetPoliciesCallback::Runnable {
-   public:
-    explicit PolicyStringRunnable(mojo::String expected)
-        : expected_(expected) {}
-    void Run(const mojo::String& policies) override {
-      EXPECT_EQ(expected_, policies);
-    }
-
-   private:
-    mojo::String expected_;
-  };
-
-  class PolicyStringCallback : public ArcPolicyBridge::GetPoliciesCallback {
-   public:
-    explicit PolicyStringCallback(mojo::String expected)
-        : ArcPolicyBridge::GetPoliciesCallback(
-              new PolicyStringRunnable(expected)) {}
-  };
-
   ArcPolicyBridge* policy_bridge() { return policy_bridge_.get(); }
+  FakePolicyInstance* policy_instance() { return policy_instance_.get(); }
   policy::PolicyMap& policy_map() { return policy_map_; }
 
  private:
+  // Not an unused variable. Unit tests do not have a message loop by themselves
+  // and mojo needs a message loop for communication.
+  base::MessageLoop loop_;
   std::unique_ptr<arc::FakeArcBridgeService> bridge_service_;
   std::unique_ptr<arc::ArcPolicyBridge> policy_bridge_;
+  // Always keep policy_instance_ below bridge_service_, so that
+  // policy_instance_ is destructed first. It needs to remove itself as
+  // observer.
+  std::unique_ptr<arc::FakePolicyInstance> policy_instance_;
   policy::PolicyMap policy_map_;
   policy::MockPolicyService policy_service_;
 
@@ -297,6 +321,17 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
         "\"cameraDisabled\":true,"
         "\"defaultPermissionPolicy\":\"GRANT\""
       "}"));
+}
+
+// This and the following test send the policies through a mojo connection
+// between a PolicyInstance and the PolicyBridge.
+TEST_F(ArcPolicyBridgeTest, PolicyInstanceUnmanagedTest) {
+  policy_bridge()->OverrideIsManagedForTesting(false);
+  policy_instance()->CallGetPolicies(PolicyStringCallback(""));
+}
+
+TEST_F(ArcPolicyBridgeTest, PolicyInstanceManagedTest) {
+  policy_instance()->CallGetPolicies(PolicyStringCallback("{}"));
 }
 
 }  // namespace arc
