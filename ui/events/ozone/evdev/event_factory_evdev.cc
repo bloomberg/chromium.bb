@@ -85,7 +85,7 @@ class ProxyDeviceEventDispatcher : public DeviceEventDispatcherEvdev {
   }
 
   void DispatchKeyboardDevicesUpdated(
-      const std::vector<KeyboardDevice>& devices) override {
+      const std::vector<InputDevice>& devices) override {
     ui_thread_runner_->PostTask(
         FROM_HERE,
         base::Bind(&EventFactoryEvdev::DispatchKeyboardDevicesUpdated,
@@ -319,7 +319,7 @@ void EventFactoryEvdev::DispatchUiEvent(Event* event) {
 }
 
 void EventFactoryEvdev::DispatchKeyboardDevicesUpdated(
-    const std::vector<KeyboardDevice>& devices) {
+    const std::vector<InputDevice>& devices) {
   TRACE_EVENT0("evdev", "EventFactoryEvdev::DispatchKeyboardDevicesUpdated");
   DeviceHotplugEventObserver* observer = DeviceDataManager::GetInstance();
   observer->OnKeyboardDevicesUpdated(devices);

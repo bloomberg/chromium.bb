@@ -103,7 +103,7 @@ class MockDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
   }
 
   void DispatchKeyboardDevicesUpdated(
-      const std::vector<KeyboardDevice>& devices) override {}
+      const std::vector<InputDevice>& devices) override {}
   void DispatchTouchscreenDevicesUpdated(
       const std::vector<TouchscreenDevice>& devices) override {}
   void DispatchMouseDevicesUpdated(

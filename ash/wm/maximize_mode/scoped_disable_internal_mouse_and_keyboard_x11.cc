@@ -22,7 +22,6 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/devices/keyboard_device.h"
 #include "ui/events/devices/x11/device_data_manager_x11.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/event.h"
@@ -98,7 +97,7 @@ ScopedDisableInternalMouseAndKeyboardX11::
       }
     }
 
-    for (const ui::KeyboardDevice& device :
+    for (const ui::InputDevice& device :
          device_data_manager->keyboard_devices()) {
       if (device.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
         keyboard_device_id_ = device.id;

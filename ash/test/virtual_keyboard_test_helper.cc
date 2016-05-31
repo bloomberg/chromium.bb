@@ -7,7 +7,6 @@
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_hotplug_event_observer.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/devices/keyboard_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 
 namespace ash {
@@ -22,8 +21,8 @@ void VirtualKeyboardTestHelper::SuppressKeyboard() {
                             "Touchscreen", gfx::Size(1024, 768), 0));
   manager->OnTouchscreenDevicesUpdated(screens);
 
-  std::vector<ui::KeyboardDevice> keyboards;
-  keyboards.push_back(ui::KeyboardDevice(
+  std::vector<ui::InputDevice> keyboards;
+  keyboards.push_back(ui::InputDevice(
       2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "keyboard"));
   manager->OnKeyboardDevicesUpdated(keyboards);
 }

@@ -19,7 +19,6 @@
 #include "base/sys_info.h"
 #include "build/build_config.h"
 #include "ui/display/display.h"
-#include "ui/events/devices/keyboard_device.h"
 #include "ui/events/devices/x11/device_list_cache_x11.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event_constants.h"
@@ -818,12 +817,12 @@ void DeviceDataManagerX11::SetDisabledKeyboardAllowedKeys(
 void DeviceDataManagerX11::DisableDevice(int deviceid) {
   blocked_devices_.set(deviceid, true);
   // TODO(rsadam@): Support blocking touchscreen devices.
-  std::vector<KeyboardDevice> keyboards = keyboard_devices();
-  std::vector<KeyboardDevice>::iterator it =
+  std::vector<InputDevice> keyboards = keyboard_devices();
+  std::vector<InputDevice>::iterator it =
       FindDeviceWithId(keyboards.begin(), keyboards.end(), deviceid);
   if (it != std::end(keyboards)) {
-    blocked_keyboards_.insert(
-        std::pair<int, KeyboardDevice>(deviceid, *it));
+    blocked_keyboard_devices_.insert(
+        std::pair<int, InputDevice>(deviceid, *it));
     keyboards.erase(it);
     DeviceDataManager::OnKeyboardDevicesUpdated(keyboards);
   }
@@ -831,13 +830,13 @@ void DeviceDataManagerX11::DisableDevice(int deviceid) {
 
 void DeviceDataManagerX11::EnableDevice(int deviceid) {
   blocked_devices_.set(deviceid, false);
-  std::map<int, KeyboardDevice>::iterator it =
-      blocked_keyboards_.find(deviceid);
-  if (it != blocked_keyboards_.end()) {
-    std::vector<KeyboardDevice> devices = keyboard_devices();
+  std::map<int, InputDevice>::iterator it =
+      blocked_keyboard_devices_.find(deviceid);
+  if (it != blocked_keyboard_devices_.end()) {
+    std::vector<InputDevice> devices = keyboard_devices();
     // Add device to current list of active devices.
     devices.push_back((*it).second);
-    blocked_keyboards_.erase(it);
+    blocked_keyboard_devices_.erase(it);
     DeviceDataManager::OnKeyboardDevicesUpdated(devices);
   }
 }
@@ -864,20 +863,20 @@ bool DeviceDataManagerX11::IsEventBlocked(const XEvent& xev) {
 }
 
 void DeviceDataManagerX11::OnKeyboardDevicesUpdated(
-    const std::vector<KeyboardDevice>& devices) {
-  std::vector<KeyboardDevice> keyboards(devices);
-  for (std::map<int, KeyboardDevice>::iterator blocked_iter =
-           blocked_keyboards_.begin();
-       blocked_iter != blocked_keyboards_.end();) {
+    const std::vector<InputDevice>& devices) {
+  std::vector<InputDevice> keyboards(devices);
+  for (std::map<int, InputDevice>::iterator blocked_iter =
+           blocked_keyboard_devices_.begin();
+       blocked_iter != blocked_keyboard_devices_.end();) {
     // Check if the blocked device still exists in list of devices.
     int device_id = blocked_iter->first;
-    std::vector<KeyboardDevice>::iterator it =
+    std::vector<InputDevice>::iterator it =
         FindDeviceWithId(keyboards.begin(), keyboards.end(), device_id);
     // If the device no longer exists, unblock it, else filter it out from our
     // active list.
     if (it == keyboards.end()) {
       blocked_devices_.set((*blocked_iter).first, false);
-      blocked_keyboards_.erase(blocked_iter++);
+      blocked_keyboard_devices_.erase(blocked_iter++);
     } else {
       keyboards.erase(it);
       ++blocked_iter;

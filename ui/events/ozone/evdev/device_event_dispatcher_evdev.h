@@ -9,7 +9,6 @@
 
 #include "base/time/time.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/devices/keyboard_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -156,7 +155,7 @@ class EVENTS_OZONE_EVDEV_EXPORT DeviceEventDispatcherEvdev {
 
   // Device lifecycle events.
   virtual void DispatchKeyboardDevicesUpdated(
-      const std::vector<KeyboardDevice>& devices) = 0;
+      const std::vector<InputDevice>& devices) = 0;
   virtual void DispatchTouchscreenDevicesUpdated(
       const std::vector<TouchscreenDevice>& devices) = 0;
   virtual void DispatchMouseDevicesUpdated(

@@ -15,7 +15,6 @@
 #include "base/observer_list.h"
 #include "ui/events/devices/device_hotplug_event_observer.h"
 #include "ui/events/devices/events_devices_export.h"
-#include "ui/events/devices/keyboard_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/transform.h"
 
@@ -55,7 +54,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
     return touchscreen_devices_;
   }
 
-  const std::vector<KeyboardDevice>& keyboard_devices() const {
+  const std::vector<InputDevice>& keyboard_devices() const {
     return keyboard_devices_;
   }
 
@@ -86,7 +85,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   void OnTouchscreenDevicesUpdated(
       const std::vector<TouchscreenDevice>& devices) override;
   void OnKeyboardDevicesUpdated(
-      const std::vector<KeyboardDevice>& devices) override;
+      const std::vector<InputDevice>& devices) override;
   void OnMouseDevicesUpdated(
       const std::vector<InputDevice>& devices) override;
   void OnTouchpadDevicesUpdated(
@@ -117,7 +116,7 @@ class EVENTS_DEVICES_EXPORT DeviceDataManager
   void NotifyObserversDeviceListsComplete();
 
   std::vector<TouchscreenDevice> touchscreen_devices_;
-  std::vector<KeyboardDevice> keyboard_devices_;
+  std::vector<InputDevice> keyboard_devices_;
   std::vector<InputDevice> mouse_devices_;
   std::vector<InputDevice> touchpad_devices_;
   bool device_lists_complete_ = false;

@@ -13,7 +13,6 @@
 #include "base/strings/string_util.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device.h"
-#include "ui/events/devices/keyboard_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -86,7 +85,7 @@ void VirtualKeyboardController::UpdateDevices() {
   // Checks for keyboards.
   has_external_keyboard_ = false;
   has_internal_keyboard_ = false;
-  for (const ui::KeyboardDevice& device :
+  for (const ui::InputDevice& device :
        device_data_manager->keyboard_devices()) {
     if (has_internal_keyboard_ && has_external_keyboard_)
       break;

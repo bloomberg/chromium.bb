@@ -73,8 +73,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   void DispatchTouchEvent(const TouchEventParams& params);
 
   // Device lifecycle events.
-  void DispatchKeyboardDevicesUpdated(
-      const std::vector<KeyboardDevice>& devices);
+  void DispatchKeyboardDevicesUpdated(const std::vector<InputDevice>& devices);
   void DispatchTouchscreenDevicesUpdated(
       const std::vector<TouchscreenDevice>& devices);
   void DispatchMouseDevicesUpdated(const std::vector<InputDevice>& devices);

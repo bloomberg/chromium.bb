@@ -13,12 +13,11 @@
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/events/devices/device_data_manager.h"
-#include "ui/events/devices/keyboard_device.h"
 
 namespace {
 
 bool HasExternalKeyboard() {
-  for (const ui::KeyboardDevice& keyboard :
+  for (const ui::InputDevice& keyboard :
        ui::DeviceDataManager::GetInstance()->keyboard_devices()) {
     if (keyboard.type == ui::InputDeviceType::INPUT_DEVICE_EXTERNAL)
       return true;

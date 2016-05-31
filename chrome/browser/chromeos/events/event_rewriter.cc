@@ -1142,9 +1142,9 @@ EventRewriter::DeviceType EventRewriter::KeyboardDeviceAddedInternal(
 EventRewriter::DeviceType EventRewriter::KeyboardDeviceAdded(int device_id) {
   if (!ui::DeviceDataManager::HasInstance())
     return kDeviceUnknown;
-  const std::vector<ui::KeyboardDevice>& keyboards =
+  const std::vector<ui::InputDevice>& keyboard_devices =
       ui::DeviceDataManager::GetInstance()->keyboard_devices();
-  for (const auto& keyboard : keyboards) {
+  for (const auto& keyboard : keyboard_devices) {
     if (keyboard.id == device_id) {
       return KeyboardDeviceAddedInternal(
           keyboard.id, keyboard.name, keyboard.vendor_id, keyboard.product_id);

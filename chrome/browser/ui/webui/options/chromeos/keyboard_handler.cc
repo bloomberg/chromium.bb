@@ -19,7 +19,6 @@
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/devices/device_data_manager.h"
-#include "ui/events/devices/keyboard_device.h"
 
 namespace {
 const struct ModifierKeysSelectItem {
@@ -51,7 +50,7 @@ const char* kDataValuesNames[] = {
 };
 
 bool HasExternalKeyboard() {
-  for (const ui::KeyboardDevice& keyboard :
+  for (const ui::InputDevice& keyboard :
        ui::DeviceDataManager::GetInstance()->keyboard_devices()) {
     if (keyboard.type == ui::InputDeviceType::INPUT_DEVICE_EXTERNAL)
       return true;

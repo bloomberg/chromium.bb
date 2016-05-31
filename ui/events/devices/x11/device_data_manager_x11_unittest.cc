@@ -15,7 +15,6 @@
 #include "ui/events/devices/device_hotplug_event_observer.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/input_device_event_observer.h"
-#include "ui/events/devices/keyboard_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 
 namespace ui {
@@ -59,11 +58,9 @@ class DeviceDataManagerX11Test : public testing::Test {
 
   void SetUp() override { DeviceDataManagerX11::CreateInstance(); }
 
-  void TearDown() override {
-    SetKeyboardDevices(std::vector<KeyboardDevice>());
-  }
+  void TearDown() override { SetKeyboardDevices(std::vector<InputDevice>()); }
 
-  virtual void SetKeyboardDevices(const std::vector<KeyboardDevice>& devices) {
+  virtual void SetKeyboardDevices(const std::vector<InputDevice>& devices) {
     DeviceHotplugEventObserver* manager = DeviceDataManagerX11::GetInstance();
     manager->OnKeyboardDevicesUpdated(devices);
   }
@@ -77,14 +74,14 @@ class DeviceDataManagerX11Test : public testing::Test {
 TEST_F(DeviceDataManagerX11Test, NotifyOnDisable) {
   DeviceDataManagerX11* manager = DeviceDataManagerX11::GetInstance();
   TestInputDeviceObserver observer(manager);
-  std::vector<ui::KeyboardDevice> keyboards;
-  keyboards.push_back(ui::KeyboardDevice(
+  std::vector<ui::InputDevice> keyboards;
+  keyboards.push_back(ui::InputDevice(
       1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "Keyboard"));
-  keyboards.push_back(ui::KeyboardDevice(
+  keyboards.push_back(ui::InputDevice(
       2, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "Keyboard"));
   SetKeyboardDevices(keyboards);
   EXPECT_TRUE(observer.change_notified());
-  std::vector<KeyboardDevice> devices = manager->keyboard_devices();
+  std::vector<InputDevice> devices = manager->keyboard_devices();
   EXPECT_EQ(keyboards.size(), devices.size());
   observer.Reset();
   // Disable the device, should be notified that the device list contains one
@@ -93,7 +90,7 @@ TEST_F(DeviceDataManagerX11Test, NotifyOnDisable) {
   EXPECT_TRUE(observer.change_notified());
   devices = manager->keyboard_devices();
   EXPECT_EQ(1u, devices.size());
-  KeyboardDevice device = devices.front();
+  InputDevice device = devices.front();
   EXPECT_EQ(1, device.id);
   observer.Reset();
   // Reenable the device, should be notified that the device list contains one
@@ -108,14 +105,14 @@ TEST_F(DeviceDataManagerX11Test, NotifyOnDisable) {
 TEST_F(DeviceDataManagerX11Test, TestMultipleDisable) {
   DeviceDataManagerX11* manager = DeviceDataManagerX11::GetInstance();
   TestInputDeviceObserver observer(manager);
-  std::vector<ui::KeyboardDevice> keyboards;
-  keyboards.push_back(ui::KeyboardDevice(
+  std::vector<ui::InputDevice> keyboards;
+  keyboards.push_back(ui::InputDevice(
       1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "Keyboard"));
-  keyboards.push_back(ui::KeyboardDevice(
+  keyboards.push_back(ui::InputDevice(
       2, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "Keyboard"));
   SetKeyboardDevices(keyboards);
   EXPECT_TRUE(observer.change_notified());
-  std::vector<KeyboardDevice> devices = manager->keyboard_devices();
+  std::vector<InputDevice> devices = manager->keyboard_devices();
   EXPECT_EQ(keyboards.size(), devices.size());
   observer.Reset();
   // Disable the device, should be notified that the device list contains one
@@ -147,14 +144,14 @@ TEST_F(DeviceDataManagerX11Test, TestMultipleDisable) {
 TEST_F(DeviceDataManagerX11Test, UnblockOnDeviceUnplugged) {
   DeviceDataManagerX11* manager = DeviceDataManagerX11::GetInstance();
   TestInputDeviceObserver observer(manager);
-  std::vector<ui::KeyboardDevice> all_keyboards;
-  all_keyboards.push_back(ui::KeyboardDevice(
+  std::vector<ui::InputDevice> all_keyboards;
+  all_keyboards.push_back(ui::InputDevice(
       1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "Keyboard"));
-  all_keyboards.push_back(ui::KeyboardDevice(
+  all_keyboards.push_back(ui::InputDevice(
       2, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "Keyboard"));
   SetKeyboardDevices(all_keyboards);
   EXPECT_TRUE(observer.change_notified());
-  std::vector<KeyboardDevice> devices = manager->keyboard_devices();
+  std::vector<InputDevice> devices = manager->keyboard_devices();
   EXPECT_EQ(all_keyboards.size(), devices.size());
   observer.Reset();
   // Expect to be notified that the device is no longer available.
@@ -165,8 +162,8 @@ TEST_F(DeviceDataManagerX11Test, UnblockOnDeviceUnplugged) {
   observer.Reset();
   // Unplug the disabled device. Should not be notified, since the active list
   // did not change.
-  std::vector<ui::KeyboardDevice> subset_keyboards;
-  subset_keyboards.push_back(ui::KeyboardDevice(
+  std::vector<ui::InputDevice> subset_keyboards;
+  subset_keyboards.push_back(ui::InputDevice(
       1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "Keyboard"));
   SetKeyboardDevices(subset_keyboards);
   EXPECT_FALSE(observer.change_notified());

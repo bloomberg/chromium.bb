@@ -63,7 +63,7 @@ class TestDeviceEventDispatcherEvdev : public DeviceEventDispatcherEvdev {
   }
 
   void DispatchKeyboardDevicesUpdated(
-      const std::vector<KeyboardDevice>& devices) override {
+      const std::vector<InputDevice>& devices) override {
     event_factory_evdev_->DispatchKeyboardDevicesUpdated(devices);
   }
   void DispatchTouchscreenDevicesUpdated(

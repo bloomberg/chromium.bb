@@ -277,7 +277,7 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
  protected:
   // DeviceHotplugEventObserver:
   void OnKeyboardDevicesUpdated(
-      const std::vector<KeyboardDevice>& devices) override;
+      const std::vector<InputDevice>& devices) override;
 
  private:
   // Information about scroll valuators
@@ -383,7 +383,7 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
 
   // Map that stores meta-data for blocked keyboards. This is needed to restore
   // devices when they are re-enabled.
-  std::map<int, ui::KeyboardDevice> blocked_keyboards_;
+  std::map<int, ui::InputDevice> blocked_keyboard_devices_;
 
   // X11 atoms cache.
   X11AtomCache atom_cache_;

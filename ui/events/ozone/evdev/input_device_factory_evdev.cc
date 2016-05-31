@@ -428,10 +428,10 @@ void InputDeviceFactoryEvdev::NotifyTouchscreensUpdated() {
 }
 
 void InputDeviceFactoryEvdev::NotifyKeyboardsUpdated() {
-  std::vector<KeyboardDevice> keyboards;
+  std::vector<InputDevice> keyboards;
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasKeyboard()) {
-      keyboards.push_back(KeyboardDevice(it->second->input_device()));
+      keyboards.push_back(InputDevice(it->second->input_device()));
     }
   }
 

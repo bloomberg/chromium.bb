@@ -151,7 +151,7 @@ void DeviceDataManager::OnTouchscreenDevicesUpdated(
 }
 
 void DeviceDataManager::OnKeyboardDevicesUpdated(
-    const std::vector<KeyboardDevice>& devices) {
+    const std::vector<InputDevice>& devices) {
   if (devices.size() == keyboard_devices_.size() &&
       std::equal(devices.begin(),
                  devices.end(),
