@@ -64,7 +64,6 @@ class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
   size_t ExternalMemoryUsage() const override;
 
   int ApproximateOpCount() const { return 0; }
-  bool IsSuitableForGpuRasterization() const { return true; }
 };
 
 }  // namespace cc
