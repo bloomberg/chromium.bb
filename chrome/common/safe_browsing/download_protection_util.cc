@@ -34,6 +34,7 @@ ClientDownloadRequest::DownloadType GetDownloadType(
            file.MatchesExtension(FILE_PATH_LITERAL(".img")) ||
            file.MatchesExtension(FILE_PATH_LITERAL(".iso")) ||
            file.MatchesExtension(FILE_PATH_LITERAL(".pkg")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".mpkg")) ||
            file.MatchesExtension(FILE_PATH_LITERAL(".smi")) ||
            file.MatchesExtension(FILE_PATH_LITERAL(".osx")) ||
            file.MatchesExtension(FILE_PATH_LITERAL(".app")) ||

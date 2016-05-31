@@ -8,7 +8,8 @@
 ##
 ## Top level settings
 ##
-version_id: 1
+
+version_id: 2
 sampled_ping_probability: 0.0
 default_file_type {
   uma_value: 18
@@ -2298,6 +2299,17 @@ file_types {
   }
 }
 file_types {
+  # An alias for PKG files, opened by the Mac installer. http://crbug.com/600908
+  extension: "mpkg"
+  uma_value: 263
+  ping_setting: FULL_PING
+  platform_settings {
+    platform: PLATFORM_MAC
+    danger_level: ALLOW_ON_USER_GESTURE
+    auto_open_hint: DISALLOW_AUTO_OPEN
+  }
+}
+file_types {
   # Automator workflow
   extension: "workflow"
   uma_value: 170
@@ -2316,6 +2328,7 @@ file_types {
 
 ## Package management formats (non-windows)
 file_types {
+  # Used by Mac installer as well as linux
   extension: "pkg"
   uma_value: 22
   ping_setting: FULL_PING

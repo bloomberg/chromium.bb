@@ -46988,7 +46988,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SBClientDownload.DownloadRequestResponseCode">
+<histogram name="SBClientDownload.DownloadRequestResponseCode"
+    enum="HttpResponseCode">
   <owner>mattm@chromium.org</owner>
   <summary>
     For CheckClientDownloadRequest URLFetchers with successful status, the HTTP
@@ -47144,7 +47145,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SBClientMalware.IPBlacklistRequestResponseCode">
+<histogram name="SBClientMalware.IPBlacklistRequestResponseCode"
+    enum="HttpResponseCode">
   <owner>noelutz@chromium.org</owner>
   <summary>
     For ClientMalwareRequest URLFetchers with successful status, the HTTP
@@ -86163,6 +86165,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="260" label="TOAST"/>
   <int value="261" label="RUN"/>
   <int value="262" label="AD"/>
+  <int value="263" label="MPKG"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary" type="int">
