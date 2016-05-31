@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -46,6 +47,7 @@ PipeControlMessageProxy::PipeControlMessageProxy(MessageReceiver* receiver)
     : receiver_(receiver) {}
 
 void PipeControlMessageProxy::NotifyPeerEndpointClosed(InterfaceId id) {
+  DCHECK(!IsMasterInterfaceId(id));
   pipe_control::PeerAssociatedEndpointClosedEventPtr event(
       pipe_control::PeerAssociatedEndpointClosedEvent::New());
   event->id = id;
@@ -58,6 +60,7 @@ void PipeControlMessageProxy::NotifyPeerEndpointClosed(InterfaceId id) {
 }
 
 void PipeControlMessageProxy::NotifyEndpointClosedBeforeSent(InterfaceId id) {
+  DCHECK(!IsMasterInterfaceId(id));
   pipe_control::AssociatedEndpointClosedBeforeSentEventPtr event(
       pipe_control::AssociatedEndpointClosedBeforeSentEvent::New());
   event->id = id;

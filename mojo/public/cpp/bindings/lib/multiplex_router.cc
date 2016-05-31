@@ -702,8 +702,6 @@ bool MultiplexRouter::ProcessIncomingMessage(
   bool inserted = false;
   InterfaceEndpoint* endpoint = FindOrInsertEndpoint(id, &inserted);
   if (inserted) {
-    DCHECK(!IsMasterInterfaceId(id));
-
     // Currently, it is legitimate to receive messages for an endpoint
     // that is not registered. For example, the endpoint is transferred in
     // a message that is discarded. Once we add support to specify all
@@ -711,7 +709,16 @@ bool MultiplexRouter::ProcessIncomingMessage(
     // this.
     UpdateEndpointStateMayRemove(endpoint, ENDPOINT_CLOSED);
 
-    control_message_proxy_.NotifyPeerEndpointClosed(id);
+    // It is also possible that this newly-inserted endpoint is the master
+    // endpoint. When the master InterfacePtr/Binding goes away, the message
+    // pipe is closed and we explicitly trigger a pipe connection error. The
+    // error updates all the endpoints, including the master endpoint, with
+    // PEER_ENDPOINT_CLOSED and removes the master endpoint from the
+    // registration. We continue to process remaining tasks in the queue, as
+    // long as there are refs keeping the router alive. If there are remaining
+    // messages for the master endpoint, we will get here.
+    if (!IsMasterInterfaceId(id))
+      control_message_proxy_.NotifyPeerEndpointClosed(id);
     return true;
   }
 
