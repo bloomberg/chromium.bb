@@ -81,7 +81,7 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
 bool IsTextRTL(const ui::TextInputClient* client) {
   gfx::Range text_range;
   base::string16 text;
-  return client->GetTextRange(&text_range) &&
+  return client && client->GetTextRange(&text_range) &&
          client->GetTextFromRange(text_range, &text) &&
          base::i18n::GetStringDirection(text) == base::i18n::RIGHT_TO_LEFT;
 }
