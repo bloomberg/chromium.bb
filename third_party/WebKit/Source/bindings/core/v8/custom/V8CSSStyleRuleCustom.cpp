@@ -41,17 +41,13 @@ namespace blink {
 void V8CSSStyleRule::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* scriptWrappable, const v8::Persistent<v8::Object>& wrapper)
 {
     CSSStyleRule* impl = scriptWrappable->toImpl<CSSStyleRule>();
-    v8::Local<v8::Object> context = v8::Local<v8::Object>::New(isolate, wrapper);
-    v8::Context::Scope scope(context->CreationContext());
     CSSRule* parentRule = impl->parentRule();
     if (parentRule) {
-        if (DOMDataStore::containsWrapper(parentRule, isolate))
-            DOMDataStore::setWrapperReference(wrapper, parentRule, isolate);
+        DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, parentRule, isolate);
     }
     CSSStyleSheet* parentStyleSheet = impl->parentStyleSheet();
     if (parentStyleSheet) {
-        if (DOMDataStore::containsWrapper(parentStyleSheet, isolate))
-            DOMDataStore::setWrapperReference(wrapper, parentStyleSheet, isolate);
+        DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, parentStyleSheet, isolate);
     }
 }
 
