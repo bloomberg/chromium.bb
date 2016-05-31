@@ -33,6 +33,8 @@
         'offline_pages/offline_page_metadata_store.h',
         'offline_pages/offline_page_model.cc',
         'offline_pages/offline_page_model.h',
+        'offline_pages/offline_page_model_impl.cc',
+        'offline_pages/offline_page_model_impl.h',
         'offline_pages/offline_page_storage_manager.cc',
         'offline_pages/offline_page_storage_manager.h',
         'offline_pages/offline_page_types.h',

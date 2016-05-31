@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/offline_pages/offline_page_metadata_store_sql.h"
-#include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/offline_page_model_impl.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace offline_pages {
@@ -33,7 +33,7 @@ OfflinePageModelFactory* OfflinePageModelFactory::GetInstance() {
 // static
 OfflinePageModel* OfflinePageModelFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<OfflinePageModel*>(
+  return static_cast<OfflinePageModelImpl*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
@@ -52,8 +52,8 @@ KeyedService* OfflinePageModelFactory::BuildServiceInstanceFor(
   base::FilePath archives_dir =
       profile->GetPath().Append(chrome::kOfflinePageArchviesDirname);
 
-  return new OfflinePageModel(std::move(metadata_store), archives_dir,
-                              background_task_runner);
+  return new OfflinePageModelImpl(std::move(metadata_store), archives_dir,
+                                  background_task_runner);
 }
 
 }  // namespace offline_pages

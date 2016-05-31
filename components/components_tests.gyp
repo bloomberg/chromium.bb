@@ -431,7 +431,7 @@
       'offline_pages/archive_manager_unittest.cc',
       'offline_pages/client_policy_controller_unittest.cc',
       'offline_pages/offline_page_metadata_store_impl_unittest.cc',
-      'offline_pages/offline_page_model_unittest.cc',
+      'offline_pages/offline_page_model_impl_unittest.cc',
       'offline_pages/offline_page_storage_manager_unittest.cc',
       'offline_pages/snapshot_controller_unittest.cc',
     ],

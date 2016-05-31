@@ -23,6 +23,8 @@ static_library("offline_pages") {
     "offline_page_metadata_store_sql.h",
     "offline_page_model.cc",
     "offline_page_model.h",
+    "offline_page_model_impl.cc",
+    "offline_page_model_impl.h",
     "offline_page_storage_manager.cc",
     "offline_page_storage_manager.h",
     "offline_page_types.h",
@@ -77,7 +79,7 @@ source_set("unit_tests") {
     "archive_manager_unittest.cc",
     "client_policy_controller_unittest.cc",
     "offline_page_metadata_store_impl_unittest.cc",
-    "offline_page_model_unittest.cc",
+    "offline_page_model_impl_unittest.cc",
     "offline_page_storage_manager_unittest.cc",
     "snapshot_controller_unittest.cc",
   ]

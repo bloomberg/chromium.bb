@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/offline_pages/offline_page_model.h"
+#include "components/offline_pages/offline_page_model_impl.h"
 
 #include <stdint.h>
 #include <algorithm>
@@ -52,14 +52,14 @@ bool URLSpecContains(std::string contains_value, const GURL& url) {
 
 }  // namespace
 
-class OfflinePageModelTest
+class OfflinePageModelImplTest
     : public testing::Test,
       public OfflinePageModel::Observer,
       public OfflinePageTestArchiver::Observer,
-      public base::SupportsWeakPtr<OfflinePageModelTest> {
+      public base::SupportsWeakPtr<OfflinePageModelImplTest> {
  public:
-  OfflinePageModelTest();
-  ~OfflinePageModelTest() override;
+  OfflinePageModelImplTest();
+  ~OfflinePageModelImplTest() override;
 
   void SetUp() override;
   void TearDown() override;
@@ -96,7 +96,7 @@ class OfflinePageModelTest
       const GURL& url,
       OfflinePageArchiver::ArchiverResult result);
   std::unique_ptr<OfflinePageMetadataStore> BuildStore();
-  std::unique_ptr<OfflinePageModel> BuildModel(
+  std::unique_ptr<OfflinePageModelImpl> BuildModel(
       std::unique_ptr<OfflinePageMetadataStore> store);
   void ResetModel();
 
@@ -121,8 +121,7 @@ class OfflinePageModelTest
                                   ClientId client_id,
                                   OfflinePageArchiver::ArchiverResult result);
 
-  void DeletePage(int64_t offline_id,
-                  const DeletePageCallback& callback) {
+  void DeletePage(int64_t offline_id, const DeletePageCallback& callback) {
     std::vector<int64_t> offline_ids;
     offline_ids.push_back(offline_id);
     model()->DeletePagesByOfflineId(offline_ids, callback);
@@ -140,17 +139,13 @@ class OfflinePageModelTest
 
   SingleOfflinePageItemResult GetPageByOfflineURL(const GURL& offline_url);
 
-  OfflinePageModel* model() { return model_.get(); }
+  OfflinePageModelImpl* model() { return model_.get(); }
 
   int64_t last_save_offline_id() const { return last_save_offline_id_; }
 
-  SavePageResult last_save_result() const {
-    return last_save_result_;
-  }
+  SavePageResult last_save_result() const { return last_save_result_; }
 
-  DeletePageResult last_delete_result() const {
-    return last_delete_result_;
-  }
+  DeletePageResult last_delete_result() const { return last_delete_result_; }
 
   int64_t last_deleted_offline_id() const { return last_deleted_offline_id_; }
 
@@ -171,7 +166,7 @@ class OfflinePageModelTest
   base::ThreadTaskRunnerHandle task_runner_handle_;
   base::ScopedTempDir temp_dir_;
 
-  std::unique_ptr<OfflinePageModel> model_;
+  std::unique_ptr<OfflinePageModelImpl> model_;
   SavePageResult last_save_result_;
   int64_t last_save_offline_id_;
   DeletePageResult last_delete_result_;
@@ -185,7 +180,7 @@ class OfflinePageModelTest
   bool last_expire_page_result_;
 };
 
-OfflinePageModelTest::OfflinePageModelTest()
+OfflinePageModelImplTest::OfflinePageModelImplTest()
     : task_runner_(new base::TestMockTimeTaskRunner),
       task_runner_handle_(task_runner_),
       last_save_result_(SavePageResult::CANCELLED),
@@ -193,86 +188,88 @@ OfflinePageModelTest::OfflinePageModelTest()
       last_delete_result_(DeletePageResult::CANCELLED),
       last_deleted_offline_id_(-1) {}
 
-OfflinePageModelTest::~OfflinePageModelTest() {
-}
+OfflinePageModelImplTest::~OfflinePageModelImplTest() {}
 
-void OfflinePageModelTest::SetUp() {
+void OfflinePageModelImplTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   model_ = BuildModel(BuildStore());
   model_->AddObserver(this);
   PumpLoop();
 }
 
-void OfflinePageModelTest::TearDown() {
+void OfflinePageModelImplTest::TearDown() {
   model_->RemoveObserver(this);
   model_.reset();
   PumpLoop();
 }
 
-void OfflinePageModelTest::OfflinePageModelLoaded(OfflinePageModel* model) {
+void OfflinePageModelImplTest::OfflinePageModelLoaded(OfflinePageModel* model) {
   ASSERT_EQ(model_.get(), model);
 }
 
-void OfflinePageModelTest::OfflinePageModelChanged(OfflinePageModel* model) {
+void OfflinePageModelImplTest::OfflinePageModelChanged(
+    OfflinePageModel* model) {
   ASSERT_EQ(model_.get(), model);
 }
 
-void OfflinePageModelTest::OfflinePageDeleted(int64_t offline_id,
-                                              const ClientId& client_id) {
+void OfflinePageModelImplTest::OfflinePageDeleted(int64_t offline_id,
+                                                  const ClientId& client_id) {
   last_deleted_offline_id_ = offline_id;
   last_deleted_client_id_ = client_id;
 }
 
-void OfflinePageModelTest::SetLastPathCreatedByArchiver(
+void OfflinePageModelImplTest::SetLastPathCreatedByArchiver(
     const base::FilePath& file_path) {
   last_archiver_path_ = file_path;
 }
 
-void OfflinePageModelTest::OnSavePageDone(SavePageResult result,
-                                          int64_t offline_id) {
+void OfflinePageModelImplTest::OnSavePageDone(SavePageResult result,
+                                              int64_t offline_id) {
   last_save_result_ = result;
   last_save_offline_id_ = offline_id;
 }
 
-void OfflinePageModelTest::OnDeletePageDone(DeletePageResult result) {
+void OfflinePageModelImplTest::OnDeletePageDone(DeletePageResult result) {
   last_delete_result_ = result;
 }
 
-void OfflinePageModelTest::OnHasPagesDone(bool result) {
+void OfflinePageModelImplTest::OnHasPagesDone(bool result) {
   last_has_pages_result_ = result;
 }
 
-void OfflinePageModelTest::OnCheckPagesExistOfflineDone(
+void OfflinePageModelImplTest::OnCheckPagesExistOfflineDone(
     const CheckPagesExistOfflineResult& result) {
   last_pages_exist_result_ = result;
 }
 
-void OfflinePageModelTest::OnClearAllDone() {
+void OfflinePageModelImplTest::OnClearAllDone() {
   PumpLoop();
 }
 
-void OfflinePageModelTest::OnStoreUpdateDone(bool /* success - ignored */) {
+void OfflinePageModelImplTest::OnStoreUpdateDone(bool /* success - ignored */) {
 }
 
-std::unique_ptr<OfflinePageTestArchiver> OfflinePageModelTest::BuildArchiver(
+std::unique_ptr<OfflinePageTestArchiver>
+OfflinePageModelImplTest::BuildArchiver(
     const GURL& url,
     OfflinePageArchiver::ArchiverResult result) {
   return std::unique_ptr<OfflinePageTestArchiver>(new OfflinePageTestArchiver(
       this, url, result, kTestFileSize, base::ThreadTaskRunnerHandle::Get()));
 }
 
-std::unique_ptr<OfflinePageMetadataStore> OfflinePageModelTest::BuildStore() {
+std::unique_ptr<OfflinePageMetadataStore>
+OfflinePageModelImplTest::BuildStore() {
   return std::unique_ptr<OfflinePageMetadataStore>(
       new OfflinePageTestStore(base::ThreadTaskRunnerHandle::Get()));
 }
 
-std::unique_ptr<OfflinePageModel> OfflinePageModelTest::BuildModel(
+std::unique_ptr<OfflinePageModelImpl> OfflinePageModelImplTest::BuildModel(
     std::unique_ptr<OfflinePageMetadataStore> store) {
-  return std::unique_ptr<OfflinePageModel>(new OfflinePageModel(
+  return std::unique_ptr<OfflinePageModelImpl>(new OfflinePageModelImpl(
       std::move(store), temp_dir_.path(), base::ThreadTaskRunnerHandle::Get()));
 }
 
-void OfflinePageModelTest::ResetModel() {
+void OfflinePageModelImplTest::ResetModel() {
   model_->RemoveObserver(this);
   OfflinePageTestStore* old_store = GetStore();
   std::unique_ptr<OfflinePageMetadataStore> new_store(
@@ -282,15 +279,15 @@ void OfflinePageModelTest::ResetModel() {
   PumpLoop();
 }
 
-void OfflinePageModelTest::PumpLoop() {
+void OfflinePageModelImplTest::PumpLoop() {
   task_runner_->RunUntilIdle();
 }
 
-void OfflinePageModelTest::FastForwardBy(base::TimeDelta delta) {
+void OfflinePageModelImplTest::FastForwardBy(base::TimeDelta delta) {
   task_runner_->FastForwardBy(delta);
 }
 
-void OfflinePageModelTest::ResetResults() {
+void OfflinePageModelImplTest::ResetResults() {
   last_save_result_ = SavePageResult::CANCELLED;
   last_delete_result_ = DeletePageResult::CANCELLED;
   last_archiver_path_.clear();
@@ -298,11 +295,11 @@ void OfflinePageModelTest::ResetResults() {
   last_cleared_pages_count_ = 0;
 }
 
-OfflinePageTestStore* OfflinePageModelTest::GetStore() {
+OfflinePageTestStore* OfflinePageModelImplTest::GetStore() {
   return static_cast<OfflinePageTestStore*>(model()->GetStoreForTesting());
 }
 
-std::pair<SavePageResult, int64_t> OfflinePageModelTest::SavePage(
+std::pair<SavePageResult, int64_t> OfflinePageModelImplTest::SavePage(
     const GURL& url,
     ClientId client_id) {
   SavePageWithArchiverResult(
@@ -311,96 +308,96 @@ std::pair<SavePageResult, int64_t> OfflinePageModelTest::SavePage(
   return std::make_pair(last_save_result_, last_save_offline_id_);
 }
 
-void OfflinePageModelTest::SavePageWithArchiverResult(
+void OfflinePageModelImplTest::SavePageWithArchiverResult(
     const GURL& url,
     ClientId client_id,
     OfflinePageArchiver::ArchiverResult result) {
   std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(url, result));
   model()->SavePage(
       url, client_id, std::move(archiver),
-      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+      base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
 }
 
-MultipleOfflinePageItemResult OfflinePageModelTest::GetAllPages() {
+MultipleOfflinePageItemResult OfflinePageModelImplTest::GetAllPages() {
   MultipleOfflinePageItemResult result;
   model()->GetAllPages(
-      base::Bind(&OfflinePageModelTest::OnGetMultipleOfflinePageItemsResult,
+      base::Bind(&OfflinePageModelImplTest::OnGetMultipleOfflinePageItemsResult,
                  AsWeakPtr(), base::Unretained(&result)));
   PumpLoop();
   return result;
 }
 
-CheckPagesExistOfflineResult OfflinePageModelTest::CheckPagesExistOffline(
+CheckPagesExistOfflineResult OfflinePageModelImplTest::CheckPagesExistOffline(
     std::set<GURL> pages) {
   model()->CheckPagesExistOffline(
-      pages, base::Bind(&OfflinePageModelTest::OnCheckPagesExistOfflineDone,
+      pages, base::Bind(&OfflinePageModelImplTest::OnCheckPagesExistOfflineDone,
                         AsWeakPtr()));
   PumpLoop();
   return last_pages_exist_result_;
 }
 
-MultipleOfflineIdResult OfflinePageModelTest::GetOfflineIdsForClientId(
+MultipleOfflineIdResult OfflinePageModelImplTest::GetOfflineIdsForClientId(
     const ClientId& client_id) {
   MultipleOfflineIdResult result;
   model()->GetOfflineIdsForClientId(
       client_id,
-      base::Bind(&OfflinePageModelTest::OnGetOfflineIdsForClientIdDone,
+      base::Bind(&OfflinePageModelImplTest::OnGetOfflineIdsForClientIdDone,
                  AsWeakPtr(), base::Unretained(&result)));
   PumpLoop();
   return result;
 }
 
-void OfflinePageModelTest::OnGetOfflineIdsForClientIdDone(
+void OfflinePageModelImplTest::OnGetOfflineIdsForClientIdDone(
     MultipleOfflineIdResult* storage,
     const MultipleOfflineIdResult& result) {
   *storage = result;
 }
 
-SingleOfflinePageItemResult OfflinePageModelTest::GetPageByOfflineId(
+SingleOfflinePageItemResult OfflinePageModelImplTest::GetPageByOfflineId(
     int64_t offline_id) {
   SingleOfflinePageItemResult result;
   model()->GetPageByOfflineId(
       offline_id,
-      base::Bind(&OfflinePageModelTest::OnGetSingleOfflinePageItemResult,
+      base::Bind(&OfflinePageModelImplTest::OnGetSingleOfflinePageItemResult,
                  AsWeakPtr(), base::Unretained(&result)));
   PumpLoop();
   return result;
 }
 
-SingleOfflinePageItemResult OfflinePageModelTest::GetPageByOfflineURL(
+SingleOfflinePageItemResult OfflinePageModelImplTest::GetPageByOfflineURL(
     const GURL& offline_url) {
   SingleOfflinePageItemResult result;
   model()->GetPageByOfflineURL(
       offline_url,
-      base::Bind(&OfflinePageModelTest::OnGetSingleOfflinePageItemResult,
+      base::Bind(&OfflinePageModelImplTest::OnGetSingleOfflinePageItemResult,
                  AsWeakPtr(), base::Unretained(&result)));
   PumpLoop();
   return result;
 }
 
-void OfflinePageModelTest::OnGetSingleOfflinePageItemResult(
+void OfflinePageModelImplTest::OnGetSingleOfflinePageItemResult(
     SingleOfflinePageItemResult* storage,
     const SingleOfflinePageItemResult& result) {
   *storage = result;
 }
 
-void OfflinePageModelTest::OnGetMultipleOfflinePageItemsResult(
+void OfflinePageModelImplTest::OnGetMultipleOfflinePageItemsResult(
     MultipleOfflinePageItemResult* storage,
     const MultipleOfflinePageItemResult& result) {
   *storage = result;
 }
 
-void OfflinePageModelTest::OnPagesExpired(bool result) {
+void OfflinePageModelImplTest::OnPagesExpired(bool result) {
   last_expire_page_result_ = result;
 }
 
-base::Optional<OfflinePageItem> OfflinePageModelTest::GetPagesByOnlineURL(
+base::Optional<OfflinePageItem> OfflinePageModelImplTest::GetPagesByOnlineURL(
     const GURL& online_url) {
   MultipleOfflinePageItemResult result;
   model()->GetPagesByOnlineURL(
       online_url,
-      base::Bind(&OfflinePageModelTest::OnGetMultipleOfflinePageItemsResult,
+      base::Bind(&OfflinePageModelImplTest::OnGetMultipleOfflinePageItemsResult,
                  AsWeakPtr(), base::Unretained(&result)));
   PumpLoop();
   if (result.size() > 0)
@@ -408,15 +405,15 @@ base::Optional<OfflinePageItem> OfflinePageModelTest::GetPagesByOnlineURL(
   return base::nullopt;
 }
 
-bool OfflinePageModelTest::HasPages(std::string name_space) {
+bool OfflinePageModelImplTest::HasPages(std::string name_space) {
   model()->HasPages(
       name_space,
-      base::Bind(&OfflinePageModelTest::OnHasPagesDone, AsWeakPtr()));
+      base::Bind(&OfflinePageModelImplTest::OnHasPagesDone, AsWeakPtr()));
   PumpLoop();
   return last_has_pages_result_;
 }
 
-TEST_F(OfflinePageModelTest, SavePageSuccessful) {
+TEST_F(OfflinePageModelImplTest, SavePageSuccessful) {
   EXPECT_FALSE(HasPages(kTestClientNamespace));
   SavePage(kTestUrl, kTestClientId1);
   EXPECT_TRUE(HasPages(kTestClientNamespace));
@@ -445,63 +442,63 @@ TEST_F(OfflinePageModelTest, SavePageSuccessful) {
   EXPECT_EQ(0, offline_pages[0].flags);
 }
 
-TEST_F(OfflinePageModelTest, SavePageOfflineArchiverCancelled) {
+TEST_F(OfflinePageModelImplTest, SavePageOfflineArchiverCancelled) {
   SavePageWithArchiverResult(
       kTestUrl, kTestClientId1,
       OfflinePageArchiver::ArchiverResult::ERROR_CANCELED);
   EXPECT_EQ(SavePageResult::CANCELLED, last_save_result());
 }
 
-TEST_F(OfflinePageModelTest, SavePageOfflineArchiverDeviceFull) {
+TEST_F(OfflinePageModelImplTest, SavePageOfflineArchiverDeviceFull) {
   SavePageWithArchiverResult(
       kTestUrl, kTestClientId1,
       OfflinePageArchiver::ArchiverResult::ERROR_DEVICE_FULL);
   EXPECT_EQ(SavePageResult::DEVICE_FULL, last_save_result());
 }
 
-TEST_F(OfflinePageModelTest, SavePageOfflineArchiverContentUnavailable) {
+TEST_F(OfflinePageModelImplTest, SavePageOfflineArchiverContentUnavailable) {
   SavePageWithArchiverResult(
       kTestUrl, kTestClientId1,
       OfflinePageArchiver::ArchiverResult::ERROR_CONTENT_UNAVAILABLE);
   EXPECT_EQ(SavePageResult::CONTENT_UNAVAILABLE, last_save_result());
 }
 
-TEST_F(OfflinePageModelTest, SavePageOfflineCreationFailed) {
+TEST_F(OfflinePageModelImplTest, SavePageOfflineCreationFailed) {
   SavePageWithArchiverResult(
       kTestUrl, kTestClientId1,
       OfflinePageArchiver::ArchiverResult::ERROR_ARCHIVE_CREATION_FAILED);
   EXPECT_EQ(SavePageResult::ARCHIVE_CREATION_FAILED, last_save_result());
 }
 
-TEST_F(OfflinePageModelTest, SavePageOfflineArchiverReturnedWrongUrl) {
+TEST_F(OfflinePageModelImplTest, SavePageOfflineArchiverReturnedWrongUrl) {
   std::unique_ptr<OfflinePageTestArchiver> archiver(
       BuildArchiver(GURL("http://other.random.url.com"),
                     OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   model()->SavePage(
       kTestUrl, kTestClientId1, std::move(archiver),
-      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+      base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::ARCHIVE_CREATION_FAILED, last_save_result());
 }
 
-TEST_F(OfflinePageModelTest, SavePageOfflineCreationStoreWriteFailure) {
+TEST_F(OfflinePageModelImplTest, SavePageOfflineCreationStoreWriteFailure) {
   GetStore()->set_test_scenario(
       OfflinePageTestStore::TestScenario::WRITE_FAILED);
   SavePage(kTestUrl, kTestClientId1);
   EXPECT_EQ(SavePageResult::STORE_FAILURE, last_save_result());
 }
 
-TEST_F(OfflinePageModelTest, SavePageLocalFileFailed) {
+TEST_F(OfflinePageModelImplTest, SavePageLocalFileFailed) {
   // Don't create archiver since it will not be needed for pages that are not
   // going to be saved.
   model()->SavePage(
       kFileUrl, kTestClientId1, std::unique_ptr<OfflinePageTestArchiver>(),
-      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+      base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(SavePageResult::SKIPPED, last_save_result());
 }
 
-TEST_F(OfflinePageModelTest, SavePageOfflineArchiverTwoPages) {
+TEST_F(OfflinePageModelImplTest, SavePageOfflineArchiverTwoPages) {
   std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
       kTestUrl, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   // archiver_ptr will be valid until after first PumpLoop() call after
@@ -510,7 +507,7 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverTwoPages) {
   archiver_ptr->set_delayed(true);
   model()->SavePage(
       kTestUrl, kTestClientId1, std::move(archiver),
-      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+      base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
   EXPECT_TRUE(archiver_ptr->create_archive_called());
 
   // Request to save another page.
@@ -569,7 +566,7 @@ TEST_F(OfflinePageModelTest, SavePageOfflineArchiverTwoPages) {
   EXPECT_EQ(0, page2->flags);
 }
 
-TEST_F(OfflinePageModelTest, MarkPageAccessed) {
+TEST_F(OfflinePageModelImplTest, MarkPageAccessed) {
   SavePage(kTestUrl, kTestClientId1);
 
   // This will increase access_count by one.
@@ -585,13 +582,13 @@ TEST_F(OfflinePageModelTest, MarkPageAccessed) {
   EXPECT_EQ(1, offline_pages[0].access_count);
 }
 
-TEST_F(OfflinePageModelTest, GetAllPagesStoreEmpty) {
+TEST_F(OfflinePageModelImplTest, GetAllPagesStoreEmpty) {
   const std::vector<OfflinePageItem>& offline_pages = GetAllPages();
 
   EXPECT_EQ(0UL, offline_pages.size());
 }
 
-TEST_F(OfflinePageModelTest, GetAllPagesStoreFailure) {
+TEST_F(OfflinePageModelImplTest, GetAllPagesStoreFailure) {
   GetStore()->set_test_scenario(
       OfflinePageTestStore::TestScenario::LOAD_FAILED);
   const std::vector<OfflinePageItem>& offline_pages = GetAllPages();
@@ -599,7 +596,7 @@ TEST_F(OfflinePageModelTest, GetAllPagesStoreFailure) {
   EXPECT_EQ(0UL, offline_pages.size());
 }
 
-TEST_F(OfflinePageModelTest, DeletePageSuccessful) {
+TEST_F(OfflinePageModelImplTest, DeletePageSuccessful) {
   OfflinePageTestStore* store = GetStore();
 
   // Save one page.
@@ -619,8 +616,8 @@ TEST_F(OfflinePageModelTest, DeletePageSuccessful) {
   ResetResults();
 
   // Delete one page.
-  DeletePage(offline1,
-             base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+  DeletePage(offline1, base::Bind(&OfflinePageModelImplTest::OnDeletePageDone,
+                                  AsWeakPtr()));
 
   PumpLoop();
 
@@ -631,8 +628,8 @@ TEST_F(OfflinePageModelTest, DeletePageSuccessful) {
   EXPECT_EQ(kTestUrl2, store->GetAllPages()[0].url);
 
   // Delete another page.
-  DeletePage(offline2,
-             base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+  DeletePage(offline2, base::Bind(&OfflinePageModelImplTest::OnDeletePageDone,
+                                  AsWeakPtr()));
 
   ResetResults();
 
@@ -644,7 +641,7 @@ TEST_F(OfflinePageModelTest, DeletePageSuccessful) {
   EXPECT_EQ(0u, store->GetAllPages().size());
 }
 
-TEST_F(OfflinePageModelTest, DeletePageByPredicate) {
+TEST_F(OfflinePageModelImplTest, DeletePageByPredicate) {
   OfflinePageTestStore* store = GetStore();
 
   // Save one page.
@@ -666,7 +663,7 @@ TEST_F(OfflinePageModelTest, DeletePageByPredicate) {
   // Delete the second page.
   model()->DeletePagesByURLPredicate(
       base::Bind(&URLSpecContains, "page.com"),
-      base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+      base::Bind(&OfflinePageModelImplTest::OnDeletePageDone, AsWeakPtr()));
 
   PumpLoop();
 
@@ -681,7 +678,7 @@ TEST_F(OfflinePageModelTest, DeletePageByPredicate) {
   // Delete the first page.
   model()->DeletePagesByURLPredicate(
       base::Bind(&URLSpecContains, "example.com"),
-      base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+      base::Bind(&OfflinePageModelImplTest::OnDeletePageDone, AsWeakPtr()));
 
   PumpLoop();
 
@@ -691,20 +688,20 @@ TEST_F(OfflinePageModelTest, DeletePageByPredicate) {
   EXPECT_EQ(0u, store->GetAllPages().size());
 }
 
-TEST_F(OfflinePageModelTest, DeletePageNotFound) {
-  DeletePage(1234LL,
-             base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+TEST_F(OfflinePageModelImplTest, DeletePageNotFound) {
+  DeletePage(1234LL, base::Bind(&OfflinePageModelImplTest::OnDeletePageDone,
+                                AsWeakPtr()));
   EXPECT_EQ(DeletePageResult::NOT_FOUND, last_delete_result());
 
   ResetResults();
 
   model()->DeletePagesByURLPredicate(
       base::Bind(&URLSpecContains, "page.com"),
-      base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+      base::Bind(&OfflinePageModelImplTest::OnDeletePageDone, AsWeakPtr()));
   EXPECT_EQ(DeletePageResult::NOT_FOUND, last_delete_result());
 }
 
-TEST_F(OfflinePageModelTest, DeletePageStoreFailureOnRemove) {
+TEST_F(OfflinePageModelImplTest, DeletePageStoreFailureOnRemove) {
   // Save a page.
   SavePage(kTestUrl, kTestClientId1);
   int64_t offline_id = last_save_offline_id();
@@ -713,13 +710,13 @@ TEST_F(OfflinePageModelTest, DeletePageStoreFailureOnRemove) {
   // Try to delete this page.
   GetStore()->set_test_scenario(
       OfflinePageTestStore::TestScenario::REMOVE_FAILED);
-  DeletePage(offline_id,
-             base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+  DeletePage(offline_id, base::Bind(&OfflinePageModelImplTest::OnDeletePageDone,
+                                    AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(DeletePageResult::STORE_FAILURE, last_delete_result());
 }
 
-TEST_F(OfflinePageModelTest, DetectThatOfflineCopyIsMissing) {
+TEST_F(OfflinePageModelImplTest, DetectThatOfflineCopyIsMissing) {
   // Save a page.
   SavePage(kTestUrl, kTestClientId1);
   int64_t offline_id = last_save_offline_id();
@@ -737,7 +734,7 @@ TEST_F(OfflinePageModelTest, DetectThatOfflineCopyIsMissing) {
   EXPECT_EQ(0UL, GetAllPages().size());
 }
 
-TEST_F(OfflinePageModelTest, DetectThatOfflineCopyIsMissingAfterLoad) {
+TEST_F(OfflinePageModelImplTest, DetectThatOfflineCopyIsMissingAfterLoad) {
   // Save a page.
   SavePage(kTestUrl, kTestClientId1);
   PumpLoop();
@@ -756,7 +753,7 @@ TEST_F(OfflinePageModelTest, DetectThatOfflineCopyIsMissingAfterLoad) {
   EXPECT_EQ(0UL, GetAllPages().size());
 }
 
-TEST_F(OfflinePageModelTest, DeleteMultiplePages) {
+TEST_F(OfflinePageModelImplTest, DeleteMultiplePages) {
   OfflinePageTestStore* store = GetStore();
 
   // Save 3 pages.
@@ -764,7 +761,7 @@ TEST_F(OfflinePageModelTest, DeleteMultiplePages) {
       kTestUrl, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   model()->SavePage(
       kTestUrl, kTestClientId1, std::move(archiver),
-      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+      base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   int64_t offline1 = last_save_offline_id();
 
@@ -772,7 +769,7 @@ TEST_F(OfflinePageModelTest, DeleteMultiplePages) {
       kTestUrl2, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   model()->SavePage(
       kTestUrl2, kTestClientId2, std::move(archiver2),
-      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+      base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
   int64_t offline2 = last_save_offline_id();
 
@@ -780,7 +777,7 @@ TEST_F(OfflinePageModelTest, DeleteMultiplePages) {
       kTestUrl3, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   model()->SavePage(
       kTestUrl3, kTestClientId3, std::move(archiver3),
-      base::Bind(&OfflinePageModelTest::OnSavePageDone, AsWeakPtr()));
+      base::Bind(&OfflinePageModelImplTest::OnSavePageDone, AsWeakPtr()));
   PumpLoop();
 
   EXPECT_EQ(3u, store->GetAllPages().size());
@@ -792,7 +789,7 @@ TEST_F(OfflinePageModelTest, DeleteMultiplePages) {
   ids_to_delete.push_back(23434LL);  // Non-existent ID.
   model()->DeletePagesByOfflineId(
       ids_to_delete,
-      base::Bind(&OfflinePageModelTest::OnDeletePageDone, AsWeakPtr()));
+      base::Bind(&OfflinePageModelImplTest::OnDeletePageDone, AsWeakPtr()));
   PumpLoop();
 
   // Success is expected if at least one page is deleted successfully.
@@ -800,7 +797,7 @@ TEST_F(OfflinePageModelTest, DeleteMultiplePages) {
   EXPECT_EQ(1u, store->GetAllPages().size());
 }
 
-TEST_F(OfflinePageModelTest, GetPageByOfflineId) {
+TEST_F(OfflinePageModelImplTest, GetPageByOfflineId) {
   SavePage(kTestUrl, kTestClientId1);
   int64_t offline1 = last_save_offline_id();
   SavePage(kTestUrl2, kTestClientId2);
@@ -825,7 +822,7 @@ TEST_F(OfflinePageModelTest, GetPageByOfflineId) {
   EXPECT_FALSE(page_exists);
 }
 
-TEST_F(OfflinePageModelTest, GetPageByOfflineURL) {
+TEST_F(OfflinePageModelImplTest, GetPageByOfflineURL) {
   SavePage(kTestUrl, kTestClientId1);
   int64_t offline1 = last_save_offline_id();
 
@@ -853,7 +850,7 @@ TEST_F(OfflinePageModelTest, GetPageByOfflineURL) {
   EXPECT_TRUE(page == base::nullopt);
 }
 
-TEST_F(OfflinePageModelTest, GetPagesByOnlineURL) {
+TEST_F(OfflinePageModelImplTest, GetPagesByOnlineURL) {
   SavePage(kTestUrl, kTestClientId1);
   SavePage(kTestUrl2, kTestClientId2);
 
@@ -869,7 +866,7 @@ TEST_F(OfflinePageModelTest, GetPagesByOnlineURL) {
   EXPECT_TRUE(base::nullopt == page);
 }
 
-TEST_F(OfflinePageModelTest, CheckPagesExistOffline) {
+TEST_F(OfflinePageModelImplTest, CheckPagesExistOffline) {
   SavePage(kTestUrl, kTestClientId1);
   SavePage(kTestUrl2, kTestClientId2);
 
@@ -885,7 +882,7 @@ TEST_F(OfflinePageModelTest, CheckPagesExistOffline) {
   EXPECT_EQ(existing_pages.end(), existing_pages.find(kTestUrl3));
 }
 
-TEST_F(OfflinePageModelTest, CanSavePage) {
+TEST_F(OfflinePageModelImplTest, CanSavePage) {
   EXPECT_TRUE(OfflinePageModel::CanSavePage(GURL("http://foo")));
   EXPECT_TRUE(OfflinePageModel::CanSavePage(GURL("https://foo")));
   EXPECT_FALSE(OfflinePageModel::CanSavePage(GURL("file:///foo")));
@@ -894,7 +891,7 @@ TEST_F(OfflinePageModelTest, CanSavePage) {
   EXPECT_FALSE(OfflinePageModel::CanSavePage(GURL("chrome-native://newtab/")));
 }
 
-TEST_F(OfflinePageModelTest, ClearAll) {
+TEST_F(OfflinePageModelImplTest, ClearAll) {
   SavePage(kTestUrl, kTestClientId1);
   SavePage(kTestUrl2, kTestClientId2);
 
@@ -906,7 +903,7 @@ TEST_F(OfflinePageModelTest, ClearAll) {
 
   // ClearAll should delete all the files and wipe out both cache and store.
   model()->ClearAll(
-      base::Bind(&OfflinePageModelTest::OnClearAllDone, AsWeakPtr()));
+      base::Bind(&OfflinePageModelImplTest::OnClearAllDone, AsWeakPtr()));
   PumpLoop();
   EXPECT_EQ(0UL, GetAllPages().size());
   EXPECT_EQ(0UL, GetStore()->GetAllPages().size());
@@ -919,7 +916,7 @@ TEST_F(OfflinePageModelTest, ClearAll) {
   EXPECT_EQ(1UL, GetStore()->GetAllPages().size());
 }
 
-TEST_F(OfflinePageModelTest, SaveRetrieveMultipleClientIds) {
+TEST_F(OfflinePageModelImplTest, SaveRetrieveMultipleClientIds) {
   EXPECT_FALSE(HasPages(kTestClientNamespace));
   SavePage(kTestUrl, kTestClientId1);
   int64_t offline1 = last_save_offline_id();
@@ -943,7 +940,7 @@ TEST_F(OfflinePageModelTest, SaveRetrieveMultipleClientIds) {
   EXPECT_TRUE(id_set.find(offline2) != id_set.end());
 }
 
-TEST_F(OfflinePageModelTest, GetBestPage) {
+TEST_F(OfflinePageModelImplTest, GetBestPage) {
   // We will save 3 pages - two for the same URL, and one for a different URL.
   // Correct behavior will pick the most recently saved page for the correct
   // URL.
@@ -964,7 +961,7 @@ TEST_F(OfflinePageModelTest, GetBestPage) {
   EXPECT_EQ(std::get<1>(saved_pages[1]), offline_page->offline_id);
 }
 
-TEST_F(OfflinePageModelTest, ExpirePages) {
+TEST_F(OfflinePageModelImplTest, ExpirePages) {
   // We will save 3 pages and then expire 2 of them.
   std::pair<SavePageResult, int64_t> saved_pages[3];
   saved_pages[0] = SavePage(kTestUrl, kTestClientId1);
@@ -985,7 +982,7 @@ TEST_F(OfflinePageModelTest, ExpirePages) {
 
   model()->ExpirePages(
       pages_to_expire, expiration_time,
-      base::Bind(&OfflinePageModelTest::OnPagesExpired, AsWeakPtr()));
+      base::Bind(&OfflinePageModelImplTest::OnPagesExpired, AsWeakPtr()));
   PumpLoop();
 
   const std::vector<OfflinePageItem>& offline_pages = GetAllPages();
