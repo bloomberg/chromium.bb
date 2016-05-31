@@ -47,7 +47,7 @@ DesktopAutomationHandler = function(node) {
   this.addListener_(e.ariaAttributeChanged, this.onEventIfInRange);
   this.addListener_(e.checkedStateChanged, this.onEventIfInRange);
   this.addListener_(e.focus, this.onFocus);
-  this.addListener_(e.hover, this.onEventWithFlushedOutput);
+  this.addListener_(e.hover, this.onHover);
   this.addListener_(e.loadComplete, this.onLoadComplete);
   this.addListener_(e.menuEnd, this.onMenuEnd);
   this.addListener_(e.menuListItemSelected, this.onEventIfSelected);
@@ -155,6 +155,17 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onEventWithFlushedOutput: function(evt) {
+    Output.flushNextSpeechUtterance();
+    this.onEventDefault(evt);
+  },
+
+  /**
+   * @param {!AutomationEvent} evt
+   */
+  onHover: function(evt) {
+    if (ChromeVoxState.instance.currentRange &&
+        evt.target == ChromeVoxState.instance.currentRange.start.node)
+      return;
     Output.flushNextSpeechUtterance();
     this.onEventDefault(evt);
   },
