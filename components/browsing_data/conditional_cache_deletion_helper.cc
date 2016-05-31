@@ -62,10 +62,15 @@ ConditionalCacheDeletionHelper::~ConditionalCacheDeletionHelper() {
 
 void ConditionalCacheDeletionHelper::IterateOverEntries(int error) {
   while (error != net::ERR_IO_PENDING) {
-    // Delete the entry obtained in the previous iteration. The iterator is
-    // already one step forward, so it won't be invalidated.
-    if (previous_entry_ && condition_.Run(previous_entry_))
+    // If the entry obtained in the previous iteration matches the condition,
+    // mark it for deletion. The iterator is already one step forward, so it
+    // won't be invalidated. Always close the previous entry so it does not
+    // leak.
+    if (previous_entry_) {
+      if (condition_.Run(previous_entry_))
         previous_entry_->Doom();
+      previous_entry_->Close();
+    }
 
     if (error == net::ERR_FAILED) {
       // The iteration finished successfuly or we can no longer iterate

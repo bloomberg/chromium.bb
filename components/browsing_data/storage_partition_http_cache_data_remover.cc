@@ -178,7 +178,7 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
         // |cache_| can be null if it cannot be initialized.
         if (cache_) {
           if (!url_predicate_.is_null()) {
-            (new ConditionalCacheDeletionHelper(
+            rv = (new ConditionalCacheDeletionHelper(
                 cache_,
                 ConditionalCacheDeletionHelper::CreateURLAndTimeCondition(
                     url_predicate_,

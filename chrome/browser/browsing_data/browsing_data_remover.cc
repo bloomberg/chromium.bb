@@ -926,10 +926,15 @@ void BrowsingDataRemover::RemoveImpl(
           content::StoragePartition::QUOTA_MANAGED_STORAGE_MASK_PERSISTENT;
     }
 
+    // If cookies are supposed to be conditionally deleted from the storage
+    // partition, create a cookie matcher function.
     content::StoragePartition::CookieMatcherFunction cookie_matcher;
-    if (!filter_builder.IsEmptyBlacklist()) {
+    if (!filter_builder.IsEmptyBlacklist() &&
+        (storage_partition_remove_mask &
+            content::StoragePartition::REMOVE_DATA_MASK_COOKIES)) {
       cookie_matcher = filter_builder.BuildCookieFilter();
     }
+
     storage_partition->ClearData(
         storage_partition_remove_mask, quota_storage_remove_mask,
         base::Bind(&DoesOriginMatchMaskAndUrls, origin_type_mask_, filter),

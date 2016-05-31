@@ -3,13 +3,19 @@
 // found in the LICENSE file.
 
 #include <stddef.h>
+#include <memory>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
+#include "chrome/browser/browsing_data/cache_counter.h"
+#include "chrome/browser/browsing_data/origin_filter_builder.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -25,8 +31,9 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/http/transport_security_state.h"
-#include "net/test/url_request/url_request_mock_http_job.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,10 +41,7 @@
 using content::BrowserThread;
 
 namespace {
-void SetUrlRequestMock(const base::FilePath& path) {
-  net::URLRequestMockHTTPJob::AddUrlHandlers(path,
-                                             BrowserThread::GetBlockingPool());
-}
+static const char* kExampleHost = "example.com";
 }
 
 class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
@@ -47,8 +51,9 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     base::FilePath path;
     PathService::Get(content::DIR_TEST_DATA, &path);
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE, base::Bind(&SetUrlRequestMock, path));
+    host_resolver()->AddRule(kExampleHost, "127.0.0.1");
+    embedded_test_server()->ServeFilesFromDirectory(path);
+    ASSERT_TRUE(embedded_test_server()->Start());
   }
 
   void RunScriptAndCheckResult(const std::string& script,
@@ -90,6 +95,21 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     VerifyDownloadCount(1u);
   }
 
+  BrowsingDataCounter::ResultInt GetCacheSize() {
+    base::RunLoop run_loop;
+    BrowsingDataCounter::ResultInt size;
+
+    CacheCounter counter;
+    counter.Init(browser()->profile(),
+                 base::Bind(&BrowsingDataRemoverBrowserTest::OnCacheSizeResult,
+                            base::Unretained(this),
+                            base::Unretained(&run_loop),
+                            base::Unretained(&size)));
+    counter.Restart();
+    run_loop.Run();
+    return size;
+  }
+
   void RemoveAndWait(int remove_mask) {
     BrowsingDataRemover* remover =
         BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
@@ -97,6 +117,31 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     remover->Remove(BrowsingDataRemover::Period(BrowsingDataRemover::LAST_HOUR),
                     remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
     completion_observer.BlockUntilCompletion();
+  }
+
+  void RemoveWithFilterAndWait(
+      int remove_mask,
+      const BrowsingDataFilterBuilder& filter_builder) {
+    BrowsingDataRemover* remover =
+        BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
+    BrowsingDataRemoverCompletionObserver completion_observer(remover);
+    remover->RemoveWithFilter(
+        BrowsingDataRemover::Period(BrowsingDataRemover::LAST_HOUR),
+        remove_mask, BrowsingDataHelper::UNPROTECTED_WEB, filter_builder);
+    completion_observer.BlockUntilCompletion();
+  }
+
+ private:
+  void OnCacheSizeResult(
+      base::RunLoop* run_loop,
+      BrowsingDataCounter::ResultInt* out_size,
+      std::unique_ptr<BrowsingDataCounter::Result> result) {
+    if (!result->Finished())
+      return;
+
+    *out_size = static_cast<BrowsingDataCounter::FinishedResult*>(
+        result.get())->Value();
+    run_loop->Quit();
   }
 };
 
@@ -161,7 +206,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, DownloadProhibited) {
 
 // Verify can modify database after deleting it.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
-  GURL url(net::URLRequestMockHTTPJob::GetMockUrl("simple_database.html"));
+  GURL url = embedded_test_server()->GetURL("/simple_database.html");
+  LOG(ERROR) << url;
   ui_test_utils::NavigateToURL(browser(), url);
 
   RunScriptAndCheckResult("createTable()", "done");
@@ -174,6 +220,45 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Database) {
   RunScriptAndCheckResult("createTable()", "done");
   RunScriptAndCheckResult("insertRecord('text2')", "done");
   RunScriptAndCheckResult("getRecords()", "text2");
+}
+
+// Verify that cache deleting cache finishes successfully. Complete deletion
+// of cache should leave it empty, and partial deletion should leave nonzero
+// amount of data. Note that this tests the integration of BrowsingDataRemover
+// with ConditionalCacheDeletionHelper. Whether ConditionalCacheDeletionHelper
+// actually deletes the correct entries is tested
+// in ConditionalCacheDeletionHelperBrowsertest.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
+  // Load several resources.
+  GURL url1 = embedded_test_server()->GetURL("/simple.html");
+  GURL url2 = embedded_test_server()->GetURL(kExampleHost, "/simple.html");
+  ASSERT_FALSE(url::IsSameOriginWith(url1, url2));
+  ui_test_utils::NavigateToURL(browser(), url1);
+  ui_test_utils::NavigateToURL(browser(), url2);
+
+  // The cache is nonempty, because we created entries by visiting websites.
+  BrowsingDataCounter::ResultInt original_size = GetCacheSize();
+  EXPECT_GT(original_size, 0);
+
+  // Partially delete cache data. Delete data for localhost, which is the origin
+  // of |url1|, but not for |kExampleHost|, which is the origin of |url2|.
+  OriginFilterBuilder filter_builder(OriginFilterBuilder::WHITELIST);
+  filter_builder.AddOrigin(url::Origin(url1));
+  RemoveWithFilterAndWait(BrowsingDataRemover::REMOVE_CACHE, filter_builder);
+
+  // After the partial deletion, the cache should be smaller but still nonempty.
+  BrowsingDataCounter::ResultInt new_size = GetCacheSize();
+  EXPECT_LT(new_size, original_size);
+
+  // Another partial deletion with the same filter should have no effect.
+  RemoveWithFilterAndWait(BrowsingDataRemover::REMOVE_CACHE, filter_builder);
+  EXPECT_EQ(new_size, GetCacheSize());
+
+  // Delete the remaining data.
+  RemoveAndWait(BrowsingDataRemover::REMOVE_CACHE);
+
+  // The cache is empty.
+  EXPECT_EQ(0, GetCacheSize());
 }
 
 // Verify that TransportSecurityState data is cleared for REMOVE_CACHE.
