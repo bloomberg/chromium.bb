@@ -4,8 +4,6 @@
 
 #include "content/public/common/mojo_channel_switches.h"
 
-#include "ipc/mojo/ipc_channel_mojo.h"
-
 namespace switches {
 
 // The token to use to construct the message pipe on which to layer ChannelMojo.
