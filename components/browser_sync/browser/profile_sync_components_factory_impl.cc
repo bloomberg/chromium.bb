@@ -29,7 +29,6 @@
 #include "components/sync_bookmarks/bookmark_model_associator.h"
 #include "components/sync_driver/data_type_manager_impl.h"
 #include "components/sync_driver/device_info_data_type_controller.h"
-#include "components/sync_driver/device_info_model_type_controller.h"
 #include "components/sync_driver/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync_driver/glue/sync_backend_host.h"
 #include "components/sync_driver/glue/sync_backend_host_impl.h"
@@ -38,6 +37,7 @@
 #include "components/sync_driver/sync_client.h"
 #include "components/sync_driver/sync_driver_switches.h"
 #include "components/sync_driver/ui_data_type_controller.h"
+#include "components/sync_driver/ui_model_type_controller.h"
 #include "components/sync_sessions/session_data_type_controller.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_request.h"
@@ -67,7 +67,7 @@ using sync_driver::DataTypeManagerObserver;
 using sync_driver::DeviceInfoDataTypeController;
 using sync_driver::ProxyDataTypeController;
 using sync_driver::UIDataTypeController;
-using sync_driver_v2::DeviceInfoModelTypeController;
+using sync_driver_v2::UIModelTypeController;
 
 namespace {
 
@@ -145,8 +145,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   // TODO(stanisc): can DEVICE_INFO be one of disabled datatypes?
   if (channel_ == version_info::Channel::UNKNOWN &&
       command_line_.HasSwitch(switches::kSyncEnableUSSDeviceInfo)) {
-    sync_service->RegisterDataTypeController(new DeviceInfoModelTypeController(
-        ui_thread_, error_callback, sync_client_));
+    sync_service->RegisterDataTypeController(new UIModelTypeController(
+        ui_thread_, error_callback, syncer::DEVICE_INFO, sync_client_));
   } else {
     sync_service->RegisterDataTypeController(new DeviceInfoDataTypeController(
         ui_thread_, error_callback, sync_client_,
