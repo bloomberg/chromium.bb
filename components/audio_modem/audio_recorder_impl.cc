@@ -114,7 +114,8 @@ void AudioRecorderImpl::InitializeOnAudioThread() {
   stream_ = input_stream_for_testing_
                 ? input_stream_for_testing_.get()
                 : media::AudioManager::Get()->MakeAudioInputStream(
-                      params, media::AudioDeviceDescription::kDefaultDeviceId);
+                      params, media::AudioDeviceDescription::kDefaultDeviceId,
+                      media::AudioManager::LogCallback());
 
   if (!stream_ || !stream_->Open()) {
     LOG(ERROR) << "Failed to open an input stream.";

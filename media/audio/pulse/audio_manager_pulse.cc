@@ -142,14 +142,16 @@ AudioParameters AudioManagerPulse::GetInputStreamParameters(
 }
 
 AudioOutputStream* AudioManagerPulse::MakeLinearOutputStream(
-    const AudioParameters& params) {
+    const AudioParameters& params,
+    const LogCallback& log_callback) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
   return MakeOutputStream(params, AudioDeviceDescription::kDefaultDeviceId);
 }
 
 AudioOutputStream* AudioManagerPulse::MakeLowLatencyOutputStream(
     const AudioParameters& params,
-    const std::string& device_id) {
+    const std::string& device_id,
+    const LogCallback& log_callback) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   return MakeOutputStream(params, device_id.empty()
                                       ? AudioDeviceDescription::kDefaultDeviceId
@@ -157,13 +159,17 @@ AudioOutputStream* AudioManagerPulse::MakeLowLatencyOutputStream(
 }
 
 AudioInputStream* AudioManagerPulse::MakeLinearInputStream(
-    const AudioParameters& params, const std::string& device_id) {
+    const AudioParameters& params,
+    const std::string& device_id,
+    const LogCallback& log_callback) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
   return MakeInputStream(params, device_id);
 }
 
 AudioInputStream* AudioManagerPulse::MakeLowLatencyInputStream(
-    const AudioParameters& params, const std::string& device_id) {
+    const AudioParameters& params,
+    const std::string& device_id,
+    const LogCallback& log_callback) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   return MakeInputStream(params, device_id);
 }

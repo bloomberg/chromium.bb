@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -132,6 +133,10 @@ class MEDIA_EXPORT AudioManager {
   // Audio worker thread (see GetWorkerTaskRunner()).
   virtual void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) = 0;
 
+  // Log callback used for sending log messages from a stream to the object
+  // that manages the stream.
+  using LogCallback = base::Callback<void(const std::string&)>;
+
   // Factory for all the supported stream formats. |params| defines parameters
   // of the audio stream to be created.
   //
@@ -155,7 +160,8 @@ class MEDIA_EXPORT AudioManager {
   // Do not free the returned AudioOutputStream. It is owned by AudioManager.
   virtual AudioOutputStream* MakeAudioOutputStream(
       const AudioParameters& params,
-      const std::string& device_id) = 0;
+      const std::string& device_id,
+      const LogCallback& log_callback) = 0;
 
   // Creates new audio output proxy. A proxy implements
   // AudioOutputStream interface, but unlike regular output stream
@@ -179,7 +185,8 @@ class MEDIA_EXPORT AudioManager {
   // When you are done with it, call |Stop()| and |Close()| to release it.
   virtual AudioInputStream* MakeAudioInputStream(
       const AudioParameters& params,
-      const std::string& device_id) = 0;
+      const std::string& device_id,
+      const LogCallback& log_callback) = 0;
 
   // Returns the task runner used for audio IO.
   // TODO(alokp): Rename to task_runner().

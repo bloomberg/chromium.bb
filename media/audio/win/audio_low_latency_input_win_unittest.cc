@@ -202,7 +202,8 @@ class AudioInputStreamWrapper {
     AudioParameters params = default_params_;
     params.set_frames_per_buffer(frames_per_buffer_);
     AudioInputStream* ais = audio_man_->MakeAudioInputStream(
-        params, AudioDeviceDescription::kDefaultDeviceId);
+        params, AudioDeviceDescription::kDefaultDeviceId,
+        AudioManager::LogCallback());
     EXPECT_TRUE(ais);
     return ais;
   }
@@ -440,7 +441,8 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
   EXPECT_EQ(params.channel_layout(), output_params.channel_layout());
 
   ScopedAudioInputStream stream(audio_manager_->MakeAudioInputStream(
-      params, AudioDeviceDescription::kLoopbackInputDeviceId));
+      params, AudioDeviceDescription::kLoopbackInputDeviceId,
+      AudioManager::LogCallback()));
   ASSERT_TRUE(stream->Open());
   FakeAudioInputCallback sink;
   stream->Start(&sink);

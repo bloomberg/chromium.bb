@@ -379,7 +379,7 @@ void VideoCaptureManager::DoStopDevice(DeviceEntry* entry) {
   DVLOG(3) << "DoStopDevice. Send stop request for device = " << entry->id
            << " serial_id = " << entry->serial_id << ".";
   entry->video_capture_controller()->DoLogOnIOThread(
-      base::StringPrintf("Stopping device: id: %s\n", entry->id.c_str()));
+      base::StringPrintf("Stopping device: id: %s", entry->id.c_str()));
 
   if (entry->video_capture_device()) {
     // |entry->video_capture_device| can be null if creating the device fails.

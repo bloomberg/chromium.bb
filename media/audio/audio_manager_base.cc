@@ -105,7 +105,8 @@ base::string16 AudioManagerBase::GetAudioInputDeviceModel() {
 
 AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
     const AudioParameters& params,
-    const std::string& device_id) {
+    const std::string& device_id,
+    const LogCallback& log_callback) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
 
   if (!params.IsValid()) {
@@ -130,10 +131,10 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
     case AudioParameters::AUDIO_PCM_LINEAR:
       DCHECK(AudioDeviceDescription::IsDefaultDevice(device_id))
           << "AUDIO_PCM_LINEAR supports only the default device.";
-      stream = MakeLinearOutputStream(params);
+      stream = MakeLinearOutputStream(params, log_callback);
       break;
     case AudioParameters::AUDIO_PCM_LOW_LATENCY:
-      stream = MakeLowLatencyOutputStream(params, device_id);
+      stream = MakeLowLatencyOutputStream(params, device_id, log_callback);
       break;
     case AudioParameters::AUDIO_FAKE:
       stream = FakeAudioOutputStream::MakeFakeStream(this, params);
@@ -152,7 +153,8 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
 
 AudioInputStream* AudioManagerBase::MakeAudioInputStream(
     const AudioParameters& params,
-    const std::string& device_id) {
+    const std::string& device_id,
+    const LogCallback& log_callback) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
 
   if (!params.IsValid() || (params.channels() > kMaxInputChannels) ||
@@ -174,10 +176,10 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
   AudioInputStream* stream;
   switch (params.format()) {
     case AudioParameters::AUDIO_PCM_LINEAR:
-      stream = MakeLinearInputStream(params, device_id);
+      stream = MakeLinearInputStream(params, device_id, log_callback);
       break;
     case AudioParameters::AUDIO_PCM_LOW_LATENCY:
-      stream = MakeLowLatencyInputStream(params, device_id);
+      stream = MakeLowLatencyInputStream(params, device_id, log_callback);
       break;
     case AudioParameters::AUDIO_FAKE:
       stream = FakeAudioInputStream::MakeFakeStream(this, params);

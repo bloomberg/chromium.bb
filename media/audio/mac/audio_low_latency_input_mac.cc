@@ -12,6 +12,7 @@
 #include "base/mac/mac_logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #include "media/audio/mac/audio_manager_mac.h"
@@ -236,9 +237,11 @@ static void AddSystemInfoToUMA(bool is_on_battery, int num_resumes) {
 // http://developer.apple.com/library/mac/#technotes/tn2091/_index.html
 // for more details and background regarding this implementation.
 
-AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
-                                       const AudioParameters& input_params,
-                                       AudioDeviceID audio_device_id)
+AUAudioInputStream::AUAudioInputStream(
+    AudioManagerMac* manager,
+    const AudioParameters& input_params,
+    AudioDeviceID audio_device_id,
+    const AudioManager::LogCallback& log_callback)
     : manager_(manager),
       number_of_frames_(input_params.frames_per_buffer()),
       number_of_frames_provided_(0),
@@ -264,8 +267,10 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
       number_of_restart_indications_(0),
       number_of_restart_attempts_(0),
       total_number_of_restart_attempts_(0),
+      log_callback_(log_callback),
       weak_factory_(this) {
   DCHECK(manager_);
+  DCHECK(!log_callback_.Equals(AudioManager::LogCallback()));
 
   // Set up the desired (output) format specified by the client.
   format_.mSampleRate = input_params.sample_rate();
@@ -1645,8 +1650,13 @@ void AUAudioInputStream::ReportAndResetStats() {
   // how often we get no glitches vs the alternative.
   UMA_HISTOGRAM_COUNTS("Media.Audio.Capture.Glitches", glitches_detected_);
 
+  auto lost_frames_ms = (total_lost_frames_ * 1000) / format_.mSampleRate;
+  std::string log_message = base::StringPrintf(
+      "AU in: Total glitches=%d. Total frames lost=%d (%.0lf ms).",
+      glitches_detected_, total_lost_frames_, lost_frames_ms);
+  log_callback_.Run(log_message);
+
   if (glitches_detected_ != 0) {
-    auto lost_frames_ms = (total_lost_frames_ * 1000) / format_.mSampleRate;
     UMA_HISTOGRAM_LONG_TIMES("Media.Audio.Capture.LostFramesInMs",
                              base::TimeDelta::FromMilliseconds(lost_frames_ms));
     auto largest_glitch_ms =
@@ -1656,9 +1666,7 @@ void AUAudioInputStream::ReportAndResetStats() {
         base::TimeDelta::FromMilliseconds(largest_glitch_ms),
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(1),
         50);
-    DLOG(WARNING) << "Total glitches=" << glitches_detected_
-                  << ". Total frames lost=" << total_lost_frames_ << " ("
-                  << lost_frames_ms << ")";
+    DLOG(WARNING) << log_message;
   }
 
   number_of_frames_provided_ = 0;
