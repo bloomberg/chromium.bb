@@ -430,7 +430,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, LevelDBLogFileTest) {
   EXPECT_GT(size, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
+// Disabled due to flakes on Android bots. See crbug.com/616100.
+IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
+                       DISABLED_CanDeleteWhenOverQuotaTest) {
   SimpleTest(GetTestUrl("indexeddb", "fill_up_5k.html"));
   int64_t size = RequestDiskUsage();
   const int kQuotaKilobytes = 2;
