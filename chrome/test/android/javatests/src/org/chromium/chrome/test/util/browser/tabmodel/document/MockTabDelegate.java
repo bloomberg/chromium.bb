@@ -10,7 +10,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.WebContents;
 
 /**
  * Mocks out calls to get Tabs for the DocumentTabModel.
@@ -28,12 +27,6 @@ public class MockTabDelegate extends TabDelegate {
     @Override
     public Tab createFrozenTab(TabState state, int id, int index) {
         return null;
-    }
-
-    @Override
-    public boolean createTabWithWebContents(
-            WebContents webContents, int parentId, TabLaunchType type, String url, int startedBy) {
-        return false;
     }
 
     @Override

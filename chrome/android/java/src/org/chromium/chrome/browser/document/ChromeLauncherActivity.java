@@ -79,15 +79,6 @@ public class ChromeLauncherActivity extends Activity
 
     private static final String TAG = "document_CLActivity";
 
-    /** New instance should be launched in the foreground. */
-    public static final int LAUNCH_MODE_FOREGROUND = 0;
-
-    /** New instance should be launched as an affiliated task. */
-    public static final int LAUNCH_MODE_AFFILIATED = 1;
-
-    /** Existing instance should be retargetted, if possible. */
-    public static final int LAUNCH_MODE_RETARGET = 2;
-
     private static final int FIRST_RUN_EXPERIENCE_REQUEST_CODE = 101;
 
     /**

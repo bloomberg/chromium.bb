@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.tabmodel.document;
 
 import android.content.Intent;
 
+import org.chromium.chrome.browser.ChromeServiceTabLauncher;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.document.DocumentMetricIds;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParams;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -29,15 +29,6 @@ public class AsyncTabCreationParams implements AsyncTabParams {
 
     /** The tab launch request ID from the {@link ChromeServiceTabLauncher}. **/
     private final Integer mRequestId;
-
-    /** How to start a {@link DocumentTab}. */
-    private int mDocumentLaunchMode = ChromeLauncherActivity.LAUNCH_MODE_FOREGROUND;
-
-    /** What caused a {@link DocumentTab} to be created. */
-    private int mDocumentStartedBy = DocumentMetricIds.STARTED_BY_UNKNOWN;
-
-    /** Whether or not the {@link WebContents} should be initially hidden. */
-    private boolean mIsAffiliated;
 
     /** Create parameters for creating a Tab asynchronously. */
     public AsyncTabCreationParams(LoadUrlParams loadUrlParams) {
@@ -62,22 +53,6 @@ public class AsyncTabCreationParams implements AsyncTabParams {
         assert requestId != null;
     }
 
-    public void setDocumentLaunchMode(int launchMode) {
-        mDocumentLaunchMode = launchMode;
-    }
-
-    public void setDocumentStartedBy(int startedBy) {
-        mDocumentStartedBy = startedBy;
-    }
-
-    public int getDocumentLaunchMode() {
-        return mDocumentLaunchMode;
-    }
-
-    public int getDocumentStartedBy() {
-        return mDocumentStartedBy;
-    }
-
     @Override
     public LoadUrlParams getLoadUrlParams() {
         return mLoadUrlParams;
@@ -96,14 +71,6 @@ public class AsyncTabCreationParams implements AsyncTabParams {
     @Override
     public WebContents getWebContents() {
         return mWebContents;
-    }
-
-    public void setIsAffiliated(boolean isAffiliated) {
-        mIsAffiliated = isAffiliated;
-    }
-
-    public boolean isAffiliated() {
-        return mIsAffiliated;
     }
 
     private AsyncTabCreationParams(LoadUrlParams loadUrlParams, Intent originalIntent,

@@ -8,7 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 
-import org.chromium.chrome.browser.document.DocumentMetricIds;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
@@ -51,11 +50,6 @@ public class ChromeServiceTabLauncher extends ServiceTabLauncher {
                 // If we do not find a WebappDataStorage corresponding to this URL, or if it hasn't
                 // been opened recently enough, open the URL in a tab.
                 if (storage == null || !storage.wasLaunchedRecently()) {
-                    // TODO(peter): Determine the intent source based on the |disposition| with
-                    // which the tab is being launched. Right now this is gated by a check in the
-                    // native implementation.
-                    int intentSource = DocumentMetricIds.STARTED_BY_WINDOW_OPEN;
-
                     LoadUrlParams loadUrlParams = new LoadUrlParams(url, PageTransition.LINK);
                     loadUrlParams.setPostData(postData);
                     loadUrlParams.setVerbatimHeaders(extraHeaders);
@@ -63,8 +57,6 @@ public class ChromeServiceTabLauncher extends ServiceTabLauncher {
 
                     AsyncTabCreationParams asyncParams = new AsyncTabCreationParams(loadUrlParams,
                             requestId);
-                    asyncParams.setDocumentStartedBy(intentSource);
-
                     tabDelegate.createNewTab(asyncParams, TabLaunchType.FROM_CHROME_UI,
                             Tab.INVALID_TAB_ID);
                 } else {

@@ -15,8 +15,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 
 /**
- * Deprected class for running Chrome in document mode.  Kept around to force users into the correct
- * {@link Activity}.
+ * Deprecated class for running Chrome in document mode.  Kept around to force users into the
+ * correct {@link Activity}.
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class DocumentActivity extends ChromeActivity {

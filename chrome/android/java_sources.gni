@@ -268,7 +268,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/document/ChromeLauncherActivity.java",
   "java/src/org/chromium/chrome/browser/document/CipherKeyActivity.java",
   "java/src/org/chromium/chrome/browser/document/DocumentActivity.java",
-  "java/src/org/chromium/chrome/browser/document/DocumentMetricIds.java",
   "java/src/org/chromium/chrome/browser/document/DocumentUtils.java",
   "java/src/org/chromium/chrome/browser/document/DocumentWebContentsDelegate.java",
   "java/src/org/chromium/chrome/browser/document/IncognitoDocumentActivity.java",
