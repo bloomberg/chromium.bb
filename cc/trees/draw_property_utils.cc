@@ -313,7 +313,6 @@ static bool LayerNeedsUpdateInternal(LayerType* layer,
 void FindLayersThatNeedUpdates(LayerTreeImpl* layer_tree_impl,
                                const TransformTree& transform_tree,
                                const EffectTree& effect_tree,
-                               LayerImplList* update_layer_list,
                                std::vector<LayerImpl*>* visible_layer_list) {
   for (auto* layer_impl : *layer_tree_impl) {
     bool layer_is_drawn =
@@ -324,17 +323,8 @@ void FindLayersThatNeedUpdates(LayerTreeImpl* layer_tree_impl,
                              effect_tree))
       continue;
 
-    if (LayerNeedsUpdate(layer_impl, layer_is_drawn, transform_tree)) {
+    if (LayerNeedsUpdate(layer_impl, layer_is_drawn, transform_tree))
       visible_layer_list->push_back(layer_impl);
-      update_layer_list->push_back(layer_impl);
-    }
-
-    if (LayerImpl* mask_layer = layer_impl->mask_layer())
-      update_layer_list->push_back(mask_layer);
-    if (LayerImpl* replica_layer = layer_impl->replica_layer()) {
-      if (LayerImpl* mask_layer = replica_layer->mask_layer())
-        update_layer_list->push_back(mask_layer);
-    }
   }
 }
 
@@ -760,7 +750,6 @@ static void ComputeVisibleRectsInternal(
     LayerImpl* root_layer,
     PropertyTrees* property_trees,
     bool can_render_to_separate_surface,
-    LayerImplList* update_layer_list,
     std::vector<LayerImpl*>* visible_layer_list) {
   if (property_trees->non_root_surfaces_enabled !=
       can_render_to_separate_surface) {
@@ -778,9 +767,9 @@ static void ComputeVisibleRectsInternal(
                can_render_to_separate_surface);
   ComputeEffects(&property_trees->effect_tree);
 
-  FindLayersThatNeedUpdates(
-      root_layer->layer_tree_impl(), property_trees->transform_tree,
-      property_trees->effect_tree, update_layer_list, visible_layer_list);
+  FindLayersThatNeedUpdates(root_layer->layer_tree_impl(),
+                            property_trees->transform_tree,
+                            property_trees->effect_tree, visible_layer_list);
   CalculateVisibleRects<LayerImpl>(
       *visible_layer_list, property_trees->clip_tree,
       property_trees->transform_tree, property_trees->effect_tree,
@@ -861,10 +850,9 @@ void ComputeVisibleRects(LayerImpl* root_layer,
       ValidateRenderSurfaceForLayer(layer);
 #endif
   }
-  LayerImplList update_layer_list;
   ComputeVisibleRectsInternal(root_layer, property_trees,
                               can_render_to_separate_surface,
-                              &update_layer_list, visible_layer_list);
+                              visible_layer_list);
 }
 
 bool LayerNeedsUpdate(Layer* layer,
