@@ -105,7 +105,20 @@ public:
     {
         return reinterpret_cast<Return>(ThreadHeap::allocate<Metadata>(size, IsEagerlyFinalizedType<Metadata>::value));
     }
-    static void free(void* address) { }
+
+#if OS(WIN) && COMPILER(MSVC)
+    // MSVC eagerly instantiates the unused 'operator delete',
+    // provide a version that asserts and fails at run-time if
+    // used.
+    // Elsewhere we expect compilation to fail if 'delete' is
+    // attempted used and instantiated with a HeapAllocator-based
+    // object, as HeapAllocator::free is not provided.
+    static void free(void*)
+    {
+        NOTREACHED();
+    }
+#endif
+
     template<typename T>
     static void* newArray(size_t bytes)
     {
