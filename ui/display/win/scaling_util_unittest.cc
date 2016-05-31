@@ -426,6 +426,89 @@ TEST(ScalingUtilTest, CalculateDisplayPlacement2xScale) {
                                 CreateDisplayInfo(50, 650, 1000, 700, 2.0f)));
 }
 
+TEST(ScalingUtilTest, SquaredDistanceBetweenRectsFullyIntersecting) {
+  gfx::Rect rect1(0, 0, 100, 100);
+  gfx::Rect rect2(5, 5, 10, 10);
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(rect1, rect2));
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(rect2, rect1));
+}
+
+TEST(ScalingUtilTest, SquaredDistanceBetweenRectsPartiallyIntersecting) {
+  gfx::Rect rect1(0, 0, 10, 10);
+  gfx::Rect rect2(5, 5, 10, 10);
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(rect1, rect2));
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(rect2, rect1));
+}
+
+TEST(ScalingUtilTest, SquaredDistanceBetweenRectsTouching) {
+  gfx::Rect ref(2, 2, 2, 2);
+
+  gfx::Rect top_left(0, 0, 2, 2);
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(ref, top_left));
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(top_left, ref));
+  gfx::Rect top_left_partial_top(1, 0, 2, 2);
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(ref, top_left_partial_top));
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(top_left_partial_top, ref));
+  gfx::Rect top(2, 0, 2, 2);
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(ref, top));
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(top, ref));
+  gfx::Rect top_right_partial_top(3, 0, 2, 2);
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(ref, top_right_partial_top));
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(top_right_partial_top, ref));
+  gfx::Rect top_right(4, 0, 2, 2);
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(ref, top_right));
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(top_right, ref));
+
+  gfx::Rect top_left_partial_left(0, 1, 2, 2);
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(ref, top_left_partial_left));
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(top_left_partial_left, ref));
+  gfx::Rect left(0, 2, 2, 2);
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(ref, left));
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(left, ref));
+  gfx::Rect bottom_left_partial(0, 3, 2, 2);
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(ref, bottom_left_partial));
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(bottom_left_partial, ref));
+  gfx::Rect bottom_left(0, 4, 2, 2);
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(ref, bottom_left));
+  EXPECT_EQ(0, SquaredDistanceBetweenRects(bottom_left, ref));
+}
+
+TEST(ScalingUtilTest, SquaredDistanceBetweenRectsOverlapping) {
+  gfx::Rect ref(5, 5, 2, 2);
+
+  gfx::Rect top_left_partial_top(4, 0, 2, 2);
+  EXPECT_EQ(9, SquaredDistanceBetweenRects(ref, top_left_partial_top));
+  EXPECT_EQ(9, SquaredDistanceBetweenRects(top_left_partial_top, ref));
+  gfx::Rect top(5, 0, 2, 2);
+  EXPECT_EQ(9, SquaredDistanceBetweenRects(ref, top));
+  EXPECT_EQ(9, SquaredDistanceBetweenRects(top, ref));
+  gfx::Rect top_right_partial(6, 0, 2, 2);
+  EXPECT_EQ(9, SquaredDistanceBetweenRects(ref, top_right_partial));
+  EXPECT_EQ(9, SquaredDistanceBetweenRects(top_right_partial, ref));
+
+  gfx::Rect top_left_partial_left(0, 4, 2, 2);
+  EXPECT_EQ(9, SquaredDistanceBetweenRects(ref, top_left_partial_left));
+  EXPECT_EQ(9, SquaredDistanceBetweenRects(top_left_partial_left, ref));
+  gfx::Rect left(0, 5, 2, 2);
+  EXPECT_EQ(9, SquaredDistanceBetweenRects(ref, left));
+  EXPECT_EQ(9, SquaredDistanceBetweenRects(left, ref));
+  gfx::Rect bottom_left_partial(0, 6, 2, 2);
+  EXPECT_EQ(9, SquaredDistanceBetweenRects(ref, bottom_left_partial));
+  EXPECT_EQ(9, SquaredDistanceBetweenRects(bottom_left_partial, ref));
+}
+
+TEST(ScalingUtilTest, SquaredDistanceBetweenRectsDiagonals) {
+  gfx::Rect ref(5, 5, 2, 2);
+
+  gfx::Rect top_left(0, 0, 2, 2);
+  EXPECT_EQ(18, SquaredDistanceBetweenRects(ref, top_left));
+  EXPECT_EQ(18, SquaredDistanceBetweenRects(top_left, ref));
+
+  gfx::Rect top_right(10, 0, 2, 2);
+  EXPECT_EQ(18, SquaredDistanceBetweenRects(ref, top_right));
+  EXPECT_EQ(18, SquaredDistanceBetweenRects(top_right, ref));
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace win

@@ -14,6 +14,57 @@
 
 namespace {
 
+// Represents the amount of rotation an object has about a coordinate plane.
+enum class CoordinateRotation {
+  COORDINATE_ROTATE_0,
+  COORDINATE_ROTATE_90,
+  COORDINATE_ROTATE_180,
+  COORDINATE_ROTATE_270,
+};
+
+// Returns the CoordinateRotation necessary for |ref| and |other| so that |ref|
+// is positioned on top of |other|.
+CoordinateRotation ComputeCoordinateRotationRefTop(const gfx::Rect& ref,
+                                                   const gfx::Rect& other) {
+  if (ref.bottom() <= other.y())
+    return CoordinateRotation::COORDINATE_ROTATE_0;
+  if (other.right() <= ref.x())
+    return CoordinateRotation::COORDINATE_ROTATE_90;
+  if (other.bottom() <= ref.y())
+    return CoordinateRotation::COORDINATE_ROTATE_180;
+
+  return CoordinateRotation::COORDINATE_ROTATE_270;
+}
+
+gfx::Rect CoordinateRotateRectangle90(const gfx::Rect& rect) {
+  return gfx::Rect(rect.y(), -rect.x() - rect.width(),
+                   rect.height(), rect.width());
+}
+
+gfx::Rect CoordinateRotateRectangle180(const gfx::Rect& rect) {
+  return gfx::Rect(-rect.x() - rect.width(), -rect.y() -rect.height(),
+                   rect.width(), rect.height());
+}
+
+gfx::Rect CoordinateRotateRectangle270(const gfx::Rect& rect) {
+  return gfx::Rect(-rect.y() - rect.height(), rect.x(),
+                   rect.height(), rect.width());
+}
+
+gfx::Rect CoordinateRotateRect(const gfx::Rect& rect,
+                               CoordinateRotation rotation) {
+  switch (rotation) {
+    case CoordinateRotation::COORDINATE_ROTATE_90:
+      return CoordinateRotateRectangle90(rect);
+    case CoordinateRotation::COORDINATE_ROTATE_180:
+      return CoordinateRotateRectangle180(rect);
+    case CoordinateRotation::COORDINATE_ROTATE_270:
+      return CoordinateRotateRectangle270(rect);
+    default:
+      return rect;
+  }
+}
+
 bool InRange(int target, int lower_bound, int upper_bound) {
   return lower_bound <= target && target <= upper_bound;
 }
@@ -167,6 +218,26 @@ DisplayPlacement CalculateDisplayPlacement(const DisplayInfo& parent,
   }
 
   return placement;
+}
+
+// This function rotates the rectangles so that |ref| is always on top of
+// |rect|, allowing the function to concentrate on comparing |ref|'s bottom
+// corners and |rect|'s top corners when the rects don't overlap vertically.
+int64_t SquaredDistanceBetweenRects(const gfx::Rect& ref,
+                                    const gfx::Rect& rect) {
+  if (ref.Intersects(rect))
+    return 0;
+
+  CoordinateRotation degrees = ComputeCoordinateRotationRefTop(ref, rect);
+  gfx::Rect top_rect(CoordinateRotateRect(ref, degrees));
+  gfx::Rect bottom_rect(CoordinateRotateRect(rect, degrees));
+  if (bottom_rect.right() < top_rect.x())
+    return (bottom_rect.top_right() - top_rect.bottom_left()).LengthSquared();
+  else if (top_rect.right() < bottom_rect.x())
+    return (bottom_rect.origin() - top_rect.bottom_right()).LengthSquared();
+
+  int distance = bottom_rect.y() - top_rect.bottom();
+  return distance * distance;
 }
 
 }  // namespace win

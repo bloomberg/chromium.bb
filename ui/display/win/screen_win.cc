@@ -18,14 +18,17 @@
 #include "ui/display/win/scaling_util.h"
 #include "ui/display/win/screen_win_display.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/geometry/size_conversions.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d.h"
 
 namespace display {
 namespace win {
 namespace {
+
+// TODO(robliao): http://crbug.com/615514 Remove when ScreenWin usage is
+// resolved with Desktop Aura and WindowTreeHost.
+ScreenWin* g_screen_win_instance = nullptr;
 
 std::vector<DisplayInfo> FindAndRemoveTouchingDisplayInfos(
     const DisplayInfo& ref_display_info,
@@ -141,6 +144,8 @@ BOOL CALLBACK EnumMonitorCallback(HMONITOR monitor,
   std::vector<DisplayInfo>* display_infos =
       reinterpret_cast<std::vector<DisplayInfo>*>(data);
   DCHECK(display_infos);
+  // TODO(robliao): When ready, replace the GetDPIScale with GetDpiForMonitor
+  // to get the actual DPI for the HMONITOR.
   display_infos->push_back(DisplayInfo(MonitorInfoFromHMONITOR(monitor),
                                        GetDPIScale()));
   return TRUE;
@@ -155,78 +160,114 @@ std::vector<DisplayInfo> GetDisplayInfosFromSystem() {
   return display_infos;
 }
 
+// Returns a point in |to_origin|'s coordinates and position scaled by
+// |scale_factor|.
+gfx::Point ScalePointRelative(const gfx::Point& from_origin,
+                              const gfx::Point& to_origin,
+                              const float scale_factor,
+                              const gfx::Point& point) {
+  gfx::Vector2d from_origin_vector(from_origin.x(), from_origin.y());
+  gfx::Vector2d to_origin_vector(to_origin.x(), to_origin.y());
+  gfx::Point scaled_relative_point(
+      gfx::ScaleToFlooredPoint(point - from_origin_vector, scale_factor));
+  return scaled_relative_point + to_origin_vector;
+}
+
 }  // namespace
 
 ScreenWin::ScreenWin() {
+  DCHECK(!g_screen_win_instance);
+  g_screen_win_instance = this;
   Initialize();
 }
 
-ScreenWin::~ScreenWin() = default;
+ScreenWin::~ScreenWin() {
+  DCHECK_EQ(g_screen_win_instance, this);
+  g_screen_win_instance = nullptr;
+}
 
 // static
 gfx::Point ScreenWin::ScreenToDIPPoint(const gfx::Point& pixel_point) {
-  return ScaleToFlooredPoint(pixel_point, 1.0f / GetDPIScale());
+  const ScreenWinDisplay screen_win_display =
+      GetScreenWinDisplayVia(&ScreenWin::GetScreenWinDisplayNearestScreenPoint,
+                             pixel_point);
+  const display::Display display = screen_win_display.display();
+  return ScalePointRelative(screen_win_display.pixel_bounds().origin(),
+                            display.bounds().origin(),
+                            1.0f / display.device_scale_factor(),
+                            pixel_point);
 }
 
 // static
 gfx::Point ScreenWin::DIPToScreenPoint(const gfx::Point& dip_point) {
-  return ScaleToFlooredPoint(dip_point, GetDPIScale());
+  const ScreenWinDisplay screen_win_display =
+      GetScreenWinDisplayVia(&ScreenWin::GetScreenWinDisplayNearestDIPPoint,
+                             dip_point);
+  const display::Display display = screen_win_display.display();
+  return ScalePointRelative(display.bounds().origin(),
+                            screen_win_display.pixel_bounds().origin(),
+                            display.device_scale_factor(),
+                            dip_point);
 }
 
 // static
 gfx::Point ScreenWin::ClientToDIPPoint(HWND hwnd,
                                        const gfx::Point& client_point) {
-  // TODO(robliao): Get the scale factor from |hwnd|.
-  return ScreenToDIPPoint(client_point);
+  return ScaleToFlooredPoint(client_point, 1.0f / GetScaleFactorForHWND(hwnd));
 }
 
 // static
 gfx::Point ScreenWin::DIPToClientPoint(HWND hwnd, const gfx::Point& dip_point) {
-  // TODO(robliao): Get the scale factor from |hwnd|.
-  return DIPToScreenPoint(dip_point);
+  float scale_factor = GetScaleFactorForHWND(hwnd);
+  return ScaleToFlooredPoint(dip_point, scale_factor);
 }
 
 // static
 gfx::Rect ScreenWin::ScreenToDIPRect(HWND hwnd, const gfx::Rect& pixel_bounds) {
-  // It's important we scale the origin and size separately. If we instead
-  // calculated the size from the floored origin and ceiled right the size could
-  // vary depending upon where the two points land. That would cause problems
-  // for the places this code is used (in particular mapping from native window
-  // bounds to DIPs).
-  return gfx::Rect(ScreenToDIPPoint(pixel_bounds.origin()),
-                   ScreenToDIPSize(hwnd, pixel_bounds.size()));
+  float scale_factor = hwnd ?
+      GetScaleFactorForHWND(hwnd) :
+      GetScreenWinDisplayVia(
+          &ScreenWin::GetScreenWinDisplayNearestScreenRect, pixel_bounds).
+              display().device_scale_factor();
+  gfx::Rect dip_rect = ScaleToEnclosingRect(pixel_bounds, 1.0f / scale_factor);
+  dip_rect.set_origin(ScreenToDIPPoint(pixel_bounds.origin()));
+  return dip_rect;
 }
 
 // static
 gfx::Rect ScreenWin::DIPToScreenRect(HWND hwnd, const gfx::Rect& dip_bounds) {
-  // See comment in ScreenToDIPRect for why we calculate size like this.
-  return gfx::Rect(DIPToScreenPoint(dip_bounds.origin()),
-                   DIPToScreenSize(hwnd, dip_bounds.size()));
+  float scale_factor = hwnd ?
+      GetScaleFactorForHWND(hwnd) :
+      GetScreenWinDisplayVia(
+          &ScreenWin::GetScreenWinDisplayNearestDIPRect, dip_bounds).display().
+              device_scale_factor();
+  gfx::Rect screen_rect = ScaleToEnclosingRect(dip_bounds, scale_factor);
+  screen_rect.set_origin(DIPToScreenPoint(dip_bounds.origin()));
+  return screen_rect;
 }
 
 // static
 gfx::Rect ScreenWin::ClientToDIPRect(HWND hwnd, const gfx::Rect& pixel_bounds) {
-  return ScreenToDIPRect(hwnd, pixel_bounds);
+  return ScaleToEnclosingRect(pixel_bounds, 1.0f / GetScaleFactorForHWND(hwnd));
 }
 
 // static
 gfx::Rect ScreenWin::DIPToClientRect(HWND hwnd, const gfx::Rect& dip_bounds) {
-  return DIPToScreenRect(hwnd, dip_bounds);
+  return ScaleToEnclosingRect(dip_bounds, GetScaleFactorForHWND(hwnd));
 }
 
 // static
 gfx::Size ScreenWin::ScreenToDIPSize(HWND hwnd,
                                      const gfx::Size& size_in_pixels) {
   // Always ceil sizes. Otherwise we may be leaving off part of the bounds.
-  // TODO(robliao): Get the scale factor from |hwnd|.
-  return ScaleToCeiledSize(size_in_pixels, 1.0f / GetDPIScale());
+  return ScaleToCeiledSize(size_in_pixels, 1.0f / GetScaleFactorForHWND(hwnd));
 }
 
 // static
 gfx::Size ScreenWin::DIPToScreenSize(HWND hwnd, const gfx::Size& dip_size) {
+  float scale_factor = GetScaleFactorForHWND(hwnd);
   // Always ceil sizes. Otherwise we may be leaving off part of the bounds.
-  // TODO(robliao): Get the scale factor from |hwnd|.
-  return ScaleToCeiledSize(dip_size, GetDPIScale());
+  return ScaleToCeiledSize(dip_size, scale_factor);
 }
 
 HWND ScreenWin::GetHWNDFromNativeView(gfx::NativeView window) const {
@@ -306,6 +347,18 @@ void ScreenWin::RemoveObserver(display::DisplayObserver* observer) {
   change_notifier_.RemoveObserver(observer);
 }
 
+gfx::Rect ScreenWin::ScreenToDIPRectInWindow(
+    gfx::NativeView view, const gfx::Rect& screen_rect) const {
+  HWND hwnd = view ? GetHWNDFromNativeView(view) : nullptr;
+  return ScreenToDIPRect(hwnd, screen_rect);
+}
+
+gfx::Rect ScreenWin::DIPToScreenRectInWindow(gfx::NativeView view,
+                                             const gfx::Rect& dip_rect) const {
+  HWND hwnd = view ? GetHWNDFromNativeView(view) : nullptr;
+  return DIPToScreenRect(hwnd, dip_rect);
+}
+
 void ScreenWin::UpdateFromDisplayInfos(
     const std::vector<DisplayInfo>& display_infos) {
   screen_win_displays_ = DisplayInfosToScreenWinDisplays(display_infos);
@@ -369,6 +422,39 @@ ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestScreenPoint(
   return GetScreenWinDisplay(MonitorInfoFromScreenPoint(screen_point));
 }
 
+ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestDIPPoint(
+    const gfx::Point& dip_point) const {
+  ScreenWinDisplay primary_screen_win_display;
+  for (const auto& screen_win_display : screen_win_displays_) {
+    display::Display display = screen_win_display.display();
+    const gfx::Rect dip_bounds = display.bounds();
+    if (dip_bounds.Contains(dip_point))
+      return screen_win_display;
+    else if (dip_bounds.origin().IsOrigin())
+      primary_screen_win_display = screen_win_display;
+  }
+  return primary_screen_win_display;
+}
+
+ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestDIPRect(
+    const gfx::Rect& dip_rect) const {
+  ScreenWinDisplay closest_screen_win_display;
+  int64_t closest_distance_squared = INT64_MAX;
+  for (const auto& screen_win_display : screen_win_displays_) {
+    display::Display display = screen_win_display.display();
+    gfx::Rect dip_bounds = display.bounds();
+    int64_t distance_squared = SquaredDistanceBetweenRects(dip_rect,
+                                                           dip_bounds);
+    if (distance_squared == 0) {
+      return screen_win_display;
+    } else if (distance_squared < closest_distance_squared) {
+      closest_distance_squared = distance_squared;
+      closest_screen_win_display = screen_win_display;
+    }
+  }
+  return closest_screen_win_display;
+}
+
 ScreenWinDisplay ScreenWin::GetPrimaryScreenWinDisplay() const {
   MONITORINFOEX monitor_info = MonitorInfoFromWindow(nullptr,
                                                      MONITOR_DEFAULTTOPRIMARY);
@@ -392,6 +478,28 @@ ScreenWinDisplay ScreenWin::GetScreenWinDisplay(
   // default display.
   DCHECK_EQ(screen_win_displays_.size(), 0u);
   return ScreenWinDisplay();
+}
+
+// static
+float ScreenWin::GetScaleFactorForHWND(HWND hwnd) {
+  if (!g_screen_win_instance)
+    return ScreenWinDisplay().display().device_scale_factor();
+
+  DCHECK(hwnd);
+  HWND rootHwnd = g_screen_win_instance->GetRootWindow(hwnd);
+  ScreenWinDisplay screen_win_display =
+      g_screen_win_instance->GetScreenWinDisplayNearestHWND(rootHwnd);
+  return screen_win_display.display().device_scale_factor();
+}
+
+// static
+template <typename Getter, typename GetterType>
+ScreenWinDisplay ScreenWin::GetScreenWinDisplayVia(Getter getter,
+                                                   GetterType value) {
+  if (!g_screen_win_instance)
+    return ScreenWinDisplay();
+
+  return (g_screen_win_instance->*getter)(value);
 }
 
 }  // namespace win

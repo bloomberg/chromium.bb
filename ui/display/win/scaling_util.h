@@ -107,6 +107,40 @@ DISPLAY_EXPORT DisplayPlacement CalculateDisplayPlacement(
     const DisplayInfo& parent,
     const DisplayInfo& current);
 
+// Returns the squared distance between two rects.
+// The distance between two rects is the length of the shortest segment that can
+// be drawn between two rectangles. This segment generally connects two opposing
+// corners between rectangles like this...
+//
+// +----------+
+// |          |
+// +----------+
+//             \  <--- Shortest Segment
+//              \
+//               +---+
+//               |   |
+//               |   |
+//               +---+
+//
+// For rectangles that share coordinates within the same axis, that generally
+// means the segment is parallel to the axis and perpendicular to the edges.
+//
+//                 One of many shortest segments
+//  +----------+  /                            \    +--------+
+//  |          |  |                             \   |        |
+//  |          |  V  +---+                       \  +--------+
+//  |          |-----|   |                        \-->|
+//  +----------+     |   |                            +----+
+//                   |   |                            |    |
+//                   +---+                            +----+
+//
+// For rectangles that intersect each other, the distance is 0.
+//
+// The squared distance is used to avoid taking the square root as the common
+// usage is to compare distances greater than 1 unit.
+DISPLAY_EXPORT int64_t SquaredDistanceBetweenRects(const gfx::Rect& ref,
+                                                   const gfx::Rect& rect);
+
 }  // namespace win
 }  // namespace display
 

@@ -111,6 +111,10 @@ class DISPLAY_EXPORT ScreenWin : public display::Screen {
   display::Display GetPrimaryDisplay() const override;
   void AddObserver(display::DisplayObserver* observer) override;
   void RemoveObserver(display::DisplayObserver* observer) override;
+  gfx::Rect ScreenToDIPRectInWindow(
+      gfx::NativeView view, const gfx::Rect& screen_rect) const override;
+  gfx::Rect DIPToScreenRectInWindow(
+      gfx::NativeView view, const gfx::Rect& dip_rect) const override;
 
   void UpdateFromDisplayInfos(const std::vector<DisplayInfo>& display_infos);
 
@@ -138,10 +142,26 @@ class DISPLAY_EXPORT ScreenWin : public display::Screen {
   ScreenWinDisplay GetScreenWinDisplayNearestScreenPoint(
       const gfx::Point& screen_point) const;
 
+  // Returns the ScreenWinDisplay closest to or enclosing |dip_point|.
+  ScreenWinDisplay GetScreenWinDisplayNearestDIPPoint(
+      const gfx::Point& dip_point) const;
+
+  // Returns the ScreenWinDisplay closest to or enclosing |dip_rect|.
+  ScreenWinDisplay GetScreenWinDisplayNearestDIPRect(
+      const gfx::Rect& dip_rect) const;
+
   // Returns the ScreenWinDisplay corresponding to the primary monitor.
   ScreenWinDisplay GetPrimaryScreenWinDisplay() const;
 
   ScreenWinDisplay GetScreenWinDisplay(const MONITORINFOEX& monitor_info) const;
+
+  static float GetScaleFactorForHWND(HWND hwnd);
+
+  // Returns the result of calling |getter| with |value| on the global
+  // ScreenWin if it exists, otherwise return the default ScreenWinDisplay.
+  template <typename Getter, typename GetterType>
+  static ScreenWinDisplay GetScreenWinDisplayVia(Getter getter,
+                                                 GetterType value);
 
   // Helper implementing the DisplayObserver handling.
   DisplayChangeNotifier change_notifier_;
