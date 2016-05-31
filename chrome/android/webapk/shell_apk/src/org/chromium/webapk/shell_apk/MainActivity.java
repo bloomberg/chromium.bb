@@ -30,12 +30,10 @@ public class MainActivity extends Activity {
     private static final String EXTRA_ICON = "org.chromium.chrome.browser.webapp_icon";
     private static final String EXTRA_NAME = "org.chromium.chrome.browser.webapp_name";
     private static final String EXTRA_URL = "org.chromium.chrome.browser.webapp_url";
-    private static final String EXTRA_MAC = "org.chromium.chrome.browser.webapp_mac";
     private static final String EXTRA_WEBAPK_PACKAGE_NAME =
             "org.chromium.chrome.browser.webapk_package_name";
 
     private static final String META_DATA_HOST_URL = "hostUrl";
-    private static final String META_DATA_MAC = "mac";
     private static final String META_DATA_RUNTIME_HOST = "runtimeHost";
 
     private static final String TAG = "cr_MainActivity";
@@ -46,7 +44,6 @@ public class MainActivity extends Activity {
 
         String packageName = getPackageName();
         String webappId = null;
-        String mac = null;
         String name = null;
         String url = null;
         String encodedIcon = null;
@@ -64,7 +61,6 @@ public class MainActivity extends Activity {
             }
 
             webappId = WebApkConstants.WEBAPK_ID_PREFIX + packageName;
-            mac = bundle.getString(META_DATA_MAC);
             runtimeHost = bundle.getString(META_DATA_RUNTIME_HOST);
             name = (String) getPackageManager().getApplicationLabel(appInfo);
             // TODO(hanxi): find a neat solution to avoid encode/decode each time launch the
@@ -82,7 +78,6 @@ public class MainActivity extends Activity {
             newIntent.putExtra(EXTRA_ID, webappId)
                      .putExtra(EXTRA_NAME, name)
                      .putExtra(EXTRA_URL, url)
-                     .putExtra(EXTRA_MAC, mac)
                      .putExtra(EXTRA_ICON, encodedIcon)
                      .putExtra(EXTRA_WEBAPK_PACKAGE_NAME, packageName);
             startActivity(newIntent);

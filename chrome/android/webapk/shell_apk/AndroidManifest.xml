@@ -31,7 +31,6 @@
         </activity>
         <meta-data android:name="runtimeHost" android:value="{{ runtime_host }}" />
         <meta-data android:name="hostUrl" android:value="{{ host_url }}" />
-        <meta-data android:name="mac" android:value="{{ mac }}" />
         <meta-data android:name="scope" android:value="{{ scope_url }}" />
         <service
             android:name="org.chromium.webapk.shell_apk.WebApkServiceFactory"

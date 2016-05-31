@@ -15,9 +15,6 @@ declare_args() {
   # The browser that the WebAPK will be bound to.
   webapk_runtime_host = "com.google.android.apps.chrome"
 
-  # The message authentication code from Chrome for identity verification.
-  webapk_mac = "template"
-
   # The scope of the urls that the WebAPK can navigate to.
   webapk_scope_url = "https://www.template.com"
 
@@ -38,7 +35,6 @@ jinja_template("shell_apk_manifest") {
     "manifest_package=$shell_apk_manifest_package",
     "host_url=$webapk_start_url",
     "runtime_host=$webapk_runtime_host",
-    "mac=$webapk_mac",
     "scope_url=$webapk_scope_url",
     "scope_url_host=$webapk_scope_url_host",
   ]
