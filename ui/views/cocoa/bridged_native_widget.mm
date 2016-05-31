@@ -729,7 +729,7 @@ void BridgedNativeWidget::OnSizeChanged() {
   // We don't update the window mask during a live resize, instead it is done
   // after the resize is completed in viewDidEndLiveResize: in
   // BridgedContentView.
-  if (base::mac::IsOSMavericksOrEarlier() && ![window_ inLiveResize])
+  if (base::mac::IsOSMavericks() && ![window_ inLiveResize])
     [bridged_view_ updateWindowMask];
 }
 

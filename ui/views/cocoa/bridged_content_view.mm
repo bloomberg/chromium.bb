@@ -323,7 +323,7 @@ base::string16 AttributedSubstringForRangeHelper(
 
 - (void)updateWindowMask {
   DCHECK(![self inLiveResize]);
-  DCHECK(base::mac::IsOSMavericksOrEarlier());
+  DCHECK(base::mac::IsOSMavericks());
   DCHECK(hostedView_);
 
   views::Widget* widget = hostedView_->GetWidget();
@@ -522,7 +522,7 @@ base::string16 AttributedSubstringForRangeHelper(
   // We prevent updating the window mask and clipping the border around the
   // view, during a live resize. Hence update the window mask and redraw the
   // view after resize has completed.
-  if (base::mac::IsOSMavericksOrEarlier()) {
+  if (base::mac::IsOSMavericks()) {
     [self updateWindowMask];
     [self setNeedsDisplay:YES];
   }
@@ -549,7 +549,7 @@ base::string16 AttributedSubstringForRangeHelper(
   // crbug.com/543671.
   if (windowMask_ && ![self inLiveResize] &&
       !IsRectInsidePath(dirtyRect, windowMask_)) {
-    DCHECK(base::mac::IsOSMavericksOrEarlier());
+    DCHECK(base::mac::IsOSMavericks());
     gfx::ScopedNSGraphicsContextSaveGState state;
 
     // The outer rectangular path corresponding to the window.

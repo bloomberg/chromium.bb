@@ -75,9 +75,6 @@ enum ButtonState {
 // Draws the cell's image within |cellFrame|.
 - (void)drawImageWithFrame:(NSRect)cellFrame inView:(NSView*)controlView;
 
-// If |controlView| is a first responder then draws a blue focus ring.
-- (void)drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView*)controlView;
-
 @end
 
 #endif // CHROME_BROWSER_UI_COCOA_IMAGE_BUTTON_CELL_H_

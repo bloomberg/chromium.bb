@@ -18,13 +18,8 @@ bool Animation::ScrollAnimationsEnabledBySystem() {
 
   bool enabled = false;
   id value = nil;
-  if (base::mac::IsOSMountainLionOrLater()) {
-    value = [[NSUserDefaults standardUserDefaults]
-        objectForKey:@"NSScrollAnimationEnabled"];
-  } else {
-    value = [[NSUserDefaults standardUserDefaults]
-        objectForKey:@"AppleScrollAnimationEnabled"];
-  }
+  value = [[NSUserDefaults standardUserDefaults]
+      objectForKey:@"NSScrollAnimationEnabled"];
   if (value)
     enabled = [value boolValue];
   return enabled;

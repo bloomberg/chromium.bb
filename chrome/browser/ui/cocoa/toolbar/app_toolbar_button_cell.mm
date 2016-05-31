@@ -57,8 +57,6 @@ class AppMenuIconPainterDelegateMac : public AppMenuIconPainter::Delegate {
                         [self currentBezelType]);
   }
   canvas.Restore();
-
-  [self drawFocusRingWithFrame:cellFrame inView:controlView];
 }
 
 - (void)setSeverity:(AppMenuIconPainter::Severity)severity

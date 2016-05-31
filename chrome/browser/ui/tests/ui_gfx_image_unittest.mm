@@ -20,8 +20,7 @@ class UiGfxImageTest : public CocoaTest {
 // http://crbug.com/247379
 TEST_F(UiGfxImageTest, DISABLED_CheckColor) {
   // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
+  return;
 
   gfx::Image image = gfx::Image::CreateFrom1xBitmap(
       gfx::test::CreateBitmap(25, 25));

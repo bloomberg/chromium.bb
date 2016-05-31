@@ -50,15 +50,14 @@
 
   // In Yosemite, the fullscreen button replaces the zoom button. We no longer
   // need to swizzle out this AppKit private method.
-  if (!base::mac::IsOSMavericksOrEarlier())
+  if (!base::mac::IsOSMavericks())
     return;
 
   base::mac::ScopedNSAutoreleasePool pool;
 
   // On 10.8+ the background for textured windows are no longer drawn by
   // NSGrayFrame, and NSThemeFrame is used instead <http://crbug.com/114745>.
-  Class borderViewClass = NSClassFromString(
-      base::mac::IsOSMountainLionOrLater() ? @"NSThemeFrame" : @"NSGrayFrame");
+  Class borderViewClass = NSClassFromString(@"NSThemeFrame");
   DCHECK(borderViewClass);
   if (!borderViewClass) return;
 

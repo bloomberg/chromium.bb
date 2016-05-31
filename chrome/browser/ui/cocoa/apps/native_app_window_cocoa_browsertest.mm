@@ -556,7 +556,7 @@ void TestControls(AppWindow* app_window) {
   // fullscreen action. The above check that collectionBehavior does not include
   // NSWindowCollectionBehaviorFullScreenPrimary is sufficient to determine that
   // the window can't be fullscreened.
-  if (base::mac::IsOSMavericksOrEarlier()) {
+  if (base::mac::IsOSMavericks()) {
     EXPECT_EQ(can_fullscreen,
               [[ns_window standardWindowButton:NSWindowZoomButton] isEnabled]);
   }

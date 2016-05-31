@@ -62,8 +62,7 @@ typedef SSLClientCertificateSelectorTestBase
 // Flaky on 10.7; crbug.com/313243
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, DISABLED_Basic) {
   // TODO(kbr): re-enable: http://crbug.com/222296
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
+  return;
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

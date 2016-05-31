@@ -40,8 +40,6 @@ const int kSidePadding = 2.0;
   NSAttributedString* title = [self attributedTitle];
   if ([title length])
     [self drawTitle:title withFrame:titleRect inView:controlView];
-
-  [self drawFocusRingWithFrame:cellFrame inView:controlView];
 }
 
 @end

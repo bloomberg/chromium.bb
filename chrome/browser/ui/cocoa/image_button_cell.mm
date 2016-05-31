@@ -101,7 +101,6 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   [self drawImageWithFrame:cellFrame inView:controlView];
-  [self drawFocusRingWithFrame:cellFrame inView:controlView];
 }
 
 - (void)setImageID:(NSInteger)imageID
@@ -132,27 +131,6 @@ const CGFloat kImageNoFocusAlpha = 0.65;
 
 - (const ui::ThemeProvider*)themeProviderForWindow:(NSWindow*)window {
   return [window themeProvider];
-}
-
-- (void)drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
-  // Draw custom focus ring only if AppKit won't draw one automatically.
-  // The new focus ring APIs became available with 10.7, but did not get
-  // applied to buttons (only editable text fields) until 10.8.
-  if (base::mac::IsOSMountainLionOrLater())
-    return;
-
-  if (![self showsFirstResponder])
-    return;
-  gfx::ScopedNSGraphicsContextSaveGState scoped_state;
-  const CGFloat lineWidth = [controlView cr_lineWidth];
-  rect_path_utils::FrameRectWithInset(rect_path_utils::RoundedCornerAll,
-                                      NSInsetRect(cellFrame, 0, lineWidth),
-                                      0.0,            // insetX
-                                      0.0,            // insetY
-                                      3.0,            // outerRadius
-                                      lineWidth * 2,  // lineWidth
-                                      [controlView
-                                          cr_keyboardFocusIndicatorColor]);
 }
 
 - (image_button_cell::ButtonState)currentButtonState {

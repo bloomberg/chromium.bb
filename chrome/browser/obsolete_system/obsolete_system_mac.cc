@@ -11,7 +11,7 @@
 
 // static
 bool ObsoleteSystem::IsObsoleteNowOrSoon() {
-  return base::mac::IsOSMountainLionOrEarlier();
+  return false;
 }
 
 // static

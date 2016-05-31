@@ -341,14 +341,11 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
     [color colorUsingColorSpaceName:NSCalibratedRGBColorSpace];
   }
 
-  if (sandbox_type == SANDBOX_TYPE_RENDERER &&
-      base::mac::IsOSMountainLionOrLater()) {
+  if (sandbox_type == SANDBOX_TYPE_RENDERER) {
     // Now disconnect from WindowServer, after all objects have been warmed up.
     // Shutting down the connection requires connecting to WindowServer,
-    // so do this before actually engaging the sandbox. This is only done on
-    // 10.8 and higher because doing it on earlier OSes causes layout tests to
-    // fail <http://crbug.com/397642#c48>. This may cause two log messages to
-    // be printed to the system logger on certain OS versions.
+    // so do this before actually engaging the sandbox. This may cause two log
+    // messages to be printed to the system logger on certain OS versions.
     CGSSetDenyWindowServerConnections(true);
     CGSShutdownServerConnections();
   }

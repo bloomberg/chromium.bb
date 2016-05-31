@@ -65,9 +65,6 @@ MemoryPressureMonitor::~MemoryPressureMonitor() {
 
 MemoryPressureListener::MemoryPressureLevel
 MemoryPressureMonitor::GetCurrentPressureLevel() const {
-  if (base::mac::IsOSMountainLionOrEarlier()) {
-    return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
-  }
   int mac_memory_pressure;
   size_t length = sizeof(int);
   sysctlbyname("kern.memorystatus_vm_pressure_level", &mac_memory_pressure,

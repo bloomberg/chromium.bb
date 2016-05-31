@@ -16,11 +16,8 @@ class CustomFrameViewTest : public PlatformTest {
   CustomFrameViewTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 50);
     // We create NSGrayFrame instead of CustomFrameView because
-    // we are swizzling into NSGrayFrame. (NSThemeFrame on Mountain Lion and
-    // later)
-    Class customFrameClass = NSClassFromString(
-        base::mac::IsOSMountainLionOrLater() ? @"NSThemeFrame"
-                                             : @"NSGrayFrame");
+    // we are swizzling into NSThemeFrame.
+    Class customFrameClass = NSClassFromString(@"NSThemeFrame");
     view_.reset([[customFrameClass alloc] initWithFrame:frame]);
   }
 
@@ -31,7 +28,7 @@ class CustomFrameViewTest : public PlatformTest {
 TEST_F(CustomFrameViewTest, SuccessfulClassModifications) {
   // In Yosemite, the fullscreen button replaces the zoom button. We no longer
   // need to swizzle out this AppKit private method.
-  if (!base::mac::IsOSMavericksOrEarlier())
+  if (!base::mac::IsOSMavericks())
     return;
 
   unsigned int count;

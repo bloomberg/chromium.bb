@@ -96,20 +96,11 @@ ViewMsg_SystemColorsChanged* CreateSystemColorsChangedMessage() {
                           object:nil
               suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
 
-  if (base::mac::IsOSMountainLionOrLater()) {
-    [distributedCenter addObserver:self
-                          selector:@selector(behaviorPrefsChanged:)
-                              name:@"NSScrollAnimationEnabled"
-                            object:nil
-                suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
-  } else {
-    // Register for < 10.8
-    [distributedCenter addObserver:self
-                          selector:@selector(behaviorPrefsChanged:)
-                              name:@"AppleScrollAnimationEnabled"
-                            object:nil
-                suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
-  }
+  [distributedCenter addObserver:self
+                        selector:@selector(behaviorPrefsChanged:)
+                            name:@"NSScrollAnimationEnabled"
+                          object:nil
+              suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
 
   [distributedCenter addObserver:self
                         selector:@selector(appearancePrefsChanged:)

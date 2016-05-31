@@ -49,32 +49,6 @@ struct EnumArray {
   VALUE array[static_cast<size_t>(KEY::COUNT)];
 };
 
-// On 10.6 and 10.7 there is no way to get components from system colors. Here,
-// system colors are just opaque objects that can paint themselves and otherwise
-// tell you nothing. In 10.8, some of the system color classes have incomplete
-// implementations and throw exceptions even attempting to convert using
-// -[NSColor colorUsingColorSpace:], so don't bother there either.
-// This function paints a single pixel to a 1x1 swatch and reads it back.
-SkColor GetSystemColorUsingSwatch(NSColor* color) {
-  SkColor swatch;
-  base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
-      CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
-  const size_t bytes_per_row = 4;
-  static_assert(sizeof(swatch) == bytes_per_row, "skcolor should be 4 bytes");
-  CGBitmapInfo bitmap_info =
-      kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host;
-  base::ScopedCFTypeRef<CGContextRef> context(CGBitmapContextCreate(
-      &swatch, 1, 1, 8, bytes_per_row, color_space, bitmap_info));
-
-  NSGraphicsContext* drawing_context =
-      [NSGraphicsContext graphicsContextWithGraphicsPort:context flipped:NO];
-  [NSGraphicsContext saveGraphicsState];
-  [NSGraphicsContext setCurrentContext:drawing_context];
-  [color drawSwatchInRect:NSMakeRect(0, 0, 1, 1)];
-  [NSGraphicsContext restoreGraphicsState];
-  return swatch;
-}
-
 // NSColor has a number of methods that return system colors (i.e. controlled by
 // user preferences). This function converts the color given by an NSColor class
 // method to an SkColor. Official documentation suggests developers only rely on
@@ -84,9 +58,6 @@ SkColor GetSystemColorUsingSwatch(NSColor* color) {
 // Apple's documentation also suggests to use NSColorList, but the system color
 // list is just populated with class methods on NSColor.
 SkColor NSSystemColorToSkColor(NSColor* color) {
-  if (base::mac::IsOSMountainLionOrEarlier())
-    return GetSystemColorUsingSwatch(color);
-
   // System colors use the an NSNamedColorSpace called "System", so first step
   // is to convert the color into something that can be worked with.
   NSColor* device_color =

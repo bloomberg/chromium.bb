@@ -1151,10 +1151,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (BOOL)shouldUseCustomAppKitFullscreenTransition:(BOOL)enterFullScreen {
-  // Custom fullscreen transitions should only be available in OSX 10.9+.
-  if (base::mac::IsOSMountainLionOrEarlier())
-    return NO;
-
   // Disable the custom exit animation in OSX 10.9: http://crbug.com/526327#c3.
   if (base::mac::IsOSMavericks() && !enterFullScreen)
     return NO;
