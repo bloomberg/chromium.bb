@@ -205,7 +205,7 @@ float ShapeResultBuffer::fillGlyphBuffer(GlyphBuffer* glyphBuffer, const TextRun
     unsigned from, unsigned to) const
 {
     // Fast path: full run with no vertical offsets
-    if (!from && to == static_cast<unsigned>(textRun.length()) && !hasVerticalOffsets())
+    if (!from && to == textRun.length() && !hasVerticalOffsets())
         return fillFastHorizontalGlyphBuffer(glyphBuffer, textRun.direction());
 
     float advance = 0;

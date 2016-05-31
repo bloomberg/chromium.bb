@@ -177,8 +177,8 @@ public:
     const UChar* characters16() const { ASSERT(!is8Bit()); return m_data.characters16; }
 
     bool is8Bit() const { return m_is8Bit; }
-    int length() const { return m_len; }
-    int charactersLength() const { return m_charactersLength; }
+    unsigned length() const { return m_len; }
+    unsigned charactersLength() const { return m_charactersLength; }
 
     bool normalizeSpace() const { return m_normalizeSpace; }
     void setNormalizeSpace(bool normalizeSpace) { m_normalizeSpace = normalizeSpace; }
@@ -259,8 +259,8 @@ public:
     }
 
     const TextRun& run;
-    int from;
-    int to;
+    unsigned from;
+    unsigned to;
     FloatRect bounds;
     RefPtr<const SkTextBlob>* cachedTextBlob;
 };

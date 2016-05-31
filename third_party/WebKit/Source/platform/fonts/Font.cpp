@@ -768,7 +768,7 @@ Vector<CharacterRange> Font::individualCharacterRanges(const TextRun& run) const
     FontCachePurgePreventer purgePreventer;
     CachingWordShaper shaper(m_fontFallbackList->shapeCache(m_fontDescription));
     auto ranges = shaper.individualCharacterRanges(this, run);
-    DCHECK_EQ(ranges.size(), static_cast<unsigned>(run.length()));
+    DCHECK_EQ(ranges.size(), run.length());
     return ranges;
 }
 

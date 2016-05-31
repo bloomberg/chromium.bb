@@ -43,7 +43,7 @@ public:
 
     static void updateGraphicsContext(GraphicsContext&, const Style&, bool horizontal, GraphicsContextStateSaver&);
 
-    void paint(int startOffset, int endOffset, int length, const Style&, TextBlobPtr* cachedTextBlob = 0);
+    void paint(unsigned startOffset, unsigned endOffset, unsigned length, const Style&, TextBlobPtr* cachedTextBlob = 0);
 
     struct Style {
         STACK_ALLOCATED();
@@ -80,10 +80,10 @@ private:
     enum PaintInternalStep { PaintText, PaintEmphasisMark };
 
     template <PaintInternalStep step>
-    void paintInternalRun(TextRunPaintInfo&, int from, int to);
+    void paintInternalRun(TextRunPaintInfo&, unsigned from, unsigned to);
 
     template <PaintInternalStep step>
-    void paintInternal(int startOffset, int endOffset, int truncationPoint, TextBlobPtr* cachedTextBlob = 0);
+    void paintInternal(unsigned startOffset, unsigned endOffset, unsigned truncationPoint, TextBlobPtr* cachedTextBlob = 0);
 
     void paintEmphasisMarkForCombinedText();
 

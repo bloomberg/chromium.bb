@@ -197,7 +197,7 @@ inline bool isValidSurrogatePair(const TextRun& run, unsigned index)
 {
     if (!U16_IS_LEAD(run[index]))
         return false;
-    if (index + 1 >= static_cast<unsigned>(run.length()))
+    if (index + 1 >= run.length())
         return false;
     return U16_IS_TRAIL(run[index + 1]);
 }
@@ -275,7 +275,7 @@ void LayoutSVGInlineText::addMetricsFromRun(
 
     const float cachedFontHeight = scaledFont().getFontMetrics().floatHeight() / m_scalingFactor;
     const bool preserveWhiteSpace = styleRef().whiteSpace() == PRE;
-    const unsigned runLength = static_cast<unsigned>(run.length());
+    const unsigned runLength = run.length();
 
     // TODO(pdr): Character-based iteration is ambiguous and error-prone. It
     // should be unified under a single concept. See: https://crbug.com/593570

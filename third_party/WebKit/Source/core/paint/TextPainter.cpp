@@ -54,7 +54,7 @@ void TextPainter::setEmphasisMark(const AtomicString& emphasisMark, TextEmphasis
     }
 }
 
-void TextPainter::paint(int startOffset, int endOffset, int length, const Style& textStyle, TextBlobPtr* cachedTextBlob)
+void TextPainter::paint(unsigned startOffset, unsigned endOffset, unsigned length, const Style& textStyle, TextBlobPtr* cachedTextBlob)
 {
     GraphicsContextStateSaver stateSaver(m_graphicsContext, false);
     updateGraphicsContext(textStyle, stateSaver);
@@ -183,7 +183,7 @@ TextPainter::Style TextPainter::selectionPaintingStyle(LineLayoutItem lineLayout
 }
 
 template <TextPainter::PaintInternalStep step>
-void TextPainter::paintInternalRun(TextRunPaintInfo& textRunPaintInfo, int from, int to)
+void TextPainter::paintInternalRun(TextRunPaintInfo& textRunPaintInfo, unsigned from, unsigned to)
 {
     ASSERT(from <= textRunPaintInfo.run.length());
     ASSERT(to <= textRunPaintInfo.run.length());
@@ -201,7 +201,7 @@ void TextPainter::paintInternalRun(TextRunPaintInfo& textRunPaintInfo, int from,
 }
 
 template <TextPainter::PaintInternalStep Step>
-void TextPainter::paintInternal(int startOffset, int endOffset, int truncationPoint, TextBlobPtr* cachedTextBlob)
+void TextPainter::paintInternal(unsigned startOffset, unsigned endOffset, unsigned truncationPoint, TextBlobPtr* cachedTextBlob)
 {
     TextRunPaintInfo textRunPaintInfo(m_run);
     textRunPaintInfo.bounds = FloatRect(m_textBounds);
