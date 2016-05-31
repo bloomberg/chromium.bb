@@ -262,7 +262,8 @@ void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSe
     if (visibleSelection<Strategy>() == newSelection)
         return;
 
-    setSelection(newSelection, granularity);
+    const SetSelectionOptions options = CloseTyping | ClearTypingStyle;
+    setSelection(newSelection, options, CursorAlignOnScroll::IfNeeded, granularity);
 }
 
 void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelection& passedNewSelection, TextGranularity granularity, EndPointsAdjustmentMode endpointsAdjustmentMode)
