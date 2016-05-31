@@ -41,6 +41,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
 private:
     PromiseRejectionEvent();
     PromiseRejectionEvent(ScriptState*, const AtomicString&, const PromiseRejectionEventInit&);

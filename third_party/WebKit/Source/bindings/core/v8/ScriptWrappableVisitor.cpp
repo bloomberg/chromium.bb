@@ -86,19 +86,15 @@ void ScriptWrappableVisitor::addHeaderToUnmark(HeapObjectHeader* header) const
     m_headersToUnmark.append(header);
 }
 
-void ScriptWrappableVisitor::markWrapper(const v8::Persistent<v8::Object>* handle, v8::Isolate* isolate)
-{
-    handle->RegisterExternalReference(isolate);
-}
-
-void ScriptWrappableVisitor::markWrapper(const v8::Persistent<v8::Object>* handle) const
-{
-    markWrapper(handle, m_isolate);
-}
-
 void ScriptWrappableVisitor::markWrappersInAllWorlds(const ScriptWrappable* scriptWrappable, v8::Isolate* isolate)
 {
     DOMWrapperWorld::markWrappersInAllWorlds(const_cast<ScriptWrappable*>(scriptWrappable), isolate);
+}
+
+void ScriptWrappableVisitor::traceWrappers(const ScopedPersistent<v8::Value>* scopedPersistent) const
+{
+    markWrapper(
+        &(const_cast<ScopedPersistent<v8::Value>*>(scopedPersistent)->get()));
 }
 
 void ScriptWrappableVisitor::dispatchTraceWrappers(const ScriptWrappable* wrappable) const

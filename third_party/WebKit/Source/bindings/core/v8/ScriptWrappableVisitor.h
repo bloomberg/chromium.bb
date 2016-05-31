@@ -5,6 +5,7 @@
 #ifndef ScriptWrappableVisitor_h
 #define ScriptWrappableVisitor_h
 
+#include "bindings/core/v8/ScopedPersistent.h"
 #include "core/CoreExport.h"
 #include "platform/heap/WrapperVisitor.h"
 #include "wtf/Vector.h"
@@ -37,7 +38,11 @@ public:
     /**
      * Mark given wrapper as alive in V8.
      */
-    static void markWrapper(const v8::Persistent<v8::Object>* handle, v8::Isolate*);
+    template <typename T>
+    static void markWrapper(const v8::Persistent<T>* handle, v8::Isolate* isolate)
+    {
+        handle->RegisterExternalReference(isolate);
+    }
 
     void TracePrologue() override;
     void TraceWrappersFrom(const std::vector<std::pair<void*, void*>>& internalFieldsOfPotentialWrappers) override;
@@ -45,19 +50,26 @@ public:
 
     void traceWrappersFrom(const ScriptWrappable*) const;
 
-    void markWrapper(const v8::Persistent<v8::Object>*) const;
-    virtual void dispatchTraceWrappers(const ScriptWrappable*) const;
+    template <typename T>
+    void markWrapper(const v8::Persistent<T>* handle) const
+    {
+        markWrapper(handle, m_isolate);
+    }
+
+    void dispatchTraceWrappers(const ScriptWrappable*) const override;
 #define DECLARE_DISPATCH_TRACE_WRAPPERS(className)                   \
-    virtual void dispatchTraceWrappers(const className*) const;
+    void dispatchTraceWrappers(const className*) const override;
 
     WRAPPER_VISITOR_SPECIAL_CLASSES(DECLARE_DISPATCH_TRACE_WRAPPERS);
 
 #undef DECLARE_DISPATCH_TRACE_WRAPPERS
     virtual void dispatchTraceWrappers(const void*) const {}
 
+    void traceWrappers(const ScopedPersistent<v8::Value>*) const override;
+
 private:
-    virtual bool markWrapperHeader(const ScriptWrappable*, const void*) const;
-    virtual bool markWrapperHeader(const void* garbageCollected, const void*) const;
+    bool markWrapperHeader(const ScriptWrappable*, const void*) const override;
+    bool markWrapperHeader(const void* garbageCollected, const void*) const override;
     inline void addHeaderToUnmark(HeapObjectHeader*) const;
     inline void traceWrappersFrom(std::pair<void*, void*> internalFields);
     bool m_tracingInProgress = false;

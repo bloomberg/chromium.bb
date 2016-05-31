@@ -8,11 +8,17 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 
+namespace v8 {
+class Value;
+class Object;
+}
+
 namespace blink {
 
 template<typename T> class TraceTrait;
 template<typename T> class Member;
 class ScriptWrappable;
+template<typename T> class ScopedPersistent;
 
 // TODO(hlopko): Find a way to remove special-casing using templates
 #define WRAPPER_VISITOR_SPECIAL_CLASSES(V)                           \
@@ -99,6 +105,8 @@ public:
     {
         traceWrappers(t.get());
     }
+
+    virtual void traceWrappers(const ScopedPersistent<v8::Value>*) const = 0;
 
     template<typename T>
     bool markWrapperHeader(const T* object) const

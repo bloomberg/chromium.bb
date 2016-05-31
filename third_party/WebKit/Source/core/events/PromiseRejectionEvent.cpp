@@ -73,6 +73,12 @@ DEFINE_TRACE(PromiseRejectionEvent)
     Event::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(PromiseRejectionEvent)
+{
+    visitor->traceWrappers(&m_promise);
+    visitor->traceWrappers(&m_reason);
+}
+
 void PromiseRejectionEvent::didCollectPromise(const v8::WeakCallbackInfo<PromiseRejectionEvent>& data)
 {
     data.GetParameter()->m_promise.clear();
