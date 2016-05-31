@@ -55,9 +55,10 @@ class RequestCoordinator :
   void StopProcessing();
 
   // Returns the request queue used for requests.  Coordinator keeps ownership.
-  RequestQueue* GetQueue() { return queue_.get(); }
+  RequestQueue* queue() { return queue_.get(); }
 
-  Scheduler* GetSchedulerForTesting() { return scheduler_.get(); }
+  // Return an unowned pointer to the Scheduler.
+  Scheduler* scheduler() { return scheduler_.get(); }
 
   // Returns the status of the most recent offlining.
   Offliner::RequestStatus last_offlining_status() {

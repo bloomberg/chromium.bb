@@ -156,7 +156,7 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
   EXPECT_TRUE(coordinator()->SavePageLater(kUrl, kClientId));
 
   // Expect that a request got placed on the queue.
-  coordinator()->GetQueue()->GetRequests(
+  coordinator()->queue()->GetRequests(
       base::Bind(&RequestCoordinatorTest::GetRequestsDone,
                  base::Unretained(this)));
 
@@ -170,7 +170,7 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
 
   // Expect that the scheduler got notified.
   SchedulerStub* scheduler_stub = reinterpret_cast<SchedulerStub*>(
-      coordinator()->GetSchedulerForTesting());
+      coordinator()->scheduler());
   EXPECT_TRUE(scheduler_stub->schedule_called());
 
   // Check that the offliner callback got a response.

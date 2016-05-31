@@ -20,9 +20,6 @@ namespace android {
 // on Android.
 class BackgroundSchedulerBridge : public Scheduler {
  public:
-  BackgroundSchedulerBridge();
-  ~BackgroundSchedulerBridge() override;
-
   // Scheduler implementation.
   void Schedule(const TriggerCondition& trigger_condition) override;
   void Unschedule() override;

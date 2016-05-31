@@ -4,8 +4,11 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "chrome/browser/android/offline_pages/background_scheduler_bridge.h"
+#include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/android/offline_pages/request_coordinator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "components/offline_pages/background/request_coordinator.h"
 #include "jni/BackgroundSchedulerBridge_jni.h"
 
 using base::android::ScopedJavaGlobalRef;
@@ -29,7 +32,6 @@ void ProcessingDoneCallback(
 static jboolean StartProcessing(
     JNIEnv* env,
     const JavaParamRef<jclass>& jcaller,
-    const JavaParamRef<jobject>& j_profile,
     const JavaParamRef<jobject>& j_callback_obj) {
   ScopedJavaGlobalRef<jobject> j_callback_ref;
   j_callback_ref.Reset(env, j_callback_obj);
@@ -37,12 +39,6 @@ static jboolean StartProcessing(
   // TODO(dougarnett): lookup/create RequestCoordinator KeyedService
   // and call StartProcessing on it with bound j_callback_obj.
   return false;
-}
-
-BackgroundSchedulerBridge::BackgroundSchedulerBridge() {
-}
-
-BackgroundSchedulerBridge::~BackgroundSchedulerBridge() {
 }
 
 void BackgroundSchedulerBridge::Schedule(

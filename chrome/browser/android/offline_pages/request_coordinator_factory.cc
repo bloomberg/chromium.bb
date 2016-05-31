@@ -45,11 +45,8 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
   std::unique_ptr<RequestQueueInMemoryStore> store(
       new RequestQueueInMemoryStore());
   std::unique_ptr<RequestQueue> queue(new RequestQueue(std::move(store)));
-  // TODO(petewil) Add support for server based offliner when it is ready.
-
   std::unique_ptr<Scheduler>
       scheduler(new android::BackgroundSchedulerBridge());
-  // TODO(petewil) Add support for server based offliner when it is ready.
 
   return new RequestCoordinator(std::move(policy),
                                 std::move(prerenderer_offliner),

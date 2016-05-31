@@ -508,6 +508,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/cards/NewTabPageRecyclerView.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/NewTabPageViewHolder.java",
   "java/src/org/chromium/chrome/browser/ntp/cards/SpacingListItem.java",
+  "java/src/org/chromium/chrome/browser/offlinepages/BackgroundScheduler.java",
+  "java/src/org/chromium/chrome/browser/offlinepages/BackgroundOfflinerTask.java",
   "java/src/org/chromium/chrome/browser/offlinepages/BackgroundSchedulerBridge.java",
   "java/src/org/chromium/chrome/browser/offlinepages/ClientId.java",
   "java/src/org/chromium/chrome/browser/offlinepages/OfflinePageBridge.java",

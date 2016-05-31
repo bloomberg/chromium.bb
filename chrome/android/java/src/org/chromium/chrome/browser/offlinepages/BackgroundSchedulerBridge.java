@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.browser.profiles.Profile;
 
 /**
  * Provides Java scheduling support from native offlining code as
@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.profiles.Profile;
  */
 @JNINamespace("offline_pages::android")
 public class BackgroundSchedulerBridge {
-
     /**
      * Callback used to determine when request processing is done.
      */
@@ -32,24 +31,19 @@ public class BackgroundSchedulerBridge {
     // not receive a callback.
     // TODO(dougarnett): consider adding policy check api to let caller
     //     separately determine if not allowed by policy.
-    public static boolean startProcessing(
-            Profile profile, ProcessingDoneCallback callback) {
-        return nativeStartProcessing(profile, callback);
+    public static boolean startProcessing(ProcessingDoneCallback callback) {
+        return nativeStartProcessing(callback);
     }
 
     @CalledByNative
     private static void schedule() {
-        // TODO(dougarnett): call GcmNetworkManager to schedule for
-        //     OfflinePageUtils.TASK_TAG.
+        BackgroundScheduler.schedule(ContextUtils.getApplicationContext());
     }
 
     @CalledByNative
     private static void unschedule() {
-        // TODO(dougarnett): call GcmNetworkManager to unschedule for
-        //     OfflinePageUtils.TASK_TAG.
+        BackgroundScheduler.unschedule(ContextUtils.getApplicationContext());
     }
 
-    private static native boolean nativeStartProcessing(
-            Profile profile, ProcessingDoneCallback callback);
+    private static native boolean nativeStartProcessing(ProcessingDoneCallback callback);
 }
-

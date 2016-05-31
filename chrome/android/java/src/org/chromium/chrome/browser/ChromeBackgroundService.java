@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
+import android.os.Bundle;
 
 import com.google.android.gms.gcm.GcmNetworkManager;
 import com.google.android.gms.gcm.GcmTaskService;
@@ -14,11 +15,11 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsLauncher;
+import org.chromium.chrome.browser.offlinepages.BackgroundOfflinerTask;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.precache.PrecacheController;
 
@@ -44,7 +45,7 @@ public class ChromeBackgroundService extends GcmTaskService {
                         break;
 
                     case OfflinePageUtils.TASK_TAG:
-                        handleOfflinePageBackgroundLoad(context);
+                        handleOfflinePageBackgroundLoad(context, params.getExtras());
                         break;
 
                     case SnippetsLauncher.TASK_TAG_WIFI_CHARGING:
@@ -124,12 +125,15 @@ public class ChromeBackgroundService extends GcmTaskService {
         PrecacheController.get(context).precache(tag);
     }
 
-    private void handleOfflinePageBackgroundLoad(Context context) {
-        // Gather UMA data to measure how often the user's machine is amenable to background
-        // loading when we wake to do a task.
-        if (LibraryLoader.isInitialized()) {
-            OfflinePageUtils.recordWakeupUMA(context);
+    private void handleOfflinePageBackgroundLoad(Context context, Bundle bundle) {
+        if (!hasPrecacheInstance()) {
+            launchBrowser(context);
         }
+
+        // Call BackgroundTask, provide context.
+        BackgroundOfflinerTask.startBackgroundRequests(context, bundle);
+        // TODO(petewil) if processBackgroundRequest returns false, return RESTART_RESCHEDULE
+        // to the GcmNetworkManager
     }
 
     @VisibleForTesting
