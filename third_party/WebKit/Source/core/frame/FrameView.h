@@ -179,6 +179,7 @@ public:
     void updateBackgroundRecursively(const Color&, bool);
 
     void adjustViewSize();
+    void adjustViewSizeAndLayout();
 
     // Scale used to convert incoming input events.
     float inputEventsScaleFactor() const;
@@ -912,6 +913,7 @@ private:
     ScrollAnchor m_scrollAnchor;
 
     bool m_needsScrollbarsUpdate;
+    bool m_suppressAdjustViewSize;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count)
