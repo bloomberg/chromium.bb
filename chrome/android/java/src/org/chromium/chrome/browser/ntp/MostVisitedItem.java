@@ -28,7 +28,7 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
          * Navigates to a most visited page in the existing tab.
          * @param item The most visited item to open.
          */
-        void open(MostVisitedItem item);
+        void openMostVisitedItem(MostVisitedItem item);
 
         /**
          * Allows the manager to add context menu items for a given MostVisitedItem.
@@ -166,6 +166,6 @@ public class MostVisitedItem implements OnCreateContextMenuListener,
 
     @Override
     public void onClick(View v) {
-        mManager.open(this);
+        mManager.openMostVisitedItem(this);
     }
 }

@@ -34100,6 +34100,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.Snippets.VisitDuration" units="ms">
+  <owner>mastiz@chromium.org</owner>
+  <summary>
+    Android: Time spent reading the page linked by an opened (clicked) snippet
+    card. Exit conditions include the tab not being in the foreground or
+    starting a new navigation.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.SuggestedSite">
   <obsolete>
     Deprecated 2016-02 (and not recorded for some time before that).

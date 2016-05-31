@@ -8977,6 +8977,22 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated as of 4/2016</obsolete>
 </action>
 
+<action name="MobileNTP.Snippets.VisitEnd">
+  <owner>mastiz@chromium.org</owner>
+  <description>
+    Android: User stopped reading the article linked by an opened (clicked)
+    snippet card.
+  </description>
+</action>
+
+<action name="MobileNTP.Snippets.VisitEndBackInNTP">
+  <owner>mastiz@chromium.org</owner>
+  <description>
+    Android: User navigated back to the NTP after reading an opened (clicked)
+    snippet card.
+  </description>
+</action>
+
 <action name="MobileNTPBookmark">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

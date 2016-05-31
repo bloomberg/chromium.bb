@@ -116,7 +116,7 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
 
     @Override
     public void onClick(View v) {
-        mNewTabPageManager.open(mUrl);
+        mNewTabPageManager.openSnippet(mUrl);
         RecordUserAction.record("MobileNTP.Snippets.Click");
         RecordHistogram.recordSparseSlowlyHistogram("NewTabPage.Snippets.CardClicked", mPosition);
         NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_CLICKED);
