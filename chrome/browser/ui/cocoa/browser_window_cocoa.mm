@@ -434,8 +434,9 @@ bool BrowserWindowCocoa::IsFullscreenBubbleVisible() const {
 }
 
 void BrowserWindowCocoa::ShowNewBackShortcutBubble(bool forward) {
-  // TODO(mgiuca): Implement new back shortcut bubble Mac.
-  // https://crbug.com/610039.
+  ExclusiveAccessController* exclusive_access_controller =
+      [controller_ exclusiveAccessController];
+  exclusive_access_controller->ShowNewBackShortcutBubble(forward);
 }
 
 LocationBar* BrowserWindowCocoa::GetLocationBar() const {
