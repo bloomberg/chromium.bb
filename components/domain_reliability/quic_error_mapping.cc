@@ -235,7 +235,13 @@ const struct QuicErrorMapping {
   { net::QUIC_LAST_ERROR, "quic.last_error"}
 };
 
-static_assert(arraysize(kQuicErrorMap) == net::kActiveQuicErrorCount,
+// Must be updated any time a net::QuicErrorCode is deprecated in
+// net/quic/quic_protocol.h.
+const int kDeprecatedQuicErrorCount = 4;
+const int kActiveQuicErrorCount =
+    net::QUIC_LAST_ERROR - kDeprecatedQuicErrorCount;
+
+static_assert(arraysize(kQuicErrorMap) == kActiveQuicErrorCount,
               "quic_error_map is not in sync with quic protocol!");
 
 }  // namespace
