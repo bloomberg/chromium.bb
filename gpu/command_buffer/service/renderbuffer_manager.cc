@@ -214,7 +214,7 @@ bool RenderbufferManager::ComputeEstimatedRenderbufferSize(
   if (!SafeMultiplyUint32(width, height, &temp)) {
     return false;
   }
-  if (!SafeMultiplyUint32(temp, samples, &temp)) {
+  if (!SafeMultiplyUint32(temp, (samples == 0 ? 1 : samples), &temp)) {
     return false;
   }
   GLenum impl_format = InternalRenderbufferFormatToImplFormat(internal_format);

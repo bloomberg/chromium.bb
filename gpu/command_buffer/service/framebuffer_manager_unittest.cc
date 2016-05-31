@@ -222,6 +222,7 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   const GLsizei kHeight4 = 32;
   const GLenum kFormat4 = GL_STENCIL_INDEX8;
   const GLsizei kSamples4 = 0;
+  const GLsizei kDifferentSamples4 = 1;
 
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_COLOR_ATTACHMENT0));
   EXPECT_FALSE(framebuffer_->HasUnclearedAttachment(GL_DEPTH_ATTACHMENT));
@@ -371,6 +372,16 @@ TEST_F(FramebufferInfoTest, AttachRenderbuffer) {
   EXPECT_EQ(kSamples4, attachment->samples());
   EXPECT_EQ(kFormat4, attachment->internal_format());
   EXPECT_FALSE(attachment->cleared());
+  EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
+
+  // Change samples.
+  renderbuffer_manager_->SetInfo(
+      renderbuffer4, kDifferentSamples4, kFormat4, kWidth4, kHeight4);
+  EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE),
+            framebuffer_->IsPossiblyComplete(feature_info_.get()));
+  renderbuffer_manager_->SetInfo(
+      renderbuffer4, kSamples4, kFormat4, kWidth4, kHeight4);
   EXPECT_EQ(static_cast<GLenum>(GL_FRAMEBUFFER_COMPLETE),
             framebuffer_->IsPossiblyComplete(feature_info_.get()));
 

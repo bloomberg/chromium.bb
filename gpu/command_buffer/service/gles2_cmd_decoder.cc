@@ -7429,7 +7429,7 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
     // we could just mark those framebuffers as not complete.
     framebuffer_manager()->IncFramebufferStateChangeCount();
     renderbuffer_manager()->SetInfo(
-        renderbuffer, 1, internalformat, width, height);
+        renderbuffer, 0, internalformat, width, height);
   }
 }
 

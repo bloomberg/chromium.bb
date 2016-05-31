@@ -578,6 +578,7 @@ GLenum Framebuffer::IsPossiblyComplete(const FeatureInfo* feature_info) const {
 
   GLsizei width = -1;
   GLsizei height = -1;
+  GLsizei samples = -1;
   for (AttachmentMap::const_iterator it = attachments_.begin();
        it != attachments_.end(); ++it) {
     GLenum attachment_type = it->first;
@@ -601,6 +602,14 @@ GLenum Framebuffer::IsPossiblyComplete(const FeatureInfo* feature_info) const {
       // even though ES3 allows it, it is still forbidden to ensure consistent
       // behaviors across platforms.
       return GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT;
+    }
+    if (samples < 0) {
+      samples = attachment->samples();
+    } else if (attachment->samples() != samples) {
+      // It's possible that the specified samples isn't the actual samples a
+      // GL implementation uses, but we always return INCOMPLETE_MULTISAMPLE
+      // here to ensure consistent behaviors across platforms.
+      return GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE;
     }
     if (!attachment->CanRenderTo(feature_info)) {
       return GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT;
