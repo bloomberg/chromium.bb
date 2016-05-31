@@ -1,0 +1,28 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CustomElementReaction_h
+#define CustomElementReaction_h
+
+#include "core/CoreExport.h"
+#include "platform/heap/Handle.h"
+#include "wtf/Noncopyable.h"
+
+namespace blink {
+
+class Element;
+
+class CORE_EXPORT CustomElementReaction
+    : public GarbageCollectedFinalized<CustomElementReaction> {
+    WTF_MAKE_NONCOPYABLE(CustomElementReaction);
+public:
+    CustomElementReaction() { }
+    virtual ~CustomElementReaction() { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { }
+    virtual void invoke(Element*) = 0;
+};
+
+} // namespace blink
+
+#endif // CustomElementReaction_h
