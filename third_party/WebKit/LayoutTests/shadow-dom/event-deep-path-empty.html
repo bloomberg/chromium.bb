@@ -7,12 +7,12 @@ test(() => {
   const ev = new Event("sample");
   var dispatched = false;
   target.addEventListener("sample", (e) => {
-    assert_true(e.deepPath().length > 0);
+    assert_true(e.composedPath().length > 0);
     dispatched = true;
   });
-  assert_array_equals(ev.deepPath(), []);
+  assert_array_equals(ev.composedPath(), []);
   target.dispatchEvent(ev);
   assert_true(dispatched);
-  assert_array_equals(ev.deepPath(), []);
-}, "Event.deepPath() should return an empty array before/after dispatching an event");
+  assert_array_equals(ev.composedPath(), []);
+}, "Event.composedPath() should return an empty array before/after dispatching an event");
 </script>

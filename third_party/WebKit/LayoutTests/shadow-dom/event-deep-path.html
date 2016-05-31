@@ -6,8 +6,8 @@
 
 img.onload = function(e) {
     test(function() {
-        assert_array_equals(e.deepPath(), e.path);
-    }, "Event.deepPath() should be the same as Event.path.");
+        assert_array_equals(e.composedPath(), e.path);
+    }, "Event.composedPath() should be the same as Event.path.");
 };
 
 </script>

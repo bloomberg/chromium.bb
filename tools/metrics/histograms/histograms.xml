@@ -73702,7 +73702,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1120" label="NonSecureSharedWorkerAccessedFromSecureContext"/>
   <int value="1121" label="SecureSharedWorkerAccessedFromNonSecureContext"/>
   <int value="1122" label="NonCSSStyleSheetType"/>
-  <int value="1123" label="EventDeepPath"/>
+  <int value="1123" label="EventComposedPath"/>
   <int value="1124" label="LinkHeaderPreload"/>
   <int value="1125" label="MouseWheelEvent"/>
   <int value="1126" label="WheelEvent"/>

@@ -66,7 +66,7 @@
     // Shadow DOM
     // https://w3c.github.io/webcomponents/spec/shadow/#extensions-to-event-interface
     [MeasureAs=EventPath, CallWith=ScriptState] readonly attribute EventTarget[] path;
-    [RuntimeEnabled=ShadowDOMV1, MeasureAs=EventDeepPath, CallWith=ScriptState] sequence<EventTarget> deepPath();
+    [RuntimeEnabled=ShadowDOMV1, MeasureAs=EventComposedPath, CallWith=ScriptState] sequence<EventTarget> composedPath();
 
     // Non-standard APIs
     const unsigned short MOUSEDOWN = 1;

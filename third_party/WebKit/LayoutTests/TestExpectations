@@ -529,6 +529,8 @@ crbug.com/505364 imported/wpt/shadow-dom/untriaged/user-interaction/focus-naviga
 crbug.com/505364 imported/wpt/shadow-dom/untriaged/user-interaction/focus-navigation/test-004.html [ Failure ]
 crbug.com/505364 imported/wpt/custom-elements/v0/instantiating/extensions-to-document-interface/create-element-interface-type-is-a-type-extension.html [ Failure ]
 crbug.com/505364 imported/csswg-test/css-scoping-1/css-scoping-shadow-slot-display-override.html [ Failure ]
+crbug.com/505364 imported/wpt/shadow-dom/untriaged/elements-and-dom-objects/extensions-to-event-interface/event-path-001.html [ Failure ]
+crbug.com/505364 imported/wpt/shadow-dom/untriaged/events/event-dispatch/test-003.html [ Failure ]
 
 crbug.com/517840 imported/wpt/webrtc/rtcpeerconnection/rtcpeerconnection-idl.html [ Failure Timeout ]
 

@@ -935,7 +935,7 @@ public:
         MediaDevicesEnumerateDevices = 1119,
         NonSecureSharedWorkerAccessedFromSecureContext = 1120,
         SecureSharedWorkerAccessedFromNonSecureContext = 1121,
-        EventDeepPath = 1123,
+        EventComposedPath = 1123,
         LinkHeaderPreload = 1124,
         MouseWheelEvent = 1125,
         WheelEvent = 1126,

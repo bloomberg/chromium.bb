@@ -281,7 +281,7 @@ HeapVector<Member<EventTarget>> Event::path(ScriptState* scriptState) const
     return pathInternal(scriptState, NonEmptyAfterDispatch);
 }
 
-HeapVector<Member<EventTarget>> Event::deepPath(ScriptState* scriptState) const
+HeapVector<Member<EventTarget>> Event::composedPath(ScriptState* scriptState) const
 {
     return pathInternal(scriptState, EmptyAfterDispatch);
 }

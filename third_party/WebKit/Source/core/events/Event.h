@@ -196,7 +196,7 @@ public:
     void initEventPath(Node&);
 
     HeapVector<Member<EventTarget>> path(ScriptState*) const;
-    HeapVector<Member<EventTarget>> deepPath(ScriptState*) const;
+    HeapVector<Member<EventTarget>> composedPath(ScriptState*) const;
 
     bool isBeingDispatched() const { return eventPhase(); }
 

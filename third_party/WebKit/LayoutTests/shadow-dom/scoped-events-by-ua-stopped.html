@@ -40,8 +40,8 @@ var host = getNodeInComposedTree('host');
 async_test(function(t) {
     target.onselect = function(e) {
         t.step(function() {
-            assert_true(e.deepPath().includes(target));
-            assert_false(e.deepPath().includes(host));
+            assert_true(e.composedPath().includes(target));
+            assert_false(e.composedPath().includes(host));
             t.done();
         });
     }
@@ -50,8 +50,8 @@ async_test(function(t) {
 async_test(function(t) {
     target.onerror = function(e) {
         t.step(function() {
-            assert_true(e.deepPath().includes(target));
-            assert_true(e.deepPath().includes(host));
+            assert_true(e.composedPath().includes(target));
+            assert_true(e.composedPath().includes(host));
             t.done();
         });
     }

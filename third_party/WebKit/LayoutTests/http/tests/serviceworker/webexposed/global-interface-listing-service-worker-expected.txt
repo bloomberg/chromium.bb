@@ -150,8 +150,8 @@ interface Event
     getter target
     getter timeStamp
     getter type
+    method composedPath
     method constructor
-    method deepPath
     method initEvent
     method preventDefault
     method stopImmediatePropagation
