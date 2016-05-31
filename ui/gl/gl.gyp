@@ -182,6 +182,8 @@
             'gl_surface_egl_x11.h',
             'gl_surface_glx.cc',
             'gl_surface_glx.h',
+            'gl_surface_osmesa_x11.cc',
+            'gl_surface_osmesa_x11.h',
           ],
           'direct_dependent_settings': {
             'defines': [

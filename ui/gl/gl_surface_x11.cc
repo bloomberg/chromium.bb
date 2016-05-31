@@ -10,238 +10,19 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/gl_surface_egl_x11.h"
 #include "ui/gl/gl_surface_glx.h"
-#include "ui/gl/gl_surface_osmesa.h"
+#include "ui/gl/gl_surface_osmesa_x11.h"
 #include "ui/gl/gl_surface_stub.h"
 
 namespace gl {
 
 namespace {
-
-// This OSMesa GL surface can use XLib to swap the contents of the buffer to a
-// view.
-class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
- public:
-  explicit NativeViewGLSurfaceOSMesa(gfx::AcceleratedWidget window);
-
-  static bool InitializeOneOff();
-
-  // Implement a subset of GLSurface.
-  bool Initialize(GLSurface::Format format) override;
-  void Destroy() override;
-  bool Resize(const gfx::Size& new_size,
-              float scale_factor,
-              bool alpha) override;
-  bool IsOffscreen() override;
-  gfx::SwapResult SwapBuffers() override;
-  bool SupportsPostSubBuffer() override;
-  gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
-
- protected:
-  ~NativeViewGLSurfaceOSMesa() override;
-
- private:
-  Display* xdisplay_;
-  GC window_graphics_context_;
-  gfx::AcceleratedWidget window_;
-  GC pixmap_graphics_context_;
-  Pixmap pixmap_;
-
-  DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceOSMesa);
-};
-
-NativeViewGLSurfaceOSMesa::NativeViewGLSurfaceOSMesa(
-    gfx::AcceleratedWidget window)
-    : GLSurfaceOSMesa(SURFACE_OSMESA_BGRA, gfx::Size(1, 1)),
-      xdisplay_(gfx::GetXDisplay()),
-      window_graphics_context_(0),
-      window_(window),
-      pixmap_graphics_context_(0),
-      pixmap_(0) {
-  DCHECK(xdisplay_);
-  DCHECK(window_);
-}
-
-// static
-bool NativeViewGLSurfaceOSMesa::InitializeOneOff() {
-  static bool initialized = false;
-  if (initialized)
-    return true;
-
-  if (!gfx::GetXDisplay()) {
-    LOG(ERROR) << "XOpenDisplay failed.";
-    return false;
-  }
-
-  initialized = true;
-  return true;
-}
-
-bool NativeViewGLSurfaceOSMesa::Initialize(GLSurface::Format format) {
-  if (!GLSurfaceOSMesa::Initialize(format))
-    return false;
-
-  window_graphics_context_ = XCreateGC(xdisplay_, window_, 0, NULL);
-  if (!window_graphics_context_) {
-    LOG(ERROR) << "XCreateGC failed.";
-    Destroy();
-    return false;
-  }
-
-  return true;
-}
-
-void NativeViewGLSurfaceOSMesa::Destroy() {
-  if (pixmap_graphics_context_) {
-    XFreeGC(xdisplay_, pixmap_graphics_context_);
-    pixmap_graphics_context_ = NULL;
-  }
-
-  if (pixmap_) {
-    XFreePixmap(xdisplay_, pixmap_);
-    pixmap_ = 0;
-  }
-
-  if (window_graphics_context_) {
-    XFreeGC(xdisplay_, window_graphics_context_);
-    window_graphics_context_ = NULL;
-  }
-
-  XSync(xdisplay_, False);
-}
-
-bool NativeViewGLSurfaceOSMesa::Resize(const gfx::Size& new_size,
-                                       float scale_factor,
-                                       bool alpha) {
-  if (!GLSurfaceOSMesa::Resize(new_size, scale_factor, alpha))
-    return false;
-
-  XWindowAttributes attributes;
-  if (!XGetWindowAttributes(xdisplay_, window_, &attributes)) {
-    LOG(ERROR) << "XGetWindowAttributes failed for window " << window_ << ".";
-    return false;
-  }
-
-  // Destroy the previous pixmap and graphics context.
-  if (pixmap_graphics_context_) {
-    XFreeGC(xdisplay_, pixmap_graphics_context_);
-    pixmap_graphics_context_ = NULL;
-  }
-  if (pixmap_) {
-    XFreePixmap(xdisplay_, pixmap_);
-    pixmap_ = 0;
-  }
-
-  // Recreate a pixmap to hold the frame.
-  pixmap_ = XCreatePixmap(xdisplay_,
-                          window_,
-                          new_size.width(),
-                          new_size.height(),
-                          attributes.depth);
-  if (!pixmap_) {
-    LOG(ERROR) << "XCreatePixmap failed.";
-    return false;
-  }
-
-  // Recreate a graphics context for the pixmap.
-  pixmap_graphics_context_ = XCreateGC(xdisplay_, pixmap_, 0, NULL);
-  if (!pixmap_graphics_context_) {
-    LOG(ERROR) << "XCreateGC failed";
-    return false;
-  }
-
-  return true;
-}
-
-bool NativeViewGLSurfaceOSMesa::IsOffscreen() {
-  return false;
-}
-
-gfx::SwapResult NativeViewGLSurfaceOSMesa::SwapBuffers() {
-  TRACE_EVENT2("gpu", "NativeViewGLSurfaceOSMesa:RealSwapBuffers",
-      "width", GetSize().width(),
-      "height", GetSize().height());
-
-  gfx::Size size = GetSize();
-
-  XWindowAttributes attributes;
-  if (!XGetWindowAttributes(xdisplay_, window_, &attributes)) {
-    LOG(ERROR) << "XGetWindowAttributes failed for window " << window_ << ".";
-    return gfx::SwapResult::SWAP_FAILED;
-  }
-
-  // Copy the frame into the pixmap.
-  gfx::PutARGBImage(xdisplay_, attributes.visual, attributes.depth, pixmap_,
-                    pixmap_graphics_context_,
-                    static_cast<const uint8_t*>(GetHandle()), size.width(),
-                    size.height());
-
-  // Copy the pixmap to the window.
-  XCopyArea(xdisplay_,
-            pixmap_,
-            window_,
-            window_graphics_context_,
-            0,
-            0,
-            size.width(),
-            size.height(),
-            0,
-            0);
-
-  return gfx::SwapResult::SWAP_ACK;
-}
-
-bool NativeViewGLSurfaceOSMesa::SupportsPostSubBuffer() {
-  return true;
-}
-
-gfx::SwapResult NativeViewGLSurfaceOSMesa::PostSubBuffer(int x,
-                                                         int y,
-                                                         int width,
-                                                         int height) {
-  gfx::Size size = GetSize();
-
-  // Move (0,0) from lower-left to upper-left
-  y = size.height() - y - height;
-
-  XWindowAttributes attributes;
-  if (!XGetWindowAttributes(xdisplay_, window_, &attributes)) {
-    LOG(ERROR) << "XGetWindowAttributes failed for window " << window_ << ".";
-    return gfx::SwapResult::SWAP_FAILED;
-  }
-
-  // Copy the frame into the pixmap.
-  gfx::PutARGBImage(xdisplay_, attributes.visual, attributes.depth, pixmap_,
-                    pixmap_graphics_context_,
-                    static_cast<const uint8_t*>(GetHandle()), size.width(),
-                    size.height(), x, y, x, y, width, height);
-
-  // Copy the pixmap to the window.
-  XCopyArea(xdisplay_,
-            pixmap_,
-            window_,
-            window_graphics_context_,
-            x,
-            y,
-            width,
-            height,
-            x,
-            y);
-
-  return gfx::SwapResult::SWAP_ACK;
-}
-
-NativeViewGLSurfaceOSMesa::~NativeViewGLSurfaceOSMesa() {
-  Destroy();
-}
 
 }  // namespace
 
@@ -254,8 +35,8 @@ bool GLSurface::InitializeOneOffInternal() {
       }
       break;
     case kGLImplementationOSMesaGL:
-      if (!NativeViewGLSurfaceOSMesa::InitializeOneOff()) {
-        LOG(ERROR) << "NativeViewGLSurfaceOSMesa::InitializeOneOff failed.";
+      if (!GLSurfaceOSMesaX11::InitializeOneOff()) {
+        LOG(ERROR) << "GLSurfaceOSMesaX11::InitializeOneOff failed.";
         return false;
       }
       break;
@@ -277,8 +58,7 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
   TRACE_EVENT0("gpu", "GLSurface::CreateViewGLSurface");
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
-      scoped_refptr<GLSurface> surface(
-          new NativeViewGLSurfaceOSMesa(window));
+      scoped_refptr<GLSurface> surface(new GLSurfaceOSMesaX11(window));
       if (!surface->Initialize())
         return NULL;
 
