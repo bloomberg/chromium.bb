@@ -132,7 +132,7 @@ Then, to actually update the schema, run:
 ```shell
 bq update \
   --schema \
-    $CHROMIUM_SRC/tools/android/loading/cloud/frontend/bigquery_schema.json
+    $CHROMIUM_SRC/tools/android/loading/cloud/frontend/bigquery_schema.json \
   -t clovis_dataset.report
 ```
 
