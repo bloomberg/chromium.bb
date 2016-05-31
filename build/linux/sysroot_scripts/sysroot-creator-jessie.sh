@@ -202,20 +202,29 @@ DEBIAN_PACKAGES_AMD64="
 "
 
 DEBIAN_PACKAGES_X86="
-  libquadmath0
-  libdrm-intel1
-  libcilkrts5
-  libitm1
   libasan0
+  libcilkrts5
+  libdrm-intel1
+  libitm1
+  libquadmath0
   libubsan0
 "
 
 DEBIAN_PACKAGES_ARM="
-  libdrm-omap1
+  libasan0
   libdrm-exynos1
   libdrm-freedreno1
-  libasan0
+  libdrm-omap1
   libubsan0
+"
+DEBIAN_PACKAGES_ARM64="
+  libdatrie1
+  libgmp10
+  libgraphite2-3
+  libhogweed2
+  libitm1
+  libnettle4
+  libthai0
 "
 
 . ${SCRIPT_DIR}/sysroot-creator.sh

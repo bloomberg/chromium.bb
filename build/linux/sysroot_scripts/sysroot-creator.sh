@@ -64,15 +64,18 @@ readonly RELEASE_LIST_GPG="${REPO_BASEDIR}/${RELEASE_FILE_GPG}"
 readonly PACKAGE_FILE_AMD64="main/binary-amd64/Packages.${PACKAGES_EXT}"
 readonly PACKAGE_FILE_I386="main/binary-i386/Packages.${PACKAGES_EXT}"
 readonly PACKAGE_FILE_ARM="main/binary-armhf/Packages.${PACKAGES_EXT}"
+readonly PACKAGE_FILE_ARM64="main/binary-arm64/Packages.${PACKAGES_EXT}"
 readonly PACKAGE_FILE_MIPS="main/binary-mipsel/Packages.${PACKAGES_EXT}"
 readonly PACKAGE_LIST_AMD64="${REPO_BASEDIR}/${PACKAGE_FILE_AMD64}"
 readonly PACKAGE_LIST_I386="${REPO_BASEDIR}/${PACKAGE_FILE_I386}"
 readonly PACKAGE_LIST_ARM="${REPO_BASEDIR}/${PACKAGE_FILE_ARM}"
+readonly PACKAGE_LIST_ARM64="${REPO_BASEDIR}/${PACKAGE_FILE_ARM64}"
 readonly PACKAGE_LIST_MIPS="${REPO_BASEDIR}/${PACKAGE_FILE_MIPS}"
 
 readonly DEBIAN_DEP_LIST_AMD64="packagelist.${DIST}.amd64"
 readonly DEBIAN_DEP_LIST_I386="packagelist.${DIST}.i386"
 readonly DEBIAN_DEP_LIST_ARM="packagelist.${DIST}.arm"
+readonly DEBIAN_DEP_LIST_ARM64="packagelist.${DIST}.arm64"
 readonly DEBIAN_DEP_LIST_MIPS="packagelist.${DIST}.mipsel"
 
 ######################################################################
@@ -128,6 +131,9 @@ SetEnvironmentVariables() {
   fi
   if [ -z "$ARCH" ]; then
     echo $1 | grep -qs ARM$ && ARCH=ARM
+  fi
+  if [ -z "$ARCH" ]; then
+    echo $1 | grep -qs ARM64$ && ARCH=ARM64
   fi
   if [ -z "${ARCH}" ]; then
     echo "ERROR: Unable to determine architecture based on: $1"
@@ -222,6 +228,17 @@ GeneratePackageListARM() {
   ExtractPackageBz2 "$package_list" "$tmp_package_list"
   GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}
     ${DEBIAN_PACKAGES_ARM}"
+}
+
+function GeneratePackageListARM64() {
+  local output_file="$1"
+  local package_list="${BUILD_DIR}/Packages.${DIST}_arm64.${PACKAGES_EXT}"
+  local tmp_package_list="${BUILD_DIR}/Packages.${DIST}_arm64"
+  DownloadOrCopy "${PACKAGE_LIST_ARM64}" "${package_list}"
+  VerifyPackageListing "${PACKAGE_FILE_ARM64}" "${package_list}"
+  ExtractPackageBz2 "$package_list" "$tmp_package_list"
+  GeneratePackageList "$tmp_package_list" "$output_file" "${DEBIAN_PACKAGES}
+    ${DEBIAN_PACKAGES_ARM64}"
 }
 
 GeneratePackageListMips() {
@@ -323,6 +340,25 @@ HacksAndPatchesARM() {
       ${INSTALL_ROOT}/usr/lib/pkgconfig
 }
 
+function HacksAndPatchesARM64() {
+  Banner "Misc Hacks & Patches"
+  # these are linker scripts with absolute pathnames in them
+  # which we rewrite here
+  lscripts="${INSTALL_ROOT}/usr/lib/aarch64-linux-gnu/libpthread.so \
+            ${INSTALL_ROOT}/usr/lib/aarch64-linux-gnu/libc.so"
+
+  # Rewrite linker scripts
+  sed -i -e 's|/usr/lib/aarch64-linux-gnu/||g' ${lscripts}
+  sed -i -e 's|/lib/aarch64-linux-gnu/||g' ${lscripts}
+
+  # This is for chrome's ./build/linux/pkg-config-wrapper
+  # which overwrites PKG_CONFIG_LIBDIR internally
+  SubBanner "Move pkgconfig files"
+  mkdir -p ${INSTALL_ROOT}/usr/lib/pkgconfig
+  mv ${INSTALL_ROOT}/usr/lib/aarch64-linux-gnu/pkgconfig/* \
+      ${INSTALL_ROOT}/usr/lib/pkgconfig
+
+}
 
 HacksAndPatchesMips() {
   Banner "Misc Hacks & Patches"
@@ -398,7 +434,8 @@ CleanupJailSymlinks() {
     echo "${target}" | grep -qs ^/ || continue
     echo "${link}: ${target}"
     case "${link}" in
-      usr/lib/gcc/*-linux-gnu/4.*/* | usr/lib/gcc/arm-linux-gnueabihf/4.*/*)
+      usr/lib/gcc/*-linux-gnu/4.*/* | usr/lib/gcc/arm-linux-gnueabihf/4.*/* |\
+      usr/lib/gcc/aarch64-linux-gnu/4.*/*)
         # Relativize the symlink.
         ln -snfv "../../../../..${target}" "${link}"
         ;;
@@ -481,6 +518,25 @@ BuildSysrootARM() {
 }
 
 #@
+#@ BuildSysrootARM64
+#@
+#@    Build everything and package it
+function BuildSysrootARM64() {
+  ClearInstallDir
+  local package_file="$BUILD_DIR/package_with_sha256sum_arm64"
+  GeneratePackageListARM64 "$package_file"
+  local files_and_sha256sums="$(cat ${package_file})"
+  StripChecksumsFromPackageList "$package_file"
+  VerifyPackageFilesMatch "$package_file" "$DEBIAN_DEP_LIST_ARM64"
+  APT_REPO=${APR_REPO_ARM64:=$APT_REPO}
+  InstallIntoSysroot ${files_and_sha256sums}
+  CleanupJailSymlinks
+  HacksAndPatchesARM64
+  CreateTarBall
+}
+
+
+#@
 #@ BuildSysrootMips
 #@
 #@    Build everything and package it
@@ -543,6 +599,13 @@ UploadSysrootARM() {
 }
 
 #@
+#@ UploadSysrootARM64 <revision>
+#@
+function UploadSysrootARM64() {
+  UploadSysroot "$@"
+}
+
+#@
 #@ UploadSysrootMips <revision>
 #@
 UploadSysrootMips() {
@@ -557,6 +620,7 @@ UploadSysrootAll() {
   RunCommand UploadSysrootAmd64 "$@"
   RunCommand UploadSysrootI386 "$@"
   RunCommand UploadSysrootARM "$@"
+  RunCommand UploadSysrootARM64 "$@"
   RunCommand UploadSysrootMips "$@"
 }
 
@@ -669,6 +733,16 @@ UpdatePackageListsARM() {
 }
 
 #@
+#@ UpdatePackageListsARM64
+#@
+#@     Regenerate the package lists such that they contain an up-to-date
+#@     list of URLs within the Debian archive. (For arm)
+function UpdatePackageListsARM64() {
+  GeneratePackageListARM64 "$DEBIAN_DEP_LIST_ARM64"
+  StripChecksumsFromPackageList "$DEBIAN_DEP_LIST_ARM64"
+}
+
+#@
 #@ UpdatePackageListsMips
 #@
 #@     Regenerate the package lists such that they contain an up-to-date
@@ -686,6 +760,7 @@ UpdatePackageListsAll() {
   RunCommand UpdatePackageListsAmd64
   RunCommand UpdatePackageListsI386
   RunCommand UpdatePackageListsARM
+  RunCommand UpdatePackageListsARM64
   RunCommand UpdatePackageListsMips
 }
 
