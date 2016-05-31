@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/web_process_memory_dump_impl.h"
+#include "platform/web_process_memory_dump.h"
 
 #include "base/memory/discardable_memory.h"
 #include "base/test/test_discardable_memory_allocator.h"
@@ -10,7 +10,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/values.h"
-#include "platform/web_memory_allocator_dump_impl.h"
+#include "platform/web_memory_allocator_dump.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/OwnPtr.h"
 
@@ -19,17 +19,17 @@ namespace blink {
 // Tests that the Chromium<>Blink plumbing that exposes the MemoryInfra classes
 // behaves correctly, performs the right transfers of memory ownerships and
 // doesn't leak objects.
-TEST(WebProcessMemoryDumpImplTest, IntegrationTest) {
+TEST(WebProcessMemoryDumpTest, IntegrationTest) {
   std::unique_ptr<base::trace_event::TracedValue> traced_value(
           new base::trace_event::TracedValue());
 
-  std::unique_ptr<WebProcessMemoryDumpImpl> wpmd1(new WebProcessMemoryDumpImpl());
+  std::unique_ptr<WebProcessMemoryDump> wpmd1(new WebProcessMemoryDump());
   auto wmad1 = wpmd1->createMemoryAllocatorDump("1/1");
   auto wmad2 = wpmd1->createMemoryAllocatorDump("1/2");
   ASSERT_EQ(wmad1, wpmd1->getMemoryAllocatorDump("1/1"));
   ASSERT_EQ(wmad2, wpmd1->getMemoryAllocatorDump("1/2"));
 
-  std::unique_ptr<WebProcessMemoryDumpImpl> wpmd2(new WebProcessMemoryDumpImpl());
+  std::unique_ptr<WebProcessMemoryDump> wpmd2(new WebProcessMemoryDump());
   wpmd2->createMemoryAllocatorDump("2/1");
   wpmd2->createMemoryAllocatorDump("2/2");
 

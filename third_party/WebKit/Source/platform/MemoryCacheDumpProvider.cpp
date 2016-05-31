@@ -4,8 +4,6 @@
 
 #include "platform/MemoryCacheDumpProvider.h"
 
-#include "platform/web_process_memory_dump_impl.h"
-
 namespace blink {
 
 DEFINE_TRACE(MemoryCacheDumpClient)
@@ -37,7 +35,7 @@ bool MemoryCacheDumpProvider::OnMemoryDump(const base::trace_event::MemoryDumpAr
         return false;
     }
 
-    WebProcessMemoryDumpImpl dump(args.level_of_detail, memoryDump);
+    WebProcessMemoryDump dump(args.level_of_detail, memoryDump);
     return m_client->onMemoryDump(level, &dump);
 }
 

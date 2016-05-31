@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/web_process_memory_dump_impl.h"
+#include "platform/web_process_memory_dump.h"
 
 #include "base/memory/discardable_memory.h"
 #include "base/memory/ptr_util.h"
@@ -11,73 +11,80 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
-#include "platform/web_memory_allocator_dump_impl.h"
+#include "platform/web_memory_allocator_dump.h"
 #include "skia/ext/skia_trace_memory_dump_impl.h"
+#include "wtf/text/StringUTF8Adaptor.h"
 
 #include <stddef.h>
 
 namespace blink {
 
-WebProcessMemoryDumpImpl::WebProcessMemoryDumpImpl()
+WebProcessMemoryDump::WebProcessMemoryDump()
     : owned_process_memory_dump_(
           new base::trace_event::ProcessMemoryDump(nullptr)),
       process_memory_dump_(owned_process_memory_dump_.get()),
       level_of_detail_(base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {}
 
-WebProcessMemoryDumpImpl::WebProcessMemoryDumpImpl(
+WebProcessMemoryDump::WebProcessMemoryDump(
     base::trace_event::MemoryDumpLevelOfDetail level_of_detail,
     base::trace_event::ProcessMemoryDump* process_memory_dump)
     : process_memory_dump_(process_memory_dump),
       level_of_detail_(level_of_detail) {}
 
-WebProcessMemoryDumpImpl::~WebProcessMemoryDumpImpl() {
+WebProcessMemoryDump::~WebProcessMemoryDump() {
 }
 
 blink::WebMemoryAllocatorDump*
-WebProcessMemoryDumpImpl::createMemoryAllocatorDump(
-    const blink::WebString& absolute_name) {
+WebProcessMemoryDump::createMemoryAllocatorDump(
+    const String& absolute_name) {
+  StringUTF8Adaptor adapter(absolute_name);
+  std::string name(adapter.data(), adapter.length());
   // Get a MemoryAllocatorDump from the base/ object.
   base::trace_event::MemoryAllocatorDump* memory_allocator_dump =
-      process_memory_dump_->CreateAllocatorDump(absolute_name.utf8());
+      process_memory_dump_->CreateAllocatorDump(name);
 
   return createWebMemoryAllocatorDump(memory_allocator_dump);
 }
 
 blink::WebMemoryAllocatorDump*
-WebProcessMemoryDumpImpl::createMemoryAllocatorDump(
-    const blink::WebString& absolute_name,
+WebProcessMemoryDump::createMemoryAllocatorDump(
+    const String& absolute_name,
     blink::WebMemoryAllocatorDumpGuid guid) {
+  StringUTF8Adaptor adapter(absolute_name);
+  std::string name(adapter.data(), adapter.length());
   // Get a MemoryAllocatorDump from the base/ object with given guid.
   base::trace_event::MemoryAllocatorDump* memory_allocator_dump =
       process_memory_dump_->CreateAllocatorDump(
-          absolute_name.utf8(),
+          name,
           base::trace_event::MemoryAllocatorDumpGuid(guid));
   return createWebMemoryAllocatorDump(memory_allocator_dump);
 }
 
 blink::WebMemoryAllocatorDump*
-WebProcessMemoryDumpImpl::createWebMemoryAllocatorDump(
+WebProcessMemoryDump::createWebMemoryAllocatorDump(
     base::trace_event::MemoryAllocatorDump* memory_allocator_dump) {
   if (!memory_allocator_dump)
     return nullptr;
 
   // Wrap it and return to blink.
-  WebMemoryAllocatorDumpImpl* web_memory_allocator_dump_impl =
-      new WebMemoryAllocatorDumpImpl(memory_allocator_dump);
+  WebMemoryAllocatorDump* web_memory_allocator_dump =
+      new WebMemoryAllocatorDump(memory_allocator_dump);
 
   // memory_allocator_dumps_ will take ownership of
-  // |web_memory_allocator_dumpd_impl|.
+  // |web_memory_allocator_dump|.
   memory_allocator_dumps_.set(
-      memory_allocator_dump, adoptPtr(web_memory_allocator_dump_impl));
-  return web_memory_allocator_dump_impl;
+      memory_allocator_dump, adoptPtr(web_memory_allocator_dump));
+  return web_memory_allocator_dump;
 }
 
-blink::WebMemoryAllocatorDump* WebProcessMemoryDumpImpl::getMemoryAllocatorDump(
-    const blink::WebString& absolute_name) const {
+blink::WebMemoryAllocatorDump* WebProcessMemoryDump::getMemoryAllocatorDump(
+    const String& absolute_name) const {
+  StringUTF8Adaptor adapter(absolute_name);
+  std::string name(adapter.data(), adapter.length());
   // Retrieve the base MemoryAllocatorDump object and then reverse lookup
   // its wrapper.
   base::trace_event::MemoryAllocatorDump* memory_allocator_dump =
-      process_memory_dump_->GetAllocatorDump(absolute_name.utf8());
+      process_memory_dump_->GetAllocatorDump(name);
   if (!memory_allocator_dump)
     return nullptr;
 
@@ -90,7 +97,7 @@ blink::WebMemoryAllocatorDump* WebProcessMemoryDumpImpl::getMemoryAllocatorDump(
   return web_memory_allocator_dump;
 }
 
-void WebProcessMemoryDumpImpl::clear() {
+void WebProcessMemoryDump::clear() {
   // Clear all the WebMemoryAllocatorDump wrappers.
   memory_allocator_dumps_.clear();
 
@@ -98,33 +105,32 @@ void WebProcessMemoryDumpImpl::clear() {
   process_memory_dump_->Clear();
 }
 
-void WebProcessMemoryDumpImpl::takeAllDumpsFrom(
+void WebProcessMemoryDump::takeAllDumpsFrom(
     blink::WebProcessMemoryDump* other) {
-  auto other_impl = static_cast<WebProcessMemoryDumpImpl*>(other);
-  // WebProcessMemoryDumpImpl is a container of WebMemoryAllocatorDump(s) which
+  // WebProcessMemoryDump is a container of WebMemoryAllocatorDump(s) which
   // in turn are wrappers of base::trace_event::MemoryAllocatorDump(s).
   // In order to expose the move and ownership transfer semantics of the
   // underlying ProcessMemoryDump, we need to:
 
   // 1) Move and transfer the ownership of the wrapped
   // base::trace_event::MemoryAllocatorDump(s) instances.
-  process_memory_dump_->TakeAllDumpsFrom(other_impl->process_memory_dump_);
+  process_memory_dump_->TakeAllDumpsFrom(other->process_memory_dump_);
 
   // 2) Move and transfer the ownership of the WebMemoryAllocatorDump wrappers.
   const size_t expected_final_size = memory_allocator_dumps_.size() +
-                                     other_impl->memory_allocator_dumps_.size();
-  while (!other_impl->memory_allocator_dumps_.isEmpty()) {
-    auto first_entry = other_impl->memory_allocator_dumps_.begin();
+                                     other->memory_allocator_dumps_.size();
+  while (!other->memory_allocator_dumps_.isEmpty()) {
+    auto first_entry = other->memory_allocator_dumps_.begin();
     base::trace_event::MemoryAllocatorDump* memory_allocator_dump =
         first_entry->key;
     memory_allocator_dumps_.set(memory_allocator_dump,
-        other_impl->memory_allocator_dumps_.take(memory_allocator_dump));
+        other->memory_allocator_dumps_.take(memory_allocator_dump));
   }
   DCHECK_EQ(expected_final_size, memory_allocator_dumps_.size());
-  DCHECK(other_impl->memory_allocator_dumps_.isEmpty());
+  DCHECK(other->memory_allocator_dumps_.isEmpty());
 }
 
-void WebProcessMemoryDumpImpl::addOwnershipEdge(
+void WebProcessMemoryDump::addOwnershipEdge(
     blink::WebMemoryAllocatorDumpGuid source,
     blink::WebMemoryAllocatorDumpGuid target,
     int importance) {
@@ -133,7 +139,7 @@ void WebProcessMemoryDumpImpl::addOwnershipEdge(
       base::trace_event::MemoryAllocatorDumpGuid(target), importance);
 }
 
-void WebProcessMemoryDumpImpl::addOwnershipEdge(
+void WebProcessMemoryDump::addOwnershipEdge(
     blink::WebMemoryAllocatorDumpGuid source,
     blink::WebMemoryAllocatorDumpGuid target) {
   process_memory_dump_->AddOwnershipEdge(
@@ -141,24 +147,28 @@ void WebProcessMemoryDumpImpl::addOwnershipEdge(
       base::trace_event::MemoryAllocatorDumpGuid(target));
 }
 
-void WebProcessMemoryDumpImpl::addSuballocation(
+void WebProcessMemoryDump::addSuballocation(
     blink::WebMemoryAllocatorDumpGuid source,
-    const blink::WebString& target_node_name) {
+    const String& target_node_name) {
+  StringUTF8Adaptor adapter(target_node_name);
+  std::string target_node(adapter.data(), adapter.length());
   process_memory_dump_->AddSuballocation(
       base::trace_event::MemoryAllocatorDumpGuid(source),
-      target_node_name.utf8());
+      target_node);
 }
 
-SkTraceMemoryDump* WebProcessMemoryDumpImpl::createDumpAdapterForSkia(
-    const blink::WebString& dump_name_prefix) {
+SkTraceMemoryDump* WebProcessMemoryDump::createDumpAdapterForSkia(
+    const String& dump_name_prefix) {
+  StringUTF8Adaptor adapter(dump_name_prefix);
+  std::string prefix(adapter.data(), adapter.length());
   sk_trace_dump_list_.push_back(base::WrapUnique(
       new skia::SkiaTraceMemoryDumpImpl(
-          dump_name_prefix.utf8(), level_of_detail_, process_memory_dump_)));
+          prefix, level_of_detail_, process_memory_dump_)));
   return sk_trace_dump_list_.back().get();
 }
 
 blink::WebMemoryAllocatorDump*
-WebProcessMemoryDumpImpl::createDiscardableMemoryAllocatorDump(
+WebProcessMemoryDump::createDiscardableMemoryAllocatorDump(
     const std::string& name,
     base::DiscardableMemory* discardable) {
   base::trace_event::MemoryAllocatorDump* dump =
@@ -167,7 +177,7 @@ WebProcessMemoryDumpImpl::createDiscardableMemoryAllocatorDump(
   return createWebMemoryAllocatorDump(dump);
 }
 
-void WebProcessMemoryDumpImpl::dumpHeapUsage(
+void WebProcessMemoryDump::dumpHeapUsage(
     const base::hash_map<base::trace_event::AllocationContext,
         base::trace_event::AllocationMetrics>& metrics_by_context,
     base::trace_event::TraceEventMemoryOverhead& overhead,

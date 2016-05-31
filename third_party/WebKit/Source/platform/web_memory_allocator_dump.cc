@@ -2,40 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/web_memory_allocator_dump_impl.h"
+#include "platform/web_memory_allocator_dump.h"
 
 #include "base/trace_event/memory_allocator_dump.h"
+#include "wtf/text/StringUTF8Adaptor.h"
 
 namespace blink {
 
-WebMemoryAllocatorDumpImpl::WebMemoryAllocatorDumpImpl(
+WebMemoryAllocatorDump::WebMemoryAllocatorDump(
     base::trace_event::MemoryAllocatorDump* memory_allocator_dump)
     : memory_allocator_dump_(memory_allocator_dump),
       guid_(memory_allocator_dump->guid().ToUint64()) {
 }
 
-WebMemoryAllocatorDumpImpl::~WebMemoryAllocatorDumpImpl() {
+WebMemoryAllocatorDump::~WebMemoryAllocatorDump() {
 }
 
-void WebMemoryAllocatorDumpImpl::addScalar(const char* name,
+void WebMemoryAllocatorDump::addScalar(const char* name,
                                            const char* units,
                                            uint64_t value) {
   memory_allocator_dump_->AddScalar(name, units, value);
 }
 
-void WebMemoryAllocatorDumpImpl::addScalarF(const char* name,
+void WebMemoryAllocatorDump::addScalarF(const char* name,
                                             const char* units,
                                             double value) {
   memory_allocator_dump_->AddScalarF(name, units, value);
 }
 
-void WebMemoryAllocatorDumpImpl::addString(const char* name,
+void WebMemoryAllocatorDump::addString(const char* name,
                                            const char* units,
-                                           const blink::WebString& value) {
-  memory_allocator_dump_->AddString(name, units, value.utf8());
+                                           const String& value) {
+  StringUTF8Adaptor adapter(value);
+  std::string utf8(adapter.data(), adapter.length());
+  memory_allocator_dump_->AddString(name, units, utf8);
 }
 
-WebMemoryAllocatorDumpGuid WebMemoryAllocatorDumpImpl::guid() const {
+WebMemoryAllocatorDumpGuid WebMemoryAllocatorDump::guid() const {
   return guid_;
 }
 

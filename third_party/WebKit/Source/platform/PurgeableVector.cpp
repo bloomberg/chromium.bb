@@ -32,7 +32,7 @@
 
 #include "base/memory/discardable_memory.h"
 #include "base/memory/discardable_memory_allocator.h"
-#include "platform/WebProcessMemoryDump.h"
+#include "platform/web_process_memory_dump.h"
 #include "wtf/Assertions.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
