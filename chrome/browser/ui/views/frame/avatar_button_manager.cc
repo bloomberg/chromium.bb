@@ -22,12 +22,14 @@ void AvatarButtonManager::Update(AvatarButtonStyle style) {
   // This should never be called in incognito mode.
   DCHECK(browser_view->IsRegularOrGuestSession());
   ProfileAttributesEntry* unused;
-  if (browser_view->IsBrowserTypeNormal() &&
-      // Tests may not have a profile manager.
-      g_browser_process->profile_manager() &&
-      g_browser_process->profile_manager()
-          ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile->GetPath(), &unused)) {
+  if ((browser_view->IsBrowserTypeNormal() &&
+       // Tests may not have a profile manager.
+       g_browser_process->profile_manager() &&
+       g_browser_process->profile_manager()
+           ->GetProfileAttributesStorage()
+           .GetProfileAttributesWithPath(profile->GetPath(), &unused)) ||
+      // Desktop guest shows the avatar button.
+      browser_view->IsOffTheRecord()) {
     if (!view_) {
       view_ = new NewAvatarButton(this, style, profile);
       view_->set_id(VIEW_ID_AVATAR_BUTTON);
