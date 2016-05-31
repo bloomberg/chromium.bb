@@ -135,7 +135,7 @@ public:
     float fontSizeDelta() const { return m_fontSizeDelta; }
     bool hasFontSizeDelta() const { return m_fontSizeDelta != NoFontDelta; }
 
-    static EditingStyle* styleAtSelectionStart(const VisibleSelection&, bool shouldUseBackgroundColorInEffect = false);
+    static EditingStyle* styleAtSelectionStart(const VisibleSelection&, bool shouldUseBackgroundColorInEffect = false, MutableStylePropertySet* styleToCheck = nullptr);
     static WritingDirection textDirectionForSelection(const VisibleSelection&, EditingStyle* typingStyle, bool& hasNestedOrMultipleEmbeddings);
     static bool isEmbedOrIsolate(CSSValueID unicodeBidi)
     {
@@ -163,6 +163,7 @@ private:
     Member<MutableStylePropertySet> m_mutableStyle;
     bool m_isMonospaceFont;
     float m_fontSizeDelta;
+    bool m_isVerticalAlign = false;
 
     friend class HTMLElementEquivalent;
     friend class HTMLAttributeEquivalent;

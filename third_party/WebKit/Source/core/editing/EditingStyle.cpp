@@ -30,6 +30,7 @@
 #include "core/HTMLNames.h"
 #include "core/css/CSSColorValue.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
+#include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleRule.h"
@@ -43,6 +44,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/QualifiedName.h"
 #include "core/editing/EditingUtilities.h"
@@ -163,6 +165,7 @@ static bool isTransparentColorValue(CSSValue*);
 static bool hasTransparentBackgroundColor(CSSStyleDeclaration*);
 static bool hasTransparentBackgroundColor(StylePropertySet*);
 static CSSValue* backgroundColorValueInEffect(Node*);
+static bool hasAncestorVerticalAlignStyle(Node&, CSSValueID);
 
 class HTMLElementEquivalent : public GarbageCollected<HTMLElementEquivalent> {
 public:
@@ -386,6 +389,7 @@ EditingStyle::EditingStyle(CSSPropertyID propertyID, const String& value)
     , m_fontSizeDelta(NoFontDelta)
 {
     setProperty(propertyID, value);
+    m_isVerticalAlign = propertyID == CSSPropertyVerticalAlign && (value == "sub" || value == "super");
 }
 
 static Color cssValueToColor(CSSValue* colorValue)
@@ -737,6 +741,16 @@ TriState EditingStyle::triStateOfStyle(CSSStyleDeclaration* styleToCompare, Shou
     return MixedTriState;
 }
 
+static bool hasAncestorVerticalAlignStyle(Node& node, CSSValueID value)
+{
+    for (Node& runner : NodeTraversal::inclusiveAncestorsOf(node)) {
+        CSSComputedStyleDeclaration* ancestorStyle = CSSComputedStyleDeclaration::create(&runner);
+        if (getIdentifierValue(ancestorStyle, CSSPropertyVerticalAlign) == value)
+            return true;
+    }
+    return false;
+}
+
 TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
 {
     if (selection.isNone())
@@ -751,6 +765,15 @@ TriState EditingStyle::triStateOfStyle(const VisibleSelection& selection) const
         if (node.layoutObject() && node.hasEditableStyle()) {
             CSSComputedStyleDeclaration* nodeStyle = CSSComputedStyleDeclaration::create(&node);
             if (nodeStyle) {
+                // If the selected element has <sub> or <sup> ancestor element, apply the corresponding
+                // style(vertical-align) to it so that document.queryCommandState() works with the style.
+                // See bug http://crbug.com/582225.
+                if (m_isVerticalAlign && getIdentifierValue(nodeStyle, CSSPropertyVerticalAlign) == CSSValueBaseline) {
+                    CSSPrimitiveValue* verticalAlign = toCSSPrimitiveValue(m_mutableStyle->getPropertyCSSValue(CSSPropertyVerticalAlign));
+                    if (hasAncestorVerticalAlignStyle(node, verticalAlign->getValueID()))
+                        node.mutableComputedStyle()->setVerticalAlign(verticalAlign->convertTo<EVerticalAlign>());
+                }
+
                 // Pass EditingStyle::DoNotIgnoreTextOnlyProperties without checking if node.isTextNode()
                 // because the node can be an element node. See bug http://crbug.com/584939.
                 TriState nodeState = triStateOfStyle(nodeStyle, EditingStyle::DoNotIgnoreTextOnlyProperties);
@@ -1314,7 +1337,7 @@ int EditingStyle::legacyFontSize(Document* document) const
         m_isMonospaceFont, AlwaysUseLegacyFontSize);
 }
 
-EditingStyle* EditingStyle::styleAtSelectionStart(const VisibleSelection& selection, bool shouldUseBackgroundColorInEffect)
+EditingStyle* EditingStyle::styleAtSelectionStart(const VisibleSelection& selection, bool shouldUseBackgroundColorInEffect, MutableStylePropertySet* styleToCheck)
 {
     if (selection.isNone())
         return nullptr;
@@ -1335,6 +1358,17 @@ EditingStyle* EditingStyle::styleAtSelectionStart(const VisibleSelection& select
 
     EditingStyle* style = EditingStyle::create(element, EditingStyle::AllProperties);
     style->mergeTypingStyle(&element->document());
+
+    // If |element| has <sub> or <sup> ancestor element, apply the corresponding
+    // style(vertical-align) to it so that document.queryCommandState() works with the style.
+    // See bug http://crbug.com/582225.
+    CSSValueID valueID = getIdentifierValue(styleToCheck, CSSPropertyVerticalAlign);
+    if (valueID == CSSValueSub || valueID == CSSValueSuper) {
+        CSSComputedStyleDeclaration* elementStyle = CSSComputedStyleDeclaration::create(element);
+        // Find the ancestor that has CSSValueSub or CSSValueSuper as the value of CSS vertical-align property.
+        if (getIdentifierValue(elementStyle, CSSPropertyVerticalAlign) == CSSValueBaseline && hasAncestorVerticalAlignStyle(*element, valueID))
+            style->m_mutableStyle->setProperty(CSSPropertyVerticalAlign, valueID);
+    }
 
     // If background color is transparent, traverse parent nodes until we hit a different value or document root
     // Also, if the selection is a range, ignore the background color at the start of selection,
