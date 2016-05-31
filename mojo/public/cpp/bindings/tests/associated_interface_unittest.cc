@@ -333,7 +333,8 @@ class NotificationCounter {
   base::Closure notify_finish_;
 };
 
-TEST_F(AssociatedInterfaceTest, MultiThreadAccess) {
+// Disabled due to flakes on Windows bots. See crbug.com/615450.
+TEST_F(AssociatedInterfaceTest, DISABLED_MultiThreadAccess) {
   // Set up four associated interfaces on a message pipe. Use the inteface
   // pointers on four threads in parallel; run the interface implementations on
   // two threads. Test that multi-threaded access works.
