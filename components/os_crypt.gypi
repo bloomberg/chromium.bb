@@ -52,8 +52,16 @@
         }],
         ['OS=="linux" and chromeos!=1 and use_glib==1', {
           'sources': [
-            'os_crypt/libsecret_util_posix.cc',
-            'os_crypt/libsecret_util_posix.h',
+            'os_crypt/key_storage_libsecret.cc',
+            'os_crypt/key_storage_libsecret.h',
+            'os_crypt/key_storage_linux.cc',
+            'os_crypt/key_storage_linux.h',
+            'os_crypt/libsecret_util_linux.cc',
+            'os_crypt/libsecret_util_linux.h',
+            'os_crypt/os_crypt_linux.cc',
+          ],
+          'sources!': [
+            'os_crypt/os_crypt_posix.cc',
           ],
           'defines': [
             'USE_LIBSECRET',
@@ -79,14 +87,19 @@
       'target_name': 'os_crypt_test_support',
       'type': 'static_library',
       'sources': [
-        "os_crypt/os_crypt_mocker.cc",
-        "os_crypt/os_crypt_mocker.h",
+        'os_crypt/os_crypt_mocker.cc',
+        'os_crypt/os_crypt_mocker.h',
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
       ],
       'conditions': [
         ['OS=="linux" and chromeos!=1 and use_glib==1', {
+          'sources': [
+            'os_crypt/os_crypt_mocker_linux.cc',
+            'os_crypt/os_crypt_mocker_linux.h',
+          ],
           'defines': [
             'USE_LIBSECRET',
           ],

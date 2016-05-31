@@ -14,7 +14,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_x.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/os_crypt/libsecret_util_posix.h"
+#include "components/os_crypt/libsecret_util_linux.h"
 
 namespace autofill {
 struct PasswordForm;

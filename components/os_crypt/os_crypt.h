@@ -11,9 +11,14 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 
+#if defined(USE_LIBSECRET)
+#include "components/os_crypt/key_storage_linux.h"
+#endif
+
 // The OSCrypt class gives access to simple encryption and decryption of
 // strings. Note that on Mac, access to the system Keychain is required and
-// these calls can block the current thread to collect user input.
+// these calls can block the current thread to collect user input. The same is
+// true for Linux, if a password management tool is available.
 class OSCrypt {
  public:
   // Encrypt a string16. The output (second argument) is really an array of
@@ -46,5 +51,15 @@ class OSCrypt {
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(OSCrypt);
 };
+
+#if defined(USE_LIBSECRET) && defined(UNIT_TEST)
+// For unit testing purposes, inject methods to be used.
+// |get_key_storage_mock| provides the desired |KeyStorage| implementation.
+// If the provider returns |nullptr|, a hardcoded password will be used.
+// |get_password_v11_mock| provides a password to derive the encryption key from
+// If both parameters are |nullptr|, the real implementation is restored.
+void UseMockKeyStorageForTesting(KeyStorageLinux* (*get_key_storage_mock)(),
+                                 std::string* (*get_password_v11_mock)());
+#endif  // defined(USE_LIBSECRET) && defined(UNIT_TEST)
 
 #endif  // COMPONENTS_OS_CRYPT_OS_CRYPT_H_

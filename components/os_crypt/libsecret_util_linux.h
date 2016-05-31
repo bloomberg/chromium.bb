@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OS_CRYPT_LIBSECRET_UTIL_POSIX_H_
-#define COMPONENTS_OS_CRYPT_LIBSECRET_UTIL_POSIX_H_
+#ifndef COMPONENTS_OS_CRYPT_LIBSECRET_UTIL_LINUX_H_
+#define COMPONENTS_OS_CRYPT_LIBSECRET_UTIL_LINUX_H_
 
 #include <libsecret/secret.h>
 
@@ -15,13 +15,14 @@
 // Utility for dynamically loading libsecret.
 class LibsecretLoader {
  public:
-  static decltype(&::secret_password_store_sync) secret_password_store_sync;
-  static decltype(&::secret_service_search_sync) secret_service_search_sync;
-  static decltype(&::secret_password_clear_sync) secret_password_clear_sync;
-  static decltype(&::secret_item_get_secret) secret_item_get_secret;
-  static decltype(&::secret_value_get_text) secret_value_get_text;
   static decltype(&::secret_item_get_attributes) secret_item_get_attributes;
+  static decltype(&::secret_item_get_secret) secret_item_get_secret;
   static decltype(&::secret_item_load_secret_sync) secret_item_load_secret_sync;
+  static decltype(&::secret_password_clear_sync) secret_password_clear_sync;
+  static decltype(&::secret_password_store_sync) secret_password_store_sync;
+  static decltype(&::secret_service_lookup_sync) secret_service_lookup_sync;
+  static decltype(&::secret_service_search_sync) secret_service_search_sync;
+  static decltype(&::secret_value_get_text) secret_value_get_text;
   static decltype(&::secret_value_unref) secret_value_unref;
 
   // Loads the libsecret library and checks that it responds to queries.
@@ -80,4 +81,4 @@ class LibsecretAttributesBuilder {
   DISALLOW_COPY_AND_ASSIGN(LibsecretAttributesBuilder);
 };
 
-#endif  // COMPONENTS_OS_CRYPT_LIBSECRET_UTIL_POSIX_H_
+#endif  // COMPONENTS_OS_CRYPT_LIBSECRET_UTIL_LINUX_H_

@@ -44,9 +44,15 @@ source_set("os_crypt") {
   }
 
   if (is_desktop_linux && use_glib) {
+    sources -= [ "os_crypt_posix.cc" ]
     sources += [
-      "libsecret_util_posix.cc",
-      "libsecret_util_posix.h",
+      "key_storage_libsecret.cc",
+      "key_storage_libsecret.h",
+      "key_storage_linux.cc",
+      "key_storage_linux.h",
+      "libsecret_util_linux.cc",
+      "libsecret_util_linux.h",
+      "os_crypt_linux.cc",
     ]
     configs += [ "//build/config/linux:glib" ]
     deps += [ "//third_party/libsecret" ]
@@ -63,8 +69,13 @@ source_set("test_support") {
   deps = [
     ":os_crypt",
     "//base",
+    "//testing/gtest",
   ]
   if (is_desktop_linux && use_glib) {
+    sources += [
+      "os_crypt_mocker_linux.cc",
+      "os_crypt_mocker_linux.h",
+    ]
     deps += [ "//third_party/libsecret" ]
     defines = [ "USE_LIBSECRET" ]
   }
@@ -86,6 +97,10 @@ source_set("unit_tests") {
   ]
 
   if (is_desktop_linux && use_glib) {
+    sources += [
+      "os_crypt_linux_unittest.cc",
+      "os_crypt_util_linux_unittest.cc",
+    ]
     deps += [ "//third_party/libsecret" ]
     defines = [ "USE_LIBSECRET" ]
   }

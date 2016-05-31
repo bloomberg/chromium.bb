@@ -1535,6 +1535,18 @@
             '../device/media_transfer_protocol/media_transfer_protocol.gyp:device_media_transfer_protocol',
           ],
         }],
+        ['OS=="linux" and chromeos!=1', {
+          'sources': [
+            'os_crypt/os_crypt_linux_unittest.cc',
+            'os_crypt/os_crypt_util_linux_unittest.cc',
+          ],
+          'defines': [
+            'USE_LIBSECRET',
+          ],
+          'include_dirs': [
+            '../third_party/libsecret'
+          ],
+        }],
         ['OS=="linux" and use_udev==0', {
           'dependencies!': [
             'components.gyp:storage_monitor',

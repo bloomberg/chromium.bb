@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/os_crypt/libsecret_util_posix.h"
+#include "components/os_crypt/libsecret_util_linux.h"
 
 #include <dlfcn.h>
 
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+
+//
+// LibsecretLoader
+//
 
 decltype(
     &::secret_password_store_sync) LibsecretLoader::secret_password_store_sync;
@@ -22,24 +26,29 @@ decltype(
 decltype(&::secret_item_load_secret_sync)
     LibsecretLoader::secret_item_load_secret_sync;
 decltype(&::secret_value_unref) LibsecretLoader::secret_value_unref;
+decltype(
+    &::secret_service_lookup_sync) LibsecretLoader::secret_service_lookup_sync;
 
 bool LibsecretLoader::libsecret_loaded_ = false;
 
 const LibsecretLoader::FunctionInfo LibsecretLoader::kFunctions[] = {
-    {"secret_password_store_sync",
-     reinterpret_cast<void**>(&secret_password_store_sync)},
-    {"secret_service_search_sync",
-     reinterpret_cast<void**>(&secret_service_search_sync)},
-    {"secret_password_clear_sync",
-     reinterpret_cast<void**>(&secret_password_clear_sync)},
     {"secret_item_get_secret",
      reinterpret_cast<void**>(&secret_item_get_secret)},
-    {"secret_value_get_text", reinterpret_cast<void**>(&secret_value_get_text)},
     {"secret_item_get_attributes",
      reinterpret_cast<void**>(&secret_item_get_attributes)},
     {"secret_item_load_secret_sync",
      reinterpret_cast<void**>(&secret_item_load_secret_sync)},
-    {"secret_value_unref", reinterpret_cast<void**>(&secret_value_unref)}};
+    {"secret_password_clear_sync",
+     reinterpret_cast<void**>(&secret_password_clear_sync)},
+    {"secret_password_store_sync",
+     reinterpret_cast<void**>(&secret_password_store_sync)},
+    {"secret_service_lookup_sync",
+     reinterpret_cast<void**>(&secret_service_lookup_sync)},
+    {"secret_service_search_sync",
+     reinterpret_cast<void**>(&secret_service_search_sync)},
+    {"secret_value_get_text", reinterpret_cast<void**>(&secret_value_get_text)},
+    {"secret_value_unref", reinterpret_cast<void**>(&secret_value_unref)},
+};
 
 // static
 bool LibsecretLoader::EnsureLibsecretLoaded() {
@@ -51,7 +60,7 @@ bool LibsecretLoader::LoadLibsecret() {
   if (libsecret_loaded_)
     return true;
 
-  void* handle = dlopen("libsecret-1.so.0", RTLD_NOW | RTLD_GLOBAL);
+  static void* handle = dlopen("libsecret-1.so.0", RTLD_NOW | RTLD_GLOBAL);
   if (!handle) {
     // We wanted to use libsecret, but we couldn't load it. Warn, because
     // either the user asked for this, or we autodetected it incorrectly. (Or
@@ -106,6 +115,10 @@ bool LibsecretLoader::LibsecretIsAvailable() {
 
   return success;
 }
+
+//
+// LibsecretAttributesBuilder
+//
 
 LibsecretAttributesBuilder::LibsecretAttributesBuilder() {
   attrs_ = g_hash_table_new_full(g_str_hash, g_str_equal,
