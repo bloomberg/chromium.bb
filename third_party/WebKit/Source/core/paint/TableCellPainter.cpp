@@ -61,6 +61,10 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     if (m_layoutTableCell.style()->visibility() != VISIBLE)
         return;
 
+    LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableCell.location();
+    if (!BlockPainter(m_layoutTableCell).intersectsPaintRect(paintInfo, adjustedPaintOffset))
+        return;
+
     const LayoutTableCell::CollapsedBorderValues* values = m_layoutTableCell.collapsedBorderValues();
     if (!values)
         return;
@@ -89,14 +93,11 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
     int rightWidth = rightBorderValue.width();
 
     // Adjust our x/y/width/height so that we paint the collapsed borders at the correct location.
-    LayoutRect paintRect = paintRectNotIncludingVisualOverflow(paintOffset + m_layoutTableCell.location());
+    LayoutRect paintRect = paintRectNotIncludingVisualOverflow(adjustedPaintOffset);
     IntRect borderRect = pixelSnappedIntRect(paintRect.x() - leftWidth / 2,
         paintRect.y() - topWidth / 2,
         paintRect.width() + leftWidth / 2 + (rightWidth + 1) / 2,
         paintRect.height() + topWidth / 2 + (bottomWidth + 1) / 2);
-
-    if (!paintInfo.cullRect().intersectsCullRect(borderRect))
-        return;
 
     GraphicsContext& graphicsContext = paintInfo.context;
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(graphicsContext, m_layoutTableCell, static_cast<DisplayItem::Type>(displayItemType)))
@@ -132,6 +133,10 @@ void TableCellPainter::paintContainerBackgroundBehindCell(const PaintInfo& paint
     if (m_layoutTableCell.style()->visibility() != VISIBLE)
         return;
 
+    LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableCell.location();
+    if (!BlockPainter(m_layoutTableCell).intersectsPaintRect(paintInfo, adjustedPaintOffset))
+        return;
+
     LayoutTable* table = m_layoutTableCell.table();
     if (!table->collapseBorders() && m_layoutTableCell.style()->emptyCells() == EmptyCellsHide && !m_layoutTableCell.firstChild())
         return;
@@ -139,7 +144,7 @@ void TableCellPainter::paintContainerBackgroundBehindCell(const PaintInfo& paint
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutTableCell, type))
         return;
 
-    LayoutRect paintRect = paintRectNotIncludingVisualOverflow(paintOffset + m_layoutTableCell.location());
+    LayoutRect paintRect = paintRectNotIncludingVisualOverflow(adjustedPaintOffset);
     LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableCell, type, paintRect);
     paintBackground(paintInfo, paintRect, backgroundObject);
 }
