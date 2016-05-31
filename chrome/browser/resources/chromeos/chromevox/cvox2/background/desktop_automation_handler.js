@@ -365,8 +365,10 @@ DesktopAutomationHandler.prototype = {
     chrome.automation.getFocus(function(focus) {
       // Some cases (e.g. in overview mode), require overriding the assumption
       // that focus is an ancestor of a selection target.
-      var override =
-          evt.target.root == focus.root && focus.root.role == RoleType.desktop;
+      var override = evt.target.role == RoleType.menuItem ||
+          (evt.target.root == focus.root &&
+              focus.root.role == RoleType.desktop);
+      Output.flushNextSpeechUtterance();
       if (override || AutomationUtil.isDescendantOf(evt.target, focus))
         this.onEventDefault(evt);
     }.bind(this));
