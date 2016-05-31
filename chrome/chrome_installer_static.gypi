@@ -77,7 +77,7 @@
            ],
            'includes': [ '../build/isolate.gypi' ],
            'sources': [
-             'install_static/install_static_unittests.isolate'
+             'install_static_unittests.isolate'
            ],
          }, 
        ],
