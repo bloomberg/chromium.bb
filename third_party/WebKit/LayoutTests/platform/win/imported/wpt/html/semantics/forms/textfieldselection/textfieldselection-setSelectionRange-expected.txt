@@ -19,6 +19,7 @@ PASS input setSelectionRange({},1)
 PASS input setSelectionRange(NaN,1) 
 PASS input setSelectionRange(null,1) 
 PASS input setSelectionRange(undefined,1) 
+PASS input setSelectionRange fires a select event 
 PASS test of textarea.setSelectionRange 
 PASS textarea typeof(input.setSelectionRange)' 
 PASS textarea setSelectionRange return void 
@@ -39,5 +40,6 @@ PASS textarea setSelectionRange({},1)
 PASS textarea setSelectionRange(NaN,1) 
 PASS textarea setSelectionRange(null,1) 
 PASS textarea setSelectionRange(undefined,1) 
+PASS textarea setSelectionRange fires a select event 
 Harness: the test ran to completion.
 

@@ -43,7 +43,8 @@ PASS Element names: defining an element named missing-glyph should throw a Synta
 PASS If the name is already defined, should throw a NotSupportedError 
 PASS If the constructor is already defined, should throw a NotSupportedError 
 FAIL If extends is a-, should throw a NotSupportedError assert_throws: function "() =>  {
-        customElements.define('test-define-exten..." did not throw
+        customElements.define('test-define-extend-valid-name', class {}, { extends: name });
+      }" did not throw
 PASS If extends is a-a, should throw a NotSupportedError 
 PASS If extends is aa-, should throw a NotSupportedError 
 PASS If extends is aa-a, should throw a NotSupportedError 
@@ -52,44 +53,73 @@ PASS If extends is a-0123456789, should throw a NotSupportedError
 PASS If extends is a-漢字, should throw a NotSupportedError 
 PASS If extends is a-𠀋, should throw a NotSupportedError 
 FAIL If extends is bgsound, should throw a NotSupportedError assert_throws: function "() =>  {
-        customElements.define('test-define-exten..." did not throw
+        customElements.define('test-define-extend-' + name, class {}, { extends: name });
+      }" did not throw
 FAIL If extends is blink, should throw a NotSupportedError assert_throws: function "() =>  {
-        customElements.define('test-define-exten..." did not throw
+        customElements.define('test-define-extend-' + name, class {}, { extends: name });
+      }" did not throw
 FAIL If extends is isindex, should throw a NotSupportedError assert_throws: function "() =>  {
-        customElements.define('test-define-exten..." did not throw
+        customElements.define('test-define-extend-' + name, class {}, { extends: name });
+      }" did not throw
 FAIL If extends is multicol, should throw a NotSupportedError assert_throws: function "() =>  {
-        customElements.define('test-define-exten..." did not throw
+        customElements.define('test-define-extend-' + name, class {}, { extends: name });
+      }" did not throw
 FAIL If extends is nextid, should throw a NotSupportedError assert_throws: function "() =>  {
-        customElements.define('test-define-exten..." did not throw
+        customElements.define('test-define-extend-' + name, class {}, { extends: name });
+      }" did not throw
 FAIL If extends is spacer, should throw a NotSupportedError assert_throws: function "() =>  {
-        customElements.define('test-define-exten..." did not throw
+        customElements.define('test-define-extend-' + name, class {}, { extends: name });
+      }" did not throw
 FAIL If extends is elementnametobeunknownelement, should throw a NotSupportedError assert_throws: function "() =>  {
-        customElements.define('test-define-exten..." did not throw
+        customElements.define('test-define-extend-' + name, class {}, { extends: name });
+      }" did not throw
+FAIL If constructor.observedAttributes throws, should rethrow assert_throws: function "() => {
+      customElements.define('test-define-observedattributes-rethrow', C);
+    }" did not throw
 PASS If constructor.prototype throws, should rethrow 
 PASS If Type(constructor.prototype) is undefined, should throw a TypeError 
 PASS If Type(constructor.prototype) is string, should throw a TypeError 
-FAIL If constructor.prototype.observedAttributes throws, should rethrow assert_throws: function "() =>  {
-        customElements.define('test-define-const..." threw object "SyntaxError: Failed to execute 'define' on 'CustomElement..." ("SyntaxError") expected object "[object Object]" ("rethrown")
-FAIL If constructor.prototype.connectedCallback throws, should rethrow assert_throws: function "() =>  {
-        customElements.define('test-define-const..." threw object "SyntaxError: Failed to execute 'define' on 'CustomElement..." ("SyntaxError") expected object "[object Object]" ("rethrown")
-FAIL If constructor.prototype.disconnectedCallback throws, should rethrow assert_throws: function "() =>  {
-        customElements.define('test-define-const..." threw object "SyntaxError: Failed to execute 'define' on 'CustomElement..." ("SyntaxError") expected object "[object Object]" ("rethrown")
-FAIL If constructor.prototype.attributeChangedCallback throws, should rethrow assert_throws: function "() =>  {
-        customElements.define('test-define-const..." threw object "SyntaxError: Failed to execute 'define' on 'CustomElement..." ("SyntaxError") expected object "[object Object]" ("rethrown")
-FAIL If constructor.prototype.connectedCallback is undefined, should success Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-prototype-connectedCallback" is not a valid custom element name
-FAIL If constructor.prototype.connectedCallback is null, should throw a TypeError assert_throws: function "() =>  {
-          customElements.define('test-define-con..." threw object "SyntaxError: Failed to execute 'define' on 'CustomElement..." ("SyntaxError") expected object "TypeError" ("TypeError")
-FAIL If constructor.prototype.connectedCallback is object, should throw a TypeError assert_throws: function "() =>  {
-          customElements.define('test-define-con..." threw object "SyntaxError: Failed to execute 'define' on 'CustomElement..." ("SyntaxError") expected object "TypeError" ("TypeError")
-FAIL If constructor.prototype.disconnectedCallback is undefined, should success Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-prototype-disconnectedCallback" is not a valid custom element name
-FAIL If constructor.prototype.disconnectedCallback is null, should throw a TypeError assert_throws: function "() =>  {
-          customElements.define('test-define-con..." threw object "SyntaxError: Failed to execute 'define' on 'CustomElement..." ("SyntaxError") expected object "TypeError" ("TypeError")
-FAIL If constructor.prototype.disconnectedCallback is object, should throw a TypeError assert_throws: function "() =>  {
-          customElements.define('test-define-con..." threw object "SyntaxError: Failed to execute 'define' on 'CustomElement..." ("SyntaxError") expected object "TypeError" ("TypeError")
-FAIL If constructor.prototype.attributeChangedCallback is undefined, should success Failed to execute 'define' on 'CustomElementsRegistry': "test-define-constructor-prototype-attributeChangedCallback" is not a valid custom element name
-FAIL If constructor.prototype.attributeChangedCallback is null, should throw a TypeError assert_throws: function "() =>  {
-          customElements.define('test-define-con..." threw object "SyntaxError: Failed to execute 'define' on 'CustomElement..." ("SyntaxError") expected object "TypeError" ("TypeError")
-FAIL If constructor.prototype.attributeChangedCallback is object, should throw a TypeError assert_throws: function "() =>  {
-          customElements.define('test-define-con..." threw object "SyntaxError: Failed to execute 'define' on 'CustomElement..." ("SyntaxError") expected object "TypeError" ("TypeError")
+FAIL If constructor.prototype.connectedCallback throws, should rethrow assert_throws: function "() => {
+        customElements.define(`test-define-${name.toLowerCase()}-rethrow`, C);
+      }" did not throw
+PASS If constructor.prototype.connectedCallback is undefined, should succeed 
+PASS If constructor.prototype.connectedCallback is function, should succeed 
+FAIL If constructor.prototype.connectedCallback is null, should throw a TypeError assert_throws: function "() => {
+            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
+          }" did not throw
+FAIL If constructor.prototype.connectedCallback is object, should throw a TypeError assert_throws: function "() => {
+            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
+          }" did not throw
+FAIL If constructor.prototype.connectedCallback is integer, should throw a TypeError assert_throws: function "() => {
+            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
+          }" did not throw
+FAIL If constructor.prototype.disconnectedCallback throws, should rethrow assert_throws: function "() => {
+        customElements.define(`test-define-${name.toLowerCase()}-rethrow`, C);
+      }" did not throw
+PASS If constructor.prototype.disconnectedCallback is undefined, should succeed 
+PASS If constructor.prototype.disconnectedCallback is function, should succeed 
+FAIL If constructor.prototype.disconnectedCallback is null, should throw a TypeError assert_throws: function "() => {
+            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
+          }" did not throw
+FAIL If constructor.prototype.disconnectedCallback is object, should throw a TypeError assert_throws: function "() => {
+            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
+          }" did not throw
+FAIL If constructor.prototype.disconnectedCallback is integer, should throw a TypeError assert_throws: function "() => {
+            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
+          }" did not throw
+FAIL If constructor.prototype.attributeChangedCallback throws, should rethrow assert_throws: function "() => {
+        customElements.define(`test-define-${name.toLowerCase()}-rethrow`, C);
+      }" did not throw
+PASS If constructor.prototype.attributeChangedCallback is undefined, should succeed 
+PASS If constructor.prototype.attributeChangedCallback is function, should succeed 
+FAIL If constructor.prototype.attributeChangedCallback is null, should throw a TypeError assert_throws: function "() => {
+            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
+          }" did not throw
+FAIL If constructor.prototype.attributeChangedCallback is object, should throw a TypeError assert_throws: function "() => {
+            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
+          }" did not throw
+FAIL If constructor.prototype.attributeChangedCallback is integer, should throw a TypeError assert_throws: function "() => {
+            customElements.define(`test-define-${name.toLowerCase()}-${data.name}`, C);
+          }" did not throw
 Harness: the test ran to completion.
 

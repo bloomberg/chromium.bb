@@ -15,11 +15,11 @@ PASS a url argument without %s should throw SYNTAX_ERR
 PASS a url argument pointing to a different domain name, without %s should throw SYNTAX_ERR 
 PASS a url argument without %s (but with %) should throw SYNTAX_ERR 
 PASS a url argument without %s (but with %a) should throw SYNTAX_ERR 
-FAIL a url argument pointing to a different domain name should throw SECURITY_ERR assert_throws: function "function () { navigator.registerProtocolHandler('mailto',..." did not throw
-FAIL a url argument pointing to a different domain name should throw SECURITY_ERR (2) assert_throws: function "function () { navigator.registerProtocolHandler('mailto',..." did not throw
-FAIL a url argument pointing to a different domain name should throw SECURITY_ERR (3) assert_throws: function "function () { navigator.registerProtocolHandler('mailto',..." did not throw
-FAIL looping handlers should throw SECURITY_ERR assert_throws: function "function () { navigator.registerProtocolHandler('mailto',..." did not throw
-FAIL a url argument pointing to a non-http[s] scheme should throw SECURITY_ERR due to not being of the same origin assert_throws: function "function () { navigator.registerProtocolHandler('sms', 't..." did not throw
+FAIL a url argument pointing to a different domain name should throw SECURITY_ERR assert_throws: function "function () { navigator.registerProtocolHandler('mailto', 'http://example.com/%s', 'foo') }" did not throw
+FAIL a url argument pointing to a different domain name should throw SECURITY_ERR (2) assert_throws: function "function () { navigator.registerProtocolHandler('mailto', 'https://example.com/%s', 'foo') }" did not throw
+FAIL a url argument pointing to a different domain name should throw SECURITY_ERR (3) assert_throws: function "function () { navigator.registerProtocolHandler('mailto', 'http://foobar.example.com/%s', 'foo') }" did not throw
+FAIL looping handlers should throw SECURITY_ERR assert_throws: function "function () { navigator.registerProtocolHandler('mailto', 'mailto:%s@example.com', 'foo') }" did not throw
+FAIL a url argument pointing to a non-http[s] scheme should throw SECURITY_ERR due to not being of the same origin assert_throws: function "function () { navigator.registerProtocolHandler('sms', 'tel:%s', 'foo') }" did not throw
 PASS a protocol argument containing an unrecognized scheme should throw SECURITY_ERR 
 PASS a protocol argument containing : should throw SYNTAX_ERR 
 PASS a protocol argument containing :// should throw SYNTAX_ERR 
