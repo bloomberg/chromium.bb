@@ -731,9 +731,14 @@ INSTANTIATE_TEST_CASE_P(IndexedDBBrowserTestInstantiation,
                                           "iterate",
                                           "failTransactionCommit",
                                           "clearObjectStore"));
-
+// https://crbug.com/616155
+#if defined(ANDROID)
+#define MAYBE_DeleteCompactsBackingStore DISABLED_DeleteCompactsBackingStore
+#else
+#define MAYBE_DeleteCompactsBackingStore DeleteCompactsBackingStore
+#endif
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest,
-                       DeleteCompactsBackingStore) {
+                       MAYBE_DeleteCompactsBackingStore) {
   const GURL test_url = GetTestUrl("indexeddb", "delete_compact.html");
   SimpleTest(GURL(test_url.spec() + "#fill"));
   int64_t after_filling = RequestDiskUsage();
