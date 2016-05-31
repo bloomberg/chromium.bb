@@ -64,22 +64,11 @@ testCases.forEach(function (test) {
     divX = document.getElementById(test[0]);
     divY = document.getElementById(test[1]);
     divZ = document.getElementById(test[2]);
-    if (window.internals)
-        prevNodes = window.internals.numberOfLiveNodes();
+
     rootDiv.innerHTML = "";
     divX = null;
     divY = null;
     divZ = null;
-    gc();
-    if (window.internals) {
-        // If all the Node objects in testHtml are successfully destructed,
-        // at least 9 <div>s objects will be removed.
-        // (Actually, since testHtml rendering requires more than 9 Node objects.)
-        if (window.internals.numberOfLiveNodes() <= prevNodes - 9)
-            testPassed("All <div> objects in a DOM tree are successfully destructed.");
-        else
-            testFailed("<div> objects in a DOM tree are not destructed.");
-    }
 });
 
 function checkParentAndChildAlive(div, name) {
