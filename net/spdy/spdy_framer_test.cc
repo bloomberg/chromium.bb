@@ -1838,14 +1838,12 @@ TEST_P(SpdyFramerTest, HeaderCompression) {
   SpdyHeaderBlock block;
   block[kHeader1] = kValue1;
   block[kHeader2] = kValue2;
-  SpdySynStreamIR syn_ir_1(1);
-  syn_ir_1.set_header_block(block);
+  SpdySynStreamIR syn_ir_1(1, block);
   SpdySerializedFrame syn_frame_1(send_framer.SerializeFrame(syn_ir_1));
 
   // SYN_STREAM #2
   block[kHeader3] = kValue3;
-  SpdySynStreamIR syn_stream(3);
-  syn_stream.set_header_block(block);
+  SpdySynStreamIR syn_stream(3, std::move(block));
   SpdySerializedFrame syn_frame_2(send_framer.SerializeSynStream(syn_stream));
 
   // Decompress SYN_STREAM #1

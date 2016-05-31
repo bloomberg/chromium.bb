@@ -143,8 +143,6 @@ void SpdyHeaderBlock::StringPieceProxy::reserve(size_t size) {
 
 SpdyHeaderBlock::SpdyHeaderBlock() : storage_(new Storage) {}
 
-SpdyHeaderBlock::~SpdyHeaderBlock() {}
-
 SpdyHeaderBlock::SpdyHeaderBlock(const SpdyHeaderBlock& other)
     : storage_(new Storage) {
   storage_->Reserve(min(other.storage_->BytesUsed(), kMaxContiguousAllocation));
@@ -153,12 +151,28 @@ SpdyHeaderBlock::SpdyHeaderBlock(const SpdyHeaderBlock& other)
   }
 }
 
+SpdyHeaderBlock::SpdyHeaderBlock(SpdyHeaderBlock&& other)
+    : storage_(std::move(other.storage_)) {
+  // |block_| is linked_hash_map, which does not have move constructor.
+  block_.swap(other.block_);
+}
+
+SpdyHeaderBlock::~SpdyHeaderBlock() {}
+
 SpdyHeaderBlock& SpdyHeaderBlock::operator=(const SpdyHeaderBlock& other) {
   clear();
   storage_->Reserve(min(other.storage_->BytesUsed(), kMaxContiguousAllocation));
   for (auto iter : other) {
     AppendHeader(iter.first, iter.second);
   }
+  return *this;
+}
+
+SpdyHeaderBlock& SpdyHeaderBlock::operator=(SpdyHeaderBlock&& other) {
+  storage_ = std::move(other.storage_);
+  // |block_| is linked_hash_map, which does not have move assignment
+  // operator.
+  block_.swap(other.block_);
   return *this;
 }
 

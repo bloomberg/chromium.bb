@@ -767,8 +767,10 @@ std::string SpdyConstants::GetVersionString(SpdyMajorVersion version) {
   }
 }
 
-SpdyFrameWithHeaderBlockIR::SpdyFrameWithHeaderBlockIR(SpdyStreamId stream_id)
-    : SpdyFrameWithFinIR(stream_id) {}
+SpdyFrameWithHeaderBlockIR::SpdyFrameWithHeaderBlockIR(
+    SpdyStreamId stream_id,
+    SpdyHeaderBlock header_block)
+    : SpdyFrameWithFinIR(stream_id), header_block_(std::move(header_block)) {}
 
 SpdyFrameWithHeaderBlockIR::~SpdyFrameWithHeaderBlockIR() {}
 

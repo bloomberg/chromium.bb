@@ -16,6 +16,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -727,7 +728,8 @@ class NET_EXPORT_PRIVATE SpdyFrameWithHeaderBlockIR
   SpdyHeaderBlock* mutable_header_block() { return &header_block_; }
 
  protected:
-  explicit SpdyFrameWithHeaderBlockIR(SpdyStreamId stream_id);
+  SpdyFrameWithHeaderBlockIR(SpdyStreamId stream_id,
+                             SpdyHeaderBlock header_block);
 
  private:
   SpdyHeaderBlock header_block_;
@@ -795,7 +797,9 @@ class NET_EXPORT_PRIVATE SpdyDataIR
 class NET_EXPORT_PRIVATE SpdySynStreamIR : public SpdyFrameWithHeaderBlockIR {
  public:
   explicit SpdySynStreamIR(SpdyStreamId stream_id)
-      : SpdyFrameWithHeaderBlockIR(stream_id),
+      : SpdySynStreamIR(stream_id, SpdyHeaderBlock()) {}
+  SpdySynStreamIR(SpdyStreamId stream_id, SpdyHeaderBlock header_block)
+      : SpdyFrameWithHeaderBlockIR(stream_id, std::move(header_block)),
         associated_to_stream_id_(0),
         priority_(0),
         unidirectional_(false) {}
@@ -825,7 +829,9 @@ class NET_EXPORT_PRIVATE SpdySynStreamIR : public SpdyFrameWithHeaderBlockIR {
 class NET_EXPORT_PRIVATE SpdySynReplyIR : public SpdyFrameWithHeaderBlockIR {
  public:
   explicit SpdySynReplyIR(SpdyStreamId stream_id)
-      : SpdyFrameWithHeaderBlockIR(stream_id) {}
+      : SpdySynReplyIR(stream_id, SpdyHeaderBlock()) {}
+  SpdySynReplyIR(SpdyStreamId stream_id, SpdyHeaderBlock header_block)
+      : SpdyFrameWithHeaderBlockIR(stream_id, std::move(header_block)) {}
 
   void Visit(SpdyFrameVisitor* visitor) const override;
 
@@ -965,7 +971,9 @@ class NET_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
 class NET_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithHeaderBlockIR {
  public:
   explicit SpdyHeadersIR(SpdyStreamId stream_id)
-      : SpdyFrameWithHeaderBlockIR(stream_id) {}
+      : SpdyHeadersIR(stream_id, SpdyHeaderBlock()) {}
+  SpdyHeadersIR(SpdyStreamId stream_id, SpdyHeaderBlock header_block)
+      : SpdyFrameWithHeaderBlockIR(stream_id, std::move(header_block)) {}
 
   void Visit(SpdyFrameVisitor* visitor) const override;
 
@@ -1035,7 +1043,11 @@ class NET_EXPORT_PRIVATE SpdyBlockedIR
 class NET_EXPORT_PRIVATE SpdyPushPromiseIR : public SpdyFrameWithHeaderBlockIR {
  public:
   SpdyPushPromiseIR(SpdyStreamId stream_id, SpdyStreamId promised_stream_id)
-      : SpdyFrameWithHeaderBlockIR(stream_id),
+      : SpdyPushPromiseIR(stream_id, promised_stream_id, SpdyHeaderBlock()) {}
+  SpdyPushPromiseIR(SpdyStreamId stream_id,
+                    SpdyStreamId promised_stream_id,
+                    SpdyHeaderBlock header_block)
+      : SpdyFrameWithHeaderBlockIR(stream_id, std::move(header_block)),
         promised_stream_id_(promised_stream_id),
         padded_(false),
         padding_payload_len_(0) {}
@@ -1068,7 +1080,10 @@ class NET_EXPORT_PRIVATE SpdyContinuationIR
     : public SpdyFrameWithHeaderBlockIR {
  public:
   explicit SpdyContinuationIR(SpdyStreamId stream_id)
-      : SpdyFrameWithHeaderBlockIR(stream_id), end_headers_(false) {}
+      : SpdyContinuationIR(stream_id, SpdyHeaderBlock()) {}
+  SpdyContinuationIR(SpdyStreamId stream_id, SpdyHeaderBlock header_block)
+      : SpdyFrameWithHeaderBlockIR(stream_id, std::move(header_block)),
+        end_headers_(false) {}
 
   void Visit(SpdyFrameVisitor* visitor) const override;
 

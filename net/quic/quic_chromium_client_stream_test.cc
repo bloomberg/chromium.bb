@@ -94,7 +94,7 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
   MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
   MOCK_METHOD5(WriteHeaders,
                size_t(QuicStreamId id,
-                      const SpdyHeaderBlock& headers,
+                      SpdyHeaderBlock headers,
                       bool fin,
                       SpdyPriority priority,
                       QuicAckListenerInterface* ack_notifier_delegate));

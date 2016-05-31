@@ -69,12 +69,12 @@ class MockQuicHeadersStream : public QuicHeadersStream {
   MOCK_METHOD4(WritePushPromise,
                size_t(QuicStreamId original_stream_id,
                       QuicStreamId promised_stream_id,
-                      const SpdyHeaderBlock& headers,
+                      SpdyHeaderBlock headers,
                       QuicAckListenerInterface* ack_listener));
 
   MOCK_METHOD5(WriteHeaders,
                size_t(QuicStreamId stream_id,
-                      const SpdyHeaderBlock& headers,
+                      SpdyHeaderBlock headers,
                       bool fin,
                       SpdyPriority priority,
                       QuicAckListenerInterface* ack_listener));

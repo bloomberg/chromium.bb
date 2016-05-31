@@ -48,7 +48,7 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
   // If |fin| is true, the fin flag will be set on the HEADERS frame.  Returns
   // the size, in bytes, of the resulting HEADERS frame.
   virtual size_t WriteHeaders(QuicStreamId stream_id,
-                              const SpdyHeaderBlock& headers,
+                              SpdyHeaderBlock headers,
                               bool fin,
                               SpdyPriority priority,
                               QuicAckListenerInterface* ack_listener);
@@ -58,7 +58,7 @@ class NET_EXPORT_PRIVATE QuicHeadersStream : public ReliableQuicStream {
   // Return the size, in bytes, of the resulting PUSH_PROMISE frame.
   virtual size_t WritePushPromise(QuicStreamId original_stream_id,
                                   QuicStreamId promised_stream_id,
-                                  const SpdyHeaderBlock& headers,
+                                  SpdyHeaderBlock headers,
                                   QuicAckListenerInterface* ack_listener);
 
   // ReliableQuicStream implementation

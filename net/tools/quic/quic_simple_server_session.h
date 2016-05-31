@@ -14,6 +14,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -47,7 +48,7 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
     PromisedStreamInfo(SpdyHeaderBlock request_headers,
                        QuicStreamId stream_id,
                        SpdyPriority priority)
-        : request_headers(request_headers),
+        : request_headers(std::move(request_headers)),
           stream_id(stream_id),
           priority(priority),
           is_cancelled(false) {}
@@ -119,7 +120,7 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
   // Send PUSH_PROMISE frame on headers stream.
   void SendPushPromise(QuicStreamId original_stream_id,
                        QuicStreamId promised_stream_id,
-                       const SpdyHeaderBlock& headers);
+                       SpdyHeaderBlock headers);
 
   // Fetch response from cache for request headers enqueued into
   // promised_headers_and_streams_ and send them on dedicated stream until
