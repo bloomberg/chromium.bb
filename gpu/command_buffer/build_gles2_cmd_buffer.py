@@ -1175,6 +1175,9 @@ _NAMED_TYPE_INFO = {
       'GL_CONSTANT_ALPHA',
       'GL_ONE_MINUS_CONSTANT_ALPHA',
     ],
+    'valid_es3': [
+      'GL_SRC_ALPHA_SATURATE'
+    ]
   },
   'Capability': {
     'type': 'GLenum',

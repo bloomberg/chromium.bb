@@ -199,6 +199,10 @@ static const GLenum valid_dst_blend_factor_table[] = {
     GL_CONSTANT_ALPHA, GL_ONE_MINUS_CONSTANT_ALPHA,
 };
 
+static const GLenum valid_dst_blend_factor_table_es3[] = {
+    GL_SRC_ALPHA_SATURATE,
+};
+
 static const GLenum valid_equation_table[] = {
     GL_FUNC_ADD, GL_FUNC_SUBTRACT, GL_FUNC_REVERSE_SUBTRACT,
 };
@@ -1454,6 +1458,8 @@ void Validators::UpdateValuesES3() {
   compressed_texture_format.AddValues(
       valid_compressed_texture_format_table_es3,
       arraysize(valid_compressed_texture_format_table_es3));
+  dst_blend_factor.AddValues(valid_dst_blend_factor_table_es3,
+                             arraysize(valid_dst_blend_factor_table_es3));
   equation.AddValues(valid_equation_table_es3,
                      arraysize(valid_equation_table_es3));
   frame_buffer_parameter.AddValues(

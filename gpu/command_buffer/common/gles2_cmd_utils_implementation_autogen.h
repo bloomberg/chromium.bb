@@ -3684,6 +3684,7 @@ std::string GLES2Util::GetStringDstBlendFactor(uint32_t value) {
       {GL_ONE_MINUS_CONSTANT_COLOR, "GL_ONE_MINUS_CONSTANT_COLOR"},
       {GL_CONSTANT_ALPHA, "GL_CONSTANT_ALPHA"},
       {GL_ONE_MINUS_CONSTANT_ALPHA, "GL_ONE_MINUS_CONSTANT_ALPHA"},
+      {GL_SRC_ALPHA_SATURATE, "GL_SRC_ALPHA_SATURATE"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);
