@@ -8,3 +8,9 @@ include_rules = [
   "+gpu/command_buffer/service/image_factory.h",
   "+gpu/skia_bindings/grcontext_for_gles2_interface.h",
 ]
+
+specific_include_rules = {
+  "run_all_unittests\.cc": [
+    "+mojo/edk/embedder/embedder.h",
+  ],
+}
