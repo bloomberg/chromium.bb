@@ -149,6 +149,7 @@ ActivityIconLoader::ResizeIcons(mojo::Array<mojom::ActivityIconPtr> icons) {
     static const size_t kBytesPerPixel = 4;
     const mojom::ActivityIconPtr& icon = icons.at(i);
     if (icon->width > kMaxIconSizeInPx || icon->height > kMaxIconSizeInPx ||
+        icon->width == 0 || icon->height == 0 ||
         icon->icon.size() != (icon->width * icon->height * kBytesPerPixel)) {
       continue;
     }
