@@ -265,7 +265,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
       NetworkChangeNotifier::ConnectionType type) override;
 
   // ExternalEstimateProvider::UpdatedEstimateObserver implementation.
-  void OnUpdatedEstimateAvailable() override;
+  void OnUpdatedEstimateAvailable(const base::TimeDelta& rtt,
+                                  int32_t downstream_throughput_kbps,
+                                  int32_t upstream_throughput_kbps) override;
 
   // Return a string equivalent to |type|.
   const char* GetNameForEffectiveConnectionType(
@@ -315,11 +317,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Larger size may affect performance.
   static const size_t kMaximumNetworkQualityCacheSize = 10;
 
-  // Time duration (in milliseconds) after which the estimate provided by
-  // external estimate provider is considered stale.
-  static const int kExternalEstimateProviderFreshnessDurationMsec =
-      5 * 60 * 1000;
-
   // Returns the RTT value to be used when the valid RTT is unavailable. Readers
   // should discard RTT if it is set to the value returned by |InvalidRTT()|.
   static const base::TimeDelta InvalidRTT();
@@ -338,10 +335,6 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // Notifies |this| of a new transport layer RTT.
   void OnUpdatedRTTAvailable(SocketPerformanceWatcherFactory::Protocol protocol,
                              const base::TimeDelta& rtt);
-
-  // Queries the external estimate provider for the latest network quality
-  // estimates, and adds those estimates to the current observation buffer.
-  void QueryExternalEstimateProvider();
 
   // Obtains operating parameters from the field trial parameters.
   void ObtainOperatingParams(

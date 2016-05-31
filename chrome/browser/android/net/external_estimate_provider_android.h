@@ -15,7 +15,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "net/base/network_change_notifier.h"
 #include "net/nqe/external_estimate_provider.h"
 
 namespace chrome {
@@ -25,9 +24,7 @@ namespace android {
 // ExternalEstimateProviderAndroidHelper.java. Provides network quality
 // estimates as provided by Android. Estimates are automatically updated on a
 // network change event.
-class ExternalEstimateProviderAndroid
-    : public net::NetworkChangeNotifier::ConnectionTypeObserver,
-      public net::ExternalEstimateProvider {
+class ExternalEstimateProviderAndroid : public net::ExternalEstimateProvider {
  public:
   // Constructs and initializes the underlying provider.
   ExternalEstimateProviderAndroid();
@@ -46,10 +43,6 @@ class ExternalEstimateProviderAndroid
       net::ExternalEstimateProvider::UpdatedEstimateDelegate* delegate)
       override;
   void Update() const override;
-
-  // NetworkChangeNotifier::ConnectionTypeObserver implementation.
-  void OnConnectionTypeChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
 
   // Called by Java when the external estimate provider has an updated value.
   // This may be called on a thread different from |task_runner_|.

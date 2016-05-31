@@ -27,12 +27,10 @@ ExternalEstimateProviderAndroid::ExternalEstimateProviderAndroid()
           reinterpret_cast<intptr_t>(this)));
   DCHECK(!j_external_estimate_provider_.is_null());
   no_value_ = Java_ExternalEstimateProviderAndroid_getNoValue(env);
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
 }
 
 ExternalEstimateProviderAndroid::~ExternalEstimateProviderAndroid() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
   Java_ExternalEstimateProviderAndroid_destroy(
       base::android::AttachCurrentThread(),
       j_external_estimate_provider_.obj());
@@ -106,11 +104,6 @@ void ExternalEstimateProviderAndroid::Update() const {
       env, j_external_estimate_provider_.obj());
 }
 
-void ExternalEstimateProviderAndroid::OnConnectionTypeChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  Update();
-}
-
 void ExternalEstimateProviderAndroid::
     NotifyExternalEstimateProviderAndroidUpdate(
         JNIEnv* env,
@@ -134,8 +127,20 @@ void ExternalEstimateProviderAndroid::
 
 void ExternalEstimateProviderAndroid::NotifyUpdatedEstimateAvailable() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (delegate_)
-    delegate_->OnUpdatedEstimateAvailable();
+
+  base::TimeDelta rtt;
+  GetRTT(&rtt);
+
+  int32_t downstream_throughput_kbps = -1;
+  GetDownstreamThroughputKbps(&downstream_throughput_kbps);
+
+  int32_t upstream_throughput_kbps = -1;
+  GetUpstreamThroughputKbps(&upstream_throughput_kbps);
+
+  if (delegate_) {
+    delegate_->OnUpdatedEstimateAvailable(rtt, downstream_throughput_kbps,
+                                          upstream_throughput_kbps);
+  }
 }
 
 bool RegisterExternalEstimateProviderAndroid(JNIEnv* env) {
