@@ -72,6 +72,18 @@ class MetricsTestCase(unittest.TestCase):
     self.assertEqual(self._BODY_SIZE + self._RESPONSE_HEADERS_SIZE,
                      downloaded)
 
+  def testDnsRequestsAndCost(self):
+    trace = self._MakeTrace()
+    (count, cost) = metrics.DnsRequestsAndCost(trace)
+    self.assertEqual(0, count)
+    self.assertEqual(0, cost)
+    r = trace.request_track.GetEvents()[0]
+    r.timing.dns_end = 12
+    r.timing.dns_start = 4
+    (count, cost) = metrics.DnsRequestsAndCost(trace)
+    self.assertEqual(1, count)
+    self.assertEqual(8, cost)
+
   @classmethod
   def _MakeTrace(cls):
     request = request_track.Request.FromJsonDict(copy.deepcopy(cls._REQUEST))

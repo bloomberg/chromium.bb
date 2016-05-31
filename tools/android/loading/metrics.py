@@ -106,6 +106,16 @@ def AdsAndTrackingTransferSize(trace, ad_rules_filename,
   return TransferSize(requests)
 
 
+def DnsRequestsAndCost(trace):
+  """Returns the number and cost of DNS requests for a trace."""
+  requests = trace.request_track.GetEvents()
+  requests_with_dns = [r for r in requests if r.timing.dns_start != -1]
+  dns_requests_count = len(requests_with_dns)
+  dns_cost = sum(r.timing.dns_end - r.timing.dns_start
+                 for r in requests_with_dns)
+  return (dns_requests_count, dns_cost)
+
+
 def PlotTransferSizeVsTimeBetweenVisits(trace):
   times = [10, 60, 300, 600, 3600, 4 * 3600, 12 * 3600, 24 * 3600]
   labels = ['10s', '1m', '10m', '1h', '4h', '12h', '1d']
