@@ -162,8 +162,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-expand.html"));
 }
 
+#if defined(OS_MACOSX)
+// crbug.com/615411
+#define MAYBE_AccessibilityEventsAriaComboBoxFocus \
+    DISABLED_AccessibilityEventsAriaComboBoxFocus
+#else
+#define MAYBE_AccessibilityEventsAriaComboBoxFocus \
+    AccessibilityEventsAriaComboBoxFocus
+#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAriaComboBoxFocus) {
+                       MAYBE_AccessibilityEventsAriaComboBoxFocus) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-focus.html"));
 }
 
@@ -258,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 #if defined(OS_MACOSX)
-// Crashes on Mac.
+// crbug.com/615411
 #define MAYBE_AccessibilityEventsMenuListExpand \
     DISABLED_AccessibilityEventsMenuListExpand
 #else
@@ -276,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 #if defined(OS_MACOSX)
-// Crashes on Mac.
+// crbug.com/615411
 #define MAYBE_AccessibilityEventsMenuListNext \
     DISABLED_AccessibilityEventsMenuListNext
 #else
