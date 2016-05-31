@@ -15,6 +15,7 @@
 #include "content/public/common/resource_type.h"
 
 namespace blink {
+class WebHTTPBody;
 class WebURL;
 class WebURLRequest;
 struct WebURLError;
@@ -28,6 +29,14 @@ CONTENT_EXPORT ResourceType WebURLRequestToResourceType(
 std::string GetWebURLRequestHeaders(const blink::WebURLRequest& request);
 
 int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request);
+
+// Takes a ResourceRequestBody and converts into WebHTTPBody.
+blink::WebHTTPBody GetWebHTTPBodyForRequestBody(
+    const scoped_refptr<ResourceRequestBody>& input);
+
+// Takes a WebHTTPBody and converts into a ResourceRequestBody.
+scoped_refptr<ResourceRequestBody> GetRequestBodyForWebHTTPBody(
+    const blink::WebHTTPBody& httpBody);
 
 // Takes a WebURLRequest and sets the appropriate information
 // in a ResourceRequestBody structure. Returns an empty scoped_refptr

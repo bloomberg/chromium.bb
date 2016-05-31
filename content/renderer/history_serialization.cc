@@ -7,10 +7,10 @@
 #include <stddef.h>
 
 #include "base/strings/nullable_string16.h"
+#include "content/child/web_url_request_util.h"
 #include "content/common/page_state_serialization.h"
 #include "content/public/common/page_state.h"
 #include "content/renderer/history_entry.h"
-#include "content/renderer/http_body_conversions.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"
@@ -56,15 +56,8 @@ void GenerateFrameStateFromItem(const WebHistoryItem& item,
 
   state->http_body.http_content_type = item.httpContentType();
   const WebHTTPBody& http_body = item.httpBody();
-  state->http_body.is_null = http_body.isNull();
-  if (!state->http_body.is_null) {
-    state->http_body.identifier = http_body.identifier();
-    state->http_body.elements.resize(http_body.elementCount());
-    for (size_t i = 0; i < http_body.elementCount(); ++i) {
-      WebHTTPBody::Element element;
-      http_body.elementAt(i, element);
-      ConvertToHttpBodyElement(element, &state->http_body.elements[i]);
-    }
+  if (!http_body.isNull()) {
+    state->http_body.request_body = GetRequestBodyForWebHTTPBody(http_body);
     state->http_body.contains_passwords = http_body.containsPasswordData();
   }
 }
@@ -111,13 +104,9 @@ void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
     item.setDocumentSequenceNumber(state.document_sequence_number);
 
   item.setHTTPContentType(state.http_body.http_content_type);
-  if (!state.http_body.is_null) {
-    WebHTTPBody http_body;
-    http_body.initialize();
-    http_body.setIdentifier(state.http_body.identifier);
-    for (size_t i = 0; i < state.http_body.elements.size(); ++i)
-      AppendHttpBodyElement(state.http_body.elements[i], &http_body);
-    item.setHTTPBody(http_body);
+  if (state.http_body.request_body != nullptr) {
+    item.setHTTPBody(
+        GetWebHTTPBodyForRequestBody(state.http_body.request_body));
   }
   node->set_item(item);
 

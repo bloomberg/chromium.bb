@@ -22,14 +22,10 @@
 
 namespace content {
 
-using ExplodedHttpBodyElement = ResourceRequestBody::Element;
-
 struct CONTENT_EXPORT ExplodedHttpBody {
   base::NullableString16 http_content_type;
-  std::vector<ExplodedHttpBodyElement> elements;
-  int64_t identifier;
+  scoped_refptr<ResourceRequestBody> request_body;
   bool contains_passwords;
-  bool is_null;
 
   ExplodedHttpBody();
   ~ExplodedHttpBody();
@@ -75,15 +71,6 @@ CONTENT_EXPORT bool DecodePageState(const std::string& encoded,
                                     ExplodedPageState* exploded);
 CONTENT_EXPORT bool EncodePageState(const ExplodedPageState& exploded,
                                     std::string* encoded);
-
-// This method converts the ExplodedHttpBody into a ResourceRequestBody format.
-// If |exploded| is not null, initializes |http_body| with the data from
-// |exploded|. Returns false otherwise.
-// PlzNavigate: This is used in the browser process when converting the POST
-// data stored in a PageState into a ResourceRequestBody that can be used by
-// the network stack.
-bool GeneratePostData(const ExplodedHttpBody& exploded,
-                      ResourceRequestBody* http_body);
 
 #if defined(OS_ANDROID)
 CONTENT_EXPORT bool DecodePageStateWithDeviceScaleFactorForTesting(

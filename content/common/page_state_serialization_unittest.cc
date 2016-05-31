@@ -41,11 +41,11 @@ void ExpectEquality(const std::vector<T>& a, const std::vector<T>& b) {
 }
 
 template <>
-void ExpectEquality(const ExplodedHttpBodyElement& a,
-                    const ExplodedHttpBodyElement& b) {
+void ExpectEquality(const ResourceRequestBody::Element& a,
+                    const ResourceRequestBody::Element& b) {
   EXPECT_EQ(a.type(), b.type());
-  if (a.type() == ExplodedHttpBodyElement::TYPE_BYTES &&
-      b.type() == ExplodedHttpBodyElement::TYPE_BYTES) {
+  if (a.type() == ResourceRequestBody::Element::TYPE_BYTES &&
+      b.type() == ResourceRequestBody::Element::TYPE_BYTES) {
     EXPECT_EQ(std::string(a.bytes(), a.length()),
               std::string(b.bytes(), b.length()));
   }
@@ -60,10 +60,14 @@ void ExpectEquality(const ExplodedHttpBodyElement& a,
 template <>
 void ExpectEquality(const ExplodedHttpBody& a, const ExplodedHttpBody& b) {
   EXPECT_EQ(a.http_content_type, b.http_content_type);
-  EXPECT_EQ(a.identifier, b.identifier);
   EXPECT_EQ(a.contains_passwords, b.contains_passwords);
-  EXPECT_EQ(a.is_null, b.is_null);
-  ExpectEquality(a.elements, b.elements);
+  if (a.request_body == nullptr || b.request_body == nullptr) {
+    EXPECT_EQ(nullptr, a.request_body);
+    EXPECT_EQ(nullptr, b.request_body);
+  } else {
+    EXPECT_EQ(a.request_body->identifier(), b.request_body->identifier());
+    ExpectEquality(*a.request_body->elements(), *b.request_body->elements());
+  }
 }
 
 template <>
@@ -115,23 +119,20 @@ class PageStateSerializationTest : public testing::Test {
 
   void PopulateHttpBody(ExplodedHttpBody* http_body,
                         std::vector<base::NullableString16>* referenced_files) {
-    http_body->is_null = false;
-    http_body->identifier = 12345;
+    http_body->request_body = new ResourceRequestBody();
+    http_body->request_body->set_identifier(12345);
     http_body->contains_passwords = false;
     http_body->http_content_type = NS16("text/foo");
 
-    ExplodedHttpBodyElement e1;
     std::string test_body("foo");
-    e1.SetToBytes(test_body.data(), test_body.size());
-    http_body->elements.push_back(e1);
+    http_body->request_body->AppendBytes(test_body.data(), test_body.size());
 
-    ExplodedHttpBodyElement e2;
-    e2.SetToFilePathRange(base::FilePath::FromUTF8Unsafe("file.txt"), 100, 1024,
-                          base::Time::FromDoubleT(9999.0));
-    http_body->elements.push_back(e2);
+    base::FilePath path(FILE_PATH_LITERAL("file.txt"));
+    http_body->request_body->AppendFileRange(base::FilePath(path), 100, 1024,
+                                             base::Time::FromDoubleT(9999.0));
 
     referenced_files->push_back(
-        base::NullableString16(e2.path().AsUTF16Unsafe(), false));
+        base::NullableString16(path.AsUTF16Unsafe(), false));
   }
 
   void PopulateFrameStateForBackwardsCompatTest(
@@ -162,22 +163,20 @@ class PageStateSerializationTest : public testing::Test {
 
     if (!is_child) {
       frame_state->http_body.http_content_type = NS16("foo/bar");
-      frame_state->http_body.identifier = 789;
-      frame_state->http_body.is_null = false;
+      frame_state->http_body.request_body = new ResourceRequestBody();
+      frame_state->http_body.request_body->set_identifier(789);
 
-      ExplodedHttpBodyElement e1;
       std::string test_body("first data block");
-      e1.SetToBytes(test_body.data(), test_body.size());
-      frame_state->http_body.elements.push_back(e1);
+      frame_state->http_body.request_body->AppendBytes(test_body.data(),
+                                                       test_body.size());
 
-      ExplodedHttpBodyElement e2;
-      e2.SetToFilePath(base::FilePath::FromUTF8Unsafe("file.txt"));
-      frame_state->http_body.elements.push_back(e2);
+      frame_state->http_body.request_body->AppendFileRange(
+          base::FilePath(FILE_PATH_LITERAL("file.txt")), 0,
+          std::numeric_limits<uint64_t>::max(), base::Time::FromDoubleT(0.0));
 
-      ExplodedHttpBodyElement e3;
       std::string test_body2("data the second");
-      e3.SetToBytes(test_body2.data(), test_body2.size());
-      frame_state->http_body.elements.push_back(e3);
+      frame_state->http_body.request_body->AppendBytes(test_body2.data(),
+                                                       test_body2.size());
 
       ExplodedFrameState child_state;
       PopulateFrameStateForBackwardsCompatTest(&child_state, true);

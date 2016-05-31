@@ -93,11 +93,7 @@ scoped_refptr<ResourceRequestBody> FrameNavigationEntry::GetPostData() const {
   if (!DecodePageState(page_state_.ToEncodedData(), &exploded_state))
     return nullptr;
 
-  scoped_refptr<ResourceRequestBody> body = new ResourceRequestBody();
-  if (!GeneratePostData(exploded_state.top.http_body, body.get()))
-    return nullptr;
-
-  return body;
+  return exploded_state.top.http_body.request_body;
 }
 
 }  // namespace content

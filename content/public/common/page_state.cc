@@ -85,16 +85,18 @@ PageState PageState::CreateForTesting(
   state.top.url_string = ToNullableString16(url.possibly_invalid_spec());
 
   if (optional_body_data || optional_body_file_path) {
-    state.top.http_body.is_null = false;
     if (optional_body_data) {
-      ExplodedHttpBodyElement element;
       std::string body_data(optional_body_data);
-      element.SetToBytes(body_data.data(), body_data.size());
-      state.top.http_body.elements.push_back(element);
+      state.top.http_body.request_body = new ResourceRequestBody();
+      state.top.http_body.request_body->AppendBytes(body_data.data(),
+                                                    body_data.size());
     }
     if (optional_body_file_path) {
-      ExplodedHttpBodyElement element;
-      element.SetToFilePath(*optional_body_file_path);
+      state.top.http_body.request_body = new ResourceRequestBody();
+      state.top.http_body.request_body->AppendFileRange(
+          *optional_body_file_path,
+          0, std::numeric_limits<uint64_t>::max(),
+          base::Time());
       state.referenced_files.push_back(base::NullableString16(
           optional_body_file_path->AsUTF16Unsafe(), false));
     }

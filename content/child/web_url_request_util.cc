@@ -15,6 +15,7 @@
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebCachePolicy.h"
+#include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -22,6 +23,7 @@
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 
 using blink::WebCachePolicy;
+using blink::WebData;
 using blink::WebHTTPBody;
 using blink::WebString;
 using blink::WebURLRequest;
@@ -217,6 +219,45 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request) {
   return load_flags;
 }
 
+WebHTTPBody GetWebHTTPBodyForRequestBody(
+    const scoped_refptr<ResourceRequestBody>& input) {
+  WebHTTPBody http_body;
+  http_body.initialize();
+  http_body.setIdentifier(input->identifier());
+  for (const auto& element : *input->elements()) {
+    switch (element.type()) {
+      case ResourceRequestBody::Element::TYPE_BYTES:
+        http_body.appendData(WebData(element.bytes(), element.length()));
+        break;
+      case ResourceRequestBody::Element::TYPE_FILE:
+        http_body.appendFileRange(
+            element.path().AsUTF16Unsafe(), element.offset(),
+            (element.length() != std::numeric_limits<uint64_t>::max())
+                ? element.length()
+                : -1,
+            element.expected_modification_time().ToDoubleT());
+        break;
+      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
+        http_body.appendFileSystemURLRange(
+            element.filesystem_url(), element.offset(),
+            (element.length() != std::numeric_limits<uint64_t>::max())
+                ? element.length()
+                : -1,
+            element.expected_modification_time().ToDoubleT());
+        break;
+      case ResourceRequestBody::Element::TYPE_BLOB:
+        http_body.appendBlob(WebString::fromUTF8(element.blob_uuid()));
+        break;
+      case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
+      case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+  return http_body;
+}
+
 scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
     const blink::WebURLRequest& request) {
   scoped_refptr<ResourceRequestBody> request_body;
@@ -229,8 +270,12 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
   // GET and HEAD requests shouldn't have http bodies.
   DCHECK(method != "GET" && method != "HEAD");
 
-  const WebHTTPBody& httpBody = request.httpBody();
-  request_body = new ResourceRequestBody();
+  return GetRequestBodyForWebHTTPBody(request.httpBody());
+}
+
+scoped_refptr<ResourceRequestBody> GetRequestBodyForWebHTTPBody(
+    const blink::WebHTTPBody& httpBody) {
+  scoped_refptr<ResourceRequestBody> request_body = new ResourceRequestBody();
   size_t i = 0;
   WebHTTPBody::Element element;
   while (httpBody.elementAt(i++, element)) {
@@ -272,7 +317,7 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
         NOTREACHED();
     }
   }
-  request_body->set_identifier(request.httpBody().identifier());
+  request_body->set_identifier(httpBody.identifier());
   return request_body;
 }
 

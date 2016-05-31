@@ -94,7 +94,6 @@
 #include "content/renderer/gpu/gpu_benchmarking_extension.h"
 #include "content/renderer/history_controller.h"
 #include "content/renderer/history_serialization.h"
-#include "content/renderer/http_body_conversions.h"
 #include "content/renderer/image_downloader/image_downloader_impl.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/internal_document_state_data.h"
@@ -540,21 +539,6 @@ WebURLRequest CreateURLRequestForNavigation(
       static_cast<WebURLRequest::InputToLoadPerfMetricReportPolicy>(
           common_params.report_type));
   return request;
-}
-
-// Converts the HTTP body data stored in ResourceRequestBody format to a
-// WebHTTPBody, which is then added to the WebURLRequest.
-// PlzNavigate: used to add the POST data sent by the renderer at commit time
-// to the WebURLRequest used to commit the navigation. This ensures that the
-// POST data will be in the PageState sent to the browser on commit.
-void AddHTTPBodyToRequest(WebURLRequest* request,
-                          const scoped_refptr<ResourceRequestBody>& body) {
-  WebHTTPBody http_body;
-  http_body.initialize();
-  http_body.setIdentifier(body->identifier());
-  for (const ResourceRequestBody::Element& element : *(body->elements()))
-    AppendHttpBodyElement(element, &http_body);
-  request->setHTTPBody(http_body);
 }
 
 // Sanitizes the navigation_start timestamp for browser-initiated navigations,
@@ -5374,7 +5358,7 @@ void RenderFrameImpl::NavigateInternal(
                                     frame_->isViewSourceModeEnabled());
 
   if (IsBrowserSideNavigationEnabled() && common_params.post_data)
-    AddHTTPBodyToRequest(&request, common_params.post_data);
+    request.setHTTPBody(GetWebHTTPBodyForRequestBody(common_params.post_data));
 
   // Used to determine whether this frame is actually loading a request as part
   // of a history navigation.
@@ -5467,7 +5451,8 @@ void RenderFrameImpl::NavigateInternal(
 
     if (common_params.method == "POST" && !browser_side_navigation &&
         common_params.post_data) {
-      AddHTTPBodyToRequest(&request, common_params.post_data);
+      request.setHTTPBody(
+          GetWebHTTPBodyForRequestBody(common_params.post_data));
     }
 
     // A session history navigation should have been accompanied by state.

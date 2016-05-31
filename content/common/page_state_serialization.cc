@@ -30,9 +30,7 @@ float g_device_scale_factor_for_testing = 0.0;
 
 void AppendDataToHttpBody(ExplodedHttpBody* http_body, const char* data,
                           int data_length) {
-  ExplodedHttpBodyElement element;
-  element.SetToBytes(data, data_length);
-  http_body->elements.push_back(element);
+  http_body->request_body->AppendBytes(data, data_length);
 }
 
 void AppendFileRangeToHttpBody(ExplodedHttpBody* http_body,
@@ -40,12 +38,10 @@ void AppendFileRangeToHttpBody(ExplodedHttpBody* http_body,
                                int file_start,
                                int file_length,
                                double file_modification_time) {
-  ExplodedHttpBodyElement element;
-  element.SetToFilePathRange(
+  http_body->request_body->AppendFileRange(
       base::FilePath::FromUTF16Unsafe(file_path.string()),
       static_cast<uint64_t>(file_start), static_cast<uint64_t>(file_length),
       base::Time::FromDoubleT(file_modification_time));
-  http_body->elements.push_back(element);
 }
 
 void AppendURLRangeToHttpBody(ExplodedHttpBody* http_body,
@@ -53,28 +49,24 @@ void AppendURLRangeToHttpBody(ExplodedHttpBody* http_body,
                               int file_start,
                               int file_length,
                               double file_modification_time) {
-  ExplodedHttpBodyElement element;
-  element.SetToFileSystemUrlRange(
+  http_body->request_body->AppendFileSystemFileRange(
       url, static_cast<uint64_t>(file_start),
       static_cast<uint64_t>(file_length),
       base::Time::FromDoubleT(file_modification_time));
-  http_body->elements.push_back(element);
 }
 
 void AppendBlobToHttpBody(ExplodedHttpBody* http_body,
                           const std::string& uuid) {
-  ExplodedHttpBodyElement element;
-  element.SetToBlob(uuid);
-  http_body->elements.push_back(element);
+  http_body->request_body->AppendBlob(uuid);
 }
 
 //----------------------------------------------------------------------------
 
 void AppendReferencedFilesFromHttpBody(
-    const std::vector<ExplodedHttpBodyElement>& elements,
+    const std::vector<ResourceRequestBody::Element>& elements,
     std::vector<base::NullableString16>* referenced_files) {
   for (size_t i = 0; i < elements.size(); ++i) {
-    if (elements[i].type() == ExplodedHttpBodyElement::TYPE_FILE)
+    if (elements[i].type() == ResourceRequestBody::Element::TYPE_FILE)
       referenced_files->push_back(
           base::NullableString16(elements[i].path().AsUTF16Unsafe(), false));
   }
@@ -140,9 +132,9 @@ bool AppendReferencedFilesFromDocumentState(
 bool RecursivelyAppendReferencedFiles(
     const ExplodedFrameState& frame_state,
     std::vector<base::NullableString16>* referenced_files) {
-  if (!frame_state.http_body.is_null) {
-    AppendReferencedFilesFromHttpBody(frame_state.http_body.elements,
-                                      referenced_files);
+  if (frame_state.http_body.request_body != nullptr) {
+    AppendReferencedFilesFromHttpBody(
+        *frame_state.http_body.request_body->elements(), referenced_files);
   }
 
   if (!AppendReferencedFilesFromDocumentState(frame_state.document_state,
@@ -397,20 +389,19 @@ void ReadStringVector(SerializeObject* obj,
 
 // Writes an ExplodedHttpBody object into a SerializeObject for serialization.
 void WriteHttpBody(const ExplodedHttpBody& http_body, SerializeObject* obj) {
-  WriteBoolean(!http_body.is_null, obj);
-
-  if (http_body.is_null)
+  bool is_null = http_body.request_body == nullptr;
+  WriteBoolean(!is_null, obj);
+  if (is_null)
     return;
 
-  WriteAndValidateVectorSize(http_body.elements, obj);
-  for (size_t i = 0; i < http_body.elements.size(); ++i) {
-    const ExplodedHttpBodyElement& element = http_body.elements[i];
+  WriteAndValidateVectorSize(*http_body.request_body->elements(), obj);
+  for (const auto& element : *http_body.request_body->elements()) {
     switch (element.type()) {
-      case ExplodedHttpBodyElement::TYPE_BYTES:
+      case ResourceRequestBody::Element::TYPE_BYTES:
         WriteInteger(blink::WebHTTPBody::Element::TypeData, obj);
         WriteData(element.bytes(), static_cast<int>(element.length()), obj);
         break;
-      case ExplodedHttpBodyElement::TYPE_FILE:
+      case ResourceRequestBody::Element::TYPE_FILE:
         WriteInteger(blink::WebHTTPBody::Element::TypeFile, obj);
         WriteString(
             base::NullableString16(element.path().AsUTF16Unsafe(), false), obj);
@@ -418,25 +409,25 @@ void WriteHttpBody(const ExplodedHttpBody& http_body, SerializeObject* obj) {
         WriteInteger64(static_cast<int64_t>(element.length()), obj);
         WriteReal(element.expected_modification_time().ToDoubleT(), obj);
         break;
-      case ExplodedHttpBodyElement::TYPE_FILE_FILESYSTEM:
+      case ResourceRequestBody::Element::TYPE_FILE_FILESYSTEM:
         WriteInteger(blink::WebHTTPBody::Element::TypeFileSystemURL, obj);
         WriteGURL(element.filesystem_url(), obj);
         WriteInteger64(static_cast<int64_t>(element.offset()), obj);
         WriteInteger64(static_cast<int64_t>(element.length()), obj);
         WriteReal(element.expected_modification_time().ToDoubleT(), obj);
         break;
-      case ExplodedHttpBodyElement::TYPE_BLOB:
+      case ResourceRequestBody::Element::TYPE_BLOB:
         WriteInteger(blink::WebHTTPBody::Element::TypeBlob, obj);
         WriteStdString(element.blob_uuid(), obj);
         break;
-      case ExplodedHttpBodyElement::TYPE_BYTES_DESCRIPTION:
-      case ExplodedHttpBodyElement::TYPE_DISK_CACHE_ENTRY:
+      case ResourceRequestBody::Element::TYPE_BYTES_DESCRIPTION:
+      case ResourceRequestBody::Element::TYPE_DISK_CACHE_ENTRY:
       default:
         NOTREACHED();
         continue;
     }
   }
-  WriteInteger64(http_body.identifier, obj);
+  WriteInteger64(http_body.request_body->identifier(), obj);
   WriteBoolean(http_body.contains_passwords, obj);
 }
 
@@ -444,10 +435,9 @@ void ReadHttpBody(SerializeObject* obj, ExplodedHttpBody* http_body) {
   // An initial boolean indicates if we have an HTTP body.
   if (!ReadBoolean(obj))
     return;
-  http_body->is_null = false;
 
+  http_body->request_body = new ResourceRequestBody();
   int num_elements = ReadInteger(obj);
-
   for (int i = 0; i < num_elements; ++i) {
     int type = ReadInteger(obj);
     if (type == blink::WebHTTPBody::Element::TypeData) {
@@ -481,7 +471,7 @@ void ReadHttpBody(SerializeObject* obj, ExplodedHttpBody* http_body) {
       }
     }
   }
-  http_body->identifier = ReadInteger64(obj);
+  http_body->request_body->set_identifier(ReadInteger64(obj));
 
   if (obj->version >= 12)
     http_body->contains_passwords = ReadBoolean(obj);
@@ -676,11 +666,7 @@ void ReadPageState(SerializeObject* obj, ExplodedPageState* state) {
 
 }  // namespace
 
-ExplodedHttpBody::ExplodedHttpBody()
-    : identifier(0),
-      contains_passwords(false),
-      is_null(true) {
-}
+ExplodedHttpBody::ExplodedHttpBody() : contains_passwords(false) {}
 
 ExplodedHttpBody::~ExplodedHttpBody() {
 }
@@ -744,18 +730,6 @@ bool EncodePageState(const ExplodedPageState& exploded, std::string* encoded) {
   obj.version = kCurrentVersion;
   WritePageState(exploded, &obj);
   *encoded = obj.GetAsString();
-  return true;
-}
-
-bool GeneratePostData(const ExplodedHttpBody& exploded,
-                      ResourceRequestBody* http_body) {
-  if (exploded.is_null)
-    return false;
-
-  http_body->set_identifier(exploded.identifier);
-  for (auto element : exploded.elements)
-    http_body->elements_mutable()->push_back(element);
-
   return true;
 }
 
