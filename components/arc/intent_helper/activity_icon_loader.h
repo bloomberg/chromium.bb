@@ -34,9 +34,13 @@ class ActivityIconLoader : public base::RefCounted<ActivityIconLoader> {
     ActivityName(const std::string& package_name,
                  const std::string& activity_name);
     bool operator<(const ActivityName& other) const;
+
     // TODO(yusukes): Add const to these variables later. At this point,
     // doing so seems to confuse g++ 4.6 on builders.
     std::string package_name;
+
+    // Can be empty. When |activity_name| is empty, the loader tries to fetch
+    // the package's default icon.
     std::string activity_name;
   };
 
