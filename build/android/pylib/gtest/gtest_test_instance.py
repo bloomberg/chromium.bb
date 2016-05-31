@@ -178,7 +178,7 @@ def ParseGTestOutput(output):
     if log is not None:
       log.append(l)
 
-    if result_type:
+    if result_type and test_name:
       results.append(base_test_result.BaseTestResult(
           test_name, result_type, duration,
           log=('\n'.join(log) if log else '')))
