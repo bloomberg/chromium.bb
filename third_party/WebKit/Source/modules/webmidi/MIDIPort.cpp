@@ -167,6 +167,11 @@ DEFINE_TRACE(MIDIPort)
     ActiveDOMObject::trace(visitor);
 }
 
+DEFINE_TRACE_WRAPPERS(MIDIPort)
+{
+    visitor->traceWrappers(m_access);
+}
+
 void MIDIPort::open()
 {
     switch (m_state) {

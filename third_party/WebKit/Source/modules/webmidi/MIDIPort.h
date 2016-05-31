@@ -78,6 +78,8 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+    DECLARE_VIRTUAL_TRACE_WRAPPERS();
+
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     // EventTarget
