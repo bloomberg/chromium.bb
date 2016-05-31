@@ -706,6 +706,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         mTimestampMillis = state.timestampMillis;
         mUrl = state.getVirtualUrlFromState();
 
+        mThemeColor = state.hasThemeColor() ? state.getThemeColor() : mDefaultThemeColor;
+
         mTitle = state.getDisplayTitleFromState();
         mIsTitleDirectionRtl = mTitle != null
                 && LocalizationUtils.getFirstStrongCharacterDirection(mTitle)
@@ -928,6 +930,7 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         tabState.shouldPreserve = mShouldPreserve;
         tabState.syncId = mSyncId;
         tabState.timestampMillis = mTimestampMillis;
+        tabState.themeColor = getThemeColor();
         return tabState;
     }
 

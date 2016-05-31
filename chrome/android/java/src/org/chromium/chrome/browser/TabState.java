@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.graphics.Color;
 import android.os.Handler;
 import android.util.Log;
 import android.util.Pair;
@@ -126,8 +127,14 @@ public class TabState {
     public String openerAppId;
     public boolean shouldPreserve;
 
+    /** The tab's theme color. */
+    public int themeColor;
+
     /** Whether this TabState was created from a file containing info about an incognito Tab. */
     protected boolean mIsIncognito;
+
+    /** Whether the theme color was set for this tab. */
+    private boolean mHasThemeColor;
 
     /** @return Whether a Stable channel build of Chrome is being used. */
     private static boolean isStableChannelBuild() {
@@ -261,6 +268,16 @@ public class TabState {
                         + "Assuming shouldPreserve is false");
             }
             tabState.mIsIncognito = encrypted;
+            try {
+                tabState.themeColor = stream.readInt();
+                tabState.mHasThemeColor = true;
+            } catch (EOFException eof) {
+                // Could happen if reading a version of TabState without a theme color.
+                tabState.themeColor = Color.WHITE;
+                tabState.mHasThemeColor = false;
+                Log.w(TAG, "Failed to read theme color from tab state. "
+                        + "Assuming theme color is white");
+            }
             return tabState;
         } finally {
             stream.close();
@@ -314,6 +331,7 @@ public class TabState {
             stream.writeInt(state.contentsState.version());
             stream.writeLong(state.syncId);
             stream.writeBoolean(state.shouldPreserve);
+            stream.writeInt(state.themeColor);
         } finally {
             StreamUtil.closeQuietly(stream);
         }
@@ -354,6 +372,16 @@ public class TabState {
     /** @return Whether an incognito TabState was loaded by {@link #readState}. */
     public boolean isIncognito() {
         return mIsIncognito;
+    }
+
+    /** @return The theme color of the tab or Color.WHITE if not set. */
+    public int getThemeColor() {
+        return themeColor;
+    }
+
+    /** @return True if the tab has a theme color set. */
+    public boolean hasThemeColor() {
+        return mHasThemeColor;
     }
 
     /**
