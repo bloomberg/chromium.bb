@@ -183,8 +183,19 @@ class TraceTaskHandler(object):
       controller.LocalChromeController.KillChromeProcesses()
       pool.terminate()
       failed = True
-
-    if not apply_result.successful():
+    elif not apply_result.successful():
+      # Try to reraise the exception that killed the subprocess and add it to
+      # the error log.
+      try:
+        apply_result.get()
+      except Exception as e:
+        with file(log_filename, 'w+') as error_log:
+          error_log.write('Unhandled exception caught by apply_result: {}'
+                          .format(e))
+          traceback.print_exc(file=error_log)
+      else:
+        with file(log_filename, 'w+') as error_log:
+          error_log.write('No exception found for unsuccessful apply_result')
       self._logger.error('Process failure for trace generation of URL: ' + url)
       self._failure_database.AddFailure('trace_process_error', url)
       failed = True
@@ -233,9 +244,13 @@ class TraceTaskHandler(object):
     else:
       self._logger.warning('No trace found at: ' + local_filename)
 
-    self._logger.debug('Uploading analyze log')
-    remote_log_location = remote_trace_location + '.log'
-    self._google_storage_accessor.UploadFile(log_filename, remote_log_location)
+    if os.path.isfile(log_filename):
+      self._logger.debug('Uploading analyze log')
+      remote_log_location = remote_trace_location + '.log'
+      self._google_storage_accessor.UploadFile(
+          log_filename, remote_log_location)
+    else:
+      self._logger.warning('No log file found at: {}'.format(log_filename))
 
   def Finalize(self):
     """Called once before the handler is destroyed."""
@@ -287,4 +302,3 @@ class TraceTaskHandler(object):
 
     if success_happened:
       self._UploadTraceDatabase()
-
