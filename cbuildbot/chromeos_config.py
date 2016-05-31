@@ -797,7 +797,7 @@ def GetConfig():
       # dictionary, all projects on that remote are considered to not be
       # branchable.
       BRANCHABLE_PROJECTS={
-          external_remote: r'chromiumos/(.+)',
+          external_remote: r'(chromiumos|aosp)/(.+)',
           internal_remote: r'chromeos/(.+)',
       },
 
