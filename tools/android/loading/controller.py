@@ -296,7 +296,7 @@ class RemoteChromeController(ChromeControllerBase):
     Caution: The browser state might need to be manually reseted.
 
     Args:
-      device: an android device.
+      device: (device_utils.DeviceUtils) an android device.
     """
     assert device is not None, 'Should you be using LocalController instead?'
     super(RemoteChromeController, self).__init__()
@@ -361,13 +361,16 @@ class RemoteChromeController(ChromeControllerBase):
         self._device.ForceStop(package_info.package)
 
   def ResetBrowserState(self):
-    """Override for chrome state reseting."""
-    logging.info('Reset chrome\'s profile')
-    package_info = OPTIONS.ChromePackage()
-    # We assume all the browser is in the Default user profile directory.
-    cmd = ['rm', '-rf', '/data/data/{}/app_chrome/Default'.format(
-               package_info.package)]
-    self._device.adb.Shell(subprocess.list2cmdline(cmd))
+    """Override resetting Chrome local state."""
+    logging.info('Resetting Chrome local state')
+    package = OPTIONS.ChromePackage().package
+    # Remove the Chrome Profile and the various disk caches. Other parts
+    # theoretically should not affect loading performance. Also remove the tab
+    # state to prevent it from growing infinitely. [:D]
+    for directory in ['app_chrome/Default', 'cache', 'app_chrome/ShaderCache',
+                      'app_tabs']:
+      cmd = ['rm', '-rf', '/data/data/{}/{}'.format(package, directory)]
+      self._device.adb.Shell(subprocess.list2cmdline(cmd))
 
   def PushBrowserCache(self, cache_path):
     """Override for chrome cache pushing."""
