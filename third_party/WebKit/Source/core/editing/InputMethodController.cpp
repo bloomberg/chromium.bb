@@ -413,7 +413,7 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     // PlainTextRange::createRange as a workaround.
     const Position& startPosition = startRange.endPosition();
     const Position& endPosition = endRange.endPosition();
-    Range* selectedRange = Range::create(rootEditableElement->document(), startPosition, endPosition);
+    const EphemeralRange selectedRange(startPosition, endPosition);
     frame().selection().setSelectedRange(selectedRange, TextAffinity::Downstream, SelectionDirectionalMode::NonDirectional, NotUserTriggered);
 
     if (underlines.isEmpty()) {
