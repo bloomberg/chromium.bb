@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/gpu/arc_gpu_video_decode_accelerator.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace {
 void OnConnectionError() {
@@ -153,17 +153,17 @@ base::ScopedFD GpuArcVideoService::UnwrapFdFromMojoHandle(
     return base::ScopedFD();
   }
 
-  mojo::edk::ScopedPlatformHandle scoped_platform_handle;
-  MojoResult mojo_result = mojo::edk::PassWrappedPlatformHandle(
-      handle.release().value(), &scoped_platform_handle);
+  base::PlatformFile platform_file;
+  MojoResult mojo_result =
+      mojo::UnwrapPlatformFile(std::move(handle), &platform_file);
   if (mojo_result != MOJO_RESULT_OK) {
-    LOG(ERROR) << "PassWrappedPlatformHandle failed: " << mojo_result;
+    LOG(ERROR) << "UnwrapPlatformFile failed: " << mojo_result;
     client_->OnError(
         ::arc::mojom::VideoAcceleratorServiceClient::Error::PLATFORM_FAILURE);
     return base::ScopedFD();
   }
 
-  return base::ScopedFD(scoped_platform_handle.release().handle);
+  return base::ScopedFD(platform_file);
 }
 
 void GpuArcVideoService::BindSharedMemory(::arc::mojom::PortType port,
