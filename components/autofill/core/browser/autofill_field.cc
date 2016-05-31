@@ -440,6 +440,28 @@ bool FillStateText(const base::string16& value, FormFieldData* field) {
   return false;
 }
 
+// Fills the expiration year |value| into the |field|. Uses the |field_type|
+// and the |field|'s max_length attribute to determine if the |value| needs to
+// be truncated.
+void FillExpirationYearInput(base::string16 value,
+                             ServerFieldType field_type,
+                             FormFieldData* field) {
+  // If the |field_type| requires only 2 digits, keep only the last 2 digits of
+  // |value|.
+  if (field_type == CREDIT_CARD_EXP_2_DIGIT_YEAR && value.length() > 2)
+    value = value.substr(value.length() - 2, 2);
+
+  if (field->max_length == 0 || field->max_length >= value.size()) {
+    // No length restrictions, fill the year value directly.
+    field->value = value;
+  } else {
+    // Truncate the front of |value| to keep only the number of characters equal
+    // to the |field|'s max length.
+    field->value =
+        value.substr(value.length() - field->max_length, field->max_length);
+  }
+}
+
 std::string Hash32Bit(const std::string& str) {
   std::string hash_bin = base::SHA1HashString(str);
   DCHECK_EQ(base::kSHA1Length, hash_bin.length());
@@ -594,6 +616,11 @@ bool AutofillField::FillFormField(const AutofillField& field,
     return true;
   } else if (type.GetStorableType() == ADDRESS_HOME_STATE) {
     return FillStateText(value, field_data);
+  } else if (field_data->form_control_type == "input" &&
+             (type.GetStorableType() == CREDIT_CARD_EXP_2_DIGIT_YEAR ||
+              type.GetStorableType() == CREDIT_CARD_EXP_4_DIGIT_YEAR)) {
+    FillExpirationYearInput(value, type.GetStorableType(), field_data);
+    return true;
   }
 
   field_data->value = value;

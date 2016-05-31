@@ -330,6 +330,53 @@ TEST_F(AutofillFieldTest, FillPhoneNumber) {
   }
 }
 
+TEST_F(AutofillFieldTest, FillExpirationYearInput) {
+  typedef struct {
+    HtmlFieldType field_type;
+    size_t field_max_length;
+    std::string value_to_fill;
+    std::string expected_value;
+
+  } TestCase;
+
+  TestCase test_cases[] = {
+      // A field predicted as a 2 digits expiration year should fill the last 2
+      // digits of the expiration year if the field has an unspecified max
+      // length (0) or if it's greater than 1.
+      {HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR, /* default value */ 0, "2023",
+       "23"},
+      {HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR, 2, "2023", "23"},
+      {HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR, 12, "2023", "23"},
+      // A field predicted as a 2 digits expiration year should fill the last
+      // digit of the expiration year if the field has a max length of 1.
+      {HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR, 1, "2023", "3"},
+      // A field predicted as a 4 digits expiration year should fill the 4
+      // digits of the expiration year if the field has an unspecified max
+      // length (0) or if it's greater than 3 .
+      {HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, /* default value */ 0, "2023",
+       "2023"},
+      {HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, 4, "2023", "2023"},
+      {HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, 12, "2023", "2023"},
+      // A field predicted as a 4 digits expiration year should fill the last 2
+      // digits of the expiration year if the field has a max length of 2.
+      {HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, 2, "2023", "23"},
+      // A field predicted as a 4 digits expiration year should fill the last
+      // digit of the expiration year if the field has a max length of 1.
+      {HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR, 1, "2023", "3"},
+  };
+
+  for (TestCase test_case : test_cases) {
+    AutofillField field;
+    field.form_control_type = "input";
+    field.SetHtmlType(test_case.field_type, HtmlFieldMode());
+    field.max_length = test_case.field_max_length;
+
+    AutofillField::FillFormField(field, ASCIIToUTF16(test_case.value_to_fill),
+                                 "en-US", "en-US", &field);
+    EXPECT_EQ(ASCIIToUTF16(test_case.expected_value), field.value);
+  }
+}
+
 TEST_F(AutofillFieldTest, FillSelectControlByValue) {
   std::vector<const char*> kOptions = {
       "Eenie", "Meenie", "Miney", "Mo",
