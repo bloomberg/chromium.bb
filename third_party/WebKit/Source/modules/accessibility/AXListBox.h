@@ -47,7 +47,7 @@ public:
 
     AccessibilityRole determineAccessibilityRole() final;
     bool isAXListBox() const override { return true; }
-    AXObject* activeDescendant() const override;
+    AXObject* activeDescendant() final;
 
     void activeIndexChanged();
 

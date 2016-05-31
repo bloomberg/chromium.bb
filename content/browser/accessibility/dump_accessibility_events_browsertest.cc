@@ -153,6 +153,26 @@ void DumpAccessibilityEventsTest::RunEventTest(
 #if defined(OS_WIN) || defined(OS_MACOSX)
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaComboBoxCollapse) {
+  RunEventTest(FILE_PATH_LITERAL("aria-combo-box-collapse.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaComboBoxExpand) {
+  RunEventTest(FILE_PATH_LITERAL("aria-combo-box-expand.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaComboBoxFocus) {
+  RunEventTest(FILE_PATH_LITERAL("aria-combo-box-focus.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaComboBoxNext) {
+  RunEventTest(FILE_PATH_LITERAL("aria-combo-box-next.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
                        AccessibilityEventsAddAlert) {
   RunEventTest(FILE_PATH_LITERAL("add-alert.html"));
 }
@@ -228,8 +248,26 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 // Flaky on Windows: http://crbug.com/486861
 // Flaky on Mac: http://crbug.com/588271
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       DISABLED_AccessibilityEventsListboxNext) {
+                       AccessibilityEventsListboxNext) {
   RunEventTest(FILE_PATH_LITERAL("listbox-next.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       AccessibilityEventsMenuListCollapse) {
+  RunEventTest(FILE_PATH_LITERAL("menulist-collapse.html"));
+}
+
+#if defined(OS_MACOSX)
+// Crashes on Mac.
+#define MAYBE_AccessibilityEventsMenuListExpand \
+    DISABLED_AccessibilityEventsMenuListExpand
+#else
+#define MAYBE_AccessibilityEventsMenuListExpand \
+    AccessibilityEventsMenuListExpand
+#endif
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
+                       MAYBE_AccessibilityEventsMenuListExpand) {
+  RunEventTest(FILE_PATH_LITERAL("menulist-expand.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
@@ -237,8 +275,15 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("menulist-focus.html"));
 }
 
+#if defined(OS_MACOSX)
+// Crashes on Mac.
+#define MAYBE_AccessibilityEventsMenuListNext \
+    DISABLED_AccessibilityEventsMenuListNext
+#else
+#define MAYBE_AccessibilityEventsMenuListNext AccessibilityEventsMenuListNext
+#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       AccessibilityEventsMenuListNext) {
+                       MAYBE_AccessibilityEventsMenuListNext) {
   RunEventTest(FILE_PATH_LITERAL("menulist-next.html"));
 }
 

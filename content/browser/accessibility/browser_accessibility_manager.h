@@ -285,7 +285,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   // Given a focused node |focus|, returns a descendant of that node if it
   // has an active descendant, otherwise returns |focus|.
-  BrowserAccessibility* GetActiveDescendantFocus(BrowserAccessibility* focus);
+  BrowserAccessibility* GetActiveDescendant(BrowserAccessibility* focus);
 
   // Returns true if native focus is anywhere in this WebContents or not.
   bool NativeViewHasFocus();

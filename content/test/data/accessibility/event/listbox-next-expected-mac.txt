@@ -1,7 +1,3 @@
-#<skip - browser side code needs to be re-implemented>
-AXFocusedUIElementChanged on AXList
-AXFocusedUIElementChanged on AXList
 AXValueChanged on AXStaticText AXValue="Orange"
 AXSelectedChildrenChanged on AXList
 AXValueChanged on AXStaticText AXValue="Apple"
-AXFocusedUIElementChanged on AXList

@@ -1,2 +1,1 @@
-#<skip - browser side code needs to be re-implemented>
 AXFocusedUIElementChanged on AXList

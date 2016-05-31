@@ -104,6 +104,11 @@ void BrowserAccessibilityManagerWin::UserIsReloading() {
   }
 }
 
+BrowserAccessibility* BrowserAccessibilityManagerWin::GetFocus() {
+  BrowserAccessibility* focus = BrowserAccessibilityManager::GetFocus();
+  return GetActiveDescendant(focus);
+}
+
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
     BrowserAccessibilityEvent::Source source,
     ui::AXEvent event_type,
@@ -231,6 +236,7 @@ bool BrowserAccessibilityManagerWin::CanFireEvents() {
 void BrowserAccessibilityManagerWin::FireFocusEvent(
     BrowserAccessibilityEvent::Source source,
     BrowserAccessibility* node) {
+  DCHECK(node);
   // On Windows, we always fire a FOCUS event on the root of a frame before
   // firing a focus event within that frame.
   if (node->manager() != last_focused_manager_ &&
