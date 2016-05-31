@@ -124,12 +124,25 @@ struct LayoutMetrics {
 
 NSRect GetFirstButtonFrameForHeight(CGFloat height) {
   CGFloat y = height - bookmarks::kBookmarkFolderButtonHeight -
-      bookmarks::BookmarkVerticalPadding();
+      bookmarks::BookmarkTopVerticalPadding();
   return NSMakeRect(0, y, bookmarks::kDefaultBookmarkWidth,
                     bookmarks::kBookmarkFolderButtonHeight);
 }
 
 }  // namespace
+
+namespace bookmarks {
+
+CGFloat BookmarkTopVerticalPadding() {
+  return bookmarks::BookmarkVerticalPadding();
+}
+
+CGFloat BookmarkBottomVerticalPadding() {
+  return ui::MaterialDesignController::IsModeMaterial()
+      ? 0 : bookmarks::BookmarkVerticalPadding();
+}
+
+}  // bookmarks
 
 
 // Required to set the right tracking bounds for our fake menus.
@@ -552,14 +565,13 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
   } else {
     // Parent is a folder: expose as much as we can vertically; grow right/left.
     newWindowTopLeft.x = [self childFolderWindowLeftForWidth:windowWidth];
-    NSPoint topOfWindow = NSMakePoint(0,
-                                      NSMaxY([parentButton_ frame]) -
-                                          bookmarks::BookmarkVerticalPadding());
+    NSPoint topOfWindow =
+        NSMakePoint(0, NSMaxY([parentButton_ frame]) +
+            bookmarks::BookmarkTopVerticalPadding());
     topOfWindow = ui::ConvertPointFromWindowToScreen(
         [parentButton_ window],
         [[parentButton_ superview] convertPoint:topOfWindow toView:nil]);
-    newWindowTopLeft.y = topOfWindow.y +
-                         2 * bookmarks::BookmarkVerticalPadding();
+    newWindowTopLeft.y = topOfWindow.y;
   }
   return newWindowTopLeft;
 }
@@ -574,7 +586,8 @@ NSRect GetFirstButtonFrameForHeight(CGFloat height) {
   // This does not take into account any padding which may be required at the
   // top and/or bottom of the window.
   return (buttonCount * bookmarks::kBookmarkFolderButtonHeight) +
-      2 * bookmarks::BookmarkVerticalPadding();
+      bookmarks::BookmarkTopVerticalPadding() +
+      bookmarks::BookmarkBottomVerticalPadding();
 }
 
 - (void)adjustWindowLeft:(CGFloat)windowLeft
@@ -1746,7 +1759,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
         [buttons_ objectAtIndex:static_cast<NSUInteger>(destIndex)];
     DCHECK(button);
     NSRect buttonFrame = [button frame];
-    y = NSMaxY(buttonFrame) + 0.5 * bookmarks::BookmarkVerticalPadding();
+    y = NSMaxY(buttonFrame) + 0.5 * bookmarks::BookmarkTopVerticalPadding();
 
     // If it's a drop at the end (past the last button, if there are any) ...
   } else if (destIndex == numButtons) {
@@ -1757,7 +1770,8 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
           [buttons_ objectAtIndex:static_cast<NSUInteger>(destIndex - 1)];
       DCHECK(button);
       NSRect buttonFrame = [button frame];
-      y = buttonFrame.origin.y - 0.5 * bookmarks::BookmarkVerticalPadding();
+      y = buttonFrame.origin.y -
+          0.5 * bookmarks::BookmarkBottomVerticalPadding();
 
     }
   } else {

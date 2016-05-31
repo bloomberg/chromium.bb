@@ -23,10 +23,17 @@ using bookmarks::BookmarkNode;
 
 namespace {
 
-const int kHierarchyButtonXMargin = 4;
+// Padding on the right side of the arrow icon.
+const int kHierarchyButtonRightPadding = 4;
+
+// Padding on the left side of the arrow icon.
+int HierarchyButtonLeftPadding() {
+  return ui::MaterialDesignController::IsModeMaterial() ? 11 : 2;
+}
+
 const int kIconTextSpacer = 4;
-const int kTextRightPadding = 3;
-const int kIconLeftPadding = 3;
+const int kTextRightPadding = 1;
+const int kIconLeftPadding = 1;
 
 const int kDefaultFontSize = 12;
 
@@ -330,11 +337,16 @@ const int kDefaultFontSize = 12;
           [title sizeWithAttributes:[self titleTextAttributes]].width;
       cellSize.width +=
           kIconTextSpacer + std::ceil(textWidth) + kTextRightPadding;
+    } else {
+      // Make buttons without visible titles 20pts wide (18 plus padding).
+      cellSize.width = 18;
     }
   }
 
   if (drawFolderArrow_) {
-    cellSize.width += [arrowImage_ size].width + 2 * kHierarchyButtonXMargin;
+    cellSize.width += [arrowImage_ size].width +
+                      HierarchyButtonLeftPadding() +
+                      kHierarchyButtonRightPadding;
   }
   return cellSize;
 }
@@ -345,7 +357,7 @@ const int kDefaultFontSize = 12;
   // left edge, but only if there's a visible title.
   if (ui::MaterialDesignController::IsModeMaterial()) {
     imageRect.origin.y -= 1;
-    if ([[self visibleTitle] length]) {
+    if ([[self visibleTitle] length] > 0) {
       imageRect.origin.x += kIconLeftPadding;
     }
   }
@@ -374,7 +386,7 @@ const int kDefaultFontSize = 12;
     imageRect.size = [arrowImage_ size];
     const CGFloat kArrowOffset = 1.0;  // Required for proper centering.
     CGFloat dX =
-        NSWidth(cellFrame) - NSWidth(imageRect) - kHierarchyButtonXMargin;
+        NSWidth(cellFrame) - NSWidth(imageRect) - kHierarchyButtonRightPadding;
     CGFloat dY = (NSHeight(cellFrame) / 2.0) - (NSHeight(imageRect) / 2.0) +
         kArrowOffset;
     NSRect drawRect = NSOffsetRect(imageRect, dX, dY);

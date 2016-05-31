@@ -20,6 +20,16 @@ class Profile;
 @class BookmarkBarFolderWindowContentView;
 @class BookmarkFolderTarget;
 
+namespace bookmarks {
+
+// The padding between the top of the folder menu and the topmost button.
+CGFloat BookmarkTopVerticalPadding();
+
+// The padding between the bottom of the folder menu and the bottommost button.
+CGFloat BookmarkBottomVerticalPadding();
+
+}  // bookmarks
+
 // A controller for the pop-up windows from bookmark folder buttons
 // which look sort of like menus.
 @interface BookmarkBarFolderController :

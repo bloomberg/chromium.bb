@@ -377,7 +377,8 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
     // The alpha is always at least 8%. Default the color to black.
     CGFloat alpha = kEightPercentAlpha;
     CGFloat color = 0.0;
-    // If a dark theme, incrase the opacity slightly and use white.
+
+    // If a dark theme, increase the opacity slightly and use white.
     if ([[controlView window] hasDarkTheme]) {
       alpha += kFourPercentAlpha;
       color = 1.0;
@@ -513,12 +514,19 @@ static const NSTimeInterval kAnimationContinuousCycleDuration = 0.4;
   const CGFloat kLineWidth = [controlView cr_lineWidth];
   const CGFloat kHalfLineWidth = kLineWidth / 2.0;
 
-  NSRect drawFrame = cellFrame;
-  NSRect innerFrame = NSInsetRect(cellFrame, kLineWidth, kLineWidth);
+  NSRect drawFrame = NSZeroRect;
+  NSRect innerFrame = NSZeroRect;
   CGFloat cornerRadius = 2;
   if ([self tag] != kMaterialStandardButtonTypeWithLimitedClickFeedback) {
     drawFrame = NSInsetRect(cellFrame, 1.5 * kLineWidth, 1.5 * kLineWidth);
+    innerFrame = NSInsetRect(cellFrame, kLineWidth, kLineWidth);
     cornerRadius = 3;
+  } else {
+    drawFrame = cellFrame;
+    // Hover and click paths are always 20pt tall, regardless of the button's
+    // height.
+    drawFrame.size.height = 20;
+    innerFrame = NSInsetRect(drawFrame, kLineWidth, kLineWidth);
   }
 
   ButtonType type = [[(NSControl*)controlView cell] tag];

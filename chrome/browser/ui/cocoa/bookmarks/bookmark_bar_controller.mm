@@ -255,7 +255,7 @@ CGFloat BookmarkHorizontalPadding() {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     return 1.0;
   }
-  return 10.0;
+  return 4.0;
 }
 
 CGFloat BookmarkVerticalPadding() {
@@ -486,6 +486,9 @@ CGFloat BookmarkRightMargin() {
     BookmarkButtonCell* offTheSideCell = [offTheSideButton_ cell];
     [offTheSideCell setTag:kMaterialStandardButtonTypeWithLimitedClickFeedback];
     [offTheSideCell setImagePosition:NSImageOnly];
+
+    // The cell is configured in the nib to draw a white highlight when clicked.
+    [offTheSideCell setHighlightsBy:NSNoCellMask];
   } else {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     [offTheSideButton_ setImage:
@@ -510,6 +513,11 @@ CGFloat BookmarkRightMargin() {
 
     originalImportBookmarksRect_.origin.x += kMaterialBookmarksTextfieldOffsetX;
     [[buttonView_ importBookmarksButton] setFrame:originalImportBookmarksRect_];
+
+    // Move the chevron button up 2pts from its position in the xib.
+    NSRect chevronButtonFrame = [offTheSideButton_ frame];
+    chevronButtonFrame.origin.y -= 2;
+    [offTheSideButton_ setFrame:chevronButtonFrame];
   }
 
   // To make life happier when the bookmark bar is floating, the chevron is a
