@@ -21,52 +21,6 @@ namespace base {
 
 namespace {
 
-TEST(TimeTestOutOfBounds, FromExplodedOutOfBoundsTime) {
-  // FromUTCExploded must set time to Time(0) and failure, if the day is set to
-  // 31 on a 28-30 day month. Test |exploded| returns Time(0) on 31st of
-  // February and 31st of April. New implementation handles this.
-
-  const struct DateTestData {
-    Time::Exploded explode;
-    bool is_valid;
-  } kDateTestData[] = {
-      // 31st of February
-      {{2016, 2, 0, 31, 12, 30, 0, 0}, true},
-      // 31st of April
-      {{2016, 4, 0, 31, 8, 43, 0, 0}, true},
-      // Negative month
-      {{2016, -5, 0, 2, 4, 10, 0, 0}, false},
-      // Negative date of month
-      {{2016, 6, 0, -15, 2, 50, 0, 0}, false},
-      // Negative hours
-      {{2016, 7, 0, 10, -11, 29, 0, 0}, false},
-      // Negative minutes
-      {{2016, 3, 0, 14, 10, -29, 0, 0}, false},
-      // Negative seconds
-      {{2016, 10, 0, 25, 7, 47, -30, 0}, false},
-      // Negative milliseconds
-      {{2016, 10, 0, 25, 7, 47, 20, -500}, false},
-      // Hours are too large
-      {{2016, 7, 0, 10, 26, 29, 0, 0}, false},
-      // Minutes are too large
-      {{2016, 3, 0, 14, 10, 78, 0, 0}, false},
-      // Seconds are too large
-      {{2016, 10, 0, 25, 7, 47, 234, 0}, false},
-      // Milliseconds are too large
-      {{2016, 10, 0, 25, 6, 31, 23, 1643}, false},
-  };
-
-  for (const auto& test : kDateTestData) {
-    EXPECT_EQ(test.explode.HasValidValues(), test.is_valid);
-
-    base::Time result;
-    EXPECT_FALSE(base::Time::FromUTCExploded(test.explode, &result));
-    EXPECT_TRUE(result.is_null());
-    EXPECT_FALSE(base::Time::FromLocalExploded(test.explode, &result));
-    EXPECT_TRUE(result.is_null());
-  }
-}
-
 // Specialized test fixture allowing time strings without timezones to be
 // tested by comparing them to a known time in the local zone.
 // See also pr_time_unittests.cc
