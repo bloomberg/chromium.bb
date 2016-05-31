@@ -260,4 +260,21 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
 
         mChooserDialog.dismiss();
     }
+
+    @SmallTest
+    public void testListHeight() throws InterruptedException {
+        // 500 * .3 is 150, which is 48 * 3.125. 48 * 3.5 is 168.
+        assertEquals(168, ItemChooserDialog.getListHeight(500, 1.0f));
+
+        // 150 * .3 is 45, which rounds below the minimum height.
+        assertEquals(72, ItemChooserDialog.getListHeight(150, 1.0f));
+
+        // 1460 * .3 is 438, which rounds above the maximum height.
+        assertEquals(408, ItemChooserDialog.getListHeight(1460, 1.0f));
+
+        // 1100px is 500dp at a density of 2.2. 500 * .3 is 150dp, which is 48dp *
+        // 3.125. 48dp * 3.5 is 168dp. 168dp * 2.2px/dp is 369.6, which rounds to
+        // 370.
+        assertEquals(370, ItemChooserDialog.getListHeight(1100, 2.2f));
+    }
 }

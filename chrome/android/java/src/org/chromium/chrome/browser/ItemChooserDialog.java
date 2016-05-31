@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,14 +12,12 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
-import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -30,6 +29,7 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
 
@@ -231,7 +231,7 @@ public class ItemChooserDialog {
         }
     }
 
-    private Context mContext;
+    private Activity mActivity;
 
     // The dialog this class encapsulates.
     private Dialog mDialog;
@@ -254,27 +254,29 @@ public class ItemChooserDialog {
     private ItemAdapter mItemAdapter;
 
     // How much of the height of the screen should be taken up by the listview.
-    private static final double LISTVIEW_HEIGHT_PERCENT = 0.30;
+    private static final float LISTVIEW_HEIGHT_PERCENT = 0.30f;
+    // The height of a row of the listview in dp.
+    private static final int LIST_ROW_HEIGHT_DP = 48;
     // The minimum height of the listview in the dialog (in dp).
-    private static final int MIN_HEIGHT_DP = 56;
+    private static final int MIN_HEIGHT_DP = (int) (LIST_ROW_HEIGHT_DP * 1.5);
     // The maximum height of the listview in the dialog (in dp).
-    private static final int MAX_HEIGHT_DP = 400;
+    private static final int MAX_HEIGHT_DP = (int) (LIST_ROW_HEIGHT_DP * 8.5);
 
     /**
      * Creates the ItemChooserPopup and displays it (and starts waiting for data).
      *
-     * @param context Context which is used for launching a dialog.
+     * @param activity Activity which is used for launching a dialog.
      * @param callback The callback used to communicate back what was selected.
      * @param labels The labels to show in the dialog.
      */
     public ItemChooserDialog(
-            Context context, ItemSelectedCallback callback, ItemChooserLabels labels) {
-        mContext = context;
+            Activity activity, ItemSelectedCallback callback, ItemChooserLabels labels) {
+        mActivity = activity;
         mItemSelectedCallback = callback;
         mLabels = labels;
 
-        LinearLayout dialogContainer = (LinearLayout) LayoutInflater.from(
-                mContext).inflate(R.layout.item_chooser_dialog, null);
+        LinearLayout dialogContainer = (LinearLayout) LayoutInflater.from(mActivity).inflate(
+                R.layout.item_chooser_dialog, null);
 
         mListView = (ListView) dialogContainer.findViewById(R.id.items);
         mProgressBar = (ProgressBar) dialogContainer.findViewById(R.id.progress);
@@ -302,7 +304,7 @@ public class ItemChooserDialog {
             }
         });
 
-        mItemAdapter = new ItemAdapter(mContext, R.layout.item_chooser_dialog_row);
+        mItemAdapter = new ItemAdapter(mActivity, R.layout.item_chooser_dialog_row);
         mListView.setAdapter(mItemAdapter);
         mListView.setEmptyView(mEmptyMessage);
         mListView.setOnItemClickListener(mItemAdapter);
@@ -310,26 +312,29 @@ public class ItemChooserDialog {
         setState(State.STARTING);
 
         // The list is the main element in the dialog and it should grow and
-        // shrink according to the size of the screen available (clamped to a
-        // min and a max).
+        // shrink according to the size of the screen available.
         View listViewContainer = dialogContainer.findViewById(R.id.container);
-        DisplayMetrics metrics = new DisplayMetrics();
-        WindowManager manager = (WindowManager) mContext.getSystemService(
-                Context.WINDOW_SERVICE);
-        manager.getDefaultDisplay().getMetrics(metrics);
-
-        float density = context.getResources().getDisplayMetrics().density;
-        int height = (int) (metrics.heightPixels * LISTVIEW_HEIGHT_PERCENT);
-        height = Math.min(height, Math.round(MAX_HEIGHT_DP * density));
-        height = Math.max(height, Math.round(MIN_HEIGHT_DP * density));
-        listViewContainer.setLayoutParams(
-                new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, height));
+        listViewContainer.setLayoutParams(new LinearLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT,
+                getListHeight(mActivity.getWindow().getDecorView().getHeight(),
+                        mActivity.getResources().getDisplayMetrics().density)));
 
         showDialogForView(dialogContainer);
     }
 
+    // Computes the height of the device list, bound to half-multiples of the
+    // row height so that it's obvious if there are more elements to scroll to.
+    @VisibleForTesting
+    static int getListHeight(int decorHeight, float density) {
+        float heightDp = decorHeight / density * LISTVIEW_HEIGHT_PERCENT;
+        // Round to (an integer + 0.5) times LIST_ROW_HEIGHT.
+        heightDp = (Math.round(heightDp / LIST_ROW_HEIGHT_DP - 0.5f) + 0.5f) * LIST_ROW_HEIGHT_DP;
+        heightDp = MathUtils.clamp(heightDp, MIN_HEIGHT_DP, MAX_HEIGHT_DP);
+        return (int) Math.round(heightDp * density);
+    }
+
     private void showDialogForView(View view) {
-        mDialog = new Dialog(mContext);
+        mDialog = new Dialog(mActivity);
         mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         mDialog.addContentView(view,
                 new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
@@ -342,7 +347,7 @@ public class ItemChooserDialog {
         });
 
         Window window = mDialog.getWindow();
-        if (!DeviceFormFactor.isTablet(mContext)) {
+        if (!DeviceFormFactor.isTablet(mActivity)) {
             // On smaller screens, make the dialog fill the width of the screen,
             // and appear at the top.
             window.setBackgroundDrawable(new ColorDrawable(Color.WHITE));

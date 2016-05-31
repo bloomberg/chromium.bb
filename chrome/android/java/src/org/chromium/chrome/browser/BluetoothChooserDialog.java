@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -45,7 +46,7 @@ public class BluetoothChooserDialog
 
     // Always equal to mWindowAndroid.getActivity().get(), but stored separately to make sure it's
     // not GC'ed.
-    final Context mContext;
+    final Activity mActivity;
 
     // The dialog to show to let the user pick a device.
     ItemChooserDialog mItemChooserDialog;
@@ -77,8 +78,8 @@ public class BluetoothChooserDialog
     BluetoothChooserDialog(WindowAndroid windowAndroid, String origin, int securityLevel,
             long nativeBluetoothChooserDialogPtr) {
         mWindowAndroid = windowAndroid;
-        mContext = windowAndroid.getActivity().get();
-        assert mContext != null;
+        mActivity = windowAndroid.getActivity().get();
+        assert mActivity != null;
         mOrigin = origin;
         mSecurityLevel = securityLevel;
         mNativeBluetoothChooserDialogPtr = nativeBluetoothChooserDialogPtr;
@@ -93,41 +94,41 @@ public class BluetoothChooserDialog
         Profile profile = Profile.getLastUsedProfile();
         SpannableString origin = new SpannableString(mOrigin);
         OmniboxUrlEmphasizer.emphasizeUrl(
-                origin, mContext.getResources(), profile, mSecurityLevel, false, true, true);
+                origin, mActivity.getResources(), profile, mSecurityLevel, false, true, true);
         // Construct a full string and replace the origin text with emphasized version.
         SpannableString title =
-                new SpannableString(mContext.getString(R.string.bluetooth_dialog_title, mOrigin));
+                new SpannableString(mActivity.getString(R.string.bluetooth_dialog_title, mOrigin));
         int start = title.toString().indexOf(mOrigin);
         TextUtils.copySpansFrom(origin, 0, origin.length(), Object.class, title, start);
 
-        String message = mContext.getString(R.string.bluetooth_not_found);
+        String message = mActivity.getString(R.string.bluetooth_not_found);
         SpannableString noneFound = SpanApplier.applySpans(
                 message, new SpanInfo("<link>", "</link>",
-                        new BluetoothClickableSpan(LinkType.RESTART_SEARCH, mContext)));
+                                 new BluetoothClickableSpan(LinkType.RESTART_SEARCH, mActivity)));
 
         SpannableString searching = SpanApplier.applySpans(
-                mContext.getString(R.string.bluetooth_searching),
+                mActivity.getString(R.string.bluetooth_searching),
                 new SpanInfo("<link>", "</link>",
-                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)));
+                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mActivity)));
 
-        String positiveButton = mContext.getString(R.string.bluetooth_confirm_button);
+        String positiveButton = mActivity.getString(R.string.bluetooth_confirm_button);
 
         SpannableString statusIdleNoneFound = SpanApplier.applySpans(
-                mContext.getString(R.string.bluetooth_not_seeing_it_idle_none_found),
+                mActivity.getString(R.string.bluetooth_not_seeing_it_idle_none_found),
                 new SpanInfo("<link>", "</link>",
-                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)));
+                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mActivity)));
 
         SpannableString statusIdleSomeFound = SpanApplier.applySpans(
-                mContext.getString(R.string.bluetooth_not_seeing_it_idle_some_found),
+                mActivity.getString(R.string.bluetooth_not_seeing_it_idle_some_found),
                 new SpanInfo("<link1>", "</link1>",
-                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)),
+                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mActivity)),
                 new SpanInfo("<link2>", "</link2>",
-                        new BluetoothClickableSpan(LinkType.RESTART_SEARCH, mContext)));
+                        new BluetoothClickableSpan(LinkType.RESTART_SEARCH, mActivity)));
 
         ItemChooserDialog.ItemChooserLabels labels =
                 new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound,
                         statusIdleNoneFound, statusIdleSomeFound, positiveButton);
-        mItemChooserDialog = new ItemChooserDialog(mContext, this, labels);
+        mItemChooserDialog = new ItemChooserDialog(mActivity, this, labels);
     }
 
     @Override
@@ -174,16 +175,16 @@ public class BluetoothChooserDialog
         }
 
         SpannableString needLocationMessage = SpanApplier.applySpans(
-                mContext.getString(R.string.bluetooth_need_location_permission),
+                mActivity.getString(R.string.bluetooth_need_location_permission),
                 new SpanInfo("<link>", "</link>",
                         new BluetoothClickableSpan(
-                                     LinkType.REQUEST_LOCATION_PERMISSION, mContext)));
+                                     LinkType.REQUEST_LOCATION_PERMISSION, mActivity)));
 
         SpannableString needLocationStatus = SpanApplier.applySpans(
-                mContext.getString(R.string.bluetooth_need_location_permission_help),
+                mActivity.getString(R.string.bluetooth_need_location_permission_help),
                 new SpanInfo("<link>", "</link>",
                         new BluetoothClickableSpan(
-                                     LinkType.NEED_LOCATION_PERMISSION_HELP, mContext)));
+                                     LinkType.NEED_LOCATION_PERMISSION_HELP, mActivity)));
 
         mItemChooserDialog.setErrorState(needLocationMessage, needLocationStatus);
     }
@@ -292,13 +293,13 @@ public class BluetoothChooserDialog
     @CalledByNative
     void notifyAdapterTurnedOff() {
         SpannableString adapterOffMessage = SpanApplier.applySpans(
-                mContext.getString(R.string.bluetooth_adapter_off),
+                mActivity.getString(R.string.bluetooth_adapter_off),
                 new SpanInfo("<link>", "</link>",
-                        new BluetoothClickableSpan(LinkType.ADAPTER_OFF, mContext)));
+                        new BluetoothClickableSpan(LinkType.ADAPTER_OFF, mActivity)));
         SpannableString adapterOffStatus = SpanApplier.applySpans(
-                mContext.getString(R.string.bluetooth_adapter_off_help),
+                mActivity.getString(R.string.bluetooth_adapter_off_help),
                 new SpanInfo("<link>", "</link>",
-                        new BluetoothClickableSpan(LinkType.ADAPTER_OFF_HELP, mContext)));
+                        new BluetoothClickableSpan(LinkType.ADAPTER_OFF_HELP, mActivity)));
 
         mItemChooserDialog.setErrorState(adapterOffMessage, adapterOffStatus);
     }

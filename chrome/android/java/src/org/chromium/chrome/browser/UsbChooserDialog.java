@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser;
 
-import android.content.Context;
+import android.app.Activity;
 import android.text.SpannableString;
 import android.text.TextUtils;
 import android.view.View;
@@ -45,30 +45,31 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
     /**
      * Shows the UsbChooserDialog.
      *
-     * @param context Context which is used for launching a dialog.
+     * @param activity Activity which is used for launching a dialog.
      * @param origin The origin for the site wanting to connect to the USB device.
      * @param securityLevel The security level of the connection to the site wanting to connect to
      *                      the USB device. For valid values see SecurityStateModel::SecurityLevel.
      */
     @VisibleForTesting
-    void show(Context context, String origin, int securityLevel) {
+    void show(Activity activity, String origin, int securityLevel) {
         // Emphasize the origin.
         Profile profile = Profile.getLastUsedProfile();
         SpannableString originSpannableString = new SpannableString(origin);
-        OmniboxUrlEmphasizer.emphasizeUrl(originSpannableString, context.getResources(), profile,
+        OmniboxUrlEmphasizer.emphasizeUrl(originSpannableString, activity.getResources(), profile,
                 securityLevel, false /* isInternalPage */, true /* useDarkColors */,
                 true /* emphasizeHttpsScheme */);
         // Construct a full string and replace the origin text with emphasized version.
         SpannableString title =
-                new SpannableString(context.getString(R.string.usb_chooser_dialog_prompt, origin));
+                new SpannableString(activity.getString(R.string.usb_chooser_dialog_prompt, origin));
         int start = title.toString().indexOf(origin);
         TextUtils.copySpansFrom(originSpannableString, 0, originSpannableString.length(),
                 Object.class, title, start);
 
         String searching = "";
-        String noneFound = context.getString(R.string.usb_chooser_dialog_no_devices_found_prompt);
-        SpannableString statusIdleNoneFound = SpanApplier.applySpans(
-                context.getString(R.string.usb_chooser_dialog_footnote_text),
+        String noneFound = activity.getString(R.string.usb_chooser_dialog_no_devices_found_prompt);
+        SpannableString statusIdleNoneFound =
+                SpanApplier.applySpans(
+                        activity.getString(R.string.usb_chooser_dialog_footnote_text),
                         new SpanInfo("<link>", "</link>", new NoUnderlineClickableSpan() {
                             @Override
                             public void onClick(View view) {
@@ -83,12 +84,12 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
                             }
                         }));
         SpannableString statusIdleSomeFound = statusIdleNoneFound;
-        String positiveButton = context.getString(R.string.usb_chooser_dialog_connect_button_text);
+        String positiveButton = activity.getString(R.string.usb_chooser_dialog_connect_button_text);
 
         ItemChooserDialog.ItemChooserLabels labels =
                 new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound,
                         statusIdleNoneFound, statusIdleSomeFound, positiveButton);
-        mItemChooserDialog = new ItemChooserDialog(context, this, labels);
+        mItemChooserDialog = new ItemChooserDialog(activity, this, labels);
     }
 
     @Override
@@ -105,13 +106,13 @@ public class UsbChooserDialog implements ItemChooserDialog.ItemSelectedCallback 
     @CalledByNative
     private static UsbChooserDialog create(WindowAndroid windowAndroid, String origin,
             int securityLevel, long nativeUsbChooserDialogPtr) {
-        Context context = windowAndroid.getActivity().get();
-        if (context == null) {
+        Activity activity = windowAndroid.getActivity().get();
+        if (activity == null) {
             return null;
         }
 
         UsbChooserDialog dialog = new UsbChooserDialog(nativeUsbChooserDialogPtr);
-        dialog.show(context, origin, securityLevel);
+        dialog.show(activity, origin, securityLevel);
         return dialog;
     }
 
