@@ -87,16 +87,6 @@ crbug.com/604144 svg/transforms/svg-css-transforms-clip-path.xhtml [ NeedsManual
 crbug.com/604144 svg/transforms/svg-css-transforms.xhtml [ NeedsManualRebaseline ]
 crbug.com/604144 transforms/svg-vs-css.xhtml [ NeedsManualRebaseline ]
 
-crbug.com/416535 compositing/overflow/updating-scrolling-content.html [ NeedsRebaseline ]
-crbug.com/416535 compositing/repaint/should-not-clip-composited-overflow-scrolling-layer.html [ NeedsRebaseline ]
-crbug.com/416535 fast/repaint/overflow-scroll-after-move.html [ NeedsRebaseline ]
-crbug.com/416535 fast/repaint/overflow-move-after-scroll.html [ NeedsRebaseline ]
-crbug.com/416535 paint/selection/selection-within-composited-scroller.html [ NeedsRebaseline ]
-crbug.com/416535 paint/invalidation/invalidation-on-foreground-graphics-layer.html [ NeedsRebaseline ]
-crbug.com/416535 virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-color-change.html [ NeedsRebaseline ]
-crbug.com/416535 virtual/prefer_compositing_to_lcd_text/compositing/overflow/text-match-highlight.html [ NeedsRebaseline ]
-crbug.com/416535 virtual/prefer_compositing_to_lcd_text/compositing/overflow/updating-scrolling-container-and-content.html [ NeedsRebaseline ]
-
 crbug.com/522641 inspector/elements/styles-4/styles-update-links.html [ Pass Timeout ]
 crbug.com/522645 [ Linux ] virtual/android/fullscreen/video-fixed-background.html [ Failure Pass ]
 crbug.com/522647 http/tests/notifications/close-dispatch-asynchronous.html [ Failure Pass ]
