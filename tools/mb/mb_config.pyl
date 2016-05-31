@@ -710,7 +710,7 @@
       'chromeos_x86-generic_variable': 'findit',
       'chromium_presubmit': 'none',
       'closure_compilation': 'closure_compilation',
-      'linux_arm': 'swarming_gyp_release_trybot_arm',
+      'linux_arm': 'swarming_gn_release_trybot_arm',
       'linux_chromium_archive_rel_ng': 'noswarming_gn_release_bot',
       'linux_chromium_asan_rel_ng': 'swarming_asan_lsan_gyp_release_trybot',
       'linux_chromium_asan_variable': 'findit',
@@ -1810,8 +1810,8 @@
       'swarming', 'gyp', 'msan', 'release_bot',
     ],
 
-    'swarming_gyp_release_trybot_arm': [
-      'swarming', 'gyp', 'release_trybot', 'arm', 'crosscompile',
+    'swarming_gn_release_trybot_arm': [
+      'swarming', 'gn', 'release_trybot', 'arm', 'crosscompile',
     ],
 
     'swarming_gyp_syzyasan_release_trybot_x86': [
