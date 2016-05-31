@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 declare_args() {
   # Overrides os name in uma metrics log to "Blimp".
   metrics_use_blimp = false
@@ -298,6 +300,14 @@ if (is_linux) {
     ]
     deps = [
       "//base",
+    ]
+  }
+}
+
+if (is_chromeos) {
+  mojom("interfaces") {
+    sources = [
+      "leak_detector/leak_detector_remote.mojom",
     ]
   }
 }

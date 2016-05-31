@@ -280,6 +280,16 @@
             'metrics/leak_detector/ranked_set.h',
           ],
         },
+        {
+          'target_name': 'metrics_mojo_bindings',
+          'type': 'static_library',
+          'includes': [
+            '../mojo/mojom_bindings_generator.gypi',
+          ],
+          'sources': [
+            'metrics/leak_detector/leak_detector_remote.mojom',
+          ],
+        },
       ],
     }],
     ['OS!="ios"', {
