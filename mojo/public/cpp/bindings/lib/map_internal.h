@@ -16,11 +16,11 @@ namespace mojo {
 namespace internal {
 
 template <typename Key, typename Value, bool kValueIsMoveOnlyType>
-struct MapTraits {};
+struct MapCloneTraits {};
 
 // Defines traits of a map for which Value is not a move-only type.
 template <typename Key, typename Value>
-struct MapTraits<Key, Value, false> {
+struct MapCloneTraits<Key, Value, false> {
   static inline void Clone(const std::map<Key, Value>& src,
                            std::map<Key, Value>* dst) {
     dst->clear();
@@ -31,7 +31,7 @@ struct MapTraits<Key, Value, false> {
 
 // Defines traits of a map for which Value is a move-only type.
 template <typename Key, typename Value>
-struct MapTraits<Key, Value, true> {
+struct MapCloneTraits<Key, Value, true> {
   static inline void Clone(const std::map<Key, Value>& src,
                            std::map<Key, Value>* dst) {
     dst->clear();

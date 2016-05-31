@@ -227,6 +227,37 @@ ReturnType CallWithContext(ReturnType (*f)(ParamType),
   return f(std::forward<InputUserType>(input));
 }
 
+template <typename T, typename MaybeConstUserType>
+struct HasGetDataMethod {
+  template <typename U>
+  static char Test(decltype(U::GetData(std::declval<MaybeConstUserType&>()))*);
+  template <typename U>
+  static int Test(...);
+  static const bool value = sizeof(Test<T>(0)) == sizeof(char);
+
+ private:
+  EnsureTypeIsComplete<T> check_t_;
+};
+
+template <
+    typename Traits,
+    typename MaybeConstUserType,
+    typename std::enable_if<
+        HasGetDataMethod<Traits, MaybeConstUserType>::value>::type* = nullptr>
+decltype(Traits::GetData(std::declval<MaybeConstUserType&>()))
+CallGetDataIfExists(MaybeConstUserType& input) {
+  return Traits::GetData(input);
+}
+
+template <
+    typename Traits,
+    typename MaybeConstUserType,
+    typename std::enable_if<
+        !HasGetDataMethod<Traits, MaybeConstUserType>::value>::type* = nullptr>
+void* CallGetDataIfExists(MaybeConstUserType& input) {
+  return nullptr;
+}
+
 }  // namespace internal
 }  // namespace mojo
 

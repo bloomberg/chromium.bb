@@ -7,7 +7,8 @@ class {{struct.name}}DataView {
 {%- for pf in struct.packed.packed_fields_in_ordinal_order %}
 {%-   set kind = pf.field.kind -%}
 {%-   set name = pf.field.name -%}
-{%-   if kind|is_struct_kind or kind|is_array_kind or kind|is_string_kind %}
+{%-   if kind|is_struct_kind or kind|is_array_kind or kind|is_string_kind
+         or kind|is_map_kind %}
   template <typename UserType>
   bool Read{{name|under_to_camel}}(UserType* value) {
 {%-  if pf.min_version != 0 %}
@@ -19,7 +20,7 @@ class {{struct.name}}DataView {
     return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
         pointer, value, context_);
   }
-{%-   elif kind|is_map_kind or kind|is_union_kind %}
+{%-   elif kind|is_union_kind %}
   bool Read{{name|under_to_camel}}({{kind|cpp_wrapper_type}}* value);
 {%-   elif kind|is_interface_kind or kind|is_any_handle_kind or
            kind|is_associated_kind %}

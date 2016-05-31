@@ -75,6 +75,9 @@ bool StructTraits<test::StructWithTraits, test::StructWithTraitsImpl>::Read(
   if (!data.ReadFStructArray(&out->get_mutable_struct_array()))
     return false;
 
+  if (!data.ReadFStructMap(&out->get_mutable_struct_map()))
+    return false;
+
   return true;
 }
 

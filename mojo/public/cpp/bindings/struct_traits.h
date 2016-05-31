@@ -30,6 +30,10 @@ namespace mojo {
 //          Value or reference of any type that has an ArrayTraits defined.
 //          Supported by default: std::vector, WTF::Vector (in blink).
 //
+//        - map:
+//          Value or reference of any type that has a MapTraits defined.
+//          Supported by default: std::map.
+//
 //        - struct:
 //          Value or reference of any type that has a StructTraits defined.
 //

@@ -36,6 +36,7 @@ class Map {
   static_assert(!internal::IsMoveOnlyType<Key>::value,
                 "Map keys cannot be move only types.");
 
+  using Iterator = typename std::map<Key, Value>::iterator;
   using ConstIterator = typename std::map<Key, Value>::const_iterator;
 
   using Data_ = internal::Map_Data<
@@ -223,11 +224,15 @@ class Map {
   // Provide read-only iteration over map members in a way similar to STL
   // collections.
   ConstIterator begin() const { return map_.begin(); }
+  Iterator begin() { return map_.begin(); }
+
   ConstIterator end() const { return map_.end(); }
+  Iterator end() { return map_.end(); }
 
   // Returns the iterator pointing to the entry for |key|, if present, or else
   // returns end().
   ConstIterator find(const Key& key) const { return map_.find(key); }
+  Iterator find(const Key& key) { return map_.find(key); }
 
  private:
   typedef std::map<Key, Value> Map::*Testable;
@@ -240,7 +245,9 @@ class Map {
 
  private:
   using Traits =
-      internal::MapTraits<Key, Value, internal::IsMoveOnlyType<Value>::value>;
+      internal::MapCloneTraits<Key,
+                               Value,
+                               internal::IsMoveOnlyType<Value>::value>;
 
   // Forbid the == and != operators explicitly, otherwise Map will be converted
   // to Testable to do == or != comparison.

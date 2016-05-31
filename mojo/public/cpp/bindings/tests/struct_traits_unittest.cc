@@ -225,6 +225,8 @@ TEST_F(StructTraitsTest, EchoStructWithTraits) {
   input.get_mutable_struct_array().resize(2);
   input.get_mutable_struct_array()[0].value = 1;
   input.get_mutable_struct_array()[1].value = 2;
+  input.get_mutable_struct_map()["hello"] = NestedStructWithTraitsImpl(1024);
+  input.get_mutable_struct_map()["world"] = NestedStructWithTraitsImpl(2048);
 
   base::RunLoop loop;
   TraitsTestServicePtr proxy = GetTraitsTestProxy();
@@ -237,6 +239,7 @@ TEST_F(StructTraitsTest, EchoStructWithTraits) {
     EXPECT_EQ(input.get_string_array(), passed.get_string_array());
     EXPECT_EQ(input.get_struct(), passed.get_struct());
     EXPECT_EQ(input.get_struct_array(), passed.get_struct_array());
+    EXPECT_EQ(input.get_struct_map(), passed.get_struct_map());
     loop.Quit();
   });
   loop.Run();

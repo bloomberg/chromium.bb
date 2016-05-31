@@ -73,6 +73,11 @@ struct StructTraits<test::StructWithTraits, test::StructWithTraitsImpl> {
       const test::StructWithTraitsImpl& value) {
     return value.get_struct_array();
   }
+
+  static const std::map<std::string, test::NestedStructWithTraitsImpl>&
+  f_struct_map(const test::StructWithTraitsImpl& value) {
+    return value.get_struct_map();
+  }
 };
 
 template <>

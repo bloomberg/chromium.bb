@@ -5,7 +5,10 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_SERIALIZATION_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_MAP_SERIALIZATION_H_
 
+#include <type_traits>
+
 #include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/lib/array_serialization.h"
 #include "mojo/public/cpp/bindings/lib/map_data_internal.h"
 #include "mojo/public/cpp/bindings/lib/serialization_forward.h"
 #include "mojo/public/cpp/bindings/map.h"
@@ -13,44 +16,93 @@
 namespace mojo {
 namespace internal {
 
-template <typename Key, typename Value>
-struct MapContext {
-  explicit MapContext(bool in_is_null) : is_null(in_is_null) {}
+template <typename MaybeConstUserType>
+class MapReaderBase {
+ public:
+  using UserType = typename std::remove_const<MaybeConstUserType>::type;
+  using Traits = MapTraits<UserType>;
+  using MaybeConstIterator =
+      decltype(Traits::GetBegin(std::declval<MaybeConstUserType&>()));
 
-  bool is_null;
-  Array<Key> keys;
-  Array<Value> values;
+  explicit MapReaderBase(MaybeConstUserType& input)
+      : input_(input), iter_(Traits::GetBegin(input_)) {}
+  ~MapReaderBase() {}
+
+  size_t GetSize() const { return Traits::GetSize(input_); }
+
+  // Return null because key or value elements are not stored continuously in
+  // memory.
+  void* GetDataIfExists() { return nullptr; }
+
+ protected:
+  MaybeConstUserType& input_;
+  MaybeConstIterator iter_;
+};
+
+// Used as the UserTypeReader template parameter of ArraySerializer.
+template <typename MaybeConstUserType>
+class MapKeyReader : public MapReaderBase<MaybeConstUserType> {
+ public:
+  using Base = MapReaderBase<MaybeConstUserType>;
+  using Traits = typename Base::Traits;
+
+  explicit MapKeyReader(MaybeConstUserType& input) : Base(input) {}
+  ~MapKeyReader() {}
+
+  const typename Traits::Key& GetNext() {
+    const typename Traits::Key& key = Traits::GetKey(this->iter_);
+    Traits::AdvanceIterator(this->iter_);
+    return key;
+  }
+};
+
+// Used as the UserTypeReader template parameter of ArraySerializer.
+template <typename MaybeConstUserType>
+class MapValueReader : public MapReaderBase<MaybeConstUserType> {
+ public:
+  using Base = MapReaderBase<MaybeConstUserType>;
+  using Traits = typename Base::Traits;
+  using MaybeConstIterator = typename Base::MaybeConstIterator;
+
+  explicit MapValueReader(MaybeConstUserType& input) : Base(input) {}
+  ~MapValueReader() {}
+
+  using GetNextResult =
+      decltype(Traits::GetValue(std::declval<MaybeConstIterator&>()));
+  GetNextResult GetNext() {
+    GetNextResult value = Traits::GetValue(this->iter_);
+    Traits::AdvanceIterator(this->iter_);
+    return value;
+  }
 };
 
 template <typename Key, typename Value, typename MaybeConstUserType>
 struct Serializer<Map<Key, Value>, MaybeConstUserType> {
   using UserType = typename std::remove_const<MaybeConstUserType>::type;
-  using UserKey = typename UserType::Key;
-  using UserValue = typename UserType::Value;
+  using Traits = MapTraits<UserType>;
+  using UserKey = typename Traits::Key;
+  using UserValue = typename Traits::Value;
   using Data = typename Map<Key, Value>::Data_;
+  using KeyArraySerializer = ArraySerializer<Array<Key>,
+                                             Array<UserKey>,
+                                             MapKeyReader<MaybeConstUserType>>;
+  using ValueArraySerializer =
+      ArraySerializer<Array<Value>,
+                      Array<UserValue>,
+                      MapValueReader<MaybeConstUserType>>;
 
-  static_assert(std::is_same<MaybeConstUserType, UserType>::value,
-                "Only support serialization of non-const Maps.");
-  static_assert(IsSpecializationOf<Map, UserType>::value,
-                "Custom mapping of mojom map is not supported yet.");
-
-  static size_t PrepareToSerialize(UserType& input,
+  static size_t PrepareToSerialize(MaybeConstUserType& input,
                                    SerializationContext* context) {
-    auto map_context = new MapContext<UserKey, UserValue>(input.is_null());
-    if (!context->custom_contexts)
-      context->custom_contexts.reset(new std::queue<void*>());
-    context->custom_contexts->push(map_context);
-
-    if (!input)
+    if (CallIsNullIfExists<Traits>(input))
       return 0;
 
-    input.DecomposeMapTo(&map_context->keys, &map_context->values);
-
     size_t struct_overhead = sizeof(Data);
+    MapKeyReader<MaybeConstUserType> key_reader(input);
     size_t keys_size =
-        internal::PrepareToSerialize<Array<Key>>(map_context->keys, context);
-    size_t values_size = internal::PrepareToSerialize<Array<Value>>(
-        map_context->values, context);
+        KeyArraySerializer::GetSerializedSize(&key_reader, context);
+    MapValueReader<MaybeConstUserType> value_reader(input);
+    size_t values_size =
+        ValueArraySerializer::GetSerializedSize(&value_reader, context);
 
     return struct_overhead + keys_size + values_size;
   }
@@ -58,31 +110,36 @@ struct Serializer<Map<Key, Value>, MaybeConstUserType> {
   // We don't need an ArrayValidateParams instance for key validation since
   // we can deduce it from the Key type. (which can only be primitive types or
   // non-nullable strings.)
-  static void Serialize(UserType& input,
+  static void Serialize(MaybeConstUserType& input,
                         Buffer* buf,
                         Data** output,
                         const ArrayValidateParams* value_validate_params,
                         SerializationContext* context) {
-    std::unique_ptr<MapContext<UserKey, UserValue>> map_context(
-        static_cast<MapContext<UserKey, UserValue>*>(
-            context->custom_contexts->front()));
-    context->custom_contexts->pop();
-
-    if (map_context->is_null) {
+    if (CallIsNullIfExists<Traits>(input)) {
       *output = nullptr;
       return;
     }
 
     auto result = Data::New(buf);
     if (result) {
-      const ArrayValidateParams* key_validate_params =
-          MapKeyValidateParamsFactory<
-              typename GetDataTypeAsArrayElement<Key>::Data>::Get();
-      internal::Serialize<Array<Key>>(map_context->keys, buf, &result->keys.ptr,
-                                      key_validate_params, context);
-      internal::Serialize<Array<Value>>(map_context->values, buf,
-                                        &result->values.ptr,
-                                        value_validate_params, context);
+      result->keys.ptr = Array<Key>::Data_::New(Traits::GetSize(input), buf);
+      if (result->keys.ptr) {
+        const ArrayValidateParams* key_validate_params =
+            MapKeyValidateParamsFactory<
+                typename GetDataTypeAsArrayElement<Key>::Data>::Get();
+        MapKeyReader<MaybeConstUserType> key_reader(input);
+        KeyArraySerializer::SerializeElements(
+            &key_reader, buf, result->keys.ptr, key_validate_params, context);
+      }
+
+      result->values.ptr =
+          Array<Value>::Data_::New(Traits::GetSize(input), buf);
+      if (result->values.ptr) {
+        MapValueReader<MaybeConstUserType> value_reader(input);
+        ValueArraySerializer::SerializeElements(&value_reader, buf,
+                                                result->values.ptr,
+                                                value_validate_params, context);
+      }
     }
     *output = result;
   }
@@ -90,26 +147,26 @@ struct Serializer<Map<Key, Value>, MaybeConstUserType> {
   static bool Deserialize(Data* input,
                           UserType* output,
                           SerializationContext* context) {
-    bool success = true;
-    if (input) {
-      Array<UserKey> keys;
-      Array<UserValue> values;
+    if (!input)
+      return CallSetToNullIfExists<Traits>(output);
 
-      // Note that we rely on complete deserialization taking place in order to
-      // transfer ownership of all encoded handles. Therefore we don't
-      // short-circuit on failure here.
-      if (!internal::Deserialize<Array<Key>>(input->keys.ptr, &keys, context))
-        success = false;
-      if (!internal::Deserialize<Array<Value>>(input->values.ptr, &values,
-                                               context)) {
-        success = false;
-      }
+    Array<UserKey> keys;
+    Array<UserValue> values;
 
-      *output = UserType(std::move(keys), std::move(values));
-    } else {
-      *output = nullptr;
+    if (!KeyArraySerializer::DeserializeElements(input->keys.ptr, &keys,
+                                                 context) ||
+        !ValueArraySerializer::DeserializeElements(input->values.ptr, &values,
+                                                   context)) {
+      return false;
     }
-    return success;
+
+    DCHECK_EQ(keys.size(), values.size());
+    size_t size = keys.size();
+    Traits::SetToEmpty(output);
+
+    for (size_t i = 0; i < size; ++i)
+      Traits::Insert(*output, std::move(keys[i]), std::move(values[i]));
+    return true;
   }
 };
 

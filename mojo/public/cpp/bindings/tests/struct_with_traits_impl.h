@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -18,6 +19,9 @@ namespace test {
 
 struct NestedStructWithTraitsImpl {
  public:
+  NestedStructWithTraitsImpl();
+  explicit NestedStructWithTraitsImpl(int32_t in_value);
+
   bool operator==(const NestedStructWithTraitsImpl& other) const {
     return value == other.value;
   }
@@ -60,6 +64,14 @@ class StructWithTraitsImpl {
     return struct_array_;
   }
 
+  const std::map<std::string, NestedStructWithTraitsImpl>& get_struct_map()
+      const {
+    return struct_map_;
+  }
+  std::map<std::string, NestedStructWithTraitsImpl>& get_mutable_struct_map() {
+    return struct_map_;
+  }
+
  private:
   bool bool_ = false;
   uint32_t uint32_ = 0;
@@ -68,6 +80,7 @@ class StructWithTraitsImpl {
   std::vector<std::string> string_array_;
   NestedStructWithTraitsImpl struct_;
   std::vector<NestedStructWithTraitsImpl> struct_array_;
+  std::map<std::string, NestedStructWithTraitsImpl> struct_map_;
 };
 
 // A type which knows how to look like a mojo::test::PassByValueStructWithTraits

@@ -26,6 +26,7 @@ blacklist = [
   "//components/mus/public/interfaces/window_manager.mojom",
   "//components/mus/public/interfaces/window_tree.mojom",
   "//extensions/common/api/mime_handler.mojom",
+  "//mojo/public/interfaces/bindings/tests/struct_with_traits.mojom",
   "//mojo/public/interfaces/bindings/tests/test_structs.mojom",
   "//mojo/public/interfaces/bindings/tests/test_unions.mojom",
   "//mojo/public/interfaces/bindings/tests/validation_test_interfaces.mojom",

@@ -7,6 +7,10 @@
 namespace mojo {
 namespace test {
 
+NestedStructWithTraitsImpl::NestedStructWithTraitsImpl() {}
+NestedStructWithTraitsImpl::NestedStructWithTraitsImpl(int32_t in_value)
+    : value(in_value) {}
+
 StructWithTraitsImpl::StructWithTraitsImpl() {}
 
 StructWithTraitsImpl::~StructWithTraitsImpl() {}

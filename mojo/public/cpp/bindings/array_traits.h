@@ -24,6 +24,8 @@ namespace mojo {
 //
 //     static size_t GetSize(const CustomArray<T>& input);
 //
+//     // These two methods are optional. They are used to access the
+//     // underlying storage of the array to speed up copy of POD types.
 //     static T* GetData(CustomArray<T>& input);
 //     static const T* GetData(const CustomArray<T>& input);
 //

@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_SERIALIZATION_FORWARD_H_
 
 #include "mojo/public/cpp/bindings/array_traits.h"
+#include "mojo/public/cpp/bindings/map_traits.h"
 #include "mojo/public/cpp/bindings/string_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 

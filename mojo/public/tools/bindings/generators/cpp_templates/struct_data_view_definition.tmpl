@@ -8,20 +8,9 @@
 {%- for pf in struct.packed.packed_fields_in_ordinal_order %}
 {%-   set kind = pf.field.kind -%}
 {%-   set name = pf.field.name -%}
-{%-   if kind|is_struct_kind or kind|is_array_kind or kind|is_string_kind %}
+{%-   if kind|is_struct_kind or kind|is_array_kind or kind|is_string_kind or
+         kind|is_map_kind %}
 {#-     Does nothing. They are already defined in the class declaration. #}
-{%-   elif kind|is_map_kind %}
-bool {{struct.name}}DataView::Read{{name|under_to_camel}}(
-    {{kind|cpp_wrapper_type}}* value) {
-{%-     if pf.min_version != 0 %}
-    auto pointer = data_->header_.version >= {{pf.min_version}}
-                   ? data_->{{name}}.ptr : nullptr;
-{%-     else %}
-    auto pointer = data_->{{name}}.ptr;
-{%-     endif %}
-  return mojo::internal::Deserialize<{{kind|unmapped_type_for_serializer}}>(
-      pointer, value, context_);
-}
 
 {%-   elif kind|is_union_kind %}
 bool {{struct.name}}DataView::Read{{name|under_to_camel}}(

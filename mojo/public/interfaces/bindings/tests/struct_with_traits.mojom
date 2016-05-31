@@ -17,6 +17,7 @@ struct StructWithTraits {
   array<string> f_string_array;
   NestedStructWithTraits f_struct;
   array<NestedStructWithTraits> f_struct_array;
+  map<string, NestedStructWithTraits> f_struct_map;
 };
 
 struct StructWithTraitsContainer {
