@@ -58,4 +58,13 @@ public class WebApkUtils {
         sHostPackage = hostPackage != null ? hostPackage : "";
         return sHostPackage;
     }
+
+    /**
+     * Returns name of "Runtime Dex" asset in Chrome APK based on version.
+     * @param version
+     * @return Dex asset name.
+     */
+    public static String getRuntimeDexName(int version) {
+        return "webapk" + version + ".dex";
+    }
 }

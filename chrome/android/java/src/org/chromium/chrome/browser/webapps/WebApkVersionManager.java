@@ -7,10 +7,14 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.webapk.lib.client.DexOptimizer;
+import org.chromium.webapk.lib.client.WebApkVersion;
+import org.chromium.webapk.lib.common.WebApkUtils;
 
 import java.io.File;
 
@@ -19,11 +23,10 @@ import java.io.File;
  */
 public class WebApkVersionManager {
     /**
-     * Name of the shared preference to store whether an attempt to extract the WebAPK runtime
-     * library was made.
+     * Name of the shared preference for the version number of the dynamically loaded dex.
      */
-    private static final String TRIED_EXTRACTING_DEX_PREF =
-            "org.chromium.chrome.browser.webapps.TRIED_EXTRACTING_DEX";
+    private static final String EXTRACTED_DEX_VERSION_PREF =
+            "org.chromium.chrome.browser.webapps.extracted_dex_version";
 
     /**
      * Tries to extract the WebAPK runtime dex from the Chrome APK if it has not tried already.
@@ -32,18 +35,32 @@ public class WebApkVersionManager {
     public static void updateWebApksIfNeeded() {
         assert !ThreadUtils.runningOnUiThread();
 
+        // TODO(pkotwicz|hanxi): Detect whether the manifest of installed APKs needs to be updated.
+        // (crbug.com/604513)
+
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-        if (preferences.getBoolean(TRIED_EXTRACTING_DEX_PREF, false)) {
+        int extractedDexVersion = preferences.getInt(EXTRACTED_DEX_VERSION_PREF, -1);
+        if (!CommandLine.getInstance().hasSwitch(
+                    ChromeSwitches.ALWAYS_EXTRACT_WEBAPK_RUNTIME_DEX_ON_STARTUP)
+                && extractedDexVersion == WebApkVersion.CURRENT_RUNTIME_DEX_VERSION) {
             return;
         }
 
-        preferences.edit().putBoolean(TRIED_EXTRACTING_DEX_PREF, true).apply();
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt(EXTRACTED_DEX_VERSION_PREF, WebApkVersion.CURRENT_RUNTIME_DEX_VERSION);
+        editor.apply();
 
         Context context = ContextUtils.getApplicationContext();
         File dexDir = context.getDir("dex", Context.MODE_PRIVATE);
-        File dexFile = new File(dexDir, "web_apk.dex");
-        if (!FileUtils.extractAsset(context, "web_apk.dex", dexFile)
-                || !DexOptimizer.optimize(dexFile)) {
+        FileUtils.recursivelyDeleteFile(dexDir);
+
+        // Recreate world-executable directory using {@link Context#getDir}.
+        dexDir = context.getDir("dex", Context.MODE_PRIVATE);
+
+        String dexName =
+                WebApkUtils.getRuntimeDexName(WebApkVersion.CURRENT_RUNTIME_DEX_VERSION);
+        File dexFile = new File(dexDir, dexName);
+        if (!FileUtils.extractAsset(context, dexName, dexFile) || !DexOptimizer.optimize(dexFile)) {
             return;
         }
 
