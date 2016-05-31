@@ -51,24 +51,6 @@ std::unique_ptr<ContentSettingsForOneType> GetEngagementContentSettings(
   return engagement_settings;
 }
 
-std::unique_ptr<base::DictionaryValue> GetScoreDictForOrigin(
-    HostContentSettingsMap* settings,
-    const GURL& origin_url) {
-  if (!settings)
-    return std::unique_ptr<base::DictionaryValue>();
-
-  std::unique_ptr<base::Value> value = settings->GetWebsiteSetting(
-      origin_url, origin_url, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
-      std::string(), NULL);
-  if (!value.get())
-    return base::WrapUnique(new base::DictionaryValue());
-
-  if (!value->IsType(base::Value::TYPE_DICTIONARY))
-    return base::WrapUnique(new base::DictionaryValue());
-
-  return base::WrapUnique(static_cast<base::DictionaryValue*>(value.release()));
-}
-
 // Only accept a navigation event for engagement if it is one of:
 //  a. direct typed navigation
 //  b. clicking on an omnibox suggestion brought up by typing a keyword
@@ -173,16 +155,13 @@ std::map<GURL, double> SiteEngagementService::GetScoreMap() const {
     if (!origin.is_valid())
       continue;
 
-    std::unique_ptr<base::DictionaryValue> score_dict =
-        GetScoreDictForOrigin(settings_map, origin);
-    SiteEngagementScore score(clock_.get(), *score_dict);
-    score_map[origin] = score.GetScore();
+    score_map[origin] = GetScore(origin);
   }
 
   return score_map;
 }
 
-bool SiteEngagementService::IsBootstrapped() {
+bool SiteEngagementService::IsBootstrapped() const {
   return GetTotalEngagementPoints() >=
          SiteEngagementScore::GetBootstrapPoints();
 }
@@ -210,15 +189,13 @@ bool SiteEngagementService::IsEngagementAtLeast(
 }
 
 void SiteEngagementService::ResetScoreForURL(const GURL& url, double score) {
-  ResetScoreAndAccessTimesForURL(url, score, nullptr);
+  SiteEngagementScore engagement_score = CreateEngagementScore(url);
+  engagement_score.Reset(score, clock_->Now());
+  engagement_score.Commit();
 }
 
 void SiteEngagementService::SetLastShortcutLaunchTime(const GURL& url) {
-  HostContentSettingsMap* settings_map =
-    HostContentSettingsMapFactory::GetForProfile(profile_);
-  std::unique_ptr<base::DictionaryValue> score_dict =
-      GetScoreDictForOrigin(settings_map, url);
-  SiteEngagementScore score(clock_.get(), *score_dict);
+  SiteEngagementScore score = CreateEngagementScore(url);
 
   // Record the number of days since the last launch in UMA. If the user's clock
   // has changed back in time, set this to 0.
@@ -232,21 +209,11 @@ void SiteEngagementService::SetLastShortcutLaunchTime(const GURL& url) {
       SiteEngagementMetrics::ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH);
 
   score.set_last_shortcut_launch_time(now);
-  if (score.UpdateScoreDict(score_dict.get())) {
-    settings_map->SetWebsiteSettingDefaultScope(
-        url, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-        score_dict.release());
-  }
+  score.Commit();
 }
 
 double SiteEngagementService::GetScore(const GURL& url) const {
-  HostContentSettingsMap* settings_map =
-    HostContentSettingsMapFactory::GetForProfile(profile_);
-  std::unique_ptr<base::DictionaryValue> score_dict =
-      GetScoreDictForOrigin(settings_map, url);
-  SiteEngagementScore score(clock_.get(), *score_dict);
-
-  return score.GetScore();
+  return CreateEngagementScore(url).GetScore();
 }
 
 double SiteEngagementService::GetTotalEngagementPoints() const {
@@ -270,18 +237,10 @@ SiteEngagementService::SiteEngagementService(Profile* profile,
 }
 
 void SiteEngagementService::AddPoints(const GURL& url, double points) {
-  HostContentSettingsMap* settings_map =
-    HostContentSettingsMapFactory::GetForProfile(profile_);
-  std::unique_ptr<base::DictionaryValue> score_dict =
-      GetScoreDictForOrigin(settings_map, url);
-  SiteEngagementScore score(clock_.get(), *score_dict);
+  SiteEngagementScore score = CreateEngagementScore(url);
 
   score.AddPoints(points);
-  if (score.UpdateScoreDict(score_dict.get())) {
-    settings_map->SetWebsiteSettingDefaultScope(
-        url, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-        score_dict.release());
-  }
+  score.Commit();
 }
 
 void SiteEngagementService::AfterStartupTask() {
@@ -297,13 +256,8 @@ void SiteEngagementService::CleanupEngagementScores() {
 
   for (const auto& site : *engagement_settings) {
     GURL origin(site.primary_pattern.ToString());
-    if (origin.is_valid()) {
-      std::unique_ptr<base::DictionaryValue> score_dict =
-          GetScoreDictForOrigin(settings_map, origin);
-      SiteEngagementScore score(clock_.get(), *score_dict);
-      if (score.GetScore() != 0)
+    if (origin.is_valid() && GetScore(origin) != 0)
         continue;
-    }
 
     settings_map->SetWebsiteSettingDefaultScope(
         origin, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
@@ -412,6 +366,20 @@ void SiteEngagementService::OnURLsDeleted(
           weak_factory_.GetWeakPtr(), hs, origins, expired));
 }
 
+const SiteEngagementScore SiteEngagementService::CreateEngagementScore(
+    const GURL& origin) const {
+  return SiteEngagementScore(
+      clock_.get(), origin,
+      HostContentSettingsMapFactory::GetForProfile(profile_));
+}
+
+SiteEngagementScore SiteEngagementService::CreateEngagementScore(
+    const GURL& origin) {
+  return SiteEngagementScore(
+      clock_.get(), origin,
+      HostContentSettingsMapFactory::GetForProfile(profile_));
+}
+
 int SiteEngagementService::OriginsWithMaxDailyEngagement() const {
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
@@ -426,10 +394,7 @@ int SiteEngagementService::OriginsWithMaxDailyEngagement() const {
     if (!origin.is_valid())
       continue;
 
-    std::unique_ptr<base::DictionaryValue> score_dict =
-        GetScoreDictForOrigin(settings_map, origin);
-    SiteEngagementScore score(clock_.get(), *score_dict);
-    if (score.MaxPointsPerDayAdded())
+    if (CreateEngagementScore(origin).MaxPointsPerDayAdded())
       ++total_origins;
   }
 
@@ -462,6 +427,11 @@ void SiteEngagementService::GetCountsAndLastVisitForOriginsComplete(
 
   for (const auto& origin_to_count : remaining_origins) {
     GURL origin = origin_to_count.first;
+    // It appears that the history service occasionally sends bad URLs to us.
+    // See crbug.com/612881.
+    if (!origin.is_valid())
+      continue;
+
     int remaining = origin_to_count.second.first;
     base::Time last_visit = origin_to_count.second.second;
     int deleted = deleted_origins.count(origin);
@@ -496,40 +466,17 @@ void SiteEngagementService::GetCountsAndLastVisitForOriginsComplete(
       undecay = periods * SiteEngagementScore::GetDecayPoints();
     }
 
-    double score =
-        std::min(SiteEngagementScore::kMaxPoints,
-                 (proportion_remaining * GetScore(origin)) + undecay);
-    ResetScoreAndAccessTimesForURL(origin, score, &last_visit);
-  }
-}
+    SiteEngagementScore engagement_score = CreateEngagementScore(origin);
 
-void SiteEngagementService::ResetScoreAndAccessTimesForURL(
-    const GURL& url, double score, const base::Time* updated_time) {
-  // It appears that the history service occassionally sends bad URLs to us.
-  // See crbug.com/612881.
-  if (!url.is_valid())
-    return;
+    double score = std::min(
+        SiteEngagementScore::kMaxPoints,
+        (proportion_remaining * engagement_score.GetScore()) + undecay);
+    engagement_score.Reset(score, last_visit);
+    if (!engagement_score.last_shortcut_launch_time().is_null()
+        && engagement_score.last_shortcut_launch_time() > last_visit) {
+      engagement_score.set_last_shortcut_launch_time(last_visit);
+    }
 
-  DCHECK_GE(score, 0);
-  DCHECK_LE(score, SiteEngagementScore::kMaxPoints);
-
-  HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
-  std::unique_ptr<base::DictionaryValue> score_dict =
-      GetScoreDictForOrigin(settings_map, url);
-  SiteEngagementScore engagement_score(clock_.get(), *score_dict);
-
-  engagement_score.Reset(score, updated_time);
-  if (score == 0) {
-    settings_map->SetWebsiteSettingDefaultScope(
-        url, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-        nullptr);
-    return;
-  }
-
-  if (engagement_score.UpdateScoreDict(score_dict.get())) {
-    settings_map->SetWebsiteSettingDefaultScope(
-        url, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
-        score_dict.release());
+    engagement_score.Commit();
   }
 }

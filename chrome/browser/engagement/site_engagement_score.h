@@ -5,14 +5,19 @@
 #ifndef CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_SCORE_H_
 #define CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_SCORE_H_
 
+#include <memory>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "url/gurl.h"
 
 namespace base {
 class Clock;
 }
+
+class HostContentSettingsMap;
 
 class SiteEngagementScore {
  public:
@@ -84,14 +89,21 @@ class SiteEngagementScore {
   // responsibility of the caller to make sure |clock| outlives this
   // SiteEngagementScore.
   SiteEngagementScore(base::Clock* clock,
-                      const base::DictionaryValue& score_dict);
+                      const GURL& origin,
+                      HostContentSettingsMap* settings_map);
+  SiteEngagementScore(SiteEngagementScore&& other);
   ~SiteEngagementScore();
+
+  SiteEngagementScore& operator=(SiteEngagementScore&& other);
 
   // Adds |points| to this score, respecting daily limits and the maximum
   // possible score. Decays the score if it has not been updated recently
   // enough.
   void AddPoints(double points);
   double GetScore() const;
+
+  // Writes the values in this score into |settings_map_|.
+  void Commit();
 
   // Returns true if the maximum number of points today has been added.
   bool MaxPointsPerDayAdded() const;
@@ -101,15 +113,7 @@ class SiteEngagementScore {
   // shortcut launch time (if it is non-null) to |updated_time|. Otherwise, last
   // engagement time is set to the current time and last shortcut launch time is
   // left unchanged.
-  // TODO(calamity): Ideally, all SiteEngagementScore methods should take a
-  // base::Time argument like this one does rather than each SiteEngagementScore
-  // hold a pointer to a base::Clock. Then SiteEngagementScore doesn't need to
-  // worry about clock vending. See crbug.com/604305.
-  void Reset(double points, const base::Time* updated_time);
-
-  // Updates the content settings dictionary |score_dict| with the current score
-  // fields. Returns true if |score_dict| changed, otherwise return false.
-  bool UpdateScoreDict(base::DictionaryValue* score_dict);
+  void Reset(double points, const base::Time updated_time);
 
   // Get/set the last time this origin was launched from an installed shortcut.
   base::Time last_shortcut_launch_time() const {
@@ -139,7 +143,8 @@ class SiteEngagementScore {
   static const char* kLastShortcutLaunchTimeKey;
 
   // This version of the constructor is used in unit tests.
-  explicit SiteEngagementScore(base::Clock* clock);
+  SiteEngagementScore(base::Clock* clock,
+                      std::unique_ptr<base::DictionaryValue> score_dict);
 
   // Determine the score, accounting for any decay.
   double DecayedScore() const;
@@ -150,6 +155,10 @@ class SiteEngagementScore {
   // Sets fixed parameter values for testing site engagement. Ensure that any
   // newly added parameters receive a fixed value here.
   static void SetParamValuesForTesting();
+
+  // Updates the content settings dictionary |score_dict| with the current score
+  // fields. Returns true if |score_dict| changed, otherwise return false.
+  bool UpdateScoreDict(base::DictionaryValue* score_dict);
 
   // The clock used to vend times. Enables time travelling in tests. Owned by
   // the SiteEngagementService.
@@ -170,6 +179,15 @@ class SiteEngagementScore {
   // The last time the site with this score was launched from an installed
   // shortcut.
   base::Time last_shortcut_launch_time_;
+
+  // The dictionary that represents this engagement score.
+  std::unique_ptr<base::DictionaryValue> score_dict_;
+
+  // The origin this score represents.
+  GURL origin_;
+
+  // The settings map to write this score to when Commit() is called.
+  HostContentSettingsMap* settings_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementScore);
 };

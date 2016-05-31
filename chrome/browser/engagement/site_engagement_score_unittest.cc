@@ -40,7 +40,7 @@ base::Time GetReferenceTime() {
 
 class SiteEngagementScoreTest : public testing::Test {
  public:
-  SiteEngagementScoreTest() : score_(&test_clock_) {}
+  SiteEngagementScoreTest() : score_(&test_clock_, nullptr) {}
 
   void SetUp() override {
     testing::Test::SetUp();
@@ -68,25 +68,26 @@ class SiteEngagementScoreTest : public testing::Test {
   }
 
   void TestScoreInitializesAndUpdates(
-      base::DictionaryValue* score_dict,
+      std::unique_ptr<base::DictionaryValue> score_dict,
       double expected_raw_score,
       double expected_points_added_today,
       base::Time expected_last_engagement_time) {
-    SiteEngagementScore initial_score(&test_clock_, *score_dict);
+    std::unique_ptr<base::DictionaryValue> copy(score_dict->DeepCopy());
+    SiteEngagementScore initial_score(&test_clock_, std::move(score_dict));
     VerifyScore(initial_score, expected_raw_score, expected_points_added_today,
                 expected_last_engagement_time);
 
     // Updating the score dict should return false, as the score shouldn't
     // have changed at this point.
-    EXPECT_FALSE(initial_score.UpdateScoreDict(score_dict));
+    EXPECT_FALSE(initial_score.UpdateScoreDict(copy.get()));
 
     // Update the score to new values and verify it updates the score dict
     // correctly.
     base::Time different_day =
         GetReferenceTime() + base::TimeDelta::FromDays(1);
     UpdateScore(&initial_score, 5, 10, different_day);
-    EXPECT_TRUE(initial_score.UpdateScoreDict(score_dict));
-    SiteEngagementScore updated_score(&test_clock_, *score_dict);
+    EXPECT_TRUE(initial_score.UpdateScoreDict(copy.get()));
+    SiteEngagementScore updated_score(&test_clock_, std::move(copy));
     VerifyScore(updated_score, 5, 10, different_day);
   }
 
@@ -295,37 +296,39 @@ TEST_F(SiteEngagementScoreTest, GoBackInTime) {
 // Test that scores are read / written correctly from / to empty score
 // dictionaries.
 TEST_F(SiteEngagementScoreTest, EmptyDictionary) {
-  base::DictionaryValue dict;
-  TestScoreInitializesAndUpdates(&dict, 0, 0, base::Time());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  TestScoreInitializesAndUpdates(std::move(dict), 0, 0, base::Time());
 }
 
 // Test that scores are read / written correctly from / to partially empty
 // score dictionaries.
 TEST_F(SiteEngagementScoreTest, PartiallyEmptyDictionary) {
-  base::DictionaryValue dict;
-  dict.SetDouble(SiteEngagementScore::kPointsAddedTodayKey, 2);
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetDouble(SiteEngagementScore::kPointsAddedTodayKey, 2);
 
-  TestScoreInitializesAndUpdates(&dict, 0, 2, base::Time());
+  TestScoreInitializesAndUpdates(std::move(dict), 0, 2, base::Time());
 }
 
 // Test that scores are read / written correctly from / to populated score
 // dictionaries.
 TEST_F(SiteEngagementScoreTest, PopulatedDictionary) {
-  base::DictionaryValue dict;
-  dict.SetDouble(SiteEngagementScore::kRawScoreKey, 1);
-  dict.SetDouble(SiteEngagementScore::kPointsAddedTodayKey, 2);
-  dict.SetDouble(SiteEngagementScore::kLastEngagementTimeKey,
-                 GetReferenceTime().ToInternalValue());
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetDouble(SiteEngagementScore::kRawScoreKey, 1);
+  dict->SetDouble(SiteEngagementScore::kPointsAddedTodayKey, 2);
+  dict->SetDouble(SiteEngagementScore::kLastEngagementTimeKey,
+                  GetReferenceTime().ToInternalValue());
 
-  TestScoreInitializesAndUpdates(&dict, 1, 2, GetReferenceTime());
+  TestScoreInitializesAndUpdates(std::move(dict), 1, 2, GetReferenceTime());
 }
 
 // Ensure bonus engagement is awarded for the first engagement of a day.
 TEST_F(SiteEngagementScoreTest, FirstDailyEngagementBonus) {
   SetFirstDailyEngagementPointsForTesting(0.5);
 
-  SiteEngagementScore score1(&test_clock_);
-  SiteEngagementScore score2(&test_clock_);
+  SiteEngagementScore score1(&test_clock_,
+                             std::unique_ptr<base::DictionaryValue>());
+  SiteEngagementScore score2(&test_clock_,
+                             std::unique_ptr<base::DictionaryValue>());
   base::Time current_day = GetReferenceTime();
 
   test_clock_.SetNow(current_day);
@@ -371,7 +374,7 @@ TEST_F(SiteEngagementScoreTest, Reset) {
   current_day += base::TimeDelta::FromDays(7);
   test_clock_.SetNow(current_day);
 
-  score_.Reset(20.0, nullptr);
+  score_.Reset(20.0, current_day);
   EXPECT_DOUBLE_EQ(20.0, score_.GetScore());
   EXPECT_DOUBLE_EQ(0, score_.points_added_today_);
   EXPECT_EQ(current_day, score_.last_engagement_time_);
@@ -391,21 +394,23 @@ TEST_F(SiteEngagementScoreTest, Reset) {
   score_.AddPoints(5);
   test_clock_.SetNow(GetReferenceTime());
   base::Time now = test_clock_.Now();
-  score_.Reset(10.0, &now);
+  score_.Reset(10.0, now);
 
   EXPECT_DOUBLE_EQ(10.0, score_.GetScore());
   EXPECT_DOUBLE_EQ(0, score_.points_added_today_);
   EXPECT_EQ(now, score_.last_engagement_time_);
   EXPECT_TRUE(score_.last_shortcut_launch_time_.is_null());
 
+  base::Time old_now = test_clock_.Now();
+
   score_.set_last_shortcut_launch_time(test_clock_.Now());
   test_clock_.SetNow(GetReferenceTime() + base::TimeDelta::FromDays(3));
   now = test_clock_.Now();
-  score_.Reset(15.0, &now);
+  score_.Reset(15.0, now);
 
   // 5 bonus from the last shortcut launch.
   EXPECT_DOUBLE_EQ(20.0, score_.GetScore());
   EXPECT_DOUBLE_EQ(0, score_.points_added_today_);
   EXPECT_EQ(now, score_.last_engagement_time_);
-  EXPECT_EQ(now, score_.last_shortcut_launch_time_);
+  EXPECT_EQ(old_now, score_.last_shortcut_launch_time_);
 }

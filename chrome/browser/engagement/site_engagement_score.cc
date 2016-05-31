@@ -6,11 +6,13 @@
 
 #include <cmath>
 
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace {
@@ -45,6 +47,24 @@ const char* kVariationNames[] = {
 bool DoublesConsideredDifferent(double value1, double value2, double delta) {
   double abs_difference = fabs(value1 - value2);
   return abs_difference > delta;
+}
+
+std::unique_ptr<base::DictionaryValue> GetScoreDictForOrigin(
+    HostContentSettingsMap* settings,
+    const GURL& origin_url) {
+  if (!settings)
+    return std::unique_ptr<base::DictionaryValue>();
+
+  std::unique_ptr<base::Value> value = settings->GetWebsiteSetting(
+      origin_url, origin_url, CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT,
+      std::string(), NULL);
+  if (!value.get())
+    return base::WrapUnique(new base::DictionaryValue());
+
+  if (!value->IsType(base::Value::TYPE_DICTIONARY))
+    return base::WrapUnique(new base::DictionaryValue());
+
+  return base::WrapUnique(static_cast<base::DictionaryValue*>(value.release()));
 }
 
 }  // namespace
@@ -143,19 +163,19 @@ void SiteEngagementScore::UpdateFromVariations(const char* param_name) {
 }
 
 SiteEngagementScore::SiteEngagementScore(base::Clock* clock,
-                           const base::DictionaryValue& score_dict)
-    : SiteEngagementScore(clock) {
-  score_dict.GetDouble(kRawScoreKey, &raw_score_);
-  score_dict.GetDouble(kPointsAddedTodayKey, &points_added_today_);
-
-  double internal_time;
-  if (score_dict.GetDouble(kLastEngagementTimeKey, &internal_time))
-    last_engagement_time_ = base::Time::FromInternalValue(internal_time);
-  if (score_dict.GetDouble(kLastShortcutLaunchTimeKey, &internal_time))
-    last_shortcut_launch_time_ = base::Time::FromInternalValue(internal_time);
+                                         const GURL& origin,
+                                         HostContentSettingsMap* settings_map)
+    : SiteEngagementScore(clock, GetScoreDictForOrigin(settings_map, origin)) {
+  origin_ = origin;
+  settings_map_ = settings_map;
 }
 
+SiteEngagementScore::SiteEngagementScore(SiteEngagementScore&& other) = default;
+
 SiteEngagementScore::~SiteEngagementScore() {}
+
+SiteEngagementScore& SiteEngagementScore::operator=(
+    SiteEngagementScore&& other) = default;
 
 void SiteEngagementScore::AddPoints(double points) {
   DCHECK_NE(0, points);
@@ -198,6 +218,15 @@ double SiteEngagementScore::GetScore() const {
   return std::min(DecayedScore() + BonusScore(), kMaxPoints);
 }
 
+void SiteEngagementScore::Commit() {
+  if (!UpdateScoreDict(score_dict_.get()))
+    return;
+
+  settings_map_->SetWebsiteSettingDefaultScope(
+      origin_, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
+      score_dict_.release());
+}
+
 bool SiteEngagementScore::MaxPointsPerDayAdded() const {
   if (!last_engagement_time_.is_null() &&
       clock_->Now().LocalMidnight() != last_engagement_time_.LocalMidnight()) {
@@ -207,18 +236,13 @@ bool SiteEngagementScore::MaxPointsPerDayAdded() const {
   return points_added_today_ == GetMaxPointsPerDay();
 }
 
-void SiteEngagementScore::Reset(double points, const base::Time* updated_time) {
+void SiteEngagementScore::Reset(double points,
+                                const base::Time last_engagement_time) {
   raw_score_ = points;
   points_added_today_ = 0;
 
   // This must be set in order to prevent the score from decaying when read.
-  if (updated_time) {
-    last_engagement_time_ = *updated_time;
-    if (!last_shortcut_launch_time_.is_null())
-      last_shortcut_launch_time_ = *updated_time;
-  } else {
-    last_engagement_time_ = clock_->Now();
-  }
+  last_engagement_time_ = last_engagement_time;
 }
 
 bool SiteEngagementScore::UpdateScoreDict(base::DictionaryValue* score_dict) {
@@ -257,12 +281,27 @@ bool SiteEngagementScore::UpdateScoreDict(base::DictionaryValue* score_dict) {
   return true;
 }
 
-SiteEngagementScore::SiteEngagementScore(base::Clock* clock)
+SiteEngagementScore::SiteEngagementScore(
+    base::Clock* clock,
+    std::unique_ptr<base::DictionaryValue> score_dict)
     : clock_(clock),
       raw_score_(0),
       points_added_today_(0),
       last_engagement_time_(),
-      last_shortcut_launch_time_() {}
+      last_shortcut_launch_time_(),
+      score_dict_(score_dict.release()) {
+  if (!score_dict_)
+    return;
+
+  score_dict_->GetDouble(kRawScoreKey, &raw_score_);
+  score_dict_->GetDouble(kPointsAddedTodayKey, &points_added_today_);
+
+  double internal_time;
+  if (score_dict_->GetDouble(kLastEngagementTimeKey, &internal_time))
+    last_engagement_time_ = base::Time::FromInternalValue(internal_time);
+  if (score_dict_->GetDouble(kLastShortcutLaunchTimeKey, &internal_time))
+    last_shortcut_launch_time_ = base::Time::FromInternalValue(internal_time);
+}
 
 double SiteEngagementScore::DecayedScore() const {
   // Note that users can change their clock, so from this system's perspective

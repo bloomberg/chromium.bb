@@ -29,6 +29,7 @@ class HistoryService;
 
 class GURL;
 class Profile;
+class SiteEngagementScore;
 
 class SiteEngagementScoreProvider {
  public:
@@ -92,7 +93,7 @@ class SiteEngagementService : public KeyedService,
   // Returns whether the engagement service has enough data to make meaningful
   // decisions. Clients should avoid using engagement in their heuristic until
   // this is true.
-  bool IsBootstrapped();
+  bool IsBootstrapped() const;
 
   // Returns whether |url| has at least the given |level| of engagement.
   bool IsEngagementAtLeast(const GURL& url, EngagementLevel level) const;
@@ -129,6 +130,10 @@ class SiteEngagementService : public KeyedService,
   // Adds the specified number of points to the given origin, respecting the
   // maximum limits for the day and overall.
   void AddPoints(const GURL& url, double points);
+
+  // Retrieves the SiteEngagementScore object for |origin|.
+  SiteEngagementScore CreateEngagementScore(const GURL& origin);
+  const SiteEngagementScore CreateEngagementScore(const GURL& origin) const;
 
   // Post startup tasks: cleaning up origins which have decayed to 0, and
   // logging UMA statistics.
@@ -167,17 +172,10 @@ class SiteEngagementService : public KeyedService,
   // Callback for the history service when it is asked for a map of origins to
   // how many URLs corresponding to that origin remain in history.
   void GetCountsAndLastVisitForOriginsComplete(
-    history::HistoryService* history_service,
-    const std::multiset<GURL>& deleted_url_origins,
-    bool expired,
-    const history::OriginCountAndLastVisitMap& remaining_origin_counts);
-
-  // Resets the engagement score for |url| to |score|, and sets the last
-  // engagement time and last shortcut launch time (if it is non-null) to
-  // |updated_time|. Clears daily limits.
-  void ResetScoreAndAccessTimesForURL(const GURL& url,
-                                      double score,
-                                      const base::Time* updated_time);
+      history::HistoryService* history_service,
+      const std::multiset<GURL>& deleted_url_origins,
+      bool expired,
+      const history::OriginCountAndLastVisitMap& remaining_origin_counts);
 
   Profile* profile_;
 
