@@ -424,7 +424,7 @@ class CC_EXPORT LayerImpl {
   void AddDamageRect(const gfx::Rect& damage_rect);
   const gfx::Rect& damage_rect() const { return damage_rect_; }
 
-  virtual base::DictionaryValue* LayerTreeAsJson() const;
+  virtual std::unique_ptr<base::DictionaryValue> LayerTreeAsJson() const;
 
   bool LayerPropertyChanged() const;
 

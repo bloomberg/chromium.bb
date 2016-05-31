@@ -66,7 +66,7 @@ class CC_EXPORT NinePatchLayerImpl : public UIResourceLayerImpl {
   void AppendQuads(RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
 
-  base::DictionaryValue* LayerTreeAsJson() const override;
+  std::unique_ptr<base::DictionaryValue> LayerTreeAsJson() const override;
 
  protected:
   NinePatchLayerImpl(LayerTreeImpl* tree_impl, int id);

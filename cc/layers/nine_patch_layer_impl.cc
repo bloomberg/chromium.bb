@@ -350,8 +350,9 @@ const char* NinePatchLayerImpl::LayerTypeAsString() const {
   return "cc::NinePatchLayerImpl";
 }
 
-base::DictionaryValue* NinePatchLayerImpl::LayerTreeAsJson() const {
-  base::DictionaryValue* result = LayerImpl::LayerTreeAsJson();
+std::unique_ptr<base::DictionaryValue> NinePatchLayerImpl::LayerTreeAsJson()
+    const {
+  std::unique_ptr<base::DictionaryValue> result = LayerImpl::LayerTreeAsJson();
 
   base::ListValue* list = new base::ListValue;
   list->AppendInteger(image_aperture_.origin().x());
