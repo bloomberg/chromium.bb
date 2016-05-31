@@ -364,21 +364,6 @@ Status NavigationTracker::OnCommandSuccess(
     DevToolsClient* client,
     const std::string& method,
     const base::DictionaryValue& result) {
-  if (!IsExpectingFrameLoadingEvents()) {
-    if (method == "Page.navigate" && loading_state_ == kLoading) {
-      // In all versions of Chrome that are supported by ChromeDriver, except
-      // for old versions of Android WebView, Page.navigate will return a
-      // frameId in the command response. We'll get a notification that the
-      // frame has loaded when we get the Page.frameStoppedLoading event, so
-      // keep track of the pending frame id here.
-      std::string pending_frame_id;
-      if (result.GetString("frameId", &pending_frame_id)) {
-        pending_frame_set_.insert(pending_frame_id);
-        return Status(kOk);
-      }
-    }
-  }
-
   if ((method == "Page.navigate" || method == "Page.navigateToHistoryEntry") &&
       loading_state_ != kLoading) {
     // At this point the browser has initiated the navigation, but besides that,
