@@ -86,6 +86,7 @@ class TracingTrack(devtools_monitor.Track):
     return self._base_msec
 
   def GetEvents(self):
+    """Returns a list of tracing.Event. Not sorted."""
     return self._events
 
   def GetMatchingEvents(self, category, name):

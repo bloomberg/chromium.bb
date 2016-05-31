@@ -128,28 +128,38 @@ def _GetWebPageTrackedEvents(tracing_track):
     tracing_track: The tracing.TracingTrack.
 
   Returns:
-    Dictionary all tracked events.
+    A dict mapping event.name -> tracing.Event for each first occurrence of a
+        tracked event.
   """
-  main_frame = None
+  main_frame_id = None
   tracked_events = {}
-  for event in tracing_track.GetEvents():
+  sorted_events = sorted(tracing_track.GetEvents(),
+                         key=lambda event: event.start_msec)
+  for event in sorted_events:
     if event.category != 'blink.user_timing':
       continue
     event_name = event.name
-    # Ignore events until about:blank's unloadEventEnd that give the main
-    # frame id.
-    if not main_frame:
-      if event_name == 'unloadEventEnd':
-        main_frame = event.args['frame']
-        logging.info('found about:blank\'s event \'unloadEventEnd\'')
+
+    # Find the id of the main frame. Skip all events until it is found.
+    if not main_frame_id:
+      # Tracing (in Sandwich) is started after about:blank is fully loaded,
+      # hence the first navigationStart in the trace registers the correct frame
+      # id.
+      if event_name == 'navigationStart':
+        logging.info('Found navigationStart at: %f', event.start_msec)
+        main_frame_id = event.args['frame']
       continue
-    # Ignore sub-frames events. requestStart don't have the frame set but it
-    # is fine since tracking the first one after about:blank's unloadEventEnd.
-    if 'frame' in event.args and event.args['frame'] != main_frame:
+
+    # Ignore events with frame id attached, but not being the main frame.
+    if 'frame' in event.args and event.args['frame'] != main_frame_id:
       continue
+
+    # Capture trace events by the first time of their appearance. Note: some
+    # important events (like requestStart) do not have a frame id attached.
     if event_name in _TRACKED_EVENT_NAMES and event_name not in tracked_events:
-      logging.info('found url\'s event \'%s\'' % event_name)
       tracked_events[event_name] = event
+      logging.info('Event %s first appears at: %f', event_name,
+          event.start_msec)
   return tracked_events
 
 
@@ -157,7 +167,7 @@ def _ExtractDefaultMetrics(loading_trace):
   """Extracts all the default metrics from a given trace.
 
   Args:
-    loading_trace: loading_trace_module.LoadingTrace.
+    loading_trace: loading_trace.LoadingTrace.
 
   Returns:
     Dictionary with all trace extracted fields set.

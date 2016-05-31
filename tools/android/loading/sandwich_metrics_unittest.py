@@ -23,12 +23,12 @@ _MEM_CAT = sandwich_runner.MEMORY_DUMP_CATEGORY
 _START = 'requestStart'
 _LOADS = 'loadEventStart'
 _LOADE = 'loadEventEnd'
-_UNLOAD = 'unloadEventEnd'
+_NAVIGATION_START = 'navigationStart'
 _PAINT = 'firstContentfulPaint'
 _LAYOUT = 'firstLayout'
 
 _MINIMALIST_TRACE_EVENTS = [
-    {'ph': 'R', 'cat': _BLINK_CAT, 'name': _UNLOAD, 'ts': 10000,
+    {'ph': 'R', 'cat': _BLINK_CAT, 'name': _NAVIGATION_START, 'ts': 10000,
         'args': {'frame': '0'}},
     {'ph': 'R', 'cat': _BLINK_CAT, 'name': _START,  'ts': 20000,
         'args': {}},
@@ -145,16 +145,12 @@ class PageTrackTest(unittest.TestCase):
             'name': _LOADS},
         {'ph': 'R', 'ts':  5000, 'args': {'frame': '0'}, 'cat': _BLINK_CAT,
             'name': _LOADE},
-        {'ph': 'R', 'ts':  6000, 'args': {'frame': '0'}, 'cat': 'whatever',
-            'name': _UNLOAD},
         {'ph': 'R', 'ts':  7000, 'args': {},             'cat': _BLINK_CAT,
             'name': _START},
         {'ph': 'R', 'ts':  8000, 'args': {'frame': '0'}, 'cat': _BLINK_CAT,
             'name': _LOADS},
         {'ph': 'R', 'ts':  9000, 'args': {'frame': '0'}, 'cat': _BLINK_CAT,
             'name': _LOADE},
-        {'ph': 'R', 'ts': 10000, 'args': {'frame': '0'}, 'cat': _BLINK_CAT,
-            'name': _UNLOAD},
         {'ph': 'R', 'ts': 11000, 'args': {'frame': '0'}, 'cat': 'whatever',
             'name': _START},
         {'ph': 'R', 'ts': 12000, 'args': {'frame': '0'}, 'cat': 'whatever',
@@ -163,6 +159,10 @@ class PageTrackTest(unittest.TestCase):
             'name': _LOADE},
         {'ph': 'R', 'ts': 14000, 'args': {},             'cat': _BLINK_CAT,
             'name': _START},
+        {'ph': 'R', 'ts': 10000, 'args': {'frame': '0'}, 'cat': _BLINK_CAT,
+            'name': _NAVIGATION_START}, # Event out of |start_msec| order.
+        {'ph': 'R', 'ts':  6000, 'args': {'frame': '0'}, 'cat': 'whatever',
+            'name': _NAVIGATION_START},
         {'ph': 'R', 'ts': 15000, 'args': {},             'cat': _BLINK_CAT,
             'name': _START},
         {'ph': 'R', 'ts': 16000, 'args': {'frame': '1'}, 'cat': _BLINK_CAT,
@@ -203,7 +203,7 @@ class PageTrackTest(unittest.TestCase):
   def testExtractDefaultMetricsBestEffort(self):
     metrics = puller._ExtractDefaultMetrics(LoadingTrace([
         {'ph': 'R', 'ts': 10000, 'args': {'frame': '0'}, 'cat': _BLINK_CAT,
-            'name': _UNLOAD},
+            'name': _NAVIGATION_START},
         {'ph': 'R', 'ts': 11000, 'args': {'frame': '0'}, 'cat': 'whatever',
             'name': _START}]))
     self.assertEquals(4, len(metrics))
