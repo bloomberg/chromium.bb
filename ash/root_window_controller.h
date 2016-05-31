@@ -73,6 +73,10 @@ class BootSplashScreen;
 class AshTouchExplorationManager;
 #endif
 
+namespace wm {
+class WmWindow;
+}
+
 // This class maintains the per root window state for ash. This class
 // owns the root window and other dependent objects that should be
 // deleted upon the deletion of the root window. This object is
@@ -249,7 +253,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   // Creates each of the special window containers that holds windows of various
   // types in the shell UI.
-  void CreateContainersInRootWindow(aura::Window* root_window);
+  void CreateContainersInRootWindow(wm::WmWindow* root_window);
 
   // Enables projection touch HUD.
   void EnableTouchHudProjection();

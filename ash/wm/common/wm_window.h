@@ -46,6 +46,12 @@ class WindowState;
 // aura::Window or mus::Window. See aura::Window for details on the functions.
 class ASH_EXPORT WmWindow {
  public:
+  // See comments in SetBoundsInScreen().
+  enum class BoundsInScreenBehavior {
+    USE_LOCAL_COORDINATES,
+    USE_SCREEN_COORDINATES,
+  };
+
   WmWindow* GetRootWindow() {
     return const_cast<WmWindow*>(
         const_cast<const WmWindow*>(this)->GetRootWindow());
@@ -55,6 +61,9 @@ class ASH_EXPORT WmWindow {
 
   // TODO(sky): fix constness.
   virtual WmGlobals* GetGlobals() const = 0;
+
+  // Used for debugging.
+  virtual void SetName(const char* name) = 0;
 
   virtual base::string16 GetTitle() const = 0;
 
@@ -135,6 +144,10 @@ class ASH_EXPORT WmWindow {
   virtual void Animate(::wm::WindowAnimationType type) = 0;
   virtual void StopAnimatingProperty(
       ui::LayerAnimationElement::AnimatableProperty property) = 0;
+  virtual void SetChildWindowVisibilityChangesAnimated() = 0;
+
+  // See description in ui::Layer.
+  virtual void SetMasksToBounds(bool value) = 0;
 
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
   virtual void SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
@@ -143,6 +156,16 @@ class ASH_EXPORT WmWindow {
   virtual void SetBoundsDirect(const gfx::Rect& bounds) = 0;
   virtual void SetBoundsDirectAnimated(const gfx::Rect& bounds) = 0;
   virtual void SetBoundsDirectCrossFade(const gfx::Rect& bounds) = 0;
+
+  // Sets the bounds in two distinct ways. The exact behavior is dictated by
+  // the value of BoundsInScreenBehavior set on the parent:
+  //
+  // USE_LOCAL_COORDINATES: the bounds are applied as is to the window. In other
+  //   words this behaves the same as if SetBounds(bounds_in_screen) was used.
+  //   This is the default.
+  // USE_SCREEN_COORDINATES: the bounds are actual screen bounds and converted
+  //   from the display. In this case the window may move to a different
+  //   display if allowed (see SetDescendantsStayInSameRootWindow()).
   virtual void SetBoundsInScreen(const gfx::Rect& bounds_in_screen,
                                  const display::Display& dst_display) = 0;
   virtual gfx::Rect GetBoundsInScreen() const = 0;
@@ -209,10 +232,23 @@ class ASH_EXPORT WmWindow {
   virtual void ShowResizeShadow(int component) = 0;
   virtual void HideResizeShadow() = 0;
 
+  // See description in SetBoundsInScreen().
+  virtual void SetBoundsInScreenBehaviorForChildren(BoundsInScreenBehavior) = 0;
+
+  // See description of SnapToPixelBoundaryIfNecessary().
+  virtual void SetSnapsChildrenToPhysicalPixelBoundary() = 0;
+
   // If an ancestor has been set to snap children to pixel boundaries, then
   // snaps the layer associated with this window to the layer associated with
   // the ancestor.
   virtual void SnapToPixelBoundaryIfNecessary() = 0;
+
+  // Makes the hit region for children slightly larger for easier resizing.
+  virtual void SetChildrenUseExtendedHitRegion() = 0;
+
+  // Sets whether descendants of this should not be moved to a different
+  // container. This is used by SetBoundsInScreen().
+  virtual void SetDescendantsStayInSameRootWindow(bool value) = 0;
 
   virtual void AddObserver(WmWindowObserver* observer) = 0;
   virtual void RemoveObserver(WmWindowObserver* observer) = 0;

@@ -37,7 +37,7 @@ WorkspaceLayoutManager::WorkspaceLayoutManager(
   root_window_->AddObserver(this);
   root_window_controller_->AddObserver(this);
   DCHECK(window->GetBoolProperty(
-      wm::WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUDARY));
+      wm::WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY));
 }
 
 WorkspaceLayoutManager::~WorkspaceLayoutManager() {

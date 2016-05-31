@@ -43,6 +43,7 @@ class WmGlobalsMus : public ash::wm::WmGlobals,
   WmRootWindowControllerMus* GetRootWindowControllerWithDisplayId(int64_t id);
 
   // WmGlobals:
+  ash::wm::WmWindow* NewContainerWindow() override;
   ash::wm::WmWindow* GetFocusedWindow() override;
   ash::wm::WmWindow* GetActiveWindow() override;
   ash::wm::WmWindow* GetPrimaryRootWindow() override;

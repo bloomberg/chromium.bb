@@ -4,6 +4,7 @@
 
 #include "ash/wm/aura/wm_window_aura.h"
 
+#include "ash/ash_constants.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
@@ -19,6 +20,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/layout_manager.h"
@@ -29,8 +31,11 @@
 #include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/easy_resize_window_targeter.h"
+#include "ui/wm/core/visibility_controller.h"
 #include "ui/wm/core/window_util.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(ash::wm::WmWindowAura*);
@@ -117,6 +122,10 @@ WmRootWindowController* WmWindowAura::GetRootWindowController() {
 
 WmGlobals* WmWindowAura::GetGlobals() const {
   return WmGlobals::Get();
+}
+
+void WmWindowAura::SetName(const char* name) {
+  window_->SetName(name);
 }
 
 base::string16 WmWindowAura::GetTitle() const {
@@ -220,7 +229,7 @@ bool WmWindowAura::IsSystemModal() const {
 
 bool WmWindowAura::GetBoolProperty(WmWindowProperty key) {
   switch (key) {
-    case WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUDARY:
+    case WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY:
       return window_->GetProperty(kSnapChildrenToPixelBoundary);
 
     case WmWindowProperty::ALWAYS_ON_TOP:
@@ -307,6 +316,14 @@ void WmWindowAura::Animate(::wm::WindowAnimationType type) {
 void WmWindowAura::StopAnimatingProperty(
     ui::LayerAnimationElement::AnimatableProperty property) {
   window_->layer()->GetAnimator()->StopAnimatingProperty(property);
+}
+
+void WmWindowAura::SetChildWindowVisibilityChangesAnimated() {
+  ::wm::SetChildWindowVisibilityChangesAnimated(window_);
+}
+
+void WmWindowAura::SetMasksToBounds(bool value) {
+  window_->layer()->SetMasksToBounds(value);
 }
 
 void WmWindowAura::SetBounds(const gfx::Rect& bounds) {
@@ -548,8 +565,33 @@ void WmWindowAura::HideResizeShadow() {
     resize_shadow_controller->HideShadow(window_);
 }
 
+void WmWindowAura::SetBoundsInScreenBehaviorForChildren(
+    BoundsInScreenBehavior behavior) {
+  window_->SetProperty(
+      kUsesScreenCoordinatesKey,
+      behavior == BoundsInScreenBehavior::USE_SCREEN_COORDINATES);
+}
+
+void WmWindowAura::SetSnapsChildrenToPhysicalPixelBoundary() {
+  wm::SetSnapsChildrenToPhysicalPixelBoundary(window_);
+}
+
 void WmWindowAura::SnapToPixelBoundaryIfNecessary() {
   SnapWindowToPixelBoundary(window_);
+}
+
+void WmWindowAura::SetChildrenUseExtendedHitRegion() {
+  gfx::Insets mouse_extend(-kResizeOutsideBoundsSize, -kResizeOutsideBoundsSize,
+                           -kResizeOutsideBoundsSize,
+                           -kResizeOutsideBoundsSize);
+  gfx::Insets touch_extend =
+      mouse_extend.Scale(kResizeOutsideBoundsScaleForTouch);
+  window_->SetEventTargeter(base::WrapUnique(
+      new ::wm::EasyResizeWindowTargeter(window_, mouse_extend, touch_extend)));
+}
+
+void WmWindowAura::SetDescendantsStayInSameRootWindow(bool value) {
+  window_->SetProperty(kStayInSameRootWindowKey, true);
 }
 
 void WmWindowAura::AddObserver(WmWindowObserver* observer) {
@@ -588,7 +630,7 @@ void WmWindowAura::OnWindowPropertyChanged(aura::Window* window,
   }
   WmWindowProperty wm_property;
   if (key == kSnapChildrenToPixelBoundary) {
-    wm_property = WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUDARY;
+    wm_property = WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY;
   } else if (key == aura::client::kAlwaysOnTopKey) {
     wm_property = WmWindowProperty::ALWAYS_ON_TOP;
   } else if (key == kShelfID) {

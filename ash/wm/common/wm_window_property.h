@@ -10,7 +10,7 @@ namespace wm {
 
 enum class WmWindowProperty {
   // Type bool.
-  SNAP_CHILDREN_TO_PIXEL_BOUDARY,
+  SNAP_CHILDREN_TO_PIXEL_BOUNDARY,
 
   // Type bool.
   ALWAYS_ON_TOP,

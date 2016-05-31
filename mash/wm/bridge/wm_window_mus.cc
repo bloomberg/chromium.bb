@@ -9,9 +9,11 @@
 #include "ash/wm/common/wm_layout_manager.h"
 #include "ash/wm/common/wm_window_observer.h"
 #include "ash/wm/common/wm_window_property.h"
+#include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_client.h"
+#include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mash/wm/bridge/mus_layout_manager_adapter.h"
 #include "mash/wm/bridge/wm_globals_mus.h"
 #include "mash/wm/bridge/wm_root_window_controller_mus.h"
@@ -146,6 +148,11 @@ const WmRootWindowControllerMus* WmWindowMus::GetRootWindowControllerMus()
   return WmRootWindowControllerMus::Get(window_->GetRoot());
 }
 
+bool WmWindowMus::ShouldUseExtendedHitRegion() const {
+  const WmWindowMus* parent = Get(window_->parent());
+  return parent && parent->children_use_extended_hit_region_;
+}
+
 const ash::wm::WmWindow* WmWindowMus::GetRootWindow() const {
   return Get(window_->GetRoot());
 }
@@ -156,6 +163,15 @@ ash::wm::WmRootWindowController* WmWindowMus::GetRootWindowController() {
 
 ash::wm::WmGlobals* WmWindowMus::GetGlobals() const {
   return WmGlobalsMus::Get();
+}
+
+void WmWindowMus::SetName(const char* name) {
+  if (name) {
+    window_->SetSharedProperty<std::string>(
+        mus::mojom::WindowManager::kName_Property, std::string(name));
+  } else {
+    window_->ClearSharedProperty(mus::mojom::WindowManager::kName_Property);
+  }
 }
 
 base::string16 WmWindowMus::GetTitle() const {
@@ -279,9 +295,8 @@ bool WmWindowMus::IsSystemModal() const {
 
 bool WmWindowMus::GetBoolProperty(ash::wm::WmWindowProperty key) {
   switch (key) {
-    case ash::wm::WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUDARY:
-      NOTIMPLEMENTED();
-      return true;
+    case ash::wm::WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY:
+      return snap_children_to_pixel_boundary_;
 
     case ash::wm::WmWindowProperty::ALWAYS_ON_TOP:
       return IsAlwaysOnTop();
@@ -382,6 +397,16 @@ void WmWindowMus::StopAnimatingProperty(
   NOTIMPLEMENTED();
 }
 
+void WmWindowMus::SetChildWindowVisibilityChangesAnimated() {
+  // TODO: need animation support: http://crbug.com/615087.
+  NOTIMPLEMENTED();
+}
+
+void WmWindowMus::SetMasksToBounds(bool value) {
+  // TODO: mus needs mask to bounds support: http://crbug.com/615550.
+  NOTIMPLEMENTED();
+}
+
 void WmWindowMus::SetBounds(const gfx::Rect& bounds) {
   if (window_->parent()) {
     WmWindowMus* parent = WmWindowMus::Get(window_->parent());
@@ -420,8 +445,8 @@ void WmWindowMus::SetBoundsDirectCrossFade(const gfx::Rect& bounds) {
 
 void WmWindowMus::SetBoundsInScreen(const gfx::Rect& bounds_in_screen,
                                     const display::Display& dst_display) {
-  // TODO(sky): need to find WmRootWindowControllerMus for dst_display and
-  // convert.
+  // TODO: SetBoundsInScreen isn't fully implemented yet,
+  // http://crbug.com/615552.
   NOTIMPLEMENTED();
   SetBounds(ConvertRectFromScreen(bounds_in_screen));
 }
@@ -618,7 +643,39 @@ void WmWindowMus::HideResizeShadow() {
   NOTIMPLEMENTED();
 }
 
+void WmWindowMus::SetBoundsInScreenBehaviorForChildren(
+    ash::wm::WmWindow::BoundsInScreenBehavior behavior) {
+  // TODO: SetBoundsInScreen isn't fully implemented yet,
+  // http://crbug.com/615552.
+  NOTIMPLEMENTED();
+}
+
+void WmWindowMus::SetSnapsChildrenToPhysicalPixelBoundary() {
+  if (snap_children_to_pixel_boundary_)
+    return;
+
+  snap_children_to_pixel_boundary_ = true;
+  FOR_EACH_OBSERVER(
+      ash::wm::WmWindowObserver, observers_,
+      OnWindowPropertyChanged(
+          this, ash::wm::WmWindowProperty::SNAP_CHILDREN_TO_PIXEL_BOUNDARY));
+}
+
 void WmWindowMus::SnapToPixelBoundaryIfNecessary() {
+  WmWindowMus* parent = Get(window_->parent());
+  if (parent && parent->snap_children_to_pixel_boundary_) {
+    // TODO: implement snap to pixel: http://crbug.com/615554.
+    NOTIMPLEMENTED();
+  }
+}
+
+void WmWindowMus::SetChildrenUseExtendedHitRegion() {
+  children_use_extended_hit_region_ = true;
+}
+
+void WmWindowMus::SetDescendantsStayInSameRootWindow(bool value) {
+  // TODO: this logic feeds into SetBoundsInScreen(), which is not implemented:
+  // http://crbug.com/615552.
   NOTIMPLEMENTED();
 }
 

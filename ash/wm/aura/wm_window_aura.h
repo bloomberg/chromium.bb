@@ -45,6 +45,7 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   const WmWindow* GetRootWindow() const override;
   WmRootWindowController* GetRootWindowController() override;
   WmGlobals* GetGlobals() const override;
+  void SetName(const char* name) override;
   base::string16 GetTitle() const override;
   void SetShellWindowId(int id) override;
   int GetShellWindowId() const override;
@@ -89,6 +90,8 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   void Animate(::wm::WindowAnimationType type) override;
   void StopAnimatingProperty(
       ui::LayerAnimationElement::AnimatableProperty property) override;
+  void SetChildWindowVisibilityChangesAnimated() override;
+  void SetMasksToBounds(bool value) override;
   void SetBounds(const gfx::Rect& bounds) override;
   void SetBoundsWithTransitionDelay(const gfx::Rect& bounds,
                                     base::TimeDelta delta) override;
@@ -136,7 +139,12 @@ class ASH_EXPORT WmWindowAura : public WmWindow, public aura::WindowObserver {
   std::vector<WmWindow*> GetChildren() override;
   void ShowResizeShadow(int component) override;
   void HideResizeShadow() override;
+  void SetBoundsInScreenBehaviorForChildren(
+      BoundsInScreenBehavior behavior) override;
+  void SetSnapsChildrenToPhysicalPixelBoundary() override;
   void SnapToPixelBoundaryIfNecessary() override;
+  void SetChildrenUseExtendedHitRegion() override;
+  void SetDescendantsStayInSameRootWindow(bool value) override;
   void AddObserver(WmWindowObserver* observer) override;
   void RemoveObserver(WmWindowObserver* observer) override;
 

@@ -320,25 +320,39 @@ void RootWindowController::CreateContainers() {
   std::unique_ptr<WorkspaceLayoutManagerDelegateImpl>
       workspace_layout_manager_delegate(new WorkspaceLayoutManagerDelegateImpl(
           wm_root_window_controller_.get()));
-  WmWindowMus::Get(user_private_windows)
-      ->SetLayoutManager(base::WrapUnique(new ash::WorkspaceLayoutManager(
-          WmWindowMus::Get(user_private_windows),
+  WmWindowMus* user_private_windows_wm = WmWindowMus::Get(user_private_windows);
+  user_private_windows_wm->SetSnapsChildrenToPhysicalPixelBoundary();
+  user_private_windows_wm->SetChildrenUseExtendedHitRegion();
+  user_private_windows_wm->SetLayoutManager(
+      base::WrapUnique(new ash::WorkspaceLayoutManager(
+          user_private_windows_wm,
           std::move(workspace_layout_manager_delegate))));
 
   mus::Window* user_private_docked_windows =
       GetWindowForContainer(mojom::Container::USER_PRIVATE_DOCKED_WINDOWS);
   WmWindowMus* user_private_docked_windows_wm =
       WmWindowMus::Get(user_private_docked_windows);
+  user_private_docked_windows_wm->SetSnapsChildrenToPhysicalPixelBoundary();
   layout_managers_.erase(user_private_docked_windows);
+  user_private_docked_windows_wm->SetChildrenUseExtendedHitRegion();
   user_private_docked_windows_wm->SetLayoutManager(base::WrapUnique(
       new ash::DockedWindowLayoutManager(user_private_docked_windows_wm)));
 
   mus::Window* user_private_panels =
       GetWindowForContainer(mojom::Container::USER_PRIVATE_PANELS);
   WmWindowMus* user_private_panels_wm = WmWindowMus::Get(user_private_panels);
+  user_private_panels_wm->SetSnapsChildrenToPhysicalPixelBoundary();
   layout_managers_.erase(user_private_panels);
+  user_private_panels_wm->SetChildrenUseExtendedHitRegion();
   user_private_panels_wm->SetLayoutManager(
       base::WrapUnique(new ash::PanelLayoutManager(user_private_panels_wm)));
+
+  mus::Window* user_private_always_on_top = GetWindowForContainer(
+      mojom::Container::USER_PRIVATE_ALWAYS_ON_TOP_WINDOWS);
+  WmWindowMus* user_private_always_on_top_wm =
+      WmWindowMus::Get(user_private_always_on_top);
+  user_private_always_on_top_wm->SetChildrenUseExtendedHitRegion();
+  user_private_always_on_top_wm->SetSnapsChildrenToPhysicalPixelBoundary();
 }
 
 }  // namespace wm

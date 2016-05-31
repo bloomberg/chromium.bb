@@ -40,6 +40,12 @@ WmGlobalsAura::~WmGlobalsAura() {
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
+WmWindow* WmGlobalsAura::NewContainerWindow() {
+  aura::Window* aura_window = new aura::Window(nullptr);
+  aura_window->Init(ui::LAYER_NOT_DRAWN);
+  return WmWindowAura::Get(aura_window);
+}
+
 WmWindow* WmGlobalsAura::GetFocusedWindow() {
   return WmWindowAura::Get(
       aura::client::GetFocusClient(Shell::GetPrimaryRootWindow())

@@ -203,8 +203,8 @@ NonClientFrameController::NonClientFrameController(
     mus::Window* window,
     mus::WindowManagerClient* window_manager_client)
     : widget_(new views::Widget), window_(window) {
-  WmWindowMus::Get(window)->set_widget(
-      widget_, WmWindowMus::WidgetCreationType::FOR_CLIENT);
+  WmWindowMus* wm_window = WmWindowMus::Get(window);
+  wm_window->set_widget(widget_, WmWindowMus::WidgetCreationType::FOR_CLIENT);
   window_->AddObserver(this);
 
   // To simplify things this code creates a Widget. While a Widget is created
@@ -225,9 +225,12 @@ NonClientFrameController::NonClientFrameController(
 
   const int shadow_inset =
       Shadow::GetInteriorInsetForStyle(Shadow::STYLE_ACTIVE);
+  const gfx::Insets extended_hit_region =
+      wm_window->ShouldUseExtendedHitRegion()
+          ? FrameBorderHitTestController::GetResizeOutsideBoundsSize()
+          : gfx::Insets();
   window_manager_client->SetUnderlaySurfaceOffsetAndExtendedHitArea(
-      window, gfx::Vector2d(shadow_inset, shadow_inset),
-      FrameBorderHitTestController::GetResizeOutsideBoundsSize());
+      window, gfx::Vector2d(shadow_inset, shadow_inset), extended_hit_region);
 }
 
 NonClientFrameController::~NonClientFrameController() {

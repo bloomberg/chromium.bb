@@ -71,6 +71,10 @@ WmRootWindowControllerMus* WmGlobalsMus::GetRootWindowControllerWithDisplayId(
   return nullptr;
 }
 
+ash::wm::WmWindow* WmGlobalsMus::NewContainerWindow() {
+  return WmWindowMus::Get(client_->NewWindow());
+}
+
 ash::wm::WmWindow* WmGlobalsMus::GetFocusedWindow() {
   return WmWindowMus::Get(client_->GetFocusedWindow());
 }

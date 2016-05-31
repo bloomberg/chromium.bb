@@ -601,6 +601,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   KeyboardUI* keyboard_ui() { return keyboard_ui_.get(); }
 
+  // TODO(sky): remove this. This was needed by sysui, but as sysui is going
+  // away it should no longer be needed.
   bool in_mus() const { return in_mus_; }
 
 #if defined(OS_CHROMEOS)

@@ -30,6 +30,7 @@ class ASH_EXPORT WmGlobalsAura : public WmGlobals,
   static WmGlobalsAura* Get();
 
   // WmGlobals:
+  WmWindow* NewContainerWindow() override;
   WmWindow* GetFocusedWindow() override;
   WmWindow* GetActiveWindow() override;
   WmWindow* GetPrimaryRootWindow() override;

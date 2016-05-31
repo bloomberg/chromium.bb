@@ -40,6 +40,10 @@ class ASH_EXPORT WmGlobals {
   static void Set(WmGlobals* instance);
   static WmGlobals* Get();
 
+  // Creates a new window used as a container of other windows. No painting is
+  // done to the created window.
+  virtual WmWindow* NewContainerWindow() = 0;
+
   virtual WmWindow* GetFocusedWindow() = 0;
   virtual WmWindow* GetActiveWindow() = 0;
 
