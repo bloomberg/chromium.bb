@@ -68,6 +68,11 @@ NativeWidget* WindowManagerConnection::CreateNativeWidgetMus(
     const std::map<std::string, std::vector<uint8_t>>& props,
     const Widget::InitParams& init_params,
     internal::NativeWidgetDelegate* delegate) {
+  // TYPE_CONTROL widgets require a NativeWidgetAura. So we let this fall
+  // through, so that the default NativeWidgetPrivate::CreateNativeWidget() is
+  // used instead.
+  if (init_params.type == Widget::InitParams::TYPE_CONTROL)
+    return nullptr;
   std::map<std::string, std::vector<uint8_t>> properties = props;
   NativeWidgetMus::ConfigurePropertiesForNewWindow(init_params, &properties);
   properties[mus::mojom::WindowManager::kAppID_Property] =

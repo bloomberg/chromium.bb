@@ -257,15 +257,13 @@ TEST_F(NativeViewHostAuraTest, InstallClip) {
 TEST_F(NativeViewHostAuraTest, ParentAfterDetach) {
   CreateHost();
   aura::Window* child_win = child()->GetNativeView();
-  aura::Window* root_window = child_win->GetRootWindow();
-  aura::WindowTreeHost* child_win_tree_host = child_win->GetHost();
 
   NativeViewHostWindowObserver test_observer;
   child_win->AddObserver(&test_observer);
 
   host()->Detach();
-  EXPECT_EQ(root_window, child_win->GetRootWindow());
-  EXPECT_EQ(child_win_tree_host, child_win->GetHost());
+  EXPECT_EQ(nullptr, child_win->GetRootWindow());
+  EXPECT_EQ(nullptr, child_win->GetHost());
 
   DestroyHost();
 
