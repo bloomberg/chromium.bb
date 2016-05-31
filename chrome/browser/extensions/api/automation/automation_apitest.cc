@@ -160,7 +160,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, Desktop) {
 }
 
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopInitialFocus) {
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DesktopInitialFocus DISABLED_DesktopInitialFocus
+#else
+#define MAYBE_DesktopInitialFocus DesktopInitialFocus
+#endif
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, MAYBE_DesktopInitialFocus) {
   ASSERT_TRUE(
       RunExtensionSubtest("automation/tests/desktop", "initial_focus.html"))
       << message_;
