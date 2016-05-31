@@ -260,7 +260,7 @@
       'GPU Win Builder (dbg)':
         'swarming_gpu_tests_deqp_gles_gyp_debug_trybot_x86',
       'GPU Win Clang Builder (dbg)':
-        'swarming_gpu_fyi_tests_gyp_clang_debug_trybot_x86',
+        'swarming_gpu_fyi_tests_win_clang_debug_bot',
       'GPU Win x64 Builder':
         'swarming_gpu_tests_deqp_gles_gyp_release_trybot_x64',
       'GPU Win x64 Builder (dbg)':
@@ -1593,9 +1593,9 @@
       'release_trybot', 'angle_deqp_tests',
     ],
 
-    'swarming_gpu_fyi_tests_gyp_clang_debug_trybot_x86': [
-      'swarming', 'gpu_tests', 'internal_gles2_conform_tests', 'gyp',
-      'clang', 'debug_trybot', 'x86',
+    'swarming_gpu_fyi_tests_win_clang_debug_bot': [
+      'swarming', 'gpu_tests', 'internal_gles2_conform_tests',
+      'gn', 'clang', 'debug_bot_minimal_symbols',
     ],
 
     'swarming_gpu_fyi_tests_gyp_debug_trybot': [
