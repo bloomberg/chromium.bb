@@ -920,8 +920,7 @@ TEST(EventTest, EventLatencyOSTouchHistograms) {
 TEST(EventTest, EventLatencyOSMouseWheelHistogram) {
 #if defined(OS_WIN)
   base::HistogramTester histogram_tester;
-  MSG event;
-  event.message = WM_MOUSEWHEEL;
+  MSG event = { nullptr, WM_MOUSEWHEEL, 0, 0 };
   MouseWheelEvent mouseWheelEvent(event);
   histogram_tester.ExpectTotalCount("Event.Latency.OS.MOUSE_WHEEL", 1);
 #elif defined(USE_X11)
