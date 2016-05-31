@@ -227,10 +227,16 @@ public class ExternalAuthUtils {
      * @param resultCode the result from {@link #checkGooglePlayServicesAvailable(Context)}
      */
     protected void recordConnectionResult(final int resultCode) {
-        // Doing it this way avoids a hard dependency on RecordHistogram, which allows the code to
-        // be tested with simple mocks and junit instead of having an instrumentation test.
-        RecordHistogram.recordSparseSlowlyHistogram(
-                CONNECTION_RESULT_HISTOGRAM_NAME, resultCode);
+        try {
+            // Doing it this way avoids a hard dependency on RecordHistogram, which allows the code
+            //  to be tested with simple mocks and junit instead of having an instrumentation test.
+            RecordHistogram.recordSparseSlowlyHistogram(
+                    CONNECTION_RESULT_HISTOGRAM_NAME, resultCode);
+        } catch (UnsatisfiedLinkError error) {
+            // Usually native is loaded when this check is called, but it is not guaranteed. Since
+            // most of the data is better than none of the data and we don't want this to crash in
+            // the case of native not being loaded, intentionally catch and ignore the linker error.
+        }
     }
 
     /**
