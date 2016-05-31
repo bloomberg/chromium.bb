@@ -205,6 +205,7 @@ TEST_F(BluetoothGattBlueZTest, GattConnection) {
       adapter_->GetDevice(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress);
   ASSERT_TRUE(device);
   ASSERT_FALSE(device->IsConnected());
+  ASSERT_FALSE(device->IsGattConnected());
   ASSERT_FALSE(gatt_conn_.get());
   ASSERT_EQ(0, success_callback_count_);
   ASSERT_EQ(0, error_callback_count_);
@@ -218,6 +219,7 @@ TEST_F(BluetoothGattBlueZTest, GattConnection) {
   EXPECT_EQ(1, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(device->IsConnected());
+  EXPECT_TRUE(device->IsGattConnected());
   ASSERT_TRUE(gatt_conn_.get());
   EXPECT_TRUE(gatt_conn_->IsConnected());
   EXPECT_EQ(bluez::FakeBluetoothDeviceClient::kLowEnergyAddress,
@@ -225,6 +227,7 @@ TEST_F(BluetoothGattBlueZTest, GattConnection) {
 
   gatt_conn_->Disconnect();
   EXPECT_FALSE(device->IsConnected());
+  EXPECT_FALSE(device->IsGattConnected());
   EXPECT_FALSE(gatt_conn_->IsConnected());
 
   device->CreateGattConnection(
@@ -236,6 +239,7 @@ TEST_F(BluetoothGattBlueZTest, GattConnection) {
   EXPECT_EQ(2, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(device->IsConnected());
+  EXPECT_TRUE(device->IsGattConnected());
   ASSERT_TRUE(gatt_conn_.get());
   EXPECT_TRUE(gatt_conn_->IsConnected());
 
@@ -247,6 +251,7 @@ TEST_F(BluetoothGattBlueZTest, GattConnection) {
   EXPECT_EQ(3, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_FALSE(device->IsConnected());
+  EXPECT_FALSE(device->IsGattConnected());
   ASSERT_TRUE(gatt_conn_.get());
   EXPECT_FALSE(gatt_conn_->IsConnected());
 
@@ -259,6 +264,7 @@ TEST_F(BluetoothGattBlueZTest, GattConnection) {
   EXPECT_EQ(4, success_callback_count_);
   EXPECT_EQ(0, error_callback_count_);
   EXPECT_TRUE(device->IsConnected());
+  EXPECT_TRUE(device->IsGattConnected());
   EXPECT_TRUE(gatt_conn_->IsConnected());
 
   fake_bluetooth_device_client_->RemoveDevice(

@@ -288,8 +288,9 @@ bool BluetoothDeviceBlueZ::IsConnected() const {
 }
 
 bool BluetoothDeviceBlueZ::IsGattConnected() const {
-  NOTIMPLEMENTED();
-  return false;
+  // Bluez uses the same attribute for GATT Connections and Classic BT
+  // Connections.
+  return IsConnected();
 }
 
 bool BluetoothDeviceBlueZ::IsConnectable() const {
