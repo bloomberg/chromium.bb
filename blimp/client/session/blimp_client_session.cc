@@ -161,7 +161,11 @@ void ClientNetworkComponents::HandleConnection(
 }
 
 void ClientNetworkComponents::OnConnectionError(int result) {
-  VLOG(1) << "Connection error: " << net::ErrorToString(result);
+  if (result >= 0) {
+    VLOG(1) << "Disconnected with reason: " << result;
+  } else {
+    VLOG(1) << "Connection error: " << net::ErrorToString(result);
+  }
   network_observer_->OnDisconnected(result);
 }
 
