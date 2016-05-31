@@ -377,7 +377,7 @@ static void ComputeInitialRenderSurfaceLayerList(
       // same is true for layers with filters that move pixels.
       // TODO(senorblanco): make this smarter for the SkImageFilter case (check
       // for pixel-moving filters)
-      bool is_occlusion_immune = layer->HasCopyRequest() ||
+      bool is_occlusion_immune = surface->HasCopyRequest() ||
                                  layer->has_replica() ||
                                  layer->filters().HasReferenceFilter() ||
                                  layer->filters().HasFilterThatMovesPixels();

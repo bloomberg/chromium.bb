@@ -808,7 +808,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
                             active_tree_->hud_layer()->IsAnimatingHUDContents();
   if (root_surface_has_contributing_layers &&
       root_surface_has_no_visible_damage &&
-      active_tree_->LayersWithCopyOutputRequest().empty() &&
+      !active_tree_->property_trees()->effect_tree.HasCopyRequests() &&
       !output_surface_->capabilities().can_force_reclaim_resources &&
       !hud_wants_to_draw_) {
     TRACE_EVENT0("cc",
@@ -836,7 +836,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     bool should_draw_into_render_pass =
         active_tree_->IsRootLayer(render_surface_layer) ||
         render_surface->contributes_to_drawn_surface() ||
-        render_surface_layer->HasCopyRequest();
+        render_surface->HasCopyRequest();
     if (should_draw_into_render_pass)
       render_surface->AppendRenderPasses(frame);
   }
@@ -857,13 +857,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   if (active_tree_->hud_layer()) {
     RenderPass* root_pass = frame->render_passes.back().get();
     root_pass->damage_rect = root_pass->output_rect;
-  }
-
-  // Because the active tree could be drawn again if this fails for some reason,
-  // clear all of the copy request flags so that sanity checks for the counts
-  // succeed.
-  if (!active_tree_->LayersWithCopyOutputRequest().empty()) {
-    active_tree()->property_trees()->effect_tree.ClearCopyRequests();
   }
 
   // Grab this region here before iterating layers. Taking copy requests from
@@ -889,7 +882,8 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   int num_incomplete_tiles = 0;
   int64_t checkerboarded_no_recording_content_area = 0;
   int64_t checkerboarded_needs_raster_content_area = 0;
-  bool have_copy_request = false;
+  bool have_copy_request =
+      active_tree()->property_trees()->effect_tree.HasCopyRequests();
   bool have_missing_animated_tiles = false;
 
   LayerIterator end = LayerIterator::End(frame->render_surface_layer_list);
@@ -904,10 +898,12 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     AppendQuadsData append_quads_data;
 
     if (it.represents_target_render_surface()) {
-      if (it->HasCopyRequest()) {
-        have_copy_request = true;
-        it->TakeCopyRequestsAndTransformToTarget(
-            &target_render_pass->copy_requests);
+      if (it->render_surface()->HasCopyRequest()) {
+        active_tree()
+            ->property_trees()
+            ->effect_tree.TakeCopyRequestsAndTransformToSurface(
+                it->render_surface()->EffectTreeIndex(),
+                &target_render_pass->copy_requests);
       }
     } else if (it.represents_contributing_render_surface() &&
                it->render_surface()->contributes_to_drawn_surface()) {
@@ -1002,15 +998,14 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
   RemoveRenderPasses(frame);
   renderer_->DecideRenderPassAllocationsForFrame(frame->render_passes);
 
-  // Any copy requests left in the tree are not going to get serviced, and
-  // should be aborted.
-  std::vector<std::unique_ptr<CopyOutputRequest>> requests_to_abort;
-  while (!active_tree_->LayersWithCopyOutputRequest().empty()) {
-    LayerImpl* layer = active_tree_->LayersWithCopyOutputRequest().back();
-    layer->TakeCopyRequestsAndTransformToTarget(&requests_to_abort);
+  if (have_copy_request) {
+    // Any copy requests left in the tree are not going to get serviced, and
+    // should be aborted.
+    active_tree()->property_trees()->effect_tree.ClearCopyRequests();
+
+    // Draw properties depend on copy requests.
+    active_tree()->set_needs_update_draw_properties();
   }
-  for (size_t i = 0; i < requests_to_abort.size(); ++i)
-    requests_to_abort[i]->SendEmptyResult();
 
   // If we're making a frame to draw, it better have at least one render pass.
   DCHECK(!frame->render_passes.empty());

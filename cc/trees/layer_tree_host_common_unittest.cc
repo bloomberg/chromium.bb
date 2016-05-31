@@ -5532,11 +5532,8 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
       ->hide_layer_and_subtree = true;
   copy_grand_child_layer->test_properties()->hide_layer_and_subtree = true;
 
-  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
-  copy_requests.push_back(
+  copy_layer->test_properties()->copy_requests.push_back(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
-  copy_layer->PassCopyRequests(&copy_requests);
-  EXPECT_TRUE(copy_layer->HasCopyRequest());
 
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
@@ -5639,11 +5636,8 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
                                true, false, false);
   copy_child->SetDrawsContent(true);
 
-  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
-  copy_requests.push_back(
+  copy_layer->test_properties()->copy_requests.push_back(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
-  copy_layer->PassCopyRequests(&copy_requests);
-  EXPECT_TRUE(copy_layer->HasCopyRequest());
 
   copy_layer->AddChild(std::move(copy_child));
   copy_parent->AddChild(std::move(copy_layer));
@@ -8743,15 +8737,13 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   // Now, even though child has zero opacity, we will configure |grandchild| and
   // |greatgrandchild| in several ways that should force the subtree to be
   // processed anyhow.
-  std::vector<std::unique_ptr<CopyOutputRequest>> requests;
-  requests.push_back(CopyOutputRequest::CreateEmptyRequest());
-
-  grandchild_ptr->PassCopyRequests(&requests);
+  grandchild_ptr->test_properties()->copy_requests.push_back(
+      CopyOutputRequest::CreateEmptyRequest());
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
-  requests.clear();
-  grandchild_ptr->PassCopyRequests(&requests);
+
+  host_impl.active_tree()->property_trees()->effect_tree.ClearCopyRequests();
   child_ptr->SetOpacity(1.f);
 
   // A double sided render surface with backface visible should not be skipped

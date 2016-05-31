@@ -3302,11 +3302,8 @@ class DidDrawCheckLayer : public LayerImpl {
   static void IgnoreResult(std::unique_ptr<CopyOutputResult> result) {}
 
   void AddCopyRequest() {
-    std::vector<std::unique_ptr<CopyOutputRequest>> requests;
-    requests.push_back(
+    test_properties()->copy_requests.push_back(
         CopyOutputRequest::CreateRequest(base::Bind(&IgnoreResult)));
-    test_properties()->force_render_surface = true;
-    PassCopyRequests(&requests);
   }
 
  protected:
@@ -7785,12 +7782,10 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
 
   SetupRootLayerImpl(LayerImpl::Create(host_impl_->active_tree(), 1));
 
-  std::vector<std::unique_ptr<CopyOutputRequest>> requests;
-  requests.push_back(CopyOutputRequest::CreateRequest(
-      base::Bind(&ShutdownReleasesContext_Callback)));
-
   LayerImpl* root = host_impl_->active_tree()->root_layer();
-  root->PassCopyRequests(&requests);
+  root->test_properties()->copy_requests.push_back(
+      CopyOutputRequest::CreateRequest(
+          base::Bind(&ShutdownReleasesContext_Callback)));
 
   LayerTreeHostImpl::FrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, PrepareToDrawFrame(&frame));

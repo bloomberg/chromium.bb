@@ -53,7 +53,6 @@ static void ValidateRenderSurfaceForLayer(LayerImpl* layer) {
     return;
   DCHECK(!layer->mask_layer()) << "layer: " << layer->id();
   DCHECK(!layer->replica_layer()) << "layer: " << layer->id();
-  DCHECK(!layer->HasCopyRequest()) << "layer: " << layer->id();
 }
 
 #endif
@@ -63,6 +62,7 @@ void CalculateVisibleRects(
     const typename LayerType::LayerListType& visible_layer_list,
     const ClipTree& clip_tree,
     const TransformTree& transform_tree,
+    const EffectTree& effect_tree,
     bool non_root_surfaces_enabled) {
   for (auto& layer : visible_layer_list) {
     gfx::Size layer_bounds = layer->bounds();
@@ -79,7 +79,10 @@ void CalculateVisibleRects(
         transform_tree.Node(layer->transform_tree_index());
     if (!is_unclipped && !fully_visible) {
       // The entire layer is visible if it has copy requests.
-      if (layer->HasCopyRequest()) {
+      const EffectNode* effect_node =
+          effect_tree.Node(layer->effect_tree_index());
+      if (effect_node->data.has_copy_request &&
+          effect_node->owner_id == layer->id()) {
         layer->set_visible_layer_rect(gfx::Rect(layer_bounds));
         continue;
       }
@@ -780,7 +783,8 @@ static void ComputeVisibleRectsInternal(
       property_trees->effect_tree, update_layer_list, visible_layer_list);
   CalculateVisibleRects<LayerImpl>(
       *visible_layer_list, property_trees->clip_tree,
-      property_trees->transform_tree, can_render_to_separate_surface);
+      property_trees->transform_tree, property_trees->effect_tree,
+      can_render_to_separate_surface);
 }
 
 void UpdatePropertyTrees(PropertyTrees* property_trees,
@@ -805,6 +809,7 @@ void ComputeVisibleRectsForTesting(PropertyTrees* property_trees,
                                    LayerList* update_layer_list) {
   CalculateVisibleRects<Layer>(*update_layer_list, property_trees->clip_tree,
                                property_trees->transform_tree,
+                               property_trees->effect_tree,
                                can_render_to_separate_surface);
 }
 

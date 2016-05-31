@@ -12,6 +12,7 @@
 #include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -681,6 +682,14 @@ static inline bool AlwaysUseActiveTreeOpacity(LayerImpl* layer) {
   return false;
 }
 
+static inline bool HasCopyRequest(Layer* layer) {
+  return layer->HasCopyRequest();
+}
+
+static inline bool HasCopyRequest(LayerImpl* layer) {
+  return !layer->test_properties()->copy_requests.empty();
+}
+
 template <typename LayerType>
 bool ShouldCreateRenderSurface(LayerType* layer,
                                gfx::Transform current_transform,
@@ -781,10 +790,24 @@ bool ShouldCreateRenderSurface(LayerType* layer,
     return true;
 
   // If we'll make a copy of the layer's contents.
-  if (layer->HasCopyRequest())
+  if (HasCopyRequest(layer))
     return true;
 
   return false;
+}
+
+static void TakeCopyRequests(
+    Layer* layer,
+    std::vector<std::unique_ptr<CopyOutputRequest>>* copy_requests) {
+  layer->TakeCopyRequests(copy_requests);
+}
+
+static void TakeCopyRequests(
+    LayerImpl* layer,
+    std::vector<std::unique_ptr<CopyOutputRequest>>* copy_requests) {
+  for (auto& request : layer->test_properties()->copy_requests)
+    copy_requests->push_back(std::move(request));
+  layer->test_properties()->copy_requests.clear();
 }
 
 template <typename LayerType>
@@ -825,7 +848,7 @@ bool AddEffectNodeIfNeeded(
 
   node.data.opacity = layer->opacity();
   node.data.has_render_surface = should_create_render_surface;
-  node.data.has_copy_request = layer->HasCopyRequest();
+  node.data.has_copy_request = HasCopyRequest(layer);
   node.data.has_background_filters = !layer->background_filters().IsEmpty();
   node.data.has_potential_opacity_animation = has_potential_opacity_animation;
   node.data.double_sided = DoubleSided(layer);
@@ -856,9 +879,19 @@ bool AddEffectNodeIfNeeded(
   }
   data_for_children->effect_tree_parent =
       data_for_children->property_trees->effect_tree.Insert(node, parent_id);
-  layer->SetEffectTreeIndex(data_for_children->effect_tree_parent);
+  int node_id = data_for_children->effect_tree_parent;
+  layer->SetEffectTreeIndex(node_id);
   data_for_children->property_trees->effect_id_to_index_map[layer->id()] =
       data_for_children->effect_tree_parent;
+
+  std::vector<std::unique_ptr<CopyOutputRequest>> layer_copy_requests;
+  TakeCopyRequests(layer, &layer_copy_requests);
+  for (auto& it : layer_copy_requests) {
+    data_for_children->property_trees->effect_tree.AddCopyRequest(
+        node_id, std::move(it));
+  }
+  layer_copy_requests.clear();
+
   if (should_create_render_surface) {
     data_for_children->compound_transform_since_render_target =
         gfx::Transform();
@@ -1078,16 +1111,15 @@ void BuildPropertyTreesInternal(
     data_to_parent->Merge(data_from_child);
   }
 
-  if (layer->HasCopyRequest())
-    data_to_parent->num_copy_requests_in_subtree++;
+  EffectNode* effect_node = data_for_children.property_trees->effect_tree.Node(
+      data_for_children.effect_tree_parent);
 
-  if (data_for_children.property_trees->effect_tree
-          .Node(data_for_children.effect_tree_parent)
-          ->owner_id == layer->id())
-    data_for_children.property_trees->effect_tree
-        .Node(data_for_children.effect_tree_parent)
-        ->data.num_copy_requests_in_subtree =
+  if (effect_node->owner_id == layer->id()) {
+    if (effect_node->data.has_copy_request)
+      data_to_parent->num_copy_requests_in_subtree++;
+    effect_node->data.num_copy_requests_in_subtree =
         data_to_parent->num_copy_requests_in_subtree;
+  }
 }
 
 }  // namespace

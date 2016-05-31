@@ -14,6 +14,7 @@
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_state.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/output/copy_output_request.h"
 #include "cc/proto/gfx_conversions.h"
 #include "cc/proto/property_tree.pb.h"
 #include "cc/proto/scroll_offset.pb.h"
@@ -1317,6 +1318,10 @@ void TransformTree::FromProtobuf(
   }
 }
 
+EffectTree::EffectTree() {}
+
+EffectTree::~EffectTree() {}
+
 float EffectTree::EffectiveOpacity(const EffectNode* node) const {
   return node->data.subtree_hidden ? 0.f : node->data.opacity;
 }
@@ -1406,11 +1411,88 @@ void EffectTree::UpdateEffects(int id) {
   UpdateBackfaceVisibility(node, parent_node);
 }
 
+void EffectTree::AddCopyRequest(int node_id,
+                                std::unique_ptr<CopyOutputRequest> request) {
+  copy_requests_.insert(std::make_pair(node_id, std::move(request)));
+}
+
+void EffectTree::PushCopyRequestsTo(EffectTree* other_tree) {
+  // If other_tree still has copy requests, this means there was a commit
+  // without a draw. This only happens in some edge cases during lost context or
+  // visibility changes, so don't try to handle preserving these output
+  // requests.
+  if (!other_tree->copy_requests_.empty()) {
+    // Destroying these copy requests will abort them.
+    other_tree->copy_requests_.clear();
+  }
+
+  if (copy_requests_.empty())
+    return;
+
+  for (auto& request : copy_requests_) {
+    other_tree->copy_requests_.insert(
+        std::make_pair(request.first, std::move(request.second)));
+  }
+  copy_requests_.clear();
+
+  // Property trees need to get rebuilt since effect nodes (and render surfaces)
+  // that were created only for the copy requests we just pushed are no longer
+  // needed.
+  if (property_trees()->is_main_thread)
+    property_trees()->needs_rebuild = true;
+}
+
+void EffectTree::TakeCopyRequestsAndTransformToSurface(
+    int node_id,
+    std::vector<std::unique_ptr<CopyOutputRequest>>* requests) {
+  EffectNode* effect_node = Node(node_id);
+  DCHECK(effect_node->data.has_render_surface);
+  DCHECK(effect_node->data.has_copy_request);
+
+  auto range = copy_requests_.equal_range(node_id);
+  for (auto it = range.first; it != range.second; ++it)
+    requests->push_back(std::move(it->second));
+  copy_requests_.erase(range.first, range.second);
+
+  for (auto& it : *requests) {
+    if (!it->has_area())
+      continue;
+
+    // The area needs to be transformed from the space of content that draws to
+    // the surface to the space of the surface itself.
+    int destination_id = effect_node->data.transform_id;
+    int source_id;
+    if (effect_node->parent_id != -1) {
+      // For non-root surfaces, transform only by sub-layer scale.
+      source_id = destination_id;
+    } else {
+      // The root surface doesn't have the notion of sub-layer scale, but
+      // instead has a similar notion of transforming from the space of the root
+      // layer to the space of the screen.
+      DCHECK_EQ(0, destination_id);
+      source_id = 1;
+    }
+    gfx::Transform transform;
+    property_trees()
+        ->transform_tree.ComputeTransformWithDestinationSublayerScale(
+            source_id, destination_id, &transform);
+    it->set_area(MathUtil::MapEnclosingClippedRect(transform, it->area()));
+  }
+}
+
+bool EffectTree::HasCopyRequests() const {
+  return !copy_requests_.empty();
+}
+
 void EffectTree::ClearCopyRequests() {
   for (auto& node : nodes()) {
     node.data.num_copy_requests_in_subtree = 0;
     node.data.has_copy_request = false;
   }
+
+  // Any copy requests that are still left will be aborted (sending an empty
+  // result) on destruction.
+  copy_requests_.clear();
   set_needs_update(true);
 }
 
@@ -1475,6 +1557,13 @@ void ClipTree::FromProtobuf(
   DCHECK_EQ(proto.property_type(), proto::PropertyTree::Clip);
 
   PropertyTree::FromProtobuf(proto, node_id_to_index_map);
+}
+
+EffectTree& EffectTree::operator=(const EffectTree& from) {
+  PropertyTree::operator=(from);
+  // copy_requests_ are omitted here, since these need to be moved rather
+  // than copied or assigned.
+  return *this;
 }
 
 bool EffectTree::operator==(const EffectTree& other) const {

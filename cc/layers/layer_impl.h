@@ -153,13 +153,6 @@ class CC_EXPORT LayerImpl {
   // For compatibility with Layer.
   bool has_render_surface() const { return !!render_surface(); }
 
-  void PassCopyRequests(
-      std::vector<std::unique_ptr<CopyOutputRequest>>* requests);
-  // Can only be called when the layer has a copy request.
-  void TakeCopyRequestsAndTransformToTarget(
-      std::vector<std::unique_ptr<CopyOutputRequest>>* request);
-  bool HasCopyRequest() const { return !copy_requests_.empty(); }
-
   void SetMaskLayer(std::unique_ptr<LayerImpl> mask_layer);
   LayerImpl* mask_layer() { return mask_layer_; }
   const LayerImpl* mask_layer() const { return mask_layer_; }
@@ -638,8 +631,6 @@ class CC_EXPORT LayerImpl {
   // Denotes an area that is damaged and needs redraw. This is in the layer's
   // space.
   gfx::Rect damage_rect_;
-
-  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests_;
 
   // Group of properties that need to be computed based on the layer tree
   // hierarchy before layers can be drawn.

@@ -139,17 +139,7 @@ class CC_EXPORT LayerTreeImpl {
   std::unique_ptr<OwnedLayerImplList> DetachLayers();
   void ClearLayers();
 
-  void SetPropertyTrees(const PropertyTrees& property_trees) {
-    property_trees_ = property_trees;
-    property_trees_.is_main_thread = false;
-    property_trees_.is_active = IsActiveTree();
-    property_trees_.transform_tree.set_source_to_parent_updates_allowed(false);
-    // The value of some effect node properties (like is_drawn) depends on
-    // whether we are on the active tree or not. So, we need to update the
-    // effect tree.
-    if (IsActiveTree())
-      property_trees_.effect_tree.set_needs_update(true);
-  }
+  void SetPropertyTrees(PropertyTrees* property_trees);
   PropertyTrees* property_trees() { return &property_trees_; }
 
   void UpdatePropertyTreesForBoundsDelta();
@@ -392,10 +382,6 @@ class CC_EXPORT LayerTreeImpl {
   void RegisterScrollLayer(LayerImpl* layer);
   void UnregisterScrollLayer(LayerImpl* layer);
 
-  void AddLayerWithCopyOutputRequest(LayerImpl* layer);
-  void RemoveLayerWithCopyOutputRequest(LayerImpl* layer);
-  const std::vector<LayerImpl*>& LayersWithCopyOutputRequest() const;
-
   void AddSurfaceLayer(LayerImpl* layer);
   void RemoveSurfaceLayer(LayerImpl* layer);
   const std::vector<LayerImpl*>& SurfaceLayers() const {
@@ -546,7 +532,6 @@ class CC_EXPORT LayerTreeImpl {
   std::multimap<int, int> scrollbar_map_;
 
   std::vector<PictureLayerImpl*> picture_layers_;
-  std::vector<LayerImpl*> layers_with_copy_output_request_;
   std::vector<LayerImpl*> surface_layers_;
 
   // List of visible layers for the most recently prepared frame.

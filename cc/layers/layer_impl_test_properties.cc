@@ -4,6 +4,8 @@
 
 #include "cc/layers/layer_impl_test_properties.h"
 
+#include "cc/output/copy_output_request.h"
+
 namespace cc {
 
 LayerImplTestProperties::LayerImplTestProperties()

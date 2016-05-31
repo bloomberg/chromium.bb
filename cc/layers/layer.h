@@ -106,6 +106,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return !copy_requests_.empty();
   }
 
+  void TakeCopyRequests(
+      std::vector<std::unique_ptr<CopyOutputRequest>>* requests);
+
   virtual void SetBackgroundColor(SkColor background_color);
   SkColor background_color() const { return background_color_; }
   void SetSafeOpaqueBackgroundColor(SkColor background_color);

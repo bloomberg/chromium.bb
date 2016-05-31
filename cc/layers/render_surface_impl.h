@@ -142,6 +142,8 @@ class CC_EXPORT RenderSurfaceImpl {
   bool HasReplica() const;
   const LayerImpl* ReplicaLayer() const;
 
+  bool HasCopyRequest() const;
+
   void ResetPropertyChangedFlag() { surface_property_changed_ = false; }
   bool SurfacePropertyChanged() const;
   bool SurfacePropertyChangedOnlyFromDescendant() const;

@@ -1207,29 +1207,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
         ->property_trees()
         ->scroll_tree.SetScrollOffsetClobberActiveValue(layer->id());
 
-  {
-    TRACE_EVENT0("cc", "Layer::PushPropertiesTo::CopyOutputRequests");
-    // Wrap the copy_requests_ in a PostTask to the main thread.
-    std::vector<std::unique_ptr<CopyOutputRequest>> main_thread_copy_requests;
-    for (auto it = copy_requests_.begin(); it != copy_requests_.end(); ++it) {
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
-          layer_tree_host()->task_runner_provider()->MainThreadTaskRunner();
-      std::unique_ptr<CopyOutputRequest> original_request = std::move(*it);
-      const CopyOutputRequest& original_request_ref = *original_request;
-      std::unique_ptr<CopyOutputRequest> main_thread_request =
-          CopyOutputRequest::CreateRelayRequest(
-              original_request_ref,
-              base::Bind(&PostCopyCallbackToMainThread, main_thread_task_runner,
-                         base::Passed(&original_request)));
-      main_thread_copy_requests.push_back(std::move(main_thread_request));
-    }
-    if (!copy_requests_.empty() && layer_tree_host_)
-      layer_tree_host_->property_trees()->needs_rebuild = true;
-
-    copy_requests_.clear();
-    layer->PassCopyRequests(&main_thread_copy_requests);
-  }
-
   // If the main thread commits multiple times before the impl thread actually
   // draws, then damage tracking will become incorrect if we simply clobber the
   // update_rect here. The LayerImpl's update_rect needs to accumulate (i.e.
@@ -1244,6 +1221,28 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   update_rect_ = gfx::Rect();
 
   layer_tree_host()->RemoveLayerShouldPushProperties(this);
+}
+
+void Layer::TakeCopyRequests(
+    std::vector<std::unique_ptr<CopyOutputRequest>>* requests) {
+  for (auto& it : copy_requests_) {
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
+        layer_tree_host()->task_runner_provider()->MainThreadTaskRunner();
+    std::unique_ptr<CopyOutputRequest> original_request = std::move(it);
+    const CopyOutputRequest& original_request_ref = *original_request;
+    std::unique_ptr<CopyOutputRequest> main_thread_request =
+        CopyOutputRequest::CreateRelayRequest(
+            original_request_ref,
+            base::Bind(&PostCopyCallbackToMainThread, main_thread_task_runner,
+                       base::Passed(&original_request)));
+    if (main_thread_request->has_area()) {
+      main_thread_request->set_area(gfx::IntersectRects(
+          main_thread_request->area(), gfx::Rect(bounds())));
+    }
+    requests->push_back(std::move(main_thread_request));
+  }
+
+  copy_requests_.clear();
 }
 
 void Layer::SetTypeForProtoSerialization(proto::LayerNode* proto) const {

@@ -209,10 +209,8 @@ void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
 void EmptyCopyOutputCallback(std::unique_ptr<CopyOutputResult> result) {}
 
 void LayerTestCommon::LayerImplTest::RequestCopyOfOutput() {
-  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
-  copy_requests.push_back(
+  root_layer()->test_properties()->copy_requests.push_back(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
-  root_layer()->PassCopyRequests(&copy_requests);
 }
 
 }  // namespace cc

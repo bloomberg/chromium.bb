@@ -6,6 +6,7 @@
 #define CC_LAYERS_LAYER_IMPL_TEST_PROPERTIES_H_
 
 #include <set>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "cc/layers/layer_position_constraint.h"
@@ -13,6 +14,7 @@
 
 namespace cc {
 
+class CopyOutputRequest;
 class LayerImpl;
 
 struct CC_EXPORT LayerImplTestProperties {
@@ -32,6 +34,7 @@ struct CC_EXPORT LayerImplTestProperties {
   std::unique_ptr<std::set<LayerImpl*>> scroll_children;
   LayerImpl* clip_parent;
   std::unique_ptr<std::set<LayerImpl*>> clip_children;
+  std::vector<std::unique_ptr<CopyOutputRequest>> copy_requests;
 };
 
 }  // namespace cc

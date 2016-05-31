@@ -129,6 +129,13 @@ const LayerImpl* RenderSurfaceImpl::ReplicaLayer() const {
   return owning_layer_->replica_layer();
 }
 
+bool RenderSurfaceImpl::HasCopyRequest() const {
+  return owning_layer_->layer_tree_impl()
+      ->property_trees()
+      ->effect_tree.Node(EffectTreeIndex())
+      ->data.has_copy_request;
+}
+
 int RenderSurfaceImpl::TransformTreeIndex() const {
   return owning_layer_->transform_tree_index();
 }
@@ -162,8 +169,7 @@ void RenderSurfaceImpl::SetContentRectForTesting(const gfx::Rect& rect) {
 }
 
 gfx::Rect RenderSurfaceImpl::CalculateClippedAccumulatedContentRect() {
-  if (owning_layer_->replica_layer() || owning_layer_->HasCopyRequest() ||
-      !is_clipped())
+  if (owning_layer_->replica_layer() || HasCopyRequest() || !is_clipped())
     return accumulated_content_rect();
 
   if (accumulated_content_rect().IsEmpty())

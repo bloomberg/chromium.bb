@@ -214,10 +214,10 @@ class OcclusionTrackerTest : public testing::Test {
   }
 
   void AddCopyRequest(LayerImpl* layer) {
-    std::vector<std::unique_ptr<CopyOutputRequest>> requests;
-    requests.push_back(CopyOutputRequest::CreateBitmapRequest(base::Bind(
-        &OcclusionTrackerTest::CopyOutputCallback, base::Unretained(this))));
-    layer->PassCopyRequests(&requests);
+    layer->test_properties()->copy_requests.push_back(
+        CopyOutputRequest::CreateBitmapRequest(
+            base::Bind(&OcclusionTrackerTest::CopyOutputCallback,
+                       base::Unretained(this))));
   }
 
   void CalcDrawEtc(TestContentLayerImpl* root) {

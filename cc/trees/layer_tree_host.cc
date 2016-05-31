@@ -476,7 +476,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
       sync_tree->MoveChangeTrackingToLayers();
   }
   // Setting property trees must happen before pushing the page scale.
-  sync_tree->SetPropertyTrees(property_trees_);
+  sync_tree->SetPropertyTrees(&property_trees_);
 
   sync_tree->PushPageScaleFromMainThread(
       page_scale_factor_, min_page_scale_factor_, max_page_scale_factor_);

@@ -36,6 +36,7 @@ class TransformTreeData;
 class TreeNode;
 }
 
+class CopyOutputRequest;
 class LayerTreeImpl;
 class RenderSurfaceImpl;
 class ScrollState;
@@ -570,6 +571,10 @@ class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {
 
 class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
  public:
+  EffectTree();
+  ~EffectTree();
+
+  EffectTree& operator=(const EffectTree& from);
   bool operator==(const EffectTree& other) const;
 
   float EffectiveOpacity(const EffectNode* node) const;
@@ -578,6 +583,12 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 
   void UpdateEffectChanged(EffectNode* node, EffectNode* parent_node);
 
+  void AddCopyRequest(int node_id, std::unique_ptr<CopyOutputRequest> request);
+  void PushCopyRequestsTo(EffectTree* other_tree);
+  void TakeCopyRequestsAndTransformToSurface(
+      int node_id,
+      std::vector<std::unique_ptr<CopyOutputRequest>>* requests);
+  bool HasCopyRequests() const;
   void ClearCopyRequests();
 
   bool ContributesToDrawnSurface(int id);
@@ -592,6 +603,10 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   void UpdateOpacities(EffectNode* node, EffectNode* parent_node);
   void UpdateIsDrawn(EffectNode* node, EffectNode* parent_node);
   void UpdateBackfaceVisibility(EffectNode* node, EffectNode* parent_node);
+
+  // Stores copy requests, keyed by node id.
+  std::unordered_multimap<int, std::unique_ptr<CopyOutputRequest>>
+      copy_requests_;
 };
 
 class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
