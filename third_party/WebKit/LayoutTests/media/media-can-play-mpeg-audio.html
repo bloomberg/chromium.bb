@@ -1,29 +1,18 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script>
-            function start()
-            {
-                audio = document.getElementsByTagName('audio')[0];
+<title>Test HTMLMediaElement's "canPlayType" method with multiple audio mpeg MIME types.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<audio></audio>
+<script>
+test(function() {
+    var audio = document.querySelector("audio");
+    // Currently no platform supports the below formats.
+    assert_equals(audio.canPlayType("audio/x-mpeg"), "");
+    assert_equals(audio.canPlayType("audio/x-mp3"), "");
+    assert_equals(audio.canPlayType("audio/mp3"), "");
+    assert_equals(audio.canPlayType("audio/mpeg"), "");
 
-                testExpected("audio.canPlayType('audio/x-mpeg')", "maybe");
-                testExpected("audio.canPlayType('audio/x-mp3')", "maybe");
-                testExpected("audio.canPlayType('audio/mp3')", "maybe");
-                testExpected("audio.canPlayType('audio/mpeg')", "maybe");
-
-                testExpected("audio.canPlayType('audio/mp4')", "maybe");
-                testExpected("audio.canPlayType('audio/aac')", "maybe");
-
-                endTest();
-            }
-        </script>
-    </head>
-    <body onload="start()">
-        <audio controls></audio>
-        <p>Test HTMLMediaElement <em>canPlayType()</em> method with multiple audio mpeg MIME types.</p>
-        <p>These tests may be expected to fail if the WebKit port does not support the format.</p>
-    </body>
-</html>
+    assert_equals(audio.canPlayType("audio/mp4"), "");
+    assert_equals(audio.canPlayType("audio/aac"), "");
+});
+</script>

@@ -1,34 +1,19 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src="video-test.js"></script>
-        <script>
-            function test()
-            {
-                testExpected("mediaElement.canPlayType('APPLICATION/octet-stream')", "");
-                testExpected("mediaElement.canPlayType('application/octet-stream;codecs=theora')", "");
-                testExpected("mediaElement.canPlayType('application/octet-stream;codecs=mp4')", "");
-             }
+<title>Test HTMLMediaElement's "canPlayType" method with "application/octet-stream".</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+function check_media_element_canplaytype(elementName) {
+    test(function() {
+    	var mediaElement = document.createElement(elementName);
+        // These tests should always pass as no platform
+        // should support "application/octet-stream".
+        assert_equals(mediaElement.canPlayType("APPLICATION/octet-stream"), "");
+        assert_equals(mediaElement.canPlayType("application/octet-stream;codecs=theora"), "");
+        assert_equals(mediaElement.canPlayType("application/octet-stream;codecs=mp4"), "");
+    }, "check \"canPlayType\" method for " + elementName);
+}
 
-            function start()
-            {
-                consoleWrite("<em>++ Test with &lt;video&gt; element.</em>");
-                mediaElement = document.getElementsByTagName('video')[0];
-                test();
-
-                consoleWrite("<br><em>++ Test with &lt;audio&gt; element.</em>");
-                mediaElement = new Audio();
-                test();
-
-                endTest();
-            }
-        </script>
-    </head>
-    <body onload="start()">
-        <video controls></video>
-        <p>Test HTMLMediaElement <em>canPlayType()</em> method with "application/octet-stream".</p>
-        <p>These tests should always pass as no WebKit port should support "application/octet-stream".</p>
-    </body>
-</html>
+check_media_element_canplaytype("audio");
+check_media_element_canplaytype("video");
+</script>

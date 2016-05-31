@@ -1,26 +1,16 @@
-<html>
-    <head>
-        <style>
-            video {display:none; background-color: yellow; width: 320px; height: 240px;}
-        </style>
-    </head>
-    <body onload="start()">
-
-        <video controls ></video>
-
-        <p>Test HTMLMediaElement to be sure that the video is getting loaded even if the element
-        is hidden.</p>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script>
-            function start()
-            {
-                video = document.getElementsByTagName('video')[0];
-                waitForEvent('durationchange', function() { endTest(); });
-                video.src = findMediaFile("video", "content/test");
-            }
-        </script>
-    </body>
-</html>
+<!DOCTYPE html>
+<title>Test HTMLMediaElement to be sure that the video is getting loaded even if the element is hidden.</title>
+<style>
+    video { display: none; }
+</style>
+<video></video>
+<script src="media-file.js"></script>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    video.ondurationchange = t.step_func_done();
+    video.src = findMediaFile("video", "content/test");
+});
+</script>

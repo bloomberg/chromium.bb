@@ -1,26 +1,15 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src="video-test.js"></script>
-        <script>
-            function start()
-            {
-                video = document.getElementsByTagName('video')[0];
-
-                testExpected("video.canPlayType('video/x-m4v')", "maybe");
-                testExpected("video.canPlayType('video/mp4')", "maybe");
-                testExpected("video.canPlayType('video/mp4; Codecs=\"avc1.4D400C\"')", "probably");
-                testExpected("video.canPlayType('        Video/MP4 ; CODECS=\"mp4v.20.8, mp4a.40.2\"')", "probably");
-
-                endTest();
-            }
-        </script>
-    </head>
-    <body onload="start()">
-        <video controls></video>
-        <p>Test HTMLMediaElement <em>canPlayType()</em> method with multiple video mpeg4 MIME types.</p>
-        <p>These tests may be expected to fail if the WebKit port does not support the format.</p>
-    </body>
-</html>
+<title>Test HTMLMediaElement's "canPlayType" method with multiple video mpeg4 MIME types.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<video></video>
+<script>
+test(function() {
+    var video = document.querySelector("video");
+    // Currently no platform supports the below formats.
+    assert_equals(video.canPlayType("video/x-m4v"), "");
+    assert_equals(video.canPlayType("video/mp4"), "");
+    assert_equals(video.canPlayType("video/mp4; Codecs=\"avc1.4D400C\""), "");
+    assert_equals(video.canPlayType("Video/MP4; CODECS=\"mp4v.20.8, mp4a.40.2\""), "");
+});
+</script>
