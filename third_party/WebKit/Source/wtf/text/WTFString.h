@@ -30,7 +30,6 @@
 #include "wtf/WTFExport.h"
 #include "wtf/text/ASCIIFastPath.h"
 #include "wtf/text/StringImpl.h"
-#include "wtf/text/StringView.h"
 #include <algorithm>
 #include <iosfwd>
 
@@ -342,9 +341,6 @@ public:
     String substring(unsigned pos, unsigned len = UINT_MAX) const;
     String left(unsigned len) const { return substring(0, len); }
     String right(unsigned len) const { return substring(length() - len, len); }
-
-    StringView createView() const { return StringView(impl()); }
-    StringView createView(unsigned offset, unsigned length) const { return StringView(impl(), offset, length); }
 
     // Returns a lowercase/uppercase version of the string
     String lower() const;

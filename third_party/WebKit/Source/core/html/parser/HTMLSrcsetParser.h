@@ -34,6 +34,7 @@
 
 #include "core/CoreExport.h"
 #include "wtf/Allocator.h"
+#include "wtf/text/StringView.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -86,21 +87,22 @@ public:
     }
 
     ImageCandidate(const String& source, unsigned start, unsigned length, const DescriptorParsingResult& result, OriginAttribute originAttribute)
-        : m_string(source.createView(start, length))
-        , m_density(result.hasDensity()?result.density():UninitializedDescriptor)
-        , m_resourceWidth(result.hasWidth()?result.getResourceWidth():UninitializedDescriptor)
+        : m_source(source)
+        , m_string(source, start, length)
+        , m_density(result.hasDensity() ? result.density() : UninitializedDescriptor)
+        , m_resourceWidth(result.hasWidth() ? result.getResourceWidth() : UninitializedDescriptor)
         , m_originAttribute(originAttribute)
     {
     }
 
     String toString() const
     {
-        return String(m_string.toString());
+        return m_string.toString();
     }
 
     AtomicString url() const
     {
-        return AtomicString(m_string.toString());
+        return AtomicString(toString());
     }
 
     void setDensity(float factor)
@@ -129,6 +131,7 @@ public:
     }
 
 private:
+    String m_source; // Keep the StringView buffer alive.
     StringView m_string;
     float m_density;
     int m_resourceWidth;

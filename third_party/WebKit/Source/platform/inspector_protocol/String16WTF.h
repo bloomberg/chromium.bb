@@ -73,7 +73,7 @@ private:
 class String16Builder {
 public:
     String16Builder() { }
-    void append(const String16& str) { m_impl.append(str); };
+    void append(const String16& str) { m_impl.append(StringView(str)); };
     void append(UChar c) { m_impl.append(c); };
     void append(LChar c) { m_impl.append(c); };
     void append(char c) { m_impl.append(c); };

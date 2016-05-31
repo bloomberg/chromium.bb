@@ -75,12 +75,15 @@ String UnionTypesTest::doubleOrStringArrayArg(HeapVector<DoubleOrString>& array)
     StringBuilder builder;
     for (DoubleOrString& doubleOrString : array) {
         ASSERT(!doubleOrString.isNull());
-        if (doubleOrString.isDouble())
-            builder.append("double: " + String::numberToStringECMAScript(doubleOrString.getAsDouble()));
-        else if (doubleOrString.isString())
-            builder.append("string: " + doubleOrString.getAsString());
-        else
+        if (doubleOrString.isDouble()) {
+            builder.append("double: ");
+            builder.append(String::numberToStringECMAScript(doubleOrString.getAsDouble()));
+        } else if (doubleOrString.isString()) {
+            builder.append("string: ");
+            builder.append(doubleOrString.getAsString());
+        } else {
             ASSERT_NOT_REACHED();
+        }
         builder.append(", ");
     }
     return builder.substring(0, builder.length() - 2);

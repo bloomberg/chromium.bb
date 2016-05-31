@@ -868,7 +868,7 @@ static float maxWordFragmentWidth(LayoutText* layoutText,
         return 0;
 
     Vector<size_t, 8> hyphenLocations = hyphenation.hyphenLocations(
-        layoutText->text().createView(wordOffset, wordLength));
+        StringView(layoutText->text(), wordOffset, wordLength));
     if (hyphenLocations.isEmpty())
         return 0;
 

@@ -9,13 +9,13 @@ namespace blink {
 size_t MockHyphenation::lastHyphenLocation(const StringView& text,
     size_t beforeIndex) const
 {
-    RefPtr<StringImpl> str = text.toString();
-    if (str->endsWithIgnoringASCIICase("phenation", 9)) {
-        if (beforeIndex - (str->length() - 9) > 4)
-            return 4 + (str->length() - 9);
-        if (str->endsWithIgnoringASCIICase("hyphenation", 11)
-            && beforeIndex - (str->length() - 11) > 2) {
-            return 2 + (str->length() - 11);
+    String str = text.toString();
+    if (str.endsWith("phenation", TextCaseASCIIInsensitive)) {
+        if (beforeIndex - (str.length() - 9) > 4)
+            return 4 + (str.length() - 9);
+        if (str.endsWith("hyphenation", TextCaseASCIIInsensitive)
+            && beforeIndex - (str.length() - 11) > 2) {
+            return 2 + (str.length() - 11);
         }
     }
     return 0;
