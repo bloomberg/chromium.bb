@@ -52,7 +52,7 @@ namespace blink {
 namespace {
 
 // The target to use when binding a texture to a Chromium image.
-GLenum imageTextureTarget()
+GLenum imageCHROMIUMTextureTarget()
 {
 #if OS(MACOSX)
     return GC3D_TEXTURE_RECTANGLE_ARB;
@@ -62,10 +62,10 @@ GLenum imageTextureTarget()
 }
 
 // The target to use when preparing a mailbox texture.
-GLenum drawingBufferTextureTarget(bool allowImageChromium)
+GLenum drawingBufferTextureTarget()
 {
-    if (RuntimeEnabledFeatures::webGLImageChromiumEnabled() && allowImageChromium)
-        return imageTextureTarget();
+    if (RuntimeEnabledFeatures::webGLImageChromiumEnabled())
+        return imageCHROMIUMTextureTarget();
     return GL_TEXTURE_2D;
 }
 
@@ -123,9 +123,12 @@ public:
 
     void ProduceTextureDirectCHROMIUM(GLuint texture, GLenum target, const GLbyte* mailbox) override
     {
-        ASSERT_EQ(target, drawingBufferTextureTarget(m_allowImageChromium));
-        ASSERT_TRUE(m_textureSizes.contains(texture));
-        m_mostRecentlyProducedSize = m_textureSizes.get(texture);
+        ASSERT_EQ(target, drawingBufferTextureTarget());
+
+        if (!m_createImageChromiumFail) {
+            ASSERT_TRUE(m_textureSizes.contains(texture));
+            m_mostRecentlyProducedSize = m_textureSizes.get(texture);
+        }
     }
 
     void TexImage2D(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels) override
@@ -137,8 +140,8 @@ public:
 
     GLuint CreateGpuMemoryBufferImageCHROMIUM(GLsizei width, GLsizei height, GLenum internalformat, GLenum usage) override
     {
-        if (!m_allowImageChromium)
-            return false;
+        if (m_createImageChromiumFail)
+            return 0;
         m_imageSizes.set(m_currentImageId, IntSize(width, height));
         return m_currentImageId++;
     }
@@ -156,7 +159,7 @@ public:
     MOCK_METHOD1(BindTexImage2DMock, void(GLint imageId));
     void BindTexImage2DCHROMIUM(GLenum target, GLint imageId)
     {
-        if (target == imageTextureTarget()) {
+        if (target == imageCHROMIUMTextureTarget()) {
             m_textureSizes.set(m_boundTexture, m_imageSizes.find(imageId)->value);
             m_imageToTextureMap.set(imageId, m_boundTexture);
             BindTexImage2DMock(imageId);
@@ -166,7 +169,7 @@ public:
     MOCK_METHOD1(ReleaseTexImage2DMock, void(GLint imageId));
     void ReleaseTexImage2DCHROMIUM(GLenum target, GLint imageId)
     {
-        if (target == imageTextureTarget()) {
+        if (target == imageCHROMIUMTextureTarget()) {
             m_imageSizes.set(m_currentImageId, IntSize());
             m_imageToTextureMap.remove(imageId);
             ReleaseTexImage2DMock(imageId);
@@ -190,9 +193,8 @@ public:
     GLuint mostRecentlyWaitedSyncToken() const { return m_mostRecentlyWaitedSyncToken; }
     GLuint nextImageIdToBeCreated() const { return m_currentImageId; }
     IntSize mostRecentlyProducedSize() const { return m_mostRecentlyProducedSize; }
-    bool allowImageChromium() const { return m_allowImageChromium; }
 
-    void setAllowImageChromium(bool allow) { m_allowImageChromium = allow; }
+    void setCreateImageChromiumFail(bool fail) { m_createImageChromiumFail = fail; }
 
 private:
     GLuint m_boundTexture = 0;
@@ -200,7 +202,7 @@ private:
     GLuint m_mostRecentlyWaitedSyncToken = 0;
     GLbyte m_currentMailboxByte = 0;
     IntSize m_mostRecentlyProducedSize;
-    bool m_allowImageChromium = true;
+    bool m_createImageChromiumFail = false;
     GLuint m_currentImageId = 1;
     HashMap<GLuint, IntSize> m_textureSizes;
     HashMap<GLuint, IntSize> m_imageSizes;
@@ -579,6 +581,44 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     testing::Mock::VerifyAndClearExpectations(m_gl);
 }
 
+TEST_F(DrawingBufferImageChromiumTest, allocationFailure)
+{
+    WebExternalTextureMailbox mailboxes[3];
+
+    // Request a mailbox. An image should already be created. Everything works
+    // as expected.
+    EXPECT_CALL(*m_gl, BindTexImage2DMock(_)).Times(1);
+    IntSize initialSize(initialWidth, initialHeight);
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailboxes[0], 0));
+    EXPECT_TRUE(mailboxes[0].allowOverlay);
+    testing::Mock::VerifyAndClearExpectations(m_gl);
+
+    // Force image CHROMIUM creation failure. Request another mailbox. It should
+    // still be provided, but this time with allowOverlay = false.
+    m_gl->setCreateImageChromiumFail(true);
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailboxes[1], 0));
+    EXPECT_FALSE(mailboxes[1].allowOverlay);
+
+    // Check that if image CHROMIUM starts working again, mailboxes are
+    // correctly created with allowOverlay = true.
+    EXPECT_CALL(*m_gl, BindTexImage2DMock(_)).Times(1);
+    m_gl->setCreateImageChromiumFail(false);
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailboxes[2], 0));
+    EXPECT_TRUE(mailboxes[2].allowOverlay);
+    testing::Mock::VerifyAndClearExpectations(m_gl);
+
+    for (int i = 0; i < 3; ++i)
+        m_drawingBuffer->mailboxReleased(mailboxes[i], false);
+
+    EXPECT_CALL(*m_gl, DestroyImageMock(_)).Times(3);
+    EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(_)).Times(3);
+    m_drawingBuffer->beginDestruction();
+    testing::Mock::VerifyAndClearExpectations(m_gl);
+}
+
 class DepthStencilTrackingGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
 public:
     void FramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) override
@@ -737,39 +777,6 @@ TEST_F(DrawingBufferTest, verifySetIsHiddenProperlyAffectsMailboxes)
     memcpy(&waitSyncToken, mailbox.syncToken, sizeof(waitSyncToken));
     EXPECT_EQ(waitSyncToken, m_gl->mostRecentlyWaitedSyncToken());
 
-    m_drawingBuffer->beginDestruction();
-}
-
-class DrawingBufferImageChromiumFallbackTest : public DrawingBufferTest {
-protected:
-    void SetUp() override
-    {
-        OwnPtr<GLES2InterfaceForTests> gl = adoptPtr(new GLES2InterfaceForTests);
-        gl->setAllowImageChromium(false);
-        m_gl = gl.get();
-        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(std::move(gl)));
-        RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(true);
-        m_drawingBuffer = DrawingBufferForTests::create(std::move(provider),
-            IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
-    }
-
-    void TearDown() override
-    {
-        RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(false);
-    }
-};
-
-TEST_F(DrawingBufferImageChromiumFallbackTest, verifyImageChromiumFallback)
-{
-    WebExternalTextureMailbox mailbox;
-
-    IntSize initialSize(initialWidth, initialHeight);
-    m_drawingBuffer->markContentsChanged();
-    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
-    EXPECT_EQ(initialSize, m_gl->mostRecentlyProducedSize());
-    EXPECT_FALSE(mailbox.allowOverlay);
-
-    m_drawingBuffer->mailboxReleased(mailbox, false);
     m_drawingBuffer->beginDestruction();
 }
 

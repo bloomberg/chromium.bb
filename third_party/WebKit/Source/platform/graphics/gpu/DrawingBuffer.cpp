@@ -215,7 +215,7 @@ bool DrawingBuffer::defaultBufferRequiresAlphaChannelToBePreserved()
         return !m_wantAlphaChannel && getMultisampledRenderbufferFormat() == GL_RGBA8_OES;
     }
 
-    return !m_wantAlphaChannel && m_colorBuffer.imageId && contextProvider()->getCapabilities().chromium_image_rgb_emulation;
+    return !m_wantAlphaChannel && RuntimeEnabledFeatures::webGLImageChromiumEnabled() && contextProvider()->getCapabilities().chromium_image_rgb_emulation;
 }
 
 void DrawingBuffer::freeRecycledMailboxes()
@@ -964,18 +964,16 @@ DrawingBuffer::TextureInfo DrawingBuffer::createTextureAndAllocateMemory(const I
     if (!RuntimeEnabledFeatures::webGLImageChromiumEnabled())
         return createDefaultTextureAndAllocateMemory(size);
 
-    // First, try to allocate a CHROMIUM_image. This always has the potential to
-    // fail.
     TextureParameters parameters = chromiumImageTextureParameters();
     GLuint imageId = m_gl->CreateGpuMemoryBufferImageCHROMIUM(size.width(), size.height(), parameters.creationInternalColorFormat, GC3D_SCANOUT_CHROMIUM);
-    if (!imageId)
-        return createDefaultTextureAndAllocateMemory(size);
-
-    GLuint textureId = createColorTexture(parameters);
-    m_gl->BindTexImage2DCHROMIUM(parameters.target, imageId);
     GLint gpuMemoryBufferId = -1;
-    m_gl->GetImageivCHROMIUM(imageId, GC3D_GPU_MEMORY_BUFFER_ID, &gpuMemoryBufferId);
-    DCHECK_NE(-1, gpuMemoryBufferId);
+    GLuint textureId = createColorTexture(parameters);
+
+    if (imageId) {
+        m_gl->BindTexImage2DCHROMIUM(parameters.target, imageId);
+        m_gl->GetImageivCHROMIUM(imageId, GC3D_GPU_MEMORY_BUFFER_ID, &gpuMemoryBufferId);
+        DCHECK_NE(-1, gpuMemoryBufferId);
+    }
 
     TextureInfo info;
     info.textureId = textureId;
@@ -1001,30 +999,31 @@ DrawingBuffer::TextureInfo DrawingBuffer::createDefaultTextureAndAllocateMemory(
 void DrawingBuffer::resizeTextureMemory(TextureInfo* info, const IntSize& size)
 {
     ASSERT(info->textureId);
-    if (info->imageId) {
-        deleteChromiumImageForTexture(info);
-        info->imageId = m_gl->CreateGpuMemoryBufferImageCHROMIUM(size.width(), size.height(), info->parameters.creationInternalColorFormat, GC3D_SCANOUT_CHROMIUM);
-        if (info->imageId) {
-            m_gl->BindTexture(info->parameters.target, info->textureId);
-            m_gl->BindTexImage2DCHROMIUM(info->parameters.target, info->imageId);
-
-            GLint gpuMemoryBufferId = -1;
-            m_gl->GetImageivCHROMIUM(info->imageId, GC3D_GPU_MEMORY_BUFFER_ID, &gpuMemoryBufferId);
-            DCHECK_NE(-1, gpuMemoryBufferId);
-            info->gpuMemoryBufferId = gpuMemoryBufferId;
-
-            clearChromiumImageAlpha(*info);
-            return;
-        }
-
-        // If the desired texture target is different, there's no way to fall back
-        // to a non CHROMIUM_image texture.
-        if (chromiumImageTextureParameters().target != defaultTextureParameters().target)
-            return;
+    if (!RuntimeEnabledFeatures::webGLImageChromiumEnabled()) {
+        m_gl->BindTexture(info->parameters.target, info->textureId);
+        texImage2DResourceSafe(info->parameters.target, 0, info->parameters.creationInternalColorFormat, size.width(), size.height(), 0, info->parameters.colorFormat, GL_UNSIGNED_BYTE);
+        return;
     }
 
-    m_gl->BindTexture(info->parameters.target, info->textureId);
-    texImage2DResourceSafe(info->parameters.target, 0, info->parameters.creationInternalColorFormat, size.width(), size.height(), 0, info->parameters.colorFormat, GL_UNSIGNED_BYTE);
+    deleteChromiumImageForTexture(info);
+    info->imageId = m_gl->CreateGpuMemoryBufferImageCHROMIUM(size.width(), size.height(), info->parameters.creationInternalColorFormat, GC3D_SCANOUT_CHROMIUM);
+    if (info->imageId) {
+        m_gl->BindTexture(info->parameters.target, info->textureId);
+        m_gl->BindTexImage2DCHROMIUM(info->parameters.target, info->imageId);
+
+        GLint gpuMemoryBufferId = -1;
+        m_gl->GetImageivCHROMIUM(info->imageId, GC3D_GPU_MEMORY_BUFFER_ID, &gpuMemoryBufferId);
+        DCHECK_NE(-1, gpuMemoryBufferId);
+        info->gpuMemoryBufferId = gpuMemoryBufferId;
+
+        clearChromiumImageAlpha(*info);
+    } else {
+        info->gpuMemoryBufferId = -1;
+
+        // At this point, the texture still exists, but has no allocated
+        // storage. This is intentional, and mimics the behavior of a texImage2D
+        // failure.
+    }
 }
 
 void DrawingBuffer::attachColorBufferToReadFramebuffer()
@@ -1060,7 +1059,7 @@ GLenum DrawingBuffer::getMultisampledRenderbufferFormat()
     DCHECK(wantExplicitResolve());
     if (m_wantAlphaChannel)
         return GL_RGBA8_OES;
-    if (m_colorBuffer.imageId && contextProvider()->getCapabilities().chromium_image_rgb_emulation)
+    if (RuntimeEnabledFeatures::webGLImageChromiumEnabled() && contextProvider()->getCapabilities().chromium_image_rgb_emulation)
         return GL_RGBA8_OES;
     return GL_RGB8_OES;
 }
