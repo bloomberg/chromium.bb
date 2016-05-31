@@ -14,3 +14,6 @@ WebContentsVideoCaptureDeviceTest.VariableResolution_FixedAspectRatio
 
 # https://crbug.com/604056
 CodecProfiles/RTCVideoDecoderTest.GetVDAErrorCounterForTesting*
+
+# https://crbug.com/615909
+AudioRendererSinkCacheTest.SmokeTest
