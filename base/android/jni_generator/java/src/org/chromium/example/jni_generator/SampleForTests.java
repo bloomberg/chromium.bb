@@ -19,7 +19,7 @@ import java.util.List;
 // This class serves as a reference test for the bindings generator, and as example documentation
 // for how to use the jni generator.
 // The C++ counter-part is sample_for_tests.cc.
-// jni_generator.gyp has a jni_generator_tests target that will:
+// jni_generator/BUILD.gn has a jni_generator_tests target that will:
 //   * Generate a header file for the JNI bindings based on this file.
 //   * Compile sample_for_tests.cc using the generated header file.
 //   * link a native executable to prove the generated header + cc file are self-contained.

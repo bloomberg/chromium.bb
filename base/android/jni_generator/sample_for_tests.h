@@ -23,59 +23,6 @@ namespace android {
 // documentation in SampleForTests.java
 //
 // For C++ to access Java methods:
-// - GYP Build must be configured to generate bindings:
-//  # ...
-//  'targets': [
-//    {
-//      # An example target that will rely on JNI:
-//      'target_name': 'foo',
-//      'type': '<(component)',
-//      # ... normal sources, defines, deps.
-//      #     For each jni generated .java -> .h header file in foo_jni_headers
-//      #     target there will be a single .cc file here that includes it.
-//      #
-//      # Add deps for JNI:
-//      'conditions': [
-//        ['OS == "android"', {
-//          'dependencies': [
-//            'foo_java',
-//            'foo_jni_headers',
-//          ],
-//        }],
-//      ],
-//    },
-//  ],
-//  # ...
-//  # Create targets for JNI:
-//  'conditions': [
-//    ['OS == "android"', {
-//      'targets': [
-//        {
-//          'target_name': 'foo_jni_headers',
-//          'type': 'none',
-//          'sources': [
-//            'java/src/org/chromium/example/jni_generator/SampleForTests.java',
-//          ],
-//          'variables': {
-//            'jni_gen_package': 'foo',
-//          },
-//          'includes': [ '../../../build/jni_generator.gypi' ],
-//        },
-//        {
-//          'target_name': 'foo_java',
-//          'type': 'none',
-//          'dependencies': [
-//            '../../../base/base.gyp:base',
-//          ],
-//          'variables': {
-//            'java_in_dir': 'java',
-//          },
-//          'includes': [ '../../../build/java.gypi' ],
-//        },
-//      ],
-//    }],
-//  ],
-//
 // - GN Build must be configured to generate bindings:
 //  # Add import at top of file:
 //  if (is_android) {
