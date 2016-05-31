@@ -2528,7 +2528,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       print 'git-cl: Added Change-Id to commit message.'
       return new_log_desc
     else:
-      print >> sys.stderr, 'ERROR: Gerrit commit-msg hook not available.'
+      DieWithError('ERROR: Gerrit commit-msg hook not installed.')
 
   def SetCQState(self, new_state):
     """Sets the Commit-Queue label assuming canonical CQ config for Gerrit."""
