@@ -262,6 +262,7 @@ void ChromotingJniRuntime::ConnectToHost(const std::string& username,
   session_ = new ChromotingJniInstance(this, username, auth_token, host_jid,
                                        host_id, host_pubkey, pairing_id,
                                        pairing_secret, capabilities, flags);
+  session_->Connect();
 }
 
 void ChromotingJniRuntime::DisconnectFromHost() {

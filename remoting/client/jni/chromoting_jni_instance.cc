@@ -79,11 +79,6 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
   client_auth_config_.fetch_third_party_token_callback =
       base::Bind(&ChromotingJniInstance::FetchThirdPartyToken,
                  weak_factory_.GetWeakPtr(), host_pubkey);
-
-  // Post a task to start connection
-  jni_runtime_->network_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&ChromotingJniInstance::ConnectToHostOnNetworkThread, this));
 }
 
 ChromotingJniInstance::~ChromotingJniInstance() {
@@ -95,6 +90,16 @@ ChromotingJniInstance::~ChromotingJniInstance() {
   DCHECK(!video_renderer_);
   DCHECK(!client_);
   DCHECK(!signaling_);
+}
+
+void ChromotingJniInstance::Connect() {
+  if (jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
+    ConnectToHostOnNetworkThread();
+  } else {
+    jni_runtime_->network_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromotingJniInstance::ConnectToHostOnNetworkThread, this));
+  }
 }
 
 void ChromotingJniInstance::Disconnect() {
