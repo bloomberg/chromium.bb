@@ -540,7 +540,6 @@ class TestRunner : public WebTestRunner {
   bool IsFramePartOfMainTestWindow(blink::WebFrame*) const;
 
   void CheckResponseMimeType();
-  void CompleteNotifyDone();
 
   // In the Mac code, this is called to trigger the end of a test after the
   // page has finished loading. From here, we can generate the dump for the

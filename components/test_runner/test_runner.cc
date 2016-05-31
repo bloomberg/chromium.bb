@@ -1930,13 +1930,6 @@ class WorkItemBackForward : public TestRunner::WorkItem {
   int distance_;
 };
 
-void TestRunner::NotifyDone() {
-  // Test didn't timeout. Kill the pending callbacks.
-  weak_factory_.InvalidateWeakPtrs();
-
-  CompleteNotifyDone();
-}
-
 void TestRunner::WaitUntilDone() {
   layout_test_runtime_flags_.set_wait_until_done(true);
   OnLayoutTestRuntimeFlagsChanged();
@@ -2723,7 +2716,7 @@ void TestRunner::CheckResponseMimeType() {
   OnLayoutTestRuntimeFlagsChanged();
 }
 
-void TestRunner::CompleteNotifyDone() {
+void TestRunner::NotifyDone() {
   if (layout_test_runtime_flags_.wait_until_done() && !topLoadingFrame() &&
       work_queue_.is_empty())
     delegate_->TestFinished();

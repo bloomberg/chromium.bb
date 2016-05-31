@@ -4,6 +4,9 @@
 # https://crbug.com/611838 - regression when geolocation tests use JS mock.
 http/tests/security/powerfulFeatureRestrictions/geolocation-on-secure-origin-in-insecure-origin.html [ Timeout ]
 
+# https://crbug.com/585284 - Form submissions targeting remote windows don't work.
+http/tests/navigation/form-targets-cross-site-frame.html [ Timeout ]
+
 # https://crbug.com/611154 - DCHECK in NavigatorImpl::DidStartProvisionalLoad.
 http/tests/security/upgrade-insecure-requests/iframe-upgrade.https.html [ Crash ]
 
