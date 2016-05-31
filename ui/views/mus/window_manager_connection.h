@@ -87,6 +87,7 @@ class VIEWS_MUS_EXPORT WindowManagerConnection
   std::unique_ptr<mus::WindowTreeClient> client_;
   // Must be empty on destruction.
   base::ObserverList<PointerWatcher, true> pointer_watchers_;
+  bool created_device_data_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerConnection);
 };

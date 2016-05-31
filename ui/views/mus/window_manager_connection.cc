@@ -102,17 +102,20 @@ WindowManagerConnection::WindowManagerConnection(
     const shell::Identity& identity)
     : connector_(connector),
       identity_(identity),
-      client_(nullptr) {
+      created_device_data_manager_(false) {
   client_.reset(new mus::WindowTreeClient(this, nullptr, nullptr));
   client_->ConnectViaWindowTreeFactory(connector_);
 
   screen_.reset(new ScreenMus(this));
   screen_->Init(connector);
 
-  // TODO(sad): We should have a DeviceDataManager implementation that talks to
-  // a mojo service to learn about the input-devices on the system.
-  // http://crbug.com/601981
-  ui::DeviceDataManager::CreateInstance();
+  if (!ui::DeviceDataManager::HasInstance()) {
+    // TODO(sad): We should have a DeviceDataManager implementation that talks
+    // to a mojo service to learn about the input-devices on the system.
+    // http://crbug.com/601981
+    ui::DeviceDataManager::CreateInstance();
+    created_device_data_manager_ = true;
+  }
 
   ViewsDelegate::GetInstance()->set_native_widget_factory(base::Bind(
       &WindowManagerConnection::CreateNativeWidgetMus,
@@ -124,8 +127,8 @@ WindowManagerConnection::~WindowManagerConnection() {
   // ~WindowTreeClient calls back to us (we're its delegate), destroy it while
   // we are still valid.
   client_.reset();
-
-  ui::DeviceDataManager::DeleteInstance();
+  if (created_device_data_manager_)
+    ui::DeviceDataManager::DeleteInstance();
 }
 
 bool WindowManagerConnection::HasPointerWatcher() {
