@@ -150,7 +150,11 @@ cvox.ChromeVox.typingEcho = 0;
  */
 cvox.ChromeVox.keyEcho = {};
 /**
- * @type {Object<{x:number, y:number}>}
+ * @typedef {{x: number, y: number}}
+ */
+cvox.Point;
+/**
+ * @type {Object<string, cvox.Point>}
  */
 cvox.ChromeVox.position = {};
 /**

@@ -279,4 +279,29 @@ AutomationUtil.isDescendantOf = function(node, ancestor) {
   return testNode === ancestor;
 };
 
+/**
+ * Finds the deepest node containing point. Since the automation tree does not
+ * maintain a containment invariant when considering child node bounding rects
+ * with respect to their parents, the hit test considers all children before
+ * their parents when looking for a matching node.
+ * @param {AutomationNode} node Subtree to search.
+ * @param {cvox.Point} point
+ * @return {AutomationNode}
+ */
+AutomationUtil.hitTest = function(node, point) {
+  var loc = node.location;
+  var child = node.firstChild;
+  while (child) {
+    var hit = AutomationUtil.hitTest(child, point);
+    if (hit)
+      return hit;
+    child = child.nextSibling;
+  }
+
+  if (point.x <= (loc.left + loc.width) && point.x >= loc.left &&
+      point.y <= (loc.top + loc.height) && point.y >= loc.top)
+    return node;
+  return null;
+};
+
 });  // goog.scope

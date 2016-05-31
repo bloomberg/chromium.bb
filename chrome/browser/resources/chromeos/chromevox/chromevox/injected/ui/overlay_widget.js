@@ -36,8 +36,8 @@ cvox.OverlayWidget.prototype.show = function() {
   var hitPoint = cvox.DomUtil.elementToPoint(
       cvox.ChromeVox.navigationManager.getCurrentNode());
   host.style.position = 'absolute';
-  host.style.left = hitPoint.x;
-  host.style.top = hitPoint.y;
+  host.style.left = String(hitPoint.x);
+  host.style.top = String(hitPoint.y);
 
   document.body.appendChild(host);
   cvox.ChromeVox.navigationManager.updateSelToArbitraryNode(host);

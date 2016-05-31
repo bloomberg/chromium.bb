@@ -209,3 +209,25 @@ TEST_F('AutomationUtilE2ETest', 'VisitContainer', function() {
                  AutomationUtil.findNextNode(forward, 'backward', pred));
   });
 });
+
+TEST_F('AutomationUtilE2ETest', 'HitTest', function() {
+  this.runWithLoadedTree(headingDoc, function(r) {
+    // Gets the center point of a rect.
+    function getCP(node) {
+      var loc = node.location;
+      return {x: loc.left + loc.width/2, y: loc.top + loc.height/2};
+    }
+    var h1, h2, a;
+    [h1, h2, a] = r.findAll({role: 'inlineTextBox'});
+
+    assertEquals(h1, AutomationUtil.hitTest(r, getCP(h1)));
+    assertEquals(h1, AutomationUtil.hitTest(r, getCP(h1.parent)));
+    assertEquals(h1.parent.parent,
+                 AutomationUtil.hitTest(r, getCP(h1.parent.parent)));
+
+    assertEquals(a, AutomationUtil.hitTest(r, getCP(a)));
+    assertEquals(a, AutomationUtil.hitTest(r, getCP(a.parent)));
+    assertEquals(a.parent.parent,
+                 AutomationUtil.hitTest(r, getCP(a.parent.parent)));
+  });
+});

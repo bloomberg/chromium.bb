@@ -86,6 +86,10 @@ cvox.ChromeVoxBackground.setPref = function(pref, value, announce) {
     }
   } else if (pref == 'brailleCaptions') {
     cvox.BrailleCaptionsBackground.setActive(!!value);
+  } else if (pref == 'position') {
+    cvox.ChromeVox.position =
+        /** @type {Object<string, cvox.Point>} */(JSON.parse(
+            /** @type {string} */(value)));
   }
   window['prefs'].setPref(pref, value);
   cvox.ChromeVoxBackground.readPrefs();

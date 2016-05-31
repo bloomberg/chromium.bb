@@ -239,8 +239,20 @@ DesktopAutomationHandler.prototype = {
           ChromeVoxState.instance.currentRange.start.node.root == focus.root)
         return;
 
+      var o = new Output();
+      if (focus.role == RoleType.rootWebArea) {
+        // Restore to previous position.
+        var url = focus.docUrl;
+        url = url.substring(0, url.indexOf('#')) || url;
+        var pos = cvox.ChromeVox.position[url];
+        if (pos) {
+          focus = AutomationUtil.hitTest(focus.root, pos) || focus;
+          if (focus != focus.root)
+            o.format('$name', focus.root);
+        }
+      }
       ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(focus));
-      new Output().withRichSpeechAndBraille(
+      o.withRichSpeechAndBraille(
           ChromeVoxState.instance.currentRange, null, evt.type).go();
     }.bind(this));
   },
@@ -331,7 +343,7 @@ DesktopAutomationHandler.prototype = {
       return;
 
     var currentRange = ChromeVoxState.instance.currentRange;
-    if (currentRange)
+    if (currentRange && currentRange.isValid())
       new Output().withLocation(currentRange, null, evt.type).go();
   },
 

@@ -348,8 +348,23 @@ Background.prototype = {
 
     this.currentRange_ = newRange;
 
-    if (this.currentRange_)
-      this.currentRange_.start.node.makeVisible();
+    if (this.currentRange_) {
+      var start = this.currentRange_.start.node;
+      start.makeVisible();
+
+      var root = start.root;
+
+      if (!root || root.role == RoleType.desktop)
+        return;
+
+      var position = {};
+      var loc = start.location;
+      position.x = loc.left + loc.width / 2;
+      position.y = loc.top + loc.height / 2;
+      var url = root.docUrl;
+      url = url.substring(0, url.indexOf('#')) || url;
+      cvox.ChromeVox.position[url] = position;
+    }
   },
 
   /** Forces ChromeVox Next to be active for all tabs. */
@@ -368,6 +383,8 @@ Background.prototype = {
     // Check for loss of focus which results in us invalidating our current
     // range. Note this call is synchronis.
     chrome.automation.getFocus(function(focusedNode) {
+      if (this.currentRange_ && !this.currentRange_.isValid())
+        this.currentRange_ = cursors.Range.fromNode(focusedNode);
       if (!focusedNode)
         this.currentRange_ = null;
     }.bind(this));

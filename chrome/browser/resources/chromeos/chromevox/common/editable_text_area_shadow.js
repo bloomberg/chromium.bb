@@ -49,8 +49,8 @@ cvox.EditableTextAreaShadow.prototype.update = function(element) {
   this.shadowElement_.style.cssText =
       window.getComputedStyle(element, null).cssText;
   this.shadowElement_.style.position = 'absolute';
-  this.shadowElement_.style.top = -9999;
-  this.shadowElement_.style.left = -9999;
+  this.shadowElement_.style.top = '-9999';
+  this.shadowElement_.style.left = '-9999';
   this.shadowElement_.setAttribute('aria-hidden', 'true');
 
   // Add the text to the shadow element, but with an extra character to the

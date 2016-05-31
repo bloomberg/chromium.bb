@@ -444,7 +444,7 @@ Output.RULES = {
       speak: '$name='
     },
     link: {
-      enter: '$nameFromNode $if($visited, @visited_link, $role)',
+      enter: '$nameFromNode= $if($visited, @visited_link, $role)',
       speak: '$name= $if($visited, @visited_link, $role) $description'
     },
     list: {
@@ -1015,7 +1015,7 @@ Output.prototype = {
               'nameFromContents')
             return;
 
-          options.annotation.push(token);
+          options.annotation.push('name');
           this.append_(buff, node.name, options);
         } else if (token == 'nameOrDescendants') {
           options.annotation.push(token);
