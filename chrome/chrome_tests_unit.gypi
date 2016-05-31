@@ -1225,7 +1225,6 @@
       'browser/ui/cocoa/download/download_shelf_view_cocoa_unittest.mm',
       'browser/ui/cocoa/download/download_util_mac_unittest.mm',
       'browser/ui/cocoa/draggable_button_unittest.mm',
-      'browser/ui/cocoa/exclusive_access_bubble_window_controller_unittest.mm',
       'browser/ui/cocoa/extensions/browser_actions_container_view_unittest.mm',
       'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h',
       'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.mm',
