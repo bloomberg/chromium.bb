@@ -216,13 +216,16 @@ class CachingPolicyTestCase(unittest.TestCase):
   def testStaleWhileRevalidate(self):
     r = self._MakeRequest()
     r.response_headers['Cache-Control'] = (
-        'whatever,max-age=100,stale-while-revalidate=2000')
+        'whatever,max-age=1000,stale-while-revalidate=2000')
     self.assertEqual(
         CachingPolicy.VALIDATION_ASYNC,
         CachingPolicy(r).PolicyAtDate(r.wall_time + 200))
     self.assertEqual(
-        CachingPolicy.VALIDATION_SYNC,
+        CachingPolicy.VALIDATION_ASYNC,
         CachingPolicy(r).PolicyAtDate(r.wall_time + 2000))
+    self.assertEqual(
+        CachingPolicy.VALIDATION_SYNC,
+        CachingPolicy(r).PolicyAtDate(r.wall_time + 3100))
     # must-revalidate overrides stale-while-revalidate.
     r.response_headers['Cache-Control'] += ',must-revalidate'
     self.assertEqual(

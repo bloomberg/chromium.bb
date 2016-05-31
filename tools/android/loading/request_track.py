@@ -455,7 +455,7 @@ class CachingPolicy(object):
     age = self._GetCurrentAge(timestamp)
     if freshness[0] > age:
       return self.VALIDATION_NONE
-    if freshness[1] > age:
+    if (freshness[0] + freshness[1]) > age:
       return self.VALIDATION_ASYNC
     return self.VALIDATION_SYNC
 
