@@ -20,6 +20,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/web/public/url_data_source_ios.h"
 #include "net/base/escape.h"
+#include "third_party/brotli/dec/decode.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -126,8 +127,24 @@ void AboutUIHTMLSource::StartDataRequest(
     int idr = IDR_ABOUT_UI_CREDITS_HTML;
     if (path == kCreditsJsPath)
       idr = IDR_ABOUT_UI_CREDITS_JS;
-    response =
-        ResourceBundle::GetSharedInstance().GetRawDataResource(idr).as_string();
+    base::StringPiece raw_response =
+        ResourceBundle::GetSharedInstance().GetRawDataResource(idr);
+    if (idr == IDR_ABOUT_UI_CREDITS_HTML) {
+      size_t decoded_size;
+      const uint8_t* encoded_response_buffer =
+          reinterpret_cast<const uint8_t*>(raw_response.data());
+      CHECK(BrotliDecompressedSize(raw_response.size(), encoded_response_buffer,
+                                   &decoded_size));
+      // Resizing the response and using it as the buffer Brotli decompresses
+      // into.
+      response.resize(decoded_size);
+      CHECK(BrotliDecompressBuffer(raw_response.size(), encoded_response_buffer,
+                                   &decoded_size,
+                                   reinterpret_cast<uint8_t*>(&response[0])) ==
+            BROTLI_RESULT_SUCCESS);
+    } else {
+      response = raw_response.as_string();
+    }
   } else if (source_name_ == kChromeUIHistogramHost) {
     // Note: On other platforms, this is implemented in //content. If there is
     // ever a need for embedders other than //ios/chrome to use

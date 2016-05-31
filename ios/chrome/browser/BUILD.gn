@@ -658,6 +658,7 @@ source_set("browser") {
     "//net:extras",
     "//skia",
     "//sync",
+    "//third_party/brotli",
     "//third_party/google_toolbox_for_mac",
     "//ui/base",
     "//ui/gfx",

@@ -87,6 +87,7 @@ include_rules = [
   "+ios/web/public",
   "+net",
   "+sync",
+  "+third_party/brotli",
   "+third_party/google_toolbox_for_mac",
   "+ui",
 

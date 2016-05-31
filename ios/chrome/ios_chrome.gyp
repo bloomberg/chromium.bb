@@ -129,6 +129,7 @@
         '../../net/net.gyp:net_extras',
         '../../skia/skia.gyp:skia',
         '../../sync/sync.gyp:sync',
+        '../../third_party/brotli/brotli.gyp:brotli',
         '../../third_party/google_toolbox_for_mac/google_toolbox_for_mac.gyp:google_toolbox_for_mac',
         '../../ui/base/ui_base.gyp:ui_base',
         '../../ui/gfx/gfx.gyp:gfx',
