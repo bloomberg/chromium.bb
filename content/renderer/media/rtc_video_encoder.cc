@@ -149,7 +149,8 @@ class RTCVideoEncoder::Impl
                                size_t output_buffer_size) override;
   void BitstreamBufferReady(int32_t bitstream_buffer_id,
                             size_t payload_size,
-                            bool key_frame) override;
+                            bool key_frame,
+                            base::TimeDelta timestamp) override;
   void NotifyError(media::VideoEncodeAccelerator::Error error) override;
 
  private:
@@ -449,8 +450,9 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
 }
 
 void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
-                                                 size_t payload_size,
-                                                 bool key_frame) {
+    size_t payload_size,
+    bool key_frame,
+    base::TimeDelta timestamp) {
   DVLOG(3) << "Impl::BitstreamBufferReady(): "
               "bitstream_buffer_id=" << bitstream_buffer_id
            << ", payload_size=" << payload_size
@@ -471,14 +473,11 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
   }
   output_buffers_free_count_--;
 
-  // Use webrtc timestamps to ensure correct RTP sender behavior.
-  // TODO(hshi): obtain timestamp from the capturer, see crbug.com/350106.
-  const int64_t capture_time_us = rtc::TimeMicros();
-
   // Derive the capture time (in ms) and RTP timestamp (in 90KHz ticks).
-  const int64_t capture_time_ms = capture_time_us / 1000;
+  // This is based on how input timestamps are calculated in
+  // webrtc/video/video_capture_input.cc.
   const uint32_t rtp_timestamp =
-      static_cast<uint32_t>(capture_time_us * 90 / 1000);
+      static_cast<uint32_t>(timestamp.InMilliseconds()) * 90;
 
   webrtc::EncodedImage image(
       reinterpret_cast<uint8_t*>(output_buffer->memory()), payload_size,
@@ -486,7 +485,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
   image._encodedWidth = input_visible_size_.width();
   image._encodedHeight = input_visible_size_.height();
   image._timeStamp = rtp_timestamp;
-  image.capture_time_ms_ = capture_time_ms;
+  image.capture_time_ms_ = timestamp.InMilliseconds();
   image._frameType =
       (key_frame ? webrtc::kVideoFrameKey : webrtc::kVideoFrameDelta);
   image._completeFrame = true;
@@ -568,7 +567,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
         gfx::Rect(input_visible_size_), input_visible_size_,
         reinterpret_cast<uint8_t*>(input_buffer->memory()),
         input_buffer->mapped_size(), input_buffer->handle(), 0,
-        base::TimeDelta());
+        base::TimeDelta::FromMilliseconds(next_frame->ntp_time_ms()));
     if (!frame.get()) {
       LogAndNotifyError(FROM_HERE, "failed to create frame",
                         media::VideoEncodeAccelerator::kPlatformFailureError);

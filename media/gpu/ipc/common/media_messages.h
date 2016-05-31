@@ -177,10 +177,11 @@ IPC_MESSAGE_ROUTED1(AcceleratedVideoEncoderHostMsg_NotifyInputDone,
                     int32_t /* frame_id */)
 
 // Notify the renderer that an output buffer has been filled with encoded data.
-IPC_MESSAGE_ROUTED3(AcceleratedVideoEncoderHostMsg_BitstreamBufferReady,
+IPC_MESSAGE_ROUTED4(AcceleratedVideoEncoderHostMsg_BitstreamBufferReady,
                     int32_t /* bitstream_buffer_id */,
                     uint32_t /* payload_size */,
-                    bool /* key_frame */)
+                    bool /* key_frame */,
+                    base::TimeDelta /* timestamp */)
 
 // Report error condition.
 IPC_MESSAGE_ROUTED1(AcceleratedVideoEncoderHostMsg_NotifyError,

@@ -665,8 +665,12 @@ void V4L2VideoEncodeAccelerator::Dequeue() {
              << ", key_frame=" << key_frame;
     child_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&Client::BitstreamBufferReady, client_,
-                   output_record.buffer_ref->id, output_size, key_frame));
+        base::Bind(
+            &Client::BitstreamBufferReady, client_,
+            output_record.buffer_ref->id, output_size, key_frame,
+            base::TimeDelta::FromMicroseconds(
+                dqbuf.timestamp.tv_usec +
+                dqbuf.timestamp.tv_sec * base::Time::kMicrosecondsPerSecond)));
     output_record.at_device = false;
     output_record.buffer_ref.reset();
     free_output_buffers_.push_back(dqbuf.index);
@@ -691,6 +695,10 @@ bool V4L2VideoEncodeAccelerator::EnqueueInputRecord() {
   qbuf.index = index;
   qbuf.type = V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE;
   qbuf.m.planes = qbuf_planes;
+  qbuf.timestamp.tv_sec = static_cast<time_t>(frame->timestamp().InSeconds());
+  qbuf.timestamp.tv_usec =
+      frame->timestamp().InMicroseconds() -
+      frame->timestamp().InSeconds() * base::Time::kMicrosecondsPerSecond;
 
   DCHECK_EQ(device_input_format_, frame->format());
   for (size_t i = 0; i < input_planes_count_; ++i) {

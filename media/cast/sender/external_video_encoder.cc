@@ -248,7 +248,8 @@ class ExternalVideoEncoder::VEAClientImpl
   // to the Cast MAIN thread via the supplied callback.
   void BitstreamBufferReady(int32_t bitstream_buffer_id,
                             size_t payload_size,
-                            bool key_frame) final {
+                            bool key_frame,
+                            base::TimeDelta /* timestamp */) final {
     DCHECK(task_runner_->RunsTasksOnCurrentThread());
     if (bitstream_buffer_id < 0 ||
         bitstream_buffer_id >= static_cast<int32_t>(output_buffers_.size())) {

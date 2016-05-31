@@ -71,7 +71,8 @@ class CONTENT_EXPORT PepperVideoEncoderHost
                                size_t output_buffer_size) override;
   void BitstreamBufferReady(int32_t bitstream_buffer_id,
                             size_t payload_size,
-                            bool key_frame) override;
+                            bool key_frame,
+                            base::TimeDelta timestamp) override;
   void NotifyError(media::VideoEncodeAccelerator::Error error) override;
 
   // ResourceHost implementation.

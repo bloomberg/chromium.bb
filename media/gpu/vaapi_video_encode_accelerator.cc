@@ -555,8 +555,9 @@ void VaapiVideoEncodeAccelerator::TryToReturnBitstreamBuffer() {
             << " id: " << buffer->id << " size: " << data_size;
 
   child_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Client::BitstreamBufferReady, client_, buffer->id,
-                            data_size, encode_job->keyframe));
+      FROM_HERE,
+      base::Bind(&Client::BitstreamBufferReady, client_, buffer->id, data_size,
+                 encode_job->keyframe, encode_job->timestamp));
 }
 
 void VaapiVideoEncodeAccelerator::Encode(
@@ -571,7 +572,7 @@ void VaapiVideoEncodeAccelerator::Encode(
                             base::Unretained(this), frame, force_keyframe));
 }
 
-bool VaapiVideoEncodeAccelerator::PrepareNextJob() {
+bool VaapiVideoEncodeAccelerator::PrepareNextJob(base::TimeDelta timestamp) {
   if (available_va_surface_ids_.size() < kMinSurfacesToEncode)
     return false;
 
@@ -583,6 +584,8 @@ bool VaapiVideoEncodeAccelerator::PrepareNextJob() {
     NOTIFY_ERROR(kPlatformFailureError, "Failed creating coded buffer");
     return false;
   }
+
+  current_encode_job_->timestamp = timestamp;
 
   current_encode_job_->input_surface = new VASurface(
       available_va_surface_ids_.back(), coded_size_,
@@ -619,7 +622,7 @@ void VaapiVideoEncodeAccelerator::EncodeFrameTask() {
   if (state_ != kEncoding || encoder_input_queue_.empty())
     return;
 
-  if (!PrepareNextJob()) {
+  if (!PrepareNextJob(encoder_input_queue_.front()->frame->timestamp())) {
     DVLOGF(4) << "Not ready for next frame yet";
     return;
   }

@@ -73,6 +73,8 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
     // True if this job will produce a keyframe. Used to report
     // to BitstreamBufferReady().
     bool keyframe;
+    // Source timestamp.
+    base::TimeDelta timestamp;
 
     EncodeJob();
     ~EncodeJob();
@@ -118,7 +120,7 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // Check if we have sufficient resources for a new encode job, claim them and
   // fill current_encode_job_ with them.
   // Return false if we cannot start a new job yet, true otherwise.
-  bool PrepareNextJob();
+  bool PrepareNextJob(base::TimeDelta timestamp);
 
   // Begin a new frame, making it a keyframe if |force_keyframe| is true,
   // updating current_pic_.

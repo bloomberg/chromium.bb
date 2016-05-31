@@ -95,7 +95,8 @@ class GpuVideoEncodeAcceleratorHost
   void OnNotifyInputDone(int32_t frame_id);
   void OnBitstreamBufferReady(int32_t bitstream_buffer_id,
                               uint32_t payload_size,
-                              bool key_frame);
+                              bool key_frame,
+                              base::TimeDelta timestamp);
   void OnNotifyError(Error error);
 
   scoped_refptr<gpu::GpuChannelHost> channel_;

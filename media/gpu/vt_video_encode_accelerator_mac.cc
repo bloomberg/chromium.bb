@@ -444,8 +444,9 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
   if (encode_output->info & VideoToolboxGlue::kVTEncodeInfo_FrameDropped) {
     DVLOG(2) << " frame dropped";
     client_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Client::BitstreamBufferReady, client_,
-                              buffer_ref->id, 0, false));
+        FROM_HERE,
+        base::Bind(&Client::BitstreamBufferReady, client_, buffer_ref->id, 0,
+                   false, base::Time::Now() - base::Time()));
     return;
   }
 
@@ -467,8 +468,9 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
   bitrate_adjuster_.Update(used_buffer_size);
 
   client_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&Client::BitstreamBufferReady, client_,
-                            buffer_ref->id, used_buffer_size, keyframe));
+      FROM_HERE,
+      base::Bind(&Client::BitstreamBufferReady, client_, buffer_ref->id,
+                 used_buffer_size, keyframe, base::Time::Now() - base::Time()));
 }
 
 bool VTVideoEncodeAccelerator::ResetCompressionSession() {

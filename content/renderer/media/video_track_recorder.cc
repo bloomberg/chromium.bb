@@ -253,7 +253,8 @@ class VEAEncoder final : public VideoTrackRecorder::Encoder,
                                size_t output_buffer_size) override;
   void BitstreamBufferReady(int32_t bitstream_buffer_id,
                             size_t payload_size,
-                            bool key_frame) override;
+                            bool key_frame,
+                            base::TimeDelta timestamp) override;
   void NotifyError(media::VideoEncodeAccelerator::Error error) override;
 
  private:
@@ -425,7 +426,8 @@ void VEAEncoder::RequireBitstreamBuffers(unsigned int /*input_count*/,
 
 void VEAEncoder::BitstreamBufferReady(int32_t bitstream_buffer_id,
                                       size_t payload_size,
-                                      bool keyframe) {
+                                      bool keyframe,
+                                      base::TimeDelta timestamp) {
   DVLOG(3) << __FUNCTION__;
   DCHECK(encoding_task_runner_->BelongsToCurrentThread());
 

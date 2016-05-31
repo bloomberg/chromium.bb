@@ -151,9 +151,10 @@ void GpuVideoEncodeAccelerator::RequireBitstreamBuffers(
 void GpuVideoEncodeAccelerator::BitstreamBufferReady(
     int32_t bitstream_buffer_id,
     size_t payload_size,
-    bool key_frame) {
+    bool key_frame,
+    base::TimeDelta timestamp) {
   Send(new AcceleratedVideoEncoderHostMsg_BitstreamBufferReady(
-      host_route_id_, bitstream_buffer_id, payload_size, key_frame));
+      host_route_id_, bitstream_buffer_id, payload_size, key_frame, timestamp));
 }
 
 void GpuVideoEncodeAccelerator::NotifyError(

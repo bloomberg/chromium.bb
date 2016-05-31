@@ -79,9 +79,11 @@ class MEDIA_EXPORT VideoEncodeAccelerator {
     //  |bitstream_buffer_id| is the id of the buffer that is ready.
     //  |payload_size| is the byte size of the used portion of the buffer.
     //  |key_frame| is true if this delivered frame is a keyframe.
+    //  |timestamp| is the same timestamp as in VideoFrame passed to Encode().
     virtual void BitstreamBufferReady(int32_t bitstream_buffer_id,
                                       size_t payload_size,
-                                      bool key_frame) = 0;
+                                      bool key_frame,
+                                      base::TimeDelta timestamp) = 0;
 
     // Error notification callback. Note that errors in Initialize() will not be
     // reported here, but will instead be indicated by a false return value

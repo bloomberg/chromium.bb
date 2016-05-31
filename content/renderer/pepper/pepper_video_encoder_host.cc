@@ -441,12 +441,14 @@ void PepperVideoEncoderHost::RequireBitstreamBuffers(
 }
 
 void PepperVideoEncoderHost::BitstreamBufferReady(int32_t buffer_id,
-                                                  size_t payload_size,
-                                                  bool key_frame) {
+    size_t payload_size,
+    bool key_frame,
+    base::TimeDelta /* timestamp */) {
   DCHECK(RenderThreadImpl::current());
   DCHECK(shm_buffers_[buffer_id]->in_use);
 
   shm_buffers_[buffer_id]->in_use = false;
+  // TODO: Pass timestamp. Tracked in crbug/613984.
   host()->SendUnsolicitedReply(
       pp_resource(),
       PpapiPluginMsg_VideoEncoder_BitstreamBufferReady(
