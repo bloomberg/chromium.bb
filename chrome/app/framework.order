@@ -12,12 +12,9 @@
 #
 # Not all symbols will appear in all build types.  Varying optimizations may
 # result in differences between the set of symbols present in debug and
-# release modes.  When Breakpad is in use, _catch_exception_raise will be
-# present, but it will not appear in non-Breakpad-enabled builds.  It is not
-# an error to list symbols in this file that will not be present in each
-# output variant.
+# release modes.  It is not an error to list symbols in this file that will not
+# be present in each output variant.
 
-__CTFontManagerUnregisterFontForData
 __ZnwmPv
 __ZdlPvS_
 
