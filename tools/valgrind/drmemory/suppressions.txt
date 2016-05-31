@@ -809,3 +809,18 @@ name=https://bugs.chromium.org/p/webrtc/issues/detail?id=5151
 *!sofree
 *!usrsctp_close
 *!cricket::SctpDataMediaChannel::CloseSctpSocket
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/615121
+cc.dll!cc::ResourceProvider::CreateBitmap
+cc.dll!cc::ResourceProvider::CreateResource
+cc.dll!cc::ScopedResource::Allocate
+cc.dll!cc::ResourcePool::AcquireResource
+cc.dll!cc::TileManager::CreateRasterTask
+cc.dll!cc::TileManager::ScheduleTasks
+
+GDI USAGE ERROR
+name=http://crbug.com/615911
+skia.dll!HDCOffscreen::draw
+skia.dll!SkScalerContext_GDI::generateImage
+skia.dll!SkScalerContext::getImage
