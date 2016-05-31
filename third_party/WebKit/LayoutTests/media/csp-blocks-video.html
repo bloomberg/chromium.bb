@@ -1,18 +1,16 @@
+<!DOCTYPE html>
+<title>Test that "Content-Security-Policy" on a media element is obeyed.</title>
 <meta http-equiv="Content-Security-Policy" content="media-src 'none'">
-<video controls></video>
-<script src=media-file.js></script>
-<!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-     (Please avoid writing new tests using video-test.js) -->
-<script src=video-test.js></script>
-<p>This test passes if it doesn't alert failure.</p>
+<video></video>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
 <script>
-var mediaFile = findMediaFile("video", "content/test");
-video.src = mediaFile;
+async_test(function(t) {
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "content/test");
 
-waitForEvent('loadedmetadata', function () {
-    alert('FAIL');
-    endTest();
-} );
-video.load();
-addEventListener('load', endTest, false);
+    video.onloadedmetadata = t.unreached_func();
+    video.onerror = t.step_func_done();
+});
 </script>
