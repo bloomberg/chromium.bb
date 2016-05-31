@@ -1109,14 +1109,6 @@ class TestGitCl(TestCase):
   def test_patch_when_dirty(self):
     # Patch when local tree is dirty
     self.mock(git_common, 'is_dirty_git_tree', lambda x: True)
-    self.calls = [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ((['git', 'config', 'branch.master.rietveldissue'],), ''),
-      ((['git', 'config', 'branch.master.gerritissue'],), ''),
-      ((['git', 'config', 'rietveld.autoupdate'],), ''),
-      ((['git', 'config', 'gerrit.host'],), ''),
-      ((['git', 'config', 'rietveld.server'],), 'codereview.example.com'),
-    ]
     self.assertNotEqual(git_cl.main(['patch', '123456']), 0)
 
   def test_diff_when_dirty(self):
@@ -1154,16 +1146,15 @@ class TestGitCl(TestCase):
               lambda *args: 'Description')
     self.mock(git_cl, 'IsGitVersionAtLeast', lambda *args: True)
 
+    self.calls = self.calls or []
     if not force_codereview:
       # These calls detect codereview to use.
-      self.calls = [
+      self.calls += [
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', 'branch.master.rietveldissue'],), ''),
         ((['git', 'config', 'branch.master.gerritissue'],), ''),
         ((['git', 'config', 'rietveld.autoupdate'],), ''),
       ]
-    else:
-      self.calls = []
 
     if is_gerrit:
       if not force_codereview:
@@ -1178,7 +1169,7 @@ class TestGitCl(TestCase):
         ((['sed', '-e', 's|^--- a/|--- |; s|^+++ b/|+++ |'],), ''),
       ]
 
-  def test_patch_successful(self):
+  def _common_patch_successful(self):
     self._patch_common()
     self.calls += [
       ((['git', 'apply', '--index', '-p0', '--3way'],), ''),
@@ -1192,7 +1183,15 @@ class TestGitCl(TestCase):
          'https://codereview.example.com'],), ''),
       ((['git', 'config', 'branch.master.rietveldpatchset', '60001'],), ''),
     ]
+
+  def test_patch_successful(self):
+    self._common_patch_successful()
     self.assertEqual(git_cl.main(['patch', '123456']), 0)
+
+  def test_patch_successful_new_branch(self):
+    self.calls = [ ((['git', 'new-branch', 'master'],), ''), ]
+    self._common_patch_successful()
+    self.assertEqual(git_cl.main(['patch', '-b', 'master', '123456']), 0)
 
   def test_patch_conflict(self):
     self._patch_common()

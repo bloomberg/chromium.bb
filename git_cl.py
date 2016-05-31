@@ -4092,14 +4092,18 @@ def CMDpatch(parser, args):
   _process_codereview_select_options(parser, options)
   auth_config = auth.extract_auth_config_from_options(options)
 
-  cl = Changelist(auth_config=auth_config, codereview=options.forced_codereview)
 
-  issue_arg = None
   if options.reapply :
+    if options.newbranch:
+      parser.error('--reapply works on the current branch only')
     if len(args) > 0:
-      parser.error('--reapply implies no additional arguments.')
+      parser.error('--reapply implies no additional arguments')
 
-    issue_arg = cl.GetIssue()
+    cl = Changelist(auth_config=auth_config,
+                    codereview=options.forced_codereview)
+    if not cl.GetIssue():
+      parser.error('current branch must have an associated issue')
+
     upstream = cl.GetUpstreamBranch()
     if upstream == None:
       parser.error('No upstream branch specified. Cannot reset branch')
@@ -4107,14 +4111,24 @@ def CMDpatch(parser, args):
     RunGit(['reset', '--hard', upstream])
     if options.pull:
       RunGit(['pull'])
-  else:
-    if len(args) != 1:
-      parser.error('Must specify issue number or url')
-    issue_arg = args[0]
 
-  if not issue_arg:
-    parser.print_help()
+    return cl.CMDPatchIssue(cl.GetIssue(), options.reject, options.nocommit,
+                            options.directory)
+
+  if len(args) != 1 or not args[0]:
+    parser.error('Must specify issue number or url')
+
+  # We don't want uncommitted changes mixed up with the patch.
+  if git_common.is_dirty_git_tree('patch'):
     return 1
+
+  if options.newbranch:
+    if options.force:
+      RunGit(['branch', '-D', options.newbranch],
+             stderr=subprocess2.PIPE, error_ok=True)
+    RunGit(['new-branch', options.newbranch])
+
+  cl = Changelist(auth_config=auth_config, codereview=options.forced_codereview)
 
   if cl.IsGerrit():
     if options.reject:
@@ -4124,20 +4138,7 @@ def CMDpatch(parser, args):
     if options.directory:
       parser.error('--directory is not supported with Gerrit codereview.')
 
-  # We don't want uncommitted changes mixed up with the patch.
-  if git_common.is_dirty_git_tree('patch'):
-    return 1
-
-  if options.newbranch:
-    if options.reapply:
-      parser.error("--reapply excludes any option other than --pull")
-    if options.force:
-      RunGit(['branch', '-D', options.newbranch],
-          stderr=subprocess2.PIPE, error_ok=True)
-    RunGit(['checkout', '-b', options.newbranch,
-            Changelist().GetUpstreamBranch()])
-
-  return cl.CMDPatchIssue(issue_arg, options.reject, options.nocommit,
+  return cl.CMDPatchIssue(args[0], options.reject, options.nocommit,
                           options.directory)
 
 
