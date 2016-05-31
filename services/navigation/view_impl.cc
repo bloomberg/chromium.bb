@@ -5,7 +5,7 @@
 #include "services/navigation/view_impl.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/controls/webview/webview.h"
@@ -55,9 +55,7 @@ void ViewImpl::Stop() {
 
 void ViewImpl::GetWindowTreeClient(
     mus::mojom::WindowTreeClientRequest request) {
-  mus::WindowTreeConnection::Create(
-      this, std::move(request),
-      mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
+  new mus::WindowTreeClient(this, nullptr, std::move(request));
 }
 
 void ViewImpl::AddNewContents(content::WebContents* source,
@@ -119,7 +117,7 @@ void ViewImpl::OnEmbed(mus::Window* root) {
   widget_->Show();
 }
 
-void ViewImpl::OnConnectionLost(mus::WindowTreeConnection* connection) {}
+void ViewImpl::OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) {}
 void ViewImpl::OnEventObserved(const ui::Event& event, mus::Window* target) {}
 
 views::View* ViewImpl::GetContentsView() {

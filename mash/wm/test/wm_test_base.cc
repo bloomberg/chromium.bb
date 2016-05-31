@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "components/mus/public/cpp/property_type_converters.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "mash/wm/root_window_controller.h"
 #include "mash/wm/test/wm_test_helper.h"
 #include "mash/wm/test/wm_test_screen.h"
@@ -180,7 +180,7 @@ mus::Window* WmTestBase::CreateChildTestWindow(mus::Window* parent,
       mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(
           MusWindowTypeFromWmWindowType(ui::wm::WINDOW_TYPE_NORMAL)));
   mus::Window* window =
-      GetRootsOrderedByDisplayId()[0]->root()->connection()->NewWindow(
+      GetRootsOrderedByDisplayId()[0]->root()->window_tree()->NewWindow(
           &properties);
   window->SetBounds(bounds);
   window->SetVisible(true);

@@ -4,26 +4,24 @@
 
 #include "components/mus/public/cpp/window_tree_host_factory.h"
 
-#include "components/mus/public/cpp/window_tree_connection.h"
-#include "components/mus/public/cpp/window_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_client.h"
+#include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "services/shell/public/cpp/connector.h"
 
 namespace mus {
 
 void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
-                          WindowTreeDelegate* delegate,
+                          WindowTreeClientDelegate* delegate,
                           mojom::WindowTreeHostPtr* host,
                           WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeClientPtr tree_client;
-  WindowTreeConnection::CreateForWindowManager(
-      delegate, GetProxy(&tree_client),
-      WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED,
-      window_manager_delegate);
+  new WindowTreeClient(delegate, window_manager_delegate,
+                       GetProxy(&tree_client));
   factory->CreateWindowTreeHost(GetProxy(host), std::move(tree_client));
 }
 
 void CreateWindowTreeHost(shell::Connector* connector,
-                          WindowTreeDelegate* delegate,
+                          WindowTreeClientDelegate* delegate,
                           mojom::WindowTreeHostPtr* host,
                           WindowManagerDelegate* window_manager_delegate) {
   mojom::WindowTreeHostFactoryPtr factory;

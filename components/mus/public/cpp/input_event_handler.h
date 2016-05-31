@@ -27,7 +27,7 @@ class InputEventHandler {
   // The event handler can asynchronously ack the event by taking ownership of
   // the |ack_callback|. The callback takes an EventResult indicating if the
   // handler has consumed the event. If the handler does not take ownership of
-  // the callback, then WindowTreeClientImpl will ack the event as not consumed.
+  // the callback, then WindowTreeClient will ack the event as not consumed.
   virtual void OnWindowInputEvent(
       Window* target,
       const ui::Event& event,

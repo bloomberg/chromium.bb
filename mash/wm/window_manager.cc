@@ -13,7 +13,7 @@
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "components/mus/public/interfaces/input_events.mojom.h"
 #include "components/mus/public/interfaces/mus_constants.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
@@ -89,7 +89,7 @@ mus::Window* WindowManager::NewTopLevelWindow(
     (*properties)[mus::mojom::kWaitForUnderlay_Property].clear();
 
   // TODO(sky): constrain and validate properties before passing to server.
-  mus::Window* window = root->connection()->NewWindow(properties);
+  mus::Window* window = root->window_tree()->NewWindow(properties);
   window->SetBounds(CalculateDefaultBounds(window));
 
   mus::Window* container_window = nullptr;

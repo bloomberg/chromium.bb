@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "components/mus/public/cpp/input_event_handler.h"
 #include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
-#include "components/mus/public/cpp/window_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_client.h"
+#include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -26,7 +26,7 @@ class InputHandlerManager;
 // default all other methods are assumed to run on the compositor thread unless
 // explicited suffixed with OnMainThread.
 class CONTENT_EXPORT CompositorMusConnection
-    : NON_EXPORTED_BASE(public mus::WindowTreeDelegate),
+    : NON_EXPORTED_BASE(public mus::WindowTreeClientDelegate),
       NON_EXPORTED_BASE(public mus::InputEventHandler),
       public base::RefCountedThreadSafe<CompositorMusConnection> {
  public:
@@ -52,8 +52,8 @@ class CONTENT_EXPORT CompositorMusConnection
   void AttachSurfaceOnCompositorThread(
       std::unique_ptr<mus::WindowSurfaceBinding> surface_binding);
 
-  void CreateWindowTreeConnectionOnCompositorThread(
-      mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request);
+  void CreateWindowTreeClientOnCompositorThread(
+      mus::mojom::WindowTreeClientRequest request);
 
   void OnConnectionLostOnMainThread();
 
@@ -65,8 +65,8 @@ class CONTENT_EXPORT CompositorMusConnection
       const base::Callback<void(mus::mojom::EventResult)>& ack,
       mus::mojom::EventResult result);
 
-  // WindowTreeDelegate implementation:
-  void OnConnectionLost(mus::WindowTreeConnection* connection) override;
+  // WindowTreeClientDelegate implementation:
+  void OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) override;
   void OnEmbed(mus::Window* root) override;
   void OnEventObserved(const ui::Event& event, mus::Window* target) override;
 

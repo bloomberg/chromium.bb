@@ -62,7 +62,7 @@ void WindowManagerApplication::OnRootWindowControllerGotRoot(
   if (connector_)
     aura_init_.reset(new views::AuraInit(connector_, "mash_wm_resources.pak"));
 
-  globals_.reset(new WmGlobalsMus(root_controller->root()->connection()));
+  globals_.reset(new WmGlobalsMus(root_controller->root()->window_tree()));
   lookup_.reset(new WmLookupMus);
 }
 

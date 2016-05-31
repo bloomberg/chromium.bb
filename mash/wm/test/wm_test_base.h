@@ -31,7 +31,7 @@ class RootWindowController;
 class WmTestHelper;
 
 // Base class for window manager tests that want to configure
-// WindowTreeConnection without a connection to mus.
+// WindowTreeClient without a client to mus.
 class WmTestBase : public testing::Test {
  public:
   WmTestBase();
@@ -52,7 +52,7 @@ class WmTestBase : public testing::Test {
 
   // Creates a top level window visible window in the appropriate container.
   // NOTE: you can explicitly destroy the returned value if necessary, but it
-  // will also be automatically destroyed when the WindowTreeConnection is
+  // will also be automatically destroyed when the WindowTreeClient is
   // destroyed.
   mus::Window* CreateTestWindow(const gfx::Rect& bounds);
   mus::Window* CreateTestWindow(const gfx::Rect& bounds,

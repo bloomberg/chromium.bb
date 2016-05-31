@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "grit/mash_wm_resources.h"
 #include "mash/wm/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "mash/wm/frame/default_header_painter.h"
@@ -132,7 +132,8 @@ void NonClientFrameViewMash::HeaderView::Layout() {
 }
 
 void NonClientFrameViewMash::HeaderView::OnPaint(gfx::Canvas* canvas) {
-  const mus::Window* focused_window = window_->connection()->GetFocusedWindow();
+  const mus::Window* focused_window =
+      window_->window_tree()->GetFocusedWindow();
   const bool paint_as_active =
       focused_window && window_->Contains(focused_window);
   caption_button_container_->SetPaintAsActive(paint_as_active);
@@ -169,7 +170,7 @@ NonClientFrameViewMash::NonClientFrameViewMash(views::Widget* frame,
   // overlay the web contents in immersive fullscreen.
   AddChildView(header_view_);
   window_->AddObserver(this);
-  window_->connection()->AddObserver(this);
+  window_->window_tree()->AddObserver(this);
 }
 
 NonClientFrameViewMash::~NonClientFrameViewMash() {
@@ -353,7 +354,7 @@ void NonClientFrameViewMash::RemoveObservers() {
     return;
 
   window_->RemoveObserver(this);
-  window_->connection()->RemoveObserver(this);
+  window_->window_tree()->RemoveObserver(this);
   window_ = nullptr;
 }
 

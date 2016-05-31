@@ -4,8 +4,8 @@
 
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
-#include "components/mus/public/cpp/window_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_client.h"
+#include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -20,7 +20,7 @@ namespace test {
 
 class TestWM : public shell::ShellClient,
                public mus::mojom::WindowManagerFactory,
-               public mus::WindowTreeDelegate,
+               public mus::WindowTreeClientDelegate,
                public mus::WindowManagerDelegate {
  public:
   TestWM() : window_manager_factory_binding_(this) {}
@@ -44,12 +44,10 @@ class TestWM : public shell::ShellClient,
   void CreateWindowManager(
       mus::mojom::DisplayPtr display,
       mus::mojom::WindowTreeClientRequest request) override {
-    mus::WindowTreeConnection::CreateForWindowManager(
-        this, std::move(request),
-        mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED, this);
+    new mus::WindowTreeClient(this, this, std::move(request));
   }
 
-  // mus::WindowTreeDelegate:
+  // mus::WindowTreeClientDelegate:
   void OnEmbed(mus::Window* root) override {
     root_ = root;
     window_manager_client_->AddActivationParent(root_);
@@ -59,8 +57,7 @@ class TestWM : public shell::ShellClient,
     window_manager_client_->SetFrameDecorationValues(
         std::move(frame_decoration_values));
   }
-  void OnConnectionLost(mus::WindowTreeConnection* connection) override {
-  }
+  void OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) override {}
   void OnEventObserved(const ui::Event& event, mus::Window* target) override {
     // Don't care.
   }
@@ -80,7 +77,7 @@ class TestWM : public shell::ShellClient,
   }
   mus::Window* OnWmCreateTopLevelWindow(
       std::map<std::string, std::vector<uint8_t>>* properties) override {
-    mus::Window* window = root_->connection()->NewWindow(properties);
+    mus::Window* window = root_->window_tree()->NewWindow(properties);
     window->SetBounds(gfx::Rect(10, 10, 500, 500));
     root_->AddChild(window);
     return window;

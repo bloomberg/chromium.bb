@@ -11,7 +11,7 @@
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "components/mus/public/interfaces/event_matcher.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "services/shell/public/cpp/connection.h"
@@ -61,7 +61,7 @@ void WindowManagerConnection::Reset() {
 
 mus::Window* WindowManagerConnection::NewWindow(
     const std::map<std::string, std::vector<uint8_t>>& properties) {
-  return window_tree_connection_->NewTopLevelWindow(&properties);
+  return client_->NewTopLevelWindow(&properties);
 }
 
 NativeWidget* WindowManagerConnection::CreateNativeWidgetMus(
@@ -85,7 +85,7 @@ void WindowManagerConnection::AddPointerWatcher(PointerWatcher* watcher) {
     mus::mojom::EventMatcherPtr matcher = mus::mojom::EventMatcher::New();
     matcher->type_matcher = mus::mojom::EventTypeMatcher::New();
     matcher->type_matcher->type = mus::mojom::EventType::POINTER_DOWN;
-    window_tree_connection_->SetEventObserver(std::move(matcher));
+    client_->SetEventObserver(std::move(matcher));
   }
 }
 
@@ -93,7 +93,7 @@ void WindowManagerConnection::RemovePointerWatcher(PointerWatcher* watcher) {
   pointer_watchers_.RemoveObserver(watcher);
   if (!HasPointerWatcher()) {
     // Last PointerWatcher removed, stop the event observer.
-    window_tree_connection_->SetEventObserver(nullptr);
+    client_->SetEventObserver(nullptr);
   }
 }
 
@@ -102,9 +102,9 @@ WindowManagerConnection::WindowManagerConnection(
     const shell::Identity& identity)
     : connector_(connector),
       identity_(identity),
-      window_tree_connection_(nullptr) {
-  window_tree_connection_.reset(
-      mus::WindowTreeConnection::Create(this, connector_));
+      client_(nullptr) {
+  client_.reset(new mus::WindowTreeClient(this, nullptr, nullptr));
+  client_->ConnectViaWindowTreeFactory(connector_);
 
   screen_.reset(new ScreenMus(this));
   screen_->Init(connector);
@@ -121,9 +121,9 @@ WindowManagerConnection::WindowManagerConnection(
 }
 
 WindowManagerConnection::~WindowManagerConnection() {
-  // ~WindowTreeConnection calls back to us (we're the WindowTreeDelegate),
-  // destroy it while we are still valid.
-  window_tree_connection_.reset();
+  // ~WindowTreeClient calls back to us (we're its delegate), destroy it while
+  // we are still valid.
+  client_.reset();
 
   ui::DeviceDataManager::DeleteInstance();
 }
@@ -138,8 +138,8 @@ bool WindowManagerConnection::HasPointerWatcher() {
 
 void WindowManagerConnection::OnEmbed(mus::Window* root) {}
 
-void WindowManagerConnection::OnConnectionLost(
-    mus::WindowTreeConnection* connection) {}
+void WindowManagerConnection::OnWindowTreeClientDestroyed(
+    mus::WindowTreeClient* client) {}
 
 void WindowManagerConnection::OnEventObserved(const ui::Event& event,
                                               mus::Window* target) {
@@ -167,12 +167,12 @@ void WindowManagerConnection::OnEventObserved(const ui::Event& event,
 }
 
 void WindowManagerConnection::OnWindowManagerFrameValuesChanged() {
-  if (window_tree_connection_)
-    NativeWidgetMus::NotifyFrameChanged(window_tree_connection_.get());
+  if (client_)
+    NativeWidgetMus::NotifyFrameChanged(client_.get());
 }
 
 gfx::Point WindowManagerConnection::GetCursorScreenPoint() {
-  return window_tree_connection_->GetCursorScreenPoint();
+  return client_->GetCursorScreenPoint();
 }
 
 }  // namespace views

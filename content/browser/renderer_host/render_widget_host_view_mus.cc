@@ -8,7 +8,7 @@
 
 #include "build/build_config.h"
 #include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
@@ -29,7 +29,7 @@ RenderWidgetHostViewMus::RenderWidgetHostViewMus(mus::Window* parent_window,
                                                  RenderWidgetHostImpl* host)
     : host_(host), aura_window_(nullptr) {
   DCHECK(parent_window);
-  mus::Window* window = parent_window->connection()->NewWindow();
+  mus::Window* window = parent_window->window_tree()->NewWindow();
   window->SetVisible(true);
   window->SetBounds(gfx::Rect(300, 300));
   parent_window->AddChild(window);

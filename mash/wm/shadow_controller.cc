@@ -5,7 +5,7 @@
 #include "mash/wm/shadow_controller.h"
 
 #include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "mash/wm/property_util.h"
 #include "mash/wm/shadow.h"
 
@@ -25,7 +25,7 @@ mus::Window* FindAncestorWithShadow(mus::Window* from) {
 
 }  // namespace
 
-ShadowController::ShadowController(mus::WindowTreeConnection* window_tree)
+ShadowController::ShadowController(mus::WindowTreeClient* window_tree)
     : window_tree_(window_tree), active_window_(nullptr) {
   window_tree_->AddObserver(this);
   SetActiveWindow(FindAncestorWithShadow(window_tree_->GetFocusedWindow()));

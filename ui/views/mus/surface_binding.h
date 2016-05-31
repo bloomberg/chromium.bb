@@ -43,11 +43,11 @@ class VIEWS_MUS_EXPORT SurfaceBinding {
   std::unique_ptr<cc::OutputSurface> CreateOutputSurface();
 
  private:
-  class PerConnectionState;
+  class PerClientState;
 
   mus::Window* window_;
   const mus::mojom::SurfaceType surface_type_;
-  scoped_refptr<PerConnectionState> state_;
+  scoped_refptr<PerClientState> state_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceBinding);
 };

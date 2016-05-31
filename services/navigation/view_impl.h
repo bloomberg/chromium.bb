@@ -6,7 +6,7 @@
 #define SERVICES_NAVIGATION_VIEW_IMPL_H_
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/window_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -25,7 +25,7 @@ namespace navigation {
 
 class ViewImpl : public mojom::View,
                  public content::WebContentsDelegate,
-                 public mus::WindowTreeDelegate,
+                 public mus::WindowTreeClientDelegate,
                  public views::WidgetDelegate {
  public:
   ViewImpl(shell::Connector* connector,
@@ -60,9 +60,9 @@ class ViewImpl : public mojom::View,
   void LoadProgressChanged(content::WebContents* source,
                            double progress) override;
 
-  // mus::WindowTreeDelegate:
+  // mus::WindowTreeClientDelegate:
   void OnEmbed(mus::Window* root) override;
-  void OnConnectionLost(mus::WindowTreeConnection* connection) override;
+  void OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) override;
   void OnEventObserved(const ui::Event& event, mus::Window* target) override;
 
   // views::WidgetDelegate:

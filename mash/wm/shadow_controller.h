@@ -7,32 +7,32 @@
 
 #include "base/macros.h"
 #include "components/mus/public/cpp/window_observer.h"
-#include "components/mus/public/cpp/window_tree_connection_observer.h"
+#include "components/mus/public/cpp/window_tree_client_observer.h"
 
 namespace mus {
-class WindowTreeConnection;
+class WindowTreeClient;
 }
 
 namespace mash {
 namespace wm {
 
-class ShadowController : public mus::WindowTreeConnectionObserver,
+class ShadowController : public mus::WindowTreeClientObserver,
                          public mus::WindowObserver {
  public:
-  explicit ShadowController(mus::WindowTreeConnection* window_tree);
+  explicit ShadowController(mus::WindowTreeClient* window_tree);
   ~ShadowController() override;
 
  private:
   void SetActiveWindow(mus::Window* window);
 
-  // mus::WindowTreeConnectionObserver:
+  // mus::WindowTreeClientObserver:
   void OnWindowTreeFocusChanged(mus::Window* gained_focus,
                                 mus::Window* lost_focus) override;
 
   // mus::WindowObserver:
   void OnWindowDestroying(mus::Window* window) override;
 
-  mus::WindowTreeConnection* window_tree_;
+  mus::WindowTreeClient* window_tree_;
   mus::Window* active_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ShadowController);

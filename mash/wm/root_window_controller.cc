@@ -23,7 +23,7 @@
 #include "components/mus/common/util.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "components/mus/public/cpp/window_tree_host_factory.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "mash/session/public/interfaces/session.mojom.h"
@@ -87,20 +87,18 @@ class WorkspaceLayoutManagerDelegateImpl
 RootWindowController* RootWindowController::CreateFromDisplay(
     WindowManagerApplication* app,
     mus::mojom::DisplayPtr display,
-    mojo::InterfaceRequest<mus::mojom::WindowTreeClient> client_request) {
+    mus::mojom::WindowTreeClientRequest client_request) {
   RootWindowController* controller = new RootWindowController(app);
   controller->display_ = display.To<display::Display>();
-  mus::WindowTreeConnection::CreateForWindowManager(
-      controller, std::move(client_request),
-      mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED,
-      controller->window_manager_.get());
+  new mus::WindowTreeClient(controller, controller->window_manager_.get(),
+                            std::move(client_request));
   return controller;
 }
 
 void RootWindowController::Destroy() {
   // See class description for details on lifetime.
   if (root_) {
-    delete root_->connection();
+    delete root_->window_tree();
   } else {
     // This case only happens if we're destroyed before OnEmbed().
     delete this;
@@ -192,13 +190,13 @@ void RootWindowController::OnEmbed(mus::Window* root) {
 
   window_manager_->Initialize(this, app_->session());
 
-  shadow_controller_.reset(new ShadowController(root->connection()));
+  shadow_controller_.reset(new ShadowController(root->window_tree()));
 
   app_->OnRootWindowControllerDoneInit(this);
 }
 
-void RootWindowController::OnConnectionLost(
-    mus::WindowTreeConnection* connection) {
+void RootWindowController::OnWindowTreeClientDestroyed(
+    mus::WindowTreeClient* client) {
   shadow_controller_.reset();
   delete this;
 }
@@ -242,7 +240,7 @@ void RootWindowController::CreateContainer(
   properties[mus::mojom::WindowManager::kName_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(container_name.str());
 
-  mus::Window* window = root_->connection()->NewWindow(&properties);
+  mus::Window* window = root_->window_tree()->NewWindow(&properties);
   window->set_local_id(ContainerToLocalId(container));
   layout_managers_[window].reset(new FillLayout(window));
   WmWindowMus::Get(window)->SetShellWindowId(

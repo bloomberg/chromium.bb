@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/tests/test_window_tree_connection_setup.h"
+#include "components/mus/public/cpp/tests/test_window_tree_client_setup.h"
 #include "mash/wm/window_manager_application.h"
 
 namespace base {
@@ -28,7 +28,7 @@ namespace wm {
 
 class WmTestScreen;
 
-// WMTestHelper is responsible for configuring a WindowTreeConnection that
+// WMTestHelper is responsible for configuring a WindowTreeClient that
 // does not talk to mus. Additionally a test Screen (WmTestScreen) is created.
 class WmTestHelper {
  public:
@@ -45,7 +45,7 @@ class WmTestHelper {
 
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;
-  mus::TestWindowTreeConnectionSetup window_tree_connection_setup_;
+  mus::TestWindowTreeClientSetup window_tree_client_setup_;
   WindowManagerApplication window_manager_app_;
   WmTestScreen* screen_ = nullptr;  // Owned by |window_manager_app_|.
 

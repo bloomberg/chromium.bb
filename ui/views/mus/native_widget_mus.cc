@@ -12,7 +12,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_property.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "components/mus/public/interfaces/cursor.mojom.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
@@ -522,9 +522,8 @@ NativeWidgetMus::~NativeWidgetMus() {
 }
 
 // static
-void NativeWidgetMus::NotifyFrameChanged(
-    mus::WindowTreeConnection* connection) {
-  for (mus::Window* window : connection->GetRoots()) {
+void NativeWidgetMus::NotifyFrameChanged(mus::WindowTreeClient* client) {
+  for (mus::Window* window : client->GetRoots()) {
     NativeWidgetMus* native_widget =
         window->GetLocalProperty(kNativeWidgetMusKey);
     if (native_widget && native_widget->GetWidget()->non_client_view()) {
@@ -980,12 +979,12 @@ void NativeWidgetMus::Activate() {
 
 void NativeWidgetMus::Deactivate() {
   if (IsActive())
-    window_->connection()->ClearFocus();
+    window_->window_tree()->ClearFocus();
 }
 
 bool NativeWidgetMus::IsActive() const {
   mus::Window* focused =
-      window_ ? window_->connection()->GetFocusedWindow() : nullptr;
+      window_ ? window_->window_tree()->GetFocusedWindow() : nullptr;
   return focused && window_->Contains(focused);
 }
 
@@ -1108,7 +1107,7 @@ void NativeWidgetMus::ClearNativeFocus() {
   if (!IsActive())
     return;
   mus::Window* focused =
-      window_ ? window_->connection()->GetFocusedWindow() : nullptr;
+      window_ ? window_->window_tree()->GetFocusedWindow() : nullptr;
   if (focused && window_->Contains(focused) && focused != window_)
     window_->SetFocus();
   // Move aura-focus back to |content_|, so that the Widget still receives

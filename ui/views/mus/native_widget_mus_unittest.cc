@@ -7,10 +7,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/mus/public/cpp/property_type_converters.h"
-#include "components/mus/public/cpp/tests/window_tree_client_impl_private.h"
+#include "components/mus/public/cpp/tests/window_tree_client_private.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -348,7 +348,7 @@ TEST_F(NativeWidgetMusTest, ChildVisibilityDoesntEffectParent) {
 
   // Create a child window, make it visible and parent it to the Widget's
   // window.
-  mus::Window* child_window = window->connection()->NewWindow();
+  mus::Window* child_window = window->window_tree()->NewWindow();
   child_window->SetVisible(true);
   window->AddChild(child_window);
 
@@ -416,7 +416,7 @@ TEST_F(NativeWidgetMusTest, WidgetReceivesEvent) {
   std::unique_ptr<ui::MouseEvent> mouse = CreateMouseEvent();
   NativeWidgetMus* native_widget =
       static_cast<NativeWidgetMus*>(widget->native_widget_private());
-  mus::WindowTreeClientImplPrivate test_api(native_widget->window());
+  mus::WindowTreeClientPrivate test_api(native_widget->window());
   test_api.CallOnWindowInputEvent(native_widget->window(), *mouse);
   EXPECT_EQ(1, handler.num_mouse_events());
 }

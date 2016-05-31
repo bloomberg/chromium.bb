@@ -12,10 +12,10 @@ source_set("unittest_support") {
     "test_window.h",
     "test_window_tree.cc",
     "test_window_tree.h",
-    "test_window_tree_connection_setup.cc",
-    "test_window_tree_connection_setup.h",
-    "window_tree_client_impl_private.cc",
-    "window_tree_client_impl_private.h",
+    "test_window_tree_client_setup.cc",
+    "test_window_tree_client_setup.h",
+    "window_tree_client_private.cc",
+    "window_tree_client_private.h",
   ]
 
   deps = [
@@ -54,7 +54,7 @@ test("mus_public_unittests") {
     "run_all_unittests.cc",
     "window_server_test_suite.cc",
     "window_server_test_suite.h",
-    "window_tree_client_impl_unittest.cc",
+    "window_tree_client_unittest.cc",
     "window_unittest.cc",
   ]
 

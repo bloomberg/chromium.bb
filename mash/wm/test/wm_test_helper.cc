@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "components/mus/public/cpp/property_type_converters.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "mash/wm/root_window_controller.h"
 #include "mash/wm/test/wm_test_screen.h"
 #include "mash/wm/window_manager.h"
@@ -44,7 +44,7 @@ void WmTestHelper::Init() {
   screen_->display_list()->AddDisplay(root_window_controller->display(),
                                       views::DisplayList::Type::PRIMARY);
 
-  window_tree_connection_setup_.Init(
+  window_tree_client_setup_.Init(
       root_window_controller, root_window_controller->window_manager_.get());
   root_window_controller->root()->SetBounds(display_bounds);
   window_manager_app_.AddRootWindowController(root_window_controller);

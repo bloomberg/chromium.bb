@@ -113,11 +113,11 @@ std::string WindowParentToString(Id window, Id parent) {
 // -----------------------------------------------------------------------------
 
 // A WindowTreeClient implementation that logs all changes to a tracker.
-class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
-                                 public TestChangeTracker::Delegate,
-                                 public mojom::WindowManager {
+class TestWindowTreeClient : public mojom::WindowTreeClient,
+                             public TestChangeTracker::Delegate,
+                             public mojom::WindowManager {
  public:
-  TestWindowTreeClientImpl()
+  TestWindowTreeClient()
       : binding_(this),
         client_id_(0),
         root_window_id_(0),
@@ -436,12 +436,12 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
       window_manager_binding_;
   mojom::WindowManagerClientAssociatedPtr window_manager_client_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClientImpl);
+  DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient);
 };
 
 // -----------------------------------------------------------------------------
 
-// InterfaceFactory for vending TestWindowTreeClientImpls.
+// InterfaceFactory for vending TestWindowTreeClients.
 class WindowTreeClientFactory
     : public shell::InterfaceFactory<WindowTreeClient> {
  public:
@@ -449,7 +449,7 @@ class WindowTreeClientFactory
   ~WindowTreeClientFactory() override {}
 
   // Runs a nested MessageLoop until a new instance has been created.
-  std::unique_ptr<TestWindowTreeClientImpl> WaitForInstance() {
+  std::unique_ptr<TestWindowTreeClient> WaitForInstance() {
     if (!client_impl_.get()) {
       DCHECK(!run_loop_);
       run_loop_.reset(new base::RunLoop);
@@ -463,13 +463,13 @@ class WindowTreeClientFactory
   // InterfaceFactory<WindowTreeClient>:
   void Create(Connection* connection,
               InterfaceRequest<WindowTreeClient> request) override {
-    client_impl_.reset(new TestWindowTreeClientImpl());
+    client_impl_.reset(new TestWindowTreeClient());
     client_impl_->Bind(std::move(request));
     if (run_loop_.get())
       run_loop_->Quit();
   }
 
-  std::unique_ptr<TestWindowTreeClientImpl> client_impl_;
+  std::unique_ptr<TestWindowTreeClient> client_impl_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientFactory);
@@ -496,9 +496,9 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
   WindowTree* wt2() { return wt_client2_->tree(); }
   WindowTree* wt3() { return wt_client3_->tree(); }
 
-  TestWindowTreeClientImpl* wt_client1() { return wt_client1_.get(); }
-  TestWindowTreeClientImpl* wt_client2() { return wt_client2_.get(); }
-  TestWindowTreeClientImpl* wt_client3() { return wt_client3_.get(); }
+  TestWindowTreeClient* wt_client1() { return wt_client1_.get(); }
+  TestWindowTreeClient* wt_client2() { return wt_client2_.get(); }
+  TestWindowTreeClient* wt_client3() { return wt_client3_.get(); }
 
   Id root_window_id() const { return root_window_id_; }
 
@@ -534,19 +534,19 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
     ASSERT_TRUE(wt_client3_.get() != nullptr);
   }
 
-  std::unique_ptr<TestWindowTreeClientImpl> WaitForWindowTreeClient() {
+  std::unique_ptr<TestWindowTreeClient> WaitForWindowTreeClient() {
     return client_factory_->WaitForInstance();
   }
 
   // Establishes a new client by way of Embed() on the specified WindowTree.
-  std::unique_ptr<TestWindowTreeClientImpl> EstablishClientViaEmbed(
+  std::unique_ptr<TestWindowTreeClient> EstablishClientViaEmbed(
       WindowTree* owner,
       Id root_id,
       int* client_id) {
     return EstablishClientViaEmbedWithPolicyBitmask(owner, root_id, client_id);
   }
 
-  std::unique_ptr<TestWindowTreeClientImpl>
+  std::unique_ptr<TestWindowTreeClient>
   EstablishClientViaEmbedWithPolicyBitmask(WindowTree* owner,
                                            Id root_id,
                                            int* client_id) {
@@ -554,7 +554,7 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
       ADD_FAILURE() << "Embed() failed";
       return nullptr;
     }
-    std::unique_ptr<TestWindowTreeClientImpl> client =
+    std::unique_ptr<TestWindowTreeClient> client =
         client_factory_->WaitForInstance();
     if (!client.get()) {
       ADD_FAILURE() << "WaitForInstance failed";
@@ -584,7 +584,7 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
     connector()->ConnectToInterface("mojo:mus", &factory);
 
     mojom::WindowTreeClientPtr tree_client_ptr;
-    wt_client1_.reset(new TestWindowTreeClientImpl());
+    wt_client1_.reset(new TestWindowTreeClient());
     wt_client1_->Bind(GetProxy(&tree_client_ptr));
 
     factory->CreateWindowTreeHost(GetProxy(&host_),
@@ -616,9 +616,9 @@ class WindowTreeClientTest : public WindowServerShellTestBase {
     WindowServerShellTestBase::TearDown();
   }
 
-  std::unique_ptr<TestWindowTreeClientImpl> wt_client1_;
-  std::unique_ptr<TestWindowTreeClientImpl> wt_client2_;
-  std::unique_ptr<TestWindowTreeClientImpl> wt_client3_;
+  std::unique_ptr<TestWindowTreeClient> wt_client1_;
+  std::unique_ptr<TestWindowTreeClient> wt_client2_;
+  std::unique_ptr<TestWindowTreeClient> wt_client3_;
 
   mojom::WindowTreeHostPtr host_;
 
@@ -1365,7 +1365,7 @@ TEST_F(WindowTreeClientTest, EmbedWithSameWindowId2) {
     changes3()->clear();
 
     // We should get a new client for the new embedding.
-    std::unique_ptr<TestWindowTreeClientImpl> client4(
+    std::unique_ptr<TestWindowTreeClient> client4(
         EstablishClientViaEmbed(wt1(), window_1_1, nullptr));
     ASSERT_TRUE(client4.get());
     EXPECT_EQ("[" + WindowParentToString(window_1_1, kNullParentId) + "]",
@@ -1803,7 +1803,7 @@ TEST_F(WindowTreeClientTest, DontCleanMapOnDestroy) {
 TEST_F(WindowTreeClientTest, EmbedSupplyingWindowTreeClient) {
   ASSERT_TRUE(wt_client1()->NewWindow(1));
 
-  TestWindowTreeClientImpl client2;
+  TestWindowTreeClient client2;
   mojom::WindowTreeClientPtr client2_ptr;
   mojo::Binding<WindowTreeClient> client2_binding(&client2, &client2_ptr);
   ASSERT_TRUE(Embed(wt1(), BuildWindowId(client_id_1(), 1),

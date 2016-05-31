@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "mash/public/interfaces/launchable.mojom.h"
 #include "mojo/public/c/system/main.h"
 #include "services/navigation/public/interfaces/view.mojom.h"
@@ -229,7 +229,7 @@ class UI : public views::WidgetDelegateView,
       const views::View::ViewHierarchyChangedDetails& details) override {
     if (details.is_add && GetWidget() && !content_area_) {
       mus::Window* window = aura::GetMusWindow(GetWidget()->GetNativeWindow());
-      content_area_ = window->connection()->NewWindow(nullptr);
+      content_area_ = window->window_tree()->NewWindow(nullptr);
       window->AddChild(content_area_);
 
       mus::mojom::WindowTreeClientPtr client;

@@ -11,7 +11,7 @@
 #include "ash/wm/common/wm_window_property.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "mash/wm/bridge/mus_layout_manager_adapter.h"
 #include "mash/wm/bridge/wm_globals_mus.h"
 #include "mash/wm/bridge/wm_root_window_controller_mus.h"
@@ -559,7 +559,7 @@ bool WmWindowMus::IsFocused() const {
 }
 
 bool WmWindowMus::IsActive() const {
-  mus::Window* focused = window_->connection()->GetFocusedWindow();
+  mus::Window* focused = window_->window_tree()->GetFocusedWindow();
   return focused && window_->Contains(focused);
 }
 
@@ -575,7 +575,7 @@ void WmWindowMus::Activate() {
 
 void WmWindowMus::Deactivate() {
   if (IsActive())
-    window_->connection()->ClearFocus();
+    window_->window_tree()->ClearFocus();
 }
 
 void WmWindowMus::SetFullscreen() {

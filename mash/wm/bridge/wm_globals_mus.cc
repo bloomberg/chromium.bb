@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "components/mus/common/util.h"
 #include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "mash/wm/bridge/wm_root_window_controller_mus.h"
 #include "mash/wm/bridge/wm_window_mus.h"
 #include "mash/wm/container_ids.h"
@@ -21,14 +21,14 @@
 namespace mash {
 namespace wm {
 
-WmGlobalsMus::WmGlobalsMus(mus::WindowTreeConnection* connection)
-    : connection_(connection) {
-  connection_->AddObserver(this);
+WmGlobalsMus::WmGlobalsMus(mus::WindowTreeClient* client)
+    : client_(client) {
+  client_->AddObserver(this);
   WmGlobals::Set(this);
 }
 
 WmGlobalsMus::~WmGlobalsMus() {
-  RemoveConnectionObserver();
+  RemoveClientObserver();
   WmGlobals::Set(nullptr);
 }
 
@@ -72,11 +72,11 @@ WmRootWindowControllerMus* WmGlobalsMus::GetRootWindowControllerWithDisplayId(
 }
 
 ash::wm::WmWindow* WmGlobalsMus::GetFocusedWindow() {
-  return WmWindowMus::Get(connection_->GetFocusedWindow());
+  return WmWindowMus::Get(client_->GetFocusedWindow());
 }
 
 ash::wm::WmWindow* WmGlobalsMus::GetActiveWindow() {
-  return GetToplevelAncestor(connection_->GetFocusedWindow());
+  return GetToplevelAncestor(client_->GetFocusedWindow());
 }
 
 ash::wm::WmWindow* WmGlobalsMus::GetPrimaryRootWindow() {
@@ -194,12 +194,12 @@ bool WmGlobalsMus::IsActivationParent(mus::Window* window) {
   return false;
 }
 
-void WmGlobalsMus::RemoveConnectionObserver() {
-  if (!connection_)
+void WmGlobalsMus::RemoveClientObserver() {
+  if (!client_)
     return;
 
-  connection_->RemoveObserver(this);
-  connection_ = nullptr;
+  client_->RemoveObserver(this);
+  client_ = nullptr;
 }
 
 // TODO: support OnAttemptToReactivateWindow, http://crbug.com/615114.
@@ -214,10 +214,10 @@ void WmGlobalsMus::OnWindowTreeFocusChanged(mus::Window* gained_focus,
                     OnWindowActivated(gained_active, lost_active));
 }
 
-void WmGlobalsMus::OnWillDestroyConnection(
-    mus::WindowTreeConnection* connection) {
-  DCHECK_EQ(connection, connection_);
-  RemoveConnectionObserver();
+void WmGlobalsMus::OnWillDestroyClient(
+    mus::WindowTreeClient* client) {
+  DCHECK_EQ(client, client_);
+  RemoveClientObserver();
 }
 
 }  // namespace wm

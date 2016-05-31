@@ -30,9 +30,8 @@ class ServiceProviderImpl;
 class WindowObserver;
 class WindowSurface;
 class WindowSurfaceBinding;
-class WindowTreeClientImpl;
-class WindowTreeClientImplPrivate;
-class WindowTreeConnection;
+class WindowTreeClient;
+class WindowTreeClientPrivate;
 
 namespace {
 class OrderChangedNotifier;
@@ -42,7 +41,7 @@ class OrderChangedNotifier;
 template <typename T>
 struct WindowProperty;
 
-// Windows are owned by the WindowTreeConnection. See WindowTreeDelegate for
+// Windows are owned by the WindowTreeClient. See WindowTreeClientDelegate for
 // details on ownership.
 //
 // TODO(beng): Right now, you'll have to implement a WindowObserver to track
@@ -62,7 +61,7 @@ class Window {
   // immediately deleted.
   void Destroy();
 
-  WindowTreeConnection* connection() { return connection_; }
+  WindowTreeClient* window_tree() { return client_; }
 
   // The local_id is provided for client code. The local_id is not set or
   // manipulated by mus. The default value is -1.
@@ -205,7 +204,7 @@ class Window {
   void SetCapture();
   void ReleaseCapture();
 
-  // Focus. See WindowTreeConnection::ClearFocus() to reset focus.
+  // Focus. See WindowTreeClient::ClearFocus() to reset focus.
   void SetFocus();
   bool HasFocus() const;
   void SetCanFocus(bool can_focus);
@@ -232,16 +231,14 @@ class Window {
 
  private:
   friend class WindowPrivate;
-  friend class WindowTreeClientImpl;
-  friend class WindowTreeClientImplPrivate;
+  friend class WindowTreeClient;
+  friend class WindowTreeClientPrivate;
 
-  Window(WindowTreeConnection* connection, Id id);
+  Window(WindowTreeClient* client, Id id);
 
   // Used to identify this Window on the server. Clients can not change this
   // value.
   Id server_id() const { return server_id_; }
-
-  WindowTreeClientImpl* tree_client();
 
   // Applies a shared property change locally and forwards to the server. If
   // |data| is null, this property is deleted.
@@ -307,7 +304,7 @@ class Window {
   // RestackTransientDescendants.
   static Window** GetStackingTarget(Window* window);
 
-  WindowTreeConnection* connection_;
+  WindowTreeClient* client_;
   Id server_id_;
   int local_id_ = -1;
   Window* parent_;

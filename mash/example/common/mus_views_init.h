@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "components/mus/public/cpp/window_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "ui/views/mus/aura_init.h"
 #include "ui/views/views_delegate.h"
@@ -23,7 +23,7 @@ class AuraInit;
 
 // Does the necessary setup to use mus, views and the example wm.
 class MUSViewsInit : public views::ViewsDelegate,
-                     public mus::WindowTreeDelegate {
+                     public mus::WindowTreeClientDelegate {
  public:
   explicit MUSViewsInit(shell::ShellConnection* app);
   ~MUSViewsInit() override;
@@ -38,9 +38,9 @@ class MUSViewsInit : public views::ViewsDelegate,
       views::Widget::InitParams* params,
       views::internal::NativeWidgetDelegate* delegate) override;
 
-  // mus::WindowTreeDelegate:
+  // mus::WindowTreeClientDelegate:
   void OnEmbed(mus::Window* root) override;
-  void OnConnectionLost(mus::WindowTreeConnection* connection) override;
+  void OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) override;
 #if defined(OS_WIN)
   HICON GetSmallWindowIcon() const override;
 #endif

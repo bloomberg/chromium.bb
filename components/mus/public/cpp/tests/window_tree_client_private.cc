@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/public/cpp/tests/window_tree_client_impl_private.h"
+#include "components/mus/public/cpp/tests/window_tree_client_private.h"
 
-#include "components/mus/public/cpp/lib/window_tree_client_impl.h"
 #include "components/mus/public/cpp/window.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "ui/events/mojo/input_events_type_converters.h"
 
 namespace mus {
 
-WindowTreeClientImplPrivate::WindowTreeClientImplPrivate(
-    WindowTreeClientImpl* tree_client_impl)
+WindowTreeClientPrivate::WindowTreeClientPrivate(
+    WindowTreeClient* tree_client_impl)
     : tree_client_impl_(tree_client_impl) {}
 
-WindowTreeClientImplPrivate::WindowTreeClientImplPrivate(Window* window)
-    : WindowTreeClientImplPrivate(window->tree_client()) {}
+WindowTreeClientPrivate::WindowTreeClientPrivate(Window* window)
+    : WindowTreeClientPrivate(window->window_tree()) {}
 
-WindowTreeClientImplPrivate::~WindowTreeClientImplPrivate() {}
+WindowTreeClientPrivate::~WindowTreeClientPrivate() {}
 
-uint32_t WindowTreeClientImplPrivate::event_observer_id() {
+uint32_t WindowTreeClientPrivate::event_observer_id() {
   return tree_client_impl_->event_observer_id_;
 }
 
-void WindowTreeClientImplPrivate::OnEmbed(mojom::WindowTree* window_tree) {
+void WindowTreeClientPrivate::OnEmbed(mojom::WindowTree* window_tree) {
   mojom::WindowDataPtr root_data(mojom::WindowData::New());
   root_data->parent_id = 0;
   root_data->window_id = 1;
@@ -35,7 +35,7 @@ void WindowTreeClientImplPrivate::OnEmbed(mojom::WindowTree* window_tree) {
                                  display_id, focused_window_id, true);
 }
 
-void WindowTreeClientImplPrivate::CallOnWindowInputEvent(
+void WindowTreeClientPrivate::CallOnWindowInputEvent(
     Window* window,
     const ui::Event& event) {
   const uint32_t event_id = 0u;

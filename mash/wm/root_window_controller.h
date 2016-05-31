@@ -8,7 +8,8 @@
 #include <memory>
 
 #include "components/mus/public/cpp/window_observer.h"
-#include "components/mus/public/cpp/window_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_client.h"
+#include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
@@ -51,7 +52,7 @@ class WmTestHelper;
 // RootWindowController deletes itself when the root mus::Window is destroyed.
 // You can trigger deletion explicitly by way of Destroy().
 class RootWindowController : public mus::WindowObserver,
-                             public mus::WindowTreeDelegate,
+                             public mus::WindowTreeClientDelegate,
                              public ShelfLayoutManagerDelegate {
  public:
   static RootWindowController* CreateFromDisplay(
@@ -98,9 +99,9 @@ class RootWindowController : public mus::WindowObserver,
 
   void AddAccelerators();
 
-  // WindowTreeDelegate:
+  // WindowTreeClientDelegate:
   void OnEmbed(mus::Window* root) override;
-  void OnConnectionLost(mus::WindowTreeConnection* connection) override;
+  void OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) override;
   void OnEventObserved(const ui::Event& event, mus::Window* target) override;
 
   // mus::WindowObserver:

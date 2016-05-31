@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/public/cpp/lib/window_tree_client_impl.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 
 #include <stdint.h>
 
@@ -14,12 +14,12 @@
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/tests/test_window.h"
 #include "components/mus/public/cpp/tests/test_window_tree.h"
-#include "components/mus/public/cpp/tests/window_tree_client_impl_private.h"
+#include "components/mus/public/cpp/tests/window_tree_client_private.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tracker.h"
-#include "components/mus/public/cpp/window_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "mojo/common/common_type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
@@ -48,18 +48,18 @@ mojo::Array<uint8_t> Int32ToPropertyTransportValue(int32_t value) {
   return transport_value;
 }
 
-class TestWindowTreeDelegate : public WindowTreeDelegate {
+class TestWindowTreeClientDelegate : public WindowTreeClientDelegate {
  public:
-  TestWindowTreeDelegate() {}
-  ~TestWindowTreeDelegate() override {}
+  TestWindowTreeClientDelegate() {}
+  ~TestWindowTreeClientDelegate() override {}
 
   ui::Event* last_event_observed() { return last_event_observed_.get(); }
 
   void Reset() { last_event_observed_.reset(); }
 
-  // WindowTreeDelegate:
+  // WindowTreeClientDelegate:
   void OnEmbed(Window* root) override {}
-  void OnConnectionLost(WindowTreeConnection* connection) override {}
+  void OnWindowTreeClientDestroyed(WindowTreeClient* client) override {}
   void OnEventObserved(const ui::Event& event, Window* target) override {
     last_event_observed_ = ui::Event::Clone(event);
   }
@@ -67,18 +67,18 @@ class TestWindowTreeDelegate : public WindowTreeDelegate {
  private:
   std::unique_ptr<ui::Event> last_event_observed_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWindowTreeDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClientDelegate);
 };
 
 class WindowTreeSetup {
  public:
   WindowTreeSetup() : tree_client_(&window_tree_delegate_, nullptr, nullptr) {
-    WindowTreeClientImplPrivate(&tree_client_).OnEmbed(&window_tree_);
+    WindowTreeClientPrivate(&tree_client_).OnEmbed(&window_tree_);
     window_tree_.GetAndClearChangeId(nullptr);
   }
 
-  WindowTreeConnection* window_tree_connection() {
-    return static_cast<WindowTreeConnection*>(&tree_client_);
+  WindowTreeClient* client() {
+    return &tree_client_;
   }
 
   mojom::WindowTreeClient* window_tree_client() {
@@ -87,24 +87,23 @@ class WindowTreeSetup {
 
   TestWindowTree* window_tree() { return &window_tree_; }
 
-  TestWindowTreeDelegate* window_tree_delegate() {
+  TestWindowTreeClientDelegate* window_tree_delegate() {
     return &window_tree_delegate_;
   }
 
   Window* GetFirstRoot() {
-    return window_tree_connection()->GetRoots().empty()
-               ? nullptr
-               : *window_tree_connection()->GetRoots().begin();
+    return client()->GetRoots().empty() ? nullptr
+                                        : *client()->GetRoots().begin();
   }
 
   uint32_t GetEventObserverId() {
-    return WindowTreeClientImplPrivate(&tree_client_).event_observer_id();
+    return WindowTreeClientPrivate(&tree_client_).event_observer_id();
   }
 
  private:
   TestWindowTree window_tree_;
-  TestWindowTreeDelegate window_tree_delegate_;
-  WindowTreeClientImpl tree_client_;
+  TestWindowTreeClientDelegate window_tree_delegate_;
+  WindowTreeClient tree_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeSetup);
 };
@@ -153,10 +152,10 @@ class TestInputEventHandler : public InputEventHandler {
   DISALLOW_COPY_AND_ASSIGN(TestInputEventHandler);
 };
 
-using WindowTreeClientImplTest = testing::Test;
+using WindowTreeClientTest = testing::Test;
 
 // Verifies bounds are reverted if the server replied that the change failed.
-TEST_F(WindowTreeClientImplTest, SetBoundsFailed) {
+TEST_F(WindowTreeClientTest, SetBoundsFailed) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -172,7 +171,7 @@ TEST_F(WindowTreeClientImplTest, SetBoundsFailed) {
 
 // Simulates a bounds change, and while the bounds change is in flight the
 // server replies with a new bounds and the original bounds change fails.
-TEST_F(WindowTreeClientImplTest, SetBoundsFailedWithPendingChange) {
+TEST_F(WindowTreeClientTest, SetBoundsFailedWithPendingChange) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -203,7 +202,7 @@ TEST_F(WindowTreeClientImplTest, SetBoundsFailedWithPendingChange) {
   EXPECT_EQ(original_bounds, root->bounds());
 }
 
-TEST_F(WindowTreeClientImplTest, TwoInFlightBoundsChangesBothCanceled) {
+TEST_F(WindowTreeClientTest, TwoInFlightBoundsChangesBothCanceled) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -233,7 +232,7 @@ TEST_F(WindowTreeClientImplTest, TwoInFlightBoundsChangesBothCanceled) {
 
 // Verifies properties are reverted if the server replied that the change
 // failed.
-TEST_F(WindowTreeClientImplTest, SetPropertyFailed) {
+TEST_F(WindowTreeClientTest, SetPropertyFailed) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -250,7 +249,7 @@ TEST_F(WindowTreeClientImplTest, SetPropertyFailed) {
 
 // Simulates a property change, and while the property change is in flight the
 // server replies with a new property and the original property change fails.
-TEST_F(WindowTreeClientImplTest, SetPropertyFailedWithPendingChange) {
+TEST_F(WindowTreeClientTest, SetPropertyFailedWithPendingChange) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -284,7 +283,7 @@ TEST_F(WindowTreeClientImplTest, SetPropertyFailedWithPendingChange) {
 }
 
 // Verifies visible is reverted if the server replied that the change failed.
-TEST_F(WindowTreeClientImplTest, SetVisibleFailed) {
+TEST_F(WindowTreeClientTest, SetVisibleFailed) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -300,7 +299,7 @@ TEST_F(WindowTreeClientImplTest, SetVisibleFailed) {
 
 // Simulates a visible change, and while the visible change is in flight the
 // server replies with a new visible and the original visible change fails.
-TEST_F(WindowTreeClientImplTest, SetVisibleFailedWithPendingChange) {
+TEST_F(WindowTreeClientTest, SetVisibleFailedWithPendingChange) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -333,7 +332,7 @@ TEST_F(WindowTreeClientImplTest, SetVisibleFailedWithPendingChange) {
 
 // Verifies that local opacity is not changed if the server replied that the
 // change succeeded.
-TEST_F(WindowTreeClientImplTest, SetOpacitySucceeds) {
+TEST_F(WindowTreeClientTest, SetOpacitySucceeds) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -350,7 +349,7 @@ TEST_F(WindowTreeClientImplTest, SetOpacitySucceeds) {
 
 // Verifies that opacity is reverted if the server replied that the change
 // failed.
-TEST_F(WindowTreeClientImplTest, SetOpacityFailed) {
+TEST_F(WindowTreeClientTest, SetOpacityFailed) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -366,7 +365,7 @@ TEST_F(WindowTreeClientImplTest, SetOpacityFailed) {
 
 // Simulates the server changing the opacitry while there is an opacity change
 // in flight, causing the requested change to fail.
-TEST_F(WindowTreeClientImplTest, SetOpacityFailedWithPendingChange) {
+TEST_F(WindowTreeClientTest, SetOpacityFailedWithPendingChange) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -399,7 +398,7 @@ TEST_F(WindowTreeClientImplTest, SetOpacityFailedWithPendingChange) {
 
 // Tests that when there are multiple changes in flight, that failing changes
 // update the revert state of subsequent changes.
-TEST_F(WindowTreeClientImplTest, SetOpacityFailedWithMultiplePendingChange) {
+TEST_F(WindowTreeClientTest, SetOpacityFailedWithMultiplePendingChange) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -428,7 +427,7 @@ TEST_F(WindowTreeClientImplTest, SetOpacityFailedWithMultiplePendingChange) {
 }
 
 // Verifies |is_modal| is reverted if the server replied that the change failed.
-TEST_F(WindowTreeClientImplTest, SetModalFailed) {
+TEST_F(WindowTreeClientTest, SetModalFailed) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -441,7 +440,7 @@ TEST_F(WindowTreeClientImplTest, SetModalFailed) {
   EXPECT_FALSE(root->is_modal());
 }
 
-TEST_F(WindowTreeClientImplTest, InputEventBasic) {
+TEST_F(WindowTreeClientTest, InputEventBasic) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -470,7 +469,7 @@ TEST_F(WindowTreeClientImplTest, InputEventBasic) {
 
 // Tests event observers triggered by events that did not hit a target in this
 // window tree.
-TEST_F(WindowTreeClientImplTest, OnEventObserved) {
+TEST_F(WindowTreeClientTest, OnEventObserved) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -479,7 +478,7 @@ TEST_F(WindowTreeClientImplTest, OnEventObserved) {
   mojom::EventMatcherPtr matcher = mojom::EventMatcher::New();
   matcher->type_matcher = mojom::EventTypeMatcher::New();
   matcher->type_matcher->type = mojom::EventType::POINTER_DOWN;
-  setup.window_tree_connection()->SetEventObserver(std::move(matcher));
+  setup.client()->SetEventObserver(std::move(matcher));
 
   // Simulate the server sending an observed event.
   uint32_t event_observer_id = setup.GetEventObserverId();
@@ -496,7 +495,7 @@ TEST_F(WindowTreeClientImplTest, OnEventObserved) {
   setup.window_tree_delegate()->Reset();
 
   // Clear the event observer.
-  setup.window_tree_connection()->SetEventObserver(nullptr);
+  setup.client()->SetEventObserver(nullptr);
 
   // Simulate another event from the server.
   setup.window_tree_client()->OnEventObserved(
@@ -507,7 +506,7 @@ TEST_F(WindowTreeClientImplTest, OnEventObserved) {
 }
 
 // Tests event observers triggered by events that hit this window tree.
-TEST_F(WindowTreeClientImplTest, OnWindowInputEventWithEventObserver) {
+TEST_F(WindowTreeClientTest, OnWindowInputEventWithEventObserver) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -516,7 +515,7 @@ TEST_F(WindowTreeClientImplTest, OnWindowInputEventWithEventObserver) {
   mojom::EventMatcherPtr matcher = mojom::EventMatcher::New();
   matcher->type_matcher = mojom::EventTypeMatcher::New();
   matcher->type_matcher->type = mojom::EventType::POINTER_DOWN;
-  setup.window_tree_connection()->SetEventObserver(std::move(matcher));
+  setup.client()->SetEventObserver(std::move(matcher));
 
   // Simulate the server dispatching an event that also matched the observer.
   uint32_t event_observer_id = setup.GetEventObserverId();
@@ -535,7 +534,7 @@ TEST_F(WindowTreeClientImplTest, OnWindowInputEventWithEventObserver) {
 
 // Tests that replacing an event observer with a new one results in only new
 // events being observed.
-TEST_F(WindowTreeClientImplTest, EventObserverReplaced) {
+TEST_F(WindowTreeClientTest, EventObserverReplaced) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -544,14 +543,14 @@ TEST_F(WindowTreeClientImplTest, EventObserverReplaced) {
   mojom::EventMatcherPtr matcher1 = mojom::EventMatcher::New();
   matcher1->type_matcher = mojom::EventTypeMatcher::New();
   matcher1->type_matcher->type = mojom::EventType::POINTER_DOWN;
-  setup.window_tree_connection()->SetEventObserver(std::move(matcher1));
+  setup.client()->SetEventObserver(std::move(matcher1));
   uint32_t event_observer_id1 = setup.GetEventObserverId();
 
   // Replace it with a second observer.
   mojom::EventMatcherPtr matcher2 = mojom::EventMatcher::New();
   matcher2->type_matcher = mojom::EventTypeMatcher::New();
   matcher2->type_matcher->type = mojom::EventType::POINTER_UP;
-  setup.window_tree_connection()->SetEventObserver(std::move(matcher2));
+  setup.client()->SetEventObserver(std::move(matcher2));
   uint32_t event_observer_id2 = setup.GetEventObserverId();
 
   // Simulate the server sending an observed event that matched the old observer
@@ -579,15 +578,15 @@ TEST_F(WindowTreeClientImplTest, EventObserverReplaced) {
 }
 
 // Verifies focus is reverted if the server replied that the change failed.
-TEST_F(WindowTreeClientImplTest, SetFocusFailed) {
+TEST_F(WindowTreeClientTest, SetFocusFailed) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
   root->SetVisible(true);
-  Window* child = setup.window_tree_connection()->NewWindow();
+  Window* child = setup.client()->NewWindow();
   child->SetVisible(true);
   root->AddChild(child);
-  Window* original_focus = setup.window_tree_connection()->GetFocusedWindow();
+  Window* original_focus = setup.client()->GetFocusedWindow();
   Window* new_focus = child;
   ASSERT_NE(new_focus, original_focus);
   new_focus->SetFocus();
@@ -595,23 +594,23 @@ TEST_F(WindowTreeClientImplTest, SetFocusFailed) {
   uint32_t change_id;
   ASSERT_TRUE(setup.window_tree()->GetAndClearChangeId(&change_id));
   setup.window_tree_client()->OnChangeCompleted(change_id, false);
-  EXPECT_EQ(original_focus, setup.window_tree_connection()->GetFocusedWindow());
+  EXPECT_EQ(original_focus, setup.client()->GetFocusedWindow());
 }
 
 // Simulates a focus change, and while the focus change is in flight the server
 // replies with a new focus and the original focus change fails.
-TEST_F(WindowTreeClientImplTest, SetFocusFailedWithPendingChange) {
+TEST_F(WindowTreeClientTest, SetFocusFailedWithPendingChange) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
   root->SetVisible(true);
-  Window* child1 = setup.window_tree_connection()->NewWindow();
+  Window* child1 = setup.client()->NewWindow();
   child1->SetVisible(true);
   root->AddChild(child1);
-  Window* child2 = setup.window_tree_connection()->NewWindow();
+  Window* child2 = setup.client()->NewWindow();
   child2->SetVisible(true);
   root->AddChild(child2);
-  Window* original_focus = setup.window_tree_connection()->GetFocusedWindow();
+  Window* original_focus = setup.client()->GetFocusedWindow();
   Window* new_focus = child1;
   ASSERT_NE(new_focus, original_focus);
   new_focus->SetFocus();
@@ -630,22 +629,22 @@ TEST_F(WindowTreeClientImplTest, SetFocusFailedWithPendingChange) {
   setup.window_tree_client()->OnChangeCompleted(change_id, false);
   EXPECT_FALSE(child1->HasFocus());
   EXPECT_TRUE(child2->HasFocus());
-  EXPECT_EQ(child2, setup.window_tree_connection()->GetFocusedWindow());
+  EXPECT_EQ(child2, setup.client()->GetFocusedWindow());
 
   // Simulate server changing focus to child1. Should take immediately.
   setup.window_tree_client()->OnWindowFocused(server_id(child1));
   EXPECT_TRUE(child1->HasFocus());
 }
 
-TEST_F(WindowTreeClientImplTest, FocusOnRemovedWindowWithInFlightFocusChange) {
+TEST_F(WindowTreeClientTest, FocusOnRemovedWindowWithInFlightFocusChange) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
   root->SetVisible(true);
-  Window* child1 = setup.window_tree_connection()->NewWindow();
+  Window* child1 = setup.client()->NewWindow();
   child1->SetVisible(true);
   root->AddChild(child1);
-  Window* child2 = setup.window_tree_connection()->NewWindow();
+  Window* child2 = setup.client()->NewWindow();
   child2->SetVisible(true);
   root->AddChild(child2);
 
@@ -655,7 +654,7 @@ TEST_F(WindowTreeClientImplTest, FocusOnRemovedWindowWithInFlightFocusChange) {
 
   // Destroy child1, which should set focus to null.
   child1->Destroy();
-  EXPECT_EQ(nullptr, setup.window_tree_connection()->GetFocusedWindow());
+  EXPECT_EQ(nullptr, setup.client()->GetFocusedWindow());
 
   // Server changes focus to 2.
   setup.window_tree_client()->OnWindowFocused(server_id(child2));
@@ -664,7 +663,7 @@ TEST_F(WindowTreeClientImplTest, FocusOnRemovedWindowWithInFlightFocusChange) {
 
   // Ack the change, focus should still be null.
   setup.window_tree_client()->OnChangeCompleted(change_id, true);
-  EXPECT_EQ(nullptr, setup.window_tree_connection()->GetFocusedWindow());
+  EXPECT_EQ(nullptr, setup.client()->GetFocusedWindow());
 
   // Change to 2 again, this time it should take.
   setup.window_tree_client()->OnWindowFocused(server_id(child2));
@@ -693,11 +692,11 @@ class ToggleVisibilityFromDestroyedObserver : public WindowObserver {
   DISALLOW_COPY_AND_ASSIGN(ToggleVisibilityFromDestroyedObserver);
 };
 
-TEST_F(WindowTreeClientImplTest, ToggleVisibilityFromWindowDestroyed) {
+TEST_F(WindowTreeClientTest, ToggleVisibilityFromWindowDestroyed) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
-  Window* child1 = setup.window_tree_connection()->NewWindow();
+  Window* child1 = setup.client()->NewWindow();
   root->AddChild(child1);
   ToggleVisibilityFromDestroyedObserver toggler(child1);
   // Destroying the window triggers
@@ -710,18 +709,18 @@ TEST_F(WindowTreeClientImplTest, ToggleVisibilityFromWindowDestroyed) {
   setup.window_tree_client()->OnChangeCompleted(change_id, true);
 }
 
-TEST_F(WindowTreeClientImplTest, NewTopLevelWindow) {
+TEST_F(WindowTreeClientTest, NewTopLevelWindow) {
   WindowTreeSetup setup;
   Window* root1 = setup.GetFirstRoot();
   ASSERT_TRUE(root1);
-  Window* root2 = setup.window_tree_connection()->NewTopLevelWindow(nullptr);
+  Window* root2 = setup.client()->NewTopLevelWindow(nullptr);
   ASSERT_TRUE(root2);
   EXPECT_TRUE(WindowPrivate(root2).parent_drawn());
   ASSERT_NE(root2, root1);
   EXPECT_NE(server_id(root2), server_id(root1));
-  EXPECT_EQ(2u, setup.window_tree_connection()->GetRoots().size());
-  EXPECT_TRUE(setup.window_tree_connection()->GetRoots().count(root1) > 0u);
-  EXPECT_TRUE(setup.window_tree_connection()->GetRoots().count(root2) > 0u);
+  EXPECT_EQ(2u, setup.client()->GetRoots().size());
+  EXPECT_TRUE(setup.client()->GetRoots().count(root1) > 0u);
+  EXPECT_TRUE(setup.client()->GetRoots().count(root2) > 0u);
 
   // Ack the request to the windowtree to create the new window.
   uint32_t change_id;
@@ -743,15 +742,15 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindow) {
   // Destroy the first root, shouldn't initiate tear down.
   root1->Destroy();
   root1 = nullptr;
-  EXPECT_EQ(1u, setup.window_tree_connection()->GetRoots().size());
-  EXPECT_TRUE(setup.window_tree_connection()->GetRoots().count(root2) > 0u);
+  EXPECT_EQ(1u, setup.client()->GetRoots().size());
+  EXPECT_TRUE(setup.client()->GetRoots().count(root2) > 0u);
 }
 
-TEST_F(WindowTreeClientImplTest, NewTopLevelWindowGetsPropertiesFromData) {
+TEST_F(WindowTreeClientTest, NewTopLevelWindowGetsPropertiesFromData) {
   WindowTreeSetup setup;
   Window* root1 = setup.GetFirstRoot();
   ASSERT_TRUE(root1);
-  Window* root2 = setup.window_tree_connection()->NewTopLevelWindow(nullptr);
+  Window* root2 = setup.client()->NewTopLevelWindow(nullptr);
   ASSERT_TRUE(root2);
 
   EXPECT_FALSE(root2->IsDrawn());
@@ -777,11 +776,11 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindowGetsPropertiesFromData) {
   EXPECT_EQ(gfx::Rect(1, 2, 3, 4), root2->bounds());
 }
 
-TEST_F(WindowTreeClientImplTest, NewTopLevelWindowGetsAllChangesInFlight) {
+TEST_F(WindowTreeClientTest, NewTopLevelWindowGetsAllChangesInFlight) {
   WindowTreeSetup setup;
   Window* root1 = setup.GetFirstRoot();
   ASSERT_TRUE(root1);
-  Window* root2 = setup.window_tree_connection()->NewTopLevelWindow(nullptr);
+  Window* root2 = setup.client()->NewTopLevelWindow(nullptr);
   ASSERT_TRUE(root2);
 
   EXPECT_FALSE(root2->IsDrawn());
@@ -863,11 +862,11 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindowGetsAllChangesInFlight) {
 
 // Tests that if the client has multiple unowned windows, and one of them is a
 // transient child to another, the  teardown can happen cleanly.
-TEST_F(WindowTreeClientImplTest, MultipleUnOwnedWindowsDuringDestruction) {
+TEST_F(WindowTreeClientTest, MultipleUnOwnedWindowsDuringDestruction) {
   std::unique_ptr<WindowTreeSetup> setup(new WindowTreeSetup());
   Window* root1 = setup->GetFirstRoot();
   ASSERT_TRUE(root1);
-  Window* root2 = setup->window_tree_connection()->NewTopLevelWindow(nullptr);
+  Window* root2 = setup->client()->NewTopLevelWindow(nullptr);
   ASSERT_TRUE(root2);
   root1->AddTransientWindow(root2);
 
@@ -878,13 +877,13 @@ TEST_F(WindowTreeClientImplTest, MultipleUnOwnedWindowsDuringDestruction) {
   EXPECT_TRUE(tracker.windows().empty());
 }
 
-TEST_F(WindowTreeClientImplTest, TopLevelWindowDestroyedBeforeCreateComplete) {
+TEST_F(WindowTreeClientTest, TopLevelWindowDestroyedBeforeCreateComplete) {
   WindowTreeSetup setup;
   Window* root1 = setup.GetFirstRoot();
   ASSERT_TRUE(root1);
-  Window* root2 = setup.window_tree_connection()->NewTopLevelWindow(nullptr);
+  Window* root2 = setup.client()->NewTopLevelWindow(nullptr);
   ASSERT_TRUE(root2);
-  ASSERT_EQ(2u, setup.window_tree_connection()->GetRoots().size());
+  ASSERT_EQ(2u, setup.client()->GetRoots().size());
 
   // Get the id of the in flight change for creating the new window.
   uint32_t change_id;
@@ -897,17 +896,17 @@ TEST_F(WindowTreeClientImplTest, TopLevelWindowDestroyedBeforeCreateComplete) {
   // Destroy the window before the server has a chance to ack the window
   // creation.
   root2->Destroy();
-  EXPECT_EQ(1u, setup.window_tree_connection()->GetRoots().size());
+  EXPECT_EQ(1u, setup.client()->GetRoots().size());
 
   const int64_t display_id = 1;
   setup.window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
                                                 display_id, true);
-  EXPECT_EQ(1u, setup.window_tree_connection()->GetRoots().size());
+  EXPECT_EQ(1u, setup.client()->GetRoots().size());
 }
 
 // Tests both SetCapture and ReleaseCapture, to ensure that Window is properly
 // updated on failures.
-TEST_F(WindowTreeClientImplTest, ExplicitCapture) {
+TEST_F(WindowTreeClientTest, ExplicitCapture) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -941,7 +940,7 @@ TEST_F(WindowTreeClientImplTest, ExplicitCapture) {
 }
 
 // Tests that when capture is lost, that the window tree updates properly.
-TEST_F(WindowTreeClientImplTest, LostCapture) {
+TEST_F(WindowTreeClientTest, LostCapture) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -964,7 +963,7 @@ TEST_F(WindowTreeClientImplTest, LostCapture) {
 
 // Tests that when capture is lost, while there is a release capture request
 // inflight, that the revert value of that request is updated correctly.
-TEST_F(WindowTreeClientImplTest, LostCaptureDifferentInFlightChange) {
+TEST_F(WindowTreeClientTest, LostCaptureDifferentInFlightChange) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
   ASSERT_TRUE(root);
@@ -990,10 +989,10 @@ TEST_F(WindowTreeClientImplTest, LostCaptureDifferentInFlightChange) {
 
 // Tests that while two windows can inflight capture requests, that the
 // WindowTreeClient only identifies one as having the current capture.
-TEST_F(WindowTreeClientImplTest, TwoWindowsRequestCapture) {
+TEST_F(WindowTreeClientTest, TwoWindowsRequestCapture) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
-  Window* child = setup.window_tree_connection()->NewWindow();
+  Window* child = setup.client()->NewWindow();
   child->SetVisible(true);
   root->AddChild(child);
 
@@ -1021,11 +1020,11 @@ TEST_F(WindowTreeClientImplTest, TwoWindowsRequestCapture) {
   EXPECT_FALSE(root->HasCapture());
 }
 
-TEST_F(WindowTreeClientImplTest, WindowDestroyedWhileTransientChildHasCapture) {
+TEST_F(WindowTreeClientTest, WindowDestroyedWhileTransientChildHasCapture) {
   WindowTreeSetup setup;
   Window* root = setup.GetFirstRoot();
-  Window* transient_parent = setup.window_tree_connection()->NewWindow();
-  Window* transient_child = setup.window_tree_connection()->NewWindow();
+  Window* transient_parent = setup.client()->NewWindow();
+  Window* transient_child = setup.client()->NewWindow();
   transient_parent->SetVisible(true);
   transient_child->SetVisible(true);
   root->AddChild(transient_parent);
@@ -1044,7 +1043,7 @@ TEST_F(WindowTreeClientImplTest, WindowDestroyedWhileTransientChildHasCapture) {
   EXPECT_TRUE(tracker.windows().empty());
 
   // Create a new Window, and attempt to place capture on that.
-  Window* child = setup.window_tree_connection()->NewWindow();
+  Window* child = setup.client()->NewWindow();
   child->SetVisible(true);
   root->AddChild(child);
   child->SetCapture();

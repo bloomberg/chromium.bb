@@ -41,8 +41,8 @@ class WindowPrivate {
   void set_server_id(Id id) { window_->server_id_ = id; }
   Id server_id() { return window_->server_id_; }
 
-  void set_connection(WindowTreeConnection* connection) {
-    window_->connection_ = connection;
+  void set_client(WindowTreeClient* client) {
+    window_->client_ = client;
   }
 
   void set_properties(const std::map<std::string, std::vector<uint8_t>>& data) {

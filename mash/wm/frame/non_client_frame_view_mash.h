@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/mus/public/cpp/window_observer.h"
-#include "components/mus/public/cpp/window_tree_connection_observer.h"
+#include "components/mus/public/cpp/window_tree_client_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/paint_cache.h"
 #include "ui/views/window/non_client_view.h"
@@ -31,7 +31,7 @@ class FrameCaptionButtonContainerView;
 
 class NonClientFrameViewMash : public views::NonClientFrameView,
                                public mus::WindowObserver,
-                               public mus::WindowTreeConnectionObserver {
+                               public mus::WindowTreeClientObserver {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -89,7 +89,7 @@ class NonClientFrameViewMash : public views::NonClientFrameView,
 
   void RemoveObservers();
 
-  // mus::WindowTreeConnectionObserver:
+  // mus::WindowTreeClientObserver:
   void OnWindowTreeFocusChanged(mus::Window* gained_focus,
                                 mus::Window* lost_focus) override;
 

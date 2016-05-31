@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/mus/public/cpp/window_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_client_delegate.h"
 
 namespace mus {
 
-void WindowTreeDelegate::OnUnembed(Window* root) {}
+void WindowTreeClientDelegate::OnUnembed(Window* root) {}
 
 }  // namespace mus

@@ -36,7 +36,7 @@ CompositorMusConnection::CompositorMusConnection(
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   compositor_task_runner_->PostTask(
       FROM_HERE, base::Bind(&CompositorMusConnection::
-                                CreateWindowTreeConnectionOnCompositorThread,
+                                CreateWindowTreeClientOnCompositorThread,
                             this, base::Passed(std::move(request))));
 }
 
@@ -61,12 +61,10 @@ void CompositorMusConnection::AttachSurfaceOnCompositorThread(
   }
 }
 
-void CompositorMusConnection::CreateWindowTreeConnectionOnCompositorThread(
+void CompositorMusConnection::CreateWindowTreeClientOnCompositorThread(
     mojo::InterfaceRequest<mus::mojom::WindowTreeClient> request) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  mus::WindowTreeConnection::Create(
-      this, std::move(request),
-      mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED);
+  new mus::WindowTreeClient(this, nullptr, std::move(request));
 }
 
 void CompositorMusConnection::OnConnectionLostOnMainThread() {
@@ -98,8 +96,8 @@ void CompositorMusConnection::OnWindowInputEventAckOnMainThread(
   compositor_task_runner_->PostTask(FROM_HERE, base::Bind(ack, result));
 }
 
-void CompositorMusConnection::OnConnectionLost(
-    mus::WindowTreeConnection* connection) {
+void CompositorMusConnection::OnWindowTreeClientDestroyed(
+    mus::WindowTreeClient* client) {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   main_task_runner_->PostTask(
       FROM_HERE,

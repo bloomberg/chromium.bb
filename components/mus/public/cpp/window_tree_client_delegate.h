@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_DELEGATE_H_
-#define COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_DELEGATE_H_
+#ifndef COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_CLIENT_DELEGATE_H_
+#define COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_CLIENT_DELEGATE_H_
 
 #include <string>
 
@@ -17,11 +17,11 @@ class Event;
 namespace mus {
 
 class Window;
-class WindowTreeConnection;
+class WindowTreeClient;
 
 // Interface implemented by an application using the window manager.
 //
-// WindowTreeConnection is deleted by any of the following:
+// WindowTreeClient is deleted by any of the following:
 // . If all the roots of the connection are destroyed and the connection is
 //   configured to delete when there are no roots (the default). This happens
 //   if the owner of the roots Embed()s another app in all the roots, or all
@@ -29,15 +29,15 @@ class WindowTreeConnection;
 // . The connection to the window manager is lost.
 // . Explicitly by way of calling delete.
 //
-// When the WindowTreeConnection is deleted all windows are deleted (and
-// observers notified). This is followed by notifying the delegate by way of
-// OnConnectionLost().
-class WindowTreeDelegate {
+// When the WindowTreeClient is deleted all windows are deleted (and observers
+// notified). This is followed by notifying the delegate by way of
+// OnClientDestroyed().
+class WindowTreeClientDelegate {
  public:
   // Called when the application implementing this interface is embedded at
   // |root|.
-  // NOTE: this is only invoked if the WindowTreeConnection is created with
-  // an InterfaceRequest.
+  // NOTE: this is only invoked if the WindowTreeClient is created with an
+  // InterfaceRequest.
   virtual void OnEmbed(Window* root) = 0;
 
   // Sent when another app is embedded in |root| (one of the roots of the
@@ -47,19 +47,19 @@ class WindowTreeDelegate {
   // well.
   virtual void OnUnembed(Window* root);
 
-  // Called from the destructor of WindowTreeConnection after all the Windows
-  // have been destroyed. |connection| is no longer valid after this call.
-  virtual void OnConnectionLost(WindowTreeConnection* connection) = 0;
+  // Called from the destructor of WindowTreeClient after all the Windows have
+  // been destroyed. |client| is no longer valid after this call.
+  virtual void OnWindowTreeClientDestroyed(WindowTreeClient* client) = 0;
 
-  // Called when the WindowTreeConnection receives an input event observed via
+  // Called when the WindowTreeClient receives an input event observed via
   // SetEventObserver(). |target| may be null for events that were sent to
   // windows owned by other processes.
   virtual void OnEventObserved(const ui::Event& event, Window* target) = 0;
 
  protected:
-  virtual ~WindowTreeDelegate() {}
+  virtual ~WindowTreeClientDelegate() {}
 };
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_DELEGATE_H_
+#endif  // COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_CLIENT_DELEGATE_H_

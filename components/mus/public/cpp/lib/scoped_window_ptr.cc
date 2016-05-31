@@ -6,7 +6,7 @@
 
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_observer.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 
 namespace mus {
 
@@ -22,8 +22,8 @@ ScopedWindowPtr::~ScopedWindowPtr() {
 
 // static
 void ScopedWindowPtr::DeleteWindowOrWindowManager(Window* window) {
-  if (window->connection()->GetRoots().count(window) > 0)
-    delete window->connection();
+  if (window->window_tree()->GetRoots().count(window) > 0)
+    delete window->window_tree();
   else
     window->Destroy();
 }

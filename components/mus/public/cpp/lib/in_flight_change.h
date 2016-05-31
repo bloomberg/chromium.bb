@@ -24,7 +24,7 @@ enum class Cursor : int32_t;
 }
 
 class Window;
-class WindowTreeClientImpl;
+class WindowTreeClient;
 
 enum class ChangeType {
   ADD_CHILD,
@@ -75,7 +75,7 @@ enum class ChangeType {
 //
 // For (1) use CrashInFlightChange. As the name implies this change CHECKs that
 // the change succeeded. Use the following pattern for this. This code goes
-// where the change is sent to the server (in WindowTreeClientImpl):
+// where the change is sent to the server (in WindowTreeClient):
 //   const uint32_t change_id =
 //   ScheduleInFlightChange(base::WrapUnique(new CrashInFlightChange(
 //       window, ChangeType::REORDER)));
@@ -159,16 +159,16 @@ class CrashInFlightChange : public InFlightChange {
   DISALLOW_COPY_AND_ASSIGN(CrashInFlightChange);
 };
 
-// Use this class for properties that are specific to the connection, and not a
+// Use this class for properties that are specific to the client, and not a
 // particular window. For example, only a single window can have focus, so focus
-// is specific to the connection.
+// is specific to the client.
 //
 // This does not implement InFlightChange::Revert, subclasses must implement
-// that to update the WindowTreeConnection.
+// that to update the WindowTreeClient.
 class InFlightWindowTreeClientChange : public InFlightChange,
                                        public WindowObserver {
  public:
-  InFlightWindowTreeClientChange(WindowTreeClientImpl* client_connection,
+  InFlightWindowTreeClientChange(WindowTreeClient* client,
                                  Window* revert_value,
                                  ChangeType type);
   ~InFlightWindowTreeClientChange() override;
@@ -177,7 +177,7 @@ class InFlightWindowTreeClientChange : public InFlightChange,
   void SetRevertValueFrom(const InFlightChange& change) override;
 
  protected:
-  WindowTreeClientImpl* connection() { return connection_; }
+  WindowTreeClient* client() { return client_; }
   Window* revert_window() { return revert_window_; }
 
  private:
@@ -186,7 +186,7 @@ class InFlightWindowTreeClientChange : public InFlightChange,
   // WindowObserver:
   void OnWindowDestroying(Window* window) override;
 
-  WindowTreeClientImpl* connection_;
+  WindowTreeClient* client_;
   Window* revert_window_;
 
   DISALLOW_COPY_AND_ASSIGN(InFlightWindowTreeClientChange);
@@ -194,8 +194,7 @@ class InFlightWindowTreeClientChange : public InFlightChange,
 
 class InFlightCaptureChange : public InFlightWindowTreeClientChange {
  public:
-  InFlightCaptureChange(WindowTreeClientImpl* client_connection,
-                        Window* revert_value);
+  InFlightCaptureChange(WindowTreeClient* client, Window* revert_value);
   ~InFlightCaptureChange() override;
 
   // InFlightChange:
@@ -207,8 +206,7 @@ class InFlightCaptureChange : public InFlightWindowTreeClientChange {
 
 class InFlightFocusChange : public InFlightWindowTreeClientChange {
  public:
-  InFlightFocusChange(WindowTreeClientImpl* client_connection,
-                      Window* revert_value);
+  InFlightFocusChange(WindowTreeClient* client, Window* revert_value);
   ~InFlightFocusChange() override;
 
   // InFlightChange:

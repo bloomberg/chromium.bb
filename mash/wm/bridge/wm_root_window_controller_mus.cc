@@ -7,7 +7,7 @@
 #include "ash/wm/common/wm_root_window_controller_observer.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "mash/wm/bridge/wm_globals_mus.h"
 #include "mash/wm/bridge/wm_shelf_mus.h"
 #include "mash/wm/bridge/wm_window_mus.h"
@@ -111,7 +111,7 @@ void WmRootWindowControllerMus::ConfigureWidgetInitParamsForContainer(
           ->GetChildByShellWindowId(shell_container_id));
   DCHECK(init_params->parent_mus);
   mus::Window* new_window =
-      root_window_controller_->root()->connection()->NewWindow();
+      root_window_controller_->root()->window_tree()->NewWindow();
   WmWindowMus::Get(new_window)
       ->set_widget(widget, WmWindowMus::WidgetCreationType::INTERNAL);
   init_params->native_widget = new views::NativeWidgetMus(

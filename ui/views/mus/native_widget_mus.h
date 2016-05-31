@@ -34,7 +34,7 @@ class Window;
 
 namespace mus {
 class Window;
-class WindowTreeConnection;
+class WindowTreeClient;
 namespace mojom {
 enum class Cursor;
 enum class EventResult;
@@ -83,7 +83,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
       std::map<std::string, std::vector<uint8_t>>* properties);
 
   // Notifies all widgets the frame constants changed in some way.
-  static void NotifyFrameChanged(mus::WindowTreeConnection* connection);
+  static void NotifyFrameChanged(mus::WindowTreeClient* client);
 
   // Returns the widget for a mus::Window, or null if there is none.
   static Widget* GetWidgetForWindow(mus::Window* window);

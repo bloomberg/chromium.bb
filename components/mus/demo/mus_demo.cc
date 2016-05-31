@@ -6,7 +6,7 @@
 
 #include "base/time/time.h"
 #include "components/bitmap_uploader/bitmap_uploader.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -87,7 +87,7 @@ void MusDemo::OnEmbed(mus::Window* window) {
 
 void MusDemo::OnUnembed(mus::Window* root) {}
 
-void MusDemo::OnConnectionLost(mus::WindowTreeConnection* connection) {
+void MusDemo::OnWindowTreeClientDestroyed(mus::WindowTreeClient* client) {
   timer_.Stop();
 }
 
@@ -96,9 +96,7 @@ void MusDemo::OnEventObserved(const ui::Event& event, mus::Window* target) {}
 // mus::mojom::WindowManagerFactory:
 void MusDemo::CreateWindowManager(mus::mojom::DisplayPtr display,
                                   mus::mojom::WindowTreeClientRequest request) {
-  mus::WindowTreeConnection::CreateForWindowManager(
-      this, std::move(request),
-      mus::WindowTreeConnection::CreateType::DONT_WAIT_FOR_EMBED, this);
+  new mus::WindowTreeClient(this, this, std::move(request));
 }
 
 // mus::WindowManagerDelegate:

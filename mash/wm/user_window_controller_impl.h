@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window_observer.h"
-#include "components/mus/public/cpp/window_tree_connection_observer.h"
+#include "components/mus/public/cpp/window_tree_client_observer.h"
 #include "mash/wm/public/interfaces/user_window_controller.mojom.h"
 
 namespace mash {
@@ -23,7 +23,7 @@ class WindowPropertyObserver;
 
 class UserWindowControllerImpl : public mojom::UserWindowController,
                                  public mus::WindowObserver,
-                                 public mus::WindowTreeConnectionObserver {
+                                 public mus::WindowTreeClientObserver {
  public:
   UserWindowControllerImpl();
   ~UserWindowControllerImpl() override;
@@ -37,7 +37,7 @@ class UserWindowControllerImpl : public mojom::UserWindowController,
  private:
   void AssignIdIfNecessary(mus::Window* window);
 
-  // Removes observers from the window and connection.
+  // Removes observers from the window and client.
   void RemoveObservers(mus::Window* user_container);
 
   // Returns the window with the specified user id.
@@ -50,7 +50,7 @@ class UserWindowControllerImpl : public mojom::UserWindowController,
   void OnTreeChanging(const TreeChangeParams& params) override;
   void OnWindowDestroying(mus::Window* window) override;
 
-  // mus::WindowTreeConnectionObserver:
+  // mus::WindowTreeClientObserver:
   void OnWindowTreeFocusChanged(mus::Window* gained_focus,
                                 mus::Window* lost_focus) override;
 

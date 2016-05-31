@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "components/mus/public/cpp/tests/window_server_shelltest_base.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
-#include "components/mus/public/cpp/window_tree_delegate.h"
+#include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "services/shell/public/cpp/interface_factory.h"
@@ -23,16 +23,16 @@ namespace mus {
 // established as part of SetUp().
 class WindowServerTestBase
     : public WindowServerShellTestBase,
-      public WindowTreeDelegate,
+      public WindowTreeClientDelegate,
       public WindowManagerDelegate,
       public shell::InterfaceFactory<mojom::WindowTreeClient> {
  public:
   WindowServerTestBase();
   ~WindowServerTestBase() override;
 
-  // True if WindowTreeDelegate::OnConnectionLost() was called.
-  bool window_tree_connection_destroyed() const {
-    return window_tree_connection_destroyed_;
+  // True if WindowTreeClientDelegate::OnWindowTreeClientDestroyed() was called.
+  bool window_tree_client_destroyed() const {
+    return window_tree_client_destroyed_;
   }
 
   // Runs the MessageLoop until QuitRunLoop() is called, or a timeout occurs.
@@ -44,15 +44,15 @@ class WindowServerTestBase
   // success, false if a RunLoop isn't running.
   static bool QuitRunLoop() WARN_UNUSED_RESULT;
 
-  WindowTreeConnection* window_manager() { return window_manager_; }
+  WindowTreeClient* window_manager() { return window_manager_; }
   WindowManagerClient* window_manager_client() {
     return window_manager_client_;
   }
 
  protected:
   mojom::WindowTreeHost* host() { return host_.get(); }
-  WindowTreeConnection* most_recent_connection() {
-    return most_recent_connection_;
+  WindowTreeClient* most_recent_client() {
+    return most_recent_client_;
   }
 
   void set_window_manager_delegate(WindowManagerDelegate* delegate) {
@@ -65,9 +65,9 @@ class WindowServerTestBase
   // WindowServerShellTestBase:
   bool AcceptConnection(shell::Connection* connection) override;
 
-  // WindowTreeDelegate:
+  // WindowTreeClientDelegate:
   void OnEmbed(Window* root) override;
-  void OnConnectionLost(WindowTreeConnection* connection) override;
+  void OnWindowTreeClientDestroyed(WindowTreeClient* client) override;
   void OnEventObserved(const ui::Event& event, Window* target) override;
 
   // WindowManagerDelegate:
@@ -87,16 +87,16 @@ class WindowServerTestBase
   void Create(shell::Connection* connection,
               mojo::InterfaceRequest<mojom::WindowTreeClient> request) override;
 
-  // Used to receive the most recent window tree connection loaded by an embed
+  // Used to receive the most recent window tree client loaded by an embed
   // action.
-  WindowTreeConnection* most_recent_connection_;
+  WindowTreeClient* most_recent_client_;
 
  private:
   mojom::WindowTreeHostPtr host_;
 
   // The window server connection held by the window manager (app running at
   // the root window).
-  WindowTreeConnection* window_manager_;
+  WindowTreeClient* window_manager_;
 
   // A test can override the WM-related behaviour by installing its own
   // WindowManagerDelegate during the test.
@@ -104,7 +104,7 @@ class WindowServerTestBase
 
   WindowManagerClient* window_manager_client_;
 
-  bool window_tree_connection_destroyed_;
+  bool window_tree_client_destroyed_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServerTestBase);
 };

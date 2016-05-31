@@ -18,17 +18,17 @@ class Connector;
 namespace mus {
 
 class WindowManagerDelegate;
-class WindowTreeDelegate;
+class WindowTreeClientDelegate;
 
 // The following create a new window tree host. Supply a |factory| if you have
 // already connected to mus, otherwise supply |shell|, which contacts mus and
 // obtains a WindowTreeHostFactory.
 void CreateWindowTreeHost(mojom::WindowTreeHostFactory* factory,
-                          WindowTreeDelegate* delegate,
+                          WindowTreeClientDelegate* delegate,
                           mojom::WindowTreeHostPtr* host,
                           WindowManagerDelegate* window_manager_delegate);
 void CreateWindowTreeHost(shell::Connector* connector,
-                          WindowTreeDelegate* delegate,
+                          WindowTreeClientDelegate* delegate,
                           mojom::WindowTreeHostPtr* host,
                           WindowManagerDelegate* window_manager_delegate);
 

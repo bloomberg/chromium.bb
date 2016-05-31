@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 #include "components/mus/public/cpp/window.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
+#include "components/mus/public/cpp/window_tree_client.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_mus.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -30,7 +30,7 @@ WebContentsViewMus::WebContentsViewMus(
     : web_contents_(web_contents), delegate_(delegate) {
   DCHECK(parent_window);
   *delegate_view = this;
-  mus::Window* window = parent_window->connection()->NewWindow();
+  mus::Window* window = parent_window->window_tree()->NewWindow();
   window->SetVisible(true);
   window->SetBounds(gfx::Rect(300, 300));
   parent_window->AddChild(window);

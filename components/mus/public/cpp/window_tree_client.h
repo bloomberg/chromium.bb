@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MUS_PUBLIC_CPP_LIB_WINDOW_TREE_CLIENT_IMPL_H_
-#define COMPONENTS_MUS_PUBLIC_CPP_LIB_WINDOW_TREE_CLIENT_IMPL_H_
+#ifndef COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_CLIENT_H_
+#define COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_CLIENT_H_
 
 #include <stdint.h>
 
@@ -19,7 +19,6 @@
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
-#include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -29,24 +28,26 @@ class Insets;
 class Size;
 }
 
+namespace shell {
+class Connector;
+}
+
 namespace mus {
 class InFlightChange;
-class WindowTreeClientImplPrivate;
-class WindowTreeConnection;
-class WindowTreeDelegate;
-
+class WindowTreeClientDelegate;
+class WindowTreeClientPrivate;
+class WindowTreeClientObserver;
 enum class ChangeType;
 
 // Manages the connection with the Window Server service.
-class WindowTreeClientImpl : public WindowTreeConnection,
-                             public mojom::WindowTreeClient,
-                             public mojom::WindowManager,
-                             public WindowManagerClient {
+class WindowTreeClient : public mojom::WindowTreeClient,
+                         public mojom::WindowManager,
+                         public WindowManagerClient {
  public:
-  WindowTreeClientImpl(WindowTreeDelegate* delegate,
-                       WindowManagerDelegate* window_manager_delegate,
-                       mojo::InterfaceRequest<mojom::WindowTreeClient> request);
-  ~WindowTreeClientImpl() override;
+  WindowTreeClient(WindowTreeClientDelegate* delegate,
+                   WindowManagerDelegate* window_manager_delegate,
+                   mojom::WindowTreeClientRequest request);
+  ~WindowTreeClient() override;
 
   // Establishes the connection by way of the WindowTreeFactory.
   void ConnectViaWindowTreeFactory(shell::Connector* connector);
@@ -119,7 +120,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   void LocalSetFocus(Window* window);
 
   // Start/stop tracking windows. While tracked, they can be retrieved via
-  // WindowTreeConnection::GetWindowById.
+  // WindowTreeClient::GetWindowById.
   void AddWindow(Window* window);
 
   bool IsRoot(Window* window) const { return roots_.count(window) > 0; }
@@ -132,11 +133,46 @@ class WindowTreeClientImpl : public WindowTreeConnection,
 
   Window* GetWindowByServerId(Id id);
 
-  // WindowTreeConnection:
-  Window* GetCaptureWindow() override;
+  // Sets whether this is deleted when there are no roots. The default is to
+  // delete when there are no roots.
+  void SetDeleteOnNoRoots(bool value);
+
+  // Returns the root of this connection.
+  const std::set<Window*>& GetRoots();
+
+  // Returns the Window with input capture; null if no window has requested
+  // input capture, or if another app has capture.
+  Window* GetCaptureWindow();
+
+  // Returns the focused window; null if focus is not yet known or another app
+  // is focused.
+  Window* GetFocusedWindow();
+
+  // Sets focus to null. This does nothing if focus is currently null.
+  void ClearFocus();
+
+  // Returns the current location of the mouse on screen. Note: this method may
+  // race the asynchronous initialization; but in that case we return (0, 0).
+  gfx::Point GetCursorScreenPoint();
+
+  // See description in window_tree.mojom. When an existing event observer is
+  // updated or cleared then any future events from the server for that observer
+  // will be ignored.
+  void SetEventObserver(mojom::EventMatcherPtr matcher);
+
+  // Creates and returns a new Window (which is owned by the window server).
+  // Windows are initially hidden, use SetVisible(true) to show.
+  Window* NewWindow() { return NewWindow(nullptr); }
+  Window* NewWindow(
+      const std::map<std::string, std::vector<uint8_t>>* properties);
+  Window* NewTopLevelWindow(
+      const std::map<std::string, std::vector<uint8_t>>* properties);
+
+  void AddObserver(WindowTreeClientObserver* observer);
+  void RemoveObserver(WindowTreeClientObserver* observer);
 
  private:
-  friend class WindowTreeClientImplPrivate;
+  friend class WindowTreeClientPrivate;
 
   enum class NewWindowType {
     CHILD,
@@ -172,19 +208,6 @@ class WindowTreeClientImpl : public WindowTreeConnection,
                    bool drawn);
 
   void OnReceivedCursorLocationMemory(mojo::ScopedSharedBufferHandle handle);
-
-  // Overridden from WindowTreeConnection:
-  void SetDeleteOnNoRoots(bool value) override;
-  const std::set<Window*>& GetRoots() override;
-  Window* GetFocusedWindow() override;
-  void ClearFocus() override;
-  gfx::Point GetCursorScreenPoint() override;
-  void SetEventObserver(mojom::EventMatcherPtr matcher) override;
-  Window* NewWindow(const Window::SharedProperties* properties) override;
-  Window* NewTopLevelWindow(
-      const Window::SharedProperties* properties) override;
-  void AddObserver(WindowTreeConnectionObserver* observer) override;
-  void RemoveObserver(WindowTreeConnectionObserver* observer) override;
 
   // Overridden from WindowTreeClient:
   void OnEmbed(ClientSpecificId client_id,
@@ -286,7 +309,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   uint32_t next_change_id_;
   InFlightMap in_flight_map_;
 
-  WindowTreeDelegate* delegate_;
+  WindowTreeClientDelegate* delegate_;
 
   WindowManagerDelegate* window_manager_delegate_;
 
@@ -299,7 +322,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
 
   Window* focused_window_;
 
-  mojo::Binding<WindowTreeClient> binding_;
+  mojo::Binding<mojom::WindowTreeClient> binding_;
   mojom::WindowTreePtr tree_ptr_;
   // Typically this is the value contained in |tree_ptr_|, but tests may
   // directly set this.
@@ -317,7 +340,7 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // location, we must always read from it atomically.
   base::subtle::Atomic32* cursor_location_memory_;
 
-  base::ObserverList<WindowTreeConnectionObserver> observers_;
+  base::ObserverList<WindowTreeClientObserver> observers_;
 
   std::unique_ptr<mojo::AssociatedBinding<mojom::WindowManager>>
       window_manager_internal_;
@@ -328,11 +351,11 @@ class WindowTreeClientImpl : public WindowTreeConnection,
   // Monotonically increasing ID for event observers.
   uint32_t event_observer_id_ = 0u;
 
-  base::WeakPtrFactory<WindowTreeClientImpl> weak_factory_;
+  base::WeakPtrFactory<WindowTreeClient> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WindowTreeClientImpl);
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeClient);
 };
 
 }  // namespace mus
 
-#endif  // COMPONENTS_MUS_PUBLIC_CPP_LIB_WINDOW_TREE_CLIENT_IMPL_H_
+#endif  // COMPONENTS_MUS_PUBLIC_CPP_WINDOW_TREE_CLIENT_H_
