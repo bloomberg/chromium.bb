@@ -42,44 +42,6 @@ static pthread_mutex_t table_lock = PTHREAD_MUTEX_INITIALIZER;
 struct fd_device * kgsl_device_new(int fd);
 struct fd_device * msm_device_new(int fd);
 
-static void
-add_bucket(struct fd_bo_cache *cache, int size)
-{
-	unsigned int i = cache->num_buckets;
-
-	assert(i < ARRAY_SIZE(cache->cache_bucket));
-
-	list_inithead(&cache->cache_bucket[i].list);
-	cache->cache_bucket[i].size = size;
-	cache->num_buckets++;
-}
-
-drm_private void
-fd_bo_cache_init(struct fd_bo_cache *cache)
-{
-	unsigned long size, cache_max_size = 64 * 1024 * 1024;
-
-	/* OK, so power of two buckets was too wasteful of memory.
-	 * Give 3 other sizes between each power of two, to hopefully
-	 * cover things accurately enough.  (The alternative is
-	 * probably to just go for exact matching of sizes, and assume
-	 * that for things like composited window resize the tiled
-	 * width/height alignment and rounding of sizes to pages will
-	 * get us useful cache hit rates anyway)
-	 */
-	add_bucket(cache, 4096);
-	add_bucket(cache, 4096 * 2);
-	add_bucket(cache, 4096 * 3);
-
-	/* Initialize the linked lists for BO reuse cache. */
-	for (size = 4 * 4096; size <= cache_max_size; size *= 2) {
-		add_bucket(cache, size);
-		add_bucket(cache, size + size * 1 / 4);
-		add_bucket(cache, size + size * 2 / 4);
-		add_bucket(cache, size + size * 3 / 4);
-	}
-}
-
 struct fd_device * fd_device_new(int fd)
 {
 	struct fd_device *dev;

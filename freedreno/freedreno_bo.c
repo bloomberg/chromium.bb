@@ -33,9 +33,8 @@
 #include "freedreno_drmif.h"
 #include "freedreno_priv.h"
 
-static pthread_mutex_t table_lock = PTHREAD_MUTEX_INITIALIZER;
-
-static void bo_del(struct fd_bo *bo);
+drm_private pthread_mutex_t table_lock = PTHREAD_MUTEX_INITIALIZER;
+drm_private void bo_del(struct fd_bo *bo);
 
 /* set buffer name, and add to table, call w/ table_lock held: */
 static void set_name(struct fd_bo *bo, uint32_t name)
@@ -81,116 +80,6 @@ static struct fd_bo * bo_from_handle(struct fd_device *dev,
 	/* add ourself into the handle table: */
 	drmHashInsert(dev->handle_table, handle, bo);
 	return bo;
-}
-
-/* Frees older cached buffers.  Called under table_lock */
-drm_private void
-fd_bo_cache_cleanup(struct fd_bo_cache *cache, time_t time)
-{
-	int i;
-
-	if (cache->time == time)
-		return;
-
-	for (i = 0; i < cache->num_buckets; i++) {
-		struct fd_bo_bucket *bucket = &cache->cache_bucket[i];
-		struct fd_bo *bo;
-
-		while (!LIST_IS_EMPTY(&bucket->list)) {
-			bo = LIST_ENTRY(struct fd_bo, bucket->list.next, list);
-
-			/* keep things in cache for at least 1 second: */
-			if (time && ((time - bo->free_time) <= 1))
-				break;
-
-			list_del(&bo->list);
-			bo_del(bo);
-		}
-	}
-
-	cache->time = time;
-}
-
-static struct fd_bo_bucket * get_bucket(struct fd_bo_cache *cache, uint32_t size)
-{
-	int i;
-
-	/* hmm, this is what intel does, but I suppose we could calculate our
-	 * way to the correct bucket size rather than looping..
-	 */
-	for (i = 0; i < cache->num_buckets; i++) {
-		struct fd_bo_bucket *bucket = &cache->cache_bucket[i];
-		if (bucket->size >= size) {
-			return bucket;
-		}
-	}
-
-	return NULL;
-}
-
-static int is_idle(struct fd_bo *bo)
-{
-	return fd_bo_cpu_prep(bo, NULL,
-			DRM_FREEDRENO_PREP_READ |
-			DRM_FREEDRENO_PREP_WRITE |
-			DRM_FREEDRENO_PREP_NOSYNC) == 0;
-}
-
-static struct fd_bo *find_in_bucket(struct fd_bo_bucket *bucket, uint32_t flags)
-{
-	struct fd_bo *bo = NULL;
-
-	/* TODO .. if we had an ALLOC_FOR_RENDER flag like intel, we could
-	 * skip the busy check.. if it is only going to be a render target
-	 * then we probably don't need to stall..
-	 *
-	 * NOTE that intel takes ALLOC_FOR_RENDER bo's from the list tail
-	 * (MRU, since likely to be in GPU cache), rather than head (LRU)..
-	 */
-	pthread_mutex_lock(&table_lock);
-	while (!LIST_IS_EMPTY(&bucket->list)) {
-		bo = LIST_ENTRY(struct fd_bo, bucket->list.next, list);
-		if (0 /* TODO: if madvise tells us bo is gone... */) {
-			list_del(&bo->list);
-			bo_del(bo);
-			bo = NULL;
-			continue;
-		}
-		/* TODO check for compatible flags? */
-		if (is_idle(bo)) {
-			list_del(&bo->list);
-			break;
-		}
-		bo = NULL;
-		break;
-	}
-	pthread_mutex_unlock(&table_lock);
-
-	return bo;
-}
-
-/* NOTE: size is potentially rounded up to bucket size: */
-drm_private struct fd_bo *
-fd_bo_cache_alloc(struct fd_bo_cache *cache, uint32_t *size, uint32_t flags)
-{
-	struct fd_bo *bo = NULL;
-	struct fd_bo_bucket *bucket;
-
-	*size = ALIGN(*size, 4096);
-	bucket = get_bucket(cache, *size);
-
-	/* see if we can be green and recycle: */
-	if (bucket) {
-		*size = bucket->size;
-		bo = find_in_bucket(bucket, flags);
-		if (bo) {
-			atomic_set(&bo->refcnt, 1);
-			fd_device_ref(bo->dev);
-			return bo;
-		}
-	}
-
-	return NULL;
 }
 
 struct fd_bo *
@@ -303,32 +192,6 @@ struct fd_bo * fd_bo_ref(struct fd_bo *bo)
 	return bo;
 }
 
-drm_private int
-fd_bo_cache_free(struct fd_bo_cache *cache, struct fd_bo *bo)
-{
-	struct fd_bo_bucket *bucket = get_bucket(cache, bo->size);
-
-	/* see if we can be green and recycle: */
-	if (bucket) {
-		struct timespec time;
-
-		clock_gettime(CLOCK_MONOTONIC, &time);
-
-		bo->free_time = time.tv_sec;
-		list_addtail(&bo->list, &bucket->list);
-		fd_bo_cache_cleanup(cache, time.tv_sec);
-
-		/* bo's in the bucket cache don't have a ref and
-		 * don't hold a ref to the dev:
-		 */
-		fd_device_del_locked(bo->dev);
-
-		return 0;
-	}
-
-	return -1;
-}
-
 void fd_bo_del(struct fd_bo *bo)
 {
 	struct fd_device *dev = bo->dev;
@@ -348,7 +211,7 @@ out:
 }
 
 /* Called under table_lock */
-static void bo_del(struct fd_bo *bo)
+drm_private void bo_del(struct fd_bo *bo)
 {
 	if (bo->map)
 		drm_munmap(bo->map, bo->size);
