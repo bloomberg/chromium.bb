@@ -83,6 +83,12 @@ def attribute_context(interface, attribute):
     # [PerWorldBindings]
     if 'PerWorldBindings' in extended_attributes:
         assert idl_type.is_wrapper_type or 'LogActivity' in extended_attributes, '[PerWorldBindings] should only be used with wrapper types: %s.%s' % (interface.name, attribute.name)
+    # [SaveSameObject]
+    is_save_same_object = (
+        'SameObject' in attribute.extended_attributes and
+        'SaveSameObject' in attribute.extended_attributes)
+    if is_save_same_object:
+        includes.add('bindings/core/v8/V8PrivateProperty.h')
 
     if (base_idl_type == 'EventHandler' and
             interface.name in ['Window', 'WorkerGlobalScope'] and
@@ -135,9 +141,7 @@ def attribute_context(interface, attribute):
         'is_read_only': attribute.is_read_only,
         'is_reflect': is_reflect,
         'is_replaceable': 'Replaceable' in attribute.extended_attributes,
-        'is_save_same_object': (
-            'SameObject' in attribute.extended_attributes and
-            'SaveSameObject' in attribute.extended_attributes),
+        'is_save_same_object': is_save_same_object,
         'is_static': attribute.is_static,
         'is_url': 'URL' in extended_attributes,
         'is_unforgeable': is_unforgeable(interface, attribute),

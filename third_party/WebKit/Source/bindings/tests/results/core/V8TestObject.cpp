@@ -48,6 +48,7 @@
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8NodeFilter.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "bindings/core/v8/V8ShadowRoot.h"
 #include "bindings/core/v8/V8TestCallbackInterface.h"
 #include "bindings/core/v8/V8TestDictionary.h"
@@ -4539,9 +4540,14 @@ static void sameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbac
 static void saveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Object> holder = info.Holder();
-    v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "sameobject_saveSameObjectAttribute");
+    // If you see a compile error that
+    //   V8PrivateProperty::getSameObjectTestObjectSaveSameObjectAttribute
+    // is not defined, then you need to register your attribute at
+    // V8_PRIVATE_PROPERTY_FOR_EACH defined in V8PrivateProperty.h as
+    //   X(SameObject, TestObjectSaveSameObjectAttribute)
+    auto privateSameObject = V8PrivateProperty::getSameObjectTestObjectSaveSameObjectAttribute(info.GetIsolate());
     {
-        v8::Local<v8::Value> v8Value = V8HiddenValue::getHiddenValue(ScriptState::current(info.GetIsolate()), holder, propertyName);
+        v8::Local<v8::Value> v8Value = privateSameObject.get(info.GetIsolate()->GetCurrentContext(), holder);
         if (!v8Value.IsEmpty()) {
             v8SetReturnValue(info, v8Value);
             return;
@@ -4556,7 +4562,7 @@ static void saveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
         V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "saveSameObjectAttribute"), v8Value);
         v8SetReturnValue(info, v8Value);
     }
-    V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, propertyName, info.GetReturnValue().Get());
+    privateSameObject.set(info.GetIsolate()->GetCurrentContext(), holder, info.GetReturnValue().Get());
 }
 
 static void saveSameObjectAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
