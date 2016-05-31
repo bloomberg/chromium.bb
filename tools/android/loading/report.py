@@ -140,6 +140,9 @@ class LoadingReport(object):
 
   def GenerateReport(self):
     """Returns a report as a dict."""
+    # NOTE: When changing the return value here, also update the schema
+    # (bigquery_schema.json) accordingly. See cloud/frontend/README.md for
+    # details.
     report = {
         'url': self.trace.url,
         'plt_ms': self._load_end_msec - self._navigation_start_msec,

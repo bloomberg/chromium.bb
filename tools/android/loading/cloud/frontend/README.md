@@ -123,6 +123,22 @@ pip install -r requirements.txt -t lib
 gcloud preview app deploy app.yaml
 ```
 
+### Updating the Database Schema
+
+When a change is made to the dictionary returned by report.py, the BigQuery
+database schema must be updated accordingly.
+Then, to actually update the schema, run:
+
+```shell
+bq update \
+  --schema \
+    $CHROMIUM_SRC/tools/android/loading/cloud/frontend/bigquery_schema.json
+  -t clovis_dataset.report
+```
+
+Adding a new field is harmless, but don't modify existing ones.
+
+
 [1]: https://cloud.google.com/sdk
 [2]: https://cloud.google.com/appengine/docs/python/taskqueue
 [3]: https://cloud.google.com/appengine/docs/python/config/queue

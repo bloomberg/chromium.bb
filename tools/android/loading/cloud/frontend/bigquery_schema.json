@@ -1,0 +1,137 @@
+[
+    {
+        "mode": "REQUIRED",
+        "name": "url",
+        "type": "STRING"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "first_text_ms",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "contentful_paint_ms",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "significant_paint_ms",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "plt_ms",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "contentful_byte_frac",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "significant_byte_frac",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "contentful_inversion",
+        "type": "STRING"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "significant_inversion",
+        "type": "STRING"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "request_count",
+        "type": "INTEGER"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "ad_requests",
+        "type": "INTEGER"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "tracking_requests",
+        "type": "INTEGER"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "transfer_size",
+        "type": "INTEGER"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "ad_or_tracking_initiated_transfer_size",
+        "type": "INTEGER"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "ad_or_tracking_requests",
+        "type": "INTEGER"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "ad_or_tracking_initiated_requests",
+        "type": "INTEGER"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "activity_load_frac",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "activity_contentful_paint_frac",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "activity_significant_paint_frac",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "parsing_load_frac",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "script_load_frac",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "parsing_contentful_frac",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "script_contentful_frac",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "parsing_significant_frac",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "script_significant_frac",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "dns_cost_ms",
+        "type": "FLOAT"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "dns_requests",
+        "type": "INTEGER"
+    }
+]
