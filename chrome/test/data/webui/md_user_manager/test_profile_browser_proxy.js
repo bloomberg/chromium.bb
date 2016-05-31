@@ -21,8 +21,8 @@ var TestProfileBrowserProxy = function() {
     'getExistingSupervisedUsers',
   ]);
 
-  /** @private {!Array<string>} */
-  this.iconUrls_ = [];
+  /** @private {!Array<!AvatarIcon>} */
+  this.icons_ = [];
 
   /** @private {!Array<SignedInUser>} */
   this.signedInUsers_ = [];
@@ -38,10 +38,10 @@ TestProfileBrowserProxy.prototype = {
   __proto__: settings.TestBrowserProxy.prototype,
 
   /**
-   * @param {!Array<string>} iconUrls
+   * @param {!Array<!AvatarIcon>} icons
    */
-  setIconUrls: function(iconUrls) {
-    this.iconUrls_ = iconUrls;
+  setIcons: function(icons) {
+    this.icons_ = icons;
   },
 
   /**
@@ -68,7 +68,7 @@ TestProfileBrowserProxy.prototype = {
   /** @override */
   getAvailableIcons: function() {
     this.methodCalled('getAvailableIcons');
-    cr.webUIListenerCallback('profile-icons-received', this.iconUrls_);
+    cr.webUIListenerCallback('profile-icons-received', this.icons_);
     cr.webUIListenerCallback('profile-defaults-received',
                              this.defaultProfileInfo_);
   },

@@ -374,8 +374,13 @@ html[dir=rtl] .main-pane {
 }
 
 .reauth-hint-container .reauth-warning {
-  color: #f4b400;
-  display: inline-flex;
+  -webkit-mask-image: url(../../../ui/webui/resources/images/warning.svg);
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 20px;
+  background-color: #f4b400;
+  height: 24px;
+  width: 24px;
 }
 
 .reauth-hint-container .reauth-name-hint {

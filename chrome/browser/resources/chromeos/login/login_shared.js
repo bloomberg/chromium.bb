@@ -21,8 +21,6 @@
 <include src="../../../../../ui/login/display_manager.js">
 <include src="header_bar.js">
 
-<include src="../../../../../ui/login/account_picker/user_pod_template.js">
-
 <include src="../../../../../ui/login/account_picker/screen_account_picker.js">
 
 <include src="../../../../../ui/login/login_ui_tools.js">

@@ -25,7 +25,8 @@ cr.define('user_manager.create_profile_tests', function() {
         // Replace real proxy with mock proxy.
         signin.ProfileBrowserProxyImpl.instance_ = browserProxy;
         browserProxy.setDefaultProfileInfo({name: 'profile name'});
-        browserProxy.setIconUrls(['icon1.png', 'icon2.png']);
+        browserProxy.setIcons([{url: 'icon1.png', label: 'icon1'},
+                               {url: 'icon2.png', label: 'icon2'}]);
         browserProxy.setSignedInUsers([{username: 'username',
                                         profilePath: 'path/to/profile'}]);
         browserProxy.setExistingSupervisedUsers([{name: 'existing name 1',
@@ -365,6 +366,8 @@ cr.define('user_manager.create_profile_tests', function() {
         browserProxy = new TestProfileBrowserProxy();
         // Replace real proxy with mock proxy.
         signin.ProfileBrowserProxyImpl.instance_ = browserProxy;
+
+        browserProxy.setIcons([{url: 'icon1.png', label: 'icon1'}]);
 
         createProfileElement = createElement();
 
