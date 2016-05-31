@@ -4,7 +4,7 @@
 
 package org.chromium.android_webview.test;
 
-import org.chromium.base.test.BaseInstrumentationTestRunner;
+import org.chromium.base.test.BaseChromiumInstrumentationTestRunner;
 import org.chromium.base.test.BaseTestResult;
 import org.chromium.policy.test.annotations.Policies;
 
@@ -12,7 +12,7 @@ import org.chromium.policy.test.annotations.Policies;
  * Instrumentation test runner that allows integrating features defined above base layer
  * for webview testing.
  */
-public class AwInstrumentationTestRunner extends BaseInstrumentationTestRunner {
+public class AwInstrumentationTestRunner extends BaseChromiumInstrumentationTestRunner {
     @Override
     protected void addTestHooks(BaseTestResult result) {
         super.addTestHooks(result);

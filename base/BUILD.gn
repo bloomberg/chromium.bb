@@ -2280,6 +2280,7 @@ if (is_android) {
     ]
     java_files = [
       "test/android/javatests/src/org/chromium/base/test/BaseActivityInstrumentationTestCase.java",
+      "test/android/javatests/src/org/chromium/base/test/BaseChromiumInstrumentationTestRunner.java",
       "test/android/javatests/src/org/chromium/base/test/BaseInstrumentationTestRunner.java",
       "test/android/javatests/src/org/chromium/base/test/BaseTestResult.java",
       "test/android/javatests/src/org/chromium/base/test/util/AdvancedMockContext.java",

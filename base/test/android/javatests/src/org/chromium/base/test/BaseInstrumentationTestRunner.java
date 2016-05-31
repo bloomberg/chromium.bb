@@ -8,14 +8,11 @@ import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.os.Bundle;
 import android.test.AndroidTestRunner;
 import android.test.InstrumentationTestRunner;
 
 import junit.framework.TestResult;
 
-import org.chromium.base.multidex.ChromiumMultiDexInstaller;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIfSkipCheck;
 import org.chromium.base.test.util.MinAndroidSdkLevelSkipCheck;
 import org.chromium.base.test.util.RestrictionSkipCheck;
@@ -23,17 +20,13 @@ import org.chromium.test.reporter.TestStatusListener;
 
 // TODO(jbudorick): Add support for on-device handling of timeouts.
 /**
- *  An Instrumentation test runner that checks SDK level for tests with specific requirements.
+ * An Instrumentation test runner that checks SDK level for tests with specific requirements.
+ *
+ * If the package application for which the instrumetation targets is based on
+    * {@code org.chromium.base.BaseChromiumApplication}, one should use
+    * {@code BaseChromiumInstrumentationTestRunner}
  */
 public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
-    private static final String TAG = "base_test";
-
-    @Override
-    public void onCreate(Bundle arguments) {
-        ChromiumMultiDexInstaller.install(getTargetContext());
-        super.onCreate(arguments);
-    }
-
     @Override
     protected AndroidTestRunner getAndroidTestRunner() {
         AndroidTestRunner runner = new AndroidTestRunner() {
@@ -59,8 +52,6 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
         result.addSkipCheck(new MinAndroidSdkLevelSkipCheck());
         result.addSkipCheck(new RestrictionSkipCheck(getTargetContext()));
         result.addSkipCheck(new DisableIfSkipCheck());
-
-        result.addPreTestHook(CommandLineFlags.getRegistrationHook());
     }
 
     @Override

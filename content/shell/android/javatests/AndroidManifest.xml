@@ -16,7 +16,7 @@
         <activity android:name="org.chromium.test.broker.OnDeviceInstrumentationBroker"
             android:exported="true"/>
     </application>
-    <instrumentation android:name="org.chromium.base.test.BaseInstrumentationTestRunner"
+    <instrumentation android:name="org.chromium.base.test.BaseChromiumInstrumentationTestRunner"
         android:targetPackage="org.chromium.content_shell_apk"
         android:label="Tests for org.chromium.content_shell_apk"/>
 </manifest>

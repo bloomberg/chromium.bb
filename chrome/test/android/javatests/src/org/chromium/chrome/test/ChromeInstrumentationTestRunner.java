@@ -14,7 +14,7 @@ import com.google.android.gms.common.GoogleApiAvailability;
 
 import junit.framework.TestCase;
 
-import org.chromium.base.test.BaseInstrumentationTestRunner;
+import org.chromium.base.test.BaseChromiumInstrumentationTestRunner;
 import org.chromium.base.test.BaseTestResult;
 import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.base.test.util.SkipCheck;
@@ -35,7 +35,7 @@ import java.lang.reflect.Method;
  *  TODO(jbudorick): remove uses of deprecated org.apache.* crbug.com/488192
  */
 @SuppressWarnings("deprecation")
-public class ChromeInstrumentationTestRunner extends BaseInstrumentationTestRunner {
+public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentationTestRunner {
 
     private static final String TAG = "ChromeInstrumentationTestRunner";
 
