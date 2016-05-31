@@ -91,8 +91,11 @@ TEST_F(Webm2PesTests, CanParseFirstPacket) {
   EXPECT_EQ(0, header.opt_header.unused_fields);
 
   // Test the BCMV header.
+  // Note: The length field of the BCMV header includes its own length.
+  const std::size_t kBcmvBaseLength = 10;
   const std::size_t kFirstFrameLength = 83;
-  const libwebm::VpxPesParser::BcmvHeader kFirstBcmvHeader(kFirstFrameLength);
+  const libwebm::VpxPesParser::BcmvHeader kFirstBcmvHeader(kFirstFrameLength +
+                                                           kBcmvBaseLength);
   EXPECT_TRUE(header.bcmv_header.Valid());
   EXPECT_EQ(kFirstBcmvHeader, header.bcmv_header);
 

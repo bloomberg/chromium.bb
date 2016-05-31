@@ -111,12 +111,13 @@ bool PesOptionalHeader::Write(bool write_pts, PacketDataBuffer* buffer) const {
   int num_stuffing_bytes =
       (pts.num_bits + 7) / 8 + 1 /* always 1 stuffing byte */;
   if (write_pts == true) {
-    // Set the PTS value and adjust stuffing byte count accordingly.
-    *++byte = (pts.bits >> 32) & 0xff;
-    *++byte = (pts.bits >> 24) & 0xff;
-    *++byte = (pts.bits >> 16) & 0xff;
-    *++byte = (pts.bits >> 8) & 0xff;
+    // Write the PTS value as big endian and adjust stuffing byte count
+    // accordingly.
     *++byte = pts.bits & 0xff;
+    *++byte = (pts.bits >> 8) & 0xff;
+    *++byte = (pts.bits >> 16) & 0xff;
+    *++byte = (pts.bits >> 24) & 0xff;
+    *++byte = (pts.bits >> 32) & 0xff;
     num_stuffing_bytes = 1;
   }
 
@@ -140,12 +141,14 @@ bool BCMVHeader::Write(PacketDataBuffer* buffer) const {
   for (int i = 0; i < kBcmvSize; ++i)
     buffer->push_back(bcmv[i]);
 
+  // Note: The 4 byte length field must include the size of the BCMV header.
   const int kRemainingBytes = 6;
+  const uint32_t bcmv_total_length = length + static_cast<uint32_t>(size());
   const uint8_t bcmv_buffer[kRemainingBytes] = {
-      static_cast<std::uint8_t>((length >> 24) & 0xff),
-      static_cast<std::uint8_t>((length >> 16) & 0xff),
-      static_cast<std::uint8_t>((length >> 8) & 0xff),
-      static_cast<std::uint8_t>(length & 0xff),
+      static_cast<std::uint8_t>((bcmv_total_length >> 24) & 0xff),
+      static_cast<std::uint8_t>((bcmv_total_length >> 16) & 0xff),
+      static_cast<std::uint8_t>((bcmv_total_length >> 8) & 0xff),
+      static_cast<std::uint8_t>(bcmv_total_length & 0xff),
       0,
       0 /* 2 bytes 0 padding */};
 

@@ -227,7 +227,7 @@ bool VpxPesParser::ParseBcmvHeader(BcmvHeader* header) {
     return false;
 
   // TODO(tomfinegan): Verify data instead of jumping to the next packet.
-  read_pos_ += kBcmvHeaderSize + header->length;
+  read_pos_ += header->length;
   parse_state_ = kFindStartCode;
   return true;
 }
