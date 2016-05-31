@@ -31,21 +31,20 @@
 
 namespace blink {
 
-void GradientGeneratedImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& destRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode)
+void GradientGeneratedImage::draw(SkCanvas* canvas, const SkPaint& paint, const FloatRect& destRect,
+    const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode)
 {
-    SkRect visibleRect = srcRect;
-    if (!visibleRect.intersect(SkRect::MakeIWH(m_size.width(), m_size.height())))
+    SkRect visibleSrcRect = srcRect;
+    if (!visibleSrcRect.intersect(SkRect::MakeIWH(m_size.width(), m_size.height())))
         return;
 
-    SkMatrix transform = SkMatrix::MakeRectToRect(srcRect, destRect, SkMatrix::kFill_ScaleToFit);
-    SkAutoCanvasRestore autoRestore(canvas, !transform.isIdentity());
-    canvas->concat(transform);
+    const SkMatrix transform = SkMatrix::MakeRectToRect(srcRect, destRect, SkMatrix::kFill_ScaleToFit);
+    SkRect visibleDestRect;
+    transform.mapRect(&visibleDestRect, visibleSrcRect);
 
     SkPaint gradientPaint(paint);
-    // TODO(fmalita): use the shader matrix instead of changing global canvas state.
-    m_gradient->applyToPaint(gradientPaint, SkMatrix::I());
-
-    canvas->drawRect(visibleRect, gradientPaint);
+    m_gradient->applyToPaint(gradientPaint, transform);
+    canvas->drawRect(visibleDestRect, gradientPaint);
 }
 
 void GradientGeneratedImage::drawTile(GraphicsContext& context, const FloatRect& srcRect)
@@ -56,11 +55,10 @@ void GradientGeneratedImage::drawTile(GraphicsContext& context, const FloatRect&
     context.drawRect(srcRect, gradientPaint);
 }
 
-bool GradientGeneratedImage::applyShader(SkPaint& paint, const SkMatrix* localMatrix)
+bool GradientGeneratedImage::applyShader(SkPaint& paint, const SkMatrix& localMatrix)
 {
     DCHECK(m_gradient);
-    // TODO(fmalita): pass a const SkMatrix& to applyShader.
-    m_gradient->applyToPaint(paint, localMatrix ? *localMatrix : SkMatrix::I());
+    m_gradient->applyToPaint(paint, localMatrix);
 
     return true;
 }

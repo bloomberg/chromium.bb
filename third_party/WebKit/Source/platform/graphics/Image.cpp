@@ -263,7 +263,7 @@ bool Image::isTextureBacked()
     return image ? image->isTextureBacked() : false;
 }
 
-bool Image::applyShader(SkPaint& paint, const SkMatrix* localMatrix)
+bool Image::applyShader(SkPaint& paint, const SkMatrix& localMatrix)
 {
     // Default shader impl: attempt to build a shader based on the current frame SkImage.
     RefPtr<SkImage> image = imageForCurrentFrame();
@@ -271,7 +271,7 @@ bool Image::applyShader(SkPaint& paint, const SkMatrix* localMatrix)
         return false;
 
     paint.setShader(
-        image->makeShader(SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, localMatrix));
+        image->makeShader(SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix));
 
     return true;
 }

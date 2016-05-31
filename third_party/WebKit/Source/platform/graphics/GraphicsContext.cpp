@@ -792,7 +792,7 @@ void GraphicsContext::drawImageRRect(Image* image, const FloatRoundedRect& dest,
     if (useShader) {
         const SkMatrix localMatrix =
             SkMatrix::MakeRectToRect(visibleSrc, dest.rect(), SkMatrix::kFill_ScaleToFit);
-        useShader = image->applyShader(imagePaint, localMatrix.isIdentity() ? nullptr : &localMatrix);
+        useShader = image->applyShader(imagePaint, localMatrix);
     }
 
     if (useShader) {

@@ -151,7 +151,7 @@ public:
 
     virtual void draw(SkCanvas*, const SkPaint&, const FloatRect& dstRect, const FloatRect& srcRect, RespectImageOrientationEnum, ImageClampingMode) = 0;
 
-    virtual bool applyShader(SkPaint&, const SkMatrix* localMatrix);
+    virtual bool applyShader(SkPaint&, const SkMatrix& localMatrix);
 
     // Compute the tile which contains a given point (assuming a repeating tile grid).
     // The point and returned value are in destination grid space.

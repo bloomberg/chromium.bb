@@ -43,7 +43,7 @@ public:
 
     ~GradientGeneratedImage() override {}
 
-    bool applyShader(SkPaint&, const SkMatrix*) override;
+    bool applyShader(SkPaint&, const SkMatrix&) override;
 
 protected:
     void draw(SkCanvas*, const SkPaint&, const FloatRect&, const FloatRect&, RespectImageOrientationEnum, ImageClampingMode) override;
