@@ -14,7 +14,7 @@ namespace arc {
 
 namespace {
 
-const int kMinInstanceVersion = 1;  // See storage_manager.mojom.
+const int kMinInstanceVersion = 0;  // See storage_manager.mojom.
 
 // This class is owned by ArcServiceManager so that it is safe to use this raw
 // pointer as the singleton reference.
