@@ -284,9 +284,7 @@ test("components_unittests") {
   }
 
   if (toolkit_views) {
-    # TODO bug 522654 Enable this when the undefined symbol is fixed in
-    # web_modal such that this links.
-    #deps += [ "//components/constrained_window:unit_tests" ]
+    deps += [ "//components/constrained_window:unit_tests" ]
   }
 
   if (is_win) {
