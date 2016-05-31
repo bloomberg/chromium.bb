@@ -267,15 +267,6 @@ ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
   return content_setting;
 }
 
-bool HostContentSettingsMap::AreUserExceptionsAllowedForType(
-    ContentSettingsType content_type) const {
-  ProviderType default_provider_type = NUM_PROVIDER_TYPES;
-  ContentSetting content_setting =
-      GetDefaultContentSettingInternal(content_type, &default_provider_type);
-  DCHECK_NE(CONTENT_SETTING_DEFAULT, content_setting);
-  return default_provider_type >= PREF_PROVIDER;
-}
-
 ContentSetting HostContentSettingsMap::GetContentSetting(
     const GURL& primary_url,
     const GURL& secondary_url,

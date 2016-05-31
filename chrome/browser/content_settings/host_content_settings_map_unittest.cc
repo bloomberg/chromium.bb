@@ -81,11 +81,6 @@ class TesterForType {
                            new base::FundamentalValue(setting));
   }
 
-  bool AreUserExceptionsAllowed() {
-    return host_content_settings_map_->AreUserExceptionsAllowedForType(
-        content_type_);
-  }
-
   void AddUserException(std::string exception,
                         ContentSetting content_settings) {
     ContentSettingsPattern pattern =
@@ -867,32 +862,6 @@ TEST_F(HostContentSettingsMapTest, OffTheRecordDontInheritSetting) {
   EXPECT_EQ(nullptr, otr_map->GetWebsiteSetting(
                          host, host, CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA,
                          std::string(), nullptr));
-}
-
-TEST_F(HostContentSettingsMapTest, AreUserExceptionsAllowedForType) {
-  ContentSettingsType kContentTypesToTest[] = {
-    CONTENT_SETTINGS_TYPE_COOKIES,
-    CONTENT_SETTINGS_TYPE_POPUPS,
-  };
-
-  TestingProfile profile;
-
-  for (ContentSettingsType type : kContentTypesToTest) {
-    TesterForType tester(&profile, type);
-
-    // No settings: Yes.
-    tester.ClearPolicyDefault();
-    EXPECT_TRUE(tester.AreUserExceptionsAllowed());
-
-    // Policy enforces default value: No.
-    tester.SetPolicyDefault(CONTENT_SETTING_ALLOW);
-    EXPECT_FALSE(tester.AreUserExceptionsAllowed());
-    tester.SetPolicyDefault(CONTENT_SETTING_BLOCK);
-    EXPECT_FALSE(tester.AreUserExceptionsAllowed());
-
-    // Cleanup for next iteration.
-    tester.ClearPolicyDefault();
-  }
 }
 
 TEST_F(HostContentSettingsMapTest, PrefExceptionsOperation) {

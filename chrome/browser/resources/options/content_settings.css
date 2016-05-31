@@ -21,8 +21,22 @@
   width: 120px;
 }
 
+.settings-list div[role='listitem'][controlled-by='policy'] .exception-setting,
+.settings-list div[role='listitem'][controlled-by='extension']
+    .exception-setting {
+  width: calc(120px - 8px);
+}
+
 select.exception-setting {
   vertical-align: middle;
+}
+
+.overruled .exception-setting {
+  width: calc(120px - 24px);
+}
+
+.overruled .overruleable {
+  text-decoration: line-through;
 }
 
 #exception-column-headers {

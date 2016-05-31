@@ -127,6 +127,8 @@ cr.define('options', function() {
       for (var i = 0; i < indicators.length; i++) {
         indicators[i].handlePrefChange(event);
       }
+      if (controlledBy)
+        this.getExceptionsList(group, 'normal').setOverruledBy(controlledBy);
     }
   };
 

@@ -131,9 +131,6 @@ class HostContentSettingsMap : public content_settings::Observer,
   void SetDefaultContentSetting(ContentSettingsType content_type,
                                 ContentSetting setting);
 
-  // Returns true if user exceptions are allowed for |content_type|.
-  bool AreUserExceptionsAllowedForType(ContentSettingsType content_type) const;
-
   // Sets the content |setting| for the given patterns, |content_type| and
   // |resource_identifier|. Setting the value to CONTENT_SETTING_DEFAULT causes
   // the default setting for that type to be used when loading pages matching
