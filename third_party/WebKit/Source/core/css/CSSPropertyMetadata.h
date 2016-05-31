@@ -20,6 +20,7 @@ public:
     static bool isInheritedProperty(CSSPropertyID);
     static bool propertySupportsPercentage(CSSPropertyID);
     static bool propertySupportsMultiple(CSSPropertyID);
+    static bool isDescriptorOnly(CSSPropertyID);
 
     static void filterEnabledCSSPropertiesIntoVector(const CSSPropertyID*, size_t length, Vector<CSSPropertyID>&);
 };

@@ -305,10 +305,13 @@ bool CSSPropertyParser::consumeCSSWideKeyword(CSSPropertyID unresolvedProperty, 
 
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
     const StylePropertyShorthand& shorthand = shorthandForProperty(property);
-    if (!shorthand.length())
+    if (!shorthand.length()) {
+        if (CSSPropertyMetadata::isDescriptorOnly(unresolvedProperty))
+            return false;
         addProperty(property, CSSPropertyInvalid, value, important);
-    else
+    } else {
         addExpandedPropertyForValue(property, value, important);
+    }
     m_range = rangeCopy;
     return true;
 }
@@ -3970,6 +3973,11 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty, 
     }
 }
 
+static CSSPrimitiveValue* consumeFontDisplay(CSSParserTokenRange& range)
+{
+    return consumeIdent<CSSValueAuto, CSSValueBlock, CSSValueSwap, CSSValueFallback, CSSValueOptional>(range);
+}
+
 static CSSValueList* consumeFontFaceUnicodeRange(CSSParserTokenRange& range)
 {
     CSSValueList* values = CSSValueList::createCommaSeparated();
@@ -4063,6 +4071,8 @@ bool CSSPropertyParser::parseFontFaceDescriptor(CSSPropertyID propId)
         parsedValue = consumeFontFaceUnicodeRange(m_range);
         break;
     case CSSPropertyFontDisplay:
+        parsedValue = consumeFontDisplay(m_range);
+        break;
     case CSSPropertyFontStretch:
     case CSSPropertyFontStyle: {
         CSSValueID id = m_range.consumeIncludingWhitespace().id();

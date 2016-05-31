@@ -14,6 +14,11 @@
 // This doesn't currently work with alias_for.
 
 
+// - descriptor_only
+// These are actually descriptors and not CSS properties. Properties with
+// the same name as a descriptor do not get this flag.
+
+
 // - longhands=property;other-property
 // The property is a shorthand for several other properties.
 
@@ -443,16 +448,19 @@ z-index interpolable, type_name=int, custom_all
 // TODO(timloh): This seems wrong, most of these shouldn't reach the StyleBuilder
 
 all builder_skip
-font-display builder_skip, runtime_flag=CSSFontDisplay
-max-zoom builder_skip
-min-zoom builder_skip
-orientation builder_skip
 page builder_skip
-src builder_skip
-unicode-range builder_skip
-user-zoom builder_skip
 -webkit-font-size-delta builder_skip
 -webkit-text-decorations-in-effect inherited, builder_skip
+
+// Descriptors
+
+font-display descriptor_only, runtime_flag=CSSFontDisplay
+max-zoom descriptor_only
+min-zoom descriptor_only
+orientation descriptor_only
+src descriptor_only
+unicode-range descriptor_only
+user-zoom descriptor_only
 
 // Shorthands
 

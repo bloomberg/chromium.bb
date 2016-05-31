@@ -528,8 +528,6 @@ bool CSSParserFastPaths::isValidKeywordPropertyAndValue(CSSPropertyID propertyId
         return valueID == CSSValueShow || valueID == CSSValueHide;
     case CSSPropertyFloat: // left | right | none
         return valueID == CSSValueLeft || valueID == CSSValueRight || valueID == CSSValueNone;
-    case CSSPropertyFontDisplay: // auto | block | swap | fallback | optional
-        return valueID == CSSValueAuto || valueID == CSSValueBlock || valueID == CSSValueSwap || valueID == CSSValueFallback || valueID == CSSValueOptional;
     case CSSPropertyFontStyle: // normal | italic | oblique
         return valueID == CSSValueNormal || valueID == CSSValueItalic || valueID == CSSValueOblique;
     case CSSPropertyFontStretch: // normal | ultra-condensed | extra-condensed | condensed | semi-condensed | semi-expanded | expanded | extra-expanded | ultra-expanded
@@ -841,6 +839,10 @@ static CSSValue* parseKeywordValue(CSSPropertyID propertyId, const String& strin
 
         // Parse initial/inherit shorthands using the CSSPropertyParser.
         if (shorthandForProperty(propertyId).length())
+            return nullptr;
+
+        // Descriptors do not support css wide keywords.
+        if (CSSPropertyMetadata::isDescriptorOnly(propertyId))
             return nullptr;
     }
 

@@ -10,6 +10,7 @@ import name_utilities
 class CSSProperties(in_generator.Writer):
     defaults = {
         'alias_for': None,
+        'descriptor_only': None,
         'runtime_flag': None,
         'longhands': '',
         'interpolable': False,
@@ -53,6 +54,7 @@ class CSSProperties(in_generator.Writer):
         in_generator.Writer.__init__(self, file_paths)
 
         properties = self.in_file.name_dictionaries
+        self._descriptors = [property for property in properties if property['descriptor_only']]
 
         self._aliases = [property for property in properties if property['alias_for']]
         properties = [property for property in properties if not property['alias_for']]

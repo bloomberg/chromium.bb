@@ -65,7 +65,8 @@ class StyleBuilderWriter(css_properties.CSSProperties):
                 property['custom_inherit'] = True
                 property['custom_value'] = True
             property['should_declare_functions'] = not property['use_handlers_for'] and not property['longhands'] \
-                                                   and not property['direction_aware'] and not property['builder_skip']
+                and not property['direction_aware'] and not property['builder_skip'] \
+                and not property['descriptor_only']
 
     @template_expander.use_jinja('StyleBuilderFunctions.h.tmpl',
                                  filters=filters)
