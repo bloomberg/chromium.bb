@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxPnXCkmm7uFGELamSYBSy29GuJx/akY2n5CrxnVvXQrFZt0sFBK+PeClSllm1M5u1YNOyYgcXmq/HxbcIGQNVHlrZZYgC7nAe3cc09lrY381a6/p7Rco2vdotbVOcY8FFav02WSsKjGv2yE2Zm7bxkuvO+05CY0tFQGTnz3xegargqYyyljErLvmdL03yzRSK1qKMQXCvx8e2jgV+hOiDKdea+unlN538r9trD6MVhiowWwgjeZslon+5sTyseT8JLcWCwsG1P/Us/3I+UUi05uF1j7UuYoK95sKMj6Tdx5aeMkm4Map+6dOPv+crfubUjZVaEJWfCw2wVDskDVfuwIDAQAB",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuI9XCmiRiqlOKmuzDxMEy5JJGJYTfrqvmkuxpi/a0UNdHMkh48db4Z2CGB0ad04Vigb9Bo6RlYbGqeGP30RaFFrtBvux/PQvMueS8nzCW8nZrqn2eiElTudCVm+Q2Kv+SAhx+Qclx8kCV9gb5FbDdinYu06MhyEwq7FFZjyU0gRVMbYpL6pp08MxnRr0ZXzhbWM/4M+iMLMvEIXWI+Kz01Xs4EBvMZthIimUK6ySWsW2Pn8BQUa0DN+fF8FG7IbVc7/jp9m3hAuUYJdfgcgqsPkwCEr/waa1ajDuHMNMfFgivUVcCypQ4Ngl2G9tiMGcPfL1ISI/PZNR4oay5y+hxQIDAQAB",
   "name": "Activity Log API Tester",
   "description": "Tests chrome.activityLogPrivate.",
   "version": "1.0",

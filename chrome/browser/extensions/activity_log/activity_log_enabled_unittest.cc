@@ -25,7 +25,7 @@
 
 namespace extensions {
 
-const char kExtensionID[] = "abjoigjokfeibfhiahiijggogladbmfm";
+const char kExtensionID[] = "eplckmlabaanikjjcgnigddmagoglhmp";
 
 class ActivityLogEnabledTest : public ChromeRenderViewHostTestHarness {
  protected:
