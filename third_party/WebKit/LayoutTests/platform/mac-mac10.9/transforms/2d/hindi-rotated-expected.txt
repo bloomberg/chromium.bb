@@ -4,13 +4,13 @@ layer at (0,0) size 785x600
   LayoutBlockFlow {HTML} at (0,0) size 785x600
     LayoutBlockFlow {BODY} at (8,8) size 769x576
       LayoutBlockFlow {P} at (0,0) size 769x18
-        LayoutText {#text} at (0,0) size 146x18
-          text run at (0,0) width 146: "This is to test a fix for "
+        LayoutText {#text} at (0,0) size 145x18
+          text run at (0,0) width 145: "This is to test a fix for "
         LayoutInline {A} at (0,0) size 69x18 [color=#0000EE]
-          LayoutText {#text} at (145,0) size 69x18
-            text run at (145,0) width 69: "bug 26660"
-        LayoutText {#text} at (213,0) size 5x18
-          text run at (213,0) width 5: "."
+          LayoutText {#text} at (144,0) size 69x18
+            text run at (144,0) width 69: "bug 26660"
+        LayoutText {#text} at (212,0) size 5x18
+          text run at (212,0) width 5: "."
       LayoutBlockFlow {P} at (0,550) size 769x0
 layer at (8,101) size 252x54 transparent
   LayoutBlockFlow {DIV} at (0,93) size 252x54 [border: (1px solid #008000)]

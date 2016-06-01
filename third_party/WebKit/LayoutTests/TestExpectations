@@ -66,11 +66,7 @@ crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/bidi-embed-002.
 crbug.com/492664 [ Mac ] imported/csswg-test/css-writing-modes-3/bidi-isolate-002.html [ Failure ]
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-override-005.html [ Failure ]
 crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-plaintext-001.html [ Failure ]
-#crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-html-background.html [ Failure ]
-#crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-nonzero.html [ Failure ]
 crbug.com/463358 [ Mac Linux ] fast/transforms/transformed-caret.html [ Pass Failure ]
-#crbug.com/463358 [ Mac Linux Debug ] fast/backgrounds/transformed-body-background.html [ Failure ]
-#crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon.html [ Failure ]
 crbug.com/463358 [ Mac Linux ] svg/W3C-SVG-1.1/paths-data-02-t.svg [ Pass Failure ]
 
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
@@ -82,10 +78,6 @@ crbug.com/520737 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-ve
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
 crbug.com/563650 inspector/elements/css-rule-hover-highlights-selectors.html [ Pass Failure ]
-
-crbug.com/604144 svg/transforms/svg-css-transforms-clip-path.xhtml [ NeedsManualRebaseline ]
-crbug.com/604144 svg/transforms/svg-css-transforms.xhtml [ NeedsManualRebaseline ]
-crbug.com/604144 transforms/svg-vs-css.xhtml [ NeedsManualRebaseline ]
 
 crbug.com/522641 inspector/elements/styles-4/styles-update-links.html [ Pass Timeout ]
 crbug.com/522645 [ Linux ] virtual/android/fullscreen/video-fixed-background.html [ Failure Pass ]
@@ -229,11 +221,6 @@ crbug.com/567837 virtual/scalefactor150/fast/hidpi/static/gesture-scroll-amount.
 # though this is a non-flaky assert failure, we need to mark it [ Pass Crash ].
 crbug.com/389648 crbug.com/517123 crbug.com/410145 fast/text-autosizing/table-inflation-crash.html [ Pass Crash Timeout ]
 crbug.com/419696 [ Mac Debug ] fast/text/font-linux-normalize.html [ Crash Pass ]
-crbug.com/524859 fast/text/complex-text-opacity.html [ NeedsManualRebaseline ]
-# crbug.com/498021 [ Linux ] fast/text/complex-text-opacity.html [ Failure ]
-# crbug.com/509025 [ Mac10.10 ] fast/text/complex-text-opacity.html [ Failure ]
-# crbug.com/521730 [ Win10 ] fast/text/complex-text-opacity.html [ Failure Timeout ]
-crbug.com/524859 transforms/2d/hindi-rotated.html [ NeedsManualRebaseline ]
 
 crbug.com/569139 fast/js/string-replace-2.html [ NeedsManualRebaseline ]
 crbug.com/569139 fast/js/regexp-caching.html [ NeedsManualRebaseline ]
@@ -509,9 +496,6 @@ crbug.com/325673 imported/wpt/custom-elements/v0/concepts/custom-elements-type-a
 crbug.com/325673 imported/wpt/custom-elements/v0/concepts/custom-elements-type-allowed-chars.html [ Failure Timeout ]
 crbug.com/325673 imported/wpt/custom-elements/v0/concepts/custom-elements-type-naming.html [ Failure ]
 
-crbug.com/396825 fast/repaint/outline-change-invalidation.html [ NeedsManualRebaseline ]
-crbug.com/396825 fast/repaint/outline-clip-change.html [ NeedsManualRebaseline ]
-
 crbug.com/542660 fast/css/absolute-inline-alignment-2.html [ Failure ]
 
 # Ref tests that needs investigation.
@@ -746,8 +730,6 @@ crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/ref
 crbug.com/381684 [ Mac Win ] fonts/family-fallback-gardiner.html [ Skip ]
 crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip ]
 
-# crbug.com/396823 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ Failure ]
-
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
 
 # Printing Layout broken in these tests.
@@ -871,13 +853,6 @@ crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame-z
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollable-area-frame.html [ Failure ]
 crbug.com/417782 virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-styled.html [ Failure ]
 
-crbug.com/607185 svg/hixie/perf/005.xml                                     [ NeedsManualRebaseline ]
-crbug.com/607185 fast/backgrounds/transformed-body-html-background.html     [ NeedsManualRebaseline ]
-crbug.com/607185 css3/masking/clip-path-polygon-nonzero.html                [ NeedsManualRebaseline ]
-crbug.com/607185 css3/masking/clip-path-polygon-evenodd.html                [ NeedsManualRebaseline ]
-crbug.com/607185 fast/backgrounds/transformed-body-background.html          [ NeedsManualRebaseline ]
-crbug.com/607185 css3/masking/clip-path-polygon.html                        [ NeedsManualRebaseline ]
-
 crbug.com/600087 virtual/gpu-rasterization/fast/images/pixel-crack-image-background-webkit-transform-scale.html [ Timeout ]
 
 crbug.com/385014 crbug.com/410145 accessibility/canvas-fallback-content-2.html [ Pass Failure Timeout ]
@@ -927,8 +902,6 @@ crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure 
 
 # Significant Slimming Paint failure.
 crbug.com/459305 [ Mac ] svg/custom/foreign-object-skew.svg [ Failure ]
-
-#crbug.com/463358 [ Mac Linux Debug ] css3/masking/clip-path-polygon-evenodd.html [ Failure ]
 
 crbug.com/482229 compositing/layer-creation/fixed-position-under-transform.html [ Failure ]
 
@@ -1002,8 +975,6 @@ crbug.com/582836 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reft
 # These need a rebaseline due crbug.com/504745 on Windows when they are activated again.
 crbug.com/521124 crbug.com/410145 [ Win7 ] fast/css/font-weight-1.html [ Pass Failure ]
 
-crbug.com/587094 [ Mac10.9 ] fast/text/font-features/caps-native-synthesis.html [ NeedsManualRebaseline ]
-
 # Temporary, until we stop use_system_harfbuzz on Linux including non-official builds
 crbug.com/462689 [ Linux ] fast/text/unicode-variation-selector.html [ Failure ]
 
@@ -1049,10 +1020,6 @@ crbug.com/505387 [ Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/o
 # Form controls need rebaseline because of the default font change.
 # If you see wider INPUT elements or narrower TEXTAREA elements, you may do just
 # rebaseline. See crbug.com/508768#c6
-# TODO(chrishtr): uncomment after fixing crbug.com/529038
-#crbug.com/509025 [ Mac10.10 ] compositing/layer-creation/should-invoke-deferred-compositing.html [ Failure ]
-# TODO(chrishtr): uncomment/inspect rebaseline of this after fixing crbug.com/516016
-# crbug.com/509025 [ Mac10.10 ] compositing/repaint/should-not-clip-composited-overflow-scrolling-layer.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/css/css2-system-fonts.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/forms/select/hidden-listbox.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] fast/forms/textarea/textarea-newline.html [ Failure ]
@@ -1161,8 +1128,6 @@ crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass ]
 
-#crbug.com/563694 [ Linux Mac Debug ] svg/hixie/perf/005.xml [ Failure ]
-
 crbug.com/564109 [ Win7 ]  http/tests/webfont/font-display.html [ Pass Timeout Failure ]
 
 crbug.com/571376 http/tests/webfont/font-display-intervention.html [ Pass Failure ]
@@ -1177,8 +1142,6 @@ crbug.com/571710 http/tests/inspector/search/source-frame-search.html [ Timeout 
 crbug.com/614063 [ Win10 ] svg/custom/shape-rendering.svg [ Failure ]
 crbug.com/614063 [ Win10 ] svg/custom/use-referencing-nonexisting-symbol.svg [ Failure ]
 
-crbug.com/551843 fast/text/fallback-traits-fixup.html [ NeedsManualRebaseline ]
-
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 
 crbug.com/602193 inspector/extensions/extensions-resources.html [ Pass Failure ]
@@ -1190,13 +1153,6 @@ crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.h
 
 crbug.com/572726 inspector/tracing/timeline-node-reference.html [ Timeout Pass Crash ]
 
-crbug.com/155836 [ Mac Win ] fast/css/text-overflow-ellipsis-bidi.html [ NeedsManualRebaseline ]
-crbug.com/155836 [ Mac Win ] fast/css/text-overflow-ellipsis-strict.html [ NeedsManualRebaseline ]
-crbug.com/155836 [ Mac Win ] fast/css/text-overflow-ellipsis.html [ NeedsManualRebaseline ]
-crbug.com/155836 [ Mac Win ] fast/text/ellipsis-ltr-text-in-ltr-flow.html [ NeedsManualRebaseline ]
-crbug.com/155836 [ Mac Win ] fast/text/ellipsis-ltr-text-in-rtl-flow.html [ NeedsManualRebaseline ]
-crbug.com/155836 [ Mac Win ] fast/text/ellipsis-rtl-text-in-ltr-flow.html [ NeedsManualRebaseline ]
-crbug.com/155836 [ Mac Win ] fast/text/ellipsis-rtl-text-in-rtl-flow.html [ NeedsManualRebaseline ]
 crbug.com/155836 fast/text/emphasis-ellipsis-complextext.html [ Failure Pass ]
 
 crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-stress.html [ Failure ]
@@ -1245,7 +1201,6 @@ crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
 
 crbug.com/587737 [ Mac10.11 Retina ] virtual/gpu-rasterization/fast/images/color-profile-filter.html [ Timeout Failure ]
 crbug.com/613463 [ Win ] virtual/threaded/fast/scroll-behavior/main-frame-interrupted-scroll.html [ Failure Pass ]
-crbug.com/602933 fast/canvas/canvas-incremental-repaint.html [ NeedsManualRebaseline ]
 
 crbug.com/599975 [ Android ] media/video-autoplay.html [ Crash Timeout ]
 

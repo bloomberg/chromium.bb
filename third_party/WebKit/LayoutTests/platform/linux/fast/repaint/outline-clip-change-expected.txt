@@ -9,16 +9,16 @@
         {
           "object": "LayoutBlockFlow (positioned) A id='link' class='updated'",
           "rect": [43, 103, 91, 30],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutText #text",
           "rect": [48, 108, 82, 19],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "InlineTextBox 'Lorem Ipsum'",
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "RootInlineBox",
