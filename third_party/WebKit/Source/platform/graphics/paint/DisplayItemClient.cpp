@@ -16,11 +16,14 @@ DisplayItemCacheGeneration::Generation DisplayItemCacheGeneration::s_nextGenerat
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
 
 HashSet<const DisplayItemClient*>* liveDisplayItemClients = nullptr;
-HashMap<const DisplayItemClient*, String>* displayItemClientsShouldKeepAlive = nullptr;
+HashMap<const void*, HashMap<const DisplayItemClient*, String>>* displayItemClientsShouldKeepAlive = nullptr;
 
 DisplayItemClient::DisplayItemClient()
 {
-    CHECK(!displayItemClientsShouldKeepAlive || !displayItemClientsShouldKeepAlive->contains(this));
+    if (displayItemClientsShouldKeepAlive) {
+        for (auto item : *displayItemClientsShouldKeepAlive)
+            CHECK(!item.value.contains(this));
+    }
     if (!liveDisplayItemClients)
         liveDisplayItemClients = new HashSet<const DisplayItemClient*>();
     liveDisplayItemClients->add(this);
@@ -28,9 +31,13 @@ DisplayItemClient::DisplayItemClient()
 
 DisplayItemClient::~DisplayItemClient()
 {
-    CHECK(!displayItemClientsShouldKeepAlive || !displayItemClientsShouldKeepAlive->contains(this))
-        << "Short-lived DisplayItemClient: " << displayItemClientsShouldKeepAlive->get(this)
-        << ". See crbug.com/570030.";
+    if (displayItemClientsShouldKeepAlive) {
+        for (auto& item : *displayItemClientsShouldKeepAlive) {
+            CHECK(!item.value.contains(this))
+                << "Short-lived DisplayItemClient: " << item.value.get(this)
+                << ". See crbug.com/570030.";
+        }
+    }
     liveDisplayItemClients->remove(this);
 }
 
@@ -39,24 +46,20 @@ bool DisplayItemClient::isAlive() const
     return liveDisplayItemClients && liveDisplayItemClients->contains(this);
 }
 
-void DisplayItemClient::beginShouldKeepAlive() const
+void DisplayItemClient::beginShouldKeepAlive(const void* owner) const
 {
     CHECK(isAlive());
     if (!displayItemClientsShouldKeepAlive)
-        displayItemClientsShouldKeepAlive = new HashMap<const DisplayItemClient*, String>();
-#ifdef NDEBUG
-    displayItemClientsShouldKeepAlive->add(this, "");
-#else
-    auto addResult = displayItemClientsShouldKeepAlive->add(this, "");
+        displayItemClientsShouldKeepAlive = new HashMap<const void*, HashMap<const DisplayItemClient*, String>>();
+    auto addResult = displayItemClientsShouldKeepAlive->add(owner, HashMap<const DisplayItemClient*, String>()).storedValue->value.add(this, "");
     if (addResult.isNewEntry)
         addResult.storedValue->value = debugName();
-#endif
 }
 
-void DisplayItemClient::endShouldKeepAliveAllClients()
+void DisplayItemClient::endShouldKeepAliveAllClients(const void* owner)
 {
-    delete displayItemClientsShouldKeepAlive;
-    displayItemClientsShouldKeepAlive = nullptr;
+    if (displayItemClientsShouldKeepAlive)
+        displayItemClientsShouldKeepAlive->remove(owner);
 }
 
 #endif // CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS

@@ -67,7 +67,7 @@ void PaintController::processNewItem(DisplayItem& displayItem)
 
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
     if (!skippingCache() && (displayItem.isCacheable() || displayItem.isCached()))
-        displayItem.client().beginShouldKeepAlive();
+        displayItem.client().beginShouldKeepAlive(this);
 #endif
 
     if (displayItem.isCached())
@@ -409,7 +409,7 @@ void PaintController::updateCacheGeneration()
         displayItem.client().setDisplayItemsCached(m_currentCacheGeneration);
     }
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
-    DisplayItemClient::endShouldKeepAliveAllClients();
+    DisplayItemClient::endShouldKeepAliveAllClients(this);
 #endif
 }
 
