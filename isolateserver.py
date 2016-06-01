@@ -1604,24 +1604,28 @@ class DiskCache(LocalCache):
 
     # Ensure enough free space.
     self._free_disk = file_path.get_free_space(self.cache_dir)
-    trimmed_due_to_space = False
+    trimmed_due_to_space = 0
     while (
         self.policies.min_free_space and
         self._lru and
         self._free_disk < self.policies.min_free_space):
-      trimmed_due_to_space = True
+      trimmed_due_to_space += 1
       self._remove_lru_file()
+
     if trimmed_due_to_space:
       total_usage = sum(self._lru.itervalues())
       usage_percent = 0.
       if total_usage:
-        usage_percent = 100. * self.policies.max_cache_size / float(total_usage)
+        usage_percent = 100. * float(total_usage) / self.policies.max_cache_size
+
       logging.warning(
-          'Trimmed due to not enough free disk space: %.1fkb free, %.1fkb '
-          'cache (%.1f%% of its maximum capacity)',
+          'Trimmed %s file(s) due to not enough free disk space: %.1fkb free,'
+          ' %.1fkb cache (%.1f%% of its maximum capacity of %.1fkb)',
+          trimmed_due_to_space,
           self._free_disk / 1024.,
           total_usage / 1024.,
-          usage_percent)
+          usage_percent,
+          self.policies.max_cache_size / 1024.)
     self._save()
 
   def _path(self, digest):
@@ -1638,6 +1642,7 @@ class DiskCache(LocalCache):
     if digest in self._protected:
       raise Error('Not enough space to map the whole isolated tree')
     digest, size = self._lru.pop_oldest()
+    logging.debug("Removing LRU file %s", digest)
     self._delete_file(digest, size)
     return size
 
