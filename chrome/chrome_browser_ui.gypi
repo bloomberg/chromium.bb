@@ -2203,8 +2203,6 @@
       'browser/ui/views/autofill/autofill_popup_view_views.cc',
       'browser/ui/views/autofill/autofill_popup_view_views.h',
       'browser/ui/views/autofill/card_unmask_prompt_views_shim.cc',
-      'browser/ui/views/autofill/expanding_textfield.cc',
-      'browser/ui/views/autofill/expanding_textfield.h',
       'browser/ui/views/autofill/password_generation_popup_view_views.cc',
       'browser/ui/views/autofill/password_generation_popup_view_views.h',
       'browser/ui/views/autofill/save_card_bubble_views.cc',
