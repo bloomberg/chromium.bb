@@ -1,7 +1,6 @@
 cpu@chromium.org
 darin@chromium.org
 jam@chromium.org
-jeremy@chromium.org
 tsepez@chromium.org
 
 # New IPC message files require a security review to avoid introducing
