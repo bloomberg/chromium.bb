@@ -188,6 +188,7 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
 
   // Layout the components.
   views::GridLayout* dialog_layout = new views::GridLayout(this);
+  dialog_layout->SetInsets(views::kPanelVertMargin, 0, 0, 0);
   SetLayoutManager(dialog_layout);
 
   // Use GridLayout inside the prompt bar because StyledLabel requires it.
