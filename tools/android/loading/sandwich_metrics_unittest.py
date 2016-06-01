@@ -232,7 +232,7 @@ class PageTrackTest(unittest.TestCase):
       point(400, 1.0),
     ]
     self.assertEqual(120 + 70 * 0.6 + 90 * 0.25,
-                     puller.ComputeSpeedIndex(completness_record))
+                     puller._ComputeSpeedIndex(completness_record))
 
     completness_record = [
       point(70, 0.0),
@@ -242,7 +242,7 @@ class PageTrackTest(unittest.TestCase):
       point(240, 1.0),
     ]
     self.assertEqual(80 + 60 * 0.7 + 10 * 0.4 + 20 * 0.1,
-                     puller.ComputeSpeedIndex(completness_record))
+                     puller._ComputeSpeedIndex(completness_record))
 
     completness_record = [
       point(90, 0.0),
@@ -251,7 +251,7 @@ class PageTrackTest(unittest.TestCase):
       point(230, 1.0),
     ]
     with self.assertRaises(ValueError):
-      puller.ComputeSpeedIndex(completness_record)
+      puller._ComputeSpeedIndex(completness_record)
 
 
 if __name__ == '__main__':

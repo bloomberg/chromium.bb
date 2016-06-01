@@ -101,6 +101,8 @@ class StaleWhileRevalidateBenchmarkBuilder(task_manager.Builder):
       depends on: <transformer_list_name>/{swr,worstcase}-run/
         depends on: some tasks saved by PopulateCommonPipelines()
     """
+    additional_column_names = ['url', 'repeat_id']
+
     task_prefix = os.path.join(transformer_list_name, '')
     if enable_swr:
       task_prefix += 'swr'
@@ -124,15 +126,27 @@ class StaleWhileRevalidateBenchmarkBuilder(task_manager.Builder):
 
     @self.RegisterTask(task_prefix + '-metrics.csv', [RunBenchmark])
     def ExtractMetrics():
-      trace_metrics_list = \
-          sandwich_metrics.ExtractMetricsFromRunnerOutputDirectory(
-              None, RunBenchmark.path)
-      trace_metrics_list.sort(key=lambda e: e['repeat_id'])
+      run_metrics_list = []
+      for repeat_id, repeat_dir in sandwich_runner.WalkRepeatedRuns(
+          RunBenchmark.path):
+        trace_path = os.path.join(repeat_dir, sandwich_runner.TRACE_FILENAME)
+        logging.info('processing trace: %s', trace_path)
+        trace = loading_trace.LoadingTrace.FromJsonFile(trace_path)
+        run_metrics = {
+            'url': trace.url,
+            'repeat_id': repeat_id,
+        }
+        run_metrics.update(
+            sandwich_metrics.ExtractCommonMetricsFromRepeatDirectory(
+                repeat_dir, trace))
+        run_metrics_list.append(run_metrics)
+
+      run_metrics_list.sort(key=lambda e: e['repeat_id'])
       with open(ExtractMetrics.path, 'w') as csv_file:
-        writer = csv.DictWriter(csv_file,
-                                fieldnames=sandwich_metrics.CSV_FIELD_NAMES)
+        writer = csv.DictWriter(csv_file, fieldnames=(additional_column_names +
+                                    sandwich_metrics.COMMON_CSV_COLUMN_NAMES))
         writer.writeheader()
-        for trace_metrics in trace_metrics_list:
+        for trace_metrics in run_metrics_list:
           writer.writerow(trace_metrics)
 
     self._common_builder.default_final_tasks.append(ExtractMetrics)

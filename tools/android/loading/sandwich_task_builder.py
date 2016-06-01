@@ -5,12 +5,14 @@
 import csv
 import logging
 import json
+import logging
 import os
 import shutil
 
 import chrome_cache
 import common_util
 import emulation
+import loading_trace
 import sandwich_metrics
 import sandwich_misc
 import sandwich_runner
@@ -186,6 +188,18 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
           depends on: common/<subresource_discoverer>-setup.json
             depends on: some tasks saved by PopulateCommonPipelines()
     """
+    additional_column_names = [
+        'url',
+        'repeat_id',
+        'subresource_discoverer',
+        'subresource_count',
+        # The amount of subresources detected at SetupBenchmark step.
+        'subresource_count_theoretic',
+        # Amount of subresources for caching as suggested by the subresource
+        # discoverer.
+        'cached_subresource_count_theoretic',
+        'cached_subresource_count']
+
     assert subresource_discoverer in sandwich_misc.SUBRESOURCE_DISCOVERERS
     assert 'common' not in sandwich_misc.SUBRESOURCE_DISCOVERERS
     shared_task_prefix = os.path.join('common', subresource_discoverer)
@@ -233,17 +247,42 @@ class PrefetchBenchmarkBuilder(task_manager.Builder):
     @self.RegisterTask(task_prefix + '-metrics.csv',
                        dependencies=[RunBenchmark])
     def ExtractMetrics():
+      # TODO(gabadie): Performance improvement: load each trace only once and
+      # use it for validation and extraction of metrics later.
       sandwich_misc.VerifyBenchmarkOutputDirectory(
           SetupBenchmark.path, RunBenchmark.path)
-      trace_metrics_list = \
-          sandwich_metrics.ExtractMetricsFromRunnerOutputDirectory(
-              SetupBenchmark.path, RunBenchmark.path)
-      trace_metrics_list.sort(key=lambda e: e['repeat_id'])
+
+      benchmark_setup = json.load(open(SetupBenchmark.path))
+      run_metrics_list = []
+      for repeat_id, repeat_dir in sandwich_runner.WalkRepeatedRuns(
+          RunBenchmark.path):
+        trace_path = os.path.join(repeat_dir, sandwich_runner.TRACE_FILENAME)
+        logging.info('processing trace: %s', trace_path)
+        trace = loading_trace.LoadingTrace.FromJsonFile(trace_path)
+        run_metrics = {
+            'url': trace.url,
+            'repeat_id': repeat_id,
+            'subresource_discoverer': benchmark_setup['subresource_discoverer'],
+            'subresource_count': len(sandwich_misc.ListUrlRequests(
+                trace, sandwich_misc.RequestOutcome.All)),
+            'subresource_count_theoretic':
+                len(benchmark_setup['url_resources']),
+            'cached_subresource_count': len(sandwich_misc.ListUrlRequests(
+                trace, sandwich_misc.RequestOutcome.ServedFromCache)),
+            'cached_subresource_count_theoretic':
+                len(benchmark_setup['cache_whitelist']),
+        }
+        run_metrics.update(
+            sandwich_metrics.ExtractCommonMetricsFromRepeatDirectory(
+                repeat_dir, trace))
+        run_metrics_list.append(run_metrics)
+
+      run_metrics_list.sort(key=lambda e: e['repeat_id'])
       with open(ExtractMetrics.path, 'w') as csv_file:
-        writer = csv.DictWriter(csv_file,
-                                fieldnames=sandwich_metrics.CSV_FIELD_NAMES)
+        writer = csv.DictWriter(csv_file, fieldnames=(additional_column_names +
+                                    sandwich_metrics.COMMON_CSV_COLUMN_NAMES))
         writer.writeheader()
-        for trace_metrics in trace_metrics_list:
+        for trace_metrics in run_metrics_list:
           writer.writerow(trace_metrics)
 
     self._common_builder.default_final_tasks.append(ExtractMetrics)

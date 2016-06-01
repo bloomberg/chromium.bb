@@ -32,19 +32,9 @@ import sandwich_misc
 import tracing
 
 
-CSV_FIELD_NAMES = [
-    'repeat_id',
-    'url',
+COMMON_CSV_COLUMN_NAMES = [
     'chromium_commit',
     'platform',
-    'subresource_discoverer',
-    'subresource_count',
-    # The amount of subresources detected at SetupBenchmark step.
-    'subresource_count_theoretic',
-    # Amount of subresources for caching as suggested by the subresource
-    # discoverer.
-    'cached_subresource_count_theoretic',
-    'cached_subresource_count',
     'first_layout',
     'first_contentful_paint',
     'total_load',
@@ -222,30 +212,6 @@ def _ExtractMemoryMetrics(loading_trace):
   }
 
 
-def _ExtractBenchmarkStatistics(benchmark_setup, loading_trace):
-  """Extracts some useful statistics from a benchmark run.
-
-  Args:
-    benchmark_setup: benchmark_setup: dict representing the benchmark setup
-        JSON. The JSON format is according to:
-            PrefetchBenchmarkBuilder.PopulateLoadBenchmark.SetupBenchmark.
-    loading_trace: loading_trace_module.LoadingTrace.
-
-  Returns:
-    Dictionary with all extracted fields set.
-  """
-  return {
-    'subresource_discoverer': benchmark_setup['subresource_discoverer'],
-    'subresource_count': len(sandwich_misc.ListUrlRequests(
-        loading_trace, sandwich_misc.RequestOutcome.All)),
-    'subresource_count_theoretic': len(benchmark_setup['url_resources']),
-    'cached_subresource_count': len(sandwich_misc.ListUrlRequests(
-        loading_trace, sandwich_misc.RequestOutcome.ServedFromCache)),
-    'cached_subresource_count_theoretic':
-        len(benchmark_setup['cache_whitelist']),
-  }
-
-
 def _ExtractCompletenessRecordFromVideo(video_path):
   """Extracts the completeness record from a video.
 
@@ -283,7 +249,7 @@ def _ExtractCompletenessRecordFromVideo(video_path):
   return [(time, FrameProgress(hist)) for time, hist in histograms]
 
 
-def ComputeSpeedIndex(completeness_record):
+def _ComputeSpeedIndex(completeness_record):
   """Computes the speed-index from a completeness record.
 
   Args:
@@ -305,82 +271,41 @@ def ComputeSpeedIndex(completeness_record):
   return speed_index
 
 
-def _ExtractMetricsFromRunDirectory(benchmark_setup, run_directory_path):
-  """Extracts all the metrics from traces and video of a sandwich run.
+def ExtractCommonMetricsFromRepeatDirectory(repeat_dir, trace):
+  """Extracts all the metrics from traces and video of a sandwich run repeat
+  directory.
 
   Args:
-    benchmark_setup: benchmark_setup: dict representing the benchmark setup
-        JSON. The JSON format is according to:
-            PrefetchBenchmarkBuilder.PopulateLoadBenchmark.SetupBenchmark.
-    run_directory_path: Path of the run directory.
+    repeat_dir: Path of the repeat directory within a run directory.
+    trace: preloaded LoadingTrace in |repeat_dir|
+
+  Contract:
+    trace == LoadingTrace.FromJsonFile(
+        os.path.join(repeat_dir, sandwich_runner.TRACE_FILENAME))
 
   Returns:
     Dictionary of extracted metrics.
   """
-  trace_path = os.path.join(run_directory_path, 'trace.json')
-  logging.info('processing trace \'%s\'' % trace_path)
-  loading_trace = loading_trace_module.LoadingTrace.FromJsonFile(trace_path)
   run_metrics = {
-      'url': loading_trace.url,
-      'chromium_commit': loading_trace.metadata['chromium_commit'],
-      'platform': (loading_trace.metadata['platform']['os'] + '-' +
-          loading_trace.metadata['platform']['product_model'])
+      'chromium_commit': trace.metadata['chromium_commit'],
+      'platform': (trace.metadata['platform']['os'] + '-' +
+          trace.metadata['platform']['product_model'])
   }
-  run_metrics.update(_ExtractDefaultMetrics(loading_trace))
-  run_metrics.update(_ExtractMemoryMetrics(loading_trace))
-  if benchmark_setup:
-    run_metrics.update(
-        _ExtractBenchmarkStatistics(benchmark_setup, loading_trace))
-  video_path = os.path.join(run_directory_path, 'video.mp4')
+  run_metrics.update(_ExtractDefaultMetrics(trace))
+  run_metrics.update(_ExtractMemoryMetrics(trace))
+  video_path = os.path.join(repeat_dir, sandwich_runner.VIDEO_FILENAME)
   if os.path.isfile(video_path):
     logging.info('processing speed-index video \'%s\'' % video_path)
     try:
       completeness_record = _ExtractCompletenessRecordFromVideo(video_path)
-      run_metrics['speed_index'] = ComputeSpeedIndex(completeness_record)
+      run_metrics['speed_index'] = _ComputeSpeedIndex(completeness_record)
     except video.BoundingBoxNotFoundException:
       # Sometimes the bounding box for the web content area is not present. Skip
       # calculating Speed Index.
       run_metrics['speed_index'] = _FAILED_CSV_VALUE
   else:
     run_metrics['speed_index'] = _UNAVAILABLE_CSV_VALUE
-  for key, value in loading_trace.metadata['network_emulation'].iteritems():
+  for key, value in trace.metadata['network_emulation'].iteritems():
     run_metrics['net_emul.' + key] = value
+  assert set(run_metrics.keys()) == set(COMMON_CSV_COLUMN_NAMES)
   return run_metrics
-
-
-def ExtractMetricsFromRunnerOutputDirectory(benchmark_setup_path,
-                                            output_directory_path):
-  """Extracts all the metrics from all the traces of a sandwich runner output
-  directory.
-
-  Args:
-    benchmark_setup_path: Path of the JSON of the benchmark setup.
-    output_directory_path: The sandwich runner's output directory to extract the
-        metrics from.
-
-  Returns:
-    List of dictionaries.
-  """
-  benchmark_setup = None
-  if benchmark_setup_path:
-    benchmark_setup = json.load(open(benchmark_setup_path))
-  assert os.path.isdir(output_directory_path)
-  metrics = []
-  for node_name in os.listdir(output_directory_path):
-    if not os.path.isdir(os.path.join(output_directory_path, node_name)):
-      continue
-    try:
-      repeat_id = int(node_name)
-    except ValueError:
-      continue
-    run_directory_path = os.path.join(output_directory_path, node_name)
-    run_metrics = _ExtractMetricsFromRunDirectory(
-        benchmark_setup, run_directory_path)
-    run_metrics['repeat_id'] = repeat_id
-    # TODO(gabadie): Make common metrics extraction with benchmark type
-    # specific CSV column.
-    # assert set(run_metrics.keys()) == set(CSV_FIELD_NAMES)
-    metrics.append(run_metrics)
-  assert len(metrics) > 0, ('Looks like \'{}\' was not a sandwich runner ' +
-                            'output directory.').format(output_directory_path)
-  return metrics

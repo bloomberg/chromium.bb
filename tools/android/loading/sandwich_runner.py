@@ -254,3 +254,24 @@ class SandwichRunner(object):
       self._PullCacheFromDevice()
 
     self._chrome_ctl = None
+
+
+def WalkRepeatedRuns(runner_output_dir):
+  """Yields unordered (repeat id, path of the repeat directory).
+
+  Args:
+    runner_output_dir: Same as for SandwichRunner.output_dir.
+  """
+  repeated_run_count = 0
+  for node_name in os.listdir(runner_output_dir):
+    repeat_dir = os.path.join(runner_output_dir, node_name)
+    if not os.path.isdir(repeat_dir):
+      continue
+    try:
+      repeat_id = int(node_name)
+    except ValueError:
+      continue
+    yield repeat_id, repeat_dir
+    repeated_run_count += 1
+  assert repeated_run_count > 0, ('Error: not a sandwich runner output '
+                                  'directory: {}').format(runner_output_dir)
