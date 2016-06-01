@@ -618,7 +618,7 @@ layer at (0,0) size 785x644 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (77,26) width 4: " "
             text run at (0,39) width 119: "abcdefghijklmnopqrstu"
             text run at (0,52) width 6: "v"
-    layer at (144,500) size 141x32 clip at (145,501) size 124x15 scrollWidth 426 scrollHeight 17
+    layer at (144,500) size 141x32 clip at (145,501) size 139x15 scrollWidth 426 scrollHeight 17
       LayoutTextControl {TEXTAREA} at (1,29) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 135x13
           LayoutText {#text} at (0,0) size 425x13
@@ -634,7 +634,7 @@ layer at (0,0) size 785x644 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (77,26) width 4: " "
             text run at (0,39) width 119: "abcdefghijklmnopqrstu"
             text run at (0,52) width 6: "v"
-    layer at (430,500) size 141x32 clip at (431,501) size 124x15 scrollWidth 426 scrollHeight 17
+    layer at (430,500) size 141x32 clip at (431,501) size 139x15 scrollWidth 426 scrollHeight 17
       LayoutTextControl {TEXTAREA} at (1,29) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 135x13
           LayoutText {#text} at (0,0) size 425x13
@@ -650,7 +650,7 @@ layer at (0,0) size 785x644 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (77,26) width 4: " "
             text run at (0,39) width 119: "abcdefghijklmnopqrstu"
             text run at (0,52) width 6: "v"
-    layer at (1,593) size 141x47 clip at (2,594) size 124x30 scrollWidth 195 scrollHeight 43
+    layer at (1,593) size 141x47 clip at (2,594) size 139x30 scrollWidth 195 scrollHeight 43
       LayoutTextControl {TEXTAREA} at (1,29) size 141x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 135x39
           LayoutText {#text} at (0,0) size 194x39
@@ -658,7 +658,7 @@ layer at (0,0) size 785x644 backgroundClip at (0,0) size 785x600 clip at (0,0) s
             text run at (99,0) width 4: " "
             text run at (0,13) width 194: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             text run at (0,26) width 129: " abcdefghijklmnopqrstuv"
-    layer at (144,593) size 141x47 clip at (145,594) size 124x30 scrollWidth 195 scrollHeight 43
+    layer at (144,593) size 141x47 clip at (145,594) size 139x30 scrollWidth 195 scrollHeight 43
       LayoutTextControl {TEXTAREA} at (1,57) size 141x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 135x39
           LayoutText {#text} at (0,0) size 194x39
@@ -1346,7 +1346,7 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (77,26) width 4: " "
             text run at (0,39) width 119: "abcdefghijklmnopqrstu"
             text run at (0,52) width 6: "v"
-    layer at (144,482) size 141x32 clip at (145,483) size 124x15 scrollWidth 426 scrollHeight 17
+    layer at (144,482) size 141x32 clip at (145,483) size 139x15 scrollWidth 426 scrollHeight 17
       LayoutTextControl {TEXTAREA} at (1,29) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 135x13
           LayoutText {#text} at (0,0) size 425x13
@@ -1362,7 +1362,7 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (77,26) width 4: " "
             text run at (0,39) width 119: "abcdefghijklmnopqrstu"
             text run at (0,52) width 6: "v"
-    layer at (430,482) size 141x32 clip at (431,483) size 124x15 scrollWidth 426 scrollHeight 17
+    layer at (430,482) size 141x32 clip at (431,483) size 139x15 scrollWidth 426 scrollHeight 17
       LayoutTextControl {TEXTAREA} at (1,29) size 141x32 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 135x13
           LayoutText {#text} at (0,0) size 425x13
@@ -1378,7 +1378,7 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (77,26) width 4: " "
             text run at (0,39) width 119: "abcdefghijklmnopqrstu"
             text run at (0,52) width 6: "v"
-    layer at (1,572) size 141x47 clip at (2,573) size 124x30 scrollWidth 195 scrollHeight 43
+    layer at (1,572) size 141x47 clip at (2,573) size 139x30 scrollWidth 195 scrollHeight 43
       LayoutTextControl {TEXTAREA} at (1,29) size 141x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 135x39
           LayoutText {#text} at (0,0) size 194x39
@@ -1386,7 +1386,7 @@ layer at (0,644) size 785x620 backgroundClip at (0,0) size 785x600 clip at (0,0)
             text run at (99,0) width 4: " "
             text run at (0,13) width 194: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             text run at (0,26) width 129: " abcdefghijklmnopqrstuv"
-    layer at (144,572) size 141x47 clip at (145,573) size 124x30 scrollWidth 195 scrollHeight 43
+    layer at (144,572) size 141x47 clip at (145,573) size 139x30 scrollWidth 195 scrollHeight 43
       LayoutTextControl {TEXTAREA} at (1,57) size 141x47 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (3,3) size 135x39
           LayoutText {#text} at (0,0) size 194x39

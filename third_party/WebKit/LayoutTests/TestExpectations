@@ -746,12 +746,6 @@ crbug.com/396775 virtual/prefer_compositing_to_lcd_text/compositing/overflow/ref
 crbug.com/381684 [ Mac Win ] fonts/family-fallback-gardiner.html [ Skip ]
 crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip ]
 
-crbug.com/600036 scrollbars/scrollbars-on-positioned-content.html [ NeedsRebaseline ]
-crbug.com/600036 virtual/prefer_compositing_to_lcd_text/scrollbars/scrollbars-on-positioned-content.html [ NeedsRebaseline ]
-crbug.com/600036 virtual/rootlayerscrolls/scrollbars/scrollbars-on-positioned-content.html [ NeedsRebaseline ]
-crbug.com/600036 [ Mac ] fast/forms/textarea/basic-textareas.html [ NeedsRebaseline ]
-crbug.com/600036 [ Linux ] fast/table/overflowHidden.html [ NeedsRebaseline ]
-
 # crbug.com/396823 [ Mac ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ Failure ]
 
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ Failure ]
