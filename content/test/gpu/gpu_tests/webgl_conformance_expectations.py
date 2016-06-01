@@ -395,6 +395,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               'glsl-construct-vec-mat-index.html',
               ['win'], bug=525188)
     self.Flaky('deqp/data/gles2/shaders/constants.html', ['win'], bug=594922)
+    self.Fail('conformance/rendering/point-specific-shader-variables.html',
+        ['win'], bug=616335)
 
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +

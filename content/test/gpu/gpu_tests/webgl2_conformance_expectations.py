@@ -57,7 +57,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/shaderstatequery.html', bug=483282)
     self.Skip('deqp/functional/gles3/shadertexturefunction/*.html', bug=483282)
     self.Skip('deqp/functional/gles3/sync.html', bug=483282)
-    self.Skip('deqp/functional/gles3/textureshadow.html', bug=483282)
+    self.Skip('deqp/functional/gles3/textureshadow/*.html', bug=483282)
     self.Skip('deqp/functional/gles3/transformfeedback.html', bug=483282)
     self.Skip('deqp/functional/gles3/uniformapi.html', bug=483282)
     self.Skip('deqp/functional/gles3/uniformbuffers.html', bug=483282)
