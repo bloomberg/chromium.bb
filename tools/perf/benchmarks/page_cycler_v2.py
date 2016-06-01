@@ -28,7 +28,7 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
     return tbm_options
 
 
-@benchmark.Disabled('all')  # crbug.com/615178
+@benchmark.Disabled('win', 'android')  # crbug.com/615178
 class PageCyclerV2Typical25(_PageCyclerV2):
   """Page load time benchmark for a 25 typical web pages.
 
