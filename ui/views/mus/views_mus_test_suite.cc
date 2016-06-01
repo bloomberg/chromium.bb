@@ -65,7 +65,8 @@ std::unique_ptr<PlatformTestHelper> CreatePlatformTestHelper(
 class ShellConnection {
  public:
   ShellConnection() : thread_("Persistent shell connections") {
-    base::WaitableEvent wait(false, false);
+    base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     base::Thread::Options options;
     thread_.StartWithOptions(options);
     thread_.task_runner()->PostTask(
@@ -86,7 +87,8 @@ class ShellConnection {
   ~ShellConnection() {
     if (views::WindowManagerConnection::Exists())
       views::WindowManagerConnection::Reset();
-    base::WaitableEvent wait(false, false);
+    base::WaitableEvent wait(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&ShellConnection::TearDownConnections,
                               base::Unretained(this), &wait));
