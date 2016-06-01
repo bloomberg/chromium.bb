@@ -1617,12 +1617,14 @@ class ValidationPool(object):
     for change in sorted(changes, key=SortKeyForChanges):
       project = os.path.basename(change.project)
       gerrit_number = cros_patch.AddPrefix(change, change.gerrit_number)
-      # We cannot print '@' in the link because it is used to separate
-      # the display text and the URL by the buildbot annotator.
-      author = change.owner_email.replace('@', '-AT-')
-      if (change.owner_email.endswith(constants.GOOGLE_EMAIL) or
-          change.owner_email.endswith(constants.CHROMIUM_EMAIL)):
-        author = change.owner
+      author = change.owner
+      # Show the owner, unless it's a non-standard email address.
+      if (change.owner_email and
+          not (change.owner_email.endswith(constants.GOOGLE_EMAIL) or
+               change.owner_email.endswith(constants.CHROMIUM_EMAIL))):
+        # We cannot print '@' in the link because it is used to separate
+        # the display text and the URL by the buildbot annotator.
+        author = change.owner_email.replace('@', '-AT-')
 
       s = '%s | %s | %s' % (project, author, gerrit_number)
 

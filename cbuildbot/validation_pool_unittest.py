@@ -1523,8 +1523,13 @@ class TestPrintLinks(MoxBase):
   """Tests that change links can be printed."""
   def testPrintLinks(self):
     changes = self.GetPatches(3)
+    changes[1].owner_email = 'foo@bar.com'
+    changes[2].owner_email = None
+    # TODO: Validate the output, don't just print it out to inspect by hand.
     with parallel_unittest.ParallelMock():
       validation_pool.ValidationPool.PrintLinksToChanges(changes)
+
+
 
 
 class TestCreateValidationFailureMessage(MoxBase):
