@@ -1089,6 +1089,7 @@ void WebURLLoaderImpl::PopulateURLRequestForRedirect(
 
   new_request->setHTTPReferrer(WebString::fromUTF8(redirect_info.new_referrer),
                               referrer_policy);
+  new_request->setPriority(request.getPriority());
 
   std::string old_method = request.httpMethod().utf8();
   new_request->setHTTPMethod(WebString::fromUTF8(redirect_info.new_method));
