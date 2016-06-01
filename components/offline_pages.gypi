@@ -21,8 +21,6 @@
       'sources': [
         'offline_pages/archive_manager.cc',
         'offline_pages/archive_manager.h',
-        'offline_pages/client_namespace_constants.cc',
-        'offline_pages/client_namespace_constants.h',
         'offline_pages/client_policy_controller.cc',
         'offline_pages/client_policy_controller.h',
         'offline_pages/offline_page_archiver.h',

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/time/time.h"
-#include "components/offline_pages/client_namespace_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using LifetimeType = offline_pages::LifetimePolicy::LifetimeType;
@@ -14,6 +13,8 @@ using LifetimeType = offline_pages::LifetimePolicy::LifetimeType;
 namespace offline_pages {
 
 namespace {
+const char kBookmarkNamespace[] = "bookmark";
+const char kLastNNamespace[] = "last_n";
 const char kUndefinedNamespace[] = "undefined";
 
 bool isTemporary(const OfflinePageClientPolicy& policy) {

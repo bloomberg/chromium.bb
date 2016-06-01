@@ -135,111 +135,6 @@ void ReportStorageHistogramsAfterDelete(
   }
 }
 
-void ReportSavePageResultHistogramAfterSave(const ClientId& client_id,
-                                           SavePageResult result) {
-  // The histogram below is an expansion of the UMA_HISTOGRAM_ENUMERATION
-  // macro adapted to allow for a dynamically suffixed histogram name.
-  // Note: The factory creates and owns the histogram.
-  base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
-      AddHistogramSuffix(client_id, "OfflinePages.SavePageResult"),
-      1,
-      static_cast<int>(SavePageResult::RESULT_COUNT),
-      static_cast<int>(SavePageResult::RESULT_COUNT) + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->Add(static_cast<int>(result));
-}
-
-void ReportPageHistogramAfterSave(const OfflinePageItem& offline_page) {
-  // The histogram below is an expansion of the UMA_HISTOGRAM_TIMES
-  // macro adapted to allow for a dynamically suffixed histogram name.
-  // Note: The factory creates and owns the histogram.
-  base::HistogramBase* histogram = base::Histogram::FactoryTimeGet(
-      AddHistogramSuffix(offline_page.client_id, "OfflinePages.SavePageTime"),
-      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(10),
-      50, base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->AddTime(base::Time::Now() - offline_page.creation_time);
-
-  // The histogram below is an expansion of the UMA_HISTOGRAM_CUSTOM_COUNTS
-  // macro adapted to allow for a dynamically suffixed histogram name.
-  // Note: The factory creates and owns the histogram.
-  // Reported as Kb between 1Kb and 10Mb.
-  histogram = base::Histogram::FactoryGet(
-      AddHistogramSuffix(offline_page.client_id, "OfflinePages.PageSize"),
-      1, 10000, 50, base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->Add(offline_page.file_size / 1024);
-}
-
-void ReportPageHistogramsAfterDelete(
-    const std::map<int64_t, OfflinePageItem>& offline_pages,
-    const std::vector<int64_t>& deleted_offline_ids) {
-  const int max_minutes = base::TimeDelta::FromDays(365).InMinutes();
-  base::Time now = base::Time::Now();
-  int64_t total_size = 0;
-  for (int64_t offline_id : deleted_offline_ids) {
-    auto iter = offline_pages.find(offline_id);
-    if (iter == offline_pages.end())
-      continue;
-    total_size += iter->second.file_size;
-    ClientId client_id = iter->second.client_id;
-
-    // The histograms below are an expansion of the UMA_HISTOGRAM_CUSTOM_COUNTS
-    // macro adapted to allow for a dynamically suffixed histogram name.
-    // Note: The factory creates and owns the histogram.
-    base::HistogramBase* histogram = base::Histogram::FactoryGet(
-        AddHistogramSuffix(client_id, "OfflinePages.PageLifetime"),
-        1, max_minutes, 100, base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add((now - iter->second.creation_time).InMinutes());
-
-    histogram = base::Histogram::FactoryGet(
-        AddHistogramSuffix(
-            client_id, "OfflinePages.DeletePage.TimeSinceLastOpen"),
-        1, max_minutes, 100, base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add((now - iter->second.last_access_time).InMinutes());
-
-    histogram = base::Histogram::FactoryGet(
-        AddHistogramSuffix(
-            client_id, "OfflinePages.DeletePage.LastOpenToCreated"),
-        1, max_minutes, 100, base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add(
-        (iter->second.last_access_time - iter->second.creation_time).
-            InMinutes());
-
-    // Reported as Kb between 1Kb and 10Mb.
-    histogram = base::Histogram::FactoryGet(
-        AddHistogramSuffix(client_id, "OfflinePages.DeletePage.PageSize"),
-        1, 10000, 50, base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add(iter->second.file_size / 1024);
-
-    histogram = base::Histogram::FactoryGet(
-        AddHistogramSuffix(client_id, "OfflinePages.DeletePage.AccessCount"),
-        1, 1000000, 50, base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add(iter->second.access_count);
-  }
-
-  if (deleted_offline_ids.size() > 1) {
-    UMA_HISTOGRAM_COUNTS("OfflinePages.BatchDelete.Count",
-                         static_cast<int32_t>(deleted_offline_ids.size()));
-    UMA_HISTOGRAM_MEMORY_KB(
-        "OfflinePages.BatchDelete.TotalPageSize", total_size / 1024);
-  }
-}
-
-void ReportPageHistogramsAfterAccess(const OfflinePageItem& offline_page_item) {
-  // The histogram below is an expansion of the UMA_HISTOGRAM_CUSTOM_COUNTS
-  // macro adapted to allow for a dynamically suffixed histogram name.
-  // Note: The factory creates and owns the histogram.
-  base::HistogramBase* histogram = base::Histogram::FactoryGet(
-        AddHistogramSuffix(
-            offline_page_item.client_id,
-            offline_page_item.access_count == 0 ?
-                "OfflinePages.FirstOpenSinceCreated" :
-                "OfflinePages.OpenSinceLastOpen"),
-        1, kMaxOpenedPageHistogramBucket.InMinutes(), 50,
-        base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->Add(
-      (base::Time::Now() - offline_page_item.last_access_time).InMinutes());
-}
-
 }  // namespace
 
 // protected
@@ -313,9 +208,22 @@ void OfflinePageModelImpl::MarkPageAccessed(int64_t offline_id) {
   // be updated upon the successful store operation.
   OfflinePageItem offline_page_item = iter->second;
 
-  ReportPageHistogramsAfterAccess(offline_page_item);
+  base::Time now = base::Time::Now();
+  base::TimeDelta time_since_last_accessed =
+      now - offline_page_item.last_access_time;
 
-  offline_page_item.last_access_time = base::Time::Now();
+  // When the access account is still zero, the page is opened for the first
+  // time since its creation.
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      AddHistogramSuffix(offline_page_item.client_id,
+                         (offline_page_item.access_count == 0)
+                             ? "OfflinePages.FirstOpenSinceCreated"
+                             : "OfflinePages.OpenSinceLastOpen")
+          .c_str(),
+      time_since_last_accessed.InMinutes(), 1,
+      kMaxOpenedPageHistogramBucket.InMinutes(), 50);
+
+  offline_page_item.last_access_time = now;
   offline_page_item.access_count++;
 
   store_->AddOrUpdateOfflinePage(
@@ -715,7 +623,15 @@ void OfflinePageModelImpl::OnAddOfflinePageDone(
   if (success) {
     offline_pages_[offline_page.offline_id] = offline_page;
     result = SavePageResult::SUCCESS;
-    ReportPageHistogramAfterSave(offline_page);
+    UMA_HISTOGRAM_TIMES(
+        AddHistogramSuffix(offline_page.client_id, "OfflinePages.SavePageTime")
+            .c_str(),
+        base::Time::Now() - offline_page.creation_time);
+    // 50 buckets capped between 1Kb and 10Mb.
+    UMA_HISTOGRAM_COUNTS_10000(
+        AddHistogramSuffix(offline_page.client_id, "OfflinePages.PageSize")
+            .c_str(),
+        offline_page.file_size / 1024);
   } else {
     result = SavePageResult::STORE_FAILURE;
   }
@@ -786,7 +702,9 @@ void OfflinePageModelImpl::InformSavePageDone(const SavePageCallback& callback,
                                               SavePageResult result,
                                               const ClientId& client_id,
                                               int64_t offline_id) {
-  ReportSavePageResultHistogramAfterSave(client_id, result);
+  UMA_HISTOGRAM_ENUMERATION(
+      AddHistogramSuffix(client_id, "OfflinePages.SavePageResult").c_str(),
+      static_cast<int>(result), static_cast<int>(SavePageResult::RESULT_COUNT));
   archive_manager_->GetStorageStats(
       base::Bind(&ReportStorageHistogramsAfterSave));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -822,18 +740,51 @@ void OfflinePageModelImpl::OnRemoveOfflinePagesDone(
     const std::vector<int64_t>& offline_ids,
     const DeletePageCallback& callback,
     bool success) {
-  ReportPageHistogramsAfterDelete(offline_pages_, offline_ids);
-
   // Delete the offline page from the in memory cache regardless of success in
   // store.
+  base::Time now = base::Time::Now();
+  int64_t total_size = 0;
   for (int64_t offline_id : offline_ids) {
     auto iter = offline_pages_.find(offline_id);
     if (iter == offline_pages_.end())
       continue;
+    total_size += iter->second.file_size;
+    ClientId client_id = iter->second.client_id;
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        AddHistogramSuffix(client_id, "OfflinePages.PageLifetime").c_str(),
+        (now - iter->second.creation_time).InMinutes(), 1,
+        base::TimeDelta::FromDays(365).InMinutes(), 100);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        AddHistogramSuffix(client_id,
+                           "OfflinePages.DeletePage.TimeSinceLastOpen")
+            .c_str(),
+        (now - iter->second.last_access_time).InMinutes(), 1,
+        base::TimeDelta::FromDays(365).InMinutes(), 100);
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        AddHistogramSuffix(client_id,
+                           "OfflinePages.DeletePage.LastOpenToCreated")
+            .c_str(),
+        (iter->second.last_access_time - iter->second.creation_time)
+            .InMinutes(),
+        1, base::TimeDelta::FromDays(365).InMinutes(), 100);
+    UMA_HISTOGRAM_MEMORY_KB(
+        AddHistogramSuffix(client_id, "OfflinePages.DeletePage.PageSize")
+            .c_str(),
+        iter->second.file_size / 1024);
+    UMA_HISTOGRAM_COUNTS(
+        AddHistogramSuffix(client_id, "OfflinePages.DeletePage.AccessCount")
+            .c_str(),
+        iter->second.access_count);
     FOR_EACH_OBSERVER(
         Observer, observers_,
         OfflinePageDeleted(iter->second.offline_id, iter->second.client_id));
     offline_pages_.erase(iter);
+  }
+  if (offline_ids.size() > 1) {
+    UMA_HISTOGRAM_COUNTS("OfflinePages.BatchDelete.Count",
+                         static_cast<int32_t>(offline_ids.size()));
+    UMA_HISTOGRAM_MEMORY_KB("OfflinePages.BatchDelete.TotalPageSize",
+                            total_size / 1024);
   }
   // Deleting multiple pages always succeeds when it gets to this point.
   InformDeletePageDone(callback, (success || offline_ids.size() > 1)

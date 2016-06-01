@@ -15,6 +15,9 @@
 
 namespace offline_pages {
 
+// Currently used for fallbacks like tests.
+static const char kDefaultNamespace[] = "default";
+
 // This is the class which is a singleton for offline page model
 // to get client policies based on namespaces.
 class ClientPolicyController {
