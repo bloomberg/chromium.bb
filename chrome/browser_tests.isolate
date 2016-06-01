@@ -200,6 +200,7 @@
     ['OS=="mac" and target_arch=="x64" and branding=="Chrome" and enable_pepper_cdms==1', {
       'variables': {
         'files': [
+          '<(PRODUCT_DIR)/WidevineCdm/manifest.json',
           '<(PRODUCT_DIR)/WidevineCdm/_platform_specific/mac_x64/libwidevinecdm.dylib',
           '<(PRODUCT_DIR)/WidevineCdm/_platform_specific/mac_x64/widevinecdmadapter.plugin',
         ],
@@ -236,6 +237,7 @@
     ['OS=="win" and target_arch=="ia32" and branding=="Chrome" and enable_pepper_cdms==1', {
       'variables': {
         'files': [
+          '<(PRODUCT_DIR)/WidevineCdm/manifest.json',
           '<(PRODUCT_DIR)/WidevineCdm/_platform_specific/win_x86/widevinecdm.dll',
           '<(PRODUCT_DIR)/WidevineCdm/_platform_specific/win_x86/widevinecdmadapter.dll',
         ],
@@ -244,6 +246,7 @@
     ['OS=="win" and target_arch=="x64" and branding=="Chrome" and enable_pepper_cdms==1', {
       'variables': {
         'files': [
+          '<(PRODUCT_DIR)/WidevineCdm/manifest.json',
           '<(PRODUCT_DIR)/WidevineCdm/_platform_specific/win_x64/widevinecdm.dll',
           '<(PRODUCT_DIR)/WidevineCdm/_platform_specific/win_x64/widevinecdmadapter.dll',
         ],
