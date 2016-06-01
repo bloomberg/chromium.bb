@@ -84,7 +84,7 @@ class ASH_EXPORT ShelfLayoutManager
   // the shelf items, notifications, status area etc.
   static const int kShelfItemInset;
 
-  explicit ShelfLayoutManager(ShelfWidget* shelf);
+  explicit ShelfLayoutManager(ShelfWidget* shelf_widget);
   ~ShelfLayoutManager() override;
 
   void set_workspace_controller(WorkspaceController* controller) {
@@ -139,7 +139,7 @@ class ASH_EXPORT ShelfLayoutManager
   }
   ShelfAutoHideState auto_hide_state() const { return state_.auto_hide_state; }
 
-  ShelfWidget* shelf_widget() { return shelf_; }
+  ShelfWidget* shelf_widget() { return shelf_widget_; }
 
   // Sets whether any windows overlap the shelf. If a window overlaps the shelf
   // the shelf renders slightly differently.
@@ -183,18 +183,9 @@ class ASH_EXPORT ShelfLayoutManager
   void SessionStateChanged(SessionStateDelegate::SessionState state) override;
 
   // TODO(msw): Remove these accessors, kept temporarily to simplify changes.
-  void SetAutoHideBehavior(ShelfAutoHideBehavior behavior) {
-    shelf_->shelf()->SetAutoHideBehavior(behavior);
+  wm::ShelfAlignment GetAlignment() const {
+    return shelf_widget_->GetAlignment();
   }
-  ShelfAutoHideBehavior auto_hide_behavior() const {
-    return shelf_->shelf()->auto_hide_behavior();
-  }
-
-  // TODO(msw): Remove these accessors, kept temporarily to simplify changes.
-  void SetAlignment(wm::ShelfAlignment alignment) {
-    shelf_->shelf()->SetAlignment(alignment);
-  }
-  wm::ShelfAlignment GetAlignment() const { return shelf_->GetAlignment(); }
 
   // TODO(harrym|oshima): These templates will be moved to a new Shelf class.
   // A helper function for choosing values specific to a shelf alignment.
@@ -351,7 +342,7 @@ class ASH_EXPORT ShelfLayoutManager
   // Current state.
   State state_;
 
-  ShelfWidget* shelf_;
+  ShelfWidget* shelf_widget_;
 
   WorkspaceController* workspace_controller_;
 

@@ -11,7 +11,7 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
-#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
@@ -864,33 +864,32 @@ TEST_F(MaximizeModeWindowManagerTest, KeepFullScreenModeOn) {
       CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
 
-  ShelfLayoutManager* shelf =
-      Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
 
   // Allow the shelf to hide.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
   window_state->OnWMEvent(&event);
 
   // With full screen, the shelf should get hidden.
   EXPECT_TRUE(window_state->IsFullscreen());
-  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
   CreateMaximizeModeWindowManager();
 
   // The Full screen mode should continue to be on.
   EXPECT_TRUE(window_state->IsFullscreen());
   EXPECT_FALSE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
   // With leaving the fullscreen mode, the maximized mode should return and the
   // shelf should maintain its state from before maximize mode.
   window_state->OnWMEvent(&event);
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_TRUE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   // We left fullscreen mode while in maximize mode, so the window should
   // remain maximized and the shelf should not change state upon exiting
@@ -898,7 +897,7 @@ TEST_F(MaximizeModeWindowManagerTest, KeepFullScreenModeOn) {
   DestroyMaximizeModeWindowManager();
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_TRUE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 }
 
 // Verifies that if a window is un-full-screened while in maximize mode,
@@ -910,8 +909,7 @@ TEST_F(MaximizeModeWindowManagerTest, MinimizePreservedAfterLeavingFullscreen) {
       CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
 
-  ShelfLayoutManager* shelf =
-      Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
 
   // Allow the shelf to hide and enter full screen.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
@@ -938,15 +936,14 @@ TEST_F(MaximizeModeWindowManagerTest, AllowFullScreenMode) {
       CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
 
-  ShelfLayoutManager* shelf =
-      Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
 
   // Allow the shelf to hide.
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_FALSE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   CreateMaximizeModeWindowManager();
 
@@ -954,20 +951,20 @@ TEST_F(MaximizeModeWindowManagerTest, AllowFullScreenMode) {
   // state.
   EXPECT_FALSE(window_state->IsFullscreen());
   EXPECT_TRUE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   // After going into fullscreen mode, the shelf should be hidden.
   wm::WMEvent event(wm::WM_EVENT_TOGGLE_FULLSCREEN);
   window_state->OnWMEvent(&event);
   EXPECT_TRUE(window_state->IsFullscreen());
   EXPECT_FALSE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
   // With the destruction of the manager we should remain in full screen.
   DestroyMaximizeModeWindowManager();
   EXPECT_TRUE(window_state->IsFullscreen());
   EXPECT_FALSE(window_state->IsMaximized());
-  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 }
 
 // Check that the full screen mode will stay active when the maximize mode is

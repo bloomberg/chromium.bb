@@ -105,6 +105,14 @@ void Shelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
       shelf_widget_->GetNativeWindow()->GetRootWindow());
 }
 
+ShelfAutoHideState Shelf::GetAutoHideState() const {
+  return shelf_widget_->shelf_layout_manager()->auto_hide_state();
+}
+
+ShelfVisibilityState Shelf::GetVisibilityState() const {
+  return shelf_widget_->shelf_layout_manager()->visibility_state();
+}
+
 gfx::Rect Shelf::GetScreenBoundsOfItemIconForWindow(
     const aura::Window* window) {
   ShelfID id = GetShelfIDForWindow(window);

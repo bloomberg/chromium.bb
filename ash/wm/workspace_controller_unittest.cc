@@ -376,10 +376,10 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
 
   std::unique_ptr<Window> w1(CreateTestWindow());
   const gfx::Rect w1_bounds(0, 1, 101, 102);
-  ShelfLayoutManager* shelf = shelf_layout_manager();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
   shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   const gfx::Rect touches_shelf_bounds(
-      0, shelf->GetIdealBounds().y() - 10, 101, 102);
+      0, shelf_layout_manager()->GetIdealBounds().y() - 10, 101, 102);
   // Move |w1| to overlap the shelf.
   w1->SetBounds(touches_shelf_bounds);
   EXPECT_FALSE(GetWindowOverlapsShelf());
@@ -400,25 +400,25 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
   w1->Show();
   wm::ActivateWindow(w1.get());
 
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   // Maximize the window.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
   // Restore.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
 
   // Fullscreen.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  EXPECT_EQ(SHELF_HIDDEN, shelf->visibility_state());
+  EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
   // Normal.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
   EXPECT_FALSE(GetWindowOverlapsShelf());
 
@@ -432,12 +432,12 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
 
   // Maximize again.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
   // Minimize.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   // Since the restore from minimize will restore to the pre-minimize
   // state (tested elsewhere), we abandon the current size and restore
@@ -452,7 +452,7 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
 
   // Restore.
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
 
   // Create another window, maximized.
@@ -461,8 +461,8 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
   w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   w2->Show();
   wm::ActivateWindow(w2.get());
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
   EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(
                 w2->parent()).ToString(),
@@ -470,7 +470,7 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
 
   // Switch to w1.
   wm::ActivateWindow(w1.get());
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
   EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(
                 w2->parent()).ToString(),
@@ -478,8 +478,8 @@ TEST_F(WorkspaceControllerTest, ShelfStateUpdated) {
 
   // Switch to w2.
   wm::ActivateWindow(w2.get());
-  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   EXPECT_EQ("0,1 101x102", w1->bounds().ToString());
   EXPECT_EQ(ScreenUtil::GetMaximizedWindowBoundsInParent(w2.get()).ToString(),
             w2->bounds().ToString());
@@ -515,8 +515,8 @@ TEST_F(WorkspaceControllerTest, MinimizeResetsVisibility) {
             shelf_widget()->GetBackgroundType());
 
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MINIMIZED);
-  EXPECT_EQ(SHELF_VISIBLE,
-            shelf_layout_manager()->visibility_state());
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   EXPECT_EQ(wm::SHELF_BACKGROUND_DEFAULT, shelf_widget()->GetBackgroundType());
 }
 
@@ -584,9 +584,8 @@ TEST_F(WorkspaceControllerTest, DontMoveOnSwitch) {
   generator.MoveMouseTo(0, 0);
 
   std::unique_ptr<Window> w1(CreateTestWindow());
-  ShelfLayoutManager* shelf = shelf_layout_manager();
   const gfx::Rect touches_shelf_bounds(
-      0, shelf->GetIdealBounds().y() - 10, 101, 102);
+      0, shelf_layout_manager()->GetIdealBounds().y() - 10, 101, 102);
   // Move |w1| to overlap the shelf.
   w1->SetBounds(touches_shelf_bounds);
   w1->Show();
@@ -612,8 +611,8 @@ TEST_F(WorkspaceControllerTest, MoveOnSwitch) {
   generator.MoveMouseTo(0, 0);
 
   std::unique_ptr<Window> w1(CreateTestWindow());
-  ShelfLayoutManager* shelf = shelf_layout_manager();
-  const gfx::Rect w1_bounds(0, shelf->GetIdealBounds().y(), 100, 200);
+  const gfx::Rect w1_bounds(0, shelf_layout_manager()->GetIdealBounds().y(),
+                            100, 200);
   // Move |w1| so that the top edge is the same as the top edge of the shelf.
   w1->SetBounds(w1_bounds);
   w1->Show();
@@ -673,7 +672,7 @@ class DontCrashOnChangeAndActivateDelegate
 // . show the window and during the bounds change activate it.
 TEST_F(WorkspaceControllerTest, DontCrashOnChangeAndActivate) {
   // Force the shelf
-  ShelfLayoutManager* shelf = shelf_layout_manager();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   DontCrashOnChangeAndActivateDelegate delegate;
@@ -1395,7 +1394,7 @@ TEST_F(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
       &delegate, ui::wm::WINDOW_TYPE_NORMAL, gfx::Rect(5, 5, 100, 50), NULL));
   ParentWindowInPrimaryRootWindow(w1.get());
 
-  ShelfLayoutManager* shelf = shelf_layout_manager();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   // Drag near the shelf.
@@ -1403,12 +1402,12 @@ TEST_F(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
                                      gfx::Point());
   generator.MoveMouseTo(10, 10);
   generator.PressLeftButton();
-  generator.MoveMouseTo(100, shelf->GetIdealBounds().y() - 70);
+  generator.MoveMouseTo(100, shelf_layout_manager()->GetIdealBounds().y() - 70);
 
   // Shelf should not be in overlapped state.
   EXPECT_FALSE(GetWindowOverlapsShelf());
 
-  generator.MoveMouseTo(100, shelf->GetIdealBounds().y() - 20);
+  generator.MoveMouseTo(100, shelf_layout_manager()->GetIdealBounds().y() - 20);
 
   // Shelf should detect overlap. Overlap state stays after mouse is released.
   EXPECT_TRUE(GetWindowOverlapsShelf());
@@ -1425,9 +1424,9 @@ TEST_F(WorkspaceControllerTestDragging, DragWindowKeepsShelfAutohidden) {
       &delegate, ui::wm::WINDOW_TYPE_NORMAL, gfx::Rect(5, 5, 100, 50), NULL));
   ParentWindowInPrimaryRootWindow(w1.get());
 
-  ShelfLayoutManager* shelf = shelf_layout_manager();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
   // Drag very little.
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
@@ -1437,9 +1436,9 @@ TEST_F(WorkspaceControllerTestDragging, DragWindowKeepsShelfAutohidden) {
   generator.MoveMouseTo(12, 12);
 
   // Shelf should be hidden during and after the drag.
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   generator.ReleaseLeftButton();
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 }
 
 // Verifies that events are targeted properly just outside the window edges.

@@ -9,7 +9,6 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/display/display_manager.h"
 #include "ash/session/session_state_delegate.h"
-#include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
@@ -34,6 +33,7 @@
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/test_event_handler.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_switches.h"
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -134,11 +134,6 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   // Windows origin should be doubled when moved to the 1st display.
   UpdateDisplay("600x600,300x300");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  RootWindowController* controller = Shell::GetPrimaryRootWindowController();
-  ShelfLayoutManager* shelf_layout_manager =
-      controller->GetShelfLayoutManager();
-  shelf_layout_manager->SetAutoHideBehavior(
-      ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   views::Widget* normal = CreateTestWidget(gfx::Rect(650, 10, 100, 100));
   EXPECT_EQ(root_windows[1], normal->GetNativeView()->GetRootWindow());
@@ -204,24 +199,23 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
   EXPECT_EQ("100,20 100x100",
             normal->GetNativeView()->GetBoundsInRootWindow().ToString());
 
-  // Maximized area on primary display has 3px (given as
-  // kAutoHideSize in shelf_layout_manager.cc) inset at the bottom.
+  // Maximized area on primary display has 47px (ash::kShelfSize) inset at the
+  // bottom.
 
   // First clear fullscreen status, since both fullscreen and maximized windows
   // share the same desktop workspace, which cancels the shelf status.
   fullscreen->SetFullscreen(false);
   EXPECT_EQ(root_windows[0], maximized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("0,0 600x597",
-            maximized->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("0,0 600x597",
+  EXPECT_EQ("0,0 600x553", maximized->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("0,0 600x553",
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   // Set fullscreen to true, but maximized window's size won't change because
   // it's not visible. see crbug.com/504299.
   fullscreen->SetFullscreen(true);
   EXPECT_EQ(root_windows[0], maximized->GetNativeView()->GetRootWindow());
-  EXPECT_EQ("0,0 600x597", maximized->GetWindowBoundsInScreen().ToString());
-  EXPECT_EQ("0,0 600x597",
+  EXPECT_EQ("0,0 600x553", maximized->GetWindowBoundsInScreen().ToString());
+  EXPECT_EQ("0,0 600x553",
             maximized->GetNativeView()->GetBoundsInRootWindow().ToString());
 
   EXPECT_EQ(root_windows[0], minimized->GetNativeView()->GetRootWindow());

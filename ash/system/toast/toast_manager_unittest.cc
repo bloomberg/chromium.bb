@@ -65,7 +65,7 @@ class ToastManagerTest : public test::AshTestBase {
   }
 
   void SetShelfAlignment(wm::ShelfAlignment alignment) {
-    Shelf::ForPrimaryDisplay()->shelf_layout_manager()->SetAlignment(alignment);
+    Shelf::ForPrimaryDisplay()->SetAlignment(alignment);
   }
 
   void SetShelfState(ShelfVisibilityState state) {
@@ -73,8 +73,7 @@ class ToastManagerTest : public test::AshTestBase {
   }
 
   void SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior) {
-    Shelf::ForPrimaryDisplay()->shelf_layout_manager()->SetAutoHideBehavior(
-        behavior);
+    Shelf::ForPrimaryDisplay()->SetAutoHideBehavior(behavior);
   }
 
   std::string ShowToast(const std::string& text, uint64_t duration) {

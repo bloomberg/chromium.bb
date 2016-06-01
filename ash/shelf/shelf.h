@@ -76,6 +76,10 @@ class ASH_EXPORT Shelf {
     return auto_hide_behavior_;
   }
 
+  ShelfAutoHideState GetAutoHideState() const;
+
+  ShelfVisibilityState GetVisibilityState() const;
+
   // A helper functions that chooses values specific to a shelf alignment.
   template <typename T>
   T SelectValueForShelfAlignment(T bottom, T left, T right) const {

@@ -357,17 +357,16 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndAutoHideShelf) {
   // Shelf's auto-hide state won't be HIDDEN unless window exists.
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
-  ShelfLayoutManager* shelf =
-      Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   int bottom_auto_hidden = GetPopupWorkAreaBottom();
   EXPECT_LT(bottom, bottom_auto_hidden);
 
   // Close the window, which shows the shelf.
   window.reset();
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   int bottom_auto_shown = GetPopupWorkAreaBottom();
   EXPECT_EQ(bottom, bottom_auto_shown);
 
@@ -377,22 +376,22 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndAutoHideShelf) {
   GetSystemTray()->AddTrayItem(test_item);
   GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
 
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   EXPECT_TRUE(GetTray()->IsPopupVisible());
   int bottom_with_tray = GetPopupWorkAreaBottom();
   EXPECT_GT(bottom_auto_shown, bottom_with_tray);
 
   // Create tray notification.
   GetSystemTray()->ShowNotificationView(test_item);
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   int bottom_with_tray_notification = GetPopupWorkAreaBottom();
   EXPECT_GT(bottom_with_tray, bottom_with_tray_notification);
 
   // Close the system tray.
   GetSystemTray()->ClickedOutsideBubble();
-  shelf->UpdateAutoHideState();
+  shelf->shelf_layout_manager()->UpdateAutoHideState();
   RunAllPendingInMessageLoop();
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   int bottom_hidden_with_tray_notification = GetPopupWorkAreaBottom();
   EXPECT_LT(bottom_with_tray_notification,
             bottom_hidden_with_tray_notification);
@@ -400,7 +399,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndAutoHideShelf) {
 
   // Close the window again, which shows the shelf.
   window.reset();
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   int bottom_shown_with_tray_notification = GetPopupWorkAreaBottom();
   EXPECT_GT(bottom_hidden_with_tray_notification,
             bottom_shown_with_tray_notification);
@@ -415,10 +414,9 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
   // Checks the work area for normal auto-hidden state.
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
-  ShelfLayoutManager* shelf =
-      Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   int bottom_auto_hidden = GetPopupWorkAreaBottom();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
@@ -431,7 +429,7 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
 
   // The work area for auto-hidden status of fullscreen is a bit larger
   // since it doesn't even have the 3-pixel width.
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   int bottom_fullscreen_hidden = GetPopupWorkAreaBottom();
   EXPECT_EQ(bottom_auto_hidden, bottom_fullscreen_hidden);
 
@@ -441,14 +439,14 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndFullscreen) {
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().bottom_right();
   bottom_right.Offset(-1, -1);
   generator.MoveMouseTo(bottom_right);
-  shelf->UpdateAutoHideStateNow();
-  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  shelf->shelf_layout_manager()->UpdateAutoHideStateNow();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   EXPECT_EQ(bottom, GetPopupWorkAreaBottom());
 
   generator.MoveMouseTo(
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds().CenterPoint());
-  shelf->UpdateAutoHideStateNow();
-  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  shelf->shelf_layout_manager()->UpdateAutoHideStateNow();
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
   EXPECT_EQ(bottom_auto_hidden, GetPopupWorkAreaBottom());
 }
 

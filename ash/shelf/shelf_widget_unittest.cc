@@ -228,7 +228,8 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
   }
 
   // Change shelf alignment to verify that the targeter insets are updated.
-  shelf_layout_manager->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  shelf->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
   shelf_layout_manager->LayoutShelf();
   shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
   {
@@ -243,8 +244,8 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
   }
 
   // Now restore shelf alignment (bottom) and auto-hide (hidden) the shelf.
-  shelf_layout_manager->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
-  shelf_layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   shelf_layout_manager->LayoutShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_layout_manager->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_layout_manager->auto_hide_state());
@@ -271,6 +272,7 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
 // Tests that the shelf has a slightly larger hit-region for touch-events when
 // it's in the auto-hidden state.
 TEST_F(ShelfWidgetTest, HiddenShelfHitTestTouch) {
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
   ShelfWidget* shelf_widget = GetShelfWidget();
   gfx::Rect shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
   EXPECT_TRUE(!shelf_bounds.IsEmpty());
@@ -301,7 +303,7 @@ TEST_F(ShelfWidgetTest, HiddenShelfHitTestTouch) {
   }
 
   // Now auto-hide (hidden) the shelf.
-  shelf_layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   shelf_layout_manager->LayoutShelf();
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_layout_manager->visibility_state());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_layout_manager->auto_hide_state());
@@ -416,9 +418,8 @@ class ShelfWidgetTestWithDelegate : public ShelfWidgetTest {
         shelf_widget->shelf_layout_manager();
     ASSERT_NE(nullptr, shelf_layout_manager);
 
-    EXPECT_EQ(initial_alignment, shelf_layout_manager->GetAlignment());
-    EXPECT_EQ(initial_auto_hide_behavior,
-              shelf_layout_manager->auto_hide_behavior());
+    EXPECT_EQ(initial_alignment, shelf->alignment());
+    EXPECT_EQ(initial_auto_hide_behavior, shelf->auto_hide_behavior());
     EXPECT_EQ(expected_shelf_visibility_state,
               shelf_layout_manager->visibility_state());
     EXPECT_EQ(expected_shelf_auto_hide_state,

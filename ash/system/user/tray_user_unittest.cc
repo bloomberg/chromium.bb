@@ -29,7 +29,7 @@ namespace ash {
 
 class TrayUserTest : public ash::test::AshTestBase {
  public:
-  TrayUserTest();
+  TrayUserTest() = default;
 
   // testing::Test:
   void SetUp() override;
@@ -47,37 +47,27 @@ class TrayUserTest : public ash::test::AshTestBase {
   void ClickUserItem(ui::test::EventGenerator* generator, int index);
 
   // Accessors to various system components.
-  ShelfLayoutManager* shelf() { return shelf_; }
   SystemTray* tray() { return tray_; }
   ash::test::TestSessionStateDelegate* delegate() { return delegate_; }
   ash::TrayUser* tray_user(int index) { return tray_user_[index]; }
   ash::TrayUserSeparator* tray_user_separator() { return tray_user_separator_; }
 
  private:
-  ShelfLayoutManager* shelf_;
-  SystemTray* tray_;
-  ash::test::TestSessionStateDelegate* delegate_;
+  SystemTray* tray_ = nullptr;
+  ash::test::TestSessionStateDelegate* delegate_ = nullptr;
 
   // Note that the ownership of these items is on the shelf.
   std::vector<ash::TrayUser*> tray_user_;
 
   // The separator between the tray users and the rest of the menu.
   // Note: The item will get owned by the shelf.
-  TrayUserSeparator* tray_user_separator_;
+  TrayUserSeparator* tray_user_separator_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TrayUserTest);
 };
 
-TrayUserTest::TrayUserTest()
-    : shelf_(NULL),
-      tray_(NULL),
-      delegate_(NULL),
-      tray_user_separator_(NULL) {
-}
-
 void TrayUserTest::SetUp() {
   ash::test::AshTestBase::SetUp();
-  shelf_ = Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
   tray_ = Shell::GetPrimaryRootWindowController()->GetSystemTray();
   delegate_ = static_cast<ash::test::TestSessionStateDelegate*>(
       ash::Shell::GetInstance()->session_state_delegate());
@@ -86,8 +76,9 @@ void TrayUserTest::SetUp() {
 void TrayUserTest::InitializeParameters(int users_logged_in,
                                         bool multiprofile) {
   // Show the shelf.
-  shelf()->LayoutShelf();
-  shelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  shelf->shelf_layout_manager()->LayoutShelf();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   // Set our default assumptions. Note that it is sufficient to set these
   // after everything was created.

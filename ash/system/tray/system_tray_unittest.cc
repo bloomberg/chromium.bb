@@ -8,7 +8,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -183,10 +183,8 @@ TEST_F(SystemTrayTest, SystemTrayColoring) {
 TEST_F(SystemTrayTest, SystemTrayColoringAfterAlignmentChange) {
   SystemTray* tray = GetSystemTray();
   ASSERT_TRUE(tray->GetWidget());
-  ShelfLayoutManager* manager = Shell::GetPrimaryRootWindowController()
-                                    ->shelf_widget()
-                                    ->shelf_layout_manager();
-  manager->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  shelf->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
   // At the beginning the tray coloring is not active.
   ASSERT_FALSE(tray->draw_background_as_active());
 
@@ -196,7 +194,7 @@ TEST_F(SystemTrayTest, SystemTrayColoringAfterAlignmentChange) {
 
   // Changing the alignment should close the system bubble and change the
   // background color.
-  manager->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
   ASSERT_FALSE(tray->draw_background_as_active());
   RunAllPendingInMessageLoop();
   // The bubble should already be closed by now.
@@ -354,16 +352,14 @@ TEST_F(SystemTrayTest, BubbleCreationTypesTest) {
 // Tests that the tray is laid out properly and is fully contained within
 // the shelf.
 TEST_F(SystemTrayTest, TrayBoundsInWidget) {
-  ShelfLayoutManager* manager = Shell::GetPrimaryRootWindowController()
-                                    ->shelf_widget()
-                                    ->shelf_layout_manager();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
   StatusAreaWidget* widget = Shell::GetPrimaryRootWindowController()
                                  ->shelf_widget()
                                  ->status_area_widget();
   SystemTray* tray = widget->system_tray();
 
   // Test in bottom alignment.
-  manager->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
+  shelf->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
   gfx::Rect window_bounds = widget->GetWindowBoundsInScreen();
   gfx::Rect tray_bounds = tray->GetBoundsInScreen();
   EXPECT_TRUE(window_bounds.bottom() >= tray_bounds.bottom());
@@ -372,7 +368,7 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
   EXPECT_TRUE(window_bounds.y() >= tray_bounds.y());
 
   // Test in locked alignment.
-  manager->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM_LOCKED);
+  shelf->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM_LOCKED);
   window_bounds = widget->GetWindowBoundsInScreen();
   tray_bounds = tray->GetBoundsInScreen();
   EXPECT_TRUE(window_bounds.bottom() >= tray_bounds.bottom());
@@ -381,7 +377,7 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
   EXPECT_TRUE(window_bounds.y() >= tray_bounds.y());
 
   // Test in the left alignment.
-  manager->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
   window_bounds = widget->GetWindowBoundsInScreen();
   tray_bounds = tray->GetBoundsInScreen();
   EXPECT_TRUE(window_bounds.bottom() >= tray_bounds.bottom());
@@ -390,7 +386,7 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
   EXPECT_TRUE(window_bounds.y() >= tray_bounds.y());
 
   // Test in the right alignment.
-  manager->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+  shelf->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
   window_bounds = widget->GetWindowBoundsInScreen();
   tray_bounds = tray->GetBoundsInScreen();
   EXPECT_TRUE(window_bounds.bottom() >= tray_bounds.bottom());

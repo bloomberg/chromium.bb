@@ -221,7 +221,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
   void SetShelfAutoHideBehavior(aura::Window* window,
                                 ShelfAutoHideBehavior behavior) {
     Shelf* shelf = Shelf::ForWindow(window);
-    shelf->shelf_layout_manager()->SetAutoHideBehavior(behavior);
+    shelf->SetAutoHideBehavior(behavior);
     test::ShelfViewTestAPI test_api(GetShelfView(shelf));
     test_api.RunMessageLoopUntilAnimationsDone();
   }

@@ -8,7 +8,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/root_window_controller.h"
-#include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -1035,39 +1035,38 @@ TEST_F(ImmersiveFullscreenControllerTest, Bubbles) {
 // immersive fullscreen and that the shelf's state before entering immersive
 // fullscreen is restored upon exiting immersive fullscreen.
 TEST_F(ImmersiveFullscreenControllerTest, Shelf) {
-  ash::ShelfLayoutManager* shelf =
-      ash::Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
 
   // Shelf is visible by default.
   window()->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   ASSERT_FALSE(controller()->IsEnabled());
-  ASSERT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
+  ASSERT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // Entering immersive fullscreen sets the shelf to auto hide.
   window()->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   SetEnabled(true);
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   // Disabling immersive fullscreen puts it back.
   SetEnabled(false);
   window()->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
   ASSERT_FALSE(controller()->IsEnabled());
-  EXPECT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // The user could toggle the shelf auto-hide behavior.
-  shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   // Entering immersive fullscreen keeps auto-hide.
   window()->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   SetEnabled(true);
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   // Disabling immersive fullscreen maintains the user's auto-hide selection.
   SetEnabled(false);
   window()->SetProperty(aura::client::kShowStateKey,
                         ui::SHOW_STATE_NORMAL);
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 }
 
 }  // namespase ash

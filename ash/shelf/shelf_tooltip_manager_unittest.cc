@@ -122,10 +122,9 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsAutoHide) {
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 
-  ShelfLayoutManager* shelf_layout_manager = shelf_->shelf_layout_manager();
-  shelf_layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  shelf_layout_manager->UpdateAutoHideState();
-  ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_layout_manager->auto_hide_state());
+  shelf_->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf_->shelf_layout_manager()->UpdateAutoHideState();
+  ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_->GetAutoHideState());
 
   // Tooltip visibility change for auto hide may take time.
   EXPECT_TRUE(TooltipIsVisible());
