@@ -39,6 +39,7 @@
 
 struct msm_device {
 	struct fd_device base;
+	struct fd_bo_cache ring_cache;
 };
 
 static inline struct msm_device * to_msm_device(struct fd_device *x)

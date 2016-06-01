@@ -65,6 +65,39 @@ struct msm_ringbuffer {
 };
 
 static pthread_mutex_t idx_lock = PTHREAD_MUTEX_INITIALIZER;
+drm_private extern pthread_mutex_t table_lock;
+
+static void ring_bo_del(struct fd_device *dev, struct fd_bo *bo)
+{
+	int ret;
+
+	pthread_mutex_lock(&table_lock);
+	ret = fd_bo_cache_free(&to_msm_device(dev)->ring_cache, bo);
+	pthread_mutex_unlock(&table_lock);
+
+	if (ret == 0)
+		return;
+
+	fd_bo_del(bo);
+}
+
+static struct fd_bo * ring_bo_new(struct fd_device *dev, uint32_t size)
+{
+	struct fd_bo *bo;
+
+	bo = fd_bo_cache_alloc(&to_msm_device(dev)->ring_cache, &size, 0);
+	if (bo)
+		return bo;
+
+	bo = fd_bo_new(dev, size, 0);
+	if (!bo)
+		return NULL;
+
+	/* keep ringbuffer bo's out of the normal bo cache: */
+	bo->bo_reuse = FALSE;
+
+	return bo;
+}
 
 static void *grow(void *ptr, uint32_t nr, uint32_t *max, uint32_t sz)
 {
@@ -344,7 +377,7 @@ static void msm_ringbuffer_destroy(struct fd_ringbuffer *ring)
 {
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
 	if (msm_ring->ring_bo)
-		fd_bo_del(msm_ring->ring_bo);
+		ring_bo_del(ring->pipe->dev, msm_ring->ring_bo);
 	free(msm_ring->submit.relocs);
 	free(msm_ring->submit.cmds);
 	free(msm_ring->submit.bos);
@@ -377,7 +410,7 @@ drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
 	ring = &msm_ring->base;
 	ring->funcs = &funcs;
 
-	msm_ring->ring_bo = fd_bo_new(pipe->dev, size, 0);
+	msm_ring->ring_bo = ring_bo_new(pipe->dev, size);
 	if (!msm_ring->ring_bo) {
 		ERROR_MSG("ringbuffer allocation failed");
 		goto fail;
