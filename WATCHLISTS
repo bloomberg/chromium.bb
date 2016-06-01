@@ -667,6 +667,7 @@
                   '|chrome/test/data/password'\
                   '|components/autofill.*password'
                   '|components/password_'\
+                  '|^ios/chrome/browser/passwords'\
     },
     'pepper_api': {
       'filepath': 'ppapi/api'\
