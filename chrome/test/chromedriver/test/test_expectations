@@ -97,6 +97,11 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'DragAndDropTest.testElementInDiv',
 ]
 
+_REVISION_NEGATIVE_FILTER['50'] = [
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1390
+    'ElementAttributeTest.testShouldReturnNullForNonPresentBooleanAttributes',
+    'SvgElementTest.testShouldClickOnGraphVisualElements',
+]
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
