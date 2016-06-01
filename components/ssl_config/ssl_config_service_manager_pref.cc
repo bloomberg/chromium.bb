@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -82,10 +81,6 @@ uint16_t SSLProtocolVersionFromString(const std::string& version_str) {
   }
   return version;
 }
-
-const base::Feature kSSLVersionFallbackTLSv11 {
-    "SSLVersionFallbackTLSv1.1", base::FEATURE_DISABLED_BY_DEFAULT,
-};
 
 }  // namespace
 
@@ -191,15 +186,6 @@ SSLConfigServiceManagerPref::SSLConfigServiceManagerPref(
     : ssl_config_service_(new SSLConfigServicePref(io_task_runner)),
       io_task_runner_(io_task_runner) {
   DCHECK(local_state);
-
-  // Restore the TLS 1.1 fallback leg if enabled via features.
-  // TODO(davidben): Remove this when the fallback removal has succeeded.
-  // https://crbug.com/536200.
-  if (base::FeatureList::IsEnabled(kSSLVersionFallbackTLSv11)) {
-    local_state->SetDefaultPrefValue(
-        ssl_config::prefs::kSSLVersionFallbackMin,
-        new base::StringValue(switches::kSSLVersionTLSv11));
-  }
 
   PrefChangeRegistrar::NamedChangeCallback local_state_callback =
       base::Bind(&SSLConfigServiceManagerPref::OnPreferenceChanged,
