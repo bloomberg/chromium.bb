@@ -85,7 +85,8 @@ UsbDeviceAndroid::UsbDeviceAndroid(JNIEnv* env,
                 device_version,
                 manufacturer_string,
                 product_string,
-                serial_number) {
+                serial_number),
+      device_id_(Java_ChromeUsbDevice_getDeviceId(env, wrapper.obj())) {
   j_object_.Reset(wrapper);
 
   if (base::android::BuildInfo::GetInstance()->sdk_int() >= 21) {

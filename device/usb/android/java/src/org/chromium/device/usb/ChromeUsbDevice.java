@@ -37,6 +37,11 @@ final class ChromeUsbDevice {
     }
 
     @CalledByNative
+    private int getDeviceId() {
+        return mDevice.getDeviceId();
+    }
+
+    @CalledByNative
     private int getDeviceClass() {
         return mDevice.getDeviceClass();
     }

@@ -150,6 +150,7 @@ test("device_unittests") {
     deps += [
       ":bluetooth_test_java",
       ":bluetooth_test_jni_headers",
+      "//device/usb:java",
     ]
     deps -= [ "//device/battery" ]
   }

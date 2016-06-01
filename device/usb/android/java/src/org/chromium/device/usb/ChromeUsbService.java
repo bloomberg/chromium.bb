@@ -4,7 +4,10 @@
 
 package org.chromium.device.usb;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 
@@ -25,15 +28,19 @@ final class ChromeUsbService {
     private static final String TAG = "Usb";
 
     Context mContext;
+    long mUsbServiceAndroid;
+    BroadcastReceiver mUsbDeviceReceiver;
 
-    private ChromeUsbService(Context context) {
+    private ChromeUsbService(Context context, long usbServiceAndroid) {
         mContext = context;
+        mUsbServiceAndroid = usbServiceAndroid;
+        registerForUsbDeviceIntentBroadcast();
         Log.v(TAG, "ChromeUsbService created.");
     }
 
     @CalledByNative
-    private static ChromeUsbService create(Context context) {
-        return new ChromeUsbService(context);
+    private static ChromeUsbService create(Context context, long usbServiceAndroid) {
+        return new ChromeUsbService(context, usbServiceAndroid);
     }
 
     @CalledByNative
@@ -41,5 +48,38 @@ final class ChromeUsbService {
         UsbManager manager = (UsbManager) mContext.getSystemService(Context.USB_SERVICE);
         HashMap<String, UsbDevice> deviceList = manager.getDeviceList();
         return deviceList.values().toArray();
+    }
+
+    @CalledByNative
+    private void close() {
+        unregisterForUsbDeviceIntentBroadcast();
+    }
+
+    private native void nativeDeviceAttached(long nativeUsbServiceAndroid, UsbDevice device);
+
+    private native void nativeDeviceDetached(long nativeUsbServiceAndroid, int deviceId);
+
+    private void registerForUsbDeviceIntentBroadcast() {
+        mUsbDeviceReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                if (UsbManager.ACTION_USB_DEVICE_ATTACHED.equals(intent.getAction())) {
+                    nativeDeviceAttached(mUsbServiceAndroid, device);
+                } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(intent.getAction())) {
+                    nativeDeviceDetached(mUsbServiceAndroid, device.getDeviceId());
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+        mContext.registerReceiver(mUsbDeviceReceiver, filter);
+    }
+
+    private void unregisterForUsbDeviceIntentBroadcast() {
+        mContext.unregisterReceiver(mUsbDeviceReceiver);
+        mUsbDeviceReceiver = null;
     }
 }

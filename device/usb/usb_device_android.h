@@ -23,6 +23,8 @@ class UsbDeviceAndroid : public UsbDevice {
   void Open(const OpenCallback& callback) override;
   const UsbConfigDescriptor* GetActiveConfiguration() const override;
 
+  jint device_id() const { return device_id_; }
+
  private:
   UsbDeviceAndroid(JNIEnv* env,
                    uint16_t usb_version,
@@ -37,6 +39,8 @@ class UsbDeviceAndroid : public UsbDevice {
                    const base::string16& serial_number,
                    const base::android::JavaRef<jobject>& wrapper);
   ~UsbDeviceAndroid() override;
+
+  const jint device_id_;
 
   // Java object org.chromium.device.usb.ChromeUsbDevice.
   base::android::ScopedJavaGlobalRef<jobject> j_object_;
