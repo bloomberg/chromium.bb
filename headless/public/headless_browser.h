@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_map>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -15,7 +14,6 @@
 #include "headless/public/headless_export.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
-#include "net/url_request/url_request_job_factory.h"
 
 namespace base {
 class MessagePump;
@@ -63,10 +61,6 @@ class HEADLESS_EXPORT HeadlessBrowser {
   DISALLOW_COPY_AND_ASSIGN(HeadlessBrowser);
 };
 
-using ProtocolHandlerMap = std::unordered_map<
-    std::string,
-    std::unique_ptr<net::URLRequestJobFactory::ProtocolHandler>>;
-
 // Embedding API overrides for the headless browser.
 struct HeadlessBrowser::Options {
   class Builder;
@@ -103,10 +97,6 @@ struct HeadlessBrowser::Options {
   // web content, which can be a security risk.
   bool single_process_mode;
 
-  // Custom network protocol handlers. These can be used to override URL
-  // fetching for different network schemes.
-  ProtocolHandlerMap protocol_handlers;
-
  private:
   Options(int argc, const char** argv);
 
@@ -125,7 +115,6 @@ class HeadlessBrowser::Options::Builder {
   Builder& SetProxyServer(const net::HostPortPair& proxy_server);
   Builder& SetHostResolverRules(const std::string& host_resolver_rules);
   Builder& SetSingleProcessMode(bool single_process_mode);
-  Builder& SetProtocolHandlers(ProtocolHandlerMap protocol_handlers);
 
   Options Build();
 

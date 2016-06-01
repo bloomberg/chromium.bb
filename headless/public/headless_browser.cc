@@ -65,11 +65,6 @@ Builder& Builder::SetSingleProcessMode(bool single_process_mode) {
   return *this;
 }
 
-Builder& Builder::SetProtocolHandlers(ProtocolHandlerMap protocol_handlers) {
-  options_.protocol_handlers = std::move(protocol_handlers);
-  return *this;
-}
-
 Options Builder::Build() {
   return std::move(options_);
 }

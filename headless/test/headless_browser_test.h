@@ -14,9 +14,6 @@ class RunLoop;
 }
 
 namespace headless {
-namespace runtime {
-class EvaluateResult;
-}
 class HeadlessWebContents;
 
 // Base class for tests which require a full instance of the headless browser.
@@ -46,11 +43,6 @@ class HeadlessBrowserTest : public content::BrowserTestBase {
 
   // Synchronously waits for a tab to finish loading.
   bool WaitForLoad(HeadlessWebContents* web_contents);
-
-  // Synchronously evaluates a script and returns the result.
-  std::unique_ptr<runtime::EvaluateResult> EvaluateScript(
-      HeadlessWebContents* web_contents,
-      const std::string& script);
 
  protected:
   // Returns the browser for the test.
