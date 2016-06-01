@@ -17,6 +17,7 @@
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/permissions/permission_request_id.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_permission_context.h"
 #include "chrome/browser/storage/durable_storage_permission_context.h"
@@ -293,6 +294,9 @@ int PermissionManager::RequestPermissions(
 
     if (IsConstantPermission(permission) ||
         !GetPermissionContext(permission)) {
+      // Track permission request usages even for constant permissions.
+      PermissionUmaUtil::PermissionRequested(permission, requesting_origin,
+                                             embedding_origin, profile_);
       OnPermissionsRequestResponseStatus(request_id, i,
           GetPermissionStatus(permission, requesting_origin, embedding_origin));
       continue;

@@ -193,6 +193,12 @@ void RecordPermissionRequest(PermissionType permission,
           "ContentSettings.PermissionRequested.Notifications.Url2",
           rappor::LOW_FREQUENCY_ETLD_PLUS_ONE_RAPPOR_TYPE,
           rappor::GetDomainAndRegistrySampleFromGURL(requesting_origin));
+    } else if (permission == PermissionType::MIDI ||
+               permission == PermissionType::MIDI_SYSEX) {
+      rappor::SampleDomainAndRegistryFromGURL(
+          rappor_service,
+          "ContentSettings.PermissionRequested.Midi.Url",
+          requesting_origin);
     }
   }
 
