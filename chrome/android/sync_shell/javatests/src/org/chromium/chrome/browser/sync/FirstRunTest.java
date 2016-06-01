@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
@@ -54,8 +55,10 @@ public class FirstRunTest extends SyncTestBase {
 
     // Test that signing in and opening settings through FirstRun signs in and doesn't fully start
     // sync until the settings page is closed.
-    @SmallTest
-    @Feature({"Sync"})
+    // Disabled due to flakiness. See crbug.com/616456
+    // @SmallTest
+    // @Feature({"Sync"})
+    @DisabledTest
     public void testSignInWithOpenSettings() throws Exception {
         final Account testAccount = SigninTestUtil.addTestAccount();
         final Preferences prefActivity = processFirstRun(testAccount.name, ShowSettings.YES);
