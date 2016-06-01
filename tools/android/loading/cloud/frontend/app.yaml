@@ -1,6 +1,7 @@
 runtime: python27
 api_version: 1
 threadsafe: yes
+instance_class: F4_1G
 
 builtins:
 - deferred: on
