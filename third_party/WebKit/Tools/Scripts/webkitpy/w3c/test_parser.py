@@ -69,8 +69,15 @@ class TestParser(object):
             self.test_doc = doc
 
     def analyze_test(self, test_contents=None, ref_contents=None):
-        """ Analyzes a file to determine if it's a test, what type of test, and what reference or support files it requires. Returns all of the test info """
+        """Analyzes a file to determine if it's a test, what type of test, and what reference or support files it requires.
 
+        Returns: A dict which can have the properties:
+            "test": test file name.
+            "reference": related reference test file name if this is a reference test.
+            "reference_support_info": extra information about the related reference test and any support files.
+            "jstest": A boolean, whether this is a JS test.
+            If the given contents are empty, then None is returned.
+        """
         test_info = None
 
         if test_contents is None and self.test_doc is None:
@@ -102,7 +109,7 @@ class TestParser(object):
 
             test_info = {'test': self.filename, 'reference': ref_file}
 
-            # If the ref file does not live in the same directory as the test file, check it for support files
+            # If the ref file does not live in the same directory as the test file, check it for support files.
             test_info['reference_support_info'] = {}
             if self.filesystem.dirname(ref_file) != self.filesystem.dirname(self.filename):
                 reference_support_files = self.support_files(self.ref_doc)
@@ -126,7 +133,7 @@ class TestParser(object):
         return bool(self.test_doc.find(src=re.compile('[\'\"/]?/resources/testharness')))
 
     def support_files(self, doc):
-        """ Searches the file for all paths specified in url()'s or src attributes."""
+        """Searches the file for all paths specified in url()s or src attributes."""
         support_files = []
 
         if doc is None:

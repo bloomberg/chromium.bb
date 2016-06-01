@@ -51,7 +51,7 @@ class W3CTestConverterTest(unittest.TestCase):
         return filesystem.abspath(filesystem.join(webkit_root, "LayoutTests", "css", dirname))
 
     def test_read_prefixed_property_list(self):
-        """ Tests that the current list of properties requiring the -webkit- prefix load correctly """
+        """Tests that the current list of properties requiring the -webkit- prefix load correctly."""
 
         # FIXME: We should be passing in a MockHost here ...
         converter = _W3CTestConverter(DUMMY_PATH, DUMMY_FILENAME, None)
@@ -59,7 +59,7 @@ class W3CTestConverterTest(unittest.TestCase):
         self.assertTrue(prop_list, 'No prefixed properties found')
 
     def test_convert_for_webkit_nothing_to_convert(self):
-        """ Tests convert_for_webkit() using a basic test that has nothing to convert """
+        """Tests convert_for_webkit() using a basic test that has nothing to convert."""
 
         test_html = """<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -93,7 +93,7 @@ CONTENT OF TEST
         self.verify_no_conversion_happened(converted, test_html)
 
     def test_convert_for_webkit_properties_only(self):
-        """ Tests convert_for_webkit() using a test that has 2 prefixed properties: 1 in a style block + 1 inline style """
+        """Tests convert_for_webkit() using a test that has 2 prefixed properties: 1 in a style block + 1 inline style."""
 
         test_html = """<html>
 <head>
@@ -127,10 +127,13 @@ CONTENT OF TEST
         self.verify_prefixed_properties(converted, test_content[0])
 
     def test_convert_prefixed_properties(self):
-        """ Tests convert_prefixed_properties() file that has 20 properties requiring the -webkit- prefix:
+        """Tests convert_prefixed_properties() file that has 20 properties requiring the -webkit- prefix.
+
+        The properties are:
         10 in one style block + 5 in another style
         block + 5 inline styles, including one with multiple prefixed properties.
         2 when prefixed properties appear in comments without ending ';'.
+
         The properties in the test content are in all sorts of wack formatting.
         """
 
@@ -241,7 +244,7 @@ CONTENT OF TEST
         self.assertEqual(converted[1], expected_test_html)
 
     def test_convert_attributes_if_needed(self):
-        """ Tests convert_attributes_if_needed() using a reference file that has some relative src paths """
+        """Tests convert_attributes_if_needed() using a reference file that has some relative src paths."""
 
         test_html = """<html>
  <head>

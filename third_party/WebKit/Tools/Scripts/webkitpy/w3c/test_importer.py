@@ -26,43 +26,43 @@
 # SUCH DAMAGE.
 
 """
- This script imports a directory of W3C tests into Blink.
+This script imports a directory of W3C tests into Blink.
 
- This script will import the tests into WebKit following these rules:
+This script takes a source repository directory, which it searches for files,
+then converts and copies files over to a destination directory.
 
-    - By default, all tests are imported under LayoutTests/w3c/[repo-name].
+Rules for importing:
 
-    - By default, only reftests and jstest are imported. This can be overridden
-      with a -a or --all argument
+ * By default, only reference tests and JS tests are imported, (because pixel
+   tests take longer to run). This can be overridden with the --all flag.
 
-    - Also by default, if test files by the same name already exist in the
-      destination directory, they are overwritten with the idea that running
-      this script would refresh files periodically.  This can also be
-      overridden by a -n or --no-overwrite flag
+ * By default, if test files by the same name already exist in the destination
+   directory, they are overwritten. This is because this script is used to
+   refresh files periodically. This can be overridden with the --no-overwrite flag.
 
-    - All files are converted to work in Blink:
-         1. All CSS properties requiring the -webkit- vendor prefix are prefixed
-            (the list of what needs prefixes is read from Source/core/css/CSSProperties.in).
-         2. Each reftest has its own copy of its reference file following
-            the naming conventions new-run-webkit-tests expects.
-         3. If a reference files lives outside the directory of the test that
-            uses it, it is checked for paths to support files as it will be
-            imported into a different relative position to the test file
-            (in the same directory).
-         4. Any tags with the class "instructions" have style="display:none" added
-            to them. Some w3c tests contain instructions to manual testers which we
-            want to strip out (the test result parser only recognizes pure testharness.js
-            output and not those instructions).
+ * All files are converted to work in Blink:
+     1. All CSS properties requiring the -webkit- vendor prefix are prefixed
+        (the list of what needs prefixes is read from Source/core/css/CSSProperties.in).
+     2. Each reftest has its own copy of its reference file following
+        the naming conventions new-run-webkit-tests expects.
+     3. If a reference files lives outside the directory of the test that
+        uses it, it is checked for paths to support files as it will be
+        imported into a different relative position to the test file
+        (in the same directory).
+     4. Any tags with the class "instructions" have style="display:none" added
+        to them. Some w3c tests contain instructions to manual testers which we
+        want to strip out (the test result parser only recognizes pure testharness.js
+        output and not those instructions).
 
-     - Upon completion, script outputs the total number tests imported, broken
-       down by test type
+ * Upon completion, script outputs the total number tests imported,
+   broken down by test type.
 
-     - Also upon completion, if we are not importing the files in place, each
-       directory where files are imported will have a w3c-import.log file written with
-       a timestamp, the list of CSS properties used that require prefixes, the list
-       of imported files, and guidance for future test modification and maintenance.
-       On subsequent imports, this file is read to determine if files have been
-       removed in the newer changesets. The script removes these files accordingly.
+ * Also upon completion, if we are not importing the files in place, each
+   directory where files are imported will have a w3c-import.log file written with
+   a timestamp, the list of CSS properties used that require prefixes, the list
+   of imported files, and guidance for future test modification and maintenance.
+   On subsequent imports, this file is read to determine if files have been
+   removed in the newer changesets. The script removes these files accordingly.
 """
 
 import logging
@@ -174,6 +174,11 @@ class TestImporter(object):
         self.import_tests()
 
     def find_importable_tests(self, directory):
+        """Walks through the source directory to find what tests should be imported.
+
+        This function sets self.import_list, which contains information about how many
+        tests are being imported, and their source and destination paths.
+        """
         paths_to_skip = self.find_paths_to_skip()
 
         for root, dirs, files in self.filesystem.walk(directory):
@@ -305,6 +310,7 @@ class TestImporter(object):
         return paths_to_skip
 
     def import_tests(self):
+        """Reads |self.import_list|, and converts and copies files to their destination."""
         total_imported_tests = 0
         total_imported_reftests = 0
         total_imported_jstests = 0
@@ -362,8 +368,8 @@ class TestImporter(object):
                     # there's no harm in copying the identical thing.
                     _log.info('  %s' % relpath)
 
-                # Only html, xml, or css should be converted
-                # FIXME: Eventually, so should js when support is added for this type of conversion
+                # Only HTML, XML, or CSS should be converted.
+                # FIXME: Eventually, so should JS when support is added for this type of conversion.
                 mimetype = mimetypes.guess_type(orig_filepath)
                 if 'is_jstest' not in file_to_copy and ('html' in str(mimetype[0]) or 'xml' in str(mimetype[0]) or 'css' in str(mimetype[0])):
                     converted_file = convert_for_webkit(new_path, filename=orig_filepath,
@@ -412,7 +418,7 @@ class TestImporter(object):
         return len(path_from_repo_base) > MAX_PATH_LENGTH
 
     def setup_destination_directory(self):
-        """ Creates a destination directory that mirrors that of the source directory """
+        """Creates a destination directory that mirrors that of the source directory."""
 
         new_subpath = self.dir_to_import[len(self.top_of_repo):]
 

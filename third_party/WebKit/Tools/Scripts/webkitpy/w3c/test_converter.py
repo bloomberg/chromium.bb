@@ -39,9 +39,11 @@ _log = logging.getLogger(__name__)
 
 
 def convert_for_webkit(new_path, filename, reference_support_info, host=Host()):
-    """ Converts a file's |contents| so it will function correctly in its |new_path| in Webkit.
+    """Converts a file's contents so the Blink layout test runner can run it.
 
-    Returns the list of modified properties and the modified text if the file was modified, None otherwise."""
+    Returns:
+      A pair: the list of modified properties, and the modified text if the file was modified, None otherwise.
+    """
     contents = host.filesystem.read_binary_file(filename)
     converter = _W3CTestConverter(new_path, filename, reference_support_info, host)
     if filename.endswith('.css'):
@@ -53,6 +55,11 @@ def convert_for_webkit(new_path, filename, reference_support_info, host=Host()):
 
 
 class _W3CTestConverter(HTMLParser):
+    """A HTMLParser subclass which converts a HTML file as it is parsed.
+
+    After the feed() method is called, the converted document will be stored
+    in converted_data, and can be retrieved with the output() method.
+    """
 
     def __init__(self, new_path, filename, reference_support_info, host=Host()):
         HTMLParser.__init__(self)
@@ -72,7 +79,7 @@ class _W3CTestConverter(HTMLParser):
         resources_relpath = self._filesystem.relpath(resources_path, new_path)
         self.resources_relpath = resources_relpath
 
-        # These settings might vary between WebKit and Blink
+        # These settings might vary between WebKit and Blink.
         self._css_property_file = self.path_from_webkit_root('Source', 'core', 'css', 'CSSProperties.in')
         self.prefixed_properties = self.read_webkit_prefixed_css_property_list()
         prop_regex = '([\s{]|^)(' + "|".join(
@@ -92,7 +99,7 @@ class _W3CTestConverter(HTMLParser):
         contents = self._filesystem.read_text_file(self._css_property_file)
         for line in contents.splitlines():
             if re.match('^(#|//|$)', line):
-                # skip comments and preprocessor directives
+                # skip comments and preprocessor directives.
                 continue
             prop = line.split()[0]
             # Find properties starting with the -webkit- prefix.
@@ -102,14 +109,14 @@ class _W3CTestConverter(HTMLParser):
             else:
                 unprefixed_properties.add(prop.strip())
 
-        # Ignore any prefixed properties for which an unprefixed version is supported
+        # Ignore any prefixed properties for which an unprefixed version is supported.
         return [prop for prop in prefixed_properties if prop not in unprefixed_properties]
 
     def add_webkit_prefix_to_unprefixed_properties(self, text):
-        """ Searches |text| for instances of properties requiring the -webkit- prefix and adds the prefix to them.
+        """Searches |text| for instances of properties requiring the -webkit- prefix and adds the prefix to them.
 
-        Returns the list of converted properties and the modified text."""
-
+        Returns the list of converted properties and the modified text.
+        """
         converted_properties = set()
         text_chunks = []
         cur_pos = 0
@@ -126,8 +133,11 @@ class _W3CTestConverter(HTMLParser):
         return (converted_properties, ''.join(text_chunks))
 
     def convert_reference_relpaths(self, text):
-        """ Searches |text| for instances of files in reference_support_info and updates the relative path to be correct for the new ref file location"""
+        """Converts reference file paths found in the given text.
 
+        Searches |text| for instances of files in |self.reference_support_info| and
+        updates the relative path to be correct for the new ref file location.
+        """
         converted = text
         for path in self.reference_support_info['files']:
             if path in text:
@@ -149,6 +159,10 @@ class _W3CTestConverter(HTMLParser):
         return self.convert_reference_relpaths(converted[1])
 
     def convert_attributes_if_needed(self, tag, attrs):
+        """Converts attributes in a start tag in HTML.
+
+        The converted tag text is appended to |self.converted_data|.
+        """
         converted = self.get_starttag_text()
         for attr_name, attr_value in attrs:
             if attr_name == 'style':

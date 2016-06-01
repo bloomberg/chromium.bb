@@ -149,7 +149,7 @@ class TestParserTest(unittest.TestCase):
 
         self.assertNotEqual(test_info, None, 'test_info is None')
         self.assertTrue('test' in test_info.keys(), 'did not find a test file')
-        self.assertFalse('reference' in test_info.keys(), 'shold not have found a reference file')
+        self.assertFalse('reference' in test_info.keys(), 'should not have found a reference file')
         self.assertFalse('refsupport' in test_info.keys(), 'there should be no refsupport files for this test')
         self.assertTrue('jstest' in test_info.keys(), 'test should be a jstest')
 
