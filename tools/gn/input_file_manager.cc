@@ -203,8 +203,11 @@ const ParseNode* InputFileManager::SyncLoadFile(
 
     if (!data->loaded) {
       // Wait for the already-pending sync load to complete.
-      if (!data->completion_event)
-        data->completion_event.reset(new base::WaitableEvent(false, false));
+      if (!data->completion_event) {
+        data->completion_event.reset(new base::WaitableEvent(
+            base::WaitableEvent::ResetPolicy::AUTOMATIC,
+            base::WaitableEvent::InitialState::NOT_SIGNALED));
+      }
       {
         base::AutoUnlock unlock(lock_);
         data->completion_event->Wait();

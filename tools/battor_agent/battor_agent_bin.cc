@@ -149,7 +149,8 @@ class BattOrAgentBin : public BattOrAgent::Listener {
 
   // Performs any cleanup necessary after the BattOr binary is done running.
   void TearDown() {
-    base::WaitableEvent done(false, false);
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     io_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&BattOrAgentBin::DeleteAgent,
                               base::Unretained(this), &done));
