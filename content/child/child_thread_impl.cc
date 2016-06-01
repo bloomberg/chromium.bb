@@ -51,6 +51,7 @@
 #include "content/child/service_worker/service_worker_message_filter.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/websocket_dispatcher.h"
+#include "content/child/websocket_message_filter.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/in_process_child_thread_params.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
@@ -441,12 +442,16 @@ void ChildThreadImpl::Init(const Options& options) {
       new NotificationDispatcher(thread_safe_sender_.get());
   push_dispatcher_ = new PushDispatcher(thread_safe_sender_.get());
 
+  websocket_message_filter_ =
+      new WebSocketMessageFilter(websocket_dispatcher_.get());
+
   channel_->AddFilter(histogram_message_filter_.get());
   channel_->AddFilter(resource_message_filter_.get());
   channel_->AddFilter(quota_message_filter_->GetFilter());
   channel_->AddFilter(notification_dispatcher_->GetFilter());
   channel_->AddFilter(push_dispatcher_->GetFilter());
   channel_->AddFilter(service_worker_message_filter_->GetFilter());
+  channel_->AddFilter(websocket_message_filter_.get());
 
   if (!IsInBrowserProcess()) {
     // In single process mode, browser-side tracing and memory will cover the
@@ -627,8 +632,6 @@ std::unique_ptr<base::SharedMemory> ChildThreadImpl::AllocateSharedMemory(
 bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
   // Resource responses are sent to the resource dispatcher.
   if (resource_dispatcher_->OnMessageReceived(msg))
-    return true;
-  if (websocket_dispatcher_->OnMessageReceived(msg))
     return true;
   if (file_system_dispatcher_->OnMessageReceived(msg))
     return true;

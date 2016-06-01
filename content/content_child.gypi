@@ -223,6 +223,8 @@
       'child/websocket_bridge.h',
       'child/websocket_dispatcher.cc',
       'child/websocket_dispatcher.h',
+      'child/websocket_message_filter.cc',
+      'child/websocket_message_filter.h',
       'child/webthemeengine_impl_android.cc',
       'child/webthemeengine_impl_android.h',
       'child/webthemeengine_impl_default.cc',

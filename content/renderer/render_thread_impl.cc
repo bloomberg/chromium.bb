@@ -65,6 +65,7 @@
 #include "content/child/runtime_features.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_database_observer_impl.h"
+#include "content/child/websocket_message_filter.h"
 #include "content/child/worker_thread_registry.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/content_constants_internal.h"
@@ -1179,6 +1180,9 @@ void RenderThreadImpl::InitializeWebKit(
   child_resource_message_filter()->SetMainThreadTaskRunner(
       resource_task_queue2);
   resource_dispatcher()->SetMainThreadTaskRunner(resource_task_queue2);
+
+  websocket_message_filter()->SetLoadingTaskRunner(
+      renderer_scheduler_->LoadingTaskRunner());
 
   if (!command_line.HasSwitch(switches::kDisableThreadedCompositing) &&
       !command_line.HasSwitch(switches::kUseRemoteCompositing))

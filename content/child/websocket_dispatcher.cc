@@ -15,9 +15,27 @@
 
 namespace content {
 
-WebSocketDispatcher::WebSocketDispatcher() : channel_id_max_(0) {}
+WebSocketDispatcher::WebSocketDispatcher()
+  : channel_id_max_(0),
+    weak_ptr_factory_(this) {}
 
 WebSocketDispatcher::~WebSocketDispatcher() {}
+
+bool WebSocketDispatcher::CanHandleMessage(const IPC::Message& msg) {
+  switch (msg.type()) {
+    case WebSocketMsg_AddChannelResponse::ID:
+    case WebSocketMsg_NotifyStartOpeningHandshake::ID:
+    case WebSocketMsg_NotifyFinishOpeningHandshake::ID:
+    case WebSocketMsg_NotifyFailure::ID:
+    case WebSocketMsg_SendFrame::ID:
+    case WebSocketMsg_FlowControl::ID:
+    case WebSocketMsg_DropChannel::ID:
+    case WebSocketMsg_NotifyClosing::ID:
+      return true;
+    default:
+      return false;
+  }
+}
 
 int WebSocketDispatcher::AddBridge(WebSocketBridge* bridge) {
   ++channel_id_max_;
@@ -35,20 +53,8 @@ void WebSocketDispatcher::RemoveBridge(int channel_id) {
 }
 
 bool WebSocketDispatcher::OnMessageReceived(const IPC::Message& msg) {
-  switch (msg.type()) {
-    case WebSocketMsg_AddChannelResponse::ID:
-    case WebSocketMsg_NotifyStartOpeningHandshake::ID:
-    case WebSocketMsg_NotifyFinishOpeningHandshake::ID:
-    case WebSocketMsg_NotifyFailure::ID:
-    case WebSocketMsg_SendFrame::ID:
-    case WebSocketMsg_FlowControl::ID:
-    case WebSocketMsg_DropChannel::ID:
-    case WebSocketMsg_NotifyClosing::ID:
-      break;
-    default:
-      return false;
-  }
-
+  if (!CanHandleMessage(msg))
+    return false;
   WebSocketBridge* bridge = GetBridge(msg.routing_id(), msg.type());
   if (!bridge)
     return true;

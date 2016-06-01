@@ -12,6 +12,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ipc/ipc_listener.h"
 
 namespace content {
@@ -27,6 +28,8 @@ class WebSocketDispatcher : public IPC::Listener {
   WebSocketDispatcher();
   ~WebSocketDispatcher() override;
 
+  static bool CanHandleMessage(const IPC::Message& msg);
+
   // Returns a unique channel id
   int AddBridge(WebSocketBridge* bridge);
   void RemoveBridge(int channel_id);
@@ -34,11 +37,16 @@ class WebSocketDispatcher : public IPC::Listener {
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& msg) override;
 
+  base::WeakPtr<WebSocketDispatcher> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
  private:
   WebSocketBridge* GetBridge(int channel_id, uint32_t type);
 
   std::map<int, WebSocketBridge*> bridges_;
   int channel_id_max_;
+  base::WeakPtrFactory<WebSocketDispatcher> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketDispatcher);
 };
