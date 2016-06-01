@@ -6687,14 +6687,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enables the use of an AppContainer on sandboxed processes to improve security.
         </message>
       </if>
-      <if expr="toolkit_views or is_android">
-        <message name="IDS_FLAGS_AUTOFILL_CREDIT_CARD_UPLOAD_NAME" desc="Name of the flag to enable uploading Autofill credit cards.">
-          Enable offering upload of Autofilled credit cards
-        </message>
-        <message name="IDS_FLAGS_AUTOFILL_CREDIT_CARD_UPLOAD_DESCRIPTION" desc="Description of the flag to enable uploading Autofill credit cards.">
-          Enables a new option to upload credit cards to Google Payments for sync to all Chrome devices.
-        </message>
-      </if>
       <message name="IDS_FLAGS_FORCE_UI_DIRECTION_NAME" desc="Name for the flag to force a specific UI direction.">
           Force UI direction
       </message>

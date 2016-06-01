@@ -54,10 +54,6 @@ bool OfferStoreUnmaskedCards() {
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const sync_driver::SyncService* sync_service,
                                const std::string& user_email) {
-  // Query the field trial first to ensure UMA always reports the correct group.
-  std::string group_name =
-      base::FieldTrialList::FindFullName("OfferUploadCreditCards");
-
   // Check Autofill sync setting.
   if (!(sync_service && sync_service->CanSyncStart() &&
         sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL_PROFILE))) {
@@ -82,23 +78,8 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   if (user_email.empty())
     return false;
   std::string domain = gaia::ExtractDomainName(user_email);
-  if (!(domain == "googlemail.com" || domain == "gmail.com" ||
-        domain == "google.com")) {
-    return false;
-  }
-
-  // With the user settings and logged in state verified, now we can consult the
-  // command-line flags and experiment settings.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableOfferUploadCreditCards)) {
-    return true;
-  }
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableOfferUploadCreditCards)) {
-    return false;
-  }
-
-  return !group_name.empty() && group_name != "Disabled";
+  return domain == "googlemail.com" || domain == "gmail.com" ||
+         domain == "google.com";
 }
 
 }  // namespace autofill
