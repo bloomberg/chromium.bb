@@ -6,6 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "chromecast/browser/media/cast_renderer.h"
+#include "media/base/media_log.h"
+#include "media/base/renderer_factory.h"
 
 namespace {
 class CastRendererFactory : public media::RendererFactory {
