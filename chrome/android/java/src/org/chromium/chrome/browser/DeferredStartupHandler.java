@@ -7,7 +7,6 @@ package org.chromium.chrome.browser;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.SystemClock;
-import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.FieldTrialList;
@@ -21,8 +20,12 @@ import org.chromium.chrome.browser.bookmarkswidget.BookmarkWidgetProvider;
 import org.chromium.chrome.browser.crash.CrashFileManager;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
+import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaUtils;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
+import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
+import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.precache.PrecacheLauncher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
@@ -112,6 +115,16 @@ public class DeferredStartupHandler {
 
         AfterStartupTaskUtils.setStartupComplete();
 
+        PartnerBrowserCustomizations.setOnInitializeAsyncFinished(new Runnable() {
+            @Override
+            public void run() {
+                String homepageUrl = HomepageManager.getHomepageUri(application);
+                LaunchMetrics.recordHomePageLaunchMetrics(
+                        HomepageManager.isHomepageEnabled(application),
+                        NewTabPage.isNTPUrl(homepageUrl), homepageUrl);
+            }
+        });
+
         // TODO(aruslan): http://b/6397072 This will be moved elsewhere
         PartnerBookmarksShim.kickOffReading(application);
 
@@ -141,14 +154,6 @@ public class DeferredStartupHandler {
         PhysicalWeb.onChromeStart(application);
 
         mDeferredStartupComplete = true;
-    }
-
-    private static float parseFloat(String value, float defaultValue) {
-        try {
-            return TextUtils.isEmpty(value) ? defaultValue : Float.parseFloat(value);
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
     }
 
     private static void startModerateBindingManagementIfNeeded(Context context) {

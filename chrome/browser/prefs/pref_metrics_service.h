@@ -25,6 +25,11 @@ class PrefMetricsService : public KeyedService {
   explicit PrefMetricsService(Profile* profile);
   ~PrefMetricsService() override;
 
+  // Records metrics about the state of the homepage on launch.
+  static void RecordHomePageLaunchMetrics(bool show_home_button,
+                                          bool homepage_is_ntp,
+                                          const GURL& homepage_url);
+
   class Factory : public BrowserContextKeyedServiceFactory {
    public:
     static Factory* GetInstance();

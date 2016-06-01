@@ -190,7 +190,6 @@ public class LaunchMetrics {
      * This intermediate step is necessary because Activity.onCreate() may be called when
      * the native library has not yet been loaded.
      * @param webContents WebContents for the current Tab.
-     * @param application The ChromeApplication object.
      */
     public static void commitLaunchMetrics(WebContents webContents) {
         for (Pair<String, Integer> item : sActivityUrls) {
@@ -207,6 +206,23 @@ public class LaunchMetrics {
         for (CachedHistogram event : CachedHistogram.sEvents) event.commitAndClear();
     }
 
+    /**
+     * Records metrics about the state of the homepage on launch.
+     * @param showHomeButton Whether the home button is shown.
+     * @param homepageIsNtp Whether the homepage is set to the NTP.
+     * @param homepageUrl The value of the homepage URL.
+     */
+    public static void recordHomePageLaunchMetrics(
+            boolean showHomeButton, boolean homepageIsNtp, String homepageUrl) {
+        if (homepageUrl == null) {
+            homepageUrl = "";
+            assert !showHomeButton : "Homepage should be disabled for a null URL";
+        }
+        nativeRecordHomePageLaunchMetrics(showHomeButton, homepageIsNtp, homepageUrl);
+    }
+
     private static native void nativeRecordLaunch(
             boolean standalone, String url, int source, WebContents webContents);
+    private static native void nativeRecordHomePageLaunchMetrics(
+            boolean showHomeButton, boolean homepageIsNtp, String homepageUrl);
 }

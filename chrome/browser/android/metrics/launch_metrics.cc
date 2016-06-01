@@ -12,6 +12,7 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/prefs/pref_metrics_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -85,6 +86,19 @@ static void RecordLaunch(JNIEnv* env,
 
   rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
                                           rappor_metric_action, url);
+}
+
+static void RecordHomePageLaunchMetrics(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& caller,
+    jboolean show_home_button,
+    jboolean homepage_is_ntp,
+    const JavaParamRef<jstring>& jhomepage_url) {
+  GURL homepage_url(base::android::ConvertJavaStringToUTF8(env, jhomepage_url));
+  PrefMetricsService::RecordHomePageLaunchMetrics(
+      show_home_button,
+      homepage_is_ntp,
+      homepage_url);
 }
 
 };  // namespace metrics
