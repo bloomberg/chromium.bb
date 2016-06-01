@@ -1,6 +1,11 @@
 # `Source/core/paint`
 
-This directory contains implementation of painters of layout objects.
+This directory contains implementation of painters of layout objects. It covers
+the following document lifecycle states:
+
+*   PaintInvalidation (`InPaintInvalidation` and `PaintInvalidationClean`)
+*   PrePaint (`InPrePaint` and `PrePaintClean`)
+*   Paint (`InPaint` and `PaintClean`)
 
 ## Glossaries
 
@@ -187,6 +192,19 @@ When this happens, we invalidate all `InlineBox`es in the first line.
 ### Slimming paint v2
 
 TODO(wangxianzhu): add details
+
+## [`PrePaintTreeWalk`](PrePaintTreeWalk.h) (Slimming paint v2 only)
+
+During `InPrePaint` document lifecycle state, this class is called to walk the whole
+layout tree, beginning from the root FrameView, across frame boundaries. We do the
+following during the tree walk:
+
+*   Building paint property tree: creates paint property tree nodes for special
+    things in the layout tree, including but not limit to: overflow clip, transform,
+    fixed-pos, animation, mask, filter, etc.
+
+*   Paint invalidation: Not implemented yet. TODO(wangxianzhu): add details after
+    it's implemented.
 
 ## Paint result caching
 

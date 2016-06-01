@@ -219,17 +219,17 @@ bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
         if (nextState == InCompositingUpdate)
             return true;
         if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-            if (nextState == InUpdatePaintProperties)
+            if (nextState == InPrePaint)
                 return true;
         } else if (nextState == InPaint) {
             return true;
         }
         break;
-    case InUpdatePaintProperties:
-        if (nextState == UpdatePaintPropertiesClean && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+    case InPrePaint:
+        if (nextState == PrePaintClean && RuntimeEnabledFeatures::slimmingPaintV2Enabled())
             return true;
         break;
-    case UpdatePaintPropertiesClean:
+    case PrePaintClean:
         if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled())
             break;
         if (nextState == InPaint)
@@ -327,8 +327,8 @@ const char* DocumentLifecycle::stateAsDebugString(const LifecycleState state)
         DEBUG_STRING_CASE(CompositingClean);
         DEBUG_STRING_CASE(InPaintInvalidation);
         DEBUG_STRING_CASE(PaintInvalidationClean);
-        DEBUG_STRING_CASE(InUpdatePaintProperties);
-        DEBUG_STRING_CASE(UpdatePaintPropertiesClean);
+        DEBUG_STRING_CASE(InPrePaint);
+        DEBUG_STRING_CASE(PrePaintClean);
         DEBUG_STRING_CASE(InPaint);
         DEBUG_STRING_CASE(PaintClean);
         DEBUG_STRING_CASE(Stopping);

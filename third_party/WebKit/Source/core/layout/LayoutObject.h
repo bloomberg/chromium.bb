@@ -1386,6 +1386,8 @@ public:
     class MutableForPainting {
     public:
         void setPreviousPaintOffset(const LayoutPoint& paintOffset) { m_layoutObject.setPreviousPaintOffset(paintOffset); }
+        ObjectPaintProperties& ensureObjectPaintProperties() { return m_layoutObject.ensureObjectPaintProperties(); }
+        void clearObjectPaintProperties() { m_layoutObject.clearObjectPaintProperties(); }
 
     private:
         friend class LayoutObject;

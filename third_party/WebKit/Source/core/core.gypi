@@ -2112,6 +2112,8 @@
             'paint/PaintTiming.h',
             'paint/PartPainter.cpp',
             'paint/PartPainter.h',
+            'paint/PrePaintTreeWalk.cpp',
+            'paint/PrePaintTreeWalk.h',
             'paint/ReplacedPainter.cpp',
             'paint/ReplacedPainter.h',
             'paint/ReplicaPainter.cpp',

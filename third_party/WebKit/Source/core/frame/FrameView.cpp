@@ -80,7 +80,7 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/FramePainter.h"
 #include "core/paint/PaintLayer.h"
-#include "core/paint/PaintPropertyTreeBuilder.h"
+#include "core/paint/PrePaintTreeWalk.h"
 #include "core/plugins/PluginView.h"
 #include "core/style/ComputedStyle.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -2420,7 +2420,7 @@ void FrameView::updateLifecycleToLayoutClean()
 void FrameView::scheduleVisualUpdateForPaintInvalidationIfNeeded()
 {
     LocalFrame* localFrameRoot = frame().localFrameRoot();
-    if (!localFrameRoot->view()->m_isUpdatingAllLifecyclePhases || lifecycle().state() >= DocumentLifecycle::PaintInvalidationClean) {
+    if (!localFrameRoot->view()->m_isUpdatingAllLifecyclePhases || lifecycle().state() >= DocumentLifecycle::PrePaintClean) {
         // Schedule visual update to process the paint invalidation in the next cycle.
         localFrameRoot->scheduleVisualUpdateUnlessThrottled();
     }
@@ -2499,9 +2499,9 @@ void FrameView::updatePaintProperties()
 
     ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
-    forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InUpdatePaintProperties); });
-    PaintPropertyTreeBuilder().buildPropertyTrees(*this);
-    forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::UpdatePaintPropertiesClean); });
+    forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::InPrePaint); });
+    PrePaintTreeWalk().walk(*this);
+    forAllNonThrottledFrameViews([](FrameView& frameView) { frameView.lifecycle().advanceTo(DocumentLifecycle::PrePaintClean); });
 }
 
 void FrameView::synchronizedPaint()
