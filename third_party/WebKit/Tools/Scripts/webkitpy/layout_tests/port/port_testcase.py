@@ -95,7 +95,6 @@ class PortTestCase(unittest.TestCase):
         port_name = port_name or self.port_name
         port_name = self.port_maker.determine_full_port_name(host, options, port_name)
         port = self.port_maker(host, port_name, options=options, **kwargs)
-        port._config.build_directory = lambda configuration: '/mock-build'
         return port
 
     def make_wdiff_available(self, port):

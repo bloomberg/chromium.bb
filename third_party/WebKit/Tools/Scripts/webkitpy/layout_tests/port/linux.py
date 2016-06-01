@@ -33,7 +33,6 @@ from webkitpy.layout_tests.breakpad.dump_reader_multipart import DumpReaderLinux
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import base
 from webkitpy.layout_tests.port import win
-from webkitpy.layout_tests.port import config
 
 
 _log = logging.getLogger(__name__)

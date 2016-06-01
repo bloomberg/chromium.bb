@@ -45,7 +45,6 @@ class DriverTest(unittest.TestCase):
 
     def make_port(self):
         port = Port(MockSystemHost(), 'test', MockOptions(configuration='Release'))
-        port._config.build_directory = lambda configuration: '/mock-checkout/out/' + configuration
         return port
 
     def _assert_wrapper(self, wrapper_string, expected_wrapper):
@@ -132,7 +131,6 @@ class DriverTest(unittest.TestCase):
 
     def test_no_timeout(self):
         port = TestWebKitPort()
-        port._config.build_directory = lambda configuration: '/mock-checkout/out/' + configuration
         driver = Driver(port, 0, pixel_tests=True, no_timeout=True)
         cmd_line = driver.cmd_line(True, [])
         self.assertEqual(cmd_line[0], '/mock-checkout/out/Release/content_shell')

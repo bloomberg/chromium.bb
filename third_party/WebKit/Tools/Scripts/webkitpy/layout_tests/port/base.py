@@ -59,7 +59,6 @@ from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration
-from webkitpy.layout_tests.port import config as port_config
 from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import server_process
 from webkitpy.layout_tests.port.factory import PortFactory
@@ -176,7 +175,6 @@ class Port(object):
         self._executive = host.executive
         self._filesystem = host.filesystem
         self._webkit_finder = WebKitFinder(host.filesystem)
-        self._config = port_config.Config(self._executive, self._filesystem, self.port_name)
 
         self._helper = None
         self._http_server = None
@@ -1421,7 +1419,7 @@ class Port(object):
             return self._pretty_patch_error_html
 
     def default_configuration(self):
-        return self._config.default_configuration()
+        return 'Release'
 
     def clobber_old_port_specific_results(self):
         pass
