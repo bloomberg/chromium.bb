@@ -243,6 +243,33 @@
         done();
       });
 
+      audit.defineTask("curve lengths", function (done) {
+        var success = true;
+        var context = new OfflineAudioContext(1, testDurationFrames, sampleRate);
+        var g = context.createGain();
+        var time = 0;
+
+        // Check for invalid curve lengths
+        success = Should("setValueCurveAtTime([], " + time + ", 0.01)", function () {
+          g.gain.setValueCurveAtTime(Float32Array.from([]), time, 0.01);
+        }).throw("InvalidStateError") && success;
+
+        success = Should("setValueCurveAtTime([1], " + time + ", 0.01)", function () {
+          g.gain.setValueCurveAtTime(Float32Array.from([1]), time, 0.01);
+        }).throw("InvalidStateError") && success;
+
+        success = Should("setValueCurveAtTime([1,2], " + time + ", 0.01)", function () {
+          g.gain.setValueCurveAtTime(Float32Array.from([1,2]), time, 0.01);
+        }).notThrow() && success;
+
+        if (success)
+          testPassed("Exceptions for curve length correctly handled.\n");
+        else
+          testFailed("Exceptions for curve length not correctly handled.\n");
+
+        done();
+      });
+
       audit.defineTask("finish", function (done) {
         finishJSTest();
         done();

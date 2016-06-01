@@ -41,6 +41,11 @@ PASS setValueCurveAtTime(..., 0.0125, 0.0025) did not throw an exception.
 PASS setTargetAtTime(1, 0.015000000000000001, 1) did not throw an exception.
 PASS setValueCurve with adjoining automation functions allowed as expected.
 
+PASS setValueCurveAtTime([], 0, 0.01) threw InvalidStateError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': The curve length provided (0) is less than the minimum bound (2)..
+PASS setValueCurveAtTime([1], 0, 0.01) threw InvalidStateError: Failed to execute 'setValueCurveAtTime' on 'AudioParam': The curve length provided (1) is less than the minimum bound (2)..
+PASS setValueCurveAtTime([1,2], 0, 0.01) did not throw an exception.
+PASS Exceptions for curve length correctly handled.
+
 PASS successfullyParsed is true
 
 TEST COMPLETE

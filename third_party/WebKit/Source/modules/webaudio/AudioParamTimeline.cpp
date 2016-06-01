@@ -214,6 +214,16 @@ void AudioParamTimeline::setValueCurveAtTime(DOMFloat32Array* curve, double time
         || !isPositiveAudioParamTime(duration, exceptionState, "Duration"))
         return;
 
+    if (curve->length() < 2) {
+        exceptionState.throwDOMException(
+            InvalidStateError,
+            ExceptionMessages::indexExceedsMinimumBound(
+                "curve length",
+                curve->length(),
+                2U));
+        return;
+    }
+
     insertEvent(ParamEvent::createSetValueCurveEvent(curve, time, duration), exceptionState);
 }
 
