@@ -136,7 +136,7 @@ bool PartitionAllocMemoryDumpProvider::OnMemoryDump(const base::trace_event::Mem
         base::StringPrintf("%s/%s", kPartitionAllocDumpName, kPartitionsDumpName));
 
     // This method calls memoryStats.partitionsDumpBucketStats with memory statistics.
-    WTF::Partitions::dumpMemoryStats(levelOfDetail == MemoryDumpLevelOfDetail::LIGHT, &partitionStatsDumper);
+    WTF::Partitions::dumpMemoryStats(levelOfDetail != MemoryDumpLevelOfDetail::DETAILED, &partitionStatsDumper);
 
     base::trace_event::MemoryAllocatorDump* allocatedObjectsDump = memoryDump->CreateAllocatorDump(Partitions::kAllocatedObjectPoolName);
     allocatedObjectsDump->AddScalar("size", "bytes", partitionStatsDumper.totalActiveBytes());

@@ -131,9 +131,11 @@ void V8IsolateMemoryDumpProvider::DumpHeapStatistics(
                                           system_allocator_name);
   }
 
-  // If light dump is requested, then object statistics are not dumped
-  if (args.level_of_detail == base::trace_event::MemoryDumpLevelOfDetail::LIGHT)
+  // Dump object statistics only for detailed dumps.
+  if (args.level_of_detail !=
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED) {
     return;
+  }
 
   // Dump statistics of the heap's live objects from last GC.
   // TODO(primiano): these should not be tracked in the same trace event as they
