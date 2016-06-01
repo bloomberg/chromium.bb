@@ -110,8 +110,7 @@ class AudioInputTest : public testing::Test {
     AudioParameters params = audio_manager_->GetInputStreamParameters(
         AudioDeviceDescription::kDefaultDeviceId);
     audio_input_stream_ = audio_manager_->MakeAudioInputStream(
-        params, AudioDeviceDescription::kDefaultDeviceId,
-        base::Bind(&AudioInputTest::OnLogMessage, base::Unretained(this)));
+        params, AudioDeviceDescription::kDefaultDeviceId);
     EXPECT_TRUE(audio_input_stream_);
   }
 
@@ -148,8 +147,6 @@ class AudioInputTest : public testing::Test {
     DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
     closure.Run();
   }
-
-  void OnLogMessage(const std::string& message) {}
 
   base::TestMessageLoop message_loop_;
   ScopedAudioManagerPtr audio_manager_;

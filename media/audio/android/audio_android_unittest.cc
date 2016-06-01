@@ -544,7 +544,7 @@ class AudioAndroidOutputTest : public testing::Test {
   void MakeOutputStream(const AudioParameters& params) {
     DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
     audio_output_stream_ = audio_manager()->MakeAudioOutputStream(
-        params, std::string(), AudioManager::LogCallback());
+        params, std::string());
     EXPECT_TRUE(audio_output_stream_);
   }
 
@@ -692,8 +692,7 @@ class AudioAndroidInputTest : public AudioAndroidOutputTest,
   void MakeInputStream(const AudioParameters& params) {
     DCHECK(audio_manager()->GetTaskRunner()->BelongsToCurrentThread());
     audio_input_stream_ = audio_manager()->MakeAudioInputStream(
-        params, AudioDeviceDescription::kDefaultDeviceId,
-        AudioManager::LogCallback());
+        params, AudioDeviceDescription::kDefaultDeviceId);
     EXPECT_TRUE(audio_input_stream_);
   }
 

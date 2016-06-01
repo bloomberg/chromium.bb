@@ -10,7 +10,6 @@
 
 
 namespace media {
-
 class AudioParameters;
 
 // AudioLog logs state information about an active audio component.  Each method
@@ -49,9 +48,6 @@ class AudioLog {
   // new audio output device.
   virtual void OnSwitchOutputDevice(int component_id,
                                     const std::string& device_id) = 0;
-
-  // Called when an audio component wants to forward a log message.
-  virtual void OnLogMessage(int component_id, const std::string& message) = 0;
 };
 
 // AudioLogFactory dispenses AudioLog instances to owning classes for tracking

@@ -34,8 +34,7 @@ class MockAudioManager : public media::AudioManager {
 
   media::AudioOutputStream* MakeAudioOutputStream(
       const media::AudioParameters& params,
-      const std::string& device_id,
-      const LogCallback& log_callback) override;
+      const std::string& device_id) override;
 
   media::AudioOutputStream* MakeAudioOutputStreamProxy(
       const media::AudioParameters& params,
@@ -43,8 +42,7 @@ class MockAudioManager : public media::AudioManager {
 
   media::AudioInputStream* MakeAudioInputStream(
       const media::AudioParameters& params,
-      const std::string& device_id,
-      const LogCallback& log_callback) override;
+      const std::string& device_id) override;
 
   void AddOutputDeviceChangeListener(AudioDeviceListener* listener) override;
   void RemoveOutputDeviceChangeListener(AudioDeviceListener* listener) override;
