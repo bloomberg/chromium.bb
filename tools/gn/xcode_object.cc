@@ -98,6 +98,7 @@ struct SourceTypeForExt {
 const SourceTypeForExt kSourceTypeForExt[] = {
     {".a", "archive.ar"},
     {".app", "wrapper.application"},
+    {".appex", "wrapper.app-extension"},
     {".bdic", "file"},
     {".bundle", "wrapper.cfbundle"},
     {".c", "sourcecode.c.c"},
