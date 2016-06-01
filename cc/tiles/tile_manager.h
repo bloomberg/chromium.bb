@@ -96,7 +96,7 @@ RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats);
 class CC_EXPORT TileManager {
  public:
   TileManager(TileManagerClient* client,
-              scoped_refptr<base::SequencedTaskRunner> task_runner,
+              base::SequencedTaskRunner* task_runner,
               size_t scheduled_raster_task_limit,
               bool use_partial_raster);
   virtual ~TileManager();
@@ -271,7 +271,7 @@ class CC_EXPORT TileManager {
   ScheduledTasksStateAsValue() const;
 
   TileManagerClient* client_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::SequencedTaskRunner* task_runner_;
   ResourcePool* resource_pool_;
   TileTaskManager* tile_task_manager_;
   GlobalStateThatImpactsTilePriority global_state_;

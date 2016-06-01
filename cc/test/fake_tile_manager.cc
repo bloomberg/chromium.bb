@@ -27,7 +27,7 @@ base::LazyInstance<FakeTileTaskManagerImpl> g_fake_tile_task_manager =
 
 FakeTileManager::FakeTileManager(TileManagerClient* client)
     : TileManager(client,
-                  base::ThreadTaskRunnerHandle::Get(),
+                  base::ThreadTaskRunnerHandle::Get().get(),
                   std::numeric_limits<size_t>::max(),
                   false /* use_partial_raster */),
       image_decode_controller_(
@@ -41,7 +41,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourcePool* resource_pool)
     : TileManager(client,
-                  base::ThreadTaskRunnerHandle::Get(),
+                  base::ThreadTaskRunnerHandle::Get().get(),
                   std::numeric_limits<size_t>::max(),
                   false /* use_partial_raster */),
       image_decode_controller_(

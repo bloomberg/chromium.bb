@@ -282,7 +282,7 @@ class TaskSetFinishedTaskImpl : public TileTask {
   }
 
  private:
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::SequencedTaskRunner* task_runner_;
   const base::Closure on_task_set_finished_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSetFinishedTaskImpl);
@@ -305,11 +305,11 @@ RasterTaskCompletionStatsAsValue(const RasterTaskCompletionStats& stats) {
 }
 
 TileManager::TileManager(TileManagerClient* client,
-                         scoped_refptr<base::SequencedTaskRunner> task_runner,
+                         base::SequencedTaskRunner* task_runner,
                          size_t scheduled_raster_task_limit,
                          bool use_partial_raster)
     : client_(client),
-      task_runner_(std::move(task_runner)),
+      task_runner_(task_runner),
       resource_pool_(nullptr),
       tile_task_manager_(nullptr),
       scheduled_raster_task_limit_(scheduled_raster_task_limit),
@@ -319,10 +319,10 @@ TileManager::TileManager(TileManagerClient* client,
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
       did_oom_on_last_assign_(false),
       more_tiles_need_prepare_check_notifier_(
-          task_runner_.get(),
+          task_runner_,
           base::Bind(&TileManager::CheckIfMoreTilesNeedToBePrepared,
                      base::Unretained(this))),
-      signals_check_notifier_(task_runner_.get(),
+      signals_check_notifier_(task_runner_,
                               base::Bind(&TileManager::CheckAndIssueSignals,
                                          base::Unretained(this))),
       has_scheduled_tile_tasks_(false),
@@ -1173,7 +1173,7 @@ TileManager::ScheduledTasksStateAsValue() const {
 scoped_refptr<TileTask> TileManager::CreateTaskSetFinishedTask(
     void (TileManager::*callback)()) {
   return make_scoped_refptr(new TaskSetFinishedTaskImpl(
-      task_runner_.get(),
+      task_runner_,
       base::Bind(callback, task_set_finished_weak_ptr_factory_.GetWeakPtr())));
 }
 
