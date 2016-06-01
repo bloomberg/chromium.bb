@@ -40,7 +40,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/fragmentoutput.html', bug=483282)
     self.Skip('deqp/functional/gles3/framebufferblit.html', bug=483282)
     self.Skip('deqp/functional/gles3/instancedrendering.html', bug=483282)
-    self.Skip('deqp/functional/gles3/integerstatequery.html', bug=483282)
     self.Skip('deqp/functional/gles3/lifetime.html', bug=483282)
     self.Skip('deqp/data/gles3/shaders/linkage.html', bug=601821)
     self.Skip('deqp/functional/gles3/multisample.html', bug=483282)
