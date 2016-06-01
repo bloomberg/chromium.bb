@@ -37,6 +37,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPSnippetsFeature,
     &kNTPToolbarFeature,
     &kPhysicalWebFeature,
+    &kSystemDownloadManager,
     &offline_pages::kOfflinePagesBackgroundLoadingFeature,
 };
 

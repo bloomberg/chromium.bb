@@ -107,4 +107,9 @@ interface ExternalNavigationDelegate {
      * @return Default SMS application's package name. Null if there isn't any.
      */
     String getDefaultSmsPackageName();
+
+    /**
+     * @return Whether the URL is a file download.
+     */
+    boolean isPdfDownload(String url);
 }

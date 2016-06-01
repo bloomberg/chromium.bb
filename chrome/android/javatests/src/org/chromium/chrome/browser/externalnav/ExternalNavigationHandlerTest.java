@@ -856,6 +856,11 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
             return defaultSmsPackageName;
         }
 
+        @Override
+        public boolean isPdfDownload(String url) {
+            return false;
+        }
+
         public void reset() {
             startActivityIntent = null;
             startIncognitoIntentCalled = false;

@@ -23,6 +23,7 @@ import android.provider.Telephony;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
+import android.webkit.MimeTypeMap;
 
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
@@ -31,6 +32,7 @@ import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -54,6 +56,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     private static final String PDF_VIEWER = "com.google.android.apps.docs";
     private static final String PDF_MIME = "application/pdf";
     private static final String PDF_SUFFIX = ".pdf";
+    private static final String PDF_EXTENSION = "pdf";
 
     protected final Context mApplicationContext;
     private final Tab mTab;
@@ -478,5 +481,15 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         if (context instanceof ChromeActivity) {
             ((ChromeActivity) context).getTabModelSelector().closeTab(tab);
         }
+    }
+
+    @Override
+    public boolean isPdfDownload(String url) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYSTEM_DOWNLOAD_MANAGER)) return false;
+
+        String fileExtension = MimeTypeMap.getFileExtensionFromUrl(url);
+        if (TextUtils.isEmpty(fileExtension)) return false;
+
+        return PDF_EXTENSION.equals(fileExtension);
     }
 }

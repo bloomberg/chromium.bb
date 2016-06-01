@@ -7,18 +7,24 @@ package org.chromium.chrome.browser.externalnav;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
-import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
+
+import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-
 /**
  * Instrumentation tests for {@link ExternalNavigationHandler}.
  */
-public class ExternalNavigationDelegateImplTest extends InstrumentationTestCase {
+public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+
+    public ExternalNavigationDelegateImplTest() {
+        super(ChromeActivity.class);
+    }
 
     private static List<ResolveInfo> makeResolveInfos(ResolveInfo... infos) {
         return Arrays.asList(infos);
@@ -88,5 +94,36 @@ public class ExternalNavigationDelegateImplTest extends InstrumentationTestCase 
         List<ResolveInfo> resolveInfos = makeResolveInfos(info);
         assertFalse(ExternalNavigationDelegateImpl
                 .isPackageSpecializedHandler(resolveInfos, packageName));
+    }
+
+    @SmallTest
+    @CommandLineFlags.Add({"disable-features=SystemDownloadManager"})
+    public void testIsDownload_noSystemDownloadManager() throws Exception {
+        ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
+                getActivity().getActivityTab());
+        assertTrue("pdf should be a download, no viewer in Android Chrome",
+                delegate.isPdfDownload("http://somesampeleurldne.com/file.pdf"));
+        assertFalse("URL is not a file, but web page",
+                delegate.isPdfDownload("http://somesampleurldne.com/index.html"));
+        assertFalse("URL is not a file url",
+                delegate.isPdfDownload("http://somesampeleurldne.com/not.a.real.extension"));
+        assertFalse("URL is an image, can be viewed in Chrome",
+                delegate.isPdfDownload("http://somesampleurldne.com/image.jpg"));
+        assertFalse("URL is a text file can be viewed in Chrome",
+                delegate.isPdfDownload("http://somesampleurldne.com/copy.txt"));
+    }
+
+    @SmallTest
+    @CommandLineFlags.Add({"enable-features=SystemDownloadManager"})
+    public void testIsDownload_withSystemDownloadManager() throws Exception {
+        ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
+                getActivity().getActivityTab());
+        assertFalse("isDownload should return false with SystemDownloadManager enabled",
+                delegate.isPdfDownload("http://somesampeleurldne.com/file.pdf"));
+    }
+
+    @Override
+    public void startMainActivity() throws InterruptedException {
+        startMainActivityOnBlankPage();
     }
 }

@@ -149,6 +149,11 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
+        // http://crbug.com/605302 : Allow Chrome to handle all pdf file downloads.
+        if (mDelegate.isPdfDownload(params.getUrl())) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
         // pageTransition is a combination of an enumeration (core value) and bitmask.
         int pageTransitionCore = params.getPageTransition() & PageTransition.CORE_MASK;
         boolean isLink = pageTransitionCore == PageTransition.LINK;
