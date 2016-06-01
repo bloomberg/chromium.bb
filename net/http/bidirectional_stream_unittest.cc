@@ -580,7 +580,12 @@ TEST_F(BidirectionalStreamTest, TestNetLogContainEntries) {
   net_log_.GetEntries(&entries);
   size_t index = ExpectLogContainsSomewhere(
       entries, 0, NetLog::TYPE_BIDIRECTIONAL_STREAM_ALIVE, NetLog::PHASE_BEGIN);
-  // Headers received should happen after BIDIRECTIONAL_STREAM_ALIVE.
+  // HTTP_STREAM_REQUEST is nested inside in BIDIRECTIONAL_STREAM_ALIVE.
+  index = ExpectLogContainsSomewhere(
+      entries, index, NetLog::TYPE_HTTP_STREAM_REQUEST, NetLog::PHASE_BEGIN);
+  index = ExpectLogContainsSomewhere(
+      entries, index, NetLog::TYPE_HTTP_STREAM_REQUEST, NetLog::PHASE_END);
+  // Headers received should happen after HTTP_STREAM_REQUEST.
   index = ExpectLogContainsSomewhere(
       entries, index, NetLog::TYPE_BIDIRECTIONAL_STREAM_RECV_HEADERS,
       NetLog::PHASE_NONE);

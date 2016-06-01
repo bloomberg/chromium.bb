@@ -90,6 +90,13 @@ BidirectionalStream::BidirectionalStream(
   DCHECK(delegate_);
   DCHECK(request_info_);
 
+  if (net_log_.IsCapturing()) {
+    net_log_.BeginEvent(
+        NetLog::TYPE_BIDIRECTIONAL_STREAM_ALIVE,
+        base::Bind(&NetLogCallback, &request_info_->url, &request_info_->method,
+                   base::Unretained(&request_info_->extra_headers)));
+  }
+
   SSLConfig server_ssl_config;
   session->ssl_config_service()->GetSSLConfig(&server_ssl_config);
   session->GetAlpnProtos(&server_ssl_config.alpn_protos);
@@ -116,12 +123,6 @@ BidirectionalStream::BidirectionalStream(
   // Check that HttpStreamFactory does not invoke OnBidirectionalStreamImplReady
   // synchronously.
   DCHECK(!stream_impl_);
-  if (net_log_.IsCapturing()) {
-    net_log_.BeginEvent(
-        NetLog::TYPE_BIDIRECTIONAL_STREAM_ALIVE,
-        base::Bind(&NetLogCallback, &request_info_->url, &request_info_->method,
-                   base::Unretained(&request_info_->extra_headers)));
-  }
 }
 
 BidirectionalStream::~BidirectionalStream() {
