@@ -17,14 +17,14 @@
         var result1 = document.getElementById("result1").firstChild;
         var result2 = document.getElementById("result2").firstChild;
 
-        if (getComputedStyle(rect).cursor == "url(\"file:///icon1.ico\"), auto")
+        if (getComputedStyle(rect).cursor == "url(\"file:///icon1.ico\") 0 0, auto")
             result1.data = "PASS";
         else
             result1.data = "FAIL - " + getComputedStyle(rect).cursor;
 
         document.getElementById("cursor").setAttribute("xlink:href", "file:///icon2.ico");
 
-        if (getComputedStyle(rect).cursor == "url(\"file:///icon2.ico\"), auto")
+        if (getComputedStyle(rect).cursor == "url(\"file:///icon2.ico\") 0 0, auto")
             result2.data = "PASS";
         else
             result2.data = "FAIL - " + getComputedStyle(rect).cursor;

@@ -32,6 +32,7 @@
 #include "core/css/CSSBorderImage.h"
 #include "core/css/CSSBorderImageSliceValue.h"
 #include "core/css/CSSCounterValue.h"
+#include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSFontFeatureValue.h"
@@ -1849,7 +1850,7 @@ CSSValue* ComputedStyleCSSValueMapping::get(CSSPropertyID propertyID, const Comp
             list = CSSValueList::createCommaSeparated();
             for (unsigned i = 0; i < cursors->size(); ++i) {
                 if (StyleImage* image = cursors->at(i).image())
-                    list->append(image->computedCSSValue());
+                    list->append(CSSCursorImageValue::create(image->computedCSSValue(), cursors->at(i).hotSpotSpecified(), cursors->at(i).hotSpot()));
             }
         }
         CSSValue* value = cssValuePool().createValue(style.cursor());
