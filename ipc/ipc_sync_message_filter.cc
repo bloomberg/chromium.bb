@@ -30,7 +30,9 @@ bool SyncMessageFilter::Send(Message* message) {
     return true;
   }
 
-  base::WaitableEvent done_event(true, false);
+  base::WaitableEvent done_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   PendingSyncMsg pending_message(
       SyncMessage::GetMessageId(*message),
       static_cast<SyncMessage*>(message)->GetReplyDeserializer(),

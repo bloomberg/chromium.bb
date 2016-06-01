@@ -42,28 +42,37 @@ class Worker : public Listener, public Sender {
   Worker(Channel::Mode mode,
          const std::string& thread_name,
          const std::string& channel_name)
-      : done_(new WaitableEvent(false, false)),
-        channel_created_(new WaitableEvent(false, false)),
+      : done_(
+            new WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED)),
+        channel_created_(
+            new WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED)),
         channel_name_(channel_name),
         mode_(mode),
         ipc_thread_((thread_name + "_ipc").c_str()),
         listener_thread_((thread_name + "_listener").c_str()),
         overrided_thread_(NULL),
-        shutdown_event_(true, false),
+        shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED),
         is_shutdown_(false) {}
 
   // Will create a named channel and use this name for the threads' name.
   Worker(const std::string& channel_name, Channel::Mode mode)
-      : done_(new WaitableEvent(false, false)),
-        channel_created_(new WaitableEvent(false, false)),
+      : done_(
+            new WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED)),
+        channel_created_(
+            new WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED)),
         channel_name_(channel_name),
         mode_(mode),
         ipc_thread_((channel_name + "_ipc").c_str()),
         listener_thread_((channel_name + "_listener").c_str()),
         overrided_thread_(NULL),
-        shutdown_event_(true, false),
-        is_shutdown_(false) {
-  }
+        shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED),
+        is_shutdown_(false) {}
 
   ~Worker() override {
     // Shutdown() must be called before destruction.
@@ -86,7 +95,11 @@ class Worker : public Listener, public Sender {
     // The IPC thread needs to outlive SyncChannel. We can't do this in
     // ~Worker(), since that'll reset the vtable pointer (to Worker's), which
     // may result in a race conditions. See http://crbug.com/25841.
-    WaitableEvent listener_done(false, false), ipc_done(false, false);
+    WaitableEvent listener_done(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED),
+        ipc_done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                 base::WaitableEvent::InitialState::NOT_SIGNALED);
     ListenerThread()->task_runner()->PostTask(
         FROM_HERE, base::Bind(&Worker::OnListenerThreadShutdown1, this,
                               &listener_done, &ipc_done));
@@ -454,7 +467,9 @@ class NoHangClient : public Worker {
 };
 
 void NoHang(bool pump_during_send) {
-  WaitableEvent got_first_reply(false, false);
+  WaitableEvent got_first_reply(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   std::vector<Worker*> workers;
   workers.push_back(
       new NoHangServer(&got_first_reply, pump_during_send, "NoHang"));
@@ -730,8 +745,12 @@ void Multiple(bool server_pump, bool client_pump) {
   // Server1 sends a sync msg to client1, which blocks the reply until
   // server2 (which runs on the same worker thread as server1) responds
   // to a sync msg from client2.
-  WaitableEvent client1_msg_received(false, false);
-  WaitableEvent client1_can_reply(false, false);
+  WaitableEvent client1_msg_received(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent client1_can_reply(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   Worker* worker;
 
@@ -1255,8 +1274,11 @@ class RestrictedDispatchClient : public Worker {
 };
 
 TEST_F(IPCSyncChannelTest, RestrictedDispatch) {
-  WaitableEvent sent_ping_event(false, false);
-  WaitableEvent wait_event(false, false);
+  WaitableEvent sent_ping_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent wait_event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
   RestrictedDispatchServer* server =
       new RestrictedDispatchServer(&sent_ping_event, &wait_event);
   NonRestrictedDispatchServer* server2 =
@@ -1486,13 +1508,19 @@ TEST_F(IPCSyncChannelTest, RestrictedDispatchDeadlock) {
   base::Thread worker_thread("RestrictedDispatchDeadlock");
   ASSERT_TRUE(worker_thread.Start());
 
-  WaitableEvent server1_ready(false, false);
-  WaitableEvent server2_ready(false, false);
+  WaitableEvent server1_ready(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent server2_ready(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  WaitableEvent event0(false, false);
-  WaitableEvent event1(false, false);
-  WaitableEvent event2(false, false);
-  WaitableEvent event3(false, false);
+  WaitableEvent event0(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent event1(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent event2(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent event3(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED);
   WaitableEvent* events[4] = {&event0, &event1, &event2, &event3};
 
   RestrictedDispatchDeadlockServer* server1;
@@ -1616,10 +1644,14 @@ class RestrictedDispatchPipeWorker : public Worker {
 TEST_F(IPCSyncChannelTest, MAYBE_RestrictedDispatch4WayDeadlock) {
   int success = 0;
   std::vector<Worker*> workers;
-  WaitableEvent event0(true, false);
-  WaitableEvent event1(true, false);
-  WaitableEvent event2(true, false);
-  WaitableEvent event3(true, false);
+  WaitableEvent event0(base::WaitableEvent::ResetPolicy::MANUAL,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent event1(base::WaitableEvent::ResetPolicy::MANUAL,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent event2(base::WaitableEvent::ResetPolicy::MANUAL,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent event3(base::WaitableEvent::ResetPolicy::MANUAL,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED);
   workers.push_back(new RestrictedDispatchPipeWorker(
         "channel0", &event0, "channel1", &event1, 1, &success));
   workers.push_back(new RestrictedDispatchPipeWorker(
@@ -1734,7 +1766,8 @@ class ReentrantReplyClient : public Worker {
 
 TEST_F(IPCSyncChannelTest, ReentrantReply) {
   std::vector<Worker*> workers;
-  WaitableEvent server_ready(false, false);
+  WaitableEvent server_ready(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   workers.push_back(new ReentrantReplyServer2());
   workers.push_back(new ReentrantReplyServer1(&server_ready));
   workers.push_back(new ReentrantReplyClient(&server_ready));

@@ -269,8 +269,10 @@ class PipeChannelHelper {
   }
 
   ~PipeChannelHelper() {
-    base::WaitableEvent a(true, false);
-    base::WaitableEvent b(true, false);
+    base::WaitableEvent a(base::WaitableEvent::ResetPolicy::MANUAL,
+                          base::WaitableEvent::InitialState::NOT_SIGNALED);
+    base::WaitableEvent b(base::WaitableEvent::ResetPolicy::MANUAL,
+                          base::WaitableEvent::InitialState::NOT_SIGNALED);
     in_thread_->task_runner()->PostTask(
         FROM_HERE, base::Bind(&PipeChannelHelper::DestroyChannel, &in, &a));
     out_thread_->task_runner()->PostTask(
@@ -315,7 +317,9 @@ class PipeChannelHelper {
 // http://crbug.com/298276
 class IPCMultiSendingFdsTest : public testing::Test {
  public:
-  IPCMultiSendingFdsTest() : received_(true, false) {}
+  IPCMultiSendingFdsTest()
+      : received_(base::WaitableEvent::ResetPolicy::MANUAL,
+                  base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void Producer(PipeChannelHelper* dest,
                 base::Thread* t,

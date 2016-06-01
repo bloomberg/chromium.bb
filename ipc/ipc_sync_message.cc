@@ -20,7 +20,9 @@ struct WaitableEventLazyInstanceTraits
     : public base::DefaultLazyInstanceTraits<base::WaitableEvent> {
   static base::WaitableEvent* New(void* instance) {
     // Use placement new to initialize our instance in our preallocated space.
-    return new (instance) base::WaitableEvent(true, true);
+    return new (instance)
+        base::WaitableEvent(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::SIGNALED);
   }
 };
 

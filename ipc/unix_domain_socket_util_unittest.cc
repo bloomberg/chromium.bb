@@ -28,8 +28,11 @@ class SocketAcceptor : public base::MessageLoopForIO::Watcher {
   SocketAcceptor(int fd, base::SingleThreadTaskRunner* target_thread)
       : server_fd_(-1),
         target_thread_(target_thread),
-        started_watching_event_(false, false),
-        accepted_event_(false, false) {
+        started_watching_event_(
+            base::WaitableEvent::ResetPolicy::AUTOMATIC,
+            base::WaitableEvent::InitialState::NOT_SIGNALED),
+        accepted_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED) {
     target_thread->PostTask(FROM_HERE,
         base::Bind(&SocketAcceptor::StartWatching, base::Unretained(this), fd));
   }

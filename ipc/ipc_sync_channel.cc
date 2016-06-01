@@ -190,14 +190,14 @@ class SyncChannel::ReceivedSyncMsgQueue :
 
   // See the comment in SyncChannel::SyncChannel for why this event is created
   // as manual reset.
-  ReceivedSyncMsgQueue() :
-      message_queue_version_(0),
-      dispatch_event_(true, false),
-      listener_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      task_pending_(false),
-      listener_count_(0),
-      top_send_done_watcher_(NULL) {
-  }
+  ReceivedSyncMsgQueue()
+      : message_queue_version_(0),
+        dispatch_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED),
+        listener_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        task_pending_(false),
+        listener_count_(0),
+        top_send_done_watcher_(NULL) {}
 
   ~ReceivedSyncMsgQueue() {}
 
@@ -260,9 +260,10 @@ void SyncChannel::SyncContext::Push(SyncMessage* sync_msg) {
   // OnObjectSignalled, another Send can happen which would stop the watcher
   // from being called.  The event would get watched later, when the nested
   // Send completes, so the event will need to remain set.
-  PendingSyncMsg pending(SyncMessage::GetMessageId(*sync_msg),
-                         sync_msg->GetReplyDeserializer(),
-                         new WaitableEvent(true, false));
+  PendingSyncMsg pending(
+      SyncMessage::GetMessageId(*sync_msg), sync_msg->GetReplyDeserializer(),
+      new WaitableEvent(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED));
   base::AutoLock auto_lock(deserializers_lock_);
   deserializers_.push_back(pending);
 }
