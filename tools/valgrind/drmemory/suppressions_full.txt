@@ -2152,3 +2152,14 @@ skia.dll!skia::BitmapPlatformDevice::Create
 ...
 webcore_shared.dll!blink::ScriptController::createPluginWrapper
 webcore_shared.dll!blink::HTMLPlugInElement::pluginWrapper
+
+UNINITIALIZED READ
+name=bug_616564
+system call NtFsControlFile FILE_PIPE_WAIT_FOR_BUFFER Timeout+NameLength
+KERNELBASE.dll!WaitNamedPipeW
+mojo_system_impl.dll!mojo::edk::NamedPlatformChannelPair::PassClientHandleFromParentProcess
+content.dll!content::`anonymous namespace'::InitializeMojoIPCChannel
+content.dll!content::ChildThreadImpl::Init
+content.dll!content::ChildThreadImpl::ChildThreadImpl
+content.dll!content::UtilityThreadImpl::UtilityThreadImpl
+content.dll!content::UtilityMain
