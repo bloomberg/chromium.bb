@@ -67,6 +67,7 @@ public:
     };
     static Style textPaintingStyle(LineLayoutItem, const ComputedStyle&, const PaintInfo&);
     static Style selectionPaintingStyle(LineLayoutItem, bool haveSelection, const PaintInfo&, const Style& textStyle);
+    static Color textColorForWhiteBackground(Color);
 
     enum RotationDirection { Counterclockwise, Clockwise };
     static AffineTransform rotation(const LayoutRect& boxRect, RotationDirection);

@@ -109,7 +109,7 @@ void TextPainter::updateGraphicsContext(GraphicsContext& context, const Style& t
     }
 }
 
-static Color textColorForWhiteBackground(Color textColor)
+Color TextPainter::textColorForWhiteBackground(Color textColor)
 {
     int distanceFromWhite = differenceSquared(textColor, Color::white);
     // semi-arbitrarily chose 65025 (255^2) value here after a few tests;
