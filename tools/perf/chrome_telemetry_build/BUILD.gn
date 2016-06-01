@@ -28,6 +28,10 @@ group("telemetry_chrome_test") {
 
   if (is_android) {
     data_deps = [
+      "//chrome/android:chrome_public_apk",
+
+      # TODO(stip): remove the content_shell dependency below after the GPU bots
+      # are switched over to use Chromium instead. crbug.com/616392.
       "//content/shell:content_shell",
     ]
   } else {

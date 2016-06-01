@@ -734,29 +734,6 @@ if (!is_android) {
 
   # TODO(GYP_GONE): Delete this after we've converted everything to GN.
   # The _run targets exist only for compatibility w/ GYP.
-  group("telemetry_perf_unittests_run") {
-    testonly = true
-    deps = [
-      ":telemetry_perf_unittests",
-    ]
-  }
-
-  group("telemetry_perf_unittests") {
-    testonly = true
-    deps = [
-      "//tools/perf:perf",
-    ]
-
-    data = [
-      # For isolate contract.
-      "//testing/scripts/common.py",
-      "//testing/xvfb.py",
-      "//testing/scripts/run_telemetry_as_googletest.py",
-    ]
-  }
-
-  # TODO(GYP_GONE): Delete this after we've converted everything to GN.
-  # The _run targets exist only for compatibility w/ GYP.
   group("telemetry_unittests_run") {
     testonly = true
     deps = [
@@ -1621,6 +1598,29 @@ if (!is_android) {
     # This target should not require the Chrome executable to run.
     assert_no_deps = [ "//chrome" ]
   }
+}
+
+# TODO(GYP_GONE): Delete this after we've converted everything to GN.
+# The _run targets exist only for compatibility w/ GYP.
+group("telemetry_perf_unittests_run") {
+  testonly = true
+  deps = [
+    ":telemetry_perf_unittests",
+  ]
+}
+
+group("telemetry_perf_unittests") {
+  testonly = true
+  deps = [
+    "//tools/perf:perf",
+  ]
+
+  data = [
+    # For isolate contract.
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//testing/scripts/run_telemetry_as_googletest.py",
+  ]
 }
 
 js2gtest("unit_tests_js") {

@@ -200,6 +200,7 @@ group("both_gn_and_gyp") {
     # and whether there should be other targets that are iOS-only and missing.
     deps += [
       "//cc:cc_unittests",
+      "//chrome/test:telemetry_perf_unittests",
       "//chrome/test:unit_tests",
       "//components:components_browsertests",
       "//content/shell:content_shell",

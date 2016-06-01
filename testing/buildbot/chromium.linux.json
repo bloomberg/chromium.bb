@@ -1012,6 +1012,9 @@
         }
       },
       {
+        "args": [
+          "--xvfb"
+        ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
         "override_compile_targets": [
@@ -1428,6 +1431,9 @@
         }
       },
       {
+        "args": [
+          "--xvfb"
+        ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests",
         "override_compile_targets": [

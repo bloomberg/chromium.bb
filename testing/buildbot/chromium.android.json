@@ -951,6 +951,29 @@
         },
         "test": "unit_tests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--browser=android-chromium",
+          "--device=android"
+        ],
+        "isolate_name": "telemetry_perf_unittests",
+        "name": "telemetry_perf_unittests",
+        "override_compile_targets": [
+          "telemetry_perf_unittests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "KTU84P",
+              "device_type": "hammerhead"
+            }
+          ],
+          "hard_timeout": 960
+        }
+      }
     ]
   },
   "Jelly Bean Tester": {
