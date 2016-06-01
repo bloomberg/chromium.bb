@@ -89,6 +89,11 @@ struct fd_device * fd_device_ref(struct fd_device *dev);
 void fd_device_del(struct fd_device *dev);
 int fd_device_fd(struct fd_device *dev);
 
+enum fd_version {
+	FD_VERSION_MADVISE = 1,            /* kernel supports madvise */
+	FD_VERSION_UNLIMITED_CMDS = 1,     /* submits w/ >4 cmd buffers (growable ringbuffer) */
+};
+enum fd_version fd_device_version(struct fd_device *dev);
 
 /* pipe functions:
  */

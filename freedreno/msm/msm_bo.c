@@ -98,7 +98,7 @@ static int msm_bo_madvise(struct fd_bo *bo, int willneed)
 	int ret;
 
 	/* older kernels do not support this: */
-	if (bo->dev->version < 1)
+	if (bo->dev->version < FD_VERSION_MADVISE)
 		return willneed;
 
 	ret = drmCommandWriteRead(bo->dev->fd, DRM_MSM_GEM_MADVISE, &req, sizeof(req));

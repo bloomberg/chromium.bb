@@ -83,7 +83,7 @@ struct fd_bo_cache {
 
 struct fd_device {
 	int fd;
-	int version;
+	enum fd_version version;
 	atomic_t refcnt;
 
 	/* tables to keep track of bo's, to avoid "evil-twin" fd_bo objects:

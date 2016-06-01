@@ -140,3 +140,8 @@ int fd_device_fd(struct fd_device *dev)
 {
 	return dev->fd;
 }
+
+enum fd_version fd_device_version(struct fd_device *dev)
+{
+	return dev->version;
+}
