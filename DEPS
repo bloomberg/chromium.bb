@@ -43,7 +43,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '4ca545e6cd1e4ed3481d3779e03dc255bb7a6903',
+  'v8_revision': '6f8618f881070ce6488b2de9eab180ebab233d72',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
