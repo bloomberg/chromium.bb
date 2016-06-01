@@ -37,9 +37,6 @@ enum FragmentShaderId {
 FragmentShaderId GetFragmentShaderId(bool premultiply_alpha,
                                      bool unpremultiply_alpha,
                                      GLenum target) {
-  // Only one alpha mode at a time makes sense.
-  DCHECK(!premultiply_alpha || !unpremultiply_alpha);
-
   enum {
     SAMPLER_2D,
     SAMPLER_RECTANGLE_ARB,
@@ -136,9 +133,6 @@ std::string GetVertexShaderSource() {
 std::string GetFragmentShaderSource(bool premultiply_alpha,
                                     bool unpremultiply_alpha,
                                     GLenum target) {
-  // Only one alpha mode at a time makes sense.
-  DCHECK(!premultiply_alpha || !unpremultiply_alpha);
-
   std::string source;
 
   // Preamble for core and compatibility mode.
