@@ -9,6 +9,7 @@ import android.content.Context;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.ResultReceiver;
+import android.os.StrictMode;
 import android.view.View;
 import android.view.inputmethod.CursorAnchorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -49,7 +50,12 @@ public class InputMethodManagerWrapper {
      */
     public void showSoftInput(View view, int flags, ResultReceiver resultReceiver) {
         if (DEBUG_LOGS) Log.d(TAG, "showSoftInput");
-        getInputMethodManager().showSoftInput(view, flags, resultReceiver);
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();  // crbug.com/616283
+        try {
+            getInputMethodManager().showSoftInput(view, flags, resultReceiver);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     /**
@@ -67,7 +73,13 @@ public class InputMethodManagerWrapper {
     public boolean hideSoftInputFromWindow(IBinder windowToken, int flags,
             ResultReceiver resultReceiver) {
         if (DEBUG_LOGS) Log.d(TAG, "hideSoftInputFromWindow");
-        return getInputMethodManager().hideSoftInputFromWindow(windowToken, flags, resultReceiver);
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();  // crbug.com/616283
+        try {
+            return getInputMethodManager().hideSoftInputFromWindow(
+                    windowToken, flags, resultReceiver);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     /**
