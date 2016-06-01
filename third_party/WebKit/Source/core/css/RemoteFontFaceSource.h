@@ -24,6 +24,7 @@ enum FontDisplay {
 
 class RemoteFontFaceSource final : public CSSFontFaceSource, public FontResourceClient {
     USING_PRE_FINALIZER(RemoteFontFaceSource, dispose);
+    USING_GARBAGE_COLLECTED_MIXIN(RemoteFontFaceSource);
 public:
     enum DisplayPeriod { BlockPeriod, SwapPeriod, FailurePeriod };
 

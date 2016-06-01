@@ -30,6 +30,7 @@
 #include "core/fetch/ResourceClient.h"
 #include "platform/Timer.h"
 #include "platform/fonts/FontOrientation.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -95,13 +96,15 @@ private:
 
 DEFINE_RESOURCE_TYPE_CASTS(Font);
 
-class FontResourceClient : public ResourceClient {
+class FontResourceClient : public GarbageCollectedMixin, public ResourceClient {
 public:
     ~FontResourceClient() override {}
     static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == FontType; }
     ResourceClientType getResourceClientType() const final { return FontType; }
     virtual void fontLoadShortLimitExceeded(FontResource*) {}
     virtual void fontLoadLongLimitExceeded(FontResource*) {}
+
+    DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
 } // namespace blink

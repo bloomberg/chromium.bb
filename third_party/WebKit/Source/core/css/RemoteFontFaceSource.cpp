@@ -219,6 +219,7 @@ DEFINE_TRACE(RemoteFontFaceSource)
     visitor->trace(m_font);
     visitor->trace(m_fontSelector);
     CSSFontFaceSource::trace(visitor);
+    FontResourceClient::trace(visitor);
 }
 
 void RemoteFontFaceSource::FontLoadHistograms::loadStarted()
