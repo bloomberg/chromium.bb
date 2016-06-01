@@ -919,6 +919,8 @@ TEST_F(BidirectionalStreamTest, TestBuffering) {
   // Deliver last DATA frame and EOF. There will be an additional
   // Delegate::OnReadComplete callback.
   sequenced_data_->Resume();
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(2, delegate->on_data_read_count());
   EXPECT_EQ(kUploadDataSize * 3,
             static_cast<int>(delegate->data_received().size()));
@@ -1000,6 +1002,8 @@ TEST_F(BidirectionalStreamTest, TestBufferingWithTrailers) {
   // called right after OnTrailersReceived. The three DATA frames should be
   // delivered in a single OnReadCompleted callback.
   sequenced_data_->Resume();
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(1, delegate->on_data_read_count());
   EXPECT_EQ(kUploadDataSize * 3,
             static_cast<int>(delegate->data_received().size()));
