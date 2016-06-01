@@ -458,67 +458,6 @@ def _read_configuration_from_gn(build_dir):
   return 'Debug'
 
 
-# Copy the relevant CRT DLLs to |build_dir|. We copy DLLs from all versions
-# of VS installed to make sure we have the correct CRT version, unused DLLs
-# should not conflict with the others anyways.
-def CopyVisualStudioRuntimeDLLs(target_arch, build_dir):
-  is_debug = os.path.basename(build_dir).startswith('Debug')
-  if not is_debug and not os.path.basename(build_dir).startswith('Release'):
-    gn_type = _read_configuration_from_gn(build_dir)
-    if gn_type == 'Debug':
-      is_debug = True
-    elif gn_type == 'Release':
-      is_debug = False
-    else:
-      print ("Warning: could not determine build configuration from "
-             "output directory or args.gn, assuming Release build. If "
-             "setup.exe fails to launch, please check that your build "
-             "configuration is Release.")
-
-  crt_dlls = []
-  sys_dll_dir = None
-  if is_debug:
-    crt_dlls = glob.glob(
-        "C:/Program Files (x86)/Microsoft Visual Studio */VC/redist/"
-        "Debug_NonRedist/" + target_arch + "/Microsoft.*.DebugCRT/*.dll")
-  else:
-    crt_dlls = glob.glob(
-        "C:/Program Files (x86)/Microsoft Visual Studio */VC/redist/" +
-        target_arch + "/Microsoft.*.CRT/*.dll")
-
-  # Also handle the case where someone is building using only winsdk and
-  # doesn't have Visual Studio installed.
-  if not crt_dlls:
-    if target_arch == 'x64':
-      # check we are are on a 64bit system by existence of WOW64 dir
-      if os.access("C:/Windows/SysWOW64", os.F_OK):
-        sys_dll_dir = "C:/Windows/System32"
-      else:
-        # only support packaging of 64bit installer on 64bit system
-        # but this just as bad as not finding DLLs at all so we
-        # don't abort here to mirror behavior below
-        print ("Warning: could not find x64 CRT DLLs on x86 system.")
-    else:
-      # On a 64-bit system, 32-bit dlls are in SysWOW64 (don't ask).
-      if os.access("C:/Windows/SysWOW64", os.F_OK):
-        sys_dll_dir = "C:/Windows/SysWOW64"
-      else:
-        sys_dll_dir = "C:/Windows/System32"
-
-    if sys_dll_dir is not None:
-      if is_debug:
-        crt_dlls = glob.glob(os.path.join(sys_dll_dir, "msvc*0d.dll"))
-      else:
-        crt_dlls = glob.glob(os.path.join(sys_dll_dir, "msvc*0.dll"))
-
-  if not crt_dlls:
-    print ("Warning: could not find CRT DLLs to copy to build dir - target "
-           "may not run on a system that doesn't have those DLLs.")
-
-  for dll in crt_dlls:
-    CopyIfChanged(dll, build_dir)
-
-
 # Copies component build DLLs and generates required config files and manifests
 # in order for chrome.exe and setup.exe to be able to find those DLLs at
 # run-time.
@@ -534,11 +473,6 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
   if not os.path.exists(installer_dir):
     os.mkdir(installer_dir)
 
-  # Copy the VS CRT DLLs to |build_dir|. This must be done before the general
-  # copy step below to ensure the CRT DLLs are added to the archive and marked
-  # as a dependency in the exe manifests generated below.
-  CopyVisualStudioRuntimeDLLs(target_arch, build_dir)
-
   # Explicitly list the component DLLs setup.exe depends on (this list may
   # contain wildcards). These will be copied to |installer_dir| in the archive.
   # The use of source sets in gn builds means that references to some extra
@@ -552,6 +486,7 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
                                 'icui18n.dll',
                                 'icuuc.dll',
                                 'msvc*.dll',
+                                'ucrtbase*.dll',
                                 'vcruntime*.dll',
                                 # DLLs needed due to source sets.
                                 'base_i18n.dll',

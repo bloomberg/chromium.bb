@@ -7,7 +7,9 @@ import glob
 import json
 import os
 import pipes
+import platform
 import shutil
+import stat
 import subprocess
 import sys
 
@@ -30,6 +32,8 @@ def SetEnvironmentAndGetRuntimeDllDirs():
   """Sets up os.environ to use the depot_tools VS toolchain with gyp, and
   returns the location of the VS runtime DLLs so they can be copied into
   the output directory after gyp generation.
+
+  Return value is [x64path, x86path] or None
   """
   vs_runtime_dll_dirs = None
   depot_tools_win_toolchain = \
@@ -74,6 +78,16 @@ def SetEnvironmentAndGetRuntimeDllDirs():
       os.environ['GYP_MSVS_OVERRIDE_PATH'] = DetectVisualStudioPath()
     if not 'GYP_MSVS_VERSION' in os.environ:
       os.environ['GYP_MSVS_VERSION'] = GetVisualStudioVersion()
+
+    # When using an installed toolchain these files aren't needed in the output
+    # directory in order to run binaries locally, but they are needed in order
+    # to create isolates or the mini_installer. Copying them to the output
+    # directory ensures that they are available when needed.
+    bitness = platform.architecture()[0]
+    # When running 64-bit python the x64 DLLs will be in System32
+    x64_path = 'System32' if bitness == '64bit' else 'Sysnative'
+    x64_path = os.path.join(r'C:\Windows', x64_path)
+    vs_runtime_dll_dirs = [x64_path, r'C:\Windows\SysWOW64']
 
   return vs_runtime_dll_dirs
 
@@ -164,8 +178,12 @@ def _CopyRuntimeImpl(target, source, verbose=True):
     if verbose:
       print 'Copying %s to %s...' % (source, target)
     if os.path.exists(target):
+      # Make the file writable so that we can delete it now.
+      os.chmod(target, stat.S_IWRITE)
       os.unlink(target)
     shutil.copy2(source, target)
+    # Make the file writable so that we can overwrite or delete it later.
+    os.chmod(target, stat.S_IWRITE)
 
 
 def _CopyRuntime2013(target_dir, source_dir, dll_pattern):
@@ -186,8 +204,16 @@ def _CopyRuntime2015(target_dir, source_dir, dll_pattern, suffix):
     target = os.path.join(target_dir, dll)
     source = os.path.join(source_dir, dll)
     _CopyRuntimeImpl(target, source)
-  ucrt_src_dir = os.path.join(source_dir, 'api-ms-win-*.dll')
-  for ucrt_src_file in glob.glob(ucrt_src_dir):
+  # OS installs of Visual Studio (and all installs of Windows 10) put the
+  # universal CRT files in c:\Windows\System32\downlevel - look for them there
+  # to support DEPOT_TOOLS_WIN_TOOLCHAIN=0.
+  if os.path.exists(os.path.join(source_dir, 'downlevel')):
+    ucrt_src_glob = os.path.join(source_dir, 'downlevel', 'api-ms-win-*.dll')
+  else:
+    ucrt_src_glob = os.path.join(source_dir, 'api-ms-win-*.dll')
+  ucrt_files = glob.glob(ucrt_src_glob)
+  assert len(ucrt_files) > 0
+  for ucrt_src_file in ucrt_files:
     file_part = os.path.basename(ucrt_src_file)
     ucrt_dst_file = os.path.join(target_dir, file_part)
     _CopyRuntimeImpl(ucrt_dst_file, ucrt_src_file, False)
