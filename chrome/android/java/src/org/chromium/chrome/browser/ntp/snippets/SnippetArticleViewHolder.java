@@ -196,7 +196,7 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
         if (ageInMinutes >= 0) {
             // If the max value below (72 hours) were to be changed, the histogram should be renamed
             // since it will change the shape of buckets.
-            RecordHistogram.recordCustomCountHistogram(histogramName, ageInMinutes, 0, 72 * 60, 50);
+            RecordHistogram.recordCustomCountHistogram(histogramName, ageInMinutes, 1, 72 * 60, 50);
         }
     }
 
