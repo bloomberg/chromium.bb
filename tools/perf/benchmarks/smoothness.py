@@ -233,6 +233,11 @@ class SmoothnessGpuRasterizationFiltersCases(_Smoothness):
   def Name(cls):
     return 'smoothness.gpu_rasterization.tough_filters_cases'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/616540
+    return (cls.IsSvelte(possible_browser) and
+            possible_browser.browser_type == 'reference')
+
 
 @benchmark.Enabled('android')
 class SmoothnessSyncScrollKeyMobileSites(_Smoothness):
