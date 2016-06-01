@@ -34,7 +34,8 @@ namespace app.runtime {
     background,
     kiosk,
     chrome_internal,
-    test
+    test,
+    installed_notification
   };
 
   // Optional data for the launch. Either <code>items</code>, or

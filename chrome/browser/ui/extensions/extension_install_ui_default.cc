@@ -15,8 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
-#include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -28,18 +26,23 @@
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/search/search.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/install/crx_install_error.h"
 #include "extensions/common/extension.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/extensions/extension_installed_notification.h"
+#else
+#include "chrome/common/url_constants.h"
+#include "content/public/browser/notification_service.h"
+#endif
 
 #if defined(USE_ASH)
 #include "ash/shell.h"
@@ -184,18 +187,16 @@ void ExtensionInstallUIDefault::OnInstallSuccess(const Extension* extension,
     use_bubble = use_app_installed_bubble_;
 #endif
 
-    if (IsAppLauncherEnabled()) {
-      AppListService::Get()->ShowForAppInstall(current_profile, extension->id(),
-                                               false);
-      return;
-    }
-
     if (use_bubble) {
       ShowExtensionInstalledBubble(extension, current_profile, *icon);
       return;
     }
 
+#if defined(OS_CHROMEOS)
+    ExtensionInstalledNotification::Show(extension, current_profile);
+#else  // defined(OS_CHROMEOS)
     OpenAppInstalledUI(extension->id());
+#endif  // defined(OS_CHROMEOS)
     return;
   }
 
@@ -221,7 +222,7 @@ void ExtensionInstallUIDefault::OnInstallFailure(
 
 void ExtensionInstallUIDefault::OpenAppInstalledUI(const std::string& app_id) {
 #if defined(OS_CHROMEOS)
-  // App Launcher always enabled on ChromeOS, so always handled in
+  // Notification always enabled on ChromeOS, so always handled in
   // OnInstallSuccess.
   NOTREACHED();
 #else

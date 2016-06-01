@@ -114,6 +114,8 @@ app_runtime::LaunchSource getLaunchSourceEnum(
       return app_runtime::LAUNCH_SOURCE_CHROME_INTERNAL;
     case extensions::SOURCE_TEST:
       return app_runtime::LAUNCH_SOURCE_TEST;
+    case extensions::SOURCE_INSTALLED_NOTIFICATION:
+      return app_runtime::LAUNCH_SOURCE_INSTALLED_NOTIFICATION;
 
     default:
       return app_runtime::LAUNCH_SOURCE_NONE;

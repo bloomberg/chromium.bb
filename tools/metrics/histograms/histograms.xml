@@ -63696,6 +63696,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="16" label="SOURCE_KIOSK"/>
   <int value="17" label="SOURCE_CHROME_INTERNAL"/>
   <int value="18" label="SOURCE_TEST"/>
+  <int value="19" label="SOURCE_INSTALLED_NOTIFICATION"/>
 </enum>
 
 <enum name="AppleScriptCommandEvents" type="int">

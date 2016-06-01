@@ -721,6 +721,8 @@
       'browser/ui/app_list/search/launcher_search/launcher_search_provider.h',
       'browser/ui/app_list/search/launcher_search/launcher_search_result.cc',
       'browser/ui/app_list/search/launcher_search/launcher_search_result.h',
+      'browser/ui/extensions/extension_installed_notification.cc',
+      'browser/ui/extensions/extension_installed_notification.h',
       'browser/ui/input_method/input_method_engine_base.cc',
       'browser/ui/input_method/input_method_engine_base.h',
       'browser/ui/views/apps/chrome_native_app_window_views_aura_ash.cc',

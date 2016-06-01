@@ -4181,6 +4181,12 @@ Even if you have downloaded files from this website before, the website might ha
         Could not load icon '<ph name="ICON">$1<ex>icon.png</ex></ph>' for browser action.
       </message>
 
+      <if expr="chromeos">
+        <message name="IDS_EXTENSION_NOTIFICATION_INSTALLED" desc="Notification message shown in the message center when an application is successfully install.">
+          Successfully installed
+        </message>
+      </if>
+
       <!-- Extension installed bubble -->
       <message name="IDS_EXTENSION_BUNDLE_INSTALLED_HEADING_EXTENSIONS" desc="First line in the content area of the extension bundle installed bubble. Instructs which extensions were installed.">
         The following extensions are now installed:
