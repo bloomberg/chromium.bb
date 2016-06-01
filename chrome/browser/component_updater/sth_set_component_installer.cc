@@ -15,6 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/net/sth_distributor_provider.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "content/public/browser/browser_thread.h"
@@ -49,8 +50,8 @@ const uint8_t kPublicKeySHA256[32] = {
 const char kSTHSetFetcherManifestName[] = "Signed Tree Heads";
 
 STHSetComponentInstallerTraits::STHSetComponentInstallerTraits(
-    std::unique_ptr<net::ct::STHObserver> sth_observer)
-    : sth_observer_(std::move(sth_observer)) {}
+    net::ct::STHObserver* sth_observer)
+    : sth_observer_(sth_observer) {}
 
 STHSetComponentInstallerTraits::~STHSetComponentInstallerTraits() {}
 
@@ -168,7 +169,7 @@ void STHSetComponentInstallerTraits::OnJsonParseSuccess(
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&net::ct::STHObserver::NewSTHObserved,
-                 base::Unretained(sth_observer_.get()), signed_tree_head));
+                 base::Unretained(sth_observer_), signed_tree_head));
 }
 
 void STHSetComponentInstallerTraits::OnJsonParseError(
@@ -182,14 +183,13 @@ void RegisterSTHSetComponent(ComponentUpdateService* cus,
                              const base::FilePath& user_data_dir) {
   DVLOG(1) << "Registering STH Set fetcher component.";
 
-  // TODO(eranm): The next step in auditing CT logs (crbug.com/506227) is to
-  // pass the distributor to the IOThread so it can be used in a per-profile
-  // context for checking inclusion of SCTs.
-  std::unique_ptr<net::ct::STHDistributor> distributor(
-      new net::ct::STHDistributor());
+  net::ct::STHDistributor* distributor =
+      chrome_browser_net::GetGlobalSTHDistributor();
+  // The global STHDistributor should have been created by this point.
+  DCHECK(distributor);
 
   std::unique_ptr<ComponentInstallerTraits> traits(
-      new STHSetComponentInstallerTraits(std::move(distributor)));
+      new STHSetComponentInstallerTraits(distributor));
   // |cus| will take ownership of |installer| during installer->Register(cus).
   DefaultComponentInstaller* installer =
       new DefaultComponentInstaller(std::move(traits));

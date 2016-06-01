@@ -54,6 +54,10 @@ namespace chrome_browser_net {
 class ResourcePrefetchPredictorObserver;
 }
 
+namespace certificate_transparency {
+class TreeStateTracker;
+}
+
 namespace content_settings {
 class CookieSettings;
 }
@@ -609,6 +613,10 @@ class ProfileIOData {
 #endif
 
   mutable DevToolsNetworkControllerHandle network_controller_handle_;
+
+  mutable std::unique_ptr<certificate_transparency::TreeStateTracker>
+      ct_tree_tracker_;
+  mutable base::Closure ct_tree_tracker_unregistration_;
 
   const Profile::ProfileType profile_type_;
 

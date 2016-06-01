@@ -44,9 +44,8 @@ class STHSetComponentInstallerTest : public PlatformTest {
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    std::unique_ptr<StoringSTHObserver> observer(new StoringSTHObserver());
-    observer_ = observer.get();
-    traits_.reset(new STHSetComponentInstallerTraits(std::move(observer)));
+    observer_.reset(new StoringSTHObserver());
+    traits_.reset(new STHSetComponentInstallerTraits(observer_.get()));
   }
 
   void WriteSTHToFile(const std::string& sth_json,
@@ -82,8 +81,10 @@ class STHSetComponentInstallerTest : public PlatformTest {
   content::TestBrowserThreadBundle thread_bundle_;
 
   base::ScopedTempDir temp_dir_;
+  std::unique_ptr<StoringSTHObserver> observer_;
+  // |traits_| should be destroyed before the |observer_| as it holds a pointer
+  // to it.
   std::unique_ptr<STHSetComponentInstallerTraits> traits_;
-  StoringSTHObserver* observer_;
   safe_json::TestingJsonParser::ScopedFactoryOverride factory_override_;
 
  private:

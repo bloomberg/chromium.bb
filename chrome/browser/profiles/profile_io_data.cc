@@ -58,6 +58,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/about_handler/about_protocol_handler.h"
+#include "components/certificate_transparency/tree_state_tracker.h"
 #include "components/content_settings/core/browser/content_settings_provider.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -81,6 +82,7 @@
 #include "content/public/browser/resource_context.h"
 #include "net/base/keygen_handler.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_log_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_network_session.h"
@@ -1150,7 +1152,16 @@ void ProfileIOData::Init(
       new net::MultiLogCTVerifier());
   ct_verifier->AddLogs(io_thread_globals->ct_logs);
   main_request_context_->set_cert_transparency_verifier(ct_verifier.get());
+
+  ct_tree_tracker_.reset(new certificate_transparency::TreeStateTracker(
+      io_thread_globals->ct_logs));
+  ct_verifier->SetObserver(ct_tree_tracker_.get());
+
   cert_transparency_verifier_ = std::move(ct_verifier);
+  io_thread->RegisterSTHObserver(ct_tree_tracker_.get());
+  ct_tree_tracker_unregistration_ =
+      base::Bind(&IOThread::UnregisterSTHObserver, base::Unretained(io_thread),
+                 ct_tree_tracker_.get());
 
   InitializeInternal(std::move(network_delegate), profile_params_.get(),
                      protocol_handlers, std::move(request_interceptors));
@@ -1299,6 +1310,12 @@ void ProfileIOData::set_channel_id_service(
 
 void ProfileIOData::DestroyResourceContext() {
   resource_context_.reset();
+  // Prevent the cert_transparency_observer_ from getting any more
+  // notifications by severing the link between it and the
+  // cert_transparency_verifier_ and unregistering it from new STH
+  // notifications.
+  cert_transparency_verifier_->SetObserver(nullptr);
+  ct_tree_tracker_unregistration_.Run();
 }
 
 std::unique_ptr<net::HttpNetworkSession>

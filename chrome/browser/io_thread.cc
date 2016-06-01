@@ -39,10 +39,12 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
+#include "chrome/browser/net/sth_distributor_provider.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "components/certificate_transparency/tree_state_tracker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/data_usage/core/data_use_aggregator.h"
 #include "components/data_usage/core/data_use_amortizer.h"
@@ -72,6 +74,8 @@
 #include "net/cert/ct_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
+#include "net/cert/sth_distributor.h"
+#include "net/cert/sth_observer.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
@@ -393,6 +397,9 @@ IOThread::IOThread(
         g_browser_process->metrics_service()->GetDataUseForwardingCallback();
   }
 
+  chrome_browser_net::SetGlobalSTHDistributor(
+      std::unique_ptr<net::ct::STHDistributor>(new net::ct::STHDistributor()));
+
   BrowserThread::SetDelegate(BrowserThread::IO, this);
 }
 
@@ -403,6 +410,10 @@ IOThread::~IOThread() {
 
   pref_proxy_config_tracker_->DetachFromPrefService();
   DCHECK(!globals_);
+
+  // Destroy the old distributor to check that the observers list it holds is
+  // empty.
+  chrome_browser_net::SetGlobalSTHDistributor(nullptr);
 }
 
 IOThread::Globals* IOThread::globals() {
@@ -607,6 +618,13 @@ void IOThread::Init() {
   // Add built-in logs
   ct_verifier->AddLogs(globals_->ct_logs);
 
+  ct_tree_tracker_.reset(
+      new certificate_transparency::TreeStateTracker(globals_->ct_logs));
+  // Register the ct_tree_tracker_ as observer for new STHs.
+  RegisterSTHObserver(ct_tree_tracker_.get());
+  // Register the ct_tree_tracker_ as observer for verified SCTs.
+  globals_->cert_transparency_verifier->SetObserver(ct_tree_tracker_.get());
+
   // TODO(erikchen): Remove ScopedTracker below once http://crbug.com/466432
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile10(
@@ -766,6 +784,14 @@ void IOThread::CleanUp() {
 
   system_url_request_context_getter_ = NULL;
 
+  // Unlink the ct_tree_tracker_ from the global cert_transparency_verifier
+  // and unregister it from new STH notifications so it will take no actions
+  // on anything observed during CleanUp process.
+  globals()->cert_transparency_verifier->SetObserver(nullptr);
+  UnregisterSTHObserver(ct_tree_tracker_.get());
+
+  ct_tree_tracker_.reset();
+
   // Release objects that the net::URLRequestContext could have been pointing
   // to.
 
@@ -915,6 +941,14 @@ void IOThread::InitSystemRequestContextOnIOThread() {
 
 void IOThread::UpdateDnsClientEnabled() {
   globals()->host_resolver->SetDnsClientEnabled(*dns_client_enabled_);
+}
+
+void IOThread::RegisterSTHObserver(net::ct::STHObserver* observer) {
+  chrome_browser_net::GetGlobalSTHDistributor()->RegisterObserver(observer);
+}
+
+void IOThread::UnregisterSTHObserver(net::ct::STHObserver* observer) {
+  chrome_browser_net::GetGlobalSTHDistributor()->UnregisterObserver(observer);
 }
 
 // static

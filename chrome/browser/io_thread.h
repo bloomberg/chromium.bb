@@ -44,6 +44,10 @@ class ExternalDataUseObserver;
 }
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
+namespace certificate_transparency {
+class TreeStateTracker;
+}
+
 namespace chrome_browser_net {
 class DnsProbeService;
 }
@@ -81,6 +85,11 @@ class URLRequestBackoffManager;
 class URLRequestContext;
 class URLRequestContextGetter;
 class URLRequestJobFactory;
+
+namespace ct {
+class STHObserver;
+}
+
 }  // namespace net
 
 namespace net_log {
@@ -223,6 +232,12 @@ class IOThread : public content::BrowserThreadDelegate {
   // Returns the callback for updating data use prefs.
   const metrics::UpdateUsagePrefCallbackType& GetMetricsDataUseForwarder();
 
+  // Registers the |observer| for new STH notifications.
+  void RegisterSTHObserver(net::ct::STHObserver* observer);
+
+  // Un-registers the |observer|.
+  void UnregisterSTHObserver(net::ct::STHObserver* observer);
+
  private:
   // Provide SystemURLRequestContextGetter with access to
   // InitSystemRequestContext().
@@ -304,6 +319,8 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // Observer that logs network changes to the ChromeNetLog.
   std::unique_ptr<net::LoggingNetworkChangeObserver> network_change_observer_;
+
+  std::unique_ptr<certificate_transparency::TreeStateTracker> ct_tree_tracker_;
 
   BooleanPrefMember system_enable_referrers_;
 
