@@ -6,13 +6,14 @@
 #define CONTENT_PUBLIC_BROWSER_RESOURCE_HINTS_H_
 
 #include "content/common/content_export.h"
+#include "net/base/completion_callback.h"
 #include "net/http/http_request_info.h"
 #include "url/gurl.h"
 
 class GURL;
 
-namespace net {
-class URLRequestContextGetter;
+namespace content {
+class ResourceContext;
 }
 
 namespace content {
@@ -27,12 +28,18 @@ namespace content {
 // Note: This should only be called on the IO thread, with a valid
 // URLRequestContextGetter.
 CONTENT_EXPORT void PreconnectUrl(
-    net::URLRequestContextGetter* getter,
+    content::ResourceContext* resource_context,
     const GURL& url,
     const GURL& first_party_for_cookies,
     int count,
     bool allow_credentials,
     net::HttpRequestInfo::RequestMotivation motivation);
+
+// Issues a DNS request to |url|. Note that these requests are sent to the host
+// resolver with priority net::IDLE.
+CONTENT_EXPORT int PreresolveUrl(content::ResourceContext* resource_context,
+                                 const GURL& url,
+                                 const net::CompletionCallback& callback);
 
 }  // namespace content
 

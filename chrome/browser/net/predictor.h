@@ -25,7 +25,6 @@
 #include <map>
 #include <memory>
 #include <queue>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -279,10 +278,6 @@ class Predictor {
   static GURL CanonicalizeUrl(const GURL& url);
 
   // Used for testing.
-  void SetHostResolver(net::HostResolver* host_resolver) {
-    host_resolver_ = host_resolver;
-  }
-  // Used for testing.
   void SetTransportSecurityState(
       net::TransportSecurityState* transport_security_state) {
     transport_security_state_ = transport_security_state;
@@ -333,8 +328,6 @@ class Predictor {
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, ProxyMaybeEnabled);
   friend class WaitForResolutionHelper;  // For testing.
   friend class PredictorBrowserTest;
-
-  class LookupRequest;
 
   // A simple priority queue for handling host names.
   // Some names that are queued up have |motivation| that requires very rapid
@@ -437,14 +430,13 @@ class Predictor {
                                 const GURL& first_party_for_cookies);
 
   // Access method for use by async lookup request to pass resolution result.
-  void OnLookupFinished(LookupRequest* request, const GURL& url, bool found);
+  void OnLookupFinished(const GURL& url, int result);
 
   // Underlying method for both async and synchronous lookup to update state.
-  void LookupFinished(LookupRequest* request,
-                      const GURL& url, bool found);
+  void LookupFinished(const GURL& url, bool found);
 
-  // Queue hostname for resolution.  If queueing was done, return the pointer
-  // to the queued instance, otherwise return NULL. If the proxy advisor is
+  // Queues hostname for resolution.  If queueing was done, return the pointer
+  // to the queued instance, otherwise return nullptr. If the proxy advisor is
   // enabled, and |url| is likely to be proxied, the hostname will not be
   // queued as the browser is not expected to fetch it directly.
   UrlInfo* AppendToResolutionQueue(const GURL& url,
@@ -519,7 +511,7 @@ class Predictor {
   // results_ contains information for existing/prior prefetches.
   Results results_;
 
-  std::set<LookupRequest*> pending_lookups_;
+  size_t num_pending_lookups_;
 
   // For testing, to verify that we don't exceed the limit.
   size_t peak_pending_lookups_;
@@ -536,9 +528,6 @@ class Predictor {
   // The maximum queueing delay that is acceptable before we enter congestion
   // reduction mode, and discard all queued (but not yet assigned) resolutions.
   const base::TimeDelta max_dns_queue_delay_;
-
-  // The host resolver we warm DNS entries for.
-  net::HostResolver* host_resolver_;
 
   // The TransportSecurityState instance we query HSTS redirects from.
   net::TransportSecurityState* transport_security_state_;

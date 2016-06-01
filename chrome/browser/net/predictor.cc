@@ -104,69 +104,25 @@ static size_t g_max_parallel_resolves =
 // we change the format so that we discard old data.
 static const int kPredictorStartupFormatVersion = 1;
 
-class Predictor::LookupRequest {
- public:
-  LookupRequest(Predictor* predictor,
-                net::HostResolver* host_resolver,
-                const GURL& url)
-      : predictor_(predictor),
-        url_(url),
-        resolver_(host_resolver) {
-  }
-
-  // Return underlying network resolver status.
-  // net::OK ==> Host was found synchronously.
-  // net:ERR_IO_PENDING ==> Network will callback later with result.
-  // anything else ==> Host was not found synchronously.
-  int Start() {
-    net::HostResolver::RequestInfo resolve_info(
-        net::HostPortPair::FromURL(url_));
-
-    // Make a note that this is a speculative resolve request. This allows us
-    // to separate it from real navigations in the observer's callback, and
-    // lets the HostResolver know it can de-prioritize it.
-    resolve_info.set_is_speculative(true);
-    return resolver_.Resolve(
-        resolve_info,
-        net::DEFAULT_PRIORITY,
-        &addresses_,
-        base::Bind(&LookupRequest::OnLookupFinished, base::Unretained(this)),
-        net::BoundNetLog());
-  }
-
- private:
-  void OnLookupFinished(int result) {
-    predictor_->OnLookupFinished(this, url_, result == net::OK);
-  }
-
-  Predictor* predictor_;  // The predictor which started us.
-
-  const GURL url_;  // Hostname to resolve.
-  net::SingleRequestHostResolver resolver_;
-  net::AddressList addresses_;
-
-  DISALLOW_COPY_AND_ASSIGN(LookupRequest);
-};
-
 Predictor::Predictor(bool preconnect_enabled, bool predictor_enabled)
-    : url_request_context_getter_(NULL),
+    : url_request_context_getter_(nullptr),
       predictor_enabled_(predictor_enabled),
-      user_prefs_(NULL),
-      profile_io_data_(NULL),
+      user_prefs_(nullptr),
+      profile_io_data_(nullptr),
+      num_pending_lookups_(0),
       peak_pending_lookups_(0),
       shutdown_(false),
       max_concurrent_dns_lookups_(g_max_parallel_resolves),
       max_dns_queue_delay_(
           TimeDelta::FromMilliseconds(g_max_queueing_delay_ms)),
-      host_resolver_(NULL),
-      transport_security_state_(NULL),
-      ssl_config_service_(NULL),
-      proxy_service_(NULL),
+      transport_security_state_(nullptr),
+      ssl_config_service_(nullptr),
+      proxy_service_(nullptr),
       preconnect_enabled_(preconnect_enabled),
       consecutive_omnibox_preconnect_count_(0),
       next_trim_time_(base::TimeTicks::Now() +
                       TimeDelta::FromHours(kDurationBetweenTrimmingsHours)),
-      observer_(NULL),
+      observer_(nullptr),
       timed_cache_(new TimedCache(base::TimeDelta::FromSeconds(
           kMaxUnusedSocketLifetimeSecondsWithoutAGet))) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -400,8 +356,6 @@ void Predictor::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!shutdown_);
   shutdown_ = true;
-
-  STLDeleteElements(&pending_lookups_);
 }
 
 void Predictor::DiscardAllResults() {
@@ -419,8 +373,7 @@ void Predictor::DiscardAllResults() {
     info->SetAssignedState();
     info->SetNoSuchNameState();
   }
-  // Now every result_ is either resolved, or is being resolved
-  // (see LookupRequest).
+  // Now every result_ is either resolved, or is being resolved.
 
   // Step through result_, recording names of all hosts that can't be erased.
   // We can't erase anything being worked on.
@@ -695,7 +648,6 @@ void Predictor::FinalizeInitializationOnIOThread(
 
   profile_io_data_ = profile_io_data;
   initial_observer_.reset(new InitialObserver());
-  host_resolver_ = io_thread->globals()->host_resolver.get();
 
   net::URLRequestContext* context =
       url_request_context_getter_->GetURLRequestContext();
@@ -725,7 +677,7 @@ void Predictor::FinalizeInitializationOnIOThread(
 
 void Predictor::LearnAboutInitialNavigation(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!predictor_enabled_ || NULL == initial_observer_.get() ||
+  if (!predictor_enabled_ || nullptr == initial_observer_.get() ||
       !CanPreresolveAndPreconnect()) {
     return;
   }
@@ -782,7 +734,7 @@ static void SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread(
     Predictor* predictor) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (NULL == predictor) {
+  if (nullptr == predictor) {
     completion->Signal();
     return;
   }
@@ -878,16 +830,14 @@ void Predictor::PreconnectUrlOnIOThread(
   GURL url = GetHSTSRedirectOnIOThread(original_url);
 
   // TODO(csharrison): The observer should only be notified after the null check
-  // for the URLRequestContextGetter. The predictor tests should be fixed to
-  // allow for this, as they currently expect a callback with no getter.
-  // URLRequestContextGetter is null. Tests rely on this behavior.
+  // for the ProfileIOData. The predictor tests should be fixed to allow for
+  // this, as they currently expect a callback with no getter.
   if (observer_) {
     observer_->OnPreconnectUrl(
         url, first_party_for_cookies, motivation, count);
   }
 
-  net::URLRequestContextGetter* getter = url_request_context_getter_.get();
-  if (!getter)
+  if (!profile_io_data_)
     return;
 
   // Translate the motivation from UrlRequest motivations to HttpRequest
@@ -913,8 +863,9 @@ void Predictor::PreconnectUrlOnIOThread(
   }
   UMA_HISTOGRAM_ENUMERATION("Net.PreconnectMotivation", motivation,
                             UrlInfo::MAX_MOTIVATED);
-  content::PreconnectUrl(getter, url, first_party_for_cookies, count,
-                         allow_credentials, request_motivation);
+  content::PreconnectUrl(profile_io_data_->GetResourceContext(), url,
+                         first_party_for_cookies, count, allow_credentials,
+                         request_motivation);
 }
 
 void Predictor::PredictFrameSubresources(const GURL& url,
@@ -1025,21 +976,17 @@ void Predictor::PrepareFrameSubresources(const GURL& original_url,
   }
 }
 
-void Predictor::OnLookupFinished(LookupRequest* request, const GURL& url,
-                                 bool found) {
+void Predictor::OnLookupFinished(const GURL& url, int result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  LookupFinished(request, url, found);
+  LookupFinished(url, result == net::OK);
   if (observer_)
-    observer_->OnDnsLookupFinished(url, found);
-  pending_lookups_.erase(request);
-  delete request;
-
+    observer_->OnDnsLookupFinished(url, result == net::OK);
+  DCHECK_GT(num_pending_lookups_, 0u);
+  num_pending_lookups_--;
   StartSomeQueuedResolutions();
 }
 
-void Predictor::LookupFinished(LookupRequest* request, const GURL& url,
-                               bool found) {
+void Predictor::LookupFinished(const GURL& url, bool found) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UrlInfo* info = &results_[url];
   DCHECK(info->HasUrl(url));
@@ -1059,7 +1006,7 @@ bool Predictor::WouldLikelyProxyURL(const GURL& url) {
 
   net::ProxyInfo info;
   bool synchronous_success = proxy_service_->TryResolveProxySynchronously(
-      url, std::string(), net::LOAD_NORMAL, &info, NULL, net::BoundNetLog());
+      url, std::string(), net::LOAD_NORMAL, &info, nullptr, net::BoundNetLog());
 
   return synchronous_success && !info.is_direct();
 }
@@ -1071,7 +1018,7 @@ UrlInfo* Predictor::AppendToResolutionQueue(
   DCHECK(url.has_host());
 
   if (shutdown_)
-    return NULL;
+    return nullptr;
 
   UrlInfo* info = &results_[url];
   info->SetUrl(url);  // Initialize or DCHECK.
@@ -1082,12 +1029,12 @@ UrlInfo* Predictor::AppendToResolutionQueue(
 
   if (!info->NeedsDnsUpdate()) {
     info->DLogResultsStats("DNS PrefetchNotUpdated");
-    return NULL;
+    return nullptr;
   }
 
   if (WouldLikelyProxyURL(url)) {
     info->DLogResultsStats("DNS PrefetchForProxiedRequest");
-    return NULL;
+    return nullptr;
   }
 
   info->SetQueuedState(motivation);
@@ -1119,11 +1066,11 @@ bool Predictor::CongestionControlPerformed(UrlInfo* info) {
 void Predictor::StartSomeQueuedResolutions() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // If the queue is disabled, just make LookupRequests for all entries.
+  // If the queue is disabled, just make requests for all entries.
   bool enable_queue = base::FeatureList::IsEnabled(kUsePredictorDNSQueue);
-  while (!work_queue_.IsEmpty() &&
-         (!enable_queue ||
-          pending_lookups_.size() < max_concurrent_dns_lookups_)) {
+  while (
+      !work_queue_.IsEmpty() &&
+      (!enable_queue || num_pending_lookups_ < max_concurrent_dns_lookups_)) {
     const GURL url(work_queue_.Pop());
     UrlInfo* info = &results_[url];
     DCHECK(info->HasUrl(url));
@@ -1135,20 +1082,20 @@ void Predictor::StartSomeQueuedResolutions() {
       return;
     }
 
-    LookupRequest* request = new LookupRequest(this, host_resolver_, url);
-
-    int status = request->Start();
+    int status =
+        content::PreresolveUrl(profile_io_data_->GetResourceContext(), url,
+                               base::Bind(&Predictor::OnLookupFinished,
+                                          weak_factory_->GetWeakPtr(), url));
     if (status == net::ERR_IO_PENDING) {
       // Will complete asynchronously.
-      pending_lookups_.insert(request);
-      peak_pending_lookups_ = std::max(peak_pending_lookups_,
-                                       pending_lookups_.size());
+      num_pending_lookups_++;
+      peak_pending_lookups_ =
+          std::max(peak_pending_lookups_, num_pending_lookups_);
     } else {
       // Completed synchronously (was already cached by HostResolver), or else
       // there was (equivalently) some network error that prevents us from
       // finding the name.  Status net::OK means it was "found."
-      LookupFinished(request, url, status == net::OK);
-      delete request;
+      LookupFinished(url, status == net::OK);
     }
   }
 }
@@ -1280,7 +1227,7 @@ void Predictor::InitialObserver::Append(const GURL& url,
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(rlp): Do we really need the predictor check here?
-  if (NULL == predictor)
+  if (nullptr == predictor)
     return;
   if (kStartupResolutionCount <= first_navigations_.size())
     return;
