@@ -777,26 +777,6 @@ int LayoutBox::horizontalScrollbarHeight() const
     return getScrollableArea()->horizontalScrollbarHeight();
 }
 
-int LayoutBox::intrinsicScrollbarLogicalWidth() const
-{
-    if (!hasOverflowClip())
-        return 0;
-
-    ASSERT(getScrollableArea());
-
-    if (isHorizontalWritingMode() && style()->overflowY() == OverflowScroll) {
-        // Even with OverflowScroll, the scrollbar may not exist (crbug.com/415031).
-        return getScrollableArea()->hasVerticalScrollbar() ? verticalScrollbarWidth() : 0;
-    }
-
-    if (!isHorizontalWritingMode() && style()->overflowX() == OverflowScroll) {
-        // Even with OverflowScroll, the scrollbar may not exist (crbug.com/415031).
-        return getScrollableArea()->hasHorizontalScrollbar() ? horizontalScrollbarHeight() : 0;
-    }
-
-    return 0;
-}
-
 ScrollResult LayoutBox::scroll(ScrollGranularity granularity, const FloatSize& delta)
 {
     // Presumably the same issue as in setScrollTop. See crbug.com/343132.

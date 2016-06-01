@@ -755,7 +755,6 @@ public:
 
     int verticalScrollbarWidth() const;
     int horizontalScrollbarHeight() const;
-    int intrinsicScrollbarLogicalWidth() const;
     int scrollbarLogicalWidth() const { return style()->isHorizontalWritingMode() ? verticalScrollbarWidth() : horizontalScrollbarHeight(); }
     int scrollbarLogicalHeight() const { return style()->isHorizontalWritingMode() ? horizontalScrollbarHeight() : verticalScrollbarWidth(); }
     virtual ScrollResult scroll(ScrollGranularity, const FloatSize&);

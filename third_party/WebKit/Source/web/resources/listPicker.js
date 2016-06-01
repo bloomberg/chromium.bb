@@ -225,6 +225,9 @@ ListPicker.prototype._fixWindowSize = function() {
     var elementOffsetWidth = this._selectElement.offsetWidth * zoom;
     var desiredWindowHeight = noScrollHeight;
     var desiredWindowWidth = elementOffsetWidth;
+    // If we already have a vertical scrollbar, subtract it out, it will get re-added below.
+    if (this._selectElement.scrollHeight > this._selectElement.clientHeight)
+      desiredWindowWidth -= scrollbarWidth;
     var expectingScrollbar = false;
     if (desiredWindowHeight > maxHeight) {
         desiredWindowHeight = maxHeight;

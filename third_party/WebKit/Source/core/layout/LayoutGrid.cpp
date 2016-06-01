@@ -457,7 +457,7 @@ void LayoutGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Layo
     minLogicalWidth += totalGuttersSize;
     maxLogicalWidth += totalGuttersSize;
 
-    LayoutUnit scrollbarWidth = LayoutUnit(intrinsicScrollbarLogicalWidth());
+    LayoutUnit scrollbarWidth = LayoutUnit(scrollbarLogicalWidth());
     minLogicalWidth += scrollbarWidth;
     maxLogicalWidth += scrollbarWidth;
 }

@@ -471,6 +471,8 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
 
     TextAutosizer::LayoutScope textAutosizerLayoutScope(this, &layoutScope);
 
+    bool preferredLogicalWidthsWereDirty = preferredLogicalWidthsDirty();
+
     // Reset the flag here instead of in layoutInlineChildren() in case that
     // all inline children are removed from this block.
     setContainsInlineWithOutlineAndContinuation(false);
@@ -478,6 +480,10 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
         layoutInlineChildren(relayoutChildren, m_paintInvalidationLogicalTop, m_paintInvalidationLogicalBottom, afterEdge);
     else
         layoutBlockChildren(relayoutChildren, layoutScope, beforeEdge, afterEdge);
+
+    bool preferredLogicalWidthsBecameDirty = !preferredLogicalWidthsWereDirty && preferredLogicalWidthsDirty();
+    if (preferredLogicalWidthsBecameDirty)
+        return false;
 
     // Expand our intrinsic height to encompass floats.
     if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) && createsNewFormattingContext())

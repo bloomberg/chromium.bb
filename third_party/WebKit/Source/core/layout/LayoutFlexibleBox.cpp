@@ -137,7 +137,7 @@ void LayoutFlexibleBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidt
     minLogicalWidth = std::max(LayoutUnit(), minLogicalWidth);
     maxLogicalWidth = std::max(LayoutUnit(), maxLogicalWidth);
 
-    LayoutUnit scrollbarWidth(intrinsicScrollbarLogicalWidth());
+    LayoutUnit scrollbarWidth(scrollbarLogicalWidth());
     maxLogicalWidth += scrollbarWidth;
     minLogicalWidth += scrollbarWidth;
 }
@@ -796,7 +796,7 @@ void LayoutFlexibleBox::cacheChildMainSize(const LayoutBox& child)
         // The max preferred logical width includes the intrinsic scrollbar logical width, which is only set for
         // overflow: scroll. To handle overflow: auto, we have to take scrollbarLogicalWidth() into account, and then
         // subtract the intrinsic width again so as to not double-count overflow: scroll scrollbars.
-        mainSize = child.maxPreferredLogicalWidth() + child.scrollbarLogicalWidth() - child.intrinsicScrollbarLogicalWidth();
+        mainSize = child.maxPreferredLogicalWidth() + child.scrollbarLogicalWidth() - child.scrollbarLogicalWidth();
     }
     m_intrinsicSizeAlongMainAxis.set(&child, mainSize);
     m_relaidOutChildren.add(&child);
@@ -830,7 +830,7 @@ LayoutUnit LayoutFlexibleBox::computeInnerFlexBaseSizeForChild(LayoutBox& child,
         mainAxisExtent = m_intrinsicSizeAlongMainAxis.get(&child);
     } else {
         // We don't need to add scrollbarLogicalWidth here. For overflow: scroll, the preferred width
-        // already includes the scrollbar size (via intrinsicScrollbarLogicalWidth()). For overflow: auto,
+        // already includes the scrollbar size (via scrollbarLogicalWidth()). For overflow: auto,
         // childFlexBaseSizeRequiresLayout returns true and we handle that via the other branch
         // of this if.
         mainAxisExtent = child.maxPreferredLogicalWidth();

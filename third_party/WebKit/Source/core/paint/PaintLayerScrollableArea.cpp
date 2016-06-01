@@ -642,6 +642,10 @@ bool PaintLayerScrollableArea::updateAfterLayout(SubtreeLayoutScope* delayedLayo
     bool hasHorizontalOverflow = this->hasHorizontalOverflow();
     bool hasVerticalOverflow = this->hasVerticalOverflow();
 
+    // Don't add auto scrollbars if the box contents aren't visible.
+    bool shouldHaveAutoHorizontalScrollbar = hasHorizontalOverflow && box().pixelSnappedClientHeight();
+    bool shouldHaveAutoVerticalScrollbar = hasVerticalOverflow && box().pixelSnappedClientWidth();
+
     {
         // Hits in compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html.
         DisableCompositingQueryAsserts disabler;
@@ -655,21 +659,23 @@ bool PaintLayerScrollableArea::updateAfterLayout(SubtreeLayoutScope* delayedLayo
 
     // We need to layout again if scrollbars are added or removed by overflow:auto,
     // or by changing between native and custom.
-    bool horizontalScrollBarChanged = (box().hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != hasHorizontalOverflow))
+    bool horizontalScrollBarChanged = (box().hasAutoHorizontalScrollbar() && (hasHorizontalScrollbar() != shouldHaveAutoHorizontalScrollbar))
         || (box().style()->overflowX() == OverflowScroll && !horizontalScrollbar());
-    bool verticalScrollBarChanged = (box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != hasVerticalOverflow))
+    bool verticalScrollBarChanged = (box().hasAutoVerticalScrollbar() && (hasVerticalScrollbar() != shouldHaveAutoVerticalScrollbar))
         || (box().style()->overflowY() == OverflowScroll && !verticalScrollbar());
-    if (!visualViewportSuppliesScrollbars() && (horizontalScrollBarChanged || verticalScrollBarChanged)) {
+    if (!m_inOverflowRelayout
+        && !visualViewportSuppliesScrollbars()
+        && (horizontalScrollBarChanged || verticalScrollBarChanged)) {
         if (box().hasAutoHorizontalScrollbar())
-            setHasHorizontalScrollbar(hasHorizontalOverflow);
+            setHasHorizontalScrollbar(shouldHaveAutoHorizontalScrollbar);
         else if (box().style()->overflowX() == OverflowScroll)
             setHasHorizontalScrollbar(true);
         if (box().hasAutoVerticalScrollbar())
-            setHasVerticalScrollbar(hasVerticalOverflow);
+            setHasVerticalScrollbar(shouldHaveAutoVerticalScrollbar);
         else if (box().style()->overflowY() == OverflowScroll)
             setHasVerticalScrollbar(true);
 
-        if (hasVerticalOverflow || hasHorizontalOverflow)
+        if (hasScrollbar())
             updateScrollCornerStyle();
 
         layer()->updateSelfPaintingLayer();
@@ -680,29 +686,32 @@ bool PaintLayerScrollableArea::updateAfterLayout(SubtreeLayoutScope* delayedLayo
 
         // Our proprietary overflow: overlay value doesn't trigger a layout.
         if ((horizontalScrollBarChanged && box().style()->overflowX() != OverflowOverlay) || (verticalScrollBarChanged && box().style()->overflowY() != OverflowOverlay)) {
-            if (!m_inOverflowRelayout) {
+            if ((verticalScrollBarChanged && box().isHorizontalWritingMode())
+                || (horizontalScrollBarChanged && !box().isHorizontalWritingMode())) {
+                box().setPreferredLogicalWidthsDirty();
+            }
+            if (delayedLayoutScope) {
+                box().updateLogicalWidth();
+                if (box().isLayoutBlock())
+                    toLayoutBlock(box()).scrollbarsChanged(horizontalScrollBarChanged, verticalScrollBarChanged);
+                delayedLayoutScope->setNeedsLayout(&box(), LayoutInvalidationReason::ScrollbarChanged);
+                didMarkForDelayedLayout = true;
+            } else {
                 m_inOverflowRelayout = true;
-                if (delayedLayoutScope) {
-                    if (box().isLayoutBlock())
-                        toLayoutBlock(box()).scrollbarsChanged(horizontalScrollBarChanged, verticalScrollBarChanged);
-                    delayedLayoutScope->setNeedsLayout(&box(), LayoutInvalidationReason::ScrollbarChanged);
-                    didMarkForDelayedLayout = true;
+                SubtreeLayoutScope layoutScope(box());
+                layoutScope.setNeedsLayout(&box(), LayoutInvalidationReason::ScrollbarChanged);
+                if (box().isLayoutBlock()) {
+                    LayoutBlock& block = toLayoutBlock(box());
+                    block.scrollbarsChanged(horizontalScrollBarChanged, verticalScrollBarChanged);
+                    block.layoutBlock(true);
                 } else {
-                    SubtreeLayoutScope layoutScope(box());
-                    layoutScope.setNeedsLayout(&box(), LayoutInvalidationReason::ScrollbarChanged);
-                    if (box().isLayoutBlock()) {
-                        LayoutBlock& block = toLayoutBlock(box());
-                        block.scrollbarsChanged(horizontalScrollBarChanged, verticalScrollBarChanged);
-                        block.layoutBlock(true);
-                    } else {
-                        box().layout();
-                    }
+                    box().layout();
                 }
-                LayoutObject* parent = box().parent();
-                if (parent && parent->isFlexibleBox())
-                    toLayoutFlexibleBox(parent)->clearCachedMainSizeForChild(box());
                 m_inOverflowRelayout = false;
             }
+            LayoutObject* parent = box().parent();
+            if (parent && parent->isFlexibleBox())
+                toLayoutFlexibleBox(parent)->clearCachedMainSizeForChild(box());
         }
     }
 
@@ -1446,7 +1455,8 @@ static bool layerNeedsCompositedScrolling(PaintLayerScrollableArea::LCDTextMode 
     if (mode == PaintLayerScrollableArea::ConsiderLCDText && !layer->compositor()->preferCompositingToLCDTextEnabled())
         return false;
 
-    return !layer->hasDescendantWithClipPath()
+    return !layer->size().isEmpty()
+        && !layer->hasDescendantWithClipPath()
         && !layer->hasAncestorWithClipPath()
         && !layer->layoutObject()->style()->hasBorderRadius();
 }
