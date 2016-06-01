@@ -30,6 +30,9 @@ import org.chromium.sync.test.util.MockAccountManager;
 public class ChromeBackupIntegrationTest extends ChromeTabbedActivityTestBase {
 
     private static final String GOOGLE_ACCOUNT_TYPE = "com.google";
+    private static final String TEST_ACCOUNT_1 = "user1@gmail.com";
+    private static final String TEST_ACCOUNT_2 = "user2@gmail.com";
+    private Context mTargetContext;
 
     @Override
     public void startMainActivity() throws InterruptedException {
@@ -55,66 +58,79 @@ public class ChromeBackupIntegrationTest extends ChromeTabbedActivityTestBase {
             // class.
             attachBaseContext(context);
         }
+
+        @Override
+        protected Account[] getAccounts() {
+            // ChromeBackupAgent can't use Chrome's account manager, so we override this to mock
+            // the existence of the account.
+            return new Account[]{new Account(TEST_ACCOUNT_1, GOOGLE_ACCOUNT_TYPE)};
+        }
+
+    }
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        clearAppData();
+
+        mTargetContext = getInstrumentation().getTargetContext();
+
+        // Create a mock account manager. Although this isn't used by ChromeBackupAgent it is used
+        // when we test the result by starting Chrome.
+        ChromeBackupAgent.allowChromeApplicationForTesting();
+        Account account = new Account(TEST_ACCOUNT_1, GOOGLE_ACCOUNT_TYPE);
+        MockAccountManager accountManager =
+                new MockAccountManager(mTargetContext, getInstrumentation().getContext(), account);
+        AccountManagerHelper.overrideAccountManagerHelperForTests(mTargetContext, accountManager);
+        AccountIdProvider.setInstanceForTest(new MockAccountIdProvider());
     }
 
     @SmallTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     public void testSimpleRestore() throws InterruptedException {
-        Context targetContext = getInstrumentation().getTargetContext();
 
         // Fake having previously gone through FRE and signed in.
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor preferenceEditor = prefs.edit();
         preferenceEditor.putBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, true);
         preferenceEditor.putBoolean(FirstRunSignInProcessor.FIRST_RUN_FLOW_SIGNIN_SETUP, true);
-        preferenceEditor.putString(ChromeSigninController.SIGNED_IN_ACCOUNT_KEY, "user1@gmail.com");
+
+        // Set up the mocked account as the signed in account.
+        preferenceEditor.putString(ChromeSigninController.SIGNED_IN_ACCOUNT_KEY, TEST_ACCOUNT_1);
         preferenceEditor.commit();
 
-        Account account = new Account("user1@gmail.com", GOOGLE_ACCOUNT_TYPE);
-        MockAccountManager accountManager =
-                new MockAccountManager(targetContext, getInstrumentation().getContext(), account);
-        AccountManagerHelper.overrideAccountManagerHelperForTests(targetContext, accountManager);
-        AccountIdProvider.setInstanceForTest(new MockAccountIdProvider());
-
         // Run Chrome's restore code.
-        new ChromeTestBackupAgent(targetContext).onRestoreFinished();
+        new ChromeTestBackupAgent(mTargetContext).onRestoreFinished();
 
         // Start Chrome and check that it signs in.
         startMainActivityFromLauncher();
 
-        assertTrue(ChromeSigninController.get(targetContext).isSignedIn());
-        assertEquals("user1@gmail.com",
-                ChromeSigninController.get(targetContext).getSignedInAccountName());
+        assertTrue(ChromeSigninController.get(mTargetContext).isSignedIn());
+        assertEquals(TEST_ACCOUNT_1,
+                ChromeSigninController.get(mTargetContext).getSignedInAccountName());
     }
 
     @SmallTest
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
     public void testRestoreAccountMissing() throws InterruptedException {
-        Context targetContext = getInstrumentation().getTargetContext();
-
         // Fake having previously gone through FRE and signed in.
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor preferenceEditor = prefs.edit();
         preferenceEditor.putBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, true);
         preferenceEditor.putBoolean(FirstRunSignInProcessor.FIRST_RUN_FLOW_SIGNIN_SETUP, true);
-        preferenceEditor.putString(ChromeSigninController.SIGNED_IN_ACCOUNT_KEY, "user1@gmail.com");
+
+        // Use an account that hasn't been created by the mocks as the signed in account.
+        preferenceEditor.putString(ChromeSigninController.SIGNED_IN_ACCOUNT_KEY, TEST_ACCOUNT_2);
         preferenceEditor.commit();
 
-        // Create a mock account manager with a different account
-        Account account = new Account("user2@gmail.com", GOOGLE_ACCOUNT_TYPE);
-        MockAccountManager accountManager =
-                new MockAccountManager(targetContext, getInstrumentation().getContext(), account);
-        AccountManagerHelper.overrideAccountManagerHelperForTests(targetContext, accountManager);
-        AccountIdProvider.setInstanceForTest(new MockAccountIdProvider());
-
         // Run Chrome's restore code.
-        new ChromeTestBackupAgent(targetContext).onRestoreFinished();
+        new ChromeTestBackupAgent(mTargetContext).onRestoreFinished();
 
         // Start Chrome.
         startMainActivityFromLauncher();
 
         // Since the account didn't exist, Chrome should not be signed in.
-        assertFalse(ChromeSigninController.get(targetContext).isSignedIn());
+        assertFalse(ChromeSigninController.get(mTargetContext).isSignedIn());
     }
 
 }
