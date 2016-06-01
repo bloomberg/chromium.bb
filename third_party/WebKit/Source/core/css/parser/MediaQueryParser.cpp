@@ -96,7 +96,7 @@ void MediaQueryParser::readMediaType(CSSParserTokenType type, const CSSParserTok
             && isRestrictorOrLogicalOperator(token)) {
             m_state = SkipUntilComma;
         } else {
-            m_mediaQueryData.setMediaType(token.value());
+            m_mediaQueryData.setMediaType(token.value().toString());
             m_state = ReadAnd;
         }
     } else if (type == EOFToken && (!m_querySet->queryVector().size() || m_state != ReadRestrictor)) {
@@ -133,7 +133,7 @@ void MediaQueryParser::readFeatureStart(CSSParserTokenType type, const CSSParser
 void MediaQueryParser::readFeature(CSSParserTokenType type, const CSSParserToken& token)
 {
     if (type == IdentToken) {
-        m_mediaQueryData.setMediaFeature(token.value());
+        m_mediaQueryData.setMediaFeature(token.value().toString());
         m_state = ReadFeatureColon;
     } else {
         m_state = SkipUntilComma;

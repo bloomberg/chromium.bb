@@ -32,15 +32,15 @@ String StringView::toString() const
         return emptyString();
     if (is8Bit())
         return String(m_data.characters8, m_length);
-    return String(m_data.characters16, m_length);
+    return StringImpl::create8BitIfPossible(m_data.characters16, m_length);
 }
 
 bool equalStringView(const StringView& a, const StringView& b)
 {
+    if (a.isNull() || b.isNull())
+        return a.isNull() == b.isNull();
     if (a.length() != b.length())
         return false;
-    if (a.isEmpty() || b.isEmpty())
-        return a.isEmpty() == b.isEmpty();
     if (a.is8Bit()) {
         if (b.is8Bit())
             return equal(a.characters8(), b.characters8(), a.length());
@@ -49,6 +49,22 @@ bool equalStringView(const StringView& a, const StringView& b)
     if (b.is8Bit())
         return equal(a.characters16(), b.characters8(), a.length());
     return equal(a.characters16(), b.characters16(), a.length());
+}
+
+bool equalIgnoringASCIICase(const StringView& a, const StringView& b)
+{
+    if (a.isNull() || b.isNull())
+        return a.isNull() == b.isNull();
+    if (a.length() != b.length())
+        return false;
+    if (a.is8Bit()) {
+        if (b.is8Bit())
+            return equalIgnoringASCIICase(a.characters8(), b.characters8(), a.length());
+        return equalIgnoringASCIICase(a.characters8(), b.characters16(), a.length());
+    }
+    if (b.is8Bit())
+        return equalIgnoringASCIICase(a.characters16(), b.characters8(), a.length());
+    return equalIgnoringASCIICase(a.characters16(), b.characters16(), a.length());
 }
 
 } // namespace WTF

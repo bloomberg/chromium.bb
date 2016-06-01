@@ -70,6 +70,14 @@ public:
     StringView(const UChar* chars);
     StringView(const UChar* chars, unsigned length);
 
+    // From a byte pointer.
+    StringView(const void* bytes, unsigned length, bool is8Bit)
+        : m_length(length)
+        , m_is8Bit(is8Bit)
+    {
+        m_data.bytes = bytes;
+    }
+
 #if DCHECK_IS_ON()
     ~StringView();
 #endif
@@ -83,6 +91,14 @@ public:
 
     void clear();
 
+    UChar operator[](unsigned i) const
+    {
+        SECURITY_DCHECK(i < length());
+        if (is8Bit())
+            return characters8()[i];
+        return characters16()[i];
+    }
+
     const LChar* characters8() const
     {
         ASSERT(is8Bit());
@@ -94,6 +110,8 @@ public:
         ASSERT(!is8Bit());
         return m_data.characters16;
     }
+
+    const void* bytes() const { return m_data.bytes; }
 
     String toString() const;
 
@@ -168,6 +186,8 @@ inline void StringView::set(StringImpl& impl, unsigned offset, unsigned length)
     else
         m_data.characters16 = impl.characters16() + offset;
 }
+
+WTF_EXPORT bool equalIgnoringASCIICase(const StringView& a, const StringView& b);
 
 // TODO(esprehn): Can't make this an overload of WTF::equal since that makes
 // calls to equal() that pass literal strings ambiguous. Figure out if we can

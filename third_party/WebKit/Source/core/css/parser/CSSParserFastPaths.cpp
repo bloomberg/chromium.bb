@@ -8,7 +8,6 @@
 #include "core/css/CSSFunctionValue.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/parser/CSSParserIdioms.h"
-#include "core/css/parser/CSSParserString.h"
 #include "core/css/parser/CSSPropertyParser.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -440,9 +439,7 @@ static bool fastParseColorInternal(RGBA32& rgb, const CharacterType* characters,
 CSSValue* CSSParserFastPaths::parseColor(const String& string, CSSParserMode parserMode)
 {
     ASSERT(!string.isEmpty());
-    CSSParserString cssString;
-    cssString.init(string);
-    CSSValueID valueID = cssValueKeywordID(cssString);
+    CSSValueID valueID = cssValueKeywordID(string);
     if (CSSPropertyParser::isColorKeyword(valueID)) {
         if (!isValueAllowedInMode(valueID, parserMode))
             return nullptr;
@@ -846,9 +843,7 @@ static CSSValue* parseKeywordValue(CSSPropertyID propertyId, const String& strin
             return nullptr;
     }
 
-    CSSParserString cssString;
-    cssString.init(string);
-    CSSValueID valueID = cssValueKeywordID(cssString);
+    CSSValueID valueID = cssValueKeywordID(string);
 
     if (!valueID)
         return nullptr;

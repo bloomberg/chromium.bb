@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSCustomIdentValue.h"
-#include "core/css/parser/CSSParserString.h"
 #include "core/css/parser/CSSPropertyParser.h"
 
 namespace blink {
@@ -27,9 +26,7 @@ const String& CSSKeywordValue::keywordValue() const
 
 CSSValueID CSSKeywordValue::keywordValueID() const
 {
-    CSSParserString cssKeywordString;
-    cssKeywordString.init(m_keywordValue);
-    return cssValueKeywordID(cssKeywordString);
+    return cssValueKeywordID(m_keywordValue);
 }
 
 CSSValue* CSSKeywordValue::toCSSValue() const

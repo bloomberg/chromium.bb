@@ -190,14 +190,14 @@ CSSSelectorList CSSParserImpl::parsePageSelector(CSSParserTokenRange range, Styl
     range.consumeWhitespace();
     AtomicString typeSelector;
     if (range.peek().type() == IdentToken)
-        typeSelector = range.consume().value();
+        typeSelector = AtomicString(range.consume().value().toString());
 
     AtomicString pseudo;
     if (range.peek().type() == ColonToken) {
         range.consume();
         if (range.peek().type() != IdentToken)
             return CSSSelectorList();
-        pseudo = range.consume().value();
+        pseudo = AtomicString(range.consume().value().toString());
     }
 
     range.consumeWhitespace();
@@ -356,7 +356,7 @@ bool CSSParserImpl::consumeRuleList(CSSParserTokenRange range, RuleListType rule
 StyleRuleBase* CSSParserImpl::consumeAtRule(CSSParserTokenRange& range, AllowedRulesType allowedRules)
 {
     ASSERT(range.peek().type() == AtKeywordToken);
-    const CSSParserString& name = range.consume().value();
+    const StringView name = range.consume().value();
     const CSSParserToken* preludeStart = &range.peek();
     while (!range.atEnd() && range.peek().type() != LeftBraceToken && range.peek().type() != SemicolonToken)
         range.consumeComponentValue();
@@ -436,7 +436,7 @@ static AtomicString consumeStringOrURI(CSSParserTokenRange& range)
     const CSSParserToken& token = range.peek();
 
     if (token.type() == StringToken || token.type() == UrlToken)
-        return range.consumeIncludingWhitespace().value();
+        return AtomicString(range.consumeIncludingWhitespace().value().toString());
 
     if (token.type() != FunctionToken || !token.valueEqualsIgnoringASCIICase("url"))
         return AtomicString();
@@ -446,7 +446,7 @@ static AtomicString consumeStringOrURI(CSSParserTokenRange& range)
     ASSERT(uri.type() == StringToken);
     if (!contents.atEnd())
         return AtomicString();
-    return uri.value();
+    return AtomicString(uri.value().toString());
 }
 
 StyleRuleCharset* CSSParserImpl::consumeCharsetRule(CSSParserTokenRange prelude)
@@ -481,7 +481,7 @@ StyleRuleNamespace* CSSParserImpl::consumeNamespaceRule(CSSParserTokenRange prel
     prelude.consumeWhitespace();
     AtomicString namespacePrefix;
     if (prelude.peek().type() == IdentToken)
-        namespacePrefix = prelude.consumeIncludingWhitespace().value();
+        namespacePrefix = AtomicString(prelude.consumeIncludingWhitespace().value().toString());
 
     AtomicString uri(consumeStringOrURI(prelude));
     prelude.consumeWhitespace();
@@ -589,11 +589,11 @@ StyleRuleKeyframes* CSSParserImpl::consumeKeyframesRule(bool webkitPrefixed, CSS
 
     String name;
     if (nameToken.type() == IdentToken) {
-        name = nameToken.value();
+        name = nameToken.value().toString();
     } else if (nameToken.type() == StringToken && webkitPrefixed) {
         if (m_context.useCounter())
             m_context.useCounter()->count(UseCounter::QuotedKeyframesRule);
-        name = nameToken.value();
+        name = nameToken.value().toString();
     } else {
         return nullptr; // Parse error; expected ident token in @keyframes header
     }
@@ -641,7 +641,7 @@ void CSSParserImpl::consumeApplyRule(CSSParserTokenRange prelude)
         return; // Parse error, expected a single custom property name
     m_parsedProperties.append(CSSProperty(
         CSSPropertyApplyAtRule,
-        CSSCustomIdentValue::create(ident.value())));
+        CSSCustomIdentValue::create(ident.value().toString())));
 }
 
 StyleRuleKeyframe* CSSParserImpl::consumeKeyframeStyleRule(CSSParserTokenRange prelude, CSSParserTokenRange block)
@@ -772,7 +772,7 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Rul
 
     size_t propertiesCount = m_parsedProperties.size();
     if (RuntimeEnabledFeatures::cssVariablesEnabled() && unresolvedProperty == CSSPropertyInvalid && CSSVariableParser::isValidVariableName(token)) {
-        AtomicString variableName = token.value();
+        AtomicString variableName = AtomicString(token.value().toString());
         consumeVariableValue(range.makeSubRange(&range.peek(), declarationValueEnd), variableName, important);
     }
 

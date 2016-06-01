@@ -7,8 +7,8 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/css/parser/CSSParserString.h"
 #include "wtf/Allocator.h"
+#include "wtf/text/StringView.h"
 
 namespace blink {
 
@@ -74,32 +74,30 @@ public:
     };
 
     CSSParserToken(CSSParserTokenType, BlockType = NotBlock);
-    CSSParserToken(CSSParserTokenType, CSSParserString, BlockType = NotBlock);
+    CSSParserToken(CSSParserTokenType, StringView, BlockType = NotBlock);
 
     CSSParserToken(CSSParserTokenType, UChar); // for DelimiterToken
     CSSParserToken(CSSParserTokenType, double, NumericValueType, NumericSign); // for NumberToken
     CSSParserToken(CSSParserTokenType, UChar32, UChar32); // for UnicodeRangeToken
 
-    CSSParserToken(HashTokenType, CSSParserString);
+    CSSParserToken(HashTokenType, StringView);
 
     bool operator==(const CSSParserToken& other) const;
     bool operator!=(const CSSParserToken& other) const { return !(*this == other); }
 
     // Converts NumberToken to DimensionToken.
-    void convertToDimensionWithUnit(CSSParserString);
+    void convertToDimensionWithUnit(StringView);
 
     // Converts NumberToken to PercentageToken.
     void convertToPercentage();
 
     CSSParserTokenType type() const { return static_cast<CSSParserTokenType>(m_type); }
-    CSSParserString value() const
+    StringView value() const
     {
-        CSSParserString ret;
-        ret.initRaw(m_valueDataCharRaw, m_valueLength, m_valueIs8Bit);
-        return ret;
+        return StringView(m_valueDataCharRaw, m_valueLength, m_valueIs8Bit);
     }
-    template<unsigned matchLength>
-    bool valueEqualsIgnoringASCIICase(const char (&match)[matchLength]) const { return value().equalIgnoringASCIICase<matchLength>(match); }
+    // TODO(esprehn): Remove this method, callers should just use equalIgnoringASCIICase directly.
+    bool valueEqualsIgnoringASCIICase(StringView match) const { return equalIgnoringASCIICase(value(), match); }
 
     UChar delimiter() const;
     NumericSign numericSign() const;
@@ -119,14 +117,14 @@ public:
 
     void serialize(StringBuilder&) const;
 
-    CSSParserToken copyWithUpdatedString(const CSSParserString&) const;
+    CSSParserToken copyWithUpdatedString(const StringView&) const;
 
 private:
-    void initValueFromCSSParserString(const CSSParserString& value)
+    void initValueFromStringView(StringView string)
     {
-        m_valueLength = value.m_length;
-        m_valueIs8Bit = value.m_is8Bit;
-        m_valueDataCharRaw = value.m_data.charactersRaw;
+        m_valueLength = string.length();
+        m_valueIs8Bit = string.is8Bit();
+        m_valueDataCharRaw = string.bytes();
     }
     unsigned m_type : 6; // CSSParserTokenType
     unsigned m_blockType : 2; // BlockType
@@ -136,7 +134,7 @@ private:
 
     bool valueDataCharRawEqual(const CSSParserToken& other) const;
 
-    // m_value... is an unpacked CSSParserString so that we can pack it
+    // m_value... is an unpacked StringView so that we can pack it
     // tightly with the rest of this object for a smaller object size.
     bool m_valueIs8Bit : 1;
     unsigned m_valueLength;

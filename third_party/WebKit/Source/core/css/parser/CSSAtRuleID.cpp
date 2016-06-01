@@ -4,34 +4,33 @@
 
 #include "core/css/parser/CSSAtRuleID.h"
 
-#include "core/css/parser/CSSParserString.h"
 #include "core/frame/UseCounter.h"
 
 namespace blink {
 
-CSSAtRuleID cssAtRuleID(const CSSParserString& name)
+CSSAtRuleID cssAtRuleID(StringView name)
 {
-    if (name.equalIgnoringASCIICase("charset"))
+    if (equalIgnoringASCIICase(name, "charset"))
         return CSSAtRuleCharset;
-    if (name.equalIgnoringASCIICase("font-face"))
+    if (equalIgnoringASCIICase(name, "font-face"))
         return CSSAtRuleFontFace;
-    if (name.equalIgnoringASCIICase("import"))
+    if (equalIgnoringASCIICase(name, "import"))
         return CSSAtRuleImport;
-    if (name.equalIgnoringASCIICase("keyframes"))
+    if (equalIgnoringASCIICase(name, "keyframes"))
         return CSSAtRuleKeyframes;
-    if (name.equalIgnoringASCIICase("media"))
+    if (equalIgnoringASCIICase(name, "media"))
         return CSSAtRuleMedia;
-    if (name.equalIgnoringASCIICase("namespace"))
+    if (equalIgnoringASCIICase(name, "namespace"))
         return CSSAtRuleNamespace;
-    if (name.equalIgnoringASCIICase("page"))
+    if (equalIgnoringASCIICase(name, "page"))
         return CSSAtRulePage;
-    if (name.equalIgnoringASCIICase("supports"))
+    if (equalIgnoringASCIICase(name, "supports"))
         return CSSAtRuleSupports;
-    if (name.equalIgnoringASCIICase("viewport"))
+    if (equalIgnoringASCIICase(name, "viewport"))
         return CSSAtRuleViewport;
-    if (name.equalIgnoringASCIICase("-webkit-keyframes"))
+    if (equalIgnoringASCIICase(name, "-webkit-keyframes"))
         return CSSAtRuleWebkitKeyframes;
-    if (name.equalIgnoringASCIICase("apply"))
+    if (equalIgnoringASCIICase(name, "apply"))
         return CSSAtRuleApply;
     return CSSAtRuleInvalid;
 }

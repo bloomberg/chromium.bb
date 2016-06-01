@@ -289,6 +289,20 @@ TEST(StringViewTest, ConstructionLiteral16)
     EXPECT_EQ(String("12"), StringView(kChars16, 2).toString());
 }
 
+TEST(StringViewTest, ConstructionRawBytes)
+{
+    // StringView(const void* bytes, unsigned length, bool is8Bit);
+    StringView view8(reinterpret_cast<const void*>(kChars), 2, true);
+    ASSERT_TRUE(view8.is8Bit());
+    EXPECT_EQ(2u, view8.length());
+    EXPECT_EQ("12", view8);
+
+    StringView view16(reinterpret_cast<const void*>(kChars16), 3, false);
+    ASSERT_FALSE(view16.is8Bit());
+    EXPECT_EQ(3u, view16.length());
+    EXPECT_EQ("123", view16);
+}
+
 TEST(StringViewTest, IsEmpty)
 {
     EXPECT_FALSE(StringView(kChars).isEmpty());
@@ -321,6 +335,59 @@ TEST(StringViewTest, NullString)
     EXPECT_TRUE(view.isNull());
     EXPECT_EQ(String(), StringView());
     EXPECT_TRUE(StringView().toString().isNull());
+    EXPECT_FALSE(equalStringView(StringView(), ""));
+    EXPECT_TRUE(equalStringView(StringView(), StringView()));
+    EXPECT_FALSE(equalStringView(StringView(), "abc"));
+    EXPECT_FALSE(equalStringView("abc", StringView()));
+    EXPECT_FALSE(equalIgnoringASCIICase(StringView(), ""));
+    EXPECT_TRUE(equalIgnoringASCIICase(StringView(), StringView()));
+    EXPECT_FALSE(equalIgnoringASCIICase(StringView(), "abc"));
+    EXPECT_FALSE(equalIgnoringASCIICase("abc", StringView()));
+}
+
+TEST(StringViewTest, IndexAccess)
+{
+    StringView view8(kChars8);
+    EXPECT_EQ('1', view8[0]);
+    EXPECT_EQ('3', view8[2]);
+    StringView view16(kChars16);
+    EXPECT_EQ('1', view16[0]);
+    EXPECT_EQ('3', view16[2]);
+}
+
+TEST(StringViewTest, EqualIgnoringASCIICase)
+{
+    static const char* link8 = "link";
+    static const char* linkCaps8 = "LINK";
+    static const char* nonASCII8 = "a\xE1";
+    static const char* nonASCIICaps8 = "A\xE1";
+    static const char* nonASCIIInvalid8 = "a\xC1";
+
+    static const UChar link16[5] = { 0x006c, 0x0069, 0x006e, 0x006b, 0 }; // link
+    static const UChar linkCaps16[5] = { 0x004c, 0x0049, 0x004e, 0x004b, 0 }; // LINK
+    static const UChar nonASCII16[3] = { 0x0061, 0x00e1, 0 }; // a\xE1
+    static const UChar nonASCIICaps16[3] = { 0x0041, 0x00e1, 0 }; // A\xE1
+    static const UChar nonASCIIInvalid16[3] = { 0x0061, 0x00c1, 0 }; // a\xC1
+
+    EXPECT_TRUE(equalIgnoringASCIICase(StringView(link16), link8));
+    EXPECT_TRUE(equalIgnoringASCIICase(StringView(link16), linkCaps16));
+    EXPECT_TRUE(equalIgnoringASCIICase(StringView(link16), linkCaps8));
+    EXPECT_TRUE(equalIgnoringASCIICase(StringView(link8), linkCaps8));
+    EXPECT_TRUE(equalIgnoringASCIICase(StringView(link8), link16));
+
+    EXPECT_TRUE(equalIgnoringASCIICase(StringView(nonASCII8), nonASCIICaps8));
+    EXPECT_TRUE(equalIgnoringASCIICase(StringView(nonASCII8), nonASCIICaps16));
+    EXPECT_TRUE(equalIgnoringASCIICase(StringView(nonASCII16), nonASCIICaps16));
+    EXPECT_TRUE(equalIgnoringASCIICase(StringView(nonASCII16), nonASCIICaps8));
+    EXPECT_FALSE(equalIgnoringASCIICase(StringView(nonASCII8), nonASCIIInvalid8));
+    EXPECT_FALSE(equalIgnoringASCIICase(StringView(nonASCII8), nonASCIIInvalid16));
+
+    EXPECT_TRUE(equalIgnoringASCIICase(StringView("link"), "lInK"));
+    EXPECT_FALSE(equalIgnoringASCIICase(StringView("link"), "INKL"));
+    EXPECT_FALSE(equalIgnoringASCIICase(StringView("link"), "link different length"));
+    EXPECT_FALSE(equalIgnoringASCIICase(StringView("link different length"), "link"));
+
+    EXPECT_TRUE(equalIgnoringASCIICase(StringView(""), ""));
 }
 
 } // namespace WTF

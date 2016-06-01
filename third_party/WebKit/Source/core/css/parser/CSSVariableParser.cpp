@@ -14,7 +14,7 @@ bool CSSVariableParser::isValidVariableName(const CSSParserToken& token)
     if (token.type() != IdentToken)
         return false;
 
-    CSSParserString value = token.value();
+    StringView value = token.value();
     return value.length() >= 2 && value[0] == '-' && value[1] == '-';
 }
 

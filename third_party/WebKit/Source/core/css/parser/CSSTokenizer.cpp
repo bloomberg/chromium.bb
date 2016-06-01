@@ -140,7 +140,7 @@ CSSParserToken CSSTokenizer::blockStart(CSSParserTokenType type)
     return CSSParserToken(type, CSSParserToken::BlockStart);
 }
 
-CSSParserToken CSSTokenizer::blockStart(CSSParserTokenType blockType, CSSParserTokenType type, CSSParserString name)
+CSSParserToken CSSTokenizer::blockStart(CSSParserTokenType blockType, CSSParserTokenType type, StringView name)
 {
     m_blockStack.append(blockType);
     return CSSParserToken(type, name, CSSParserToken::BlockStart);
@@ -466,9 +466,9 @@ CSSParserToken CSSTokenizer::consumeNumericToken()
 // http://dev.w3.org/csswg/css-syntax/#consume-ident-like-token
 CSSParserToken CSSTokenizer::consumeIdentLikeToken()
 {
-    CSSParserString name = consumeName();
+    StringView name = consumeName();
     if (consumeIfNext('(')) {
-        if (name.equalIgnoringASCIICase("url")) {
+        if (equalIgnoringASCIICase(name, "url")) {
             // The spec is slightly different so as to avoid dropping whitespace
             // tokens, but they wouldn't be used and this is easier.
             consumeUntilNonWhitespace();
@@ -490,7 +490,7 @@ CSSParserToken CSSTokenizer::consumeStringTokenUntil(UChar endingCodePoint)
         if (cc == endingCodePoint) {
             unsigned startOffset = m_input.offset();
             m_input.advance(size + 1);
-            return CSSParserToken(StringToken, m_input.rangeAsCSSParserString(startOffset, size));
+            return CSSParserToken(StringToken, m_input.rangeAt(startOffset, size));
         }
         if (isNewLine(cc)) {
             m_input.advance(size);
@@ -570,7 +570,7 @@ CSSParserToken CSSTokenizer::consumeUrlToken()
         if (cc == ')') {
             unsigned startOffset = m_input.offset();
             m_input.advance(size + 1);
-            return CSSParserToken(UrlToken, m_input.rangeAsCSSParserString(startOffset, size));
+            return CSSParserToken(UrlToken, m_input.rangeAt(startOffset, size));
         }
         if (cc <= ' ' || cc == '\\' || cc == '"' || cc == '\'' || cc == '(' || cc == '\x7f')
             break;
@@ -662,7 +662,7 @@ bool CSSTokenizer::consumeIfNext(UChar character)
 }
 
 // http://www.w3.org/TR/css3-syntax/#consume-a-name
-CSSParserString CSSTokenizer::consumeName()
+StringView CSSTokenizer::consumeName()
 {
     // Names without escapes get handled without allocations
     for (unsigned size = 0; ; ++size) {
@@ -672,7 +672,7 @@ CSSParserString CSSTokenizer::consumeName()
         if (!isNameCodePoint(cc)) {
             unsigned startOffset = m_input.offset();
             m_input.advance(size);
-            return m_input.rangeAsCSSParserString(startOffset, size);
+            return m_input.rangeAt(startOffset, size);
         }
     }
 
@@ -767,12 +767,10 @@ bool CSSTokenizer::nextCharsAreIdentifier()
     return areIdentifier;
 }
 
-CSSParserString CSSTokenizer::registerString(const String& string)
+StringView CSSTokenizer::registerString(const String& string)
 {
     m_scope.storeString(string);
-    CSSParserString result;
-    result.init(string);
-    return result;
+    return string;
 }
 
 } // namespace blink

@@ -293,14 +293,14 @@ CSSCustomIdentValue* consumeCustomIdent(CSSParserTokenRange& range)
 {
     if (range.peek().type() != IdentToken || isCSSWideKeyword(range.peek().id()))
         return nullptr;
-    return CSSCustomIdentValue::create(range.consumeIncludingWhitespace().value());
+    return CSSCustomIdentValue::create(range.consumeIncludingWhitespace().value().toString());
 }
 
 CSSStringValue* consumeString(CSSParserTokenRange& range)
 {
     if (range.peek().type() != StringToken)
         return nullptr;
-    return CSSStringValue::create(range.consumeIncludingWhitespace().value());
+    return CSSStringValue::create(range.consumeIncludingWhitespace().value().toString());
 }
 
 String consumeUrl(CSSParserTokenRange& range)
@@ -308,7 +308,7 @@ String consumeUrl(CSSParserTokenRange& range)
     const CSSParserToken& token = range.peek();
     if (token.type() == UrlToken) {
         range.consumeIncludingWhitespace();
-        return token.value();
+        return token.value().toString();
     }
     if (token.functionId() == CSSValueUrl) {
         CSSParserTokenRange urlRange = range;
@@ -319,7 +319,7 @@ String consumeUrl(CSSParserTokenRange& range)
         ASSERT(next.type() == StringToken);
         range = urlRange;
         range.consumeWhitespace();
-        return next.value();
+        return next.value().toString();
     }
 
     return String();
@@ -405,7 +405,7 @@ static bool parseHexColor(CSSParserTokenRange& range, RGBA32& result, bool accep
     const CSSParserToken& token = range.peek();
     String color;
     if (token.type() == HashToken) {
-        color = token.value();
+        color = token.value().toString();
     } else if (acceptQuirkyColors) {
         if (token.type() == NumberToken || token.type() == DimensionToken) {
             if (token.numericValueType() != IntegerValueType
@@ -414,11 +414,11 @@ static bool parseHexColor(CSSParserTokenRange& range, RGBA32& result, bool accep
             if (token.type() == NumberToken) // e.g. 112233
                 color = String::format("%d", static_cast<int>(token.numericValue()));
             else // e.g. 0001FF
-                color = String::number(static_cast<int>(token.numericValue())) + String(token.value());
+                color = String::number(static_cast<int>(token.numericValue())) + token.value().toString();
             while (color.length() < 6)
                 color = "0" + color;
         } else if (token.type() == IdentToken) { // e.g. FF0000
-            color = token.value();
+            color = token.value().toString();
         }
         unsigned length = color.length();
         if (length != 3 && length != 6)

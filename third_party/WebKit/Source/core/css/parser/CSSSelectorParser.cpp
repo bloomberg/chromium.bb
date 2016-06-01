@@ -360,7 +360,7 @@ bool CSSSelectorParser::consumeName(CSSParserTokenRange& range, AtomicString& na
 
     const CSSParserToken& firstToken = range.peek();
     if (firstToken.type() == IdentToken) {
-        name = firstToken.value();
+        name = AtomicString(firstToken.value().toString());
         range.consume();
     } else if (firstToken.type() == DelimiterToken && firstToken.delimiter() == '*') {
         name = starAtom;
@@ -379,7 +379,7 @@ bool CSSSelectorParser::consumeName(CSSParserTokenRange& range, AtomicString& na
     namespacePrefix = name;
     const CSSParserToken& nameToken = range.consume();
     if (nameToken.type() == IdentToken) {
-        name = nameToken.value();
+        name = AtomicString(nameToken.value().toString());
     } else if (nameToken.type() == DelimiterToken && nameToken.delimiter() == '*') {
         name = starAtom;
     } else {
@@ -398,7 +398,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeId(CSSParserTokenRange& 
         return nullptr;
     OwnPtr<CSSParserSelector> selector = CSSParserSelector::create();
     selector->setMatch(CSSSelector::Id);
-    const AtomicString& value = range.consume().value();
+    AtomicString value = AtomicString(range.consume().value().toString());
     selector->setValue(value, isQuirksModeBehavior(m_context.matchMode()));
     return selector;
 }
@@ -412,7 +412,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeClass(CSSParserTokenRang
         return nullptr;
     OwnPtr<CSSParserSelector> selector = CSSParserSelector::create();
     selector->setMatch(CSSSelector::Class);
-    const AtomicString& value = range.consume().value();
+    AtomicString value = AtomicString(range.consume().value().toString());
     selector->setValue(value, isQuirksModeBehavior(m_context.matchMode()));
     return selector;
 }
@@ -453,7 +453,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeAttribute(CSSParserToken
     const CSSParserToken& attributeValue = block.consumeIncludingWhitespace();
     if (attributeValue.type() != IdentToken && attributeValue.type() != StringToken)
         return nullptr;
-    selector->setValue(attributeValue.value());
+    selector->setValue(AtomicString(attributeValue.value().toString()));
     selector->setAttribute(qualifiedName, consumeAttributeFlags(block));
 
     if (!block.atEnd())
@@ -479,7 +479,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
     OwnPtr<CSSParserSelector> selector = CSSParserSelector::create();
     selector->setMatch(colons == 1 ? CSSSelector::PseudoClass : CSSSelector::PseudoElement);
 
-    String value = token.value();
+    String value = token.value().toString();
     bool hasArguments = token.type() == FunctionToken;
     selector->updatePseudoType(AtomicString(value.is8Bit() ? value.lower() : value), hasArguments);
 
@@ -543,7 +543,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
             const CSSParserToken& ident = block.consumeIncludingWhitespace();
             if (ident.type() != IdentToken || !block.atEnd())
                 return nullptr;
-            selector->setArgument(ident.value());
+            selector->setArgument(AtomicString(ident.value().toString()));
             return selector;
         }
     case CSSSelector::PseudoNthChild:
@@ -660,17 +660,17 @@ bool CSSSelectorParser::consumeANPlusB(CSSParserTokenRange& range, std::pair<int
 
     if (token.type() == DelimiterToken && token.delimiter() == '+' && range.peek().type() == IdentToken) {
         result.first = 1;
-        nString = range.consume().value();
+        nString = range.consume().value().toString();
     } else if (token.type() == DimensionToken && token.numericValueType() == IntegerValueType) {
         result.first = token.numericValue();
-        nString = token.value();
+        nString = token.value().toString();
     } else if (token.type() == IdentToken) {
         if (token.value()[0] == '-') {
             result.first = -1;
-            nString = String(token.value()).substring(1);
+            nString = token.value().toString().substring(1);
         } else {
             result.first = 1;
-            nString = token.value();
+            nString = token.value().toString();
         }
     }
 

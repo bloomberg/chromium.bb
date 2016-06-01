@@ -29,10 +29,10 @@ void compareTokens(const CSSParserToken& expected, const CSSParserToken& actual)
     case FunctionToken:
     case StringToken:
     case UrlToken:
-        ASSERT_EQ(String(expected.value()), String(actual.value()));
+        ASSERT_EQ(expected.value(), actual.value());
         break;
     case DimensionToken:
-        ASSERT_EQ(String(expected.value()), String(actual.value()));
+        ASSERT_EQ(expected.value(), actual.value());
         ASSERT_EQ(expected.numericValueType(), actual.numericValueType());
         ASSERT_DOUBLE_EQ(expected.numericValue(), actual.numericValue());
         break;
@@ -48,7 +48,7 @@ void compareTokens(const CSSParserToken& expected, const CSSParserToken& actual)
         ASSERT_EQ(expected.unicodeRangeEnd(), actual.unicodeRangeEnd());
         break;
     case HashToken:
-        ASSERT_EQ(String(expected.value()), String(actual.value()));
+        ASSERT_EQ(expected.value(), actual.value());
         ASSERT_EQ(expected.getHashTokenType(), actual.getHashTokenType());
         break;
     default:
@@ -78,19 +78,12 @@ void testTokens(const String& string, const CSSParserToken& token1, const CSSPar
         compareTokens(expected.consume(), actual.consume());
 }
 
-static CSSParserString toParserString(const String& string)
-{
-    CSSParserString result;
-    result.init(string);
-    return result;
-}
-
-static CSSParserToken ident(const String& string) { return CSSParserToken(IdentToken, toParserString(string)); }
-static CSSParserToken atKeyword(const String& string) { return CSSParserToken(AtKeywordToken, toParserString(string)); }
-static CSSParserToken string(const String& string) { return CSSParserToken(StringToken, toParserString(string)); }
-static CSSParserToken function(const String& string) { return CSSParserToken(FunctionToken, toParserString(string)); }
-static CSSParserToken url(const String& string) { return CSSParserToken(UrlToken, toParserString(string)); }
-static CSSParserToken hash(const String& string, HashTokenType type) { return CSSParserToken(type, toParserString(string)); }
+static CSSParserToken ident(const String& string) { return CSSParserToken(IdentToken, string); }
+static CSSParserToken atKeyword(const String& string) { return CSSParserToken(AtKeywordToken, string); }
+static CSSParserToken string(const String& string) { return CSSParserToken(StringToken, string); }
+static CSSParserToken function(const String& string) { return CSSParserToken(FunctionToken, string); }
+static CSSParserToken url(const String& string) { return CSSParserToken(UrlToken, string); }
+static CSSParserToken hash(const String& string, HashTokenType type) { return CSSParserToken(type, string); }
 static CSSParserToken delim(char c) { return CSSParserToken(DelimiterToken, c); }
 
 static CSSParserToken unicodeRange(UChar32 start, UChar32 end)
@@ -106,7 +99,7 @@ static CSSParserToken number(NumericValueType type, double value, NumericSign si
 static CSSParserToken dimension(NumericValueType type, double value, const String& string)
 {
     CSSParserToken token = number(type, value, NoSign); // sign ignored
-    token.convertToDimensionWithUnit(toParserString(string));
+    token.convertToDimensionWithUnit(string);
     return token;
 }
 

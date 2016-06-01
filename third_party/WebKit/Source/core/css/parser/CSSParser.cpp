@@ -158,9 +158,7 @@ bool CSSParser::parseColor(Color& color, const String& string, bool strict)
 
 bool CSSParser::parseSystemColor(Color& color, const String& colorString)
 {
-    CSSParserString cssColor;
-    cssColor.init(colorString);
-    CSSValueID id = cssValueKeywordID(cssColor);
+    CSSValueID id = cssValueKeywordID(colorString);
     if (!CSSPropertyParser::isSystemColor(id))
         return false;
 

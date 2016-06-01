@@ -246,7 +246,7 @@ CSSPropertyID unresolvedCSSPropertyID(const String& string)
     return string.is8Bit() ? unresolvedCSSPropertyID(string.characters8(), length) : unresolvedCSSPropertyID(string.characters16(), length);
 }
 
-CSSPropertyID unresolvedCSSPropertyID(const CSSParserString& string)
+CSSPropertyID unresolvedCSSPropertyID(StringView string)
 {
     unsigned length = string.length();
 
@@ -275,7 +275,7 @@ static CSSValueID cssValueKeywordID(const CharacterType* valueKeyword, unsigned 
     return hashTableEntry ? static_cast<CSSValueID>(hashTableEntry->id) : CSSValueInvalid;
 }
 
-CSSValueID cssValueKeywordID(const CSSParserString& string)
+CSSValueID cssValueKeywordID(StringView string)
 {
     unsigned length = string.length();
     if (!length)
@@ -393,7 +393,7 @@ static CSSFontFeatureValue* consumeFontFeatureTag(CSSParserTokenRange& range)
         return nullptr;
     if (token.value().length() != tagNameLength)
         return nullptr;
-    AtomicString tag = token.value();
+    AtomicString tag = AtomicString(token.value().toString());
     for (unsigned i = 0; i < tagNameLength; ++i) {
         // Limits the range of characters to 0x20-0x7E, following the tag name rules defiend in the OpenType specification.
         UChar character = tag[i];
@@ -702,7 +702,7 @@ static String concatenateFamilyName(CSSParserTokenRange& range)
 static CSSValue* consumeFamilyName(CSSParserTokenRange& range)
 {
     if (range.peek().type() == StringToken)
-        return cssValuePool().createFontFamilyValue(range.consumeIncludingWhitespace().value());
+        return cssValuePool().createFontFamilyValue(range.consumeIncludingWhitespace().value().toString());
     if (range.peek().type() != IdentToken)
         return nullptr;
     String familyName = concatenateFamilyName(range);
@@ -1154,7 +1154,7 @@ static CSSValue* consumeAnimationName(CSSParserTokenRange& range, const CSSParse
         const CSSParserToken& token = range.consumeIncludingWhitespace();
         if (token.valueEqualsIgnoringASCIICase("none"))
             return cssValuePool().createIdentifierValue(CSSValueNone);
-        return CSSCustomIdentValue::create(token.value());
+        return CSSCustomIdentValue::create(token.value().toString());
     }
 
     return consumeCustomIdent(range);
@@ -1544,7 +1544,7 @@ static CSSValue* consumePath(CSSParserTokenRange& range)
 
     if (functionArgs.peek().type() != StringToken)
         return nullptr;
-    String pathString = functionArgs.consumeIncludingWhitespace().value();
+    String pathString = functionArgs.consumeIncludingWhitespace().value().toString();
 
     OwnPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
     if (buildByteStreamFromString(pathString, *byteStream) != SVGParseStatus::NoError
@@ -1965,7 +1965,7 @@ static CSSValue* consumeImageSet(CSSParserTokenRange& range, const CSSParserCont
         const CSSParserToken& token = args.consumeIncludingWhitespace();
         if (token.type() != DimensionToken)
             return nullptr;
-        if (String(token.value()) != "x")
+        if (token.value() != "x")
             return nullptr;
         ASSERT(token.unitType() == CSSPrimitiveValue::UnitType::Unknown);
         double imageScaleFactor = token.numericValue();
@@ -2458,7 +2458,7 @@ static CSSValue* consumeAttr(CSSParserTokenRange args, CSSParserContext context)
     if (args.peek().type() != IdentToken)
         return nullptr;
 
-    String attrName = args.consumeIncludingWhitespace().value();
+    String attrName = args.consumeIncludingWhitespace().value().toString();
     if (!args.atEnd())
         return nullptr;
 
@@ -2482,7 +2482,7 @@ static CSSValue* consumeCounterContent(CSSParserTokenRange args, bool counters)
     } else {
         if (!consumeCommaIncludingWhitespace(args) || args.peek().type() != StringToken)
             return nullptr;
-        separator = CSSStringValue::create(args.consumeIncludingWhitespace().value());
+        separator = CSSStringValue::create(args.consumeIncludingWhitespace().value().toString());
     }
 
     CSSPrimitiveValue* listStyle = nullptr;
@@ -3535,7 +3535,7 @@ static CSSValue* consumeGridTemplateAreas(CSSParserTokenRange& range)
     size_t columnCount = 0;
 
     while (range.peek().type() == StringToken) {
-        if (!parseGridTemplateAreasRow(range.consumeIncludingWhitespace().value(), gridAreaMap, rowCount, columnCount))
+        if (!parseGridTemplateAreasRow(range.consumeIncludingWhitespace().value().toString(), gridAreaMap, rowCount, columnCount))
             return nullptr;
         ++rowCount;
     }
@@ -4014,7 +4014,7 @@ static CSSValue* consumeFontFaceSrcURI(CSSParserTokenRange& range, const CSSPars
     const CSSParserToken& arg = args.consumeIncludingWhitespace();
     if ((arg.type() != StringToken) || !args.atEnd())
         return nullptr;
-    uriValue->setFormat(arg.value());
+    uriValue->setFormat(arg.value().toString());
     return uriValue;
 }
 
@@ -4026,7 +4026,7 @@ static CSSValue* consumeFontFaceSrcLocal(CSSParserTokenRange& range, const CSSPa
         const CSSParserToken& arg = args.consumeIncludingWhitespace();
         if (!args.atEnd())
             return nullptr;
-        return CSSFontFaceSrcValue::createLocal(arg.value(), shouldCheckContentSecurityPolicy);
+        return CSSFontFaceSrcValue::createLocal(arg.value().toString(), shouldCheckContentSecurityPolicy);
     }
     if (args.peek().type() == IdentToken) {
         String familyName = concatenateFamilyName(args);
@@ -4864,7 +4864,7 @@ bool CSSPropertyParser::consumeGridTemplateRowsAndAreasAndColumns(CSSPropertyID 
             templateRows->append(lineNames);
 
         // Handle a template-area's row.
-        if (m_range.peek().type() != StringToken || !parseGridTemplateAreasRow(m_range.consumeIncludingWhitespace().value(), gridAreaMap, rowCount, columnCount))
+        if (m_range.peek().type() != StringToken || !parseGridTemplateAreasRow(m_range.consumeIncludingWhitespace().value().toString(), gridAreaMap, rowCount, columnCount))
             return false;
         ++rowCount;
 

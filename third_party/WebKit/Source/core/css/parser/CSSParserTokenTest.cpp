@@ -8,18 +8,11 @@
 
 namespace blink {
 
-static CSSParserString toParserString(const String& string)
-{
-    CSSParserString result;
-    result.init(string);
-    return result;
-}
-
-static CSSParserToken ident(const String& string) { return CSSParserToken(IdentToken, toParserString(string)); }
+static CSSParserToken ident(const String& string) { return CSSParserToken(IdentToken, string); }
 static CSSParserToken dimension(double value, const String& unit)
 {
     CSSParserToken token(NumberToken, value, NumberValueType, NoSign);
-    token.convertToDimensionWithUnit(toParserString(unit));
+    token.convertToDimensionWithUnit(unit);
     return token;
 }
 

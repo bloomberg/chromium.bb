@@ -73,7 +73,7 @@ bool CSSVariableResolver::resolveVariableReference(CSSParserTokenRange range, Ve
 {
     range.consumeWhitespace();
     ASSERT(range.peek().type() == IdentToken);
-    AtomicString variableName = range.consumeIncludingWhitespace().value();
+    AtomicString variableName = AtomicString(range.consumeIncludingWhitespace().value().toString());
     ASSERT(range.atEnd() || (range.peek().type() == CommaToken));
 
     CSSVariableData* variableData = valueForCustomProperty(variableName);
@@ -96,7 +96,7 @@ void CSSVariableResolver::resolveApplyAtRule(CSSParserTokenRange& range,
     if (range.peek().type() == SemicolonToken)
         range.consume();
 
-    CSSVariableData* variableData = valueForCustomProperty(variableName.value());
+    CSSVariableData* variableData = valueForCustomProperty(AtomicString(variableName.value().toString()));
     if (!variableData)
         return; // Invalid custom property
 

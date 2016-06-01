@@ -25,10 +25,10 @@
 
 #include "core/css/StyleRule.h"
 #include "core/css/parser/CSSParserTokenRange.h"
+#include "wtf/text/StringView.h"
 
 namespace blink {
 
-struct CSSParserString;
 class CSSProperty;
 class CSSValue;
 class StylePropertyShorthand;
@@ -108,8 +108,8 @@ private:
     HeapVector<CSSProperty, 256>* m_parsedProperties;
 };
 
-CSSPropertyID unresolvedCSSPropertyID(const CSSParserString&);
-CSSValueID cssValueKeywordID(const CSSParserString&);
+CSSPropertyID unresolvedCSSPropertyID(StringView);
+CSSValueID cssValueKeywordID(StringView);
 
 } // namespace blink
 

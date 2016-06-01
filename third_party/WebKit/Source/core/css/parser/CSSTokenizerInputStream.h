@@ -5,11 +5,10 @@
 #ifndef CSSTokenizerInputStream_h
 #define CSSTokenizerInputStream_h
 
+#include "wtf/text/StringView.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-
-struct CSSParserString;
 
 class CSSTokenizerInputStream {
     WTF_MAKE_NONCOPYABLE(CSSTokenizerInputStream);
@@ -46,7 +45,7 @@ public:
     }
 
     unsigned offset() const { return std::min(m_offset, m_stringLength); }
-    CSSParserString rangeAsCSSParserString(unsigned start, unsigned length) const;
+    StringView rangeAt(unsigned start, unsigned length) const;
 
 private:
     size_t m_offset;
