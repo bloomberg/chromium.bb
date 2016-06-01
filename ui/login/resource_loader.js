@@ -195,16 +195,18 @@ cr.define('cr.ui.login.ResourceLoader', function() {
   function loadAssetsOnIdle(id, callback, opt_idleTimeoutMs) {
     opt_idleTimeoutMs = opt_idleTimeoutMs || 250;
 
-    let loadOnIdle = function() {
+    var loadOnIdle = function() {
       window.requestIdleCallback(function() {
         loadAssets(id, callback);
       }, { timeout: opt_idleTimeoutMs });
     };
 
-    if (document.readyState == 'complete') {
-      loadOnIdle();
-    } else {
+    if (document.readyState == 'loading') {
       window.addEventListener('DOMContentLoaded', loadOnIdle);
+    } else {
+      // DOMContentLoaded has already been called if document.readyState is
+      // 'interactive' or 'complete', so invoke the callback immediately.
+      loadOnIdle();
     }
   }
 
