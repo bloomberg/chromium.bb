@@ -3375,7 +3375,7 @@
           ['release_valgrind_build==0', {
             'xcode_settings': {
               'OTHER_CFLAGS': [
-                '-fstack-protector-all',  # Implies -fstack-protector
+                '-fstack-protector-strong',  # Implies -fstack-protector
               ],
             },
           }],
@@ -3593,7 +3593,7 @@
       # and we want to avoid overriding this, so stack-protector is only
       # enabled when not building on Chrome OS.
       # TODO(phajdan.jr): Use -fstack-protector-strong when our gcc
-      # supports it.
+      # supports it.  See also https://crbug.com/533294
       'target_defaults': {
         'cflags': [
           '-fstack-protector',

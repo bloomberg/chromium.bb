@@ -191,9 +191,10 @@ config("compiler") {
 
     # Stack protection.
     if (is_mac) {
-      cflags += [ "-fstack-protector-all" ]
+      cflags += [ "-fstack-protector-strong" ]
     } else if (is_posix && !is_chromeos && !is_nacl) {
       # TODO(phajdan.jr): Use -fstack-protector-strong when our gcc supports it.
+      # See also https://crbug.com/533294
       cflags += [ "--param=ssp-buffer-size=4" ]
 
       # The x86 toolchain currently has problems with stack-protector.
