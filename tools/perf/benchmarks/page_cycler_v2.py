@@ -28,7 +28,7 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
     return tbm_options
 
 
-@benchmark.Disabled('win', 'android')  # crbug.com/615178
+@benchmark.Disabled('win')  # crbug.com/615178
 class PageCyclerV2Typical25(_PageCyclerV2):
   """Page load time benchmark for a 25 typical web pages.
 
@@ -40,6 +40,11 @@ class PageCyclerV2Typical25(_PageCyclerV2):
   @classmethod
   def Name(cls):
     return 'page_cycler_v2.typical_25'
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # crbug.com/615178
+    return (possible_browser.browser_type == 'reference' and
+        possible_browser.platform.GetOSName() == 'android')
 
   def CreateStorySet(self, options):
     return page_sets.Typical25PageSet(run_no_page_interactions=True,
