@@ -65,6 +65,11 @@ class SmoothnessToughFiltersCases(_Smoothness):
   def Name(cls):
     return 'smoothness.tough_filters_cases'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/616520
+    return (cls.IsSvelte(possible_browser) and
+            possible_browser.browser_type == 'reference')
+
 
 class SmoothnessToughPathRenderingCases(_Smoothness):
   """Tests a selection of pages with SVG and 2D Canvas paths.
