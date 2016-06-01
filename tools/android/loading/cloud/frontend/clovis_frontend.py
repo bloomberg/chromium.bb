@@ -268,10 +268,6 @@ def StartFromJsonString(http_body_str):
   task_dir_components.append(task_tag)
   task_dir = os.path.join(task.Action(), '_'.join(task_dir_components))
 
-  # Create the instance template if required.
-  if not CreateInstanceTemplate(task, task_dir):
-    return Render('Template creation failed.', memory_logs)
-
   # Build the URL where the result will live.
   task_url = None
   if task.Action() == 'trace':
@@ -295,16 +291,18 @@ def StartFromJsonString(http_body_str):
   if not EnqueueTasks(sub_tasks, task_tag):
     return Render('Task creation failed.', memory_logs)
 
-  # Start the instances if required.
-  if not CreateInstances(task):
-    return Render('Instance creation failed.', memory_logs)
-
   # Start polling the progress.
   clovis_logger.info('Creating worker polling task.')
   first_poll_delay_minutes = 10
   timeout_hours = task.BackendParams().get('timeout_hours', 5)
   deferred.defer(PollWorkers, task_tag, time.time(), timeout_hours, user_email,
                  task_url, _countdown=(60 * first_poll_delay_minutes))
+
+  # Start the instances if required.
+  if not CreateInstanceTemplate(task, task_dir):
+    return Render('Instance template creation failed.', memory_logs)
+  if not CreateInstances(task):
+    return Render('Instance creation failed.', memory_logs)
 
   return Render(flask.Markup(
       'Success!<br>Your task %s has started.<br>'
