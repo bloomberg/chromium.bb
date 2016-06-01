@@ -72,6 +72,12 @@ HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   std::swap(protocol_handlers_, *protocol_handlers);
+  for (auto& pair : options->protocol_handlers) {
+    protocol_handlers_[pair.first] =
+        linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+            pair.second.release());
+  }
+  options->protocol_handlers.clear();
 
   // We must create the proxy config service on the UI loop on Linux because it
   // must synchronously run on the glib message loop. This will be passed to
@@ -181,17 +187,22 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
     std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
         new net::URLRequestJobFactoryImpl());
 
+    // Install handlers for default protocols which aren't handled by the
+    // network layer.
+    if (protocol_handlers_.find(url::kDataScheme) == protocol_handlers_.end()) {
+      protocol_handlers_[url::kDataScheme] =
+          linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+              new net::DataProtocolHandler());
+    }
+    if (protocol_handlers_.find(url::kFileScheme) == protocol_handlers_.end()) {
+      protocol_handlers_[url::kFileScheme] =
+          linked_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+              new net::FileProtocolHandler(
+                  content::BrowserThread::GetBlockingPool()
+                      ->GetTaskRunnerWithShutdownBehavior(
+                          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
+    }
     InstallProtocolHandlers(job_factory.get(), &protocol_handlers_);
-    bool set_protocol = job_factory->SetProtocolHandler(
-        url::kDataScheme, base::WrapUnique(new net::DataProtocolHandler));
-    DCHECK(set_protocol);
-    set_protocol = job_factory->SetProtocolHandler(
-        url::kFileScheme,
-        base::WrapUnique(new net::FileProtocolHandler(
-            content::BrowserThread::GetBlockingPool()
-                ->GetTaskRunnerWithShutdownBehavior(
-                    base::SequencedWorkerPool::SKIP_ON_SHUTDOWN))));
-    DCHECK(set_protocol);
 
     // Set up interceptors in the reverse order so that the last inceptor is at
     // the end of the linked list of job factories.

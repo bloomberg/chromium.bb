@@ -15,6 +15,7 @@
 #include "headless/lib/headless_content_main_delegate.h"
 #include "headless/public/domains/network.h"
 #include "headless/public/domains/page.h"
+#include "headless/public/domains/runtime.h"
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
@@ -67,6 +68,43 @@ class WaitForLoadObserver : public page::Observer, public network::Observer {
   DISALLOW_COPY_AND_ASSIGN(WaitForLoadObserver);
 };
 
+class EvaluateHelper {
+ public:
+  EvaluateHelper(HeadlessBrowserTest* browser_test,
+                 HeadlessWebContents* web_contents,
+                 const std::string& script_to_eval)
+      : browser_test_(browser_test),
+        web_contents_(web_contents),
+        devtools_client_(HeadlessDevToolsClient::Create()) {
+    web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
+    devtools_client_->GetRuntime()->Evaluate(
+        script_to_eval,
+        base::Bind(&EvaluateHelper::OnEvaluateResult, base::Unretained(this)));
+  }
+
+  ~EvaluateHelper() {
+    web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
+  }
+
+  void OnEvaluateResult(std::unique_ptr<runtime::EvaluateResult> result) {
+    result_ = std::move(result);
+    browser_test_->FinishAsynchronousTest();
+  }
+
+  std::unique_ptr<runtime::EvaluateResult> TakeResult() {
+    return std::move(result_);
+  }
+
+ private:
+  HeadlessBrowserTest* browser_test_;  // Not owned.
+  HeadlessWebContents* web_contents_;  // Not owned.
+  std::unique_ptr<HeadlessDevToolsClient> devtools_client_;
+
+  std::unique_ptr<runtime::EvaluateResult> result_;
+
+  DISALLOW_COPY_AND_ASSIGN(EvaluateHelper);
+};
+
 }  // namespace
 
 HeadlessBrowserTest::HeadlessBrowserTest() {
@@ -112,6 +150,14 @@ bool HeadlessBrowserTest::WaitForLoad(HeadlessWebContents* web_contents) {
   WaitForLoadObserver observer(this, web_contents);
   RunAsynchronousTest();
   return observer.navigation_succeeded();
+}
+
+std::unique_ptr<runtime::EvaluateResult> HeadlessBrowserTest::EvaluateScript(
+    HeadlessWebContents* web_contents,
+    const std::string& script) {
+  EvaluateHelper helper(this, web_contents, script);
+  RunAsynchronousTest();
+  return helper.TakeResult();
 }
 
 void HeadlessBrowserTest::RunAsynchronousTest() {
