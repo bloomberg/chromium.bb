@@ -732,6 +732,10 @@ component("base") {
     "synchronization/lock_impl.h",
     "synchronization/lock_impl_posix.cc",
     "synchronization/lock_impl_win.cc",
+    "synchronization/read_write_lock.h",
+    "synchronization/read_write_lock_nacl.cc",
+    "synchronization/read_write_lock_posix.cc",
+    "synchronization/read_write_lock_win.cc",
     "synchronization/spin_wait.h",
     "synchronization/waitable_event.h",
     "synchronization/waitable_event_posix.cc",
@@ -1124,6 +1128,7 @@ component("base") {
       "process/process_posix.cc",
       "scoped_native_library.cc",
       "sync_socket_posix.cc",
+      "synchronization/read_write_lock_posix.cc",
       "sys_info.cc",
       "sys_info_posix.cc",
       "trace_event/trace_event_system_stats_monitor.cc",
@@ -1158,6 +1163,7 @@ component("base") {
       "os_compat_nacl.cc",
       "os_compat_nacl.h",
       "rand_util_nacl.cc",
+      "synchronization/read_write_lock_nacl.cc",
     ]
   }
 
@@ -1854,6 +1860,7 @@ test("base_unittests") {
     "synchronization/cancellation_flag_unittest.cc",
     "synchronization/condition_variable_unittest.cc",
     "synchronization/lock_unittest.cc",
+    "synchronization/read_write_lock_unittest.cc",
     "synchronization/waitable_event_unittest.cc",
     "synchronization/waitable_event_watcher_unittest.cc",
     "sys_info_unittest.cc",
