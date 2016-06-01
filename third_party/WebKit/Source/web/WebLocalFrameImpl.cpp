@@ -149,7 +149,6 @@
 #include "core/page/Page.h"
 #include "core/page/PrintContext.h"
 #include "core/paint/PaintLayer.h"
-#include "core/paint/ScopeRecorder.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
@@ -172,6 +171,7 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/paint/ClipRecorder.h"
+#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/graphics/skia/SkiaUtils.h"
@@ -338,39 +338,42 @@ public:
         SkPictureBuilder pictureBuilder(allPagesRect, &skia::GetMetaData(*canvas));
         pictureBuilder.context().setPrinting(true);
 
-        GraphicsContext& context = pictureBuilder.context();
-
-        // Fill the whole background by white.
         {
-            DrawingRecorder backgroundRecorder(context, pictureBuilder, DisplayItem::PrintedContentBackground, allPagesRect);
-            context.fillRect(FloatRect(0, 0, pageWidth, totalHeight), Color::white);
-        }
+            GraphicsContext& context = pictureBuilder.context();
+            DisplayItemCacheSkipper skipper(context);
 
-        int currentHeight = 0;
-        for (size_t pageIndex = 0; pageIndex < numPages; pageIndex++) {
-            ScopeRecorder scopeRecorder(context);
-            // Draw a line for a page boundary if this isn't the first page.
-            if (pageIndex > 0) {
-                DrawingRecorder lineBoundaryRecorder(context, pictureBuilder, DisplayItem::PrintedContentLineBoundary, allPagesRect);
-                context.save();
-                context.setStrokeColor(Color(0, 0, 255));
-                context.setFillColor(Color(0, 0, 255));
-                context.drawLine(IntPoint(0, currentHeight), IntPoint(pageWidth, currentHeight));
-                context.restore();
+            // Fill the whole background by white.
+            {
+                DrawingRecorder backgroundRecorder(context, pictureBuilder, DisplayItem::PrintedContentBackground, allPagesRect);
+                context.fillRect(FloatRect(0, 0, pageWidth, totalHeight), Color::white);
             }
 
-            AffineTransform transform;
-            transform.translate(0, currentHeight);
-#if OS(WIN) || OS(MACOSX)
-            // Account for the disabling of scaling in spoolPage. In the context
-            // of spoolAllPagesWithBoundaries the scale HAS NOT been pre-applied.
-            float scale = getPageShrink(pageIndex);
-            transform.scale(scale, scale);
-#endif
-            TransformRecorder transformRecorder(context, pictureBuilder, transform);
-            spoolPage(pictureBuilder, pageIndex);
 
-            currentHeight += pageSizeInPixels.height() + 1;
+            int currentHeight = 0;
+            for (size_t pageIndex = 0; pageIndex < numPages; pageIndex++) {
+                // Draw a line for a page boundary if this isn't the first page.
+                if (pageIndex > 0) {
+                    DrawingRecorder lineBoundaryRecorder(context, pictureBuilder, DisplayItem::PrintedContentLineBoundary, allPagesRect);
+                    context.save();
+                    context.setStrokeColor(Color(0, 0, 255));
+                    context.setFillColor(Color(0, 0, 255));
+                    context.drawLine(IntPoint(0, currentHeight), IntPoint(pageWidth, currentHeight));
+                    context.restore();
+                }
+
+                AffineTransform transform;
+                transform.translate(0, currentHeight);
+#if OS(WIN) || OS(MACOSX)
+                // Account for the disabling of scaling in spoolPage. In the context
+                // of spoolAllPagesWithBoundaries the scale HAS NOT been pre-applied.
+                float scale = getPageShrink(pageIndex);
+                transform.scale(scale, scale);
+#endif
+                TransformRecorder transformRecorder(context, pictureBuilder, transform);
+                spoolPage(pictureBuilder, pageIndex);
+
+                currentHeight += pageSizeInPixels.height() + 1;
+            }
         }
         pictureBuilder.endRecording()->playback(canvas);
     }

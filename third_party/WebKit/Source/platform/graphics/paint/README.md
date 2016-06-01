@@ -118,11 +118,6 @@ item is identified by an ID consisting of:
 
 * an opaque pointer to the *display item client* that produced it
 * a type (from the `DisplayItem::Type` enum)
-* a scope number
-
-*** aside
-TODO(jbroman): Explain scope numbers.
-***
 
 In practice, display item clients are generally subclasses of `LayoutObject`,
 but can be other Blink objects which get painted, such as inline boxes and drag
@@ -130,7 +125,8 @@ images.
 
 *** note
 It is illegal for there to be two drawings with the same ID in a display item
-list.
+list, except for drawings that are marked uncacheable
+(see [DisplayItemCacheSkipper](DisplayItemCacheSkipper.h)).
 ***
 
 Generally, clients of this code should use stack-allocated recorder classes to

@@ -89,12 +89,6 @@ public:
             createAndAppend<DisplayItemClass>(std::forward<Args>(args)...);
     }
 
-    // Scopes must be used to avoid duplicated display item ids when we paint some object
-    // multiple times and generate multiple display items with the same type.
-    // We don't cache display items added in scopes.
-    void beginScope();
-    void endScope();
-
     // True if the last display item is a begin that doesn't draw content.
     bool lastDisplayItemIsNoopBegin() const;
     void removeLastDisplayItem();
@@ -161,11 +155,10 @@ protected:
         , m_imagePainted(false)
         , m_skippingCacheCount(0)
         , m_numCachedNewItems(0)
-        , m_nextScope(1)
     { }
 
 private:
-    // Set new item state (scopes, cache skipping, etc) for a new item.
+    // Set new item state (cache skipping, etc) for a new item.
     void processNewItem(DisplayItem&);
 
 #ifndef NDEBUG
@@ -222,9 +215,6 @@ private:
     int m_skippingCacheCount;
 
     int m_numCachedNewItems;
-
-    unsigned m_nextScope;
-    Vector<unsigned> m_scopeStack;
 
 #if DCHECK_IS_ON()
     // Record the debug names of invalidated clients for assertion and debugging.

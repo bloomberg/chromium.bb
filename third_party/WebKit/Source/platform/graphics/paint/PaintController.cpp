@@ -82,8 +82,8 @@ void PaintController::processNewItem(DisplayItem& displayItem)
     }
 #endif
 
-    if (!m_scopeStack.isEmpty())
-        displayItem.setScope(m_scopeStack.last());
+    if (skippingCache())
+        displayItem.setSkippedCache();
 
 #if DCHECK_IS_ON()
     size_t index = findMatchingItemFromIndex(displayItem.nonCachedId(), m_newDisplayItemIndicesByClient, m_newDisplayItemList);
@@ -98,9 +98,6 @@ void PaintController::processNewItem(DisplayItem& displayItem)
     addItemToIndexIfNeeded(displayItem, m_newDisplayItemList.size() - 1, m_newDisplayItemIndicesByClient);
 #endif // DCHECK_IS_ON()
 
-    if (skippingCache())
-        displayItem.setSkippedCache();
-
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
         m_newPaintChunks.incrementDisplayItemIndex(behaviorOfItemType(displayItem.getType()));
 }
@@ -113,19 +110,6 @@ void PaintController::updateCurrentPaintChunkProperties(const PaintChunkProperti
 const PaintChunkProperties& PaintController::currentPaintChunkProperties() const
 {
     return m_newPaintChunks.currentPaintChunkProperties();
-}
-
-void PaintController::beginScope()
-{
-    SECURITY_DCHECK(m_nextScope < UINT_MAX);
-    m_scopeStack.append(m_nextScope++);
-    beginSkippingCache();
-}
-
-void PaintController::endScope()
-{
-    m_scopeStack.removeLast();
-    endSkippingCache();
 }
 
 void PaintController::displayItemClientWasInvalidated(const DisplayItemClient& client)
@@ -243,8 +227,7 @@ DisplayItemList::iterator PaintController::findOutOfOrderCachedItemForward(const
 void PaintController::copyCachedSubsequence(const DisplayItemList& currentList, DisplayItemList::iterator& currentIt, DisplayItemList& updatedList, SkPictureGpuAnalyzer& gpuAnalyzer)
 {
     DCHECK(currentIt->getType() == DisplayItem::Subsequence);
-    DCHECK(!currentIt->scope());
-    DisplayItem::Id endSubsequenceId(currentIt->client(), DisplayItem::EndSubsequence, 0);
+    DisplayItem::Id endSubsequenceId(currentIt->client(), DisplayItem::EndSubsequence);
     do {
         // We should always find the EndSubsequence display item.
         DCHECK(currentIt != m_currentPaintArtifact.getDisplayItemList().end());
@@ -280,9 +263,6 @@ void PaintController::commitNewDisplayItems(const LayoutSize& offsetFromLayoutOb
     m_numCachedNewItems = 0;
 
     // These data structures are used during painting only.
-    DCHECK(m_scopeStack.isEmpty());
-    m_scopeStack.clear();
-    m_nextScope = 1;
     DCHECK(!skippingCache());
 #if DCHECK_IS_ON()
     m_newDisplayItemIndicesByClient.clear();
@@ -458,7 +438,7 @@ void PaintController::checkUnderInvalidation(DisplayItemList::iterator& newIt, D
     CString messagePrefix = "(In CachedSubsequence)";
 #endif
 
-    DisplayItem::Id endSubsequenceId(newIt->client(), DisplayItem::EndSubsequence, 0);
+    DisplayItem::Id endSubsequenceId(newIt->client(), DisplayItem::EndSubsequence);
     while (true) {
         DCHECK(newIt != m_newDisplayItemList.end());
         if (newIt->isCached())

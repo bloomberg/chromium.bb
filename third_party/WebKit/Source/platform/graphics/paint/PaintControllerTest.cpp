@@ -622,7 +622,7 @@ TEST_F(PaintControllerTest, CachedNestedSubsequenceUpdate)
         TestDisplayItem(container1, DisplayItem::EndSubsequence));
 }
 
-TEST_F(PaintControllerTest, Scope)
+TEST_F(PaintControllerTest, SkipCache)
 {
     FakeDisplayItemClient multicol("multicol");
     FakeDisplayItemClient content("content");
@@ -634,13 +634,11 @@ TEST_F(PaintControllerTest, Scope)
 
     drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 200, 100, 100));
 
-    getPaintController().beginScope();
+    getPaintController().beginSkippingCache();
     drawRect(context, content, foregroundDrawingType, rect1);
-    getPaintController().endScope();
-
-    getPaintController().beginScope();
     drawRect(context, content, foregroundDrawingType, rect2);
-    getPaintController().endScope();
+    getPaintController().endSkippingCache();
+
     getPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(getPaintController().getDisplayItemList(), 3,
@@ -654,13 +652,11 @@ TEST_F(PaintControllerTest, Scope)
     // Draw again with nothing invalidated.
     EXPECT_TRUE(getPaintController().clientCacheIsValid(multicol));
     drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 200, 100, 100));
-    getPaintController().beginScope();
-    drawRect(context, content, foregroundDrawingType, rect1);
-    getPaintController().endScope();
 
-    getPaintController().beginScope();
+    getPaintController().beginSkippingCache();
+    drawRect(context, content, foregroundDrawingType, rect1);
     drawRect(context, content, foregroundDrawingType, rect2);
-    getPaintController().endScope();
+    getPaintController().endSkippingCache();
 
     EXPECT_DISPLAY_LIST(getPaintController().newDisplayItemList(), 3,
         TestDisplayItem(multicol, DisplayItem::drawingTypeToCachedDrawingType(backgroundDrawingType)),
@@ -680,17 +676,11 @@ TEST_F(PaintControllerTest, Scope)
     multicol.setDisplayItemsUncached();
     drawRect(context, multicol, backgroundDrawingType, FloatRect(100, 100, 100, 100));
 
-    getPaintController().beginScope();
+    getPaintController().beginSkippingCache();
     drawRect(context, content, foregroundDrawingType, rect1);
-    getPaintController().endScope();
-
-    getPaintController().beginScope();
     drawRect(context, content, foregroundDrawingType, rect2);
-    getPaintController().endScope();
-
-    getPaintController().beginScope();
     drawRect(context, content, foregroundDrawingType, rect3);
-    getPaintController().endScope();
+    getPaintController().endSkippingCache();
 
     // We should repaint everything on invalidation of the scope container.
     EXPECT_DISPLAY_LIST(getPaintController().newDisplayItemList(), 4,
@@ -837,13 +827,12 @@ TEST_F(PaintControllerTest, IsNotSuitableForGpuRasterizationMultiplePicturesSing
 {
     FakeDisplayItemClient client("test client", LayoutRect(0, 0, 200, 100));
     GraphicsContext context(getPaintController());
+    getPaintController().beginSkippingCache();
 
-    for (int i = 0; i < 50; ++i) {
-        getPaintController().beginScope();
+    for (int i = 0; i < 50; ++i)
         drawPath(context, client, backgroundDrawingType, 50);
-        getPaintController().endScope();
-    }
 
+    getPaintController().endSkippingCache();
     getPaintController().commitNewDisplayItems(LayoutSize());
     EXPECT_FALSE(getPaintController().paintArtifact().isSuitableForGpuRasterization());
 }

@@ -196,7 +196,6 @@ public:
 
     DisplayItem(const DisplayItemClient& client, Type type, size_t derivedSize)
         : m_client(&client)
-        , m_scope(0)
         , m_type(type)
         , m_derivedSize(derivedSize)
         , m_skippedCache(false)
@@ -215,24 +214,20 @@ public:
     // Ids are for matching new DisplayItems with existing DisplayItems.
     struct Id {
         STACK_ALLOCATED();
-        Id(const DisplayItemClient& client, const Type type, const unsigned scope)
+        Id(const DisplayItemClient& client, const Type type)
             : client(client)
-            , type(type)
-            , scope(scope) { }
+            , type(type) { }
 
         bool matches(const DisplayItem& item) const
         {
             // We should always convert to non-cached types before matching.
             ASSERT(!isCachedType(item.m_type));
             ASSERT(!isCachedType(type));
-            return &client == item.m_client
-                && type == item.m_type
-                && scope == item.m_scope;
+            return &client == item.m_client && type == item.m_type;
         }
 
         const DisplayItemClient& client;
         const Type type;
-        const unsigned scope;
     };
 
     // Convert cached type to non-cached type (e.g., Type::CachedSVGImage -> Type::SVGImage).
@@ -248,16 +243,13 @@ public:
     // Return the Id with cached type converted to non-cached type.
     Id nonCachedId() const
     {
-        return Id(*m_client, nonCachedType(m_type), m_scope);
+        return Id(*m_client, nonCachedType(m_type));
     }
 
     virtual void replay(GraphicsContext&) const { }
 
     const DisplayItemClient& client() const { ASSERT(m_client); return *m_client; }
     Type getType() const { return m_type; }
-
-    void setScope(unsigned scope) { m_scope = scope; }
-    unsigned scope() { return m_scope; }
 
     // Size of this object in memory, used to move it with memcpy.
     // This is not sizeof(*this), because it needs to account for the size of
@@ -336,7 +328,6 @@ public:
     virtual bool equals(const DisplayItem& other) const
     {
         return m_client == other.m_client
-            && m_scope == other.m_scope
             && m_type == other.m_type
             && m_derivedSize == other.m_derivedSize
             && m_skippedCache == other.m_skippedCache;
@@ -370,14 +361,12 @@ private:
 
     DisplayItem()
         : m_client(nullptr)
-        , m_scope(0)
         , m_type(UninitializedType)
         , m_derivedSize(sizeof(*this))
         , m_skippedCache(false)
     { }
 
     const DisplayItemClient* m_client;
-    unsigned m_scope;
     static_assert(TypeLast < (1 << 16), "DisplayItem::Type should fit in 16 bits");
     const Type m_type : 16;
     const unsigned m_derivedSize : 8; // size of the actual derived class

@@ -17,7 +17,6 @@
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/SVGClipPainter.h"
-#include "core/paint/ScopeRecorder.h"
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/Transform3DRecorder.h"
@@ -27,6 +26,7 @@
 #include "platform/graphics/paint/ClipPathRecorder.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/CompositingRecorder.h"
+#include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
 #include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "platform/graphics/paint/SubsequenceRecorder.h"
@@ -108,7 +108,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContentsAndReflectio
 
     // Paint the reflection first if we have one.
     if (m_paintLayer.reflectionInfo() && !RuntimeEnabledFeatures::cssBoxReflectFilterEnabled()) {
-        ScopeRecorder scopeRecorder(context);
+        DisplayItemCacheSkipper skipper(context);
         if (m_paintLayer.reflectionInfo()->paint(context, paintingInfo, localPaintFlags) == MayBeClippedByPaintDirtyRect)
             result = MayBeClippedByPaintDirtyRect;
     }
@@ -516,12 +516,12 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerWithTransform(Graphi
         fragments.append(fragment);
     }
 
-    bool needsScope = fragments.size() > 1;
+    Optional<DisplayItemCacheSkipper> cacheSkipper;
+    if (fragments.size() > 1)
+        cacheSkipper.emplace(context);
+
     PaintResult result = FullyPainted;
     for (const auto& fragment : fragments) {
-        Optional<ScopeRecorder> scopeRecorder;
-        if (needsScope)
-            scopeRecorder.emplace(context);
         Optional<LayerClipRecorder> clipRecorder;
         if (parentLayer) {
             ClipRect clipRectForFragment(ancestorBackgroundClipRect);
@@ -634,12 +634,11 @@ void PaintLayerPainter::paintOverflowControlsForFragments(const PaintLayerFragme
     if (!scrollableArea)
         return;
 
-    bool needsScope = layerFragments.size() > 1;
-    for (auto& fragment : layerFragments) {
-        Optional<ScopeRecorder> scopeRecorder;
-        if (needsScope)
-            scopeRecorder.emplace(context);
+    Optional<DisplayItemCacheSkipper> cacheSkipper;
+    if (layerFragments.size() > 1)
+        cacheSkipper.emplace(context);
 
+    for (auto& fragment : layerFragments) {
         // We need to apply the same clips and transforms that
         // paintFragmentWithPhase would have.
         LayoutRect cullRect = fragment.backgroundRect.rect();
@@ -714,13 +713,12 @@ void PaintLayerPainter::paintBackgroundForFragments(const PaintLayerFragments& l
     GraphicsContext& context, const LayoutRect& transparencyPaintDirtyRect,
     const PaintLayerPaintingInfo& localPaintingInfo, PaintLayerFlags paintFlags)
 {
-    bool needsScope = layerFragments.size() > 1;
-    for (auto& fragment : layerFragments) {
-        Optional<ScopeRecorder> scopeRecorder;
-        if (needsScope)
-            scopeRecorder.emplace(context);
+    Optional<DisplayItemCacheSkipper> cacheSkipper;
+    if (layerFragments.size() > 1)
+        cacheSkipper.emplace(context);
+
+    for (auto& fragment : layerFragments)
         paintFragmentWithPhase(PaintPhaseSelfBlockBackgroundOnly, fragment, context, fragment.backgroundRect, localPaintingInfo, paintFlags, HasNotClipped);
-    }
 }
 
 void PaintLayerPainter::paintForegroundForFragments(const PaintLayerFragments& layerFragments,
@@ -755,53 +753,49 @@ void PaintLayerPainter::paintForegroundForFragmentsWithPhase(PaintPhase phase,
     const PaintLayerFragments& layerFragments, GraphicsContext& context,
     const PaintLayerPaintingInfo& localPaintingInfo, PaintLayerFlags paintFlags, ClipState clipState)
 {
-    bool needsScope = layerFragments.size() > 1;
+    Optional<DisplayItemCacheSkipper> cacheSkipper;
+    if (layerFragments.size() > 1)
+        cacheSkipper.emplace(context);
+
     for (auto& fragment : layerFragments) {
-        if (!fragment.foregroundRect.isEmpty()) {
-            Optional<ScopeRecorder> scopeRecorder;
-            if (needsScope)
-                scopeRecorder.emplace(context);
+        if (!fragment.foregroundRect.isEmpty())
             paintFragmentWithPhase(phase, fragment, context, fragment.foregroundRect, localPaintingInfo, paintFlags, clipState);
-        }
     }
 }
 
 void PaintLayerPainter::paintSelfOutlineForFragments(const PaintLayerFragments& layerFragments,
     GraphicsContext& context, const PaintLayerPaintingInfo& localPaintingInfo, PaintLayerFlags paintFlags)
 {
-    bool needsScope = layerFragments.size() > 1;
+    Optional<DisplayItemCacheSkipper> cacheSkipper;
+    if (layerFragments.size() > 1)
+        cacheSkipper.emplace(context);
+
     for (auto& fragment : layerFragments) {
-        if (!fragment.backgroundRect.isEmpty()) {
-            Optional<ScopeRecorder> scopeRecorder;
-            if (needsScope)
-                scopeRecorder.emplace(context);
+        if (!fragment.backgroundRect.isEmpty())
             paintFragmentWithPhase(PaintPhaseSelfOutlineOnly, fragment, context, fragment.backgroundRect, localPaintingInfo, paintFlags, HasNotClipped);
-        }
     }
 }
 
 void PaintLayerPainter::paintMaskForFragments(const PaintLayerFragments& layerFragments,
     GraphicsContext& context, const PaintLayerPaintingInfo& localPaintingInfo, PaintLayerFlags paintFlags)
 {
-    bool needsScope = layerFragments.size() > 1;
-    for (auto& fragment : layerFragments) {
-        Optional<ScopeRecorder> scopeRecorder;
-        if (needsScope)
-            scopeRecorder.emplace(context);
+    Optional<DisplayItemCacheSkipper> cacheSkipper;
+    if (layerFragments.size() > 1)
+        cacheSkipper.emplace(context);
+
+    for (auto& fragment : layerFragments)
         paintFragmentWithPhase(PaintPhaseMask, fragment, context, fragment.backgroundRect, localPaintingInfo, paintFlags, HasNotClipped);
-    }
 }
 
 void PaintLayerPainter::paintChildClippingMaskForFragments(const PaintLayerFragments& layerFragments,
     GraphicsContext& context, const PaintLayerPaintingInfo& localPaintingInfo, PaintLayerFlags paintFlags)
 {
-    bool needsScope = layerFragments.size() > 1;
-    for (auto& fragment: layerFragments) {
-        Optional<ScopeRecorder> scopeRecorder;
-        if (needsScope)
-            scopeRecorder.emplace(context);
+    Optional<DisplayItemCacheSkipper> cacheSkipper;
+    if (layerFragments.size() > 1)
+        cacheSkipper.emplace(context);
+
+    for (auto& fragment: layerFragments)
         paintFragmentWithPhase(PaintPhaseClippingMask, fragment, context, fragment.foregroundRect, localPaintingInfo, paintFlags, HasNotClipped);
-    }
 }
 
 void PaintLayerPainter::paintOverlayScrollbars(GraphicsContext& context, const LayoutRect& damageRect, const GlobalPaintFlags paintFlags)
