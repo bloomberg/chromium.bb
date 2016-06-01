@@ -16,9 +16,10 @@ const char kDataChannelHtmlFile[] = "/media/datachannel_test.html";
 
 namespace content {
 
-#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#if defined(OS_WIN) || (defined(OS_ANDROID) && defined(ADDRESS_SANITIZER))
 // GC does not work correctly in some cases under Android ASAN.
 // See https://crbug.com/611620.
+// This test has become flaky on Windows. See https://crbug.com/616388
 #define MAYBE_WebRtcDataChannelTest DISABLED_WebRtcDataChannelTest
 #else
 #define MAYBE_WebRtcDataChannelTest WebRtcDataChannelTest
