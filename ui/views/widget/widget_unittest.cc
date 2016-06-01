@@ -1371,7 +1371,7 @@ void DesktopAuraTestValidPaintWidget::InitForTest(InitParams init_params) {
   Activate();
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 // Flaky on Linux rel ng: https://crbug.com/596039.
 #define MAYBE_DesktopNativeWidgetNoPaintAfterCloseTest DISABLED_DesktopNativeWidgetNoPaintAfterCloseTest
 #else
