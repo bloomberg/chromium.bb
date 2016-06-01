@@ -48,7 +48,8 @@ void BitmapUploader::Init(shell::Connector* connector) {
   gpu_service_->CreateOffscreenGLES2Context(GetProxy(&command_buffer_ptr));
   gles2_context_.reset(new mus::GLES2Context(std::vector<int32_t>(),
                                              std::move(command_buffer_ptr)));
-  DCHECK(gles2_context_->Initialize());
+  bool initialized = gles2_context_->Initialize();
+  DCHECK(initialized);
 }
 
 // Sets the color which is RGBA.
