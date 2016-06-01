@@ -14,6 +14,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/dummy_input_method.h"
+#include "ui/events/event.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 namespace arc {
 
@@ -21,12 +23,20 @@ namespace {
 
 class FakeArcImeBridge : public ArcImeBridge {
  public:
+  FakeArcImeBridge() : count_send_insert_text_(0) {}
+
   void SendSetCompositionText(const ui::CompositionText& composition) override {
   }
   void SendConfirmCompositionText() override {
   }
   void SendInsertText(const base::string16& text) override {
+    count_send_insert_text_++;
   }
+
+  int count_send_insert_text() const { return count_send_insert_text_; }
+
+ private:
+  int count_send_insert_text_;
 };
 
 class FakeInputMethod : public ui::DummyInputMethod {
@@ -76,18 +86,21 @@ class ArcImeServiceTest : public testing::Test {
   std::unique_ptr<FakeArcBridgeService> fake_arc_bridge_service_;
   std::unique_ptr<FakeInputMethod> fake_input_method_;
   std::unique_ptr<ArcImeService> instance_;
+  FakeArcImeBridge* fake_arc_ime_bridge_;  // Owned by |instance_|
 
  private:
   void SetUp() override {
     fake_arc_bridge_service_.reset(new FakeArcBridgeService);
     instance_.reset(new ArcImeService(fake_arc_bridge_service_.get()));
-    instance_->SetImeBridgeForTesting(base::WrapUnique(new FakeArcImeBridge));
+    fake_arc_ime_bridge_ = new FakeArcImeBridge;
+    instance_->SetImeBridgeForTesting(base::WrapUnique(fake_arc_ime_bridge_));
 
     fake_input_method_.reset(new FakeInputMethod);
     instance_->SetInputMethodForTesting(fake_input_method_.get());
   }
 
   void TearDown() override {
+    fake_arc_ime_bridge_ = nullptr;
     instance_.reset();
     fake_arc_bridge_service_.reset();
   }
@@ -145,6 +158,20 @@ TEST_F(ArcImeServiceTest, CancelComposition) {
   fake_input_method_->SetFocusedTextInputClient(instance_.get());
   instance_->OnCancelComposition();
   EXPECT_EQ(1, fake_input_method_->count_cancel_composition());
+}
+
+TEST_F(ArcImeServiceTest, InsertChar) {
+  fake_input_method_->SetFocusedTextInputClient(instance_.get());
+
+  // When text input type is NONE, the event is not forwarded.
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE);
+  instance_->InsertChar(ui::KeyEvent('a', ui::VKEY_A, 0));
+  EXPECT_EQ(0, fake_arc_ime_bridge_->count_send_insert_text());
+
+  // When the bridge is accepting text inputs, forward the event.
+  instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT);
+  instance_->InsertChar(ui::KeyEvent('a', ui::VKEY_A, 0));
+  EXPECT_EQ(1, fake_arc_ime_bridge_->count_send_insert_text());
 }
 
 }  // namespace arc

@@ -188,6 +188,12 @@ void ArcImeService::InsertText(const base::string16& text) {
 }
 
 void ArcImeService::InsertChar(const ui::KeyEvent& event) {
+  // According to the document in text_input_client.h, InsertChar() is called
+  // even when the text input type is NONE. We ignore such events, since for
+  // ARC we are only interested in the event as a method of text input.
+  if (ime_type_ == ui::TEXT_INPUT_TYPE_NONE)
+    return;
+
   // Drop 0x00-0x1f (C0 controls), 0x7f (DEL), and 0x80-0x9f (C1 controls).
   // See: https://en.wikipedia.org/wiki/Unicode_control_characters
   // They are control characters and not treated as a text insertion.
