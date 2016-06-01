@@ -4,7 +4,6 @@
 
 #include "core/frame/DOMWindow.h"
 
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"

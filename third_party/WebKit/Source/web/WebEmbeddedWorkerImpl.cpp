@@ -30,6 +30,7 @@
 
 #include "web/WebEmbeddedWorkerImpl.h"
 
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/SecurityContext.h"
@@ -242,7 +243,7 @@ void WebEmbeddedWorkerImpl::addMessageToConsole(const WebConsoleMessage& message
         return;
     }
 
-    m_mainFrame->frame()->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, webCoreMessageLevel, message.text, message.url, message.lineNumber, message.columnNumber));
+    m_mainFrame->frame()->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, webCoreMessageLevel, message.text, SourceLocation::create(message.url, message.lineNumber, message.columnNumber, nullptr)));
 }
 
 void WebEmbeddedWorkerImpl::postMessageToPageInspector(const String& message)

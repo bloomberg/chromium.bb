@@ -73,7 +73,7 @@ void InProcessWorkerObjectProxy::reportException(const String& errorMessage, Pas
 
 void InProcessWorkerObjectProxy::reportConsoleMessage(ConsoleMessage* consoleMessage)
 {
-    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportConsoleMessage, AllowCrossThreadAccess(m_messagingProxy), consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url()));
+    getExecutionContext()->postTask(BLINK_FROM_HERE, createCrossThreadTask(&InProcessWorkerMessagingProxy::reportConsoleMessage, AllowCrossThreadAccess(m_messagingProxy), consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), passed(consoleMessage->location()->clone())));
 }
 
 void InProcessWorkerObjectProxy::postMessageToPageInspector(const String& message)

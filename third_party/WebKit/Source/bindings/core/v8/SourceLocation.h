@@ -18,6 +18,8 @@ class ExecutionContext;
 class TracedValue;
 class V8StackTrace;
 
+namespace protocol { namespace Runtime { class StackTrace; }}
+
 class CORE_EXPORT SourceLocation {
 public:
     // Zero lineNumber and columnNumber mean unknown. Captures current stack trace.
@@ -28,18 +30,31 @@ public:
 
     static PassOwnPtr<SourceLocation> fromMessage(v8::Isolate*, v8::Local<v8::Message>, ExecutionContext*);
 
+    static PassOwnPtr<SourceLocation> fromFunction(v8::Local<v8::Function>);
+
+    // Forces full stack trace.
+    static PassOwnPtr<SourceLocation> captureWithFullStackTrace();
+
     static PassOwnPtr<SourceLocation> create(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId = 0);
     ~SourceLocation();
 
-    bool isEmpty() const { return m_url.isNull(); }
+    bool isUnknown() const { return m_url.isNull() && !m_scriptId && !m_lineNumber; }
     const String& url() const { return m_url; }
     unsigned lineNumber() const { return m_lineNumber; }
     unsigned columnNumber() const { return m_columnNumber; }
-    std::unique_ptr<V8StackTrace> takeStackTrace() { return std::move(m_stackTrace); }
     int scriptId() const { return m_scriptId; }
-    void toTracedValue(TracedValue*, const char* name) const;
+
     PassOwnPtr<SourceLocation> clone() const;
     PassOwnPtr<SourceLocation> isolatedCopy() const; // Safe to pass between threads.
+
+    // No-op when stack trace is unknown.
+    void toTracedValue(TracedValue*, const char* name) const;
+
+    // Could be null string when stack trace is unknown.
+    String toString() const;
+
+    // Could be null when stack trace is unknown.
+    std::unique_ptr<protocol::Runtime::StackTrace> buildInspectorObject() const;
 
 private:
     SourceLocation(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId);

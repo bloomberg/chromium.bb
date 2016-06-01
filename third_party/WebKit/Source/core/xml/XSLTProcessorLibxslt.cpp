@@ -22,6 +22,7 @@
 
 #include "core/xml/XSLTProcessor.h"
 
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
 #include "core/dom/TransformSource.h"
 #include "core/editing/serializers/Serialization.h"
@@ -80,7 +81,7 @@ void XSLTProcessor::parseErrorFunc(void* userData, xmlError* error)
         break;
     }
 
-    console->addMessage(ConsoleMessage::create(XMLMessageSource, level, error->message, error->file, error->line, 0));
+    console->addMessage(ConsoleMessage::create(XMLMessageSource, level, error->message, SourceLocation::create(error->file, error->line, 0, nullptr)));
 }
 
 // FIXME: There seems to be no way to control the ctxt pointer for loading here, thus we have globals.

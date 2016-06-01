@@ -90,7 +90,7 @@ public:
     // at the devtools console. Even if location is specified, it may be ignored
     // and the "current" location in the sense of JavaScript execution
     // may be shown if this method is called in a JS execution context.
-    // You can pass null location if unknown.
+    // Location should not be null.
     virtual void fail(const String& reason, MessageLevel, PassOwnPtr<SourceLocation>) = 0;
 
     // Do not call any methods after calling this method.

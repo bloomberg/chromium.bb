@@ -720,23 +720,13 @@ PassOwnPtr<TracedValue> InspectorFunctionCallEvent::data(ExecutionContext* conte
         return value;
 
     v8::Local<v8::Function> originalFunction = getBoundFunction(function);
-    v8::ScriptOrigin origin = originalFunction->GetScriptOrigin();
-    int scriptId = originalFunction->ScriptId();
-    int lineNumber = 0;
-    String scriptName;
-    if (!origin.ResourceName().IsEmpty()) {
-        V8StringResource<> stringResource(origin.ResourceName());
-        stringResource.prepare();
-        scriptName = stringResource;
-        if (!scriptName.isEmpty())
-            lineNumber = originalFunction->GetScriptLineNumber() + 1;
-    }
     v8::Local<v8::Value> functionName = originalFunction->GetDebugName();
     if (!functionName.IsEmpty() && functionName->IsString())
         value->setString("functionName", toCoreString(functionName.As<v8::String>()));
-    value->setString("scriptId", String::number(scriptId));
-    value->setString("scriptName", scriptName);
-    value->setInteger("scriptLine", lineNumber);
+    OwnPtr<SourceLocation> location = SourceLocation::fromFunction(originalFunction);
+    value->setString("scriptId", String::number(location->scriptId()));
+    value->setString("scriptName", location->url());
+    value->setInteger("scriptLine", location->lineNumber());
     return value;
 }
 

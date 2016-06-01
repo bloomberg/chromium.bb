@@ -787,11 +787,11 @@ void InspectorResourceAgent::didScheduleStyleRecalculation(Document* document)
 
 std::unique_ptr<protocol::Network::Initiator> InspectorResourceAgent::buildInitiatorObject(Document* document, const FetchInitiatorInfo& initiatorInfo)
 {
-    std::unique_ptr<V8StackTrace> stackTrace = SourceLocation::capture(document)->takeStackTrace();
-    if (stackTrace) {
+    std::unique_ptr<protocol::Runtime::StackTrace> currentStackTrace = SourceLocation::capture(document)->buildInspectorObject();
+    if (currentStackTrace) {
         std::unique_ptr<protocol::Network::Initiator> initiatorObject = protocol::Network::Initiator::create()
             .setType(protocol::Network::Initiator::TypeEnum::Script).build();
-        initiatorObject->setStack(stackTrace->buildInspectorObject());
+        initiatorObject->setStack(std::move(currentStackTrace));
         return initiatorObject;
     }
 

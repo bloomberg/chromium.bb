@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "bindings/modules/v8/StringOrStringSequence.h"
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMArrayBufferView.h"
@@ -510,7 +511,7 @@ void DOMWebSocket::closeInternal(int code, const String& reason, ExceptionState&
         return;
     if (m_state == CONNECTING) {
         m_state = CLOSING;
-        m_channel->fail("WebSocket is closed before the connection is established.", WarningMessageLevel, nullptr);
+        m_channel->fail("WebSocket is closed before the connection is established.", WarningMessageLevel, SourceLocation::create(String(), 0, 0, nullptr));
         return;
     }
     m_state = CLOSING;

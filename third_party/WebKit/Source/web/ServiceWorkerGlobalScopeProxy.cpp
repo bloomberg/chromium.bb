@@ -224,7 +224,7 @@ void ServiceWorkerGlobalScopeProxy::reportException(const String& errorMessage, 
 
 void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(ConsoleMessage* consoleMessage)
 {
-    client().reportConsoleMessage(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url());
+    client().reportConsoleMessage(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->location()->lineNumber(), consoleMessage->location()->url());
 }
 
 void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(const String& message)

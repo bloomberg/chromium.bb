@@ -4,7 +4,6 @@
 
 #include "core/inspector/ConsoleMessage.h"
 
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/inspector/ScriptArguments.h"
@@ -25,36 +24,9 @@ unsigned nextMessageId()
 }
 
 // static
-ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack> passCallStack, int scriptId, ScriptArguments* arguments)
-{
-    RefPtr<ScriptCallStack> callStack = passCallStack;
-    if (callStack && !callStack->isEmpty() && (!scriptId || !lineNumber))
-        return new ConsoleMessage(source, level, message, callStack->topSourceURL(), callStack->topLineNumber(), callStack->topColumnNumber(), callStack->copyStackTrace(), 0, arguments);
-    return new ConsoleMessage(source, level, message, url, lineNumber, columnNumber, callStack ? callStack->copyStackTrace() : nullptr, scriptId, arguments);
-}
-
-// static
-ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber)
-{
-    return ConsoleMessage::create(source, level, message, url, lineNumber, columnNumber, nullptr, 0);
-}
-
-// static
-ConsoleMessage* ConsoleMessage::createWithCallStack(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber)
-{
-    return ConsoleMessage::create(source, level, message, url, lineNumber, columnNumber, ScriptCallStack::captureForConsole(), 0);
-}
-
-// static
-ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message)
-{
-    return ConsoleMessage::createWithCallStack(source, level, message, String(), 0, 0);
-}
-
-// static
 ConsoleMessage* ConsoleMessage::createForRequest(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned long requestIdentifier)
 {
-    ConsoleMessage* consoleMessage = ConsoleMessage::createWithCallStack(source, level, message, url, 0, 0);
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(source, level, message, SourceLocation::capture(url, 0, 0));
     consoleMessage->m_requestIdentifier = requestIdentifier;
     return consoleMessage;
 }
@@ -62,7 +34,7 @@ ConsoleMessage* ConsoleMessage::createForRequest(MessageSource source, MessageLe
 // static
 ConsoleMessage* ConsoleMessage::createForConsoleAPI(MessageLevel level, MessageType type, const String& message, ScriptArguments* arguments)
 {
-    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, message, String(), 0, 0, ScriptCallStack::captureForConsole(), 0, arguments);
+    ConsoleMessage* consoleMessage = ConsoleMessage::create(ConsoleAPIMessageSource, level, message, SourceLocation::capture(), arguments);
     consoleMessage->m_type = type;
     return consoleMessage;
 }
@@ -70,35 +42,25 @@ ConsoleMessage* ConsoleMessage::createForConsoleAPI(MessageLevel level, MessageT
 // static
 ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, PassOwnPtr<SourceLocation> location, ScriptArguments* arguments)
 {
-    if (!location)
-        return new ConsoleMessage(source, level, message, String(), 0, 0, nullptr, 0, arguments);
-    return new ConsoleMessage(source, level, message, location->url(), location->lineNumber(), location->columnNumber(), location->takeStackTrace(), location->scriptId(), arguments);
+    return new ConsoleMessage(source, level, message, std::move(location), arguments);
 }
 
 // static
-ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId, ScriptArguments* arguments)
+ConsoleMessage* ConsoleMessage::create(MessageSource source, MessageLevel level, const String& message)
 {
-    return new ConsoleMessage(source, level, message, url, lineNumber, columnNumber, std::move(stackTrace), scriptId, arguments);
+    return ConsoleMessage::create(source, level, message, SourceLocation::capture());
 }
 
 ConsoleMessage::ConsoleMessage(MessageSource source,
     MessageLevel level,
     const String& message,
-    const String& url,
-    unsigned lineNumber,
-    unsigned columnNumber,
-    std::unique_ptr<V8StackTrace> stackTrace,
-    int scriptId,
+    PassOwnPtr<SourceLocation> location,
     ScriptArguments* arguments)
     : m_source(source)
     , m_level(level)
     , m_type(LogMessageType)
     , m_message(message)
-    , m_scriptId(scriptId)
-    , m_url(url)
-    , m_lineNumber(lineNumber)
-    , m_columnNumber(columnNumber)
-    , m_stackTrace(std::move(stackTrace))
+    , m_location(std::move(location))
     , m_scriptArguments(arguments)
     , m_requestIdentifier(0)
     , m_timestamp(WTF::currentTime())
@@ -116,29 +78,9 @@ MessageType ConsoleMessage::type() const
     return m_type;
 }
 
-int ConsoleMessage::scriptId() const
+SourceLocation* ConsoleMessage::location() const
 {
-    return m_scriptId;
-}
-
-const String& ConsoleMessage::url() const
-{
-    return m_url;
-}
-
-unsigned ConsoleMessage::lineNumber() const
-{
-    return m_lineNumber;
-}
-
-unsigned ConsoleMessage::columnNumber() const
-{
-    return m_columnNumber;
-}
-
-V8StackTrace* ConsoleMessage::stackTrace() const
-{
-    return m_stackTrace.get();
+    return m_location.get();
 }
 
 ScriptArguments* ConsoleMessage::scriptArguments() const

@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ScriptController.h"
 
 #include "bindings/core/v8/BindingSecurity.h"
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"

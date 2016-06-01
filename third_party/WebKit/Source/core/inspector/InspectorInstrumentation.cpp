@@ -30,7 +30,6 @@
 
 #include "core/inspector/InspectorInstrumentation.h"
 
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "core/InstrumentingAgents.h"
 #include "core/events/Event.h"
 #include "core/events/EventTarget.h"

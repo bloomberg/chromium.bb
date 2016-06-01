@@ -26,6 +26,7 @@
 #include "core/inspector/InspectorConsoleAgent.h"
 
 #include "bindings/core/v8/ScriptValue.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/inspector/IdentifiersFactory.h"
@@ -162,11 +163,11 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
         .setTimestamp(timestamp ? *timestamp : consoleMessage->timestamp()).build();
     // FIXME: only send out type for ConsoleAPI source messages.
     jsonObj->setType(messageTypeValue(consoleMessage->type()));
-    jsonObj->setLine(static_cast<int>(consoleMessage->lineNumber()));
-    jsonObj->setColumn(static_cast<int>(consoleMessage->columnNumber()));
-    if (consoleMessage->scriptId())
-        jsonObj->setScriptId(String::number(consoleMessage->scriptId()));
-    jsonObj->setUrl(consoleMessage->url());
+    jsonObj->setLine(static_cast<int>(consoleMessage->location()->lineNumber()));
+    jsonObj->setColumn(static_cast<int>(consoleMessage->location()->columnNumber()));
+    if (consoleMessage->location()->scriptId())
+        jsonObj->setScriptId(String::number(consoleMessage->location()->scriptId()));
+    jsonObj->setUrl(consoleMessage->location()->url());
     if (consoleMessage->source() == NetworkMessageSource && consoleMessage->requestIdentifier())
         jsonObj->setNetworkRequestId(IdentifiersFactory::requestId(consoleMessage->requestIdentifier()));
     ScriptArguments* arguments = consoleMessage->scriptArguments();
@@ -197,8 +198,9 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
         if (jsonArgs)
             jsonObj->setParameters(std::move(jsonArgs));
     }
-    if (consoleMessage->stackTrace())
-        jsonObj->setStack(consoleMessage->stackTrace()->buildInspectorObject());
+    std::unique_ptr<protocol::Runtime::StackTrace> stackTrace = consoleMessage->location()->buildInspectorObject();
+    if (stackTrace)
+        jsonObj->setStack(std::move(stackTrace));
     if (consoleMessage->messageId())
         jsonObj->setMessageId(consoleMessage->messageId());
     if (consoleMessage->relatedMessageId())

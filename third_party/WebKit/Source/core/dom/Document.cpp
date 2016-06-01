@@ -5225,14 +5225,15 @@ void Document::addConsoleMessage(ConsoleMessage* consoleMessage)
     if (!m_frame)
         return;
 
-    if (!consoleMessage->messageId() && !consoleMessage->relatedMessageId() && consoleMessage->url().isNull() && !consoleMessage->lineNumber()) {
+    if (!consoleMessage->messageId() && !consoleMessage->relatedMessageId() && consoleMessage->location()->isUnknown()) {
+        // TODO(dgozman): capture correct location at call places instead.
         unsigned lineNumber = 0;
         if (!isInDocumentWrite() && scriptableDocumentParser()) {
             ScriptableDocumentParser* parser = scriptableDocumentParser();
             if (parser->isParsingAtLineNumber())
                 lineNumber = parser->lineNumber().oneBasedInt();
         }
-        consoleMessage = ConsoleMessage::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), url().getString(), lineNumber, 0, consoleMessage->stackTrace() ? consoleMessage->stackTrace()->clone() : nullptr, 0, consoleMessage->scriptArguments());
+        consoleMessage = ConsoleMessage::create(consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), SourceLocation::create(url().getString(), lineNumber, 0, nullptr), consoleMessage->scriptArguments());
     }
     m_frame->console().addMessage(consoleMessage);
 }

@@ -5,7 +5,6 @@
 #ifndef ConsoleMessage_h
 #define ConsoleMessage_h
 
-#include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/v8_inspector/public/ConsoleAPITypes.h"
@@ -17,43 +16,29 @@
 
 namespace blink {
 
+class LocalDOMWindow;
 class ScriptArguments;
-class ScriptCallStack;
-class ScriptState;
 class SourceLocation;
 class V8StackTrace;
 
 class CORE_EXPORT ConsoleMessage final: public GarbageCollectedFinalized<ConsoleMessage> {
 public:
-    // Callstack may be empty. Zero lineNumber or columnNumber means unknown.
-    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, PassRefPtr<ScriptCallStack>, int scriptId = 0, ScriptArguments* = nullptr);
+    // Location should not be null. Zero lineNumber or columnNumber means unknown.
+    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, PassOwnPtr<SourceLocation>, ScriptArguments* = nullptr);
 
-    // Shortcut when callstack is unavailable.
-    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber);
-
-    // This method tries to capture callstack if possible and falls back to provided location.
-    static ConsoleMessage* createWithCallStack(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber);
-
-    // Shortcut when location is unavailable. This method captures callstack.
+    // Shortcut when location is unknown. Captures current location.
     static ConsoleMessage* create(MessageSource, MessageLevel, const String& message);
 
-    // This method captures callstack.
+    // This method captures current location.
     static ConsoleMessage* createForRequest(MessageSource, MessageLevel, const String& message, const String& url, unsigned long requestIdentifier);
 
-    // This method captures callstack.
+    // This method captures current location.
     static ConsoleMessage* createForConsoleAPI(MessageLevel, MessageType, const String& message, ScriptArguments*);
-
-    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, PassOwnPtr<SourceLocation>, ScriptArguments* = nullptr);
-    static ConsoleMessage* create(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId, ScriptArguments*);
 
     ~ConsoleMessage();
 
     MessageType type() const;
-    int scriptId() const;
-    const String& url() const;
-    unsigned lineNumber() const;
-    unsigned columnNumber() const;
-    V8StackTrace* stackTrace() const;
+    SourceLocation* location() const;
     ScriptArguments* scriptArguments() const;
     unsigned long requestIdentifier() const;
     double timestamp() const;
@@ -71,17 +56,13 @@ public:
     DECLARE_TRACE();
 
 private:
-    ConsoleMessage(MessageSource, MessageLevel, const String& message, const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId, ScriptArguments*);
+    ConsoleMessage(MessageSource, MessageLevel, const String& message, PassOwnPtr<SourceLocation>, ScriptArguments*);
 
     MessageSource m_source;
     MessageLevel m_level;
     MessageType m_type;
     String m_message;
-    int m_scriptId;
-    String m_url;
-    unsigned m_lineNumber;
-    unsigned m_columnNumber;
-    std::unique_ptr<V8StackTrace> m_stackTrace;
+    OwnPtr<SourceLocation> m_location;
     Member<ScriptArguments> m_scriptArguments;
     unsigned long m_requestIdentifier;
     double m_timestamp;

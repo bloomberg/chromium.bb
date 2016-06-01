@@ -14,19 +14,20 @@
 #include "core/inspector/ThreadDebugger.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TracedValue.h"
+#include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 
 namespace blink {
 
 namespace {
 
-std::unique_ptr<V8StackTrace> captureStackTrace()
+std::unique_ptr<V8StackTrace> captureStackTrace(bool full)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     if (!data->threadDebugger() || !isolate->InContext())
         return nullptr;
-    size_t stackSize = 1;
+    size_t stackSize = full ? V8StackTrace::maxCallStackSizeToCapture : 1;
     if (InspectorInstrumentation::hasFrontends()) {
         if (InspectorInstrumentation::consoleAgentEnabled(currentExecutionContext(isolate)))
             stackSize = V8StackTrace::maxCallStackSizeToCapture;
@@ -40,7 +41,7 @@ std::unique_ptr<V8StackTrace> captureStackTrace()
 // static
 PassOwnPtr<SourceLocation> SourceLocation::capture(const String& url, unsigned lineNumber, unsigned columnNumber)
 {
-    std::unique_ptr<V8StackTrace> stackTrace = captureStackTrace();
+    std::unique_ptr<V8StackTrace> stackTrace = captureStackTrace(false);
     if (stackTrace && !stackTrace->isEmpty())
         return SourceLocation::createFromNonEmptyV8StackTrace(std::move(stackTrace), 0);
     return SourceLocation::create(url, lineNumber, columnNumber, std::move(stackTrace));
@@ -49,7 +50,7 @@ PassOwnPtr<SourceLocation> SourceLocation::capture(const String& url, unsigned l
 // static
 PassOwnPtr<SourceLocation> SourceLocation::capture(ExecutionContext* executionContext)
 {
-    std::unique_ptr<V8StackTrace> stackTrace = captureStackTrace();
+    std::unique_ptr<V8StackTrace> stackTrace = captureStackTrace(false);
     if (stackTrace && !stackTrace->isEmpty())
         return SourceLocation::createFromNonEmptyV8StackTrace(std::move(stackTrace), 0);
 
@@ -63,7 +64,7 @@ PassOwnPtr<SourceLocation> SourceLocation::capture(ExecutionContext* executionCo
         return SourceLocation::create(document->url().getString(), lineNumber, 0, std::move(stackTrace));
     }
 
-    return SourceLocation::create(executionContext ? executionContext->url().getString() : "", 0, 0, std::move(stackTrace));
+    return SourceLocation::create(executionContext ? executionContext->url().getString() : String(), 0, 0, std::move(stackTrace));
 }
 
 // static
@@ -113,6 +114,23 @@ PassOwnPtr<SourceLocation> SourceLocation::createFromNonEmptyV8StackTrace(std::u
     return adoptPtr(new SourceLocation(url, lineNumber, columnNumber, std::move(stackTrace), scriptId));
 }
 
+// static
+PassOwnPtr<SourceLocation> SourceLocation::fromFunction(v8::Local<v8::Function> function)
+{
+    if (!function.IsEmpty())
+        return SourceLocation::create(toCoreStringWithUndefinedOrNullCheck(function->GetScriptOrigin().ResourceName()), function->GetScriptLineNumber() + 1, function->GetScriptColumnNumber() + 1, nullptr, function->ScriptId());
+    return SourceLocation::create(String(), 0, 0, nullptr, 0);
+}
+
+// static
+PassOwnPtr<SourceLocation> SourceLocation::captureWithFullStackTrace()
+{
+    std::unique_ptr<V8StackTrace> stackTrace = captureStackTrace(true);
+    if (stackTrace && !stackTrace->isEmpty())
+        return SourceLocation::createFromNonEmptyV8StackTrace(std::move(stackTrace), 0);
+    return SourceLocation::create(String(), 0, 0, nullptr, 0);
+}
+
 SourceLocation::SourceLocation(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace> stackTrace, int scriptId)
     : m_url(url)
     , m_lineNumber(lineNumber)
@@ -149,6 +167,18 @@ PassOwnPtr<SourceLocation> SourceLocation::clone() const
 PassOwnPtr<SourceLocation> SourceLocation::isolatedCopy() const
 {
     return adoptPtr(new SourceLocation(m_url.isolatedCopy(), m_lineNumber, m_columnNumber, m_stackTrace ? m_stackTrace->isolatedCopy() : nullptr, m_scriptId));
+}
+
+std::unique_ptr<protocol::Runtime::StackTrace> SourceLocation::buildInspectorObject() const
+{
+    return m_stackTrace ? m_stackTrace->buildInspectorObject() : nullptr;
+}
+
+String SourceLocation::toString() const
+{
+    if (!m_stackTrace)
+        return String();
+    return m_stackTrace->toString();
 }
 
 } // namespace blink

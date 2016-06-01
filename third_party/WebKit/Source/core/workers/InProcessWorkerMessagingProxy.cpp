@@ -175,13 +175,13 @@ void InProcessWorkerMessagingProxy::reportException(const String& errorMessage, 
         postTaskToWorkerGlobalScope(createCrossThreadTask(&processUnhandledExceptionOnWorkerGlobalScope, errorMessage, passed(std::move(location))));
 }
 
-void InProcessWorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, int lineNumber, const String& sourceURL)
+void InProcessWorkerMessagingProxy::reportConsoleMessage(MessageSource source, MessageLevel level, const String& message, PassOwnPtr<SourceLocation> location)
 {
     DCHECK(isParentContextThread());
     if (m_askedToTerminate)
         return;
     if (m_workerInspectorProxy)
-        m_workerInspectorProxy->addConsoleMessageFromWorker(ConsoleMessage::create(source, level, message, sourceURL, lineNumber, 0));
+        m_workerInspectorProxy->addConsoleMessageFromWorker(ConsoleMessage::create(source, level, message, std::move(location)));
 }
 
 void InProcessWorkerMessagingProxy::workerThreadCreated()

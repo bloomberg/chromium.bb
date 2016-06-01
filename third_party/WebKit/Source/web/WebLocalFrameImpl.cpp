@@ -88,7 +88,6 @@
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -760,7 +759,7 @@ void WebLocalFrameImpl::addMessageToConsole(const WebConsoleMessage& message)
         break;
     }
 
-    frame()->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, webCoreMessageLevel, message.text, message.url, message.lineNumber, message.columnNumber));
+    frame()->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, webCoreMessageLevel, message.text, SourceLocation::create(message.url, message.lineNumber, message.columnNumber, nullptr)));
 }
 
 void WebLocalFrameImpl::collectGarbage()
@@ -2001,7 +2000,7 @@ void WebLocalFrameImpl::resetMatchCount()
 void WebLocalFrameImpl::dispatchMessageEventWithOriginCheck(const WebSecurityOrigin& intendedTargetOrigin, const WebDOMEvent& event)
 {
     DCHECK(!event.isNull());
-    frame()->localDOMWindow()->dispatchMessageEventWithOriginCheck(intendedTargetOrigin.get(), event, nullptr);
+    frame()->localDOMWindow()->dispatchMessageEventWithOriginCheck(intendedTargetOrigin.get(), event, SourceLocation::create(String(), 0, 0, nullptr));
 }
 
 int WebLocalFrameImpl::findMatchMarkersVersion() const

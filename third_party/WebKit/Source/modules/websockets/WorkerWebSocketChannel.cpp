@@ -151,11 +151,11 @@ void WorkerWebSocketChannel::fail(const String& reason, MessageLevel level, Pass
         return;
 
     OwnPtr<SourceLocation> capturedLocation = SourceLocation::capture();
-    if (!capturedLocation->isEmpty()) {
+    if (!capturedLocation->isUnknown()) {
         // If we are in JavaScript context, use the current location instead
         // of passed one - it's more precise.
         m_bridge->fail(reason, level, std::move(capturedLocation));
-    } else if (!location || location->isEmpty()) {
+    } else if (location->isUnknown()) {
         // No information is specified by the caller - use the url
         // and the line number at the connection.
         m_bridge->fail(reason, level, m_locationAtConnection->clone());

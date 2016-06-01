@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class ExecutionContext;
 class FrameHost;
 class LocalDOMWindow;
 class WorkerGlobalScopeProxy;

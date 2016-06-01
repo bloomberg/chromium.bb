@@ -62,8 +62,6 @@
             'ScheduledAction.cpp',
             'ScheduledAction.h',
             'ScopedPersistent.h',
-            'ScriptCallStack.cpp',
-            'ScriptCallStack.h',
             'ScriptController.cpp',
             'ScriptController.h',
             'ScriptCustomElementDefinition.cpp',

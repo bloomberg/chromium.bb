@@ -68,7 +68,7 @@ public:
     // InProcessWorkerObjectProxy and are called on the parent context thread.
     void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
     void reportException(const String& errorMessage, PassOwnPtr<SourceLocation>);
-    void reportConsoleMessage(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL);
+    void reportConsoleMessage(MessageSource, MessageLevel, const String& message, PassOwnPtr<SourceLocation>);
     void postMessageToPageInspector(const String&);
     void postWorkerConsoleAgentEnabled();
     void confirmMessageFromWorkerObject(bool hasPendingActivity);

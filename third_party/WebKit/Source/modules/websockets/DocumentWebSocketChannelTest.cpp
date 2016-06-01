@@ -680,7 +680,7 @@ TEST_F(DocumentWebSocketChannelTest, failFromWebSocket)
         EXPECT_CALL(*channelClient(), didClose(WebSocketChannelClient::ClosingHandshakeIncomplete, WebSocketChannel::CloseEventCodeAbnormalClosure, String()));
     }
 
-    channel()->fail("fail message from WebSocket", ErrorMessageLevel, nullptr);
+    channel()->fail("fail message from WebSocket", ErrorMessageLevel, SourceLocation::create(String(), 0, 0, nullptr));
 }
 
 } // namespace

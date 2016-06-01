@@ -140,7 +140,7 @@ void WebPepperSocketImpl::close(int code, const WebString& reason)
 
 void WebPepperSocketImpl::fail(const WebString& reason)
 {
-    m_private->fail(reason, ErrorMessageLevel, nullptr);
+    m_private->fail(reason, ErrorMessageLevel, SourceLocation::create(String(), 0, 0, nullptr));
 }
 
 void WebPepperSocketImpl::disconnect()

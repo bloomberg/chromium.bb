@@ -28,7 +28,7 @@
 
 #include "core/frame/FrameConsole.h"
 
-#include "bindings/core/v8/ScriptCallStack.h"
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/frame/FrameHost.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/ConsoleMessageStorage.h"
@@ -90,23 +90,24 @@ void FrameConsole::reportMessageToClient(ConsoleMessage* consoleMessage)
     if (consoleMessage->source() == NetworkMessageSource)
         return;
 
+    String url = consoleMessage->location()->url();
     String stackTrace;
     if (consoleMessage->source() == ConsoleAPIMessageSource) {
         if (!frame().host() || (consoleMessage->scriptArguments() && !consoleMessage->scriptArguments()->argumentCount()))
             return;
         if (!allClientReportingMessageTypes().contains(consoleMessage->type()))
             return;
-        if (frame().chromeClient().shouldReportDetailedMessageForSource(frame(), consoleMessage->url())) {
-            RefPtr<ScriptCallStack> captured = ScriptCallStack::capture();
-            if (captured)
-                stackTrace = captured->toString();
+        if (frame().chromeClient().shouldReportDetailedMessageForSource(frame(), url)) {
+            OwnPtr<SourceLocation> location = SourceLocation::captureWithFullStackTrace();
+            if (!location->isUnknown())
+                stackTrace = location->toString();
         }
     } else {
-        if (consoleMessage->stackTrace() && frame().chromeClient().shouldReportDetailedMessageForSource(frame(), consoleMessage->url()))
-            stackTrace = consoleMessage->stackTrace()->toString();
+        if (!consoleMessage->location()->isUnknown() && frame().chromeClient().shouldReportDetailedMessageForSource(frame(), url))
+            stackTrace = consoleMessage->location()->toString();
     }
 
-    frame().chromeClient().addMessageToConsole(m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->lineNumber(), consoleMessage->url(), stackTrace);
+    frame().chromeClient().addMessageToConsole(m_frame, consoleMessage->source(), consoleMessage->level(), consoleMessage->message(), consoleMessage->location()->lineNumber(), url, stackTrace);
 }
 
 void FrameConsole::reportWorkerMessage(ConsoleMessage* consoleMessage)
