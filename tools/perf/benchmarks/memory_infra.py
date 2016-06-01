@@ -196,3 +196,7 @@ class MemoryLongRunningIdleGmailBackground(_MemoryV8Benchmark):
   @classmethod
   def Name(cls):
     return 'memory.long_running_idle_gmail_background_tbmv2'
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/616530
+    return cls.IsSvelte(possible_browser)
