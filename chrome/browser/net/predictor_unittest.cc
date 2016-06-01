@@ -551,6 +551,33 @@ TEST_F(PredictorTest, HSTSRedirectSubresources) {
   predictor.Shutdown();
 }
 
+TEST_F(PredictorTest, HSTSRedirectLearnedSubresource) {
+  const GURL kHttpUrl("http://example.com");
+  const GURL kHttpsUrl("https://example.com");
+  const GURL kSubresourceUrl("https://images.example.com");
+
+  const base::Time expiry =
+      base::Time::Now() + base::TimeDelta::FromSeconds(1000);
+  net::TransportSecurityState state;
+  state.AddHSTS(kHttpUrl.host(), expiry, false);
+
+  SimplePredictor predictor(true, true);
+  TestPredictorObserver observer;
+  predictor.SetObserver(&observer);
+  predictor.SetTransportSecurityState(&state);
+
+  // Note that the predictor would also learn the HSTS redirect from kHttpUrl to
+  // kHttpsUrl during the navigation.
+  predictor.LearnFromNavigation(kHttpUrl, kSubresourceUrl);
+
+  predictor.PreconnectUrlAndSubresources(kHttpUrl, GURL());
+  ASSERT_EQ(2u, observer.preconnected_urls_.size());
+  EXPECT_EQ(kHttpsUrl, observer.preconnected_urls_[0]);
+  EXPECT_EQ(kSubresourceUrl, observer.preconnected_urls_[1]);
+
+  predictor.Shutdown();
+}
+
 TEST_F(PredictorTest, NoProxyService) {
   // Don't actually try to resolve names.
   Predictor::set_max_parallel_resolves(0);

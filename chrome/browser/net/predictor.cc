@@ -427,9 +427,12 @@ void Predictor::LearnFromNavigation(const GURL& referring_url,
   DCHECK_EQ(target_url, Predictor::CanonicalizeUrl(target_url));
   DCHECK_NE(target_url, GURL::EmptyGURL());
 
+  // Skip HSTS redirects to learn the true referrer.
+  GURL referring_url_with_hsts = GetHSTSRedirectOnIOThread(referring_url);
+
   if (observer_)
-    observer_->OnLearnFromNavigation(referring_url, target_url);
-  referrers_[referring_url].SuggestHost(target_url);
+    observer_->OnLearnFromNavigation(referring_url_with_hsts, target_url);
+  referrers_[referring_url_with_hsts].SuggestHost(target_url);
   // Possibly do some referrer trimming.
   TrimReferrers();
 }
