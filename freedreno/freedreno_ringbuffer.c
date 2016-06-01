@@ -97,10 +97,8 @@ void fd_ringbuffer_reloc(struct fd_ringbuffer *ring,
 	ring->funcs->emit_reloc(ring, reloc);
 }
 
-void
-fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
-			      struct fd_ringmarker *target,
-			      struct fd_ringmarker *end)
+void fd_ringbuffer_emit_reloc_ring(struct fd_ringbuffer *ring,
+		struct fd_ringmarker *target, struct fd_ringmarker *end)
 {
 	uint32_t submit_offset, size;
 
