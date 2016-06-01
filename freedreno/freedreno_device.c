@@ -95,9 +95,12 @@ out:
  */
 struct fd_device * fd_device_new_dup(int fd)
 {
-	struct fd_device *dev = fd_device_new(dup(fd));
+	int dup_fd = dup(fd);
+	struct fd_device *dev = fd_device_new(dup_fd);
 	if (dev)
 		dev->closefd = 1;
+	else
+		close(dup_fd);
 	return dev;
 }
 
