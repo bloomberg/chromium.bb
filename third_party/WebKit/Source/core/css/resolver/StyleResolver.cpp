@@ -512,15 +512,15 @@ void StyleResolver::matchScopedRules(const Element& element, ElementRuleCollecto
     bool matchElementScopeDone = !elementScopeResolver && !element.inlineStyle();
 
     for (auto it = m_treeBoundaryCrossingScopes.rbegin(); it != m_treeBoundaryCrossingScopes.rend(); ++it) {
-        const TreeScope& scope = (*it)->treeScope();
+        const TreeScope& scope = (*it)->containingTreeScope();
         ScopedStyleResolver* resolver = scope.scopedStyleResolver();
         ASSERT(resolver);
 
-        bool isInnerTreeScope = element.treeScope().isInclusiveAncestorOf(scope);
+        bool isInnerTreeScope = element.containingTreeScope().isInclusiveAncestorOf(scope);
         if (!shouldCheckScope(element, **it, isInnerTreeScope))
             continue;
 
-        if (!matchElementScopeDone && scope.isInclusiveAncestorOf(element.treeScope())) {
+        if (!matchElementScopeDone && scope.isInclusiveAncestorOf(element.containingTreeScope())) {
 
             matchElementScopeDone = true;
 
@@ -660,7 +660,7 @@ void StyleResolver::collectTreeBoundaryCrossingRules(const Element& element, Ele
     for (const auto& scopingNode : m_treeBoundaryCrossingScopes) {
         // Skip rule collection for element when tree boundary crossing rules of scopingNode's
         // scope can never apply to it.
-        bool isInnerTreeScope = element.treeScope().isInclusiveAncestorOf(scopingNode->treeScope());
+        bool isInnerTreeScope = element.containingTreeScope().isInclusiveAncestorOf(scopingNode->containingTreeScope());
         if (!shouldCheckScope(element, *scopingNode, isInnerTreeScope))
             continue;
 

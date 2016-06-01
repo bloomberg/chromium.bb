@@ -236,7 +236,7 @@ ScopedFocusNavigation ScopedFocusNavigation::createFor(const Element& current)
         return ScopedFocusNavigation(*slot, &current);
     if (HTMLSlotElement* slot = ScopedFocusNavigation::findFallbackScopeOwnerSlot(current))
         return ScopedFocusNavigation(*slot, &current);
-    return ScopedFocusNavigation(current.treeScope(), &current);
+    return ScopedFocusNavigation(current.containingTreeScope(), &current);
 }
 
 ScopedFocusNavigation ScopedFocusNavigation::createForDocument(Document& document)

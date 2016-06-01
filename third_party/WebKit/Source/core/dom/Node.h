@@ -471,6 +471,12 @@ public:
         return *m_treeScope;
     }
 
+    TreeScope& containingTreeScope() const
+    {
+        DCHECK(isInTreeScope());
+        return *m_treeScope;
+    }
+
     bool inActiveDocument() const;
 
     // Returns true if this node is associated with a shadow-including document and is in its associated document's

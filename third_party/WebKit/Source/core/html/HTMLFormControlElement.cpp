@@ -179,7 +179,7 @@ void HTMLFormControlElement::disabledAttributeChanged()
     pseudoStateChanged(CSSSelector::PseudoEnabled);
     if (layoutObject())
         LayoutTheme::theme().controlStateChanged(*layoutObject(), EnabledControlState);
-    if (isDisabledFormControl() && treeScope().adjustedFocusedElement() == this) {
+    if (isDisabledFormControl() && adjustedFocusedElementInTreeScope() == this) {
         // We might want to call blur(), but it's dangerous to dispatch events
         // here.
         document().setNeedsFocusedElementCheck();

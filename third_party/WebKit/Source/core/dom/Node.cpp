@@ -374,7 +374,7 @@ Node* Node::pseudoAwareLastChild() const
 Node& Node::treeRoot() const
 {
     if (isInTreeScope())
-        return treeScope().rootNode();
+        return containingTreeScope().rootNode();
     const Node* node = this;
     while (node->parentNode())
         node = node->parentNode();

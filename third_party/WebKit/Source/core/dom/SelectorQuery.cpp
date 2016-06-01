@@ -259,8 +259,8 @@ void SelectorDataList::findTraverseRootsAndExecute(ContainerNode& rootNode, type
     bool startFromParent = false;
 
     for (const CSSSelector* selector = m_selectors[0]; selector; selector = selector->tagHistory()) {
-        if (selector->match() == CSSSelector::Id && !rootNode.treeScope().containsMultipleElementsWithId(selector->value())) {
-            Element* element = rootNode.treeScope().getElementById(selector->value());
+        if (selector->match() == CSSSelector::Id && rootNode.isInTreeScope() && !rootNode.containingTreeScope().containsMultipleElementsWithId(selector->value())) {
+            Element* element = rootNode.containingTreeScope().getElementById(selector->value());
             ContainerNode* adjustedNode = &rootNode;
             if (element && (isTreeScopeRoot(rootNode) || element->isDescendantOf(&rootNode)))
                 adjustedNode = element;

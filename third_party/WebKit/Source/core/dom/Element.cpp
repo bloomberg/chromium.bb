@@ -2223,7 +2223,7 @@ void Element::parseAttribute(const QualifiedName& name, const AtomicString&, con
         int tabindex = 0;
         if (value.isEmpty()) {
             clearTabIndexExplicitlyIfNeeded();
-            if (treeScope().adjustedFocusedElement() == this) {
+            if (adjustedFocusedElementInTreeScope() == this) {
                 // We might want to call blur(), but it's dangerous to dispatch
                 // events here.
                 document().setNeedsFocusedElementCheck();
@@ -2421,7 +2421,7 @@ void Element::updateFocusAppearance(SelectionBehaviorOnFocus selectionBehavior)
 void Element::blur()
 {
     cancelFocusAppearanceUpdate();
-    if (treeScope().adjustedFocusedElement() == this) {
+    if (adjustedFocusedElementInTreeScope() == this) {
         Document& doc = document();
         if (doc.page())
             doc.page()->focusController().setFocusedElement(0, doc.frame());
@@ -2486,6 +2486,11 @@ bool Element::isMouseFocusable() const
 bool Element::isFocusedElementInDocument() const
 {
     return this == document().focusedElement();
+}
+
+Element* Element::adjustedFocusedElementInTreeScope() const
+{
+    return isInTreeScope() ? containingTreeScope().adjustedFocusedElement() : nullptr;
 }
 
 void Element::dispatchFocusEvent(Element* oldFocusedElement, WebFocusType type, InputDeviceCapabilities* sourceCapabilities)
@@ -3151,7 +3156,7 @@ inline void Element::updateId(const AtomicString& oldId, const AtomicString& new
     if (oldId == newId)
         return;
 
-    updateId(treeScope(), oldId, newId);
+    updateId(containingTreeScope(), oldId, newId);
 }
 
 inline void Element::updateId(TreeScope& scope, const AtomicString& oldId, const AtomicString& newId)

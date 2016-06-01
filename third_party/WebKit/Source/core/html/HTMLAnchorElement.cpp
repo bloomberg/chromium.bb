@@ -189,7 +189,7 @@ void HTMLAnchorElement::parseAttribute(const QualifiedName& name, const AtomicSt
             pseudoStateChanged(CSSSelector::PseudoVisited);
             pseudoStateChanged(CSSSelector::PseudoAnyLink);
         }
-        if (wasLink && !isLink() && treeScope().adjustedFocusedElement() == this) {
+        if (wasLink && !isLink() && adjustedFocusedElementInTreeScope() == this) {
             // We might want to call blur(), but it's dangerous to dispatch
             // events here.
             document().setNeedsFocusedElementCheck();

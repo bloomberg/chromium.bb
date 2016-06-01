@@ -111,7 +111,7 @@ void ElementRuleCollector::addElementStyleProperties(const StylePropertySet* pro
 static bool rulesApplicableInCurrentTreeScope(const Element* element, const ContainerNode* scopingNode)
 {
     // Check if the rules come from a shadow style sheet in the same tree scope.
-    return !scopingNode || element->treeScope() == scopingNode->treeScope();
+    return !scopingNode || element->containingTreeScope() == scopingNode->containingTreeScope();
 }
 
 template<typename RuleDataListType>

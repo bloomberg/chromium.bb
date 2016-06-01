@@ -1354,7 +1354,7 @@ Element* ContainerNode::getElementById(const AtomicString& id) const
     if (isInTreeScope()) {
         // Fast path if we are in a tree scope: call getElementById() on tree scope
         // and check if the matching element is in our subtree.
-        Element* element = treeScope().getElementById(id);
+        Element* element = containingTreeScope().getElementById(id);
         if (!element)
             return nullptr;
         if (element->isDescendantOf(this))
