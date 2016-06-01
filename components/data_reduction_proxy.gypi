@@ -63,8 +63,6 @@
         # Note: sources list duplicated in GN build.
         'data_reduction_proxy/core/common/data_reduction_proxy_bypass_action_list.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_bypass_type_list.h',
-        'data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.cc',
-        'data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_config_values.h',
         'data_reduction_proxy/core/common/data_reduction_proxy_event_creator.cc',
         'data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h',
@@ -192,8 +190,12 @@
       # GN version: //components/data_reduction_proxy/core/common
       'target_name': 'data_reduction_proxy_core_common',
       'type': 'static_library',
+      'defines': [
+        'USE_GOOGLE_API_KEYS'
+      ],
       'dependencies': [
         '../base/base.gyp:base',
+        '../google_apis/google_apis.gyp:google_apis',
         '../url/url.gyp:url_lib',
         'data_reduction_proxy_proto',
       ],

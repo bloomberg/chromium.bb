@@ -168,10 +168,10 @@
       'data_reduction_proxy/core/browser/data_reduction_proxy_settings_unittest.cc',
       'data_reduction_proxy/core/browser/data_reduction_proxy_tamper_detection_unittest.cc',
       'data_reduction_proxy/core/browser/data_usage_store_unittest.cc',
-      'data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser_unittest.cc',
       'data_reduction_proxy/core/common/data_reduction_proxy_event_store_unittest.cc',
       'data_reduction_proxy/core/common/data_reduction_proxy_headers_unittest.cc',
       'data_reduction_proxy/core/common/data_reduction_proxy_params_unittest.cc',
+      'data_reduction_proxy/core/common/data_reduction_proxy_util_unittest.cc',
     ],
     'data_usage_unittest_sources': [
       'data_usage/core/data_use_aggregator_unittest.cc',

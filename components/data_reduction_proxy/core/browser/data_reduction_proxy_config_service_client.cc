@@ -21,15 +21,14 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_mutable_config_values.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_client_config_parser.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
-#include "net/base/url_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -39,10 +38,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
-
-#if defined(USE_GOOGLE_API_KEYS)
-#include "google_apis/google_api_keys.h"
-#endif
 
 namespace data_reduction_proxy {
 
@@ -71,11 +66,6 @@ const char kUMAConfigServiceAuthExpired[] =
 const uint32_t kMaxBackgroundFetchIntervalSeconds = 6 * 60 * 60;  // 6 hours.
 #endif
 
-#if defined(USE_GOOGLE_API_KEYS)
-// Used in all Data Reduction Proxy URLs to specify API Key.
-const char kApiKeyName[] = "key";
-#endif
-
 // This is the default backoff policy used to communicate with the Data
 // Reduction Proxy configuration service.
 const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
@@ -95,23 +85,12 @@ std::vector<net::ProxyServer> GetProxiesForHTTP(
   for (const auto& server : proxy_config.http_proxy_servers()) {
     if (server.scheme() != ProxyServer_ProxyScheme_UNSPECIFIED) {
       proxies.push_back(net::ProxyServer(
-          config_parser::SchemeFromProxyScheme(server.scheme()),
+          protobuf_parser::SchemeFromProxyScheme(server.scheme()),
           net::HostPortPair(server.host(), server.port())));
     }
   }
 
   return proxies;
-}
-
-GURL AddApiKeyToUrl(const GURL& url) {
-  GURL new_url = url;
-#if defined(USE_GOOGLE_API_KEYS)
-  std::string api_key = google_apis::GetAPIKey();
-  if (google_apis::HasKeysConfigured() && !api_key.empty()) {
-    new_url = net::AppendOrReplaceQueryParameter(url, kApiKeyName, api_key);
-  }
-#endif
-  return net::AppendOrReplaceQueryParameter(new_url, "alt", "proto");
 }
 
 void RecordAuthExpiredHistogram(bool auth_expired) {
@@ -454,7 +433,7 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
   if (succeeded) {
     proxies = GetProxiesForHTTP(config.proxy_config());
     refresh_duration =
-        config_parser::DurationToTimeDelta(config.refresh_duration());
+        protobuf_parser::DurationToTimeDelta(config.refresh_duration());
 
     DCHECK(!config_fetch_start_time_.is_null());
     base::TimeDelta configuration_fetch_latency =
