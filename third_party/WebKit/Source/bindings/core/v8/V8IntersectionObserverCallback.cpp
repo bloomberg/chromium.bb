@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8IntersectionObserver.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/ExecutionContext.h"
 #include "wtf/Assertions.h"
 
@@ -17,8 +18,8 @@ V8IntersectionObserverCallback::V8IntersectionObserverCallback(v8::Local<v8::Fun
     , m_callback(scriptState->isolate(), callback)
     , m_scriptState(scriptState)
 {
-    V8HiddenValue::setHiddenValue(scriptState, owner, V8HiddenValue::callback(scriptState->isolate()), callback);
-    m_callback.setWeak(this, &setWeakCallback);
+    V8PrivateProperty::getIntersectionObserverCallback(scriptState->isolate()).set(scriptState->context(), owner, callback);
+    m_callback.setPhantom();
 }
 
 V8IntersectionObserverCallback::~V8IntersectionObserverCallback()
@@ -56,11 +57,6 @@ void V8IntersectionObserverCallback::handleEvent(const HeapVector<Member<Interse
     v8::TryCatch exceptionCatcher(m_scriptState->isolate());
     exceptionCatcher.SetVerbose(true);
     ScriptController::callFunction(m_scriptState->getExecutionContext(), m_callback.newLocal(m_scriptState->isolate()), thisObject, 2, argv, m_scriptState->isolate());
-}
-
-void V8IntersectionObserverCallback::setWeakCallback(const v8::WeakCallbackInfo<V8IntersectionObserverCallback>& data)
-{
-    data.GetParameter()->m_callback.clear();
 }
 
 DEFINE_TRACE(V8IntersectionObserverCallback)

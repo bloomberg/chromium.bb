@@ -30,8 +30,6 @@ public:
 private:
     CORE_EXPORT V8PerformanceObserverCallback(v8::Local<v8::Function>, v8::Local<v8::Object>, ScriptState*);
 
-    static void setWeakCallback(const v8::WeakCallbackInfo<V8PerformanceObserverCallback>&);
-
     ScopedPersistent<v8::Function> m_callback;
     RefPtr<ScriptState> m_scriptState;
 };

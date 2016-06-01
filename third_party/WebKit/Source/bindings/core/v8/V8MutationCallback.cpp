@@ -26,10 +26,11 @@
 #include "bindings/core/v8/V8MutationCallback.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8HiddenValue.h"
 #include "bindings/core/v8/V8MutationObserver.h"
 #include "bindings/core/v8/V8MutationRecord.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/ExecutionContext.h"
 #include "wtf/Assertions.h"
 
@@ -40,8 +41,8 @@ V8MutationCallback::V8MutationCallback(v8::Local<v8::Function> callback, v8::Loc
     , m_callback(scriptState->isolate(), callback)
     , m_scriptState(scriptState)
 {
-    V8HiddenValue::setHiddenValue(scriptState, owner, V8HiddenValue::callback(scriptState->isolate()), callback);
-    m_callback.setWeak(this, &setWeakCallback);
+    V8PrivateProperty::getMutationObserverCallback(scriptState->isolate()).set(scriptState->context(), owner, callback);
+    m_callback.setPhantom();
 }
 
 V8MutationCallback::~V8MutationCallback()
@@ -80,11 +81,6 @@ void V8MutationCallback::call(const HeapVector<Member<MutationRecord>>& mutation
     v8::TryCatch exceptionCatcher(isolate);
     exceptionCatcher.SetVerbose(true);
     ScriptController::callFunction(getExecutionContext(), m_callback.newLocal(isolate), thisObject, WTF_ARRAY_LENGTH(argv), argv, isolate);
-}
-
-void V8MutationCallback::setWeakCallback(const v8::WeakCallbackInfo<V8MutationCallback>& data)
-{
-    data.GetParameter()->m_callback.clear();
 }
 
 DEFINE_TRACE(V8MutationCallback)

@@ -25,8 +25,6 @@ public:
     ExecutionContext* getExecutionContext() const override { return ContextLifecycleObserver::getExecutionContext(); }
 private:
 
-    static void setWeakCallback(const v8::WeakCallbackInfo<V8IntersectionObserverCallback>&);
-
     ScopedPersistent<v8::Function> m_callback;
     RefPtr<ScriptState> m_scriptState;
 };
