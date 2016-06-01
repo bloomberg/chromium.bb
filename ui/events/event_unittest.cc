@@ -887,6 +887,70 @@ TEST(EventTest, PointerEventClone) {
   }
 }
 
+TEST(EventTest, PointerEventToMouseEvent) {
+  const struct {
+    ui::EventType in_type;
+    ui::EventType out_type;
+    gfx::Point location;
+    gfx::Point root_location;
+    int flags;
+  } kTestData[] = {
+      {ui::ET_POINTER_DOWN, ui::ET_MOUSE_PRESSED, gfx::Point(10, 20),
+       gfx::Point(110, 120), 0},
+      {ui::ET_POINTER_MOVED, ui::ET_MOUSE_MOVED, gfx::Point(20, 10),
+       gfx::Point(1, 2), EF_LEFT_MOUSE_BUTTON},
+      {ui::ET_POINTER_ENTERED, ui::ET_MOUSE_ENTERED, gfx::Point(), gfx::Point(),
+       EF_MIDDLE_MOUSE_BUTTON | EF_RIGHT_MOUSE_BUTTON},
+      {ui::ET_POINTER_EXITED, ui::ET_MOUSE_EXITED, gfx::Point(5, 1),
+       gfx::Point(1, 5), EF_RIGHT_MOUSE_BUTTON},
+      {ui::ET_POINTER_UP, ui::ET_MOUSE_RELEASED, gfx::Point(1000, 1000),
+       gfx::Point(14, 15), EF_MIDDLE_MOUSE_BUTTON}};
+
+  for (size_t i = 0; i < arraysize(kTestData); i++) {
+    ui::PointerEvent pointer_event(
+        kTestData[i].in_type, ui::EventPointerType::POINTER_TYPE_MOUSE,
+        kTestData[i].location, kTestData[i].root_location, kTestData[i].flags,
+        0, base::TimeDelta());
+    ui::MouseEvent mouse_event(pointer_event);
+
+    EXPECT_EQ(kTestData[i].out_type, mouse_event.type());
+    EXPECT_EQ(kTestData[i].location, mouse_event.location());
+    EXPECT_EQ(kTestData[i].root_location, mouse_event.root_location());
+    EXPECT_EQ(kTestData[i].flags, mouse_event.flags());
+  }
+}
+
+TEST(EventTest, PointerEventToTouchEventType) {
+  ui::EventType kTouchTypeMap[][2] = {
+      {ui::ET_POINTER_DOWN, ui::ET_TOUCH_PRESSED},
+      {ui::ET_POINTER_MOVED, ui::ET_TOUCH_MOVED},
+      {ui::ET_POINTER_UP, ui::ET_TOUCH_RELEASED},
+      {ui::ET_POINTER_CANCELLED, ui::ET_TOUCH_CANCELLED},
+  };
+
+  for (size_t i = 0; i < arraysize(kTouchTypeMap); i++) {
+    ui::PointerEvent pointer_event(
+        kTouchTypeMap[i][0], ui::EventPointerType::POINTER_TYPE_TOUCH,
+        gfx::Point(), gfx::Point(), 0, 0, base::TimeDelta());
+    ui::TouchEvent touch_event(pointer_event);
+
+    EXPECT_EQ(kTouchTypeMap[i][1], touch_event.type());
+  }
+}
+
+TEST(EventTest, PointerEventToTouchEventDetails) {
+  ui::PointerEvent pointer_event(
+      ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(12, 14), 0, 15,
+                     EventTimeForNow(), 11.5, 13.5, 13.0, 0.5));
+  ui::TouchEvent touch_event(pointer_event);
+
+  EXPECT_EQ(pointer_event.location(), touch_event.location());
+  EXPECT_EQ(pointer_event.flags(), touch_event.flags());
+  EXPECT_EQ(pointer_event.pointer_id(), touch_event.touch_id());
+  EXPECT_EQ(pointer_event.pointer_details(), touch_event.pointer_details());
+  EXPECT_EQ(pointer_event.time_stamp(), touch_event.time_stamp());
+}
+
 // Checks that Event.Latency.OS.TOUCH_PRESSED, TOUCH_MOVED,
 // and TOUCH_RELEASED histograms are computed properly.
 #if defined(USE_X11)

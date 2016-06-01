@@ -465,6 +465,9 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
  public:
   explicit MouseEvent(const base::NativeEvent& native_event);
 
+  // |pointer_event.IsMousePointerEvent()| must be true.
+  explicit MouseEvent(const PointerEvent& pointer_event);
+
   // Create a new MouseEvent based on the provided model.
   // Uses the provided |type| and |flags| for the new event.
   // If source / target windows are provided, the model location will be
@@ -639,6 +642,9 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
 class EVENTS_EXPORT TouchEvent : public LocatedEvent {
  public:
   explicit TouchEvent(const base::NativeEvent& native_event);
+
+  // |pointer_event.IsTouchPointerEvent()| must be true.
+  explicit TouchEvent(const PointerEvent& pointer_event);
 
   // Create a new TouchEvent which is identical to the provided model.
   // If source / target windows are provided, the model location will be

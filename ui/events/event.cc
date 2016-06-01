@@ -462,6 +462,36 @@ MouseEvent::MouseEvent(const base::NativeEvent& native_event)
     SetClickCount(GetRepeatCount(*this));
 }
 
+MouseEvent::MouseEvent(const PointerEvent& pointer_event)
+    : LocatedEvent(pointer_event),
+      pointer_details_(pointer_event.pointer_details()) {
+  DCHECK(pointer_event.IsMousePointerEvent());
+  switch (pointer_event.type()) {
+    case ET_POINTER_DOWN:
+      SetType(ET_MOUSE_PRESSED);
+      break;
+
+    case ET_POINTER_MOVED:
+      SetType(ET_MOUSE_MOVED);
+      break;
+
+    case ET_POINTER_ENTERED:
+      SetType(ET_MOUSE_ENTERED);
+      break;
+
+    case ET_POINTER_EXITED:
+      SetType(ET_MOUSE_EXITED);
+      break;
+
+    case ET_POINTER_UP:
+      SetType(ET_MOUSE_RELEASED);
+      break;
+
+    default:
+      NOTREACHED();
+  }
+}
+
 MouseEvent::MouseEvent(EventType type,
                        const gfx::Point& location,
                        const gfx::Point& root_location,
@@ -667,6 +697,37 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
   FixRotationAngle();
   if (type() == ET_TOUCH_RELEASED || type() == ET_TOUCH_CANCELLED)
     should_remove_native_touch_id_mapping_ = true;
+}
+
+TouchEvent::TouchEvent(const PointerEvent& pointer_event)
+    : LocatedEvent(pointer_event),
+      touch_id_(pointer_event.pointer_id()),
+      unique_event_id_(ui::GetNextTouchEventId()),
+      rotation_angle_(0.0f),
+      may_cause_scrolling_(false),
+      should_remove_native_touch_id_mapping_(false),
+      pointer_details_(pointer_event.pointer_details()) {
+  DCHECK(pointer_event.IsTouchPointerEvent());
+  switch (pointer_event.type()) {
+    case ET_POINTER_DOWN:
+      SetType(ET_TOUCH_PRESSED);
+      break;
+
+    case ET_POINTER_MOVED:
+      SetType(ET_TOUCH_MOVED);
+      break;
+
+    case ET_POINTER_UP:
+      SetType(ET_TOUCH_RELEASED);
+      break;
+
+    case ET_POINTER_CANCELLED:
+      SetType(ET_TOUCH_CANCELLED);
+      break;
+
+    default:
+      NOTREACHED();
+  }
 }
 
 TouchEvent::TouchEvent(EventType type,
