@@ -273,6 +273,9 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
     return frame_view;
   }
 
+  if (chrome::IsRunningInMash())
+    return ChromeNativeAppWindowViews::CreateNonClientFrameView(widget);
+
   ash::CustomFrameViewAsh* custom_frame_view =
       new ash::CustomFrameViewAsh(widget);
   // Non-frameless app windows can be put into immersive fullscreen.
