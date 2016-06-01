@@ -23,10 +23,12 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "third_party/zlib/zlib.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -110,6 +112,39 @@ SkBitmap CreateEmptyBitmap() {
   bitmap.allocN32Pixels(32, 32);
   bitmap.eraseARGB(255, 255, 255, 0);
   return bitmap;
+}
+
+// Decodes given gzip input via zlib.
+base::RefCountedBytes* DecodeGzipData(const unsigned char* input_buffer,
+                                      size_t input_size) {
+  z_stream inflateStream;
+  memset(&inflateStream, 0, sizeof(inflateStream));
+  inflateStream.zalloc = Z_NULL;
+  inflateStream.zfree = Z_NULL;
+  inflateStream.opaque = Z_NULL;
+
+  inflateStream.avail_in = input_size;
+  inflateStream.next_in = const_cast<Bytef*>(input_buffer);
+
+  CHECK(input_size >= 4);
+  // Size of output comes from footer of gzip file format, found as the last 4
+  // bytes in the compressed file, which are stored little endian.
+  inflateStream.avail_out = base::ByteSwapToLE32(
+      *reinterpret_cast<const uint32_t*>(&input_buffer[input_size - 4]));
+
+  std::vector<unsigned char> output(inflateStream.avail_out);
+  inflateStream.next_out = reinterpret_cast<Bytef*>(&output[0]);
+
+  CHECK(inflateInit2(&inflateStream, 16) == Z_OK);
+  CHECK(inflate(&inflateStream, Z_FINISH) == Z_STREAM_END);
+  CHECK(inflateEnd(&inflateStream) == Z_OK);
+
+  // Cannot use TakeVector since it puts the RefCounted* into a scoped_refptr,
+  // and callers of this function return a raw pointer (not a scoped_refptr), so
+  // the memory will be deallocated upon exit of the calling function.
+  base::RefCountedBytes* returnVal = new base::RefCountedBytes();
+  returnVal->data().swap(output);
+  return returnVal;
 }
 
 }  // namespace
@@ -454,9 +489,16 @@ base::RefCountedMemory* ResourceBundle::LoadDataResourceBytesForScale(
 
   if (!bytes) {
     base::StringPiece data =
-        GetRawDataResourceForScale(resource_id, scale_factor);
+        GetRawDataResourceForScaleImpl(resource_id, scale_factor);
     if (!data.empty()) {
-      bytes = new base::RefCountedStaticMemory(data.data(), data.length());
+      if (data.starts_with(CUSTOM_GZIP_HEADER)) {
+        // Jump past special identification byte prepended to header
+        const unsigned char* gzip_start =
+            reinterpret_cast<const unsigned char*>(data.data()) + 1;
+        bytes = DecodeGzipData(gzip_start, data.length() - 1);
+      } else {
+        bytes = new base::RefCountedStaticMemory(data.data(), data.length());
+      }
     }
   }
 
@@ -470,31 +512,13 @@ base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) const {
 base::StringPiece ResourceBundle::GetRawDataResourceForScale(
     int resource_id,
     ScaleFactor scale_factor) const {
-  base::StringPiece data;
-  if (delegate_ &&
-      delegate_->GetRawDataResource(resource_id, scale_factor, &data))
-    return data;
+  base::StringPiece data =
+      GetRawDataResourceForScaleImpl(resource_id, scale_factor);
 
-  if (scale_factor != ui::SCALE_FACTOR_100P) {
-    for (size_t i = 0; i < data_packs_.size(); i++) {
-      if (data_packs_[i]->GetScaleFactor() == scale_factor &&
-          data_packs_[i]->GetStringPiece(static_cast<uint16_t>(resource_id),
-                                         &data))
-        return data;
-    }
-  }
+  // Do not allow this function to retrieve gzip compressed resources.
+  CHECK(!data.starts_with(CUSTOM_GZIP_HEADER));
 
-  for (size_t i = 0; i < data_packs_.size(); i++) {
-    if ((data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_100P ||
-         data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_200P ||
-         data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_300P ||
-         data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_NONE) &&
-        data_packs_[i]->GetStringPiece(static_cast<uint16_t>(resource_id),
-                                       &data))
-      return data;
-  }
-
-  return base::StringPiece();
+  return data;
 }
 
 base::string16 ResourceBundle::GetLocalizedString(int message_id) {
@@ -845,6 +869,36 @@ bool ResourceBundle::LoadBitmap(int resource_id,
   }
 
   return false;
+}
+
+base::StringPiece ResourceBundle::GetRawDataResourceForScaleImpl(
+    int resource_id,
+    ScaleFactor scale_factor) const {
+  base::StringPiece data;
+  if (delegate_ &&
+      delegate_->GetRawDataResource(resource_id, scale_factor, &data))
+    return data;
+
+  if (scale_factor != ui::SCALE_FACTOR_100P) {
+    for (size_t i = 0; i < data_packs_.size(); i++) {
+      if (data_packs_[i]->GetScaleFactor() == scale_factor &&
+          data_packs_[i]->GetStringPiece(static_cast<uint16_t>(resource_id),
+                                         &data))
+        return data;
+    }
+  }
+
+  for (size_t i = 0; i < data_packs_.size(); i++) {
+    if ((data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_100P ||
+         data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_200P ||
+         data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_300P ||
+         data_packs_[i]->GetScaleFactor() == ui::SCALE_FACTOR_NONE) &&
+        data_packs_[i]->GetStringPiece(static_cast<uint16_t>(resource_id),
+                                       &data))
+      return data;
+  }
+
+  return base::StringPiece();
 }
 
 gfx::Image& ResourceBundle::GetEmptyImage() {

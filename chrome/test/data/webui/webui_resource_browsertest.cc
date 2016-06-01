@@ -36,8 +36,10 @@ class WebUIResourceBrowserTest : public InProcessBrowserTest {
 
   void LoadResource(int idr) {
     ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
-    base::StringPiece resource = bundle.GetRawDataResource(idr);
-    RunTest(GURL(std::string("data:text/html,") + resource.as_string()));
+    scoped_refptr<base::RefCountedMemory> resource =
+        bundle.LoadDataResourceBytes(idr);
+    RunTest(GURL(std::string("data:text/html,") +
+                 std::string(resource->front_as<char>(), resource->size())));
   }
 
   // Queues the library corresponding to |resource_id| for injection into the

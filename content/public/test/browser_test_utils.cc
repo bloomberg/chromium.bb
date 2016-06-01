@@ -792,8 +792,9 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents,
   for (std::vector<int>::iterator iter = ids.begin();
        iter != ids.end();
        ++iter) {
-    ResourceBundle::GetSharedInstance().GetRawDataResource(*iter)
-        .AppendToString(&script);
+    scoped_refptr<base::RefCountedMemory> resource =
+        ResourceBundle::GetSharedInstance().LoadDataResourceBytes(*iter);
+    script.append(resource->front_as<char>(), resource->size());
     script.append("\n");
   }
   if (!ExecuteScript(web_contents, script))
