@@ -250,6 +250,10 @@ class ProfileIOData {
   virtual policy::URLBlacklist::URLBlacklistState GetURLBlacklistState(
       const GURL& url) const;
 
+  // Returns the predictor service for this Profile. Returns nullptr if there is
+  // no Predictor, as is the case with OffTheRecord profiles.
+  virtual chrome_browser_net::Predictor* GetPredictor();
+
  protected:
   // A URLRequestContext for media that owns its HTTP factory, to ensure
   // it is deleted.

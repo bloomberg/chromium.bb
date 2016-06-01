@@ -69,6 +69,19 @@ net::URLRequestJob* CreateEmptyBodyRequestJob(net::URLRequest* request,
                                     true);
 }
 
+net::URLRequestJob* CreateRedirectRequestJob(std::string location,
+                                             net::URLRequest* request,
+                                             net::NetworkDelegate* delegate) {
+  char kPlainTextHeaders[] =
+      "HTTP/1.1 302 \n"
+      "Location: %s\n"
+      "Access-Control-Allow-Origin: *\n"
+      "\n";
+  return new net::URLRequestTestJob(
+      request, delegate,
+      base::StringPrintf(kPlainTextHeaders, location.c_str()), "", true);
+}
+
 // Override the test server to redirect requests matching some path. This is
 // used because the predictor only learns simple redirects with a path of "/"
 std::unique_ptr<net::test_server::HttpResponse> RedirectForPathHandler(
@@ -295,7 +308,8 @@ class CrossSitePredictorObserver
         cross_site_learned_(0),
         cross_site_preconnected_(0),
         same_site_preconnected_(0),
-        dns_run_loop_(nullptr) {}
+        dns_run_loop_(nullptr),
+        strict_(true) {}
 
   void OnPreconnectUrl(
       const GURL& original_url,
@@ -307,7 +321,7 @@ class CrossSitePredictorObserver
       cross_site_preconnected_ = std::max(cross_site_preconnected_, count);
     } else if (original_url == source_host_) {
       same_site_preconnected_ = std::max(same_site_preconnected_, count);
-    } else {
+    } else if (strict_) {
       ADD_FAILURE() << "Preconnected " << original_url
                     << " when should only be preconnecting the source host: "
                     << source_host_
@@ -326,7 +340,8 @@ class CrossSitePredictorObserver
       cross_site_learned_++;
     } else if (referring_url == source_host_ && target_url == source_host_) {
       // Same site learned. Branch retained for clarity.
-    } else if (!(referring_url == cross_site_host_ &&
+    } else if (strict_ &&
+               !(referring_url == cross_site_host_ &&
                  target_url == cross_site_host_)) {
       ADD_FAILURE() << "Learned " << referring_url << " => " << target_url
                     << " when should only be learning the source host: "
@@ -424,6 +439,13 @@ class CrossSitePredictorObserver
     task_runner_.swap(task_runner);
   }
 
+  // Optionally allows the object to observe preconnects / learning from other
+  // hosts.
+  void SetStrict(bool strict) {
+    base::AutoLock lock(lock_);
+    strict_ = strict;
+  }
+
  private:
   const GURL source_host_;
   const GURL cross_site_host_;
@@ -443,6 +465,11 @@ class CrossSitePredictorObserver
   std::set<GURL> successful_dns_lookups_;
   std::set<GURL> unsuccessful_dns_lookups_;
   base::RunLoop* dns_run_loop_;
+
+  // This member can be set to optionally allow url learning other than from
+  // source => source, source => target, or target => target. It will also allow
+  // preconnects to other hosts.
+  bool strict_;
 
   DISALLOW_COPY_AND_ASSIGN(CrossSitePredictorObserver);
 };
@@ -511,17 +538,14 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     StartInterceptingCrossSiteOnUI();
   }
 
-  // Intercepts all requests to the specified host and returns a response with
-  // an empty body. Needed to prevent requests from actually going to the test
-  // server, to avoid any races related to socket accounting. Note, the
-  // interceptor also looks at the port, to differentiate between the
-  // two test servers.
-  static void StartInterceptingHost(const GURL& url) {
+  static void StartInterceptingHostWithCreateJobCallback(
+      const GURL& url,
+      const MatchingPortRequestInterceptor::CreateJobCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
         url.scheme(), url.host(),
         base::WrapUnique(new MatchingPortRequestInterceptor(
-            url.EffectiveIntPort(), base::Bind(&CreateEmptyBodyRequestJob))));
+            url.EffectiveIntPort(), callback)));
   }
 
   static void StopInterceptingHost(const GURL& url) {
@@ -530,12 +554,19 @@ class PredictorBrowserTest : public InProcessBrowserTest {
                                                                 url.host());
   }
 
+  // Intercepts all requests to the specified host and returns a response with
+  // an empty body. Needed to prevent requests from actually going to the test
+  // server, to avoid any races related to socket accounting. Note, the
+  // interceptor also looks at the port, to differentiate between the
+  // two test servers.
   void StartInterceptingCrossSiteOnUI() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&PredictorBrowserTest::StartInterceptingHost,
-                   cross_site_test_server()->base_url()));
+        base::Bind(
+            &PredictorBrowserTest::StartInterceptingHostWithCreateJobCallback,
+            cross_site_test_server()->base_url(),
+            base::Bind(&CreateEmptyBodyRequestJob)));
   }
 
   void StopInterceptingCrossSiteOnUI() {
@@ -912,6 +943,88 @@ IN_PROC_BROWSER_TEST_F(
   // server. It's tricky to reset the connections to the test server, and
   // sockets can be reused.
   EXPECT_EQ(4, observer()->CrossSitePreconnected());
+}
+
+// 1. Navigate to A.com learning B.com
+// 2. Navigate to B.com with subresource from C.com redirecting to A.com.
+// 3. Assert that the redirect does not cause us to preconnect to B.com (via
+// A.com).
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, DontPredictBasedOnSubresources) {
+  GURL redirector_url = GURL("http://redirector.com");
+
+  NavigateToCrossSiteHtmlUrl(1 /* num_cors */, "" /* file_suffix */);
+  EXPECT_EQ(1, observer()->CrossSiteLearned());
+  EXPECT_EQ(0, observer()->CrossSitePreconnected());
+
+  EXPECT_EQ(0u, cross_site_connection_listener_->GetAcceptedSocketCount());
+
+  // Stop intercepting so that the test can actually navigate to the cross site
+  // server.
+  StopInterceptingCrossSiteOnUI();
+
+  // All requests with the redirector url as base url should redirect to the
+  // embedded_test_server_.
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &PredictorBrowserTest::StartInterceptingHostWithCreateJobCallback,
+          redirector_url,
+          base::Bind(
+              &CreateRedirectRequestJob,
+              embedded_test_server()->GetURL("/predictor/empty.js").spec())));
+
+  // Reduce the strictness, because the below logic causes the predictor to
+  // learn cross_site_test_server_ => redirector, as well as
+  // cross_site_test_server_ => embedded_test_server_ (via referrer header).
+  observer()->SetStrict(false);
+
+  GURL redirect_requesting_url =
+      cross_site_test_server()->GetURL(base::StringPrintf(
+          "/predictor/"
+          "predictor_cross_site.html?subresourceHost=%s&numCORSResources=1",
+          redirector_url.spec().c_str()));
+  ui_test_utils::NavigateToURL(browser(), redirect_requesting_url);
+  bool result = false;
+
+  int navigation_preconnects = observer()->CrossSitePreconnected();
+  EXPECT_EQ(2, navigation_preconnects);
+
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "startFetchesAndWaitForReply()", &result));
+  EXPECT_TRUE(result);
+
+  // The number of preconnects should not increase. Note that the predictor
+  // would preconnect 4 sockets if it were doing so based on learning.
+  EXPECT_EQ(navigation_preconnects, observer()->CrossSitePreconnected());
+}
+
+IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, PredictBasedOnSubframeRedirect) {
+  // A test server is needed here because data url navigations with redirect
+  // interceptors don't interact well with the ResourceTiming API.
+  // TODO(csharrison): Possibly this is a bug in either net or Blink, and it
+  // might be worthwhile to investigate.
+  std::unique_ptr<net::EmbeddedTestServer> redirector =
+      base::WrapUnique(new net::EmbeddedTestServer());
+  ASSERT_TRUE(redirector->Start());
+
+  NavigateToCrossSiteHtmlUrl(1 /* num_cors */, "" /* file_suffix */);
+  EXPECT_EQ(1, observer()->CrossSiteLearned());
+  EXPECT_EQ(0u, cross_site_connection_listener_->GetAcceptedSocketCount());
+
+  redirector->RegisterRequestHandler(
+      base::Bind(&RedirectForPathHandler, "/",
+                 embedded_test_server()->GetURL("/title1.html")));
+
+  // Note that the observer will see preconnects to the redirector, and the
+  // predictor will learn redirector->embedded_test_server.
+  observer()->SetStrict(false);
+
+  NavigateToDataURLWithContent(base::StringPrintf(
+      "<iframe src='%s'></iframe>", redirector->base_url().spec().c_str()));
+
+  EXPECT_EQ(4, observer()->CrossSitePreconnected());
+  cross_site_connection_listener_->WaitForAcceptedConnectionsOnUI(4u);
 }
 
 // Expect that the predictor correctly predicts subframe navigations.

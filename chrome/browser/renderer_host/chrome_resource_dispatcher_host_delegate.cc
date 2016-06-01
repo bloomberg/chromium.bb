@@ -31,6 +31,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_navigation_data.h"
+#include "chrome/browser/renderer_host/predictor_resource_throttle.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle.h"
 #include "chrome/browser/renderer_host/thread_hop_resource_throttle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -618,6 +619,11 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 
   if (ThreadHopResourceThrottle::IsEnabled())
     throttles->push_back(new ThreadHopResourceThrottle);
+
+  std::unique_ptr<PredictorResourceThrottle> predictor_throttle =
+      PredictorResourceThrottle::MaybeCreate(request, io_data);
+  if (predictor_throttle)
+    throttles->push_back(predictor_throttle.release());
 }
 
 bool ChromeResourceDispatcherHostDelegate::ShouldForceDownloadResource(

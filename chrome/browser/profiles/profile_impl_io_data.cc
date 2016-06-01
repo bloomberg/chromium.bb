@@ -27,7 +27,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/http_server_properties_manager_factory.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/quota_policy_channel_id_store.h"
@@ -447,8 +446,6 @@ void ProfileImplIOData::InitializeInternal(
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
 
-  chrome_network_delegate->set_predictor(predictor_.get());
-
   if (domain_reliability_monitor_) {
     domain_reliability::DomainReliabilityMonitor* monitor =
         domain_reliability_monitor_.get();
@@ -782,6 +779,10 @@ ProfileImplIOData::AcquireIsolatedMediaRequestContext(
       InitializeMediaRequestContext(app_context, partition_descriptor);
   DCHECK(media_request_context);
   return media_request_context;
+}
+
+chrome_browser_net::Predictor* ProfileImplIOData::GetPredictor() {
+  return predictor_.get();
 }
 
 void ProfileImplIOData::ClearNetworkingHistorySinceOnIOThread(

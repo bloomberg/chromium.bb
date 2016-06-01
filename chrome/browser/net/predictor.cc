@@ -166,7 +166,9 @@ Predictor::Predictor(bool preconnect_enabled, bool predictor_enabled)
       consecutive_omnibox_preconnect_count_(0),
       next_trim_time_(base::TimeTicks::Now() +
                       TimeDelta::FromHours(kDurationBetweenTrimmingsHours)),
-      observer_(NULL) {
+      observer_(NULL),
+      timed_cache_(new TimedCache(base::TimeDelta::FromSeconds(
+          kMaxUnusedSocketLifetimeSecondsWithoutAGet))) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

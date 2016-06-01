@@ -37,7 +37,6 @@
 #include "chrome/browser/data_usage/tab_id_annotator.h"
 #include "chrome/browser/net/async_dns_field_trial.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
-#include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/common/channel_info.h"

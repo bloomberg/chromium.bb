@@ -31,7 +31,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/net/chrome_extensions_network_delegate.h"
-#include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/request_source_bandwidth_histograms.h"
 #include "chrome/browser/net/safe_search_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -324,12 +323,6 @@ void ChromeNetworkDelegate::set_cookie_settings(
   cookie_settings_ = cookie_settings;
 }
 
-void ChromeNetworkDelegate::set_predictor(
-    chrome_browser_net::Predictor* predictor) {
-  connect_interceptor_.reset(
-      new chrome_browser_net::ConnectInterceptor(predictor));
-}
-
 void ChromeNetworkDelegate::set_data_use_aggregator(
     data_usage::DataUseAggregator* data_use_aggregator,
     bool is_data_usage_off_the_record) {
@@ -455,9 +448,6 @@ int ChromeNetworkDelegate::OnBeforeURLRequest(
                                          allowed_domains_for_apps_->GetValue(),
                                          true);
   }
-
-  if (connect_interceptor_)
-    connect_interceptor_->WitnessURLRequest(request);
 
   return rv;
 }

@@ -907,6 +907,10 @@ bool ProfileIOData::IsDataReductionProxyEnabled() const {
       data_reduction_proxy_io_data()->IsEnabled();
 }
 
+chrome_browser_net::Predictor* ProfileIOData::GetPredictor() {
+  return nullptr;
+}
+
 void ProfileIOData::set_data_reduction_proxy_io_data(
     std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
         data_reduction_proxy_io_data) const {

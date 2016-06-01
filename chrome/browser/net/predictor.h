@@ -318,6 +318,8 @@ class Predictor {
     return url_request_context_getter_.get();
   }
 
+  TimedCache* timed_cache() { return timed_cache_.get(); }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueuePushPopTest);
   FRIEND_TEST_ALL_PREFIXES(PredictorTest, PriorityQueueReorderTest);
@@ -582,6 +584,8 @@ class Predictor {
 
   // An observer for testing.
   PredictorObserver* observer_;
+
+  std::unique_ptr<TimedCache> timed_cache_;
 
   std::unique_ptr<base::WeakPtrFactory<Predictor>> weak_factory_;
 

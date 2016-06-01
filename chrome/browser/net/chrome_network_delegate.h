@@ -32,11 +32,6 @@ namespace base {
 class Value;
 }
 
-namespace chrome_browser_net {
-class ConnectInterceptor;
-class Predictor;
-}
-
 namespace content_settings {
 class CookieSettings;
 }
@@ -100,9 +95,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   // Not inlined because we assign a scoped_refptr, which requires us to include
   // the header file. Here we just forward-declare it.
   void set_cookie_settings(content_settings::CookieSettings* cookie_settings);
-
-  // Causes requested URLs to be fed to |predictor| via ConnectInterceptor.
-  void set_predictor(chrome_browser_net::Predictor* predictor);
 
   void set_enable_do_not_track(BooleanPrefMember* enable_do_not_track) {
     enable_do_not_track_ = enable_do_not_track;
@@ -206,8 +198,6 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   void* profile_;
   base::FilePath profile_path_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
-
-  std::unique_ptr<chrome_browser_net::ConnectInterceptor> connect_interceptor_;
 
   // Weak, owned by our owner.
   BooleanPrefMember* enable_referrers_;
