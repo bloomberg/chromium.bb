@@ -23,11 +23,8 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper.FaviconImageCallback;
-import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageListItem;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
@@ -42,7 +39,6 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
     private static final String TAG = "NtpSnippets";
     private static final String PUBLISHER_FORMAT_STRING = "%s - %s";
     private static final int FADE_IN_ANIMATION_TIME_MS = 300;
-    private static final int[] HISTOGRAM_FOR_POSITIONS = {0, 2, 4, 9};
 
     private final NewTabPageManager mNewTabPageManager;
     private final TextView mHeadlineTextView;
@@ -51,13 +47,8 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
     private final ImageView mThumbnailView;
 
     private FetchImageCallback mImageCallback;
-    private long mPublishTimestampMilliseconds;
-    private float mScore;
     private SnippetArticle mArticle;
     private ViewTreeObserver.OnPreDrawListener mPreDrawObserver;
-
-    public String mUrl;
-    public int mPosition;
 
     /**
      * Creates the CardView object to display snippets information
@@ -116,27 +107,8 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
 
     @Override
     public void onClick(View v) {
-        mNewTabPageManager.openSnippet(mUrl);
-        RecordUserAction.record("MobileNTP.Snippets.Click");
-        RecordHistogram.recordSparseSlowlyHistogram("NewTabPage.Snippets.CardClicked", mPosition);
-        NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_CLICKED);
-        NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
-
-        // Track how the (approx.) position relates to age / score of the snippet that is clicked.
-        int ageInMinutes =
-                (int) ((System.currentTimeMillis() - mPublishTimestampMilliseconds) / 60000L);
-        recordAge("NewTabPage.Snippets.CardClickedAge", ageInMinutes);
-        recordScore("NewTabPage.Snippets.CardClickedScore", mScore);
-        int startPosition = 0;
-        for (int endPosition : HISTOGRAM_FOR_POSITIONS) {
-            if (mPosition >= startPosition && mPosition <= endPosition) {
-                String suffix = "_" + startPosition + "_" + endPosition;
-                recordAge("NewTabPage.Snippets.CardClickedAge" + suffix, ageInMinutes);
-                recordScore("NewTabPage.Snippets.CardClickedScore" + suffix, mScore);
-                break;
-            }
-            startPosition = endPosition + 1;
-        }
+        mNewTabPageManager.openSnippet(mArticle.mUrl);
+        mArticle.trackClick();
     }
 
     @Override
@@ -145,15 +117,11 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
 
         mHeadlineTextView.setText(mArticle.mTitle);
         String publisherAttribution = String.format(PUBLISHER_FORMAT_STRING, mArticle.mPublisher,
-                DateUtils.getRelativeTimeSpanString(mArticle.mTimestamp, System.currentTimeMillis(),
-                        DateUtils.MINUTE_IN_MILLIS));
+                DateUtils.getRelativeTimeSpanString(mArticle.mPublishTimestampMilliseconds,
+                        System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS));
         mPublisherTextView.setText(BidiFormatter.getInstance().unicodeWrap(publisherAttribution));
 
         mArticleSnippetTextView.setText(mArticle.mPreviewText);
-        mUrl = mArticle.mUrl;
-        mPosition = mArticle.mPosition;
-        mPublishTimestampMilliseconds = mArticle.mTimestamp;
-        mScore = mArticle.mScore;
 
         // If there's still a pending thumbnail fetch, cancel it.
         cancelImageFetch();
@@ -189,20 +157,6 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
             // TODO(treib): Pass the "cancel" on to the actual image fetcher.
             mViewHolder = null;
         }
-    }
-
-    private static void recordAge(String histogramName, int ageInMinutes) {
-        // Negative values (when the time of the device is set inappropriately) provide no value.
-        if (ageInMinutes >= 0) {
-            // If the max value below (72 hours) were to be changed, the histogram should be renamed
-            // since it will change the shape of buckets.
-            RecordHistogram.recordCustomCountHistogram(histogramName, ageInMinutes, 1, 72 * 60, 50);
-        }
-    }
-
-    private static void recordScore(String histogramName, float score) {
-        int recordedScore = Math.min((int) Math.ceil(score), 1000);
-        RecordHistogram.recordCount1000Histogram(histogramName, recordedScore);
     }
 
     private void cancelImageFetch() {

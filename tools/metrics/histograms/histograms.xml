@@ -33957,7 +33957,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>knn@chromium.org</owner>
   <summary>
     Android: The position of the snippets card on the NTP, that is clicked
-    through to the host website of the content.
+    through to the host website of the content. We track the position the
+    snippet had in the list when NTP was loaded. This tracked position is thus
+    different from the position observed by the user whenever before scrolling
+    down to the given snippet, the user discards some snippets in the top of the
+    list.
   </summary>
 </histogram>
 
