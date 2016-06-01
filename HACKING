@@ -220,17 +220,19 @@ See the README.windows file and the windows subdirectory.
 *** How to cross-compile for Windows
 To compile for win32, use the MinGW win32 cross-compiler as shown
 below. Use the prefix option to install the binaries to a temporary
-place where you can create a zip file.
+place where you can create a zip file. The LDFLAGS='-all-static'
+ensures that libgcc is linked in statically. Otherwise the users need
+to have libgcc_s_sjlj-1.dll.
 
-  ./configure --build i686-pc-linux-gnu --host i586-mingw32msvc --prefix=/tmp/liblouis-mingw32msvc 
-  make
+  ./configure --build=i686-pc-linux-gnu --host=i686-w64-mingw32 --prefix=/tmp/liblouis-mingw32
+  make LDFLAGS='-Xcompiler -static-libgcc'
   make install
-  zip -r liblouis-mingw32msvc.zip /tmp/liblouis-mingw32msvc
+  zip -r liblouis-mingw32msvc.zip /tmp/liblouis-mingw32
 
 To compile for win64, use the MinGW-w64 cross-compiler:
 
-  ./configure --host x86_64-w64-mingw32 --prefix=/tmp/liblouis-w64-mingw32
-  make
+  ./configure --build=i686-pc-linux-gnu --host=x86_64-w64-mingw32 --prefix=/tmp/liblouis-w64-mingw32
+  make LDFLAGS='-Xcompiler -static-libgcc'
   make install
   zip -r liblouis-w64-mingw32.zip /tmp/liblouis-w64-mingw32
 
