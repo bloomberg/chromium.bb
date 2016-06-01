@@ -339,17 +339,6 @@ class SmoothnessToughScrollingWhileZoomedInCases(_Smoothness):
 
 
 @benchmark.Enabled('android')
-class SmoothnessPolymer(_Smoothness):
-  """Measures rendering statistics for Polymer cases.
-  """
-  page_set = page_sets.PolymerPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'smoothness.polymer'
-
-
-@benchmark.Enabled('android')
 class SmoothnessGpuRasterizationPolymer(_Smoothness):
   """Measures rendering statistics for the Polymer cases with GPU rasterization.
   """
