@@ -12,27 +12,27 @@ using media::EmeConfigRule;
 using media::EmeFeatureSupport;
 using media::EmeInitDataType;
 using media::EmeMediaType;
-using media::EmeRobustness;
 using media::EmeSessionTypeSupport;
 using media::SupportedCodecs;
+using Robustness = cdm::WidevineKeySystemProperties::Robustness;
 
 namespace cdm {
 namespace {
 
-EmeRobustness ConvertRobustness(const std::string& robustness) {
+Robustness ConvertRobustness(const std::string& robustness) {
   if (robustness.empty())
-    return EmeRobustness::EMPTY;
+    return Robustness::EMPTY;
   if (robustness == "SW_SECURE_CRYPTO")
-    return EmeRobustness::SW_SECURE_CRYPTO;
+    return Robustness::SW_SECURE_CRYPTO;
   if (robustness == "SW_SECURE_DECODE")
-    return EmeRobustness::SW_SECURE_DECODE;
+    return Robustness::SW_SECURE_DECODE;
   if (robustness == "HW_SECURE_CRYPTO")
-    return EmeRobustness::HW_SECURE_CRYPTO;
+    return Robustness::HW_SECURE_CRYPTO;
   if (robustness == "HW_SECURE_DECODE")
-    return EmeRobustness::HW_SECURE_DECODE;
+    return Robustness::HW_SECURE_DECODE;
   if (robustness == "HW_SECURE_ALL")
-    return EmeRobustness::HW_SECURE_ALL;
-  return EmeRobustness::INVALID;
+    return Robustness::HW_SECURE_ALL;
+  return Robustness::INVALID;
 }
 
 }  // namespace
@@ -42,8 +42,8 @@ WidevineKeySystemProperties::WidevineKeySystemProperties(
 #if defined(OS_ANDROID)
     media::SupportedCodecs supported_secure_codecs,
 #endif  // defined(OS_ANDROID)
-    media::EmeRobustness max_audio_robustness,
-    media::EmeRobustness max_video_robustness,
+    Robustness max_audio_robustness,
+    Robustness max_video_robustness,
     media::EmeSessionTypeSupport persistent_license_support,
     media::EmeSessionTypeSupport persistent_release_message_support,
     media::EmeFeatureSupport persistent_state_support,
@@ -92,11 +92,11 @@ SupportedCodecs WidevineKeySystemProperties::GetSupportedSecureCodecs() const {
 EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(
     EmeMediaType media_type,
     const std::string& requested_robustness) const {
-  EmeRobustness robustness = ConvertRobustness(requested_robustness);
-  if (robustness == EmeRobustness::INVALID)
+  Robustness robustness = ConvertRobustness(requested_robustness);
+  if (robustness == Robustness::INVALID)
     return EmeConfigRule::NOT_SUPPORTED;
 
-  EmeRobustness max_robustness = EmeRobustness::INVALID;
+  Robustness max_robustness = Robustness::INVALID;
   switch (media_type) {
     case EmeMediaType::AUDIO:
       max_robustness = max_audio_robustness_;
@@ -109,10 +109,10 @@ EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(
   // We can compare robustness levels whenever they are not HW_SECURE_CRYPTO
   // and SW_SECURE_DECODE in some order. If they are exactly those two then the
   // robustness requirement is not supported.
-  if ((max_robustness == EmeRobustness::HW_SECURE_CRYPTO &&
-       robustness == EmeRobustness::SW_SECURE_DECODE) ||
-      (max_robustness == EmeRobustness::SW_SECURE_DECODE &&
-       robustness == EmeRobustness::HW_SECURE_CRYPTO) ||
+  if ((max_robustness == Robustness::HW_SECURE_CRYPTO &&
+       robustness == Robustness::SW_SECURE_DECODE) ||
+      (max_robustness == Robustness::SW_SECURE_DECODE &&
+       robustness == Robustness::HW_SECURE_CRYPTO) ||
       robustness > max_robustness) {
     return EmeConfigRule::NOT_SUPPORTED;
   }
@@ -120,11 +120,11 @@ EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(
 #if defined(OS_CHROMEOS)
   // TODO(ddorwin): Remove this once we have confirmed it is not necessary.
   // See https://crbug.com/482277
-  if (robustness == EmeRobustness::EMPTY)
+  if (robustness == Robustness::EMPTY)
     return EmeConfigRule::SUPPORTED;
 
   // Hardware security requires remote attestation.
-  if (robustness >= EmeRobustness::HW_SECURE_CRYPTO)
+  if (robustness >= Robustness::HW_SECURE_CRYPTO)
     return EmeConfigRule::IDENTIFIER_REQUIRED;
 
   // For video, recommend remote attestation if HW_SECURE_ALL is available,
@@ -132,12 +132,12 @@ EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(
   // TODO(sandersd): Only do this when hardware accelerated decoding is
   // available for the requested codecs.
   if (media_type == EmeMediaType::VIDEO &&
-      max_robustness == EmeRobustness::HW_SECURE_ALL) {
+      max_robustness == Robustness::HW_SECURE_ALL) {
     return EmeConfigRule::IDENTIFIER_RECOMMENDED;
   }
 #elif defined(OS_ANDROID)
   // Require hardware secure codecs when SW_SECURE_DECODE or above is specified.
-  if (robustness >= EmeRobustness::SW_SECURE_DECODE) {
+  if (robustness >= Robustness::SW_SECURE_DECODE) {
     return EmeConfigRule::HW_SECURE_CODECS_REQUIRED;
   }
 #endif  // defined(OS_CHROMEOS)

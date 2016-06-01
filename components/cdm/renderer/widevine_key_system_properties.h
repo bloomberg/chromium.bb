@@ -13,13 +13,25 @@ namespace cdm {
 // Implementation of KeySystemProperties for Widevine key system.
 class WidevineKeySystemProperties : public media::KeySystemProperties {
  public:
+  // Robustness values understood by the Widevine key system.
+  // Note: GetRobustnessConfigRule is dependent on the order of these.
+  enum class Robustness {
+    INVALID,
+    EMPTY,
+    SW_SECURE_CRYPTO,
+    SW_SECURE_DECODE,
+    HW_SECURE_CRYPTO,
+    HW_SECURE_DECODE,
+    HW_SECURE_ALL,
+  };
+
   WidevineKeySystemProperties(
       media::SupportedCodecs supported_codecs,
 #if defined(OS_ANDROID)
       media::SupportedCodecs supported_secure_codecs,
 #endif  // defined(OS_ANDROID)
-      media::EmeRobustness max_audio_robustness,
-      media::EmeRobustness max_video_robustness,
+      Robustness max_audio_robustness,
+      Robustness max_video_robustness,
       media::EmeSessionTypeSupport persistent_license_support,
       media::EmeSessionTypeSupport persistent_release_message_support,
       media::EmeFeatureSupport persistent_state_support,
@@ -53,8 +65,8 @@ class WidevineKeySystemProperties : public media::KeySystemProperties {
 #if defined(OS_ANDROID)
   const media::SupportedCodecs supported_secure_codecs_;
 #endif  // defined(OS_ANDROID)
-  const media::EmeRobustness max_audio_robustness_;
-  const media::EmeRobustness max_video_robustness_;
+  const Robustness max_audio_robustness_;
+  const Robustness max_video_robustness_;
   const media::EmeSessionTypeSupport persistent_license_support_;
   const media::EmeSessionTypeSupport persistent_release_message_support_;
   const media::EmeFeatureSupport persistent_state_support_;

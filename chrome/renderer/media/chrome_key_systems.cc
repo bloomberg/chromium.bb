@@ -249,11 +249,12 @@ static void AddPepperBasedWidevine(
 #endif  // defined(USE_PROPRIETARY_CODECS)
   }
 
+  using Robustness = cdm::WidevineKeySystemProperties::Robustness;
   concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
       supported_codecs,
 #if defined(OS_CHROMEOS)
-      media::EmeRobustness::HW_SECURE_ALL,  // Maximum audio robustness.
-      media::EmeRobustness::HW_SECURE_ALL,  // Maximim video robustness.
+      Robustness::HW_SECURE_ALL,  // Maximum audio robustness.
+      Robustness::HW_SECURE_ALL,  // Maximim video robustness.
       media::EmeSessionTypeSupport::
           SUPPORTED_WITH_IDENTIFIER,  // Persistent-license.
       media::EmeSessionTypeSupport::
@@ -261,8 +262,8 @@ static void AddPepperBasedWidevine(
       media::EmeFeatureSupport::REQUESTABLE,    // Persistent state.
       media::EmeFeatureSupport::REQUESTABLE));  // Distinctive identifier.
 #else   // (Desktop)
-      media::EmeRobustness::SW_SECURE_CRYPTO,       // Maximum audio robustness.
-      media::EmeRobustness::SW_SECURE_DECODE,       // Maximum video robustness.
+      Robustness::SW_SECURE_CRYPTO,                 // Maximum audio robustness.
+      Robustness::SW_SECURE_DECODE,                 // Maximum video robustness.
       media::EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
       media::EmeSessionTypeSupport::
           NOT_SUPPORTED,                          // persistent-release-message.

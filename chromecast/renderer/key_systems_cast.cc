@@ -20,7 +20,6 @@ using ::media::EmeConfigRule;
 using ::media::EmeFeatureSupport;
 using ::media::EmeInitDataType;
 using ::media::EmeMediaType;
-using ::media::EmeRobustness;
 using ::media::EmeSessionTypeSupport;
 using ::media::SupportedCodecs;
 
@@ -82,6 +81,7 @@ void AddChromecastKeySystems(
 #endif  // defined(PLAYREADY_CDM_AVAILABLE)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
+  using Robustness = cdm::WidevineKeySystemProperties::Robustness;
   ::media::SupportedCodecs codecs =
       ::media::EME_CODEC_MP4_AAC | ::media::EME_CODEC_MP4_AVC1 |
       ::media::EME_CODEC_WEBM_VP8 | ::media::EME_CODEC_WEBM_VP9;
@@ -90,8 +90,8 @@ void AddChromecastKeySystems(
 #if defined(OS_ANDROID)
       codecs,  // Hardware-secure codecs.
 #endif
-      EmeRobustness::HW_SECURE_ALL,          // Max audio robustness.
-      EmeRobustness::HW_SECURE_ALL,          // Max video robustness.
+      Robustness::HW_SECURE_ALL,             // Max audio robustness.
+      Robustness::HW_SECURE_ALL,             // Max video robustness.
       EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
       EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.
       // Note: On Chromecast, all CDMs may have persistent state.

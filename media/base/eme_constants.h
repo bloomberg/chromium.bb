@@ -83,19 +83,6 @@ enum class EmeMediaType {
   VIDEO,
 };
 
-// Robustness values understood by KeySystems.
-// Note: key_systems.cc expects this ordering in GetRobustnessConfigRule(),
-// make sure to correct that code if this list changes.
-enum class EmeRobustness {
-  INVALID,
-  EMPTY,
-  SW_SECURE_CRYPTO,
-  SW_SECURE_DECODE,
-  HW_SECURE_CRYPTO,
-  HW_SECURE_DECODE,
-  HW_SECURE_ALL,
-};
-
 // Configuration rules indicate the configuration state required to support a
 // configuration option (note: a configuration option may be disallowing a
 // feature). Configuration rules are used to answer queries about distinctive

@@ -20,10 +20,10 @@
 using media::EmeConfigRule;
 using media::EmeFeatureSupport;
 using media::EmeInitDataType;
-using media::EmeRobustness;
 using media::EmeSessionTypeSupport;
 using media::KeySystemProperties;
 using media::SupportedCodecs;
+using Robustness = cdm::WidevineKeySystemProperties::Robustness;
 
 namespace cdm {
 
@@ -122,8 +122,8 @@ void AddAndroidWidevine(
     concrete_key_systems->emplace_back(new WidevineKeySystemProperties(
         response.compositing_codecs,           // Regular codecs.
         response.non_compositing_codecs,       // Hardware-secure codecs.
-        EmeRobustness::HW_SECURE_CRYPTO,       // Max audio robustness.
-        EmeRobustness::HW_SECURE_ALL,          // Max video robustness.
+        Robustness::HW_SECURE_CRYPTO,          // Max audio robustness.
+        Robustness::HW_SECURE_ALL,             // Max video robustness.
         EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-license.
         EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.
         EmeFeatureSupport::ALWAYS_ENABLED,     // Persistent state.
