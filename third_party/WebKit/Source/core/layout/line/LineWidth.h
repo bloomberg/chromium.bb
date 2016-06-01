@@ -48,12 +48,12 @@ public:
 
     bool fitsOnLine() const
     {
-        return LayoutUnit::fromFloatFloor(currentWidth()) <= m_availableWidth;
+        return LayoutUnit::fromFloatFloor(currentWidth()) <= m_availableWidth + LayoutUnit::epsilon();
     }
     bool fitsOnLine(float extra) const
     {
         float totalWidth = currentWidth() + extra;
-        return LayoutUnit::fromFloatFloor(totalWidth) <= m_availableWidth;
+        return LayoutUnit::fromFloatFloor(totalWidth) <= m_availableWidth + LayoutUnit::epsilon();
     }
     bool fitsOnLine(float extra, WhitespaceTreatment whitespaceTreatment) const
     {
