@@ -19,4 +19,14 @@ promise_test(function() {
   });
 }, 'A video track returns settings');
 
+promise_test(function() {
+  return navigator.mediaDevices.getUserMedia({video: true})
+      .then(function(s) {
+    settings = s.getVideoTracks()[0].getSettings();
+    assert_greater_than(Object.keys(settings).length, 0);
+    assert_true('frameRate' in settings,
+                'Frame rate missing: ' + JSON.stringify(settings));
+  });
+}, 'A video track returns frame rate');
+
 </script>

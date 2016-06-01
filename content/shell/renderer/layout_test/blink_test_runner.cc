@@ -179,11 +179,20 @@ class MockVideoCapturerSource : public media::VideoCapturerSource {
       int max_requested_width,
       int max_requested_height,
       double max_requested_frame_rate,
-      const VideoCaptureDeviceFormatsCB& callback) override {}
-  void StartCapture(
-      const media::VideoCaptureParams& params,
-      const VideoCaptureDeliverFrameCB& new_frame_callback,
-      const RunningCallback& running_callback) override {}
+      const VideoCaptureDeviceFormatsCB& callback) override {
+    const int supported_width = 640;
+    const int supported_height = 480;
+    const float supported_framerate = 60.0;
+    callback.Run(media::VideoCaptureFormats(
+        1, media::VideoCaptureFormat(
+               gfx::Size(supported_width, supported_height),
+               supported_framerate, media::PIXEL_FORMAT_I420)));
+  }
+  void StartCapture(const media::VideoCaptureParams& params,
+                    const VideoCaptureDeliverFrameCB& new_frame_callback,
+                    const RunningCallback& running_callback) override {
+    running_callback.Run(true);
+  }
   void StopCapture() override {}
 };
 
