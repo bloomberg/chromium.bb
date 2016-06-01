@@ -141,6 +141,10 @@ template("ios_app_bundle") {
       libs = []
     }
     libs += [ "UIKit.framework" ]
+    if (!defined(ldflags)) {
+      ldflags = []
+    }
+    ldflags += [ "-ObjC" ]
   }
 
   bundle_data(_bundle_data_executable) {
