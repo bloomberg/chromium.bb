@@ -130,7 +130,6 @@ directory are:
 .BR fbdev-backend.so
 .BR headless-backend.so
 .BR rdp-backend.so
-.BR rpi-backend.so
 .BR wayland-backend.so
 .BR x11-backend.so
 .fi

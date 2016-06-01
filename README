@@ -138,8 +138,6 @@ would be roughly like this:
 
 - xwayland (depends on X11/xcb libs)
 
-- rpi-backend (depends on DispmanX, libudev, ...)
-
 - fbdev-backend (depends on libudev...)
 
 - rdp-backend (depends on freerdp)

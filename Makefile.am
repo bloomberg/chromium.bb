@@ -328,40 +328,6 @@ nodist_wayland_backend_la_SOURCES =			\
 	protocol/fullscreen-shell-unstable-v1-client-protocol.h
 endif
 
-if ENABLE_RPI_COMPOSITOR
-if INSTALL_RPI_COMPOSITOR
-module_LTLIBRARIES += rpi-backend.la
-else
-noinst_LTLIBRARIES += rpi-backend.la
-endif
-
-rpi_backend_la_LDFLAGS = -module -avoid-version
-rpi_backend_la_LIBADD = $(COMPOSITOR_LIBS)	\
-	$(RPI_COMPOSITOR_LIBS)			\
-	$(RPI_BCM_HOST_LIBS)			\
-	$(INPUT_BACKEND_LIBS)			\
-	libsession-helper.la			\
-	libshared.la
-rpi_backend_la_CFLAGS =				\
-	$(AM_CFLAGS)				\
-	$(COMPOSITOR_CFLAGS)			\
-	$(RPI_COMPOSITOR_CFLAGS)		\
-	$(RPI_BCM_HOST_CFLAGS)
-rpi_backend_la_SOURCES =			\
-	src/compositor-rpi.c			\
-	src/rpi-renderer.c			\
-	src/rpi-renderer.h			\
-	src/rpi-bcm-stubs.h			\
-	shared/helpers.h			\
-	$(INPUT_BACKEND_SOURCES)
-
-if ENABLE_EGL
-rpi_backend_la_LIBADD += $(EGL_LIBS)
-rpi_backend_la_CFLAGS += $(EGL_CFLAGS)
-endif
-
-endif
-
 if ENABLE_HEADLESS_COMPOSITOR
 module_LTLIBRARIES += headless-backend.la
 headless_backend_la_LDFLAGS = -module -avoid-version
