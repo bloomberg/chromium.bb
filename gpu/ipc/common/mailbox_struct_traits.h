@@ -21,8 +21,6 @@ struct MailboxName {
 template <>
 struct ArrayTraits<MailboxName> {
   using Element = int8_t;
-  static bool IsNull(const MailboxName& b);
-  static void SetToNull(MailboxName* b);
   static size_t GetSize(const MailboxName& b);
   static int8_t* GetData(MailboxName& b);
   static const int8_t* GetData(const MailboxName& b);

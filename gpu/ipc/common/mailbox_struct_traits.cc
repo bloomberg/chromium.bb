@@ -7,16 +7,6 @@
 namespace mojo {
 
 // static
-bool ArrayTraits<MailboxName>::IsNull(const MailboxName& b) {
-  return b.data == nullptr;
-}
-
-// static
-void ArrayTraits<MailboxName>::SetToNull(MailboxName* b) {
-  b->data = nullptr;
-}
-
-// static
 size_t ArrayTraits<MailboxName>::GetSize(const MailboxName& b) {
   return GL_MAILBOX_SIZE_CHROMIUM;
 }
