@@ -92,17 +92,15 @@ void SVGFilterPrimitiveStandardAttributes::childrenChanged(const ChildrenChange&
 
 void SVGFilterPrimitiveStandardAttributes::setStandardAttributes(FilterEffect* filterEffect) const
 {
-    ASSERT(filterEffect);
-    if (!filterEffect)
-        return;
+    DCHECK(filterEffect);
 
-    if (hasAttribute(SVGNames::xAttr))
+    if (x()->isSpecified())
         filterEffect->setHasX(true);
-    if (hasAttribute(SVGNames::yAttr))
+    if (y()->isSpecified())
         filterEffect->setHasY(true);
-    if (hasAttribute(SVGNames::widthAttr))
+    if (width()->isSpecified())
         filterEffect->setHasWidth(true);
-    if (hasAttribute(SVGNames::heightAttr))
+    if (height()->isSpecified())
         filterEffect->setHasHeight(true);
 }
 
