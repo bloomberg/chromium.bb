@@ -112,11 +112,14 @@ std::string SharedResourcesDataSource::GetMimeType(
 
 #if defined(OS_WIN)
   base::FilePath file(base::UTF8ToWide(path));
-  std::string extension = base::WideToUTF8(file.FinalExtension()).substr(1);
+  std::string extension = base::WideToUTF8(file.FinalExtension());
 #else
   base::FilePath file(path);
-  std::string extension = file.FinalExtension().substr(1);
+  std::string extension = file.FinalExtension();
 #endif
+
+  if (!extension.empty())
+    extension.erase(0, 1);
 
   if (extension == "html")
     return "text/html";
@@ -139,7 +142,7 @@ std::string SharedResourcesDataSource::GetMimeType(
   if (extension == "woff2")
     return "application/font-woff2";
 
-  CHECK(false) << path;
+  NOTREACHED() << path;
   return "text/plain";
 }
 
