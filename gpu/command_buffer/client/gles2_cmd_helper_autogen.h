@@ -2496,18 +2496,6 @@ void PostSubBufferCHROMIUM(GLint x, GLint y, GLint width, GLint height) {
   }
 }
 
-void TexImageIOSurface2DCHROMIUM(GLenum target,
-                                 GLsizei width,
-                                 GLsizei height,
-                                 GLuint ioSurfaceId,
-                                 GLuint plane) {
-  gles2::cmds::TexImageIOSurface2DCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::TexImageIOSurface2DCHROMIUM>();
-  if (c) {
-    c->Init(target, width, height, ioSurfaceId, plane);
-  }
-}
-
 void CopyTextureCHROMIUM(GLenum source_id,
                          GLenum dest_id,
                          GLint internalformat,

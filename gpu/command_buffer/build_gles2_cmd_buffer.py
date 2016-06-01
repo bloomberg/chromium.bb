@@ -4043,13 +4043,6 @@ _FUNCTION_INFO = {
     'extension': 'CHROMIUM_request_extension',
     'chromium': True,
   },
-  'TexImageIOSurface2DCHROMIUM': {
-    'decoder_func': 'DoTexImageIOSurface2DCHROMIUM',
-    'unit_test': False,
-    'extension': True,
-    'chromium': True,
-    'trace_level': 1,
-  },
   'CopyTextureCHROMIUM': {
     'decoder_func': 'DoCopyTextureCHROMIUM',
     'unit_test': False,

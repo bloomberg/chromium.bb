@@ -1337,14 +1337,6 @@ void GL_APIENTRY GLES2PostSubBufferCHROMIUM(GLint x,
                                             GLint height) {
   gles2::GetGLContext()->PostSubBufferCHROMIUM(x, y, width, height);
 }
-void GL_APIENTRY GLES2TexImageIOSurface2DCHROMIUM(GLenum target,
-                                                  GLsizei width,
-                                                  GLsizei height,
-                                                  GLuint ioSurfaceId,
-                                                  GLuint plane) {
-  gles2::GetGLContext()->TexImageIOSurface2DCHROMIUM(target, width, height,
-                                                     ioSurfaceId, plane);
-}
 void GL_APIENTRY GLES2CopyTextureCHROMIUM(GLenum source_id,
                                           GLenum dest_id,
                                           GLint internalformat,
@@ -2725,10 +2717,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glPostSubBufferCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glPostSubBufferCHROMIUM),
-    },
-    {
-        "glTexImageIOSurface2DCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glTexImageIOSurface2DCHROMIUM),
     },
     {
         "glCopyTextureCHROMIUM",

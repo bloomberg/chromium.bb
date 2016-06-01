@@ -140,10 +140,6 @@ class CC_EXPORT ResourceProvider
                                            TextureHint hint,
                                            ResourceFormat format);
 
-  // Wraps an IOSurface into a GL resource.
-  ResourceId CreateResourceFromIOSurface(const gfx::Size& size,
-                                         unsigned io_surface_id);
-
   // Wraps an external texture mailbox into a GL resource.
   ResourceId CreateResourceFromTextureMailbox(
       const TextureMailbox& mailbox,

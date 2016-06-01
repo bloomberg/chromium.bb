@@ -1947,16 +1947,6 @@ void GLES2TraceImplementation::PostSubBufferCHROMIUM(GLint x,
   gl_->PostSubBufferCHROMIUM(x, y, width, height);
 }
 
-void GLES2TraceImplementation::TexImageIOSurface2DCHROMIUM(GLenum target,
-                                                           GLsizei width,
-                                                           GLsizei height,
-                                                           GLuint ioSurfaceId,
-                                                           GLuint plane) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "GLES2Trace::TexImageIOSurface2DCHROMIUM");
-  gl_->TexImageIOSurface2DCHROMIUM(target, width, height, ioSurfaceId, plane);
-}
-
 void GLES2TraceImplementation::CopyTextureCHROMIUM(
     GLenum source_id,
     GLenum dest_id,

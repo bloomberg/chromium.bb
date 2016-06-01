@@ -961,11 +961,10 @@ void FeatureInfo::InitializeFeatures() {
         GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG);
   }
 
-  // Ideally we would only expose this extension on Mac OS X, to
-  // support GL_CHROMIUM_iosurface and the compositor. We don't want
-  // applications to start using it; they should use ordinary non-
-  // power-of-two textures. However, for unit testing purposes we
-  // expose it on all supported platforms.
+  // Ideally we would only expose this extension on Mac OS X, to support
+  // IOSurface backed textures. We don't want applications to start using it;
+  // they should use ordinary non-power-of-two textures. However, for unit
+  // testing purposes we expose it on all supported platforms.
   if (extensions.Contains("GL_ARB_texture_rectangle") ||
       gl_version_info_->is_desktop_core_profile) {
     AddExtensionString("GL_ARB_texture_rectangle");
@@ -981,7 +980,6 @@ void FeatureInfo::InitializeFeatures() {
 
 #if defined(OS_MACOSX)
   if (gl::GetGLImplementation() != gl::kGLImplementationOSMesaGL) {
-    AddExtensionString("GL_CHROMIUM_iosurface");
     AddExtensionString("GL_CHROMIUM_ycbcr_420v_image");
     feature_flags_.chromium_image_ycbcr_420v = true;
   }

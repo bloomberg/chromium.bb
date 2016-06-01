@@ -914,11 +914,6 @@ void GLES2InterfaceStub::PostSubBufferCHROMIUM(GLint /* x */,
                                                GLint /* y */,
                                                GLint /* width */,
                                                GLint /* height */) {}
-void GLES2InterfaceStub::TexImageIOSurface2DCHROMIUM(GLenum /* target */,
-                                                     GLsizei /* width */,
-                                                     GLsizei /* height */,
-                                                     GLuint /* ioSurfaceId */,
-                                                     GLuint /* plane */) {}
 void GLES2InterfaceStub::CopyTextureCHROMIUM(
     GLenum /* source_id */,
     GLenum /* dest_id */,

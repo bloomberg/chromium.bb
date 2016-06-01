@@ -629,26 +629,6 @@ ResourceId ResourceProvider::CreateBitmap(const gfx::Size& size) {
   return id;
 }
 
-ResourceId ResourceProvider::CreateResourceFromIOSurface(
-    const gfx::Size& size,
-    unsigned io_surface_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  ResourceId id = next_id_++;
-  Resource* resource = InsertResource(
-      id, Resource(0, gfx::Size(), Resource::INTERNAL, GL_TEXTURE_RECTANGLE_ARB,
-                   GL_LINEAR, TEXTURE_HINT_IMMUTABLE, RESOURCE_TYPE_GL_TEXTURE,
-                   RGBA_8888));
-  LazyCreate(resource);
-  GLES2Interface* gl = ContextGL();
-  DCHECK(gl);
-  gl->BindTexture(GL_TEXTURE_RECTANGLE_ARB, resource->gl_id);
-  gl->TexImageIOSurface2DCHROMIUM(
-      GL_TEXTURE_RECTANGLE_ARB, size.width(), size.height(), io_surface_id, 0);
-  resource->allocated = true;
-  return id;
-}
-
 ResourceId ResourceProvider::CreateResourceFromTextureMailbox(
     const TextureMailbox& mailbox,
     std::unique_ptr<SingleReleaseCallbackImpl> release_callback_impl,

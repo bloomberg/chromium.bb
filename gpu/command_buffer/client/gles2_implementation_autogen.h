@@ -927,12 +927,6 @@ void PostSubBufferCHROMIUM(GLint x,
                            GLint width,
                            GLint height) override;
 
-void TexImageIOSurface2DCHROMIUM(GLenum target,
-                                 GLsizei width,
-                                 GLsizei height,
-                                 GLuint ioSurfaceId,
-                                 GLuint plane) override;
-
 void CopyTextureCHROMIUM(GLenum source_id,
                          GLenum dest_id,
                          GLint internalformat,

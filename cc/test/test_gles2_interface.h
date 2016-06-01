@@ -90,11 +90,6 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
                        GLenum internalformat,
                        GLsizei width,
                        GLsizei height) override;
-  void TexImageIOSurface2DCHROMIUM(GLenum target,
-                                   GLsizei width,
-                                   GLsizei height,
-                                   GLuint io_surface_id,
-                                   GLuint plane) override;
   void TexParameteri(GLenum target, GLenum pname, GLint param) override;
 
   void CompressedTexImage2D(GLenum target,

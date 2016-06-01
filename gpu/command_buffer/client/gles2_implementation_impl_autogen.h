@@ -3110,29 +3110,6 @@ void GLES2Implementation::GetTranslatedShaderSourceANGLE(GLuint shader,
   }
   CheckGLError();
 }
-void GLES2Implementation::TexImageIOSurface2DCHROMIUM(GLenum target,
-                                                      GLsizei width,
-                                                      GLsizei height,
-                                                      GLuint ioSurfaceId,
-                                                      GLuint plane) {
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glTexImageIOSurface2DCHROMIUM("
-                     << GLES2Util::GetStringTextureBindTarget(target) << ", "
-                     << width << ", " << height << ", " << ioSurfaceId << ", "
-                     << plane << ")");
-  if (width < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexImageIOSurface2DCHROMIUM", "width < 0");
-    return;
-  }
-  if (height < 0) {
-    SetGLError(GL_INVALID_VALUE, "glTexImageIOSurface2DCHROMIUM", "height < 0");
-    return;
-  }
-  helper_->TexImageIOSurface2DCHROMIUM(target, width, height, ioSurfaceId,
-                                       plane);
-  CheckGLError();
-}
-
 void GLES2Implementation::CopyTextureCHROMIUM(
     GLenum source_id,
     GLenum dest_id,

@@ -270,12 +270,6 @@ class TestWebGraphicsContext3D {
                                                     GLenum usage);
   virtual void getImageivCHROMIUM(GLuint image_id, GLenum param, GLint* data);
 
-  virtual void texImageIOSurface2DCHROMIUM(GLenum target,
-                                           GLsizei width,
-                                           GLsizei height,
-                                           GLuint io_surface_id,
-                                           GLuint plane) {}
-
   virtual GLuint64 insertFenceSync();
   virtual void genSyncToken(GLuint64 fence_sync, GLbyte* sync_token);
   virtual void waitSyncToken(const GLbyte* sync_token);

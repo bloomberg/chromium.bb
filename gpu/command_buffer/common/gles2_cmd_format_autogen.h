@@ -12391,65 +12391,6 @@ static_assert(offsetof(PostSubBufferCHROMIUM, width) == 12,
 static_assert(offsetof(PostSubBufferCHROMIUM, height) == 16,
               "offset of PostSubBufferCHROMIUM height should be 16");
 
-struct TexImageIOSurface2DCHROMIUM {
-  typedef TexImageIOSurface2DCHROMIUM ValueType;
-  static const CommandId kCmdId = kTexImageIOSurface2DCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLenum _target,
-            GLsizei _width,
-            GLsizei _height,
-            GLuint _ioSurfaceId,
-            GLuint _plane) {
-    SetHeader();
-    target = _target;
-    width = _width;
-    height = _height;
-    ioSurfaceId = _ioSurfaceId;
-    plane = _plane;
-  }
-
-  void* Set(void* cmd,
-            GLenum _target,
-            GLsizei _width,
-            GLsizei _height,
-            GLuint _ioSurfaceId,
-            GLuint _plane) {
-    static_cast<ValueType*>(cmd)->Init(_target, _width, _height, _ioSurfaceId,
-                                       _plane);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t target;
-  int32_t width;
-  int32_t height;
-  uint32_t ioSurfaceId;
-  uint32_t plane;
-};
-
-static_assert(sizeof(TexImageIOSurface2DCHROMIUM) == 24,
-              "size of TexImageIOSurface2DCHROMIUM should be 24");
-static_assert(offsetof(TexImageIOSurface2DCHROMIUM, header) == 0,
-              "offset of TexImageIOSurface2DCHROMIUM header should be 0");
-static_assert(offsetof(TexImageIOSurface2DCHROMIUM, target) == 4,
-              "offset of TexImageIOSurface2DCHROMIUM target should be 4");
-static_assert(offsetof(TexImageIOSurface2DCHROMIUM, width) == 8,
-              "offset of TexImageIOSurface2DCHROMIUM width should be 8");
-static_assert(offsetof(TexImageIOSurface2DCHROMIUM, height) == 12,
-              "offset of TexImageIOSurface2DCHROMIUM height should be 12");
-static_assert(offsetof(TexImageIOSurface2DCHROMIUM, ioSurfaceId) == 16,
-              "offset of TexImageIOSurface2DCHROMIUM ioSurfaceId should be 16");
-static_assert(offsetof(TexImageIOSurface2DCHROMIUM, plane) == 20,
-              "offset of TexImageIOSurface2DCHROMIUM plane should be 20");
-
 struct CopyTextureCHROMIUM {
   typedef CopyTextureCHROMIUM ValueType;
   static const CommandId kCmdId = kCopyTextureCHROMIUM;

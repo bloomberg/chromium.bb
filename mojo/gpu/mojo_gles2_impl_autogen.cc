@@ -1485,14 +1485,6 @@ void MojoGLES2Impl::PostSubBufferCHROMIUM(GLint x,
   MojoGLES2MakeCurrent(context_);
   glPostSubBufferCHROMIUM(x, y, width, height);
 }
-void MojoGLES2Impl::TexImageIOSurface2DCHROMIUM(GLenum target,
-                                                GLsizei width,
-                                                GLsizei height,
-                                                GLuint ioSurfaceId,
-                                                GLuint plane) {
-  MojoGLES2MakeCurrent(context_);
-  glTexImageIOSurface2DCHROMIUM(target, width, height, ioSurfaceId, plane);
-}
 void MojoGLES2Impl::CopyTextureCHROMIUM(GLenum source_id,
                                         GLenum dest_id,
                                         GLint internalformat,

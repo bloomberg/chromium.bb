@@ -686,11 +686,6 @@ virtual void PostSubBufferCHROMIUM(GLint x,
                                    GLint y,
                                    GLint width,
                                    GLint height) = 0;
-virtual void TexImageIOSurface2DCHROMIUM(GLenum target,
-                                         GLsizei width,
-                                         GLsizei height,
-                                         GLuint ioSurfaceId,
-                                         GLuint plane) = 0;
 virtual void CopyTextureCHROMIUM(GLenum source_id,
                                  GLenum dest_id,
                                  GLint internalformat,

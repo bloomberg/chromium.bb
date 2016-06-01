@@ -4673,36 +4673,6 @@ error::Error GLES2DecoderImpl::HandleGetMaxValueInBufferCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleTexImageIOSurface2DCHROMIUM(
-    uint32_t immediate_data_size,
-    const void* cmd_data) {
-  const gles2::cmds::TexImageIOSurface2DCHROMIUM& c =
-      *static_cast<const gles2::cmds::TexImageIOSurface2DCHROMIUM*>(cmd_data);
-  (void)c;
-  GLenum target = static_cast<GLenum>(c.target);
-  GLsizei width = static_cast<GLsizei>(c.width);
-  GLsizei height = static_cast<GLsizei>(c.height);
-  GLuint ioSurfaceId = static_cast<GLuint>(c.ioSurfaceId);
-  GLuint plane = static_cast<GLuint>(c.plane);
-  if (!validators_->texture_bind_target.IsValid(target)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glTexImageIOSurface2DCHROMIUM", target,
-                                    "target");
-    return error::kNoError;
-  }
-  if (width < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexImageIOSurface2DCHROMIUM",
-                       "width < 0");
-    return error::kNoError;
-  }
-  if (height < 0) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexImageIOSurface2DCHROMIUM",
-                       "height < 0");
-    return error::kNoError;
-  }
-  DoTexImageIOSurface2DCHROMIUM(target, width, height, ioSurfaceId, plane);
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderImpl::HandleCopyTextureCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {

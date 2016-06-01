@@ -4142,23 +4142,6 @@ TEST_F(GLES2FormatTest, PostSubBufferCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, TexImageIOSurface2DCHROMIUM) {
-  cmds::TexImageIOSurface2DCHROMIUM& cmd =
-      *GetBufferAs<cmds::TexImageIOSurface2DCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLenum>(11),
-                           static_cast<GLsizei>(12), static_cast<GLsizei>(13),
-                           static_cast<GLuint>(14), static_cast<GLuint>(15));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::TexImageIOSurface2DCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLsizei>(12), cmd.width);
-  EXPECT_EQ(static_cast<GLsizei>(13), cmd.height);
-  EXPECT_EQ(static_cast<GLuint>(14), cmd.ioSurfaceId);
-  EXPECT_EQ(static_cast<GLuint>(15), cmd.plane);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
 TEST_F(GLES2FormatTest, CopyTextureCHROMIUM) {
   cmds::CopyTextureCHROMIUM& cmd = *GetBufferAs<cmds::CopyTextureCHROMIUM>();
   void* next_cmd =

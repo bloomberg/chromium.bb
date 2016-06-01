@@ -976,14 +976,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       GLsizei width,
       GLsizei height);
 
-  // Wrapper for TexImageIOSurface2DCHROMIUM.
-  void DoTexImageIOSurface2DCHROMIUM(
-      GLenum target,
-      GLsizei width,
-      GLsizei height,
-      GLuint io_surface_id,
-      GLuint plane);
-
   void DoCopyTextureCHROMIUM(GLuint source_id,
                              GLuint dest_id,
                              GLenum internal_format,
@@ -1870,10 +1862,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void MarkContextLost(error::ContextLostReason reason) override;
   bool CheckResetStatus();
 
-#if defined(OS_MACOSX)
-  void ReleaseIOSurfaceForTexture(GLuint texture_id);
-#endif
-
   bool GetCompressedTexSizeInBytes(
       const char* function_name, GLsizei width, GLsizei height, GLsizei depth,
       GLenum format, GLsizei* size_in_bytes);
@@ -2177,11 +2165,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   // Log extra info.
   bool service_logging_;
-
-#if defined(OS_MACOSX)
-  typedef std::map<GLuint, IOSurfaceRef> TextureToIOSurfaceMap;
-  TextureToIOSurfaceMap texture_to_io_surface_map_;
-#endif
 
   std::unique_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_CHROMIUM_;
   std::unique_ptr<ClearFramebufferResourceManager> clear_framebuffer_blit_;
@@ -3768,12 +3751,6 @@ void GLES2DecoderImpl::DeleteTexturesHelper(
               ->UnbindTexture(GL_FRAMEBUFFER, texture_ref);
         }
       }
-#if defined(OS_MACOSX)
-      GLuint service_id = texture->service_id();
-      if (texture->target() == GL_TEXTURE_RECTANGLE_ARB) {
-        ReleaseIOSurfaceForTexture(service_id);
-      }
-#endif
       RemoveTexture(client_ids[ii]);
     }
   }
@@ -4389,14 +4366,6 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
     context_->ReleaseCurrent(NULL);
     context_ = NULL;
   }
-
-#if defined(OS_MACOSX)
-  for (TextureToIOSurfaceMap::iterator it = texture_to_io_surface_map_.begin();
-       it != texture_to_io_surface_map_.end(); ++it) {
-    CFRelease(it->second);
-  }
-  texture_to_io_surface_map_.clear();
-#endif
 }
 
 void GLES2DecoderImpl::SetSurface(const scoped_refptr<gl::GLSurface>& surface) {
@@ -14140,104 +14109,6 @@ bool GLES2DecoderImpl::DoIsPathCHROMIUM(GLuint client_id) {
 bool GLES2DecoderImpl::DoIsSync(GLuint client_id) {
   GLsync service_sync = 0;
   return group_->GetSyncServiceId(client_id, &service_sync);
-}
-
-#if defined(OS_MACOSX)
-void GLES2DecoderImpl::ReleaseIOSurfaceForTexture(GLuint texture_id) {
-  TextureToIOSurfaceMap::iterator it = texture_to_io_surface_map_.find(
-      texture_id);
-  if (it != texture_to_io_surface_map_.end()) {
-    // Found a previous IOSurface bound to this texture; release it.
-    IOSurfaceRef surface = it->second;
-    CFRelease(surface);
-    texture_to_io_surface_map_.erase(it);
-  }
-}
-#endif
-
-void GLES2DecoderImpl::DoTexImageIOSurface2DCHROMIUM(
-    GLenum target, GLsizei width, GLsizei height,
-    GLuint io_surface_id, GLuint plane) {
-#if defined(OS_MACOSX)
-  if (gl::GetGLImplementation() != gl::kGLImplementationDesktopGL) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glTexImageIOSurface2DCHROMIUM", "only supported on desktop GL.");
-    return;
-  }
-
-  if (target != GL_TEXTURE_RECTANGLE_ARB) {
-    // This might be supported in the future, and if we could require
-    // support for binding an IOSurface to a NPOT TEXTURE_2D texture, we
-    // could delete a lot of code. For now, perform strict validation so we
-    // know what's going on.
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glTexImageIOSurface2DCHROMIUM",
-        "requires TEXTURE_RECTANGLE_ARB target");
-    return;
-  }
-
-  // Default target might be conceptually valid, but disallow it to avoid
-  // accidents.
-  TextureRef* texture_ref =
-      texture_manager()->GetTextureInfoForTargetUnlessDefault(&state_, target);
-  if (!texture_ref) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glTexImageIOSurface2DCHROMIUM", "no rectangle texture bound");
-    return;
-  }
-
-  // Look up the new IOSurface. Note that because of asynchrony
-  // between processes this might fail; during live resizing the
-  // plugin process might allocate and release an IOSurface before
-  // this process gets a chance to look it up. Hold on to any old
-  // IOSurface in this case.
-  IOSurfaceRef surface = IOSurfaceLookup(io_surface_id);
-  if (!surface) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glTexImageIOSurface2DCHROMIUM", "no IOSurface with the given ID");
-    return;
-  }
-
-  // Release any IOSurface previously bound to this texture.
-  ReleaseIOSurfaceForTexture(texture_ref->service_id());
-
-  // Make sure we release the IOSurface even if CGLTexImageIOSurface2D fails.
-  texture_to_io_surface_map_.insert(
-      std::make_pair(texture_ref->service_id(), surface));
-
-  CGLContextObj context =
-      static_cast<CGLContextObj>(context_->GetHandle());
-
-  CGLError err = CGLTexImageIOSurface2D(
-      context,
-      target,
-      GL_RGBA,
-      width,
-      height,
-      GL_BGRA,
-      GL_UNSIGNED_INT_8_8_8_8_REV,
-      surface,
-      plane);
-
-  if (err != kCGLNoError) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glTexImageIOSurface2DCHROMIUM", "error in CGLTexImageIOSurface2D");
-    return;
-  }
-
-  texture_manager()->SetLevelInfo(
-      texture_ref, target, 0, GL_RGBA, width, height, 1, 0, GL_BGRA,
-      GL_UNSIGNED_INT_8_8_8_8_REV, gfx::Rect(width, height));
-
-#else
-  LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
-             "glTexImageIOSurface2DCHROMIUM", "not supported.");
-#endif
 }
 
 bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMTextures(
