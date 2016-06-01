@@ -97,6 +97,10 @@ class NET_EXPORT HttpNetworkSession
     // Whether to enable Alt-Svc entries with hostname different than that of
     // the origin.
     bool enable_alternative_service_with_different_host;
+    // Only set for tests.
+    // TODO(bnc) https://crbug.com/615497:
+    // Adapt tests to https requests, remove this member.
+    bool enable_alternative_service_for_insecure_origins;
 
     // Enables NPN support.  Note that ALPN is always enabled.
     bool enable_npn;

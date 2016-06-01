@@ -202,6 +202,7 @@ struct SpdySessionDependencies {
   bool enable_priority_dependencies;
   bool enable_spdy31;
   bool enable_quic;
+  bool enable_alternative_service_for_insecure_origins;
   NextProto protocol;
   size_t session_max_recv_window_size;
   size_t stream_max_recv_window_size;

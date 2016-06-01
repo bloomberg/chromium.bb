@@ -217,6 +217,10 @@ HttpStreamFactoryImpl::Job::Job(HttpStreamFactoryImpl* stream_factory,
       ptr_factory_(this) {
   DCHECK(stream_factory);
   DCHECK(session);
+  if (IsSpdyAlternative() &&
+      !session_->params().enable_alternative_service_for_insecure_origins) {
+    DCHECK(origin_url_.SchemeIs("https"));
+  }
   if (IsQuicAlternative()) {
     DCHECK(session_->params().enable_quic);
     using_quic_ = true;

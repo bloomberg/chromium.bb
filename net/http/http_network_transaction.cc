@@ -1238,8 +1238,11 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     return OK;
   }
 
-  session_->http_stream_factory()->ProcessAlternativeServices(
-      session_, response_.headers.get(), url::SchemeHostPort(request_->url));
+  if (session_->params().enable_alternative_service_for_insecure_origins ||
+      IsSecureRequest()) {
+    session_->http_stream_factory()->ProcessAlternativeServices(
+        session_, response_.headers.get(), url::SchemeHostPort(request_->url));
+  }
 
   if (IsSecureRequest())
     stream_->GetSSLInfo(&response_.ssl_info);

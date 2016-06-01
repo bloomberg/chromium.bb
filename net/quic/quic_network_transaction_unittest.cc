@@ -263,6 +263,7 @@ class QuicNetworkTransactionTest
     clock_->AdvanceTime(QuicTime::Delta::FromMilliseconds(20));
 
     params_.enable_alternative_service_with_different_host = true;
+    params_.enable_alternative_service_for_insecure_origins = true;
 
     scoped_refptr<X509Certificate> cert(
         ImportCertFromFile(GetTestCertsDirectory(), "wildcard.pem"));

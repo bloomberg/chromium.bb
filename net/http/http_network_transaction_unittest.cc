@@ -9709,6 +9709,63 @@ TEST_P(HttpNetworkTransactionTest, HonorAlternativeServiceHeader) {
   EXPECT_EQ(443, alternative_service_vector[0].port);
 }
 
+// Regression test for https://crbug.com/615497.
+TEST_P(HttpNetworkTransactionTest,
+       DoNotParseAlternativeServiceHeaderOnInsecureRequest) {
+  session_deps_.enable_alternative_service_for_insecure_origins = false;
+
+  std::string alternative_service_http_header =
+      GetAlternativeServiceHttpHeader();
+
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead(alternative_service_http_header.c_str()),
+      MockRead("\r\n"),
+      MockRead("hello world"),
+      MockRead(SYNCHRONOUS, OK),
+  };
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.example.org/");
+  request.load_flags = 0;
+
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads), NULL, 0);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  std::unique_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+
+  url::SchemeHostPort test_server(request.url);
+  HttpServerProperties& http_server_properties =
+      *session->http_server_properties();
+  AlternativeServiceVector alternative_service_vector =
+      http_server_properties.GetAlternativeServices(test_server);
+  EXPECT_TRUE(alternative_service_vector.empty());
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(OK, callback.WaitForResult());
+
+  const HttpResponseInfo* response = trans->GetResponseInfo();
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->headers);
+  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+  EXPECT_FALSE(response->was_fetched_via_spdy);
+  EXPECT_FALSE(response->was_npn_negotiated);
+
+  std::string response_data;
+  ASSERT_EQ(OK, ReadTransaction(trans.get(), &response_data));
+  EXPECT_EQ("hello world", response_data);
+
+  alternative_service_vector =
+      http_server_properties.GetAlternativeServices(test_server);
+  EXPECT_TRUE(alternative_service_vector.empty());
+}
+
 // HTTP/2 Alternative Services should be disabled if alternative service
 // hostname is different from that of origin.
 // TODO(bnc): Remove when https://crbug.com/615413 is fixed.
@@ -9741,6 +9798,49 @@ TEST_P(HttpNetworkTransactionTest,
   AlternativeService alternative_service(
       AlternateProtocolFromNextProto(GetProtocol()), "different.example.org",
       444);
+  base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
+  http_server_properties->SetAlternativeService(
+      url::SchemeHostPort(request.url), alternative_service, expiration);
+
+  std::unique_ptr<HttpTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  TestCompletionCallback callback;
+
+  int rv = trans->Start(&request, callback.callback(), BoundNetLog());
+  // Alternative service is not used, request fails.
+  EXPECT_EQ(ERR_CONNECTION_REFUSED, callback.GetResult(rv));
+}
+
+// Regression test for https://crbug.com/615497:
+// Alternative Services should be disabled for http origin.
+TEST_P(HttpNetworkTransactionTest,
+       DisableAlternativeServicesForInsecureOrigin) {
+  session_deps_.enable_alternative_service_for_insecure_origins = false;
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.example.org/");
+  request.load_flags = 0;
+
+  MockConnect mock_connect(ASYNC, ERR_CONNECTION_REFUSED);
+  StaticSocketDataProvider first_data;
+  first_data.set_connect_data(mock_connect);
+  session_deps_.socket_factory->AddSocketDataProvider(&first_data);
+
+  MockRead data_reads[] = {
+      MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello world"),
+      MockRead(ASYNC, OK),
+  };
+  StaticSocketDataProvider second_data(data_reads, arraysize(data_reads), NULL,
+                                       0);
+  session_deps_.socket_factory->AddSocketDataProvider(&second_data);
+
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+
+  base::WeakPtr<HttpServerProperties> http_server_properties =
+      session->http_server_properties();
+  AlternativeService alternative_service(
+      AlternateProtocolFromNextProto(GetProtocol()), "", 444);
   base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
   http_server_properties->SetAlternativeService(
       url::SchemeHostPort(request.url), alternative_service, expiration);

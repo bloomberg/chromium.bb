@@ -217,6 +217,10 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceForInternal(
   if (original_url.SchemeIs("ftp"))
     return AlternativeService();
 
+  if (!session_->params().enable_alternative_service_for_insecure_origins &&
+      !original_url.SchemeIs("https"))
+    return AlternativeService();
+
   url::SchemeHostPort origin(original_url);
   HttpServerProperties& http_server_properties =
       *session_->http_server_properties();
