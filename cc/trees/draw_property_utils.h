@@ -75,9 +75,7 @@ void CC_EXPORT ComputeVisibleRects(LayerImpl* root_layer,
                                    LayerImplList* visible_layer_list);
 
 void CC_EXPORT ComputeLayerDrawProperties(LayerImpl* layer,
-                                          const PropertyTrees* property_trees,
-                                          bool layers_always_allowed_lcd_text,
-                                          bool can_use_lcd_text);
+                                          const PropertyTrees* property_trees);
 
 void CC_EXPORT ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
                                             RenderSurfaceImpl* render_surface);

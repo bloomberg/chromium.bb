@@ -826,7 +826,6 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         InnerViewportScrollLayer(), OuterViewportScrollLayer(),
         elastic_overscroll()->Current(IsActiveTree()),
         OverscrollElasticityLayer(), resource_provider()->max_texture_size(),
-        settings().can_use_lcd_text, settings().layers_always_allowed_lcd_text,
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
         settings().verify_clip_tree_calculations, &render_surface_layer_list_,

@@ -1007,31 +1007,6 @@ static void SetSurfaceDrawOpacity(const EffectTree& tree,
   render_surface->SetDrawOpacity(draw_opacity);
 }
 
-static bool LayerCanUseLcdText(const LayerImpl* layer,
-                               bool layers_always_allowed_lcd_text,
-                               bool can_use_lcd_text,
-                               const TransformNode* transform_node,
-                               const EffectNode* effect_node) {
-  if (layers_always_allowed_lcd_text)
-    return true;
-  if (!can_use_lcd_text)
-    return false;
-  if (!layer->contents_opaque())
-    return false;
-
-  if (effect_node->data.screen_space_opacity != 1.f)
-    return false;
-  if (!transform_node->data.node_and_ancestors_have_only_integer_translation)
-    return false;
-  if (static_cast<int>(layer->offset_to_transform_parent().x()) !=
-      layer->offset_to_transform_parent().x())
-    return false;
-  if (static_cast<int>(layer->offset_to_transform_parent().y()) !=
-      layer->offset_to_transform_parent().y())
-    return false;
-  return true;
-}
-
 static gfx::Rect LayerDrawableContentRect(
     const LayerImpl* layer,
     const gfx::Rect& layer_bounds_in_target_space,
@@ -1070,13 +1045,9 @@ static gfx::Transform ReplicaToSurfaceTransform(
 }
 
 void ComputeLayerDrawProperties(LayerImpl* layer,
-                                const PropertyTrees* property_trees,
-                                bool layers_always_allowed_lcd_text,
-                                bool can_use_lcd_text) {
+                                const PropertyTrees* property_trees) {
   const TransformNode* transform_node =
       property_trees->transform_tree.Node(layer->transform_tree_index());
-  const EffectNode* effect_node =
-      property_trees->effect_tree.Node(layer->effect_tree_index());
   const ClipNode* clip_node =
       property_trees->clip_tree.Node(layer->clip_tree_index());
 
@@ -1105,9 +1076,6 @@ void ComputeLayerDrawProperties(LayerImpl* layer,
 
   layer->draw_properties().opacity =
       LayerDrawOpacity(layer, property_trees->effect_tree);
-  layer->draw_properties().can_use_lcd_text =
-      LayerCanUseLcdText(layer, layers_always_allowed_lcd_text,
-                         can_use_lcd_text, transform_node, effect_node);
   if (property_trees->non_root_surfaces_enabled) {
     layer->draw_properties().is_clipped = clip_node->data.layers_are_clipped;
   } else {

@@ -71,9 +71,7 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
     Layer* root_layer,
     float device_scale_factor,
     float page_scale_factor,
-    Layer* page_scale_layer,
-    bool can_use_lcd_text,
-    bool layers_always_allowed_lcd_text) {
+    Layer* page_scale_layer) {
   PropertyTreeBuilder::PreCalculateMetaInformation(root_layer);
 
   EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
@@ -173,9 +171,7 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
     LayerImpl* root_layer,
     float device_scale_factor,
     float page_scale_factor,
-    LayerImpl* page_scale_layer,
-    bool can_use_lcd_text,
-    bool layers_always_allowed_lcd_text) {
+    LayerImpl* page_scale_layer) {
   root_layer->layer_tree_impl()->SetDeviceScaleFactor(device_scale_factor);
 
   EXPECT_TRUE(page_scale_layer || (page_scale_factor == 1.f));
@@ -195,8 +191,6 @@ void LayerTreeHostCommonTestBase::ExecuteCalculateDrawProperties(
   inputs.device_scale_factor = device_scale_factor;
   inputs.page_scale_factor = page_scale_factor;
   inputs.page_scale_layer = page_scale_layer;
-  inputs.can_use_lcd_text = can_use_lcd_text;
-  inputs.layers_always_allowed_lcd_text = layers_always_allowed_lcd_text;
   inputs.can_adjust_raster_scales = true;
 
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);

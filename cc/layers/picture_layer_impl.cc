@@ -601,7 +601,7 @@ void PictureLayerImpl::UpdateCanUseLCDTextAfterCommit() {
   // Don't allow the LCD text state to change once disabled.
   if (!RasterSourceUsesLCDText())
     return;
-  if (can_use_lcd_text() == RasterSourceUsesLCDText())
+  if (CanUseLCDText() == RasterSourceUsesLCDText())
     return;
 
   // Raster sources are considered const, so in order to update the state

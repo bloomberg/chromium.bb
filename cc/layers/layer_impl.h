@@ -310,6 +310,8 @@ class CC_EXPORT LayerImpl {
     return performance_properties_;
   }
 
+  bool CanUseLCDText() const;
+
   // Setter for draw_properties_.
   void set_visible_layer_rect(const gfx::Rect& visible_rect) {
     draw_properties_.visible_layer_rect = visible_rect;
@@ -324,7 +326,6 @@ class CC_EXPORT LayerImpl {
   bool screen_space_transform_is_animating() const {
     return draw_properties_.screen_space_transform_is_animating;
   }
-  bool can_use_lcd_text() const { return draw_properties_.can_use_lcd_text; }
   gfx::Rect clip_rect() const { return draw_properties_.clip_rect; }
   gfx::Rect drawable_content_rect() const {
     return draw_properties_.drawable_content_rect;

@@ -42,9 +42,6 @@ struct CC_EXPORT DrawProperties {
   // to draw.
   bool screen_space_transform_is_animating;
 
-  // True if the layer can use LCD text.
-  bool can_use_lcd_text;
-
   // True if the layer needs to be clipped by clip_rect.
   bool is_clipped;
 

@@ -4550,7 +4550,7 @@ TEST_F(PictureLayerImplTest, UpdateLCDInvalidatesPendingTree) {
     EXPECT_EQ(pending_layer()->raster_source(),
               prioritized_tiles[tile].raster_source());
 
-  pending_layer()->draw_properties().can_use_lcd_text = false;
+  pending_layer()->SetContentsOpaque(false);
   pending_layer()->UpdateCanUseLCDTextAfterCommit();
 
   EXPECT_FALSE(pending_layer()->RasterSourceUsesLCDText());

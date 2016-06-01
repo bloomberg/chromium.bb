@@ -78,8 +78,6 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     const gfx::Vector2dF& elastic_overscroll,
     const LayerImpl* elastic_overscroll_application_layer,
     int max_texture_size,
-    bool can_use_lcd_text,
-    bool layers_always_allowed_lcd_text,
     bool can_render_to_separate_surface,
     bool can_adjust_raster_scales,
     bool verify_clip_tree_calculations,
@@ -97,8 +95,6 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
       elastic_overscroll_application_layer(
           elastic_overscroll_application_layer),
       max_texture_size(max_texture_size),
-      can_use_lcd_text(can_use_lcd_text),
-      layers_always_allowed_lcd_text(layers_always_allowed_lcd_text),
       can_render_to_separate_surface(can_render_to_separate_surface),
       can_adjust_raster_scales(can_adjust_raster_scales),
       verify_clip_tree_calculations(verify_clip_tree_calculations),
@@ -121,8 +117,6 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                               gfx::Vector2dF(),
                               NULL,
                               std::numeric_limits<int>::max() / 2,
-                              false,
-                              false,
                               true,
                               false,
                               true,
@@ -594,9 +588,8 @@ void CalculateDrawPropertiesInternal(
   DCHECK(inputs->can_render_to_separate_surface ==
          inputs->property_trees->non_root_surfaces_enabled);
   for (LayerImpl* layer : visible_layer_list) {
-    draw_property_utils::ComputeLayerDrawProperties(
-        layer, inputs->property_trees, inputs->layers_always_allowed_lcd_text,
-        inputs->can_use_lcd_text);
+    draw_property_utils::ComputeLayerDrawProperties(layer,
+                                                    inputs->property_trees);
     if (layer->mask_layer())
       ComputeMaskLayerDrawProperties(layer, layer->mask_layer());
     LayerImpl* replica_mask_layer =

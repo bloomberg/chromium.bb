@@ -9,7 +9,6 @@ namespace cc {
 DrawProperties::DrawProperties()
     : opacity(0.f),
       screen_space_transform_is_animating(false),
-      can_use_lcd_text(false),
       is_clipped(false),
       maximum_animation_contents_scale(0.f),
       starting_animation_contents_scale(0.f) {}
