@@ -391,6 +391,12 @@ void ContentSettingDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
       ImageDecoration::DrawInFrame(icon_rect, control_view);
     }
 
+    NSRect remainder = frame;
+    remainder.origin.x = NSMaxX(icon_rect) + kTextMarginPadding;
+    remainder.size.width =
+        NSMaxX(background_rect) - NSMinX(remainder) - kLeftDividerPadding;
+    DrawAttributedString(animated_text_, remainder);
+
     if (ui::MaterialDesignController::IsModeMaterial()) {
       NSBezierPath* line = [NSBezierPath bezierPath];
       [line setLineWidth:1];
@@ -403,11 +409,6 @@ void ContentSettingDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
       [GetDividerColor(owner_->IsLocationBarDark()) set];
       [line stroke];
     }
-
-    NSRect remainder = frame;
-    remainder.origin.x = NSMaxX(icon_rect) + kTextMarginPadding;
-    remainder.size.width = NSMaxX(background_rect) - NSMinX(remainder);
-    DrawAttributedString(animated_text_, remainder);
   } else {
     // No animation, draw the image as normal.
     ImageDecoration::DrawInFrame(frame, control_view);
