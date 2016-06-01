@@ -48,14 +48,16 @@ def main():
   args, rest_args = parser.parse_known_args()
   xvfb_proc = None
   openbox_proc = None
+  xcompmgr_proc = None
   env = os.environ.copy()
   # Assume we want to set up the sandbox environment variables all the
   # time; doing so is harmless on non-Linux platforms and is needed
   # all the time on Linux.
   env[CHROME_SANDBOX_ENV] = CHROME_SANDBOX_PATH
   if args.xvfb and xvfb.should_start_xvfb(env):
-    xvfb_proc, openbox_proc = xvfb.start_xvfb(env=env, build_dir='.')
-    assert xvfb_proc and openbox_proc, 'Failed to start xvfb'
+    xvfb_proc, openbox_proc, xcompmgr_proc = xvfb.start_xvfb(env=env,
+                                                             build_dir='.')
+    assert xvfb_proc and openbox_proc and xcompmgr_proc, 'Failed to start xvfb'
   try:
     tempfile_dir = tempfile.mkdtemp('telemetry')
     valid = True
@@ -92,6 +94,7 @@ def main():
   finally:
     xvfb.kill(xvfb_proc)
     xvfb.kill(openbox_proc)
+    xvfb.kill(xcompmgr_proc)
 
 
 # This is not really a "script test" so does not need to manually add

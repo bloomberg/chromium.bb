@@ -41,10 +41,12 @@ def main():
   args, rest_args = parser.parse_known_args()
   xvfb_proc = None
   openbox_proc = None
+  xcompmgr_proc = None
   env = os.environ.copy()
   if args.xvfb and xvfb.should_start_xvfb(env):
-    xvfb_proc, openbox_proc = xvfb.start_xvfb(env=env, build_dir='.')
-    assert xvfb_proc and openbox_proc, 'Failed to start xvfb'
+    xvfb_proc, openbox_proc, xcompmgr_proc = xvfb.start_xvfb(env=env,
+                                                             build_dir='.')
+    assert xvfb_proc and openbox_proc and xcompmgr_proc, 'Failed to start xvfb'
   try:
     with common.temporary_file() as tempfile_path:
       rc = common.run_command([sys.executable] + rest_args + [
@@ -66,6 +68,7 @@ def main():
   finally:
     xvfb.kill(xvfb_proc)
     xvfb.kill(openbox_proc)
+    xvfb.kill(xcompmgr_proc)
 
 
 
