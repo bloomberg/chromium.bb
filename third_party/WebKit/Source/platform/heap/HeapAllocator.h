@@ -6,6 +6,7 @@
 #define HeapAllocator_h
 
 #include "platform/heap/Heap.h"
+#include "platform/heap/Persistent.h"
 #include "platform/heap/TraceTraits.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
@@ -435,6 +436,16 @@ template <typename T> struct VectorTraits<blink::UntracedMember<T>> : VectorTrai
     static const bool canMoveWithMemcpy = true;
 };
 
+template <typename T, blink::WeaknessPersistentConfiguration weaknessConfiguration, blink::CrossThreadnessPersistentConfiguration crossThreadnessConfiguration>
+struct VectorTraits<blink::PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>>
+    : VectorTraitsBase<blink::PersistentBase<T, weaknessConfiguration, crossThreadnessConfiguration>> {
+    STATIC_ONLY(VectorTraits);
+    static const bool needsDestruction = true;
+    static const bool canInitializeWithMemset = true;
+    static const bool canClearUnusedSlotsWithMemset = false;
+    static const bool canMoveWithMemcpy = true;
+};
+
 template <typename T> struct VectorTraits<blink::HeapVector<T, 0>> : VectorTraitsBase<blink::HeapVector<T, 0>> {
     STATIC_ONLY(VectorTraits);
     static const bool needsDestruction = false;
@@ -563,6 +574,34 @@ template<typename T, size_t inlineCapacity>
 struct IsGarbageCollectedType<ListHashSetNode<T, blink::HeapListHashSetAllocator<T, inlineCapacity>>> {
     static const bool value = true;
 };
+
+template<typename T, typename H> struct HandleHashTraits : SimpleClassHashTraits<H> {
+    STATIC_ONLY(HandleHashTraits);
+    // TODO: The distinction between PeekInType and PassInType is there for
+    // the sake of the reference counting handles. When they are gone the two
+    // types can be merged into PassInType.
+    // TODO: Implement proper const'ness for iterator types. Requires support
+    // in the marking Visitor.
+    using PeekInType = T*;
+    using PassInType = T*;
+    using IteratorGetType = H*;
+    using IteratorConstGetType = const H*;
+    using IteratorReferenceType = H&;
+    using IteratorConstReferenceType = const H&;
+    static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
+    static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
+
+    using PeekOutType = T*;
+
+    template<typename U>
+    static void store(const U& value, H& storage) { storage = value; }
+
+    static PeekOutType peek(const H& value) { return value; }
+};
+
+template<typename T> struct HashTraits<blink::Persistent<T>> : HandleHashTraits<T, blink::Persistent<T>> { };
+
+template<typename T> struct HashTraits<blink::CrossThreadPersistent<T>> : HandleHashTraits<T, blink::CrossThreadPersistent<T>> { };
 
 } // namespace WTF
 
