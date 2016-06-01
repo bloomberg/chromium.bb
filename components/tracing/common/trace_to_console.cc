@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/tracing/trace_to_console.h"
+#include "components/tracing/common/trace_to_console.h"
 
 #include <string>
 
 #include "base/command_line.h"
-#include "components/tracing/tracing_switches.h"
+#include "components/tracing/common/tracing_switches.h"
 
 namespace tracing {
 

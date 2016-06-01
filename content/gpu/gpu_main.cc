@@ -51,7 +51,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/trace_event/memory_dump_manager.h"
-#include "components/tracing/graphics_memory_dump_provider_android.h"
+#include "components/tracing/common/graphics_memory_dump_provider_android.h"
 #endif
 
 #if defined(OS_WIN)

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/tracing/child_trace_message_filter.h"
+#include "components/tracing/child/child_trace_message_filter.h"
 
 #include <memory>
 
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "components/tracing/tracing_messages.h"
+#include "components/tracing/common/tracing_messages.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
 #include "testing/gmock/include/gmock/gmock.h"

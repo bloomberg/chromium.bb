@@ -114,7 +114,7 @@
       'certificate_transparency/single_tree_tracker_unittest.cc',
     ],
     'child_trace_message_filter_unittest_sources': [
-      'tracing/child_trace_message_filter_unittest.cc',
+      'tracing/child/child_trace_message_filter_unittest.cc',
     ],
     'client_update_protocol_unittest_sources': [
       'client_update_protocol/ecdsa_unittest.cc',
@@ -830,9 +830,9 @@
       'syncable_prefs/pref_service_syncable_unittest.cc',
     ],
     'tracing_unittest_sources': [
-      'tracing/graphics_memory_dump_provider_android_unittest.cc',
-      'tracing/process_metrics_memory_dump_provider_unittest.cc',
-      'tracing/trace_config_file_unittest.cc',
+      'tracing/browser/trace_config_file_unittest.cc',
+      'tracing/common/graphics_memory_dump_provider_android_unittest.cc',
+      'tracing/common/process_metrics_memory_dump_provider_unittest.cc',
     ],
     'translate_unittest_sources': [
       'translate/core/browser/mock_translate_driver.cc',
@@ -1571,7 +1571,7 @@
             ['OS=="android"', {
               'sources/': [
                 ['exclude', '^policy/core/common/async_policy_provider_unittest\\.cc'],
-                ['exclude', '^tracing/trace_config_file_unittest\\.cc'],
+                ['exclude', '^tracing/browser/trace_config_file_unittest\\.cc'],
               ],
             }],
             ['OS=="android" or OS=="ios"', {
@@ -1862,7 +1862,7 @@
             'dom_distiller/content/browser/distiller_page_web_contents_browsertest.cc',
             'dom_distiller/content/browser/test/dom_distiller_js_browsertest.cc',
             'password_manager/content/renderer/credential_manager_client_browsertest.cc',
-            'tracing/child_trace_message_filter_browsertest.cc',
+            'tracing/child/child_trace_message_filter_browsertest.cc',
           ],
           'conditions': [
             ['OS == "android"', {

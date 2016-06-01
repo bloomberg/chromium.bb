@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TRACING_TRACE_CONFIG_FILE_H_
-#define COMPONENTS_TRACING_TRACE_CONFIG_FILE_H_
+#ifndef COMPONENTS_TRACING_BROWSER_TRACE_CONFIG_FILE_H_
+#define COMPONENTS_TRACING_BROWSER_TRACE_CONFIG_FILE_H_
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -94,4 +94,4 @@ class TRACING_EXPORT TraceConfigFile {
 
 }  // namespace tracing
 
-#endif  // COMPONENTS_TRACING_TRACE_CONFIG_FILE_H_
+#endif  // COMPONENTS_TRACING_BROWSER_TRACE_CONFIG_FILE_H_

@@ -11,7 +11,7 @@
 #include "base/rand_util.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/values.h"
-#include "components/tracing/tracing_messages.h"
+#include "components/tracing/common/tracing_messages.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/public/browser/browser_thread.h"

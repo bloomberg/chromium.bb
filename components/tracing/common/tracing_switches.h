@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TRACING_TRACING_SWITCHES_H_
-#define COMPONENTS_TRACING_TRACING_SWITCHES_H_
+#ifndef COMPONENTS_TRACING_COMMON_TRACING_SWITCHES_H_
+#define COMPONENTS_TRACING_COMMON_TRACING_SWITCHES_H_
 
 #include "components/tracing/tracing_export.h"
 
@@ -20,4 +20,4 @@ TRACING_EXPORT extern const char kTraceUploadURL[];
 
 }  // namespace switches
 
-#endif  // COMPONENTS_TRACING_TRACING_SWITCHES_H_
+#endif  // COMPONENTS_TRACING_COMMON_TRACING_SWITCHES_H_

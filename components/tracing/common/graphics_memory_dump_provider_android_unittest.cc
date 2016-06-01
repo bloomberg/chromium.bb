@@ -5,7 +5,7 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "components/tracing/graphics_memory_dump_provider_android.h"
+#include "components/tracing/common/graphics_memory_dump_provider_android.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace tracing {

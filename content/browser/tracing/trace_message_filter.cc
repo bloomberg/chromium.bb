@@ -4,7 +4,7 @@
 
 #include "content/browser/tracing/trace_message_filter.h"
 
-#include "components/tracing/tracing_messages.h"
+#include "components/tracing/common/tracing_messages.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/common/child_process_host_impl.h"

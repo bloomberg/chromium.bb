@@ -31,7 +31,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
-#include "components/tracing/child_trace_message_filter.h"
+#include "components/tracing/child/child_trace_message_filter.h"
 #include "content/child/child_discardable_shared_memory_manager.h"
 #include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_histogram_message_filter.h"

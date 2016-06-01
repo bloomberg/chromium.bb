@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/tracing/process_metrics_memory_dump_provider.h"
+#include "components/tracing/common/process_metrics_memory_dump_provider.h"
 
 #include <stdint.h>
 

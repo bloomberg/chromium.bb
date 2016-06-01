@@ -44,7 +44,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "components/scheduler/common/scheduler_switches.h"
-#include "components/tracing/tracing_switches.h"
+#include "components/tracing/common/tracing_switches.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_sync/background_sync_service_impl.h"

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/tracing/child_memory_dump_manager_delegate_impl.h"
+#include "components/tracing/child/child_memory_dump_manager_delegate_impl.h"
 
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "components/tracing/child_trace_message_filter.h"
-#include "components/tracing/process_metrics_memory_dump_provider.h"
+#include "components/tracing/child/child_trace_message_filter.h"
+#include "components/tracing/common/process_metrics_memory_dump_provider.h"
 
 namespace tracing {
 

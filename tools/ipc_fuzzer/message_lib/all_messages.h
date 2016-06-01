@@ -21,7 +21,7 @@
 #include "components/network_hints/common/network_hints_message_generator.h"
 #include "components/page_load_metrics/common/page_load_metrics_messages.h"
 #include "components/pdf/common/pdf_message_generator.h"
-#include "components/tracing/tracing_messages.h"
+#include "components/tracing/common/tracing_messages.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/visitedlink/common/visitedlink_message_generator.h"
 #include "content/common/all_messages.h"

@@ -13,9 +13,9 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_event.h"
-#include "components/tracing/child_memory_dump_manager_delegate_impl.h"
-#include "components/tracing/child_trace_message_filter.h"
-#include "components/tracing/tracing_messages.h"
+#include "components/tracing/child/child_memory_dump_manager_delegate_impl.h"
+#include "components/tracing/child/child_trace_message_filter.h"
+#include "components/tracing/common/tracing_messages.h"
 #include "content/public/test/render_view_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

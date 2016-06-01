@@ -4,17 +4,17 @@
 
 component("tracing") {
   sources = [
-    "child_memory_dump_manager_delegate_impl.cc",
-    "child_memory_dump_manager_delegate_impl.h",
-    "child_trace_message_filter.cc",
-    "child_trace_message_filter.h",
-    "graphics_memory_dump_provider_android.cc",
-    "graphics_memory_dump_provider_android.h",
-    "process_metrics_memory_dump_provider.cc",
-    "process_metrics_memory_dump_provider.h",
+    "child/child_memory_dump_manager_delegate_impl.cc",
+    "child/child_memory_dump_manager_delegate_impl.h",
+    "child/child_trace_message_filter.cc",
+    "child/child_trace_message_filter.h",
+    "common/graphics_memory_dump_provider_android.cc",
+    "common/graphics_memory_dump_provider_android.h",
+    "common/process_metrics_memory_dump_provider.cc",
+    "common/process_metrics_memory_dump_provider.h",
+    "common/tracing_messages.cc",
+    "common/tracing_messages.h",
     "tracing_export.h",
-    "tracing_messages.cc",
-    "tracing_messages.h",
   ]
 
   defines = [ "TRACING_IMPLEMENTATION" ]
@@ -25,19 +25,19 @@ component("tracing") {
   ]
 
   if (is_nacl) {
-    sources -= [ "process_metrics_memory_dump_provider.cc" ]
+    sources -= [ "common/process_metrics_memory_dump_provider.cc" ]
   }
 }
 
 component("startup_tracing") {
   sources = [
-    "trace_config_file.cc",
-    "trace_config_file.h",
-    "trace_to_console.cc",
-    "trace_to_console.h",
+    "browser/trace_config_file.cc",
+    "browser/trace_config_file.h",
+    "common/trace_to_console.cc",
+    "common/trace_to_console.h",
+    "common/tracing_switches.cc",
+    "common/tracing_switches.h",
     "tracing_export.h",
-    "tracing_switches.cc",
-    "tracing_switches.h",
   ]
 
   defines = [ "TRACING_IMPLEMENTATION" ]
@@ -51,9 +51,9 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "child_trace_message_filter_unittest.cc",
-    "graphics_memory_dump_provider_android_unittest.cc",
-    "process_metrics_memory_dump_provider_unittest.cc",
+    "child/child_trace_message_filter_unittest.cc",
+    "common/graphics_memory_dump_provider_android_unittest.cc",
+    "common/process_metrics_memory_dump_provider_unittest.cc",
   ]
 
   deps = [
@@ -65,7 +65,7 @@ source_set("unit_tests") {
   ]
 
   if (!is_android) {
-    sources += [ "trace_config_file_unittest.cc" ]
+    sources += [ "browser/trace_config_file_unittest.cc" ]
     deps += [ ":startup_tracing" ]
   }
 }

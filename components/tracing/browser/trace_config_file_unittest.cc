@@ -6,8 +6,8 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "components/tracing/trace_config_file.h"
-#include "components/tracing/tracing_switches.h"
+#include "components/tracing/browser/trace_config_file.h"
+#include "components/tracing/common/tracing_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace tracing {

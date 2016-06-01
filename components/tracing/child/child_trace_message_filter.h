@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_
-#define COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_
+#ifndef COMPONENTS_TRACING_CHILD_CHILD_TRACE_MESSAGE_FILTER_H_
+#define COMPONENTS_TRACING_CHILD_CHILD_TRACE_MESSAGE_FILTER_H_
 
 #include <stdint.h>
 
@@ -100,4 +100,4 @@ class TRACING_EXPORT ChildTraceMessageFilter : public IPC::MessageFilter {
 
 }  // namespace tracing
 
-#endif  // COMPONENTS_TRACING_CHILD_TRACE_MESSAGE_FILTER_H_
+#endif  // COMPONENTS_TRACING_CHILD_CHILD_TRACE_MESSAGE_FILTER_H_

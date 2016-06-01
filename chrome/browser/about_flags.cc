@@ -54,7 +54,7 @@
 #include "components/security_state/switches.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "components/sync_driver/sync_driver_switches.h"
-#include "components/tracing/tracing_switches.h"
+#include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/user_metrics.h"

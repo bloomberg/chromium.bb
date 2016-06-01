@@ -14,7 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
-#include "components/tracing/child_trace_message_filter.h"
+#include "components/tracing/child/child_trace_message_filter.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message.h"

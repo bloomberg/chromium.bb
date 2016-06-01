@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/tracing/graphics_memory_dump_provider_android.h"
+#include "components/tracing/common/graphics_memory_dump_provider_android.h"
 
 #include <fcntl.h>
 #include <stdint.h>

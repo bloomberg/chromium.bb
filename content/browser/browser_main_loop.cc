@@ -37,10 +37,10 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/tracing/process_metrics_memory_dump_provider.h"
-#include "components/tracing/trace_config_file.h"
-#include "components/tracing/trace_to_console.h"
-#include "components/tracing/tracing_switches.h"
+#include "components/tracing/browser/trace_config_file.h"
+#include "components/tracing/common/process_metrics_memory_dump_provider.h"
+#include "components/tracing/common/trace_to_console.h"
+#include "components/tracing/common/tracing_switches.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/device_sensors/device_inertial_sensor_service.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
@@ -101,7 +101,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "components/tracing/graphics_memory_dump_provider_android.h"
+#include "components/tracing/common/graphics_memory_dump_provider_android.h"
 #include "content/browser/android/browser_startup_controller.h"
 #include "content/browser/android/browser_surface_texture_manager.h"
 #include "content/browser/android/tracing_controller_android.h"

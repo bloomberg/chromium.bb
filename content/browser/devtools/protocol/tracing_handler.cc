@@ -17,7 +17,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "base/trace_event/tracing_agent.h"
-#include "components/tracing/trace_config_file.h"
+#include "components/tracing/browser/trace_config_file.h"
 #include "content/browser/devtools/devtools_io_context.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 
