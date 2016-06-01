@@ -18,7 +18,6 @@ class ScriptState;
 class ScriptWrappable;
 
 #define V8_HIDDEN_VALUES(V) \
-    V(privateScriptObjectIsInitialized) \
     V(customElementAttachedCallback) \
     V(customElementAttributeChangedCallback) \
     V(customElementCreatedCallback) \

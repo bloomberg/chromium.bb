@@ -22,7 +22,8 @@ class ScriptWrappable;
 
 // Apply |X| for each pair of (InterfaceName, PrivateKeyName).
 #define V8_PRIVATE_PROPERTY_FOR_EACH(X) \
-    X(MessageEvent, CachedData)
+    X(MessageEvent, CachedData) \
+    X(PrivateScriptRunner, IsInitialized)
 
 // The getter's name for a private property.
 #define V8_PRIVATE_PROPERTY_GETTER_NAME(InterfaceName, PrivateKeyName) \
@@ -62,6 +63,11 @@ public:
     class CORE_EXPORT Symbol {
         STACK_ALLOCATED();
     public:
+        bool hasValue(v8::Local<v8::Context> context, v8::Local<v8::Object> object) const
+        {
+            return v8CallBoolean(object->HasPrivate(context, m_privateSymbol));
+        }
+
         v8::Local<v8::Value> get(v8::Local<v8::Context> context, v8::Local<v8::Object> object) const
         {
             if (!v8CallBoolean(object->HasPrivate(context, m_privateSymbol)))
