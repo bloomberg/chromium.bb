@@ -5,6 +5,7 @@
 #ifndef TableRowPainter_h
 #define TableRowPainter_h
 
+#include "core/style/ShadowData.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
@@ -21,6 +22,7 @@ public:
 
     void paint(const PaintInfo&, const LayoutPoint&);
     void paintOutline(const PaintInfo&, const LayoutPoint&);
+    void paintBoxShadow(const PaintInfo&, const LayoutPoint&, ShadowStyle);
     void paintBackgroundBehindCell(const LayoutTableCell&, const PaintInfo&, const LayoutPoint&);
 
 private:

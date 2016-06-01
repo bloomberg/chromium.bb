@@ -6,6 +6,8 @@
 
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTableRow.h"
+#include "core/paint/BoxPainter.h"
+#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TableCellPainter.h"
@@ -23,10 +25,14 @@ void TableRowPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
         return;
 
     PaintInfo paintInfoForCells = paintInfo.forDescendants();
-    if (shouldPaintSelfBlockBackground(paintInfo.phase) && m_layoutTableRow.hasBackground()) {
-        // Paint row background of behind the cells.
-        for (LayoutTableCell* cell = m_layoutTableRow.firstCell(); cell; cell = cell->nextCell())
-            TableCellPainter(*cell).paintContainerBackgroundBehindCell(paintInfoForCells, paintOffset, m_layoutTableRow, DisplayItem::TableCellBackgroundFromRow);
+    if (shouldPaintSelfBlockBackground(paintInfo.phase)) {
+        paintBoxShadow(paintInfo, paintOffset, Normal);
+        if (m_layoutTableRow.hasBackground()) {
+            // Paint row background of behind the cells.
+            for (LayoutTableCell* cell = m_layoutTableRow.firstCell(); cell; cell = cell->nextCell())
+                TableCellPainter(*cell).paintContainerBackgroundBehindCell(paintInfoForCells, paintOffset, m_layoutTableRow, DisplayItem::TableCellBackgroundFromRow);
+        }
+        paintBoxShadow(paintInfo, paintOffset, Inset);
     }
 
     if (paintInfo.phase == PaintPhaseSelfBlockBackgroundOnly)
@@ -43,6 +49,22 @@ void TableRowPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint
     DCHECK(shouldPaintSelfOutline(paintInfo.phase));
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableRow.location();
     ObjectPainter(m_layoutTableRow).paintOutline(paintInfo, adjustedPaintOffset);
+}
+
+void TableRowPainter::paintBoxShadow(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, ShadowStyle shadowStyle)
+{
+    DCHECK(shouldPaintSelfBlockBackground(paintInfo.phase));
+    if (!m_layoutTableRow.styleRef().boxShadow())
+        return;
+
+    DisplayItem::Type type = shadowStyle == Normal ? DisplayItem::TableRowBoxShadowNormal : DisplayItem::TableRowBoxShadowInset;
+    if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutTableRow, type))
+        return;
+
+    LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableRow.location();
+    LayoutRect bounds = BoxPainter(m_layoutTableRow).boundsForDrawingRecorder(adjustedPaintOffset);
+    LayoutObjectDrawingRecorder recorder(paintInfo.context, m_layoutTableRow, type, bounds);
+    BoxPainter::paintBoxShadow(paintInfo, LayoutRect(adjustedPaintOffset, m_layoutTableRow.size()), m_layoutTableRow.styleRef(), shadowStyle);
 }
 
 void TableRowPainter::paintBackgroundBehindCell(const LayoutTableCell& cell, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
