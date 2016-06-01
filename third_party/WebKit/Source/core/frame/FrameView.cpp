@@ -3877,14 +3877,19 @@ IntPoint FrameView::convertFromContainingWidgetToScrollbar(const Scrollbar& scro
     return newPoint;
 }
 
+static void setNeedsCompositingUpdate(LayoutViewItem layoutViewItem, CompositingUpdateType updateType)
+{
+    if (PaintLayerCompositor* compositor = !layoutViewItem.isNull() ? layoutViewItem.compositor() : nullptr)
+        compositor->setNeedsCompositingUpdate(updateType);
+}
+
 void FrameView::setParentVisible(bool visible)
 {
     if (isParentVisible() == visible)
         return;
 
     // As parent visibility changes, we may need to recomposite this frame view and potentially child frame views.
-    if (PaintLayerCompositor* compositor = !layoutViewItem().isNull() ? layoutViewItem().compositor() : nullptr)
-        compositor->setNeedsCompositingUpdate(CompositingUpdateRebuildTree);
+    setNeedsCompositingUpdate(layoutViewItem(), CompositingUpdateRebuildTree);
 
     Widget::setParentVisible(visible);
 
@@ -3899,6 +3904,7 @@ void FrameView::show()
 {
     if (!isSelfVisible()) {
         setSelfVisible(true);
+        setNeedsCompositingUpdate(layoutViewItem(), CompositingUpdateRebuildTree);
         updateScrollableAreaSet();
         if (isParentVisible()) {
             for (const auto& child : m_children)
@@ -3917,6 +3923,7 @@ void FrameView::hide()
                 child->setParentVisible(false);
         }
         setSelfVisible(false);
+        setNeedsCompositingUpdate(layoutViewItem(), CompositingUpdateRebuildTree);
         updateScrollableAreaSet();
     }
 

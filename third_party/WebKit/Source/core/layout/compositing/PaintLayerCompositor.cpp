@@ -27,6 +27,7 @@
 
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/DocumentAnimations.h"
+#include "core/animation/ElementAnimations.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Fullscreen.h"
 #include "core/editing/FrameSelection.h"
@@ -457,6 +458,14 @@ void PaintLayerCompositor::updateIfNeeded()
         InspectorInstrumentation::layerTreeDidChange(m_layoutView.frame());
 }
 
+static void restartAnimationOnCompositor(const LayoutObject& layoutObject)
+{
+    Node* node = layoutObject.node();
+    ElementAnimations* elementAnimations = (node && node->isElementNode()) ? toElement(node)->elementAnimations() : nullptr;
+    if (elementAnimations)
+        elementAnimations->restartAnimationOnCompositor();
+}
+
 bool PaintLayerCompositor::allocateOrClearCompositedLayerMapping(PaintLayer* layer, const CompositingStateTransitionType compositedLayerUpdate)
 {
     bool compositedLayerMappingChanged = false;
@@ -483,7 +492,9 @@ bool PaintLayerCompositor::allocateOrClearCompositedLayerMapping(PaintLayer* lay
         layer->ensureCompositedLayerMapping();
         compositedLayerMappingChanged = true;
 
-        // At this time, the ScrollingCooridnator only supports the top-level frame.
+        restartAnimationOnCompositor(*layer->layoutObject());
+
+        // At this time, the ScrollingCoordinator only supports the top-level frame.
         if (layer->isRootLayer() && m_layoutView.frame()->isLocalRoot()) {
             if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
                 scrollingCoordinator->frameViewRootLayerDidChange(m_layoutView.frameView());
