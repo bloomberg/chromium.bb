@@ -9,7 +9,7 @@ ar: ٠١:٢٣:٤٥.١٠٠‏ م
 fr: 13:23:45,100
 ja: 13:23:45.100
 ko: 오후 01:23:45.100
-cn: 13:23:45.100
+cn: 01:23:45.100 PM
 PASS successfullyParsed is true
 
 TEST COMPLETE

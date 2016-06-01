@@ -4,9 +4,9 @@ layer at (0,0) size 800x1187 backgroundClip at (0,0) size 800x600 clip at (0,0) 
   LayoutBlockFlow {HTML} at (0,0) size 800x1187
     LayoutBlockFlow {BODY} at (0,0) size 800x1186
       LayoutBlockFlow {DIV} at (0,0) size 600x48
-        LayoutText {#text} at (0,0) size 333x17
-          text run at (0,0) width 333: "Table autosizing tests - table-with-inline-block.html"
-        LayoutBR {BR} at (332,0) size 1x17
+        LayoutText {#text} at (0,0) size 332x17
+          text run at (0,0) width 332: "Table autosizing tests - table-with-inline-block.html"
+        LayoutBR {BR} at (331,0) size 1x17
         LayoutText {#text} at (0,18) size 382x17
           text run at (0,18) width 382: "This test passes if there is not extra space in the pink boxes."
       LayoutTable {TABLE} at (1,49) size 798x286 [border: none]
@@ -31,7 +31,7 @@ layer at (0,0) size 800x1187 backgroundClip at (0,0) size 800x600 clip at (0,0) 
               LayoutText {#text} at (2,3) size 143x45
                 text run at (2,3) width 143: "Autosize"
               LayoutBR {BR} at (144,3) size 1x45
-              LayoutBlockFlow {B} at (2,72) size 94.66x18 [bgcolor=#FFC0CB]
+              LayoutBlockFlow {B} at (2,72) size 94.38x18 [bgcolor=#FFC0CB]
                 LayoutText {#text} at (0,0) size 95x17
                   text run at (0,0) width 95: "Wrapped text"
               LayoutBR {BR} at (96,50) size 1x45

@@ -4,12 +4,12 @@ layer at (0,0) size 800x628 backgroundClip at (0,0) size 800x600 clip at (0,0) s
   LayoutBlockFlow {HTML} at (0,0) size 800x628
     LayoutBlockFlow {BODY} at (0,0) size 800x376
       LayoutBlockFlow {DIV} at (0,0) size 800x376
-        LayoutText {#text} at (0,1) size 784x374
-          text run at (0,1) width 643: "This test verifies that FastTextAutosizer"
+        LayoutText {#text} at (0,1) size 779x374
+          text run at (0,1) width 640: "This test verifies that FastTextAutosizer"
           text run at (0,48) width 701: "considers a list item (LI) to be \"text\" for the"
           text run at (0,95) width 661: "purpose of determining the deepest block"
-          text run at (0,142) width 784: "containing all text (DBCAT). If this were not the"
-          text run at (0,189) width 721: "case, the cluster's DBCAT would be the DIV"
+          text run at (0,142) width 779: "containing all text (DBCAT). If this were not the"
+          text run at (0,189) width 716: "case, the cluster's DBCAT would be the DIV"
           text run at (0,236) width 719: "inside the LI, which hasn't entered layout yet"
           text run at (0,283) width 730: "when the list marker is autosized (causing the"
           text run at (0,330) width 304: "autosizer to crash)."
