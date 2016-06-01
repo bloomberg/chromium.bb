@@ -49,8 +49,12 @@ add_bucket(struct fd_bo_cache *cache, int size)
 	cache->num_buckets++;
 }
 
+/**
+ * @coarse: if true, only power-of-two bucket sizes, otherwise
+ *    fill in for a bit smoother size curve..
+ */
 drm_private void
-fd_bo_cache_init(struct fd_bo_cache *cache)
+fd_bo_cache_init(struct fd_bo_cache *cache, int course)
 {
 	unsigned long size, cache_max_size = 64 * 1024 * 1024;
 
@@ -64,14 +68,17 @@ fd_bo_cache_init(struct fd_bo_cache *cache)
 	 */
 	add_bucket(cache, 4096);
 	add_bucket(cache, 4096 * 2);
-	add_bucket(cache, 4096 * 3);
+	if (!course)
+		add_bucket(cache, 4096 * 3);
 
 	/* Initialize the linked lists for BO reuse cache. */
 	for (size = 4 * 4096; size <= cache_max_size; size *= 2) {
 		add_bucket(cache, size);
-		add_bucket(cache, size + size * 1 / 4);
-		add_bucket(cache, size + size * 2 / 4);
-		add_bucket(cache, size + size * 3 / 4);
+		if (!course) {
+			add_bucket(cache, size + size * 1 / 4);
+			add_bucket(cache, size + size * 2 / 4);
+			add_bucket(cache, size + size * 3 / 4);
+		}
 	}
 }
 

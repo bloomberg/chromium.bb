@@ -104,7 +104,7 @@ struct fd_device {
 	int closefd;        /* call close(fd) upon destruction */
 };
 
-drm_private void fd_bo_cache_init(struct fd_bo_cache *cache);
+drm_private void fd_bo_cache_init(struct fd_bo_cache *cache, int coarse);
 drm_private void fd_bo_cache_cleanup(struct fd_bo_cache *cache, time_t time);
 drm_private struct fd_bo * fd_bo_cache_alloc(struct fd_bo_cache *cache,
 		uint32_t *size, uint32_t flags);
