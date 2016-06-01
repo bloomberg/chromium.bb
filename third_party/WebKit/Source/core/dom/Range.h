@@ -171,6 +171,8 @@ private:
 
 CORE_EXPORT bool areRangesEqual(const Range*, const Range*);
 
+using RangeVector = HeapVector<Member<Range>>;
+
 } // namespace blink
 
 #ifndef NDEBUG

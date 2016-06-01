@@ -1762,7 +1762,9 @@ DispatchEventResult dispatchBeforeInputInsertText(EventTarget* target, const Str
         return DispatchEventResult::NotCanceled;
     if (!target)
         return DispatchEventResult::NotCanceled;
-    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(InputEvent::InputType::InsertText, data, InputEvent::EventCancelable::IsCancelable, InputEvent::EventIsComposing::NotComposing);
+    // TODO(chongz): Pass appreciate |ranges| after it's defined on spec.
+    // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
+    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(InputEvent::InputType::InsertText, data, InputEvent::EventCancelable::IsCancelable, InputEvent::EventIsComposing::NotComposing, nullptr);
     return target->dispatchEvent(beforeInputEvent);
 }
 
@@ -1772,17 +1774,19 @@ DispatchEventResult dispatchBeforeInputFromComposition(EventTarget* target, Inpu
         return DispatchEventResult::NotCanceled;
     if (!target)
         return DispatchEventResult::NotCanceled;
-    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(inputType, data, cancelable, InputEvent::EventIsComposing::IsComposing);
+    // TODO(chongz): Pass appreciate |ranges| after it's defined on spec.
+    // http://w3c.github.io/editing/input-events.html#dom-inputevent-inputtype
+    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(inputType, data, cancelable, InputEvent::EventIsComposing::IsComposing, nullptr);
     return target->dispatchEvent(beforeInputEvent);
 }
 
-DispatchEventResult dispatchBeforeInputEditorCommand(EventTarget* target, InputEvent::InputType inputType, const String& data)
+DispatchEventResult dispatchBeforeInputEditorCommand(EventTarget* target, InputEvent::InputType inputType, const String& data, const RangeVector* ranges)
 {
     if (!RuntimeEnabledFeatures::inputEventEnabled())
         return DispatchEventResult::NotCanceled;
     if (!target)
         return DispatchEventResult::NotCanceled;
-    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(inputType, data, InputEvent::EventCancelable::IsCancelable, InputEvent::EventIsComposing::NotComposing);
+    InputEvent* beforeInputEvent = InputEvent::createBeforeInput(inputType, data, InputEvent::EventCancelable::IsCancelable, InputEvent::EventIsComposing::NotComposing, ranges);
     return target->dispatchEvent(beforeInputEvent);
 }
 

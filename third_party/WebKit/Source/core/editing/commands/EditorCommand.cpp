@@ -38,6 +38,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/SelectionModifier.h"
 #include "core/editing/commands/CreateLinkCommand.h"
 #include "core/editing/commands/EditorCommandNames.h"
 #include "core/editing/commands/FormatBlockCommand.h"
@@ -129,6 +130,19 @@ InputEvent::InputType InputTypeFromCommandType(WebEditingCommandType commandType
     default:
         return InputEvent::InputType::None;
     }
+}
+
+RangeVector* RangesFromCurrentSelectionOrExtendCaret(const LocalFrame& frame, SelectionDirection direction, TextGranularity granularity)
+{
+    SelectionModifier selectionModifier(frame, frame.selection().selection());
+    if (selectionModifier.selection().isCaret())
+        selectionModifier.modify(FrameSelection::AlterationExtend, direction, granularity);
+    RangeVector* ranges = new RangeVector;
+    // We only supports single selections.
+    if (selectionModifier.selection().isNone())
+        return ranges;
+    ranges->append(firstRangeOf(selectionModifier.selection()));
+    return ranges;
 }
 
 } // anonymous namespace
@@ -1782,7 +1796,7 @@ bool Editor::Command::execute(const String& parameter, Event* triggeringEvent) c
     if (m_source == CommandFromMenuOrKeyBinding) {
         InputEvent::InputType inputType = InputTypeFromCommandType(m_command->commandType);
         if (inputType != InputEvent::InputType::None) {
-            if (dispatchBeforeInputEditorCommand(eventTargetNodeForDocument(m_frame->document()), inputType) != DispatchEventResult::NotCanceled)
+            if (dispatchBeforeInputEditorCommand(eventTargetNodeForDocument(m_frame->document()), inputType, emptyString(), getRanges()) != DispatchEventResult::NotCanceled)
                 return true;
         }
     }
@@ -1847,6 +1861,34 @@ bool Editor::Command::isTextInsertion() const
 int Editor::Command::idForHistogram() const
 {
     return isSupported() ? static_cast<int>(m_command->commandType) : 0;
+}
+
+RangeVector* Editor::Command::getRanges() const
+{
+    if (!isSupported() || !m_frame)
+        return nullptr;
+
+    switch (m_command->commandType) {
+    case WebEditingCommandType::Delete:
+    case WebEditingCommandType::DeleteBackward:
+        return RangesFromCurrentSelectionOrExtendCaret(*m_frame, DirectionBackward, CharacterGranularity);
+    case WebEditingCommandType::DeleteForward:
+        return RangesFromCurrentSelectionOrExtendCaret(*m_frame, DirectionForward, CharacterGranularity);
+    case WebEditingCommandType::DeleteToBeginningOfLine:
+        return RangesFromCurrentSelectionOrExtendCaret(*m_frame, DirectionBackward, LineGranularity);
+    case WebEditingCommandType::DeleteToBeginningOfParagraph:
+        return RangesFromCurrentSelectionOrExtendCaret(*m_frame, DirectionBackward, ParagraphGranularity);
+    case WebEditingCommandType::DeleteToEndOfLine:
+        return RangesFromCurrentSelectionOrExtendCaret(*m_frame, DirectionForward, LineGranularity);
+    case WebEditingCommandType::DeleteToEndOfParagraph:
+        return RangesFromCurrentSelectionOrExtendCaret(*m_frame, DirectionForward, ParagraphGranularity);
+    case WebEditingCommandType::DeleteWordBackward:
+        return RangesFromCurrentSelectionOrExtendCaret(*m_frame, DirectionBackward, WordGranularity);
+    case WebEditingCommandType::DeleteWordForward:
+        return RangesFromCurrentSelectionOrExtendCaret(*m_frame, DirectionForward, WordGranularity);
+    default:
+        return nullptr;
+    }
 }
 
 } // namespace blink

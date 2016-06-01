@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>InputEvent: beforeinput getRanges()</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+</head>
+<body>
+<p id="sample" contentEditable="true"></p>
+<div id="log"></div>
+<script>
+test(function() {
+    if (!window.eventSender) {
+        document.write('This test requires eventSender');
+        return;
+    }
+
+    // Setup data.
+    var sample = document.getElementById('sample');
+    sample.innerHTML = 'hel<i>lo wo</i><b>rld</b>';
+
+    // Move caret right after 'hello world '.
+    var selection = window.getSelection();
+    selection.collapse(sample.firstChild, 0);
+    selection.modify('move', 'forward', 'line');
+
+    // Check event for delete-word-backward.
+    var handler = function(event) {
+        var ranges = event.getRanges();
+        assert_equals(ranges.length, 1);
+        var range = ranges[0];
+        assert_equals(range.startOffset, 3);
+        assert_equals(range.startContainer.textContent, 'lo wo');
+        assert_equals(range.endOffset, 3);
+        assert_equals(range.endContainer.textContent, 'rld');
+        sample.removeEventListener('beforeinput', handler);
+    };
+    sample.addEventListener('beforeinput', handler);
+
+    // Send delete-word-backward, should delete 'world' across I and B.
+    var isMacOSX = navigator.userAgent.indexOf("Mac OS X") != -1;
+    eventSender.keyDown('backspace', [isMacOSX ? 'altKey' : 'ctrlKey']);
+    assert_equals(sample.innerHTML, 'hel<i>lo&nbsp;</i>');
+}, 'Testing getRanges() returns correct range across elements.');
+
+test(function() {
+    if (!window.eventSender) {
+        document.write('This test requires eventSender');
+        return;
+    }
+
+    // Setup data.
+    var sample = document.getElementById('sample');
+    sample.innerHTML = 'hello';
+
+    // Move caret right after 'hello'.
+    var selection = window.getSelection();
+    selection.collapse(sample.firstChild, 0);
+    selection.modify('move', 'forward', 'word');
+
+    // Check and hold event for delete-character-backward.
+    var lastEvent;
+    var handler = function(event) {
+        lastEvent = event;
+        assert_equals(lastEvent.getRanges().length, 1);
+        sample.removeEventListener('beforeinput', handler);
+    };
+    sample.addEventListener('beforeinput', handler);
+
+    // Send delete-character-backward.
+    eventSender.keyDown('backspace', []);
+    assert_equals(sample.textContent, 'hell');
+    // |getRanges| should be cleared after dispatch.
+    assert_equals(lastEvent.getRanges().length, 0);
+}, 'Testing getRanges() cleared after dispatch.');
+</script>
+</body>
+</html>

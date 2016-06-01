@@ -11,5 +11,6 @@
     readonly attribute DOMString inputType;
     readonly attribute DOMString data;
     readonly attribute boolean isComposing;
-    // TODO(chongz): Add 'targetRanges'
+    // TODO(chongz): Return StaticRange.
+    sequence<Range> getRanges();
 };
