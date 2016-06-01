@@ -141,10 +141,8 @@ VideoCaptureDevice::Client::Buffer::~Buffer() {
 VideoCaptureDevice::~VideoCaptureDevice() {
 }
 
-bool VideoCaptureDevice::TakePhoto(const TakePhotoCallback& photo_callback) {
-  NOTIMPLEMENTED();
-  return false;
-}
+void VideoCaptureDevice::TakePhoto(
+    ScopedResultCallback<TakePhotoCallback> callback) {}
 
 PowerLineFrequency VideoCaptureDevice::GetPowerLineFrequencyForLocation()
     const {

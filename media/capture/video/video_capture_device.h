@@ -28,6 +28,9 @@
 #include "media/base/media_export.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame.h"
+#include "media/capture/video/scoped_result_callback.h"
+#include "mojo/public/cpp/bindings/array.h"
+#include "mojo/public/cpp/bindings/callback.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
 namespace tracked_objects {
@@ -310,14 +313,11 @@ class MEDIA_EXPORT VideoCaptureDevice {
   virtual void StopAndDeAllocate() = 0;
 
   // Asynchronously takes a photo, possibly reconfiguring the capture objects
-  // and/or interrupting the capture flow. Returns false if taking the picture
-  // could not be scheduled at all, or else runs |photo_callback| (on the thread
-  // where TakePhoto() is run).
+  // and/or interrupting the capture flow. Runs |callback| on the thread
+  // where TakePhoto() is called, if the photo was successfully taken.
   using TakePhotoCallback =
-      base::Callback<void(const std::string&,
-                          std::unique_ptr<std::vector<uint8_t>>)>;
-  virtual bool TakePhoto(const TakePhotoCallback& photo_callback)
-      WARN_UNUSED_RESULT;
+      mojo::Callback<void(mojo::String, mojo::Array<uint8_t>)>;
+  virtual void TakePhoto(ScopedResultCallback<TakePhotoCallback> callback);
 
   // Gets the power line frequency, either from the params if specified by the
   // user or from the current system time zone.

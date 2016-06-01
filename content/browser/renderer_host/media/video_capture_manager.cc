@@ -840,36 +840,24 @@ void VideoCaptureManager::MaybePostDesktopCaptureWindowId(
   notification_window_ids_.erase(window_id_it);
 }
 
-bool VideoCaptureManager::TakePhoto(
+void VideoCaptureManager::TakePhoto(
     int session_id,
-    const VideoCaptureDevice::TakePhotoCallback& photo_callback) {
+    media::ScopedResultCallback<VideoCaptureDevice::TakePhotoCallback>
+        callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   SessionMap::const_iterator session_it = sessions_.find(session_id);
   if (session_it == sessions_.end())
-    return false;
+    return;
 
   DeviceEntry* const device_info =
       GetDeviceEntryForMediaStreamDevice(session_it->second);
   if (!device_info)
-    return false;
+    return;
   device_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&VideoCaptureManager::DoTakePhotoOnDeviceThread, this,
-                 device_info->video_capture_device(), photo_callback));
-  return true;
-}
-
-void VideoCaptureManager::DoTakePhotoOnDeviceThread(
-    media::VideoCaptureDevice* device,
-    const VideoCaptureDevice::TakePhotoCallback& photo_callback) {
-  DCHECK(IsOnDeviceThread());
-  if (device->TakePhoto(photo_callback))
-    return;
-
-  // TakePhoto() failed synchronously: Make sure |photo_callback| is Run().
-  std::unique_ptr<std::vector<uint8_t>> empty_vector(
-      new std::vector<uint8_t>());
-  photo_callback.Run("", std::move(empty_vector));
+      base::Bind(&VideoCaptureDevice::TakePhoto,
+                 base::Unretained(device_info->video_capture_device()),
+                 base::Passed(&callback)));
 }
 
 void VideoCaptureManager::DoStopDeviceOnDeviceThread(

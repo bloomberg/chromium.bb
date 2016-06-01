@@ -37,7 +37,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   void AllocateAndStart(const VideoCaptureParams& params,
                         std::unique_ptr<Client> client) override;
   void StopAndDeAllocate() override;
-  bool TakePhoto(const TakePhotoCallback& photo_callback) override;
+  void TakePhoto(ScopedResultCallback<TakePhotoCallback> callback) override;
 
  private:
   void CaptureUsingOwnBuffers(base::TimeTicks expected_execution_time);

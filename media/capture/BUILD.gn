@@ -52,6 +52,7 @@ source_set("capture") {
     "video/mac/video_capture_device_factory_mac.mm",
     "video/mac/video_capture_device_mac.h",
     "video/mac/video_capture_device_mac.mm",
+    "video/scoped_result_callback.h",
     "video/video_capture_device.cc",
     "video/video_capture_device.h",
     "video/video_capture_device_factory.cc",

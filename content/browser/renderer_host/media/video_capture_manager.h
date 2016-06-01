@@ -159,9 +159,9 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
     return device_task_runner_;
   }
 
-  bool TakePhoto(int session_id,
-                 const VideoCaptureDevice::TakePhotoCallback& photo_callback)
-      WARN_UNUSED_RESULT;
+  void TakePhoto(int session_id,
+                 media::ScopedResultCallback<
+                     VideoCaptureDevice::TakePhotoCallback> callback);
 
  private:
   class DeviceEntry;
@@ -244,10 +244,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 
   // Stops and destroys the VideoCaptureDevice held in |device|.
   void DoStopDeviceOnDeviceThread(std::unique_ptr<VideoCaptureDevice> device);
-
-  void DoTakePhotoOnDeviceThread(
-      media::VideoCaptureDevice* device,
-      const VideoCaptureDevice::TakePhotoCallback& photo_callback);
 
   media::VideoCaptureDeviceInfo* FindDeviceInfoById(
       const std::string& id,

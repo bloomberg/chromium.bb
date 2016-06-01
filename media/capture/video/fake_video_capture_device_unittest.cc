@@ -21,6 +21,7 @@
 #include "media/base/video_capture_types.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "media/capture/video/video_capture_device.h"
+#include "mojo/public/cpp/bindings/string.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -138,18 +139,20 @@ class PhotoTakenListener : public base::RefCounted<PhotoTakenListener> {
  public:
   MOCK_METHOD0(OnCorrectPhotoTaken, void(void));
   // GMock doesn't support move-only arguments, so we use this forward method.
-  void DoOnPhotoTaken(const std::string& mime_type,
-                      std::unique_ptr<std::vector<uint8_t>> data) {
+  void DoOnPhotoTaken(const mojo::String& mime_type,
+                      mojo::Array<uint8_t> data) {
     // Only PNG images are supported right now.
-    EXPECT_STREQ("image/png", mime_type.c_str());
+    EXPECT_STREQ("image/png", mime_type.storage().c_str());
     // Not worth decoding the incoming data. Just check that the header is PNG.
     // http://www.libpng.org/pub/png/spec/1.2/PNG-Rationale.html#R.PNG-file-signature
-    ASSERT_GT(data->size(), 4u);
-    EXPECT_EQ('P', data->data()[1]);
-    EXPECT_EQ('N', data->data()[2]);
-    EXPECT_EQ('G', data->data()[3]);
+    ASSERT_GT(data.size(), 4u);
+    EXPECT_EQ('P', data[1]);
+    EXPECT_EQ('N', data[2]);
+    EXPECT_EQ('G', data[3]);
     OnCorrectPhotoTaken();
   }
+  MOCK_METHOD1(OnTakePhotoFailure,
+               void(const VideoCaptureDevice::TakePhotoCallback&));
 
  private:
   friend class base::RefCounted<PhotoTakenListener>;
@@ -287,10 +290,13 @@ TEST_F(FakeVideoCaptureDeviceTest, TakePhoto) {
   capture_params.requested_format.frame_rate = 30.0;
   device->AllocateAndStart(capture_params, std::move(client_));
 
-  const VideoCaptureDevice::TakePhotoCallback photo_callback =
-      base::Bind(&PhotoTakenListener::DoOnPhotoTaken, photo_taken_listener_);
+  ScopedResultCallback<VideoCaptureDevice::TakePhotoCallback> scoped_callback(
+      base::Bind(&PhotoTakenListener::DoOnPhotoTaken, photo_taken_listener_),
+      base::Bind(&PhotoTakenListener::OnTakePhotoFailure,
+                 photo_taken_listener_));
+
   EXPECT_CALL(*photo_taken_listener_.get(), OnCorrectPhotoTaken()).Times(1);
-  ASSERT_TRUE(device->TakePhoto(photo_callback));
+  device->TakePhoto(std::move(scoped_callback));
 
   run_loop_.reset(new base::RunLoop());
   run_loop_->Run();
