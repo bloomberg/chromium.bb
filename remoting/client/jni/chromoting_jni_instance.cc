@@ -21,6 +21,7 @@
 #include "remoting/client/client_telemetry_logger.h"
 #include "remoting/client/jni/android_keymap.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
+#include "remoting/client/jni/jni_client.h"
 #include "remoting/client/jni/jni_frame_consumer.h"
 #include "remoting/client/software_video_renderer.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"
@@ -48,6 +49,7 @@ const int kPerfStatsIntervalMs = 60000;
 }
 
 ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
+                                             JniClient* jni_client,
                                              const std::string& username,
                                              const std::string& auth_token,
                                              const std::string& host_jid,
@@ -58,6 +60,7 @@ ChromotingJniInstance::ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
                                              const std::string& capabilities,
                                              const std::string& flags)
     : jni_runtime_(jni_runtime),
+      jni_client_(jni_client),
       host_jid_(host_jid),
       flags_(flags),
       capabilities_(capabilities),
@@ -147,8 +150,8 @@ void ChromotingJniInstance::FetchThirdPartyToken(
 
   third_party_token_fetched_callback_ = token_fetched_callback;
   jni_runtime_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ChromotingJniRuntime::FetchThirdPartyToken,
-                            base::Unretained(jni_runtime_), token_url,
+      FROM_HERE, base::Bind(&JniClient::FetchThirdPartyToken,
+                            jni_client_->GetWeakPtr(), token_url,
                             host_public_key, scope));
 }
 
@@ -194,7 +197,7 @@ void ChromotingJniInstance::RedrawDesktop() {
     return;
   }
 
-  jni_runtime_->RedrawCanvas();
+  jni_client_->RedrawCanvas();
 }
 
 void ChromotingJniInstance::SendMouseEvent(
@@ -328,8 +331,8 @@ void ChromotingJniInstance::OnConnectionState(
 
   jni_runtime_->ui_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&ChromotingJniRuntime::OnConnectionState,
-                 base::Unretained(jni_runtime_),
+      base::Bind(&JniClient::OnConnectionState,
+                 jni_client_->GetWeakPtr(),
                  state,
                  error));
 }
@@ -348,24 +351,24 @@ void ChromotingJniInstance::OnRouteChanged(
 
 void ChromotingJniInstance::SetCapabilities(const std::string& capabilities) {
   jni_runtime_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ChromotingJniRuntime::SetCapabilities,
-                            base::Unretained(jni_runtime_), capabilities));
+      FROM_HERE, base::Bind(&JniClient::SetCapabilities,
+                            jni_client_->GetWeakPtr(), capabilities));
 }
 
 void ChromotingJniInstance::SetPairingResponse(
     const protocol::PairingResponse& response) {
   jni_runtime_->ui_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&ChromotingJniRuntime::CommitPairingCredentials,
-                 base::Unretained(jni_runtime_), client_auth_config_.host_id,
+      base::Bind(&JniClient::CommitPairingCredentials,
+                 jni_client_->GetWeakPtr(), client_auth_config_.host_id,
                  response.client_id(), response.shared_secret()));
 }
 
 void ChromotingJniInstance::DeliverHostMessage(
     const protocol::ExtensionMessage& message) {
   jni_runtime_->ui_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ChromotingJniRuntime::HandleExtensionMessage,
-                            base::Unretained(jni_runtime_), message.type(),
+      FROM_HERE, base::Bind(&JniClient::HandleExtensionMessage,
+                            jni_client_->GetWeakPtr(), message.type(),
                             message.data()));
 }
 
@@ -397,7 +400,7 @@ void ChromotingJniInstance::SetCursorShape(
     return;
   }
 
-  jni_runtime_->UpdateCursorShape(shape);
+  jni_client_->UpdateCursorShape(shape);
 }
 
 void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
@@ -410,7 +413,7 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
 
   perf_tracker_.reset(new protocol::PerformanceTracker());
 
-  view_.reset(new JniFrameConsumer(jni_runtime_));
+  view_.reset(new JniFrameConsumer(jni_runtime_, jni_client_));
   video_renderer_.reset(new SoftwareVideoRenderer(
       client_context_->decode_task_runner(), view_.get(), perf_tracker_.get()));
 
@@ -457,10 +460,10 @@ void ChromotingJniInstance::FetchSecret(
   }
 
   // Delete pairing credentials if they exist.
-  jni_runtime_->CommitPairingCredentials(client_auth_config_.host_id, "", "");
+  jni_client_->CommitPairingCredentials(client_auth_config_.host_id, "", "");
 
   pin_callback_ = callback;
-  jni_runtime_->DisplayAuthenticationPrompt(pairable);
+  jni_client_->DisplayAuthenticationPrompt(pairable);
 }
 
 void ChromotingJniInstance::SetDeviceName(const std::string& device_name) {

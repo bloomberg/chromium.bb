@@ -59,72 +59,8 @@ class ChromotingJniRuntime {
     return logger_.get();
   }
 
-  // Initiates a connection with the specified host. Only call when a host
-  // connection is active (i.e. between a call to Connect() and the
-  // corresponding call to Disconnect()). To skip the attempt at pair-based
-  // authentication, leave |pairing_id| and |pairing_secret| as empty strings.
-  void ConnectToHost(const std::string& username,
-                     const std::string& auth_token,
-                     const std::string& host_jid,
-                     const std::string& host_id,
-                     const std::string& host_pubkey,
-                     const std::string& pairing_id,
-                     const std::string& pairing_secret,
-                     const std::string& capabilities,
-                     const std::string& flags);
-
-  // Terminates any ongoing connection attempt and cleans up by nullifying
-  // |session_|. This is a no-op unless |session| is currently non-null.
-  void DisconnectFromHost();
-
-  // Returns the client for the currently-active session. Do not call if
-  // |session| is null.
-  scoped_refptr<ChromotingJniInstance> session() {
-    DCHECK(session_.get());
-    return session_;
-  }
-
-  // Notifies Java code of the current connection status. Call on UI thread.
-  void OnConnectionState(protocol::ConnectionToHost::State state,
-                         protocol::ErrorCode error);
-
-  // Pops up a dialog box asking the user to enter a PIN. Call on UI thread.
-  void DisplayAuthenticationPrompt(bool pairing_supported);
-
-  // Saves new pairing credentials to permanent storage. Call on UI thread.
-  void CommitPairingCredentials(const std::string& host,
-                                const std::string& id,
-                                const std::string& secret);
-
   // Fetch OAuth token for the telemetry logger. Call on UI thread.
   void FetchAuthToken();
-
-  // Pops up a third party login page to fetch token required for
-  // authentication. Call on UI thread.
-  void FetchThirdPartyToken(const std::string& token_url,
-                            const std::string& client_id,
-                            const std::string& scope);
-
-  // Pass on the set of negotiated capabilities to the client.
-  void SetCapabilities(const std::string& capabilities);
-
-  // Passes on the deconstructed ExtensionMessage to the client to handle
-  // appropriately.
-  void HandleExtensionMessage(const std::string& type,
-                              const std::string& message);
-
-  // Creates a new Bitmap object to store a video frame.
-  base::android::ScopedJavaLocalRef<jobject> NewBitmap(int width, int height);
-
-  // Updates video frame bitmap. |bitmap| must be an instance of
-  // android.graphics.Bitmap. Call on the display thread.
-  void UpdateFrameBitmap(jobject bitmap);
-
-  // Updates cursor shape. Call on display thread.
-  void UpdateCursorShape(const protocol::CursorShapeInfo& cursor_shape);
-
-  // Draws the latest image buffer onto the canvas. Call on the display thread.
-  void RedrawCanvas();
 
  private:
   ChromotingJniRuntime();
@@ -149,9 +85,6 @@ class ChromotingJniRuntime {
   // Contains threads.
   //
   std::unique_ptr<ChromotingClientRuntime> runtime_;
-
-  // Contains all connection-specific state.
-  scoped_refptr<ChromotingJniInstance> session_;
 
   // For logging session stage changes and stats.
   std::unique_ptr<ClientTelemetryLogger> logger_;

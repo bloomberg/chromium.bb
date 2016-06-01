@@ -9,6 +9,7 @@ import android.graphics.Point;
 import android.os.Looper;
 
 import org.chromium.base.Log;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chromoting.CapabilityManager;
@@ -44,8 +45,6 @@ public class Client {
         mNativeJniClient = nativeInit();
     }
 
-    private native long nativeInit();
-
     // Called on the UI thread. Suppress FindBugs warning, since |sClient| is only used on the
     // UI thread.
     @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
@@ -56,8 +55,6 @@ public class Client {
             sClient = null;
         }
     }
-
-    private native void nativeDestroy(long nativeJniClient);
 
     /** Returns the current Client instance, or null. */
     public static Client getInstance() {
@@ -111,7 +108,7 @@ public class Client {
 
         mConnectionListener = listener;
         mAuthenticator = authenticator;
-        JniInterface.nativeConnect(username, authToken, hostJid, hostId, hostPubkey,
+        nativeConnect(mNativeJniClient, username, authToken, hostJid, hostId, hostPubkey,
                 mAuthenticator.getPairingId(hostId), mAuthenticator.getPairingSecret(hostId),
                 mCapabilityManager.getLocalCapabilities(), flags);
         mConnected = true;
@@ -135,7 +132,7 @@ public class Client {
             return;
         }
 
-        JniInterface.nativeDisconnect();
+        nativeDisconnect(mNativeJniClient);
         mConnectionListener = null;
         mConnected = false;
         mCapabilityManager.onHostDisconnect();
@@ -146,7 +143,8 @@ public class Client {
         }
     }
 
-    /** Called by native code whenever the connection status changes. Called on the UI thread. */
+    /** Called on the UI thread whenever the connection status changes. */
+    @CalledByNative
     void onConnectionState(int stateCode, int errorCode) {
         ConnectionListener.State state = ConnectionListener.State.fromValue(stateCode);
         ConnectionListener.Error error = ConnectionListener.Error.fromValue(errorCode);
@@ -163,9 +161,9 @@ public class Client {
     }
 
     /**
-     * Called by JniInterface (from native code) to prompt the user to enter a PIN. Called on the
-     * UI thread.
+     * Called on the UI thread to prompt the user to enter a PIN.
      */
+    @CalledByNative
     void displayAuthenticationPrompt(boolean pairingSupported) {
         mAuthenticator.displayAuthenticationPrompt(pairingSupported);
     }
@@ -180,13 +178,13 @@ public class Client {
     public void handleAuthenticationResponse(
             String pin, boolean createPair, String deviceName) {
         assert mConnected;
-        JniInterface.nativeAuthenticationResponse(pin, createPair, deviceName);
+        nativeAuthenticationResponse(mNativeJniClient, pin, createPair, deviceName);
     }
 
     /**
-     * Called by JniInterface (from native code), to save newly-received pairing credentials to
-     * permanent storage. Called on the UI thread.
+     * Called on the UI thread to save newly-received pairing credentials to permanent storage.
      */
+    @CalledByNative
     void commitPairingCredentials(String host, String id, String secret) {
         mAuthenticator.commitPairingCredentials(host, id, secret);
     }
@@ -200,7 +198,7 @@ public class Client {
             return;
         }
 
-        JniInterface.nativeSendMouseEvent(x, y, whichButton, buttonDown);
+        nativeSendMouseEvent(mNativeJniClient, x, y, whichButton, buttonDown);
     }
 
     /** Injects a mouse-wheel event with delta values. Called on the UI thread. */
@@ -209,7 +207,7 @@ public class Client {
             return;
         }
 
-        JniInterface.nativeSendMouseWheelEvent(deltaX, deltaY);
+        nativeSendMouseWheelEvent(mNativeJniClient, deltaX, deltaY);
     }
 
     /**
@@ -221,7 +219,7 @@ public class Client {
             return false;
         }
 
-        return JniInterface.nativeSendKeyEvent(scanCode, keyCode, keyDown);
+        return nativeSendKeyEvent(mNativeJniClient, scanCode, keyCode, keyDown);
     }
 
     /** Sends TextEvent to the host. Called on the UI thread. */
@@ -230,7 +228,7 @@ public class Client {
             return;
         }
 
-        JniInterface.nativeSendTextEvent(text);
+        nativeSendTextEvent(mNativeJniClient, text);
     }
 
     /** Sends an array of TouchEvents to the host. Called on the UI thread. */
@@ -239,7 +237,7 @@ public class Client {
             return;
         }
 
-        JniInterface.nativeSendTouchEvent(eventType.value(), data);
+        nativeSendTouchEvent(mNativeJniClient, eventType.value(), data);
     }
 
     /**
@@ -251,7 +249,7 @@ public class Client {
             return;
         }
 
-        JniInterface.nativeEnableVideoChannel(enable);
+        nativeEnableVideoChannel(mNativeJniClient, enable);
     }
 
     /**
@@ -267,15 +265,15 @@ public class Client {
     public boolean redrawGraphics() {
         if (!mConnected || mRedrawCallback == null) return false;
 
-        JniInterface.nativeScheduleRedraw();
+        nativeScheduleRedraw(mNativeJniClient);
         return true;
     }
 
     /**
-     * Called by JniInterface to perform the redrawing callback requested by
+     * Called on the graphics thread to perform the redrawing callback requested by
      * {@link #redrawGraphics}. This is a no-op if the window isn't visible (the callback is null).
-     * Called on the graphics thread.
      */
+    @CalledByNative
     void redrawGraphicsInternal() {
         Runnable callback = mRedrawCallback;
         if (callback != null) {
@@ -298,9 +296,9 @@ public class Client {
     }
 
     /**
-     * Called by JniInterface (from native code) to set a new video frame. Called on the native
-     * graphics thread when a new frame is allocated.
+     * Set a new video frame. Called on the native graphics thread when a new frame is allocated.
      */
+    @CalledByNative
     void setVideoFrame(Bitmap bitmap) {
         if (Looper.myLooper() == Looper.getMainLooper()) {
             Log.w(TAG, "Video frame updated on UI thread");
@@ -312,20 +310,20 @@ public class Client {
     }
 
     /**
-     * Creates a new Bitmap to hold video frame pixels. Called by JniInterface (from native code),
-     * and the returned Bitmap is referenced by native code which writes the decoded frame pixels
-     * to it.
+     * Creates a new Bitmap to hold video frame pixels. The returned Bitmap is referenced by native
+     * code which writes the decoded frame pixels to it.
      */
+    @CalledByNative
     static Bitmap newBitmap(int width, int height) {
         return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
     }
 
     /**
-     * Called by JniInterface (from native code) to update the cursor shape. This is called on the
-     * graphics thread when receiving a new cursor shape from the host.
+     * Updates the cursor shape. This is called on the graphics thread when receiving a new cursor
+     * shape from the host.
      */
-    void updateCursorShape(
-            int width, int height, int hotspotX, int hotspotY, ByteBuffer buffer) {
+    @CalledByNative
+    void updateCursorShape(int width, int height, int hotspotX, int hotspotY, ByteBuffer buffer) {
         mCursorHotspot = new Point(hotspotX, hotspotY);
 
         int[] data = new int[width * height];
@@ -349,9 +347,9 @@ public class Client {
     //
 
     /**
-     * Called by JniInterface (from native code), to pop up a third party login page to fetch the
-     * token required for authentication.
+     * Pops up a third party login page to fetch the token required for authentication.
      */
+    @CalledByNative
     void fetchThirdPartyToken(String tokenUrl, String clientId, String scope) {
         mAuthenticator.fetchThirdPartyToken(tokenUrl, clientId, scope);
     }
@@ -365,7 +363,7 @@ public class Client {
             return;
         }
 
-        JniInterface.nativeOnThirdPartyTokenFetched(token, sharedSecret);
+        nativeOnThirdPartyTokenFetched(mNativeJniClient, token, sharedSecret);
     }
 
     //
@@ -373,9 +371,9 @@ public class Client {
     //
 
     /**
-     * Called by JniInterface (from native code) to set the list of negotiated capabilities between
-     * host and client. Called on the UI thread.
+     * Sets the list of negotiated capabilities between host and client. Called on the UI thread.
      */
+    @CalledByNative
     void setCapabilities(String capabilities) {
         mCapabilityManager.setNegotiatedCapabilities(capabilities);
     }
@@ -385,9 +383,9 @@ public class Client {
     //
 
     /**
-     * Called by JniInterface (from native code), to pass on the deconstructed ExtensionMessage to
-     * the app. Called on the UI thread.
+     * Passes on the deconstructed ExtensionMessage to the app. Called on the UI thread.
      */
+    @CalledByNative
     void handleExtensionMessage(String type, String data) {
         mCapabilityManager.onExtensionMessage(type, data);
     }
@@ -398,6 +396,53 @@ public class Client {
             return;
         }
 
-        JniInterface.nativeSendExtensionMessage(type, data);
+        nativeSendExtensionMessage(mNativeJniClient, type, data);
     }
+
+    private native long nativeInit();
+
+    private native void nativeDestroy(long nativeJniClient);
+
+    /** Performs the native portion of the connection. */
+    private native void nativeConnect(long nativeJniClient, String username, String authToken,
+            String hostJid, String hostId, String hostPubkey, String pairId, String pairSecret,
+            String capabilities, String flags);
+
+    /** Native implementation of Client.handleAuthenticationResponse(). */
+    private native void nativeAuthenticationResponse(
+            long nativeJniClient, String pin, boolean createPair, String deviceName);
+
+    /** Performs the native portion of the cleanup. */
+    private native void nativeDisconnect(long nativeJniClient);
+
+    /** Schedules a redraw on the native graphics thread. */
+    private native void nativeScheduleRedraw(long nativeJniClient);
+
+    /** Passes authentication data to the native handling code. */
+    private native void nativeOnThirdPartyTokenFetched(
+            long nativeJniClient, String token, String sharedSecret);
+
+    /** Passes mouse information to the native handling code. */
+    private native void nativeSendMouseEvent(
+            long nativeJniClient, int x, int y, int whichButton, boolean buttonDown);
+
+    /** Passes mouse-wheel information to the native handling code. */
+    private native void nativeSendMouseWheelEvent(long nativeJniClient, int deltaX, int deltaY);
+
+    /** Passes key press information to the native handling code. */
+    private native boolean nativeSendKeyEvent(
+            long nativeJniClient, int scanCode, int keyCode, boolean keyDown);
+
+    /** Passes text event information to the native handling code. */
+    private native void nativeSendTextEvent(long nativeJniClient, String text);
+
+    /** Passes touch event information to the native handling code. */
+    private native void nativeSendTouchEvent(
+            long nativeJniClient, int eventType, TouchEventData[] data);
+
+    /** Native implementation of Client.enableVideoChannel() */
+    private native void nativeEnableVideoChannel(long nativeJniClient, boolean enable);
+
+    /** Passes extension message to the native code. */
+    private native void nativeSendExtensionMessage(long nativeJniClient, String type, String data);
 }

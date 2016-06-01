@@ -13,6 +13,7 @@
 #include "remoting/base/util.h"
 #include "remoting/client/jni/chromoting_jni_instance.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
+#include "remoting/client/jni/jni_client.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -21,7 +22,9 @@ namespace remoting {
 
 class JniFrameConsumer::Renderer {
  public:
-  Renderer(ChromotingJniRuntime* jni_runtime) : jni_runtime_(jni_runtime) {}
+  Renderer(ChromotingJniRuntime* jni_runtime, JniClient* jni_client) :
+    jni_runtime_(jni_runtime),
+    jni_client_(jni_client) {}
   ~Renderer() {
     DCHECK(jni_runtime_->display_task_runner()->BelongsToCurrentThread());
   }
@@ -31,6 +34,8 @@ class JniFrameConsumer::Renderer {
  private:
   // Used to obtain task runner references and make calls to Java methods.
   ChromotingJniRuntime* jni_runtime_;
+
+  JniClient* jni_client_;
 
   // This global reference is required, instead of a local reference, so it
   // remains valid for the lifetime of |bitmap_| - gfx::JavaBitmap does not
@@ -57,10 +62,10 @@ void JniFrameConsumer::Renderer::RenderFrame(
     bitmap_.reset();
     bitmap_global_ref_.Reset(
         env,
-        jni_runtime_->NewBitmap(frame->size().width(), frame->size().height())
+        jni_client_->NewBitmap(frame->size().width(), frame->size().height())
             .obj());
     bitmap_.reset(new gfx::JavaBitmap(bitmap_global_ref_.obj()));
-    jni_runtime_->UpdateFrameBitmap(bitmap_global_ref_.obj());
+    jni_client_->UpdateFrameBitmap(bitmap_global_ref_.obj());
   }
 
   // Copy pixels from |frame| into the Java Bitmap.
@@ -79,12 +84,13 @@ void JniFrameConsumer::Renderer::RenderFrame(
                   bitmap_->stride(), buffer_rect, i.rect());
   }
 
-  jni_runtime_->RedrawCanvas();
+  jni_client_->RedrawCanvas();
 }
 
-JniFrameConsumer::JniFrameConsumer(ChromotingJniRuntime* jni_runtime)
+JniFrameConsumer::JniFrameConsumer(ChromotingJniRuntime* jni_runtime,
+                                   JniClient* jni_client)
     : jni_runtime_(jni_runtime),
-      renderer_(new Renderer(jni_runtime)),
+      renderer_(new Renderer(jni_runtime, jni_client)),
       weak_factory_(this) {}
 
 JniFrameConsumer::~JniFrameConsumer() {
