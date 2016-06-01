@@ -60,15 +60,25 @@ group("remoting_all") {
       "//remoting/host",
     ]
 
-    if (!is_android) {
-      deps += [ "//remoting/host:remoting_native_messaging_manifests" ]
-    }
-
     if (!is_chromeos && !is_android) {
       deps += [
+        "//remoting/host:remoting_native_messaging_manifests",
         "//remoting/host:remoting_start_host",
         "//remoting/host/it2me:remote_assistance_host",
       ]
+    }
+
+    # The same target is called differently on Linux.
+    # TODO(sergeyu): Rename it to remoting_native_messaging_host on all
+    # platforms.
+    if (is_win) {
+      deps += [ "//remoting/host:remoting_native_messaging_host" ]
+    } else if (!is_chromeos && !is_android) {
+      deps += [ "//remoting/host:native_messaging_host" ]
+    }
+
+    if (is_linux && !is_chromeos) {
+      deps += [ "//remoting/host:remoting_dev_me2me_host" ]
     }
   }
 
