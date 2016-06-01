@@ -832,3 +832,13 @@ name=http://crbug.com/615911
 skia.dll!HDCOffscreen::draw
 skia.dll!SkScalerContext_GDI::generateImage
 skia.dll!SkScalerContext::getImage
+
+UNINITIALIZED READ
+name=http://crbug.com/616556
+wtf.dll!WTF::equalIgnoringASCIICase
+webcore_shared.dll!blink::CSSSelectorParser::consumeAttributeFlags
+webcore_shared.dll!blink::CSSSelectorParser::consumeAttribute
+webcore_shared.dll!blink::CSSSelectorParser::consumeSimpleSelector
+webcore_shared.dll!blink::CSSSelectorParser::consumeCompoundSelector
+...
+webcore_shared.dll!blink::CSSParser::parseSheet
