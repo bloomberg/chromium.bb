@@ -227,9 +227,9 @@ struct VideoDecoderConfig {
   VideoCodecProfile profile;
   VideoFormat format;
   ColorSpace color_space;
-  mojo.Size coded_size;
-  mojo.Rect visible_rect;
-  mojo.Size natural_size;
+  gfx.mojom.Size coded_size;
+  gfx.mojom.Rect visible_rect;
+  gfx.mojom.Size natural_size;
   array<uint8>? extra_data;
   EncryptionScheme encryption_scheme;
 };
@@ -309,13 +309,13 @@ struct VideoFrame {
   VideoFormat format;
 
   // Width and height of the video frame, in pixels.
-  mojo.Size coded_size;
+  gfx.mojom.Size coded_size;
 
   // Visible size of the frame.
-  mojo.Rect visible_rect;
+  gfx.mojom.Rect visible_rect;
 
   // Natural size of the frame.
-  mojo.Size natural_size;
+  gfx.mojom.Size natural_size;
 
   // True if end of stream.
   bool end_of_stream;

@@ -16,12 +16,12 @@ deps = [
   "//ui/gfx/geometry",
 ]
 type_mappings = [
-  "mojo.Point=gfx::Point",
-  "mojo.PointF=gfx::PointF",
-  "mojo.Size=gfx::Size",
-  "mojo.SizeF=gfx::SizeF",
-  "mojo.Rect=gfx::Rect",
-  "mojo.RectF=gfx::RectF",
-  "mojo.Insets=gfx::Insets",
-  "mojo.InsetsF=gfx::InsetsF",
+  "gfx.mojom.Point=gfx::Point",
+  "gfx.mojom.PointF=gfx::PointF",
+  "gfx.mojom.Size=gfx::Size",
+  "gfx.mojom.SizeF=gfx::SizeF",
+  "gfx.mojom.Rect=gfx::Rect",
+  "gfx.mojom.RectF=gfx::RectF",
+  "gfx.mojom.Insets=gfx::Insets",
+  "gfx.mojom.InsetsF=gfx::InsetsF",
 ]

@@ -37,8 +37,8 @@ const int32 kResizeBehaviorCanMaximize = 2;
 const int32 kResizeBehaviorCanMinimize = 4;
 
 struct FrameDecorationValues {
-  mojo.Insets normal_client_area_insets;
-  mojo.Insets maximized_client_area_insets;
+  gfx.mojom.Insets normal_client_area_insets;
+  gfx.mojom.Insets maximized_client_area_insets;
   // Max width needed to display the buttons on the title bar. The buttons are
   // aligned to the trailing edge of the titlebar.
   // TODO(sky): this API is very narrow, and assumes a particular config.
@@ -53,8 +53,8 @@ enum TouchSupport {
 
 struct Display {
   int64 id;
-  mojo.Rect bounds;
-  mojo.Rect work_area;
+  gfx.mojom.Rect bounds;
+  gfx.mojom.Rect work_area;
   float device_pixel_ratio;
   Rotation rotation;
   TouchSupport touch_support;

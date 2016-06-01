@@ -11,7 +11,7 @@ interface KeyboardObserver {
   OnKeyboardStateChanged(bool is_enabled,
                          bool is_visible,
                          uint64 display_id,
-                         mojo.Rect bounds);
+                         gfx.mojom.Rect bounds);
 };
 
 interface Keyboard {

@@ -18,7 +18,7 @@ import "ui/platform_window/mojo/text_input_state.mojom";
 struct WindowData {
   uint32 parent_id;
   uint32 window_id;
-  mojo.Rect bounds;
+  gfx.mojom.Rect bounds;
   map<string, array<uint8>> properties;
   // True if this window is visible. The window may not be drawn on screen (see
   // OnWindowParentDrawnStateChanged() for details).
@@ -112,20 +112,20 @@ interface WindowTree {
   SetEventObserver(EventMatcher? matcher, uint32 observer_id);
 
   // Sets the specified bounds of the specified window.
-  SetWindowBounds(uint32 change_id, uint32 window_id, mojo.Rect bounds);
+  SetWindowBounds(uint32 change_id, uint32 window_id, gfx.mojom.Rect bounds);
 
   // Sets the client area of the specified window. The client area is specified
   // by way of insets. Everything outside of the insets, and not in
   // |additional_client_areas| is considered non-client area.
   // TODO(sky): convert additional_client_areas to a path.
   SetClientArea(uint32 window_id,
-                mojo.Insets insets,
-                array<mojo.Rect>? additional_client_areas);
+                gfx.mojom.Insets insets,
+                array<gfx.mojom.Rect>? additional_client_areas);
 
   // Mouse events outside a hit test mask do not hit the window. The |mask| is
   // in window local coordinates. Pass null to clear the mask.
   // TODO(jamescook): Convert |mask| to a path. http://crbug.com/613210
-  SetHitTestMask(uint32 window_id, mojo.Rect? mask);
+  SetHitTestMask(uint32 window_id, gfx.mojom.Rect? mask);
 
   // Sets the visibility of the specified window to |visible|. Connections are
   // allowed to change the visibility of any window they have created, as well
@@ -309,12 +309,12 @@ interface WindowTreeClient {
 
   // Invoked when a window's bounds have changed.
   OnWindowBoundsChanged(uint32 window,
-                        mojo.Rect old_bounds,
-                        mojo.Rect new_bounds);
+                        gfx.mojom.Rect old_bounds,
+                        gfx.mojom.Rect new_bounds);
 
   OnClientAreaChanged(uint32 window_id,
-                      mojo.Insets new_client_area,
-                      array<mojo.Rect> new_additional_client_areas);
+                      gfx.mojom.Insets new_client_area,
+                      array<gfx.mojom.Rect> new_additional_client_areas);
 
   OnTransientWindowAdded(uint32 window_id,
                          uint32 transient_window_id);

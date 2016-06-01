@@ -22,7 +22,7 @@ interface ViewClient {
   ViewCreated(View view,
               ViewClient& client,
               bool is_popup,
-              mojo.Rect initial_rect,
+              gfx.mojom.Rect initial_rect,
               bool user_gesture);
   Close();
 };

@@ -17,5 +17,5 @@ interface ImageDownloader {
                 bool bypass_cache)
       => (int32 http_status_code,
           array<skia.mojom.Bitmap> images,
-          array<mojo.Size> original_image_sizes);
+          array<gfx.mojom.Size> original_image_sizes);
 };

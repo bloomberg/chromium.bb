@@ -55,7 +55,7 @@ interface RendererClient {
   OnError();
 
   // Executed for the first video frame and whenever natural size changes.
-  OnVideoNaturalSizeChange(mojo.Size size);
+  OnVideoNaturalSizeChange(gfx.mojom.Size size);
 
   // Executed for the first video frame and whenever opacity changes.
   OnVideoOpacityChange(bool opaque);

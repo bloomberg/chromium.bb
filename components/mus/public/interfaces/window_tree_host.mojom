@@ -11,7 +11,7 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 // of windows.
 interface WindowTreeHost {
   // Sets the size of the platform window.
-  SetSize(mojo.Size size);
+  SetSize(gfx.mojom.Size size);
 
   // Sets a title string to be displayed on the platform window.
   SetTitle(string title);

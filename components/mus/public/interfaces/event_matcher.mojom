@@ -17,7 +17,7 @@ struct PointerKindMatcher {
 };
 
 struct PointerLocationMatcher {
-  mojo.RectF region;
+  gfx.mojom.RectF region;
 };
 
 struct EventTypeMatcher {
