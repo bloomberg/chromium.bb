@@ -1165,9 +1165,6 @@ crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass 
 
 crbug.com/564109 [ Win7 ]  http/tests/webfont/font-display.html [ Pass Timeout Failure ]
 
-crbug.com/613118 editing/inserting/typing-at-end-of-line.html [ NeedsRebaseline ]
-crbug.com/613118 css1/color_and_background/background_position.html [ NeedsRebaseline ]
-
 crbug.com/571376 http/tests/webfont/font-display-intervention.html [ Pass Failure ]
 
 crbug.com/320139 fast/repaint/block-layout-inline-children-replaced.html [ Pass Failure ]
