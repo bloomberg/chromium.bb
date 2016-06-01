@@ -1390,7 +1390,8 @@ TEST_F(WidgetTest, MAYBE_DesktopNativeWidgetNoPaintAfterCloseTest) {
   EXPECT_FALSE(widget.received_paint_while_hidden());
 }
 
-#if defined(OS_LINUX)
+// Flaky; see https://crbug.com/596039.
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_DesktopNativeWidgetNoPaintAfterHideTest DISABLED_DesktopNativeWidgetNoPaintAfterHideTest
 #else
 #define MAYBE_DesktopNativeWidgetNoPaintAfterHideTest DesktopNativeWidgetNoPaintAfterHideTest
