@@ -473,13 +473,8 @@ test("ios_web_inttests") {
     ":test_support",
     ":web",
     "//base/test:test_support",
-    "//ios/public/provider/web",
-    "//ios/web/test:mojo_bindings",
-    "//ios/web/test:packed_resources",
-    "//ios/web/test:resources",
     "//mojo/edk/system",
     "//net:test_support",
-    "//services/shell/public/cpp",
     "//testing/gtest",
     "//ui/base:test_support",
   ]
@@ -487,7 +482,6 @@ test("ios_web_inttests") {
     "browser_state_web_view_partition_inttest.mm",
     "public/test/http_server_inttest.mm",
     "test/run_all_unittests.cc",
-    "webui/web_ui_mojo_inttest.mm",
   ]
 }
 
@@ -540,5 +534,9 @@ grit("resources") {
   outputs = [
     "grit/ios_web_resources.h",
     "ios_web_resources.pak",
+  ]
+  grit_flags = [
+    "-E",
+    "root_out_dir=" + rebase_path(root_out_dir, root_build_dir),
   ]
 }
