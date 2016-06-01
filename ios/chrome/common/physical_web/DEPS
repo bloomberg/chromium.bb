@@ -1,0 +1,8 @@
+# This code is used by iOS application extension and should keep the list
+# of dependencies as small as possible. This is also why the code uses
+# NSURL, NSSession, ... instead of Chrome network stack.
+include_rules = [
+  "+device/bluetooth/uribeacon",
+  "+google_apis",
+  "+ios/web/public",
+]

@@ -37664,6 +37664,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PhysicalWeb.RoundTripTimeMilliseconds" units="ms">
+  <owner>olivierrobin@chromium.org</owner>
+  <summary>Round trip time to the metadata server for Physical web.</summary>
+</histogram>
+
 <histogram name="PhysicalWeb.State.Bluetooth" enum="BluetoothStatus">
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>

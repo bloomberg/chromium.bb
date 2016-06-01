@@ -10,6 +10,7 @@
       'target_name': 'ios',
       'type': 'none',
       'dependencies': [
+        'chrome/common/physical_web/physical_web.gyp:*',
         'chrome/ios_chrome_tests.gyp:*',
         'chrome/ios_share_extension_resources.gyp:*',
         'chrome/ios_today_extension_resources.gyp:*',
