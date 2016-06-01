@@ -1315,6 +1315,26 @@ class DesktopAuraTestValidPaintWidget : public views::Widget {
 
   void InitForTest(Widget::InitParams create_params);
 
+  bool ReadReceivedPaintAndReset() {
+    bool result = received_paint_;
+    received_paint_ = false;
+    return result;
+  }
+
+  bool received_paint_while_hidden() const {
+    return received_paint_while_hidden_;
+  }
+
+  void WaitUntilPaint() {
+    if (received_paint_)
+      return;
+    base::RunLoop runloop;
+    quit_closure_ = runloop.QuitClosure();
+    runloop.Run();
+    quit_closure_ = base::Closure();
+  }
+
+  // views::Widget:
   void Show() override {
     expect_paint_ = true;
     views::Widget::Show();
@@ -1336,22 +1356,15 @@ class DesktopAuraTestValidPaintWidget : public views::Widget {
     if (!expect_paint_)
       received_paint_while_hidden_ = true;
     views::Widget::OnNativeWidgetPaint(context);
-  }
-
-  bool ReadReceivedPaintAndReset() {
-    bool result = received_paint_;
-    received_paint_ = false;
-    return result;
-  }
-
-  bool received_paint_while_hidden() const {
-    return received_paint_while_hidden_;
+    if (!quit_closure_.is_null())
+      quit_closure_.Run();
   }
 
  private:
   bool received_paint_;
   bool expect_paint_;
   bool received_paint_while_hidden_;
+  base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopAuraTestValidPaintWidget);
 };
@@ -1371,17 +1384,13 @@ void DesktopAuraTestValidPaintWidget::InitForTest(InitParams init_params) {
   Activate();
 }
 
-#if defined(OS_LINUX) || defined(OS_WIN)
-// Flaky on Linux rel ng: https://crbug.com/596039.
-#define MAYBE_DesktopNativeWidgetNoPaintAfterCloseTest DISABLED_DesktopNativeWidgetNoPaintAfterCloseTest
-#else
-#define MAYBE_DesktopNativeWidgetNoPaintAfterCloseTest DesktopNativeWidgetNoPaintAfterCloseTest
-#endif
-
-TEST_F(WidgetTest, MAYBE_DesktopNativeWidgetNoPaintAfterCloseTest) {
+TEST_F(WidgetTest, DesktopNativeWidgetNoPaintAfterCloseTest) {
+  // TODO(sad): Desktop widgets do not work well in mus https://crbug.com/616551
+  if (IsMus())
+    return;
   DesktopAuraTestValidPaintWidget widget;
   widget.InitForTest(CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS));
-  RunPendingMessages();
+  widget.WaitUntilPaint();
   EXPECT_TRUE(widget.ReadReceivedPaintAndReset());
   widget.SchedulePaintInRect(widget.GetRestoredBounds());
   widget.Close();
@@ -1390,16 +1399,13 @@ TEST_F(WidgetTest, MAYBE_DesktopNativeWidgetNoPaintAfterCloseTest) {
   EXPECT_FALSE(widget.received_paint_while_hidden());
 }
 
-// Flaky; see https://crbug.com/596039.
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_DesktopNativeWidgetNoPaintAfterHideTest DISABLED_DesktopNativeWidgetNoPaintAfterHideTest
-#else
-#define MAYBE_DesktopNativeWidgetNoPaintAfterHideTest DesktopNativeWidgetNoPaintAfterHideTest
-#endif
-TEST_F(WidgetTest, MAYBE_DesktopNativeWidgetNoPaintAfterHideTest) {
+TEST_F(WidgetTest, DesktopNativeWidgetNoPaintAfterHideTest) {
+  // TODO(sad): Desktop widgets do not work well in mus https://crbug.com/616551
+  if (IsMus())
+    return;
   DesktopAuraTestValidPaintWidget widget;
   widget.InitForTest(CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS));
-  RunPendingMessages();
+  widget.WaitUntilPaint();
   EXPECT_TRUE(widget.ReadReceivedPaintAndReset());
   widget.SchedulePaintInRect(widget.GetRestoredBounds());
   widget.Hide();
@@ -3644,6 +3650,9 @@ private:
 // under the currently active modal top-level window. In this instance, the
 // remaining top-level windows should be re-enabled.
 TEST_F(WidgetTest, WindowModalOwnerDestroyedEnabledTest) {
+  // Modality etc. are controlled by mus.
+  if (IsMus())
+    return;
   // top_level_widget owns owner_dialog_widget which owns owned_dialog_widget.
   Widget top_level_widget;
   Widget owner_dialog_widget;
