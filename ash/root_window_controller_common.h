@@ -9,6 +9,7 @@
 
 namespace ash {
 namespace wm {
+class RootWindowLayoutManager;
 class WmWindow;
 }
 
@@ -23,8 +24,17 @@ class RootWindowControllerCommon {
   // Creates the containers (WmWindows) used by the shell.
   void CreateContainers();
 
+  // Creates the LayoutManagers for the windows created by CreateContainers().
+  void CreateLayoutManagers();
+
+  wm::RootWindowLayoutManager* root_window_layout() {
+    return root_window_layout_;
+  }
+
  private:
   wm::WmWindow* root_;
+
+  wm::RootWindowLayoutManager* root_window_layout_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowControllerCommon);
 };

@@ -7,6 +7,8 @@
 #include "ash/common/wm/wm_globals.h"
 #include "ash/common/wm/wm_window.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/root_window_layout_manager.h"
+#include "base/memory/ptr_util.h"
 
 namespace ash {
 namespace {
@@ -27,7 +29,7 @@ wm::WmWindow* CreateContainer(int window_id,
 }  // namespace
 
 RootWindowControllerCommon::RootWindowControllerCommon(wm::WmWindow* root)
-    : root_(root) {}
+    : root_(root), root_window_layout_(nullptr) {}
 
 RootWindowControllerCommon::~RootWindowControllerCommon() {}
 
@@ -209,6 +211,11 @@ void RootWindowControllerCommon::CreateContainers() {
 
   CreateContainer(kShellWindowId_PowerButtonAnimationContainer,
                   "PowerButtonAnimationContainer", root_);
+}
+
+void RootWindowControllerCommon::CreateLayoutManagers() {
+  root_window_layout_ = new wm::RootWindowLayoutManager(root_);
+  root_->SetLayoutManager(base::WrapUnique(root_window_layout_));
 }
 
 }  // namespace ash

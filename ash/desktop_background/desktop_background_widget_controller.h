@@ -8,11 +8,13 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/common/wm/wm_window_observer.h"
 #include "base/macros.h"
-#include "ui/aura/window.h"
-#include "ui/compositor/layer.h"
-#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
+
+namespace aura {
+class Window;
+}
 
 namespace ash {
 class RootWindowController;
@@ -22,7 +24,8 @@ class RootWindowController;
 // When the animation completes the old DesktopBackgroundWidgetController is
 // destroyed. Exported for tests.
 class ASH_EXPORT DesktopBackgroundWidgetController
-    : public views::WidgetObserver {
+    : public views::WidgetObserver,
+      public wm::WmWindowObserver {
  public:
   // Create
   explicit DesktopBackgroundWidgetController(views::Widget* widget);
@@ -33,7 +36,7 @@ class ASH_EXPORT DesktopBackgroundWidgetController
   void OnWidgetDestroying(views::Widget* widget) override;
 
   // Set bounds of component that draws background.
-  void SetBounds(gfx::Rect bounds);
+  void SetBounds(const gfx::Rect& bounds);
 
   // Move component from |src_container| in |root_window| to |dest_container|.
   // It is required for lock screen, when we need to move background so that
@@ -50,7 +53,17 @@ class ASH_EXPORT DesktopBackgroundWidgetController
   views::Widget* widget() { return widget_; }
 
  private:
+  void RemoveObservers();
+
+  // wm::WmWindowObserver:
+  void OnWindowBoundsChanged(wm::WmWindow* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
+
   views::Widget* widget_;
+
+  // Parent of |widget_|.
+  wm::WmWindow* widget_parent_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopBackgroundWidgetController);
 };

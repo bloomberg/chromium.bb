@@ -5,49 +5,36 @@
 #ifndef ASH_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_
 #define ASH_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_
 
-#include "ash/shell_window_ids.h"
-#include "base/compiler_specific.h"
+#include "ash/common/wm/wm_layout_manager.h"
 #include "base/macros.h"
-#include "ui/aura/layout_manager.h"
-
-namespace aura {
-class Window;
-}
-namespace gfx {
-class Rect;
-}
-namespace ui {
-class Layer;
-}
-namespace views {
-class Widget;
-}
 
 namespace ash {
+namespace wm {
 
 // A layout manager for the root window.
-// Resizes all of its immediate children to fill the bounds of the root window.
-class RootWindowLayoutManager : public aura::LayoutManager {
+// Resizes all of its immediate children and their descendants to fill the
+// bounds of the associated window.
+class RootWindowLayoutManager : public WmLayoutManager {
  public:
-  explicit RootWindowLayoutManager(aura::Window* owner);
+  explicit RootWindowLayoutManager(WmWindow* owner);
   ~RootWindowLayoutManager() override;
 
   // Overridden from aura::LayoutManager:
   void OnWindowResized() override;
-  void OnWindowAddedToLayout(aura::Window* child) override;
-  void OnWillRemoveWindowFromLayout(aura::Window* child) override;
-  void OnWindowRemovedFromLayout(aura::Window* child) override;
-  void OnChildWindowVisibilityChanged(aura::Window* child,
-                                      bool visible) override;
-  void SetChildBounds(aura::Window* child,
+  void OnWindowAddedToLayout(WmWindow* child) override;
+  void OnWillRemoveWindowFromLayout(WmWindow* child) override;
+  void OnWindowRemovedFromLayout(WmWindow* child) override;
+  void OnChildWindowVisibilityChanged(WmWindow* child, bool visible) override;
+  void SetChildBounds(WmWindow* child,
                       const gfx::Rect& requested_bounds) override;
 
  private:
-  aura::Window* owner_;
+  wm::WmWindow* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(RootWindowLayoutManager);
 };
 
+}  // namespace wm
 }  // namespace ash
 
 #endif  // ASH_WM_ROOT_WINDOW_LAYOUT_MANAGER_H_

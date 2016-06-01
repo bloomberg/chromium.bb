@@ -30,6 +30,7 @@ specific_include_rules = {
     "+ash/common",
     "+ash/root_window_controller_common.h",
     "+ash/shell_window_ids.h",
+    "+ash/wm/root_window_layout_manager.h",
     "-ui/aura",
   ],
   "shell.cc": [

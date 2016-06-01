@@ -655,7 +655,6 @@ bool RootWindowController::IsVirtualKeyboardWindow(aura::Window* window) {
 
 RootWindowController::RootWindowController(AshWindowTreeHost* ash_host)
     : ash_host_(ash_host),
-      root_window_layout_(NULL),
       docked_layout_manager_(NULL),
       panel_layout_manager_(NULL),
       touch_hud_debug_(NULL),
@@ -690,11 +689,10 @@ void RootWindowController::Init(RootWindowType root_window_type,
 
   shell->AddShellObserver(this);
 
+  root_window_controller_common_->root_window_layout()->OnWindowResized();
   if (root_window_type == PRIMARY) {
-    root_window_layout()->OnWindowResized();
     shell->InitKeyboard();
   } else {
-    root_window_layout()->OnWindowResized();
     ash_host_->AsWindowTreeHost()->Show();
 
     // Create a shelf if a user is already logged in.
@@ -714,9 +712,9 @@ void RootWindowController::Init(RootWindowType root_window_type,
 }
 
 void RootWindowController::InitLayoutManagers() {
+  root_window_controller_common_->CreateLayoutManagers();
+
   aura::Window* root_window = GetRootWindow();
-  root_window_layout_ = new RootWindowLayoutManager(root_window);
-  root_window->SetLayoutManager(root_window_layout_);
 
   aura::Window* default_container =
       GetContainer(kShellWindowId_DefaultContainer);

@@ -26,6 +26,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
 #include "ui/gfx/canvas.h"
+#include "ui/views/widget/widget.h"
 
 using aura::RootWindow;
 using aura::Window;

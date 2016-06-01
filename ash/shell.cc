@@ -75,7 +75,6 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
-#include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/system_gesture_event_filter.h"
 #include "ash/wm/system_modal_container_event_filter.h"
 #include "ash/wm/system_modal_container_layout_manager.h"

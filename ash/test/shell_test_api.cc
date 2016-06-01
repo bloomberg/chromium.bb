@@ -16,10 +16,6 @@ namespace test {
 
 ShellTestApi::ShellTestApi(Shell* shell) : shell_(shell) {}
 
-RootWindowLayoutManager* ShellTestApi::root_window_layout() {
-  return shell_->GetPrimaryRootWindowController()->root_window_layout();
-}
-
 SystemGestureEventFilter* ShellTestApi::system_gesture_event_filter() {
   return shell_->system_gesture_filter_.get();
 }

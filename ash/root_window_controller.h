@@ -57,7 +57,6 @@ class DesktopBackgroundWidgetController;
 class DockedWindowLayoutManager;
 class PanelLayoutManager;
 class RootWindowControllerCommon;
-class RootWindowLayoutManager;
 class Shelf;
 class ShelfLayoutManager;
 class ShelfWidget;
@@ -113,8 +112,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   const aura::WindowTreeHost* GetHost() const;
   aura::Window* GetRootWindow();
   const aura::Window* GetRootWindow() const;
-
-  RootWindowLayoutManager* root_window_layout() { return root_window_layout_; }
 
   WorkspaceController* workspace_controller() {
     return workspace_controller_.get();
@@ -274,8 +271,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   std::unique_ptr<AshWindowTreeHost> ash_host_;
 
   std::unique_ptr<RootWindowControllerCommon> root_window_controller_common_;
-
-  RootWindowLayoutManager* root_window_layout_;
 
   std::unique_ptr<StackingController> stacking_controller_;
 
