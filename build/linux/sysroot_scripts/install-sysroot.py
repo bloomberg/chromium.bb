@@ -107,8 +107,6 @@ def DetectTargetArch():
     return 'arm64'
   elif target_arch == 'mipsel':
     return 'mips'
-  elif target_arch:
-    raise Error('Unrecognized target_arch: %s' % target_arch)
 
   return None
 
