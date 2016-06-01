@@ -188,6 +188,7 @@ if (enable_remoting_host && !is_android && !is_chromeos) {
 
     deps = [
       ":it2me_standalone_host",
+      "//build/win:default_exe_manifest",
     ]
 
     if (is_desktop_linux) {
