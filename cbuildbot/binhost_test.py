@@ -106,10 +106,11 @@ class PrebuiltCompatibilityTest(cros_test_lib.TestCase):
     """
     # Skip over useflags from the useflag if needed.
     msg_prefix = ''
-    if skip_useflags:
+    if skip_useflags and config.useflags:
+      msg_prefix = 'When we take out config-requested useflags (%s), ' % (
+          config.useflags)
       config = config.deepcopy()
       config.useflags = []
-      msg_prefix = 'When we take out extra useflags, '
 
     compat_id = self.GetCompatId(config)
     pfqs = pfq_configs.by_compat_id.get(compat_id, set())
