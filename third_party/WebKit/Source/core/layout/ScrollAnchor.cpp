@@ -104,10 +104,20 @@ static LayoutPoint computeRelativeOffset(const LayoutObject* layoutObject, const
     return cornerPointOfRect(relativeBounds(layoutObject, scroller), corner);
 }
 
-static bool candidateMovesWithScroller(const LayoutObject* candidate, const ScrollableArea* scroller)
+static bool candidateMayMoveWithScroller(const LayoutObject* candidate, const ScrollableArea* scroller)
 {
-    if (candidate->style() && candidate->style()->hasViewportConstrainedPosition())
-        return false;
+    if (const ComputedStyle* style = candidate->style()) {
+        if (style->hasViewportConstrainedPosition())
+            return false;
+
+        if (style->hasOutOfFlowPosition()) {
+            // Absolute positioned elements with non-zero scrollTop/Left/Bottom/
+            // Right can stick to the viewport.
+            if (!style->top().isZero() || !style->left().isZero()
+                || !style->bottom().isZero() || !style->right().isZero())
+                return false;
+        }
+    }
 
     bool skippedByContainerLookup = false;
     candidate->container(scrollerLayoutBox(scroller), &skippedByContainerLookup);
@@ -127,7 +137,7 @@ ScrollAnchor::ExamineResult ScrollAnchor::examine(const LayoutObject* candidate)
     if (!candidate->isText() && !candidate->isBox())
         return ExamineResult(Skip);
 
-    if (!candidateMovesWithScroller(candidate, m_scroller))
+    if (!candidateMayMoveWithScroller(candidate, m_scroller))
         return ExamineResult(Skip);
 
     LayoutRect candidateRect = relativeBounds(candidate, m_scroller);
@@ -193,7 +203,7 @@ void ScrollAnchor::save()
         // We need to update m_lastAdjusted.m_savedRelativeOffset, since it is
         // relative to the visible rect and the user may have scrolled since the
         // last adjustment.
-        if (!candidateMovesWithScroller(m_lastAdjusted.m_anchorObject, m_scroller)) {
+        if (!candidateMayMoveWithScroller(m_lastAdjusted.m_anchorObject, m_scroller)) {
             m_lastAdjusted.clear();
         } else if (m_lastAdjusted.m_anchorObject == m_current.m_anchorObject
             && m_lastAdjusted.m_corner == m_current.m_corner) {
