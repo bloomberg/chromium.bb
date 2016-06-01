@@ -88,6 +88,7 @@ if (current_toolchain == host_toolchain) {
     deps = [
       ":brotli",
       "//build/config/sanitizers:deps",
+      "//build/win:default_exe_manifest",
     ]
 
     if (is_win && visual_studio_version == "2015") {
