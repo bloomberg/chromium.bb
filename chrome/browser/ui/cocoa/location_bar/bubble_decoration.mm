@@ -123,7 +123,7 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
 
     NSColor* text_color =
         in_dark_mode
-            ? skia::SkColorToCalibratedNSColor(kMaterialDarkModeTextColor)
+            ? skia::SkColorToSRGBNSColor(kMaterialDarkModeTextColor)
             : GetBackgroundBorderColor();
     SetTextColor(text_color);
   }

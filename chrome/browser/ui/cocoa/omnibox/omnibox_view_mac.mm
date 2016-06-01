@@ -102,19 +102,22 @@ NSColor* SecureSchemeColor(bool in_dark_mode) {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     return ColorWithRGBBytes(0x07, 0x95, 0x00);
   }
-  return in_dark_mode ? [NSColor colorWithCalibratedWhite:1 alpha:0.5]
-                      : skia::SkColorToCalibratedNSColor(gfx::kGoogleGreen700);
+  return in_dark_mode
+      ? skia::SkColorToSRGBNSColor(SkColorSetA(SK_ColorWHITE, 0x7F))
+      : skia::SkColorToSRGBNSColor(gfx::kGoogleGreen700);
 }
 NSColor* SecurityWarningSchemeColor(bool in_dark_mode) {
-  return in_dark_mode ? [NSColor colorWithCalibratedWhite:1 alpha:0.5]
-                      : skia::SkColorToCalibratedNSColor(gfx::kGoogleYellow700);
+  return in_dark_mode
+      ? skia::SkColorToSRGBNSColor(SkColorSetA(SK_ColorWHITE, 0x7F))
+      : skia::SkColorToSRGBNSColor(gfx::kGoogleYellow700);
 }
 NSColor* SecurityErrorSchemeColor(bool in_dark_mode) {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     return ColorWithRGBBytes(0xa2, 0x00, 0x00);
   }
-  return in_dark_mode ? [NSColor colorWithCalibratedWhite:1 alpha:0.5]
-                      : skia::SkColorToCalibratedNSColor(gfx::kGoogleRed700);
+  return in_dark_mode
+      ? skia::SkColorToSRGBNSColor(SkColorSetA(SK_ColorWHITE, 0x7F))
+      : skia::SkColorToSRGBNSColor(gfx::kGoogleRed700);
 }
 
 const char kOmniboxViewMacStateKey[] = "OmniboxViewMacState";
@@ -176,7 +179,7 @@ NSColor* OmniboxViewMac::BaseTextColor(bool in_dark_mode) {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     return [NSColor darkGrayColor];
   }
-  return skia::SkColorToCalibratedNSColor(BaseTextColorSkia(in_dark_mode));
+  return skia::SkColorToSRGBNSColor(BaseTextColorSkia(in_dark_mode));
 }
 
 // static

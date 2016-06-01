@@ -183,7 +183,8 @@ NSColor* ThemeService::GetNSColor(int id, bool incognito) const {
   DCHECK(CalledOnValidThread());
 
   int original_id = id;
-  if (ui::MaterialDesignController::IsModeMaterial() && incognito) {
+  const bool is_mode_material = ui::MaterialDesignController::IsModeMaterial();
+  if (is_mode_material && incognito) {
     id += kMaterialDesignIdOffset;
   }
 
@@ -193,7 +194,12 @@ NSColor* ThemeService::GetNSColor(int id, bool incognito) const {
     return nscolor_iter->second;
 
   SkColor sk_color = GetColor(original_id, incognito);
-  NSColor* color = skia::SkColorToCalibratedNSColor(sk_color);
+  NSColor* color = nil;
+  if (is_mode_material) {
+    color = skia::SkColorToSRGBNSColor(sk_color);
+  } else {
+    color = skia::SkColorToCalibratedNSColor(sk_color);
+  }
 
   // We loaded successfully.  Cache the color.
   if (color)

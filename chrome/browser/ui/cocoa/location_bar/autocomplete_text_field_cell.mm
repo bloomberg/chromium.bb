@@ -351,56 +351,13 @@ size_t CalculatePositionsInFrame(
   // Draw the border.
   if (isModeMaterial) {
     if (!inDarkMode) {
-      [[NSColor colorWithCalibratedWhite:168 / 255. alpha:1] set];
-      [path stroke];
+      const CGFloat kNormalStrokeGray = 168 / 255.;
+      [[NSColor colorWithCalibratedWhite:kNormalStrokeGray alpha:1] set];
     } else {
-      // In dark mode the top, middle, and bottom portions of the stroke are
-      // drawn in different colors.
-      {
-        gfx::ScopedNSGraphicsContextSaveGState saveState;
-        [[NSColor colorWithCalibratedWhite:52 / 255. alpha:1] set];
-        [NSBezierPath clipRect:NSMakeRect(NSMinX(frame), NSMaxY(frame) - 2,
-                                          NSWidth(frame), 2)];
-        [path stroke];
-      }
-      {
-        gfx::ScopedNSGraphicsContextSaveGState saveState;
-        [[NSColor colorWithCalibratedWhite:61 / 255. alpha:1] set];
-        [NSBezierPath clipRect:NSMakeRect(NSMinX(frame), NSMinY(frame) + 3,
-                                          NSWidth(frame), NSHeight(frame) - 5)];
-        [path stroke];
-      }
-      {
-        gfx::ScopedNSGraphicsContextSaveGState saveState;
-        [[NSColor colorWithCalibratedWhite:71 / 255. alpha:1] set];
-        [NSBezierPath clipRect:NSMakeRect(NSMinX(frame), NSMinY(frame),
-                                          NSWidth(frame), 3)];
-        [path stroke];
-      }
-
-      // Draw a highlight beneath the top edge, and a shadow beneath the bottom
-      // edge when on a Retina screen.
-      {
-        gfx::ScopedNSGraphicsContextSaveGState saveState;
-        [NSBezierPath setDefaultLineWidth:singlePixelLineWidth_];
-
-        [[NSColor colorWithCalibratedWhite:120 / 255. alpha:1] set];
-        NSPoint origin = NSMakePoint(NSMinX(pathRect) + 3,
-                                     NSMinY(pathRect) + singlePixelLineWidth_);
-        NSPoint destination =
-            NSMakePoint(NSMaxX(pathRect) - 3,
-                        NSMinY(pathRect) + singlePixelLineWidth_);
-        [NSBezierPath strokeLineFromPoint:origin
-                                  toPoint:destination];
-
-        if (singlePixelLineWidth_ < 1) {
-          origin.y = destination.y = NSMaxY(pathRect) + singlePixelLineWidth_;
-          [[AutocompleteTextField shadowColor] set];
-          [NSBezierPath strokeLineFromPoint:origin
-                                    toPoint:destination];
-        }
-      }
+      const CGFloat k30PercentAlpha = 0.3;
+      [[NSColor colorWithCalibratedWhite:0 alpha:k30PercentAlpha] set];
     }
+    [path stroke];
   } else {
     ui::DrawNinePartImage(frame,
                           isPopupMode_ ? kPopupBorderImageIds
