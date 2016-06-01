@@ -278,7 +278,19 @@ gfx::Size OmniboxResultView::GetPreferredSize() const {
   if (!match_.answer)
     return gfx::Size(0, GetContentLineHeight());
   // An answer implies a match and a description in a large font.
-  return gfx::Size(0, GetContentLineHeight() + GetAnswerLineHeight());
+  const auto& text_fields = match_.answer->second_line().text_fields();
+  if (text_fields.empty() || !text_fields.front().has_num_lines())
+    return gfx::Size(0, GetContentLineHeight() + GetAnswerLineHeight());
+  if (!description_rendertext_) {
+    description_rendertext_ =
+        CreateAnswerLine(match_.answer->second_line(), font_list_);
+  }
+  description_rendertext_->SetDisplayRect(
+      gfx::Rect(text_bounds_.width(), 0));
+  description_rendertext_->GetStringSize();
+  return gfx::Size(
+      0, GetContentLineHeight() +
+             GetAnswerLineHeight() * description_rendertext_->GetNumLines());
 }
 
 void OmniboxResultView::GetAccessibleState(ui::AXViewState* state) {
@@ -430,12 +442,17 @@ int OmniboxResultView::DrawRenderText(
     prefix_render_text->Draw(canvas);
   }
 
-  // Set the display rect to trigger eliding.
-  const int height = (render_text_type == DESCRIPTION && match.answer) ?
-      GetAnswerLineHeight() : GetContentLineHeight();
+  // Set the display rect to trigger elision.
+  const int final_width = right_x - x;
+  int height = GetContentLineHeight();
+  if (render_text_type == DESCRIPTION && match.answer) {
+    render_text->SetDisplayRect(gfx::Rect(gfx::Size(final_width, 0)));
+    render_text->GetStringSize();
+    height = GetAnswerLineHeight() * render_text->GetNumLines();
+  }
   render_text->SetDisplayRect(
       gfx::Rect(mirroring_context_->mirrored_left_coord(x, right_x), y,
-                right_x - x, height));
+                final_width, height));
   render_text->Draw(canvas);
   return right_x;
 }
@@ -681,10 +698,8 @@ void OmniboxResultView::OnPaint(gfx::Canvas* canvas) {
       if (match_.answer) {
         contents_rendertext_ =
             CreateAnswerLine(match_.answer->first_line(), font_list_);
-        description_rendertext_ = CreateAnswerLine(
-            match_.answer->second_line(),
-            ui::ResourceBundle::GetSharedInstance().GetFontList(
-                ui::ResourceBundle::LargeFont));
+        description_rendertext_ =
+            CreateAnswerLine(match_.answer->second_line(), font_list_);
       } else if (!match_.description.empty()) {
         description_rendertext_ = CreateClassifiedRenderText(
             match_.description, match_.description_class, true);
@@ -737,13 +752,23 @@ int OmniboxResultView::GetContentLineHeight() const {
 
 std::unique_ptr<gfx::RenderText> OmniboxResultView::CreateAnswerLine(
     const SuggestionAnswer::ImageLine& line,
-    gfx::FontList font_list) {
+    gfx::FontList font_list) const {
   std::unique_ptr<gfx::RenderText> destination =
       CreateRenderText(base::string16());
   destination->SetFontList(font_list);
 
   for (const SuggestionAnswer::TextField& text_field : line.text_fields())
     AppendAnswerText(destination.get(), text_field.text(), text_field.type());
+  if (!line.text_fields().empty()) {
+    constexpr int kMaxDisplayLines = 3;
+    const SuggestionAnswer::TextField& first_field = line.text_fields().front();
+    if (first_field.has_num_lines() && first_field.num_lines() > 1 &&
+        destination->MultilineSupported()) {
+      destination->SetMultiline(true);
+      destination->SetMaxLines(
+          std::min(kMaxDisplayLines, first_field.num_lines()));
+    }
+  }
   const base::char16 space(' ');
   const auto* text_field = line.additional_text();
   if (text_field) {
@@ -760,7 +785,7 @@ std::unique_ptr<gfx::RenderText> OmniboxResultView::CreateAnswerLine(
 
 void OmniboxResultView::AppendAnswerText(gfx::RenderText* destination,
                                          const base::string16& text,
-                                         int text_type) {
+                                         int text_type) const {
   // TODO(dschuyler): make this better.  Right now this only supports unnested
   // bold tags.  In the future we'll need to flag unexpected tags while adding
   // support for b, i, u, sub, and sup.  We'll also need to support HTML
@@ -789,7 +814,7 @@ void OmniboxResultView::AppendAnswerText(gfx::RenderText* destination,
 void OmniboxResultView::AppendAnswerTextHelper(gfx::RenderText* destination,
                                                const base::string16& text,
                                                int text_type,
-                                               bool is_bold) {
+                                               bool is_bold) const {
   if (text.empty())
     return;
   int offset = destination->text().length();

@@ -171,7 +171,7 @@ class OmniboxResultView : public views::View,
   // Creates a RenderText with text and styling from the image line.
   std::unique_ptr<gfx::RenderText> CreateAnswerLine(
       const SuggestionAnswer::ImageLine& line,
-      gfx::FontList font_list);
+      gfx::FontList font_list) const;
 
   // Adds |text| to |destination|.  |text_type| is an index into the
   // kTextStyles constant defined in the .cc file and is used to style the text,
@@ -179,14 +179,14 @@ class OmniboxResultView : public views::View,
   // TextStyle struct in the .cc file for more.
   void AppendAnswerText(gfx::RenderText* destination,
                         const base::string16& text,
-                        int text_type);
+                        int text_type) const;
 
   // AppendAnswerText will break up the |text| into bold and non-bold pieces
   // and pass each to this helper with the correct |is_bold| value.
   void AppendAnswerTextHelper(gfx::RenderText* destination,
                               const base::string16& text,
                               int text_type,
-                              bool is_bold);
+                              bool is_bold) const;
 
   // Returns the necessary margin, if any, at the start and end of the view.
   // This allows us to keep the icon and text in the view aligned with the
