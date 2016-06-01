@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -92,6 +93,8 @@ struct AudioDelayState {
   // Reported render/output delay. Typical value is ~40 [ms].
   int output_delay_ms;
 };
+
+void OnLogMessage(const std::string& message) {}
 
 // This class mocks the platform specific audio manager and overrides
 // the GetMessageLoop() method to ensure that we can run our tests on
@@ -286,7 +289,8 @@ class AudioInputStreamTraits {
   static StreamType* CreateStream(AudioManager* audio_manager,
       const AudioParameters& params) {
     return audio_manager->MakeAudioInputStream(
-        params, AudioDeviceDescription::kDefaultDeviceId);
+        params, AudioDeviceDescription::kDefaultDeviceId,
+        base::Bind(&OnLogMessage));
   }
 };
 
@@ -301,7 +305,8 @@ class AudioOutputStreamTraits {
 
   static StreamType* CreateStream(AudioManager* audio_manager,
       const AudioParameters& params) {
-    return audio_manager->MakeAudioOutputStream(params, std::string());
+    return audio_manager->MakeAudioOutputStream(params, std::string(),
+                                                base::Bind(&OnLogMessage));
   }
 };
 

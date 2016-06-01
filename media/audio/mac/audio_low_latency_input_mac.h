@@ -52,6 +52,7 @@
 #include "base/timer/timer.h"
 #include "media/audio/agc_audio_stream.h"
 #include "media/audio/audio_io.h"
+#include "media/audio/audio_manager.h"
 #include "media/base/audio_block_fifo.h"
 #include "media/base/audio_parameters.h"
 
@@ -68,7 +69,8 @@ class MEDIA_EXPORT AUAudioInputStream
   // the audio manager who is creating this object.
   AUAudioInputStream(AudioManagerMac* manager,
                      const AudioParameters& input_params,
-                     AudioDeviceID audio_device_id);
+                     AudioDeviceID audio_device_id,
+                     const AudioManager::LogCallback& log_callback);
   // The dtor is typically called by the AudioManager only and it is usually
   // triggered by calling AudioInputStream::Close().
   ~AUAudioInputStream() override;
@@ -323,6 +325,9 @@ class MEDIA_EXPORT AUAudioInputStream
   // Counts the total number of times RestartAudio() has been called. It is
   // set to zero once in the constructor and then never reset again.
   size_t total_number_of_restart_attempts_;
+
+  // Callback to send statistics info.
+  AudioManager::LogCallback log_callback_;
 
   // Used to ensure DevicePropertyChangedOnMainThread() is not called when
   // this object is destroyed.

@@ -326,6 +326,9 @@ class MEDIA_EXPORT AudioInputController
   // Called on the audio thread.
   void WriteInputDataForDebugging(std::unique_ptr<AudioBus> data);
 
+  // Called by the stream with log messages.
+  void LogMessage(const std::string& message);
+
   // Gives access to the task runner of the creating thread.
   scoped_refptr<base::SingleThreadTaskRunner> creator_task_runner_;
 

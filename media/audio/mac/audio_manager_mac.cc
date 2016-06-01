@@ -598,14 +598,16 @@ std::string AudioManagerMac::GetAssociatedOutputDeviceID(
 }
 
 AudioOutputStream* AudioManagerMac::MakeLinearOutputStream(
-    const AudioParameters& params) {
+    const AudioParameters& params,
+    const LogCallback& log_callback) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  return MakeLowLatencyOutputStream(params, std::string());
+  return MakeLowLatencyOutputStream(params, std::string(), log_callback);
 }
 
 AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     const AudioParameters& params,
-    const std::string& device_id) {
+    const std::string& device_id,
+    const LogCallback& log_callback) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   bool device_listener_first_init = false;
   // Lazily create the audio device listener on the first stream creation,
@@ -640,7 +642,7 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     current_sample_rate_ = params.sample_rate();
   }
 
-  AUHALStream* stream = new AUHALStream(this, params, device);
+  AUHALStream* stream = new AUHALStream(this, params, device, log_callback);
   output_streams_.push_back(stream);
   return stream;
 }
@@ -674,7 +676,9 @@ std::string AudioManagerMac::GetDefaultOutputDeviceID() {
 }
 
 AudioInputStream* AudioManagerMac::MakeLinearInputStream(
-    const AudioParameters& params, const std::string& device_id) {
+    const AudioParameters& params,
+    const std::string& device_id,
+    const LogCallback& log_callback) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
   AudioInputStream* stream = new PCMQueueInAudioInputStream(this, params);
@@ -683,7 +687,9 @@ AudioInputStream* AudioManagerMac::MakeLinearInputStream(
 }
 
 AudioInputStream* AudioManagerMac::MakeLowLatencyInputStream(
-    const AudioParameters& params, const std::string& device_id) {
+    const AudioParameters& params,
+    const std::string& device_id,
+    const LogCallback& log_callback) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   // Gets the AudioDeviceID that refers to the AudioInputDevice with the device
@@ -691,7 +697,8 @@ AudioInputStream* AudioManagerMac::MakeLowLatencyInputStream(
   AudioDeviceID audio_device_id = GetAudioDeviceIdByUId(true, device_id);
   AUAudioInputStream* stream = NULL;
   if (audio_device_id != kAudioObjectUnknown) {
-    stream = new AUAudioInputStream(this, params, audio_device_id);
+    stream =
+        new AUAudioInputStream(this, params, audio_device_id, log_callback);
     low_latency_input_streams_.push_back(stream);
   }
 

@@ -73,28 +73,32 @@ CastAudioManager::CreateMediaPipelineBackend(
 }
 
 ::media::AudioOutputStream* CastAudioManager::MakeLinearOutputStream(
-    const ::media::AudioParameters& params) {
+    const ::media::AudioParameters& params,
+    const ::media::AudioManager::LogCallback& log_callback) {
   DCHECK_EQ(::media::AudioParameters::AUDIO_PCM_LINEAR, params.format());
   return new CastAudioOutputStream(params, this);
 }
 
 ::media::AudioOutputStream* CastAudioManager::MakeLowLatencyOutputStream(
     const ::media::AudioParameters& params,
-    const std::string& device_id) {
+    const std::string& device_id,
+    const ::media::AudioManager::LogCallback& log_callback) {
   DCHECK_EQ(::media::AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   return new CastAudioOutputStream(params, this);
 }
 
 ::media::AudioInputStream* CastAudioManager::MakeLinearInputStream(
     const ::media::AudioParameters& params,
-    const std::string& device_id) {
+    const std::string& device_id,
+    const ::media::AudioManager::LogCallback& log_callback) {
   LOG(WARNING) << "No support for input audio devices";
   return nullptr;
 }
 
 ::media::AudioInputStream* CastAudioManager::MakeLowLatencyInputStream(
     const ::media::AudioParameters& params,
-    const std::string& device_id) {
+    const std::string& device_id,
+    const ::media::AudioManager::LogCallback& log_callback) {
   LOG(WARNING) << "No support for input audio devices";
   return nullptr;
 }

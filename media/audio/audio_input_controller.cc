@@ -117,7 +117,7 @@ void LogCaptureStartupResult(CaptureStartupResult result) {
 namespace media {
 
 // static
-AudioInputController::Factory* AudioInputController::factory_ = NULL;
+AudioInputController::Factory* AudioInputController::factory_ = nullptr;
 
 AudioInputController::AudioInputController(EventHandler* handler,
                                            SyncWriter* sync_writer,
@@ -125,7 +125,7 @@ AudioInputController::AudioInputController(EventHandler* handler,
                                            const bool agc_is_enabled)
     : creator_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       handler_(handler),
-      stream_(NULL),
+      stream_(nullptr),
       data_is_active_(false),
       state_(CLOSED),
       sync_writer_(sync_writer),
@@ -156,14 +156,14 @@ scoped_refptr<AudioInputController> AudioInputController::Create(
   DCHECK(audio_manager);
 
   if (!params.IsValid() || (params.channels() > kMaxInputChannels))
-    return NULL;
+    return nullptr;
 
   if (factory_) {
     return factory_->Create(
         audio_manager, event_handler, params, user_input_monitor);
   }
-  scoped_refptr<AudioInputController> controller(
-      new AudioInputController(event_handler, NULL, user_input_monitor, false));
+  scoped_refptr<AudioInputController> controller(new AudioInputController(
+      event_handler, nullptr, user_input_monitor, false));
 
   controller->task_runner_ = audio_manager->GetTaskRunner();
 
@@ -176,7 +176,7 @@ scoped_refptr<AudioInputController> AudioInputController::Create(
                      base::Unretained(audio_manager),
                      params,
                      device_id))) {
-    controller = NULL;
+    controller = nullptr;
   }
 
   return controller;
@@ -195,7 +195,7 @@ scoped_refptr<AudioInputController> AudioInputController::CreateLowLatency(
   DCHECK(sync_writer);
 
   if (!params.IsValid() || (params.channels() > kMaxInputChannels))
-    return NULL;
+    return nullptr;
 
   // Create the AudioInputController object and ensure that it runs on
   // the audio-manager thread.
@@ -212,7 +212,7 @@ scoped_refptr<AudioInputController> AudioInputController::CreateLowLatency(
                      base::Unretained(audio_manager),
                      params,
                      device_id))) {
-    controller = NULL;
+    controller = nullptr;
   }
 
   return controller;
@@ -244,7 +244,7 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
           base::Bind(&AudioInputController::DoCreateForStream,
                      controller,
                      stream))) {
-    controller = NULL;
+    controller = nullptr;
   }
 
   return controller;
@@ -288,7 +288,8 @@ void AudioInputController::DoCreate(AudioManager* audio_manager,
   // platform audio input requires the |no_data_timer_| be used to auto-detect
   // errors.  In reality, probably only Windows needs to be treated as
   // unreliable here.
-  DoCreateForStream(audio_manager->MakeAudioInputStream(params, device_id));
+  DoCreateForStream(audio_manager->MakeAudioInputStream(
+      params, device_id, base::Bind(&AudioInputController::LogMessage, this)));
 }
 
 void AudioInputController::DoCreateForLowLatency(AudioManager* audio_manager,
@@ -323,7 +324,7 @@ void AudioInputController::DoCreateForStream(
 
   if (stream_ && !stream_->Open()) {
     stream_->Close();
-    stream_ = NULL;
+    stream_ = nullptr;
     if (handler_)
       handler_->OnError(this, STREAM_OPEN_ERROR);
     LogCaptureStartupResult(CAPTURE_STARTUP_OPEN_STREAM_FAILED);
@@ -668,14 +669,14 @@ void AudioInputController::DoStopCloseAndClearStream() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Allow calling unconditionally and bail if we don't have a stream to close.
-  if (stream_ != NULL) {
+  if (stream_ != nullptr) {
     stream_->Stop();
     stream_->Close();
-    stream_ = NULL;
+    stream_ = nullptr;
   }
 
   // The event handler should not be touched after the stream has been closed.
-  handler_ = NULL;
+  handler_ = nullptr;
 }
 
 void AudioInputController::SetDataIsActive(bool enabled) {
@@ -733,6 +734,11 @@ void AudioInputController::WriteInputDataForDebugging(
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (input_writer_)
     input_writer_->Write(std::move(data));
+}
+
+void AudioInputController::LogMessage(const std::string& message) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  handler_->OnLog(this, message);
 }
 
 }  // namespace media

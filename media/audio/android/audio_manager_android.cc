@@ -163,20 +163,23 @@ AudioParameters AudioManagerAndroid::GetInputStreamParameters(
 
 AudioOutputStream* AudioManagerAndroid::MakeAudioOutputStream(
     const AudioParameters& params,
-    const std::string& device_id) {
+    const std::string& device_id,
+    const LogCallback& log_callback) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  AudioOutputStream* stream =
-      AudioManagerBase::MakeAudioOutputStream(params, std::string());
+  AudioOutputStream* stream = AudioManagerBase::MakeAudioOutputStream(
+      params, std::string(), AudioManager::LogCallback());
   streams_.insert(static_cast<OpenSLESOutputStream*>(stream));
   return stream;
 }
 
 AudioInputStream* AudioManagerAndroid::MakeAudioInputStream(
-    const AudioParameters& params, const std::string& device_id) {
+    const AudioParameters& params,
+    const std::string& device_id,
+    const LogCallback& log_callback) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   bool has_no_input_streams = HasNoAudioInputStreams();
-  AudioInputStream* stream =
-      AudioManagerBase::MakeAudioInputStream(params, device_id);
+  AudioInputStream* stream = AudioManagerBase::MakeAudioInputStream(
+      params, device_id, AudioManager::LogCallback());
 
   // The audio manager for Android creates streams intended for real-time
   // VoIP sessions and therefore sets the audio mode to MODE_IN_COMMUNICATION.
@@ -209,7 +212,8 @@ void AudioManagerAndroid::ReleaseInputStream(AudioInputStream* stream) {
 }
 
 AudioOutputStream* AudioManagerAndroid::MakeLinearOutputStream(
-    const AudioParameters& params) {
+    const AudioParameters& params,
+    const LogCallback& log_callback) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   return new OpenSLESOutputStream(this, params, SL_ANDROID_STREAM_MEDIA);
@@ -217,7 +221,8 @@ AudioOutputStream* AudioManagerAndroid::MakeLinearOutputStream(
 
 AudioOutputStream* AudioManagerAndroid::MakeLowLatencyOutputStream(
     const AudioParameters& params,
-    const std::string& device_id) {
+    const std::string& device_id,
+    const LogCallback& log_callback) {
   DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
 
@@ -229,7 +234,9 @@ AudioOutputStream* AudioManagerAndroid::MakeLowLatencyOutputStream(
 }
 
 AudioInputStream* AudioManagerAndroid::MakeLinearInputStream(
-    const AudioParameters& params, const std::string& device_id) {
+    const AudioParameters& params,
+    const std::string& device_id,
+    const LogCallback& log_callback) {
   // TODO(henrika): add support for device selection if/when any client
   // needs it.
   DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
@@ -238,7 +245,9 @@ AudioInputStream* AudioManagerAndroid::MakeLinearInputStream(
 }
 
 AudioInputStream* AudioManagerAndroid::MakeLowLatencyInputStream(
-    const AudioParameters& params, const std::string& device_id) {
+    const AudioParameters& params,
+    const std::string& device_id,
+    const LogCallback& log_callback) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
   DLOG_IF(ERROR, device_id.empty()) << "Invalid device ID!";
