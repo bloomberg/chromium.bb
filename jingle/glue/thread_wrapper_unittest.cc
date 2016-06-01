@@ -246,7 +246,9 @@ TEST_F(ThreadWrapperTest, SendToOtherThread) {
   base::Thread second_thread("JingleThreadWrapperTest");
   second_thread.Start();
 
-  base::WaitableEvent initialized_event(true, false);
+  base::WaitableEvent initialized_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   rtc::Thread* target;
   second_thread.message_loop()->PostTask(
       FROM_HERE, base::Bind(&InitializeWrapperForNewThread,
@@ -275,7 +277,9 @@ TEST_F(ThreadWrapperTest, SendDuringSend) {
   base::Thread second_thread("JingleThreadWrapperTest");
   second_thread.Start();
 
-  base::WaitableEvent initialized_event(true, false);
+  base::WaitableEvent initialized_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   rtc::Thread* target;
   second_thread.message_loop()->PostTask(
       FROM_HERE, base::Bind(&InitializeWrapperForNewThread,

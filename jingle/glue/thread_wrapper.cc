@@ -20,7 +20,8 @@ struct JingleThreadWrapper::PendingSend {
   PendingSend(const rtc::Message& message_value)
       : sending_thread(JingleThreadWrapper::current()),
         message(message_value),
-        done_event(true, false) {
+        done_event(base::WaitableEvent::ResetPolicy::MANUAL,
+                   base::WaitableEvent::InitialState::NOT_SIGNALED) {
     DCHECK(sending_thread);
   }
 
@@ -65,7 +66,8 @@ JingleThreadWrapper::JingleThreadWrapper(
     : task_runner_(task_runner),
       send_allowed_(false),
       last_task_id_(0),
-      pending_send_event_(true, false),
+      pending_send_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                          base::WaitableEvent::InitialState::NOT_SIGNALED),
       weak_ptr_factory_(this) {
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(!rtc::Thread::Current());
