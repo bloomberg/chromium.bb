@@ -126,7 +126,7 @@ void GranularityStrategyTest::parseText(const TextNodeVector& textNodes)
         String str = text->wholeText();
         for (size_t i = 0; i < str.length(); i++) {
             m_letterPos.append(visiblePositionToContentsPoint(createVisiblePosition(Position(text, i))));
-            char c = str.characterAt(i);
+            char c = str[i];
             if (isASCIIAlphanumeric(c) && !wordStarted) {
                 wordStartIndex = i + wordStartIndexOffset;
                 wordStarted = true;
