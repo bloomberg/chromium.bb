@@ -100,7 +100,13 @@ class ServiceWorkerMetrics {
   };
 
   // Used for UMA. Append only.
-  enum class Site { OTHER, NEW_TAB_PAGE, NUM_TYPES };
+  enum class Site {
+    OTHER,  // Obsolete
+    NEW_TAB_PAGE,
+    WITH_FETCH_HANDLER,
+    WITHOUT_FETCH_HANDLER,
+    NUM_TYPES
+  };
 
   // Not used for UMA.
   enum class StartSituation {
@@ -138,7 +144,7 @@ class ServiceWorkerMetrics {
   static void RecordDeleteAndStartOverResult(DeleteAndStartOverResult result);
 
   // Counts the number of page loads controlled by a Service Worker.
-  static void CountControlledPageLoad(const GURL& url);
+  static void CountControlledPageLoad(const GURL& url, bool has_fetch_handler);
 
   // Records the result of trying to start a worker. |is_installed| indicates
   // whether the version has been installed.

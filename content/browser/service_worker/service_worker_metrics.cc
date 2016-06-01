@@ -172,8 +172,13 @@ void ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
                             result, NUM_DELETE_AND_START_OVER_RESULT_TYPES);
 }
 
-void ServiceWorkerMetrics::CountControlledPageLoad(const GURL& url) {
+void ServiceWorkerMetrics::CountControlledPageLoad(const GURL& url,
+                                                   bool has_fetch_handler) {
   Site site = SiteFromURL(url);
+  if (site == Site::OTHER) {
+    site = (has_fetch_handler) ? Site::WITH_FETCH_HANDLER
+                               : Site::WITHOUT_FETCH_HANDLER;
+  }
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.PageLoad", static_cast<int>(site),
                             static_cast<int>(Site::NUM_TYPES));
 

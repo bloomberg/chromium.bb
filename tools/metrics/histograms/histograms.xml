@@ -86654,8 +86654,10 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="ServiceWorkerSite" type="int">
-  <int value="0" label="Other"/>
+  <int value="0" label="Other (unused)"/>
   <int value="1" label="NewTabPage"/>
+  <int value="2" label="WithFetchHandler"/>
+  <int value="3" label="WithoutFetchHandler"/>
 </enum>
 
 <enum name="ServiceWorkerStatusCode" type="int">

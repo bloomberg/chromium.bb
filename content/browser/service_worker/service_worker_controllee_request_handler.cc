@@ -267,7 +267,8 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
     return;
   }
 
-  ServiceWorkerMetrics::CountControlledPageLoad(stripped_url_);
+  ServiceWorkerMetrics::CountControlledPageLoad(
+      stripped_url_, active_version->has_fetch_handler());
   bool is_forwarded =
       MaybeForwardToServiceWorker(job_.get(), active_version.get());
 
@@ -295,7 +296,8 @@ void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
     return;
   }
 
-  ServiceWorkerMetrics::CountControlledPageLoad(stripped_url_);
+  ServiceWorkerMetrics::CountControlledPageLoad(stripped_url_,
+                                                version->has_fetch_handler());
 
   provider_host_->AssociateRegistration(registration,
                                         false /* notify_controllerchange */);
