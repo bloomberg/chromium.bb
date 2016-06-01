@@ -511,7 +511,9 @@ void EGLThreadTest::SetUp() {
 }
 
 void EGLThreadTest::TearDown() {
-  base::WaitableEvent completion(true, false);
+  base::WaitableEvent completion(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   other_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&EGLThreadTest::OtherThreadTearDown,
                             base::Unretained(this), &completion));
@@ -550,7 +552,9 @@ TEST_F(EGLThreadTest, Basic) {
 
   EXPECT_TRUE(eglMakeCurrent(display_, surface, surface, context));
 
-  base::WaitableEvent completion(false, false);
+  base::WaitableEvent completion(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   EGLBoolean result = EGL_FALSE;
   other_thread_.task_runner()->PostTask(

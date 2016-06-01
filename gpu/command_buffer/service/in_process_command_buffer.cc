@@ -205,9 +205,11 @@ InProcessCommandBuffer::InProcessCommandBuffer(
       gpu_memory_buffer_manager_(nullptr),
       next_fence_sync_release_(1),
       flushed_fence_sync_release_(0),
-      flush_event_(false, false),
+      flush_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                   base::WaitableEvent::InitialState::NOT_SIGNALED),
       service_(GetInitialService(service)),
-      fence_sync_wait_event_(false, false),
+      fence_sync_wait_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED),
       client_thread_weak_ptr_factory_(this),
       gpu_thread_weak_ptr_factory_(this) {
   DCHECK(service_.get());
@@ -282,7 +284,9 @@ bool InProcessCommandBuffer::Initialize(
                  base::Unretained(this),
                  params);
 
-  base::WaitableEvent completion(true, false);
+  base::WaitableEvent completion(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   bool result = false;
   QueueTask(
       base::Bind(&RunTaskWithResult<bool>, init_task, &result, &completion));
@@ -437,7 +441,9 @@ void InProcessCommandBuffer::Destroy() {
   CheckSequencedThread();
   client_thread_weak_ptr_factory_.InvalidateWeakPtrs();
   gpu_control_client_ = nullptr;
-  base::WaitableEvent completion(true, false);
+  base::WaitableEvent completion(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   bool result = false;
   base::Callback<bool(void)> destroy_task = base::Bind(
       &InProcessCommandBuffer::DestroyOnGpuThread, base::Unretained(this));
@@ -617,7 +623,9 @@ void InProcessCommandBuffer::SetGetBuffer(int32_t shm_id) {
   if (last_state_.error != gpu::error::kNoError)
     return;
 
-  base::WaitableEvent completion(true, false);
+  base::WaitableEvent completion(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::Closure task =
       base::Bind(&InProcessCommandBuffer::SetGetBufferOnGpuThread,
                  base::Unretained(this), shm_id, &completion);

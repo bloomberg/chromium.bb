@@ -105,7 +105,9 @@ TEST(GLES2FormatAsyncUploadSyncTest, AsyncUploadSync) {
     }
 
     // Flush the thread message loop before starting again.
-    base::WaitableEvent waitable(false, false);
+    base::WaitableEvent waitable(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&waitable)));
