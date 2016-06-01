@@ -41,13 +41,9 @@ const char kExtensionRemovedError[] =
 
 const char kReferrerId[] = "chrome-remove-extension-dialog";
 
-// Returns bitmap for the default icon with size equal to the default icon's
-// pixel size under maximal supported scale factor.
-SkBitmap GetDefaultIconBitmapForMaxScaleFactor(bool is_app) {
-  const gfx::ImageSkia& image =
-      is_app ? util::GetDefaultAppIcon() : util::GetDefaultExtensionIcon();
-  return image.GetRepresentation(
-      gfx::ImageSkia::GetMaxSupportedScale()).sk_bitmap();
+// Returns gfx::ImageSkia for the default icon.
+gfx::ImageSkia GetDefaultIconImage(bool is_app) {
+  return  is_app ? util::GetDefaultAppIcon() : util::GetDefaultExtensionIcon();
 }
 
 }  // namespace
@@ -107,13 +103,7 @@ void ExtensionUninstallDialog::ConfirmUninstall(
 
 void ExtensionUninstallDialog::SetIcon(const gfx::Image& image) {
   if (image.IsEmpty()) {
-    // Let's set default icon bitmap whose size is equal to the default icon's
-    // pixel size under maximal supported scale factor. If the bitmap is larger
-    // than the one we need, it will be scaled down by the ui code.
-    // TODO(tbarzic): We should use IconImage here and load the required bitmap
-    //     lazily.
-    icon_ = gfx::ImageSkia::CreateFrom1xBitmap(
-        GetDefaultIconBitmapForMaxScaleFactor(extension_->is_app()));
+    icon_ = GetDefaultIconImage(extension_->is_app());
   } else {
     icon_ = *image.ToImageSkia();
   }
