@@ -117,7 +117,6 @@ template("cronet_static_tmpl") {
       ":cronet_jni_headers",
       ":cronet_version_header",
       "//base",
-      "//base:i18n",
       "//base/third_party/dynamic_annotations",
       "//components/metrics",
       "//components/prefs",

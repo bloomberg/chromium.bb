@@ -34,7 +34,7 @@
 #if BUILDFLAG(USE_PLATFORM_ICU_ALTERNATIVES)
 #include "url/android/url_jni_registrar.h"  // nogncheck
 #else
-#include "base/i18n/icu_util.h"
+#include "base/i18n/icu_util.h"  // nogncheck
 #endif
 
 namespace cronet {
