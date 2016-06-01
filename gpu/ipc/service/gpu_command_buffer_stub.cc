@@ -1011,8 +1011,10 @@ void GpuCommandBufferStub::OnCreateImage(
 
   image_manager->AddImage(image.get(), id);
   if (image_release_count) {
-    DCHECK_EQ(image_release_count,
-              sync_point_client_->client_state()->fence_sync_release() + 1);
+    DLOG_IF(ERROR,
+            image_release_count !=
+                sync_point_client_->client_state()->fence_sync_release() + 1)
+        << "Client released fences out of order.";
     sync_point_client_->ReleaseFenceSync(image_release_count);
   }
 }

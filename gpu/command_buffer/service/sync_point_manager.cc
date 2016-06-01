@@ -232,7 +232,8 @@ void SyncPointClientState::ReleaseFenceSync(uint64_t release) {
   std::vector<base::Closure> callback_list;
   {
     base::AutoLock auto_lock(fence_sync_lock_);
-    DCHECK_GT(release, fence_sync_release_);
+    DLOG_IF(ERROR, release <= fence_sync_release_)
+        << "Client submitted fence releases out of order.";
 
     fence_sync_release_ = release;
     while (!release_callback_queue_.empty() &&
