@@ -32,6 +32,7 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/inspector/InstanceCounters.h"
+#include "platform/Histogram.h"
 #include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
@@ -302,6 +303,7 @@ Resource::Resource(const ResourceRequest& request, Type type, const ResourceLoad
     , m_decodedSize(0)
     , m_overheadSize(calculateOverheadSize())
     , m_preloadCount(0)
+    , m_preloadDiscoveryTime(0.0)
     , m_cacheIdentifier(MemoryCache::defaultCacheIdentifier())
     , m_preloadResult(PreloadNotReferenced)
     , m_type(type)
@@ -684,6 +686,12 @@ void Resource::willAddClientOrObserver()
             m_preloadResult = PreloadReferencedWhileLoading;
         else
             m_preloadResult = PreloadReferenced;
+
+        if (m_preloadDiscoveryTime) {
+            int timeSinceDiscovery = static_cast<int>(1000 * (monotonicallyIncreasingTime() - m_preloadDiscoveryTime));
+            DEFINE_STATIC_LOCAL(CustomCountHistogram, preloadDiscoveryHistogram, ("PreloadScanner.ReferenceTime", 0, 10000, 50));
+            preloadDiscoveryHistogram.count(timeSinceDiscovery);
+        }
     }
     if (!hasClientsOrObservers())
         memoryCache()->makeLive(this);

@@ -570,6 +570,9 @@ Resource* ResourceFetcher::createResourceForLoading(FetchRequest& request, const
 
     Resource* resource = factory.create(request.resourceRequest(), request.options(), charset);
     resource->setLinkPreload(request.isLinkPreload());
+    if (request.forPreload()) {
+        resource->setPreloadDiscoveryTime(request.preloadDiscoveryTime());
+    }
     resource->setCacheIdentifier(cacheIdentifier);
 
     // Don't add main resource to cache to prevent reuse.

@@ -105,6 +105,8 @@ public:
     void setLinkPreload(bool isLinkPreload) { m_linkPreload = isLinkPreload; }
     bool isLinkPreload() const { return m_linkPreload; }
 
+    void setPreloadDiscoveryTime(double preloadDiscoveryTime) { m_preloadDiscoveryTime = preloadDiscoveryTime; }
+
     const ResourceError& resourceError() const { return m_error; }
 
     void setIdentifier(unsigned long identifier) { m_identifier = identifier; }
@@ -332,6 +334,8 @@ private:
     const size_t m_overheadSize;
 
     unsigned m_preloadCount;
+
+    double m_preloadDiscoveryTime;
 
     String m_cacheIdentifier;
 

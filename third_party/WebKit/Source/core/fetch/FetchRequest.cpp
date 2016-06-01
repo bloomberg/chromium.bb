@@ -37,6 +37,7 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicS
     , m_priority(priority)
     , m_forPreload(false)
     , m_linkPreload(false)
+    , m_preloadDiscoveryTime(0.0)
     , m_defer(NoDefer)
     , m_originRestriction(UseDefaultOriginRestrictionForType)
 {
@@ -49,6 +50,7 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const AtomicS
     , m_priority(ResourceLoadPriorityUnresolved)
     , m_forPreload(false)
     , m_linkPreload(false)
+    , m_preloadDiscoveryTime(0.0)
     , m_defer(NoDefer)
     , m_originRestriction(UseDefaultOriginRestrictionForType)
 {
@@ -61,6 +63,7 @@ FetchRequest::FetchRequest(const ResourceRequest& resourceRequest, const FetchIn
     , m_priority(ResourceLoadPriorityUnresolved)
     , m_forPreload(false)
     , m_linkPreload(false)
+    , m_preloadDiscoveryTime(0.0)
     , m_defer(NoDefer)
     , m_originRestriction(UseDefaultOriginRestrictionForType)
 {
@@ -96,6 +99,12 @@ void FetchRequest::setResourceWidth(ResourceWidth resourceWidth)
         m_resourceWidth.width = resourceWidth.width;
         m_resourceWidth.isSet = true;
     }
+}
+
+void FetchRequest::setForPreload(bool forPreload, double discoveryTime)
+{
+    m_forPreload = forPreload;
+    m_preloadDiscoveryTime = discoveryTime;
 }
 
 } // namespace blink

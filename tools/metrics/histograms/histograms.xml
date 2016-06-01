@@ -41535,6 +41535,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PreloadScanner.ReferenceTime" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The time between preload discovery and when the resource is actually
+    referenced. This is implemented by marking when a preload is discovered by
+    the scanner, and when it has its first ResourceClient added to it. Note that
+    for link rel preloads, this tracks the time from scanner discory to DOM
+    discovery of the link declaration, not the actual resource.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.AbandonTimeUntilUsed" units="ms">
   <owner>davidben@chromium.org</owner>
   <owner>pasko@chromium.org</owner>

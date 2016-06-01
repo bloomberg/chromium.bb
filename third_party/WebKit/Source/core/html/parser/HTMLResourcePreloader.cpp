@@ -75,7 +75,7 @@ void HTMLResourcePreloader::preload(PassOwnPtr<PreloadRequest> preload, const Ne
         return;
     if (preload->resourceType() == Resource::Script || preload->resourceType() == Resource::CSSStyleSheet || preload->resourceType() == Resource::ImportResource)
         request.setCharset(preload->charset().isEmpty() ? m_document->characterSet().getString() : preload->charset());
-    request.setForPreload(true);
+    request.setForPreload(true, preload->discoveryTime());
     int duration = static_cast<int>(1000 * (monotonicallyIncreasingTime() - preload->discoveryTime()));
     DEFINE_STATIC_LOCAL(CustomCountHistogram, preloadDelayHistogram, ("WebCore.PreloadDelayMs", 0, 2000, 20));
     preloadDelayHistogram.count(duration);
