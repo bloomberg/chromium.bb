@@ -457,6 +457,7 @@ fuzzers = [
   "client",
   "pkcs8",
   "privkey",
+  "read_pem",
   "server",
   "spki",
 ]
