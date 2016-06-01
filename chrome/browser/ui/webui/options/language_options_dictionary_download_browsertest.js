@@ -51,8 +51,9 @@ LanguagesOptionsDictionaryDownloadWebUITest.prototype = {
 
 // Verify that dictionary download success does not show, "This language can't
 // be used for spellchecking." or "Download failed."
+// Disabled due to flakiness (crbug.com/616550).
 TEST_F('LanguagesOptionsDictionaryDownloadWebUITest',
-       'testdictionaryDownloadSuccess',
+       'DISABLED_testdictionaryDownloadSuccess',
        function() {
   options.LanguageOptions.onDictionaryDownloadSuccess('en-US');
   expectTrue($('spellcheck-language-message').hidden);
@@ -64,8 +65,9 @@ TEST_F('LanguagesOptionsDictionaryDownloadWebUITest',
 
 // Verify that dictionary download in progress shows 'Downloading spell check
 // language' message.
+// Disabled due to flakiness (crbug.com/616550).
 TEST_F('LanguagesOptionsDictionaryDownloadWebUITest',
-       'testdictionaryDownloadProgress',
+       'DISABLED_testdictionaryDownloadProgress',
        function() {
   options.LanguageOptions.onDictionaryDownloadBegin('en-US');
   expectTrue($('spellcheck-language-message').hidden);
