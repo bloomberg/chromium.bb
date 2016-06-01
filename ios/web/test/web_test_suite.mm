@@ -7,10 +7,12 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/path_service.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/url_schemes.h"
 #include "ios/web/web_thread_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace web {
 
@@ -43,6 +45,17 @@ void WebTestSuite::Initialize() {
       new WebTestSuiteListener);
 
   RegisterWebSchemes(false);
+
+  // Force unittests to run using en-US so if testing string output will work
+  // regardless of the system language.
+  ui::ResourceBundle::InitSharedInstanceWithLocale(
+      "en-US", nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
+  base::FilePath resources_pack_path;
+  base::PathService::Get(base::DIR_MODULE, &resources_pack_path);
+  resources_pack_path =
+      resources_pack_path.Append(FILE_PATH_LITERAL("resources.pak"));
+  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      resources_pack_path, ui::SCALE_FACTOR_NONE);
 }
 
 }  // namespace web
