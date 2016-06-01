@@ -7,7 +7,6 @@ test(function() {
   assert_throws(TypeError(), function() { new CSSKeywordValue("") });
 }, "Constructor should throw an error if given an empty string");
 
-//This test fails due to bug: 584999
 test(function() {
   assert_equals(new CSSKeywordValue('initial').cssString, 'initial');
   assert_equals(new CSSKeywordValue('center').cssString, 'center');
