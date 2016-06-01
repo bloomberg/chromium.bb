@@ -11,8 +11,8 @@
     <paper-icon-button icon="cr:search" id="searchButton"
         disabled$="[[showingSearch]]" title="[[label]]"
         on-click="toggleShowingSearch_"></paper-icon-button>
-    <paper-input-container id="searchTerm" on-search="onSearchTermSearch_"
-        on-keydown="onSearchTermKeydown_" hidden$="[[!showingSearch]]"
+    <paper-input-container id="searchTerm" on-search="onSearchTermSearch"
+        on-keydown="onSearchTermKeydown" hidden$="[[!showingSearch]]"
         no-label-float>
       <input is="iron-input" id="searchInput" type="search"
           placeholder="[[label]]" incremental>

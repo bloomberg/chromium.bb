@@ -82,11 +82,12 @@
         -webkit-margin-start: 18px;
       }
     </style>
-    <paper-icon-button id="icon" icon="cr:search"
-        title="[[label]]">
+    <paper-icon-button id="icon" icon="cr:search" title="[[label]]"
+        tabindex$="[[computeIconTabIndex_(narrow)]]">
     </paper-icon-button>
-    <paper-input-container on-search="onSearchTermSearch_"
-        on-keydown="onSearchTermKeydown_" no-label-float>
+    <paper-input-container on-search="onSearchTermSearch"
+        on-keydown="onSearchTermKeydown" on-keypress="onSearchTermKeypress_"
+        no-label-float>
       <label id="prompt" for="searchInput">[[label]]</label>
       <input is="iron-input" id="searchInput" type="search"
           on-blur="onInputBlur_" incremental></input>

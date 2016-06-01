@@ -36,7 +36,7 @@ TEST_F('CrElementsBrowserTest', 'CrToolbarSearchFieldTest', function() {
     /** @param {string} term */
     function simulateSearch(term) {
       field.$.searchInput.bindValue = term;
-      field.onSearchTermSearch_();
+      field.onSearchTermSearch();
     }
 
     /**

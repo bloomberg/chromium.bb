@@ -73,15 +73,13 @@ var CrSearchFieldBehavior = {
     this.$.searchInput.focus();
   },
 
-  /** @private */
-  onSearchTermSearch_: function() {
+  onSearchTermSearch: function() {
     this.hasSearchText = this.getValue() != '';
     if (this.delegate_)
       this.delegate_.onSearchTermSearch(this.getValue());
   },
 
-  /** @private */
-  onSearchTermKeydown_: function(e) {
+  onSearchTermKeydown: function(e) {
     if (e.key == 'Escape')
       this.showingSearch = false;
   },
@@ -95,7 +93,7 @@ var CrSearchFieldBehavior = {
 
     this.setValue('');
     this.$.searchInput.blur();
-    this.onSearchTermSearch_();
+    this.onSearchTermSearch();
   },
 
   /** @private */
