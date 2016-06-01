@@ -50,9 +50,10 @@ ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
       start_sandboxed_(start_sandboxed),
       target_(target),
       app_path_(app_path),
-      start_child_process_event_(false, false),
-      weak_factory_(this) {
-}
+      start_child_process_event_(
+          base::WaitableEvent::ResetPolicy::AUTOMATIC,
+          base::WaitableEvent::InitialState::NOT_SIGNALED),
+      weak_factory_(this) {}
 
 ChildProcessHost::~ChildProcessHost() {
   if (!app_path_.empty()) {

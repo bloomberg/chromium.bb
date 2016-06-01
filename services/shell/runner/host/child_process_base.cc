@@ -62,7 +62,10 @@ std::unique_ptr<LinuxSandbox> InitializeSandbox() {
 class ScopedAppContext : public mojo::edk::ProcessDelegate {
  public:
   ScopedAppContext()
-      : io_thread_("io_thread"), wait_for_shutdown_event_(true, false) {
+      : io_thread_("io_thread"),
+        wait_for_shutdown_event_(
+            base::WaitableEvent::ResetPolicy::MANUAL,
+            base::WaitableEvent::InitialState::NOT_SIGNALED) {
     // Initialize Mojo before starting any threads.
     mojo::edk::Init();
 

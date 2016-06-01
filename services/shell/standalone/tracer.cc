@@ -86,7 +86,9 @@ void Tracer::StopTracingAndFlushToDisk() {
     // gather as much data as possible on shutdown.
     base::trace_event::TraceLog::GetInstance()->SetDisabled();
     {
-      base::WaitableEvent flush_complete_event(false, false);
+      base::WaitableEvent flush_complete_event(
+          base::WaitableEvent::ResetPolicy::AUTOMATIC,
+          base::WaitableEvent::InitialState::NOT_SIGNALED);
       // TraceLog::Flush requires a message loop but we've already shut ours
       // down.
       // Spin up a new thread to flush things out.

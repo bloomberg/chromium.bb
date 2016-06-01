@@ -151,7 +151,8 @@ mojom::ShellClientRequest BackgroundShell::CreateShellClientRequest(
   params->set_source(CreateShellIdentity());
   params->set_target(Identity(name, mojom::kRootUserID));
   mojom::ShellClientRequest request;
-  base::WaitableEvent signal(true, false);
+  base::WaitableEvent signal(base::WaitableEvent::ResetPolicy::MANUAL,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   thread_->message_loop()->task_runner()->PostTask(
       FROM_HERE, base::Bind(&MojoThread::CreateShellClientRequest,
                             base::Unretained(thread_.get()), &signal, name,
