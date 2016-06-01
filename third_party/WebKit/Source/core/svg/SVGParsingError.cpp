@@ -19,7 +19,7 @@ void appendErrorContextInfo(StringBuilder& builder, const String& tagName, const
 {
     builder.append('<');
     builder.append(tagName);
-    builder.appendLiteral("> attribute ");
+    builder.append("> attribute ");
     builder.append(name.toString());
 }
 
@@ -108,10 +108,10 @@ String SVGParsingError::format(const String& tagName, const QualifiedName& name,
     StringBuilder builder;
 
     appendErrorContextInfo(builder, tagName, name);
-    builder.appendLiteral(": ");
+    builder.append(": ");
 
     if (hasLocus() && locus() == value.length())
-        builder.appendLiteral("Unexpected end of attribute. ");
+        builder.append("Unexpected end of attribute. ");
 
     auto message = messageForStatus(status());
     builder.append(message.first);

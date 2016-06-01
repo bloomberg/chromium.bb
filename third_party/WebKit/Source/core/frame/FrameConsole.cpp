@@ -165,9 +165,9 @@ void FrameConsole::didFailLoading(unsigned long requestIdentifier, const Resourc
     if (!storage)
         return;
     StringBuilder message;
-    message.appendLiteral("Failed to load resource");
+    message.append("Failed to load resource");
     if (!error.localizedDescription().isEmpty()) {
-        message.appendLiteral(": ");
+        message.append(": ");
         message.append(error.localizedDescription());
     }
     ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(NetworkMessageSource, ErrorMessageLevel, message.toString(), error.failingURL(), requestIdentifier);

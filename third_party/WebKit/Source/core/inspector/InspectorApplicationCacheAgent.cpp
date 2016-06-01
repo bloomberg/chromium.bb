@@ -174,19 +174,19 @@ std::unique_ptr<protocol::ApplicationCache::ApplicationCacheResource> InspectorA
 {
     StringBuilder builder;
     if (resourceInfo.m_isMaster)
-        builder.appendLiteral("Master ");
+        builder.append("Master ");
 
     if (resourceInfo.m_isManifest)
-        builder.appendLiteral("Manifest ");
+        builder.append("Manifest ");
 
     if (resourceInfo.m_isFallback)
-        builder.appendLiteral("Fallback ");
+        builder.append("Fallback ");
 
     if (resourceInfo.m_isForeign)
-        builder.appendLiteral("Foreign ");
+        builder.append("Foreign ");
 
     if (resourceInfo.m_isExplicit)
-        builder.appendLiteral("Explicit ");
+        builder.append("Explicit ");
 
     std::unique_ptr<protocol::ApplicationCache::ApplicationCacheResource> value = protocol::ApplicationCache::ApplicationCacheResource::create()
         .setUrl(resourceInfo.m_resource.getString())

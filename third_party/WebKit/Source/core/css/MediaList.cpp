@@ -149,7 +149,7 @@ String MediaQuerySet::mediaText() const
     bool first = true;
     for (size_t i = 0; i < m_queries.size(); ++i) {
         if (!first)
-            text.appendLiteral(", ");
+            text.append(", ");
         else
             first = false;
         text.append(m_queries[i]->cssText());

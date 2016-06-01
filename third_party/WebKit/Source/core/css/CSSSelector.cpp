@@ -671,7 +671,7 @@ String CSSSelector::selectorText(const String& rightSide) const
                 break;
             }
         } else if (cs->m_match == PseudoElement) {
-            str.appendLiteral("::");
+            str.append("::");
             str.append(cs->serializingValue());
         } else if (cs->isAttributeSelector()) {
             str.append('[');
@@ -690,19 +690,19 @@ String CSSSelector::selectorText(const String& rightSide) const
                 str.append(']');
                 break;
             case AttributeList:
-                str.appendLiteral("~=");
+                str.append("~=");
                 break;
             case AttributeHyphen:
-                str.appendLiteral("|=");
+                str.append("|=");
                 break;
             case AttributeBegin:
-                str.appendLiteral("^=");
+                str.append("^=");
                 break;
             case AttributeEnd:
-                str.appendLiteral("$=");
+                str.append("$=");
                 break;
             case AttributeContain:
-                str.appendLiteral("*=");
+                str.append("*=");
                 break;
             default:
                 break;
@@ -710,7 +710,7 @@ String CSSSelector::selectorText(const String& rightSide) const
             if (cs->m_match != AttributeSet) {
                 serializeString(cs->serializingValue(), str);
                 if (cs->attributeMatch() == CaseInsensitive)
-                    str.appendLiteral(" i");
+                    str.append(" i");
                 str.append(']');
             }
         }

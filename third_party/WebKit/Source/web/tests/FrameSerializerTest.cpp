@@ -184,7 +184,7 @@ private:
 
         StringBuilder uriBuilder;
         uriBuilder.append(m_rewriteFolder);
-        uriBuilder.appendLiteral("/");
+        uriBuilder.append("/");
         uriBuilder.append(m_rewriteURLs.get(completeURL));
         rewrittenLink = uriBuilder.toString();
         return true;

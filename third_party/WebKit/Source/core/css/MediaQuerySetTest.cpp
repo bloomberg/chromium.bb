@@ -27,7 +27,7 @@ static void testMediaQuery(TestCase test, MediaQuerySet& querySet, bool oldParse
         ++j;
         if (j >= querySet.queryVector().size())
             break;
-        output.appendLiteral(", ");
+        output.append(", ");
     }
     if (!oldParser || test.shouldWorkOnOldParser) {
         if (test.output)

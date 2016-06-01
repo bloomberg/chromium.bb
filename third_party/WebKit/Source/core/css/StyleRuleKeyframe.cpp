@@ -24,7 +24,7 @@ String StyleRuleKeyframe::keyText() const
     StringBuilder keyText;
     for (unsigned i = 0; i < m_keys.size(); ++i) {
         if (i)
-            keyText.appendLiteral(", ");
+            keyText.append(", ");
         keyText.appendNumber(m_keys.at(i) * 100);
         keyText.append('%');
     }
@@ -60,7 +60,7 @@ String StyleRuleKeyframe::cssText() const
 {
     StringBuilder result;
     result.append(keyText());
-    result.appendLiteral(" { ");
+    result.append(" { ");
     String decls = m_properties->asText();
     result.append(decls);
     if (!decls.isEmpty())

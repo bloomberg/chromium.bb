@@ -142,13 +142,13 @@ public:
     String toString() const
     {
         StringBuilder builder;
-        builder.appendLiteral("[PODInterval (");
+        builder.append("[PODInterval (");
         builder.append(ValueToString<T>::toString(low()));
-        builder.appendLiteral(", ");
+        builder.append(", ");
         builder.append(ValueToString<T>::toString(high()));
-        builder.appendLiteral("), data=");
+        builder.append("), data=");
         builder.append(ValueToString<UserData>::toString(data()));
-        builder.appendLiteral(", maxHigh=");
+        builder.append(", maxHigh=");
         builder.append(ValueToString<T>::toString(maxHigh()));
         builder.append(']');
         return builder.toString();

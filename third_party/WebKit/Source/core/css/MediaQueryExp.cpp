@@ -287,7 +287,7 @@ String MediaQueryExp::serialize() const
     result.append('(');
     result.append(m_mediaFeature.lower());
     if (m_expValue.isValid()) {
-        result.appendLiteral(": ");
+        result.append(": ");
         result.append(m_expValue.cssText());
     }
     result.append(')');

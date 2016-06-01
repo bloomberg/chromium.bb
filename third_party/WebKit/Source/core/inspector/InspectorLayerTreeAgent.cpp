@@ -404,7 +404,7 @@ void InspectorLayerTreeAgent::replaySnapshot(ErrorString* errorString, const Str
         return;
     }
     StringBuilder url;
-    url.appendLiteral("data:image/png;base64,");
+    url.append("data:image/png;base64,");
     url.reserveCapacity(url.length() + base64Data->size());
     url.append(base64Data->begin(), base64Data->size());
     *dataURL = url.toString();

@@ -2105,16 +2105,16 @@ void Element::formatForDebugger(char* buffer, unsigned length) const
     s = getIdAttribute();
     if (s.length() > 0) {
         if (result.length() > 0)
-            result.appendLiteral("; ");
-        result.appendLiteral("id=");
+            result.append("; ");
+        result.append("id=");
         result.append(s);
     }
 
     s = getAttribute(classAttr);
     if (s.length() > 0) {
         if (result.length() > 0)
-            result.appendLiteral("; ");
-        result.appendLiteral("class=");
+            result.append("; ");
+        result.append("class=");
         result.append(s);
     }
 

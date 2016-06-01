@@ -62,7 +62,7 @@ String CSSStyleRule::generateSelectorText() const
     StringBuilder builder;
     for (const CSSSelector* selector = m_styleRule->selectorList().first(); selector; selector = CSSSelectorList::next(*selector)) {
         if (selector != m_styleRule->selectorList().first())
-            builder.appendLiteral(", ");
+            builder.append(", ");
         builder.append(selector->selectorText());
     }
     return builder.toString();
@@ -103,7 +103,7 @@ String CSSStyleRule::cssText() const
 {
     StringBuilder result;
     result.append(selectorText());
-    result.appendLiteral(" { ");
+    result.append(" { ");
     String decls = m_styleRule->properties().asText();
     result.append(decls);
     if (!decls.isEmpty())

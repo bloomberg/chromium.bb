@@ -190,9 +190,9 @@ std::unique_ptr<protocol::DictionaryValue> buildElementInfo(Element* element)
     }
     if (pseudoElement) {
         if (pseudoElement->getPseudoId() == PseudoIdBefore)
-            classNames.appendLiteral("::before");
+            classNames.append("::before");
         else if (pseudoElement->getPseudoId() == PseudoIdAfter)
-            classNames.appendLiteral("::after");
+            classNames.append("::after");
     }
     if (!classNames.isEmpty())
         elementInfo->setString("className", classNames.toString());

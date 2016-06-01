@@ -133,7 +133,7 @@ String InstanceCounter::dump()
             builder.append(',');
         builder.append('"');
         builder.append(it->key);
-        builder.appendLiteral("\": ");
+        builder.append("\": ");
         builder.appendNumber(it->value);
     }
     builder.append('}');

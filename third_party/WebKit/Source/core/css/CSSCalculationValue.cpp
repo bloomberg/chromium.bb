@@ -135,7 +135,7 @@ static bool hasDoubleValue(CSSPrimitiveValue::UnitType type)
 static String buildCSSText(const String& expression)
 {
     StringBuilder result;
-    result.appendLiteral("calc");
+    result.append("calc");
     bool expressionHasSingleTerm = expression[0] != '(';
     if (expressionHasSingleTerm)
         result.append('(');

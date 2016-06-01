@@ -23,13 +23,13 @@ CSSNamespaceRule::~CSSNamespaceRule()
 String CSSNamespaceRule::cssText() const
 {
     StringBuilder result;
-    result.appendLiteral("@namespace ");
+    result.append("@namespace ");
     serializeIdentifier(prefix(), result);
     if (!prefix().isEmpty())
-        result.appendLiteral(" ");
-    result.appendLiteral("url(");
+        result.append(" ");
+    result.append("url(");
     result.append(serializeString(namespaceURI()));
-    result.appendLiteral(");");
+    result.append(");");
     return result.toString();
 }
 

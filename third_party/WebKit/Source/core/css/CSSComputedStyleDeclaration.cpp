@@ -376,7 +376,7 @@ String CSSComputedStyleDeclaration::cssText() const
         if (i)
             result.append(' ');
         result.append(getPropertyName(properties[i]));
-        result.appendLiteral(": ");
+        result.append(": ");
         result.append(getPropertyValue(properties[i]));
         result.append(';');
     }

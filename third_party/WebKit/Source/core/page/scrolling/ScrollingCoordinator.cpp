@@ -1036,15 +1036,15 @@ String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollin
     StringBuilder stringBuilder;
 
     if (reasons & MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects)
-        stringBuilder.appendLiteral("Has background-attachment:fixed, ");
+        stringBuilder.append("Has background-attachment:fixed, ");
     if (reasons & MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects)
-        stringBuilder.appendLiteral("Has non-layer viewport-constrained objects, ");
+        stringBuilder.append("Has non-layer viewport-constrained objects, ");
     if (reasons & MainThreadScrollingReason::kHasStickyPositionObjects)
-        stringBuilder.appendLiteral("Has sticky position objects, ");
+        stringBuilder.append("Has sticky position objects, ");
     if (reasons & MainThreadScrollingReason::kThreadedScrollingDisabled)
-        stringBuilder.appendLiteral("Threaded scrolling is disabled, ");
+        stringBuilder.append("Threaded scrolling is disabled, ");
     if (reasons & MainThreadScrollingReason::kAnimatingScrollOnMainThread)
-        stringBuilder.appendLiteral("Animating scroll on main thread, ");
+        stringBuilder.append("Animating scroll on main thread, ");
 
     if (stringBuilder.length())
         stringBuilder.resize(stringBuilder.length() - 2);
