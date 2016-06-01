@@ -124,7 +124,7 @@ generate_tests(assert_throws, [
     ['PaymentRequest constructor should throw for null required parameter.', null, function() {
         new PaymentRequest(null, null)
     }],
-    ['Empty list of supported payment method identifiers should throw.', null, function() {
+    ['Empty list of supported payment method identifiers should throw TypeError.', new TypeError(), function() {
         new PaymentRequest([], buildDetails())
     }],
     ['Keys in payment method specific data object should match accepted method identifiers.', null, function() {
