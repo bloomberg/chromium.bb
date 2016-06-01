@@ -24,6 +24,11 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
  private:
   // TraitsTestService:
+  void EchoBeginFrameArgs(const BeginFrameArgs& b,
+                          const EchoBeginFrameArgsCallback& callback) override {
+    callback.Run(b);
+  }
+
   void EchoRenderPassId(const RenderPassId& r,
                         const EchoRenderPassIdCallback& callback) override {
     callback.Run(r);
@@ -50,6 +55,33 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 };
 
 }  // namespace
+
+TEST_F(StructTraitsTest, BeginFrameArgs) {
+  const base::TimeTicks frame_time = base::TimeTicks::Now();
+  const base::TimeTicks deadline = base::TimeTicks::Now();
+  const base::TimeDelta interval = base::TimeDelta::FromMilliseconds(1337);
+  const BeginFrameArgs::BeginFrameArgsType type = BeginFrameArgs::NORMAL;
+  const bool on_critical_path = true;
+  BeginFrameArgs input;
+  input.frame_time = frame_time;
+  input.deadline = deadline;
+  input.interval = interval;
+  input.type = type;
+  input.on_critical_path = on_critical_path;
+  base::RunLoop loop;
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  proxy->EchoBeginFrameArgs(
+      input, [frame_time, deadline, interval, type, on_critical_path,
+              &loop](const BeginFrameArgs& pass) {
+        EXPECT_EQ(frame_time, pass.frame_time);
+        EXPECT_EQ(deadline, pass.deadline);
+        EXPECT_EQ(interval, pass.interval);
+        EXPECT_EQ(type, pass.type);
+        EXPECT_EQ(on_critical_path, pass.on_critical_path);
+        loop.Quit();
+      });
+  loop.Run();
+}
 
 TEST_F(StructTraitsTest, RenderPassId) {
   const int layer_id = 1337;

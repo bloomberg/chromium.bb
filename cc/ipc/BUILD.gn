@@ -37,6 +37,7 @@ component("ipc") {
 
 mojom("interfaces") {
   sources = [
+    "begin_frame_args.mojom",
     "render_pass_id.mojom",
     "returned_resource.mojom",
     "surface_id.mojom",
@@ -45,6 +46,7 @@ mojom("interfaces") {
 
   public_deps = [
     "//gpu/ipc/common:interfaces",
+    "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
   ]
 }
