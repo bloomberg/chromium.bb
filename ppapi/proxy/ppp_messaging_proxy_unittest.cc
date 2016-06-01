@@ -25,7 +25,9 @@ namespace {
 // template magic.
 PP_Instance received_instance;
 PP_Var received_var;
-base::WaitableEvent handle_message_called(false, false);
+base::WaitableEvent handle_message_called(
+    base::WaitableEvent::ResetPolicy::AUTOMATIC,
+    base::WaitableEvent::InitialState::NOT_SIGNALED);
 
 void HandleMessage(PP_Instance instance, PP_Var message_data) {
   received_instance = instance;

@@ -527,8 +527,10 @@ TwoWayTest::TwoWayTest(TwoWayTest::TwoWayTestMode test_mode)
       plugin_thread_("TwoWayTest_PluginThread"),
       remote_harness_(NULL),
       local_harness_(NULL),
-      channel_created_(true, false),
-      shutdown_event_(true, false) {
+      channel_created_(base::WaitableEvent::ResetPolicy::MANUAL,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED),
+      shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED) {
   if (test_mode == TEST_PPP_INTERFACE) {
     remote_harness_ = &plugin_;
     local_harness_ = &host_;
@@ -553,7 +555,9 @@ void TwoWayTest::SetUp() {
   std::ostringstream handle_name;
   handle_name << "TwoWayTestChannel" << base::GetCurrentProcId();
   IPC::ChannelHandle handle(handle_name.str());
-  base::WaitableEvent remote_harness_set_up(true, false);
+  base::WaitableEvent remote_harness_set_up(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   plugin_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&SetUpRemoteHarness, remote_harness_, handle,
                             base::RetainedRef(io_thread_.task_runner()),
@@ -565,7 +569,9 @@ void TwoWayTest::SetUp() {
 }
 
 void TwoWayTest::TearDown() {
-  base::WaitableEvent remote_harness_torn_down(true, false);
+  base::WaitableEvent remote_harness_torn_down(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   plugin_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&TearDownRemoteHarness, remote_harness_,
                             &remote_harness_torn_down));
@@ -577,7 +583,9 @@ void TwoWayTest::TearDown() {
 }
 
 void TwoWayTest::PostTaskOnRemoteHarness(const base::Closure& task) {
-  base::WaitableEvent task_complete(true, false);
+  base::WaitableEvent task_complete(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   plugin_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&RunTaskOnRemoteHarness, task, &task_complete));
   task_complete.Wait();

@@ -104,7 +104,9 @@ struct CallbackRunInfo {
         completion_task_run_count_(0),
         completion_task_result_(kInitializedResultValue),
         thread_checker_(thread_checker),
-        callback_did_run_event_(true, false) {}
+        callback_did_run_event_(
+            base::WaitableEvent::ResetPolicy::MANUAL,
+            base::WaitableEvent::InitialState::NOT_SIGNALED) {}
   void CallbackDidRun(int32_t result) {
     CHECK(thread_checker_->CalledOnValidThread());
     if (!run_count_)
@@ -338,7 +340,9 @@ class CallbackMockResource : public Resource {
         info_did_run_with_completion_task_(&thread_checker_),
         info_did_abort_(&thread_checker_),
         info_didnt_run_(&thread_checker_),
-        callbacks_created_event_(true, false) {}
+        callbacks_created_event_(
+            base::WaitableEvent::ResetPolicy::MANUAL,
+            base::WaitableEvent::InitialState::NOT_SIGNALED) {}
   void CreateCallbacks() {
     // Bind thread_checker_ to the thread where we create the callbacks.
     // Later, when the callback runs, it will check that it was invoked on this

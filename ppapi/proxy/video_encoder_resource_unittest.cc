@@ -33,7 +33,10 @@ namespace {
 
 class MockCompletionCallback {
  public:
-  MockCompletionCallback() : called_(false), call_event_(false, false) {}
+  MockCompletionCallback()
+      : called_(false),
+        call_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                    base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   bool called() { return called_; }
   int32_t result() { return result_; }

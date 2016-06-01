@@ -22,7 +22,9 @@ namespace ppapi {
 namespace host {
 namespace {
 
-base::WaitableEvent g_handler_completion(true, false);
+base::WaitableEvent g_handler_completion(
+    base::WaitableEvent::ResetPolicy::MANUAL,
+    base::WaitableEvent::InitialState::NOT_SIGNALED);
 
 enum TestMessageTypes {
   MSG1_TYPE = 1,

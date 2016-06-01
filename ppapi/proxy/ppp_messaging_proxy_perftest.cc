@@ -18,7 +18,9 @@ namespace ppapi {
 namespace proxy {
 namespace {
 
-base::WaitableEvent handle_message_called(false, false);
+base::WaitableEvent handle_message_called(
+    base::WaitableEvent::ResetPolicy::AUTOMATIC,
+    base::WaitableEvent::InitialState::NOT_SIGNALED);
 
 void HandleMessage(PP_Instance /* instance */, PP_Var message_data) {
   ppapi::ProxyAutoLock lock;

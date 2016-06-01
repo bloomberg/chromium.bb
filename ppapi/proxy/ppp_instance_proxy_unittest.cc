@@ -49,7 +49,9 @@ PP_Rect received_position;
 PP_Rect received_clip;
 // DidChangeView is asynchronous. We wait until the call has completed before
 // proceeding on to the next test.
-base::WaitableEvent did_change_view_called(false, false);
+base::WaitableEvent did_change_view_called(
+    base::WaitableEvent::ResetPolicy::AUTOMATIC,
+    base::WaitableEvent::InitialState::NOT_SIGNALED);
 void DidChangeView(PP_Instance instance, const PP_Rect* position,
                    const PP_Rect* clip) {
   received_instance = instance;
@@ -59,7 +61,9 @@ void DidChangeView(PP_Instance instance, const PP_Rect* position,
 }
 
 PP_Bool received_has_focus;
-base::WaitableEvent did_change_focus_called(false, false);
+base::WaitableEvent did_change_focus_called(
+    base::WaitableEvent::ResetPolicy::AUTOMATIC,
+    base::WaitableEvent::InitialState::NOT_SIGNALED);
 void DidChangeFocus(PP_Instance instance, PP_Bool has_focus) {
   received_instance = instance;
   received_has_focus = has_focus;
