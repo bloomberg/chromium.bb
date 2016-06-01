@@ -431,13 +431,25 @@ gfx::FontRenderParams GetGtkFontRenderParams() {
 }
 
 double GetDPI() {
-  GtkSettings* gtk_settings = gtk_settings_get_default();
-  CHECK(gtk_settings);
-  gint gtk_dpi = -1;
-  g_object_get(gtk_settings, "gtk-xft-dpi", &gtk_dpi, NULL);
+  // Linux chrome currently does not support dynamic DPI changes.
+  // Keep using the first value detected.
+  static double dpi = -1.f;
+  if (dpi < 0) {
+    const double kDefaultDPI = 96;
 
-  // GTK multiplies the DPI by 1024 before storing it.
-  return (gtk_dpi > 0) ? gtk_dpi / 1024.0 : 96.0;
+    GtkSettings* gtk_settings = gtk_settings_get_default();
+    CHECK(gtk_settings);
+    gint gtk_dpi = -1;
+    g_object_get(gtk_settings, "gtk-xft-dpi", &gtk_dpi, NULL);
+
+    // GTK multiplies the DPI by 1024 before storing it.
+    dpi = (gtk_dpi > 0) ? gtk_dpi / 1024.0 : kDefaultDPI;
+
+    // DSF is always >=1.0 on win/cros and lower DSF has never been considered
+    // nor tested.
+    dpi = std::max(kDefaultDPI, dpi);
+  }
+  return dpi;
 }
 
 // Queries GTK for its font DPI setting and returns the number of pixels in a
