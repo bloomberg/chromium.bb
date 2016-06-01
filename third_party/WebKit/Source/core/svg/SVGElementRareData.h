@@ -64,8 +64,8 @@ public:
     SVGElement* correspondingElement() const { return m_correspondingElement.get(); }
     void setCorrespondingElement(SVGElement* correspondingElement) { m_correspondingElement = correspondingElement; }
 
-    CSSCursorImageValue* cursorImageValue() const { return m_cursorImageValue; }
-    void setCursorImageValue(CSSCursorImageValue* cursorImageValue) { m_cursorImageValue = cursorImageValue; }
+    const CSSCursorImageValue* cursorImageValue() const { return m_cursorImageValue; }
+    void setCursorImageValue(const CSSCursorImageValue* cursorImageValue) { m_cursorImageValue = cursorImageValue; }
 
     void setWebAnimatedAttributesDirty(bool dirty) { m_webAnimatedAttributesDirty = dirty; }
     bool webAnimatedAttributesDirty() const { return m_webAnimatedAttributesDirty; }
@@ -92,7 +92,7 @@ private:
     SVGElementSet m_incomingReferences;
     HeapHashSet<WeakMember<SVGElement>> m_elementInstances;
     WeakMember<SVGCursorElement> m_cursorElement;
-    WeakMember<CSSCursorImageValue> m_cursorImageValue;
+    WeakMember<const CSSCursorImageValue> m_cursorImageValue;
     Member<SVGElement> m_correspondingElement;
     bool m_instancesUpdatesBlocked : 1;
     bool m_useOverrideComputedStyle : 1;

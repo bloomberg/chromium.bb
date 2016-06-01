@@ -547,7 +547,7 @@ void SVGElement::setCursorElement(SVGCursorElement* cursorElement)
     rareData->setCursorElement(cursorElement);
 }
 
-void SVGElement::setCursorImageValue(CSSCursorImageValue* cursorImageValue)
+void SVGElement::setCursorImageValue(const CSSCursorImageValue* cursorImageValue)
 {
     ensureSVGRareData()->setCursorImageValue(cursorImageValue);
 }
