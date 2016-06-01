@@ -169,6 +169,7 @@ def chromium_bare(c):
   p['buildtools'] = ('src/buildtools', 'HEAD')
   p['angle/angle'] = ('src/third_party/angle', None)
   p['blink'] = ('src/third_party/WebKit', None)
+  p['catapult'] = ('src/third_party/catapult', 'HEAD')
   p['pdfium'] = ('src/third_party/pdfium', 'HEAD')
   p['skia'] = ('src/third_party/skia', 'HEAD')
   p['flac'] = ('src/third_party/flac', 'HEAD')
