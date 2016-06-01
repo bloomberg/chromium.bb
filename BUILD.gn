@@ -485,15 +485,10 @@ group("both_gn_and_gyp") {
         "//net:tld_cleanup",
         "//ppapi:pepper_hash_for_uma",
         "//ppapi:ppapi_perftests",
+        "//third_party/angle/src/tests:angle_end2end_tests",
         "//third_party/leveldatabase:env_chromium_unittests",
         "//third_party/libaddressinput:libaddressinput_unittests",
       ]
-    }
-    if (!is_android && !is_linux) {
-      # TODO(dpranke): Re-enable this once
-      # https://chromium-review.googlesource.com/#/c/312298/1 is rolled
-      # into chromium.
-      deps += [ "//third_party/angle/src/tests:angle_end2end_tests" ]
     }
 
     if (enable_extensions) {
