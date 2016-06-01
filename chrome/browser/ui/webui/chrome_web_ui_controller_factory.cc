@@ -112,6 +112,7 @@
 #include "chrome/browser/ui/webui/devtools_ui.h"
 #include "chrome/browser/ui/webui/inspect_ui.h"
 #include "chrome/browser/ui/webui/md_downloads/md_downloads_ui.h"
+#include "chrome/browser/ui/webui/md_feedback/md_feedback_ui.h"
 #include "chrome/browser/ui/webui/md_history_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_ui.h"
@@ -381,7 +382,7 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
           extension_service()) {
     return &NewWebUI<AppLauncherPageUI>;
   }
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
   // Bookmarks are part of NTP on Android.
   if (url.host() == chrome::kChromeUIBookmarksHost)
@@ -389,6 +390,12 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Downloads list on Android uses the built-in download manager.
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<MdDownloadsUI>;
+  // Material Design feedback. Feedback is implemented separately in
+  // Android.
+  if (url.host() == chrome::kChromeUIFeedbackHost &&
+      ::switches::MdFeedbackEnabled()) {
+    return &NewWebUI<MdFeedbackUI>;
+  }
   // Help is implemented with native UI elements on Android.
   if (url.host() == chrome::kChromeUIHelpFrameHost)
     return &NewWebUI<HelpUI>;
