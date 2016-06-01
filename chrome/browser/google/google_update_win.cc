@@ -26,11 +26,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/version.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/browser_distribution.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -71,6 +73,16 @@ const HRESULT GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY = 0x80040813;
 const HRESULT GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL = 0x8004081f;
 const HRESULT GOOPDATE_E_APP_USING_EXTERNAL_UPDATER = 0xA043081D;
 const HRESULT GOOPDATEINSTALL_E_INSTALLER_FAILED = 0x80040902;
+
+// Older versions of GoogleUpdate require elevation for system-level updates.
+bool IsElevationRequiredForSystemLevelUpdates() {
+  const base::Version kMinGUVersionNoElevationRequired("1.3.29.1");
+  const base::Version current_version(
+      GoogleUpdateSettings::GetGoogleUpdateVersion(true));
+
+  return !current_version.IsValid() ||
+         current_version < kMinGUVersionNoElevationRequired;
+}
 
 // Check if the currently running instance can be updated by Google Update.
 // Returns GOOGLE_UPDATE_NO_ERROR only if the instance running is a Google
@@ -163,14 +175,18 @@ HRESULT CreateGoogleUpdate3WebClass(
 
   // For a user-level install, update checks and updates can both be done by a
   // normal user with the UserClass. For a system-level install, update checks
-  // can be done by a normal user with the MachineClass.
-  if (!system_level_install || !install_update_if_possible) {
+  // can be done by a normal user with the MachineClass. Newer versions of
+  // GoogleUpdate allow normal users to also install system-level updates
+  // without requiring elevation.
+  if (!system_level_install ||
+      !install_update_if_possible ||
+      !IsElevationRequiredForSystemLevelUpdates()) {
     hresult = ::CoGetClassObject(google_update_clsid, CLSCTX_ALL, nullptr,
                                  base::win::ScopedComPtr<IClassFactory>::iid(),
                                  class_factory.ReceiveVoid());
   } else {
-    // For a system-level install, an update requires Admin privileges for
-    // writing to %ProgramFiles%. Elevate while instantiating the MachineClass.
+    // With older versions of GoogleUpdate, a system-level update requires Admin
+    // privileges. Elevate while instantiating the MachineClass.
     hresult = CoGetClassObjectAsAdmin(
         google_update_clsid, base::win::ScopedComPtr<IClassFactory>::iid(),
         elevation_window, class_factory.ReceiveVoid());
