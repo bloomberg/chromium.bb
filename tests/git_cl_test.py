@@ -1453,6 +1453,24 @@ class TestGitCl(TestCase):
     self.assertEqual(0, git_cl.main(['description', '-n', '-']))
     self.assertEqual('hi\n\t there\n\nman', ChangelistMock.desc)
 
+  def test_cmd_issue_erase_existing(self):
+    out = StringIO.StringIO()
+    self.mock(git_cl.sys, 'stdout', out)
+    self.calls = [
+        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
+        ((['git', 'config', 'branch.feature.rietveldissue'],), ''),
+        ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
+        ((['git', 'config', '--unset', 'branch.feature.gerritissue'],), ''),
+        ((['git', 'config', '--unset', 'branch.feature.gerritpatchset'],), ''),
+        # Let this command raise exception (retcode=1) - it should be ignored.
+        ((['git', 'config', '--unset', 'branch.feature.last-upload-hash'],),
+         '', subprocess2.CalledProcessError(1, '', '', '', '')),
+        ((['git', 'config', '--unset', 'branch.feature.gerritserver'],), ''),
+        ((['git', 'config', '--unset', 'branch.feature.gerritsquashhash'],),
+         ''),
+    ]
+    self.assertEqual(0, git_cl.main(['issue', '0']))
+
 
 if __name__ == '__main__':
   git_cl.logging.basicConfig(

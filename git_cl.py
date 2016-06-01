@@ -1255,11 +1255,15 @@ class Changelist(object):
       if codereview_server:
         RunGit(['config', codereview_setting, codereview_server])
     else:
-      current_issue = self.GetIssue()
-      if current_issue:
-        RunGit(['config', '--unset', issue_setting])
+      # Reset it regardless. It doesn't hurt.
+      config_settings = [issue_setting, self._codereview_impl.PatchsetSetting()]
+      for prop in (['last-upload-hash'] +
+                    self._codereview_impl._PostUnsetIssueProperties()):
+        config_settings.append('branch.%s.%s' % (self.GetBranch(), prop))
+      for setting in config_settings:
+        RunGit(['config', '--unset', setting], error_ok=True)
       self.issue = None
-      self.SetPatchset(None)
+      self.patchset = None
 
   def GetChange(self, upstream_branch, author):
     if not self.GitSanityChecks(upstream_branch):
@@ -1495,6 +1499,10 @@ class _ChangelistCodereviewBase(object):
 
   def PatchsetSetting(self):
     """Returns name of git config setting which stores issue number."""
+    raise NotImplementedError()
+
+  def _PostUnsetIssueProperties(self):
+    """Which branch-specific properties to erase when unsettin issue."""
     raise NotImplementedError()
 
   def GetRieveldObjForPresubmit(self):
@@ -1737,6 +1745,10 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
     if branch:
       return 'branch.%s.rietveldserver' % branch
     return None
+
+  def _PostUnsetIssueProperties(self):
+    """Which branch-specific properties to erase when unsetting issue."""
+    return ['rietveldserver']
 
   def GetRieveldObjForPresubmit(self):
     return self.RpcServer()
@@ -2093,6 +2105,13 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if branch:
       return 'branch.%s.gerritserver' % branch
     return None
+
+  def _PostUnsetIssueProperties(self):
+    """Which branch-specific properties to erase when unsetting issue."""
+    return [
+        'gerritserver',
+        'gerritsquashhash',
+    ]
 
   def GetRieveldObjForPresubmit(self):
     class ThisIsNotRietveldIssue(object):
