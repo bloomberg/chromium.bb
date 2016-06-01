@@ -35,6 +35,7 @@ public:
     operator WTF::String() const { return m_impl; }
     operator WebString() { return m_impl; }
     const WTF::String& impl() const { return m_impl; }
+    String16 isolatedCopy() const { return String16(m_impl.isolatedCopy()); }
 
     ~String16() { }
 

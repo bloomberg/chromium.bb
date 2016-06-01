@@ -85,6 +85,11 @@ std::unique_ptr<protocol::Runtime::CallFrame> V8StackTraceImpl::Frame::buildInsp
         .build();
 }
 
+V8StackTraceImpl::Frame V8StackTraceImpl::Frame::isolatedCopy() const
+{
+    return Frame(m_functionName.isolatedCopy(), m_scriptId.isolatedCopy(), m_scriptName.isolatedCopy(), m_lineNumber, m_columnNumber);
+}
+
 std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::create(V8DebuggerAgentImpl* agent, v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize, const String16& description)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
@@ -144,6 +149,19 @@ std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::cloneImpl()
 {
     protocol::Vector<Frame> framesCopy(m_frames);
     return wrapUnique(new V8StackTraceImpl(m_description, framesCopy, m_parent ? m_parent->cloneImpl() : nullptr));
+}
+
+std::unique_ptr<V8StackTrace> V8StackTraceImpl::isolatedCopy()
+{
+    return isolatedCopyImpl();
+}
+
+std::unique_ptr<V8StackTraceImpl> V8StackTraceImpl::isolatedCopyImpl()
+{
+    protocol::Vector<Frame> frames;
+    for (size_t i = 0; i < m_frames.size(); i++)
+        frames.append(m_frames.at(i).isolatedCopy());
+    return wrapUnique(new V8StackTraceImpl(m_description.isolatedCopy(), frames, m_parent ? m_parent->isolatedCopyImpl() : nullptr));
 }
 
 V8StackTraceImpl::V8StackTraceImpl(const String16& description, protocol::Vector<Frame>& frames, std::unique_ptr<V8StackTraceImpl> parent)

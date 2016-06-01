@@ -34,6 +34,7 @@ public:
             m_impl[i] = characters[i];
     }
     String16(const UChar* characters, size_t size) : m_impl(characters, size) { }
+    String16 isolatedCopy() const { return String16(m_impl); }
     ~String16() { }
 
     unsigned sizeInBytes() const { return m_impl.size() * sizeof(UChar); }

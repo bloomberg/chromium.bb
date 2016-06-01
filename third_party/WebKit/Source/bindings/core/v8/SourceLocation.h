@@ -6,6 +6,7 @@
 #define SourceLocation_h
 
 #include "core/CoreExport.h"
+#include "platform/CrossThreadCopier.h"
 #include "platform/v8_inspector/public/V8StackTrace.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
@@ -38,6 +39,7 @@ public:
     int scriptId() const { return m_scriptId; }
     void toTracedValue(TracedValue*, const char* name) const;
     PassOwnPtr<SourceLocation> clone() const;
+    PassOwnPtr<SourceLocation> isolatedCopy() const; // Safe to pass between threads.
 
 private:
     SourceLocation(const String& url, unsigned lineNumber, unsigned columnNumber, std::unique_ptr<V8StackTrace>, int scriptId);
@@ -48,6 +50,15 @@ private:
     unsigned m_columnNumber;
     std::unique_ptr<V8StackTrace> m_stackTrace;
     int m_scriptId;
+};
+
+template <>
+struct CrossThreadCopier<PassOwnPtr<SourceLocation>> {
+    using Type = PassOwnPtr<SourceLocation>;
+    static Type copy(PassOwnPtr<SourceLocation> location)
+    {
+        return location ? location->isolatedCopy() : nullptr;
+    }
 };
 
 } // namespace blink

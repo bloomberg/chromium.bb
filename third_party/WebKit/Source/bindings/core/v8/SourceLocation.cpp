@@ -146,4 +146,9 @@ PassOwnPtr<SourceLocation> SourceLocation::clone() const
     return adoptPtr(new SourceLocation(m_url, m_lineNumber, m_columnNumber, m_stackTrace ? m_stackTrace->clone() : nullptr, m_scriptId));
 }
 
+PassOwnPtr<SourceLocation> SourceLocation::isolatedCopy() const
+{
+    return adoptPtr(new SourceLocation(m_url.isolatedCopy(), m_lineNumber, m_columnNumber, m_stackTrace ? m_stackTrace->isolatedCopy() : nullptr, m_scriptId));
+}
+
 } // namespace blink
