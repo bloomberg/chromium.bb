@@ -97,6 +97,9 @@ scoped_refptr<VideoFrame> VideoOverlayFactory::CreateFrame(
       base::TimeDelta());  // timestamp
   CHECK(frame);
   frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
+  // TODO(halliwell): this is to block idle suspend behaviour on Chromecast.
+  // Find a better way to do this.
+  frame->metadata()->SetBoolean(VideoFrameMetadata::DECODER_OWNS_FRAME, true);
   return frame;
 }
 

@@ -1470,10 +1470,12 @@ void WebMediaPlayerImpl::SetSuspendState(bool is_suspended) {
   if (IsNetworkStateError(network_state_))
     return;
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
-  // TODO(sandersd): Idle suspend is disabled on OSX and Windows for hardware
-  // decoding / opaque video frames since these frames are owned by the decoder
-  // in the GPU process. http://crbug.com/595716 and http://crbug.com/602708
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  // TODO(sandersd): idle suspend is disabled if decoder owns video frame.
+  // Used on OSX,Windows+Chromecast. Since GetCurrentFrameFromCompositor is
+  // a synchronous cross-thread post, avoid the cost on platforms that
+  // always allow suspend. Need to find a better mechanism for this. See
+  // http://crbug.com/595716 and http://crbug.com/602708
   if (can_suspend_state_ == CanSuspendState::UNKNOWN) {
     scoped_refptr<VideoFrame> frame = GetCurrentFrameFromCompositor();
     if (frame) {
