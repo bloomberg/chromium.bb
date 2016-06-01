@@ -926,29 +926,6 @@ TEST_F(LayerWithNullDelegateTest, SetBoundsSchedulesPaint) {
   WaitForDraw();
 }
 
-// Checks that the damage rect for a TextureLayer is empty after a commit.
-TEST_F(LayerWithNullDelegateTest, EmptyDamagedRect) {
-  std::unique_ptr<Layer> root(CreateLayer(LAYER_SOLID_COLOR));
-  cc::TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), 0);
-  bool callback_run = false;
-  root->SetTextureMailbox(mailbox, cc::SingleReleaseCallback::Create(base::Bind(
-                                       ReturnMailbox, &callback_run)),
-                          gfx::Size(10, 10));
-  compositor()->SetRootLayer(root.get());
-
-  root->SetBounds(gfx::Rect(0, 0, 10, 10));
-  root->SetVisible(true);
-  WaitForCommit();
-
-  gfx::Rect damaged_rect(0, 0, 5, 5);
-  root->SchedulePaint(damaged_rect);
-  EXPECT_EQ(damaged_rect, root->damaged_region_for_testing().bounds());
-  WaitForCommit();
-  EXPECT_TRUE(root->damaged_region_for_testing().IsEmpty());
-
-  compositor()->SetRootLayer(nullptr);
-}
-
 void ExpectRgba(int x, int y, SkColor expected_color, SkColor actual_color) {
   EXPECT_EQ(expected_color, actual_color)
       << "Pixel error at x=" << x << " y=" << y << "; "

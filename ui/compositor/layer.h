@@ -334,6 +334,7 @@ class COMPOSITOR_EXPORT Layer
   // Uses damaged rectangles recorded in |damaged_region_| to invalidate the
   // |cc_layer_|.
   void SendDamagedRects();
+  void ClearDamagedRects();
 
   const cc::Region& damaged_region() const { return damaged_region_; }
 
@@ -378,10 +379,6 @@ class COMPOSITOR_EXPORT Layer
 
   // Triggers a call to SwitchToLayer.
   void SwitchCCLayerForTest();
-
-  const cc::Region& damaged_region_for_testing() const {
-    return damaged_region_;
-  }
 
  private:
   friend class LayerOwner;
@@ -453,13 +450,9 @@ class COMPOSITOR_EXPORT Layer
   bool fills_bounds_opaquely_;
   bool fills_bounds_completely_;
 
-  // Union of damaged rects, in layer space, that SetNeedsDisplayRect should
-  // be called on.
-  cc::Region damaged_region_;
-
   // Union of damaged rects, in layer space, to be used when compositor is ready
   // to paint the content.
-  cc::Region paint_region_;
+  cc::Region damaged_region_;
 
   int background_blur_radius_;
 
