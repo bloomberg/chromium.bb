@@ -310,6 +310,8 @@ group("both_gn_and_gyp") {
       "//tools/android:android_tools",
       "//tools/android:memconsumer",
       "//tools/android:push_apps_to_background",
+      "//tools/android/audio_focus_grabber:audio_focus_grabber_apk",
+      "//tools/android/customtabs_benchmark:customtabs_benchmark_apk",
       "//tools/android/heap_profiler:heap_profiler_unittests",
       "//tools/android/kerberos/SpnegoAuthenticator:spnego_authenticator_apk",
       "//tools/cygprofile:cygprofile_unittests",
@@ -323,6 +325,7 @@ group("both_gn_and_gyp") {
     if (!is_component_build) {
       deps += [
         "//components/cronet/android:cronet_package",
+        "//components/cronet/android:cronet_perf_test_apk",
         "//components/cronet/android:cronet_sample_apk",
         "//components/cronet/android:cronet_sample_test_apk",
         "//components/cronet/android:cronet_test_apk",
@@ -339,6 +342,7 @@ group("both_gn_and_gyp") {
         "//chrome/android:chrome_junit_tests",
         "//chrome/android:chrome_public_apk",
         "//chrome/android:chrome_public_test_apk",
+        "//chrome/android:chrome_sync_shell_test_apk",
         "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
         "//content/shell/android:content_shell_test_apk",
         "//third_party/custom_tabs_client:custom_tabs_client_example_apk",
@@ -346,7 +350,10 @@ group("both_gn_and_gyp") {
     }
 
     if (target_cpu != "x64") {
-      deps += [ "//third_party/android_platform:android_relocation_packer_unittests($host_toolchain)" ]
+      deps += [
+        "//content/shell/android:chromium_linker_test_apk",
+        "//third_party/android_platform:android_relocation_packer_unittests($host_toolchain)",
+      ]
     }
 
     if (has_chrome_android_internal) {
