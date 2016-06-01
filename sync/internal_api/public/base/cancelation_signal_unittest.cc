@@ -48,10 +48,11 @@ class BlockingTask : public CancelationObserver {
 };
 
 BlockingTask::BlockingTask(CancelationSignal* cancel_signal)
-  : event_(true, false),
-    exec_thread_("BlockingTaskBackgroundThread"),
-    cancel_signal_(cancel_signal),
-    was_started_(false) { }
+    : event_(base::WaitableEvent::ResetPolicy::MANUAL,
+             base::WaitableEvent::InitialState::NOT_SIGNALED),
+      exec_thread_("BlockingTaskBackgroundThread"),
+      cancel_signal_(cancel_signal),
+      was_started_(false) {}
 
 BlockingTask::~BlockingTask() {
   if (was_started_) {
@@ -122,9 +123,11 @@ class CancelationSignalTest : public ::testing::Test {
 };
 
 CancelationSignalTest::CancelationSignalTest()
-  : task_start_event_(false, false),
-    task_done_event_(false, false),
-    blocking_task_(&signal_) {}
+    : task_start_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED),
+      task_done_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED),
+      blocking_task_(&signal_) {}
 
 CancelationSignalTest::~CancelationSignalTest() {}
 

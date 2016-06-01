@@ -113,7 +113,8 @@ class AttachmentServiceProxyTest : public testing::Test,
   }
 
   void WaitForStubThread() {
-    base::WaitableEvent done(false, false);
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     stub_thread->message_loop()->PostTask(
         FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));

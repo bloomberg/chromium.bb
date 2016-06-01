@@ -418,8 +418,12 @@ TEST_F(MAYBE_SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
   sync_thread.Start();
 
   // First, block the sync thread on the post.
-  base::WaitableEvent signal_when_created(false, false);
-  base::WaitableEvent signal_when_released(false, false);
+  base::WaitableEvent signal_when_created(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent signal_when_released(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   sync_thread.message_loop()->PostTask(FROM_HERE,
       base::Bind(&MAYBE_SyncHttpBridgeTest::RunSyncThreadBridgeUseTest,
                  base::Unretained(this),
@@ -427,7 +431,9 @@ TEST_F(MAYBE_SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
                  &signal_when_released));
 
   // Stop IO so we can control order of operations.
-  base::WaitableEvent io_waiter(false, false);
+  base::WaitableEvent io_waiter(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   ASSERT_TRUE(io_thread()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&base::WaitableEvent::Wait, base::Unretained(&io_waiter))));
@@ -509,8 +515,12 @@ TEST_F(MAYBE_SyncHttpBridgeTest, RequestContextGetterReleaseOrder) {
   scoped_refptr<net::URLRequestContextGetter> baseline_context_getter(
       new net::TestURLRequestContextGetter(io_thread()->task_runner()));
 
-  base::WaitableEvent signal_when_created(false, false);
-  base::WaitableEvent wait_for_shutdown(false, false);
+  base::WaitableEvent signal_when_created(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent wait_for_shutdown(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   CancelationSignal release_request_context_signal;
 
@@ -530,8 +540,12 @@ TEST_F(MAYBE_SyncHttpBridgeTest, RequestContextGetterReleaseOrder) {
 
   // Wait for sync's RequestContextGetter to be cleared on IO thread and
   // check for reference count.
-  base::WaitableEvent signal_wait_start(false, false);
-  base::WaitableEvent wait_done(false, false);
+  base::WaitableEvent signal_wait_start(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent wait_done(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   io_thread()->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&WaitOnIOThread, &signal_wait_start, &wait_done));

@@ -74,10 +74,10 @@ std::string ModelSafeGroupToString(ModelSafeGroup group) {
 
 ModelSafeWorker::ModelSafeWorker(WorkerLoopDestructionObserver* observer)
     : stopped_(false),
-      work_done_or_stopped_(false, false),
+      work_done_or_stopped_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED),
       observer_(observer),
-      working_loop_(NULL) {
-}
+      working_loop_(NULL) {}
 
 ModelSafeWorker::~ModelSafeWorker() {}
 

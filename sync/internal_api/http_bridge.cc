@@ -138,7 +138,8 @@ HttpBridge::HttpBridge(
     const BindToTrackerCallback& bind_to_tracker_callback)
     : created_on_loop_(base::MessageLoop::current()),
       user_agent_(user_agent),
-      http_post_completed_(false, false),
+      http_post_completed_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED),
       request_context_getter_(context_getter),
       network_task_runner_(request_context_getter_->GetNetworkTaskRunner()),
       network_time_update_callback_(network_time_update_callback),

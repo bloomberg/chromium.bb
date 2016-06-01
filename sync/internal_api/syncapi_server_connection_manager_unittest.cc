@@ -24,7 +24,9 @@ using base::TimeDelta;
 
 class BlockingHttpPost : public HttpPostProviderInterface {
  public:
-  BlockingHttpPost() : wait_for_abort_(false, false) {}
+  BlockingHttpPost()
+      : wait_for_abort_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED) {}
   ~BlockingHttpPost() override {}
 
   void SetExtraRequestHeaders(const char* headers) override {}

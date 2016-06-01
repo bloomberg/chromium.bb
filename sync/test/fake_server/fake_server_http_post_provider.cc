@@ -75,7 +75,9 @@ bool FakeServerHttpPostProvider::MakeSynchronousPost(int* error_code,
   int post_response_code = -1;
   std::string post_response;
 
-  base::WaitableEvent post_complete(false, false);
+  base::WaitableEvent post_complete(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::Closure signal_closure = base::Bind(&base::WaitableEvent::Signal,
                                             base::Unretained(&post_complete));
 
