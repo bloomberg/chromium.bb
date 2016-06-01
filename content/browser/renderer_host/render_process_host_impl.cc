@@ -1176,10 +1176,7 @@ void RenderProcessHostImpl::AddRoute(int32_t routing_id,
 void RenderProcessHostImpl::RemoveRoute(int32_t routing_id) {
   DCHECK(listeners_.Lookup(routing_id) != NULL);
   listeners_.Remove(routing_id);
-
-  // Keep the one renderer thread around forever in single process mode.
-  if (!run_renderer_in_process())
-    Cleanup();
+  Cleanup();
 }
 
 void RenderProcessHostImpl::AddObserver(RenderProcessHostObserver* observer) {
@@ -1813,6 +1810,10 @@ bool RenderProcessHostImpl::IgnoreInputEvents() const {
 }
 
 void RenderProcessHostImpl::Cleanup() {
+  // Keep the one renderer thread around forever in single process mode.
+  if (run_renderer_in_process())
+    return;
+
   // If within_process_died_observer_ is true, one of our observers performed an
   // action that caused us to die (e.g. http://crbug.com/339504). Therefore,
   // delay the destruction until all of the observer callbacks have been made,
