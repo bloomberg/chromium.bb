@@ -516,5 +516,40 @@ TEST_P(GLES2DecoderTest, DeleteBuffersDestroysDataStore) {
   }
 }
 
+TEST_P(GLES2DecoderTest, MapUnmapBufferInvalidTarget) {
+  const GLenum kTarget = GL_TEXTURE_2D;
+  const GLintptr kOffset = 10;
+  const GLsizeiptr kSize = 64;
+  const GLbitfield kAccess = GL_MAP_WRITE_BIT;
+
+  uint32_t result_shm_id = kSharedMemoryId;
+  uint32_t result_shm_offset = kSharedMemoryOffset;
+  uint32_t data_shm_id = kSharedMemoryId;
+  // uint32_t is Result for both MapBufferRange and UnmapBuffer commands.
+  uint32_t data_shm_offset = kSharedMemoryOffset + sizeof(uint32_t);
+
+  decoder_->set_unsafe_es3_apis_enabled(true);
+
+  typedef MapBufferRange::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
+
+  {
+    MapBufferRange cmd;
+    cmd.Init(kTarget, kOffset, kSize, kAccess, data_shm_id, data_shm_offset,
+             result_shm_id, result_shm_offset);
+    *result = 0;
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(0u, *result);
+    EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  }
+
+  {
+    UnmapBuffer cmd;
+    cmd.Init(kTarget);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  }
+}
+
 }  // namespace gles2
 }  // namespace gpu

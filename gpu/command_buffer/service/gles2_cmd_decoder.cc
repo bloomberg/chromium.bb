@@ -15636,6 +15636,11 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
     return error::kOutOfBounds;
   }
 
+  if (!validators_->buffer_target.IsValid(target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glMapBufferRange", target, "target");
+    return error::kNoError;
+  }
+
   GLbitfield mask = GL_MAP_INVALIDATE_BUFFER_BIT;
   if ((access & mask) == mask) {
     // TODO(zmo): To be on the safe side, always map
@@ -15679,6 +15684,11 @@ error::Error GLES2DecoderImpl::HandleUnmapBuffer(
   const gles2::cmds::UnmapBuffer& c =
       *static_cast<const gles2::cmds::UnmapBuffer*>(cmd_data);
   GLenum target = static_cast<GLenum>(c.target);
+
+  if (!validators_->buffer_target.IsValid(target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glMapBufferRange", target, "target");
+    return error::kNoError;
+  }
 
   Buffer* buffer = buffer_manager()->GetBufferInfoForTarget(&state_, target);
   if (!buffer) {
