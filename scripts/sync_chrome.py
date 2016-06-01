@@ -11,6 +11,7 @@ import os
 from chromite.cbuildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import gclient
 from chromite.lib import osutils
 
@@ -39,6 +40,14 @@ def GetParser():
   return parser
 
 
+def SyncChrome(gclient_path, options):
+  """Sync new Chrome."""
+  gclient.WriteConfigFile(gclient_path, options.chrome_root,
+                          options.internal, options.version,
+                          options.gclient_template, options.use_cache)
+  gclient.Sync(gclient_path, options.chrome_root, reset=options.reset)
+
+
 def main(argv):
   parser = GetParser()
   options = parser.parse_args(argv)
@@ -49,18 +58,17 @@ def main(argv):
   if not gclient_path:
     gclient_path = os.path.join(constants.DEPOT_TOOLS_DIR, 'gclient')
 
-  # Revert any lingering local changes.
-  if not osutils.SafeMakedirs(options.chrome_root) and options.reset:
-    try:
+  try:
+    if options.reset:
+      # Revert any lingering local changes.
       gclient.Revert(gclient_path, options.chrome_root)
-    except cros_build_lib.RunCommandError:
-      osutils.RmDir(options.chrome_root)
-      osutils.SafeMakedirs(options.chrome_root)
 
-  # Sync new Chrome.
-  gclient.WriteConfigFile(gclient_path, options.chrome_root,
-                          options.internal, options.version,
-                          options.gclient_template, options.use_cache)
-  gclient.Sync(gclient_path, options.chrome_root, reset=options.reset)
+    SyncChrome(gclient_path, options)
+  except cros_build_lib.RunCommandError:
+    # If we have an error resetting, or syncing, we clobber, and fresh sync.
+    logging.warning('Chrome checkout appears corrupt. Clobbering.')
+    osutils.RmDir(options.chrome_root)
+    osutils.SafeMakedirs(options.chrome_root)
+    SyncChrome(gclient_path, options)
 
   return 0
