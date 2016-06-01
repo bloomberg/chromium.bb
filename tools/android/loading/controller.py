@@ -82,6 +82,7 @@ class ChromeControllerError(Exception):
   """
   _INTERMITTENT_WHITE_LIST = {websocket.WebSocketTimeoutException,
                               devtools_monitor.DevToolsConnectionTargetCrashed}
+  _PASSTHROUGH_WHITE_LIST = (MemoryError, SyntaxError)
 
   def __init__(self, log):
     """Constructor
@@ -354,7 +355,9 @@ class RemoteChromeController(ChromeControllerBase):
           raise ChromeControllerInternalError(
               'Failed to connect to Chrome devtools after {} '
               'attempts.'.format(self.DEVTOOLS_CONNECTION_ATTEMPTS))
-      except:
+      except ChromeControllerError._PASSTHROUGH_WHITE_LIST:
+        raise
+      except Exception:
         logcat = ''.join([l + '\n' for l in self._device.adb.Logcat(dump=True)])
         raise ChromeControllerError(log=logcat)
       finally:
@@ -523,7 +526,9 @@ class LocalChromeController(ChromeControllerBase):
         connection.Close()
         chrome_process.wait()
         chrome_process = None
-    except:
+    except ChromeControllerError._PASSTHROUGH_WHITE_LIST:
+      raise
+    except Exception:
       raise ChromeControllerError(log=open(tmp_log.name).read())
     finally:
       if OPTIONS.local_noisy:
