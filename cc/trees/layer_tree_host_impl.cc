@@ -1227,6 +1227,7 @@ void LayerTreeHostImpl::ResetTreesForTesting() {
   if (pending_tree_)
     pending_tree_->ClearLayers();
   pending_tree_ = nullptr;
+  pending_tree_duration_timer_ = nullptr;
   if (recycle_tree_)
     recycle_tree_->ClearLayers();
   recycle_tree_ = nullptr;
