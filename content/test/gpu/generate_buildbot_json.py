@@ -608,7 +608,7 @@ COMMON_GTESTS = {
         'allow_on_android': True,
       }
     ],
-    'args': ['--use-gpu-in-tests']
+    'desktop_args': ['--use-gpu-in-tests']
   },
   # Until the media-only tests are extracted from content_unittests,
   # and audio_unittests and content_unittests can be run on the commit

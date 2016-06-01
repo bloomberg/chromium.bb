@@ -4,9 +4,6 @@
   "Android Debug (Nexus 5)": {
     "gtest_tests": [
       {
-        "args": [
-          "--use-gpu-in-tests"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -302,9 +299,6 @@
   "Android Debug (Nexus 5X)": {
     "gtest_tests": [
       {
-        "args": [
-          "--use-gpu-in-tests"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -600,9 +594,6 @@
   "Android Debug (Nexus 6)": {
     "gtest_tests": [
       {
-        "args": [
-          "--use-gpu-in-tests"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -898,9 +889,6 @@
   "Android Debug (Nexus 9)": {
     "gtest_tests": [
       {
-        "args": [
-          "--use-gpu-in-tests"
-        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
