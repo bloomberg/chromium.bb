@@ -33,6 +33,9 @@ var TestProfileBrowserProxy = function() {
 
   /** @private {!Array<SupervisedUser>} */
   this.existingSupervisedUsers_ = [];
+
+  /** @private {boolean} */
+  this.allProfilesLocked_ = false;
 };
 
 TestProfileBrowserProxy.prototype = {
@@ -64,6 +67,13 @@ TestProfileBrowserProxy.prototype = {
    */
   setExistingSupervisedUsers: function(supervisedUsers) {
     this.existingSupervisedUsers_ = supervisedUsers;
+  },
+
+  /**
+   * @param {boolean} allProfilesLocked
+   */
+  setAllProfilesLocked: function(allProfilesLocked) {
+    this.allProfilesLocked_ = allProfilesLocked;
   },
 
   /** @override */
@@ -115,6 +125,6 @@ TestProfileBrowserProxy.prototype = {
   /** @override */
   areAllProfilesLocked: function() {
     this.methodCalled('areAllProfilesLocked');
-    return Promise.resolve(false);
+    return Promise.resolve(this.allProfilesLocked_);
   },
 };
