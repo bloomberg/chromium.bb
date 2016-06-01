@@ -20,6 +20,7 @@ _UNIVERSAL_BLACKLIST = (
 
 _ANDROID_BLACKLIST = (
     r'.*\.crx',  # Chrome extension zip files.
+    r'.*external_extensions\.json',  # Chrome external extensions config file.
     r'.*\.so',  # Libraries packed into .apk.
     r'.*\.mojom\.js',  # Some test_support targets include python deps.
     r'.*Mojo.*manifest\.json',  # Some source_set()s pull these in.
