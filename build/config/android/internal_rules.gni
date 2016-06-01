@@ -1511,6 +1511,23 @@ template("compile_java") {
     _enable_errorprone = invoker.enable_errorprone
   }
 
+  _provider_configurations = []
+  if (defined(invoker.provider_configurations)) {
+    _provider_configurations = invoker.provider_configurations
+  }
+
+  _processors = []
+  _enable_interface_jars_javac = true
+  if (defined(invoker.processors_javac)) {
+    _processors = invoker.processors_javac
+    _enable_iterface_jars_javac = _processors == []
+  }
+
+  _processor_args = []
+  if (defined(invoker.processor_args_javac)) {
+    _processor_args = invoker.processor_args_javac
+  }
+
   if (defined(invoker.enable_incremental_javac_override)) {
     # Use invoker-specified override.
     _enable_incremental_javac = invoker.enable_incremental_javac_override
@@ -1573,11 +1590,15 @@ template("compile_java") {
     _rebased_depfile = rebase_path(depfile, root_build_dir)
     args = [
       "--depfile=$_rebased_depfile",
-      "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)",
       "--jar-path=$_rebased_jar_path",
       "--java-srcjars=$_rebased_java_srcjars",
       "--java-srcjars=@FileArg($_rebased_build_config:javac:srcjars)",
     ]
+    if (_enable_interface_jars_javac) {
+      args += [ "--classpath=@FileArg($_rebased_build_config:javac:interface_classpath)" ]
+    } else {
+      args += [ "--classpath=@FileArg($_rebased_build_config:javac:classpath)" ]
+    }
     if (_enable_incremental_javac) {
       args += [ "--incremental" ]
       deps += [ "//third_party/jmake" ]
@@ -1611,6 +1632,15 @@ template("compile_java") {
         "--use-errorprone-path",
         "bin/chromium_errorprone",
       ]
+    }
+    foreach(e, _provider_configurations) {
+      args += [ "--provider-configuration=" + rebase_path(e, root_build_dir) ]
+    }
+    foreach(e, _processors) {
+      args += [ "--processor=" + e ]
+    }
+    foreach(e, _processor_args) {
+      args += [ "--processor-arg=" + e ]
     }
     args += rebase_path(_java_files, root_build_dir)
   }
@@ -1790,8 +1820,11 @@ template("java_library_impl") {
                              "input_jars_paths",
                              "jar_excluded_patterns",
                              "manifest_entries",
+                             "processors_javac",
+                             "processor_args_javac",
                              "proguard_config",
                              "proguard_preprocess",
+                             "provider_configurations",
                            ])
     jar_path = _jar_path
     build_config = _build_config

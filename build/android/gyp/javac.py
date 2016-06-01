@@ -228,10 +228,12 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs):
 
     jar.JarDirectory(classes_dir,
                      options.jar_path,
-                     predicate=inclusion_predicate)
+                     predicate=inclusion_predicate,
+                     provider_configurations=options.provider_configurations)
     jar.JarDirectory(classes_dir,
                      excluded_jar_path,
-                     predicate=exclusion_predicate)
+                     predicate=exclusion_predicate,
+                     provider_configurations=options.provider_configurations)
 
 
 def _ParseOptions(argv):
@@ -271,6 +273,22 @@ def _ParseOptions(argv):
       '--jar-excluded-classes',
       default='',
       help='List of .class file patterns to exclude from the jar.')
+  parser.add_option(
+      '--processor',
+      dest='processors',
+      action='append',
+      help='Annotation processor to use.')
+  parser.add_option(
+      '--processor-arg',
+      dest='processor_args',
+      action='append',
+      help='key=value arguments for the annotation processors.')
+  parser.add_option(
+      '--provider-configuration',
+      dest='provider_configurations',
+      action='append',
+      help='File to specify a service provider. Will be included '
+           'in the jar under META-INF/services.')
   parser.add_option(
       '--chromium-code',
       type='int',
@@ -349,6 +367,12 @@ def main(argv):
     # ct.sym. This means that using a java internal package/class will not
     # trigger a compile warning or error.
     javac_cmd.extend(['-XDignore.symbol.file'])
+
+  if options.processors:
+    javac_cmd.extend(['-processor', ','.join(options.processors)])
+  if options.processor_args:
+    for arg in options.processor_args:
+      javac_cmd.extend(['-A%s' % arg])
 
   classpath_inputs = options.bootclasspath
   if options.classpath:
