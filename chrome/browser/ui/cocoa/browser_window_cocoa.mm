@@ -677,9 +677,9 @@ void BrowserWindowCocoa::UserChangedTheme() {
 void BrowserWindowCocoa::ShowWebsiteSettings(
     Profile* profile,
     content::WebContents* web_contents,
-    const GURL& url,
+    const GURL& virtual_url,
     const security_state::SecurityStateModel::SecurityInfo& security_info) {
-  WebsiteSettingsUIBridge::Show(window(), profile, web_contents, url,
+  WebsiteSettingsUIBridge::Show(window(), profile, web_contents, virtual_url,
                                 security_info);
 }
 

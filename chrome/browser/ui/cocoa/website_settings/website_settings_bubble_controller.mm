@@ -1110,19 +1110,19 @@ void WebsiteSettingsUIBridge::Show(
     gfx::NativeWindow parent,
     Profile* profile,
     content::WebContents* web_contents,
-    const GURL& url,
+    const GURL& virtual_url,
     const security_state::SecurityStateModel::SecurityInfo& security_info) {
   if (chrome::ToolkitViewsWebUIDialogsEnabled()) {
     chrome::ShowWebsiteSettingsBubbleViewsAtPoint(
         gfx::ScreenPointFromNSPoint(AnchorPointForWindow(parent)), profile,
-        web_contents, url, security_info);
+        web_contents, virtual_url, security_info);
     return;
   }
 
   BubbleType bubble_type = WEB_PAGE;
-  if (url.SchemeIs(content::kChromeUIScheme))
+  if (virtual_url.SchemeIs(content::kChromeUIScheme))
     bubble_type = INTERNAL_PAGE;
-  else if (url.SchemeIs(extensions::kExtensionScheme))
+  else if (virtual_url.SchemeIs(extensions::kExtensionScheme))
     bubble_type = EXTENSION_PAGE;
 
   // Create the bridge. This will be owned by the bubble controller.
@@ -1146,7 +1146,7 @@ void WebsiteSettingsUIBridge::Show(
     WebsiteSettings* presenter = new WebsiteSettings(
         bridge, profile,
         TabSpecificContentSettings::FromWebContents(web_contents), web_contents,
-        url, security_info, content::CertStore::GetInstance());
+        virtual_url, security_info, content::CertStore::GetInstance());
     [bubble_controller setPresenter:presenter];
   }
 

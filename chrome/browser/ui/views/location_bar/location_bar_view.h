@@ -96,7 +96,7 @@ class LocationBarView : public LocationBar,
     // Shows permissions and settings for the given web contents.
     virtual void ShowWebsiteSettings(
         content::WebContents* web_contents,
-        const GURL& url,
+        const GURL& virtual_url,
         const security_state::SecurityStateModel::SecurityInfo&
             security_info) = 0;
 

@@ -394,9 +394,10 @@ ToolbarView::GetContentSettingBubbleModelDelegate() {
 
 void ToolbarView::ShowWebsiteSettings(
     content::WebContents* web_contents,
-    const GURL& url,
+    const GURL& virtual_url,
     const security_state::SecurityStateModel::SecurityInfo& security_info) {
-  chrome::ShowWebsiteSettings(browser_, web_contents, url, security_info);
+  chrome::ShowWebsiteSettings(browser_, web_contents, virtual_url,
+                              security_info);
 }
 
 PageActionImageView* ToolbarView::CreatePageActionImageView(

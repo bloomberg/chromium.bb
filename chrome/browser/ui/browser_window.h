@@ -283,14 +283,14 @@ class BrowserWindow : public ui::BaseWindow {
   // indicating that it's time to redraw everything.
   virtual void UserChangedTheme() = 0;
 
-  // Shows the website settings using the specified information. |url| is the
-  // url of the page/frame the info applies to, |ssl| is the SSL information for
-  // that page/frame.  If |show_history| is true, a section showing how many
-  // times that URL has been visited is added to the page info.
+  // Shows the website settings using the specified information. |virtual_url|
+  // is the virtual url of the page/frame the info applies to, |ssl| is the SSL
+  // information for that page/frame. If |show_history| is true, a section
+  // showing how many times that URL has been visited is added to the page info.
   virtual void ShowWebsiteSettings(
       Profile* profile,
       content::WebContents* web_contents,
-      const GURL& url,
+      const GURL& virtual_url,
       const security_state::SecurityStateModel::SecurityInfo&
           security_info) = 0;
 

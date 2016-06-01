@@ -303,7 +303,7 @@ SimpleWebViewDialog::GetContentSettingBubbleModelDelegate() {
 
 void SimpleWebViewDialog::ShowWebsiteSettings(
     content::WebContents* web_contents,
-    const GURL& url,
+    const GURL& virtual_url,
     const security_state::SecurityStateModel::SecurityInfo& security_info) {
   NOTIMPLEMENTED();
   // TODO (markusheintz@): implement this

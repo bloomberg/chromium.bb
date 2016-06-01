@@ -129,7 +129,7 @@ class BrowserWindowCocoa
   void ShowWebsiteSettings(
       Profile* profile,
       content::WebContents* web_contents,
-      const GURL& url,
+      const GURL& virtual_url,
       const security_state::SecurityStateModel::SecurityInfo& security_info)
       override;
   void ShowAppMenu() override;

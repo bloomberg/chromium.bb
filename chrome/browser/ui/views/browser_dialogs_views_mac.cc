@@ -24,26 +24,26 @@ void ShowWebsiteSettingsBubbleViewsAtPoint(
     const gfx::Point& anchor_point,
     Profile* profile,
     content::WebContents* web_contents,
-    const GURL& url,
+    const GURL& virtual_url,
     const security_state::SecurityStateModel::SecurityInfo& security_info) {
   WebsiteSettingsPopupView::ShowPopup(
-      nullptr, gfx::Rect(anchor_point, gfx::Size()), profile, web_contents, url,
-      security_info);
+      nullptr, gfx::Rect(anchor_point, gfx::Size()), profile, web_contents,
+      virtual_url, security_info);
 }
 
 void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
                                     gfx::NativeView parent,
                                     bookmarks::BookmarkBubbleObserver* observer,
                                     Browser* browser,
-                                    const GURL& url,
+                                    const GURL& virtual_url,
                                     bool already_bookmarked) {
   // The Views dialog may prompt for sign in.
   std::unique_ptr<BubbleSyncPromoDelegate> delegate(
       new BookmarkBubbleSignInDelegate(browser));
 
-  BookmarkBubbleView::ShowBubble(nullptr, gfx::Rect(anchor_point, gfx::Size()),
-                                 parent, observer, std::move(delegate),
-                                 browser->profile(), url, already_bookmarked);
+  BookmarkBubbleView::ShowBubble(
+      nullptr, gfx::Rect(anchor_point, gfx::Size()), parent, observer,
+      std::move(delegate), browser->profile(), virtual_url, already_bookmarked);
 }
 
 ui::TableModel* ShowTaskManagerViews(Browser* browser) {

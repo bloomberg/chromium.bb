@@ -113,7 +113,7 @@ class WebsiteSettingsUIBridge : public content::WebContentsObserver,
   // Creates a |WebsiteSettingsBubbleController| and displays the UI. |parent|
   // is the currently active window. |profile| points to the currently active
   // profile. |web_contents| points to the WebContents that wraps the currently
-  // active tab. |url| is the GURL of the currently active
+  // active tab. |virtual_url| is the virtual GURL of the currently active
   // tab. |security_info| is the
   // |security_state::SecurityStateModel::SecurityInfo| of
   // the connection to the website in the currently active tab.
@@ -121,7 +121,7 @@ class WebsiteSettingsUIBridge : public content::WebContentsObserver,
       gfx::NativeWindow parent,
       Profile* profile,
       content::WebContents* web_contents,
-      const GURL& url,
+      const GURL& virtual_url,
       const security_state::SecurityStateModel::SecurityInfo& security_info);
 
   void set_bubble_controller(

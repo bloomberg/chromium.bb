@@ -94,6 +94,6 @@ void WebAppLeftHeaderView::ShowWebsiteSettings() const {
   DCHECK(security_model_client);
 
   chrome::ShowWebsiteSettings(browser_view_->browser(), tab,
-                              nav_entry->GetURL(),
+                              nav_entry->GetVirtualURL(),
                               security_model_client->GetSecurityInfo());
 }

@@ -109,7 +109,7 @@ void ShowWebsiteSettingsBubbleViewsAtPoint(
     const gfx::Point& anchor_point,
     Profile* profile,
     content::WebContents* web_contents,
-    const GURL& url,
+    const GURL& virtual_url,
     const security_state::SecurityStateModel::SecurityInfo& security_info);
 
 // Show a Views bookmark bubble at the given point. This occurs when the

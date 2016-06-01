@@ -1321,7 +1321,7 @@ void BrowserView::UserChangedTheme() {
 void BrowserView::ShowWebsiteSettings(
     Profile* profile,
     content::WebContents* web_contents,
-    const GURL& url,
+    const GURL& virtual_url,
     const security_state::SecurityStateModel::SecurityInfo& security_info) {
   // Some browser windows have a location icon embedded in the frame. Try to
   // use that if it exists. If it doesn't exist, use the location icon from
@@ -1331,7 +1331,7 @@ void BrowserView::ShowWebsiteSettings(
     popup_anchor = GetLocationBarView()->location_icon_view()->GetImageView();
 
   WebsiteSettingsPopupView::ShowPopup(popup_anchor, gfx::Rect(), profile,
-                                      web_contents, url, security_info);
+                                      web_contents, virtual_url, security_info);
 }
 
 void BrowserView::ShowAppMenu() {

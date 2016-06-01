@@ -146,7 +146,7 @@ bool LocationIconView::OnActivate() {
   DCHECK(model_client);
 
   location_bar_->delegate()->ShowWebsiteSettings(
-      contents, entry->GetURL(), model_client->GetSecurityInfo());
+      contents, entry->GetVirtualURL(), model_client->GetSecurityInfo());
   return true;
 }
 

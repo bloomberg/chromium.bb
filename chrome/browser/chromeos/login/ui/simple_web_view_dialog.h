@@ -85,7 +85,7 @@ class SimpleWebViewDialog : public views::ButtonListener,
       override;
   void ShowWebsiteSettings(
       content::WebContents* web_contents,
-      const GURL& url,
+      const GURL& virtual_url,
       const security_state::SecurityStateModel::SecurityInfo& security_info)
       override;
 
