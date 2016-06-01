@@ -35,7 +35,8 @@ const int kNumRuns = 100000;
 class ThreadPerfTest : public testing::Test {
  public:
   ThreadPerfTest()
-      : done_(false, false) {
+      : done_(WaitableEvent::ResetPolicy::AUTOMATIC,
+              WaitableEvent::InitialState::NOT_SIGNALED) {
     // Disable the task profiler as it adds significant cost!
     CommandLine::Init(0, NULL);
     CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -59,7 +60,8 @@ class ThreadPerfTest : public testing::Test {
   }
 
   base::ThreadTicks ThreadNow(base::Thread* thread) {
-    base::WaitableEvent done(false, false);
+    base::WaitableEvent done(WaitableEvent::ResetPolicy::AUTOMATIC,
+                             WaitableEvent::InitialState::NOT_SIGNALED);
     base::ThreadTicks ticks;
     thread->task_runner()->PostTask(
         FROM_HERE, base::Bind(&ThreadPerfTest::TimeOnThread,

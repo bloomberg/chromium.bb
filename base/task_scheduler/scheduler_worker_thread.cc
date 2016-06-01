@@ -47,7 +47,8 @@ void SchedulerWorkerThread::JoinForTesting() {
 SchedulerWorkerThread::SchedulerWorkerThread(ThreadPriority thread_priority,
                                              std::unique_ptr<Delegate> delegate,
                                              TaskTracker* task_tracker)
-    : wake_up_event_(false, false),
+    : wake_up_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
+                     WaitableEvent::InitialState::NOT_SIGNALED),
       delegate_(std::move(delegate)),
       task_tracker_(task_tracker) {
   DCHECK(delegate_);

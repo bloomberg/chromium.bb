@@ -902,7 +902,9 @@ TEST_F(MemoryDumpManagerTest, TraceConfigExpectationsWhenIsCoordinator) {
 // Tests against race conditions that might arise when disabling tracing in the
 // middle of a global memory dump.
 TEST_F(MemoryDumpManagerTest, DisableTracingWhileDumping) {
-  base::WaitableEvent tracing_disabled_event(false, false);
+  base::WaitableEvent tracing_disabled_event(
+      WaitableEvent::ResetPolicy::AUTOMATIC,
+      WaitableEvent::InitialState::NOT_SIGNALED);
   InitializeMemoryDumpManager(false /* is_coordinator */);
 
   // Register a bound dump provider.
@@ -952,7 +954,9 @@ TEST_F(MemoryDumpManagerTest, DisableTracingWhileDumping) {
 // Tests against race conditions that can happen if tracing is disabled before
 // the CreateProcessDump() call. Real-world regression: crbug.com/580295 .
 TEST_F(MemoryDumpManagerTest, DisableTracingRightBeforeStartOfDump) {
-  base::WaitableEvent tracing_disabled_event(false, false);
+  base::WaitableEvent tracing_disabled_event(
+      WaitableEvent::ResetPolicy::AUTOMATIC,
+      WaitableEvent::InitialState::NOT_SIGNALED);
   InitializeMemoryDumpManager(false /* is_coordinator */);
 
   std::unique_ptr<Thread> mdp_thread(new Thread("test thread"));

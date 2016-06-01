@@ -966,7 +966,8 @@ TEST_F(SequencedWorkerPoolTest, GetSequencedTaskRunnerForCurrentThread) {
       SequencedWorkerPool::GetSequencedTaskRunnerForCurrentThread();
   EXPECT_FALSE(local_task_runner);
 
-  WaitableEvent event(false, false);
+  WaitableEvent event(WaitableEvent::ResetPolicy::AUTOMATIC,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
   Closure signal = Bind(&WaitableEvent::Signal, Unretained(&event));
   scoped_refptr<SequencedTaskRunner> task_runner_1 =
       pool()->GetSequencedTaskRunner(SequencedWorkerPool::GetSequenceToken());
@@ -1025,7 +1026,8 @@ void VerifySequenceOnDestruction(const Closure& callback) {
 TEST_F(SequencedWorkerPoolTest, CheckSequenceOnDestruction) {
   EnsureAllWorkersCreated();
 
-  WaitableEvent event(false, false);
+  WaitableEvent event(WaitableEvent::ResetPolicy::AUTOMATIC,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
   Closure signal = Bind(&WaitableEvent::Signal, Unretained(&event));
   pool()->PostWorkerTask(FROM_HERE, Bind(&VerifySequenceOnDestruction, signal));
   event.Wait();

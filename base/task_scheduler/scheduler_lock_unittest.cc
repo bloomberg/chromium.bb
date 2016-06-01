@@ -56,8 +56,11 @@ class BasicLockAcquireAndWaitThread : public SimpleThread {
   explicit BasicLockAcquireAndWaitThread(SchedulerLock* lock)
       : SimpleThread("BasicLockAcquireAndWaitThread"),
         lock_(lock),
-        lock_acquire_event_(false, false),
-        main_thread_continue_event_(false, false) {}
+        lock_acquire_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
+                            WaitableEvent::InitialState::NOT_SIGNALED),
+        main_thread_continue_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
+                                    WaitableEvent::InitialState::NOT_SIGNALED) {
+  }
 
   void WaitForLockAcquisition() {
     lock_acquire_event_.Wait();

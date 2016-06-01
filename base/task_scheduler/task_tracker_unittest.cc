@@ -36,7 +36,8 @@ class ThreadCallingShutdown : public SimpleThread {
   explicit ThreadCallingShutdown(TaskTracker* tracker)
       : SimpleThread("ThreadCallingShutdown"),
         tracker_(tracker),
-        has_returned_(true, false) {}
+        has_returned_(WaitableEvent::ResetPolicy::MANUAL,
+                      WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   // Returns true once the async call to Shutdown() has returned.
   bool has_returned() { return has_returned_.IsSignaled(); }
@@ -163,7 +164,8 @@ TEST_P(TaskSchedulerTaskTrackerTest, WillPostAndRunBeforeShutdown) {
 
 TEST_P(TaskSchedulerTaskTrackerTest, WillPostAndRunLongTaskBeforeShutdown) {
   // Create a task that will block until |event| is signaled.
-  WaitableEvent event(false, false);
+  WaitableEvent event(WaitableEvent::ResetPolicy::AUTOMATIC,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
   std::unique_ptr<Task> blocked_task(
       new Task(FROM_HERE, Bind(&WaitableEvent::Wait, Unretained(&event)),
                TaskTraits().WithShutdownBehavior(GetParam()), TimeDelta()));

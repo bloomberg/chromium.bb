@@ -82,7 +82,8 @@ TEST(ThreadLocalTest, Pointer) {
   static char* const kBogusPointer = reinterpret_cast<char*>(0x1234);
 
   char* tls_val;
-  base::WaitableEvent done(true, false);
+  base::WaitableEvent done(WaitableEvent::ResetPolicy::MANUAL,
+                           WaitableEvent::InitialState::NOT_SIGNALED);
 
   GetThreadLocal getter(&tlp, &done);
   getter.set_ptr(&tls_val);

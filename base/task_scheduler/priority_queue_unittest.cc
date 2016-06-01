@@ -29,7 +29,8 @@ class ThreadBeginningTransaction : public SimpleThread {
   explicit ThreadBeginningTransaction(PriorityQueue* priority_queue)
       : SimpleThread("ThreadBeginningTransaction"),
         priority_queue_(priority_queue),
-        transaction_began_(true, false) {}
+        transaction_began_(WaitableEvent::ResetPolicy::MANUAL,
+                           WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   // SimpleThread:
   void Run() override {

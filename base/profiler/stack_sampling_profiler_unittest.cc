@@ -149,8 +149,12 @@ class TargetThread : public PlatformThread::Delegate {
 };
 
 TargetThread::TargetThread(const StackConfiguration& stack_config)
-    : thread_started_event_(false, false), finish_event_(false, false),
-      id_(0), stack_config_(stack_config) {}
+    : thread_started_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
+                            WaitableEvent::InitialState::NOT_SIGNALED),
+      finish_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
+                    WaitableEvent::InitialState::NOT_SIGNALED),
+      id_(0),
+      stack_config_(stack_config) {}
 
 void TargetThread::ThreadMain() {
   id_ = PlatformThread::CurrentId();
@@ -351,9 +355,11 @@ void CaptureProfiles(const SamplingParams& params, TimeDelta profiler_wait_time,
                      CallStackProfiles* profiles) {
   profiles->clear();
 
-  WithTargetThread([&params, profiles, profiler_wait_time](
-      PlatformThreadId target_thread_id) {
-    WaitableEvent sampling_thread_completed(true, false);
+  WithTargetThread([&params, profiles,
+                    profiler_wait_time](PlatformThreadId target_thread_id) {
+    WaitableEvent sampling_thread_completed(
+        WaitableEvent::ResetPolicy::MANUAL,
+        WaitableEvent::InitialState::NOT_SIGNALED);
     const StackSamplingProfiler::CompletedCallback callback =
         Bind(&SaveProfilesAndSignalEvent, Unretained(profiles),
              Unretained(&sampling_thread_completed));
@@ -465,13 +471,17 @@ void TestLibraryUnload(bool wait_until_unloaded) {
 
   target_thread.WaitForThreadStart();
 
-  WaitableEvent sampling_thread_completed(true, false);
+  WaitableEvent sampling_thread_completed(
+      WaitableEvent::ResetPolicy::MANUAL,
+      WaitableEvent::InitialState::NOT_SIGNALED);
   std::vector<CallStackProfile> profiles;
   const StackSamplingProfiler::CompletedCallback callback =
       Bind(&SaveProfilesAndSignalEvent, Unretained(&profiles),
            Unretained(&sampling_thread_completed));
-  WaitableEvent stack_copied(true, false);
-  WaitableEvent start_stack_walk(true, false);
+  WaitableEvent stack_copied(WaitableEvent::ResetPolicy::MANUAL,
+                             WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent start_stack_walk(WaitableEvent::ResetPolicy::MANUAL,
+                                 WaitableEvent::InitialState::NOT_SIGNALED);
   StackCopiedSignaler test_delegate(&stack_copied, &start_stack_walk,
                                     wait_until_unloaded);
   StackSamplingProfiler profiler(target_thread.id(), params, callback,
@@ -625,16 +635,19 @@ TEST(StackSamplingProfilerTest, MAYBE_Alloca) {
   params.samples_per_burst = 1;
 
   std::vector<CallStackProfile> profiles;
-  WithTargetThread([&params, &profiles](
-      PlatformThreadId target_thread_id) {
-    WaitableEvent sampling_thread_completed(true, false);
-    const StackSamplingProfiler::CompletedCallback callback =
-        Bind(&SaveProfilesAndSignalEvent, Unretained(&profiles),
-             Unretained(&sampling_thread_completed));
-    StackSamplingProfiler profiler(target_thread_id, params, callback);
-    profiler.Start();
-    sampling_thread_completed.Wait();
-  }, StackConfiguration(StackConfiguration::WITH_ALLOCA));
+  WithTargetThread(
+      [&params, &profiles](PlatformThreadId target_thread_id) {
+        WaitableEvent sampling_thread_completed(
+            WaitableEvent::ResetPolicy::MANUAL,
+            WaitableEvent::InitialState::NOT_SIGNALED);
+        const StackSamplingProfiler::CompletedCallback callback =
+            Bind(&SaveProfilesAndSignalEvent, Unretained(&profiles),
+                 Unretained(&sampling_thread_completed));
+        StackSamplingProfiler profiler(target_thread_id, params, callback);
+        profiler.Start();
+        sampling_thread_completed.Wait();
+      },
+      StackConfiguration(StackConfiguration::WITH_ALLOCA));
 
   // Look up the sample.
   ASSERT_EQ(1u, profiles.size());
@@ -686,7 +699,9 @@ TEST(StackSamplingProfilerTest, MAYBE_StartAndRunAsync) {
 
   CallStackProfiles profiles;
   WithTargetThread([&params, &profiles](PlatformThreadId target_thread_id) {
-    WaitableEvent sampling_thread_completed(false, false);
+    WaitableEvent sampling_thread_completed(
+        WaitableEvent::ResetPolicy::AUTOMATIC,
+        WaitableEvent::InitialState::NOT_SIGNALED);
     const StackSamplingProfiler::CompletedCallback callback =
         Bind(&SaveProfilesAndSignalEvent, Unretained(&profiles),
              Unretained(&sampling_thread_completed));
@@ -843,7 +858,9 @@ TEST(StackSamplingProfilerTest, MAYBE_ConcurrentProfiling) {
     ScopedVector<WaitableEvent> sampling_completed;
     ScopedVector<StackSamplingProfiler> profiler;
     for (int i = 0; i < 2; ++i) {
-      sampling_completed.push_back(new WaitableEvent(false, false));
+      sampling_completed.push_back(
+          new WaitableEvent(WaitableEvent::ResetPolicy::AUTOMATIC,
+                            WaitableEvent::InitialState::NOT_SIGNALED));
       const StackSamplingProfiler::CompletedCallback callback =
           Bind(&SaveProfilesAndSignalEvent, Unretained(&profiles[i]),
                Unretained(sampling_completed[i]));
@@ -886,17 +903,20 @@ TEST(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
   std::vector<CallStackProfile> profiles;
   {
     ScopedNativeLibrary other_library(LoadOtherLibrary());
-    WithTargetThread([&params, &profiles](
-        PlatformThreadId target_thread_id) {
-      WaitableEvent sampling_thread_completed(true, false);
-      const StackSamplingProfiler::CompletedCallback callback =
-          Bind(&SaveProfilesAndSignalEvent, Unretained(&profiles),
-               Unretained(&sampling_thread_completed));
-      StackSamplingProfiler profiler(target_thread_id, params, callback);
-      profiler.Start();
-      sampling_thread_completed.Wait();
-    }, StackConfiguration(StackConfiguration::WITH_OTHER_LIBRARY,
-                          other_library.get()));
+    WithTargetThread(
+        [&params, &profiles](PlatformThreadId target_thread_id) {
+          WaitableEvent sampling_thread_completed(
+              WaitableEvent::ResetPolicy::MANUAL,
+              WaitableEvent::InitialState::NOT_SIGNALED);
+          const StackSamplingProfiler::CompletedCallback callback =
+              Bind(&SaveProfilesAndSignalEvent, Unretained(&profiles),
+                   Unretained(&sampling_thread_completed));
+          StackSamplingProfiler profiler(target_thread_id, params, callback);
+          profiler.Start();
+          sampling_thread_completed.Wait();
+        },
+        StackConfiguration(StackConfiguration::WITH_OTHER_LIBRARY,
+                           other_library.get()));
   }
 
   // Look up the sample.

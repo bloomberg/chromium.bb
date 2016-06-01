@@ -214,7 +214,8 @@ TEST_F(ThreadTest, ThreadId) {
   b.Start();
 
   // Post a task that calls GetThreadId() on the created thread.
-  base::WaitableEvent event(false, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::PlatformThreadId id_from_new_thread;
   a.task_runner()->PostTask(
       FROM_HERE, base::Bind(ReturnThreadId, &a, &id_from_new_thread, &event));

@@ -15,7 +15,8 @@
 namespace base {
 
 TEST(WaitableEventTest, ManualBasics) {
-  WaitableEvent event(true, false);
+  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
 
   EXPECT_FALSE(event.IsSignaled());
 
@@ -33,7 +34,8 @@ TEST(WaitableEventTest, ManualBasics) {
 }
 
 TEST(WaitableEventTest, AutoBasics) {
-  WaitableEvent event(false, false);
+  WaitableEvent event(WaitableEvent::ResetPolicy::AUTOMATIC,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
 
   EXPECT_FALSE(event.IsSignaled());
 
@@ -55,8 +57,10 @@ TEST(WaitableEventTest, AutoBasics) {
 
 TEST(WaitableEventTest, WaitManyShortcut) {
   WaitableEvent* ev[5];
-  for (unsigned i = 0; i < 5; ++i)
-    ev[i] = new WaitableEvent(false, false);
+  for (unsigned i = 0; i < 5; ++i) {
+    ev[i] = new WaitableEvent(WaitableEvent::ResetPolicy::AUTOMATIC,
+                              WaitableEvent::InitialState::NOT_SIGNALED);
+  }
 
   ev[3]->Signal();
   EXPECT_EQ(WaitableEvent::WaitMany(ev, 5), 3u);
@@ -94,7 +98,9 @@ class WaitableEventSignaler : public PlatformThread::Delegate {
 // Tests that a WaitableEvent can be safely deleted when |Wait| is done without
 // additional synchronization.
 TEST(WaitableEventTest, WaitAndDelete) {
-  WaitableEvent* ev = new WaitableEvent(false, false);
+  WaitableEvent* ev =
+      new WaitableEvent(WaitableEvent::ResetPolicy::AUTOMATIC,
+                        WaitableEvent::InitialState::NOT_SIGNALED);
 
   WaitableEventSignaler signaler(TimeDelta::FromMilliseconds(10), ev);
   PlatformThreadHandle thread;
@@ -110,8 +116,10 @@ TEST(WaitableEventTest, WaitAndDelete) {
 // without additional synchronization.
 TEST(WaitableEventTest, WaitMany) {
   WaitableEvent* ev[5];
-  for (unsigned i = 0; i < 5; ++i)
-    ev[i] = new WaitableEvent(false, false);
+  for (unsigned i = 0; i < 5; ++i) {
+    ev[i] = new WaitableEvent(WaitableEvent::ResetPolicy::AUTOMATIC,
+                              WaitableEvent::InitialState::NOT_SIGNALED);
+  }
 
   WaitableEventSignaler signaler(TimeDelta::FromMilliseconds(10), ev[2]);
   PlatformThreadHandle thread;
@@ -135,7 +143,9 @@ TEST(WaitableEventTest, WaitMany) {
 #define MAYBE_TimedWait TimedWait
 #endif
 TEST(WaitableEventTest, MAYBE_TimedWait) {
-  WaitableEvent* ev = new WaitableEvent(false, false);
+  WaitableEvent* ev =
+      new WaitableEvent(WaitableEvent::ResetPolicy::AUTOMATIC,
+                        WaitableEvent::InitialState::NOT_SIGNALED);
 
   TimeDelta thread_delay = TimeDelta::FromMilliseconds(10);
   WaitableEventSignaler signaler(thread_delay, ev);

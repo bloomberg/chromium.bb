@@ -56,7 +56,8 @@ void TestIOThread::PostTask(const tracked_objects::Location& from_here,
 
 void TestIOThread::PostTaskAndWait(const tracked_objects::Location& from_here,
                                    const base::Closure& task) {
-  base::WaitableEvent event(false, false);
+  base::WaitableEvent event(WaitableEvent::ResetPolicy::AUTOMATIC,
+                            WaitableEvent::InitialState::NOT_SIGNALED);
   task_runner()->PostTask(from_here,
                           base::Bind(&PostTaskAndWaitHelper, &event, task));
   event.Wait();

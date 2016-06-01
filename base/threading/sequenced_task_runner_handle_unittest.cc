@@ -63,7 +63,8 @@ TEST_F(SequencedTaskRunnerHandleTest, FromSequencedWorkerPoolTask) {
   // Wrap the SequencedWorkerPool to avoid leaks due to its asynchronous
   // destruction.
   SequencedWorkerPoolOwner owner(3, "Test");
-  WaitableEvent event(false, false);
+  WaitableEvent event(WaitableEvent::ResetPolicy::AUTOMATIC,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
   owner.pool()->PostSequencedWorkerTask(
       owner.pool()->GetSequenceToken(), FROM_HERE,
       base::Bind(
@@ -77,7 +78,8 @@ TEST_F(SequencedTaskRunnerHandleTest, FromUnsequencedTask) {
   // Wrap the SequencedWorkerPool to avoid leaks due to its asynchronous
   // destruction.
   SequencedWorkerPoolOwner owner(3, "Test");
-  WaitableEvent event(false, false);
+  WaitableEvent event(WaitableEvent::ResetPolicy::AUTOMATIC,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
   owner.pool()->PostWorkerTask(
       FROM_HERE,
       base::Bind(

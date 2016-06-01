@@ -24,7 +24,8 @@ class MessageLoopTaskRunnerTest : public testing::Test {
   MessageLoopTaskRunnerTest()
       : current_loop_(new MessageLoop()),
         task_thread_("task_thread"),
-        thread_sync_(true, false) {}
+        thread_sync_(WaitableEvent::ResetPolicy::MANUAL,
+                     WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void DeleteCurrentMessageLoop() { current_loop_.reset(); }
 

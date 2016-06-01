@@ -301,7 +301,8 @@ TEST_F(AllocatorShimTest, NewHandlerConcurrency) {
 
   // The WaitableEvent here is used to attempt to trigger all the threads at
   // the same time, after they have been initialized.
-  WaitableEvent event(/*manual_reset=*/true, /*initially_signaled=*/false);
+  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
 
   ThreadDelegateForNewHandlerTest mock_thread_main(&event);
 

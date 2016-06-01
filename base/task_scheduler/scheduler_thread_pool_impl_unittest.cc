@@ -223,7 +223,8 @@ TEST_P(TaskSchedulerThreadPoolImplTest, PostTasksWithOneAvailableThread) {
   // Post blocking tasks to keep all threads busy except one until |event| is
   // signaled. Use different factories so that tasks are added to different
   // sequences and can run simultaneously when the execution mode is SEQUENCED.
-  WaitableEvent event(true, false);
+  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
   std::vector<std::unique_ptr<test::TestTaskFactory>> blocked_task_factories;
   for (size_t i = 0; i < (kNumThreadsInThreadPool - 1); ++i) {
     blocked_task_factories.push_back(WrapUnique(new test::TestTaskFactory(
@@ -256,7 +257,8 @@ TEST_P(TaskSchedulerThreadPoolImplTest, Saturate) {
   // tasks/sequences running simultaneously. Use different factories so that the
   // blocking tasks are added to different sequences and can run simultaneously
   // when the execution mode is SEQUENCED.
-  WaitableEvent event(true, false);
+  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
   std::vector<std::unique_ptr<test::TestTaskFactory>> factories;
   for (size_t i = 0; i < kNumThreadsInThreadPool; ++i) {
     factories.push_back(WrapUnique(new test::TestTaskFactory(
@@ -289,7 +291,8 @@ TEST_P(TaskSchedulerThreadPoolImplTest, PostDelayedTask) {
   EXPECT_TRUE(delayed_task_manager_.GetDelayedRunTime().is_null());
 
   // Post a delayed task.
-  WaitableEvent task_ran(true, false);
+  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
+                         WaitableEvent::InitialState::NOT_SIGNALED);
   EXPECT_TRUE(thread_pool_->CreateTaskRunnerWithTraits(TaskTraits(), GetParam())
                   ->PostDelayedTask(FROM_HERE, Bind(&WaitableEvent::Signal,
                                                     Unretained(&task_ran)),
@@ -365,7 +368,8 @@ TEST_P(TaskSchedulerThreadPoolImplIORestrictionTest, IORestriction) {
       &delayed_task_manager);
   ASSERT_TRUE(thread_pool);
 
-  WaitableEvent task_ran(true, false);
+  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
+                         WaitableEvent::InitialState::NOT_SIGNALED);
   thread_pool->CreateTaskRunnerWithTraits(TaskTraits(), ExecutionMode::PARALLEL)
       ->PostTask(FROM_HERE, Bind(&ExpectIORestriction, GetParam(), &task_ran));
   task_ran.Wait();

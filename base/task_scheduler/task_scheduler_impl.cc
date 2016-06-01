@@ -68,11 +68,12 @@ void TaskSchedulerImpl::JoinForTesting() {
 }
 
 TaskSchedulerImpl::TaskSchedulerImpl()
-    : delayed_task_manager_(Bind(&TaskSchedulerImpl::OnDelayedRunTimeUpdated,
-                                 Unretained(this)))
+    : delayed_task_manager_(
+          Bind(&TaskSchedulerImpl::OnDelayedRunTimeUpdated, Unretained(this)))
 #if DCHECK_IS_ON()
-          ,
-      join_for_testing_returned_(true, false)
+      ,
+      join_for_testing_returned_(WaitableEvent::ResetPolicy::MANUAL,
+                                 WaitableEvent::InitialState::NOT_SIGNALED)
 #endif
 {
 }

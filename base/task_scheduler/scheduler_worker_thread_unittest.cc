@@ -31,9 +31,11 @@ const size_t kNumSequencesPerTest = 150;
 class TaskSchedulerWorkerThreadTest : public testing::TestWithParam<size_t> {
  protected:
   TaskSchedulerWorkerThreadTest()
-      : main_entry_called_(true, false),
+      : main_entry_called_(WaitableEvent::ResetPolicy::MANUAL,
+                           WaitableEvent::InitialState::NOT_SIGNALED),
         num_get_work_cv_(lock_.CreateConditionVariable()),
-        worker_thread_set_(true, false) {}
+        worker_thread_set_(WaitableEvent::ResetPolicy::MANUAL,
+                           WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void SetUp() override {
     worker_thread_ = SchedulerWorkerThread::Create(

@@ -120,7 +120,8 @@ StackSamplingProfiler::SamplingThread::SamplingThread(
     const CompletedCallback& completed_callback)
     : native_sampler_(std::move(native_sampler)),
       params_(params),
-      stop_event_(false, false),
+      stop_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
+                  WaitableEvent::InitialState::NOT_SIGNALED),
       completed_callback_(completed_callback) {}
 
 StackSamplingProfiler::SamplingThread::~SamplingThread() {}

@@ -158,7 +158,8 @@ std::vector<TraitsExecutionModePair> GetTraitsExecutionModePairs() {
 // TaskTraits runs on a thread with the expected priority and I/O restrictions.
 // The ExecutionMode parameter is ignored by this test.
 TEST_P(TaskSchedulerImplTest, PostTaskWithTraits) {
-  WaitableEvent task_ran(true, false);
+  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
+                         WaitableEvent::InitialState::NOT_SIGNALED);
   scheduler_->PostTaskWithTraits(
       FROM_HERE, GetParam().traits,
       Bind(&VerifyTaskEnvironementAndSignalEvent, GetParam().traits,

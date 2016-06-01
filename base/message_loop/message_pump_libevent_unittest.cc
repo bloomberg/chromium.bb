@@ -248,7 +248,8 @@ TEST_F(MessagePumpLibeventTest, QuitWatcher) {
   RunLoop run_loop;
   MessagePumpLibevent::FileDescriptorWatcher controller;
   QuitWatcher delegate(&controller, &run_loop);
-  WaitableEvent event(false /* manual_reset */, false /* initially_signaled */);
+  WaitableEvent event(WaitableEvent::ResetPolicy::AUTOMATIC,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
   std::unique_ptr<WaitableEventWatcher> watcher(new WaitableEventWatcher);
 
   // Tell the pump to watch the pipe.

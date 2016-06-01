@@ -16,7 +16,8 @@ ThreadTestHelper::ThreadTestHelper(
     scoped_refptr<SingleThreadTaskRunner> target_thread)
     : test_result_(false),
       target_thread_(std::move(target_thread)),
-      done_event_(false, false) {}
+      done_event_(WaitableEvent::ResetPolicy::AUTOMATIC,
+                  WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 bool ThreadTestHelper::Run() {
   if (!target_thread_->PostTask(

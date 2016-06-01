@@ -95,7 +95,8 @@ TEST(SimpleThreadTest, CreateAndJoin) {
 
 TEST(SimpleThreadTest, WaitForEvent) {
   // Create a thread, and wait for it to signal us.
-  WaitableEvent event(true, false);
+  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
 
   WaitEventRunner runner(&event);
   DelegateSimpleThread thread(&runner, "event_waiter");
@@ -108,7 +109,8 @@ TEST(SimpleThreadTest, WaitForEvent) {
 }
 
 TEST(SimpleThreadTest, NamedWithOptions) {
-  WaitableEvent event(true, false);
+  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
 
   WaitEventRunner runner(&event);
   SimpleThread::Options options;
@@ -152,7 +154,8 @@ TEST(SimpleThreadTest, ThreadPool) {
   // We can reuse our pool.  Verify that all 10 threads can actually run in
   // parallel, so this test will only pass if there are actually 10 threads.
   AtomicSequenceNumber seq2;
-  WaitableEvent event(true, false);
+  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
   // Changing 9 to 10, for example, would cause us JoinAll() to never return.
   VerifyPoolRunner verifier(&seq2, 9, &event);
   pool.Start();

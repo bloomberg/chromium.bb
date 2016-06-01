@@ -73,8 +73,10 @@ class FunctionTestThread : public PlatformThread::Delegate {
  public:
   FunctionTestThread()
       : thread_id_(kInvalidThreadId),
-        termination_ready_(true, false),
-        terminate_thread_(true, false),
+        termination_ready_(WaitableEvent::ResetPolicy::MANUAL,
+                           WaitableEvent::InitialState::NOT_SIGNALED),
+        terminate_thread_(WaitableEvent::ResetPolicy::MANUAL,
+                          WaitableEvent::InitialState::NOT_SIGNALED),
         done_(false) {}
   ~FunctionTestThread() override {
     EXPECT_TRUE(terminate_thread_.IsSignaled())

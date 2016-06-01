@@ -98,7 +98,8 @@ class TaskSchedulerServiceThreadTest : public testing::Test {
 
 // Tests that the service thread can handle a single delayed task.
 TEST_F(TaskSchedulerServiceThreadTest, RunSingleDelayedTask) {
-  WaitableEvent event(true, false);
+  WaitableEvent event(WaitableEvent::ResetPolicy::MANUAL,
+                      WaitableEvent::InitialState::NOT_SIGNALED);
   delayed_task_manager().AddDelayedTask(
       WrapUnique(new Task(FROM_HERE,
                           Bind(&WaitableEvent::Signal, Unretained(&event)),
@@ -122,14 +123,16 @@ TEST_F(TaskSchedulerServiceThreadTest, RunMultipleDelayedTasks) {
   const TimeDelta delay1 = TimeDelta::FromMilliseconds(100);
   const TimeDelta delay2 = TimeDelta::FromMilliseconds(200);
 
-  WaitableEvent event1(true, false);
+  WaitableEvent event1(WaitableEvent::ResetPolicy::MANUAL,
+                       WaitableEvent::InitialState::NOT_SIGNALED);
   delayed_task_manager().AddDelayedTask(
       WrapUnique(new Task(FROM_HERE,
                           Bind(&WaitableEvent::Signal, Unretained(&event1)),
                           TaskTraits(), delay1)),
       make_scoped_refptr(new Sequence), nullptr, thread_pool());
 
-  WaitableEvent event2(true, false);
+  WaitableEvent event2(WaitableEvent::ResetPolicy::MANUAL,
+                       WaitableEvent::InitialState::NOT_SIGNALED);
   delayed_task_manager().AddDelayedTask(
       WrapUnique(new Task(FROM_HERE,
                           Bind(&WaitableEvent::Signal, Unretained(&event2)),

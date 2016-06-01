@@ -495,9 +495,11 @@ SchedulerThreadPoolImpl::SchedulerThreadPoolImpl(
       idle_worker_threads_stack_lock_(shared_priority_queue_.container_lock()),
       idle_worker_threads_stack_cv_for_testing_(
           idle_worker_threads_stack_lock_.CreateConditionVariable()),
-      join_for_testing_returned_(true, false),
+      join_for_testing_returned_(WaitableEvent::ResetPolicy::MANUAL,
+                                 WaitableEvent::InitialState::NOT_SIGNALED),
 #if DCHECK_IS_ON()
-      threads_created_(true, false),
+      threads_created_(WaitableEvent::ResetPolicy::MANUAL,
+                       WaitableEvent::InitialState::NOT_SIGNALED),
 #endif
       task_tracker_(task_tracker),
       delayed_task_manager_(delayed_task_manager) {
