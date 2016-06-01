@@ -53,11 +53,6 @@ enum UIDismissalReason {
   AUTO_SIGNIN_TOAST_CLICKED_OBSOLETE,  // obsolete.
   CLICKED_BRAND_NAME,
   NUM_UI_RESPONSES,
-
-  // If we add the omnibox icon _without_ intending to display the bubble,
-  // we actually call Close() after creating the bubble view. We don't want
-  // that to count in the metrics, so we need this placeholder value.
-  NOT_DISPLAYED
 };
 
 enum FormDeserializationStatus {

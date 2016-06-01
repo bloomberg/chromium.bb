@@ -242,13 +242,11 @@ autofill::PasswordForm ManagePasswordsBubbleModelTest::GetPendingPassword() {
 TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
   PretendPasswordWaiting();
 
-  EXPECT_EQ(model()->dismissal_reason(),
-            password_manager::metrics_util::NO_DIRECT_INTERACTION);
   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, model()->state());
   std::unique_ptr<base::SimpleTestClock> clock(new base::SimpleTestClock);
   base::Time now = base::Time::Now();
   clock->SetNow(now);
-  model()->set_clock(std::move(clock));
+  model()->SetClockForTesting(std::move(clock));
   password_manager::InteractionsStats stats = GetTestStats();
   stats.dismissal_count++;
   stats.update_time = now;
@@ -266,8 +264,6 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickSave) {
   EXPECT_CALL(*controller(), SavePassword());
   EXPECT_CALL(*controller(), NeverSavePassword()).Times(0);
   model()->OnSaveClicked();
-  EXPECT_EQ(model()->dismissal_reason(),
-            password_manager::metrics_util::CLICKED_SAVE);
   DestroyModelExpectReason(password_manager::metrics_util::CLICKED_SAVE);
 }
 
@@ -278,9 +274,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickNever) {
   EXPECT_CALL(*controller(), SavePassword()).Times(0);
   EXPECT_CALL(*controller(), NeverSavePassword());
   model()->OnNeverForThisSiteClicked();
-  EXPECT_EQ(model()->dismissal_reason(),
-            password_manager::metrics_util::CLICKED_NEVER);
-  EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, model()->state());
+   EXPECT_EQ(password_manager::ui::PENDING_PASSWORD_STATE, model()->state());
   DestroyModelExpectReason(password_manager::metrics_util::CLICKED_NEVER);
 }
 
@@ -290,8 +284,6 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickManage) {
   EXPECT_CALL(*controller(), NavigateToPasswordManagerSettingsPage());
   model()->OnManageLinkClicked();
 
-  EXPECT_EQ(model()->dismissal_reason(),
-            password_manager::metrics_util::CLICKED_MANAGE);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, model()->state());
   DestroyModelExpectReason(password_manager::metrics_util::CLICKED_MANAGE);
 }
@@ -300,8 +292,6 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickDone) {
   PretendManagingPasswords();
 
   model()->OnDoneClicked();
-  EXPECT_EQ(model()->dismissal_reason(),
-            password_manager::metrics_util::CLICKED_DONE);
   EXPECT_EQ(password_manager::ui::MANAGE_STATE, model()->state());
   DestroyModelExpectReason(password_manager::metrics_util::CLICKED_DONE);
 }
@@ -310,8 +300,6 @@ TEST_F(ManagePasswordsBubbleModelTest, PopupAutoSigninToast) {
   PretendAutoSigningIn();
 
   model()->OnAutoSignInToastTimeout();
-  EXPECT_EQ(model()->dismissal_reason(),
-            password_manager::metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT);
   DestroyModelExpectReason(
       password_manager::metrics_util::AUTO_SIGNIN_TOAST_TIMEOUT);
 }
