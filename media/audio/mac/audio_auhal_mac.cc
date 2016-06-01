@@ -63,7 +63,7 @@ AUHALStream::AUHALStream(AudioManagerMac* manager,
       log_callback_(log_callback) {
   // We must have a manager.
   DCHECK(manager_);
-  CHECK(!log_callback_.Equals(AudioManager::LogCallback()));
+  DCHECK(!log_callback_.Equals(AudioManager::LogCallback()));
 
   DVLOG(1) << "ctor";
   DVLOG(1) << "device ID: 0x" << std::hex << device;

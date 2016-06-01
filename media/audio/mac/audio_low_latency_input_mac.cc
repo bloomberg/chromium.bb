@@ -270,7 +270,7 @@ AUAudioInputStream::AUAudioInputStream(
       log_callback_(log_callback),
       weak_factory_(this) {
   DCHECK(manager_);
-  CHECK(!log_callback_.Equals(AudioManager::LogCallback()));
+  DCHECK(!log_callback_.Equals(AudioManager::LogCallback()));
 
   // Set up the desired (output) format specified by the client.
   format_.mSampleRate = input_params.sample_rate();
