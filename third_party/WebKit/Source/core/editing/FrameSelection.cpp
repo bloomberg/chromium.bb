@@ -266,11 +266,6 @@ void FrameSelection::setNonDirectionalSelectionIfNeededAlgorithm(const VisibleSe
     setSelection(newSelection, options, CursorAlignOnScroll::IfNeeded, granularity);
 }
 
-void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelection& passedNewSelection, TextGranularity granularity, EndPointsAdjustmentMode endpointsAdjustmentMode)
-{
-    setNonDirectionalSelectionIfNeededAlgorithm<EditingStrategy>(passedNewSelection, granularity, endpointsAdjustmentMode);
-}
-
 void FrameSelection::setNonDirectionalSelectionIfNeeded(const VisibleSelectionInFlatTree& passedNewSelection, TextGranularity granularity, EndPointsAdjustmentMode endpointsAdjustmentMode)
 {
     setNonDirectionalSelectionIfNeededAlgorithm<EditingInFlatTreeStrategy>(passedNewSelection, granularity, endpointsAdjustmentMode);

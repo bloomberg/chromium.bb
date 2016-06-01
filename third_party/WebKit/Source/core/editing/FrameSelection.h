@@ -205,7 +205,6 @@ public:
 #endif
 
     enum EndPointsAdjustmentMode { AdjustEndpointsAtBidiBoundary, DoNotAdjsutEndpoints };
-    void setNonDirectionalSelectionIfNeeded(const VisibleSelection&, TextGranularity, EndPointsAdjustmentMode = DoNotAdjsutEndpoints);
     void setNonDirectionalSelectionIfNeeded(const VisibleSelectionInFlatTree&, TextGranularity, EndPointsAdjustmentMode = DoNotAdjsutEndpoints);
     void setFocusedNodeIfNeeded();
     void notifyLayoutObjectOfSelectionChange(EUserTriggered);
