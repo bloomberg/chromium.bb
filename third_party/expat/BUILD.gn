@@ -5,8 +5,11 @@
 import("//build/config/chromecast_build.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
-# Chromecast doesn't ship expat as a system library
-if (is_linux && !is_chromecast) {
+# On Linux, we implicitly already depend on expat via fontconfig;
+# let's not pull it in twice.
+# Chromecast doesn't ship expat as a system library.
+# Libfuzzer needs to build library from sources.
+if (is_linux && !is_chromecast && !use_libfuzzer) {
   config("expat_config") {
     libs = [ "expat" ]
   }
