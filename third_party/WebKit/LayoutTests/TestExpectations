@@ -791,8 +791,6 @@ crbug.com/324370 compositing/video/video-reflection.html [ Failure ]
 
 crbug.com/390377 [ Release ] fast/dom/private_script_unittest.html [ Skip ]
 
-crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ Crash Pass Timeout ]
-crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Crash Pass Timeout ]
 crbug.com/613887 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 crbug.com/564403 http/tests/inspector/service-workers/service-worker-manager.html [ Failure Pass ]
 

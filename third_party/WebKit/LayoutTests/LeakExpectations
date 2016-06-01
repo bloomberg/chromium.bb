@@ -56,6 +56,9 @@ crbug.com/414163 [ Debug ] inspector/sources/debugger/promise-tracker.html [ Cra
 
 crbug.com/480769 http/tests/inspector/service-workers/user-agent-override.html [ Crash ]
 
+crbug.com/589802 [ Linux ] http/tests/workers/terminate-during-sync-operation-file.html [ Leak Pass ]
+crbug.com/589802 [ Linux ] http/tests/workers/terminate-during-sync-operation-filesystem.html [ Leak Pass ]
+
 # -----------------------------------------------------------------
 # Untriaged but known leaks of ActiveDOMObject (fast).
 # -----------------------------------------------------------------
