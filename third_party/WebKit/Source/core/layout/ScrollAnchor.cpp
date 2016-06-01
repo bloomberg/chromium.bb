@@ -119,6 +119,11 @@ ScrollAnchor::ExamineResult ScrollAnchor::examine(const LayoutObject* candidate)
     if (candidate->isLayoutInline())
         return ExamineResult(Continue);
 
+    // Anonymous blocks are not in the DOM tree and it may be hard for
+    // developers to reason about the anchor node.
+    if (candidate->isAnonymous())
+        return ExamineResult(Continue);
+
     if (!candidate->isText() && !candidate->isBox())
         return ExamineResult(Skip);
 

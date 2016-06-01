@@ -159,6 +159,37 @@ TEST_F(ScrollAnchorTest, AnchorWithLayerInScrollingDiv)
     EXPECT_EQ(250, scroller->scrollPosition().y());
 }
 
+TEST_F(ScrollAnchorTest, ExcludeAnonymousCandidates)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    body { height: 3500px }"
+        "    #div {"
+        "        position: relative; background-color: pink;"
+        "        top: 5px; left: 5px; width: 100px; height: 3500px;"
+        "    }"
+        "    #inline { padding-left: 10px }"
+        "</style>"
+        "<div id='div'>"
+        "    <a id='inline'>text</a>"
+        "    <p id='block'>Some text</p>"
+        "</div>");
+
+    ScrollableArea* viewport = layoutViewport();
+    Element* inlineElem = document().getElementById("inline");
+    EXPECT_TRUE(inlineElem->layoutObject()->parent()->isAnonymous());
+
+    // Scroll #div into view, making anonymous block a viable candidate.
+    document().getElementById("div")->scrollIntoView();
+
+    // Trigger layout and verify that we don't anchor to the anonymous block.
+    document().getElementById("div")->setAttribute(HTMLNames::styleAttr,
+        AtomicString("top: 6px"));
+    update();
+    EXPECT_EQ(inlineElem->layoutObject()->slowFirstChild(),
+        scrollAnchor(viewport).anchorObject());
+}
+
 TEST_F(ScrollAnchorTest, FullyContainedInlineBlock)
 {
     // Exercises every WalkStatus value:
@@ -211,7 +242,7 @@ TEST_F(ScrollAnchorTest, ExcludeFixedPosition)
 {
     setBodyInnerHTML(
         "<style>"
-        "    body { height: 1000px; padding: 20px }"
+        "    body { height: 1000px; padding: 20px; }"
         "    div { position: relative; top: 100px; }"
         "    #f { position: fixed }"
         "</style>"
