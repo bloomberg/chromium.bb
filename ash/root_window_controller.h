@@ -56,6 +56,7 @@ class AnimatingDesktopController;
 class DesktopBackgroundWidgetController;
 class DockedWindowLayoutManager;
 class PanelLayoutManager;
+class RootWindowControllerCommon;
 class RootWindowLayoutManager;
 class Shelf;
 class ShelfLayoutManager;
@@ -257,10 +258,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // |is_first_run_after_boot| determines the background's initial color.
   void CreateSystemBackground(bool is_first_run_after_boot);
 
-  // Creates each of the special window containers that holds windows of various
-  // types in the shell UI.
-  void CreateContainersInRootWindow(wm::WmWindow* root_window);
-
   // Enables projection touch HUD.
   void EnableTouchHudProjection();
 
@@ -275,6 +272,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void OnTouchHudProjectionToggled(bool enabled) override;
 
   std::unique_ptr<AshWindowTreeHost> ash_host_;
+
+  std::unique_ptr<RootWindowControllerCommon> root_window_controller_common_;
+
   RootWindowLayoutManager* root_window_layout_;
 
   std::unique_ptr<StackingController> stacking_controller_;

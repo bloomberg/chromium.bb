@@ -206,6 +206,8 @@
       'popup_message.h',
       'root_window_controller.cc',
       'root_window_controller.h',
+      'root_window_controller_common.cc',
+      'root_window_controller_common.h',
       'root_window_settings.cc',
       'root_window_settings.h',
       'rotator/screen_rotation_animation.cc',
