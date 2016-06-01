@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_RASTER_WORKER_POOL_H_
-#define CONTENT_RENDERER_RASTER_WORKER_POOL_H_
+#ifndef CONTENT_RENDERER_CATEGORIZED_WORKER_POOL_H_
+#define CONTENT_RENDERER_CATEGORIZED_WORKER_POOL_H_
 
 #include <memory>
 
@@ -21,18 +21,18 @@
 
 namespace content {
 
-// A pool of threads used to run raster work.
-// Work can be scheduled on the threads using different interfaces.
-// The pool itself implements TaskRunner interface and tasks posted via that
-// interface might run in parallel.
-// CreateSequencedTaskRunner creates a sequenced task runner that might run in
-// parallel with other instances of sequenced task runners.
-// It's also possible to get the underlying TaskGraphRunner to schedule a graph
-// of tasks with their dependencies.
-class CONTENT_EXPORT RasterWorkerPool : public base::TaskRunner,
-                                        public cc::TaskGraphRunner {
+// A pool of threads used to run categorized work. The work can be scheduled on
+// the threads using different interfaces.
+// 1. The pool itself implements TaskRunner interface and tasks posted via that
+//    interface might run in parallel.
+// 2. The pool also implements TaskGraphRunner interface which allows to
+//    schedule a graph of tasks with their dependencies.
+// 3. CreateSequencedTaskRunner() creates a sequenced task runner that might run
+//    in parallel with other instances of sequenced task runners.
+class CONTENT_EXPORT CategorizedWorkerPool : public base::TaskRunner,
+                                             public cc::TaskGraphRunner {
  public:
-  RasterWorkerPool();
+  CategorizedWorkerPool();
 
   // Overridden from base::TaskRunner:
   bool PostDelayedTask(const tracked_objects::Location& from_here,
@@ -70,11 +70,11 @@ class CONTENT_EXPORT RasterWorkerPool : public base::TaskRunner,
   scoped_refptr<base::SequencedTaskRunner> CreateSequencedTaskRunner();
 
  protected:
-  ~RasterWorkerPool() override;
+  ~CategorizedWorkerPool() override;
 
  private:
-  class RasterWorkerPoolSequencedTaskRunner;
-  friend class RasterWorkerPoolSequencedTaskRunner;
+  class CategorizedWorkerPoolSequencedTaskRunner;
+  friend class CategorizedWorkerPoolSequencedTaskRunner;
 
   // Simple Task for the TaskGraphRunner that wraps a closure.
   // This class is used to schedule TaskRunner tasks on the
@@ -145,4 +145,4 @@ class CONTENT_EXPORT RasterWorkerPool : public base::TaskRunner,
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_RASTER_WORKER_POOL_H_
+#endif  // CONTENT_RENDERER_CATEGORIZED_WORKER_POOL_H_

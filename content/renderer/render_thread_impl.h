@@ -109,7 +109,7 @@ class NetInfoDispatcher;
 class P2PSocketDispatcher;
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
-class RasterWorkerPool;
+class CategorizedWorkerPool;
 class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class RendererDemuxerAndroid;
@@ -613,7 +613,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
   // Pool of workers used for raster operations (e.g., tile rasterization).
-  scoped_refptr<RasterWorkerPool> raster_worker_pool_;
+  scoped_refptr<CategorizedWorkerPool> categorized_worker_pool_;
 
   base::CancelableCallback<void(const IPC::Message&)> main_input_callback_;
   scoped_refptr<IPC::MessageFilter> input_event_filter_;

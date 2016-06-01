@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/raster_worker_pool.h"
+#include "content/renderer/categorized_worker_pool.h"
 
 #include <string>
 #include <utility>
@@ -17,15 +17,16 @@
 namespace content {
 namespace {
 
-// A thread which forwards to RasterWorkerPool::Run with the runnable
+// A thread which forwards to CategorizedWorkerPool::Run with the runnable
 // categories.
-class RasterWorkerPoolThread : public base::SimpleThread {
+class CategorizedWorkerPoolThread : public base::SimpleThread {
  public:
-  RasterWorkerPoolThread(const std::string& name_prefix,
-                         const Options& options,
-                         RasterWorkerPool* pool,
-                         std::vector<cc::TaskCategory> categories,
-                         base::ConditionVariable* has_ready_to_run_tasks_cv)
+  CategorizedWorkerPoolThread(
+      const std::string& name_prefix,
+      const Options& options,
+      CategorizedWorkerPool* pool,
+      std::vector<cc::TaskCategory> categories,
+      base::ConditionVariable* has_ready_to_run_tasks_cv)
       : SimpleThread(name_prefix, options),
         pool_(pool),
         categories_(categories),
@@ -34,18 +35,18 @@ class RasterWorkerPoolThread : public base::SimpleThread {
   void Run() override { pool_->Run(categories_, has_ready_to_run_tasks_cv_); }
 
  private:
-  RasterWorkerPool* const pool_;
+  CategorizedWorkerPool* const pool_;
   const std::vector<cc::TaskCategory> categories_;
   base::ConditionVariable* const has_ready_to_run_tasks_cv_;
 };
 
 }  // namespace
 
-// A sequenced task runner which posts tasks to a RasterWorkerPool.
-class RasterWorkerPool::RasterWorkerPoolSequencedTaskRunner
+// A sequenced task runner which posts tasks to a CategorizedWorkerPool.
+class CategorizedWorkerPool::CategorizedWorkerPoolSequencedTaskRunner
     : public base::SequencedTaskRunner {
  public:
-  explicit RasterWorkerPoolSequencedTaskRunner(
+  explicit CategorizedWorkerPoolSequencedTaskRunner(
       cc::TaskGraphRunner* task_graph_runner)
       : task_graph_runner_(task_graph_runner),
         namespace_token_(task_graph_runner->GetNamespaceToken()) {}
@@ -95,7 +96,7 @@ class RasterWorkerPool::RasterWorkerPoolSequencedTaskRunner
   }
 
  private:
-  ~RasterWorkerPoolSequencedTaskRunner() override {
+  ~CategorizedWorkerPoolSequencedTaskRunner() override {
     task_graph_runner_->WaitForTasksToFinishRunning(namespace_token_);
     task_graph_runner_->CollectCompletedTasks(namespace_token_,
                                               &completed_tasks_);
@@ -117,14 +118,14 @@ class RasterWorkerPool::RasterWorkerPoolSequencedTaskRunner
   cc::Task::Vector completed_tasks_;
 };
 
-RasterWorkerPool::RasterWorkerPool()
+CategorizedWorkerPool::CategorizedWorkerPool()
     : namespace_token_(GetNamespaceToken()),
       has_ready_to_run_foreground_tasks_cv_(&lock_),
       has_ready_to_run_background_tasks_cv_(&lock_),
       has_namespaces_with_finished_running_tasks_cv_(&lock_),
       shutdown_(false) {}
 
-void RasterWorkerPool::Start(int num_threads) {
+void CategorizedWorkerPool::Start(int num_threads) {
   DCHECK(threads_.empty());
 
   // Start |num_threads| threads for foreground work, including nonconcurrent
@@ -134,7 +135,7 @@ void RasterWorkerPool::Start(int num_threads) {
   foreground_categories.push_back(cc::TASK_CATEGORY_FOREGROUND);
 
   for (int i = 0; i < num_threads; i++) {
-    std::unique_ptr<base::SimpleThread> thread(new RasterWorkerPoolThread(
+    std::unique_ptr<base::SimpleThread> thread(new CategorizedWorkerPoolThread(
         base::StringPrintf("CompositorTileWorker%u",
                            static_cast<unsigned>(threads_.size() + 1))
             .c_str(),
@@ -154,14 +155,14 @@ void RasterWorkerPool::Start(int num_threads) {
   thread_options.set_priority(base::ThreadPriority::BACKGROUND);
 #endif
 
-  std::unique_ptr<base::SimpleThread> thread(new RasterWorkerPoolThread(
+  std::unique_ptr<base::SimpleThread> thread(new CategorizedWorkerPoolThread(
       "CompositorTileWorkerBackground", thread_options, this,
       background_categories, &has_ready_to_run_background_tasks_cv_));
   thread->Start();
   threads_.push_back(std::move(thread));
 }
 
-void RasterWorkerPool::Shutdown() {
+void CategorizedWorkerPool::Shutdown() {
   WaitForTasksToFinishRunning(namespace_token_);
   CollectCompletedTasks(namespace_token_, &completed_tasks_);
   // Shutdown raster threads.
@@ -185,7 +186,7 @@ void RasterWorkerPool::Shutdown() {
 }
 
 // Overridden from base::TaskRunner:
-bool RasterWorkerPool::PostDelayedTask(
+bool CategorizedWorkerPool::PostDelayedTask(
     const tracked_objects::Location& from_here,
     const base::Closure& task,
     base::TimeDelta delay) {
@@ -218,12 +219,13 @@ bool RasterWorkerPool::PostDelayedTask(
   return true;
 }
 
-bool RasterWorkerPool::RunsTasksOnCurrentThread() const {
+bool CategorizedWorkerPool::RunsTasksOnCurrentThread() const {
   return true;
 }
 
-void RasterWorkerPool::Run(const std::vector<cc::TaskCategory>& categories,
-                           base::ConditionVariable* has_ready_to_run_tasks_cv) {
+void CategorizedWorkerPool::Run(
+    const std::vector<cc::TaskCategory>& categories,
+    base::ConditionVariable* has_ready_to_run_tasks_cv) {
   base::AutoLock lock(lock_);
 
   while (true) {
@@ -243,7 +245,7 @@ void RasterWorkerPool::Run(const std::vector<cc::TaskCategory>& categories,
   }
 }
 
-void RasterWorkerPool::FlushForTesting() {
+void CategorizedWorkerPool::FlushForTesting() {
   base::AutoLock lock(lock_);
 
   while (!work_queue_.HasFinishedRunningTasksInAllNamespaces()) {
@@ -252,21 +254,21 @@ void RasterWorkerPool::FlushForTesting() {
 }
 
 scoped_refptr<base::SequencedTaskRunner>
-RasterWorkerPool::CreateSequencedTaskRunner() {
-  return new RasterWorkerPoolSequencedTaskRunner(this);
+CategorizedWorkerPool::CreateSequencedTaskRunner() {
+  return new CategorizedWorkerPoolSequencedTaskRunner(this);
 }
 
-RasterWorkerPool::~RasterWorkerPool() {}
+CategorizedWorkerPool::~CategorizedWorkerPool() {}
 
-cc::NamespaceToken RasterWorkerPool::GetNamespaceToken() {
+cc::NamespaceToken CategorizedWorkerPool::GetNamespaceToken() {
   base::AutoLock lock(lock_);
   return work_queue_.GetNamespaceToken();
 }
 
-void RasterWorkerPool::ScheduleTasks(cc::NamespaceToken token,
-                                     cc::TaskGraph* graph) {
+void CategorizedWorkerPool::ScheduleTasks(cc::NamespaceToken token,
+                                          cc::TaskGraph* graph) {
   TRACE_EVENT2("disabled-by-default-cc.debug",
-               "RasterWorkerPool::ScheduleTasks", "num_nodes",
+               "CategorizedWorkerPool::ScheduleTasks", "num_nodes",
                graph->nodes.size(), "num_edges", graph->edges.size());
   {
     base::AutoLock lock(lock_);
@@ -274,8 +276,9 @@ void RasterWorkerPool::ScheduleTasks(cc::NamespaceToken token,
   }
 }
 
-void RasterWorkerPool::ScheduleTasksWithLockAcquired(cc::NamespaceToken token,
-                                                     cc::TaskGraph* graph) {
+void CategorizedWorkerPool::ScheduleTasksWithLockAcquired(
+    cc::NamespaceToken token,
+    cc::TaskGraph* graph) {
   DCHECK(token.IsValid());
   DCHECK(!cc::TaskGraphWorkQueue::DependencyMismatch(graph));
   DCHECK(!shutdown_);
@@ -286,9 +289,10 @@ void RasterWorkerPool::ScheduleTasksWithLockAcquired(cc::NamespaceToken token,
   SignalHasReadyToRunTasksWithLockAcquired();
 }
 
-void RasterWorkerPool::WaitForTasksToFinishRunning(cc::NamespaceToken token) {
+void CategorizedWorkerPool::WaitForTasksToFinishRunning(
+    cc::NamespaceToken token) {
   TRACE_EVENT0("disabled-by-default-cc.debug",
-               "RasterWorkerPool::WaitForTasksToFinishRunning");
+               "CategorizedWorkerPool::WaitForTasksToFinishRunning");
 
   DCHECK(token.IsValid());
 
@@ -310,11 +314,11 @@ void RasterWorkerPool::WaitForTasksToFinishRunning(cc::NamespaceToken token) {
   }
 }
 
-void RasterWorkerPool::CollectCompletedTasks(
+void CategorizedWorkerPool::CollectCompletedTasks(
     cc::NamespaceToken token,
     cc::Task::Vector* completed_tasks) {
   TRACE_EVENT0("disabled-by-default-cc.debug",
-               "RasterWorkerPool::CollectCompletedTasks");
+               "CategorizedWorkerPool::CollectCompletedTasks");
 
   {
     base::AutoLock lock(lock_);
@@ -322,14 +326,14 @@ void RasterWorkerPool::CollectCompletedTasks(
   }
 }
 
-void RasterWorkerPool::CollectCompletedTasksWithLockAcquired(
+void CategorizedWorkerPool::CollectCompletedTasksWithLockAcquired(
     cc::NamespaceToken token,
     cc::Task::Vector* completed_tasks) {
   DCHECK(token.IsValid());
   work_queue_.CollectCompletedTasks(token, completed_tasks);
 }
 
-bool RasterWorkerPool::RunTaskWithLockAcquired(
+bool CategorizedWorkerPool::RunTaskWithLockAcquired(
     const std::vector<cc::TaskCategory>& categories) {
   for (const auto& category : categories) {
     if (ShouldRunTaskForCategoryWithLockAcquired(category)) {
@@ -340,7 +344,7 @@ bool RasterWorkerPool::RunTaskWithLockAcquired(
   return false;
 }
 
-void RasterWorkerPool::RunTaskInCategoryWithLockAcquired(
+void CategorizedWorkerPool::RunTaskInCategoryWithLockAcquired(
     cc::TaskCategory category) {
   TRACE_EVENT0("toplevel", "TaskGraphRunner::RunTask");
 
@@ -366,7 +370,7 @@ void RasterWorkerPool::RunTaskInCategoryWithLockAcquired(
     has_namespaces_with_finished_running_tasks_cv_.Signal();
 }
 
-bool RasterWorkerPool::ShouldRunTaskForCategoryWithLockAcquired(
+bool CategorizedWorkerPool::ShouldRunTaskForCategoryWithLockAcquired(
     cc::TaskCategory category) {
   lock_.AssertAcquired();
 
@@ -399,7 +403,7 @@ bool RasterWorkerPool::ShouldRunTaskForCategoryWithLockAcquired(
   return true;
 }
 
-void RasterWorkerPool::SignalHasReadyToRunTasksWithLockAcquired() {
+void CategorizedWorkerPool::SignalHasReadyToRunTasksWithLockAcquired() {
   lock_.AssertAcquired();
 
   if (ShouldRunTaskForCategoryWithLockAcquired(cc::TASK_CATEGORY_FOREGROUND) ||
@@ -413,15 +417,15 @@ void RasterWorkerPool::SignalHasReadyToRunTasksWithLockAcquired() {
   }
 }
 
-RasterWorkerPool::ClosureTask::ClosureTask(const base::Closure& closure)
+CategorizedWorkerPool::ClosureTask::ClosureTask(const base::Closure& closure)
     : closure_(closure) {}
 
 // Overridden from cc::Task:
-void RasterWorkerPool::ClosureTask::RunOnWorkerThread() {
+void CategorizedWorkerPool::ClosureTask::RunOnWorkerThread() {
   closure_.Run();
   closure_.Reset();
 }
 
-RasterWorkerPool::ClosureTask::~ClosureTask() {}
+CategorizedWorkerPool::ClosureTask::~ClosureTask() {}
 
 }  // namespace content
