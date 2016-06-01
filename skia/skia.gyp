@@ -171,6 +171,19 @@
       ],
     },
     {
+      'target_name': 'skia_interfaces_mojom',
+      'type': 'none',
+      'variables': {
+        'mojom_files': [
+          'public/interfaces/bitmap.mojom',
+        ],
+        'mojom_typemaps': [
+          'public/interfaces/skbitmap.typemap',
+        ],
+      },
+      'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
+    },
+    {
       'target_name': 'skia_mojo',
       'type': 'static_library',
       # The optimize: 'max' scattered throughout are particularly
@@ -180,17 +193,16 @@
       'variables': {
         'optimize': 'max',
       },
+      'sources': [
+        '../skia/public/interfaces/bitmap_skbitmap_struct_traits.cc',
+      ],
       'dependencies': [
         'skia',
+        'skia_interfaces_mojom',
         '../base/base.gyp:base',
       ],
-      'includes': [
-        '../mojo/mojom_bindings_generator.gypi',
-      ],
-      'sources': [
-        # Note: file list duplicated in GN build.
-        'public/interfaces/bitmap.mojom',
-        'public/type_converters.cc',
+      'export_dependent_settings': [
+        'skia',
       ],
     },
   ],

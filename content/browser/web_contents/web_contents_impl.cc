@@ -120,7 +120,6 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "skia/public/type_converters.h"
 #include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/accessibility/ax_tree_combiner.h"
@@ -4846,7 +4845,7 @@ void WebContentsImpl::OnDidDownloadImage(
     int id,
     const GURL& image_url,
     int32_t http_status_code,
-    mojo::Array<skia::mojom::BitmapPtr> images,
+    mojo::Array<SkBitmap> images,
     mojo::Array<gfx::Size> original_image_sizes) {
   const std::vector<SkBitmap> bitmaps = images.To<std::vector<SkBitmap>>();
 

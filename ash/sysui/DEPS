@@ -11,6 +11,5 @@ include_rules = [
   "+services/catalog/public",
   "+services/shell/public",
   "+services/tracing/public",
-  "+skia/public",
   "+third_party/khronos/GLES2/gl2.h",
 ]

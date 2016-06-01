@@ -42,7 +42,6 @@ static_library("utility") {
     "//media",
     "//net:net_with_v8",
     "//skia",
-    "//skia/public",
     "//sql",
     "//third_party/libxml",
   ]

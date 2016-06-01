@@ -10,7 +10,7 @@ mojom("interfaces") {
     "shelf_constants.mojom",
   ]
 
-  deps = [
+  public_deps = [
     "//skia/public/interfaces",
   ]
 }

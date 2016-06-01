@@ -16,7 +16,6 @@
 #include "mojo/common/url_type_converters.h"
 #include "net/base/data_url.h"
 #include "skia/ext/image_operations.h"
-#include "skia/public/type_converters.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -219,8 +218,7 @@ void ImageDownloaderImpl::ReplyDownloadResult(
     const std::vector<SkBitmap>& result_images,
     const std::vector<gfx::Size>& result_original_image_sizes,
     const DownloadImageCallback& callback) {
-  callback.Run(http_status_code,
-               mojo::Array<skia::mojom::BitmapPtr>::From(result_images),
+  callback.Run(http_status_code, mojo::Array<SkBitmap>::From(result_images),
                result_original_image_sizes);
 }
 

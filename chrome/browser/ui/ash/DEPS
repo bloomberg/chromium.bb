@@ -4,5 +4,4 @@ include_rules = [
   "+components/user_manager",
   "+mash/shelf/public/interfaces",
   "+media",
-  "+skia/public",
 ]

@@ -12,7 +12,6 @@
 #include "content/public/child/image_decoder_utils.h"
 #include "ipc/ipc_channel.h"
 #include "skia/ext/image_operations.h"
-#include "skia/public/type_converters.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -42,9 +41,9 @@ void ImageDecoderImpl::DecodeImage(
     mojo::Array<uint8_t> encoded_data,
     mojom::ImageCodec codec,
     bool shrink_to_fit,
-    const mojo::Callback<void(skia::mojom::BitmapPtr)>& callback) {
+    const mojo::Callback<void(const SkBitmap&)>& callback) {
   if (encoded_data.size() == 0) {
-    callback.Run(nullptr);
+    callback.Run(SkBitmap());
     return;
   }
 
@@ -99,8 +98,5 @@ void ImageDecoderImpl::DecodeImage(
     }
   }
 
-  if (decoded_image.isNull())
-    callback.Run(nullptr);
-  else
-    callback.Run(skia::mojom::Bitmap::From(decoded_image));
+  callback.Run(decoded_image);
 }

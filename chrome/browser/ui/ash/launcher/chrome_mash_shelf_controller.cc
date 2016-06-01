@@ -16,7 +16,6 @@
 #include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/common/common_type_converters.h"
 #include "services/shell/public/cpp/connector.h"
-#include "skia/public/type_converters.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -125,7 +124,7 @@ void ChromeMashShelfController::PinAppsFromPrefs() {
     item->app_title = mojo::String::From(helper_.GetAppTitle(profile, app));
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const gfx::Image& image = rb.GetImageNamed(IDR_APP_DEFAULT_ICON);
-    item->image = skia::mojom::Bitmap::From(*image.ToSkBitmap());
+    item->image = *image.ToSkBitmap();
     std::unique_ptr<ChromeShelfItemDelegate> delegate(
         new ChromeShelfItemDelegate(app));
     shelf_controller_->PinItem(std::move(item),
@@ -169,6 +168,5 @@ void ChromeMashShelfController::OnAutoHideBehaviorChanged(
 
 void ChromeMashShelfController::OnAppImageUpdated(const std::string& app_id,
                                                   const gfx::ImageSkia& image) {
-  shelf_controller_->SetItemImage(app_id,
-                                  skia::mojom::Bitmap::From(*image.bitmap()));
+  shelf_controller_->SetItemImage(app_id, *image.bitmap());
 }

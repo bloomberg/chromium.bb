@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "ipc/ipc_channel.h"
-#include "skia/public/type_converters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -46,15 +45,13 @@ class Request {
         shrink, base::Bind(&Request::OnRequestDone, base::Unretained(this)));
   }
 
-  const skia::mojom::BitmapPtr& bitmap() const { return bitmap_; }
+  const SkBitmap& bitmap() const { return bitmap_; }
 
  private:
-  void OnRequestDone(skia::mojom::BitmapPtr result_image) {
-    bitmap_ = std::move(result_image);
-  }
+  void OnRequestDone(const SkBitmap& result_image) { bitmap_ = result_image; }
 
   ImageDecoderImpl* decoder_;
-  skia::mojom::BitmapPtr bitmap_;
+  SkBitmap bitmap_;
 };
 
 }  // namespace
@@ -83,24 +80,23 @@ TEST(ImageDecoderImplTest, DecodeImageSizeLimit) {
 
     Request request(&decoder);
     request.DecodeImage(jpg, true);
-    ASSERT_FALSE(request.bitmap().is_null());
-    SkBitmap bitmap = request.bitmap().To<SkBitmap>();
+    ASSERT_FALSE(request.bitmap().isNull());
 
     // Check that image has been shrunk appropriately
-    EXPECT_LT(bitmap.computeSize64() + base_msg_size,
+    EXPECT_LT(request.bitmap().computeSize64() + base_msg_size,
               static_cast<int64_t>(kTestMessageSize));
 // Android does its own image shrinking for memory conservation deeper in
 // the decode, so more specific tests here won't work.
 #if !defined(OS_ANDROID)
-    EXPECT_EQ(widths[i] >> i, bitmap.width());
-    EXPECT_EQ(heights[i] >> i, bitmap.height());
+    EXPECT_EQ(widths[i] >> i, request.bitmap().width());
+    EXPECT_EQ(heights[i] >> i, request.bitmap().height());
 
     // Check that if resize not requested and image exceeds IPC size limit,
     // an empty image is returned
     if (heights[i] > max_height_for_msg) {
       Request request(&decoder);
       request.DecodeImage(jpg, false);
-      EXPECT_TRUE(request.bitmap().is_null());
+      EXPECT_TRUE(request.bitmap().isNull());
     }
 #endif
   }
@@ -116,7 +112,7 @@ TEST(ImageDecoderImplTest, DecodeImageFailed) {
 
   Request request(&decoder);
   request.DecodeImage(jpg, false);
-  EXPECT_TRUE(request.bitmap().is_null());
+  EXPECT_TRUE(request.bitmap().isNull());
 }
 
 }  // namespace mojom

@@ -20,6 +20,7 @@
           'common/storage_partition_service.mojom',
         ],
         'mojom_typemaps': [
+          '../skia/public/interfaces/skbitmap.typemap',
           '../ui/gfx/geometry/mojo/geometry.typemap',
           '../url/mojo/gurl.typemap',
           '../url/mojo/origin.typemap',
@@ -43,9 +44,11 @@
       },
       'dependencies': [
         '../url/url.gyp:url_mojom',
+        '../skia/skia.gyp:skia',
         'content_common_mojo_bindings_mojom',
       ],
       'export_dependent_settings': [
+        '../skia/skia.gyp:skia',
         '../url/url.gyp:url_mojom',
       ],
     },

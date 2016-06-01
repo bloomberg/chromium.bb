@@ -81,7 +81,6 @@ source_set("browser") {
     "//services/user/public/cpp",
     "//services/user/public/interfaces",
     "//skia",
-    "//skia/public",
     "//sql",
     "//storage/browser",
     "//storage/common",

@@ -383,7 +383,6 @@ source_set("browser") {
       "//net:extras",
       "//net:net_with_v8",
       "//services/shell/public/cpp",
-      "//skia/public",
       "//storage/browser",
       "//storage/common",
       "//third_party/WebKit/public:image_resources",

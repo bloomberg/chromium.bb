@@ -268,7 +268,6 @@ source_set("ui") {
       "//ash/strings",
       "//components/user_manager",
       "//mash/shelf/public/interfaces",
-      "//skia/public",
       "//ui/app_list/presenter",
       "//ui/app_list/presenter:mojom",
       "//ui/keyboard:mojom",

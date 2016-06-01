@@ -40,12 +40,10 @@ source_set("lib") {
     "//components/mus/public/interfaces",
     "//components/user_manager",
     "//device/bluetooth",
-    "//mash/shelf/public/interfaces",
     "//mojo/common:common_base",
     "//services/catalog/public/cpp",
     "//services/shell/public/cpp",
     "//services/tracing/public/cpp",
-    "//skia/public",
     "//ui/app_list/presenter",
     "//ui/app_list/presenter:mojom",
     "//ui/aura",
@@ -62,6 +60,10 @@ source_set("lib") {
     "//ui/strings",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
+  ]
+
+  public_deps = [
+    "//mash/shelf/public/interfaces",
   ]
 
   if (is_chromeos) {

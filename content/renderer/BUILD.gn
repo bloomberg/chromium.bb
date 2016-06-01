@@ -71,7 +71,6 @@ source_set("renderer") {
     "//services/shell/public/cpp",
     "//services/shell/public/interfaces",
     "//skia",
-    "//skia/public",
     "//storage/common",
     "//third_party/WebKit/public:blink",
     "//third_party/WebKit/public:mojo_bindings",

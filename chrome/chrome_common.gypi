@@ -650,19 +650,34 @@
       'includes': [ '../build/protoc.gypi' ],
     },
     {
-      # GN version: //chrome/common:mojo_bindings
-      'target_name': 'common_mojo_bindings',
-      'type': 'static_library',
-      'includes': [
-        '../mojo/mojom_bindings_generator.gypi'
-      ],
-      'sources': [
-        'common/image_decoder.mojom',
-        'common/resource_usage_reporter.mojom',
-      ],
+      'target_name': 'common_mojo_bindings_mojom',
+      'type': 'none',
+      'variables': {
+        'mojom_files': [
+          'common/image_decoder.mojom',
+          'common/resource_usage_reporter.mojom',
+        ],
+        'mojom_typemaps': [
+          '../skia/public/interfaces/skbitmap.typemap',
+        ],
+      },
       'dependencies': [
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../skia/skia.gyp:skia_mojo',
+      ],
+      'includes': [ '../mojo/mojom_bindings_generator_explicit.gypi' ],
+    },
+    {
+      # GN version: //chrome/common:mojo_bindings
+      'target_name': 'common_mojo_bindings',
+      'type': 'static_library',
+      'dependencies': [
+        'common_mojo_bindings_mojom',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
+        '../skia/skia.gyp:skia',
+      ],
+      'export_dependent_settings': [
+        '../skia/skia.gyp:skia',
       ],
     },
   ],
