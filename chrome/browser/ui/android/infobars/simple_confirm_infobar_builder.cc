@@ -114,15 +114,13 @@ SimpleConfirmInfoBarDelegate::GetButtonLabel(InfoBarButton button) const {
 }
 
 bool SimpleConfirmInfoBarDelegate::Accept() {
-  Java_SimpleConfirmInfoBarBuilder_onInfoBarButtonClicked(
+  return !Java_SimpleConfirmInfoBarBuilder_onInfoBarButtonClicked(
       base::android::AttachCurrentThread(), java_listener_.obj(), true);
-  return true;
 }
 
 bool SimpleConfirmInfoBarDelegate::Cancel() {
-  Java_SimpleConfirmInfoBarBuilder_onInfoBarButtonClicked(
+  return !Java_SimpleConfirmInfoBarBuilder_onInfoBarButtonClicked(
       base::android::AttachCurrentThread(), java_listener_.obj(), false);
-  return true;
 }
 
 }  // anonymous namespace

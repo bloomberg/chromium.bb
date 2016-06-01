@@ -34,8 +34,10 @@ public class SimpleConfirmInfoBarBuilder {
          *
          * @param isPrimary True if the primary button was clicked, false if the secondary button
          *                  was clicked.
+         * @return True if the listener caused the closing of this info bar as a side effect,
+         *         false otherwise.
          */
-        void onInfoBarButtonClicked(boolean isPrimary);
+        boolean onInfoBarButtonClicked(boolean isPrimary);
     }
 
     /**
@@ -81,8 +83,8 @@ public class SimpleConfirmInfoBarBuilder {
     }
 
     @CalledByNative
-    private static void onInfoBarButtonClicked(Listener listener, boolean isPrimary) {
-        if (listener != null) listener.onInfoBarButtonClicked(isPrimary);
+    private static boolean onInfoBarButtonClicked(Listener listener, boolean isPrimary) {
+        return listener == null ? false : listener.onInfoBarButtonClicked(isPrimary);
     }
 
     private static native void nativeCreate(

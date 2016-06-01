@@ -6,9 +6,9 @@ package org.chromium.chrome.test.util;
 
 import android.view.View;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBar;
-import org.chromium.content.browser.test.util.TouchCommon;
 
 /**
  * Utility functions for dealing with InfoBars.
@@ -19,9 +19,16 @@ public class InfoBarUtil {
      * @return True if the View was found.
      */
     private static boolean findButton(InfoBar infoBar, int buttonId, boolean click) {
-        View button = infoBar.getView().findViewById(buttonId);
+        final View button = infoBar.getView().findViewById(buttonId);
         if (button == null) return false;
-        if (click) TouchCommon.singleClickView(button);
+        if (click) {
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    button.performClick();
+                }
+            });
+        }
         return true;
     }
 

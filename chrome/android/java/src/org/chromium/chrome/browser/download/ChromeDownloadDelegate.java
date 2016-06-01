@@ -56,15 +56,16 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
 
     private class DangerousDownloadListener implements SimpleConfirmInfoBarBuilder.Listener {
         @Override
-        public void onInfoBarButtonClicked(boolean confirm) {
+        public boolean onInfoBarButtonClicked(boolean confirm) {
             assert mTab != null;
-            if (mPendingRequest == null) return;
+            if (mPendingRequest == null) return false;
             if (mPendingRequest.getDownloadGuid() != null) {
                 nativeDangerousDownloadValidated(mTab, mPendingRequest.getDownloadGuid(), confirm);
                 if (confirm) {
                     showDownloadStartNotification();
                 }
-                closeBlankTab();
+                mPendingRequest = null;
+                return closeBlankTab();
             } else if (confirm) {
                 // User confirmed the download.
                 if (mPendingRequest.isGETRequest()) {
@@ -96,13 +97,16 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
                     DownloadManagerService.getDownloadManagerService(mContext).onDownloadCompleted(
                             newDownloadInfo);
                 }
+                mPendingRequest = null;
+                return false;
             } else {
                 // User did not accept the download, discard the file if it is a POST download.
                 if (!mPendingRequest.isGETRequest()) {
                     discardFile(mPendingRequest.getFilePath());
                 }
+                mPendingRequest = null;
+                return closeBlankTab();
             }
-            mPendingRequest = null;
         }
 
         @Override

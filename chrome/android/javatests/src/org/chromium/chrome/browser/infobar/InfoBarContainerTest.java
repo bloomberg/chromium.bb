@@ -46,12 +46,13 @@ public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActiv
         }
 
         @Override
-        public void onInfoBarButtonClicked(boolean isPrimary) {
+        public boolean onInfoBarButtonClicked(boolean isPrimary) {
             if (isPrimary) {
                 primaryButtonCallback.notifyCalled();
             } else {
                 secondaryButtonCallback.notifyCalled();
             }
+            return false;
         }
     }
 
