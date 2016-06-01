@@ -76,7 +76,7 @@ int vp9_full_search_sadx8(const struct macroblock *x, const struct mv *ref_mv, i
 RTCD_EXTERN int (*vp9_full_search_sad)(const struct macroblock *x, const struct mv *ref_mv, int sad_per_bit, int distance, const struct vp9_variance_vtable *fn_ptr, const struct mv *center_mv, struct mv *best_mv);
 
 void vp9_fwht4x4_c(const int16_t *input, tran_low_t *output, int stride);
-void vp9_fwht4x4_mmx(const int16_t *input, tran_low_t *output, int stride);
+void vp9_fwht4x4_sse2(const int16_t *input, tran_low_t *output, int stride);
 RTCD_EXTERN void (*vp9_fwht4x4)(const int16_t *input, tran_low_t *output, int stride);
 
 void vp9_iht16x16_256_add_c(const tran_low_t *input, uint8_t *output, int pitch, int tx_type);
@@ -152,7 +152,7 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_SSE3) vp9_full_search_sad = vp9_full_search_sadx3;
     if (flags & HAS_SSE4_1) vp9_full_search_sad = vp9_full_search_sadx8;
     vp9_fwht4x4 = vp9_fwht4x4_c;
-    if (flags & HAS_MMX) vp9_fwht4x4 = vp9_fwht4x4_mmx;
+    if (flags & HAS_SSE2) vp9_fwht4x4 = vp9_fwht4x4_sse2;
     vp9_iht16x16_256_add = vp9_iht16x16_256_add_c;
     if (flags & HAS_SSE2) vp9_iht16x16_256_add = vp9_iht16x16_256_add_sse2;
     vp9_iht4x4_16_add = vp9_iht4x4_16_add_c;

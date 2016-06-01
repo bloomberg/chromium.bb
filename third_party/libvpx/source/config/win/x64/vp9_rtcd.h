@@ -76,8 +76,8 @@ int vp9_full_search_sadx8(const struct macroblock *x, const struct mv *ref_mv, i
 RTCD_EXTERN int (*vp9_full_search_sad)(const struct macroblock *x, const struct mv *ref_mv, int sad_per_bit, int distance, const struct vp9_variance_vtable *fn_ptr, const struct mv *center_mv, struct mv *best_mv);
 
 void vp9_fwht4x4_c(const int16_t *input, tran_low_t *output, int stride);
-void vp9_fwht4x4_mmx(const int16_t *input, tran_low_t *output, int stride);
-#define vp9_fwht4x4 vp9_fwht4x4_mmx
+void vp9_fwht4x4_sse2(const int16_t *input, tran_low_t *output, int stride);
+#define vp9_fwht4x4 vp9_fwht4x4_sse2
 
 void vp9_iht16x16_256_add_c(const tran_low_t *input, uint8_t *output, int pitch, int tx_type);
 void vp9_iht16x16_256_add_sse2(const tran_low_t *input, uint8_t *output, int pitch, int tx_type);

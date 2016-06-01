@@ -240,7 +240,9 @@ function write_intrinsics_gypi {
     write_target_definition sse4_1_sources[@] "$2" libvpx_intrinsics_sse4_1 sse4.1
   fi
   if [[ -z $DISABLE_AVX && 0 -ne ${#avx_sources} ]]; then
-    write_target_definition avx_sources[@] "$2" libvpx_intrinsics_avx avx
+    #write_target_definition avx_sources[@] "$2" libvpx_intrinsics_avx avx
+    echo "ERROR: Uncomment avx sections in libvpx.gyp and BUILD.gn"
+    exit 1
   fi
   if [[ -z $DISABLE_AVX && 0 -ne ${#avx2_sources} ]]; then
     write_target_definition avx2_sources[@] "$2" libvpx_intrinsics_avx2 avx2

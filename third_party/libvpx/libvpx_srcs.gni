@@ -368,7 +368,7 @@ libvpx_srcs_x86_assembly = [
   "//third_party/libvpx/source/libvpx/vp8/encoder/x86/quantize_mmx.asm",
   "//third_party/libvpx/source/libvpx/vp9/common/x86/vp9_mfqe_sse2.asm",
   "//third_party/libvpx/source/libvpx/vp9/common/x86/vp9_postproc_sse2.asm",
-  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_dct_mmx.asm",
+  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_dct_sse2.asm",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_sse2.asm",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_temporal_filter_apply_sse2.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/add_noise_mmx.asm",
@@ -377,7 +377,6 @@ libvpx_srcs_x86_assembly = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/intrapred_sse2.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/intrapred_ssse3.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/inv_wht_sse2.asm",
-  "//third_party/libvpx/source/libvpx/vpx_dsp/x86/loopfilter_mmx.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/sad4d_sse2.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/sad_sse2.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/sad_sse3.asm",
@@ -405,7 +404,7 @@ libvpx_srcs_x86_sse2 = [
   "//third_party/libvpx/source/libvpx/vp8/encoder/x86/vp8_enc_stubs_sse2.c",
   "//third_party/libvpx/source/libvpx/vp8/encoder/x86/vp8_quantize_sse2.c",
   "//third_party/libvpx/source/libvpx/vp9/common/x86/vp9_idct_intrin_sse2.c",
-  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_dct_sse2.c",
+  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_dct_intrin_sse2.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_denoiser_sse2.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_quantize_sse2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/avg_intrin_sse2.c",
@@ -425,7 +424,7 @@ libvpx_srcs_x86_ssse3 = [
 ]
 libvpx_srcs_x86_sse4_1 =
     [ "//third_party/libvpx/source/libvpx/vp8/encoder/x86/quantize_sse4.c" ]
-libvpx_srcs_x86_avx = [ "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_diamond_search_sad_avx.c" ]
+libvpx_srcs_x86_avx = []
 libvpx_srcs_x86_avx2 = [
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_intrin_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/fwd_txfm_avx2.c",
@@ -802,7 +801,7 @@ libvpx_srcs_x86_64_assembly = [
   "//third_party/libvpx/source/libvpx/vp8/encoder/x86/quantize_mmx.asm",
   "//third_party/libvpx/source/libvpx/vp9/common/x86/vp9_mfqe_sse2.asm",
   "//third_party/libvpx/source/libvpx/vp9/common/x86/vp9_postproc_sse2.asm",
-  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_dct_mmx.asm",
+  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_dct_sse2.asm",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_sse2.asm",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_quantize_ssse3_x86_64.asm",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_temporal_filter_apply_sse2.asm",
@@ -815,7 +814,6 @@ libvpx_srcs_x86_64_assembly = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/intrapred_ssse3.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/inv_txfm_ssse3_x86_64.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/inv_wht_sse2.asm",
-  "//third_party/libvpx/source/libvpx/vpx_dsp/x86/loopfilter_mmx.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/quantize_avx_x86_64.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/quantize_ssse3_x86_64.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/sad4d_sse2.asm",
@@ -846,7 +844,7 @@ libvpx_srcs_x86_64_sse2 = [
   "//third_party/libvpx/source/libvpx/vp8/encoder/x86/vp8_enc_stubs_sse2.c",
   "//third_party/libvpx/source/libvpx/vp8/encoder/x86/vp8_quantize_sse2.c",
   "//third_party/libvpx/source/libvpx/vp9/common/x86/vp9_idct_intrin_sse2.c",
-  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_dct_sse2.c",
+  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_dct_intrin_sse2.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_denoiser_sse2.c",
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_quantize_sse2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/avg_intrin_sse2.c",
@@ -866,7 +864,7 @@ libvpx_srcs_x86_64_ssse3 = [
 ]
 libvpx_srcs_x86_64_sse4_1 =
     [ "//third_party/libvpx/source/libvpx/vp8/encoder/x86/quantize_sse4.c" ]
-libvpx_srcs_x86_64_avx = [ "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_diamond_search_sad_avx.c" ]
+libvpx_srcs_x86_64_avx = []
 libvpx_srcs_x86_64_avx2 = [
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_intrin_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/fwd_txfm_avx2.c",
