@@ -15,6 +15,24 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel.ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
 
+    # TODO(erikchen): Remove suppression after generating reference images.
+    self.Fail('Pixel.WebGLGreenTriangle.NonChromiumImage.AA.Alpha',
+              ['mac'], bug=607130)
+    self.Fail('Pixel.WebGLGreenTriangle.NonChromiumImage.AA.NoAlpha',
+              ['mac'], bug=607130)
+    self.Fail('Pixel.WebGLGreenTriangle.NonChromiumImage.NoAA.Alpha',
+              ['mac'], bug=607130)
+    self.Fail('Pixel.WebGLGreenTriangle.NonChromiumImage.NoAA.NoAlpha',
+              ['mac'], bug=607130)
+    self.Fail('Pixel.WebGLGreenTriangle.AA.Alpha', bug=607130)
+    self.Fail('Pixel.WebGLGreenTriangle.AA.NoAlpha', bug=607130)
+    self.Fail('Pixel.WebGLGreenTriangle.NoAA.Alpha', bug=607130)
+    self.Fail('Pixel.WebGLGreenTriangle.NoAA.NoAlpha', bug=607130)
+    self.Fail('Pixel.WebGLGreenTriangle.AA.AlphaES3', bug=607130)
+    self.Fail('Pixel.WebGLGreenTriangle.AA.NoAlphaES3', bug=607130)
+    self.Fail('Pixel.WebGLGreenTriangle.NoAA.AlphaES3', bug=607130)
+    self.Fail('Pixel.WebGLGreenTriangle.NoAA.NoAlphaES3', bug=607130)
+
     self.Fail('Pixel.ScissorTestWithPreserveDrawingBufferES3',
               ['mac'], bug=540039)
     self.Fail('Pixel.WebGLGreenTriangleES3',

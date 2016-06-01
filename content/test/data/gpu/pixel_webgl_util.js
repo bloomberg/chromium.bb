@@ -23,11 +23,13 @@ var fragmentShader = [
   "}"
 ].join("\n");
 
-function initGL(canvas)
+// TODO: We should test premultiplyAlpha as well.
+function initGL(canvas, antialias, alpha)
 {
   var gl = null;
   try {
-    gl = canvas.getContext("experimental-webgl");
+    gl = canvas.getContext("experimental-webgl",
+                           {"alpha": alpha, "antialias":antialias});
   } catch (e) {}
   if (!gl) {
     try {
@@ -92,4 +94,33 @@ function setup(gl) {
 function drawTriangle(gl) {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
   gl.drawArrays(gl.TRIANGLES, 0, 3);
+}
+
+var g_swapsBeforeAckUtil = 15;
+var g_glUtil;
+
+function makeMain(antialias, alpha)
+{
+  return function() {
+    var canvas = document.getElementById("c");
+    g_glUtil = initGL(canvas, antialias, alpha);
+    if (g_glUtil && setup(g_glUtil)) {
+      drawSomeFramesUtil();
+    } else {
+      domAutomationController.setAutomationId(1);
+      domAutomationController.send("FAILURE");
+    }
+  };
+}
+
+function drawSomeFramesUtil()
+{
+  if (g_swapsBeforeAckUtil == 0) {
+    domAutomationController.setAutomationId(1);
+    domAutomationController.send("SUCCESS");
+  } else {
+    g_swapsBeforeAckUtil--;
+    drawTriangle(g_glUtil);
+    window.webkitRequestAnimationFrame(drawSomeFramesUtil);
+  }
 }
