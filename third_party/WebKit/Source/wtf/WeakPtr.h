@@ -44,20 +44,24 @@ public:
 
     T* get() const
     {
-        ASSERT(m_boundThread == currentThread());
+#if DCHECK_IS_ON()
+        DCHECK(m_boundThread == currentThread());
+#endif
         return m_ptr;
     }
 
     void clear()
     {
-        ASSERT(m_boundThread == currentThread());
+#if DCHECK_IS_ON()
+        DCHECK(m_boundThread == currentThread());
+#endif
         m_ptr = 0;
     }
 
     void bindTo(T* ptr)
     {
-        ASSERT(!m_ptr);
-#if ENABLE(ASSERT)
+        DCHECK(!m_ptr);
+#if DCHECK_IS_ON()
         m_boundThread = currentThread();
 #endif
         m_ptr = ptr;
@@ -68,14 +72,14 @@ private:
 
     explicit WeakReference(T* ptr)
         : m_ptr(ptr)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
         , m_boundThread(currentThread())
 #endif
     {
     }
 
     T* m_ptr;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     ThreadIdentifier m_boundThread;
 #endif
 };
@@ -91,9 +95,15 @@ public:
     T* get() const { return m_ref ? m_ref->get() : 0; }
     void clear() { m_ref.clear(); }
 
+    T& operator*() const
+    {
+        DCHECK(get());
+        return *get();
+    }
+
     T* operator->() const
     {
-        ASSERT(get());
+        DCHECK(get());
         return get();
     }
 
