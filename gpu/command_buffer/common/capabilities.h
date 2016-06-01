@@ -154,6 +154,10 @@ struct GPU_EXPORT Capabilities {
   // details.
   bool chromium_image_rgb_emulation;
 
+  // When true, RGB framebuffer formats are unsupported. Emulate with RGBA to
+  // work around this. See https://crbug.com/449150 for an example.
+  bool emulate_rgb_buffer_with_rgba;
+
   int major_version;
   int minor_version;
 };

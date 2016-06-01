@@ -215,7 +215,9 @@ bool DrawingBuffer::defaultBufferRequiresAlphaChannelToBePreserved()
         return !m_wantAlphaChannel && getMultisampledRenderbufferFormat() == GL_RGBA8_OES;
     }
 
-    return !m_wantAlphaChannel && RuntimeEnabledFeatures::webGLImageChromiumEnabled() && contextProvider()->getCapabilities().chromium_image_rgb_emulation;
+    bool rgbEmulation = contextProvider()->getCapabilities().emulate_rgb_buffer_with_rgba
+        || (RuntimeEnabledFeatures::webGLImageChromiumEnabled() && contextProvider()->getCapabilities().chromium_image_rgb_emulation);
+    return !m_wantAlphaChannel && rgbEmulation;
 }
 
 void DrawingBuffer::freeRecycledMailboxes()
@@ -356,6 +358,10 @@ DrawingBuffer::TextureParameters DrawingBuffer::defaultTextureParameters()
     TextureParameters parameters;
     parameters.target = GL_TEXTURE_2D;
     if (m_wantAlphaChannel) {
+        parameters.internalColorFormat = GL_RGBA;
+        parameters.creationInternalColorFormat = GL_RGBA;
+        parameters.colorFormat = GL_RGBA;
+    } else if (contextProvider()->getCapabilities().emulate_rgb_buffer_with_rgba) {
         parameters.internalColorFormat = GL_RGBA;
         parameters.creationInternalColorFormat = GL_RGBA;
         parameters.colorFormat = GL_RGBA;
