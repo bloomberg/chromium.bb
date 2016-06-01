@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PerspectiveTransformComponent_h
-#define PerspectiveTransformComponent_h
+#ifndef CSSPerspective_h
+#define CSSPerspective_h
 
 #include "core/CoreExport.h"
 #include "core/css/cssom/CSSLengthValue.h"
@@ -13,18 +13,18 @@ namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT PerspectiveTransformComponent : public TransformComponent {
-    WTF_MAKE_NONCOPYABLE(PerspectiveTransformComponent);
+class CORE_EXPORT CSSPerspective : public TransformComponent {
+    WTF_MAKE_NONCOPYABLE(CSSPerspective);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PerspectiveTransformComponent* create(const CSSLengthValue*, ExceptionState&);
+    static CSSPerspective* create(const CSSLengthValue*, ExceptionState&);
 
     // Bindings require a non const return value.
     CSSLengthValue* length() const { return const_cast<CSSLengthValue*>(m_length.get()); }
 
     TransformComponentType type() const override { return PerspectiveType; }
 
-    // TODO: Implement asMatrix for PerspectiveTransformComponent.
+    // TODO: Implement asMatrix for CSSPerspective.
     MatrixTransformComponent* asMatrix() const override { return nullptr; }
 
     CSSFunctionValue* toCSSValue() const override;
@@ -36,7 +36,7 @@ public:
     }
 
 private:
-    PerspectiveTransformComponent(const CSSLengthValue* length) : m_length(length) {}
+    CSSPerspective(const CSSLengthValue* length) : m_length(length) {}
 
     Member<const CSSLengthValue> m_length;
 };

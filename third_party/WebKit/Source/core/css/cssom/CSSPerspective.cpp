@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/cssom/PerspectiveTransformComponent.h"
+#include "core/css/cssom/CSSPerspective.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 
 namespace blink {
 
-PerspectiveTransformComponent* PerspectiveTransformComponent::create(const CSSLengthValue* length, ExceptionState& exceptionState)
+CSSPerspective* CSSPerspective::create(const CSSLengthValue* length, ExceptionState& exceptionState)
 {
     if (length->containsPercent()) {
-        exceptionState.throwTypeError("PerspectiveTransformComponent does not support CSSLengthValues with percent units");
+        exceptionState.throwTypeError("CSSPerspective does not support CSSLengthValues with percent units");
         return nullptr;
     }
-    return new PerspectiveTransformComponent(length);
+    return new CSSPerspective(length);
 }
 
-CSSFunctionValue* PerspectiveTransformComponent::toCSSValue() const
+CSSFunctionValue* CSSPerspective::toCSSValue() const
 {
     CSSFunctionValue* result = CSSFunctionValue::create(CSSValuePerspective);
     result->append(m_length->toCSSValue());

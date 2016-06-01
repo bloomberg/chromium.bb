@@ -483,6 +483,10 @@ interface CSSPageRule : CSSRule
     getter style
     method constructor
     setter selectorText
+interface CSSPerspective : TransformComponent
+    attribute @@toStringTag
+    getter length
+    method constructor
 interface CSSPositionValue : StyleValue
     attribute @@toStringTag
     getter x
@@ -4318,10 +4322,6 @@ interface Permissions
     method request
     method requestAll
     method revoke
-interface Perspective : TransformComponent
-    attribute @@toStringTag
-    getter length
-    method constructor
 interface PhotoCapabilities
     attribute @@toStringTag
     getter zoom
