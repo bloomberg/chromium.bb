@@ -85,6 +85,7 @@ DEFINE_TRACE(ScriptLoader)
     visitor->trace(m_element);
     visitor->trace(m_resource);
     visitor->trace(m_pendingScript);
+    ScriptResourceClient::trace(visitor);
 }
 
 void ScriptLoader::didNotifySubtreeInsertionsToDocument()

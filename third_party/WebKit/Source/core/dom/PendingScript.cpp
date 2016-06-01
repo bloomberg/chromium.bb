@@ -185,6 +185,7 @@ DEFINE_TRACE(PendingScript)
 {
     visitor->trace(m_element);
     visitor->trace(m_streamer);
+    visitor->trace(m_client);
     ResourceOwner<ScriptResource>::trace(visitor);
 }
 

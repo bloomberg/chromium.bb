@@ -66,6 +66,7 @@ private:
 };
 
 class XMLDocumentParser final : public ScriptableDocumentParser, public ScriptResourceClient {
+    USING_GARBAGE_COLLECTED_MIXIN(XMLDocumentParser);
 public:
     static XMLDocumentParser* create(Document& document, FrameView* view)
     {

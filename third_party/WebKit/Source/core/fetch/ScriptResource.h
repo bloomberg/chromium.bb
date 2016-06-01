@@ -30,6 +30,7 @@
 #include "core/fetch/IntegrityMetadata.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/TextResource.h"
+#include "platform/heap/Handle.h"
 #include "platform/text/CompressibleString.h"
 
 namespace blink {
@@ -43,13 +44,15 @@ enum class ScriptIntegrityDisposition {
 class FetchRequest;
 class ScriptResource;
 
-class CORE_EXPORT ScriptResourceClient : public ResourceClient {
+class CORE_EXPORT ScriptResourceClient : public GarbageCollectedMixin, public ResourceClient {
 public:
     ~ScriptResourceClient() override {}
     static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == ScriptType; }
     ResourceClientType getResourceClientType() const final { return ScriptType; }
 
     virtual void notifyAppendData(ScriptResource* resource) { }
+
+    DEFINE_INLINE_VIRTUAL_TRACE() {}
 };
 
 class CORE_EXPORT ScriptResource final : public TextResource {

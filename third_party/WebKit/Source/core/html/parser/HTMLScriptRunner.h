@@ -43,6 +43,7 @@ class HTMLScriptRunnerHost;
 
 class HTMLScriptRunner final : public GarbageCollectedFinalized<HTMLScriptRunner>, private ScriptResourceClient {
     WTF_MAKE_NONCOPYABLE(HTMLScriptRunner);
+    USING_GARBAGE_COLLECTED_MIXIN(HTMLScriptRunner);
     USING_PRE_FINALIZER(HTMLScriptRunner, detach);
 public:
     static HTMLScriptRunner* create(Document* document, HTMLScriptRunnerHost* host)

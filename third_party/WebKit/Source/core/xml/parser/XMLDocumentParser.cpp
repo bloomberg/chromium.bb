@@ -852,6 +852,7 @@ DEFINE_TRACE(XMLDocumentParser)
     visitor->trace(m_pendingScript);
     visitor->trace(m_scriptElement);
     ScriptableDocumentParser::trace(visitor);
+    ScriptResourceClient::trace(visitor);
 }
 
 void XMLDocumentParser::doWrite(const String& parseString)

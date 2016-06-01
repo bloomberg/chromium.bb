@@ -96,7 +96,7 @@ private:
     double m_parserBlockingLoadStartTime;
 
     Member<ScriptStreamer> m_streamer;
-    ScriptResourceClient* m_client;
+    Member<ScriptResourceClient> m_client;
 };
 
 } // namespace blink

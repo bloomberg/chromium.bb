@@ -448,6 +448,7 @@ DEFINE_TRACE(HTMLScriptRunner)
     visitor->trace(m_host);
     visitor->trace(m_parserBlockingScript);
     visitor->trace(m_scriptsToExecuteAfterParsing);
+    ScriptResourceClient::trace(visitor);
 }
 
 } // namespace blink
