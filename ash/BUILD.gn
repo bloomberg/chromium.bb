@@ -24,7 +24,6 @@ component("ash") {
   public_deps = [
     "//ash/resources",
     "//ash/strings",
-    "//ash/wm/common/resources",
   ]
   deps = [
     "//base",
@@ -192,7 +191,6 @@ source_set("test_support") {
   deps = [
     ":test_support_with_content",  # TODO(beng): reverse this direction.
     "//ash/resources",
-    "//ash/wm/common/resources",
     "//base:i18n",
     "//base/test:test_support",
     "//components/signin/core/account_id",
@@ -283,7 +281,6 @@ static_library("ash_shell_lib") {
     ":test_support",
     "//ash/resources",
     "//ash/strings",
-    "//ash/wm/common/resources",
     "//base",
     "//base:i18n",
     "//components/user_manager",
@@ -351,7 +348,6 @@ test("ash_unittests") {
     ":test_support_with_content",
     "//ash/resources",
     "//ash/strings",
-    "//ash/wm/common/resources",
     "//base",
     "//base/test:test_support",
     "//components/signin/core/account_id",

@@ -23,7 +23,6 @@ source_set("chromeos") {
   public_deps = [
     "//ash/resources",
     "//ash/strings",
-    "//ash/wm/common/resources",
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",
@@ -193,7 +192,6 @@ source_set("unit_tests") {
     ":attestation_proto",
     ":device_policy_proto",
     "//ash/resources",
-    "//ash/wm/common/resources",
     "//components/drive",
     "//components/drive:test_support_chromeos",
     "//components/invalidation/public",

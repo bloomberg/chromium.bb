@@ -26,7 +26,6 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/workspace_controller.h"
 #include "grit/ash_resources.h"
-#include "grit/ash_wm_common_resources.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
@@ -453,7 +452,7 @@ void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
 void ShelfWidget::DelegateView::OnPaintBackground(gfx::Canvas* canvas) {
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   gfx::ImageSkia shelf_background =
-      *rb->GetImageSkiaNamed(IDR_ASH_WM_COMMON_SHELF_BACKGROUND);
+      *rb->GetImageSkiaNamed(IDR_ASH_SHELF_BACKGROUND);
   const bool horizontal = wm::IsHorizontalAlignment(shelf_->GetAlignment());
   if (!horizontal) {
     shelf_background = gfx::ImageSkiaOperations::CreateRotatedImage(

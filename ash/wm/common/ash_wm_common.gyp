@@ -8,7 +8,6 @@
       'target_name': 'ash_wm_common',
       'type': '<(component)',
       'dependencies': [
-        'ash_wm_common_resources.gyp:ash_wm_common_resources',
         '../../ash_resources.gyp:ash_resources',
         '../../../base/base.gyp:base',
         '../../../skia/skia.gyp:skia',

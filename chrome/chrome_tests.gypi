@@ -1818,7 +1818,6 @@
         ['chromeos==1', {
           'dependencies': [
             '../ash/ash_resources.gyp:ash_resources',
-            '../ash/wm/common/ash_wm_common_resources.gyp:ash_wm_common_resources',
             '../chromeos/chromeos.gyp:chromeos',
           ],
           'conditions': [

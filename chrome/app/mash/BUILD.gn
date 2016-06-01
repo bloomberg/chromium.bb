@@ -10,6 +10,7 @@ source_set("mash") {
     "mash_runner.h",
   ]
   deps = [
+    "//ash/resources",
     "//ash/sysui:lib",
     "//base:i18n",
     "//components/mus:lib",

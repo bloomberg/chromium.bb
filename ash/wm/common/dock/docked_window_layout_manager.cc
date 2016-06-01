@@ -18,7 +18,7 @@
 #include "ash/wm/common/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram.h"
-#include "grit/ash_wm_common_resources.h"
+#include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -143,7 +143,7 @@ class DockedBackgroundWidget : public views::Widget,
 
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     gfx::ImageSkia shelf_background =
-        *rb.GetImageSkiaNamed(IDR_ASH_WM_COMMON_SHELF_BACKGROUND);
+        *rb.GetImageSkiaNamed(IDR_ASH_SHELF_BACKGROUND);
     shelf_background_left_ = gfx::ImageSkiaOperations::CreateRotatedImage(
         shelf_background, SkBitmapOperations::ROTATION_90_CW);
     shelf_background_right_ = gfx::ImageSkiaOperations::CreateRotatedImage(

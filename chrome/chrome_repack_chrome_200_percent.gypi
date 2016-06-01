@@ -27,7 +27,6 @@
       ['use_ash==1', {
         'pak_inputs': [
           '<(SHARED_INTERMEDIATE_DIR)/ash/resources/ash_resources_200_percent.pak',
-          '<(SHARED_INTERMEDIATE_DIR)/ash/wm/common/resources/ash_wm_common_resources_200_percent.pak',
         ],
       }],
       ['chromeos==1', {

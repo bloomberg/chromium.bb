@@ -64,9 +64,6 @@
     "includes": [6100],
     "structures": [6150],
   },
-  "ash/wm/common/resources/ash_wm_common_resources.grd": {
-    "structures": [6700],
-  },
   "ui/keyboard/keyboard_resources.grd": {
     "includes": [6850],
   },

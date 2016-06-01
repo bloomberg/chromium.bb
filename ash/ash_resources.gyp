@@ -32,7 +32,6 @@
       'dependencies': [
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
         'ash_resources',
-        '../ash/wm/common/ash_wm_common_resources.gyp:ash_wm_common_resources',
       ],
       'actions': [
         {
@@ -41,7 +40,6 @@
             'pak_output': '<(PRODUCT_DIR)/ash_test_resources_100_percent.pak',
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/ash/resources/ash_resources_100_percent.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/ash/wm/common/resources/ash_wm_common_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/webui_resources.pak',
             ],
@@ -87,7 +85,6 @@
       'dependencies': [
         '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
         'ash_resources',
-        '../ash/wm/common/ash_wm_common_resources.gyp:ash_wm_common_resources',
       ],
       'actions': [
         {
@@ -96,7 +93,6 @@
             'pak_output': '<(PRODUCT_DIR)/ash_test_resources_200_percent.pak',
             'pak_inputs': [
               '<(SHARED_INTERMEDIATE_DIR)/ash/resources/ash_resources_200_percent.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/ash/wm/common/resources/ash_wm_common_resources_200_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/resources/ui_resources_200_percent.pak',
             ],
             'conditions': [

@@ -1299,14 +1299,9 @@ template("chrome_repack_percent") {
       ]
     }
     if (use_ash) {
-      sources += [
-        "$root_gen_dir/ash/resources/ash_resources_${percent}_percent.pak",
-        "$root_gen_dir/ash/wm/common/resources/ash_wm_common_resources_${percent}_percent.pak",
-      ]
-      deps += [
-        "//ash/resources",
-        "//ash/wm/common/resources",
-      ]
+      sources +=
+          [ "$root_gen_dir/ash/resources/ash_resources_${percent}_percent.pak" ]
+      deps += [ "//ash/resources" ]
     }
     if (toolkit_views) {
       sources += [ "$root_gen_dir/ui/views/resources/views_resources_${percent}_percent.pak" ]
