@@ -4,5 +4,6 @@
 
 typemaps = [
   "//cc/ipc/render_pass_id.typemap",
+  "//cc/ipc/returned_resource.typemap",
   "//cc/ipc/surface_id.typemap",
 ]

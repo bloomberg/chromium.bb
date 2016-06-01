@@ -4,9 +4,12 @@
 
 mojom = "//gpu/ipc/common/mailbox_holder.mojom"
 public_headers = [ "//gpu/command_buffer/common/mailbox_holder.h" ]
-traits_headers = [ "//gpu/ipc/common/gpu_command_buffer_traits.h" ]
+traits_headers = [ "//gpu/ipc/common/mailbox_holder_struct_traits.h" ]
 deps = [
-  "//gpu/ipc/common:command_buffer_traits",
+  "//mojo/public/cpp/bindings",
 ]
-
+public_deps = [
+  "//gpu/command_buffer/common",
+  "//mojo/public/cpp/bindings",
+]
 type_mappings = [ "gpu.mojom.MailboxHolder=::gpu::MailboxHolder" ]

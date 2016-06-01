@@ -4,6 +4,7 @@
 
 module mus.mojom;
 
+import "cc/ipc/returned_resource.mojom";
 import "components/mus/public/interfaces/quads.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "gpu/ipc/common/mailbox_holder.mojom";
@@ -17,14 +18,6 @@ enum ResourceFormat {
   LUMINANCE_8,
   RGB_565,
   ETC1,
-};
-
-// See src/cc/resources/returned_resource.h.
-struct ReturnedResource {
-  uint32 id;
-  gpu.mojom.SyncToken sync_token;
-  int32 count;
-  bool lost;
 };
 
 // A TransferableResource is a graphics resource such as a texture or a bitmap
@@ -67,5 +60,5 @@ interface Surface {
 };
 
 interface SurfaceClient {
-  ReturnResources(array<ReturnedResource> resources);
+  ReturnResources(array<cc.mojom.ReturnedResource> resources);
 };

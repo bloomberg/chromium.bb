@@ -42,8 +42,6 @@ using mus::mojom::QuadPtr;
 using mus::mojom::RenderPassQuadState;
 using mus::mojom::RenderPassQuadStatePtr;
 using mus::mojom::ResourceFormat;
-using mus::mojom::ReturnedResource;
-using mus::mojom::ReturnedResourcePtr;
 using mus::mojom::SharedQuadState;
 using mus::mojom::SharedQuadStatePtr;
 using mus::mojom::SolidColorQuadState;
@@ -465,30 +463,6 @@ TypeConverter<cc::TransferableResource, TransferableResourcePtr>::Convert(
   transferable.is_software = input->is_software;
   transferable.is_overlay_candidate = input->is_overlay_candidate;
   return transferable;
-}
-
-// static
-ReturnedResourcePtr
-TypeConverter<ReturnedResourcePtr, cc::ReturnedResource>::Convert(
-    const cc::ReturnedResource& input) {
-  ReturnedResourcePtr returned = ReturnedResource::New();
-  returned->id = input.id;
-  returned->sync_token = input.sync_token;
-  returned->count = input.count;
-  returned->lost = input.lost;
-  return returned;
-}
-
-// static
-cc::ReturnedResource
-TypeConverter<cc::ReturnedResource, ReturnedResourcePtr>::Convert(
-    const ReturnedResourcePtr& input) {
-  cc::ReturnedResource returned;
-  returned.id = input->id;
-  returned.sync_token = input->sync_token;
-  returned.count = input->count;
-  returned.lost = input->lost;
-  return returned;
 }
 
 // static

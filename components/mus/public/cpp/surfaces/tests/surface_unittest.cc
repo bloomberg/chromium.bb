@@ -37,8 +37,6 @@ using mus::mojom::QuadPtr;
 using mus::mojom::RenderPassQuadState;
 using mus::mojom::RenderPassQuadStatePtr;
 using mus::mojom::ResourceFormat;
-using mus::mojom::ReturnedResource;
-using mus::mojom::ReturnedResourcePtr;
 using mus::mojom::SharedQuadState;
 using mus::mojom::SharedQuadStatePtr;
 using mus::mojom::SolidColorQuadState;
@@ -403,33 +401,6 @@ TEST(SurfaceLibTest, TransferableResource) {
   EXPECT_EQ(mailbox_holder.sync_token,
             round_trip_resource.mailbox_holder.sync_token);
   EXPECT_EQ(is_software, round_trip_resource.is_software);
-}
-
-TEST(SurfaceLibTest, ReturnedResource) {
-  uint32_t id = 5u;
-  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0,
-                            gpu::CommandBufferId::FromUnsafeValue(1), 24u);
-  sync_token.SetVerifyFlush();
-  int count = 2;
-  bool lost = false;
-  cc::ReturnedResource resource;
-  resource.id = id;
-  resource.sync_token = sync_token;
-  resource.count = count;
-  resource.lost = lost;
-
-  ReturnedResourcePtr mus_resource = ReturnedResource::From(resource);
-  EXPECT_EQ(id, mus_resource->id);
-  EXPECT_EQ(sync_token, mus_resource->sync_token);
-  EXPECT_EQ(count, mus_resource->count);
-  EXPECT_EQ(lost, mus_resource->lost);
-
-  cc::ReturnedResource round_trip_resource =
-      mus_resource.To<cc::ReturnedResource>();
-  EXPECT_EQ(id, round_trip_resource.id);
-  EXPECT_EQ(sync_token, round_trip_resource.sync_token);
-  EXPECT_EQ(count, round_trip_resource.count);
-  EXPECT_EQ(lost, round_trip_resource.lost);
 }
 
 TEST_F(SurfaceLibQuadTest, DebugBorderQuad) {

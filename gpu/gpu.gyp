@@ -161,6 +161,8 @@
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
         '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../mojo/mojo_edk.gyp:mojo_common_test_support',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
         '<(angle_path)/src/angle.gyp:translator',

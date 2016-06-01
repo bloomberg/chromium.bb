@@ -153,8 +153,7 @@ void ServerWindowSurface::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   if (!client_ || !base::MessageLoop::current())
     return;
-  client_->ReturnResources(
-      mojo::Array<mojom::ReturnedResourcePtr>::From(resources));
+  client_->ReturnResources(mojo::Array<cc::ReturnedResource>::From(resources));
 }
 
 void ServerWindowSurface::SetBeginFrameSource(

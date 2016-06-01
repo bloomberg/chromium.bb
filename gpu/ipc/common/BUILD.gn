@@ -125,3 +125,14 @@ mojom("interfaces") {
     "sync_token.mojom",
   ]
 }
+
+mojom("test_interfaces") {
+  testonly = true
+  sources = [
+    "traits_test_service.mojom",
+  ]
+
+  public_deps = [
+    ":interfaces",
+  ]
+}

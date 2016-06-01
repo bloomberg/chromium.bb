@@ -323,6 +323,7 @@ test("gpu_unittests") {
     "config/gpu_util_unittest.cc",
     "ipc/client/gpu_memory_buffer_impl_shared_memory_unittest.cc",
     "ipc/client/gpu_memory_buffer_impl_test_template.h",
+    "ipc/common/struct_traits_unittest.cc",
   ]
 
   if (is_android) {
@@ -351,6 +352,9 @@ test("gpu_unittests") {
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common:gles2_utils",
+    "//gpu/ipc/common:test_interfaces",
+    "//mojo/edk/system",
+    "//mojo/public/cpp/bindings",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/angle:translator",

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module gpu.mojom;
+module cc.mojom;
 
-import "gpu/ipc/common/mailbox.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 
-// See gpu/command_buffer/common/mailbox_holder.h.
-struct MailboxHolder {
-  gpu.mojom.Mailbox mailbox;
+// See src/cc/resources/returned_resource.h.
+struct ReturnedResource {
+  uint32 id;
   gpu.mojom.SyncToken sync_token;
-  uint32 texture_target;
+  int32 count;
+  bool lost;
 };

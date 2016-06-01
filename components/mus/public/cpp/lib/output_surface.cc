@@ -47,7 +47,7 @@ void OutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
 
 void OutputSurface::OnResourcesReturned(
     mus::WindowSurface* surface,
-    mojo::Array<mojom::ReturnedResourcePtr> resources) {
+    mojo::Array<cc::ReturnedResource> resources) {
   cc::CompositorFrameAck cfa;
   cfa.resources = resources.To<cc::ReturnedResourceArray>();
   ReclaimResources(&cfa);

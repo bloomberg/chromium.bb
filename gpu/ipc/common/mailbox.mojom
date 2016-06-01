@@ -4,5 +4,7 @@
 
 module gpu.mojom;
 
-[Native]
-struct Mailbox;
+// See gpu/command_buffer/common/mailbox.h
+struct Mailbox {
+  array<int8, 64> name;
+};

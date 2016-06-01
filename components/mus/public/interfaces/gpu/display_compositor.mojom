@@ -4,6 +4,7 @@
 
 module mus.gpu.mojom;
 
+import "cc/ipc/returned_resource.mojom";
 import "components/mus/public/interfaces/compositor_frame.mojom";
 
 
@@ -56,7 +57,7 @@ interface CompositorFrameSink {
 };
 
 interface CompositorFrameSinkClient {
-  ReturnResources(array<mus.mojom.ReturnedResource> resources);
+  ReturnResources(array<cc.mojom.ReturnedResource> resources);
 };
 
 // This is a public interface implemented by Display clients.

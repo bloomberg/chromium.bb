@@ -51,7 +51,7 @@ WindowSurface::WindowSurface(
       client_request_(std::move(client_request)) {}
 
 void WindowSurface::ReturnResources(
-    mojo::Array<mojom::ReturnedResourcePtr> resources) {
+    mojo::Array<cc::ReturnedResource> resources) {
   DCHECK(thread_checker_);
   DCHECK(thread_checker_->CalledOnValidThread());
   if (!client_)

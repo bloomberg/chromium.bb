@@ -5,11 +5,11 @@
 module gpu.mojom;
 
 import "gpu/ipc/common/mailbox.mojom";
+import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 
-// See gpu/command_buffer/common/mailbox_holder.h.
-struct MailboxHolder {
-  gpu.mojom.Mailbox mailbox;
-  gpu.mojom.SyncToken sync_token;
-  uint32 texture_target;
+interface TraitsTestService {
+  EchoMailbox(Mailbox m) => (Mailbox pass);
+  EchoMailboxHolder(MailboxHolder m) => (MailboxHolder pass);
+  EchoSyncToken(SyncToken s) => (SyncToken pass);
 };

@@ -5,8 +5,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/test_io_thread.h"
 #include "base/test/test_suite.h"
 #include "build/build_config.h"
+#include "mojo/edk/embedder/embedder.h"
 
 #if defined(OS_ANDROID)
 #include "gpu/ipc/client/android/in_process_surface_texture_manager.h"
@@ -44,6 +46,8 @@ void GpuTestSuite::Initialize() {
 int main(int argc, char** argv) {
   base::CommandLine::Init(argc, argv);
   GpuTestSuite test_suite(argc, argv);
+
+  mojo::edk::Init();
 
   return base::LaunchUnitTests(
       argc, argv,

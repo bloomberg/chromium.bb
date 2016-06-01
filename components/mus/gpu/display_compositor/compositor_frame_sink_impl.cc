@@ -82,8 +82,7 @@ void CompositorFrameSinkImpl::ReturnResources(
   if (!client_)
     return;
 
-  client_->ReturnResources(
-      mojo::Array<mus::mojom::ReturnedResourcePtr>::From(resources));
+  client_->ReturnResources(mojo::Array<cc::ReturnedResource>::From(resources));
 }
 
 void CompositorFrameSinkImpl::WillDrawSurface(cc::SurfaceId surface_id,

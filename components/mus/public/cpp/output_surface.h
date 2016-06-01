@@ -29,7 +29,7 @@ class OutputSurface : public cc::OutputSurface, public WindowSurfaceClient {
   // WindowSurfaceClient implementation:
   void OnResourcesReturned(
       WindowSurface* surface,
-      mojo::Array<mojom::ReturnedResourcePtr> resources) override;
+      mojo::Array<cc::ReturnedResource> resources) override;
 
   void SwapBuffersComplete();
 

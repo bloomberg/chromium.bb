@@ -70,7 +70,7 @@ class BITMAP_UPLOADER_EXPORT BitmapUploader
   // WindowSurfaceClient implementation.
   void OnResourcesReturned(
       mus::WindowSurface* surface,
-      mojo::Array<mus::mojom::ReturnedResourcePtr> resources) override;
+      mojo::Array<cc::ReturnedResource> resources) override;
 
   mus::Window* window_;
   mus::mojom::GpuPtr gpu_service_;

@@ -29,6 +29,12 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     callback.Run(r);
   }
 
+  void EchoReturnedResource(
+      const ReturnedResource& r,
+      const EchoReturnedResourceCallback& callback) override {
+    callback.Run(r);
+  }
+
   void EchoSurfaceId(const SurfaceId& s,
                      const EchoSurfaceIdCallback& callback) override {
     callback.Run(s);
@@ -51,6 +57,36 @@ TEST_F(StructTraitsTest, RenderPassId) {
                             EXPECT_EQ(index, pass.index);
                             loop.Quit();
                           });
+  loop.Run();
+}
+
+TEST_F(StructTraitsTest, ReturnedResource) {
+  const uint32_t id = 1337;
+  const gpu::CommandBufferNamespace command_buffer_namespace = gpu::IN_PROCESS;
+  const int32_t extra_data_field = 0xbeefbeef;
+  const gpu::CommandBufferId command_buffer_id(
+      gpu::CommandBufferId::FromUnsafeValue(0xdeadbeef));
+  const uint64_t release_count = 0xdeadbeefdead;
+  const gpu::SyncToken sync_token(command_buffer_namespace, extra_data_field,
+                                  command_buffer_id, release_count);
+  const int count = 1234;
+  const bool lost = true;
+
+  ReturnedResource input;
+  input.id = id;
+  input.sync_token = sync_token;
+  input.count = count;
+  input.lost = lost;
+  base::RunLoop loop;
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  proxy->EchoReturnedResource(input, [id, sync_token, count, lost,
+                                      &loop](const ReturnedResource& pass) {
+    EXPECT_EQ(id, pass.id);
+    EXPECT_EQ(sync_token, pass.sync_token);
+    EXPECT_EQ(count, pass.count);
+    EXPECT_EQ(lost, pass.lost);
+    loop.Quit();
+  });
   loop.Run();
 }
 

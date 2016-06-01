@@ -211,16 +211,16 @@ void BitmapUploader::SetIdNamespace(uint32_t id_namespace) {
 
 void BitmapUploader::OnResourcesReturned(
     mus::WindowSurface* surface,
-    mojo::Array<mus::mojom::ReturnedResourcePtr> resources) {
+    mojo::Array<cc::ReturnedResource> resources) {
   gpu::gles2::GLES2Interface* gl = gles2_context_->interface();
   // TODO(jamesr): Recycle.
   for (size_t i = 0; i < resources.size(); ++i) {
-    mus::mojom::ReturnedResourcePtr resource = std::move(resources[i]);
-    DCHECK_EQ(1, resource->count);
-    gl->WaitSyncTokenCHROMIUM(resource->sync_token.GetConstData());
-    uint32_t texture_id = resource_to_texture_id_map_[resource->id];
+    cc::ReturnedResource resource = std::move(resources[i]);
+    DCHECK_EQ(1, resource.count);
+    gl->WaitSyncTokenCHROMIUM(resource.sync_token.GetConstData());
+    uint32_t texture_id = resource_to_texture_id_map_[resource.id];
     DCHECK_NE(0u, texture_id);
-    resource_to_texture_id_map_.erase(resource->id);
+    resource_to_texture_id_map_.erase(resource.id);
     gl->DeleteTextures(1, &texture_id);
   }
 }
