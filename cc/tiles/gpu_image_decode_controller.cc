@@ -135,19 +135,39 @@ class ImageUploadTaskImpl : public TileTask {
   DISALLOW_COPY_AND_ASSIGN(ImageUploadTaskImpl);
 };
 
-GpuImageDecodeController::DecodedImageData::DecodedImageData()
-    : ref_count(0), is_locked(false), decode_failure(false) {}
-
+GpuImageDecodeController::DecodedImageData::DecodedImageData() = default;
 GpuImageDecodeController::DecodedImageData::~DecodedImageData() = default;
 
-GpuImageDecodeController::UploadedImageData::UploadedImageData()
-    : budgeted(false), ref_count(0) {}
+bool GpuImageDecodeController::DecodedImageData::Lock() {
+  DCHECK(!is_locked_);
+  is_locked_ = data_->Lock();
+  return is_locked_;
+}
 
+void GpuImageDecodeController::DecodedImageData::Unlock() {
+  DCHECK(is_locked_);
+  data_->Unlock();
+  is_locked_ = false;
+}
+
+void GpuImageDecodeController::DecodedImageData::SetLockedData(
+    std::unique_ptr<base::DiscardableMemory> data) {
+  DCHECK(!is_locked_);
+  data_ = std::move(data);
+  is_locked_ = true;
+}
+
+void GpuImageDecodeController::DecodedImageData::ResetData() {
+  DCHECK(!is_locked_);
+  data_ = nullptr;
+}
+
+GpuImageDecodeController::UploadedImageData::UploadedImageData() = default;
 GpuImageDecodeController::UploadedImageData::~UploadedImageData() = default;
 
 GpuImageDecodeController::ImageData::ImageData(DecodedDataMode mode,
                                                size_t size)
-    : mode(mode), size(size), is_at_raster(false) {}
+    : mode(mode), size(size) {}
 
 GpuImageDecodeController::ImageData::~ImageData() = default;
 
@@ -376,17 +396,17 @@ bool GpuImageDecodeController::OnMemoryDump(
     const uint32_t image_id = image_pair.first;
 
     // If we have discardable decoded data, dump this here.
-    if (image_data->decode.data) {
+    if (image_data->decode.data()) {
       std::string discardable_dump_name = base::StringPrintf(
           "cc/image_memory/controller_%p/discardable/image_%d", this, image_id);
       base::trace_event::MemoryAllocatorDump* dump =
-          image_data->decode.data->CreateMemoryAllocatorDump(
+          image_data->decode.data()->CreateMemoryAllocatorDump(
               discardable_dump_name.c_str(), pmd);
 
       // If our image is locked, dump the "locked_size" as an additional column.
       // This lets us see the amount of discardable which is contributing to
       // memory pressure.
-      if (image_data->decode.is_locked) {
+      if (image_data->decode.is_locked()) {
         dump->AddScalar("locked_size",
                         base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                         image_data->size);
@@ -481,7 +501,7 @@ scoped_refptr<TileTask> GpuImageDecodeController::GetImageDecodeTaskAndRef(
   RefImageDecode(draw_image);
 
   auto found = image_data_.Peek(image_id);
-  if (found != image_data_.end() && found->second->decode.is_locked) {
+  if (found != image_data_.end() && found->second->decode.is_locked()) {
     // We should never be creating a decode task for an at raster image.
     DCHECK(!found->second->is_at_raster);
     // We should never be creating a decode for an already-uploaded image.
@@ -598,20 +618,21 @@ void GpuImageDecodeController::RefCountChanged(ImageData* image_data) {
       !has_any_refs || (image_data->mode == DecodedDataMode::GPU &&
                         !image_data->decode.ref_count);
 
-  if (should_unlock_discardable && image_data->decode.is_locked) {
-    DCHECK(image_data->decode.data);
-    image_data->decode.data->Unlock();
-    image_data->decode.is_locked = false;
+  if (should_unlock_discardable && image_data->decode.is_locked()) {
+    DCHECK(image_data->decode.data());
+    image_data->decode.Unlock();
   }
 
+#if DCHECK_IS_ON()
   // Sanity check the above logic.
   if (image_data->upload.image) {
     DCHECK(image_data->is_at_raster || image_data->upload.budgeted);
     if (image_data->mode == DecodedDataMode::CPU)
-      DCHECK(image_data->decode.is_locked);
+      DCHECK(image_data->decode.is_locked());
   } else {
     DCHECK(!image_data->upload.budgeted || image_data->upload.ref_count > 0);
   }
+#endif
 }
 
 // Ensures that we can fit a new image of size |required_size| in our cache. In
@@ -636,7 +657,7 @@ bool GpuImageDecodeController::EnsureCapacity(size_t required_size) {
     }
 
     // Current entry has no refs. Ensure it is not locked.
-    DCHECK(!it->second->decode.is_locked);
+    DCHECK(!it->second->decode.is_locked());
 
     // If an image without refs is budgeted, it must have an associated image
     // upload.
@@ -699,16 +720,15 @@ void GpuImageDecodeController::DecodeImageIfNecessary(
     return;
   }
 
-  if (image_data->decode.data &&
-      (image_data->decode.is_locked || image_data->decode.data->Lock())) {
+  if (image_data->decode.data() &&
+      (image_data->decode.is_locked() || image_data->decode.Lock())) {
     // We already decoded this, or we just needed to lock, early out.
-    image_data->decode.is_locked = true;
     return;
   }
 
   TRACE_EVENT0("cc", "GpuImageDecodeController::DecodeImage");
 
-  image_data->decode.data = nullptr;
+  image_data->decode.ResetData();
   std::unique_ptr<base::DiscardableMemory> backing_memory;
   {
     base::AutoUnlock unlock(lock_);
@@ -740,7 +760,7 @@ void GpuImageDecodeController::DecodeImageIfNecessary(
     }
   }
 
-  if (image_data->decode.data) {
+  if (image_data->decode.data()) {
     // An at-raster task decoded this before us. Ingore our decode.
     return;
   }
@@ -751,9 +771,7 @@ void GpuImageDecodeController::DecodeImageIfNecessary(
     return;
   }
 
-  image_data->decode.data = std::move(backing_memory);
-  DCHECK(!image_data->decode.is_locked);
-  image_data->decode.is_locked = true;
+  image_data->decode.SetLockedData(std::move(backing_memory));
 }
 
 void GpuImageDecodeController::UploadImageIfNecessary(
@@ -773,7 +791,7 @@ void GpuImageDecodeController::UploadImageIfNecessary(
   }
 
   TRACE_EVENT0("cc", "GpuImageDecodeController::UploadImage");
-  DCHECK(image_data->decode.is_locked);
+  DCHECK(image_data->decode.is_locked());
   DCHECK_GT(image_data->decode.ref_count, 0u);
   DCHECK_GT(image_data->upload.ref_count, 0u);
 
@@ -788,7 +806,7 @@ void GpuImageDecodeController::UploadImageIfNecessary(
     switch (image_data->mode) {
       case DecodedDataMode::CPU: {
         SkImageInfo image_info = CreateImageInfoForDrawImage(draw_image);
-        SkPixmap pixmap(image_info, image_data->decode.data->data(),
+        SkPixmap pixmap(image_info, image_data->decode.data()->data(),
                         image_info.minRowBytes());
         uploaded_image =
             SkImage::MakeFromRaster(pixmap, [](const void*, void*) {}, nullptr);
@@ -796,7 +814,7 @@ void GpuImageDecodeController::UploadImageIfNecessary(
       }
       case DecodedDataMode::GPU: {
         uploaded_image = SkImage::MakeFromDeferredTextureImageData(
-            context_->GrContext(), image_data->decode.data->data(),
+            context_->GrContext(), image_data->decode.data()->data(),
             SkBudgeted::kNo);
         break;
       }
@@ -861,7 +879,7 @@ bool GpuImageDecodeController::DiscardableIsLockedForTesting(
   auto found = image_data_.Peek(image.image()->uniqueID());
   DCHECK(found != image_data_.end());
   ImageData* image_data = found->second.get();
-  return image_data->decode.is_locked;
+  return image_data->decode.is_locked();
 }
 
 }  // namespace cc

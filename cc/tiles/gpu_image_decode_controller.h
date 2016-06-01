@@ -104,13 +104,21 @@ class CC_EXPORT GpuImageDecodeController
     DecodedImageData();
     ~DecodedImageData();
 
-    // May be null if image not yet decoded.
-    std::unique_ptr<base::DiscardableMemory> data;
-    uint32_t ref_count;
-    bool is_locked;
+    bool is_locked() const { return is_locked_; }
+    bool Lock();
+    void Unlock();
+    void SetLockedData(std::unique_ptr<base::DiscardableMemory> data);
+    void ResetData();
+    base::DiscardableMemory* data() const { return data_.get(); }
 
+    // May be null if image not yet decoded.
+    uint32_t ref_count = 0;
     // Set to true if the image was corrupt and could not be decoded.
-    bool decode_failure;
+    bool decode_failure = false;
+
+   private:
+    std::unique_ptr<base::DiscardableMemory> data_;
+    bool is_locked_ = false;
   };
 
   // Stores the GPU-side image and supporting fields.
@@ -121,8 +129,8 @@ class CC_EXPORT GpuImageDecodeController
     // May be null if image not yet uploaded / prepared.
     sk_sp<SkImage> image;
     // True if the image is counting against our memory limits.
-    bool budgeted;
-    uint32_t ref_count;
+    bool budgeted = false;
+    uint32_t ref_count = 0;
   };
 
   struct ImageData {
@@ -131,7 +139,7 @@ class CC_EXPORT GpuImageDecodeController
 
     const DecodedDataMode mode;
     const size_t size;
-    bool is_at_raster;
+    bool is_at_raster = false;
 
     DecodedImageData decode;
     UploadedImageData upload;
