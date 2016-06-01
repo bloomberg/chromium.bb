@@ -186,9 +186,9 @@ component("gpu") {
                ] + get_target_outputs(":libvt_generate_stubs")
     deps += [
       ":libvt_generate_stubs",
-      "//third_party/webrtc/common_video",
       "//third_party/webrtc/system_wrappers",
     ]
+    public_deps += [ "//third_party/webrtc/common_video" ]
     libs += [
       "CoreFoundation.framework",
       "Foundation.framework",
