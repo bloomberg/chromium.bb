@@ -1109,6 +1109,7 @@ crbug.com/591500 [ Win10 ] printing/iframe-print.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/iframe-print.html [ Failure ]
 crbug.com/591500 [ Win10 ] printing/list-item-with-empty-first-line.html [ Failure ]
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/list-item-with-empty-first-line.html [ Failure ]
+crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure ]
 
 crbug.com/331582 [ Win ] fast/inline/justify-emphasis-inline-box.html [ Failure ]
 crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
