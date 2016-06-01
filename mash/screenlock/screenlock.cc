@@ -4,11 +4,11 @@
 
 #include "mash/screenlock/screenlock.h"
 
+#include "ash/public/interfaces/container.mojom.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "mash/session/public/interfaces/session.mojom.h"
-#include "mash/wm/public/interfaces/container.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/views/background.h"
@@ -94,9 +94,9 @@ void Screenlock::Initialize(shell::Connector* connector,
   params.delegate = new ScreenlockView(connector);
 
   std::map<std::string, std::vector<uint8_t>> properties;
-  properties[mash::wm::mojom::kWindowContainer_Property] =
+  properties[ash::mojom::kWindowContainer_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int32_t>(mash::wm::mojom::Container::LOGIN_WINDOWS));
+          static_cast<int32_t>(ash::mojom::Container::LOGIN_WINDOWS));
   mus::Window* window =
       views::WindowManagerConnection::Get()->NewWindow(properties);
   params.native_widget = new views::NativeWidgetMus(
@@ -111,4 +111,4 @@ void Screenlock::ScreenlockStateChanged(bool screen_locked) {
 }
 
 }  // namespace screenlock
-}  // namespace main
+}  // namespace mash

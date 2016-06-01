@@ -8,7 +8,7 @@
       "mojo:desktop_wm": {
         "interfaces": [
           "mus::mojom::AcceleratorRegistrar",
-          "mash::wm::mojom::UserWindowController"
+          "ash::mojom::UserWindowController"
         ]
       }
     }

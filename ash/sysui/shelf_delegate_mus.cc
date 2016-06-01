@@ -28,7 +28,7 @@
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/mus/window_manager_connection.h"
 
-using mash::wm::mojom::UserWindowController;
+using ash::mojom::UserWindowController;
 
 namespace ash {
 namespace sysui {
@@ -353,13 +353,12 @@ void ShelfDelegateMus::SetItemImage(const mojo::String& app_id,
 }
 
 void ShelfDelegateMus::OnUserWindowObserverAdded(
-    mojo::Array<mash::wm::mojom::UserWindowPtr> user_windows) {
+    mojo::Array<mojom::UserWindowPtr> user_windows) {
   for (size_t i = 0; i < user_windows.size(); ++i)
     OnUserWindowAdded(std::move(user_windows[i]));
 }
 
-void ShelfDelegateMus::OnUserWindowAdded(
-    mash::wm::mojom::UserWindowPtr user_window) {
+void ShelfDelegateMus::OnUserWindowAdded(mojom::UserWindowPtr user_window) {
   DCHECK(!window_id_to_shelf_id_.count(user_window->window_id));
 
   if (user_window->ignored_by_shelf)

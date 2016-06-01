@@ -16,10 +16,10 @@ mojo_native_application("screenlock") {
   ]
 
   deps = [
+    "//ash/public/interfaces",
     "//base",
     "//components/mus/public/cpp",
     "//mash/session/public/interfaces",
-    "//mash/wm/public/interfaces",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//services/shell/public/cpp",

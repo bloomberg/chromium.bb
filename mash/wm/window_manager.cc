@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "ash/public/interfaces/container.mojom.h"
 #include "ash/wm/common/container_finder.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/property_type_converters.h"
@@ -20,7 +21,6 @@
 #include "mash/wm/bridge/wm_window_mus.h"
 #include "mash/wm/non_client_frame_controller.h"
 #include "mash/wm/property_util.h"
-#include "mash/wm/public/interfaces/container.mojom.h"
 #include "mash/wm/root_window_controller.h"
 
 namespace mash {
@@ -42,11 +42,11 @@ void WindowManager::Initialize(RootWindowController* root_controller,
 
   // Observe all the containers so that windows can be added to/removed from the
   // |disconnected_app_handler_|.
-  int count = static_cast<int>(mojom::Container::COUNT);
-  for (int id = static_cast<int>(mojom::Container::ROOT) + 1; id < count;
+  int count = static_cast<int>(ash::mojom::Container::COUNT);
+  for (int id = static_cast<int>(ash::mojom::Container::ROOT) + 1; id < count;
        ++id) {
     mus::Window* container = root_controller_->GetWindowForContainer(
-        static_cast<mojom::Container>(id));
+        static_cast<ash::mojom::Container>(id));
     Add(container);
 
     // Add any pre-existing windows in the container to
@@ -93,7 +93,7 @@ mus::Window* WindowManager::NewTopLevelWindow(
   window->SetBounds(CalculateDefaultBounds(window));
 
   mus::Window* container_window = nullptr;
-  if (window->HasSharedProperty(mojom::kWindowContainer_Property)) {
+  if (window->HasSharedProperty(ash::mojom::kWindowContainer_Property)) {
     container_window =
         root_controller_->GetWindowForContainer(GetRequestedContainer(window));
   } else {
@@ -204,7 +204,7 @@ void WindowManager::OnAccelerator(uint32_t id, const ui::Event& event) {
 void WindowManager::ScreenlockStateChanged(bool locked) {
   // Hide USER_PRIVATE_CONTAINER windows when the screen is locked.
   mus::Window* window = root_controller_->GetWindowForContainer(
-      mash::wm::mojom::Container::USER_PRIVATE);
+      ash::mojom::Container::USER_PRIVATE);
   window->SetVisible(!locked);
 }
 

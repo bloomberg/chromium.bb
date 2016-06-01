@@ -1,10 +1,10 @@
 include_rules = [
   "+ash/host",
+  "+ash/public/interfaces",
   "+cc",
   "+components/mus/common",
   "+components/mus/public",
   "+mash/shelf/public/interfaces",
-  "+mash/wm/public/interfaces",
   "+mojo/common",
   "+mojo/converters",
   "+mojo/public",

@@ -5,10 +5,10 @@
 #ifndef MASH_WM_PROPERTY_UTIL_H_
 #define MASH_WM_PROPERTY_UTIL_H_
 
+#include "ash/public/interfaces/ash_window_type.mojom.h"
+#include "ash/public/interfaces/container.mojom.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
-#include "mash/wm/public/interfaces/ash_window_type.mojom.h"
-#include "mash/wm/public/interfaces/container.mojom.h"
 #include "ui/wm/public/window_types.h"
 
 namespace gfx {
@@ -37,7 +37,7 @@ gfx::Rect GetWindowUserSetBounds(const mus::Window* window);
 void SetWindowPreferredSize(mus::Window* window, const gfx::Size& size);
 gfx::Size GetWindowPreferredSize(const mus::Window* window);
 
-mojom::Container GetRequestedContainer(const mus::Window* window);
+ash::mojom::Container GetRequestedContainer(const mus::Window* window);
 
 // Returns a bitfield of kResizeBehavior* values from
 // window_manager_constants.mojom.
@@ -55,7 +55,7 @@ mus::mojom::WindowType GetWindowType(
 
 ui::wm::WindowType GetWmWindowType(const mus::Window* window);
 
-mojom::AshWindowType GetAshWindowType(const mus::Window* window);
+ash::mojom::AshWindowType GetAshWindowType(const mus::Window* window);
 
 base::string16 GetWindowTitle(const mus::Window* window);
 

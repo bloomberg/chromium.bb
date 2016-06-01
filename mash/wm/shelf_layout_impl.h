@@ -5,8 +5,8 @@
 #ifndef MASH_WM_SHELF_LAYOUT_IMPL_H_
 #define MASH_WM_SHELF_LAYOUT_IMPL_H_
 
+#include "ash/public/interfaces/shelf_layout.mojom.h"
 #include "base/macros.h"
-#include "mash/wm/public/interfaces/shelf_layout.mojom.h"
 
 namespace mash {
 namespace wm {
@@ -15,7 +15,7 @@ class RootWindowController;
 
 // Implements the ShelfLayout mojo interface to listen for layout changes from
 // the system UI application.
-class ShelfLayoutImpl : public mojom::ShelfLayout {
+class ShelfLayoutImpl : public ash::mojom::ShelfLayout {
  public:
   ShelfLayoutImpl();
   ~ShelfLayoutImpl() override;

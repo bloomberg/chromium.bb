@@ -4,9 +4,9 @@
 
 #include "mash/wm/status_layout_manager.h"
 
+#include "ash/public/interfaces/ash_window_type.mojom.h"
 #include "components/mus/public/cpp/window.h"
 #include "mash/wm/property_util.h"
-#include "mash/wm/public/interfaces/ash_window_type.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace mash {
@@ -26,7 +26,7 @@ StatusLayoutManager::~StatusLayoutManager() {}
 // status area restarts.
 
 void StatusLayoutManager::LayoutWindow(mus::Window* window) {
-  if (GetAshWindowType(window) != mojom::AshWindowType::STATUS_AREA) {
+  if (GetAshWindowType(window) != ash::mojom::AshWindowType::STATUS_AREA) {
     // TODO(jamescook): Layout for notifications and other windows.
     NOTIMPLEMENTED() << "Non-status-area window needs layout.";
     return;

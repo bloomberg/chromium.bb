@@ -145,8 +145,8 @@ void WindowManagerApplication::Initialize(shell::Connector* connector,
 }
 
 bool WindowManagerApplication::AcceptConnection(shell::Connection* connection) {
-  connection->AddInterface<mojom::ShelfLayout>(this);
-  connection->AddInterface<mojom::UserWindowController>(this);
+  connection->AddInterface<ash::mojom::ShelfLayout>(this);
+  connection->AddInterface<ash::mojom::UserWindowController>(this);
   connection->AddInterface<mus::mojom::AcceleratorRegistrar>(this);
   if (connection->GetRemoteIdentity().name() == "mojo:mash_session")
     connection->GetInterface(&session_);
@@ -155,25 +155,26 @@ bool WindowManagerApplication::AcceptConnection(shell::Connection* connection) {
 
 void WindowManagerApplication::Create(
     shell::Connection* connection,
-    mojo::InterfaceRequest<mojom::ShelfLayout> request) {
+    mojo::InterfaceRequest<ash::mojom::ShelfLayout> request) {
   // TODO(msw): Handle multiple shelves (one per display).
   if (!root_controllers_.empty() && (*root_controllers_.begin())->root()) {
     shelf_layout_bindings_.AddBinding(shelf_layout_.get(), std::move(request));
   } else {
-    shelf_layout_requests_.push_back(base::WrapUnique(
-        new mojo::InterfaceRequest<mojom::ShelfLayout>(std::move(request))));
+    shelf_layout_requests_.push_back(
+        base::WrapUnique(new mojo::InterfaceRequest<ash::mojom::ShelfLayout>(
+            std::move(request))));
   }
 }
 
 void WindowManagerApplication::Create(
     shell::Connection* connection,
-    mojo::InterfaceRequest<mojom::UserWindowController> request) {
+    mojo::InterfaceRequest<ash::mojom::UserWindowController> request) {
   if (!root_controllers_.empty() && (*root_controllers_.begin())->root()) {
     user_window_controller_bindings_.AddBinding(user_window_controller_.get(),
                                                 std::move(request));
   } else {
     user_window_controller_requests_.push_back(base::WrapUnique(
-        new mojo::InterfaceRequest<mojom::UserWindowController>(
+        new mojo::InterfaceRequest<ash::mojom::UserWindowController>(
             std::move(request))));
   }
 }

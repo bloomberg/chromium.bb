@@ -32,6 +32,7 @@ source_set("lib") {
 
   deps = [
     "//ash",
+    "//ash/public/interfaces",
     "//cc",
     "//cc/surfaces",
     "//components/mus/common:mus_common",
@@ -40,7 +41,6 @@ source_set("lib") {
     "//components/user_manager",
     "//device/bluetooth",
     "//mash/shelf/public/interfaces",
-    "//mash/wm/public/interfaces",
     "//mojo/common:common_base",
     "//services/catalog/public/cpp",
     "//services/shell/public/cpp",

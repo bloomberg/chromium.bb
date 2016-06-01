@@ -7,25 +7,27 @@
 
 #include <stddef.h>
 
-namespace mash {
-namespace wm {
+namespace ash {
 namespace mojom {
 enum class Container;
 }
+}
 
+namespace mash {
+namespace wm {
 // Id used when there is no corresponding ash container.
 const int kUnknownAshId = -1;
 
 // The set of containers that allow their children to be active.
-extern const mojom::Container kActivationContainers[];
+extern const ash::mojom::Container kActivationContainers[];
 
 // Number of kActivationContainers.
 extern const size_t kNumActivationContainers;
 
 // Converts window ids between ash (ash/wm/common/wm_shell_window_ids.h) and
 // mash.
-mojom::Container AshContainerToMashContainer(int shell_window_id);
-int MashContainerToAshContainer(mojom::Container container);
+ash::mojom::Container AshContainerToMashContainer(int shell_window_id);
+int MashContainerToAshContainer(ash::mojom::Container container);
 
 }  // namespace wm
 }  // namespace mash

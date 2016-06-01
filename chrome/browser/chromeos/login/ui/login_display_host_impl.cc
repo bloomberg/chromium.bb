@@ -105,8 +105,8 @@
 #include "url/gurl.h"
 
 #if defined(MOJO_SHELL_CLIENT)
+#include "ash/public/interfaces/container.mojom.h"
 #include "components/mus/public/cpp/property_type_converters.h"
-#include "mash/wm/public/interfaces/container.mojom.h"
 #endif
 
 namespace {
@@ -1147,9 +1147,9 @@ void LoginDisplayHostImpl::InitLoginWindowAndView() {
                                  ash::kShellWindowId_LockScreenContainer);
   } else {
 #if defined(MOJO_SHELL_CLIENT)
-    params.mus_properties[mash::wm::mojom::kWindowContainer_Property] =
+    params.mus_properties[ash::mojom::kWindowContainer_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(
-            static_cast<int32_t>(mash::wm::mojom::Container::LOGIN_WINDOWS));
+            static_cast<int32_t>(ash::mojom::Container::LOGIN_WINDOWS));
 #else
     NOTREACHED();
 #endif

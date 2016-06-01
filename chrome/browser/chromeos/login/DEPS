@@ -1,11 +1,11 @@
 include_rules = [
+  "+ash/public/interfaces",
   "+components/captive_portal",
   "+components/login",
   "+components/toolbar",
   "+components/user_manager",
   "+components/wallpaper",
   "+extensions/components/native_app_window",
-  "+mash/wm/public/interfaces",
 
   # Library used for calculating CRC-32 needed for HWID verification.
   "+third_party/zlib",

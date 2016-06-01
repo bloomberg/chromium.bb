@@ -4,9 +4,9 @@
 
 #include "mash/wm/shelf_layout_manager.h"
 
+#include "ash/public/interfaces/ash_window_type.mojom.h"
 #include "components/mus/public/cpp/window.h"
 #include "mash/wm/property_util.h"
-#include "mash/wm/public/interfaces/ash_window_type.mojom.h"
 #include "mash/wm/shelf_layout_manager_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -26,7 +26,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {}
 
 mus::Window* ShelfLayoutManager::GetShelfWindow() {
   for (mus::Window* child : owner()->children()) {
-    if (GetAshWindowType(child) == mojom::AshWindowType::SHELF)
+    if (GetAshWindowType(child) == ash::mojom::AshWindowType::SHELF)
       return child;
   }
   return nullptr;
@@ -55,7 +55,7 @@ void ShelfLayoutManager::SetAutoHideBehavior(
 // shelf restarts.
 
 void ShelfLayoutManager::LayoutWindow(mus::Window* window) {
-  if (GetAshWindowType(window) != mojom::AshWindowType::SHELF) {
+  if (GetAshWindowType(window) != ash::mojom::AshWindowType::SHELF) {
     // Phantom windows end up in this container, ignore them.
     return;
   }
@@ -75,7 +75,7 @@ void ShelfLayoutManager::LayoutWindow(mus::Window* window) {
 }
 
 void ShelfLayoutManager::WindowAdded(mus::Window* window) {
-  if (GetAshWindowType(window) == mojom::AshWindowType::SHELF)
+  if (GetAshWindowType(window) == ash::mojom::AshWindowType::SHELF)
     delegate_->OnShelfWindowAvailable();
 }
 

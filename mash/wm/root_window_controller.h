@@ -7,12 +7,12 @@
 
 #include <memory>
 
+#include "ash/public/interfaces/container.mojom.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_client.h"
 #include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "components/mus/public/interfaces/window_manager_constants.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
-#include "mash/wm/public/interfaces/container.mojom.h"
 #include "mash/wm/shelf_layout_manager_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/display/display.h"
@@ -70,7 +70,7 @@ class RootWindowController : public mus::WindowObserver,
   int window_count() { return window_count_; }
   void IncrementWindowCount() { ++window_count_; }
 
-  mus::Window* GetWindowForContainer(mojom::Container container);
+  mus::Window* GetWindowForContainer(ash::mojom::Container container);
   bool WindowIsContainer(const mus::Window* window) const;
 
   WindowManager* window_manager() { return window_manager_.get(); }
@@ -111,8 +111,8 @@ class RootWindowController : public mus::WindowObserver,
   void OnShelfWindowAvailable() override;
 
   // Sets up the window containers used for z-space management.
-  void CreateContainer(mash::wm::mojom::Container container,
-                       mash::wm::mojom::Container parent_container);
+  void CreateContainer(ash::mojom::Container container,
+                       ash::mojom::Container parent_container);
   void CreateContainers();
 
   WindowManagerApplication* app_;

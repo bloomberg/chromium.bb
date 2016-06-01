@@ -15,7 +15,6 @@
 #include "mash/wm/bridge/wm_window_mus.h"
 #include "mash/wm/container_ids.h"
 #include "mash/wm/drag_window_resizer.h"
-#include "mash/wm/public/interfaces/container.mojom.h"
 #include "mash/wm/root_window_controller.h"
 
 namespace mash {

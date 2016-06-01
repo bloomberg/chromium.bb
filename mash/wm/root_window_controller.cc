@@ -44,6 +44,8 @@
 #include "services/shell/public/cpp/connector.h"
 #include "ui/display/mojo/display_type_converters.h"
 
+using ash::mojom::Container;
+
 namespace mash {
 namespace wm {
 namespace {
@@ -54,7 +56,7 @@ void AssertTrue(bool success) {
   DCHECK(success);
 }
 
-int ContainerToLocalId(mojom::Container container) {
+int ContainerToLocalId(Container container) {
   return static_cast<int>(container);
 }
 
@@ -109,15 +111,13 @@ shell::Connector* RootWindowController::GetConnector() {
   return app_->connector();
 }
 
-mus::Window* RootWindowController::GetWindowForContainer(
-    mojom::Container container) {
+mus::Window* RootWindowController::GetWindowForContainer(Container container) {
   return root_->GetChildByLocalId(ContainerToLocalId(container));
 }
 
 bool RootWindowController::WindowIsContainer(const mus::Window* window) const {
-  return window &&
-         window->local_id() > ContainerToLocalId(mojom::Container::ROOT) &&
-         window->local_id() < ContainerToLocalId(mojom::Container::COUNT);
+  return window && window->local_id() > ContainerToLocalId(Container::ROOT) &&
+         window->local_id() < ContainerToLocalId(Container::COUNT);
 }
 
 mus::WindowManagerClient* RootWindowController::window_manager_client() {
@@ -137,14 +137,13 @@ void RootWindowController::OnAccelerator(uint32_t id, const ui::Event& event) {
 
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
   return static_cast<ShelfLayoutManager*>(
-      layout_managers_[GetWindowForContainer(
-                           mojom::Container::USER_PRIVATE_SHELF)]
+      layout_managers_[GetWindowForContainer(Container::USER_PRIVATE_SHELF)]
           .get());
 }
 
 StatusLayoutManager* RootWindowController::GetStatusLayoutManager() {
   return static_cast<StatusLayoutManager*>(
-      layout_managers_[GetWindowForContainer(mojom::Container::STATUS)].get());
+      layout_managers_[GetWindowForContainer(Container::STATUS)].get());
 }
 
 RootWindowController::RootWindowController(WindowManagerApplication* app)
@@ -164,7 +163,7 @@ void RootWindowController::AddAccelerators() {
 
 void RootWindowController::OnEmbed(mus::Window* root) {
   root_ = root;
-  root_->set_local_id(ContainerToLocalId(mojom::Container::ROOT));
+  root_->set_local_id(ContainerToLocalId(Container::ROOT));
   root_->AddObserver(this);
   layout_managers_[root_].reset(new FillLayout(root_));
 
@@ -229,9 +228,8 @@ void RootWindowController::OnShelfWindowAvailable() {
   // docked_layout_manager_->AddObserver(shelf_->shelf_layout_manager());
 }
 
-void RootWindowController::CreateContainer(
-    mash::wm::mojom::Container container,
-    mash::wm::mojom::Container parent_container) {
+void RootWindowController::CreateContainer(Container container,
+                                           Container parent_container) {
   // Set the window's name to the container name (e.g. "Container::LOGIN"),
   // which makes the window hierarchy easier to read.
   std::map<std::string, std::vector<uint8_t>> properties;
@@ -251,7 +249,7 @@ void RootWindowController::CreateContainer(
   // however, usually assume the screen is unlocked.
   const bool is_test = base::CommandLine::ForCurrentProcess()->HasSwitch(
       mus::switches::kUseTestConfig);
-  window->SetVisible(container != mojom::Container::USER_PRIVATE || is_test);
+  window->SetVisible(container != Container::USER_PRIVATE || is_test);
 
   mus::Window* parent =
       root_->GetChildByLocalId(ContainerToLocalId(parent_container));
@@ -259,61 +257,55 @@ void RootWindowController::CreateContainer(
 }
 
 void RootWindowController::CreateContainers() {
-  CreateContainer(mojom::Container::ALL_USER_BACKGROUND,
-                  mojom::Container::ROOT);
-  CreateContainer(mojom::Container::USER, mojom::Container::ROOT);
-  CreateContainer(mojom::Container::USER_BACKGROUND, mojom::Container::USER);
-  CreateContainer(mojom::Container::USER_PRIVATE, mojom::Container::USER);
-  CreateContainer(mojom::Container::USER_PRIVATE_WINDOWS,
-                  mojom::Container::USER_PRIVATE);
-  CreateContainer(mojom::Container::USER_PRIVATE_ALWAYS_ON_TOP_WINDOWS,
-                  mojom::Container::USER_PRIVATE);
-  CreateContainer(mojom::Container::USER_PRIVATE_DOCKED_WINDOWS,
-                  mojom::Container::USER_PRIVATE);
-  CreateContainer(mojom::Container::USER_PRIVATE_PRESENTATION_WINDOWS,
-                  mojom::Container::USER_PRIVATE);
-  CreateContainer(mojom::Container::USER_PRIVATE_SHELF,
-                  mojom::Container::USER_PRIVATE);
-  CreateContainer(mojom::Container::USER_PRIVATE_PANELS,
-                  mojom::Container::USER_PRIVATE);
-  CreateContainer(mojom::Container::USER_PRIVATE_APP_LIST,
-                  mojom::Container::USER_PRIVATE);
-  CreateContainer(mojom::Container::USER_PRIVATE_SYSTEM_MODAL,
-                  mojom::Container::USER_PRIVATE);
-  CreateContainer(mojom::Container::LOGIN, mojom::Container::ROOT);
-  CreateContainer(mojom::Container::LOGIN_WINDOWS, mojom::Container::LOGIN);
-  CreateContainer(mojom::Container::LOGIN_APP, mojom::Container::LOGIN);
-  CreateContainer(mojom::Container::LOGIN_SHELF, mojom::Container::LOGIN);
-  CreateContainer(mojom::Container::STATUS, mojom::Container::ROOT);
-  CreateContainer(mojom::Container::BUBBLES, mojom::Container::ROOT);
-  CreateContainer(mojom::Container::SYSTEM_MODAL_WINDOWS,
-                  mojom::Container::ROOT);
-  CreateContainer(mojom::Container::KEYBOARD, mojom::Container::ROOT);
-  CreateContainer(mojom::Container::MENUS, mojom::Container::ROOT);
-  CreateContainer(mojom::Container::DRAG_AND_TOOLTIPS, mojom::Container::ROOT);
+  CreateContainer(Container::ALL_USER_BACKGROUND, Container::ROOT);
+  CreateContainer(Container::USER, Container::ROOT);
+  CreateContainer(Container::USER_BACKGROUND, Container::USER);
+  CreateContainer(Container::USER_PRIVATE, Container::USER);
+  CreateContainer(Container::USER_PRIVATE_WINDOWS, Container::USER_PRIVATE);
+  CreateContainer(Container::USER_PRIVATE_ALWAYS_ON_TOP_WINDOWS,
+                  Container::USER_PRIVATE);
+  CreateContainer(Container::USER_PRIVATE_DOCKED_WINDOWS,
+                  Container::USER_PRIVATE);
+  CreateContainer(Container::USER_PRIVATE_PRESENTATION_WINDOWS,
+                  Container::USER_PRIVATE);
+  CreateContainer(Container::USER_PRIVATE_SHELF, Container::USER_PRIVATE);
+  CreateContainer(Container::USER_PRIVATE_PANELS, Container::USER_PRIVATE);
+  CreateContainer(Container::USER_PRIVATE_APP_LIST, Container::USER_PRIVATE);
+  CreateContainer(Container::USER_PRIVATE_SYSTEM_MODAL,
+                  Container::USER_PRIVATE);
+  CreateContainer(Container::LOGIN, Container::ROOT);
+  CreateContainer(Container::LOGIN_WINDOWS, Container::LOGIN);
+  CreateContainer(Container::LOGIN_APP, Container::LOGIN);
+  CreateContainer(Container::LOGIN_SHELF, Container::LOGIN);
+  CreateContainer(Container::STATUS, Container::ROOT);
+  CreateContainer(Container::BUBBLES, Container::ROOT);
+  CreateContainer(Container::SYSTEM_MODAL_WINDOWS, Container::ROOT);
+  CreateContainer(Container::KEYBOARD, Container::ROOT);
+  CreateContainer(Container::MENUS, Container::ROOT);
+  CreateContainer(Container::DRAG_AND_TOOLTIPS, Container::ROOT);
 
   // Override the default layout managers for certain containers.
   mus::Window* user_background =
-      GetWindowForContainer(mojom::Container::USER_BACKGROUND);
+      GetWindowForContainer(Container::USER_BACKGROUND);
   layout_managers_[user_background].reset(
       new BackgroundLayout(user_background));
 
-  mus::Window* login_app = GetWindowForContainer(mojom::Container::LOGIN_APP);
+  mus::Window* login_app = GetWindowForContainer(Container::LOGIN_APP);
   layout_managers_[login_app].reset(new ScreenlockLayout(login_app));
 
   mus::Window* user_shelf =
-      GetWindowForContainer(mojom::Container::USER_PRIVATE_SHELF);
+      GetWindowForContainer(Container::USER_PRIVATE_SHELF);
   ShelfLayoutManager* shelf_layout_manager =
       new ShelfLayoutManager(user_shelf, this);
   layout_managers_[user_shelf].reset(shelf_layout_manager);
 
   wm_shelf_.reset(new WmShelfMus(shelf_layout_manager));
 
-  mus::Window* status = GetWindowForContainer(mojom::Container::STATUS);
+  mus::Window* status = GetWindowForContainer(Container::STATUS);
   layout_managers_[status].reset(new StatusLayoutManager(status));
 
   mus::Window* user_private_windows =
-      GetWindowForContainer(mojom::Container::USER_PRIVATE_WINDOWS);
+      GetWindowForContainer(Container::USER_PRIVATE_WINDOWS);
   // WorkspaceLayoutManager is not a mash::wm::LayoutManager (it's an
   // ash::wm::LayoutManager), so it can't be in |layout_managers_|.
   layout_managers_.erase(user_private_windows);
@@ -329,7 +321,7 @@ void RootWindowController::CreateContainers() {
           std::move(workspace_layout_manager_delegate))));
 
   mus::Window* user_private_docked_windows =
-      GetWindowForContainer(mojom::Container::USER_PRIVATE_DOCKED_WINDOWS);
+      GetWindowForContainer(Container::USER_PRIVATE_DOCKED_WINDOWS);
   WmWindowMus* user_private_docked_windows_wm =
       WmWindowMus::Get(user_private_docked_windows);
   user_private_docked_windows_wm->SetSnapsChildrenToPhysicalPixelBoundary();
@@ -339,7 +331,7 @@ void RootWindowController::CreateContainers() {
       new ash::DockedWindowLayoutManager(user_private_docked_windows_wm)));
 
   mus::Window* user_private_panels =
-      GetWindowForContainer(mojom::Container::USER_PRIVATE_PANELS);
+      GetWindowForContainer(Container::USER_PRIVATE_PANELS);
   WmWindowMus* user_private_panels_wm = WmWindowMus::Get(user_private_panels);
   user_private_panels_wm->SetSnapsChildrenToPhysicalPixelBoundary();
   layout_managers_.erase(user_private_panels);
@@ -347,8 +339,8 @@ void RootWindowController::CreateContainers() {
   user_private_panels_wm->SetLayoutManager(
       base::WrapUnique(new ash::PanelLayoutManager(user_private_panels_wm)));
 
-  mus::Window* user_private_always_on_top = GetWindowForContainer(
-      mojom::Container::USER_PRIVATE_ALWAYS_ON_TOP_WINDOWS);
+  mus::Window* user_private_always_on_top =
+      GetWindowForContainer(Container::USER_PRIVATE_ALWAYS_ON_TOP_WINDOWS);
   WmWindowMus* user_private_always_on_top_wm =
       WmWindowMus::Get(user_private_always_on_top);
   user_private_always_on_top_wm->SetChildrenUseExtendedHitRegion();

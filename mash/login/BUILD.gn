@@ -16,11 +16,11 @@ mojo_native_application("login") {
   ]
 
   deps = [
+    "//ash/public/interfaces",
     "//base",
     "//components/mus/public/cpp",
     "//mash/init/public/interfaces",
     "//mash/login/public/interfaces",
-    "//mash/wm/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//services/shell/public/cpp",
     "//services/tracing/public/cpp",

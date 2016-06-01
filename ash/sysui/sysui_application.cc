@@ -13,6 +13,8 @@
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_platform.h"
 #include "ash/material_design/material_design_controller.h"
+#include "ash/public/interfaces/ash_window_type.mojom.h"
+#include "ash/public/interfaces/container.mojom.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
@@ -27,8 +29,6 @@
 #include "base/path_service.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/mus/public/cpp/property_type_converters.h"
-#include "mash/wm/public/interfaces/ash_window_type.mojom.h"
-#include "mash/wm/public/interfaces/container.mojom.h"
 #include "services/catalog/public/cpp/resource_loader.h"
 #include "services/shell/public/cpp/connector.h"
 #include "ui/aura/env.h"
@@ -60,39 +60,38 @@ const char kResourceFile100[] = "ash_resources_100_percent.pak";
 const char kResourceFile200[] = "ash_resources_200_percent.pak";
 
 // Tries to determine the corresponding mash container from widget init params.
-mash::wm::mojom::Container GetContainerId(
-    const views::Widget::InitParams& params) {
+mojom::Container GetContainerId(const views::Widget::InitParams& params) {
   const int id = params.parent->id();
   if (id == kShellWindowId_DesktopBackgroundContainer)
-    return mash::wm::mojom::Container::USER_BACKGROUND;
+    return mojom::Container::USER_BACKGROUND;
   if (id == kShellWindowId_ShelfContainer)
-    return mash::wm::mojom::Container::USER_PRIVATE_SHELF;
+    return mojom::Container::USER_PRIVATE_SHELF;
   if (id == kShellWindowId_StatusContainer)
-    return mash::wm::mojom::Container::STATUS;
+    return mojom::Container::STATUS;
 
   // Determine the container based on Widget type.
   switch (params.type) {
     case views::Widget::InitParams::Type::TYPE_BUBBLE:
-      return mash::wm::mojom::Container::BUBBLES;
+      return mojom::Container::BUBBLES;
     case views::Widget::InitParams::Type::TYPE_MENU:
-      return mash::wm::mojom::Container::MENUS;
+      return mojom::Container::MENUS;
     case views::Widget::InitParams::Type::TYPE_TOOLTIP:
-      return mash::wm::mojom::Container::DRAG_AND_TOOLTIPS;
+      return mojom::Container::DRAG_AND_TOOLTIPS;
     default:
-      return mash::wm::mojom::Container::COUNT;
+      return mojom::Container::COUNT;
   }
 }
 
 // Tries to determine the corresponding ash window type from the ash container
 // for the widget.
-mash::wm::mojom::AshWindowType GetAshWindowType(aura::Window* container) {
+mojom::AshWindowType GetAshWindowType(aura::Window* container) {
   DCHECK(container);
   int id = container->id();
   if (id == kShellWindowId_ShelfContainer)
-    return mash::wm::mojom::AshWindowType::SHELF;
+    return mojom::AshWindowType::SHELF;
   if (id == kShellWindowId_StatusContainer)
-    return mash::wm::mojom::AshWindowType::STATUS_AREA;
-  return mash::wm::mojom::AshWindowType::COUNT;
+    return mojom::AshWindowType::STATUS_AREA;
+  return mojom::AshWindowType::COUNT;
 }
 
 // Creates a StubWindow, which means this window never receives any input event,
@@ -141,15 +140,15 @@ class NativeWidgetFactory {
       views::internal::NativeWidgetDelegate* delegate) {
     std::map<std::string, std::vector<uint8_t>> properties;
     if (params.parent) {
-      mash::wm::mojom::Container container = GetContainerId(params);
-      if (container != mash::wm::mojom::Container::COUNT) {
-        properties[mash::wm::mojom::kWindowContainer_Property] =
+      mojom::Container container = GetContainerId(params);
+      if (container != mojom::Container::COUNT) {
+        properties[mojom::kWindowContainer_Property] =
             mojo::ConvertTo<std::vector<uint8_t>>(
                 static_cast<int32_t>(container));
       }
-      mash::wm::mojom::AshWindowType type = GetAshWindowType(params.parent);
-      if (type != mash::wm::mojom::AshWindowType::COUNT) {
-        properties[mash::wm::mojom::kAshWindowType_Property] =
+      mojom::AshWindowType type = GetAshWindowType(params.parent);
+      if (type != mojom::AshWindowType::COUNT) {
+        properties[mojom::kAshWindowType_Property] =
             mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(type));
       }
     }
@@ -193,13 +192,13 @@ class AshInit {
 
   ~AshInit() { worker_pool_->Shutdown(); }
 
-  aura::Window* root() { return ash::Shell::GetPrimaryRootWindow(); }
+  aura::Window* root() { return Shell::GetPrimaryRootWindow(); }
 
   void Initialize(::shell::Connector* connector,
                   const ::shell::Identity& identity) {
     InitializeResourceBundle(connector);
     aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
-    ash::MaterialDesignController::Initialize();
+    MaterialDesignController::Initialize();
     views::WindowManagerConnection::Create(connector, identity);
 
     display::Screen* screen = display::Screen::GetScreen();
@@ -216,27 +215,26 @@ class AshInit {
     // be hooked up correctly.
     native_widget_factory_.reset(new NativeWidgetFactory());
 
-    ash::AshWindowTreeHost::SetFactory(base::Bind(&CreateWindowTreeHostMus));
+    AshWindowTreeHost::SetFactory(base::Bind(&CreateWindowTreeHostMus));
 
-    std::unique_ptr<ash::AppListPresenterMus> app_list_presenter =
-        base::WrapUnique(new ash::AppListPresenterMus(connector));
+    std::unique_ptr<AppListPresenterMus> app_list_presenter =
+        base::WrapUnique(new AppListPresenterMus(connector));
     ash_delegate_ = new ShellDelegateMus(std::move(app_list_presenter));
 
     InitializeComponents();
 
-    ash::ShellInitParams init_params;
+    ShellInitParams init_params;
     init_params.delegate = ash_delegate_;
     init_params.context_factory = new StubContextFactory;
     init_params.blocking_pool = worker_pool_.get();
     init_params.in_mus = true;
     init_params.keyboard_factory =
         base::Bind(&KeyboardUIMus::Create, connector);
-    ash::Shell::CreateInstance(init_params);
-    ash::Shell::GetInstance()->CreateShelf();
-    ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
-        ash::user::LOGGED_IN_USER);
+    Shell::CreateInstance(init_params);
+    Shell::GetInstance()->CreateShelf();
+    Shell::GetInstance()->UpdateAfterLoginStatusChange(user::LOGGED_IN_USER);
 
-    ash::Shell::GetPrimaryRootWindow()->GetHost()->Show();
+    Shell::GetPrimaryRootWindow()->GetHost()->Show();
     SetupWallpaper(SkColorSetARGB(255, 0, 255, 0));
   }
 
@@ -279,9 +277,8 @@ class AshInit {
     }
 #endif
     gfx::ImageSkia wallpaper = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-    ash::Shell::GetInstance()
-        ->desktop_background_controller()
-        ->SetWallpaperImage(wallpaper, wallpaper::WALLPAPER_LAYOUT_TILE);
+    Shell::GetInstance()->desktop_background_controller()->SetWallpaperImage(
+        wallpaper, wallpaper::WALLPAPER_LAYOUT_TILE);
   }
 
   void InitializeComponents() {

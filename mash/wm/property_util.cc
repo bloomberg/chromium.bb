@@ -70,12 +70,13 @@ gfx::Size GetWindowPreferredSize(const mus::Window* window) {
   return gfx::Size();
 }
 
-mojom::Container GetRequestedContainer(const mus::Window* window) {
-  if (window->HasSharedProperty(mojom::kWindowContainer_Property)) {
-    return static_cast<mojom::Container>(
-        window->GetSharedProperty<int32_t>(mojom::kWindowContainer_Property));
+ash::mojom::Container GetRequestedContainer(const mus::Window* window) {
+  if (window->HasSharedProperty(ash::mojom::kWindowContainer_Property)) {
+    return static_cast<ash::mojom::Container>(
+        window->GetSharedProperty<int32_t>(
+            ash::mojom::kWindowContainer_Property));
   }
-  return mojom::Container::USER_PRIVATE_WINDOWS;
+  return ash::mojom::Container::USER_PRIVATE_WINDOWS;
 }
 
 int32_t GetResizeBehavior(const mus::Window* window) {
@@ -157,12 +158,12 @@ ui::wm::WindowType GetWmWindowType(const mus::Window* window) {
   return ui::wm::WINDOW_TYPE_UNKNOWN;
 }
 
-mojom::AshWindowType GetAshWindowType(const mus::Window* window) {
-  if (!window->HasSharedProperty(mojom::kAshWindowType_Property))
-    return mojom::AshWindowType::COUNT;
+ash::mojom::AshWindowType GetAshWindowType(const mus::Window* window) {
+  if (!window->HasSharedProperty(ash::mojom::kAshWindowType_Property))
+    return ash::mojom::AshWindowType::COUNT;
 
-  return static_cast<mojom::AshWindowType>(
-      window->GetSharedProperty<int32_t>(mojom::kAshWindowType_Property));
+  return static_cast<ash::mojom::AshWindowType>(
+      window->GetSharedProperty<int32_t>(ash::mojom::kAshWindowType_Property));
 }
 
 base::string16 GetWindowTitle(const mus::Window* window) {

@@ -10,6 +10,8 @@
 #include <memory>
 #include <set>
 
+#include "ash/public/interfaces/shelf_layout.mojom.h"
+#include "ash/public/interfaces/user_window_controller.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/mus/common/types.h"
@@ -18,8 +20,6 @@
 #include "components/mus/public/interfaces/window_manager_factory.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mash/session/public/interfaces/session.mojom.h"
-#include "mash/wm/public/interfaces/shelf_layout.mojom.h"
-#include "mash/wm/public/interfaces/user_window_controller.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/shell_client.h"
@@ -52,8 +52,8 @@ class WmScreen;
 class WindowManagerApplication
     : public shell::ShellClient,
       public mus::mojom::WindowManagerFactory,
-      public shell::InterfaceFactory<mojom::ShelfLayout>,
-      public shell::InterfaceFactory<mojom::UserWindowController>,
+      public shell::InterfaceFactory<ash::mojom::ShelfLayout>,
+      public shell::InterfaceFactory<ash::mojom::UserWindowController>,
       public shell::InterfaceFactory<mus::mojom::AcceleratorRegistrar> {
  public:
   WindowManagerApplication();
@@ -104,14 +104,14 @@ class WindowManagerApplication
                   uint32_t id) override;
   bool AcceptConnection(shell::Connection* connection) override;
 
-  // shell::InterfaceFactory<mojom::ShelfLayout>:
+  // shell::InterfaceFactory<ash::mojom::ShelfLayout>:
   void Create(shell::Connection* connection,
-              mojo::InterfaceRequest<mojom::ShelfLayout> request) override;
+              mojo::InterfaceRequest<ash::mojom::ShelfLayout> request) override;
 
-  // shell::InterfaceFactory<mojom::UserWindowController>:
-  void Create(
-      shell::Connection* connection,
-      mojo::InterfaceRequest<mojom::UserWindowController> request) override;
+  // shell::InterfaceFactory<ash::mojom::UserWindowController>:
+  void Create(shell::Connection* connection,
+              mojo::InterfaceRequest<ash::mojom::UserWindowController> request)
+      override;
 
   // shell::InterfaceFactory<mus::mojom::AcceleratorRegistrar>:
   void Create(shell::Connection* connection,
@@ -136,17 +136,17 @@ class WindowManagerApplication
   // The |shelf_layout_| object is created once OnEmbed() is called. Until that
   // time |shelf_layout_requests_| stores pending interface requests.
   std::unique_ptr<ShelfLayoutImpl> shelf_layout_;
-  mojo::BindingSet<mojom::ShelfLayout> shelf_layout_bindings_;
-  std::vector<std::unique_ptr<mojo::InterfaceRequest<mojom::ShelfLayout>>>
+  mojo::BindingSet<ash::mojom::ShelfLayout> shelf_layout_bindings_;
+  std::vector<std::unique_ptr<mojo::InterfaceRequest<ash::mojom::ShelfLayout>>>
       shelf_layout_requests_;
 
   // |user_window_controller_| is created once OnEmbed() is called. Until that
   // time |user_window_controller_requests_| stores pending interface requests.
   std::unique_ptr<UserWindowControllerImpl> user_window_controller_;
-  mojo::BindingSet<mojom::UserWindowController>
+  mojo::BindingSet<ash::mojom::UserWindowController>
       user_window_controller_bindings_;
   std::vector<
-      std::unique_ptr<mojo::InterfaceRequest<mojom::UserWindowController>>>
+      std::unique_ptr<mojo::InterfaceRequest<ash::mojom::UserWindowController>>>
       user_window_controller_requests_;
 
   std::set<AcceleratorRegistrarImpl*> accelerator_registrars_;

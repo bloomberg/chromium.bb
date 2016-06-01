@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/interfaces/user_window_controller.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -14,7 +15,6 @@
 #include "components/mus/public/cpp/window_tree_client.h"
 #include "components/mus/public/cpp/window_tree_client_delegate.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
-#include "mash/wm/public/interfaces/user_window_controller.mojom.h"
 #include "services/shell/public/cpp/shell_test.h"
 
 namespace mash {
@@ -47,7 +47,7 @@ void OnEmbed(bool success) {
   ASSERT_TRUE(success);
 }
 
-class TestUserWindowObserver : public mojom::UserWindowObserver {
+class TestUserWindowObserver : public ash::mojom::UserWindowObserver {
  public:
   explicit TestUserWindowObserver(shell::Connector* connector)
       : binding_(this), window_count_(0u), expected_window_count_(0u) {
@@ -78,12 +78,12 @@ class TestUserWindowObserver : public mojom::UserWindowObserver {
 
   // mojom::UserWindowObserver:
   void OnUserWindowObserverAdded(
-      mojo::Array<mojom::UserWindowPtr> user_windows) override {
+      mojo::Array<ash::mojom::UserWindowPtr> user_windows) override {
     window_count_ = user_windows.size();
     QuitIfNecessary();
   }
 
-  void OnUserWindowAdded(mojom::UserWindowPtr user_window) override {
+  void OnUserWindowAdded(ash::mojom::UserWindowPtr user_window) override {
     ++window_count_;
     QuitIfNecessary();
   }
@@ -100,8 +100,8 @@ class TestUserWindowObserver : public mojom::UserWindowObserver {
   void OnUserWindowAppIconChanged(uint32_t window_id,
                                   mojo::Array<uint8_t> app_icon) override {}
 
-  mojom::UserWindowControllerPtr user_window_controller_;
-  mojo::Binding<mojom::UserWindowObserver> binding_;
+  ash::mojom::UserWindowControllerPtr user_window_controller_;
+  mojo::Binding<ash::mojom::UserWindowObserver> binding_;
 
   size_t window_count_;
   size_t expected_window_count_;

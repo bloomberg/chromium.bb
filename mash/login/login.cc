@@ -7,6 +7,7 @@
 #include <map>
 #include <memory>
 
+#include "ash/public/interfaces/container.mojom.h"
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -15,7 +16,6 @@
 #include "components/mus/public/interfaces/user_access_manager.mojom.h"
 #include "mash/init/public/interfaces/init.mojom.h"
 #include "mash/login/public/interfaces/login.mojom.h"
-#include "mash/wm/public/interfaces/container.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/shell/public/cpp/connector.h"
 #include "services/shell/public/cpp/shell_client.h"
@@ -50,9 +50,9 @@ class UI : public views::WidgetDelegateView,
     params.delegate = ui;
 
     std::map<std::string, std::vector<uint8_t>> properties;
-    properties[mash::wm::mojom::kWindowContainer_Property] =
+    properties[ash::mojom::kWindowContainer_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(
-            static_cast<int32_t>(mash::wm::mojom::Container::LOGIN_WINDOWS));
+            static_cast<int32_t>(ash::mojom::Container::LOGIN_WINDOWS));
     mus::Window* window =
         views::WindowManagerConnection::Get()->NewWindow(properties);
     params.native_widget = new views::NativeWidgetMus(

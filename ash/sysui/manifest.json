@@ -7,8 +7,8 @@
       "*": { "classes": [ "app" ] },
       "mojo:desktop_wm": {
         "interfaces": [
-          "mash::wm::mojom::ShelfLayout",
-          "mash::wm::mojom::UserWindowController"
+          "ash::mojom::ShelfLayout",
+          "ash::mojom::UserWindowController"
         ]
       },
       "exe:chrome" : { "classes": [ "app_list:presenter" ] }

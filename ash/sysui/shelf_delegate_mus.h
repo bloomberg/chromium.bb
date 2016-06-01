@@ -7,10 +7,10 @@
 
 #include <map>
 
+#include "ash/public/interfaces/shelf_layout.mojom.h"
+#include "ash/public/interfaces/user_window_controller.mojom.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "mash/shelf/public/interfaces/shelf.mojom.h"
-#include "mash/wm/public/interfaces/shelf_layout.mojom.h"
-#include "mash/wm/public/interfaces/user_window_controller.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
@@ -24,7 +24,7 @@ namespace sysui {
 // the browser.
 class ShelfDelegateMus : public ShelfDelegate,
                          public mash::shelf::mojom::ShelfController,
-                         public mash::wm::mojom::UserWindowObserver {
+                         public mojom::UserWindowObserver {
  public:
   explicit ShelfDelegateMus(ShelfModel* model);
   ~ShelfDelegateMus() override;
@@ -57,10 +57,10 @@ class ShelfDelegateMus : public ShelfDelegate,
   void SetItemImage(const mojo::String& app_id,
                     skia::mojom::BitmapPtr image) override;
 
-  // mash::wm::mojom::UserWindowObserver:
+  // mojom::UserWindowObserver:
   void OnUserWindowObserverAdded(
-      mojo::Array<mash::wm::mojom::UserWindowPtr> user_windows) override;
-  void OnUserWindowAdded(mash::wm::mojom::UserWindowPtr user_window) override;
+      mojo::Array<mojom::UserWindowPtr> user_windows) override;
+  void OnUserWindowAdded(mojom::UserWindowPtr user_window) override;
   void OnUserWindowRemoved(uint32_t window_id) override;
   void OnUserWindowTitleChanged(uint32_t window_id,
                                 const mojo::String& window_title) override;
@@ -75,9 +75,9 @@ class ShelfDelegateMus : public ShelfDelegate,
 
   mojo::AssociatedInterfacePtrSet<mash::shelf::mojom::ShelfObserver> observers_;
 
-  mash::wm::mojom::ShelfLayoutPtr shelf_layout_;
-  mash::wm::mojom::UserWindowControllerPtr user_window_controller_;
-  mojo::Binding<mash::wm::mojom::UserWindowObserver> binding_;
+  mojom::ShelfLayoutPtr shelf_layout_;
+  mojom::UserWindowControllerPtr user_window_controller_;
+  mojo::Binding<mojom::UserWindowObserver> binding_;
   std::map<uint32_t, ShelfID> window_id_to_shelf_id_;
 
   std::map<std::string, ShelfID> app_id_to_shelf_id_;
