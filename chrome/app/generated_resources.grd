@@ -5236,7 +5236,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SAVE_PAGE_AS_MHTML_DESCRIPTION" desc="Description of the 'Save Page as MHTML' lab.">
         Enables saving pages as MHTML: a single text file containing HTML and all sub-resources.
       </message>
-      
+
       <!-- Flag and values for MHTML Geenrator options lab. -->
       <message name="IDS_FLAGS_MHTML_GENERATOR_OPTION_NAME" desc="Name of the 'MHTML Generator Options' lab.">
         MHTML Generation Option
@@ -10933,16 +10933,16 @@ I don't think this site should be blocked!
         Default yellow avatar
       </message>
       <message name="IDS_DEFAULT_AVATAR_LABEL_8" desc="The label for the the female spy avatar.">
-        Blonde female with sunglasses, light skin tone
+        Spy
       </message>
       <message name="IDS_DEFAULT_AVATAR_LABEL_9" desc="The label for the male hero avatar.">
-        Male with sunglasses, medium skin tone
+        Hero
       </message>
       <message name="IDS_DEFAULT_AVATAR_LABEL_10" desc="The label for the female athlete avatar.">
-        Brunette female with sunglasses, light skin tone
+        Athlete
       </message>
       <message name="IDS_DEFAULT_AVATAR_LABEL_11" desc="The label for the male businessman avatar.">
-        Male with dark skin tone
+        Businessman
       </message>
       <message name="IDS_DEFAULT_AVATAR_LABEL_12" desc="The label for the ninja avatar.">
         Ninja
@@ -10951,7 +10951,7 @@ I don't think this site should be blocked!
         Alien
       </message>
       <message name="IDS_DEFAULT_AVATAR_LABEL_14" desc="The label for the awesome face avatar.">
-        Smiley face with open mouth
+        Awesome face
       </message>
       <message name="IDS_DEFAULT_AVATAR_LABEL_15" desc="The label for the flower avatar.">
         Yellow and white flower
@@ -10984,7 +10984,7 @@ I don't think this site should be blocked!
         Music note
       </message>
       <message name="IDS_DEFAULT_AVATAR_LABEL_25" desc="The label for the sun and cloud avatar.">
-        Sun and cloud
+        Sun and clouds
       </message>
 
       <message name="IDS_PROFILES_LOCAL_PROFILE_STATE" desc="This is displayed underneath the profile name for profiles that are not signed in to sync.">
