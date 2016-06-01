@@ -301,10 +301,13 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState, const Vector<String>& s
     , m_options(options)
     , m_clientBinding(this)
 {
-    // TODO(rouslan): Also check for a top-level browsing context.
-    // https://github.com/w3c/browser-payment-api/issues/2
     if (!scriptState->getExecutionContext()->isSecureContext()) {
         exceptionState.throwSecurityError("Must be in a secure context");
+        return;
+    }
+
+    if (!scriptState->domWindow()->frame() || !scriptState->domWindow()->frame()->isMainFrame()) {
+        exceptionState.throwSecurityError("Must be in a top-level browsing context");
         return;
     }
 
