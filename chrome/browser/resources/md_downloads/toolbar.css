@@ -21,7 +21,7 @@
 }
 
 #actions {
-  color: rgb(176, 190, 197);
+  color: rgba(255, 255, 255, 0.9);
   display: flex;
   flex: none;
   width: var(--downloads-item-width);
@@ -37,7 +37,7 @@
 
 #actions paper-button {
   --paper-button-flat-keyboard-focus: {
-    color: white;
+    color: rgba(255, 255, 255, 1);
   };
 }
 

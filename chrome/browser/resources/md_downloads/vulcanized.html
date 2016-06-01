@@ -24,10 +24,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
  * found in the LICENSE file. */
 
 :root {
-  /* These are custom, Chrome-specific colors that don't have --paper or
-   * --google equivalents. Blame bettes@. http://crbug.com/598451 */
-  --md-background-color: rgb(236, 239, 241);
-  --md-toolbar-color: rgb(52, 73, 94);
+  /* This is a custom, Chrome-specific color that does not have a --paper or
+   * --google equivalent. */
+  --md-background-color: rgb(241, 241, 241);
+  /* This is --google-blue-700, rewritten as a native custom property for speed.
+   */
+  --md-toolbar-color: rgb(51, 103, 214);
 }
 
 </style>
@@ -2409,14 +2411,18 @@ paper-button {
   justify-content: flex-end;
 }
 
-:host paper-input-container {
+[hidden] {
+  display: none !important;
+}
+
+paper-input-container {
   margin-top: 2px;
   max-width: 200px;
   padding: 2px 0;
   width: 100%;
 }
 
-#search-term {
+#searchTerm {
   --paper-input-container-color: rgb(192, 199, 205);
   --paper-input-container-focus-color: rgb(192, 199, 205);
   --paper-input-container-input: {
@@ -2429,13 +2435,13 @@ paper-button {
   z-index: 0;
 }
 
-#search-term input[type='search']::-webkit-search-decoration,
-#search-term input[type='search']::-webkit-search-cancel-button,
-#search-term input[type='search']::-webkit-search-results-button {
+#searchTerm input[type='search']::-webkit-search-decoration,
+#searchTerm input[type='search']::-webkit-search-cancel-button,
+#searchTerm input[type='search']::-webkit-search-results-button {
   -webkit-appearance: none;
 }
 
-#search-term input[type='search']::-webkit-search-cancel-button {
+#searchTerm input[type='search']::-webkit-search-cancel-button {
   display: block;
   width: 20px;
 }
@@ -2450,7 +2456,7 @@ paper-icon-button {
   };
 }
 
-#search-term paper-icon-button {
+#searchTerm paper-icon-button {
   --iron-icon-height: 16px;
   --iron-icon-width: 16px;
   --paper-icon-button: {
@@ -2465,19 +2471,17 @@ paper-icon-button {
   z-index: 1;
 }
 
-:host-context([dir='rtl']) #search-term paper-icon-button {
+:host-context([dir='rtl']) #searchTerm paper-icon-button {
   left: 0;
   right: auto;
 }
 
 </style>
-    <paper-icon-button icon="cr:search" id="search-button" disabled$="[[showingSearch_]]" title="[[label]]" on-click="toggleShowingSearch_"></paper-icon-button>
-    <template is="dom-if" if="[[showingSearch_]]" id="search-container">
-      <paper-input-container id="search-term" on-search="onSearchTermSearch_" on-keydown="onSearchTermKeydown_" hidden$="[[!showingSearch_]]" no-label-float="">
-        <input is="iron-input" id="search-input" type="search" placeholder="[[label]]" incremental="">
-        <paper-icon-button icon="cr:cancel" id="clear-search" on-click="toggleShowingSearch_" title="[[clearLabel]]" hidden$="[[!showingSearch_]]"></paper-icon-button>
-      </paper-input-container>
-    </template>
+    <paper-icon-button icon="cr:search" id="searchButton" disabled$="[[showingSearch]]" title="[[label]]" on-click="toggleShowingSearch_"></paper-icon-button>
+    <paper-input-container id="searchTerm" on-search="onSearchTermSearch_" on-keydown="onSearchTermKeydown_" hidden$="[[!showingSearch]]" no-label-float="">
+      <input is="iron-input" id="searchInput" type="search" placeholder="[[label]]" incremental="">
+      <paper-icon-button icon="cr:cancel" id="clearSearch" on-click="toggleShowingSearch_" title="[[clearLabel]]" hidden$="[[!showingSearch]]"></paper-icon-button>
+    </paper-input-container>
   </template>
   
   </dom-module>
@@ -2506,7 +2510,7 @@ paper-icon-button {
 }
 
 #actions {
-  color: rgb(176, 190, 197);
+  color: rgba(255, 255, 255, 0.9);
   display: flex;
   flex: none;
   width: var(--downloads-item-width);
@@ -2522,7 +2526,7 @@ paper-icon-button {
 
 #actions paper-button {
   --paper-button-flat-keyboard-focus: {
-    color: white;
+    color: rgba(255, 255, 255, 1);
   };
 }
 
@@ -2648,10 +2652,12 @@ paper-button {
  * found in the LICENSE file. */
 
 :root {
-  /* These are custom, Chrome-specific colors that don't have --paper or
-   * --google equivalents. Blame bettes@. http://crbug.com/598451 */
-  --md-background-color: rgb(236, 239, 241);
-  --md-toolbar-color: rgb(52, 73, 94);
+  /* This is a custom, Chrome-specific color that does not have a --paper or
+   * --google equivalent. */
+  --md-background-color: rgb(241, 241, 241);
+  /* This is --google-blue-700, rewritten as a native custom property for speed.
+   */
+  --md-toolbar-color: rgb(51, 103, 214);
 }
 
 </style>

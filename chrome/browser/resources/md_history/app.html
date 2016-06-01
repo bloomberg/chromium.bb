@@ -7,11 +7,16 @@
 <link rel="import" href="chrome://history/synced_device_manager.html">
 <link rel="import" href="chrome://history/side_bar.html">
 <link rel="import" href="chrome://history/shared_style.html">
+<link rel="stylesheet" href="chrome://resources/css/md_colors.css">
 
 <dom-module id="history-app">
   <!-- TODO(calamity): work around this deprecated import style -->
-  <link rel="import" type="css" href="chrome://resources/css/md_colors.css">
   <template>
+    <style no-process>
+      history-toolbar {
+        background: var(--md-toolbar-color);
+      }
+    </style>
     <style include="shared-style">
       :host {
         display: flex;
@@ -35,10 +40,6 @@
         display: flex;
         flex: 1 0 0;
         overflow: hidden;
-      }
-
-      history-toolbar {
-        background: var(--md-toolbar-color);
       }
     </style>
     <history-toolbar id="toolbar" searching="[[queryState_.querying]]"

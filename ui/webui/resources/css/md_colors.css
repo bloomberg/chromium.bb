@@ -3,8 +3,10 @@
  * found in the LICENSE file. */
 
 :root {
-  /* These are custom, Chrome-specific colors that don't have --paper or
-   * --google equivalents. Blame bettes@. http://crbug.com/598451 */
-  --md-background-color: rgb(236, 239, 241);
-  --md-toolbar-color: rgb(52, 73, 94);
+  /* This is a custom, Chrome-specific color that does not have a --paper or
+   * --google equivalent. */
+  --md-background-color: rgb(241, 241, 241);
+  /* This is --google-blue-700, rewritten as a native custom property for speed.
+   */
+  --md-toolbar-color: rgb(51, 103, 214);
 }
