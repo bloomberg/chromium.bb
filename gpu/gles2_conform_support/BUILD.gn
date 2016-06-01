@@ -44,7 +44,6 @@ executable("gles2_conform_support") {
   sources = [
     "gles2_conform_support.c",
     "native/egl_native.cc",
-    "native/egl_native_win.cc",
     "native/main.cc",
   ]
   defines = [
