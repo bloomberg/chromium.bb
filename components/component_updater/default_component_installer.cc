@@ -152,23 +152,51 @@ bool DefaultComponentInstaller::Uninstall() {
   return true;
 }
 
+// TODO(xhwang): The following LOG(WARNING) messages are added to help
+// investigate http://crbug.com/614745. Remove redundant checks or convent them
+// to VLOG(1) after investigation is completed.
 bool DefaultComponentInstaller::FindPreinstallation() {
   base::FilePath path;
-  if (!PathService::Get(DIR_COMPONENT_PREINSTALLED, &path))
+  if (!PathService::Get(DIR_COMPONENT_PREINSTALLED, &path)) {
+    LOG(WARNING) << "DIR_COMPONENT_PREINSTALLED does not exist.";
     return false;
+  }
+
   path = path.Append(installer_traits_->GetRelativeInstallDir());
-  if (!base::PathExists(path))
+  if (!base::PathExists(path)) {
+    LOG(WARNING) << "Relative install dir does not exist: "
+                 << path.MaybeAsASCII();
     return false;
+  }
+
   std::unique_ptr<base::DictionaryValue> manifest =
       update_client::ReadManifest(path);
-  if (!manifest || !installer_traits_->VerifyInstallation(*manifest, path))
+  if (!manifest) {
+    LOG(WARNING) << "Manifest does not exist: " << path.MaybeAsASCII();
     return false;
+  }
+
+  if (!installer_traits_->VerifyInstallation(*manifest, path)) {
+    LOG(WARNING) << "Installation verification failed: " << path.MaybeAsASCII();
+    return false;
+  }
+
   std::string version_lexical;
-  if (!manifest->GetStringASCII("version", &version_lexical))
+  if (!manifest->GetStringASCII("version", &version_lexical)) {
+    LOG(WARNING) << "Failed to get component version from the manifest.";
     return false;
+  }
+
   const base::Version version(version_lexical);
-  if (!version.IsValid())
+  if (!version.IsValid()) {
+    LOG(WARNING) << "Version in the manifest is invalid:" << version_lexical;
     return false;
+  }
+
+  LOG(WARNING) << "Preinstalled component found for "
+               << installer_traits_->GetName() << " at " << path.MaybeAsASCII()
+               << " with version " << version << ".";
+
   current_install_dir_ = path;
   current_manifest_ = std::move(manifest);
   current_version_ = version;
@@ -176,6 +204,7 @@ bool DefaultComponentInstaller::FindPreinstallation() {
 }
 
 void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
+  LOG(WARNING) << __FUNCTION__ << " for " << installer_traits_->GetName();
   DCHECK(task_runner_.get());
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
@@ -291,7 +320,9 @@ void DefaultComponentInstaller::UninstallOnTaskRunner() {
 void DefaultComponentInstaller::FinishRegistration(
     ComponentUpdateService* cus,
     const base::Closure& callback) {
+  LOG(WARNING) << __FUNCTION__ << " for " << installer_traits_->GetName();
   DCHECK(thread_checker_.CalledOnValidThread());
+
   if (installer_traits_->CanAutoUpdate()) {
     CrxComponent crx;
     crx.name = installer_traits_->GetName();
@@ -302,7 +333,7 @@ void DefaultComponentInstaller::FinishRegistration(
     crx.fingerprint = current_fingerprint_;
     installer_traits_->GetHash(&crx.pk_hash);
     if (!cus->RegisterComponent(crx)) {
-      NOTREACHED() << "Component registration failed for "
+      LOG(WARNING) << "Component registration failed for "
                    << installer_traits_->GetName();
       return;
     }
@@ -311,8 +342,10 @@ void DefaultComponentInstaller::FinishRegistration(
       callback.Run();
   }
 
-  if (!current_manifest_)
+  if (!current_manifest_) {
+    LOG(WARNING) << "No component found for " << installer_traits_->GetName();
     return;
+  }
 
   std::unique_ptr<base::DictionaryValue> manifest_copy(
       current_manifest_->DeepCopy());
