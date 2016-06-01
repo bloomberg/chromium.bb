@@ -1,0 +1,11 @@
+Test setValueCurveAtTime Copies the Curve Data
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS setValueCurve output is identical to the array [1,0.9990234375,0.998046875,0.9970703125,0.99609375,0.9951171875,0.994140625,0.9931640625,0.9921875,0.9912109375,0.990234375,0.9892578125,0.98828125,0.9873046875,0.986328125,0.9853515625,...].
+PASS Changing the curve data did not change the result.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

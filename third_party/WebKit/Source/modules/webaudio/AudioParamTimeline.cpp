@@ -109,6 +109,26 @@ String AudioParamTimeline::eventToString(const ParamEvent& event)
     return s + "(" + args + ")";
 }
 
+AudioParamTimeline::ParamEvent::ParamEvent(
+    Type type, float value, double time,
+    double timeConstant, double duration, const DOMFloat32Array* curve,
+    float initialValue, double callTime)
+    : m_type(type)
+    , m_value(value)
+    , m_time(time)
+    , m_timeConstant(timeConstant)
+    , m_duration(duration)
+    , m_initialValue(initialValue)
+    , m_callTime(callTime)
+{
+    if (curve) {
+        // Copy the curve data
+        unsigned curveLength = curve->length();
+        m_curve.resize(curveLength);
+        memcpy(m_curve.data(), curve->data(), curveLength * sizeof(float));
+    }
+}
+
 AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createSetValueEvent(float value, double time)
 {
     return ParamEvent(ParamEvent::SetValue, value, time, 0, 0, nullptr);
@@ -129,7 +149,7 @@ AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createSetTargetEv
     return ParamEvent(ParamEvent::SetTarget, value, time, timeConstant, 0, nullptr);
 }
 
-AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createSetValueCurveEvent(DOMFloat32Array* curve, double time, double duration)
+AudioParamTimeline::ParamEvent AudioParamTimeline::ParamEvent::createSetValueCurveEvent(const DOMFloat32Array* curve, double time, double duration)
 {
     return ParamEvent(ParamEvent::SetValueCurve, 0, time, 0, duration, curve);
 }
@@ -699,9 +719,9 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
 
             case ParamEvent::SetValueCurve:
                 {
-                    DOMFloat32Array* curve = event.curve();
-                    float* curveData = curve ? curve->data() : 0;
-                    unsigned numberOfCurvePoints = curve ? curve->length() : 0;
+                    Vector<float> curve = event.curve();
+                    float* curveData = curve.data();
+                    unsigned numberOfCurvePoints = curve.size();
 
                     // Curve events have duration, so don't just use next event time.
                     double duration = event.duration();
@@ -709,7 +729,7 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
                     // (N - 1)/Td in the specification.
                     double curvePointsPerFrame = (numberOfCurvePoints - 1) / duration / sampleRate;
 
-                    if (!curve || !curveData || !numberOfCurvePoints || duration <= 0 || sampleRate <= 0) {
+                    if (!numberOfCurvePoints || duration <= 0 || sampleRate <= 0) {
                         // Error condition - simply propagate previous value.
                         currentFrame = fillToEndFrame;
                         for (; writeIndex < fillToFrame; ++writeIndex)

@@ -83,31 +83,21 @@ private:
         static ParamEvent createExponentialRampEvent(float value, double time, float initialValue, double callTime);
         static ParamEvent createSetValueEvent(float value, double time);
         static ParamEvent createSetTargetEvent(float value, double time, double timeConstant);
-        static ParamEvent createSetValueCurveEvent(DOMFloat32Array* curve, double time, double duration);
+        static ParamEvent createSetValueCurveEvent(const DOMFloat32Array* curve, double time, double duration);
 
         Type getType() const { return m_type; }
         float value() const { return m_value; }
         double time() const { return m_time; }
         double timeConstant() const { return m_timeConstant; }
         double duration() const { return m_duration; }
-        DOMFloat32Array* curve() { return m_curve.get(); }
+        Vector<float>& curve() { return m_curve; }
         float initialValue() const { return m_initialValue; }
         double callTime() const { return m_callTime; }
 
     private:
         ParamEvent(Type type, float value, double time,
-            double timeConstant, double duration, DOMFloat32Array* curve,
-            float initialValue = 0, double callTime = 0)
-            : m_type(type)
-            , m_value(value)
-            , m_time(time)
-            , m_timeConstant(timeConstant)
-            , m_duration(duration)
-            , m_curve(curve)
-            , m_initialValue(initialValue)
-            , m_callTime(callTime)
-        {
-        }
+            double timeConstant, double duration, const DOMFloat32Array* curve,
+            float initialValue = 0, double callTime = 0);
 
         Type m_type;
         float m_value;
@@ -116,7 +106,7 @@ private:
         double m_timeConstant;
         // Only used for SetValueCurve events.
         double m_duration;
-        CrossThreadPersistent<DOMFloat32Array> m_curve;
+        Vector<float> m_curve;
         // Initial value and time to use for linear and exponential ramps that don't have a
         // preceding event.
         float m_initialValue;
