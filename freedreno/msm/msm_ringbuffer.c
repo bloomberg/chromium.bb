@@ -204,6 +204,12 @@ static void flush_reset(struct fd_ringbuffer *ring)
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
 	unsigned i;
 
+	for (i = 0; i < msm_ring->nr_bos; i++) {
+		struct msm_bo *msm_bo = to_msm_bo(msm_ring->bos[i]);
+		msm_bo->current_ring = NULL;
+		fd_bo_del(&msm_bo->base);
+	}
+
 	/* for each of the cmd buffers, clear their reloc's: */
 	for (i = 0; i < msm_ring->submit.nr_cmds; i++) {
 		struct msm_ringbuffer *target_ring = to_msm_ringbuffer(msm_ring->rings[i]);
@@ -278,12 +284,6 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 			if (!ret)
 				target_ring->last_timestamp = req.fence;
 		}
-	}
-
-	for (i = 0; i < msm_ring->nr_bos; i++) {
-		struct msm_bo *msm_bo = to_msm_bo(msm_ring->bos[i]);
-		msm_bo->current_ring = NULL;
-		fd_bo_del(&msm_bo->base);
 	}
 
 	flush_reset(ring);
