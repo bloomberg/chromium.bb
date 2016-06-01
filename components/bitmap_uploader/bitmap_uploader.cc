@@ -113,18 +113,17 @@ void BitmapUploader::Upload() {
     gpu::SyncToken sync_token;
     gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 
-    mus::mojom::TransferableResourcePtr resource =
-        mus::mojom::TransferableResource::New();
-    resource->id = next_resource_id_++;
-    resource_to_texture_id_map_[resource->id] = texture_id;
-    resource->format = mus::mojom::ResourceFormat::RGBA_8888;
-    resource->filter = GL_LINEAR;
-    resource->size = bitmap_size;
-    resource->mailbox_holder =
+    cc::TransferableResource resource;
+    resource.id = next_resource_id_++;
+    resource_to_texture_id_map_[resource.id] = texture_id;
+    resource.format = cc::ResourceFormat::RGBA_8888;
+    resource.filter = GL_LINEAR;
+    resource.size = bitmap_size;
+    resource.mailbox_holder =
         gpu::MailboxHolder(mailbox, sync_token, GL_TEXTURE_2D);
-    resource->read_lock_fences_enabled = false;
-    resource->is_software = false;
-    resource->is_overlay_candidate = false;
+    resource.read_lock_fences_enabled = false;
+    resource.is_software = false;
+    resource.is_overlay_candidate = false;
 
     mus::mojom::QuadPtr quad = mus::mojom::Quad::New();
     quad->material = mus::mojom::Material::TEXTURE_CONTENT;
@@ -152,7 +151,7 @@ void BitmapUploader::Upload() {
 
     mus::mojom::TextureQuadStatePtr texture_state =
         mus::mojom::TextureQuadState::New();
-    texture_state->resource_id = resource->id;
+    texture_state->resource_id = resource.id;
     texture_state->premultiplied_alpha = true;
     texture_state->uv_top_left.SetPoint(0.f, 0.f);
     texture_state->uv_bottom_right.SetPoint(1.f, 1.f);

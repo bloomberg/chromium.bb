@@ -41,7 +41,6 @@ using mus::mojom::Quad;
 using mus::mojom::QuadPtr;
 using mus::mojom::RenderPassQuadState;
 using mus::mojom::RenderPassQuadStatePtr;
-using mus::mojom::ResourceFormat;
 using mus::mojom::SharedQuadState;
 using mus::mojom::SharedQuadStatePtr;
 using mus::mojom::SolidColorQuadState;
@@ -52,8 +51,6 @@ using mus::mojom::TextureQuadState;
 using mus::mojom::TextureQuadStatePtr;
 using mus::mojom::TileQuadState;
 using mus::mojom::TileQuadStatePtr;
-using mus::mojom::TransferableResource;
-using mus::mojom::TransferableResourcePtr;
 using mus::mojom::YUVColorSpace;
 using mus::mojom::YUVVideoQuadState;
 using mus::mojom::YUVVideoQuadStatePtr;
@@ -434,38 +431,6 @@ TypeConverter<std::unique_ptr<cc::RenderPass>, PassPtr>::Convert(
 }
 
 // static
-TransferableResourcePtr
-TypeConverter<TransferableResourcePtr, cc::TransferableResource>::Convert(
-    const cc::TransferableResource& input) {
-  TransferableResourcePtr transferable = TransferableResource::New();
-  transferable->id = input.id;
-  transferable->format = static_cast<ResourceFormat>(input.format);
-  transferable->filter = input.filter;
-  transferable->size = input.size;
-  transferable->mailbox_holder = input.mailbox_holder;
-  transferable->read_lock_fences_enabled = input.read_lock_fences_enabled;
-  transferable->is_software = input.is_software;
-  transferable->is_overlay_candidate = input.is_overlay_candidate;
-  return transferable;
-}
-
-// static
-cc::TransferableResource
-TypeConverter<cc::TransferableResource, TransferableResourcePtr>::Convert(
-    const TransferableResourcePtr& input) {
-  cc::TransferableResource transferable;
-  transferable.id = input->id;
-  transferable.format = static_cast<cc::ResourceFormat>(input->format);
-  transferable.filter = input->filter;
-  transferable.size = input->size;
-  transferable.mailbox_holder = input->mailbox_holder;
-  transferable.read_lock_fences_enabled = input->read_lock_fences_enabled;
-  transferable.is_software = input->is_software;
-  transferable.is_overlay_candidate = input->is_overlay_candidate;
-  return transferable;
-}
-
-// static
 CompositorFrameMetadataPtr
 TypeConverter<CompositorFrameMetadataPtr, cc::CompositorFrameMetadata>::Convert(
     const cc::CompositorFrameMetadata& input) {
@@ -491,7 +456,7 @@ TypeConverter<CompositorFramePtr, cc::CompositorFrame>::Convert(
   DCHECK(input.delegated_frame_data);
   cc::DelegatedFrameData* frame_data = input.delegated_frame_data.get();
   frame->resources =
-      Array<TransferableResourcePtr>::From(frame_data->resource_list);
+      mojo::Array<cc::TransferableResource>(frame_data->resource_list);
   frame->metadata = CompositorFrameMetadata::From(input.metadata);
   const cc::RenderPassList& pass_list = frame_data->render_pass_list;
   frame->passes = Array<PassPtr>::New(pass_list.size());
@@ -508,8 +473,7 @@ std::unique_ptr<cc::CompositorFrame> ConvertToCompositorFrame(
   std::unique_ptr<cc::DelegatedFrameData> frame_data(
       new cc::DelegatedFrameData);
   frame_data->device_scale_factor = 1.f;
-  frame_data->resource_list =
-      input->resources.To<cc::TransferableResourceArray>();
+  frame_data->resource_list = input->resources.PassStorage();
   frame_data->render_pass_list.reserve(input->passes.size());
   for (size_t i = 0; i < input->passes.size(); ++i) {
     std::unique_ptr<cc::RenderPass> pass = ConvertToRenderPass(

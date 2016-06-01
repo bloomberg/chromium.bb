@@ -73,19 +73,6 @@ struct MOJO_SURFACES_EXPORT
 
 // Types from compositor_frame.mojom
 template <>
-struct MOJO_SURFACES_EXPORT TypeConverter<mus::mojom::TransferableResourcePtr,
-                                          cc::TransferableResource> {
-  static mus::mojom::TransferableResourcePtr Convert(
-      const cc::TransferableResource& input);
-};
-template <>
-struct MOJO_SURFACES_EXPORT TypeConverter<cc::TransferableResource,
-                                          mus::mojom::TransferableResourcePtr> {
-  static cc::TransferableResource Convert(
-      const mus::mojom::TransferableResourcePtr& input);
-};
-
-template <>
 struct MOJO_SURFACES_EXPORT
     TypeConverter<mus::mojom::CompositorFrameMetadataPtr,
                   cc::CompositorFrameMetadata> {

@@ -380,6 +380,8 @@
         '../gpu/gpu.gyp:gpu_unittest_utils',
         '../ipc/ipc.gyp:ipc',
         '../media/media.gyp:media',
+        '../mojo/mojo_edk.gyp:mojo_common_test_support',
+        '../mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',

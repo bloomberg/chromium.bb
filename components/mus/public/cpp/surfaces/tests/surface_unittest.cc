@@ -36,7 +36,6 @@ using mus::mojom::Quad;
 using mus::mojom::QuadPtr;
 using mus::mojom::RenderPassQuadState;
 using mus::mojom::RenderPassQuadStatePtr;
-using mus::mojom::ResourceFormat;
 using mus::mojom::SharedQuadState;
 using mus::mojom::SharedQuadStatePtr;
 using mus::mojom::SolidColorQuadState;
@@ -47,8 +46,6 @@ using mus::mojom::TextureQuadState;
 using mus::mojom::TextureQuadStatePtr;
 using mus::mojom::TileQuadState;
 using mus::mojom::TileQuadStatePtr;
-using mus::mojom::TransferableResource;
-using mus::mojom::TransferableResourcePtr;
 using mus::mojom::YUVColorSpace;
 using mus::mojom::YUVVideoQuadState;
 using mus::mojom::YUVVideoQuadStatePtr;
@@ -365,42 +362,6 @@ TEST(SurfaceLibTest, RenderPass) {
   }
   EXPECT_EQ(y_flipped, round_trip_texture_quad->y_flipped);
   EXPECT_EQ(secure_output_only, round_trip_texture_quad->secure_output_only);
-}
-
-TEST(SurfaceLibTest, TransferableResource) {
-  uint32_t id = 7u;
-  cc::ResourceFormat format = cc::BGRA_8888;
-  uint32_t filter = 123u;
-  gfx::Size size(17, 18);
-  gpu::MailboxHolder mailbox_holder;
-  bool is_software = false;
-  cc::TransferableResource resource;
-  resource.id = id;
-  resource.format = format;
-  resource.filter = filter;
-  resource.size = size;
-  resource.mailbox_holder = mailbox_holder;
-  resource.is_software = is_software;
-
-  TransferableResourcePtr mus_resource = TransferableResource::From(resource);
-  EXPECT_EQ(id, mus_resource->id);
-  EXPECT_EQ(static_cast<ResourceFormat>(format), mus_resource->format);
-  EXPECT_EQ(filter, mus_resource->filter);
-  EXPECT_EQ(size, mus_resource->size);
-  EXPECT_EQ(is_software, mus_resource->is_software);
-
-  cc::TransferableResource round_trip_resource =
-      mus_resource.To<cc::TransferableResource>();
-  EXPECT_EQ(id, round_trip_resource.id);
-  EXPECT_EQ(format, round_trip_resource.format);
-  EXPECT_EQ(filter, round_trip_resource.filter);
-  EXPECT_EQ(size, round_trip_resource.size);
-  EXPECT_EQ(mailbox_holder.mailbox, round_trip_resource.mailbox_holder.mailbox);
-  EXPECT_EQ(mailbox_holder.texture_target,
-            round_trip_resource.mailbox_holder.texture_target);
-  EXPECT_EQ(mailbox_holder.sync_token,
-            round_trip_resource.mailbox_holder.sync_token);
-  EXPECT_EQ(is_software, round_trip_resource.is_software);
 }
 
 TEST_F(SurfaceLibQuadTest, DebugBorderQuad) {

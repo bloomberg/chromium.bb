@@ -5,37 +5,11 @@
 module mus.mojom;
 
 import "cc/ipc/returned_resource.mojom";
+import "cc/ipc/transferable_resource.mojom";
 import "components/mus/public/interfaces/quads.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
-
-enum ResourceFormat {
-  RGBA_8888,
-  RGBA_4444,
-  BGRA_8888,
-  ALPHA_8,
-  LUMINANCE_8,
-  RGB_565,
-  ETC1,
-};
-
-// A TransferableResource is a graphics resource such as a texture or a bitmap
-// in shared memory (software mode) that is shared between the window server and
-// a client. This data structure is used to manage reuse of
-// the memory once it is no longer needed by the window server and GPU service.
-struct TransferableResource {
-  // |id| is an integer that uniquely identifies this resource  in the client so
-  // that the window server can return this resource back to the client.
-  uint32 id;
-  ResourceFormat format;
-  uint32 filter;
-  mojo.Size size;
-  gpu.mojom.MailboxHolder mailbox_holder;
-  bool read_lock_fences_enabled;
-  bool is_software;
-  bool is_overlay_candidate;
-};
 
 // See cc/output/compositor_frame_metadata.h.
 struct CompositorFrameMetadata {
@@ -45,7 +19,7 @@ struct CompositorFrameMetadata {
 // See src/cc/output/compositor_frame.h.
 struct CompositorFrame {
   CompositorFrameMetadata metadata;
-  array<TransferableResource> resources;
+  array<cc.mojom.TransferableResource> resources;
   array<Pass> passes;
 };
 

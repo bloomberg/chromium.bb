@@ -7,9 +7,12 @@ module cc.mojom;
 import "cc/ipc/render_pass_id.mojom";
 import "cc/ipc/returned_resource.mojom";
 import "cc/ipc/surface_id.mojom";
+import "cc/ipc/transferable_resource.mojom";
 
 interface TraitsTestService {
   EchoRenderPassId(RenderPassId r) => (RenderPassId pass);
   EchoReturnedResource(ReturnedResource r) => (ReturnedResource r);
   EchoSurfaceId(SurfaceId s) => (SurfaceId pass);
+  EchoTransferableResource(TransferableResource t) =>
+      (TransferableResource pass);
 };

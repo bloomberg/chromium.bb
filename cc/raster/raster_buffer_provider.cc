@@ -10,6 +10,7 @@
 #include "cc/playback/raster_source.h"
 #include "cc/raster/texture_compressor.h"
 #include "cc/resources/platform_color.h"
+#include "cc/resources/resource_format_utils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 

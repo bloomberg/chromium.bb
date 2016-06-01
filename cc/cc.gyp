@@ -455,6 +455,8 @@
         'resources/resource.h',
         'resources/resource_format.cc',
         'resources/resource_format.h',
+        'resources/resource_format_utils.cc',
+        'resources/resource_format_utils.h',
         'resources/resource_pool.cc',
         'resources/resource_pool.h',
         'resources/resource_provider.cc',

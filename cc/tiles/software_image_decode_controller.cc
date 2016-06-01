@@ -19,6 +19,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/raster/tile_task.h"
+#include "cc/resources/resource_format_utils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPixmap.h"

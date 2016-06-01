@@ -40,6 +40,12 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     callback.Run(s);
   }
 
+  void EchoTransferableResource(
+      const TransferableResource& t,
+      const EchoTransferableResourceCallback& callback) override {
+    callback.Run(t);
+  }
+
   mojo::BindingSet<TraitsTestService> traits_test_bindings_;
 };
 
@@ -102,6 +108,65 @@ TEST_F(StructTraitsTest, SurfaceId) {
         EXPECT_EQ(id_namespace, pass.id_namespace());
         EXPECT_EQ(local_id, pass.local_id());
         EXPECT_EQ(nonce, pass.nonce());
+        loop.Quit();
+      });
+  loop.Run();
+}
+
+TEST_F(StructTraitsTest, TransferableResource) {
+  const uint32_t id = 1337;
+  const ResourceFormat format = ALPHA_8;
+  const uint32_t filter = 1234;
+  const gfx::Size size(1234, 5678);
+  const int8_t mailbox_name[GL_MAILBOX_SIZE_CHROMIUM] = {
+      0, 9, 8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2, 4, 6, 8, 0, 0, 9,
+      8, 7, 6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2, 4, 6, 8, 0, 0, 9, 8, 7,
+      6, 5, 4, 3, 2, 1, 9, 7, 5, 3, 1, 2, 4, 6, 8, 0, 0, 9, 8, 7};
+  const gpu::CommandBufferNamespace command_buffer_namespace = gpu::IN_PROCESS;
+  const int32_t extra_data_field = 0xbeefbeef;
+  const gpu::CommandBufferId command_buffer_id(
+      gpu::CommandBufferId::FromUnsafeValue(0xdeadbeef));
+  const uint64_t release_count = 0xdeadbeefdeadL;
+  const uint32_t texture_target = 1337;
+  const bool read_lock_fences_enabled = true;
+  const bool is_software = false;
+  const int gpu_memory_buffer_id = 0xdeadbeef;
+  const bool is_overlay_candidate = true;
+
+  gpu::MailboxHolder mailbox_holder;
+  mailbox_holder.mailbox.SetName(mailbox_name);
+  mailbox_holder.sync_token =
+      gpu::SyncToken(command_buffer_namespace, extra_data_field,
+                     command_buffer_id, release_count);
+  mailbox_holder.texture_target = texture_target;
+  TransferableResource input;
+  input.id = id;
+  input.format = format;
+  input.filter = filter;
+  input.size = size;
+  input.mailbox_holder = mailbox_holder;
+  input.read_lock_fences_enabled = read_lock_fences_enabled;
+  input.is_software = is_software;
+  input.gpu_memory_buffer_id.id = gpu_memory_buffer_id;
+  input.is_overlay_candidate = is_overlay_candidate;
+  base::RunLoop loop;
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  proxy->EchoTransferableResource(
+      input, [id, format, filter, size, mailbox_holder,
+              read_lock_fences_enabled, is_software, gpu_memory_buffer_id,
+              is_overlay_candidate, &loop](const TransferableResource& pass) {
+        EXPECT_EQ(id, pass.id);
+        EXPECT_EQ(format, pass.format);
+        EXPECT_EQ(filter, pass.filter);
+        EXPECT_EQ(size, pass.size);
+        EXPECT_EQ(mailbox_holder.mailbox, pass.mailbox_holder.mailbox);
+        EXPECT_EQ(mailbox_holder.sync_token, pass.mailbox_holder.sync_token);
+        EXPECT_EQ(mailbox_holder.texture_target,
+                  pass.mailbox_holder.texture_target);
+        EXPECT_EQ(read_lock_fences_enabled, pass.read_lock_fences_enabled);
+        EXPECT_EQ(is_software, pass.is_software);
+        EXPECT_EQ(gpu_memory_buffer_id, pass.gpu_memory_buffer_id.id);
+        EXPECT_EQ(is_overlay_candidate, pass.is_overlay_candidate);
         loop.Quit();
       });
   loop.Run();
