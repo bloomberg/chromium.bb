@@ -445,14 +445,6 @@ class SmoothnessPathologicalMobileSites(_Smoothness):
     return 'smoothness.pathological_mobile_sites'
 
 
-class SmoothnessToughAnimatedImageCases(_Smoothness):
-  page_set = page_sets.ToughAnimatedImageCasesPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'smoothness.tough_animated_image_cases'
-
-
 class SmoothnessToughTextureUploadCases(_Smoothness):
   page_set = page_sets.ToughTextureUploadCasesPageSet
 
