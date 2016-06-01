@@ -465,8 +465,10 @@ void ScriptLoader::notifyFinished(Resource* resource)
     DCHECK(!m_willBeParserExecuted);
 
     Document* contextDocument = m_element->document().contextDocument();
-    if (!contextDocument)
+    if (!contextDocument) {
+        detach();
         return;
+    }
 
     ASSERT_UNUSED(resource, resource == m_resource);
 
