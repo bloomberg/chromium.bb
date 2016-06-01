@@ -50,7 +50,9 @@ struct AutoThread::StartupData {
   base::WaitableEvent event;
 
   explicit StartupData(base::MessageLoop::Type type)
-      : loop_type(type), event(false, false) {}
+      : loop_type(type),
+        event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+              base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 };
 
 // static
