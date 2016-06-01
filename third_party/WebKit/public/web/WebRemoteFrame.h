@@ -62,6 +62,13 @@ public:
     // Returns true if this frame should be ignored during hittesting.
     virtual bool isIgnoredForHitTest() const = 0;
 
+    // This is called in OOPIF scenarios when an element contained in this
+    // frame is about to enter fullscreen.  This frame's owner
+    // corresponds to the HTMLFrameOwnerElement to be fullscreened. Calling
+    // this prepares FullscreenController to enter fullscreen for that frame
+    // owner.
+    virtual void willEnterFullScreen() = 0;
+
     // Temporary method to allow embedders to get the script context of a
     // remote frame. This should only be used by legacy code that has not yet
     // migrated over to the new OOPI infrastructure.

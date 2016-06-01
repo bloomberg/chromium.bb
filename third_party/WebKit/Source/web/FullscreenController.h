@@ -55,8 +55,6 @@ public:
 
     bool isFullscreen() { return m_fullScreenFrame; }
 
-    void setFullscreenIsForCrossProcessAncestor() { m_fullscreenIsForCrossProcessAncestor = true; }
-
     void updateSize();
 
     DECLARE_TRACE();
@@ -79,10 +77,6 @@ private:
 
     // If set, the WebView is in fullscreen mode for an element in this frame.
     Member<LocalFrame> m_fullScreenFrame;
-
-    // If set, fullscreen is entered for an element that is a container for
-    // another fullscreen element in an out-of-process iframe.
-    bool m_fullscreenIsForCrossProcessAncestor;
 
     bool m_isCancelingFullScreen;
 };

@@ -166,6 +166,8 @@ public:
 
     bool isIgnoredForHitTest() const override;
 
+    void willEnterFullScreen() override;
+
     DECLARE_TRACE();
 
 private:

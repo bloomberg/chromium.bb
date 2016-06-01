@@ -381,7 +381,7 @@ void RenderFrameProxy::OnSetFocusedFrame() {
 }
 
 void RenderFrameProxy::OnWillEnterFullscreen() {
-  render_view_->webview()->willEnterFullScreen(web_frame_);
+  web_frame_->willEnterFullScreen();
 }
 
 void RenderFrameProxy::frameDetached(DetachType type) {

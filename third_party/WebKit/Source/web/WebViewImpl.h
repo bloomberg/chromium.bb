@@ -280,7 +280,6 @@ public:
     void setShowScrollBottleneckRects(bool) override;
     void acceptLanguagesChanged() override;
 
-    void willEnterFullScreen(WebRemoteFrame*) override;
     void didUpdateFullScreenSize();
 
     float defaultMinimumPageScaleFactor() const;

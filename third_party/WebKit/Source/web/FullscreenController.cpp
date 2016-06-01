@@ -56,7 +56,6 @@ FullscreenController::FullscreenController(WebViewImpl* webViewImpl)
     : m_webViewImpl(webViewImpl)
     , m_haveEnteredFullscreen(false)
     , m_exitFullscreenPageScaleFactor(0)
-    , m_fullscreenIsForCrossProcessAncestor(false)
     , m_isCancelingFullScreen(false)
 {
 }
@@ -82,7 +81,7 @@ void FullscreenController::didEnterFullScreen()
         m_haveEnteredFullscreen = true;
     }
 
-    Fullscreen::from(document).didEnterFullScreenForElement(element, m_fullscreenIsForCrossProcessAncestor);
+    Fullscreen::from(document).didEnterFullScreenForElement(element);
     DCHECK_EQ(Fullscreen::currentFullScreenElementFrom(document), element);
 
     if (isHTMLVideoElement(element)) {
@@ -120,8 +119,7 @@ void FullscreenController::didExitFullScreen()
                     m_haveEnteredFullscreen = false;
                 }
 
-                fullscreen->didExitFullScreenForElement(m_fullscreenIsForCrossProcessAncestor);
-                m_fullscreenIsForCrossProcessAncestor = false;
+                fullscreen->didExitFullScreenForElement();
             }
         }
     }
@@ -156,7 +154,7 @@ void FullscreenController::enterFullScreenForElement(Element* element)
     // We need to transition to fullscreen mode.
     WebLocalFrameImpl* frame = WebLocalFrameImpl::fromFrame(element->document().frame());
     if (frame && frame->client()) {
-        if (!m_fullscreenIsForCrossProcessAncestor)
+        if (!Fullscreen::from(element->document()).forCrossProcessAncestor())
             frame->client()->enterFullscreen();
         m_provisionalFullScreenElement = element;
     }

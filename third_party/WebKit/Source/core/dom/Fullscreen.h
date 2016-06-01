@@ -67,7 +67,10 @@ public:
         PrefixedRequest,
     };
 
-    void requestFullscreen(Element&, RequestType);
+    // |forCrossProcessAncestor| is used in OOPIF scenarios and is set to true
+    // when fullscreen is requested for an out-of-process descendant element.
+    void requestFullscreen(Element&, RequestType, bool forCrossProcessAncestor = false);
+
     static void fullyExitFullscreen(Document&);
     void exitFullscreen();
 
@@ -80,14 +83,18 @@ public:
     // for its (local) iframe container and make sure to also set the
     // ContainsFullScreenElement flag on it (so that it gains the
     // -webkit-full-screen-ancestor style).
-    void didEnterFullScreenForElement(Element*, bool isAncestorOfFullscreenElement);
-    void didExitFullScreenForElement(bool isAncestorOfFullscreenElement);
+    void didEnterFullScreenForElement(Element*);
+    void didExitFullScreenForElement();
 
     void setFullScreenLayoutObject(LayoutFullScreen*);
     LayoutFullScreen* fullScreenLayoutObject() const { return m_fullScreenLayoutObject; }
     void fullScreenLayoutObjectDestroyed();
 
     void elementRemoved(Element&);
+
+    // Returns true if the current fullscreen element stack corresponds to a
+    // container for an actual fullscreen element in an out-of-process iframe.
+    bool forCrossProcessAncestor() { return m_forCrossProcessAncestor; }
 
     // Mozilla API
     Element* webkitCurrentFullScreenElement() const { return m_fullScreenElement.get(); }
@@ -119,6 +126,17 @@ private:
     HeapDeque<Member<Event>> m_eventQueue;
     LayoutRect m_savedPlaceholderFrameRect;
     RefPtr<ComputedStyle> m_savedPlaceholderComputedStyle;
+
+    // TODO(alexmos, dcheng): Currently, this assumes that if fullscreen was
+    // entered for an element in an out-of-process iframe, then it's not
+    // possible to re-enter fullscreen for a different element in this
+    // document, since that requires a user gesture, which can't be obtained
+    // since nothing in this document is visible, and since user gestures can't
+    // be forwarded across processes. However, the latter assumption could
+    // change if https://crbug.com/161068 is fixed so that cross-process
+    // postMessage can carry user gestures.  If that happens, this should be
+    // moved to be part of |m_fullScreenElementStack|.
+    bool m_forCrossProcessAncestor;
 };
 
 inline bool Fullscreen::isActiveFullScreenElement(const Element& element)
