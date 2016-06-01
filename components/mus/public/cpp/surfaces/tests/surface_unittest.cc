@@ -20,7 +20,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkXfermode.h"
-#include "ui/gfx/mojo/transform_type_converters.h"
 
 using mus::mojom::Color;
 using mus::mojom::ColorPtr;
@@ -212,8 +211,7 @@ TEST(SurfaceLibTest, SharedQuadState) {
 
   SharedQuadStatePtr mus_sqs = SharedQuadState::From(*sqs);
   ASSERT_FALSE(mus_sqs.is_null());
-  EXPECT_TRUE(Transform::From(quad_to_target_transform)
-                  .Equals(mus_sqs->quad_to_target_transform));
+  EXPECT_EQ(quad_to_target_transform, mus_sqs->quad_to_target_transform);
   EXPECT_EQ(quad_layer_bounds, mus_sqs->quad_layer_bounds);
   EXPECT_EQ(visible_quad_layer_rect, mus_sqs->visible_quad_layer_rect);
   EXPECT_EQ(clip_rect, mus_sqs->clip_rect);
@@ -295,8 +293,7 @@ TEST(SurfaceLibTest, RenderPass) {
   EXPECT_EQ(6u, mus_pass->id.index);
   EXPECT_EQ(output_rect, mus_pass->output_rect);
   EXPECT_EQ(damage_rect, mus_pass->damage_rect);
-  EXPECT_TRUE(Transform::From(transform_to_root_target)
-                  .Equals(mus_pass->transform_to_root_target));
+  EXPECT_EQ(transform_to_root_target, mus_pass->transform_to_root_target);
   EXPECT_EQ(has_transparent_background, mus_pass->has_transparent_background);
   ASSERT_EQ(1u, mus_pass->shared_quad_states.size());
   ASSERT_EQ(3u, mus_pass->quads.size());

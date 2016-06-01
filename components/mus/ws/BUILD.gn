@@ -224,7 +224,6 @@ test("mus_ws_unittests") {
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
-    "//ui/gfx/mojo",
     "//ui/gl",
   ]
 

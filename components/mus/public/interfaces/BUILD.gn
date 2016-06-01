@@ -40,6 +40,7 @@ mojom("interfaces") {
     "//cc/ipc:interfaces",
     "//gpu/ipc/common:interfaces",
     "//ui/gfx/geometry/mojo",
+    "//ui/gfx/mojo",
     "//ui/platform_window/mojo:interfaces",
   ]
 }

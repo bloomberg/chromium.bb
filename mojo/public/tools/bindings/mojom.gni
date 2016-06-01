@@ -326,7 +326,7 @@ template("mojom") {
         # //mojo/something:something and we can append cpp_sources_suffix to
         # get the cpp dependency name.
         full_name = get_label_info("$d", "label_no_toolchain")
-        deps += [ "${full_name}${variant_suffix}_${cpp_sources_suffix}" ]
+        public_deps += [ "${full_name}${variant_suffix}_${cpp_sources_suffix}" ]
       }
       foreach(typemap, active_typemaps) {
         if (defined(typemap.public_headers)) {
@@ -337,6 +337,9 @@ template("mojom") {
         }
         if (defined(typemap.sources)) {
           sources += typemap.sources
+        }
+        if (defined(typemap.public_deps)) {
+          public_deps += typemap.public_deps
         }
         if (defined(typemap.deps)) {
           deps += typemap.deps

@@ -6,7 +6,6 @@
 
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/mojo/transform_type_converters.h"
 #include "ui/gfx/transform.h"
 
 using mus::mojom::Pass;
@@ -18,7 +17,6 @@ namespace mojo {
 
 SharedQuadStatePtr CreateDefaultSQS(const gfx::Size& size) {
   SharedQuadStatePtr sqs = SharedQuadState::New();
-  sqs->quad_to_target_transform = Transform::From(gfx::Transform());
   sqs->quad_layer_bounds = size;
   sqs->visible_quad_layer_rect = gfx::Rect(size);
   sqs->clip_rect = gfx::Rect(size);
@@ -37,7 +35,6 @@ PassPtr CreateDefaultPass(int id, const gfx::Rect& rect) {
   pass->id = render_pass_id;
   pass->output_rect = rect;
   pass->damage_rect = rect;
-  pass->transform_to_root_target = Transform::From(gfx::Transform());
   pass->has_transparent_background = false;
   return pass;
 }

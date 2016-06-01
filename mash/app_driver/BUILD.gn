@@ -15,10 +15,13 @@ source_set("lib") {
   ]
 
   deps = [
-    "//base",
     "//components/mus/common:mus_common",
-    "//components/mus/public/interfaces",
     "//mash/public/interfaces",
+  ]
+
+  public_deps = [
+    "//base",
+    "//components/mus/public/interfaces",
     "//services/catalog/public/interfaces",
     "//services/shell/public/cpp:sources",
   ]

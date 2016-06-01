@@ -2,4 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-typemaps = [ "//ui/gfx/geometry/mojo/geometry.typemap" ]
+typemaps = [
+  "//ui/gfx/geometry/mojo/geometry.typemap",
+  "//ui/gfx/mojo/transform.typemap",
+]

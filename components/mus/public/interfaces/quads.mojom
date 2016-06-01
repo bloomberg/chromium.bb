@@ -7,6 +7,7 @@ module mus.mojom;
 import "cc/ipc/render_pass_id.mojom";
 import "cc/ipc/surface_id.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/mojo/transform.mojom";
 
 struct Color {
   uint32 rgba;
@@ -197,7 +198,7 @@ enum SkXfermode {
 
 struct SharedQuadState {
   // mojo.Transforms quad rects into the target content space.
-  mojo.Transform quad_to_target_transform;
+  gfx.mojom.Transform quad_to_target_transform;
 
   // The size of the quads' originating layer in the space of the quad rects.
   mojo.Size quad_layer_bounds;
@@ -219,7 +220,7 @@ struct Pass {
   cc.mojom.RenderPassId id;
   mojo.Rect output_rect;
   mojo.Rect damage_rect;
-  mojo.Transform transform_to_root_target;
+  gfx.mojom.Transform transform_to_root_target;
   bool has_transparent_background;
   array<Quad> quads;
   array<SharedQuadState> shared_quad_states;

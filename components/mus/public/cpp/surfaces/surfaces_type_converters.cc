@@ -25,7 +25,6 @@
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "components/mus/public/cpp/surfaces/custom_surface_converter.h"
-#include "ui/gfx/mojo/transform_type_converters.h"
 
 using mus::mojom::Color;
 using mus::mojom::ColorPtr;
@@ -85,9 +84,9 @@ cc::SharedQuadState* ConvertSharedQuadState(
     const mus::mojom::SharedQuadStatePtr& input,
     cc::RenderPass* render_pass) {
   cc::SharedQuadState* state = render_pass->CreateAndAppendSharedQuadState();
-  state->SetAll(input->quad_to_target_transform.To<gfx::Transform>(),
-                input->quad_layer_bounds, input->visible_quad_layer_rect,
-                input->clip_rect, input->is_clipped, input->opacity,
+  state->SetAll(input->quad_to_target_transform, input->quad_layer_bounds,
+                input->visible_quad_layer_rect, input->clip_rect,
+                input->is_clipped, input->opacity,
                 static_cast<::SkXfermode::Mode>(input->blend_mode),
                 input->sorting_context_id);
   return state;
@@ -345,8 +344,7 @@ mus::mojom::SharedQuadStatePtr
 TypeConverter<mus::mojom::SharedQuadStatePtr, cc::SharedQuadState>::Convert(
     const cc::SharedQuadState& input) {
   mus::mojom::SharedQuadStatePtr state = SharedQuadState::New();
-  state->quad_to_target_transform =
-      Transform::From(input.quad_to_target_transform);
+  state->quad_to_target_transform = input.quad_to_target_transform;
   state->quad_layer_bounds = input.quad_layer_bounds;
   state->visible_quad_layer_rect = input.visible_quad_layer_rect;
   state->clip_rect = input.clip_rect;
@@ -364,8 +362,7 @@ PassPtr TypeConverter<PassPtr, cc::RenderPass>::Convert(
   pass->id = input.id;
   pass->output_rect = input.output_rect;
   pass->damage_rect = input.damage_rect;
-  pass->transform_to_root_target =
-      Transform::From(input.transform_to_root_target);
+  pass->transform_to_root_target = input.transform_to_root_target;
   pass->has_transparent_background = input.has_transparent_background;
   Array<QuadPtr> quads(input.quad_list.size());
   Array<mus::mojom::SharedQuadStatePtr> shared_quad_state(
@@ -402,7 +399,7 @@ std::unique_ptr<cc::RenderPass> ConvertToRenderPass(
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create(
       input->shared_quad_states.size(), input->quads.size());
   pass->SetAll(input->id, input->output_rect, input->damage_rect,
-               input->transform_to_root_target.To<gfx::Transform>(),
+               input->transform_to_root_target,
                input->has_transparent_background);
   for (size_t i = 0; i < input->shared_quad_states.size(); ++i) {
     ConvertSharedQuadState(input->shared_quad_states[i], pass.get());

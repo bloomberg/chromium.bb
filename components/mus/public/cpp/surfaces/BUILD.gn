@@ -19,7 +19,6 @@ component("surfaces") {
   public_deps = [
     "//ui/gfx",
     "//ui/gfx/geometry/mojo",
-    "//ui/gfx/mojo",
   ]
 
   deps = [

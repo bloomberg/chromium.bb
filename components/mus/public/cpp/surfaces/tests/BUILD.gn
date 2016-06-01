@@ -21,7 +21,6 @@ test("mojo_surfaces_lib_unittests") {
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gfx/geometry/mojo",
-    "//ui/gfx/mojo",
   ]
 
   sources = [

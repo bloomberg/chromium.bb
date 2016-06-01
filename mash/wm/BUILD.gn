@@ -80,7 +80,7 @@ source_set("lib") {
     "window_manager_application.h",
   ]
 
-  deps = [
+  public_deps = [
     "//ash",
     "//ash/public/interfaces",
     "//base",
@@ -185,6 +185,7 @@ source_set("unittests") {
     "//mojo/edk/system",
     "//mojo/public/cpp/system",
     "//services/shell/public/cpp:shell_test_support",
+    "//skia",
     "//testing/gtest",
     "//ui/aura",
     "//ui/base",
