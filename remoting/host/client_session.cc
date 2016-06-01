@@ -111,14 +111,7 @@ ClientSession::~ClientSession() {
 void ClientSession::NotifyClientResolution(
     const protocol::ClientResolution& resolution) {
   DCHECK(CalledOnValidThread());
-
-  // TODO(sergeyu): Move these checks to protocol layer.
-  if (!resolution.has_dips_width() || !resolution.has_dips_height() ||
-      resolution.dips_width() < 0 || resolution.dips_height() < 0 ||
-      resolution.width() <= 0 || resolution.height() <= 0) {
-    LOG(ERROR) << "Received invalid ClientResolution message.";
-    return;
-  }
+  DCHECK(resolution.dips_width() > 0 && resolution.dips_height() > 0);
 
   VLOG(1) << "Received ClientResolution (dips_width="
           << resolution.dips_width() << ", dips_height="

@@ -161,8 +161,8 @@ void AppRemotingConnectionHelper::SendClientConnectionDetailsToHost() {
 
   // Next send the host a description of the client screen size.
   protocol::ClientResolution client_resolution;
-  client_resolution.set_width(kDefaultWidth);
-  client_resolution.set_height(kDefaultHeight);
+  client_resolution.set_width_deprecated(kDefaultWidth);
+  client_resolution.set_height_deprecated(kDefaultHeight);
   client_resolution.set_x_dpi(kDefaultDPI);
   client_resolution.set_y_dpi(kDefaultDPI);
   client_resolution.set_dips_width(kDefaultWidth);

@@ -811,14 +811,15 @@ void ChromotingInstance::HandleNotifyClientResolution(
   }
 
   protocol::ClientResolution client_resolution;
-  client_resolution.set_width(width);
-  client_resolution.set_height(height);
   client_resolution.set_x_dpi(x_dpi);
   client_resolution.set_y_dpi(y_dpi);
-
-  // Include the legacy width & height in DIPs for use by older hosts.
   client_resolution.set_dips_width((width * kDefaultDPI) / x_dpi);
   client_resolution.set_dips_height((height * kDefaultDPI) / y_dpi);
+
+  // Include the legacy width & height in physical pixels for use by older
+  // hosts.
+  client_resolution.set_width_deprecated(width);
+  client_resolution.set_height_deprecated(height);
 
   client_->host_stub()->NotifyClientResolution(client_resolution);
 }

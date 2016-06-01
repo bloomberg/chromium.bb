@@ -72,10 +72,17 @@ void HostControlDispatcher::OnIncomingMessage(
   if (!message)
     return;
 
+  // TODO(sergeyu): Move message valudation from the message handlers here.
   if (message->has_clipboard_event()) {
     clipboard_stub_->InjectClipboardEvent(message->clipboard_event());
   } else if (message->has_client_resolution()) {
-    host_stub_->NotifyClientResolution(message->client_resolution());
+    const ClientResolution& resolution = message->client_resolution();
+    if (!resolution.has_dips_width() || !resolution.has_dips_height() ||
+        resolution.dips_width() <= 0 || resolution.dips_height() <= 0) {
+      LOG(ERROR) << "Received invalid ClientResolution message.";
+      return;
+    }
+    host_stub_->NotifyClientResolution(resolution);
   } else if (message->has_video_control()) {
     host_stub_->ControlVideo(message->video_control());
   } else if (message->has_audio_control()) {

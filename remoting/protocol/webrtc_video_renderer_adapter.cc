@@ -61,16 +61,21 @@ void WebrtcVideoRendererAdapter::OnFrame(const cricket::VideoFrame& frame) {
   std::unique_ptr<webrtc::DesktopFrame> rgb_frame(new webrtc::BasicDesktopFrame(
       webrtc::DesktopSize(frame.width(), frame.height())));
 
+  base::TimeDelta render_delay = std::max(
+      base::TimeDelta(), base::TimeDelta::FromMicroseconds(static_cast<float>(
+                             frame.timestamp_us() - rtc::TimeMicros())));
+
   frame.ConvertToRgbBuffer(
       output_format_fourcc_, rgb_frame->data(),
       std::abs(rgb_frame->stride()) * rgb_frame->size().height(),
       rgb_frame->stride());
   rgb_frame->mutable_updated_region()->AddRect(
       webrtc::DesktopRect::MakeSize(rgb_frame->size()));
-  task_runner_->PostTask(
+  task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&WebrtcVideoRendererAdapter::DrawFrame,
-                 weak_factory_.GetWeakPtr(), base::Passed(&rgb_frame)));
+                 weak_factory_.GetWeakPtr(), base::Passed(&rgb_frame)),
+      render_delay);
 }
 
 void WebrtcVideoRendererAdapter::DrawFrame(
