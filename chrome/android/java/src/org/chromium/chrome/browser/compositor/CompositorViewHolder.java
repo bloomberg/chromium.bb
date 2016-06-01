@@ -455,9 +455,10 @@ public class CompositorViewHolder extends CoordinatorLayout
     }
 
     @Override
-    public void onVisibleContentOffsetChanged(float offset) {
+    public void onVisibleContentOffsetChanged(float offset, boolean needsAnimate) {
         mLastVisibleContentOffset = offset;
         propagateViewportToLayouts(getWidth(), getHeight());
+        if (needsAnimate) requestRender();
     }
 
     @Override

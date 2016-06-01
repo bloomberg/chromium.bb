@@ -105,8 +105,9 @@ public class ChromeFullscreenManager
         /**
          * Called whenever the content's visible offset changes.
          * @param offset The new offset of the visible content from the top of the screen.
+         * @param needsAnimate Whether the caller is driving an animation with further updates.
          */
-        public void onVisibleContentOffsetChanged(float offset);
+        public void onVisibleContentOffsetChanged(float offset, boolean needsAnimate);
 
         /**
          * Called when a ContentVideoView is created/destroyed.
@@ -502,8 +503,12 @@ public class ChromeFullscreenManager
                 mControlContainer.getView().setTranslationY(getControlOffset());
             }
 
+            // Whether we need the compositor to draw again to update our animation.
+            // Should be |false| when the top controls are only moved through the page scrolling.
+            boolean needsAnimate = mControlAnimation != null || shouldShowAndroidControls();
             for (int i = 0; i < mListeners.size(); i++) {
-                mListeners.get(i).onVisibleContentOffsetChanged(getVisibleContentOffset());
+                mListeners.get(i).onVisibleContentOffsetChanged(
+                        getVisibleContentOffset(), needsAnimate);
             }
         }
 
