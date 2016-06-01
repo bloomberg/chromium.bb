@@ -29,23 +29,17 @@ DamageTracker::DamageTracker()
 
 DamageTracker::~DamageTracker() {}
 
-static inline void ExpandRectWithFilters(gfx::Rect* rect,
-                                         const FilterOperations& filters) {
-  int top, right, bottom, left;
-  filters.GetOutsets(&top, &right, &bottom, &left);
-  rect->Inset(-left, -top, -right, -bottom);
-}
-
 static inline void ExpandDamageRectInsideRectWithFilters(
     gfx::Rect* damage_rect,
     const gfx::Rect& pre_filter_rect,
     const FilterOperations& filters) {
-  gfx::Rect expanded_damage_rect = *damage_rect;
-  ExpandRectWithFilters(&expanded_damage_rect, filters);
-  gfx::Rect filter_rect = pre_filter_rect;
-  ExpandRectWithFilters(&filter_rect, filters);
+  // Compute the pixels in the background of the surface that could be affected
+  // by the damage in the content below.
+  gfx::Rect expanded_damage_rect = filters.MapRect(*damage_rect, SkMatrix::I());
 
-  expanded_damage_rect.Intersect(filter_rect);
+  // Restrict it to the rectangle in which the background filter is shown.
+  expanded_damage_rect.Intersect(pre_filter_rect);
+
   damage_rect->Union(expanded_damage_rect);
 }
 
@@ -144,8 +138,8 @@ void DamageTracker::UpdateDamageTrackingState(
     damage_rect_for_this_update = damage_from_active_layers;
     damage_rect_for_this_update.Union(damage_from_surface_mask);
     damage_rect_for_this_update.Union(damage_from_leftover_rects);
-
-    ExpandRectWithFilters(&damage_rect_for_this_update, filters);
+    damage_rect_for_this_update =
+        filters.MapRect(damage_rect_for_this_update, SkMatrix::I());
   }
 
   // Damage accumulates until we are notified that we actually did draw on that

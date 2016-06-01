@@ -703,7 +703,8 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
 
   // CASE 1: Setting the update rect should cause the corresponding damage to
   //         the surface, blurred based on the size of the child's background
-  //         blur filter.
+  //         blur filter. Note that child1's render surface has a size of
+  //         206x208 due to contributions from grand_child1 and grand_child2.
   ClearDamageForAllSurfaces(root);
   root->SetUpdateRect(gfx::Rect(297, 297, 2, 2));
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
@@ -769,15 +770,12 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
 
   root_damage_rect =
           root->render_surface()->damage_tracker()->current_damage_rect();
-  // Damage on the root should be: position of update_rect (99, 99), expanded by
-  // the blurring on child1, but since it is 1 pixel outside the layer, the
-  // expanding should be reduced by 1.
-  expected_damage_rect = gfx::Rect(99, 99, 1, 1);
-
-  expected_damage_rect.Inset(-outset_left + 1,
-                             -outset_top + 1,
-                             -outset_right,
-                             -outset_bottom);
+  // Damage on the root should be: the originally damaged rect (99,99 1x1)
+  // plus the rect that can influence with a 2px blur (93,93 13x13) intersected
+  // with the surface rect (100,100 206x208). So no additional damage occurs
+  // above or to the left, but there is additional damage within the blurred
+  // area.
+  expected_damage_rect = gfx::Rect(99, 99, 7, 7);
   EXPECT_EQ(expected_damage_rect.ToString(), root_damage_rect.ToString());
 
   // CASE 5: Setting the update rect on child2, which is above child1, will
@@ -807,12 +805,12 @@ TEST_F(DamageTrackerTest, VerifyDamageForBackgroundBlurredChild) {
           root->render_surface()->damage_tracker()->current_damage_rect();
   // Damage on child1 should be: position of update_rect offset by the child's
   // position (100, 100), and expanded by the damage.
-  expected_damage_rect = gfx::Rect(100, 100, 1, 1);
 
-  expected_damage_rect.Inset(-outset_left,
-                             -outset_top,
-                             -outset_right,
-                             -outset_bottom);
+  // Damage should be (0,0 1x1), offset by the 100,100 offset of child1 in
+  // root, and expanded 6px for the 2px blur (i.e., 94,94 13x13), but there
+  // should be no damage outside child1 (i.e. none above or to the left of
+  // 100,100.
+  expected_damage_rect = gfx::Rect(100, 100, 7, 7);
   EXPECT_EQ(expected_damage_rect.ToString(), root_damage_rect.ToString());
 }
 
