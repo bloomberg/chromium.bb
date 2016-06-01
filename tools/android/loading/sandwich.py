@@ -34,10 +34,10 @@ import device_setup
 import emulation
 import options
 import sandwich_metrics
-import sandwich_misc
+import sandwich_prefetch
 import sandwich_runner
 import sandwich_swr
-import sandwich_task_builder
+import sandwich_utils
 import task_manager
 from trace_test.webserver_test import WebServer
 
@@ -164,7 +164,7 @@ def _RecordWebServerTestTrace(args):
 
 def _GenerateBenchmarkTasks(args, url, output_subdirectory):
   MAIN_TRANSFORMER_LIST_NAME = 'no-network-emulation'
-  common_builder = sandwich_task_builder.SandwichCommonBuilder(
+  common_builder = sandwich_utils.SandwichCommonBuilder(
       android_device=_GetAndroidDeviceFromArgs(args),
       url=url,
       output_directory=args.output,
@@ -180,22 +180,22 @@ def _GenerateBenchmarkTasks(args, url, output_subdirectory):
     runner.repeat = args.url_repeat
 
   if not args.swr_benchmark:
-    builder = sandwich_task_builder.PrefetchBenchmarkBuilder(common_builder)
-    builder.PopulateLoadBenchmark(sandwich_misc.EMPTY_CACHE_DISCOVERER,
+    builder = sandwich_prefetch.PrefetchBenchmarkBuilder(common_builder)
+    builder.PopulateLoadBenchmark(sandwich_prefetch.EMPTY_CACHE_DISCOVERER,
                                   MAIN_TRANSFORMER_LIST_NAME,
                                   transformer_list=[MainTransformer])
-    builder.PopulateLoadBenchmark(sandwich_misc.FULL_CACHE_DISCOVERER,
+    builder.PopulateLoadBenchmark(sandwich_prefetch.FULL_CACHE_DISCOVERER,
                                   MAIN_TRANSFORMER_LIST_NAME,
                                   transformer_list=[MainTransformer])
     if args.gen_full:
       for network_condition in ['Regular4G', 'Regular3G', 'Regular2G']:
         transformer_list_name = network_condition.lower()
         network_transformer = \
-            sandwich_task_builder.NetworkSimulationTransformer(
+            sandwich_utils.NetworkSimulationTransformer(
                 network_condition)
         transformer_list = [MainTransformer, network_transformer]
-        for subresource_discoverer in sandwich_misc.SUBRESOURCE_DISCOVERERS:
-          if subresource_discoverer == sandwich_misc.FULL_CACHE_DISCOVERER:
+        for subresource_discoverer in sandwich_prefetch.SUBRESOURCE_DISCOVERERS:
+          if subresource_discoverer == sandwich_prefetch.FULL_CACHE_DISCOVERER:
             continue
           builder.PopulateLoadBenchmark(subresource_discoverer,
               transformer_list_name, transformer_list)
@@ -207,7 +207,7 @@ def _GenerateBenchmarkTasks(args, url, output_subdirectory):
       for network_condition in ['Regular3G', 'Regular2G']:
         transformer_list_name = network_condition.lower()
         network_transformer = \
-            sandwich_task_builder.NetworkSimulationTransformer(
+            sandwich_utils.NetworkSimulationTransformer(
                 network_condition)
         transformer_list = [MainTransformer, network_transformer]
         builder.PopulateBenchmark(enable_swr, transformer_list_name,

@@ -28,7 +28,6 @@ from telemetry.util import rgba_color
 
 import loading_trace as loading_trace_module
 import sandwich_runner
-import sandwich_misc
 import tracing
 
 
