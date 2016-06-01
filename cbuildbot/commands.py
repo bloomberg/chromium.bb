@@ -1690,7 +1690,7 @@ def UploadSymbols(buildroot, board=None, official=False, cnt=None,
                   failed_list=None, breakpad_root=None, product_name=None,
                   error_code_ok=True):
   """Upload debug symbols for this build."""
-  cmd = ['upload_symbols', '--yes', '--dedupe']
+  cmd = ['upload_symbols', '--yes']
 
   if board is not None:
     # Board requires both root and board to be set to be useful.
