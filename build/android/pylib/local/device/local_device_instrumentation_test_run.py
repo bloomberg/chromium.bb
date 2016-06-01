@@ -268,15 +268,31 @@ class LocalDeviceInstrumentationTestRun(
         self._test_instance.ParseAmInstrumentRawOutput(output))
     results = self._test_instance.GenerateTestResults(
         result_code, result_bundle, statuses, start_ms, duration_ms)
+
+    # Add UNKNOWN results for any missing tests.
+    iterable_test = test if isinstance(test, list) else [test]
+    test_names = set(self._GetTestName(t) for t in iterable_test)
+    results_names = set(r.GetName() for r in results)
+    results.extend(
+        base_test_result.BaseTestResult(u, base_test_result.ResultType.UNKNOWN)
+        for u in test_names.difference(results_names))
+
+    # Update the result name if the test used flags.
     if flags:
       for r in results:
         if r.GetName() == test_name:
           r.SetName(test_display_name)
+
+    # Update the result type if we detect a crash.
     if DidPackageCrashOnDevice(self._test_instance.test_package, device):
       for r in results:
         if r.GetType() == base_test_result.ResultType.UNKNOWN:
           r.SetType(base_test_result.ResultType.CRASH)
 
+    # Handle failures by:
+    #   - optionally taking a screenshot
+    #   - logging the raw output at INFO level
+    #   - clearing the application state while persisting permissions
     if any(r.GetType() not in (base_test_result.ResultType.PASS,
                                base_test_result.ResultType.SKIP)
            for r in results):
