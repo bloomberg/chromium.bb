@@ -416,15 +416,3 @@ class TestImporter(object):
         """
         path_from_repo_base = os.path.relpath(source_path, self.top_of_repo)
         return len(path_from_repo_base) > MAX_PATH_LENGTH
-
-    def setup_destination_directory(self):
-        """Creates a destination directory that mirrors that of the source directory."""
-
-        new_subpath = self.dir_to_import[len(self.top_of_repo):]
-
-        destination_directory = self.filesystem.join(self.destination_directory, new_subpath)
-
-        if not self.filesystem.exists(destination_directory):
-            self.filesystem.maybe_make_directory(destination_directory)
-
-        _log.info('Tests will be imported into: %s', destination_directory)
