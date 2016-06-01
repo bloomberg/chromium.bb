@@ -60,6 +60,9 @@ void InlineLoginHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("navigationButtonClicked",
       base::Bind(&InlineLoginHandler::HandleNavigationButtonClicked,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("dialogClose",
+      base::Bind(&InlineLoginHandler::HandleDialogClose,
+                 base::Unretained(this)));
 }
 
 void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {
@@ -275,4 +278,11 @@ void InlineLoginHandler::HandleNavigationButtonClicked(
   DCHECK(browser);
 
   browser->signin_view_controller()->delegate()->PerformNavigation();
+}
+
+void InlineLoginHandler::HandleDialogClose(const base::ListValue* args) {
+  Browser* browser = GetDesktopBrowser(web_ui());
+  DCHECK(browser);
+
+  browser->CloseModalSigninWindow();
 }

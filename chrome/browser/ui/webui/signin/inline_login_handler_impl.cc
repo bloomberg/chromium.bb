@@ -853,8 +853,6 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
   if (params.handler)
     params.handler->
         web_ui()->CallJavascriptFunction("inline.login.closeDialog");
-
-  CloseModalSigninIfNeeded(params.handler);
 }
 
 void InlineLoginHandlerImpl::HandleLoginError(const std::string& error_msg) {

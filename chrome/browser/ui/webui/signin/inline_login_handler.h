@@ -54,6 +54,9 @@ class InlineLoginHandler : public content::WebUIMessageHandler {
   // the user, requesting either a back navigation or closing the dialog.
   void HandleNavigationButtonClicked(const base::ListValue* args);
 
+  // Handles the web ui message sent when the window is closed from javascript.
+  void HandleDialogClose(const base::ListValue* args);
+
   virtual void SetExtraInitParams(base::DictionaryValue& params) {}
   virtual void CompleteLogin(const base::ListValue* args) = 0;
 
