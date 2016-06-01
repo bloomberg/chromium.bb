@@ -4,7 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://history/constants.html">
@@ -94,18 +94,21 @@
         -webkit-margin-start: 2px;
         color: #969696;
         height: 36px;
-        min-width: 36px;
         width: 36px;
       }
 
+      #menu-button iron-icon {
+        height: 20px;
+        width: 20px;
+      }
+
       #bookmark-star {
-        --iron-icon-height: 16px;
-        --iron-icon-width: 16px;
         -webkit-margin-end: 10px;
         -webkit-margin-start: 20px;
         color: rgb(68, 136, 255);
-        min-width: 16px;
+        height: 16px;
         visibility: hidden;
+        width: 16px;
       }
 
       :host([starred]) #bookmark-star {
@@ -133,9 +136,10 @@
           <span id="domain">[[item.domain]]</span>
         </div>
         <iron-icon icon="cr:star" id="bookmark-star"></iron-icon>
-        <paper-icon-button icon="cr:more-vert" id="menu-button"
+        <button is="paper-icon-button-light" id="menu-button"
             on-tap="onMenuButtonTap_">
-        </paper-icon-button>
+          <iron-icon icon="cr:more-vert"></iron-icon>
+        </button>
       </div>
       <template is="dom-if" if="[[hasTimeGap]]">
         <div id="time-gap-separator"></div>
