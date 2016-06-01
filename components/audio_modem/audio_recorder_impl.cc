@@ -49,6 +49,8 @@ void ProcessSamples(
       content::BrowserThread::UI, FROM_HERE, base::Bind(callback, samples));
 }
 
+void OnLogMessage(const std::string& message) {}
+
 }  // namespace
 
 // Public methods.
@@ -115,7 +117,7 @@ void AudioRecorderImpl::InitializeOnAudioThread() {
                 ? input_stream_for_testing_.get()
                 : media::AudioManager::Get()->MakeAudioInputStream(
                       params, media::AudioDeviceDescription::kDefaultDeviceId,
-                      media::AudioManager::LogCallback());
+                      base::Bind(&OnLogMessage));
 
   if (!stream_ || !stream_->Open()) {
     LOG(ERROR) << "Failed to open an input stream.";
