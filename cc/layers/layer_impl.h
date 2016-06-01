@@ -100,7 +100,6 @@ class CC_EXPORT LayerImpl {
   void OnOpacityIsCurrentlyAnimatingChanged(bool is_currently_animating);
   void OnOpacityIsPotentiallyAnimatingChanged(bool has_potential_animation);
   bool IsActive() const;
-  bool OpacityCanAnimateOnImplThread() const { return false; }
 
   // Tree structure.
   LayerImpl* parent() { return parent_; }
@@ -147,7 +146,7 @@ class CC_EXPORT LayerImpl {
 
   void UpdatePropertyTreeTransform();
   void UpdatePropertyTreeTransformIsAnimated(bool is_animated);
-  void UpdatePropertyTreeOpacity();
+  void UpdatePropertyTreeOpacity(float opacity);
   void UpdatePropertyTreeScrollOffset();
 
   // For compatibility with Layer.
@@ -232,8 +231,7 @@ class CC_EXPORT LayerImpl {
   void SetContentsOpaque(bool opaque);
   bool contents_opaque() const { return contents_opaque_; }
 
-  void SetOpacity(float opacity);
-  float opacity() const { return opacity_; }
+  float Opacity() const;
   bool OpacityIsAnimating() const;
   bool HasPotentiallyRunningOpacityAnimation() const;
 
@@ -593,7 +591,6 @@ class CC_EXPORT LayerImpl {
   SkColor background_color_;
   SkColor safe_opaque_background_color_;
 
-  float opacity_;
   SkXfermode::Mode blend_mode_;
   // draw_blend_mode may be different than blend_mode_,
   // when a RenderSurface re-parents the layer's blend_mode.

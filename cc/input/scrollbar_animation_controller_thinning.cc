@@ -140,7 +140,7 @@ void ScrollbarAnimationControllerThinning::ApplyOpacityAndThumbThicknessScale(
       continue;
     float effective_opacity =
         scrollbar->CanScrollOrientation()
-            ? AdjustScale(opacity, scrollbar->opacity(), opacity_change_)
+            ? AdjustScale(opacity, scrollbar->Opacity(), opacity_change_)
             : 0;
 
     scrollbar->OnOpacityAnimated(effective_opacity);

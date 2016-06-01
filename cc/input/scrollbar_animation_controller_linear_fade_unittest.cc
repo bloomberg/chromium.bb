@@ -51,17 +51,25 @@ class ScrollbarAnimationControllerLinearFadeTest
 
     std::unique_ptr<LayerImpl> scroll_layer =
         LayerImpl::Create(host_impl_.active_tree(), 1);
-    scrollbar_layer_ = SolidColorScrollbarLayerImpl::Create(
-        host_impl_.active_tree(), 2, orientation(), kThumbThickness,
-        kTrackStart, kIsLeftSideVerticalScrollbar, kIsOverlayScrollbar);
-    clip_layer_ = LayerImpl::Create(host_impl_.active_tree(), 3);
+    std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
+        SolidColorScrollbarLayerImpl::Create(
+            host_impl_.active_tree(), 2, orientation(), kThumbThickness,
+            kTrackStart, kIsLeftSideVerticalScrollbar, kIsOverlayScrollbar);
+    scrollbar_layer_ = scrollbar.get();
+    scrollbar_layer_->test_properties()->opacity_can_animate = true;
+    std::unique_ptr<LayerImpl> clip =
+        LayerImpl::Create(host_impl_.active_tree(), 3);
+    clip_layer_ = clip.get();
     scroll_layer->SetScrollClipLayer(clip_layer_->id());
     LayerImpl* scroll_layer_ptr = scroll_layer.get();
-    clip_layer_->AddChild(std::move(scroll_layer));
+    scroll_layer->AddChild(std::move(scrollbar));
+    clip->AddChild(std::move(scroll_layer));
+    host_impl_.active_tree()->SetRootLayer(std::move(clip));
 
     scrollbar_layer_->SetScrollLayerId(scroll_layer_ptr->id());
     clip_layer_->SetBounds(gfx::Size(100, 100));
     scroll_layer_ptr->SetBounds(gfx::Size(200, 200));
+    host_impl_.active_tree()->BuildPropertyTreesForTesting();
 
     scrollbar_controller_ = ScrollbarAnimationControllerLinearFade::Create(
         scroll_layer_ptr->id(), this, base::TimeDelta::FromSeconds(2),
@@ -75,8 +83,8 @@ class ScrollbarAnimationControllerLinearFadeTest
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
   std::unique_ptr<ScrollbarAnimationControllerLinearFade> scrollbar_controller_;
-  std::unique_ptr<LayerImpl> clip_layer_;
-  std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar_layer_;
+  LayerImpl* clip_layer_;
+  SolidColorScrollbarLayerImpl* scrollbar_layer_;
 
   base::Closure start_fade_;
   base::TimeDelta delay_;
@@ -91,43 +99,43 @@ class VerticalScrollbarAnimationControllerLinearFadeTest
 };
 
 TEST_F(ScrollbarAnimationControllerLinearFadeTest, DelayAnimationOnResize) {
-  scrollbar_layer_->SetOpacity(0.0f);
+  scrollbar_layer_->OnOpacityAnimated(0.0f);
   scrollbar_controller_->DidScrollBegin();
   scrollbar_controller_->DidScrollUpdate(true);
   scrollbar_controller_->DidScrollEnd();
   // Normal Animation delay of 2 seconds.
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_EQ(delay_, base::TimeDelta::FromSeconds(2));
 
-  scrollbar_layer_->SetOpacity(0.0f);
+  scrollbar_layer_->OnOpacityAnimated(0.0f);
   scrollbar_controller_->DidScrollUpdate(true);
   // Delay animation on resize to 5 seconds.
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_EQ(delay_, base::TimeDelta::FromSeconds(5));
 }
 
 TEST_F(ScrollbarAnimationControllerLinearFadeTest, HiddenInBegin) {
-  scrollbar_layer_->SetOpacity(0.0f);
+  scrollbar_layer_->OnOpacityAnimated(0.0f);
   scrollbar_controller_->Animate(base::TimeTicks());
-  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
 }
 
 TEST_F(ScrollbarAnimationControllerLinearFadeTest,
        HiddenAfterNonScrollingGesture) {
-  scrollbar_layer_->SetOpacity(0.0f);
+  scrollbar_layer_->OnOpacityAnimated(0.0f);
   scrollbar_controller_->DidScrollBegin();
 
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(100);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
   scrollbar_controller_->DidScrollEnd();
 
   EXPECT_TRUE(start_fade_.Equals(base::Closure()));
 
   time += base::TimeDelta::FromSeconds(100);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
 }
 
 TEST_F(ScrollbarAnimationControllerLinearFadeTest, HideOnResize) {
@@ -144,7 +152,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, HideOnResize) {
   scrollbar_controller_->DidScrollBegin();
 
   scrollbar_controller_->DidScrollUpdate(false);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
   scrollbar_controller_->DidScrollEnd();
 
@@ -156,7 +164,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, HideOnResize) {
   scrollbar_controller_->DidScrollBegin();
 
   scrollbar_controller_->DidScrollUpdate(false);
-  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
 
   scrollbar_controller_->DidScrollEnd();
 }
@@ -175,7 +183,7 @@ TEST_F(VerticalScrollbarAnimationControllerLinearFadeTest, HideOnResize) {
   scrollbar_controller_->DidScrollBegin();
 
   scrollbar_controller_->DidScrollUpdate(false);
-  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
 
   scrollbar_controller_->DidScrollEnd();
 
@@ -186,7 +194,7 @@ TEST_F(VerticalScrollbarAnimationControllerLinearFadeTest, HideOnResize) {
   scrollbar_controller_->DidScrollBegin();
 
   scrollbar_controller_->DidScrollUpdate(false);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
   scrollbar_controller_->DidScrollEnd();
 }
@@ -202,7 +210,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest,
   scrollbar_controller_->DidScrollBegin();
 
   scrollbar_controller_->DidScrollUpdate(false);
-  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
 
   scrollbar_controller_->DidScrollEnd();
 }
@@ -218,7 +226,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest,
   scrollbar_controller_->DidScrollBegin();
 
   scrollbar_controller_->DidScrollUpdate(false);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
   scrollbar_controller_->DidScrollEnd();
 }
@@ -234,7 +242,7 @@ TEST_F(VerticalScrollbarAnimationControllerLinearFadeTest,
   scrollbar_controller_->DidScrollBegin();
 
   scrollbar_controller_->DidScrollUpdate(false);
-  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
 
   scrollbar_controller_->DidScrollEnd();
 }
@@ -250,7 +258,7 @@ TEST_F(VerticalScrollbarAnimationControllerLinearFadeTest,
   scrollbar_controller_->DidScrollBegin();
 
   scrollbar_controller_->DidScrollUpdate(false);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
   scrollbar_controller_->DidScrollEnd();
 }
@@ -263,7 +271,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, AwakenByScrollingGesture) {
 
   scrollbar_controller_->DidScrollUpdate(false);
   EXPECT_FALSE(did_request_animate_);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
   EXPECT_TRUE(start_fade_.Equals(base::Closure()));
 
@@ -271,7 +279,7 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, AwakenByScrollingGesture) {
 
   scrollbar_controller_->Animate(time);
   EXPECT_FALSE(did_request_animate_);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   scrollbar_controller_->DidScrollEnd();
   EXPECT_FALSE(did_request_animate_);
   start_fade_.Run();
@@ -282,19 +290,19 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, AwakenByScrollingGesture) {
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
 
@@ -310,24 +318,24 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, AwakenByScrollingGesture) {
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_FALSE(did_request_animate_);
-  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
 }
 
 TEST_F(ScrollbarAnimationControllerLinearFadeTest, AwakenByProgrammaticScroll) {
@@ -342,13 +350,13 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, AwakenByProgrammaticScroll) {
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->Opacity());
   scrollbar_controller_->DidScrollUpdate(false);
   EXPECT_FALSE(did_request_animate_);
 
@@ -359,19 +367,19 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, AwakenByProgrammaticScroll) {
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->DidScrollUpdate(false);
@@ -380,24 +388,24 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest, AwakenByProgrammaticScroll) {
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_FALSE(did_request_animate_);
-  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
 }
 
 TEST_F(ScrollbarAnimationControllerLinearFadeTest,
@@ -411,32 +419,32 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest,
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->Opacity());
 
   scrollbar_controller_->DidScrollBegin();
   EXPECT_FALSE(did_request_animate_);
-  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->Opacity());
 
   scrollbar_controller_->DidScrollEnd();
   EXPECT_FALSE(did_request_animate_);
-  EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_FALSE(did_request_animate_);
-  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
 }
 
 TEST_F(ScrollbarAnimationControllerLinearFadeTest,
@@ -451,32 +459,32 @@ TEST_F(ScrollbarAnimationControllerLinearFadeTest,
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->Opacity());
 
   scrollbar_controller_->DidScrollBegin();
-  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(2.0f / 3.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
   EXPECT_TRUE(did_request_animate_);
   did_request_animate_ = false;
-  EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f / 3.0f, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->DidScrollUpdate(false);
   EXPECT_FALSE(did_request_animate_);
-  EXPECT_FLOAT_EQ(1, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1, scrollbar_layer_->Opacity());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->DidScrollEnd();
   EXPECT_FALSE(did_request_animate_);
-  EXPECT_FLOAT_EQ(1, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1, scrollbar_layer_->Opacity());
 }
 
 }  // namespace

@@ -1177,8 +1177,6 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
   layer->SetContentsOpaque(contents_opaque_);
-  if (!OpacityIsAnimating())
-    layer->SetOpacity(opacity_);
   layer->SetBlendMode(blend_mode_);
   layer->SetPosition(position_);
   layer->set_should_flatten_transform_from_property_tree(

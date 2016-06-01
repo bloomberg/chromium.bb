@@ -964,7 +964,7 @@ TEST_F(LayerTreeHostImplTest, ScrollWithOverlappingNonScrollableLayer) {
   scrollbar->SetPosition(gfx::PointF(345, 0));
   scrollbar->SetScrollLayerId(scroll->id());
   scrollbar->SetDrawsContent(true);
-  scrollbar->SetOpacity(1.f);
+  scrollbar->test_properties()->opacity = 1.f;
 
   std::unique_ptr<LayerImpl> squash1 = LayerImpl::Create(layer_tree_impl, 5);
   squash1->SetBounds(gfx::Size(140, 300));
@@ -2678,8 +2678,8 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
         SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(), 400,
                                              VERTICAL, 10, 0, false, true);
-    scrollbar->SetOpacity(0.f);
-    EXPECT_FLOAT_EQ(0.f, scrollbar->opacity());
+    scrollbar->test_properties()->opacity = 0.f;
+    EXPECT_FLOAT_EQ(0.f, scrollbar->test_properties()->opacity);
 
     LayerImpl* scroll = host_impl_->active_tree()->OuterViewportScrollLayer();
     LayerImpl* root = host_impl_->active_tree()->InnerViewportContainerLayer();
@@ -2863,7 +2863,7 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
         SolidColorScrollbarLayerImpl::Create(host_impl_->pending_tree(), 400,
                                              VERTICAL, 10, 0, false, true);
-    scrollbar->SetOpacity(0.f);
+    scrollbar->test_properties()->opacity = 0.f;
     LayerImpl* scroll = host_impl_->pending_tree()->OuterViewportScrollLayer();
     LayerImpl* root = host_impl_->pending_tree()->InnerViewportContainerLayer();
     scrollbar->SetScrollLayerId(scroll->id());
@@ -2877,7 +2877,7 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
     EffectNode* active_tree_node =
         host_impl_->active_tree()->property_trees()->effect_tree.Node(
             scrollbar_layer->effect_tree_index());
-    EXPECT_FLOAT_EQ(scrollbar_layer->opacity(), active_tree_node->data.opacity);
+    EXPECT_FLOAT_EQ(scrollbar_layer->Opacity(), active_tree_node->data.opacity);
 
     host_impl_->ScrollbarAnimationControllerForId(scroll->id())
         ->DidMouseMoveNear(0);
@@ -2893,14 +2893,14 @@ class LayerTreeHostImplTestScrollbarOpacity : public LayerTreeHostImplTest {
         ->property_trees()
         ->always_use_active_tree_opacity_effect_ids.push_back(400);
     EXPECT_FLOAT_EQ(1.f, active_tree_node->data.opacity);
-    EXPECT_FLOAT_EQ(1.f, scrollbar_layer->opacity());
+    EXPECT_FLOAT_EQ(1.f, scrollbar_layer->Opacity());
     EXPECT_FLOAT_EQ(0.f, pending_tree_node->data.opacity);
     host_impl_->ActivateSyncTree();
     active_tree_node =
         host_impl_->active_tree()->property_trees()->effect_tree.Node(
             scrollbar_layer->effect_tree_index());
     EXPECT_FLOAT_EQ(1.f, active_tree_node->data.opacity);
-    EXPECT_FLOAT_EQ(1.f, scrollbar_layer->opacity());
+    EXPECT_FLOAT_EQ(1.f, scrollbar_layer->Opacity());
   }
 };
 
@@ -6240,7 +6240,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
 
   // Layer with translucent opacity, drawn with blending.
   layer1->SetContentsOpaque(true);
-  layer1->SetOpacity(0.5f);
+  layer1->test_properties()->opacity = 0.5f;
   layer1->NoteLayerPropertyChanged();
   layer1->SetExpectation(true, false);
   layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
@@ -6252,7 +6252,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
 
   // Layer with translucent opacity and painting, drawn with blending.
   layer1->SetContentsOpaque(true);
-  layer1->SetOpacity(0.5f);
+  layer1->test_properties()->opacity = 0.5f;
   layer1->NoteLayerPropertyChanged();
   layer1->SetExpectation(true, false);
   layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
@@ -6272,12 +6272,12 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
 
   // 2 opaque layers, drawn without blending.
   layer1->SetContentsOpaque(true);
-  layer1->SetOpacity(1.f);
+  layer1->test_properties()->opacity = 1.f;
   layer1->NoteLayerPropertyChanged();
   layer1->SetExpectation(false, false);
   layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetContentsOpaque(true);
-  layer2->SetOpacity(1.f);
+  layer2->test_properties()->opacity = 1.f;
   layer2->NoteLayerPropertyChanged();
   layer2->SetExpectation(false, false);
   layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
@@ -6323,7 +6323,7 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   // Child layer with opaque content, drawn without blending (parent surface
   // carries the inherited opacity).
   layer1->SetContentsOpaque(true);
-  layer1->SetOpacity(0.5f);
+  layer1->test_properties()->opacity = 0.5f;
   layer1->NoteLayerPropertyChanged();
   layer1->test_properties()->force_render_surface = true;
   layer1->SetExpectation(false, true);
@@ -6343,12 +6343,12 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   // Draw again, but with child non-opaque, to make sure
   // layer1 not culled.
   layer1->SetContentsOpaque(true);
-  layer1->SetOpacity(1.f);
+  layer1->test_properties()->opacity = 1.f;
   layer1->NoteLayerPropertyChanged();
   layer1->SetExpectation(false, false);
   layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetContentsOpaque(true);
-  layer2->SetOpacity(0.5f);
+  layer2->test_properties()->opacity = 0.5f;
   layer2->NoteLayerPropertyChanged();
   layer2->SetExpectation(true, false);
   layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
@@ -6361,12 +6361,12 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
 
   // A second way of making the child non-opaque.
   layer1->SetContentsOpaque(true);
-  layer1->SetOpacity(1.f);
+  layer1->test_properties()->opacity = 1.f;
   layer1->NoteLayerPropertyChanged();
   layer1->SetExpectation(false, false);
   layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetContentsOpaque(false);
-  layer2->SetOpacity(1.f);
+  layer2->test_properties()->opacity = 1.f;
   layer2->NoteLayerPropertyChanged();
   layer2->SetExpectation(true, false);
   layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
@@ -6380,12 +6380,12 @@ TEST_F(LayerTreeHostImplTest, BlendingOffWhenDrawingOpaqueLayers) {
   // And when the layer says its not opaque but is painted opaque, it is not
   // blended.
   layer1->SetContentsOpaque(true);
-  layer1->SetOpacity(1.f);
+  layer1->test_properties()->opacity = 1.f;
   layer1->NoteLayerPropertyChanged();
   layer1->SetExpectation(false, false);
   layer1->SetUpdateRect(gfx::Rect(layer1->bounds()));
   layer2->SetContentsOpaque(true);
-  layer2->SetOpacity(1.f);
+  layer2->test_properties()->opacity = 1.f;
   layer2->NoteLayerPropertyChanged();
   layer2->SetExpectation(false, false);
   layer2->SetUpdateRect(gfx::Rect(layer1->bounds()));
@@ -7170,7 +7170,7 @@ static std::unique_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   root->SetDrawsContent(false);
 
   child->SetPosition(gfx::PointF(child_rect.x(), child_rect.y()));
-  child->SetOpacity(0.5f);
+  child->test_properties()->opacity = 0.5f;
   child->SetBounds(gfx::Size(child_rect.width(), child_rect.height()));
   child->draw_properties().visible_layer_rect = child_rect;
   child->SetDrawsContent(false);

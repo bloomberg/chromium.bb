@@ -37,7 +37,7 @@ TEST(SolidColorScrollbarLayerImplTest, Occlusion) {
   scrollbar_layer_impl->SetClipLayerLength(100.f);
   scrollbar_layer_impl->SetScrollLayerLength(200.f);
   // SolidColorScrollbarLayers construct with opacity = 0.f, so override.
-  scrollbar_layer_impl->SetOpacity(1.f);
+  scrollbar_layer_impl->test_properties()->opacity = 1.f;
 
   impl.CalcDrawProps(viewport_size);
 

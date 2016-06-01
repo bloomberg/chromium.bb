@@ -26,8 +26,10 @@ struct CC_EXPORT LayerImplTestProperties {
   bool is_container_for_fixed_position_layers;
   bool should_flatten_transform;
   bool hide_layer_and_subtree;
+  bool opacity_can_animate;
   int num_descendants_that_draw_content;
   size_t num_unclipped_descendants;
+  float opacity;
   LayerPositionConstraint position_constraint;
   gfx::Point3F transform_origin;
   LayerImpl* scroll_parent;

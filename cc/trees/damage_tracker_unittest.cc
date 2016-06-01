@@ -1184,7 +1184,7 @@ TEST_F(DamageTrackerTest, VerifyDamageForReplica) {
     grand_child3->SetDrawsContent(true);
     child1->AddChild(std::move(grand_child3));
   }
-  child1->SetOpacity(0.5f);
+  child1->test_properties()->opacity = 0.5f;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   EmulateDrawingOneFrame(root);
 

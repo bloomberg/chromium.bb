@@ -56,7 +56,7 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SURFACE_CHANGED(
       render_surface->SetContentRectForTesting(test_rect));
 
-  owning_layer->SetOpacity(0.5f);
+  owning_layer->OnOpacityAnimated(0.5f);
   EXPECT_TRUE(render_surface->SurfacePropertyChanged());
   host_impl.active_tree()->ResetAllChangeTracking();
 

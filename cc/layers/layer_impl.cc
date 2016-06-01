@@ -70,7 +70,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       was_ever_ready_since_last_transform_animation_(true),
       background_color_(0),
       safe_opaque_background_color_(0),
-      opacity_(1.0),
       blend_mode_(SkXfermode::kSrcOver_Mode),
       draw_blend_mode_(SkXfermode::kSrcOver_Mode),
       transform_tree_index_(-1),
@@ -380,7 +379,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
   layer->SetContentsOpaque(contents_opaque_);
-  layer->SetOpacity(opacity_);
   layer->SetBlendMode(blend_mode_);
   layer->SetPosition(position_);
   layer->set_should_flatten_transform_from_property_tree(
@@ -467,7 +465,7 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerTreeAsJson() const {
 
   result->SetBoolean("DrawsContent", draws_content_);
   result->SetBoolean("Is3dSorted", Is3dSorted());
-  result->SetDouble("OPACITY", opacity());
+  result->SetDouble("OPACITY", Opacity());
   result->SetBoolean("ContentsOpaque", contents_opaque_);
 
   if (scrollable())
@@ -622,7 +620,7 @@ void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
   }
 }
 
-void LayerImpl::UpdatePropertyTreeOpacity() {
+void LayerImpl::UpdatePropertyTreeOpacity(float opacity) {
   PropertyTrees* property_trees = layer_tree_impl()->property_trees();
   if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id())) {
     // A LayerImpl's own current state is insufficient for determining whether
@@ -632,7 +630,9 @@ void LayerImpl::UpdatePropertyTreeOpacity() {
     // started, but might have finished since then on the compositor thread.
     EffectNode* node = property_trees->effect_tree.Node(
         property_trees->effect_id_to_index_map[id()]);
-    node->data.opacity = opacity_;
+    if (node->data.opacity == opacity)
+      return;
+    node->data.opacity = opacity;
     node->data.effect_changed = true;
     property_trees->changed = true;
     property_trees->effect_tree.set_needs_update(true);
@@ -670,8 +670,7 @@ void LayerImpl::OnFilterAnimated(const FilterOperations& filters) {
 }
 
 void LayerImpl::OnOpacityAnimated(float opacity) {
-  SetOpacity(opacity);
-  UpdatePropertyTreeOpacity();
+  UpdatePropertyTreeOpacity(opacity);
   SetNeedsPushProperties();
   layer_tree_impl()->set_needs_update_draw_properties();
   layer_tree_impl()->AddToOpacityAnimationsMap(id(), opacity);
@@ -933,11 +932,13 @@ void LayerImpl::SetContentsOpaque(bool opaque) {
   contents_opaque_ = opaque;
 }
 
-void LayerImpl::SetOpacity(float opacity) {
-  if (opacity_ == opacity)
-    return;
-
-  opacity_ = opacity;
+float LayerImpl::Opacity() const {
+  if (!layer_tree_impl()->property_trees()->IsInIdToIndexMap(
+          PropertyTrees::TreeType::EFFECT, id()))
+    return 1.f;
+  EffectNode* node =
+      layer_tree_impl()->property_trees()->effect_tree.Node(effect_tree_index_);
+  return node->data.opacity;
 }
 
 bool LayerImpl::OpacityIsAnimating() const {
@@ -1140,7 +1141,7 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   state->SetInteger("layer_id", id());
   MathUtil::AddToTracedValue("bounds", bounds_, state);
 
-  state->SetDouble("opacity", opacity());
+  state->SetDouble("opacity", Opacity());
 
   MathUtil::AddToTracedValue("position", position_, state);
 

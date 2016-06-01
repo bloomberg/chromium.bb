@@ -20,7 +20,7 @@ CompositorMutableState::~CompositorMutableState() {}
 
 double CompositorMutableState::opacity() const
 {
-    return m_mainLayer->opacity();
+    return m_mainLayer->Opacity();
 }
 
 void CompositorMutableState::setOpacity(double opacity)

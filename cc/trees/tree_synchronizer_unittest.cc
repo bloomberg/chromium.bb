@@ -287,9 +287,6 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndProperties) {
   gfx::PointF root_position = gfx::PointF(2.3f, 7.4f);
   layer_tree_root->SetPosition(root_position);
 
-  float first_child_opacity = 0.25f;
-  layer_tree_root->children()[0]->SetOpacity(first_child_opacity);
-
   gfx::Size second_child_bounds = gfx::Size(25, 53);
   layer_tree_root->children()[1]->SetBounds(second_child_bounds);
   layer_tree_root->children()[1]->SavePaintProperties();
@@ -308,9 +305,6 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeAndProperties) {
   gfx::PointF root_layer_impl_position = layer_impl_tree_root->position();
   EXPECT_EQ(root_position.x(), root_layer_impl_position.x());
   EXPECT_EQ(root_position.y(), root_layer_impl_position.y());
-
-  EXPECT_EQ(first_child_opacity,
-            layer_impl_tree_root->children()[0]->opacity());
 
   gfx::Size second_layer_impl_child_bounds =
       layer_impl_tree_root->children()[1]->bounds();

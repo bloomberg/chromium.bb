@@ -14,8 +14,10 @@ LayerImplTestProperties::LayerImplTestProperties()
       is_container_for_fixed_position_layers(false),
       should_flatten_transform(true),
       hide_layer_and_subtree(false),
+      opacity_can_animate(false),
       num_descendants_that_draw_content(0),
       num_unclipped_descendants(0),
+      opacity(1.f),
       scroll_parent(nullptr),
       clip_parent(nullptr) {}
 

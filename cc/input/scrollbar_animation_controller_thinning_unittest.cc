@@ -44,23 +44,32 @@ class ScrollbarAnimationControllerThinningTest
   void SetUp() override {
     std::unique_ptr<LayerImpl> scroll_layer =
         LayerImpl::Create(host_impl_.active_tree(), 1);
-    clip_layer_ = LayerImpl::Create(host_impl_.active_tree(), 3);
+    std::unique_ptr<LayerImpl> clip =
+        LayerImpl::Create(host_impl_.active_tree(), 3);
+    clip_layer_ = clip.get();
     scroll_layer->SetScrollClipLayer(clip_layer_->id());
     LayerImpl* scroll_layer_ptr = scroll_layer.get();
-    clip_layer_->AddChild(std::move(scroll_layer));
 
     const int kId = 2;
     const int kThumbThickness = 10;
     const int kTrackStart = 0;
     const bool kIsLeftSideVerticalScrollbar = false;
     const bool kIsOverlayScrollbar = true;
-    scrollbar_layer_ = SolidColorScrollbarLayerImpl::Create(
-        host_impl_.active_tree(), kId, HORIZONTAL, kThumbThickness, kTrackStart,
-        kIsLeftSideVerticalScrollbar, kIsOverlayScrollbar);
+    std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar =
+        SolidColorScrollbarLayerImpl::Create(
+            host_impl_.active_tree(), kId, HORIZONTAL, kThumbThickness,
+            kTrackStart, kIsLeftSideVerticalScrollbar, kIsOverlayScrollbar);
+    scrollbar_layer_ = scrollbar.get();
+
+    scroll_layer->AddChild(std::move(scrollbar));
+    clip_layer_->AddChild(std::move(scroll_layer));
+    host_impl_.active_tree()->SetRootLayer(std::move(clip));
 
     scrollbar_layer_->SetScrollLayerId(scroll_layer_ptr->id());
+    scrollbar_layer_->test_properties()->opacity_can_animate = true;
     clip_layer_->SetBounds(gfx::Size(100, 100));
     scroll_layer_ptr->SetBounds(gfx::Size(200, 200));
+    host_impl_.active_tree()->BuildPropertyTreesForTesting();
 
     scrollbar_controller_ = ScrollbarAnimationControllerThinning::Create(
         scroll_layer_ptr->id(), this, base::TimeDelta::FromSeconds(2),
@@ -72,8 +81,8 @@ class ScrollbarAnimationControllerThinningTest
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostImpl host_impl_;
   std::unique_ptr<ScrollbarAnimationControllerThinning> scrollbar_controller_;
-  std::unique_ptr<LayerImpl> clip_layer_;
-  std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar_layer_;
+  LayerImpl* clip_layer_;
+  SolidColorScrollbarLayerImpl* scrollbar_layer_;
 
   base::Closure start_fade_;
   base::TimeDelta delay_;
@@ -84,7 +93,7 @@ class ScrollbarAnimationControllerThinningTest
 // Check initialization of scrollbar.
 TEST_F(ScrollbarAnimationControllerThinningTest, Idle) {
   scrollbar_controller_->Animate(base::TimeTicks());
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
 }
 
@@ -103,7 +112,7 @@ TEST_F(ScrollbarAnimationControllerThinningTest, HideOnResize) {
   scrollbar_controller_->DidScrollBegin();
 
   scrollbar_controller_->DidScrollUpdate(false);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
 
   scrollbar_controller_->DidScrollEnd();
 
@@ -115,7 +124,7 @@ TEST_F(ScrollbarAnimationControllerThinningTest, HideOnResize) {
   scrollbar_controller_->DidScrollBegin();
 
   scrollbar_controller_->DidScrollUpdate(false);
-  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.0f, scrollbar_layer_->Opacity());
 
   scrollbar_controller_->DidScrollEnd();
 }
@@ -126,7 +135,7 @@ TEST_F(ScrollbarAnimationControllerThinningTest, AwakenByProgrammaticScroll) {
   base::TimeTicks time;
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->DidScrollUpdate(false);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   // Scrollbar doesn't change size if triggered by scroll.
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
 
@@ -134,7 +143,7 @@ TEST_F(ScrollbarAnimationControllerThinningTest, AwakenByProgrammaticScroll) {
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   // Subsequent scroll restarts animation.
@@ -144,22 +153,22 @@ TEST_F(ScrollbarAnimationControllerThinningTest, AwakenByProgrammaticScroll) {
 
   time += base::TimeDelta::FromSeconds(2);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.9f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.9f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
 }
 
@@ -179,13 +188,13 @@ TEST_F(ScrollbarAnimationControllerThinningTest, ScrollWithMouseNear) {
   scrollbar_controller_->DidScrollUpdate(false);
   start_fade_.Run();
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   // Scrollbar should still be thick.
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(5);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 }
 
@@ -196,52 +205,52 @@ TEST_F(ScrollbarAnimationControllerThinningTest, MouseNear) {
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->DidMouseMoveNear(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   // Should animate to thickened but not darken.
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.6f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   // Subsequent moves should not change anything.
   scrollbar_controller_->DidMouseMoveNear(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   // Now move away from bar.
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->DidMouseMoveNear(26);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   // Animate to narrow.
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.6f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
 }
 
@@ -252,52 +261,52 @@ TEST_F(ScrollbarAnimationControllerThinningTest, MouseOver) {
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->DidMouseMoveNear(0);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   // Should animate to thickened and darkened.
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.6f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.9f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.9f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   // Subsequent moves should not change anything.
   scrollbar_controller_->DidMouseMoveNear(0);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   // Now move away from bar.
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->DidMouseMoveNear(26);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   // Animate to narrow.
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.9f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.9f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.6f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
 }
 
@@ -309,13 +318,13 @@ TEST_F(ScrollbarAnimationControllerThinningTest, MouseNearThenOver) {
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->DidMouseMoveNear(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.4f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   // Should animate to thickened but not darken.
   time += base::TimeDelta::FromSeconds(3);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   // Now move over.
@@ -325,17 +334,17 @@ TEST_F(ScrollbarAnimationControllerThinningTest, MouseNearThenOver) {
   // Should animate to darkened.
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.9f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.9f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   // This is tricky. The DidMouseMoveOffScrollbar() is sent before the
@@ -348,7 +357,7 @@ TEST_F(ScrollbarAnimationControllerThinningTest, MouseNearThenOver) {
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.9f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.9f, scrollbar_layer_->Opacity());
   EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   scrollbar_controller_->DidMouseMoveNear(1);
@@ -359,20 +368,20 @@ TEST_F(ScrollbarAnimationControllerThinningTest, MouseNearThenOver) {
   scrollbar_controller_->Animate(time);
   // We will initiate the narrowing again, but it won't get decremented until
   // the new animation catches up to it.
-  EXPECT_FLOAT_EQ(0.9f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.9f, scrollbar_layer_->Opacity());
   // Now the thickness should be increasing, but it shouldn't happen until the
   // animation catches up.
   EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->Opacity());
   // The thickness now gets big again.
   EXPECT_FLOAT_EQ(0.8f, scrollbar_layer_->thumb_thickness_scale_factor());
 
   time += base::TimeDelta::FromSeconds(1);
   scrollbar_controller_->Animate(time);
-  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->opacity());
+  EXPECT_FLOAT_EQ(0.7f, scrollbar_layer_->Opacity());
   // The thickness now gets big again.
   EXPECT_FLOAT_EQ(1.0f, scrollbar_layer_->thumb_thickness_scale_factor());
 }

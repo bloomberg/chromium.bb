@@ -180,7 +180,7 @@ TEST_F(LayerTreeHostCommonTest, EffectTreeTransformIdTest) {
   SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
                                gfx::PointF(10, 10), gfx::Size(100, 100), true,
                                false);
-  child->SetOpacity(0.f);
+  child->test_properties()->opacity = 0.f;
   ExecuteCalculateDrawProperties(parent);
   EffectTree& effect_tree =
       parent->layer_tree_impl()->property_trees()->effect_tree;
@@ -510,7 +510,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForSingleRenderSurface) {
                                true);
 
   // Child is set up so that a new render surface should be created.
-  child->SetOpacity(0.5f);
+  child->test_properties()->opacity = 0.5f;
   child->SetDrawsContent(true);
 
   gfx::Transform parent_layer_transform;
@@ -636,7 +636,7 @@ TEST_F(LayerTreeHostCommonTest, TransformsForReplica) {
                                true);
 
   // Child is set up so that a new render surface should be created.
-  child->SetOpacity(0.5f);
+  child->test_properties()->opacity = 0.5f;
 
   gfx::Transform parent_layer_transform;
   parent_layer_transform.Scale3d(2.0, 2.0, 1.0);
@@ -729,8 +729,8 @@ TEST_F(LayerTreeHostCommonTest, TransformsForRenderSurfaceHierarchy) {
 
   // In combination with descendant draws content, opacity != 1 forces the layer
   // to have a new render surface.
-  render_surface1->SetOpacity(0.5f);
-  render_surface2->SetOpacity(0.33f);
+  render_surface1->test_properties()->opacity = 0.5f;
+  render_surface2->test_properties()->opacity = 0.33f;
 
   // One-time setup of root layer
   gfx::Transform identity_matrix;
@@ -1294,7 +1294,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
   SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(10, 10), true, false,
                                false);
-  render_surface1->SetOpacity(0.f);
+  render_surface1->test_properties()->opacity = 0.f;
 
   LayerImplList render_surface_layer_list;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
@@ -1329,7 +1329,7 @@ TEST_F(LayerTreeHostCommonTest,
   SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(10, 10), true, false,
                                false);
-  render_surface1->SetOpacity(0.f);
+  render_surface1->test_properties()->opacity = 0.f;
   render_surface1->SetDrawsContent(true);
   child->SetDrawsContent(true);
   FilterOperations filters;
@@ -1426,7 +1426,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
                                true);
 
   child->SetBlendMode(blend_mode);
-  child->SetOpacity(0.5f);
+  child->test_properties()->opacity = 0.5f;
 
   ExecuteCalculateDrawProperties(parent);
 
@@ -1462,9 +1462,9 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceDrawOpacity) {
   surface1->SetDrawsContent(true);
   surface2->SetDrawsContent(true);
 
-  surface1->SetOpacity(0.5f);
-  not_surface->SetOpacity(0.5f);
-  surface2->SetOpacity(0.5f);
+  surface1->test_properties()->opacity = 0.5f;
+  not_surface->test_properties()->opacity = 0.5f;
+  surface2->test_properties()->opacity = 0.5f;
 
   ExecuteCalculateDrawProperties(root);
 
@@ -1524,10 +1524,10 @@ TEST_F(LayerTreeHostCommonTest, DrawOpacityWhenCannotRenderToSeparateSurface) {
                                gfx::PointF(), gfx::Size(100, 100), true, false,
                                false);
 
-  child1->SetOpacity(0.5f);
-  grand_child->SetOpacity(0.5f);
-  leaf_node1->SetOpacity(0.5f);
-  leaf_node2->SetOpacity(0.5f);
+  child1->test_properties()->opacity = 0.5f;
+  grand_child->test_properties()->opacity = 0.5f;
+  leaf_node1->test_properties()->opacity = 0.5f;
+  leaf_node2->test_properties()->opacity = 0.5f;
 
   // With surfaces enabled, each layer's draw opacity is the product of layer
   // opacities on the path from the layer to its render target, not including
@@ -1602,7 +1602,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfacesFlattenScreenSpaceTransform) {
   gfx::Transform rotation_about_y_axis;
   rotation_about_y_axis.RotateAboutYAxis(30.0);
   // Make |parent| have a render surface.
-  parent->SetOpacity(0.9f);
+  parent->test_properties()->opacity = 0.9f;
 
   const gfx::Transform identity_matrix;
   SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
@@ -1702,9 +1702,9 @@ TEST_F(LayerTreeHostCommonTest, ClipRectCullsRenderSurfaces) {
                                false);
 
   child->SetMasksToBounds(true);
-  child->SetOpacity(0.4f);
-  grand_child->SetOpacity(0.5f);
-  great_grand_child->SetOpacity(0.4f);
+  child->test_properties()->opacity = 0.4f;
+  grand_child->test_properties()->opacity = 0.5f;
+  great_grand_child->test_properties()->opacity = 0.4f;
 
   ExecuteCalculateDrawProperties(parent);
 
@@ -1750,8 +1750,8 @@ TEST_F(LayerTreeHostCommonTest, ClipRectCullsSurfaceWithoutVisibleContent) {
                                false);
 
   parent->SetMasksToBounds(true);
-  child->SetOpacity(0.4f);
-  grand_child->SetOpacity(0.4f);
+  child->test_properties()->opacity = 0.4f;
+  grand_child->test_properties()->opacity = 0.4f;
 
   ExecuteCalculateDrawProperties(parent);
 
@@ -2144,7 +2144,7 @@ TEST_F(LayerTreeHostCommonTest, DrawableContentRectForLayers) {
   grand_child3->SetMasksToBounds(true);
 
   // Force child to be a render surface.
-  child->SetOpacity(0.4f);
+  child->test_properties()->opacity = 0.4f;
 
   ExecuteCalculateDrawProperties(parent);
 
@@ -2217,11 +2217,11 @@ TEST_F(LayerTreeHostCommonTest, ClipRectIsPropagatedCorrectlyToSurfaces) {
   grand_child4->SetMasksToBounds(true);
 
   // Force everyone to be a render surface.
-  child->SetOpacity(0.4f);
-  grand_child1->SetOpacity(0.5f);
-  grand_child2->SetOpacity(0.5f);
-  grand_child3->SetOpacity(0.5f);
-  grand_child4->SetOpacity(0.5f);
+  child->test_properties()->opacity = 0.4f;
+  grand_child1->test_properties()->opacity = 0.5f;
+  grand_child2->test_properties()->opacity = 0.5f;
+  grand_child3->test_properties()->opacity = 0.5f;
+  grand_child4->test_properties()->opacity = 0.5f;
 
   ExecuteCalculateDrawProperties(parent);
 
@@ -4215,8 +4215,8 @@ TEST_F(LayerTreeHostCommonTest, BackFaceCullingWithoutPreserves3d) {
   backface_matrix.Translate(-50.0, -50.0);
 
   // Having a descendant and opacity will force these to have render surfaces.
-  front_facing_surface->SetOpacity(0.5f);
-  back_facing_surface->SetOpacity(0.5f);
+  front_facing_surface->test_properties()->opacity = 0.5f;
+  back_facing_surface->test_properties()->opacity = 0.5f;
 
   // Nothing preserves 3d. According to current W3C CSS gfx::Transforms spec,
   // these layers should blindly use their own local transforms to determine
@@ -4998,7 +4998,7 @@ TEST_F(LayerTreeHostCommonTest, TransparentChildRenderSurfaceCreation) {
   SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(10, 10), true, false);
 
-  child->SetOpacity(0.5f);
+  child->test_properties()->opacity = 0.5f;
 
   ExecuteCalculateDrawProperties(root);
 
@@ -5027,7 +5027,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
                                gfx::PointF(), gfx::Size(50, 50), true, false,
                                false);
   child->SetDrawsContent(true);
-  child->SetOpacity(0.0f);
+  child->test_properties()->opacity = 0.0f;
 
   const int child_id = child->id();
   root->AddChild(std::move(child));
@@ -5056,7 +5056,7 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
 
   // If the root itself is hidden, the child should not be drawn even if it has
   // an animating opacity.
-  root_layer->SetOpacity(0.0f);
+  root_layer->test_properties()->opacity = 0.0f;
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
   LayerImplList render_surface_layer_list2;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs2(
@@ -5072,8 +5072,8 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
 
   // A layer should be drawn and it should contribute to drawn surface when
   // it has animating opacity even if it has opacity 0.
-  root_layer->SetOpacity(1.0f);
-  child_ptr->SetOpacity(0.0f);
+  root_layer->test_properties()->opacity = 1.0f;
+  child_ptr->test_properties()->opacity = 0.0f;
   root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
   LayerImplList render_surface_layer_list3;
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs3(
@@ -5249,7 +5249,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   // Case 7: Translucent.
   child_->SetTransform(identity_matrix);
   child_->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  child_->SetOpacity(0.5f);
+  child_->test_properties()->opacity = 0.5f;
   ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
@@ -5259,7 +5259,7 @@ TEST_P(LCDTextTest, CanUseLCDText) {
   // Case 8: Sanity check: restore transform and opacity.
   child_->SetTransform(identity_matrix);
   child_->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  child_->SetOpacity(1.f);
+  child_->test_properties()->opacity = 1.f;
   ExecuteCalculateDrawProperties(root_, 1.f, 1.f, NULL, can_use_lcd_text_,
                                  layers_always_allowed_lcd_text_);
   EXPECT_EQ(expect_lcd_text, root_->can_use_lcd_text());
@@ -5295,7 +5295,7 @@ TEST_P(LCDTextTest, CanUseLCDTextWithAnimation) {
   EXPECT_EQ(expect_lcd_text, grand_child_->can_use_lcd_text());
 
   // Add opacity animation.
-  child_->SetOpacity(0.9f);
+  child_->test_properties()->opacity = 0.9f;
   child_->layer_tree_impl()->property_trees()->needs_rebuild = true;
   AddOpacityTransitionToLayerWithPlayer(child_->id(), timeline(), 10.0, 0.9f,
                                         0.1f, false);
@@ -8711,10 +8711,10 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   child_ptr->test_properties()->hide_layer_and_subtree = false;
 
-  child_ptr->SetOpacity(0.f);
+  child_ptr->OnOpacityAnimated(0.f);
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
-  child_ptr->SetOpacity(1.f);
+  child_ptr->test_properties()->opacity = 1.f;
 
   root_ptr->SetTransform(singular);
   // Force transform tree to have a node for child, so that ancestor's
@@ -8726,14 +8726,14 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   root_ptr->SetTransform(identity);
   child_ptr->SetTransform(identity);
 
-  root_ptr->SetOpacity(0.f);
-  child_ptr->SetOpacity(0.7f);
+  root_ptr->test_properties()->opacity = 0.f;
+  child_ptr->test_properties()->opacity = 0.7f;
   host_impl.active_tree()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
-  root_ptr->SetOpacity(1.f);
+  root_ptr->test_properties()->opacity = 1.f;
 
-  child_ptr->SetOpacity(0.f);
+  child_ptr->test_properties()->opacity = 0.f;
   // Now, even though child has zero opacity, we will configure |grandchild| and
   // |greatgrandchild| in several ways that should force the subtree to be
   // processed anyhow.
@@ -8744,7 +8744,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayerImpl) {
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
 
   host_impl.active_tree()->property_trees()->effect_tree.ClearCopyRequests();
-  child_ptr->SetOpacity(1.f);
+  child_ptr->test_properties()->opacity = 1.f;
 
   // A double sided render surface with backface visible should not be skipped
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
@@ -8903,7 +8903,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingPendingLayerImpl) {
       ->animation_host()
       ->GetElementAnimationsForElementId(root_ptr->id())
       ->AddAnimation(std::move(animation));
-  root_ptr->SetOpacity(0);
+  root_ptr->test_properties()->opacity = 0.f;
   grandchild_ptr->set_visible_layer_rect(gfx::Rect());
   root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
@@ -8950,7 +8950,7 @@ TEST_F(LayerTreeHostCommonTest, SkippingLayer) {
   child->test_properties()->double_sided = true;
   child->SetTransform(identity);
 
-  child->SetOpacity(0.f);
+  child->test_properties()->opacity = 0.f;
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root);
   EXPECT_EQ(gfx::Rect(0, 0), child->visible_layer_rect());
@@ -9448,7 +9448,7 @@ TEST_F(LayerTreeHostCommonTest, LayerWithInputHandlerAndZeroOpacity) {
 
   render_surface->SetMasksToBounds(true);
   test_layer->SetDrawsContent(true);
-  test_layer->SetOpacity(0);
+  test_layer->test_properties()->opacity = 0.f;
   test_layer->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 20, 20));
 
   ExecuteCalculateDrawProperties(root);

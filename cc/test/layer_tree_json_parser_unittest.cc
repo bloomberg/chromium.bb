@@ -39,8 +39,8 @@ bool LayerTreesMatch(LayerImpl* const layer_impl,
                                         layer->contents_opaque()));
   RETURN_IF_EXPECTATION_FAILS(EXPECT_EQ(layer_impl->scrollable(),
                                         layer->scrollable()));
-  RETURN_IF_EXPECTATION_FAILS(EXPECT_FLOAT_EQ(layer_impl->opacity(),
-                                              layer->opacity()));
+  RETURN_IF_EXPECTATION_FAILS(
+      EXPECT_FLOAT_EQ(layer_impl->Opacity(), layer->opacity()));
   RETURN_IF_EXPECTATION_FAILS(
       EXPECT_EQ(layer_impl->touch_event_handler_region(),
                 layer->touch_event_handler_region()));

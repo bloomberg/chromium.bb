@@ -615,7 +615,8 @@ static inline bool HasPotentialOpacityAnimation(Layer* layer) {
 }
 
 static inline bool HasPotentialOpacityAnimation(LayerImpl* layer) {
-  return layer->HasPotentiallyRunningOpacityAnimation();
+  return layer->HasPotentiallyRunningOpacityAnimation() ||
+         layer->test_properties()->opacity_can_animate;
 }
 
 static inline bool DoubleSided(Layer* layer) {
@@ -662,8 +663,17 @@ static inline float EffectiveOpacity(Layer* layer) {
 }
 
 static inline float EffectiveOpacity(LayerImpl* layer) {
-  return layer->test_properties()->hide_layer_and_subtree ? 0.f
-                                                          : layer->opacity();
+  return layer->test_properties()->hide_layer_and_subtree
+             ? 0.f
+             : layer->test_properties()->opacity;
+}
+
+static inline float Opacity(Layer* layer) {
+  return layer->opacity();
+}
+
+static inline float Opacity(LayerImpl* layer) {
+  return layer->test_properties()->opacity;
 }
 
 static inline bool HideLayerAndSubtree(Layer* layer) {
@@ -846,7 +856,7 @@ bool AddEffectNodeIfNeeded(
         .push_back(node.owner_id);
   }
 
-  node.data.opacity = layer->opacity();
+  node.data.opacity = Opacity(layer);
   node.data.has_render_surface = should_create_render_surface;
   node.data.has_copy_request = HasCopyRequest(layer);
   node.data.has_background_filters = !layer->background_filters().IsEmpty();

@@ -132,7 +132,7 @@ TEST_F(CompositorMutableStateTest, MutableStateMutableProperties)
     OwnPtr<CompositorMutableState> state(provider.getMutableStateFor(layer->element_id()));
     EXPECT_TRUE(state.get());
 
-    EXPECT_EQ(1.0, rootLayer()->opacity());
+    EXPECT_EQ(1.0, rootLayer()->Opacity());
     EXPECT_EQ(gfx::Transform().ToString(), rootLayer()->transform().ToString());
     EXPECT_EQ(0.0, layer->CurrentScrollOffset().x());
     EXPECT_EQ(0.0, layer->CurrentScrollOffset().y());
@@ -143,7 +143,7 @@ TEST_F(CompositorMutableStateTest, MutableStateMutableProperties)
     state->setScrollLeft(1.0);
     state->setScrollTop(1.0);
 
-    EXPECT_EQ(0.5, rootLayer()->opacity());
+    EXPECT_EQ(0.5, rootLayer()->Opacity());
     EXPECT_EQ(zero.ToString(), rootLayer()->transform().ToString());
     EXPECT_EQ(1.0, layer->CurrentScrollOffset().x());
     EXPECT_EQ(1.0, layer->CurrentScrollOffset().y());
