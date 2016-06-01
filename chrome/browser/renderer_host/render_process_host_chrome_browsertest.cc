@@ -592,8 +592,15 @@ class ChromeRenderProcessHostBackgroundingTest
 
 // Test to make sure that a process is backgrounded when the audio stops playing
 // from the active tab and there is an immediate tab switch.
+// Disable on Windows due to ongoing flakiness. (crbug.com/616421)
+#if defined(OS_WIN)
+#define MAYBE_ProcessPriorityAfterStoppedAudio \
+  DISABLED_ProcessPriorityAfterStoppedAudio
+#else
+#define MAYBE_ProcessPriorityAfterStoppedAudio ProcessPriorityAfterStoppedAudio
+#endif
 IN_PROC_BROWSER_TEST_F(ChromeRenderProcessHostBackgroundingTest,
-                       ProcessPriorityAfterStoppedAudio) {
+                       MAYBE_ProcessPriorityAfterStoppedAudio) {
   // This test is invalid on platforms that can't background.
   if (!base::Process::CanBackgroundProcesses())
     return;
