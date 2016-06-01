@@ -96741,6 +96741,18 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="ServiceWorkerCache.CacheStorage"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="ServiceWorkerSpecialApps" separator=".">
+  <suffix name="inbox" label="Custom histogram for Inbox"/>
+  <affected-histogram
+      name="PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
+  <affected-histogram
+      name="PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToLoadEventFired"/>
+  <affected-histogram
+      name="PageLoad.Clients.ServiceWorker.PaintTiming.NavigationToFirstContentfulPaint"/>
+  <affected-histogram
+      name="PageLoad.Clients.ServiceWorker.PaintTiming.ParseStartToFirstContentfulPaint"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="SessionRestoreTabCountMemoryPressure">
   <suffix name="MemoryPressure"
       label="Total tabs involved in session restore that encountered memory

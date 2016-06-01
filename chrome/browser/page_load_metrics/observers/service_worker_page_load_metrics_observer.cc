@@ -24,6 +24,19 @@ const char kHistogramServiceWorkerDomContentLoaded[] =
 const char kHistogramServiceWorkerLoad[] =
     "PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToLoadEventFired";
 
+const char kHistogramServiceWorkerFirstContentfulPaintInbox[] =
+    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "NavigationToFirstContentfulPaint.inbox";
+const char kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox[] =
+    "PageLoad.Clients.ServiceWorker.PaintTiming."
+    "ParseStartToFirstContentfulPaint.inbox";
+const char kHistogramServiceWorkerDomContentLoadedInbox[] =
+    "PageLoad.Clients.ServiceWorker.DocumentTiming."
+    "NavigationToDOMContentLoadedEventFired.inbox";
+const char kHistogramServiceWorkerLoadInbox[] =
+    "PageLoad.Clients.ServiceWorker.DocumentTiming.NavigationToLoadEventFired."
+    "inbox";
+
 }  // namespace internal
 
 namespace {
@@ -35,6 +48,10 @@ bool IsServiceWorkerControlled(
               WebLoadingBehaviorServiceWorkerControlled) != 0;
 }
 
+bool IsInboxSite(const GURL& url) {
+  return url.host() == "inbox.google.com";
+}
+
 }  // namespace
 
 ServiceWorkerPageLoadMetricsObserver::ServiceWorkerPageLoadMetricsObserver() {}
@@ -44,17 +61,26 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaint(
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!IsServiceWorkerControlled(info))
     return;
-  if (WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
-                                              info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerFirstContentfulPaint,
-                        timing.first_contentful_paint);
-    PAGE_LOAD_HISTOGRAM(
-        internal::kHistogramServiceWorkerParseStartToFirstContentfulPaint,
-        timing.first_contentful_paint - timing.parse_start);
-  } else {
+  if (!WasStartedInForegroundEventInForeground(timing.first_contentful_paint,
+                                               info)) {
     PAGE_LOAD_HISTOGRAM(
         internal::kBackgroundHistogramServiceWorkerFirstContentfulPaint,
         timing.first_contentful_paint);
+    return;
+  }
+  PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerFirstContentfulPaint,
+                      timing.first_contentful_paint);
+  PAGE_LOAD_HISTOGRAM(
+      internal::kHistogramServiceWorkerParseStartToFirstContentfulPaint,
+      timing.first_contentful_paint - timing.parse_start);
+
+  if (IsInboxSite(info.committed_url)) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramServiceWorkerFirstContentfulPaintInbox,
+        timing.first_contentful_paint);
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox,
+        timing.first_contentful_paint - timing.parse_start);
   }
 }
 
@@ -63,9 +89,14 @@ void ServiceWorkerPageLoadMetricsObserver::OnDomContentLoadedEventStart(
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!IsServiceWorkerControlled(info))
     return;
-  if (WasStartedInForegroundEventInForeground(
+  if (!WasStartedInForegroundEventInForeground(
           timing.dom_content_loaded_event_start, info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerDomContentLoaded,
+    return;
+  }
+  PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerDomContentLoaded,
+                      timing.dom_content_loaded_event_start);
+  if (IsInboxSite(info.committed_url)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerDomContentLoadedInbox,
                         timing.dom_content_loaded_event_start);
   }
 }
@@ -75,8 +106,12 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadEventStart(
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!IsServiceWorkerControlled(info))
     return;
-  if (WasStartedInForegroundEventInForeground(timing.load_event_start, info)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoad,
-                        timing.load_event_start);
+  if (!WasStartedInForegroundEventInForeground(timing.load_event_start, info))
+    return;
+  PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoad,
+                      timing.load_event_start);
+  if (IsInboxSite(info.committed_url)) {
+    PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoadInbox,
+                        timing.dom_content_loaded_event_start);
   }
 }
