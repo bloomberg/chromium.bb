@@ -498,10 +498,13 @@
       # See http://clang.llvm.org/docs/UsersManual.html
       'ubsan%': 0,
       'ubsan_blacklist%': '<(PRODUCT_DIR)/../../tools/ubsan/blacklist.txt',
+      'ubsan_security_blacklist%': '<(PRODUCT_DIR)/../../tools/ubsan/security_blacklist.txt',
       'ubsan_vptr_blacklist%': '<(PRODUCT_DIR)/../../tools/ubsan/vptr_blacklist.txt',
 
       # Enable building with UBsan's vptr (Clang's -fsanitize=vptr option).
       # -fsanitize=vptr only works with clang, but ubsan_vptr=1 implies clang=1
+      # ubsan_security also enables UBSan's vptr.
+      'ubsan_security%': 0,
       'ubsan_vptr%': 0,
 
       # Use dynamic libraries instrumented by one of the sanitizers
@@ -1206,8 +1209,10 @@
     'tsan_blacklist%': '<(tsan_blacklist)',
     'ubsan%': '<(ubsan)',
     'ubsan_blacklist%': '<(ubsan_blacklist)',
-    'ubsan_vptr_blacklist%': '<(ubsan_vptr_blacklist)',
+    'ubsan_security%': '<(ubsan_security)',
+    'ubsan_security_blacklist%': '<(ubsan_security_blacklist)',
     'ubsan_vptr%': '<(ubsan_vptr)',
+    'ubsan_vptr_blacklist%': '<(ubsan_vptr_blacklist)',
     'use_instrumented_libraries%': '<(use_instrumented_libraries)',
     'use_prebuilt_instrumented_libraries%': '<(use_prebuilt_instrumented_libraries)',
     'use_custom_libcxx%': '<(use_custom_libcxx)',
@@ -1598,7 +1603,7 @@
           # compiler_version works with clang.
           # TODO(glider): set clang to 1 earlier for ASan and TSan builds so
           # that it takes effect here.
-          ['clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0 and ubsan==0 and ubsan_vptr==0', {
+          ['clang==0 and asan==0 and lsan==0 and tsan==0 and msan==0 and ubsan==0 and ubsan_security==0 and ubsan_vptr==0', {
             'binutils_version%': '<!pymod_do_main(compiler_version target assembler)',
           }],
           # On Android we know the binutils version in the toolchain.
@@ -2244,6 +2249,9 @@
         'use_custom_libcxx%': 1,
       }],
       ['ubsan==1', {
+        'clang%': 1,
+      }],
+      ['ubsan_security==1', {
         'clang%': 1,
       }],
       ['ubsan_vptr==1', {
@@ -3573,7 +3581,7 @@
       },
     }],
     # -Wl,-z,-defs doesn't work with the sanitiziers, http://crbug.com/452065
-    ['(OS=="linux" or OS=="android") and asan==0 and msan==0 and tsan==0 and ubsan==0 and ubsan_vptr==0 and cfi_diag==0', {
+    ['(OS=="linux" or OS=="android") and asan==0 and msan==0 and tsan==0 and ubsan==0 and ubsan_security==0 and ubsan_vptr==0 and cfi_diag==0', {
       'target_defaults': {
         'ldflags': [
           '-Wl,-z,defs',
@@ -4300,7 +4308,7 @@
           }],
           # Common options for AddressSanitizer, LeakSanitizer,
           # ThreadSanitizer, MemorySanitizer and non-official CFI builds.
-          ['asan==1 or lsan==1 or tsan==1 or msan==1 or ubsan==1 or ubsan_vptr==1 or '
+          ['asan==1 or lsan==1 or tsan==1 or msan==1 or ubsan==1 or ubsan_security==1 or ubsan_vptr==1 or '
            '(cfi_vptr==1 and buildtype!="Official")', {
             'target_conditions': [
               ['_toolset=="target"', {
@@ -4391,6 +4399,28 @@
                 ],
                 'ldflags': [
                   '-fsanitize=undefined',
+                ],
+                'defines': [
+                  'UNDEFINED_SANITIZER',
+                ],
+              }],
+            ],
+          }],
+          ['ubsan_security==1', {
+            'target_conditions': [
+              ['_toolset=="target"', {
+                'cflags': [
+                  '-fsanitize=signed-integer-overflow,shift,vptr',
+                  '-fsanitize-blacklist=<(ubsan_security_blacklist)',
+                ],
+                'cflags_cc!': [
+                  '-fno-rtti',
+                ],
+                'cflags!': [
+                  '-fno-rtti',
+                ],
+                'ldflags': [
+                  '-fsanitize=signed-integer-overflow,shift,vptr',
                 ],
                 'defines': [
                   'UNDEFINED_SANITIZER',
@@ -4580,7 +4610,7 @@
                 ],
                 'conditions': [
                   # TODO(thestig): Enable this for disabled cases.
-                  [ 'buildtype!="Official" and chromeos==0 and release_valgrind_build==0 and asan==0 and lsan==0 and tsan==0 and msan==0 and ubsan==0 and ubsan_vptr==0', {
+                  [ 'buildtype!="Official" and chromeos==0 and release_valgrind_build==0 and asan==0 and lsan==0 and tsan==0 and msan==0 and ubsan==0 and ubsan_security==0 and ubsan_vptr==0', {
                     'ldflags': [
                       '-Wl,--detect-odr-violations',
                     ],
