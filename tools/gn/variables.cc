@@ -812,6 +812,9 @@ const char kData_Help[] =
     "  However, no verification is done on these so GN doesn't enforce this.\n"
     "  The paths are just rebased and passed along when requested.\n"
     "\n"
+    "  Note: On iOS and OS X, create_bundle targets will not be recursed\n"
+    "  into when gathering data. See \"gn help create_bundle\" for details.\n"
+    "\n"
     "  See \"gn help runtime_deps\" for how these are used.\n";
 
 const char kDataDeps[] = "data_deps";
@@ -828,6 +831,10 @@ const char kDataDeps_Help[] =
     "\n"
     "  This is normally used for things like plugins or helper programs that\n"
     "  a target needs at runtime.\n"
+    "\n"
+    "  Note: On iOS and OS X, create_bundle targets will not be recursed\n"
+    "  into when gathering data_deps. See \"gn help create_bundle\" for\n"
+    "  details.\n"
     "\n"
     "  See also \"gn help deps\" and \"gn help data\".\n"
     "\n"
