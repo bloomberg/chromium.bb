@@ -70,7 +70,8 @@ void MoveEventHandler::Detach() {
 void MoveEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   toplevel_window_event_handler_.OnMouseEvent(event, wm_window_);
   if (!toplevel_window_event_handler_.is_drag_in_progress() &&
-      event->type() == ui::ET_POINTER_MOVED) {
+      (event->type() == ui::ET_POINTER_MOVED ||
+       event->type() == ui::ET_MOUSE_MOVED)) {
     const int hit_test_location =
         wm_window_->GetNonClientComponent(event->location());
     window_manager_client_->SetNonClientCursor(
