@@ -866,6 +866,10 @@ if (is_win) {
         "@loader_path/../../../../..",
         "-Wl,-reexport_library,libchrome_dll.dylib",
       ]
+
+      data_deps = [
+        ":chrome_dll",
+      ]
     }
   }
 
