@@ -108,6 +108,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/chromeos_constants.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
@@ -2813,6 +2814,10 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
         base::Bind(&ChromePasswordManagerClient::BindCredentialManager,
                    render_frame_host));
   }
+
+  registry->AddService(
+      base::Bind(&autofill::ContentAutofillDriverFactory::BindAutofillDriver,
+                 render_frame_host));
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
   ChromeServiceRegistrarAndroid::RegisterRenderFrameMojoServices(

@@ -42,13 +42,6 @@ ContentAutofillDriver::ContentAutofillDriver(
                                             enable_download_manager)),
       autofill_external_delegate_(autofill_manager_.get(), this) {
   autofill_manager_->SetExternalDelegate(&autofill_external_delegate_);
-
-  // ContentAutofillDriver is guaranteed to outlive |render_frame_host|,
-  // as the ContentAutofillDriver instance will be destroyed in
-  // ContentAutofillDriverFactory::RenderFrameDeleted, which is a notification
-  // of |render_frame_host| destruction.
-  render_frame_host->GetServiceRegistry()->AddService(
-      base::Bind(&ContentAutofillDriver::BindRequest, base::Unretained(this)));
 }
 
 ContentAutofillDriver::~ContentAutofillDriver() {}

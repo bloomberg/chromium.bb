@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/supports_user_data.h"
+#include "components/autofill/content/public/interfaces/autofill_driver.mojom.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 
@@ -40,6 +41,8 @@ class ContentAutofillDriverFactory : public content::WebContentsObserver,
       AutofillManager::AutofillDownloadManagerState enable_download_manager);
   static ContentAutofillDriverFactory* FromWebContents(
       content::WebContents* contents);
+  static void BindAutofillDriver(content::RenderFrameHost* render_frame_host,
+                                 mojom::AutofillDriverRequest request);
 
   // Gets the |ContentAutofillDriver| associated with |render_frame_host|.
   // |render_frame_host| must be owned by |web_contents()|.

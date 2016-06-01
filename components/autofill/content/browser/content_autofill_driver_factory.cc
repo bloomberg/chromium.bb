@@ -55,6 +55,30 @@ ContentAutofillDriverFactory* ContentAutofillDriverFactory::FromWebContents(
       kContentAutofillDriverFactoryWebContentsUserDataKey));
 }
 
+// static
+void ContentAutofillDriverFactory::BindAutofillDriver(
+    content::RenderFrameHost* render_frame_host,
+    mojom::AutofillDriverRequest request) {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  // We try to bind to the driver of this render frame host,
+  // but if driver is not ready for this render frame host for now,
+  // the request will be just dropped, this would cause closing the message pipe
+  // which would raise connection error to peer side.
+  // Peer side could reconnect later when needed.
+  if (!web_contents)
+    return;
+
+  ContentAutofillDriverFactory* factory =
+      ContentAutofillDriverFactory::FromWebContents(web_contents);
+  if (!factory)
+    return;
+
+  ContentAutofillDriver* driver = factory->DriverForFrame(render_frame_host);
+  if (driver)
+    driver->BindRequest(std::move(request));
+}
+
 ContentAutofillDriverFactory::ContentAutofillDriverFactory(
     content::WebContents* web_contents,
     AutofillClient* client,

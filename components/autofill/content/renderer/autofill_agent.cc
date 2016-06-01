@@ -771,7 +771,8 @@ void AutofillAgent::ajaxSucceeded() {
 }
 
 void AutofillAgent::ConnectToMojoAutofillDriverIfNeeded() {
-  if (mojo_autofill_driver_)
+  if (mojo_autofill_driver_.is_bound() &&
+      !mojo_autofill_driver_.encountered_error())
     return;
 
   render_frame()->GetServiceRegistry()->ConnectToRemoteService(
