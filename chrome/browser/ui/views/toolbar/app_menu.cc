@@ -22,6 +22,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
@@ -630,17 +631,17 @@ class AppMenu::ZoomView : public AppMenuView {
   }
 
   void UpdateZoomControls() {
-    WebContents* selected_tab = GetActiveWebContents();
+    WebContents* contents = GetActiveWebContents();
     int zoom = 100;
-    if (selected_tab) {
+    if (contents) {
       auto zoom_controller =
-          ui_zoom::ZoomController::FromWebContents(selected_tab);
+          ui_zoom::ZoomController::FromWebContents(contents);
       if (zoom_controller)
         zoom = zoom_controller->GetZoomPercent();
       increment_button_->SetEnabled(zoom <
-                                    selected_tab->GetMaximumZoomPercent());
+                                    contents->GetMaximumZoomPercent());
       decrement_button_->SetEnabled(zoom >
-                                    selected_tab->GetMinimumZoomPercent());
+                                    contents->GetMinimumZoomPercent());
     }
     zoom_label_->SetText(base::FormatPercent(zoom));
     zoom_label_max_width_valid_ = false;

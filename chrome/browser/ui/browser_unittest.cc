@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
@@ -85,6 +86,37 @@ TEST_F(BrowserUnitTest, DisablePrintOnCrashedTab) {
   EXPECT_TRUE(contents->IsCrashed());
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_PRINT));
   EXPECT_FALSE(chrome::CanPrint(browser()));
+}
+
+// Ensure the zoom-in and zoom-out commands get disabled when a tab crashes.
+TEST_F(BrowserUnitTest, DisableZoomOnCrashedTab) {
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+
+  WebContents* contents = CreateTestWebContents();
+  tab_strip_model->AppendWebContents(contents, true);
+  WebContentsTester::For(contents)->NavigateAndCommit(GURL("about:blank"));
+  ui_zoom::ZoomController* zoom_controller =
+    ui_zoom::ZoomController::FromWebContents(contents);
+  EXPECT_TRUE(zoom_controller->SetZoomLevel(zoom_controller->
+                                            GetDefaultZoomLevel()));
+
+  CommandUpdater* command_updater =
+      browser()->command_controller()->command_updater();
+
+  EXPECT_TRUE(zoom_controller->IsAtDefaultZoom());
+  EXPECT_FALSE(contents->IsCrashed());
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_ZOOM_PLUS));
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_ZOOM_MINUS));
+  EXPECT_TRUE(chrome::CanZoomIn(contents));
+  EXPECT_TRUE(chrome::CanZoomOut(contents));
+
+  contents->SetIsCrashed(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
+
+  EXPECT_TRUE(contents->IsCrashed());
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_ZOOM_PLUS));
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_ZOOM_MINUS));
+  EXPECT_FALSE(chrome::CanZoomIn(contents));
+  EXPECT_FALSE(chrome::CanZoomOut(contents));
 }
 
 class BrowserBookmarkBarTest : public BrowserWithTestWindowTest {

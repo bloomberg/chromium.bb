@@ -579,16 +579,15 @@ void CloseTab(Browser* browser) {
 }
 
 bool CanZoomIn(content::WebContents* contents) {
-  ui_zoom::ZoomController* zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(contents);
-  return zoom_controller->GetZoomPercent() != contents->GetMaximumZoomPercent();
+  return contents && !contents->IsCrashed() &&
+         ui_zoom::ZoomController::FromWebContents(contents)->GetZoomPercent() !=
+             contents->GetMaximumZoomPercent();
 }
 
 bool CanZoomOut(content::WebContents* contents) {
-  ui_zoom::ZoomController* zoom_controller =
-      ui_zoom::ZoomController::FromWebContents(contents);
-  return zoom_controller->GetZoomPercent() !=
-      contents->GetMinimumZoomPercent();
+  return contents && !contents->IsCrashed() &&
+         ui_zoom::ZoomController::FromWebContents(contents)->GetZoomPercent() !=
+             contents->GetMinimumZoomPercent();
 }
 
 bool CanResetZoom(content::WebContents* contents) {
