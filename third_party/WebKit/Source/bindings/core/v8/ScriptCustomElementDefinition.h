@@ -35,8 +35,8 @@ public:
 
     virtual ~ScriptCustomElementDefinition() = default;
 
-    v8::Local<v8::Object> constructor(ScriptState*) const;
-    v8::Local<v8::Object> prototype(ScriptState*) const;
+    v8::Local<v8::Object> constructor() const;
+    v8::Local<v8::Object> prototype() const;
 
 private:
     ScriptCustomElementDefinition(
@@ -45,6 +45,7 @@ private:
         const v8::Local<v8::Object>& constructor,
         const v8::Local<v8::Object>& prototype);
 
+    RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Object> m_constructor;
     ScopedPersistent<v8::Object> m_prototype;
 };

@@ -67,7 +67,7 @@ void V8HTMLElement::constructorCustom(
 
     if (!v8CallBoolean(wrapper->SetPrototype(
         scriptState->context(),
-        def->prototype(scriptState)))) {
+        def->prototype()))) {
         return;
     }
 }

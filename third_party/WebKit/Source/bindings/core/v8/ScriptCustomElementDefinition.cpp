@@ -109,6 +109,7 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
     const v8::Local<v8::Object>& constructor,
     const v8::Local<v8::Object>& prototype)
     : CustomElementDefinition(descriptor)
+    , m_scriptState(scriptState)
     , m_constructor(scriptState->isolate(), constructor)
     , m_prototype(scriptState->isolate(), prototype)
 {
@@ -119,18 +120,16 @@ ScriptCustomElementDefinition::ScriptCustomElementDefinition(
     m_prototype.setPhantom();
 }
 
-v8::Local<v8::Object> ScriptCustomElementDefinition::constructor(
-    ScriptState* scriptState) const
+v8::Local<v8::Object> ScriptCustomElementDefinition::constructor() const
 {
     DCHECK(!m_constructor.isEmpty());
-    return m_constructor.newLocal(scriptState->isolate());
+    return m_constructor.newLocal(m_scriptState->isolate());
 }
 
-v8::Local<v8::Object> ScriptCustomElementDefinition::prototype(
-    ScriptState* scriptState) const
+v8::Local<v8::Object> ScriptCustomElementDefinition::prototype() const
 {
     DCHECK(!m_prototype.isEmpty());
-    return m_prototype.newLocal(scriptState->isolate());
+    return m_prototype.newLocal(m_scriptState->isolate());
 }
 
 } // namespace blink
