@@ -4,6 +4,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 
+#include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/system/chromeos/network/network_observer.h"
@@ -12,7 +13,6 @@
 #include "ash/test/ash_interactive_ui_test_base.h"
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_volume_control_delegate.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/run_loop.h"

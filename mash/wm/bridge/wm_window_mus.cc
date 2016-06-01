@@ -4,11 +4,11 @@
 
 #include "mash/wm/bridge/wm_window_mus.h"
 
-#include "ash/wm/common/container_finder.h"
-#include "ash/wm/common/window_state.h"
-#include "ash/wm/common/wm_layout_manager.h"
-#include "ash/wm/common/wm_window_observer.h"
-#include "ash/wm/common/wm_window_property.h"
+#include "ash/common/wm/container_finder.h"
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_layout_manager.h"
+#include "ash/common/wm/wm_window_observer.h"
+#include "ash/common/wm/wm_window_property.h"
 #include "components/mus/public/cpp/property_type_converters.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"

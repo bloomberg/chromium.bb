@@ -5,7 +5,7 @@
 #ifndef ASH_SHELL_WINDOW_IDS_H_
 #define ASH_SHELL_WINDOW_IDS_H_
 
-#include "ash/wm/common/wm_shell_window_ids.h"
+#include "ash/common/wm/wm_shell_window_ids.h"
 
 // Declarations of ids of special shell windows.
 

@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "ash/wm/common/shelf/wm_shelf.h"
+#include "ash/common/wm/shelf/wm_shelf.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 

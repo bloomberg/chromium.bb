@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/wm/common/window_state_observer.h"
+#include "ash/common/wm/window_state_observer.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/exo/surface_delegate.h"
@@ -226,7 +226,7 @@ class ShellSurface : public SurfaceDelegate,
   const gfx::Rect initial_bounds_;
   const bool activatable_;
   const bool resizeable_;
-  // Container Window Id (see ash/wm/common/wm_shell_window_ids.h)
+  // Container Window Id (see ash/common/wm/wm_shell_window_ids.h)
   const int container_;
   base::string16 title_;
   std::string application_id_;

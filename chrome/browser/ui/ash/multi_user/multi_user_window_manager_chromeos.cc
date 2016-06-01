@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
@@ -13,7 +14,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/auto_reset.h"

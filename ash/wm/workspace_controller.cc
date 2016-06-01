@@ -6,15 +6,15 @@
 
 #include <utility>
 
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/workspace/workspace_layout_manager.h"
+#include "ash/common/wm/workspace/workspace_layout_manager_backdrop_delegate.h"
+#include "ash/common/wm/workspace/workspace_layout_manager_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/window_state.h"
-#include "ash/wm/common/workspace/workspace_layout_manager.h"
-#include "ash/wm/common/workspace/workspace_layout_manager_backdrop_delegate.h"
-#include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"

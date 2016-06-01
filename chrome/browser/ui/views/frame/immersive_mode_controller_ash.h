@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/wm/common/window_state_observer.h"
+#include "ash/common/wm/window_state_observer.h"
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"

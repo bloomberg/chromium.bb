@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 
+#include "ash/common/wm/window_state.h"
 #include "ash/shelf/shelf_util.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/bind.h"

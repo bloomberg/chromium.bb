@@ -4,10 +4,10 @@
 
 #include "ash/wm/ash_focus_rules.h"
 
+#include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"

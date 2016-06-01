@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/common/wm/window_positioning_utils.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/display/display_manager.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_model.h"
@@ -17,8 +19,6 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/window_positioning_utils.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

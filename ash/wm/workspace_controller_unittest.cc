@@ -6,6 +6,9 @@
 
 #include <map>
 
+#include "ash/common/wm/panels/panel_layout_manager.h"
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/workspace/workspace_window_resizer.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -17,9 +20,6 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/panels/panel_layout_manager.h"
-#include "ash/wm/common/window_state.h"
-#include "ash/wm/common/workspace/workspace_window_resizer.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_number_conversions.h"

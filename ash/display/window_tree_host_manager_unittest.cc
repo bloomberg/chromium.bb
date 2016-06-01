@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "ash/ash_switches.h"
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_event.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
@@ -20,8 +22,6 @@
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/wm/common/window_state.h"
-#include "ash/wm/common/wm_event.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
 #include "ui/aura/client/focus_change_observer.h"

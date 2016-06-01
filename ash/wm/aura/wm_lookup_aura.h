@@ -5,7 +5,7 @@
 #ifndef ASH_WM_AURA_WM_LOOKUP_AURA_H_
 #define ASH_WM_AURA_WM_LOOKUP_AURA_H_
 
-#include "ash/wm/common/wm_lookup.h"
+#include "ash/common/wm/wm_lookup.h"
 #include "base/macros.h"
 
 namespace ash {

@@ -11,12 +11,12 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
-#include "ash/wm/common/window_state.h"
-#include "ash/wm/common/wm_lookup.h"
-#include "ash/wm/common/wm_root_window_controller.h"
-#include "ash/wm/common/wm_screen_util.h"
-#include "ash/wm/common/wm_shell_window_ids.h"
-#include "ash/wm/common/wm_window.h"
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_lookup.h"
+#include "ash/common/wm/wm_root_window_controller.h"
+#include "ash/common/wm/wm_screen_util.h"
+#include "ash/common/wm/wm_shell_window_ids.h"
+#include "ash/common/wm/wm_window.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/window_selector.h"
 #include "ash/wm/overview/window_selector_item.h"

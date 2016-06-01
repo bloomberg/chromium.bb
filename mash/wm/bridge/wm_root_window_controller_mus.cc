@@ -4,7 +4,7 @@
 
 #include "mash/wm/bridge/wm_root_window_controller_mus.h"
 
-#include "ash/wm/common/wm_root_window_controller_observer.h"
+#include "ash/common/wm/wm_root_window_controller_observer.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_property.h"
 #include "components/mus/public/cpp/window_tree_client.h"

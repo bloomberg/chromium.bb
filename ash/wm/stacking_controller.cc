@@ -4,8 +4,8 @@
 
 #include "ash/wm/stacking_controller.h"
 
+#include "ash/common/wm/container_finder.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/container_finder.h"
 
 namespace ash {
 

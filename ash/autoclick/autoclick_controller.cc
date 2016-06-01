@@ -4,9 +4,9 @@
 
 #include "ash/autoclick/autoclick_controller.h"
 
+#include "ash/common/wm/root_window_finder.h"
 #include "ash/shell.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/root_window_finder.h"
 #include "base/timer/timer.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_tree_host.h"

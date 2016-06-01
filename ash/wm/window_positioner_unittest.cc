@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/common/window_positioner.h"
+#include "ash/common/wm/window_positioner.h"
 
 #include <string>
 
+#include "ash/common/wm/window_positioner.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/wm/common/window_positioner.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/strings/string_number_conversions.h"
 #include "ui/aura/window_event_dispatcher.h"

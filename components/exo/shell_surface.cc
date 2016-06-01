@@ -4,11 +4,11 @@
 
 #include "components/exo/shell_surface.h"
 
+#include "ash/common/wm/window_resizer.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/window_resizer.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/logging.h"
 #include "base/macros.h"

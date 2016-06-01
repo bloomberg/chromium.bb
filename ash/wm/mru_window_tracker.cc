@@ -6,13 +6,13 @@
 
 #include <algorithm>
 
+#include "ash/common/wm/switchable_windows.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/switchable_windows.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/bind.h"

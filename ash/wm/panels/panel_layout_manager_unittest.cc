@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/common/panels/panel_layout_manager.h"
+#include "ash/common/wm/panels/panel_layout_manager.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_button.h"
@@ -22,7 +23,6 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"

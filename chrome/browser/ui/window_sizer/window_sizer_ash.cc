@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 
+#include "ash/common/wm/window_positioner.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/window_positioner.h"
-#include "ash/wm/common/window_state.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

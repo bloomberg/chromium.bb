@@ -8,10 +8,10 @@
 #include <set>
 
 #include "ash/ash_export.h"
+#include "ash/common/wm/wm_globals.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/aura/wm_lookup_aura.h"
-#include "ash/wm/common/wm_globals.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/wm/public/activation_change_observer.h"

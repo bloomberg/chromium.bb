@@ -4,6 +4,8 @@
 
 #include "ash/metrics/user_metrics_recorder.h"
 
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_user_metrics_action.h"
 #include "ash/metrics/desktop_task_switch_metric_recorder.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
@@ -14,8 +16,6 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/wm/common/window_state.h"
-#include "ash/wm/common/wm_user_metrics_action.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"

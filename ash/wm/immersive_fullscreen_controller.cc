@@ -7,8 +7,8 @@
 #include <set>
 
 #include "ash/ash_constants.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/resize_handle_window_targeter.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/metrics/histogram.h"

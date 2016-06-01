@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wm/common/workspace/workspace_types.h"
+#include "ash/common/wm/workspace/workspace_types.h"
 #include "base/macros.h"
 
 namespace aura {

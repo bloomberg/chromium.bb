@@ -4,12 +4,12 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_event.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_util.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/wm/common/window_state.h"
-#include "ash/wm/common/wm_event.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"

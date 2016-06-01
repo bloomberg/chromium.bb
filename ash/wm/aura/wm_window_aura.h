@@ -6,7 +6,7 @@
 #define ASH_WM_AURA_WM_WINDOW_AURA_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/common/wm_window.h"
+#include "ash/common/wm/wm_window.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/aura/window_observer.h"

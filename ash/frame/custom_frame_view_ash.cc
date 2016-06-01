@@ -8,6 +8,9 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/window_state_delegate.h"
+#include "ash/common/wm/window_state_observer.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
@@ -16,9 +19,6 @@
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/window_state.h"
-#include "ash/wm/common/window_state_delegate.h"
-#include "ash/wm/common/window_state_observer.h"
 #include "ash/wm/immersive_fullscreen_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"

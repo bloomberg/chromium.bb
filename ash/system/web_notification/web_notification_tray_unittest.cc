@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/wm/window_state.h"
 #include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -19,7 +20,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "ash/test/test_system_tray_delegate.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

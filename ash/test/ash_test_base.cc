@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/common/wm/window_positioner.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/ime/input_method_event_handler.h"
 #include "ash/shell.h"
@@ -17,7 +18,6 @@
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/test/test_system_tray_delegate.h"
-#include "ash/wm/common/window_positioner.h"
 #include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"

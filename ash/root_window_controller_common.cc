@@ -4,9 +4,9 @@
 
 #include "ash/root_window_controller_common.h"
 
+#include "ash/common/wm/wm_globals.h"
+#include "ash/common/wm/wm_window.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/common/wm_globals.h"
-#include "ash/wm/common/wm_window.h"
 
 namespace ash {
 namespace {

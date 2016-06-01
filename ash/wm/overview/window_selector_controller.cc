@@ -6,12 +6,12 @@
 
 #include <vector>
 
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_globals.h"
+#include "ash/common/wm/wm_window.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
-#include "ash/wm/common/window_state.h"
-#include "ash/wm/common/wm_globals.h"
-#include "ash/wm/common/wm_window.h"
 #include "ash/wm/overview/window_selector.h"
 #include "base/metrics/histogram.h"
 

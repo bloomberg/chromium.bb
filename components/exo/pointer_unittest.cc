@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/wm/wm_shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/wm/common/wm_shell_window_ids.h"
 #include "components/exo/buffer.h"
 #include "components/exo/pointer.h"
 #include "components/exo/pointer_delegate.h"

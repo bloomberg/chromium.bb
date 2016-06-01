@@ -4,8 +4,8 @@
 
 #include "ash/wm/window_cycle_list.h"
 
+#include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state_aura.h"

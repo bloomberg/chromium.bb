@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/views/tabs/window_finder.h"
 
+#include "ash/common/wm/root_window_finder.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/root_window_finder.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

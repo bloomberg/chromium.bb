@@ -4,6 +4,7 @@
 
 #include "ash/system/cast/tray_cast.h"
 
+#include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_util.h"
@@ -21,7 +22,6 @@
 #include "ash/system/tray/tray_item_more.h"
 #include "ash/system/tray/tray_item_view.h"
 #include "ash/system/tray/tray_popup_label_button.h"
-#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "base/bind.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"

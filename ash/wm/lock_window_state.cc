@@ -6,15 +6,15 @@
 
 #include <utility>
 
+#include "ash/common/wm/window_animation_types.h"
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/window_state_delegate.h"
+#include "ash/common/wm/window_state_util.h"
+#include "ash/common/wm/wm_event.h"
 #include "ash/display/display_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/window_animation_types.h"
-#include "ash/wm/common/window_state.h"
-#include "ash/wm/common/window_state_delegate.h"
-#include "ash/wm/common/window_state_util.h"
-#include "ash/wm/common/wm_event.h"
 #include "ash/wm/lock_layout_manager.h"
 #include "ash/wm/window_animations.h"
 #include "ash/wm/window_state_aura.h"

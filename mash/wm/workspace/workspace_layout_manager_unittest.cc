@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/common/workspace/workspace_layout_manager.h"
+#include "ash/common/wm/workspace/workspace_layout_manager.h"
 
 #include <string>
 #include <utility>
 
-#include "ash/wm/common/fullscreen_window_finder.h"
-#include "ash/wm/common/window_state.h"
-#include "ash/wm/common/wm_event.h"
-#include "ash/wm/common/wm_root_window_controller_observer.h"
-#include "ash/wm/common/wm_screen_util.h"
+#include "ash/common/wm/fullscreen_window_finder.h"
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_event.h"
+#include "ash/common/wm/wm_root_window_controller_observer.h"
+#include "ash/common/wm/wm_screen_util.h"
 #include "components/mus/public/cpp/tests/test_window.h"
 #include "mash/wm/bridge/wm_root_window_controller_mus.h"
 #include "mash/wm/bridge/wm_window_mus.h"

@@ -9,12 +9,12 @@
 #include <map>
 #include <sstream>
 
-#include "ash/wm/common/always_on_top_controller.h"
-#include "ash/wm/common/dock/docked_window_layout_manager.h"
-#include "ash/wm/common/panels/panel_layout_manager.h"
-#include "ash/wm/common/wm_shell_window_ids.h"
-#include "ash/wm/common/workspace/workspace_layout_manager.h"
-#include "ash/wm/common/workspace/workspace_layout_manager_delegate.h"
+#include "ash/common/wm/always_on_top_controller.h"
+#include "ash/common/wm/dock/docked_window_layout_manager.h"
+#include "ash/common/wm/panels/panel_layout_manager.h"
+#include "ash/common/wm/wm_shell_window_ids.h"
+#include "ash/common/wm/workspace/workspace_layout_manager.h"
+#include "ash/common/wm/workspace/workspace_layout_manager_delegate.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/wm/window_positioner.h"
+#include "ash/common/wm/window_resizer.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/scoped_target_root_window.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/wm/common/window_positioner.h"
-#include "ash/wm/common/window_resizer.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"

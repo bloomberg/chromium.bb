@@ -5,7 +5,7 @@
 #ifndef MASH_WM_BRIDGE_WM_ROOT_CONTROLLER_MUS_H_
 #define MASH_WM_BRIDGE_WM_ROOT_CONTROLLER_MUS_H_
 
-#include "ash/wm/common/wm_root_window_controller.h"
+#include "ash/common/wm/wm_root_window_controller.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 

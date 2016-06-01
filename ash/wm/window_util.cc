@@ -7,14 +7,14 @@
 #include <vector>
 
 #include "ash/ash_constants.h"
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_event.h"
+#include "ash/common/wm/wm_screen_util.h"
+#include "ash/common/wm/wm_window.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/snap_to_pixel_layout_manager.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/window_state.h"
-#include "ash/wm/common/wm_event.h"
-#include "ash/wm/common/wm_screen_util.h"
-#include "ash/wm/common/wm_window.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/client/aura_constants.h"

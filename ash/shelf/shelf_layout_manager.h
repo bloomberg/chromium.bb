@@ -9,15 +9,15 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/common/wm/background_animator.h"
+#include "ash/common/wm/dock/docked_window_layout_manager_observer.h"
+#include "ash/common/wm/workspace/workspace_types.h"
 #include "ash/session/session_state_observer.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell_observer.h"
 #include "ash/snap_to_pixel_layout_manager.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/wm/common/background_animator.h"
-#include "ash/wm/common/dock/docked_window_layout_manager_observer.h"
-#include "ash/wm/common/workspace/workspace_types.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "ash/wm/lock_state_observer.h"
 #include "base/compiler_specific.h"

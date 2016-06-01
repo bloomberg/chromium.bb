@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
 
+#include "ash/common/wm/window_animation_types.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
-#include "ash/wm/common/window_animation_types.h"
 #include "ash/wm/window_animations.h"
 #include "base/command_line.h"
 #include "base/logging.h"

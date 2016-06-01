@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/ash/solid_color_user_wallpaper_delegate.h"
 
+#include "ash/common/wm/window_animation_types.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/shell.h"
-#include "ash/wm/common/window_animation_types.h"
 #include "ash/wm/window_animations.h"
 #include "base/macros.h"
 #include "ui/gfx/image/image_skia.h"

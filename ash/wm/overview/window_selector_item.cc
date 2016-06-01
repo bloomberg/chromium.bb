@@ -7,14 +7,14 @@
 #include <algorithm>
 #include <vector>
 
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_lookup.h"
+#include "ash/common/wm/wm_root_window_controller.h"
+#include "ash/common/wm/wm_shell_window_ids.h"
+#include "ash/common/wm/wm_shell_window_ids.h"
+#include "ash/common/wm/wm_window.h"
+#include "ash/common/wm/wm_window_property.h"
 #include "ash/material_design/material_design_controller.h"
-#include "ash/wm/common/window_state.h"
-#include "ash/wm/common/wm_lookup.h"
-#include "ash/wm/common/wm_root_window_controller.h"
-#include "ash/wm/common/wm_shell_window_ids.h"
-#include "ash/wm/common/wm_shell_window_ids.h"
-#include "ash/wm/common/wm_window.h"
-#include "ash/wm/common/wm_window_property.h"
 #include "ash/wm/overview/overview_animation_type.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_overview_animation_settings_factory.h"

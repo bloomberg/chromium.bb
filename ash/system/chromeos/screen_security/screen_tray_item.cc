@@ -4,10 +4,10 @@
 
 #include "ash/system/chromeos/screen_security/screen_tray_item.h"
 
+#include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/system/tray/fixed_sized_image_view.h"
 #include "ash/system/tray/tray_constants.h"
-#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/controls/label.h"

@@ -7,7 +7,7 @@
 #include <iterator>
 #include <utility>
 
-#include "ash/wm/common/wm_shell_window_ids.h"
+#include "ash/common/wm/wm_shell_window_ids.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"

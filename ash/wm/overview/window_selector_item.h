@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/wm/common/wm_window_observer.h"
+#include "ash/common/wm/wm_window_observer.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"

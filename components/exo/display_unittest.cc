@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/common/wm_shell_window_ids.h"
+#include "ash/common/wm/wm_shell_window_ids.h"
 #include "components/exo/buffer.h"
 #include "components/exo/display.h"
 #include "components/exo/shared_memory.h"

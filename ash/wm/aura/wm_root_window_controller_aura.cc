@@ -4,6 +4,7 @@
 
 #include "ash/wm/aura/wm_root_window_controller_aura.h"
 
+#include "ash/common/wm/wm_root_window_controller_observer.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
@@ -12,7 +13,6 @@
 #include "ash/wm/aura/wm_globals_aura.h"
 #include "ash/wm/aura/wm_shelf_aura.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/wm_root_window_controller_observer.h"
 #include "ash/wm/workspace_controller.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"

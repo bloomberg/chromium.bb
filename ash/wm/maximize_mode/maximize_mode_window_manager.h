@@ -11,8 +11,8 @@
 #include <set>
 
 #include "ash/ash_export.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/shell_observer.h"
-#include "ash/wm/common/window_state.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"

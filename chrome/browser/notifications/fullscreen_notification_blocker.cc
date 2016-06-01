@@ -10,10 +10,10 @@
 #include "content/public/browser/notification_service.h"
 
 #if defined(USE_ASH)
+#include "ash/common/wm/window_state.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

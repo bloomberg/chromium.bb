@@ -11,7 +11,7 @@
 #include <set>
 #include <vector>
 
-#include "ash/wm/common/wm_window_observer.h"
+#include "ash/common/wm/wm_window_observer.h"
 #include "ash/wm/overview/window_selector.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"

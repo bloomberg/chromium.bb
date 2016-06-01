@@ -4,6 +4,7 @@
 
 #include "ash/wm/drag_window_resizer.h"
 
+#include "ash/common/wm/window_positioning_utils.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/root_window_controller.h"
@@ -14,7 +15,6 @@
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/display_manager_test_api.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/window_positioning_utils.h"
 #include "ash/wm/drag_window_controller.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_number_conversions.h"

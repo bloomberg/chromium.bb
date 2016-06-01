@@ -2,8 +2,8 @@
 
 include_rules = [
   "-ash",
+  "+ash/common",
   "+ash/material_design",
-  "+ash/wm/common",
   "+ash/wm/overview",
   # Aura files should only be included from other aura files.
   "-ash/wm/overview/scoped_overview_animation_settings_aura.h",

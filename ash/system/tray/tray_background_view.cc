@@ -4,6 +4,7 @@
 
 #include "ash/system/tray/tray_background_view.h"
 
+#include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -16,7 +17,6 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
-#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "ash/wm/window_animations.h"
 #include "base/command_line.h"
 #include "grit/ash_resources.h"

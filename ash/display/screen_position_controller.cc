@@ -4,11 +4,11 @@
 
 #include "ash/display/screen_position_controller.h"
 
+#include "ash/common/wm/window_state.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ui/aura/client/capture_client.h"

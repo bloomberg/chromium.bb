@@ -1,0 +1,7 @@
+include_rules = [
+  "-ash",
+  "+ash/ash_export.h",
+  "+ash/common",
+  "+ui",
+  "-ui/aura",
+]

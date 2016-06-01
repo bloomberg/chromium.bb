@@ -4,10 +4,10 @@
 
 #include "ash/wm/window_util.h"
 
+#include "ash/common/wm/window_positioning_utils.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/screen_util.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/common/window_positioning_utils.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
 

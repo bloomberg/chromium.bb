@@ -6,9 +6,9 @@
 #define ASH_WM_AURA_WM_SHELF_AURA_H_
 
 #include "ash/ash_export.h"
+#include "ash/common/wm/shelf/wm_shelf.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
-#include "ash/wm/common/shelf/wm_shelf.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 

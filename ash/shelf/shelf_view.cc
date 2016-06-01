@@ -9,6 +9,7 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
+#include "ash/common/wm/root_window_finder.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/scoped_target_root_window.h"
@@ -28,7 +29,6 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/root_window_finder.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram.h"
 #include "grit/ash_strings.h"

@@ -4,14 +4,14 @@
 
 #include "ash/wm/aura/wm_globals_aura.h"
 
+#include "ash/common/wm/wm_activation_observer.h"
+#include "ash/common/wm/wm_display_observer.h"
+#include "ash/common/wm/wm_overview_mode_observer.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/wm_activation_observer.h"
-#include "ash/wm/common/wm_display_observer.h"
-#include "ash/wm/common/wm_overview_mode_observer.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"

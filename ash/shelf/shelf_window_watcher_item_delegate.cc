@@ -4,9 +4,9 @@
 
 #include "ash/shelf/shelf_window_watcher_item_delegate.h"
 
+#include "ash/common/wm/window_state.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"

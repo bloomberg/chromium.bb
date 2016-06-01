@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/wm/common/window_resizer.h"
+#include "ash/common/wm/window_resizer.h"
 #include "base/macros.h"
 
 namespace mash {

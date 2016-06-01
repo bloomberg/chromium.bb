@@ -5,6 +5,7 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
@@ -19,7 +20,6 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
-#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "base/auto_reset.h"
 #include "base/i18n/number_formatting.h"
 #include "base/i18n/rtl.h"

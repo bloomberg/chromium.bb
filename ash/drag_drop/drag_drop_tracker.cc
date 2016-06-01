@@ -4,10 +4,10 @@
 
 #include "ash/drag_drop/drag_drop_tracker.h"
 
+#include "ash/common/wm/root_window_finder.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/root_window_finder.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

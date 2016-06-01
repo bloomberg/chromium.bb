@@ -4,11 +4,11 @@
 
 #include "ash/wm/aura/wm_lookup_aura.h"
 
+#include "ash/common/wm/wm_layout_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/aura/wm_root_window_controller_aura.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/wm_layout_manager.h"
 
 namespace ash {
 namespace wm {

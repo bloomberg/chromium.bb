@@ -13,8 +13,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/wm/common/wm_activation_observer.h"
-#include "ash/wm/common/wm_window_observer.h"
+#include "ash/common/wm/wm_activation_observer.h"
+#include "ash/common/wm/wm_window_observer.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/display/display_observer.h"

@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "ash/wm/common/wm_globals.h"
+#include "ash/common/wm/wm_globals.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/mus/public/cpp/window_tree_client_observer.h"

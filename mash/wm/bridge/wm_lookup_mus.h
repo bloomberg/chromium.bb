@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "ash/wm/common/wm_lookup.h"
+#include "ash/common/wm/wm_lookup.h"
 #include "base/macros.h"
 
 namespace mash {

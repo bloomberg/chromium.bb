@@ -5,8 +5,8 @@
 #include "ash/accelerators/accelerator_delegate.h"
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/event.h"

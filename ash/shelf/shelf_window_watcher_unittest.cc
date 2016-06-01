@@ -5,6 +5,8 @@
 #include "ash/shelf/shelf_window_watcher.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/wm/window_resizer.h"
+#include "ash/common/wm/window_state.h"
 #include "ash/shelf/shelf_item_types.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_util.h"
@@ -13,8 +15,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/window_resizer.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"

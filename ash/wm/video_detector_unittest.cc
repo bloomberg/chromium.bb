@@ -6,10 +6,10 @@
 
 #include <memory>
 
+#include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_event.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/wm/common/window_state.h"
-#include "ash/wm/common/wm_event.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"

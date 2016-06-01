@@ -5,6 +5,7 @@
 #include "ash/system/tray/system_tray.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_util.h"
@@ -24,7 +25,6 @@
 #include "ash/system/user/tray_user.h"
 #include "ash/system/user/tray_user_separator.h"
 #include "ash/system/web_notification/web_notification_tray.h"
-#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"

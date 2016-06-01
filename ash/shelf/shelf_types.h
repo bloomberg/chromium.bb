@@ -6,7 +6,7 @@
 #define ASH_SHELF_SHELF_TYPES_H_
 
 // TODO(sky): make callers explicitly include this.
-#include "ash/wm/common/shelf/wm_shelf_types.h"
+#include "ash/common/wm/shelf/wm_shelf_types.h"
 
 namespace ash {
 

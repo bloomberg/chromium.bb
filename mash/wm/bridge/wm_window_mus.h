@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/wm/common/wm_window.h"
+#include "ash/common/wm/wm_window.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/mus/public/cpp/window_observer.h"
@@ -228,7 +228,7 @@ class WmWindowMus : public ash::wm::WmWindow, public mus::WindowObserver {
   mus::Window* window_;
 
   // The shell window id of this window. Shell window ids are defined in
-  // ash/wm/common/wm_shell_window_ids.h.
+  // ash/common/wm/wm_shell_window_ids.h.
   int shell_window_id_ = -1;
 
   std::unique_ptr<ash::wm::WindowState> window_state_;

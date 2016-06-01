@@ -4,7 +4,7 @@
 
 #include "mash/wm/bridge/mus_layout_manager_adapter.h"
 
-#include "ash/wm/common/wm_layout_manager.h"
+#include "ash/common/wm/wm_layout_manager.h"
 #include "components/mus/public/cpp/window.h"
 #include "mash/wm/bridge/wm_window_mus.h"
 

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/common/wm/window_state.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -17,7 +18,6 @@
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/test/test_shell_delegate.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_cycle_list.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"

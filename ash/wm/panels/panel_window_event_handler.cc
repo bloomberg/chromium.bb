@@ -4,9 +4,9 @@
 
 #include "ash/wm/panels/panel_window_event_handler.h"
 
+#include "ash/common/wm/window_state.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
-#include "ash/wm/common/window_state.h"
 #include "ash/wm/window_state_aura.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"

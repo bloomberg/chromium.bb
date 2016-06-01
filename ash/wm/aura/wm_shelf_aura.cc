@@ -4,11 +4,11 @@
 
 #include "ash/wm/aura/wm_shelf_aura.h"
 
+#include "ash/common/wm/shelf/wm_shelf_observer.h"
+#include "ash/common/wm/wm_window.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/wm/aura/wm_window_aura.h"
-#include "ash/wm/common/shelf/wm_shelf_observer.h"
-#include "ash/wm/common/wm_window.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {

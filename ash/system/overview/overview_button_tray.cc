@@ -4,13 +4,13 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
+#include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/tray_utils.h"
-#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "grit/ash_resources.h"

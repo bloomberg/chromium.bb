@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 
+#include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/keyboard/keyboard_ui.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
@@ -13,7 +14,6 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
-#include "ash/wm/common/shelf/wm_shelf_util.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
