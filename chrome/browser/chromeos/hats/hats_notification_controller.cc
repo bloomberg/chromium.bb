@@ -8,11 +8,14 @@
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/network/network_state.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/ash_strings.h"
 #include "grit/theme_resources.h"
@@ -22,6 +25,23 @@
 #include "ui/message_center/notification_types.h"
 #include "ui/strings/grit/ui_strings.h"
 
+namespace {
+
+// Returns true if the given |profile| interacted with HaTS by either
+// dismissing the notification or taking the survey within a given threshold
+// time delta |threshold|.
+bool DidShowSurveyToProfileRecently(Profile* profile,
+                                    base::TimeDelta threshold) {
+  int64_t serialized_timestamp =
+      profile->GetPrefs()->GetInt64(prefs::kHatsLastInteractionTimestamp);
+
+  base::Time previous_interaction_timestamp =
+      base::Time::FromInternalValue(serialized_timestamp);
+  return (previous_interaction_timestamp + threshold) > base::Time::Now();
+}
+
+}  // namespace
+
 namespace chromeos {
 
 // static
@@ -29,6 +49,10 @@ const char HatsNotificationController::kDelegateId[] = "hats_delegate";
 
 // static
 const char HatsNotificationController::kNotificationId[] = "hats_notification";
+
+// static
+const base::TimeDelta HatsNotificationController::kHatsThresholdTime =
+    base::TimeDelta::FromDays(90);
 
 HatsNotificationController::HatsNotificationController(Profile* profile)
     : profile_(profile) {
@@ -45,7 +69,32 @@ HatsNotificationController::~HatsNotificationController() {
 // TODO(malaykeshav): Implement this stub.
 bool HatsNotificationController::ShouldShowSurveyToProfile(Profile* profile) {
   // Do not show the survey if the HaTS feature is disabled for the device.
-  return base::FeatureList::IsEnabled(features::kHappininessTrackingSystem);
+  if (!base::FeatureList::IsEnabled(features::kHappininessTrackingSystem))
+    return false;
+
+  // Do not show survey if this is a guest session.
+  if (profile->IsGuestSession())
+    return false;
+
+  // Do not show the survey if the current user is not an owner.
+  if (!ProfileHelper::IsOwnerProfile(profile))
+    return false;
+
+  // Do not show survey if this is an enterprise managed device.
+  // TODO(malaykeshav): Show survey to google users but not any other enterprise
+  // users.
+  if (g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->IsEnterpriseManaged()) {
+    return false;
+  }
+
+  // Do not show survey to user if user has interacted with HaTS within the past
+  // |kHatsThresholdTime| time delta.
+  if (DidShowSurveyToProfileRecently(profile, kHatsThresholdTime))
+    return false;
+
+  return true;
 }
 
 // NotificationDelegate override:

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_HATS_HATS_NOTIFICATION_CONTROLLER_H_
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
@@ -20,6 +21,9 @@ namespace chromeos {
 class HatsNotificationController : public NotificationDelegate,
                                    public NetworkPortalDetector::Observer {
  public:
+  // Minimum amount of time before the notification is displayed again after a
+  // user has interacted with it.
+  static const base::TimeDelta kHatsThresholdTime;
   static const char kDelegateId[];
   static const char kNotificationId[];
 
