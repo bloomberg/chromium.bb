@@ -967,6 +967,11 @@ bool Resource::canUseCacheValidator()
 
     if (hasCacheControlNoStoreHeader())
         return false;
+
+    // Do not revalidate Resource with redirects. https://crbug.com/613971
+    if (!redirectChain().isEmpty())
+        return false;
+
     return m_response.hasCacheValidatorFields() || m_resourceRequest.hasCacheValidatorFields();
 }
 
