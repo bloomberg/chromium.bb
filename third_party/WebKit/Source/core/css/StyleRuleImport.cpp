@@ -38,7 +38,7 @@ StyleRuleImport* StyleRuleImport::create(const String& href, MediaQuerySet* medi
 StyleRuleImport::StyleRuleImport(const String& href, MediaQuerySet* media)
     : StyleRuleBase(Import)
     , m_parentStyleSheet(nullptr)
-    , m_styleSheetClient(this)
+    , m_styleSheetClient(new ImportedStyleSheetClient(this))
     , m_strHref(href)
     , m_mediaQueries(media)
     , m_loading(false)
@@ -56,7 +56,7 @@ StyleRuleImport::~StyleRuleImport()
 void StyleRuleImport::dispose()
 {
     if (m_resource)
-        m_resource->removeClient(&m_styleSheetClient);
+        m_resource->removeClient(m_styleSheetClient);
     m_resource = nullptr;
 }
 
@@ -140,7 +140,7 @@ void StyleRuleImport::requestStyleSheet()
         if (m_parentStyleSheet && m_parentStyleSheet->loadCompleted() && rootSheet == m_parentStyleSheet)
             m_parentStyleSheet->startLoadingDynamicSheet();
         m_loading = true;
-        m_resource->addClient(&m_styleSheetClient);
+        m_resource->addClient(m_styleSheetClient);
     }
 }
 
