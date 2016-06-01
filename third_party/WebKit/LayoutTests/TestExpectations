@@ -1378,3 +1378,5 @@ crbug.com/613497 [ Linux Release ] transforms/3d/point-mapping/3d-point-mapping-
 crbug.com/613659 imported/wpt/quirks-mode/percentage-height-calculation.html [ Failure ]
 crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
+
+crbug.com/614509 [ Win ] inspector/elements/styles-2/pseudo-elements.html [ Pass Timeout ]
