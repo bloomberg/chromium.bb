@@ -39,19 +39,12 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
   bool is_guest = WebViewRendererState::GetInstance()->GetPartitionID(
       info->GetChildID(), &partition_id);
   std::string resource_path = request->url().path();
+
   // |owner_extension == extension| needs to be checked because extension
   // resources should only be accessible to WebViews owned by that extension.
   if (is_guest && owner_extension == extension &&
       WebviewInfo::IsResourceWebviewAccessible(extension, partition_id,
                                                resource_path)) {
-    *allowed = true;
-    return true;
-  }
-
-  // If the request is for navigations outside of webviews, then it should be
-  // allowed. The navigation logic in CrossSiteResourceHandler will properly
-  // transfer the navigation to a privileged process before it commits.
-  if (content::IsResourceTypeFrame(info->GetResourceType()) && !is_guest) {
     *allowed = true;
     return true;
   }
@@ -85,11 +78,41 @@ bool AllowCrossRendererResourceLoad(net::URLRequest* request,
     return true;
   }
 
-  // Extensions with web_accessible_resources: allow loading by regular
-  // renderers. Since not all subresources are required to be listed in a v2
-  // manifest, we must allow all loads if there are any web accessible
-  // resources. See http://crbug.com/179127.
-  if (extension->manifest_version() < 2 ||
+  DCHECK_EQ(extension->url(), request->url().GetWithEmptyPath());
+
+  // Extensions with manifest before v2 did not have web_accessible_resource
+  // section, therefore the request needs to be allowed.
+  if (extension->manifest_version() < 2) {
+    *allowed = true;
+    return true;
+  }
+
+  // Navigating the main frame to an extension URL is allowed, even if not
+  // explicitly listed as web_accessible_resource.
+  if (info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME) {
+    *allowed = true;
+    return true;
+  } else if (info->GetResourceType() == content::RESOURCE_TYPE_SUB_FRAME) {
+    // When navigating in subframe, allow if it is the same origin
+    // as the top-level frame. This can only be the case if the subframe
+    // request is coming from the extension process.
+    if (extension_info_map->process_map().Contains(info->GetChildID())) {
+      *allowed = true;
+      return true;
+    }
+
+    // Also allow if the file is explicitly listed as a web_accessible_resource.
+    if (WebAccessibleResourcesInfo::IsResourceWebAccessible(extension,
+                                                            resource_path)) {
+      *allowed = true;
+      return true;
+    }
+  }
+
+  // Since not all subresources are required to be listed in a v2
+  // manifest, we must allow all subresource loads if there are any web
+  // accessible resources. See http://crbug.com/179127.
+  if (!content::IsResourceTypeFrame(info->GetResourceType()) &&
       WebAccessibleResourcesInfo::HasWebAccessibleResources(extension)) {
     *allowed = true;
     return true;

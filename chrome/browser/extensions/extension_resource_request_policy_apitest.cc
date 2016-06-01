@@ -8,8 +8,12 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
@@ -318,4 +322,60 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Iframe) {
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
                        MAYBE_ExtensionAccessibleResources) {
   ASSERT_TRUE(RunExtensionSubtest("accessible_cer", "main.html")) << message_;
+}
+
+class NavigationErrorObserver : public content::WebContentsObserver {
+ public:
+  NavigationErrorObserver(content::WebContents* web_contents, const GURL& url)
+      : content::WebContentsObserver(web_contents),
+        url_(url),
+        saw_navigation_(false) {}
+
+  void DidFinishNavigation(content::NavigationHandle* handle) override {
+    if (handle->GetURL() != url_)
+      return;
+    EXPECT_TRUE(handle->IsErrorPage());
+    saw_navigation_ = true;
+    if (run_loop_.running())
+      run_loop_.Quit();
+  }
+
+  void Wait() {
+    if (!saw_navigation_)
+      run_loop_.Run();
+  }
+
+ private:
+  // The url we want to see a navigation for.
+  GURL url_;
+
+  // Have we seen the navigation for |url_| yet?
+  bool saw_navigation_;
+
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigationErrorObserver);
+};
+
+IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
+                       IframeNavigateToInaccessible) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("extension_resource_request_policy")
+          .AppendASCII("some_accessible")));
+
+  GURL iframe_navigate_url(embedded_test_server()->GetURL(
+      "/extensions/api_test/extension_resource_request_policy/"
+      "iframe_navigate.html"));
+
+  ui_test_utils::NavigateToURL(browser(), iframe_navigate_url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  GURL private_page(
+      "chrome-extension://kegmjfcnjamahdnldjmlpachmpielcdk/private.html");
+  NavigationErrorObserver observer(web_contents, private_page);
+  ASSERT_TRUE(content::ExecuteScript(web_contents, "navigateFrameNow()"));
+  observer.Wait();
 }

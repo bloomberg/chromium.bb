@@ -198,8 +198,8 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
   } cases[] = {
     {"spanning disabled", false, false, false, false},
     {"split disabled", true, false, false, false},
-    {"spanning enabled", false, true, false, true},
-    {"split enabled", true, true, true, true},
+    {"spanning enabled", false, true, false, false},
+    {"split enabled", true, true, true, false},
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
@@ -346,7 +346,9 @@ TEST_F(ExtensionProtocolTest, AllowFrameRequests) {
                                     false,
                                     false);
 
-  // All MAIN_FRAME and SUB_FRAME requests should succeed.
+  // All MAIN_FRAME requests should succeed. SUB_FRAME requests that are not
+  // explicitly listed in web_accesible_resources or same-origin to the parent
+  // should not succeed.
   {
     std::unique_ptr<net::URLRequest> request(
         resource_context_.GetRequestContext()->CreateRequest(
@@ -361,7 +363,7 @@ TEST_F(ExtensionProtocolTest, AllowFrameRequests) {
             extension->GetResourceURL("test.dat"), net::DEFAULT_PRIORITY,
             &test_delegate_));
     StartRequest(request.get(), content::RESOURCE_TYPE_SUB_FRAME);
-    EXPECT_EQ(net::URLRequestStatus::SUCCESS, request->status().status());
+    EXPECT_EQ(net::URLRequestStatus::FAILED, request->status().status());
   }
 
   // And subresource types, such as media, should fail.
