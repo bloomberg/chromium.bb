@@ -120,16 +120,14 @@ TEST_F(AshPopupAlignmentDelegateTest, MAYBE_ShelfAlignment) {
   EXPECT_FALSE(alignment_delegate()->IsTopDown());
   EXPECT_FALSE(alignment_delegate()->IsFromLeft());
 
-  Shell::GetInstance()->SetShelfAlignment(wm::SHELF_ALIGNMENT_RIGHT,
-                                          Shell::GetPrimaryRootWindow());
+  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_RIGHT);
   toast_point.set_x(alignment_delegate()->GetToastOriginX(toast_size));
   toast_point.set_y(alignment_delegate()->GetBaseLine());
   EXPECT_EQ(BOTTOM_RIGHT, GetPositionInDisplay(toast_point));
   EXPECT_FALSE(alignment_delegate()->IsTopDown());
   EXPECT_FALSE(alignment_delegate()->IsFromLeft());
 
-  Shell::GetInstance()->SetShelfAlignment(wm::SHELF_ALIGNMENT_LEFT,
-                                          Shell::GetPrimaryRootWindow());
+  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
   toast_point.set_x(alignment_delegate()->GetToastOriginX(toast_size));
   toast_point.set_y(alignment_delegate()->GetBaseLine());
   EXPECT_EQ(BOTTOM_LEFT, GetPositionInDisplay(toast_point));
@@ -143,8 +141,7 @@ TEST_F(AshPopupAlignmentDelegateTest, LockScreen) {
 
   const gfx::Rect toast_size(0, 0, 10, 10);
 
-  Shell::GetInstance()->SetShelfAlignment(wm::SHELF_ALIGNMENT_LEFT,
-                                          Shell::GetPrimaryRootWindow());
+  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
   gfx::Point toast_point;
   toast_point.set_x(alignment_delegate()->GetToastOriginX(toast_size));
   toast_point.set_y(alignment_delegate()->GetBaseLine());
@@ -168,10 +165,9 @@ TEST_F(AshPopupAlignmentDelegateTest, AutoHide) {
 
   // Create a window, otherwise autohide doesn't work.
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(0));
-  Shell::GetInstance()->SetShelfAutoHideBehavior(
-      SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
-      Shell::GetPrimaryRootWindow());
-  Shelf::ForPrimaryDisplay()->shelf_layout_manager()->UpdateAutoHideStateNow();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf->shelf_layout_manager()->UpdateAutoHideStateNow();
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
   EXPECT_LT(baseline, alignment_delegate()->GetBaseLine());
 }
@@ -197,10 +193,8 @@ TEST_F(AshPopupAlignmentDelegateTest, DockedWindow) {
   EXPECT_FALSE(alignment_delegate()->IsFromLeft());
 
   // Force dock to right-side
-  Shell::GetInstance()->SetShelfAlignment(wm::SHELF_ALIGNMENT_LEFT,
-                                          Shell::GetPrimaryRootWindow());
-  Shell::GetInstance()->SetShelfAlignment(wm::SHELF_ALIGNMENT_BOTTOM,
-                                          Shell::GetPrimaryRootWindow());
+  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
 
   // Right-side dock should not affect popup alignment
   EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));

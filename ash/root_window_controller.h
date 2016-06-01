@@ -57,6 +57,7 @@ class DesktopBackgroundWidgetController;
 class DockedWindowLayoutManager;
 class PanelLayoutManager;
 class RootWindowLayoutManager;
+class Shelf;
 class ShelfLayoutManager;
 class ShelfWidget;
 class StackingController;
@@ -124,6 +125,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   // Access the shelf widget associated with this root window controller,
   // NULL if no such shelf exists.
+  // DEPRECATED: Prefer GetShelf()->shelf_widget().
   ShelfWidget* shelf_widget() { return shelf_widget_.get(); }
 
   // Get touch HUDs associated with this root window controller.
@@ -182,10 +184,14 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   const aura::Window* GetContainer(int container_id) const;
 
   // Show shelf view if it was created hidden (before session has started).
+  // TODO(jamescook): Eliminate this and handle show via Shelf.
   void ShowShelf();
 
   // Creates the shelf for this root window and notifies observers.
   void CreateShelf();
+
+  // Returns the shelf controller for this root window.
+  Shelf* GetShelf() const;
 
   // Called when the login status changes after login (such as lock/unlock).
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.

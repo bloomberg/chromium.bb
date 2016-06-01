@@ -443,8 +443,8 @@ TEST_F(ShellTest, FullscreenWindowHidesShelf) {
   widget->Close();
 }
 
-// Various assertions around SetShelfAutoHideBehavior() and
-// GetShelfAutoHideBehavior().
+// Various assertions around auto-hide behavior.
+// TODO(jamescook): Move this to ShelfTest.
 TEST_F(ShellTest, ToggleAutoHide) {
   std::unique_ptr<aura::Window> window(new aura::Window(NULL));
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
@@ -454,27 +454,21 @@ TEST_F(ShellTest, ToggleAutoHide) {
   window->Show();
   wm::ActivateWindow(window.get());
 
-  Shell* shell = Shell::GetInstance();
-  aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  shell->SetShelfAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
-                                  root_window);
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
-            shell->GetShelfAutoHideBehavior(root_window));
-  shell->SetShelfAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
-                                  root_window);
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
-            shell->GetShelfAutoHideBehavior(root_window));
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+
+  shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+
   window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
-            shell->GetShelfAutoHideBehavior(root_window));
-  shell->SetShelfAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
-                                  root_window);
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
-            shell->GetShelfAutoHideBehavior(root_window));
-  shell->SetShelfAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
-                                  root_window);
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER,
-            shell->GetShelfAutoHideBehavior(root_window));
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
+
+  shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+
+  shelf->SetAutoHideBehavior(ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
 }
 
 // Tests that the cursor-filter is ahead of the drag-drop controller in the

@@ -432,6 +432,11 @@ void RootWindowController::CreateShelf() {
   shelf_widget_->PostCreateShelf();
 }
 
+Shelf* RootWindowController::GetShelf() const {
+  // TODO(jamescook): Shelf should be owned by this class, not by ShelfWidget.
+  return shelf_widget_->shelf();
+}
+
 void RootWindowController::UpdateAfterLoginStatusChange(
     user::LoginStatus status) {
   if (status != user::LOGGED_IN_NONE)

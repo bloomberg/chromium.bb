@@ -286,14 +286,13 @@ void ShelfDelegateMus::AddObserver(
 
 void ShelfDelegateMus::SetAlignment(mash::shelf::mojom::Alignment alignment) {
   wm::ShelfAlignment value = static_cast<wm::ShelfAlignment>(alignment);
-  Shell::GetInstance()->SetShelfAlignment(value, Shell::GetPrimaryRootWindow());
+  Shelf::ForPrimaryDisplay()->SetAlignment(value);
 }
 
 void ShelfDelegateMus::SetAutoHideBehavior(
     mash::shelf::mojom::AutoHideBehavior auto_hide) {
   ShelfAutoHideBehavior value = static_cast<ShelfAutoHideBehavior>(auto_hide);
-  Shell::GetInstance()->SetShelfAutoHideBehavior(value,
-                                                 Shell::GetPrimaryRootWindow());
+  Shelf::ForPrimaryDisplay()->SetAutoHideBehavior(value);
 }
 
 void ShelfDelegateMus::PinItem(

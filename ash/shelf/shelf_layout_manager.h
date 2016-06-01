@@ -187,7 +187,7 @@ class ASH_EXPORT ShelfLayoutManager
     shelf_->shelf()->SetAutoHideBehavior(behavior);
   }
   ShelfAutoHideBehavior auto_hide_behavior() const {
-    return shelf_->shelf()->GetAutoHideBehavior();
+    return shelf_->shelf()->auto_hide_behavior();
   }
 
   // TODO(msw): Remove these accessors, kept temporarily to simplify changes.

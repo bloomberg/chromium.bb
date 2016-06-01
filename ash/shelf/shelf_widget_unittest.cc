@@ -42,7 +42,7 @@ typedef test::AshTestBase ShelfWidgetTest;
 void TestLauncherAlignment(aura::Window* root,
                            wm::ShelfAlignment alignment,
                            const std::string& expected) {
-  Shell::GetInstance()->SetShelfAlignment(alignment, root);
+  Shelf::ForWindow(root)->SetAlignment(alignment);
   display::Screen* screen = display::Screen::GetScreen();
   EXPECT_EQ(expected,
             screen->GetDisplayNearestWindow(root).work_area().ToString());
@@ -55,9 +55,7 @@ void TestLauncherAlignment(aura::Window* root,
 #define MAYBE_TestAlignment TestAlignment
 #endif
 TEST_F(ShelfWidgetTest, MAYBE_TestAlignment) {
-  Shelf* shelf = Shelf::ForPrimaryDisplay();
   UpdateDisplay("400x400");
-  ASSERT_TRUE(shelf);
   {
     SCOPED_TRACE("Single Bottom");
     TestLauncherAlignment(Shell::GetPrimaryRootWindow(),

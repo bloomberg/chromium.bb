@@ -1433,8 +1433,7 @@ TEST_F(ShelfViewTest, RemovingItemClosesTooltip) {
   EXPECT_FALSE(tooltip_manager->IsVisible());
 
   // Change the shelf layout. This should not crash.
-  Shell::GetInstance()->SetShelfAlignment(wm::SHELF_ALIGNMENT_LEFT,
-                                          Shell::GetPrimaryRootWindow());
+  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
 }
 
 // Changing the shelf alignment closes any open tooltip.
@@ -1450,8 +1449,7 @@ TEST_F(ShelfViewTest, ShelfAlignmentClosesTooltip) {
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Changing shelf alignment hides the tooltip.
-  Shell::GetInstance()->SetShelfAlignment(wm::SHELF_ALIGNMENT_LEFT,
-                                          Shell::GetPrimaryRootWindow());
+  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
   EXPECT_FALSE(tooltip_manager->IsVisible());
 }
 
@@ -1790,18 +1788,16 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
   ASSERT_EQ(2U, Shell::GetAllRootWindows().size());
 
   aura::Window* second_root = Shell::GetAllRootWindows()[1];
+  Shelf* secondary_shelf = Shelf::ForWindow(second_root);
 
-  Shell::GetInstance()->SetShelfAlignment(wm::SHELF_ALIGNMENT_LEFT,
-                                          second_root);
-  ASSERT_EQ(wm::SHELF_ALIGNMENT_LEFT,
-            Shell::GetInstance()->GetShelfAlignment(second_root));
+  secondary_shelf->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+  ASSERT_EQ(wm::SHELF_ALIGNMENT_LEFT, secondary_shelf->alignment());
 
   // Initially, app list and browser shortcut are added.
   EXPECT_EQ(2, model_->item_count());
   int browser_index = model_->GetItemIndexForType(TYPE_BROWSER_SHORTCUT);
   EXPECT_GT(browser_index, 0);
 
-  Shelf* secondary_shelf = Shelf::ForWindow(second_root);
   ShelfView* shelf_view_for_secondary =
       ShelfTestAPI(secondary_shelf).shelf_view();
 

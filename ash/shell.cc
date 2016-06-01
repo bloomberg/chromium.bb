@@ -528,26 +528,6 @@ void Shell::UpdateShelfVisibility() {
       (*iter)->UpdateShelfVisibility();
 }
 
-void Shell::SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior,
-                                     aura::Window* root_window) {
-  Shelf::ForWindow(root_window)->SetAutoHideBehavior(behavior);
-}
-
-ShelfAutoHideBehavior Shell::GetShelfAutoHideBehavior(
-    aura::Window* root_window) const {
-  return Shelf::ForWindow(root_window)->auto_hide_behavior();
-}
-
-void Shell::SetShelfAlignment(wm::ShelfAlignment alignment,
-                              aura::Window* root_window) {
-  Shelf::ForWindow(root_window)->SetAlignment(alignment);
-}
-
-wm::ShelfAlignment Shell::GetShelfAlignment(
-    const aura::Window* root_window) const {
-  return Shelf::ForWindow(root_window)->alignment();
-}
-
 void Shell::OnShelfAlignmentChanged(aura::Window* root_window) {
   FOR_EACH_OBSERVER(ShellObserver, observers_,
                     OnShelfAlignmentChanged(root_window));

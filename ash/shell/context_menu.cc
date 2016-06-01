@@ -27,7 +27,7 @@ ContextMenu::~ContextMenu() {
 
 bool ContextMenu::IsCommandIdChecked(int command_id) const {
   if (command_id == MENU_AUTO_HIDE)
-    return shelf_->GetAutoHideBehavior() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+    return shelf_->auto_hide_behavior() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
   return false;
 }
 
@@ -42,7 +42,7 @@ bool ContextMenu::GetAcceleratorForCommandId(int command_id,
 
 void ContextMenu::ExecuteCommand(int command_id, int event_flags) {
   if (command_id == MENU_AUTO_HIDE) {
-    shelf_->SetAutoHideBehavior(shelf_->GetAutoHideBehavior() ==
+    shelf_->SetAutoHideBehavior(shelf_->auto_hide_behavior() ==
                                         SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS
                                     ? SHELF_AUTO_HIDE_BEHAVIOR_NEVER
                                     : SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);

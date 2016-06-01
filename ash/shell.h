@@ -475,26 +475,15 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   }
 
   // Force the shelf to query for it's current visibility state.
+  // TODO(jamescook): Move to Shelf.
   void UpdateShelfVisibility();
 
-  // TODO(oshima): Define an interface to access shelf/launcher
-  // state, or just use Launcher.
-
-  // Sets/gets the shelf auto-hide behavior on |root_window|.
-  void SetShelfAutoHideBehavior(ShelfAutoHideBehavior behavior,
-                                aura::Window* root_window);
-  ShelfAutoHideBehavior GetShelfAutoHideBehavior(
-      aura::Window* root_window) const;
-
-  // Sets/gets shelf's alignment on |root_window|.
-  void SetShelfAlignment(wm::ShelfAlignment alignment,
-                         aura::Window* root_window);
-  wm::ShelfAlignment GetShelfAlignment(const aura::Window* root_window) const;
-
   // Called when the alignment for a shelf changes.
+  // TODO(jamescook): Move to Shelf.
   void OnShelfAlignmentChanged(aura::Window* root_window);
 
   // Called when the auto-hide behavior for a shelf changes.
+  // TODO(jamescook): Move to Shelf.
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window);
 
   // Notifies |observers_| when entering or exiting fullscreen mode in

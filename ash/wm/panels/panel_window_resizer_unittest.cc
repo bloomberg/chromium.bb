@@ -239,20 +239,16 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachLeft) {
  if (!SupportsHostWindowResize())
     return;
 
-  ash::Shell* shell = ash::Shell::GetInstance();
-  shell->SetShelfAlignment(wm::SHELF_ALIGNMENT_LEFT,
-                           shell->GetPrimaryRootWindow());
-  std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
-  DetachReattachTest(window.get(), 1, 0);
+ Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
+ std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
+ DetachReattachTest(window.get(), 1, 0);
 }
 
 TEST_F(PanelWindowResizerTest, PanelDetachReattachRight) {
   if (!SupportsHostWindowResize())
     return;
 
-  ash::Shell* shell = ash::Shell::GetInstance();
-  shell->SetShelfAlignment(wm::SHELF_ALIGNMENT_RIGHT,
-                           shell->GetPrimaryRootWindow());
+  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_RIGHT);
   std::unique_ptr<aura::Window> window(CreatePanelWindow(gfx::Point(0, 0)));
   DetachReattachTest(window.get(), -1, 0);
 }
@@ -495,9 +491,7 @@ TEST_F(PanelWindowResizerTest, DragReordersPanelsVertical) {
   if (!SupportsHostWindowResize())
     return;
 
-  ash::Shell* shell = ash::Shell::GetInstance();
-  shell->SetShelfAlignment(wm::SHELF_ALIGNMENT_LEFT,
-                           shell->GetPrimaryRootWindow());
+  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
   DragAlongShelfReorder(0, -1);
 }
 

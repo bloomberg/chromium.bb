@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 #include "ash/content/shell_content_state.h"
-#include "ash/root_window_controller.h"
+#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -1014,12 +1014,10 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationSteps) {
   EXPECT_FALSE(CoversScreen(window(1)));
   EXPECT_EQ("S[A], H[B], H[C]", GetStatus());
   EXPECT_EQ("A", GetOwnersOfVisibleWindowsAsString());
-  EXPECT_NE(ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
-            ash::Shell::GetInstance()->GetShelfAutoHideBehavior(
-                window(0)->GetRootWindow()));
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
+  EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
   EXPECT_EQ(1.0f, window(0)->layer()->GetTargetOpacity());
-  ash::ShelfWidget* shelf_widget =
-      ash::RootWindowController::ForWindow(window(0))->shelf_widget();
+  ShelfWidget* shelf_widget = shelf->shelf_widget();
   EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
 
   // Start the animation and see that the old window is becoming invisible, the
@@ -1031,9 +1029,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationSteps) {
   EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
-            ash::Shell::GetInstance()->GetShelfAutoHideBehavior(
-                window(0)->GetRootWindow()));
+  EXPECT_EQ(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
   EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
 
   // Staring the next step should show the shelf again, but there are many
@@ -1046,9 +1042,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, AnimationSteps) {
   EXPECT_EQ("H[A], S[B], H[C]", GetStatus());
   EXPECT_EQ(0.0f, window(0)->layer()->GetTargetOpacity());
   EXPECT_EQ(1.0f, window(1)->layer()->GetTargetOpacity());
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
-            ash::Shell::GetInstance()->GetShelfAutoHideBehavior(
-                window(0)->GetRootWindow()));
+  EXPECT_EQ(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
   EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
 
   // After the finalize the animation of the wallpaper should be finished.
@@ -1303,22 +1297,19 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TestBlackBarCover) {
 
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
-  aura::Window* root_window = ash::Shell::GetInstance()->GetPrimaryRootWindow();
+  Shelf* shelf = Shelf::ForPrimaryDisplay();
 
   // Turn the use of delays and animation on.
   multi_user_window_manager()->SetAnimationSpeedForTest(
       chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
-  EXPECT_NE(ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
-            ash::Shell::GetInstance()->GetShelfAutoHideBehavior(root_window));
-  ash::ShelfWidget* shelf_widget =
-      ash::RootWindowController::ForWindow(root_window)->shelf_widget();
+  EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
+  ash::ShelfWidget* shelf_widget = shelf->shelf_widget();
   EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
 
   // First test that with no maximized window we show/hide the shelf.
   StartUserTransitionAnimation(account_id_B);
   EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
-  EXPECT_EQ(ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
-            ash::Shell::GetInstance()->GetShelfAutoHideBehavior(root_window));
+  EXPECT_EQ(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
 
   // Staring the next step should show the shelf again.
   AdvanceUserTransitionAnimation();
@@ -1326,8 +1317,7 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TestBlackBarCover) {
 
   AdvanceUserTransitionAnimation();
   EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
-  ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
-      ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER, root_window);
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   // Now we maximize the windows which will cause the black overlay to show up.
   wm::GetWindowState(window(0))->Maximize();
@@ -1342,14 +1332,12 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TestBlackBarCover) {
   // and the AutoHide behavior remains as it was.
   StartUserTransitionAnimation(account_id_A);
   EXPECT_TRUE(shelf_widget->IsShelfHiddenBehindBlackBar());
-  EXPECT_NE(ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
-            ash::Shell::GetInstance()->GetShelfAutoHideBehavior(root_window));
+  EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
 
-  // Staring the next step should show the shelf again.
+  // Starting the next step should show the shelf again.
   AdvanceUserTransitionAnimation();
   EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
-  EXPECT_NE(ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
-            ash::Shell::GetInstance()->GetShelfAutoHideBehavior(root_window));
+  EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
 
   AdvanceUserTransitionAnimation();
   EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());

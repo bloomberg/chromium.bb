@@ -380,25 +380,21 @@ TEST_P(DockedWindowResizerTest, AttachRightChangeShelf) {
   EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 
   // set launcher shelf to be aligned on the right
-  ash::Shell* shell = ash::Shell::GetInstance();
-  shell->SetShelfAlignment(wm::SHELF_ALIGNMENT_RIGHT,
-                           shell->GetPrimaryRootWindow());
+  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_RIGHT);
   // The window should have moved and get attached to the left dock.
   EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().x(),
             window->GetBoundsInScreen().x());
   EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 
   // set launcher shelf to be aligned on the left
-  shell->SetShelfAlignment(wm::SHELF_ALIGNMENT_LEFT,
-                           shell->GetPrimaryRootWindow());
+  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_LEFT);
   // The window should have moved and get attached to the right edge.
   EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
   EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
 
   // set launcher shelf to be aligned at the bottom
-  shell->SetShelfAlignment(wm::SHELF_ALIGNMENT_BOTTOM,
-                           shell->GetPrimaryRootWindow());
+  Shelf::ForPrimaryDisplay()->SetAlignment(wm::SHELF_ALIGNMENT_BOTTOM);
   // The window should stay in the right edge.
   EXPECT_EQ(window->GetRootWindow()->GetBoundsInScreen().right(),
             window->GetBoundsInScreen().right());
@@ -617,10 +613,9 @@ TEST_P(DockedWindowResizerTest, AttachOneAutoHideShelf) {
   // Docked background should extend to the bottom of work area.
   EXPECT_EQ(work_area.bottom(), manager->docked_bounds().bottom());
 
-  // set launcher shelf to be aligned on the right
-  ash::Shell* shell = ash::Shell::GetInstance();
-  shell->SetShelfAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS,
-                                  shell->GetPrimaryRootWindow());
+  // Turn on shelf auto-hide.
+  Shelf::ForPrimaryDisplay()->SetAutoHideBehavior(
+      SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   work_area = display::Screen::GetScreen()
                   ->GetDisplayNearestWindow(w1.get())
                   .work_area();
