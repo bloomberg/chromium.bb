@@ -5345,7 +5345,8 @@ MULTI_THREAD_TEST_F(LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer);
 class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
  protected:
   LayerTreeHostTestCrispUpAfterPinchEnds()
-      : playback_allowed_event_(true, true) {}
+      : playback_allowed_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                                base::WaitableEvent::InitialState::SIGNALED) {}
 
   void SetupTree() override {
     frame_ = 1;
@@ -5647,7 +5648,8 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     : public LayerTreeHostTest {
  protected:
   LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles()
-      : playback_allowed_event_(true, true) {}
+      : playback_allowed_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                                base::WaitableEvent::InitialState::SIGNALED) {}
 
   void SetupTree() override {
     step_ = 1;
