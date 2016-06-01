@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.snackbar;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -31,6 +32,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
  * Visual representation of a snackbar. On phone it matches the width of the activity; on tablet it
@@ -69,16 +71,20 @@ class SnackbarView {
     private final Behavior<View> mBehavior = new Behavior<View>() {
         @Override
         public boolean onInterceptTouchEvent(CoordinatorLayout parent, View child, MotionEvent ev) {
-            return ev.getX() - child.getX() < child.getWidth()
-                    && ev.getY() - child.getY() < child.getHeight();
+            return isInBounds(ev, child);
         }
 
         @Override
         public boolean onTouchEvent(CoordinatorLayout parent, View child, MotionEvent ev) {
+            if (!isInBounds(ev, child)) return false;
             ev.offsetLocation(-child.getX(), -child.getY());
-            boolean consumed = child.dispatchTouchEvent(ev);
-            ev.offsetLocation(child.getX(), child.getY());
-            return consumed;
+            child.dispatchTouchEvent(ev);
+            return true;
+        }
+
+        private boolean isInBounds(MotionEvent ev, View view) {
+            return ev.getX() > view.getX() && ev.getX() - view.getX() < view.getWidth()
+                    && ev.getY() > view.getY() && ev.getY() - view.getY() < view.getHeight();
         }
     };
 
@@ -121,7 +127,7 @@ class SnackbarView {
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 mView.removeOnLayoutChangeListener(this);
-                mView.setTranslationY(mView.getHeight());
+                mView.setTranslationY(mView.getHeight() + getLayoutParams().bottomMargin);
                 Animator animator = ObjectAnimator.ofFloat(mView, View.TRANSLATION_Y, 0);
                 animator.setInterpolator(new DecelerateInterpolator());
                 animator.setDuration(mAnimationDuration);
@@ -135,16 +141,22 @@ class SnackbarView {
         mActionButtonView.setEnabled(false);
         mView.getViewTreeObserver().removeOnGlobalLayoutListener(mLayoutListener);
 
-        Animator animator = ObjectAnimator.ofFloat(mView, View.TRANSLATION_Y, mView.getHeight());
-        animator.setInterpolator(new DecelerateInterpolator());
-        animator.setDuration(mAnimationDuration);
-        animator.addListener(new AnimatorListenerAdapter() {
+        AnimatorSet animatorSet = new AnimatorSet();
+        animatorSet.setDuration(mAnimationDuration);
+        animatorSet.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
                 mParent.removeView(mView);
             }
         });
-        startAnimatorOnSurfaceView(animator);
+        Animator moveDown = ObjectAnimator.ofFloat(mView, View.TRANSLATION_Y,
+                mView.getHeight() + getLayoutParams().bottomMargin);
+        moveDown.setInterpolator(new DecelerateInterpolator());
+        Animator fadeOut = ObjectAnimator.ofFloat(mView, View.ALPHA, 0f);
+        fadeOut.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
+
+        animatorSet.playTogether(fadeOut, moveDown);
+        startAnimatorOnSurfaceView(animatorSet);
     }
 
     void adjustViewPosition() {
@@ -158,7 +170,7 @@ class SnackbarView {
             int visibleHeight = Math.min(mCurrentVisibleRect.bottom, activityHeight);
             int keyboardHeight = activityHeight - visibleHeight;
 
-            MarginLayoutParams lp = (MarginLayoutParams) mView.getLayoutParams();
+            MarginLayoutParams lp = getLayoutParams();
             lp.bottomMargin = keyboardHeight;
             if (mIsTablet) {
                 int margin = mParent.getResources()
@@ -257,6 +269,10 @@ class SnackbarView {
         } else {
             animator.start();
         }
+    }
+
+    private MarginLayoutParams getLayoutParams() {
+        return (MarginLayoutParams) mView.getLayoutParams();
     }
 
     private void setViewText(TextView view, CharSequence text, boolean animate) {

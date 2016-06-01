@@ -77,7 +77,7 @@ public class SnackbarManager implements OnClickListener {
 
     /**
      * Constructs a SnackbarManager to show snackbars in the given window.
-     * @param rootView The main view (e.g. android.R.id.content) of the embedding activity.
+     * @param activity The embedding activity.
      */
     public SnackbarManager(Activity activity) {
         mActivity = activity;
