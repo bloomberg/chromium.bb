@@ -1099,6 +1099,16 @@ void ChromeContentBrowserClient::GetAdditionalWebUISchemes(
   additional_schemes->push_back(dom_distiller::kDomDistillerScheme);
 }
 
+void ChromeContentBrowserClient::GetAdditionalWebUIHostsToIgnoreParititionCheck(
+    std::vector<std::string>* hosts) {
+  hosts->push_back(chrome::kChromeUIExtensionIconHost);
+  hosts->push_back(chrome::kChromeUIFaviconHost);
+  hosts->push_back(chrome::kChromeUIThemeHost);
+  hosts->push_back(chrome::kChromeUIThumbnailHost);
+  hosts->push_back(chrome::kChromeUIThumbnailHost2);
+  hosts->push_back(chrome::kChromeUIThumbnailListHost);
+}
+
 bool ChromeContentBrowserClient::LogWebUIUrl(const GURL& web_ui_url) const {
   return webui::LogWebUIUrl(web_ui_url);
 }
