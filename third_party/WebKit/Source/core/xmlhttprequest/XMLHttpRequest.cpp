@@ -530,11 +530,6 @@ void XMLHttpRequest::setWithCredentials(bool value, ExceptionState& exceptionSta
         return;
     }
 
-    // FIXME: According to XMLHttpRequest Level 2 we should throw InvalidAccessError exception here.
-    // However for time being only print warning message to warn web developers.
-    if (!m_async)
-        Deprecation::countDeprecation(getExecutionContext(), UseCounter::SyncXHRWithCredentials);
-
     m_includeCredentials = value;
 }
 

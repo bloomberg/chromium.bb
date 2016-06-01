@@ -237,9 +237,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature)
     case UseCounter::PrefixedCancelRequestAnimationFrame:
         return "'webkitCancelRequestAnimationFrame' is vendor-specific. Please use the standard 'cancelAnimationFrame' instead.";
 
-    case UseCounter::SyncXHRWithCredentials:
-        return "Setting 'XMLHttpRequest.withCredentials' for synchronous requests is deprecated.";
-
     case UseCounter::PictureSourceSrc:
         return "<source src> with a <picture> parent is invalid and therefore ignored. Please use <source srcset> instead.";
 

@@ -372,7 +372,6 @@ public:
         CSSSelectorPseudoHost = 469,
         CSSSelectorPseudoHostContext = 470,
         CSSDeepCombinator = 471,
-        SyncXHRWithCredentials = 472,
         // The above items are available in M37 branch.
 
         UseAsm = 473,
