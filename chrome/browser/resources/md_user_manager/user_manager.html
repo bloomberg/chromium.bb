@@ -22,6 +22,7 @@
   <!-- Make sure paper-button is imported to use in user_pod_template.html -->
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
   <link rel="import" href="chrome://md-user-manager/control_bar.html">
+  <link rel="import" href="chrome://md-user-manager/error_dialog.html">
   <link rel="import" href="chrome://md-user-manager/user_manager_pages.html">
   <link rel="import" href="chrome://md-user-manager/user_manager_styles.html">
   <link rel="import" href="chrome://md-user-manager/user_manager_tutorial.html">
@@ -44,6 +45,7 @@
     </div>
     <div id="bubble" class="bubble faded" hidden></div>
     <control-bar id="login-header-bar"></control-bar>
+    <error-dialog></error-dialog>
     <include src="../../../../ui/login/account_picker/user_pod_template.html">
   </user-manager-pages>
   <link rel="import" href="chrome://md-user-manager/strings.html">

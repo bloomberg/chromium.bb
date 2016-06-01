@@ -9,6 +9,10 @@
  Polymer({
   is: 'control-bar',
 
+  behaviors: [
+    I18nBehavior,
+  ],
+
   properties: {
     /**
      * True if 'Browse as Guest' button is displayed.
@@ -43,7 +47,15 @@
    * @private
    */
   onLaunchGuestTap_: function(event) {
-    this.browserProxy_.launchGuestUser();
+    this.browserProxy_.areAllProfilesLocked().then(
+        function(allProfilesLocked) {
+          if (!allProfilesLocked) {
+            this.browserProxy_.launchGuestUser();
+          } else {
+            document.querySelector('error-dialog').show(
+                this.i18n('browseAsGuestAllProfilesLockedError'));
+          }
+        }.bind(this));
   },
 
   /**
@@ -52,7 +64,15 @@
    * @private
    */
   onAddUserTap_: function(event) {
-    // Event is caught by user-manager-pages.
-    this.fire('change-page', {page: 'create-user-page'});
+    this.browserProxy_.areAllProfilesLocked().then(
+        function(allProfilesLocked) {
+          if (!allProfilesLocked) {
+            // Event is caught by user-manager-pages.
+            this.fire('change-page', {page: 'create-user-page'});
+          } else {
+            document.querySelector('error-dialog').show(
+                this.i18n('addProfileAllProfilesLockedError'));
+          }
+        }.bind(this));
   }
 });

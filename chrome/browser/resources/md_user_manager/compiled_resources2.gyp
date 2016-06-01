@@ -7,6 +7,7 @@
       'target_name': 'control_bar',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         'profile_browser_proxy',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -19,6 +20,10 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
         'profile_browser_proxy',
       ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'error_dialog',
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {

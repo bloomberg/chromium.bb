@@ -19,6 +19,7 @@ var TestProfileBrowserProxy = function() {
     'initializeUserManager',
     'launchUser',
     'getExistingSupervisedUsers',
+    'areAllProfilesLocked',
   ]);
 
   /** @private {!Array<!AvatarIcon>} */
@@ -109,5 +110,11 @@ TestProfileBrowserProxy.prototype = {
   getExistingSupervisedUsers: function() {
     this.methodCalled('getExistingSupervisedUsers');
     return Promise.resolve(this.existingSupervisedUsers_);
+  },
+
+  /** @override */
+  areAllProfilesLocked: function() {
+    this.methodCalled('areAllProfilesLocked');
+    return Promise.resolve(false);
   },
 };

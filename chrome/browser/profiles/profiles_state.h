@@ -103,6 +103,9 @@ bool GetFastUserSwitchingTutorialDismissedState();
 // System Profile directory, which is an invalid last used profile.
 void SetLastUsedProfile(const std::string& profile_dir);
 
+// Returns true if all non-supervised and non-child profiles are locked.
+bool AreAllProfilesLocked();
+
 }  // namespace profiles
 
 #endif  // CHROME_BROWSER_PROFILES_PROFILES_STATE_H_

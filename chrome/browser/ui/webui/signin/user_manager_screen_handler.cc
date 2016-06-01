@@ -99,6 +99,8 @@ const char kJsApiUserManagerRemoveUserWarningLoadStats[] =
     "removeUserWarningLoadStats";
 const char kJsApiUserManagerGetRemoveWarningDialogMessage[] =
     "getRemoveWarningDialogMessage";
+const char kJsApiUserManagerAreAllProfilesLocked[] =
+    "areAllProfilesLocked";
 const size_t kAvatarIconSize = 180;
 const int kMaxOAuthRetries = 3;
 
@@ -465,6 +467,15 @@ void UserManagerScreenHandler::HandleRemoveUser(const base::ListValue* args) {
 
   DCHECK(profiles::IsMultipleProfilesEnabled());
 
+  if (profiles::AreAllProfilesLocked()) {
+    web_ui()->CallJavascriptFunction(
+        "cr.webUIListenerCallback",
+        base::StringValue("show-error-dialog"),
+        base::StringValue(l10n_util::GetStringUTF8(
+            IDS_USER_MANAGER_REMOVE_PROFILE_PROFILES_LOCKED_ERROR)));
+    return;
+  }
+
   // The callback is run if the only profile has been deleted, and a new
   // profile has been created to replace it.
   webui::DeleteProfileAtPath(profile_path,
@@ -482,6 +493,20 @@ void UserManagerScreenHandler::HandleLaunchGuest(const base::ListValue* args) {
     // guest mode.
     NOTREACHED();
   }
+}
+
+void UserManagerScreenHandler::HandleAreAllProfilesLocked(
+    const base::ListValue* args) {
+  std::string webui_callback_id;
+  CHECK_EQ(1U, args->GetSize());
+  bool success = args->GetString(0, &webui_callback_id);
+  DCHECK(success);
+
+  web_ui()->CallJavascriptFunction(
+      "cr.webUIResponse",
+      base::StringValue(webui_callback_id),
+      base::FundamentalValue(true),
+      base::FundamentalValue(profiles::AreAllProfilesLocked()));
 }
 
 void UserManagerScreenHandler::HandleLaunchUser(const base::ListValue* args) {
@@ -689,6 +714,10 @@ void UserManagerScreenHandler::RegisterMessages() {
       kJsApiUserManagerGetRemoveWarningDialogMessage,
       base::Bind(&UserManagerScreenHandler::HandleGetRemoveWarningDialogMessage,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kJsApiUserManagerAreAllProfilesLocked,
+      base::Bind(&UserManagerScreenHandler::HandleAreAllProfilesLocked,
+                 base::Unretained(this)));
 
   const content::WebUI::MessageCallback& kDoNothingCallback =
       base::Bind(&HandleAndDoNothing);
@@ -826,6 +855,15 @@ void UserManagerScreenHandler::GetLocalizedValues(
                                 base::string16());
   localized_strings->SetString("multiProfilesOwnerPrimaryOnlyMsg",
                                 base::string16());
+
+  // Error message when trying to add a profile while all profiles are locked.
+  localized_strings->SetString("addProfileAllProfilesLockedError",
+      l10n_util::GetStringUTF16(
+          IDS_USER_MANAGER_ADD_PROFILE_PROFILES_LOCKED_ERROR));
+  // Error message when trying to browse as guest while all profiles are locked.
+  localized_strings->SetString("browseAsGuestAllProfilesLockedError",
+      l10n_util::GetStringUTF16(
+          IDS_USER_MANAGER_GO_GUEST_PROFILES_LOCKED_ERROR));
 }
 
 void UserManagerScreenHandler::SendUserList() {

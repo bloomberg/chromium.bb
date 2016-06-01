@@ -256,4 +256,24 @@ void SetLastUsedProfile(const std::string& profile_dir) {
   local_state->SetString(prefs::kProfileLastUsed, profile_dir);
 }
 
+bool AreAllProfilesLocked() {
+  bool all_profiles_locked = true;
+
+  std::vector<ProfileAttributesEntry*> entries =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage().
+          GetAllProfilesAttributes();
+  for (const ProfileAttributesEntry* entry : entries) {
+    if (entry->IsOmitted())
+      continue;
+
+    // Supervised and Child profiles cannot be locked.
+    if (!entry->IsSigninRequired() &&
+        !entry->IsChild() &&
+        !entry->IsLegacySupervised()) {
+      return false;
+    }
+  }
+  return all_profiles_locked;
+}
+
 }  // namespace profiles

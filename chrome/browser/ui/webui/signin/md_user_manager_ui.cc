@@ -65,6 +65,8 @@ content::WebUIDataSource* MDUserManagerUI::CreateUIDataSource(
   source->AddResourcePath("control_bar.js", IDR_MD_CONTROL_BAR_JS);
   source->AddResourcePath("create_profile.html", IDR_MD_CREATE_PROFILE_HTML);
   source->AddResourcePath("create_profile.js", IDR_MD_CREATE_PROFILE_JS);
+  source->AddResourcePath("error_dialog.html", IDR_MD_ERROR_DIALOG_HTML);
+  source->AddResourcePath("error_dialog.js", IDR_MD_ERROR_DIALOG_JS);
   source->AddResourcePath("icons.html", IDR_MD_USER_MANAGER_ICONS_HTML);
   source->AddResourcePath("import_supervised_user.html",
                           IDR_MD_IMPORT_SUPERVISED_USER_HTML);

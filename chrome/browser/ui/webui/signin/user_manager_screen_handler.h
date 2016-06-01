@@ -82,6 +82,7 @@ class UserManagerScreenHandler
   void HandleLaunchGuest(const base::ListValue* args);
   void HandleLaunchUser(const base::ListValue* args);
   void HandleRemoveUser(const base::ListValue* args);
+  void HandleAreAllProfilesLocked(const base::ListValue* args);
   void HandleAttemptUnlock(const base::ListValue* args);
   void HandleHardlockUserPod(const base::ListValue* args);
   void HandleRemoveUserWarningLoadStats(const base::ListValue* args);

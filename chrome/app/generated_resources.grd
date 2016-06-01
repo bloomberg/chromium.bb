@@ -13168,6 +13168,15 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL">$1<ex>www.example.com</ex></ph>.
         </message>
         <if expr="not chromeos">
+          <message name="IDS_USER_MANAGER_GO_GUEST_PROFILES_LOCKED_ERROR" desc="Error message displayed when trying to browser as guest while all profiles are locked.">
+            Please unlock your profile before browsing as a guest.
+          </message>
+          <message name="IDS_USER_MANAGER_REMOVE_PROFILE_PROFILES_LOCKED_ERROR" desc="Error message displayed when trying to remove a profile while all profiles are locked.">
+            Please unlock your profile before removing a person.
+          </message>
+          <message name="IDS_USER_MANAGER_ADD_PROFILE_PROFILES_LOCKED_ERROR" desc="Error message displayed when trying to add a profile while all profiles are locked.">
+            Please unlock your profile before adding a person.
+          </message>
           <message name="IDS_LOGIN_POD_USER_REMOVE_WARNING_NONSYNC" desc="Main text shown as a warning when attempting to remove an user. This case is for non-synced profiles, with all statistics loaded correctly. The symbol $1 will be substituted with custom JS code, so it should not be replaced by a #.">
             {NUM_ITEMS, plural,
             =1 {This will permanently delete $1 item from this device.}

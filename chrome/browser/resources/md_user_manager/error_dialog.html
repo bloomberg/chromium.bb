@@ -1,0 +1,63 @@
+<link rel="import" href="chrome://md-user-manager/shared_styles.html">
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+
+<!-- TODO(mahmadi): refactor this and import-supervised-user reusing
+     <paper-dialog> or <settings-dialog> -->
+<dom-module id="error-dialog">
+  <template>
+    <style include="shared-styles">
+      #backdrop {
+        align-items: center;
+        background: rgba(255, 255, 255, 0.6);
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        left: 0;
+        position: absolute;
+        right: 0;
+        top: 0;
+      }
+
+      #dialog {
+        background: white;
+        border-radius: 2px;
+        box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14),
+                    0 6px 30px 5px rgba(0, 0, 0, 0.12),
+                    0 8px 10px -5px rgba(0, 0, 0, 0.4);
+        color: var(--primary-text-color);
+        width: 512px;
+      }
+
+      #title-bar {
+        padding: 6px;
+      }
+
+      #title-bar paper-icon-button {
+        --paper-icon-button: {
+          padding: 10px;
+        };
+      }
+
+      #message {
+        padding: 10px 16px 62px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+    </style>
+    <template is="dom-if" if="[[!popupHidden_]]">
+      <div id="backdrop">
+        <div id="dialog">
+          <div id="title-bar" class="horizontal end-justified layout">
+            <paper-icon-button icon="cr:close" on-tap="onCloseTap_">
+            </paper-icon-button>
+          </div>
+          <div id="message">[[message_]]</div>
+        </div>
+      </div>
+    </template>
+  </template>
+  <script src="chrome://md-user-manager/error_dialog.js"></script>
+</dom-module>

@@ -54,10 +54,9 @@ cr.define('signin', function() {
     },
 
     /**
-     * Gets the list of existing supervised users.
      * @param {string} profilePath Profile Path of the custodian.
-     * @return {Promise} A promise for the requested data.
-     * @private
+     * @return {!Promise<!Array<!SupervisedUser>>} The list of existing
+     *     supervised users.
      */
     getExistingSupervisedUsers: function(profilePath) {
       assertNotReached();
@@ -117,6 +116,14 @@ cr.define('signin', function() {
      * @param {string} profilePath Path to the profile to switch to.
      */
     switchToProfile: function(profilePath) {
+      assertNotReached();
+    },
+
+    /**
+     * @return {!Promise<boolean>} Whether all (non-supervised and non-child)
+     *     profiles are locked.
+     */
+    areAllProfilesLocked: function() {
       assertNotReached();
     }
   };
@@ -183,6 +190,11 @@ cr.define('signin', function() {
     /** @override */
     switchToProfile: function(profilePath) {
       chrome.send('switchToProfile', [profilePath]);
+    },
+
+    /** @override */
+    areAllProfilesLocked: function() {
+      return cr.sendWithPromise('areAllProfilesLocked');
     }
   };
 

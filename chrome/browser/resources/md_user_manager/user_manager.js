@@ -65,6 +65,7 @@ cr.define('cr.ui', function() {
 
     signin.ProfileBrowserProxyImpl.getInstance().initializeUserManager(
         window.location.hash);
+    cr.addWebUIListener('show-error-dialog', cr.ui.UserManager.showErrorDialog);
   };
 
   /**
@@ -129,6 +130,14 @@ cr.define('cr.ui', function() {
    */
   UserManager.clearErrors = function() {
     DisplayManager.clearErrors();
+  };
+
+  /**
+   * Shows the error dialog populated with the given message.
+   * @param {string} message Error message to show.
+   */
+  UserManager.showErrorDialog = function(message) {
+    document.querySelector('error-dialog').show(message);
   };
 
   // Export
