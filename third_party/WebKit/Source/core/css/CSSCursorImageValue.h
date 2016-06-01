@@ -22,6 +22,7 @@
 #define CSSCursorImageValue_h
 
 #include "core/css/CSSImageValue.h"
+#include "core/svg/SVGCursorElement.h"
 #include "platform/geometry/IntPoint.h"
 #include "wtf/HashSet.h"
 
@@ -45,8 +46,11 @@ public:
 
     String customCSSText() const;
 
-    bool updateIfSVGCursorIsUsed(Element*);
+    SVGCursorElement* getSVGCursorElement(Element*) const;
+
+    void clearImageResource() const;
     bool isCachePending(float deviceScaleFactor) const;
+    String cachedImageURL() const;
     StyleImage* cachedImage(float deviceScaleFactor) const;
     StyleImage* cacheImage(Document*, float deviceScaleFactor);
 
@@ -57,16 +61,14 @@ public:
 private:
     CSSCursorImageValue(CSSValue* imageValue, bool hotSpotSpecified, const IntPoint& hotSpot);
 
-    bool isSVGCursor() const;
-    String cachedImageURL();
-    void clearImageResource();
+    bool hasFragmentInURL() const;
 
     Member<CSSValue> m_imageValue;
 
     bool m_hotSpotSpecified;
     IntPoint m_hotSpot;
-    bool m_isCachePending;
-    Member<StyleImage> m_cachedImage;
+    mutable bool m_isCachePending;
+    mutable Member<StyleImage> m_cachedImage;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSCursorImageValue, isCursorImageValue());

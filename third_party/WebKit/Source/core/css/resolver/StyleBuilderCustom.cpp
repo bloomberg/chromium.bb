@@ -198,9 +198,34 @@ void StyleBuilderFunctions::applyValueCSSPropertyCursor(StyleResolverState& stat
             CSSValue* item = list->item(i);
             if (item->isCursorImageValue()) {
                 CSSCursorImageValue* image = toCSSCursorImageValue(item);
-                if (image->updateIfSVGCursorIsUsed(state.element())) // Elements with SVG cursors are not allowed to share style.
+                IntPoint hotSpot = image->hotSpot();
+                bool hotSpotSpecified = image->hotSpotSpecified();
+
+                Element* element = state.element();
+                if (SVGCursorElement* cursorElement = image->getSVGCursorElement(element)) {
+                    if (image->cachedImageURL() != element->document().completeURL(cursorElement->href()->currentValue()->value()))
+                        image->clearImageResource();
+
+                    // Set the hot spot if it wasn't specified in the CSS but is specified in the SVG.
+                    if (!hotSpotSpecified) {
+                        hotSpotSpecified = true;
+                        SVGLengthContext lengthContext(0);
+                        // x() and y() return 0 if they're not specified in cursorElement.
+                        float svgX = roundf(cursorElement->x()->currentValue()->value(lengthContext));
+                        hotSpot.setX(static_cast<int>(svgX));
+                        float svgY = roundf(cursorElement->y()->currentValue()->value(lengthContext));
+                        hotSpot.setY(static_cast<int>(svgY));
+                    }
+
+                    SVGElement* svgElement = toSVGElement(element);
+                    svgElement->setCursorImageValue(image);
+                    cursorElement->addClient(svgElement);
+
+                    // Elements with SVG cursors are not allowed to share style.
                     state.style()->setUnique();
-                state.style()->addCursor(state.styleImage(CSSPropertyCursor, *image), image->hotSpotSpecified(), image->hotSpot());
+                }
+
+                state.style()->addCursor(state.styleImage(CSSPropertyCursor, *image), hotSpotSpecified, hotSpot);
             } else {
                 state.style()->setCursor(toCSSPrimitiveValue(item)->convertTo<ECursor>());
             }
