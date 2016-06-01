@@ -644,7 +644,6 @@ void LayerImpl::UpdatePropertyTreeForScrollingAndAnimationIfNeeded() {
     UpdatePropertyTreeScrollOffset();
 
   if (HasAnyAnimationTargetingProperty(TargetProperty::TRANSFORM)) {
-    UpdatePropertyTreeTransform();
     UpdatePropertyTreeTransformIsAnimated(
         HasPotentiallyRunningTransformAnimation());
   }
@@ -681,6 +680,7 @@ void LayerImpl::OnTransformAnimated(const gfx::Transform& transform) {
   SetTransform(transform);
   UpdatePropertyTreeTransform();
   was_ever_ready_since_last_transform_animation_ = false;
+  layer_tree_impl()->AddToTransformAnimationsMap(id(), transform);
   if (old_transform != transform) {
     SetNeedsPushProperties();
     layer_tree_impl()->set_needs_update_draw_properties();

@@ -500,6 +500,11 @@ void LayerTreeImpl::AddToOpacityAnimationsMap(int id, float opacity) {
   opacity_animations_map_[id] = opacity;
 }
 
+void LayerTreeImpl::AddToTransformAnimationsMap(int id,
+                                                gfx::Transform transform) {
+  transform_animations_map_[id] = transform;
+}
+
 LayerTreeImpl::ElementLayers LayerTreeImpl::GetMutableLayers(
     uint64_t element_id) {
   auto iter = element_layers_map_.find(element_id);
@@ -579,17 +584,35 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
   if (!root_layer())
     return;
   for (auto& layer_id_to_opacity : opacity_animations_map_) {
-    if (LayerImpl* layer = LayerById(layer_id_to_opacity.first)) {
-      EffectNode* node =
-          property_trees_.effect_tree.Node(layer->effect_tree_index());
-      if (node->owner_id != layer->id() ||
-          !node->data.is_currently_animating_opacity)
+    const int id = layer_id_to_opacity.first;
+    if (property_trees_.IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id)) {
+      EffectNode* node = property_trees_.effect_tree.Node(
+          property_trees_.effect_id_to_index_map[id]);
+      if (!node->data.is_currently_animating_opacity ||
+          node->data.opacity == layer_id_to_opacity.second)
         continue;
       node->data.opacity = layer_id_to_opacity.second;
       property_trees_.effect_tree.set_needs_update(true);
     }
   }
   opacity_animations_map_.clear();
+
+  for (auto& layer_id_to_transform : transform_animations_map_) {
+    const int id = layer_id_to_transform.first;
+    if (property_trees_.IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
+                                         id)) {
+      TransformNode* node = property_trees_.transform_tree.Node(
+          property_trees_.transform_id_to_index_map[id]);
+      if (!node->data.is_currently_animating ||
+          node->data.local == layer_id_to_transform.second)
+        continue;
+      node->data.local = layer_id_to_transform.second;
+      node->data.needs_local_transform_update = true;
+      property_trees_.transform_tree.set_needs_update(true);
+    }
+  }
+  transform_animations_map_.clear();
+
   LayerTreeHostCommon::CallFunctionForEveryLayer(this, [](LayerImpl* layer) {
     layer->UpdatePropertyTreeForScrollingAndAnimationIfNeeded();
   });
