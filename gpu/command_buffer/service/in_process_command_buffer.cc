@@ -421,6 +421,12 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   decoder_->SetWaitFenceSyncCallback(
       base::Bind(&InProcessCommandBuffer::WaitFenceSyncOnGpuThread,
                  base::Unretained(this)));
+  decoder_->SetDescheduleUntilFinishedCallback(
+      base::Bind(&InProcessCommandBuffer::DescheduleUntilFinishedOnGpuThread,
+                 base::Unretained(this)));
+  decoder_->SetRescheduleAfterFinishedCallback(
+      base::Bind(&InProcessCommandBuffer::RescheduleAfterFinishedOnGpuThread,
+                 base::Unretained(this)));
 
   image_factory_ = params.image_factory;
 
@@ -880,6 +886,14 @@ bool InProcessCommandBuffer::WaitFenceSyncOnGpuThread(
   SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
   mailbox_manager->PullTextureUpdates(sync_token);
   return true;
+}
+
+void InProcessCommandBuffer::DescheduleUntilFinishedOnGpuThread() {
+  NOTIMPLEMENTED();
+}
+
+void InProcessCommandBuffer::RescheduleAfterFinishedOnGpuThread() {
+  NOTIMPLEMENTED();
 }
 
 void InProcessCommandBuffer::SignalSyncTokenOnGpuThread(

@@ -152,6 +152,10 @@ bool CommandBufferDriver::Initialize(
       &CommandBufferDriver::OnFenceSyncRelease, base::Unretained(this)));
   decoder_->SetWaitFenceSyncCallback(base::Bind(
       &CommandBufferDriver::OnWaitFenceSync, base::Unretained(this)));
+  decoder_->SetDescheduleUntilFinishedCallback(base::Bind(
+      &CommandBufferDriver::OnDescheduleUntilFinished, base::Unretained(this)));
+  decoder_->SetRescheduleAfterFinishedCallback(base::Bind(
+      &CommandBufferDriver::OnRescheduleAfterFinished, base::Unretained(this)));
 
   gpu::gles2::DisallowedFeatures disallowed_features;
 
@@ -512,6 +516,21 @@ bool CommandBufferDriver::OnWaitFenceSync(
                            base::Bind(&gpu::CommandExecutor::SetScheduled,
                                       executor_->AsWeakPtr(), true));
   return executor_->scheduled();
+}
+
+void CommandBufferDriver::OnDescheduleUntilFinished() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(IsScheduled());
+  DCHECK(executor_->HasMoreIdleWork());
+
+  executor_->SetScheduled(false);
+}
+
+void CommandBufferDriver::OnRescheduleAfterFinished() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!executor_->scheduled());
+
+  executor_->SetScheduled(true);
 }
 
 void CommandBufferDriver::OnParseError() {

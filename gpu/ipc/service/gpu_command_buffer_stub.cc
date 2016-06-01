@@ -610,6 +610,12 @@ bool GpuCommandBufferStub::Initialize(
       &GpuCommandBufferStub::OnFenceSyncRelease, base::Unretained(this)));
   decoder_->SetWaitFenceSyncCallback(base::Bind(
       &GpuCommandBufferStub::OnWaitFenceSync, base::Unretained(this)));
+  decoder_->SetDescheduleUntilFinishedCallback(
+      base::Bind(&GpuCommandBufferStub::OnDescheduleUntilFinished,
+                 base::Unretained(this)));
+  decoder_->SetRescheduleAfterFinishedCallback(
+      base::Bind(&GpuCommandBufferStub::OnRescheduleAfterFinished,
+                 base::Unretained(this)));
 
   command_buffer_->SetPutOffsetChangeCallback(
       base::Bind(&GpuCommandBufferStub::PutChanged, base::Unretained(this)));
@@ -896,6 +902,21 @@ void GpuCommandBufferStub::OnFenceSyncRelease(uint64_t release) {
   }
 
   sync_point_client_->ReleaseFenceSync(release);
+}
+
+void GpuCommandBufferStub::OnDescheduleUntilFinished() {
+  DCHECK(executor_->scheduled());
+  DCHECK(executor_->HasMoreIdleWork());
+
+  executor_->SetScheduled(false);
+  channel_->OnStreamRescheduled(stream_id_, false);
+}
+
+void GpuCommandBufferStub::OnRescheduleAfterFinished() {
+  DCHECK(!executor_->scheduled());
+
+  executor_->SetScheduled(true);
+  channel_->OnStreamRescheduled(stream_id_, true);
 }
 
 bool GpuCommandBufferStub::OnWaitFenceSync(

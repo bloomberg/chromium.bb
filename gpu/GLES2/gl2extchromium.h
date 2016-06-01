@@ -153,6 +153,15 @@ typedef GLint(GL_APIENTRYP PFNGLGETIMAGEIVCHROMIUMPROC)(
     GLenum param);
 #endif  /* GL_CHROMIUM_gpu_memory_buffer_image */
 
+/* GL_CHROMIUM_deschedule */
+#ifndef GL_CHROMIUM_deschedule
+#define GL_CHROMIUM_deschedule 1
+#ifdef GL_GLEXT_PROTOTYPES
+GL_APICALL void GL_APIENTRY glDescheduleUntilFinishedCHROMIUM();
+#endif
+typedef void(GL_APIENTRYP PFNGLDESCHEDULEUNTILFINISHEDCHROMIUM)();
+#endif  /* GL_CHROMIUM_deschedule */
+
 /* GL_CHROMIUM_map_sub */
 #ifndef GL_CHROMIUM_map_sub
 #define GL_CHROMIUM_map_sub 1

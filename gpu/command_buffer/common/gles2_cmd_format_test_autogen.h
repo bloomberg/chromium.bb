@@ -4103,6 +4103,17 @@ TEST_F(GLES2FormatTest, GetUniformsES3CHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, DescheduleUntilFinishedCHROMIUM) {
+  cmds::DescheduleUntilFinishedCHROMIUM& cmd =
+      *GetBufferAs<cmds::DescheduleUntilFinishedCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd);
+  EXPECT_EQ(
+      static_cast<uint32_t>(cmds::DescheduleUntilFinishedCHROMIUM::kCmdId),
+      cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 TEST_F(GLES2FormatTest, GetTranslatedShaderSourceANGLE) {
   cmds::GetTranslatedShaderSourceANGLE& cmd =
       *GetBufferAs<cmds::GetTranslatedShaderSourceANGLE>();

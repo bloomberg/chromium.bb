@@ -136,6 +136,8 @@ class CommandBufferDriver : base::NonThreadSafe {
   bool OnWaitFenceSync(gpu::CommandBufferNamespace namespace_id,
                        gpu::CommandBufferId command_buffer_id,
                        uint64_t release);
+  void OnDescheduleUntilFinished();
+  void OnRescheduleAfterFinished();
   void OnParseError();
   void OnContextLost(uint32_t reason);
   void OnGpuCompletedSwapBuffers(gfx::SwapResult result);

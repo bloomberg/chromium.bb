@@ -181,6 +181,9 @@ class GPU_EXPORT GpuCommandBufferStub
                                 CommandBufferId command_buffer_id,
                                 uint64_t release);
 
+  void OnDescheduleUntilFinished();
+  void OnRescheduleAfterFinished();
+
   void OnCreateImage(const GpuCommandBufferMsg_CreateImage_Params& params);
   void OnDestroyImage(int32_t id);
   void OnCreateStreamTexture(uint32_t texture_id,

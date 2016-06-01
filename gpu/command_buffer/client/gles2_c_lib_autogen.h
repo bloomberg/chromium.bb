@@ -1321,6 +1321,9 @@ void GL_APIENTRY GLES2GetImageivCHROMIUM(GLuint image_id,
                                          GLint* data) {
   gles2::GetGLContext()->GetImageivCHROMIUM(image_id, param, data);
 }
+void GL_APIENTRY GLES2DescheduleUntilFinishedCHROMIUM() {
+  gles2::GetGLContext()->DescheduleUntilFinishedCHROMIUM();
+}
 void GL_APIENTRY GLES2GetTranslatedShaderSourceANGLE(GLuint shader,
                                                      GLsizei bufsize,
                                                      GLsizei* length,
@@ -2708,6 +2711,11 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glGetImageivCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glGetImageivCHROMIUM),
+    },
+    {
+        "glDescheduleUntilFinishedCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(
+            glDescheduleUntilFinishedCHROMIUM),
     },
     {
         "glGetTranslatedShaderSourceANGLE",

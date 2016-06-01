@@ -23,12 +23,14 @@ namespace error {
     kLostContext,
     kGenericError,
     kDeferCommandUntilLater,
-    kErrorLast = kDeferCommandUntilLater,
+    kDeferLaterCommands,
+    kErrorLast = kDeferLaterCommands,
   };
 
   // Return true if the given error code is an actual error.
   inline bool IsError(Error error) {
-    return error != kNoError && error != kDeferCommandUntilLater;
+    return error != kNoError && error != kDeferCommandUntilLater &&
+           error != kDeferLaterCommands;
   }
 
   // Provides finer grained information about why the context was lost.

@@ -12282,6 +12282,33 @@ static_assert(offsetof(GetUniformsES3CHROMIUM, program) == 4,
 static_assert(offsetof(GetUniformsES3CHROMIUM, bucket_id) == 8,
               "offset of GetUniformsES3CHROMIUM bucket_id should be 8");
 
+struct DescheduleUntilFinishedCHROMIUM {
+  typedef DescheduleUntilFinishedCHROMIUM ValueType;
+  static const CommandId kCmdId = kDescheduleUntilFinishedCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init() { SetHeader(); }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+static_assert(sizeof(DescheduleUntilFinishedCHROMIUM) == 4,
+              "size of DescheduleUntilFinishedCHROMIUM should be 4");
+static_assert(offsetof(DescheduleUntilFinishedCHROMIUM, header) == 0,
+              "offset of DescheduleUntilFinishedCHROMIUM header should be 0");
+
 struct GetTranslatedShaderSourceANGLE {
   typedef GetTranslatedShaderSourceANGLE ValueType;
   static const CommandId kCmdId = kGetTranslatedShaderSourceANGLE;

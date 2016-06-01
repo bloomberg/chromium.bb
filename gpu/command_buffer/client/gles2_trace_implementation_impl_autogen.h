@@ -1924,6 +1924,12 @@ void GLES2TraceImplementation::GetImageivCHROMIUM(GLuint image_id,
   gl_->GetImageivCHROMIUM(image_id, param, data);
 }
 
+void GLES2TraceImplementation::DescheduleUntilFinishedCHROMIUM() {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "GLES2Trace::DescheduleUntilFinishedCHROMIUM");
+  gl_->DescheduleUntilFinishedCHROMIUM();
+}
+
 void GLES2TraceImplementation::GetTranslatedShaderSourceANGLE(GLuint shader,
                                                               GLsizei bufsize,
                                                               GLsizei* length,

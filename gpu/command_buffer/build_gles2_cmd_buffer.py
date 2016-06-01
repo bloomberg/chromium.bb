@@ -2681,6 +2681,14 @@ _FUNCTION_INFO = {
     'chromium': True,
     'trace_level': 1,
   },
+  'DescheduleUntilFinishedCHROMIUM': {
+    'type': 'Custom',
+    'decoder_func': 'DoDescheduleUntilFinishedCHROMIUM',
+    'unit_test': False,
+    'extension': "CHROMIUM_deschedule",
+    'chromium': True,
+    'trace_level': 1,
+  },
   'CreateProgram': {
     'type': 'Create',
     'client_test': False,

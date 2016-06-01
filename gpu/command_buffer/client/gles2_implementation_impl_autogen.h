@@ -3075,6 +3075,14 @@ void GLES2Implementation::BindVertexArrayOES(GLuint array) {
   CheckGLError();
 }
 
+void GLES2Implementation::DescheduleUntilFinishedCHROMIUM() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDescheduleUntilFinishedCHROMIUM("
+                     << ")");
+  helper_->DescheduleUntilFinishedCHROMIUM();
+  CheckGLError();
+}
+
 void GLES2Implementation::GetTranslatedShaderSourceANGLE(GLuint shader,
                                                          GLsizei bufsize,
                                                          GLsizei* length,

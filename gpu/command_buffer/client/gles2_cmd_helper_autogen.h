@@ -2472,6 +2472,14 @@ void GetUniformsES3CHROMIUM(GLuint program, uint32_t bucket_id) {
   }
 }
 
+void DescheduleUntilFinishedCHROMIUM() {
+  gles2::cmds::DescheduleUntilFinishedCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::DescheduleUntilFinishedCHROMIUM>();
+  if (c) {
+    c->Init();
+  }
+}
+
 void GetTranslatedShaderSourceANGLE(GLuint shader, uint32_t bucket_id) {
   gles2::cmds::GetTranslatedShaderSourceANGLE* c =
       GetCmdSpace<gles2::cmds::GetTranslatedShaderSourceANGLE>();

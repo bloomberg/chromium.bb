@@ -213,6 +213,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   bool WaitFenceSyncOnGpuThread(gpu::CommandBufferNamespace namespace_id,
                                 gpu::CommandBufferId command_buffer_id,
                                 uint64_t release);
+  void DescheduleUntilFinishedOnGpuThread();
+  void RescheduleAfterFinishedOnGpuThread();
   void SignalSyncTokenOnGpuThread(const SyncToken& sync_token,
                                   const base::Closure& callback);
   void SignalQueryOnGpuThread(unsigned query_id, const base::Closure& callback);

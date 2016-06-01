@@ -93,6 +93,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
                               gpu::CommandBufferId command_buffer_id,
                               uint64_t release)>
       WaitFenceSyncCallback;
+  typedef base::Callback<void(void)> NoParamCallback;
 
   // The default stencil mask, which has all bits set.  This really should be a
   // GLuint, but we can't #include gl_bindings.h in this file without causing
@@ -291,6 +292,13 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
       const FenceSyncReleaseCallback& callback) = 0;
   virtual void SetWaitFenceSyncCallback(
       const WaitFenceSyncCallback& callback) = 0;
+
+  // Sets the callback for the DescheduleUntilFinished and
+  // RescheduleAfterFinished calls.
+  virtual void SetDescheduleUntilFinishedCallback(
+      const NoParamCallback& callback) = 0;
+  virtual void SetRescheduleAfterFinishedCallback(
+      const NoParamCallback& callback) = 0;
 
   virtual void WaitForReadPixels(base::Closure callback) = 0;
   virtual uint32_t GetTextureUploadCount() = 0;

@@ -1692,6 +1692,76 @@ TEST_P(GLES2DecoderDoCommandsTest, DoCommandsBadArgSize) {
   EXPECT_EQ(entries_per_cmd_ + cmds_[1].header.size, num_processed);
 }
 
+class GLES2DecoderDescheduleUntilFinishedTest : public GLES2DecoderTest {
+ public:
+  GLES2DecoderDescheduleUntilFinishedTest() {
+  }
+
+  void SetUp() override {
+    InitState init;
+    init.gl_version = "4.4";
+    init.extensions += " GL_ARB_compatibility GL_ARB_sync";
+    InitDecoder(init);
+
+    GetDecoder()->SetDescheduleUntilFinishedCallback(
+        base::Bind(&GLES2DecoderDescheduleUntilFinishedTest::
+                       DescheduleUntilFinishedCallback,
+                   base::Unretained(this)));
+    GetDecoder()->SetRescheduleAfterFinishedCallback(
+        base::Bind(&GLES2DecoderDescheduleUntilFinishedTest::
+                       RescheduleAfterFinishedCallback,
+                   base::Unretained(this)));
+
+    EXPECT_CALL(*gl_, FenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0))
+        .Times(1)
+        .WillOnce(Return(sync_service_id_))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, IsSync(sync_service_id_)).WillRepeatedly(Return(GL_TRUE));
+    EXPECT_CALL(*gl_, Flush()).RetiresOnSaturation();
+    EXPECT_CALL(*gl_, DeleteSync(sync_service_id_))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+
+  void DescheduleUntilFinishedCallback() {
+    deschedule_until_finished_callback_count_++;
+  }
+  void RescheduleAfterFinishedCallback() {
+    reschedule_after_finished_callback_count_++;
+  }
+
+ protected:
+  int deschedule_until_finished_callback_count_ = 0;
+  int reschedule_after_finished_callback_count_ = 0;
+  GLsync sync_service_id_ = reinterpret_cast<GLsync>(0x15);
+};
+
+TEST_P(GLES2DecoderDescheduleUntilFinishedTest, AlreadySignalled) {
+  EXPECT_CALL(*gl_, ClientWaitSync(sync_service_id_, 0, 0))
+      .Times(1)
+      .WillOnce(Return(GL_ALREADY_SIGNALED))
+      .RetiresOnSaturation();
+
+  cmds::DescheduleUntilFinishedCHROMIUM cmd;
+  cmd.Init();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0, deschedule_until_finished_callback_count_);
+  EXPECT_EQ(0, reschedule_after_finished_callback_count_);
+}
+
+TEST_P(GLES2DecoderDescheduleUntilFinishedTest, NotYetSignalled) {
+  EXPECT_CALL(*gl_, ClientWaitSync(sync_service_id_, 0, 0))
+      .Times(1)
+      .WillOnce(Return(GL_TIMEOUT_EXPIRED))
+      .RetiresOnSaturation();
+
+  cmds::DescheduleUntilFinishedCHROMIUM cmd;
+  cmd.Init();
+  EXPECT_EQ(error::kDeferLaterCommands, ExecuteCmd(cmd));
+  EXPECT_EQ(1, deschedule_until_finished_callback_count_);
+  EXPECT_EQ(0, reschedule_after_finished_callback_count_);
+}
+
 void GLES3DecoderWithESSL3ShaderTest::SetUp() {
   base::CommandLine command_line(0, nullptr);
   command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
@@ -1714,6 +1784,10 @@ INSTANTIATE_TEST_CASE_P(Service,
                         ::testing::Bool());
 
 INSTANTIATE_TEST_CASE_P(Service, GLES2DecoderDoCommandsTest, ::testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES2DecoderDescheduleUntilFinishedTest,
+                        ::testing::Bool());
 
 INSTANTIATE_TEST_CASE_P(Service, GLES3DecoderTest, ::testing::Bool());
 

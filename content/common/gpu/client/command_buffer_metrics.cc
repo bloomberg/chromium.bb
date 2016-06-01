@@ -64,6 +64,7 @@ CommandBufferContextLostReason GetContextLostReason(
       case gpu::error::kGenericError:
         return CONTEXT_PARSE_ERROR_GENERIC_ERROR;
       case gpu::error::kDeferCommandUntilLater:
+      case gpu::error::kDeferLaterCommands:
       case gpu::error::kNoError:
       case gpu::error::kLostContext:
         NOTREACHED();

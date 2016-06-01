@@ -438,6 +438,7 @@
         'command_buffer/tests/gl_copy_texture_CHROMIUM_unittest.cc',
         'command_buffer/tests/gl_cube_map_texture_unittest.cc',
         'command_buffer/tests/gl_depth_texture_unittest.cc',
+        'command_buffer/tests/gl_deschedule_unittest.cc',
         'command_buffer/tests/gl_dynamic_config_unittest.cc',
         'command_buffer/tests/gl_ext_blend_func_extended_unittest.cc',
         'command_buffer/tests/gl_ext_multisample_compatibility_unittest.cc',

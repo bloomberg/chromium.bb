@@ -308,6 +308,10 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
       const FenceSyncReleaseCallback& callback) override {}
   void SetWaitFenceSyncCallback(
       const WaitFenceSyncCallback& callback) override {}
+  void SetDescheduleUntilFinishedCallback(
+      const NoParamCallback& callback) override {}
+  void SetRescheduleAfterFinishedCallback(
+      const NoParamCallback& callback) override {}
 
   void WaitForReadPixels(base::Closure callback) override {}
 

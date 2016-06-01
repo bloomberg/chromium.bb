@@ -905,6 +905,7 @@ GLuint GLES2InterfaceStub::CreateGpuMemoryBufferImageCHROMIUM(
 void GLES2InterfaceStub::GetImageivCHROMIUM(GLuint /* image_id */,
                                             GLenum /* param */,
                                             GLint* /* data */) {}
+void GLES2InterfaceStub::DescheduleUntilFinishedCHROMIUM() {}
 void GLES2InterfaceStub::GetTranslatedShaderSourceANGLE(GLuint /* shader */,
                                                         GLsizei /* bufsize */,
                                                         GLsizei* /* length */,

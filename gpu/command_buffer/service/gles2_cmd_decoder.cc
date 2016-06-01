@@ -652,6 +652,11 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       const FenceSyncReleaseCallback& callback) override;
   void SetWaitFenceSyncCallback(const WaitFenceSyncCallback& callback) override;
 
+  void SetDescheduleUntilFinishedCallback(
+      const NoParamCallback& callback) override;
+  void SetRescheduleAfterFinishedCallback(
+      const NoParamCallback& callback) override;
+
   void SetIgnoreCachedStateForTest(bool ignore) override;
   void SetForceShaderNameHashingForTest(bool force) override;
   uint32_t GetAndClearBackbufferClearBitsForTest() override;
@@ -1962,6 +1967,9 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void ProcessPendingReadPixels(bool did_finish);
   void FinishReadPixels(const cmds::ReadPixels& c, GLuint buffer);
 
+  // Checks to see if the inserted fence has completed.
+  void ProcessDescheduleUntilFinished();
+
   void DoBindFragmentInputLocationCHROMIUM(GLuint program_id,
                                            GLint location,
                                            const std::string& name);
@@ -2101,6 +2109,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   FenceSyncReleaseCallback fence_sync_release_callback_;
   WaitFenceSyncCallback wait_fence_sync_callback_;
+  NoParamCallback deschedule_until_finished_callback_;
+  NoParamCallback reschedule_after_finished_callback_;
 
   ShaderCacheCallback shader_cache_callback_;
 
@@ -2195,6 +2205,11 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool gpu_debug_commands_;
 
   std::queue<linked_ptr<FenceCallback> > pending_readpixel_fences_;
+
+  // After this fence is inserted, both the GpuChannelMessageQueue and
+  // CommandExecutor are descheduled. Once the fence has completed, both get
+  // rescheduled.
+  std::unique_ptr<gl::GLFence> deschedule_until_finished_fence_;
 
   // Used to validate multisample renderbuffers if needed
   GLuint validation_texture_;
@@ -4175,6 +4190,16 @@ void GLES2DecoderImpl::SetFenceSyncReleaseCallback(
 void GLES2DecoderImpl::SetWaitFenceSyncCallback(
     const WaitFenceSyncCallback& callback) {
   wait_fence_sync_callback_ = callback;
+}
+
+void GLES2DecoderImpl::SetDescheduleUntilFinishedCallback(
+    const NoParamCallback& callback) {
+  deschedule_until_finished_callback_ = callback;
+}
+
+void GLES2DecoderImpl::SetRescheduleAfterFinishedCallback(
+    const NoParamCallback& callback) {
+  reschedule_after_finished_callback_ = callback;
 }
 
 bool GLES2DecoderImpl::GetServiceTextureId(uint32_t client_texture_id,
@@ -13674,6 +13699,28 @@ bool GLES2DecoderImpl::CheckResetStatus() {
   return false;
 }
 
+error::Error GLES2DecoderImpl::HandleDescheduleUntilFinishedCHROMIUM(
+    uint32_t immediate_data_size,
+    const void* cmd_data) {
+  if (deschedule_until_finished_callback_.is_null() ||
+      reschedule_after_finished_callback_.is_null()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glDescheduleUntilFinishedCHROMIUM",
+                       "Not fully implemented.");
+    return error::kNoError;
+  }
+
+  deschedule_until_finished_fence_.reset(gl::GLFence::Create());
+  DCHECK(deschedule_until_finished_fence_);
+  if (deschedule_until_finished_fence_->HasCompleted()) {
+    deschedule_until_finished_fence_.reset();
+    return error::kNoError;
+  }
+
+  deschedule_until_finished_callback_.Run();
+  return error::kDeferLaterCommands;
+}
+
 error::Error GLES2DecoderImpl::HandleInsertFenceSyncCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {
@@ -13800,14 +13847,27 @@ void GLES2DecoderImpl::ProcessPendingReadPixels(bool did_finish) {
   }
 }
 
+void GLES2DecoderImpl::ProcessDescheduleUntilFinished() {
+  if (!deschedule_until_finished_fence_)
+    return;
+
+  if (!deschedule_until_finished_fence_->HasCompleted())
+    return;
+
+  deschedule_until_finished_fence_.reset();
+  reschedule_after_finished_callback_.Run();
+}
+
 bool GLES2DecoderImpl::HasMoreIdleWork() const {
-  return !pending_readpixel_fences_.empty() ||
+  return deschedule_until_finished_fence_ ||
+         !pending_readpixel_fences_.empty() ||
          gpu_tracer_->HasTracesToProcess();
 }
 
 void GLES2DecoderImpl::PerformIdleWork() {
   gpu_tracer_->ProcessTraces();
   ProcessPendingReadPixels(false);
+  ProcessDescheduleUntilFinished();
 }
 
 error::Error GLES2DecoderImpl::HandleBeginQueryEXT(uint32_t immediate_data_size,

@@ -322,6 +322,7 @@ void FeatureInfo::InitializeFeatures() {
   AddExtensionString("GL_CHROMIUM_command_buffer_query");
   AddExtensionString("GL_CHROMIUM_command_buffer_latency_query");
   AddExtensionString("GL_CHROMIUM_copy_texture");
+  AddExtensionString("GL_CHROMIUM_deschedule");
   AddExtensionString("GL_CHROMIUM_get_error_query");
   AddExtensionString("GL_CHROMIUM_lose_context");
   AddExtensionString("GL_CHROMIUM_pixel_transfer_buffer_object");
