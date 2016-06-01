@@ -135,6 +135,7 @@ public:
     virtual void setAllowRunningOfInsecureContent(bool) = 0;
     virtual void setAllowScriptsToCloseWindows(bool) = 0;
     virtual void setAllowUniversalAccessFromFileURLs(bool) = 0;
+    virtual void setAlwaysShowContextMenuOnTouch(bool) = 0;
     virtual void setAntialiased2dCanvasEnabled(bool) = 0;
     virtual void setAntialiasedClips2dCanvasEnabled(bool) = 0;
     virtual void setAutoplayExperimentMode(const WebString&) = 0;

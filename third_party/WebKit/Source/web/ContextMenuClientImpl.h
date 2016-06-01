@@ -46,6 +46,7 @@ public:
     void clearContextMenu() override;
 private:
     void populateCustomMenuItems(const ContextMenu*, WebContextMenuData*);
+    bool shouldShowContextMenuFromTouch(const blink::WebContextMenuData&);
     WebViewImpl* m_webView;
 };
 

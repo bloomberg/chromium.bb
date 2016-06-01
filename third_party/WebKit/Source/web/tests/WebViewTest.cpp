@@ -1617,6 +1617,7 @@ TEST_F(WebViewTest, LongPressEmptyDiv)
         WebString::fromUTF8("long_press_empty_div.html"));
 
     WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "long_press_empty_div.html", true);
+    webView->settingsImpl()->setAlwaysShowContextMenuOnTouch(false);
     webView->resize(WebSize(500, 300));
     webView->updateAllLifecyclePhases();
     runPendingTasks();
@@ -1630,12 +1631,33 @@ TEST_F(WebViewTest, LongPressEmptyDiv)
     EXPECT_EQ(WebInputEventResult::NotHandled, webView->handleInputEvent(event));
 }
 
+TEST_F(WebViewTest, LongPressEmptyDivAlwaysShow)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()),
+        WebString::fromUTF8("long_press_empty_div.html"));
+
+    WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "long_press_empty_div.html", true);
+    webView->settingsImpl()->setAlwaysShowContextMenuOnTouch(true);
+    webView->resize(WebSize(500, 300));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    WebGestureEvent event;
+    event.type = WebInputEvent::GestureLongPress;
+    event.sourceDevice = WebGestureDeviceTouchscreen;
+    event.x = 250;
+    event.y = 150;
+
+    EXPECT_EQ(WebInputEventResult::HandledSystem, webView->handleInputEvent(event));
+}
+
 TEST_F(WebViewTest, LongPressImage)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()),
         WebString::fromUTF8("long_press_image.html"));
 
     WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "long_press_image.html", true);
+    webView->settingsImpl()->setAlwaysShowContextMenuOnTouch(false);
     webView->resize(WebSize(500, 300));
     webView->updateAllLifecyclePhases();
     runPendingTasks();
@@ -1655,6 +1677,7 @@ TEST_F(WebViewTest, LongPressVideo)
         WebString::fromUTF8("long_press_video.html"));
 
     WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "long_press_video.html", true);
+    webView->settingsImpl()->setAlwaysShowContextMenuOnTouch(false);
     webView->resize(WebSize(500, 300));
     webView->updateAllLifecyclePhases();
     runPendingTasks();
@@ -1674,6 +1697,7 @@ TEST_F(WebViewTest, LongPressLink)
         WebString::fromUTF8("long_press_link.html"));
 
     WebViewImpl* webView = m_webViewHelper.initializeAndLoad(m_baseURL + "long_press_link.html", true);
+    webView->settingsImpl()->setAlwaysShowContextMenuOnTouch(false);
     webView->resize(WebSize(500, 300));
     webView->updateAllLifecyclePhases();
     runPendingTasks();
@@ -1694,6 +1718,7 @@ TEST_F(WebViewTest, LongPressEmptyEditableSelection)
 
     WebViewImpl* webView = m_webViewHelper.initializeAndLoad(
         m_baseURL + "long_press_empty_editable_selection.html", true);
+    webView->settingsImpl()->setAlwaysShowContextMenuOnTouch(false);
     webView->resize(WebSize(500, 300));
     webView->updateAllLifecyclePhases();
     runPendingTasks();

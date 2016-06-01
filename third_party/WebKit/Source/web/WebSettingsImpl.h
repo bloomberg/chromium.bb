@@ -64,6 +64,7 @@ public:
     void setAllowRunningOfInsecureContent(bool) override;
     void setAllowScriptsToCloseWindows(bool) override;
     void setAllowUniversalAccessFromFileURLs(bool) override;
+    void setAlwaysShowContextMenuOnTouch(bool) override;
     void setAntialiased2dCanvasEnabled(bool) override;
     void setAntialiasedClips2dCanvasEnabled(bool) override;
     void setAutoplayExperimentMode(const WebString&) override;

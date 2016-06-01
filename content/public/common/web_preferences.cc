@@ -148,9 +148,11 @@ WebPreferences::WebPreferences()
 #if defined(OS_ANDROID)
       viewport_meta_enabled(true),
       viewport_style(ViewportStyle::MOBILE),
+      always_show_context_menu_on_touch(false),
 #else
       viewport_meta_enabled(false),
       viewport_style(ViewportStyle::DEFAULT),
+      always_show_context_menu_on_touch(true),
 #endif
       main_frame_resizes_are_orientation_changes(false),
       initialize_at_minimum_page_scale(true),

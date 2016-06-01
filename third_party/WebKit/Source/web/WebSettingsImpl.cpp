@@ -502,6 +502,11 @@ void WebSettingsImpl::setWebGLErrorsToConsoleEnabled(bool enabled)
     m_settings->setWebGLErrorsToConsoleEnabled(enabled);
 }
 
+void WebSettingsImpl::setAlwaysShowContextMenuOnTouch(bool enabled)
+{
+    m_settings->setAlwaysShowContextMenuOnTouch(enabled);
+}
+
 void WebSettingsImpl::setShowContextMenuOnMouseUp(bool enabled)
 {
     m_settings->setShowContextMenuOnMouseUp(enabled);

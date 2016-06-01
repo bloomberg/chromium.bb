@@ -169,6 +169,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool viewport_enabled;
   bool viewport_meta_enabled;
   ViewportStyle viewport_style;
+  bool always_show_context_menu_on_touch;
   bool main_frame_resizes_are_orientation_changes;
   bool initialize_at_minimum_page_scale;
   bool smart_insert_delete_enabled;

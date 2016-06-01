@@ -131,9 +131,10 @@ static String selectMisspellingAsync(LocalFrame* selectedFrame, String& descript
     return markerRange->text();
 }
 
-static bool shouldShowContextMenuFromTouch(const WebContextMenuData& data)
+bool ContextMenuClientImpl::shouldShowContextMenuFromTouch(const WebContextMenuData& data)
 {
-    return !data.linkURL.isEmpty()
+    return m_webView->page()->settings().alwaysShowContextMenuOnTouch()
+        || !data.linkURL.isEmpty()
         || data.mediaType == WebContextMenuData::MediaTypeImage
         || data.mediaType == WebContextMenuData::MediaTypeVideo
         || data.isEditable;

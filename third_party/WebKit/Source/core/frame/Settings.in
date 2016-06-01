@@ -334,6 +334,11 @@ inlineTextBoxAccessibilityEnabled initial=false
 # Typically enabled on Windows to match platform convention.
 showContextMenuOnMouseUp initial=false
 
+# If true, context menu will be shown on any long press event.
+# Used on Android to prevent a context menu from being shown in certain situations
+# (i.e. long pressing an empty div)
+alwaysShowContextMenuOnTouch initial=true
+
 disableReadingFromCanvas initial=false
 strictMixedContentChecking initial=false
 strictMixedContentCheckingForPlugin initial=false
