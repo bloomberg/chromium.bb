@@ -17,6 +17,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
@@ -1184,6 +1185,21 @@ public class ImeTest extends ContentShellTestBase {
         setComposingText("ab", 1);
         finishComposingText();
         assertEquals("ab", getTextBeforeCursor(10, 0));
+    }
+
+    // https://crbug.com/616334
+    @SmallTest
+    @Feature({"TextInput"})
+    @CommandLineFlags.Add("enable-features=ImeThread")
+    public void testCastToBaseInputConnection() throws Exception {
+        commitText("a", 1);
+        final BaseInputConnection baseInputConnection = (BaseInputConnection) mConnection;
+        assertEquals("a", runBlockingOnImeThread(new Callable<CharSequence>() {
+            @Override
+            public CharSequence call() {
+                return baseInputConnection.getTextBeforeCursor(10, 0);
+            }
+        }));
     }
 
     private void performGo(TestCallbackHelperContainer testCallbackHelperContainer)

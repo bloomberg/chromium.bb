@@ -85,7 +85,7 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         if (DEBUG_LOGS) Log.w(TAG, "initializeAndGet: called from proxy view");
         if (mThreadedInputConnection == null) {
             if (DEBUG_LOGS) Log.w(TAG, "Creating ThreadedInputConnection...");
-            mThreadedInputConnection = new ThreadedInputConnection(imeAdapter, mHandler);
+            mThreadedInputConnection = new ThreadedInputConnection(view, imeAdapter, mHandler);
         }
         mThreadedInputConnection.initializeOutAttrsOnUiThread(inputType, inputFlags,
                 selectionStart, selectionEnd, outAttrs);

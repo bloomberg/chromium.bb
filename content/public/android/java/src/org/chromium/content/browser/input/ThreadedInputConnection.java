@@ -9,6 +9,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
+import android.view.View;
+import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.CompletionInfo;
 import android.view.inputmethod.CorrectionInfo;
 import android.view.inputmethod.EditorInfo;
@@ -28,8 +30,14 @@ import java.util.concurrent.LinkedBlockingQueue;
  * apps. Note that it is running on IME thread (except for constructor and calls from ImeAdapter)
  * such that it does not block UI thread and returns text values immediately after any change
  * to them.
+ * Note that extending {@link BaseInputConnection} is a workaround for some OEM's email client
+ * which tries to downcast the {@link InputConnection} from {@link View#onCreateInputConnection}
+ * into {@link BaseInputConnection}. We are implementing every function of {@link InputConnection},
+ * so 'extends' here should have no functional effect at all. See crbug.com/616334 for more
+ * details.
  */
-public class ThreadedInputConnection implements ChromiumBaseInputConnection {
+public class ThreadedInputConnection extends BaseInputConnection
+        implements ChromiumBaseInputConnection {
     private static final String TAG = "cr_Ime";
     private static final boolean DEBUG_LOGS = false;
 
@@ -90,7 +98,8 @@ public class ThreadedInputConnection implements ChromiumBaseInputConnection {
     private final BlockingQueue<TextInputState> mQueue = new LinkedBlockingQueue<>();
     private int mPendingAccent;
 
-    ThreadedInputConnection(ImeAdapter imeAdapter, Handler handler) {
+    ThreadedInputConnection(View view, ImeAdapter imeAdapter, Handler handler) {
+        super(view, true);
         if (DEBUG_LOGS) Log.w(TAG, "constructor");
         ImeUtils.checkOnUiThread();
         mImeAdapter = imeAdapter;
