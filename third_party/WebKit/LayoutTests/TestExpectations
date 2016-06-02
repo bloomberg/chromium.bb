@@ -1331,3 +1331,6 @@ crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calcul
 crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
 
 crbug.com/614509 [ Win ] inspector/elements/styles-2/pseudo-elements.html [ Pass Timeout ]
+
+# Asserts on Mac
+crbug.com/616699 [ Mac ] accessibility/image-inside-link.html [ Failure ]
