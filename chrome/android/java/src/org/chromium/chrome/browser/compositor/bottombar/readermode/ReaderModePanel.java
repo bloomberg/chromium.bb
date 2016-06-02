@@ -316,11 +316,6 @@ public class ReaderModePanel extends OverlayPanel {
         if (mManagerDelegate != null) {
             mManagerDelegate.onSizeChanged();
         }
-        // If the panel is not closed, make sure it is in the appropriate place when the viewport
-        // size changes.
-        if (getPanelState() != PanelState.UNDEFINED && getPanelState() != PanelState.CLOSED) {
-            resizePanelToState(getPanelState(), StateChangeReason.UNKNOWN);
-        }
     }
 
     @Override
