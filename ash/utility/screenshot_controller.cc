@@ -27,10 +27,7 @@ namespace ash {
 
 namespace {
 
-// The size to increase the invalidated area in the layer to repaint. The area
-// should be slightly bigger than the actual region because the region indicator
-// rectangles are drawn outside of the selected region.
-const int kInvalidateRegionAdditionalSize = 3;
+const int kCursorSize = 12;
 
 // This will prevent the user from taking a screenshot across multiple
 // monitors. it will stop the mouse at the any edge of the screen. must
@@ -105,31 +102,33 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
     // Invalidates the region which covers the current and new region.
     gfx::Rect union_rect(region_);
     union_rect.Union(region);
-    union_rect.Inset(-kInvalidateRegionAdditionalSize,
-                     -kInvalidateRegionAdditionalSize);
     union_rect.Intersects(layer()->bounds());
+    union_rect.Inset(-kCursorSize, -kCursorSize, -kCursorSize, -kCursorSize);
     region_ = region;
     layer()->SchedulePaint(union_rect);
+  }
+
+  void set_cursor_location_in_root(const gfx::Point& point) {
+    cursor_location_in_root_ = point;
   }
 
  private:
   // ui::LayerDelegate:
   void OnPaintLayer(const ui::PaintContext& context) override {
-    const SkColor kSelectedAreaOverlayColor = 0x40000000;
-    if (region_.IsEmpty())
-      return;
-    // Screenshot area representation: black rectangle with white
-    // rectangle inside.  To avoid capturing these rectangles when mouse
-    // release, they should be outside of the actual capturing area.
+    const SkColor kSelectedAreaOverlayColor = 0x60000000;
+    // Screenshot area representation: transparent hole with half opaque gray
+    // overlay.
     gfx::Rect rect(region_);
     ui::PaintRecorder recorder(context, layer()->size());
 
-    recorder.canvas()->FillRect(region_, kSelectedAreaOverlayColor);
+    recorder.canvas()->FillRect(gfx::Rect(layer()->size()),
+                                kSelectedAreaOverlayColor);
 
-    rect.Inset(-1, -1);
-    recorder.canvas()->DrawRect(rect, SK_ColorWHITE);
-    rect.Inset(-1, -1);
-    recorder.canvas()->DrawRect(rect, SK_ColorBLACK);
+    DrawPseudoCursor(recorder.canvas());
+
+    if (!region_.IsEmpty())
+      recorder.canvas()->FillRect(region_, SK_ColorBLACK,
+                                  SkXfermode::kClear_Mode);
   }
 
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override {}
@@ -140,7 +139,51 @@ class ScreenshotController::ScreenshotLayer : public ui::LayerOwner,
     return base::Closure();
   }
 
+  // Mouse cursor may move sub DIP, so paint pseudo cursor instead of
+  // using platform cursor so that it's aliend with the region.
+  void DrawPseudoCursor(gfx::Canvas* canvas) {
+    // Don't draw if window selection mode.
+    if (cursor_location_in_root_.IsOrigin())
+      return;
+
+    gfx::Point pseudo_cursor_point = cursor_location_in_root_;
+
+    // The cursor is above/before region.
+    if (pseudo_cursor_point.x() == region_.x())
+      pseudo_cursor_point.Offset(-1, 0);
+
+    if (pseudo_cursor_point.y() == region_.y())
+      pseudo_cursor_point.Offset(0, -1);
+
+    SkPaint paint;
+    paint.setAntiAlias(false);
+    paint.setStrokeWidth(1);
+    paint.setColor(SK_ColorWHITE);
+    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+    gfx::Vector2d width(kCursorSize / 2, 0);
+    gfx::Vector2d height(0, kCursorSize / 2);
+    gfx::Vector2d white_x_offset(1, -1);
+    gfx::Vector2d white_y_offset(1, -1);
+    // Horizontal
+    canvas->DrawLine(pseudo_cursor_point - width + white_x_offset,
+                     pseudo_cursor_point + width + white_x_offset, paint);
+    paint.setStrokeWidth(1);
+    // Vertical
+    canvas->DrawLine(pseudo_cursor_point - height + white_y_offset,
+                     pseudo_cursor_point + height + white_y_offset, paint);
+
+    paint.setColor(SK_ColorBLACK);
+    // Horizontal
+    canvas->DrawLine(pseudo_cursor_point - width, pseudo_cursor_point + width,
+                     paint);
+    // Vertical
+    canvas->DrawLine(pseudo_cursor_point - height, pseudo_cursor_point + height,
+                     paint);
+  }
+
   gfx::Rect region_;
+
+  gfx::Point cursor_location_in_root_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenshotLayer);
 };
@@ -154,13 +197,17 @@ class ScreenshotController::ScopedCursorSetter {
       return;
     gfx::NativeCursor original_cursor = cursor_manager->GetCursor();
     cursor_manager_ = cursor_manager;
-    cursor_manager_->SetCursor(cursor);
-    if (!cursor_manager_->IsCursorVisible())
+    if (cursor == ui::kCursorNone) {
+      cursor_manager_->HideCursor();
+    } else {
+      cursor_manager_->SetCursor(cursor);
       cursor_manager_->ShowCursor();
+    }
     cursor_manager_->LockCursor();
-    // SetCursor does not make any effects at this point but it sets back to
-    // the original cursor when unlocked.
+    // Set/ShowCursor does not make any effects at this point but it sets
+    // back to the original cursor when unlocked.
     cursor_manager_->SetCursor(original_cursor);
+    cursor_manager_->ShowCursor();
   }
 
   ~ScopedCursorSetter() {
@@ -248,6 +295,12 @@ void ScreenshotController::MaybeStart(const ui::LocatedEvent& event) {
   } else {
     root_window_ = current_root;
     start_position_ = event.root_location();
+    // ScopedCursorSetter must be reset first to make sure that its dtor is
+    // called before ctor is called.
+    cursor_setter_.reset();
+    cursor_setter_.reset(new ScopedCursorSetter(
+        Shell::GetInstance()->cursor_manager(), ui::kCursorNone));
+    Update(event);
   }
 }
 
@@ -294,14 +347,15 @@ void ScreenshotController::Update(const ui::LocatedEvent& event) {
   // starts when dragging.
   if (!root_window_)
     MaybeStart(event);
-
   DCHECK(layers_.find(root_window_) != layers_.end());
-  layers_.at(root_window_)
-      ->SetRegion(
-          gfx::Rect(std::min(start_position_.x(), event.root_location().x()),
-                    std::min(start_position_.y(), event.root_location().y()),
-                    ::abs(start_position_.x() - event.root_location().x()),
-                    ::abs(start_position_.y() - event.root_location().y())));
+
+  ScreenshotLayer* layer = layers_.at(root_window_);
+  layer->set_cursor_location_in_root(event.root_location());
+  layer->SetRegion(
+      gfx::Rect(std::min(start_position_.x(), event.root_location().x()),
+                std::min(start_position_.y(), event.root_location().y()),
+                ::abs(start_position_.x() - event.root_location().x()),
+                ::abs(start_position_.y() - event.root_location().y())));
 }
 
 void ScreenshotController::UpdateSelectedWindow(ui::LocatedEvent* event) {

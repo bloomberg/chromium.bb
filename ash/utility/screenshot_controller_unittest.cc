@@ -221,6 +221,11 @@ TEST_F(PartialScreenshotControllerTest, VisibilityTest) {
   EXPECT_TRUE(IsActive());
   EXPECT_TRUE(client->IsCursorVisible());
 
+  // Platform's Cursor should be hidden while dragging.
+  GetEventGenerator().PressLeftButton();
+  EXPECT_TRUE(IsActive());
+  EXPECT_FALSE(client->IsCursorVisible());
+
   Cancel();
   EXPECT_TRUE(client->IsCursorVisible());
 }
