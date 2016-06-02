@@ -175,7 +175,7 @@ void OfflinePageModelImpl::SavePage(
 
   // Skip saving the page that is not intended to be saved, like local file
   // page.
-  if (url.is_valid() && !CanSavePage(url)) {
+  if (!OfflinePageModel::CanSaveURL(url)) {
     InformSavePageDone(callback, SavePageResult::SKIPPED, client_id,
                        kInvalidOfflineId);
     return;

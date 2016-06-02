@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "components/offline_pages/background/save_page_request.h"
+#include "components/offline_pages/offline_page_model.h"
 #include "content/public/browser/browser_context.h"
 
 namespace offline_pages {
@@ -106,7 +107,7 @@ bool PrerenderingOffliner::LoadAndSave(const SavePageRequest& request,
     return false;
   }
 
-  if (!OfflinePageModel::CanSavePage(request.url())) {
+  if (!OfflinePageModel::CanSaveURL(request.url())) {
     DVLOG(1) << "Not able to save page for requested url: " << request.url();
     return false;
   }

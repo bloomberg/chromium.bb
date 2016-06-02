@@ -9,8 +9,8 @@
 namespace offline_pages {
 
 // static
-bool OfflinePageModel::CanSavePage(const GURL& url) {
-  return url.SchemeIsHTTPOrHTTPS();
+bool OfflinePageModel::CanSaveURL(const GURL& url) {
+  return url.is_valid() && url.SchemeIsHTTPOrHTTPS();
 }
 
 OfflinePageModel::OfflinePageModel() {}

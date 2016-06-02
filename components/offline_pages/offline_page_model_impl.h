@@ -40,6 +40,8 @@ class TimeTicks;
 
 namespace offline_pages {
 
+static const int64_t kInvalidOfflineId = 0;
+
 struct ClientId;
 struct OfflinePageItem;
 

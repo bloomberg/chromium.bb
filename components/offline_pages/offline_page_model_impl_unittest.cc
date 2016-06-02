@@ -882,13 +882,14 @@ TEST_F(OfflinePageModelImplTest, CheckPagesExistOffline) {
   EXPECT_EQ(existing_pages.end(), existing_pages.find(kTestUrl3));
 }
 
-TEST_F(OfflinePageModelImplTest, CanSavePage) {
-  EXPECT_TRUE(OfflinePageModel::CanSavePage(GURL("http://foo")));
-  EXPECT_TRUE(OfflinePageModel::CanSavePage(GURL("https://foo")));
-  EXPECT_FALSE(OfflinePageModel::CanSavePage(GURL("file:///foo")));
-  EXPECT_FALSE(OfflinePageModel::CanSavePage(GURL("data:image/png;base64,ab")));
-  EXPECT_FALSE(OfflinePageModel::CanSavePage(GURL("chrome://version")));
-  EXPECT_FALSE(OfflinePageModel::CanSavePage(GURL("chrome-native://newtab/")));
+TEST_F(OfflinePageModelImplTest, CanSaveURL) {
+  EXPECT_TRUE(OfflinePageModel::CanSaveURL(GURL("http://foo")));
+  EXPECT_TRUE(OfflinePageModel::CanSaveURL(GURL("https://foo")));
+  EXPECT_FALSE(OfflinePageModel::CanSaveURL(GURL("file:///foo")));
+  EXPECT_FALSE(OfflinePageModel::CanSaveURL(GURL("data:image/png;base64,ab")));
+  EXPECT_FALSE(OfflinePageModel::CanSaveURL(GURL("chrome://version")));
+  EXPECT_FALSE(OfflinePageModel::CanSaveURL(GURL("chrome-native://newtab/")));
+  EXPECT_FALSE(OfflinePageModel::CanSaveURL(GURL("/invalid/url.mhtml")));
 }
 
 TEST_F(OfflinePageModelImplTest, ClearAll) {

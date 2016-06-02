@@ -5,7 +5,10 @@
 #include "chrome/browser/android/offline_pages/offline_page_bridge.h"
 
 #include <memory>
+#include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -152,7 +155,7 @@ static jboolean CanSavePage(JNIEnv* env,
                             const JavaParamRef<jclass>& clazz,
                             const JavaParamRef<jstring>& j_url) {
   GURL url(ConvertJavaStringToUTF8(env, j_url));
-  return url.is_valid() && OfflinePageModel::CanSavePage(url);
+  return OfflinePageModel::CanSaveURL(url);
 }
 
 static ScopedJavaLocalRef<jobject> GetOfflinePageBridgeForProfile(

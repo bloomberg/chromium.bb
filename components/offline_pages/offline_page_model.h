@@ -25,7 +25,6 @@ class Time;
 namespace offline_pages {
 
 static const char* const kBookmarkNamespace = "bookmark";
-static const int64_t kInvalidOfflineId = 0;
 
 struct ClientId;
 struct OfflinePageItem;
@@ -79,9 +78,8 @@ class OfflinePageModel : public base::SupportsUserData,
   using DeletePageResult = offline_pages::DeletePageResult;
   using SavePageResult = offline_pages::SavePageResult;
 
-  // Returns true if an offline copy can be saved for the given URL.
-  // TODO(dougarnett): Consider renaming and moving to Utils.
-  static bool CanSavePage(const GURL& url);
+  // Returns true if saving an offline page may be attempted for |url|.
+  static bool CanSaveURL(const GURL& url);
 
   OfflinePageModel();
   ~OfflinePageModel() override;

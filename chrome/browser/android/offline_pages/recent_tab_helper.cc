@@ -92,7 +92,7 @@ void RecentTabHelper::StartSnapshot() {
     return;
 
   GURL url = web_contents()->GetLastCommittedURL();
-  bool can_save = page_model_->CanSavePage(url);
+  bool can_save = OfflinePageModel::CanSaveURL(url);
   UMA_HISTOGRAM_BOOLEAN("OfflinePages.CanSaveRecentPage", can_save);
   if (!can_save)
     return;
