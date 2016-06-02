@@ -267,7 +267,6 @@ abstract class BookmarkRow extends FrameLayout implements BookmarkUIObserver,
 
     @Override
     public void onBookmarkDelegateInitialized(BookmarkDelegate delegate) {
-        assert mDelegate == null;
         mDelegate = delegate;
         if (mIsAttachedToWindow) initialize();
     }
