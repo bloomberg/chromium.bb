@@ -2804,6 +2804,8 @@
             'input/InputDeviceCapabilities.h',
             'input/PointerEventManager.cpp',
             'input/PointerEventManager.h',
+            'input/ScrollManager.cpp',
+            'input/ScrollManager.h',
             'input/TouchActionUtil.cpp',
             'input/TouchActionUtil.h',
             'input/TouchEventManager.cpp',
