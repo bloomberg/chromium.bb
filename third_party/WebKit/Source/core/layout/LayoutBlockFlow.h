@@ -47,7 +47,6 @@
 namespace blink {
 
 class BlockChildrenLayoutInfo;
-class ClipScope;
 class MarginInfo;
 class LayoutInline;
 class LineInfo;
@@ -270,17 +269,6 @@ public:
         return child.y() + child.layoutObject()->marginTop();
     }
 
-    LayoutSize positionForFloatIncludingMargin(const FloatingObject& child) const
-    {
-        if (isHorizontalWritingMode()) {
-            return LayoutSize(child.x() + child.layoutObject()->marginLeft(),
-                child.y() + marginBeforeForChild(*child.layoutObject()));
-        }
-
-        return LayoutSize(child.x() + marginBeforeForChild(*child.layoutObject()),
-            child.y() + child.layoutObject()->marginTop());
-    }
-
     LayoutPoint flipFloatForWritingModeForChild(const FloatingObject&, const LayoutPoint&) const;
 
     const char* name() const override { return "LayoutBlockFlow"; }
@@ -393,7 +381,6 @@ private:
     void invalidatePaintForOverflow() final;
     void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason) const override;
 
-    virtual void clipOutFloatingObjects(const LayoutBlock*, ClipScope&, const LayoutPoint&, const LayoutSize&) const;
     void clearFloats(EClear);
 
     LayoutUnit logicalRightFloatOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, LayoutUnit logicalHeight) const;

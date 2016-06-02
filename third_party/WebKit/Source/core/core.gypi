@@ -2036,8 +2036,6 @@
             'paint/BoxPainter.h',
             'paint/BoxReflectionUtils.cpp',
             'paint/BoxReflectionUtils.h',
-            'paint/ClipScope.cpp',
-            'paint/ClipScope.h',
             'paint/DetailsMarkerPainter.cpp',
             'paint/DetailsMarkerPainter.h',
             'paint/EllipsisBoxPainter.cpp',
