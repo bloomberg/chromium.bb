@@ -368,6 +368,7 @@ class UnitTest(unittest.TestCase):
 
   def test_gn_isolate(self):
     files = {
+      '/fake_src/out/Default/toolchain.ninja': "",
       '/fake_src/testing/buildbot/gn_isolate_map.pyl': (
           "{'base_unittests': {"
           "  'label': '//base:base_unittests',"

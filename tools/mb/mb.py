@@ -526,8 +526,9 @@ class MetaBuildWrapper(object):
 
     mb_type_path = self.PathJoin(self.ToAbsPath(build_dir), 'mb_type')
     if not self.Exists(mb_type_path):
-      gn_args_path = self.PathJoin(self.ToAbsPath(build_dir), 'args.gn')
-      if not self.Exists(gn_args_path):
+      toolchain_path = self.PathJoin(self.ToAbsPath(build_dir),
+                                     'toolchain.ninja')
+      if not self.Exists(toolchain_path):
         self.Print('Must either specify a path to an existing GN build dir '
                    'or pass in a -m/-b pair or a -c flag to specify the '
                    'configuration')
@@ -546,8 +547,10 @@ class MetaBuildWrapper(object):
     return vals
 
   def GNValsFromDir(self, build_dir):
-    args_contents = self.ReadFile(
-        self.PathJoin(self.ToAbsPath(build_dir), 'args.gn'))
+    args_contents = ""
+    gn_args_path = self.PathJoin(self.ToAbsPath(build_dir), 'args.gn')
+    if self.Exists(gn_args_path):
+      args_contents = self.ReadFile(gn_args_path)
     gn_args = []
     for l in args_contents.splitlines():
       fields = l.split(' ')
