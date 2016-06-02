@@ -143,15 +143,6 @@ class RendererMemoryBlinkMemoryMobile(_MemoryInfra):
 
   page_set = page_sets.BlinkMemoryMobilePageSet
 
-  def SetExtraBrowserOptions(self, options):
-    super(RendererMemoryBlinkMemoryMobile, self).SetExtraBrowserOptions(
-        options)
-    options.AppendExtraBrowserArgs([
-        # Ignore certs errors because record_wpr cannot handle certs correctly
-        # in some cases (e.g. WordPress).
-        '--ignore-certificate-errors',
-    ])
-
   @classmethod
   def Name(cls):
     return 'memory.blink_memory_mobile'
