@@ -235,8 +235,8 @@ r: 0px
 resize: none
 right: auto
 rotate: 0deg
-rx: 0px
-ry: 0px
+rx: auto
+ry: auto
 scale: 1
 scroll-behavior: auto
 scroll-snap-coordinate: none

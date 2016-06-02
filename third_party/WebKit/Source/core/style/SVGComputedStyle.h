@@ -97,8 +97,8 @@ public:
     static Length initialX() { return Length(Fixed); }
     static Length initialY() { return Length(Fixed); }
     static Length initialR() { return Length(Fixed); }
-    static Length initialRx() { return Length(Fixed); }
-    static Length initialRy() { return Length(Fixed); }
+    static Length initialRx() { return Length(Auto); }
+    static Length initialRy() { return Length(Auto); }
 
     // SVG CSS Property setters
     void setAlignmentBaseline(EAlignmentBaseline val) { svg_noninherited_flags.f.alignmentBaseline = val; }

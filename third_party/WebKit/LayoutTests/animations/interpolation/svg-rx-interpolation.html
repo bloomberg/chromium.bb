@@ -36,18 +36,11 @@ assertInterpolation({
   {at: 1.5, is: '25px'},
 ]);
 
-assertInterpolation({
+assertNoInterpolation({
   property: 'rx',
   from: 'initial',
   to: '20px',
-}, [
-  {at: -0.3, is: '0px'},
-  {at: 0, is: '0px'},
-  {at: 0.3, is: '6px'},
-  {at: 0.6, is: '12px'},
-  {at: 1, is: '20px'},
-  {at: 1.5, is: '30px'},
-]);
+});
 
 assertInterpolation({
   property: 'rx',
@@ -62,18 +55,11 @@ assertInterpolation({
   {at: 1.5, is: '15px'},
 ]);
 
-assertInterpolation({
+assertNoInterpolation({
   property: 'rx',
   from: 'unset',
   to: '20px',
-}, [
-  {at: -0.3, is: '0px'},
-  {at: 0, is: '0px'},
-  {at: 0.3, is: '6px'},
-  {at: 0.6, is: '12px'},
-  {at: 1, is: '20px'},
-  {at: 1.5, is: '30px'},
-]);
+});
 
 assertInterpolation({
   property: 'rx',

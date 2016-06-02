@@ -1942,6 +1942,13 @@ static CSSPrimitiveValue* consumeBaselineShift(CSSParserTokenRange& range)
     return consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeAll);
 }
 
+static CSSPrimitiveValue* consumeRxOrRy(CSSParserTokenRange& range)
+{
+    if (range.peek().id() == CSSValueAuto)
+        return consumeIdent(range);
+    return consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeAll, UnitlessQuirk::Forbid);
+}
+
 static CSSValue* createCSSImageValueWithReferrer(const AtomicString& rawValue, const CSSParserContext& context)
 {
     CSSValue* imageValue = CSSImageValue::create(rawValue, context.completeURL(rawValue));
@@ -3851,9 +3858,10 @@ CSSValue* CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty, 
     case CSSPropertyX:
     case CSSPropertyY:
     case CSSPropertyR:
+        return consumeLengthOrPercent(m_range, SVGAttributeMode, ValueRangeAll, UnitlessQuirk::Forbid);
     case CSSPropertyRx:
     case CSSPropertyRy:
-        return consumeLengthOrPercent(m_range, SVGAttributeMode, ValueRangeAll, UnitlessQuirk::Forbid);
+        return consumeRxOrRy(m_range);
     case CSSPropertyCursor:
         return consumeCursor(m_range, m_context, inQuirksMode());
     case CSSPropertyContain:
