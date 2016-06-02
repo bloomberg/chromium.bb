@@ -95,6 +95,9 @@ bool shouldDisallowFetchForMainFrameScript(const ResourceRequest& request, Fetch
     if (defer != FetchRequest::NoDefer)
         return false;
 
+    if (!request.url().protocolIsInHTTPFamily())
+        return false;
+
     // Avoid blocking same origin scripts, as they may be used to render main
     // page content, whereas cross-origin scripts inserted via document.write
     // are likely to be third party content.
