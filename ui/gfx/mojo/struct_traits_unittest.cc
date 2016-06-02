@@ -30,6 +30,8 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
 
   base::MessageLoop loop_;
   mojo::BindingSet<TraitsTestService> traits_test_bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(StructTraitsTest);
 };
 
 }  // namespace

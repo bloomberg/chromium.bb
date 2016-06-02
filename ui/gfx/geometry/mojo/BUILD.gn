@@ -11,3 +11,29 @@ mojom("mojo") {
     "geometry.mojom",
   ]
 }
+
+mojom("test_interfaces") {
+  sources = [
+    "geometry_traits_test_service.mojom",
+  ]
+
+  public_deps = [
+    ":mojo",
+  ]
+}
+
+source_set("unit_test") {
+  testonly = true
+
+  sources = [
+    "geometry_struct_traits_unittest.cc",
+  ]
+
+  deps = [
+    ":test_interfaces",
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//testing/gtest",
+    "//ui/gfx/geometry",
+  ]
+}

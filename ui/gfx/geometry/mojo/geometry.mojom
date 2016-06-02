@@ -20,8 +20,8 @@ struct Size {
 };
 
 struct SizeF {
-  int32 width;
-  int32 height;
+  float width;
+  float height;
 };
 
 struct Rect {

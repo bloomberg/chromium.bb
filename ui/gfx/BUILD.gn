@@ -818,9 +818,10 @@ test("gfx_unittests") {
 
   if (!is_ios) {
     deps += [
-      "mojo:test_interfaces",
       "//mojo/edk/system",
       "//mojo/public/cpp/bindings",
+      "//ui/gfx/geometry/mojo:unit_test",
+      "//ui/gfx/mojo:test_interfaces",
     ]
   }
 }

@@ -6,6 +6,8 @@ module gfx.mojom;
 
 import "ui/gfx/mojo/transform.mojom";
 
+// All functions on this interface echo their arguments to test StructTraits
+// serialization and deserialization.
 interface TraitsTestService {
   [Sync]
   EchoTransform(Transform t) => (Transform pass);
