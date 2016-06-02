@@ -87,6 +87,7 @@ private:
     // immediately to the target and returns false.
     bool registerAndScheduleAnimation();
 
+    void createAnimationCurve();
     void postAnimationCleanupAndReset();
 
     void addMainThreadScrollingReason();
