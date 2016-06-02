@@ -1011,12 +1011,10 @@ charactersDefined (FileInfo * nested)
 static int noback = 0;
 static int nofor = 0;
 
-/*The following functions are 
-called by addRule to handle various 
-* cases.*/
+/*The following functions are called by addRule to handle various cases.*/
 
 static void
-add_0_single (FileInfo * nested)
+addForwardRuleWithSingleChar (FileInfo * nested)
 {
 /*direction = 0, newRule->charslen = 1*/
   TranslationTableRule *currentRule;
@@ -1028,8 +1026,7 @@ add_0_single (FileInfo * nested)
   if (newRule->opcode >= CTO_Pass2 && newRule->opcode <= CTO_Pass4)
     m = 1;
   character = definedCharOrDots (nested, newRule->charsdots[0], m);
-  if (m != 1 && character->attributes & CTC_Letter && (newRule->opcode
-						       ==
+  if (m != 1 && character->attributes & CTC_Letter && (newRule->opcode ==
 						       CTO_WholeWord
 						       || newRule->opcode ==
 						       CTO_LargeSign))
@@ -1056,7 +1053,7 @@ add_0_single (FileInfo * nested)
 }
 
 static void
-add_0_multiple ()
+addForwardRuleWithMultipleChars ()
 {
 /*direction = 0 newRule->charslen > 1*/
   TranslationTableRule *currentRule = NULL;
@@ -1079,7 +1076,7 @@ add_0_multiple ()
 }
 
 static void
-add_1_single (FileInfo * nested)
+addBackwardRuleWithSingleChar (FileInfo * nested)
 {
 /*direction = 1, newRule->dotslen = 1*/
   TranslationTableRule *currentRule;
@@ -1113,7 +1110,7 @@ add_1_single (FileInfo * nested)
 }
 
 static void
-add_1_multiple ()
+addBackwardRuleWithMultipleChars ()
 {
 /*direction = 1, newRule->dotslen > 1*/
   TranslationTableRule *currentRule = NULL;
@@ -1233,19 +1230,17 @@ static int
   while (direction < 2)
     {
       if (direction == 0 && newRule->charslen == 1)
-	add_0_single (nested);
+	addForwardRuleWithSingleChar (nested);
       else if (direction == 0 && newRule->charslen > 1)
-	add_0_multiple ();
+	addForwardRuleWithMultipleChars ();
       else if (direction == 1 && newRule->dotslen == 1 && !noback)
-	add_1_single (nested);
+	addBackwardRuleWithSingleChar (nested);
       else if (direction == 1 && newRule->dotslen > 1 && !noback)
-	add_1_multiple ();
-      else
-	{
-	}
+	addBackwardRuleWithMultipleChars ();
       direction++;
+      /*Don't process rules without dots any further once they are added.*/
       if (newRule->dotslen == 0)
-	direction = 2;
+	return 1;
     }
   return 1;
 }
