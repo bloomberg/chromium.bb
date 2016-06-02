@@ -42,11 +42,6 @@ class PrerenderingOffliner : public Offliner {
   void SetLoaderForTesting(std::unique_ptr<PrerenderingLoader> loader);
 
  protected:
-  // Internal method for OfflinePageModel's check if url can be saved.
-  // Exposed for unit testing.
-  // TODO(dougarnett): Consider making OfflinePageModel mockable instead.
-  virtual bool CanSavePage(const GURL& url);
-
   // Internal method for requesting OfflinePageModel to save page.
   // Exposed for unit testing.
   // TODO(dougarnett): Consider making OfflinePageModel mockable instead.

@@ -50,6 +50,8 @@ static_library("test_support") {
     "offline_page_test_archiver.h",
     "offline_page_test_store.cc",
     "offline_page_test_store.h",
+    "stub_offline_page_model.cc",
+    "stub_offline_page_model.h",
   ]
 
   deps = [
