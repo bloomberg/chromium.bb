@@ -178,12 +178,6 @@ def GenerateBinaryProtos(opts):
       MakeSubDirs(outfile)
       FilterForPlatformAndWrite(full_pb, platform_enum, outfile)
 
-    print "\n\nTo push these files, run the following:"
-    print ("python " +
-           "chrome/browser/resources/safe_browsing/push_file_type_proto.py " +
-           "-d " + os.path.abspath(opts.outdir))
-    print "\n\n"
-
 
 def main():
   parser = optparse.OptionParser()
