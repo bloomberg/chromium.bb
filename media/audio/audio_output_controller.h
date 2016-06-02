@@ -6,8 +6,8 @@
 #define MEDIA_AUDIO_AUDIO_OUTPUT_CONTROLLER_H_
 
 #include <stdint.h>
-
 #include <memory>
+#include <set>
 
 #include "base/atomic_ref_count.h"
 #include "base/callback.h"
@@ -178,6 +178,8 @@ class MEDIA_EXPORT AudioOutputController
   const AudioParameters& GetAudioParameters() override;
   void StartDiverting(AudioOutputStream* to_stream) override;
   void StopDiverting() override;
+  void StartDuplicating(AudioPushSink* sink) override;
+  void StopDuplicating(AudioPushSink* sink) override;
 
   // Accessor for AudioPowerMonitor::ReadCurrentPowerAndClip().  See comments in
   // audio_power_monitor.h for usage.  This may be called on any thread.
@@ -218,6 +220,8 @@ class MEDIA_EXPORT AudioOutputController
   void DoReportError();
   void DoStartDiverting(AudioOutputStream* to_stream);
   void DoStopDiverting();
+  void DoStartDuplicating(AudioPushSink* sink);
+  void DoStopDuplicating(AudioPushSink* sink);
 
   // Helper method that stops the physical stream.
   void StopStream();
@@ -227,6 +231,10 @@ class MEDIA_EXPORT AudioOutputController
 
   // Checks if a stream was started successfully but never calls OnMoreData().
   void WedgeCheck();
+
+  // Send audio data to each duplication target.
+  void BroadcastDataToDuplicationTargets(std::unique_ptr<AudioBus> audio_bus,
+                                         base::TimeTicks reference_time);
 
   AudioManager* const audio_manager_;
   const AudioParameters params_;
@@ -240,6 +248,10 @@ class MEDIA_EXPORT AudioOutputController
 
   // When non-NULL, audio is being diverted to this stream.
   AudioOutputStream* diverting_to_stream_;
+
+  // The targets for audio stream to be copied to.
+  std::set<AudioPushSink*> duplication_targets_;
+  base::Lock duplication_targets_lock_;
 
   // The current volume of the audio stream.
   double volume_;

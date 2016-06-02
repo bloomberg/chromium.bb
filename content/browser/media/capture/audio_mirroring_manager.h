@@ -32,6 +32,7 @@
 #ifndef CONTENT_BROWSER_MEDIA_CAPTURE_AUDIO_MIRRORING_MANAGER_H_
 #define CONTENT_BROWSER_MEDIA_CAPTURE_AUDIO_MIRRORING_MANAGER_H_
 
+#include <map>
 #include <set>
 #include <utility>
 #include <vector>
@@ -64,19 +65,31 @@ class CONTENT_EXPORT AudioMirroringManager {
     // Asynchronously query whether this MirroringDestination wants to consume
     // audio sourced from each of the |candidates|.  |results_callback| is run
     // to indicate which of them (or none) should have audio routed to this
-    // MirroringDestination.  |results_callback| must be run on the same thread
-    // as the one that called QueryForMatches().
-    typedef base::Callback<void(const std::set<SourceFrameRef>&)>
+    // MirroringDestination.  The second parameter of |results_callback|
+    // indicates whether the MirroringDestination wants either: 1) exclusive
+    // access to a diverted audio flow versus 2) a duplicate copy of the audio
+    // flow. |results_callback| must be run on the same thread as the one that
+    // called QueryForMatches().
+    typedef base::Callback<void(const std::set<SourceFrameRef>&, bool)>
         MatchesCallback;
     virtual void QueryForMatches(
         const std::set<SourceFrameRef>& candidates,
         const MatchesCallback& results_callback) = 0;
 
     // Create a consumer of audio data in the format specified by |params|, and
-    // connect it as an input to mirroring.  When Close() is called on the
-    // returned AudioOutputStream, the input is disconnected and the object
-    // becomes invalid.
+    // connect it as an input to mirroring.  This is used to provide
+    // MirroringDestination with exclusive access to pull the audio flow from
+    // the source. When Close() is called on the returned AudioOutputStream, the
+    // input is disconnected and the object becomes invalid.
     virtual media::AudioOutputStream* AddInput(
+        const media::AudioParameters& params) = 0;
+
+    // Create a consumer of audio data in the format specified by |params|, and
+    // connect it as an input to mirroring.  This is used to provide
+    // MirroringDestination with duplicate audio data, which is pushed from the
+    // main audio flow. When Close() is called on the returned AudioPushSink,
+    // the input is disconnected and the object becomes invalid.
+    virtual media::AudioPushSink* AddPushInput(
         const media::AudioParameters& params) = 0;
 
    protected:
@@ -120,6 +133,11 @@ class CONTENT_EXPORT AudioMirroringManager {
     // destination.
     MirroringDestination* destination;
 
+    // The destinations to which audio stream is duplicated. AudioPushSink is
+    // owned by the Diverter, but AudioMirroringManager must guarantee
+    // StopDuplicating() is called to release them.
+    std::map<MirroringDestination*, media::AudioPushSink*> duplications;
+
     StreamRoutingState(const SourceFrameRef& source_frame,
                        Diverter* stream_diverter);
     StreamRoutingState(const StreamRoutingState& other);
@@ -136,17 +154,35 @@ class CONTENT_EXPORT AudioMirroringManager {
       const std::set<SourceFrameRef>& candidates);
 
   // MirroringDestination query callback.  |matches| contains all RenderFrame
-  // sources that will be diverted to |destination|.  If |add_only| is false,
-  // then any Diverters currently routed to |destination| but not found in
-  // |matches| will be stopped.
+  // sources that will be diverted or duplicated to |destination|.
+  // If |add_only| is false, then any audio flows currently routed to
+  // |destination| but not found in |matches| will be stopped.
+  // If |is_duplicate| is true, the audio data flow will be duplicated to the
+  // destination instead of diverted.
   void UpdateRoutesToDestination(MirroringDestination* destination,
                                  bool add_only,
-                                 const std::set<SourceFrameRef>& matches);
+                                 const std::set<SourceFrameRef>& matches,
+                                 bool is_duplicate);
+
+  // |matches| contains all RenderFrame sources that will be diverted to
+  // |destination|.  If |add_only| is false, then any Diverters currently routed
+  // to |destination| but not found in |matches| will be stopped.
+  void UpdateRoutesToDivertDestination(MirroringDestination* destination,
+                                       bool add_only,
+                                       const std::set<SourceFrameRef>& matches);
+
+  // |matches| contains all RenderFrame sources that will be duplicated to
+  // |destination|.  If |add_only| is false, then any Diverters currently
+  // duplicating to |destination| but not found in |matches| will be stopped.
+  void UpdateRoutesToDuplicateDestination(
+      MirroringDestination* destination,
+      bool add_only,
+      const std::set<SourceFrameRef>& matches);
 
   // Starts diverting audio to the |new_destination|, if not NULL.  Otherwise,
   // stops diverting audio.
-  static void ChangeRoute(StreamRoutingState* route,
-                          MirroringDestination* new_destination);
+  static void RouteDivertedFlow(StreamRoutingState* route,
+                                MirroringDestination* new_destination);
 
   // Routing table.  Contains one entry for each Diverter.
   StreamRoutes routes_;

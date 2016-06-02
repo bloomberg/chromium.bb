@@ -122,6 +122,8 @@ source_set("audio") {
     "virtual_audio_input_stream.h",
     "virtual_audio_output_stream.cc",
     "virtual_audio_output_stream.h",
+    "virtual_audio_sink.cc",
+    "virtual_audio_sink.h",
   ]
   deps = [
     "//base",

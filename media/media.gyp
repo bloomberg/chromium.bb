@@ -223,6 +223,8 @@
         'audio/virtual_audio_input_stream.h',
         'audio/virtual_audio_output_stream.cc',
         'audio/virtual_audio_output_stream.h',
+        'audio/virtual_audio_sink.cc',
+        'audio/virtual_audio_sink.h',
         'audio/win/audio_device_listener_win.cc',
         'audio/win/audio_device_listener_win.h',
         'audio/win/audio_low_latency_input_win.cc',

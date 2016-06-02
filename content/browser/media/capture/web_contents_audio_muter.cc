@@ -104,12 +104,18 @@ class WebContentsAudioMuter::MuteDestination
       if (contents_containing_frame == web_contents_)
         matches.insert(*i);
     }
-    results_callback.Run(matches);
+    results_callback.Run(matches, false);
   }
 
   media::AudioOutputStream* AddInput(
       const media::AudioParameters& params) override {
     return new AudioDiscarder(params);
+  }
+
+  media::AudioPushSink* AddPushInput(
+      const media::AudioParameters& params) override {
+    NOTREACHED();
+    return nullptr;
   }
 
   WebContents* const web_contents_;

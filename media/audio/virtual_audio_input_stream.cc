@@ -65,34 +65,36 @@ void VirtualAudioInputStream::Stop() {
   callback_ = NULL;
 }
 
-void VirtualAudioInputStream::AddOutputStream(
-    VirtualAudioOutputStream* stream, const AudioParameters& output_params) {
+void VirtualAudioInputStream::AddInputProvider(
+    AudioConverter::InputCallback* input,
+    const AudioParameters& params) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::AutoLock scoped_lock(converter_network_lock_);
 
-  AudioConvertersMap::iterator converter = converters_.find(output_params);
+  AudioConvertersMap::iterator converter = converters_.find(params);
   if (converter == converters_.end()) {
-    std::pair<AudioConvertersMap::iterator, bool> result = converters_.insert(
-        std::make_pair(output_params, new LoopbackAudioConverter(
-                                          output_params, params_, false)));
+    std::pair<AudioConvertersMap::iterator, bool> result =
+        converters_.insert(std::make_pair(
+            params, new LoopbackAudioConverter(params, params_, false)));
     converter = result.first;
 
     // Add to main mixer if we just added a new AudioTransform.
     mixer_.AddInput(converter->second);
   }
-  converter->second->AddInput(stream);
+  converter->second->AddInput(input);
   ++num_attached_output_streams_;
 }
 
-void VirtualAudioInputStream::RemoveOutputStream(
-    VirtualAudioOutputStream* stream, const AudioParameters& output_params) {
+void VirtualAudioInputStream::RemoveInputProvider(
+    AudioConverter::InputCallback* input,
+    const AudioParameters& params) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::AutoLock scoped_lock(converter_network_lock_);
 
-  DCHECK(converters_.find(output_params) != converters_.end());
-  converters_[output_params]->RemoveInput(stream);
+  DCHECK(converters_.find(params) != converters_.end());
+  converters_[params]->RemoveInput(input);
 
   --num_attached_output_streams_;
   DCHECK_LE(0, num_attached_output_streams_);

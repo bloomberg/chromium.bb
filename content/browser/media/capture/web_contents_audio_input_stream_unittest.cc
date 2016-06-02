@@ -33,9 +33,11 @@ using ::testing::NotNull;
 using ::testing::SaveArg;
 using ::testing::WithArgs;
 
+using media::AudioBus;
 using media::AudioInputStream;
 using media::AudioOutputStream;
 using media::AudioParameters;
+using media::AudioPushSink;
 using media::SineWaveAudioSource;
 using media::VirtualAudioInputStream;
 using media::VirtualAudioOutputStream;
@@ -119,12 +121,12 @@ class MockVirtualAudioInputStream : public VirtualAudioInputStream {
     ON_CALL(*this, GetAutomaticGainControl())
         .WillByDefault(
             Invoke(&real_, &VirtualAudioInputStream::GetAutomaticGainControl));
-    ON_CALL(*this, AddOutputStream(NotNull(), _))
+    ON_CALL(*this, AddInputProvider(NotNull(), _))
         .WillByDefault(
-            Invoke(&real_, &VirtualAudioInputStream::AddOutputStream));
-    ON_CALL(*this, RemoveOutputStream(NotNull(), _))
+            Invoke(&real_, &VirtualAudioInputStream::AddInputProvider));
+    ON_CALL(*this, RemoveInputProvider(NotNull(), _))
         .WillByDefault(
-            Invoke(&real_, &VirtualAudioInputStream::RemoveOutputStream));
+            Invoke(&real_, &VirtualAudioInputStream::RemoveInputProvider));
   }
 
   ~MockVirtualAudioInputStream() {
@@ -140,10 +142,12 @@ class MockVirtualAudioInputStream : public VirtualAudioInputStream {
   MOCK_METHOD0(GetVolume, double());
   MOCK_METHOD1(SetAutomaticGainControl, bool(bool));
   MOCK_METHOD0(GetAutomaticGainControl, bool());
-  MOCK_METHOD2(AddOutputStream, void(VirtualAudioOutputStream*,
-                                     const AudioParameters&));
-  MOCK_METHOD2(RemoveOutputStream, void(VirtualAudioOutputStream*,
-                                        const AudioParameters&));
+  MOCK_METHOD2(AddInputProvider,
+               void(media::AudioConverter::InputCallback*,
+                    const AudioParameters&));
+  MOCK_METHOD2(RemoveInputProvider,
+               void(media::AudioConverter::InputCallback*,
+                    const AudioParameters&));
 
  private:
   void OnRealStreamHasClosed(VirtualAudioInputStream* stream) {
@@ -175,7 +179,7 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
 
 }  // namespace
 
-class WebContentsAudioInputStreamTest : public testing::Test {
+class WebContentsAudioInputStreamTest : public testing::TestWithParam<bool> {
  public:
   WebContentsAudioInputStreamTest()
       : thread_bundle_(new TestBrowserThreadBundle(
@@ -203,6 +207,12 @@ class WebContentsAudioInputStreamTest : public testing::Test {
     DCHECK(sources_.empty());
   }
 
+  // If this value is true, we are testing a WebContentsAudioInputStream
+  // instance, which requests duplicate audio.
+  // Otherwise, we are testing a WebContentsAudioInputStream instance, which
+  // requests diverting audio.
+  bool is_duplication() const { return GetParam(); }
+
   void Open() {
     mock_vais_ = new MockVirtualAudioInputStream(audio_thread_.task_runner());
     EXPECT_CALL(*mock_vais_, Open());
@@ -222,8 +232,8 @@ class WebContentsAudioInputStreamTest : public testing::Test {
 
     wcais_ = new WebContentsAudioInputStream(
         current_render_process_id_, current_render_frame_id_,
-        mock_mirroring_manager_.get(),
-        mock_tracker_, mock_vais_);
+        mock_mirroring_manager_.get(), mock_tracker_, mock_vais_,
+        is_duplication());
     wcais_->Open();
   }
 
@@ -277,29 +287,54 @@ class WebContentsAudioInputStreamTest : public testing::Test {
     done.Wait();
     ASSERT_TRUE(destination_);
 
-    EXPECT_CALL(*mock_vais_, AddOutputStream(NotNull(), _))
+    EXPECT_CALL(*mock_vais_, AddInputProvider(NotNull(), _))
         .RetiresOnSaturation();
     // Later, when stream is closed:
-    EXPECT_CALL(*mock_vais_, RemoveOutputStream(NotNull(), _))
+    EXPECT_CALL(*mock_vais_, RemoveInputProvider(NotNull(), _))
         .RetiresOnSaturation();
 
     const AudioParameters& params = TestAudioParameters();
-    AudioOutputStream* const out = destination_->AddInput(params);
-    ASSERT_TRUE(out);
-    streams_.push_back(out);
-    EXPECT_TRUE(out->Open());
     SineWaveAudioSource* const source = new SineWaveAudioSource(
         params.channel_layout(), 200.0, params.sample_rate());
     sources_.push_back(source);
-    out->Start(source);
+    if (is_duplication()) {
+      media::AudioPushSink* out = destination_->AddPushInput(params);
+      ASSERT_TRUE(out);
+      sinks_.push_back(out);
+      std::unique_ptr<media::AudioBus> audio_data = AudioBus::Create(params);
+      base::TimeTicks now = base::TimeTicks::Now();
+      // 20 Audio buses are enough for all test cases.
+      const int kAudioBusesNumber = 20;
+      for (int i = 0; i < kAudioBusesNumber; i++) {
+        int frames = source->OnMoreData(audio_data.get(), 0, 0);
+        std::unique_ptr<media::AudioBus> copy = AudioBus::Create(params);
+        audio_data->CopyTo(copy.get());
+        out->OnData(std::move(copy), now);
+        now += base::TimeDelta::FromMillisecondsD(
+            frames * params.GetMicrosecondsPerFrame());
+      }
+    } else {
+      AudioOutputStream* const out = destination_->AddInput(params);
+      ASSERT_TRUE(out);
+      streams_.push_back(out);
+      EXPECT_TRUE(out->Open());
+      out->Start(source);
+    }
   }
 
   void RemoveOneInputInFIFOOrder() {
-    ASSERT_FALSE(streams_.empty());
-    AudioOutputStream* const out = streams_.front();
-    streams_.pop_front();
-    out->Stop();
-    out->Close();  // Self-deletes.
+    if (is_duplication()) {
+      ASSERT_FALSE(sinks_.empty());
+      AudioPushSink* const out = sinks_.front();
+      sinks_.pop_front();
+      out->Close();  // Self-deletes.
+    } else {
+      ASSERT_FALSE(streams_.empty());
+      AudioOutputStream* const out = streams_.front();
+      streams_.pop_front();
+      out->Stop();
+      out->Close();  // Self-deletes.
+    }
     ASSERT_TRUE(!sources_.empty());
     delete sources_.front();
     sources_.pop_front();
@@ -390,6 +425,7 @@ class WebContentsAudioInputStreamTest : public testing::Test {
   // Streams provided by calls to WebContentsAudioInputStream::AddInput().  Each
   // is started with a simulated source of audio data.
   std::list<AudioOutputStream*> streams_;
+  std::list<media::AudioPushSink*> sinks_;
   std::list<SineWaveAudioSource*> sources_;  // 1:1 with elements in streams_.
 
   base::WaitableEvent on_data_event_;
@@ -401,12 +437,12 @@ class WebContentsAudioInputStreamTest : public testing::Test {
   RunOnAudioThread(base::Bind(&WebContentsAudioInputStreamTest::method,  \
                               base::Unretained(this)))
 
-TEST_F(WebContentsAudioInputStreamTest, OpenedButNeverStarted) {
+TEST_P(WebContentsAudioInputStreamTest, OpenedButNeverStarted) {
   RUN_ON_AUDIO_THREAD(Open);
   RUN_ON_AUDIO_THREAD(Close);
 }
 
-TEST_F(WebContentsAudioInputStreamTest, MirroringNothing) {
+TEST_P(WebContentsAudioInputStreamTest, MirroringNothing) {
   RUN_ON_AUDIO_THREAD(Open);
   RUN_ON_AUDIO_THREAD(Start);
   WaitForData();
@@ -414,7 +450,7 @@ TEST_F(WebContentsAudioInputStreamTest, MirroringNothing) {
   RUN_ON_AUDIO_THREAD(Close);
 }
 
-TEST_F(WebContentsAudioInputStreamTest, MirroringOutputOutlivesSession) {
+TEST_P(WebContentsAudioInputStreamTest, MirroringOutputOutlivesSession) {
   RUN_ON_AUDIO_THREAD(Open);
   RUN_ON_AUDIO_THREAD(Start);
   RUN_ON_AUDIO_THREAD(AddAnotherInput);
@@ -424,7 +460,7 @@ TEST_F(WebContentsAudioInputStreamTest, MirroringOutputOutlivesSession) {
   RUN_ON_AUDIO_THREAD(RemoveOneInputInFIFOOrder);
 }
 
-TEST_F(WebContentsAudioInputStreamTest, MirroringOutputWithinSession) {
+TEST_P(WebContentsAudioInputStreamTest, MirroringOutputWithinSession) {
   RUN_ON_AUDIO_THREAD(Open);
   RUN_ON_AUDIO_THREAD(Start);
   RUN_ON_AUDIO_THREAD(AddAnotherInput);
@@ -434,7 +470,7 @@ TEST_F(WebContentsAudioInputStreamTest, MirroringOutputWithinSession) {
   RUN_ON_AUDIO_THREAD(Close);
 }
 
-TEST_F(WebContentsAudioInputStreamTest, MirroringNothingWithTargetChange) {
+TEST_P(WebContentsAudioInputStreamTest, MirroringNothingWithTargetChange) {
   RUN_ON_AUDIO_THREAD(Open);
   RUN_ON_AUDIO_THREAD(Start);
   RUN_ON_AUDIO_THREAD(ChangeMirroringTarget);
@@ -442,7 +478,7 @@ TEST_F(WebContentsAudioInputStreamTest, MirroringNothingWithTargetChange) {
   RUN_ON_AUDIO_THREAD(Close);
 }
 
-TEST_F(WebContentsAudioInputStreamTest, MirroringOneStreamAfterTargetChange) {
+TEST_P(WebContentsAudioInputStreamTest, MirroringOneStreamAfterTargetChange) {
   RUN_ON_AUDIO_THREAD(Open);
   RUN_ON_AUDIO_THREAD(Start);
   RUN_ON_AUDIO_THREAD(ChangeMirroringTarget);
@@ -453,7 +489,7 @@ TEST_F(WebContentsAudioInputStreamTest, MirroringOneStreamAfterTargetChange) {
   RUN_ON_AUDIO_THREAD(RemoveOneInputInFIFOOrder);
 }
 
-TEST_F(WebContentsAudioInputStreamTest, MirroringOneStreamWithTargetChange) {
+TEST_P(WebContentsAudioInputStreamTest, MirroringOneStreamWithTargetChange) {
   RUN_ON_AUDIO_THREAD(Open);
   RUN_ON_AUDIO_THREAD(Start);
   RUN_ON_AUDIO_THREAD(AddAnotherInput);
@@ -467,7 +503,7 @@ TEST_F(WebContentsAudioInputStreamTest, MirroringOneStreamWithTargetChange) {
   RUN_ON_AUDIO_THREAD(RemoveOneInputInFIFOOrder);
 }
 
-TEST_F(WebContentsAudioInputStreamTest, MirroringLostTarget) {
+TEST_P(WebContentsAudioInputStreamTest, MirroringLostTarget) {
   RUN_ON_AUDIO_THREAD(Open);
   RUN_ON_AUDIO_THREAD(Start);
   RUN_ON_AUDIO_THREAD(AddAnotherInput);
@@ -478,7 +514,7 @@ TEST_F(WebContentsAudioInputStreamTest, MirroringLostTarget) {
   RUN_ON_AUDIO_THREAD(Close);
 }
 
-TEST_F(WebContentsAudioInputStreamTest, MirroringMultipleStreamsAndTargets) {
+TEST_P(WebContentsAudioInputStreamTest, MirroringMultipleStreamsAndTargets) {
   RUN_ON_AUDIO_THREAD(Open);
   RUN_ON_AUDIO_THREAD(Start);
   RUN_ON_AUDIO_THREAD(AddAnotherInput);
@@ -501,5 +537,7 @@ TEST_F(WebContentsAudioInputStreamTest, MirroringMultipleStreamsAndTargets) {
   RUN_ON_AUDIO_THREAD(Stop);
   RUN_ON_AUDIO_THREAD(Close);
 }
+
+INSTANTIATE_TEST_CASE_P(, WebContentsAudioInputStreamTest, ::testing::Bool());
 
 }  // namespace content

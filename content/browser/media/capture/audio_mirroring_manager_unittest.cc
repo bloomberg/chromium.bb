@@ -19,6 +19,7 @@
 
 using media::AudioOutputStream;
 using media::AudioParameters;
+using media::AudioPushSink;
 using testing::_;
 using testing::Invoke;
 using testing::NotNull;
@@ -35,6 +36,8 @@ class MockDiverter : public AudioMirroringManager::Diverter {
   MOCK_METHOD0(GetAudioParameters, const AudioParameters&());
   MOCK_METHOD1(StartDiverting, void(AudioOutputStream*));
   MOCK_METHOD0(StopDiverting, void());
+  MOCK_METHOD1(StartDuplicating, void(AudioPushSink*));
+  MOCK_METHOD1(StopDuplicating, void(AudioPushSink*));
 };
 
 class MockMirroringDestination
@@ -42,16 +45,22 @@ class MockMirroringDestination
  public:
   typedef AudioMirroringManager::SourceFrameRef SourceFrameRef;
 
-  MockMirroringDestination(int render_process_id, int render_frame_id)
+  MockMirroringDestination(int render_process_id,
+                           int render_frame_id,
+                           bool is_duplication)
       : render_process_id_(render_process_id),
         render_frame_id_(render_frame_id),
-        query_count_(0) {}
+        query_count_(0),
+        is_duplication_(is_duplication) {}
 
   MOCK_METHOD2(QueryForMatches,
                void(const std::set<SourceFrameRef>& candidates,
                     const MatchesCallback& results_callback));
   MOCK_METHOD1(AddInput,
                media::AudioOutputStream*(const media::AudioParameters& params));
+
+  MOCK_METHOD1(AddPushInput,
+               media::AudioPushSink*(const media::AudioParameters& params));
 
   void SimulateQuery(const std::set<SourceFrameRef>& candidates,
                      const MatchesCallback& results_callback) {
@@ -62,13 +71,20 @@ class MockMirroringDestination
             candidates.end()) {
       result.insert(SourceFrameRef(render_process_id_, render_frame_id_));
     }
-    results_callback.Run(result);
+    results_callback.Run(result, is_duplication_);
   }
 
   media::AudioOutputStream* SimulateAddInput(
       const media::AudioParameters& params) {
     static AudioOutputStream* const kNonNullPointer =
         reinterpret_cast<AudioOutputStream*>(0x11111110);
+    return kNonNullPointer;
+  }
+
+  media::AudioPushSink* SimulateAddPushInput(
+      const media::AudioParameters& params) {
+    static AudioPushSink* const kNonNullPointer =
+        reinterpret_cast<AudioPushSink*>(0x11111110);
     return kNonNullPointer;
   }
 
@@ -80,6 +96,7 @@ class MockMirroringDestination
   const int render_process_id_;
   const int render_frame_id_;
   int query_count_;
+  bool is_duplication_;
 };
 
 }  // namespace
@@ -96,17 +113,30 @@ class AudioMirroringManagerTest : public testing::Test {
                 AudioParameters::kAudioCDSampleRate, 16,
                 AudioParameters::kAudioCDSampleRate / 10) {}
 
-  MockDiverter* CreateStream(
-      int render_process_id, int render_frame_id, int expected_times_diverted) {
+  MockDiverter* CreateStream(int render_process_id,
+                             int render_frame_id,
+                             int expected_times_diverted,
+                             int expected_times_duplicated) {
     MockDiverter* const diverter = new MockDiverter();
-    if (expected_times_diverted > 0) {
+
+    if (expected_times_diverted + expected_times_duplicated > 0) {
       EXPECT_CALL(*diverter, GetAudioParameters())
-          .Times(expected_times_diverted)
+          .Times(expected_times_diverted + expected_times_duplicated)
           .WillRepeatedly(ReturnRef(params_));
+    }
+
+    if (expected_times_diverted > 0) {
       EXPECT_CALL(*diverter, StartDiverting(NotNull()))
           .Times(expected_times_diverted);
       EXPECT_CALL(*diverter, StopDiverting())
           .Times(expected_times_diverted);
+    }
+
+    if (expected_times_duplicated > 0) {
+      EXPECT_CALL(*diverter, StartDuplicating(NotNull()))
+          .Times(expected_times_duplicated);
+      EXPECT_CALL(*diverter, StopDuplicating(NotNull()))
+          .Times(expected_times_duplicated);
     }
 
     mirroring_manager_.AddDiverter(
@@ -121,7 +151,8 @@ class AudioMirroringManagerTest : public testing::Test {
   }
 
   void StartMirroringTo(const std::unique_ptr<MockMirroringDestination>& dest,
-                        int expected_inputs_added) {
+                        int expected_inputs_added,
+                        int expected_push_inputs_added) {
     EXPECT_CALL(*dest, QueryForMatches(_, _))
         .WillRepeatedly(Invoke(dest.get(),
                                &MockMirroringDestination::SimulateQuery));
@@ -130,6 +161,14 @@ class AudioMirroringManagerTest : public testing::Test {
           .Times(expected_inputs_added)
           .WillRepeatedly(Invoke(dest.get(),
                                  &MockMirroringDestination::SimulateAddInput))
+          .RetiresOnSaturation();
+    }
+
+    if (expected_push_inputs_added > 0) {
+      EXPECT_CALL(*dest, AddPushInput(Ref(params_)))
+          .Times(expected_push_inputs_added)
+          .WillRepeatedly(Invoke(
+              dest.get(), &MockMirroringDestination::SimulateAddPushInput))
           .RetiresOnSaturation();
     }
 
@@ -146,6 +185,17 @@ class AudioMirroringManagerTest : public testing::Test {
     for (StreamRoutes::const_iterator it = mirroring_manager_.routes_.begin();
          it != mirroring_manager_.routes_.end(); ++it) {
       if (it->destination == dest.get())
+        ++count;
+    }
+    return count;
+  }
+
+  int CountStreamsDuplicatedTo(
+      const std::unique_ptr<MockMirroringDestination>& dest) const {
+    int count = 0;
+    for (StreamRoutes::const_iterator it = mirroring_manager_.routes_.begin();
+         it != mirroring_manager_.routes_.end(); ++it) {
+      if (it->duplications.find(dest.get()) != it->duplications.end())
         ++count;
     }
     return count;
@@ -176,8 +226,8 @@ const int kYetAnotherRenderFrameId = 7890;
 
 TEST_F(AudioMirroringManagerTest, MirroringSessionOfNothing) {
   const std::unique_ptr<MockMirroringDestination> destination(
-      new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
-  StartMirroringTo(destination, 0);
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(destination, 0, 0);
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
 
   StopMirroringTo(destination);
@@ -188,8 +238,8 @@ TEST_F(AudioMirroringManagerTest, MirroringSessionOfNothing) {
 
 TEST_F(AudioMirroringManagerTest, TwoMirroringSessionsOfNothing) {
   const std::unique_ptr<MockMirroringDestination> destination(
-      new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
-  StartMirroringTo(destination, 0);
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(destination, 0, 0);
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
 
   StopMirroringTo(destination);
@@ -197,8 +247,8 @@ TEST_F(AudioMirroringManagerTest, TwoMirroringSessionsOfNothing) {
 
   const std::unique_ptr<MockMirroringDestination> another_destination(
       new MockMirroringDestination(kAnotherRenderProcessId,
-                                   kAnotherRenderFrameId));
-  StartMirroringTo(another_destination, 0);
+                                   kAnotherRenderFrameId, false));
+  StartMirroringTo(another_destination, 0, 0);
   EXPECT_EQ(0, CountStreamsDivertedTo(another_destination));
 
   StopMirroringTo(another_destination);
@@ -211,10 +261,10 @@ TEST_F(AudioMirroringManagerTest, TwoMirroringSessionsOfNothing) {
 // will be diverted to it.
 TEST_F(AudioMirroringManagerTest, StreamLifetimeAroundMirroringSession) {
   MockDiverter* const stream =
-      CreateStream(kRenderProcessId, kRenderFrameId, 1);
+      CreateStream(kRenderProcessId, kRenderFrameId, 1, 0);
   const std::unique_ptr<MockMirroringDestination> destination(
-      new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
-  StartMirroringTo(destination, 1);
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(destination, 1, 0);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
 
@@ -233,13 +283,13 @@ TEST_F(AudioMirroringManagerTest, StreamLifetimeAroundMirroringSession) {
 // will be diverted to it.
 TEST_F(AudioMirroringManagerTest, StreamLifetimeWithinMirroringSession) {
   const std::unique_ptr<MockMirroringDestination> destination(
-      new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
-  StartMirroringTo(destination, 1);
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(destination, 1, 0);
   EXPECT_EQ(0, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
 
   MockDiverter* const stream =
-      CreateStream(kRenderProcessId, kRenderFrameId, 1);
+      CreateStream(kRenderProcessId, kRenderFrameId, 1, 0);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
 
@@ -258,11 +308,11 @@ TEST_F(AudioMirroringManagerTest, StreamLifetimeWithinMirroringSession) {
 // go.
 TEST_F(AudioMirroringManagerTest, StreamLifetimeAcrossTwoMirroringSessions) {
   MockDiverter* const stream =
-      CreateStream(kRenderProcessId, kRenderFrameId, 2);
+      CreateStream(kRenderProcessId, kRenderFrameId, 2, 0);
 
   const std::unique_ptr<MockMirroringDestination> destination(
-      new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
-  StartMirroringTo(destination, 1);
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(destination, 1, 0);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
 
@@ -271,8 +321,8 @@ TEST_F(AudioMirroringManagerTest, StreamLifetimeAcrossTwoMirroringSessions) {
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
 
   const std::unique_ptr<MockMirroringDestination> second_destination(
-      new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
-  StartMirroringTo(second_destination, 1);
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(second_destination, 1, 0);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
   EXPECT_EQ(1, second_destination->query_count());
@@ -297,38 +347,38 @@ TEST_F(AudioMirroringManagerTest, StreamLifetimeAcrossTwoMirroringSessions) {
 // match for it.
 TEST_F(AudioMirroringManagerTest, StreamDivertingStickyToOneDestination_1) {
   MockDiverter* const stream =
-      CreateStream(kRenderProcessId, kRenderFrameId, 2);
+      CreateStream(kRenderProcessId, kRenderFrameId, 2, 0);
 
   const std::unique_ptr<MockMirroringDestination> destination(
-      new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
-  StartMirroringTo(destination, 1);
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(destination, 1, 0);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
 
   const std::unique_ptr<MockMirroringDestination> replacement_destination(
-      new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
-  StartMirroringTo(replacement_destination, 1);
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(replacement_destination, 1, 0);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(0, replacement_destination->query_count());
+  EXPECT_EQ(1, replacement_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(replacement_destination));
 
   StopMirroringTo(destination);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(1, replacement_destination->query_count());
+  EXPECT_EQ(2, replacement_destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(replacement_destination));
 
   StopMirroringTo(replacement_destination);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(1, replacement_destination->query_count());
+  EXPECT_EQ(2, replacement_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(replacement_destination));
 
   KillStream(stream);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(1, replacement_destination->query_count());
+  EXPECT_EQ(2, replacement_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(replacement_destination));
 
   ExpectNoLongerManagingAnything();
@@ -338,38 +388,38 @@ TEST_F(AudioMirroringManagerTest, StreamDivertingStickyToOneDestination_1) {
 // operations that should have the same effects.
 TEST_F(AudioMirroringManagerTest, StreamDivertingStickyToOneDestination_2) {
   MockDiverter* const stream =
-      CreateStream(kRenderProcessId, kRenderFrameId, 2);
+      CreateStream(kRenderProcessId, kRenderFrameId, 2, 0);
 
   const std::unique_ptr<MockMirroringDestination> destination(
-      new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
-  StartMirroringTo(destination, 1);
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(destination, 1, 0);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
 
   const std::unique_ptr<MockMirroringDestination> replacement_destination(
-      new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
-  StartMirroringTo(replacement_destination, 1);
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(replacement_destination, 1, 0);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(0, replacement_destination->query_count());
+  EXPECT_EQ(1, replacement_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(replacement_destination));
 
   StopMirroringTo(destination);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(1, replacement_destination->query_count());
+  EXPECT_EQ(2, replacement_destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(replacement_destination));
 
   KillStream(stream);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(1, replacement_destination->query_count());
+  EXPECT_EQ(2, replacement_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(replacement_destination));
 
   StopMirroringTo(replacement_destination);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(1, replacement_destination->query_count());
+  EXPECT_EQ(2, replacement_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(replacement_destination));
 
   ExpectNoLongerManagingAnything();
@@ -380,38 +430,38 @@ TEST_F(AudioMirroringManagerTest, StreamDivertingStickyToOneDestination_2) {
 // destination should never see the stream.
 TEST_F(AudioMirroringManagerTest, StreamDivertingStickyToOneDestination_3) {
   MockDiverter* const stream =
-      CreateStream(kRenderProcessId, kRenderFrameId, 1);
+      CreateStream(kRenderProcessId, kRenderFrameId, 1, 0);
 
   const std::unique_ptr<MockMirroringDestination> destination(
-      new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
-  StartMirroringTo(destination, 1);
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(destination, 1, 0);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
 
   const std::unique_ptr<MockMirroringDestination> replacement_destination(
-      new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
-  StartMirroringTo(replacement_destination, 0);
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(replacement_destination, 0, 0);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(0, replacement_destination->query_count());
+  EXPECT_EQ(1, replacement_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(replacement_destination));
 
   KillStream(stream);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(0, replacement_destination->query_count());
+  EXPECT_EQ(1, replacement_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(replacement_destination));
 
   StopMirroringTo(destination);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(0, replacement_destination->query_count());
+  EXPECT_EQ(1, replacement_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(replacement_destination));
 
   StopMirroringTo(replacement_destination);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(0, replacement_destination->query_count());
+  EXPECT_EQ(1, replacement_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(replacement_destination));
 
   ExpectNoLongerManagingAnything();
@@ -420,21 +470,21 @@ TEST_F(AudioMirroringManagerTest, StreamDivertingStickyToOneDestination_3) {
 // Tests that multiple streams are diverted/mixed to one destination.
 TEST_F(AudioMirroringManagerTest, MultipleStreamsInOneMirroringSession) {
   MockDiverter* const stream1 =
-      CreateStream(kRenderProcessId, kRenderFrameId, 1);
+      CreateStream(kRenderProcessId, kRenderFrameId, 1, 0);
 
   const std::unique_ptr<MockMirroringDestination> destination(
-      new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
-  StartMirroringTo(destination, 3);
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(destination, 3, 0);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
 
   MockDiverter* const stream2 =
-      CreateStream(kRenderProcessId, kRenderFrameId, 1);
+      CreateStream(kRenderProcessId, kRenderFrameId, 1, 0);
   EXPECT_EQ(2, destination->query_count());
   EXPECT_EQ(2, CountStreamsDivertedTo(destination));
 
   MockDiverter* const stream3 =
-      CreateStream(kRenderProcessId, kRenderFrameId, 1);
+      CreateStream(kRenderProcessId, kRenderFrameId, 1, 0);
   EXPECT_EQ(3, destination->query_count());
   EXPECT_EQ(3, CountStreamsDivertedTo(destination));
 
@@ -461,50 +511,50 @@ TEST_F(AudioMirroringManagerTest, MultipleStreamsInOneMirroringSession) {
 // has one stream mirrored to one destination.
 TEST_F(AudioMirroringManagerTest, ThreeSeparateMirroringSessions) {
   MockDiverter* const stream =
-      CreateStream(kRenderProcessId, kRenderFrameId, 1);
+      CreateStream(kRenderProcessId, kRenderFrameId, 1, 0);
 
   const std::unique_ptr<MockMirroringDestination> destination(
-      new MockMirroringDestination(kRenderProcessId, kRenderFrameId));
-  StartMirroringTo(destination, 1);
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(destination, 1, 0);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
 
   const std::unique_ptr<MockMirroringDestination> another_destination(
       new MockMirroringDestination(kAnotherRenderProcessId,
-                                   kAnotherRenderFrameId));
-  StartMirroringTo(another_destination, 1);
+                                   kAnotherRenderFrameId, false));
+  StartMirroringTo(another_destination, 1, 0);
   EXPECT_EQ(1, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(0, another_destination->query_count());
+  EXPECT_EQ(1, another_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(another_destination));
 
   MockDiverter* const another_stream =
-      CreateStream(kAnotherRenderProcessId, kAnotherRenderFrameId, 1);
+      CreateStream(kAnotherRenderProcessId, kAnotherRenderFrameId, 1, 0);
   EXPECT_EQ(2, destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(1, another_destination->query_count());
+  EXPECT_EQ(2, another_destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(another_destination));
 
   KillStream(stream);
   EXPECT_EQ(2, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(1, another_destination->query_count());
+  EXPECT_EQ(2, another_destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(another_destination));
 
   MockDiverter* const yet_another_stream =
-      CreateStream(kYetAnotherRenderProcessId, kYetAnotherRenderFrameId, 1);
+      CreateStream(kYetAnotherRenderProcessId, kYetAnotherRenderFrameId, 1, 0);
   EXPECT_EQ(3, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(2, another_destination->query_count());
+  EXPECT_EQ(3, another_destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(another_destination));
 
   const std::unique_ptr<MockMirroringDestination> yet_another_destination(
       new MockMirroringDestination(kYetAnotherRenderProcessId,
-                                   kYetAnotherRenderFrameId));
-  StartMirroringTo(yet_another_destination, 1);
+                                   kYetAnotherRenderFrameId, false));
+  StartMirroringTo(yet_another_destination, 1, 0);
   EXPECT_EQ(3, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(2, another_destination->query_count());
+  EXPECT_EQ(3, another_destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(another_destination));
   EXPECT_EQ(1, yet_another_destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(yet_another_destination));
@@ -512,7 +562,7 @@ TEST_F(AudioMirroringManagerTest, ThreeSeparateMirroringSessions) {
   StopMirroringTo(another_destination);
   EXPECT_EQ(4, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(2, another_destination->query_count());
+  EXPECT_EQ(3, another_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(another_destination));
   EXPECT_EQ(2, yet_another_destination->query_count());
   EXPECT_EQ(1, CountStreamsDivertedTo(yet_another_destination));
@@ -520,7 +570,7 @@ TEST_F(AudioMirroringManagerTest, ThreeSeparateMirroringSessions) {
   StopMirroringTo(yet_another_destination);
   EXPECT_EQ(5, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(2, another_destination->query_count());
+  EXPECT_EQ(3, another_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(another_destination));
   EXPECT_EQ(2, yet_another_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(yet_another_destination));
@@ -528,7 +578,7 @@ TEST_F(AudioMirroringManagerTest, ThreeSeparateMirroringSessions) {
   StopMirroringTo(destination);
   EXPECT_EQ(5, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(2, another_destination->query_count());
+  EXPECT_EQ(3, another_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(another_destination));
   EXPECT_EQ(2, yet_another_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(yet_another_destination));
@@ -536,7 +586,7 @@ TEST_F(AudioMirroringManagerTest, ThreeSeparateMirroringSessions) {
   KillStream(another_stream);
   EXPECT_EQ(5, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(2, another_destination->query_count());
+  EXPECT_EQ(3, another_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(another_destination));
   EXPECT_EQ(2, yet_another_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(yet_another_destination));
@@ -544,10 +594,179 @@ TEST_F(AudioMirroringManagerTest, ThreeSeparateMirroringSessions) {
   KillStream(yet_another_stream);
   EXPECT_EQ(5, destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(destination));
-  EXPECT_EQ(2, another_destination->query_count());
+  EXPECT_EQ(3, another_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(another_destination));
   EXPECT_EQ(2, yet_another_destination->query_count());
   EXPECT_EQ(0, CountStreamsDivertedTo(yet_another_destination));
+
+  ExpectNoLongerManagingAnything();
+}
+
+// Tests that a stream can be successfully duplicated.
+TEST_F(AudioMirroringManagerTest, DuplicationToOneDestination) {
+  MockDiverter* const stream =
+      CreateStream(kRenderProcessId, kRenderFrameId, 1, 1);
+
+  const std::unique_ptr<MockMirroringDestination> destination(
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(destination, 1, 0);
+  EXPECT_EQ(1, destination->query_count());
+  EXPECT_EQ(1, CountStreamsDivertedTo(destination));
+
+  const std::unique_ptr<MockMirroringDestination> duplicated_destination(
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, true));
+  StartMirroringTo(duplicated_destination, 0, 1);
+  EXPECT_EQ(1, destination->query_count());
+  EXPECT_EQ(1, CountStreamsDivertedTo(destination));
+  EXPECT_EQ(1, duplicated_destination->query_count());
+  EXPECT_EQ(1, CountStreamsDuplicatedTo(duplicated_destination));
+
+  StopMirroringTo(destination);
+  EXPECT_EQ(1, destination->query_count());
+  EXPECT_EQ(0, CountStreamsDivertedTo(destination));
+  EXPECT_EQ(2, duplicated_destination->query_count());
+  EXPECT_EQ(1, CountStreamsDuplicatedTo(duplicated_destination));
+
+  StopMirroringTo(duplicated_destination);
+  EXPECT_EQ(1, destination->query_count());
+  EXPECT_EQ(0, CountStreamsDivertedTo(destination));
+  EXPECT_EQ(2, duplicated_destination->query_count());
+  EXPECT_EQ(0, CountStreamsDuplicatedTo(duplicated_destination));
+
+  KillStream(stream);
+  EXPECT_EQ(1, destination->query_count());
+  EXPECT_EQ(0, CountStreamsDivertedTo(destination));
+  EXPECT_EQ(2, duplicated_destination->query_count());
+  EXPECT_EQ(0, CountStreamsDuplicatedTo(duplicated_destination));
+
+  ExpectNoLongerManagingAnything();
+}
+
+// Tests that a stream can be successfully duplicated to multiple destinations
+// simultaneously.
+TEST_F(AudioMirroringManagerTest, DuplicationToMultipleDestinations) {
+  MockDiverter* const stream =
+      CreateStream(kRenderProcessId, kRenderFrameId, 1, 2);
+
+  const std::unique_ptr<MockMirroringDestination> destination(
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(destination, 1, 0);
+  EXPECT_EQ(1, destination->query_count());
+  EXPECT_EQ(1, CountStreamsDivertedTo(destination));
+
+  const std::unique_ptr<MockMirroringDestination> duplicated_destination(
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, true));
+  StartMirroringTo(duplicated_destination, 0, 1);
+  EXPECT_EQ(1, destination->query_count());
+  EXPECT_EQ(1, CountStreamsDivertedTo(destination));
+  EXPECT_EQ(1, duplicated_destination->query_count());
+  EXPECT_EQ(1, CountStreamsDuplicatedTo(duplicated_destination));
+
+  const std::unique_ptr<MockMirroringDestination> duplicated_destination2(
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, true));
+  StartMirroringTo(duplicated_destination2, 0, 1);
+  EXPECT_EQ(1, destination->query_count());
+  EXPECT_EQ(1, CountStreamsDivertedTo(destination));
+  EXPECT_EQ(1, duplicated_destination->query_count());
+  EXPECT_EQ(1, CountStreamsDuplicatedTo(duplicated_destination));
+  EXPECT_EQ(1, duplicated_destination2->query_count());
+  EXPECT_EQ(1, CountStreamsDuplicatedTo(duplicated_destination2));
+
+  StopMirroringTo(destination);
+  EXPECT_EQ(1, destination->query_count());
+  EXPECT_EQ(0, CountStreamsDivertedTo(destination));
+  EXPECT_EQ(2, duplicated_destination->query_count());
+  EXPECT_EQ(1, CountStreamsDuplicatedTo(duplicated_destination));
+  EXPECT_EQ(2, duplicated_destination2->query_count());
+  EXPECT_EQ(1, CountStreamsDuplicatedTo(duplicated_destination2));
+
+  StopMirroringTo(duplicated_destination);
+  EXPECT_EQ(1, destination->query_count());
+  EXPECT_EQ(0, CountStreamsDivertedTo(destination));
+  EXPECT_EQ(2, duplicated_destination->query_count());
+  EXPECT_EQ(0, CountStreamsDuplicatedTo(duplicated_destination));
+  EXPECT_EQ(2, duplicated_destination2->query_count());
+  EXPECT_EQ(1, CountStreamsDuplicatedTo(duplicated_destination2));
+
+  StopMirroringTo(duplicated_destination2);
+  EXPECT_EQ(1, destination->query_count());
+  EXPECT_EQ(0, CountStreamsDivertedTo(destination));
+  EXPECT_EQ(2, duplicated_destination->query_count());
+  EXPECT_EQ(0, CountStreamsDuplicatedTo(duplicated_destination));
+  EXPECT_EQ(2, duplicated_destination2->query_count());
+  EXPECT_EQ(0, CountStreamsDuplicatedTo(duplicated_destination2));
+
+  KillStream(stream);
+  EXPECT_EQ(1, destination->query_count());
+  EXPECT_EQ(0, CountStreamsDivertedTo(destination));
+  EXPECT_EQ(2, duplicated_destination->query_count());
+  EXPECT_EQ(0, CountStreamsDuplicatedTo(duplicated_destination));
+  EXPECT_EQ(2, duplicated_destination2->query_count());
+  EXPECT_EQ(0, CountStreamsDuplicatedTo(duplicated_destination2));
+
+  ExpectNoLongerManagingAnything();
+}
+
+// Tests that duplication should not be affected when the major flow gets
+// diverted to another destination
+TEST_F(AudioMirroringManagerTest,
+       DuplicationUnaffectedBySwitchingDivertedFlow) {
+  MockDiverter* const stream =
+      CreateStream(kRenderProcessId, kRenderFrameId, 2, 1);
+
+  const std::unique_ptr<MockMirroringDestination> duplicated_destination(
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, true));
+  StartMirroringTo(duplicated_destination, 0, 1);
+  EXPECT_EQ(1, duplicated_destination->query_count());
+  EXPECT_EQ(1, CountStreamsDuplicatedTo(duplicated_destination));
+
+  const std::unique_ptr<MockMirroringDestination> divert_destination(
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(divert_destination, 1, 0);
+  EXPECT_EQ(1, divert_destination->query_count());
+  EXPECT_EQ(1, CountStreamsDivertedTo(divert_destination));
+  EXPECT_EQ(1, duplicated_destination->query_count());
+  EXPECT_EQ(1, CountStreamsDuplicatedTo(duplicated_destination));
+
+  const std::unique_ptr<MockMirroringDestination> divert_destination2(
+      new MockMirroringDestination(kRenderProcessId, kRenderFrameId, false));
+  StartMirroringTo(divert_destination2, 1, 0);
+  EXPECT_EQ(1, divert_destination->query_count());
+  EXPECT_EQ(1, CountStreamsDivertedTo(divert_destination));
+  EXPECT_EQ(1, duplicated_destination->query_count());
+  EXPECT_EQ(1, CountStreamsDuplicatedTo(duplicated_destination));
+  EXPECT_EQ(1, divert_destination2->query_count());
+  EXPECT_EQ(0, CountStreamsDivertedTo(divert_destination2));
+
+  StopMirroringTo(divert_destination);
+  EXPECT_EQ(1, divert_destination->query_count());
+  EXPECT_EQ(0, CountStreamsDivertedTo(divert_destination));
+  EXPECT_EQ(2, duplicated_destination->query_count());
+  EXPECT_EQ(1, CountStreamsDuplicatedTo(duplicated_destination));
+  EXPECT_EQ(2, divert_destination2->query_count());
+  EXPECT_EQ(1, CountStreamsDivertedTo(divert_destination2));
+
+  StopMirroringTo(duplicated_destination);
+  EXPECT_EQ(1, divert_destination->query_count());
+  EXPECT_EQ(0, CountStreamsDivertedTo(divert_destination));
+  EXPECT_EQ(2, duplicated_destination->query_count());
+  EXPECT_EQ(0, CountStreamsDuplicatedTo(duplicated_destination));
+  EXPECT_EQ(2, divert_destination2->query_count());
+  EXPECT_EQ(1, CountStreamsDivertedTo(divert_destination2));
+
+  StopMirroringTo(divert_destination2);
+  EXPECT_EQ(1, divert_destination->query_count());
+  EXPECT_EQ(0, CountStreamsDivertedTo(divert_destination));
+  EXPECT_EQ(2, duplicated_destination->query_count());
+  EXPECT_EQ(0, CountStreamsDuplicatedTo(duplicated_destination));
+  EXPECT_EQ(2, divert_destination2->query_count());
+  EXPECT_EQ(0, CountStreamsDivertedTo(divert_destination2));
+
+  KillStream(stream);
+  EXPECT_EQ(1, divert_destination->query_count());
+  EXPECT_EQ(0, CountStreamsDivertedTo(divert_destination));
+  EXPECT_EQ(2, duplicated_destination->query_count());
+  EXPECT_EQ(0, CountStreamsDuplicatedTo(duplicated_destination));
 
   ExpectNoLongerManagingAnything();
 }

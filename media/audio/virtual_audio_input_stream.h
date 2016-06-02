@@ -60,16 +60,16 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
   bool GetAutomaticGainControl() override;
   bool IsMuted() override;
 
-  // Attaches a VirtualAudioOutputStream to be used as input. This
+  // Attaches an AudioConverter::InputCallback to be used as input. This
   // VirtualAudioInputStream must outlive all attached streams, so any attached
   // stream must be closed (which causes a detach) before
   // VirtualAudioInputStream is destroyed.
-  virtual void AddOutputStream(VirtualAudioOutputStream* stream,
-                               const AudioParameters& output_params);
+  virtual void AddInputProvider(AudioConverter::InputCallback* input,
+                                const AudioParameters& params);
 
-  // Detaches a VirtualAudioOutputStream and removes it as input.
-  virtual void RemoveOutputStream(VirtualAudioOutputStream* stream,
-                                  const AudioParameters& output_params);
+  // Detaches an AudioConverter::InputCallback and removes it as input.
+  virtual void RemoveInputProvider(AudioConverter::InputCallback* input,
+                                   const AudioParameters& params);
 
  private:
   friend class VirtualAudioInputStreamTest;

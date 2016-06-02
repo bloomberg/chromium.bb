@@ -17,6 +17,7 @@
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_source_diverter.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_parameters.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,6 +37,7 @@ static const int kBitsPerSample = 16;
 static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
 static const int kSamplesPerPacket = kSampleRate / 100;
 static const double kTestVolume = 0.25;
+static const float kBufferNonZeroData = 1.0f;
 
 class MockAudioOutputControllerEventHandler
     : public AudioOutputController::EventHandler {
@@ -82,7 +84,17 @@ class MockAudioOutputStream : public AudioOutputStream {
   AudioSourceCallback* callback_;
 };
 
-static const float kBufferNonZeroData = 1.0f;
+class MockAudioPushSink : public AudioPushSink {
+ public:
+  MOCK_METHOD0(Close, void());
+  MOCK_METHOD1(OnDataCheck, void(float));
+
+  void OnData(std::unique_ptr<AudioBus> source,
+              base::TimeTicks reference_time) override {
+    OnDataCheck(source->channel(0)[0]);
+  }
+};
+
 ACTION(PopulateBuffer) {
   arg0->Zero();
   // Note: To confirm the buffer will be populated in these tests, it's
@@ -177,6 +189,11 @@ class AudioOutputControllerTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  void StartDuplicating(MockAudioPushSink* sink) {
+    controller_->StartDuplicating(sink);
+    base::RunLoop().RunUntilIdle();
+  }
+
   void ReadDivertedAudioData() {
     std::unique_ptr<AudioBus> dest = AudioBus::Create(params_);
     ASSERT_TRUE(mock_stream_.callback());
@@ -184,6 +201,22 @@ class AudioOutputControllerTest : public testing::Test {
         mock_stream_.callback()->OnMoreData(dest.get(), 0, 0);
     EXPECT_LT(0, frames_read);
     EXPECT_EQ(kBufferNonZeroData, dest->channel(0)[0]);
+  }
+
+  void ReadDuplicatedAudioData(const std::vector<MockAudioPushSink*>& sinks) {
+    for (size_t i = 0; i < sinks.size(); i++) {
+      EXPECT_CALL(*sinks[i], OnDataCheck(kBufferNonZeroData));
+    }
+
+    std::unique_ptr<AudioBus> dest = AudioBus::Create(params_);
+
+    // It is this OnMoreData() call that triggers |sink|'s OnData().
+    const int frames_read = controller_->OnMoreData(dest.get(), 0, 0);
+
+    EXPECT_LT(0, frames_read);
+    EXPECT_EQ(kBufferNonZeroData, dest->channel(0)[0]);
+
+    base::RunLoop().RunUntilIdle();
   }
 
   void Revert(bool was_playing) {
@@ -196,6 +229,12 @@ class AudioOutputControllerTest : public testing::Test {
     EXPECT_CALL(mock_stream_, Close());
 
     controller_->StopDiverting();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void StopDuplicating(MockAudioPushSink* sink) {
+    EXPECT_CALL(*sink, Close());
+    controller_->StopDuplicating(sink);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -333,6 +372,61 @@ TEST_F(AudioOutputControllerTest, DivertRevertClose) {
   Create(kSamplesPerPacket);
   DivertNeverPlaying();
   RevertWasNotPlaying();
+  Close();
+}
+
+TEST_F(AudioOutputControllerTest, PlayDuplicateStopClose) {
+  Create(kSamplesPerPacket);
+  MockAudioPushSink mock_sink;
+  Play();
+  StartDuplicating(&mock_sink);
+  ReadDuplicatedAudioData({&mock_sink});
+  StopDuplicating(&mock_sink);
+  Close();
+}
+
+TEST_F(AudioOutputControllerTest, TwoDuplicates) {
+  Create(kSamplesPerPacket);
+  MockAudioPushSink mock_sink_1;
+  MockAudioPushSink mock_sink_2;
+  Play();
+  StartDuplicating(&mock_sink_1);
+  StartDuplicating(&mock_sink_2);
+  ReadDuplicatedAudioData({&mock_sink_1, &mock_sink_2});
+  StopDuplicating(&mock_sink_1);
+  StopDuplicating(&mock_sink_2);
+  Close();
+}
+
+TEST_F(AudioOutputControllerTest, DuplicateDivertInteract) {
+  Create(kSamplesPerPacket);
+  MockAudioPushSink mock_sink;
+  Play();
+  StartDuplicating(&mock_sink);
+  DivertWhilePlaying();
+
+  // When diverted stream pulls data, it would trigger a push to sink.
+  EXPECT_CALL(mock_sink, OnDataCheck(kBufferNonZeroData));
+  ReadDivertedAudioData();
+
+  StopDuplicating(&mock_sink);
+  RevertWhilePlaying();
+  Close();
+}
+
+TEST_F(AudioOutputControllerTest, DuplicateSwitchDeviceInteract) {
+  Create(kSamplesPerPacket);
+  MockAudioPushSink mock_sink;
+  Play();
+  StartDuplicating(&mock_sink);
+  ReadDuplicatedAudioData({&mock_sink});
+
+  // Switching device would trigger a read, and in turn it would trigger a push
+  // to sink.
+  EXPECT_CALL(mock_sink, OnDataCheck(kBufferNonZeroData));
+  SwitchDevice(false);
+
+  StopDuplicating(&mock_sink);
   Close();
 }
 

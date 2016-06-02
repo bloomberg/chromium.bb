@@ -37,13 +37,13 @@ void VirtualAudioOutputStream::Start(AudioSourceCallback* callback)  {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!callback_);
   callback_ = callback;
-  target_input_stream_->AddOutputStream(this, params_);
+  target_input_stream_->AddInputProvider(this, params_);
 }
 
 void VirtualAudioOutputStream::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (callback_) {
-    target_input_stream_->RemoveOutputStream(this, params_);
+    target_input_stream_->RemoveInputProvider(this, params_);
     callback_ = NULL;
   }
 }
