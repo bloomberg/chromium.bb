@@ -72,6 +72,8 @@ const MojoDuplicateBufferHandleOptionsFlags
 #else
 #define MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_NONE \
   ((MojoDuplicateBufferHandleOptionsFlags)0)
+#define MOJO_DUPLICATE_BUFFER_HANDLE_OPTIONS_FLAG_READ_ONLY \
+  ((MojoDuplicateBufferHandleOptionsFlags)1 << 0)
 #endif
 
 struct MojoDuplicateBufferHandleOptions {
