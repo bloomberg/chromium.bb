@@ -24,3 +24,5 @@ Local Modifications:
 - bro.gypi: Added.
 - enc/static_dict_lut.h: split up into two files (enc/static_dict_lut.h,
   enc/static_dict_lut2.h) to allow upload to codereview.
+- Line 1158 of enc/encode.cc has been modified to fix an unitialized variable
+  warning. Cherry-pick of c6d38e94cbf9ec094b1e84f6a3a675c9dc42fbed.
