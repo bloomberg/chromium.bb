@@ -134,7 +134,8 @@ void VerifyCreateChannelOnIOThread(base::WaitableEvent* event) {
 // Verify that a message channel can be created and used for exchanging
 // messages.
 IN_PROC_BROWSER_TEST_F(MessagePortProviderBrowserTest, CreateChannel) {
-  base::WaitableEvent event(true, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&VerifyCreateChannelOnIOThread, &event));

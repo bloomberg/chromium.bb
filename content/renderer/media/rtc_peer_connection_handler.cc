@@ -1762,7 +1762,8 @@ void RTCPeerConnectionHandler::RunSynchronousClosureOnSignalingThread(
     TRACE_EVENT0("webrtc", trace_event_name);
     closure.Run();
   } else {
-    base::WaitableEvent event(false, false);
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread->PostTask(FROM_HERE,
         base::Bind(&RunSynchronousClosure, closure,
                    base::Unretained(trace_event_name),

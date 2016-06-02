@@ -57,7 +57,9 @@ void BrowserShutdownProfileDumper::WriteTracesToDisc() {
   // TraceLog::Flush() requires the calling thread to have a message loop.
   // As the message loop of the current thread may have quit, start another
   // thread for flushing the trace.
-  base::WaitableEvent flush_complete_event(false, false);
+  base::WaitableEvent flush_complete_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::Thread flush_thread("browser_shutdown_trace_event_flush");
   flush_thread.Start();
   flush_thread.task_runner()->PostTask(

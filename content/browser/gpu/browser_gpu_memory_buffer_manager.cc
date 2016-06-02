@@ -144,7 +144,8 @@ struct BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferRequest {
                                gfx::BufferUsage usage,
                                int client_id,
                                gpu::SurfaceHandle surface_handle)
-      : event(true, false),
+      : event(base::WaitableEvent::ResetPolicy::MANUAL,
+              base::WaitableEvent::InitialState::NOT_SIGNALED),
         size(size),
         format(format),
         usage(usage),

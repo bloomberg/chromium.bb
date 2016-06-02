@@ -395,7 +395,8 @@ void BlinkPlatformImpl::InternalInit() {
 
 void BlinkPlatformImpl::WaitUntilWebThreadTLSUpdate(
     scheduler::WebThreadBase* thread) {
-  base::WaitableEvent event(false, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   thread->GetTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&BlinkPlatformImpl::UpdateWebThreadTLS, base::Unretained(this),

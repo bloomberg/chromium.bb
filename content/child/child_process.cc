@@ -38,7 +38,8 @@ ChildProcess::ChildProcess() : ChildProcess(base::ThreadPriority::NORMAL) {}
 
 ChildProcess::ChildProcess(base::ThreadPriority io_thread_priority)
     : ref_count_(0),
-      shutdown_event_(true, false),
+      shutdown_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
       io_thread_("Chrome_ChildIOThread") {
   DCHECK(!g_lazy_tls.Pointer()->Get());
   g_lazy_tls.Pointer()->Set(this);

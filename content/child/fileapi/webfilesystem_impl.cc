@@ -42,8 +42,9 @@ class WebFileSystemImpl::WaitableCallbackResults
     : public base::RefCountedThreadSafe<WaitableCallbackResults> {
  public:
   WaitableCallbackResults()
-      : results_available_event_(true /* manual_reset */,
-                                 false /* initially_signaled */) {}
+      : results_available_event_(
+            base::WaitableEvent::ResetPolicy::MANUAL,
+            base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void AddResultsAndSignal(const base::Closure& results_closure) {
     base::AutoLock lock(lock_);

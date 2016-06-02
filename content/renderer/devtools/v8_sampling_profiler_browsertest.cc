@@ -37,7 +37,9 @@ class V8SamplingProfilerTest : public RenderViewTest {
   void KickV8() { ExecuteJavaScriptForTests("1"); }
 
   void SyncFlush(TraceLog* trace_log) {
-    base::WaitableEvent flush_complete_event(false, false);
+    base::WaitableEvent flush_complete_event(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     trace_log->Flush(
         base::Bind(&V8SamplingProfilerTest::OnTraceDataCollected,
                    base::Unretained(static_cast<V8SamplingProfilerTest*>(this)),

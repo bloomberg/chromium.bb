@@ -28,12 +28,18 @@ namespace {
 class FakeDataFetcher : public DataFetcherSharedMemory {
  public:
   FakeDataFetcher()
-      : started_orientation_(false, false),
-        stopped_orientation_(false, false),
-        started_motion_(false, false),
-        stopped_motion_(false, false),
-        started_light_(false, false),
-        stopped_light_(false, false),
+      : started_orientation_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED),
+        stopped_orientation_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED),
+        started_motion_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED),
+        stopped_motion_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED),
+        started_light_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED),
+        stopped_light_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED),
         sensor_data_available_(true) {}
   ~FakeDataFetcher() override {}
 
@@ -179,7 +185,10 @@ class FakeDataFetcher : public DataFetcherSharedMemory {
 class DeviceInertialSensorBrowserTest : public ContentBrowserTest  {
  public:
   DeviceInertialSensorBrowserTest()
-      : fetcher_(nullptr), io_loop_finished_event_(false, false) {}
+      : fetcher_(nullptr),
+        io_loop_finished_event_(
+            base::WaitableEvent::ResetPolicy::AUTOMATIC,
+            base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void SetUpOnMainThread() override {
     BrowserThread::PostTask(

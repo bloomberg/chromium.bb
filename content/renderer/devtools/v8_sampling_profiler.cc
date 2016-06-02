@@ -639,7 +639,9 @@ void V8SamplingProfiler::EnableSamplingEventForTesting(int code_added_events,
                                                        int sample_events) {
   render_thread_sampler_->SetEventsToCollectForTest(code_added_events,
                                                     sample_events);
-  waitable_event_for_testing_.reset(new base::WaitableEvent(false, false));
+  waitable_event_for_testing_.reset(
+      new base::WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED));
 }
 
 void V8SamplingProfiler::WaitSamplingEventForTesting() {

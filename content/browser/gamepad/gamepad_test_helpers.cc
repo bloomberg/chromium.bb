@@ -11,8 +11,8 @@ namespace content {
 MockGamepadDataFetcher::MockGamepadDataFetcher(
     const blink::WebGamepads& test_data)
     : test_data_(test_data),
-      read_data_(false, false) {
-}
+      read_data_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                 base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 MockGamepadDataFetcher::~MockGamepadDataFetcher() {
 }

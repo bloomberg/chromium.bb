@@ -81,7 +81,9 @@ class AppCacheResponseTest : public testing::Test {
 
   template <class Method>
   void RunTestOnIOThread(Method method) {
-    test_finished_event_ .reset(new base::WaitableEvent(false, false));
+    test_finished_event_.reset(new base::WaitableEvent(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED));
     io_thread_->task_runner()->PostTask(
         FROM_HERE, base::Bind(&AppCacheResponseTest::MethodWrapper<Method>,
                               base::Unretained(this), method));

@@ -292,7 +292,9 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   CreateScreenCaptureDevice(std::move(capturer));
 
   media::VideoCaptureFormat format;
-  base::WaitableEvent done_event(false, false);
+  base::WaitableEvent done_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   int frame_size;
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
@@ -328,7 +330,9 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
 
   FormatChecker format_checker(gfx::Size(kTestFrameWidth1, kTestFrameHeight1),
                                gfx::Size(kTestFrameWidth1, kTestFrameHeight1));
-  base::WaitableEvent done_event(false, false);
+  base::WaitableEvent done_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_, _)).Times(0);
@@ -370,7 +374,9 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeFixedAspectRatio) {
       std::unique_ptr<webrtc::DesktopCapturer>(mock_capturer));
 
   FormatChecker format_checker(gfx::Size(888, 500), gfx::Size(532, 300));
-  base::WaitableEvent done_event(false, false);
+  base::WaitableEvent done_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_,_)).Times(0);
@@ -416,7 +422,9 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
 
   FormatChecker format_checker(gfx::Size(kTestFrameWidth1, kTestFrameHeight1),
                                gfx::Size(kTestFrameWidth2, kTestFrameHeight2));
-  base::WaitableEvent done_event(false, false);
+  base::WaitableEvent done_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   std::unique_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_,_)).Times(0);
@@ -460,7 +468,9 @@ TEST_F(DesktopCaptureDeviceTest, UnpackedFrame) {
       std::unique_ptr<webrtc::DesktopCapturer>(mock_capturer));
 
   media::VideoCaptureFormat format;
-  base::WaitableEvent done_event(false, false);
+  base::WaitableEvent done_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   int frame_size = 0;
   output_frame_.reset(new webrtc::BasicDesktopFrame(
@@ -505,7 +515,9 @@ TEST_F(DesktopCaptureDeviceTest, InvertedFrame) {
       std::unique_ptr<webrtc::DesktopCapturer>(mock_capturer));
 
   media::VideoCaptureFormat format;
-  base::WaitableEvent done_event(false, false);
+  base::WaitableEvent done_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   int frame_size = 0;
   output_frame_.reset(new webrtc::BasicDesktopFrame(

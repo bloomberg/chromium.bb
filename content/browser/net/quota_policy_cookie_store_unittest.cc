@@ -36,9 +36,10 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
  public:
   QuotaPolicyCookieStoreTest()
       : pool_owner_(new base::SequencedWorkerPoolOwner(3, "Background Pool")),
-        loaded_event_(false, false),
-        destroy_event_(false, false) {
-  }
+        loaded_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
+        destroy_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void OnLoaded(const CanonicalCookieVector& cookies) {
     cookies_ = cookies;

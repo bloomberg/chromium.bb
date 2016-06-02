@@ -119,7 +119,8 @@ std::unique_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
       return decoder;
   }
 
-  base::WaitableEvent waiter(true, false);
+  base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::MANUAL,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   decoder.reset(new RTCVideoDecoder(type, factories));
   decoder->factories_->GetTaskRunner()->PostTask(
       FROM_HERE,

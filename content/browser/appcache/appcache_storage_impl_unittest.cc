@@ -400,7 +400,9 @@ class AppCacheStorageImplTest : public testing::Test {
 
   template <class Method>
   void RunTestOnIOThread(Method method) {
-    test_finished_event_ .reset(new base::WaitableEvent(false, false));
+    test_finished_event_.reset(new base::WaitableEvent(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED));
     io_thread->task_runner()->PostTask(
         FROM_HERE, base::Bind(&AppCacheStorageImplTest::MethodWrapper<Method>,
                               base::Unretained(this), method));
@@ -462,7 +464,8 @@ class AppCacheStorageImplTest : public testing::Test {
   void FlushDbThreadTasks() {
     // We pump a task thru the db thread to ensure any tasks previously
     // scheduled on that thread have been performed prior to return.
-    base::WaitableEvent event(false, false);
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     db_thread->task_runner()->PostTask(
         FROM_HERE, base::Bind(&AppCacheStorageImplTest::SignalEvent, &event));
     event.Wait();

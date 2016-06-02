@@ -315,7 +315,9 @@ class InterstitialPageImplTest : public ContentBrowserTest {
 
  private:
   void RunTaskOnIOThreadAndWait(const base::Closure& task) {
-    base::WaitableEvent completion(false, false);
+    base::WaitableEvent completion(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(&InterstitialPageImplTest::RunTask, this,
                                        task, &completion));

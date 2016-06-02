@@ -184,13 +184,17 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
   CHECK(chrome_signaling_thread_.Start());
   CHECK(chrome_worker_thread_.Start());
 
-  base::WaitableEvent start_worker_event(true, false);
+  base::WaitableEvent start_worker_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   chrome_worker_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&PeerConnectionDependencyFactory::InitializeWorkerThread,
                  base::Unretained(this), &worker_thread_, &start_worker_event));
 
-  base::WaitableEvent create_network_manager_event(true, false);
+  base::WaitableEvent create_network_manager_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   chrome_worker_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&PeerConnectionDependencyFactory::
@@ -209,7 +213,9 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
     return;
   }
 
-  base::WaitableEvent start_signaling_event(true, false);
+  base::WaitableEvent start_signaling_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   chrome_signaling_thread_.task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&PeerConnectionDependencyFactory::InitializeSignalingThread,

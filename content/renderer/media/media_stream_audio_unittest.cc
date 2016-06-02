@@ -38,8 +38,11 @@ class FakeMediaStreamAudioSource
       public base::PlatformThread::Delegate {
  public:
   FakeMediaStreamAudioSource()
-      : MediaStreamAudioSource(true), stop_event_(true, false),
-        next_buffer_size_(kBufferSize), sample_count_(0) {}
+      : MediaStreamAudioSource(true),
+        stop_event_(base::WaitableEvent::ResetPolicy::MANUAL,
+                    base::WaitableEvent::InitialState::NOT_SIGNALED),
+        next_buffer_size_(kBufferSize),
+        sample_count_(0) {}
 
   ~FakeMediaStreamAudioSource() final {
     CHECK(main_thread_checker_.CalledOnValidThread());

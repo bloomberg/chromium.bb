@@ -65,7 +65,9 @@ class PluginDataRemoverImpl::Context
                                         BrowserThread::DeleteOnIOThread> {
  public:
   Context(base::Time begin_time, BrowserContext* browser_context)
-      : event_(new base::WaitableEvent(true, false)),
+      : event_(new base::WaitableEvent(
+            base::WaitableEvent::ResetPolicy::MANUAL,
+            base::WaitableEvent::InitialState::NOT_SIGNALED)),
         begin_time_(begin_time),
         is_removing_(false),
         browser_context_path_(browser_context->GetPath()) {

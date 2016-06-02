@@ -739,7 +739,9 @@ int32_t RTCVideoEncoder::InitEncode(const webrtc::VideoCodec* codec_settings,
   const media::VideoCodecProfile profile = WebRTCVideoCodecToVideoCodecProfile(
       impl_->video_codec_type(), codec_settings);
 
-  base::WaitableEvent initialization_waiter(true, false);
+  base::WaitableEvent initialization_waiter(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   int32_t initialization_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   gpu_task_runner_->PostTask(
       FROM_HERE,
@@ -769,7 +771,9 @@ int32_t RTCVideoEncoder::Encode(
 
   const bool want_key_frame = frame_types && frame_types->size() &&
                               frame_types->front() == webrtc::kVideoFrameKey;
-  base::WaitableEvent encode_waiter(true, false);
+  base::WaitableEvent encode_waiter(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   int32_t encode_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   gpu_task_runner_->PostTask(
       FROM_HERE,
@@ -794,7 +798,9 @@ int32_t RTCVideoEncoder::RegisterEncodeCompleteCallback(
     return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   }
 
-  base::WaitableEvent register_waiter(true, false);
+  base::WaitableEvent register_waiter(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   int32_t register_retval = WEBRTC_VIDEO_CODEC_UNINITIALIZED;
   gpu_task_runner_->PostTask(
       FROM_HERE,
@@ -809,7 +815,9 @@ int32_t RTCVideoEncoder::Release() {
   if (!impl_.get())
     return WEBRTC_VIDEO_CODEC_OK;
 
-  base::WaitableEvent release_waiter(true, false);
+  base::WaitableEvent release_waiter(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   gpu_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&RTCVideoEncoder::Impl::Destroy, impl_, &release_waiter));

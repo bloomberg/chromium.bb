@@ -49,7 +49,8 @@ class RTCVideoDecoderTest
       : mock_gpu_factories_(
             new media::MockGpuVideoAcceleratorFactories(nullptr)),
         vda_thread_("vda_thread"),
-        idle_waiter_(false, false) {
+        idle_waiter_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                     base::WaitableEvent::InitialState::NOT_SIGNALED) {
     memset(&codec_, 0, sizeof(codec_));
   }
 

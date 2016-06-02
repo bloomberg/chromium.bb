@@ -815,7 +815,8 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents,
 
 std::string GetCookies(BrowserContext* browser_context, const GURL& url) {
   std::string cookies;
-  base::WaitableEvent event(true, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   net::URLRequestContextGetter* context_getter =
       BrowserContext::GetDefaultStoragePartition(browser_context)->
           GetURLRequestContext();
@@ -832,7 +833,8 @@ bool SetCookie(BrowserContext* browser_context,
                const GURL& url,
                const std::string& value) {
   bool result = false;
-  base::WaitableEvent event(true, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   net::URLRequestContextGetter* context_getter =
       BrowserContext::GetDefaultStoragePartition(browser_context)->
           GetURLRequestContext();

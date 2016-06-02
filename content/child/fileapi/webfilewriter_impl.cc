@@ -36,8 +36,11 @@ class WebFileWriterImpl::WriterBridge
         task_runner_(running_on_worker_ ? base::ThreadTaskRunnerHandle::Get()
                                         : nullptr),
         written_bytes_(0) {
-    if (type == WebFileWriterImpl::TYPE_SYNC)
-      waitable_event_.reset(new base::WaitableEvent(false, false));
+    if (type == WebFileWriterImpl::TYPE_SYNC) {
+      waitable_event_.reset(new base::WaitableEvent(
+          base::WaitableEvent::ResetPolicy::AUTOMATIC,
+          base::WaitableEvent::InitialState::NOT_SIGNALED));
+    }
   }
 
   void Truncate(const GURL& path,

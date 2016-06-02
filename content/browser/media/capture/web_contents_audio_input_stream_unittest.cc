@@ -192,7 +192,8 @@ class WebContentsAudioInputStreamTest : public testing::TestWithParam<bool> {
         destination_(NULL),
         current_render_process_id_(kRenderProcessId),
         current_render_frame_id_(kRenderFrameId),
-        on_data_event_(false, false) {
+        on_data_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                       base::WaitableEvent::InitialState::NOT_SIGNALED) {
     audio_thread_.Start();
   }
 
@@ -280,7 +281,8 @@ class WebContentsAudioInputStreamTest : public testing::TestWithParam<bool> {
     // Note: WCAIS posts a task to invoke
     // MockAudioMirroringManager::StartMirroring() on the IO thread, which
     // causes our mock to set |destination_|.  Block until that has happened.
-    base::WaitableEvent done(false, false);
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE, base::Bind(
             &base::WaitableEvent::Signal, base::Unretained(&done)));

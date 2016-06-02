@@ -625,7 +625,9 @@ class AppCacheUpdateJobTest : public testing::Test,
   // when it goes out of scope.
   template <class Method>
   void RunTestOnIOThread(Method method) {
-    event_.reset(new base::WaitableEvent(false, false));
+    event_.reset(new base::WaitableEvent(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED));
     io_thread_->task_runner()->PostTask(
         FROM_HERE, base::Bind(method, base::Unretained(this)));
 

@@ -95,15 +95,15 @@ BrowserGpuChannelHostFactory::EstablishRequest::EstablishRequest(
     int gpu_client_id,
     uint64_t gpu_client_tracing_id,
     int gpu_host_id)
-    : event_(false, false),
+    : event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+             base::WaitableEvent::InitialState::NOT_SIGNALED),
       cause_for_gpu_launch_(cause),
       gpu_client_id_(gpu_client_id),
       gpu_client_tracing_id_(gpu_client_tracing_id),
       gpu_host_id_(gpu_host_id),
       reused_gpu_process_(false),
       finished_(false),
-      main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-}
+      main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 void BrowserGpuChannelHostFactory::EstablishRequest::EstablishOnIO() {
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.
@@ -226,7 +226,9 @@ void BrowserGpuChannelHostFactory::Terminate() {
 BrowserGpuChannelHostFactory::BrowserGpuChannelHostFactory()
     : gpu_client_id_(ChildProcessHostImpl::GenerateChildProcessUniqueId()),
       gpu_client_tracing_id_(ChildProcessHost::kBrowserTracingProcessId),
-      shutdown_event_(new base::WaitableEvent(true, false)),
+      shutdown_event_(new base::WaitableEvent(
+          base::WaitableEvent::ResetPolicy::MANUAL,
+          base::WaitableEvent::InitialState::NOT_SIGNALED)),
       gpu_memory_buffer_manager_(
           new BrowserGpuMemoryBufferManager(gpu_client_id_,
                                             gpu_client_tracing_id_)),

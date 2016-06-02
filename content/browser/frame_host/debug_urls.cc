@@ -171,7 +171,9 @@ bool HandleAsanDebugURL(const GURL& url) {
 
 void HangCurrentThread() {
   ScopedAllowWaitForDebugURL allow_wait;
-  base::WaitableEvent(false, false).Wait();
+  base::WaitableEvent(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED)
+      .Wait();
 }
 
 }  // namespace
