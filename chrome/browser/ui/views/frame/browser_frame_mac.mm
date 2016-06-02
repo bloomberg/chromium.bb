@@ -7,7 +7,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_command_handler.h"
 #import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
-#include "chrome/browser/ui/views/frame/browser_shutdown.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #import "chrome/browser/ui/views/frame/native_widget_mac_frameless_nswindow.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -25,13 +24,6 @@ BrowserFrameMac::~BrowserFrameMac() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameMac, views::NativeWidgetMac implementation:
-
-void BrowserFrameMac::OnWindowWillClose() {
-  // Destroy any remaining WebContents early on. This is consistent with Aura.
-  // See comment in DesktopBrowserFrameAura::OnHostClosed().
-  DestroyBrowserWebContents(browser_view_->browser());
-  NativeWidgetMac::OnWindowWillClose();
-}
 
 int BrowserFrameMac::SheetPositionY() {
   web_modal::WebContentsModalDialogHost* dialog_host =

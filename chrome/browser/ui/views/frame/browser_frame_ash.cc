@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/views/frame/browser_shutdown.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -81,14 +80,6 @@ BrowserFrameAsh::BrowserFrameAsh(BrowserFrame* browser_frame,
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAsh, views::NativeWidgetAura overrides:
-
-void BrowserFrameAsh::OnWindowDestroying(aura::Window* window) {
-  // Destroy any remaining WebContents early on. Doing so may result in
-  // calling back to one of the Views/LayoutManagers or supporting classes of
-  // BrowserView. By destroying here we ensure all said classes are valid.
-  DestroyBrowserWebContents(browser_view_->browser());
-  NativeWidgetAura::OnWindowDestroying(window);
-}
 
 void BrowserFrameAsh::OnWindowTargetVisibilityChanged(bool visible) {
   if (visible) {

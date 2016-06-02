@@ -25,7 +25,6 @@ class BrowserFrameMac : public views::NativeWidgetMac,
   BrowserFrameMac(BrowserFrame* browser_frame, BrowserView* browser_view);
 
   // Overridden from views::NativeWidgetMac:
-  void OnWindowWillClose() override;
   int SheetPositionY() override;
   void InitNativeWidget(const views::Widget::InitParams& params) override;
 

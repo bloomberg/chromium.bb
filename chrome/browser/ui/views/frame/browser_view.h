@@ -412,6 +412,7 @@ class BrowserView : public BrowserWindow,
   void GetAccessiblePanes(std::vector<View*>* panes) override;
 
   // Overridden from views::WidgetObserver:
+  void OnWidgetDestroying(views::Widget* widget) override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
   // Overridden from views::ClientView:

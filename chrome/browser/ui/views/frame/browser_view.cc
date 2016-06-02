@@ -1769,6 +1769,15 @@ views::ClientView* BrowserView::CreateClientView(views::Widget* widget) {
   return this;
 }
 
+void BrowserView::OnWidgetDestroying(views::Widget* widget) {
+  // Destroy any remaining WebContents early on. Doing so may result in
+  // calling back to one of the Views/LayoutManagers or supporting classes of
+  // BrowserView. By destroying here we ensure all said classes are valid.
+  ScopedVector<content::WebContents> contents;
+  while (browser()->tab_strip_model()->count())
+    contents.push_back(browser()->tab_strip_model()->DetachWebContentsAt(0));
+}
+
 void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
                                             bool active) {
   if (active)
