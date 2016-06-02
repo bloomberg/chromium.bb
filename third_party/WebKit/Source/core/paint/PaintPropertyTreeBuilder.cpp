@@ -15,21 +15,21 @@
 
 namespace blink {
 
-void PaintPropertyTreeBuilder::buildTreeRootNodes(FrameView& rootFrame, PaintPropertyTreeBuilderRootContext& rootContext)
+void PaintPropertyTreeBuilder::buildTreeRootNodes(FrameView& rootFrame, PaintPropertyTreeBuilderContext& context)
 {
     // Only create extra root clip and transform nodes when RLS is enabled, because the main frame
     // unconditionally create frame translation / clip nodes otherwise.
     if (rootFrame.frame().settings() && rootFrame.frame().settings()->rootLayerScrolls()) {
-        rootContext.transformRoot = TransformPaintPropertyNode::create(TransformationMatrix(), FloatPoint3D(), nullptr);
-        rootContext.currentTransform = rootContext.transformForAbsolutePosition = rootContext.transformForFixedPosition = rootContext.transformRoot.get();
+        transformRoot = TransformPaintPropertyNode::create(TransformationMatrix(), FloatPoint3D(), nullptr);
+        context.currentTransform = context.transformForAbsolutePosition = context.transformForFixedPosition = transformRoot.get();
 
-        rootContext.clipRoot = ClipPaintPropertyNode::create(rootContext.transformRoot, FloatRoundedRect(LayoutRect::infiniteIntRect()), nullptr);
-        rootContext.currentClip = rootContext.clipForAbsolutePosition = rootContext.clipForFixedPosition = rootContext.clipRoot.get();
+        clipRoot = ClipPaintPropertyNode::create(transformRoot, FloatRoundedRect(LayoutRect::infiniteIntRect()), nullptr);
+        context.currentClip = context.clipForAbsolutePosition = context.clipForFixedPosition = clipRoot.get();
     }
 
     // The root frame never creates effect node so we unconditionally create a root node here.
-    rootContext.effectRoot = EffectPaintPropertyNode::create(1.0, nullptr);
-    rootContext.currentEffect = rootContext.effectRoot.get();
+    effectRoot = EffectPaintPropertyNode::create(1.0, nullptr);
+    context.currentEffect = effectRoot.get();
 }
 
 void PaintPropertyTreeBuilder::buildTreeNodes(FrameView& frameView, PaintPropertyTreeBuilderContext& context)

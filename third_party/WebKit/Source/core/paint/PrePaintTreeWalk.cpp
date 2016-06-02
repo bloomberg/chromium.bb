@@ -21,9 +21,8 @@ void PrePaintTreeWalk::walk(FrameView& rootFrame)
 {
     DCHECK(rootFrame.frame().document()->lifecycle().state() == DocumentLifecycle::InPrePaint);
 
-    PaintPropertyTreeBuilderRootContext treeBuilderRootContext;
-    m_propertyTreeBuilder.buildTreeRootNodes(rootFrame, treeBuilderRootContext);
-    PrePaintTreeWalkContext rootContext = { treeBuilderRootContext };
+    PrePaintTreeWalkContext rootContext;
+    m_propertyTreeBuilder.buildTreeRootNodes(rootFrame, rootContext.treeBuilderContext);
     walk(rootFrame, rootContext);
 }
 

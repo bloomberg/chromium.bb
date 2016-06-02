@@ -64,20 +64,13 @@ struct PaintPropertyTreeBuilderContext {
     EffectPaintPropertyNode* currentEffect;
 };
 
-// Holds references to root property nodes to keep them alive during tree walk.
-struct PaintPropertyTreeBuilderRootContext : public PaintPropertyTreeBuilderContext {
-    RefPtr<TransformPaintPropertyNode> transformRoot;
-    RefPtr<ClipPaintPropertyNode> clipRoot;
-    RefPtr<EffectPaintPropertyNode> effectRoot;
-};
-
 // Creates paint property tree nodes for special things in the layout tree.
 // Special things include but not limit to: overflow clip, transform, fixed-pos, animation,
 // mask, filter, ... etc.
 // It expects to be invoked for each layout tree node in DOM order during InPrePaint phase.
 class PaintPropertyTreeBuilder {
 public:
-    void buildTreeRootNodes(FrameView&, PaintPropertyTreeBuilderRootContext&);
+    void buildTreeRootNodes(FrameView&, PaintPropertyTreeBuilderContext&);
     void buildTreeNodes(FrameView&, PaintPropertyTreeBuilderContext&);
     void buildTreeNodes(const LayoutObject&, PaintPropertyTreeBuilderContext&);
 
@@ -93,6 +86,11 @@ private:
     static void updateSvgLocalTransform(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateScrollTranslation(const LayoutObject&, PaintPropertyTreeBuilderContext&);
     static void updateOutOfFlowContext(const LayoutObject&, PaintPropertyTreeBuilderContext&);
+
+    // Holds references to root property nodes to keep them alive during tree walk.
+    RefPtr<TransformPaintPropertyNode> transformRoot;
+    RefPtr<ClipPaintPropertyNode> clipRoot;
+    RefPtr<EffectPaintPropertyNode> effectRoot;
 };
 
 } // namespace blink
