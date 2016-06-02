@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,25 +45,19 @@ class Http2PriorityWriteSchedulerPeer;
 template <typename StreamIdType>
 class Http2PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
  public:
+  using typename WriteScheduler<StreamIdType>::StreamPrecedenceType;
+
   Http2PriorityWriteScheduler();
 
   // WriteScheduler methods
   void RegisterStream(StreamIdType stream_id,
-                      StreamIdType parent_id,
-                      int weight,
-                      bool exclusive) override;
-  void RegisterStream(StreamIdType stream_id, SpdyPriority priority) override;
+                      const StreamPrecedenceType& precedence) override;
   void UnregisterStream(StreamIdType stream_id) override;
   bool StreamRegistered(StreamIdType stream_id) const override;
-  SpdyPriority GetStreamPriority(StreamIdType stream_id) const override;
-  void UpdateStreamPriority(StreamIdType stream_id,
-                            SpdyPriority priority) override;
-  int GetStreamWeight(StreamIdType stream_id) const override;
-  void UpdateStreamWeight(StreamIdType stream_id, int weight) override;
-  StreamIdType GetStreamParent(StreamIdType stream_id) const override;
-  void UpdateStreamParent(StreamIdType stream_id,
-                          StreamIdType parent_id,
-                          bool exclusive) override;
+  StreamPrecedenceType GetStreamPrecedence(
+      StreamIdType stream_id) const override;
+  void UpdateStreamPrecedence(StreamIdType stream_id,
+                              const StreamPrecedenceType& precedence) override;
   std::vector<StreamIdType> GetStreamChildren(
       StreamIdType stream_id) const override;
   void RecordStreamEventTime(StreamIdType stream_id,
@@ -75,11 +69,6 @@ class Http2PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
   bool HasReadyStreams() const override;
   StreamIdType PopNextReadyStream() override;
   size_t NumReadyStreams() const override;
-
-  // Returns true if the stream parent_id has child_id in its children. If
-  // either parent or child stream aren't registered, logs SPDY_BUG and returns
-  // false.
-  bool StreamHasChild(StreamIdType parent_id, StreamIdType child_id) const;
 
   // Return the number of streams currently in the tree.
   int num_streams() const;
@@ -136,6 +125,12 @@ class Http2PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
   const StreamInfo* FindStream(StreamIdType stream_id) const;
   StreamInfo* FindStream(StreamIdType stream_id);
 
+  // Helpers for UpdateStreamPrecedence().
+  void UpdateStreamParent(StreamInfo* stream_info,
+                          StreamIdType parent_id,
+                          bool exclusive);
+  void UpdateStreamWeight(StreamInfo* stream_info, int weight);
+
   // Update all priority values in the subtree rooted at the given stream, not
   // including the stream itself. If this results in priority value changes for
   // scheduled streams, those streams are rescheduled to ensure proper ordering
@@ -153,6 +148,10 @@ class Http2PriorityWriteScheduler : public WriteScheduler<StreamIdType> {
   // Return true if all internal invariants hold (useful for unit tests).
   // Unless there are bugs, this should always return true.
   bool ValidateInvariantsForTests() const;
+
+  // Returns true if the parent stream has the given stream in its children.
+  bool StreamHasChild(const StreamInfo& parent_info,
+                      const StreamInfo* child_info) const;
 
   // Pointee owned by all_stream_infos_.
   StreamInfo* root_stream_info_;
@@ -203,27 +202,27 @@ bool Http2PriorityWriteScheduler<StreamIdType>::StreamRegistered(
 template <typename StreamIdType>
 void Http2PriorityWriteScheduler<StreamIdType>::RegisterStream(
     StreamIdType stream_id,
-    StreamIdType parent_id,
-    int weight,
-    bool exclusive) {
+    const StreamPrecedenceType& precedence) {
+  SPDY_BUG_IF(precedence.is_spdy3_priority())
+      << "Expected HTTP/2 stream dependency";
+
   if (StreamRegistered(stream_id)) {
     SPDY_BUG << "Stream " << stream_id << " already registered";
     return;
   }
-  weight = ClampHttp2Weight(weight);
 
-  StreamInfo* parent = FindStream(parent_id);
+  StreamInfo* parent = FindStream(precedence.parent_id());
   if (parent == nullptr) {
-    SPDY_BUG << "Parent stream " << parent_id << " not registered";
+    SPDY_BUG << "Parent stream " << precedence.parent_id() << " not registered";
     parent = root_stream_info_;
   }
 
   StreamInfo* new_stream_info = new StreamInfo;
   new_stream_info->id = stream_id;
-  new_stream_info->weight = weight;
+  new_stream_info->weight = precedence.weight();
   new_stream_info->parent = parent;
   all_stream_infos_[stream_id] = new_stream_info;
-  if (exclusive) {
+  if (precedence.is_exclusive()) {
     // Move the parent's current children below the new stream.
     using std::swap;
     swap(new_stream_info->children, parent->children);
@@ -238,7 +237,7 @@ void Http2PriorityWriteScheduler<StreamIdType>::RegisterStream(
   }
   // Add new stream to parent.
   parent->children.push_back(new_stream_info);
-  parent->total_child_weights += weight;
+  parent->total_child_weights += precedence.weight();
 
   // Update all priorities under parent, since addition of a stream affects
   // sibling priorities as well.
@@ -246,14 +245,6 @@ void Http2PriorityWriteScheduler<StreamIdType>::RegisterStream(
 
   // Stream starts with ready == false, so no need to schedule it yet.
   DCHECK(!new_stream_info->ready);
-}
-
-template <typename StreamIdType>
-void Http2PriorityWriteScheduler<StreamIdType>::RegisterStream(
-    StreamIdType stream_id,
-    SpdyPriority priority) {
-  RegisterStream(stream_id, kHttp2RootStreamId,
-                 Spdy3PriorityToHttp2Weight(priority), false);
 }
 
 template <typename StreamIdType>
@@ -302,34 +293,21 @@ void Http2PriorityWriteScheduler<StreamIdType>::UnregisterStream(
 }
 
 template <typename StreamIdType>
-SpdyPriority Http2PriorityWriteScheduler<StreamIdType>::GetStreamPriority(
-    StreamIdType stream_id) const {
-  return Http2WeightToSpdy3Priority(GetStreamWeight(stream_id));
-}
-
-template <typename StreamIdType>
-int Http2PriorityWriteScheduler<StreamIdType>::GetStreamWeight(
+typename Http2PriorityWriteScheduler<StreamIdType>::StreamPrecedenceType
+Http2PriorityWriteScheduler<StreamIdType>::GetStreamPrecedence(
     StreamIdType stream_id) const {
   const StreamInfo* stream_info = FindStream(stream_id);
   if (stream_info == nullptr) {
     SPDY_BUG << "Stream " << stream_id << " not registered";
-    return kHttp2MinStreamWeight;
+    return StreamPrecedenceType(kHttp2RootStreamId, kHttp2MinStreamWeight,
+                                false);
   }
-  return stream_info->weight;
-}
-
-template <typename StreamIdType>
-StreamIdType Http2PriorityWriteScheduler<StreamIdType>::GetStreamParent(
-    StreamIdType stream_id) const {
-  const StreamInfo* stream_info = FindStream(stream_id);
-  if (stream_info == nullptr) {
-    SPDY_BUG << "Stream " << stream_id << " not registered";
-    return kHttp2RootStreamId;
-  }
-  if (stream_info->parent == nullptr) {  // root stream
-    return kHttp2RootStreamId;
-  }
-  return stream_info->parent->id;
+  StreamIdType parent_id = (stream_info->parent == nullptr)
+                               ? kHttp2RootStreamId
+                               : stream_info->parent->id;
+  bool exclusive = stream_info->parent != nullptr &&
+                   stream_info->parent->children.size() == 1;
+  return StreamPrecedenceType(parent_id, stream_info->weight, exclusive);
 }
 
 template <typename StreamIdType>
@@ -349,26 +327,30 @@ std::vector<StreamIdType> Http2PriorityWriteScheduler<
 }
 
 template <typename StreamIdType>
-void Http2PriorityWriteScheduler<StreamIdType>::UpdateStreamPriority(
+void Http2PriorityWriteScheduler<StreamIdType>::UpdateStreamPrecedence(
     StreamIdType stream_id,
-    SpdyPriority priority) {
-  UpdateStreamWeight(stream_id, Spdy3PriorityToHttp2Weight(priority));
-}
-
-template <typename StreamIdType>
-void Http2PriorityWriteScheduler<StreamIdType>::UpdateStreamWeight(
-    StreamIdType stream_id,
-    int weight) {
+    const StreamPrecedenceType& precedence) {
+  SPDY_BUG_IF(precedence.is_spdy3_priority())
+      << "Expected HTTP/2 stream dependency";
   if (stream_id == kHttp2RootStreamId) {
-    SPDY_BUG << "Cannot set weight of root stream";
+    SPDY_BUG << "Cannot set precedence of root stream";
     return;
   }
+
   StreamInfo* stream_info = FindStream(stream_id);
   if (stream_info == nullptr) {
     SPDY_BUG << "Stream " << stream_id << " not registered";
     return;
   }
-  weight = ClampHttp2Weight(weight);
+  UpdateStreamParent(stream_info, precedence.parent_id(),
+                     precedence.is_exclusive());
+  UpdateStreamWeight(stream_info, precedence.weight());
+}
+
+template <typename StreamIdType>
+void Http2PriorityWriteScheduler<StreamIdType>::UpdateStreamWeight(
+    StreamInfo* stream_info,
+    int weight) {
   if (weight == stream_info->weight) {
     return;
   }
@@ -383,20 +365,11 @@ void Http2PriorityWriteScheduler<StreamIdType>::UpdateStreamWeight(
 
 template <typename StreamIdType>
 void Http2PriorityWriteScheduler<StreamIdType>::UpdateStreamParent(
-    StreamIdType stream_id,
+    StreamInfo* stream_info,
     StreamIdType parent_id,
     bool exclusive) {
-  if (stream_id == kHttp2RootStreamId) {
-    SPDY_BUG << "Cannot set parent of root stream";
-    return;
-  }
-  if (stream_id == parent_id) {
+  if (stream_info->id == parent_id) {
     SPDY_BUG << "Cannot set stream to be its own parent";
-    return;
-  }
-  StreamInfo* stream_info = FindStream(stream_id);
-  if (stream_info == nullptr) {
-    SPDY_BUG << "Stream " << stream_id << " not registered";
     return;
   }
   StreamInfo* new_parent = FindStream(parent_id);
@@ -424,7 +397,7 @@ void Http2PriorityWriteScheduler<StreamIdType>::UpdateStreamParent(
 
   if (cycle_exists) {
     // The new parent moves to the level of the current stream.
-    UpdateStreamParent(parent_id, stream_info->parent->id, false);
+    UpdateStreamParent(new_parent, stream_info->parent->id, false);
   }
 
   // Remove stream from old parent's child list.
@@ -647,22 +620,11 @@ void Http2PriorityWriteScheduler<StreamIdType>::Unschedule(
 
 template <typename StreamIdType>
 bool Http2PriorityWriteScheduler<StreamIdType>::StreamHasChild(
-    StreamIdType parent_id,
-    StreamIdType child_id) const {
-  const StreamInfo* parent = FindStream(parent_id);
-  if (parent == nullptr) {
-    SPDY_BUG << "Parent stream " << parent_id << " not registered";
-    return false;
-  }
-  if (!StreamRegistered(child_id)) {
-    SPDY_BUG << "Child stream " << child_id << " not registered";
-    return false;
-  }
-  auto found = std::find_if(parent->children.begin(), parent->children.end(),
-                            [child_id](StreamInfo* stream_info) {
-                              return stream_info->id == child_id;
-                            });
-  return found != parent->children.end();
+    const StreamInfo& parent_info,
+    const StreamInfo* child_info) const {
+  auto found = std::find(parent_info.children.begin(),
+                         parent_info.children.end(), child_info);
+  return found != parent_info.children.end();
 }
 
 template <typename StreamIdType>
@@ -702,11 +664,20 @@ bool Http2PriorityWriteScheduler<StreamIdType>::ValidateInvariantsForTests()
   for (const auto& kv : all_stream_infos_) {
     ++total_streams;
     ++streams_visited;
+    StreamIdType stream_id = kv.first;
     const StreamInfo& stream_info = *kv.second;
+
+    // Verify each StreamInfo mapped under the proper stream ID.
+    if (stream_id != stream_info.id) {
+      DLOG(INFO) << "Stream ID " << stream_id << " maps to StreamInfo with ID "
+                 << stream_info.id;
+      return false;
+    }
+
     // All streams except the root should have a parent, and should appear in
     // the children of that parent.
     if (stream_info.id != kHttp2RootStreamId &&
-        !StreamHasChild(stream_info.parent->id, stream_info.id)) {
+        !StreamHasChild(*stream_info.parent, &stream_info)) {
       DLOG(INFO) << "Parent stream " << stream_info.parent->id
                  << " is not registered, or does not list stream "
                  << stream_info.id << " as its child.";
@@ -720,8 +691,7 @@ bool Http2PriorityWriteScheduler<StreamIdType>::ValidateInvariantsForTests()
         ++streams_visited;
         // Each stream in the list should exist and should have this stream
         // set as its parent.
-        if (!StreamRegistered(child->id) ||
-            stream_info.id != GetStreamParent(child->id)) {
+        if (!StreamRegistered(child->id) || child->parent != &stream_info) {
           DLOG(INFO) << "Child stream " << child->id << " is not registered, "
                      << "or does not list " << stream_info.id
                      << " as its parent.";
