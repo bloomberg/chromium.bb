@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/test/test_timeouts.h"
 #include "content/renderer/media/audio_renderer_sink_cache_impl.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
@@ -362,7 +363,8 @@ TEST_F(AudioRendererSinkCacheTest, SmokeTest) {
   }
 
   // Wait for completion of all the tasks posted to at least one thread.
-  media::WaitableMessageLoopEvent loop_event;
+  media::WaitableMessageLoopEvent loop_event(
+      TestTimeouts::action_max_timeout());
   threads[kThreadCount - 1]->task_runner()->PostTaskAndReply(
       FROM_HERE, base::Bind(&base::DoNothing), loop_event.GetClosure());
   // Runs the loop and waits for the thread to call event's closure.

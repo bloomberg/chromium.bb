@@ -42,6 +42,7 @@ PipelineStatusCB NewExpectedStatusCB(PipelineStatus status);
 class WaitableMessageLoopEvent {
  public:
   WaitableMessageLoopEvent();
+  explicit WaitableMessageLoopEvent(base::TimeDelta timeout);
   ~WaitableMessageLoopEvent();
 
   // Returns a thread-safe closure that will signal |this| when executed.
@@ -69,6 +70,7 @@ class WaitableMessageLoopEvent {
   bool signaled_;
   PipelineStatus status_;
   std::unique_ptr<base::RunLoop> run_loop_;
+  const base::TimeDelta timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(WaitableMessageLoopEvent);
 };

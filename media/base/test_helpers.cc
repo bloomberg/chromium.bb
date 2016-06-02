@@ -64,9 +64,13 @@ PipelineStatusCB NewExpectedStatusCB(PipelineStatus status) {
 }
 
 WaitableMessageLoopEvent::WaitableMessageLoopEvent()
+    : WaitableMessageLoopEvent(TestTimeouts::action_timeout()) {}
+
+WaitableMessageLoopEvent::WaitableMessageLoopEvent(base::TimeDelta timeout)
     : message_loop_(base::MessageLoop::current()),
       signaled_(false),
-      status_(PIPELINE_OK) {
+      status_(PIPELINE_OK),
+      timeout_(timeout) {
   DCHECK(message_loop_);
 }
 
@@ -98,8 +102,9 @@ void WaitableMessageLoopEvent::RunAndWaitForStatus(PipelineStatus expected) {
 
   run_loop_.reset(new base::RunLoop());
   base::Timer timer(false, false);
-  timer.Start(FROM_HERE, TestTimeouts::action_timeout(), base::Bind(
-      &WaitableMessageLoopEvent::OnTimeout, base::Unretained(this)));
+  timer.Start(
+      FROM_HERE, timeout_,
+      base::Bind(&WaitableMessageLoopEvent::OnTimeout, base::Unretained(this)));
 
   run_loop_->Run();
   EXPECT_TRUE(signaled_);
