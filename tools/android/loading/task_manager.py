@@ -60,6 +60,7 @@ Example:
 
 
 import argparse
+import collections
 import logging
 import os
 import re
@@ -72,6 +73,7 @@ import common_util
 _TASK_GRAPH_DOTFILE_NAME = 'tasks_graph.dot'
 _TASK_GRAPH_PNG_NAME = 'tasks_graph.png'
 _TASK_RESUME_ARGUMENTS_FILE = 'resume.txt'
+_TASK_EXECUTION_LOG_NAME = 'task_execution.log'
 
 FROMFILE_PREFIX_CHARS = '@'
 
@@ -230,20 +232,38 @@ def GenerateScenario(final_tasks, frozen_tasks):
   return scenario
 
 
-def ListResumingTasksToFreeze(scenario, final_tasks, failed_task):
+def GenerateDependentSetPerTask(scenario):
+  """Maps direct dependents per tasks of scenario.
+
+  Args:
+    scenario: The scenario containing the Tasks to map.
+
+  Returns:
+    {Task: set(Task)}
+  """
+  task_set = set(scenario)
+  task_children = collections.defaultdict(set)
+  for task in scenario:
+    for parent in task._dependencies:
+      if parent in task_set:
+        task_children[parent].add(task)
+  return task_children
+
+
+def ListResumingTasksToFreeze(scenario, final_tasks, skipped_tasks):
   """Lists the tasks that one needs to freeze to be able to resume the scenario
   after failure.
 
   Args:
     scenario: The scenario (list of Task) to be resumed.
     final_tasks: The list of final Task used to generate the scenario.
-    failed_task: A Task that have failed in the scenario.
+    skipped_tasks: Set of Tasks in the scenario that were skipped.
 
   Returns:
     set(Task)
   """
-  task_to_id = {t: i for i, t in enumerate(scenario)}
-  assert failed_task in task_to_id
+  scenario_tasks = set(scenario)
+  assert skipped_tasks.issubset(scenario_tasks)
   frozen_tasks = set()
   walked_tasks = set()
 
@@ -251,9 +271,7 @@ def ListResumingTasksToFreeze(scenario, final_tasks, failed_task):
     if task.IsStatic() or task in walked_tasks:
       return
     walked_tasks.add(task)
-    if task not in task_to_id:
-      frozen_tasks.add(task)
-    elif task_to_id[task] < task_to_id[failed_task]:
+    if task not in scenario_tasks or task not in skipped_tasks:
       frozen_tasks.add(task)
     else:
       for dependency in task._dependencies:
@@ -328,6 +346,8 @@ def CommandLineParser():
   parser.add_argument('-f', '--to-freeze', metavar='REGEX', type=str,
                       action='append', dest='frozen_regexes', default=[],
                       help='Regex selecting tasks to not execute.')
+  parser.add_argument('-k', '--keep-going', action='store_true', default=False,
+                      help='Keep going when some targets can\'t be made.')
   parser.add_argument('-o', '--output', type=str, required=True,
                       help='Path of the output directory.')
   parser.add_argument('-v', '--output-graphviz', action='store_true',
@@ -336,17 +356,7 @@ def CommandLineParser():
   return parser
 
 
-def ExecuteWithCommandLine(args, default_final_tasks):
-  """Helper to execute tasks using command line arguments.
-
-  Args:
-    args: Command line argument parsed with CommandLineParser().
-    default_final_tasks: Default final tasks if there is no -r command
-      line arguments.
-
-  Returns:
-    0 if success or 1 otherwise
-  """
+def _SelectTasksFromCommandLineRegexes(args, default_final_tasks):
   frozen_regexes = [common_util.VerboseCompileRegexOrAbort(e)
                       for e in args.frozen_regexes]
   run_regexes = [common_util.VerboseCompileRegexOrAbort(e)
@@ -373,10 +383,64 @@ def ExecuteWithCommandLine(args, default_final_tasks):
         if regex.search(task.name):
           frozen_tasks.add(task)
           break
+  return final_tasks, frozen_tasks
 
-  # Create the scenario.
+
+class _ResumingFileBuilder(object):
+  def __init__(self, args):
+    resume_path = os.path.join(args.output, _TASK_RESUME_ARGUMENTS_FILE)
+    self._resume_output = open(resume_path, 'w')
+    # List initial freezing regexes not to loose track of final targets to
+    # freeze in case of severals resume attempts caused by sudden death.
+    for regex in args.frozen_regexes:
+      self._resume_output.write('-f\n{}\n'.format(regex))
+
+  def __enter__(self):
+    return self
+
+  def __exit__(self, exc_type, exc_value, exc_traceback):
+    del exc_type, exc_value, exc_traceback # unused
+    self._resume_output.close()
+
+  def OnTaskSuccess(self, task):
+    # Log the succeed tasks so that they are ensured to be frozen in case
+    # of a sudden death.
+    self._resume_output.write('-f\n^{}$\n'.format(re.escape(task.name)))
+    self._resume_output.flush()
+
+  def OnScenarioFinish(
+      self, scenario, final_tasks, failed_tasks, skipped_tasks):
+    resume_additonal_arguments = []
+    for task in ListResumingTasksToFreeze(
+        scenario, final_tasks, skipped_tasks):
+      resume_additonal_arguments.extend(
+          ['-f', '^{}$'.format(re.escape(task.name))])
+    self._resume_output.seek(0)
+    self._resume_output.truncate()
+    self._resume_output.write('\n'.join(resume_additonal_arguments))
+    print '# Looks like something went wrong in tasks:'
+    for failed_task in failed_tasks:
+      print '#   {}'.format(failed_task.name)
+    print '#'
+    print '# To resume, append the following parameter:'
+    print '#   ' + FROMFILE_PREFIX_CHARS + self._resume_output.name
+
+
+def ExecuteWithCommandLine(args, default_final_tasks):
+  """Helper to execute tasks using command line arguments.
+
+  Args:
+    args: Command line argument parsed with CommandLineParser().
+    default_final_tasks: Default final tasks if there is no -r command
+      line arguments.
+
+  Returns:
+    0 if success or 1 otherwise
+  """
+  # Builds the scenario.
+  final_tasks, frozen_tasks = _SelectTasksFromCommandLineRegexes(
+      args, default_final_tasks)
   scenario = GenerateScenario(final_tasks, frozen_tasks)
-
   if len(scenario) == 0:
     logging.error('No tasks to build.')
     return 1
@@ -397,22 +461,55 @@ def ExecuteWithCommandLine(args, default_final_tasks):
     for task in scenario:
       print '{}:{}'.format(
           task.name, ' '.join([' \\\n  ' + d.name for d in task._dependencies]))
-  else:
-    for task in scenario:
-      logging.info('%s %s' % ('-' * 60, task.name))
-      try:
-        task.Execute()
-      except:
-        resume_path = os.path.join(args.output, _TASK_RESUME_ARGUMENTS_FILE)
-        resume_additonal_arguments = []
-        for task in ListResumingTasksToFreeze(
-            scenario, final_tasks, task):
-          resume_additonal_arguments.extend(['-f', re.escape(task.name)])
-        with open(resume_path, 'w') as file_output:
-          file_output.write('\n'.join(resume_additonal_arguments))
-        print '# Looks like something went wrong in \'{}\''.format(task.name)
-        print '#'
-        print '# To resume from this task, append the following parameter:'
-        print '#   ' + FROMFILE_PREFIX_CHARS + resume_path
-        raise
+    return 0
+
+  # Run the Scenario while saving intermediate state to be able to resume later.
+  failed_tasks = []
+  tasks_to_skip = set()
+  dependents_per_task = GenerateDependentSetPerTask(scenario)
+
+  def MarkTaskNotToExecute(task):
+    if task not in tasks_to_skip:
+      logging.warning('can not execute task: %s', task.name)
+      tasks_to_skip.add(task)
+      for dependent in dependents_per_task[task]:
+        MarkTaskNotToExecute(dependent)
+
+  formatter = logging.Formatter('[%(asctime)s] %(levelname)s: %(message)s')
+  handler = logging.FileHandler(
+      os.path.join(args.output, _TASK_EXECUTION_LOG_NAME), mode='a')
+  handler.setFormatter(formatter)
+  logging.getLogger().addHandler(handler)
+  logging.info(
+      '%s %s', '-' * 60, common_util.GetCommandLineForLogging(sys.argv))
+  try:
+    with _ResumingFileBuilder(args) as resume_file_builder:
+      for task_execute_id, task in enumerate(scenario):
+        if task in tasks_to_skip:
+          continue
+        logging.info('%s %s', '-' * 60, task.name)
+        try:
+          task.Execute()
+        except (MemoryError, SyntaxError):
+          raise
+        except (Exception, KeyboardInterrupt):
+          logging.exception('%s %s failed', '-' * 60, task.name)
+          failed_tasks.append(task)
+          if args.keep_going and sys.exc_info()[0] != KeyboardInterrupt:
+            MarkTaskNotToExecute(task)
+          else:
+            tasks_to_skip.update(set(scenario[task_execute_id:]))
+            break
+        else:
+          resume_file_builder.OnTaskSuccess(task)
+      if tasks_to_skip:
+        assert failed_tasks
+        resume_file_builder.OnScenarioFinish(
+            scenario, final_tasks, failed_tasks, tasks_to_skip)
+        if sys.exc_info()[0] == KeyboardInterrupt:
+          raise
+        return 1
+  finally:
+    logging.getLogger().removeHandler(handler)
+  assert not failed_tasks
   return 0
