@@ -165,13 +165,16 @@ executable("mini_installer") {
   ]
 
   # This target is special so we manually override most linker flags and
-  # specify our own to keep the size down.
+  # specify our own to keep the size down. Also make sure that we don't use
+  # WPO as it's not supported by the mini installer.
   configs -= [
+    "//build/config/compiler:default_optimization",
     "//build/config:executable_config",
     "//build/config/win:console",
   ]
   configs += [
     ":mini_installer_compiler_flags",
+    "//build/config/compiler:optimize_no_wpo",
     "//build/config/win:sdk_link",
     "//build/config/win:windowed",
   ]

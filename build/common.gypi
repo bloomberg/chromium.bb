@@ -2017,7 +2017,7 @@
           },{
             'msvs_large_module_debug_link_mode%': '2',  # Yes
           }],
-          ['chrome_pgo_phase!= 0', {
+          ['chrome_pgo_phase!=0 or target_arch=="x64"', {
             'full_wpo_on_official%': 1,
           }],
         ],

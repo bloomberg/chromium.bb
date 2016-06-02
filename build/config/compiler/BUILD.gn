@@ -1194,6 +1194,9 @@ if (is_win) {
       # This gives a 5-10% link speedup.
       "/cgthreads:8",
     ]
+    if (full_wpo_on_official) {
+      arflags = [ "/LTCG" ]
+    }
   }
 } else {
   common_optimize_on_cflags = [
