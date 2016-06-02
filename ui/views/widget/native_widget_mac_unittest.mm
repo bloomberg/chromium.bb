@@ -1261,7 +1261,7 @@ TEST_F(NativeWidgetMacTest, ChangeOpacity) {
   CGFloat old_opacity = [ns_window alphaValue];
   widget->SetOpacity(.7f);
   EXPECT_NE(old_opacity, [ns_window alphaValue]);
-  EXPECT_DOUBLE_EQ(.7, [ns_window alphaValue]);
+  EXPECT_DOUBLE_EQ(.7f, [ns_window alphaValue]);
 
   widget->CloseNow();
 }
