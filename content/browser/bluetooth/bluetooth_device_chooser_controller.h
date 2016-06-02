@@ -80,6 +80,9 @@ class BluetoothDeviceChooserController final {
   void AdapterPoweredChanged(bool powered);
 
  private:
+  // Populates the chooser with the devices that are already in the adapter.
+  void PopulateFoundDevices();
+
   // Notifies the chooser that discovery is starting and starts a discovery
   // session.
   void StartDeviceDiscovery();

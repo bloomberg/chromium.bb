@@ -326,13 +326,7 @@ void BluetoothDeviceChooserController::GetDevice(
     return;
   }
 
-  // Populate the initial list of devices.
-  VLOG(1) << "Populating " << adapter_->GetDevices().size()
-          << " devices in chooser.";
-  for (const device::BluetoothDevice* device : adapter_->GetDevices()) {
-    AddFilteredDevice(*device);
-  }
-
+  PopulateFoundDevices();
   if (!chooser_.get()) {
     // If the dialog's closing, no need to do any of the rest of this.
     return;
@@ -368,6 +362,14 @@ void BluetoothDeviceChooserController::AdapterPoweredChanged(bool powered) {
 
   if (!powered) {
     discovery_session_timer_.Stop();
+  }
+}
+
+void BluetoothDeviceChooserController::PopulateFoundDevices() {
+  VLOG(1) << "Populating " << adapter_->GetDevices().size()
+          << " devices in chooser.";
+  for (const device::BluetoothDevice* device : adapter_->GetDevices()) {
+    AddFilteredDevice(*device);
   }
 }
 
@@ -427,6 +429,8 @@ void BluetoothDeviceChooserController::OnBluetoothChooserEvent(
 
   switch (event) {
     case BluetoothChooser::Event::RESCAN:
+      PopulateFoundDevices();
+      DCHECK(chooser_);
       StartDeviceDiscovery();
       // No need to close the chooser so we return.
       return;
