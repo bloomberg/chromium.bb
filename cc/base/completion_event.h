@@ -19,7 +19,8 @@ namespace cc {
 class CompletionEvent {
  public:
   CompletionEvent()
-      : event_(false /* manual_reset */, false /* initially_signaled */) {
+      : event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+               base::WaitableEvent::InitialState::NOT_SIGNALED) {
 #if DCHECK_IS_ON()
     waited_ = false;
     signaled_ = false;
