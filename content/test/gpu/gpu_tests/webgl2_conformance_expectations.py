@@ -513,6 +513,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'nvidia', 'opengl'], bug=483282)
     self.Fail('conformance2/transform_feedback/transform_feedback.html',
         ['linux', 'nvidia', 'opengl'], bug=483282)
+    self.Fail('deqp/functional/gles3/uniformapi/value_assigned.html',
+        ['linux', 'nvidia', 'opengl'], bug=483282)
 
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/pixelbufferobject.html',
@@ -543,6 +545,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/texturefiltering/3d*',
         ['linux', 'amd'], bug=606114)
+    self.Fail('deqp/functional/gles3/fbocompleteness.html',
+        ['linux', 'amd'], bug=483282)
 
     self.Fail('conformance2/misc/uninitialized-test-2.html',
         ['linux', 'amd'], bug=483282)
