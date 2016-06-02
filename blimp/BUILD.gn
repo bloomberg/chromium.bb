@@ -79,4 +79,62 @@ if (is_linux) {
       "//blimp/test:engine_browsertests",
     ]
   }
+
+  _blimp_engine_env_tests_runtime_deps =
+      "$root_gen_dir/blimp-tests.runtime_deps"
+  _rebased_blimp_engine_env_tests_runtime_deps =
+      rebase_path(_blimp_engine_env_tests_runtime_deps, root_out_dir)
+
+  # This group contains Blimp Engine tests and tests of the various components
+  # the Blimp Engine depends on.  The idea is that if this group of tests pass
+  # on a given system there is a high probability the Engine will also work on
+  # that platform.
+  group("blimp_engine_env_tests_group") {
+    testonly = true
+
+    # Additional environment test targets should be added here.
+    # Executable targets and those executable targets' transitive
+    # dependencies are not considered unless that executable is listed in
+    # "data_deps". Otherwise, GN assumes that the executable (and
+    # everything it requires) is a build-time dependency only.
+    data_deps = [
+      ":blimp_unittests",
+      "//base:base_unittests",
+    ]
+
+    write_runtime_deps = _blimp_engine_env_tests_runtime_deps
+  }
+
+  _blimp_engine_env_tests_manifest = "$root_gen_dir/blimp-tests-manifest.txt"
+  _rebased_blimp_engine_env_tests_manifest =
+      rebase_path(_blimp_engine_env_tests_manifest, root_out_dir)
+  _rebased_blimp_engine_env_tests_blacklist =
+      rebase_path("//blimp/tools/tests-manifest-blacklist.txt")
+
+  action("generate_blimp_engine_env_tests_manifest") {
+    testonly = true
+    script = "//blimp/tools/generate-target-manifest.py"
+    args = [
+      "--blacklist",
+      _rebased_blimp_engine_env_tests_blacklist,
+      "--runtime-deps-file",
+      _rebased_blimp_engine_env_tests_runtime_deps,
+      "--output",
+      _rebased_blimp_engine_env_tests_manifest,
+    ]
+    inputs = [
+      _blimp_engine_env_tests_runtime_deps,
+    ]
+    outputs = [
+      _blimp_engine_env_tests_manifest,
+    ]
+
+    # By specifying a dependency (not a data_dependency) on :blimp_tests_group,
+    # we can be sure that everything is built before the action is
+    # complete (though not necessarily before we generate the manifest
+    # itself).
+    deps = [
+      ":blimp_engine_env_tests_group",
+    ]
+  }
 }
