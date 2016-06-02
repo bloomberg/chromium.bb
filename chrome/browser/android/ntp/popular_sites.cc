@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -24,7 +25,7 @@
 #include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_json/json_sanitizer.h"
+#include "components/safe_json/safe_json_parser.h"
 #include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
@@ -126,39 +127,13 @@ std::string GetVersionToUse(const PrefService* prefs,
   return version;
 }
 
-std::unique_ptr<std::vector<PopularSites::Site>> ParseJson(
-    const std::string& json) {
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS);
-  base::ListValue* list;
-  if (!value || !value->GetAsList(&list)) {
-    DLOG(WARNING) << "Failed parsing json";
-    return nullptr;
-  }
-
-  std::unique_ptr<std::vector<PopularSites::Site>> sites(
-      new std::vector<PopularSites::Site>);
-  for (size_t i = 0; i < list->GetSize(); i++) {
-    base::DictionaryValue* item;
-    if (!list->GetDictionary(i, &item))
-      continue;
-    base::string16 title;
-    std::string url;
-    if (!item->GetString("title", &title) || !item->GetString("url", &url))
-      continue;
-    std::string favicon_url;
-    item->GetString("favicon_url", &favicon_url);
-    std::string thumbnail_url;
-    item->GetString("thumbnail_url", &thumbnail_url);
-    std::string large_icon_url;
-    item->GetString("large_icon_url", &large_icon_url);
-
-    sites->push_back(PopularSites::Site(title, GURL(url), GURL(favicon_url),
-                                        GURL(large_icon_url),
-                                        GURL(thumbnail_url)));
-  }
-
-  return sites;
+// Must run on the blocking thread pool.
+bool WriteJsonToFile(const base::FilePath& local_path,
+                     const base::Value* json) {
+  std::string json_string;
+  return base::JSONWriter::Write(*json, &json_string) &&
+         base::ImportantFileWriter::WriteFileAtomically(local_path,
+                                                        json_string);
 }
 
 }  // namespace
@@ -317,7 +292,12 @@ void PopularSites::OnReadFileDone(const GURL& url,
                                   std::unique_ptr<std::string> data,
                                   bool success) {
   if (success) {
-    ParseSiteList(*data);
+    auto json = base::JSONReader::Read(*data, base::JSON_ALLOW_TRAILING_COMMAS);
+    if (json) {
+      ParseSiteList(std::move(json));
+    } else {
+      OnJsonParseFailed("previously-fetched JSON was no longer parseable");
+    }
   } else {
     // File didn't exist, or couldn't be read for some other reason.
     FetchPopularSites(url);
@@ -337,42 +317,43 @@ void PopularSites::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(fetcher_.get(), source);
   std::unique_ptr<net::URLFetcher> free_fetcher = std::move(fetcher_);
 
-  std::string sketchy_json;
+  std::string json_string;
   if (!(source->GetStatus().is_success() &&
         source->GetResponseCode() == net::HTTP_OK &&
-        source->GetResponseAsString(&sketchy_json))) {
+        source->GetResponseAsString(&json_string))) {
     OnDownloadFailed();
     return;
   }
 
-  safe_json::JsonSanitizer::Sanitize(
-      sketchy_json, base::Bind(&PopularSites::OnJsonSanitized,
-                               weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&PopularSites::OnJsonSanitizationFailed,
+  safe_json::SafeJsonParser::Parse(
+      json_string,
+      base::Bind(&PopularSites::OnJsonParsed, weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&PopularSites::OnJsonParseFailed,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PopularSites::OnJsonSanitized(const std::string& valid_minified_json) {
+void PopularSites::OnJsonParsed(std::unique_ptr<base::Value> json) {
+  const base::Value* json_ptr = json.get();
   base::PostTaskAndReplyWithResult(
       blocking_runner_.get(), FROM_HERE,
-      base::Bind(&base::ImportantFileWriter::WriteFileAtomically, local_path_,
-                 valid_minified_json),
+      base::Bind(&WriteJsonToFile, local_path_, json_ptr),
       base::Bind(&PopularSites::OnFileWriteDone, weak_ptr_factory_.GetWeakPtr(),
-                 valid_minified_json));
+                 base::Passed(std::move(json))));
 }
 
-void PopularSites::OnJsonSanitizationFailed(const std::string& error_message) {
-  DLOG(WARNING) << "JSON sanitization failed: " << error_message;
+void PopularSites::OnJsonParseFailed(const std::string& error_message) {
+  DLOG(WARNING) << "JSON parsing failed: " << error_message;
   OnDownloadFailed();
 }
 
-void PopularSites::OnFileWriteDone(const std::string& json, bool success) {
+void PopularSites::OnFileWriteDone(std::unique_ptr<base::Value> json,
+                                   bool success) {
   if (success) {
     prefs_->SetInt64(kPopularSitesLastDownloadPref,
                      base::Time::Now().ToInternalValue());
     prefs_->SetString(kPopularSitesCountryPref, pending_country_);
     prefs_->SetString(kPopularSitesVersionPref, pending_version_);
-    ParseSiteList(json);
+    ParseSiteList(std::move(json));
   } else {
     DLOG(WARNING) << "Could not write file to "
                   << local_path_.LossyDisplayName();
@@ -380,18 +361,38 @@ void PopularSites::OnFileWriteDone(const std::string& json, bool success) {
   }
 }
 
-void PopularSites::ParseSiteList(const std::string& json) {
-  base::PostTaskAndReplyWithResult(
-      blocking_runner_.get(), FROM_HERE, base::Bind(&ParseJson, json),
-      base::Bind(&PopularSites::OnJsonParsed, weak_ptr_factory_.GetWeakPtr()));
-}
-
-void PopularSites::OnJsonParsed(std::unique_ptr<std::vector<Site>> sites) {
-  if (sites)
-    sites_.swap(*sites);
-  else
+void PopularSites::ParseSiteList(std::unique_ptr<base::Value> json) {
+  base::ListValue* list = nullptr;
+  if (!json || !json->GetAsList(&list)) {
+    DLOG(WARNING) << "JSON is not a list";
     sites_.clear();
-  callback_.Run(!!sites);
+    callback_.Run(false);
+    return;
+  }
+
+  std::vector<PopularSites::Site> sites;
+  for (size_t i = 0; i < list->GetSize(); i++) {
+    base::DictionaryValue* item;
+    if (!list->GetDictionary(i, &item))
+      continue;
+    base::string16 title;
+    std::string url;
+    if (!item->GetString("title", &title) || !item->GetString("url", &url))
+      continue;
+    std::string favicon_url;
+    item->GetString("favicon_url", &favicon_url);
+    std::string thumbnail_url;
+    item->GetString("thumbnail_url", &thumbnail_url);
+    std::string large_icon_url;
+    item->GetString("large_icon_url", &large_icon_url);
+
+    sites.push_back(PopularSites::Site(title, GURL(url), GURL(favicon_url),
+                                       GURL(large_icon_url),
+                                       GURL(thumbnail_url)));
+  }
+
+  sites_.swap(sites);
+  callback_.Run(true);
 }
 
 void PopularSites::OnDownloadFailed() {

@@ -17,6 +17,10 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
+namespace base {
+class Value;
+}
+
 namespace net {
 class URLRequestContextGetter;
 }
@@ -130,11 +134,10 @@ class PopularSites : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate implementation.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  void OnJsonSanitized(const std::string& valid_minified_json);
-  void OnJsonSanitizationFailed(const std::string& error_message);
-  void OnFileWriteDone(const std::string& json, bool success);
-  void ParseSiteList(const std::string& json);
-  void OnJsonParsed(std::unique_ptr<std::vector<Site>> sites);
+  void OnJsonParsed(std::unique_ptr<base::Value> json);
+  void OnJsonParseFailed(const std::string& error_message);
+  void OnFileWriteDone(std::unique_ptr<base::Value> json, bool success);
+  void ParseSiteList(std::unique_ptr<base::Value> json);
   void OnDownloadFailed();
 
   FinishedCallback callback_;
