@@ -530,12 +530,10 @@ if (!is_android) {
     }
 
     if (is_mac) {
-      data_deps += [ "//chrome" ]
-
-      # TODO(mark): We really want this for all non-static library targets, but
-      # when we tried to pull it up to the common.gypi level, it broke other
-      # things like the ui and startup tests. *shrug*
-      ldflags += [ "-Wl,-ObjC" ]
+      data_deps += [
+        "//chrome",
+        "//chrome:chrome_framework",
+      ]
 
       # The browser window can be views or Cocoa on Mac. Test accordingly.
       if (mac_views_browser) {
@@ -1479,9 +1477,10 @@ if (!is_android) {
         "../browser/sync/test/integration/two_client_dictionary_sync_test.cc",
       ]
 
-      # The sync_integration_tests do not run on mac without this flag.
-      # Search for comments about "xcode_settings" elsewhere in this file.
-      ldflags = [ "-Wl,-ObjC" ]
+      data_deps += [
+        "//chrome",
+        "//chrome:chrome_framework",
+      ]
     }
     if (is_win) {
       deps += [
