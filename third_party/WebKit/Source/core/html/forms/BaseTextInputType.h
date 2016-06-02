@@ -35,11 +35,14 @@
 
 namespace blink {
 
+class ScriptRegexp;
+
 // Base of email, password, search, tel, text, and URL types.
 // They support maxlength, selection functions, and so on.
 class BaseTextInputType : public TextFieldInputType {
 protected:
-    BaseTextInputType(HTMLInputElement& element) : TextFieldInputType(element) { }
+    BaseTextInputType(HTMLInputElement&);
+    ~BaseTextInputType() override;
 
 private:
     bool tooLong(const String&, HTMLTextFormControlElement::NeedsToCheckDirtyFlag) const final;
@@ -50,6 +53,11 @@ private:
     bool supportsPlaceholder() const final;
     bool supportsSelectionAPI() const override;
     bool supportsAutocapitalize() const override;
+
+    // m_regexp and m_patternForRegexp are mutable because they are kinds of
+    // cache.
+    mutable std::unique_ptr<ScriptRegexp> m_regexp;
+    mutable AtomicString m_patternForRegexp;
 };
 
 } // namespace blink

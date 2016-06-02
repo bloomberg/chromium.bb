@@ -26,10 +26,20 @@
 #include "bindings/core/v8/ScriptRegexp.h"
 #include "core/HTMLNames.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/inspector/ConsoleMessage.h"
 
 namespace blink {
 
 using namespace HTMLNames;
+
+BaseTextInputType::BaseTextInputType(HTMLInputElement& element)
+    : TextFieldInputType(element)
+{
+}
+
+BaseTextInputType::~BaseTextInputType()
+{
+}
 
 int BaseTextInputType::maxLength() const
 {
@@ -77,24 +87,27 @@ bool BaseTextInputType::patternMismatch(const String& value) const
     // Empty values can't be mismatched
     if (rawPattern.isNull() || value.isEmpty())
         return false;
-    bool rawPatternIsValid = ScriptRegexp(rawPattern, TextCaseSensitive).isValid();
-    bool rawUnicodePatternIsValid = ScriptRegexp(rawPattern, TextCaseSensitive, MultilineDisabled, ScriptRegexp::UTF16).isValid();
-    if (rawPatternIsValid != rawUnicodePatternIsValid)
-        UseCounter::count(element().document(), UseCounter::PatternAttributeUnicodeFlagIsIncompatible);
-    if (!rawPatternIsValid)
-        return false;
+    if (!m_regexp || m_patternForRegexp != rawPattern) {
+        std::unique_ptr<ScriptRegexp> rawRegexp(new ScriptRegexp(rawPattern, TextCaseSensitive, MultilineDisabled, ScriptRegexp::UTF16));
+        if (!rawRegexp->isValid()) {
+            element().document().addConsoleMessage(ConsoleMessage::create(RenderingMessageSource, ErrorMessageLevel,
+                String::format("Pattern attribute value %s is not a valid regular expression: %s",
+                    rawPattern.utf8().data(),
+                    rawRegexp->exceptionMessage().utf8().data())));
+            m_regexp.reset(rawRegexp.release());
+            m_patternForRegexp = rawPattern;
+            return false;
+        }
+        String pattern = "^(?:" + rawPattern + ")$";
+        m_regexp.reset(new ScriptRegexp(pattern, TextCaseSensitive, MultilineDisabled, ScriptRegexp::UTF16));
+        m_patternForRegexp = rawPattern;
+    }
 
-    String pattern = "^(?:" + rawPattern + ")$";
     int matchLength = 0;
     int valueLength = value.length();
-    int matchOffset = ScriptRegexp(pattern, TextCaseSensitive).match(value, 0, &matchLength);
-    bool bmpMismatched = matchOffset != 0 || matchLength != valueLength;
-    matchLength = 0;
-    matchOffset = ScriptRegexp(pattern, TextCaseSensitive, MultilineDisabled, ScriptRegexp::UTF16).match(value, 0, &matchLength);
-    bool utf16Mismatched = matchOffset != 0 || matchLength != valueLength;
-    if (bmpMismatched != utf16Mismatched)
-        UseCounter::count(element().document(), UseCounter::PatternAttributeUnicodeFlagIsIncompatible);
-    return bmpMismatched;
+    int matchOffset = m_regexp->match(value, 0, &matchLength);
+    bool mismatched = matchOffset != 0 || matchLength != valueLength;
+    return mismatched;
 }
 
 bool BaseTextInputType::supportsPlaceholder() const

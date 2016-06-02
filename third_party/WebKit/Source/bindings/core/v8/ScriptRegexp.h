@@ -53,9 +53,12 @@ public:
     int match(const String&, int startFrom = 0, int* matchLength = 0) const;
 
     bool isValid() const { return !m_regex.isEmpty(); }
+    // exceptionMessage is available only if !isValid().
+    String exceptionMessage() const { return m_exceptionMessage; }
 
 private:
     ScopedPersistent<v8::RegExp> m_regex;
+    String m_exceptionMessage;
 };
 
 } // namespace blink

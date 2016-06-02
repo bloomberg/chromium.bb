@@ -68,7 +68,17 @@
 <input id="invalid-06" type="text" pattern="[0-9" value="a"/>
 
 <input id="empty-pattern-mismatch" type="text" pattern="" value="Lorem Ipsum"
-/><input id="disabled" pattern="[0-9][A-Z]{3}" value="00AA" disabled /></div>
+/><input id="disabled" pattern="[0-9][A-Z]{3}" value="00AA" disabled />
+
+<input id="unicode-invalid-01" pattern="\@" value="a">
+<input id="unicode-invalid-02" pattern="\p" value="o">
+<input id="unicode-match-01" pattern="." value="&#x1F418;">
+<input id="unicode-match-02" pattern="\u{1f418}" value="&#x1F418;">
+<input id="unicode-match-03" pattern="ele[\u{1f418}]" value="ele&#x1F418;">
+<input id="unicode-match-04" pattern="[^A]" value="&#x1F418;">
+<input id="unicode-mismatch-01" pattern=".." value="&#x1F418;">
+
+</div>
 <script language="JavaScript" type="text/javascript">
 function patternMismatchFor(id) {
     return document.getElementById(id).validity.patternMismatch;
@@ -141,6 +151,14 @@ shouldBeFalse('patternMismatchFor("invalid-05")');
 shouldBeFalse('patternMismatchFor("invalid-06")');
 
 shouldBeFalse('patternMismatchFor("disabled")');
+
+shouldBeFalse('patternMismatchFor("unicode-invalid-01")');
+shouldBeFalse('patternMismatchFor("unicode-invalid-02")');
+shouldBeFalse('patternMismatchFor("unicode-match-01")');
+shouldBeFalse('patternMismatchFor("unicode-match-02")');
+shouldBeFalse('patternMismatchFor("unicode-match-03")');
+shouldBeFalse('patternMismatchFor("unicode-match-04")');
+shouldBeTrue('patternMismatchFor("unicode-mismatch-01")');
 
 document.body.removeChild(document.getElementById('container'));
 </script>

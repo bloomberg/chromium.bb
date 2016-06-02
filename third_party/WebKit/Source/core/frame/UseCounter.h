@@ -1072,7 +1072,6 @@ public:
         DocumentAllLegacyCallIndexedWithNonNumber = 1259,
         DocumentAllLegacyCallTwoArguments = 1260,
         HTMLLabelElementControlForNonFormAssociatedElement = 1263,
-        PatternAttributeUnicodeFlagIsIncompatible = 1264,
         HTMLMediaElementLoadNetworkEmptyNotPaused = 1265,
         V8Window_WebkitSpeechGrammar_ConstructorGetter = 1267,
         V8Window_WebkitSpeechGrammarList_ConstructorGetter = 1268,

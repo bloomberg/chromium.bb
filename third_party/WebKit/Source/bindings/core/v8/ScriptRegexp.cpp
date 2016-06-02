@@ -54,6 +54,8 @@ ScriptRegexp::ScriptRegexp(const String& pattern, TextCaseSensitivity caseSensit
     v8::Local<v8::RegExp> regex;
     if (v8::RegExp::New(context, v8String(isolate, pattern), static_cast<v8::RegExp::Flags>(flags)).ToLocal(&regex))
         m_regex.set(isolate, regex);
+    if (tryCatch.HasCaught() && !tryCatch.Message().IsEmpty())
+        m_exceptionMessage = toCoreStringWithUndefinedOrNullCheck(tryCatch.Message()->Get());
 }
 
 int ScriptRegexp::match(const String& string, int startFrom, int* matchLength) const
