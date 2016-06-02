@@ -1537,8 +1537,8 @@ weston_seat_update_keymap(struct weston_seat *seat, struct xkb_keymap *keymap);
 void
 weston_seat_release(struct weston_seat *seat);
 int
-weston_compositor_xkb_init(struct weston_compositor *ec,
-			   struct xkb_rule_names *names);
+weston_compositor_set_xkb_rule_names(struct weston_compositor *ec,
+				     struct xkb_rule_names *names);
 void
 weston_compositor_xkb_destroy(struct weston_compositor *ec);
 

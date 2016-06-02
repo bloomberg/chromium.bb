@@ -2277,9 +2277,9 @@ bind_seat(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 }
 
 #ifdef ENABLE_XKBCOMMON
-int
-weston_compositor_xkb_init(struct weston_compositor *ec,
-			   struct xkb_rule_names *names)
+WL_EXPORT int
+weston_compositor_set_xkb_rule_names(struct weston_compositor *ec,
+				     struct xkb_rule_names *names)
 {
 	ec->use_xkbcommon = 1;
 
@@ -2442,9 +2442,9 @@ weston_compositor_build_global_keymap(struct weston_compositor *ec)
 	return 0;
 }
 #else
-int
-weston_compositor_xkb_init(struct weston_compositor *ec,
-			   struct xkb_rule_names *names)
+WL_EXPORT int
+weston_compositor_set_xkb_rule_names(struct weston_compositor *ec,
+				     struct xkb_rule_names *names)
 {
 	return 0;
 }

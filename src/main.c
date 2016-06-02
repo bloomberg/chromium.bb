@@ -509,7 +509,7 @@ weston_compositor_init_config(struct weston_compositor *ec,
 	weston_config_section_get_string(s, "keymap_options",
 					 (char **) &xkb_names.options, NULL);
 
-	if (weston_compositor_xkb_init(ec, &xkb_names) < 0)
+	if (weston_compositor_set_xkb_rule_names(ec, &xkb_names) < 0)
 		return -1;
 
 	weston_config_section_get_int(s, "repeat-rate",
