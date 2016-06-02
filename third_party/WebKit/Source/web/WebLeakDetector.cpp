@@ -34,7 +34,6 @@
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/inspector/InstanceCounters.h"
-#include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/Timer.h"
 #include "public/web/WebFrame.h"
@@ -51,7 +50,7 @@ public:
         : m_client(client)
         , m_delayedGCAndReportTimer(this, &WebLeakDetectorImpl::delayedGCAndReport)
         , m_delayedReportTimer(this, &WebLeakDetectorImpl::delayedReport)
-        , m_numberOfWorkerGCs(0)
+        , m_numberOfGCNeeded(0)
     {
         DCHECK(m_client);
     }
@@ -68,7 +67,7 @@ private:
     WebLeakDetectorClient* m_client;
     Timer<WebLeakDetectorImpl> m_delayedGCAndReportTimer;
     Timer<WebLeakDetectorImpl> m_delayedReportTimer;
-    int m_numberOfWorkerGCs;
+    int m_numberOfGCNeeded;
 };
 
 void WebLeakDetectorImpl::prepareForLeakDetection(WebFrame* frame)
@@ -111,30 +110,24 @@ void WebLeakDetectorImpl::collectGarbageAndReport()
     // This method is called from navigation hook inside FrameLoader,
     // so previous document is still held by the loader until the next event loop.
     // Complete all pending tasks before proceeding to gc.
-    m_numberOfWorkerGCs = 0;
+    m_numberOfGCNeeded = 2;
     m_delayedGCAndReportTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
 void WebLeakDetectorImpl::delayedGCAndReport(Timer<WebLeakDetectorImpl>*)
 {
-    // The initial GC will have swept out Resource objects, but their finalizers
-    // will let go of yet more objects, needing another GC after having been back
-    // to the event loop to run any clean-up tasks.
+    // We do a second and third GC here to address flakiness
+    // The second GC is necessary as Resource GC may have postponed clean-up tasks to next event loop.
+    // The third GC is necessary for cleaning up Document after worker object died.
+
     V8GCController::collectAllGarbageForTesting(V8PerIsolateData::mainThreadIsolate());
     // Note: Oilpan precise GC is scheduled at the end of the event loop.
 
-    // If there are any in-process worker proxy objects still around waiting for
-    // the worker to notify of destruction, we need to ensure that these have all
-    // been destructed and their garbage collected (as they hold a Document
-    // reference, and would generate a leak if not.)
-    //
-    // Do that by monitoring the remaining proxy count, iterating at most two times.
-    if (InProcessWorkerMessagingProxy::proxyCount() && m_numberOfWorkerGCs < 2) {
-        m_numberOfWorkerGCs++;
+    // Inspect counters on the next event loop.
+    if (--m_numberOfGCNeeded)
         m_delayedGCAndReportTimer.startOneShot(0, BLINK_FROM_HERE);
-    } else {
+    else
         m_delayedReportTimer.startOneShot(0, BLINK_FROM_HERE);
-    }
 }
 
 void WebLeakDetectorImpl::delayedReport(Timer<WebLeakDetectorImpl>*)

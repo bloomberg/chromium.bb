@@ -66,8 +66,6 @@ void processMessageOnWorkerGlobalScope(PassRefPtr<SerializedScriptValue> message
     workerObjectProxy->confirmMessageFromWorkerObject(V8GCController::hasPendingActivity(globalScope->thread()->isolate(), scriptContext));
 }
 
-static int s_liveMessagingProxyCount = 0;
-
 } // namespace
 
 InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(InProcessWorkerBase* workerObject, WorkerClients* workerClients)
@@ -83,7 +81,6 @@ InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(InProcessWorkerBase
 {
     DCHECK(isParentContextThread());
     DCHECK(m_workerObject);
-    s_liveMessagingProxyCount++;
 }
 
 InProcessWorkerMessagingProxy::~InProcessWorkerMessagingProxy()
@@ -92,13 +89,6 @@ InProcessWorkerMessagingProxy::~InProcessWorkerMessagingProxy()
     DCHECK(!m_workerObject);
     if (m_loaderProxy)
         m_loaderProxy->detachProvider(this);
-    s_liveMessagingProxyCount--;
-}
-
-int InProcessWorkerMessagingProxy::proxyCount()
-{
-    DCHECK(isMainThread());
-    return s_liveMessagingProxyCount;
 }
 
 void InProcessWorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const String& userAgent, const String& sourceCode)
