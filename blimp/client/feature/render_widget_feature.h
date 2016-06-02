@@ -89,11 +89,11 @@ class RenderWidgetFeature : public BlimpMessageProcessor {
   virtual void SetDelegate(int tab_id, RenderWidgetFeatureDelegate* delegate);
   virtual void RemoveDelegate(const int tab_id);
 
- private:
   // BlimpMessageProcessor implementation.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
+ private:
   void ProcessRenderWidgetMessage(
       RenderWidgetFeatureDelegate* delegate,
       const RenderWidgetMessage& message);

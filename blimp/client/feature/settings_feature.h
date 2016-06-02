@@ -25,11 +25,11 @@ class SettingsFeature : public BlimpMessageProcessor {
   void SetRecordWholeDocument(bool record_whole_document);
   void SendUserAgentOSVersionInfo(const std::string& client_os_info);
 
- private:
   // BlimpMessageProcessor implementation.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
+ private:
   // Used to send BlimpMessage::TAB_CONTROL messages to the engine.
   std::unique_ptr<BlimpMessageProcessor> outgoing_message_processor_;
 

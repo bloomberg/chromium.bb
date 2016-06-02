@@ -35,11 +35,11 @@ class TabControlFeature : public BlimpMessageProcessor {
   void CreateTab(int tab_id);
   void CloseTab(int tab_id);
 
- private:
   // BlimpMessageProcessor implementation.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
+ private:
   // Used to send BlimpMessage::TAB_CONTROL messages to the engine.
   std::unique_ptr<BlimpMessageProcessor> outgoing_message_processor_;
 

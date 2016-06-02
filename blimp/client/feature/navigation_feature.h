@@ -53,11 +53,11 @@ class NavigationFeature : public BlimpMessageProcessor {
   void GoForward(int tab_id);
   void GoBack(int tab_id);
 
- private:
   // BlimpMessageProcessor implementation.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
+ private:
   NavigationFeatureDelegate* FindDelegate(const int tab_id);
 
   typedef base::SmallMap<std::map<int, NavigationFeatureDelegate*>> DelegateMap;

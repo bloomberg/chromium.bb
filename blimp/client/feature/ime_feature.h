@@ -50,19 +50,19 @@ class ImeFeature : public BlimpMessageProcessor {
   }
 
   // Sets a Delegate to be notified of all text input messages.
-  // Passing a null |delegate| causes IME messages to be ignored.
+  // There must be a valid non-null Delegate set before routing messages
+  // to the ImeFeature for processing, until the last message is processed.
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
   // Sends text from IME to the blimp engine.
   void OnImeTextEntered(const std::string& text);
 
- private:
   // BlimpMessageProcessor implementation.
   void ProcessMessage(std::unique_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
 
-  // Delegate for processing the text input related messages. |delegate_| must
-  // remain valid until the last message has been passed to ImeFeature.
+ private:
+  // Used to actually show or hide the IME. See notes on |set_delegate|.
   Delegate* delegate_ = nullptr;
 
   // Tab id and render widget id for the input field for which user input is
