@@ -72,6 +72,13 @@ public:
             return v8CallBoolean(object->HasPrivate(context, m_privateSymbol));
         }
 
+        // Returns the value of the private property if set, or undefined.
+        v8::Local<v8::Value> getOrUndefined(v8::Local<v8::Context> context, v8::Local<v8::Object> object) const
+        {
+            return v8CallOrCrash(object->GetPrivate(context, m_privateSymbol));
+        }
+
+        // Returns the value of the private property if set, or an empty handle.
         v8::Local<v8::Value> get(v8::Local<v8::Context> context, v8::Local<v8::Object> object) const
         {
             if (!v8CallBoolean(object->HasPrivate(context, m_privateSymbol)))
