@@ -168,8 +168,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableUnsafeES3APIs))
     WebRuntimeFeatures::enableUnsafeES3APIs(true);
 
-  if (command_line.HasSwitch(switches::kEnableWebVR))
+  if (command_line.HasSwitch(switches::kEnableWebVR)) {
     WebRuntimeFeatures::enableWebVR(true);
+    WebRuntimeFeatures::enableFeatureFromString(
+        std::string("GeometryInterfaces"), true);
+  }
 
   if (command_line.HasSwitch(switches::kDisablePresentationAPI))
     WebRuntimeFeatures::enablePresentationAPI(false);
