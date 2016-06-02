@@ -3439,18 +3439,14 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // Go back to the first page, which never completes. The attempt to unload the
   // second page, though, causes it to do a replaceState().
-  NavigationStallDelegate stall_delegate(start_url);
-  ResourceDispatcherHost::Get()->SetDelegate(&stall_delegate);
-  TestNavigationObserver back_load_observer(shell()->web_contents());
+  TestNavigationManager manager(shell()->web_contents(), start_url);
   controller.GoBack();
-  back_load_observer.Wait();
+  manager.WaitForWillStartRequest();
 
   // The navigation that just happened was the replaceState(), which should not
   // have changed the position into the navigation entry list. Make sure that
   // the pending navigation didn't confuse anything.
   EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
-
-  ResourceDispatcherHost::Get()->SetDelegate(nullptr);
 }
 
 // Ensure the renderer process does not get confused about the current entry
