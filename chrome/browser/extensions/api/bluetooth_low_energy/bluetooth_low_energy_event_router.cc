@@ -149,7 +149,7 @@ void PopulateDevice(const device::BluetoothDevice* device,
     return;
   request->device.address = device->GetAddress();
   request->device.name.reset(
-      new std::string(base::UTF16ToUTF8(device->GetName())));
+      new std::string(base::UTF16ToUTF8(device->GetNameForDisplay())));
   request->device.device_class.reset(new int(device->GetBluetoothClass()));
 }
 

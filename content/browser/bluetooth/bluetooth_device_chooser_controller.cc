@@ -101,7 +101,8 @@ bool MatchesFilter(const device::BluetoothDevice& device,
                    const blink::mojom::WebBluetoothScanFilterPtr& filter) {
   DCHECK(!IsEmptyOrInvalidFilter(filter));
 
-  const std::string device_name = base::UTF16ToUTF8(device.GetName());
+  // TODO(615720): Use the upcoming GetName (was GetDeviceName).
+  const std::string device_name = base::UTF16ToUTF8(device.GetNameForDisplay());
 
   if (!filter->name.is_null() && (device_name != filter->name)) {
     return false;
@@ -345,7 +346,7 @@ void BluetoothDeviceChooserController::AddFilteredDevice(
     const device::BluetoothDevice& device) {
   if (chooser_.get() && MatchesFilters(device, options_->filters)) {
     VLOG(1) << "Adding device to chooser: " << device.GetAddress();
-    chooser_->AddDevice(device.GetAddress(), device.GetName());
+    chooser_->AddDevice(device.GetAddress(), device.GetNameForDisplay());
   }
 }
 

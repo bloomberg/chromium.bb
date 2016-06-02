@@ -26,14 +26,10 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
       connected_(connected) {
   ON_CALL(*this, GetBluetoothClass())
       .WillByDefault(testing::Return(bluetooth_class_));
-  ON_CALL(*this, GetDeviceName())
-      .WillByDefault(testing::Return(name_));
   ON_CALL(*this, GetIdentifier())
       .WillByDefault(testing::Return(address_ + "-Identifier"));
   ON_CALL(*this, GetAddress())
       .WillByDefault(testing::Return(address_));
-  ON_CALL(*this, GetDeviceType())
-      .WillByDefault(testing::Return(DEVICE_UNKNOWN));
   ON_CALL(*this, GetVendorIDSource())
       .WillByDefault(testing::Return(VENDOR_ID_UNKNOWN));
   ON_CALL(*this, GetVendorID())
@@ -42,6 +38,10 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
       .WillByDefault(testing::Return(0));
   ON_CALL(*this, GetDeviceID())
       .WillByDefault(testing::Return(0));
+  ON_CALL(*this, GetNameForDisplay())
+      .WillByDefault(testing::Return(base::UTF8ToUTF16(name_)));
+  ON_CALL(*this, GetDeviceType())
+      .WillByDefault(testing::Return(DEVICE_UNKNOWN));
   ON_CALL(*this, IsPaired())
       .WillByDefault(testing::Return(paired));
   ON_CALL(*this, IsConnected())
@@ -50,16 +50,14 @@ MockBluetoothDevice::MockBluetoothDevice(MockBluetoothAdapter* adapter,
       .WillByDefault(testing::Return(false));
   ON_CALL(*this, IsConnecting())
       .WillByDefault(testing::Return(false));
-  ON_CALL(*this, GetName())
-      .WillByDefault(testing::Return(base::UTF8ToUTF16(name_)));
+  ON_CALL(*this, GetUUIDs()).WillByDefault(testing::Return(uuids_));
   ON_CALL(*this, ExpectingPinCode())
       .WillByDefault(testing::Return(false));
   ON_CALL(*this, ExpectingPasskey())
       .WillByDefault(testing::Return(false));
   ON_CALL(*this, ExpectingConfirmation())
       .WillByDefault(testing::Return(false));
-  ON_CALL(*this, GetUUIDs())
-      .WillByDefault(testing::Return(uuids_));
+  ON_CALL(*this, GetDeviceName()).WillByDefault(testing::Return(name_));
 }
 
 MockBluetoothDevice::~MockBluetoothDevice() {}

@@ -626,7 +626,7 @@ void SystemTrayDelegateChromeOS::GetAvailableBluetoothDevices(
     device::BluetoothDevice* device = devices[i];
     ash::BluetoothDeviceInfo info;
     info.address = device->GetAddress();
-    info.display_name = device->GetName();
+    info.display_name = device->GetNameForDisplay();
     info.connected = device->IsConnected();
     info.connecting = device->IsConnecting();
     info.paired = device->IsPaired();

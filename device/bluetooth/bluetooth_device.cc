@@ -44,7 +44,7 @@ BluetoothDevice::ConnectionInfo::ConnectionInfo(
 
 BluetoothDevice::ConnectionInfo::~ConnectionInfo() {}
 
-base::string16 BluetoothDevice::GetName() const {
+base::string16 BluetoothDevice::GetNameForDisplay() const {
   std::string name = GetDeviceName();
   if (!name.empty()) {
     return base::UTF8ToUTF16(name);

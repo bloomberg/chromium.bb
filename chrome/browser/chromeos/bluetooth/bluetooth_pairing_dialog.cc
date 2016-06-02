@@ -35,7 +35,7 @@ BluetoothPairingDialog::BluetoothPairingDialog(
     : parent_window_(parent_window),
       webui_(nullptr) {
   device_data_.SetString("address", device->GetAddress());
-  device_data_.SetString("name", device->GetName());
+  device_data_.SetString("name", device->GetNameForDisplay());
   device_data_.SetBoolean("paired", device->IsPaired());
   device_data_.SetBoolean("connected", device->IsConnected());
 }

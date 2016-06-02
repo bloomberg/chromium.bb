@@ -257,7 +257,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   ExpectRemoveObserver();
 
   PrepareDevice(kServiceUUID, kTestRemoteDeviceBluetoothAddress, false);
-  ON_CALL(*device_, GetName())
+  ON_CALL(*device_, GetNameForDisplay())
       .WillByDefault(Return(base::UTF8ToUTF16(kTestRemoteDeviceName)));
 
   connection_finder.ExpectCreateConnection();
@@ -273,7 +273,7 @@ TEST_F(ProximityAuthBluetoothLowEnergyConnectionFinderTest,
   ExpectRemoveObserver();
 
   PrepareDevice(kOtherUUID, kTestRemoteDeviceBluetoothAddress, false);
-  ON_CALL(*device_, GetName())
+  ON_CALL(*device_, GetNameForDisplay())
       .WillByDefault(Return(base::UTF8ToUTF16("Other name")));
 
   EXPECT_CALL(connection_finder, CreateConnectionProxy()).Times(0);

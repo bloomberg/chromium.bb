@@ -91,7 +91,7 @@ TEST_F(BluetoothTest, LowEnergyDeviceProperties) {
   EXPECT_EQ(0, device->GetVendorID());
   EXPECT_EQ(0, device->GetProductID());
   EXPECT_EQ(0, device->GetDeviceID());
-  EXPECT_EQ(base::UTF8ToUTF16(kTestDeviceName), device->GetName());
+  EXPECT_EQ(base::UTF8ToUTF16(kTestDeviceName), device->GetNameForDisplay());
   EXPECT_FALSE(device->IsPaired());
   BluetoothDevice::UUIDList uuids = device->GetUUIDs();
   EXPECT_TRUE(ContainsValue(uuids, BluetoothUUID(kTestUUIDGenericAccess)));

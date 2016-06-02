@@ -94,7 +94,8 @@ namespace bluetooth {
 void BluetoothDeviceToApiDevice(const device::BluetoothDevice& device,
                                 Device* out) {
   out->address = device.GetAddress();
-  out->name.reset(new std::string(base::UTF16ToUTF8(device.GetName())));
+  out->name.reset(
+      new std::string(base::UTF16ToUTF8(device.GetNameForDisplay())));
   out->device_class.reset(new int(device.GetBluetoothClass()));
 
   // Only include the Device ID members when one exists for the device, and
