@@ -571,7 +571,7 @@ void Surface::CommitSurfaceContents() {
     std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
     render_pass->SetAll(cc::RenderPassId(1, 1),
                         gfx::Rect(contents_surface_size), damage_rect,
-                        gfx::Transform(), false);
+                        gfx::Transform(), true);
 
     gfx::Rect quad_rect = gfx::Rect(contents_surface_size);
     cc::SharedQuadState* quad_state =
