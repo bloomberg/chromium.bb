@@ -99,9 +99,10 @@ class BlockableProxyResolver : public MockProxyResolver {
  public:
   BlockableProxyResolver()
       : should_block_(false),
-        unblocked_(true, true),
-        blocked_(true, false) {
-  }
+        unblocked_(base::WaitableEvent::ResetPolicy::MANUAL,
+                   base::WaitableEvent::InitialState::SIGNALED),
+        blocked_(base::WaitableEvent::ResetPolicy::MANUAL,
+                 base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void Block() {
     should_block_ = true;

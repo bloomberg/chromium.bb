@@ -336,7 +336,8 @@ Job::Job(const Job::Params* params,
     : origin_runner_(base::ThreadTaskRunnerHandle::Get()),
       params_(params),
       bindings_(std::move(bindings)),
-      event_(true, false),
+      event_(base::WaitableEvent::ResetPolicy::MANUAL,
+             base::WaitableEvent::InitialState::NOT_SIGNALED),
       last_num_dns_(0),
       pending_dns_(NULL) {
   CheckIsOnOriginThread();

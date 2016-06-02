@@ -241,7 +241,9 @@ class AddRemoveObserverTestThread : public NetLogTestThread {
 template <class ThreadType>
 void RunTestThreads(NetLog* net_log) {
   ThreadType threads[kThreads];
-  base::WaitableEvent start_event(true, false);
+  base::WaitableEvent start_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   for (size_t i = 0; i < arraysize(threads); ++i) {
     threads[i].Init(net_log, &start_event);

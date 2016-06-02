@@ -262,7 +262,8 @@ class SynchConfigGetter {
  public:
   // Takes ownership of |config_service|.
   explicit SynchConfigGetter(ProxyConfigServiceLinux* config_service)
-      : event_(false, false),
+      : event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+               base::WaitableEvent::InitialState::NOT_SIGNALED),
         io_thread_("IO_Thread"),
         config_service_(config_service) {
     // Start an IO thread.

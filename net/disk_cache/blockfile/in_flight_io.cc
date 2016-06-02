@@ -16,8 +16,10 @@
 namespace disk_cache {
 
 BackgroundIO::BackgroundIO(InFlightIO* controller)
-    : result_(-1), io_completed_(true, false), controller_(controller) {
-}
+    : result_(-1),
+      io_completed_(base::WaitableEvent::ResetPolicy::MANUAL,
+                    base::WaitableEvent::InitialState::NOT_SIGNALED),
+      controller_(controller) {}
 
 // Runs on the primary thread.
 void BackgroundIO::OnIOSignalled() {

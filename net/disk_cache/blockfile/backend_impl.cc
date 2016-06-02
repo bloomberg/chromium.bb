@@ -136,9 +136,9 @@ BackendImpl::BackendImpl(
       first_timer_(true),
       user_load_(false),
       net_log_(net_log),
-      done_(true, false),
-      ptr_factory_(this) {
-}
+      done_(base::WaitableEvent::ResetPolicy::MANUAL,
+            base::WaitableEvent::InitialState::NOT_SIGNALED),
+      ptr_factory_(this) {}
 
 BackendImpl::BackendImpl(
     const base::FilePath& path,
@@ -163,7 +163,8 @@ BackendImpl::BackendImpl(
       first_timer_(true),
       user_load_(false),
       net_log_(net_log),
-      done_(true, false),
+      done_(base::WaitableEvent::ResetPolicy::MANUAL,
+            base::WaitableEvent::InitialState::NOT_SIGNALED),
       ptr_factory_(this) {}
 
 BackendImpl::~BackendImpl() {

@@ -34,8 +34,10 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
  public:
   SQLitePersistentCookieStorePerfTest()
       : pool_owner_(new base::SequencedWorkerPoolOwner(1, "Background Pool")),
-        loaded_event_(false, false),
-        key_loaded_event_(false, false) {}
+        loaded_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
+        key_loaded_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                          base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void OnLoaded(const std::vector<CanonicalCookie*>& cookies) {
     cookies_ = cookies;

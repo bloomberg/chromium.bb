@@ -691,9 +691,11 @@ class GetCurrentConnectionTypeRunner
     : public base::DelegateSimpleThread::Delegate {
  public:
   explicit GetCurrentConnectionTypeRunner(AddressTrackerLinux* tracker,
-      const std::string& thread_name)
-      : tracker_(tracker), done_(true, false), thread_(this, thread_name) {
-  }
+                                          const std::string& thread_name)
+      : tracker_(tracker),
+        done_(base::WaitableEvent::ResetPolicy::MANUAL,
+              base::WaitableEvent::InitialState::NOT_SIGNALED),
+        thread_(this, thread_name) {}
   ~GetCurrentConnectionTypeRunner() override {}
 
   void Run() override {

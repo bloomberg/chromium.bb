@@ -86,9 +86,12 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
  public:
   SQLitePersistentCookieStoreTest()
       : pool_owner_(new base::SequencedWorkerPoolOwner(3, "Background Pool")),
-        loaded_event_(false, false),
-        key_loaded_event_(false, false),
-        db_thread_event_(false, false) {}
+        loaded_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
+        key_loaded_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                          base::WaitableEvent::InitialState::NOT_SIGNALED),
+        db_thread_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                         base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void OnLoaded(const CanonicalCookieVector& cookies) {
     cookies_ = cookies;
@@ -109,7 +112,8 @@ class SQLitePersistentCookieStoreTest : public testing::Test {
   }
 
   void Flush() {
-    base::WaitableEvent event(false, false);
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     store_->Flush(
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
     event.Wait();
@@ -316,7 +320,8 @@ TEST_F(SQLitePersistentCookieStoreTest, TestSessionCookiesDeletedOnStartup) {
                           base::Unretained(this)));
   t += base::TimeDelta::FromInternalValue(10);
   AddCookieWithExpiration("A", "B", "c.com", "/", t, base::Time());
-  base::WaitableEvent event(false, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   store_->Flush(
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event)));
 

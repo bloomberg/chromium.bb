@@ -202,7 +202,9 @@ TEST_F(KeygenHandlerTest, ConcurrencyTest) {
   std::string results[NUM_HANDLERS];
   for (int i = 0; i < NUM_HANDLERS; i++) {
     std::unique_ptr<KeygenHandler> handler(CreateKeygenHandler());
-    events[i] = new base::WaitableEvent(false, false);
+    events[i] = new base::WaitableEvent(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     base::WorkerPool::PostTask(FROM_HERE,
                                base::Bind(ConcurrencyTestCallback,
                                           "some challenge",
