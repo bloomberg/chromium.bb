@@ -180,12 +180,13 @@ class URLRequestChromeJob : public net::URLRequestJob {
 
   // Helper for Start(), to let us start asynchronously.
   // (This pattern is shared by most net::URLRequestJob implementations.)
-  void StartAsync(bool allowed);
+  void StartAsync();
 
-  // Called on the UI thread to check if this request is allowed.
-  static void CheckStoragePartitionMatches(
-      int render_process_id,
-      const GURL& url,
+  // Due to a race condition, DevTools relies on a legacy thread hop to the UI
+  // thread before calling StartAsync.
+  // TODO(caseq): Fix the race condition and remove this thread hop in
+  // https://crbug.com/616641.
+  static void DelayStartForDevTools(
       const base::WeakPtr<URLRequestChromeJob>& job);
 
   // Specific resources require unsafe-eval in the Content Security Policy.
@@ -265,38 +266,27 @@ URLRequestChromeJob::~URLRequestChromeJob() {
 void URLRequestChromeJob::Start() {
   const GURL url = request_->url();
 
-  TRACE_EVENT_ASYNC_BEGIN1("browser", "DataManager:Request", this, "URL",
-      url.possibly_invalid_spec());
-
-  int render_process_id, unused;
-  bool is_renderer_request = ResourceRequestInfo::GetRenderFrameForRequest(
-      request_, &render_process_id, &unused);
-
-  if (!is_renderer_request) {
-    StartAsync(true);
+  // Due to a race condition, DevTools relies on a legacy thread hop to the UI
+  // thread before calling StartAsync.
+  // TODO(caseq): Fix the race condition and remove this thread hop in
+  // https://crbug.com/616641.
+  if (url.SchemeIs(kChromeDevToolsScheme)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&URLRequestChromeJob::DelayStartForDevTools,
+                   weak_factory_.GetWeakPtr()));
     return;
   }
 
-  if (url.SchemeIs(kChromeUIScheme)) {
-    // TODO(dbeam): it's not clear that partition checking is needed or used. It
-    // was added for iframe-based signin (http://crbug.com/338127), which has
-    // since changed. We should remove if no longer necessary.
-    std::vector<std::string> hosts;
-    hosts.push_back(content::kChromeUIResourcesHost);
-    GetContentClient()->
-        browser()->GetAdditionalWebUIHostsToIgnoreParititionCheck(&hosts);
-    if (std::find(hosts.begin(), hosts.end(), url.host()) != hosts.end()) {
-      StartAsync(true);
-      return;
-    }
-  }
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
+  // Start reading asynchronously so that all error reporting and data
+  // callbacks happen as they would for network requests.
+  base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&URLRequestChromeJob::CheckStoragePartitionMatches,
-                 render_process_id, url,
-                 weak_factory_.GetWeakPtr()));
+      base::Bind(&URLRequestChromeJob::StartAsync, weak_factory_.GetWeakPtr()));
+
+  TRACE_EVENT_ASYNC_BEGIN1("browser", "DataManager:Request", this, "URL",
+      url.possibly_invalid_spec());
 }
 
 void URLRequestChromeJob::Kill() {
@@ -406,33 +396,19 @@ int URLRequestChromeJob::CompleteRead(net::IOBuffer* buf, int buf_size) {
   return buf_size;
 }
 
-void URLRequestChromeJob::CheckStoragePartitionMatches(
-    int render_process_id,
-    const GURL& url,
+void URLRequestChromeJob::DelayStartForDevTools(
     const base::WeakPtr<URLRequestChromeJob>& job) {
-  // The embedder could put some webui pages in separate storage partition.
-  // RenderProcessHostImpl::IsSuitableHost would guard against top level pages
-  // being in the same process. We do an extra check to guard against an
-  // exploited renderer pretending to add them as a subframe. We skip this check
-  // for resources.
-  bool allowed = false;
-  RenderProcessHost* process = RenderProcessHost::FromID(render_process_id);
-  if (process) {
-    StoragePartition* partition = BrowserContext::GetStoragePartitionForSite(
-        process->GetBrowserContext(), url);
-    allowed = partition == process->GetStoragePartition();
-  }
   BrowserThread::PostTask(
       BrowserThread::IO,
       FROM_HERE,
-      base::Bind(&URLRequestChromeJob::StartAsync, job, allowed));
+      base::Bind(&URLRequestChromeJob::StartAsync, job));
 }
 
-void URLRequestChromeJob::StartAsync(bool allowed) {
+void URLRequestChromeJob::StartAsync() {
   if (!request_)
     return;
 
-  if (!allowed || !backend_->StartRequest(request_, this)) {
+  if (!backend_->StartRequest(request_, this)) {
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            net::ERR_INVALID_URL));
   }

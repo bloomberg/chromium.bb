@@ -214,11 +214,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void GetAdditionalWebUISchemes(
       std::vector<std::string>* additional_schemes) {}
 
-  // Returns a list of webUI hosts to ignore the storage partition check in
-  // URLRequestChromeJob::CheckStoragePartitionMatches.
-  virtual void GetAdditionalWebUIHostsToIgnoreParititionCheck(
-      std::vector<std::string>* hosts) {}
-
   // Called when WebUI objects are created to get aggregate usage data (i.e. is
   // chrome://downloads used more than chrome://bookmarks?). Only internal (e.g.
   // chrome://) URLs are logged. Returns whether the URL was actually logged.
