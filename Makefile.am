@@ -95,6 +95,7 @@ weston_SOURCES =					\
 	src/main.c					\
 	src/linux-dmabuf.c				\
 	src/linux-dmabuf.h				\
+	src/weston-screenshooter.c			\
 	shared/helpers.h				\
 	shared/matrix.c					\
 	shared/matrix.h					\
@@ -221,6 +222,7 @@ westoninclude_HEADERS =				\
 	src/compositor-wayland.h		\
 	src/compositor-x11.h			\
 	src/timeline-object.h			\
+	src/weston.h				\
 	shared/matrix.h				\
 	shared/config-parser.h			\
 	shared/zalloc.h				\

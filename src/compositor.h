@@ -58,6 +58,7 @@ struct weston_output;
 struct input_method;
 struct weston_pointer;
 struct linux_dmabuf_buffer;
+struct weston_recorder;
 
 enum weston_keyboard_modifier {
 	MODIFIER_CTRL = (1 << 0),
@@ -1577,9 +1578,6 @@ tty_reset(struct tty *tty);
 int
 tty_activate_vt(struct tty *tty, int vt);
 
-void
-screenshooter_create(struct weston_compositor *ec);
-
 enum weston_screenshooter_outcome {
 	WESTON_SCREENSHOOTER_SUCCESS,
 	WESTON_SCREENSHOOTER_NO_MEMORY,
@@ -1591,6 +1589,10 @@ typedef void (*weston_screenshooter_done_func_t)(void *data,
 int
 weston_screenshooter_shoot(struct weston_output *output, struct weston_buffer *buffer,
 			   weston_screenshooter_done_func_t done, void *data);
+struct weston_recorder *
+weston_recorder_start(struct weston_output *output, const char *filename);
+void
+weston_recorder_stop(struct weston_recorder *recorder);
 
 struct clipboard *
 clipboard_create(struct weston_seat *seat);
