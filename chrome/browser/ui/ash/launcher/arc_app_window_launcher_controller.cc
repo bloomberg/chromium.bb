@@ -249,16 +249,7 @@ void ArcAppWindowLauncherController::CheckForAppWindowWidget(
     AppWindow* app_window = GetAppWindowForTask(task_id);
     if (app_window)
       app_window->set_widget(views::Widget::GetWidgetForNativeWindow(window));
-  } else {
-    // task_id=0 is the default window. It will not contain any real
-    // apps so best if it's ignored by the shelf for purposes of darkening
-    // and always on top.
-    ash::wm::GetWindowState(window)->set_ignored_by_shelf(true);
-    window->SetProperty(aura::client::kAlwaysOnTopKey, true);
   }
-
-  // Apps do their own animation and don't want any from the system.
-  window->SetProperty(aura::client::kAnimationsDisabledKey, true);
 }
 
 void ArcAppWindowLauncherController::OnAppReadyChanged(
