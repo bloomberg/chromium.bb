@@ -10,7 +10,6 @@ time from navigationStart (immediately after the previous page's beforeunload
 event) until after the layout in the page's load event. In addition, two garbage
 collections are performed in between the page loads (in the beforeunload event).
 This extra garbage collection time is not included in the measurement times.
-
 Finally, various memory and IO statistics are gathered at the very end of
 cycling all pages.
 """
@@ -110,6 +109,23 @@ class PageCycler(legacy_page_test.LegacyPageTest):
     chart_name_prefix = ('cold_' if self.IsRunCold(page.url) else
                          'warm_')
 
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, '%stimes-page_load_time' % chart_name_prefix,
+        'ms', tab.EvaluateJavaScript('__pc_load_time'),
+        description='Average page load time. Measured from '
+                    'performance.timing.navigationStart until the completion '
+                    'time of a layout after the window.load event. Cold times '
+                    'are the times when the page is loaded cold, i.e. without '
+                    'loading it before, and warm times are times when the '
+                    'page is loaded after being loaded previously.'))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, '%stimes-time_to_onload' % chart_name_prefix,
+        'ms', tab.EvaluateJavaScript('performance.timing.loadEventStart'
+                                     '- performance.timing.navigationStart'),
+        description='Time to onload. This is temporary metric to check that '
+                    'PCv1 and PCv2 emit similar results'))
+
+    # TODO(kouhei): Remove below. crbug.com/616342
     results.AddValue(scalar.ScalarValue(
         results.current_page, '%stimes.page_load_time' % chart_name_prefix,
         'ms', tab.EvaluateJavaScript('__pc_load_time'),
