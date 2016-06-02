@@ -43,7 +43,8 @@ class WiFiDisplayVideoEncoderVEA final
 
   void BitstreamBufferReady(int32_t bitstream_buffer_id,
                             size_t payload_size,
-                            bool key_frame) override;
+                            bool key_frame,
+                            base::TimeDelta timestamp) override;
   void NotifyError(media::VideoEncodeAccelerator::Error error) override;
 
   scoped_refptr<WiFiDisplayVideoEncoder> InitOnMediaThread(
@@ -183,7 +184,8 @@ void WiFiDisplayVideoEncoderVEA::InsertFrameOnMediaThread(
 void WiFiDisplayVideoEncoderVEA::BitstreamBufferReady(
     int32_t bitstream_buffer_id,
     size_t payload_size,
-    bool key_frame) {
+    bool key_frame,
+    base::TimeDelta timestamp) {
   if (bitstream_buffer_id >= static_cast<int>(output_buffers_.size())) {
     DVLOG(1) << "WiFiDisplayVideoEncoderVEA::BitstreamBufferReady()"
              << ": invalid bitstream_buffer_id=" << bitstream_buffer_id;
