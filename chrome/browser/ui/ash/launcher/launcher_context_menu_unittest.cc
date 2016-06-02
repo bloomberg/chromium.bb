@@ -34,7 +34,6 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
 
   void SetUp() override {
     arc_test_.SetUp(profile_.get());
-    arc_test_.CreateUserAndLogin();
     ash::test::AshTestBase::SetUp();
     controller_.reset(new ChromeLauncherController(profile(), &shelf_model_));
   }

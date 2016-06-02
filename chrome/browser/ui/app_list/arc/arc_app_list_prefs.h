@@ -42,6 +42,7 @@ class PrefRegistrySyncable;
 // about app attributes (name, package_name, activity) and its state. This
 // information is used to pre-create non-ready app items while ARC bridge
 // service is not ready to provide information about available ARC apps.
+// NOTE: ArcAppListPrefs is only created for the primary user.
 class ArcAppListPrefs : public KeyedService,
                         public arc::mojom::AppHost,
                         public arc::ArcBridgeService::Observer,
@@ -95,7 +96,8 @@ class ArcAppListPrefs : public KeyedService,
   static ArcAppListPrefs* Create(const base::FilePath& base_path,
                                  PrefService* prefs);
 
-  // Convenience function to get the ArcAppListPrefs for a BrowserContext.
+  // Convenience function to get the ArcAppListPrefs for a BrowserContext. It
+  // will only return non-null pointer for the primary user.
   static ArcAppListPrefs* Get(content::BrowserContext* context);
 
   // Constructs unique id based on package name and activity information. This

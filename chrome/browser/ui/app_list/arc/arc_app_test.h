@@ -35,7 +35,6 @@ class ArcAppTest {
   virtual ~ArcAppTest();
 
   void SetUp(Profile* profile);
-  void CreateUserAndLogin();
   void TearDown();
 
   static std::string GetAppId(const arc::mojom::AppInfo& app_info);
@@ -56,6 +55,8 @@ class ArcAppTest {
   arc::ArcAuthService* arc_auth_service() { return auth_service_.get(); }
 
  private:
+  void CreateUserAndLogin();
+
   // Unowned pointer.
   Profile* profile_ = nullptr;
 

@@ -20,6 +20,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
@@ -308,6 +310,9 @@ TEST_F(ArcAuthServiceTest, DisabledForDeviceLocalAccount) {
   PrefService* const prefs = profile()->GetPrefs();
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   prefs->SetBoolean(prefs::kArcEnabled, true);
+  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  auth_service()->SetAuthCodeAndStartArc(kTestAuthCode);
+  EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
 
   // Create device local account and set it as active.
   const std::string email = "device-local-account@fake-email.com";
@@ -316,13 +321,41 @@ TEST_F(ArcAuthServiceTest, DisabledForDeviceLocalAccount) {
   std::unique_ptr<TestingProfile> device_local_profile(profile_builder.Build());
   const AccountId account_id(AccountId::FromUserEmail(email));
   GetFakeUserManager()->AddPublicAccountUser(account_id);
-  GetFakeUserManager()->SwitchActiveUser(account_id);
+
+  // Remove |profile_| to set the device local account be the primary account.
+  GetFakeUserManager()->RemoveUserFromList(
+      multi_user_util::GetAccountIdFromProfile(profile()));
+  GetFakeUserManager()->LoginUser(account_id);
 
   // Check that user without GAIA account can't use ARC.
+  device_local_profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
   auth_service()->OnPrimaryUserProfilePrepared(device_local_profile.get());
   EXPECT_EQ(ArcAuthService::State::STOPPED, auth_service()->state());
 
   // Correctly stop service.
+  auth_service()->Shutdown();
+}
+
+TEST_F(ArcAuthServiceTest, DisabledForNonPrimaryProfile) {
+  profile()->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+  auth_service()->OnPrimaryUserProfilePrepared(profile());
+  auth_service()->SetAuthCodeAndStartArc(kTestAuthCode);
+  EXPECT_EQ(ArcAuthService::State::ACTIVE, auth_service()->state());
+
+  // Create a second profile and set it as the active profile.
+  const std::string email = "test@exmaple.com";
+  TestingProfile::Builder profile_builder;
+  profile_builder.SetProfileName(email);
+  std::unique_ptr<TestingProfile> second_profile(profile_builder.Build());
+  const AccountId account_id(AccountId::FromUserEmail(email));
+  GetFakeUserManager()->AddUser(account_id);
+  GetFakeUserManager()->SwitchActiveUser(account_id);
+  second_profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, true);
+
+  // Check that non-primary user can't use Arc.
+  EXPECT_FALSE(chromeos::ProfileHelper::IsPrimaryProfile(second_profile.get()));
+  EXPECT_FALSE(ArcAppListPrefs::Get(second_profile.get()));
+
   auth_service()->Shutdown();
 }
 

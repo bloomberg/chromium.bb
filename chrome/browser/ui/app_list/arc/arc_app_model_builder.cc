@@ -18,6 +18,7 @@ ArcAppModelBuilder::~ArcAppModelBuilder() {
 
 void ArcAppModelBuilder::BuildModel() {
   prefs_ = ArcAppListPrefs::Get(profile());
+  DCHECK(prefs_);
 
   std::vector<std::string> app_ids = prefs_->GetAppIds();
   for (auto& app_id : app_ids) {

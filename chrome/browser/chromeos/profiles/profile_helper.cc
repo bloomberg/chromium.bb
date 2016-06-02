@@ -456,6 +456,16 @@ void ProfileHelper::SetUserToProfileMappingForTesting(
   user_to_profile_for_testing_[user] = profile;
 }
 
+void ProfileHelper::RemoveUserFromListForTesting(const AccountId& account_id) {
+  auto it =
+      std::find_if(user_list_for_testing_.begin(), user_list_for_testing_.end(),
+                   [&account_id](const user_manager::User* user) {
+                     return user->GetAccountId() == account_id;
+                   });
+  if (it != user_list_for_testing_.end())
+    user_list_for_testing_.erase(it);
+}
+
 // static
 std::string ProfileHelper::GetUserIdHashByUserIdForTesting(
     const std::string& user_id) {

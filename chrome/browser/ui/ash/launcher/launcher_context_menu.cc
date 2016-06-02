@@ -47,11 +47,10 @@ LauncherContextMenu* LauncherContextMenu::Create(
   if (!item || item->id == 0)
     return new DesktopShellLauncherContextMenu(controller, item, shelf);
 
-// Create ArcLauncherContextMenu if the item is an Arc app.
+  // Create ArcLauncherContextMenu if the item is an Arc app.
   const std::string& app_id = controller->GetAppIDForShelfID(item->id);
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(controller->profile());
-  DCHECK(arc_prefs);
-  if (arc_prefs->IsRegistered(app_id))
+  if (arc_prefs && arc_prefs->IsRegistered(app_id))
     return new ArcLauncherContextMenu(controller, item, shelf);
 
   // Create ExtensionLauncherContextMenu for the item.

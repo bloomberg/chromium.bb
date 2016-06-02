@@ -196,6 +196,7 @@ ArcAppIcon::~ArcAppIcon() {
 
 void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context_);
+  DCHECK(prefs);
 
   base::FilePath path = prefs->GetIconPath(app_id_, scale_factor);
   if (path.empty())
@@ -213,6 +214,7 @@ void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
 void ArcAppIcon::RequestIcon(ui::ScaleFactor scale_factor) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context_);
+  DCHECK(prefs);
 
   // ArcAppListPrefs notifies ArcAppModelBuilder via Observer when icon is ready
   // and ArcAppModelBuilder refreshes the icon of the corresponding item by

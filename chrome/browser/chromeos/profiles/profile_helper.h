@@ -192,6 +192,9 @@ class ProfileHelper
   void SetUserToProfileMappingForTesting(const user_manager::User* user,
                                          Profile* profile);
 
+  // Removes |account_id| user from |user_to_profile_for_testing_| for testing.
+  void RemoveUserFromListForTesting(const AccountId& account_id);
+
   // Identifies path to active user profile on Chrome OS.
   std::string active_user_id_hash_;
 

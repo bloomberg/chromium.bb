@@ -105,7 +105,6 @@ TEST_F(AppSearchProviderTest, Basic) {
 #if defined(OS_CHROMEOS)
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
-  arc_test.CreateUserAndLogin();
   arc_test.app_instance()->RefreshAppList();
   std::vector<arc::mojom::AppInfo> arc_apps(arc_test.fake_apps().begin(),
                                             arc_test.fake_apps().begin() + 2);
@@ -180,7 +179,6 @@ TEST_F(AppSearchProviderTest, UninstallExtension) {
 TEST_F(AppSearchProviderTest, InstallUninstallArc) {
   ArcAppTest arc_test;
   arc_test.SetUp(profile());
-  arc_test.CreateUserAndLogin();
   std::vector<arc::mojom::AppInfo> arc_apps;
   arc_test.app_instance()->RefreshAppList();
   arc_test.app_instance()->SendRefreshAppList(arc_apps);

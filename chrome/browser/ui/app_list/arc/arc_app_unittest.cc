@@ -76,10 +76,7 @@ class ArcAppModelBuilderTest : public AppListTestBase {
 
   void SetUp() override {
     AppListTestBase::SetUp();
-
     arc_test_.SetUp(profile_.get());
-    arc_test_.CreateUserAndLogin();
-
     CreateBuilder();
   }
 
@@ -146,6 +143,7 @@ class ArcAppModelBuilderTest : public AppListTestBase {
   // Validate that prefs and model have right content.
   void ValidateHaveApps(const std::vector<arc::mojom::AppInfo> apps) {
     ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+    ASSERT_NE(nullptr, prefs);
     const std::vector<std::string> ids = prefs->GetAppIds();
     ASSERT_EQ(apps.size(), ids.size());
     ASSERT_EQ(apps.size(), GetArcItemCount());
@@ -623,6 +621,7 @@ TEST_F(ArcAppModelBuilderTest, IconLoader) {
 
 TEST_F(ArcAppModelBuilderTest, AppLauncher) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile());
+  ASSERT_NE(nullptr, prefs);
 
   // App1 is called in deferred mode, after refreshing apps.
   // App2 is never called since app is not avaialble.

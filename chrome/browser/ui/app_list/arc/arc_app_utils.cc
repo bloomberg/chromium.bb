@@ -188,6 +188,7 @@ bool CanHandleResolution(content::BrowserContext* context,
     const gfx::Rect& rect,
     const CanHandleResolutionCallback& callback) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context);
+  DCHECK(prefs);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
   if (!app_info) {
     VLOG(2) << "Cannot test resolution capability of unavailable app:" << app_id

@@ -57,11 +57,15 @@ class SpinningEffectSource : public gfx::CanvasImageSource {
 ArcAppDeferredLauncherController::ArcAppDeferredLauncherController(
     ChromeLauncherController* owner)
     : owner_(owner), weak_ptr_factory_(this) {
-  ArcAppListPrefs::Get(owner_->profile())->AddObserver(this);
+  if (arc::ArcAuthService::IsAllowedForProfile(owner->profile())) {
+    observed_profile_ = owner->profile();
+    ArcAppListPrefs::Get(observed_profile_)->AddObserver(this);
+  }
 }
 
 ArcAppDeferredLauncherController::~ArcAppDeferredLauncherController() {
-  ArcAppListPrefs::Get(owner_->profile())->RemoveObserver(this);
+  if (observed_profile_)
+    ArcAppListPrefs::Get(observed_profile_)->RemoveObserver(this);
 }
 
 void ArcAppDeferredLauncherController::Apply(const std::string& app_id,

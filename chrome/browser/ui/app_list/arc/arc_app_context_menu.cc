@@ -51,6 +51,7 @@ void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
 
 void ArcAppContextMenu::UninstallPackage() {
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
+  DCHECK(arc_prefs);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       arc_prefs->GetApp(app_id());
   if (!app_info) {
@@ -62,6 +63,7 @@ void ArcAppContextMenu::UninstallPackage() {
 
 bool ArcAppContextMenu::CanBeUninstalled() const {
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
+  DCHECK(arc_prefs);
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
       arc_prefs->GetApp(app_id());
   return app_info && app_info->ready && !app_info->sticky;

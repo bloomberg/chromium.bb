@@ -108,8 +108,7 @@ base::string16 LauncherControllerHelper::GetAppTitle(
 
   // Get title if the app is an Arc app.
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
-  DCHECK(arc_prefs);
-  if (arc_prefs->IsRegistered(app_id)) {
+  if (arc_prefs && arc_prefs->IsRegistered(app_id)) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
         arc_prefs->GetApp(app_id);
     DCHECK(app_info.get());
@@ -145,7 +144,8 @@ std::string LauncherControllerHelper::GetAppID(content::WebContents* tab) {
 
 bool LauncherControllerHelper::IsValidIDForCurrentUser(
     const std::string& id) const {
-  if (GetArcAppListPrefs()->IsRegistered(id))
+  const ArcAppListPrefs* arc_prefs = GetArcAppListPrefs();
+  if (arc_prefs && arc_prefs->IsRegistered(id))
     return true;
   return GetExtensionByID(profile_, id) != nullptr;
 }
@@ -157,7 +157,8 @@ void LauncherControllerHelper::SetCurrentUser(Profile* profile) {
 void LauncherControllerHelper::LaunchApp(const std::string& app_id,
                                          ash::LaunchSource source,
                                          int event_flags) {
-  if (GetArcAppListPrefs()->IsRegistered(app_id)) {
+  const ArcAppListPrefs* arc_prefs = GetArcAppListPrefs();
+  if (arc_prefs && arc_prefs->IsRegistered(app_id)) {
     arc::LaunchApp(profile_, app_id);
     return;
   }

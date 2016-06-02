@@ -59,6 +59,8 @@ void FakeUserManager::RemoveUserFromList(const AccountId& account_id) {
   while (it != users_.end() && (*it)->GetEmail() != account_id.GetUserEmail())
     ++it;
   if (it != users_.end()) {
+    if (primary_user_ == *it)
+      primary_user_ = nullptr;
     if (active_user_ != *it)
       delete *it;
     users_.erase(it);

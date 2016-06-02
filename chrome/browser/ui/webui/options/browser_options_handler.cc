@@ -1099,12 +1099,8 @@ void BrowserOptionsHandler::InitializePage() {
     consumer_management->AddObserver(this);
   }
 
-  if (arc::ArcBridgeService::GetEnabled(
-          base::CommandLine::ForCurrentProcess()) &&
-      !arc::ArcAuthService::IsOptInVerificationDisabled() &&
-      !profile->IsLegacySupervised() && user->HasGaiaAccount() &&
-      !user_manager::UserManager::Get()
-           ->IsCurrentUserCryptohomeDataEphemeral()) {
+  if (arc::ArcAuthService::IsAllowedForProfile(profile) &&
+      !arc::ArcAuthService::IsOptInVerificationDisabled()) {
     web_ui()->CallJavascriptFunction("BrowserOptions.showAndroidAppsSection");
   }
   OnSystemTimezoneAutomaticDetectionPolicyChanged();

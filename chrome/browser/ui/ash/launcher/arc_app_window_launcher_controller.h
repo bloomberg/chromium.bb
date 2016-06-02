@@ -27,6 +27,8 @@ class Widget;
 class ArcAppWindowLauncherItemController;
 class ChromeLauncherController;
 
+class Profile;
+
 class ArcAppWindowLauncherController : public AppWindowLauncherController,
                                        public aura::EnvObserver,
                                        public aura::WindowObserver,
@@ -34,6 +36,10 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
  public:
   explicit ArcAppWindowLauncherController(ChromeLauncherController* owner);
   ~ArcAppWindowLauncherController() override;
+
+  // AppWindowLauncherControllre:
+  void ActiveUserChanged(const std::string& user_email) override;
+  void AdditionalUserAddedToSession(Profile* profile) override;
 
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override;
@@ -57,6 +63,10 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   void OnTaskDestroyed(int task_id) override;
   void OnTaskSetActive(int32_t task_id) override;
 
+ protected:
+  void StartObserving(Profile* profile);
+  void StopObserving(Profile* profile);
+
  private:
   class AppWindow;
 
@@ -76,6 +86,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   TaskIdToAppWindow task_id_to_app_window_;
   AppControllerMap app_controller_map_;
   std::vector<aura::Window*> observed_windows_;
+  Profile* observed_profile_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppWindowLauncherController);
 };

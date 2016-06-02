@@ -4,12 +4,13 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 
+#include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/app.mojom.h"
 #include "components/arc/test/fake_app_instance.h"
@@ -35,8 +36,11 @@ chromeos::FakeChromeUserManager* ArcAppTest::GetUserManager() {
 }
 
 void ArcAppTest::SetUp(Profile* profile) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kEnableArc);
   DCHECK(!profile_);
   profile_ = profile;
+  CreateUserAndLogin();
 
   // Make sure we have enough data for test.
   for (int i = 0; i < 3; ++i) {
@@ -53,8 +57,12 @@ void ArcAppTest::SetUp(Profile* profile) {
 
   auth_service_.reset(new arc::ArcAuthService(bridge_service_.get()));
   DCHECK(arc::ArcAuthService::Get());
+  arc::ArcAuthService::DisableUIForTesting();
+  arc_auth_service()->OnPrimaryUserProfilePrepared(profile_);
+  auth_service_->EnableArc();
 
   arc_app_list_pref_ = ArcAppListPrefs::Get(profile_);
+  DCHECK(arc_app_list_pref_);
 
   app_instance_.reset(new arc::FakeAppInstance(arc_app_list_pref_));
   arc::mojom::AppInstancePtr instance;
@@ -70,21 +78,17 @@ void ArcAppTest::SetUp(Profile* profile) {
 
   // At this point we should have ArcAppListPrefs as observer of service.
   EXPECT_TRUE(bridge_service_->HasObserver(arc_app_list_pref_));
-}
-
-void ArcAppTest::CreateUserAndLogin() {
-  const AccountId account_id(
-      AccountId::FromUserEmailGaiaId(profile_->GetProfileUserName(),
-                                     "1234567890"));
-  GetUserManager()->AddUser(account_id);
-  GetUserManager()->LoginUser(account_id);
-
-  arc::ArcAuthService::DisableUIForTesting();
-  arc_auth_service()->OnPrimaryUserProfilePrepared(profile_);
-  arc_auth_service()->EnableArc();
   bridge_service()->SetReady();
 }
 
 void ArcAppTest::TearDown() {
   auth_service_.reset();
 }
+
+void ArcAppTest::CreateUserAndLogin() {
+  const AccountId account_id(AccountId::FromUserEmailGaiaId(
+      profile_->GetProfileUserName(), "1234567890"));
+  GetUserManager()->AddUser(account_id);
+  GetUserManager()->LoginUser(account_id);
+}
+

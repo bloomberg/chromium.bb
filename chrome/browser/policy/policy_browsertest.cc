@@ -3823,10 +3823,6 @@ class ArcPolicyTest : public PolicyTest {
 
  protected:
   void SetUpTest() {
-    // ArcAuthService functionality is available only when Arc is enabled. Use
-    // kEnableArc switch that activates it.
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kEnableArc);
     arc::ArcAuthService::DisableUIForTesting();
 
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
@@ -3853,6 +3849,12 @@ class ArcPolicyTest : public PolicyTest {
         base::WrapUnique(new arc::ArcBridgeServiceImpl(
             base::WrapUnique(new arc::FakeArcBridgeBootstrap(
                 fake_arc_bridge_instance_.get())))));
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // ArcAuthService functionality is available only when Arc is enabled. Use
+    // kEnableArc switch that activates it.
+    command_line->AppendSwitch(chromeos::switches::kEnableArc);
   }
 
  private:

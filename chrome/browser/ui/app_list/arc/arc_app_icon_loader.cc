@@ -15,6 +15,7 @@ ArcAppIconLoader::ArcAppIconLoader(Profile* profile,
     : AppIconLoader(profile, icon_size, delegate),
       arc_prefs_(ArcAppListPrefs::Get(profile)),
       post_effect_(post_effect) {
+  DCHECK(arc_prefs_);
   arc_prefs_->AddObserver(this);
 }
 
@@ -25,7 +26,7 @@ ArcAppIconLoader::~ArcAppIconLoader() {
 bool ArcAppIconLoader::CanLoadImageForApp(const std::string& app_id) {
   if (icon_map_.find(app_id) != icon_map_.end())
     return true;
-  return ArcAppListPrefs::Get(profile())->IsRegistered(app_id);
+  return arc_prefs_->IsRegistered(app_id);
 }
 
 void ArcAppIconLoader::FetchImage(const std::string& app_id) {

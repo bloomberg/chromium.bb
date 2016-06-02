@@ -150,6 +150,11 @@ bool ArcAuthService::IsAllowedForProfile(const Profile* profile) {
     return false;
   }
 
+  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
+    VLOG(1) << "Non-primary users are not supported in ARC.";
+    return false;
+  }
+
   if (profile->IsLegacySupervised()) {
     VLOG(1) << "Supervised users are not supported in ARC.";
     return false;

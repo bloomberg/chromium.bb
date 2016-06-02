@@ -47,6 +47,7 @@ class ArcAppDeferredLauncherController : public ArcAppListPrefs::Observer,
 
   // Unowned pointers.
   ChromeLauncherController* owner_;
+  Profile* observed_profile_ = nullptr;
 
   AppControllerMap app_controller_map_;
 

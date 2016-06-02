@@ -270,7 +270,8 @@ void AppListSyncableService::BuildModel() {
     controller = service->GetControllerDelegate();
   apps_builder_.reset(new ExtensionAppModelBuilder(controller));
 #if defined(OS_CHROMEOS)
-  arc_apps_builder_.reset(new ArcAppModelBuilder(controller));
+  if (arc::ArcAuthService::IsAllowedForProfile(profile_))
+    arc_apps_builder_.reset(new ArcAppModelBuilder(controller));
 #endif
   DCHECK(profile_);
   if (app_list::switches::IsAppListSyncEnabled()) {
@@ -278,13 +279,15 @@ void AppListSyncableService::BuildModel() {
     SyncStarted();
     apps_builder_->InitializeWithService(this, model_.get());
 #if defined(OS_CHROMEOS)
-    arc_apps_builder_->InitializeWithService(this, model_.get());
+    if (arc_apps_builder_.get())
+      arc_apps_builder_->InitializeWithService(this, model_.get());
 #endif
   } else {
     VLOG(1) << this << ": AppListSyncableService: InitializeWithProfile.";
     apps_builder_->InitializeWithProfile(profile_, model_.get());
 #if defined(OS_CHROMEOS)
-    arc_apps_builder_->InitializeWithProfile(profile_, model_.get());
+    if (arc_apps_builder_.get())
+      arc_apps_builder_->InitializeWithProfile(profile_, model_.get());
 #endif
   }
 

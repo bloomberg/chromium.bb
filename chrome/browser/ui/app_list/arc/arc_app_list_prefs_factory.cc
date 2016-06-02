@@ -34,6 +34,8 @@ ArcAppListPrefsFactory::~ArcAppListPrefsFactory() {
 KeyedService* ArcAppListPrefsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
+  if (!arc::ArcAuthService::IsAllowedForProfile(profile))
+    return nullptr;
   return ArcAppListPrefs::Create(profile->GetPath(), profile->GetPrefs());
 }
 

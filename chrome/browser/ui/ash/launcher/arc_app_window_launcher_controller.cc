@@ -176,19 +176,26 @@ class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
 ArcAppWindowLauncherController::ArcAppWindowLauncherController(
     ChromeLauncherController* owner)
     : AppWindowLauncherController(owner) {
-  aura::Env* env = aura::Env::GetInstanceDontCreate();
-  if (env)
-    env->AddObserver(this);
-  ArcAppListPrefs::Get(owner->profile())->AddObserver(this);
+  if (arc::ArcAuthService::IsAllowedForProfile(owner->profile())) {
+    observed_profile_ = owner->profile();
+    StartObserving(observed_profile_);
+  }
 }
 
 ArcAppWindowLauncherController::~ArcAppWindowLauncherController() {
-  for (auto window : observed_windows_)
-    window->RemoveObserver(this);
-  ArcAppListPrefs::Get(owner()->profile())->RemoveObserver(this);
-  aura::Env* env = aura::Env::GetInstanceDontCreate();
-  if (env)
-    env->RemoveObserver(this);
+  if (observed_profile_)
+    StopObserving(observed_profile_);
+}
+
+void ArcAppWindowLauncherController::ActiveUserChanged(
+    const std::string& user_email) {
+  // TODO(xdai): Traverse the Arc App list to show / hide the apps one by one
+  // if there are Arc Apps running.
+}
+
+void ArcAppWindowLauncherController::AdditionalUserAddedToSession(
+    Profile* profile) {
+  DCHECK(!arc::ArcAuthService::IsAllowedForProfile(profile));
 }
 
 void ArcAppWindowLauncherController::OnWindowInitialized(aura::Window* window) {
@@ -401,4 +408,23 @@ void ArcAppWindowLauncherController::OnWindowActivated(
     aura::Window* gained_active,
     aura::Window* lost_active) {
   OnTaskSetActive(active_task_id_);
+}
+
+void ArcAppWindowLauncherController::StartObserving(Profile* profile) {
+  aura::Env* env = aura::Env::GetInstanceDontCreate();
+  if (env)
+    env->AddObserver(this);
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile);
+  DCHECK(prefs);
+  prefs->AddObserver(this);
+}
+
+void ArcAppWindowLauncherController::StopObserving(Profile* profile) {
+  for (auto window : observed_windows_)
+    window->RemoveObserver(this);
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile);
+  prefs->RemoveObserver(this);
+  aura::Env* env = aura::Env::GetInstanceDontCreate();
+  if (env)
+    env->RemoveObserver(this);
 }

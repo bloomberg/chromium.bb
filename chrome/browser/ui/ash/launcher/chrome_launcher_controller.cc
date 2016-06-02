@@ -284,7 +284,9 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
       app_sync_ui_state_->AddObserver(this);
   }
 
-  arc_deferred_launcher_.reset(new ArcAppDeferredLauncherController(this));
+  if (arc::ArcAuthService::IsAllowedForProfile(profile_)) {
+    arc_deferred_launcher_.reset(new ArcAppDeferredLauncherController(this));
+  }
 
   // All profile relevant settings get bound to the current profile.
   AttachProfile(profile_);
@@ -1851,11 +1853,13 @@ void ChromeLauncherController::AttachProfile(Profile* profile) {
           profile_, extension_misc::EXTENSION_ICON_SMALL, this));
   app_icon_loaders_.push_back(std::move(extension_app_icon_loader));
 
-  DCHECK(arc_deferred_launcher());
-  std::unique_ptr<AppIconLoader> arc_app_icon_loader(
-      new ArcAppIconLoader(profile_, extension_misc::EXTENSION_ICON_SMALL,
-                           arc_deferred_launcher(), this));
-  app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
+  if (arc::ArcAuthService::IsAllowedForProfile(profile_)) {
+    DCHECK(arc_deferred_launcher());
+    std::unique_ptr<AppIconLoader> arc_app_icon_loader(
+        new ArcAppIconLoader(profile_, extension_misc::EXTENSION_ICON_SMALL,
+                             arc_deferred_launcher(), this));
+    app_icon_loaders_.push_back(std::move(arc_app_icon_loader));
+  }
 
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
@@ -1888,9 +1892,11 @@ void ChromeLauncherController::AttachProfile(Profile* profile) {
       new LauncherExtensionAppUpdater(this, profile_));
   app_updaters_.push_back(std::move(extension_app_updater));
 
-  std::unique_ptr<LauncherAppUpdater> arc_app_updater(
-      new LauncherArcAppUpdater(this, profile_));
-  app_updaters_.push_back(std::move(arc_app_updater));
+  if (arc::ArcAuthService::IsAllowedForProfile(profile_)) {
+    std::unique_ptr<LauncherAppUpdater> arc_app_updater(
+        new LauncherArcAppUpdater(this, profile_));
+    app_updaters_.push_back(std::move(arc_app_updater));
+  }
 }
 
 void ChromeLauncherController::ReleaseProfile() {
