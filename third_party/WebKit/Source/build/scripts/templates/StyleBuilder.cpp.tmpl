@@ -24,13 +24,13 @@ void StyleBuilder::applyProperty(CSSPropertyID property, StyleResolverState& sta
         else if (isInherit)
             StyleBuilderFunctions::applyInherit{{used_property_id}}(state);
         else
-            StyleBuilderFunctions::applyValue{{used_property_id}}(state, value);
+            StyleBuilderFunctions::applyValue{{used_property_id}}(state, *value);
         return;
 
     {% endfor %}
     case CSSPropertyVariable:
         ASSERT(!isInitial && !isInherit);
-        StyleBuilderFunctions::applyValueCSSPropertyVariable(state, value);
+        StyleBuilderFunctions::applyValueCSSPropertyVariable(state, *value);
         return;
     {% for property_id, property in properties.items() if property.direction_aware %}
     case {{property_id}}:
