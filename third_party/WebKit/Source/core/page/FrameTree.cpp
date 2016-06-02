@@ -27,6 +27,7 @@
 #include "core/frame/RemoteFrame.h"
 #include "core/frame/RemoteFrameView.h"
 #include "core/page/Page.h"
+#include "wtf/Assertions.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
@@ -51,29 +52,42 @@ FrameTree::~FrameTree()
 {
 }
 
-void FrameTree::setName(const AtomicString& name, const AtomicString& fallbackName)
+void FrameTree::setName(const AtomicString& name)
 {
     m_name = name;
-    if (!parent()) {
-        m_uniqueName = name;
-        return;
-    }
 
-    // Remove our old frame name so it's not considered in calculateUniqueNameForChildFrame.
+    // Remove our old frame name so it's not considered in calculateUniqueNameForChildFrame
+    // and appendUniqueSuffix calls below.
     m_uniqueName = AtomicString();
 
-    m_uniqueName = parent()->tree().calculateUniqueNameForChildFrame(true, name, fallbackName);
+    // Calculate a new unique name based on inputs.
+    if (parent()) {
+        setUniqueName(
+            parent()->tree().calculateUniqueNameForChildFrame(m_thisFrame, name, nullAtom));
+    } else if (name.isEmpty() || !uniqueNameExists(name)) {
+        // Only main frame can have an empty unique name, so for main frames
+        // emptiness guarantees uniquness.
+        setUniqueName(name);
+    } else {
+        setUniqueName(appendUniqueSuffix(name, "<!--framePosition"));
+    }
 }
 
 void FrameTree::setPrecalculatedName(const AtomicString& name, const AtomicString& uniqueName)
 {
     if (!parent()) {
-        ASSERT(uniqueName == name);
+        DCHECK(uniqueName == name);
     } else {
-        ASSERT(!uniqueName.isEmpty());
+        DCHECK(!uniqueName.isEmpty());
     }
 
     m_name = name;
+
+    // TODO(lukasza): We would like to assert uniqueness below (i.e. by calling
+    // setUniqueName), but
+    // 1) uniqueness is currently violated by provisional/old frame pairs.
+    // 2) there is an unresolved race between 2 OOPIFs, that can result in a
+    //    non-unique |uniqueName| - see https://crbug.com/558680#c14.
     m_uniqueName = uniqueName;
 }
 
@@ -123,10 +137,18 @@ Frame* FrameTree::lastChild() const
     return m_thisFrame->client()->lastChild();
 }
 
-bool FrameTree::uniqueNameExists(const AtomicString& name) const
+bool FrameTree::uniqueNameExists(const String& uniqueNameCandidate) const
 {
+    // This method is currently O(N), where N = number of frames in the tree.
+
+    // Before recalculating or checking unique name, we set m_uniqueName
+    // to an empty string (so the soon-to-be-removed name does not count
+    // as a collision).  This means that uniqueNameExists would return
+    // false positives when called with an empty |name|.
+    DCHECK(!uniqueNameCandidate.isEmpty());
+
     for (Frame* frame = top(); frame; frame = frame->tree().traverseNext()) {
-        if (frame->tree().uniqueName() == name)
+        if (frame->tree().uniqueName() == uniqueNameCandidate)
             return true;
     }
     return false;
@@ -136,25 +158,18 @@ AtomicString FrameTree::calculateUniqueNameForNewChildFrame(
     const AtomicString& name,
     const AtomicString& fallbackName) const
 {
-    return calculateUniqueNameForChildFrame(false, name, fallbackName);
+    AtomicString uniqueName = calculateUniqueNameForChildFrame(nullptr, name, fallbackName);
+
+    // Caller will likely set the name via setPrecalculatedName, which
+    // unfortunately cannot currently assert uniqueness of the name - let's
+    // therefore assert the uniqueness here.
+    DCHECK(!uniqueNameExists(uniqueName));
+
+    return uniqueName;
 }
 
-AtomicString FrameTree::calculateUniqueNameForChildFrame(
-    bool existingChildFrame,
-    const AtomicString& name,
-    const AtomicString& fallbackName) const
+String FrameTree::generateUniqueNameCandidate(bool existingChildFrame) const
 {
-    const AtomicString& requestedName = name.isEmpty() ? fallbackName : name;
-    if (!requestedName.isEmpty() && !uniqueNameExists(requestedName) && requestedName != "_blank")
-        return requestedName;
-
-    // Create a repeatable name for a child about to be added to us. The name must be
-    // unique within the frame tree. The string we generate includes a "path" of names
-    // from the root frame down to us. For this path to be unique, each set of siblings must
-    // contribute a unique name to the path, which can't collide with any HTML-assigned names.
-    // We generate this path component by index in the child list along with an unlikely
-    // frame name that can't be set in HTML because it collides with comment syntax.
-
     const char framePathPrefix[] = "<!--framePath ";
     const int framePathPrefixLength = 14;
     const int framePathSuffixLength = 3;
@@ -183,7 +198,147 @@ AtomicString FrameTree::calculateUniqueNameForChildFrame(
     uniqueName.appendNumber(childCount() - (existingChildFrame ? 1 : 0));
     uniqueName.append("-->-->");
 
+    // NOTE: This name might not be unique - see http://crbug.com/588800.
     return uniqueName.toAtomicString();
+}
+
+String FrameTree::generateFramePosition(Frame* child) const
+{
+    // This method is currently O(N), where N = number of frames in the tree.
+
+    StringBuilder framePositionBuilder;
+    framePositionBuilder.append("<!--framePosition");
+
+    if (!child) {
+        framePositionBuilder.append('-');
+        framePositionBuilder.appendNumber(childCount());
+        child = m_thisFrame;
+    }
+
+    while (child->tree().parent()) {
+        int numberOfSiblingsBeforeChild = 0;
+        Frame* sibling = child->tree().previousSibling();
+        while (sibling) {
+            sibling = sibling->tree().previousSibling();
+            numberOfSiblingsBeforeChild++;
+        }
+
+        framePositionBuilder.append('-');
+        framePositionBuilder.appendNumber(numberOfSiblingsBeforeChild);
+
+        child = child->tree().parent();
+    }
+
+    // NOTE: The generated string is not guaranteed to be unique, but should
+    // have a better chance of being unique than the string generated by
+    // generateUniqueNameCandidate, because we embed extra information into the
+    // string:
+    // 1) we walk the full chain of ancestors, all the way to the main frame
+    // 2) we use frame-position-within-parent (aka |numberOfSiblingsBeforeChild|)
+    //    instead of sibling-count.
+    return framePositionBuilder.toString();
+}
+
+AtomicString FrameTree::appendUniqueSuffix(
+    const String& prefix,
+    const String& likelyUniqueSuffix) const
+{
+    // Verify that we are not doing unnecessary work.
+    DCHECK(uniqueNameExists(prefix));
+
+    // We want unique name to be stable across page reloads - this is why
+    // we use a deterministic |numberOfTries| rather than a random number
+    // (a random number would be more likely to avoid a collision, but
+    // would change after every page reload).
+    int numberOfTries = 0;
+
+    // Keep trying |prefix| + |likelyUniqueSuffix| + |numberOfTries|
+    // concatenations until we get a truly unique name.
+    String candidate;
+    do {
+        StringBuilder uniqueNameBuilder;
+        uniqueNameBuilder.append(prefix);
+        uniqueNameBuilder.append(likelyUniqueSuffix);
+        uniqueNameBuilder.append('/');
+        uniqueNameBuilder.appendNumber(numberOfTries++);
+        uniqueNameBuilder.append("-->");
+
+        candidate = uniqueNameBuilder.toString();
+    } while (uniqueNameExists(candidate));
+    return AtomicString(candidate);
+}
+
+AtomicString FrameTree::calculateUniqueNameForChildFrame(
+    Frame* child,
+    const AtomicString& assignedName,
+    const AtomicString& fallbackName) const
+{
+    // Try to use |assignedName| (i.e. window.name or iframe.name) or |fallbackName| if possible.
+    const AtomicString& requestedName = assignedName.isEmpty() ? fallbackName : assignedName;
+    if (!requestedName.isEmpty() && !uniqueNameExists(requestedName) && requestedName != "_blank")
+        return requestedName;
+
+    String candidate = generateUniqueNameCandidate(child);
+    if (!uniqueNameExists(candidate))
+        return AtomicString(candidate);
+
+    String likelyUniqueSuffix = generateFramePosition(child);
+    return appendUniqueSuffix(candidate, likelyUniqueSuffix);
+
+    // Description of the current unique name format
+    // ---------------------------------------------
+    //
+    // Changing the format of unique name is undesirable, because it breaks
+    // backcompatibility of session history (which stores unique names
+    // generated in the past on user's disk).  This incremental,
+    // backcompatibility-aware approach has resulted so far in the following
+    // rather baroque format... :
+    //
+    //   uniqueName ::= <assignedName> | <generatedName>
+    //                 (generatedName is used if assignedName is
+    //                 1) non-unique / conflicts with other frame's unique name or
+    //                 2) assignedName is empty for a non-main frame)
+    //
+    //   assignedName ::= value of iframe's name attribute
+    //                 or value assigned to window.name
+    //
+    //   generatedName ::= oldGeneratedName newUniqueSuffix?
+    //                  (newUniqueSuffix is only present if oldGeneratedName was
+    //                  not unique after all)
+    //
+    //   oldGeneratedName ::= "<!--framePath //" ancestorChain "/<!--frame" childCount "-->-->"
+    //                  (main frame is special - oldGeneratedName for main frame
+    //                  is always the frame's assignedName;  oldGeneratedName is
+    //                  generated by generateUniqueNameCandidate method).
+    //
+    //   childCount ::= current number of siblings
+    //
+    //   ancestorChain ::= concatenated unique names of ancestor chain,
+    //                     terminated on the first ancestor (if any) starting with "<!--framePath"
+    //                     each ancestor's unique name is separated by "/" character
+    //   ancestorChain example1: "grandparent/parent"
+    //  (ancestor's unique names :   #1--^   | #2-^ )
+    //   ancestorChain example2: "<!--framePath //foo/bar/<!--frame42-->-->/blah/foobar"
+    //  (ancestor's unique names :        ^--#1--^                         | #2 | #3-^ )
+    //
+    //   newUniqueSuffix ::= "<!--framePosition" framePosition "/" retryNumber "-->"
+    //
+    //   framePosition ::= "-" numberOfSiblingsBeforeChild [ framePosition-forParent? ]
+    //                   | <empty string for main frame>
+    //
+    //   retryNumber ::= smallest non-negative integer resulting in unique name
+}
+
+void FrameTree::setUniqueName(const AtomicString& uniqueName)
+{
+    // Main frame is the only frame that can have an empty unique name.
+    if (parent()) {
+        DCHECK(!uniqueName.isEmpty() && !uniqueNameExists(uniqueName));
+    } else {
+        DCHECK(uniqueName.isEmpty() || !uniqueNameExists(uniqueName));
+    }
+
+    m_uniqueName = uniqueName;
 }
 
 Frame* FrameTree::scopedChild(unsigned index) const
