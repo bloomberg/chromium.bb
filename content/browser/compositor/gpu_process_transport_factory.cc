@@ -73,6 +73,7 @@
 #include "content/browser/compositor/software_output_device_x11.h"
 #elif defined(OS_MACOSX)
 #include "components/display_compositor/compositor_overlay_candidate_validator_mac.h"
+#include "content/browser/compositor/gpu_output_surface_mac.h"
 #include "content/browser/compositor/software_output_device_mac.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
@@ -453,18 +454,21 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
             std::unique_ptr<
                 display_compositor::CompositorOverlayCandidateValidator>()));
       } else if (capabilities.surfaceless) {
-        GLenum target = GL_TEXTURE_2D;
-        GLenum format = GL_RGB;
 #if defined(OS_MACOSX)
-        target = GL_TEXTURE_RECTANGLE_ARB;
-        format = GL_RGBA;
-#endif
+        surface = base::WrapUnique(new GpuOutputSurfaceMac(
+            context_provider, data->surface_handle, compositor->vsync_manager(),
+            compositor->task_runner().get(),
+            CreateOverlayCandidateValidator(compositor->widget()),
+            BrowserGpuMemoryBufferManager::current()));
+#else
         surface =
             base::WrapUnique(new GpuSurfacelessBrowserCompositorOutputSurface(
                 context_provider, data->surface_handle,
                 compositor->vsync_manager(), compositor->task_runner().get(),
-                CreateOverlayCandidateValidator(compositor->widget()), target,
-                format, BrowserGpuMemoryBufferManager::current()));
+                CreateOverlayCandidateValidator(compositor->widget()),
+                GL_TEXTURE_2D, GL_RGB,
+                BrowserGpuMemoryBufferManager::current()));
+#endif
       } else {
         std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
             validator;

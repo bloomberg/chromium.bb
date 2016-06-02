@@ -36,7 +36,6 @@ class GpuSurfacelessBrowserCompositorOutputSurface
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
   ~GpuSurfacelessBrowserCompositorOutputSurface() override;
 
- private:
   // cc::OutputSurface implementation.
   void SwapBuffers(cc::CompositorFrame* frame) override;
   void OnSwapBuffersComplete() override;
@@ -51,6 +50,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
       gfx::SwapResult result,
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) override;
 
+ private:
   const unsigned int internalformat_;
   std::unique_ptr<display_compositor::GLHelper> gl_helper_;
   std::unique_ptr<display_compositor::BufferQueue> buffer_queue_;

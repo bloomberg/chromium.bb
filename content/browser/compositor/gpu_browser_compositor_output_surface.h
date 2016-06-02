@@ -50,28 +50,13 @@ class GpuBrowserCompositorOutputSurface
       const std::vector<ui::LatencyInfo>& latency_info,
       gfx::SwapResult result,
       const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) override;
+#if defined(OS_MACOSX)
+  void SetSurfaceSuspendedForRecycle(bool suspended) override;
+#endif
 
   // cc::OutputSurface implementation.
   void SwapBuffers(cc::CompositorFrame* frame) override;
   bool BindToClient(cc::OutputSurfaceClient* client) override;
-  bool SurfaceIsSuspendForRecycle() const override;
-
-#if defined(OS_MACOSX)
-  void SetSurfaceSuspendedForRecycle(bool suspended) override;
-  enum ShouldShowFramesState {
-    // Frames that come from the GPU process should appear on-screen.
-    SHOULD_SHOW_FRAMES,
-    // The compositor has been suspended. Any frames that come from the GPU
-    // process are for the pre-suspend content and should not be displayed.
-    SHOULD_NOT_SHOW_FRAMES_SUSPENDED,
-    // The compositor has been un-suspended, but has not yet issued a swap
-    // since being un-suspended, so any frames that come from the GPU process
-    // are for pre-suspend content and should not be displayed.
-    SHOULD_NOT_SHOW_FRAMES_NO_SWAP_AFTER_SUSPENDED,
-  };
-  ShouldShowFramesState should_show_frames_state_;
-#endif
-
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy();
 
   base::CancelableCallback<void(

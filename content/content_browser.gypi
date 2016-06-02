@@ -1765,6 +1765,8 @@
       'browser/compositor/browser_compositor_output_surface.h',
       'browser/compositor/gpu_browser_compositor_output_surface.cc',
       'browser/compositor/gpu_browser_compositor_output_surface.h',
+      'browser/compositor/gpu_output_surface_mac.mm',
+      'browser/compositor/gpu_output_surface_mac.h',
       'browser/compositor/gpu_process_transport_factory.cc',
       'browser/compositor/gpu_process_transport_factory.h',
       'browser/compositor/gpu_surfaceless_browser_compositor_output_surface.cc',
