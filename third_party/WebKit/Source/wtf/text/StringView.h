@@ -114,6 +114,7 @@ public:
     const void* bytes() const { return m_data.bytes; }
 
     String toString() const;
+    AtomicString toAtomicString() const;
 
 private:
     void set(StringImpl&, unsigned offset, unsigned length);

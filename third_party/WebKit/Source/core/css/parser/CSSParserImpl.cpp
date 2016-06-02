@@ -190,14 +190,14 @@ CSSSelectorList CSSParserImpl::parsePageSelector(CSSParserTokenRange range, Styl
     range.consumeWhitespace();
     AtomicString typeSelector;
     if (range.peek().type() == IdentToken)
-        typeSelector = AtomicString(range.consume().value().toString());
+        typeSelector = range.consume().value().toAtomicString();
 
     AtomicString pseudo;
     if (range.peek().type() == ColonToken) {
         range.consume();
         if (range.peek().type() != IdentToken)
             return CSSSelectorList();
-        pseudo = AtomicString(range.consume().value().toString());
+        pseudo = range.consume().value().toAtomicString();
     }
 
     range.consumeWhitespace();
@@ -436,7 +436,7 @@ static AtomicString consumeStringOrURI(CSSParserTokenRange& range)
     const CSSParserToken& token = range.peek();
 
     if (token.type() == StringToken || token.type() == UrlToken)
-        return AtomicString(range.consumeIncludingWhitespace().value().toString());
+        return range.consumeIncludingWhitespace().value().toAtomicString();
 
     if (token.type() != FunctionToken || !token.valueEqualsIgnoringASCIICase("url"))
         return AtomicString();
@@ -446,7 +446,7 @@ static AtomicString consumeStringOrURI(CSSParserTokenRange& range)
     ASSERT(uri.type() == StringToken);
     if (!contents.atEnd())
         return AtomicString();
-    return AtomicString(uri.value().toString());
+    return uri.value().toAtomicString();
 }
 
 StyleRuleCharset* CSSParserImpl::consumeCharsetRule(CSSParserTokenRange prelude)
@@ -481,7 +481,7 @@ StyleRuleNamespace* CSSParserImpl::consumeNamespaceRule(CSSParserTokenRange prel
     prelude.consumeWhitespace();
     AtomicString namespacePrefix;
     if (prelude.peek().type() == IdentToken)
-        namespacePrefix = AtomicString(prelude.consumeIncludingWhitespace().value().toString());
+        namespacePrefix = prelude.consumeIncludingWhitespace().value().toAtomicString();
 
     AtomicString uri(consumeStringOrURI(prelude));
     prelude.consumeWhitespace();
@@ -772,7 +772,7 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Rul
 
     size_t propertiesCount = m_parsedProperties.size();
     if (RuntimeEnabledFeatures::cssVariablesEnabled() && unresolvedProperty == CSSPropertyInvalid && CSSVariableParser::isValidVariableName(token)) {
-        AtomicString variableName = AtomicString(token.value().toString());
+        AtomicString variableName = token.value().toAtomicString();
         consumeVariableValue(range.makeSubRange(&range.peek(), declarationValueEnd), variableName, important);
     }
 

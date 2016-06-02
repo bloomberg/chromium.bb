@@ -360,7 +360,7 @@ bool CSSSelectorParser::consumeName(CSSParserTokenRange& range, AtomicString& na
 
     const CSSParserToken& firstToken = range.peek();
     if (firstToken.type() == IdentToken) {
-        name = AtomicString(firstToken.value().toString());
+        name = firstToken.value().toAtomicString();
         range.consume();
     } else if (firstToken.type() == DelimiterToken && firstToken.delimiter() == '*') {
         name = starAtom;
@@ -379,7 +379,7 @@ bool CSSSelectorParser::consumeName(CSSParserTokenRange& range, AtomicString& na
     namespacePrefix = name;
     const CSSParserToken& nameToken = range.consume();
     if (nameToken.type() == IdentToken) {
-        name = AtomicString(nameToken.value().toString());
+        name = nameToken.value().toAtomicString();
     } else if (nameToken.type() == DelimiterToken && nameToken.delimiter() == '*') {
         name = starAtom;
     } else {
@@ -398,7 +398,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeId(CSSParserTokenRange& 
         return nullptr;
     OwnPtr<CSSParserSelector> selector = CSSParserSelector::create();
     selector->setMatch(CSSSelector::Id);
-    AtomicString value = AtomicString(range.consume().value().toString());
+    AtomicString value = range.consume().value().toAtomicString();
     selector->setValue(value, isQuirksModeBehavior(m_context.matchMode()));
     return selector;
 }
@@ -412,7 +412,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeClass(CSSParserTokenRang
         return nullptr;
     OwnPtr<CSSParserSelector> selector = CSSParserSelector::create();
     selector->setMatch(CSSSelector::Class);
-    AtomicString value = AtomicString(range.consume().value().toString());
+    AtomicString value = range.consume().value().toAtomicString();
     selector->setValue(value, isQuirksModeBehavior(m_context.matchMode()));
     return selector;
 }
@@ -453,7 +453,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeAttribute(CSSParserToken
     const CSSParserToken& attributeValue = block.consumeIncludingWhitespace();
     if (attributeValue.type() != IdentToken && attributeValue.type() != StringToken)
         return nullptr;
-    selector->setValue(AtomicString(attributeValue.value().toString()));
+    selector->setValue(attributeValue.value().toAtomicString());
     selector->setAttribute(qualifiedName, consumeAttributeFlags(block));
 
     if (!block.atEnd())
@@ -543,7 +543,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
             const CSSParserToken& ident = block.consumeIncludingWhitespace();
             if (ident.type() != IdentToken || !block.atEnd())
                 return nullptr;
-            selector->setArgument(AtomicString(ident.value().toString()));
+            selector->setArgument(ident.value().toAtomicString());
             return selector;
         }
     case CSSSelector::PseudoNthChild:

@@ -323,6 +323,15 @@ TEST(StringViewTest, ToString)
     // NOTE: All the construction tests also check toString().
 }
 
+TEST(StringViewTest, ToAtomicString)
+{
+    EXPECT_EQ(AtomicString(), nullAtom);
+    EXPECT_EQ(AtomicString(""), emptyAtom);
+    EXPECT_EQ(AtomicString("12"), StringView(kChars8, 2).toAtomicString());
+    // AtomicString will convert to 8bit if possible when creating the string.
+    EXPECT_EQ(AtomicString("12"), StringView(kChars16, 2).toAtomicString());
+}
+
 TEST(StringViewTest, NullString)
 {
     EXPECT_TRUE(StringView().isNull());

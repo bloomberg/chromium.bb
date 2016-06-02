@@ -35,6 +35,17 @@ String StringView::toString() const
     return StringImpl::create8BitIfPossible(m_data.characters16, m_length);
 }
 
+AtomicString StringView::toAtomicString() const
+{
+    if (isNull())
+        return nullAtom;
+    if (isEmpty())
+        return emptyAtom;
+    if (is8Bit())
+        return AtomicString(m_data.characters8, m_length);
+    return AtomicString(m_data.characters16, m_length);
+}
+
 bool equalStringView(const StringView& a, const StringView& b)
 {
     if (a.isNull() || b.isNull())

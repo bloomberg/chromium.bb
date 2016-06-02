@@ -393,7 +393,7 @@ static CSSFontFeatureValue* consumeFontFeatureTag(CSSParserTokenRange& range)
         return nullptr;
     if (token.value().length() != tagNameLength)
         return nullptr;
-    AtomicString tag = AtomicString(token.value().toString());
+    AtomicString tag = token.value().toAtomicString();
     for (unsigned i = 0; i < tagNameLength; ++i) {
         // Limits the range of characters to 0x20-0x7E, following the tag name rules defiend in the OpenType specification.
         UChar character = tag[i];
