@@ -56,8 +56,8 @@ void DefaultComponentInstaller::Register(
   task_runner_ = cus->GetSequencedTaskRunner();
 
   if (!installer_traits_) {
-    NOTREACHED() << "A DefaultComponentInstaller has been created but "
-                 << "has no installer traits.";
+    LOG(ERROR) << "A DefaultComponentInstaller has been created but "
+               << "has no installer traits.";
     return;
   }
   task_runner_->PostTaskAndReply(
@@ -69,7 +69,7 @@ void DefaultComponentInstaller::Register(
 }
 
 void DefaultComponentInstaller::OnUpdateError(int error) {
-  NOTREACHED() << "Component update error: " << error;
+  LOG(ERROR) << "Component update error: " << error;
 }
 
 bool DefaultComponentInstaller::InstallHelper(
@@ -152,50 +152,46 @@ bool DefaultComponentInstaller::Uninstall() {
   return true;
 }
 
-// TODO(xhwang): The following LOG(WARNING) messages are added to help
-// investigate http://crbug.com/614745. Remove redundant checks or convent them
-// to VLOG(1) after investigation is completed.
 bool DefaultComponentInstaller::FindPreinstallation() {
   base::FilePath path;
   if (!PathService::Get(DIR_COMPONENT_PREINSTALLED, &path)) {
-    LOG(WARNING) << "DIR_COMPONENT_PREINSTALLED does not exist.";
+    DVLOG(1) << "DIR_COMPONENT_PREINSTALLED does not exist.";
     return false;
   }
 
   path = path.Append(installer_traits_->GetRelativeInstallDir());
   if (!base::PathExists(path)) {
-    LOG(WARNING) << "Relative install dir does not exist: "
-                 << path.MaybeAsASCII();
+    DVLOG(1) << "Relative install dir does not exist: " << path.MaybeAsASCII();
     return false;
   }
 
   std::unique_ptr<base::DictionaryValue> manifest =
       update_client::ReadManifest(path);
   if (!manifest) {
-    LOG(WARNING) << "Manifest does not exist: " << path.MaybeAsASCII();
+    DVLOG(1) << "Manifest does not exist: " << path.MaybeAsASCII();
     return false;
   }
 
   if (!installer_traits_->VerifyInstallation(*manifest, path)) {
-    LOG(WARNING) << "Installation verification failed: " << path.MaybeAsASCII();
+    DVLOG(1) << "Installation verification failed: " << path.MaybeAsASCII();
     return false;
   }
 
   std::string version_lexical;
   if (!manifest->GetStringASCII("version", &version_lexical)) {
-    LOG(WARNING) << "Failed to get component version from the manifest.";
+    DVLOG(1) << "Failed to get component version from the manifest.";
     return false;
   }
 
   const base::Version version(version_lexical);
   if (!version.IsValid()) {
-    LOG(WARNING) << "Version in the manifest is invalid:" << version_lexical;
+    DVLOG(1) << "Version in the manifest is invalid:" << version_lexical;
     return false;
   }
 
-  LOG(WARNING) << "Preinstalled component found for "
-               << installer_traits_->GetName() << " at " << path.MaybeAsASCII()
-               << " with version " << version << ".";
+  VLOG(1) << "Preinstalled component found for " << installer_traits_->GetName()
+          << " at " << path.MaybeAsASCII() << " with version " << version
+          << ".";
 
   current_install_dir_ = path;
   current_manifest_ = std::move(manifest);
@@ -204,7 +200,7 @@ bool DefaultComponentInstaller::FindPreinstallation() {
 }
 
 void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
-  LOG(WARNING) << __FUNCTION__ << " for " << installer_traits_->GetName();
+  VLOG(1) << __FUNCTION__ << " for " << installer_traits_->GetName();
   DCHECK(task_runner_.get());
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
@@ -320,7 +316,7 @@ void DefaultComponentInstaller::UninstallOnTaskRunner() {
 void DefaultComponentInstaller::FinishRegistration(
     ComponentUpdateService* cus,
     const base::Closure& callback) {
-  LOG(WARNING) << __FUNCTION__ << " for " << installer_traits_->GetName();
+  VLOG(1) << __FUNCTION__ << " for " << installer_traits_->GetName();
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (installer_traits_->CanAutoUpdate()) {
@@ -333,8 +329,8 @@ void DefaultComponentInstaller::FinishRegistration(
     crx.fingerprint = current_fingerprint_;
     installer_traits_->GetHash(&crx.pk_hash);
     if (!cus->RegisterComponent(crx)) {
-      LOG(WARNING) << "Component registration failed for "
-                   << installer_traits_->GetName();
+      LOG(ERROR) << "Component registration failed for "
+                 << installer_traits_->GetName();
       return;
     }
 
@@ -343,7 +339,7 @@ void DefaultComponentInstaller::FinishRegistration(
   }
 
   if (!current_manifest_) {
-    LOG(WARNING) << "No component found for " << installer_traits_->GetName();
+    DVLOG(1) << "No component found for " << installer_traits_->GetName();
     return;
   }
 
