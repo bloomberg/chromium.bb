@@ -138,9 +138,7 @@ PingLoader::PingLoader(LocalFrame* frame, ResourceRequest& request, const FetchI
     , m_keepAlive(this)
 {
     frame->loader().client()->didDispatchPingLoader(request.url());
-
-    TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD, "data", InspectorSendRequestEvent::data(m_identifier, frame, request));
-    InspectorInstrumentation::willSendRequest(frame, m_identifier, frame->loader().documentLoader(), request, ResourceResponse(), initiatorInfo);
+    frame->document()->fetcher()->context().dispatchWillSendRequest(m_identifier, request, ResourceResponse(), initiatorInfo);
 
     m_loader = adoptPtr(Platform::current()->createURLLoader());
     ASSERT(m_loader);

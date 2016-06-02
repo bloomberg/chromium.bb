@@ -32,6 +32,13 @@ function getBeaconURL() {
   return getServerURL('empty.html?as-beacon');
 }
 
+// A slow URL used for the beacon test, to make sure that the test fails
+// deterministically if there is a bug that causes the frameId/tabId to not be
+// set if the frame is removed during the request.
+function getSlowURL() {
+  return getServerURL('slow?2.718');
+}
+
 function getScriptFilter() {
   // Scripts and worker scripts are internally represented by a different
   // ResourceType, but they still map to the same public "script" type.
@@ -360,12 +367,8 @@ runTests([
           method: 'POST',
           url: getPingURL(),
           frameUrl: 'unknown frame URL',
-          // TODO(robwu): Ping / beacons are not associated with a tab/frame
-          // because they are detached requests. However, it would be useful if
-          // the frameId and tabId are set to the source of the request.
-          // See crbug.com/522124.
-          frameId: -1,
-          tabId: -1,
+          frameId: 0,
+          tabId: 1,
         }
       },
       { label: 'onBeforeSendHeaders',
@@ -374,8 +377,8 @@ runTests([
           type: 'ping',
           method: 'POST',
           url: getPingURL(),
-          frameId: -1,
-          tabId: -1,
+          frameId: 0,
+          tabId: 1,
         },
       },
       { label: 'onSendHeaders',
@@ -384,8 +387,8 @@ runTests([
           type: 'ping',
           method: 'POST',
           url: getPingURL(),
-          frameId: -1,
-          tabId: -1,
+          frameId: 0,
+          tabId: 1,
         },
       },
       { label: 'onHeadersReceived',
@@ -394,8 +397,8 @@ runTests([
           type: 'ping',
           method: 'POST',
           url: getPingURL(),
-          frameId: -1,
-          tabId: -1,
+          frameId: 0,
+          tabId: 1,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
         },
@@ -406,8 +409,8 @@ runTests([
           type: 'ping',
           method: 'POST',
           url: getPingURL(),
-          frameId: -1,
-          tabId: -1,
+          frameId: 0,
+          tabId: 1,
           ip: '127.0.0.1',
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
@@ -420,8 +423,8 @@ runTests([
           type: 'ping',
           method: 'POST',
           url: getPingURL(),
-          frameId: -1,
-          tabId: -1,
+          frameId: 0,
+          tabId: 1,
           ip: '127.0.0.1',
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
@@ -446,9 +449,8 @@ runTests([
           method: 'POST',
           url: getBeaconURL(),
           frameUrl: 'unknown frame URL',
-          // TODO(robwu): these IDs should not be -1. See comment at typePing.
-          frameId: -1,
-          tabId: -1,
+          frameId: 0,
+          tabId: 1,
         }
       },
       { label: 'onBeforeSendHeaders',
@@ -457,8 +459,8 @@ runTests([
           type: 'ping',
           method: 'POST',
           url: getBeaconURL(),
-          frameId: -1,
-          tabId: -1,
+          frameId: 0,
+          tabId: 1,
         },
       },
       { label: 'onSendHeaders',
@@ -467,8 +469,8 @@ runTests([
           type: 'ping',
           method: 'POST',
           url: getBeaconURL(),
-          frameId: -1,
-          tabId: -1,
+          frameId: 0,
+          tabId: 1,
         },
       },
       { label: 'onHeadersReceived',
@@ -477,8 +479,8 @@ runTests([
           type: 'ping',
           method: 'POST',
           url: getBeaconURL(),
-          frameId: -1,
-          tabId: -1,
+          frameId: 0,
+          tabId: 1,
           statusLine: 'HTTP/1.1 200 OK',
           statusCode: 200,
         },
@@ -489,8 +491,8 @@ runTests([
           type: 'ping',
           method: 'POST',
           url: getBeaconURL(),
-          frameId: -1,
-          tabId: -1,
+          frameId: 0,
+          tabId: 1,
           ip: '127.0.0.1',
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
@@ -503,8 +505,8 @@ runTests([
           type: 'ping',
           method: 'POST',
           url: getBeaconURL(),
-          frameId: -1,
-          tabId: -1,
+          frameId: 0,
+          tabId: 1,
           ip: '127.0.0.1',
           fromCache: false,
           statusLine: 'HTTP/1.1 200 OK',
@@ -515,5 +517,100 @@ runTests([
         'onHeadersReceived', 'onResponseStarted', 'onCompleted']]);
 
     navigator.sendBeacon(getBeaconURL(), 'beacon data');
+  },
+
+  function sendBeaconInFrameOnUnload() {
+    expect([
+      { label: 'onBeforeRequest',
+        event: 'onBeforeRequest',
+        details: {
+          type: 'ping',
+          method: 'POST',
+          url: getSlowURL(),
+          frameUrl: 'unknown frame URL',
+          frameId: 1,
+          parentFrameId: 0,
+          tabId: 1,
+        }
+      },
+      { label: 'onBeforeSendHeaders',
+        event: 'onBeforeSendHeaders',
+        details: {
+          type: 'ping',
+          method: 'POST',
+          url: getSlowURL(),
+          frameId: 1,
+          parentFrameId: 0,
+          tabId: 1,
+        },
+      },
+      { label: 'onSendHeaders',
+        event: 'onSendHeaders',
+        details: {
+          type: 'ping',
+          method: 'POST',
+          url: getSlowURL(),
+          frameId: 1,
+          parentFrameId: 0,
+          tabId: 1,
+        },
+      },
+      { label: 'onHeadersReceived',
+        event: 'onHeadersReceived',
+        details: {
+          type: 'ping',
+          method: 'POST',
+          url: getSlowURL(),
+          // TODO(robwu): These IDs should be identical to the previous IDs, but
+          // unfortunately the context is lost when the frames are destroyed.
+          // This should be fixed - https://crbug.com/522129
+          frameId: -1,
+          parentFrameId: -1,
+          tabId: -1,
+          statusLine: 'HTTP/1.1 200 OK',
+          statusCode: 200,
+        },
+      },
+      { label: 'onResponseStarted',
+        event: 'onResponseStarted',
+        details: {
+          type: 'ping',
+          method: 'POST',
+          url: getSlowURL(),
+          frameId: -1,
+          parentFrameId: -1,
+          tabId: -1,
+          ip: '127.0.0.1',
+          fromCache: false,
+          statusLine: 'HTTP/1.1 200 OK',
+          statusCode: 200,
+        },
+      },
+      { label: 'onCompleted',
+        event: 'onCompleted',
+        details: {
+          type: 'ping',
+          method: 'POST',
+          url: getSlowURL(),
+          frameId: -1,
+          parentFrameId: -1,
+          tabId: -1,
+          ip: '127.0.0.1',
+          fromCache: false,
+          statusLine: 'HTTP/1.1 200 OK',
+          statusCode: 200,
+        },
+      }],
+      [['onBeforeRequest', 'onBeforeSendHeaders', 'onSendHeaders',
+        'onHeadersReceived', 'onResponseStarted', 'onCompleted']]);
+
+    var frame = document.createElement('iframe');
+    document.body.appendChild(frame);
+    frame.contentWindow.onunload = function() {
+      console.log('Going to send beacon...');
+      var sentBeacon = frame.contentWindow.navigator.sendBeacon(getSlowURL());
+      chrome.test.assertTrue(sentBeacon);
+    };
+    frame.remove();
   },
 ]);

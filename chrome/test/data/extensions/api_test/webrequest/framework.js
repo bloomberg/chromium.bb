@@ -181,9 +181,20 @@ function isUnexpectedDetachedRequest(name, details) {
 
   // Only return true if there is no matching expectation for the given details.
   return !expectedEventData.some(function(exp) {
-    return name === exp.event &&
+    var didMatchTabAndFrameId =
       exp.details.tabId === -1 &&
-      exp.details.frameId === -1 &&
+      exp.details.frameId === -1;
+
+    // Accept non-matching tabId/frameId for ping/beacon requests because these
+    // requests can continue after a frame is removed. And due to a bug, such
+    // requests have a tabId/frameId of -1.
+    // The test will fail anyway, but then with a helpful error (expectation
+    // differs from actual events) instead of an obscure test timeout.
+    // TODO(robwu): Remove this once https://crbug.com/522129 gets fixed.
+    didMatchTabAndFrameId = didMatchTabAndFrameId || details.type === 'ping';
+
+    return name === exp.event &&
+      didMatchTabAndFrameId &&
       exp.details.method === details.method &&
       exp.details.url === details.url &&
       exp.details.type === details.type;
