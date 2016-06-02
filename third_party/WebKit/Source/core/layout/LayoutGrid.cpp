@@ -360,7 +360,7 @@ void LayoutGrid::computeTrackSizesForDirection(GridTrackSizingDirection directio
     sizingData.sizingOperation = GridSizingData::TrackSizing;
 
     LayoutUnit baseSizes, growthLimits;
-    computeUsedBreadthOfGridTracks(direction, sizingData, baseSizes, growthLimits, AvailableSpaceDefinite);
+    computeUsedBreadthOfGridTracks(direction, sizingData, baseSizes, growthLimits);
     ASSERT(tracksAreWiderThanMinTrackBreadth(direction, sizingData));
 }
 
@@ -451,7 +451,7 @@ void LayoutGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, Layo
     GridSizingData sizingData(gridColumnCount(), gridRowCount());
     sizingData.freeSpaceForDirection(ForColumns) = LayoutUnit();
     sizingData.sizingOperation = GridSizingData::IntrinsicSizeComputation;
-    const_cast<LayoutGrid*>(this)->computeUsedBreadthOfGridTracks(ForColumns, sizingData, minLogicalWidth, maxLogicalWidth, AvailableSpaceIndefinite);
+    const_cast<LayoutGrid*>(this)->computeUsedBreadthOfGridTracks(ForColumns, sizingData, minLogicalWidth, maxLogicalWidth);
 
     LayoutUnit totalGuttersSize = guttersSize(ForColumns, sizingData.columnTracks.size());
     minLogicalWidth += totalGuttersSize;
@@ -467,7 +467,7 @@ void LayoutGrid::computeIntrinsicLogicalHeight(GridSizingData& sizingData)
     ASSERT(tracksAreWiderThanMinTrackBreadth(ForColumns, sizingData));
     sizingData.freeSpaceForDirection(ForRows) = LayoutUnit();
     sizingData.sizingOperation = GridSizingData::IntrinsicSizeComputation;
-    computeUsedBreadthOfGridTracks(ForRows, sizingData, m_minContentHeight, m_maxContentHeight, AvailableSpaceIndefinite);
+    computeUsedBreadthOfGridTracks(ForRows, sizingData, m_minContentHeight, m_maxContentHeight);
 
     LayoutUnit totalGuttersSize = guttersSize(ForRows, gridRowCount());
     m_minContentHeight += totalGuttersSize;
@@ -502,7 +502,7 @@ static inline double normalizedFlexFraction(const GridTrack& track, double flexF
     return track.baseSize() / std::max<double>(1, flexFactor);
 }
 
-void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection direction, GridSizingData& sizingData, LayoutUnit& baseSizesWithoutMaximization, LayoutUnit& growthLimitsWithoutMaximization, AvailableSpaceType availableSpaceType)
+void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection direction, GridSizingData& sizingData, LayoutUnit& baseSizesWithoutMaximization, LayoutUnit& growthLimitsWithoutMaximization)
 {
     LayoutUnit& freeSpace = sizingData.freeSpaceForDirection(direction);
     const LayoutUnit initialFreeSpace = freeSpace;
@@ -512,7 +512,8 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
 
     LayoutUnit maxSize = std::max(LayoutUnit(), initialFreeSpace);
     // Grid gutters were removed from freeSpace by the caller, but we must use them to compute relative (i.e. percentages) sizes.
-    if (availableSpaceType == AvailableSpaceDefinite)
+    bool hasDefiniteFreeSpace = sizingData.sizingOperation == GridSizingData::TrackSizing;
+    if (hasDefiniteFreeSpace)
         maxSize += guttersSize(direction, direction == ForRows ? gridRowCount() : gridColumnCount());
 
     // 1. Initialize per Grid track variables.
@@ -545,7 +546,6 @@ void LayoutGrid::computeUsedBreadthOfGridTracks(GridTrackSizingDirection directi
     }
     freeSpace = initialFreeSpace - baseSizesWithoutMaximization;
 
-    bool hasDefiniteFreeSpace = availableSpaceType == AvailableSpaceDefinite;
     if (hasDefiniteFreeSpace && freeSpace <= 0)
         return;
 

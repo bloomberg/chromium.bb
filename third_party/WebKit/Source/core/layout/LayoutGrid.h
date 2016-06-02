@@ -119,8 +119,7 @@ private:
 
     class GridIterator;
     struct GridSizingData;
-    enum AvailableSpaceType {AvailableSpaceDefinite, AvailableSpaceIndefinite};
-    void computeUsedBreadthOfGridTracks(GridTrackSizingDirection, GridSizingData&, LayoutUnit& baseSizesWithoutMaximization, LayoutUnit& growthLimitsWithoutMaximization, AvailableSpaceType);
+    void computeUsedBreadthOfGridTracks(GridTrackSizingDirection, GridSizingData&, LayoutUnit& baseSizesWithoutMaximization, LayoutUnit& growthLimitsWithoutMaximization);
     LayoutUnit computeUsedBreadthOfMinLength(const GridLength&, LayoutUnit maxBreadth) const;
     LayoutUnit computeUsedBreadthOfMaxLength(const GridLength&, LayoutUnit usedBreadth, LayoutUnit maxBreadth) const;
     void resolveContentBasedTrackSizingFunctions(GridTrackSizingDirection, GridSizingData&);
