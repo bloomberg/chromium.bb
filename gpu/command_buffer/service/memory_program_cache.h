@@ -64,11 +64,13 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
                       const UniformMap& uniform_map_0,
                       const VaryingMap& varying_map_0,
                       const OutputVariableList& output_variable_list_0,
+                      const InterfaceBlockMap& interface_block_map_0,
                       const char* shader_1_hash,
                       const AttributeMap& attrib_map_1,
                       const UniformMap& uniform_map_1,
                       const VaryingMap& varying_map_1,
                       const OutputVariableList& output_variable_list_1,
+                      const InterfaceBlockMap& interface_block_map_1,
                       MemoryProgramCache* program_cache);
 
     GLsizei length() const {
@@ -103,6 +105,10 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
       return output_variable_list_0_;
     }
 
+    const InterfaceBlockMap& interface_block_map_0() const {
+      return interface_block_map_0_;
+    }
+
     const std::string& shader_1_hash() const {
       return shader_1_hash_;
     }
@@ -123,6 +129,10 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
       return output_variable_list_1_;
     }
 
+    const InterfaceBlockMap& interface_block_map_1() const {
+      return interface_block_map_1_;
+    }
+
    private:
     friend class base::RefCounted<ProgramCacheValue>;
 
@@ -137,11 +147,13 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
     const UniformMap uniform_map_0_;
     const VaryingMap varying_map_0_;
     const OutputVariableList output_variable_list_0_;
+    const InterfaceBlockMap interface_block_map_0_;
     const std::string shader_1_hash_;
     const AttributeMap attrib_map_1_;
     const UniformMap uniform_map_1_;
     const VaryingMap varying_map_1_;
     const OutputVariableList output_variable_list_1_;
+    const InterfaceBlockMap interface_block_map_1_;
     MemoryProgramCache* const program_cache_;
 
     DISALLOW_COPY_AND_ASSIGN(ProgramCacheValue);

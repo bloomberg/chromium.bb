@@ -64,6 +64,28 @@ void FillShaderOutputVariableProto(ShaderOutputVariableProto* proto,
   proto->set_location(attrib.location);
 }
 
+void FillShaderInterfaceBlockFieldProto(
+    ShaderInterfaceBlockFieldProto* proto,
+    const sh::InterfaceBlockField& interfaceBlockField) {
+  FillShaderVariableProto(proto->mutable_basic(), interfaceBlockField);
+  proto->set_is_row_major_layout(interfaceBlockField.isRowMajorLayout);
+}
+
+void FillShaderInterfaceBlockProto(ShaderInterfaceBlockProto* proto,
+    const sh::InterfaceBlock& interfaceBlock) {
+  proto->set_name(interfaceBlock.name);
+  proto->set_mapped_name(interfaceBlock.mappedName);
+  proto->set_instance_name(interfaceBlock.instanceName);
+  proto->set_array_size(interfaceBlock.arraySize);
+  proto->set_layout(interfaceBlock.layout);
+  proto->set_is_row_major_layout(interfaceBlock.isRowMajorLayout);
+  proto->set_static_use(interfaceBlock.staticUse);
+  for (size_t ii = 0; ii < interfaceBlock.fields.size(); ++ii) {
+    ShaderInterfaceBlockFieldProto* field = proto->add_fields();
+    FillShaderInterfaceBlockFieldProto(field, interfaceBlock.fields[ii]);
+  }
+}
+
 void FillShaderProto(ShaderProto* proto, const char* sha,
                      const Shader* shader) {
   proto->set_sha(sha, gpu::gles2::ProgramCache::kHashLength);
@@ -86,6 +108,12 @@ void FillShaderProto(ShaderProto* proto, const char* sha,
        iter != shader->output_variable_list().end(); ++iter) {
     ShaderOutputVariableProto* info = proto->add_output_variables();
     FillShaderOutputVariableProto(info, *iter);
+  }
+  for (InterfaceBlockMap::const_iterator iter =
+       shader->interface_block_map().begin();
+       iter != shader->interface_block_map().end(); ++iter) {
+    ShaderInterfaceBlockProto* info = proto->add_interface_blocks();
+    FillShaderInterfaceBlockProto(info, iter->second);
   }
 }
 
@@ -134,6 +162,31 @@ void RetrieveShaderOutputVariableInfo(const ShaderOutputVariableProto& proto,
   RetrieveShaderVariableInfo(proto.basic(), &output_variable);
   output_variable.location = proto.location();
   list->push_back(output_variable);
+}
+
+void RetrieveShaderInterfaceBlockFieldInfo(
+    const ShaderInterfaceBlockFieldProto& proto,
+    sh::InterfaceBlockField* interface_block_field) {
+  RetrieveShaderVariableInfo(proto.basic(), interface_block_field);
+  interface_block_field->isRowMajorLayout = proto.is_row_major_layout();
+}
+
+void RetrieveShaderInterfaceBlockInfo(const ShaderInterfaceBlockProto& proto,
+                                      InterfaceBlockMap* map) {
+  sh::InterfaceBlock interface_block;
+  interface_block.name = proto.name();
+  interface_block.mappedName = proto.mapped_name();
+  interface_block.instanceName = proto.instance_name();
+  interface_block.arraySize = proto.array_size();
+  interface_block.layout = static_cast<sh::BlockLayoutType>(proto.layout());
+  interface_block.isRowMajorLayout = proto.is_row_major_layout();
+  interface_block.staticUse = proto.static_use();
+  interface_block.fields.resize(proto.fields_size());
+  for (int ii = 0; ii < proto.fields_size(); ++ii) {
+    RetrieveShaderInterfaceBlockFieldInfo(proto.fields(ii),
+        &(interface_block.fields[ii]));
+  }
+  (*map)[proto.mapped_name()] = interface_block;
 }
 
 void RunShaderCallback(const ShaderCacheCallback& callback,
@@ -208,10 +261,12 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
   shader_a->set_uniform_map(value->uniform_map_0());
   shader_a->set_varying_map(value->varying_map_0());
   shader_a->set_output_variable_list(value->output_variable_list_0());
+  shader_a->set_interface_block_map(value->interface_block_map_0());
   shader_b->set_attrib_map(value->attrib_map_1());
   shader_b->set_uniform_map(value->uniform_map_1());
   shader_b->set_varying_map(value->varying_map_1());
   shader_b->set_output_variable_list(value->output_variable_list_1());
+  shader_b->set_interface_block_map(value->interface_block_map_1());
 
   if (!shader_callback.is_null() && !disable_gpu_shader_disk_cache_) {
     std::unique_ptr<GpuProgramProto> proto(
@@ -299,9 +354,11 @@ void MemoryProgramCache::SaveLinkedProgram(
       new ProgramCacheValue(
           length, format, binary.release(), sha_string, a_sha,
           shader_a->attrib_map(), shader_a->uniform_map(),
-          shader_a->varying_map(), shader_a->output_variable_list(), b_sha,
+          shader_a->varying_map(), shader_a->output_variable_list(),
+          shader_a->interface_block_map(), b_sha,
           shader_b->attrib_map(), shader_b->uniform_map(),
-          shader_b->varying_map(), shader_b->output_variable_list(), this));
+          shader_b->varying_map(), shader_b->output_variable_list(),
+          shader_b->interface_block_map(), this));
 
   UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
                        curr_size_bytes_ / 1024);
@@ -315,6 +372,7 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
     UniformMap vertex_uniforms;
     VaryingMap vertex_varyings;
     OutputVariableList vertex_output_variables;
+    InterfaceBlockMap vertex_interface_blocks;
     for (int i = 0; i < proto->vertex_shader().attribs_size(); i++) {
       RetrieveShaderAttributeInfo(proto->vertex_shader().attribs(i),
                                   &vertex_attribs);
@@ -331,11 +389,16 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
       RetrieveShaderOutputVariableInfo(
           proto->vertex_shader().output_variables(i), &vertex_output_variables);
     }
+    for (int i = 0; i < proto->vertex_shader().interface_blocks_size(); i++) {
+      RetrieveShaderInterfaceBlockInfo(
+          proto->vertex_shader().interface_blocks(i), &vertex_interface_blocks);
+    }
 
     AttributeMap fragment_attribs;
     UniformMap fragment_uniforms;
     VaryingMap fragment_varyings;
     OutputVariableList fragment_output_variables;
+    InterfaceBlockMap fragment_interface_blocks;
     for (int i = 0; i < proto->fragment_shader().attribs_size(); i++) {
       RetrieveShaderAttributeInfo(proto->fragment_shader().attribs(i),
                                   &fragment_attribs);
@@ -353,6 +416,11 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
           proto->fragment_shader().output_variables(i),
           &fragment_output_variables);
     }
+    for (int i = 0; i < proto->fragment_shader().interface_blocks_size(); i++) {
+      RetrieveShaderInterfaceBlockInfo(
+          proto->fragment_shader().interface_blocks(i),
+          &fragment_interface_blocks);
+    }
 
     std::unique_ptr<char[]> binary(new char[proto->program().length()]);
     memcpy(binary.get(), proto->program().c_str(), proto->program().length());
@@ -363,9 +431,9 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
             proto->program().length(), proto->format(), binary.release(),
             proto->sha(), proto->vertex_shader().sha().c_str(), vertex_attribs,
             vertex_uniforms, vertex_varyings, vertex_output_variables,
-            proto->fragment_shader().sha().c_str(), fragment_attribs,
-            fragment_uniforms, fragment_varyings, fragment_output_variables,
-            this));
+            vertex_interface_blocks, proto->fragment_shader().sha().c_str(),
+            fragment_attribs, fragment_uniforms, fragment_varyings,
+            fragment_output_variables, fragment_interface_blocks, this));
 
     UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
                          curr_size_bytes_ / 1024);
@@ -384,11 +452,13 @@ MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(
     const UniformMap& uniform_map_0,
     const VaryingMap& varying_map_0,
     const OutputVariableList& output_variable_list_0,
+    const InterfaceBlockMap& interface_block_map_0,
     const char* shader_1_hash,
     const AttributeMap& attrib_map_1,
     const UniformMap& uniform_map_1,
     const VaryingMap& varying_map_1,
     const OutputVariableList& output_variable_list_1,
+    const InterfaceBlockMap& interface_block_map_1,
     MemoryProgramCache* program_cache)
     : length_(length),
       format_(format),
@@ -399,11 +469,13 @@ MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(
       uniform_map_0_(uniform_map_0),
       varying_map_0_(varying_map_0),
       output_variable_list_0_(output_variable_list_0),
+      interface_block_map_0_(interface_block_map_0),
       shader_1_hash_(shader_1_hash, kHashLength),
       attrib_map_1_(attrib_map_1),
       uniform_map_1_(uniform_map_1),
       varying_map_1_(varying_map_1),
       output_variable_list_1_(output_variable_list_1),
+      interface_block_map_1_(interface_block_map_1),
       program_cache_(program_cache) {
   program_cache_->curr_size_bytes_ += length_;
   program_cache_->LinkedProgramCacheSuccess(program_hash);
