@@ -109,8 +109,10 @@ TEST(ReadWriteLockTest, ReaderTwoThreads) {
 class ReadAndWriteReadWriteLockTestThread : public PlatformThread::Delegate {
  public:
   ReadAndWriteReadWriteLockTestThread(ReadWriteLock* lock, int* value)
-      : lock_(lock), value_(value),
-        event_(true /* manual_reset */, false /* initially_signaled */)  {}
+      : lock_(lock),
+        value_(value),
+        event_(WaitableEvent::ResetPolicy::MANUAL,
+               WaitableEvent::InitialState::NOT_SIGNALED) {}
 
   void ThreadMain() override {
     AutoWriteLock locker(*lock_);
