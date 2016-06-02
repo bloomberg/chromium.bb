@@ -21,4 +21,9 @@ document.addEventListener('mouseup', function(e) {
   middleButtonMouseDownTarget = null;
 }, true);
 
+window.addEventListener('click', function(e) {
+  if (e.button == 1 && !e.isTrusted)
+    e.preventDefault();
+});
+
 })();

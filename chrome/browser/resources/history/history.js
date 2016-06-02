@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="../synthetic_middleclick.js">
 <include src="../uber/uber_utils.js">
 <include src="history_focus_manager.js">
 
