@@ -110,6 +110,11 @@ void WebRuntimeFeatures::enableDisplayList2dCanvas(bool enable)
     RuntimeEnabledFeatures::setDisplayList2dCanvasEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableDoNotUnlockSharedBuffer(bool enable)
+{
+    RuntimeEnabledFeatures::setDoNotUnlockSharedBufferEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableDocumentWriteEvaluator(bool enable)
 {
     RuntimeEnabledFeatures::setDocumentWriteEvaluatorEnabled(enable);
@@ -268,6 +273,11 @@ void WebRuntimeFeatures::enablePushMessaging(bool enable)
 void WebRuntimeFeatures::enableUnsafeES3APIs(bool enable)
 {
     RuntimeEnabledFeatures::setUnsafeES3APIsEnabled(enable);
+}
+
+void WebRuntimeFeatures::enableWeakMemoryCache(bool enable)
+{
+    RuntimeEnabledFeatures::setWeakMemoryCacheEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableWebVR(bool enable)

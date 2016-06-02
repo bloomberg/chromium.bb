@@ -86,19 +86,15 @@ public:
     Member<MemoryCacheEntry> m_nextInAllResourcesList;
 
 private:
-    explicit MemoryCacheEntry(Resource* resource)
-        : m_inLiveDecodedResourcesList(false)
-        , m_accessCount(0)
-        , m_lastDecodedAccessTime(0.0)
-        , m_previousInLiveResourcesList(nullptr)
-        , m_nextInLiveResourcesList(nullptr)
-        , m_previousInAllResourcesList(nullptr)
-        , m_nextInAllResourcesList(nullptr)
-        , m_resource(resource)
-    {
-    }
+    explicit MemoryCacheEntry(Resource*);
 
+    // Only one of |m_resource| or |m_resourceWeak| is used, based on
+    // RuntimeEnabledFeatures::weakMemoryCacheEnabled().
+    // TODO(hiroshige): this switching mechanism is added for a field trial
+    // for Weak MemoryCache (https://crbug.com/603462) and should be reverted
+    // at least before going stable.
     Member<Resource> m_resource;
+    WeakMember<Resource> m_resourceWeak;
 };
 
 WILL_NOT_BE_EAGERLY_TRACED_CLASS(MemoryCacheEntry);

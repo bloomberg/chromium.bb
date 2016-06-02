@@ -237,3 +237,5 @@ WebFontsInterventionV2With2G
 WebFontsInterventionV2WithSlow2G
 WebFontsInterventionTrigger
 Worklet status=test
+WeakMemoryCache
+DoNotUnlockSharedBuffer

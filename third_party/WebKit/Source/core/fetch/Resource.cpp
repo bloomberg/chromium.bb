@@ -34,6 +34,7 @@
 #include "core/inspector/InstanceCounters.h"
 #include "platform/Histogram.h"
 #include "platform/Logging.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
 #include "platform/network/HTTPParsers.h"
@@ -573,6 +574,9 @@ bool Resource::unlock()
         return true;
 
     if (!memoryCache()->contains(this) || hasClientsOrObservers() || !m_revalidatingRequest.isNull() || !m_loadFinishTime || !isSafeToUnlock())
+        return false;
+
+    if (RuntimeEnabledFeatures::doNotUnlockSharedBufferEnabled())
         return false;
 
     m_data->unlock();

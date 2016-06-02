@@ -23,6 +23,7 @@
 #include "core/fetch/MemoryCache.h"
 
 #include "platform/Logging.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityOriginHash.h"
@@ -60,9 +61,25 @@ MemoryCache* replaceMemoryCacheForTesting(MemoryCache* cache)
     return oldCache;
 }
 
+MemoryCacheEntry::MemoryCacheEntry(Resource* resource)
+    : m_inLiveDecodedResourcesList(false)
+    , m_accessCount(0)
+    , m_lastDecodedAccessTime(0.0)
+    , m_previousInLiveResourcesList(nullptr)
+    , m_nextInLiveResourcesList(nullptr)
+    , m_previousInAllResourcesList(nullptr)
+    , m_nextInAllResourcesList(nullptr)
+{
+    if (RuntimeEnabledFeatures::weakMemoryCacheEnabled())
+        m_resourceWeak = resource;
+    else
+        m_resource = resource;
+}
+
 DEFINE_TRACE(MemoryCacheEntry)
 {
     visitor->trace(m_resource);
+    visitor->trace(m_resourceWeak);
     visitor->trace(m_previousInLiveResourcesList);
     visitor->trace(m_nextInLiveResourcesList);
     visitor->trace(m_previousInAllResourcesList);
@@ -72,10 +89,13 @@ DEFINE_TRACE(MemoryCacheEntry)
 void MemoryCacheEntry::dispose()
 {
     m_resource.clear();
+    m_resourceWeak.clear();
 }
 
 Resource* MemoryCacheEntry::resource()
 {
+    if (RuntimeEnabledFeatures::weakMemoryCacheEnabled())
+        return m_resourceWeak.get();
     return m_resource.get();
 }
 
@@ -163,7 +183,7 @@ void MemoryCache::add(Resource* resource)
     ASSERT(resource->url().isValid());
     ResourceMap* resources = ensureResourceMap(resource->cacheIdentifier());
     KURL url = removeFragmentIdentifierIfNeeded(resource->url());
-    RELEASE_ASSERT(!resources->contains(url));
+    RELEASE_ASSERT(!contains(resource));
     resources->set(url, MemoryCacheEntry::create(resource));
     update(resource, 0, resource->size(), true);
 
@@ -213,8 +233,11 @@ HeapVector<Member<Resource>> MemoryCache::resourcesForURL(const KURL& resourceUR
     KURL url = removeFragmentIdentifierIfNeeded(resourceURL);
     HeapVector<Member<Resource>> results;
     for (const auto& resourceMapIter : m_resourceMaps) {
-        if (MemoryCacheEntry* entry = resourceMapIter.value->get(url))
-            results.append(entry->resource());
+        if (MemoryCacheEntry* entry = resourceMapIter.value->get(url)) {
+            Resource* resource = entry->resource();
+            if (resource)
+                results.append(resource);
+        }
     }
     return results;
 }
@@ -259,6 +282,10 @@ void MemoryCache::pruneLiveResources(PruneStrategy strategy)
     while (current) {
         Resource* resource = current->resource();
         MemoryCacheEntry* previous = current->m_previousInLiveResourcesList;
+        if (!resource) {
+            current = previous;
+            continue;
+        }
         ASSERT(resource->hasClientsOrObservers());
 
         if (resource->isLoaded() && resource->decodedSize()) {
@@ -365,6 +392,7 @@ void MemoryCache::evict(MemoryCacheEntry* entry)
     ASSERT(WTF::isMainThread());
 
     Resource* resource = entry->resource();
+    DCHECK(resource);
     WTF_LOG(ResourceLoading, "Evicting resource %p for '%s' from cache", resource, resource->url().getString().latin1().data());
     // The resource may have already been removed by someone other than our caller,
     // who needed a fresh copy for a reload. See <http://bugs.webkit.org/show_bug.cgi?id=12479#c6>.
@@ -385,7 +413,7 @@ void MemoryCache::evict(MemoryCacheEntry* entry)
 
 MemoryCacheEntry* MemoryCache::getEntryForResource(const Resource* resource) const
 {
-    if (resource->url().isNull() || resource->url().isEmpty())
+    if (!resource || resource->url().isNull() || resource->url().isEmpty())
         return nullptr;
     ResourceMap* resources = m_resourceMaps.get(resource->cacheIdentifier());
     if (!resources)
@@ -598,6 +626,8 @@ MemoryCache::Statistics MemoryCache::getStatistics()
     for (const auto& resourceMapIter : m_resourceMaps) {
         for (const auto& resourceIter : *resourceMapIter.value) {
             Resource* resource = resourceIter.value->resource();
+            if (!resource)
+                continue;
             switch (resource->getType()) {
             case Resource::Image:
                 stats.images.addResource(resource);
@@ -634,7 +664,10 @@ void MemoryCache::evictResources()
             ResourceMap::iterator resourceIter = resources->begin();
             if (resourceIter == resources->end())
                 break;
-            evict(resourceIter->value.get());
+            if (resourceIter->value->resource())
+                evict(resourceIter->value.get());
+            else
+                resources->remove(resourceIter);
         }
         m_resourceMaps.remove(resourceMapIter);
     }
@@ -728,7 +761,8 @@ bool MemoryCache::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail, WebProc
     for (const auto& resourceMapIter : m_resourceMaps) {
         for (const auto& resourceIter : *resourceMapIter.value) {
             Resource* resource = resourceIter.value->resource();
-            resource->onMemoryDump(levelOfDetail, memoryDump);
+            if (resource)
+                resource->onMemoryDump(levelOfDetail, memoryDump);
         }
     }
     return true;
@@ -777,7 +811,7 @@ void MemoryCache::dumpLRULists(bool includeLive) const
         MemoryCacheEntry* current = m_allResources[i].m_tail;
         while (current) {
             Resource* currentResource = current->resource();
-            if (includeLive || !currentResource->hasClientsOrObservers())
+            if (currentResource && (includeLive || !currentResource->hasClientsOrObservers()))
                 printf("(%.1fK, %.1fK, %uA, %dR, %d); ", currentResource->decodedSize() / 1024.0f, (currentResource->encodedSize() + currentResource->overheadSize()) / 1024.0f, current->m_accessCount, currentResource->hasClientsOrObservers(), currentResource->isPurgeable());
 
             current = current->m_previousInAllResourcesList;

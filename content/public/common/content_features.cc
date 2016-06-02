@@ -24,6 +24,10 @@ const base::Feature kCredentialManagementAPI{"CredentialManagementAPI",
 const base::Feature kDefaultEnableGpuRasterization{
     "DefaultEnableGpuRasterization", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Do not call SharedBuffer::unlock() (https://crbug.com/603791).
+const base::Feature kDoNotUnlockSharedBuffer{"DoNotUnlockSharedBuffer",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Downloads resumption will be controllable via a flag until it's enabled
 // permanently. See https://crbug.com/7648
 const base::Feature kDownloadResumption{"DownloadResumption",
@@ -106,6 +110,10 @@ const base::Feature kStaleWhileRevalidate{"StaleWhileRevalidate2",
 // (https://www.ietf.org/id/draft-ietf-tokbind-protocol-04.txt).
 const base::Feature kTokenBinding{"token-binding",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Weak MemoryCache (https://crbug.com/603462).
+const base::Feature kWeakMemoryCache{"WeakMemoryCache",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Makes WebRTC use ECDSA certs by default (i.e., when no cert type was
 // specified in JS).

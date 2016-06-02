@@ -1906,6 +1906,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_FONT_CACHE_SCALING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kFontCacheScaling)},
 
+    {"enable-weak-memorycache",
+     IDS_FLAGS_ENABLE_WEAK_MEMORYCACHE_NAME,
+     IDS_FLAGS_ENABLE_WEAK_MEMORYCACHE_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWeakMemoryCache)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
