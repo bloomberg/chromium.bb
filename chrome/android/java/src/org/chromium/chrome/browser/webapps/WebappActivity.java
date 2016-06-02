@@ -37,11 +37,9 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tab.TopControlsVisibilityDelegate;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.ControlContainer;
-import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content.browser.ScreenOrientationProvider;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.NetworkChangeNotifier;
@@ -578,36 +576,7 @@ public class WebappActivity extends FullScreenActivity {
 
     @Override
     protected TabDelegateFactory createTabDelegateFactory() {
-        return new FullScreenDelegateFactory() {
-            @Override
-            public TopControlsVisibilityDelegate createTopControlsVisibilityDelegate(Tab tab) {
-                return new TopControlsVisibilityDelegate(tab) {
-                    @Override
-                    public boolean isShowingTopControlsEnabled() {
-                        if (!super.isShowingTopControlsEnabled()) return false;
-                        return shouldShowTopControls(mTab.getUrl(), mTab.getSecurityLevel());
-                    }
-
-                    @Override
-                    public boolean isHidingTopControlsEnabled() {
-                        return !isShowingTopControlsEnabled();
-                    }
-                };
-            }
-        };
-    }
-
-    public boolean shouldShowTopControls(String url, int securityLevel) {
-        // Do not show top controls when URL is not ready yet.
-        boolean visible = false;
-        if (TextUtils.isEmpty(url)) return false;
-
-        boolean isSameWebsite = UrlUtilities.sameDomainOrHost(
-                mWebappInfo.uri().toString(), url, true);
-        visible = !isSameWebsite
-                || securityLevel == ConnectionSecurityLevel.SECURITY_ERROR
-                || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING;
-        return visible;
+        return new WebappDelegateFactory(this);
     }
 
     // We're temporarily disable CS on webapp since there are some issues. (http://crbug.com/471950)

@@ -889,6 +889,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webapps/WebappAuthenticator.java",
   "java/src/org/chromium/chrome/browser/webapps/WebappControlContainer.java",
   "java/src/org/chromium/chrome/browser/webapps/WebappDataStorage.java",
+  "java/src/org/chromium/chrome/browser/webapps/WebappDelegateFactory.java",
   "java/src/org/chromium/chrome/browser/webapps/WebappDirectoryManager.java",
   "java/src/org/chromium/chrome/browser/webapps/WebappInfo.java",
   "java/src/org/chromium/chrome/browser/webapps/WebappLauncherActivity.java",
