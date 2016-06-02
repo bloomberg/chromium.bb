@@ -4,8 +4,10 @@
 
 #include <string>
 
+#include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
@@ -23,7 +25,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 
-using base::MessageLoop;
 using chromeos::DBusThreadManager;
 using chromeos::NetworkPortalDetector;
 using chromeos::NetworkPortalDetectorImpl;
@@ -59,7 +60,8 @@ class TestNotificationObserver : public MessageCenterObserver {
       const message_center::DisplaySource source) override {
     if (notification_id ==
         NetworkPortalNotificationController::kNotificationId) {
-      MessageLoop::current()->PostTask(FROM_HERE, run_loop_.QuitClosure());
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    run_loop_.QuitClosure());
     }
   }
 

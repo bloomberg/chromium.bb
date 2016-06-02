@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -64,7 +65,8 @@ void ConsumerEnrollmentHandler::OnGetTokenSuccess(
       const std::string& access_token,
       const base::Time& expiration_time) {
   DCHECK_EQ(token_request_.get(), request);
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, token_request_.release());
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                  token_request_.release());
 
   OnOwnerAccessTokenAvailable(access_token);
 }
@@ -73,7 +75,8 @@ void ConsumerEnrollmentHandler::OnGetTokenFailure(
       const OAuth2TokenService::Request* request,
       const GoogleServiceAuthError& error) {
   DCHECK_EQ(token_request_.get(), request);
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, token_request_.release());
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                  token_request_.release());
 
   LOG(ERROR) << "Failed to get the access token: " << error.ToString();
   EndEnrollment(ConsumerManagementStage::EnrollmentGetTokenFailed());

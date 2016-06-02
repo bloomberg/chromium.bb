@@ -8,7 +8,8 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_uma.h"
@@ -57,7 +58,7 @@ void TokenRevoker::Start(const std::string& token) {
 }
 
 void TokenRevoker::OnOAuth2RevokeTokenCompleted() {
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 }  // namespace

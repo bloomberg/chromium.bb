@@ -7,7 +7,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
@@ -249,7 +252,7 @@ void AutoEnrollmentCheckScreen::SignalCompletion() {
 
   // Calling Finish() can cause |this| destruction, so let other methods finish
   // their work before.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(
           &AutoEnrollmentCheckScreen::Finish, weak_ptr_factory_.GetWeakPtr(),

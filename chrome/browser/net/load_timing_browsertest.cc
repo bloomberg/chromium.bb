@@ -8,12 +8,14 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
@@ -139,10 +141,9 @@ class MockUrlRequestJobWithTiming : public net::URLRequestFileJob {
                          base::TimeDelta::FromMilliseconds(100);
     }
 
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&MockUrlRequestJobWithTiming::DelayedStart,
-                   weak_factory_.GetWeakPtr()),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, base::Bind(&MockUrlRequestJobWithTiming::DelayedStart,
+                              weak_factory_.GetWeakPtr()),
         time_to_wait);
   }
 
@@ -190,7 +191,7 @@ class MockUrlRequestJobWithTiming : public net::URLRequestFileJob {
 
     load_timing_info->send_start =
         load_timing_deltas_.send_start.ToTimeTicks(start_time_);
-    load_timing_info->send_end=
+    load_timing_info->send_end =
         load_timing_deltas_.send_end.ToTimeTicks(start_time_);
     load_timing_info->receive_headers_end =
         load_timing_deltas_.receive_headers_end.ToTimeTicks(start_time_);

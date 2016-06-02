@@ -456,7 +456,7 @@ void ExtensionDisabledGlobalError::RemoveGlobalError() {
   registry_observer_.RemoveAll();
   // Delete this object after any running tasks, so that the extension dialog
   // still has it as a delegate to finish the current tasks.
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 // Globals --------------------------------------------------------------------

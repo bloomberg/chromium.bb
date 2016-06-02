@@ -17,12 +17,14 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
@@ -661,9 +663,8 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
                    weak_factory_.GetWeakPtr(),
                    reason,
                    true));
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        update_state_closure_.callback(),
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, update_state_closure_.callback(),
         base::TimeDelta::FromSeconds(
             zero_offline_timeout_for_test_ ? 0 : kOfflineTimeoutSec));
     return;
@@ -678,9 +679,8 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
                      weak_factory_.GetWeakPtr(),
                      reason,
                      true));
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          connecting_closure_.callback(),
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, connecting_closure_.callback(),
           base::TimeDelta::FromSeconds(kConnectingTimeoutSec));
     }
     return;

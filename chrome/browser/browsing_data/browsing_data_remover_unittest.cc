@@ -17,12 +17,15 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -163,7 +166,7 @@ bool MatchPrimaryPattern(const ContentSettingsPattern& expected_primary,
 
 #if defined(OS_CHROMEOS)
 void FakeDBusCall(const chromeos::BoolDBusMethodCallback& callback) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, chromeos::DBUS_METHOD_CALL_SUCCESS, true));
 }

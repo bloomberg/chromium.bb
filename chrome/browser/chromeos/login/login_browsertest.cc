@@ -5,7 +5,10 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
 #include "base/command_line.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -234,8 +237,8 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   EXPECT_TRUE(ui_test_utils::SendMouseMoveSync(gfx::Point()));
   EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE,
-                                           LoginDisplayHost::default_host());
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, LoginDisplayHost::default_host());
 
   TestSystemTrayIsVisible();
 }

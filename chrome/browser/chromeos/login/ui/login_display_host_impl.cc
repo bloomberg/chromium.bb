@@ -14,11 +14,14 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/browser_process.h"
@@ -1011,12 +1014,13 @@ void LoginDisplayHostImpl::ShutdownDisplayHost(bool post_quit_task) {
 
   shutting_down_ = true;
   registrar_.RemoveAll();
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
   if (post_quit_task)
     base::MessageLoop::current()->QuitWhenIdle();
 
   if (!completion_callback_.is_null())
-    base::MessageLoop::current()->PostTask(FROM_HERE, completion_callback_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  completion_callback_);
 
   if (ash::Shell::HasInstance() &&
       finalize_animation_type_ == ANIMATION_ADD_USER) {
@@ -1236,9 +1240,8 @@ void LoginDisplayHostImpl::TryToPlayStartupSound() {
     return;
   }
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&EnableSystemSoundsForAccessibility),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&EnableSystemSoundsForAccessibility),
       media::SoundsManager::Get()->GetDuration(SOUND_STARTUP));
 }
 

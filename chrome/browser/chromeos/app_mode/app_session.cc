@@ -9,8 +9,10 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_update_service.h"
@@ -165,7 +167,7 @@ class AppSession::BrowserWindowHandler : public chrome::BrowserListObserver {
 
   // chrome::BrowserListObserver overrides:
   void OnBrowserAdded(Browser* browser) override {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&BrowserWindowHandler::HandleBrowser,
                    base::Unretained(this),  // LazyInstance, always valid

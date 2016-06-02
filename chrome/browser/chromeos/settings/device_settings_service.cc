@@ -7,9 +7,11 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
@@ -135,7 +137,7 @@ void DeviceSettingsService::GetOwnershipStatusAsync(
     const OwnershipStatusCallback& callback) {
   if (public_key_.get()) {
     // If there is a key, report status immediately.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, GetOwnershipStatus()));
   } else {
     // If the key hasn't been loaded yet, enqueue the callback to be fired when

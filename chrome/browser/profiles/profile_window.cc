@@ -11,9 +11,12 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
@@ -104,10 +107,10 @@ class BrowserAddedForProfileObserver : public chrome::BrowserListObserver {
       // By the time the browser is added a tab (or multiple) are about to be
       // added. Post the callback to the message loop so it gets executed after
       // the tabs are created.
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(callback_, profile_, Profile::CREATE_STATUS_INITIALIZED));
-      base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
     }
   }
 

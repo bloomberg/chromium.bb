@@ -4,12 +4,14 @@
 
 #include "chrome/browser/chromeos/app_mode/kiosk_profile_loader.h"
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/auth/chrome_login_performer.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
@@ -84,7 +86,7 @@ class KioskProfileLoader::CryptohomedChecker
     }
 
     const int retry_delay_in_milliseconds = 500 * (1 << retry_count_);
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, base::Bind(&CryptohomedChecker::StartCheck, AsWeakPtr()),
         base::TimeDelta::FromMilliseconds(retry_delay_in_milliseconds));
   }

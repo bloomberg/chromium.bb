@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 
 namespace local_discovery {
@@ -95,11 +97,10 @@ void ServiceDiscoveryDeviceLister::OnResolveComplete(
     // On Mac, the Bonjour service does not seem to ever evict a service if a
     // device is unplugged, so we need to continuously try to resolve the
     // service to detect non-graceful shutdowns.
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ServiceDiscoveryDeviceLister::OnServiceUpdated,
-                   weak_factory_.GetWeakPtr(),
-                   ServiceWatcher::UPDATE_CHANGED,
+                   weak_factory_.GetWeakPtr(), ServiceWatcher::UPDATE_CHANGED,
                    service_description.service_name),
         base::TimeDelta::FromSeconds(kMacServiceResolvingIntervalSecs));
 #endif

@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "content/public/browser/browser_thread.h"
@@ -84,7 +86,7 @@ void MergeSessionXHRRequestWaiter::NotifyBlockingDone() {
         BrowserThread::IO, FROM_HERE, callback_);
   }
   weak_ptr_factory_.InvalidateWeakPtrs();
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 }  // namespace chromeos

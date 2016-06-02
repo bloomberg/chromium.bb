@@ -4,9 +4,11 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -32,7 +34,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 
-using base::MessageLoop;
 using message_center::MessageCenter;
 using message_center::MessageCenterObserver;
 
@@ -82,14 +83,18 @@ class TestObserver : public MessageCenterObserver {
   void OnNotificationDisplayed(
       const std::string& notification_id,
       const message_center::DisplaySource source) override {
-    if (notification_id == kNotificationId)
-      MessageLoop::current()->PostTask(FROM_HERE, run_loop_->QuitClosure());
+    if (notification_id == kNotificationId) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    run_loop_->QuitClosure());
+    }
   }
 
   void OnNotificationRemoved(const std::string& notification_id,
                              bool by_user) override {
-    if (notification_id == kNotificationId && by_user)
-      MessageLoop::current()->PostTask(FROM_HERE, run_loop_->QuitClosure());
+    if (notification_id == kNotificationId && by_user) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    run_loop_->QuitClosure());
+    }
   }
 
  private:

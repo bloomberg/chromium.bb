@@ -28,10 +28,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -530,8 +530,8 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
     BrowserList::RemoveObserver(this);
 
     // This shuts down the login UI.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(&chrome::AttemptExit));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&chrome::AttemptExit));
     base::RunLoop().RunUntilIdle();
   }
 

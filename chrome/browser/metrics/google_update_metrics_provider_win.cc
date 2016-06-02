@@ -4,8 +4,10 @@
 
 #include "chrome/browser/metrics/google_update_metrics_provider_win.h"
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -49,7 +51,7 @@ GoogleUpdateMetricsProviderWin::~GoogleUpdateMetricsProviderWin() {
 void GoogleUpdateMetricsProviderWin::GetGoogleUpdateData(
     const base::Closure& done_callback) {
   if (!IsOfficialBuild()) {
-    base::MessageLoop::current()->PostTask(FROM_HERE, done_callback);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, done_callback);
     return;
   }
 

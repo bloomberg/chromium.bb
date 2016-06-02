@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
@@ -414,10 +416,9 @@ void EnrollmentHandlerChromeOS::HandleLockDeviceResult(
         // InstallAttributes not ready yet, retry later.
         LOG(WARNING) << "Install Attributes not ready yet will retry in "
                      << kLockRetryIntervalMs << "ms.";
-        base::MessageLoop::current()->PostDelayedTask(
-            FROM_HERE,
-            base::Bind(&EnrollmentHandlerChromeOS::StartLockDevice,
-                       weak_ptr_factory_.GetWeakPtr()),
+        base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+            FROM_HERE, base::Bind(&EnrollmentHandlerChromeOS::StartLockDevice,
+                                  weak_ptr_factory_.GetWeakPtr()),
             base::TimeDelta::FromMilliseconds(kLockRetryIntervalMs));
         lockbox_init_duration_ += kLockRetryIntervalMs;
       } else {

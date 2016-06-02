@@ -9,8 +9,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -133,12 +135,9 @@ void DeviceOAuth2TokenService::FailRequest(
     RequestImpl* request,
     GoogleServiceAuthError::State error) {
   GoogleServiceAuthError auth_error(error);
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
-      &RequestImpl::InformConsumer,
-      request->AsWeakPtr(),
-      auth_error,
-      std::string(),
-      base::Time()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&RequestImpl::InformConsumer, request->AsWeakPtr(),
+                            auth_error, std::string(), base::Time()));
 }
 
 }  // namespace chromeos

@@ -6,8 +6,11 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_error_view.h"
@@ -90,7 +93,7 @@ class CaptivePortalWindowTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     captive_portal_window_proxy_.reset();
-    base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, host_);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, host_);
     base::MessageLoopForUI::current()->RunUntilIdle();
   }
 

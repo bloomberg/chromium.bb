@@ -15,9 +15,10 @@
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -299,8 +300,8 @@ void PowerPolicyLoginScreenBrowserTest::SetUpOnMainThread() {
 }
 
 void PowerPolicyLoginScreenBrowserTest::TearDownOnMainThread() {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(&chrome::AttemptExit));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&chrome::AttemptExit));
   base::RunLoop().RunUntilIdle();
   PowerPolicyBrowserTestBase::TearDownOnMainThread();
 }

@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -98,7 +100,7 @@ ExclusiveAccessBubbleViews::~ExclusiveAccessBubbleViews() {
   // the popup to synchronously hide, and then asynchronously close and delete
   // itself.
   popup_->Close();
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, popup_);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, popup_);
 }
 
 void ExclusiveAccessBubbleViews::UpdateContent(

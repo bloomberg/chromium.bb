@@ -7,6 +7,9 @@
 #include <string.h>
 #include <utility>
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
@@ -36,14 +39,15 @@ class ImageWriterFakeImageBurnerClient
   void BurnImage(const std::string& from_path,
                  const std::string& to_path,
                  const ErrorCallback& error_callback) override {
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(burn_progress_update_handler_, to_path, 0, 100));
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(burn_progress_update_handler_, to_path, 50, 100));
-    base::MessageLoop::current()->PostTask(FROM_HERE,
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(burn_progress_update_handler_, to_path, 0, 100));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(burn_progress_update_handler_, to_path, 50, 100));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
         base::Bind(burn_progress_update_handler_, to_path, 100, 100));
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(burn_finished_handler_, to_path, true, ""));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(burn_finished_handler_, to_path, true, ""));
   }
 
  private:
@@ -66,7 +70,8 @@ FakeDiskMountManager::~FakeDiskMountManager() {}
 void FakeDiskMountManager::UnmountDeviceRecursively(
     const std::string& device_path,
     const UnmountDeviceRecursivelyCallbackType& callback) {
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(callback, true));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, true));
 }
 #endif
 

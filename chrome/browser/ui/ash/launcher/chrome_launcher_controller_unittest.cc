@@ -24,10 +24,13 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -864,7 +867,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
 
     // A Task is leaked if we don't destroy everything, then run the message
     // loop.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     base::MessageLoop::current()->Run();
   }

@@ -9,8 +9,10 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -2341,7 +2343,7 @@ class BookmarkBarViewTest26 : public BookmarkBarViewEventTestBase {
         GetWidget()->GetNativeView()->GetHost()->GetAcceleratedWidget(),
         WM_CANCELMODE, 0, 0);
 
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&BookmarkBarViewTest26::Step3, this));
   }
 

@@ -11,10 +11,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
@@ -452,7 +455,7 @@ class DetachToBrowserTabDragControllerTest
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_controls::SendMouseMoveNotifyWhenDone(x, y, task);
 #if defined(OS_CHROMEOS)
-    base::MessageLoop::current()->PostTask(FROM_HERE, task);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
     event_generator_->MoveTouch(gfx::Point(x, y));
 #else
     NOTREACHED();
@@ -467,7 +470,8 @@ class DetachToBrowserTabDragControllerTest
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_controls::SendMouseMoveNotifyWhenDone(x, y, task);
 #if defined(OS_CHROMEOS)
-    base::MessageLoop::current()->PostDelayedTask(FROM_HERE, task, delay);
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(FROM_HERE, task,
+                                                         delay);
     event_generator_->MoveTouch(gfx::Point(x, y));
 #else
     NOTREACHED();
@@ -481,7 +485,7 @@ class DetachToBrowserTabDragControllerTest
     if (input_source() == INPUT_SOURCE_MOUSE)
       return ui_controls::SendMouseMoveNotifyWhenDone(x, y, task);
 #if defined(OS_CHROMEOS)
-    base::MessageLoop::current()->PostTask(FROM_HERE, task);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, task);
     event_generator_->MoveTouchId(gfx::Point(x, y), 1);
 #else
     NOTREACHED();

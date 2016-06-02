@@ -5,7 +5,10 @@
 #include "chrome/browser/download/notification/download_notification_manager.h"
 
 #include "base/command_line.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/notification/download_item_notification.h"
@@ -41,7 +44,8 @@ void DownloadNotificationManager::OnAllDownloadsRemoving(Profile* profile) {
       manager_for_profile_[profile];
   manager_for_profile_.erase(profile);
 
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, manager_for_profile);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                  manager_for_profile);
 }
 
 void DownloadNotificationManager::OnNewDownloadReady(
@@ -107,7 +111,7 @@ void DownloadNotificationManagerForProfile::OnDownloadRemoved(
 
   // This removing might be initiated from DownloadNotificationItem, so delaying
   // deleting for item to do remaining cleanups.
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, item);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, item);
 
   if (items_.size() == 0 && parent_manager_)
     parent_manager_->OnAllDownloadsRemoving(profile_);
@@ -123,7 +127,7 @@ void DownloadNotificationManagerForProfile::OnDownloadDestroyed(
 
   // This removing might be initiated from DownloadNotificationItem, so delaying
   // deleting for item to do remaining cleanups.
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, item);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, item);
 
   if (items_.size() == 0 && parent_manager_)
     parent_manager_->OnAllDownloadsRemoving(profile_);

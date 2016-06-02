@@ -5,7 +5,10 @@
 #include "chrome/browser/chromeos/login/test/wizard_in_process_browser_test.h"
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -43,7 +46,7 @@ void WizardInProcessBrowserTest::SetUpOnMainThread() {
 
 void WizardInProcessBrowserTest::TearDownOnMainThread() {
   // LoginDisplayHost owns controllers and all windows.
-  base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, host_);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, host_);
 
   base::MessageLoopForUI::current()->RunUntilIdle();
 }

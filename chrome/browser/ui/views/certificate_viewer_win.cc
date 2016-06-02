@@ -12,9 +12,10 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -34,7 +35,7 @@ class CertificateViewerDialog : public ui::BaseShellDialogImpl {
             net::X509Certificate* cert,
             const base::Closure& callback) {
     if (IsRunningDialogForOwner(parent)) {
-      base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
       return;
     }
 

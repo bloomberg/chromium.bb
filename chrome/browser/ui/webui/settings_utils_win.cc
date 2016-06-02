@@ -12,9 +12,10 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -36,7 +37,7 @@ class ManageCertificatesDialog : public ui::BaseShellDialogImpl {
   // must ensure the ManageCertificatesDialog remains valid until then.
   void Show(HWND parent, const base::Closure& callback) {
     if (IsRunningDialogForOwner(parent)) {
-      base::MessageLoop::current()->PostTask(FROM_HERE, callback);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
       return;
     }
 

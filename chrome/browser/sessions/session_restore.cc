@@ -17,13 +17,16 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/alias.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -304,7 +307,7 @@ class SessionRestoreImpl : public content::NotificationObserver {
       // NOTE: we must use DeleteLater here as most likely we're in a callback
       // from the history service which doesn't deal well with deleting the
       // object it is notifying.
-      base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 
       // The delete may take a while and at this point we no longer care about
       // if the browser is deleted. Don't listen to anything. This avoid a

@@ -8,9 +8,11 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/error_screens_histogram_helper.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
@@ -272,7 +274,7 @@ void UpdateScreen::OnPortalDetectionCompleted(
        state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE) &&
       is_first_detection_notification_) {
     is_first_detection_notification_ = false;
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(
             base::IgnoreResult(&NetworkPortalDetector::StartDetectionIfIdle),

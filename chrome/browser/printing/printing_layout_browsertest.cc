@@ -6,14 +6,17 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/simple_thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -80,7 +83,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
     switch (content::Details<printing::JobEventDetails>(details)->type()) {
       case printing::JobEventDetails::JOB_DONE: {
         // Succeeded.
-        base::MessageLoop::current()->PostTask(
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
         break;
       }
@@ -88,7 +91,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
       case printing::JobEventDetails::FAILED: {
         // Failed.
         ASSERT_TRUE(false);
-        base::MessageLoop::current()->PostTask(
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
         break;
       }

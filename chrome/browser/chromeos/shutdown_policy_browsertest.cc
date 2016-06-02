@@ -15,9 +15,10 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker_tester.h"
@@ -306,8 +307,8 @@ class ShutdownPolicyLoginTest : public ShutdownPolicyBaseTest {
   void TearDownOnMainThread() override {
     // If the login display is still showing, exit gracefully.
     if (LoginDisplayHost::default_host()) {
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-                                             base::Bind(&chrome::AttemptExit));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&chrome::AttemptExit));
       content::RunMessageLoop();
     }
   }

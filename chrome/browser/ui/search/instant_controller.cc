@@ -7,7 +7,10 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -150,7 +153,8 @@ void InstantController::InstantSupportDetermined(
   DCHECK(IsContentsFrom(instant_tab(), contents));
 
   if (!supports_instant)
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, instant_tab_.release());
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,
+                                                    instant_tab_.release());
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,

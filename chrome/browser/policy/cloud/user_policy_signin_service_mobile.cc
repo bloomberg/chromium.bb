@@ -7,8 +7,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -173,7 +175,7 @@ void UserPolicySigninService::OnInitializationCompleted(
   if (now > last_check_time && now < next_check_time)
     try_registration_delay = next_check_time - now;
 
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&UserPolicySigninService::RegisterCloudPolicyService,
                  weak_factory_.GetWeakPtr()),

@@ -6,8 +6,10 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/subtle_notification_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -47,7 +49,7 @@ NewBackShortcutBubble::~NewBackShortcutBubble() {
   // We might need to delete the widget asynchronously. See rationale in
   // ~ExclusiveAccessBubbleViews.
   popup_->Close();
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, popup_);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, popup_);
 }
 
 void NewBackShortcutBubble::UpdateContent(bool forward) {

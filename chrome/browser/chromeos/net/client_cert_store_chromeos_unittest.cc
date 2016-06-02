@@ -9,10 +9,13 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/base/test_data_directory.h"
@@ -56,7 +59,7 @@ class TestCertFilter : public ClientCertStoreChromeOS::CertFilter {
 
   void FinishInit() {
     init_finished_ = true;
-    base::MessageLoop::current()->PostTask(FROM_HERE, pending_callback_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, pending_callback_);
     pending_callback_.Reset();
   }
 

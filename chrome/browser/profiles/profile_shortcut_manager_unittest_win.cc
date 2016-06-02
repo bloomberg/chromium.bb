@@ -10,9 +10,11 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_shortcut_win.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/win/shortcut.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -92,7 +94,7 @@ class ProfileShortcutManagerTest : public testing::Test {
   }
 
   void RunPendingTasks() {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     base::MessageLoop::current()->Run();
   }

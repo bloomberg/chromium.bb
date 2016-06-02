@@ -9,13 +9,15 @@
 #include <sstream>
 
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -171,10 +173,9 @@ void AppListServiceWin::ScheduleWarmup() {
       break;
   }
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&AppListServiceWin::LoadProfileForWarmup,
-                 base::Unretained(this)),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&AppListServiceWin::LoadProfileForWarmup,
+                            base::Unretained(this)),
       base::TimeDelta::FromSeconds(kInitWindowDelay));
 }
 

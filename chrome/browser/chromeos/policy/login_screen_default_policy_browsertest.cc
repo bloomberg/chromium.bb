@@ -10,8 +10,9 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
@@ -190,8 +191,8 @@ void LoginScreenDefaultPolicyLoginScreenBrowsertest::SetUpOnMainThread() {
 }
 
 void LoginScreenDefaultPolicyLoginScreenBrowsertest::TearDownOnMainThread() {
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(&chrome::AttemptExit));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&chrome::AttemptExit));
   base::RunLoop().RunUntilIdle();
   LoginScreenDefaultPolicyBrowsertestBase::TearDownOnMainThread();
 }

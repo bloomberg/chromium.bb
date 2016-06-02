@@ -12,10 +12,13 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -50,7 +53,7 @@ const char kSanitizedUsername[] =
 const char kDefaultHomepage[] = "http://chromium.org";
 
 ACTION_P2(SendSanitizedUsername, call_status, sanitized_username) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(arg1, call_status, sanitized_username));
 }
 

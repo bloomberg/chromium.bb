@@ -1035,7 +1035,7 @@ IN_PROC_BROWSER_TEST_F(WebViewDragDropInteractiveTest, DragDropWithinWebView) {
   for (;;) {
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&WebViewInteractiveTestBase::DragTestStep1,
                               base::Unretained(this)));
     run_loop.Run();

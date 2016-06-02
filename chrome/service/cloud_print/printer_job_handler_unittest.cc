@@ -613,10 +613,9 @@ void PrinterJobHandlerTest::BeginTest(int timeout_seconds) {
 
   job_handler_->Initialize();
 
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&PrinterJobHandlerTest::MessageLoopQuitSoonHelper,
-                 base::MessageLoop::current()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&PrinterJobHandlerTest::MessageLoopQuitSoonHelper,
+                            base::MessageLoop::current()),
       base::TimeDelta::FromSeconds(timeout_seconds));
 
   base::MessageLoop::current()->Run();

@@ -9,9 +9,11 @@
 #include <utility>
 
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/spellchecker/spellcheck_platform.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
@@ -119,7 +121,8 @@ void SpellcheckHunspellDictionary::Load() {
       spellcheck_platform::PlatformSupportsLanguage(language_)) {
     use_browser_spellchecker_ = true;
     spellcheck_platform::SetLanguage(language_);
-    base::MessageLoop::current()->PostTask(FROM_HERE,
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
         base::Bind(
             &SpellcheckHunspellDictionary::InformListenersOfInitialization,
             weak_ptr_factory_.GetWeakPtr()));

@@ -12,9 +12,9 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -333,7 +333,7 @@ void BrowserPolicyConnectorChromeOS::OnDeviceCloudPolicyManagerConnected() {
   // DeviceCloudPolicyInitializer might still be on the call stack, so we
   // should release the initializer after this function returns.
   device_cloud_policy_initializer_->Shutdown();
-  base::MessageLoop::current()->DeleteSoon(
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
       FROM_HERE, device_cloud_policy_initializer_.release());
 }
 

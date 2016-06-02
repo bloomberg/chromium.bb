@@ -8,11 +8,13 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -97,10 +99,9 @@ class AppLaunchController::AppWindowWatcher
             extensions::AppWindowRegistry::Get(controller->profile_)),
         weak_factory_(this) {
     if (!window_registry_->GetAppWindowsForApp(app_id).empty()) {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&AppWindowWatcher::NotifyAppWindowCreated,
-                     weak_factory_.GetWeakPtr()));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&AppWindowWatcher::NotifyAppWindowCreated,
+                                weak_factory_.GetWeakPtr()));
       return;
     } else {
       window_registry_->AddObserver(this);

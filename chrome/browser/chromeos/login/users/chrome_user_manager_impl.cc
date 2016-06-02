@@ -16,9 +16,11 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/format_macros.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -188,7 +190,7 @@ ChromeUserManagerImpl::ChromeUserManagerImpl()
 
   // Since we're in ctor postpone any actions till this is fully created.
   if (base::MessageLoop::current()) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ChromeUserManagerImpl::RetrieveTrustedDevicePolicies,
                    weak_factory_.GetWeakPtr()));
@@ -473,11 +475,10 @@ void ChromeUserManagerImpl::Observe(
         // ProfileManager::GetProfile before the profile gets registered
         // in ProfileManager. It happens in case of sync profile load when
         // NOTIFICATION_PROFILE_CREATED is called synchronously.
-        base::MessageLoop::current()->PostTask(
+        base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
             base::Bind(&ChromeUserManagerImpl::SwitchActiveUser,
-                       weak_factory_.GetWeakPtr(),
-                       GetPendingUserSwitchID()));
+                       weak_factory_.GetWeakPtr(), GetPendingUserSwitchID()));
         SetPendingUserSwitchId(EmptyAccountId());
       }
       break;

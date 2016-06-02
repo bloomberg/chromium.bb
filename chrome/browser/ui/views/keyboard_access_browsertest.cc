@@ -6,10 +6,13 @@
 // toolkit_views is defined (i.e. for Chrome OS). It's not needed
 // on the Mac, and it's not yet implemented on Linux.
 
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -70,7 +73,7 @@ class ViewFocusChangeWaiter : public views::FocusChangeListener {
   void OnDidChangeFocus(views::View* focused_before,
                         views::View* focused_now) override {
     if (focused_now && focused_now->id() != previous_view_id_) {
-      base::MessageLoop::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     }
   }
@@ -114,7 +117,7 @@ class SendKeysMenuListener : public views::MenuListener {
       SendKeyPress(browser_, ui::VKEY_RETURN);
     } else {
       SendKeyPress(browser_, ui::VKEY_ESCAPE);
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
           base::TimeDelta::FromMilliseconds(200));
     }

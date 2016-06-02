@@ -7,7 +7,9 @@
 #include "apps/launcher.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -72,9 +74,8 @@ void HandleAppLaunchForMetroRestart(Profile* profile) {
   prefs->ClearPref(prefs::kAppLaunchForMetroRestart);
 
   const int kRestartAppLaunchDelayMs = 1000;
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&LaunchAppWithId, profile, extension_id),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&LaunchAppWithId, profile, extension_id),
       base::TimeDelta::FromMilliseconds(kRestartAppLaunchDelayMs));
 }
 

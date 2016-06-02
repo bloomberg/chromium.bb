@@ -14,8 +14,9 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -90,8 +91,8 @@ class DisplayRotationDefaultTest
   void TearDownOnMainThread() override {
     // If the login display is still showing, exit gracefully.
     if (chromeos::LoginDisplayHost::default_host()) {
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-                                             base::Bind(&chrome::AttemptExit));
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&chrome::AttemptExit));
       content::RunMessageLoop();
     }
   }

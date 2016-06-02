@@ -7,7 +7,9 @@
 #include "ash/content/shell_content_state.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/media/media_stream_capture_indicator.h"
@@ -154,10 +156,9 @@ void MediaDelegateChromeOS::OnRequestUpdate(
     int render_frame_id,
     content::MediaStreamType stream_type,
     const content::MediaRequestState state) {
-  base::MessageLoopForUI::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&MediaDelegateChromeOS::NotifyMediaCaptureChange,
-                 weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&MediaDelegateChromeOS::NotifyMediaCaptureChange,
+                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MediaDelegateChromeOS::NotifyMediaCaptureChange() {

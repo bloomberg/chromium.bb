@@ -13,9 +13,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -149,7 +151,7 @@ class PasswordStoreWinTest : public testing::Test {
     BrowserThread::PostTask(BrowserThread::DB, FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
     done.Wait();
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
     base::MessageLoop::current()->Run();
     db_thread_.Stop();

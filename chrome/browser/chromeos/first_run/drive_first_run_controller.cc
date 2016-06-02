@@ -10,11 +10,13 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/background/background_contents.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
@@ -236,12 +238,10 @@ void DriveWebContentsManager::OnOfflineInit(
   if (started_) {
     // We postpone notifying the controller as we may be in the middle
     // of a call stack for some routine of the contained WebContents.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&DriveWebContentsManager::RunCompletionCallback,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   success,
-                   outcome));
+                   weak_ptr_factory_.GetWeakPtr(), success, outcome));
     StopLoad();
   }
 }
@@ -434,7 +434,7 @@ void DriveFirstRunController::CleanUp() {
   if (web_contents_manager_)
     web_contents_manager_->StopLoad();
   web_contents_timer_.Stop();
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 void DriveFirstRunController::OnOfflineInit(bool success, UMAOutcome outcome) {

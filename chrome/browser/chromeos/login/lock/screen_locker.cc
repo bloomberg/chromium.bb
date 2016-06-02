@@ -19,12 +19,15 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -225,10 +228,9 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
 
   // Add guard for case when something get broken in call chain to unlock
   // for sure.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ScreenLocker::UnlockOnLoginSuccess,
-          weak_factory_.GetWeakPtr()),
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::Bind(&ScreenLocker::UnlockOnLoginSuccess,
+                            weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(kUnlockGuardTimeoutMs));
   delegate_->AnimateAuthenticationSuccess();
 }

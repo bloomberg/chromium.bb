@@ -14,10 +14,12 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file.h"
+#include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -422,7 +424,7 @@ void BookmarkFaviconFetcher::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (chrome::NOTIFICATION_PROFILE_DESTROYED == type && fetcher != NULL) {
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, fetcher);
     fetcher = NULL;
   }
 }
@@ -450,7 +452,7 @@ void BookmarkFaviconFetcher::ExecuteWriter() {
                                 profile_)),
                             path_, favicons_map_.release(), observer_)));
   if (fetcher != NULL) {
-    base::MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, fetcher);
     fetcher = NULL;
   }
 }

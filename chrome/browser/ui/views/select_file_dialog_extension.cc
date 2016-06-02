@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/app_window_registry_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -217,7 +219,7 @@ void SelectFileDialogExtension::ExtensionTerminated(
   // extensions::ProcessManager::CreateViewHost. Once that is fixed, remove
   // this.
   if (profile_) {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&ExtensionService::ReloadExtension,
                    base::Unretained(extensions::ExtensionSystem::Get(profile_)

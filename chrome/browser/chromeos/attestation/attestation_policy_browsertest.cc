@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_flow.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
@@ -26,7 +29,7 @@ class CustomFakeCryptohomeClient : public chromeos::FakeCryptohomeClient {
  public:
   void TpmAttestationIsEnrolled(
       const chromeos::BoolDBusMethodCallback& callback) override {
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(callback, chromeos::DBUS_METHOD_CALL_FAILURE, false));
   }

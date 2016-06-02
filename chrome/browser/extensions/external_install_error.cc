@@ -8,10 +8,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_install_error_menu_item_id_provider.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
@@ -321,10 +323,9 @@ void ExternalInstallError::OnInstallPromptDone(
   // If the error isn't removed and deleted as part of handling the user's
   // response (which can happen, e.g., if an uninstall fails), be sure to remove
   // the error directly in order to ensure it's not called twice.
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&ExternalInstallError::RemoveError,
-                 weak_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&ExternalInstallError::RemoveError,
+                            weak_factory_.GetWeakPtr()));
 
   switch (result) {
     case ExtensionInstallPrompt::Result::ACCEPTED:

@@ -6,7 +6,10 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/common/chrome_switches.h"
@@ -91,7 +94,7 @@ bool MediaRouterBaseBrowserTest::ConditionalWait(
       return true;
 
     base::RunLoop run_loop;
-    base::MessageLoop::current()->PostDelayedTask(
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), interval);
     run_loop.Run();
   } while (timer.Elapsed() < timeout);
@@ -101,7 +104,7 @@ bool MediaRouterBaseBrowserTest::ConditionalWait(
 
 void MediaRouterBaseBrowserTest::Wait(base::TimeDelta timeout) {
   base::RunLoop run_loop;
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), timeout);
   run_loop.Run();
 }

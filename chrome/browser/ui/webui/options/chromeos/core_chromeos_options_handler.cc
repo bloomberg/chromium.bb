@@ -11,11 +11,14 @@
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
@@ -162,9 +165,9 @@ void CoreChromeOSOptionsHandler::Observe(
 
   // Finish this asynchronously because the notification has to tricle in to all
   // Chrome components before we can reliably read the status on the other end.
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&CoreChromeOSOptionsHandler::NotifyOwnershipChanged,
-                 base::Unretained(this)));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&CoreChromeOSOptionsHandler::NotifyOwnershipChanged,
+                            base::Unretained(this)));
 }
 
 void CoreChromeOSOptionsHandler::NotifyOwnershipChanged() {

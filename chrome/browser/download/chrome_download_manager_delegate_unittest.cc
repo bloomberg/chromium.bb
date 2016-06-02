@@ -9,7 +9,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -69,12 +68,13 @@ class MockWebContentsDelegate : public content::WebContentsDelegate {
 //   EXPECT_CALL(mock_fooclass_instance, Foo(callback))
 //     .WillOnce(ScheduleCallback(false));
 ACTION_P(ScheduleCallback, result) {
-  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(arg0, result));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(arg0, result));
 }
 
 // Similar to ScheduleCallback, but binds 2 arguments.
 ACTION_P2(ScheduleCallback2, result0, result1) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(arg0, result0, result1));
 }
 

@@ -6,7 +6,10 @@
 
 #include "base/command_line.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/location.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -79,9 +82,8 @@ class TestDebugDaemonClient : public FakeDebugDaemonClient {
       const DebugDaemonClient::EnableDebuggingCallback& original_callback,
       bool succeeded) {
     LOG(WARNING) << "OnRemoveRootfsVerification: succeeded = " << succeeded;
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(original_callback, succeeded));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(original_callback, succeeded));
     if (runner_.get())
       runner_->Quit();
     else
@@ -96,9 +98,8 @@ class TestDebugDaemonClient : public FakeDebugDaemonClient {
       int feature_mask) {
     LOG(WARNING) << "OnQueryDebuggingFeatures: succeeded = " << succeeded
                  << ", feature_mask = " << feature_mask;
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(original_callback, succeeded, feature_mask));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(original_callback, succeeded, feature_mask));
     if (runner_.get())
       runner_->Quit();
     else
@@ -112,9 +113,8 @@ class TestDebugDaemonClient : public FakeDebugDaemonClient {
       bool succeeded) {
     LOG(WARNING) << "OnEnableDebuggingFeatures: succeeded = " << succeeded
                  << ", feature_mask = ";
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(original_callback, succeeded));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(original_callback, succeeded));
     if (runner_.get())
       runner_->Quit();
     else

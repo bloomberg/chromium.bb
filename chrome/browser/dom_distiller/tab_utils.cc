@@ -6,7 +6,9 @@
 
 #include <utility>
 
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
@@ -67,18 +69,18 @@ void SelfDeletingRequestDelegate::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
   Observe(NULL);
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 void SelfDeletingRequestDelegate::RenderProcessGone(
     base::TerminationStatus status) {
   Observe(NULL);
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 void SelfDeletingRequestDelegate::WebContentsDestroyed() {
   Observe(NULL);
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
 SelfDeletingRequestDelegate::SelfDeletingRequestDelegate(

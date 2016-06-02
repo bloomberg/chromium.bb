@@ -151,7 +151,7 @@ void ThreadWatcher::PostPingMessage() {
           base::Bind(&ThreadWatcher::OnPingMessage, thread_id_,
                      callback))) {
       // Post a task to check the responsiveness of watched thread.
-      base::MessageLoop::current()->PostDelayedTask(
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&ThreadWatcher::OnCheckResponsiveness,
                      weak_ptr_factory_.GetWeakPtr(), ping_sequence_number_),

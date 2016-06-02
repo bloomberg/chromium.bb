@@ -9,8 +9,11 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/printing/cloud_print/privet_http_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -1062,14 +1065,14 @@ class PrivetHttpWithServerTest : public ::testing::Test,
     success_ = false;
     error_ = error;
 
-    base::MessageLoop::current()->PostTask(FROM_HERE, quit_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_);
   }
 
   void OnParsedJson(PrivetURLFetcher* fetcher,
                     const base::DictionaryValue& value,
                     bool has_error) override {
     NOTREACHED();
-    base::MessageLoop::current()->PostTask(FROM_HERE, quit_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_);
   }
 
   bool OnRawData(PrivetURLFetcher* fetcher,
@@ -1079,7 +1082,7 @@ class PrivetHttpWithServerTest : public ::testing::Test,
     done_ = true;
     success_ = true;
 
-    base::MessageLoop::current()->PostTask(FROM_HERE, quit_);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_);
     return true;
   }
 

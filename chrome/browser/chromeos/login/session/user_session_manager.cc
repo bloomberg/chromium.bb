@@ -13,11 +13,12 @@
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
@@ -1583,7 +1584,7 @@ UserSessionManager::GetAuthRequestContext() const {
 void UserSessionManager::AttemptRestart(Profile* profile) {
   // Restart unconditionally in case if we are stuck somewhere in a session
   // restore process. http://crbug.com/520346.
-  base::MessageLoop::current()->PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(RestartOnTimeout),
       base::TimeDelta::FromSeconds(kMaxRestartDelaySeconds));
 

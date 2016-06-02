@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_persistence.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -53,7 +56,7 @@ class FocusPODWaiter {
   void OnFocusPOD() {
     focused_ = true;
     if (runner_.get())
-      base::MessageLoopForUI::current()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&FocusPODWaiter::ExitMessageLoop, base::Unretained(this)));
   }

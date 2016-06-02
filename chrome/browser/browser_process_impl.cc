@@ -18,14 +18,17 @@
 #include "base/debug/alias.h"
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -1228,7 +1231,7 @@ void BrowserProcessImpl::Unpin() {
   CHECK(base::MessageLoop::current()->is_running());
 
 #if defined(OS_MACOSX)
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(ChromeBrowserMainPartsMac::DidEndMainMessageLoop));
 #endif
   base::MessageLoop::current()->QuitWhenIdle();

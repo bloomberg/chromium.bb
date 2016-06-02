@@ -5,7 +5,9 @@
 #include "chrome/browser/android/download/download_manager_service.h"
 
 #include "base/android/jni_string.h"
-#include "base/message_loop/message_loop.h"
+#include "base/location.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
@@ -188,7 +190,7 @@ void DownloadManagerService::EnqueueDownloadAction(
 
 void DownloadManagerService::OnResumptionFailed(
     const std::string& download_guid) {
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&DownloadManagerService::OnResumptionFailedInternal,
                             base::Unretained(this), download_guid));
 }

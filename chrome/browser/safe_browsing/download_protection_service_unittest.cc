@@ -18,13 +18,16 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
@@ -1337,7 +1340,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadValidateRequest) {
   EXPECT_EQ("dummy dos header", headers.pe_headers().dos_header());
 
   // Simulate the request finishing.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
                  base::Unretained(this), fetcher));
@@ -1397,7 +1400,7 @@ TEST_F(DownloadProtectionServiceTest,
   EXPECT_EQ(0, request.signature().certificate_chain_size());
 
   // Simulate the request finishing.
-  base::MessageLoop::current()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
                  base::Unretained(this), fetcher));
@@ -1485,11 +1488,10 @@ TEST_F(DownloadProtectionServiceTest,
     EXPECT_EQ("dummy dos header", headers.pe_headers().dos_header());
 
     // Simulate the request finishing.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
-                   base::Unretained(this),
-                   fetcher));
+                   base::Unretained(this), fetcher));
     MessageLoop::current()->Run();
   }
 
@@ -1558,11 +1560,10 @@ TEST_F(DownloadProtectionServiceTest,
     EXPECT_EQ("dummy cert data", chain.element(0).certificate());
 
     // Simulate the request finishing.
-    base::MessageLoop::current()->PostTask(
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&DownloadProtectionServiceTest::SendURLFetchComplete,
-                   base::Unretained(this),
-                   fetcher));
+                   base::Unretained(this), fetcher));
     MessageLoop::current()->Run();
   }
 }
