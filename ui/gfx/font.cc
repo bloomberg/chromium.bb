@@ -41,8 +41,8 @@ Font::Font(const std::string& font_name, int font_size)
 Font::~Font() {
 }
 
-Font Font::Derive(int size_delta, int style) const {
-  return platform_font_->DeriveFont(size_delta, style);
+Font Font::Derive(int size_delta, int style, Font::Weight weight) const {
+  return platform_font_->DeriveFont(size_delta, style, weight);
 }
 
 int Font::GetHeight() const {
@@ -77,6 +77,10 @@ int Font::GetFontSize() const {
   return platform_font_->GetFontSize();
 }
 
+Font::Weight Font::GetWeight() const {
+  return platform_font_->GetWeight();
+}
+
 const FontRenderParams& Font::GetFontRenderParams() const {
   return platform_font_->GetFontRenderParams();
 }
@@ -84,6 +88,12 @@ const FontRenderParams& Font::GetFontRenderParams() const {
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
 NativeFont Font::GetNativeFont() const {
   return platform_font_->GetNativeFont();
+}
+#endif
+
+#ifndef NDEBUG
+std::ostream& operator<<(std::ostream& stream, const Font::Weight weight) {
+  return stream << static_cast<int>(weight);
 }
 #endif
 

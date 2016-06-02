@@ -11,22 +11,50 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 
+namespace gfx {
 namespace {
 
 // Returns a font description from |families|, |style|, and |size_pixels|.
 std::string BuildDescription(const std::vector<std::string>& families,
                              int style,
-                             int size_pixels) {
+                             int size_pixels,
+                             Font::Weight weight) {
   std::string description = base::JoinString(families, ",");
   description += ",";
 
-  if (style & gfx::Font::BOLD)
-    description += "Bold ";
-  if (style & gfx::Font::ITALIC)
+  if (style & Font::ITALIC)
     description += "Italic ";
+  switch (weight) {
+    case Font::Weight::THIN:
+      description += "Thin ";
+      break;
+    case Font::Weight::EXTRA_LIGHT:
+      description += "Ultra-Light ";
+      break;
+    case Font::Weight::LIGHT:
+      description += "Light ";
+      break;
+    case Font::Weight::MEDIUM:
+      description += "Medium ";
+      break;
+    case Font::Weight::SEMIBOLD:
+      description += "Semi-Bold ";
+      break;
+    case Font::Weight::BOLD:
+      description += "Bold ";
+      break;
+    case Font::Weight::EXTRA_BOLD:
+      description += "Ultra-Bold ";
+      break;
+    case Font::Weight::BLACK:
+      description += "Heavy ";
+      break;
+    case Font::Weight::NORMAL:
+    case Font::Weight::INVALID:
+      break;
+  }
 
   description += base::IntToString(size_pixels);
   description += "px";
@@ -36,14 +64,13 @@ std::string BuildDescription(const std::vector<std::string>& families,
 
 }  // namespace
 
-namespace gfx {
-
 FontListImpl::FontListImpl(const std::string& font_description_string)
     : font_description_string_(font_description_string),
       common_height_(-1),
       common_baseline_(-1),
       font_style_(-1),
-      font_size_(-1) {
+      font_size_(-1),
+      font_weight_(Font::Weight::INVALID) {
   DCHECK(!font_description_string.empty());
   // DCHECK description string ends with "px" for size in pixel.
   DCHECK(base::EndsWith(font_description_string, "px",
@@ -52,13 +79,15 @@ FontListImpl::FontListImpl(const std::string& font_description_string)
 
 FontListImpl::FontListImpl(const std::vector<std::string>& font_names,
                            int font_style,
-                           int font_size)
-    : font_description_string_(BuildDescription(font_names, font_style,
-                                                font_size)),
+                           int font_size,
+                           Font::Weight font_weight)
+    : font_description_string_(
+          BuildDescription(font_names, font_style, font_size, font_weight)),
       common_height_(-1),
       common_baseline_(-1),
       font_style_(font_style),
-      font_size_(font_size) {
+      font_size_(font_size),
+      font_weight_(font_weight) {
   DCHECK(!font_names.empty());
   DCHECK(!font_names[0].empty());
 }
@@ -68,10 +97,12 @@ FontListImpl::FontListImpl(const std::vector<Font>& fonts)
       common_height_(-1),
       common_baseline_(-1),
       font_style_(-1),
-      font_size_(-1) {
+      font_size_(-1),
+      font_weight_(Font::Weight::INVALID) {
   DCHECK(!fonts.empty());
   font_style_ = fonts[0].GetStyle();
   font_size_ = fonts[0].GetFontSize();
+  font_weight_ = fonts[0].GetWeight();
 #if DCHECK_IS_ON()
   for (size_t i = 1; i < fonts.size(); ++i) {
     DCHECK_EQ(fonts[i].GetStyle(), font_style_);
@@ -84,16 +115,19 @@ FontListImpl::FontListImpl(const Font& font)
     : common_height_(-1),
       common_baseline_(-1),
       font_style_(-1),
-      font_size_(-1) {
+      font_size_(-1),
+      font_weight_(Font::Weight::INVALID) {
   fonts_.push_back(font);
 }
 
-FontListImpl* FontListImpl::Derive(int size_delta, int font_style) const {
+FontListImpl* FontListImpl::Derive(int size_delta,
+                                   int font_style,
+                                   Font::Weight weight) const {
   // If there is a font vector, derive from that.
   if (!fonts_.empty()) {
     std::vector<Font> fonts = fonts_;
     for (size_t i = 0; i < fonts.size(); ++i)
-      fonts[i] = fonts[i].Derive(size_delta, font_style);
+      fonts[i] = fonts[i].Derive(size_delta, font_style, weight);
     return new FontListImpl(fonts);
   }
 
@@ -101,10 +135,11 @@ FontListImpl* FontListImpl::Derive(int size_delta, int font_style) const {
   std::vector<std::string> font_names;
   int old_size;
   int old_style;
+  Font::Weight old_weight;
   CHECK(FontList::ParseDescription(font_description_string_, &font_names,
-                                   &old_style, &old_size));
+                                   &old_style, &old_size, &old_weight));
   const int size = std::max(1, old_size + size_delta);
-  return new FontListImpl(font_names, font_style, size);
+  return new FontListImpl(font_names, font_style, size, weight);
 }
 
 int FontListImpl::GetHeight() const {
@@ -141,28 +176,34 @@ int FontListImpl::GetFontSize() const {
   return font_size_;
 }
 
+Font::Weight FontListImpl::GetFontWeight() const {
+  if (font_weight_ == Font::Weight::INVALID)
+    CacheFontStyleAndSize();
+  return font_weight_;
+}
+
 const std::vector<Font>& FontListImpl::GetFonts() const {
   if (fonts_.empty()) {
     DCHECK(!font_description_string_.empty());
 
     std::vector<std::string> font_names;
-    // It's possible that gfx::Font::UNDERLINE is specified and it's already
+    // It's possible that Font::UNDERLINE is specified and it's already
     // stored in |font_style_| but |font_description_string_| doesn't have the
     // underline info.  So we should respect |font_style_| as long as it's
     // valid.
     int style = 0;
     CHECK(FontList::ParseDescription(font_description_string_, &font_names,
-                                     &style, &font_size_));
+                                     &style, &font_size_, &font_weight_));
     if (font_style_ == -1)
       font_style_ = style;
     for (size_t i = 0; i < font_names.size(); ++i) {
       DCHECK(!font_names[i].empty());
 
       Font font(font_names[i], font_size_);
-      if (font_style_ == Font::NORMAL)
+      if (font_style_ == Font::NORMAL && font_weight_ == Font::Weight::NORMAL)
         fonts_.push_back(font);
       else
-        fonts_.push_back(font.Derive(0, font_style_));
+        fonts_.push_back(font.Derive(0, font_style_, font_weight_));
     }
   }
   return fonts_;
@@ -191,10 +232,11 @@ void FontListImpl::CacheFontStyleAndSize() const {
   if (!fonts_.empty()) {
     font_style_ = fonts_[0].GetStyle();
     font_size_ = fonts_[0].GetFontSize();
+    font_weight_ = fonts_[0].GetWeight();
   } else {
     std::vector<std::string> font_names;
     CHECK(FontList::ParseDescription(font_description_string_, &font_names,
-                                     &font_style_, &font_size_));
+                                     &font_style_, &font_size_, &font_weight_));
   }
 }
 

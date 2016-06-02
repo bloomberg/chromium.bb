@@ -50,15 +50,12 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   // name could not be retrieved, returns GetFontName().
   std::string GetLocalizedFontName() const;
 
-  // Returns a derived Font with the specified |style| and maximum |height|.
-  // The returned Font will be the largest font size with a height <= |height|,
-  // since a size with the exact specified |height| may not necessarily exist.
-  // GetMinimumFontSize() may impose a font size that is taller than |height|.
-  Font DeriveFontWithHeight(int height, int style);
-
   // Overridden from PlatformFont:
-  Font DeriveFont(int size_delta, int style) const override;
+  Font DeriveFont(int size_delta,
+                  int style,
+                  Font::Weight weight) const override;
   int GetHeight() override;
+  Font::Weight GetWeight() const override;
   int GetBaseline() override;
   int GetCapHeight() override;
   int GetExpectedTextWidth(int length) override;
@@ -106,6 +103,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
              int baseline,
              int cap_height,
              int ave_char_width,
+             Font::Weight weight,
              int style);
 
     // Accessors
@@ -114,6 +112,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
     int baseline() const { return baseline_; }
     int cap_height() const { return cap_height_; }
     int ave_char_width() const { return ave_char_width_; }
+    Font::Weight weight() const { return weight_; }
     int style() const { return style_; }
     const std::string& font_name() const { return font_name_; }
     int font_size() const { return font_size_; }
@@ -140,6 +139,7 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
     const int baseline_;
     const int cap_height_;
     const int ave_char_width_;
+    const Font::Weight weight_;
     const int style_;
     // Average character width in dialog units. This is queried lazily from the
     // system, with an initial value of -1 meaning it hasn't yet been queried.

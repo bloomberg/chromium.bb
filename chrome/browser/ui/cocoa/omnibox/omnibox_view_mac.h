@@ -125,11 +125,10 @@ class OmniboxViewMac : public OmniboxView,
 
   // Helper to get the font to use in the field, exposed for the
   // popup.
-  // The style parameter specifies the new style for the font, and is a
-  // bitmask of the values: BOLD, ITALIC and UNDERLINE (see ui/gfx/font.h).
-  static NSFont* GetFieldFont(int style);
-  static NSFont* GetLargeFont(int style);
-  static NSFont* GetSmallFont(int style);
+  static NSFont* GetNormalFieldFont();
+  static NSFont* GetBoldFieldFont();
+  static NSFont* GetLargeFont();
+  static NSFont* GetSmallFont();
 
   // If |resource_id| has a PDF image which can be used, return it.
   // Otherwise return the PNG image from the resource bundle.

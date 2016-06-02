@@ -28,6 +28,44 @@ namespace gfx {
 
 namespace {
 
+int FontWeightToFCWeight(Font::Weight weight) {
+  const int weight_number = static_cast<int>(weight);
+  if (weight_number <= (static_cast<int>(Font::Weight::THIN) +
+                        static_cast<int>(Font::Weight::EXTRA_LIGHT)) /
+                           2)
+    return FC_WEIGHT_THIN;
+  else if (weight_number <= (static_cast<int>(Font::Weight::EXTRA_LIGHT) +
+                             static_cast<int>(Font::Weight::LIGHT)) /
+                                2)
+    return FC_WEIGHT_ULTRALIGHT;
+  else if (weight_number <= (static_cast<int>(Font::Weight::LIGHT) +
+                             static_cast<int>(Font::Weight::NORMAL)) /
+                                2)
+    return FC_WEIGHT_LIGHT;
+  else if (weight_number <= (static_cast<int>(Font::Weight::NORMAL) +
+                             static_cast<int>(Font::Weight::MEDIUM)) /
+                                2)
+    return FC_WEIGHT_NORMAL;
+  else if (weight_number <= (static_cast<int>(Font::Weight::MEDIUM) +
+                             static_cast<int>(Font::Weight::SEMIBOLD)) /
+                                2)
+    return FC_WEIGHT_MEDIUM;
+  else if (weight_number <= (static_cast<int>(Font::Weight::SEMIBOLD) +
+                             static_cast<int>(Font::Weight::BOLD)) /
+                                2)
+    return FC_WEIGHT_DEMIBOLD;
+  else if (weight_number <= (static_cast<int>(Font::Weight::BOLD) +
+                             static_cast<int>(Font::Weight::EXTRA_BOLD)) /
+                                2)
+    return FC_WEIGHT_BOLD;
+  else if (weight_number <= (static_cast<int>(Font::Weight::EXTRA_BOLD) +
+                             static_cast<int>(Font::Weight::BLACK)) /
+                                2)
+    return FC_WEIGHT_ULTRABOLD;
+  else
+    return FC_WEIGHT_BLACK;
+}
+
 // A device scale factor used to determine if subpixel positioning
 // should be used.
 float device_scale_factor_ = 1.0f;
@@ -112,8 +150,10 @@ bool QueryFontconfig(const FontRenderParamsQuery& query,
   if (query.style >= 0) {
     FcPatternAddInteger(query_pattern.get(), FC_SLANT,
         (query.style & Font::ITALIC) ? FC_SLANT_ITALIC : FC_SLANT_ROMAN);
+  }
+  if (query.weight != Font::Weight::INVALID) {
     FcPatternAddInteger(query_pattern.get(), FC_WEIGHT,
-        (query.style & Font::BOLD) ? FC_WEIGHT_BOLD : FC_WEIGHT_NORMAL);
+                        FontWeightToFCWeight(query.weight));
   }
 
   FcConfigSubstitute(NULL, query_pattern.get(), FcMatchPattern);
@@ -191,7 +231,8 @@ bool QueryFontconfig(const FontRenderParamsQuery& query,
 // cache key.
 uint32_t HashFontRenderParamsQuery(const FontRenderParamsQuery& query) {
   return base::Hash(base::StringPrintf(
-      "%d|%d|%d|%s|%f", query.pixel_size, query.point_size, query.style,
+      "%d|%d|%d|%d|%s|%f", query.pixel_size, query.point_size, query.style,
+      static_cast<int>(query.weight),
       base::JoinString(query.families, ",").c_str(),
       query.device_scale_factor));
 }

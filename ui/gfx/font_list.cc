@@ -29,10 +29,12 @@ namespace gfx {
 bool FontList::ParseDescription(const std::string& description,
                                 std::vector<std::string>* families_out,
                                 int* style_out,
-                                int* size_pixels_out) {
+                                int* size_pixels_out,
+                                Font::Weight* weight_out) {
   DCHECK(families_out);
   DCHECK(style_out);
   DCHECK(size_pixels_out);
+  DCHECK(weight_out);
 
   *families_out = base::SplitString(
       description, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
@@ -59,13 +61,30 @@ bool FontList::ParseDescription(const std::string& description,
       *size_pixels_out <= 0)
     return false;
 
-  // Font supports BOLD and ITALIC; underline is supported via RenderText.
-  *style_out = gfx::Font::NORMAL;
+  // Font supports ITALIC and weights; underline is supported via RenderText.
+  *style_out = Font::NORMAL;
+  *weight_out = Font::Weight::NORMAL;
   for (const auto& style_string : styles) {
-    if (style_string == "Bold")
-      *style_out |= gfx::Font::BOLD;
-    else if (style_string == "Italic")
-      *style_out |= gfx::Font::ITALIC;
+    if (style_string == "Italic")
+      *style_out |= Font::ITALIC;
+    else if (style_string == "Thin")
+      *weight_out = Font::Weight::THIN;
+    else if (style_string == "Ultra-Light")
+      *weight_out = Font::Weight::EXTRA_LIGHT;
+    else if (style_string == "Light")
+      *weight_out = Font::Weight::LIGHT;
+    else if (style_string == "Normal")
+      *weight_out = Font::Weight::NORMAL;
+    else if (style_string == "Medium")
+      *weight_out = Font::Weight::MEDIUM;
+    else if (style_string == "Semi-Bold")
+      *weight_out = Font::Weight::SEMIBOLD;
+    else if (style_string == "Bold")
+      *weight_out = Font::Weight::BOLD;
+    else if (style_string == "Ultra-Bold")
+      *weight_out = Font::Weight::EXTRA_BOLD;
+    else if (style_string == "Heavy")
+      *weight_out = Font::Weight::BLACK;
     else
       return false;
   }
@@ -82,8 +101,9 @@ FontList::FontList(const std::string& font_description_string)
 
 FontList::FontList(const std::vector<std::string>& font_names,
                    int font_style,
-                   int font_size)
-    : impl_(new FontListImpl(font_names, font_style, font_size)) {}
+                   int font_size,
+                   Font::Weight font_weight)
+    : impl_(new FontListImpl(font_names, font_style, font_size, font_weight)) {}
 
 FontList::FontList(const std::vector<Font>& fonts)
     : impl_(new FontListImpl(fonts)) {}
@@ -108,20 +128,26 @@ void FontList::SetDefaultFontDescription(const std::string& font_description) {
   g_default_impl_initialized = false;
 }
 
-FontList FontList::Derive(int size_delta, int font_style) const {
-  return FontList(impl_->Derive(size_delta, font_style));
+FontList FontList::Derive(int size_delta,
+                          int font_style,
+                          Font::Weight weight) const {
+  return FontList(impl_->Derive(size_delta, font_style, weight));
 }
 
 FontList FontList::DeriveWithSizeDelta(int size_delta) const {
-  return Derive(size_delta, GetFontStyle());
+  return Derive(size_delta, GetFontStyle(), GetFontWeight());
 }
 
 FontList FontList::DeriveWithStyle(int font_style) const {
-  return Derive(0, font_style);
+  return Derive(0, font_style, GetFontWeight());
 }
 
-gfx::FontList FontList::DeriveWithHeightUpperBound(int height) const {
-  gfx::FontList font_list(*this);
+FontList FontList::DeriveWithWeight(Font::Weight weight) const {
+  return Derive(0, GetFontStyle(), weight);
+}
+
+FontList FontList::DeriveWithHeightUpperBound(int height) const {
+  FontList font_list(*this);
   for (int font_size = font_list.GetFontSize(); font_size > 1; --font_size) {
     const int internal_leading =
         font_list.GetBaseline() - font_list.GetCapHeight();
@@ -163,6 +189,10 @@ int FontList::GetFontStyle() const {
 
 int FontList::GetFontSize() const {
   return impl_->GetFontSize();
+}
+
+Font::Weight FontList::GetFontWeight() const {
+  return impl_->GetFontWeight();
 }
 
 const std::vector<Font>& FontList::GetFonts() const {

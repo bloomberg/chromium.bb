@@ -123,12 +123,10 @@ void TextfieldExample::ButtonPressed(Button* sender, const ui::Event& event) {
   } else if (sender == set_style_) {
     if (!name_->text().empty()) {
       name_->SetColor(SK_ColorGREEN);
-      name_->SetStyle(gfx::BOLD, true);
 
       if (name_->text().length() >= 5) {
         size_t fifth = name_->text().length() / 5;
         const gfx::Range big_range(1 * fifth, 4 * fifth);
-        name_->ApplyStyle(gfx::BOLD, false, big_range);
         name_->ApplyStyle(gfx::UNDERLINE, true, big_range);
         name_->ApplyColor(SK_ColorBLUE, big_range);
 

@@ -102,7 +102,8 @@ base::ListValue* NetworkMenuWebUI::ConvertMenuModel(ui::MenuModel* model) {
       item->SetBoolean("enabled", model->IsEnabledAt(i));
       const gfx::FontList* font_list = model->GetLabelFontListAt(i);
       if (font_list)
-        item->SetBoolean("bold", font_list->GetFontStyle() == gfx::Font::BOLD);
+        item->SetBoolean("bold",
+                         font_list->GetFontWeight() == gfx::Font::Weight::BOLD);
     }
     if (type == ui::MenuModel::TYPE_SUBMENU)
       item->Set("sub", ConvertMenuModel(model->GetSubmenuModelAt(i)));

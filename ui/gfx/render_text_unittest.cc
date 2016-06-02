@@ -326,13 +326,14 @@ TEST_F(RenderTextTest, SetStyles) {
   const SkColor color = SK_ColorRED;
   render_text->SetColor(color);
   render_text->SetBaselineStyle(SUPERSCRIPT);
-  render_text->SetStyle(BOLD, true);
+  render_text->SetWeight(Font::Weight::BOLD);
   render_text->SetStyle(UNDERLINE, false);
   const wchar_t* const cases[] = { kWeak, kLtr, L"Hello", kRtl, L"", L"" };
   for (size_t i = 0; i < arraysize(cases); ++i) {
     EXPECT_TRUE(render_text->colors().EqualsValueForTesting(color));
     EXPECT_TRUE(render_text->baselines().EqualsValueForTesting(SUPERSCRIPT));
-    EXPECT_TRUE(render_text->styles()[BOLD].EqualsValueForTesting(true));
+    EXPECT_TRUE(
+        render_text->weights().EqualsValueForTesting(Font::Weight::BOLD));
     EXPECT_TRUE(render_text->styles()[UNDERLINE].EqualsValueForTesting(false));
     render_text->SetText(WideToUTF16(cases[i]));
 
@@ -351,7 +352,7 @@ TEST_F(RenderTextTest, ApplyStyles) {
   // Apply a ranged color and style and check the resulting breaks.
   render_text->ApplyColor(SK_ColorRED, Range(1, 4));
   render_text->ApplyBaselineStyle(SUPERIOR, Range(2, 4));
-  render_text->ApplyStyle(BOLD, true, Range(2, 5));
+  render_text->ApplyWeight(Font::Weight::BOLD, Range(2, 5));
   std::vector<std::pair<size_t, SkColor> > expected_color;
   expected_color.push_back(std::pair<size_t, SkColor>(0, SK_ColorBLACK));
   expected_color.push_back(std::pair<size_t, SkColor>(1, SK_ColorRED));
@@ -366,26 +367,30 @@ TEST_F(RenderTextTest, ApplyStyles) {
       std::pair<size_t, BaselineStyle>(4, NORMAL_BASELINE));
   EXPECT_TRUE(
       render_text->baselines().EqualsForTesting(expected_baseline_style));
-  std::vector<std::pair<size_t, bool> > expected_style;
-  expected_style.push_back(std::pair<size_t, bool>(0, false));
-  expected_style.push_back(std::pair<size_t, bool>(2, true));
-  expected_style.push_back(std::pair<size_t, bool>(5, false));
-  EXPECT_TRUE(render_text->styles()[BOLD].EqualsForTesting(expected_style));
+  std::vector<std::pair<size_t, Font::Weight>> expected_weight;
+  expected_weight.push_back(
+      std::pair<size_t, Font::Weight>(0, Font::Weight::NORMAL));
+  expected_weight.push_back(
+      std::pair<size_t, Font::Weight>(2, Font::Weight::BOLD));
+  expected_weight.push_back(
+      std::pair<size_t, Font::Weight>(5, Font::Weight::NORMAL));
+  EXPECT_TRUE(render_text->weights().EqualsForTesting(expected_weight));
 
   // Ensure that setting a value overrides the ranged values.
   render_text->SetColor(SK_ColorBLUE);
   EXPECT_TRUE(render_text->colors().EqualsValueForTesting(SK_ColorBLUE));
   render_text->SetBaselineStyle(SUBSCRIPT);
   EXPECT_TRUE(render_text->baselines().EqualsValueForTesting(SUBSCRIPT));
-  render_text->SetStyle(BOLD, false);
-  EXPECT_TRUE(render_text->styles()[BOLD].EqualsValueForTesting(false));
+  render_text->SetWeight(Font::Weight::NORMAL);
+  EXPECT_TRUE(
+      render_text->weights().EqualsValueForTesting(Font::Weight::NORMAL));
 
   // Apply a value over the text end and check the resulting breaks (INT_MAX
   // should be used instead of the text length for the range end)
   const size_t text_length = render_text->text().length();
   render_text->ApplyColor(SK_ColorRED, Range(0, text_length));
   render_text->ApplyBaselineStyle(SUPERIOR, Range(0, text_length));
-  render_text->ApplyStyle(BOLD, true, Range(2, text_length));
+  render_text->ApplyWeight(Font::Weight::BOLD, Range(2, text_length));
   std::vector<std::pair<size_t, SkColor> > expected_color_end;
   expected_color_end.push_back(std::pair<size_t, SkColor>(0, SK_ColorRED));
   EXPECT_TRUE(render_text->colors().EqualsForTesting(expected_color_end));
@@ -393,10 +398,12 @@ TEST_F(RenderTextTest, ApplyStyles) {
   expected_baseline_end.push_back(
       std::pair<size_t, BaselineStyle>(0, SUPERIOR));
   EXPECT_TRUE(render_text->baselines().EqualsForTesting(expected_baseline_end));
-  std::vector<std::pair<size_t, bool> > expected_style_end;
-  expected_style_end.push_back(std::pair<size_t, bool>(0, false));
-  expected_style_end.push_back(std::pair<size_t, bool>(2, true));
-  EXPECT_TRUE(render_text->styles()[BOLD].EqualsForTesting(expected_style_end));
+  std::vector<std::pair<size_t, Font::Weight>> expected_weight_end;
+  expected_weight_end.push_back(
+      std::pair<size_t, Font::Weight>(0, Font::Weight::NORMAL));
+  expected_weight_end.push_back(
+      std::pair<size_t, Font::Weight>(2, Font::Weight::BOLD));
+  EXPECT_TRUE(render_text->weights().EqualsForTesting(expected_weight_end));
 
   // Ensure ranged values adjust to accommodate text length changes.
   render_text->ApplyStyle(ITALIC, true, Range(0, 2));
@@ -753,16 +760,16 @@ TEST_F(RenderTextTest, MultilineElide) {
   // Apply a style that tweaks the layout to make sure elision is calculated
   // with these styles. This can expose a behavior in layout where text is
   // slightly different width. This must be done after |SetText()|.
-  render_text->ApplyStyle(gfx::BOLD, true, gfx::Range(1, 20));
-  render_text->ApplyStyle(gfx::ITALIC, true, gfx::Range(1, 20));
-  render_text->ApplyStyle(gfx::DIAGONAL_STRIKE, true, gfx::Range(1, 20));
+  render_text->ApplyWeight(Font::Weight::BOLD, Range(1, 20));
+  render_text->ApplyStyle(ITALIC, true, Range(1, 20));
+  render_text->ApplyStyle(DIAGONAL_STRIKE, true, Range(1, 20));
   render_text->SetMultiline(true);
   render_text->SetElideBehavior(ELIDE_TAIL);
   render_text->SetMaxLines(3);
-  const gfx::Size size = render_text->GetStringSize();
+  const Size size = render_text->GetStringSize();
   // Fit in 3 lines. (If we knew the width of a word, we could
   // anticipate word wrap better.)
-  render_text->SetDisplayRect(gfx::Rect((size.width() + 96) / 3, 0));
+  render_text->SetDisplayRect(Rect((size.width() + 96) / 3, 0));
   // Trigger rendering.
   render_text->GetStringSize();
   EXPECT_EQ(input_text, render_text->GetDisplayText());
@@ -774,7 +781,7 @@ TEST_F(RenderTextTest, MultilineElide) {
   // the edge of a word getting truncated, the estimate would be wrong
   // and it would wrap instead.
   for (int i = (size.width() - 12) / 3; i < (size.width() + 30) / 3; ++i) {
-    render_text->SetDisplayRect(gfx::Rect(i, 0));
+    render_text->SetDisplayRect(Rect(i, 0));
     // Trigger rendering.
     render_text->GetStringSize();
     actual_text = render_text->GetDisplayText();
@@ -801,13 +808,13 @@ TEST_F(RenderTextTest, MultilineElide) {
 TEST_F(RenderTextTest, ElidedEmail) {
   std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(ASCIIToUTF16("test@example.com"));
-  const gfx::Size size = render_text->GetStringSize();
+  const Size size = render_text->GetStringSize();
 
   const base::string16 long_email =
       ASCIIToUTF16("longemailaddresstest@example.com");
   render_text->SetText(long_email);
   render_text->SetElideBehavior(ELIDE_EMAIL);
-  render_text->SetDisplayRect(gfx::Rect(size));
+  render_text->SetDisplayRect(Rect(size));
   EXPECT_GE(size.width(), render_text->GetStringSize().width());
   EXPECT_GT(long_email.size(), render_text->GetDisplayText().size());
 }
@@ -1737,6 +1744,8 @@ TEST_F(RenderTextTest, SetFontList) {
 }
 
 TEST_F(RenderTextTest, StringSizeBoldWidth) {
+  // TODO(mboc): Add some unittests for other weights (currently not
+  // implemented because of test system font configuration).
   std::unique_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetText(UTF8ToUTF16("Hello World"));
 
@@ -1744,12 +1753,18 @@ TEST_F(RenderTextTest, StringSizeBoldWidth) {
   EXPECT_GT(plain_width, 0);
 
   // Apply a bold style and check that the new width is greater.
-  render_text->SetStyle(BOLD, true);
+  render_text->SetWeight(Font::Weight::BOLD);
   const int bold_width = render_text->GetStringSize().width();
   EXPECT_GT(bold_width, plain_width);
 
+#if defined(OS_WIN)
+  render_text->SetWeight(Font::Weight::SEMIBOLD);
+  const int semibold_width = render_text->GetStringSize().width();
+  EXPECT_GT(bold_width, semibold_width);
+#endif
+
   // Now, apply a plain style over the first word only.
-  render_text->ApplyStyle(BOLD, false, Range(0, 5));
+  render_text->ApplyWeight(Font::Weight::NORMAL, Range(0, 5));
   const int plain_bold_width = render_text->GetStringSize().width();
   EXPECT_GT(plain_bold_width, plain_width);
   EXPECT_LT(plain_bold_width, bold_width);
@@ -2431,26 +2446,26 @@ TEST_F(RenderTextTest, Multiline_NewlineCharacterReplacement) {
 TEST_F(RenderTextTest, Multiline_HorizontalAlignment) {
   const struct {
     const wchar_t* const text;
-    const gfx::HorizontalAlignment alignment;
+    const HorizontalAlignment alignment;
   } kTestStrings[] = {
-    { L"abcdefghij\nhijkl", gfx::ALIGN_LEFT },
-    { L"nhijkl\nabcdefghij", gfx::ALIGN_LEFT },
+    { L"abcdefghij\nhijkl", ALIGN_LEFT },
+    { L"nhijkl\nabcdefghij", ALIGN_LEFT },
     // hebrew, 2nd line shorter
     { L"\x5d0\x5d1\x5d2\x5d3\x5d4\x5d5\x5d6\x5d7\n\x5d0\x5d1\x5d2\x5d3",
-      gfx::ALIGN_RIGHT },
+      ALIGN_RIGHT },
     // hebrew, 2nd line longer
     { L"\x5d0\x5d1\x5d2\x5d3\n\x5d0\x5d1\x5d2\x5d3\x5d4\x5d5\x5d6\x5d7",
-      gfx::ALIGN_RIGHT },
+      ALIGN_RIGHT },
     // arabic, 2nd line shorter
     { L"\x62a\x62b\x62c\x62d\x62e\x62f\x630\n\x660\x661\x662\x663\x664",
-      gfx::ALIGN_RIGHT },
+      ALIGN_RIGHT },
     // arabic, 2nd line longer
     { L"\x660\x661\x662\x663\x664\n\x62a\x62b\x62c\x62d\x62e\x62f\x630",
-      gfx::ALIGN_RIGHT },
+      ALIGN_RIGHT },
   };
   const int kGlyphSize = 5;
   RenderTextHarfBuzz render_text;
-  render_text.SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
+  render_text.SetHorizontalAlignment(ALIGN_TO_HEAD);
   render_text.set_glyph_width_for_test(kGlyphSize);
   render_text.SetDisplayRect(Rect(100, 1000));
   render_text.SetMultiline(true);
@@ -2462,7 +2477,7 @@ TEST_F(RenderTextTest, Multiline_HorizontalAlignment) {
     render_text.SetText(WideToUTF16(kTestStrings[i].text));
     render_text.Draw(&canvas);
     ASSERT_LE(2u, render_text.lines().size());
-    if (kTestStrings[i].alignment == gfx::ALIGN_LEFT) {
+    if (kTestStrings[i].alignment == ALIGN_LEFT) {
       EXPECT_EQ(0, render_text.GetAlignmentOffset(0).x());
       EXPECT_EQ(0, render_text.GetAlignmentOffset(1).x());
     } else {
@@ -3029,13 +3044,13 @@ TEST_F(RenderTextTest, HarfBuzz_WordWidthWithDiacritics) {
   RenderTextHarfBuzz render_text;
   const base::string16 kWord = WideToUTF16(L"\u0906\u092A\u0915\u0947 ");
   render_text.SetText(kWord);
-  const gfx::SizeF text_size = render_text.GetStringSizeF();
+  const SizeF text_size = render_text.GetStringSizeF();
 
   render_text.SetText(kWord + kWord);
   render_text.SetMultiline(true);
   EXPECT_EQ(text_size.width() * 2, render_text.GetStringSizeF().width());
   EXPECT_EQ(text_size.height(), render_text.GetStringSizeF().height());
-  render_text.SetDisplayRect(gfx::Rect(0, 0, std::ceil(text_size.width()), 0));
+  render_text.SetDisplayRect(Rect(0, 0, std::ceil(text_size.width()), 0));
   EXPECT_NEAR(text_size.width(), render_text.GetStringSizeF().width(), 1.0f);
   EXPECT_EQ(text_size.height() * 2, render_text.GetStringSizeF().height());
 }
@@ -3046,7 +3061,7 @@ TEST_F(RenderTextTest, StringFitsOwnWidth) {
   const base::string16 kString = ASCIIToUTF16("www.example.com");
 
   render_text->SetText(kString);
-  render_text->ApplyStyle(BOLD, true, Range(0, 3));
+  render_text->ApplyWeight(Font::Weight::BOLD, Range(0, 3));
   render_text->SetElideBehavior(ELIDE_TAIL);
 
   render_text->SetDisplayRect(Rect(0, 0, 500, 100));
@@ -3154,7 +3169,7 @@ TEST_F(RenderTextTest, TextDoesntClip) {
     render_text->ApplyBaselineStyle(SUPERIOR, Range(3, 4));
     render_text->ApplyBaselineStyle(INFERIOR, Range(5, 6));
     render_text->ApplyBaselineStyle(SUBSCRIPT, Range(7, 8));
-    render_text->SetStyle(BOLD, true);
+    render_text->SetWeight(Font::Weight::BOLD);
     render_text->SetDisplayRect(
         Rect(kTestSize, kTestSize, string_size.width(), string_size.height()));
     // Allow the RenderText to paint outside of its display rect.
@@ -3284,8 +3299,8 @@ TEST_F(RenderTextTest, Mac_ElidedText) {
   RenderTextMac render_text;
   base::string16 text(ASCIIToUTF16("This is an example."));
   render_text.SetText(text);
-  gfx::Size string_size = render_text.GetStringSize();
-  render_text.SetDisplayRect(gfx::Rect(string_size));
+  Size string_size = render_text.GetStringSize();
+  render_text.SetDisplayRect(Rect(string_size));
   render_text.EnsureLayout();
   // NOTE: Character and glyph counts are only comparable for simple text.
   EXPECT_EQ(text.size(),
@@ -3293,7 +3308,7 @@ TEST_F(RenderTextTest, Mac_ElidedText) {
 
   render_text.SetElideBehavior(ELIDE_TAIL);
   string_size.set_width(string_size.width() / 2);
-  render_text.SetDisplayRect(gfx::Rect(string_size));
+  render_text.SetDisplayRect(Rect(string_size));
   render_text.EnsureLayout();
   CFIndex glyph_count = CTLineGetGlyphCount(render_text.line_);
   EXPECT_GT(text.size(), static_cast<size_t>(glyph_count));
@@ -3332,7 +3347,7 @@ TEST_F(RenderTextTest, StylePropagated) {
   // of weird weights and style, which are preserved by PlatformFontMac, but do
   // not map simply to a SkTypeface::Style (the full details in SkFontStyle is
   // needed). They also vary depending on the OS version, so set a known font.
-  gfx::FontList font_list(gfx::Font("Arial", 10));
+  FontList font_list(Font("Arial", 10));
 
   while (backend.Advance()) {
     SCOPED_TRACE(testing::Message() << "backend: " << backend.GetName());
@@ -3342,7 +3357,7 @@ TEST_F(RenderTextTest, StylePropagated) {
     backend.DrawVisualText();
     EXPECT_EQ(SkTypeface::kNormal, backend.paint().getTypeface()->style());
 
-    backend->SetStyle(TextStyle::BOLD, true);
+    backend->SetWeight(Font::Weight::BOLD);
     backend.DrawVisualText();
     EXPECT_EQ(SkTypeface::kBold, backend.paint().getTypeface()->style());
 
@@ -3350,7 +3365,7 @@ TEST_F(RenderTextTest, StylePropagated) {
     backend.DrawVisualText();
     EXPECT_EQ(SkTypeface::kBoldItalic, backend.paint().getTypeface()->style());
 
-    backend->SetStyle(TextStyle::BOLD, false);
+    backend->SetWeight(Font::Weight::NORMAL);
     backend.DrawVisualText();
     EXPECT_EQ(SkTypeface::kItalic, backend.paint().getTypeface()->style());
   }

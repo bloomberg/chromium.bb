@@ -88,11 +88,13 @@ void DesktopMediaSourceView::SetSelected(bool selected) {
         ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
     image_view_->SetBorder(views::Border::CreateSolidBorder(
         style_.selection_border_thickness, border_color));
-    label_->SetFontList(label_->font_list().Derive(0, gfx::Font::BOLD));
+    label_->SetFontList(label_->font_list().Derive(0, gfx::Font::NORMAL,
+                                                   gfx::Font::Weight::BOLD));
     parent_->OnSelectionChanged();
   } else {
     image_view_->SetBorder(views::Border::NullBorder());
-    label_->SetFontList(label_->font_list().Derive(0, gfx::Font::NORMAL));
+    label_->SetFontList(label_->font_list().Derive(0, gfx::Font::NORMAL,
+                                                   gfx::Font::Weight::NORMAL));
   }
 
   SchedulePaint();

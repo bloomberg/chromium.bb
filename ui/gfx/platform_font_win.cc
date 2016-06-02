@@ -35,10 +35,6 @@
 
 namespace {
 
-// If the tmWeight field of a TEXTMETRIC structure has a value >= this, the
-// font is bold.
-const int kTextMetricWeightBold = 700;
-
 // Returns the minimum font size, using the minimum size callback, if set.
 int GetMinimumFontSize() {
   int min_font_size = 0;
@@ -69,7 +65,10 @@ int AdjustFontSize(int lf_height, int size_delta) {
 void SetLogFontStyle(int font_style, LOGFONT* font_info) {
   font_info->lfUnderline = (font_style & gfx::Font::UNDERLINE) != 0;
   font_info->lfItalic = (font_style & gfx::Font::ITALIC) != 0;
-  font_info->lfWeight = (font_style & gfx::Font::BOLD) ? FW_BOLD : FW_NORMAL;
+}
+
+gfx::Font::Weight ToGfxFontWeight(int weight) {
+  return static_cast<gfx::Font::Weight>(weight);
 }
 
 // Returns the family name for the |IDWriteFont| interface passed in.
@@ -160,7 +159,7 @@ HRESULT FindDirectWriteFontForLOGFONT(IDWriteFactory* factory,
 // The contents of the LOGFONT pointer |font_info| may be modified on
 // return.
 HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
-                                   int font_style,
+                                   bool italic,
                                    IDWriteFactory* factory,
                                    IDWriteFont** dwrite_font) {
   // First try the GDI compat route to get a matching DirectWrite font.
@@ -239,13 +238,11 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
     return hr;
   }
 
-  DWRITE_FONT_WEIGHT weight = (font_style & SkTypeface::kBold)
-                            ? DWRITE_FONT_WEIGHT_BOLD
-                            : DWRITE_FONT_WEIGHT_NORMAL;
+  DWRITE_FONT_WEIGHT weight =
+      static_cast<DWRITE_FONT_WEIGHT>(font_info->lfWeight);
   DWRITE_FONT_STRETCH stretch = DWRITE_FONT_STRETCH_NORMAL;
-  DWRITE_FONT_STYLE italic = (font_style & SkTypeface::kItalic)
-                            ? DWRITE_FONT_STYLE_ITALIC
-                            : DWRITE_FONT_STYLE_NORMAL;
+  DWRITE_FONT_STYLE style =
+      (italic) ? DWRITE_FONT_STYLE_ITALIC : DWRITE_FONT_STYLE_NORMAL;
 
   // The IDWriteFontFamily::GetFirstMatchingFont call fails on certain machines
   // for fonts like MS UI Gothic, Segoe UI, etc. It is not clear why these
@@ -261,14 +258,13 @@ HRESULT GetMatchingDirectWriteFont(LOGFONT* font_info,
   // Remove the GetMatchingFonts and related code here once we get to a stable
   // state in canary.
   base::win::ScopedComPtr<IDWriteFontList> matching_font_list;
-  hr = font_family->GetMatchingFonts(weight, stretch, italic,
+  hr = font_family->GetMatchingFonts(weight, stretch, style,
                                      matching_font_list.Receive());
   uint32_t matching_font_count = 0;
   if (SUCCEEDED(hr))
     matching_font_count = matching_font_list->GetFontCount();
 
-  hr = font_family->GetFirstMatchingFont(weight, stretch, italic,
-                                         dwrite_font);
+  hr = font_family->GetFirstMatchingFont(weight, stretch, style, dwrite_font);
   if (FAILED(hr)) {
     base::debug::Alias(&matching_font_count);
     CHECK(false);
@@ -311,59 +307,17 @@ PlatformFontWin::PlatformFontWin(const std::string& font_name,
   InitWithFontNameAndSize(font_name, font_size);
 }
 
-Font PlatformFontWin::DeriveFontWithHeight(int height, int style) {
-  DCHECK_GE(height, 0);
-
-  // Create a font with a height near that of the target height.
-  LOGFONT font_info;
-  GetObject(GetNativeFont(), sizeof(LOGFONT), &font_info);
-  font_info.lfHeight = height;
-  SetLogFontStyle(style, &font_info);
-
-  HFONT hfont = CreateFontIndirect(&font_info);
-  Font font(new PlatformFontWin(CreateHFontRef(hfont)));
-
-  // Respect the minimum font size constraint.
-  const int min_font_size = GetMinimumFontSize();
-
-  // Used to avoid shrinking the font and expanding it.
-  bool ran_shrink_loop = false;
-
-  // Iterate to find the largest font with a height <= |height|.
-  while ((font.GetHeight() > height) &&
-         (font.GetFontSize() >= min_font_size)) {
-    ran_shrink_loop = true;
-    Font derived_font = font.Derive(-1, style);
-    // Break the loop if the derived font is too small or hasn't shrunk at all.
-    if ((derived_font.GetFontSize() < min_font_size) ||
-        ((derived_font.GetFontSize() == font.GetFontSize()) &&
-         (derived_font.GetHeight() == font.GetHeight())))
-      break;
-    font = derived_font;
-  }
-
-  while ((!ran_shrink_loop && font.GetHeight() <= height) ||
-         (font.GetFontSize() < min_font_size)) {
-    Font derived_font = font.Derive(1, style);
-    // Break the loop if the derived font is too large or hasn't grown at all.
-    if (((derived_font.GetHeight() > height) &&
-         (font.GetFontSize() >= min_font_size)) ||
-        ((derived_font.GetFontSize() == font.GetFontSize()) &&
-         (derived_font.GetHeight() == font.GetHeight())))
-      break;
-    font = derived_font;
-  }
-  return font;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontWin, PlatformFont implementation:
 
-Font PlatformFontWin::DeriveFont(int size_delta, int style) const {
+Font PlatformFontWin::DeriveFont(int size_delta,
+                                 int style,
+                                 Font::Weight weight) const {
   LOGFONT font_info;
   GetObject(GetNativeFont(), sizeof(LOGFONT), &font_info);
   const int requested_font_size = font_ref_->requested_font_size();
   font_info.lfHeight = AdjustFontSize(-requested_font_size, size_delta);
+  font_info.lfWeight = static_cast<LONG>(weight);
   SetLogFontStyle(style, &font_info);
 
   HFONT hfont = CreateFontIndirect(&font_info);
@@ -372,6 +326,10 @@ Font PlatformFontWin::DeriveFont(int size_delta, int style) const {
 
 int PlatformFontWin::GetHeight() {
   return font_ref_->height();
+}
+
+Font::Weight PlatformFontWin::GetWeight() const {
+  return font_ref_->weight();
 }
 
 int PlatformFontWin::GetBaseline() {
@@ -423,8 +381,8 @@ int PlatformFontWin::GetFontSize() const {
 }
 
 const FontRenderParams& PlatformFontWin::GetFontRenderParams() {
-  CR_DEFINE_STATIC_LOCAL(const gfx::FontRenderParams, params,
-      (gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), NULL)));
+  CR_DEFINE_STATIC_LOCAL(const FontRenderParams, params,
+      (gfx::GetFontRenderParams(FontRenderParamsQuery(), NULL)));
   return params;
 }
 
@@ -507,7 +465,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
 
   {
     base::win::ScopedGetDC screen_dc(NULL);
-    gfx::ScopedSetMapMode mode(screen_dc, MM_TEXT);
+    ScopedSetMapMode mode(screen_dc, MM_TEXT);
     GetTextMetricsForFont(screen_dc, font, &font_metrics);
   }
 
@@ -532,11 +490,10 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromGDI(
     style |= Font::ITALIC;
   if (font_metrics.tmUnderlined)
     style |= Font::UNDERLINE;
-  if (font_metrics.tmWeight >= kTextMetricWeightBold)
-    style |= Font::BOLD;
 
   return new HFontRef(font, font_size, height, baseline, cap_height,
-                      ave_char_width, style);
+                      ave_char_width, ToGfxFontWeight(font_metrics.tmWeight),
+                      style);
 }
 
 // static
@@ -557,13 +514,11 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
     font_info.lfHeight = -1;
   }
 
-  int skia_style = SkTypeface::kNormal;
-  if (font_info.lfWeight >= FW_SEMIBOLD &&
-      font_info.lfWeight <= FW_ULTRABOLD) {
-    skia_style |= SkTypeface::kBold;
+  if (font_info.lfWeight == 0) {
+    font_info.lfWeight = static_cast<LONG>(Font::Weight::NORMAL);
   }
-  if (font_info.lfItalic)
-    skia_style |= SkTypeface::kItalic;
+
+  const bool italic = font_info.lfItalic != 0;
 
   // Skia does not return all values we need for font metrics. For e.g.
   // the cap height which indicates the height of capital letters is not
@@ -573,10 +528,8 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   // DirectWrite and remove the code here which retrieves metrics from
   // DirectWrite to calculate the cap height.
   base::win::ScopedComPtr<IDWriteFont> dwrite_font;
-  HRESULT hr = GetMatchingDirectWriteFont(&font_info,
-                                          skia_style,
-                                          direct_write_factory_,
-                                          dwrite_font.Receive());
+  HRESULT hr = GetMatchingDirectWriteFont(
+      &font_info, italic, direct_write_factory_, dwrite_font.Receive());
   if (FAILED(hr)) {
     CHECK(false);
     return nullptr;
@@ -585,18 +538,21 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   DWRITE_FONT_METRICS dwrite_font_metrics = {0};
   dwrite_font->GetMetrics(&dwrite_font_metrics);
 
+  SkFontStyle skia_font_style(font_info.lfWeight, SkFontStyle::kNormal_Width,
+                              font_info.lfItalic ? SkFontStyle::kItalic_Slant
+                                                 : SkFontStyle::kUpright_Slant);
   sk_sp<SkTypeface> skia_face(
-      SkTypeface::CreateFromName(
+      SkTypeface::MakeFromName(
           base::SysWideToUTF8(font_info.lfFaceName).c_str(),
-                              static_cast<SkTypeface::Style>(skia_style)));
+                              skia_font_style));
 
-  gfx::FontRenderParams font_params =
-      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
+  FontRenderParams font_params =
+      gfx::GetFontRenderParams(FontRenderParamsQuery(), nullptr);
   SkFontLCDConfig::SetSubpixelOrder(
-      gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrder(
+      FontRenderParams::SubpixelRenderingToSkiaLCDOrder(
           font_params.subpixel_rendering));
   SkFontLCDConfig::SetSubpixelOrientation(
-      gfx::FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
+      FontRenderParams::SubpixelRenderingToSkiaLCDOrientation(
           font_params.subpixel_rendering));
 
   SkPaint paint;
@@ -625,19 +581,18 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
               : skia_metrics.fAvgCharWidth;
 
   int style = 0;
-  if (skia_style & SkTypeface::kItalic)
+  if (italic)
     style |= Font::ITALIC;
   if (font_info.lfUnderline)
     style |= Font::UNDERLINE;
-  if (font_info.lfWeight >= kTextMetricWeightBold)
-    style |= Font::BOLD;
 
   // DirectWrite may have substituted the GDI font name with a fallback
   // font. Ensure that it is updated here.
   DeleteObject(gdi_font);
   gdi_font = ::CreateFontIndirect(&font_info);
   return new HFontRef(gdi_font, -font_info.lfHeight, height, baseline,
-                      cap_height, ave_char_width, style);
+                      cap_height, ave_char_width,
+                      ToGfxFontWeight(font_info.lfWeight), style);
 }
 
 PlatformFontWin::PlatformFontWin(HFontRef* hfont_ref) : font_ref_(hfont_ref) {
@@ -655,6 +610,7 @@ PlatformFontWin::HFontRef::HFontRef(HFONT hfont,
                                     int baseline,
                                     int cap_height,
                                     int ave_char_width,
+                                    Font::Weight weight,
                                     int style)
     : hfont_(hfont),
       font_size_(font_size),
@@ -662,6 +618,7 @@ PlatformFontWin::HFontRef::HFontRef(HFONT hfont,
       baseline_(baseline),
       cap_height_(cap_height),
       ave_char_width_(ave_char_width),
+      weight_(weight),
       style_(style),
       dlu_base_x_(-1),
       requested_font_size_(font_size) {
@@ -695,7 +652,7 @@ int PlatformFontWin::HFontRef::GetAverageCharWidthInDialogUnits(
     HFONT gdi_font) {
   base::win::ScopedGetDC screen_dc(NULL);
   base::win::ScopedSelectObject font(screen_dc, gdi_font);
-  gfx::ScopedSetMapMode mode(screen_dc, MM_TEXT);
+  ScopedSetMapMode mode(screen_dc, MM_TEXT);
 
   // Yes, this is how Microsoft recommends calculating the dialog unit
   // conversions. See: http://support.microsoft.com/kb/125681

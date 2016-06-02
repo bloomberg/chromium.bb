@@ -347,7 +347,8 @@ TEST_F(LabelButtonTest, ButtonStyleIsDefaultStyle) {
   gfx::Size non_default_size = button->label()->size();
   EXPECT_EQ(button->label()->GetPreferredSize().width(),
             non_default_size.width());
-  EXPECT_FALSE(button->label()->font_list().GetFontStyle() & gfx::Font::BOLD);
+  EXPECT_EQ(button->label()->font_list().GetFontWeight(),
+            gfx::Font::Weight::NORMAL);
   EXPECT_EQ(styled_normal_text_color_, button->label()->enabled_color());
   button->SetIsDefault(true);
   button->SizeToPreferredSize();
@@ -355,10 +356,12 @@ TEST_F(LabelButtonTest, ButtonStyleIsDefaultStyle) {
   EXPECT_EQ(styled_highlight_text_color_, button->label()->enabled_color());
   if (PlatformStyle::kDefaultLabelButtonHasBoldFont) {
     EXPECT_NE(non_default_size, button->label()->size());
-    EXPECT_TRUE(button->label()->font_list().GetFontStyle() & gfx::Font::BOLD);
+    EXPECT_EQ(button->label()->font_list().GetFontWeight(),
+              gfx::Font::Weight::BOLD);
   } else {
     EXPECT_EQ(non_default_size, button->label()->size());
-    EXPECT_FALSE(button->label()->font_list().GetFontStyle() & gfx::Font::BOLD);
+    EXPECT_EQ(button->label()->font_list().GetFontWeight(),
+              gfx::Font::Weight::NORMAL);
   }
 }
 

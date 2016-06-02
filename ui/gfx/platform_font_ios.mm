@@ -21,7 +21,8 @@ namespace gfx {
 
 PlatformFontIOS::PlatformFontIOS() {
   font_size_ = [UIFont systemFontSize];
-  style_ = gfx::Font::NORMAL;
+  style_ = Font::NORMAL;
+  weight_ = Font::Weight::NORMAL;
   UIFont* system_font = [UIFont systemFontOfSize:font_size_];
   font_name_ = base::SysNSStringToUTF8([system_font fontName]);
   CalculateMetrics();
@@ -29,21 +30,23 @@ PlatformFontIOS::PlatformFontIOS() {
 
 PlatformFontIOS::PlatformFontIOS(NativeFont native_font) {
   std::string font_name = base::SysNSStringToUTF8([native_font fontName]);
-  InitWithNameSizeAndStyle(font_name,
-                           [native_font pointSize],
-                           gfx::Font::NORMAL);
+  InitWithNameSizeAndStyle(font_name, [native_font pointSize],
+                           Font::NORMAL, Font::Weight::NORMAL);
 }
 
-PlatformFontIOS::PlatformFontIOS(const std::string& font_name,
-                                 int font_size) {
-  InitWithNameSizeAndStyle(font_name, font_size, gfx::Font::NORMAL);
+PlatformFontIOS::PlatformFontIOS(const std::string& font_name, int font_size) {
+  InitWithNameSizeAndStyle(font_name, font_size, Font::NORMAL,
+                           Font::Weight::NORMAL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontIOS, PlatformFont implementation:
 
-Font PlatformFontIOS::DeriveFont(int size_delta, int style) const {
-  return Font(new PlatformFontIOS(font_name_, font_size_ + size_delta, style));
+Font PlatformFontIOS::DeriveFont(int size_delta,
+                                 int style,
+                                 Font::Weight weight) const {
+  return Font(
+      new PlatformFontIOS(font_name_, font_size_ + size_delta, style, weight));
 }
 
 int PlatformFontIOS::GetHeight() {
@@ -64,6 +67,10 @@ int PlatformFontIOS::GetExpectedTextWidth(int length) {
 
 int PlatformFontIOS::GetStyle() const {
   return style_;
+}
+
+Font::Weight PlatformFontIOS::GetWeight() const {
+  return weight_;
 }
 
 const std::string& PlatformFontIOS::GetFontName() const {
@@ -94,16 +101,19 @@ NativeFont PlatformFontIOS::GetNativeFont() const {
 
 PlatformFontIOS::PlatformFontIOS(const std::string& font_name,
                                  int font_size,
-                                 int style) {
-  InitWithNameSizeAndStyle(font_name, font_size, style);
+                                 int style,
+                                 Font::Weight weight) {
+  InitWithNameSizeAndStyle(font_name, font_size, style, weight);
 }
 
 void PlatformFontIOS::InitWithNameSizeAndStyle(const std::string& font_name,
                                                int font_size,
-                                               int style) {
+                                               int style,
+                                               Font::Weight weight) {
   font_name_ = font_name;
   font_size_ = font_size;
   style_ = style;
+  weight_ = weight;
   CalculateMetrics();
 }
 

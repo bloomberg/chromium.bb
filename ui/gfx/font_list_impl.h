@@ -9,10 +9,9 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/font.h"
 
 namespace gfx {
-
-class Font;
 
 // FontListImpl is designed to provide the implementation of FontList and
 // intended to be used only from FontList.  You must not use this class
@@ -32,10 +31,11 @@ class FontListImpl : public base::RefCounted<FontListImpl> {
   // size.
   explicit FontListImpl(const std::string& font_description_string);
 
-  // Creates a font list from font names, styles and size.
+  // Creates a font list from font names, styles, size and weight.
   FontListImpl(const std::vector<std::string>& font_names,
                int font_style,
-               int font_size);
+               int font_size,
+               Font::Weight font_weight);
 
   // Creates a font list from a Font vector.
   // All fonts in this vector should have the same style and size.
@@ -45,10 +45,12 @@ class FontListImpl : public base::RefCounted<FontListImpl> {
   explicit FontListImpl(const Font& font);
 
   // Returns a new FontListImpl with the same font names but resized and the
-  // given style. |size_delta| is the size in pixels to add to the current font
-  // size. |font_style| specifies the new style, which is a bitmask of the
-  // values: Font::BOLD, Font::ITALIC and Font::UNDERLINE.
-  FontListImpl* Derive(int size_delta, int font_style) const;
+  // given style and weight. |size_delta| is the size in pixels to add to the
+  // current font size. |font_style| specifies the new style, which is a
+  // bitmask of the values: Font::ITALIC and Font::UNDERLINE.
+  FontListImpl* Derive(int size_delta,
+                       int font_style,
+                       Font::Weight weight) const;
 
   // Returns the height of this font list, which is max(ascent) + max(descent)
   // for all the fonts in the font list.
@@ -67,11 +69,14 @@ class FontListImpl : public base::RefCounted<FontListImpl> {
   // actual number.
   int GetExpectedTextWidth(int length) const;
 
-  // Returns the |gfx::Font::FontStyle| style flags for this font list.
+  // Returns the |Font::FontStyle| style flags for this font list.
   int GetFontStyle() const;
 
   // Returns the font size in pixels.
   int GetFontSize() const;
+
+  // Returns the font weight.
+  Font::Weight GetFontWeight() const;
 
   // Returns the Font vector.
   const std::vector<Font>& GetFonts() const;
@@ -113,6 +118,7 @@ class FontListImpl : public base::RefCounted<FontListImpl> {
   // Cached font style and size.
   mutable int font_style_;
   mutable int font_size_;
+  mutable Font::Weight font_weight_;
 };
 
 }  // namespace gfx

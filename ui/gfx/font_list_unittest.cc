@@ -13,65 +13,88 @@
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace gfx {
+
 namespace {
 
 // Helper function for comparing fonts for equality.
-std::string FontToString(const gfx::Font& font) {
+std::string FontToString(const Font& font) {
   std::string font_string = font.GetFontName();
   font_string += "|";
   font_string += base::IntToString(font.GetFontSize());
   int style = font.GetStyle();
-  if (style & gfx::Font::BOLD)
-    font_string += "|bold";
-  if (style & gfx::Font::ITALIC)
+  if (style & Font::ITALIC)
     font_string += "|italic";
-  if (style & gfx::Font::UNDERLINE)
+  if (style & Font::UNDERLINE)
     font_string += "|underline";
+  auto weight = font.GetWeight();
+  if (weight == Font::Weight::BLACK)
+    font_string += "|black";
+  else if (weight == Font::Weight::BOLD)
+    font_string += "|bold";
+  else if (weight == Font::Weight::EXTRA_BOLD)
+    font_string += "|extrabold";
+  else if (weight == Font::Weight::EXTRA_LIGHT)
+    font_string += "|extralight";
+  else if (weight == Font::Weight::LIGHT)
+    font_string += "|light";
+  else if (weight == Font::Weight::MEDIUM)
+    font_string += "|medium";
+  else if (weight == Font::Weight::NORMAL)
+    font_string += "|normal";
+  else if (weight == Font::Weight::SEMIBOLD)
+    font_string += "|semibold";
+  else if (weight == Font::Weight::THIN)
+    font_string += "|thin";
   return font_string;
 }
 
 }  // namespace
 
-namespace gfx {
-
 TEST(FontListTest, ParseDescription) {
   std::vector<std::string> families;
-  int style = gfx::Font::NORMAL;
+  int style = Font::NORMAL;
   int size_pixels = 0;
+  Font::Weight weight = Font::Weight::NORMAL;
 
   // Parse a well-formed description containing styles and a size.
   EXPECT_TRUE(FontList::ParseDescription("Arial,Helvetica,Bold Italic 12px",
-                                         &families, &style, &size_pixels));
+                                         &families, &style, &size_pixels,
+                                         &weight));
   ASSERT_EQ(2U, families.size());
   EXPECT_EQ("Arial", families[0]);
   EXPECT_EQ("Helvetica", families[1]);
-  EXPECT_EQ(gfx::Font::BOLD | gfx::Font::ITALIC, style);
+  EXPECT_EQ(Font::ITALIC, style);
+  EXPECT_EQ(Font::Weight::BOLD, weight);
   EXPECT_EQ(12, size_pixels);
 
   // Whitespace should be removed.
   EXPECT_TRUE(FontList::ParseDescription("  Verdana , Italic  Bold   10px ",
-                                         &families, &style, &size_pixels));
+                                         &families, &style, &size_pixels,
+                                         &weight));
   ASSERT_EQ(1U, families.size());
   EXPECT_EQ("Verdana", families[0]);
-  EXPECT_EQ(gfx::Font::BOLD | gfx::Font::ITALIC, style);
+  EXPECT_EQ(Font::ITALIC, style);
+  EXPECT_EQ(Font::Weight::BOLD, weight);
   EXPECT_EQ(10, size_pixels);
 
   // Invalid descriptions should be rejected.
-  EXPECT_FALSE(FontList::ParseDescription("", &families, &style, &size_pixels));
+  EXPECT_FALSE(
+      FontList::ParseDescription("", &families, &style, &size_pixels, &weight));
   EXPECT_FALSE(FontList::ParseDescription("Arial", &families, &style,
-                                          &size_pixels));
+                                          &size_pixels, &weight));
   EXPECT_FALSE(FontList::ParseDescription("Arial,12", &families, &style,
-                                          &size_pixels));
+                                          &size_pixels, &weight));
   EXPECT_FALSE(FontList::ParseDescription("Arial 12px", &families, &style,
-                                          &size_pixels));
+                                          &size_pixels, &weight));
   EXPECT_FALSE(FontList::ParseDescription("Arial,12px,", &families, &style,
-                                          &size_pixels));
+                                          &size_pixels, &weight));
   EXPECT_FALSE(FontList::ParseDescription("Arial,0px", &families, &style,
-                                          &size_pixels));
+                                          &size_pixels, &weight));
   EXPECT_FALSE(FontList::ParseDescription("Arial,-1px", &families, &style,
-                                          &size_pixels));
+                                          &size_pixels, &weight));
   EXPECT_FALSE(FontList::ParseDescription("Arial,foo 12px", &families, &style,
-                                          &size_pixels));
+                                          &size_pixels, &weight));
 }
 
 // TODO(489354): Enable this on android.
@@ -85,8 +108,8 @@ TEST(FontListTest, MAYBE_Fonts_FromDescString) {
   FontList font_list = FontList("arial, Courier New, 13px");
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(2U, fonts.size());
-  EXPECT_EQ("arial|13", FontToString(fonts[0]));
-  EXPECT_EQ("Courier New|13", FontToString(fonts[1]));
+  EXPECT_EQ("arial|13|normal", FontToString(fonts[0]));
+  EXPECT_EQ("Courier New|13|normal", FontToString(fonts[1]));
 }
 
 // TODO(489354): Enable this on android.
@@ -102,8 +125,8 @@ TEST(FontListTest, MAYBE_Fonts_FromDescStringInFlexibleFormat) {
   FontList font_list = FontList("  arial   ,   Courier New ,   13px");
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(2U, fonts.size());
-  EXPECT_EQ("arial|13", FontToString(fonts[0]));
-  EXPECT_EQ("Courier New|13", FontToString(fonts[1]));
+  EXPECT_EQ("arial|13|normal", FontToString(fonts[0]));
+  EXPECT_EQ("Courier New|13|normal", FontToString(fonts[1]));
 }
 
 // TODO(489354): Enable this on android.
@@ -116,12 +139,13 @@ TEST(FontListTest, MAYBE_Fonts_FromDescStringInFlexibleFormat) {
 #endif
 TEST(FontListTest, MAYBE_Fonts_FromDescStringWithStyleInFlexibleFormat) {
   // Test init from font name style size string with flexible format.
-  FontList font_list = FontList("  arial  ,  Courier New ,  Bold   "
-                                "  Italic   13px");
+  FontList font_list = FontList(
+      "  arial  ,  Courier New ,  Bold   "
+      "  Italic   13px");
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(2U, fonts.size());
-  EXPECT_EQ("arial|13|bold|italic", FontToString(fonts[0]));
-  EXPECT_EQ("Courier New|13|bold|italic", FontToString(fonts[1]));
+  EXPECT_EQ("arial|13|italic|bold", FontToString(fonts[0]));
+  EXPECT_EQ("Courier New|13|italic|bold", FontToString(fonts[1]));
 }
 
 // TODO(489354): Enable this on android.
@@ -136,7 +160,7 @@ TEST(FontListTest, MAYBE_Fonts_FromFont) {
   FontList font_list = FontList(font);
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(1U, fonts.size());
-  EXPECT_EQ("Arial|8", FontToString(fonts[0]));
+  EXPECT_EQ("Arial|8|normal", FontToString(fonts[0]));
 }
 
 // TODO(489354): Enable this on android.
@@ -149,15 +173,15 @@ TEST(FontListTest, MAYBE_Fonts_FromFont) {
 TEST(FontListTest, MAYBE_Fonts_FromFontWithNonNormalStyle) {
   // Test init from Font with non-normal style.
   Font font("Arial", 8);
-  FontList font_list = FontList(font.Derive(2, Font::BOLD));
+  FontList font_list(font.Derive(2, Font::NORMAL, Font::Weight::BOLD));
   std::vector<Font> fonts = font_list.GetFonts();
   ASSERT_EQ(1U, fonts.size());
   EXPECT_EQ("Arial|10|bold", FontToString(fonts[0]));
 
-  font_list = FontList(font.Derive(-2, Font::ITALIC));
+  font_list = FontList(font.Derive(-2, Font::ITALIC, Font::Weight::NORMAL));
   fonts = font_list.GetFonts();
   ASSERT_EQ(1U, fonts.size());
-  EXPECT_EQ("Arial|6|italic", FontToString(fonts[0]));
+  EXPECT_EQ("Arial|6|italic|normal", FontToString(fonts[0]));
 }
 
 // TODO(489354): Enable this on android.
@@ -171,8 +195,8 @@ TEST(FontListTest, MAYBE_Fonts_FromFontVector) {
   Font font("Arial", 8);
   Font font_1("Courier New", 10);
   std::vector<Font> input_fonts;
-  input_fonts.push_back(font.Derive(0, Font::BOLD));
-  input_fonts.push_back(font_1.Derive(-2, Font::BOLD));
+  input_fonts.push_back(font.Derive(0, Font::NORMAL, Font::Weight::BOLD));
+  input_fonts.push_back(font_1.Derive(-2, Font::NORMAL, Font::Weight::BOLD));
   FontList font_list = FontList(input_fonts);
   const std::vector<Font>& fonts = font_list.GetFonts();
   ASSERT_EQ(2U, fonts.size());
@@ -183,15 +207,19 @@ TEST(FontListTest, MAYBE_Fonts_FromFontVector) {
 TEST(FontListTest, FontDescString_GetStyle) {
   FontList font_list = FontList("Arial,Sans serif, 8px");
   EXPECT_EQ(Font::NORMAL, font_list.GetFontStyle());
+  EXPECT_EQ(Font::Weight::NORMAL, font_list.GetFontWeight());
 
   font_list = FontList("Arial,Sans serif,Bold 8px");
-  EXPECT_EQ(Font::BOLD, font_list.GetFontStyle());
+  EXPECT_EQ(Font::NORMAL, font_list.GetFontStyle());
+  EXPECT_EQ(Font::Weight::BOLD, font_list.GetFontWeight());
 
   font_list = FontList("Arial,Sans serif,Italic 8px");
   EXPECT_EQ(Font::ITALIC, font_list.GetFontStyle());
+  EXPECT_EQ(Font::Weight::NORMAL, font_list.GetFontWeight());
 
   font_list = FontList("Arial,Italic Bold 8px");
-  EXPECT_EQ(Font::BOLD | Font::ITALIC, font_list.GetFontStyle());
+  EXPECT_EQ(Font::ITALIC, font_list.GetFontStyle());
+  EXPECT_EQ(Font::Weight::BOLD, font_list.GetFontWeight());
 }
 
 // TODO(489354): Enable this on android.
@@ -202,14 +230,15 @@ TEST(FontListTest, FontDescString_GetStyle) {
 #endif
 TEST(FontListTest, MAYBE_Fonts_GetStyle) {
   std::vector<Font> fonts;
-  fonts.push_back(gfx::Font("Arial", 8));
-  fonts.push_back(gfx::Font("Sans serif", 8));
+  fonts.push_back(Font("Arial", 8));
+  fonts.push_back(Font("Sans serif", 8));
   FontList font_list = FontList(fonts);
   EXPECT_EQ(Font::NORMAL, font_list.GetFontStyle());
-  fonts[0] = fonts[0].Derive(0, Font::ITALIC | Font::BOLD);
-  fonts[1] = fonts[1].Derive(0, Font::ITALIC | Font::BOLD);
+  fonts[0] = fonts[0].Derive(0, Font::ITALIC, Font::Weight::BOLD);
+  fonts[1] = fonts[1].Derive(0, Font::ITALIC, Font::Weight::BOLD);
   font_list = FontList(fonts);
-  EXPECT_EQ(Font::ITALIC | Font::BOLD, font_list.GetFontStyle());
+  EXPECT_EQ(Font::ITALIC, font_list.GetFontStyle());
+  EXPECT_EQ(Font::Weight::BOLD, font_list.GetFontWeight());
 }
 
 // TODO(489354): Enable this on android.
@@ -220,16 +249,26 @@ TEST(FontListTest, MAYBE_Fonts_GetStyle) {
 #endif
 TEST(FontListTest, MAYBE_Fonts_Derive) {
   std::vector<Font> fonts;
-  fonts.push_back(gfx::Font("Arial", 8));
-  fonts.push_back(gfx::Font("Courier New", 8));
+  fonts.push_back(Font("Arial", 8));
+  fonts.push_back(Font("Courier New", 8));
   FontList font_list = FontList(fonts);
 
-  FontList derived = font_list.Derive(5, Font::BOLD | Font::UNDERLINE);
+  FontList derived = font_list.Derive(5, Font::ITALIC, Font::Weight::BOLD);
   const std::vector<Font>& derived_fonts = derived.GetFonts();
 
   EXPECT_EQ(2U, derived_fonts.size());
-  EXPECT_EQ("Arial|13|bold|underline", FontToString(derived_fonts[0]));
-  EXPECT_EQ("Courier New|13|bold|underline", FontToString(derived_fonts[1]));
+  EXPECT_EQ("Arial|13|italic|bold", FontToString(derived_fonts[0]));
+  EXPECT_EQ("Courier New|13|italic|bold", FontToString(derived_fonts[1]));
+
+  // TODO(mboc): Linux has never supported UNDERLINE. Fix this if possible.
+#if !defined(OS_LINUX)
+  derived = font_list.Derive(5, Font::UNDERLINE, Font::Weight::BOLD);
+  const std::vector<Font>& underline_fonts = derived.GetFonts();
+
+  EXPECT_EQ(2U, underline_fonts.size());
+  EXPECT_EQ("Arial|13|underline|bold", FontToString(underline_fonts[0]));
+  EXPECT_EQ("Courier New|13|underline|bold", FontToString(underline_fonts[1]));
+#endif
 }
 
 // TODO(489354): Enable this on android.
@@ -240,16 +279,18 @@ TEST(FontListTest, MAYBE_Fonts_Derive) {
 #endif
 TEST(FontListTest, MAYBE_Fonts_DeriveWithSizeDelta) {
   std::vector<Font> fonts;
-  fonts.push_back(gfx::Font("Arial", 18).Derive(0, Font::ITALIC));
-  fonts.push_back(gfx::Font("Courier New", 18).Derive(0, Font::ITALIC));
+  fonts.push_back(
+      Font("Arial", 18).Derive(0, Font::ITALIC, Font::Weight::NORMAL));
+  fonts.push_back(Font("Courier New", 18)
+                      .Derive(0, Font::ITALIC, Font::Weight::NORMAL));
   FontList font_list = FontList(fonts);
 
   FontList derived = font_list.DeriveWithSizeDelta(-5);
   const std::vector<Font>& derived_fonts = derived.GetFonts();
 
   EXPECT_EQ(2U, derived_fonts.size());
-  EXPECT_EQ("Arial|13|italic", FontToString(derived_fonts[0]));
-  EXPECT_EQ("Courier New|13|italic", FontToString(derived_fonts[1]));
+  EXPECT_EQ("Arial|13|italic|normal", FontToString(derived_fonts[0]));
+  EXPECT_EQ("Courier New|13|italic|normal", FontToString(derived_fonts[1]));
 }
 
 // TODO(489354): Enable this on android.
@@ -296,9 +337,9 @@ TEST(FontListTest, MAYBE_Fonts_GetHeight_GetBaseline) {
 TEST(FontListTest, MAYBE_Fonts_DeriveWithHeightUpperBound) {
   std::vector<Font> fonts;
 
-  fonts.push_back(gfx::Font("Arial", 18));
-  fonts.push_back(gfx::Font("Sans serif", 18));
-  fonts.push_back(gfx::Font("Symbol", 18));
+  fonts.push_back(Font("Arial", 18));
+  fonts.push_back(Font("Sans serif", 18));
+  fonts.push_back(Font("Symbol", 18));
   FontList font_list = FontList(fonts);
 
   // A smaller upper bound should derive a font list with a smaller height.

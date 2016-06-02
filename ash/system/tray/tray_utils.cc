@@ -17,7 +17,8 @@
 namespace ash {
 
 void SetupLabelForTray(views::Label* label) {
-  label->SetFontList(gfx::FontList().Derive(1, gfx::Font::BOLD));
+  label->SetFontList(
+      gfx::FontList().Derive(1, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
   label->SetAutoColorReadabilityEnabled(false);
   label->SetEnabledColor(SK_ColorWHITE);
   label->SetBackgroundColor(SkColorSetARGB(0, 255, 255, 255));

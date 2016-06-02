@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -33,8 +34,11 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   // Returns a new Font derived from the existing font.
   // |size_delta| is the size in pixels to add to the current font.
   // The style parameter specifies the new style for the font, and is a
-  // bitmask of the values: BOLD, ITALIC and UNDERLINE.
-  virtual Font DeriveFont(int size_delta, int style) const = 0;
+  // bitmask of the values: ITALIC and UNDERLINE.
+  // The weight parameter specifies the desired weight of the font.
+  virtual Font DeriveFont(int size_delta,
+                          int style,
+                          Font::Weight weight) const = 0;
 
   // Returns the number of vertical pixels needed to display characters from
   // the specified font.  This may include some leading, i.e. height may be
@@ -42,6 +46,9 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   // implementations include leading and the Linux one does not.  This may
   // need to be revisited in the future.
   virtual int GetHeight() = 0;
+
+  // Returns the font weight.
+  virtual Font::Weight GetWeight() const = 0;
 
   // Returns the baseline, or ascent, of the font.
   virtual int GetBaseline() = 0;

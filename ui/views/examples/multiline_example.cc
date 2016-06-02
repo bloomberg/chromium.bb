@@ -101,8 +101,8 @@ class MultilineExample::RenderTextView : public View {
     render_text_->ApplyStyle(gfx::DIAGONAL_STRIKE, true, color_range);
     render_text_->SetStyle(gfx::UNDERLINE, false);
     render_text_->ApplyStyle(gfx::UNDERLINE, true, color_range);
-    render_text_->ApplyStyle(gfx::BOLD, true, bold_range);
     render_text_->ApplyStyle(gfx::ITALIC, true, italic_range);
+    render_text_->ApplyWeight(gfx::Font::Weight::BOLD, bold_range);
     InvalidateLayout();
   }
 

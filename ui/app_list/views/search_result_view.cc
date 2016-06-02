@@ -57,7 +57,7 @@ gfx::RenderText* CreateRenderText(const base::string16& text,
       continue;
 
     if (it->styles & SearchResult::Tag::MATCH)
-      render_text->ApplyStyle(gfx::BOLD, true, it->range);
+      render_text->ApplyWeight(gfx::Font::Weight::BOLD, it->range);
     if (it->styles & SearchResult::Tag::DIM)
       render_text->ApplyColor(kResultDimmedTextColor, it->range);
     else if (it->styles & SearchResult::Tag::URL)

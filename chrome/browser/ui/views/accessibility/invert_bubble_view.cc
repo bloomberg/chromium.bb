@@ -83,7 +83,8 @@ void InvertBubbleView::Init() {
       rb.GetFontList(ui::ResourceBundle::MediumFont);
 
   views::Label* title = new views::Label(
-      base::string16(), original_font_list.Derive(2, gfx::Font::BOLD));
+      base::string16(),
+      original_font_list.Derive(2, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
   title->SetMultiLine(true);
 
   learn_more_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));

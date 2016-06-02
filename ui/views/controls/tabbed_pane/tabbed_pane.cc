@@ -28,9 +28,9 @@ const SkColor kTabTitleColor_Hovered = SK_ColorBLACK;
 const SkColor kTabBorderColor = SkColorSetRGB(0xC8, 0xC8, 0xC8);
 const SkScalar kTabBorderThickness = 1.0f;
 
-const gfx::Font::FontStyle kHoverStyle = gfx::Font::NORMAL;
-const gfx::Font::FontStyle kActiveStyle = gfx::Font::BOLD;
-const gfx::Font::FontStyle kInactiveStyle = gfx::Font::NORMAL;
+const gfx::Font::Weight kHoverWeight = gfx::Font::Weight::NORMAL;
+const gfx::Font::Weight kActiveWeight = gfx::Font::Weight::BOLD;
+const gfx::Font::Weight kInactiveWeight = gfx::Font::Weight::NORMAL;
 
 }  // namespace
 
@@ -111,7 +111,8 @@ Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
           title,
           ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
               ui::kLabelFontSizeDelta,
-              kActiveStyle))),
+              gfx::Font::NORMAL,
+              kActiveWeight))),
       tab_state_(TAB_ACTIVE),
       contents_(contents) {
   // Calculate this now while the font list is guaranteed to be bold.
@@ -189,18 +190,18 @@ void Tab::SetState(TabState tab_state) {
   switch (tab_state) {
     case TAB_INACTIVE:
       title_->SetEnabledColor(kTabTitleColor_Inactive);
-      title_->SetFontList(
-          rb.GetFontListWithDelta(ui::kLabelFontSizeDelta, kInactiveStyle));
+      title_->SetFontList(rb.GetFontListWithDelta(
+          ui::kLabelFontSizeDelta, gfx::Font::NORMAL, kInactiveWeight));
       break;
     case TAB_ACTIVE:
       title_->SetEnabledColor(kTabTitleColor_Active);
-      title_->SetFontList(
-          rb.GetFontListWithDelta(ui::kLabelFontSizeDelta, kActiveStyle));
+      title_->SetFontList(rb.GetFontListWithDelta(
+          ui::kLabelFontSizeDelta, gfx::Font::NORMAL, kActiveWeight));
       break;
     case TAB_HOVERED:
       title_->SetEnabledColor(kTabTitleColor_Hovered);
-      title_->SetFontList(
-          rb.GetFontListWithDelta(ui::kLabelFontSizeDelta, kHoverStyle));
+      title_->SetFontList(rb.GetFontListWithDelta(
+          ui::kLabelFontSizeDelta, gfx::Font::NORMAL, kHoverWeight));
       break;
   }
   SchedulePaint();

@@ -34,7 +34,7 @@ namespace internal {
 struct GFX_EXPORT TextRunHarfBuzz {
   // Construct the run with |template_font| since determining the details of a
   // default-constructed gfx::Font is expensive, but it will always be replaced.
-  explicit TextRunHarfBuzz(const gfx::Font& template_font);
+  explicit TextRunHarfBuzz(const Font& template_font);
   ~TextRunHarfBuzz();
 
   // Returns the index of the first glyph that corresponds to the character at
@@ -81,7 +81,8 @@ struct GFX_EXPORT TextRunHarfBuzz {
   int font_size;
   int baseline_offset;
   int baseline_type;
-  int font_style;
+  bool italic;
+  Font::Weight weight;
   bool strike;
   bool diagonal_strike;
   bool underline;
@@ -230,10 +231,10 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   // has fewer than |best_missing_glyphs| missing glyphs.
   bool CompareFamily(const base::string16& text,
                      const Font& font,
-                     const gfx::FontRenderParams& render_params,
+                     const FontRenderParams& render_params,
                      internal::TextRunHarfBuzz* run,
                      Font* best_font,
-                     gfx::FontRenderParams* best_render_params,
+                     FontRenderParams* best_render_params,
                      size_t* best_missing_glyphs);
 
   // Shape the glyphs of all runs in |run_list| using |text|.

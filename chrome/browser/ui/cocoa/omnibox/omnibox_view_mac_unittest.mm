@@ -115,8 +115,11 @@ class OmniboxViewMacTest : public CocoaProfileTest {
   }
 };
 
-TEST_F(OmniboxViewMacTest, GetFieldFont) {
-  EXPECT_TRUE(OmniboxViewMac::GetFieldFont(gfx::Font::NORMAL));
+TEST_F(OmniboxViewMacTest, GetFonts) {
+  EXPECT_TRUE(OmniboxViewMac::GetNormalFieldFont());
+  EXPECT_TRUE(OmniboxViewMac::GetBoldFieldFont());
+  EXPECT_TRUE(OmniboxViewMac::GetLargeFont());
+  EXPECT_TRUE(OmniboxViewMac::GetSmallFont());
 }
 
 TEST_F(OmniboxViewMacTest, TabToAutocomplete) {

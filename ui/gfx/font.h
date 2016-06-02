@@ -34,9 +34,23 @@ class GFX_EXPORT Font {
   // The following constants indicate the font style.
   enum FontStyle {
     NORMAL = 0,
-    BOLD = 1,
-    ITALIC = 2,
-    UNDERLINE = 4,
+    ITALIC = 1,
+    UNDERLINE = 2,
+  };
+
+  // Standard font weights as used in Pango and Windows. The values must match
+  // https://msdn.microsoft.com/en-us/library/system.windows.fontweights(v=vs.110).aspx
+  enum class Weight {
+    INVALID = -1,
+    THIN = 100,
+    EXTRA_LIGHT = 200,
+    LIGHT = 300,
+    NORMAL = 400,
+    MEDIUM = 500,
+    SEMIBOLD = 600,
+    BOLD = 700,
+    EXTRA_BOLD = 800,
+    BLACK = 900,
   };
 
   // Creates a font with the default name and style.
@@ -64,8 +78,8 @@ class GFX_EXPORT Font {
   // |size_delta| is the size in pixels to add to the current font. For example,
   // a value of 5 results in a font 5 pixels bigger than this font.
   // The style parameter specifies the new style for the font, and is a
-  // bitmask of the values: BOLD, ITALIC and UNDERLINE.
-  Font Derive(int size_delta, int style) const;
+  // bitmask of the values: ITALIC and UNDERLINE.
+  Font Derive(int size_delta, int style, Font::Weight weight) const;
 
   // Returns the number of vertical pixels needed to display characters from
   // the specified font.  This may include some leading, i.e. height may be
@@ -73,6 +87,9 @@ class GFX_EXPORT Font {
   // implementations include leading and the Linux one does not.  This may
   // need to be revisited in the future.
   int GetHeight() const;
+
+  // Returns the font weight.
+  Font::Weight GetWeight() const;
 
   // Returns the baseline, or ascent, of the font.
   int GetBaseline() const;
@@ -117,6 +134,11 @@ class GFX_EXPORT Font {
   // Wrapped platform font implementation.
   scoped_refptr<PlatformFont> platform_font_;
 };
+
+#ifndef NDEBUG
+GFX_EXPORT std::ostream& operator<<(std::ostream& stream,
+                                    const Font::Weight weight);
+#endif
 
 }  // namespace gfx
 

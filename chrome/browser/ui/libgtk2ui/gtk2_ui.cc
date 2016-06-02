@@ -485,6 +485,7 @@ views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
 Gtk2UI::Gtk2UI()
     : default_font_size_pixels_(0),
       default_font_style_(gfx::Font::NORMAL),
+      default_font_weight_(gfx::Font::Weight::NORMAL),
       middle_click_action_(GetDefaultMiddleClickAction()),
       device_scale_factor_(1.0) {
   GtkInitFromCommandLine(*base::CommandLine::ForCurrentProcess());
@@ -835,11 +836,13 @@ gfx::FontRenderParams Gtk2UI::GetDefaultFontRenderParams() const {
 void Gtk2UI::GetDefaultFontDescription(
     std::string* family_out,
     int* size_pixels_out,
-    int* style_out,
+    bool* italic_out,
+    gfx::Font::Weight* weight_out,
     gfx::FontRenderParams* params_out) const {
   *family_out = default_font_family_;
   *size_pixels_out = default_font_size_pixels_;
-  *style_out = default_font_style_;
+  *italic_out = (default_font_style_ & gfx::Font::ITALIC) != 0;
+  *weight_out = default_font_weight_;
   *params_out = default_font_render_params_;
 }
 
@@ -1366,9 +1369,8 @@ void Gtk2UI::UpdateDefaultFont() {
   }
 
   query.style = gfx::Font::NORMAL;
-  // TODO(davemoore): Support weights other than bold?
-  if (pango_font_description_get_weight(desc) == PANGO_WEIGHT_BOLD)
-    query.style |= gfx::Font::BOLD;
+  query.weight =
+      static_cast<gfx::Font::Weight>(pango_font_description_get_weight(desc));
   // TODO(davemoore): What about PANGO_STYLE_OBLIQUE?
   if (pango_font_description_get_style(desc) == PANGO_STYLE_ITALIC)
     query.style |= gfx::Font::ITALIC;

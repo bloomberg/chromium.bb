@@ -60,8 +60,8 @@ FontRenderParamsQuery::FontRenderParamsQuery()
     : pixel_size(0),
       point_size(0),
       style(-1),
-      device_scale_factor(0) {
-}
+      weight(Font::Weight::INVALID),
+      device_scale_factor(0) {}
 
 FontRenderParamsQuery::FontRenderParamsQuery(
     const FontRenderParamsQuery& other) = default;

@@ -18,8 +18,11 @@ class PlatformFontIOS : public PlatformFont {
                   int font_size);
 
   // Overridden from PlatformFont:
-  Font DeriveFont(int size_delta, int style) const override;
+  Font DeriveFont(int size_delta,
+                  int style,
+                  Font::Weight weight) const override;
   int GetHeight() override;
+  Font::Weight GetWeight() const override;
   int GetBaseline() override;
   int GetCapHeight() override;
   int GetExpectedTextWidth(int length) override;
@@ -31,13 +34,17 @@ class PlatformFontIOS : public PlatformFont {
   NativeFont GetNativeFont() const override;
 
  private:
-  PlatformFontIOS(const std::string& font_name, int font_size, int style);
+  PlatformFontIOS(const std::string& font_name,
+                  int font_size,
+                  int style,
+                  Font::Weight weight);
   ~PlatformFontIOS() override {}
 
   // Initialize the object with the specified parameters.
   void InitWithNameSizeAndStyle(const std::string& font_name,
                                 int font_size,
-                                int style);
+                                int style,
+                                Font::Weight weight);
 
   // Calculate and cache the font metrics.
   void CalculateMetrics();
@@ -45,6 +52,7 @@ class PlatformFontIOS : public PlatformFont {
   std::string font_name_;
   int font_size_;
   int style_;
+  Font::Weight weight_;
 
   // Cached metrics, generated at construction.
   int height_;

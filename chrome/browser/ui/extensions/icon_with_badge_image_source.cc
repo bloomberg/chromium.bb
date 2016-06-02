@@ -69,7 +69,8 @@ SkPaint* GetBadgeTextPaintSingleton() {
     text_paint->setTextAlign(SkPaint::kLeft_Align);
 
     sk_sp<SkTypeface> typeface(
-        SkTypeface::CreateFromName(kPreferredTypeface, SkTypeface::kBold));
+        SkTypeface::MakeFromName(kPreferredTypeface,
+                                 SkFontStyle::FromOldStyle(SkTypeface::kBold)));
     // Skia doesn't do any font fallback---if the user is missing the font then
     // typeface will be NULL. If we don't do manual fallback then we'll crash.
     if (typeface) {
@@ -81,8 +82,8 @@ SkPaint* GetBadgeTextPaintSingleton() {
       // that don't have Arial.
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       const gfx::Font& base_font = rb.GetFont(ResourceBundle::BaseFont);
-      typeface = sk_sp<SkTypeface>(SkTypeface::CreateFromName(
-          base_font.GetFontName().c_str(), SkTypeface::kNormal));
+      typeface = sk_sp<SkTypeface>(SkTypeface::MakeFromName(
+          base_font.GetFontName().c_str(), SkFontStyle()));
       DCHECK(typeface);
     }
 
@@ -187,7 +188,8 @@ void IconWithBadgeImageSource::PaintBadge(gfx::Canvas* canvas) {
   for (size_t i = 0; i < kMaxIncrementAttempts; ++i) {
     int w = 0;
     int h = 0;
-    gfx::FontList bigger_font = base_font.Derive(1, 0);
+    gfx::FontList bigger_font =
+        base_font.Derive(1, 0, gfx::Font::Weight::NORMAL);
     gfx::Canvas::SizeStringInt(utf16_text, bigger_font, &w, &h, 0,
                                gfx::Canvas::NO_ELLIPSIS);
     if (h > kBadgeHeight)

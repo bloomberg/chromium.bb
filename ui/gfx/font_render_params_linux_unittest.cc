@@ -29,11 +29,11 @@ class TestFontDelegate : public LinuxFontDelegate {
   FontRenderParams GetDefaultFontRenderParams() const override {
     return params_;
   }
-  void GetDefaultFontDescription(
-      std::string* family_out,
-      int* size_pixels_out,
-      int* style_out,
-      FontRenderParams* params_out) const override {
+  void GetDefaultFontDescription(std::string* family_out,
+                                 int* size_pixels_out,
+                                 bool* italic_out,
+                                 Font::Weight* weight_out,
+                                 FontRenderParams* params_out) const override {
     NOTIMPLEMENTED();
   }
 
@@ -194,19 +194,21 @@ TEST_F(FontRenderParamsTest, Style) {
   EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_RGB,
             params.subpixel_rendering);
 
-  query.style = Font::BOLD;
+  query.weight = Font::Weight::BOLD;
   params = GetFontRenderParams(query, NULL);
   EXPECT_EQ(FontRenderParams::HINTING_SLIGHT, params.hinting);
   EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_NONE,
             params.subpixel_rendering);
 
+  query.weight = Font::Weight::NORMAL;
   query.style = Font::ITALIC;
   params = GetFontRenderParams(query, NULL);
   EXPECT_EQ(FontRenderParams::HINTING_NONE, params.hinting);
   EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_RGB,
             params.subpixel_rendering);
 
-  query.style = Font::BOLD | Font::ITALIC;
+  query.weight = Font::Weight::BOLD;
+  query.style = Font::ITALIC;
   params = GetFontRenderParams(query, NULL);
   EXPECT_EQ(FontRenderParams::HINTING_NONE, params.hinting);
   EXPECT_EQ(FontRenderParams::SUBPIXEL_RENDERING_NONE,

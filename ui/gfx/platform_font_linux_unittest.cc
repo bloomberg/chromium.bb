@@ -21,26 +21,30 @@ namespace gfx {
 // description on Linux.
 class TestFontDelegate : public LinuxFontDelegate {
  public:
-  TestFontDelegate() : size_pixels_(0), style_(gfx::Font::NORMAL) {}
+  TestFontDelegate()
+      : size_pixels_(0), italic_(false), weight_(Font::Weight::NORMAL) {}
   ~TestFontDelegate() override {}
 
   void set_family(const std::string& family) { family_ = family; }
   void set_size_pixels(int size_pixels) { size_pixels_ = size_pixels; }
-  void set_style(int style) { style_ = style; }
+  void set_italic(int italic) { italic_ = italic; }
+  void set_weight(gfx::Font::Weight weight) { weight_ = weight; }
   void set_params(const FontRenderParams& params) { params_ = params; }
 
   FontRenderParams GetDefaultFontRenderParams() const override {
     NOTIMPLEMENTED();
     return FontRenderParams();
   }
-  void GetDefaultFontDescription(
-      std::string* family_out,
-      int* size_pixels_out,
-      int* style_out,
-      FontRenderParams* params_out) const override {
+
+  void GetDefaultFontDescription(std::string* family_out,
+                                 int* size_pixels_out,
+                                 bool* italic_out,
+                                 Font::Weight* weight_out,
+                                 FontRenderParams* params_out) const override {
     *family_out = family_;
     *size_pixels_out = size_pixels_;
-    *style_out = style_;
+    *italic_out = italic_;
+    *weight_out = weight_;
     *params_out = params_;
   }
 
@@ -48,7 +52,8 @@ class TestFontDelegate : public LinuxFontDelegate {
   // Default values to be returned.
   std::string family_;
   int size_pixels_;
-  int style_;
+  bool italic_;
+  gfx::Font::Weight weight_;
   FontRenderParams params_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFontDelegate);
@@ -89,7 +94,7 @@ TEST_F(PlatformFontLinuxTest, DefaultFont) {
 #else
   test_font_delegate_.set_family("Arial");
   test_font_delegate_.set_size_pixels(13);
-  test_font_delegate_.set_style(gfx::Font::NORMAL);
+  test_font_delegate_.set_italic(false);
   FontRenderParams params;
   params.antialiasing = false;
   params.hinting = FontRenderParams::HINTING_FULL;
@@ -108,17 +113,19 @@ TEST_F(PlatformFontLinuxTest, DefaultFont) {
   // Drop the old default font and check that new settings are loaded.
 #if defined(OS_CHROMEOS)
   PlatformFontLinux::SetDefaultFontDescription(
-      "Times New Roman,Arial,Bold 15px");
+      "Times New Roman,Arial,Bold Italic 15px");
 #else
   test_font_delegate_.set_family("Times New Roman");
   test_font_delegate_.set_size_pixels(15);
-  test_font_delegate_.set_style(gfx::Font::BOLD);
+  test_font_delegate_.set_italic(true);
+  test_font_delegate_.set_weight(gfx::Font::Weight::BOLD);
 #endif
   PlatformFontLinux::ReloadDefaultFont();
   scoped_refptr<gfx::PlatformFontLinux> font2(new gfx::PlatformFontLinux());
   EXPECT_EQ("Times New Roman", font2->GetFontName());
   EXPECT_EQ(15, font2->GetFontSize());
-  EXPECT_EQ(gfx::Font::BOLD, font2->GetStyle());
+  EXPECT_NE(font2->GetStyle() & Font::ITALIC, 0);
+  EXPECT_EQ(gfx::Font::Weight::BOLD, font2->GetWeight());
 }
 
 }  // namespace gfx

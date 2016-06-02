@@ -10,6 +10,7 @@
 
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkFontLCDConfig.h"
+#include "ui/gfx/font.h"
 #include "ui/gfx/gfx_export.h"
 
 namespace gfx {
@@ -88,8 +89,11 @@ struct GFX_EXPORT FontRenderParamsQuery {
   int pixel_size;
   int point_size;
 
-  // gfx::Font::FontStyle bit field, or -1 if unset.
+  // Font::FontStyle bit field, or -1 if unset.
   int style;
+
+  // Weight of the font. Weight::NORMAL by default.
+  Font::Weight weight;
 
   // The device scale factor of the display, or 0 if unset.
   float device_scale_factor;

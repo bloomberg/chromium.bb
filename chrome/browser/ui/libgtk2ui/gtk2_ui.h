@@ -63,7 +63,8 @@ class Gtk2UI : public views::LinuxUI {
   void GetDefaultFontDescription(
       std::string* family_out,
       int* size_pixels_out,
-      int* style_out,
+      bool* italic_out,
+      gfx::Font::Weight* weight_out,
       gfx::FontRenderParams* params_out) const override;
 
   // ui::ShellDialogLinux:
@@ -207,6 +208,7 @@ class Gtk2UI : public views::LinuxUI {
   std::string default_font_family_;
   int default_font_size_pixels_;
   int default_font_style_;  // Bitfield of gfx::Font::Style values.
+  gfx::Font::Weight default_font_weight_;
   gfx::FontRenderParams default_font_render_params_;
 
 #if defined(USE_GCONF)

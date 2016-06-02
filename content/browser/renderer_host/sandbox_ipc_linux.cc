@@ -284,8 +284,8 @@ void SandboxIPCHandler::HandleGetStyleForStrike(
   gfx::FontRenderParamsQuery query;
   query.families.push_back(family);
   query.pixel_size = pixel_size;
-  query.style = gfx::Font::NORMAL |
-      (bold ? gfx::Font::BOLD : 0) | (italic ? gfx::Font::ITALIC : 0);
+  query.style = italic ? gfx::Font::ITALIC : 0;
+  query.weight = bold ? gfx::Font::Weight::BOLD : gfx::Font::Weight::NORMAL;
   const gfx::FontRenderParams params = gfx::GetFontRenderParams(query, NULL);
 
   // These are passed as ints since they're interpreted as tri-state chars in

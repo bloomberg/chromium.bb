@@ -569,16 +569,18 @@ struct CaseInsensitiveCompare {
 namespace internal {
 
 #if !defined(OS_MACOSX)
-sk_sp<SkTypeface> CreateSkiaTypeface(const gfx::Font& font, int style) {
-  int skia_style = SkTypeface::kNormal;
-  skia_style |= (style & Font::BOLD) ? SkTypeface::kBold : 0;
-  skia_style |= (style & Font::ITALIC) ? SkTypeface::kItalic : 0;
-  return sk_sp<SkTypeface>(SkTypeface::CreateFromName(
-      font.GetFontName().c_str(), static_cast<SkTypeface::Style>(skia_style)));
+sk_sp<SkTypeface> CreateSkiaTypeface(const Font& font,
+                                     bool italic,
+                                     Font::Weight weight) {
+  SkFontStyle skia_style(
+      static_cast<int>(weight), SkFontStyle::kNormal_Width,
+      italic ? SkFontStyle::kItalic_Slant : SkFontStyle::kUpright_Slant);
+  return sk_sp<SkTypeface>(SkTypeface::MakeFromName(
+      font.GetFontName().c_str(), skia_style));
 }
 #endif
 
-TextRunHarfBuzz::TextRunHarfBuzz(const gfx::Font& template_font)
+TextRunHarfBuzz::TextRunHarfBuzz(const Font& template_font)
     : width(0.0f),
       preceding_run_widths(0.0f),
       is_rtl(false),
@@ -589,7 +591,8 @@ TextRunHarfBuzz::TextRunHarfBuzz(const gfx::Font& template_font)
       font_size(0),
       baseline_offset(0),
       baseline_type(0),
-      font_style(0),
+      italic(false),
+      weight(Font::Weight::NORMAL),
       strike(false),
       diagonal_strike(false),
       underline(false) {}
@@ -1272,18 +1275,18 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   DCHECK_LE(text.size(), baselines().max());
   for (const BreakList<bool>& style : styles())
     DCHECK_LE(text.size(), style.max());
-  internal::StyleIterator style(empty_colors, baselines(), styles());
+  internal::StyleIterator style(empty_colors, baselines(), weights(), styles());
 
   for (size_t run_break = 0; run_break < text.length();) {
     internal::TextRunHarfBuzz* run =
         new internal::TextRunHarfBuzz(font_list().GetPrimaryFont());
     run->range.set_start(run_break);
-    run->font_style = (style.style(BOLD) ? Font::BOLD : 0) |
-                      (style.style(ITALIC) ? Font::ITALIC : 0);
+    run->italic = style.style(ITALIC);
     run->baseline_type = style.baseline();
     run->strike = style.style(STRIKE);
     run->diagonal_strike = style.style(DIAGONAL_STRIKE);
     run->underline = style.style(UNDERLINE);
+    run->weight = style.weight();
     int32_t script_item_break = 0;
     bidi_iterator.GetLogicalRun(run_break, &script_item_break, &run->level);
     CHECK_GT(static_cast<size_t>(script_item_break), run_break);
@@ -1324,10 +1327,10 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
 bool RenderTextHarfBuzz::CompareFamily(
     const base::string16& text,
     const Font& font,
-    const gfx::FontRenderParams& render_params,
+    const FontRenderParams& render_params,
     internal::TextRunHarfBuzz* run,
     Font* best_font,
-    gfx::FontRenderParams* best_render_params,
+    FontRenderParams* best_render_params,
     size_t* best_missing_glyphs) {
   if (!ShapeRunWithFont(text, font, render_params, run))
     return false;
@@ -1358,7 +1361,7 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
     // Calculate a slightly smaller font. The ratio here is somewhat arbitrary.
     // Proportions from 5/9 to 5/7 all look pretty good.
     const float ratio = 5.0f / 9.0f;
-    run->font_size = gfx::ToRoundedInt(primary_font.GetFontSize() * ratio);
+    run->font_size = ToRoundedInt(primary_font.GetFontSize() * ratio);
     switch (run->baseline_type) {
       case SUPERSCRIPT:
         run->baseline_offset =
@@ -1366,7 +1369,7 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
         break;
       case SUPERIOR:
         run->baseline_offset =
-            gfx::ToRoundedInt(primary_font.GetCapHeight() * ratio) -
+            ToRoundedInt(primary_font.GetCapHeight() * ratio) -
             primary_font.GetCapHeight();
         break;
       case SUBSCRIPT:
@@ -1448,7 +1451,7 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
     FontRenderParamsQuery query;
     query.families.push_back(font_name);
     query.pixel_size = run->font_size;
-    query.style = run->font_style;
+    query.style = run->italic ? Font::ITALIC : 0;
     FontRenderParams fallback_render_params = GetFontRenderParams(query, NULL);
     if (CompareFamily(text, font, fallback_render_params, run, &best_font,
                       &best_render_params, &best_missing_glyphs))
@@ -1465,11 +1468,11 @@ void RenderTextHarfBuzz::ShapeRun(const base::string16& text,
 }
 
 bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
-                                          const gfx::Font& font,
+                                          const Font& font,
                                           const FontRenderParams& params,
                                           internal::TextRunHarfBuzz* run) {
   sk_sp<SkTypeface> skia_face(
-      internal::CreateSkiaTypeface(font, run->font_style));
+      internal::CreateSkiaTypeface(font, run->italic, run->weight));
   if (!skia_face)
     return false;
 

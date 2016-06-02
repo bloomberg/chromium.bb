@@ -32,6 +32,21 @@ namespace {
 // The default spacing between the icon and text.
 const int kSpacing = 5;
 
+gfx::Font::Weight GetValueBolderThan(gfx::Font::Weight weight) {
+  if (weight < gfx::Font::Weight::BOLD)
+    return gfx::Font::Weight::BOLD;
+  switch (weight) {
+    case gfx::Font::Weight::BOLD:
+      return gfx::Font::Weight::EXTRA_BOLD;
+    case gfx::Font::Weight::EXTRA_BOLD:
+    case gfx::Font::Weight::BLACK:
+      return gfx::Font::Weight::BLACK;
+    default:
+      NOTREACHED();
+  }
+  return gfx::Font::Weight::INVALID;
+}
+
 const gfx::FontList& GetDefaultNormalFontList() {
   static base::LazyInstance<gfx::FontList>::Leaky font_list =
       LAZY_INSTANCE_INITIALIZER;
@@ -44,11 +59,14 @@ const gfx::FontList& GetDefaultBoldFontList() {
 
   static base::LazyInstance<gfx::FontList>::Leaky font_list =
       LAZY_INSTANCE_INITIALIZER;
-  if ((font_list.Get().GetFontStyle() & gfx::Font::BOLD) == 0) {
-    font_list.Get() = font_list.Get().
-        DeriveWithStyle(font_list.Get().GetFontStyle() | gfx::Font::BOLD);
-    DCHECK_NE(font_list.Get().GetFontStyle() & gfx::Font::BOLD, 0);
-  }
+
+  static const gfx::Font::Weight default_bold_weight =
+      font_list.Get().GetFontWeight();
+
+  font_list.Get() = font_list.Get().DeriveWithWeight(
+      GetValueBolderThan(default_bold_weight));
+  DCHECK_GE(font_list.Get().GetFontWeight(), gfx::Font::Weight::BOLD);
+
   return font_list.Get();
 }
 
@@ -165,8 +183,8 @@ const gfx::FontList& LabelButton::GetFontList() const {
 void LabelButton::SetFontList(const gfx::FontList& font_list) {
   cached_normal_font_list_ = font_list;
   if (PlatformStyle::kDefaultLabelButtonHasBoldFont) {
-    cached_bold_font_list_ =
-        font_list.DeriveWithStyle(font_list.GetFontStyle() | gfx::Font::BOLD);
+    cached_bold_font_list_ = font_list.DeriveWithWeight(
+        GetValueBolderThan(font_list.GetFontWeight()));
     if (is_default_) {
       label_->SetFontList(cached_bold_font_list_);
       return;

@@ -121,6 +121,7 @@ class StyleIterator {
  public:
   StyleIterator(const BreakList<SkColor>& colors,
                 const BreakList<BaselineStyle>& baselines,
+                const BreakList<Font::Weight>& weights,
                 const std::vector<BreakList<bool>>& styles);
   ~StyleIterator();
 
@@ -128,6 +129,7 @@ class StyleIterator {
   SkColor color() const { return color_->second; }
   BaselineStyle baseline() const { return baseline_->second; }
   bool style(TextStyle s) const { return style_[s]->second; }
+  Font::Weight weight() const { return weight_->second; }
 
   // Get the intersecting range of the current iterator set.
   Range GetRange() const;
@@ -138,10 +140,12 @@ class StyleIterator {
  private:
   BreakList<SkColor> colors_;
   BreakList<BaselineStyle> baselines_;
+  BreakList<Font::Weight> weights_;
   std::vector<BreakList<bool> > styles_;
 
   BreakList<SkColor>::const_iterator color_;
   BreakList<BaselineStyle>::const_iterator baseline_;
+  BreakList<Font::Weight>::const_iterator weight_;
   std::vector<BreakList<bool>::const_iterator> style_;
 
   DISALLOW_COPY_AND_ASSIGN(StyleIterator);
@@ -184,9 +188,11 @@ struct Line {
   int baseline;
 };
 
-// Creates an SkTypeface from a font and a |gfx::Font::FontStyle|.
+// Creates an SkTypeface from a font, |italic| and a desired |weight|.
 // May return null.
-sk_sp<SkTypeface> CreateSkiaTypeface(const gfx::Font& font, int style);
+sk_sp<SkTypeface> CreateSkiaTypeface(const Font& font,
+                                     bool italic,
+                                     Font::Weight weight);
 
 // Applies the given FontRenderParams to a Skia |paint|.
 void ApplyRenderParams(const FontRenderParams& params,
@@ -373,6 +379,9 @@ class GFX_EXPORT RenderText {
   void SetStyle(TextStyle style, bool value);
   void ApplyStyle(TextStyle style, bool value, const Range& range);
 
+  void SetWeight(Font::Weight weight);
+  void ApplyWeight(Font::Weight weight, const Range& range);
+
   // Returns whether this style is enabled consistently across the entire
   // RenderText.
   bool GetStyle(TextStyle style) const;
@@ -496,6 +505,7 @@ class GFX_EXPORT RenderText {
 
   const BreakList<SkColor>& colors() const { return colors_; }
   const BreakList<BaselineStyle>& baselines() const { return baselines_; }
+  const BreakList<Font::Weight>& weights() const { return weights_; }
   const std::vector<BreakList<bool> >& styles() const { return styles_; }
 
   const std::vector<internal::Line>& lines() const { return lines_; }
@@ -751,6 +761,7 @@ class GFX_EXPORT RenderText {
   // TODO(msw): Expand to support cursor, selection, background, etc. colors.
   BreakList<SkColor> colors_;
   BreakList<BaselineStyle> baselines_;
+  BreakList<Font::Weight> weights_;
   std::vector<BreakList<bool> > styles_;
 
   // Breaks saved without temporary composition and selection styling.

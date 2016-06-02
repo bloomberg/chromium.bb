@@ -79,9 +79,8 @@ void FallbackIconService::DrawFallbackIcon(
   canvas->DrawStringRectWithFlags(
       icon_text,
       gfx::FontList(fallback_icon_client_->GetFontNameList(), gfx::Font::NORMAL,
-                    font_size),
-      style.text_color,
-      gfx::Rect(kOffsetX, kOffsetY, size, size),
+                    font_size, gfx::Font::Weight::NORMAL),
+      style.text_color, gfx::Rect(kOffsetX, kOffsetY, size, size),
       gfx::Canvas::TEXT_ALIGN_CENTER);
 }
 

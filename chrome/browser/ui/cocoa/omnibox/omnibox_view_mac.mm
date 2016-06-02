@@ -78,6 +78,10 @@ using content::WebContents;
 // things work on other platforms.
 
 namespace {
+const int kOmniboxLargeFontSizeDelta = 9;
+const int kOmniboxNormalFontSizeDelta = 1;
+const int kOmniboxSmallFontSizeDelta = 0;
+const int kOmniboxSmallMaterialFontSizeDelta = -1;
 
 // TODO(shess): This is ugly, find a better way.  Using it right now
 // so that I can crib from gtk and still be able to see that I'm using
@@ -550,7 +554,7 @@ void OmniboxViewMac::EmphasizeURLComponents() {
 void OmniboxViewMac::ApplyTextStyle(
     NSMutableAttributedString* attributedString) {
   [attributedString addAttribute:NSFontAttributeName
-                           value:GetFieldFont(gfx::Font::NORMAL)
+                           value:GetNormalFieldFont()
                            range:NSMakeRange(0, [attributedString length])];
 
   // Make a paragraph style locking in the standard line height as the maximum,
@@ -1105,32 +1109,42 @@ void OmniboxViewMac::FocusLocation(bool select_all) {
 }
 
 // static
-NSFont* OmniboxViewMac::GetFieldFont(int style) {
-  // This value should be kept in sync with InstantPage::InitializeFonts.
+NSFont* OmniboxViewMac::GetNormalFieldFont() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetFontList(ui::ResourceBundle::BaseFont).Derive(1, style)
-      .GetPrimaryFont().GetNativeFont();
-}
-
-NSFont* OmniboxViewMac::GetLargeFont(int style) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetFontList(ui::ResourceBundle::LargeFont)
-      .Derive(1, style)
-      .GetPrimaryFont()
+  return rb
+      .GetFontWithDelta(kOmniboxNormalFontSizeDelta, gfx::Font::NORMAL,
+                        gfx::Font::Weight::NORMAL)
       .GetNativeFont();
 }
 
-NSFont* OmniboxViewMac::GetSmallFont(int style) {
+NSFont* OmniboxViewMac::GetBoldFieldFont() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb
+      .GetFontWithDelta(kOmniboxNormalFontSizeDelta, gfx::Font::NORMAL,
+                        gfx::Font::Weight::BOLD)
+      .GetNativeFont();
+}
+
+NSFont* OmniboxViewMac::GetLargeFont() {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb
+      .GetFontWithDelta(kOmniboxLargeFontSizeDelta, gfx::Font::NORMAL,
+                        gfx::Font::Weight::NORMAL)
+      .GetNativeFont();
+}
+
+NSFont* OmniboxViewMac::GetSmallFont() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   if (!ui::MaterialDesignController::IsModeMaterial()) {
-    return rb.GetFontList(ui::ResourceBundle::SmallFont)
-        .Derive(1, style)
-        .GetPrimaryFont()
+    return rb
+        .GetFontWithDelta(kOmniboxSmallFontSizeDelta, gfx::Font::NORMAL,
+                          gfx::Font::Weight::NORMAL)
         .GetNativeFont();
   }
-  return rb.GetFontListWithDelta(-2, gfx::Font::NORMAL)
-      .Derive(1, style)
-      .GetPrimaryFont()
+
+  return rb
+      .GetFontWithDelta(kOmniboxSmallMaterialFontSizeDelta, gfx::Font::NORMAL,
+                        gfx::Font::Weight::NORMAL)
       .GetNativeFont();
 }
 

@@ -206,6 +206,29 @@ class ResourceBundle::ResourceBundleImageSource : public gfx::ImageSkiaSource {
   DISALLOW_COPY_AND_ASSIGN(ResourceBundleImageSource);
 };
 
+struct ResourceBundle::FontKey {
+  FontKey(int in_size_delta,
+          gfx::Font::FontStyle in_style,
+          gfx::Font::Weight in_weight)
+      : size_delta(in_size_delta), style(in_style), weight(in_weight) {}
+
+  ~FontKey() {}
+
+  bool operator==(const FontKey& rhs) const {
+    return std::tie(size_delta, style, weight) ==
+           std::tie(rhs.size_delta, rhs.style, rhs.weight);
+  }
+
+  bool operator<(const FontKey& rhs) const {
+    return std::tie(size_delta, style, weight) <
+           std::tie(rhs.size_delta, rhs.style, rhs.weight);
+  }
+
+  int size_delta;
+  gfx::Font::FontStyle style;
+  gfx::Font::Weight weight;
+};
+
 // static
 std::string ResourceBundle::InitSharedInstanceWithLocale(
     const std::string& pref_locale,
@@ -573,17 +596,17 @@ base::string16 ResourceBundle::GetLocalizedString(int message_id) {
 
 const gfx::FontList& ResourceBundle::GetFontListWithDelta(
     int size_delta,
-    gfx::Font::FontStyle style) {
+    gfx::Font::FontStyle style,
+    gfx::Font::Weight weight) {
   base::AutoLock lock_scope(*images_and_fonts_lock_);
 
-  typedef std::pair<int, gfx::Font::FontStyle> Key;
-  const Key styled_key(size_delta, style);
+  const FontKey styled_key(size_delta, style, weight);
 
   auto found = font_cache_.find(styled_key);
   if (found != font_cache_.end())
     return found->second;
 
-  const Key base_key(0, gfx::Font::NORMAL);
+  const FontKey base_key(0, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
   gfx::FontList& base = font_cache_[base_key];
   if (styled_key == base_key)
     return base;
@@ -592,7 +615,8 @@ const gfx::FontList& ResourceBundle::GetFontListWithDelta(
   // Cache the unstyled font by first inserting a default-constructed font list.
   // Then, derive it for the initial insertion, or use the iterator that points
   // to the existing entry that the insertion collided with.
-  const Key sized_key(size_delta, gfx::Font::NORMAL);
+  const FontKey sized_key(size_delta, gfx::Font::NORMAL,
+                          gfx::Font::Weight::NORMAL);
   auto sized = font_cache_.insert(std::make_pair(sized_key, gfx::FontList()));
   if (sized.second)
     sized.first->second = base.DeriveWithSizeDelta(size_delta);
@@ -601,21 +625,23 @@ const gfx::FontList& ResourceBundle::GetFontListWithDelta(
 
   auto styled = font_cache_.insert(std::make_pair(styled_key, gfx::FontList()));
   DCHECK(styled.second);  // Otherwise font_cache_.find(..) would have found it.
-  styled.first->second = sized.first->second.DeriveWithStyle(
-      sized.first->second.GetFontStyle() | style);
+  styled.first->second = sized.first->second.Derive(
+      0, sized.first->second.GetFontStyle() | style, weight);
+
   return styled.first->second;
 }
 
 const gfx::Font& ResourceBundle::GetFontWithDelta(int size_delta,
-                                                  gfx::Font::FontStyle style) {
-  return GetFontListWithDelta(size_delta, style).GetPrimaryFont();
+                                                  gfx::Font::FontStyle style,
+                                                  gfx::Font::Weight weight) {
+  return GetFontListWithDelta(size_delta, style, weight).GetPrimaryFont();
 }
 
 const gfx::FontList& ResourceBundle::GetFontList(FontStyle legacy_style) {
-  gfx::Font::FontStyle font_style = gfx::Font::NORMAL;
+  gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
   if (legacy_style == BoldFont || legacy_style == SmallBoldFont ||
       legacy_style == MediumBoldFont || legacy_style == LargeBoldFont)
-    font_style = gfx::Font::BOLD;
+    font_weight = gfx::Font::Weight::BOLD;
 
   int size_delta = 0;
   switch (legacy_style) {
@@ -636,7 +662,7 @@ const gfx::FontList& ResourceBundle::GetFontList(FontStyle legacy_style) {
       break;
   }
 
-  return GetFontListWithDelta(size_delta, font_style);
+  return GetFontListWithDelta(size_delta, gfx::Font::NORMAL, font_weight);
 }
 
 const gfx::Font& ResourceBundle::GetFont(FontStyle style) {

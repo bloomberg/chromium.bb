@@ -132,16 +132,16 @@ NSColor* URLTextColor(BOOL is_dark_theme) {
 }
 
 NSFont* FieldFont() {
-  return OmniboxViewMac::GetFieldFont(gfx::Font::NORMAL);
+  return OmniboxViewMac::GetNormalFieldFont();
 }
 NSFont* BoldFieldFont() {
-  return OmniboxViewMac::GetFieldFont(gfx::Font::BOLD);
+  return OmniboxViewMac::GetBoldFieldFont();
 }
 NSFont* LargeFont() {
-  return OmniboxViewMac::GetLargeFont(gfx::Font::NORMAL);
+  return OmniboxViewMac::GetLargeFont();
 }
 NSFont* LargeSuperscriptFont() {
-  NSFont* font = OmniboxViewMac::GetLargeFont(gfx::Font::NORMAL);
+  NSFont* font = OmniboxViewMac::GetLargeFont();
   // Calculate a slightly smaller font. The ratio here is somewhat arbitrary.
   // Proportions from 5/9 to 5/7 all look pretty good.
   CGFloat size = [font pointSize] * 5.0 / 9.0;
@@ -149,7 +149,7 @@ NSFont* LargeSuperscriptFont() {
   return [NSFont fontWithDescriptor:descriptor size:size];
 }
 NSFont* SmallFont() {
-  return OmniboxViewMac::GetSmallFont(gfx::Font::NORMAL);
+  return OmniboxViewMac::GetSmallFont();
 }
 
 CGFloat GetContentAreaWidth(NSRect cellFrame) {

@@ -70,11 +70,12 @@ TEST_F(FontTest, MAYBE_LoadArial) {
 #endif
 TEST_F(FontTest, MAYBE_LoadArialBold) {
   Font cf("Arial", 16);
-  Font bold(cf.Derive(0, Font::BOLD));
+  Font bold(cf.Derive(0, Font::NORMAL, Font::Weight::BOLD));
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_IOS)
   EXPECT_TRUE(bold.GetNativeFont());
 #endif
-  EXPECT_EQ(bold.GetStyle(), Font::BOLD);
+  EXPECT_EQ(bold.GetStyle(), Font::NORMAL);
+  EXPECT_EQ(bold.GetWeight(), Font::Weight::BOLD);
   EXPECT_EQ("arial", base::ToLowerASCII(cf.GetActualFontNameForTesting()));
 }
 
@@ -163,7 +164,7 @@ TEST_F(FontTest, DeriveResizesIfSizeTooSmall) {
   // The minimum font size is set to 5 in browser_main.cc.
   ScopedMinimumFontSizeCallback minimum_size(5);
 
-  Font derived_font = cf.Derive(-4, cf.GetStyle());
+  Font derived_font = cf.Derive(-4, cf.GetStyle(), cf.GetWeight());
   EXPECT_EQ(5, derived_font.GetFontSize());
 }
 
@@ -172,7 +173,7 @@ TEST_F(FontTest, DeriveKeepsOriginalSizeIfHeightOk) {
   // The minimum font size is set to 5 in browser_main.cc.
   ScopedMinimumFontSizeCallback minimum_size(5);
 
-  Font derived_font = cf.Derive(-2, cf.GetStyle());
+  Font derived_font = cf.Derive(-2, cf.GetStyle(), cf.GetWeight());
   EXPECT_EQ(6, derived_font.GetFontSize());
 }
 #endif  // defined(OS_WIN)

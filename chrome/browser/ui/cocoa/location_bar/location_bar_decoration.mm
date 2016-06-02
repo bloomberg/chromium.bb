@@ -82,7 +82,7 @@ NSMenu* LocationBarDecoration::GetMenu() {
 }
 
 NSFont* LocationBarDecoration::GetFont() const {
-  return OmniboxViewMac::GetFieldFont(gfx::Font::NORMAL);
+  return OmniboxViewMac::GetNormalFieldFont();
 }
 
 NSPoint LocationBarDecoration::GetBubblePointInFrame(NSRect frame) {

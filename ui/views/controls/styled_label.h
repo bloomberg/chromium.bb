@@ -41,8 +41,11 @@ class VIEWS_EXPORT StyledLabel : public View, public LinkListener {
     static RangeStyleInfo CreateForLink();
 
     // The font style that will be applied to the range. Should be a bitmask of
-    // values defined in gfx::Font::FontStyle (BOLD, ITALIC, UNDERLINE).
+    // values defined in gfx::Font::FontStyle (ITALIC, UNDERLINE).
     int font_style;
+
+    // The font weight to be applied to the range. Default is Weight::NORMAL.
+    gfx::Font::Weight weight;
 
     // The text color for the range. Default is SK_ColorTRANSPARENT, indicating
     // the theme's default color should be used.

@@ -191,9 +191,9 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
       model_index_(model_index),
       location_bar_view_(location_bar_view),
       font_list_(font_list),
-      font_height_(
-          std::max(font_list.GetHeight(),
-                   font_list.DeriveWithStyle(gfx::Font::BOLD).GetHeight())),
+      font_height_(std::max(
+          font_list.GetHeight(),
+          font_list.DeriveWithWeight(gfx::Font::Weight::BOLD).GetHeight())),
       mirroring_context_(new MirroringContext()),
       keyword_icon_(new views::ImageView()),
       animation_(new gfx::SlideAnimation(this)) {
@@ -487,7 +487,7 @@ std::unique_ptr<gfx::RenderText> OmniboxResultView::CreateClassifiedRenderText(
 
     // Calculate style-related data.
     if (classifications[i].style & ACMatchClassification::MATCH)
-      render_text->ApplyStyle(gfx::BOLD, true, current_range);
+      render_text->ApplyWeight(gfx::Font::Weight::BOLD, current_range);
 
     ColorKind color_kind = TEXT;
     if (classifications[i].style & ACMatchClassification::URL) {
@@ -823,7 +823,8 @@ void OmniboxResultView::AppendAnswerTextHelper(gfx::RenderText* destination,
   const TextStyle& text_style = GetTextStyle(text_type);
   // TODO(dschuyler): follow up on the problem of different font sizes within
   // one RenderText.  Maybe with destination->SetFontList(...).
-  destination->ApplyStyle(gfx::BOLD, is_bold, range);
+  destination->ApplyWeight(
+      is_bold ? gfx::Font::Weight::BOLD : gfx::Font::Weight::NORMAL, range);
   destination->ApplyColor(
       GetNativeTheme()->GetSystemColor(text_style.colors[GetState()]), range);
   destination->ApplyBaselineStyle(text_style.baseline, range);

@@ -28,21 +28,23 @@ class FontListImpl;
 // The format is "<FONT_FAMILY_LIST>,[STYLES] <SIZE>", where:
 // - FONT_FAMILY_LIST is a comma-separated list of font family names,
 // - STYLES is an optional space-separated list of style names (case-sensitive
-//   "Bold" and "Italic" are supported), and
-// - SIZE is an integer font size in pixels with the suffix "px".
+//   "Italic" "Ultra-Light" "Light" "Normal" "Semi-Bold" "Bold" "Ultra-Bold"
+//   "Heavy" are supported), and
+// - SIZE is an integer font size in pixels with the suffix "px"
 //
 // Here are examples of valid font description strings:
-// - "Arial, Helvetica, Bold Italic 14px"
+// - "Arial, Helvetica, Italic Semi-Bold 14px"
 // - "Arial, 14px"
 class GFX_EXPORT FontList {
  public:
   // Parses a FontList description string into |families_out|, |style_out| (a
-  // bitfield of gfx::Font::Style values), and |size_pixels_out|. Returns true
-  // if the string is properly-formed.
+  // bitfield of gfx::Font::Style values), |size_pixels_out| and |weight_out|.
+  // Returns true if the string is properly-formed.
   static bool ParseDescription(const std::string& description,
                                std::vector<std::string>* families_out,
                                int* style_out,
-                               int* size_pixels_out);
+                               int* size_pixels_out,
+                               Font::Weight* weight_out);
 
   // Creates a font list with default font names, size and style, which are
   // specified by SetDefaultFontDescription().
@@ -55,10 +57,11 @@ class GFX_EXPORT FontList {
   // size.
   explicit FontList(const std::string& font_description_string);
 
-  // Creates a font list from font names, styles and size.
+  // Creates a font list from font names, styles, size and weight.
   FontList(const std::vector<std::string>& font_names,
            int font_style,
-           int font_size);
+           int font_size,
+           Font::Weight font_weight);
 
   // Creates a font list from a Font vector.
   // All fonts in this vector should have the same style and size.
@@ -83,19 +86,26 @@ class GFX_EXPORT FontList {
   static void SetDefaultFontDescription(const std::string& font_description);
 
   // Returns a new FontList with the same font names but resized and the given
-  // style. |size_delta| is the size in pixels to add to the current font size.
-  // |font_style| specifies the new style, which is a bitmask of the values:
-  // Font::BOLD, Font::ITALIC and Font::UNDERLINE.
-  FontList Derive(int size_delta, int font_style) const;
+  // style and weight. |size_delta| is the size in pixels to add to the current
+  // font size. |font_style| specifies the new style, which is a bitmask of the
+  // values: Font::ITALIC and Font::UNDERLINE. |weight| is the requested font
+  // weight.
+  FontList Derive(int size_delta,
+                  int font_style,
+                  Font::Weight weight) const;
 
   // Returns a new FontList with the same font names and style but resized.
   // |size_delta| is the size in pixels to add to the current font size.
   FontList DeriveWithSizeDelta(int size_delta) const;
 
-  // Returns a new FontList with the same font names and size but the given
-  // style. |font_style| specifies the new style, which is a bitmask of the
-  // values: Font::BOLD, Font::ITALIC and Font::UNDERLINE.
+  // Returns a new FontList with the same font names, weight and size but the
+  // given style. |font_style| specifies the new style, which is a bitmask of
+  // the values: Font::ITALIC and Font::UNDERLINE.
   FontList DeriveWithStyle(int font_style) const;
+
+  // Returns a new FontList with the same font name, size and style but with
+  // the given weight.
+  FontList DeriveWithWeight(Font::Weight weight) const;
 
   // Shrinks the font size until the font list fits within |height| while
   // having its cap height vertically centered. Returns a new FontList with
@@ -120,7 +130,7 @@ class GFX_EXPORT FontList {
   //     y offset >= 0
   //     space at bottom >= 0
   //     (i.e. Entire font must be visible inside the box.)
-  gfx::FontList DeriveWithHeightUpperBound(int height) const;
+  FontList DeriveWithHeightUpperBound(int height) const;
 
   // Returns the height of this font list, which is max(ascent) + max(descent)
   // for all the fonts in the font list.
@@ -139,11 +149,14 @@ class GFX_EXPORT FontList {
   // actual number.
   int GetExpectedTextWidth(int length) const;
 
-  // Returns the |gfx::Font::FontStyle| style flags for this font list.
+  // Returns the |Font::FontStyle| style flags for this font list.
   int GetFontStyle() const;
 
   // Returns the font size in pixels.
   int GetFontSize() const;
+
+  // Returns the font weight.
+  Font::Weight GetFontWeight() const;
 
   // Returns the Font vector.
   const std::vector<Font>& GetFonts() const;

@@ -83,7 +83,7 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
 #if !defined(OS_ANDROID)
   smaller_font_list_ =
       normal_font_list_.DeriveWithSizeDelta(kSmallerFontSizeDelta);
-  bold_font_list_ = normal_font_list_.DeriveWithStyle(gfx::Font::BOLD);
+  bold_font_list_ = normal_font_list_.DeriveWithWeight(gfx::Font::Weight::BOLD);
 #if defined(OS_MACOSX)
   // There is no italic version of the system font.
   warning_font_list_ = normal_font_list_;

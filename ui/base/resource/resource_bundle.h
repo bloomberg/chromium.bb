@@ -248,12 +248,14 @@ class UI_BASE_EXPORT ResourceBundle {
   // The result is always cached and exists for the lifetime of the process.
   const gfx::FontList& GetFontListWithDelta(
       int size_delta,
-      gfx::Font::FontStyle style = gfx::Font::NORMAL);
+      gfx::Font::FontStyle style = gfx::Font::NORMAL,
+      gfx::Font::Weight weight = gfx::Font::Weight::NORMAL);
 
   // Returns the primary font from the FontList given by GetFontListWithDelta().
   const gfx::Font& GetFontWithDelta(
       int size_delta,
-      gfx::Font::FontStyle style = gfx::Font::NORMAL);
+      gfx::Font::FontStyle style = gfx::Font::NORMAL,
+      gfx::Font::Weight weight = gfx::Font::Weight::NORMAL);
 
   // Deprecated. Returns fonts using hard-coded size deltas implied by |style|.
   const gfx::FontList& GetFontList(FontStyle style);
@@ -315,6 +317,8 @@ class UI_BASE_EXPORT ResourceBundle {
 
   class ResourceBundleImageSource;
   friend class ResourceBundleImageSource;
+
+  struct FontKey;
 
   typedef base::hash_map<int, base::string16> IdToStringMap;
 
@@ -444,7 +448,7 @@ class UI_BASE_EXPORT ResourceBundle {
   // platform base font size, plus style, to the FontList. Cached to avoid
   // repeated GDI creation/destruction and font derivation.
   // Must be accessed only while holding |images_and_fonts_lock_|.
-  std::map<std::pair<int, gfx::Font::FontStyle>, gfx::FontList> font_cache_;
+  std::map<FontKey, gfx::FontList> font_cache_;
 
   base::FilePath overridden_pak_path_;
 

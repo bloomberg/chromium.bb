@@ -67,8 +67,11 @@ namespace gfx {
 namespace internal {
 
 // Note: this is only used by RenderTextHarfbuzz.
-sk_sp<SkTypeface> CreateSkiaTypeface(const gfx::Font& font, int style) {
-  gfx::Font font_with_style = font.Derive(0, style);
+sk_sp<SkTypeface> CreateSkiaTypeface(const Font& font,
+                                     bool italic,
+                                     Font::Weight weight) {
+  const Font::FontStyle style = italic ? Font::ITALIC : Font::NORMAL;
+  Font font_with_style = font.Derive(0, style, weight);
   if (!font_with_style.GetNativeFont())
     return nullptr;
 
@@ -119,7 +122,7 @@ std::vector<RenderText::FontSpan> RenderTextMac::GetFontSpansForTesting() {
     const CFRange cf_range = CTRunGetStringRange(runs_[i].ct_run);
     const Range range(cf_range.location, cf_range.location + cf_range.length);
     spans.push_back(RenderText::FontSpan(
-        gfx::Font(base::mac::CFToNSCast(runs_[i].ct_font.get())), range));
+        Font(base::mac::CFToNSCast(runs_[i].ct_font.get())), range));
   }
 
   return spans;
@@ -250,7 +253,7 @@ float RenderTextMac::GetLayoutTextWidth() {
   return GetCTLineSize(line.get(), &baseline).width();
 }
 
-gfx::SizeF RenderTextMac::GetCTLineSize(CTLineRef line, SkScalar* baseline) {
+SizeF RenderTextMac::GetCTLineSize(CTLineRef line, SkScalar* baseline) {
   CGFloat ascent = 0;
   CGFloat descent = 0;
   CGFloat leading = 0;
@@ -311,7 +314,7 @@ base::ScopedCFTypeRef<CFMutableArrayRef> RenderTextMac::ApplyStyles(
       CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks));
 
   // https://developer.apple.com/library/mac/#documentation/Carbon/Reference/CoreText_StringAttributes_Ref/Reference/reference.html
-  internal::StyleIterator style(colors(), baselines(), styles());
+  internal::StyleIterator style(colors(), baselines(), weights(), styles());
   const size_t layout_text_length = CFAttributedStringGetLength(attr_string);
   for (size_t i = 0, end = 0; i < layout_text_length; i = end) {
     end = TextIndexToGivenTextIndex(text, style.GetRange().end());
@@ -331,8 +334,10 @@ base::ScopedCFTypeRef<CFMutableArrayRef> RenderTextMac::ApplyStyles(
       CFArrayAppendValue(attributes, underline_value);
     }
 
-    const int traits = (style.style(BOLD) ? kCTFontBoldTrait : 0) |
-                       (style.style(ITALIC) ? kCTFontItalicTrait : 0);
+    // TODO(mboc): Apply font weights other than bold below.
+    const int traits =
+        (style.style(ITALIC) ? kCTFontItalicTrait : 0) |
+        (style.weight() >= Font::Weight::BOLD ? kCTFontBoldTrait : 0);
     if (traits != 0) {
       base::ScopedCFTypeRef<CTFontRef> styled_font =
           CopyFontWithSymbolicTraits(font, traits);

@@ -152,8 +152,7 @@ const NSInteger kMiddleButtonNumber = 2;
     base::scoped_nsobject<NSLayoutManager> layoutManager(
         [[NSLayoutManager alloc] init]);
     answerLineHeight_ =
-        [layoutManager defaultLineHeightForFont:OmniboxViewMac::GetLargeFont(
-                                                    gfx::Font::NORMAL)];
+        [layoutManager defaultLineHeightForFont:OmniboxViewMac::GetLargeFont()];
   }
   return self;
 }

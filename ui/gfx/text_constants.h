@@ -44,8 +44,7 @@ enum DirectionalityMode {
 // Text styles and adornments.
 // TODO(msw): Merge with gfx::Font::FontStyle.
 enum TextStyle {
-  BOLD = 0,
-  ITALIC,
+  ITALIC = 0,
   STRIKE,
   DIAGONAL_STRIKE,
   UNDERLINE,

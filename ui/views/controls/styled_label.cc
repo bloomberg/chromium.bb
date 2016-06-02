@@ -54,9 +54,10 @@ std::unique_ptr<Label> CreateLabelRange(
 
   if (!style_info.tooltip.empty())
     result->SetTooltipText(style_info.tooltip);
-  if (style_info.font_style != gfx::Font::NORMAL) {
-    result->SetFontList(
-        result->font_list().DeriveWithStyle(style_info.font_style));
+  if (style_info.font_style != gfx::Font::NORMAL ||
+      style_info.weight != gfx::Font::Weight::NORMAL) {
+    result->SetFontList(result->font_list().Derive(0, style_info.font_style,
+                                                   style_info.weight));
   }
 
   return result;
@@ -69,6 +70,7 @@ std::unique_ptr<Label> CreateLabelRange(
 
 StyledLabel::RangeStyleInfo::RangeStyleInfo()
     : font_style(gfx::Font::NORMAL),
+      weight(gfx::Font::Weight::NORMAL),
       color(SK_ColorTRANSPARENT),
       disable_line_wrapping(false),
       is_link(false) {}
@@ -276,8 +278,9 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
     // style may differ from the base font. The font specified by the range
     // should be used when eliding text.
     if (position >= range.start()) {
-      text_font_list = text_font_list.DeriveWithStyle(
-          current_range->style_info.font_style);
+      text_font_list =
+          text_font_list.Derive(0, current_range->style_info.font_style,
+                                current_range->style_info.weight);
     }
     gfx::ElideRectangleText(remaining_string,
                             text_font_list,
