@@ -264,6 +264,10 @@ GCMAppHandler* GCMDriver::GetAppHandler(const std::string& app_id) {
   return &default_app_handler_;
 }
 
+GCMEncryptionProvider* GCMDriver::GetEncryptionProviderInternal() {
+  return &encryption_provider_;
+}
+
 bool GCMDriver::HasRegisterCallback(const std::string& app_id) {
   return register_callbacks_.find(app_id) != register_callbacks_.end();
 }

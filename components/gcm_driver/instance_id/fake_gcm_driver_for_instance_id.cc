@@ -14,8 +14,8 @@
 
 namespace instance_id {
 
-FakeGCMDriverForInstanceID::FakeGCMDriverForInstanceID() {
-}
+FakeGCMDriverForInstanceID::FakeGCMDriverForInstanceID()
+    : gcm::FakeGCMDriver(base::ThreadTaskRunnerHandle::Get()) {}
 
 FakeGCMDriverForInstanceID::~FakeGCMDriverForInstanceID() {
 }

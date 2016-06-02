@@ -138,7 +138,8 @@ class GCMDriver {
 
   // Get the public encryption key and the authentication secret associated with
   // |app_id|. If none have been associated with |app_id| yet, they will be
-  // created. The |callback| will be invoked when it is available.
+  // created. The |callback| will be invoked when it is available. Only use with
+  // GCM registrations; use InstanceID::GetEncryptionInfo for InstanceID tokens.
   void GetEncryptionInfo(const std::string& app_id,
                          const GetEncryptionInfoCallback& callback);
 
@@ -212,8 +213,11 @@ class GCMDriver {
   // to send a heartbeat message.
   virtual void WakeFromSuspendForHeartbeat(bool wake) = 0;
 
-  // Supports InstanceID handling. Must only be used by the InstanceID system.
+  // These methods must only be used by the InstanceID system.
+  // The InstanceIDHandler provides an implementation for the InstanceID system.
   virtual InstanceIDHandler* GetInstanceIDHandlerInternal() = 0;
+  // Allows the InstanceID system to integrate with GCM encryption storage.
+  GCMEncryptionProvider* GetEncryptionProviderInternal();
 
   // Adds or removes a custom client requested heartbeat interval. If multiple
   // components set that setting, the lowest setting will be used. If the

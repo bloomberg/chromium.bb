@@ -18,6 +18,7 @@
 #include "components/gcm_driver/instance_id/instance_id.h"
 
 namespace gcm {
+class GCMDriver;
 class InstanceIDHandler;
 }  // namespace gcm
 
@@ -26,7 +27,7 @@ namespace instance_id {
 // InstanceID implementation for desktop and iOS.
 class InstanceIDImpl : public InstanceID {
  public:
-  InstanceIDImpl(const std::string& app_id, gcm::InstanceIDHandler* handler);
+  InstanceIDImpl(const std::string& app_id, gcm::GCMDriver* gcm_driver);
   ~InstanceIDImpl() override;
 
   // InstanceID:
@@ -36,10 +37,10 @@ class InstanceIDImpl : public InstanceID {
                 const std::string& scope,
                 const std::map<std::string, std::string>& options,
                 const GetTokenCallback& callback) override;
-  void DeleteToken(const std::string& authorized_entity,
-                   const std::string& scope,
-                   const DeleteTokenCallback& callback) override;
-  void DeleteID(const DeleteIDCallback& callback) override;
+  void DeleteTokenImpl(const std::string& authorized_entity,
+                       const std::string& scope,
+                       const DeleteTokenCallback& callback) override;
+  void DeleteIDImpl(const DeleteIDCallback& callback) override;
 
  private:
   void EnsureIDGenerated();
@@ -66,9 +67,7 @@ class InstanceIDImpl : public InstanceID {
                      const DeleteTokenCallback& callback);
   void DoDeleteID(const DeleteIDCallback& callback);
 
-  // Owned by GCMProfileServiceFactory, which is a dependency of
-  // InstanceIDProfileServiceFactory, which owns this.
-  gcm::InstanceIDHandler* handler_;
+  gcm::InstanceIDHandler* Handler();
 
   gcm::GCMDelayedTaskController delayed_task_controller_;
 

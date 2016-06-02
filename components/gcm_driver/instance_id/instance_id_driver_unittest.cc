@@ -120,7 +120,13 @@ void InstanceIDDriverTest::SetUp() {
   RecreateInstanceIDDriver();
 }
 
-void InstanceIDDriverTest::TearDown() {}
+void InstanceIDDriverTest::TearDown() {
+  driver_.reset();
+  gcm_driver_.reset();
+  // |gcm_driver_| owns a GCMKeyStore that owns a ProtoDatabaseImpl whose
+  // destructor deletes the underlying LevelDB on the task runner.
+  base::RunLoop().RunUntilIdle();
+}
 
 void InstanceIDDriverTest::RecreateInstanceIDDriver() {
   driver_.reset(new InstanceIDDriver(gcm_driver_.get()));

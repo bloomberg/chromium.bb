@@ -40,7 +40,7 @@ class InstanceIDAndroid : public InstanceID {
   // Register JNI methods.
   static bool RegisterJni(JNIEnv* env);
 
-  InstanceIDAndroid(const std::string& app_id);
+  InstanceIDAndroid(const std::string& app_id, gcm::GCMDriver* gcm_driver);
   ~InstanceIDAndroid() override;
 
   // InstanceID implementation:
@@ -50,10 +50,10 @@ class InstanceIDAndroid : public InstanceID {
                 const std::string& scope,
                 const std::map<std::string, std::string>& options,
                 const GetTokenCallback& callback) override;
-  void DeleteToken(const std::string& audience,
-                   const std::string& scope,
-                   const DeleteTokenCallback& callback) override;
-  void DeleteID(const DeleteIDCallback& callback) override;
+  void DeleteTokenImpl(const std::string& audience,
+                       const std::string& scope,
+                       const DeleteTokenCallback& callback) override;
+  void DeleteIDImpl(const DeleteIDCallback& callback) override;
 
   // Methods called from Java via JNI:
   void DidGetID(JNIEnv* env,

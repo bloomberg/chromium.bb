@@ -46,12 +46,13 @@ bool InstanceIDAndroid::RegisterJni(JNIEnv* env) {
 
 // static
 std::unique_ptr<InstanceID> InstanceID::Create(const std::string& app_id,
-                                               gcm::InstanceIDHandler* unused) {
-  return base::WrapUnique(new InstanceIDAndroid(app_id));
+                                               gcm::GCMDriver* gcm_driver) {
+  return base::WrapUnique(new InstanceIDAndroid(app_id, gcm_driver));
 }
 
-InstanceIDAndroid::InstanceIDAndroid(const std::string& app_id)
-    : InstanceID(app_id) {
+InstanceIDAndroid::InstanceIDAndroid(const std::string& app_id,
+                                     gcm::GCMDriver* gcm_driver)
+    : InstanceID(app_id, gcm_driver) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   DCHECK(!app_id.empty()) << "Empty app_id is not supported";
@@ -117,9 +118,9 @@ void InstanceIDAndroid::GetToken(
       base::android::ToJavaArrayOfStrings(env, options_strings).obj());
 }
 
-void InstanceIDAndroid::DeleteToken(const std::string& authorized_entity,
-                                    const std::string& scope,
-                                    const DeleteTokenCallback& callback) {
+void InstanceIDAndroid::DeleteTokenImpl(const std::string& authorized_entity,
+                                        const std::string& scope,
+                                        const DeleteTokenCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   int32_t request_id =
@@ -132,7 +133,7 @@ void InstanceIDAndroid::DeleteToken(const std::string& authorized_entity,
       ConvertUTF8ToJavaString(env, scope).obj());
 }
 
-void InstanceIDAndroid::DeleteID(const DeleteIDCallback& callback) {
+void InstanceIDAndroid::DeleteIDImpl(const DeleteIDCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   int32_t request_id = delete_id_callbacks_.Add(new DeleteIDCallback(callback));

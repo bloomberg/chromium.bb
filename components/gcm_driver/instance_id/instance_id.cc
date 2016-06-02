@@ -4,9 +4,19 @@
 
 #include "components/gcm_driver/instance_id/instance_id.h"
 
+#include "base/bind.h"
+#include "components/gcm_driver/gcm_driver.h"
+
 namespace instance_id {
 
-InstanceID::InstanceID(const std::string& app_id) : app_id_(app_id) {}
+// A common use case for InstanceID tokens is to authorize and route push
+// messages sent via Google Cloud Messaging (replacing the earlier registration
+// IDs). To get such a GCM-enabled token, pass this scope to getToken.
+// Must match Java GoogleCloudMessaging.INSTANCE_ID_SCOPE.
+const char kGCMScope[] = "GCM";
+
+InstanceID::InstanceID(const std::string& app_id, gcm::GCMDriver* gcm_driver)
+    : gcm_driver_(gcm_driver), app_id_(app_id), weak_ptr_factory_(this) {}
 
 InstanceID::~InstanceID() {}
 
@@ -17,6 +27,40 @@ void InstanceID::SetTokenRefreshCallback(const TokenRefreshCallback& callback) {
 void InstanceID::NotifyTokenRefresh(bool update_id) {
   if (!token_refresh_callback_.is_null())
     token_refresh_callback_.Run(app_id_, update_id);
+}
+
+void InstanceID::GetEncryptionInfo(const std::string& authorized_entity,
+                                   const GetEncryptionInfoCallback& callback) {
+  gcm_driver_->GetEncryptionProviderInternal()->GetEncryptionInfo(
+      app_id_, authorized_entity, callback);
+}
+
+void InstanceID::DeleteToken(const std::string& authorized_entity,
+                             const std::string& scope,
+                             const DeleteTokenCallback& callback) {
+  // Tokens with GCM scope act as Google Cloud Messaging registrations, so may
+  // have associated encryption information in the GCMKeyStore. This needs to be
+  // cleared when the token is deleted.
+  DeleteTokenCallback wrapped_callback =
+      scope == kGCMScope
+          ? base::Bind(&InstanceID::DidDelete, weak_ptr_factory_.GetWeakPtr(),
+                       authorized_entity, callback)
+          : callback;
+  DeleteTokenImpl(authorized_entity, scope, wrapped_callback);
+}
+
+void InstanceID::DeleteID(const DeleteIDCallback& callback) {
+  // Use "*" as authorized_entity to remove any encryption info for all tokens.
+  DeleteIDImpl(base::Bind(&InstanceID::DidDelete,
+                          weak_ptr_factory_.GetWeakPtr(),
+                          "*" /* authorized_entity */, callback));
+}
+
+void InstanceID::DidDelete(const std::string& authorized_entity,
+                           const base::Callback<void(Result result)>& callback,
+                           Result result) {
+  gcm_driver_->GetEncryptionProviderInternal()->RemoveEncryptionInfo(
+      app_id_, authorized_entity, base::Bind(callback, result));
 }
 
 }  // namespace instance_id

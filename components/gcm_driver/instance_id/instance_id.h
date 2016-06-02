@@ -11,13 +11,16 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
 namespace gcm {
-class InstanceIDHandler;
+class GCMDriver;
 }  // namespace gcm
 
 namespace instance_id {
+
+extern const char kGCMScope[];
 
 // Encapsulates Instance ID functionalities that need to be implemented for
 // different platforms. One instance is created per application. Life of
@@ -50,6 +53,8 @@ class InstanceID {
       GetCreationTimeCallback;
   typedef base::Callback<void(const std::string& token,
                               Result result)> GetTokenCallback;
+  typedef base::Callback<void(const std::string&, const std::string&)>
+      GetEncryptionInfoCallback;
   typedef base::Callback<void(Result result)> DeleteTokenCallback;
   typedef base::Callback<void(Result result)> DeleteIDCallback;
 
@@ -60,7 +65,7 @@ class InstanceID {
   // |handler|: provides the GCM functionality needed to support Instance ID.
   //            Must outlive this class. On Android, this can be null instead.
   static std::unique_ptr<InstanceID> Create(const std::string& app_id,
-                                            gcm::InstanceIDHandler* handler);
+                                            gcm::GCMDriver* gcm_driver);
 
   virtual ~InstanceID();
 
@@ -90,30 +95,55 @@ class InstanceID {
                         const std::map<std::string, std::string>& options,
                         const GetTokenCallback& callback) = 0;
 
-  // Revokes a granted token.
-  // |authorized_entity|: the authorized entity that is passed for obtaining a
-  //                      token.
-  // |scope|: the scope that is passed for obtaining a token.
+  // Get the public encryption key and authentication secret associated with a
+  // GCM-scoped token. If encryption info is not yet associated, it will be
+  // created.
+  // |authorized_entity|: the authorized entity passed when obtaining the token.
   // |callback|: to be called once the asynchronous operation is done.
-  virtual void DeleteToken(const std::string& authorized_entity,
-                           const std::string& scope,
-                           const DeleteTokenCallback& callback) = 0;
+  void GetEncryptionInfo(const std::string& authorized_entity,
+                         const GetEncryptionInfoCallback& callback);
+
+  // Revokes a granted token.
+  // |authorized_entity|: the authorized entity passed when obtaining the token.
+  // |scope|: the scope that was passed when obtaining the token.
+  // |callback|: to be called once the asynchronous operation is done.
+  void DeleteToken(const std::string& authorized_entity,
+                   const std::string& scope,
+                   const DeleteTokenCallback& callback);
 
   // Resets the app instance identifier and revokes all tokens associated with
   // it.
   // |callback|: to be called once the asynchronous operation is done.
-  virtual void DeleteID(const DeleteIDCallback& callback) = 0;
+  void DeleteID(const DeleteIDCallback& callback);
 
   std::string app_id() const { return app_id_; }
 
  protected:
-  InstanceID(const std::string& app_id);
+  InstanceID(const std::string& app_id, gcm::GCMDriver* gcm_driver);
+
+  // Platform-specific implementations.
+  virtual void DeleteTokenImpl(const std::string& authorized_entity,
+                               const std::string& scope,
+                               const DeleteTokenCallback& callback) = 0;
+  virtual void DeleteIDImpl(const DeleteIDCallback& callback) = 0;
 
   void NotifyTokenRefresh(bool update_id);
 
+  gcm::GCMDriver* gcm_driver() { return gcm_driver_; }
+
  private:
+  void DidDelete(const std::string& authorized_entity,
+                 const base::Callback<void(Result result)>& callback,
+                 Result result);
+
+  // Owned by GCMProfileServiceFactory, which is a dependency of
+  // InstanceIDProfileServiceFactory, which owns this.
+  gcm::GCMDriver* gcm_driver_;
+
   std::string app_id_;
   TokenRefreshCallback token_refresh_callback_;
+
+  base::WeakPtrFactory<InstanceID> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InstanceID);
 };
