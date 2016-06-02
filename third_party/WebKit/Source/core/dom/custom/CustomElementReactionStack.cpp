@@ -16,10 +16,6 @@ CustomElementReactionStack::CustomElementReactionStack()
 {
 }
 
-CustomElementReactionStack::~CustomElementReactionStack()
-{
-}
-
 DEFINE_TRACE(CustomElementReactionStack)
 {
     visitor->trace(m_map);

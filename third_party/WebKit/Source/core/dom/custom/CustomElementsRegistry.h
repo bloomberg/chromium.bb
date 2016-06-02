@@ -23,7 +23,7 @@ class ScriptValue;
 class V0CustomElementRegistrationContext;
 
 class CORE_EXPORT CustomElementsRegistry final
-    : public GarbageCollectedFinalized<CustomElementsRegistry>
+    : public GarbageCollected<CustomElementsRegistry>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WTF_MAKE_NONCOPYABLE(CustomElementsRegistry);

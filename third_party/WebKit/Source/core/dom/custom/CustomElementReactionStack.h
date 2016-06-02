@@ -17,11 +17,10 @@ class Element;
 
 // https://html.spec.whatwg.org/multipage/scripting.html#custom-element-reactions
 class CORE_EXPORT CustomElementReactionStack final
-    : public GarbageCollectedFinalized<CustomElementReactionStack> {
+    : public GarbageCollected<CustomElementReactionStack> {
     WTF_MAKE_NONCOPYABLE(CustomElementReactionStack);
 public:
     CustomElementReactionStack();
-    ~CustomElementReactionStack();
 
     DECLARE_TRACE();
 
