@@ -1973,6 +1973,7 @@ CGFloat BookmarkRightMargin() {
                               menuController:contextMenuController_];
   if (ui::MaterialDesignController::IsModeMaterial()) {
     [cell setTag:kMaterialStandardButtonTypeWithLimitedClickFeedback];
+    [cell setHighlightsBy:NSNoCellMask];
   } else {
     [cell setTag:kStandardButtonTypeWithLimitedClickFeedback];
   }
