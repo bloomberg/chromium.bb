@@ -1545,10 +1545,9 @@ weston_compositor_xkb_destroy(struct weston_compositor *ec);
 /* String literal of spaces, the same width as the timestamp. */
 #define STAMP_SPACE "               "
 
+typedef int (*log_func_t)(const char *fmt, va_list ap);
 void
-weston_log_file_open(const char *filename);
-void
-weston_log_file_close(void);
+weston_log_set_handler(log_func_t log, log_func_t cont);
 int
 weston_vlog(const char *fmt, va_list ap);
 int

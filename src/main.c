@@ -39,6 +39,7 @@
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <libinput.h>
+#include <sys/time.h>
 
 #ifdef HAVE_LIBUNWIND
 #define UNW_LOCAL_ONLY
@@ -60,6 +61,84 @@
 #include "compositor-wayland.h"
 
 #define WINDOW_TITLE "Weston Compositor"
+
+static FILE *weston_logfile = NULL;
+
+static int cached_tm_mday = -1;
+
+static int weston_log_timestamp(void)
+{
+	struct timeval tv;
+	struct tm *brokendown_time;
+	char string[128];
+
+	gettimeofday(&tv, NULL);
+
+	brokendown_time = localtime(&tv.tv_sec);
+	if (brokendown_time == NULL)
+		return fprintf(weston_logfile, "[(NULL)localtime] ");
+
+	if (brokendown_time->tm_mday != cached_tm_mday) {
+		strftime(string, sizeof string, "%Y-%m-%d %Z", brokendown_time);
+		fprintf(weston_logfile, "Date: %s\n", string);
+
+		cached_tm_mday = brokendown_time->tm_mday;
+	}
+
+	strftime(string, sizeof string, "%H:%M:%S", brokendown_time);
+
+	return fprintf(weston_logfile, "[%s.%03li] ", string, tv.tv_usec/1000);
+}
+
+static void
+custom_handler(const char *fmt, va_list arg)
+{
+	weston_log_timestamp();
+	fprintf(weston_logfile, "libwayland: ");
+	vfprintf(weston_logfile, fmt, arg);
+}
+
+static void
+weston_log_file_open(const char *filename)
+{
+	wl_log_set_handler_server(custom_handler);
+
+	if (filename != NULL) {
+		weston_logfile = fopen(filename, "a");
+		if (weston_logfile)
+			os_fd_set_cloexec(fileno(weston_logfile));
+	}
+
+	if (weston_logfile == NULL)
+		weston_logfile = stderr;
+	else
+		setvbuf(weston_logfile, NULL, _IOLBF, 256);
+}
+
+static void
+weston_log_file_close(void)
+{
+	if ((weston_logfile != stderr) && (weston_logfile != NULL))
+		fclose(weston_logfile);
+	weston_logfile = stderr;
+}
+
+static int
+vlog(const char *fmt, va_list ap)
+{
+	int l;
+
+	l = weston_log_timestamp();
+	l += vfprintf(weston_logfile, fmt, ap);
+
+	return l;
+}
+
+static int
+vlog_continue(const char *fmt, va_list argp)
+{
+	return vfprintf(weston_logfile, fmt, argp);
+}
 
 static struct wl_list child_process_list;
 static struct weston_compositor *segv_compositor;
@@ -1482,6 +1561,7 @@ int main(int argc, char *argv[])
 		return EXIT_SUCCESS;
 	}
 
+	weston_log_set_handler(vlog, vlog_continue);
 	weston_log_file_open(log);
 
 	weston_log("%s\n"

@@ -36,78 +36,33 @@
 
 #include "compositor.h"
 
-#include "os-compatibility.h"
+static log_func_t log_handler = 0;
+static log_func_t log_continue_handler = 0;
 
-static FILE *weston_logfile = NULL;
-
-static int cached_tm_mday = -1;
-
-static int weston_log_timestamp(void)
+/** Install the log handler
+ *
+ * The given functions will be called to output text as passed to the
+ * \a weston_log and \a weston_log_continue functions.
+ *
+ * \param log The log function. This function will be called when
+ *            \a weston_log is called, and should begin a new line,
+ *            with user defined line headers, if any.
+ * \param cont The continue log function. This function will be called
+ *             when \a weston_log_continue is called, and should append
+ *             its output to the current line, without any header or
+ *             other content in between.
+ */
+WL_EXPORT void
+weston_log_set_handler(log_func_t log, log_func_t cont)
 {
-	struct timeval tv;
-	struct tm *brokendown_time;
-	char string[128];
-
-	gettimeofday(&tv, NULL);
-
-	brokendown_time = localtime(&tv.tv_sec);
-	if (brokendown_time == NULL)
-		return fprintf(weston_logfile, "[(NULL)localtime] ");
-
-	if (brokendown_time->tm_mday != cached_tm_mday) {
-		strftime(string, sizeof string, "%Y-%m-%d %Z", brokendown_time);
-		fprintf(weston_logfile, "Date: %s\n", string);
-
-		cached_tm_mday = brokendown_time->tm_mday;
-	}
-
-	strftime(string, sizeof string, "%H:%M:%S", brokendown_time);
-
-	return fprintf(weston_logfile, "[%s.%03li] ", string, tv.tv_usec/1000);
-}
-
-static void
-custom_handler(const char *fmt, va_list arg)
-{
-	weston_log_timestamp();
-	fprintf(weston_logfile, "libwayland: ");
-	vfprintf(weston_logfile, fmt, arg);
-}
-
-void
-weston_log_file_open(const char *filename)
-{
-	wl_log_set_handler_server(custom_handler);
-
-	if (filename != NULL) {
-		weston_logfile = fopen(filename, "a");
-		if (weston_logfile)
-			os_fd_set_cloexec(fileno(weston_logfile));
-	}
-
-	if (weston_logfile == NULL)
-		weston_logfile = stderr;
-	else
-		setvbuf(weston_logfile, NULL, _IOLBF, 256);
-}
-
-void
-weston_log_file_close()
-{
-	if ((weston_logfile != stderr) && (weston_logfile != NULL))
-		fclose(weston_logfile);
-	weston_logfile = stderr;
+	log_handler = log;
+	log_continue_handler = cont;
 }
 
 WL_EXPORT int
 weston_vlog(const char *fmt, va_list ap)
 {
-	int l;
-
-	l = weston_log_timestamp();
-	l += vfprintf(weston_logfile, fmt, ap);
-
-	return l;
+	return log_handler(fmt, ap);
 }
 
 WL_EXPORT int
@@ -126,7 +81,7 @@ weston_log(const char *fmt, ...)
 WL_EXPORT int
 weston_vlog_continue(const char *fmt, va_list argp)
 {
-	return vfprintf(weston_logfile, fmt, argp);
+	return log_continue_handler(fmt, argp);
 }
 
 WL_EXPORT int
