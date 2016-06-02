@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/memory/aligned_memory.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/process_metrics.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -84,8 +85,14 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   metrics_by_context[AllocationContext()] = { 1, 1 };
   TraceEventMemoryOverhead overhead;
 
+  scoped_refptr<MemoryDumpSessionState> session_state =
+      new MemoryDumpSessionState;
+  session_state->SetStackFrameDeduplicator(
+      WrapUnique(new StackFrameDeduplicator));
+  session_state->SetTypeNameDeduplicator(
+      WrapUnique(new TypeNameDeduplicator));
   std::unique_ptr<ProcessMemoryDump> pmd1(
-      new ProcessMemoryDump(new MemoryDumpSessionState()));
+      new ProcessMemoryDump(session_state.get()));
   auto mad1_1 = pmd1->CreateAllocatorDump("pmd1/mad1");
   auto mad1_2 = pmd1->CreateAllocatorDump("pmd1/mad2");
   pmd1->AddOwnershipEdge(mad1_1->guid(), mad1_2->guid());
@@ -93,7 +100,7 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   pmd1->DumpHeapUsage(metrics_by_context, overhead, "pmd1/heap_dump2");
 
   std::unique_ptr<ProcessMemoryDump> pmd2(
-      new ProcessMemoryDump(new MemoryDumpSessionState()));
+      new ProcessMemoryDump(session_state.get()));
   auto mad2_1 = pmd2->CreateAllocatorDump("pmd2/mad1");
   auto mad2_2 = pmd2->CreateAllocatorDump("pmd2/mad2");
   pmd2->AddOwnershipEdge(mad2_1->guid(), mad2_2->guid());
