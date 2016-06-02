@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/protocol/Worker.h"
 #include "core/workers/WorkerInspectorProxy.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"

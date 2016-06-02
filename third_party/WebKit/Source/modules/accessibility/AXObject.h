@@ -32,11 +32,11 @@
 
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/markers/DocumentMarker.h"
+#include "core/inspector/protocol/Accessibility.h"
 #include "modules/ModulesExport.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
-#include "platform/inspector_protocol/TypeBuilder.h"
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 

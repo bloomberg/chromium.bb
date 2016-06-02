@@ -31,8 +31,8 @@
 #ifndef InspectorDatabaseResource_h
 #define InspectorDatabaseResource_h
 
+#include "core/inspector/protocol/Database.h"
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/TypeBuilder.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 

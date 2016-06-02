@@ -27,8 +27,8 @@
 
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSStyleDeclaration.h"
+#include "core/inspector/protocol/CSS.h"
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/inspector_protocol/Values.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"

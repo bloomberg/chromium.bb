@@ -30,6 +30,7 @@
 #define InspectorDOMStorageAgent_h
 
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/protocol/DOMStorage.h"
 #include "modules/ModulesExport.h"
 #include "modules/storage/StorageArea.h"
 #include "wtf/HashMap.h"

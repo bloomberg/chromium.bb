@@ -153,6 +153,7 @@
         'generated_testing_idls',
         'core_event_interfaces',
         '../config.gyp:config',
+        'inspector/inspector.gyp:protocol_sources',
       ],
       'sources': [
         # bison rule

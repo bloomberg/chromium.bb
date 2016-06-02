@@ -5,10 +5,10 @@
 #ifndef InspectorTypeBuilderHelper_h
 #define InspectorTypeBuilderHelper_h
 
+#include "core/inspector/protocol/Accessibility.h"
 #include "modules/ModulesExport.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "platform/inspector_protocol/TypeBuilder.h"
 
 namespace blink {
 

@@ -27,6 +27,7 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/protocol/Console.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 

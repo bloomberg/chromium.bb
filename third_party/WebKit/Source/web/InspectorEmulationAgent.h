@@ -6,6 +6,7 @@
 #define InspectorEmulationAgent_h
 
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/protocol/Emulation.h"
 
 namespace blink {
 

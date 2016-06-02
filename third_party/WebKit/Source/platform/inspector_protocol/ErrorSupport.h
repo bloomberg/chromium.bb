@@ -36,4 +36,6 @@ private:
 } // namespace platform
 } // namespace blink
 
+using blink::protocol::ErrorString;
+
 #endif // !defined(ErrorSupport_h)

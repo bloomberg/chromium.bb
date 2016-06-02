@@ -10,6 +10,9 @@
 namespace blink {
 namespace protocol {
 
+// static
+const char DispatcherBase::kInvalidRequest[] = "Invalid request";
+
 DispatcherBase::WeakPtr::WeakPtr(DispatcherBase* dispatcher) : m_dispatcher(dispatcher) { }
 
 DispatcherBase::WeakPtr::~WeakPtr()

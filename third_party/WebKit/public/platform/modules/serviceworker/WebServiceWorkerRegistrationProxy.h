@@ -5,11 +5,11 @@
 #ifndef WebServiceWorkerRegistrationProxy_h
 #define WebServiceWorkerRegistrationProxy_h
 
+#include "public/platform/modules/serviceworker/WebServiceWorker.h"
+
 #include <memory>
 
 namespace blink {
-
-class WebServiceWorker;
 
 // A proxy interface, passed via WebServiceWorkerRegistration.setProxy() from
 // blink to the embedder, to talk to the ServiceWorkerRegistration object from

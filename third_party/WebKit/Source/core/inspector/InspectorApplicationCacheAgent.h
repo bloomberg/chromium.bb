@@ -27,6 +27,7 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/protocol/ApplicationCache.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"

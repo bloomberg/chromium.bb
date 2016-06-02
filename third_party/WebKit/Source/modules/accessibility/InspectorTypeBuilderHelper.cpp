@@ -7,7 +7,6 @@
 #include "core/dom/DOMNodeIds.h"
 #include "modules/accessibility/AXObject.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
-#include "platform/inspector_protocol/TypeBuilder.h"
 
 namespace blink {
 

@@ -32,6 +32,7 @@
 #define InspectorIndexedDBAgent_h
 
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/protocol/IndexedDB.h"
 #include "modules/ModulesExport.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"

@@ -35,7 +35,7 @@
 #include "core/InstrumentingAgents.h"
 #include "platform/heap/Handle.h"
 #include "platform/inspector_protocol/DispatcherBase.h"
-#include "platform/inspector_protocol/TypeBuilder.h"
+#include "platform/inspector_protocol/Maybe.h"
 #include "platform/inspector_protocol/Values.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"

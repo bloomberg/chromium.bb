@@ -9,6 +9,7 @@
 
   'variables': {
     'blink_core_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/core',
+    'blink_platform_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/platform',
 
     'generated_webcore_testing_idl_files': [
       '<(blink_core_output_dir)/testing/InternalRuntimeFlags.idl',
@@ -99,12 +100,40 @@
       # Additional .cpp files from the make_core_generated rules.
       '<(blink_core_output_dir)/XPathGrammar.cpp',
 
-      # Additional .cpp files from the inspector_instrumentation_sources list.
+      # Additional .cpp files from the inspector:instrumentation_sources list.
       '<(blink_core_output_dir)/InspectorConsoleInstrumentationInl.h',
       '<(blink_core_output_dir)/InspectorInstrumentationInl.h',
       '<(blink_core_output_dir)/InspectorOverridesInl.h',
       '<(blink_core_output_dir)/InstrumentingAgents.h',
       '<(blink_core_output_dir)/InspectorInstrumentationImpl.cpp',
+
+      # Additional .cpp files from the inspector:protocol_sources list.
+      '<(blink_core_output_dir)/inspector/protocol/Accessibility.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Animation.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/ApplicationCache.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/CacheStorage.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Console.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/CSS.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Database.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/DeviceOrientation.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/DOMDebugger.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/DOM.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/DOMStorage.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Emulation.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/IndexedDB.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Input.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Inspector.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/IO.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/LayerTree.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Memory.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Network.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Page.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Rendering.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Security.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/ServiceWorker.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Storage.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Tracing.cpp',
+      '<(blink_core_output_dir)/inspector/protocol/Worker.cpp',
 
       # Additional .cpp files for SVG.
       '<(blink_core_output_dir)/SVGElementFactory.cpp',

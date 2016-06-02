@@ -36,7 +36,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/TypeBuilder.h"
+#include "platform/inspector_protocol/Values.h"
 #include "public/web/WebInputEvent.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

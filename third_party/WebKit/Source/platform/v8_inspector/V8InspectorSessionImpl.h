@@ -9,7 +9,7 @@
 #include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/DispatcherBase.h"
 #include "platform/inspector_protocol/String16.h"
-#include "platform/inspector_protocol/TypeBuilder.h"
+#include "platform/v8_inspector/protocol/Runtime.h"
 #include "platform/v8_inspector/public/V8InspectorSession.h"
 #include "platform/v8_inspector/public/V8InspectorSessionClient.h"
 #include "wtf/PtrUtil.h"

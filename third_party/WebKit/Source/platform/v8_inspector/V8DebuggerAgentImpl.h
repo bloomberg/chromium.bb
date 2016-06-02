@@ -7,8 +7,8 @@
 
 #include "platform/inspector_protocol/Collections.h"
 #include "platform/inspector_protocol/String16.h"
-#include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
+#include "platform/v8_inspector/protocol/Debugger.h"
 
 namespace blink {
 

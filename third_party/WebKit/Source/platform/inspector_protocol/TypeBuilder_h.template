@@ -4,10 +4,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef {{class_name}}_h
-#define {{class_name}}_h
+#ifndef protocol_{{domain.domain}}_h
+#define protocol_{{domain.domain}}_h
 
+{% if export_macro == "PLATFORM_EXPORT" %}
 #include "platform/PlatformExport.h"
+{% else %}
+#include "core/CoreExport.h"
+{% endif %}
 #include "platform/inspector_protocol/Array.h"
 #include "platform/inspector_protocol/BackendCallback.h"
 #include "platform/inspector_protocol/DispatcherBase.h"
@@ -18,14 +22,15 @@
 #include "platform/inspector_protocol/String16.h"
 #include "platform/inspector_protocol/Values.h"
 #include "platform/inspector_protocol/ValueConversions.h"
+{% for name in domain.dependencies %}
+#include "{{output_package}}/{{name}}.h"
+{% endfor %}
+
 #include "wtf/Assertions.h"
 #include "wtf/PtrUtil.h"
 
 namespace blink {
 namespace protocol {
-
-{% for domain in api.domains %}
-
 namespace {{domain.domain}} {
 
 // ------------- Forward and enum declarations.
@@ -48,7 +53,7 @@ using {{type.id}} = {{resolve_type(type).type}};
 
 namespace {{type.id}}Enum {
       {% for literal in type.enum %}
-PLATFORM_EXPORT extern const char* {{ literal | dash_to_camelcase}};
+{{export_macro}} extern const char* {{ literal | dash_to_camelcase}};
       {% endfor %}
 } // {{type.id}}Enum
     {% endif %}
@@ -60,7 +65,7 @@ PLATFORM_EXPORT extern const char* {{ literal | dash_to_camelcase}};
 namespace {{command.name | to_title_case}} {
 namespace {{param.name | to_title_case}}Enum {
         {% for literal in param.enum %}
-PLATFORM_EXPORT extern const char* {{ literal | dash_to_camelcase}};
+{{export_macro}} extern const char* {{ literal | dash_to_camelcase}};
         {% endfor %}
 } // {{param.name | to_title_case}}Enum
 } // {{command.name | to_title_case }}
@@ -74,7 +79,7 @@ PLATFORM_EXPORT extern const char* {{ literal | dash_to_camelcase}};
     {% set type_def = type_definition(domain.domain + "." + type.id)%}
 
 // {{type.description}}
-class PLATFORM_EXPORT {{type.id}} {
+class {{export_macro}} {{type.id}} {
 public:
     static std::unique_ptr<{{type.id}}> parse(protocol::Value* value, ErrorSupport* errors);
 
@@ -82,7 +87,7 @@ public:
     {% for property in type.properties %}
       {% if "enum" in property %}
 
-    struct PLATFORM_EXPORT {{property.name | to_title_case}}Enum {
+    struct {{export_macro}} {{property.name | to_title_case}}Enum {
         {% for literal in property.enum %}
         static const char* {{ literal | dash_to_camelcase}};
         {% endfor %}
@@ -175,13 +180,13 @@ private:
 
 // ------------- Backend interface.
 
-class PLATFORM_EXPORT Backend {
+class {{export_macro}} Backend {
 public:
   {% for command in domain.commands %}
     {% if "redirect" in command %}{% continue %}{% endif %}
     {% if ("handlers" in command) and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
     {% if "async" in command %}
-    class PLATFORM_EXPORT {{command.name | to_title_case}}Callback : public BackendCallback {
+    class {{export_macro}} {{command.name | to_title_case}}Callback : public BackendCallback {
     public:
         virtual void sendSuccess(
             {%- for parameter in command.returns -%}
@@ -227,7 +232,7 @@ protected:
 
 // ------------- Frontend interface.
 
-class PLATFORM_EXPORT Frontend {
+class {{export_macro}} Frontend {
 public:
     Frontend(FrontendChannel* frontendChannel) : m_frontendChannel(frontendChannel) { }
   {% for event in domain.events %}
@@ -250,7 +255,7 @@ private:
 
 // ------------- Dispatcher.
 
-class PLATFORM_EXPORT Dispatcher {
+class {{export_macro}} Dispatcher {
 public:
     static void wire(UberDispatcher*, blink::protocol::{{domain.domain}}::Backend*);
 
@@ -260,7 +265,7 @@ private:
 
 // ------------- Metainfo.
 
-class PLATFORM_EXPORT Metainfo {
+class {{export_macro}} Metainfo {
 public:
     using BackendClass = Backend;
     using FrontendClass = Frontend;
@@ -269,11 +274,7 @@ public:
 };
 
 } // namespace {{domain.domain}}
-{% endfor %}
-
 } // namespace protocol
 } // namespace blink
 
-using blink::protocol::ErrorString;
-
-#endif // !defined({{class_name}}_h)
+#endif // !defined(protocol_{{domain.domain}}_h)

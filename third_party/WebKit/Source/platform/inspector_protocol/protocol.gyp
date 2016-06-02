@@ -11,41 +11,7 @@
       '<(DEPTH)/third_party/markupsafe/__init__.py',  # jinja2 dep
     ],
   },
-
   'targets': [
-    {
-      # GN version: //third_party/WebKit/Source/platform/inspector_protocol_sources
-      'target_name': 'protocol_sources',
-      'type': 'none',
-      'dependencies': [
-        'protocol_version'
-      ],
-      'actions': [
-        {
-          'action_name': 'generateInspectorProtocolBackendSources',
-          'inputs': [
-            '<@(jinja_module_files)',
-            # The python script in action below.
-            'CodeGenerator.py',
-            # Input files for the script.
-            '../../devtools/protocol.json',
-            'TypeBuilder_h.template',
-            'TypeBuilder_cpp.template',
-          ],
-          'outputs': [
-            '<(blink_platform_output_dir)/inspector_protocol/TypeBuilder.cpp',
-            '<(blink_platform_output_dir)/inspector_protocol/TypeBuilder.h',
-          ],
-          'action': [
-            'python',
-            'CodeGenerator.py',
-            '../../devtools/protocol.json',
-            '--output_dir', '<(blink_platform_output_dir)/inspector_protocol',
-          ],
-          'message': 'Generating Inspector protocol backend sources from protocol.json',
-        },
-      ]
-    },
     {
       # GN version: //third_party/WebKit/Source/platform/inspector_protocol_version
       'target_name': 'protocol_version',
@@ -60,10 +26,6 @@
           'outputs': [
             '<(blink_platform_output_dir)/inspector_protocol/InspectorProtocolVersion.h',
           ],
-          'variables': {
-            'generator_include_dirs': [
-            ],
-          },
           'action': [
             'python',
             'generate-inspector-protocol-version',

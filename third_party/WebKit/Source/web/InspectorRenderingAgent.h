@@ -6,6 +6,7 @@
 #define InspectorRenderingAgent_h
 
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/protocol/Rendering.h"
 
 namespace blink {
 

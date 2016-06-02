@@ -34,6 +34,7 @@
 #include "core/events/EventListenerMap.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorHighlight.h"
+#include "core/inspector/protocol/DOM.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/inspector_protocol/Values.h"
@@ -125,11 +126,11 @@ public:
     void performSearch(ErrorString*, const String& query, const Maybe<bool>& includeUserAgentShadowDOM, String* searchId, int* resultCount) override;
     void getSearchResults(ErrorString*, const String& searchId, int fromIndex, int toIndex, std::unique_ptr<protocol::Array<int>>* nodeIds) override;
     void discardSearchResults(ErrorString*, const String& searchId) override;
-    void requestNode(ErrorString*, const String16& objectId, int* outNodeId) override;
+    void requestNode(ErrorString*, const String& objectId, int* outNodeId) override;
     void setInspectMode(ErrorString*, const String& mode, const Maybe<protocol::DOM::HighlightConfig>&) override;
     void highlightRect(ErrorString*, int x, int y, int width, int height, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor) override;
     void highlightQuad(ErrorString*, std::unique_ptr<protocol::Array<double>> quad, const Maybe<protocol::DOM::RGBA>& color, const Maybe<protocol::DOM::RGBA>& outlineColor) override;
-    void highlightNode(ErrorString*, std::unique_ptr<protocol::DOM::HighlightConfig>, const Maybe<int>& nodeId, const Maybe<int>& backendNodeId, const Maybe<String16>& objectId) override;
+    void highlightNode(ErrorString*, std::unique_ptr<protocol::DOM::HighlightConfig>, const Maybe<int>& nodeId, const Maybe<int>& backendNodeId, const Maybe<String>& objectId) override;
     void hideHighlight(ErrorString*) override;
     void highlightFrame(ErrorString*, const String& frameId, const Maybe<protocol::DOM::RGBA>& contentColor, const Maybe<protocol::DOM::RGBA>& contentOutlineColor) override;
     void pushNodeByPathToFrontend(ErrorString*, const String& path, int* outNodeId) override;
@@ -178,7 +179,7 @@ public:
 
     static String documentURLString(Document*);
 
-    std::unique_ptr<protocol::Runtime::RemoteObject> resolveNode(Node*, const String16& objectGroup);
+    std::unique_ptr<protocol::Runtime::RemoteObject> resolveNode(Node*, const String& objectGroup);
 
     InspectorHistory* history() { return m_history.get(); }
 

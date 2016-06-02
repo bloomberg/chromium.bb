@@ -33,7 +33,7 @@
 
 #include "platform/inspector_protocol/Allocator.h"
 #include "platform/inspector_protocol/String16.h"
-#include "platform/inspector_protocol/TypeBuilder.h"
+#include "platform/v8_inspector/protocol/Runtime.h"
 
 #include <v8.h>
 

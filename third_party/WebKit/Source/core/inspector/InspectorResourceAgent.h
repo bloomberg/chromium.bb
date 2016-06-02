@@ -35,6 +35,7 @@
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorPageAgent.h"
+#include "core/inspector/protocol/Network.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"

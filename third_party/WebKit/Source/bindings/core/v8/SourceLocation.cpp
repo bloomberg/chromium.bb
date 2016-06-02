@@ -14,7 +14,6 @@
 #include "core/inspector/ThreadDebugger.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TracedValue.h"
-#include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 
 namespace blink {

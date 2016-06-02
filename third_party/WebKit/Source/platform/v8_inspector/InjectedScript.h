@@ -32,10 +32,10 @@
 #define InjectedScript_h
 
 #include "platform/inspector_protocol/Allocator.h"
-#include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/v8_inspector/InjectedScriptNative.h"
 #include "platform/v8_inspector/InspectedContext.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
+#include "platform/v8_inspector/protocol/Runtime.h"
 #include "wtf/PtrUtil.h"
 
 #include <v8.h>

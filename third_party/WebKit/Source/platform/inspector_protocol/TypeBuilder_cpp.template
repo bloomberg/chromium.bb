@@ -4,19 +4,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/inspector_protocol/{{class_name}}.h"
+#include "{{output_package}}/{{domain.domain}}.h"
 
 #include "platform/inspector_protocol/DispatcherBase.h"
 
 namespace blink {
 namespace protocol {
-
-static const char kInvalidRequest[] = "Invalid request";
+namespace {{domain.domain}} {
 
 // ------------- Enum values from types.
-{% for domain in api.domains %}
-
-namespace {{domain.domain}} {
 
 const char Metainfo::domainName[] = "{{domain.domain}}";
   {% for type in domain.types %}
@@ -181,7 +177,7 @@ void DispatcherImpl::dispatch(int callId, const String16& method, std::unique_pt
     {% if "handlers" in command and not ("renderer" in command["handlers"]) %}{% continue %}{% endif %}
     {% if "async" in command %}
 
-class PLATFORM_EXPORT {{command.name | to_title_case}}CallbackImpl : public Backend::{{command.name | to_title_case}}Callback, public DispatcherBase::Callback {
+class {{command.name | to_title_case}}CallbackImpl : public Backend::{{command.name | to_title_case}}Callback, public DispatcherBase::Callback {
 public:
     {{command.name | to_title_case}}CallbackImpl(std::unique_ptr<DispatcherBase::WeakPtr> backendImpl, int callId)
         : DispatcherBase::Callback(std::move(backendImpl), callId) { }
@@ -300,7 +296,5 @@ void Dispatcher::wire(UberDispatcher* dispatcher, Backend* backend)
 }
 
 } // {{domain.domain}}
-{% endfor %}
-
 } // namespace protocol
 } // namespace blink

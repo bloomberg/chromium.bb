@@ -202,19 +202,29 @@ action("inspector_protocol_sources") {
     "inspector_protocol/TypeBuilder_cpp.template",
   ]
   outputs = [
-    "$blink_platform_output_dir/inspector_protocol/TypeBuilder.cpp",
-    "$blink_platform_output_dir/inspector_protocol/TypeBuilder.h",
+    "$blink_platform_output_dir/v8_inspector/protocol/Debugger.cpp",
+    "$blink_platform_output_dir/v8_inspector/protocol/Debugger.h",
+    "$blink_platform_output_dir/v8_inspector/protocol/HeapProfiler.cpp",
+    "$blink_platform_output_dir/v8_inspector/protocol/HeapProfiler.h",
+    "$blink_platform_output_dir/v8_inspector/protocol/Profiler.cpp",
+    "$blink_platform_output_dir/v8_inspector/protocol/Profiler.h",
+    "$blink_platform_output_dir/v8_inspector/protocol/Runtime.cpp",
+    "$blink_platform_output_dir/v8_inspector/protocol/Runtime.h",
   ]
 
   args = [
     rebase_path(protocol_file, root_build_dir),
+    "--domains",
+    "Debugger,HeapProfiler,Profiler,Runtime",
+    "--string_type",
+    "String16",
+    "--export_macro",
+    "PLATFORM_EXPORT",
     "--output_dir",
-    rebase_path(blink_platform_output_dir + "/inspector_protocol/",
+    rebase_path(blink_platform_output_dir + "/v8_inspector/protocol",
                 root_build_dir),
-  ]
-
-  deps = [
-    ":inspector_protocol_version",
+    "--output_package",
+    "platform/v8_inspector/protocol",
   ]
 }
 
@@ -284,6 +294,7 @@ group("make_platform_generated") {
     ":inspector_debugger_script",
     ":inspector_injected_script",
     ":inspector_protocol_sources",
+    ":inspector_protocol_version",
     ":runtime_enabled_features",
   ]
 }
@@ -311,6 +322,7 @@ component("platform") {
              get_target_outputs(":inspector_debugger_script") +
              get_target_outputs(":inspector_injected_script") +
              get_target_outputs(":inspector_protocol_sources") +
+             get_target_outputs(":inspector_protocol_version") +
              get_target_outputs(":runtime_enabled_features")
 
   configs += [

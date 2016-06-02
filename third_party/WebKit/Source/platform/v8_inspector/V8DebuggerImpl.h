@@ -31,9 +31,10 @@
 #ifndef V8DebuggerImpl_h
 #define V8DebuggerImpl_h
 
-#include "platform/inspector_protocol/TypeBuilder.h"
+#include "platform/inspector_protocol/Maybe.h"
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/V8DebuggerScript.h"
+#include "platform/v8_inspector/protocol/Debugger.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "wtf/PtrUtil.h"
 

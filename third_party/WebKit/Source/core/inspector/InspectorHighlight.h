@@ -6,11 +6,11 @@
 #define InspectorHighlight_h
 
 #include "core/CoreExport.h"
+#include "core/inspector/protocol/DOM.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/heap/Handle.h"
-#include "platform/inspector_protocol/TypeBuilder.h"
 
 namespace blink {
 

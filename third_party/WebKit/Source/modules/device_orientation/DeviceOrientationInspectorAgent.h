@@ -6,6 +6,7 @@
 #define DeviceOrientationInspectorAgent_h
 
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/protocol/DeviceOrientation.h"
 #include "modules/ModulesExport.h"
 #include "wtf/text/WTFString.h"
 

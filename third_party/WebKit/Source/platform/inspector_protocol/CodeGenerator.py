@@ -33,22 +33,39 @@ sys.path.insert(1, third_party_dir)
 import jinja2
 
 cmdline_parser = optparse.OptionParser()
+cmdline_parser.add_option("--domains")
 cmdline_parser.add_option("--output_dir")
-cmdline_parser.add_option("--generate_dispatcher")
+cmdline_parser.add_option("--output_package")
+cmdline_parser.add_option("--string_type")
+cmdline_parser.add_option("--export_macro")
+
+generate_domains = set()
 
 try:
     arg_options, arg_values = cmdline_parser.parse_args()
     if (len(arg_values) == 0):
         raise Exception("At least one plain argument expected (found %s)" % len(arg_values))
     output_dirname = arg_options.output_dir
-    generate_dispatcher = arg_options.generate_dispatcher
     if not output_dirname:
         raise Exception("Output directory must be specified")
+    output_package = arg_options.output_package
+    if not output_package:
+        raise Exception("Output package must be specified")
+    string_type = arg_options.string_type
+    if not string_type:
+        raise Exception("String type must be specified")
+    export_macro = arg_options.export_macro
+    if not export_macro:
+        raise Exception("Export macro must be specified")
+    output_domains = arg_options.domains
+    if output_domains and len(output_domains):
+        for domain in output_domains.split(","):
+            generate_domains.add(domain)
 except Exception:
     # Work with python 2 and 3 http://docs.python.org/py3k/howto/pyporting.html
     exc = sys.exc_info()[1]
     sys.stderr.write("Failed to parse command-line arguments: %s\n\n" % exc)
-    sys.stderr.write("Usage: <script> --output_dir <output_dir> blink_protocol.json v8_protocol.json ...\n")
+    sys.stderr.write("Usage: <script> --output_dir <output_dir> protocol.json ...\n")
     exit(1)
 
 json_api = {"domains": []}
@@ -86,30 +103,6 @@ def initialize_jinja_env(cache_dir):
 
 def output_file(file_name):
     return open(file_name, "w")
-
-
-def topsort_domains():
-    domains = {}
-    for domain in json_api["domains"]:
-        domains[domain["domain"]] = domain
-
-    processed = set()
-    result = []
-
-    def process(name):
-        if name in processed:
-            return
-        domain = domains[name]
-        deps = []
-        if "depends" in domain:
-            for dep in domain["depends"]:
-                process(dep)
-        result.append(domain)
-        processed.add(name)
-
-    for domain in json_api["domains"]:
-        process(domain["domain"])
-    json_api["domains"] = result
 
 
 def patch_full_qualified_refs():
@@ -176,28 +169,16 @@ def create_any_type_definition():
 
 
 def create_string_type_definition(domain):
-    if domain in ["Runtime", "Debugger", "Profiler", "HeapProfiler"]:
-        return {
-            "return_type": "String16",
-            "pass_type": "const String16&",
-            "to_pass_type": "%s",
-            "to_raw_type": "%s",
-            "to_rvalue": "%s",
-            "type": "String16",
-            "raw_type": "String16",
-            "raw_pass_type": "const String16&",
-            "raw_return_type": "String16",
-        }
     return {
-        "return_type": "String",
-        "pass_type": "const String&",
+        "return_type": string_type,
+        "pass_type": ("const %s&" % string_type),
         "to_pass_type": "%s",
         "to_raw_type": "%s",
         "to_rvalue": "%s",
-        "type": "String",
-        "raw_type": "String",
-        "raw_pass_type": "const String&",
-        "raw_return_type": "String",
+        "type": string_type,
+        "raw_type": string_type,
+        "raw_pass_type": ("const %s&" % string_type),
+        "raw_return_type": string_type,
     }
 
 
@@ -263,7 +244,6 @@ def create_type_definitions():
             else:
                 type_definitions[domain["domain"] + "." + type["id"]] = create_primitive_type_definition(type["type"])
 
-topsort_domains()
 patch_full_qualified_refs()
 create_type_definitions()
 
@@ -308,10 +288,18 @@ def is_up_to_date(file, template):
     return timestamp > max(os.path.getmtime(module_path + template),
                            current_script_timestamp, json_timestamp)
 
+if not os.path.exists(output_dirname):
+    os.mkdir(output_dirname)
+jinja_env = initialize_jinja_env(output_dirname)
 
-def generate(class_name):
-    h_template_name = "/%s_h.template" % class_name
-    cpp_template_name = "/%s_cpp.template" % class_name
+h_template_name = "/TypeBuilder_h.template"
+cpp_template_name = "/TypeBuilder_cpp.template"
+h_template = jinja_env.get_template(h_template_name)
+cpp_template = jinja_env.get_template(cpp_template_name)
+
+
+def generate(domain):
+    class_name = domain["domain"]
     h_file_name = output_dirname + "/" + class_name + ".h"
     cpp_file_name = output_dirname + "/" + class_name + ".cpp"
 
@@ -320,15 +308,14 @@ def generate(class_name):
         return
 
     template_context = {
-        "class_name": class_name,
-        "api": json_api,
+        "domain": domain,
         "join_arrays": join_arrays,
         "resolve_type": resolve_type,
         "type_definition": type_definition,
-        "has_disable": has_disable
+        "has_disable": has_disable,
+        "export_macro": export_macro,
+        "output_package": output_package,
     }
-    h_template = jinja_env.get_template(h_template_name)
-    cpp_template = jinja_env.get_template(cpp_template_name)
     h_file = output_file(h_file_name)
     cpp_file = output_file(cpp_file_name)
     h_file.write(h_template.render(template_context))
@@ -337,5 +324,6 @@ def generate(class_name):
     cpp_file.close()
 
 
-jinja_env = initialize_jinja_env(output_dirname)
-generate("TypeBuilder")
+for domain in json_api["domains"]:
+    if domain["domain"] in generate_domains:
+        generate(domain)

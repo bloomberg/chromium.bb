@@ -5,7 +5,8 @@
 #ifndef V8StackTrace_h
 #define V8StackTrace_h
 
-#include "platform/inspector_protocol/TypeBuilder.h"
+#include "platform/inspector_protocol/String16.h"
+#include "platform/v8_inspector/protocol/Runtime.h"
 #include "wtf/PtrUtil.h"
 
 #include <v8.h>

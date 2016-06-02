@@ -21,7 +21,8 @@ class WeakPtr;
 class PLATFORM_EXPORT DispatcherBase {
     PROTOCOL_DISALLOW_COPY(DispatcherBase);
 public:
-    class WeakPtr {
+    static const char kInvalidRequest[];
+    class PLATFORM_EXPORT WeakPtr {
     public:
         explicit WeakPtr(DispatcherBase*);
         ~WeakPtr();

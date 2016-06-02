@@ -32,8 +32,8 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/InspectorBaseAgent.h"
+#include "core/inspector/protocol/LayerTree.h"
 #include "platform/Timer.h"
-#include "platform/inspector_protocol/TypeBuilder.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"

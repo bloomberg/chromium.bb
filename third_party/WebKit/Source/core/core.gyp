@@ -62,37 +62,6 @@
 
   'targets': [
     {
-      # GN version: //third_party/WebKit/Source/core/inspector:instrumentation_sources
-      'target_name': 'inspector_instrumentation_sources',
-      'type': 'none',
-      'dependencies': [],
-      'actions': [
-        {
-          'action_name': 'generateInspectorInstrumentation',
-          'inputs': [
-            # The python script in action below.
-            'inspector/CodeGeneratorInstrumentation.py',
-            # Input file for the script.
-            'inspector/InspectorInstrumentation.idl',
-          ],
-          'outputs': [
-            '<(blink_core_output_dir)/InspectorConsoleInstrumentationInl.h',
-            '<(blink_core_output_dir)/InspectorInstrumentationInl.h',
-            '<(blink_core_output_dir)/InspectorOverridesInl.h',
-            '<(blink_core_output_dir)/InstrumentingAgents.h',
-            '<(blink_core_output_dir)/InspectorInstrumentationImpl.cpp',
-          ],
-          'action': [
-            'python',
-            'inspector/CodeGeneratorInstrumentation.py',
-            'inspector/InspectorInstrumentation.idl',
-            '--output_dir', '<(blink_core_output_dir)',
-          ],
-          'message': 'Generating Inspector instrumentation code from InspectorInstrumentation.idl',
-        }
-      ]
-    },
-    {
       # GN version: //third_party/WebKit/Source/core:core_generated
       'target_name': 'webcore_generated',
       'type': 'static_library',
@@ -100,7 +69,8 @@
       'dependencies': [
         'webcore_prerequisites',
         'core_generated.gyp:make_core_generated',
-        'inspector_instrumentation_sources',
+        'inspector/inspector.gyp:instrumentation_sources',
+        'inspector/inspector.gyp:protocol_sources',
         '../bindings/core/v8/generated.gyp:bindings_core_v8_generated',
         # FIXME: don't depend on bindings_modules http://crbug.com/358074
         '../bindings/modules/generated.gyp:modules_event_generated',
@@ -158,7 +128,8 @@
       'target_name': 'webcore_prerequisites',
       'type': 'none',
       'dependencies': [
-        'inspector_instrumentation_sources',
+        'inspector/inspector.gyp:instrumentation_sources',
+        'inspector/inspector.gyp:protocol_sources',
         'core_generated.gyp:make_core_generated',
         '../bindings/core/v8/generated.gyp:bindings_core_v8_generated',
         # FIXME: don't depend on bindings_modules http://crbug.com/358074
@@ -526,7 +497,8 @@
 
         # webcore_generated dependency
         'core_generated.gyp:make_core_generated',
-        'inspector_instrumentation_sources',
+        'inspector/inspector.gyp:instrumentation_sources',
+        'inspector/inspector.gyp:protocol_sources',
         '../bindings/core/v8/generated.gyp:bindings_core_v8_generated',
         # FIXME: don't depend on bindings_modules http://crbug.com/358074
         '../bindings/modules/generated.gyp:modules_event_generated',
