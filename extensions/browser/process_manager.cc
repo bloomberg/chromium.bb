@@ -569,24 +569,37 @@ void ProcessManager::OnNetworkRequestStarted(
     uint64_t request_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(
       GetExtensionID(render_frame_host));
-  auto result = pending_network_requests_.insert(request_id);
+  if (!host || !IsFrameInExtensionHost(host, render_frame_host))
+    return;
+
+  auto result =
+      pending_network_requests_.insert(std::make_pair(request_id, host));
   DCHECK(result.second) << "Duplicate network request IDs.";
-  if (host && IsFrameInExtensionHost(host, render_frame_host)) {
-    IncrementLazyKeepaliveCount(host->extension());
-    host->OnNetworkRequestStarted(request_id);
-  }
+
+  IncrementLazyKeepaliveCount(host->extension());
+  host->OnNetworkRequestStarted(request_id);
 }
 
 void ProcessManager::OnNetworkRequestDone(
     content::RenderFrameHost* render_frame_host,
     uint64_t request_id) {
-  ExtensionHost* host = GetBackgroundHostForExtension(
-      GetExtensionID(render_frame_host));
-  if (host && IsFrameInExtensionHost(host, render_frame_host)) {
-    host->OnNetworkRequestDone(request_id);
-    if (pending_network_requests_.erase(request_id))
-      DecrementLazyKeepaliveCount(host->extension());
-  }
+  auto result = pending_network_requests_.find(request_id);
+  if (result == pending_network_requests_.end())
+    return;
+
+  // The cached |host| can be invalid, if it was deleted between the time it
+  // was inserted in the map and the look up. It is checked to ensure it is in
+  // the list of existing background_hosts_.
+  ExtensionHost* host = result->second;
+  pending_network_requests_.erase(result);
+
+  if (background_hosts_.find(host) == background_hosts_.end())
+    return;
+
+  DCHECK(IsFrameInExtensionHost(host, render_frame_host));
+
+  host->OnNetworkRequestDone(request_id);
+  DecrementLazyKeepaliveCount(host->extension());
 }
 
 void ProcessManager::CancelSuspend(const Extension* extension) {
