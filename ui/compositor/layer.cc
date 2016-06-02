@@ -689,9 +689,9 @@ void Layer::SendDamagedRects() {
 
   for (cc::Region::Iterator iter(damaged_region_); iter.has_rect(); iter.next())
     cc_layer_->SetNeedsDisplayRect(iter.rect());
-}
 
-void Layer::ClearDamagedRects() {
+  if (content_layer_)
+    paint_region_.Union(damaged_region_);
   damaged_region_.Clear();
 }
 
@@ -756,8 +756,8 @@ scoped_refptr<cc::DisplayItemList> Layer::PaintContentsToDisplayList(
   TRACE_EVENT1("ui", "Layer::PaintContentsToDisplayList", "name", name_);
   gfx::Rect local_bounds(bounds().size());
   gfx::Rect invalidation(
-      gfx::IntersectRects(damaged_region_.bounds(), local_bounds));
-  ClearDamagedRects();
+      gfx::IntersectRects(paint_region_.bounds(), local_bounds));
+  paint_region_.Clear();
   cc::DisplayItemListSettings settings;
   settings.use_cached_picture = false;
   scoped_refptr<cc::DisplayItemList> display_list =
