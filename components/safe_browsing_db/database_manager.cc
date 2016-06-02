@@ -94,26 +94,123 @@ bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
   if (full_hashes.empty())
     return true;
 
-  // Copy to prefixes.
-  std::vector<SBPrefix> prefixes;
-  for (const SBFullHash& full_hash : full_hashes) {
-    prefixes.push_back(full_hash.prefix);
-  }
-  // Multiple full hashes could share a prefix, remove duplicates.
-  std::sort(prefixes.begin(), prefixes.end());
-  prefixes.erase(std::unique(prefixes.begin(), prefixes.end()), prefixes.end());
-  DCHECK(!prefixes.empty());
+  // First check the cache.
+
+  // Used to determine cache expiration.
+  base::Time now = base::Time::Now();
+
+  std::vector<SBFullHashResult> cached_results;
+  std::vector<SBPrefix> prefixes_needing_reqs;
+  GetFullHashCachedResults(SB_THREAT_TYPE_API_ABUSE,
+      full_hashes, now, &prefixes_needing_reqs, &cached_results);
+
+  if (prefixes_needing_reqs.empty() && cached_results.empty())
+    return true;
 
   SafeBrowsingApiCheck* check =
-      new SafeBrowsingApiCheck(url, prefixes, full_hashes, client);
+      new SafeBrowsingApiCheck(url, prefixes_needing_reqs, full_hashes,
+                               cached_results, client);
   api_checks_.insert(check);
 
-  // TODO(kcarattini): Implement cache compliance.
-  v4_get_hash_protocol_manager_->GetFullHashesWithApis(prefixes,
+  if (prefixes_needing_reqs.empty()) {
+    // We can call the callback immediately if no prefixes require a request.
+    // The |full_hash_results| representing the results fromt eh SB server will
+    // be empty.
+    std::vector<SBFullHashResult> full_hash_results;
+    HandleGetHashesWithApisResults(check, full_hash_results, base::Time());
+    return false;
+  }
+
+  v4_get_hash_protocol_manager_->GetFullHashesWithApis(prefixes_needing_reqs,
       base::Bind(&SafeBrowsingDatabaseManager::HandleGetHashesWithApisResults,
                  base::Unretained(this), check));
 
   return false;
+}
+
+void SafeBrowsingDatabaseManager::GetFullHashCachedResults(
+    const SBThreatType& threat_type,
+    const std::vector<SBFullHash>& full_hashes,
+    base::Time now,
+    std::vector<SBPrefix>* prefixes_needing_reqs,
+    std::vector<SBFullHashResult>* cached_results) {
+  DCHECK(prefixes_needing_reqs);
+  prefixes_needing_reqs->clear();
+  DCHECK(cached_results);
+  cached_results->clear();
+
+  // Caching behavior is documented here:
+  // https://developers.google.com/safe-browsing/v4/caching#about-caching
+  //
+  // The cache operates as follows:
+  // Lookup:
+  //     Case 1: The prefix is in the cache.
+  //         Case a: The full hash is in the cache.
+  //             Case i : The positive full hash result has not expired.
+  //                      The result is unsafe and we do not need to send a new
+  //                      request.
+  //             Case ii: The positive full hash result has expired.
+  //                      We need to send a request for full hashes.
+  //         Case b: The full hash is not in the cache.
+  //             Case i : The negative cache entry has not expired.
+  //                      The result is still safe and we do not need to send a
+  //                      new request.
+  //             Case ii: The negative cache entry has expired.
+  //                      We need to send a request for full hashes.
+  //     Case 2: The prefix is not in the cache.
+  //             We need to send a request for full hashes.
+  //
+  // Eviction:
+  //   SBCachedFullHashResult entries can be removed from the cache only when
+  //   the negative cache expire time and the cache expire time of all full
+  //   hash results for that prefix have expired.
+  //   Individual full hash results can be removed from the prefix's
+  //   cache entry if they expire AND their expire time is after the negative
+  //   cache expire time.
+  //
+  // TODO(kcarattini): Implement cache eviction.
+  for (const SBFullHash& full_hash : full_hashes) {
+    auto entry = v4_full_hash_cache_[threat_type].find(full_hash.prefix);
+    if (entry != v4_full_hash_cache_[threat_type].end()) {
+      // Case 1.
+      const SBCachedFullHashResult& cache_result = entry->second;
+
+      const SBFullHashResult* found_full_hash = nullptr;
+      for (const SBFullHashResult& hash_result : cache_result.full_hashes) {
+        if (SBFullHashEqual(full_hash, hash_result.hash)) {
+          found_full_hash = &hash_result;
+          break;
+        }
+      }
+
+      if (found_full_hash) {
+        // Case a.
+        if (found_full_hash->cache_expire_after > now) {
+          // Case i.
+          cached_results->push_back(*found_full_hash);
+        } else {
+          // Case ii.
+          prefixes_needing_reqs->push_back(full_hash.prefix);
+        }
+      } else {
+        // Case b.
+        if (cache_result.expire_after > now) {
+          // Case i.
+        } else {
+          // Case ii.
+          prefixes_needing_reqs->push_back(full_hash.prefix);
+        }
+      }
+    } else {
+      // Case 2.
+      prefixes_needing_reqs->push_back(full_hash.prefix);
+    }
+  }
+
+  // Multiple full hashes could share a prefix, remove duplicates.
+  std::sort(prefixes_needing_reqs->begin(), prefixes_needing_reqs->end());
+  prefixes_needing_reqs->erase(std::unique(prefixes_needing_reqs->begin(),
+      prefixes_needing_reqs->end()), prefixes_needing_reqs->end());
 }
 
 void SafeBrowsingDatabaseManager::HandleGetHashesWithApisResults(
@@ -128,12 +225,14 @@ void SafeBrowsingDatabaseManager::HandleGetHashesWithApisResults(
     // Cache the results.
     // Create or reset all cached results for this prefix.
     for (const SBPrefix& prefix : check->prefixes()) {
-      api_cache_[prefix] = SBCachedFullHashResult(negative_cache_expire);
+      v4_full_hash_cache_[SB_THREAT_TYPE_API_ABUSE][prefix] =
+          SBCachedFullHashResult(negative_cache_expire);
     }
     // Insert any full hash hits. Note that there may be one, multiple, or no
     // full hashes for any given prefix.
     for (const SBFullHashResult& result : full_hash_results) {
-      api_cache_[result.hash.prefix].full_hashes.push_back(result);
+      v4_full_hash_cache_[SB_THREAT_TYPE_API_ABUSE][result.hash.prefix].
+          full_hashes.push_back(result);
     }
   }
 
@@ -145,29 +244,45 @@ void SafeBrowsingDatabaseManager::HandleGetHashesWithApisResults(
 
   ThreatMetadata md;
   // Merge the metadata from all matching results.
-  // TODO(kcarattini): This is O(N^2). Look at improving performance by
-  // using a map, sorting or doing binary search etc..
-  for (const SBFullHashResult& result : full_hash_results) {
-    for (const SBFullHash& full_hash : check->full_hashes()) {
-      if (SBFullHashEqual(full_hash, result.hash)) {
-        md.api_permissions.insert(md.api_permissions.end(),
-                                  result.metadata.api_permissions.begin(),
-                                  result.metadata.api_permissions.end());
-        break;
-      }
-    }
-  }
+  // Note: A full hash may have a result in both the cached results (from
+  // its own cache lookup) and in the server results (if another full hash
+  // with the same prefix needed to request results from the server). In this
+  // unlikely case, the two results' metadata will be merged.
+  PopulateApiMetadataResult(full_hash_results, check->full_hashes(), &md);
+  PopulateApiMetadataResult(check->cached_results(), check->full_hashes(), &md);
 
   check->client()->OnCheckApiBlacklistUrlResult(check->url(), md);
   api_checks_.erase(it);
   delete check;
 }
 
+// TODO(kcarattini): This is O(N^2). Look at improving performance by
+// using a map, sorting or doing binary search etc..
+void SafeBrowsingDatabaseManager::PopulateApiMetadataResult(
+    const std::vector<SBFullHashResult>& results,
+    const std::vector<SBFullHash>& full_hashes,
+    ThreatMetadata* md) {
+  DCHECK(md);
+  for (const SBFullHashResult& result : results) {
+    for (const SBFullHash& full_hash : full_hashes) {
+      if (SBFullHashEqual(full_hash, result.hash)) {
+        md->api_permissions.insert(md->api_permissions.end(),
+            result.metadata.api_permissions.begin(),
+            result.metadata.api_permissions.end());
+        break;
+      }
+    }
+  }
+}
+
 SafeBrowsingDatabaseManager::SafeBrowsingApiCheck::SafeBrowsingApiCheck(
-    const GURL& url, const std::vector<SBPrefix>& prefixes,
-    const std::vector<SBFullHash>& full_hashes, Client* client)
+    const GURL& url,
+    const std::vector<SBPrefix>& prefixes,
+    const std::vector<SBFullHash>& full_hashes,
+    const std::vector<SBFullHashResult>& cached_results,
+    Client* client)
     : url_(url), prefixes_(prefixes), full_hashes_(full_hashes),
-      client_(client) {
+      cached_results_(cached_results), client_(client) {
 }
 
 SafeBrowsingDatabaseManager::SafeBrowsingApiCheck::~SafeBrowsingApiCheck() {

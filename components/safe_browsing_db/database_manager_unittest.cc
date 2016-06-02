@@ -61,13 +61,19 @@ class TestV4GetHashProtocolManager : public V4GetHashProtocolManager {
 
   void SetNegativeCacheDurationMins(base::Time now,
       int negative_cache_duration_mins) {
-    negative_cache_expire_ = now +
-        base::TimeDelta::FromMinutes(negative_cache_duration_mins);
+    // Don't add a TimeDelta to the maximum time to avoid undefined behavior.
+    negative_cache_expire_ = now.is_max() ? now :
+        now + base::TimeDelta::FromMinutes(negative_cache_duration_mins);
   }
 
   // Prepare the GetFullHash results for the next request.
   void AddGetFullHashResponse(const SBFullHashResult& full_hash_result) {
     full_hashes_.push_back(full_hash_result);
+  }
+
+  // Clear the GetFullHash results for the next request.
+  void ClearFullHashResponse() {
+    full_hashes_.clear();
   }
 
   // Returns the prefixes that were sent in the last request.
@@ -263,7 +269,7 @@ TEST_F(SafeBrowsingDatabaseManagerTest, ResultsAreCached) {
   pm->AddGetFullHashResponse(full_hash_result);
   pm->SetNegativeCacheDurationMins(now, 5);
 
-  EXPECT_TRUE(db_manager_->api_cache_.empty());
+  EXPECT_TRUE(db_manager_->v4_full_hash_cache_.empty());
   EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
   base::RunLoop().RunUntilIdle();
 
@@ -273,28 +279,31 @@ TEST_F(SafeBrowsingDatabaseManagerTest, ResultsAreCached) {
   EXPECT_EQ("GEOLOCATION", permissions[0]);
 
   // Check the cache.
+  const SafeBrowsingDatabaseManager::PrefixToFullHashResultsMap& cache =
+      db_manager_->v4_full_hash_cache_[SB_THREAT_TYPE_API_ABUSE];
   // Generated from the sorted output of UrlToFullHashes in util.h.
   std::vector<SBPrefix> expected_prefixes =
       {1237562338, 2871045197, 3553205461, 3766933875};
-  EXPECT_EQ(expected_prefixes.size(), db_manager_->api_cache_.size());
+  EXPECT_EQ(expected_prefixes.size(),
+            db_manager_->v4_full_hash_cache_[SB_THREAT_TYPE_API_ABUSE].size());
 
-  auto entry = db_manager_->api_cache_.find(expected_prefixes[0]);
-  EXPECT_NE(db_manager_->api_cache_.end(), entry);
+  auto entry = cache.find(expected_prefixes[0]);
+  EXPECT_NE(cache.end(), entry);
   EXPECT_EQ(now + base::TimeDelta::FromMinutes(5), entry->second.expire_after);
   EXPECT_EQ(0ul, entry->second.full_hashes.size());
 
-  entry = db_manager_->api_cache_.find(expected_prefixes[1]);
-  EXPECT_NE(db_manager_->api_cache_.end(), entry);
+  entry = cache.find(expected_prefixes[1]);
+  EXPECT_NE(cache.end(), entry);
   EXPECT_EQ(now + base::TimeDelta::FromMinutes(5), entry->second.expire_after);
   EXPECT_EQ(0ul, entry->second.full_hashes.size());
 
-  entry = db_manager_->api_cache_.find(expected_prefixes[2]);
-  EXPECT_NE(db_manager_->api_cache_.end(), entry);
+  entry = cache.find(expected_prefixes[2]);
+  EXPECT_NE(cache.end(), entry);
   EXPECT_EQ(now + base::TimeDelta::FromMinutes(5), entry->second.expire_after);
   EXPECT_EQ(0ul, entry->second.full_hashes.size());
 
-  entry = db_manager_->api_cache_.find(expected_prefixes[3]);
-  EXPECT_NE(db_manager_->api_cache_.end(), entry);
+  entry = cache.find(expected_prefixes[3]);
+  EXPECT_NE(cache.end(), entry);
   EXPECT_EQ(now + base::TimeDelta::FromMinutes(5), entry->second.expire_after);
   EXPECT_EQ(1ul, entry->second.full_hashes.size());
   EXPECT_TRUE(SBFullHashEqual(full_hash_result.hash,
@@ -319,12 +328,131 @@ TEST_F(SafeBrowsingDatabaseManagerTest, ResultsAreNotCachedOnNull) {
   full_hash_result.cache_expire_after = now + base::TimeDelta::FromMinutes(3);
   pm->AddGetFullHashResponse(full_hash_result);
 
-  EXPECT_TRUE(db_manager_->api_cache_.empty());
+  EXPECT_TRUE(db_manager_->v4_full_hash_cache_.empty());
   EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(client.callback_invoked());
-  EXPECT_TRUE(db_manager_->api_cache_.empty());
+  EXPECT_TRUE(
+      db_manager_->v4_full_hash_cache_[SB_THREAT_TYPE_API_ABUSE].empty());
+}
+
+// Checks that results are looked up correctly in the cache.
+TEST_F(SafeBrowsingDatabaseManagerTest, GetCachedResults) {
+  base::Time now = base::Time::UnixEpoch();
+  std::vector<SBFullHash> full_hashes;
+  SBFullHash full_hash = SBFullHashForString("example.com/");
+  full_hashes.push_back(full_hash);
+  std::vector<SBFullHashResult> cached_results;
+  std::vector<SBPrefix> prefixes;
+  db_manager_->GetFullHashCachedResults(SB_THREAT_TYPE_API_ABUSE,
+      full_hashes, now, &prefixes, &cached_results);
+
+  // The cache is empty.
+  EXPECT_TRUE(cached_results.empty());
+  EXPECT_EQ(1ul, prefixes.size());
+  EXPECT_EQ(full_hash.prefix, prefixes[0]);
+
+  // Prefix has a cache entry but full hash is not there.
+  SBCachedFullHashResult& entry = db_manager_->
+      v4_full_hash_cache_[SB_THREAT_TYPE_API_ABUSE][full_hash.prefix] =
+      SBCachedFullHashResult(now + base::TimeDelta::FromMinutes(5));
+  db_manager_->GetFullHashCachedResults(SB_THREAT_TYPE_API_ABUSE,
+      full_hashes, now, &prefixes, &cached_results);
+
+  EXPECT_TRUE(prefixes.empty());
+  EXPECT_TRUE(cached_results.empty());
+
+  // Expired negative cache entry.
+  entry.expire_after = now - base::TimeDelta::FromMinutes(5);
+  db_manager_->GetFullHashCachedResults(SB_THREAT_TYPE_API_ABUSE,
+      full_hashes, now, &prefixes, &cached_results);
+
+  EXPECT_TRUE(cached_results.empty());
+  EXPECT_EQ(1ul, prefixes.size());
+  EXPECT_EQ(full_hash.prefix, prefixes[0]);
+
+  // Now put the full hash in the cache.
+  SBFullHashResult full_hash_result;
+  full_hash_result.hash = full_hash;
+  full_hash_result.cache_expire_after = now + base::TimeDelta::FromMinutes(3);
+  entry.full_hashes.push_back(full_hash_result);
+  db_manager_->GetFullHashCachedResults(SB_THREAT_TYPE_API_ABUSE,
+      full_hashes, now, &prefixes, &cached_results);
+
+  EXPECT_TRUE(prefixes.empty());
+  EXPECT_EQ(1ul, cached_results.size());
+  EXPECT_TRUE(SBFullHashEqual(full_hash, cached_results[0].hash));
+
+  // Expired full hash in cache.
+  entry.full_hashes.clear();
+  full_hash_result.cache_expire_after = now - base::TimeDelta::FromMinutes(3);
+  entry.full_hashes.push_back(full_hash_result);
+  db_manager_->GetFullHashCachedResults(SB_THREAT_TYPE_API_ABUSE,
+      full_hashes, now, &prefixes, &cached_results);
+
+  EXPECT_TRUE(cached_results.empty());
+  EXPECT_EQ(1ul, prefixes.size());
+  EXPECT_EQ(full_hash.prefix, prefixes[0]);
+}
+
+// Checks that the cached results and request results are merged.
+TEST_F(SafeBrowsingDatabaseManagerTest, CachedResultsMerged) {
+  TestClient client;
+  const GURL url("https://www.example.com/more");
+  TestV4GetHashProtocolManager* pm = static_cast<TestV4GetHashProtocolManager*>(
+      db_manager_->v4_get_hash_protocol_manager_);
+  // Set now to max time so the cache expire times are in the future.
+  SBFullHashResult full_hash_result;
+  full_hash_result.hash = SBFullHashForString("example.com/");
+  full_hash_result.metadata.api_permissions.push_back("GEOLOCATION");
+  full_hash_result.cache_expire_after = base::Time::Max();
+  pm->AddGetFullHashResponse(full_hash_result);
+  pm->SetNegativeCacheDurationMins(base::Time::Max(), 0);
+
+  EXPECT_TRUE(db_manager_->v4_full_hash_cache_.empty());
+  EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(client.callback_invoked());
+  const std::vector<std::string>& permissions = client.GetBlockedPermissions();
+  EXPECT_EQ(1ul, permissions.size());
+  EXPECT_EQ("GEOLOCATION", permissions[0]);
+
+  // The results should be cached, so remove them from the protocol manager
+  // response.
+  TestClient client2;
+  pm->ClearFullHashResponse();
+  pm->SetNegativeCacheDurationMins(base::Time(), 0);
+  EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url, &client2));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(client2.callback_invoked());
+  const std::vector<std::string>& permissions2 =
+      client2.GetBlockedPermissions();
+  EXPECT_EQ(1ul, permissions2.size());
+  EXPECT_EQ("GEOLOCATION", permissions2[0]);
+
+  // Add a different result to the protocol manager response and ensure it is
+  // merged with the cached result in the metadata.
+  TestClient client3;
+  const GURL url2("https://m.example.com/more");
+  full_hash_result.hash = SBFullHashForString("m.example.com/");
+  full_hash_result.metadata.api_permissions.push_back("NOTIFICATIONS");
+  pm->AddGetFullHashResponse(full_hash_result);
+  pm->SetNegativeCacheDurationMins(base::Time::Max(), 0);
+  EXPECT_FALSE(db_manager_->CheckApiBlacklistUrl(url2, &client3));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(client3.callback_invoked());
+  const std::vector<std::string>& permissions3 =
+      client3.GetBlockedPermissions();
+  EXPECT_EQ(3ul, permissions3.size());
+  // TODO(kcarattini): Fix the metadata storage of permissions to avoid
+  // duplicates.
+  EXPECT_EQ("GEOLOCATION", permissions3[0]);
+  EXPECT_EQ("NOTIFICATIONS", permissions3[1]);
+  EXPECT_EQ("GEOLOCATION", permissions3[2]);
 }
 
 }  // namespace safe_browsing

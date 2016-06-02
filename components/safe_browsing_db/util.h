@@ -51,6 +51,9 @@ enum SBThreatType {
   // Url leads to a blacklisted resource script. Note that no warnings should be
   // shown on this threat type, but an incident report might be sent.
   SB_THREAT_TYPE_BLACKLISTED_RESOURCE,
+
+  // Url abuses a permission API.
+  SB_THREAT_TYPE_API_ABUSE,
 };
 
 // Metadata that indicates what kind of URL match this is.
