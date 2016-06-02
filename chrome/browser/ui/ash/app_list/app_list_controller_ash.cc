@@ -103,10 +103,13 @@ void AppListControllerDelegateAsh::ActivateApp(
     const extensions::Extension* extension,
     AppListSource source,
     int event_flags) {
-  ash::Shell::GetInstance()
-      ->metrics()
-      ->task_switch_metrics_recorder()
-      .OnTaskSwitch(ash::TaskSwitchMetricsRecorder::APP_LIST);
+  // TODO(mfomitchev): Figure this out for Mustash - crbug.com/616581
+  if (ash::Shell::HasInstance()) {
+    ash::Shell::GetInstance()
+        ->metrics()
+        ->task_switch_metrics_recorder()
+        .OnTaskSwitch(ash::TaskSwitchMetricsRecorder::APP_LIST);
+  }
 
   // Platform apps treat activations as a launch. The app can decide whether to
   // show a new window or focus an existing window as it sees fit.
