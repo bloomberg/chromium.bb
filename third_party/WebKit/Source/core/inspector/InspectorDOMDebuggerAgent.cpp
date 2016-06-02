@@ -72,6 +72,82 @@ static const char xhrBreakpoints[] = "xhrBreakpoints";
 static const char enabled[] = "enabled";
 }
 
+static void removeEventListenerCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    v8::Isolate* isolate = info.GetIsolate();
+    v8::Local<v8::Context> context = isolate->GetCurrentContext();
+    v8::Local<v8::Object> data = info.Data().As<v8::Object>();
+
+    v8::Local<v8::Value> v8Target;
+    if (!data->Get(context, v8String(isolate, "target")).ToLocal(&v8Target) || !v8Target->IsObject())
+        return;
+    EventTarget* target = V8EventTarget::toImplWithTypeCheck(isolate, v8Target);
+    // We need to handle LocalDOMWindow specially, because LocalDOMWindow wrapper exists on prototype chain.
+    if (!target)
+        target = toDOMWindow(isolate, v8Target);
+    if (!target || !target->getExecutionContext())
+        return;
+
+    v8::Local<v8::Value> v8Handler;
+    if (!data->Get(context, v8String(isolate, "handler")).ToLocal(&v8Handler) || !v8Handler->IsObject())
+        return;
+    v8::Local<v8::Value> v8Type;
+    if (!data->Get(context, v8String(isolate, "type")).ToLocal(&v8Type) || !v8Type->IsString())
+        return;
+    AtomicString type = AtomicString(toCoreString(v8::Local<v8::String>::Cast(v8Type)));
+    v8::Local<v8::Value> v8UseCapture;
+    if (!data->Get(context, v8String(isolate, "useCapture")).ToLocal(&v8UseCapture) || !v8UseCapture->IsBoolean())
+        return;
+    bool useCapture = v8::Local<v8::Boolean>::Cast(v8UseCapture)->Value();
+
+    EventListener* eventListener = nullptr;
+    EventListenerVector* listeners = target->getEventListeners(type);
+    if (!listeners)
+        return;
+    for (size_t i = 0; i < listeners->size(); ++i) {
+        if (listeners->at(i).capture() != useCapture)
+            continue;
+        V8AbstractEventListener* v8Listener = V8AbstractEventListener::cast(listeners->at(i).listener());
+        if (!v8Listener)
+            continue;
+        if (!v8Listener->hasExistingListenerObject())
+            continue;
+        if (!v8Listener->getExistingListenerObject()->Equals(context, v8Handler).FromMaybe(false))
+            continue;
+        eventListener = v8Listener;
+        break;
+    }
+    if (!eventListener)
+        return;
+    EventListenerOptions options;
+    options.setCapture(useCapture);
+    target->removeEventListener(type, eventListener, options);
+}
+
+static void returnDataCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    info.GetReturnValue().Set(info.Data());
+}
+
+static v8::MaybeLocal<v8::Function> createRemoveFunction(v8::Local<v8::Context> context, v8::Local<v8::Value> object, v8::Local<v8::Object> handler, AtomicString type, bool useCapture)
+{
+    v8::Isolate* isolate = context->GetIsolate();
+    v8::Local<v8::Object> data = v8::Object::New(isolate);
+    if (!data->Set(context, v8String(isolate, "target"), object).FromMaybe(false))
+        return v8::MaybeLocal<v8::Function>();
+    if (!data->Set(context, v8String(isolate, "handler"), handler).FromMaybe(false))
+        return v8::MaybeLocal<v8::Function>();
+    if (!data->Set(context, v8String(isolate, "type"), v8String(isolate, type)).FromMaybe(false))
+        return v8::MaybeLocal<v8::Function>();
+    if (!data->Set(context, v8String(isolate, "useCapture"), v8Boolean(useCapture, isolate)).FromMaybe(false))
+        return v8::MaybeLocal<v8::Function>();
+    v8::Local<v8::Function> removeFunction = v8::Function::New(isolate, removeEventListenerCallback, data);
+    v8::Local<v8::Function> toStringFunction;
+    if (v8::Function::New(context, returnDataCallback, v8String(isolate, "function remove() { [Command Line API] }")).ToLocal(&toStringFunction))
+        removeFunction->Set(v8String(context->GetIsolate(), "toString"), toStringFunction);
+    return removeFunction;
+}
+
 void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate, v8::Local<v8::Value> value, V8EventListenerInfoList& eventInformation)
 {
     EventTarget* target = V8EventTarget::toImplWithTypeCheck(isolate, value);
@@ -105,7 +181,8 @@ void InspectorDOMDebuggerAgent::eventListenersInfoForTarget(v8::Isolate* isolate
             v8::Local<v8::Object> handler = v8Listener->getListenerObject(executionContext);
             if (handler.IsEmpty())
                 continue;
-            eventInformation.append(V8EventListenerInfo(type, listeners->at(k).capture(), listeners->at(k).passive(), handler));
+            bool useCapture = listeners->at(k).capture();
+            eventInformation.append(V8EventListenerInfo(type, useCapture, listeners->at(k).passive(), handler, createRemoveFunction(context, value, handler, type, useCapture)));
         }
     }
 }
@@ -390,6 +467,9 @@ std::unique_ptr<protocol::DOMDebugger::EventListener> InspectorDOMDebuggerAgent:
     if (!objectGroupId.isEmpty()) {
         value->setHandler(m_v8Session->wrapObject(context, function, objectGroupId));
         value->setOriginalHandler(m_v8Session->wrapObject(context, info.handler, objectGroupId));
+        v8::Local<v8::Function> removeFunction;
+        if (info.removeFunction.ToLocal(&removeFunction))
+            value->setRemoveFunction(m_v8Session->wrapObject(context, removeFunction, objectGroupId));
     }
     return value;
 }

@@ -14,11 +14,12 @@ namespace blink {
 
 class V8EventListenerInfo {
 public:
-    V8EventListenerInfo(AtomicString eventType, bool useCapture, bool passive, v8::Local<v8::Object> handler)
+    V8EventListenerInfo(AtomicString eventType, bool useCapture, bool passive, v8::Local<v8::Object> handler, v8::MaybeLocal<v8::Function> removeFunction)
         : eventType(eventType)
         , useCapture(useCapture)
         , passive(passive)
         , handler(handler)
+        , removeFunction(removeFunction)
     {
     }
 
@@ -26,7 +27,7 @@ public:
     bool useCapture;
     bool passive;
     v8::Local<v8::Object> handler;
-
+    v8::MaybeLocal<v8::Function> removeFunction;
 };
 
 using V8EventListenerInfoList = Vector<V8EventListenerInfo>;

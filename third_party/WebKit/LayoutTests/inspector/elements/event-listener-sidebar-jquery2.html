@@ -10,7 +10,7 @@ function setupEventListeners()
     $("#node").click(function(){ console.log("first jquery"); });
     $("#node").click(function(){ console.log("second jquery"); });
     node.addEventListener("click", function() { console.log("addEventListener"); });
-    node.onclick = function() { constole.log("onclick"); }
+    node.onclick = function() { console.log("onclick"); }
 }
 
 function test()
@@ -37,7 +37,7 @@ function test()
                 promises.push(listenersItems[j].eventListener().remove());
         }
         InspectorTest.expandAndDumpSelectedElementEventListeners(InspectorTest.completeTest.bind(this));
-        Promise.all(promises).then(eventListenersWidget.doUpdate());
+        Promise.all(promises).then(() => eventListenersWidget.doUpdate());
     }
 }
 

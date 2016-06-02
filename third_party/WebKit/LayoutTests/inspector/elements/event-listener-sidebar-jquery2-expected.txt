@@ -17,7 +17,7 @@ Inspect Me
 [expanded] button#nodeRemoveevent-listener-sidebar-jquery2.html:13
     useCapture: false
     passive: false
-    handler: function () { constole.log("onclick"); }
+    handler: function () { console.log("onclick"); }
 == normal
 [expanded] button#nodeRemoveevent-listener-sidebar-jquery2.html:12
     useCapture: false
