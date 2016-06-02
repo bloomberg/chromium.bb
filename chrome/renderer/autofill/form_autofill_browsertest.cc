@@ -2234,8 +2234,16 @@ TEST_F(FormAutofillTest, WebFormElementConsiderNonControlLabelableElements) {
   EXPECT_EQ(ASCIIToUTF16("firstname"), fields[0].name);
 }
 
+// TODO(crbug.com/616730) Flaky.
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+#define MAYBE_WebFormElementToFormDataTooManyFields \
+  DISABLED_WebFormElementToFormDataTooManyFields
+#else
+#define MAYBE_WebFormElementToFormDataTooManyFields \
+  WebFormElementToFormDataTooManyFields
+#endif
 // We should not be able to serialize a form with too many fillable fields.
-TEST_F(FormAutofillTest, WebFormElementToFormDataTooManyFields) {
+TEST_F(FormAutofillTest, MAYBE_WebFormElementToFormDataTooManyFields) {
   std::string html =
       "<FORM name='TestForm' action='http://cnn.com' method='post'>";
   for (size_t i = 0; i < (kMaxParseableFields + 1); ++i) {
