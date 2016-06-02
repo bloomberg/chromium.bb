@@ -1684,9 +1684,15 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     bool disable_picture_quad_image_filtering =
         IsActivelyScrolling() || animation_host_->NeedsAnimateLayers();
 
+    // We must disable the image hijack canvas when using GPU rasterization but
+    // performing a resourceless software draw. Otherwise, we will attempt to
+    // use the GPU ImageDecodeController during software raster.
+    bool use_image_hijack_canvas = !use_gpu_rasterization_;
+
     std::unique_ptr<SoftwareRenderer> temp_software_renderer =
         SoftwareRenderer::Create(this, &settings_.renderer_settings,
-                                 output_surface_, NULL);
+                                 output_surface_, nullptr,
+                                 use_image_hijack_canvas);
     temp_software_renderer->DrawFrame(
         &frame->render_passes, active_tree_->device_scale_factor(),
         DeviceViewport(), DeviceClip(), disable_picture_quad_image_filtering);
@@ -2155,9 +2161,9 @@ void LayerTreeHostImpl::CreateAndSetRenderer() {
         resource_provider_.get(), texture_mailbox_deleter_.get(),
         settings_.renderer_settings.highp_threshold_min);
   } else if (output_surface_->software_device()) {
-    renderer_ =
-        SoftwareRenderer::Create(this, &settings_.renderer_settings,
-                                 output_surface_, resource_provider_.get());
+    renderer_ = SoftwareRenderer::Create(
+        this, &settings_.renderer_settings, output_surface_,
+        resource_provider_.get(), true /* use_image_hijack_canvas */);
   }
   DCHECK(renderer_);
 

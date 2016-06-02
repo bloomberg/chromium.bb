@@ -185,9 +185,9 @@ void PixelTest::SetUpSoftwareRenderer() {
       main_thread_task_runner_.get(), 0, 1, delegated_sync_points_required,
       settings_.renderer_settings.use_gpu_memory_buffer_resources,
       settings_.use_image_texture_targets);
-  renderer_ =
-      SoftwareRenderer::Create(this, &settings_.renderer_settings,
-                               output_surface_.get(), resource_provider_.get());
+  renderer_ = SoftwareRenderer::Create(
+      this, &settings_.renderer_settings, output_surface_.get(),
+      resource_provider_.get(), true /* use_image_hijack_canvas */);
 }
 
 }  // namespace cc

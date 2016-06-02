@@ -208,7 +208,8 @@ void Display::InitializeRenderer() {
 #endif
   } else {
     std::unique_ptr<SoftwareRenderer> renderer = SoftwareRenderer::Create(
-        this, &settings_, output_surface_.get(), resource_provider.get());
+        this, &settings_, output_surface_.get(), resource_provider.get(),
+        true /* use_image_hijack_canvas */);
     if (!renderer)
       return;
     renderer_ = std::move(renderer);

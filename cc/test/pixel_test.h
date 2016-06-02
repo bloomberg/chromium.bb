@@ -118,7 +118,11 @@ class SoftwareRendererWithExpandedViewport : public SoftwareRenderer {
                                        const RendererSettings* settings,
                                        OutputSurface* output_surface,
                                        ResourceProvider* resource_provider)
-      : SoftwareRenderer(client, settings, output_surface, resource_provider) {}
+      : SoftwareRenderer(client,
+                         settings,
+                         output_surface,
+                         resource_provider,
+                         true /* use_image_hijack_canvas */) {}
 };
 
 class GLRendererWithFlippedSurface : public GLRenderer {

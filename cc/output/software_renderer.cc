@@ -56,20 +56,24 @@ std::unique_ptr<SoftwareRenderer> SoftwareRenderer::Create(
     RendererClient* client,
     const RendererSettings* settings,
     OutputSurface* output_surface,
-    ResourceProvider* resource_provider) {
+    ResourceProvider* resource_provider,
+    bool use_image_hijack_canvas) {
   return base::WrapUnique(new SoftwareRenderer(client, settings, output_surface,
-                                               resource_provider));
+                                               resource_provider,
+                                               use_image_hijack_canvas));
 }
 
 SoftwareRenderer::SoftwareRenderer(RendererClient* client,
                                    const RendererSettings* settings,
                                    OutputSurface* output_surface,
-                                   ResourceProvider* resource_provider)
+                                   ResourceProvider* resource_provider,
+                                   bool use_image_hijack_canvas)
     : DirectRenderer(client, settings, output_surface, resource_provider),
       is_scissor_enabled_(false),
       is_backbuffer_discarded_(false),
       output_device_(output_surface->software_device()),
-      current_canvas_(NULL) {
+      current_canvas_(nullptr),
+      use_image_hijack_canvas_(use_image_hijack_canvas) {
   if (resource_provider_) {
     capabilities_.max_texture_size = resource_provider_->max_texture_size();
     capabilities_.best_texture_format =
@@ -368,6 +372,7 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
 
   RasterSource::PlaybackSettings playback_settings;
   playback_settings.playback_to_shared_canvas = true;
+  playback_settings.use_image_hijack_canvas = use_image_hijack_canvas_;
   if (needs_transparency || disable_image_filtering) {
     // TODO(aelias): This isn't correct in all cases. We should detect these
     // cases and fall back to a persistent bitmap backing
