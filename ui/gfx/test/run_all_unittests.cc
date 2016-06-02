@@ -28,6 +28,10 @@
 #include "ui/gfx/win/direct_write.h"
 #endif
 
+#if !defined(OS_IOS)
+#include "mojo/edk/embedder/embedder.h"  // nogncheck
+#endif
+
 namespace {
 
 class GfxTestSuite : public base::TestSuite {
@@ -93,6 +97,10 @@ class GfxTestSuite : public base::TestSuite {
 
 int main(int argc, char** argv) {
   GfxTestSuite test_suite(argc, argv);
+
+#if !defined(OS_IOS)
+  mojo::edk::Init();
+#endif
 
   return base::LaunchUnitTests(
       argc,

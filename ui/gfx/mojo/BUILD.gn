@@ -9,3 +9,13 @@ mojom("mojo") {
     "transform.mojom",
   ]
 }
+
+mojom("test_interfaces") {
+  sources = [
+    "traits_test_service.mojom",
+  ]
+
+  public_deps = [
+    ":mojo",
+  ]
+}

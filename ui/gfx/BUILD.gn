@@ -725,6 +725,7 @@ test("gfx_unittests") {
       "image/image_mac_unittest.mm",
       "image/image_util_unittest.cc",
       "mac/coordinate_conversion_unittest.mm",
+      "mojo/struct_traits_unittest.cc",
       "nine_image_painter_unittest.cc",
       "path_mac_unittest.mm",
       "platform_font_mac_unittest.mm",
@@ -806,6 +807,14 @@ test("gfx_unittests") {
       "d3d10_1.lib",
       "imm32.lib",
       "oleacc.lib",
+    ]
+  }
+
+  if (!is_ios) {
+    deps += [
+      "mojo:test_interfaces",
+      "//mojo/edk/system",
+      "//mojo/public/cpp/bindings",
     ]
   }
 }

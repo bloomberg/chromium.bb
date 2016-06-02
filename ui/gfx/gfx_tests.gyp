@@ -91,6 +91,10 @@
         ['OS == "ios"', {
           'sources': ['<@(_common_sources)'],
         }, {  # OS != "ios"
+          'dependencies': [
+            '../../mojo/mojo_edk.gyp:mojo_common_test_support',
+            '../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+          ],
           'sources': ['<@(_all_sources)'],
         }],
         ['OS != "mac" and OS != "ios"', {
