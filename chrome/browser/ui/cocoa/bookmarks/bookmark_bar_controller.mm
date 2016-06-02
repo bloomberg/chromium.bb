@@ -493,9 +493,9 @@ CGFloat BookmarkRightMargin() {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     [offTheSideButton_ setImage:
           rb.GetNativeImageNamed(IDR_BOOKMARK_BAR_CHEVRONS).ToNSImage()];
-    [offTheSideButton_.draggableButton setDraggable:NO];
-    [offTheSideButton_.draggableButton setActsOnMouseDown:YES];
   }
+  [offTheSideButton_.draggableButton setDraggable:NO];
+  [offTheSideButton_.draggableButton setActsOnMouseDown:YES];
 
   // We are enabled by default.
   barIsEnabled_ = YES;
