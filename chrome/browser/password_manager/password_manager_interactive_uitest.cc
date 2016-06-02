@@ -36,7 +36,13 @@ void SimulateUserTypingInField(content::RenderViewHost* render_view_host,
 
 namespace password_manager {
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
+// TODO(crbug.com/616627): Flaky on Mac, CrOS and Linux.
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS) || defined(OS_LINUX)
+#define MAYBE_UsernameChanged DISABLED_UsernameChanged
+#else
+#define MAYBE_UsernameChanged UsernameChanged
+#endif
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, MAYBE_UsernameChanged) {
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
