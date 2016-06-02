@@ -143,9 +143,12 @@ if ((is_chrome_branded || enable_widevine) && enable_pepper_cdms) {
     output_dir = "$root_out_dir/$widevine_cdm_path"
     deps = [
       ":version_h",
-      ":widevine_cdm_manifest",
       ":widevinecdm",
       ":widevinecdmadapter_resources",
+    ]
+    data_deps = [
+      ":widevine_cdm_manifest",
+      ":widevinecdm",
     ]
 
     if (is_linux) {
