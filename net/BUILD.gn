@@ -1672,9 +1672,7 @@ test("net_unittests") {
   }
 
   if (is_win) {
-    libs = [
-      "iphlpapi.lib",
-    ]
+    libs = [ "iphlpapi.lib" ]
   }
 }
 
@@ -1733,6 +1731,8 @@ source_set("net_fuzzer_test_support") {
     "socket/fuzzed_socket.h",
     "socket/fuzzed_socket_factory.cc",
     "socket/fuzzed_socket_factory.h",
+    "udp/fuzzed_datagram_client_socket.cc",
+    "udp/fuzzed_datagram_client_socket.h",
   ]
   deps = [
     "//base",
@@ -1908,6 +1908,21 @@ fuzzer_test("net_dns_hosts_parse_fuzzer") {
     "//base",
     "//net",
   ]
+}
+
+fuzzer_test("net_host_resolver_impl_fuzzer") {
+  sources = [
+    "dns/fuzzed_host_resolver.cc",
+    "dns/fuzzed_host_resolver.h",
+    "dns/host_resolver_impl_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+  dict = "data/dns/dns.dict"
 }
 
 fuzzer_test("net_http_stream_parser_fuzzer") {

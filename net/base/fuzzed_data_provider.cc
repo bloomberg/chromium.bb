@@ -27,7 +27,7 @@ base::StringPiece FuzzedDataProvider::ConsumeRemainingBytes() {
   return ConsumeBytes(remaining_data_.length());
 }
 
-uint32_t FuzzedDataProvider::ConsumeValueInRange(uint32_t min, uint32_t max) {
+uint32_t FuzzedDataProvider::ConsumeUint32InRange(uint32_t min, uint32_t max) {
   CHECK_LE(min, max);
 
   uint32_t range = max - min;
@@ -54,16 +54,23 @@ uint32_t FuzzedDataProvider::ConsumeValueInRange(uint32_t min, uint32_t max) {
   return min + result % (range + 1);
 }
 
+int FuzzedDataProvider::ConsumeInt32InRange(int min, int max) {
+  CHECK_LE(min, max);
+
+  uint32_t range = max - min;
+  return min + ConsumeUint32InRange(0, range);
+}
+
 bool FuzzedDataProvider::ConsumeBool() {
   return (ConsumeUint8() & 0x01) == 0x01;
 }
 
 uint8_t FuzzedDataProvider::ConsumeUint8() {
-  return ConsumeValueInRange(0, 0xFF);
+  return ConsumeUint32InRange(0, 0xFF);
 }
 
 uint16_t FuzzedDataProvider::ConsumeUint16() {
-  return ConsumeValueInRange(0, 0xFFFF);
+  return ConsumeUint32InRange(0, 0xFFFF);
 }
 
 }  // namespace net

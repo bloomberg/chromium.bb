@@ -16,76 +16,11 @@
 #include "net/socket/fuzzed_socket.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/ssl/ssl_failure_state.h"
-#include "net/udp/datagram_client_socket.h"
+#include "net/udp/fuzzed_datagram_client_socket.h"
 
 namespace net {
 
 namespace {
-
-// Datagram ClientSocket implementation that always failed to connect.
-class FailingUDPClientSocket : public DatagramClientSocket {
- public:
-  FailingUDPClientSocket() {}
-  ~FailingUDPClientSocket() override {}
-
-  // DatagramClientSocket implementation:
-  int Connect(const IPEndPoint& address) override { return ERR_FAILED; }
-
-  int ConnectUsingNetwork(NetworkChangeNotifier::NetworkHandle network,
-                          const IPEndPoint& address) override {
-    return ERR_FAILED;
-  }
-
-  int ConnectUsingDefaultNetwork(const IPEndPoint& address) override {
-    return ERR_FAILED;
-  }
-
-  NetworkChangeNotifier::NetworkHandle GetBoundNetwork() const override {
-    return -1;
-  }
-
-  // DatagramSocket implementation:
-  void Close() override {}
-
-  int GetPeerAddress(IPEndPoint* address) const override {
-    return ERR_SOCKET_NOT_CONNECTED;
-  }
-
-  int GetLocalAddress(IPEndPoint* address) const override {
-    return ERR_SOCKET_NOT_CONNECTED;
-  }
-
-  const BoundNetLog& NetLog() const override { return net_log_; }
-
-  // Socket implementation:
-  int Read(IOBuffer* buf,
-           int buf_len,
-           const CompletionCallback& callback) override {
-    NOTREACHED();
-    return ERR_UNEXPECTED;
-  }
-
-  int Write(IOBuffer* buf,
-            int buf_len,
-            const CompletionCallback& callback) override {
-    NOTREACHED();
-    return ERR_UNEXPECTED;
-  }
-
-  int SetReceiveBufferSize(int32_t size) override {
-    NOTREACHED();
-    return ERR_UNEXPECTED;
-  }
-
-  int SetSendBufferSize(int32_t size) override {
-    NOTREACHED();
-    return ERR_UNEXPECTED;
-  }
-
-  BoundNetLog net_log_;
-
-  DISALLOW_COPY_AND_ASSIGN(FailingUDPClientSocket);
-};
 
 // SSLClientSocket implementation that always fails to connect.
 class FailingSSLClientSocket : public SSLClientSocket {
@@ -208,7 +143,7 @@ FuzzedSocketFactory::CreateDatagramClientSocket(
     const RandIntCallback& rand_int_cb,
     NetLog* net_log,
     const NetLog::Source& source) {
-  return base::WrapUnique(new FailingUDPClientSocket());
+  return base::WrapUnique(new FuzzedDatagramClientSocket(data_provider_));
 }
 
 std::unique_ptr<StreamSocket> FuzzedSocketFactory::CreateTransportClientSocket(

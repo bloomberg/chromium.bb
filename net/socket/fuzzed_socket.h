@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SOCKET_FUZZED_SOCKET_H
-#define NET_SOCKET_FUZZED_SOCKET_H
+#ifndef NET_SOCKET_FUZZED_SOCKET_H_
+#define NET_SOCKET_FUZZED_SOCKET_H_
 
 #include <stdint.h>
 
@@ -126,4 +126,4 @@ class FuzzedSocket : public StreamSocket {
 
 }  // namespace net
 
-#endif  // NET_SOCKET_FUZZED_SOCKET_H
+#endif  // NET_SOCKET_FUZZED_SOCKET_H_

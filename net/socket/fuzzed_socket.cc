@@ -157,10 +157,8 @@ int FuzzedSocket::Connect(const CompletionCallback& callback) {
     // Decide if sync or async. Use async, if no data is left.
     sync = data_provider_->ConsumeBool();
     // Decide if the connect succeeds or not, and if so, pick an error code.
-    if (data_provider_->ConsumeBool()) {
-      result = kConnectErrors[data_provider_->ConsumeValueInRange(
-          0, arraysize(kConnectErrors) - 1)];
-    }
+    if (data_provider_->ConsumeBool())
+      result = data_provider_->PickValueInArray(kConnectErrors);
   }
 
   if (sync) {
@@ -247,8 +245,7 @@ int64_t FuzzedSocket::GetTotalReceivedBytes() const {
 }
 
 Error FuzzedSocket::ConsumeReadWriteErrorFromData() {
-  return kReadWriteErrors[data_provider_->ConsumeValueInRange(
-      0, arraysize(kReadWriteErrors) - 1)];
+  return data_provider_->PickValueInArray(kReadWriteErrors);
 }
 
 void FuzzedSocket::OnReadComplete(const CompletionCallback& callback,

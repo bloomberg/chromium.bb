@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SOCKET_FUZZED_SOCKET_FACTORY_H
-#define NET_SOCKET_FUZZED_SOCKET_FACTORY_H
+#ifndef NET_SOCKET_FUZZED_SOCKET_FACTORY_H_
+#define NET_SOCKET_FUZZED_SOCKET_FACTORY_H_
 
 #include <memory>
 
@@ -61,4 +61,4 @@ class FuzzedSocketFactory : public ClientSocketFactory {
 
 }  // namespace net
 
-#endif  // NET_SOCKET_FUZZED_SOCKET_FACTORY_H
+#endif  // NET_SOCKET_FUZZED_SOCKET_FACTORY_H_

@@ -89,7 +89,7 @@ class DnsSessionTest : public testing::Test {
 class MockDnsSocketPool : public DnsSocketPool {
  public:
   MockDnsSocketPool(ClientSocketFactory* factory, DnsSessionTest* test)
-     : DnsSocketPool(factory), test_(test) { }
+      : DnsSocketPool(factory, base::Bind(&base::RandInt)), test_(test) {}
 
   ~MockDnsSocketPool() override {}
 

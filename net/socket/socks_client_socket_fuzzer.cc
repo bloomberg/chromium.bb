@@ -35,7 +35,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   scoped_refptr<net::RuleBasedHostResolverProc> rules(
       new net::RuleBasedHostResolverProc(nullptr));
   mock_host_resolver.set_synchronous_mode(data_provider.ConsumeBool());
-  switch (data_provider.ConsumeValueInRange(0, 2)) {
+  switch (data_provider.ConsumeInt32InRange(0, 2)) {
     case 0:
       rules->AddRule("*", "127.0.0.1");
       break;

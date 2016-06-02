@@ -2191,7 +2191,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base8internal20PostTaskAndReplyImpl16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIF*
-   fun:_ZN4base10WorkerPool16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIF*
+   fun:_ZN4base10TaskRunner16PostTaskAndReplyERKN15tracked_objects8LocationERKNS_8CallbackIF*
    fun:_ZN3net16HostResolverImpl16LoopbackProbeJob*
    fun:_ZN3net16HostResolverImpl*
 }
