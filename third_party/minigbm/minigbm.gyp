@@ -28,6 +28,7 @@
             'src/rockchip.c',
             'src/tegra.c',
             'src/udl.c',
+            'src/virtio_gpu.c',
           ],
           'include_dirs': [
             'src',
