@@ -54,6 +54,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_network_session_peer.h"
 #include "net/http/http_request_headers.h"
+#include "net/http/http_response_info.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream.h"
 #include "net/http/http_stream_factory.h"
@@ -1961,6 +1962,286 @@ TEST_P(HttpNetworkTransactionTest, KeepAliveAfterUnreadBody) {
   rv = ReadTransaction(trans.get(), &response_data);
   EXPECT_EQ(OK, rv);
   EXPECT_EQ("hello", response_data);
+}
+
+// Sockets that receive extra data after a response is complete should not be
+// reused.
+TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData1) {
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  MockWrite data_writes1[] = {
+      MockWrite("HEAD / HTTP/1.1\r\n"
+                "Host: www.borked.com\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead data_reads1[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 22\r\n\r\n"
+               "This server is borked."),
+  };
+
+  MockWrite data_writes2[] = {
+      MockWrite("GET /foo HTTP/1.1\r\n"
+                "Host: www.borked.com\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead data_reads2[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Content-Length: 3\r\n\r\n"
+               "foo"),
+  };
+  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
+                                 data_writes1, arraysize(data_writes1));
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
+                                 data_writes2, arraysize(data_writes2));
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+
+  TestCompletionCallback callback;
+  HttpRequestInfo request1;
+  request1.method = "HEAD";
+  request1.url = GURL("http://www.borked.com/");
+
+  std::unique_ptr<HttpTransaction> trans1(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  int rv = trans1->Start(&request1, callback.callback(), BoundNetLog());
+  EXPECT_EQ(OK, callback.GetResult(rv));
+
+  const HttpResponseInfo* response1 = trans1->GetResponseInfo();
+  ASSERT_TRUE(response1);
+  ASSERT_TRUE(response1->headers);
+  EXPECT_EQ(200, response1->headers->response_code());
+  EXPECT_TRUE(response1->headers->IsKeepAlive());
+
+  std::string response_data1;
+  EXPECT_EQ(OK, ReadTransaction(trans1.get(), &response_data1));
+  EXPECT_EQ("", response_data1);
+  // Deleting the transaction attempts to release the socket back into the
+  // socket pool.
+  trans1.reset();
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("http://www.borked.com/foo");
+
+  std::unique_ptr<HttpTransaction> trans2(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
+  EXPECT_EQ(OK, callback.GetResult(rv));
+
+  const HttpResponseInfo* response2 = trans2->GetResponseInfo();
+  ASSERT_TRUE(response2);
+  ASSERT_TRUE(response2->headers);
+  EXPECT_EQ(200, response2->headers->response_code());
+
+  std::string response_data2;
+  EXPECT_EQ(OK, ReadTransaction(trans2.get(), &response_data2));
+  EXPECT_EQ("foo", response_data2);
+}
+
+TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData2) {
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  MockWrite data_writes1[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.borked.com\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead data_reads1[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Content-Length: 22\r\n\r\n"
+               "This server is borked."
+               "Bonus data!"),
+  };
+
+  MockWrite data_writes2[] = {
+      MockWrite("GET /foo HTTP/1.1\r\n"
+                "Host: www.borked.com\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead data_reads2[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Content-Length: 3\r\n\r\n"
+               "foo"),
+  };
+  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
+                                 data_writes1, arraysize(data_writes1));
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
+                                 data_writes2, arraysize(data_writes2));
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+
+  TestCompletionCallback callback;
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("http://www.borked.com/");
+
+  std::unique_ptr<HttpTransaction> trans1(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  int rv = trans1->Start(&request1, callback.callback(), BoundNetLog());
+  EXPECT_EQ(OK, callback.GetResult(rv));
+
+  const HttpResponseInfo* response1 = trans1->GetResponseInfo();
+  ASSERT_TRUE(response1);
+  ASSERT_TRUE(response1->headers);
+  EXPECT_EQ(200, response1->headers->response_code());
+  EXPECT_TRUE(response1->headers->IsKeepAlive());
+
+  std::string response_data1;
+  EXPECT_EQ(OK, ReadTransaction(trans1.get(), &response_data1));
+  EXPECT_EQ("This server is borked.", response_data1);
+  // Deleting the transaction attempts to release the socket back into the
+  // socket pool.
+  trans1.reset();
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("http://www.borked.com/foo");
+
+  std::unique_ptr<HttpTransaction> trans2(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
+  EXPECT_EQ(OK, callback.GetResult(rv));
+
+  const HttpResponseInfo* response2 = trans2->GetResponseInfo();
+  ASSERT_TRUE(response2);
+  ASSERT_TRUE(response2->headers);
+  EXPECT_EQ(200, response2->headers->response_code());
+
+  std::string response_data2;
+  EXPECT_EQ(OK, ReadTransaction(trans2.get(), &response_data2));
+  EXPECT_EQ("foo", response_data2);
+}
+
+TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData3) {
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  MockWrite data_writes1[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.borked.com\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead data_reads1[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Transfer-Encoding: chunked\r\n\r\n"),
+      MockRead("16\r\nThis server is borked.\r\n"),
+      MockRead("0\r\n\r\nBonus data!"),
+  };
+
+  MockWrite data_writes2[] = {
+      MockWrite("GET /foo HTTP/1.1\r\n"
+                "Host: www.borked.com\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead data_reads2[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Content-Length: 3\r\n\r\n"
+               "foo"),
+  };
+  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
+                                 data_writes1, arraysize(data_writes1));
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+  StaticSocketDataProvider data2(data_reads2, arraysize(data_reads2),
+                                 data_writes2, arraysize(data_writes2));
+  session_deps_.socket_factory->AddSocketDataProvider(&data2);
+
+  TestCompletionCallback callback;
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("http://www.borked.com/");
+
+  std::unique_ptr<HttpTransaction> trans1(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  int rv = trans1->Start(&request1, callback.callback(), BoundNetLog());
+  EXPECT_EQ(OK, callback.GetResult(rv));
+
+  const HttpResponseInfo* response1 = trans1->GetResponseInfo();
+  ASSERT_TRUE(response1);
+  ASSERT_TRUE(response1->headers);
+  EXPECT_EQ(200, response1->headers->response_code());
+  EXPECT_TRUE(response1->headers->IsKeepAlive());
+
+  std::string response_data1;
+  EXPECT_EQ(OK, ReadTransaction(trans1.get(), &response_data1));
+  EXPECT_EQ("This server is borked.", response_data1);
+  // Deleting the transaction attempts to release the socket back into the
+  // socket pool.
+  trans1.reset();
+
+  HttpRequestInfo request2;
+  request2.method = "GET";
+  request2.url = GURL("http://www.borked.com/foo");
+
+  std::unique_ptr<HttpTransaction> trans2(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  rv = trans2->Start(&request2, callback.callback(), BoundNetLog());
+  EXPECT_EQ(OK, callback.GetResult(rv));
+
+  const HttpResponseInfo* response2 = trans2->GetResponseInfo();
+  ASSERT_TRUE(response2);
+  ASSERT_TRUE(response2->headers);
+  EXPECT_EQ(200, response2->headers->response_code());
+
+  std::string response_data2;
+  EXPECT_EQ(OK, ReadTransaction(trans2.get(), &response_data2));
+  EXPECT_EQ("foo", response_data2);
+}
+
+// This is a little different from the others - it tests the case that the
+// HttpStreamParser doesn't know if there's extra data on a socket or not when
+// the HttpNetworkTransaction is torn down, because the response body hasn't
+// been read from yet, but the request goes through the HttpResponseBodyDrainer.
+TEST_P(HttpNetworkTransactionTest, KeepAliveWithUnusedData4) {
+  std::unique_ptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  MockWrite data_writes1[] = {
+      MockWrite("GET / HTTP/1.1\r\n"
+                "Host: www.borked.com\r\n"
+                "Connection: keep-alive\r\n\r\n"),
+  };
+
+  MockRead data_reads1[] = {
+      MockRead("HTTP/1.1 200 OK\r\n"
+               "Connection: keep-alive\r\n"
+               "Transfer-Encoding: chunked\r\n\r\n"),
+      MockRead("16\r\nThis server is borked.\r\n"),
+      MockRead("0\r\n\r\nBonus data!"),
+  };
+  StaticSocketDataProvider data1(data_reads1, arraysize(data_reads1),
+                                 data_writes1, arraysize(data_writes1));
+  session_deps_.socket_factory->AddSocketDataProvider(&data1);
+
+  TestCompletionCallback callback;
+  HttpRequestInfo request1;
+  request1.method = "GET";
+  request1.url = GURL("http://www.borked.com/");
+
+  std::unique_ptr<HttpTransaction> trans1(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session.get()));
+  int rv = trans1->Start(&request1, callback.callback(), BoundNetLog());
+  EXPECT_EQ(OK, callback.GetResult(rv));
+
+  const HttpResponseInfo* response1 = trans1->GetResponseInfo();
+  ASSERT_TRUE(response1);
+  ASSERT_TRUE(response1->headers);
+  EXPECT_EQ(200, response1->headers->response_code());
+  EXPECT_TRUE(response1->headers->IsKeepAlive());
+
+  // Deleting the transaction creates an HttpResponseBodyDrainer to read the
+  // response body.
+  trans1.reset();
+
+  // Let the HttpResponseBodyDrainer drain the socket.  It should determine the
+  // socket can't be reused, rather than returning it to the socket pool.
+  base::RunLoop().RunUntilIdle();
+
+  // There should be no idle sockets in the pool.
+  EXPECT_EQ(0, GetIdleSocketCountInTransportSocketPool(session.get()));
 }
 
 // Test the request-challenge-retry sequence for basic auth.

@@ -79,6 +79,7 @@ class MockHttpStream : public HttpStream {
         is_sync_(false),
         is_last_chunk_zero_size_(false),
         is_complete_(false),
+        can_reuse_connection_(true),
         weak_factory_(this) {}
   ~MockHttpStream() override {}
 
@@ -101,7 +102,7 @@ class MockHttpStream : public HttpStream {
 
   bool IsConnectionReused() const override { return false; }
   void SetConnectionReused() override {}
-  bool CanReuseConnection() const override { return false; }
+  bool CanReuseConnection() const override { return can_reuse_connection_; }
   int64_t GetTotalReceivedBytes() const override { return 0; }
   int64_t GetTotalSentBytes() const override { return 0; }
   void GetSSLInfo(SSLInfo* ssl_info) override {}
@@ -146,6 +147,11 @@ class MockHttpStream : public HttpStream {
 
   void set_is_last_chunk_zero_size() { is_last_chunk_zero_size_ = true; }
 
+  // Sets result value of CanReuseConnection. Defaults to true.
+  void set_can_reuse_connection(bool can_reuse_connection) {
+    can_reuse_connection_ = can_reuse_connection;
+  }
+
  private:
   int ReadResponseBodyImpl(IOBuffer* buf, int buf_len);
   void CompleteRead();
@@ -162,7 +168,11 @@ class MockHttpStream : public HttpStream {
   bool is_sync_;
   bool is_last_chunk_zero_size_;
   bool is_complete_;
+  bool can_reuse_connection_;
+
   base::WeakPtrFactory<MockHttpStream> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockHttpStream);
 };
 
 int MockHttpStream::ReadResponseBody(IOBuffer* buf,
@@ -311,6 +321,13 @@ TEST_F(HttpResponseBodyDrainerTest, DrainBodyTooLarge) {
   too_many_chunks += 1;  // Now it's too large.
 
   mock_stream_->set_num_chunks(too_many_chunks);
+  drainer_->Start(session_.get());
+  EXPECT_TRUE(result_waiter_.WaitForResult());
+}
+
+TEST_F(HttpResponseBodyDrainerTest, DrainBodyCantReuse) {
+  mock_stream_->set_num_chunks(1);
+  mock_stream_->set_can_reuse_connection(false);
   drainer_->Start(session_.get());
   EXPECT_TRUE(result_waiter_.WaitForResult());
 }
