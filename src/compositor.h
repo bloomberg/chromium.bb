@@ -1605,28 +1605,6 @@ text_backend_init(struct weston_compositor *ec);
 void
 text_backend_destroy(struct text_backend *text_backend);
 
-struct weston_process;
-typedef void (*weston_process_cleanup_func_t)(struct weston_process *process,
-					    int status);
-
-struct weston_process {
-	pid_t pid;
-	weston_process_cleanup_func_t cleanup;
-	struct wl_list link;
-};
-
-struct wl_client *
-weston_client_launch(struct weston_compositor *compositor,
-		     struct weston_process *proc,
-		     const char *path,
-		     weston_process_cleanup_func_t cleanup);
-
-struct wl_client *
-weston_client_start(struct weston_compositor *compositor, const char *path);
-
-void
-weston_watch_process(struct weston_process *process);
-
 struct weston_view_animation;
 typedef	void (*weston_view_animation_done_func_t)(struct weston_view_animation *animation, void *data);
 

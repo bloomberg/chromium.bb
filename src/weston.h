@@ -35,6 +35,28 @@ extern "C" {
 void
 screenshooter_create(struct weston_compositor *ec);
 
+struct weston_process;
+typedef void (*weston_process_cleanup_func_t)(struct weston_process *process,
+					    int status);
+
+struct weston_process {
+	pid_t pid;
+	weston_process_cleanup_func_t cleanup;
+	struct wl_list link;
+};
+
+struct wl_client *
+weston_client_launch(struct weston_compositor *compositor,
+		     struct weston_process *proc,
+		     const char *path,
+		     weston_process_cleanup_func_t cleanup);
+
+struct wl_client *
+weston_client_start(struct weston_compositor *compositor, const char *path);
+
+void
+weston_watch_process(struct weston_process *process);
+
 #ifdef  __cplusplus
 }
 #endif
