@@ -10,6 +10,8 @@
 #include <iterator>
 #include <utility>
 
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -307,8 +309,23 @@ T* ExtensionPrefs::ScopedUpdate<T, type_enum_value>::Create() {
     value_as_t = new T;
     extension->SetWithoutPathExpansion(key_, value_as_t);
   } else {
-    CHECK(key_value->GetType() == type_enum_value);
-    value_as_t = static_cast<T*>(key_value);
+    // It would be nice to CHECK that this doesn't happen, but since prefs can
+    // get into a mangled state, we can't really do that. Instead, handle it
+    // gracefully (by overwriting whatever was previously there).
+    // TODO(devlin): It's unclear if there's anything we'll ever be able to do
+    // here (corrupted prefs are sometimes a fact of life), but the debug info
+    // might be useful. Remove the dumps after we analyze them.
+    if (key_value->GetType() != type_enum_value) {
+      NOTREACHED();
+      base::debug::SetCrashKeyValue(
+          "existing_extension_pref_value_type",
+          base::IntToString(static_cast<int>(key_value->GetType())));
+      base::debug::DumpWithoutCrashing();
+      value_as_t = new T();
+      extension->SetWithoutPathExpansion(key_, value_as_t);
+    } else {
+      value_as_t = static_cast<T*>(key_value);
+    }
   }
   return value_as_t;
 }

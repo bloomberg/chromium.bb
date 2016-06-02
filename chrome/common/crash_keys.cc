@@ -189,6 +189,9 @@ size_t RegisterChromeCrashKeys() {
 
     // Temporary for https://crbug.com/612711.
     { "aci_wrong_sp_extension_id", kSmallSize },
+
+    // Temporary for https://crbug.com/616149.
+    { "existing_extension_pref_value_type", crash_keys::kSmallSize },
   };
 
   // This dynamic set of keys is used for sets of key value pairs when gathering

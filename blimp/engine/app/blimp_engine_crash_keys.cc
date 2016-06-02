@@ -68,6 +68,9 @@ size_t RegisterEngineCrashKeys() {
 
       // Temporary for https://crbug.com/612711.
       { "aci_wrong_sp_extension_id", crash_keys::kSmallSize },
+
+      // Temporary for https://crbug.com/616149.
+      { "existing_extension_pref_value_type", crash_keys::kSmallSize },
     };
 
   return base::debug::InitCrashKeys(engine_keys, arraysize(engine_keys),
