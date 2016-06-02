@@ -2720,7 +2720,6 @@ def GetConfig():
   def _AdjustLeaderFollowerReleaseConfigs(
       leader_boards,
       follower_boards=None,
-      variant_boards=None,
       **kwargs):
     """Adjust existing release configs into a leader/follower group.
 
@@ -2736,8 +2735,6 @@ def GetConfig():
                      single leader board.
       follower_boards: List of board names for normal followers (reduced GCE
                        friendly testing).
-      variant_boards: List of board names of variants (chrome is binary
-                      identical to a leader/follower).
       kwargs: Any special build config settings needed for all builds in this
               group can be passed in as additional named arguments.
     """
@@ -2752,7 +2749,6 @@ def GetConfig():
     # Compute all release configuration names.
     leaders = [release_name(b) for b in leader_boards or []]
     followers = [release_name(b) for b in follower_boards or []]
-    variants = [release_name(b) for b in variant_boards or []]
 
     # Leaders are built on baremetal builders and run all tests needed by the
     # related boards.
@@ -2768,10 +2764,6 @@ def GetConfig():
         vm_tests=[],
     )
 
-    # Variant boards don't build chrome_sdk, since a non-variant board will
-    # already build/upload the same thing.
-    variant_config = follower_config.derive(chrome_sdk=False)
-
     # Adjust the leader board.
     for config_name in leaders:
       site_config[config_name] = site_config[config_name].derive(
@@ -2779,16 +2771,10 @@ def GetConfig():
           **kwargs
       )
 
-    # Adjust all follower/variant boards based on above options.
+    # Adjust all follower boards based on above options.
     for config_name in followers:
       site_config[config_name] = site_config[config_name].derive(
           follower_config,
-          **kwargs
-      )
-
-    for config_name in variants:
-      site_config[config_name] = site_config[config_name].derive(
-          variant_config,
           **kwargs
       )
 
@@ -2797,7 +2783,6 @@ def GetConfig():
       'x86-mario', (
           'x86-alex',
           'x86-zgb',
-      ), (
           'x86-alex_he',
           'x86-zgb_he',
       )
@@ -2816,7 +2801,6 @@ def GetConfig():
   _AdjustLeaderFollowerReleaseConfigs(
       'stout', (
           'link',
-      ), (
           'parrot_ivb',
       )
   )
@@ -2832,7 +2816,6 @@ def GetConfig():
           'monroe',
           'tricky',
           'zako',
-      ), (
           'falco_li',
       )
   )
