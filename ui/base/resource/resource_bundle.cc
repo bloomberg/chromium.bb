@@ -747,6 +747,9 @@ void ResourceBundle::FreeImages() {
 }
 
 void ResourceBundle::LoadChromeResources() {
+// TODO(estade): remove material design specific resources.
+// See crbug.com/613593
+#if defined(OS_MACOSX)
   // The material design data packs contain some of the same asset IDs as in
   // the non-material design data packs. Add these to the ResourceBundle
   // first so that they are searched first when a request for an asset is
@@ -764,6 +767,7 @@ void ResourceBundle::LoadChromeResources() {
           SCALE_FACTOR_200P);
     }
   }
+#endif
 
   // Always load the 1x data pack first as the 2x data pack contains both 1x and
   // 2x images. The 1x data pack only has 1x images, thus passes in an accurate
