@@ -27,7 +27,6 @@
     {
       'target_name': 'keyboard',
       'dependencies': [
-        '../prefs/compiled_resources2.gyp:prefs_behavior',
         '../prefs/compiled_resources2.gyp:prefs_types',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',

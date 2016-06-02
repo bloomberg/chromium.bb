@@ -1,11 +1,11 @@
+<link rel="import" href="chrome://resources/cr_elements/cr_slider/cr_slider.html">
+<link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
 <link rel="import" href="/controls/settings_checkbox.html">
 <link rel="import" href="/controls/settings_dropdown_menu.html">
 <link rel="import" href="/i18n_setup.html">
-<link rel="import" href="/prefs/prefs_behavior.html">
 <link rel="import" href="/settings_shared_css.html">
 
 <dom-module id="settings-keyboard">
@@ -69,11 +69,12 @@
         <div class="start" id="repeatDelayLabel">$i18n{keyRepeatDelay}</div>
         <div class="layout horizontal center">
           <div>$i18n{keyRepeatDelayLong}</div>
-          <paper-slider id="delaySlider" class="always-on" snaps
-              max="[[delayMaxTick_()]]" on-change="onDelaySliderChange_"
+          <cr-slider id="delaySlider" class="always-on" snaps
+              value="{{prefs.settings.language.xkb_auto_repeat_delay_r2.value}}"
+              tick-values="[[autoRepeatDelays_]]"
               disabled="[[!prefs.settings.language.xkb_auto_repeat_enabled_r2.value]]"
               aria-labelledby="repeatDelayLabel">
-          </paper-slider>
+          </cr-slider>
           <div>$i18n{keyRepeatDelayShort}</div>
         </div>
       </div>
@@ -81,12 +82,12 @@
         <div class="start" id="repeatRateLabel">$i18n{keyRepeatRate}</div>
         <div class="layout horizontal center">
           <div>$i18n{keyRepeatRateSlow}</div>
-          <paper-slider id="repeatRateSlider" class="always-on" snaps
-              max="[[repeatRateMaxTick_()]]"
-              on-change="onRepeatRateSliderChange_"
-              disabled="{{!prefs.settings.language.xkb_auto_repeat_enabled_r2.value}}"
+          <cr-slider id="repeatRateSlider" class="always-on" snaps
+              value="{{prefs.settings.language.xkb_auto_repeat_interval_r2.value}}"
+              tick-values="[[autoRepeatIntervals_]]"
+              disabled="[[!prefs.settings.language.xkb_auto_repeat_enabled_r2.value]]"
               aria-labelledby="repeatRateLabel">
-          </paper-slider>
+          </cr-slider>
           <div>$i18n{keyRepeatRateFast}</div>
         </div>
       </div>

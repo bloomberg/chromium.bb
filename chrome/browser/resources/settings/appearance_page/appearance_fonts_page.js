@@ -51,22 +51,6 @@
       browserProxy_: Object,
 
       /**
-       * The font size used by default.
-       * @private
-       */
-      defaultFontSize_: {
-        type: Number,
-      },
-
-      /**
-       * The value of the font size slider.
-       * @private
-       */
-      fontSizeIndex_: {
-        type: Number,
-      },
-
-      /**
        * Common font sizes.
        * @private {!Array<number>}
        */
@@ -74,34 +58,6 @@
         readOnly: true,
         type: Array,
         value: FONT_SIZE_RANGE_,
-      },
-
-      /**
-       * Upper bound of the font size slider.
-       * @private
-       */
-      fontSizeRangeLimit_: {
-        readOnly: true,
-        type: Number,
-        value: FONT_SIZE_RANGE_.length - 1,
-      },
-
-      /**
-       * The interactive value of the minimum font size slider.
-       * @private
-       */
-      immediateMinimumSizeIndex_: {
-        observer: 'immediateMinimumSizeIndexChanged_',
-        type: Number,
-      },
-
-      /**
-       * The interactive value of the font size slider.
-       * @private
-       */
-      immediateSizeIndex_: {
-        observer: 'immediateSizeIndexChanged_',
-        type: Number,
       },
 
       /**
@@ -115,32 +71,6 @@
       },
 
       /**
-       * Upper bound of the minimum font size slider.
-       * @private
-       */
-      minimumFontSizeRangeLimit_: {
-        readOnly: true,
-        type: Number,
-        value: MINIMUM_FONT_SIZE_RANGE_.length - 1,
-      },
-
-      /**
-       * The font size used at minimum.
-       * @private
-       */
-      minimumFontSize_: {
-        type: Number,
-      },
-
-      /**
-       * The value of the minimum font size slider.
-       * @private
-       */
-      minimumSizeIndex_: {
-        type: Number,
-      },
-
-      /**
        * Preferences state.
        */
       prefs: {
@@ -151,7 +81,6 @@
 
     observers: [
       'fontSizeChanged_(prefs.webkit.webprefs.default_font_size.value)',
-      'minimumFontSizeChanged_(prefs.webkit.webprefs.minimum_font_size.value)',
     ],
 
     /** @override */
@@ -167,24 +96,6 @@
 
       this.browserProxy_.fetchFontsData().then(
           this.setFontsData_.bind(this));
-    },
-
-    /**
-     * @param {number} value The intermediate slider value.
-     * @private
-     */
-    immediateSizeIndexChanged_: function(value) {
-      this.set('prefs.webkit.webprefs.default_font_size.value',
-          this.fontSizeRange_[this.immediateSizeIndex_]);
-    },
-
-    /**
-     * @param {number} value The intermediate slider value.
-     * @private
-     */
-    immediateMinimumSizeIndexChanged_: function(value) {
-      this.set('prefs.webkit.webprefs.minimum_font_size.value',
-          this.minimumFontSizeRange_[this.immediateMinimumSizeIndex_]);
     },
 
     /** @private */
@@ -240,22 +151,11 @@
      * @private
      */
     fontSizeChanged_: function(value) {
-      this.defaultFontSize_ = value;
-      if (!this.$.sizeSlider.dragging) {
-        this.fontSizeIndex_ = this.fontSizeRange_.indexOf(value);
-        this.set('prefs.webkit.webprefs.default_fixed_font_size.value',
+      // TODO(michaelpg): Whitelist this pref in prefs_utils.cc so it is
+      // included in the <settings-prefs> getAllPrefs call, otherwise this path
+      // is invalid and nothing happens. See crbug.com/612535.
+      this.set('prefs.webkit.webprefs.default_fixed_font_size.value',
           value - SIZE_DIFFERENCE_FIXED_STANDARD_);
-      }
-    },
-
-    /**
-     * @param {number} value The changed font size slider value.
-     * @private
-     */
-    minimumFontSizeChanged_: function(value) {
-      this.minimumFontSize_ = value;
-      if (!this.$.minimumSizeSlider.dragging)
-        this.minimumSizeIndex_ = this.minimumFontSizeRange_.indexOf(value);
     },
 
     /**

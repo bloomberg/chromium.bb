@@ -98,7 +98,7 @@ cr.define('device_page_tests', function() {
             value: 500,
           },
           xkb_auto_repeat_interval_r2: {
-            key: 'settings.language.xkb_auto_repeat_delay_r2',
+            key: 'settings.language.xkb_auto_repeat_interval_r2',
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: 500,
           },
@@ -206,117 +206,84 @@ cr.define('device_page_tests', function() {
       });
     });
 
-    suite(assert(TestNames.Keyboard), function() {
-      test('keyboard subpage', function() {
-        // Open the keyboard subpage.
-        return showAndGetDeviceSubpage('keyboard').then(function(keyboardPage) {
-          // Initially, the optional keys are hidden.
-          expectFalse(!!keyboardPage.$$('#capsLockKey'));
-          expectFalse(!!keyboardPage.$$('#diamondKey'));
+    test(assert(TestNames.Keyboard), function() {
+      // Open the keyboard subpage.
+      return showAndGetDeviceSubpage('keyboard').then(function(keyboardPage) {
+        // Initially, the optional keys are hidden.
+        expectFalse(!!keyboardPage.$$('#capsLockKey'));
+        expectFalse(!!keyboardPage.$$('#diamondKey'));
 
-          // Pretend the diamond key is available.
-          var showCapsLock = false;
-          var showDiamondKey = true;
-          cr.webUIListenerCallback(
-              'show-keys-changed', showCapsLock, showDiamondKey);
-          Polymer.dom.flush();
-          expectFalse(!!keyboardPage.$$('#capsLockKey'));
-          expectTrue(!!keyboardPage.$$('#diamondKey'));
+        // Pretend the diamond key is available.
+        var showCapsLock = false;
+        var showDiamondKey = true;
+        cr.webUIListenerCallback(
+            'show-keys-changed', showCapsLock, showDiamondKey);
+        Polymer.dom.flush();
+        expectFalse(!!keyboardPage.$$('#capsLockKey'));
+        expectTrue(!!keyboardPage.$$('#diamondKey'));
 
-          // Pretend a Caps Lock key is now available.
-          showCapsLock = true;
-          cr.webUIListenerCallback(
-              'show-keys-changed', showCapsLock, showDiamondKey);
-          Polymer.dom.flush();
-          expectTrue(!!keyboardPage.$$('#capsLockKey'));
-          expectTrue(!!keyboardPage.$$('#diamondKey'));
+        // Pretend a Caps Lock key is now available.
+        showCapsLock = true;
+        cr.webUIListenerCallback(
+            'show-keys-changed', showCapsLock, showDiamondKey);
+        Polymer.dom.flush();
+        expectTrue(!!keyboardPage.$$('#capsLockKey'));
+        expectTrue(!!keyboardPage.$$('#diamondKey'));
 
-          var collapse = keyboardPage.$$('iron-collapse');
-          assertTrue(!!collapse);
-          expectTrue(collapse.opened);
+        var collapse = keyboardPage.$$('iron-collapse');
+        assertTrue(!!collapse);
+        expectTrue(collapse.opened);
 
-          // Values are based on indices of auto-repeat options in keyboard.js.
-          expectEquals(keyboardPage.$.delaySlider.immediateValue, 3);
-          expectEquals(keyboardPage.$.repeatRateSlider.immediateValue, 2);
+        expectEquals(500, keyboardPage.$.delaySlider.value);
+        expectEquals(500, keyboardPage.$.repeatRateSlider.value);
 
-          // Test interaction with slider.
-          MockInteractions.pressAndReleaseKeyOn(
-              keyboardPage.$.delaySlider, 37 /* left */);
-          MockInteractions.pressAndReleaseKeyOn(
-              keyboardPage.$.repeatRateSlider, 39 /* right */);
-          expectEquals(
-              fakePrefs.settings.language.xkb_auto_repeat_delay_r2.value, 1000);
-          expectEquals(
-              fakePrefs.settings.language.xkb_auto_repeat_interval_r2.value,
-              300);
+        // Test interaction with the cr-slider's underlying paper-slider.
+        MockInteractions.pressAndReleaseKeyOn(
+            keyboardPage.$.delaySlider.$.slider, 37 /* left */);
+        MockInteractions.pressAndReleaseKeyOn(
+            keyboardPage.$.repeatRateSlider.$.slider, 39 /* right */);
+        expectEquals(
+            1000, fakePrefs.settings.language.xkb_auto_repeat_delay_r2.value);
+        expectEquals(
+            300,
+            fakePrefs.settings.language.xkb_auto_repeat_interval_r2.value);
 
-          // Test sliders change when prefs change.
-          devicePage.set(
-              'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 1500);
-          expectEquals(keyboardPage.$.delaySlider.immediateValue, 1);
-          devicePage.set(
-              'prefs.settings.language.xkb_auto_repeat_interval_r2.value',
-              2000);
-          expectEquals(keyboardPage.$.repeatRateSlider.immediateValue, 0);
+        // Test sliders change when prefs change.
+        devicePage.set(
+            'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 1500);
+        expectEquals(1500, keyboardPage.$.delaySlider.value);
+        devicePage.set(
+            'prefs.settings.language.xkb_auto_repeat_interval_r2.value',
+            2000);
+        expectEquals(2000, keyboardPage.$.repeatRateSlider.value);
 
-          // Test sliders round to nearest value when prefs change.
-          devicePage.set(
-              'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 600);
-          expectEquals(keyboardPage.$.delaySlider.immediateValue, 3 /* 500 */);
-          devicePage.set(
-              'prefs.settings.language.xkb_auto_repeat_interval_r2.value', 45);
-          expectEquals(keyboardPage.$.repeatRateSlider.immediateValue,
-              6 /* 50 */);
+        // Test sliders round to nearest value when prefs change.
+        devicePage.set(
+            'prefs.settings.language.xkb_auto_repeat_delay_r2.value', 600);
+        expectEquals(600, keyboardPage.$.delaySlider.value);
+        devicePage.set(
+            'prefs.settings.language.xkb_auto_repeat_interval_r2.value', 45);
+        expectEquals(45, keyboardPage.$.repeatRateSlider.value);
 
-          devicePage.set(
-              'prefs.settings.language.xkb_auto_repeat_enabled_r2.value',
-              false);
-          expectFalse(collapse.opened);
+        devicePage.set(
+            'prefs.settings.language.xkb_auto_repeat_enabled_r2.value',
+            false);
+        expectFalse(collapse.opened);
 
-          // Test keyboard shortcut overlay button.
-          var node = keyboardPage.$$('#keyboardOverlay');
-          MockInteractions.tap(keyboardPage.$$('#keyboardOverlay'));
-          expectEquals(
-              1,
-              settings.DevicePageBrowserProxyImpl.getInstance()
-              .keyboardShortcutsOverlayShown_);
-        });
-      });
-
-      // Test edge cases for slider rounding logic.
-      // TODO(michaelpg): Move this test to settings-slider tests once that
-      // element is created.
-      test('keyboard sliders', function() {
-        return showAndGetDeviceSubpage('keyboard').then(function(keyboardPage) {
-          var testArray = [80, 20, 350, 1000, 200, 100];
-          var testFindNearestIndex = function(expectedIndex, value) {
-            expectEquals(
-                expectedIndex,
-                keyboardPage.findNearestIndex_(testArray, value));
-          };
-          testFindNearestIndex(0, 51);
-          testFindNearestIndex(0, 80);
-          testFindNearestIndex(0, 89);
-          testFindNearestIndex(1, -100);
-          testFindNearestIndex(1, 20);
-          testFindNearestIndex(1, 49);
-          testFindNearestIndex(2, 400);
-          testFindNearestIndex(2, 350);
-          testFindNearestIndex(2, 300);
-          testFindNearestIndex(3, 200000);
-          testFindNearestIndex(3, 1000);
-          testFindNearestIndex(3, 700);
-          testFindNearestIndex(4, 220);
-          testFindNearestIndex(4, 200);
-          testFindNearestIndex(4, 151);
-          testFindNearestIndex(5, 149);
-          testFindNearestIndex(5, 100);
-          testFindNearestIndex(5, 91);
-        });
+        // Test keyboard shortcut overlay button.
+        MockInteractions.tap(keyboardPage.$$('#keyboardOverlay'));
+        expectEquals(
+            1,
+            settings.DevicePageBrowserProxyImpl.getInstance()
+                .keyboardShortcutsOverlayShown_);
       });
     });
 
     test(assert(TestNames.Display), function() {
+      // Open the display subpage.
+      var displayPage = showAndGetDeviceSubpage('display');
+      assertTrue(!!displayPage);
+
       var addDisplay = function(n) {
         var display = {
           id: 'fakeDisplayId' + n,

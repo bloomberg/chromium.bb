@@ -107,6 +107,12 @@
   <structure name="IDR_CR_ELEMENTS_CR_SHARED_MENU_JS"
              file="../../webui/resources/cr_elements/cr_shared_menu/cr_shared_menu.js"
              type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_SLIDER_HTML"
+             file="../../webui/resources/cr_elements/cr_slider/cr_slider.html"
+             type="chrome_html" />
+  <structure name="IDR_CR_ELEMENTS_CR_SLIDER_JS"
+             file="../../webui/resources/cr_elements/cr_slider/cr_slider.js"
+             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_TOOLBAR_HTML"
              file="../../webui/resources/cr_elements/cr_toolbar/cr_toolbar.html"
              type="chrome_html" />

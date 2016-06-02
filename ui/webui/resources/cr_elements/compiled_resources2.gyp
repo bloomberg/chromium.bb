@@ -9,6 +9,7 @@
       'dependencies': [
         'network/compiled_resources2.gyp:*',
         'policy/compiled_resources2.gyp:*',
+        'cr_slider/compiled_resources2.gyp:*',
       ],
     },
   ]
