@@ -295,17 +295,22 @@ class ExtensionFunction
   //
   // Success, no arguments to pass to caller.
   ResponseValue NoArguments();
+  // Success, a single argument |arg| to pass to caller. TAKES OWNERSHIP - a
+  // raw pointer for convenience, since callers usually construct the argument
+  // to this by hand.
+  ResponseValue OneArgument(base::Value* arg);
   // Success, a single argument |arg| to pass to caller.
   ResponseValue OneArgument(std::unique_ptr<base::Value> arg);
-  // Success, two arguments |arg1| and |arg2| to pass to caller.
-  // Note that use of this function may imply you
+  // Success, two arguments |arg1| and |arg2| to pass to caller. TAKES
+  // OWNERSHIP - raw pointers for convenience, since callers usually construct
+  // the argument to this by hand. Note that use of this function may imply you
   // should be using the generated Result struct and ArgumentList.
-  ResponseValue TwoArguments(std::unique_ptr<base::Value> arg1,
-                             std::unique_ptr<base::Value> arg2);
-  // Success, a list of arguments |results| to pass to caller.
+  ResponseValue TwoArguments(base::Value* arg1, base::Value* arg2);
+  // Success, a list of arguments |results| to pass to caller. TAKES OWNERSHIP
   // - a std::unique_ptr<> for convenience, since callers usually get this from
-  //   the result of a Create(...) call on the generated Results struct. For
-  //   example, alarms::Get::Results::Create(alarm).
+  // the
+  // result of a Create(...) call on the generated Results struct, for example,
+  // alarms::Get::Results::Create(alarm).
   ResponseValue ArgumentList(std::unique_ptr<base::ListValue> results);
   // Error. chrome.runtime.lastError.message will be set to |error|.
   ResponseValue Error(const std::string& error);
@@ -321,7 +326,7 @@ class ExtensionFunction
                       const std::string& s1,
                       const std::string& s2,
                       const std::string& s3);
-  // Error with a list of arguments |args| to pass to caller.
+  // Error with a list of arguments |args| to pass to caller. TAKES OWNERSHIP.
   // Using this ResponseValue indicates something is wrong with the API.
   // It shouldn't be possible to have both an error *and* some arguments.
   // Some legacy APIs do rely on it though, like webstorePrivate.

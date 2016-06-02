@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/api/idle/idle_api_constants.h"
@@ -181,8 +180,7 @@ void IdleManager::SetThreshold(const std::string& extension_id, int threshold) {
 }
 
 // static
-std::unique_ptr<base::StringValue> IdleManager::CreateIdleValue(
-    ui::IdleState idle_state) {
+base::StringValue* IdleManager::CreateIdleValue(ui::IdleState idle_state) {
   const char* description;
 
   if (idle_state == ui::IDLE_STATE_ACTIVE) {
@@ -193,7 +191,7 @@ std::unique_ptr<base::StringValue> IdleManager::CreateIdleValue(
     description = keys::kStateLocked;
   }
 
-  return base::MakeUnique<base::StringValue>(description);
+  return new base::StringValue(description);
 }
 
 void IdleManager::SetEventDelegateForTest(

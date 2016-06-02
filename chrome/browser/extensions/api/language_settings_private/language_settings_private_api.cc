@@ -14,7 +14,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -242,7 +241,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
 
     language_list->Append(language.ToValue());
   }
-  return RespondNow(OneArgument(std::move(language_list)));
+  return RespondNow(OneArgument(language_list.release()));
 }
 
 LanguageSettingsPrivateSetLanguageListFunction::
@@ -303,7 +302,7 @@ LanguageSettingsPrivateGetSpellcheckWordsFunction::Run() {
   SpellcheckCustomDictionary* dictionary = service->GetCustomDictionary();
 
   if (dictionary->IsLoaded())
-    return RespondNow(OneArgument(GetSpellcheckWords()));
+    return RespondNow(OneArgument(GetSpellcheckWords().release()));
 
   dictionary->AddObserver(this);
   AddRef();  // Balanced in OnCustomDictionaryLoaded().
@@ -315,7 +314,7 @@ LanguageSettingsPrivateGetSpellcheckWordsFunction::OnCustomDictionaryLoaded() {
   SpellcheckService* service =
       SpellcheckServiceFactory::GetForContext(browser_context());
   service->GetCustomDictionary()->RemoveObserver(this);
-  Respond(OneArgument(GetSpellcheckWords()));
+  Respond(OneArgument(GetSpellcheckWords().release()));
   Release();
 }
 
@@ -360,8 +359,7 @@ LanguageSettingsPrivateAddSpellcheckWordFunction::Run() {
       SpellcheckServiceFactory::GetForContext(browser_context());
   bool success = service->GetCustomDictionary()->AddWord(params->word);
 
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(success)));
+  return RespondNow(OneArgument(new base::FundamentalValue(success)));
 }
 
 LanguageSettingsPrivateRemoveSpellcheckWordFunction::
@@ -383,8 +381,7 @@ LanguageSettingsPrivateRemoveSpellcheckWordFunction::Run() {
       SpellcheckServiceFactory::GetForContext(browser_context());
   bool success = service->GetCustomDictionary()->RemoveWord(params->word);
 
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(success)));
+  return RespondNow(OneArgument(new base::FundamentalValue(success)));
 }
 
 LanguageSettingsPrivateGetTranslateTargetLanguageFunction::
@@ -398,8 +395,8 @@ LanguageSettingsPrivateGetTranslateTargetLanguageFunction::
 
 ExtensionFunction::ResponseAction
 LanguageSettingsPrivateGetTranslateTargetLanguageFunction::Run() {
-  return RespondNow(OneArgument(
-      base::MakeUnique<base::StringValue>(TranslateService::GetTargetLanguage(
+  return RespondNow(OneArgument(new base::StringValue(
+      TranslateService::GetTargetLanguage(
           chrome_details_.GetProfile()->GetPrefs()))));
 }
 

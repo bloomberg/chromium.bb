@@ -9,7 +9,6 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -532,13 +531,12 @@ ExtensionFunction::ResponseAction RuntimeRequestUpdateCheckFunction::Run() {
 void RuntimeRequestUpdateCheckFunction::CheckComplete(
     const RuntimeAPIDelegate::UpdateCheckResult& result) {
   if (result.success) {
-    std::unique_ptr<base::DictionaryValue> details(new base::DictionaryValue);
+    base::DictionaryValue* details = new base::DictionaryValue;
     details->SetString("version", result.version);
-    Respond(TwoArguments(base::MakeUnique<base::StringValue>(result.response),
-                         std::move(details)));
+    Respond(TwoArguments(new base::StringValue(result.response), details));
   } else {
     // HMM(kalman): Why does !success not imply Error()?
-    Respond(OneArgument(base::MakeUnique<base::StringValue>(result.response)));
+    Respond(OneArgument(new base::StringValue(result.response)));
   }
 }
 
@@ -579,10 +577,10 @@ RuntimeGetPackageDirectoryEntryFunction::Run() {
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
   policy->GrantReadFileSystem(renderer_id, filesystem_id);
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("fileSystemId", filesystem_id);
   dict->SetString("baseName", relative_path);
-  return RespondNow(OneArgument(std::move(dict)));
+  return RespondNow(OneArgument(dict));
 }
 
 }  // namespace extensions

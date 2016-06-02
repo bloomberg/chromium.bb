@@ -7,10 +7,8 @@
 #include <stdint.h>
 
 #include <string>
-#include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "device/core/device_client.h"
 #include "device/hid/hid_connection.h"
 #include "device/hid/hid_device_filter.h"
@@ -58,12 +56,11 @@ const char kErrorFailedToOpenDevice[] = "Failed to open HID device.";
 const char kErrorConnectionNotFound[] = "Connection not established.";
 const char kErrorTransfer[] = "Transfer failed.";
 
-std::unique_ptr<base::Value> PopulateHidConnection(
-    int connection_id,
-    scoped_refptr<HidConnection> connection) {
+base::Value* PopulateHidConnection(int connection_id,
+                                   scoped_refptr<HidConnection> connection) {
   hid::HidConnectInfo connection_value;
   connection_value.connection_id = connection_id;
-  return connection_value.ToValue();
+  return connection_value.ToValue().release();
 }
 
 void ConvertHidDeviceFilter(const hid::DeviceFilter& input,
@@ -122,7 +119,7 @@ ExtensionFunction::ResponseAction HidGetDevicesFunction::Run() {
 
 void HidGetDevicesFunction::OnEnumerationComplete(
     std::unique_ptr<base::ListValue> devices) {
-  Respond(OneArgument(std::move(devices)));
+  Respond(OneArgument(devices.release()));
 }
 
 HidGetUserSelectedDevicesFunction::HidGetUserSelectedDevicesFunction() {
@@ -138,7 +135,7 @@ ExtensionFunction::ResponseAction HidGetUserSelectedDevicesFunction::Run() {
 
   content::WebContents* web_contents = GetSenderWebContents();
   if (!web_contents || !user_gesture()) {
-    return RespondNow(OneArgument(base::MakeUnique<base::ListValue>()));
+    return RespondNow(OneArgument(new base::ListValue()));
   }
 
   bool multiple = false;
@@ -290,10 +287,9 @@ void HidReceiveFunction::OnFinished(bool success,
     DCHECK_GE(size, 1u);
     int report_id = reinterpret_cast<uint8_t*>(buffer->data())[0];
 
-    Respond(
-        TwoArguments(base::MakeUnique<base::FundamentalValue>(report_id),
-                     base::WrapUnique(base::BinaryValue::CreateWithCopiedBuffer(
-                         buffer->data() + 1, size - 1))));
+    Respond(TwoArguments(new base::FundamentalValue(report_id),
+                         base::BinaryValue::CreateWithCopiedBuffer(
+                             buffer->data() + 1, size - 1)));
   } else {
     Respond(Error(kErrorTransfer));
   }
@@ -350,8 +346,8 @@ void HidReceiveFeatureReportFunction::OnFinished(
     scoped_refptr<net::IOBuffer> buffer,
     size_t size) {
   if (success) {
-    Respond(OneArgument(base::WrapUnique(
-        base::BinaryValue::CreateWithCopiedBuffer(buffer->data(), size))));
+    Respond(OneArgument(
+        base::BinaryValue::CreateWithCopiedBuffer(buffer->data(), size)));
   } else {
     Respond(Error(kErrorTransfer));
   }

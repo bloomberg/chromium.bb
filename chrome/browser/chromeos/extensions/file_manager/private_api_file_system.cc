@@ -945,7 +945,7 @@ void FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes(
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateIsUMAEnabledFunction::Run() {
-  return RespondNow(OneArgument(base::MakeUnique<base::FundamentalValue>(
+  return RespondNow(OneArgument(new base::FundamentalValue(
       ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())));
 }
 

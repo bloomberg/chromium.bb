@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -293,7 +292,7 @@ ExtensionFunction::ResponseAction IdentityGetAccountsFunction::Run() {
       IdentityAPI::GetFactoryInstance()->Get(GetProfile())->GetAccounts();
   DCHECK(gaia_ids.size() < 2 || switches::IsExtensionsMultiAccount());
 
-  std::unique_ptr<base::ListValue> infos(new base::ListValue());
+  base::ListValue* infos = new base::ListValue();
 
   for (std::vector<std::string>::const_iterator it = gaia_ids.begin();
        it != gaia_ids.end();
@@ -303,7 +302,7 @@ ExtensionFunction::ResponseAction IdentityGetAccountsFunction::Run() {
     infos->Append(account_info.ToValue().release());
   }
 
-  return RespondNow(OneArgument(std::move(infos)));
+  return RespondNow(OneArgument(infos));
 }
 
 IdentityGetAuthTokenFunction::IdentityGetAuthTokenFunction()
@@ -918,7 +917,7 @@ ExtensionFunction::ResponseAction IdentityGetProfileUserInfoFunction::Run() {
     profile_user_info.id = account.gaia;
   }
 
-  return RespondNow(OneArgument(profile_user_info.ToValue()));
+  return RespondNow(OneArgument(profile_user_info.ToValue().release()));
 }
 
 IdentityRemoveCachedAuthTokenFunction::IdentityRemoveCachedAuthTokenFunction() {

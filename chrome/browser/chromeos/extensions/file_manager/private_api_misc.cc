@@ -467,11 +467,9 @@ void FileManagerPrivateInternalGetMimeTypeFunction::OnGetMimeType(
 ExtensionFunction::ResponseAction
 FileManagerPrivateIsPiexLoaderEnabledFunction::Run() {
 #if defined(OFFICIAL_BUILD)
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
+  return RespondNow(OneArgument(new base::FundamentalValue(true)));
 #else
-  return RespondNow(
-      OneArgument(base::MakeUnique<base::FundamentalValue>(false)));
+  return RespondNow(OneArgument(new base::FundamentalValue(false)));
 #endif
 }
 

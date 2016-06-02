@@ -14,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -481,7 +480,7 @@ void ManagementSetEnabledFunction::OnInstallPromptDone(bool did_accept) {
         ->Get(browser_context())
         ->GetDelegate()
         ->EnableExtension(browser_context(), extension_id_);
-    Respond(OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
+    Respond(OneArgument(new base::FundamentalValue(true)));
   } else {
     Respond(Error(keys::kUserDidNotReEnableError));
   }

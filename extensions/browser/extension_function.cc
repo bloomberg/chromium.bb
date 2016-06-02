@@ -291,19 +291,24 @@ ExtensionFunction::ResponseValue ExtensionFunction::NoArguments() {
 }
 
 ExtensionFunction::ResponseValue ExtensionFunction::OneArgument(
-    std::unique_ptr<base::Value> arg) {
+    base::Value* arg) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(std::move(arg));
+  args->Append(arg);
   return ResponseValue(new ArgumentListResponseValue(name(), "OneArgument",
                                                      this, std::move(args)));
 }
 
+ExtensionFunction::ResponseValue ExtensionFunction::OneArgument(
+    std::unique_ptr<base::Value> arg) {
+  return OneArgument(arg.release());
+}
+
 ExtensionFunction::ResponseValue ExtensionFunction::TwoArguments(
-    std::unique_ptr<base::Value> arg1,
-    std::unique_ptr<base::Value> arg2) {
+    base::Value* arg1,
+    base::Value* arg2) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(std::move(arg1));
-  args->Append(std::move(arg2));
+  args->Append(arg1);
+  args->Append(arg2);
   return ResponseValue(new ArgumentListResponseValue(name(), "TwoArguments",
                                                      this, std::move(args)));
 }

@@ -63,9 +63,9 @@ void DataReductionProxyGetDataUsageFunction::ReplyWithDataUsage(
     data_usage_buckets->Append(std::move(connection_usage_list));
   }
 
-  std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
+  base::DictionaryValue* result = new base::DictionaryValue();
   result->Set("data_usage_buckets", std::move(data_usage_buckets));
-  Respond(OneArgument(std::move(result)));
+  Respond(OneArgument(result));
 }
 
 }  // namespace extensions

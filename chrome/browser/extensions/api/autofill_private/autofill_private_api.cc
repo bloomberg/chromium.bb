@@ -297,7 +297,7 @@ ExtensionFunction::ResponseAction
       g_browser_process->GetApplicationLocale(),
       &components);
 
-  return RespondNow(OneArgument(components.ToValue()));
+  return RespondNow(OneArgument(components.ToValue().release()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
