@@ -584,11 +584,13 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::QueueInput");
   base::AutoReset<bool> auto_reset(&defer_errors_, true);
+  if (state_ == ERROR || state_ == WAITING_FOR_CODEC ||
+      state_ == WAITING_FOR_KEY) {
+    return false;
+  }
   if (bitstreams_notified_in_advance_.size() > kMaxBitstreamsNotifiedInAdvance)
     return false;
   if (pending_bitstream_records_.empty())
-    return false;
-  if (state_ == WAITING_FOR_KEY)
     return false;
 
   int input_buf_index = pending_input_buf_index_;
@@ -716,11 +718,12 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::DequeueOutput");
   base::AutoReset<bool> auto_reset(&defer_errors_, true);
+  if (state_ == ERROR || state_ == WAITING_FOR_CODEC)
+    return false;
   if (picturebuffers_requested_ && output_picture_buffers_.empty())
     return false;
-
   if (!output_picture_buffers_.empty() && free_picture_ids_.empty()) {
-    // Don't have any picture buffer to send. Need to wait more.
+    // Don't have any picture buffer to send. Need to wait.
     return false;
   }
 
