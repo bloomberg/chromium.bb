@@ -170,7 +170,7 @@
       'target_name': 'widevine_cdm_manifest',
       'type': 'none',
       'conditions': [
-        [ 'branding == "Chrome"', {
+        [ 'widevine_cdm_manifest_file != []', {
           'copies': [{
             'destination': '<(PRODUCT_DIR)/WidevineCdm',
             'files': [ '<(widevine_cdm_manifest_file)' ],
