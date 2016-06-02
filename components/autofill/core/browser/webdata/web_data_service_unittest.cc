@@ -127,7 +127,8 @@ class WebDataServiceTest : public testing::Test {
   }
 
   void WaitForDatabaseThread() {
-    base::WaitableEvent done(false, false);
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     db_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&done)));
@@ -149,7 +150,8 @@ class WebDataServiceAutofillTest : public WebDataServiceTest {
         unique_id1_(1),
         unique_id2_(2),
         test_timeout_(TimeDelta::FromSeconds(kWebDataServiceTimeoutSeconds)),
-        done_event_(false, false) {}
+        done_event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                    base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
  protected:
   virtual void SetUp() {

@@ -246,7 +246,9 @@ class WebDataServiceFake : public AutofillWebDataService {
         web_database_(NULL),
         autocomplete_syncable_service_(NULL),
         autofill_profile_syncable_service_(NULL),
-        syncable_service_created_or_destroyed_(false, false),
+        syncable_service_created_or_destroyed_(
+            base::WaitableEvent::ResetPolicy::AUTOMATIC,
+            base::WaitableEvent::InitialState::NOT_SIGNALED),
         db_thread_(db_thread),
         ui_thread_(ui_thread) {}
 
@@ -281,7 +283,8 @@ class WebDataServiceFake : public AutofillWebDataService {
   WebDatabase* GetDatabase() override { return web_database_; }
 
   void OnAutofillEntriesChanged(const AutofillChangeList& changes) {
-    WaitableEvent event(true, false);
+    WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED);
 
     base::Closure notify_cb =
         base::Bind(&AutocompleteSyncableService::AutofillEntriesChanged,
@@ -293,7 +296,8 @@ class WebDataServiceFake : public AutofillWebDataService {
   }
 
   void OnAutofillProfileChanged(const AutofillProfileChange& changes) {
-    WaitableEvent event(true, false);
+    WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED);
 
     base::Closure notify_cb =
         base::Bind(&AutocompleteSyncableService::AutofillProfileChanged,
@@ -710,7 +714,8 @@ class FakeServerUpdater : public base::RefCountedThreadSafe<FakeServerUpdater> {
         service_(service),
         wait_for_start_(wait_for_start),
         wait_for_syncapi_(wait_for_syncapi),
-        is_finished_(false, false),
+        is_finished_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                     base::WaitableEvent::InitialState::NOT_SIGNALED),
         db_thread_(db_thread) {}
 
   void Update() {
@@ -1416,10 +1421,12 @@ TEST_F(ProfileSyncServiceAutofillTest, ServerChangeRace) {
   StartSyncService(create_root.callback(), false, AUTOFILL);
   ASSERT_TRUE(create_root.success());
 
-  // (true, false) means we have to reset after |Signal|, init to unsignaled.
-  std::unique_ptr<WaitableEvent> wait_for_start(new WaitableEvent(true, false));
+  std::unique_ptr<WaitableEvent> wait_for_start(
+      new WaitableEvent(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED));
   std::unique_ptr<WaitableEvent> wait_for_syncapi(
-      new WaitableEvent(true, false));
+      new WaitableEvent(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED));
   scoped_refptr<FakeServerUpdater> updater(new FakeServerUpdater(
       sync_service(), wait_for_start.get(), wait_for_syncapi.get(),
       data_type_thread()->task_runner()));

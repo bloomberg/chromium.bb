@@ -98,7 +98,9 @@ class WebThreadImplForWorkerSchedulerTest : public testing::Test {
 
   void RunOnWorkerThread(const tracked_objects::Location& from_here,
                          const base::Closure& task) {
-    base::WaitableEvent completion(false, false);
+    base::WaitableEvent completion(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     thread_->GetTaskRunner()->PostTask(
         from_here,
         base::Bind(&WebThreadImplForWorkerSchedulerTest::RunOnWorkerThreadTask,
@@ -120,7 +122,9 @@ class WebThreadImplForWorkerSchedulerTest : public testing::Test {
 
 TEST_F(WebThreadImplForWorkerSchedulerTest, TestDefaultTask) {
   std::unique_ptr<MockTask> task(new MockTask());
-  base::WaitableEvent completion(false, false);
+  base::WaitableEvent completion(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   EXPECT_CALL(*task, run());
   ON_CALL(*task, run())
@@ -134,7 +138,9 @@ TEST_F(WebThreadImplForWorkerSchedulerTest, TestDefaultTask) {
 TEST_F(WebThreadImplForWorkerSchedulerTest,
        TestTaskExecutedBeforeThreadDeletion) {
   std::unique_ptr<MockTask> task(new MockTask());
-  base::WaitableEvent completion(false, false);
+  base::WaitableEvent completion(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   EXPECT_CALL(*task, run());
   ON_CALL(*task, run())
@@ -147,7 +153,9 @@ TEST_F(WebThreadImplForWorkerSchedulerTest,
 
 TEST_F(WebThreadImplForWorkerSchedulerTest, TestIdleTask) {
   std::unique_ptr<MockIdleTask> task(new MockIdleTask());
-  base::WaitableEvent completion(false, false);
+  base::WaitableEvent completion(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   EXPECT_CALL(*task, run(_));
   ON_CALL(*task, run(_))

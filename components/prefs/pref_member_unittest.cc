@@ -46,7 +46,8 @@ class GetPrefValueHelper
   }
 
   void FetchValue() {
-    base::WaitableEvent event(true, false);
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     ASSERT_TRUE(pref_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&GetPrefValueHelper::GetPrefValue, this, &event)));

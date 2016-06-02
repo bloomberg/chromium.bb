@@ -129,7 +129,8 @@ TEST_F(MediaStorageUtilTest, DetectDeviceFiltered) {
   MediaStorageUtil::DeviceIdSet devices;
   devices.insert(kImageCaptureDeviceId);
 
-  base::WaitableEvent event(true, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::Closure signal_event =
       base::Bind(&base::WaitableEvent::Signal, base::Unretained(&event));
 

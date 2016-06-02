@@ -62,7 +62,8 @@ void TestStorageMonitor::SyncInitialize() {
   if (monitor->IsInitialized())
     return;
 
-  base::WaitableEvent event(true, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   monitor->EnsureInitialized(base::Bind(&base::WaitableEvent::Signal,
                              base::Unretained(&event)));
   while (!event.IsSignaled()) {

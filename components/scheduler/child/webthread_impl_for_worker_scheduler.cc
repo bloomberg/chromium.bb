@@ -33,7 +33,9 @@ WebThreadImplForWorkerScheduler::WebThreadImplForWorkerScheduler(
 }
 
 void WebThreadImplForWorkerScheduler::Init() {
-  base::WaitableEvent completion(false, false);
+  base::WaitableEvent completion(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&WebThreadImplForWorkerScheduler::InitOnThread,
                             base::Unretained(this), &completion));
@@ -42,7 +44,9 @@ void WebThreadImplForWorkerScheduler::Init() {
 
 WebThreadImplForWorkerScheduler::~WebThreadImplForWorkerScheduler() {
   if (task_runner_delegate_) {
-    base::WaitableEvent completion(false, false);
+    base::WaitableEvent completion(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     // Restore the original task runner so that the thread can tear itself down.
     thread_task_runner_->PostTask(
         FROM_HERE,

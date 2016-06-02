@@ -149,7 +149,8 @@ class SyncSharedChangeProcessorTest :
   }
 
   bool HasAttachmentService() {
-    base::WaitableEvent event(false, false);
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     EXPECT_TRUE(backend_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(

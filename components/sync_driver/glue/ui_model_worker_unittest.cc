@@ -83,7 +83,9 @@ class SyncUIModelWorkerTest : public testing::Test {
 };
 
 TEST_F(SyncUIModelWorkerTest, ScheduledWorkRunsOnUILoop) {
-  base::WaitableEvent v_was_run(false, false);
+  base::WaitableEvent v_was_run(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   std::unique_ptr<UIModelWorkerVisitor> v(
       new UIModelWorkerVisitor(&v_was_run, true));
 

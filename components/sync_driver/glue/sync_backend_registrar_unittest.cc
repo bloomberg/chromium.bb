@@ -292,7 +292,8 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   const ModelTypeSet types(AUTOFILL);
   EXPECT_EQ(types, registrar_->ConfigureDataTypes(types, ModelTypeSet()));
 
-  base::WaitableEvent done(false, false);
+  base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED);
   db_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&SyncBackendRegistrarTest::TestNonUIDataTypeActivationAsync,
@@ -354,7 +355,8 @@ class SyncBackendRegistrarShutdownTest : public testing::Test {
   SyncBackendRegistrarShutdownTest()
       : db_thread_("DBThreadForTest"),
         file_thread_("FileThreadForTest"),
-        db_thread_blocked_(false, false) {
+        db_thread_blocked_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                           base::WaitableEvent::InitialState::NOT_SIGNALED) {
     quit_closure_ = run_loop_.QuitClosure();
   }
 

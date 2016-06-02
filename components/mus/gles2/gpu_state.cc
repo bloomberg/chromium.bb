@@ -27,7 +27,8 @@ GpuState::GpuState()
   gpu_thread_.Start();
   control_thread_.Start();
   control_thread_task_runner_ = control_thread_.task_runner();
-  base::WaitableEvent event(true, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   gpu_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&GpuState::InitializeOnGpuThread,
                             base::Unretained(this), &event));

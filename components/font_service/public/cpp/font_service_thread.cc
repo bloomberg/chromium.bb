@@ -37,7 +37,9 @@ bool FontServiceThread::MatchFamilyName(
   bool out_valid = false;
   // This proxies to the other thread, which proxies to mojo. Only on the reply
   // from mojo do we return from this.
-  base::WaitableEvent done_event(false, false);
+  base::WaitableEvent done_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&FontServiceThread::MatchFamilyNameImpl, this, &done_event,
@@ -55,7 +57,9 @@ scoped_refptr<MappedFontFile> FontServiceThread::OpenStream(
   base::File stream_file;
   // This proxies to the other thread, which proxies to mojo. Only on the reply
   // from mojo do we return from this.
-  base::WaitableEvent done_event(false, false);
+  base::WaitableEvent done_event(
+      base::WaitableEvent::ResetPolicy::AUTOMATIC,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   task_runner()->PostTask(FROM_HERE,
                           base::Bind(&FontServiceThread::OpenStreamImpl, this,
                                      &done_event, &stream_file, identity.fID));

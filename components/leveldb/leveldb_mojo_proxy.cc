@@ -144,7 +144,9 @@ void LevelDBMojoProxy::RunInternal(const base::Closure& task) {
   if (task_runner_->BelongsToCurrentThread()) {
     task.Run();
   } else {
-    base::WaitableEvent done_event(false, false);
+    base::WaitableEvent done_event(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&LevelDBMojoProxy::DoOnOtherThread,

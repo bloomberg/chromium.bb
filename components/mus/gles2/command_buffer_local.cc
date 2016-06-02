@@ -101,7 +101,8 @@ void CommandBufferLocal::Destroy() {
   // too. Additionally we need to make sure we are deleted before returning,
   // otherwise we may attempt to use the AcceleratedWidget which has since been
   // destroyed.
-  base::WaitableEvent event(true, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   gpu_state_->command_buffer_task_runner()->PostTask(
       driver_.get(), base::Bind(&CommandBufferLocal::DeleteOnGpuThread,
                                 base::Unretained(this), &event));
@@ -111,7 +112,8 @@ void CommandBufferLocal::Destroy() {
 bool CommandBufferLocal::Initialize() {
   DCHECK(CalledOnValidThread());
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  base::WaitableEvent event(true, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   bool result = false;
   gpu_state_->command_buffer_task_runner()->task_runner()->PostTask(
       FROM_HERE,
@@ -431,7 +433,8 @@ void CommandBufferLocal::TryUpdateState() {
 
 void CommandBufferLocal::MakeProgressAndUpdateState() {
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  base::WaitableEvent event(true, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   gpu::CommandBuffer::State state;
   gpu_state_->command_buffer_task_runner()->PostTask(
       driver_.get(),
