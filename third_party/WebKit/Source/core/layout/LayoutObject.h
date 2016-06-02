@@ -1403,6 +1403,8 @@ public:
 
     void clearChildNeedsOverflowRecalcAfterStyleChange() { m_bitfields.setChildNeedsOverflowRecalcAfterStyleChange(false); }
 
+    bool compositedScrollsWithRespectTo(const LayoutBoxModelObject& paintInvalidationContainer) const;
+
 protected:
     enum LayoutObjectType {
         LayoutObjectBr,

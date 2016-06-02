@@ -412,11 +412,6 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
     invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
 }
 
-static bool compositedScrollsWithRespectTo(const LayoutObject* layoutObject, const LayoutBoxModelObject& paintInvalidationContainer)
-{
-    return paintInvalidationContainer.usesCompositedScrolling() && layoutObject != &paintInvalidationContainer;
-}
-
 void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRect& r, PaintInvalidationReason invalidationReason, const LayoutObject& object) const
 {
     // TODO(wangxianzhu): Enable the following assert after paint invalidation for spv2 is ready.
@@ -433,7 +428,7 @@ void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRe
             // Note: the subpixel accumulation of layer() does not need to be added here. It is already taken into account.
             squashingLayer->setNeedsDisplayInRect(enclosingIntRect(paintInvalidationRect), invalidationReason, object);
         }
-    } else if (compositedScrollsWithRespectTo(&object, *this)) {
+    } else if (object.compositedScrollsWithRespectTo(*this)) {
         layer()->compositedLayerMapping()->setScrollingContentsNeedDisplayInRect(r, invalidationReason, object);
     } else {
         // TODO(chrishtr): we should be able to skip scrolling content layers in this case.
@@ -456,7 +451,7 @@ void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayIte
         if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
             squashingLayer->displayItemClientWasInvalidated(displayItemClient, invalidationReason);
     } else if (CompositedLayerMapping* compositedLayerMapping = layer()->compositedLayerMapping()) {
-        if (compositedScrollsWithRespectTo(layoutObject, *this))
+        if (layoutObject && layoutObject->compositedScrollsWithRespectTo(*this))
             compositedLayerMapping->scrollingDisplayItemClientWasInvalidated(displayItemClient, invalidationReason);
         else
             compositedLayerMapping->displayItemClientWasInvalidated(displayItemClient, invalidationReason);

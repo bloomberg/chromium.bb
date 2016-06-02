@@ -1,0 +1,69 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 48],
+          "bounds": [100, 100],
+          "shouldFlattenTransform": false,
+          "drawsContent": true,
+          "children": [
+            {
+              "bounds": [100, 100],
+              "shouldFlattenTransform": false,
+              "children": [
+                {
+                  "bounds": [205, 1022],
+                  "drawsContent": true,
+                  "paintInvalidations": [
+                    {
+                      "object": "LayoutTextControl INPUT id='text'",
+                      "rect": [-1, 999, 207, 24],
+                      "reason": "subtree"
+                    },
+                    {
+                      "object": "LayoutBlockFlow DIV id='inner-editor'",
+                      "rect": [3, 1003, 200, 16],
+                      "reason": "subtree"
+                    },
+                    {
+                      "object": "LayoutBlockFlow DIV id='inner-editor'",
+                      "rect": [2, 1002, 3, 18],
+                      "reason": "invalidate paint rectangle"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "bounds": [100, 100],
+              "children": [
+                {
+                  "position": [0, 100],
+                  "bounds": [100, 0],
+                  "drawsContent": true
+                },
+                {
+                  "position": [100, 0],
+                  "bounds": [0, 100],
+                  "drawsContent": true,
+                  "paintInvalidations": [
+                    {
+                      "object": "Vertical Scrollbar Layer",
+                      "reason": "full"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
