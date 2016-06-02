@@ -95,7 +95,22 @@ void CastDeviceCache::Init() {
 }
 
 void CastDeviceCache::OnSinksReceived(const MediaSinks& sinks) {
-  sinks_ = sinks;
+  sinks_.clear();
+  for (const media_router::MediaSink& sink : sinks) {
+    // The media router adds a MediaSink instance that doesn't have a name. Make
+    // sure to filter that sink out from the UI so it is not rendered, as it
+    // will be a line that only has a icon with no apparent meaning.
+    if (sink.name().empty())
+      continue;
+
+    // Temporarily hide sinks that have a domain. This is to meet cast privacy
+    // requirements. See bug/28691645.
+    if (!sink.domain().empty())
+      continue;
+
+    sinks_.push_back(sink);
+  }
+
   cast_config_delegate_->RequestDeviceRefresh();
 }
 
