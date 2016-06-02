@@ -23,7 +23,7 @@
 <dom-module id="settings-about-page">
   <template>
     <style include="settings-shared settings-page-styles">
-      span {
+      .product-title {
         font-size: 20px;
         margin-top: auto;
         margin-bottom: auto;
@@ -65,22 +65,29 @@
               <img id="product-logo"
                   srcset="chrome://theme/current-channel-logo@1x 1x,
                           chrome://theme/current-channel-logo@2x 2x" alt="">
-              <span>$i18n{aboutProductTitle}</span>
+              <span class="product-title">$i18n{aboutProductTitle}</span>
             </div>
             <div class="settings-box two-line">
-              <div hidden="[[!shouldShowUpdateStatus_(
-                  currentUpdateStatusEvent_)]]">
-                <iron-icon
-                    icon$="[[getIcon_(currentUpdateStatusEvent_)]]"
-                    src="[[getIconSrc_(currentUpdateStatusEvent_)]]">
-                </iron-icon>
-              </div>
+              <iron-icon
+                  hidden="[[!shouldShowUpdateStatusIcon_(
+                      currentUpdateStatusEvent_)]]"
+                  icon$="[[getIcon_(currentUpdateStatusEvent_)]]"
+                  src="[[getIconSrc_(currentUpdateStatusEvent_)]]">
+              </iron-icon>
               <div class="start">
-                <div hidden="[[!shouldShowUpdateStatus_(
-                    currentUpdateStatusEvent_)]]">
+                <div id="updateStatusMessage"
+                    hidden="[[!shouldShowUpdateStatusMessage_(
+                        currentUpdateStatusEvent_)]]">
                   [[getUpdateStatusMessage_(
-                      currentUpdateStatusEvent_, targetChannel_)]]
+                      currentUpdateStatusEvent_,targetChannel)]]
                 </div>
+                <span id="deprecationWarning"
+                    hidden="[[!obsoleteSystemInfo_.obsolete]]">
+                  $i18n{aboutObsoleteSystem}
+                  <a href="$i18n{aboutObsoleteSystemURL}" target="_blank">
+                    $i18n{learnMore}
+                  </a>
+                </span>
                 <div class="secondary">$i18n{aboutBrowserVersion}</div>
               </div>
               <paper-button id="relaunch" class="secondary-action"

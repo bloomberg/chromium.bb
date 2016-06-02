@@ -278,11 +278,15 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
       base::ASCIIToUTF16(chrome::kChromeUICreditsURL));
   html_source->AddString("aboutProductLicense", license);
 
-  html_source->AddBoolean("aboutObsolteNowOrSoon",
+  html_source->AddBoolean("aboutObsoleteNowOrSoon",
                           ObsoleteSystem::IsObsoleteNowOrSoon());
-  html_source->AddBoolean("aboutObsolteEndOfTheLine",
+  html_source->AddBoolean("aboutObsoleteEndOfTheLine",
                           ObsoleteSystem::IsObsoleteNowOrSoon() &&
                               ObsoleteSystem::IsEndOfTheLine());
+  html_source->AddString("aboutObsoleteSystem",
+                         ObsoleteSystem::LocalizedObsoleteString());
+  html_source->AddString("aboutObsoleteSystemURL",
+                         ObsoleteSystem::GetLinkURL());
 
 #if defined(GOOGLE_CHROME_BUILD)
   base::string16 tos = l10n_util::GetStringFUTF16(

@@ -144,11 +144,21 @@ cr.define('settings_about_page', function() {
     suite('AboutPageTest', function() {
       var page = null;
       var browserProxy = null;
+      var SPINNER_ICON = 'chrome://resources/images/throbber_small.svg';
 
       setup(function() {
         browserProxy = new TestAboutPageBrowserProxy();
         settings.AboutPageBrowserProxyImpl.instance_ = browserProxy;
         return initNewPage();
+      });
+
+      teardown(function() {
+        page.remove();
+        page = null;
+        loadTimeData.overrideValues({
+          aboutObsoleteNowOrSoon: false,
+          aboutObsoleteEndOfTheLine: false,
+        });
       });
 
       /** @return {!Promise} */
@@ -165,8 +175,6 @@ cr.define('settings_about_page', function() {
        * 'update-status-changed' events.
        */
       test('IconUpdates', function() {
-        var SPINNER_ICON = 'chrome://resources/images/throbber_small.svg';
-
         var icon = page.$$('iron-icon');
         assertTrue(!!icon);
 
@@ -197,6 +205,84 @@ cr.define('settings_about_page', function() {
         fireStatusChanged(UpdateStatus.DISABLED);
         assertEquals(null, icon.src);
         assertEquals(null, icon.getAttribute('icon'));
+      });
+
+      /**
+       * Test that when the current platform has been marked as deprecated (but
+       * not end of the line) a deprecation warning message is displayed,
+       * without interfering with the update status message and icon.
+       */
+      test('ObsoleteSystem', function() {
+        loadTimeData.overrideValues({
+          aboutObsoleteNowOrSoon: true,
+          aboutObsoleteEndOfTheLine: false,
+        });
+
+        return initNewPage().then(function() {
+          var icon = page.$$('iron-icon');
+          assertTrue(!!icon);
+          assertTrue(!!page.$.updateStatusMessage);
+          assertTrue(!!page.$.deprecationWarning);
+
+          assertFalse(page.$.deprecationWarning.hidden);
+          assertFalse(page.$.updateStatusMessage.hidden);
+
+          fireStatusChanged(UpdateStatus.CHECKING);
+          assertEquals(SPINNER_ICON, icon.src);
+          assertEquals(null, icon.getAttribute('icon'));
+          assertFalse(page.$.deprecationWarning.hidden);
+          assertFalse(page.$.updateStatusMessage.hidden);
+
+          fireStatusChanged(UpdateStatus.UPDATING);
+          assertEquals(SPINNER_ICON, icon.src);
+          assertEquals(null, icon.getAttribute('icon'));
+          assertFalse(page.$.deprecationWarning.hidden);
+          assertFalse(page.$.updateStatusMessage.hidden);
+
+          fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
+          assertEquals(null, icon.src);
+          assertEquals('settings:check-circle', icon.icon);
+          assertFalse(page.$.deprecationWarning.hidden);
+          assertFalse(page.$.updateStatusMessage.hidden);
+        });
+      });
+
+      /**
+       * Test that when the current platform has reached the end of the line, a
+       * deprecation warning message and an error icon is displayed.
+       */
+      test('ObsoleteSystemEndOfLine', function() {
+        loadTimeData.overrideValues({
+          aboutObsoleteNowOrSoon: true,
+          aboutObsoleteEndOfTheLine: true,
+        });
+        return initNewPage().then(function() {
+          var icon = page.$$('iron-icon');
+          assertTrue(!!icon);
+          assertTrue(!!page.$.deprecationWarning);
+          assertTrue(!!page.$.updateStatusMessage);
+
+          assertFalse(page.$.deprecationWarning.hidden);
+          assertFalse(page.$.deprecationWarning.hidden);
+
+          fireStatusChanged(UpdateStatus.CHECKING);
+          assertEquals(null, icon.src);
+          assertEquals('settings:error', icon.icon);
+          assertFalse(page.$.deprecationWarning.hidden);
+          assertTrue(page.$.updateStatusMessage.hidden);
+
+          fireStatusChanged(UpdateStatus.FAILED);
+          assertEquals(null, icon.src);
+          assertEquals('settings:error', icon.icon);
+          assertFalse(page.$.deprecationWarning.hidden);
+          assertTrue(page.$.updateStatusMessage.hidden);
+
+          fireStatusChanged(UpdateStatus.UPDATED);
+          assertEquals(null, icon.src);
+          assertEquals('settings:error', icon.icon);
+          assertFalse(page.$.deprecationWarning.hidden);
+          assertTrue(page.$.updateStatusMessage.hidden);
+        });
       });
 
       if (cr.isChromeOS) {

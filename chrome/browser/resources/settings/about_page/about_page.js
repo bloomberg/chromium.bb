@@ -36,6 +36,17 @@ Polymer({
     /** @private {?RegulatoryInfo} */
     regulatoryInfo_: Object,
 </if>
+
+    /** @private {!{obsolete: boolean, endOfLine: boolean}} */
+    obsoleteSystemInfo_: {
+      type: Object,
+      value: function() {
+        return {
+          obsolete: loadTimeData.getBoolean('aboutObsoleteNowOrSoon'),
+          endOfLine: loadTimeData.getBoolean('aboutObsoleteEndOfTheLine'),
+        };
+      },
+    },
   },
 
   /** @private {?settings.AboutPageBrowserProxy} */
@@ -113,8 +124,18 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowUpdateStatus_: function() {
-    return this.currentUpdateStatusEvent_.status != UpdateStatus.DISABLED;
+  shouldShowUpdateStatusMessage_: function() {
+    return this.currentUpdateStatusEvent_.status != UpdateStatus.DISABLED &&
+        !this.obsoleteSystemInfo_.endOfLine;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowUpdateStatusIcon_: function() {
+    return this.currentUpdateStatusEvent_.status != UpdateStatus.DISABLED ||
+        this.obsoleteSystemInfo_.endOfLine;
   },
 
   /**
@@ -167,6 +188,11 @@ Polymer({
    * @private
    */
   getIcon_: function() {
+    // If this platform has reached the end of the line, display an error icon
+    // and ignore UpdateStatus.
+    if (this.obsoleteSystemInfo_.endOfLine)
+      return 'settings:error';
+
     switch (this.currentUpdateStatusEvent_.status) {
       case UpdateStatus.DISABLED_BY_ADMIN:
         return 'cr:domain';
@@ -185,6 +211,9 @@ Polymer({
    * @private
    */
   getIconSrc_: function() {
+    if (this.obsoleteSystemInfo_.endOfLine)
+      return null;
+
     switch (this.currentUpdateStatusEvent_.status) {
       case UpdateStatus.CHECKING:
       case UpdateStatus.UPDATING:
