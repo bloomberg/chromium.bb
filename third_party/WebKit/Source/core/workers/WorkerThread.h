@@ -62,15 +62,22 @@ enum WorkerThreadStartMode {
 // an actual task is executed on the worker thread.
 class CORE_EXPORT WorkerThread {
 public:
+    // Represents how this thread is terminated.
+    enum class ExitCode {
+        NotTerminated,
+        GracefullyTerminated,
+        SyncForciblyTerminated,
+        AsyncForciblyTerminated,
+    };
+
     virtual ~WorkerThread();
 
     // Called on the main thread.
     void start(PassOwnPtr<WorkerThreadStartupData>);
     void terminate();
 
-    // Called in shutdown sequence on the main thread. Internally calls
-    // terminate() and wait (by *blocking* the calling thread) until the
-    // worker(s) is/are shut down.
+    // Called on the main thread. Internally calls terminateInternal() and wait
+    // (by *blocking* the calling thread) until the worker(s) is/are shut down.
     void terminateAndWait();
     static void terminateAndWaitForAllWorkers();
 
@@ -114,6 +121,8 @@ public:
 
     PlatformThreadId platformThreadId();
 
+    ExitCode getExitCode();
+
 protected:
     WorkerThread(PassRefPtr<WorkerLoaderProxy>, WorkerReportingProxy&);
 
@@ -125,9 +134,27 @@ protected:
     virtual void postInitialize() { }
 
 private:
+    friend class WorkerThreadTest;
+
+    class ForceTerminationTask;
     class WorkerMicrotaskRunner;
 
+    enum class TerminationMode {
+        // Synchronously terminate the worker execution. Please be careful to
+        // use this mode, because after the synchronous termination any V8 APIs
+        // may suddenly start to return empty handles and it may cause crashes.
+        Forcible,
+
+        // Don't synchronously terminate the worker execution. Instead, schedule
+        // a task to terminate it in case that the shutdown sequence does not
+        // start on the worker thread in a certain time period.
+        Graceful,
+    };
+
     std::unique_ptr<CrossThreadClosure> createWorkerThreadTask(std::unique_ptr<ExecutionContextTask>, bool isInstrumented);
+
+    void terminateInternal(TerminationMode);
+    void forciblyTerminateExecution();
 
     void initializeOnWorkerThread(PassOwnPtr<WorkerThreadStartupData>);
     void prepareForShutdownOnWorkerThread();
@@ -136,11 +163,16 @@ private:
     void runDebuggerTaskOnWorkerThread(std::unique_ptr<CrossThreadClosure>);
     void runDebuggerTaskDontWaitOnWorkerThread();
 
+    void setForceTerminationDelayInMsForTesting(long long forceTerminationDelayInMs) { m_forceTerminationDelayInMs = forceTerminationDelayInMs; }
+
     bool m_started = false;
     bool m_terminated = false;
     bool m_readyToShutdown = false;
     bool m_pausedInDebugger = false;
     bool m_runningDebuggerTask = false;
+    ExitCode m_exitCode = ExitCode::NotTerminated;
+
+    long long m_forceTerminationDelayInMs;
 
     OwnPtr<InspectorTaskRunner> m_inspectorTaskRunner;
     OwnPtr<WorkerMicrotaskRunner> m_microtaskRunner;
@@ -149,7 +181,8 @@ private:
     WorkerReportingProxy& m_workerReportingProxy;
 
     // This lock protects |m_workerGlobalScope|, |m_terminated|,
-    // |m_readyToShutdown|, |m_runningDebuggerTask| and |m_microtaskRunner|.
+    // |m_readyToShutdown|, |m_runningDebuggerTask|, |m_exitCode| and
+    // |m_microtaskRunner|.
     Mutex m_threadStateMutex;
 
     Persistent<WorkerGlobalScope> m_workerGlobalScope;
@@ -159,6 +192,10 @@ private:
 
     // Signaled when the thread completes termination on the worker thread.
     OwnPtr<WaitableEvent> m_shutdownEvent;
+
+    // Scheduled when termination starts with TerminationMode::Force, and
+    // cancelled when the worker thread is gracefully shut down.
+    OwnPtr<ForceTerminationTask> m_scheduledForceTerminationTask;
 };
 
 } // namespace blink

@@ -43,6 +43,7 @@
 #include "platform/WebThreadSupportingGC.h"
 #include "platform/heap/SafePoint.h"
 #include "platform/heap/ThreadState.h"
+#include "platform/scheduler/CancellableTaskFactory.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
@@ -52,7 +53,54 @@
 
 namespace blink {
 
-class WorkerThread::WorkerMicrotaskRunner : public WebThread::TaskObserver {
+// TODO(nhiroki): Adjust the delay based on UMA.
+const long long kForceTerminationDelayInMs = 2000; // 2 secs
+
+// ForceTerminationTask is used for posting a delayed task to terminate the
+// worker execution from the main thread. This task is expected to run when the
+// shutdown sequence does not start in a certain time period because of an
+// inifite loop in the JS execution context etc. When the shutdown sequence is
+// started before this task runs, the task is simply cancelled.
+class WorkerThread::ForceTerminationTask final {
+public:
+    static PassOwnPtr<ForceTerminationTask> create(WorkerThread* workerThread)
+    {
+        return adoptPtr(new ForceTerminationTask(workerThread));
+    }
+
+    void schedule()
+    {
+        DCHECK(isMainThread());
+        Platform::current()->mainThread()->getWebTaskRunner()->postDelayedTask(BLINK_FROM_HERE, m_cancellableTaskFactory->cancelAndCreate(), m_workerThread->m_forceTerminationDelayInMs);
+    }
+
+private:
+    explicit ForceTerminationTask(WorkerThread* workerThread)
+        : m_workerThread(workerThread)
+    {
+        DCHECK(isMainThread());
+        m_cancellableTaskFactory = CancellableTaskFactory::create(this, &ForceTerminationTask::run);
+    }
+
+    void run()
+    {
+        DCHECK(isMainThread());
+        MutexLocker lock(m_workerThread->m_threadStateMutex);
+        if (m_workerThread->m_readyToShutdown) {
+            // Shutdown sequence is now running. Just return.
+            return;
+        }
+
+        m_workerThread->forciblyTerminateExecution();
+        DCHECK_EQ(WorkerThread::ExitCode::NotTerminated, m_workerThread->m_exitCode);
+        m_workerThread->m_exitCode = WorkerThread::ExitCode::AsyncForciblyTerminated;
+    }
+
+    WorkerThread* m_workerThread;
+    OwnPtr<CancellableTaskFactory> m_cancellableTaskFactory;
+};
+
+class WorkerThread::WorkerMicrotaskRunner final : public WebThread::TaskObserver {
 public:
     explicit WorkerMicrotaskRunner(WorkerThread* workerThread)
         : m_workerThread(workerThread)
@@ -101,9 +149,14 @@ static HashSet<WorkerThread*>& workerThreads()
 
 WorkerThread::~WorkerThread()
 {
+    DCHECK(isMainThread());
     MutexLocker lock(threadSetMutex());
     DCHECK(workerThreads().contains(this));
     workerThreads().remove(this);
+
+    // TODO(nhiroki): Record how this thread is terminated (i.e. m_exitCode)
+    // in UMA.
+    DCHECK_NE(ExitCode::NotTerminated, m_exitCode);
 }
 
 void WorkerThread::start(PassOwnPtr<WorkerThreadStartupData> startupData)
@@ -120,66 +173,16 @@ void WorkerThread::start(PassOwnPtr<WorkerThreadStartupData> startupData)
 void WorkerThread::terminate()
 {
     DCHECK(isMainThread());
-
-    // Prevent the deadlock between GC and an attempt to terminate a thread.
-    SafePointScope safePointScope(BlinkGC::HeapPointersOnStack);
-
-    // Protect against this method, initializeOnWorkerThread() or termination
-    // via the global scope racing each other.
-    MutexLocker lock(m_threadStateMutex);
-
-    // If terminate has already been called, just return.
-    if (m_terminated)
-        return;
-    m_terminated = true;
-
-    // Signal the thread to notify that the thread's stopping.
-    if (m_terminationEvent)
-        m_terminationEvent->signal();
-
-    // If the worker thread was never initialized, don't start another
-    // shutdown, but still wait for the thread to signal when shutdown has
-    // completed on initializeOnWorkerThread().
-    if (!m_workerGlobalScope)
-        return;
-
-    // Determine if we should terminate the isolate so that the task can
-    // be handled by thread event loop. If script execution weren't forbidden,
-    // a while(1) loop in JS could keep the thread alive forever.
-    //
-    // (1) |m_readyToShutdown|: It this is set, the worker thread has already
-    // noticed that the thread is about to be terminated and the worker global
-    // scope is already disposed, so we don't have to explicitly terminate the
-    // isolate.
-    //
-    // (2) |workerScriptCount() == 1|: If other WorkerGlobalScopes are running
-    // on the worker thread, we should not terminate the isolate. This condition
-    // is not entirely correct because other scripts can be being initialized or
-    // terminated simuletaneously. Though this function itself is protected by a
-    // mutex, it is possible that |workerScriptCount()| here is not consistent
-    // with that in |initialize| and |shutdown|.
-    //
-    // (3) |m_runningDebuggerTask|: Terminating during debugger task may lead to
-    // crash due to heavy use of v8 api in debugger. Any debugger task is
-    // guaranteed to finish, so we can wait for the completion.
-    bool shouldTerminateIsolate = !m_readyToShutdown && (workerBackingThread().workerScriptCount() == 1) && !m_runningDebuggerTask;
-
-    if (shouldTerminateIsolate) {
-        // TODO(yhirano): TerminateExecution should be called more
-        // carefully (https://crbug.com/413518).
-        m_workerGlobalScope->scriptController()->willScheduleExecutionTermination();
-        isolate()->TerminateExecution();
-    }
-
-    m_inspectorTaskRunner->kill();
-    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::prepareForShutdownOnWorkerThread, AllowCrossThreadAccess(this)));
-    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::performShutdownOnWorkerThread, AllowCrossThreadAccess(this)));
+    terminateInternal(TerminationMode::Graceful);
 }
 
 void WorkerThread::terminateAndWait()
 {
     DCHECK(isMainThread());
-    terminate();
+
+    // The main thread will be blocked, so asynchronous graceful shutdown does
+    // not work.
+    terminateInternal(TerminationMode::Forcible);
     m_shutdownEvent->wait();
 }
 
@@ -190,8 +193,11 @@ void WorkerThread::terminateAndWaitForAllWorkers()
     // Keep this lock to prevent WorkerThread instances from being destroyed.
     MutexLocker lock(threadSetMutex());
     HashSet<WorkerThread*> threads = workerThreads();
+
+    // The main thread will be blocked, so asynchronous graceful shutdown does
+    // not work.
     for (WorkerThread* thread : threads)
-        thread->terminate();
+        thread->terminateInternal(TerminationMode::Forcible);
 
     for (WorkerThread* thread : threads)
         thread->m_shutdownEvent->wait();
@@ -276,7 +282,8 @@ PlatformThreadId WorkerThread::platformThreadId()
 }
 
 WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy, WorkerReportingProxy& workerReportingProxy)
-    : m_inspectorTaskRunner(adoptPtr(new InspectorTaskRunner()))
+    : m_forceTerminationDelayInMs(kForceTerminationDelayInMs)
+    , m_inspectorTaskRunner(adoptPtr(new InspectorTaskRunner()))
     , m_workerLoaderProxy(workerLoaderProxy)
     , m_workerReportingProxy(workerReportingProxy)
     , m_terminationEvent(adoptPtr(new WaitableEvent(
@@ -301,6 +308,93 @@ std::unique_ptr<CrossThreadClosure> WorkerThread::createWorkerThreadTask(std::un
     return threadSafeBind(&WorkerThread::performTaskOnWorkerThread, AllowCrossThreadAccess(this), passed(std::move(task)), isInstrumented);
 }
 
+void WorkerThread::terminateInternal(TerminationMode mode)
+{
+    DCHECK(m_started);
+
+    // Prevent the deadlock between GC and an attempt to terminate a thread.
+    SafePointScope safePointScope(BlinkGC::HeapPointersOnStack);
+
+    // Protect against this method, initializeOnWorkerThread() or termination
+    // via the global scope racing each other.
+    MutexLocker lock(m_threadStateMutex);
+
+    // If terminate has already been called.
+    if (m_terminated) {
+        // The synchronous forcible termination request should overtake the
+        // scheduled termination task because the request will block the main
+        // thread and the scheduled termination task never runs.
+        if (mode == TerminationMode::Forcible && m_exitCode == ExitCode::NotTerminated) {
+            DCHECK(m_scheduledForceTerminationTask);
+            m_scheduledForceTerminationTask.reset();
+            forciblyTerminateExecution();
+            DCHECK_EQ(ExitCode::NotTerminated, m_exitCode);
+            m_exitCode = ExitCode::SyncForciblyTerminated;
+        }
+        return;
+    }
+    m_terminated = true;
+
+    // Signal the thread to notify that the thread's stopping.
+    if (m_terminationEvent)
+        m_terminationEvent->signal();
+
+    // If the worker thread was never initialized, don't start another
+    // shutdown, but still wait for the thread to signal when shutdown has
+    // completed on initializeOnWorkerThread().
+    if (!m_workerGlobalScope) {
+        DCHECK_EQ(ExitCode::NotTerminated, m_exitCode);
+        m_exitCode = ExitCode::GracefullyTerminated;
+        return;
+    }
+
+    // Determine if we should synchronously terminate or schedule to terminate
+    // the worker execution so that the task can be handled by thread event
+    // loop. If script execution weren't forbidden, a while(1) loop in JS could
+    // keep the thread alive forever.
+    //
+    // (1) |m_readyToShutdown|: It this is set, the worker thread has already
+    // noticed that the thread is about to be terminated and the worker global
+    // scope is already disposed, so we don't have to explicitly terminate the
+    // worker execution.
+    //
+    // (2) |workerScriptCount() == 1|: If other WorkerGlobalScopes are running
+    // on the worker thread, we should not terminate the worker execution. This
+    // condition is not entirely correct because other scripts can be being
+    // initialized or terminated simuletaneously. Though this function itself is
+    // protected by a mutex, it is possible that |workerScriptCount()| here is
+    // not consistent with that in |initialize| and |shutdown|.
+    //
+    // (3) |m_runningDebuggerTask|: Terminating during debugger task may lead to
+    // crash due to heavy use of v8 api in debugger. Any debugger task is
+    // guaranteed to finish, so we can wait for the completion.
+    bool shouldScheduleToTerminateExecution = !m_readyToShutdown && (workerBackingThread().workerScriptCount() == 1) && !m_runningDebuggerTask;
+
+    if (shouldScheduleToTerminateExecution) {
+        if (mode == TerminationMode::Forcible) {
+            forciblyTerminateExecution();
+            DCHECK_EQ(ExitCode::NotTerminated, m_exitCode);
+            m_exitCode = ExitCode::SyncForciblyTerminated;
+        } else {
+            DCHECK_EQ(TerminationMode::Graceful, mode);
+            DCHECK(!m_scheduledForceTerminationTask);
+            m_scheduledForceTerminationTask = ForceTerminationTask::create(this);
+            m_scheduledForceTerminationTask->schedule();
+        }
+    }
+
+    m_inspectorTaskRunner->kill();
+    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::prepareForShutdownOnWorkerThread, AllowCrossThreadAccess(this)));
+    workerBackingThread().backingThread().postTask(BLINK_FROM_HERE, threadSafeBind(&WorkerThread::performShutdownOnWorkerThread, AllowCrossThreadAccess(this)));
+}
+
+void WorkerThread::forciblyTerminateExecution()
+{
+    DCHECK(m_workerGlobalScope);
+    m_workerGlobalScope->scriptController()->willScheduleExecutionTermination();
+    isolate()->TerminateExecution();
+}
+
 void WorkerThread::initializeOnWorkerThread(PassOwnPtr<WorkerThreadStartupData> startupData)
 {
     KURL scriptURL = startupData->m_scriptURL;
@@ -314,6 +408,8 @@ void WorkerThread::initializeOnWorkerThread(PassOwnPtr<WorkerThreadStartupData> 
 
         // The worker was terminated before the thread had a chance to run.
         if (m_terminated) {
+            DCHECK_EQ(ExitCode::GracefullyTerminated, m_exitCode);
+
             // Notify the proxy that the WorkerGlobalScope has been disposed of.
             // This can free this thread object, hence it must not be touched
             // afterwards.
@@ -380,6 +476,8 @@ void WorkerThread::prepareForShutdownOnWorkerThread()
         if (m_readyToShutdown)
             return;
         m_readyToShutdown = true;
+        if (m_exitCode == ExitCode::NotTerminated)
+            m_exitCode = ExitCode::GracefullyTerminated;
     }
 
     workerReportingProxy().willDestroyWorkerGlobalScope();
@@ -413,7 +511,8 @@ void WorkerThread::performShutdownOnWorkerThread()
     m_microtaskRunner = nullptr;
 
     // Notify the proxy that the WorkerGlobalScope has been disposed of.
-    // This can free this thread object, hence it must not be touched afterwards.
+    // This can free this thread object, hence it must not be touched
+    // afterwards.
     workerReportingProxy().workerThreadTerminated();
 
     m_shutdownEvent->signal();
@@ -469,6 +568,12 @@ void WorkerThread::runDebuggerTaskDontWaitOnWorkerThread()
     std::unique_ptr<CrossThreadClosure> task = m_inspectorTaskRunner->takeNextTask(InspectorTaskRunner::DontWaitForTask);
     if (task)
         (*task)();
+}
+
+WorkerThread::ExitCode WorkerThread::getExitCode()
+{
+    MutexLocker lock(m_threadStateMutex);
+    return m_exitCode;
 }
 
 } // namespace blink
