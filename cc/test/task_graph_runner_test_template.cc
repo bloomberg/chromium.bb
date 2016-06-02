@@ -28,7 +28,7 @@ void TaskGraphRunnerTestBase::RunAllTasks(int namespace_index) {
   for (Task::Vector::const_iterator it = completed_tasks.begin();
        it != completed_tasks.end(); ++it) {
     FakeTaskImpl* task = static_cast<FakeTaskImpl*>(it->get());
-    task->CompleteOnOriginThread();
+    task->OnTaskCompleted();
   }
 }
 
@@ -92,7 +92,7 @@ void TaskGraphRunnerTestBase::FakeTaskImpl::RunOnWorkerThread() {
   test_->RunTaskOnWorkerThread(namespace_index_, id_);
 }
 
-void TaskGraphRunnerTestBase::FakeTaskImpl::CompleteOnOriginThread() {
+void TaskGraphRunnerTestBase::FakeTaskImpl::OnTaskCompleted() {
   test_->OnTaskCompleted(namespace_index_, id_);
 }
 

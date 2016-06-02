@@ -63,9 +63,7 @@ class TaskGraphRunnerTestBase {
     // Overridden from Task:
     void RunOnWorkerThread() override;
 
-    // TODO(prashant.n): Rename this function to OnTaskCompleted() to make it
-    // analogous with tile task. crbug.com/599863.
-    virtual void CompleteOnOriginThread();
+    virtual void OnTaskCompleted();
 
    protected:
     ~FakeTaskImpl() override {}
@@ -86,7 +84,7 @@ class TaskGraphRunnerTestBase {
         : FakeTaskImpl(test, namespace_index, id) {}
 
     // Overridden from FakeTaskImpl:
-    void CompleteOnOriginThread() override {}
+    void OnTaskCompleted() override {}
 
    private:
     ~FakeDependentTaskImpl() override {}
