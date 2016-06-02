@@ -36,10 +36,16 @@ PP_Bool GetPrintPresetOptionsFromDocument(
   return ret;
 }
 
+void EnableAccessibility(PP_Instance instance) {
+  HostDispatcher::GetForInstance(instance)->Send(
+      new PpapiMsg_PPPPdf_EnableAccessibility(API_ID_PPP_PDF, instance));
+}
+
 const PPP_Pdf ppp_pdf_interface = {
   &GetLinkAtPosition,
   &Transform,
-  &GetPrintPresetOptionsFromDocument
+  &GetPrintPresetOptionsFromDocument,
+  &EnableAccessibility,
 };
 #else
 // The NaCl plugin doesn't need the host side interface - stub it out.
@@ -74,6 +80,8 @@ bool PPP_Pdf_Proxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_Rotate, OnPluginMsgRotate)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_PrintPresetOptions,
                         OnPluginMsgPrintPresetOptions)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPPdf_EnableAccessibility,
+                        OnPluginMsgEnableAccessibility)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -95,6 +103,11 @@ void PPP_Pdf_Proxy::OnPluginMsgPrintPresetOptions(
     *result = CallWhileUnlocked(
         ppp_pdf_->GetPrintPresetOptionsFromDocument, instance, options);
   }
+}
+
+void PPP_Pdf_Proxy::OnPluginMsgEnableAccessibility(PP_Instance instance) {
+  if (ppp_pdf_)
+    CallWhileUnlocked(ppp_pdf_->EnableAccessibility, instance);
 }
 
 }  // namespace proxy

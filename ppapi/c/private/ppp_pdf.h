@@ -63,6 +63,8 @@ struct PPP_Pdf_1_1 {
   PP_Bool (*GetPrintPresetOptionsFromDocument)(
       PP_Instance instance,
       PP_PdfPrintPresetOptions_Dev* options);
+
+  void (*EnableAccessibility)(PP_Instance instance);
 };
 
 typedef PPP_Pdf_1_1 PPP_Pdf;

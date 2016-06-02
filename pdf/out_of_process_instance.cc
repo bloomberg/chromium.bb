@@ -153,6 +153,10 @@ const char kJSFieldFocus[] = "focused";
 
 const int kFindResultCooldownMs = 100;
 
+// A delay to wait between each accessibility page to keep the system
+// responsive.
+const int kAccessibilityPageDelayMs = 100;
+
 const double kMinZoom = 0.01;
 
 namespace {
@@ -206,10 +210,20 @@ PP_Bool GetPrintPresetOptionsFromDocument(
   return PP_TRUE;
 }
 
+void EnableAccessibility(PP_Instance instance) {
+  void* object = pp::Instance::GetPerInstanceObject(instance, kPPPPdfInterface);
+  if (object) {
+    OutOfProcessInstance* obj_instance =
+        static_cast<OutOfProcessInstance*>(object);
+    return obj_instance->EnableAccessibility();
+  }
+}
+
 const PPP_Pdf ppp_private = {
   &GetLinkAtPosition,
   &Transform,
-  &GetPrintPresetOptionsFromDocument
+  &GetPrintPresetOptionsFromDocument,
+  &EnableAccessibility,
 };
 
 int ExtractPrintPreviewPageIndex(const std::string& src_url) {
@@ -288,7 +302,8 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       did_call_start_loading_(false),
       stop_scrolling_(false),
       background_color_(0),
-      top_toolbar_height_(0) {
+      top_toolbar_height_(0),
+      accessibility_enabled_(false) {
   loader_factory_.Initialize(this);
   timer_factory_.Initialize(this);
   form_factory_.Initialize(this);
@@ -612,6 +627,81 @@ void OutOfProcessInstance::GetPrintPresetOptionsFromDocument(
   options->is_page_size_uniform =
       PP_FromBool(engine_->GetPageSizeAndUniformity(&uniform_page_size));
   options->uniform_page_size = uniform_page_size;
+}
+
+void OutOfProcessInstance::EnableAccessibility() {
+  if (accessibility_enabled_)
+    return;
+
+  accessibility_enabled_ = true;
+
+  PP_PrivateAccessibilityDocInfo doc_info;
+  doc_info.page_count = engine_->GetNumberOfPages();
+  doc_info.text_accessible = PP_FromBool(
+      engine_->HasPermission(PDFEngine::PERMISSION_COPY_ACCESSIBLE));
+  doc_info.text_copyable = PP_FromBool(
+      engine_->HasPermission(PDFEngine::PERMISSION_COPY));
+  pp::PDF::SetAccessibilityDocInfo(GetPluginInstance(), &doc_info);
+
+  // If the document contents isn't accessible, don't send anything more.
+  if (!(engine_->HasPermission(PDFEngine::PERMISSION_COPY) ||
+        engine_->HasPermission(PDFEngine::PERMISSION_COPY_ACCESSIBLE))) {
+    return;
+  }
+
+  PP_PrivateAccessibilityViewportInfo viewport_info;
+  viewport_info.scroll.x = 0;
+  viewport_info.scroll.y = -top_toolbar_height_ * device_scale_;
+  viewport_info.offset = available_area_.point();
+  viewport_info.zoom = zoom_;
+  pp::PDF::SetAccessibilityViewportInfo(GetPluginInstance(), &viewport_info);
+
+  // Schedule loading the first page.
+  pp::CompletionCallback callback = timer_factory_.NewCallback(
+      &OutOfProcessInstance::SendNextAccessibilityPage);
+  pp::Module::Get()->core()->CallOnMainThread(kAccessibilityPageDelayMs,
+                                              callback, 0);
+}
+
+void OutOfProcessInstance::SendNextAccessibilityPage(int32_t page_index) {
+  int page_count = engine_->GetNumberOfPages();
+  if (page_index < 0 || page_index >= page_count)
+    return;
+
+  int char_count = engine_->GetCharCount(page_index);
+  PP_PrivateAccessibilityPageInfo page_info;
+  page_info.page_index = page_index;
+  page_info.bounds = engine_->GetPageBoundsRect(page_index);
+  page_info.char_count = char_count;
+
+  std::vector<PP_PrivateAccessibilityCharInfo> chars(page_info.char_count);
+  for (uint32_t i = 0; i < page_info.char_count; ++i) {
+    chars[i].unicode_character = engine_->GetCharUnicode(page_index, i);
+    chars[i].char_width = engine_->GetCharWidth(page_index, i);
+  }
+
+  std::vector<PP_PrivateAccessibilityTextRunInfo> text_runs;
+  int char_index = 0;
+  while (char_index < char_count) {
+    PP_PrivateAccessibilityTextRunInfo text_run_info;
+    pp::FloatRect bounds;
+    engine_->GetTextRunInfo(page_index, char_index, &text_run_info.len,
+                            &text_run_info.font_size, &bounds);
+    text_run_info.direction = PP_PRIVATEDIRECTION_LTR;
+    text_run_info.bounds = bounds;
+    text_runs.push_back(text_run_info);
+    char_index += text_run_info.len;
+  }
+
+  page_info.text_run_count = text_runs.size();
+  pp::PDF::SetAccessibilityPageInfo(GetPluginInstance(), &page_info,
+                                    text_runs.data(), chars.data());
+
+  // Schedule loading the next page.
+  pp::CompletionCallback callback = timer_factory_.NewCallback(
+      &OutOfProcessInstance::SendNextAccessibilityPage);
+  pp::Module::Get()->core()->CallOnMainThread(kAccessibilityPageDelayMs,
+                                              callback, page_index + 1);
 }
 
 pp::Var OutOfProcessInstance::GetLinkAtPosition(

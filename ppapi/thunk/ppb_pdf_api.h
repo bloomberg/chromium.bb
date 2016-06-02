@@ -32,7 +32,14 @@ class PPB_PDF_API {
                                          int* natives_size_out,
                                          const char** snapshot_data_out,
                                          int* snapshot_size_out) = 0;
-
+  virtual void SetAccessibilityViewportInfo(
+      PP_PrivateAccessibilityViewportInfo* viewport_info) = 0;
+  virtual void SetAccessibilityDocInfo(
+      PP_PrivateAccessibilityDocInfo* doc_info) = 0;
+  virtual void SetAccessibilityPageInfo(
+      PP_PrivateAccessibilityPageInfo* page_info,
+      PP_PrivateAccessibilityTextRunInfo text_runs[],
+      PP_PrivateAccessibilityCharInfo chars[]) = 0;
   static const SingletonResourceID kSingletonResourceID = PDF_SINGLETON_ID;
 };
 

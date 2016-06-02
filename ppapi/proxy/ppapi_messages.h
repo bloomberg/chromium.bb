@@ -136,6 +136,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(PP_VideoFrame_Format, PP_VIDEOFRAME_FORMAT_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_HardwareAcceleration, PP_HARDWAREACCELERATION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_AudioProfile, PP_AUDIOPROFILE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_VideoProfile, PP_VIDEOPROFILE_MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(PP_PrivateDirection, PP_PRIVATEDIRECTION_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(PP_Point)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -217,6 +218,37 @@ IPC_STRUCT_TRAITS_BEGIN(PP_PdfPrintPresetOptions_Dev)
   IPC_STRUCT_TRAITS_MEMBER(duplex)
   IPC_STRUCT_TRAITS_MEMBER(is_page_size_uniform)
   IPC_STRUCT_TRAITS_MEMBER(uniform_page_size)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityViewportInfo)
+  IPC_STRUCT_TRAITS_MEMBER(zoom)
+  IPC_STRUCT_TRAITS_MEMBER(scroll)
+  IPC_STRUCT_TRAITS_MEMBER(offset)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityDocInfo)
+  IPC_STRUCT_TRAITS_MEMBER(page_count)
+  IPC_STRUCT_TRAITS_MEMBER(text_accessible)
+  IPC_STRUCT_TRAITS_MEMBER(text_copyable)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityCharInfo)
+  IPC_STRUCT_TRAITS_MEMBER(unicode_character)
+  IPC_STRUCT_TRAITS_MEMBER(char_width)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityTextRunInfo)
+  IPC_STRUCT_TRAITS_MEMBER(len)
+  IPC_STRUCT_TRAITS_MEMBER(font_size)
+  IPC_STRUCT_TRAITS_MEMBER(bounds)
+  IPC_STRUCT_TRAITS_MEMBER(direction)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityPageInfo)
+  IPC_STRUCT_TRAITS_MEMBER(page_index)
+  IPC_STRUCT_TRAITS_MEMBER(bounds)
+  IPC_STRUCT_TRAITS_MEMBER(text_run_count)
+  IPC_STRUCT_TRAITS_MEMBER(char_count)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_URLComponent_Dev)
@@ -746,6 +778,8 @@ IPC_SYNC_MESSAGE_ROUTED1_2(
     PP_Instance /* instance */,
     PP_PdfPrintPresetOptions_Dev /* print preset options */,
     PP_Bool /* result */)
+IPC_MESSAGE_ROUTED1(PpapiMsg_PPPPdf_EnableAccessibility,
+                    PP_Instance /* instance */)
 
 // Find
 IPC_MESSAGE_ROUTED2(PpapiPluginMsg_PPPFind_StartFind,
@@ -2417,6 +2451,23 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_SetSelectedText,
 // Called by the plugin to set the link under the cursor.
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_SetLinkUnderCursor,
                      std::string /* url */)
+
+// Called by the plugin to describe the viewport for accessibility support.
+IPC_MESSAGE_CONTROL1(
+    PpapiHostMsg_PDF_SetAccessibilityViewportInfo,
+    PP_PrivateAccessibilityViewportInfo /* viewport_info */)
+
+// Send information about the whole document for accessibility support.
+IPC_MESSAGE_CONTROL1(
+    PpapiHostMsg_PDF_SetAccessibilityDocInfo,
+    PP_PrivateAccessibilityDocInfo /* doc_info */)
+
+// Send information about one page for accessibility support.
+IPC_MESSAGE_CONTROL3(
+    PpapiHostMsg_PDF_SetAccessibilityPageInfo,
+    PP_PrivateAccessibilityPageInfo /* page_info */,
+    std::vector<PP_PrivateAccessibilityTextRunInfo> /* text_runs */,
+    std::vector<PP_PrivateAccessibilityCharInfo> /* chars */)
 
 // VideoCapture ----------------------------------------------------------------
 

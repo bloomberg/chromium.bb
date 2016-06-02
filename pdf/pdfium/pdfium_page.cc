@@ -17,9 +17,14 @@
 #include "base/values.h"
 #include "pdf/pdfium/pdfium_api_string_buffer_adapter.h"
 #include "pdf/pdfium/pdfium_engine.h"
+#include "printing/units.h"
 
 // Used when doing hit detection.
 #define kTolerance 20.0
+
+using printing::ConvertUnitDouble;
+using printing::kPointsPerInch;
+using printing::kPixelsPerInch;
 
 namespace {
 
@@ -60,6 +65,33 @@ pp::Rect PageRectToGViewRect(FPDF_PAGE page, const pp::Rect& input) {
   return output_rect;
 }
 
+pp::FloatRect FloatPageRectToPixelRect(FPDF_PAGE page,
+                                       const pp::FloatRect& input) {
+  int output_width = FPDF_GetPageWidth(page);
+  int output_height = FPDF_GetPageHeight(page);
+
+  int min_x;
+  int min_y;
+  int max_x;
+  int max_y;
+  FPDF_PageToDevice(page, 0, 0, output_width, output_height, 0, input.x(),
+                    input.y(), &min_x, &min_y);
+  FPDF_PageToDevice(page, 0, 0, output_width, output_height, 0, input.right(),
+                    input.bottom(), &max_x, &max_y);
+
+  if (max_x < min_x)
+    std::swap(min_x, max_x);
+  if (max_y < min_y)
+    std::swap(min_y, max_y);
+
+  pp::FloatRect output_rect(
+      ConvertUnitDouble(min_x, kPointsPerInch, kPixelsPerInch),
+      ConvertUnitDouble(min_y, kPointsPerInch, kPixelsPerInch),
+      ConvertUnitDouble(max_x - min_x, kPointsPerInch, kPixelsPerInch),
+      ConvertUnitDouble(max_y - min_y, kPointsPerInch, kPixelsPerInch));
+  return output_rect;
+}
+
 pp::Rect GetCharRectInGViewCoords(FPDF_PAGE page, FPDF_TEXTPAGE text_page,
                                   int index) {
   double left, right, bottom, top;
@@ -70,6 +102,19 @@ pp::Rect GetCharRectInGViewCoords(FPDF_PAGE page, FPDF_TEXTPAGE text_page,
     std::swap(top, bottom);
   pp::Rect page_coords(left, top, right - left, bottom - top);
   return PageRectToGViewRect(page, page_coords);
+}
+
+pp::FloatRect GetFloatCharRectInPixels(FPDF_PAGE page,
+                                       FPDF_TEXTPAGE text_page,
+                                       int index) {
+  double left, right, bottom, top;
+  FPDFText_GetCharBox(text_page, index, &left, &right, &bottom, &top);
+  if (right < left)
+    std::swap(left, right);
+  if (bottom < top)
+    std::swap(top, bottom);
+  pp::FloatRect page_coords(left, top, right - left, bottom - top);
+  return FloatPageRectToPixelRect(page, page_coords);
 }
 
 // This is the character PDFium inserts where a word is broken across lines.
@@ -94,6 +139,11 @@ bool IsSoftHyphen(unsigned int character) {
 }
 
 bool OverlapsOnYAxis(const pp::Rect &a, const pp::Rect& b) {
+  return !(a.IsEmpty() || b.IsEmpty() ||
+           a.bottom() < b.y() || b.bottom() < a.y());
+}
+
+bool OverlapsOnYAxis(const pp::FloatRect &a, const pp::FloatRect& b) {
   return !(a.IsEmpty() || b.IsEmpty() ||
            a.bottom() < b.y() || b.bottom() < a.y());
 }
@@ -297,6 +347,60 @@ base::Value* PDFiumPage::GetAccessibleContentAsValue(int rotation) {
   node->Set(kPageTextBox, text.release());  // Takes ownership of |text|
 
   return node;
+}
+
+void PDFiumPage::GetTextRunInfo(int start_char_index,
+                                uint32_t* out_len,
+                                double* out_font_size,
+                                pp::FloatRect* out_bounds) {
+  FPDF_PAGE page = GetPage();
+  FPDF_TEXTPAGE text_page = GetTextPage();
+  int chars_count = FPDFText_CountChars(text_page);
+  int char_index = start_char_index;
+  while (
+      char_index < chars_count &&
+      base::IsUnicodeWhitespace(FPDFText_GetUnicode(text_page, char_index))) {
+    char_index++;
+  }
+  int text_run_font_size = FPDFText_GetFontSize(text_page, char_index);
+  pp::FloatRect text_run_bounds =
+      GetFloatCharRectInPixels(page, text_page, char_index);
+  char_index++;
+  while (char_index < chars_count) {
+    unsigned int character = FPDFText_GetUnicode(text_page, char_index);
+
+    if (!base::IsUnicodeWhitespace(character)) {
+      // TODO(dmazzoni): this assumes horizontal text.
+      // https://crbug.com/580311
+      pp::FloatRect char_rect =
+          GetFloatCharRectInPixels(page, text_page, char_index);
+      if (!char_rect.IsEmpty() && !OverlapsOnYAxis(text_run_bounds, char_rect))
+        break;
+
+      int font_size = FPDFText_GetFontSize(text_page, char_index);
+      if (font_size != text_run_font_size)
+        break;
+
+      text_run_bounds = text_run_bounds.Union(char_rect);
+    }
+
+    char_index++;
+  }
+
+  *out_len = char_index - start_char_index;
+  *out_font_size = text_run_font_size;
+  *out_bounds = text_run_bounds;
+}
+
+uint32_t PDFiumPage::GetCharUnicode(int char_index) {
+  FPDF_TEXTPAGE text_page = GetTextPage();
+  return FPDFText_GetUnicode(text_page, char_index);
+}
+
+double PDFiumPage::GetCharWidth(int char_index) {
+  FPDF_PAGE page = GetPage();
+  FPDF_TEXTPAGE text_page = GetTextPage();
+  return GetFloatCharRectInPixels(page, text_page, char_index).width();
 }
 
 PDFiumPage::Area PDFiumPage::GetCharIndex(const pp::Point& point,

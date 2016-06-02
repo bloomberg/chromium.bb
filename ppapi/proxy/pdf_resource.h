@@ -54,6 +54,14 @@ class PPAPI_PROXY_EXPORT PDFResource
                                  int* natives_size_out,
                                  const char** snapshot_data_out,
                                  int* snapshot_size_out) override;
+  void SetAccessibilityViewportInfo(
+      PP_PrivateAccessibilityViewportInfo* viewport_info) override;
+  void SetAccessibilityDocInfo(
+      PP_PrivateAccessibilityDocInfo* doc_info) override;
+  void SetAccessibilityPageInfo(
+      PP_PrivateAccessibilityPageInfo* page_info,
+      PP_PrivateAccessibilityTextRunInfo text_runs[],
+      PP_PrivateAccessibilityCharInfo chars[]) override;
 
  private:
   std::string locale_;

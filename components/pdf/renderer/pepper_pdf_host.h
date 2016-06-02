@@ -89,6 +89,17 @@ class PepperPDFHost : public ppapi::host::ResourceHost {
                                    const base::string16& selected_text);
   int32_t OnHostMsgSetLinkUnderCursor(ppapi::host::HostMessageContext* context,
                                       const std::string& url);
+  int32_t OnHostMsgSetAccessibilityViewportInfo(
+      ppapi::host::HostMessageContext* context,
+      const PP_PrivateAccessibilityViewportInfo& viewport_info);
+  int32_t OnHostMsgSetAccessibilityDocInfo(
+      ppapi::host::HostMessageContext* context,
+      const PP_PrivateAccessibilityDocInfo& doc_info);
+  int32_t OnHostMsgSetAccessibilityPageInfo(
+      ppapi::host::HostMessageContext* context,
+      const PP_PrivateAccessibilityPageInfo& page_info,
+      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+      const std::vector<PP_PrivateAccessibilityCharInfo>& chars);
 
   content::RendererPpapiHost* host_;
 

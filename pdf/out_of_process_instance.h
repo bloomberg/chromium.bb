@@ -77,6 +77,10 @@ class OutOfProcessInstance : public pp::Instance,
   // pp::Private implementation.
   pp::Var GetLinkAtPosition(const pp::Point& point);
   void GetPrintPresetOptionsFromDocument(PP_PdfPrintPresetOptions_Dev* options);
+  void EnableAccessibility();
+
+  // Send accessibility information about the given page index.
+  void SendNextAccessibilityPage(int32_t page_index);
 
   void FlushCallback(int32_t result);
   void DidOpen(int32_t result);
@@ -341,6 +345,9 @@ class OutOfProcessInstance : public pp::Instance,
   // The blank space above the first page of the document reserved for the
   // toolbar.
   int top_toolbar_height_;
+
+  // Whether we should send accessibility information about the loaded PDF.
+  bool accessibility_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(OutOfProcessInstance);
 };

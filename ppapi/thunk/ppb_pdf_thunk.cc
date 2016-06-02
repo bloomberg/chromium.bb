@@ -131,6 +131,35 @@ void GetV8ExternalSnapshotData(PP_Instance instance,
       natives_size_out, snapshot_data_out, snapshot_size_out);
 }
 
+void SetAccessibilityViewportInfo(
+    PP_Instance instance,
+    PP_PrivateAccessibilityViewportInfo* viewport_info) {
+  EnterInstanceAPI<PPB_PDF_API> enter(instance);
+  if (enter.failed())
+    return;
+  enter.functions()->SetAccessibilityViewportInfo(viewport_info);
+}
+
+void SetAccessibilityDocInfo(
+    PP_Instance instance,
+    PP_PrivateAccessibilityDocInfo* doc_info) {
+  EnterInstanceAPI<PPB_PDF_API> enter(instance);
+  if (enter.failed())
+    return;
+  enter.functions()->SetAccessibilityDocInfo(doc_info);
+}
+
+void SetAccessibilityPageInfo(
+    PP_Instance instance,
+    PP_PrivateAccessibilityPageInfo* page_info,
+    PP_PrivateAccessibilityTextRunInfo text_runs[],
+    PP_PrivateAccessibilityCharInfo chars[]) {
+  EnterInstanceAPI<PPB_PDF_API> enter(instance);
+  if (enter.failed())
+    return;
+  enter.functions()->SetAccessibilityPageInfo(page_info, text_runs, chars);
+}
+
 const PPB_PDF g_ppb_pdf_thunk = {
   &GetFontFileWithFallback,
   &GetFontTableForPrivateFontFile,
@@ -146,6 +175,9 @@ const PPB_PDF g_ppb_pdf_thunk = {
   &SetSelectedText,
   &SetLinkUnderCursor,
   &GetV8ExternalSnapshotData,
+  &SetAccessibilityViewportInfo,
+  &SetAccessibilityDocInfo,
+  &SetAccessibilityPageInfo
 };
 
 }  // namespace

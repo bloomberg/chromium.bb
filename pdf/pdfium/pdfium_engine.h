@@ -84,12 +84,21 @@ class PDFiumEngine : public PDFEngine,
   int GetNamedDestinationPage(const std::string& destination) override;
   int GetMostVisiblePage() override;
   pp::Rect GetPageRect(int index) override;
+  pp::Rect GetPageBoundsRect(int index) override;
   pp::Rect GetPageContentsRect(int index) override;
   pp::Rect GetPageScreenRect(int page_index) const override;
   int GetVerticalScrollbarYPosition() override { return position_.y(); }
   void SetGrayscale(bool grayscale) override;
   void OnCallback(int id) override;
   std::string GetPageAsJSON(int index) override;
+  int GetCharCount(int page_index) override;
+  double GetCharWidth(int page_index, int char_index) override;
+  uint32_t GetCharUnicode(int page_index, int char_index) override;
+  void GetTextRunInfo(int page_index,
+                      int start_char_index,
+                      uint32_t* out_len,
+                      double* out_font_size,
+                      pp::FloatRect* out_bounds) override;
   bool GetPrintScaling() override;
   int GetCopiesToPrint() override;
   int GetDuplexType() override;

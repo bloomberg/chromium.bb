@@ -79,6 +79,15 @@ int32_t PepperPDFHost::OnResourceMessageReceived(
                                       OnHostMsgSetLinkUnderCursor)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_PDF_SetContentRestriction,
                                       OnHostMsgSetContentRestriction)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_PDF_SetAccessibilityViewportInfo,
+        OnHostMsgSetAccessibilityViewportInfo)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_PDF_SetAccessibilityDocInfo,
+        OnHostMsgSetAccessibilityDocInfo)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_PDF_SetAccessibilityPageInfo,
+        OnHostMsgSetAccessibilityPageInfo)
   PPAPI_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -180,6 +189,26 @@ int32_t PepperPDFHost::OnHostMsgSetLinkUnderCursor(
   if (!instance)
     return PP_ERROR_FAILED;
   instance->SetLinkUnderCursor(url);
+  return PP_OK;
+}
+
+int32_t PepperPDFHost::OnHostMsgSetAccessibilityViewportInfo(
+    ppapi::host::HostMessageContext* context,
+    const PP_PrivateAccessibilityViewportInfo& viewport_info) {
+  return PP_OK;
+}
+
+int32_t PepperPDFHost::OnHostMsgSetAccessibilityDocInfo(
+    ppapi::host::HostMessageContext* context,
+    const PP_PrivateAccessibilityDocInfo& doc_info) {
+  return PP_OK;
+}
+
+int32_t PepperPDFHost::OnHostMsgSetAccessibilityPageInfo(
+    ppapi::host::HostMessageContext* context,
+    const PP_PrivateAccessibilityPageInfo& page_info,
+    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_run_info,
+    const std::vector<PP_PrivateAccessibilityCharInfo>& chars) {
   return PP_OK;
 }
 

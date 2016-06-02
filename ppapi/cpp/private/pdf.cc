@@ -152,4 +152,35 @@ void PDF::GetV8ExternalSnapshotData(const InstanceHandle& instance,
   *snapshot_size_out = 0;
 }
 
+// static
+void PDF::SetAccessibilityViewportInfo(
+    const InstanceHandle& instance,
+    PP_PrivateAccessibilityViewportInfo* viewport_info) {
+  if (has_interface<PPB_PDF>()) {
+    get_interface<PPB_PDF>()->SetAccessibilityViewportInfo(
+        instance.pp_instance(), viewport_info);
+  }
+}
+
+// static
+void PDF::SetAccessibilityDocInfo(const InstanceHandle& instance,
+                                  PP_PrivateAccessibilityDocInfo* doc_info) {
+  if (has_interface<PPB_PDF>()) {
+    get_interface<PPB_PDF>()->SetAccessibilityDocInfo(instance.pp_instance(),
+                                                      doc_info);
+  }
+}
+
+// static
+void PDF::SetAccessibilityPageInfo(
+    const InstanceHandle& instance,
+    PP_PrivateAccessibilityPageInfo* page_info,
+    PP_PrivateAccessibilityTextRunInfo text_runs[],
+    PP_PrivateAccessibilityCharInfo chars[]) {
+  if (has_interface<PPB_PDF>()) {
+    get_interface<PPB_PDF>()->SetAccessibilityPageInfo(
+        instance.pp_instance(), page_info, text_runs, chars);
+  }
+}
+
 }  // namespace pp

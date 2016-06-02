@@ -233,6 +233,8 @@ class PDFEngine {
   virtual int GetMostVisiblePage() = 0;
   // Gets the rectangle of the page including shadow.
   virtual pp::Rect GetPageRect(int index) = 0;
+  // Gets the rectangle of the page not including the shadow.
+  virtual pp::Rect GetPageBoundsRect(int index) = 0;
   // Gets the rectangle of the page excluding any additional areas.
   virtual pp::Rect GetPageContentsRect(int index) = 0;
   // Returns a page's rect in screen coordinates, as well as its surrounding
@@ -247,6 +249,20 @@ class PDFEngine {
   virtual void OnCallback(int id) = 0;
   // Gets the JSON representation of the PDF file
   virtual std::string GetPageAsJSON(int index) = 0;
+  // Get the number of characters on a given page.
+  virtual int GetCharCount(int page_index) = 0;
+  // Get the width in pixels of a character on a given page.
+  virtual double GetCharWidth(int page_index, int char_index) = 0;
+  // Get a given unicode character on a given page.
+  virtual uint32_t GetCharUnicode(int page_index, int char_index) = 0;
+  // Given a start char index, find the longest continuous run of text that's
+  // in a single direction and with the same style and font size. Return the
+  // length of that sequence and its font size and bounding box.
+  virtual void GetTextRunInfo(int page_index,
+                              int start_char_index,
+                              uint32_t* out_len,
+                              double* out_font_size,
+                              pp::FloatRect* out_bounds) = 0;
   // Gets the PDF document's print scaling preference. True if the document can
   // be scaled to fit.
   virtual bool GetPrintScaling() = 0;

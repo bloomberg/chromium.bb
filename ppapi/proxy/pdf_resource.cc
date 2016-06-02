@@ -168,5 +168,27 @@ void PDFResource::GetV8ExternalSnapshotData(const char** natives_data_out,
       natives_data_out, natives_size_out, snapshot_data_out, snapshot_size_out);
 }
 
+void PDFResource::SetAccessibilityDocInfo(
+    PP_PrivateAccessibilityDocInfo* doc_info) {
+  Post(RENDERER, PpapiHostMsg_PDF_SetAccessibilityDocInfo(*doc_info));
+}
+
+void PDFResource::SetAccessibilityViewportInfo(
+    PP_PrivateAccessibilityViewportInfo* viewport_info) {
+  Post(RENDERER, PpapiHostMsg_PDF_SetAccessibilityViewportInfo(*viewport_info));
+}
+
+void PDFResource::SetAccessibilityPageInfo(
+    PP_PrivateAccessibilityPageInfo* page_info,
+    PP_PrivateAccessibilityTextRunInfo text_runs[],
+    PP_PrivateAccessibilityCharInfo chars[]) {
+  std::vector<PP_PrivateAccessibilityTextRunInfo> text_run_vector(
+      text_runs, text_runs + page_info->text_run_count);
+  std::vector<PP_PrivateAccessibilityCharInfo> char_vector(
+      chars, chars + page_info->char_count);
+  Post(RENDERER, PpapiHostMsg_PDF_SetAccessibilityPageInfo(
+                     *page_info, text_run_vector, char_vector));
+}
+
 }  // namespace proxy
 }  // namespace ppapi

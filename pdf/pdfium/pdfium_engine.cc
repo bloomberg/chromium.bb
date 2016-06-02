@@ -2270,6 +2270,10 @@ pp::Rect PDFiumEngine::GetPageRect(int index) {
   return rc;
 }
 
+pp::Rect PDFiumEngine::GetPageBoundsRect(int index) {
+  return pages_[index]->rect();
+}
+
 pp::Rect PDFiumEngine::GetPageContentsRect(int index) {
   return GetScreenRect(pages_[index]->rect());
 }
@@ -2301,6 +2305,31 @@ std::string PDFiumEngine::GetPageAsJSON(int index) {
   std::string page_json;
   base::JSONWriter::Write(*node, &page_json);
   return page_json;
+}
+
+int PDFiumEngine::GetCharCount(int page_index) {
+  DCHECK(page_index >= 0 && page_index < static_cast<int>(pages_.size()));
+  return pages_[page_index]->GetCharCount();
+}
+
+double PDFiumEngine::GetCharWidth(int page_index, int char_index) {
+  DCHECK(page_index >= 0 && page_index < static_cast<int>(pages_.size()));
+  return pages_[page_index]->GetCharWidth(char_index);
+}
+
+uint32_t PDFiumEngine::GetCharUnicode(int page_index, int char_index) {
+  DCHECK(page_index >= 0 && page_index < static_cast<int>(pages_.size()));
+  return pages_[page_index]->GetCharUnicode(char_index);
+}
+
+void PDFiumEngine::GetTextRunInfo(int page_index,
+                                  int start_char_index,
+                                  uint32_t* out_len,
+                                  double* out_font_size,
+                                  pp::FloatRect* out_bounds) {
+  DCHECK(page_index >= 0 && page_index < static_cast<int>(pages_.size()));
+  return pages_[page_index]->GetTextRunInfo(start_char_index, out_len,
+                                            out_font_size, out_bounds);
 }
 
 bool PDFiumEngine::GetPrintScaling() {
