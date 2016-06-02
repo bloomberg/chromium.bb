@@ -166,13 +166,20 @@ void ArcProcessService::PopulateProcessList(
     const vector<arc::mojom::RunningAppProcessInfoPtr>* raw_processes,
     vector<ArcProcess>* ret_processes) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   for (const auto& entry : *raw_processes) {
     const auto it = nspid_to_pid_.find(entry->pid);
     // In case the process already dies so couldn't find corresponding pid.
     if (it != nspid_to_pid_.end() && it->second != kNullProcessId) {
-      ArcProcess arc_process = {
-          entry->pid, it->second, entry->process_name, entry->process_state};
-      ret_processes->push_back(arc_process);
+      ArcProcess arc_process(entry->pid, it->second, entry->process_name,
+                             entry->process_state);
+      // |entry->packages| is provided only when process.mojom's verion is >=4.
+      if (entry->packages) {
+        for (const auto& package : entry->packages) {
+          arc_process.packages().push_back(package.get());
+        }
+      }
+      ret_processes->push_back(std::move(arc_process));
     }
   }
 }

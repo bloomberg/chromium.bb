@@ -60,23 +60,24 @@ void ArcProcessTaskProvider::OnUpdateProcessList(
     nspid_to_remove.insert(entry.first);
 
   for (const auto& entry : processes) {
-    if (nspid_to_remove.erase(entry.nspid) == 0) {
+    if (nspid_to_remove.erase(entry.nspid()) == 0) {
       // New arc process.
-      std::unique_ptr<ArcProcessTask>& task = nspid_to_task_[entry.nspid];
+      std::unique_ptr<ArcProcessTask>& task = nspid_to_task_[entry.nspid()];
       // After calling NotifyObserverTaskAdded(), the raw pointer of |task| is
       // remebered somewhere else. One should not (implicitly) delete the
       // referenced object before calling NotifyObserverTaskRemoved() first
       // (crbug.com/587707).
       DCHECK(!task.get()) <<
           "Task with the same pid should not be added twice.";
-      task.reset(new ArcProcessTask(
-          entry.pid, entry.nspid, entry.process_name, entry.process_state));
+      task.reset(new ArcProcessTask(entry.pid(), entry.nspid(),
+                                    entry.process_name(), entry.process_state(),
+                                    entry.packages()));
       NotifyObserverTaskAdded(task.get());
     } else {
       // Update process state of existing process.
-      std::unique_ptr<ArcProcessTask>& task = nspid_to_task_[entry.nspid];
+      std::unique_ptr<ArcProcessTask>& task = nspid_to_task_[entry.nspid()];
       DCHECK(task.get());
-      task->SetProcessState(entry.process_state);
+      task->SetProcessState(entry.process_state());
     }
   }
 

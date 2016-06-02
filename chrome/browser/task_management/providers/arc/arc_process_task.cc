@@ -4,13 +4,17 @@
 
 #include "chrome/browser/task_management/providers/arc/arc_process_task.h"
 
+#include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/common/process.mojom.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/child_process_host.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/image/image.h"
 
 namespace task_management {
 
@@ -24,17 +28,52 @@ base::string16 MakeTitle(const std::string& process_name) {
   return title;
 }
 
+scoped_refptr<arc::ActivityIconLoader> GetIconLoader() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  arc::ArcServiceManager* arc_service_manager = arc::ArcServiceManager::Get();
+  if (!arc_service_manager)
+    return nullptr;
+  return arc_service_manager->icon_loader();
+}
+
+// An activity name for retrieving the package's default icon without
+// specifying an activity name.
+constexpr char kEmptyActivityName[] = "";
+
 }  // namespace
 
-ArcProcessTask::ArcProcessTask(
-    base::ProcessId pid,
-    base::ProcessId nspid,
-    const std::string& process_name,
-    arc::mojom::ProcessState process_state)
-    : Task(MakeTitle(process_name), process_name, nullptr, pid),
+ArcProcessTask::ArcProcessTask(base::ProcessId pid,
+                               base::ProcessId nspid,
+                               const std::string& process_name,
+                               arc::mojom::ProcessState process_state,
+                               const std::vector<std::string>& packages)
+    : Task(MakeTitle(process_name), process_name, nullptr /* icon */, pid),
       nspid_(nspid),
       process_name_(process_name),
-      process_state_(process_state) {
+      process_state_(process_state),
+      weak_ptr_factory_(this) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (packages.empty())
+    return;
+
+  std::vector<arc::ActivityIconLoader::ActivityName> activity;
+  // |packages| contains an alphabetically-sorted list of package names the
+  // process has. Since the Task class can hold only one icon per process,
+  // and there is no reliable way to pick the most important process from
+  // the |packages| list, just use the first item in the list.
+  activity.emplace_back(packages.at(0), kEmptyActivityName);
+
+  scoped_refptr<arc::ActivityIconLoader> icon_loader = GetIconLoader();
+  if (!icon_loader)
+    return;
+
+  // TODO(yusukes): ArcProcessTask might be created before intent_helper
+  // instance becomes ready. Because of the race, OnIconLoaded() might
+  // be called synchronously with no icon. Fix the race to ensure that
+  // ArcProcessTask can always fetch icons.
+  icon_loader->GetActivityIcons(activity,
+                                base::Bind(&ArcProcessTask::OnIconLoaded,
+                                           weak_ptr_factory_.GetWeakPtr()));
 }
 
 ArcProcessTask::~ArcProcessTask() {
@@ -71,6 +110,18 @@ void ArcProcessTask::Kill() {
 
 void ArcProcessTask::SetProcessState(arc::mojom::ProcessState process_state) {
   process_state_ = process_state;
+}
+
+void ArcProcessTask::OnIconLoaded(
+    std::unique_ptr<arc::ActivityIconLoader::ActivityToIconsMap> icons) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  for (const auto& kv : *icons) {
+    const gfx::Image& icon = kv.second.icon16;
+    if (icon.IsEmpty())
+      continue;
+    set_icon(*icon.ToImageSkia());
+    break;  // Since the parent class can hold only one icon, break here.
+  }
 }
 
 }  // namespace task_management

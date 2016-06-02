@@ -68,10 +68,12 @@ class TabManagerDelegateTest : public ash::test::AshTestBase {
 };
 
 TEST_F(TabManagerDelegateTest, CandidatesSorted) {
-  std::vector<arc::ArcProcess> arc_processes = {
-      {1, 10, "top", arc::mojom::ProcessState::TOP},
-      {2, 20, "foreground", arc::mojom::ProcessState::FOREGROUND_SERVICE},
-      {3, 30, "service", arc::mojom::ProcessState::SERVICE}};
+  std::vector<arc::ArcProcess> arc_processes;
+  arc_processes.emplace_back(1, 10, "top", arc::mojom::ProcessState::TOP);
+  arc_processes.emplace_back(2, 20, "foreground",
+                             arc::mojom::ProcessState::FOREGROUND_SERVICE);
+  arc_processes.emplace_back(3, 30, "service",
+                             arc::mojom::ProcessState::SERVICE);
 
   TabStats tab1, tab2, tab3, tab4, tab5;
   tab1.tab_contents_id = 100;
@@ -101,8 +103,8 @@ TEST_F(TabManagerDelegateTest, CandidatesSorted) {
           tab_list, arc_processes);
   EXPECT_EQ(8U, candidates.size());
 
-  EXPECT_EQ("service", candidates[0].app->process_name);
-  EXPECT_EQ("foreground", candidates[1].app->process_name);
+  EXPECT_EQ("service", candidates[0].app->process_name());
+  EXPECT_EQ("foreground", candidates[1].app->process_name());
   // internal page.
   EXPECT_EQ(200, candidates[2].tab->tab_contents_id);
   // chrome app.
@@ -114,7 +116,7 @@ TEST_F(TabManagerDelegateTest, CandidatesSorted) {
   // pinned and media.
   EXPECT_EQ(300, candidates[6].tab->tab_contents_id);
   // ARC window is the active window, so top app has highest priority.
-  EXPECT_EQ("top", candidates[7].app->process_name);
+  EXPECT_EQ("top", candidates[7].app->process_name());
 
   // Case 2: ARC window in the background.
   DeactivateArcWindow();
@@ -122,20 +124,20 @@ TEST_F(TabManagerDelegateTest, CandidatesSorted) {
           tab_list, arc_processes);
   EXPECT_EQ(8U, candidates.size());
 
-  EXPECT_EQ("service", candidates[0].app->process_name);
-  EXPECT_EQ("foreground", candidates[1].app->process_name);
+  EXPECT_EQ("service", candidates[0].app->process_name());
+  EXPECT_EQ("foreground", candidates[1].app->process_name());
   // internal page.
   EXPECT_EQ(200, candidates[2].tab->tab_contents_id);
 
   // Chrome app and android app are tied, so both orders are correct.
   if (candidates[3].is_arc_app) {
-    EXPECT_EQ("top", candidates[3].app->process_name);
+    EXPECT_EQ("top", candidates[3].app->process_name());
     // chrome app.
     EXPECT_EQ(500, candidates[4].tab->tab_contents_id);
   } else {
     // chrome app.
     EXPECT_EQ(500, candidates[3].tab->tab_contents_id);
-    EXPECT_EQ("top", candidates[4].app->process_name);
+    EXPECT_EQ("top", candidates[4].app->process_name());
   }
 
   // pinned.
@@ -225,10 +227,12 @@ TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
   MockTabManagerDelegate tab_manager_delegate;
 
   ActivateArcWindow();
-  std::vector<arc::ArcProcess> arc_processes = {
-      {1, 10, "top", arc::mojom::ProcessState::TOP},
-      {2, 20, "foreground", arc::mojom::ProcessState::FOREGROUND_SERVICE},
-      {3, 30, "service", arc::mojom::ProcessState::SERVICE}};
+  std::vector<arc::ArcProcess> arc_processes;
+  arc_processes.emplace_back(1, 10, "top", arc::mojom::ProcessState::TOP);
+  arc_processes.emplace_back(2, 20, "foreground",
+                             arc::mojom::ProcessState::FOREGROUND_SERVICE);
+  arc_processes.emplace_back(3, 30, "service",
+                             arc::mojom::ProcessState::SERVICE);
 
   TabStats tab1, tab2, tab3, tab4, tab5;
   tab1.is_pinned = true;
@@ -283,10 +287,12 @@ TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
 
   ActivateArcWindow();
 
-  std::vector<arc::ArcProcess> arc_processes = {
-      {10001, 100, "top", arc::mojom::ProcessState::TOP},
-      {10002, 200, "foreground", arc::mojom::ProcessState::FOREGROUND_SERVICE},
-      {10003, 300, "service", arc::mojom::ProcessState::SERVICE}};
+  std::vector<arc::ArcProcess> arc_processes;
+  arc_processes.emplace_back(10001, 100, "top", arc::mojom::ProcessState::TOP);
+  arc_processes.emplace_back(10002, 200, "foreground",
+                             arc::mojom::ProcessState::FOREGROUND_SERVICE);
+  arc_processes.emplace_back(10003, 300, "service",
+                             arc::mojom::ProcessState::SERVICE);
 
   TabStats tab1, tab2, tab3, tab4, tab5;
   tab1.is_pinned = true;
