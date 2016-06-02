@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "remoting/client/jni/jni_client.h"
+#include "remoting/client/jni/jni_display_handler.h"
 #include "remoting/client/jni/jni_touch_event_data.h"
 
 namespace remoting {
@@ -19,6 +20,7 @@ const base::android::RegistrationMethod kRemotingRegisteredMethods[] = {
   {"JniClient", JniClient::RegisterJni},
   {"ChromotingJniRuntime", RegisterChromotingJniRuntime},
   {"JniTouchEventData", JniTouchEventData::RegisterJni},
+  {"JniDisplayHandler", JniDisplayHandler::RegisterJni}
 };
 }  // namespace
 

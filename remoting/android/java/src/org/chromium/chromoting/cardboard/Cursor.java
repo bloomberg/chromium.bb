@@ -140,7 +140,7 @@ public class Cursor {
             }
         }
 
-        Bitmap cursorBitmap = mClient.getCursorBitmap();
+        Bitmap cursorBitmap = mClient.getDisplay().getCursorBitmap();
 
         if (cursorBitmap == mCursorBitmap) {
             // Case when cursor image has not changed.
@@ -151,7 +151,7 @@ public class Cursor {
         }
 
         mCursorBitmap = cursorBitmap;
-        updatePosition(desktop, mCursorBitmap, mClient.getCursorHotspot());
+        updatePosition(desktop, mCursorBitmap, mClient.getDisplay().getCursorHotspot());
 
         TextureHelper.linkTexture(mTextureDataHandle, cursorBitmap);
 

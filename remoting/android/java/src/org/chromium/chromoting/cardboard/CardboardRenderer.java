@@ -124,7 +124,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
     private void initializeRedrawCallback() {
         mActivity.runOnUiThread(new Runnable() {
             public void run() {
-                mClient.provideRedrawCallback(new Runnable() {
+                mClient.getDisplay().provideRedrawCallback(new Runnable() {
                     @Override
                     public void run() {
                         mDesktop.reloadTexture();
@@ -132,7 +132,7 @@ public class CardboardRenderer implements CardboardView.StereoRenderer {
                     }
                 });
 
-                mClient.redrawGraphics();
+                mClient.getDisplay().redrawGraphics();
             }
         });
     }

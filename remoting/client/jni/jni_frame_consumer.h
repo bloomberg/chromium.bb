@@ -17,13 +17,15 @@
 namespace remoting {
 
 class ChromotingJniRuntime;
+class JniDisplayHandler;
 class JniClient;
 
 // FrameConsumer implementation that draws onto a JNI direct byte buffer.
 class JniFrameConsumer : public protocol::FrameConsumer {
  public:
-  // Does not take ownership of |jni_runtime|.
-  JniFrameConsumer(ChromotingJniRuntime* jni_runtime, JniClient* client);
+  // Does not take ownership of |jni_runtime| or |display|.
+  JniFrameConsumer(ChromotingJniRuntime* jni_runtime,
+                   base::WeakPtr<JniDisplayHandler> display);
 
   ~JniFrameConsumer() override;
 

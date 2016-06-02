@@ -200,7 +200,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             }
             mRepaintPending = true;
         }
-        mClient.redrawGraphics();
+        mClient.getDisplay().redrawGraphics();
     }
 
     /**
@@ -215,7 +215,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
             Log.w(TAG, "Canvas being redrawn on UI thread");
         }
 
-        Bitmap image = mClient.getVideoFrame();
+        Bitmap image = mClient.getDisplay().getVideoFrame();
         if (image == null) {
             // This can happen if the client is connected, but a complete video frame has not yet
             // been decoded.
@@ -274,9 +274,9 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
         }
 
         if (drawCursor) {
-            Bitmap cursorBitmap = mClient.getCursorBitmap();
+            Bitmap cursorBitmap = mClient.getDisplay().getCursorBitmap();
             if (cursorBitmap != null) {
-                Point hotspot = mClient.getCursorHotspot();
+                Point hotspot = mClient.getDisplay().getCursorHotspot();
                 canvas.drawBitmap(cursorBitmap, cursorPosition.x - hotspot.x,
                         cursorPosition.y - hotspot.y, new Paint());
             }
@@ -327,7 +327,7 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface,
     }
 
     public void attachRedrawCallback() {
-        mClient.provideRedrawCallback(new Runnable() {
+        mClient.getDisplay().provideRedrawCallback(new Runnable() {
             @Override
             public void run() {
                 paint();

@@ -4,38 +4,32 @@
 
 package org.chromium.chromoting.jni;
 
-import android.graphics.Bitmap;
-import android.graphics.Point;
-import android.os.Looper;
-
-import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chromoting.CapabilityManager;
 import org.chromium.chromoting.SessionAuthenticator;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
 /**
  * Class to manage a client connection to the host. This class controls the lifetime of the
  * corresponding C++ object which implements the connection. A new object should be created for
  * each connection to the host, so that notifications from a connection are always sent to the
  * right object.
+ * This class is used entirely on the UI thread.
  */
 @JNINamespace("remoting")
 public class Client {
-    private static final String TAG = "Chromoting";
-
     // Pointer to the C++ object, cast to a |long|.
     private long mNativeJniClient;
+
+    // Reference has to be kept until the lifecycle of Client ends. Code are currently using
+    // getDisplay() without doing a null check.
+    private Display mDisplay;
 
     // The global Client instance (may be null). This needs to be a global singleton so that the
     // Client can be passed between Activities.
     private static Client sClient;
 
-    // Called on the UI thread.
     public Client() {
         if (sClient != null) {
             throw new RuntimeException("Client instance already created.");
@@ -45,8 +39,16 @@ public class Client {
         mNativeJniClient = nativeInit();
     }
 
-    // Called on the UI thread. Suppress FindBugs warning, since |sClient| is only used on the
-    // UI thread.
+    /**
+     * Returns the display object. It will be null before calling connectToHost() but won't be null
+     *          after calling disconnectFromHost().
+     * @return the display object.
+     */
+    public Display getDisplay() {
+        return mDisplay;
+    }
+
+    // Suppress FindBugs warning, since |sClient| is only used on the UI thread.
     @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
     public void destroy() {
         if (sClient != null) {
@@ -61,32 +63,14 @@ public class Client {
         return sClient;
     }
 
-    /** Used for authentication-related UX during connection. Accessed on the UI thread. */
+    /** Used for authentication-related UX during connection. */
     private SessionAuthenticator mAuthenticator;
 
-    /** Whether the native code is attempting a connection. Accessed on the UI thread. */
+    /** Whether the native code is attempting a connection. */
     private boolean mConnected;
 
-    /** Notified upon successful connection or disconnection. Accessed on the UI thread. */
+    /** Notified upon successful connection or disconnection. */
     private ConnectionListener mConnectionListener;
-
-    /**
-     * Callback invoked on the graphics thread to repaint the desktop. Accessed on the UI and
-     * graphics threads.
-     */
-    private Runnable mRedrawCallback;
-
-    /** Bitmap holding a copy of the latest video frame. Accessed on the UI and graphics threads. */
-    private Bitmap mFrameBitmap;
-
-    /** Protects access to {@link mFrameBitmap}. */
-    private final Object mFrameLock = new Object();
-
-    /** Position of cursor hot-spot. Accessed on the graphics thread. */
-    private Point mCursorHotspot = new Point();
-
-    /** Bitmap holding the cursor shape. Accessed on the graphics thread. */
-    private Bitmap mCursorBitmap;
 
     /** Capability Manager through which capabilities and extensions are handled. */
     private CapabilityManager mCapabilityManager = new CapabilityManager();
@@ -100,7 +84,7 @@ public class Client {
         return mConnected;
     }
 
-    /** Attempts to form a connection to the user-selected host. Called on the UI thread. */
+    /** Attempts to form a connection to the user-selected host. */
     public void connectToHost(String username, String authToken, String hostJid,
             String hostId, String hostPubkey, SessionAuthenticator authenticator, String flags,
             ConnectionListener listener) {
@@ -108,13 +92,15 @@ public class Client {
 
         mConnectionListener = listener;
         mAuthenticator = authenticator;
-        nativeConnect(mNativeJniClient, username, authToken, hostJid, hostId, hostPubkey,
-                mAuthenticator.getPairingId(hostId), mAuthenticator.getPairingSecret(hostId),
-                mCapabilityManager.getLocalCapabilities(), flags);
+        mDisplay = new Display();
+        nativeConnect(mNativeJniClient, mDisplay.getNativePointer(), username, authToken, hostJid,
+                hostId, hostPubkey, mAuthenticator.getPairingId(hostId),
+                mAuthenticator.getPairingSecret(hostId), mCapabilityManager.getLocalCapabilities(),
+                flags);
         mConnected = true;
     }
 
-    /** Severs the connection and cleans up. Called on the UI thread. */
+    /** Severs the connection and cleans up. */
     public void disconnectFromHost() {
         if (!mConnected) {
             return;
@@ -137,13 +123,10 @@ public class Client {
         mConnected = false;
         mCapabilityManager.onHostDisconnect();
 
-        // Drop the reference to free the Bitmap for GC.
-        synchronized (mFrameLock) {
-            mFrameBitmap = null;
-        }
+        mDisplay.destroy();
     }
 
-    /** Called on the UI thread whenever the connection status changes. */
+    /** Called whenever the connection status changes. */
     @CalledByNative
     void onConnectionState(int stateCode, int errorCode) {
         ConnectionListener.State state = ConnectionListener.State.fromValue(stateCode);
@@ -161,7 +144,7 @@ public class Client {
     }
 
     /**
-     * Called on the UI thread to prompt the user to enter a PIN.
+     * Called to prompt the user to enter a PIN.
      */
     @CalledByNative
     void displayAuthenticationPrompt(boolean pairingSupported) {
@@ -182,7 +165,7 @@ public class Client {
     }
 
     /**
-     * Called on the UI thread to save newly-received pairing credentials to permanent storage.
+     * Called to save newly-received pairing credentials to permanent storage.
      */
     @CalledByNative
     void commitPairingCredentials(String host, String id, String secret) {
@@ -190,8 +173,7 @@ public class Client {
     }
 
     /**
-     * Moves the mouse cursor, possibly while clicking the specified (nonnegative) button. Called
-     * on the UI thread.
+     * Moves the mouse cursor, possibly while clicking the specified (nonnegative) button.
      */
     public void sendMouseEvent(int x, int y, int whichButton, boolean buttonDown) {
         if (!mConnected) {
@@ -201,7 +183,7 @@ public class Client {
         nativeSendMouseEvent(mNativeJniClient, x, y, whichButton, buttonDown);
     }
 
-    /** Injects a mouse-wheel event with delta values. Called on the UI thread. */
+    /** Injects a mouse-wheel event with delta values. */
     public void sendMouseWheelEvent(int deltaX, int deltaY) {
         if (!mConnected) {
             return;
@@ -211,7 +193,7 @@ public class Client {
     }
 
     /**
-     * Presses or releases the specified key. Called on the UI thread. If scanCode is not zero then
+     * Presses or releases the specified key. If scanCode is not zero then
      * keyCode is ignored.
      */
     public boolean sendKeyEvent(int scanCode, int keyCode, boolean keyDown) {
@@ -222,7 +204,7 @@ public class Client {
         return nativeSendKeyEvent(mNativeJniClient, scanCode, keyCode, keyDown);
     }
 
-    /** Sends TextEvent to the host. Called on the UI thread. */
+    /** Sends TextEvent to the host. */
     public void sendTextEvent(String text) {
         if (!mConnected) {
             return;
@@ -231,7 +213,7 @@ public class Client {
         nativeSendTextEvent(mNativeJniClient, text);
     }
 
-    /** Sends an array of TouchEvents to the host. Called on the UI thread. */
+    /** Sends an array of TouchEvents to the host. */
     public void sendTouchEvent(TouchEventData.EventType eventType, TouchEventData[] data) {
         if (!mConnected) {
             return;
@@ -241,8 +223,7 @@ public class Client {
     }
 
     /**
-     * Enables or disables the video channel. Called on the UI thread in response to Activity
-     * lifecycle events.
+     * Enables or disables the video channel. Called in response to Activity lifecycle events.
      */
     public void enableVideoChannel(boolean enable) {
         if (!mConnected) {
@@ -250,96 +231,6 @@ public class Client {
         }
 
         nativeEnableVideoChannel(mNativeJniClient, enable);
-    }
-
-    /**
-     * Sets the redraw callback to the provided functor. Provide a value of null whenever the
-     * window is no longer visible so that we don't continue to draw onto it. Called on the UI
-     * thread.
-     */
-    public void provideRedrawCallback(Runnable redrawCallback) {
-        mRedrawCallback = redrawCallback;
-    }
-
-    /** Forces the native graphics thread to redraw to the canvas. Called on the UI thread. */
-    public boolean redrawGraphics() {
-        if (!mConnected || mRedrawCallback == null) return false;
-
-        nativeScheduleRedraw(mNativeJniClient);
-        return true;
-    }
-
-    /**
-     * Called on the graphics thread to perform the redrawing callback requested by
-     * {@link #redrawGraphics}. This is a no-op if the window isn't visible (the callback is null).
-     */
-    @CalledByNative
-    void redrawGraphicsInternal() {
-        Runnable callback = mRedrawCallback;
-        if (callback != null) {
-            callback.run();
-        }
-    }
-
-    /**
-     * Returns a bitmap of the latest video frame. Called on the native graphics thread when
-     * DesktopView is repainted.
-     */
-    public Bitmap getVideoFrame() {
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            Log.w(TAG, "Canvas being redrawn on UI thread");
-        }
-
-        synchronized (mFrameLock) {
-            return mFrameBitmap;
-        }
-    }
-
-    /**
-     * Set a new video frame. Called on the native graphics thread when a new frame is allocated.
-     */
-    @CalledByNative
-    void setVideoFrame(Bitmap bitmap) {
-        if (Looper.myLooper() == Looper.getMainLooper()) {
-            Log.w(TAG, "Video frame updated on UI thread");
-        }
-
-        synchronized (mFrameLock) {
-            mFrameBitmap = bitmap;
-        }
-    }
-
-    /**
-     * Creates a new Bitmap to hold video frame pixels. The returned Bitmap is referenced by native
-     * code which writes the decoded frame pixels to it.
-     */
-    @CalledByNative
-    static Bitmap newBitmap(int width, int height) {
-        return Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-    }
-
-    /**
-     * Updates the cursor shape. This is called on the graphics thread when receiving a new cursor
-     * shape from the host.
-     */
-    @CalledByNative
-    void updateCursorShape(int width, int height, int hotspotX, int hotspotY, ByteBuffer buffer) {
-        mCursorHotspot = new Point(hotspotX, hotspotY);
-
-        int[] data = new int[width * height];
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        buffer.asIntBuffer().get(data, 0, data.length);
-        mCursorBitmap = Bitmap.createBitmap(data, width, height, Bitmap.Config.ARGB_8888);
-    }
-
-    /** Position of cursor hotspot within cursor image. Called on the graphics thread. */
-    public Point getCursorHotspot() {
-        return mCursorHotspot;
-    }
-
-    /** Returns the current cursor shape. Called on the graphics thread. */
-    public Bitmap getCursorBitmap() {
-        return mCursorBitmap;
     }
 
     //
@@ -371,7 +262,7 @@ public class Client {
     //
 
     /**
-     * Sets the list of negotiated capabilities between host and client. Called on the UI thread.
+     * Sets the list of negotiated capabilities between host and client.
      */
     @CalledByNative
     void setCapabilities(String capabilities) {
@@ -383,14 +274,14 @@ public class Client {
     //
 
     /**
-     * Passes on the deconstructed ExtensionMessage to the app. Called on the UI thread.
+     * Passes on the deconstructed ExtensionMessage to the app.
      */
     @CalledByNative
     void handleExtensionMessage(String type, String data) {
         mCapabilityManager.onExtensionMessage(type, data);
     }
 
-    /** Sends an extension message to the Chromoting host. Called on the UI thread. */
+    /** Sends an extension message to the Chromoting host. */
     public void sendExtensionMessage(String type, String data) {
         if (!mConnected) {
             return;
@@ -404,9 +295,9 @@ public class Client {
     private native void nativeDestroy(long nativeJniClient);
 
     /** Performs the native portion of the connection. */
-    private native void nativeConnect(long nativeJniClient, String username, String authToken,
-            String hostJid, String hostId, String hostPubkey, String pairId, String pairSecret,
-            String capabilities, String flags);
+    private native void nativeConnect(long nativeJniClient, long nativeJniDisplayHandler,
+            String username, String authToken, String hostJid, String hostId, String hostPubkey,
+            String pairId, String pairSecret, String capabilities, String flags);
 
     /** Native implementation of Client.handleAuthenticationResponse(). */
     private native void nativeAuthenticationResponse(
@@ -414,9 +305,6 @@ public class Client {
 
     /** Performs the native portion of the cleanup. */
     private native void nativeDisconnect(long nativeJniClient);
-
-    /** Schedules a redraw on the native graphics thread. */
-    private native void nativeScheduleRedraw(long nativeJniClient);
 
     /** Passes authentication data to the native handling code. */
     private native void nativeOnThirdPartyTokenFetched(

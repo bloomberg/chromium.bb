@@ -67,6 +67,7 @@ template("remoting_android_client_java_tmpl") {
       "help/HelpSingleton.java",
       "jni/Client.java",
       "jni/ConnectionListener.java",
+      "jni/Display.java",
       "jni/JniInterface.java",
       "jni/TouchEventData.java",
     ]

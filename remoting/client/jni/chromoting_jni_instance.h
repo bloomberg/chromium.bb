@@ -32,20 +32,26 @@ class VideoRenderer;
 
 class ChromotingJniRuntime;
 class JniClient;
+class JniDisplayHandler;
 class JniFrameConsumer;
+class JniPairingSecretFetcher;
 
-// ClientUserInterface that indirectly makes and receives JNI calls.
+// ChromotingJniInstance is scoped to the session.
+// This class is Created on the UI thread but thereafter it is used and
+// destroyed on the network thread. Except where indicated, all methods are
+// called on the network thread.
 class ChromotingJniInstance
   : public ClientUserInterface,
     public protocol::ClipboardStub,
-    public protocol::CursorShapeStub,
-    public base::RefCountedThreadSafe<ChromotingJniInstance> {
+    public protocol::CursorShapeStub {
  public:
   // Initiates a connection with the specified host. Call from the UI thread.
   // The instance does not take ownership of |jni_runtime|. To connect with an
   // unpaired host, pass in |pairing_id| and |pairing_secret| as empty strings.
   ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
-                        JniClient* jni_client,
+                        base::WeakPtr<JniClient> jni_client,
+                        base::WeakPtr<JniDisplayHandler> display,
+                        base::WeakPtr<JniPairingSecretFetcher> secret_fetcher,
                         const std::string& username,
                         const std::string& auth_token,
                         const std::string& host_jid,
@@ -55,6 +61,8 @@ class ChromotingJniInstance
                         const std::string& pairing_secret,
                         const std::string& capabilities,
                         const std::string& flags);
+
+  ~ChromotingJniInstance() override;
 
   // Starts the connection. Can be called on any thread.
   void Connect();
@@ -80,9 +88,6 @@ class ChromotingJniInstance
   // but only after the UI has been asked to provide a PIN (via FetchSecret()).
   void ProvideSecret(const std::string& pin, bool create_pair,
                      const std::string& device_name);
-
-  // Schedules a redraw on the display thread. May be called from any thread.
-  void RedrawDesktop();
 
   // Moves the host's cursor to the specified coordinates, optionally with some
   // mouse button depressed. If |button| is BUTTON_UNDEFINED, no click is made.
@@ -124,10 +129,11 @@ class ChromotingJniInstance
   // ClipboardStub implementation.
   void SetCursorShape(const protocol::CursorShapeInfo& shape) override;
 
- private:
-  // This object is ref-counted, so it cleans itself up.
-  ~ChromotingJniInstance() override;
+  // Get the weak pointer of the instance. Please only use it on the network
+  // thread.
+  base::WeakPtr<ChromotingJniInstance> GetWeakPtr();
 
+ private:
   void ConnectToHostOnNetworkThread();
 
   // Notifies the user interface that the user needs to enter a PIN. The
@@ -150,10 +156,17 @@ class ChromotingJniInstance
   // Called on the network thread.
   void LogPerfStats();
 
+  // Releases the resource in the right order.
+  void ReleaseResources();
+
   // Used to obtain task runner references and make calls to Java methods.
   ChromotingJniRuntime* jni_runtime_;
 
-  JniClient* jni_client_;
+  base::WeakPtr<JniClient> jni_client_;
+
+  base::WeakPtr<JniDisplayHandler> display_handler_;
+
+  base::WeakPtr<JniPairingSecretFetcher> secret_fetcher_;
 
   // ID of the host we are connecting to.
   std::string host_jid_;
@@ -171,10 +184,6 @@ class ChromotingJniInstance
   XmppSignalStrategy::XmppServerConfig xmpp_config_;
   std::unique_ptr<XmppSignalStrategy> signaling_;  // Must outlive client_
   protocol::ThirdPartyTokenFetchedCallback third_party_token_fetched_callback_;
-
-  // Pass this the user's PIN once we have it. To be assigned and accessed on
-  // the UI thread, but must be posted to the network thread to call it.
-  protocol::SecretFetchedCallback pin_callback_;
 
   // Indicates whether to establish a new pairing with this host. This is
   // modified in ProvideSecret(), but thereafter to be used only from the
@@ -198,8 +207,6 @@ class ChromotingJniInstance
   // Indicates whether the client is connected to the host. Used on network
   // thread.
   bool connected_ = false;
-
-  friend class base::RefCountedThreadSafe<ChromotingJniInstance>;
 
   base::WeakPtrFactory<ChromotingJniInstance> weak_factory_;
 

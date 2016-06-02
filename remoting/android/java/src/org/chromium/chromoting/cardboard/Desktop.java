@@ -223,7 +223,7 @@ public class Desktop {
         }
 
         // TODO(shichengfeng): Record the time desktop drawing takes.
-        Bitmap bitmap = mClient.getVideoFrame();
+        Bitmap bitmap = mClient.getDisplay().getVideoFrame();
 
         if (bitmap == null) {
             // This can happen if the client is connected, but a complete video frame has not yet

@@ -13,6 +13,7 @@ generate_jni("jni_headers") {
   sources = [
     "host/src/org/chromium/chromoting/host/jni/Host.java",
     "java/src/org/chromium/chromoting/jni/Client.java",
+    "java/src/org/chromium/chromoting/jni/Display.java",
     "java/src/org/chromium/chromoting/jni/JniInterface.java",
     "java/src/org/chromium/chromoting/jni/TouchEventData.java",
   ]
@@ -39,8 +40,12 @@ shared_library("remoting_client_jni") {
     "//remoting/client/jni/chromoting_jni_runtime.h",
     "//remoting/client/jni/jni_client.cc",
     "//remoting/client/jni/jni_client.h",
+    "//remoting/client/jni/jni_display_handler.cc",
+    "//remoting/client/jni/jni_display_handler.h",
     "//remoting/client/jni/jni_frame_consumer.cc",
     "//remoting/client/jni/jni_frame_consumer.h",
+    "//remoting/client/jni/jni_pairing_secret_fetcher.cc",
+    "//remoting/client/jni/jni_pairing_secret_fetcher.h",
     "//remoting/client/jni/jni_touch_event_data.cc",
     "//remoting/client/jni/jni_touch_event_data.h",
     "//remoting/client/jni/remoting_jni_onload.cc",

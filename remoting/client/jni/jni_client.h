@@ -9,7 +9,6 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/protocol/connection_to_host.h"
 #include "remoting/protocol/cursor_shape_stub.h"
@@ -18,19 +17,23 @@ namespace remoting {
 
 class ChromotingJniRuntime;
 class ChromotingJniInstance;
+class JniDisplayHandler;
+class JniPairingSecretFetcher;
 
 // Houses resources scoped to a session and exposes JNI interface to the
 // Java client during a session. All its methods should be invoked exclusively
 // from the UI thread unless otherwise noted.
 class JniClient {
  public:
-  JniClient(jobject java_client);
+  JniClient(ChromotingJniRuntime* runtime,
+            base::android::ScopedJavaGlobalRef<jobject> java_client);
+  virtual ~JniClient();
 
-  // Initiates a connection with the specified host. Only call when a host
-  // connection is active (i.e. between a call to Connect() and the
-  // corresponding call to Disconnect()). To skip the attempt at pair-based
-  // authentication, leave |pairing_id| and |pairing_secret| as empty strings.
-  void ConnectToHost(const std::string& username,
+  // Initiates a connection with the specified host. To skip the attempt at
+  // pair-based authentication, leave |pairing_id| and |pairing_secret| as
+  // empty strings.
+  void ConnectToHost(base::WeakPtr<JniDisplayHandler> handler,
+                     const std::string& username,
                      const std::string& auth_token,
                      const std::string& host_jid,
                      const std::string& host_id,
@@ -70,19 +73,6 @@ class JniClient {
   void HandleExtensionMessage(const std::string& type,
                               const std::string& message);
 
-  // Creates a new Bitmap object to store a video frame.
-  base::android::ScopedJavaLocalRef<jobject> NewBitmap(int width, int height);
-
-  // Updates video frame bitmap. |bitmap| must be an instance of
-  // android.graphics.Bitmap. Call on the display thread.
-  void UpdateFrameBitmap(jobject bitmap);
-
-  // Updates cursor shape. Call on display thread.
-  void UpdateCursorShape(const protocol::CursorShapeInfo& cursor_shape);
-
-  // Draws the latest image buffer onto the canvas. Call on the display thread.
-  void RedrawCanvas();
-
   // Register C++ methods exposed to Java using JNI.
   static bool RegisterJni(JNIEnv* env);
 
@@ -90,6 +80,7 @@ class JniClient {
 
   void Connect(JNIEnv* env,
                const base::android::JavaParamRef<jobject>& caller,
+               jlong display_handler_ptr,
                const base::android::JavaParamRef<jstring>& username,
                const base::android::JavaParamRef<jstring>& authToken,
                const base::android::JavaParamRef<jstring>& hostJid,
@@ -109,9 +100,6 @@ class JniClient {
       const base::android::JavaParamRef<jstring>& pin,
       jboolean createPair,
       const base::android::JavaParamRef<jstring>& deviceName);
-
-  void ScheduleRedraw(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& caller);
 
   void SendMouseEvent(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& caller,
@@ -156,8 +144,7 @@ class JniClient {
                             const base::android::JavaParamRef<jstring>& type,
                             const base::android::JavaParamRef<jstring>& data);
 
-  // Destroys this object. Called on UI thread. This function will delete the
-  // |java_client_| reference and delete |this|.
+  // Deletes this object.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& caller);
 
   // Get the weak pointer of the object. Should be used on the UI thread.
@@ -166,16 +153,18 @@ class JniClient {
   base::WeakPtr<JniClient> GetWeakPtr();
 
  private:
-  // Please use Destroy() to delete this object.
-  ~JniClient();
-
-  // Helper function for getting the runtime instance.
-  static ChromotingJniRuntime* runtime();
+  ChromotingJniRuntime* runtime_;
 
   // Reference to the Java client object.
-  jobject java_client_;
+  base::android::ScopedJavaGlobalRef<jobject> java_client_;
 
-  scoped_refptr<ChromotingJniInstance> session_;
+  base::WeakPtr<JniDisplayHandler> display_handler_;
+
+  // Deleted on UI thread.
+  std::unique_ptr<JniPairingSecretFetcher> secret_fetcher_;
+
+  // Deleted on Network thread.
+  std::unique_ptr<ChromotingJniInstance> session_;
 
   // Holds pointer for the UI thread.
   base::WeakPtrFactory<JniClient> weak_factory_;
