@@ -35,11 +35,9 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.components.bookmarks.BookmarkId;
-import org.chromium.components.bookmarks.BookmarkType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,7 +62,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
 
     private static final String TAG = "BookmarkWidget";
     private static final String ACTION_CHANGE_FOLDER_SUFFIX = ".CHANGE_FOLDER";
-    private static final String PREF_CURRENT_FOLDER = "current_folder";
+    private static final String PREF_CURRENT_FOLDER = "bookmarkswidget.current_folder";
     private static final String EXTRA_FOLDER_ID = "folderId";
 
     @UiThread
@@ -101,10 +99,10 @@ public class BookmarkWidgetService extends RemoteViewsService {
 
     static void changeFolder(Context context, Intent intent) {
         int widgetId = IntentUtils.safeGetIntExtra(intent, AppWidgetManager.EXTRA_APPWIDGET_ID, -1);
-        long folderId = IntentUtils.safeGetLongExtra(intent, EXTRA_FOLDER_ID, -1);
-        if (widgetId >= 0 && folderId >= 0) {
+        String serializedFolder = IntentUtils.safeGetStringExtra(intent, EXTRA_FOLDER_ID);
+        if (widgetId >= 0 && serializedFolder != null) {
             SharedPreferences prefs = getWidgetState(context, widgetId);
-            prefs.edit().putLong(PREF_CURRENT_FOLDER, folderId).apply();
+            prefs.edit().putString(PREF_CURRENT_FOLDER, serializedFolder).apply();
             AppWidgetManager.getInstance(context)
                     .notifyAppWidgetViewDataChanged(widgetId, R.id.bookmarks_list);
         }
@@ -123,11 +121,6 @@ public class BookmarkWidgetService extends RemoteViewsService {
 
         public static Bookmark fromBookmarkItem(BookmarkItem item) {
             if (item == null) return null;
-
-            // The bookmarks widget doesn't support showing partner bookmarks. The main hurdle is
-            // that the current folder ID is stored in shared prefs as a long, not a BookmarkId.
-            // This support could be added if there's a strong desire.
-            if (item.getId().getType() == BookmarkType.PARTNER) return null;
 
             Bookmark bookmark = new Bookmark();
             bookmark.title = item.getTitle();
@@ -333,8 +326,8 @@ public class BookmarkWidgetService extends RemoteViewsService {
         private boolean isWidgetNewlyCreated() {
             // This method relies on the fact that PREF_CURRENT_FOLDER is not yet
             // set when onCreate is called for a newly created widget.
-            long currentFolder = mPreferences.getLong(PREF_CURRENT_FOLDER, Tab.INVALID_BOOKMARK_ID);
-            return currentFolder == Tab.INVALID_BOOKMARK_ID;
+            String serializedFolder = mPreferences.getString(PREF_CURRENT_FOLDER, null);
+            return serializedFolder == null;
         }
 
         @UiThread
@@ -374,18 +367,11 @@ public class BookmarkWidgetService extends RemoteViewsService {
 
         @BinderThread
         private void updateBookmarkList() {
-            long folderIdLong = mPreferences.getLong(PREF_CURRENT_FOLDER, Tab.INVALID_BOOKMARK_ID);
-            BookmarkId folderId = folderIdLong != Tab.INVALID_BOOKMARK_ID
-                    ? new BookmarkId(folderIdLong, BookmarkType.NORMAL)
-                    : null;
-
+            BookmarkId folderId = BookmarkId
+                    .getBookmarkIdFromString(mPreferences.getString(PREF_CURRENT_FOLDER, null));
             mCurrentFolder = loadBookmarks(folderId);
-
-            mPreferences.edit()
-                .putLong(PREF_CURRENT_FOLDER, mCurrentFolder != null
-                        ? mCurrentFolder.folder.id.getId()
-                        : Tab.INVALID_BOOKMARK_ID)
-                .apply();
+            mPreferences.edit().putString(PREF_CURRENT_FOLDER, mCurrentFolder.folder.id.toString())
+                    .apply();
         }
 
         @BinderThread
@@ -469,9 +455,9 @@ public class BookmarkWidgetService extends RemoteViewsService {
 
             String title = bookmark.title;
             String url = bookmark.url;
-            long id = (bookmark == mCurrentFolder.folder)
-                    ? mCurrentFolder.parent.id.getId()
-                    : bookmark.id.getId();
+            BookmarkId id = (bookmark == mCurrentFolder.folder)
+                    ? mCurrentFolder.parent.id
+                    : bookmark.id;
 
             RemoteViews views = new RemoteViews(mContext.getPackageName(),
                     R.layout.bookmark_widget_item);
@@ -491,7 +477,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
             if (bookmark.isFolder) {
                 fillIn = new Intent(getChangeFolderAction(mContext))
                         .putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mWidgetId)
-                        .putExtra(EXTRA_FOLDER_ID, id);
+                        .putExtra(EXTRA_FOLDER_ID, id.toString());
             } else {
                 fillIn = new Intent(Intent.ACTION_VIEW);
                 if (!TextUtils.isEmpty(url)) {
