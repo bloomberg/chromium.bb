@@ -111,8 +111,12 @@ ChildSharedBitmapManager::AllocateSharedMemoryBitmap(const gfx::Size& size) {
   bool send_success =
       sender_->Send(new ChildProcessHostMsg_SyncAllocateSharedBitmap(
           memory_size, id, &handle));
-  if (!send_success)
-    return nullptr;
+  if (!send_success) {
+    // Callers of this method are not prepared to handle failures during
+    // shutdown. Exit immediately. This is expected behavior during the Fast
+    // Shutdown path, so use EXIT_SUCCESS. https://crbug.com/615121.
+    exit(EXIT_SUCCESS);
+  }
   memory = base::WrapUnique(new base::SharedMemory(handle, false));
   if (!memory->Map(memory_size))
     CollectMemoryUsageAndDie(size, memory_size);
@@ -121,10 +125,14 @@ ChildSharedBitmapManager::AllocateSharedMemoryBitmap(const gfx::Size& size) {
   memory = ChildThreadImpl::AllocateSharedMemory(memory_size, sender_.get(),
                                                  &out_of_memory);
   if (!memory) {
-    if (out_of_memory)
+    if (out_of_memory) {
       CollectMemoryUsageAndDie(size, memory_size);
-    else
-      return nullptr;
+    } else {
+      // Callers of this method are not prepared to handle failures during
+      // shutdown. Exit immediately. This is expected behavior during the Fast
+      // Shutdown path, so use EXIT_SUCCESS. https://crbug.com/615121.
+      exit(EXIT_SUCCESS);
+    }
   }
 
   if (!memory->Map(memory_size))
