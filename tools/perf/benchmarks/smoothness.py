@@ -328,16 +328,6 @@ class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
     return cls.IsSvelte(possible_browser)  # http://crbug.com/564008
 
 
-@benchmark.Enabled('android', 'chromeos')
-class SmoothnessToughScrollingWhileZoomedInCases(_Smoothness):
-  """Measures rendering statistics for pinch-zooming then diagonal scrolling"""
-  page_set = page_sets.ToughScrollingWhileZoomedInCasesPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'smoothness.tough_scrolling_while_zoomed_in_cases'
-
-
 @benchmark.Enabled('android')
 class SmoothnessGpuRasterizationPolymer(_Smoothness):
   """Measures rendering statistics for the Polymer cases with GPU rasterization.
