@@ -851,4 +851,18 @@ TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared)
     EXPECT_EQ(LayoutPoint(), fixedProperties->localBorderBoxProperties()->paintOffset);
 }
 
+TEST_F(PaintPropertyTreeBuilderTest, ColumnSpannerUnderRelativePositioned)
+{
+    setBodyInnerHTML(
+        "<div style='columns: 3; position: absolute; top: 44px; left: 55px;'>"
+        "  <div style='position: relative; top: 100px; left: 100px'>"
+        "    <div id='spanner' style='column-span: all; opacity: 0.5; width: 100px; height: 100px;'></div>"
+        "  </div>"
+        "</div>"
+    );
+
+    LayoutObject& spanner = *getLayoutObjectByElementId("spanner");
+    EXPECT_EQ(LayoutPoint(55, 44), spanner.objectPaintProperties()->localBorderBoxProperties()->paintOffset);
+}
+
 } // namespace blink
