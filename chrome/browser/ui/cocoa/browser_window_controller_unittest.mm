@@ -27,6 +27,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+#import "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 
 using ::testing::Return;
 
@@ -763,6 +764,7 @@ void WaitForFullScreenTransition() {
 
 // http://crbug.com/53586
 TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
   [controller_ showWindow:nil];
   EXPECT_FALSE([controller_ isInAnyFullscreenMode]);
 
@@ -781,6 +783,7 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
 // problems.
 // http://crbug.com/53586
 TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
+  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
   [controller_ showWindow:nil];
 
   EXPECT_FALSE([controller_ isInAnyFullscreenMode]);
