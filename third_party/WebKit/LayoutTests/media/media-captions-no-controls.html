@@ -1,51 +1,32 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests that adding a text track does not make controls visible.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script src="media-controls.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "content/test");
 
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script src=media-controls.js></script>
-        <script>
+    video.oncanplaythrough = t.step_func_done(function() {
+        // Initial state: no text tracks, controls should not be visible.
+        assert_equals(video.textTracks.length, 0);
+        assert_false(video.controls);
 
-            function canplaythrough()
-            {
-                consoleWrite("<br>** Initial state: no text tracks, controls should not be visible **");
-                testExpected("video.textTracks.length", 0);
-                testExpected("video.controls", false, '==');
+        // Add a text track, controls should not become visible.
+        video.addTextTrack("captions");
+        assert_equals(video.textTracks.length, 1);
+        assert_false(video.controls);
 
-                consoleWrite("<br>** Add a text track, controls should not become visible **");
-                run("video.addTextTrack('captions')");
-                testExpected("video.textTracks.length", 1);
-                testExpected("video.controls", false);
-
-                consoleWrite("<br>** Enable controls **");
-                run("video.setAttribute('controls','controls')");
-                testExpected("video.textTracks.length", 1);
-                testExpected("video.controls", true);
-                panel = mediaControlsButton(video, "panel");
-                testExpected("internals.shadowRoot(video).firstChild", null, "!=");
-                testExpected("panel.style['display']", 'none', "!=");
-
-                consoleWrite("");
-                endTest();
-            }
-
-            function start()
-            {
-                findMediaElement();
-
-                waitForEvent('canplaythrough', canplaythrough);
-                video.src = findMediaFile("video", "content/test");
-            }
-
-        </script>
-    </head>
-    <body onload="start()">
-        <video>
-        </video>
-        <p>Tests that adding a text track does not make controls visible.</p>
-    </body>
-</html>
+        // Enable controls.
+        video.setAttribute("controls","controls");
+        assert_equals(video.textTracks.length, 1);
+        assert_true(video.controls);
+        assert_not_equals(internals.shadowRoot(video).firstChild, null);
+        var panel = mediaControlsButton(video, "panel");
+        assert_not_equals(panel.style["display"], "none");
+    });
+});
+</script>

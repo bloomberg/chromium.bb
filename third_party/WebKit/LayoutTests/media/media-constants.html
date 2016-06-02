@@ -1,35 +1,23 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-         (Please avoid writing new tests using video-test.js) -->
-    <script src=video-test.js></script>
-    <script type="text/javascript">
-        function doTest ()
-        {
-            testExpected("HTMLMediaElement.NETWORK_EMPTY", 0);
-            testExpected("HTMLMediaElement.NETWORK_IDLE", 1);
-            testExpected("HTMLMediaElement.NETWORK_LOADING", 2);
-            testExpected("HTMLMediaElement.NETWORK_NO_SOURCE", 3);
-            consoleWrite("");
+<title>Test HTMLMediaElement and MediaError constants.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+    assert_equals(HTMLMediaElement.NETWORK_EMPTY, 0);
+    assert_equals(HTMLMediaElement.NETWORK_IDLE, 1);
+    assert_equals(HTMLMediaElement.NETWORK_LOADING, 2);
+    assert_equals(HTMLMediaElement.NETWORK_NO_SOURCE, 3);
 
-            testExpected("HTMLMediaElement.HAVE_NOTHING", 0);
-            testExpected("HTMLMediaElement.HAVE_METADATA", 1);
-            testExpected("HTMLMediaElement.HAVE_CURRENT_DATA", 2);
-            testExpected("HTMLMediaElement.HAVE_FUTURE_DATA", 3);
-            testExpected("HTMLMediaElement.HAVE_ENOUGH_DATA", 4);
-            consoleWrite("");
+    assert_equals(HTMLMediaElement.HAVE_NOTHING, 0);
+    assert_equals(HTMLMediaElement.HAVE_METADATA, 1);
+    assert_equals(HTMLMediaElement.HAVE_CURRENT_DATA, 2);
+    assert_equals(HTMLMediaElement.HAVE_FUTURE_DATA, 3);
+    assert_equals(HTMLMediaElement.HAVE_ENOUGH_DATA, 4);
 
-            testExpected("MediaError.MEDIA_ERR_ABORTED", 1);
-            testExpected("MediaError.MEDIA_ERR_NETWORK", 2);
-            testExpected("MediaError.MEDIA_ERR_DECODE", 3);
-            testExpected("MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED", 4);
-
-            endTest();
-        }
-    </script>
-</head>
-<body onload="doTest()">
-    <p>Test HTMLMediaElement and MediaError constants.</p>
-</body>
-</html>
+    assert_equals(MediaError.MEDIA_ERR_ABORTED, 1);
+    assert_equals(MediaError.MEDIA_ERR_NETWORK, 2);
+    assert_equals(MediaError.MEDIA_ERR_DECODE, 3);
+    assert_equals(MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED, 4);
+});
+</script>
