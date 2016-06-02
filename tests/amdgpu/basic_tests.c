@@ -346,6 +346,7 @@ static void amdgpu_command_submission_gfx_separate_ibs(void)
 
 	fence_status.context = context_handle;
 	fence_status.ip_type = AMDGPU_HW_IP_GFX;
+	fence_status.ip_instance = 0;
 	fence_status.fence = ibs_request.seq_no;
 
 	r = amdgpu_cs_query_fence_status(&fence_status,
@@ -427,6 +428,7 @@ static void amdgpu_command_submission_gfx_shared_ib(void)
 
 	fence_status.context = context_handle;
 	fence_status.ip_type = AMDGPU_HW_IP_GFX;
+	fence_status.ip_instance = 0;
 	fence_status.fence = ibs_request.seq_no;
 
 	r = amdgpu_cs_query_fence_status(&fence_status,
@@ -541,6 +543,7 @@ static void amdgpu_semaphore_test(void)
 
 	fence_status.context = context_handle[0];
 	fence_status.ip_type = AMDGPU_HW_IP_GFX;
+	fence_status.ip_instance = 0;
 	fence_status.fence = ibs_request[1].seq_no;
 	r = amdgpu_cs_query_fence_status(&fence_status,
 					 500000000, 0, &expired);
@@ -581,6 +584,7 @@ static void amdgpu_semaphore_test(void)
 
 	fence_status.context = context_handle[1];
 	fence_status.ip_type = AMDGPU_HW_IP_GFX;
+	fence_status.ip_instance = 0;
 	fence_status.fence = ibs_request[1].seq_no;
 	r = amdgpu_cs_query_fence_status(&fence_status,
 					 500000000, 0, &expired);
@@ -653,6 +657,7 @@ static void amdgpu_command_submission_compute_nop(void)
 
 		fence_status.context = context_handle;
 		fence_status.ip_type = AMDGPU_HW_IP_COMPUTE;
+		fence_status.ip_instance = 0;
 		fence_status.ring = instance;
 		fence_status.fence = ibs_request.seq_no;
 
@@ -766,6 +771,7 @@ static void amdgpu_test_exec_cs_helper(amdgpu_context_handle context_handle,
 	CU_ASSERT_EQUAL(r, 0);
 
 	fence_status.ip_type = ip_type;
+	fence_status.ip_instance = 0;
 	fence_status.ring = ibs_request->ring;
 	fence_status.context = context_handle;
 	fence_status.fence = ibs_request->seq_no;
