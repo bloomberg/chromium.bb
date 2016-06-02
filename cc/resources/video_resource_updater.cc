@@ -24,11 +24,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
-#if DCHECK_IS_ON()
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
-#endif
-
 namespace cc {
 
 namespace {
@@ -124,14 +119,6 @@ class SyncTokenClientImpl : public media::VideoFrame::SyncTokenClient {
   gpu::SyncToken sync_token_;
 };
 
-#if DCHECK_IS_ON()
-void OnVideoFrameDestruct(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const base::Closure& task) {
-  task_runner->PostTask(FROM_HERE, task);
-}
-#endif
-
 }  // namespace
 
 VideoResourceUpdater::PlaneResource::PlaneResource(
@@ -139,48 +126,26 @@ VideoResourceUpdater::PlaneResource::PlaneResource(
     const gfx::Size& resource_size,
     ResourceFormat resource_format,
     gpu::Mailbox mailbox)
-    : resource_id(resource_id),
-      resource_size(resource_size),
-      resource_format(resource_format),
-      mailbox(mailbox),
-      ref_count(0),
-      frame_ptr(nullptr),
-#if DCHECK_IS_ON()
-      destructed(false),
-#endif
-      plane_index(0u) {
-}
+    : resource_id_(resource_id),
+      resource_size_(resource_size),
+      resource_format_(resource_format),
+      mailbox_(mailbox) {}
 
 VideoResourceUpdater::PlaneResource::PlaneResource(const PlaneResource& other) =
     default;
 
-bool VideoResourceUpdater::PlaneResourceMatchesUniqueID(
-    const PlaneResource& plane_resource,
-    const media::VideoFrame* video_frame,
-    size_t plane_index) {
-  bool matched = plane_resource.frame_ptr == video_frame &&
-                 plane_resource.plane_index == plane_index &&
-                 plane_resource.timestamp == video_frame->timestamp();
-#if DCHECK_IS_ON()
-  if ((plane_index == 0) && matched) {
-    DCHECK(!plane_resource.destructed)
-        << "ERROR: reused the destructed resource."
-        << " timestamp = " << plane_resource.timestamp;
-  }
-#endif
-  return matched;
+bool VideoResourceUpdater::PlaneResource::Matches(int unique_frame_id,
+                                                  size_t plane_index) {
+  return has_unique_frame_id_and_plane_index_ &&
+         unique_frame_id_ == unique_frame_id && plane_index_ == plane_index;
 }
 
-void VideoResourceUpdater::SetPlaneResourceUniqueId(
-    const media::VideoFrame* video_frame,
-    size_t plane_index,
-    PlaneResource* plane_resource) {
-  plane_resource->frame_ptr = video_frame;
-  plane_resource->plane_index = plane_index;
-  plane_resource->timestamp = video_frame->timestamp();
-#if DCHECK_IS_ON()
-  plane_resource->destructed = false;
-#endif
+void VideoResourceUpdater::PlaneResource::SetUniqueId(int unique_frame_id,
+                                                      size_t plane_index) {
+  DCHECK_EQ(ref_count_, 1);
+  plane_index_ = plane_index;
+  unique_frame_id_ = unique_frame_id;
+  has_unique_frame_id_and_plane_index_ = true;
 }
 
 VideoFrameExternalResources::VideoFrameExternalResources()
@@ -202,7 +167,7 @@ VideoResourceUpdater::VideoResourceUpdater(ContextProvider* context_provider,
 
 VideoResourceUpdater::~VideoResourceUpdater() {
   for (const PlaneResource& plane_resource : all_resources_)
-    resource_provider_->DeleteResource(plane_resource.resource_id);
+    resource_provider_->DeleteResource(plane_resource.resource_id());
 }
 
 VideoResourceUpdater::ResourceList::iterator
@@ -238,8 +203,8 @@ VideoResourceUpdater::AllocateResource(const gfx::Size& plane_size,
 }
 
 void VideoResourceUpdater::DeleteResource(ResourceList::iterator resource_it) {
-  DCHECK_EQ(resource_it->ref_count, 0);
-  resource_provider_->DeleteResource(resource_it->resource_id);
+  DCHECK(!resource_it->has_refs());
+  resource_provider_->DeleteResource(resource_it->resource_id());
   all_resources_.erase(resource_it);
 }
 
@@ -342,7 +307,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
   // Drop recycled resources that are the wrong format.
   for (auto it = all_resources_.begin(); it != all_resources_.end();) {
-    if (it->ref_count == 0 && it->resource_format != output_resource_format)
+    if (!it->has_refs() && it->resource_format() != output_resource_format)
       DeleteResource(it++);
     else
       ++it;
@@ -362,9 +327,9 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     // Try recycle a previously-allocated resource.
     ResourceList::iterator resource_it = all_resources_.end();
     for (auto it = all_resources_.begin(); it != all_resources_.end(); ++it) {
-      if (it->resource_size == output_plane_resource_size &&
-          it->resource_format == output_resource_format) {
-        if (PlaneResourceMatchesUniqueID(*it, video_frame.get(), i)) {
+      if (it->resource_size() == output_plane_resource_size &&
+          it->resource_format() == output_resource_format) {
+        if (it->Matches(video_frame->unique_id(), i)) {
           // Bingo, we found a resource that already contains the data we are
           // planning to put in it. It's safe to reuse it even if
           // resource_provider_ holds some references to it, because those
@@ -378,8 +343,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         // codereview.chromium.org/145273021.
         const bool in_use =
             software_compositor &&
-            resource_provider_->InUseByConsumer(it->resource_id);
-        if (it->ref_count == 0 && !in_use) {
+            resource_provider_->InUseByConsumer(it->resource_id());
+        if (!it->has_refs() && !in_use) {
           // We found a resource with the correct size that we can overwrite.
           resource_it = it;
         }
@@ -396,14 +361,14 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     if (resource_it == all_resources_.end())
       break;
 
-    ++resource_it->ref_count;
+    resource_it->add_ref();
     plane_resources.push_back(resource_it);
   }
 
   if (plane_resources.size() != output_plane_count) {
     // Allocation failed, nothing will be returned so restore reference counts.
     for (ResourceList::iterator resource_it : plane_resources)
-      --resource_it->ref_count;
+      resource_it->remove_ref();
     return VideoFrameExternalResources();
   }
 
@@ -412,34 +377,27 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   if (software_compositor) {
     DCHECK_EQ(plane_resources.size(), 1u);
     PlaneResource& plane_resource = *plane_resources[0];
-    DCHECK_EQ(plane_resource.resource_format, kRGBResourceFormat);
-    DCHECK(plane_resource.mailbox.IsZero());
+    DCHECK_EQ(plane_resource.resource_format(), kRGBResourceFormat);
+    DCHECK(plane_resource.mailbox().IsZero());
 
-    if (!PlaneResourceMatchesUniqueID(plane_resource, video_frame.get(), 0)) {
+    if (!plane_resource.Matches(video_frame->unique_id(), 0)) {
       // We need to transfer data from |video_frame| to the plane resource.
       if (!video_renderer_)
         video_renderer_.reset(new media::SkCanvasVideoRenderer);
 
       ResourceProvider::ScopedWriteLockSoftware lock(
-          resource_provider_, plane_resource.resource_id);
+          resource_provider_, plane_resource.resource_id());
       SkCanvas canvas(lock.sk_bitmap());
       // This is software path, so canvas and video_frame are always backed
       // by software.
       video_renderer_->Copy(video_frame, &canvas, media::Context3D());
-      SetPlaneResourceUniqueId(video_frame.get(), 0, &plane_resource);
-#if DCHECK_IS_ON()
-      // Add VideoFrame destructor callback.
-      video_frame->AddDestructionObserver(base::Bind(
-          &OnVideoFrameDestruct, base::ThreadTaskRunnerHandle::Get(),
-          base::Bind(&VideoResourceUpdater::MarkOldResource, AsWeakPtr(),
-                     base::Unretained(video_frame.get()),
-                     video_frame->timestamp())));
-#endif
+      plane_resource.SetUniqueId(video_frame->unique_id(), 0);
     }
 
-    external_resources.software_resources.push_back(plane_resource.resource_id);
+    external_resources.software_resources.push_back(
+        plane_resource.resource_id());
     external_resources.software_release_callback =
-        base::Bind(&RecycleResource, AsWeakPtr(), plane_resource.resource_id);
+        base::Bind(&RecycleResource, AsWeakPtr(), plane_resource.resource_id());
     external_resources.type = VideoFrameExternalResources::SOFTWARE_RESOURCE;
     return external_resources;
   }
@@ -447,22 +405,22 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   for (size_t i = 0; i < plane_resources.size(); ++i) {
     PlaneResource& plane_resource = *plane_resources[i];
     // Update each plane's resource id with its content.
-    DCHECK_EQ(plane_resource.resource_format,
+    DCHECK_EQ(plane_resource.resource_format(),
               resource_provider_->YuvResourceFormat(bits_per_channel));
 
-    if (!PlaneResourceMatchesUniqueID(plane_resource, video_frame.get(), i)) {
+    if (!plane_resource.Matches(video_frame->unique_id(), i)) {
       // We need to transfer data from |video_frame| to the plane resource.
       // TODO(reveman): Can use GpuMemoryBuffers here to improve performance.
 
       // The |resource_size_pixels| is the size of the resource we want to
       // upload to.
-      gfx::Size resource_size_pixels = plane_resource.resource_size;
+      gfx::Size resource_size_pixels = plane_resource.resource_size();
       // The |video_stride_bytes| is the width of the video frame we are
       // uploading (including non-frame data to fill in the stride).
       int video_stride_bytes = video_frame->stride(i);
 
       size_t bytes_per_row = ResourceUtil::UncheckedWidthInBytes<size_t>(
-          resource_size_pixels.width(), plane_resource.resource_format);
+          resource_size_pixels.width(), plane_resource.resource_format());
       // Use 4-byte row alignment (OpenGL default) for upload performance.
       // Assuming that GL_UNPACK_ALIGNMENT has not changed from default.
       size_t upload_image_stride =
@@ -472,7 +430,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       int shift = 0;
 
       // LUMINANCE_F16 uses half-floats, so we always need a conversion step.
-      if (plane_resource.resource_format == LUMINANCE_F16) {
+      if (plane_resource.resource_format() == LUMINANCE_F16) {
         needs_conversion = true;
         // Note that the current method of converting integers to half-floats
         // stops working if you have more than 10 bits of data.
@@ -495,7 +453,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
           upload_pixels_.resize(needed_size);
 
         for (int row = 0; row < resource_size_pixels.height(); ++row) {
-          if (plane_resource.resource_format == LUMINANCE_F16) {
+          if (plane_resource.resource_format() == LUMINANCE_F16) {
             uint16_t* dst = reinterpret_cast<uint16_t*>(
                 &upload_pixels_[upload_image_stride * row]);
             const uint16_t* src = reinterpret_cast<uint16_t*>(
@@ -527,22 +485,12 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         pixels = &upload_pixels_[0];
       }
 
-      resource_provider_->CopyToResource(plane_resource.resource_id, pixels,
+      resource_provider_->CopyToResource(plane_resource.resource_id(), pixels,
                                          resource_size_pixels);
-      SetPlaneResourceUniqueId(video_frame.get(), i, &plane_resource);
-#if DCHECK_IS_ON()
-      // Add VideoFrame destructor callback.
-      if (i == 0) {
-        video_frame->AddDestructionObserver(base::Bind(
-            &OnVideoFrameDestruct, base::ThreadTaskRunnerHandle::Get(),
-            base::Bind(&VideoResourceUpdater::MarkOldResource, AsWeakPtr(),
-                       base::Unretained(video_frame.get()),
-                       video_frame->timestamp())));
-      }
-#endif
+      plane_resource.SetUniqueId(video_frame->unique_id(), i);
     }
 
-    if (plane_resource.resource_format == LUMINANCE_F16) {
+    if (plane_resource.resource_format() == LUMINANCE_F16) {
       // By OR-ing with 0x3800, 10-bit numbers become half-floats in the
       // range [0.5..1) and 9-bit numbers get the range [0.5..0.75).
       //
@@ -566,11 +514,11 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     }
 
     external_resources.mailboxes.push_back(
-        TextureMailbox(plane_resource.mailbox, gpu::SyncToken(),
+        TextureMailbox(plane_resource.mailbox(), gpu::SyncToken(),
                        resource_provider_->GetResourceTextureTarget(
-                           plane_resource.resource_id)));
-    external_resources.release_callbacks.push_back(
-        base::Bind(&RecycleResource, AsWeakPtr(), plane_resource.resource_id));
+                           plane_resource.resource_id())));
+    external_resources.release_callbacks.push_back(base::Bind(
+        &RecycleResource, AsWeakPtr(), plane_resource.resource_id()));
   }
 
   external_resources.type = VideoFrameExternalResources::YUV_RESOURCE;
@@ -616,10 +564,10 @@ void VideoResourceUpdater::CopyPlaneTexture(
   for (auto it = all_resources_.begin(); it != all_resources_.end(); ++it) {
     // Reuse resource if attributes match and the resource is a currently
     // unreferenced texture.
-    if (it->resource_size == output_plane_resource_size &&
-        it->resource_format == copy_target_format && !it->mailbox.IsZero() &&
-        it->ref_count == 0 &&
-        resource_provider_->GetTextureHint(it->resource_id) !=
+    if (it->resource_size() == output_plane_resource_size &&
+        it->resource_format() == copy_target_format &&
+        !it->mailbox().IsZero() && !it->has_refs() &&
+        resource_provider_->GetTextureHint(it->resource_id()) !=
             ResourceProvider::TEXTURE_HINT_IMMUTABLE) {
       resource = it;
       break;
@@ -633,14 +581,15 @@ void VideoResourceUpdater::CopyPlaneTexture(
                                 true, is_immutable);
   }
 
-  ++resource->ref_count;
+  resource->add_ref();
 
   ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
-                                           resource->resource_id);
+                                           resource->resource_id());
   uint32_t texture_id = lock.texture_id();
 
-  DCHECK_EQ(resource_provider_->GetResourceTextureTarget(resource->resource_id),
-            (GLenum)GL_TEXTURE_2D);
+  DCHECK_EQ(
+      resource_provider_->GetResourceTextureTarget(resource->resource_id()),
+      (GLenum)GL_TEXTURE_2D);
 
   gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
   uint32_t src_texture_id = gl->CreateAndConsumeTextureCHROMIUM(
@@ -661,11 +610,11 @@ void VideoResourceUpdater::CopyPlaneTexture(
   video_frame->UpdateReleaseSyncToken(&client);
 
   external_resources->mailboxes.push_back(TextureMailbox(
-      resource->mailbox, sync_token, GL_TEXTURE_2D, video_frame->coded_size(),
+      resource->mailbox(), sync_token, GL_TEXTURE_2D, video_frame->coded_size(),
       gfx::GpuMemoryBufferId(), false, false));
 
   external_resources->release_callbacks.push_back(
-      base::Bind(&RecycleResource, AsWeakPtr(), resource->resource_id));
+      base::Bind(&RecycleResource, AsWeakPtr(), resource->resource_id()));
 }
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
@@ -728,7 +677,7 @@ void VideoResourceUpdater::RecycleResource(
   const ResourceList::iterator resource_it = std::find_if(
       updater->all_resources_.begin(), updater->all_resources_.end(),
       [resource_id](const PlaneResource& plane_resource) {
-        return plane_resource.resource_id == resource_id;
+        return plane_resource.resource_id() == resource_id;
       });
   if (resource_it == updater->all_resources_.end())
     return;
@@ -740,35 +689,12 @@ void VideoResourceUpdater::RecycleResource(
   }
 
   if (lost_resource) {
-    resource_it->ref_count = 0;
+    resource_it->clear_refs();
     updater->DeleteResource(resource_it);
     return;
   }
 
-  --resource_it->ref_count;
-  DCHECK_GE(resource_it->ref_count, 0);
+  resource_it->remove_ref();
 }
-
-#if DCHECK_IS_ON()
-// static
-void VideoResourceUpdater::MarkOldResource(
-    base::WeakPtr<VideoResourceUpdater> updater,
-    const media::VideoFrame* video_frame_ptr,
-    base::TimeDelta timestamp) {
-  if (!updater)
-    return;
-  const ResourceList::iterator resource_it = std::find_if(
-      updater->all_resources_.begin(), updater->all_resources_.end(),
-      [video_frame_ptr, timestamp](const PlaneResource& plane_resource) {
-        return plane_resource.frame_ptr == video_frame_ptr &&
-               plane_resource.timestamp == timestamp &&
-               plane_resource.plane_index == 0;
-      });
-  if (resource_it == updater->all_resources_.end())
-    return;
-
-  resource_it->destructed = true;
-}
-#endif
 
 }  // namespace cc

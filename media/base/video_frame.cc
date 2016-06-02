@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <climits>
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -21,6 +22,9 @@
 #include "ui/gfx/geometry/point.h"
 
 namespace media {
+
+// Static POD class for generating unique identifiers for each VideoFrame.
+static base::StaticAtomicSequenceNumber g_unique_id_generator;
 
 static bool IsPowerOfTwo(size_t x) {
   return x != 0 && (x & (x - 1)) == 0;
@@ -845,7 +849,8 @@ VideoFrame::VideoFrame(VideoPixelFormat format,
       natural_size_(natural_size),
       shared_memory_handle_(base::SharedMemory::NULLHandle()),
       shared_memory_offset_(0),
-      timestamp_(timestamp) {
+      timestamp_(timestamp),
+      unique_id_(g_unique_id_generator.GetNext()) {
   DCHECK(IsValidConfig(format_, storage_type, coded_size_, visible_rect_,
                        natural_size_));
   memset(&mailbox_holders_, 0, sizeof(mailbox_holders_));

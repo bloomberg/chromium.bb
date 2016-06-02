@@ -72,10 +72,6 @@ TEST_F(NullVideoSinkTest, BasicFunctionality) {
   std::unique_ptr<NullVideoSink> sink = ConstructSink(false, kInterval);
   scoped_refptr<VideoFrame> test_frame = CreateFrame(base::TimeDelta());
 
-  // The sink shouldn't have to be started to use the paint method.
-  EXPECT_CALL(*this, FrameReceived(test_frame));
-  sink->PaintSingleFrame(test_frame);
-
   {
     SCOPED_TRACE("Waiting for sink startup.");
     sink->Start(this);
@@ -115,6 +111,10 @@ TEST_F(NullVideoSinkTest, BasicFunctionality) {
     sink->Stop();
     event.RunAndWait();
   }
+
+  // The sink shouldn't have to be started to use the paint method.
+  EXPECT_CALL(*this, FrameReceived(test_frame));
+  sink->PaintSingleFrame(test_frame);
 }
 
 TEST_F(NullVideoSinkTest, ClocklessFunctionality) {

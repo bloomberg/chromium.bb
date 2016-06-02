@@ -86,44 +86,51 @@ class CC_EXPORT VideoResourceUpdater
       scoped_refptr<media::VideoFrame> video_frame);
 
  private:
-  struct PlaneResource {
-    unsigned resource_id;
-    gfx::Size resource_size;
-    ResourceFormat resource_format;
-    gpu::Mailbox mailbox;
-    // The balance between the number of times this resource has been returned
-    // from CreateForSoftwarePlanes vs released in RecycleResource.
-    int ref_count;
-    // These last three members will be used for identifying the data stored in
-    // this resource, and uniquely identifies a media::VideoFrame plane. The
-    // frame pointer will only be used for pointer comparison, i.e. the
-    // underlying data will not be accessed.
-    const void* frame_ptr;
-#if DCHECK_IS_ON()
-    // This is marked true when the orginal VideoFrame is destructed. It is
-    // used to detect clients that are not setting the VideoFrame's timestamp
-    // field correctly, as required. The memory allocator can and will re-use
-    // the same pointer for new VideoFrame instances, so a destruction observer
-    // is used to detect that.
-    bool destructed;
-#endif
-    size_t plane_index;
-    base::TimeDelta timestamp;
-
+  class PlaneResource {
+   public:
     PlaneResource(unsigned resource_id,
                   const gfx::Size& resource_size,
                   ResourceFormat resource_format,
                   gpu::Mailbox mailbox);
     PlaneResource(const PlaneResource& other);
+
+    // Returns true if this resource matches the unique identifiers of another
+    // VideoFrame resource.
+    bool Matches(int unique_frame_id, size_t plane_index);
+
+    // Sets the unique identifiers for this resource, may only be called when
+    // there is a single reference to the resource (i.e. |ref_count_| == 1).
+    void SetUniqueId(int unique_frame_id, size_t plane_index);
+
+    // Accessors for resource identifiers provided at construction time.
+    unsigned resource_id() const { return resource_id_; }
+    const gfx::Size& resource_size() const { return resource_size_; }
+    ResourceFormat resource_format() const { return resource_format_; }
+    const gpu::Mailbox& mailbox() const { return mailbox_; }
+
+    // Various methods for managing references. See |ref_count_| for details.
+    void add_ref() { ++ref_count_; }
+    void remove_ref() { --ref_count_; }
+    void clear_refs() { ref_count_ = 0; }
+    bool has_refs() const { return ref_count_ != 0; }
+
+   private:
+    // The balance between the number of times this resource has been returned
+    // from CreateForSoftwarePlanes vs released in RecycleResource.
+    int ref_count_ = 0;
+
+    // These two members are used for identifying the data stored in this
+    // resource; they uniquely identify a media::VideoFrame plane.
+    int unique_frame_id_ = 0;
+    size_t plane_index_ = 0u;
+    // Indicates if the above two members have been set or not.
+    bool has_unique_frame_id_and_plane_index_ = false;
+
+    const unsigned resource_id_;
+    const gfx::Size resource_size_;
+    const ResourceFormat resource_format_;
+    const gpu::Mailbox mailbox_;
   };
-
-  static bool PlaneResourceMatchesUniqueID(const PlaneResource& plane_resource,
-                                           const media::VideoFrame* video_frame,
-                                           size_t plane_index);
-
-  static void SetPlaneResourceUniqueId(const media::VideoFrame* video_frame,
-                                       size_t plane_index,
-                                       PlaneResource* plane_resource);
 
   // This needs to be a container where iterators can be erased without
   // invalidating other iterators.
@@ -151,12 +158,6 @@ class CC_EXPORT VideoResourceUpdater
                             const gpu::SyncToken& sync_token,
                             bool lost_resource,
                             BlockingTaskRunner* main_thread_task_runner);
-#if DCHECK_IS_ON()
-  // Mark the |destructed| as true when the orginal VideoFrame is destructed.
-  static void MarkOldResource(base::WeakPtr<VideoResourceUpdater> updater,
-                              const media::VideoFrame* video_frame_ptr,
-                              base::TimeDelta timestamp);
-#endif
 
   ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;

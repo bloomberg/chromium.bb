@@ -89,6 +89,9 @@ void NullVideoSink::CallRender() {
 }
 
 void NullVideoSink::PaintSingleFrame(const scoped_refptr<VideoFrame>& frame) {
+  if (frame == last_frame_)
+    return;
+  last_frame_ = frame;
   new_frame_cb_.Run(frame);
 }
 

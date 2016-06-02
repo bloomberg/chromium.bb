@@ -368,9 +368,6 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
   if (frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM)) {
     DCHECK(!received_end_of_stream_);
     received_end_of_stream_ = true;
-
-    // See if we can fire EOS immediately instead of waiting for Render().
-    MaybeFireEndedCallback_Locked(time_progressing_);
   } else if ((low_delay_ || !video_frame_stream_->CanReadWithoutStalling()) &&
              IsBeforeStartTime(frame->timestamp())) {
     // Don't accumulate frames that are earlier than the start time if we
@@ -391,18 +388,27 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
   // Attempt to purge bad frames in case of underflow or backgrounding.
   RemoveFramesForUnderflowOrBackgroundRendering();
 
-  // Signal buffering state if we've met our conditions.
-  if (buffering_state_ == BUFFERING_HAVE_NOTHING && HaveEnoughData_Locked()) {
-    TransitionToHaveEnough_Locked();
+  // We may have removed all frames above and have reached end of stream.
+  MaybeFireEndedCallback_Locked(time_progressing_);
 
-    // Paint the first frame if necessary.
-    if (!rendered_end_of_stream_ && !sink_started_) {
-      DCHECK(algorithm_->frames_queued());
+  // Paint the first frame if possible and necessary. PaintSingleFrame() will
+  // ignore repeated calls for the same frame. Paint ahead of HAVE_ENOUGH_DATA
+  // to ensure the user sees the frame as early as possible.
+  if (!sink_started_ && algorithm_->frames_queued()) {
+    // We want to paint the first frame under two conditions: Either (1) we have
+    // enough frames to know it's definitely the first frame or (2) there may be
+    // no more frames coming (sometimes unless we paint one of them).
+    if (algorithm_->frames_queued() > 1 || received_end_of_stream_ ||
+        low_delay_ || !video_frame_stream_->CanReadWithoutStalling()) {
       scoped_refptr<VideoFrame> frame = algorithm_->first_frame();
       CheckForMetadataChanges(frame->format(), frame->natural_size());
       sink_->PaintSingleFrame(frame);
     }
   }
+
+  // Signal buffering state if we've met our conditions.
+  if (buffering_state_ == BUFFERING_HAVE_NOTHING && HaveEnoughData_Locked())
+    TransitionToHaveEnough_Locked();
 
   // Always request more decoded video if we have capacity. This serves two
   // purposes:

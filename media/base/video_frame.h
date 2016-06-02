@@ -420,6 +420,10 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns a human-readable string describing |*this|.
   std::string AsHumanReadableString();
 
+  // Unique identifier for this video frame; generated at construction time and
+  // guaranteed to be unique within a single process.
+  int unique_id() const { return unique_id_; }
+
  protected:
   friend class base::RefCountedThreadSafe<VideoFrame>;
 
@@ -568,6 +572,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   gpu::SyncToken release_sync_token_;
 
   VideoFrameMetadata metadata_;
+
+  // Generated at construction time.
+  const int unique_id_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoFrame);
 };
