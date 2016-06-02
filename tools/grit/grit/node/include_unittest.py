@@ -11,8 +11,8 @@ if __name__ == '__main__':
   sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 
 import os
+import StringIO
 import unittest
-import zlib
 
 from grit.node import misc
 from grit.node import include
@@ -68,21 +68,6 @@ class IncludeNodeUnittest(unittest.TestCase):
     self.assertEqual(root.ToRealPath(include_node.GetInputPath()),
                      util.normpath(
                        os.path.join(ur'../', ur'flugel/kugel.pdf')))
-
-  def testCompressGzip(self):
-    root = util.ParseGrdForUnittest('''
-        <includes>
-          <include name="TEST_TXT" file="test_text.txt"
-                   compress="gzip" type="BINDATA"/>
-        </includes>''', base_dir = util.PathFromRoot('grit/testdata'))
-    inc, = root.GetChildrenOfType(include.IncludeNode)
-    throwaway, compressed = inc.GetDataPackPair(lang='en', encoding=1)
-
-    # compressed[1:] ensures we skip the special inserted first byte.
-    decompressed_data = zlib.decompress(compressed[1:], 16 + zlib.MAX_WBITS)
-    self.assertEqual(util.ReadFile(util.PathFromRoot('grit/testdata')
-                                   + "/test_text.txt", util.BINARY),
-                     decompressed_data)
 
 
 if __name__ == '__main__':

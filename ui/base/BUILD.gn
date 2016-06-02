@@ -371,7 +371,6 @@ component("base") {
     "//base/third_party/dynamic_annotations",
     "//net",
     "//third_party/icu",
-    "//third_party/zlib:zlib",
     "//ui/base:ui_data_pack",
     "//ui/display",
     "//ui/events",

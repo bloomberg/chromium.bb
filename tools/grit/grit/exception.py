@@ -48,6 +48,7 @@ class UnexpectedContent(Parsing):
   '''This element should not have content'''
   pass
 
+
 class MissingMandatoryAttribute(Parsing):
   '''This element is missing a mandatory attribute'''
   pass
@@ -135,7 +136,3 @@ class IdRangeOverlap(Base):
   '''ID range overlap.'''
   pass
 
-
-class ReservedHeaderCollision(Base):
-  '''Resource included with first 3 bytes matching reserved header.'''
-  pass

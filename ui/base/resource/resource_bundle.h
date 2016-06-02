@@ -50,8 +50,6 @@ class UI_BASE_EXPORT ResourceBundle {
   static const int kMediumFontDelta = 3;
   static const int kLargeFontDelta = 8;
 
-  static constexpr const char* CUSTOM_GZIP_HEADER = "\xff\x1f\x8b";
-
   // Legacy font style mappings. TODO(tapted): Phase these out in favour of
   // client code providing their own constant with the desired font size delta.
   enum FontStyle {
@@ -230,7 +228,7 @@ class UI_BASE_EXPORT ResourceBundle {
       ScaleFactor scale_factor) const;
 
   // Return the contents of a scale independent resource in a
-  // StringPiece given the resource id.
+  // StringPiece given the resource id
   base::StringPiece GetRawDataResource(int resource_id) const;
 
   // Return the contents of a resource in a StringPiece given the resource id
@@ -387,15 +385,6 @@ class UI_BASE_EXPORT ResourceBundle {
                   ScaleFactor* scale_factor,
                   SkBitmap* bitmap,
                   bool* fell_back_to_1x) const;
-
-  // Loads the raw bytes of a data resource nearest the scale factor
-  // |scale_factor| into |bytes|, without doing any processing or
-  // interpretation of the resource. Use ResourceHandle::SCALE_FACTOR_NONE
-  // for scale independent image resources (such as wallpaper).
-  // Returns NULL if we fail to read the resource.
-  base::StringPiece GetRawDataResourceForScaleImpl(
-      int resource_id,
-      ScaleFactor scale_factor) const;
 
   // Returns true if missing scaled resources should be visually indicated when
   // drawing the fallback (e.g., by tinting the image).

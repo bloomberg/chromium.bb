@@ -66,7 +66,6 @@
         '../../skia/skia.gyp:skia',
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
-        '../../third_party/zlib/zlib.gyp:zlib',
         '../../url/url.gyp:url_lib',
         '../display/display.gyp:display',
         '../events/events.gyp:events',
