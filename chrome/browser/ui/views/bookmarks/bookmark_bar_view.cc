@@ -1240,13 +1240,13 @@ const char* BookmarkBarView::GetClassName() const {
   return kViewClassName;
 }
 
-void BookmarkBarView::SetVisible(bool v) {
-  if (v == visible())
-    return;
+void BookmarkBarView::VisibilityChanged(View* starting_from, bool is_visible) {
+  AccessiblePaneView::VisibilityChanged(starting_from, is_visible);
 
-  View::SetVisible(v);
-  FOR_EACH_OBSERVER(BookmarkBarViewObserver, observers_,
-                    OnBookmarkBarVisibilityChanged());
+  if (starting_from == this) {
+    FOR_EACH_OBSERVER(BookmarkBarViewObserver, observers_,
+                      OnBookmarkBarVisibilityChanged());
+  }
 }
 
 void BookmarkBarView::GetAccessibleState(ui::AXViewState* state) {

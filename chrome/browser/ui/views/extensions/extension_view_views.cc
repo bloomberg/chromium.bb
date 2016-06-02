@@ -42,10 +42,11 @@ Browser* ExtensionViewViews::GetBrowser() {
   return browser_;
 }
 
-void ExtensionViewViews::SetVisible(bool is_visible) {
-  if (is_visible != visible()) {
-    views::WebView::SetVisible(is_visible);
+void ExtensionViewViews::VisibilityChanged(View* starting_from,
+                                           bool is_visible) {
+  views::WebView::VisibilityChanged(starting_from, is_visible);
 
+  if (starting_from == this) {
     // Also tell RenderWidgetHostView the new visibility. Despite its name, it
     // is not part of the View hierarchy and does not know about the change
     // unless we tell it.

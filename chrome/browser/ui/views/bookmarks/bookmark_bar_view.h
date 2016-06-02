@@ -177,7 +177,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
   int OnPerformDrop(const ui::DropTargetEvent& event) override;
   void OnThemeChanged() override;
   const char* GetClassName() const override;
-  void SetVisible(bool visible) override;
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
 
   // AccessiblePaneView:
   void GetAccessibleState(ui::AXViewState* state) override;
