@@ -43,11 +43,29 @@ ThrottlingHelper::~ThrottlingHelper() {
   renderer_scheduler_->UnregisterTimeDomain(time_domain_.get());
 }
 
+void ThrottlingHelper::SetQueueEnabled(TaskQueue* task_queue, bool enabled) {
+  TaskQueueMap::iterator find_it = throttled_queues_.find(task_queue);
+
+  if (find_it == throttled_queues_.end()) {
+    task_queue->SetQueueEnabled(enabled);
+    return;
+  }
+
+  find_it->second.enabled = enabled;
+
+  // We don't enable the queue here because it's throttled and there might be
+  // tasks in it's work queue that would execute immediatly rather than after
+  // PumpThrottledTasks runs.
+  if (!enabled)
+    task_queue->SetQueueEnabled(false);
+}
+
 void ThrottlingHelper::IncreaseThrottleRefCount(TaskQueue* task_queue) {
   DCHECK_NE(task_queue, task_runner_.get());
 
   std::pair<TaskQueueMap::iterator, bool> insert_result =
-      throttled_queues_.insert(std::make_pair(task_queue, 1));
+      throttled_queues_.insert(std::make_pair(
+          task_queue, Metadata(1, task_queue->IsQueueEnabled())));
 
   if (insert_result.second) {
     // The insert was succesful so we need to throttle the queue.
@@ -64,20 +82,22 @@ void ThrottlingHelper::IncreaseThrottleRefCount(TaskQueue* task_queue) {
     }
   } else {
     // An entry already existed in the map so we need to increment the refcount.
-    insert_result.first->second++;
+    insert_result.first->second.throttling_ref_count++;
   }
 }
 
 void ThrottlingHelper::DecreaseThrottleRefCount(TaskQueue* task_queue) {
   TaskQueueMap::iterator iter = throttled_queues_.find(task_queue);
 
-  if (iter != throttled_queues_.end() && --iter->second == 0) {
+  if (iter != throttled_queues_.end() &&
+      --iter->second.throttling_ref_count == 0) {
+    bool enabled = iter->second.enabled;
     // The refcount has become zero, we need to unthrottle the queue.
     throttled_queues_.erase(iter);
 
     task_queue->SetTimeDomain(renderer_scheduler_->real_time_domain());
     task_queue->SetPumpPolicy(TaskQueue::PumpPolicy::AUTO);
-    task_queue->SetQueueEnabled(true);
+    task_queue->SetQueueEnabled(enabled);
   }
 }
 
@@ -120,7 +140,7 @@ void ThrottlingHelper::PumpThrottledTasks() {
     if (task_queue->IsEmpty())
       continue;
 
-    task_queue->SetQueueEnabled(true);
+    task_queue->SetQueueEnabled(map_entry.second.enabled);
     task_queue->PumpQueue(false);
   }
   // Make sure NextScheduledRunTime gives us an up-to date result.

@@ -199,6 +199,10 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewLoadingTaskRunner(
       MainThreadOnly().current_policy.loading_queue_policy.is_enabled);
   loading_task_queue->SetQueuePriority(
       MainThreadOnly().current_policy.loading_queue_policy.priority);
+  if (MainThreadOnly().current_policy.loading_queue_policy.time_domain_type ==
+      TimeDomainType::THROTTLED) {
+    throttling_helper_->IncreaseThrottleRefCount(loading_task_queue.get());
+  }
   loading_task_queue->AddTaskObserver(
       &MainThreadOnly().loading_task_cost_estimator);
   return loading_task_queue;
@@ -216,6 +220,10 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewTimerTaskRunner(
       MainThreadOnly().current_policy.timer_queue_policy.is_enabled);
   timer_task_queue->SetQueuePriority(
       MainThreadOnly().current_policy.timer_queue_policy.priority);
+  if (MainThreadOnly().current_policy.timer_queue_policy.time_domain_type ==
+      TimeDomainType::THROTTLED) {
+    throttling_helper_->IncreaseThrottleRefCount(timer_task_queue.get());
+  }
   timer_task_queue->AddTaskObserver(
       &MainThreadOnly().timer_task_cost_estimator);
   return timer_task_queue;
@@ -830,6 +838,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   if (MainThreadOnly().timer_queue_suspend_count != 0 ||
       MainThreadOnly().timer_queue_suspended_when_backgrounded) {
     new_policy.timer_queue_policy.is_enabled = false;
+    new_policy.timer_queue_policy.time_domain_type = TimeDomainType::REAL;
   }
 
   // Tracing is done before the early out check, because it's quite possible we
@@ -890,10 +899,11 @@ void RendererSchedulerImpl::ApplyTaskQueuePolicy(
     TaskQueue* task_queue,
     const TaskQueuePolicy& old_task_queue_policy,
     const TaskQueuePolicy& new_task_queue_policy) const {
-  // The ThrottlingHelper also calls SetQueueEnabled, so we can avoid calling
-  // this here.
-  if (new_task_queue_policy.time_domain_type != TimeDomainType::THROTTLED)
-    task_queue->SetQueueEnabled(new_task_queue_policy.is_enabled);
+  if (old_task_queue_policy.is_enabled != new_task_queue_policy.is_enabled) {
+    throttling_helper_->SetQueueEnabled(task_queue,
+                                        new_task_queue_policy.is_enabled);
+  }
+
   if (old_task_queue_policy.priority != new_task_queue_policy.priority)
     task_queue->SetQueuePriority(new_task_queue_policy.priority);
 
@@ -1023,7 +1033,7 @@ void RendererSchedulerImpl::SuspendTimerQueue() {
 #ifndef NDEBUG
   DCHECK(!default_timer_task_runner_->IsQueueEnabled());
   for (const auto& runner : timer_task_runners_) {
-    DCHECK(!runner->IsQueueEnabled());
+     DCHECK(!runner->IsQueueEnabled());
   }
 #endif
 }

@@ -371,14 +371,61 @@ TEST_F(ThrottlingHelperTest, TaskQueueDisabledTillPump) {
   EXPECT_TRUE(timer_queue_->IsQueueEnabled());
 }
 
-TEST_F(ThrottlingHelperTest, TaskQueueEnabledOnUnthrottle) {
+TEST_F(ThrottlingHelperTest, TaskQueueUnthrottle_InitiallyEnabled) {
   timer_queue_->PostTask(FROM_HERE, base::Bind(&NopTask));
 
+  timer_queue_->SetQueueEnabled(true);  // NOP
   throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
   EXPECT_FALSE(timer_queue_->IsQueueEnabled());
 
   throttling_helper_->DecreaseThrottleRefCount(timer_queue_.get());
   EXPECT_TRUE(timer_queue_->IsQueueEnabled());
+}
+
+TEST_F(ThrottlingHelperTest, TaskQueueUnthrottle_InitiallyDisabled) {
+  timer_queue_->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  timer_queue_->SetQueueEnabled(false);
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
+  EXPECT_FALSE(timer_queue_->IsQueueEnabled());
+
+  throttling_helper_->DecreaseThrottleRefCount(timer_queue_.get());
+  EXPECT_FALSE(timer_queue_->IsQueueEnabled());
+}
+
+TEST_F(ThrottlingHelperTest, SetQueueEnabled_Unthrottled) {
+  timer_queue_->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  throttling_helper_->SetQueueEnabled(timer_queue_.get(), false);
+  EXPECT_FALSE(timer_queue_->IsQueueEnabled());
+
+  throttling_helper_->SetQueueEnabled(timer_queue_.get(), true);
+  EXPECT_TRUE(timer_queue_->IsQueueEnabled());
+}
+
+TEST_F(ThrottlingHelperTest, SetQueueEnabled_DisabledWhileThrottled) {
+  timer_queue_->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
+  EXPECT_FALSE(timer_queue_->IsQueueEnabled());
+
+  throttling_helper_->SetQueueEnabled(timer_queue_.get(), false);
+  throttling_helper_->DecreaseThrottleRefCount(timer_queue_.get());
+  EXPECT_FALSE(timer_queue_->IsQueueEnabled());
+}
+
+TEST_F(ThrottlingHelperTest, TaskQueueDisabledTillPump_ThenManuallyDisabled) {
+  timer_queue_->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  EXPECT_TRUE(timer_queue_->IsQueueEnabled());
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
+  EXPECT_FALSE(timer_queue_->IsQueueEnabled());
+
+  mock_task_runner_->RunUntilIdle();  // Wait until the pump.
+  EXPECT_TRUE(timer_queue_->IsQueueEnabled());
+
+  throttling_helper_->SetQueueEnabled(timer_queue_.get(), false);
+  EXPECT_FALSE(timer_queue_->IsQueueEnabled());
 }
 
 }  // namespace scheduler
