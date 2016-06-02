@@ -4,8 +4,8 @@
 
 #include "ash/first_run/desktop_cleaner.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"

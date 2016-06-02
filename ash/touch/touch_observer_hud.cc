@@ -4,10 +4,10 @@
 
 #include "ash/touch/touch_observer_hud.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"

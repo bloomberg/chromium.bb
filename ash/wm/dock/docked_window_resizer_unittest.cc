@@ -5,6 +5,7 @@
 #include "ash/common/wm/dock/docked_window_resizer.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/window_state.h"
@@ -18,7 +19,6 @@
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/shell_test_api.h"

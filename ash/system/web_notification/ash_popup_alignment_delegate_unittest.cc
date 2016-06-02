@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
@@ -14,7 +15,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"

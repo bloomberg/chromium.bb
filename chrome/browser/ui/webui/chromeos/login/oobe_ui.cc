@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "ash/shell_window_ids.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/wm/screen_dimmer.h"
 #include "base/command_line.h"
 #include "base/logging.h"

@@ -4,7 +4,7 @@
 
 #include "mash/wm/container_ids.h"
 
-#include "ash/common/wm/wm_shell_window_ids.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/public/interfaces/container.mojom.h"
 
 using ash::mojom::Container;

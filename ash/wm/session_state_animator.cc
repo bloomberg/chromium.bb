@@ -4,8 +4,8 @@
 
 #include "ash/wm/session_state_animator.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_event_dispatcher.h"

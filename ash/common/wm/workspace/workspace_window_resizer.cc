@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/default_window_resizer.h"
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/dock/docked_window_resizer.h"
@@ -20,7 +21,6 @@
 #include "ash/common/wm/wm_lookup.h"
 #include "ash/common/wm/wm_root_window_controller.h"
 #include "ash/common/wm/wm_screen_util.h"
-#include "ash/common/wm/wm_shell_window_ids.h"
 #include "ash/common/wm/wm_user_metrics_action.h"
 #include "ash/common/wm/wm_window.h"
 #include "ash/common/wm/workspace/phantom_window_controller.h"

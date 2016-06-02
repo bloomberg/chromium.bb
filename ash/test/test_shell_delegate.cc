@@ -8,6 +8,7 @@
 
 #include "ash/app_list/app_list_presenter_delegate.h"
 #include "ash/app_list/app_list_presenter_delegate_factory.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/container_delegate_aura.h"
 #include "ash/default_accessibility_delegate.h"
@@ -17,7 +18,6 @@
 #include "ash/pointer_watcher_delegate_aura.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/test_keyboard_ui.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shelf_delegate.h"

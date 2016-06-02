@@ -8,11 +8,11 @@
 #include <cstdlib>
 
 #include "ash/ash_switches.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_user_wallpaper_delegate.h"
 #include "base/message_loop/message_loop.h"

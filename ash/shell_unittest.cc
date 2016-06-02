@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/ash_switches.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/drag_drop/drag_drop_controller.h"
@@ -17,7 +18,6 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/window_util.h"

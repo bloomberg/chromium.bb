@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/network_connect_delegate_chromeos.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/user/login_status.h"
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"

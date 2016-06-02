@@ -6,10 +6,10 @@
 
 #include <math.h>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/wm_lookup.h"
 #include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_shell_window_ids.h"
 #include "ash/common/wm/wm_window.h"
 #include "grit/ash_resources.h"
 #include "ui/compositor/layer.h"

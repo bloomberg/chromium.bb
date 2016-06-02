@@ -5,6 +5,7 @@
 #include "ash/shelf/shelf_widget.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/shelf/wm_shelf_constants.h"
 #include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/common/wm/wm_root_window_controller.h"
@@ -19,7 +20,6 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/status_area_layout_manager.h"

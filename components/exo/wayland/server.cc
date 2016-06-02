@@ -24,7 +24,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/common/wm/wm_shell_window_ids.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"

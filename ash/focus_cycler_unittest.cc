@@ -6,13 +6,13 @@
 
 #include <memory>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/wm_globals.h"
 #include "ash/common/wm/wm_window.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_factory.h"
-#include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"

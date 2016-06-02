@@ -4,10 +4,10 @@
 
 #include "ash/common/wm/fullscreen_window_finder.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/switchable_windows.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_globals.h"
-#include "ash/common/wm/wm_shell_window_ids.h"
 #include "ash/common/wm/wm_window.h"
 #include "ui/compositor/layer.h"
 

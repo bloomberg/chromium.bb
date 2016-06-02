@@ -6,11 +6,11 @@
 
 #include "ash/ash_export.h"
 #include "ash/ash_switches.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/focus_cycler.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/system/tray/tray_constants.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window_event_dispatcher.h"

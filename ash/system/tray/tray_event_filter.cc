@@ -4,11 +4,11 @@
 
 #include "ash/system/tray/tray_event_filter.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/container_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"

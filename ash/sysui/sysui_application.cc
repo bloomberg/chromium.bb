@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/ash_window_tree_host_platform.h"
@@ -18,7 +19,6 @@
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
-#include "ash/shell_window_ids.h"
 #include "ash/sysui/app_list_presenter_mus.h"
 #include "ash/sysui/keyboard_ui_mus.h"
 #include "ash/sysui/shelf_delegate_mus.h"

@@ -4,7 +4,7 @@
 
 #include "ash/common/wm/switchable_windows.h"
 
-#include "ash/common/wm/wm_shell_window_ids.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/wm_window.h"
 
 namespace ash {

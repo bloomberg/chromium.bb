@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/content/shell_content_state.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
@@ -15,7 +16,6 @@
 #include "ash/shell/panel_window.h"
 #include "ash/shell/toplevel_window.h"
 #include "ash/shell_delegate.h"
-#include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "ash/test/child_modal_window.h"

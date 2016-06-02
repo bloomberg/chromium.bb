@@ -6,9 +6,9 @@
 
 #include <string>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"

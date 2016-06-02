@@ -6,6 +6,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/app_list/app_list_presenter_delegate_factory.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/container_delegate_aura.h"
 #include "ash/default_accessibility_delegate.h"
@@ -19,7 +20,6 @@
 #include "ash/shell/example_factory.h"
 #include "ash/shell/shelf_delegate_impl.h"
 #include "ash/shell/toplevel_window.h"
-#include "ash/shell_window_ids.h"
 #include "ash/system/tray/default_system_tray_delegate.h"
 #include "ash/test/test_keyboard_ui.h"
 #include "base/memory/ptr_util.h"

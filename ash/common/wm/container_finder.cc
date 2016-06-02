@@ -4,12 +4,12 @@
 
 #include "ash/common/wm/container_finder.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/always_on_top_controller.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_globals.h"
 #include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_shell_window_ids.h"
 #include "ash/common/wm/wm_window.h"
 #include "ui/gfx/geometry/rect.h"
 

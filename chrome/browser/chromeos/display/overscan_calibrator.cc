@@ -8,11 +8,11 @@
 
 #include <limits>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "base/callback.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"

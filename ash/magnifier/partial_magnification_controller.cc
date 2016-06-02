@@ -4,8 +4,8 @@
 
 #include "ash/magnifier/partial_magnification_controller.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"

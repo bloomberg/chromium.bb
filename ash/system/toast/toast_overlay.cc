@@ -4,11 +4,11 @@
 
 #include "ash/system/toast/toast_overlay.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/wm/window_animations.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

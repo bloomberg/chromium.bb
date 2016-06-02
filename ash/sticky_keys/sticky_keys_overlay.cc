@@ -4,8 +4,8 @@
 
 #include "ash/sticky_keys/sticky_keys_overlay.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

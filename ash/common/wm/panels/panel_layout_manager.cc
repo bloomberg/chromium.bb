@@ -8,6 +8,7 @@
 #include <map>
 #include <utility>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/shelf/wm_shelf.h"
 #include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/common/wm/window_animation_types.h"
@@ -16,7 +17,6 @@
 #include "ash/common/wm/wm_globals.h"
 #include "ash/common/wm/wm_lookup.h"
 #include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_shell_window_ids.h"
 #include "ash/common/wm/wm_window.h"
 #include "ash/common/wm/wm_window_property.h"
 #include "base/auto_reset.h"

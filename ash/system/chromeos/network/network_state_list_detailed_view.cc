@@ -9,12 +9,12 @@
 
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/networking_config_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/shell_window_ids.h"
 #include "ash/system/chromeos/network/tray_network_state_observer.h"
 #include "ash/system/chromeos/network/vpn_list_view.h"
 #include "ash/system/tray/fixed_sized_image_view.h"

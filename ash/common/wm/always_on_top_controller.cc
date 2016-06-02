@@ -4,7 +4,7 @@
 
 #include "ash/common/wm/always_on_top_controller.h"
 
-#include "ash/common/wm/wm_shell_window_ids.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/wm_window.h"
 #include "ash/common/wm/wm_window_property.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"

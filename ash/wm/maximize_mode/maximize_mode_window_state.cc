@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/common/wm/window_state_delegate.h"
 #include "ash/common/wm/window_state_util.h"
@@ -14,7 +15,6 @@
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/window_animations.h"

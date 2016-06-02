@@ -6,10 +6,10 @@
 
 #include <cmath>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
 #include "ui/aura/client/capture_client.h"

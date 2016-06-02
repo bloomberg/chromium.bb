@@ -7,12 +7,12 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"

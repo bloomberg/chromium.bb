@@ -5,6 +5,7 @@
 #include "ash/common/wm/panels/panel_layout_manager.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
@@ -16,7 +17,6 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"

@@ -4,6 +4,7 @@
 
 #include "ash/common/wm/dock/docked_window_layout_manager.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/shelf/wm_shelf.h"
 #include "ash/common/wm/shelf/wm_shelf_constants.h"
 #include "ash/common/wm/shelf/wm_shelf_observer.h"
@@ -14,7 +15,6 @@
 #include "ash/common/wm/wm_globals.h"
 #include "ash/common/wm/wm_lookup.h"
 #include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_shell_window_ids.h"
 #include "ash/common/wm/wm_window.h"
 #include "base/auto_reset.h"
 #include "base/metrics/histogram.h"

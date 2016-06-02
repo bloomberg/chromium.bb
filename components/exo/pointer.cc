@@ -4,10 +4,10 @@
 
 #include "components/exo/pointer.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/surface.h"
 #include "ui/aura/env.h"

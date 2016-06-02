@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shelf_delegate.h"
 #include "ash/wm/mru_window_tracker.h"

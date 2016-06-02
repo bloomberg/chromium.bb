@@ -6,10 +6,10 @@
 
 #include <algorithm>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"

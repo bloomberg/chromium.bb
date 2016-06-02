@@ -4,11 +4,11 @@
 
 #include "ash/common/wm/always_on_top_controller.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/workspace/workspace_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_layout_manager_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "base/command_line.h"

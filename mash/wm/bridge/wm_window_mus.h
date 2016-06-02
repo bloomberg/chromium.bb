@@ -228,7 +228,7 @@ class WmWindowMus : public ash::wm::WmWindow, public mus::WindowObserver {
   mus::Window* window_;
 
   // The shell window id of this window. Shell window ids are defined in
-  // ash/common/wm/wm_shell_window_ids.h.
+  // ash/common/shell_window_ids.h.
   int shell_window_id_ = -1;
 
   std::unique_ptr<ash::wm::WindowState> window_state_;

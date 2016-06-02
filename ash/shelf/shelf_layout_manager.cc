@@ -12,6 +12,7 @@
 
 #include "ash/accelerators/accelerator_commands.h"
 #include "ash/ash_switches.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_root_window_controller.h"
@@ -27,7 +28,6 @@
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/aura/wm_window_aura.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"

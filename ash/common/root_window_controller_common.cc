@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/root_window_controller_common.h"
+#include "ash/common/root_window_controller_common.h"
 
+#include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/common/wm/wm_globals.h"
 #include "ash/common/wm/wm_window.h"
-#include "ash/shell_window_ids.h"
-#include "ash/wm/root_window_layout_manager.h"
 #include "base/memory/ptr_util.h"
 
 namespace ash {

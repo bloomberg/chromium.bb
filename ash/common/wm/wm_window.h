@@ -67,7 +67,7 @@ class ASH_EXPORT WmWindow {
 
   virtual base::string16 GetTitle() const = 0;
 
-  // See wm_shell_window_ids.h for list of known ids.
+  // See shell_window_ids.h for list of known ids.
   virtual void SetShellWindowId(int id) = 0;
   virtual int GetShellWindowId() const = 0;
   virtual WmWindow* GetChildByShellWindowId(int id) = 0;

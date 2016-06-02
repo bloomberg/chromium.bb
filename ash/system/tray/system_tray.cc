@@ -5,12 +5,12 @@
 #include "ash/system/tray/system_tray.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_util.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/system/audio/tray_audio.h"
 #include "ash/system/cast/tray_cast.h"
 #include "ash/system/date/tray_date.h"

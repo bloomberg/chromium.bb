@@ -4,13 +4,13 @@
 
 #include "ash/common/wm/panels/panel_window_resizer.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/panels/panel_layout_manager.h"
 #include "ash/common/wm/shelf/wm_shelf.h"
 #include "ash/common/wm/window_parenting_utils.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_lookup.h"
 #include "ash/common/wm/wm_root_window_controller.h"
-#include "ash/common/wm/wm_shell_window_ids.h"
 #include "ash/common/wm/wm_window.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ui_base_types.h"

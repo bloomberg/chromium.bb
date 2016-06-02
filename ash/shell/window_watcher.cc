@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_item_delegate_manager.h"
@@ -14,7 +15,6 @@
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell/window_watcher_shelf_item_delegate.h"
-#include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"

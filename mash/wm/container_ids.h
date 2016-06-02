@@ -24,7 +24,7 @@ extern const ash::mojom::Container kActivationContainers[];
 // Number of kActivationContainers.
 extern const size_t kNumActivationContainers;
 
-// Converts window ids between ash (ash/common/wm/wm_shell_window_ids.h) and
+// Converts window ids between ash (ash/common/shell_window_ids.h) and
 // mash.
 ash::mojom::Container AshContainerToMashContainer(int shell_window_id);
 int MashContainerToAshContainer(ash::mojom::Container container);

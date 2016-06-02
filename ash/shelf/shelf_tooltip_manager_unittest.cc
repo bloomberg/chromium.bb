@@ -4,10 +4,10 @@
 
 #include "ash/shelf/shelf_tooltip_manager.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_test_api.h"
 #include "ash/test/shelf_view_test_api.h"

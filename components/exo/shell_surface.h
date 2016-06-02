@@ -226,7 +226,7 @@ class ShellSurface : public SurfaceDelegate,
   const gfx::Rect initial_bounds_;
   const bool activatable_;
   const bool resizeable_;
-  // Container Window Id (see ash/common/wm/wm_shell_window_ids.h)
+  // Container Window Id (see ash/common/shell_window_ids.h)
   const int container_;
   base::string16 title_;
   std::string application_id_;

@@ -5,6 +5,8 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 
 #include "ash/ash_switches.h"
+#include "ash/common/shell_window_ids.h"
+#include "ash/common/wm/root_window_layout_manager.h"
 #include "ash/desktop_background/desktop_background_controller_observer.h"
 #include "ash/desktop_background/desktop_background_view.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
@@ -14,8 +16,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_factory.h"
-#include "ash/shell_window_ids.h"
-#include "ash/wm/root_window_layout_manager.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"

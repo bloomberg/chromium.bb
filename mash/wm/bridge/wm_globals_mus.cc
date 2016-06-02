@@ -4,9 +4,9 @@
 
 #include "mash/wm/bridge/wm_globals_mus.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/wm_activation_observer.h"
-#include "ash/common/wm/wm_shell_window_ids.h"
 #include "base/memory/ptr_util.h"
 #include "components/mus/common/util.h"
 #include "components/mus/public/cpp/window.h"

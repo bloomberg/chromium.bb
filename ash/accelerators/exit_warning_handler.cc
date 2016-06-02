@@ -4,10 +4,10 @@
 
 #include "ash/accelerators/exit_warning_handler.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/shell_window_ids.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"

@@ -4,6 +4,7 @@
 
 #include "ash/system/tray/tray_background_view.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/shelf/wm_shelf_util.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -11,7 +12,6 @@
 #include "ash/shelf/shelf_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"

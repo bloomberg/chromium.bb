@@ -4,13 +4,13 @@
 
 #include "ash/system/status_area_widget.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/common/wm/wm_root_window_controller.h"
 #include "ash/common/wm/wm_window.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
-#include "ash/shell_window_ids.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray.h"

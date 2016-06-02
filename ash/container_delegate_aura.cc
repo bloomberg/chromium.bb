@@ -4,8 +4,8 @@
 
 #include "ash/container_delegate_aura.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/shell_window_ids.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {

@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/overflow_bubble.h"
@@ -22,7 +23,6 @@
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/overflow_bubble_view_test_api.h"
 #include "ash/test/shelf_test_api.h"

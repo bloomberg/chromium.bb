@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
 
+#include "ash/common/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
