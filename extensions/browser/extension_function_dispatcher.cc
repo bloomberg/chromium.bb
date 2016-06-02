@@ -491,7 +491,11 @@ void ExtensionFunctionDispatcher::DispatchWithCallbackInternal(
     NOTREACHED();
     return;
   }
-  function_ui->SetRenderFrameHost(render_frame_host);
+  if (params.embedded_worker_id != -1) {
+    function_ui->set_is_from_service_worker(true);
+  } else {
+    function_ui->SetRenderFrameHost(render_frame_host);
+  }
   function_ui->set_dispatcher(AsWeakPtr());
   function_ui->set_browser_context(browser_context_);
   if (extension &&

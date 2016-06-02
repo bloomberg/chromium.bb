@@ -493,6 +493,10 @@ class UIThreadExtensionFunction : public ExtensionFunction {
     return dispatcher_.get();
   }
 
+  void set_is_from_service_worker(bool value) {
+    is_from_service_worker_ = value;
+  }
+
   // Gets the "current" web contents if any. If there is no associated web
   // contents then defaults to the foremost one.
   // NOTE: "current" can mean different things in different contexts. You
@@ -533,6 +537,10 @@ class UIThreadExtensionFunction : public ExtensionFunction {
 
   // The RenderFrameHost we will send responses to.
   content::RenderFrameHost* render_frame_host_;
+
+  // Whether or not this ExtensionFunction was called by an extension Service
+  // Worker.
+  bool is_from_service_worker_;
 
   std::unique_ptr<RenderFrameHostTracker> tracker_;
 

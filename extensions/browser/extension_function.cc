@@ -420,8 +420,8 @@ void ExtensionFunction::OnRespondingLater(ResponseValue value) {
 UIThreadExtensionFunction::UIThreadExtensionFunction()
     : context_(nullptr),
       render_frame_host_(nullptr),
-      delegate_(nullptr) {
-}
+      is_from_service_worker_(false),
+      delegate_(nullptr) {}
 
 UIThreadExtensionFunction::~UIThreadExtensionFunction() {
   if (dispatcher() && render_frame_host())
@@ -449,8 +449,11 @@ UIThreadExtensionFunction::render_view_host_do_not_use() const {
 void UIThreadExtensionFunction::SetRenderFrameHost(
     content::RenderFrameHost* render_frame_host) {
   // An extension function from Service Worker does not have a RenderFrameHost.
-  if (!render_frame_host)
+  if (is_from_service_worker_) {
+    DCHECK(!render_frame_host);
     return;
+  }
+
   DCHECK_NE(render_frame_host_ == nullptr, render_frame_host == nullptr);
   render_frame_host_ = render_frame_host;
   tracker_.reset(
