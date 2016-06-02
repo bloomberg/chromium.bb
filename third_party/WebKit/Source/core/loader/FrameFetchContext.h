@@ -118,7 +118,7 @@ public:
 
 private:
     explicit FrameFetchContext(DocumentLoader*, Document*);
-    inline DocumentLoader* ensureLoaderForNotifications() const;
+    inline DocumentLoader* masterDocumentLoader() const;
 
     LocalFrame* frame() const; // Can be null
     void printAccessDeniedMessage(const KURL&) const;

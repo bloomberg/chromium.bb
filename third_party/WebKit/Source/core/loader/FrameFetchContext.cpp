@@ -276,11 +276,10 @@ WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(const ResourceReque
     return WebCachePolicy::UseProtocolCachePolicy;
 }
 
-// FIXME(http://crbug.com/274173):
-// |loader| can be null if the resource is loaded from imported document.
-// This means inspector, which uses DocumentLoader as an grouping entity,
-// cannot see imported documents.
-inline DocumentLoader* FrameFetchContext::ensureLoaderForNotifications() const
+// The |m_documentLoader| is null in the FrameFetchContext of an imported document.
+// FIXME(http://crbug.com/274173): This means Inspector, which uses DocumentLoader
+// as a grouping entity, cannot see imported documents.
+inline DocumentLoader* FrameFetchContext::masterDocumentLoader() const
 {
     return m_documentLoader ? m_documentLoader.get() : frame()->loader().documentLoader();
 }
@@ -297,7 +296,7 @@ void FrameFetchContext::dispatchWillSendRequest(unsigned long identifier, Resour
     frame()->loader().applyUserAgent(request);
     frame()->loader().client()->dispatchWillSendRequest(m_documentLoader, identifier, request, redirectResponse);
     TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD, "data", InspectorSendRequestEvent::data(identifier, frame(), request));
-    InspectorInstrumentation::willSendRequest(frame(), identifier, ensureLoaderForNotifications(), request, redirectResponse, initiatorInfo);
+    InspectorInstrumentation::willSendRequest(frame(), identifier, masterDocumentLoader(), request, redirectResponse, initiatorInfo);
 }
 
 void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, const ResourceResponse& response, WebURLRequest::FrameType frameType, WebURLRequest::RequestContext requestContext, Resource* resource)
@@ -320,7 +319,7 @@ void FrameFetchContext::dispatchDidReceiveResponse(unsigned long identifier, con
     frame()->loader().progress().incrementProgress(identifier, response);
     frame()->loader().client()->dispatchDidReceiveResponse(m_documentLoader, identifier, response);
     TRACE_EVENT_INSTANT1("devtools.timeline", "ResourceReceiveResponse", TRACE_EVENT_SCOPE_THREAD, "data", InspectorReceiveResponseEvent::data(identifier, frame(), response));
-    DocumentLoader* documentLoader = ensureLoaderForNotifications();
+    DocumentLoader* documentLoader = masterDocumentLoader();
     InspectorInstrumentation::didReceiveResourceResponse(frame(), identifier, documentLoader, response, resource);
     // It is essential that inspector gets resource response BEFORE console.
     frame()->console().reportResourceResponseReceived(documentLoader, identifier, response);
@@ -449,7 +448,7 @@ bool FrameFetchContext::canRequest(Resource::Type type, const ResourceRequest& r
     ResourceRequestBlockedReason reason = canRequestInternal(type, resourceRequest, url, options, forPreload, originRestriction, resourceRequest.redirectStatus());
     if (reason != ResourceRequestBlockedReasonNone) {
         if (!forPreload)
-            InspectorInstrumentation::didBlockRequest(frame(), resourceRequest, ensureLoaderForNotifications(), options.initiatorInfo, reason);
+            InspectorInstrumentation::didBlockRequest(frame(), resourceRequest, masterDocumentLoader(), options.initiatorInfo, reason);
         return false;
     }
     return true;
@@ -459,7 +458,7 @@ bool FrameFetchContext::allowResponse(Resource::Type type, const ResourceRequest
 {
     ResourceRequestBlockedReason reason = canRequestInternal(type, resourceRequest, url, options, false, FetchRequest::UseDefaultOriginRestrictionForType, RedirectStatus::FollowedRedirect);
     if (reason != ResourceRequestBlockedReasonNone) {
-        InspectorInstrumentation::didBlockRequest(frame(), resourceRequest, ensureLoaderForNotifications(), options.initiatorInfo, reason);
+        InspectorInstrumentation::didBlockRequest(frame(), resourceRequest, masterDocumentLoader(), options.initiatorInfo, reason);
         return false;
     }
     return true;
