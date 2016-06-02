@@ -390,8 +390,8 @@ class RemoteDeviceUpdater(object):
 
       if not self.force and self.board != device.board:
         # If a board was specified, it must be compatible with the device.
-        raise FlashError('Device (%s) is incompatible with board %s',
-                         device.board, self.board)
+        raise FlashError('Device (%s) is incompatible with board %s' %
+                         (device.board, self.board))
 
       logging.info('Board is %s', self.board)
 
