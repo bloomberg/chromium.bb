@@ -28,7 +28,11 @@ enum class FullScreenMode {
   ACTIVE,       // Fullscreen is activated for an app.
   NON_ACTIVE,   // Fullscreen was not activated for an app.
 };
+
+std::string GetShelfAppId(const std::string& app_id) {
+  return app_id == arc::kPlayStoreAppId ? ArcSupportHost::kHostAppId : app_id;
 }
+}  // namespace
 
 class ArcAppWindowLauncherController::AppWindow : public ui::BaseWindow {
  public:
@@ -287,7 +291,7 @@ void ArcAppWindowLauncherController::OnTaskCreated(
   std::unique_ptr<AppWindow> app_window(new AppWindow(task_id, this));
 
   const std::string app_id =
-      ArcAppListPrefs::GetAppId(package_name, activity_name);
+      GetShelfAppId(ArcAppListPrefs::GetAppId(package_name, activity_name));
 
   ArcAppWindowLauncherItemController* controller;
   AppControllerMap::iterator it = app_controller_map_.find(app_id);
@@ -297,14 +301,11 @@ void ArcAppWindowLauncherController::OnTaskCreated(
     DCHECK_EQ(controller->app_id(), app_id);
     shelf_id = controller->shelf_id();
   } else {
-    const std::string shelf_app_id =
-        app_id == arc::kPlayStoreAppId ? ArcSupportHost::kHostAppId : app_id;
-    controller =
-        new ArcAppWindowLauncherItemController(shelf_app_id, app_id, owner());
-    shelf_id = owner()->GetShelfIDForAppID(shelf_app_id);
+    controller = new ArcAppWindowLauncherItemController(app_id, owner());
+    shelf_id = owner()->GetShelfIDForAppID(app_id);
     if (shelf_id == 0) {
       // Map Play Store shelf icon to Arc Support host, to share one entry.
-      shelf_id = owner()->CreateAppLauncherItem(controller, shelf_app_id,
+      shelf_id = owner()->CreateAppLauncherItem(controller, app_id,
                                                 ash::STATUS_RUNNING);
     } else {
       owner()->SetItemController(shelf_id, controller);
