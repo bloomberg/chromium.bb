@@ -48,7 +48,7 @@ static DatabaseManager* s_databaseManager;
 
 DatabaseManager& DatabaseManager::manager()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (!s_databaseManager)
         s_databaseManager = new DatabaseManager();
     return *s_databaseManager;
@@ -56,7 +56,7 @@ DatabaseManager& DatabaseManager::manager()
 
 void DatabaseManager::terminateDatabaseThread()
 {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (!s_databaseManager)
         return;
     for (const Member<DatabaseContext>& context : s_databaseManager->m_contextMap.values())

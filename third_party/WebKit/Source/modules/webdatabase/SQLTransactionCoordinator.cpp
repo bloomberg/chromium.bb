@@ -50,7 +50,6 @@ SQLTransactionCoordinator::SQLTransactionCoordinator()
 
 DEFINE_TRACE(SQLTransactionCoordinator)
 {
-    visitor->trace(m_coordinationInfoMap);
 }
 
 void SQLTransactionCoordinator::processPendingTransactions(CoordinationInfo& info)
@@ -130,11 +129,8 @@ void SQLTransactionCoordinator::shutdown()
         // transaction is interrupted?" at the top of SQLTransactionBackend.cpp.
         if (info.activeWriteTransaction)
             info.activeWriteTransaction->notifyDatabaseThreadIsShuttingDown();
-        for (HeapHashSet<Member<SQLTransactionBackend>>::iterator activeReadTransactionsIterator =
-                     info.activeReadTransactions.begin();
-             activeReadTransactionsIterator != info.activeReadTransactions.end();
-             ++activeReadTransactionsIterator) {
-            (*activeReadTransactionsIterator)->notifyDatabaseThreadIsShuttingDown();
+        for (auto& it : info.activeReadTransactions) {
+            it->notifyDatabaseThreadIsShuttingDown();
         }
 
         // Clean up transactions that have NOT reached "lockAcquired":

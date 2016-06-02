@@ -42,7 +42,7 @@ namespace blink {
 
 class SQLTransactionBackend;
 
-class SQLTransactionCoordinator : public GarbageCollected<SQLTransactionCoordinator> {
+class SQLTransactionCoordinator : public GarbageCollectedFinalized<SQLTransactionCoordinator> {
     WTF_MAKE_NONCOPYABLE(SQLTransactionCoordinator);
 public:
     SQLTransactionCoordinator();
@@ -52,23 +52,16 @@ public:
     void shutdown();
 
 private:
-    typedef HeapDeque<Member<SQLTransactionBackend>> TransactionsQueue;
+    typedef Deque<CrossThreadPersistent<SQLTransactionBackend>> TransactionsQueue;
     struct CoordinationInfo {
         DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         TransactionsQueue pendingTransactions;
-        HeapHashSet<Member<SQLTransactionBackend>> activeReadTransactions;
-        Member<SQLTransactionBackend> activeWriteTransaction;
-
-        DEFINE_INLINE_TRACE()
-        {
-            visitor->trace(pendingTransactions);
-            visitor->trace(activeReadTransactions);
-            visitor->trace(activeWriteTransaction);
-        }
+        HashSet<CrossThreadPersistent<SQLTransactionBackend>> activeReadTransactions;
+        CrossThreadPersistent<SQLTransactionBackend> activeWriteTransaction;
     };
     // Maps database names to information about pending transactions
-    typedef HeapHashMap<String, CoordinationInfo> CoordinationInfoHeapMap;
+    typedef HashMap<String, CoordinationInfo> CoordinationInfoHeapMap;
     CoordinationInfoHeapMap m_coordinationInfoMap;
     bool m_isShuttingDown;
 

@@ -64,6 +64,7 @@ SQLTransaction::SQLTransaction(Database* db, SQLTransactionCallback* callback,
     , m_executeSqlAllowed(false)
     , m_readOnly(readOnly)
 {
+    DCHECK(isMainThread());
     ASSERT(m_database);
     InspectorInstrumentation::asyncTaskScheduled(db->getExecutionContext(), "SQLTransaction", this, true);
 }
