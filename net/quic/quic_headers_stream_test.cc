@@ -13,6 +13,7 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/spdy/spdy_alt_svc_wire_format.h"
+#include "net/spdy/spdy_flags.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/spdy_test_utils.h"
 #include "net/test/gtest_util.h"
@@ -619,6 +620,9 @@ TEST_P(QuicHeadersStreamTest, NoConnectionLevelFlowControl) {
 }
 
 TEST_P(QuicHeadersStreamTest, HpackDecoderDebugVisitor) {
+  if (FLAGS_use_nested_spdy_framer_decoder)
+    return;
+
   StrictMock<MockHpackDebugVisitor>* hpack_decoder_visitor =
       hpack_decoder_visitor_.get();
   headers_stream_->SetHpackDecoderDebugVisitor(
