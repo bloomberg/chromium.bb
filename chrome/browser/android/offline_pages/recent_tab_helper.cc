@@ -65,8 +65,9 @@ RecentTabHelper::~RecentTabHelper() {
 void RecentTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame() &&
-      navigation_handle->HasCommitted() &&
-      !navigation_handle->IsErrorPage()) {
+      navigation_handle->HasCommitted()) {
+    // Cancel tasks in flight that relate to the previous page.
+    weak_ptr_factory_.InvalidateWeakPtrs();
     // New navigation, new snapshot session.
     snapshot_controller_->Reset();
     snapshot_url_ = GURL::EmptyGURL();

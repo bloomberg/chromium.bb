@@ -45,7 +45,6 @@ void SnapshotController::PendingSnapshotCompleted() {
   // Stopped state prevents any further snapshots form being started.
   if (state_ == State::kStopped)
     return;
-  DCHECK(state_ == State::kSnapshotPending);
   state_ = State::kReady;
 }
 

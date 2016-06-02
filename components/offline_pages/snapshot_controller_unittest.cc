@@ -161,4 +161,20 @@ TEST_F(SnapshotControllerTest, ClientReset) {
   EXPECT_EQ(2, snapshot_count());
 }
 
+// This simulated a Reset while there is ongoing snapshot, which is reported
+// as done later. That reporting should have no effect nor crash.
+TEST_F(SnapshotControllerTest, ClientResetWhileSnapshotting) {
+  controller()->DocumentOnLoadCompletedInMainFrame();
+  EXPECT_EQ(1, snapshot_count());
+  // This normally happens when navigation starts.
+  controller()->Reset();
+  controller()->PendingSnapshotCompleted();
+  // Next snapshot should be initiated when new document is loaded.
+  controller()->DocumentAvailableInMainFrame();
+  FastForwardBy(base::TimeDelta::FromMilliseconds(
+      controller()->GetDelayAfterDocumentAvailableForTest()));
+  // No snapshot since session was reset.
+  EXPECT_EQ(2, snapshot_count());
+}
+
 }  // namespace offline_pages
