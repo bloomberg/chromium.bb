@@ -45,6 +45,9 @@ private:
         const v8::Local<v8::Object>& constructor,
         const v8::Local<v8::Object>& prototype);
 
+    // Implementations of |CustomElementDefinition|
+    ScriptValue getConstructorForScript() final;
+
     RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Object> m_constructor;
     ScopedPersistent<v8::Object> m_prototype;

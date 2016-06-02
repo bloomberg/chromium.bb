@@ -5,12 +5,15 @@
 #ifndef CustomElementDefinition_h
 #define CustomElementDefinition_h
 
+#include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
 #include "core/dom/custom/CustomElementDescriptor.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
+
+class ScriptState;
 
 class CORE_EXPORT CustomElementDefinition
     : public GarbageCollectedFinalized<CustomElementDefinition> {
@@ -20,6 +23,13 @@ public:
     virtual ~CustomElementDefinition();
 
     const CustomElementDescriptor& descriptor() { return m_descriptor; }
+
+    // TODO(yosin): To support Web Module, once we introduce abstract class
+    // |CustomElementConstructor|, allows us to have JavaScript and C++
+    // constructor, and ask binding layer to convert |CustomElementConstructor|
+    // to |ScriptValue|, we should replace |getConstructorForScript()| by
+    // |getConstructor() -> CustomElementConstructor|.
+    virtual ScriptValue getConstructorForScript() = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 

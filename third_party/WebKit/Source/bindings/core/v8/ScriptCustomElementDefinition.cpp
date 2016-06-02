@@ -132,4 +132,10 @@ v8::Local<v8::Object> ScriptCustomElementDefinition::prototype() const
     return m_prototype.newLocal(m_scriptState->isolate());
 }
 
+// CustomElementDefinition
+ScriptValue ScriptCustomElementDefinition::getConstructorForScript()
+{
+    return ScriptValue(m_scriptState.get(), constructor());
+}
+
 } // namespace blink

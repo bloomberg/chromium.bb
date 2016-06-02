@@ -112,6 +112,18 @@ void CustomElementsRegistry::define(
     // 20: when-defined promise processing
 }
 
+// https://html.spec.whatwg.org/multipage/scripting.html#dom-customelementsregistry-get
+ScriptValue CustomElementsRegistry::get(const AtomicString& name)
+{
+    CustomElementDefinition* definition = definitionForName(name);
+    if (!definition) {
+        // Binding layer converts |ScriptValue()| to script specific value,
+        // e.g. |undefined| for v8.
+        return ScriptValue();
+    }
+    return definition->getConstructorForScript();
+}
+
 bool CustomElementsRegistry::v0NameIsDefined(const AtomicString& name) const
 {
     if (!m_v0)

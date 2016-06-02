@@ -44,6 +44,8 @@ public:
         const ElementRegistrationOptions&,
         ExceptionState&);
 
+    ScriptValue get(const AtomicString& name);
+
     bool nameIsDefined(const AtomicString& name) const
     {
         return m_definitions.contains(name);
