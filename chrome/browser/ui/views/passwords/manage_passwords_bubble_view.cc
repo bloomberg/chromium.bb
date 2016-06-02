@@ -352,12 +352,17 @@ ManagePasswordsBubbleView::PendingView::~PendingView() {
 void ManagePasswordsBubbleView::PendingView::ButtonPressed(
     views::Button* sender,
     const ui::Event& event) {
-  if (sender == save_button_)
+  if (sender == save_button_) {
     parent_->model()->OnSaveClicked();
-  else if (sender == never_button_)
+    if (parent_->model()->ReplaceToShowSignInPromoIfNeeded()) {
+      parent_->Refresh();
+      return;
+    }
+  } else if (sender == never_button_) {
     parent_->model()->OnNeverForThisSiteClicked();
-  else
+  } else {
     NOTREACHED();
+  }
 
   parent_->CloseBubble();
 }
@@ -545,6 +550,63 @@ void ManagePasswordsBubbleView::SaveConfirmationView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
   DCHECK_EQ(sender, ok_button_);
   parent_->model()->OnOKClicked();
+  parent_->CloseBubble();
+}
+
+// ManagePasswordsBubbleView::SignInPromoView ---------------------------------
+
+// A view that offers user to sign in to Chrome.
+class ManagePasswordsBubbleView::SignInPromoView
+    : public views::View,
+      public views::ButtonListener {
+ public:
+  explicit SignInPromoView(ManagePasswordsBubbleView* parent);
+
+ private:
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  ManagePasswordsBubbleView* parent_;
+
+  views::Button* signin_button_;
+  views::Button* no_button_;
+
+  DISALLOW_COPY_AND_ASSIGN(SignInPromoView);
+};
+
+ManagePasswordsBubbleView::SignInPromoView::SignInPromoView(
+    ManagePasswordsBubbleView* parent)
+    : parent_(parent) {
+  views::GridLayout* layout = new views::GridLayout(this);
+  layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
+  SetLayoutManager(layout);
+
+  signin_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
+      this,
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SIGNIN_PROMO_SIGN_IN));
+  no_button_ = views::MdTextButton::CreateSecondaryUiButton(
+      this,
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SIGNIN_PROMO_NO_THANKS));
+
+  // Button row.
+  BuildColumnSet(layout, DOUBLE_BUTTON_COLUMN_SET);
+  layout->StartRow(0, DOUBLE_BUTTON_COLUMN_SET);
+  layout->AddView(signin_button_);
+  layout->AddView(no_button_);
+
+  parent_->set_initially_focused_view(signin_button_);
+}
+
+void ManagePasswordsBubbleView::SignInPromoView::ButtonPressed(
+    views::Button* sender,
+    const ui::Event& event) {
+  if (sender == signin_button_)
+    parent_->model()->OnSignInToChromeClicked();
+  else if (sender == no_button_)
+    parent_->model()->OnSkipSignInClicked();
+  else
+    NOTREACHED();
+
   parent_->CloseBubble();
 }
 
@@ -783,10 +845,9 @@ views::View* ManagePasswordsBubbleView::GetInitiallyFocusedView() {
 }
 
 void ManagePasswordsBubbleView::Init() {
-  views::FillLayout* layout = new views::FillLayout();
-  SetLayoutManager(layout);
+  SetLayoutManager(new views::FillLayout);
 
-  Refresh();
+  CreateChild();
 }
 
 void ManagePasswordsBubbleView::CloseBubble() {
@@ -812,19 +873,28 @@ bool ManagePasswordsBubbleView::ShouldShowCloseButton() const {
 void ManagePasswordsBubbleView::Refresh() {
   RemoveAllChildViews(true);
   initially_focused_view_ = NULL;
+  CreateChild();
+
+  // Show/hide the close button.
+  GetWidget()->non_client_view()->ResetWindowControls();
+  GetWidget()->UpdateWindowTitle();
+  SizeToContents();
+}
+
+void ManagePasswordsBubbleView::CreateChild() {
   if (model_.state() == password_manager::ui::PENDING_PASSWORD_STATE) {
     AddChildView(new PendingView(this));
   } else if (model_.state() ==
-             password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+      password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     AddChildView(new UpdatePendingView(this));
   } else if (model_.state() == password_manager::ui::CONFIRMATION_STATE) {
     AddChildView(new SaveConfirmationView(this));
   } else if (model_.state() == password_manager::ui::AUTO_SIGNIN_STATE) {
     AddChildView(new AutoSigninView(this));
+  } else if (model_.state() ==
+      password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
+    AddChildView(new SignInPromoView(this));
   } else {
     AddChildView(new ManageView(this));
   }
-  if (GetWidget())
-    GetWidget()->UpdateWindowTitle();
-  GetLayoutManager()->Layout(this);
 }

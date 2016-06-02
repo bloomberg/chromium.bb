@@ -56,10 +56,10 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
 
  private:
   class AutoSigninView;
-  class BlacklistedView;
   class ManageView;
   class PendingView;
   class SaveConfirmationView;
+  class SignInPromoView;
   class UpdatePendingView;
   class WebContentMouseHandler;
 
@@ -78,9 +78,11 @@ class ManagePasswordsBubbleView : public LocationBarBubbleDelegateView {
   bool ShouldShowWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
 
-  // Refreshes the bubble's state: called to display a confirmation screen after
-  // a user selects "Never for this site", for instance.
+  // Refreshes the bubble's state.
   void Refresh();
+
+  // Sets up a child view according to the model state.
+  void CreateChild();
 
   void set_initially_focused_view(views::View* view) {
     DCHECK(!initially_focused_view_);

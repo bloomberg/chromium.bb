@@ -268,6 +268,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
       case password_manager::ui::CONFIRMATION_STATE:
       case password_manager::ui::CREDENTIAL_REQUEST_STATE:
       case password_manager::ui::AUTO_SIGNIN_STATE:
+      case password_manager::ui::CHROME_SIGN_IN_PROMO_STATE:
       case password_manager::ui::INACTIVE_STATE:
         NOTREACHED();
         break;
@@ -290,6 +291,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
         break;
       case password_manager::ui::MANAGE_STATE:
       case password_manager::ui::CREDENTIAL_REQUEST_STATE:
+      case password_manager::ui::CHROME_SIGN_IN_PROMO_STATE:
       case password_manager::ui::INACTIVE_STATE:
         NOTREACHED();
         break;
@@ -393,6 +395,14 @@ void ManagePasswordsBubbleModel::OnPasswordAction(
     password_store->AddLogin(password_form);
 }
 
+void ManagePasswordsBubbleModel::OnSignInToChromeClicked() {
+
+}
+
+void ManagePasswordsBubbleModel::OnSkipSignInClicked() {
+
+}
+
 Profile* ManagePasswordsBubbleModel::GetProfile() const {
   return GetProfileFromWebContents(web_contents());
 }
@@ -409,6 +419,17 @@ bool ManagePasswordsBubbleModel::ShouldShowGoogleSmartLockWelcome() const {
     PrefService* prefs = profile->GetPrefs();
     return !prefs->GetBoolean(
         password_manager::prefs::kWasSavePrompFirstRunExperienceShown);
+  }
+  return false;
+}
+
+bool ManagePasswordsBubbleModel::ReplaceToShowSignInPromoIfNeeded() {
+  DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state_);
+  if (false /*TODO(crbug.com/615825): there will be a real condition soon*/) {
+    title_brand_link_range_ = gfx::Range();
+    title_ = l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SIGNIN_PROMO_TITLE);
+    state_ = password_manager::ui::CHROME_SIGN_IN_PROMO_STATE;
+    return true;
   }
   return false;
 }

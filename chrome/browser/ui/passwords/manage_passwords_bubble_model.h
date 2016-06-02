@@ -73,6 +73,14 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   void OnPasswordAction(const autofill::PasswordForm& password_form,
                         PasswordAction action);
 
+  // Called by the view when the "Sign in" button in the promo bubble is
+  // clicked.
+  void OnSignInToChromeClicked();
+
+  // Called by the view when the "No thanks" button in the promo bubble is
+  // clicked.
+  void OnSkipSignInClicked();
+
   password_manager::ui::State state() const { return state_; }
 
   const base::string16& title() const { return title_; }
@@ -104,6 +112,11 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
   // True if the save bubble should display the warm welcome for Google Smart
   // Lock.
   bool ShouldShowGoogleSmartLockWelcome() const;
+
+  // Returns true and updates the internal state iff the Save bubble should
+  // switch to the Chrome Sign In promo after the password was saved. Otherwise,
+  // returns false and leaves the current state.
+  bool ReplaceToShowSignInPromoIfNeeded();
 
   void SetClockForTesting(std::unique_ptr<base::Clock> clock);
 

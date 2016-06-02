@@ -6017,12 +6017,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN" desc="In Title Case: The title of the Sign in button in the account chooser when there is one account.">
           Sign In
         </message>
+        <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_SIGN_IN" desc="In Title Case: The title of the Sign in button in the bubble promoting Chrome sign-in.">
+          Sign In
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_NO_THANKS" desc="In Title Case: The title of the No Thanks button in the bubble promoting Chrome sign-in.">
+          No Thanks
+        </message>
       </if>
       <if expr="not use_titlecase">
         <message name="IDS_PASSWORD_MANAGER_ACCOUNT_CHOOSER_SIGN_IN" desc="The title of the Sign in button in the account chooser when there is one account.">
           Sign in
         </message>
+        <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_SIGN_IN" desc="The title of the Sign in button in the bubble promoting Chrome sign-in.">
+          Sign in
+        </message>
+        <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_NO_THANKS" desc="The title of the No Thanks button in the bubble promoting Chrome sign-in.">
+          No thanks
+        </message>
       </if>
+      <message name="IDS_PASSWORD_MANAGER_SIGNIN_PROMO_TITLE" desc="Promotion text for Chrome sign-in appearing in the password bubble after a password is saved.">
+        Password saved. To get your passwords on all your devices, sign in to Chrome.
+      </message>
       <message name="IDS_PASSWORD_MANAGER_SAVE_PROMPT_FIRST_RUN_EXPERIENCE" desc="The message which explains to the user what is Smart Lock, when the user sees the branded title of the Save prompt for the first time.">
         Smart Lock helps you quickly sign in to apps and sites using passwords you have saved with Google.
       </message>
