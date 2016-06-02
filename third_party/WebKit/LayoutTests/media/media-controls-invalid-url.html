@@ -1,71 +1,39 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script src=media-controls.js></script>
-        <script>
-            var video;
+<title>This tests that media element controls are reset to their default state when the src is changed to an invalid url.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<script src="media-controls.js"></script>
+<video></video>
+<script>
+async_test(function(t) {
+    var video = document.querySelector("video");
+    video.src = findMediaFile("video", "content/test");
 
-            function init()
-            {
-                video = document.getElementsByTagName("video")[0];
-                video.src = findMediaFile("video", "content/test");
+    video.oncanplaythrough = t.step_func(function() {
+        video.oncanplaythrough = null;
+        assert_equals(video.currentTime, 0);
+        assert_equals(getMediaControlTimelineValue(), 0);
+        // Seeking to time value 1.0
+        video.currentTime = 1.0;
+    });
 
-                waitForEventOnce("canplaythrough", start);
-                waitForEvent("seeked", seeked);
-                waitForEvent("error", error);
-            }
+    video.onseeked = t.step_func(function() {
+        assert_equals(video.currentTime, 1);
+        assert_equals(getMediaControlTimelineValue(), 1);
+        // Change video source to an invalid one
+        video.src = "/invalid.mov";
 
-            function getTimeLineValue()
-            {
-                return mediaControlsButton(video, "timeline").value;
-            }
+    });
 
-            function error()
-            {
-                try {
-                    testExpected("getTimeLineValue()", video.currentTime);
-                    endTest();
-                } catch (exception) {
-                    failTest(exception.description);
-                }
-            }
+    video.onerror = t.step_func_done(function() {
+        assert_equals(video.currentTime, 0);
+        assert_equals(getMediaControlTimelineValue(), 0);
+    });
 
-            function seeked()
-            {
-                try {
-                    testExpected("getTimeLineValue()", video.currentTime);
-                } catch (exception) {
-                    failTest(exception.description);
-                }
-
-                // Change video source to an invalid one
-                video.src = "/invalid.mov";
-            }
-
-            function start()
-            {
-                if (!window.testRunner)
-                    return;
-
-                try {
-                    testExpected("getTimeLineValue()", video.currentTime);
-                } catch (exception) {
-                    failTest(exception.description);
-                }
-
-                // Seeking to time value 1.0
-                video.currentTime = 1.0;
-            }
-        </script>
-    </head>
-    <body onload="init()">
-        <p>This tests that media element controls are reset to their default state when the src is changed to an invalid url.</p>
-        <p>This test only runs in DRT!</p>
-        <video controls></video>
-        <div id="console"></div>
-    </body>
-</html>
+    function getMediaControlTimelineValue() {
+        var timeStr = mediaControlsButton(video, "timeline").value;
+        return +timeStr;
+    }
+});
+</script>

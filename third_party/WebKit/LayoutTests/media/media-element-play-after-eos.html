@@ -1,55 +1,43 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <script src=media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=video-test.js></script>
-        <script>
-            var repeated = false;
-            var mediaElement = new Audio();
+<title>This test ensures that media element fires the "playing" event every time it starts playing after eos. It also ensure that "pause" and "ended" events are fired when media playback ends.</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="media-file.js"></script>
+<audio></audio>
+<script>
+// TODO(srirama.m): Modify the test to record events and check for order
+// at the end of test. See autoplay-with-preload-none.html for help.
+async_test(function(t) {
+    var loop = true;
+    var audio = document.querySelector("audio");
+    audio.src = findMediaFile("audio", "content/silence");
 
-            function start()
-            {
-                mediaElement.src = findMediaFile('audio', 'content/silence');
-                waitForEvent("loadedmetadata", mediaLoadedMetadata);
+    audio.onloadedmetadata = t.step_func(function() {
+        audio.onplaying = t.step_func(mediaPlaying);
+
+        audio.onpause = t.step_func(function() {
+            assert_true(audio.paused);
+        });
+
+        audio.onended = t.step_func(function() {
+            assert_true(audio.ended, true);
+
+            if (!loop) {
+                t.done();
+                return;
             }
 
-            function mediaLoadedMetadata()
-            {
-                waitForEventOnce("playing", mediaPlaying);
-                waitForEvent("pause", mediaPause);
-                waitForEvent("ended", mediaEnded);
-                run("mediaElement.play()");
-            }
+            loop = false;
+            audio.onplaying = t.step_func(mediaPlaying);
+            audio.play();
+        });
 
-            function mediaPlaying()
-            {
-                mediaElement.currentTime = mediaElement.duration - 0.2;
-            }
+        audio.play();
+    });
 
-            function mediaPause()
-            {
-                testExpected("mediaElement.paused", true);
-            }
-
-            function mediaEnded()
-            {
-                testExpected("mediaElement.ended", true);
-
-                if (repeated) {
-                    endTest();
-                    return;
-                }
-
-                repeated = true;
-                waitForEventOnce("playing", mediaPlaying);
-                run("mediaElement.play()");
-            }
-
-        </script>
-    </head>
-    <body onload="start()">
-        <p>This tests ensure that media element emits the 'playing' event every time it starts playing after eos. It also ensure that 'pause' and 'ended' events are sent when media playback ends.</p>
-    </body>
-</html>
+    function mediaPlaying() {
+        audio.onplaying = null;
+        audio.currentTime = audio.duration - 0.2;
+    }
+});
+</script>
