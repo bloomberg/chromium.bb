@@ -9,23 +9,20 @@
   <template>
     <style include="shared-styles">
       #container {
+        -webkit-padding-end: 8px;
+        -webkit-padding-start: 24px;
+        align-items: center;
         min-height: 32px;
-        padding: 12px 8px;
+        padding-bottom: 12px;
+        padding-top: 12px;
       }
 
       #logo {
+        -webkit-margin-end: auto;
         content: -webkit-image-set(
-            url(../../../app/theme/default_100_percent/%DISTRIBUTION%/product_logo_name_48.png) 1x,
-            url(../../../app/theme/default_200_percent/%DISTRIBUTION%/product_logo_name_48.png) 2x);
-        height: 18px;
-        left: 24px;
-        position: absolute;
-        top: 19px;
-      }
-
-      :host-context([dir='rtl']) #logo {
-        left: auto;
-        right: 24px;
+            url(../../../app/theme/default_100_percent/%DISTRIBUTION%/product_logo_name_22.png) 1x,
+            url(../../../app/theme/default_200_percent/%DISTRIBUTION%/product_logo_name_22.png) 2x);
+        height: 22px;
       }
     </style>
     <div id="container" class="layout horizontal end-justified">
