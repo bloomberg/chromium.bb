@@ -78,6 +78,9 @@ class TestCustomButton : public CustomButton, public ButtonListener {
     canceled_ = false;
   }
 
+  // Raised visibility of OnFocus() to public
+  void OnFocus() override { CustomButton::OnFocus(); }
+
  private:
   bool pressed_ = false;
   bool canceled_ = false;
@@ -466,6 +469,29 @@ TEST_F(CustomButtonTest, DontHideInkDropWhenShowingContextMenu) {
   EXPECT_TRUE(ink_drop_delegate->is_hovered());
   EXPECT_EQ(InkDropState::ACTION_PENDING,
             ink_drop_delegate->GetTargetInkDropState());
+}
+
+TEST_F(CustomButtonTest, HideInkDropOnBlur) {
+  gfx::Point center(10, 10);
+
+  TestInkDropDelegate* ink_drop_delegate = new TestInkDropDelegate();
+  CreateButtonWithInkDrop(base::WrapUnique(ink_drop_delegate));
+
+  button()->OnFocus();
+
+  button()->OnMousePressed(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  EXPECT_EQ(InkDropState::ACTION_PENDING,
+            ink_drop_delegate->GetTargetInkDropState());
+
+  button()->OnBlur();
+  EXPECT_EQ(InkDropState::HIDDEN, ink_drop_delegate->GetTargetInkDropState());
+
+  button()->OnMouseReleased(ui::MouseEvent(
+      ui::ET_MOUSE_PRESSED, center, center, ui::EventTimeForNow(),
+      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
+  EXPECT_TRUE(button()->pressed());
 }
 
 TEST_F(CustomButtonTest, InkDropAfterTryingToShowContextMenu) {

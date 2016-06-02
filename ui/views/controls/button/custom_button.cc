@@ -241,12 +241,12 @@ bool CustomButton::OnKeyPressed(const ui::KeyEvent& event) {
 }
 
 bool CustomButton::OnKeyReleased(const ui::KeyEvent& event) {
-  if ((state_ == STATE_DISABLED) || (event.key_code() != ui::VKEY_SPACE))
-    return false;
-
-  SetState(STATE_NORMAL);
-  NotifyClick(event);
-  return true;
+  if ((state_ == STATE_PRESSED) && (event.key_code() == ui::VKEY_SPACE)) {
+    SetState(STATE_NORMAL);
+    NotifyClick(event);
+    return true;
+  }
+  return false;
 }
 
 void CustomButton::OnGestureEvent(ui::GestureEvent* event) {
@@ -371,8 +371,17 @@ void CustomButton::ViewHierarchyChanged(
 
 void CustomButton::OnBlur() {
   Button::OnBlur();
-  if (IsHotTracked())
+  if (IsHotTracked() || state_ == STATE_PRESSED) {
     SetState(STATE_NORMAL);
+    if (ink_drop_delegate() &&
+        ink_drop_delegate()->GetTargetInkDropState() !=
+            views::InkDropState::HIDDEN)
+      ink_drop_delegate()->OnAction(views::InkDropState::HIDDEN);
+    // TODO(bruthig) : Fix CustomButtons to work well when multiple input
+    // methods are interacting with a button.e.g.By animating to HIDDEN here
+    // it is possible for a Mouse Release to trigger an action however there
+    // would be no visual cue to the user that this will occur.
+  }
 }
 
 bool CustomButton::ShouldShowInkDropForFocus() const {

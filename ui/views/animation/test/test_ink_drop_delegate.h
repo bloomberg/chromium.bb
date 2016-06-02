@@ -6,6 +6,7 @@
 #define UI_VIEWS_ANIMATION_TEST_TEST_INK_DROP_DELEGATE_H_
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "ui/views/animation/ink_drop_delegate.h"
 
 namespace views {
@@ -29,6 +30,8 @@ class TestInkDropDelegate : public InkDropDelegate {
   InkDropState state_;
 
   bool is_hovered_;
+
+  std::unique_ptr<InkDrop> ink_drop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInkDropDelegate);
 };
