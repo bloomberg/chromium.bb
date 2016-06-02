@@ -149,7 +149,7 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
-                       DISABLED_TouchExplorationInCrossSiteIframe) {
+                       TouchExplorationInCrossSiteIframe) {
   NavigateToUrlAndWaitForAccessibilityTree(
       embedded_test_server()->GetURL(
           "/accessibility/html/iframe-coordinates-cross-process.html"));

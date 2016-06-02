@@ -108,6 +108,23 @@ void PageWidgetDelegate::paintIgnoringCompositing(Page& page, WebCanvas* canvas,
 
 WebInputEventResult PageWidgetDelegate::handleInputEvent(PageWidgetEventHandler& handler, const WebInputEvent& event, LocalFrame* root)
 {
+    if (event.modifiers & WebInputEvent::IsTouchAccessibility
+        && WebInputEvent::isMouseEventType(event.type)) {
+        PlatformMouseEventBuilder pme(root->view(), static_cast<const WebMouseEvent&>(event));
+
+        IntPoint docPoint(root->view()->rootFrameToContents(pme.position()));
+        HitTestResult result = root->eventHandler().hitTestResultAtPoint(docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
+        result.setToShadowHostIfInUserAgentShadowRoot();
+        if (result.innerNodeFrame()) {
+            Document* document = result.innerNodeFrame()->document();
+            if (document) {
+                AXObjectCache* cache = document->existingAXObjectCache();
+                if (cache)
+                    cache->onTouchAccessibilityHover(result.roundedPointInInnerNodeFrame());
+            }
+        }
+    }
+
     switch (event.type) {
 
     // FIXME: WebKit seems to always return false on mouse events processing
