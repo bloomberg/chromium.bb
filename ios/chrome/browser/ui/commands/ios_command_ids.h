@@ -53,7 +53,6 @@
 #define IDC_CLOSE_SETTINGS_AND_OPEN_URL                40920
 #define IDC_REQUEST_DESKTOP_SITE                       40921
 #define IDC_CLEAR_BROWSING_DATA_IOS                    40924
-#define IDC_SHOW_SIGN_IN_WITH_RESHARE_ON_COMPLETION    40925
 #define IDC_SHOW_MAIL_COMPOSER                         40926
 #define IDC_BACK_TO_CALLING_APP                        40927
 #define IDC_RESET_ALL_WEBVIEWS                         40928

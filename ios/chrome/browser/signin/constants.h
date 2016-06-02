@@ -38,7 +38,8 @@ typedef enum {
   // Sign in operation was started from settings.
   SIGN_IN_SOURCE_SETTINGS,
   // Sign in operation was started from as a pre-requisite of share operation.
-  SIGN_IN_SOURCE_SHARE,
+  // Deprecated since M53.
+  SIGN_IN_SOURCE_SHARE_DEPRECATED,
   // Sign in operation was started from as a pre-requisite of a print operation.
   SIGN_IN_SOURCE_PRINT,
   // Sign in operation was started from the re-sign in infobar.
