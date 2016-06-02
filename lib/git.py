@@ -1228,7 +1228,7 @@ def UploadCL(git_repo, remote, branch, local_branch='HEAD', draft=False,
 
 
 def GitPush(git_repo, refspec, push_to, force=False, retry=True,
-            capture_output=True, skip=False):
+            capture_output=True, skip=False, **kwargs):
   """Wrapper for pushing to a branch.
 
   Args:
@@ -1251,7 +1251,7 @@ def GitPush(git_repo, refspec, push_to, force=False, retry=True,
     logging.info('Would have run "%s"', cmd)
     return
 
-  RunGit(git_repo, cmd, retry=retry, capture_output=capture_output)
+  RunGit(git_repo, cmd, retry=retry, capture_output=capture_output, **kwargs)
 
 
 # TODO(build): Switch callers of this function to use CreateBranch instead.

@@ -3,27 +3,6 @@
 # found in the LICENSE file.
 
 """cros uprevchrome: Uprev chrome to a new valid version
-
-When a chrome PFQ failure happens, master_chrome_pfq automatically checks the
-status of certain stages and then uploads the ebuild/binhost_mapping
-updates to a staging branch in remote git repository. This tool provides a way
-to fetch the updates from the remote staging branch, generate CLs to manually
-uprev chrome and upload the CLs to Gerrit for review.
-
-Users need to provide a failed master_chrome_pfq build_id, the cidb
-credentials directory and the bug id to track this manual uprev. This tool
-first verifies if the build_id is valid and if the staging branches exist,
-then fetches the changes into local branches, updates commit messages,
-adds CQ-DEPEND, rebases based on master and uploads CLs to Gerrit.
-
-Examples:
-  cros uprevchrome --pfq-build XXXX  --cred ~/cidb_creds
-      --bug='chromium:XXXXX' [--nowipe] [--debug] [--dry-run]
-
-After successfully executing this tool, users can review CLs at Gerrit
-(https://chromium-review.googlesource.com,
-https://chrome-internal-review.googlesource.com/),
-submit the CLs from Gerrit if everything looks good and all tests are passed.
 """
 
 from __future__ import print_function
@@ -58,6 +37,9 @@ PRIV_OVERLAY_URL = os.path.join(
     site_config.params.INTERNAL_GOB_URL,
     'chromeos/overlays/chromeos-partner-overlay')
 
+# Master branch name
+MASTER_BRANCH = 'master'
+
 class MissingBranchException(Exception):
   """Remote branch wasn't found."""
 
@@ -66,7 +48,33 @@ class InvalidPFQBuildIdExcpetion(Exception):
 
 @command.CommandDecorator('uprevchrome')
 class UprevChromeCommand(command.CliCommand):
-  """Manually uprev chrome to a new version."""
+  """cros uprevchrome: Uprev chrome to a new valid version
+
+  When a chrome PFQ failure happens, master_chrome_pfq automatically checks the
+  status of certain stages and then uploads the ebuild/binhost_mapping
+  updates to a staging branch in remote git repository. This tool provides a way
+  to fetch the updates from the remote staging branch, generate CLs to manually
+  uprev chrome and upload the CLs to Gerrit for review.
+
+  Users need to provide a failed master_chrome_pfq build_id, the cidb
+  credentials directory and the bug id to track this manual uprev. This tool
+  first verifies if the build_id is valid and if the staging branches exist,
+  then fetches the changes into local branches, updates commit messages,
+  adds CQ-DEPEND, rebases based on master and uploads CLs to Gerrit.
+
+  Examples:
+
+  cros uprevchrome --pfq-build XXXX  --cred-dir path_to_cidb_creds
+      --bug='chromium:XXXXX' [--debug] [--nowipe] [--draft] [--dry-run]
+
+  After successfully executing this tool, users can review CLs at Gerrit
+  https://chromium-review.googlesource.com
+  https://chrome-internal-review.googlesource.com/
+  review and submit CLs from Gerrit.
+
+  Note: Please do not revert the generated CLs after they're merged.
+  Please use cros_pinchrome to pin/unpin Chrome if needed.
+  """
 
   # No limit when retrieving results from cidb.
   NUM_RESULTS_NO_LIMIT = -1
@@ -93,13 +101,10 @@ class UprevChromeCommand(command.CliCommand):
     parser.add_argument('--nowipe', default=True, dest='wipe',
                         action='store_false',
                         help='Preserve the working directory.')
-    parser.add_argument('--branch', default='master',
-                        help='The branch to uprev chrome on (default master).')
     parser.add_argument('--draft', action='store_true',
                         help='Upload the uprev CLs to Gerrit as drafts.')
     parser.add_argument('--dry-run', action='store_true',
-                        help='Prepare CLs but don\'t upload them.'
-                        'If dry-run is on, CLs won\'t be uploaded to Gerrit')
+                        help="Prepare CLs but don't upload them to Gerrit")
     return parser
 
   def ValidatePFQBuild(self, pfq_build, db):
@@ -115,10 +120,17 @@ class UprevChromeCommand(command.CliCommand):
     """
     pfq_info = db.GetBuildStatus(pfq_build)
 
+    # Return False if it's not a master_chromium_pfq build.
+    if pfq_info['build_config'] != constants.PFQ_MASTER:
+      logging.error('pfq_build %s with build_config %s is not valid. '
+                    'build_config must be master_chromium_pfq.',
+                    pfq_build, pfq_info['build_config'])
+      return False
+
     # Can only uprev a failed pfq run
     if pfq_info['status'] != constants.BUILDER_STATUS_FAILED:
-      logging.info('pfq_build %s not valid, status: %s',
-                   pfq_build, pfq_info['status'])
+      logging.error('pfq_build %s not valid, status: %s',
+                    pfq_build, pfq_info['status'])
       return False
 
     # Get all the pfq builds which were started after
@@ -130,8 +142,8 @@ class UprevChromeCommand(command.CliCommand):
                                      pfq_info['start_time'])
     for build_info in build_infos:
       if build_info['status'] == 'pass':
-        logging.info('build %s not valid as build %s passed',
-                     pfq_build, build_info['id'])
+        logging.error('build %s not valid as build %s passed',
+                      pfq_build, build_info['id'])
         return False
 
     return True
@@ -209,13 +221,15 @@ class UprevChromeCommand(command.CliCommand):
     pub_overlay = os.path.join(work_dir, 'pub_overlay')
     priv_overlay = os.path.join(work_dir, 'priv_overlay')
 
-    logging.info('Setting up working directory.')
+    print('Setting up working directory...')
     # TODO(nxia): move cros_pinchrome.CloneWorkingRepo to a util class?
     cros_pinchrome.CloneWorkingRepo(pub_overlay, PUB_OVERLAY_URL, PUB_OVERLAY,
-                                    self.options.branch)
+                                    MASTER_BRANCH)
     cros_pinchrome.CloneWorkingRepo(priv_overlay, PRIV_OVERLAY_URL,
                                     PRIV_OVERLAY,
-                                    self.options.branch)
+                                    MASTER_BRANCH)
+
+    print('Preparing CLs...')
     remote = 'origin'
     branch_name = constants.STAGING_PFQ_BRANCH_PREFIX + pfq_build
     remote_ref = ('refs/' + constants.PFQ_REF + '/' + branch_name)
@@ -270,15 +284,17 @@ class UprevChromeCommand(command.CliCommand):
                 (priv_overlay, PRIV_OVERLAY_URL)]
 
     for (_overlay, _overlay_url) in overlays:
-      logging.info('git pull --rebase %s %s', remote, self.options.branch)
+      logging.info('git pull --rebase %s %s', remote, MASTER_BRANCH)
       git.RunGit(_overlay,
-                 ['pull', '--rebase', remote, self.options.branch])
+                 ['pull', '--rebase', remote, MASTER_BRANCH])
 
       logging.info('Upload CLs to Gerrit.')
-      git.UploadCL(_overlay, _overlay_url, self.options.branch,
-                   skip=self.options.dry_run, draft=self.options.draft)
+      git.UploadCL(_overlay, _overlay_url, MASTER_BRANCH,
+                   skip=self.options.dry_run, draft=self.options.draft,
+                   debug_level=logging.NOTICE)
 
-    logging.info('Successfully run cros uprevchrome!')
+    print('Please review and submit the CLs together from Gerrit.')
+    print('Successfully run cros uprevchrome!')
 
   def Run(self):
     """Run cros uprevchrome.

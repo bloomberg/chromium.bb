@@ -39,7 +39,8 @@ class CrosUprevChromeTest(cros_test_lib.MockTempDirTestCase,
   mock_pfq_info = {'id': '100',
                    'status': constants.BUILDER_STATUS_FAILED,
                    'build_number': '100',
-                   'start_time': time.time()}
+                   'start_time': time.time(),
+                   'build_config': constants.PFQ_MASTER}
 
   def SetupCommandMock(self, cmd_args):
     """Setup comand mock."""
