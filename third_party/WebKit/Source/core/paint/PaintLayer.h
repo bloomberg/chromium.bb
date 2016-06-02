@@ -790,6 +790,8 @@ private:
 
     bool isSelfPaintingLayerForIntrinsicOrScrollingReasons() const;
 
+    bool shouldFragmentCompositedBounds(const PaintLayer* compositingLayer) const;
+
     // Self-painting layer is an optimization where we avoid the heavy Layer painting
     // machinery for a Layer allocated only to handle the overflow clip case.
     // FIXME(crbug.com/332791): Self-painting layer should be merged into the overflow-only concept.

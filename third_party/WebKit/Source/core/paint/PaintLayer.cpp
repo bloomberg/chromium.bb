@@ -1490,12 +1490,23 @@ void PaintLayer::appendSingleFragmentIgnoringPagination(PaintLayerFragments& fra
     fragments.append(fragment);
 }
 
+bool PaintLayer::shouldFragmentCompositedBounds(const PaintLayer* compositingLayer) const
+{
+    // Composited layers may not be fragmented.
+    return enclosingPaginationLayer() && !compositingLayer->enclosingPaginationLayer();
+}
+
 void PaintLayer::collectFragments(PaintLayerFragments& fragments, const PaintLayer* rootLayer, const LayoutRect& dirtyRect,
     ClipRectsCacheSlot clipRectsCacheSlot, OverlayScrollbarClipBehavior overlayScrollbarClipBehavior, ShouldRespectOverflowClipType respectOverflowClip, const LayoutPoint* offsetFromRoot,
     const LayoutSize& subPixelAccumulation, const LayoutRect* layerBoundingBox)
 {
     if (!enclosingPaginationLayer()) {
         // For unpaginated layers, there is only one fragment.
+        appendSingleFragmentIgnoringPagination(fragments, rootLayer, dirtyRect, clipRectsCacheSlot, overlayScrollbarClipBehavior, respectOverflowClip, offsetFromRoot, subPixelAccumulation);
+        return;
+    }
+
+    if (!shouldFragmentCompositedBounds(rootLayer)) {
         appendSingleFragmentIgnoringPagination(fragments, rootLayer, dirtyRect, clipRectsCacheSlot, overlayScrollbarClipBehavior, respectOverflowClip, offsetFromRoot, subPixelAccumulation);
         return;
     }
@@ -2253,7 +2264,7 @@ LayoutRect PaintLayer::boundingBoxForCompositing(const PaintLayer* ancestorLayer
     if (transform() && paintsWithTransform(GlobalPaintNormalPhase) && (this != ancestorLayer || options == MaybeIncludeTransformForAncestorLayer))
         result = transform()->mapRect(result);
 
-    if (enclosingPaginationLayer()) {
+    if (shouldFragmentCompositedBounds(ancestorLayer)) {
         convertFromFlowThreadToVisualBoundingBoxInAncestor(ancestorLayer, result);
         return result;
     }

@@ -183,6 +183,9 @@ SquashingDisallowedReasons CompositingLayerAssigner::getReasonsPreventingSquashi
         || squashingLayer.layoutObject()->style()->shouldCompositeForCurrentAnimations())
         return SquashingDisallowedReasonSquashingLayerIsAnimating;
 
+    if (layer->enclosingPaginationLayer())
+        return SquashingDisallowedReasonFragmentedContent;
+
     return SquashingDisallowedReasonsNone;
 }
 

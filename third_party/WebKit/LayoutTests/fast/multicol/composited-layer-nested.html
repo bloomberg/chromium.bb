@@ -17,7 +17,7 @@
 .layer { transform: translateZ(0); }
 
 </style>
-<p>There should be two green squares below.</p>
+<p>If no compositing were present, there should be two green squares below. Since some elements are composited, and therefore not fragmented, the output is different.</p>
 <!-- composited layer in composited layer: -->
 <div class="multicol">
     <div class="square"></div>

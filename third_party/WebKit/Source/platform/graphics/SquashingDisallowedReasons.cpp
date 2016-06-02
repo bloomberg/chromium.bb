@@ -60,6 +60,9 @@ const SquashingDisallowedReasonStringMap kSquashingDisallowedReasonStringMap[] =
     { SquashingDisallowedReasonNonTranslationTransform,
         "SquashingDisallowedReasonNonTranslationTransform",
         "Cannot squash layers with transforms that are not identity or translation." },
+    { SquashingDisallowedReasonFragmentedContent,
+        "SquashingDisallowedReasonFragmentedContent",
+        "Cannot squash layers that are inside fragmentation contexts." },
 };
 
 const size_t kNumberOfSquashingDisallowedReasons = WTF_ARRAY_LENGTH(kSquashingDisallowedReasonStringMap);
