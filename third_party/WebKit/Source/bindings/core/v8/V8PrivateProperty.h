@@ -26,7 +26,8 @@ class ScriptWrappable;
     X(PrivateScriptRunner, IsInitialized) \
     X(IntersectionObserver, Callback) \
     X(MutationObserver, Callback) \
-    X(PerformanceObserver, Callback)
+    X(PerformanceObserver, Callback) \
+    X(V8NodeFilterCondition, Filter)
 
 // The getter's name for a private property.
 #define V8_PRIVATE_PROPERTY_GETTER_NAME(InterfaceName, PrivateKeyName) \

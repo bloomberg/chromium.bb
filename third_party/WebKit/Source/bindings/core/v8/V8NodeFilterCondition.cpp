@@ -31,12 +31,12 @@
 #include "bindings/core/v8/V8NodeFilterCondition.h"
 
 #include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/V8HiddenValue.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8Node.h"
+#include "bindings/core/v8/V8PrivateProperty.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeFilter.h"
 #include "core/frame/UseCounter.h"
-#include "wtf/OwnPtr.h"
 
 namespace blink {
 
@@ -47,9 +47,9 @@ V8NodeFilterCondition::V8NodeFilterCondition(v8::Local<v8::Value> filter, v8::Lo
     // We'll make sure m_filter is either usable by acceptNode or empty.
     // (See the fast/dom/node-filter-gc test for a case where 'empty' happens.)
     if (!filter.IsEmpty() && filter->IsObject()) {
-        V8HiddenValue::setHiddenValue(scriptState, owner, V8HiddenValue::condition(scriptState->isolate()), filter);
+        V8PrivateProperty::getV8NodeFilterConditionFilter(scriptState->isolate()).set(scriptState->context(), owner, filter);
         m_filter.set(scriptState->isolate(), filter);
-        m_filter.setWeak(this, &setWeakCallback);
+        m_filter.setPhantom();
     }
 }
 
@@ -92,16 +92,16 @@ unsigned V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exception
         receiver = filter;
     }
 
-    OwnPtr<v8::Local<v8::Value>[]> info = adoptArrayPtr(new v8::Local<v8::Value>[1]);
-    info[0] = toV8(node, m_scriptState->context()->Global(), isolate);
-    if (info[0].IsEmpty()) {
+    v8::Local<v8::Value> nodeWrapper = toV8(node, m_scriptState.get());
+    if (nodeWrapper.IsEmpty()) {
         if (exceptionCatcher.HasCaught())
             exceptionState.rethrowV8Exception(exceptionCatcher.Exception());
         return NodeFilter::FILTER_REJECT;
     }
 
     v8::Local<v8::Value> result;
-    if (!ScriptController::callFunction(m_scriptState->getExecutionContext(), callback, receiver, 1, info.get(), isolate).ToLocal(&result)) {
+    v8::Local<v8::Value> args[] = { nodeWrapper };
+    if (!ScriptController::callFunction(m_scriptState->getExecutionContext(), callback, receiver, 1, args, isolate).ToLocal(&result)) {
         exceptionState.rethrowV8Exception(exceptionCatcher.Exception());
         return NodeFilter::FILTER_REJECT;
     }
@@ -114,11 +114,6 @@ unsigned V8NodeFilterCondition::acceptNode(Node* node, ExceptionState& exception
         return NodeFilter::FILTER_REJECT;
     }
     return uint32Value;
-}
-
-void V8NodeFilterCondition::setWeakCallback(const v8::WeakCallbackInfo<V8NodeFilterCondition>& data)
-{
-    data.GetParameter()->m_filter.clear();
 }
 
 } // namespace blink

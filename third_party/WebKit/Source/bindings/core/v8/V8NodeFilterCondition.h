@@ -32,7 +32,6 @@
 #define V8NodeFilterCondition_h
 
 #include "bindings/core/v8/ScopedPersistent.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/dom/NodeFilterCondition.h"
 #include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
@@ -40,8 +39,9 @@
 
 namespace blink {
 
-class Node;
 class ExceptionState;
+class Node;
+class ScriptState;
 
 // V8NodeFilterCondition maintains a Javascript implemented callback for
 // filtering Node returned by NodeIterator/TreeWalker.
@@ -76,8 +76,6 @@ private:
     // V8NodeFilterCondition, usually a wrapper of NodeFilter, is specified here
     // to hold a strong reference to |filter|.
     V8NodeFilterCondition(v8::Local<v8::Value> filter, v8::Local<v8::Object> owner, ScriptState*);
-
-    static void setWeakCallback(const v8::WeakCallbackInfo<V8NodeFilterCondition>&);
 
     RefPtr<ScriptState> m_scriptState;
     ScopedPersistent<v8::Value> m_filter;
