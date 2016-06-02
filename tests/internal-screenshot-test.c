@@ -68,6 +68,7 @@ TEST(internal_screenshot)
 	struct buffer *screenshot = NULL;
 	pixman_image_t *reference_good = NULL;
 	pixman_image_t *reference_bad = NULL;
+	pixman_image_t *diffimg;
 	struct rectangle clip;
 	const char *fname;
 	bool match = false;
@@ -139,6 +140,12 @@ TEST(internal_screenshot)
 	printf("Clip: %d,%d %d x %d\n", clip.x, clip.y, clip.width, clip.height);
 	match = check_images_match(screenshot->image, reference_good, &clip);
 	printf("Screenshot %s reference image in clipped area\n", match? "matches" : "doesn't match");
+	if (!match) {
+		diffimg = visualize_image_difference(screenshot->image, reference_good, &clip);
+		fname = screenshot_output_filename("internal-screenshot-error", 0);
+		write_image_as_png(diffimg, fname);
+		pixman_image_unref(diffimg);
+	}
 	pixman_image_unref(reference_good);
 
 	/* Test dumping of non-matching images */

@@ -1130,6 +1130,105 @@ check_images_match(pixman_image_t *img_a, pixman_image_t *img_b,
 }
 
 /**
+ * Tint a color
+ *
+ * \param src Source pixel as x8r8g8b8.
+ * \param add The tint as x8r8g8b8, x8 must be zero; r8, g8 and b8 must be
+ * no greater than 0xc0 to avoid overflow to another channel.
+ * \return The tinted pixel color as x8r8g8b8, x8 guaranteed to be 0xff.
+ *
+ * The source pixel RGB values are divided by 4, and then the tint is added.
+ * To achieve colors outside of the range of src, a tint color channel must be
+ * at least 0x40. (0xff / 4 = 0x3f, 0xff - 0x3f = 0xc0)
+ */
+static uint32_t
+tint(uint32_t src, uint32_t add)
+{
+	uint32_t v;
+
+	v = ((src & 0xfcfcfcfc) >> 2) | 0xff000000;
+
+	return v + add;
+}
+
+/**
+ * Create a visualization of image differences.
+ *
+ * \param img_a First image, which is used as the basis for the output.
+ * \param img_b Second image.
+ * \param clip_rect The region of interest, or NULL for comparing the whole
+ * images.
+ * \return A new image with the differences highlighted.
+ *
+ * Regions outside of the region of interest are shaded with black, matching
+ * pixels are shaded with green, and differing pixels are shaded with
+ * bright red.
+ *
+ * This function hard-fails if clip_rect is not inside both images. If clip_rect
+ * is given, the images do not have to match in size, otherwise size mismatch
+ * will be a hard failure.
+ */
+pixman_image_t *
+visualize_image_difference(pixman_image_t *img_a, pixman_image_t *img_b,
+			   const struct rectangle *clip_rect)
+{
+	pixman_image_t *diffimg;
+	pixman_image_t *shade;
+	struct image_iterator it_a;
+	struct image_iterator it_b;
+	struct image_iterator it_d;
+	int width;
+	int height;
+	pixman_box32_t box;
+	int x, y;
+	uint32_t *pix_a;
+	uint32_t *pix_b;
+	uint32_t *pix_d;
+	pixman_color_t shade_color = { 0, 0, 0, 32768 };
+
+	width = pixman_image_get_width(img_a);
+	height = pixman_image_get_height(img_a);
+	box = image_check_get_roi(img_a, img_b, clip_rect);
+
+	diffimg = pixman_image_create_bits_no_clear(PIXMAN_x8r8g8b8,
+						    width, height, NULL, 0);
+
+	/* Fill diffimg with a black-shaded copy of img_a, and then fill
+	 * the clip_rect area with original img_a.
+	 */
+	shade = pixman_image_create_solid_fill(&shade_color);
+	pixman_image_composite32(PIXMAN_OP_SRC, img_a, shade, diffimg,
+				 0, 0, 0, 0, 0, 0, width, height);
+	pixman_image_unref(shade);
+	pixman_image_composite32(PIXMAN_OP_SRC, img_a, NULL, diffimg,
+				 box.x1, box.y1, 0, 0, box.x1, box.y1,
+				 box.x2 - box.x1, box.y2 - box.y1);
+
+	image_iter_init(&it_a, img_a);
+	image_iter_init(&it_b, img_b);
+	image_iter_init(&it_d, diffimg);
+
+	for (y = box.y1; y < box.y2; y++) {
+		pix_a = image_iter_get_row(&it_a, y) + box.x1;
+		pix_b = image_iter_get_row(&it_b, y) + box.x1;
+		pix_d = image_iter_get_row(&it_d, y) + box.x1;
+
+		for (x = box.x1; x < box.x2; x++) {
+			if (*pix_a == *pix_b)
+				*pix_d = tint(*pix_d, 0x00008000); /* green */
+			else
+				*pix_d = tint(*pix_d, 0x00c00000); /* red */
+
+			pix_a++;
+			pix_b++;
+			pix_d++;
+		}
+	}
+
+	return diffimg;
+}
+
+/**
  * Write an image into a PNG file.
  *
  * \param image The image.

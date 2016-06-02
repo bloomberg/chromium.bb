@@ -201,6 +201,10 @@ bool
 check_images_match(pixman_image_t *img_a, pixman_image_t *img_b,
 		   const struct rectangle *clip);
 
+pixman_image_t *
+visualize_image_difference(pixman_image_t *img_a, pixman_image_t *img_b,
+			   const struct rectangle *clip_rect);
+
 bool
 write_image_as_png(pixman_image_t *image, const char *fname);
 
