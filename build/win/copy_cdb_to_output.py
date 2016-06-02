@@ -53,7 +53,11 @@ def _CopyCDBToOutput(output_dir, target_arch):
   if not os.path.isdir(output_dir):
     os.makedirs(output_dir)
   vs_toolchain.SetEnvironmentAndGetRuntimeDllDirs()
-  win_sdk_dir = os.path.normpath(os.environ['WINDOWSSDKDIR'])
+  # If WINDOWSSDKDIR is not set use the default SDK path. This will be the case
+  # when DEPOT_TOOLS_WIN_TOOLCHAIN=0 and vcvarsall.bat has not been run.
+  win_sdk_dir = os.path.normpath(
+      os.environ.get('WINDOWSSDKDIR',
+                     'C:\\Program Files (x86)\\Windows Kits\\10'))
   if target_arch == 'ia32' or target_arch == 'x86':
     src_arch = 'x86'
   elif target_arch == 'x64':
