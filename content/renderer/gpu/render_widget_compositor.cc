@@ -422,7 +422,8 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
 
   settings.use_external_begin_frame_source = true;
 
-#elif !defined(OS_MACOSX)
+#else  // defined(OS_ANDROID)
+#if !defined(OS_MACOSX)
   if (ui::IsOverlayScrollbarEnabled()) {
     settings.scrollbar_animator = cc::LayerTreeSettings::THINNING;
     settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
@@ -433,7 +434,22 @@ void RenderWidgetCompositor::Initialize(float device_scale_factor) {
   settings.scrollbar_fade_delay_ms = 500;
   settings.scrollbar_fade_resize_delay_ms = 500;
   settings.scrollbar_fade_duration_ms = 300;
-#endif
+#endif  // !defined(OS_MACOSX)
+
+  // On desktop, if there's over 4GB of memory on the machine, increase the
+  // image decode budget to 256MB for both gpu and software.
+  const int kImageDecodeMemoryThresholdMB = 4 * 1024;
+  if (base::SysInfo::AmountOfPhysicalMemoryMB() >=
+      kImageDecodeMemoryThresholdMB) {
+    settings.gpu_decoded_image_budget_bytes = 256 * 1024 * 1024;
+    settings.software_decoded_image_budget_bytes = 256 * 1024 * 1024;
+  } else {
+    // These are the defaults, but recorded here as well.
+    settings.gpu_decoded_image_budget_bytes = 96 * 1024 * 1024;
+    settings.software_decoded_image_budget_bytes = 128 * 1024 * 1024;
+  }
+
+#endif  // defined(OS_ANDROID)
 
   if (cmd->HasSwitch(switches::kEnableLowResTiling))
     settings.create_low_res_tiling = true;
