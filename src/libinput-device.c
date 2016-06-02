@@ -39,7 +39,6 @@
 #include "compositor.h"
 #include "libinput-device.h"
 #include "shared/helpers.h"
-#include "weston.h"
 
 void
 evdev_led_update(struct evdev_device *device, enum weston_led weston_leds)
@@ -430,7 +429,7 @@ notify_output_destroy(struct wl_listener *listener, void *data)
  * can't do that, so we need to convert the calibration to the normalized
  * format libinput expects.
  */
-static void
+void
 evdev_device_set_calibration(struct evdev_device *device)
 {
 	struct udev *udev;
@@ -524,32 +523,6 @@ evdev_device_set_output(struct evdev_device *device,
 	evdev_device_set_calibration(device);
 }
 
-static void
-configure_device(struct evdev_device *device)
-{
-	struct weston_compositor *compositor = device->seat->compositor;
-	struct weston_config_section *s;
-	struct weston_config *config = wet_get_config(compositor);
-	int enable_tap;
-	int enable_tap_default;
-
-	s = weston_config_get_section(config,
-				      "libinput", NULL, NULL);
-
-	if (libinput_device_config_tap_get_finger_count(device->device) > 0) {
-		enable_tap_default =
-			libinput_device_config_tap_get_default_enabled(
-				device->device);
-		weston_config_section_get_bool(s, "enable_tap",
-					       &enable_tap,
-					       enable_tap_default);
-		libinput_device_config_tap_set_enabled(device->device,
-						       enable_tap);
-	}
-
-	evdev_device_set_calibration(device);
-}
-
 struct evdev_device *
 evdev_device_create(struct libinput_device *libinput_device,
 		    struct weston_seat *seat)
@@ -582,8 +555,6 @@ evdev_device_create(struct libinput_device *libinput_device,
 
 	libinput_device_set_user_data(libinput_device, device);
 	libinput_device_ref(libinput_device);
-
-	configure_device(device);
 
 	return device;
 }

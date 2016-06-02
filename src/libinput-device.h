@@ -71,6 +71,8 @@ evdev_device_destroy(struct evdev_device *device);
 void
 evdev_notify_keyboard_focus(struct weston_seat *seat,
 			    struct wl_list *evdev_devices);
+void
+evdev_device_set_calibration(struct evdev_device *device);
 
 int
 dispatch_libinput(struct libinput *libinput);

@@ -65,7 +65,8 @@ weston_LDFLAGS = -export-dynamic
 weston_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
 weston_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
 weston_LDADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
-	$(DLOPEN_LIBS) -lm $(CLOCK_GETTIME_LIBS) libshared.la
+	$(DLOPEN_LIBS) -lm $(CLOCK_GETTIME_LIBS) \
+	$(LIBINPUT_BACKEND_LIBS) libshared.la
 
 weston_SOURCES =					\
 	src/git-version.h				\

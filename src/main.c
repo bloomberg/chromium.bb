@@ -38,6 +38,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
+#include <libinput.h>
 
 #ifdef HAVE_LIBUNWIND
 #define UNW_LOCAL_ONLY
@@ -873,6 +874,30 @@ drm_configure_output(struct weston_compositor *c,
 	return mode;
 }
 
+static void
+configure_input_device(struct weston_compositor *compositor,
+		       struct libinput_device *device)
+{
+	struct weston_config_section *s;
+	struct weston_config *config = wet_get_config(compositor);
+	int enable_tap;
+	int enable_tap_default;
+
+	s = weston_config_get_section(config,
+				      "libinput", NULL, NULL);
+
+	if (libinput_device_config_tap_get_finger_count(device) > 0) {
+		enable_tap_default =
+			libinput_device_config_tap_get_default_enabled(
+				device);
+		weston_config_section_get_bool(s, "enable_tap",
+					       &enable_tap,
+					       enable_tap_default);
+		libinput_device_config_tap_set_enabled(device,
+						       enable_tap);
+	}
+}
+
 static int
 load_drm_backend(struct weston_compositor *c, const char *backend,
 		 int *argc, char **argv, struct weston_config *wc)
@@ -899,6 +924,7 @@ load_drm_backend(struct weston_compositor *c, const char *backend,
 	config.base.struct_version = WESTON_DRM_BACKEND_CONFIG_VERSION;
 	config.base.struct_size = sizeof(struct weston_drm_backend_config);
 	config.configure_output = drm_configure_output;
+	config.configure_device = configure_input_device;
 
 	ret = load_backend_new(c, backend, &config.base);
 
@@ -1021,6 +1047,7 @@ load_fbdev_backend(struct weston_compositor *c, char const * backend,
 
 	config.base.struct_version = WESTON_FBDEV_BACKEND_CONFIG_VERSION;
 	config.base.struct_size = sizeof(struct weston_fbdev_backend_config);
+	config.configure_device = configure_input_device;
 
 	/* load the actual wayland backend and configure it */
 	ret = load_backend_new(c, backend, &config.base);

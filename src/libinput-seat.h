@@ -33,17 +33,23 @@
 
 #include "compositor.h"
 
+struct libinput_device;
+
 struct udev_seat {
 	struct weston_seat base;
 	struct wl_list devices_list;
 	struct wl_listener output_create_listener;
 };
 
+typedef void (*udev_configure_device_t)(struct weston_compositor *compositor,
+					struct libinput_device *device);
+
 struct udev_input {
 	struct libinput *libinput;
 	struct wl_event_source *libinput_source;
 	struct weston_compositor *compositor;
 	int suspended;
+	udev_configure_device_t configure_device;
 };
 
 int
@@ -54,7 +60,8 @@ int
 udev_input_init(struct udev_input *input,
 		struct weston_compositor *c,
 		struct udev *udev,
-		const char *seat_id);
+		const char *seat_id,
+		udev_configure_device_t configure_device);
 void
 udev_input_destroy(struct udev_input *input);
 

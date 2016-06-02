@@ -34,6 +34,8 @@ extern "C" {
 
 #define WESTON_FBDEV_BACKEND_CONFIG_VERSION 1
 
+struct libinput_device;
+
 struct weston_fbdev_backend_config {
 	struct weston_backend_config base;
 
@@ -42,6 +44,15 @@ struct weston_fbdev_backend_config {
 	int use_gl;
 
 	uint32_t output_transform;
+
+	/** Callback used to configure input devices.
+	 *
+	 * This function will be called by the backend when a new input device
+	 * needs to be configured.
+	 * If NULL the device will use the default configuration.
+	 */
+	void (*configure_device)(struct weston_compositor *compositor,
+				 struct libinput_device *device);
 };
 
 #ifdef  __cplusplus

@@ -79,6 +79,9 @@ device_added(struct udev_input *input, struct libinput_device *libinput_device)
 	if (device == NULL)
 		return;
 
+	if (input->configure_device != NULL)
+		input->configure_device(c, device->device);
+	evdev_device_set_calibration(device);
 	udev_seat = (struct udev_seat *) seat;
 	wl_list_insert(udev_seat->devices_list.prev, &device->link);
 
@@ -279,7 +282,8 @@ libinput_log_func(struct libinput *libinput,
 
 int
 udev_input_init(struct udev_input *input, struct weston_compositor *c,
-		struct udev *udev, const char *seat_id)
+		struct udev *udev, const char *seat_id,
+		udev_configure_device_t configure_device)
 {
 	enum libinput_log_priority priority = LIBINPUT_LOG_PRIORITY_INFO;
 	const char *log_priority = NULL;
@@ -287,6 +291,7 @@ udev_input_init(struct udev_input *input, struct weston_compositor *c,
 	memset(input, 0, sizeof *input);
 
 	input->compositor = c;
+	input->configure_device = configure_device;
 
 	log_priority = getenv("WESTON_LIBINPUT_LOG_PRIORITY");
 

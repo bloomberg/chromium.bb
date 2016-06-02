@@ -36,6 +36,8 @@ extern "C" {
 
 #define WESTON_DRM_BACKEND_CONFIG_VERSION 1
 
+struct libinput_device;
+
 enum weston_drm_backend_output_mode {
 	/** The output is disabled */
 	WESTON_DRM_BACKEND_OUTPUT_OFF,
@@ -117,6 +119,15 @@ struct weston_drm_backend_config {
 				    bool use_current_mode,
 				    const char *name,
 				    struct weston_drm_backend_output_config *output_config);
+
+	/** Callback used to configure input devices.
+	 *
+	 * This function will be called by the backend when a new input device
+	 * needs to be configured.
+	 * If NULL the device will use the default configuration.
+	 */
+	void (*configure_device)(struct weston_compositor *compositor,
+				 struct libinput_device *device);
 	bool use_current_mode;
 };
 
