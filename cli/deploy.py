@@ -951,7 +951,7 @@ def Deploy(device, packages, board=None, emerge=True, update=False, deep=False,
                                       override_board=board)
       if not force and board != device.board:
         raise DeployError('Device (%s) is incompatible with board %s. Use '
-                          '--force to deploy anyway.' % (device, board))
+                          '--force to deploy anyway.' % (device.board, board))
 
       sysroot = cros_build_lib.GetSysroot(board=board)
 
