@@ -56,7 +56,7 @@ void FrameTreeNodeBlameContext::AsValueInto(
     int routing_id = current_frame_host->GetRoutingID();
     DCHECK_NE(routing_id, MSG_ROUTING_NONE);
 
-    value->BeginDictionary(kRenderFrameBlameContextScope);
+    value->BeginDictionary("renderFrame");
     value->SetInteger("pid_ref", process_id);
     value->SetString("id_ref", base::StringPrintf("0x%x", routing_id));
     value->SetString("scope", kRenderFrameBlameContextScope);
