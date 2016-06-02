@@ -634,6 +634,10 @@ fi
 
 AC_CONFIG_FILES([Makefile src/version.h src/weston.pc])
 
+# AC_CONFIG_FILES needs the full name when running autoconf, so we need to use
+# libweston_abi_version here, and outside [] because of m4 quoting rules
+AC_CONFIG_FILES([src/libweston-]libweston_abi_version[.pc:src/libweston.pc.in])
+
 AM_CONDITIONAL([HAVE_GIT_REPO], [test -f $srcdir/.git/logs/HEAD])
 
 AC_OUTPUT

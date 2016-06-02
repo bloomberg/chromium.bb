@@ -8,5 +8,5 @@ pkglibexecdir=${libexecdir}/@PACKAGE@
 Name: Weston Plugin API
 Description: Header files for Weston plugin development
 Version: @WESTON_VERSION@
-Requires.private: wayland-server pixman-1 xkbcommon
-Cflags: -I${includedir}/weston -I{includedir}/libweston-@LIBWESTON_ABI_VERSION@
+Requires.private: libweston-@LIBWESTON_ABI_VERSION@
+Cflags: -I${includedir}/weston

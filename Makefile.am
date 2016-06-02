@@ -51,7 +51,6 @@ AM_CPPFLAGS = 					\
 	-I$(top_srcdir)/shared			\
 	-I$(top_builddir)/protocol		\
 	-DDATADIR='"$(datadir)"'		\
-	-DMODULEDIR='"$(moduledir)"'		\
 	-DLIBWESTON_MODULEDIR='"$(libweston_moduledir)"' \
 	-DLIBEXECDIR='"$(libexecdir)"'		\
 	-DBINDIR='"$(bindir)"'
@@ -62,16 +61,15 @@ CLEANFILES = weston.ini				\
 	internal-screenshot-00.png		\
 	$(BUILT_SOURCES)
 
-bin_PROGRAMS += weston
-
-weston_LDFLAGS = -export-dynamic
-weston_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
-weston_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
-weston_LDADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
+lib_LTLIBRARIES = libweston.la
+libweston_la_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON
+libweston_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
+libweston_la_LIBADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
 	$(DLOPEN_LIBS) -lm $(CLOCK_GETTIME_LIBS) \
 	$(LIBINPUT_BACKEND_LIBS) libshared.la
+libweston_la_LDFLAGS = -release ${LIBWESTON_ABI_VERSION}
 
-weston_SOURCES =					\
+libweston_la_SOURCES =					\
 	src/git-version.h				\
 	src/log.c					\
 	src/compositor.c				\
@@ -87,7 +85,6 @@ weston_SOURCES =					\
 	src/screenshooter.c				\
 	src/clipboard.c					\
 	src/zoom.c					\
-	src/text-backend.c				\
 	src/bindings.c					\
 	src/animation.c					\
 	src/noop-renderer.c				\
@@ -96,10 +93,8 @@ weston_SOURCES =					\
 	src/timeline.c					\
 	src/timeline.h					\
 	src/timeline-object.h				\
-	src/main.c					\
 	src/linux-dmabuf.c				\
 	src/linux-dmabuf.h				\
-	src/weston-screenshooter.c			\
 	shared/helpers.h				\
 	shared/matrix.c					\
 	shared/matrix.h					\
@@ -124,7 +119,7 @@ systemd_notify_la_SOURCES =			\
 	src/compositor.h
 endif
 
-nodist_weston_SOURCES =					\
+nodist_libweston_la_SOURCES =					\
 	protocol/weston-screenshooter-protocol.c			\
 	protocol/weston-screenshooter-server-protocol.h			\
 	protocol/text-cursor-position-protocol.c	\
@@ -140,7 +135,22 @@ nodist_weston_SOURCES =					\
 	protocol/linux-dmabuf-unstable-v1-protocol.c	\
 	protocol/linux-dmabuf-unstable-v1-server-protocol.h
 
-BUILT_SOURCES += $(nodist_weston_SOURCES)
+BUILT_SOURCES += $(nodist_libweston_la_SOURCES)
+
+bin_PROGRAMS += weston
+
+weston_LDFLAGS = -export-dynamic
+weston_CPPFLAGS = $(AM_CPPFLAGS) -DIN_WESTON 		\
+				 -DMODULEDIR='"$(moduledir)"'
+weston_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS) $(LIBUNWIND_CFLAGS)
+weston_LDADD = $(COMPOSITOR_LIBS) $(LIBUNWIND_LIBS) \
+	$(DLOPEN_LIBS) $(LIBINPUT_BACKEND_LIBS) \
+	-lm libshared.la libweston.la
+
+weston_SOURCES = 					\
+	src/main.c					\
+	src/weston-screenshooter.c			\
+	src/text-backend.c
 
 # Track this dependency explicitly instead of using BUILT_SOURCES.  We
 # add BUILT_SOURCES to CLEANFILES, but we want to keep git-version.h
@@ -210,7 +220,7 @@ endif
 endif # BUILD_WESTON_LAUNCH
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = src/weston.pc
+pkgconfig_DATA = src/weston.pc src/libweston-${LIBWESTON_ABI_VERSION}.pc
 
 wayland_sessiondir = $(datadir)/wayland-sessions
 dist_wayland_session_DATA = src/weston.desktop
