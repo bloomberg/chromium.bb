@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -38,7 +37,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/security_filter_peer.h"
-#include "components/variations/variations_util.h"
 #include "content/public/child/resource_dispatcher_delegate.h"
 #include "content/public/common/service_registry.h"
 #include "content/public/renderer/render_thread.h"
@@ -238,7 +236,7 @@ void CreateResourceUsageReporter(
 bool ChromeRenderThreadObserver::is_incognito_process_ = false;
 
 ChromeRenderThreadObserver::ChromeRenderThreadObserver()
-    : weak_factory_(this) {
+    : field_trial_syncer_(content::RenderThread::Get()), weak_factory_(this) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
@@ -254,7 +252,7 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
   media::SetLocalizedStringProvider(
       chrome_common_media::LocalizedStringProvider);
 
-  InitFieldTrialObserving(command_line);
+  field_trial_syncer_.InitFieldTrialObserving(command_line);
 
   // chrome-native: is a scheme used for placeholder navigations that allow
   // UIs to be drawn with platform native widgets instead of HTML.  These pages
@@ -271,34 +269,6 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
 }
 
 ChromeRenderThreadObserver::~ChromeRenderThreadObserver() {}
-
-void ChromeRenderThreadObserver::InitFieldTrialObserving(
-    const base::CommandLine& command_line) {
-  // Set up initial set of crash dump data for field trials in this renderer.
-  variations::SetVariationListCrashKeys();
-
-  // Listen for field trial activations to report them to the browser.
-  base::FieldTrialList::AddObserver(this);
-
-  // Some field trials may have been activated before this point. Notify the
-  // browser of these activations now. To detect these, take the set difference
-  // of currently active trials with the initially active trials.
-  base::FieldTrial::ActiveGroups initially_active_trials;
-  base::FieldTrialList::GetActiveFieldTrialGroupsFromString(
-      command_line.GetSwitchValueASCII(switches::kForceFieldTrials),
-      &initially_active_trials);
-  std::set<std::string> initially_active_trials_set;
-  for (const auto& entry : initially_active_trials) {
-    initially_active_trials_set.insert(std::move(entry.trial_name));
-  }
-
-  base::FieldTrial::ActiveGroups current_active_trials;
-  base::FieldTrialList::GetActiveFieldTrialGroups(&current_active_trials);
-  for (const auto& trial : current_active_trials) {
-    if (!ContainsKey(initially_active_trials_set, trial.trial_name))
-      OnFieldTrialGroupFinalized(trial.trial_name, trial.group_name);
-  }
-}
 
 bool ChromeRenderThreadObserver::OnControlMessageReceived(
     const IPC::Message& message) {
@@ -325,24 +295,12 @@ void ChromeRenderThreadObserver::OnSetContentSettingRules(
 }
 
 void ChromeRenderThreadObserver::OnSetFieldTrialGroup(
-    const std::string& field_trial_name,
+    const std::string& trial_name,
     const std::string& group_name) {
-  base::FieldTrial* trial =
-      base::FieldTrialList::CreateFieldTrial(field_trial_name, group_name);
-  // Ensure the trial is marked as "used" by calling group() on it if it is
-  // marked as activated.
-  trial->group();
-  variations::SetVariationListCrashKeys();
+  field_trial_syncer_.OnSetFieldTrialGroup(trial_name, group_name);
 }
 
 const RendererContentSettingRules*
 ChromeRenderThreadObserver::content_setting_rules() const {
   return &content_setting_rules_;
-}
-
-void ChromeRenderThreadObserver::OnFieldTrialGroupFinalized(
-    const std::string& trial_name,
-    const std::string& group_name) {
-  content::RenderThread::Get()->Send(
-      new ChromeViewHostMsg_FieldTrialActivated(trial_name));
 }

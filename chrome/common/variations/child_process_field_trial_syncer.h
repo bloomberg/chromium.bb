@@ -1,0 +1,54 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_COMMON_VARIATIONS_CHILD_PROCESS_FIELD_TRIAL_SYNCER_H_
+#define CHROME_COMMON_VARIATIONS_CHILD_PROCESS_FIELD_TRIAL_SYNCER_H_
+
+#include <string>
+
+#include "base/macros.h"
+#include "base/metrics/field_trial.h"
+#include "ipc/ipc_sender.h"
+
+namespace base {
+class CommandLine;
+}
+
+namespace chrome_variations {
+
+// ChildProcessFieldTrialSyncer is a utility class that's responsible for
+// syncing the "activated" state of field trials between browser and child
+// processes. Specifically, when a field trial is activated in the browser, it
+// also activates it in the child process and when a field trial is activated
+// in the child process, it notifies the browser process to activate it.
+class ChildProcessFieldTrialSyncer : public base::FieldTrialList::Observer {
+ public:
+  // ChildProcessFieldTrialSyncer constructor taking an externally owned
+  // |ipc_sender| param for sending ChromeViewHostMsg_FieldTrialActivated IPCs
+  // to the browser process. The |ipc_sender| must outlive this object.
+  explicit ChildProcessFieldTrialSyncer(IPC::Sender* ipc_sender);
+  ~ChildProcessFieldTrialSyncer() override;
+
+  // Initializes field trial state change observation and notifies the browser
+  // of any field trials that might have already been activated.
+  void InitFieldTrialObserving(const base::CommandLine& command_line);
+
+  // Handler for messages from the browser process notifying the child process
+  // that a field trial was activated.
+  void OnSetFieldTrialGroup(const std::string& trial_name,
+                            const std::string& group_name);
+
+ private:
+  // base::FieldTrialList::Observer:
+  void OnFieldTrialGroupFinalized(const std::string& trial_name,
+                                  const std::string& group_name) override;
+
+  IPC::Sender* const ipc_sender_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChildProcessFieldTrialSyncer);
+};
+
+}  // namespace chrome_variations
+
+#endif  // CHROME_COMMON_VARIATIONS_CHILD_PROCESS_FIELD_TRIAL_SYNCER_H_
