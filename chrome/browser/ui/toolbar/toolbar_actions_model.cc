@@ -555,6 +555,35 @@ void ToolbarActionsModel::Populate() {
   UMA_HISTOGRAM_COUNTS_100("Toolbar.ActionsModel.OverallActionsCount",
                            toolbar_items_.size());
 
+  const char kDocsOfflineExtensionId[] = "ghbmnnjooekpmoecnnnilnnbdlolhkhi";
+  if (extension_registry_->GetExtensionById(
+          kDocsOfflineExtensionId,
+          extensions::ExtensionRegistry::ENABLED |
+              extensions::ExtensionRegistry::DISABLED) != nullptr) {
+    // Note: This enum is used in UMA (directly below). Don't renumber.
+    enum ExtensionState {
+      DISABLED   = 0,
+      VISIBLE    = 1,
+      OVERFLOWED = 2,
+      BOUNDARY   = 3,
+    };
+    ExtensionState doc_state = DISABLED;
+    if (extensions.GetByID(kDocsOfflineExtensionId)) {  // In the enabled set.
+      auto current_pos = std::find_if(
+          toolbar_items_.begin(), toolbar_items_.end(),
+          [&kDocsOfflineExtensionId](const ToolbarItem& item) {
+        return item.id == kDocsOfflineExtensionId;
+      });
+      doc_state =
+          current_pos - toolbar_items_.begin() <
+              static_cast<int>(visible_icon_count()) ||
+          all_icons_visible() ?
+              VISIBLE : OVERFLOWED;
+    }
+    UMA_HISTOGRAM_ENUMERATION("Extensions.DocsOfflineIconState",
+                              doc_state, BOUNDARY);
+  }
+
   if (!toolbar_items_.empty()) {
     // Visible count can be -1, meaning: 'show all'. Since UMA converts negative
     // values to 0, this would be counted as 'show none' unless we convert it to

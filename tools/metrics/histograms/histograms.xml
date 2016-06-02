@@ -13849,6 +13849,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.DocsOfflineIconState" enum="ExtensionIconState">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The state of the toolbar icon for the docs offline extension (visible in the
+    toolbar, overflowed in the menu, or the extension is disabled). Recorded
+    once per startup per (non-incognito) profile.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.EnhancedBookmarksManagerNumEventListeners">
   <obsolete>
     Obsolete since the enhanced bookmarks manager is no longer using an event
@@ -72084,6 +72093,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1133" label="SYSTEM_DISPLAY_OVERSCANCALIBRATIONADJUST"/>
   <int value="1134" label="SYSTEM_DISPLAY_OVERSCANCALIBRATIONRESET"/>
   <int value="1135" label="SYSTEM_DISPLAY_OVERSCANCALIBRATIONCOMPLETE"/>
+</enum>
+
+<enum name="ExtensionIconState" type="int">
+  <int value="0" label="DISABLED"/>
+  <int value="1" label="VISIBLE"/>
+  <int value="2" label="OVERFLOWED"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
