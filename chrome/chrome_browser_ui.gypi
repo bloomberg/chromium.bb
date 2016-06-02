@@ -1336,6 +1336,8 @@
     ],
     # Files used only on desktop systems (not iOS, Android, ChromeOS).
     'chrome_browser_ui_desktop_sources': [
+      'browser/ui/startup/default_browser_infobar_delegate.cc',
+      'browser/ui/startup/default_browser_infobar_delegate.h',
       'browser/ui/startup/default_browser_prompt.cc',
       'browser/ui/startup/default_browser_prompt.h',
       'browser/ui/startup/default_browser_prompt_win.cc',

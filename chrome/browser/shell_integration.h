@@ -213,9 +213,10 @@ class DefaultBrowserWorker : public DefaultWebClientWorker {
  public:
   explicit DefaultBrowserWorker(const DefaultWebClientWorkerCallback& callback);
 
- private:
+ protected:
   ~DefaultBrowserWorker() override;
 
+ private:
   // Check if Chrome is the default browser.
   DefaultWebClientState CheckIsDefaultImpl() override;
 

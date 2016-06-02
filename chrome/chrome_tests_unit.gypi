@@ -2441,6 +2441,7 @@
             'browser/net/disk_cache_dir_policy_handler_unittest.cc',
             'browser/profiles/profile_list_desktop_unittest.cc',
             'browser/profiles/profile_statistics_unittest.cc',
+            'browser/ui/startup/default_browser_infobar_delegate_unittest.cc',
           ],
         }],
         ['chromeos==0 and use_ozone==0 and OS=="linux"', {
