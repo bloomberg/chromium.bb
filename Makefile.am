@@ -5,6 +5,8 @@ noinst_PROGRAMS =
 libexec_PROGRAMS =
 moduledir = $(libdir)/weston
 module_LTLIBRARIES =
+libweston_moduledir = $(libdir)/libweston-${LIBWESTON_ABI_VERSION}
+libweston_module_LTLIBRARIES =
 noinst_LTLIBRARIES =
 BUILT_SOURCES =
 
@@ -50,6 +52,7 @@ AM_CPPFLAGS = 					\
 	-I$(top_builddir)/protocol		\
 	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
+	-DLIBWESTON_MODULEDIR='"$(libweston_moduledir)"' \
 	-DLIBEXECDIR='"$(libexecdir)"'		\
 	-DBINDIR='"$(bindir)"'
 
@@ -212,8 +215,8 @@ pkgconfig_DATA = src/weston.pc
 wayland_sessiondir = $(datadir)/wayland-sessions
 dist_wayland_session_DATA = src/weston.desktop
 
-westonincludedir = $(includedir)/weston
-westoninclude_HEADERS =				\
+libwestonincludedir = $(includedir)/libweston-${LIBWESTON_ABI_VERSION}
+libwestoninclude_HEADERS =				\
 	src/version.h				\
 	src/compositor.h			\
 	src/compositor-drm.h			\
@@ -223,11 +226,13 @@ westoninclude_HEADERS =				\
 	src/compositor-wayland.h		\
 	src/compositor-x11.h			\
 	src/timeline-object.h			\
-	src/weston.h				\
 	shared/matrix.h				\
 	shared/config-parser.h			\
 	shared/zalloc.h				\
 	shared/platform.h
+
+westonincludedir = $(includedir)/weston
+westoninclude_HEADERS = src/weston.h
 
 if ENABLE_IVI_SHELL
 westoninclude_HEADERS +=				\
@@ -235,7 +240,7 @@ westoninclude_HEADERS +=				\
 endif
 
 if ENABLE_EGL
-module_LTLIBRARIES += gl-renderer.la
+libweston_module_LTLIBRARIES += gl-renderer.la
 gl_renderer_la_LDFLAGS = -module -avoid-version
 gl_renderer_la_LIBADD = $(COMPOSITOR_LIBS) $(EGL_LIBS)
 gl_renderer_la_CFLAGS =				\
@@ -252,7 +257,7 @@ gl_renderer_la_SOURCES =			\
 endif
 
 if ENABLE_X11_COMPOSITOR
-module_LTLIBRARIES += x11-backend.la
+libweston_module_LTLIBRARIES += x11-backend.la
 x11_backend_la_LDFLAGS = -module -avoid-version
 x11_backend_la_LIBADD = $(COMPOSITOR_LIBS) $(X11_COMPOSITOR_LIBS) \
 	libshared-cairo.la
@@ -278,7 +283,7 @@ INPUT_BACKEND_SOURCES =				\
 	shared/helpers.h
 
 if ENABLE_DRM_COMPOSITOR
-module_LTLIBRARIES += drm-backend.la
+libweston_module_LTLIBRARIES += drm-backend.la
 drm_backend_la_LDFLAGS = -module -avoid-version
 drm_backend_la_LIBADD =				\
 	$(COMPOSITOR_LIBS)			\
@@ -309,7 +314,7 @@ endif
 endif
 
 if ENABLE_WAYLAND_COMPOSITOR
-module_LTLIBRARIES += wayland-backend.la
+libweston_module_LTLIBRARIES += wayland-backend.la
 wayland_backend_la_LDFLAGS = -module -avoid-version
 wayland_backend_la_LIBADD =			\
 	$(COMPOSITOR_LIBS)			\
@@ -332,7 +337,7 @@ nodist_wayland_backend_la_SOURCES =			\
 endif
 
 if ENABLE_HEADLESS_COMPOSITOR
-module_LTLIBRARIES += headless-backend.la
+libweston_module_LTLIBRARIES += headless-backend.la
 headless_backend_la_LDFLAGS = -module -avoid-version
 headless_backend_la_LIBADD = $(COMPOSITOR_LIBS) libshared.la
 headless_backend_la_CFLAGS = $(COMPOSITOR_CFLAGS) $(AM_CFLAGS)
@@ -343,7 +348,7 @@ headless_backend_la_SOURCES = 			\
 endif
 
 if ENABLE_FBDEV_COMPOSITOR
-module_LTLIBRARIES += fbdev-backend.la
+libweston_module_LTLIBRARIES += fbdev-backend.la
 fbdev_backend_la_LDFLAGS = -module -avoid-version
 fbdev_backend_la_LIBADD =			\
 	$(COMPOSITOR_LIBS)			\
@@ -365,7 +370,7 @@ fbdev_backend_la_SOURCES =			\
 endif
 
 if ENABLE_RDP_COMPOSITOR
-module_LTLIBRARIES += rdp-backend.la
+libweston_module_LTLIBRARIES += rdp-backend.la
 rdp_backend_la_LDFLAGS = -module -avoid-version
 rdp_backend_la_LIBADD = $(COMPOSITOR_LIBS) \
 	$(RDP_COMPOSITOR_LIBS) \

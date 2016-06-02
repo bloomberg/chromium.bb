@@ -4791,7 +4791,7 @@ weston_load_module(const char *name, const char *entrypoint)
 		if (builddir)
 			snprintf(path, sizeof path, "%s/.libs/%s", builddir, name);
 		else
-			snprintf(path, sizeof path, "%s/%s", MODULEDIR, name);
+			snprintf(path, sizeof path, "%s/%s", LIBWESTON_MODULEDIR, name);
 	} else {
 		snprintf(path, sizeof path, "%s", name);
 	}

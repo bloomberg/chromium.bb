@@ -40,12 +40,14 @@
 #include <sys/socket.h>
 #include <libinput.h>
 #include <sys/time.h>
+#include <linux/limits.h>
 
 #ifdef HAVE_LIBUNWIND
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
 #endif
 
+#include "weston.h"
 #include "compositor.h"
 #include "../shared/os-compatibility.h"
 #include "../shared/helpers.h"
@@ -690,6 +692,49 @@ weston_create_listening_socket(struct wl_display *display, const char *socket_na
 	return 0;
 }
 
+WL_EXPORT void *
+wet_load_module(const char *name, const char *entrypoint)
+{
+	const char *builddir = getenv("WESTON_BUILD_DIR");
+	char path[PATH_MAX];
+	void *module, *init;
+
+	if (name == NULL)
+		return NULL;
+
+	if (name[0] != '/') {
+		if (builddir)
+			snprintf(path, sizeof path, "%s/.libs/%s", builddir, name);
+		else
+			snprintf(path, sizeof path, "%s/%s", MODULEDIR, name);
+	} else {
+		snprintf(path, sizeof path, "%s", name);
+	}
+
+	module = dlopen(path, RTLD_NOW | RTLD_NOLOAD);
+	if (module) {
+		weston_log("Module '%s' already loaded\n", path);
+		dlclose(module);
+		return NULL;
+	}
+
+	weston_log("Loading module '%s'\n", path);
+	module = dlopen(path, RTLD_NOW);
+	if (!module) {
+		weston_log("Failed to load module: %s\n", dlerror());
+		return NULL;
+	}
+
+	init = dlsym(module, entrypoint);
+	if (!init) {
+		weston_log("Failed to lookup init function: %s\n", dlerror());
+		dlclose(module);
+		return NULL;
+	}
+
+	return init;
+}
+
 static int
 load_modules(struct weston_compositor *ec, const char *modules,
 	     int *argc, char *argv[])
@@ -706,7 +751,7 @@ load_modules(struct weston_compositor *ec, const char *modules,
 	while (*p) {
 		end = strchrnul(p, ',');
 		snprintf(buffer, sizeof buffer, "%.*s", (int) (end - p), p);
-		module_init = weston_load_module(buffer, "module_init");
+		module_init = wet_load_module(buffer, "module_init");
 		if (!module_init)
 			return -1;
 		if (module_init(ec, argc, argv) < 0)

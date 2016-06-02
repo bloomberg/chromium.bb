@@ -3,6 +3,7 @@ m4_define([weston_minor_version], [11])
 m4_define([weston_micro_version], [90])
 m4_define([weston_version],
           [weston_major_version.weston_minor_version.weston_micro_version])
+m4_define([libweston_abi_version], [0])
 
 AC_PREREQ([2.64])
 AC_INIT([weston],
@@ -17,6 +18,7 @@ AC_SUBST([WESTON_VERSION_MAJOR], [weston_major_version])
 AC_SUBST([WESTON_VERSION_MINOR], [weston_minor_version])
 AC_SUBST([WESTON_VERSION_MICRO], [weston_micro_version])
 AC_SUBST([WESTON_VERSION], [weston_version])
+AC_SUBST([LIBWESTON_ABI_VERSION], [libweston_abi_version])
 
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h])

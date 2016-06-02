@@ -30,7 +30,7 @@
 extern "C" {
 #endif
 
-#include "compositor.h"
+#include <compositor.h>
 
 void
 screenshooter_create(struct weston_compositor *ec);
@@ -59,6 +59,9 @@ weston_watch_process(struct weston_process *process);
 
 struct weston_config *
 wet_get_config(struct weston_compositor *compositor);
+
+void *
+wet_load_module(const char *name, const char *entrypoint);
 
 #ifdef  __cplusplus
 }
