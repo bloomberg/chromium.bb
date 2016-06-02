@@ -27,7 +27,7 @@
             android:inputType="textPassword"
             android:singleLine="true"
             android:imeOptions="actionDone" />
-        <TextView
+        <org.chromium.ui.widget.TextViewWithClickableSpans
             android:id="@+id/custom_passphrase_instructions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
