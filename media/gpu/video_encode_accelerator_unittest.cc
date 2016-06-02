@@ -275,10 +275,11 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
   test_stream->aligned_in_file_data.resize(test_stream->aligned_buffer_size *
                                            test_stream->num_frames);
 
+  base::File src(src_file, base::File::FLAG_OPEN | base::File::FLAG_READ);
   std::vector<char> src_data(visible_buffer_size);
-  off_t dest_offset = 0;
+  off_t src_offset = 0, dest_offset = 0;
   for (size_t frame = 0; frame < test_stream->num_frames; frame++) {
-    LOG_ASSERT(base::ReadFile(src_file, &src_data[0], visible_buffer_size) ==
+    LOG_ASSERT(src.Read(src_offset, &src_data[0], visible_buffer_size) ==
                static_cast<int>(visible_buffer_size));
     const char* src_ptr = &src_data[0];
     for (size_t i = 0; i < num_planes; i++) {
@@ -293,7 +294,9 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
       }
       dest_offset += padding_sizes[i];
     }
+    src_offset += visible_buffer_size;
   }
+  src.Close();
 
   // Assert that memory mapped of file starts at 64 byte boundary. So each
   // plane of frames also start at 64 byte boundary.
