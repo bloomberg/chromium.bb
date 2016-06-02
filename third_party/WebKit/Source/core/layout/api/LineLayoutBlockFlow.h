@@ -53,6 +53,8 @@ public:
         return toBlockFlow()->textIndentOffset();
     }
 
+    // TODO(dgrogan/eae): *ForChild methods: callers should call
+    // child.logicalWidth etc, and the API should access the parent BlockFlow.
     LayoutUnit logicalWidthForChild(const LayoutBox& child) const
     {
         return toBlockFlow()->logicalWidthForChild(child);
@@ -138,6 +140,9 @@ public:
         return toBlockFlow()->lastFloatFromPreviousLine();
     }
 
+    // TODO(dgrogan/eae): *ForFloat: add these methods to the FloatingObject
+    // class. Be consistent with use of start/end/before/after instead of
+    // logicalTop/Left etc.
     LayoutUnit logicalTopForFloat(const FloatingObject& floatingObject) const
     {
         return toBlockFlow()->logicalTopForFloat(floatingObject);

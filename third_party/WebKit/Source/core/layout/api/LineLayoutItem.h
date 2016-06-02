@@ -135,6 +135,8 @@ public:
         return LineLayoutItem(m_layoutObject->slowLastChild());
     }
 
+    // TODO(dgrogan/eae): Collapse these 4 methods to 1. Settle on pointer or
+    // ref. Give firstLine a default value.
     const ComputedStyle* style() const
     {
         return m_layoutObject->style();
@@ -160,6 +162,8 @@ public:
         return m_layoutObject->document();
     }
 
+    // TODO(dgrogan): This is the only caller: move the logic from LayoutObject
+    // to here.
     bool preservesNewline() const
     {
         return m_layoutObject->preservesNewline();
@@ -180,6 +184,7 @@ public:
         return m_layoutObject->ancestorLineBoxDirty();
     }
 
+    // TODO(dgrogan/eae): Remove this method and replace every call with an ||.
     bool isFloatingOrOutOfFlowPositioned() const
     {
         return m_layoutObject->isFloatingOrOutOfFlowPositioned();
@@ -240,6 +245,8 @@ public:
         return m_layoutObject->isInlineElementContinuation();
     }
 
+    // TODO(dgrogan/eae): Replace isType with an enum in the API? As it stands
+    // we mix isProperty and isType, which is confusing.
     bool isLayoutBlock() const
     {
         return m_layoutObject->isLayoutBlock();
@@ -320,6 +327,8 @@ public:
         return m_layoutObject->selfNeedsLayout();
     }
 
+    // TODO(dgrogan/eae): Why does layoutObject need to know if its ancestor
+    // line box is dirty at all?
     void setAncestorLineBoxDirty() const
     {
         m_layoutObject->setAncestorLineBoxDirty();
@@ -355,11 +364,13 @@ public:
         return m_layoutObject->getSelectionState();
     }
 
+    // TODO(dgrogan/eae): Can we move this to style?
     Color selectionBackgroundColor() const
     {
         return m_layoutObject->selectionBackgroundColor();
     }
 
+    // TODO(dgrogan/eae): Needed for Color::current. Can we move this somewhere?
     Color resolveColor(const ComputedStyle& styleToUse, int colorProperty)
     {
         return m_layoutObject->resolveColor(styleToUse, colorProperty);
@@ -370,6 +381,8 @@ public:
         return m_layoutObject->isInFlowPositioned();
     }
 
+    // TODO(dgrogan/eae): Can we change this to GlobalToLocal and vice versa
+    // instead of having 4 methods? See localToAbsoluteQuad below.
     PositionWithAffinity positionForPoint(const LayoutPoint& point)
     {
         return m_layoutObject->positionForPoint(point);
@@ -400,6 +413,8 @@ public:
         return m_layoutObject->hasOverflowClip();
     }
 
+    // TODO(dgrogan/eae): Can we instead add a TearDown method to the API
+    // instead of exposing this and other shutdown code to line layout?
     bool documentBeingDestroyed() const
     {
         return m_layoutObject->documentBeingDestroyed();

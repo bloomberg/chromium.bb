@@ -30,6 +30,7 @@ public:
 
     LineLayoutBoxModel() { }
 
+    // TODO(dgrogan) Remove. Implement API methods that proxy to the PaintLayer.
     PaintLayer* layer() const
     {
         return toBoxModel()->layer();
