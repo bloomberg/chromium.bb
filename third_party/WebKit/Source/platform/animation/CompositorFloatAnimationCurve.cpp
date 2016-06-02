@@ -17,8 +17,58 @@ CompositorFloatAnimationCurve::CompositorFloatAnimationCurve()
 {
 }
 
+CompositorFloatAnimationCurve::CompositorFloatAnimationCurve(std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve)
+    : m_curve(std::move(curve))
+{
+}
+
 CompositorFloatAnimationCurve::~CompositorFloatAnimationCurve()
 {
+}
+
+PassOwnPtr<CompositorFloatAnimationCurve> CompositorFloatAnimationCurve::CreateForTesting(std::unique_ptr<cc::KeyframedFloatAnimationCurve> curve)
+{
+    return adoptPtr(new CompositorFloatAnimationCurve(std::move(curve)));
+}
+
+Vector<CompositorFloatKeyframe> CompositorFloatAnimationCurve::keyframesForTesting() const
+{
+    Vector<CompositorFloatKeyframe> keyframes;
+    for (const auto& ccKeyframe : m_curve->keyframes_for_testing()) {
+        CompositorFloatKeyframe keyframe(ccKeyframe->Time().InSecondsF(), ccKeyframe->Value());
+        keyframes.append(keyframe);
+    }
+    return keyframes;
+}
+
+CubicBezierTimingFunction::EaseType CompositorFloatAnimationCurve::getCurveEaseTypeForTesting() const
+{
+    const cc::TimingFunction* timingFunction = m_curve->timing_function_for_testing();
+    DCHECK(timingFunction);
+    DCHECK_EQ(timingFunction->GetType(), cc::TimingFunction::Type::CUBIC_BEZIER);
+    auto cubicTimingFunction = static_cast<const cc::CubicBezierTimingFunction*>(timingFunction);
+    return cubicTimingFunction->ease_type();
+}
+
+bool CompositorFloatAnimationCurve::curveHasLinearTimingFunctionForTesting() const
+{
+    return !m_curve->timing_function_for_testing();
+}
+
+CubicBezierTimingFunction::EaseType CompositorFloatAnimationCurve::getKeyframeEaseTypeForTesting(unsigned long index) const
+{
+    DCHECK_LT(index, m_curve->keyframes_for_testing().size());
+    const cc::TimingFunction* timingFunction = m_curve->keyframes_for_testing()[index]->timing_function();
+    DCHECK(timingFunction);
+    DCHECK_EQ(timingFunction->GetType(), cc::TimingFunction::Type::CUBIC_BEZIER);
+    auto cubicTimingFunction = static_cast<const cc::CubicBezierTimingFunction*>(timingFunction);
+    return cubicTimingFunction->ease_type();
+}
+
+bool CompositorFloatAnimationCurve::keyframeHasLinearTimingFunctionForTesting(unsigned long index) const
+{
+    DCHECK_LT(index, m_curve->keyframes_for_testing().size());
+    return !m_curve->keyframes_for_testing()[index]->timing_function();
 }
 
 void CompositorFloatAnimationCurve::addLinearKeyframe(const CompositorFloatKeyframe& keyframe)

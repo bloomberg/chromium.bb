@@ -29,12 +29,12 @@ public:
     CompositorScrollOffsetAnimationCurve(cc::ScrollOffsetAnimationCurve*);
     ~CompositorScrollOffsetAnimationCurve() override;
 
-    virtual void setInitialValue(FloatPoint);
-    virtual FloatPoint getValue(double time) const;
-    virtual double duration() const;
-    virtual FloatPoint targetValue() const;
-    virtual void applyAdjustment(IntSize);
-    virtual void updateTarget(double time, FloatPoint newTarget);
+    void setInitialValue(FloatPoint);
+    FloatPoint getValue(double time) const;
+    double duration() const;
+    FloatPoint targetValue() const;
+    void applyAdjustment(IntSize);
+    void updateTarget(double time, FloatPoint newTarget);
 
     // CompositorAnimationCurve implementation.
     std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const override;

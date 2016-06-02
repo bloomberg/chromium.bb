@@ -9,6 +9,7 @@
 #include "platform/PlatformExport.h"
 #include "platform/animation/CompositorTargetProperty.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 
 #include <memory>
 
@@ -19,6 +20,7 @@ class Animation;
 namespace blink {
 
 class CompositorAnimationCurve;
+class CompositorFloatAnimationCurve;
 
 // A compositor driven animation.
 class PLATFORM_EXPORT CompositorAnimation {
@@ -28,42 +30,41 @@ public:
     using FillMode = cc::Animation::FillMode;
 
     CompositorAnimation(const CompositorAnimationCurve&, CompositorTargetProperty::Type, int animationId, int groupId);
-    virtual ~CompositorAnimation();
+    ~CompositorAnimation();
 
     // An id must be unique.
-    virtual int id();
-    virtual int group();
+    int id() const;
+    int group() const;
 
-    virtual CompositorTargetProperty::Type targetProperty() const;
+    CompositorTargetProperty::Type targetProperty() const;
 
     // This is the number of times that the animation will play. If this
     // value is zero the animation will not play. If it is negative, then
     // the animation will loop indefinitely.
-    virtual double iterations() const;
-    virtual void setIterations(double);
+    double iterations() const;
+    void setIterations(double);
 
-    virtual double startTime() const;
-    virtual void setStartTime(double monotonicTime);
+    double startTime() const;
+    void setStartTime(double monotonicTime);
 
-    virtual double timeOffset() const;
-    virtual void setTimeOffset(double monotonicTime);
+    double timeOffset() const;
+    void setTimeOffset(double monotonicTime);
 
-    virtual Direction getDirection() const;
-    virtual void setDirection(Direction);
+    Direction getDirection() const;
+    void setDirection(Direction);
 
-    virtual double playbackRate() const;
-    virtual void setPlaybackRate(double);
+    double playbackRate() const;
+    void setPlaybackRate(double);
 
-    virtual FillMode getFillMode() const;
-    virtual void setFillMode(FillMode);
+    FillMode getFillMode() const;
+    void setFillMode(FillMode);
 
-    virtual double iterationStart() const;
-    virtual void setIterationStart(double);
+    double iterationStart() const;
+    void setIterationStart(double);
 
     std::unique_ptr<cc::Animation> passAnimation();
 
-protected:
-    CompositorAnimation();
+    PassOwnPtr<CompositorFloatAnimationCurve> floatCurveForTesting() const;
 
 private:
     std::unique_ptr<cc::Animation> m_animation;

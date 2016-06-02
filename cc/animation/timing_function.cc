@@ -20,31 +20,40 @@ std::unique_ptr<TimingFunction> CubicBezierTimingFunction::CreatePreset(
     EaseType ease_type) {
   switch (ease_type) {
     case EaseType::EASE:
-      return EaseTimingFunction::Create();
+      return base::WrapUnique(
+          new CubicBezierTimingFunction(EaseType::EASE, 0.25, 0.1, 0.25, 1.0));
     case EaseType::EASE_IN:
-      return EaseInTimingFunction::Create();
+      return base::WrapUnique(new CubicBezierTimingFunction(
+          EaseType::EASE_IN, 0.42, 0.0, 1.0, 1.0));
     case EaseType::EASE_OUT:
-      return EaseOutTimingFunction::Create();
+      return base::WrapUnique(new CubicBezierTimingFunction(
+          EaseType::EASE_OUT, 0.0, 0.0, 0.58, 1.0));
     case EaseType::EASE_IN_OUT:
-      return EaseInOutTimingFunction::Create();
+      return base::WrapUnique(new CubicBezierTimingFunction(
+          EaseType::EASE_IN_OUT, 0.42, 0.0, 0.58, 1));
     default:
       NOTREACHED();
       return nullptr;
   }
 }
-
 std::unique_ptr<CubicBezierTimingFunction>
 CubicBezierTimingFunction::Create(double x1, double y1, double x2, double y2) {
-  return base::WrapUnique(new CubicBezierTimingFunction(x1, y1, x2, y2));
+  return base::WrapUnique(
+      new CubicBezierTimingFunction(EaseType::CUSTOM, x1, y1, x2, y2));
 }
 
-CubicBezierTimingFunction::CubicBezierTimingFunction(double x1,
+CubicBezierTimingFunction::CubicBezierTimingFunction(EaseType ease_type,
+                                                     double x1,
                                                      double y1,
                                                      double x2,
                                                      double y2)
-    : bezier_(x1, y1, x2, y2) {}
+    : bezier_(x1, y1, x2, y2), ease_type_(ease_type) {}
 
 CubicBezierTimingFunction::~CubicBezierTimingFunction() {}
+
+TimingFunction::Type CubicBezierTimingFunction::GetType() const {
+  return Type::CUBIC_BEZIER;
+}
 
 float CubicBezierTimingFunction::GetValue(double x) const {
   return static_cast<float>(bezier_.Solve(x));
@@ -66,19 +75,23 @@ std::unique_ptr<TimingFunction> CubicBezierTimingFunction::Clone() const {
 // These numbers come from
 // http://www.w3.org/TR/css3-transitions/#transition-timing-function_tag.
 std::unique_ptr<TimingFunction> EaseTimingFunction::Create() {
-  return CubicBezierTimingFunction::Create(0.25, 0.1, 0.25, 1.0);
+  return CubicBezierTimingFunction::CreatePreset(
+      CubicBezierTimingFunction::EaseType::EASE);
 }
 
 std::unique_ptr<TimingFunction> EaseInTimingFunction::Create() {
-  return CubicBezierTimingFunction::Create(0.42, 0.0, 1.0, 1.0);
+  return CubicBezierTimingFunction::CreatePreset(
+      CubicBezierTimingFunction::EaseType::EASE_IN);
 }
 
 std::unique_ptr<TimingFunction> EaseOutTimingFunction::Create() {
-  return CubicBezierTimingFunction::Create(0.0, 0.0, 0.58, 1.0);
+  return CubicBezierTimingFunction::CreatePreset(
+      CubicBezierTimingFunction::EaseType::EASE_OUT);
 }
 
 std::unique_ptr<TimingFunction> EaseInOutTimingFunction::Create() {
-  return CubicBezierTimingFunction::Create(0.42, 0.0, 0.58, 1);
+  return CubicBezierTimingFunction::CreatePreset(
+      CubicBezierTimingFunction::EaseType::EASE_IN_OUT);
 }
 
 std::unique_ptr<StepsTimingFunction> StepsTimingFunction::Create(
@@ -103,6 +116,10 @@ StepsTimingFunction::StepsTimingFunction(int steps, StepPosition step_position)
 }
 
 StepsTimingFunction::~StepsTimingFunction() {
+}
+
+TimingFunction::Type StepsTimingFunction::GetType() const {
+  return Type::STEPS;
 }
 
 float StepsTimingFunction::GetValue(double t) const {

@@ -28,17 +28,17 @@ public:
     CompositorFilterAnimationCurve();
     ~CompositorFilterAnimationCurve() override;
 
-    virtual void addLinearKeyframe(const CompositorFilterKeyframe&);
-    virtual void addCubicBezierKeyframe(const CompositorFilterKeyframe&, CubicBezierTimingFunction::EaseType);
+    void addLinearKeyframe(const CompositorFilterKeyframe&);
+    void addCubicBezierKeyframe(const CompositorFilterKeyframe&, CubicBezierTimingFunction::EaseType);
     // Adds the keyframe with a custom, bezier timing function. Note, it is
     // assumed that x0 = y0, and x3 = y3 = 1.
-    virtual void addCubicBezierKeyframe(const CompositorFilterKeyframe&, double x1, double y1, double x2, double y2);
-    virtual void addStepsKeyframe(const CompositorFilterKeyframe&, int steps, StepsTimingFunction::StepPosition);
+    void addCubicBezierKeyframe(const CompositorFilterKeyframe&, double x1, double y1, double x2, double y2);
+    void addStepsKeyframe(const CompositorFilterKeyframe&, int steps, StepsTimingFunction::StepPosition);
 
-    virtual void setLinearTimingFunction();
-    virtual void setCubicBezierTimingFunction(CubicBezierTimingFunction::EaseType);
-    virtual void setCubicBezierTimingFunction(double x1, double y1, double x2, double y2);
-    virtual void setStepsTimingFunction(int numberOfSteps, StepsTimingFunction::StepPosition);
+    void setLinearTimingFunction();
+    void setCubicBezierTimingFunction(CubicBezierTimingFunction::EaseType);
+    void setCubicBezierTimingFunction(double x1, double y1, double x2, double y2);
+    void setStepsTimingFunction(int numberOfSteps, StepsTimingFunction::StepPosition);
 
     // blink::CompositorAnimationCurve implementation.
     std::unique_ptr<cc::AnimationCurve> cloneToAnimationCurve() const override;

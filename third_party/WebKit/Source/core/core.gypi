@@ -3921,7 +3921,6 @@
             'animation/AnimationTestHelper.h',
             'animation/AnimationTimelineTest.cpp',
             'animation/CompositorAnimationsTest.cpp',
-            'animation/CompositorAnimationsTestHelper.h',
             'animation/DeferredLegacyStyleInterpolationTest.cpp',
             'animation/EffectInputTest.cpp',
             'animation/InterpolableValueTest.cpp',

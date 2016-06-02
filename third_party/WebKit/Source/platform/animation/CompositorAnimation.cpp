@@ -4,8 +4,10 @@
 
 #include "platform/animation/CompositorAnimation.h"
 
+#include "base/memory/ptr_util.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_id_provider.h"
+#include "cc/animation/keyframed_animation_curve.h"
 #include "platform/animation/CompositorAnimationCurve.h"
 #include "platform/animation/CompositorFilterAnimationCurve.h"
 #include "platform/animation/CompositorFloatAnimationCurve.h"
@@ -30,16 +32,14 @@ CompositorAnimation::CompositorAnimation(const CompositorAnimationCurve& curve, 
     m_animation = Animation::Create(curve.cloneToAnimationCurve(), animationId, groupId, targetProperty);
 }
 
-CompositorAnimation::CompositorAnimation() {}
-
 CompositorAnimation::~CompositorAnimation() {}
 
-int CompositorAnimation::id()
+int CompositorAnimation::id() const
 {
     return m_animation->id();
 }
 
-int CompositorAnimation::group()
+int CompositorAnimation::group() const
 {
     return m_animation->group();
 }
@@ -124,6 +124,15 @@ std::unique_ptr<cc::Animation> CompositorAnimation::passAnimation()
 {
     m_animation->set_needs_synchronized_start_time(true);
     return std::move(m_animation);
+}
+
+PassOwnPtr<CompositorFloatAnimationCurve> CompositorAnimation::floatCurveForTesting() const
+{
+    const cc::AnimationCurve* curve = m_animation->curve();
+    DCHECK_EQ(cc::AnimationCurve::FLOAT, curve->Type());
+
+    auto keyframedCurve = base::WrapUnique(static_cast<cc::KeyframedFloatAnimationCurve*>(curve->Clone().release()));
+    return CompositorFloatAnimationCurve::CreateForTesting(std::move(keyframedCurve));
 }
 
 } // namespace blink
