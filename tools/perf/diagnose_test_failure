@@ -10,7 +10,7 @@ import urllib2
 
 
 _BUILD_REGEX = r'builds/(\d+)'
-_REVISION_REGEX = r'Cr-Commit-Position: refs/heads/master@{#(\d+)}'
+_REVISION_REGEX = r'\nCr-Commit-Position: refs/heads/master@{#(\d+)}'
 
 
 class _Color(object):
