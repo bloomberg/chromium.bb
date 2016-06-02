@@ -4450,10 +4450,18 @@ void WebContentsImpl::UpdateTitle(RenderFrameHost* render_frame_host,
   NavigationEntryImpl* entry = controller_.GetEntryWithPageID(
       render_frame_host->GetSiteInstance(), page_id);
 
-  // TODO(creis): Switch to use this as the default.
   NavigationEntryImpl* new_entry = controller_.GetEntryWithUniqueID(
       static_cast<RenderFrameHostImpl*>(render_frame_host)->nav_entry_id());
-  DCHECK_EQ(entry, new_entry);
+  if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
+    // In out-of-process iframe enabled modes, page_id can't keep track of
+    // navigations in other processes, so we must use nav_entry_id.
+    // TODO(creis): Switch to use this as the default.
+    entry = new_entry;
+  } else {
+    // In modes that have no out-of-process iframes, nav_entry_id and page_id
+    // should agree on which entry to update.
+    DCHECK_EQ(entry, new_entry);
+  }
 
   // We can handle title updates when we don't have an entry in
   // UpdateTitleForEntry, but only if the update is from the current RVH.
