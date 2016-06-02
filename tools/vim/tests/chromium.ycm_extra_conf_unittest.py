@@ -213,6 +213,25 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-I[OUT]/tag-default'
         ])
 
+  def testGetFlagsForFileForUnknownCppNotTestFile(self):
+    result = self.ycm_extra_conf.FlagsForFile(
+        os.path.join(self.chrome_root, 'test_nonexistent.cpp'))
+    self.assertTrue(result)
+    self.assertTrue('do_cache' in result)
+    self.assertTrue(result['do_cache'])
+    self.assertTrue('flags' in result)
+    self.assertEquals(self.NormalizeStringsInList(result['flags']), [
+        '-DUSE_CLANG_COMPLETER',
+        '-std=c++11',
+        '-x', 'c++',
+        '-I[SRC]',
+        '-Wno-unknown-warning-option',
+        '-I[OUT]/a',
+        '-isysroot',
+        '/mac.sdk',
+        '-I[OUT]/tag-default'
+        ])
+
   def testGetFlagsForFileForUnknownHeaderFile(self):
     result = self.ycm_extra_conf.FlagsForFile(
         os.path.join(self.chrome_root, 'nonexistent.h'))
@@ -230,6 +249,44 @@ class Chromium_ycmExtraConfTest(unittest.TestCase):
         '-isysroot',
         '/mac.sdk',
         '-I[OUT]/tag-default'
+        ])
+
+  def testGetFlagsForFileForUnknownUnittestFile(self):
+    result = self.ycm_extra_conf.FlagsForFile(
+        os.path.join(self.chrome_root, 'nonexistent_unittest.cpp'))
+    self.assertTrue(result)
+    self.assertTrue('do_cache' in result)
+    self.assertTrue(result['do_cache'])
+    self.assertTrue('flags' in result)
+    self.assertEquals(self.NormalizeStringsInList(result['flags']), [
+        '-DUSE_CLANG_COMPLETER',
+        '-std=c++11',
+        '-x', 'c++',
+        '-I[SRC]',
+        '-Wno-unknown-warning-option',
+        '-I[OUT]/a',
+        '-isysroot',
+        '/mac.sdk',
+        '-I[OUT]/tag-default-test'
+        ])
+
+  def testGetFlagsForFileForUnknownBrowsertestFile2(self):
+    result = self.ycm_extra_conf.FlagsForFile(
+        os.path.join(self.chrome_root, 'nonexistent_browsertest.cpp'))
+    self.assertTrue(result)
+    self.assertTrue('do_cache' in result)
+    self.assertTrue(result['do_cache'])
+    self.assertTrue('flags' in result)
+    self.assertEquals(self.NormalizeStringsInList(result['flags']), [
+        '-DUSE_CLANG_COMPLETER',
+        '-std=c++11',
+        '-x', 'c++',
+        '-I[SRC]',
+        '-Wno-unknown-warning-option',
+        '-I[OUT]/a',
+        '-isysroot',
+        '/mac.sdk',
+        '-I[OUT]/tag-default-test'
         ])
 
   def testGetFlagsForFileForKnownHeaderFileWithAssociatedCppFile(self):

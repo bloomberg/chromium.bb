@@ -108,6 +108,8 @@ def GetDefaultSourceFile(chrome_root, filename):
   if filename.startswith(blink_root):
     return os.path.join(blink_root, 'Source', 'core', 'Init.cpp')
   else:
+    if 'test.' in filename:
+      return os.path.join(chrome_root, 'base', 'logging_unittest.cc')
     return os.path.join(chrome_root, 'base', 'logging.cc')
 
 

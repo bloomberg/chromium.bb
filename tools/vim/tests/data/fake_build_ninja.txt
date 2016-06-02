@@ -7,7 +7,8 @@
 cxx = ../../fake-clang++
 cxx2 = echo ../../fake-clang++
 link = echo Link
-default_file = ../../base/logging.cc
+default_cc_file = ../../base/logging.cc
+default_test_file = ../../base/logging_unittest.cc
 
 rule cxx
   command = $cxx -Ia -isysroot /mac.sdk -Itag-$tag $in -o $out
@@ -26,7 +27,7 @@ build obj/one.o: cxx ../../one.cpp
 
 build extra: phony obj/extra.o
 
-build obj/linker-output.o: link ../../three.cc | ../../four.cc $default_file
+build obj/linker-output.o: link ../../three.cc | ../../four.cc $default_cc_file
 
 build obj/extra.o: cxx ../../extra.cpp
   tag = extra
@@ -40,8 +41,11 @@ build obj/three.o: cxx ../../three.cc
 build obj/four.o: cxx ../../four.cc
   tag = four
 
-build obj/base.logging.o: cxx $default_file
+build obj/base.logging.o: cxx $default_cc_file
   tag = default
+
+build obj/base_unittests.logging_unittest.o: cxx $default_test_file
+  tag = default-test
 
 build obj/five.o: link ../../five.cc
 
