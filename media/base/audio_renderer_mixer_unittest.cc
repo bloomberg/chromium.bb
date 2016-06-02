@@ -476,7 +476,9 @@ TEST_P(AudioRendererMixerBehavioralTest, MixerPausesStream) {
   const base::TimeDelta kTestTimeout = 10 * kPauseTime;
   mixer_->set_pause_delay_for_testing(kPauseTime);
 
-  base::WaitableEvent pause_event(true, false);
+  base::WaitableEvent pause_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
   EXPECT_CALL(*sink_.get(), Pause()).Times(2)
       .WillRepeatedly(SignalEvent(&pause_event));
   InitializeInputs(1);

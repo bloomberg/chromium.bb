@@ -95,7 +95,8 @@ void PipelineImpl::Stop() {
     // TODO(alokp): It may be possible to not have to wait for StopTask by
     // moving the members accessed on media thread into a class/struct and
     // DeleteSoon the instance on the media thread.
-    base::WaitableEvent waiter(false, false);
+    base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     base::Closure stop_cb =
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&waiter));
     // If posting the task fails or the posted task fails to run,

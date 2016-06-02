@@ -13,16 +13,19 @@
 
 namespace media {
 
-BlockingUrlProtocol::BlockingUrlProtocol(
-    DataSource* data_source,
-    const base::Closure& error_cb)
+BlockingUrlProtocol::BlockingUrlProtocol(DataSource* data_source,
+                                         const base::Closure& error_cb)
     : data_source_(data_source),
       error_cb_(error_cb),
-      aborted_(true, false),  // We never want to reset |aborted_|.
-      read_complete_(false, false),
+      aborted_(base::WaitableEvent::ResetPolicy::MANUAL,
+               base::WaitableEvent::InitialState::NOT_SIGNALED),  // We never
+                                                                  // want to
+                                                                  // reset
+                                                                  // |aborted_|.
+      read_complete_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                     base::WaitableEvent::InitialState::NOT_SIGNALED),
       last_read_bytes_(0),
-      read_position_(0) {
-}
+      read_position_(0) {}
 
 BlockingUrlProtocol::~BlockingUrlProtocol() {}
 

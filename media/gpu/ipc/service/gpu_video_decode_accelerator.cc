@@ -161,7 +161,8 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
       stub_(stub),
       texture_target_(0),
       textures_per_buffer_(0),
-      filter_removed_(true, false),
+      filter_removed_(base::WaitableEvent::ResetPolicy::MANUAL,
+                      base::WaitableEvent::InitialState::NOT_SIGNALED),
       child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(io_task_runner),
       weak_factory_for_io_(this) {

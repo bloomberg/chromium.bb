@@ -62,7 +62,8 @@ void InProcessReceiver::Start() {
 }
 
 void InProcessReceiver::Stop() {
-  base::WaitableEvent event(false, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   if (cast_environment_->CurrentlyOn(CastEnvironment::MAIN)) {
     StopOnMainThread(&event);
   } else {

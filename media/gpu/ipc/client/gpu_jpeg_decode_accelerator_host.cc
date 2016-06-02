@@ -116,7 +116,8 @@ GpuJpegDecodeAcceleratorHost::~GpuJpegDecodeAcceleratorHost() {
 
     // Invalidate weak ptr of |receiver_|. After that, no more messages will be
     // routed to |receiver_| on IO thread.
-    base::WaitableEvent event(false, false);
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     io_task_runner_->PostTask(FROM_HERE,
                               base::Bind(&Receiver::InvalidateWeakPtr,
                                          base::Unretained(receiver_.get()),

@@ -62,7 +62,8 @@ class VirtualAudioOutputStreamTest : public testing::Test {
   }
 
   void SyncWithAudioThread() {
-    base::WaitableEvent done(false, false);
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     audio_task_runner()->PostTask(
         FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
                               base::Unretained(&done)));

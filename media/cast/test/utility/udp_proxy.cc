@@ -676,7 +676,9 @@ class UDPProxyImpl : public UDPProxy {
         weak_factory_(this) {
     proxy_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-    base::WaitableEvent start_event(false, false);
+    base::WaitableEvent start_event(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     proxy_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&UDPProxyImpl::Start,
@@ -687,7 +689,9 @@ class UDPProxyImpl : public UDPProxy {
   }
 
   ~UDPProxyImpl() final {
-    base::WaitableEvent stop_event(false, false);
+    base::WaitableEvent stop_event(
+        base::WaitableEvent::ResetPolicy::AUTOMATIC,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     proxy_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&UDPProxyImpl::Stop,

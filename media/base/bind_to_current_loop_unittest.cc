@@ -50,7 +50,8 @@ class BindToCurrentLoopTest : public ::testing::Test {
 
 TEST_F(BindToCurrentLoopTest, Closure) {
   // Test the closure is run inside the loop, not outside it.
-  base::WaitableEvent waiter(false, false);
+  base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
   base::Closure cb = BindToCurrentLoop(base::Bind(
       &base::WaitableEvent::Signal, base::Unretained(&waiter)));
   cb.Run();

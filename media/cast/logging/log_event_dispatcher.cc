@@ -85,7 +85,8 @@ void LogEventDispatcher::Unsubscribe(RawEventSubscriber* subscriber) {
         done->Signal();
       }
     };
-    base::WaitableEvent done(true, false);
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::MANUAL,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     CHECK(env_->PostTask(
         CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&Helper::UnsubscribeAndSignal, impl_, subscriber, &done)));

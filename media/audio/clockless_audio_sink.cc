@@ -21,7 +21,9 @@ class ClocklessAudioSinkThread : public base::DelegateSimpleThread::Delegate {
                            bool hashing)
       : callback_(callback),
         audio_bus_(AudioBus::Create(params)),
-        stop_event_(new base::WaitableEvent(false, false)) {
+        stop_event_(new base::WaitableEvent(
+            base::WaitableEvent::ResetPolicy::AUTOMATIC,
+            base::WaitableEvent::InitialState::NOT_SIGNALED)) {
     if (hashing)
       audio_hash_.reset(new AudioHash());
   }

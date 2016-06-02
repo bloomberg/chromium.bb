@@ -70,7 +70,8 @@ class VpxOffloadThread {
     DCHECK(thread_checker_.CalledOnValidThread());
     DCHECK(offload_thread_users_);
     DCHECK(offload_thread_.IsRunning());
-    base::WaitableEvent waiter(false, false);
+    base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                               base::WaitableEvent::InitialState::NOT_SIGNALED);
     offload_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&base::WaitableEvent::Signal, base::Unretained(&waiter)));

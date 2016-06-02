@@ -63,7 +63,8 @@ AudioOutputDevice::AudioOutputDevice(
       device_id_(device_id),
       security_origin_(security_origin),
       stopping_hack_(false),
-      did_receive_auth_(true, false),
+      did_receive_auth_(base::WaitableEvent::ResetPolicy::MANUAL,
+                        base::WaitableEvent::InitialState::NOT_SIGNALED),
       device_status_(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL) {
   CHECK(ipc_);
 

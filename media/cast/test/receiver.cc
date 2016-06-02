@@ -220,7 +220,8 @@ class NaivePlayer : public InProcessReceiver,
 
   void Stop() final {
     // First, stop audio output to the Chromium audio stack.
-    base::WaitableEvent done(false, false);
+    base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                             base::WaitableEvent::InitialState::NOT_SIGNALED);
     DCHECK(!AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
     AudioManager::Get()->GetTaskRunner()->PostTask(
         FROM_HERE,

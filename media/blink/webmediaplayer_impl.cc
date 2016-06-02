@@ -1391,7 +1391,8 @@ WebMediaPlayerImpl::GetCurrentFrameFromCompositor() {
   // Use a posted task and waitable event instead of a lock otherwise
   // WebGL/Canvas can see different content than what the compositor is seeing.
   scoped_refptr<VideoFrame> video_frame;
-  base::WaitableEvent event(false, false);
+  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                            base::WaitableEvent::InitialState::NOT_SIGNALED);
   compositor_task_runner_->PostTask(FROM_HERE,
                                     base::Bind(&GetCurrentFrameAndSignal,
                                                base::Unretained(compositor_),
