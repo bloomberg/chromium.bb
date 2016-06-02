@@ -34,7 +34,7 @@ import java.util.TreeMap;
  * {@hide}
  */
 public class CronetHttpURLConnection extends HttpURLConnection {
-    private static final String TAG = "cr.CronetHttpURLConn";
+    private static final String TAG = "cr_CronetHttpURLConn";
     private static final String CONTENT_LENGTH = "Content-Length";
     private final CronetEngine mCronetEngine;
     private final MessageLoop mMessageLoop;
@@ -402,7 +402,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         // Sockets are assigned to requests according to request priorities
         // when sockets are connected. This requires requests with the same host,
         // domain and port to have same timeout.
-        throw new UnsupportedOperationException("Not supported");
+        Log.e(TAG, "setConnectTimeout is not supported by CronetHttpURLConnection");
     }
 
     /**

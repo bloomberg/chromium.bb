@@ -96,12 +96,12 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
     public void testConnectTimeout() throws Exception {
         URL url = new URL(NativeTestServer.getEchoMethodURL());
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        try {
-            connection.setConnectTimeout(1000);
-            fail();
-        } catch (UnsupportedOperationException e) {
-            // Expected
-        }
+        // This should not throw an exception.
+        connection.setConnectTimeout(1000);
+        assertEquals(200, connection.getResponseCode());
+        assertEquals("OK", connection.getResponseMessage());
+        assertEquals("GET", TestUtil.getResponseAsString(connection));
+        connection.disconnect();
     }
 
     @SmallTest
