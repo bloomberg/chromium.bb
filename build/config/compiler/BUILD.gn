@@ -1255,7 +1255,8 @@ if (is_win) {
 # Default "optimization on" config.
 config("optimize") {
   if (is_win) {
-    if (is_official_build && full_wpo_on_official) {
+    # TODO(thakis): Remove is_clang here, https://crbug.com/598772
+    if (is_official_build && full_wpo_on_official && !is_clang) {
       common_optimize_on_cflags += [
         "/GL",  # Whole program optimization.
 

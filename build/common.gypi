@@ -5501,7 +5501,8 @@
                     # 2, favorSize - Favor small code (/Os)
                     'FavorSizeOrSpeed': '2',
                     'conditions': [
-                      ['full_wpo_on_official==1', {
+                      # TODO(thakis): Remove clang==0 here, crbug.com/598772
+                      ['full_wpo_on_official==1 and clang==0', {
                         # This implies link time code generation.
                         'WholeProgramOptimization': 'true',
                       }],
@@ -5529,7 +5530,8 @@
                     # 1, favorSpeed - Favor fast code (/Ot)
                     'FavorSizeOrSpeed': '1',
                     'conditions': [
-                      ['full_wpo_on_official==1', {
+                      # TODO(thakis): Remove clang==0 here, crbug.com/598772
+                      ['full_wpo_on_official==1 and clang==0', {
                         # This implies link time code generation.
                         'WholeProgramOptimization': 'true',
                       }],
