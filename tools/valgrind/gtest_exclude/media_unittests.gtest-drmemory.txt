@@ -1,2 +1,5 @@
 # http://crbug.com/470517
 VideoRendererImplTest.Underflow
+
+# crbug.com/616837
+AudioOutputControllerTest.PlayDuplicateStopClose
