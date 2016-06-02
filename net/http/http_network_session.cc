@@ -148,6 +148,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
       proxy_service_(params.proxy_service),
       ssl_config_service_(params.ssl_config_service),
       quic_stream_factory_(
+          params.net_log,
           params.host_resolver,
           params.client_socket_factory
               ? params.client_socket_factory

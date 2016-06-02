@@ -1905,6 +1905,31 @@ EVENT_TYPE(QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_HEADERS)
 EVENT_TYPE(QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_TRAILERS)
 
 // ------------------------------------------------------------------------
+// QuicConnectionMigration
+// ------------------------------------------------------------------------
+
+// Records that QUIC connection migration has been triggered.
+//  {
+//     "trigger": <The reason for the migration attempt>
+//  }
+EVENT_TYPE(QUIC_CONNECTION_MIGRATION_TRIGGERED)
+
+// Records that a QUIC connection migration attempt of the session
+// identified by connection_id failed.
+//  {
+//     "connection_id": <Connection ID of the session>
+//     "reason": <Failure reason>
+//  }
+EVENT_TYPE(QUIC_CONNECTION_MIGRATION_FAILURE)
+
+// Records that a QUIC connection migration attempt of the session
+// identified by connection_id succeeded.
+//  {
+//     "connection_id": <Connection ID of the session>
+//  }
+EVENT_TYPE(QUIC_CONNECTION_MIGRATION_SUCCESS)
+
+// ------------------------------------------------------------------------
 // HttpStreamParser
 // ------------------------------------------------------------------------
 

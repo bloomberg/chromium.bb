@@ -311,9 +311,10 @@ class QuicStreamFactoryTestBase {
   void Initialize() {
     DCHECK(!factory_);
     factory_.reset(new QuicStreamFactory(
-        &host_resolver_, &socket_factory_, http_server_properties_.GetWeakPtr(),
-        cert_verifier_.get(), nullptr, channel_id_service_.get(),
-        &transport_security_state_, cert_transparency_verifier_.get(),
+        net_log_.net_log(), &host_resolver_, &socket_factory_,
+        http_server_properties_.GetWeakPtr(), cert_verifier_.get(), nullptr,
+        channel_id_service_.get(), &transport_security_state_,
+        cert_transparency_verifier_.get(),
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &random_generator_, clock_,
         kDefaultMaxPacketSize, string(), SupportedVersions(version_),
