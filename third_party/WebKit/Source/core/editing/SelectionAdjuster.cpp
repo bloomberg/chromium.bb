@@ -180,7 +180,6 @@ void SelectionAdjuster::adjustSelectionInFlatTree(VisibleSelectionInFlatTree* se
         selectionInFlatTree->m_end = position1;
     }
     selectionInFlatTree->updateSelectionType();
-    selectionInFlatTree->didChange();
 }
 
 static bool isCrossingShadowBoundaries(const VisibleSelectionInFlatTree& selection)
@@ -225,7 +224,6 @@ void SelectionAdjuster::adjustSelectionInDOMTree(VisibleSelection* selection, co
         selection->m_end = position1;
     }
     selection->updateSelectionType();
-    selection->didChange();
 }
 
 void SelectionAdjuster::adjustSelectionToAvoidCrossingShadowBoundaries(VisibleSelection* selection)

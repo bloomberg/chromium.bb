@@ -44,21 +44,6 @@ class SelectionAdjuster;
 const TextAffinity SelDefaultAffinity = TextAffinity::Downstream;
 enum SelectionDirection { DirectionForward, DirectionBackward, DirectionRight, DirectionLeft };
 
-// Listener of |VisibleSelection| modification. |didChangeVisibleSelection()|
-// will be invoked when base, extent, start or end is moved to a different
-// position.
-//
-// Objects implementing |VisibleSelectionChangeObserver| interface must outlive
-// the |VisibleSelection| object.
-class CORE_EXPORT VisibleSelectionChangeObserver : public GarbageCollectedMixin {
-    WTF_MAKE_NONCOPYABLE(VisibleSelectionChangeObserver);
-public:
-    VisibleSelectionChangeObserver();
-    virtual ~VisibleSelectionChangeObserver();
-    virtual void didChangeVisibleSelection() = 0;
-    DEFINE_INLINE_VIRTUAL_TRACE() { }
-};
-
 template <typename Strategy>
 class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
     DISALLOW_NEW();
@@ -129,17 +114,12 @@ public:
     bool isValidFor(const Document&) const;
     void setWithoutValidation(const PositionTemplate<Strategy>&, const PositionTemplate<Strategy>&);
 
-    void setChangeObserver(VisibleSelectionChangeObserver&);
-    void clearChangeObserver();
-    void didChange(); // Fire the change observer, if any.
-
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_base);
         visitor->trace(m_extent);
         visitor->trace(m_start);
         visitor->trace(m_end);
-        visitor->trace(m_changeObserver);
     }
 
     void updateIfNeeded();
@@ -180,10 +160,6 @@ private:
     PositionTemplate<Strategy> m_end;
 
     TextAffinity m_affinity; // the upstream/downstream affinity of the caret
-
-    // Oilpan: this reference has a lifetime that is at least as long
-    // as this object.
-    Member<VisibleSelectionChangeObserver> m_changeObserver;
 
     // these are cached, can be recalculated by validate()
     SelectionType m_selectionType; // None, Caret, Range

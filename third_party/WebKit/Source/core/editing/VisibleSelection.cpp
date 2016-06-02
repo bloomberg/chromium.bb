@@ -44,7 +44,6 @@ namespace blink {
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate()
     : m_affinity(TextAffinity::Downstream)
-    , m_changeObserver(nullptr)
     , m_selectionType(NoSelection)
     , m_baseIsFirst(true)
     , m_isDirectional(false)
@@ -64,7 +63,6 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const PositionTempl
     : m_base(base)
     , m_extent(extent)
     , m_affinity(affinity)
-    , m_changeObserver(nullptr)
     , m_isDirectional(isDirectional)
     , m_granularity(CharacterGranularity)
     , m_hasTrailingWhitespace(false)
@@ -122,7 +120,6 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const VisibleSelect
     , m_start(other.m_start)
     , m_end(other.m_end)
     , m_affinity(other.m_affinity)
-    , m_changeObserver(nullptr) // Observer is associated with only one VisibleSelection, so this should not be copied.
     , m_selectionType(other.m_selectionType)
     , m_baseIsFirst(other.m_baseIsFirst)
     , m_isDirectional(other.m_isDirectional)
@@ -134,14 +131,11 @@ VisibleSelectionTemplate<Strategy>::VisibleSelectionTemplate(const VisibleSelect
 template <typename Strategy>
 VisibleSelectionTemplate<Strategy>& VisibleSelectionTemplate<Strategy>::operator=(const VisibleSelectionTemplate<Strategy>& other)
 {
-    didChange();
-
     m_base = other.m_base;
     m_extent = other.m_extent;
     m_start = other.m_start;
     m_end = other.m_end;
     m_affinity = other.m_affinity;
-    m_changeObserver = nullptr;
     m_selectionType = other.m_selectionType;
     m_baseIsFirst = other.m_baseIsFirst;
     m_isDirectional = other.m_isDirectional;
@@ -160,41 +154,29 @@ VisibleSelectionTemplate<Strategy> VisibleSelectionTemplate<Strategy>::selection
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::setBase(const PositionTemplate<Strategy>& position)
 {
-    const PositionTemplate<Strategy> oldBase = m_base;
     m_base = position;
     validate();
-    if (m_base != oldBase)
-        didChange();
 }
 
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::setBase(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    const PositionTemplate<Strategy> oldBase = m_base;
     m_base = visiblePosition.deepEquivalent();
     validate();
-    if (m_base != oldBase)
-        didChange();
 }
 
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::setExtent(const PositionTemplate<Strategy>& position)
 {
-    const PositionTemplate<Strategy> oldExtent = m_extent;
     m_extent = position;
     validate();
-    if (m_extent != oldExtent)
-        didChange();
 }
 
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::setExtent(const VisiblePositionTemplate<Strategy>& visiblePosition)
 {
-    const PositionTemplate<Strategy> oldExtent = m_extent;
     m_extent = visiblePosition.deepEquivalent();
     validate();
-    if (m_extent != oldExtent)
-        didChange();
 }
 
 EphemeralRange firstEphemeralRangeOf(const VisibleSelection& selection)
@@ -254,15 +236,7 @@ void VisibleSelectionTemplate<Strategy>::expandUsingGranularity(TextGranularity 
 {
     if (isNone())
         return;
-
-    // TODO(yosin) Do we need to check all of them?
-    const PositionTemplate<Strategy>oldBase = m_base;
-    const PositionTemplate<Strategy>oldExtent = m_extent;
-    const PositionTemplate<Strategy>oldStart = m_start;
-    const PositionTemplate<Strategy>oldEnd = m_end;
     validate(granularity);
-    if (m_base != oldBase || m_extent != oldExtent || m_start != oldStart || m_end != oldEnd)
-        didChange();
 }
 
 template <typename Strategy>
@@ -306,7 +280,6 @@ void VisibleSelectionTemplate<Strategy>::appendTrailingWhitespace()
     if (!changed)
         return;
     m_hasTrailingWhitespace = true;
-    didChange();
 }
 
 template <typename Strategy>
@@ -601,7 +574,6 @@ void VisibleSelectionTemplate<Strategy>::setWithoutValidation(const PositionTemp
         // |m_affinity| is |TextAffinity::Upstream|.
         m_affinity = TextAffinity::Downstream;
     }
-    didChange();
 }
 
 template <typename Strategy>
@@ -755,35 +727,6 @@ template <typename Strategy>
 Element* VisibleSelectionTemplate<Strategy>::rootEditableElement() const
 {
     return rootEditableElementOf(start());
-}
-
-VisibleSelectionChangeObserver::VisibleSelectionChangeObserver()
-{
-}
-
-VisibleSelectionChangeObserver::~VisibleSelectionChangeObserver()
-{
-}
-
-template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::setChangeObserver(VisibleSelectionChangeObserver& observer)
-{
-    DCHECK(!m_changeObserver);
-    m_changeObserver = &observer;
-}
-
-template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::clearChangeObserver()
-{
-    DCHECK(m_changeObserver);
-    m_changeObserver = nullptr;
-}
-
-template <typename Strategy>
-void VisibleSelectionTemplate<Strategy>::didChange()
-{
-    if (m_changeObserver)
-        m_changeObserver->didChangeVisibleSelection();
 }
 
 template <typename Strategy>

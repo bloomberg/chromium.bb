@@ -34,9 +34,8 @@ namespace blink {
 // TODO(yosin): We will rename |SelectionEditor| to appropriate name since
 // it is no longer have a changing selection functionality, it was moved to
 // |SelectionModifier| class.
-class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor>, public VisibleSelectionChangeObserver {
+class SelectionEditor final : public GarbageCollectedFinalized<SelectionEditor> {
     WTF_MAKE_NONCOPYABLE(SelectionEditor);
-    USING_GARBAGE_COLLECTED_MIXIN(SelectionEditor);
 public:
     static SelectionEditor* create(FrameSelection& frameSelection)
     {
@@ -68,9 +67,6 @@ public:
     void resetLogicalRange();
     void setLogicalRange(Range*);
 
-    // VisibleSelectionChangeObserver interface.
-    void didChangeVisibleSelection() override;
-
     // Updates |m_selection| and |m_selectionInFlatTree| with up-to-date
     // layout if needed.
     void updateIfNeeded();
@@ -81,8 +77,6 @@ private:
     explicit SelectionEditor(FrameSelection&);
 
     LocalFrame* frame() const;
-    void startObservingVisibleSelectionChange();
-    void stopObservingVisibleSelectionChangeIfNecessary();
 
     Member<FrameSelection> m_frameSelection;
 

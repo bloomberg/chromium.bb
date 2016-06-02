@@ -66,6 +66,7 @@ const VisibleSelectionInFlatTree& SelectionEditor::visibleSelection<EditingInFla
 
 void SelectionEditor::setVisibleSelection(const VisibleSelection& newSelection, FrameSelection::SetSelectionOptions options)
 {
+    resetLogicalRange();
     m_selection = newSelection;
     if (options & FrameSelection::DoNotAdjustInFlatTree) {
         m_selectionInFlatTree.setWithoutValidation(toPositionInFlatTree(m_selection.base()), toPositionInFlatTree(m_selection.extent()));
@@ -78,6 +79,7 @@ void SelectionEditor::setVisibleSelection(const VisibleSelection& newSelection, 
 void SelectionEditor::setVisibleSelection(const VisibleSelectionInFlatTree& newSelection, FrameSelection::SetSelectionOptions options)
 {
     DCHECK(!(options & FrameSelection::DoNotAdjustInFlatTree));
+    resetLogicalRange();
     m_selectionInFlatTree = newSelection;
     SelectionAdjuster::adjustSelectionInDOMTree(&m_selection, m_selectionInFlatTree);
 }
@@ -90,13 +92,13 @@ void SelectionEditor::setIsDirectional(bool isDirectional)
 
 void SelectionEditor::setWithoutValidation(const Position& base, const Position& extent)
 {
+    resetLogicalRange();
     m_selection.setWithoutValidation(base, extent);
     m_selectionInFlatTree.setWithoutValidation(toPositionInFlatTree(base), toPositionInFlatTree(extent));
 }
 
 void SelectionEditor::resetLogicalRange()
 {
-    stopObservingVisibleSelectionChangeIfNecessary();
     // Non-collapsed ranges are not allowed to start at the end of a line that
     // is wrapped, they start at the beginning of the next line instead
     if (!m_logicalRange)
@@ -109,7 +111,6 @@ void SelectionEditor::setLogicalRange(Range* range)
 {
     DCHECK(!m_logicalRange) << "A logical range should be one.";
     m_logicalRange = range;
-    startObservingVisibleSelectionChange();
 }
 
 Range* SelectionEditor::firstRange() const
@@ -117,27 +118,6 @@ Range* SelectionEditor::firstRange() const
     if (m_logicalRange)
         return m_logicalRange->cloneRange();
     return firstRangeOf(m_selection);
-}
-
-void SelectionEditor::didChangeVisibleSelection()
-{
-    DCHECK(m_observingVisibleSelection);
-    resetLogicalRange();
-}
-
-void SelectionEditor::startObservingVisibleSelectionChange()
-{
-    DCHECK(!m_observingVisibleSelection);
-    m_selection.setChangeObserver(*this);
-    m_observingVisibleSelection = true;
-}
-
-void SelectionEditor::stopObservingVisibleSelectionChangeIfNecessary()
-{
-    if (!m_observingVisibleSelection)
-        return;
-    m_selection.clearChangeObserver();
-    m_observingVisibleSelection = false;
 }
 
 void SelectionEditor::updateIfNeeded()
@@ -152,7 +132,6 @@ DEFINE_TRACE(SelectionEditor)
     visitor->trace(m_selection);
     visitor->trace(m_selectionInFlatTree);
     visitor->trace(m_logicalRange);
-    VisibleSelectionChangeObserver::trace(visitor);
 }
 
 } // namespace blink
