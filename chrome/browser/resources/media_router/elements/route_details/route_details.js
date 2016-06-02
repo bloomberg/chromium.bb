@@ -17,6 +17,25 @@ Polymer({
     },
 
     /**
+     * Bitmask of available cast modes compatible with the sink of the current
+     * route.
+     * @type {number}
+     */
+    availableCastModes: {
+      type: Number,
+      value: 0,
+    },
+
+    /**
+     * Whether the external container will accept replace-route-click events.
+     * @type {boolean}
+     */
+    replaceRouteAvailable: {
+      type: Boolean,
+      value: true,
+    },
+
+    /**
      * The route to show.
      * @type {?media_router.Route|undefined}
      */
@@ -42,23 +61,42 @@ Polymer({
   ],
 
   /**
-   * Fires a close-route-click event. This is called when the button to close
+   * Fires a close-route event. This is called when the button to close
    * the current route is clicked.
    *
    * @private
    */
   closeRoute_: function() {
-    this.fire('close-route-click', {route: this.route});
+    this.fire('close-route', {route: this.route});
   },
 
   /**
-   * Fires a start-casting-to-route-click event. This is called when the button
-   * to start casting to the current route is clicked.
+   * @param {?media_router.Route|undefined} route
+   * @param {number} availableCastModes
+   * @param {boolean} replaceRouteAvailable
+   * @return {boolean} Whether to show the button that allows casting to the
+   *     current route or the current route's sink.
+   */
+  computeCastButtonHidden_: function(
+      route, availableCastModes, replaceRouteAvailable) {
+    return !((route && route.canJoin) ||
+             (availableCastModes && replaceRouteAvailable));
+  },
+
+  /**
+   * Fires a join-route-click event if the current route is joinable, otherwise
+   * it fires a replace-route-click event, which stops the current route and
+   * immediately launches a new route to the same sink. This is called when the
+   * button to start casting to the current route is clicked.
    *
    * @private
    */
   startCastingToRoute_: function() {
-    this.fire('start-casting-to-route-click', {route: this.route});
+    if (this.route.canJoin) {
+      this.fire('join-route-click', {route: this.route});
+    } else {
+      this.fire('replace-route-click', {route: this.route});
+    }
   },
 
   /**

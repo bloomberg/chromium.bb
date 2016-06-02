@@ -85,20 +85,48 @@ cr.define('route_details', function() {
         setTimeout(done);
       });
 
+      // Tests that the cast button is shown under the correct circumstances and
+      // that updating |replaceRouteAvailable| updates the cast button
+      // visibility.
+      test('cast button visibility', function() {
+        details.route = fakeRouteTwo;
+        checkStartCastButtonIsShown();
+
+        details.availableCastModes = 1;
+        details.replaceRouteAvailable = false;
+        details.route = fakeRouteOne;
+        checkStartCastButtonIsNotShown();
+
+        details.replaceRouteAvailable = true;
+        checkStartCastButtonIsShown();
+      });
+
       // Tests for 'close-route-click' event firing when the
       // 'close-route-button' button is clicked.
       test('close route button click', function(done) {
-        details.addEventListener('close-route-click', function() {
+        details.addEventListener('close-route', function() {
           done();
         });
         MockInteractions.tap(details.$['close-route-button']);
       });
 
-      // Tests for 'start-casting-to-route-click' event firing when the
-      // 'start-casting-to-route-button' button is clicked.
+      // Tests for 'join-route-click' event firing when the
+      // 'start-casting-to-route-button' button is clicked when the current
+      // route is joinable.
       test('start casting to route button click', function(done) {
+        details.addEventListener('join-route-click', function() { done(); });
+        details.route = fakeRouteTwo;
+        MockInteractions.tap(details.$['start-casting-to-route-button']);
+      });
+
+      // Tests for 'replace-route-click' event firing when the
+      // 'start-casting-to-route-button' button is clicked when the current
+      // route is not joinable.
+      test('start casting button click replaces route', function(done) {
         details.addEventListener(
-            'start-casting-to-route-click', function() { done(); });
+            'replace-route-click', function() { done(); });
+        details.route = fakeRouteOne;
+        details.availableCastModes = 1;
         MockInteractions.tap(details.$['start-casting-to-route-button']);
       });
 
@@ -117,6 +145,7 @@ cr.define('route_details', function() {
       test('route is undefined or set', function() {
         // |route| is initially undefined.
         assertEquals(undefined, details.route);
+        assertEquals(0, details.availableCastModes);
         checkDefaultViewIsShown();
 
         // Set |route|.
@@ -133,6 +162,23 @@ cr.define('route_details', function() {
         checkSpanText(loadTimeData.getStringF('castingActivityStatus',
             fakeRouteTwo.description), 'route-information');
         checkDefaultViewIsShown();
+        checkStartCastButtonIsShown();
+      });
+
+      // Tests when |availableCastModes| is undefined or set.
+      test('route available cast modes undefined or set', function() {
+        details.route = fakeRouteOne;
+        assertEquals(0, details.availableCastModes);
+        assertFalse(details.route.canJoin);
+        checkStartCastButtonIsNotShown();
+
+        details.availableCastModes = 1;
+        checkStartCastButtonIsShown();
+
+        details.availableCastModes = 2;
+        checkStartCastButtonIsShown();
+
+        details.availableCastModes = 3;
         checkStartCastButtonIsShown();
       });
 

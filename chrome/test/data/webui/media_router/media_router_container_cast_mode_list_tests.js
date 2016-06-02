@@ -401,6 +401,53 @@ cr.define('media_router_container_cast_mode_list', function() {
           });
         });
       });
+
+      // Tests that the 'cast' button is shown in the route details view when
+      // the sink for the current route is compatible with the user-selected
+      // cast mode.
+      test('cast to sink with existing route', function(done) {
+        var newSinks = [
+          new media_router.Sink('sink id 10', 'Sink 10', null, null,
+              media_router.SinkIconType.CAST,
+              media_router.SinkStatus.ACTIVE, 0x2 | 0x4 | 0x8),
+        ];
+
+        container.allSinks = newSinks;
+        container.routeList = [
+          new media_router.Route('id 1', 'sink id 10',
+                                 'Title 1', 1, false, false),
+        ];
+
+        setTimeout(function() {
+          var sinkList =
+              container.shadowRoot.getElementById('sink-list')
+                  .querySelectorAll('paper-item');
+
+          MockInteractions.tap(container.$['container-header'].
+              $['arrow-drop-icon']);
+          setTimeout(function() {
+            // Cast mode 1 is selected, and the sink list is filtered.
+            var castModeList =
+                container.$$('#cast-mode-list').querySelectorAll('paper-item');
+            MockInteractions.tap(castModeList[1]);
+
+            setTimeout(function() {
+              var sinkList =
+                  container.shadowRoot.getElementById('sink-list')
+                      .querySelectorAll('paper-item');
+
+              MockInteractions.tap(sinkList[0]);
+              setTimeout(function() {
+                assertFalse(container.shadowRoot.getElementById('route-details')
+                            .shadowRoot
+                            .getElementById('start-casting-to-route-button')
+                            .hasAttribute('hidden'));
+                done();
+              });
+            });
+          });
+        });
+      });
     });
   }
 

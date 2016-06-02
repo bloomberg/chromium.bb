@@ -36,9 +36,10 @@ cr.define('media_router', function() {
     container.addEventListener('back-click', onNavigateToSinkList);
     container.addEventListener('cast-mode-selected', onCastModeSelected);
     container.addEventListener('close-dialog', onCloseDialog);
-    container.addEventListener('close-route-click', onCloseRouteClick);
+    container.addEventListener('close-route', onCloseRoute);
     container.addEventListener('create-route', onCreateRoute);
     container.addEventListener('issue-action-click', onIssueActionClick);
+    container.addEventListener('join-route-click', onJoinRouteClick);
     container.addEventListener('navigate-sink-list-to-details',
                                onNavigateToDetails);
     container.addEventListener('navigate-to-cast-mode-list',
@@ -59,8 +60,6 @@ cr.define('media_router', function() {
                                onSearchSinksAndCreateRoute);
     container.addEventListener('show-initial-state', onShowInitialState);
     container.addEventListener('sink-click', onSinkClick);
-    container.addEventListener('start-casting-to-route-click',
-                               onStartCastingToRouteClick);
 
     window.addEventListener('blur', onWindowBlur);
   }
@@ -214,7 +213,7 @@ cr.define('media_router', function() {
    * Parameters in |event|.detail:
    *   route - The route to close.
    */
-  function onCloseRouteClick(event) {
+  function onCloseRoute(event) {
     /** @type {{route: !media_router.Route}} */
     var detail = event.detail;
     media_router.browserApi.closeRoute(detail.route);
@@ -222,13 +221,14 @@ cr.define('media_router', function() {
 
   /**
    * Starts casting to an existing route.
-   * Called when the user requests to start casting to a media route.
+   * Called when the user requests to start casting to a media route that is
+   * joinable.
    *
    * @param {!Event} event
    * Parameters in |event|.detail:
    *   route - The route to connect to if possible.
    */
-  function onStartCastingToRouteClick(event) {
+  function onJoinRouteClick(event) {
     /** @type {{route: !media_router.Route}} */
     var detail = event.detail;
     media_router.browserApi.joinRoute(detail.route);

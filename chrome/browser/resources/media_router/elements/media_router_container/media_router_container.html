@@ -85,7 +85,10 @@
       <template is="dom-if"
           if="[[!computeRouteDetailsHidden_(currentView_, issue)]]">
         <route-details id="route-details" route="[[currentRoute_]]"
-            on-close-route-click="onCloseRouteClick_">
+            available-cast-modes="[[computeAvailableCastModesForRoute_(currentRoute_)]]"
+            replace-route-available="[[!currentLaunchingSinkId_]]"
+            on-close-route-click="onCloseRoute_"
+            on-replace-route-click="onReplaceRouteClick_">
         </route-details>
       </template>
       <div id="sink-list-view"

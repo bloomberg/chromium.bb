@@ -50,6 +50,7 @@ media_router.MediaRouterUserAction = {
   STOP_LOCAL: 2,
   CLOSE: 3,
   STATUS_REMOTE: 4,
+  REPLACE_LOCAL_ROUTE: 5,
 };
 
 /**

@@ -46,9 +46,10 @@ enum class MediaRouterUserAction {
   STOP_LOCAL = 2,
   CLOSE = 3,
   STATUS_REMOTE = 4,
+  REPLACE_LOCAL_ROUTE = 5,
 
   // Note: Add entries only immediately above this line.
-  TOTAL_COUNT = 5
+  TOTAL_COUNT = 6
 };
 
 class MediaRouterMetrics {
