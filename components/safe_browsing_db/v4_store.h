@@ -11,6 +11,18 @@
 
 namespace safe_browsing {
 
+class V4Store;
+
+// Factory for creating V4Store. Tests implement this factory to create fake
+// stores for testing.
+class V4StoreFactory {
+ public:
+  virtual ~V4StoreFactory() {}
+  virtual V4Store* CreateV4Store(
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      const base::FilePath& store_path);
+};
+
 class V4Store {
  public:
   // The |task_runner| is used to ensure that the operations in this file are
@@ -23,7 +35,14 @@ class V4Store {
   // Reset internal state and delete the backing file.
   virtual bool Reset();
 
- private:
+  const base::FilePath& store_path() const {
+    return store_path_;
+  }
+
+ protected:
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  const base::FilePath store_path_;
+
   DISALLOW_COPY_AND_ASSIGN(V4Store);
 };
 

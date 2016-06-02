@@ -6,8 +6,15 @@
 
 namespace safe_browsing {
 
+V4Store* V4StoreFactory::CreateV4Store(
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const base::FilePath& store_path) {
+  return new V4Store(task_runner, store_path);
+}
+
 V4Store::V4Store(const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-                 const base::FilePath& store_path) {}
+                 const base::FilePath& store_path)
+    : task_runner_(task_runner), store_path_(store_path) {}
 
 V4Store::~V4Store() {}
 

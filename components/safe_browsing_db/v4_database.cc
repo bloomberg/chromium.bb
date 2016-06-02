@@ -5,6 +5,8 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/debug/leak_annotations.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "components/safe_browsing_db/v4_database.h"
 #include "content/public/browser/browser_thread.h"
@@ -13,25 +15,18 @@ using content::BrowserThread;
 
 namespace safe_browsing {
 
-namespace {
-
-V4Store* CreateStore(
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const base::FilePath& store_path) {
-  return new V4Store(task_runner, store_path);
-}
-
-}  // namespace
-
 // static
-V4DatabaseFactory* V4Database::factory_ = NULL;
+V4StoreFactory* V4Database::factory_ = NULL;
 
 // static
 void V4Database::Create(
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
     const base::FilePath& base_path,
-    ListInfoMap list_info_map,
+    const ListInfoMap& list_info_map,
     NewDatabaseReadyCallback callback) {
+  // Create the database, which may be a lengthy operation, on the
+  // db_task_runner, but once that is done, call the caller back on this
+  // thread.
   const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner =
       base::MessageLoop::current()->task_runner();
   db_task_runner->PostTask(
@@ -44,38 +39,34 @@ void V4Database::Create(
 void V4Database::CreateOnTaskRunner(
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
     const base::FilePath& base_path,
-    ListInfoMap list_info_map,
+    const ListInfoMap& list_info_map,
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
     NewDatabaseReadyCallback callback) {
   DCHECK(db_task_runner->RunsTasksOnCurrentThread());
-  DCHECK(!base_path.empty());
+  DCHECK(base_path.IsAbsolute());
 
-  std::unique_ptr<V4Database> v4_database;
   if (!factory_) {
-    StoreMap store_map;
-
-    for (const auto& list_info : list_info_map) {
-      UpdateListIdentifier update_list_identifier = list_info.first;
-      const base::FilePath::CharType suffix = list_info.second;
-
-      const base::FilePath store_path =
-          base::FilePath(base_path.value() + suffix);
-      (*store_map)[update_list_identifier].reset(
-          CreateStore(db_task_runner, store_path));
-    }
-
-    v4_database.reset(new V4Database(db_task_runner, std::move(store_map)));
-  } else {
-    v4_database.reset(
-        factory_->CreateV4Database(db_task_runner, base_path, list_info_map));
+    factory_ = new V4StoreFactory();
+    ANNOTATE_LEAKING_OBJECT_PTR(factory_);
   }
+  auto store_map = base::MakeUnique<StoreMap>();
+  for (const auto& list_info : list_info_map) {
+    const UpdateListIdentifier& update_list_identifier = list_info.first;
+    const base::FilePath store_path = base_path.AppendASCII(list_info.second);
+    (*store_map)[update_list_identifier].reset(
+        factory_->CreateV4Store(db_task_runner, store_path));
+  }
+  std::unique_ptr<V4Database> v4_database(
+      new V4Database(db_task_runner, std::move(store_map)));
+
+  // Database is done loading, pass it to the callback on the caller's thread.
   callback_task_runner->PostTask(
       FROM_HERE, base::Bind(callback, base::Passed(&v4_database)));
 }
 
 V4Database::V4Database(
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
-    StoreMap store_map)
+    std::unique_ptr<StoreMap> store_map)
     : db_task_runner_(db_task_runner), store_map_(std::move(store_map)) {
   DCHECK(db_task_runner->RunsTasksOnCurrentThread());
   // TODO(vakh): Implement skeleton
@@ -89,7 +80,9 @@ void V4Database::Destroy(std::unique_ptr<V4Database> v4_database) {
   }
 }
 
-V4Database::~V4Database() {}
+V4Database::~V4Database() {
+  DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
+}
 
 bool V4Database::ResetDatabase() {
   DCHECK(db_task_runner_->RunsTasksOnCurrentThread());
