@@ -165,7 +165,7 @@ config("feature_flags") {
   if (is_msan) {
     defines += [ "MEMORY_SANITIZER" ]
   }
-  if (is_ubsan || is_ubsan_vptr || is_ubsan_security) {
+  if (is_ubsan || is_ubsan_null || is_ubsan_vptr || is_ubsan_security) {
     defines += [ "UNDEFINED_SANITIZER" ]
   }
   if (enable_webrtc) {

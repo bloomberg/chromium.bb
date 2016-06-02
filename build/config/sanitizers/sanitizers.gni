@@ -22,6 +22,9 @@ declare_args() {
   # Halt the program if a problem is detected.
   is_ubsan_no_recover = false
 
+  # Compile for Undefined Behaviour Sanitizer's null pointer checks.
+  is_ubsan_null = false
+
   # Compile for Undefined Behaviour Sanitizer's vptr checks.
   is_ubsan_vptr = false
 
@@ -92,7 +95,7 @@ if (use_sanitizer_coverage && sanitizer_coverage_flags == "") {
 }
 
 using_sanitizer = is_asan || is_lsan || is_tsan || is_msan || is_ubsan ||
-                  is_ubsan_vptr || is_ubsan_security
+                  is_ubsan_null || is_ubsan_vptr || is_ubsan_security
 
 assert(!using_sanitizer || is_clang,
        "Sanitizers (is_*san) require setting is_clang = true in 'gn args'")
@@ -110,6 +113,6 @@ assert(!using_sanitizer || is_clang,
 # unsupported or unadvisable configurations.
 #
 # For one-off testing, just comment this assertion out.
-assert(
-    !is_debug || !(is_msan || is_lsan || is_tsan || is_ubsan || is_ubsan_vptr),
-    "Sanitizers should generally be used in release (set is_debug=false).")
+assert(!is_debug || !(is_msan || is_lsan || is_tsan || is_ubsan ||
+                          is_ubsan_null || is_ubsan_vptr),
+       "Sanitizers should generally be used in release (set is_debug=false).")

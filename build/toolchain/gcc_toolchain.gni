@@ -482,6 +482,7 @@ template("gcc_toolchain") {
       is_syzyasan = false
       is_tsan = false
       is_ubsan = false
+      is_ubsan_null = false
       is_ubsan_vptr = false
     }
 
