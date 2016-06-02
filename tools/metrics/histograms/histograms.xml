@@ -33976,13 +33976,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.Snippets.CardClickedAge" units="min">
+<histogram name="NewTabPage.Snippets.CardClickedAge" units="minutes">
   <owner>jkrcal@chromium.org</owner>
   <summary>
     Android: The age of the snippets card on the NTP, that is clicked through to
     the host website of the content. The age is measured from the moment the
     content has been published. In each &quot;_x_y&quot; suffix of the
-    histogram, only snippets on positions \gt;=x and \lt;=y are tracked.
+    histogram, only snippets on positions \gt;=x and \lt;=y are tracked. We
+    track the position the snippet had in the list when NTP was loaded. This
+    tracked position is thus different from the position observed by the user
+    whenever before scrolling down to the given snippet, the user discards some
+    snippets in the top of the list.
   </summary>
 </histogram>
 
@@ -33992,7 +33996,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Android: The score of the snippets card on the NTP, that is clicked through
     to the host website of the content. The recorded score is from the moment
     the snippet was fetched, it could have changed since. In each &quot;_x&quot;
-    suffix  of the histogram, only snippets on positions \lt;=x are tracked.
+    suffix  of the histogram, only snippets on positions \lt;=x are tracked. We
+    track the position the snippet had in the list when NTP was loaded. This
+    tracked position is thus different from the position observed by the user
+    whenever before scrolling down to the given snippet, the user discards some
+    snippets in the top of the list.
   </summary>
 </histogram>
 
@@ -34022,7 +34030,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>knn@chromium.org</owner>
   <summary>
     Android: The position of the snippets card that is shown on the NTP. Each
-    snippet (its position) is recorded whenever at least 1/3 of it height
+    snippet (its position) is recorded whenever at least 1/3 of its height
     becomes visible by scrolling through the NTP. Each snippet is recorded at
     most once for a given instance of NTP and a given data set of snippets that
     is shown. We track the position the snippet had in the list when NTP was
@@ -34032,6 +34040,39 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     before 2016/05/27), this histogram was recorded each time a snippet became
     visible (e.g. by scrolling up and down) at least by 1px; the first snippet
     was thus recorded even without scrolling down.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Snippets.CardShownAge" units="minutes">
+  <owner>jkrcal@chromium.org</owner>
+  <summary>
+    Android: The age of the snippets card that is shown on the NTP. Each snippet
+    (its age) is recorded whenever at least 1/3 of its height becomes visible by
+    scrolling through the NTP. Each snippet is recorded at most once for a given
+    instance of NTP and a given data set of snippets that is shown. The age is
+    measured from the moment the content has been published. In each
+    &quot;_x_y&quot; suffix of the histogram, only snippets on positions \gt;=x
+    and \lt;=y are tracked. By this, we mean the position the snippet had in the
+    list when NTP was loaded. This tracked position is thus different from the
+    position observed by the user whenever before scrolling down to the given
+    snippet, the user discards some snippets in the top of the list.
+  </summary>
+</histogram>
+
+<histogram name="NewTabPage.Snippets.CardShownScore" units="score">
+  <owner>jkrcal@chromium.org</owner>
+  <summary>
+    Android: The score of the snippets card that is shown on the NTP. Each
+    snippet (its score) is recorded whenever at least 1/3 of its height becomes
+    visible by scrolling through the NTP. Each snippet is recorded at most once
+    for a given instance of NTP and a given data set of snippets that is shown.
+    The recorded score is from the moment the snippet was fetched, it could have
+    changed since. In each &quot;_x&quot; suffix  of the histogram, only
+    snippets on positions \lt;=x are tracked. By this, we mean the position the
+    snippet had in the list when NTP was loaded. This tracked position is thus
+    different from the position observed by the user whenever before scrolling
+    down to the given snippet, the user discards some snippets in the top of the
+    list.
   </summary>
 </histogram>
 
@@ -95683,6 +95724,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="5_9" label="Only snippets on position 5-9"/>
   <affected-histogram name="NewTabPage.Snippets.CardClickedAge"/>
   <affected-histogram name="NewTabPage.Snippets.CardClickedScore"/>
+  <affected-histogram name="NewTabPage.Snippets.CardShownAge"/>
+  <affected-histogram name="NewTabPage.Snippets.CardShownScore"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="PpapiPluginName">

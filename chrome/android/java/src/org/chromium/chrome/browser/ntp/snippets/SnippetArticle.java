@@ -95,22 +95,7 @@ public class SnippetArticle implements NewTabPageListItem {
         RecordHistogram.recordSparseSlowlyHistogram("NewTabPage.Snippets.CardClicked", mPosition);
         NewTabPageUma.recordSnippetAction(NewTabPageUma.SNIPPETS_ACTION_CLICKED);
         NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_SNIPPET);
-
-        // Track how the (approx.) position relates to age / score of the snippet that is clicked.
-        int ageInMinutes =
-                (int) ((System.currentTimeMillis() - mPublishTimestampMilliseconds) / 60000L);
-        recordAge("NewTabPage.Snippets.CardClickedAge", ageInMinutes);
-        recordScore("NewTabPage.Snippets.CardClickedScore", mScore);
-        int startPosition = 0;
-        for (int endPosition : HISTOGRAM_FOR_POSITIONS) {
-            if (mPosition >= startPosition && mPosition <= endPosition) {
-                String suffix = "_" + startPosition + "_" + endPosition;
-                recordAge("NewTabPage.Snippets.CardClickedAge" + suffix, ageInMinutes);
-                recordScore("NewTabPage.Snippets.CardClickedScore" + suffix, mScore);
-                break;
-            }
-            startPosition = endPosition + 1;
-        }
+        recordAgeAndScore("NewTabPage.Snippets.CardClicked");
     }
 
     /** Tracks impression of this NTP snippet. */
@@ -119,12 +104,31 @@ public class SnippetArticle implements NewTabPageListItem {
         if (mImpressionTracked) return;
 
         RecordHistogram.recordSparseSlowlyHistogram("NewTabPage.Snippets.CardShown", mPosition);
+        recordAgeAndScore("NewTabPage.Snippets.CardShown");
         mImpressionTracked = true;
     }
 
     /** Returns whether impression of this SnippetArticle has already been tracked. */
     public boolean impressionTracked() {
         return mImpressionTracked;
+    }
+
+    private void recordAgeAndScore(String histogramPrefix) {
+        // Track how the (approx.) position relates to age / score of the snippet that is clicked.
+        int ageInMinutes =
+                (int) ((System.currentTimeMillis() - mPublishTimestampMilliseconds) / 60000L);
+        recordAge(histogramPrefix + "Age", ageInMinutes);
+        recordScore(histogramPrefix + "Score", mScore);
+        int startPosition = 0;
+        for (int endPosition : HISTOGRAM_FOR_POSITIONS) {
+            if (mPosition >= startPosition && mPosition <= endPosition) {
+                String suffix = "_" + startPosition + "_" + endPosition;
+                recordAge(histogramPrefix + "Age" + suffix, ageInMinutes);
+                recordScore(histogramPrefix + "Score" + suffix, mScore);
+                break;
+            }
+            startPosition = endPosition + 1;
+        }
     }
 
     private static void recordAge(String histogramName, int ageInMinutes) {
