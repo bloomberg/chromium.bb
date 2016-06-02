@@ -187,7 +187,8 @@ PlatformMouseEventBuilder::PlatformMouseEventBuilder(Widget* widget, const WebMo
 
     switch (e.type) {
     case WebInputEvent::MouseMove:
-    case WebInputEvent::MouseLeave:  // synthesize a move event
+    case WebInputEvent::MouseEnter: // synthesize a move event
+    case WebInputEvent::MouseLeave: // synthesize a move event
         m_type = PlatformEvent::MouseMoved;
         break;
 

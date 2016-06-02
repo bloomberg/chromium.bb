@@ -2169,19 +2169,12 @@ WebInputEventResult WebViewImpl::handleInputEvent(const WebInputEvent& inputEven
 
         // Find the right target frame. See issue 1186900.
         HitTestResult result = hitTestResultForRootFramePos(pme.position());
-        Frame* targetFrame;
-        if (result.innerNodeOrImageMapImage())
-            targetFrame = result.innerNodeOrImageMapImage()->document().frame();
-        else
-            targetFrame = m_page->focusController().focusedOrMainFrame();
-
-        if (targetFrame->isLocalFrame()) {
-            LocalFrame* targetLocalFrame = toLocalFrame(targetFrame);
-            Document* document = targetLocalFrame->document();
+        if (result.innerNodeFrame()) {
+            Document* document = result.innerNodeFrame()->document();
             if (document) {
                 AXObjectCache* cache = document->existingAXObjectCache();
                 if (cache)
-                    cache->onTouchAccessibilityHover(pme.position());
+                    cache->onTouchAccessibilityHover(result.roundedPointInInnerNodeFrame());
             }
         }
     }

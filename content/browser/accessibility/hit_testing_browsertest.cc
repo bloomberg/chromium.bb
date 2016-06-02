@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/accessibility/accessibility_test_utils.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -29,23 +30,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
-
-namespace {
-
-bool AXTreeContainsNodeWithName(BrowserAccessibility* node,
-                                const std::string& name) {
-  if (node->GetStringAttribute(ui::AX_ATTR_NAME) == name)
-    return true;
-
-  for (unsigned i = 0; i < node->PlatformChildCount(); i++) {
-    if (AXTreeContainsNodeWithName(node->PlatformGetChild(i), name))
-      return true;
-  }
-
-  return false;
-}
-
-}  // namespace
 
 class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
  public:
@@ -117,20 +101,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   NavigateToURL(shell(), url);
   waiter.WaitForNotification();
 
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(shell()->web_contents());
-  FrameTree* frame_tree = web_contents->GetFrameTree();
-  BrowserAccessibilityManager* manager =
-      web_contents->GetRootBrowserAccessibilityManager();
-  BrowserAccessibility* root = manager->GetRoot();
-  while (!AXTreeContainsNodeWithName(root, "Ordinary Button") ||
-         !AXTreeContainsNodeWithName(root, "Scrolled Button")) {
-    AccessibilityNotificationWaiter waiter(shell(), AccessibilityModeComplete,
-                                           ui::AX_EVENT_NONE);
-    for (FrameTreeNode* node : frame_tree->Nodes())
-      waiter.ListenToAdditionalFrame(node->current_frame_host());
-    waiter.WaitForNotification();
-  }
+  WaitForAccessibilityTreeToContainNodeWithName(
+      shell()->web_contents(), "Ordinary Button");
+  WaitForAccessibilityTreeToContainNodeWithName(
+      shell()->web_contents(), "Scrolled Button");
 
   // Send a series of hit test requests, and for each one
   // wait for the hover event in response, verifying we hit the

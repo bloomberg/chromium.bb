@@ -1252,8 +1252,15 @@ String AXObjectCacheImpl::computedNameForNode(Node* node)
 void AXObjectCacheImpl::onTouchAccessibilityHover(const IntPoint& location)
 {
     AXObject* hit = root()->accessibilityHitTest(location);
-    if (hit)
+    if (hit) {
+        // Ignore events on a frame or plug-in, because the touch events
+        // will be re-targeted there and we don't want to fire duplicate
+        // accessibility events.
+        if (hit->getLayoutObject() && hit->getLayoutObject()->isLayoutPart())
+            return;
+
         postPlatformNotification(hit, AXHover);
+    }
 }
 
 void AXObjectCacheImpl::setCanvasObjectBounds(Element* element, const LayoutRect& rect)

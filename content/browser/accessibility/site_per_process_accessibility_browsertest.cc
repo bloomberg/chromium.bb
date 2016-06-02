@@ -6,6 +6,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "content/browser/accessibility/accessibility_test_utils.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -43,23 +44,6 @@
 
 namespace content {
 
-namespace {
-
-// Searches recursively and returns true if any node's accessible name
-// is equal to the given text.
-bool AccessibilityTreeContainsText(BrowserAccessibility* node,
-                                   const std::string& text) {
-  if (node->GetStringAttribute(ui::AX_ATTR_NAME) == text)
-    return true;
-  for (unsigned i = 0; i < node->PlatformChildCount(); i++) {
-    if (AccessibilityTreeContainsText(node->PlatformGetChild(i), text))
-      return true;
-  }
-  return false;
-}
-
-}  // namespace
-
 class MAYBE_SitePerProcessAccessibilityBrowserTest
     : public SitePerProcessBrowserTest {
  public:
@@ -82,34 +66,6 @@ class MAYBE_SitePerProcessAccessibilityBrowserTest
 
     // Wait until the iframe completes the swap.
     deleted_observer.WaitUntilDeleted();
-  }
-
-  // This is intended to be a robust way to assert that the accessibility
-  // tree eventually gets into the correct state, without worrying about
-  // the exact ordering of events received while getting there.
-  //
-  // Searches the accessibility tree to see if any node's accessible name
-  // is equal to the given text. If not, sets up a notification waiter
-  // that listens for any accessibility event in any frame, and checks again
-  // after each event. Keeps looping until the text is found (or the
-  // test times out).
-  void WaitForAccessibilityTreeToContainText(const std::string& text) {
-    RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
-        shell()->web_contents()->GetMainFrame());
-    BrowserAccessibilityManager* main_frame_manager =
-        main_frame->browser_accessibility_manager();
-    FrameTree* frame_tree =
-        static_cast<WebContentsImpl*>(shell()->web_contents())->GetFrameTree();
-    while (!AccessibilityTreeContainsText(
-               main_frame_manager->GetRoot(), text)) {
-      AccessibilityNotificationWaiter accessibility_waiter(main_frame,
-                                                           ui::AX_EVENT_NONE);
-      for (FrameTreeNode* node : frame_tree->Nodes())
-        accessibility_waiter.ListenToAdditionalFrame(
-            node->current_frame_host());
-
-      accessibility_waiter.WaitForNotification();
-    }
   }
 };
 
@@ -134,7 +90,9 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
   // Load cross-site page into iframe and wait for text from that
   // page to appear in the accessibility tree.
   LoadCrossSitePageIntoFrame(child, "/title2.html", "foo.com");
-  WaitForAccessibilityTreeToContainText("Title Of Awesomeness");
+  WaitForAccessibilityTreeToContainNodeWithName(
+      shell()->web_contents(),
+      "Title Of Awesomeness");
 
   RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
       shell()->web_contents()->GetMainFrame());
@@ -194,13 +152,17 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
   // page to appear in the accessibility tree.
   FrameTreeNode* child = root->child_at(0);
   LoadCrossSitePageIntoFrame(child, "/title1.html", "foo.com");
-  WaitForAccessibilityTreeToContainText("This page has no title.");
+  WaitForAccessibilityTreeToContainNodeWithName(
+      shell()->web_contents(),
+      "This page has no title.");
 
   // Load second cross-site page into iframe and wait for text from that
   // page to appear in the accessibility tree. If this succeeds and doesn't
   // time out, the test passes.
   LoadCrossSitePageIntoFrame(child, "/title2.html", "bar.com");
-  WaitForAccessibilityTreeToContainText("Title Of Awesomeness");
+  WaitForAccessibilityTreeToContainNodeWithName(
+      shell()->web_contents(),
+      "Title Of Awesomeness");
 }
 
 }  // namespace content

@@ -4,6 +4,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "content/browser/accessibility/accessibility_test_utils.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/browser_test_utils.h"
@@ -11,6 +12,8 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
@@ -23,6 +26,32 @@ namespace content {
 class TouchAccessibilityBrowserTest : public ContentBrowserTest {
  public:
   TouchAccessibilityBrowserTest() {}
+
+ protected:
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+    SetupCrossSiteRedirector(embedded_test_server());
+  }
+
+  void NavigateToUrlAndWaitForAccessibilityTree(const GURL& url) {
+    AccessibilityNotificationWaiter waiter(
+        shell(), AccessibilityModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
+    NavigateToURL(shell(), url);
+    waiter.WaitForNotification();
+  }
+
+  void SendTouchExplorationEvent(int x, int y) {
+    aura::Window* window = shell()->web_contents()->GetContentNativeView();
+    ui::EventProcessor* dispatcher = window->GetHost()->event_processor();
+    gfx::Rect bounds = window->GetBoundsInRootWindow();
+    gfx::Point location(bounds.x() + x,  bounds.y() + y);
+    int flags = ui::EF_TOUCH_ACCESSIBILITY;
+    std::unique_ptr<ui::Event> mouse_move_event(
+        new ui::MouseEvent(ui::ET_MOUSE_MOVED, location, location,
+                           ui::EventTimeForNow(), flags, 0));
+    ignore_result(dispatcher->OnEventFromSource(mouse_move_event.get()));
+  }
 
   DISALLOW_COPY_AND_ASSIGN(TouchAccessibilityBrowserTest);
 };
@@ -50,12 +79,7 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
   }
   html_url += "</table></body>";
 
-  // Navigate to the url and load the accessibility tree.
-  AccessibilityNotificationWaiter waiter(
-      shell(), AccessibilityModeComplete, ui::AX_EVENT_LOAD_COMPLETE);
-  GURL url(html_url);
-  NavigateToURL(shell(), url);
-  waiter.WaitForNotification();
+  NavigateToUrlAndWaitForAccessibilityTree(GURL(html_url));
 
   // Get the BrowserAccessibilityManager.
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
@@ -67,34 +91,21 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
   // Loop over all of the cells in the table. For each one, send a simulated
   // touch exploration event in the center of that cell, and assert that we
   // get an accessibility hover event fired in the correct cell.
-  AccessibilityNotificationWaiter waiter2(
+  AccessibilityNotificationWaiter waiter(
       shell(), AccessibilityModeComplete, ui::AX_EVENT_HOVER);
-  aura::Window* window = web_contents->GetContentNativeView();
-  ui::EventProcessor* dispatcher = window->GetHost()->event_processor();
   for (int row = 0; row < 5; ++row) {
     for (int col = 0; col < 7; ++col) {
       std::string expected_cell_text = base::IntToString(row * 7 + col);
       VLOG(1) << "Sending event in row " << row << " col " << col
               << " with text " << expected_cell_text;
-
-      // Send a touch exploration event to the center of the particular grid
-      // cell. A touch exploration event is just a mouse move event with
-      // the ui::EF_TOUCH_ACCESSIBILITY flag set.
-      gfx::Rect bounds = window->GetBoundsInRootWindow();
-      gfx::Point location(bounds.x() + 50 * col + 25,
-                          bounds.y() + 50 * row + 25);
-      int flags = ui::EF_TOUCH_ACCESSIBILITY;
-      std::unique_ptr<ui::Event> mouse_move_event(
-          new ui::MouseEvent(ui::ET_MOUSE_MOVED, location, location,
-                             ui::EventTimeForNow(), flags, 0));
-      ignore_result(dispatcher->OnEventFromSource(mouse_move_event.get()));
+      SendTouchExplorationEvent(50 * col + 25, 50 * row + 25);
 
       // Wait until we get a hover event in the expected grid cell.
       // Tolerate additional events, keep looping until we get the expected one.
       std::string cell_text;
       do {
-        waiter2.WaitForNotification();
-        int target_id = waiter2.event_target_id();
+        waiter.WaitForNotification();
+        int target_id = waiter.event_target_id();
         BrowserAccessibility* hit = manager->GetFromID(target_id);
         BrowserAccessibility* child = hit->PlatformGetChild(0);
         ASSERT_NE(nullptr, child);
@@ -103,6 +114,70 @@ IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
       } while (cell_text != expected_cell_text);
     }
   }
+}
+
+IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
+                       TouchExplorationInIframe) {
+  NavigateToUrlAndWaitForAccessibilityTree(
+      embedded_test_server()->GetURL(
+          "/accessibility/html/iframe-coordinates.html"));
+
+  WaitForAccessibilityTreeToContainNodeWithName(
+      shell()->web_contents(), "Ordinary Button");
+
+  // Get the BrowserAccessibilityManager for the first child frame.
+  RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  RenderFrameHostImpl* child_frame =
+      main_frame->frame_tree_node()->child_at(0)->current_frame_host();
+  BrowserAccessibilityManager* child_manager =
+      child_frame->GetOrCreateBrowserAccessibilityManager();
+  ASSERT_NE(nullptr, child_manager);
+
+  // Send a touch exploration event to the button in the first iframe.
+  // A touch exploration event is just a mouse move event with
+  // the ui::EF_TOUCH_ACCESSIBILITY flag set.
+  AccessibilityNotificationWaiter waiter(
+      child_frame, ui::AX_EVENT_HOVER);
+  SendTouchExplorationEvent(50, 350);
+  waiter.WaitForNotification();
+  int target_id = waiter.event_target_id();
+  BrowserAccessibility* hit = child_manager->GetFromID(target_id);
+  EXPECT_EQ(ui::AX_ROLE_BUTTON, hit->GetData().role);
+  std::string text = hit->GetData().GetStringAttribute(ui::AX_ATTR_NAME);
+  EXPECT_EQ("Ordinary Button", text);
+}
+
+IN_PROC_BROWSER_TEST_F(TouchAccessibilityBrowserTest,
+                       DISABLED_TouchExplorationInCrossSiteIframe) {
+  NavigateToUrlAndWaitForAccessibilityTree(
+      embedded_test_server()->GetURL(
+          "/accessibility/html/iframe-coordinates-cross-process.html"));
+
+  WaitForAccessibilityTreeToContainNodeWithName(
+      shell()->web_contents(), "Ordinary Button");
+
+  // Get the BrowserAccessibilityManager for the first child frame.
+  RenderFrameHostImpl* main_frame = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  RenderFrameHostImpl* child_frame =
+      main_frame->frame_tree_node()->child_at(0)->current_frame_host();
+  BrowserAccessibilityManager* child_manager =
+      child_frame->GetOrCreateBrowserAccessibilityManager();
+  ASSERT_NE(nullptr, child_manager);
+
+  // Send a touch exploration event to the button in the first iframe.
+  // A touch exploration event is just a mouse move event with
+  // the ui::EF_TOUCH_ACCESSIBILITY flag set.
+  AccessibilityNotificationWaiter waiter(
+      child_frame, ui::AX_EVENT_HOVER);
+  SendTouchExplorationEvent(50, 350);
+  waiter.WaitForNotification();
+  int target_id = waiter.event_target_id();
+  BrowserAccessibility* hit = child_manager->GetFromID(target_id);
+  EXPECT_EQ(ui::AX_ROLE_BUTTON, hit->GetData().role);
+  std::string text = hit->GetData().GetStringAttribute(ui::AX_ATTR_NAME);
+  EXPECT_EQ("Ordinary Button", text);
 }
 
 }  // namespace content

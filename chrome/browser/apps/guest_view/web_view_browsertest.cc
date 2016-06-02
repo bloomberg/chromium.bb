@@ -45,6 +45,7 @@
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/interstitial_page_delegate.h"
@@ -3110,6 +3111,80 @@ IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, FocusAccessibility) {
   ui::AXNodeData node_data =
       content::GetFocusedAccessibilityNodeInfo(web_contents);
   EXPECT_EQ("Guest button", node_data.GetStringAttribute(ui::AX_ATTR_NAME));
+}
+
+class WebContentsAccessibilityEventWatcher
+    : public content::WebContentsObserver {
+ public:
+  WebContentsAccessibilityEventWatcher(
+      content::WebContents* web_contents,
+      ui::AXEvent event)
+      : content::WebContentsObserver(web_contents),
+        event_(event),
+        count_(0) {}
+  ~WebContentsAccessibilityEventWatcher() override {}
+
+  void Wait() {
+    if (count_ == 0) {
+      loop_runner_ = new content::MessageLoopRunner();
+      loop_runner_->Run();
+    }
+  }
+
+  void AccessibilityEventReceived(
+      const std::vector<content::AXEventNotificationDetails>& details_vector)
+          override {
+    for (auto& details : details_vector) {
+      if (details.event_type == event_ && details.update.nodes.size() > 0) {
+        count_++;
+        node_data_ = details.update.nodes[0];
+        loop_runner_->Quit();
+      }
+    }
+  }
+
+  size_t count() const { return count_; }
+
+  const ui::AXNodeData& node_data() const { return node_data_; }
+
+ private:
+  scoped_refptr<content::MessageLoopRunner> loop_runner_;
+  ui::AXEvent event_;
+  ui::AXNodeData node_data_;
+  size_t count_;
+};
+
+IN_PROC_BROWSER_TEST_P(WebViewAccessibilityTest, TouchAccessibility) {
+  LoadAppWithGuest("web_view/touch_accessibility");
+  content::WebContents* web_contents = GetFirstAppWindowWebContents();
+  content::EnableAccessibilityForWebContents(web_contents);
+  content::WebContents* guest_web_contents = GetGuestWebContents();
+  content::EnableAccessibilityForWebContents(guest_web_contents);
+
+  // Listen for accessibility events on both WebContents.
+  WebContentsAccessibilityEventWatcher main_event_watcher(
+      web_contents, ui::AX_EVENT_HOVER);
+  WebContentsAccessibilityEventWatcher guest_event_watcher(
+      guest_web_contents, ui::AX_EVENT_HOVER);
+
+  // Send an accessibility touch event to the main WebContents, but
+  // positioned on top of the button inside the inner WebView.
+  blink::WebMouseEvent accessibility_touch_event;
+  accessibility_touch_event.type = blink::WebInputEvent::MouseMove;
+  accessibility_touch_event.x = 95;
+  accessibility_touch_event.y = 55;
+  accessibility_touch_event.modifiers =
+      blink::WebInputEvent::IsTouchAccessibility;
+  web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
+      accessibility_touch_event);
+
+  // Ensure that we got just a single hover event on the guest WebContents,
+  // and that it was fired on a button.
+  guest_event_watcher.Wait();
+  ui::AXNodeData hit_node = guest_event_watcher.node_data();
+  EXPECT_EQ(1U, guest_event_watcher.count());
+  EXPECT_EQ(ui::AX_ROLE_BUTTON, hit_node.role);
+  EXPECT_EQ(0U, main_event_watcher.count());
 }
 
 class WebViewGuestScrollTest

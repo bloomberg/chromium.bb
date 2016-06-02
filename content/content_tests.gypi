@@ -188,6 +188,8 @@
       'browser/accessibility/accessibility_event_recorder_win.cc',
       'browser/accessibility/accessibility_ipc_error_browsertest.cc',
       'browser/accessibility/accessibility_mode_browsertest.cc',
+      'browser/accessibility/accessibility_test_utils.cc',
+      'browser/accessibility/accessibility_test_utils.h',
       'browser/accessibility/cross_platform_accessibility_browsertest.cc',
       'browser/accessibility/dump_accessibility_browsertest_base.cc',
       'browser/accessibility/dump_accessibility_browsertest_base.h',
