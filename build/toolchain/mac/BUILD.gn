@@ -244,25 +244,19 @@ template("mac_toolchain") {
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
     }
     tool("compile_xcassets") {
+      _tool = rebase_path("//build/toolchain/mac/compile_xcassets.py",
+                          root_build_dir)
       if (is_ios) {
-        _configuration = "Release"
-        if (is_debug) {
-          _configuration = "Debug"
-        }
-
-        _compile_xcassets_env =
-            "IPHONEOS_DEPLOYMENT_TARGET=$ios_deployment_target " +
-            "CONFIGURATION=$ios_sdk_name-$_configuration " +
-            "CONTENTS_FOLDER_PATH=\$(dirname {{output}})"
+        _sdk_name = ios_sdk_name
+        _min_deployment_target = ios_deployment_target
       } else {
-        _compile_xcassets_env =
-            "MACOSX_DEPLOYMENT_TARGET=$mac_deployment_target " +
-            "UNLOCALIZED_RESOURCES_FOLDER_PATH=\$(dirname {{output}})"
+        _sdk_name = mac_sdk_name
+        _min_deployment_target = mac_deployment_target
       }
-
       command = "rm -f {{output}} && " +
-                "env $_compile_xcassets_env ./gyp-mac-tool compile-xcassets " +
-                "{} {{inputs}}"
+                "python $_tool -p $_sdk_name -t $_min_deployment_target " +
+                "-o {{output}} {{inputs}}"
+
       description = "COMPILE_XCASSETS {{output}}"
     }
 
