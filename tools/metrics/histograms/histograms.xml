@@ -30485,6 +30485,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSL_KeyExchange.RSA">
+  <obsolete>
+    Removed May 2016.
+  </obsolete>
   <owner>sigbjorn@opera.com</owner>
   <owner>agl@chromium.org</owner>
   <owner>rsleevi@chromium.org</owner>
