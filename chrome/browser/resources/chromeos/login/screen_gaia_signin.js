@@ -30,7 +30,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
   // Amount of time allowed for video based SAML logins, to prevent a site
   // from keeping the camera on indefinitely.  This is a hard deadline and
   // it will not be extended by user activity.
-  /** @const */ var VIDEO_LOGIN_TIMEOUT = 180 * 1000;
+  /** @const */ var VIDEO_LOGIN_TIMEOUT = 90 * 1000;
 
   /**
    * The modes this screen can be in.
