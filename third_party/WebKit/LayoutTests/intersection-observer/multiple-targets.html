@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+<script src="../resources/intersection-observer-helper-functions.js"></script>
+<style>
+.target {
+  width: 100px;
+  height: 100px;
+  margin: 10px;
+  background-color: green;
+}
+</style>
+<div style="width:100%; height:700px;"></div>
+<div id="target1" class="target"></div>
+<div id="target2" class="target"></div>
+<div id="target3" class="target"></div>
+
+<script>
+description("Verify that notifications for multiple targets are sorted by the order in which observe() was called on each target.");
+var target1 = document.getElementById("target1");
+var target2 = document.getElementById("target2");
+var target3 = document.getElementById("target3");
+var entries = [];
+var observer = new IntersectionObserver(
+  changes => { entries.push(...changes); }
+);
+
+onload = function() {
+  observer.observe(target1);
+  observer.observe(target2);
+  observer.observe(target3);
+  entries = entries.concat(observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 0);
+  document.scrollingElement.scrollTop = 150;
+  waitForNotification(step0);
+}
+
+function step0() {
+  shouldBeEqualToNumber("entries.length", 1);
+  if (entries.length > 0)
+    shouldBeEqualToString("entries[0].target.id", "target1");
+  document.scrollingElement.scrollTop = 10000;
+  waitForNotification(step1);
+}
+
+function step1() {
+  shouldBeEqualToNumber("entries.length", 3);
+  if (entries.length > 1)
+    shouldBeEqualToString("entries[1].target.id", "target2");
+  if (entries.length > 2)
+    shouldBeEqualToString("entries[2].target.id", "target3");
+  document.scrollingElement.scrollTop = 0;
+  waitForNotification(step2);
+}
+
+function step2() {
+  shouldBeEqualToNumber("entries.length", 6);
+  if (entries.length > 3)
+    shouldBeEqualToString("entries[3].target.id", "target1");
+  if (entries.length > 4)
+    shouldBeEqualToString("entries[4].target.id", "target2");
+  if (entries.length > 5)
+    shouldBeEqualToString("entries[5].target.id", "target3");
+  finishJSTest();
+}
+</script>

@@ -1,0 +1,19 @@
+Verify that notifications for multiple targets are sorted by the order in which observe() was called on each target.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS entries.length is 0
+PASS entries.length is 1
+PASS entries[0].target.id is "target1"
+PASS entries.length is 3
+PASS entries[1].target.id is "target2"
+PASS entries[2].target.id is "target3"
+PASS entries.length is 6
+PASS entries[3].target.id is "target1"
+PASS entries[4].target.id is "target2"
+PASS entries[5].target.id is "target3"
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

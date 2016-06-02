@@ -50,7 +50,7 @@ public:
     void deliver();
     void removeObservation(IntersectionObservation&);
     bool hasEntries() const { return m_entries.size(); }
-    const HeapHashSet<WeakMember<IntersectionObservation>>& observations() const { return m_observations; }
+    const HeapLinkedHashSet<WeakMember<IntersectionObservation>>& observations() const { return m_observations; }
 
     DECLARE_TRACE();
 
@@ -60,7 +60,7 @@ private:
 
     Member<IntersectionObserverCallback> m_callback;
     WeakMember<Node> m_root;
-    HeapHashSet<WeakMember<IntersectionObservation>> m_observations;
+    HeapLinkedHashSet<WeakMember<IntersectionObservation>> m_observations;
     HeapVector<Member<IntersectionObserverEntry>> m_entries;
     Vector<float> m_thresholds;
     Length m_topMargin;
