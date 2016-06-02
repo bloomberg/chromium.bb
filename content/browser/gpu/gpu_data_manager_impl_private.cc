@@ -932,6 +932,16 @@ void GpuDataManagerImplPrivate::HandleGpuSwitch() {
 
 bool GpuDataManagerImplPrivate::UpdateActiveGpu(uint32_t vendor_id,
                                                 uint32_t device_id) {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+
+  // For tests, only the gpu process is allowed to detect the active gpu device
+  // using information on the actual loaded GL driver.
+  if (command_line->HasSwitch(switches::kGpuTestingVendorId) &&
+      command_line->HasSwitch(switches::kGpuTestingDeviceId)) {
+    return false;
+  }
+
   if (gpu_info_.gpu.vendor_id == vendor_id &&
       gpu_info_.gpu.device_id == device_id) {
     // The primary GPU is active.
