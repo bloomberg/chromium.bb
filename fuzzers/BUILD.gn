@@ -16,6 +16,7 @@ fuzzer_test("icu_uregex_open_fuzzer") {
     "icu_uregex_open_fuzzer.cc",
   ]
   deps = [
+    "//base",
     "//third_party/icu",
   ]
   dict = "icu_regex.dict"
@@ -27,6 +28,7 @@ fuzzer_test("icu_unicode_string_codepage_create_fuzzer") {
     "icu_unicode_string_codepage_create_fuzzer.cc",
   ]
   deps = [
+    "//base",
     "//third_party/icu",
   ]
 }
