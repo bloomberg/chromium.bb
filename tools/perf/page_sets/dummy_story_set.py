@@ -9,7 +9,7 @@ class DummyPage(page_module.Page):
 
   def __init__(self, page_set):
     super(DummyPage, self).__init__(
-      url='file://dummy_page.html',
+      url='file://dummy_pages/dummy_page.html',
       page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
@@ -20,7 +20,7 @@ class BrokenDummyPage(page_module.Page):
 
   def __init__(self, page_set):
     super(BrokenDummyPage, self).__init__(
-      url='file://dummy_page.html',
+      url='file://dummy_pages/dummy_page.html',
       name='Broken dummy page',
       page_set=page_set)
 
