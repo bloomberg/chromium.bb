@@ -4,6 +4,8 @@
 
 #include "chromecast/base/metrics/cast_metrics_test_helper.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
