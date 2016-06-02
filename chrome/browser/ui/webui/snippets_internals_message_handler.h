@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -30,16 +29,12 @@ class SnippetsInternalsMessageHandler
   void RegisterMessages() override;
 
   // ntp_snippets::NTPSnippetsServiceObserver:
-  // Send everytime the service loads a new set of data.
   void NTPSnippetsServiceLoaded() override;
-  // Send when the service is shutting down.
   void NTPSnippetsServiceShutdown() override;
-  // Sent when the service is disabled.
   void NTPSnippetsServiceDisabled() override;
 
   void HandleLoaded(const base::ListValue* args);
   void HandleClear(const base::ListValue* args);
-  void HandleDump(const base::ListValue* args);
   void HandleClearDiscarded(const base::ListValue* args);
   void HandleDownload(const base::ListValue* args);
 
@@ -47,7 +42,6 @@ class SnippetsInternalsMessageHandler
   void SendSnippets();
   void SendDiscardedSnippets();
   void SendHosts();
-  void SendJson(const std::string& json);
   void SendBoolean(const std::string& name, bool value);
   void SendString(const std::string& name, const std::string& value);
 

@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -21,6 +23,7 @@
 #include "base/time/time.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/ntp_snippets/ntp_snippet.h"
+#include "components/ntp_snippets/ntp_snippets_database.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
 #include "components/ntp_snippets/switches.h"
@@ -236,6 +239,33 @@ class MockServiceObserver : public NTPSnippetsServiceObserver {
   MOCK_METHOD0(NTPSnippetsServiceDisabled, void());
 };
 
+class WaitForDBLoad : public NTPSnippetsServiceObserver {
+ public:
+  WaitForDBLoad(NTPSnippetsService* service) : service_(service) {
+    service_->AddObserver(this);
+    if (!service_->loaded())
+      run_loop_.Run();
+  }
+
+  ~WaitForDBLoad() override {
+    service_->RemoveObserver(this);
+  }
+
+ private:
+  void NTPSnippetsServiceLoaded() override {
+    EXPECT_TRUE(service_->loaded());
+    run_loop_.Quit();
+  }
+
+  void NTPSnippetsServiceShutdown() override {}
+  void NTPSnippetsServiceDisabled() override {}
+
+  NTPSnippetsService* service_;
+  base::RunLoop run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WaitForDBLoad);
+};
+
 }  // namespace
 
 class NTPSnippetsServiceTest : public testing::Test {
@@ -256,11 +286,18 @@ class NTPSnippetsServiceTest : public testing::Test {
     // service to fetch from all hosts.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDontRestrict);
+    EXPECT_TRUE(database_dir_.CreateUniqueTempDir());
   }
 
   ~NTPSnippetsServiceTest() override {
     if (service_)
       service_->Shutdown();
+
+    // We need to run the message loop after deleting the database, because
+    // ProtoDatabaseImpl deletes the actual LevelDB asynchronously on the task
+    // runner. Without this, we'd get reports of memory leaks.
+    service_.reset();
+    base::RunLoop().RunUntilIdle();
   }
 
   void SetUp() override {
@@ -277,14 +314,22 @@ class NTPSnippetsServiceTest : public testing::Test {
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
         new net::TestURLRequestContextGetter(task_runner.get());
 
+    // Delete the current service, so that the database is destroyed before we
+    // create the new one, otherwise opening the new database will fail.
+    service_.reset();
+
     service_.reset(new NTPSnippetsService(
         enabled, pref_service_.get(), mock_sync_service_.get(), nullptr,
-        task_runner, std::string("fr"), &scheduler_,
+        std::string("fr"), &scheduler_,
         base::WrapUnique(new NTPSnippetsFetcher(
             fake_signin_manager_.get(), fake_token_service_.get(),
             std::move(request_context_getter), base::Bind(&ParseJson),
             /*is_stable_channel=*/true)),
-        /*image_fetcher=*/nullptr));
+        /*image_fetcher=*/nullptr,
+        base::WrapUnique(new NTPSnippetsDatabase(database_dir_.path(),
+                                                 task_runner))));
+    if (enabled)
+      WaitForDBLoad(service_.get());
   }
 
  protected:
@@ -337,6 +382,8 @@ class NTPSnippetsServiceTest : public testing::Test {
   MockScheduler scheduler_;
   // Last so that the dependencies are deleted after the service.
   std::unique_ptr<NTPSnippetsService> service_;
+
+  base::ScopedTempDir database_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsServiceTest);
 };

@@ -8,4 +8,7 @@ namespace ntp_snippets {
 
 const char kStudyName[] = "NTPSnippets";
 
+const base::FilePath::CharType kDatabaseFolder[] =
+    FILE_PATH_LITERAL("NTPSnippets");
+
 }  // namespace ntp_snippets

@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
-#include "base/sequenced_task_runner.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/ntp_snippet.h"
@@ -50,6 +49,7 @@ class SyncService;
 
 namespace ntp_snippets {
 
+class NTPSnippetsDatabase;
 class NTPSnippetsServiceObserver;
 
 // Stores and vends fresh content data for the NTP.
@@ -63,16 +63,15 @@ class NTPSnippetsService : public KeyedService,
   // 'en' or 'en-US'. Note that this code should only specify the language, not
   // the locale, so 'en_US' (English language with US locale) and 'en-GB_US'
   // (British English person in the US) are not language codes.
-  NTPSnippetsService(
-      bool enabled,
-      PrefService* pref_service,
-      sync_driver::SyncService* sync_service,
-      suggestions::SuggestionsService* suggestions_service,
-      scoped_refptr<base::SequencedTaskRunner> file_task_runner,
-      const std::string& application_language_code,
-      NTPSnippetsScheduler* scheduler,
-      std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
-      std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher);
+  NTPSnippetsService(bool enabled,
+                     PrefService* pref_service,
+                     sync_driver::SyncService* sync_service,
+                     suggestions::SuggestionsService* suggestions_service,
+                     const std::string& application_language_code,
+                     NTPSnippetsScheduler* scheduler,
+                     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
+                     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
+                     std::unique_ptr<NTPSnippetsDatabase> database);
   ~NTPSnippetsService() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -80,10 +79,16 @@ class NTPSnippetsService : public KeyedService,
   // Inherited from KeyedService.
   void Shutdown() override;
 
+  // Returns whether the initial set of snippets has been loaded from the
+  // database. While this is false, the list of snippets will be empty.
+  bool loaded() const { return state_ == State::LOADED; }
+
   // Fetches snippets from the server and adds them to the current ones.
   void FetchSnippets();
   // Fetches snippets from the server for specified hosts (overriding
   // suggestions from the suggestion service) and adds them to the current ones.
+  // Only called from chrome://snippets-internals, DO NOT USE otherwise!
+  // Ignored while |loaded()| is false.
   void FetchSnippetsFromHosts(const std::set<std::string>& hosts);
 
   // Available snippets.
@@ -138,17 +143,17 @@ class NTPSnippetsService : public KeyedService,
   // sync_driver::SyncServiceObserver implementation.
   void OnStateChanged() override;
 
+  // Callback for the NTPSnippetsDatabase.
+  void OnDatabaseLoaded(NTPSnippet::PtrVector snippets);
+
+  // Callback for the SuggestionsService.
   void OnSuggestionsChanged(const suggestions::SuggestionsProfile& suggestions);
+
+  // Callback for the NTPSnippetsFetcher.
   void OnFetchFinished(NTPSnippetsFetcher::OptionalSnippets snippets);
 
   // Merges newly available snippets with the previously available list.
   void MergeSnippets(NTPSnippet::PtrVector new_snippets);
-  // TODO(treib): Investigate a better storage, maybe LevelDB or SQLite?
-  void LoadSnippetsFromPrefs();
-  void StoreSnippetsToPrefs();
-
-  void LoadDiscardedSnippetsFromPrefs();
-  void StoreDiscardedSnippetsToPrefs();
 
   std::set<std::string> GetSnippetHostsFromPrefs() const;
   void StoreSnippetHostsToPrefs(const std::set<std::string>& hosts);
@@ -161,9 +166,12 @@ class NTPSnippetsService : public KeyedService,
   // initializing and the sync state is not known.
   bool IsSyncStateIncompatible();
 
+  void ClearDeprecatedPrefs();
+
   enum class State {
-    INITED,
-    SHUT_DOWN
+    INITED,    // Initial state before the DB has been loaded; no snippets yet.
+    LOADED,    // DB has been loaded and the service is ready for action.
+    SHUT_DOWN  // Shutdown has been called, service is inactive.
   } state_;
 
   // When |enabled_| is true the service will fetch snippets from the server
@@ -182,9 +190,6 @@ class NTPSnippetsService : public KeyedService,
       sync_service_observer_;
 
   suggestions::SuggestionsService* suggestions_service_;
-
-  // The SequencedTaskRunner on which file system operations will be run.
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   // All current suggestions (i.e. not discarded ones).
   NTPSnippet::PtrVector snippets_;
@@ -216,6 +221,13 @@ class NTPSnippetsService : public KeyedService,
   base::OneShotTimer expiry_timer_;
 
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
+
+  // The database for persisting snippets.
+  std::unique_ptr<NTPSnippetsDatabase> database_;
+
+  // Set to true if FetchSnippets is called before the database has been loaded.
+  // The fetch will be executed after the database load finishes.
+  bool fetch_after_load_;
 
   DISALLOW_COPY_AND_ASSIGN(NTPSnippetsService);
 };

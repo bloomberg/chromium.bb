@@ -5,6 +5,7 @@
 #include "chrome/browser/ntp_snippets/ntp_snippets_service_factory.h"
 
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/browser_process.h"
@@ -19,6 +20,8 @@
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/ntp_snippets/ntp_snippets_constants.h"
+#include "components/ntp_snippets/ntp_snippets_database.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
@@ -96,6 +99,8 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
   scheduler = NTPSnippetsLauncher::Get();
 #endif  // OS_ANDROID
 
+  base::FilePath database_dir(
+      profile->GetPath().Append(ntp_snippets::kDatabaseFolder));
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       BrowserThread::GetBlockingPool()
           ->GetSequencedTaskRunnerWithShutdownBehavior(
@@ -104,10 +109,12 @@ KeyedService* NTPSnippetsServiceFactory::BuildServiceInstanceFor(
 
   return new ntp_snippets::NTPSnippetsService(
       enabled, profile->GetPrefs(), sync_service, suggestions_service,
-      task_runner, g_browser_process->GetApplicationLocale(), scheduler,
+      g_browser_process->GetApplicationLocale(), scheduler,
       base::WrapUnique(new ntp_snippets::NTPSnippetsFetcher(
           signin_manager, token_service, request_context,
           base::Bind(&safe_json::SafeJsonParser::Parse),
           chrome::GetChannel() == version_info::Channel::STABLE)),
-      base::WrapUnique(new ImageFetcherImpl(request_context.get())));
+      base::WrapUnique(new ImageFetcherImpl(request_context.get())),
+      base::WrapUnique(
+          new ntp_snippets::NTPSnippetsDatabase(database_dir, task_runner)));
 }

@@ -5,6 +5,9 @@
 cr.define('chrome.SnippetsInternals', function() {
   'use strict';
 
+  // Stores the list of snippets we received in receiveSnippets.
+  var lastSnippets = [];
+
   function initialize() {
     $('submit-download').addEventListener('click', function(event) {
       chrome.send('download', [$('hosts-input').value]);
@@ -17,7 +20,7 @@ cr.define('chrome.SnippetsInternals', function() {
     });
 
     $('submit-dump').addEventListener('click', function(event) {
-      chrome.send('dump');
+      downloadJson(JSON.stringify(lastSnippets));
       event.preventDefault();
     });
 
@@ -26,7 +29,7 @@ cr.define('chrome.SnippetsInternals', function() {
     });
 
     $('last-json-dump').addEventListener('click', function(event) {
-      receiveJsonToDownload($('last-json-text').innerText);
+      downloadJson($('last-json-text').innerText);
       event.preventDefault();
     });
 
@@ -57,6 +60,7 @@ cr.define('chrome.SnippetsInternals', function() {
   }
 
   function receiveSnippets(snippets) {
+    lastSnippets = snippets;
     displayList(snippets, 'snippets', 'snippet-title');
   }
 
@@ -77,7 +81,7 @@ cr.define('chrome.SnippetsInternals', function() {
     }
   }
 
-  function receiveJsonToDownload(json) {
+  function downloadJson(json) {
     // Redirect the browser to download data in |json| as a file "snippets.json"
     // (Setting Content-Disposition: attachment via a data: URL is not possible;
     // create a link with download attribute and simulate a click, instead.)
@@ -122,7 +126,6 @@ cr.define('chrome.SnippetsInternals', function() {
     receiveSnippets: receiveSnippets,
     receiveDiscardedSnippets: receiveDiscardedSnippets,
     receiveJson: receiveJson,
-    receiveJsonToDownload: receiveJsonToDownload,
   };
 });
 

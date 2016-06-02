@@ -9,6 +9,8 @@ source_set("ntp_snippets") {
     "ntp_snippet.h",
     "ntp_snippets_constants.cc",
     "ntp_snippets_constants.h",
+    "ntp_snippets_database.cc",
+    "ntp_snippets_database.h",
     "ntp_snippets_fetcher.cc",
     "ntp_snippets_fetcher.h",
     "ntp_snippets_scheduler.h",
@@ -23,6 +25,7 @@ source_set("ntp_snippets") {
   public_deps = [
     "//base",
     "//components/keyed_service/core",
+    "//components/leveldb_proto",
     "//components/prefs",
     "//components/signin/core/browser",
     "//components/suggestions",
@@ -36,6 +39,7 @@ source_set("ntp_snippets") {
     "//components/data_use_measurement/core",
     "//components/image_fetcher",
     "//components/metrics",
+    "//components/ntp_snippets/proto",
     "//components/variations",
     "//third_party/icu/",
     "//ui/gfx",
@@ -45,6 +49,7 @@ source_set("ntp_snippets") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "ntp_snippets_database_unittest.cc",
     "ntp_snippets_fetcher_unittest.cc",
     "ntp_snippets_service_unittest.cc",
   ]
@@ -54,6 +59,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/image_fetcher",
+    "//components/leveldb_proto:test_support",
     "//components/signin/core/browser:test_support",
     "//components/sync_driver:test_support",
     "//net:test_support",

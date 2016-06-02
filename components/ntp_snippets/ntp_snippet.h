@@ -20,6 +20,8 @@ class ListValue;
 
 namespace ntp_snippets {
 
+class SnippetProto;
+
 struct SnippetSource {
   SnippetSource(const GURL& url,
                 const std::string& publisher_name,
@@ -35,23 +37,31 @@ class NTPSnippet {
   using PtrVector = std::vector<std::unique_ptr<NTPSnippet>>;
 
   // Creates a new snippet with the given |id|.
+  // Public for testing only - create snippets using the Create* methods below.
+  // TODO(treib): Make this private and add a CreateSnippetForTest?
   NTPSnippet(const std::string& id);
 
   ~NTPSnippet();
 
   // Creates an NTPSnippet from a dictionary. Returns a null pointer if the
-  // dictionary doesn't contain at least a url. The keys in the dictionary are
-  // expected to be the same as the property name, with exceptions documented in
-  // the property comment.
+  // dictionary doesn't correspond to a valid snippet. The keys in the
+  // dictionary are expected to be the same as the property name, with
+  // exceptions documented in the property comment.
   static std::unique_ptr<NTPSnippet> CreateFromDictionary(
       const base::DictionaryValue& dict);
 
+  // Creates an NTPSnippet from a protocol buffer. Returns a null pointer if the
+  // protocol buffer doesn't correspond to a valid snippet.
+  static std::unique_ptr<NTPSnippet> CreateFromProto(const SnippetProto& proto);
+
   // Creates snippets from dictionary values in |list| and adds them to
   // |snippets|. Returns true on success, false if anything went wrong.
+  // TODO(treib): Move this to NTPSnippetsFetcher where it's used.
   static bool AddFromListValue(const base::ListValue& list,
                                PtrVector* snippets);
 
-  std::unique_ptr<base::DictionaryValue> ToDictionary() const;
+  // Creates a protocol buffer corresponding to this snippet, for persisting.
+  SnippetProto ToProto() const;
 
   // A unique ID for identifying the snippet. If initialized by
   // CreateFromDictionary() the relevant key is 'url'.
@@ -112,11 +122,16 @@ class NTPSnippet {
   float score() const { return score_; }
   void set_score(float score) { score_ = score; }
 
+  bool is_discarded() const { return is_discarded_; }
+  void set_discarded(bool discarded) { is_discarded_ = discarded; }
+
   // Public for testing.
   static base::Time TimeFromJsonString(const std::string& timestamp_str);
   static std::string TimeToJsonString(const base::Time& time);
 
  private:
+  void FindBestSource();
+
   std::string id_;
   std::string title_;
   GURL salient_image_url_;
@@ -124,6 +139,8 @@ class NTPSnippet {
   base::Time publish_date_;
   base::Time expiry_date_;
   float score_;
+  bool is_discarded_;
+
   size_t best_source_index_;
 
   std::vector<SnippetSource> sources_;
