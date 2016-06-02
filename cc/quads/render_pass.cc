@@ -112,7 +112,7 @@ void RenderPass::CopyAll(const std::vector<std::unique_ptr<RenderPass>>& in,
     for (const auto& shared_quad_state : source->shared_quad_state_list) {
       SharedQuadState* copy_shared_quad_state =
           copy_pass->CreateAndAppendSharedQuadState();
-      copy_shared_quad_state->CopyFrom(shared_quad_state);
+      *copy_shared_quad_state = *shared_quad_state;
     }
     SharedQuadStateList::Iterator sqs_iter =
         source->shared_quad_state_list.begin();

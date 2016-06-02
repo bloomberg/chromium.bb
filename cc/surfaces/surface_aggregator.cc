@@ -318,7 +318,7 @@ SharedQuadState* SurfaceAggregator::CopySharedQuadState(
     RenderPass* dest_render_pass) {
   SharedQuadState* copy_shared_quad_state =
       dest_render_pass->CreateAndAppendSharedQuadState();
-  copy_shared_quad_state->CopyFrom(source_sqs);
+  *copy_shared_quad_state = *source_sqs;
   // target_transform contains any transformation that may exist
   // between the context that these quads are being copied from (i.e. the
   // surface's draw transform when aggregated from within a surface) to the

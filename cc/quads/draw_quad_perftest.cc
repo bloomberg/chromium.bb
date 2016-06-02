@@ -48,7 +48,7 @@ class DrawQuadPerfTest : public testing::Test {
     SharedQuadState* new_shared_state(
         CreateSharedQuadState(render_pass_.get()));
     shared_state_ = render_pass_->CreateAndAppendSharedQuadState();
-    shared_state_->CopyFrom(new_shared_state);
+    *shared_state_ = *new_shared_state;
   }
 
   void CleanUpRenderPass() {

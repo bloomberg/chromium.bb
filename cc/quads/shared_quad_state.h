@@ -29,9 +29,8 @@ namespace cc {
 class CC_EXPORT SharedQuadState {
  public:
   SharedQuadState();
+  SharedQuadState(const SharedQuadState& other);
   ~SharedQuadState();
-
-  void CopyFrom(const SharedQuadState* other);
 
   void SetAll(const gfx::Transform& quad_to_target_transform,
               const gfx::Size& layer_bounds,

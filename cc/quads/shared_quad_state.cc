@@ -19,14 +19,12 @@ SharedQuadState::SharedQuadState()
       sorting_context_id(0) {
 }
 
+SharedQuadState::SharedQuadState(const SharedQuadState& other) = default;
+
 SharedQuadState::~SharedQuadState() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"),
       "cc::SharedQuadState", this);
-}
-
-void SharedQuadState::CopyFrom(const SharedQuadState* other) {
-  *this = *other;
 }
 
 void SharedQuadState::SetAll(const gfx::Transform& quad_to_target_transform,

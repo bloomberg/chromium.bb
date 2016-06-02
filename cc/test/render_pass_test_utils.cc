@@ -258,7 +258,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
 
   SharedQuadState* transformed_state =
       to_pass->CreateAndAppendSharedQuadState();
-  transformed_state->CopyFrom(shared_state);
+  *transformed_state = *shared_state;
   gfx::Transform rotation;
   rotation.Rotate(45);
   transformed_state->quad_to_target_transform =
