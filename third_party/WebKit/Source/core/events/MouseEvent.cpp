@@ -119,7 +119,7 @@ MouseEvent::MouseEvent(const AtomicString& eventType, bool canBubble, bool cance
     double platformTimeStamp,
     PlatformMouseEvent::SyntheticEventType syntheticEventType,
     const String& region)
-    : MouseRelatedEvent(eventType, canBubble, cancelable, relatedTarget, view, detail, IntPoint(screenX, screenY),
+    : MouseRelatedEvent(eventType, canBubble, cancelable, view, detail, IntPoint(screenX, screenY),
         IntPoint(windowX, windowY), IntPoint(movementX, movementY), modifiers,
         platformTimeStamp,
         syntheticEventType == PlatformMouseEvent::Positionless ? PositionType::Positionless : PositionType::Position,
@@ -273,8 +273,7 @@ MouseEvent& MouseEventDispatchMediator::event() const
 DispatchEventResult MouseEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
     MouseEvent& mouseEvent = event();
-    if (mouseEvent.relatedTargetScoped())
-        mouseEvent.eventPath().adjustForRelatedTarget(dispatcher.node(), mouseEvent.relatedTarget());
+    mouseEvent.eventPath().adjustForRelatedTarget(dispatcher.node(), mouseEvent.relatedTarget());
 
     if (!mouseEvent.isTrusted())
         return dispatcher.dispatch();

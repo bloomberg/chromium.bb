@@ -144,7 +144,6 @@ interface Event
     getter defaultPrevented
     getter eventPhase
     getter path
-    getter relatedTargetScoped
     getter returnValue
     getter srcElement
     getter target

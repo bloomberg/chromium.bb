@@ -131,7 +131,6 @@ public:
     bool cancelable() const { return m_cancelable; }
     bool composed() const { return m_composed; }
     bool isScopedInV0() const;
-    bool relatedTargetScoped() const { return m_relatedTargetScoped; }
 
     // Event creation timestamp in milliseconds. If |HiResEventTimeStamp|
     // runtime feature is enabled it returns a DOMHighResTimeStamp using the
@@ -216,12 +215,8 @@ public:
 
 protected:
     Event();
-    Event(const AtomicString& type, bool canBubble, bool cancelable);
-    Event(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget);
     Event(const AtomicString& type, bool canBubble, bool cancelable, double platformTimeStamp);
-    Event(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget, double platformTimeStamp);
-    Event(const AtomicString& type, bool canBubble, bool cancelable, bool composed);
-    Event(const AtomicString& type, bool canBubble, bool cancelable, bool composed, bool relatedTargetScoped, double platformTimeStamp);
+    Event(const AtomicString& type, bool canBubble, bool cancelable);
     Event(const AtomicString& type, const EventInit&);
 
     virtual void receivedTarget();
@@ -229,6 +224,8 @@ protected:
     void setCanBubble(bool bubble) { m_canBubble = bubble; }
 
 private:
+    Event(const AtomicString& type, bool canBubble, bool cancelable, bool composed, double platformTimeStamp);
+
     enum EventPathMode {
         EmptyAfterDispatch,
         NonEmptyAfterDispatch
@@ -240,7 +237,6 @@ private:
     unsigned m_canBubble:1;
     unsigned m_cancelable:1;
     unsigned m_composed:1;
-    unsigned m_relatedTargetScoped:1;
 
     unsigned m_propagationStopped:1;
     unsigned m_immediatePropagationStopped:1;

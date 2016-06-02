@@ -93,9 +93,7 @@ DispatchEventResult PointerEventDispatchMediator::dispatchEvent(EventDispatcher&
 
     ASSERT(!event().target() || event().target() != event().relatedTarget());
 
-    EventTarget* relatedTarget = event().relatedTarget();
-    if (event().relatedTargetScoped())
-        event().eventPath().adjustForRelatedTarget(dispatcher.node(), relatedTarget);
+    event().eventPath().adjustForRelatedTarget(dispatcher.node(), event().relatedTarget());
 
     return dispatcher.dispatch();
 }

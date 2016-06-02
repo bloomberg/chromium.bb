@@ -43,7 +43,6 @@
     readonly attribute boolean defaultPrevented;
 
     [RuntimeEnabled=ShadowDOMV1, MeasureAs=EventComposed] readonly attribute boolean composed;
-    [RuntimeEnabled=ShadowDOMV1, MeasureAs=EventRelatedTargetScoped] readonly attribute boolean relatedTargetScoped;
 
     [Unforgeable] readonly attribute boolean isTrusted;
 

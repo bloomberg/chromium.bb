@@ -52,42 +52,26 @@ static bool isScoped(const AtomicString& eventType)
 }
 
 Event::Event()
-    : Event("", false, false, false)
+    : Event("", false, false)
 {
     m_wasInitialized = false;
 }
 
 Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg)
-    : Event(eventType, canBubbleArg, cancelableArg, !isScoped(eventType), false, monotonicallyIncreasingTime())
-{
-}
-
-Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget)
-    : Event(eventType, canBubbleArg, cancelableArg, !isScoped(eventType), relatedTarget ? true : false, monotonicallyIncreasingTime())
+    : Event(eventType, canBubbleArg, cancelableArg, !isScoped(eventType), monotonicallyIncreasingTime())
 {
 }
 
 Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, double platformTimeStamp)
-    : Event(eventType, canBubbleArg, cancelableArg, !isScoped(eventType), false, platformTimeStamp)
+    : Event(eventType, canBubbleArg, cancelableArg, !isScoped(eventType), platformTimeStamp)
 {
 }
 
-Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget, double platformTimeStamp)
-    : Event(eventType, canBubbleArg, cancelableArg, !isScoped(eventType), relatedTarget ? true : false, platformTimeStamp)
-{
-}
-
-Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, bool composed)
-    : Event(eventType, canBubbleArg, cancelableArg, composed, false, monotonicallyIncreasingTime())
-{
-}
-
-Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, bool composed, bool relatedTargetScoped, double platformTimeStamp)
+Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableArg, bool composed, double platformTimeStamp)
     : m_type(eventType)
     , m_canBubble(canBubbleArg)
     , m_cancelable(cancelableArg)
     , m_composed(composed)
-    , m_relatedTargetScoped(relatedTargetScoped)
     , m_propagationStopped(false)
     , m_immediatePropagationStopped(false)
     , m_defaultPrevented(false)
@@ -104,7 +88,7 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
 }
 
 Event::Event(const AtomicString& eventType, const EventInit& initializer)
-    : Event(eventType, initializer.bubbles(), initializer.cancelable(), initializer.composed(), initializer.relatedTargetScoped(), monotonicallyIncreasingTime())
+    : Event(eventType, initializer.bubbles(), initializer.cancelable(), initializer.composed(), monotonicallyIncreasingTime())
 {
 }
 
@@ -136,8 +120,6 @@ void Event::initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool 
     m_type = eventTypeArg;
     m_canBubble = canBubbleArg;
     m_cancelable = cancelableArg;
-
-    m_relatedTargetScoped = relatedTarget ? true : false;
 }
 
 bool Event::legacyReturnValue(ExecutionContext* executionContext) const

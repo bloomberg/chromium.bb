@@ -2,55 +2,20 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script src="resources/shadow-dom.js"></script>
-
-<div id="log"></div>
-<div id="sandbox">
-  <div id="top">
-    <div id="host">
-      <template>
-        <input id="input1"></input>
-        <input id="input2"></input>
-      </template>
-    </div>
-  </div>
+<div id=host label=host>
+  <template label=shadowRoot data-mode=open>
+    <input label="input1"></input>
+    <input label="input2"></input>
+  </template>
 </div>
 <script>
-
-var sandbox = document.getElementById('sandbox');
-convertTemplatesToShadowRootsWithin(sandbox);
-
-var host = document.getElementById('host');
-var topDiv = document.getElementById('top');
-var sr = host.shadowRoot;
-
-var input1 = getNodeInComposedTree('host/input1');
-var input2 = getNodeInComposedTree('host/input2');
-
-async_test(function(t) {
-  input2.onfocus = function(e) {
-    t.step(function() {
-      assert_false(e.relatedTargetScoped);
-      var expected1 = [input2, sr, host, topDiv, sandbox, document.body, document.documentElement, document, window];
-      assert_array_equals(e.path, expected1);
-      t.done();
-    });
-  };
-}, 'Event paths of untrusted events with relatedTargetScoped false do not stop.');
-
-async_test(function(t) {
-  input1.onfocus = function(e) {
-    t.step(function() {
-      assert_true(e.relatedTargetScoped);
-      var expected2 = [input1, sr];
-      assert_array_equals(e.path, expected2);
-      t.done();
-    });
-  };
-}, 'Event paths of untrusted events with relatedTargetScoped true stop at the common ancestor of the target & the related target.');
-
-var userFocus1 = new FocusEvent('focus', { relatedTarget: input1 });
-input2.dispatchEvent(userFocus1);
-
-var userFocus2 = new FocusEvent('focus', { relatedTarget: input2, relatedTargetScoped: true });
-input1.dispatchEvent(userFocus2);
+test(() => {
+  let nodes = createTestTree(host);
+  let log = dispatchEventWithLog(nodes, nodes['input1'],
+                                 new FocusEvent('test', { bubbles: true, relatedTarget: nodes['input2']}));
+  let expectedPath = ['input1', 'shadowRoot'];
+  assert_event_path_equals(log,
+                           [['input1', 'input2', expectedPath],
+                            ['shadowRoot', 'input2', expectedPath]]);
+}, 'An event should stop at the common ancestor of target and relatedTarget.');
 </script>

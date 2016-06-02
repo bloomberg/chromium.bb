@@ -83,7 +83,10 @@ private:
     void calculateTreeOrderAndSetNearestAncestorClosedTree();
 
     void shrink(size_t newSize) { ASSERT(!m_windowEventContext); m_nodeEventContexts.shrink(newSize); }
-    void shrinkIfNeeded(const Node& target, const EventTarget& relatedTarget);
+
+    void retargetRelatedTarget(const Node& relatedTargetNode);
+
+    void shrinkForRelatedTarget(const Node& target, const Node& relatedTarget);
 
     void adjustTouchList(const TouchList*, HeapVector<Member<TouchList>> adjustedTouchList, const HeapVector<Member<TreeScope>>& treeScopes);
 

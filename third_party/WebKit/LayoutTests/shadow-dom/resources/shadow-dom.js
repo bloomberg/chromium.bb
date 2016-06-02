@@ -130,3 +130,13 @@ function dispatchEventWithLog(nodes, target, event) {
   target.dispatchEvent(event);
   return log;
 }
+
+// This function assumes that testharness.js is available.
+function assert_event_path_equals(actual, expected) {
+  assert_equals(actual.length, expected.length);
+  for (let i = 0; i < actual.length; ++i) {
+    assert_equals(actual[i][0], expected[i][0], 'currentTarget at ' + i + ' should be same');
+    assert_equals(actual[i][1], expected[i][1], 'relatedTarget at ' + i + ' should be same');
+    assert_array_equals(actual[i][2], expected[i][2], 'composedPath at ' + i + ' should be same');
+  }
+}

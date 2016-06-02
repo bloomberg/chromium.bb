@@ -45,7 +45,7 @@ FocusEvent::FocusEvent()
 }
 
 FocusEvent::FocusEvent(const AtomicString& type, bool canBubble, bool cancelable, AbstractView* view, int detail, EventTarget* relatedTarget, InputDeviceCapabilities* sourceCapabilities)
-    : UIEvent(type, canBubble, cancelable, relatedTarget, view, detail, sourceCapabilities)
+    : UIEvent(type, canBubble, cancelable, view, detail, sourceCapabilities)
     , m_relatedTarget(relatedTarget)
 {
 }
@@ -80,8 +80,7 @@ FocusEventDispatchMediator::FocusEventDispatchMediator(FocusEvent* focusEvent)
 
 DispatchEventResult FocusEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
-    if (event().relatedTargetScoped())
-        event().eventPath().adjustForRelatedTarget(dispatcher.node(), event().relatedTarget());
+    event().eventPath().adjustForRelatedTarget(dispatcher.node(), event().relatedTarget());
     return EventDispatchMediator::dispatchEvent(dispatcher);
 }
 

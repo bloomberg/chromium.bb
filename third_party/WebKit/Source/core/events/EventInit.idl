@@ -8,5 +8,4 @@ dictionary EventInit {
     boolean bubbles = false;
     boolean cancelable = false;
     [RuntimeEnabled=ShadowDOMV1] boolean composed = false;
-    [RuntimeEnabled=ShadowDOMV1] boolean relatedTargetScoped = false;
 };

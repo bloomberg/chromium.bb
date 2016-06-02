@@ -30,7 +30,7 @@ RelatedEvent::RelatedEvent()
 }
 
 RelatedEvent::RelatedEvent(const AtomicString& type, bool canBubble, bool cancelable, EventTarget* relatedTarget)
-    : Event(type, canBubble, cancelable, relatedTarget)
+    : Event(type, canBubble, cancelable)
     , m_relatedTarget(relatedTarget)
 {
 }

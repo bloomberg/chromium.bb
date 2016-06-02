@@ -10,8 +10,6 @@ DIV	 id=sandbox
   mouseout
 
   mouseover
-     @div1 (target: div1) (related: div1)
-     @shadow-root (target: div1) (related: div1)
 PASS successfullyParsed is true
 
 TEST COMPLETE
