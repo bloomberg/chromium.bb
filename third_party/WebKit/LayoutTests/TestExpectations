@@ -1088,9 +1088,6 @@ crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure 
 
 crbug.com/527270 accessibility/name-calc-img.html [ Failure Pass Timeout ]
 
-# This test has different results in Debug and Release.
-crbug.com/529038 [ Debug ] virtual/gpu/fast/canvas/canvas-composite-repaint-by-all-imagesource.html [ Failure ]
-
 crbug.com/532643 [ Mac ] fast/events/hit-test-cache-scrollbar-no-crash.html [ Pass Failure ]
 crbug.com/532643 [ Mac ] virtual/trustedeventsdefaultaction/fast/events/hit-test-cache-scrollbar-no-crash.html [ Pass Failure ]
 crbug.com/532643 [ Mac ] virtual/pointerevent/fast/events/hit-test-cache-scrollbar-no-crash.html [ Pass Failure ]
