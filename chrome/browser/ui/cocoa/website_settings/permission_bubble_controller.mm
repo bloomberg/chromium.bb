@@ -301,7 +301,7 @@ const NSSize kPermissionIconSize = {18, 18};
 
 - (void)parentWindowDidResize:(NSNotification*)notification {
   DCHECK(bridge_);
-  [self setAnchorPoint:[self getExpectedAnchorPoint]];
+  [self updateAnchorPosition];
 }
 
 - (void)parentWindowDidMove:(NSNotification*)notification {
@@ -471,6 +471,7 @@ const NSSize kPermissionIconSize = {18, 18};
 - (void)updateAnchorPosition {
   [self setParentWindow:[self getExpectedParentWindow]];
   [self setAnchorPoint:[self getExpectedAnchorPoint]];
+  [[self bubble] setArrowLocation:[self getExpectedArrowLocation]];
 }
 
 - (NSPoint)getExpectedAnchorPoint {

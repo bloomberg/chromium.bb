@@ -129,4 +129,12 @@
   backgroundColor_.reset([backgroundColor retain]);
 }
 
+- (void)setArrowLocation:(info_bubble::BubbleArrowLocation)location {
+  if (arrowLocation_ == location)
+    return;
+
+  arrowLocation_ = location;
+  [self setNeedsDisplayInRect:[self bounds]];
+}
+
 @end
