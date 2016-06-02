@@ -354,6 +354,14 @@ class BASE_EXPORT LocalPersistentMemoryAllocator
   ~LocalPersistentMemoryAllocator() override;
 
  private:
+  // Allocates a block of local memory of the specified |size|, ensuring that
+  // the memory will not be physically allocated until accessed and will read
+  // as zero when that happens.
+  static void* AllocateLocalMemory(size_t size);
+
+  // Deallocates a block of local |memory| of the specified |size|.
+  static void DeallocateLocalMemory(void* memory, size_t size);
+
   DISALLOW_COPY_AND_ASSIGN(LocalPersistentMemoryAllocator);
 };
 

@@ -7,6 +7,12 @@
 #include <assert.h>
 #include <algorithm>
 
+#if defined(OS_WIN)
+#include "winbase.h"
+#elif defined(OS_POSIX)
+#include <sys/mman.h>
+#endif
+
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
@@ -722,11 +728,44 @@ LocalPersistentMemoryAllocator::LocalPersistentMemoryAllocator(
     size_t size,
     uint64_t id,
     base::StringPiece name)
-    : PersistentMemoryAllocator(memset(new char[size], 0, size),
+    : PersistentMemoryAllocator(AllocateLocalMemory(size),
                                 size, 0, id, name, false) {}
 
 LocalPersistentMemoryAllocator::~LocalPersistentMemoryAllocator() {
-  delete [] mem_base_;
+  DeallocateLocalMemory(const_cast<char*>(mem_base_), mem_size_);
+}
+
+// static
+void* LocalPersistentMemoryAllocator::AllocateLocalMemory(size_t size) {
+#if defined(OS_WIN)
+  void* address =
+      ::VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+  DPCHECK(address);
+  return address;
+#elif defined(OS_POSIX)
+  // MAP_ANON is deprecated on Linux but MAP_ANONYMOUS is not universal on Mac.
+  // MAP_SHARED is not available on Linux <2.4 but required on Mac.
+  void* address = ::mmap(nullptr, size, PROT_READ | PROT_WRITE,
+                         MAP_ANON | MAP_SHARED, -1, 0);
+  DPCHECK(MAP_FAILED != address);
+  return address;
+#else
+#error This architecture is not (yet) supported.
+#endif
+}
+
+// static
+void LocalPersistentMemoryAllocator::DeallocateLocalMemory(void* memory,
+                                                           size_t size) {
+#if defined(OS_WIN)
+  BOOL success = ::VirtualFree(memory, 0, MEM_DECOMMIT);
+  DPCHECK(success);
+#elif defined(OS_POSIX)
+  int result = ::munmap(memory, size);
+  DPCHECK(0 == result);
+#else
+#error This architecture is not (yet) supported.
+#endif
 }
 
 
