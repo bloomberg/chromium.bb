@@ -74046,6 +74046,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1386" label="RTCIceCandidateDefaultSdpMLineIndex"/>
   <int value="1387" label="DocumentCreateEventSensorErrorEvent"/>
   <int value="1388" label="DocumentCreateEventSensorReadingEvent"/>
+  <int value="1389" label="MediaStreamConstraintsOldAndNew"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

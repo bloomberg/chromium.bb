@@ -602,6 +602,7 @@ WebMediaConstraints create(ExecutionContext* context, const MediaTrackConstraint
     WebMediaConstraints standardForm = convertConstraintsToWeb(constraintsIn);
     if (constraintsIn.hasOptional() || constraintsIn.hasMandatory()) {
         if (!standardForm.isEmpty()) {
+            UseCounter::count(context, UseCounter::MediaStreamConstraintsOldAndNew);
             errorState.throwTypeError("Malformed constraint: Cannot use both optional/mandatory and specific or advanced constraints.");
             return WebMediaConstraints();
         }
