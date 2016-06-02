@@ -933,11 +933,11 @@ void LayerImpl::SetContentsOpaque(bool opaque) {
 }
 
 float LayerImpl::Opacity() const {
-  if (!layer_tree_impl()->property_trees()->IsInIdToIndexMap(
-          PropertyTrees::TreeType::EFFECT, id()))
+  PropertyTrees* property_trees = layer_tree_impl()->property_trees();
+  if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
     return 1.f;
-  EffectNode* node =
-      layer_tree_impl()->property_trees()->effect_tree.Node(effect_tree_index_);
+  EffectNode* node = property_trees->effect_tree.Node(
+      property_trees->effect_id_to_index_map[id()]);
   return node->data.opacity;
 }
 
