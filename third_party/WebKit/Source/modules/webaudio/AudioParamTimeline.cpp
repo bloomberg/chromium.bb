@@ -424,9 +424,8 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
 
     // Go through each event and render the value buffer where the times overlap,
     // stopping when we've rendered all the requested values.
-    // FIXME: could try to optimize by avoiding having to iterate starting from the very first event
-    // and keeping track of a "current" event index.
     int n = m_events.size();
+    int lastSkippedEventIndex = 0;
     for (int i = 0; i < n && writeIndex < numberOfValues; ++i) {
         ParamEvent& event = m_events[i];
         ParamEvent* nextEvent = i < n - 1 ? &(m_events[i + 1]) : 0;
@@ -444,8 +443,14 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
             // unsigned and could be 0, so use currentFrame < eventFrame + 1 instead.
             if (!((event.getType() == ParamEvent::SetValue
                 && (eventFrame <= currentFrame)
-                && (currentFrame < eventFrame + 1))))
+                && (currentFrame < eventFrame + 1)))) {
+                // This is not the special SetValue event case, and nextEvent is
+                // in the past. We can skip processing of this event since it's
+                // in past. We keep track of this event in lastSkippedEventIndex
+                // to note what events we've skipped.
+                lastSkippedEventIndex = i;
                 continue;
+            }
         }
 
         // If there's no next event, set nextEventType to LastType to indicate that.
@@ -880,6 +885,13 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
             }
         }
     }
+
+    // If we skipped over any events (because they are in the past), we can
+    // remove them so we don't have to check them ever again.  (This MUST be
+    // running with the m_events lock so we can safely modify the m_events
+    // array.)
+    if (lastSkippedEventIndex > 0)
+        m_events.remove(0, lastSkippedEventIndex - 1);
 
     // If there's any time left after processing the last event then just propagate the last value
     // to the end of the values buffer.
