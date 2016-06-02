@@ -37,7 +37,7 @@
 
 #include "xwayland.h"
 #include "shared/helpers.h"
-
+#include "weston.h"
 
 static int
 handle_sigusr1(int signal_number, void *data)
@@ -60,6 +60,7 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 	char display[8], s[8], abstract_fd[8], unix_fd[8], wm_fd[8];
 	int sv[2], wm[2], fd;
 	char *xserver = NULL;
+	struct weston_config *config = wet_get_config(wxs->compositor);
 	struct weston_config_section *section;
 
 	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
@@ -98,7 +99,7 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 			goto fail;
 		snprintf(wm_fd, sizeof wm_fd, "%d", fd);
 
-		section = weston_config_get_section(wxs->compositor->config,
+		section = weston_config_get_section(config,
 						    "xwayland", NULL, NULL);
 		weston_config_section_get_string(section, "path",
 						 &xserver, XSERVER_PATH);

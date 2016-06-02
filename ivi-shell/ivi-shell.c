@@ -46,6 +46,7 @@
 #include "ivi-layout-export.h"
 #include "ivi-layout-shell.h"
 #include "shared/helpers.h"
+#include "weston.h"
 
 /* Representation of ivi_surface protocol object. */
 struct ivi_shell_surface
@@ -416,7 +417,7 @@ ivi_shell_setting_create(struct ivi_shell_setting *dest,
 			 int *argc, char *argv[])
 {
 	int result = 0;
-	struct weston_config *config = compositor->config;
+	struct weston_config *config = wet_get_config(compositor);
 	struct weston_config_section *section;
 
 	const struct weston_option ivi_shell_options[] = {

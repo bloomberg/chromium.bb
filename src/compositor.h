@@ -726,7 +726,6 @@ struct weston_compositor {
 
 	struct wl_display *wl_display;
 	struct weston_shell_interface shell_interface;
-	struct weston_config *config;
 
 	/* surface signals */
 	struct wl_signal create_surface_signal;

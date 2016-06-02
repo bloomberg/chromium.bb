@@ -678,7 +678,7 @@ static struct hmi_server_setting *
 hmi_server_setting_create(struct weston_compositor *ec)
 {
 	struct hmi_server_setting *setting = MEM_ALLOC(sizeof(*setting));
-	struct weston_config *config = ec->config;
+	struct weston_config *config = wet_get_config(ec);
 	struct weston_config_section *shell_section = NULL;
 
 	shell_section = weston_config_get_section(config, "ivi-shell",
@@ -1140,7 +1140,7 @@ ivi_hmi_controller_add_launchers(struct hmi_controller *hmi_ctrl,
 	if (0 == y_count)
 		y_count  = 1;
 
-	config = hmi_ctrl->compositor->config;
+	config = wet_get_config(hmi_ctrl->compositor);
 	if (!config)
 		return;
 
@@ -1881,7 +1881,7 @@ initialize(struct hmi_controller *hmi_ctrl)
 		uint32_t *dest;
 	};
 
-	struct weston_config *config = hmi_ctrl->compositor->config;
+	struct weston_config *config = wet_get_config(hmi_ctrl->compositor);
 	struct weston_config_section *section = NULL;
 	int result = 0;
 	int i = 0;

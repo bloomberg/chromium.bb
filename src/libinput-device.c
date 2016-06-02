@@ -39,6 +39,7 @@
 #include "compositor.h"
 #include "libinput-device.h"
 #include "shared/helpers.h"
+#include "weston.h"
 
 void
 evdev_led_update(struct evdev_device *device, enum weston_led weston_leds)
@@ -528,10 +529,11 @@ configure_device(struct evdev_device *device)
 {
 	struct weston_compositor *compositor = device->seat->compositor;
 	struct weston_config_section *s;
+	struct weston_config *config = wet_get_config(compositor);
 	int enable_tap;
 	int enable_tap_default;
 
-	s = weston_config_get_section(compositor->config,
+	s = weston_config_get_section(config,
 				      "libinput", NULL, NULL);
 
 	if (libinput_device_config_tap_get_finger_count(device->device) > 0) {

@@ -31,6 +31,7 @@
 #include "compositor.h"
 #include "cms-helper.h"
 #include "shared/helpers.h"
+#include "weston.h"
 
 struct cms_static {
 	struct weston_compositor	*ec;
@@ -49,7 +50,7 @@ cms_output_created(struct cms_static *cms, struct weston_output *o)
 
 	if (o->name == NULL)
 		return;
-	s = weston_config_get_section(cms->ec->config,
+	s = weston_config_get_section(wet_get_config(cms->ec),
 				      "output", "name", o->name);
 	if (s == NULL)
 		return;

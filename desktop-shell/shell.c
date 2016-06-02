@@ -640,7 +640,7 @@ shell_configuration(struct desktop_shell *shell)
 	int ret;
 	int allow_zap;
 
-	section = weston_config_get_section(shell->compositor->config,
+	section = weston_config_get_section(wet_get_config(shell->compositor),
 					    "shell", NULL, NULL);
 	ret = asprintf(&client, "%s/%s", weston_config_get_libexec_dir(),
 		       WESTON_SHELL_CLIENT);

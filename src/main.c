@@ -331,6 +331,12 @@ log_uname(void)
 						usys.version, usys.machine);
 }
 
+WL_EXPORT struct weston_config *
+wet_get_config(struct weston_compositor *compositor)
+{
+	return weston_compositor_get_user_data(compositor);
+}
+
 static const char xdg_error_message[] =
 	"fatal: environment variable XDG_RUNTIME_DIR is not set.\n";
 
@@ -831,7 +837,7 @@ drm_configure_output(struct weston_compositor *c,
 		     const char *name,
 		     struct weston_drm_backend_output_config *config)
 {
-	struct weston_config *wc = weston_compositor_get_user_data(c);
+	struct weston_config *wc = wet_get_config(c);
 	struct weston_config_section *section;
 	char *s;
 	int scale;
@@ -1496,7 +1502,6 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
-	ec->config = config;
 	if (weston_compositor_init_config(ec, config) < 0)
 		goto out;
 
