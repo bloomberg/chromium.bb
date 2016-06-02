@@ -11,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.media.ThumbnailUtils;
+import android.support.annotation.IntDef;
 import android.support.v4.text.BidiFormatter;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
@@ -49,6 +50,12 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
     private FetchImageCallback mImageCallback;
     private SnippetArticle mArticle;
     private ViewTreeObserver.OnPreDrawListener mPreDrawObserver;
+
+    @IntDef({CACHE_FOR_URL, CACHE_FOR_DOMAIN, DEFAULT_FAVICON})
+    public @interface FaviconSource {}
+    public static final int CACHE_FOR_URL = 0;
+    public static final int CACHE_FOR_DOMAIN = 1;
+    public static final int DEFAULT_FAVICON = 2;
 
     /**
      * Creates the CardView object to display snippets information
@@ -135,7 +142,7 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
             mNewTabPageManager.fetchSnippetImage(mArticle, mImageCallback);
         }
 
-        updateFavicon(mArticle);
+        updateFavicon();
     }
 
     private static class FetchImageCallback extends Callback<Bitmap> {
@@ -189,68 +196,65 @@ public class SnippetArticleViewHolder extends NewTabPageViewHolder implements Vi
         transitionDrawable.startTransition(FADE_IN_ANIMATION_TIME_MS);
     }
 
-    private void updateFavicon(SnippetArticle snippet) {
+    private void updateFavicon() {
         // The favicon size should match the textview height
         int widthSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         int heightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
         mPublisherTextView.measure(widthSpec, heightSpec);
-        fetchFavicon(snippet, mPublisherTextView.getMeasuredHeight());
-    }
+        int faviconSizePx = mPublisherTextView.getMeasuredHeight();
 
-    // Fetch the favicon using the article's url first. If that fails, try to fetch the
-    // favicon for the hostname
-    private void fetchFavicon(final SnippetArticle snippet, final int faviconSizePx) {
-        mNewTabPageManager.getLocalFaviconImageForURL(
-                snippet.mUrl, faviconSizePx, new FaviconImageCallback() {
-                    @Override
-                    public void onFaviconAvailable(Bitmap image, String iconUrl) {
-                        if (image == null) {
-                            fetchFaviconForHostname(snippet.mUrl, faviconSizePx);
-                        } else {
-                            setFaviconOnView(mPublisherTextView, faviconSizePx, image);
-                        }
-                    }
-                });
-    }
-
-    private void fetchFaviconForHostname(String urlStr, final int sizePx) {
-        URI uri = null;
         try {
-            uri = new URI(urlStr);
+            fetchFavicon(CACHE_FOR_URL, new URI(mArticle.mUrl), faviconSizePx);
         } catch (URISyntaxException e) {
-            drawDefaultFavicon(sizePx);
-            return;
+            fetchFavicon(DEFAULT_FAVICON, null, faviconSizePx);
         }
-
-        mNewTabPageManager.getLocalFaviconImageForURL(
-                String.format("%s://%s", uri.getScheme(), uri.getHost()), sizePx,
-                new FaviconImageCallback() {
-                    @Override
-                    public void onFaviconAvailable(Bitmap image, String iconUrl) {
-                        if (image == null) {
-                            drawDefaultFavicon(sizePx);
-                        } else {
-                            setFaviconOnView(mPublisherTextView, sizePx, image);
-                        }
-                    }
-                });
     }
 
-    private void drawDefaultFavicon(int faviconSizePx) {
-        Drawable newIcon = ApiCompatibilityUtils.getDrawable(
-                mPublisherTextView.getContext().getResources(), R.drawable.default_favicon);
-        setFaviconOnView(mPublisherTextView, faviconSizePx, newIcon);
+    private void fetchFavicon(
+            @FaviconSource final int source, final URI snippetUri, final int faviconSizePx) {
+        assert source == DEFAULT_FAVICON || snippetUri != null;
+
+        switch (source) {
+            case CACHE_FOR_URL:
+            case CACHE_FOR_DOMAIN:
+                String url = (source == CACHE_FOR_URL)
+                        ? snippetUri.toString()
+                        : String.format("%s://%s", snippetUri.getScheme(), snippetUri.getHost());
+
+                mNewTabPageManager.getLocalFaviconImageForURL(
+                        url, faviconSizePx, new FaviconImageCallback() {
+                            @Override
+                            public void onFaviconAvailable(Bitmap image, String iconUrl) {
+                                if (image == null) {
+                                    // Fetch again for the next source.
+                                    fetchFavicon(source + 1, snippetUri, faviconSizePx);
+                                    return;
+                                }
+
+                                setFaviconOnView(
+                                        new BitmapDrawable(
+                                                mPublisherTextView.getContext().getResources(),
+                                                image),
+                                        faviconSizePx);
+                            }
+                        });
+                break;
+            case DEFAULT_FAVICON:
+                setFaviconOnView(ApiCompatibilityUtils.getDrawable(
+                                         mPublisherTextView.getContext().getResources(),
+                                         R.drawable.default_favicon),
+                        faviconSizePx);
+                break;
+            default:
+                assert false;
+        }
     }
 
-    private static void setFaviconOnView(TextView textview, int sizePx, Bitmap image) {
-        Drawable domainFavicon = new BitmapDrawable(textview.getContext().getResources(), image);
-        setFaviconOnView(textview, sizePx, domainFavicon);
-    }
-
-    private static void setFaviconOnView(TextView textview, int sizePx, Drawable drawable) {
+    private void setFaviconOnView(Drawable drawable, int sizePx) {
         drawable.setBounds(0, 0, sizePx, sizePx);
-        ApiCompatibilityUtils.setCompoundDrawablesRelative(textview, drawable, null, null, null);
-        textview.setVisibility(View.VISIBLE);
+        ApiCompatibilityUtils.setCompoundDrawablesRelative(
+                mPublisherTextView, drawable, null, null, null);
+        mPublisherTextView.setVisibility(View.VISIBLE);
     }
 
     @Override
