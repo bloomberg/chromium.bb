@@ -100,6 +100,9 @@ const int kOfflineTimeoutSec = 5;
 // Timeout used to prevent infinite connecting to a flaky network.
 const int kConnectingTimeoutSec = 60;
 
+// Max number of Gaia Reload to Show Proxy Auth Dialog.
+const int kMaxGaiaReloadForProxyAuthDialog = 3;
+
 // Type of the login screen UI that is currently presented to user.
 const char kSourceGaiaSignin[] = "gaia-signin";
 const char kSourceAccountPicker[] = "account-picker";
@@ -249,6 +252,7 @@ SigninScreenHandler::SigninScreenHandler(
       caps_lock_enabled_(chromeos::input_method::InputMethodManager::Get()
                              ->GetImeKeyboard()
                              ->CapsLockIsEnabled()),
+      proxy_auth_dialog_reload_times_(kMaxGaiaReloadForProxyAuthDialog),
       gaia_screen_handler_(gaia_screen_handler),
       histogram_helper_(new ErrorScreensHistogramHelper("Signin")),
       weak_factory_(this) {
@@ -697,6 +701,10 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
   const bool from_not_online_to_online_transition =
       is_online && last_network_state_ != NetworkStateInformer::ONLINE;
   last_network_state_ = state;
+  proxy_auth_dialog_need_reload_ =
+      (reason == NetworkError::ERROR_REASON_NETWORK_STATE_CHANGED) &&
+      (state == NetworkStateInformer::PROXY_AUTH_REQUIRED) &&
+      (proxy_auth_dialog_reload_times_ > 0);
 
   CallOnReturn reload_gaia(base::Bind(
       &SigninScreenHandler::ReloadGaia, weak_factory_.GetWeakPtr(), true));
@@ -745,6 +753,12 @@ void SigninScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
   if (is_gaia_loading_timeout) {
     LOG(WARNING) << "Retry frame load due to loading timeout.";
     LOG(ERROR) << "UpdateStateInternal reload 4";
+    reload_gaia.ScheduleCall();
+  }
+
+  if (proxy_auth_dialog_need_reload_) {
+    --proxy_auth_dialog_reload_times_;
+    LOG(WARNING) << "Retry frame load to show proxy auth dialog";
     reload_gaia.ScheduleCall();
   }
 

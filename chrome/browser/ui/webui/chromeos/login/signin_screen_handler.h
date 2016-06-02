@@ -465,6 +465,16 @@ class SigninScreenHandler
 
   bool caps_lock_enabled_ = false;
 
+  // If network has accidentally changed to the one that requires proxy
+  // authentication, we will automatically reload gaia page that will bring
+  // "Proxy authentication" dialog to the user. To prevent flakiness, we will do
+  // it at most 3 times.
+  int proxy_auth_dialog_reload_times_;
+
+  // True if we need to reload gaia page to bring back "Proxy authentication"
+  // dialog.
+  bool proxy_auth_dialog_need_reload_ = false;
+
   // Non-owning ptr.
   // TODO(antrim@): remove this dependency.
   GaiaScreenHandler* gaia_screen_handler_ = nullptr;
