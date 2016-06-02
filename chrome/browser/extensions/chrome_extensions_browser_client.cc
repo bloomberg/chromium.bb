@@ -37,6 +37,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/task_management/web_contents_tags.h"
+#include "chrome/browser/ui/bluetooth/chrome_extension_bluetooth_chooser.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -406,6 +407,14 @@ std::unique_ptr<ExtensionApiFrameIdMapHelper>
 ChromeExtensionsBrowserClient::CreateExtensionApiFrameIdMapHelper(
     ExtensionApiFrameIdMap* map) {
   return base::WrapUnique(new ChromeExtensionApiFrameIdMapHelper(map));
+}
+
+std::unique_ptr<content::BluetoothChooser>
+ChromeExtensionsBrowserClient::CreateBluetoothChooser(
+    content::RenderFrameHost* frame,
+    const content::BluetoothChooser::EventHandler& event_handler) {
+  return base::WrapUnique(
+      new ChromeExtensionBluetoothChooser(frame, event_handler));
 }
 
 }  // namespace extensions

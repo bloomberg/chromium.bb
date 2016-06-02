@@ -13,6 +13,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
@@ -441,6 +442,13 @@ void AppWindow::RequestToLockMouse(WebContents* web_contents,
 bool AppWindow::PreHandleGestureEvent(WebContents* source,
                                       const blink::WebGestureEvent& event) {
   return AppWebContentsHelper::ShouldSuppressGestureEvent(event);
+}
+
+std::unique_ptr<content::BluetoothChooser> AppWindow::RunBluetoothChooser(
+    content::RenderFrameHost* frame,
+    const content::BluetoothChooser::EventHandler& event_handler) {
+  return ExtensionsBrowserClient::Get()->CreateBluetoothChooser(frame,
+                                                                event_handler);
 }
 
 void AppWindow::RenderViewCreated(content::RenderViewHost* render_view_host) {

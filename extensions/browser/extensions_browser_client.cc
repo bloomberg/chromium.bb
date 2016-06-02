@@ -29,6 +29,13 @@ ExtensionsBrowserClient::CreateExtensionApiFrameIdMapHelper(
   return nullptr;
 }
 
+std::unique_ptr<content::BluetoothChooser>
+ExtensionsBrowserClient::CreateBluetoothChooser(
+    content::RenderFrameHost* frame,
+    const content::BluetoothChooser::EventHandler& event_handler) {
+  return nullptr;
+}
+
 void ExtensionsBrowserClient::ReportError(
     content::BrowserContext* context,
     std::unique_ptr<ExtensionError> error) {

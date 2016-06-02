@@ -1226,6 +1226,7 @@
       'browser/ui/cocoa/download/download_util_mac_unittest.mm',
       'browser/ui/cocoa/draggable_button_unittest.mm',
       'browser/ui/cocoa/extensions/browser_actions_container_view_unittest.mm',
+      'browser/ui/cocoa/extensions/chooser_dialog_cocoa_controller_unittest.mm',
       'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h',
       'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.mm',
       'browser/ui/cocoa/extensions/extension_install_view_controller_unittest.mm',

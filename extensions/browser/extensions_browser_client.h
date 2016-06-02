@@ -11,6 +11,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "content/public/browser/bluetooth_chooser.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/common/view_type.h"
@@ -252,6 +253,10 @@ class ExtensionsBrowserClient {
 
   virtual std::unique_ptr<ExtensionApiFrameIdMapHelper>
   CreateExtensionApiFrameIdMapHelper(ExtensionApiFrameIdMap* map);
+
+  virtual std::unique_ptr<content::BluetoothChooser> CreateBluetoothChooser(
+      content::RenderFrameHost* frame,
+      const content::BluetoothChooser::EventHandler& event_handler);
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

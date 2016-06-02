@@ -566,6 +566,7 @@
       'browser/extensions/chrome_content_verifier_delegate.h',
       'browser/extensions/chrome_extension_api_frame_id_map_helper.cc',
       'browser/extensions/chrome_extension_api_frame_id_map_helper.h',
+      'browser/extensions/chrome_extension_chooser_dialog.h',
       'browser/extensions/chrome_extension_function.cc',
       'browser/extensions/chrome_extension_function.h',
       'browser/extensions/chrome_extension_function_details.cc',
