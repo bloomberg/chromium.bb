@@ -63,8 +63,6 @@ class PrefRegistrySyncable;
 
 namespace chrome_browser_net {
 
-typedef network_hints::UrlList UrlList;
-typedef network_hints::NameList NameList;
 typedef std::map<GURL, UrlInfo> Results;
 
 // An observer for testing.
@@ -153,7 +151,8 @@ class Predictor {
   void PreconnectUrlAndSubresources(const GURL& url,
                                     const GURL& first_party_for_cookies);
 
-  static UrlList GetPredictedUrlListAtStartup(PrefService* user_prefs);
+  static std::vector<GURL> GetPredictedUrlListAtStartup(
+      PrefService* user_prefs);
 
   static void set_max_queueing_delay(int max_queueing_delay_ms);
 
@@ -176,7 +175,7 @@ class Predictor {
   void DiscardAllResults();
 
   // Add hostname(s) to the queue for processing.
-  void ResolveList(const UrlList& urls,
+  void ResolveList(const std::vector<GURL>& urls,
                    UrlInfo::ResolutionMotivation motivation);
 
   void Resolve(const GURL& url, UrlInfo::ResolutionMotivation motivation);
@@ -229,12 +228,12 @@ class Predictor {
   void LearnAboutInitialNavigation(const GURL& url);
 
   // Renderer bundles up list and sends to this browser API via IPC.
-  // TODO(jar): Use UrlList instead to include port and scheme.
-  void DnsPrefetchList(const NameList& hostnames);
+  // TODO(csharrison): Use a GURL vector instead to include port and scheme.
+  void DnsPrefetchList(const std::vector<std::string>& hostnames);
 
   // May be called from either the IO or UI thread and will PostTask
   // to the IO thread if necessary.
-  void DnsPrefetchMotivatedList(const UrlList& urls,
+  void DnsPrefetchMotivatedList(const std::vector<GURL>& urls,
                                 UrlInfo::ResolutionMotivation motivation);
 
   // May be called from either the IO or UI thread and will PostTask

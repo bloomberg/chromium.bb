@@ -160,7 +160,7 @@ void Predictor::InitNetworkPredictor(PrefService* user_prefs,
   url_request_context_getter_ = getter;
 
   // Gather the list of hostnames to prefetch on startup.
-  UrlList urls = GetPredictedUrlListAtStartup(user_prefs);
+  std::vector<GURL> urls = GetPredictedUrlListAtStartup(user_prefs);
 
   base::ListValue* referral_list =
       static_cast<base::ListValue*>(user_prefs->GetList(
@@ -276,9 +276,10 @@ void Predictor::PreconnectUrlAndSubresources(const GURL& url,
   PredictFrameSubresources(url.GetWithEmptyPath(), first_party_for_cookies);
 }
 
-UrlList Predictor::GetPredictedUrlListAtStartup(PrefService* user_prefs) {
+std::vector<GURL> Predictor::GetPredictedUrlListAtStartup(
+    PrefService* user_prefs) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  UrlList urls;
+  std::vector<GURL> urls;
   // Recall list of URLs we learned about during last session.
   // This may catch secondary hostnames, pulled in by the homepages.  It will
   // also catch more of the "primary" home pages, since that was (presumably)
@@ -398,11 +399,12 @@ void Predictor::DiscardAllResults() {
 }
 
 // Overloaded Resolve() to take a vector of names.
-void Predictor::ResolveList(const UrlList& urls,
+void Predictor::ResolveList(const std::vector<GURL>& urls,
                             UrlInfo::ResolutionMotivation motivation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  for (UrlList::const_iterator it = urls.begin(); it < urls.end(); ++it) {
+  for (std::vector<GURL>::const_iterator it = urls.begin(); it < urls.end();
+       ++it) {
     AppendToResolutionQueue(*it, motivation);
   }
 }
@@ -643,7 +645,7 @@ void Predictor::DiscardInitialNavigationHistory() {
 }
 
 void Predictor::FinalizeInitializationOnIOThread(
-    const UrlList& startup_urls,
+    const std::vector<GURL>& startup_urls,
     base::ListValue* referral_list,
     IOThread* io_thread,
     ProfileIOData* profile_io_data) {
@@ -691,13 +693,12 @@ void Predictor::LearnAboutInitialNavigation(const GURL& url) {
 // It is called from an IPC message originating in the renderer.  It currently
 // includes both Page-Scan, and Link-Hover prefetching.
 // TODO(jar): Separate out link-hover prefetching, and page-scan results.
-void Predictor::DnsPrefetchList(const NameList& hostnames) {
+void Predictor::DnsPrefetchList(const std::vector<std::string>& hostnames) {
   // TODO(jar): Push GURL transport further back into renderer, but this will
   // require a Webkit change in the observer :-/.
-  UrlList urls;
-  for (NameList::const_iterator it = hostnames.begin();
-       it < hostnames.end();
-       ++it) {
+  std::vector<GURL> urls;
+  for (std::vector<std::string>::const_iterator it = hostnames.begin();
+       it < hostnames.end(); ++it) {
     urls.push_back(GURL("http://" + *it + ":80"));
   }
 
@@ -706,7 +707,7 @@ void Predictor::DnsPrefetchList(const NameList& hostnames) {
 }
 
 void Predictor::DnsPrefetchMotivatedList(
-    const UrlList& urls,
+    const std::vector<GURL>& urls,
     UrlInfo::ResolutionMotivation motivation) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));

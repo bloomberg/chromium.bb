@@ -624,19 +624,19 @@ class PredictorBrowserTest : public InProcessBrowserTest {
     serializer.Serialize(*list_value);
   }
 
-  void WaitUntilHostsLookedUp(const network_hints::UrlList& names) {
+  void WaitUntilHostsLookedUp(const std::vector<GURL>& names) {
     for (const GURL& url : names)
       observer()->WaitUntilHostLookedUp(url);
   }
 
-  void FloodResolveRequestsOnUIThread(const network_hints::UrlList& names) {
+  void FloodResolveRequestsOnUIThread(const std::vector<GURL>& names) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&PredictorBrowserTest::FloodResolveRequests, this, names));
   }
 
-  void FloodResolveRequests(const network_hints::UrlList& names) {
+  void FloodResolveRequests(const std::vector<GURL>& names) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     for (int i = 0; i < 10; i++) {
       predictor()->DnsPrefetchMotivatedList(names,
@@ -700,9 +700,8 @@ class PredictorBrowserTest : public InProcessBrowserTest {
 
   // Note this method also expects that all the urls (found or not) were looked
   // up.
-  void ExpectFoundUrls(
-      const network_hints::UrlList& found_names,
-      const network_hints::UrlList& not_found_names) {
+  void ExpectFoundUrls(const std::vector<GURL>& found_names,
+                       const std::vector<GURL>& not_found_names) {
     for (const auto& name : found_names) {
       EXPECT_TRUE(observer()->HostFound(name)) << "Expected to have found "
                                                << name.spec();
@@ -791,7 +790,7 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, SingleLookupTest) {
   GURL url("http://www.example.test/");
 
   // Try to flood the predictor with many concurrent requests.
-  network_hints::UrlList names{url};
+  std::vector<GURL> names{url};
   FloodResolveRequestsOnUIThread(names);
   observer()->WaitUntilHostLookedUp(url);
   EXPECT_TRUE(observer()->HostFound(url));
@@ -804,8 +803,8 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ConcurrentLookupTest) {
       goog3("http://mail.google.com"), goog4("http://gmail.com");
   GURL bad1("http://bad1.notfound"), bad2("http://bad2.notfound");
 
-  UrlList found_names{url, goog3, goog2, goog4};
-  UrlList not_found_names{bad1, bad2};
+  std::vector<GURL> found_names{url, goog3, goog2, goog4};
+  std::vector<GURL> not_found_names{bad1, bad2};
   FloodResolveRequestsOnUIThread(found_names);
   FloodResolveRequestsOnUIThread(not_found_names);
 
@@ -818,7 +817,7 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, ConcurrentLookupTest) {
 
 IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, MassiveConcurrentLookupTest) {
   DiscardAllResultsOnUIThread();
-  UrlList not_found_names;
+  std::vector<GURL> not_found_names;
   for (int i = 0; i < 100; i++) {
     not_found_names.push_back(
         GURL(base::StringPrintf("http://host%d.notfound:80", i)));
@@ -826,14 +825,14 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest, MassiveConcurrentLookupTest) {
   FloodResolveRequestsOnUIThread(not_found_names);
 
   WaitUntilHostsLookedUp(not_found_names);
-  ExpectFoundUrls(network_hints::UrlList(), not_found_names);
+  ExpectFoundUrls(std::vector<GURL>(), not_found_names);
   ExpectValidPeakPendingLookupsOnUI(not_found_names.size());
 }
 
 IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
                        ShutdownWhenResolutionIsPendingTest) {
   GURL delayed_url("http://delay.google.com:80");
-  UrlList names{delayed_url};
+  std::vector<GURL> names{delayed_url};
 
   // Flood with delayed requests, then wait.
   FloodResolveRequestsOnUIThread(names);
