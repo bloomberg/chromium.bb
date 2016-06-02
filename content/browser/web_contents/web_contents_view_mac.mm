@@ -226,8 +226,7 @@ void WebContentsViewMac::UpdateDragCursor(WebDragOperation operation) {
 }
 
 void WebContentsViewMac::GotFocus() {
-  // This is only used in the views FocusManager stuff but it bleeds through
-  // all subclasses. http://crbug.com/21875
+  web_contents_->NotifyWebContentsFocused();
 }
 
 // This is called when the renderer asks us to take focus back (i.e., it has
