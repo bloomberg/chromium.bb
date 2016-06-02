@@ -1708,6 +1708,15 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppContainer,
                                switches::kDisableAppContainer)},
 #endif  // defined(OS_WIN)
+#if defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
+    {"enable-autofill-credit-card-upload",
+     IDS_FLAGS_AUTOFILL_CREDIT_CARD_UPLOAD_NAME,
+     IDS_FLAGS_AUTOFILL_CREDIT_CARD_UPLOAD_DESCRIPTION,
+     kOsAll,
+     ENABLE_DISABLE_VALUE_TYPE(
+         autofill::switches::kEnableOfferUploadCreditCards,
+         autofill::switches::kDisableOfferUploadCreditCards)},
+#endif  // defined(TOOLKIT_VIEWS) || defined(OS_ANDROID)
 #if defined(OS_ANDROID)
     {"tab-management-experiment-type", IDS_FLAGS_HERB_PROTOTYPE_CHOICES_NAME,
      IDS_FLAGS_HERB_PROTOTYPE_CHOICES_DESCRIPTION, kOsAndroid,

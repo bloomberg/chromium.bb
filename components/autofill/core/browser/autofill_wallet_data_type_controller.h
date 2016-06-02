@@ -71,7 +71,7 @@ class AutofillWalletDataTypeController
   // value computed by IsEnabled.
   bool currently_enabled_;
 
-  // Registrar for listening to kAutofillWalletImportEnabled status.
+  // Registrar for listening to kAutofillWalletSyncExperimentEnabled status.
   PrefChangeRegistrar pref_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillWalletDataTypeController);
