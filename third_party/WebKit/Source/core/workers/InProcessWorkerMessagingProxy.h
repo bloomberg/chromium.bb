@@ -78,6 +78,9 @@ public:
 
     ExecutionContext* getExecutionContext() const { return m_executionContext.get(); }
 
+    // Number of live messaging proxies, used by leak detection.
+    static int proxyCount();
+
 protected:
     InProcessWorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
     ~InProcessWorkerMessagingProxy() override;
