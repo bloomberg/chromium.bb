@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -306,11 +307,14 @@ bool GetGestureTimes(const XEvent& xev, double* start_time, double* end_time) {
   return true;
 }
 
+namespace {
 int64_t g_last_seen_timestamp_ms = 0;
-// accumulated rollover time.
 int64_t g_rollover_ms = 0;
+bool g_bogus_x11_timestamps = false;
 base::LazyInstance<std::unique_ptr<base::TickClock>>::Leaky g_tick_clock =
     LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 // Takes Xlib Time and returns a time delta that is immune to timer rollover.
 // This function is not thread safe as we do not use a lock.
@@ -319,6 +323,11 @@ base::TimeDelta TimeDeltaFromXEventTime(Time timestamp) {
 
   if (!timestamp)
     return base::TimeDelta();
+
+  if (g_bogus_x11_timestamps) {
+    return base::TimeDelta::FromInternalValue(
+        base::TimeTicks::Now().ToInternalValue());
+  }
 
   // If this is the first event that we get, assume the time stamp roll-over
   // might have happened before the process was started.
@@ -343,11 +352,19 @@ base::TimeDelta TimeDeltaFromXEventTime(Time timestamp) {
 
   g_rollover_ms = now_ms & ~static_cast<int64_t>(UINT32_MAX);
   uint32_t delta = static_cast<uint32_t>(now_ms - timestamp);
-  // If using a mock clock, all bets are off -- in some tests, actual X11 events
-  // come through with real timestamps.
-  DCHECK(delta < 60 * 1000 || g_tick_clock.Get() != nullptr)
-      << "Unexpected X11 event time, now: " << now_ticks
-      << " event at: " << timestamp;
+  if (!g_tick_clock.Get()) {
+    if (delta > 60 * 1000) {
+      // x11 timestamps don't seem to be using the same time base as TimeTicks,
+      // so ignore them altogether and always use current time instead.
+      delta = 0;
+      g_bogus_x11_timestamps = true;
+      LOG(WARNING)
+          << "Unexpected x11 timestamps, will use browser time instead.";
+    }
+    UMA_HISTOGRAM_BOOLEAN("Event.TimestampHasValidTimebase",
+                          !g_bogus_x11_timestamps);
+  }
+
   return base::TimeDelta::FromMilliseconds(now_ms - delta);
 }
 
@@ -813,6 +830,7 @@ void ResetTimestampRolloverCountersForTesting(
     std::unique_ptr<base::TickClock> tick_clock) {
   g_last_seen_timestamp_ms = 0;
   g_rollover_ms = 0;
+  g_bogus_x11_timestamps = false;
   g_tick_clock.Get() = std::move(tick_clock);
 }
 
