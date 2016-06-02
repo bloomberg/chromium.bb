@@ -53,10 +53,6 @@ const char kBlinkStaticMemberPrefix[] = "s_";
 const char kGeneratedFileRegex[] = "^gen/|/gen/";
 
 const clang::ast_matchers::internal::
-    VariadicDynCastAllOfMatcher<clang::Expr, clang::UnresolvedLookupExpr>
-        unresolvedLookupExpr;
-
-const clang::ast_matchers::internal::
     VariadicDynCastAllOfMatcher<clang::Expr, clang::UnresolvedMemberExpr>
         unresolvedMemberExpr;
 
