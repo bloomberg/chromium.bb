@@ -1,79 +1,28 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Tests cue vertical alignment (direction) from settings.</title>
+<script src="track-helpers.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+check_cues_from_track("captions-webvtt/tc021-valign.vtt", testTrack);
+check_cues_from_track("captions-webvtt/tc021-valign-ltr.vtt", testTrack);
+check_cues_from_track("captions-webvtt/tc021-valign-bad.vtt", function(track) {
+    var expected = [
+        { vertical: "" },
+        { vertical: "" },
+        { vertical: "" }
+    ];
 
-        <script src=../media-file.js></script>
-        <!-- TODO(foolip): Convert test to testharness.js. crbug.com/588956
-             (Please avoid writing new tests using video-test.js) -->
-        <script src=../video-test.js></script>
-        <script>
+    assert_cues_match(track.cues, expected);
+});
 
-            var numberOfTrackTests = 3;
+function testTrack(track) {
+    var expected = [
+        { vertical: "rl", align: "middle", position: "auto" },
+        { vertical: "lr", align: "middle", position: "auto" },
+        { vertical: "rl", align: "start",  position: 0      }
+    ];
 
-            function trackLoaded()
-            {
-                numberOfTracksLoaded++;
-                if (numberOfTracksLoaded == numberOfTrackTests) {
-                    testTrack(0);
-                    testTrack(1);
-                    testTrackError(2);
-                }
-            }
-
-            function testTrack(i)
-            {
-                findMediaElement();
-                var expected =
-                {
-                    length : 3,
-                    tests:
-                    [
-                        {
-                            property : "vertical",
-                            values : ["rl", "lr", "rl"],
-                        },
-                        {
-                            property : "align",
-                            values : ["middle", "middle", "start"],
-                        },
-                        {
-                            property : "position",
-                            values : ["auto", "auto", 0],
-                        },
-                    ],
-                };
-                testCues(i, expected);
-
-                allTestsEnded();
-            }
-
-            function testTrackError(i)
-            {
-                findMediaElement();
-                var expected =
-                {
-                    length : 3,
-                    tests:
-                    [
-                        {
-                            property : "vertical",
-                            values : ["", "", ""],
-                        },
-                    ],
-                };
-                testCues(i, expected);
-
-                allTestsEnded();
-            }
-        </script>
-    </head>
-    <body onload="enableAllTextTracks()">
-        <p>Tests cue vertical alignment (direction) from settings.</p>
-        <video>
-            <track src="captions-webvtt/tc021-valign.vtt" onload="trackLoaded()">
-            <track src="captions-webvtt/tc021-valign-ltr.vtt" onload="trackLoaded()">
-            <track src="captions-webvtt/tc021-valign-bad.vtt" onload="trackLoaded()">
-        </video>
-    </body>
-</html>
+    assert_cues_match(track.cues, expected);
+}
+</script>

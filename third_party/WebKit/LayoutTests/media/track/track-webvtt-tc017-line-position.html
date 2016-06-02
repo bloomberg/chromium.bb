@@ -39,9 +39,8 @@ async_test(function(t) {
             { line : -1,  snapToLines : true  },
             { line : 500, snapToLines : true  }
         ];
-        var properties = [ "line", "snapToLines" ];
 
-        assert_cues_match(video.textTracks[index].cues, expected, properties);
+        assert_cues_match(video.textTracks[index].cues, expected);
     }
 
     function testTrackError(index) {
@@ -53,9 +52,8 @@ async_test(function(t) {
             { line : "auto", snapToLines : true },
             { line : "auto", snapToLines : true }
         ];
-        var properties = [ "line", "snapToLines" ];
 
-        assert_cues_match(video.textTracks[index].cues, expected, properties);
+        assert_cues_match(video.textTracks[index].cues, expected);
     }
 });
 </script>

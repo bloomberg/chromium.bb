@@ -35,9 +35,8 @@ async_test(function(t) {
             { position : 20, align : "middle" },
             { position : 80, align : "end"    }
         ];
-        var properties = [ "position", "align" ];
 
-        assert_cues_match(video.textTracks[index].cues, expected, properties);
+        assert_cues_match(video.textTracks[index].cues, expected);
     }
 
     function testTrackError(index) {
@@ -46,9 +45,8 @@ async_test(function(t) {
             { position : "auto", align : "middle" },
             { position : "auto", align : "middle" }
         ];
-        var properties = [ "position", "align" ];
 
-        assert_cues_match(video.textTracks[index].cues, expected, properties);
+        assert_cues_match(video.textTracks[index].cues, expected);
     }
 });
 </script>

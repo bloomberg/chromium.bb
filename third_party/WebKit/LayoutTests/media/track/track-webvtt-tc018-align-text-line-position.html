@@ -37,9 +37,8 @@ async_test(function(t) {
             { align : "end",    position : 30,     line : 5,  snapToLines : true  },
             { align : "middle", position : 60,     line : -3, snapToLines : true  }
         ];
-        var properties = [ "align", "position", "line", "snapToLines" ];
 
-        assert_cues_match(video.textTracks[index].cues, expected, properties);
+        assert_cues_match(video.textTracks[index].cues, expected);
     }
 
     function testTrackError(index) {
@@ -48,9 +47,8 @@ async_test(function(t) {
             { align : "end",    position : 0,      line : "auto", snapToLines : true },
             { align : "middle", position : 60,     line : -3,     snapToLines : true }
         ];
-        var properties = [ "align", "position", "line", "snapToLines" ];
 
-        assert_cues_match(video.textTracks[index].cues, expected, properties);
+        assert_cues_match(video.textTracks[index].cues, expected);
     }
 });
 </script>
