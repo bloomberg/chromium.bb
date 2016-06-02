@@ -35,7 +35,11 @@ def main(argv):
             print >> sys.stderr, "file not found: %s" % args[0]
             sys.exit(1)
     else:
-        txt = host.filesystem.read_text_file(host.filesystem.join(host.port_factory.get(options=options).results_directory(), 'full_results.json'))
+        txt = host.filesystem.read_text_file(
+            host.filesystem.join(
+                host.port_factory.get(
+                    options=options).results_directory(),
+                'full_results.json'))
 
     if txt.startswith('ADD_RESULTS(') and txt.endswith(');'):
         txt = txt[12:-2]  # ignore optional JSONP wrapper
@@ -112,5 +116,5 @@ def convert_trie_to_flat_paths(trie, prefix=None):
     return result
 
 
-if __name__ ==  '__main__':
+if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

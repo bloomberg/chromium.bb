@@ -86,7 +86,7 @@ class Host(SystemHost):
     def _engage_awesome_windows_hacks(self):
         try:
             self.executive.run_command(['git', 'help'])
-        except OSError, e:
+        except OSError as e:
             try:
                 self.executive.run_command(['git.bat', 'help'])
                 # The Win port uses the depot_tools package, which contains a number
@@ -102,7 +102,7 @@ class Host(SystemHost):
                 _log.debug('Engaging git.bat Windows hack.')
                 from webkitpy.common.checkout.scm.git import Git
                 Git.executable_name = 'git.bat'
-            except OSError, e:
+            except OSError as e:
                 _log.debug('Failed to engage git.bat Windows hack.')
 
     def initialize_scm(self, patch_directories=None):

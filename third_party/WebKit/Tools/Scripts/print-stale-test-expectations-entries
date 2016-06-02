@@ -46,7 +46,9 @@ from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
 google_code_url = 'https://www.googleapis.com/projecthosting/v2/projects/chromium/issues/%s?key=AIzaSyDgCqT1Dt5AZWLHo4QJjyMHaCjhnFacGF0'
 crbug_prefix = 'crbug.com/'
 
+
 class StaleTestPrinter(object):
+
     def __init__(self, options):
         self.days = options.days
         self.create_csv = options.create_csv
@@ -57,7 +59,7 @@ class StaleTestPrinter(object):
         response = urllib2.urlopen(url)
         parsed = json.loads(response.read())
         last_updated = parsed['updated']
-        parsed_time = datetime.datetime.strptime(last_updated.split(".")[0]+"UTC", "%Y-%m-%dT%H:%M:%S%Z")
+        parsed_time = datetime.datetime.strptime(last_updated.split(".")[0] + "UTC", "%Y-%m-%dT%H:%M:%S%Z")
         time_delta = datetime.datetime.now() - parsed_time
         return time_delta.days > self.days
 
@@ -84,10 +86,15 @@ class StaleTestPrinter(object):
         if self.create_csv:
             host.filesystem.write_text_file(self.create_csv, csv_contents)
 
+
 def main(argv):
     option_parser = optparse.OptionParser()
     option_parser.add_option('--days', type='int', default=90, help='Number of days to consider a bug stale.'),
-    option_parser.add_option('--create-csv', type='string', default=0, help='Generate a CSV of the stale entries as well. Followed by the filename.'),
+    option_parser.add_option(
+        '--create-csv',
+        type='string',
+        default=0,
+        help='Generate a CSV of the stale entries as well. Followed by the filename.'),
     options, args = option_parser.parse_args(argv)
 
     printer = StaleTestPrinter(options)

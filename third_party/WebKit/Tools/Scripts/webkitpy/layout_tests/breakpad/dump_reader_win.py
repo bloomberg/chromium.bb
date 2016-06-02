@@ -76,7 +76,7 @@ class DumpReaderWin(DumpReader):
 
     def _check_cdb_available(self):
         """Checks whether we can use cdb to symbolize minidumps."""
-        if self._cdb_available != None:
+        if self._cdb_available is not None:
             return self._cdb_available
 
         CDB_LOCATION_TEMPLATES = [

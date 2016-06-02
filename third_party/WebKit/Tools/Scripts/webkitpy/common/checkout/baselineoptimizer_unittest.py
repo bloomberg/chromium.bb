@@ -114,7 +114,8 @@ class BaselineOptimizerTest(unittest.TestCase):
             '/mock-checkout/third_party/WebKit/LayoutTests/platform/linux/another/test-expected.txt',
         ])
 
-    def _assertOptimization(self, results_by_directory, expected_new_results_by_directory, baseline_dirname='', expected_files_to_delete=None, host=None):
+    def _assertOptimization(self, results_by_directory, expected_new_results_by_directory,
+                            baseline_dirname='', expected_files_to_delete=None, host=None):
         if not host:
             host = MockHost()
         fs = host.filesystem

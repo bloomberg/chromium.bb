@@ -209,7 +209,7 @@ class Testprinter(unittest.TestCase):
         self.assertEqual(89, len(actual))
         self.assertEqual(actual, '[0/0] fast/dom/HTMLFormElement/associated-...ents-after-index-assertion-fail1.html passed')
 
-        printer._meter.number_of_columns = lambda: sys.maxint
+        printer._meter.number_of_columns = lambda: sys.maxsize
         actual = printer._test_status_line(
             'fast/dom/HTMLFormElement/associated-elements-after-index-assertion-fail1.html', ' passed')
         self.assertEqual(90, len(actual))

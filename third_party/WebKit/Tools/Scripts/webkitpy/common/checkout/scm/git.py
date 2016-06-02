@@ -70,8 +70,9 @@ class Git(SCM):
     def in_working_directory(cls, path, executive=None):
         try:
             executive = executive or Executive()
-            return executive.run_command([cls.executable_name, 'rev-parse', '--is-inside-work-tree'], cwd=path, error_handler=Executive.ignore_error).rstrip() == "true"
-        except OSError, e:
+            return executive.run_command([cls.executable_name, 'rev-parse', '--is-inside-work-tree'],
+                                         cwd=path, error_handler=Executive.ignore_error).rstrip() == "true"
+        except OSError as e:
             # The Windows bots seem to through a WindowsError when git isn't installed.
             return False
 
@@ -89,7 +90,8 @@ class Git(SCM):
         # Pass the cwd if provided so that we can handle the case of running webkit-patch outside of the working directory.
         # FIXME: This should use an Executive.
         executive = executive or Executive()
-        return executive.run_command([cls.executable_name, "config", "--get-all", key], error_handler=Executive.ignore_error, cwd=cwd).rstrip('\n')
+        return executive.run_command(
+            [cls.executable_name, "config", "--get-all", key], error_handler=Executive.ignore_error, cwd=cwd).rstrip('\n')
 
     def _discard_local_commits(self):
         self._run_git(['reset', '--hard', self._remote_branch_ref()])
@@ -152,7 +154,8 @@ class Git(SCM):
 
     def _upstream_branch(self):
         current_branch = self.current_branch()
-        return self._branch_from_ref(self.read_git_config('branch.%s.merge' % current_branch, cwd=self.checkout_root, executive=self._executive).strip())
+        return self._branch_from_ref(self.read_git_config(
+            'branch.%s.merge' % current_branch, cwd=self.checkout_root, executive=self._executive).strip())
 
     def _merge_base(self, git_commit=None):
         if git_commit:

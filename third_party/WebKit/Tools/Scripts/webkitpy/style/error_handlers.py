@@ -49,8 +49,6 @@ Methods:
 """
 
 
-
-
 class DefaultStyleErrorHandler(object):
 
     """The default style error handler."""

@@ -27,6 +27,7 @@ import sys
 
 from webkitpy.bindings.main import run_bindings_tests
 
+
 def main(argv):
     """Runs Blink bindings IDL compiler on test IDL files and compares the
     results with reference files.

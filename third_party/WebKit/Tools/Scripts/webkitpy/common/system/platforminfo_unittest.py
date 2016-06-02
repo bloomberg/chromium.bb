@@ -76,7 +76,8 @@ def fake_executive(output=None):
 class TestPlatformInfo(unittest.TestCase):
 
     def make_info(self, sys_module=None, platform_module=None, filesystem_module=None, executive=None):
-        return PlatformInfo(sys_module or fake_sys(), platform_module or fake_platform(), filesystem_module or MockFileSystem(), executive or fake_executive())
+        return PlatformInfo(sys_module or fake_sys(), platform_module or fake_platform(),
+                            filesystem_module or MockFileSystem(), executive or fake_executive())
 
     def test_real_code(self):
         # This test makes sure the real (unmocked) code actually works.

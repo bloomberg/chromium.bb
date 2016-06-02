@@ -410,7 +410,8 @@ class Driver(object):
 
     def _command_from_driver_input(self, driver_input):
         # FIXME: performance tests pass in full URLs instead of test names.
-        if driver_input.test_name.startswith('http://') or driver_input.test_name.startswith('https://') or driver_input.test_name == ('about:blank'):
+        if driver_input.test_name.startswith(
+                'http://') or driver_input.test_name.startswith('https://') or driver_input.test_name == ('about:blank'):
             command = driver_input.test_name
         elif self.is_http_test(driver_input.test_name) or self._should_treat_as_wpt_test(driver_input.test_name):
             command = self.test_to_uri(driver_input.test_name)
@@ -459,12 +460,12 @@ class Driver(object):
 
     def _process_stdout_line(self, block, line):
         if (self._read_header(block, line, 'Content-Type: ', 'content_type')
-            or self._read_header(block, line, 'Content-Transfer-Encoding: ', 'encoding')
-            or self._read_header(block, line, 'Content-Length: ', '_content_length', int)
-            or self._read_header(block, line, 'ActualHash: ', 'content_hash')
-            or self._read_header(block, line, 'DumpMalloc: ', 'malloc')
-            or self._read_header(block, line, 'DumpJSHeap: ', 'js_heap')
-            or self._read_header(block, line, 'StdinPath', 'stdin_path')):
+                or self._read_header(block, line, 'Content-Transfer-Encoding: ', 'encoding')
+                or self._read_header(block, line, 'Content-Length: ', '_content_length', int)
+                or self._read_header(block, line, 'ActualHash: ', 'content_hash')
+                or self._read_header(block, line, 'DumpMalloc: ', 'malloc')
+                or self._read_header(block, line, 'DumpJSHeap: ', 'js_heap')
+                or self._read_header(block, line, 'StdinPath', 'stdin_path')):
             return
         # Note, we're not reading ExpectedHash: here, but we could.
         # If the line wasn't a header, we just append it to the content.
@@ -507,7 +508,8 @@ class Driver(object):
 
             if out_line:
                 if out_line[-1] != "\n":
-                    _log.error("Last character read from DRT stdout line was not a newline!  This indicates either a NRWT or DRT bug.")
+                    _log.error(
+                        "Last character read from DRT stdout line was not a newline!  This indicates either a NRWT or DRT bug.")
                 content_length_before_header_check = block._content_length
                 self._process_stdout_line(block, out_line)
                 # FIXME: Unlike HTTP, DRT dumps the content right after printing a Content-Length header.

@@ -179,7 +179,7 @@ class ServerProcess(object):
         try:
             self._log_data(' IN', bytes)
             self._proc.stdin.write(bytes)
-        except IOError, e:
+        except IOError as e:
             self.stop(0.0)
             # stop() calls _reset(), so we have to set crashed to True after calling stop().
             self._crashed = True
@@ -270,7 +270,7 @@ class ServerProcess(object):
         select_fds = (out_fd, err_fd)
         try:
             read_fds, _, _ = select.select(select_fds, [], select_fds, max(deadline - time.time(), 0))
-        except select.error, e:
+        except select.error as e:
             # We can ignore EINVAL since it's likely the process just crashed and we'll
             # figure that out the next time through the loop in _read().
             if e.args[0] == errno.EINVAL:
@@ -296,7 +296,7 @@ class ServerProcess(object):
                     self._crashed = True
                 self._log_data('ERR', data)
                 self._error += data
-        except IOError, e:
+        except IOError as e:
             # We can ignore the IOErrors because we will detect if the subporcess crashed
             # the next time through the loop in _read()
             pass
@@ -329,7 +329,7 @@ class ServerProcess(object):
             if avail > 0:
                 _, buf = win32file.ReadFile(handle, avail, None)
                 return buf
-        except Exception, e:
+        except Exception as e:
             if e[0] not in (109, errno.ESHUTDOWN):  # 109 == win32 ERROR_BROKEN_PIPE
                 raise
         return None

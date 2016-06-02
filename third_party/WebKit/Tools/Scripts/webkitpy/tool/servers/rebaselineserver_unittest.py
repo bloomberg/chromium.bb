@@ -215,7 +215,8 @@ class RebaselineTestTest(unittest.TestCase):
                          'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html']['state'], 'needs_rebaseline')
         self.assertNotIn('prototype-chocolate.html', results_json['tests'])
 
-    def _assertRebaseline(self, test_files, results_files, test_name, baseline_target, baseline_move_to, expected_success, expected_log):
+    def _assertRebaseline(self, test_files, results_files, test_name, baseline_target,
+                          baseline_move_to, expected_success, expected_log):
         log = []
         test_config = get_test_config(test_files, results_files)
         success = rebaselineserver._rebaseline_test(

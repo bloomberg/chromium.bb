@@ -50,7 +50,10 @@ class Command(object):
         self._tool = None
         # option_parser can be overridden by the tool using set_option_parser
         # This default parser will be used for standalone_help printing.
-        self.option_parser = HelpPrintingOptionParser(usage=optparse.SUPPRESS_USAGE, add_help_option=False, option_list=self.options)
+        self.option_parser = HelpPrintingOptionParser(
+            usage=optparse.SUPPRESS_USAGE,
+            add_help_option=False,
+            option_list=self.options)
 
     def _exit(self, code):
         sys.exit(code)

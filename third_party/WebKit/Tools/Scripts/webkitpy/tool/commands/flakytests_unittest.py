@@ -31,7 +31,8 @@ class FakeBotTestExpectationsFactory(object):
             builder: test_data,
         }
         results = bot_test_expectations.ResultsJSON(builder, json_dict)
-        return bot_test_expectations.BotTestExpectations(results, self.builders, self.builders._exact_matches[builder]["specifiers"])
+        return bot_test_expectations.BotTestExpectations(
+            results, self.builders, self.builders._exact_matches[builder]["specifiers"])
 
     def expectations_for_builder(self, builder):
         if builder == 'foo-builder':

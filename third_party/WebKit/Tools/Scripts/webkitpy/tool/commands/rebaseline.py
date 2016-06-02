@@ -835,7 +835,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         last_output_time = time.time()
 
         # git cl sometimes completely hangs. Bail if we haven't gotten any output to stdout/stderr in a while.
-        while process.poll() == None and time.time() < last_output_time + self.SECONDS_BEFORE_GIVING_UP:
+        while process.poll() is None and time.time() < last_output_time + self.SECONDS_BEFORE_GIVING_UP:
             # FIXME: This doesn't make any sense. readline blocks, so all this code to
             # try and bail is useless. Instead, we should do the readline calls on a
             # subthread. Then the rest of this code would make sense.
@@ -844,7 +844,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 last_output_time = time.time()
                 _log.info(out)
 
-        if process.poll() == None:
+        if process.poll() is None:
             _log.error('Command hung: %s' % subprocess_command)
             return False
         return True

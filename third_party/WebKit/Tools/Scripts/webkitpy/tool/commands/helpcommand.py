@@ -38,7 +38,12 @@ class HelpCommand(Command):
 
     def __init__(self):
         options = [
-            optparse.make_option("-a", "--all-commands", action="store_true", dest="show_all_commands", help="Print all available commands"),
+            optparse.make_option(
+                "-a",
+                "--all-commands",
+                action="store_true",
+                dest="show_all_commands",
+                help="Print all available commands"),
         ]
         super(HelpCommand, self).__init__(options)
         # A hack used to pass --all-commands to _help_epilog even though it's called by the OptionParser.

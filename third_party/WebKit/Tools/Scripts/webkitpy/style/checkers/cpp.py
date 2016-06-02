@@ -568,7 +568,7 @@ class _FunctionState(object):
     def modifiers_and_return_type(self):
         """Returns the modifiers and the return type."""
         # Go backwards from where the function name is until we encounter one of several things:
-        #   ';' or '{' or '}' or 'private:', etc. or '#' or return Position(0, 0)
+        # ';' or '{' or '}' or 'private:', etc. or '#' or return Position(0, 0)
         elided = self._clean_lines.elided
         start_modifiers = _rfind_in_lines(r';|\{|\}|((private|public|protected):)|(#.*)',
                                           elided, self.parameter_start_position, Position(0, 0))
@@ -1456,8 +1456,8 @@ def check_for_non_standard_constructs(clean_lines, line_number,
         # declare derived virtual destructors without declaring the base
         # destructor virtual.
         if ((classinfo.virtual_method_line_number is not None)
-            and (not classinfo.has_virtual_destructor)
-            and (not classinfo.is_derived)):  # Only warn for base classes
+                and (not classinfo.has_virtual_destructor)
+                and (not classinfo.is_derived)):  # Only warn for base classes
             error(classinfo.line_number, 'runtime/virtual', 4,
                   'The class %s probably needs a virtual destructor due to '
                   'having virtual method(s), one declared at line %d.'
@@ -1538,11 +1538,11 @@ def check_spacing_for_function_call(line, line_number, error):
     # Note that we assume the contents of [] to be short enough that
     # they'll never need to wrap.
     if (  # Ignore control structures.
-        not search(r'\b(if|for|foreach|while|switch|return|new|delete)\b', function_call)
-        # Ignore pointers/references to functions.
-        and not search(r' \([^)]+\)\([^)]*(\)|,$)', function_call)
-        # Ignore pointers/references to arrays.
-        and not search(r' \([^)]+\)\[[^\]]+\]', function_call)):
+            not search(r'\b(if|for|foreach|while|switch|return|new|delete)\b', function_call)
+            # Ignore pointers/references to functions.
+            and not search(r' \([^)]+\)\([^)]*(\)|,$)', function_call)
+            # Ignore pointers/references to arrays.
+            and not search(r' \([^)]+\)\[[^\]]+\]', function_call)):
         if search(r'\w\s*\([ \t](?!\s*\\$)', function_call):      # a ( used for a fn call
             error(line_number, 'whitespace/parens', 4,
                   'Extra space after ( in function call')
@@ -1550,7 +1550,7 @@ def check_spacing_for_function_call(line, line_number, error):
             error(line_number, 'whitespace/parens', 2,
                   'Extra space after (')
         if (search(r'\w\s+\(', function_call)
-            and not match(r'\s*(#|typedef)', function_call)):
+                and not match(r'\s*(#|typedef)', function_call)):
             error(line_number, 'whitespace/parens', 4,
                   'Extra space before ( in function call')
         # If the ) is followed only by a newline or a { + newline, assume it's
@@ -1761,7 +1761,8 @@ def check_function_definition(filename, file_extension, clean_lines, line_number
 
     modifiers_and_return_type = function_state.modifiers_and_return_type()
     if filename.find('/chromium/') != -1 and search(r'\bWEBKIT_EXPORT\b', modifiers_and_return_type):
-        if filename.find('/chromium/public/') == -1 and filename.find('/chromium/tests/') == -1 and filename.find('chromium/platform') == -1:
+        if filename.find('/chromium/public/') == -1 and filename.find('/chromium/tests/') == - \
+                1 and filename.find('chromium/platform') == -1:
             error(function_state.function_name_start_position.row, 'readability/webkit_export', 5,
                   'WEBKIT_EXPORT should only appear in the chromium public (or tests) directory.')
         elif not file_extension == "h":
@@ -1878,7 +1879,7 @@ def check_spacing(file_extension, clean_lines, line_number, error):
         #        This ignores whitespace at the start of a namespace block
         #        because those are not usually indented.
         if (previous_brace != -1 and previous_line[previous_brace:].find('}') == -1
-            and previous_line[:previous_brace].find('namespace') == -1):
+                and previous_line[:previous_brace].find('namespace') == -1):
             # OK, we have a blank line at the start of a code block.  Before we
             # complain, we check if it is an exception to the rule: The previous
             # non-empty line has the parameters of a function header that are indented
@@ -2175,7 +2176,7 @@ def check_namespace_indentation(clean_lines, line_number, file_extension, file_s
                 in_preprocessor_directive = current_line[-1] == '\\'
             else:
                 looking_for_semicolon = ((';' not in current_line) and (current_line.strip()
-                                                                             [-1] != '}')) or (current_line[-1] == '\\')
+                                                                        [-1] != '}')) or (current_line[-1] == '\\')
         else:
             looking_for_semicolon = False  # If we have a brace we may not need a semicolon.
         current_indentation_level += current_line.count('{') - current_line.count('}')
@@ -2422,7 +2423,7 @@ def check_braces(clean_lines, line_number, error):
         previous_line = get_previous_non_blank_line(clean_lines, line_number)[0]
         if ((not search(r'[;:}{)=]\s*$|\)\s*((const|override|final)\s*)*\s*(->\s*.+)?$', previous_line)
              or search(r'^\s*\b(if|for|foreach|while|switch|else)\b.*[^{]\s*$', previous_line))
-            and previous_line.find('#') < 0):
+                and previous_line.find('#') < 0):
             error(line_number, 'whitespace/braces', 4,
                   'This { should be at the end of the previous line')
     elif (search(r'\)\s*(((const|override|final)\s*)*\s*)?{\s*$', line)
@@ -2460,8 +2461,8 @@ def check_braces(clean_lines, line_number, error):
         else:
             break
     if (search(r'{.*}\s*;', line)
-        and line.count('{') == line.count('}')
-        and not search(r'struct|class|enum|\s*=\s*{', line)):
+            and line.count('{') == line.count('}')
+            and not search(r'struct|class|enum|\s*=\s*{', line)):
         error(line_number, 'readability/braces', 4,
               "You don't need a ; after a }")
 
@@ -2671,7 +2672,8 @@ def check_for_null(clean_lines, line_number, file_state, error):
 
     # Don't warn about NULL usage in gtk_widget_style_get(),
     # gtk_style_context_get_style(), or gtk_style_context_get(). See Bug 51758
-    if search(r'\bgtk_widget_style_get\(\w+\b', line) or search(r'\bgtk_style_context_get_style\(\w+\b', line) or search(r'\bgtk_style_context_get\(\w+\b', line):
+    if search(r'\bgtk_widget_style_get\(\w+\b', line) or search(r'\bgtk_style_context_get_style\(\w+\b',
+                                                                line) or search(r'\bgtk_style_context_get\(\w+\b', line):
         return
 
     # Don't warn about NULL usage in soup_server_new(). See Bug 77890.
@@ -3033,7 +3035,7 @@ def _drop_common_suffixes(filename):
     for suffix in ('test.cpp', 'regtest.cpp', 'unittest.cpp',
                    'inl.h', 'impl.h', 'internal.h'):
         if (filename.endswith(suffix) and len(filename) > len(suffix)
-            and filename[-len(suffix) - 1] in ('-', '_')):
+                and filename[-len(suffix) - 1] in ('-', '_')):
             return filename[:-len(suffix) - 1]
     return os.path.splitext(filename)[0]
 
@@ -3277,7 +3279,7 @@ def check_language(filename, clean_lines, line_number, file_extension, include_s
     # is dangerous -- casts can assign to temporaries, so the pointer doesn't
     # point where you think.
     if search(
-        r'(&\([^)]+\)[\w(])|(&(static|dynamic|reinterpret)_cast\b)', line):
+            r'(&\([^)]+\)[\w(])|(&(static|dynamic|reinterpret)_cast\b)', line):
         error(line_number, 'runtime/casting', 4,
               ('Are you taking an address of a cast?  '
                'This is dangerous: could be a temp var.  '
@@ -3368,7 +3370,7 @@ def check_language(filename, clean_lines, line_number, file_extension, include_s
     # Detect variable-length arrays.
     matched = match(r'\s*(.+::)?(\w+) [a-z]\w*\[(.+)];', line)
     if (matched and matched.group(2) != 'return' and matched.group(2) != 'delete' and
-        matched.group(3).find(']') == -1):
+            matched.group(3).find(']') == -1):
         # Split the size using space and arithmetic operators as delimiters.
         # If any of the resulting tokens are not compile time constants then
         # report the error.
@@ -3416,8 +3418,8 @@ def check_language(filename, clean_lines, line_number, file_extension, include_s
     # macros are typically OK, so we allow use of "namespace {" on lines
     # that end with backslashes.
     if (file_extension == 'h'
-        and search(r'\bnamespace\s*{', line)
-        and line[-1] != '\\'):
+            and search(r'\bnamespace\s*{', line)
+            and line[-1] != '\\'):
         error(line_number, 'build/namespaces', 4,
               'Do not use unnamed namespaces in header files.  See '
               'http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml#Namespaces'
@@ -3505,7 +3507,8 @@ def check_identifier_name_in_declaration(filename, line_number, line, file_state
     identifier_regexp = r'(?P<identifier>[\w:]+)'
     maybe_bitfield_regexp = r'(:\s*\d+\s*)?'
     character_after_identifier_regexp = r'(?P<character_after_identifier>[[;()=,])(?!=)'
-    declaration_without_type_regexp = r'\s*' + identifier_regexp + r'\s*' + maybe_bitfield_regexp + character_after_identifier_regexp
+    declaration_without_type_regexp = r'\s*' + identifier_regexp + \
+        r'\s*' + maybe_bitfield_regexp + character_after_identifier_regexp
     declaration_with_type_regexp = r'\s*' + type_regexp + r'\s' + declaration_without_type_regexp
     is_function_arguments = False
     number_of_identifiers = 0
@@ -3536,26 +3539,26 @@ def check_identifier_name_in_declaration(filename, line_number, line, file_state
         if not file_state.is_objective_c() and modified_identifier.find('_') >= 0:
             # Various exceptions to the rule: JavaScript op codes functions, const_iterator.
             if (not (filename.find('JavaScriptCore') >= 0 and modified_identifier.find('op_') >= 0)
-                and not (filename.find('gtk') >= 0 and modified_identifier.startswith('webkit_') >= 0)
-                and not modified_identifier.startswith('tst_')
-                and not modified_identifier.startswith('webkit_dom_object_')
-                and not modified_identifier.startswith('webkit_soup')
-                and not modified_identifier.startswith('NPN_')
-                and not modified_identifier.startswith('NPP_')
-                and not modified_identifier.startswith('NP_')
-                and not modified_identifier.startswith('qt_')
-                and not modified_identifier.startswith('_q_')
-                and not modified_identifier.startswith('cairo_')
-                and not modified_identifier.startswith('Ecore_')
-                and not modified_identifier.startswith('Eina_')
-                and not modified_identifier.startswith('Evas_')
-                and not modified_identifier.startswith('Ewk_')
-                and not modified_identifier.startswith('cti_')
-                and not modified_identifier.find('::qt_') >= 0
-                and not modified_identifier.find('::_q_') >= 0
-                and not modified_identifier == "const_iterator"
-                and not modified_identifier == "vm_throw"
-                and not modified_identifier == "DFG_OPERATION"):
+                    and not (filename.find('gtk') >= 0 and modified_identifier.startswith('webkit_') >= 0)
+                    and not modified_identifier.startswith('tst_')
+                    and not modified_identifier.startswith('webkit_dom_object_')
+                    and not modified_identifier.startswith('webkit_soup')
+                    and not modified_identifier.startswith('NPN_')
+                    and not modified_identifier.startswith('NPP_')
+                    and not modified_identifier.startswith('NP_')
+                    and not modified_identifier.startswith('qt_')
+                    and not modified_identifier.startswith('_q_')
+                    and not modified_identifier.startswith('cairo_')
+                    and not modified_identifier.startswith('Ecore_')
+                    and not modified_identifier.startswith('Eina_')
+                    and not modified_identifier.startswith('Evas_')
+                    and not modified_identifier.startswith('Ewk_')
+                    and not modified_identifier.startswith('cti_')
+                    and not modified_identifier.find('::qt_') >= 0
+                    and not modified_identifier.find('::_q_') >= 0
+                    and not modified_identifier == "const_iterator"
+                    and not modified_identifier == "vm_throw"
+                    and not modified_identifier == "DFG_OPERATION"):
                 error(line_number, 'readability/naming/underscores', 4, identifier +
                       " is incorrectly named. Don't use underscores in your identifier names.")
 
@@ -3756,8 +3759,8 @@ def check_c_style_cast(line_number, line, raw_line, cast_type, pattern,
     function_match = match(r'\s*(\)|=|(const)?\s*(;|\{|throw\(\)))', remainder)
     if function_match:
         if (not function_match.group(3)
-            or function_match.group(3) == ';'
-            or raw_line.find('/*') < 0):
+                or function_match.group(3) == ';'
+                or raw_line.find('/*') < 0):
             error(line_number, 'readability/function', 3,
                   'All parameters should be named in a function')
         return

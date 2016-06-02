@@ -79,7 +79,7 @@ class TextFileReaderTest(LoggingTestCase):
     def test_process_file__does_not_exist(self):
         try:
             self._file_reader.process_file('does_not_exist.txt')
-        except SystemExit, err:
+        except SystemExit as err:
             self.assertEqual(str(err), '1')
         else:
             self.fail('No Exception raised.')

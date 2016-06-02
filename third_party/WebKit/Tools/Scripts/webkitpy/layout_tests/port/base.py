@@ -40,6 +40,7 @@ import operator
 import optparse
 import re
 import sys
+from functools import reduce
 
 try:
     from collections import OrderedDict
@@ -215,7 +216,8 @@ class Port(object):
         self._virtual_test_suites = None
 
     def __str__(self):
-        return "Port{name=%s, version=%s, architecture=%s, test_configuration=%s}" % (self._name, self._version, self._architecture, self._test_configuration)
+        return "Port{name=%s, version=%s, architecture=%s, test_configuration=%s}" % (
+            self._name, self._version, self._architecture, self._test_configuration)
 
     def buildbot_archives_baselines(self):
         return True
@@ -419,7 +421,7 @@ class Port(object):
         """Checks whether we can use the PrettyPatch ruby script."""
         try:
             _ = self._executive.run_command(['ruby', '--version'])
-        except OSError, e:
+        except OSError as e:
             if e.errno in [errno.ENOENT, errno.EACCES, errno.ECHILD]:
                 if logging:
                     _log.warning("Ruby is not installed; can't generate pretty patches.")
@@ -519,7 +521,7 @@ class Port(object):
                 result = self._filesystem.read_binary_file(native_diff_filename)
             else:
                 err_str = "Image diff returned an exit code of %s. See http://crbug.com/278596" % exit_code
-        except OSError, e:
+        except OSError as e:
             err_str = 'error running image diff: %s' % str(e)
         finally:
             self._filesystem.rmtree(str(tempdir))
@@ -784,7 +786,8 @@ class Port(object):
 
     @staticmethod
     def is_test_file(filesystem, dirname, filename):
-        return Port._has_supported_extension(filesystem, filename) and not Port.is_reference_html_file(filesystem, dirname, filename)
+        return Port._has_supported_extension(
+            filesystem, filename) and not Port.is_reference_html_file(filesystem, dirname, filename)
 
     ALL_TEST_TYPES = ['audio', 'harness', 'pixel', 'ref', 'text', 'unknown']
 
@@ -1203,7 +1206,7 @@ class Port(object):
                 self._helper.stdin.write("x\n")
                 self._helper.stdin.close()
                 self._helper.wait()
-            except IOError, e:
+            except IOError as e:
                 pass
             finally:
                 self._helper = None
@@ -1406,12 +1409,12 @@ class Port(object):
             # Diffs are treated as binary (we pass decode_output=False) as they
             # may contain multiple files of conflicting encodings.
             return self._executive.run_command(command, decode_output=False)
-        except OSError, e:
+        except OSError as e:
             # If the system is missing ruby log the error and stop trying.
             self._pretty_patch_available = False
             _log.error("Failed to run PrettyPatch (%s): %s" % (command, e))
             return self._pretty_patch_error_html
-        except ScriptError, e:
+        except ScriptError as e:
             # If ruby failed to run for some reason, log the command
             # output and stop trying.
             self._pretty_patch_available = False
@@ -1669,7 +1672,7 @@ class Port(object):
         for path_to_module in self._modules_to_search_for_symbols():
             try:
                 symbols += self._executive.run_command(['nm', path_to_module], error_handler=self._executive.ignore_error)
-            except OSError, e:
+            except OSError as e:
                 _log.warn("Failed to run nm: %s.  Can't determine supported features correctly." % e)
         return symbols
 
@@ -1705,7 +1708,8 @@ class Port(object):
         if self._has_test_in_directories(self._missing_symbol_to_skipped_tests().values(), test_list):
             symbols_string = self._symbols_string()
             if symbols_string is not None:
-                return reduce(operator.add, [directories for symbol_substring, directories in self._missing_symbol_to_skipped_tests().items() if symbol_substring not in symbols_string], [])
+                return reduce(operator.add, [directories for symbol_substring, directories in self._missing_symbol_to_skipped_tests(
+                ).items() if symbol_substring not in symbols_string], [])
         return []
 
     def _convert_path(self, path):

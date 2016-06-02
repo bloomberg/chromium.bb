@@ -120,7 +120,10 @@ HOST_FONT_FILES = [
     [['/usr/share/fonts/truetype/ttf-indic-fonts-core/'], 'lohit_ta.ttf', 'ttf-indic-fonts-core'],
     [['/usr/share/fonts/truetype/ttf-indic-fonts-core/'], 'MuktiNarrow.ttf', 'ttf-indic-fonts-core'],
     [['/usr/share/fonts/truetype/thai/', '/usr/share/fonts/truetype/tlwg/'], 'Garuda.ttf', 'fonts-tlwg-garuda'],
-    [['/usr/share/fonts/truetype/ttf-indic-fonts-core/', '/usr/share/fonts/truetype/ttf-punjabi-fonts/'], 'lohit_pa.ttf', 'ttf-indic-fonts-core'],
+    [['/usr/share/fonts/truetype/ttf-indic-fonts-core/',
+      '/usr/share/fonts/truetype/ttf-punjabi-fonts/'],
+     'lohit_pa.ttf',
+     'ttf-indic-fonts-core'],
 ]
 
 # Test resources that need to be accessed as files directly.
@@ -285,7 +288,7 @@ class AndroidCommands(object):
             path_version = AndroidCommands._determine_adb_version(path_option, executive, debug_logging)
             if not path_version:
                 continue
-            if command_version != None and path_version < command_version:
+            if command_version is not None and path_version < command_version:
                 continue
 
             command_path = path_option
@@ -463,7 +466,8 @@ class AndroidPort(base.Port):
         return self._build_path(MD5SUM_HOST_FILE_NAME)
 
     def additional_driver_flag(self):
-        return super(AndroidPort, self).additional_driver_flag() + self._driver_details.additional_command_line_flags(use_breakpad=not self.get_option('disable_breakpad'))
+        return super(AndroidPort, self).additional_driver_flag() + \
+            self._driver_details.additional_command_line_flags(use_breakpad=not self.get_option('disable_breakpad'))
 
     def default_timeout_ms(self):
         # Android platform has less computing power than desktop platforms.
@@ -726,7 +730,7 @@ http://goto.google.com/cr-android-perf-howto
 
     def attach_to_pid(self, pid):
         assert(pid)
-        assert(self._perf_process == None)
+        assert(self._perf_process is None)
         # FIXME: This can't be a fixed timeout!
         cmd = self._android_commands.adb_command() + ['shell', 'perf', 'record', '-g', '-p', pid, 'sleep', 30]
         self._perf_process = self._host.executive.popen(cmd)
@@ -1149,7 +1153,8 @@ class ChromiumAndroidDriver(driver.Driver):
 
         cmd_line_file_path = self._driver_details.command_line_file()
         original_cmd_line_file_path = cmd_line_file_path + '.orig'
-        if self._android_commands.file_exists(cmd_line_file_path) and not self._android_commands.file_exists(original_cmd_line_file_path):
+        if self._android_commands.file_exists(
+                cmd_line_file_path) and not self._android_commands.file_exists(original_cmd_line_file_path):
             # We check for both the normal path and the backup because we do not want to step
             # on the backup. Otherwise, we'd clobber the backup whenever we changed the
             # command line during the run.

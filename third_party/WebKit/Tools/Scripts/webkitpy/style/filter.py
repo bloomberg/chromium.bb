@@ -174,6 +174,7 @@ class FilterConfiguration(object):
         """Cached dictionary of file path to CategoryFilter instance."""
 
     # Useful for unit testing.
+
     def __eq__(self, other):
         """Return whether this FilterConfiguration is equal to another."""
         if self._base_rules != other._base_rules:

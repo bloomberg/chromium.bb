@@ -50,7 +50,8 @@ class _BaseTestCase(unittest.TestCase):
 
     def setUp(self):
         self.tool = MockTool()
-        self.command = self.command_constructor()  # lint warns that command_constructor might not be set, but this is intentional; pylint: disable=E1102
+        # lint warns that command_constructor might not be set, but this is intentional; pylint: disable=E1102
+        self.command = self.command_constructor()
         self.command.bind_to_tool(self.tool)
         self.mac_port = self.tool.port_factory.get_from_builder_name("WebKit Mac10.11")
         self.mac_expectations_path = self.mac_port.path_to_generic_test_expectations_file()
@@ -205,7 +206,11 @@ class TestCopyExistingBaselinesInternal(_BaseTestCase):
         self.tool.executive = MockExecutive2()
         port = self.tool.port_factory.get('test-win-win7')
         fs = self.tool.filesystem
-        self._write(fs.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt'), 'original win7 result')
+        self._write(
+            fs.join(
+                port.layout_tests_dir(),
+                'platform/test-win-win7/failures/expected/image-expected.txt'),
+            'original win7 result')
         expectations_path = fs.join(port.path_to_generic_test_expectations_file())
         self._write(expectations_path, (
             "[ Win ] failures/expected/image.html [ Failure ]\n"
@@ -226,8 +231,16 @@ class TestCopyExistingBaselinesInternal(_BaseTestCase):
         finally:
             out, _, _ = oc.restore_output()
 
-        self.assertFalse(fs.exists(fs.join(port.layout_tests_dir(), 'platform/test-mac-mac10.10/failures/expected/image-expected.txt')))
-        self.assertFalse(fs.exists(fs.join(port.layout_tests_dir(), 'platform/test-linux-trusty/failures/expected/image-expected.txt')))
+        self.assertFalse(
+            fs.exists(
+                fs.join(
+                    port.layout_tests_dir(),
+                    'platform/test-mac-mac10.10/failures/expected/image-expected.txt')))
+        self.assertFalse(
+            fs.exists(
+                fs.join(
+                    port.layout_tests_dir(),
+                    'platform/test-linux-trusty/failures/expected/image-expected.txt')))
         self.assertFalse(fs.exists(fs.join(port.layout_tests_dir(),
                                            'platform/test-linux-precise/failures/expected/image-expected.txt')))
         self.assertEqual(self._read(fs.join(port.layout_tests_dir(), 'platform/test-win-win7/failures/expected/image-expected.txt')),
@@ -924,7 +937,9 @@ class TestOptimizeBaselines(_BaseTestCase):
         finally:
             out, err, logs = oc.restore_output()
 
-        self.assertEquals(out, '{"add": [], "remove-lines": [], "delete": ["/mock-checkout/third_party/WebKit/LayoutTests/platform/mac-mac10.10/another/test-expected.txt", "/mock-checkout/third_party/WebKit/LayoutTests/platform/mac-mac10.10/another/test-expected.png"]}\n')
+        self.assertEquals(
+            out,
+            '{"add": [], "remove-lines": [], "delete": ["/mock-checkout/third_party/WebKit/LayoutTests/platform/mac-mac10.10/another/test-expected.txt", "/mock-checkout/third_party/WebKit/LayoutTests/platform/mac-mac10.10/another/test-expected.png"]}\n')
         self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(
             test_port.layout_tests_dir(), 'platform/mac/another/test-expected.txt')))
         self.assertFalse(self.tool.filesystem.exists(self.tool.filesystem.join(

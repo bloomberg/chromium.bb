@@ -197,12 +197,14 @@ class _Message(object):
         self.logs = logs
 
     def __repr__(self):
-        return '_Message(src=%s, name=%s, args=%s, from_user=%s, logs=%s)' % (self.src, self.name, self.args, self.from_user, self.logs)
+        return '_Message(src=%s, name=%s, args=%s, from_user=%s, logs=%s)' % (
+            self.src, self.name, self.args, self.from_user, self.logs)
 
 
 class _Worker(multiprocessing.Process):
 
-    def __init__(self, host, messages_to_manager, messages_to_worker, worker_factory, worker_number, running_inline, manager, log_level):
+    def __init__(self, host, messages_to_manager, messages_to_worker,
+                 worker_factory, worker_number, running_inline, manager, log_level):
         super(_Worker, self).__init__()
         self.host = host
         self.worker_number = worker_number
@@ -263,9 +265,9 @@ class _Worker(multiprocessing.Process):
             _log.debug("%s exiting" % self.name)
         except Queue.Empty:
             assert False, '%s: ran out of messages in worker queue.' % self.name
-        except KeyboardInterrupt, e:
+        except KeyboardInterrupt as e:
             self._raise(sys.exc_info())
-        except Exception, e:
+        except Exception as e:
             self._raise(sys.exc_info())
         finally:
             try:

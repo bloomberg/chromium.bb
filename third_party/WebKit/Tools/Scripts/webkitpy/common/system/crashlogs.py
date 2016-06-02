@@ -63,10 +63,10 @@ class CrashLogs(object):
                     match = first_line_regex.match(f[0:f.find('\n')])
                     if match and match.group('process_name') == process_name and (pid is None or int(match.group('pid')) == pid):
                         return errors + f
-            except IOError, e:
+            except IOError as e:
                 if include_errors:
                     errors += "ERROR: Failed to read '%s': %s\n" % (path, str(e))
-            except OSError, e:
+            except OSError as e:
                 if include_errors:
                     errors += "ERROR: Failed to read '%s': %s\n" % (path, str(e))
 

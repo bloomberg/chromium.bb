@@ -579,7 +579,8 @@ class TestDriver(Driver):
 
     def cmd_line(self, pixel_tests, per_test_args):
         pixel_tests_flag = '-p' if pixel_tests else ''
-        return [self._port._path_to_driver()] + [pixel_tests_flag] + self._port.get_option('additional_driver_flag', []) + per_test_args
+        return [self._port._path_to_driver()] + [pixel_tests_flag] + \
+            self._port.get_option('additional_driver_flag', []) + per_test_args
 
     def run_test(self, driver_input, stop_when_done):
         if not self.started:

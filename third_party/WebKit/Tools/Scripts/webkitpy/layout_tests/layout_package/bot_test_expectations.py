@@ -42,27 +42,31 @@ from webkitpy.layout_tests.models.test_expectations import TestExpectationLine
 _log = logging.getLogger(__name__)
 
 
-# results.json v4 format:
-# {
-#  'version': 4,
-#  'builder name' : {
-#     'blinkRevision': [],
-#     'tests': {
-#       'directory' { # Each path component is a dictionary.
-#          'testname.html': {
-#             'expected' : 'FAIL', # expectation name
-#             'results': [], # Run-length encoded result.
-#             'times': [],
-#             'bugs': [], # bug urls
-#          }
-#      }
-#   }
-#  'buildNumbers': [],
-#  'secondsSinceEpoch': [],
-#  'chromeRevision': [],
-#  'failure_map': { } # Map from letter code to expectation name.
-# },
 class ResultsJSON(object):
+    """Contains the contents of a results.json file.
+
+    results.json v4 format:
+    {
+      'version': 4,
+      'builder name' : {
+        'blinkRevision': [],
+        'tests': {
+          'directory' { # Each path component is a dictionary.
+            'testname.html': {
+              'expected' : 'FAIL', # Expectation name.
+              'results': [], # Run-length encoded result.
+              'times': [],
+              'bugs': [], # Bug URLs.
+            }
+          }
+        }
+      }
+      'buildNumbers': [],
+      'secondsSinceEpoch': [],
+      'chromeRevision': [],
+      'failure_map': {}  # Map from letter code to expectation name.
+    }
+    """
     TESTS_KEY = 'tests'
     FAILURE_MAP_KEY = 'failure_map'
     RESULTS_KEY = 'results'

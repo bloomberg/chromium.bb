@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import copy
+from functools import reduce
 
 
 class TestConfiguration(object):
@@ -136,7 +137,8 @@ class TestConfigurationConverter(object):
 
         for specifier, sets_by_category in matching_sets_by_category.items():
             for category, set_by_category in sets_by_category.items():
-                if len(set_by_category) == 1 and self._specifier_sorter.category_priority(category) > self._specifier_sorter.specifier_priority(specifier):
+                if len(set_by_category) == 1 and self._specifier_sorter.category_priority(
+                        category) > self._specifier_sorter.specifier_priority(specifier):
                     self._junk_specifier_combinations[specifier] = set_by_category
 
         self._specifier_sorter.add_macros(configuration_macros)

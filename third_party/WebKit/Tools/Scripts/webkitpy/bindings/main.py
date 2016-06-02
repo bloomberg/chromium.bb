@@ -311,9 +311,9 @@ def bindings_tests(output_directory, verbose):
             input_directory = os.path.join(test_input_directory, component)
             for filename in os.listdir(input_directory):
                 if (filename.endswith('.idl') and
-                    # Dependencies aren't built
-                    # (they are used by the dependent)
-                    filename not in DEPENDENCY_IDL_FILES):
+                        # Dependencies aren't built
+                        # (they are used by the dependent)
+                        filename not in DEPENDENCY_IDL_FILES):
                     idl_filenames.append(
                         os.path.realpath(
                             os.path.join(input_directory, filename)))

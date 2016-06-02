@@ -234,7 +234,9 @@ class TestImporter(object):
                 fullpath = self.filesystem.join(root, filename)
 
                 mimetype = mimetypes.guess_type(fullpath)
-                if not 'html' in str(mimetype[0]) and not 'application/xhtml+xml' in str(mimetype[0]) and not 'application/xml' in str(mimetype[0]):
+                if ('html' not in str(mimetype[0]) and
+                        'application/xhtml+xml' not in str(mimetype[0]) and
+                        'application/xml' not in str(mimetype[0])):
                     copy_list.append({'src': fullpath, 'dest': filename})
                     continue
 
@@ -371,7 +373,8 @@ class TestImporter(object):
                 # Only HTML, XML, or CSS should be converted.
                 # FIXME: Eventually, so should JS when support is added for this type of conversion.
                 mimetype = mimetypes.guess_type(orig_filepath)
-                if 'is_jstest' not in file_to_copy and ('html' in str(mimetype[0]) or 'xml' in str(mimetype[0]) or 'css' in str(mimetype[0])):
+                if 'is_jstest' not in file_to_copy and (
+                        'html' in str(mimetype[0]) or 'xml' in str(mimetype[0]) or 'css' in str(mimetype[0])):
                     converted_file = convert_for_webkit(new_path, filename=orig_filepath,
                                                         reference_support_info=reference_support_info)
 

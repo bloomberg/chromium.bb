@@ -87,7 +87,7 @@ def _rebaseline_test(test_file, baseline_target, baseline_move_to, test_config, 
             actual_result_extensions)
 
         if extensions_to_move.intersection(
-            current_baselines.get(baseline_move_to, {}).keys()):
+                current_baselines.get(baseline_move_to, {}).keys()):
             log('    Already had baselines in %s, could not move existing '
                 '%s ones' % (baseline_move_to, baseline_target))
             return False
@@ -95,12 +95,12 @@ def _rebaseline_test(test_file, baseline_target, baseline_move_to, test_config, 
         # Do the actual move.
         if extensions_to_move:
             if not _move_test_baselines(
-                test_file,
-                list(extensions_to_move),
-                baseline_target,
-                baseline_move_to,
-                test_config,
-                log):
+                    test_file,
+                    list(extensions_to_move),
+                    baseline_target,
+                    baseline_move_to,
+                    test_config,
+                    log):
                 return False
         else:
             log('    No current baselines to move')

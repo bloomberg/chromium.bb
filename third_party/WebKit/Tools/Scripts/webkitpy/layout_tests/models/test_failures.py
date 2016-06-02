@@ -33,7 +33,8 @@ from webkitpy.layout_tests.models import test_expectations
 
 def is_reftest_failure(failure_list):
     failure_types = [type(f) for f in failure_list]
-    return set((FailureReftestMismatch, FailureReftestMismatchDidNotOccur, FailureReftestNoImagesGenerated)).intersection(failure_types)
+    return set((FailureReftestMismatch, FailureReftestMismatchDidNotOccur, FailureReftestNoImagesGenerated)).intersection(
+        failure_types)
 
 # FIXME: This is backwards.  Each TestFailure subclass should know what
 # test_expectation type it corresponds too.  Then this method just

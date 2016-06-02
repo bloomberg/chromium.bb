@@ -157,7 +157,8 @@ class PerfTestsRunner(object):
         tests = []
         for path in test_files:
             relative_path = filesystem.relpath(path, self._base_path).replace('\\', '/')
-            if self._options.use_skipped_list and self._port.skips_perf_test(relative_path) and filesystem.normpath(relative_path) not in paths:
+            if self._options.use_skipped_list and self._port.skips_perf_test(
+                    relative_path) and filesystem.normpath(relative_path) not in paths:
                 continue
             test = PerfTestFactory.create_perf_test(self._port, relative_path, path,
                                                     test_runner_count=self._options.test_runner_count)
@@ -319,7 +320,7 @@ class PerfTestsRunner(object):
             for key in slave_config:
                 contents['builder' + key.capitalize()] = slave_config[key]
             return contents
-        except Exception, error:
+        except Exception as error:
             _log.error("Failed to merge slave configuration JSON file %s: %s" % (slave_config_json_path, error))
         return None
 
@@ -329,7 +330,7 @@ class PerfTestsRunner(object):
         try:
             existing_outputs = json.loads(self._host.filesystem.read_text_file(output_json_path))
             return existing_outputs + [output]
-        except Exception, error:
+        except Exception as error:
             _log.error("Failed to merge output JSON file %s: %s" % (output_json_path, error))
         return None
 
@@ -338,7 +339,7 @@ class PerfTestsRunner(object):
         uploader = file_uploader(url, 120)
         try:
             response = uploader.upload_single_text_file(self._host.filesystem, 'application/json', json_path)
-        except Exception, error:
+        except Exception as error:
             _log.error("Failed to upload JSON file to %s in 120s: %s" % (url, error))
             return False
 

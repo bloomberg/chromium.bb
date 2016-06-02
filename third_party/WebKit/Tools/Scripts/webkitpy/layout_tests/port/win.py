@@ -121,7 +121,7 @@ class WinPort(base.Port):
             # existing entry points to a valid path and has the right command line.
             if len(args) == 2 and self._filesystem.exists(args[0]) and args[0].endswith('perl.exe') and args[1] == '-wT':
                 return True
-        except WindowsError, e:
+        except WindowsError as e:
             if e.errno != errno.ENOENT:
                 raise e
             # The key simply probably doesn't exist.
@@ -140,7 +140,7 @@ class WinPort(base.Port):
 
         if not self.get_option('disable_breakpad'):
             assert not self._crash_service, 'Already running a crash service'
-            if self._crash_service_available == None:
+            if self._crash_service_available is None:
                 self._crash_service_available = self._check_crash_service_available()
             if not self._crash_service_available:
                 return

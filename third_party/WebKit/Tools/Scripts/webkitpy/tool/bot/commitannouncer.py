@@ -110,7 +110,7 @@ class CommitAnnouncer(SingleServerIRCBot):
                     return False
             try:
                 self.git.ensure_cleanly_tracking_remote_master()
-            except ScriptError, e:
+            except ScriptError as e:
                 _log.error('Failed to clean repository: %s' % e)
                 return False
 
@@ -130,7 +130,7 @@ class CommitAnnouncer(SingleServerIRCBot):
             try:
                 self.git.pull()
                 return True
-            except ScriptError, e:
+            except ScriptError as e:
                 _log.error('Error pulling from server: %s' % e)
                 _log.error('Output: %s' % e.output)
             attempts += 1

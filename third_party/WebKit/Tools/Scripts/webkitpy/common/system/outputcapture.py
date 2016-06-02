@@ -79,7 +79,8 @@ class OutputCapture(object):
         delattr(self, '_logs')
         return (self._restore_output_with_name("stdout"), self._restore_output_with_name("stderr"), logs_string)
 
-    def assert_outputs(self, testcase, function, args=[], kwargs={}, expected_stdout="", expected_stderr="", expected_exception=None, expected_logs=None):
+    def assert_outputs(self, testcase, function, args=[], kwargs={}, expected_stdout="",
+                       expected_stderr="", expected_exception=None, expected_logs=None):
         self.capture_output()
         try:
             if expected_exception:

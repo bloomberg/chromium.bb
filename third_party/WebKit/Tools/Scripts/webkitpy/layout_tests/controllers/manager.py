@@ -206,7 +206,8 @@ class Manager(object):
             else:
                 if initial_results.interrupted:
                     exit_code = test_run_results.EARLY_EXIT_STATUS
-                if self._options.show_results and (exit_code or (self._options.full_results_html and initial_results.total_failures)):
+                if self._options.show_results and (
+                        exit_code or (self._options.full_results_html and initial_results.total_failures)):
                     self._port.show_results_html_file(results_path)
                 self._printer.print_results(time.time() - start_time, initial_results, summarized_failing_results)
 
@@ -293,7 +294,7 @@ class Manager(object):
         try:
             timestamp = time.strftime(
                 "%Y-%m-%d-%H-%M-%S", time.localtime(self._filesystem.mtime(self._filesystem.join(self._results_directory, "results.html"))))
-        except (IOError, OSError), e:
+        except (IOError, OSError) as e:
             # It might be possible that results.html was not generated in previous run, because the test
             # run was interrupted even before testing started. In those cases, don't archive the folder.
             # Simply override the current folder contents with new results.
@@ -373,7 +374,8 @@ class Manager(object):
             self._port.start_wptserve()
             self._wptserve_started = True
 
-        if self._port.requires_http_server() or any((self._is_http_test(test) or self._is_inspector_test(test)) for test in tests_to_run):
+        if self._port.requires_http_server() or any((self._is_http_test(test) or self._is_inspector_test(test))
+                                                    for test in tests_to_run):
             self._printer.write_update('Starting HTTP server ...')
             self._port.start_http_server(additional_dirs={}, number_of_drivers=self._options.max_locked_shards)
             self._http_server_started = True
@@ -471,7 +473,8 @@ class Manager(object):
     def _tests_to_retry(self, run_results):
         # TODO(ojan): This should also check that result.type != test_expectations.MISSING since retrying missing expectations is silly.
         # But that's a bit tricky since we only consider the last retry attempt for the count of unexpected regressions.
-        return [result.test_name for result in run_results.unexpected_results_by_name.values() if result.type != test_expectations.PASS]
+        return [result.test_name for result in run_results.unexpected_results_by_name.values(
+        ) if result.type != test_expectations.PASS]
 
     def _write_json_files(self, summarized_full_results, summarized_failing_results, initial_results, running_all_tests):
         _log.debug("Writing JSON files in %s." % self._results_directory)
@@ -533,7 +536,7 @@ class Manager(object):
                     _log.debug("JSON upload failed, %d: '%s'" % (response.code, response.read()))
             else:
                 _log.error("JSON upload failed; no response returned")
-        except Exception, err:
+        except Exception as err:
             _log.error("Upload failed: %s" % err)
 
     def _copy_results_html_file(self, destination_path):

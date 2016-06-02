@@ -200,13 +200,14 @@ class PerfTest(object):
         return self._metrics[metric_name]
 
     def run_single(self, driver, test_path, time_out_ms, should_run_pixel_test=False):
-        return driver.run_test(DriverInput(test_path, time_out_ms, image_hash=None, should_run_pixel_test=should_run_pixel_test, args=[]), stop_when_done=False)
+        return driver.run_test(
+            DriverInput(test_path, time_out_ms, image_hash=None, should_run_pixel_test=should_run_pixel_test, args=[]), stop_when_done=False)
 
     def run_failed(self, output):
         if output.error:
             _log.error('error: %s\n%s' % (self.test_name(), output.error))
 
-        if output.text == None:
+        if output.text is None:
             pass
         elif output.timeout:
             _log.error('timeout: %s' % self.test_name())

@@ -78,7 +78,7 @@ class ScriptError(Exception):
 
     def command_name(self):
         command_path = self.script_args
-        if type(command_path) is list:
+        if isinstance(command_path, list):
             command_path = command_path[0]
         return os.path.basename(command_path)
 
@@ -145,7 +145,7 @@ class Executive(object):
                 retries_left -= 1
                 os.kill(pid, signal.SIGKILL)
                 _ = os.waitpid(pid, os.WNOHANG)
-            except OSError, e:
+            except OSError as e:
                 if e.errno == errno.EAGAIN:
                     if retries_left <= 0:
                         _log.warn("Failed to kill pid %s.  Too many EAGAIN errors." % pid)
@@ -244,7 +244,7 @@ class Executive(object):
                 pid = line[1]
                 if process_name_filter(process_name):
                     running_pids.append(int(pid))
-            except (ValueError, IndexError), e:
+            except (ValueError, IndexError) as e:
                 pass
 
         return sorted(running_pids)

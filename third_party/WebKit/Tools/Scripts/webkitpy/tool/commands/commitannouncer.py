@@ -58,7 +58,7 @@ class CommitAnnouncerCommand(Command):
                 time.sleep(update_wait_seconds)
         except KeyboardInterrupt:
             _log.error("Terminated by keyboard interrupt")
-        except Exception, e:
+        except Exception as e:
             _log.error("Unexpected error:")
             _log.error(traceback.format_exc())
 

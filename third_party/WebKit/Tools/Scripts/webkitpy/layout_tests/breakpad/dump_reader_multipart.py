@@ -92,7 +92,7 @@ class DumpReaderMultipart(DumpReader):
         return None
 
     def _check_breakpad_tools_available(self):
-        if self._breakpad_tools_available != None:
+        if self._breakpad_tools_available is not None:
             return self._breakpad_tools_available
 
         REQUIRED_BREAKPAD_TOOLS = [
@@ -119,7 +119,8 @@ class DumpReaderMultipart(DumpReader):
         return self._host.filesystem.join(self._build_dir, "minidump_stackwalk")
 
     def _path_to_generate_breakpad_symbols(self):
-        return self._webkit_finder.path_from_chromium_base("components", "crash", "content", "tools", "generate_breakpad_symbols.py")
+        return self._webkit_finder.path_from_chromium_base(
+            "components", "crash", "content", "tools", "generate_breakpad_symbols.py")
 
     def _symbols_dir(self):
         return self._host.filesystem.join(self._build_dir, 'content_shell.syms')

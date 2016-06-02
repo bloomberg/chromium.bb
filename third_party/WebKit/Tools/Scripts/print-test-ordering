@@ -34,6 +34,7 @@ import sys
 
 from webkitpy.common.host import Host
 
+
 def main(argv):
     parser = optparse.OptionParser(usage='%prog [stats.json]')
     parser.description = "Prints out lists of tests run on each worker as per the stats.json file."
@@ -46,7 +47,7 @@ def main(argv):
         stats_path = host.filesystem.join(host.port_factory.get().results_directory(), 'stats.json')
 
     with open(stats_path, 'r') as fp:
-         stats_trie = json.load(fp)
+        stats_trie = json.load(fp)
 
     stats = convert_trie_to_flat_paths(stats_trie)
     stats_by_worker = {}
@@ -62,9 +63,10 @@ def main(argv):
 
     for worker in sorted(stats_by_worker.keys()):
         print worker + ':'
-        for test in sorted(stats_by_worker[worker], key=lambda test:test["number"]):
+        for test in sorted(stats_by_worker[worker], key=lambda test: test["number"]):
             print test["name"]
         print
+
 
 def convert_trie_to_flat_paths(trie, prefix=None):
     # Cloned from webkitpy.layout_tests.layout_package.json_results_generator
@@ -81,5 +83,5 @@ def convert_trie_to_flat_paths(trie, prefix=None):
     return result
 
 
-if __name__ ==  '__main__':
+if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

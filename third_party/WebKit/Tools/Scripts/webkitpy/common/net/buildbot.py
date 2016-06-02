@@ -143,7 +143,7 @@ class Builder(object):
             _log.info("Loading revision/build list from %s." % self.results_url())
             _log.info("This may take a while...")
             result_files = self._buildbot._fetch_twisted_directory_listing(self.results_url())
-        except urllib2.HTTPError, error:
+        except urllib2.HTTPError as error:
             if error.code != 404:
                 raise
             _log.debug("Revision/build list failed to load.")
@@ -289,12 +289,12 @@ class BuildBot(object):
         json_url = "%s/json/builders/%s/builds/%s?filter=1" % (buildbot_url, urllib.quote(builder.name()), build_number)
         try:
             return json.load(urllib2.urlopen(json_url))
-        except urllib2.URLError, err:
+        except urllib2.URLError as err:
             build_url = Build.build_url(builder, build_number)
             _log.error("Error fetching data for %s build %s (%s, json: %s): %s" %
                        (builder.name(), build_number, build_url, json_url, err))
             return None
-        except ValueError, err:
+        except ValueError as err:
             build_url = Build.build_url(builder, build_number)
             _log.error("Error decoding json data from %s: %s" % (build_url, err))
             return None
@@ -405,6 +405,7 @@ class BuildBot(object):
                     break
                 builders_succeeded_in_past = builders_succeeded_in_past.union(revision_statuses[past_revision])
 
-            if len(builders_succeeded_in_future) == len(builder_revisions) and len(builders_succeeded_in_past) == len(builder_revisions):
+            if len(builders_succeeded_in_future) == len(builder_revisions) and len(
+                    builders_succeeded_in_past) == len(builder_revisions):
                 return revision
         return None

@@ -50,7 +50,7 @@ class MockOptions(object):
         return self
 
     def ensure_value(self, key, value):
-        if getattr(self, key, None) == None:
+        if getattr(self, key, None) is None:
             self.__dict__[key] = value
         return self.__dict__[key]
 

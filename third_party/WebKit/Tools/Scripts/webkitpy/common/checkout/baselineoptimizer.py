@@ -30,6 +30,7 @@ import copy
 import logging
 
 from webkitpy.common.memoized import memoized
+from functools import reduce
 
 _log = logging.getLogger(__name__)
 
@@ -292,7 +293,8 @@ class BaselineOptimizer(object):
             self.new_results_by_directory.append(results_by_directory)
             return True
 
-        if self._results_by_port_name(results_by_directory, baseline_name) != self._results_by_port_name(new_results_by_directory, baseline_name):
+        if self._results_by_port_name(results_by_directory, baseline_name) != self._results_by_port_name(
+                new_results_by_directory, baseline_name):
             # This really should never happen. Just a sanity check to make sure the script fails in the case of bugs
             # instead of committing incorrect baselines.
             _log.error("  %s: optimization failed" % basename)

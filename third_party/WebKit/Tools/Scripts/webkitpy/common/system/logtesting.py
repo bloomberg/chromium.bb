@@ -60,6 +60,7 @@ class TestLogStream(object):
     # constructor should support write() and flush():
     #
     # http://docs.python.org/library/logging.html#module-logging.handlers
+
     def write(self, message):
         self.messages.append(message)
 

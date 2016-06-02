@@ -210,7 +210,9 @@ class CppFunctionsTest(unittest.TestCase):
 
         expected_parameters = ({'type': 'PassRefPtr<MyClass>', 'name': 'paramName', 'row': 0},
                                {'type': 'const Other1Class&', 'name': 'foo', 'row': 1},
-                               {'type': 'const ComplexTemplate<Class1, NestedTemplate<P1, P2> >* const *', 'name': 'param', 'row': 2},
+                               {'type': 'const ComplexTemplate<Class1, NestedTemplate<P1, P2> >* const *',
+                                'name': 'param',
+                                'row': 2},
                                {'type': 'int*', 'name': 'myCount', 'row': 3})
         index = 0
         for parameter in cpp_style.parameter_list(elided_lines, start_position, end_position):
@@ -586,7 +588,8 @@ class FunctionDetectionTest(CppStyleTestBase):
 
         # Some parameter type with modifiers and no parameter names.
         function_state = self.perform_function_detection(
-            ['virtual void determineARIADropEffects(Vector<String>*&, const unsigned long int*&, const MediaPlayer::Preload, Other<Other2, Other3<P1, P2> >, int);'],
+            [
+                'virtual void determineARIADropEffects(Vector<String>*&, const unsigned long int*&, const MediaPlayer::Preload, Other<Other2, Other3<P1, P2> >, int);'],
             {'name': 'determineARIADropEffects',
              'modifiers_and_return_type': 'virtual void',
              'parameter_start_position': (0, 37),
@@ -810,7 +813,7 @@ class CppStyleTest(CppStyleTestBase):
     # We cannot test this functionality because of difference of
     # function definitions.  Anyway, we may never enable this.
     #
-    # # Test for unnamed arguments in a method.
+    # Test for unnamed arguments in a method.
     # def test_check_for_unnamed_params(self):
     #   message = ('All parameters should be named in a function'
     #              '  [readability/function] [3]')
@@ -833,8 +836,8 @@ class CppStyleTest(CppStyleTestBase):
     #   self.assert_lint('static void operator delete[](void* x) throw();', '')
     #   self.assert_lint('static void operator delete[](void* /*x*/) throw();', '')
     #
-    #   # This one should technically warn, but doesn't because the function
-    #   # pointer is confusing.
+    # This one should technically warn, but doesn't because the function
+    # pointer is confusing.
     #   self.assert_lint('virtual void E(void (*fn)(int* p));', '')
 
     # Test deprecated casts such as int(d)
@@ -4158,7 +4161,7 @@ class WebKitStyleTest(CppStyleTestBase):
             'Extra space after ( in if  [whitespace/parens] [5]')
         # FIXME: currently we only check first conditional, so we cannot detect errors in next ones.
         # self.assert_multi_line_lint(
-        #     '#define TEST_ASSERT(expression) do { if (!(expression)) { TestsController::shared().testFailed(__FILE__, __LINE__, #expression); return; } } while (0 )\n',
+        # '#define TEST_ASSERT(expression) do { if (!(expression)) { TestsController::shared().testFailed(__FILE__, __LINE__, #expression); return; } } while (0 )\n',
         #     'Mismatching spaces inside () in if  [whitespace/parens] [5]')
         self.assert_multi_line_lint(
             'WTF_MAKE_NONCOPYABLE(ClassName); WTF_MAKE_FAST_ALLOCATED;\n',

@@ -106,7 +106,7 @@ class MultiCommandTool(object):
         return None
 
     def path(self):
-        raise NotImplementedError, "subclasses must implement"
+        raise NotImplementedError("subclasses must implement")
 
     def command_completed(self):
         pass
@@ -148,7 +148,7 @@ class MultiCommandTool(object):
             try:
                 result = command.check_arguments_and_execute(options, args, self)
                 break
-            except TryAgain, e:
+            except TryAgain as e:
                 pass
 
         self.command_completed()

@@ -70,7 +70,7 @@ class ProcessJsonData(object):
 
     def _process_json_object(self, json_object, keyList):
         for key, subdict in json_object.iteritems():
-            if type(subdict) == dict:
+            if isinstance(subdict, dict):
                 self._process_json_object(subdict, keyList + [key])
             else:
                 row = [self._get_test_result(json_object)]

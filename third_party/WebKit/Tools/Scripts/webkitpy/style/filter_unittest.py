@@ -47,7 +47,7 @@ from filter import FilterConfiguration
 #    also define __ne__() so that the operators will behave as
 #    expected."
 #
-#   (from http://docs.python.org/reference/datamodel.html#object.__ne__ )
+# (from http://docs.python.org/reference/datamodel.html#object.__ne__ )
 
 
 class ValidateFilterRulesTest(unittest.TestCase):

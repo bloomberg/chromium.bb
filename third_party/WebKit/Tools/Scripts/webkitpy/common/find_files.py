@@ -58,7 +58,8 @@ def find(filesystem, base_dir, paths=None, skipped_directories=None, file_filter
 
     paths = paths or ['*']
     skipped_directories = skipped_directories or set(['.svn', '_svn'])
-    return _normalized_find(filesystem, _normalize(filesystem, base_dir, paths), skipped_directories, file_filter, directory_sort_key)
+    return _normalized_find(filesystem, _normalize(
+        filesystem, base_dir, paths), skipped_directories, file_filter, directory_sort_key)
 
 
 def _normalize(filesystem, base_dir, paths):

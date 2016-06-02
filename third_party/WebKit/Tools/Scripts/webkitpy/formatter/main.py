@@ -56,14 +56,20 @@ def main(host=None, args=None):
 def _autopep8_options_for_style(style):
     return {
         None: [],
-        'blink': autopep8.parse_args(['--aggressive',
-                                      '--max-line-length', '132',
-                                      '--indent-size', '4',
-                                      '']),
-        'chromium': autopep8.parse_args(['--aggressive',
-                                         '--max-line-length', '80',
-                                         '--indent-size', '2',
-                                         '']),
+        'blink': autopep8.parse_args([
+            '--aggressive',
+            '--max-line-length', '132',
+            '--ignore=E309',
+            '--indent-size', '4',
+            '',
+        ]),
+        'chromium': autopep8.parse_args([
+            '--aggressive',
+            '--max-line-length', '80',
+            '--ignore=E309',
+            '--indent-size', '2',
+            '',
+        ]),
     }.get(style)
 
 

@@ -172,7 +172,7 @@ class PortTestCase(unittest.TestCase):
                 test_socket = socket.socket()
                 test_socket.connect((host, port))
                 self.fail()
-            except IOError, e:
+            except IOError as e:
                 self.assertTrue(e.errno in (errno.ECONNREFUSED, errno.ECONNRESET))
             finally:
                 test_socket.close()
@@ -182,7 +182,7 @@ class PortTestCase(unittest.TestCase):
             try:
                 test_socket = socket.socket()
                 test_socket.connect((host, port))
-            except IOError, e:
+            except IOError as e:
                 self.fail('failed to connect to %s:%d' % (host, port))
             finally:
                 test_socket.close()
@@ -231,7 +231,7 @@ class PortTestCase(unittest.TestCase):
         exception_raised = False
         try:
             port.diff_image("EXPECTED", "ACTUAL")
-        except ValueError, e:
+        except ValueError as e:
             exception_raised = True
         self.assertFalse(exception_raised)
 
