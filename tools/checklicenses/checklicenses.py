@@ -532,21 +532,9 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
-    # http://crbug.com/334668
-    # Apache v2.0.
-    'tools/swarming_client/third_party/oauth2client': [
-        'UNKNOWN',
-    ],
-
     # http://crbug.com/471372
     # BSD
     'tools/swarming_client/third_party/pyasn1': [
-        'UNKNOWN',
-    ],
-
-    # http://crbug.com/471372
-    # Apache v2.0.
-    'tools/swarming_client/third_party/rsa': [
         'UNKNOWN',
     ],
 
@@ -619,18 +607,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
     'tools/symsrc/pefile.py': [
-        'UNKNOWN',
-    ],
-    # Not shipped, MIT license but the header files contain no licensing info.
-    'tools/telemetry/third_party/altgraph': [
-        'UNKNOWN',
-    ],
-    # Not shipped, MIT license but the header files contain no licensing info.
-    'tools/telemetry/third_party/modulegraph': [
-        'UNKNOWN',
-    ],
-    'tools/telemetry/third_party/pyserial': [
-        # https://sourceforge.net/p/pyserial/feature-requests/35/
         'UNKNOWN',
     ],
     # Not shipped, MIT license but the header files contain no licensing info.
