@@ -71,7 +71,7 @@ PASS new PointerEvent('eventType', { tiltY: {abc:1} }).tiltY is 0
 PASS new PointerEvent('eventType', { tiltY: {} }).tiltY is 0
 PASS new PointerEvent('eventType', { tiltY: {valueOf: function () { return 123; }} }).tiltY is 123
 -- no init --
-PASS new PointerEvent('eventType').width is 0
+PASS new PointerEvent('eventType').width is 1
 -- init with valid float/double values --
 PASS new PointerEvent('eventType', { width: 123 }).width is 123
 PASS new PointerEvent('eventType', { width: -123 }).width is -123
@@ -84,7 +84,7 @@ PASS new PointerEvent('eventType', { width: '123abc' }).width threw exception Ty
 PASS new PointerEvent('eventType', { width: 'dummy' }).width threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
 PASS new PointerEvent('eventType', { width: NaN }).width threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
 PASS new PointerEvent('eventType', { width: null }).width is 0
-PASS new PointerEvent('eventType', { width: undefined }).width is 0
+PASS new PointerEvent('eventType', { width: undefined }).width is 1
 PASS new PointerEvent('eventType', { width: [] }).width is 0
 PASS new PointerEvent('eventType', { width: [12] }).width is 12
 PASS new PointerEvent('eventType', { width: [12, 34] }).width threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
@@ -93,7 +93,7 @@ PASS new PointerEvent('eventType', { width: {abc:1} }).width threw exception Typ
 PASS new PointerEvent('eventType', { width: {} }).width threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
 PASS new PointerEvent('eventType', { width: {valueOf: function () { return 123; }} }).width is 123
 -- no init --
-PASS new PointerEvent('eventType').height is 0
+PASS new PointerEvent('eventType').height is 1
 -- init with valid float/double values --
 PASS new PointerEvent('eventType', { height: 123 }).height is 123
 PASS new PointerEvent('eventType', { height: -123 }).height is -123
@@ -106,7 +106,7 @@ PASS new PointerEvent('eventType', { height: '123abc' }).height threw exception 
 PASS new PointerEvent('eventType', { height: 'dummy' }).height threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
 PASS new PointerEvent('eventType', { height: NaN }).height threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..
 PASS new PointerEvent('eventType', { height: null }).height is 0
-PASS new PointerEvent('eventType', { height: undefined }).height is 0
+PASS new PointerEvent('eventType', { height: undefined }).height is 1
 PASS new PointerEvent('eventType', { height: [] }).height is 0
 PASS new PointerEvent('eventType', { height: [12] }).height is 12
 PASS new PointerEvent('eventType', { height: [12, 34] }).height threw exception TypeError: Failed to construct 'PointerEvent': The provided double value is non-finite..

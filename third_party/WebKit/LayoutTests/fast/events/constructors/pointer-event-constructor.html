@@ -36,7 +36,10 @@ debug("--- tests for intrinsic attributes ---");
 
 ["width", "height", "pressure"].forEach(function (attr) {
   debug("-- no init --");
-  shouldBeZero("new PointerEvent('eventType')." + attr);
+  var defaultValue = 1; // For width and height
+  if (attr == "pressure")
+    defaultValue = 0;
+  shouldBeEqualToNumber("new PointerEvent('eventType')." + attr, defaultValue);
 
   debug("-- init with valid float/double values --");
   shouldBeEqualToNumber("new PointerEvent('eventType', { " + attr + ": 123 })." + attr, 123);
@@ -51,7 +54,7 @@ debug("--- tests for intrinsic attributes ---");
   shouldThrow("new PointerEvent('eventType', { " + attr + ": 'dummy' })." + attr);
   shouldThrow("new PointerEvent('eventType', { " + attr + ": NaN })." + attr);
   shouldBeZero("new PointerEvent('eventType', { " + attr + ": null })." + attr);
-  shouldBeZero("new PointerEvent('eventType', { " + attr + ": undefined })." + attr);
+  shouldBeEqualToNumber("new PointerEvent('eventType', { " + attr + ": undefined })." + attr, defaultValue);
   shouldBeZero("new PointerEvent('eventType', { " + attr + ": [] })." + attr);
 
   shouldBeEqualToNumber("new PointerEvent('eventType', { " + attr + ": [12] })." + attr, 12);

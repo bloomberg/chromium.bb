@@ -71,7 +71,7 @@ FAIL new PointerEvent('eventType', { tiltY: {abc:1} }).tiltY should be 0. Threw 
 FAIL new PointerEvent('eventType', { tiltY: {} }).tiltY should be 0. Threw exception ReferenceError: PointerEvent is not defined
 FAIL new PointerEvent('eventType', { tiltY: {valueOf: function () { return 123; }} }).tiltY should be 123. Threw exception ReferenceError: PointerEvent is not defined
 -- no init --
-FAIL new PointerEvent('eventType').width should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').width should be 1. Threw exception ReferenceError: PointerEvent is not defined
 -- init with valid float/double values --
 FAIL new PointerEvent('eventType', { width: 123 }).width should be 123. Threw exception ReferenceError: PointerEvent is not defined
 FAIL new PointerEvent('eventType', { width: -123 }).width should be -123. Threw exception ReferenceError: PointerEvent is not defined
@@ -84,7 +84,7 @@ PASS new PointerEvent('eventType', { width: '123abc' }).width threw exception Re
 PASS new PointerEvent('eventType', { width: 'dummy' }).width threw exception ReferenceError: PointerEvent is not defined.
 PASS new PointerEvent('eventType', { width: NaN }).width threw exception ReferenceError: PointerEvent is not defined.
 FAIL new PointerEvent('eventType', { width: null }).width should be 0. Threw exception ReferenceError: PointerEvent is not defined
-FAIL new PointerEvent('eventType', { width: undefined }).width should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { width: undefined }).width should be 1. Threw exception ReferenceError: PointerEvent is not defined
 FAIL new PointerEvent('eventType', { width: [] }).width should be 0. Threw exception ReferenceError: PointerEvent is not defined
 FAIL new PointerEvent('eventType', { width: [12] }).width should be 12. Threw exception ReferenceError: PointerEvent is not defined
 PASS new PointerEvent('eventType', { width: [12, 34] }).width threw exception ReferenceError: PointerEvent is not defined.
@@ -93,7 +93,7 @@ PASS new PointerEvent('eventType', { width: {abc:1} }).width threw exception Ref
 PASS new PointerEvent('eventType', { width: {} }).width threw exception ReferenceError: PointerEvent is not defined.
 FAIL new PointerEvent('eventType', { width: {valueOf: function () { return 123; }} }).width should be 123. Threw exception ReferenceError: PointerEvent is not defined
 -- no init --
-FAIL new PointerEvent('eventType').height should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType').height should be 1. Threw exception ReferenceError: PointerEvent is not defined
 -- init with valid float/double values --
 FAIL new PointerEvent('eventType', { height: 123 }).height should be 123. Threw exception ReferenceError: PointerEvent is not defined
 FAIL new PointerEvent('eventType', { height: -123 }).height should be -123. Threw exception ReferenceError: PointerEvent is not defined
@@ -106,7 +106,7 @@ PASS new PointerEvent('eventType', { height: '123abc' }).height threw exception 
 PASS new PointerEvent('eventType', { height: 'dummy' }).height threw exception ReferenceError: PointerEvent is not defined.
 PASS new PointerEvent('eventType', { height: NaN }).height threw exception ReferenceError: PointerEvent is not defined.
 FAIL new PointerEvent('eventType', { height: null }).height should be 0. Threw exception ReferenceError: PointerEvent is not defined
-FAIL new PointerEvent('eventType', { height: undefined }).height should be 0. Threw exception ReferenceError: PointerEvent is not defined
+FAIL new PointerEvent('eventType', { height: undefined }).height should be 1. Threw exception ReferenceError: PointerEvent is not defined
 FAIL new PointerEvent('eventType', { height: [] }).height should be 0. Threw exception ReferenceError: PointerEvent is not defined
 FAIL new PointerEvent('eventType', { height: [12] }).height should be 12. Threw exception ReferenceError: PointerEvent is not defined
 PASS new PointerEvent('eventType', { height: [12, 34] }).height threw exception ReferenceError: PointerEvent is not defined.

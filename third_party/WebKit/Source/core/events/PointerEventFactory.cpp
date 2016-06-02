@@ -129,10 +129,6 @@ PointerEvent* PointerEventFactory::create(
     pointerEventInit.setPressure(getPointerEventPressure(
         mouseEvent.pointerProperties().force, pointerEventInit.buttons()));
 
-    // Set width/height to 1 because it matches Edge (and supported by the spec).
-    pointerEventInit.setWidth(1);
-    pointerEventInit.setHeight(1);
-
     UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit, mouseEvent.getModifiers());
 
     // Make sure chorded buttons fire pointermove instead of pointerup/down.
