@@ -39,6 +39,11 @@ const base::Feature kMaterialDesignUserManager {
   "MaterialDesignUserManager", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
+// Enables or disables the material design desktop user menu.
+const base::Feature kMaterialDesignUserMenu {
+  "MaterialDesignUserMenu", base::FEATURE_DISABLED_BY_DEFAULT
+};
+
 // Enables or disables the new password separated sign in flow in a tab modal
 // dialog.
 const base::Feature kUsePasswordSeparatedSigninFlow {
