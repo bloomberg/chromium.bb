@@ -42,28 +42,28 @@ public class TapGestureDetector {
     }
 
     /** The listener to which notifications are sent. */
-    private OnTapListener mListener;
+    private final OnTapListener mListener;
 
     /** Handler used for posting tasks to be executed in the future. */
-    private Handler mHandler;
+    private final Handler mHandler;
+
+    /**
+     * Stores the location of each down MotionEvent (by pointer ID), for detecting motion of any
+     * pointer beyond the TouchSlop region.
+     */
+    private final SparseArray<PointF> mInitialPositions = new SparseArray<PointF>();
+
+    /**
+     * Threshold squared-distance, in pixels, to use for motion-detection. If a finger moves less
+     * than this distance, the gesture is still eligible to be a tap event.
+     */
+    private final int mTouchSlopSquare;
 
     /** The maximum number of fingers seen in the gesture. */
     private int mPointerCount = 0;
 
     /** The coordinates of the first finger down seen in the gesture. */
     private PointF mInitialPoint;
-
-    /**
-     * Stores the location of each down MotionEvent (by pointer ID), for detecting motion of any
-     * pointer beyond the TouchSlop region.
-     */
-    private SparseArray<PointF> mInitialPositions = new SparseArray<PointF>();
-
-    /**
-     * Threshold squared-distance, in pixels, to use for motion-detection. If a finger moves less
-     * than this distance, the gesture is still eligible to be a tap event.
-     */
-    private int mTouchSlopSquare;
 
     /** Set to true whenever motion is detected in the gesture, or a long-touch is triggered. */
     private boolean mTapCancelled = false;
@@ -81,9 +81,10 @@ public class TapGestureDetector {
         public void handleMessage(Message message) {
             TapGestureDetector detector = mDetector.get();
             if (detector != null) {
+                detector.mTapCancelled = true;
                 detector.mListener.onLongPress(
                         detector.mPointerCount, detector.mInitialPoint.x, detector.mInitialPoint.y);
-                detector.mTapCancelled = true;
+                detector.mInitialPoint = null;
             }
         }
     }
@@ -102,9 +103,10 @@ public class TapGestureDetector {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 reset();
+                trackDownEvent(event);
+
                 // Cause a long-press notification to be triggered after the timeout.
                 mHandler.sendEmptyMessageDelayed(0, ViewConfiguration.getLongPressTimeout());
-                trackDownEvent(event);
                 mPointerCount = 1;
                 break;
 
