@@ -423,6 +423,16 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'android',
     },
+    'Android Swarmed Debug (Nexus 5X)': {
+      'swarming_dimensions': {
+        'device_type': 'bullhead',
+        'device_os': 'M',
+        'os': 'Android'
+      },
+      'build_config': 'android-content-shell',
+      'swarming': True,
+      'os_type': 'android',
+    },
     'Android Debug (Nexus 6)': {
       'swarming_dimensions': {
         # There are no PCI IDs on Android.
