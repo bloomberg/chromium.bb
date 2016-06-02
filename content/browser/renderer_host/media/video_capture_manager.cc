@@ -1114,9 +1114,20 @@ void VideoCaptureManager::ResumeDevices() {
         entry->video_capture_device())
       continue;
 
-    // Session ID is only valid for Screen capture. So we can fake it to resume
-    // video capture devices here.
-    QueueStartDevice(kFakeSessionId, entry, entry->parameters);
+    // Check if the device is already in the start queue.
+    bool device_in_queue = false;
+    for (auto& request : device_start_queue_) {
+      if (request.serial_id() == entry->serial_id) {
+        device_in_queue = true;
+        break;
+      }
+    }
+
+    if (!device_in_queue) {
+      // Session ID is only valid for Screen capture. So we can fake it to
+      // resume video capture devices here.
+      QueueStartDevice(kFakeSessionId, entry, entry->parameters);
+    }
   }
 }
 #endif  // defined(OS_ANDROID)

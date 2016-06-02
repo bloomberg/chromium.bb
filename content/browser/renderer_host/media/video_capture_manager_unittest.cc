@@ -160,6 +160,12 @@ class VideoCaptureManagerTest : public testing::Test {
                                frame_observer_.get());
   }
 
+#if defined(OS_ANDROID)
+  void ApplicationStateChange(base::android::ApplicationState state) {
+    vcm_->OnApplicationStateChange(state);
+  }
+#endif
+
   int next_client_id_;
   std::map<VideoCaptureControllerID, VideoCaptureController*> controllers_;
   scoped_refptr<VideoCaptureManager> vcm_;
@@ -543,7 +549,7 @@ TEST_F(VideoCaptureManagerTest, CloseWithoutStop) {
 }
 
 // Try to open, start, pause and resume a device.
-TEST_F(VideoCaptureManagerTest, PauseAndResume) {
+TEST_F(VideoCaptureManagerTest, PauseAndResumeClient) {
   StreamDeviceInfoArray devices;
 
   InSequence s;
@@ -572,6 +578,47 @@ TEST_F(VideoCaptureManagerTest, PauseAndResume) {
   message_loop_->RunUntilIdle();
   vcm_->Unregister();
 }
+
+#if defined(OS_ANDROID)
+// Try to open, start, pause and resume a device.
+TEST_F(VideoCaptureManagerTest, PauseAndResumeDevice) {
+  StreamDeviceInfoArray devices;
+
+  InSequence s;
+  EXPECT_CALL(*listener_, DevicesEnumerated(MEDIA_DEVICE_VIDEO_CAPTURE, _))
+      .WillOnce(SaveArg<1>(&devices));
+  EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
+  EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
+
+  vcm_->EnumerateDevices(MEDIA_DEVICE_VIDEO_CAPTURE);
+
+  // Wait to get device callback.
+  message_loop_->RunUntilIdle();
+
+  int video_session_id = vcm_->Open(devices.front());
+  VideoCaptureControllerID client_id = StartClient(video_session_id, true);
+
+  // Release/ResumeDevices according to ApplicationStatus. Should cause no
+  // problem in any order. Check https://crbug.com/615557 for more details.
+  ApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
+  ApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
+  ApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
+  ApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
+  ApplicationStateChange(
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
+
+  StopClient(client_id);
+  vcm_->Close(video_session_id);
+
+  // Wait to check callbacks before removing the listener.
+  message_loop_->RunUntilIdle();
+  vcm_->Unregister();
+}
+#endif
 
 // TODO(mcasas): Add a test to check consolidation of the supported formats
 // provided by the device when http://crbug.com/323913 is closed.

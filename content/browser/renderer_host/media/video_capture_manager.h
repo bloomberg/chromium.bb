@@ -162,6 +162,12 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   void TakePhoto(int session_id,
                  media::ScopedResultCallback<
                      VideoCaptureDevice::TakePhotoCallback> callback);
+#if defined(OS_ANDROID)
+  // Some devices had troubles when stopped and restarted quickly, so the device
+  // is only stopped when Chrome is sent to background and not when, e.g., a tab
+  // is hidden, see http://crbug.com/582295.
+  void OnApplicationStateChange(base::android::ApplicationState state);
+#endif
 
  private:
   class DeviceEntry;
@@ -275,10 +281,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 #endif
 
 #if defined(OS_ANDROID)
-  // Some devices had troubles when stopped and restarted quickly, so the device
-  // is only stopped when Chrome is sent to background and not when, e.g., a tab
-  // is hidden, see http://crbug.com/582295.
-  void OnApplicationStateChange(base::android::ApplicationState state);
   void ReleaseDevices();
   void ResumeDevices();
 
