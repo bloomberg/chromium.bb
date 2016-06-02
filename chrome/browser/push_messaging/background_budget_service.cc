@@ -129,6 +129,14 @@ double BackgroundBudgetService::GetBudget(const GURL& origin) {
   base::Time now = clock_->Now();
   base::TimeDelta elapsed = now - base::Time::FromDoubleT(last_updated_msec);
 
+  // The user can set their clock backwards, so if the last updated time is in
+  // the future, don't update the budget based on elapsed time. Eventually the
+  // clock will reach the future, and the budget calculations will catch up.
+  // TODO(harkness): Consider what to do if the clock jumps forward by a
+  // significant amount.
+  if (elapsed.InMicroseconds() < 0)
+    return old_budget;
+
   // For each time period that elapses, calculate the carryover ratio as the
   // ratio of time remaining in our max period to the total period.
   // The carryover component is then the old budget multiplied by the ratio.

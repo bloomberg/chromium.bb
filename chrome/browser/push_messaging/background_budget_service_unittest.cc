@@ -214,3 +214,28 @@ TEST_F(BackgroundBudgetServiceTest, GetBudgetInvalidBudget) {
 
   EXPECT_DOUBLE_EQ(budget, kTestSES);
 }
+
+TEST_F(BackgroundBudgetServiceTest, GetBudgetNegativeTime) {
+  // Manually construct a BackgroundBudgetService with a clock that the test
+  // can control so that we can fast forward in time.
+  BackgroundBudgetService* service = GetService();
+  base::SimpleTestClock* clock = SetClockForTesting();
+  base::Time starting_time = clock->Now();
+
+  // Set initial SES and budget values.
+  const GURL origin(kTestOrigin);
+  SetSiteEngagementScore(origin, kTestSES);
+  service->StoreBudget(origin, kTestBudget);
+
+  // Move time forward an hour and get the budget.
+  clock->SetNow(starting_time + base::TimeDelta::FromHours(1));
+  double budget = service->GetBudget(origin);
+  service->StoreBudget(origin, budget);
+  EXPECT_NE(kTestBudget, budget);
+
+  // Now move time backwards a day and make sure that the current
+  // budget matches the budget of the most foward time.
+  clock->SetNow(starting_time - base::TimeDelta::FromDays(1));
+  double back_budget = service->GetBudget(origin);
+  EXPECT_NEAR(budget, back_budget, 0.01);
+}
