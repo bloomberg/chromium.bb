@@ -249,6 +249,11 @@ class GFX_EXPORT Canvas {
                   int radius,
                   const SkPaint& paint);
 
+  // Draws a circle with the given |paint| parameters.
+  void DrawCircle(const PointF& center_point,
+                  float radius,
+                  const SkPaint& paint);
+
   // Draws the given rectangle with rounded corners of |radius| using the
   // given |paint| parameters. DEPRECATED in favor of the RectF version below.
   // TODO(mgiuca): Remove this (http://crbug.com/553726).

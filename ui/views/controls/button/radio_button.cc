@@ -8,6 +8,9 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/resources/grit/views_resources.h"
 #include "ui/views/widget/widget.h"
@@ -21,43 +24,44 @@ RadioButton::RadioButton(const base::string16& label, int group_id)
     : Checkbox(label) {
   SetGroup(group_id);
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  if (!UseMd()) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    // Unchecked/Unfocused images.
+    SetCustomImage(false, false, STATE_NORMAL,
+                   *rb.GetImageSkiaNamed(IDR_RADIO));
+    SetCustomImage(false, false, STATE_HOVERED,
+                   *rb.GetImageSkiaNamed(IDR_RADIO_HOVER));
+    SetCustomImage(false, false, STATE_PRESSED,
+                   *rb.GetImageSkiaNamed(IDR_RADIO_PRESSED));
+    SetCustomImage(false, false, STATE_DISABLED,
+                   *rb.GetImageSkiaNamed(IDR_RADIO_DISABLED));
 
-  // Unchecked/Unfocused images.
-  SetCustomImage(false, false, STATE_NORMAL,
-                 *rb.GetImageSkiaNamed(IDR_RADIO));
-  SetCustomImage(false, false, STATE_HOVERED,
-                 *rb.GetImageSkiaNamed(IDR_RADIO_HOVER));
-  SetCustomImage(false, false, STATE_PRESSED,
-                 *rb.GetImageSkiaNamed(IDR_RADIO_PRESSED));
-  SetCustomImage(false, false, STATE_DISABLED,
-                 *rb.GetImageSkiaNamed(IDR_RADIO_DISABLED));
+    // Checked/Unfocused images.
+    SetCustomImage(true, false, STATE_NORMAL,
+                   *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED));
+    SetCustomImage(true, false, STATE_HOVERED,
+                   *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED_HOVER));
+    SetCustomImage(true, false, STATE_PRESSED,
+                   *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED_PRESSED));
+    SetCustomImage(true, false, STATE_DISABLED,
+                   *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED_DISABLED));
 
-  // Checked/Unfocused images.
-  SetCustomImage(true, false, STATE_NORMAL,
-                 *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED));
-  SetCustomImage(true, false, STATE_HOVERED,
-                 *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED_HOVER));
-  SetCustomImage(true, false, STATE_PRESSED,
-                 *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED_PRESSED));
-  SetCustomImage(true, false, STATE_DISABLED,
-                 *rb.GetImageSkiaNamed(IDR_RADIO_CHECKED_DISABLED));
+    // Unchecked/Focused images.
+    SetCustomImage(false, true, STATE_NORMAL,
+                   *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED));
+    SetCustomImage(false, true, STATE_HOVERED,
+                   *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_HOVER));
+    SetCustomImage(false, true, STATE_PRESSED,
+                   *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_PRESSED));
 
-  // Unchecked/Focused images.
-  SetCustomImage(false, true, STATE_NORMAL,
-                 *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED));
-  SetCustomImage(false, true, STATE_HOVERED,
-                 *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_HOVER));
-  SetCustomImage(false, true, STATE_PRESSED,
-                 *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_PRESSED));
-
-  // Checked/Focused images.
-  SetCustomImage(true, true, STATE_NORMAL,
-                 *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_CHECKED));
-  SetCustomImage(true, true, STATE_HOVERED,
-                 *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_CHECKED_HOVER));
-  SetCustomImage(true, true, STATE_PRESSED,
-                 *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_CHECKED_PRESSED));
+    // Checked/Focused images.
+    SetCustomImage(true, true, STATE_NORMAL,
+                   *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_CHECKED));
+    SetCustomImage(true, true, STATE_HOVERED,
+                   *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_CHECKED_HOVER));
+    SetCustomImage(true, true, STATE_PRESSED,
+                   *rb.GetImageSkiaNamed(IDR_RADIO_FOCUSED_CHECKED_PRESSED));
+  }
 }
 
 RadioButton::~RadioButton() {
@@ -90,6 +94,11 @@ void RadioButton::SetChecked(bool checked) {
     }
   }
   Checkbox::SetChecked(checked);
+}
+
+void RadioButton::PaintFocusRing(gfx::Canvas* canvas, const SkPaint& paint) {
+  canvas->DrawCircle(gfx::PointF(image()->bounds().CenterPoint()),
+                     image()->width() / 2 + .5f, paint);
 }
 
 const char* RadioButton::GetClassName() const {
@@ -141,6 +150,18 @@ void RadioButton::NotifyClick(const ui::Event& event) {
 
 ui::NativeTheme::Part RadioButton::GetThemePart() const {
   return ui::NativeTheme::kRadio;
+}
+
+gfx::ImageSkia RadioButton::GetImage(ButtonState for_state) const {
+  if (!UseMd())
+    return Checkbox::GetImage(for_state);
+
+  return gfx::CreateVectorIcon(
+      checked() ? gfx::VectorIconId::RADIO_BUTTON_ACTIVE
+                : gfx::VectorIconId::RADIO_BUTTON_NORMAL,
+      16, GetNativeTheme()->GetSystemColor(
+              checked() ? ui::NativeTheme::kColorId_FocusedBorderColor
+                        : ui::NativeTheme::kColorId_UnfocusedBorderColor));
 }
 
 }  // namespace views

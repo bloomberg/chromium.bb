@@ -41,7 +41,7 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
 
   // Gets or sets the image shown for the specified button state.
   // GetImage returns the image for STATE_NORMAL if the state's image is empty.
-  virtual const gfx::ImageSkia& GetImage(ButtonState for_state);
+  virtual gfx::ImageSkia GetImage(ButtonState for_state) const;
   void SetImage(ButtonState for_state, const gfx::ImageSkia& image);
 
   // Gets or sets the text shown on the button.

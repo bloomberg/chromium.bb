@@ -287,6 +287,13 @@ void Canvas::DrawCircle(const Point& center_point,
       SkIntToScalar(center_point.y()), SkIntToScalar(radius), paint);
 }
 
+void Canvas::DrawCircle(const PointF& center_point,
+                        float radius,
+                        const SkPaint& paint) {
+  canvas_->drawCircle(SkFloatToScalar(center_point.x()),
+                      SkFloatToScalar(center_point.y()), radius, paint);
+}
+
 void Canvas::DrawRoundRect(const Rect& rect,
                            int radius,
                            const SkPaint& paint) {

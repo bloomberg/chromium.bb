@@ -12,6 +12,8 @@
 #include "base/strings/string16.h"
 #include "ui/views/controls/button/label_button.h"
 
+class SkPaint;
+
 namespace views {
 
 // A native themed class representing a checkbox.  This class does not use
@@ -32,13 +34,18 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   bool checked() const { return checked_; }
 
  protected:
+  // Returns whether MD is enabled; exists for the sake of brevity.
+  static bool UseMd();
+
   // Overridden from LabelButton:
   void Layout() override;
   const char* GetClassName() const override;
   void GetAccessibleState(ui::AXViewState* state) override;
+  void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
-  const gfx::ImageSkia& GetImage(ButtonState for_state) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
+  gfx::ImageSkia GetImage(ButtonState for_state) const override;
 
   // Set the image shown for each button state depending on whether it is
   // [checked] or [focused].
@@ -46,6 +53,9 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
                       bool focused,
                       ButtonState for_state,
                       const gfx::ImageSkia& image);
+
+  // Paints a focus indicator for the view.
+  virtual void PaintFocusRing(gfx::Canvas* canvas, const SkPaint& paint);
 
  private:
   // Overridden from Button:

@@ -116,7 +116,7 @@ LabelButton::LabelButton(ButtonListener* listener, const base::string16& text)
 
 LabelButton::~LabelButton() {}
 
-const gfx::ImageSkia& LabelButton::GetImage(ButtonState for_state) {
+gfx::ImageSkia LabelButton::GetImage(ButtonState for_state) const {
   if (for_state != STATE_NORMAL && button_state_images_[for_state].isNull())
     return button_state_images_[STATE_NORMAL];
   return button_state_images_[for_state];
