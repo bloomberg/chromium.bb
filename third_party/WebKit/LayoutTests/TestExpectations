@@ -1331,6 +1331,9 @@ crbug.com/606302 [ Win ] transforms/3d/point-mapping/3d-point-mapping-preserve-3
 crbug.com/606302 [ Linux Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 crbug.com/613497 [ Linux Release ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 
+# Crashed on Linux ASAN.
+crbug.com/616700 [ Linux ] svg/filters/filtered-animated-image-crash.html [ Crash Failure ]
+
 crbug.com/613659 imported/wpt/quirks-mode/percentage-height-calculation.html [ Failure ]
 crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 crbug.com/613663 imported/wpt/quirks-mode/table-cell-width-calculation.html [ Failure ]
