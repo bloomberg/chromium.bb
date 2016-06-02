@@ -112,7 +112,7 @@ void V8WrapperInstantiationScope::securityCheck(v8::Isolate* isolate, v8::Local<
     const DOMWrapperWorld& currentWorld = DOMWrapperWorld::world(m_context);
     RELEASE_ASSERT(currentWorld.worldId() == DOMWrapperWorld::world(contextForWrapper).worldId());
     if (currentWorld.isMainWorld()) {
-        RELEASE_ASSERT(BindingSecurity::shouldAllowAccessToFrame(isolate, callingDOMWindow(isolate), frame, DoNotReportSecurityError));
+        RELEASE_ASSERT(BindingSecurity::shouldAllowAccessToFrame(isolate, currentDOMWindow(isolate), frame, DoNotReportSecurityError));
     }
 }
 
@@ -121,7 +121,7 @@ void V8WrapperInstantiationScope::convertException()
     v8::Isolate* isolate = m_context->GetIsolate();
     // TODO(jochen): Currently, Location is the only object for which we can reach this code path. Should be generalized.
     ExceptionState exceptionState(ExceptionState::ConstructionContext, "Location", isolate->GetCurrentContext()->Global(), isolate);
-    LocalDOMWindow* callingWindow = callingDOMWindow(isolate);
+    LocalDOMWindow* callingWindow = currentDOMWindow(isolate);
     DOMWindow* targetWindow = toDOMWindow(m_context);
     exceptionState.throwSecurityError(targetWindow->sanitizedCrossDomainAccessErrorMessage(callingWindow), targetWindow->crossDomainAccessErrorMessage(callingWindow));
     exceptionState.throwIfNeeded();

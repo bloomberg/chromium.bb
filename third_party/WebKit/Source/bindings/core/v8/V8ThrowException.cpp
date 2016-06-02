@@ -69,7 +69,7 @@ v8::Local<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate, 
     // FIXME: Is the current context always the right choice?
     ScriptState* scriptState = ScriptState::from(creationContext->CreationContext());
     Frame* frame = toFrameIfNotDetached(scriptState->context());
-    if (!frame || !BindingSecurity::shouldAllowAccessToFrame(isolate, callingDOMWindow(isolate), frame, DoNotReportSecurityError)) {
+    if (!frame || !BindingSecurity::shouldAllowAccessToFrame(isolate, currentDOMWindow(isolate), frame, DoNotReportSecurityError)) {
         scriptState = ScriptState::current(isolate);
         sanitizedCreationContext = scriptState->context()->Global();
     }
