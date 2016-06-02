@@ -8,7 +8,6 @@
 #include "base/metrics/histogram.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
-#include "components/sync_driver/sync_client.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/util/experiments.h"
 
@@ -21,7 +20,6 @@ AutofillDataTypeController::AutofillDataTypeController(
     sync_driver::SyncClient* sync_client,
     const scoped_refptr<autofill::AutofillWebDataService>& web_data_service)
     : NonUIDataTypeController(ui_thread, error_callback, sync_client),
-      sync_client_(sync_client),
       db_thread_(db_thread),
       web_data_service_(web_data_service) {}
 
@@ -65,13 +63,6 @@ bool AutofillDataTypeController::StartModels() {
         base::Bind(&AutofillDataTypeController::WebDatabaseLoaded, this));
     return false;
   }
-}
-
-void AutofillDataTypeController::StartAssociating(
-    const StartCallback& start_callback) {
-  DCHECK(ui_thread()->BelongsToCurrentThread());
-  DCHECK_EQ(state(), MODEL_LOADED);
-  NonUIDataTypeController::StartAssociating(start_callback);
 }
 
 }  // namespace browser_sync

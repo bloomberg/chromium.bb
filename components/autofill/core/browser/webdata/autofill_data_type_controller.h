@@ -33,10 +33,6 @@ class AutofillDataTypeController : public sync_driver::NonUIDataTypeController {
   syncer::ModelType type() const override;
   syncer::ModelSafeGroup model_safe_group() const override;
 
-  // NonFrontendDatatypeController override, needed as stop-gap until bug
-  // 163431 is addressed / implemented.
-  void StartAssociating(const StartCallback& start_callback) override;
-
  protected:
   ~AutofillDataTypeController() override;
 
@@ -52,9 +48,6 @@ class AutofillDataTypeController : public sync_driver::NonUIDataTypeController {
 
   // Callback once WebDatabase has loaded.
   void WebDatabaseLoaded();
-
-  // A pointer to the sync client.
-  sync_driver::SyncClient* const sync_client_;
 
   // A reference to the DB thread's task runner.
   const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;

@@ -51,7 +51,6 @@ struct DoInitializeOptions {
       const base::Closure& report_unrecoverable_error_function,
       std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
           saved_nigori_state,
-      syncer::PassphraseTransitionClearDataOption clear_data_option,
       const std::map<syncer::ModelType, int64_t>& invalidation_versions);
   ~DoInitializeOptions();
 
@@ -78,7 +77,6 @@ struct DoInitializeOptions {
   base::Closure report_unrecoverable_error_function;
   std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
       saved_nigori_state;
-  const syncer::PassphraseTransitionClearDataOption clear_data_option;
   const std::map<syncer::ModelType, int64_t> invalidation_versions;
 };
 

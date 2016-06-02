@@ -87,7 +87,6 @@ DoInitializeOptions::DoInitializeOptions(
     const base::Closure& report_unrecoverable_error_function,
     std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
         saved_nigori_state,
-    syncer::PassphraseTransitionClearDataOption clear_data_option,
     const std::map<syncer::ModelType, int64_t>& invalidation_versions)
     : sync_loop(sync_loop),
       registrar(registrar),
@@ -108,7 +107,6 @@ DoInitializeOptions::DoInitializeOptions(
       unrecoverable_error_handler(unrecoverable_error_handler),
       report_unrecoverable_error_function(report_unrecoverable_error_function),
       saved_nigori_state(std::move(saved_nigori_state)),
-      clear_data_option(clear_data_option),
       invalidation_versions(invalidation_versions) {}
 
 DoInitializeOptions::~DoInitializeOptions() {}
@@ -486,7 +484,6 @@ void SyncBackendHostCore::DoInitialize(
       options->report_unrecoverable_error_function;
   args.cancelation_signal = &stop_syncing_signal_;
   args.saved_nigori_state = std::move(options->saved_nigori_state);
-  args.clear_data_option = options->clear_data_option;
   sync_manager_->Init(&args);
 }
 

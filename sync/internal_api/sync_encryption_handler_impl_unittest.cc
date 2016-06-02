@@ -99,8 +99,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
       const std::string& key_for_bootstrapping) {
     encryption_handler_.reset(new SyncEncryptionHandlerImpl(
         user_share(), &encryptor_, key_for_bootstrapping,
-        std::string() /* keystore key for bootstrapping */,
-        PASSPHRASE_TRANSITION_DO_NOT_CLEAR_DATA));
+        std::string() /* keystore key for bootstrapping */));
     encryption_handler_->AddObserver(&observer_);
   }
 
@@ -381,8 +380,7 @@ TEST_F(SyncEncryptionHandlerImplTest, NigoriEncryptionTypes) {
 
   StrictMock<SyncEncryptionHandlerObserverMock> observer2;
   SyncEncryptionHandlerImpl handler2(user_share(), &encryptor_, std::string(),
-                                     std::string() /* bootstrap tokens */,
-                                     PASSPHRASE_TRANSITION_DO_NOT_CLEAR_DATA);
+                                     std::string() /* bootstrap tokens */);
   handler2.AddObserver(&observer2);
 
   // Just set the sensitive types (shouldn't trigger any notifications).
@@ -710,8 +708,7 @@ TEST_F(SyncEncryptionHandlerImplTest, SetKeystoreMigratesAndUpdatesBootstrap) {
   // token.
   SyncEncryptionHandlerImpl handler2(user_share(), &encryptor_,
                                      std::string(),  // Cryptographer bootstrap.
-                                     keystore_bootstrap,
-                                     PASSPHRASE_TRANSITION_DO_NOT_CLEAR_DATA);
+                                     keystore_bootstrap);
 
   {
     WriteTransaction trans(FROM_HERE, user_share());

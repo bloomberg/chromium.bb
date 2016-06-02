@@ -46,12 +46,6 @@ enum BootstrapTokenType {
   KEYSTORE_BOOTSTRAP_TOKEN
 };
 
-// Whether we clear server data when a user enables passphrase encryption.
-enum PassphraseTransitionClearDataOption {
-  PASSPHRASE_TRANSITION_DO_NOT_CLEAR_DATA,
-  PASSPHRASE_TRANSITION_CLEAR_DATA
-};
-
 // Sync's encryption handler. Handles tracking encrypted types, ensuring the
 // cryptographer encrypts with the proper key and has the most recent keybag,
 // and keeps the nigori node up to date.

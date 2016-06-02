@@ -212,14 +212,12 @@ SyncEncryptionHandlerImpl::SyncEncryptionHandlerImpl(
     UserShare* user_share,
     Encryptor* encryptor,
     const std::string& restored_key_for_bootstrapping,
-    const std::string& restored_keystore_key_for_bootstrapping,
-    PassphraseTransitionClearDataOption clear_data_option)
+    const std::string& restored_keystore_key_for_bootstrapping)
     : user_share_(user_share),
       vault_unsafe_(encryptor, SensitiveTypes()),
       encrypt_everything_(false),
       passphrase_type_(IMPLICIT_PASSPHRASE),
       nigori_overwrite_count_(0),
-      clear_data_option_(clear_data_option),
       weak_ptr_factory_(this) {
   // Restore the cryptographer's previous keys. Note that we don't add the
   // keystore keys into the cryptographer here, in case a migration was pending.

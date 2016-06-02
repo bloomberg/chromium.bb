@@ -115,12 +115,6 @@ void SyncBackendHostImpl::Initialize(
     factory_switches.pre_commit_updates_policy =
         InternalComponentsFactory::FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE;
   }
-  syncer::PassphraseTransitionClearDataOption clear_data_option =
-      syncer::PASSPHRASE_TRANSITION_DO_NOT_CLEAR_DATA;
-  if (base::FeatureList::IsEnabled(
-          switches::kSyncClearDataOnPassphraseEncryption)) {
-    clear_data_option = syncer::PASSPHRASE_TRANSITION_CLEAR_DATA;
-  }
 
   std::map<syncer::ModelType, int64_t> invalidation_versions;
   sync_prefs_->GetInvalidationVersions(&invalidation_versions);
@@ -137,7 +131,7 @@ void SyncBackendHostImpl::Initialize(
       std::unique_ptr<InternalComponentsFactory>(
           new syncer::InternalComponentsFactoryImpl(factory_switches)),
       unrecoverable_error_handler, report_unrecoverable_error_function,
-      std::move(saved_nigori_state), clear_data_option, invalidation_versions));
+      std::move(saved_nigori_state), invalidation_versions));
   InitCore(std::move(init_opts));
 }
 

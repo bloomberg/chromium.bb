@@ -252,7 +252,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
       !args->restored_keystore_key_for_bootstrapping.empty());
   sync_encryption_handler_.reset(new SyncEncryptionHandlerImpl(
       &share_, args->encryptor, args->restored_key_for_bootstrapping,
-      args->restored_keystore_key_for_bootstrapping, args->clear_data_option));
+      args->restored_keystore_key_for_bootstrapping));
   sync_encryption_handler_->AddObserver(this);
   sync_encryption_handler_->AddObserver(&debug_info_event_listener_);
   sync_encryption_handler_->AddObserver(&js_sync_encryption_handler_observer_);
