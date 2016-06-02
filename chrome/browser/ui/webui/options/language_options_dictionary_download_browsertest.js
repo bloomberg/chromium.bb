@@ -110,8 +110,15 @@ TEST_F('LanguagesOptionsDictionaryDownloadWebUITest',
 });
 
 // Verify that clicking the retry button calls the handler.
+// This test is flaky on Windows. https://crbug.com/616791
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_testdictionaryDownloadRetry ' +
+    'DISABLED_testdictionaryDownloadRetry');
+GEN('#else');
+GEN('#define MAYBE_testdictionaryDownloadRetry testdictionaryDownloadRetry');
+GEN('#endif  // defined(OS_WIN)');
 TEST_F('LanguagesOptionsDictionaryDownloadWebUITest',
-       'testdictionaryDownloadRetry',
+       'MAYBE_testdictionaryDownloadRetry',
        function() {
   this.mockHandler.expects(once()).retryDictionaryDownload('en-US').
       will(callFunction(function() {
