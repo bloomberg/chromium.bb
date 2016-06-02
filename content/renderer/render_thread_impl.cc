@@ -1268,6 +1268,10 @@ void RenderThreadImpl::RegisterSchemes() {
   // chrome-devtools:
   WebString devtools_scheme(base::ASCIIToUTF16(kChromeDevToolsScheme));
   WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(devtools_scheme);
+
+  // view-source:
+  WebString view_source_scheme(base::ASCIIToUTF16(kViewSourceScheme));
+  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(view_source_scheme);
 }
 
 void RenderThreadImpl::NotifyTimezoneChange() {

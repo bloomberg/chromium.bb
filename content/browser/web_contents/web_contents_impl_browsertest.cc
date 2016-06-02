@@ -770,6 +770,84 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ChangePageScale) {
   observer.WaitForPageScaleUpdate();
 }
 
+// Test that a direct navigation to a view-source URL works.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ViewSourceDirectNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kUrl(embedded_test_server()->GetURL("/simple_page.html"));
+  const GURL kViewSourceURL(kViewSourceScheme + std::string(":") + kUrl.spec());
+  NavigateToURL(shell(), kViewSourceURL);
+  // Displayed view-source URLs don't include the scheme of the effective URL if
+  // the effective URL is HTTP. (e.g. view-source:example.com is displayed
+  // instead of view-source:http://example.com).
+  EXPECT_EQ(base::ASCIIToUTF16(std::string("view-source:") + kUrl.host() + ":" +
+                               kUrl.port() + kUrl.path()),
+            shell()->web_contents()->GetTitle());
+  EXPECT_TRUE(shell()
+                  ->web_contents()
+                  ->GetController()
+                  .GetLastCommittedEntry()
+                  ->IsViewSourceMode());
+}
+
+// Test that window.open to a view-source URL is blocked.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       ViewSourceWindowOpen_ShouldBeBlocked) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kUrl(embedded_test_server()->GetURL("/simple_page.html"));
+  const GURL kViewSourceURL(kViewSourceScheme + std::string(":") + kUrl.spec());
+  NavigateToURL(shell(), kUrl);
+
+  ShellAddedObserver new_shell_observer;
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "window.open('" + kViewSourceURL.spec() + "');"));
+  Shell* new_shell = new_shell_observer.GetShell();
+  WaitForLoadStop(new_shell->web_contents());
+  EXPECT_EQ("", new_shell->web_contents()->GetURL().spec());
+  // No navigation should commit.
+  EXPECT_FALSE(
+      new_shell->web_contents()->GetController().GetLastCommittedEntry());
+}
+
+// Test that a content initiated navigation to a view-source URL is blocked.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       ViewSourceRedirect_ShouldBeBlocked) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  const GURL kUrl(embedded_test_server()->GetURL("/simple_page.html"));
+  const GURL kViewSourceURL(kViewSourceScheme + std::string(":") + kUrl.spec());
+  NavigateToURL(shell(), kUrl);
+
+  std::unique_ptr<ConsoleObserverDelegate> console_delegate(
+      new ConsoleObserverDelegate(
+          shell()->web_contents(),
+          "Not allowed to load local resource: view-source:*"));
+  shell()->web_contents()->SetDelegate(console_delegate.get());
+
+  EXPECT_TRUE(
+      ExecuteScript(shell()->web_contents(),
+                    "window.location = '" + kViewSourceURL.spec() + "';"));
+  console_delegate->Wait();
+  // Original page shouldn't navigate away.
+  EXPECT_EQ(kUrl, shell()->web_contents()->GetURL());
+  EXPECT_FALSE(shell()
+                   ->web_contents()
+                   ->GetController()
+                   .GetLastCommittedEntry()
+                   ->IsViewSourceMode());
+}
+
+// Test that view source mode for a webui page can be opened.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ViewSourceWebUI) {
+  const char kUrl[] = "view-source:chrome://chrome/settings";
+  const GURL kGURL(kUrl);
+  NavigateToURL(shell(), kGURL);
+  EXPECT_EQ(base::ASCIIToUTF16(kUrl), shell()->web_contents()->GetTitle());
+  EXPECT_TRUE(shell()
+                  ->web_contents()
+                  ->GetController()
+                  .GetLastCommittedEntry()
+                  ->IsViewSourceMode());
+}
+
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NewNamedWindow) {
   ASSERT_TRUE(embedded_test_server()->Start());
 

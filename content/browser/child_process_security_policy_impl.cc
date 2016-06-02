@@ -393,16 +393,6 @@ void ChildProcessSecurityPolicyImpl::GrantRequestURL(
     return;  // The scheme has already been whitelisted for every child process.
 
   if (IsPseudoScheme(url.scheme())) {
-    // The view-source scheme is a special case of a pseudo-URL that eventually
-    // results in requesting its embedded URL.
-    if (url.SchemeIs(kViewSourceScheme)) {
-      // URLs with the view-source scheme typically look like:
-      //   view-source:http://www.google.com/a
-      // In order to request these URLs, the child_id needs to be able to
-      // request the embedded URL.
-      GrantRequestURL(child_id, GURL(url.GetContent()));
-    }
-
     return;  // Can't grant the capability to request pseudo schemes.
   }
 
@@ -585,25 +575,13 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
     return false;  // Can't request invalid URLs.
 
   if (IsPseudoScheme(url.scheme())) {
-    // There are a number of special cases for pseudo schemes.
-
-    if (url.SchemeIs(kViewSourceScheme)) {
-      // A view-source URL is allowed if the child process is permitted to
-      // request the embedded URL. Careful to avoid pointless recursion.
-      GURL child_url(url.GetContent());
-      if (child_url.SchemeIs(kViewSourceScheme) &&
-          url.SchemeIs(kViewSourceScheme))
-          return false;
-
-      return CanRequestURL(child_id, child_url);
-    }
-
+    // Every child process can request <about:blank>.
     if (base::LowerCaseEqualsASCII(url.spec(), url::kAboutBlankURL))
-      return true;  // Every child process can request <about:blank>.
-
-    // URLs like <about:version> and <about:crash> shouldn't be requestable by
-    // any child process.  Also, this case covers <javascript:...>, which should
-    // be handled internally by the process and not kicked up to the browser.
+      return true;
+    // URLs like <about:version>, <about:crash>, <view-source:...> shouldn't be
+    // requestable by any child process.  Also, this case covers
+    // <javascript:...>, which should be handled internally by the process and
+    // not kicked up to the browser.
     return false;
   }
 

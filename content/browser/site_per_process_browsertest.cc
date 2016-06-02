@@ -463,58 +463,6 @@ void FocusFrame(FrameTreeNode* frame) {
   focus_observer.Wait();
 }
 
-// A WebContentsDelegate that catches messages sent to the console.
-class ConsoleObserverDelegate : public WebContentsDelegate {
- public:
-  ConsoleObserverDelegate(WebContents* web_contents, const std::string& filter)
-      : web_contents_(web_contents),
-        filter_(filter),
-        message_(""),
-        message_loop_runner_(new MessageLoopRunner) {}
-
-  ~ConsoleObserverDelegate() override {}
-
-  bool AddMessageToConsole(WebContents* source,
-                           int32_t level,
-                           const base::string16& message,
-                           int32_t line_no,
-                           const base::string16& source_id) override;
-
-  std::string message() { return message_; }
-
-  void Wait();
-
- private:
-  WebContents* web_contents_;
-  std::string filter_;
-  std::string message_;
-
-  // The MessageLoopRunner used to spin the message loop.
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConsoleObserverDelegate);
-};
-
-void ConsoleObserverDelegate::Wait() {
-  message_loop_runner_->Run();
-}
-
-bool ConsoleObserverDelegate::AddMessageToConsole(
-    WebContents* source,
-    int32_t level,
-    const base::string16& message,
-    int32_t line_no,
-    const base::string16& source_id) {
-  DCHECK(source == web_contents_);
-
-  std::string ascii_message = base::UTF16ToASCII(message);
-  if (base::MatchPattern(ascii_message, filter_)) {
-    message_ = ascii_message;
-    message_loop_runner_->Quit();
-  }
-  return false;
-}
-
 // A BrowserMessageFilter that drops SwapOut ACK messages.
 class SwapoutACKMessageFilter : public BrowserMessageFilter {
  public:

@@ -24,10 +24,15 @@
   function clickCrossSiteLink() {
     return simulateClick(document.getElementById("cross_site_link"));
   }
+
+  function clickViewSourceLink() {
+    return simulateClick(document.getElementById("view_source_link"));
+  }
  </script>
  </head>
 
 <a href="title2.html" id="same_site_link">same-site</a><br>
 <a href="http://foo.com/title2.html" id="cross_site_link">cross-site</a><br>
+<a href="view-source:about:blank" id="view_source_link">view-source:</a><br>
 
 </html>

@@ -405,29 +405,36 @@ TEST_F(WebContentsImplTest, UseTitleFromPendingEntryIfSet) {
   EXPECT_EQ(title, contents()->GetTitle());
 }
 
-// Test view source mode for a webui page.
-TEST_F(WebContentsImplTest, NTPViewSource) {
+// Browser initiated navigations to view-source URLs of WebUI pages should work.
+TEST_F(WebContentsImplTest, DirectNavigationToViewSourceWebUI) {
   NavigationControllerImpl& cont =
       static_cast<NavigationControllerImpl&>(controller());
-  const char kUrl[] = "view-source:chrome://blah";
-  const GURL kGURL(kUrl);
+  const GURL kGURL("view-source:chrome://blah");
+  // NavigationControllerImpl rewrites view-source URLs, simulating that here.
+  const GURL kRewrittenURL("chrome://blah");
 
   process()->sink().ClearMessages();
 
-  cont.LoadURL(
-      kGURL, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
+  // Use LoadURLWithParams instead of LoadURL, because the former properly
+  // rewrites view-source:chrome://blah URLs to chrome://blah.
+  NavigationController::LoadURLParams load_params(kGURL);
+  load_params.transition_type = ui::PAGE_TRANSITION_TYPED;
+  load_params.extra_headers = "content-type: text/plain";
+  load_params.load_type = NavigationController::LOAD_TYPE_DEFAULT;
+  load_params.is_renderer_initiated = false;
+  controller().LoadURLWithParams(load_params);
+
   int entry_id = cont.GetPendingEntry()->GetUniqueID();
   // Did we get the expected message?
   EXPECT_TRUE(process()->sink().GetFirstMessageMatching(
       FrameMsg_EnableViewSourceMode::ID));
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  InitNavigateParams(&params, 0, entry_id, true, kGURL,
+  InitNavigateParams(&params, 0, entry_id, true, kRewrittenURL,
                      ui::PAGE_TRANSITION_TYPED);
   contents()->GetMainFrame()->PrepareForCommit();
   contents()->GetMainFrame()->SendNavigateWithParams(&params);
-  // Also check title and url.
-  EXPECT_EQ(base::ASCIIToUTF16(kUrl), contents()->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16("chrome://blah"), contents()->GetTitle());
 }
 
 // Test to ensure UpdateMaxPageID is working properly.

@@ -11,6 +11,7 @@
 #include "content/common/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -226,6 +227,50 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest, POSTNavigation) {
                   ->GetController()
                   .GetActiveEntry()
                   ->GetHasPostData());
+}
+
+// Ensure that browser side navigation can load browser initiated navigations
+// to view-source URLs.
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
+                       ViewSourceNavigation_BrowserInitiated) {
+  TestNavigationObserver observer(shell()->web_contents());
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  GURL view_source_url(content::kViewSourceScheme + std::string(":") +
+                       url.spec());
+  NavigateToURL(shell(), view_source_url);
+  EXPECT_EQ(url, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+}
+
+// Ensure that browser side navigation blocks content initiated navigations to
+// view-source URLs.
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
+                       ViewSourceNavigation_RendererInitiated) {
+  TestNavigationObserver observer(shell()->web_contents());
+  GURL kUrl(embedded_test_server()->GetURL("/simple_links.html"));
+  NavigateToURL(shell(), kUrl);
+  EXPECT_EQ(kUrl, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  std::unique_ptr<ConsoleObserverDelegate> console_delegate(
+      new ConsoleObserverDelegate(
+          shell()->web_contents(),
+          "Not allowed to load local resource: view-source:about:blank"));
+  shell()->web_contents()->SetDelegate(console_delegate.get());
+
+  bool success = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      shell()->web_contents(),
+      "window.domAutomationController.send(clickViewSourceLink());", &success));
+  EXPECT_TRUE(success);
+  console_delegate->Wait();
+  // Original page shouldn't navigate away.
+  EXPECT_EQ(kUrl, shell()->web_contents()->GetURL());
+  EXPECT_FALSE(shell()
+                   ->web_contents()
+                   ->GetController()
+                   .GetLastCommittedEntry()
+                   ->IsViewSourceMode());
 }
 
 }  // namespace content

@@ -169,21 +169,19 @@ TEST_F(ChildProcessSecurityPolicyTest, StandardSchemesTest) {
   EXPECT_TRUE(p->CanCommitURL(
       kRendererID, GURL("filesystem:http://localhost/temporary/a.gif")));
 
-  // Safe to request but not commit.
-  EXPECT_TRUE(p->CanRequestURL(kRendererID,
-                               GURL("view-source:http://www.google.com/")));
-  EXPECT_FALSE(p->CanCommitURL(kRendererID,
-                               GURL("view-source:http://www.google.com/")));
-
   // Dangerous to request or commit.
   EXPECT_FALSE(p->CanRequestURL(kRendererID,
                                 GURL("file:///etc/passwd")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID,
                                 GURL("chrome://foo/bar")));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID,
+                                GURL("view-source:http://www.google.com/")));
   EXPECT_FALSE(p->CanCommitURL(kRendererID,
                                 GURL("file:///etc/passwd")));
   EXPECT_FALSE(p->CanCommitURL(kRendererID,
                                 GURL("chrome://foo/bar")));
+  EXPECT_FALSE(
+      p->CanCommitURL(kRendererID, GURL("view-source:http://www.google.com/")));
 
   p->Remove(kRendererID);
 }
@@ -300,9 +298,9 @@ TEST_F(ChildProcessSecurityPolicyTest, ViewSource) {
 
   p->Add(kRendererID);
 
-  // View source is determined by the embedded scheme.
-  EXPECT_TRUE(p->CanRequestURL(kRendererID,
-                               GURL("view-source:http://www.google.com/")));
+  // Child processes cannot request view source URLs.
+  EXPECT_FALSE(p->CanRequestURL(kRendererID,
+                                GURL("view-source:http://www.google.com/")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID,
                                 GURL("view-source:file:///etc/passwd")));
   EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("file:///etc/passwd")));
@@ -319,16 +317,13 @@ TEST_F(ChildProcessSecurityPolicyTest, ViewSource) {
   EXPECT_FALSE(p->CanCommitURL(
       kRendererID, GURL("view-source:view-source:http://www.google.com/")));
 
-
   p->GrantRequestURL(kRendererID, GURL("view-source:file:///etc/passwd"));
-  // View source needs to be able to request the embedded scheme.
-  EXPECT_TRUE(p->CanRequestURL(kRendererID, GURL("file:///etc/passwd")));
-  EXPECT_TRUE(p->CanCommitURL(kRendererID, GURL("file:///etc/passwd")));
-  EXPECT_TRUE(p->CanRequestURL(kRendererID,
-                               GURL("view-source:file:///etc/passwd")));
+  EXPECT_FALSE(p->CanRequestURL(kRendererID, GURL("file:///etc/passwd")));
+  EXPECT_FALSE(p->CanCommitURL(kRendererID, GURL("file:///etc/passwd")));
+  EXPECT_FALSE(
+      p->CanRequestURL(kRendererID, GURL("view-source:file:///etc/passwd")));
   EXPECT_FALSE(p->CanCommitURL(kRendererID,
                                GURL("view-source:file:///etc/passwd")));
-
   p->Remove(kRendererID);
 }
 
