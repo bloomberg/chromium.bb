@@ -2386,8 +2386,8 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_CARET_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the caret (the text insertion point) to make it easier to see.">
     Highlight the caret (when editing text)
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_CURSOR_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the mouse cursor to make it easier to see.">
-    Highlight the mouse cursor
+  <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_CURSOR_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the mouse cursor when it's moving to make it easier to see.">
+    Highlight the mouse cursor when it's moving
   </message>
   <message name="IDS_OPTIONS_SETTINGS_ACCESSIBILITY_FOCUS_HIGHLIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to highlight the focused object to make it easier to see.">
     Highlight the object with keyboard focus
