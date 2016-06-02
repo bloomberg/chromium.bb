@@ -277,6 +277,11 @@ class CC_EXPORT LayerTreeImpl {
     return needs_update_draw_properties_;
   }
 
+  bool is_in_resourceless_software_draw_mode() {
+    return (layer_tree_host_impl_->GetDrawMode() ==
+            DRAW_MODE_RESOURCELESS_SOFTWARE);
+  }
+
   void set_needs_full_tree_sync(bool needs) { needs_full_tree_sync_ = needs; }
   bool needs_full_tree_sync() const { return needs_full_tree_sync_; }
 

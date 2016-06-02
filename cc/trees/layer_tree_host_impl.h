@@ -212,6 +212,10 @@ class CC_EXPORT LayerTreeHostImpl
 
   void UpdateViewportContainerSizes();
 
+  void set_resourceless_software_draw_for_testing() {
+    resourceless_software_draw_ = true;
+  }
+
   struct CC_EXPORT FrameData : public RenderPassSink {
     FrameData();
     ~FrameData() override;

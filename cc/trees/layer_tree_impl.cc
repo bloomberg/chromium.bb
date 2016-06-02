@@ -839,8 +839,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
         "cc", "LayerTreeImpl::UpdateDrawProperties::CalculateDrawProperties",
         "IsActive", IsActiveTree(), "SourceFrameNumber", source_frame_number_);
     bool can_render_to_separate_surface =
-        (layer_tree_host_impl_->GetDrawMode() !=
-         DRAW_MODE_RESOURCELESS_SOFTWARE);
+        (!is_in_resourceless_software_draw_mode());
 
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         root_layer(), DrawViewportSize(),
@@ -952,7 +951,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
 
   // Resourceless draw do not need tiles and should not affect existing tile
   // priorities.
-  if (layer_tree_host_impl_->GetDrawMode() != DRAW_MODE_RESOURCELESS_SOFTWARE) {
+  if (!is_in_resourceless_software_draw_mode()) {
     TRACE_EVENT_BEGIN2("cc", "LayerTreeImpl::UpdateDrawProperties::UpdateTiles",
                        "IsActive", IsActiveTree(), "SourceFrameNumber",
                        source_frame_number_);
@@ -1621,9 +1620,12 @@ static bool PointIsClippedByAncestorClipNode(
 
       const LayerImpl* target_layer =
           layer->layer_tree_impl()->LayerById(transform_node->owner_id);
-      DCHECK(transform_node->id == 0 || target_layer->render_surface());
+      DCHECK(transform_node->id == 0 || target_layer->render_surface() ||
+             layer->layer_tree_impl()->is_in_resourceless_software_draw_mode());
       gfx::Transform surface_screen_space_transform =
-          transform_node->id == 0
+          transform_node->id == 0 ||
+                  (layer->layer_tree_impl()
+                       ->is_in_resourceless_software_draw_mode())
               ? gfx::Transform()
               : SurfaceScreenSpaceTransform(target_layer, transform_tree);
       if (!PointHitsRect(screen_space_point, surface_screen_space_transform,

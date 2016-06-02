@@ -2423,6 +2423,54 @@ TEST_F(LayerTreeHostCommonTest, ClipRectWhenCannotRenderToSeparateSurface) {
   EXPECT_EQ(gfx::Rect(2, 2, 400, 400), leaf_node2->clip_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, HitTestingWhenSurfacesDisabled) {
+  LayerImpl* root = root_layer();
+  LayerImpl* parent = AddChild<LayerImpl>(root);
+  LayerImpl* child = AddChild<LayerImpl>(parent);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+  LayerImpl* leaf_node = AddChild<LayerImpl>(grand_child);
+
+  root->SetDrawsContent(true);
+  parent->SetDrawsContent(true);
+  child->SetDrawsContent(true);
+  grand_child->SetDrawsContent(true);
+  leaf_node->SetDrawsContent(true);
+
+  const gfx::Transform identity_matrix;
+
+  // child and grand_child will get render surfaces if surfaces are enabled.
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(parent, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(2.f, 2.f), gfx::Size(400, 400), true,
+                               false, false);
+  SetLayerPropertiesForTesting(child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(4.f, 4.f), gfx::Size(800, 800), true,
+                               false, true);
+  SetLayerPropertiesForTesting(grand_child, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(8.f, 8.f), gfx::Size(1500, 1500),
+                               true, false, true);
+  SetLayerPropertiesForTesting(leaf_node, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(16.f, 16.f), gfx::Size(2000, 2000),
+                               true, false, false);
+
+  parent->SetMasksToBounds(true);
+  child->SetMasksToBounds(true);
+
+  root->SetHasRenderSurface(true);
+  child->SetHasRenderSurface(true);
+  grand_child->SetHasRenderSurface(true);
+
+  host_impl()->set_resourceless_software_draw_for_testing();
+  ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(root);
+  gfx::PointF test_point(90.f, 90.f);
+  LayerImpl* result_layer =
+      root->layer_tree_impl()->FindLayerThatIsHitByPoint(test_point);
+  ASSERT_TRUE(result_layer);
+  EXPECT_EQ(leaf_node, result_layer);
+}
+
 TEST_F(LayerTreeHostCommonTest, SurfacesDisabledAndReEnabled) {
   // Tests that draw properties are computed correctly when we disable and then
   // re-enable separate surfaces.
