@@ -819,13 +819,21 @@ name=https://bugs.chromium.org/p/webrtc/issues/detail?id=5151
 *!cricket::SctpDataMediaChannel::CloseSctpSocket
 
 UNADDRESSABLE ACCESS
-name=http://crbug.com/615121
+name=http://crbug.com/615121_a
 cc.dll!cc::ResourceProvider::CreateBitmap
 cc.dll!cc::ResourceProvider::CreateResource
 cc.dll!cc::ScopedResource::Allocate
 cc.dll!cc::ResourcePool::AcquireResource
 cc.dll!cc::TileManager::CreateRasterTask
 cc.dll!cc::TileManager::ScheduleTasks
+
+UNADDRESSABLE ACCESS
+name=http://crbug.com/615121_b
+cc.dll!cc::ResourceProvider::CreateBitmap
+cc.dll!cc::ResourceProvider::CreateResource
+cc.dll!cc::LayerTreeHostImpl::CreateUIResource
+cc.dll!cc::LayerTreeImpl::ProcessUIResourceRequestQueue
+cc.dll!cc::LayerTreeHostImpl::ActivateSyncTree
 
 GDI USAGE ERROR
 name=http://crbug.com/615911
