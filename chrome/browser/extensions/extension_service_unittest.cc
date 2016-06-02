@@ -1410,13 +1410,100 @@ TEST_F(ExtensionServiceTest, GrantedPermissions) {
 
   std::unique_ptr<const PermissionSet> known_perms =
       prefs->GetGrantedPermissions(extension->id());
-  EXPECT_TRUE(known_perms.get());
+  ASSERT_TRUE(known_perms.get());
   EXPECT_FALSE(known_perms->IsEmpty());
   EXPECT_EQ(expected_api_perms, known_perms->apis());
   EXPECT_FALSE(known_perms->HasEffectiveFullAccess());
   EXPECT_EQ(expected_host_perms, known_perms->effective_hosts());
 }
 
+// This tests that the granted permissions preferences are correctly set when
+// updating an extension, and the extension is disabled in case of a permission
+// escalation.
+TEST_F(ExtensionServiceTest, GrantedPermissionsOnUpdate) {
+  InitializeEmptyExtensionService();
+  const base::FilePath base_path = data_dir().AppendASCII("permissions");
+
+  const base::FilePath pem_path = base_path.AppendASCII("update.pem");
+  const base::FilePath path1 = base_path.AppendASCII("update_1");
+  const base::FilePath path2 = base_path.AppendASCII("update_2");
+  const base::FilePath path3 = base_path.AppendASCII("update_3");
+  const base::FilePath path4 = base_path.AppendASCII("update_4");
+
+  ASSERT_TRUE(base::PathExists(pem_path));
+  ASSERT_TRUE(base::PathExists(path1));
+  ASSERT_TRUE(base::PathExists(path2));
+  ASSERT_TRUE(base::PathExists(path3));
+  ASSERT_TRUE(base::PathExists(path4));
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
+  // Install version 1, which has the kHistory permission.
+  const Extension* extension = PackAndInstallCRX(path1, pem_path, INSTALL_NEW);
+  const std::string id = extension->id();
+
+  EXPECT_EQ(0u, GetErrors().size());
+  ASSERT_TRUE(registry()->enabled_extensions().Contains(id));
+
+  // Verify that the history permission has been recognized.
+  APIPermissionSet expected_api_perms;
+  expected_api_perms.insert(APIPermission::kHistory);
+  {
+    std::unique_ptr<const PermissionSet> known_perms =
+        prefs->GetGrantedPermissions(id);
+    ASSERT_TRUE(known_perms.get());
+    EXPECT_EQ(expected_api_perms, known_perms->apis());
+  }
+
+  // Update to version 2 that adds the kTopSites permission, which has a
+  // separate message, but is implied by kHistory. The extension should remain
+  // enabled.
+  PackCRXAndUpdateExtension(id, path2, pem_path, ENABLED);
+  extension = service()->GetInstalledExtension(id);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+
+  // The extra permission should have been granted automatically.
+  expected_api_perms.insert(APIPermission::kTopSites);
+  {
+    std::unique_ptr<const PermissionSet> known_perms =
+        prefs->GetGrantedPermissions(id);
+    ASSERT_TRUE(known_perms.get());
+    EXPECT_EQ(expected_api_perms, known_perms->apis());
+  }
+
+  // Update to version 3 that adds the kStorage permission, which does not have
+  // a message. The extension should remain enabled.
+  PackCRXAndUpdateExtension(id, path3, pem_path, ENABLED);
+  extension = service()->GetInstalledExtension(id);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+
+  // The extra permission should have been granted automatically.
+  expected_api_perms.insert(APIPermission::kStorage);
+  {
+    std::unique_ptr<const PermissionSet> known_perms =
+        prefs->GetGrantedPermissions(id);
+    ASSERT_TRUE(known_perms.get());
+    EXPECT_EQ(expected_api_perms, known_perms->apis());
+  }
+
+  // Update to version 4 that adds the kNotifications permission, which has a
+  // message and hence is considered a permission increase. Now the extension
+  // should get disabled.
+  PackCRXAndUpdateExtension(id, path4, pem_path, DISABLED);
+  extension = service()->GetInstalledExtension(id);
+  ASSERT_TRUE(extension);
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(id));
+
+  // No new permissions should have been granted.
+  {
+    std::unique_ptr<const PermissionSet> known_perms =
+        prefs->GetGrantedPermissions(id);
+    ASSERT_TRUE(known_perms.get());
+    EXPECT_EQ(expected_api_perms, known_perms->apis());
+  }
+}
 
 #if !defined(OS_CHROMEOS)
 // This tests that the granted permissions preferences are correctly set for
