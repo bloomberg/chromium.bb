@@ -122,8 +122,8 @@ void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, CS
     bool isInherit = state.parentNode() && value->isInheritedValue();
     bool isInitial = value->isInitialValue() || (!state.parentNode() && value->isInheritedValue());
 
-    ASSERT(!isInherit || !isInitial); // isInherit -> !isInitial && isInitial -> !isInherit
-    ASSERT(!isInherit || (state.parentNode() && state.parentStyle())); // isInherit -> (state.parentNode() && state.parentStyle())
+    DCHECK(!isInherit || !isInitial); // isInherit -> !isInitial && isInitial -> !isInherit
+    DCHECK(!isInherit || (state.parentNode() && state.parentStyle())); // isInherit -> (state.parentNode() && state.parentStyle())
 
     if (!state.applyPropertyToRegularStyle() && (!state.applyPropertyToVisitedLinkStyle() || !isValidVisitedLinkProperty(id))) {
         // Limit the properties that can be applied to only the ones honored by :visited.
@@ -133,7 +133,7 @@ void StyleBuilder::applyProperty(CSSPropertyID id, StyleResolverState& state, CS
     if (isInherit && !state.parentStyle()->hasExplicitlyInheritedProperties() && !CSSPropertyMetadata::isInheritedProperty(id)) {
         state.parentStyle()->setHasExplicitlyInheritedProperties();
     } else if (value->isUnsetValue()) {
-        ASSERT(!isInherit && !isInitial);
+        DCHECK(!isInherit && !isInitial);
         if (CSSPropertyMetadata::isInheritedProperty(id))
             isInherit = true;
         else
@@ -258,7 +258,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyGridTemplateAreas(StyleResolver
 {
     if (value->isPrimitiveValue()) {
         // FIXME: Shouldn't we clear the grid-area values
-        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
+        DCHECK_EQ(toCSSPrimitiveValue(value)->getValueID(), CSSValueNone);
         return;
     }
 
@@ -339,7 +339,7 @@ static FloatSize getPageSizeFromName(CSSPrimitiveValue* pageSizeName)
     case CSSValueLedger:
         return FloatSize(inchToPx(11), inchToPx(17));
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         return FloatSize(0, 0);
     }
 }
@@ -364,13 +364,13 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
             // <page-size> <orientation>
             size = getPageSizeFromName(first);
 
-            ASSERT(second->getValueID() == CSSValueLandscape || second->getValueID() == CSSValuePortrait);
+            DCHECK(second->getValueID() == CSSValueLandscape || second->getValueID() == CSSValuePortrait);
             if (second->getValueID() == CSSValueLandscape)
                 size = size.transposedSize();
         }
         pageSizeType = PAGE_SIZE_RESOLVED;
     } else {
-        ASSERT(list->length() == 1);
+        DCHECK_EQ(list->length(), 1U);
         // <length> | auto | <page-size> | [ portrait | landscape]
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(list->item(0));
         if (primitiveValue->isLength()) {
@@ -416,9 +416,9 @@ void StyleBuilderFunctions::applyValueCSSPropertySnapHeight(StyleResolverState& 
 {
     CSSValueList* list = toCSSValueList(value);
     CSSPrimitiveValue* first = toCSSPrimitiveValue(list->item(0));
-    ASSERT(first->isLength());
+    DCHECK(first->isLength());
     int unit = first->computeLength<int>(state.cssToLengthConversionData());
-    ASSERT(unit >= 0);
+    DCHECK_GE(unit, 0);
     state.style()->setSnapHeightUnit(clampTo<uint8_t>(unit));
 
     if (list->length() == 1) {
@@ -426,11 +426,11 @@ void StyleBuilderFunctions::applyValueCSSPropertySnapHeight(StyleResolverState& 
         return;
     }
 
-    ASSERT(list->length() == 2);
+    DCHECK_EQ(list->length(), 2U);
     CSSPrimitiveValue* second = toCSSPrimitiveValue(list->item(1));
-    ASSERT(second->isNumber());
+    DCHECK(second->isNumber());
     int position = second->getIntValue();
-    ASSERT(position > 0 && position <= 100);
+    DCHECK(position > 0 && position <= 100);
     state.style()->setSnapHeightPosition(position);
 }
 
@@ -482,7 +482,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& 
         else if (primitiveValue->getValueID() == CSSValueHanging)
             textIndentTypeValue = TextIndentHanging;
         else
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
     }
 
     state.style()->setTextIndent(lengthOrPercentageValue);
@@ -536,7 +536,7 @@ void StyleBuilderFunctions::applyInheritCSSPropertyZoom(StyleResolverState& stat
 
 void StyleBuilderFunctions::applyValueCSSPropertyZoom(StyleResolverState& state, CSSValue* value)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(value->isPrimitiveValue());
+    SECURITY_DCHECK(value->isPrimitiveValue());
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
 
     if (primitiveValue->getValueID() == CSSValueNormal) {
@@ -601,7 +601,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitTextEmphasisStyle(StyleRe
 {
     if (value->isValueList()) {
         CSSValueList* list = toCSSValueList(value);
-        ASSERT(list->length() == 2);
+        DCHECK_EQ(list->length(), 2U);
         for (unsigned i = 0; i < 2; ++i) {
             CSSPrimitiveValue* value = toCSSPrimitiveValue(list->item(i));
             if (value->getValueID() == CSSValueFilled || value->getValueID() == CSSValueOpen)
@@ -656,9 +656,9 @@ void StyleBuilderFunctions::applyValueCSSPropertyWillChange(StyleResolverState& 
     Vector<CSSPropertyID> willChangeProperties;
 
     if (value->isPrimitiveValue()) {
-        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueAuto);
+        DCHECK_EQ(toCSSPrimitiveValue(value)->getValueID(), CSSValueAuto);
     } else {
-        ASSERT(value->isValueList());
+        DCHECK(value->isValueList());
         for (auto& willChangeValue : toCSSValueList(*value)) {
             if (willChangeValue->isCustomIdentValue())
                 willChangeProperties.append(toCSSCustomIdentValue(*willChangeValue).valueAsPropertyID());
@@ -667,7 +667,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWillChange(StyleResolverState& 
             else if (toCSSPrimitiveValue(*willChangeValue).getValueID() == CSSValueScrollPosition)
                 willChangeScrollPosition = true;
             else
-                ASSERT_NOT_REACHED();
+                NOTREACHED();
         }
     }
     state.style()->setWillChangeContents(willChangeContents);
@@ -690,7 +690,7 @@ void StyleBuilderFunctions::applyInheritCSSPropertyContent(StyleResolverState&)
 void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& state, CSSValue* value)
 {
     if (value->isPrimitiveValue()) {
-        ASSERT(toCSSPrimitiveValue(*value).getValueID() == CSSValueNormal || toCSSPrimitiveValue(*value).getValueID() == CSSValueNone);
+        DCHECK(toCSSPrimitiveValue(*value).getValueID() == CSSValueNormal || toCSSPrimitiveValue(*value).getValueID() == CSSValueNone);
         state.style()->setContent(nullptr);
         return;
     }
@@ -713,7 +713,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
             QuoteType quoteType;
             switch (toCSSPrimitiveValue(*item).getValueID()) {
             default:
-                ASSERT_NOT_REACHED();
+                NOTREACHED();
             case CSSValueOpenQuote:
                 quoteType = OPEN_QUOTE;
                 break;
@@ -732,7 +732,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
             String string;
             if (item->isFunctionValue()) {
                 CSSFunctionValue* functionValue = toCSSFunctionValue(item.get());
-                ASSERT(functionValue->functionType() == CSSValueAttr);
+                DCHECK_EQ(functionValue->functionType(), CSSValueAttr);
                 // FIXME: Can a namespace be specified for an attr(foo)?
                 if (state.style()->styleType() == PseudoIdNone)
                     state.style()->setUnique();
@@ -759,14 +759,14 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
 
         prevContent = nextContent;
     }
-    ASSERT(firstContent);
+    DCHECK(firstContent);
     state.style()->setContent(firstContent);
 }
 
 void StyleBuilderFunctions::applyValueCSSPropertyWebkitLocale(StyleResolverState& state, CSSValue* value)
 {
     if (value->isPrimitiveValue()) {
-        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueAuto);
+        DCHECK_EQ(toCSSPrimitiveValue(value)->getValueID(), CSSValueAuto);
         state.fontBuilder().setLocale(nullAtom);
     } else {
         state.fontBuilder().setLocale(AtomicString(toCSSStringValue(value)->value()));
@@ -832,7 +832,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyVariable(StyleResolverState& st
         state.style()->setVariable(declaration->name(), declaration->value());
         break;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 
@@ -867,7 +867,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyBaselineShift(StyleResolverStat
         svgStyle.setBaselineShift(BS_SUPER);
         return;
     default:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
 }
 

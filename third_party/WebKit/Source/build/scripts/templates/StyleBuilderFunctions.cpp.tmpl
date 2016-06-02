@@ -321,7 +321,7 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
         return;
 
     CounterDirectiveMap& map = state.style()->accessCounterDirectives();
-    ASSERT(!parentMap->isEmpty());
+    DCHECK(!parentMap->isEmpty());
 
     typedef CounterDirectiveMap::const_iterator Iterator;
     Iterator end = parentMap->end();
@@ -336,7 +336,8 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
     state.style()->clear{{action}}Directives();
 
     if (!value->isValueList()) {
-        ASSERT(value->isPrimitiveValue() && toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
+        DCHECK(value->isPrimitiveValue());
+        DCHECK_EQ(toCSSPrimitiveValue(value)->getValueID(), CSSValueNone);
         return;
     }
 
@@ -356,7 +357,7 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
         directives.addIncrementValue(value);
         {% endif %}
     }
-    ASSERT(!map.isEmpty());
+    DCHECK(!map.isEmpty());
 }
 {% endmacro %}
 {{apply_counter('CSSPropertyCounterIncrement', 'Increment')}}
@@ -512,7 +513,7 @@ static bool borderImageLengthMatchesAllSides(const BorderImageLengthBox& borderI
     String url;
     if (value->isValueList()) {
         CSSValueList* list = toCSSValueList(value);
-        ASSERT(list->length() == 2);
+        DCHECK_EQ(list->length(), 2U);
         url = toCSSURIValue(list->item(0))->value();
         value = list->item(1);
     }
