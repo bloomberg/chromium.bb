@@ -1772,10 +1772,15 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
   def testConnectToRemoteBrowser(self):
     port = self.FindFreePort()
     temp_dir = util.MakeTempDir()
-    process = subprocess.Popen([_CHROME_BINARY,
-                                '--remote-debugging-port=%d' % port,
-                                '--user-data-dir=%s' % temp_dir,
-                                '--use-mock-keychain'])
+    print 'temp dir is ' + temp_dir
+    cmd = [_CHROME_BINARY,
+           '--remote-debugging-port=%d' % port,
+           '--user-data-dir=%s' % temp_dir,
+           '--use-mock-keychain']
+    if util.IsLinux() and not util.Is64Bit():
+      # Workaround for crbug.com/611886.
+      cmd.append('--no-sandbox')
+    process = subprocess.Popen(cmd)
     if process is None:
       raise RuntimeError('Chrome could not be started with debugging port')
     try:
