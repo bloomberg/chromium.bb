@@ -1069,9 +1069,6 @@ public:
 
     SnapCoordinator* snapCoordinator();
 
-    using WeakDocumentSet = HeapHashSet<WeakMember<Document>>;
-    static WeakDocumentSet& liveDocumentSet();
-
     WebTaskRunner* loadingTaskRunner() const;
     WebTaskRunner* timerTaskRunner() const;
 

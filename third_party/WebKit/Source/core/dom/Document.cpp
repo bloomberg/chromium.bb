@@ -366,9 +366,11 @@ uint64_t Document::s_globalTreeVersion = 0;
 
 static bool s_threadedParsingEnabledForTesting = true;
 
-Document::WeakDocumentSet& Document::liveDocumentSet()
+using WeakDocumentSet = PersistentHeapHashSet<WeakMember<Document>>;
+
+static WeakDocumentSet& liveDocumentSet()
 {
-    DEFINE_STATIC_LOCAL(WeakDocumentSet, set, (new WeakDocumentSet));
+    DEFINE_STATIC_LOCAL(WeakDocumentSet, set, ());
     return set;
 }
 
@@ -6035,7 +6037,7 @@ template class CORE_TEMPLATE_EXPORT Supplement<Document>;
 using namespace blink;
 void showLiveDocumentInstances()
 {
-    Document::WeakDocumentSet& set = Document::liveDocumentSet();
+    WeakDocumentSet& set = liveDocumentSet();
     fprintf(stderr, "There are %u documents currently alive:\n", set.size());
     for (Document* document : set)
         fprintf(stderr, "- Document %p URL: %s\n", document, document->url().getString().utf8().data());
