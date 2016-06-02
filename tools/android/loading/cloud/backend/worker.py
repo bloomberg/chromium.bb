@@ -22,6 +22,7 @@ sys.path.insert(0, os.path.join(_CLOUD_DIR, os.pardir))
 sys.path.append(_CLOUD_DIR)
 
 from common.clovis_task import ClovisTask
+import common.google_bigquery_helper
 from common.google_instance_helper import GoogleInstanceHelper
 from clovis_task_handler import ClovisTaskHandler
 from failure_database import FailureDatabase
@@ -73,8 +74,8 @@ class Worker(object):
       self._failure_database.AddFailure(FailureDatabase.DIRTY_STATE_ERROR,
                                         'failure_database')
 
-    bigquery_service = discovery.build('bigquery', 'v2',
-                                       credentials=self._credentials)
+    bigquery_service = common.google_bigquery_helper.GetBigQueryService(
+        self._credentials)
     self._clovis_task_handler = ClovisTaskHandler(
         self._project_name, self._base_path_in_bucket, self._failure_database,
         self._google_storage_accessor, bigquery_service,

@@ -4,11 +4,10 @@
 
 import json
 import math
-import uuid
 
 from googleapiclient import errors
 
-import common.clovis_paths
+import common.google_bigquery_helper
 from common.loading_trace_database import LoadingTraceDatabase
 import common.google_error_helper as google_error_helper
 from failure_database import FailureDatabase
@@ -87,18 +86,10 @@ class ReportTaskHandler(object):
       rows: (list of dict) Each dictionary is a row to add to the table.
       table_id: (str) Identifier of the BigQuery table to update.
     """
-    # Assumes that the dataset and the table template already exist.
-    dataset = 'clovis_dataset'
-    template = 'report'
-    rows_data = [{'json': row, 'insertId': str(uuid.uuid4())} for row in rows]
-    body = {'rows': rows_data, 'templateSuffix':'_'+table_id}
-    self._logger.info('BigQuery API request:\n' + str(body))
-
     try:
-      response = self._bigquery_service.tabledata().insertAll(
-          projectId=self._project_name, datasetId=dataset, tableId=template,
-          body=body).execute()
-      self._logger.info('BigQuery API response:\n' + str(response))
+      response = common.google_bigquery_helper.InsertInTemplatedBigQueryTable(
+          self._bigquery_service, self._project_name, table_id, rows,
+          self._logger)
     except errors.HttpError as http_error:
       # Handles HTTP error response codes (such as 404), typically indicating a
       # problem in parameters other than 'body'.
@@ -161,6 +152,5 @@ class ReportTaskHandler(object):
       rows.append(report)
 
     if rows:
-      tag = clovis_task.BackendParams()['tag']
-      table_id = common.clovis_paths.GetBigQueryTableID(tag)
+      table_id = common.google_bigquery_helper.GetBigQueryTableID(clovis_task)
       self._StreamRowsToBigQuery(rows, table_id)

@@ -15,6 +15,7 @@ from oauth2client.client import GoogleCredentials
 
 import common.clovis_paths
 from common.clovis_task import ClovisTask
+import common.google_bigquery_helper
 import common.google_instance_helper
 from common.loading_trace_database import LoadingTraceDatabase
 import email_helper
@@ -241,6 +242,49 @@ def GetTracePaths(bucket):
   return traces
 
 
+def GetTaskURL(task, task_dir):
+  """Returns the URL where the task output are generated, or None.
+
+  Args:
+    task: (ClovisTask) The task.
+    task_dir: (str) Working directory for the backend, it is a subdirectory of
+                    the deployment bucket.
+
+  Returns:
+    str: The URL.
+  """
+  clovis_logger.info('Building task result URL.')
+
+  if task.Action() == 'trace':
+    storage_bucket = task.BackendParams().get('storage_bucket')
+    if not storage_bucket:
+      clovis_logger.error('Missing storage_bucket for trace action.')
+      return None
+    return 'https://console.cloud.google.com/storage/%s/%s' % (storage_bucket,
+                                                               task_dir)
+
+  elif task.Action() == 'report':
+    table_id = common.google_bigquery_helper.GetBigQueryTableID(task)
+    task_url = common.google_bigquery_helper.GetBigQueryTableURL(project_name,
+                                                                 table_id)
+    # Abort if the table already exists.
+    bigquery_service = common.google_bigquery_helper.GetBigQueryService(
+        GoogleCredentials.get_application_default())
+    try:
+      table_exists = common.google_bigquery_helper.DoesBigQueryTableExist(
+          bigquery_service, project_name, table_id, clovis_logger)
+    except Exception:
+      return None
+    if table_exists:
+      clovis_logger.error('BigQuery table %s already exists.' % task_url)
+      return None
+    return task_url
+
+  else:
+    clovis_logger.error('Unsupported action: %s.' % task.Action())
+    return None
+
+
 def StartFromJsonString(http_body_str):
   """Main function handling a JSON task posted by the user."""
   # Set up logging.
@@ -259,7 +303,9 @@ def StartFromJsonString(http_body_str):
   # Compute the task directory.
   task_dir_components = []
   user_email = email_helper.GetUserEmail()
-  user_name = user_email[:user_email.find('@')]
+  user_name = None
+  if user_email:
+    user_name = user_email[:user_email.find('@')]
   if user_name:
     task_dir_components.append(user_name)
   task_name = task.BackendParams().get('task_name')
@@ -269,19 +315,11 @@ def StartFromJsonString(http_body_str):
   task_dir = os.path.join(task.Action(), '_'.join(task_dir_components))
 
   # Build the URL where the result will live.
-  task_url = None
-  if task.Action() == 'trace':
-    bucket = task.BackendParams().get('storage_bucket')
-    if bucket:
-      task_url = 'https://console.cloud.google.com/storage/%s/%s' % (bucket,
-                                                                     task_dir)
-  elif task.Action() == 'report':
-    task_url = common.clovis_paths.GetBigQueryTableURL(project_name, task_tag)
+  task_url = GetTaskURL(task, task_dir)
+  if task_url:
+    clovis_logger.info('Task result URL: ' + task_url)
   else:
-    error_string = 'Unsupported action: %s.' % task.Action()
-    clovis_logger.error(error_string)
-    return Render(error_string, memory_logs)
-  clovis_logger.info('Task result URL: ' + task_url)
+    return Render('Could not build the task URL.', memory_logs)
 
   # Split the task in smaller tasks.
   sub_tasks = SplitClovisTask(task)
