@@ -1,12 +1,3 @@
-per-file *param_traits*.*=set noparent
-per-file *param_traits*.*=dcheng@chromium.org
-per-file *param_traits*.*=inferno@chromium.org
-per-file *param_traits*.*=jln@chromium.org
-per-file *param_traits*.*=jschuh@chromium.org
-per-file *param_traits*.*=kenrb@chromium.org
-per-file *param_traits*.*=nasko@chromium.org
-per-file *param_traits*.*=tsepez@chromium.org
-
 # Changes to IPC serialization require a security review to avoid introducing
 # new sandbox escapes.
 per-file *struct_traits*.*=set noparent
