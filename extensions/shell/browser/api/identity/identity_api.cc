@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/guid.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "extensions/common/manifest_handlers/oauth2_manifest_handler.h"
@@ -126,7 +127,7 @@ void IdentityGetAuthTokenFunction::OnGetTokenFailure(
 void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
     const std::string& access_token,
     int time_to_live) {
-  Respond(OneArgument(new base::StringValue(access_token)));
+  Respond(OneArgument(base::MakeUnique<base::StringValue>(access_token)));
   Release();  // Balanced in Run().
 }
 

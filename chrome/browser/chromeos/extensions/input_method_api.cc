@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/extensions/dictionary_event_router.h"
@@ -75,7 +76,7 @@ InputMethodPrivateGetInputMethodConfigFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
-  base::DictionaryValue* output = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> output(new base::DictionaryValue());
   output->SetBoolean(
       "isPhysicalKeyboardAutocorrectEnabled",
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -85,7 +86,7 @@ InputMethodPrivateGetInputMethodConfigFunction::Run() {
                          Profile::FromBrowserContext(browser_context())
                              ->GetPrefs()
                              ->GetBoolean(prefs::kLanguageImeMenuActivated));
-  return RespondNow(OneArgument(output));
+  return RespondNow(OneArgument(std::move(output)));
 #endif
 }
 
@@ -96,7 +97,7 @@ InputMethodPrivateGetCurrentInputMethodFunction::Run() {
 #else
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
-  return RespondNow(OneArgument(new base::StringValue(
+  return RespondNow(OneArgument(base::MakeUnique<base::StringValue>(
       manager->GetActiveIMEState()->GetCurrentInputMethod().id())));
 #endif
 }
@@ -130,7 +131,7 @@ InputMethodPrivateGetInputMethodsFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
-  base::ListValue* output = new base::ListValue();
+  std::unique_ptr<base::ListValue> output(new base::ListValue());
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
   chromeos::input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
@@ -147,7 +148,7 @@ InputMethodPrivateGetInputMethodsFunction::Run() {
     val->SetString("indicator", util->GetInputMethodShortName(input_method));
     output->Append(val);
   }
-  return RespondNow(OneArgument(output));
+  return RespondNow(OneArgument(std::move(output)));
 #endif
 }
 
@@ -167,11 +168,11 @@ InputMethodPrivateFetchAllDictionaryWordsFunction::Run() {
   }
 
   const std::set<std::string>& words = dictionary->GetWords();
-  base::ListValue* output = new base::ListValue();
+  std::unique_ptr<base::ListValue> output(new base::ListValue());
   for (auto it = words.begin(); it != words.end(); ++it) {
     output->AppendString(*it);
   }
-  return RespondNow(OneArgument(output));
+  return RespondNow(OneArgument(std::move(output)));
 #endif
 }
 

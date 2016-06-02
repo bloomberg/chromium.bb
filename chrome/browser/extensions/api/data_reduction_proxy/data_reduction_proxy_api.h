@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_DATA_REDUCTION_PROXY_DATA_REDUCTION_PROXY_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_DATA_REDUCTION_PROXY_DATA_REDUCTION_PROXY_API_H_
 
+#include <memory>
+
 #include "extensions/browser/extension_function.h"
 
 namespace data_reduction_proxy {

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -162,7 +163,7 @@ void VpnThreadExtensionFunction::SignalCallCompletionSuccess() {
 
 void VpnThreadExtensionFunction::SignalCallCompletionSuccessWithId(
     const std::string& configuration_id) {
-  Respond(OneArgument(new base::StringValue(configuration_id)));
+  Respond(OneArgument(base::MakeUnique<base::StringValue>(configuration_id)));
 }
 
 void VpnThreadExtensionFunction::SignalCallCompletionSuccessWithWarning(

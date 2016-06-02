@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/barrier_closure.h"
+#include "base/memory/ptr_util.h"
 #include "device/core/device_client.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device_handle.h"
@@ -248,14 +249,14 @@ const char* ConvertTransferStatusToApi(const UsbTransferStatus status) {
   }
 }
 
-base::Value* PopulateConnectionHandle(int handle,
-                                      int vendor_id,
-                                      int product_id) {
+std::unique_ptr<base::Value> PopulateConnectionHandle(int handle,
+                                                      int vendor_id,
+                                                      int product_id) {
   ConnectionHandle result;
   result.handle = handle;
   result.vendor_id = vendor_id;
   result.product_id = product_id;
-  return result.ToValue().release();
+  return result.ToValue();
 }
 
 TransferType ConvertTransferTypeToApi(const UsbTransferType& input) {
@@ -612,7 +613,7 @@ ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   if (!user_gesture()) {
-    return RespondNow(OneArgument(new base::ListValue()));
+    return RespondNow(OneArgument(base::MakeUnique<base::ListValue>()));
   }
 
   bool multiple = false;
@@ -707,7 +708,8 @@ ExtensionFunction::ResponseAction UsbRequestAccessFunction::Run() {
   std::unique_ptr<extensions::api::usb::RequestAccess::Params> parameters =
       RequestAccess::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
-  return RespondNow(OneArgument(new base::FundamentalValue(true)));
+  return RespondNow(
+      OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
 }
 
 UsbOpenDeviceFunction::UsbOpenDeviceFunction() {
@@ -1251,7 +1253,7 @@ ExtensionFunction::ResponseAction UsbResetDeviceFunction::Run() {
 
 void UsbResetDeviceFunction::OnComplete(bool success) {
   if (success) {
-    Respond(OneArgument(new base::FundamentalValue(true)));
+    Respond(OneArgument(base::MakeUnique<base::FundamentalValue>(true)));
   } else {
     scoped_refptr<UsbDeviceHandle> device_handle =
         GetDeviceHandle(parameters_->handle);

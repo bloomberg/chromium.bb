@@ -78,9 +78,9 @@ ExtensionFunction::ResponseValue SettingsFunction::UseReadResult(
   if (!result->status().ok())
     return Error(result->status().message);
 
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->Swap(&result->settings());
-  return OneArgument(dict);
+  return OneArgument(std::move(dict));
 }
 
 ExtensionFunction::ResponseValue SettingsFunction::UseWriteResult(
@@ -217,7 +217,7 @@ StorageStorageAreaGetBytesInUseFunction::RunWithStorage(ValueStore* storage) {
   }
 
   return OneArgument(
-      new base::FundamentalValue(static_cast<int>(bytes_in_use)));
+      base::MakeUnique<base::FundamentalValue>(static_cast<int>(bytes_in_use)));
 }
 
 ExtensionFunction::ResponseValue StorageStorageAreaSetFunction::RunWithStorage(

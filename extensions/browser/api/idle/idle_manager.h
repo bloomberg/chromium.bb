@@ -6,6 +6,7 @@
 #define EXTENSIONS_BROWSER_API_IDLE_IDLE_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "base/callback_forward.h"
@@ -90,7 +91,8 @@ class IdleManager : public ExtensionRegistryObserver,
 
   void QueryState(int threshold, QueryStateCallback notify);
   void SetThreshold(const std::string& extension_id, int threshold);
-  static base::StringValue* CreateIdleValue(ui::IdleState idle_state);
+  static std::unique_ptr<base::StringValue> CreateIdleValue(
+      ui::IdleState idle_state);
 
   // Override default event class. Callee assumes ownership. Used for testing.
   void SetEventDelegateForTest(std::unique_ptr<EventDelegate> event_delegate);
