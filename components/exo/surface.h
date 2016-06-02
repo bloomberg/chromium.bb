@@ -322,6 +322,9 @@ class Surface : public aura::Window,
   // Cursor providers. Surface does not own the cursor providers.
   std::set<CursorProvider*> cursor_providers_;
 
+  // Texture size.
+  gfx::Size texture_size_in_dip_;
+
   // This can be set to have some functions delegated. E.g. ShellSurface class
   // can set this to handle Commit() and apply any double buffered state it
   // maintains.

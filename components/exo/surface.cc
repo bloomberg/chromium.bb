@@ -450,33 +450,12 @@ void Surface::CommitLayerContents() {
 
     // Update layer with the new contents.
     if (texture_mailbox_release_callback) {
-      gfx::Size texture_size_in_dip = gfx::ScaleToFlooredSize(
+      texture_size_in_dip_ = gfx::ScaleToFlooredSize(
           texture_mailbox.size_in_pixels(), 1.0f / pending_buffer_scale_);
-      // Determine the new surface size.
-      // - Texture size in DIP defines the size if nothing else is set.
-      // - If a viewport is set then that defines the size, otherwise
-      //   the crop rectangle defines the size if set.
-      gfx::Size contents_size = texture_size_in_dip;
-      if (!pending_viewport_.IsEmpty()) {
-        contents_size = pending_viewport_;
-      } else if (!pending_crop_.IsEmpty()) {
-        DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(pending_crop_.width()) ||
-                             !gfx::IsExpressibleAsInt(pending_crop_.height()))
-            << "Crop rectangle size (" << pending_crop_.size().ToString()
-            << ") most be expressible using integers when viewport is not set";
-        contents_size = gfx::ToCeiledSize(pending_crop_.size());
-      }
       layer()->SetTextureMailbox(texture_mailbox,
                                  std::move(texture_mailbox_release_callback),
-                                 texture_size_in_dip);
+                                 texture_size_in_dip_);
       layer()->SetTextureFlipped(false);
-      layer()->SetTextureCrop(pending_crop_);
-      layer()->SetTextureScale(
-          static_cast<float>(texture_size_in_dip.width()) /
-              contents_size.width(),
-          static_cast<float>(texture_size_in_dip.height()) /
-              contents_size.height());
-      layer()->SetBounds(gfx::Rect(layer()->bounds().origin(), contents_size));
     } else {
       // Show solid color content if no buffer is attached or we failed
       // to produce a texture mailbox for the currently attached buffer.
@@ -494,6 +473,26 @@ void Surface::CommitLayerContents() {
   }
 
   if (layer()->has_external_content()) {
+    // Determine the new surface size.
+    // - Texture size in DIP defines the size if nothing else is set.
+    // - If a viewport is set then that defines the size, otherwise
+    //   the crop rectangle defines the size if set.
+    gfx::Size contents_size = texture_size_in_dip_;
+    if (!pending_viewport_.IsEmpty()) {
+      contents_size = pending_viewport_;
+    } else if (!pending_crop_.IsEmpty()) {
+      DLOG_IF(WARNING, !gfx::IsExpressibleAsInt(pending_crop_.width()) ||
+                           !gfx::IsExpressibleAsInt(pending_crop_.height()))
+          << "Crop rectangle size (" << pending_crop_.size().ToString()
+          << ") most be expressible using integers when viewport is not set";
+      contents_size = gfx::ToCeiledSize(pending_crop_.size());
+    }
+    layer()->SetTextureCrop(pending_crop_);
+    layer()->SetTextureScale(static_cast<float>(texture_size_in_dip_.width()) /
+                                 contents_size.width(),
+                             static_cast<float>(texture_size_in_dip_.height()) /
+                                 contents_size.height());
+    layer()->SetBounds(gfx::Rect(layer()->bounds().origin(), contents_size));
     layer()->SetTextureAlpha(pending_alpha_);
     alpha_ = pending_alpha_;
   }

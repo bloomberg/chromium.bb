@@ -137,6 +137,13 @@ TEST_P(SurfaceTest, SetViewport) {
   surface->SetViewport(viewport);
   surface->Commit();
   EXPECT_EQ(viewport.ToString(), surface->bounds().size().ToString());
+
+  // This will update the bounds of the surface and take the viewport2 into
+  // account.
+  gfx::Size viewport2(512, 512);
+  surface->SetViewport(viewport2);
+  surface->Commit();
+  EXPECT_EQ(viewport2.ToString(), surface->bounds().size().ToString());
 }
 
 TEST_P(SurfaceTest, SetCrop) {
