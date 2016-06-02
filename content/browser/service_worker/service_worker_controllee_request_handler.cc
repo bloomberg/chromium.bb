@@ -60,6 +60,7 @@ ServiceWorkerControlleeRequestHandler::ServiceWorkerControlleeRequestHandler(
                                   resource_type),
       is_main_resource_load_(
           ServiceWorkerUtils::IsMainResourceType(resource_type)),
+      is_main_frame_load_(resource_type == RESOURCE_TYPE_MAIN_FRAME),
       request_mode_(request_mode),
       credentials_mode_(credentials_mode),
       redirect_mode_(redirect_mode),
@@ -268,7 +269,8 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
   }
 
   ServiceWorkerMetrics::CountControlledPageLoad(
-      stripped_url_, active_version->has_fetch_handler());
+      stripped_url_, active_version->has_fetch_handler(), is_main_frame_load_);
+
   bool is_forwarded =
       MaybeForwardToServiceWorker(job_.get(), active_version.get());
 
@@ -296,8 +298,8 @@ void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
     return;
   }
 
-  ServiceWorkerMetrics::CountControlledPageLoad(stripped_url_,
-                                                version->has_fetch_handler());
+  ServiceWorkerMetrics::CountControlledPageLoad(
+      stripped_url_, version->has_fetch_handler(), is_main_frame_load_);
 
   provider_host_->AssociateRegistration(registration,
                                         false /* notify_controllerchange */);

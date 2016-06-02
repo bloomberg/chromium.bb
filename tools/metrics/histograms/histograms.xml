@@ -49572,6 +49572,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The result of dispatching the install event to the worker.</summary>
 </histogram>
 
+<histogram name="ServiceWorker.MainFramePageLoad" enum="ServiceWorkerSite">
+  <owner>horo@chromium.org</owner>
+  <summary>
+    Counts main frame page loads controlled by a service worker.
+  </summary>
+</histogram>
+
 <histogram name="ServiceWorker.MessageEvent.Time" units="ms">
   <owner>shimazu@chromium.org</owner>
   <obsolete>

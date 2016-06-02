@@ -99,7 +99,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // that job, except for timing information.
   void ClearJob();
 
-  bool is_main_resource_load_;
+  const bool is_main_resource_load_;
+  const bool is_main_frame_load_;
   base::WeakPtr<ServiceWorkerURLRequestJob> job_;
   FetchRequestMode request_mode_;
   FetchCredentialsMode credentials_mode_;
