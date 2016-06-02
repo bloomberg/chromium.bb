@@ -571,6 +571,7 @@
       'accessibility/native_view_accessibility_win_unittest.cc',
       'accessible_pane_view_unittest.cc',
       'animation/bounds_animator_unittest.cc',
+      'animation/flood_fill_ink_drop_ripple_unittest.cc',
       'animation/ink_drop_factory_unittest.cc',
       'animation/ink_drop_impl_unittest.cc',
       'animation/ink_drop_ripple_unittest.cc',

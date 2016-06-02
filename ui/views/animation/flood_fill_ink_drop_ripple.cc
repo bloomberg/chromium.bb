@@ -109,19 +109,18 @@ namespace views {
 FloodFillInkDropRipple::FloodFillInkDropRipple(const gfx::Rect& clip_bounds,
                                                const gfx::Point& center_point,
                                                SkColor color)
-    : clip_bounds_(clip_bounds),
-      center_point_(center_point),
+    : center_point_(center_point),
       root_layer_(ui::LAYER_NOT_DRAWN),
       circle_layer_delegate_(
           color,
-          std::max(clip_bounds_.width(), clip_bounds_.height()) / 2.f),
+          std::max(clip_bounds.width(), clip_bounds.height()) / 2.f),
       ink_drop_state_(InkDropState::HIDDEN) {
   root_layer_.set_name("FloodFillInkDropRipple:ROOT_LAYER");
   root_layer_.SetMasksToBounds(true);
   root_layer_.SetBounds(clip_bounds);
 
   const int painted_size_length =
-      2 * std::max(clip_bounds_.width(), clip_bounds_.height());
+      std::max(clip_bounds.width(), clip_bounds.height());
 
   painted_layer_.SetBounds(gfx::Rect(painted_size_length, painted_size_length));
   painted_layer_.SetFillsBoundsOpaquely(false);
@@ -308,10 +307,10 @@ gfx::Transform FloodFillInkDropRipple::CalculateTransform(
       ToRoundedPoint(circle_layer_delegate_.GetCenterPoint());
 
   gfx::Transform transform = gfx::Transform();
-  transform.Translate(center_point_.x(), center_point_.y());
+  transform.Translate(center_point_.x() - root_layer_.bounds().x(),
+                      center_point_.y() - root_layer_.bounds().y());
   transform.Scale(target_scale, target_scale);
-  transform.Translate(-drawn_center_point.x() - root_layer_.bounds().x(),
-                      -drawn_center_point.y() - root_layer_.bounds().y());
+  transform.Translate(-drawn_center_point.x(), -drawn_center_point.y());
 
   return transform;
 }
@@ -319,8 +318,10 @@ gfx::Transform FloodFillInkDropRipple::CalculateTransform(
 gfx::Transform FloodFillInkDropRipple::GetMaxSizeTargetTransform() const {
   // TODO(estade): get rid of this 2, but make the fade out start before the
   // active/action transform is done.
-  return CalculateTransform(
-      gfx::Vector2dF(clip_bounds_.width(), clip_bounds_.height()).Length() / 2);
+  return CalculateTransform(gfx::Vector2dF(root_layer_.bounds().width(),
+                                           root_layer_.bounds().height())
+                                .Length() /
+                            2);
 }
 
 }  // namespace views

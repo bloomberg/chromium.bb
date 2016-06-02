@@ -12,12 +12,13 @@
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/views_export.h"
 
 namespace views {
 
 // Base ui::LayerDelegate stub that can be extended to paint shapes of a
 // specific color.
-class BasePaintedLayerDelegate : public ui::LayerDelegate {
+class VIEWS_EXPORT BasePaintedLayerDelegate : public ui::LayerDelegate {
  public:
   ~BasePaintedLayerDelegate() override;
 
@@ -43,7 +44,7 @@ class BasePaintedLayerDelegate : public ui::LayerDelegate {
 
 // A BasePaintedLayerDelegate that paints a circle of a specified color and
 // radius.
-class CircleLayerDelegate : public BasePaintedLayerDelegate {
+class VIEWS_EXPORT CircleLayerDelegate : public BasePaintedLayerDelegate {
  public:
   CircleLayerDelegate(SkColor color, int radius);
   ~CircleLayerDelegate() override;
@@ -63,7 +64,7 @@ class CircleLayerDelegate : public BasePaintedLayerDelegate {
 
 // A BasePaintedLayerDelegate that paints a rectangle of a specified color and
 // size.
-class RectangleLayerDelegate : public BasePaintedLayerDelegate {
+class VIEWS_EXPORT RectangleLayerDelegate : public BasePaintedLayerDelegate {
  public:
   RectangleLayerDelegate(SkColor color, gfx::Size size);
   ~RectangleLayerDelegate() override;
@@ -83,7 +84,8 @@ class RectangleLayerDelegate : public BasePaintedLayerDelegate {
 
 // A BasePaintedLayerDelegate that paints a rounded rectangle of a specified
 // color, size and corner radius.
-class RoundedRectangleLayerDelegate : public BasePaintedLayerDelegate {
+class VIEWS_EXPORT RoundedRectangleLayerDelegate
+    : public BasePaintedLayerDelegate {
  public:
   RoundedRectangleLayerDelegate(SkColor color,
                                 gfx::Size size,

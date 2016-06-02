@@ -26,8 +26,13 @@ class FloodFillInkDropRippleTestApi : public InkDropRippleTestApi {
       FloodFillInkDropRipple* ink_drop_ripple);
   ~FloodFillInkDropRippleTestApi() override;
 
-  // Wrapper functions to the wrapped InkDropRipple:
-  gfx::Transform CalculateTransform(float target_radius) const;
+  // Transforms |point| into the FloodFillInkDropRipples clip layer coordinate
+  // space for the given radius.
+  void TransformPoint(float radius, gfx::Point* point);
+
+  // Returns the center point that the ripple is drawn at in the original Canvas
+  // coordinate space.
+  gfx::Point GetDrawnCenterPoint() const;
 
   // InkDropRippleTestApi:
   float GetCurrentOpacity() const override;

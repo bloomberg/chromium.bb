@@ -101,9 +101,6 @@ class VIEWS_EXPORT FloodFillInkDropRipple : public InkDropRipple {
   // Returns the target Transform for when the ink drop is fully shown.
   gfx::Transform GetMaxSizeTargetTransform() const;
 
-  // The clip bounds.
-  const gfx::Rect clip_bounds_;
-
   // The point where the Center of the ink drop's circle should be drawn.
   gfx::Point center_point_;
 

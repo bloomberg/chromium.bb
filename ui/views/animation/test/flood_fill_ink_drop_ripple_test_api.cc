@@ -10,6 +10,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 
 namespace views {
@@ -21,9 +22,14 @@ FloodFillInkDropRippleTestApi::FloodFillInkDropRippleTestApi(
 
 FloodFillInkDropRippleTestApi::~FloodFillInkDropRippleTestApi() {}
 
-gfx::Transform FloodFillInkDropRippleTestApi::CalculateTransform(
-    float target_radius) const {
-  return ink_drop_ripple()->CalculateTransform(target_radius);
+void FloodFillInkDropRippleTestApi::TransformPoint(float radius,
+                                                   gfx::Point* point) {
+  ink_drop_ripple()->CalculateTransform(radius).TransformPoint(point);
+}
+
+gfx::Point FloodFillInkDropRippleTestApi::GetDrawnCenterPoint() const {
+  return ToRoundedPoint(
+      ink_drop_ripple()->circle_layer_delegate_.GetCenterPoint());
 }
 
 float FloodFillInkDropRippleTestApi::GetCurrentOpacity() const {
