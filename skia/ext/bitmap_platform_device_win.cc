@@ -168,19 +168,25 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(
   // shared memory as the bitmap.
   if (base::win::IsUser32AndGdi32Available()) {
     hbitmap = CreateHBitmap(width, height, is_opaque, shared_section, &data);
-    if (!hbitmap)
+    if (!hbitmap) {
+      LOG(ERROR) << "CreateHBitmap failed";
       return NULL;
+    }
   } else {
     DCHECK(shared_section != NULL);
     data = MapViewOfFile(shared_section, FILE_MAP_WRITE, 0, 0,
                          PlatformCanvasStrideForWidth(width) * height);
-    if (!data)
+    if (!data) {
+      LOG(ERROR) << "MapViewOfFile failed";
       return NULL;
+    }
   }
 
   SkBitmap bitmap;
-  if (!InstallHBitmapPixels(&bitmap, width, height, is_opaque, data, hbitmap))
+  if (!InstallHBitmapPixels(&bitmap, width, height, is_opaque, data, hbitmap)) {
+    LOG(ERROR) << "InstallHBitmapPixels failed";
     return NULL;
+  }
 
   if (do_clear)
     bitmap.eraseColor(0);

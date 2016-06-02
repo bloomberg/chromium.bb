@@ -98,6 +98,8 @@ void CapturePixelsForPrinting(std::unique_ptr<PixelsDumpRequest> dump_request) {
   sk_sp<SkCanvas> canvas(skia::TryCreateBitmapCanvas(
       page_size_in_pixels.width, totalHeight, is_opaque));
   if (!canvas) {
+    LOG(ERROR) << "Failed to create canvas width="
+               << page_size_in_pixels.width << " height=" << totalHeight;
     dump_request->callback.Run(SkBitmap());
     return;
   }
