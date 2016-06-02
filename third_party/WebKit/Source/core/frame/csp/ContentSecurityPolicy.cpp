@@ -796,7 +796,7 @@ static String stripURLForUseInReport(Document* document, const KURL& url, Redire
     return SecurityOrigin::create(url)->toString();
 }
 
-static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventInit& init, Document* document, const String& directiveText, const String& effectiveDirective, const KURL& blockedURL, const String& header, RedirectStatus redirectStatus)
+static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventInit& init, Document* document, const String& directiveText, const String& effectiveDirective, const KURL& blockedURL, const String& header, RedirectStatus redirectStatus, ContentSecurityPolicy::ViolationType violationType, int contextLine)
 {
     if (equalIgnoringCase(effectiveDirective, ContentSecurityPolicy::FrameAncestors)) {
         // If this load was blocked via 'frame-ancestors', then the URL of |document| has not yet
@@ -806,14 +806,24 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
         init.setBlockedURI(blockedURL.getString());
     } else {
         init.setDocumentURI(document->url().getString());
-        init.setBlockedURI(stripURLForUseInReport(document, blockedURL, redirectStatus));
+        switch (violationType) {
+        case ContentSecurityPolicy::InlineViolation:
+            init.setBlockedURI("inline");
+            break;
+        case ContentSecurityPolicy::EvalViolation:
+            init.setBlockedURI("eval");
+            break;
+        case ContentSecurityPolicy::URLViolation:
+            init.setBlockedURI(stripURLForUseInReport(document, blockedURL, redirectStatus));
+            break;
+        }
     }
     init.setReferrer(document->referrer());
     init.setViolatedDirective(directiveText);
     init.setEffectiveDirective(effectiveDirective);
     init.setOriginalPolicy(header);
     init.setSourceFile(String());
-    init.setLineNumber(0);
+    init.setLineNumber(contextLine);
     init.setColumnNumber(0);
     init.setStatusCode(0);
 
@@ -829,7 +839,7 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
     }
 }
 
-void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, ViolationType violationType, LocalFrame* contextFrame, RedirectStatus redirectStatus)
+void ContentSecurityPolicy::reportViolation(const String& directiveText, const String& effectiveDirective, const String& consoleMessage, const KURL& blockedURL, const Vector<String>& reportEndpoints, const String& header, ViolationType violationType, LocalFrame* contextFrame, RedirectStatus redirectStatus, int contextLine)
 {
     ASSERT(violationType == URLViolation || blockedURL.isEmpty());
 
@@ -854,7 +864,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
         return;
 
     SecurityPolicyViolationEventInit violationData;
-    gatherSecurityPolicyViolationEventData(violationData, document, directiveText, effectiveDirective, blockedURL, header, redirectStatus);
+    gatherSecurityPolicyViolationEventData(violationData, document, directiveText, effectiveDirective, blockedURL, header, redirectStatus, violationType, contextLine);
 
     frame->localDOMWindow()->enqueueDocumentEvent(SecurityPolicyViolationEvent::create(EventTypeNames::securitypolicyviolation, violationData));
 
@@ -884,17 +894,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     cspReport->setString("violated-directive", violationData.violatedDirective());
     cspReport->setString("effective-directive", violationData.effectiveDirective());
     cspReport->setString("original-policy", violationData.originalPolicy());
-    switch (violationType) {
-    case InlineViolation:
-        cspReport->setString("blocked-uri", "inline");
-        break;
-    case EvalViolation:
-        cspReport->setString("blocked-uri", "eval");
-        break;
-    case URLViolation:
-        cspReport->setString("blocked-uri", violationData.blockedURI());
-        break;
-    }
+    cspReport->setString("blocked-uri", violationData.blockedURI());
     if (!violationData.sourceFile().isEmpty() && violationData.lineNumber()) {
         cspReport->setString("source-file", violationData.sourceFile());
         cspReport->setNumber("line-number", violationData.lineNumber());
