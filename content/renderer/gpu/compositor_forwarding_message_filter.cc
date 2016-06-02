@@ -47,6 +47,7 @@ void CompositorForwardingMessageFilter::RemoveHandlerOnCompositorThread(
 bool CompositorForwardingMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
   switch(message.type()) {
+    case ViewMsg_SetBeginFramePaused::ID:        // Fall through.
     case ViewMsg_BeginFrame::ID:                 // Fall through.
     case ViewMsg_ReclaimCompositorResources::ID: // Fall through.
     case ViewMsg_SwapCompositorFrameAck::ID:     // Fall through.

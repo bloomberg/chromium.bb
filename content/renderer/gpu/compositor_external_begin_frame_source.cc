@@ -74,6 +74,7 @@ void CompositorExternalBeginFrameSource::OnMessageReceived(
   DCHECK(CalledOnValidThread());
   DCHECK(begin_frame_source_proxy_.get());
   IPC_BEGIN_MESSAGE_MAP(CompositorExternalBeginFrameSource, message)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetBeginFramePaused, SetBeginFrameSourcePaused)
     IPC_MESSAGE_HANDLER(ViewMsg_BeginFrame, OnBeginFrame)
   IPC_END_MESSAGE_MAP()
 }
