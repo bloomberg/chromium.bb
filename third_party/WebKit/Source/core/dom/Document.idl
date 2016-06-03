@@ -76,8 +76,7 @@ interface Document : Node {
     [NewObject] TreeWalker createTreeWalker(Node root, optional unsigned long whatToShow = 0xFFFFFFFF, optional NodeFilter? filter = null);
 
     // NonDocumentRootScroller (https://github.com/bokand/NonDocumentRootScroller)
-    [RuntimeEnabled=SetRootScroller, RaisesException] void setRootScroller (Element element);
-    [RuntimeEnabled=SetRootScroller] readonly attribute Element? rootScroller;
+    [RaisesException=Setter, RuntimeEnabled=SetRootScroller] attribute Element? rootScroller;
 
     // FIXME: CDATASection has been removed from the spec. crbug.com/437205
     [RaisesException, MeasureAs=DocumentCreateCDATASection] CDATASection createCDATASection(DOMString data);

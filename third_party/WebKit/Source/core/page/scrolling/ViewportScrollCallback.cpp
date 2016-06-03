@@ -96,9 +96,9 @@ void ViewportScrollCallback::handleEvent(ScrollState* state)
         state->deltaY() - result.unusedScrollDeltaY);
 }
 
-void ViewportScrollCallback::setScroller(ScrollableArea& scroller)
+void ViewportScrollCallback::setScroller(ScrollableArea* scroller)
 {
-    m_scroller = &scroller;
+    m_scroller = scroller;
 }
 
 } // namespace blink

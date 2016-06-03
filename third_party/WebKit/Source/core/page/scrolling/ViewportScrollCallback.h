@@ -26,7 +26,7 @@ public:
 
     void handleEvent(ScrollState*) override;
 
-    void setScroller(ScrollableArea&);
+    void setScroller(ScrollableArea*);
 
     DECLARE_VIRTUAL_TRACE();
 

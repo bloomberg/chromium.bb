@@ -61,20 +61,20 @@ class InputMethodController;
 class IntPoint;
 class IntSize;
 class InstrumentingAgents;
+class LayoutView;
 class LayoutViewItem;
 class LocalDOMWindow;
 class NavigationScheduler;
 class Node;
 class NodeTraversal;
+template <typename Strategy> class PositionWithAffinityTemplate;
 class PluginData;
 class Range;
-class LayoutView;
 class ScriptController;
 class ServiceRegistry;
 class SpellChecker;
 class WebFrameHostScheduler;
 class WebFrameScheduler;
-template <typename Strategy> class PositionWithAffinityTemplate;
 
 class CORE_EXPORT LocalFrame : public Frame, public LocalFrameLifecycleNotifier, public Supplementable<LocalFrame> {
     USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);

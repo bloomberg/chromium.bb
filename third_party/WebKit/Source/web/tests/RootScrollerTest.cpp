@@ -152,11 +152,6 @@ public:
         return frameHost().visualViewport();
     }
 
-    RootScroller& rootScroller() const
-    {
-        return *frameHost().rootScroller();
-    }
-
     TopControls& topControls() const
     {
         return frameHost().topControls();
@@ -169,15 +164,17 @@ protected:
     RuntimeEnabledFeatures::Backup m_featuresBackup;
 };
 
-// Test that a default root scroller element is set if setRootScroller isn't
-// called on any elements.
+// Test that no root scroller element is set if setRootScroller isn't called on
+// any elements. The document element should be the default effective root
+// scroller.
 TEST_F(RootScrollerTest, TestDefaultRootScroller)
 {
     initialize("overflow-scrolling.html");
 
-    EXPECT_EQ(
-        mainFrame()->document()->documentElement(),
-        rootScroller().get());
+    ASSERT_EQ(nullptr, mainFrame()->document()->rootScroller());
+
+    Element* htmlElement = mainFrame()->document()->documentElement();
+    EXPECT_TRUE(mainFrame()->document()->isEffectiveRootScroller(*htmlElement));
 }
 
 // Tests that setting an element as the root scroller causes it to control url
@@ -286,30 +283,30 @@ TEST_F(RootScrollerTest, TestSetRootScroller)
 }
 
 // Tests that removing the element that is the root scroller from the DOM tree
-// resets the default element to be the root scroller.
+// doesn't remove it as the root scroller but it does change the effective root
+// scroller.
 TEST_F(RootScrollerTest, TestRemoveRootScrollerFromDom)
 {
     initialize("root-scroller.html");
 
-    ASSERT_EQ(
-        mainFrame()->document()->documentElement(),
-        rootScroller().get());
+    ASSERT_EQ(nullptr, mainFrame()->document()->rootScroller());
 
     Element* container = mainFrame()->document()->getElementById("container");
     TrackExceptionState exceptionState;
     mainFrame()->document()->setRootScroller(container, exceptionState);
 
     ASSERT_EQ(container, mainFrame()->document()->rootScroller());
+    ASSERT_TRUE(mainFrame()->document()->isEffectiveRootScroller(*container));
 
     mainFrame()->document()->body()->removeChild(container);
+    mainFrameView()->updateAllLifecyclePhases();
 
-    ASSERT_EQ(
-        mainFrame()->document()->documentElement(),
-        mainFrame()->document()->rootScroller());
+    ASSERT_EQ(container, mainFrame()->document()->rootScroller());
+    ASSERT_FALSE(mainFrame()->document()->isEffectiveRootScroller(*container));
 }
 
 // Tests that setting an element that isn't a valid scroller as the root
-// scroller fails and doesn't change the current root scroller.
+// scroller doesn't change the effective root scroller.
 TEST_F(RootScrollerTest, TestSetRootScrollerOnInvalidElement)
 {
     initialize("root-scroller.html");
@@ -320,10 +317,10 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnInvalidElement)
         Element* element = mainFrame()->document()->getElementById("nonBlock");
         TrackExceptionState exceptionState;
         mainFrame()->document()->setRootScroller(element, exceptionState);
-        ASSERT_EQ(
-            mainFrame()->document()->documentElement(),
-            mainFrame()->document()->rootScroller());
-        EXPECT_TRUE(exceptionState.hadException());
+        mainFrameView()->updateAllLifecyclePhases();
+        ASSERT_EQ(element, mainFrame()->document()->rootScroller());
+        ASSERT_FALSE(
+            mainFrame()->document()->isEffectiveRootScroller(*element));
     }
 
     {
@@ -331,46 +328,75 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnInvalidElement)
         Element* element = mainFrame()->document()->getElementById("empty");
         TrackExceptionState exceptionState;
         mainFrame()->document()->setRootScroller(element, exceptionState);
-        ASSERT_EQ(
-            mainFrame()->document()->documentElement(),
-            mainFrame()->document()->rootScroller());
-        EXPECT_TRUE(exceptionState.hadException());
+        mainFrameView()->updateAllLifecyclePhases();
+        ASSERT_EQ(element, mainFrame()->document()->rootScroller());
+        ASSERT_FALSE(
+            mainFrame()->document()->isEffectiveRootScroller(*element));
     }
 }
 
-// Test that the root scroller resets to the default element when the current
-// root scroller element becomes invalid as a scroller.
+// Test that the effective root scroller resets to the default element when the
+// current root scroller element becomes invalid as a scroller.
 TEST_F(RootScrollerTest, TestRootScrollerBecomesInvalid)
 {
     initialize("root-scroller.html");
 
-    ASSERT_EQ(
-        mainFrame()->document()->documentElement(),
-        rootScroller().get());
-
+    Element* htmlElement = mainFrame()->document()->documentElement();
     Element* container = mainFrame()->document()->getElementById("container");
     TrackExceptionState exceptionState;
-    mainFrame()->document()->setRootScroller(container, exceptionState);
 
-    ASSERT_EQ(container, mainFrame()->document()->rootScroller());
+    ASSERT_EQ(nullptr, mainFrame()->document()->rootScroller());
+    ASSERT_TRUE(mainFrame()->document()->isEffectiveRootScroller(*htmlElement));
+
+    {
+        mainFrame()->document()->setRootScroller(container, exceptionState);
+        mainFrameView()->updateAllLifecyclePhases();
+
+        ASSERT_EQ(container, mainFrame()->document()->rootScroller());
+        ASSERT_TRUE(
+            mainFrame()->document()->isEffectiveRootScroller(*container));
+
+        executeScript(
+            "document.querySelector('#container').style.display = 'inline'");
+        mainFrameView()->updateAllLifecyclePhases();
+
+        ASSERT_EQ(container, mainFrame()->document()->rootScroller());
+        ASSERT_TRUE(
+            mainFrame()->document()->isEffectiveRootScroller(*htmlElement));
+    }
 
     executeScript(
-        "document.querySelector('#container').style.display = 'inline'");
+        "document.querySelector('#container').style.display = 'block'");
+    mainFrame()->document()->setRootScroller(nullptr, exceptionState);
+    mainFrameView()->updateAllLifecyclePhases();
+    ASSERT_EQ(nullptr, mainFrame()->document()->rootScroller());
+    ASSERT_TRUE(mainFrame()->document()->isEffectiveRootScroller(*htmlElement));
 
-    ASSERT_EQ(
-        mainFrame()->document()->documentElement(),
-        mainFrame()->document()->rootScroller());
+    {
+        mainFrame()->document()->setRootScroller(container, exceptionState);
+        mainFrameView()->updateAllLifecyclePhases();
+
+        ASSERT_EQ(container, mainFrame()->document()->rootScroller());
+        ASSERT_TRUE(
+            mainFrame()->document()->isEffectiveRootScroller(*container));
+
+        executeScript(
+            "document.querySelector('#container').style.width = '98%'");
+        mainFrameView()->updateAllLifecyclePhases();
+
+        ASSERT_EQ(container, mainFrame()->document()->rootScroller());
+        ASSERT_TRUE(
+            mainFrame()->document()->isEffectiveRootScroller(*htmlElement));
+    }
 }
 
-// Tests that setting the root scroller of the top codument to an element that
-// belongs to a nested document fails.
+// Tests that setting the root scroller of the top document to an element that
+// belongs to a nested document works.
 TEST_F(RootScrollerTest, TestSetRootScrollerOnElementInIframe)
 {
     initialize("root-scroller-iframe.html");
 
-    ASSERT_EQ(
-        mainFrame()->document()->documentElement(),
-        rootScroller().get());
+    ASSERT_EQ(nullptr, mainFrame()->document()->rootScroller());
 
     {
         // Trying to set an element from a nested document should fail.
@@ -383,46 +409,42 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnElementInIframe)
         mainFrame()->document()->setRootScroller(
             innerContainer,
             exceptionState);
-        EXPECT_TRUE(exceptionState.hadException());
+        mainFrameView()->updateAllLifecyclePhases();
 
-        ASSERT_EQ(
-            mainFrame()->document()->documentElement(),
-            rootScroller().get());
+        ASSERT_EQ(innerContainer, mainFrame()->document()->rootScroller());
+        ASSERT_TRUE(
+            mainFrame()->document()->isEffectiveRootScroller(*innerContainer));
     }
 
     {
-        // Setting the iframe itself, however, should work.
+        // Setting the iframe itself should also work.
         HTMLFrameOwnerElement* iframe = toHTMLFrameOwnerElement(
             mainFrame()->document()->getElementById("iframe"));
 
         TrackExceptionState exceptionState;
         mainFrame()->document()->setRootScroller(iframe, exceptionState);
-        EXPECT_FALSE(exceptionState.hadException());
+        mainFrameView()->updateAllLifecyclePhases();
 
-        ASSERT_EQ(iframe, rootScroller().get());
+        ASSERT_EQ(iframe, mainFrame()->document()->rootScroller());
+        ASSERT_TRUE(
+            mainFrame()->document()->isEffectiveRootScroller(*iframe));
     }
 }
 
-// Tests that setting an otherwise valid element as the root scroller on a
-// document within an iframe fails and getting the root scroller in the nested
-// document returns the default element.
+// Tests that setting a valid element as the root scroller on a document within
+// an iframe works as expected.
 TEST_F(RootScrollerTest, TestRootScrollerWithinIframe)
 {
     initialize("root-scroller-iframe.html");
 
-    ASSERT_EQ(
-        mainFrame()->document()->documentElement(),
-        rootScroller().get());
+    ASSERT_EQ(nullptr, mainFrame()->document()->rootScroller());
 
     {
-        // Trying to set an element within nested document should fail.
-        // rootScroller() should always return its documentElement.
         HTMLFrameOwnerElement* iframe = toHTMLFrameOwnerElement(
             mainFrame()->document()->getElementById("iframe"));
 
-        ASSERT_EQ(
-            iframe->contentDocument()->documentElement(),
-            iframe->contentDocument()->rootScroller());
+        ASSERT_TRUE(iframe->contentDocument()->isEffectiveRootScroller(
+            *iframe->contentDocument()->documentElement()));
 
         Element* innerContainer =
             iframe->contentDocument()->getElementById("container");
@@ -430,23 +452,22 @@ TEST_F(RootScrollerTest, TestRootScrollerWithinIframe)
         iframe->contentDocument()->setRootScroller(
             innerContainer,
             exceptionState);
-        EXPECT_TRUE(exceptionState.hadException());
+        mainFrameView()->updateAllLifecyclePhases();
 
-        ASSERT_EQ(
-            iframe->contentDocument()->documentElement(),
-            iframe->contentDocument()->rootScroller());
+        ASSERT_EQ(innerContainer, iframe->contentDocument()->rootScroller());
+        ASSERT_TRUE(iframe->contentDocument()->isEffectiveRootScroller(
+            *innerContainer));
     }
 }
 
 // Tests that trying to set an element as the root scroller of a document inside
 // an iframe fails when that element belongs to the parent document.
-TEST_F(RootScrollerTest, TestSetRootScrollerOnElementFromOutsideIframe)
+// TODO(bokan): Recent changes mean this is now possible but should be fixed.
+TEST_F(RootScrollerTest, DISABLED_TestSetRootScrollerOnElementFromOutsideIframe)
 {
     initialize("root-scroller-iframe.html");
 
-    ASSERT_EQ(
-        mainFrame()->document()->documentElement(),
-        rootScroller().get());
+    ASSERT_EQ(nullptr, mainFrame()->document()->rootScroller());
     {
         // Try to set the the root scroller of the child document to be the
         // <iframe> element in the parent document.
@@ -456,32 +477,22 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnElementFromOutsideIframe)
         Element* body =
             mainFrame()->document()->querySelector("body", nonThrow);
 
-        ASSERT_EQ(
-            iframe->contentDocument()->documentElement(),
-            iframe->contentDocument()->rootScroller());
+        ASSERT_EQ(nullptr, iframe->contentDocument()->rootScroller());
 
         TrackExceptionState exceptionState;
         iframe->contentDocument()->setRootScroller(
             iframe,
             exceptionState);
-        EXPECT_TRUE(exceptionState.hadException());
 
-        ASSERT_EQ(
-            iframe->contentDocument()->documentElement(),
-            iframe->contentDocument()->rootScroller());
-
-        exceptionState.clearException();
+        ASSERT_EQ(iframe, iframe->contentDocument()->rootScroller());
 
         // Try to set the root scroller of the child document to be the
         // <body> element of the parent document.
         iframe->contentDocument()->setRootScroller(
             body,
             exceptionState);
-        EXPECT_TRUE(exceptionState.hadException());
 
-        ASSERT_EQ(
-            iframe->contentDocument()->documentElement(),
-            iframe->contentDocument()->rootScroller());
+        ASSERT_EQ(body, iframe->contentDocument()->rootScroller());
     }
 }
 

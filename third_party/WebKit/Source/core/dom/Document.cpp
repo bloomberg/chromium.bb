@@ -197,6 +197,7 @@
 #include "core/page/scrolling/RootScroller.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/SnapCoordinator.h"
+#include "core/page/scrolling/ViewportScrollCallback.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGScriptElement.h"
 #include "core/svg/SVGTitleElement.h"
@@ -479,6 +480,13 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         m_fetcher = ResourceFetcher::create(nullptr);
     }
 
+    ViewportScrollCallback* applyScroll = nullptr;
+    if (isInMainFrame()) {
+        applyScroll = RootScroller::createViewportApplyScroll(
+            frameHost()->topControls(), frameHost()->overscrollController());
+    }
+    m_rootScroller = RootScroller::create(*this, applyScroll);
+
     // We depend on the url getting immediately set in subframes, but we
     // also depend on the url NOT getting immediately set in opened windows.
     // See fast/dom/early-frame-url.html
@@ -602,52 +610,17 @@ void Document::childrenChanged(const ChildrenChange& change)
 
 void Document::setRootScroller(Element* newScroller, ExceptionState& exceptionState)
 {
-    DCHECK(newScroller);
-
-    if (!frame() || !frame()->isMainFrame()) {
-        exceptionState.throwDOMException(
-            WrongDocumentError,
-            "Root scroller can only be set on the top window's document.");
-        return;
-    }
-
-    if (newScroller->document() != this) {
-        exceptionState.throwDOMException(
-            WrongDocumentError,
-            "Element isn't in this document.");
-        return;
-    }
-
-    FrameHost* host = frameHost();
-    if (!host)
-        return;
-
-    RootScroller* rootScroller = host->rootScroller();
-    DCHECK(rootScroller);
-
-    if (!rootScroller->set(*newScroller)) {
-        exceptionState.throwDOMException(
-            InvalidStateError,
-            "Element cannot be set as root scroller. Must be block or iframe.");
-    }
+    m_rootScroller->set(newScroller);
 }
 
-Element* Document::rootScroller()
+Element* Document::rootScroller() const
 {
-    // TODO(bokan): Should child frames return the documentElement or nullptr?
-    if (!isInMainFrame())
-        return documentElement();
+    return m_rootScroller->get();
+}
 
-    FrameHost* host = frameHost();
-    if (!host)
-        return nullptr;
-
-    RootScroller* rootScroller = host->rootScroller();
-    DCHECK(rootScroller);
-
-    updateStyleAndLayoutIgnorePendingStylesheets();
-
-    return rootScroller->get();
+bool Document::isEffectiveRootScroller(const Element& element) const
+{
+    return m_rootScroller->effectiveRootScroller() == element;
 }
 
 bool Document::isInMainFrame() const
@@ -1947,11 +1920,7 @@ void Document::layoutUpdated()
             m_documentTiming.markFirstLayout();
     }
 
-    // TODO(bokan): Not sure how rootScroller can be null here if we're in the
-    // main frame. In any case, I'm moving rootScroller to be owned by Document
-    // soon so this will go away: https://codereview.chromium.org/1970763002/
-    if (isInMainFrame() && frameHost() && frameHost()->rootScroller())
-        frameHost()->rootScroller()->didUpdateTopDocumentLayout();
+    m_rootScroller->didUpdateLayout();
 }
 
 void Document::setNeedsFocusedElementCheck()
@@ -5960,6 +5929,7 @@ DEFINE_TRACE(Document)
     visitor->trace(m_hoverNode);
     visitor->trace(m_activeHoverElement);
     visitor->trace(m_documentElement);
+    visitor->trace(m_rootScroller);
     visitor->trace(m_titleElement);
     visitor->trace(m_axObjectCache);
     visitor->trace(m_markers);

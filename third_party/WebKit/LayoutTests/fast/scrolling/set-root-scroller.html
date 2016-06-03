@@ -15,14 +15,23 @@
   }
 
   #container {
-    width: 1000px;
-    height: 1000px;
+    width: 100%;
+    height: 100%;
     overflow: auto;
   }
 
   #spacer {
     width: 2000px;
-    height: 1900px;
+    height: 2000px;
+  }
+
+  #rootspacer {
+    width: 1000px;
+    height: 1000px;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: -1;
   }
 </style>
 
@@ -31,33 +40,33 @@
     <span id="spanner">TEST</span>
   </div>
 </div>
+<div id="rootspacer"></div>
 
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 
 <script>
   test(function() {
-      assert_false(typeof document.setRootScroller === 'undefined');
+      assert_false(typeof document.rootScroller === 'undefined');
   }, 'setRootScroller API enabled');
+
+  // TODO(bokan): Break this test up, failing asserts are hard to find.
   test(function() {
     // Setting the container object should succeed.
-    assert_equals(document.rootScroller, document.documentElement);
+    assert_equals(document.rootScroller, null);
     var container = document.querySelector('#container');
-    document.setRootScroller(container);
+    document.rootScroller = container;
     assert_equals(document.rootScroller, container);
 
-    // Trying to set the <span> should fail with an exception thrown since a
-    // span is not a valid scroller.
-    assert_throws(
-      'InvalidStateError',
-      function() {
-        document.setRootScroller(document.querySelector('#spanner'));
-      },
-      'Trying to set a non-block flow element should throw');
-    assert_equals(document.rootScroller, container);
+    // Trying to set the <span> should succeed even though it's not a valid
+    // scroller.
+    var spanner = document.querySelector('#spanner');
+    document.rootScroller = spanner;
+    assert_equals(document.rootScroller, spanner);
 
     // Scroll the container <div> past the end. The scrolls should not chain
     // past the rootScroller to the scrollingElement.
+    document.rootScroller = container;
     if (typeof eventSender !== 'undefined') {
         eventSender.gestureScrollBegin(500, 500);
         eventSender.gestureScrollUpdate(-300, -300);
@@ -70,24 +79,24 @@
         eventSender.gestureScrollEnd(0, 0);
         eventSender.gestureScrollBegin(500, 500);
         eventSender.gestureScrollUpdate(-300, -300);
+        eventSender.gestureScrollUpdate(-300, -300);
+        eventSender.gestureScrollUpdate(-300, -300);
         eventSender.gestureScrollEnd(0, 0);
 
-        assert_equals(container.scrollTop, 900);
-        assert_equals(container.scrollLeft, 1000);
+        assert_equals(container.scrollTop, 2000 - 600);
+        assert_equals(container.scrollLeft, 2000 - 800);
         assert_equals(document.scrollingElement.scrollTop, 0);
         assert_equals(document.scrollingElement.scrollLeft, 0);
     }
 
-    // Making the current rootScroller an invalid scroller should reset the
-    // rootScroller to the default, the documentElement.
-    container.style.display = "none";
-    newRootScroller = document.rootScroller;
-    assert_equals(newRootScroller, document.documentElement);
+    // Making the current rootScroller an invalid scroller should fallback to
+    // the default element, the documentElement, but the rootScroller property
+    // should remain the same.
+    container.style.width = "95%";
+    assert_equals(document.rootScroller, container);
 
-    container.style.display = "block";
-    assert_equals(newRootScroller, document.documentElement);
-
-    // Now scrolling over the <div> should scroll the scrollingElement.
+    // Now scrolling over the <div> should scroll the scrollingElement since the
+    // rootElement is invalid (doesn't fill the viewport).
     if (typeof eventSender !== 'undefined') {
         eventSender.gestureScrollBegin(500, 500);
         eventSender.gestureScrollUpdate(-300, -300);

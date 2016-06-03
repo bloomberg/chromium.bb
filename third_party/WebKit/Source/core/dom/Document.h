@@ -122,6 +122,7 @@ class IdleRequestOptions;
 class InputDeviceCapabilities;
 class IntersectionObserverController;
 class LayoutPoint;
+class LayoutView;
 class LayoutViewItem;
 class LiveNodeListBase;
 class LocalDOMWindow;
@@ -141,8 +142,8 @@ class PlatformMouseEvent;
 class ProcessingInstruction;
 class QualifiedName;
 class Range;
-class LayoutView;
 class ResourceFetcher;
+class RootScroller;
 class SVGDocumentExtensions;
 class SVGUseElement;
 class ScriptRunner;
@@ -1081,8 +1082,9 @@ public:
 
     bool containsV1ShadowTree() const { return m_shadowCascadeOrder == ShadowCascadeOrder::ShadowCascadeV1; }
 
+    Element* rootScroller() const;
     void setRootScroller(Element*, ExceptionState&);
-    Element* rootScroller();
+    bool isEffectiveRootScroller(const Element&) const;
 
     bool isInMainFrame() const;
 
@@ -1238,6 +1240,7 @@ private:
     Member<Element> m_activeHoverElement;
     Member<Element> m_documentElement;
     UserActionElementSet m_userActionElements;
+    Member<RootScroller> m_rootScroller;
 
     uint64_t m_domTreeVersion;
     static uint64_t s_globalTreeVersion;

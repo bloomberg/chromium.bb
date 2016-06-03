@@ -1308,7 +1308,6 @@ interface Document : Node
     method querySelector
     method querySelectorAll
     method registerElement
-    method setRootScroller
     method webkitCancelFullScreen
     method webkitExitFullscreen
     method write
@@ -1399,6 +1398,7 @@ interface Document : Node
     setter onwebkitfullscreenchange
     setter onwebkitfullscreenerror
     setter onwheel
+    setter rootScroller
     setter selectedStylesheetSet
     setter title
     setter xmlStandalone

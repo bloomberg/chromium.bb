@@ -40,7 +40,6 @@
 #include "core/inspector/ConsoleMessageStorage.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/OverscrollController.h"
-#include "core/page/scrolling/RootScroller.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 
@@ -53,7 +52,6 @@ FrameHost* FrameHost::create(Page& page)
 
 FrameHost::FrameHost(Page& page)
     : m_page(&page)
-    , m_rootScroller(RootScroller::create(*this))
     , m_topControls(TopControls::create(*this))
     , m_pageScaleConstraintsSet(PageScaleConstraintsSet::create())
     , m_visualViewport(VisualViewport::create(*this))
@@ -125,26 +123,6 @@ const Deprecation& FrameHost::deprecation() const
 float FrameHost::deviceScaleFactorDeprecated() const
 {
     return m_page->deviceScaleFactor();
-}
-
-RootScroller* FrameHost::rootScroller()
-{
-    // RootScroller only makes sense if we're in the process where the main
-    // frame is local.
-    if (!m_page->mainFrame() || !m_page->mainFrame()->isLocalFrame())
-        return nullptr;
-
-    return m_rootScroller;
-}
-
-const RootScroller* FrameHost::rootScroller() const
-{
-    // RootScroller only makes sense if we're in the process where the main
-    // frame is local.
-    if (!m_page->mainFrame() || !m_page->mainFrame()->isLocalFrame())
-        return nullptr;
-
-    return m_rootScroller;
 }
 
 TopControls& FrameHost::topControls()
@@ -220,7 +198,6 @@ const CustomElementReactionStack& FrameHost::customElementReactionStack() const
 DEFINE_TRACE(FrameHost)
 {
     visitor->trace(m_page);
-    visitor->trace(m_rootScroller);
     visitor->trace(m_topControls);
     visitor->trace(m_visualViewport);
     visitor->trace(m_overscrollController);

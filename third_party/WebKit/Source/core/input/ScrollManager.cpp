@@ -242,10 +242,6 @@ ScrollResult ScrollManager::scrollBox(LayoutBox* box,
         return box->scroll(granularity, delta);
     }
 
-    // Viewport actions should only happen when scrolling an element in the
-    // main frame.
-    DCHECK(m_frame->isMainFrame());
-
     // If there is an ApplyScroll callback, its because we placed one on the
     // root scroller to control top controls and overscroll. Invoke a scroll
     // using parts of the scroll customization framework on just this element.
@@ -492,10 +488,13 @@ bool ScrollManager::isRootScroller(const Node& node) const
 {
     // The root scroller is the one Element on the page designated to perform
     // "viewport actions" like top controls movement and overscroll glow.
-    if (!frameHost() || !frameHost()->rootScroller())
+    if (!m_frame->document())
         return false;
 
-    return frameHost()->rootScroller()->get() == &node;
+    if (!node.isElementNode())
+        return false;
+
+    return m_frame->document()->topDocument().isEffectiveRootScroller(toElement(node));
 }
 
 
