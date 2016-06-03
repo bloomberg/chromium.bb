@@ -312,30 +312,6 @@ imported/wpt/websockets [ Skip ]
 imported/wpt/webvtt [ Skip ]
 imported/wpt/workers [ Skip ]
 
-# Skip OWNERS files in web-platform-tests. crbug.com/584660
-imported/wpt/user-timing/OWNERS [ Skip ]
-imported/wpt/common/OWNERS [ Skip ]
-imported/wpt/custom-elements/OWNERS [ Skip ]
-imported/wpt/gamepad/OWNERS [ Skip ]
-imported/wpt/FileAPI/OWNERS [ Skip ]
-imported/wpt/html/OWNERS [ Skip ]
-imported/wpt/images/OWNERS [ Skip ]
-imported/wpt/webrtc/OWNERS [ Skip ]
-imported/wpt/html-imports/OWNERS [ Skip ]
-imported/wpt/IndexedDB/OWNERS [ Skip ]
-imported/wpt/dom/OWNERS [ Skip ]
-imported/wpt/shadow-dom/OWNERS [ Skip ]
-imported/wpt/encoding/OWNERS [ Skip ]
-imported/wpt/hr-time/OWNERS [ Skip ]
-imported/wpt/pointerevents/OWNERS [ Skip ]
-imported/wpt/webstorage/OWNERS [ Skip ]
-imported/wpt/mediacapture-streams/OWNERS [ Skip ]
-imported/wpt/media/OWNERS [ Skip ]
-imported/wpt/touch-events/OWNERS [ Skip ]
-imported/wpt/uievents/OWNERS [ Skip ]
-imported/wpt/web-animations/OWNERS [ Skip ]
-imported/wpt/quirks-mode/OWNERS [ Skip ]
-
 # Exceptions for individual files that fail due to bugs in the
 # upstream tests that we shouldn't bother importing until they are
 # fixed. Please include an explanation, ideally with a crbug reference

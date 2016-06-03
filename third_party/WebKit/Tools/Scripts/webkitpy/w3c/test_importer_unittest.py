@@ -38,11 +38,13 @@ from webkitpy.w3c.test_importer import TestImporter
 FAKE_SOURCE_DIR = '/blink/w3c'
 FAKE_REPO_DIR = '/blink'
 
-FAKE_FILES = {
-    '/blink/w3c/empty_dir/README.txt': '',
-    '/mock-checkout/third_party/WebKit/LayoutTests/w3c/README.txt': '',
-    '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations': '',
-}
+FAKE_FILES = {'/mock-checkout/third_party/Webkit/LayoutTests/w3c/OWNERS': '',
+              '/blink/w3c/dir/README.txt': '',
+              '/blink/w3c/dir/OWNERS': '',
+              '/blink/w3c/dir1/OWNERS': '',
+              '/mock-checkout/third_party/WebKit/LayoutTests/w3c/README.txt': '',
+              '/mock-checkout/third_party/WebKit/LayoutTests/W3CImportExpectations': ''}
+
 
 
 class TestImporterTest(unittest.TestCase):
@@ -82,4 +84,14 @@ class TestImporterTest(unittest.TestCase):
         importer = TestImporter(MockHost(), FAKE_SOURCE_DIR, FAKE_REPO_DIR, self.options())
         self.assertFalse(importer.path_too_long(FAKE_REPO_DIR + '/x.html'))
 
-    # FIXME: Needs more tests.
+    def test_does_not_import_owner_files(self):
+        host = MockHost()
+        host.filesystem = MockFileSystem(files=FAKE_FILES)
+        importer = TestImporter(host, FAKE_SOURCE_DIR, FAKE_REPO_DIR, self.options())
+        importer.find_importable_tests(FAKE_REPO_DIR)
+        self.assertEqual(importer.import_list,
+                         [{'copy_list': [{'dest': 'README.txt', 'src': '/blink/w3c/dir/README.txt'}],
+                           'dirname': '/blink/w3c/dir',
+                           'jstests': 0,
+                           'reftests': 0,
+                           'total_tests': 0}])
