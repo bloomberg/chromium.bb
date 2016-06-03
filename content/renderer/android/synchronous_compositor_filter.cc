@@ -187,9 +187,9 @@ void SynchronousCompositorFilter::CheckIsReady(int routing_id) {
   if (filter_ready_ && entry.IsReady()) {
     DCHECK(!sync_compositor_map_.contains(routing_id));
     std::unique_ptr<SynchronousCompositorProxy> proxy(
-        new SynchronousCompositorProxy(
-            routing_id, this, entry.begin_frame_source,
-            entry.synchronous_input_handler_proxy, &input_handler_));
+        new SynchronousCompositorProxy(routing_id, this,
+                                       entry.begin_frame_source,
+                                       entry.synchronous_input_handler_proxy));
     if (entry.output_surface)
       proxy->SetOutputSurface(entry.output_surface);
     sync_compositor_map_.add(routing_id, std::move(proxy));
@@ -211,46 +211,6 @@ void SynchronousCompositorFilter::RemoveEntryIfNeeded(int routing_id) {
     entry_map_.erase(routing_id);
   }
 }
-
-void SynchronousCompositorFilter::SetBoundHandler(const Handler& handler) {
-  compositor_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &SynchronousCompositorFilter::SetBoundHandlerOnCompositorThread, this,
-          handler));
-}
-
-void SynchronousCompositorFilter::DidAddInputHandler(int routing_id) {}
-void SynchronousCompositorFilter::DidRemoveInputHandler(int routing_id) {}
-
-void SynchronousCompositorFilter::SetBoundHandlerOnCompositorThread(
-    const Handler& handler) {
-  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  input_handler_ = handler;
-}
-
-void SynchronousCompositorFilter::DidOverscroll(
-    int routing_id,
-    const DidOverscrollParams& params) {
-  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  SynchronousCompositorProxy* proxy = FindProxy(routing_id);
-  if (!proxy) {
-    DLOG(WARNING) << "No matching proxy in DidOverScroll " << routing_id;
-    return;
-  }
-  proxy->DidOverscroll(params);
-}
-
-void SynchronousCompositorFilter::DidStartFlinging(int routing_id) {}
-
-void SynchronousCompositorFilter::DidStopFlinging(int routing_id) {
-  DCHECK(compositor_task_runner_->BelongsToCurrentThread());
-  Send(new InputHostMsg_DidStopFlinging(routing_id));
-}
-
-void SynchronousCompositorFilter::NotifyInputEventHandled(
-    int routing_id,
-    blink::WebInputEvent::Type type) {}
 
 void SynchronousCompositorFilter::DidAddSynchronousHandlerProxy(
     int routing_id,

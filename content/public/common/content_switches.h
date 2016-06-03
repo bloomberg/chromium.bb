@@ -279,7 +279,6 @@ CONTENT_EXPORT extern const char kHideScrollbars[];
 extern const char kNetworkCountryIso[];
 CONTENT_EXPORT extern const char kRemoteDebuggingSocketName[];
 CONTENT_EXPORT extern const char kRendererWaitForJavaDebugger[];
-CONTENT_EXPORT extern const char kSyncInputForSyncCompositor[];
 CONTENT_EXPORT extern const char kEnableOSKOverscroll[];
 #endif
 

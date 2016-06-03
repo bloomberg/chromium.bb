@@ -12,7 +12,6 @@
 #include "content/common/input/input_event_ack_state.h"
 #include "content/renderer/android/synchronous_compositor_external_begin_frame_source.h"
 #include "content/renderer/android/synchronous_compositor_output_surface.h"
-#include "content/renderer/input/input_handler_manager_client.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -50,8 +49,7 @@ class SynchronousCompositorProxy
       int routing_id,
       IPC::Sender* sender,
       SynchronousCompositorExternalBeginFrameSource* begin_frame_source,
-      ui::SynchronousInputHandlerProxy* input_handler_proxy,
-      InputHandlerManagerClient::Handler* handler);
+      ui::SynchronousInputHandlerProxy* input_handler_proxy);
   ~SynchronousCompositorProxy() override;
 
   // ui::SynchronousInputHandler overrides.
@@ -75,7 +73,6 @@ class SynchronousCompositorProxy
   void SetOutputSurface(SynchronousCompositorOutputSurface* output_surface);
   void OnMessageReceived(const IPC::Message& message);
   bool Send(IPC::Message* message);
-  void DidOverscroll(const DidOverscrollParams& did_overscroll_params);
 
  private:
   struct SharedMemoryWithSize;
@@ -85,11 +82,6 @@ class SynchronousCompositorProxy
   void PopulateCommonParams(SyncCompositorCommonRendererParams* params) const;
 
   // IPC handlers.
-  void HandleInputEvent(
-      const SyncCompositorCommonBrowserParams& common_params,
-      const blink::WebInputEvent* event,
-      SyncCompositorCommonRendererParams* common_renderer_params,
-      InputEventAckState* ack);
   void BeginFrame(const SyncCompositorCommonBrowserParams& common_params,
                   const cc::BeginFrameArgs& args,
                   SyncCompositorCommonRendererParams* common_renderer_params);
@@ -129,7 +121,6 @@ class SynchronousCompositorProxy
   IPC::Sender* const sender_;
   SynchronousCompositorExternalBeginFrameSource* const begin_frame_source_;
   ui::SynchronousInputHandlerProxy* const input_handler_proxy_;
-  InputHandlerManagerClient::Handler* const input_handler_;
   const bool use_in_process_zero_copy_software_draw_;
   SynchronousCompositorOutputSurface* output_surface_;
   bool inside_receive_;

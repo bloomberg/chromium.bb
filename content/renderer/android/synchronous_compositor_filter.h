@@ -29,7 +29,6 @@ class SynchronousCompositorFilter
     : public IPC::MessageFilter,
       public IPC::Sender,
       public SynchronousCompositorRegistry,
-      public InputHandlerManagerClient,
       public SynchronousInputHandlerProxyClient {
  public:
   SynchronousCompositorFilter(const scoped_refptr<base::SingleThreadTaskRunner>&
@@ -60,17 +59,6 @@ class SynchronousCompositorFilter
                                   SynchronousCompositorExternalBeginFrameSource*
                                       begin_frame_source) override;
 
-  // InputHandlerManagerClient overrides.
-  void SetBoundHandler(const Handler& handler) override;
-  void DidAddInputHandler(int routing_id) override;
-  void DidRemoveInputHandler(int routing_id) override;
-  void DidOverscroll(int routing_id,
-                     const DidOverscrollParams& params) override;
-  void DidStartFlinging(int routing_id) override;
-  void DidStopFlinging(int routing_id) override;
-  void NotifyInputEventHandled(int routing_id,
-                               blink::WebInputEvent::Type type) override;
-
   // SynchronousInputHandlerProxyClient overrides.
   void DidAddSynchronousHandlerProxy(
       int routing_id,
@@ -87,7 +75,6 @@ class SynchronousCompositorFilter
   // Compositor thread methods.
   void FilterReadyyOnCompositorThread();
   void OnMessageReceivedOnCompositorThread(const IPC::Message& message);
-  void SetBoundHandlerOnCompositorThread(const Handler& handler);
   void CheckIsReady(int routing_id);
   void UnregisterObjects(int routing_id);
   void RemoveEntryIfNeeded(int routing_id);
@@ -104,7 +91,6 @@ class SynchronousCompositorFilter
       base::ScopedPtrHashMap<int /* routing_id */,
                              std::unique_ptr<SynchronousCompositorProxy>>;
   SyncCompositorMap sync_compositor_map_;
-  Handler input_handler_;
 
   bool filter_ready_;
   struct Entry {

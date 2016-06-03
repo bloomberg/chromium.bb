@@ -53,19 +53,16 @@ std::unique_ptr<SynchronousCompositorHost> SynchronousCompositorHost::Create(
     return nullptr;  // Not using sync compositing.
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  bool async_input =
-      !command_line->HasSwitch(switches::kSyncInputForSyncCompositor);
   bool use_in_proc_software_draw =
       command_line->HasSwitch(switches::kSingleProcess);
   return base::WrapUnique(new SynchronousCompositorHost(
-      rwhva, web_contents_android->synchronous_compositor_client(), async_input,
+      rwhva, web_contents_android->synchronous_compositor_client(),
       use_in_proc_software_draw));
 }
 
 SynchronousCompositorHost::SynchronousCompositorHost(
     RenderWidgetHostViewAndroid* rwhva,
     SynchronousCompositorClient* client,
-    bool async_input,
     bool use_in_proc_software_draw)
     : rwhva_(rwhva),
       client_(client),
@@ -73,7 +70,6 @@ SynchronousCompositorHost::SynchronousCompositorHost(
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
       routing_id_(rwhva_->GetRenderWidgetHost()->GetRoutingID()),
       sender_(rwhva_->GetRenderWidgetHost()),
-      async_input_(async_input),
       use_in_process_zero_copy_software_draw_(use_in_proc_software_draw),
       is_active_(false),
       bytes_limit_(0u),
@@ -98,7 +94,6 @@ bool SynchronousCompositorHost::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_OutputSurfaceCreated,
                         OutputSurfaceCreated)
     IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_UpdateState, ProcessCommonParams)
-    IPC_MESSAGE_HANDLER(SyncCompositorHostMsg_OverScroll, OnOverScroll)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -384,23 +379,6 @@ void SynchronousCompositorHost::OnComputeScroll(
       routing_id_, common_browser_params, animation_time));
 }
 
-InputEventAckState SynchronousCompositorHost::HandleInputEvent(
-    const blink::WebInputEvent& input_event) {
-  if (async_input_)
-    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-  SyncCompositorCommonBrowserParams common_browser_params;
-  PopulateCommonParams(&common_browser_params);
-  SyncCompositorCommonRendererParams common_renderer_params;
-  InputEventAckState ack = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-  if (!sender_->Send(new SyncCompositorMsg_HandleInputEvent(
-          routing_id_, common_browser_params, &input_event,
-          &common_renderer_params, &ack))) {
-    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-  }
-  ProcessCommonParams(common_renderer_params);
-  return ack;
-}
-
 void SynchronousCompositorHost::DidOverscroll(
     const DidOverscrollParams& over_scroll_params) {
   client_->DidOverscroll(over_scroll_params.accumulated_overscroll,
@@ -428,13 +406,6 @@ void SynchronousCompositorHost::OutputSurfaceCreated() {
   // re-send all browser side state here.
   sender_->Send(
       new SyncCompositorMsg_SetMemoryPolicy(routing_id_, bytes_limit_));
-}
-
-void SynchronousCompositorHost::OnOverScroll(
-    const SyncCompositorCommonRendererParams& params,
-    const DidOverscrollParams& over_scroll_params) {
-  ProcessCommonParams(params);
-  DidOverscroll(over_scroll_params);
 }
 
 void SynchronousCompositorHost::PopulateCommonParams(

@@ -17,7 +17,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkRegion.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/skia_util.h"
 
 namespace content {
@@ -26,13 +25,11 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
     int routing_id,
     IPC::Sender* sender,
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source,
-    ui::SynchronousInputHandlerProxy* input_handler_proxy,
-    InputHandlerManagerClient::Handler* handler)
+    ui::SynchronousInputHandlerProxy* input_handler_proxy)
     : routing_id_(routing_id),
       sender_(sender),
       begin_frame_source_(begin_frame_source),
       input_handler_proxy_(input_handler_proxy),
-      input_handler_(handler),
       use_in_process_zero_copy_software_draw_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kSingleProcess)),
@@ -50,7 +47,6 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
       did_activate_pending_tree_count_(0u) {
   DCHECK(begin_frame_source_);
   DCHECK(input_handler_proxy_);
-  DCHECK(input_handler_);
   begin_frame_source_->SetClient(this);
   input_handler_proxy_->SetOnlySynchronouslyAnimateRootFlings(this);
 }
@@ -149,7 +145,6 @@ void SynchronousCompositorProxy::OnMessageReceived(
     return;
 
   IPC_BEGIN_MESSAGE_MAP(SynchronousCompositorProxy, message)
-    IPC_MESSAGE_HANDLER(SyncCompositorMsg_HandleInputEvent, HandleInputEvent)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_BeginFrame, BeginFrame)
     IPC_MESSAGE_HANDLER(SyncCompositorMsg_ComputeScroll, OnComputeScroll)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(SyncCompositorMsg_DemandDrawHw,
@@ -166,21 +161,6 @@ void SynchronousCompositorProxy::OnMessageReceived(
 
 bool SynchronousCompositorProxy::Send(IPC::Message* message) {
   return sender_->Send(message);
-}
-
-void SynchronousCompositorProxy::HandleInputEvent(
-    const SyncCompositorCommonBrowserParams& common_params,
-    const blink::WebInputEvent* event,
-    SyncCompositorCommonRendererParams* common_renderer_params,
-    InputEventAckState* ack) {
-  DCHECK(!inside_receive_);
-  base::AutoReset<bool> scoped_inside_receive(&inside_receive_, true);
-
-  ProcessCommonParams(common_params);
-  DCHECK(!input_handler_->is_null());
-  ui::LatencyInfo latency;
-  *ack = input_handler_->Run(routing_id_, event, &latency);
-  PopulateCommonParams(common_renderer_params);
 }
 
 void SynchronousCompositorProxy::BeginFrame(
@@ -388,14 +368,6 @@ void SynchronousCompositorProxy::SetScroll(
     return;
   total_scroll_offset_ = new_total_scroll_offset;
   input_handler_proxy_->SynchronouslySetRootScrollOffset(total_scroll_offset_);
-}
-
-void SynchronousCompositorProxy::DidOverscroll(
-    const DidOverscrollParams& did_overscroll_params) {
-  SyncCompositorCommonRendererParams params;
-  PopulateCommonParams(&params);
-  Send(new SyncCompositorHostMsg_OverScroll(routing_id_, params,
-                                            did_overscroll_params));
 }
 
 void SynchronousCompositorProxy::ProcessCommonParams(

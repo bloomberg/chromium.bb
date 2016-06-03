@@ -1104,7 +1104,6 @@ void RenderThreadImpl::InitializeCompositorThread() {
       FROM_HERE,
       base::Bind(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed), false));
 
-  InputHandlerManagerClient* input_handler_manager_client = nullptr;
   SynchronousInputHandlerProxyClient* synchronous_input_handler_proxy_client =
       nullptr;
 #if defined(OS_ANDROID)
@@ -1112,22 +1111,17 @@ void RenderThreadImpl::InitializeCompositorThread() {
     sync_compositor_message_filter_ =
         new SynchronousCompositorFilter(compositor_task_runner_);
     AddFilter(sync_compositor_message_filter_.get());
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kSyncInputForSyncCompositor)) {
-      input_handler_manager_client = sync_compositor_message_filter_.get();
-    }
     synchronous_input_handler_proxy_client =
         sync_compositor_message_filter_.get();
   }
 #endif
-  if (!input_handler_manager_client) {
-    scoped_refptr<InputEventFilter> compositor_input_event_filter(
-        new InputEventFilter(main_input_callback_.callback(),
-                             main_thread_compositor_task_runner_,
-                             compositor_task_runner_));
-    input_handler_manager_client = compositor_input_event_filter.get();
-    input_event_filter_ = compositor_input_event_filter;
-  }
+  scoped_refptr<InputEventFilter> compositor_input_event_filter(
+      new InputEventFilter(main_input_callback_.callback(),
+                           main_thread_compositor_task_runner_,
+                           compositor_task_runner_));
+  InputHandlerManagerClient* input_handler_manager_client =
+      compositor_input_event_filter.get();
+  input_event_filter_ = compositor_input_event_filter;
   input_handler_manager_.reset(new InputHandlerManager(
       compositor_task_runner_, input_handler_manager_client,
       synchronous_input_handler_proxy_client, renderer_scheduler_.get()));

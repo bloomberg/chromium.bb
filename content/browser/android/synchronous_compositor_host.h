@@ -67,7 +67,6 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   void SetIsActive(bool is_active) override;
   void OnComputeScroll(base::TimeTicks animation_time) override;
 
-  InputEventAckState HandleInputEvent(const blink::WebInputEvent& input_event);
   void DidOverscroll(const DidOverscrollParams& over_scroll_params);
   void BeginFrame(const cc::BeginFrameArgs& args);
   bool OnMessageReceived(const IPC::Message& message);
@@ -81,15 +80,12 @@ class SynchronousCompositorHost : public SynchronousCompositor {
 
   SynchronousCompositorHost(RenderWidgetHostViewAndroid* rwhva,
                             SynchronousCompositorClient* client,
-                            bool async_input,
                             bool use_in_proc_software_draw);
   void PopulateCommonParams(SyncCompositorCommonBrowserParams* params);
   void ProcessCommonParams(const SyncCompositorCommonRendererParams& params);
   void UpdateNeedsBeginFrames();
   void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_metadata);
   void OutputSurfaceCreated();
-  void OnOverScroll(const SyncCompositorCommonRendererParams& params,
-                    const DidOverscrollParams& over_scroll_params);
   void SendAsyncCompositorStateIfNeeded();
   void UpdateStateTask();
   bool DemandDrawSwInProc(SkCanvas* canvas);
@@ -101,7 +97,6 @@ class SynchronousCompositorHost : public SynchronousCompositor {
   const scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   const int routing_id_;
   IPC::Sender* const sender_;
-  const bool async_input_;
   const bool use_in_process_zero_copy_software_draw_;
 
   bool is_active_;

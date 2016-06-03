@@ -133,12 +133,6 @@ IPC_STRUCT_TRAITS_END()
 // Synchronous IPCs are allowed here to the renderer compositor thread. See
 // design doc https://goo.gl/Tn81FW and crbug.com/526842 for details.
 
-IPC_SYNC_MESSAGE_ROUTED2_2(SyncCompositorMsg_HandleInputEvent,
-                           content::SyncCompositorCommonBrowserParams,
-                           IPC::WebInputEventPointer,
-                           content::SyncCompositorCommonRendererParams,
-                           content::InputEventAckState)
-
 IPC_SYNC_MESSAGE_ROUTED2_1(SyncCompositorMsg_BeginFrame,
                            content::SyncCompositorCommonBrowserParams,
                            cc::BeginFrameArgs,
@@ -195,7 +189,3 @@ IPC_MESSAGE_ROUTED0(SyncCompositorHostMsg_OutputSurfaceCreated);
 
 IPC_MESSAGE_ROUTED1(SyncCompositorHostMsg_UpdateState,
                     content::SyncCompositorCommonRendererParams)
-
-IPC_MESSAGE_ROUTED2(SyncCompositorHostMsg_OverScroll,
-                    content::SyncCompositorCommonRendererParams,
-                    content::DidOverscrollParams)
