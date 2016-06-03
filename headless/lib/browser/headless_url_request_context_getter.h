@@ -37,13 +37,10 @@ namespace headless {
 class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   HeadlessURLRequestContextGetter(
-      bool ignore_certificate_errors,
-      const base::FilePath& base_path,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors,
-      net::NetLog* net_log,
       HeadlessBrowser::Options* options);
 
   // net::URLRequestContextGetter implementation:
@@ -56,16 +53,9 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
  protected:
   ~HeadlessURLRequestContextGetter() override;
 
-  std::unique_ptr<net::NetworkDelegate> CreateNetworkDelegate();
-  std::unique_ptr<net::ProxyConfigService> GetProxyConfigService();
-  std::unique_ptr<net::ProxyService> GetProxyService();
-
  private:
-  bool ignore_certificate_errors_;
-  base::FilePath base_path_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> file_task_runner_;
-  net::NetLog* net_log_;
 
   // The |options| object given to the constructor is not guaranteed to outlive
   // this class, so we make copies of the parts we need to access on the IO
@@ -75,8 +65,6 @@ class HeadlessURLRequestContextGetter : public net::URLRequestContextGetter {
   net::HostPortPair proxy_server_;
 
   std::unique_ptr<net::ProxyConfigService> proxy_config_service_;
-  std::unique_ptr<net::NetworkDelegate> network_delegate_;
-  std::unique_ptr<net::URLRequestContextStorage> storage_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;
   content::ProtocolHandlerMap protocol_handlers_;
   content::URLRequestInterceptorScopedVector request_interceptors_;

@@ -140,13 +140,11 @@ net::URLRequestContextGetter* HeadlessBrowserContext::CreateRequestContext(
     content::URLRequestInterceptorScopedVector request_interceptors) {
   scoped_refptr<HeadlessURLRequestContextGetter> url_request_context_getter(
       new HeadlessURLRequestContextGetter(
-          false /* ignore_certificate_errors */, GetPath(),
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::IO),
           content::BrowserThread::GetMessageLoopProxyForThread(
               content::BrowserThread::FILE),
-          protocol_handlers, std::move(request_interceptors),
-          nullptr /* net_log */, options()));
+          protocol_handlers, std::move(request_interceptors), options()));
   resource_context_->set_url_request_context_getter(url_request_context_getter);
   return url_request_context_getter.get();
 }
