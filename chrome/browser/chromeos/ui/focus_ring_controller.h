@@ -37,6 +37,7 @@ class FocusRingController : public FocusRingLayerDelegate,
  private:
   // FocusRingLayerDelegate.
   void OnDeviceScaleFactorChanged() override;
+  void OnAnimationStep(base::TimeTicks timestamp) override;
 
   // Sets the focused |widget|.
   void SetWidget(views::Widget* widget);

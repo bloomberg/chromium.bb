@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/time/time.h"
+#include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/layer_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -16,6 +18,7 @@ class Window;
 }
 
 namespace ui {
+class Compositor;
 class Layer;
 }
 
@@ -25,13 +28,15 @@ namespace chromeos {
 class FocusRingLayerDelegate {
  public:
   virtual void OnDeviceScaleFactorChanged() = 0;
+  virtual void OnAnimationStep(base::TimeTicks timestamp) = 0;
 
  protected:
   virtual ~FocusRingLayerDelegate();
 };
 
 // FocusRingLayer draws a focus ring at a given global rectangle.
-class FocusRingLayer : public ui::LayerDelegate {
+class FocusRingLayer : public ui::LayerDelegate,
+                       public ui::CompositorAnimationObserver {
  public:
   explicit FocusRingLayer(FocusRingLayerDelegate* delegate);
   ~FocusRingLayer() override;
@@ -40,6 +45,10 @@ class FocusRingLayer : public ui::LayerDelegate {
   // the given root window.
   void Set(aura::Window* root_window, const gfx::Rect& bounds);
 
+  // Returns true if this layer is in a composited window with an
+  // animation observer.
+  bool CanAnimate() const;
+
   ui::Layer* layer() { return layer_.get(); }
   aura::Window* root_window() { return root_window_; }
 
@@ -47,7 +56,9 @@ class FocusRingLayer : public ui::LayerDelegate {
   // Updates |root_window_| and creates |layer_| if it doesn't exist,
   // or if the root window has changed. Moves the layer to the top if
   // it wasn't there already.
-  void CreateOrUpdateLayer(aura::Window* root_window, const char* layer_name);
+  void CreateOrUpdateLayer(aura::Window* root_window,
+                           const char* layer_name,
+                           const gfx::Rect& bounds);
 
  private:
   // ui::LayerDelegate overrides:
@@ -55,6 +66,10 @@ class FocusRingLayer : public ui::LayerDelegate {
   void OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) override;
   void OnDeviceScaleFactorChanged(float device_scale_factor) override;
   base::Closure PrepareForLayerBoundsChange() override;
+
+  // CompositorAnimationObserver overrides:
+  void OnAnimationStep(base::TimeTicks timestamp) override;
+  void OnCompositingShuttingDown(ui::Compositor* compositor) override;
 
   // The object that owns this layer.
   FocusRingLayerDelegate* delegate_;
@@ -68,6 +83,9 @@ class FocusRingLayer : public ui::LayerDelegate {
   // The bounding rectangle of the focused object, in |root_window_|
   // coordinates.
   gfx::Rect focus_ring_;
+
+  // The compositor associated with this layer.
+  ui::Compositor* compositor_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusRingLayer);
 };

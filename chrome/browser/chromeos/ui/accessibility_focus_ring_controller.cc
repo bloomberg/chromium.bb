@@ -8,11 +8,9 @@
 
 #include <algorithm>
 
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/ui/focus_ring_layer.h"
-#include "ui/display/screen.h"
 
 namespace chromeos {
 
@@ -60,7 +58,7 @@ AccessibilityFocusRingController*
 }
 
 AccessibilityFocusRingController::AccessibilityFocusRingController()
-    : compositor_(nullptr), cursor_opacity_(0), cursor_compositor_(nullptr) {}
+    : cursor_opacity_(0) {}
 
 AccessibilityFocusRingController::~AccessibilityFocusRingController() {
 }
@@ -89,43 +87,12 @@ void AccessibilityFocusRingController::Update() {
     }
   }
 
-  ui::Compositor* compositor = CompositorForBounds(rings_[0].GetBounds());
-  if (compositor != compositor_) {
-    RemoveAnimationObservers();
-    compositor_ = compositor;
-    AddAnimationObservers();
-  }
-
-  if (compositor_ && compositor_->HasAnimationObserver(this)) {
+  if (layers_[0]->CanAnimate()) {
     focus_change_time_ = base::TimeTicks::Now();
   } else {
     // If we can't animate, set the location of the first ring.
     layers_[0]->Set(rings_[0]);
   }
-}
-
-ui::Compositor* AccessibilityFocusRingController::CompositorForBounds(
-    const gfx::Rect& bounds) {
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayMatching(bounds);
-  aura::Window* root_window = ash::Shell::GetInstance()
-                                  ->window_tree_host_manager()
-                                  ->GetRootWindowForDisplayId(display.id());
-  return root_window->layer()->GetCompositor();
-}
-
-void AccessibilityFocusRingController::RemoveAnimationObservers() {
-  if (compositor_ && compositor_->HasAnimationObserver(this))
-    compositor_->RemoveAnimationObserver(this);
-  if (cursor_compositor_ && cursor_compositor_->HasAnimationObserver(this))
-    cursor_compositor_->RemoveAnimationObserver(this);
-}
-
-void AccessibilityFocusRingController::AddAnimationObservers() {
-  if (compositor_ && !compositor_->HasAnimationObserver(this))
-    compositor_->AddAnimationObserver(this);
-  if (cursor_compositor_ && !cursor_compositor_->HasAnimationObserver(this))
-    cursor_compositor_->AddAnimationObserver(this);
 }
 
 void AccessibilityFocusRingController::SetCursorRing(
@@ -141,14 +108,6 @@ void AccessibilityFocusRingController::SetCursorRing(
         kCursorRingColorBlue));
   }
   cursor_layer_->Set(location);
-
-  ui::Compositor* compositor =
-      CompositorForBounds(gfx::Rect(location.x(), location.y(), 0, 0));
-  if (compositor != cursor_compositor_) {
-    RemoveAnimationObservers();
-    cursor_compositor_ = compositor;
-    AddAnimationObservers();
-  }
 }
 
 void AccessibilityFocusRingController::SetCaretRing(
@@ -359,10 +318,10 @@ void AccessibilityFocusRingController::OnDeviceScaleFactorChanged() {
 
 void AccessibilityFocusRingController::OnAnimationStep(
     base::TimeTicks timestamp) {
-  if (!rings_.empty() && compositor_)
+  if (!rings_.empty() && layers_[0]->CanAnimate())
     AnimateFocusRings(timestamp);
 
-  if (cursor_layer_ && cursor_compositor_)
+  if (cursor_layer_ && cursor_layer_->CanAnimate())
     AnimateCursorRing(timestamp);
 }
 
@@ -383,10 +342,6 @@ void AccessibilityFocusRingController::AnimateFocusRings(
       base::TimeDelta::FromMilliseconds(kTransitionTimeMilliseconds);
   if (delta >= transition_time) {
     layers_[0]->Set(rings_[0]);
-
-    RemoveAnimationObservers();
-    compositor_ = nullptr;
-    AddAnimationObservers();
     return;
   }
 
@@ -438,17 +393,6 @@ void AccessibilityFocusRingController::AnimateCursorRing(
       cursor_opacity_ = 0.0;
   }
   cursor_layer_->SetOpacity(cursor_opacity_);
-}
-
-void AccessibilityFocusRingController::OnCompositingShuttingDown(
-    ui::Compositor* compositor) {
-  if (compositor == compositor_ || compositor == cursor_compositor_)
-    compositor->RemoveAnimationObserver(this);
-
-  if (compositor == compositor_)
-    compositor_ = nullptr;
-  if (compositor == cursor_compositor_)
-    cursor_compositor_ = nullptr;
 }
 
 }  // namespace chromeos

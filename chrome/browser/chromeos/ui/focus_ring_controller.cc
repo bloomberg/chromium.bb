@@ -98,6 +98,8 @@ void FocusRingController::OnDeviceScaleFactorChanged() {
   UpdateFocusRing();
 }
 
+void FocusRingController::OnAnimationStep(base::TimeTicks timestamp) {}
+
 void FocusRingController::SetWidget(views::Widget* widget) {
   if (widget_) {
     widget_->RemoveObserver(this);

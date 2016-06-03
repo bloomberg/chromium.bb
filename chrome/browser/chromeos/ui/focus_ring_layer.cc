@@ -6,9 +6,16 @@
 
 #include "base/bind.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
+
+namespace ui {
+class Compositor;
+}
 
 namespace chromeos {
 
@@ -23,25 +30,28 @@ const SkColor kShadowColor = SkColorSetRGB(77, 144, 254);
 FocusRingLayerDelegate::~FocusRingLayerDelegate() {}
 
 FocusRingLayer::FocusRingLayer(FocusRingLayerDelegate* delegate)
-    : delegate_(delegate),
-      root_window_(NULL) {
-}
+    : delegate_(delegate), root_window_(nullptr), compositor_(nullptr) {}
 
-FocusRingLayer::~FocusRingLayer() {}
+FocusRingLayer::~FocusRingLayer() {
+  if (compositor_ && compositor_->HasAnimationObserver(this))
+    compositor_->RemoveAnimationObserver(this);
+}
 
 void FocusRingLayer::Set(aura::Window* root_window, const gfx::Rect& bounds) {
   focus_ring_ = bounds;
-  CreateOrUpdateLayer(root_window, "FocusRing");
-
-  // Update the layer bounds.
   gfx::Rect layer_bounds = bounds;
   int inset = -(kShadowRadius + 2);
   layer_bounds.Inset(inset, inset, inset, inset);
-  layer_->SetBounds(layer_bounds);
+  CreateOrUpdateLayer(root_window, "FocusRing", layer_bounds);
 }
 
-void FocusRingLayer::CreateOrUpdateLayer(
-    aura::Window* root_window, const char* layer_name) {
+bool FocusRingLayer::CanAnimate() const {
+  return compositor_ && compositor_->HasAnimationObserver(this);
+}
+
+void FocusRingLayer::CreateOrUpdateLayer(aura::Window* root_window,
+                                         const char* layer_name,
+                                         const gfx::Rect& bounds) {
   if (!layer_ || root_window != root_window_) {
     root_window_ = root_window;
     ui::Layer* root_layer = root_window->layer();
@@ -55,6 +65,20 @@ void FocusRingLayer::CreateOrUpdateLayer(
   // Keep moving it to the top in case new layers have been added
   // since we created this layer.
   layer_->parent()->StackAtTop(layer_.get());
+
+  layer_->SetBounds(bounds);
+
+  // Update the animation observer.
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayMatching(bounds);
+  ui::Compositor* compositor = root_window->layer()->GetCompositor();
+  if (compositor != compositor_) {
+    if (compositor_ && compositor_->HasAnimationObserver(this))
+      compositor_->RemoveAnimationObserver(this);
+    compositor_ = compositor;
+    if (compositor_ && !compositor_->HasAnimationObserver(this))
+      compositor_->AddAnimationObserver(this);
+  }
 }
 
 void FocusRingLayer::OnPaintLayer(const ui::PaintContext& context) {
@@ -91,6 +115,17 @@ void FocusRingLayer::OnDeviceScaleFactorChanged(float device_scale_factor) {
 
 base::Closure FocusRingLayer::PrepareForLayerBoundsChange() {
   return base::Bind(&base::DoNothing);
+}
+
+void FocusRingLayer::OnAnimationStep(base::TimeTicks timestamp) {
+  delegate_->OnAnimationStep(timestamp);
+}
+
+void FocusRingLayer::OnCompositingShuttingDown(ui::Compositor* compositor) {
+  if (compositor == compositor_) {
+    compositor->RemoveAnimationObserver(this);
+    compositor_ = nullptr;
+  }
 }
 
 }  // namespace chromeos
