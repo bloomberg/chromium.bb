@@ -9,9 +9,9 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <limits.h>
 #include <math.h>
 #include <stdio.h>
-#include <limits.h>
 
 #include "./aom_config.h"
 
@@ -57,9 +57,9 @@
 #endif
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_dsp/aom_filter.h"
+#include "aom_ports/aom_timer.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
-#include "aom_ports/aom_timer.h"
 #include "aom_scale/aom_scale.h"
 
 #define AM_SEGMENT_ID_INACTIVE 7

@@ -12,8 +12,8 @@
 #include <assert.h>
 #include <math.h>
 
-#include "./av1_rtcd.h"
 #include "./aom_dsp_rtcd.h"
+#include "./av1_rtcd.h"
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "aom_mem/aom_mem.h"
@@ -32,6 +32,7 @@
 #include "av1/common/scan.h"
 #include "av1/common/seg_common.h"
 
+#include "av1/encoder/aq_variance.h"
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encodemv.h"
@@ -41,7 +42,6 @@
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/rd.h"
 #include "av1/encoder/rdopt.h"
-#include "av1/encoder/aq_variance.h"
 
 #define LAST_FRAME_MODE_MASK \
   ((1 << GOLDEN_FRAME) | (1 << ALTREF_FRAME) | (1 << INTRA_FRAME))
