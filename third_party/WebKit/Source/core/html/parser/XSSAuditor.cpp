@@ -73,8 +73,10 @@ static bool isNonCanonicalCharacter(UChar c)
     // We also remove the questionmark character, since some severs replace invalid high-bytes with a questionmark. We
     // are already stripping the high-bytes so we also strip the questionmark to match.
     //
+    // We also move the percent character, since some servers strip it when there's a malformed sequence.
+    //
     // For instance: new String("http://localhost:8000?x") => new String("http:localhost:8x").
-    return (c == '\\' || c == '0' || c == '\0' || c == '/' || c == '?' || c >= 127);
+    return (c == '\\' || c == '0' || c == '\0' || c == '/' || c == '?' || c == '%' || c >= 127);
 }
 
 static bool isRequiredForInjection(UChar c)
