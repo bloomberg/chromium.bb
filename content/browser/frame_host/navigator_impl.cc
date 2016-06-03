@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "content/browser/frame_host/frame_tree.h"
@@ -42,6 +43,7 @@
 #include "content/public/common/resource_response.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
+#include "url/gurl.h"
 #include "url/url_constants.h"
 
 namespace content {
@@ -269,7 +271,8 @@ bool NavigatorImpl::NavigateToEntry(
     const NavigationEntryImpl& entry,
     NavigationController::ReloadType reload_type,
     bool is_same_document_history_load,
-    bool is_pending_entry) {
+    bool is_pending_entry,
+    const scoped_refptr<ResourceRequestBody>& post_body) {
   TRACE_EVENT0("browser,navigation", "NavigatorImpl::NavigateToEntry");
 
   GURL dest_url = frame_entry.url();
@@ -388,9 +391,9 @@ bool NavigatorImpl::NavigateToEntry(
       FrameMsg_Navigate_Type::Value navigation_type = GetNavigationType(
           controller_->GetBrowserContext(), entry, reload_type);
       dest_render_frame_host->Navigate(
-          entry.ConstructCommonNavigationParams(frame_entry, nullptr, dest_url,
-                                                dest_referrer, navigation_type,
-                                                lofi_state, navigation_start),
+          entry.ConstructCommonNavigationParams(
+              frame_entry, post_body, dest_url, dest_referrer, navigation_type,
+              lofi_state, navigation_start),
           entry.ConstructStartNavigationParams(),
           entry.ConstructRequestNavigationParams(
               frame_entry, is_same_document_history_load,
@@ -437,7 +440,7 @@ bool NavigatorImpl::NavigateToPendingEntry(
     bool is_same_document_history_load) {
   return NavigateToEntry(frame_tree_node, frame_entry,
                          *controller_->GetPendingEntry(), reload_type,
-                         is_same_document_history_load, true);
+                         is_same_document_history_load, true, nullptr);
 }
 
 bool NavigatorImpl::NavigateNewChildFrame(
@@ -458,7 +461,7 @@ bool NavigatorImpl::NavigateNewChildFrame(
 
   return NavigateToEntry(render_frame_host->frame_tree_node(), *frame_entry,
                          *entry, NavigationControllerImpl::NO_RELOAD, false,
-                         false);
+                         false, nullptr);
 }
 
 void NavigatorImpl::DidNavigate(
@@ -725,7 +728,15 @@ void NavigatorImpl::RequestTransferURL(
     const Referrer& referrer,
     ui::PageTransition page_transition,
     const GlobalRequestID& transferred_global_request_id,
-    bool should_replace_current_entry) {
+    bool should_replace_current_entry,
+    const std::string& method,
+    scoped_refptr<ResourceRequestBody> post_body) {
+  // |method != "POST"| should imply absence of |post_body|.
+  if (method != "POST" && post_body) {
+    NOTREACHED();
+    post_body = nullptr;
+  }
+
   // This call only makes sense for subframes if OOPIFs are possible.
   DCHECK(!render_frame_host->GetParent() ||
          SiteIsolationPolicy::AreCrossProcessFramesPossible());
@@ -789,12 +800,10 @@ void NavigatorImpl::RequestTransferURL(
               is_renderer_initiated, std::string(),
               controller_->GetBrowserContext()));
     }
-    // TODO(creis): Handle POST submissions.  See https://crbug.com/582211 and
-    // https://crbug.com/101395.
     entry->AddOrUpdateFrameEntry(
         node, -1, -1, nullptr,
         static_cast<SiteInstanceImpl*>(source_site_instance), dest_url,
-        referrer_to_use, PageState(), "GET", -1);
+        referrer_to_use, PageState(), method, -1);
   } else {
     // Main frame case.
     entry = NavigationEntryImpl::FromNavigationEntry(
@@ -824,14 +833,13 @@ void NavigatorImpl::RequestTransferURL(
   // further in https://crbug.com/536906.
   scoped_refptr<FrameNavigationEntry> frame_entry(entry->GetFrameEntry(node));
   if (!frame_entry) {
-    // TODO(creis): Handle POST submissions here, as above.
     frame_entry = new FrameNavigationEntry(
         node->unique_name(), -1, -1, nullptr,
         static_cast<SiteInstanceImpl*>(source_site_instance), dest_url,
-        referrer_to_use, "GET", -1);
+        referrer_to_use, method, -1);
   }
   NavigateToEntry(node, *frame_entry, *entry.get(),
-                  NavigationController::NO_RELOAD, false, false);
+                  NavigationController::NO_RELOAD, false, false, post_body);
 }
 
 // PlzNavigate

@@ -20,15 +20,6 @@ http/tests/security/xssAuditor/block-does-not-leak-location.html [ Failure ]
 http/tests/security/xssAuditor/block-does-not-leak-referrer.html [ Failure ]
 http/tests/security/xssAuditor/full-block-script-tag-cross-domain.html [ Failure ]
 
-# https://crbug.com/582211 - body of POST request is not delivered to XSSAuditor.
-http/tests/security/xssAuditor/full-block-post-from-iframe.html [ Failure ]
-http/tests/security/xssAuditor/xss-protection-parsing-01.html [ Failure ]
-http/tests/security/xssAuditor/post-from-iframe.html [ Failure ]
-http/tests/security/xssAuditor/script-tag-post.html [ Failure ]
-http/tests/security/xssAuditor/xss-filter-bypass-long-string.html [ Failure ]
-http/tests/security/xssAuditor/script-tag-post-control-char.html [ Failure ]
-http/tests/security/xssAuditor/script-tag-post-null-char.html [ Failure ]
-
 # https://crbug.com/582176 - InspectorTest.changeExecutionContext doesn't like OOPIFs.
 http/tests/inspector/console-cd-completions.html [ Failure ]
 http/tests/inspector/console-cd.html [ Failure ]

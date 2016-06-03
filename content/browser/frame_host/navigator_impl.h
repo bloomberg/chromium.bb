@@ -24,6 +24,7 @@ namespace content {
 class NavigationControllerImpl;
 class NavigatorDelegate;
 class NavigatorTest;
+class ResourceRequestBody;
 struct LoadCommittedDetails;
 
 // This class is an implementation of Navigator, responsible for managing
@@ -69,14 +70,17 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                       WindowOpenDisposition disposition,
                       bool should_replace_current_entry,
                       bool user_gesture) override;
-  void RequestTransferURL(RenderFrameHostImpl* render_frame_host,
-                          const GURL& url,
-                          SiteInstance* source_site_instance,
-                          const std::vector<GURL>& redirect_chain,
-                          const Referrer& referrer,
-                          ui::PageTransition page_transition,
-                          const GlobalRequestID& transferred_global_request_id,
-                          bool should_replace_current_entry) override;
+  void RequestTransferURL(
+      RenderFrameHostImpl* render_frame_host,
+      const GURL& url,
+      SiteInstance* source_site_instance,
+      const std::vector<GURL>& redirect_chain,
+      const Referrer& referrer,
+      ui::PageTransition page_transition,
+      const GlobalRequestID& transferred_global_request_id,
+      bool should_replace_current_entry,
+      const std::string& method,
+      scoped_refptr<ResourceRequestBody> post_body) override;
   void OnBeforeUnloadACK(FrameTreeNode* frame_tree_node, bool proceed) override;
   void OnBeginNavigation(FrameTreeNode* frame_tree_node,
                          const CommonNavigationParams& common_params,
@@ -106,7 +110,8 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                        const NavigationEntryImpl& entry,
                        NavigationController::ReloadType reload_type,
                        bool is_same_document_history_load,
-                       bool is_pending_entry);
+                       bool is_pending_entry,
+                       const scoped_refptr<ResourceRequestBody>& post_body);
 
   bool ShouldAssignSiteForURL(const GURL& url);
 

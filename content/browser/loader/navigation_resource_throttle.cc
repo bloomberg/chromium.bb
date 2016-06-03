@@ -10,8 +10,10 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/loader/resource_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/resource_context.h"
@@ -39,14 +41,16 @@ void SendCheckResultToIOThread(UIChecksPerformedCallback callback,
                           base::Bind(callback, result));
 }
 
-void CheckWillStartRequestOnUIThread(UIChecksPerformedCallback callback,
-                                     int render_process_id,
-                                     int render_frame_host_id,
-                                     const std::string& method,
-                                     const Referrer& sanitized_referrer,
-                                     bool has_user_gesture,
-                                     ui::PageTransition transition,
-                                     bool is_external_protocol) {
+void CheckWillStartRequestOnUIThread(
+    UIChecksPerformedCallback callback,
+    int render_process_id,
+    int render_frame_host_id,
+    const std::string& method,
+    const scoped_refptr<content::ResourceRequestBody>& resource_request_body,
+    const Referrer& sanitized_referrer,
+    bool has_user_gesture,
+    ui::PageTransition transition,
+    bool is_external_protocol) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* render_frame_host =
       RenderFrameHostImpl::FromID(render_process_id, render_frame_host_id);
@@ -63,8 +67,9 @@ void CheckWillStartRequestOnUIThread(UIChecksPerformedCallback callback,
   }
 
   navigation_handle->WillStartRequest(
-      method, sanitized_referrer, has_user_gesture, transition,
-      is_external_protocol, base::Bind(&SendCheckResultToIOThread, callback));
+      method, resource_request_body, sanitized_referrer, has_user_gesture,
+      transition, is_external_protocol,
+      base::Bind(&SendCheckResultToIOThread, callback));
 }
 
 void CheckWillRedirectRequestOnUIThread(
@@ -141,7 +146,8 @@ NavigationResourceThrottle::~NavigationResourceThrottle() {}
 
 void NavigationResourceThrottle::WillStartRequest(bool* defer) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
+  const ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(request_);
   if (!info)
     return;
 
@@ -159,7 +165,7 @@ void NavigationResourceThrottle::WillStartRequest(bool* defer) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&CheckWillStartRequestOnUIThread, callback, render_process_id,
-                 render_frame_id, request_->method(),
+                 render_frame_id, request_->method(), info->body(),
                  Referrer::SanitizeForRequest(
                      request_->url(), Referrer(GURL(request_->referrer()),
                                                info->GetReferrerPolicy())),
@@ -172,9 +178,12 @@ void NavigationResourceThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
     bool* defer) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
+  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(request_);
   if (!info)
     return;
+
+  if (redirect_info.new_method != "POST")
+    info->ResetBody();
 
   int render_process_id, render_frame_id;
   if (!info->GetAssociatedRenderFrame(&render_process_id, &render_frame_id))

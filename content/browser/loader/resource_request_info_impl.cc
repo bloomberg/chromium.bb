@@ -61,35 +61,35 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
   // the main frame.
   DCHECK(resource_type != RESOURCE_TYPE_MAIN_FRAME || is_main_frame);
 
-  ResourceRequestInfoImpl* info =
-      new ResourceRequestInfoImpl(
-          PROCESS_TYPE_RENDERER,             // process_type
-          render_process_id,                 // child_id
-          render_view_id,                    // route_id
-          -1,                                // frame_tree_node_id
-          0,                                 // origin_pid
-          0,                                 // request_id
-          render_frame_id,                   // render_frame_id
-          is_main_frame,                     // is_main_frame
-          parent_is_main_frame,              // parent_is_main_frame
-          resource_type,                     // resource_type
-          ui::PAGE_TRANSITION_LINK,          // transition_type
-          false,                             // should_replace_current_entry
-          false,                             // is_download
-          false,                             // is_stream
-          allow_download,                    // allow_download
-          false,                             // has_user_gesture
-          false,                             // enable load timing
-          request->has_upload(),             // enable upload progress
-          false,                             // do_not_prompt_for_login
-          blink::WebReferrerPolicyDefault,   // referrer_policy
-          blink::WebPageVisibilityStateVisible,  // visibility_state
-          context,                           // context
-          base::WeakPtr<ResourceMessageFilter>(),  // filter
-          false,                             // report_raw_headers
-          is_async,                          // is_async
-          is_using_lofi,                     // is_using_lofi
-          std::string());                    // original_headers
+  ResourceRequestInfoImpl* info = new ResourceRequestInfoImpl(
+      PROCESS_TYPE_RENDERER,                   // process_type
+      render_process_id,                       // child_id
+      render_view_id,                          // route_id
+      -1,                                      // frame_tree_node_id
+      0,                                       // origin_pid
+      0,                                       // request_id
+      render_frame_id,                         // render_frame_id
+      is_main_frame,                           // is_main_frame
+      parent_is_main_frame,                    // parent_is_main_frame
+      resource_type,                           // resource_type
+      ui::PAGE_TRANSITION_LINK,                // transition_type
+      false,                                   // should_replace_current_entry
+      false,                                   // is_download
+      false,                                   // is_stream
+      allow_download,                          // allow_download
+      false,                                   // has_user_gesture
+      false,                                   // enable load timing
+      request->has_upload(),                   // enable upload progress
+      false,                                   // do_not_prompt_for_login
+      blink::WebReferrerPolicyDefault,         // referrer_policy
+      blink::WebPageVisibilityStateVisible,    // visibility_state
+      context,                                 // context
+      base::WeakPtr<ResourceMessageFilter>(),  // filter
+      false,                                   // report_raw_headers
+      is_async,                                // is_async
+      is_using_lofi,                           // is_using_lofi
+      std::string(),                           // original_headers
+      nullptr);                                // body
   info->AssociateWithRequest(request);
 }
 
@@ -156,7 +156,8 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool report_raw_headers,
     bool is_async,
     bool is_using_lofi,
-    const std::string& original_headers)
+    const std::string& original_headers,
+    const scoped_refptr<ResourceRequestBody> body)
     : cross_site_handler_(NULL),
       detachable_handler_(NULL),
       process_type_(process_type),
@@ -188,8 +189,8 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       report_raw_headers_(report_raw_headers),
       is_async_(is_async),
       is_using_lofi_(is_using_lofi),
-      original_headers_(original_headers) {
-}
+      original_headers_(original_headers),
+      body_(body) {}
 
 ResourceRequestInfoImpl::~ResourceRequestInfoImpl() {
 }
@@ -334,6 +335,10 @@ void ResourceRequestInfoImpl::UpdateForTransfer(
   origin_pid_ = origin_pid;
   request_id_ = request_id;
   filter_ = filter;
+}
+
+void ResourceRequestInfoImpl::ResetBody() {
+  body_ = nullptr;
 }
 
 }  // namespace content

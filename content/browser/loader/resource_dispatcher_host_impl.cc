@@ -1582,7 +1582,8 @@ void ResourceDispatcherHostImpl::BeginRequest(
       IsUsingLoFi(request_data.lofi_state, delegate_, *new_request,
                   resource_context,
                   request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME),
-      support_async_revalidation ? request_data.headers : std::string());
+      support_async_revalidation ? request_data.headers : std::string(),
+      request_data.request_body);
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
 
@@ -1860,8 +1861,8 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       0,
       request_id_,
       render_frame_route_id,
-      false,             // is_main_frame
-      false,             // parent_is_main_frame
+      false,  // is_main_frame
+      false,  // parent_is_main_frame
       RESOURCE_TYPE_SUB_RESOURCE,
       ui::PAGE_TRANSITION_LINK,
       false,     // should_replace_current_entry
@@ -1879,7 +1880,8 @@ ResourceRequestInfoImpl* ResourceDispatcherHostImpl::CreateRequestInfo(
       false,                                   // report_raw_headers
       true,                                    // is_async
       false,                                   // is_using_lofi
-      std::string());                          // original_headers
+      std::string(),                           // original_headers
+      nullptr);                                // body
 }
 
 void ResourceDispatcherHostImpl::OnRenderFrameDeleted(
@@ -2307,7 +2309,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       // here.
       // TODO(ricea): Make the feature work with stale-while-revalidate
       // and clean this up.
-      std::string());  // original_headers
+      std::string(),  // original_headers
+      info.common_params.post_data);
   // Request takes ownership.
   extra_info->AssociateWithRequest(new_request.get());
 

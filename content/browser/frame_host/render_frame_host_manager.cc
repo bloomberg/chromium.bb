@@ -487,9 +487,12 @@ void RenderFrameHostManager::OnCrossSiteResponse(
 
   transferring_render_frame_host->frame_tree_node()
       ->navigator()
-      ->RequestTransferURL(transferring_render_frame_host, transfer_url,
-                           nullptr, rest_of_chain, referrer, page_transition,
-                           global_request_id, should_replace_current_entry);
+      ->RequestTransferURL(
+          transferring_render_frame_host, transfer_url, nullptr, rest_of_chain,
+          referrer, page_transition, global_request_id,
+          should_replace_current_entry,
+          transfer_navigation_handle_->IsPost() ? "POST" : "GET",
+          transfer_navigation_handle_->resource_request_body());
 
   // The transferring request was only needed during the RequestTransferURL
   // call, so it is safe to clear at this point.

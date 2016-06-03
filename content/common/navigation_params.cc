@@ -4,10 +4,13 @@
 
 #include "content/common/navigation_params.h"
 
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
+#include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace content {
 
@@ -62,7 +65,13 @@ CommonNavigationParams::CommonNavigationParams(
       lofi_state(lofi_state),
       navigation_start(navigation_start),
       method(method),
-      post_data(post_data) {}
+      post_data(post_data) {
+  // |method != "POST"| should imply absence of |post_data|.
+  if (method != "POST" && post_data) {
+    NOTREACHED();
+    this->post_data = nullptr;
+  }
+}
 
 CommonNavigationParams::CommonNavigationParams(
     const CommonNavigationParams& other) = default;

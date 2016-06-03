@@ -120,7 +120,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
 
   // The RenderFrameHostImpl wants to transfer the request to a new renderer.
   // |redirect_chain| contains any redirect URLs (excluding |url|) that happened
-  // before the transfer.
+  // before the transfer.  If |method| is "POST", then |post_body| needs to
+  // specify the request body, otherwise |post_body| should be null.
   virtual void RequestTransferURL(
       RenderFrameHostImpl* render_frame_host,
       const GURL& url,
@@ -129,7 +130,9 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       const Referrer& referrer,
       ui::PageTransition page_transition,
       const GlobalRequestID& transferred_global_request_id,
-      bool should_replace_current_entry) {}
+      bool should_replace_current_entry,
+      const std::string& method,
+      scoped_refptr<ResourceRequestBody> post_body) {}
 
   // PlzNavigate
   // Called after receiving a BeforeUnloadACK IPC from the renderer. If

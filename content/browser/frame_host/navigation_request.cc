@@ -208,8 +208,9 @@ void NavigationRequest::BeginNavigation() {
     // TODO(clamy): pass the method to the NavigationHandle instead of a
     // boolean.
     navigation_handle_->WillStartRequest(
-        common_params_.method, Referrer::SanitizeForRequest(
-                                   common_params_.url, common_params_.referrer),
+        common_params_.method, common_params_.post_data,
+        Referrer::SanitizeForRequest(common_params_.url,
+                                     common_params_.referrer),
         begin_params_.has_user_gesture, common_params_.transition, false,
         base::Bind(&NavigationRequest::OnStartChecksComplete,
                    base::Unretained(this)));

@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -24,6 +25,7 @@ struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 namespace content {
 
 class NavigatorDelegate;
+class ResourceRequestBody;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
 struct NavigationRequestInfo;
@@ -156,6 +158,13 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     render_frame_host_ = render_frame_host;
   }
 
+  // Returns the POST body associated with this navigation.  This will be
+  // null for GET and/or other non-POST requests (or if a response to a POST
+  // request was a redirect that changed the method to GET - for example 302).
+  const scoped_refptr<ResourceRequestBody>& resource_request_body() const {
+    return resource_request_body_;
+  }
+
   // PlzNavigate
   void InitServiceWorkerHandle(
       ServiceWorkerContextWrapper* service_worker_context);
@@ -169,12 +178,14 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Called when the URLRequest will start in the network stack.  |callback|
   // will be called when all throttle checks have completed. This will allow
   // the caller to cancel the navigation or let it proceed.
-  void WillStartRequest(const std::string& method,
-                        const Referrer& sanitized_referrer,
-                        bool has_user_gesture,
-                        ui::PageTransition transition,
-                        bool is_external_protocol,
-                        const ThrottleChecksFinishedCallback& callback);
+  void WillStartRequest(
+      const std::string& method,
+      scoped_refptr<content::ResourceRequestBody> resource_request_body,
+      const Referrer& sanitized_referrer,
+      bool has_user_gesture,
+      ui::PageTransition transition,
+      bool is_external_protocol,
+      const ThrottleChecksFinishedCallback& callback);
 
   // Called when the URLRequest will be redirected in the network stack.
   // |callback| will be called when all throttles check have completed. This
@@ -276,6 +287,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // The HTTP method used for the navigation.
   std::string method_;
+
+  // The POST body associated with this navigation.  This will be null for GET
+  // and/or other non-POST requests (or if a response to a POST request was a
+  // redirect that changed the method to GET - for example 302).
+  scoped_refptr<ResourceRequestBody> resource_request_body_;
 
   // The state the navigation is in.
   State state_;

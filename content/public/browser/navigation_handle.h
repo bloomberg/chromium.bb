@@ -89,8 +89,13 @@ class CONTENT_EXPORT NavigationHandle {
   // This corresponds to NavigationThrottle::WillSendRequest. They should not
   // be queried before that.
 
-  // Whether the navigation is a POST or a GET. This may change during the
-  // navigation when encountering a server redirect.
+  // Whether the navigation is done using HTTP POST method. This may change
+  // during the navigation (e.g. after encountering a server redirect).
+  //
+  // Note: page and frame navigations can only be done using HTTP POST or HTTP
+  // GET methods (and using other, scheme-specific protocols for non-http(s) URI
+  // schemes like data: or file:).  Therefore //content public API exposes only
+  // |bool IsPost()| as opposed to |const std::string& GetMethod()| method.
   virtual bool IsPost() = 0;
 
   // Returns a sanitized version of the referrer for this request.

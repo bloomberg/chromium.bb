@@ -16,6 +16,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -155,7 +156,12 @@ void NavigateToURL(chrome::NavigateParams* params) {
 void NavigateToURLWithPost(Browser* browser, const GURL& url) {
   chrome::NavigateParams params(browser, url,
                                 ui::PAGE_TRANSITION_FORM_SUBMIT);
+
+  std::string post_data("test=body");
+  params.browser_initiated_post_data =
+      base::RefCountedString::TakeString(&post_data);
   params.uses_post = true;
+
   NavigateToURL(&params);
 }
 
