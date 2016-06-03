@@ -36,7 +36,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/fonts/FontPlatformData.h"
-#include "platform/fonts/opentype/OpenTypeSanitizer.h"
+#include "platform/fonts/WebFontDecoder.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "wtf/PassOwnPtr.h"
@@ -59,31 +59,18 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(float size, bool bold,
 PassOwnPtr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* buffer, String& otsParseMessage)
 {
     DCHECK(buffer);
-
-    OpenTypeSanitizer sanitizer(buffer);
-    RefPtr<SharedBuffer> transcodeBuffer = sanitizer.sanitize();
-
-    if (!transcodeBuffer) {
-        otsParseMessage = sanitizer.getErrorString();
-        return nullptr; // validation failed.
-    }
-    buffer = transcodeBuffer.get();
-
-    SkMemoryStream* stream = new SkMemoryStream(buffer->getAsSkData().get());
-#if OS(WIN)
-    RefPtr<SkTypeface> typeface = adoptRef(FontCache::fontCache()->fontManager()->createFromStream(stream));
-#else
-    RefPtr<SkTypeface> typeface = adoptRef(SkTypeface::CreateFromStream(stream));
-#endif
-    if (!typeface)
+    WebFontDecoder decoder;
+    RefPtr<SkTypeface> typeface = decoder.decode(buffer);
+    if (!typeface) {
+        otsParseMessage = decoder.getErrorString();
         return nullptr;
-
+    }
     return adoptPtr(new FontCustomPlatformData(typeface.release()));
 }
 
 bool FontCustomPlatformData::supportsFormat(const String& format)
 {
-    return equalIgnoringCase(format, "truetype") || equalIgnoringCase(format, "opentype") || OpenTypeSanitizer::supportsFormat(format);
+    return equalIgnoringCase(format, "truetype") || equalIgnoringCase(format, "opentype") || WebFontDecoder::supportsFormat(format);
 }
 
 } // namespace blink

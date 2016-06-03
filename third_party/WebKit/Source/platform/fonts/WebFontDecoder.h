@@ -28,54 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OpenTypeSanitizer_h
-#define OpenTypeSanitizer_h
+#ifndef WebFontDecoder_h
+#define WebFontDecoder_h
 
-#include "opentype-sanitiser.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "wtf/Allocator.h"
-#include "wtf/Forward.h"
+#include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class SharedBuffer;
 
-class OpenTypeSanitizer {
+class WebFontDecoder final {
     STACK_ALLOCATED();
 public:
-    explicit OpenTypeSanitizer(SharedBuffer* buffer)
-        : m_buffer(buffer)
-        , m_otsErrorString("")
+    WebFontDecoder()
     {
     }
 
-    PassRefPtr<SharedBuffer> sanitize();
+    PassRefPtr<SkTypeface> decode(SharedBuffer*);
 
     static bool supportsFormat(const String&);
-    String getErrorString() const { return static_cast<String>(m_otsErrorString); }
+    String getErrorString() const { return m_otsErrorString; }
 
+private:
     void setErrorString(const String& errorString) { m_otsErrorString = errorString; }
 
-private:
-    SharedBuffer* const m_buffer;
     String m_otsErrorString;
-};
-
-class BlinkOTSContext: public ots::OTSContext {
-    DISALLOW_NEW();
-public:
-        BlinkOTSContext()
-            : m_errorString("")
-        {
-        }
-
-        virtual void Message(int level, const char *format, ...);
-        virtual ots::TableAction GetTableAction(uint32_t tag);
-        String getErrorString() const { return static_cast<String>(m_errorString); }
-private:
-        String m_errorString;
 };
 
 } // namespace blink
 
-#endif // OpenTypeSanitizer_h
+#endif // WebFontDecoder_h

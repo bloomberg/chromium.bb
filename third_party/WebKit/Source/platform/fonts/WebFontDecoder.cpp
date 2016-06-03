@@ -28,88 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/fonts/opentype/OpenTypeSanitizer.h"
+#include "platform/fonts/WebFontDecoder.h"
 
-#include "hb.h"
-#include "ots-memory-stream.h"
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
+#include "platform/fonts/FontCache.h"
 #include "public/platform/Platform.h"
+#include "third_party/harfbuzz-ng/src/hb.h"
+#include "third_party/ots/include/ots-memory-stream.h"
+#include "third_party/skia/include/core/SkStream.h"
 #include "wtf/CurrentTime.h"
 
 #include <stdarg.h>
 
 namespace blink {
 
-static void recordDecodeSpeedHistogram(SharedBuffer* buffer, double decodeTime, size_t decodedSize)
-{
-    if (decodeTime <= 0)
-        return;
+namespace {
 
-    double kbPerSecond = decodedSize / (1000 * decodeTime);
-    if (buffer->size() >= 4) {
-        const char* data = buffer->data();
-        if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == 'F') {
-            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, woffHistogram, new CustomCountHistogram("WebFont.DecodeSpeed.WOFF", 1000, 300000, 50));
-            woffHistogram.count(kbPerSecond);
-            return;
-        }
+class BlinkOTSContext final : public ots::OTSContext {
+    DISALLOW_NEW();
+public:
 
-        if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == '2') {
-            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, woff2Histogram, new CustomCountHistogram("WebFont.DecodeSpeed.WOFF2", 1000, 300000, 50));
-            woff2Histogram.count(kbPerSecond);
-            return;
-        }
-    }
+    void Message(int level, const char *format, ...) override;
+    ots::TableAction GetTableAction(uint32_t tag) override;
+    const String& getErrorString() { return m_errorString; }
 
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, sfntHistogram, new CustomCountHistogram("WebFont.DecodeSpeed.SFNT", 1000, 300000, 50));
-    sfntHistogram.count(kbPerSecond);
-}
-
-PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()
-{
-    if (!m_buffer) {
-        setErrorString("Empty Buffer");
-        return nullptr;
-    }
-
-    // This is the largest web font size which we'll try to transcode.
-    static const size_t maxWebFontSize = 30 * 1024 * 1024; // 30 MB
-    if (m_buffer->size() > maxWebFontSize) {
-        setErrorString("Web font size more than 30MB");
-        return nullptr;
-    }
-
-    // A transcoded font is usually smaller than an original font.
-    // However, it can be slightly bigger than the original one due to
-    // name table replacement and/or padding for glyf table.
-    //
-    // With WOFF fonts, however, we'll be decompressing, so the result can be
-    // much larger than the original.
-
-    ots::ExpandingMemoryStream output(m_buffer->size(), maxWebFontSize);
-    double start = currentTime();
-    BlinkOTSContext otsContext;
-
-    TRACE_EVENT_BEGIN0("blink", "DecodeFont");
-    bool ok = otsContext.Process(&output, reinterpret_cast<const uint8_t*>(m_buffer->data()), m_buffer->size());
-    TRACE_EVENT_END0("blink", "DecodeFont");
-
-    if (!ok) {
-        setErrorString(otsContext.getErrorString());
-        return nullptr;
-    }
-
-    const size_t transcodeLen = output.Tell();
-    recordDecodeSpeedHistogram(m_buffer, currentTime() - start, transcodeLen);
-    return SharedBuffer::create(static_cast<unsigned char*>(output.get()), transcodeLen);
-}
-
-bool OpenTypeSanitizer::supportsFormat(const String& format)
-{
-    return equalIgnoringCase(format, "woff") || equalIgnoringCase(format, "woff2");
-}
+private:
+    String m_errorString;
+};
 
 void BlinkOTSContext::Message(int level, const char *format, ...)
 {
@@ -171,6 +118,87 @@ ots::TableAction BlinkOTSContext::GetTableAction(uint32_t tag)
     default:
         return ots::TABLE_ACTION_DEFAULT;
     }
+}
+
+void recordDecodeSpeedHistogram(const char* data, size_t length, double decodeTime, size_t decodedSize)
+{
+    if (decodeTime <= 0)
+        return;
+
+    double kbPerSecond = decodedSize / (1000 * decodeTime);
+    if (length >= 4) {
+        if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == 'F') {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, woffHistogram, new CustomCountHistogram("WebFont.DecodeSpeed.WOFF", 1000, 300000, 50));
+            woffHistogram.count(kbPerSecond);
+            return;
+        }
+
+        if (data[0] == 'w' && data[1] == 'O' && data[2] == 'F' && data[3] == '2') {
+            DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, woff2Histogram, new CustomCountHistogram("WebFont.DecodeSpeed.WOFF2", 1000, 300000, 50));
+            woff2Histogram.count(kbPerSecond);
+            return;
+        }
+    }
+
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(CustomCountHistogram, sfntHistogram, new CustomCountHistogram("WebFont.DecodeSpeed.SFNT", 1000, 300000, 50));
+    sfntHistogram.count(kbPerSecond);
+}
+
+} // namespace
+
+// static
+bool WebFontDecoder::supportsFormat(const String& format)
+{
+    return equalIgnoringCase(format, "woff") || equalIgnoringCase(format, "woff2");
+}
+
+PassRefPtr<SkTypeface> WebFontDecoder::decode(SharedBuffer* buffer)
+{
+    if (!buffer) {
+        setErrorString("Empty Buffer");
+        return nullptr;
+    }
+
+    // This is the largest web font size which we'll try to transcode.
+    // TODO(bashi): 30MB seems low. Update the limit if necessary.
+    static const size_t maxWebFontSize = 30 * 1024 * 1024; // 30 MB
+    if (buffer->size() > maxWebFontSize) {
+        setErrorString("Web font size more than 30MB");
+        return nullptr;
+    }
+
+    // Most web fonts are compressed, so the result can be much larger than
+    // the original.
+    ots::ExpandingMemoryStream output(buffer->size(), maxWebFontSize);
+    double start = currentTime();
+    BlinkOTSContext otsContext;
+    const char* data = buffer->data();
+
+    TRACE_EVENT_BEGIN0("blink", "DecodeFont");
+    bool ok = otsContext.Process(&output, reinterpret_cast<const uint8_t*>(data), buffer->size());
+    TRACE_EVENT_END0("blink", "DecodeFont");
+
+    if (!ok) {
+        setErrorString(otsContext.getErrorString());
+        return nullptr;
+    }
+
+    const size_t decodedLength = output.Tell();
+    recordDecodeSpeedHistogram(data, buffer->size(), currentTime() - start, decodedLength);
+
+    sk_sp<SkData> skData = SkData::MakeWithCopy(output.get(), decodedLength);
+    SkMemoryStream* stream = new SkMemoryStream(skData);
+#if OS(WIN)
+    RefPtr<SkTypeface> typeface = adoptRef(FontCache::fontCache()->fontManager()->createFromStream(stream));
+#else
+    RefPtr<SkTypeface> typeface = adoptRef(SkTypeface::CreateFromStream(stream));
+#endif
+    if (!typeface) {
+        setErrorString("Not a valid font data");
+        return nullptr;
+    }
+
+    return typeface.release();
 }
 
 } // namespace blink
