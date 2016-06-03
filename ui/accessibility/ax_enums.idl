@@ -492,7 +492,7 @@
 
   // Touch gestures on Chrome OS.
   enum AXGesture {
-    double_tap,
+    click,
     swipe_left_1,
     swipe_up_1,
     swipe_right_1,

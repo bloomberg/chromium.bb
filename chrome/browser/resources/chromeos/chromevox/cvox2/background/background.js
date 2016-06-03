@@ -162,12 +162,13 @@ Background.ISSUE_URL = 'https://code.google.com/p/chromium/issues/entry?' +
  * @const
  */
 Background.GESTURE_CLASSIC_COMMAND_MAP = {
+  'click': 'forceClickOnCurrentItem',
   'swipeUp1': 'backward',
   'swipeDown1': 'forward',
   'swipeLeft1': 'left',
   'swipeRight1': 'right',
   'swipeUp2': 'jumpToTop',
-  'swipeDown2': 'readFromhere',
+  'swipeDown2': 'readFromHere',
 };
 
 /**
@@ -177,6 +178,7 @@ Background.GESTURE_CLASSIC_COMMAND_MAP = {
  * @const
  */
 Background.GESTURE_NEXT_COMMAND_MAP = {
+  'click': 'forceClickOnCurrentItem',
   'swipeUp1': 'previousLine',
   'swipeDown1': 'nextLine',
   'swipeLeft1': 'previousObject',

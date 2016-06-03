@@ -650,6 +650,14 @@ bool RootWindowController::IsVirtualKeyboardWindow(aura::Window* window) {
   return parent ? parent->Contains(window) : false;
 }
 
+void RootWindowController::SetTouchAccessibilityAnchorPoint(
+    const gfx::Point& anchor_point) {
+#if defined(OS_CHROMEOS)
+  if (touch_exploration_manager_)
+    touch_exploration_manager_->SetTouchAccessibilityAnchorPoint(anchor_point);
+#endif  // defined(OS_CHROMEOS)
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowController, private:
 

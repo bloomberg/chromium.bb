@@ -97,6 +97,14 @@ void AshTouchExplorationManager::OnWindowActivated(
   UpdateTouchExplorationState();
 }
 
+void AshTouchExplorationManager::SetTouchAccessibilityAnchorPoint(
+    const gfx::Point& anchor_point) {
+  if (touch_exploration_controller_) {
+    touch_exploration_controller_->SetTouchAccessibilityAnchorPoint(
+        anchor_point);
+  }
+}
+
 void AshTouchExplorationManager::UpdateTouchExplorationState() {
   // Comes from components/exo/shell_surface.cc.
   const char kExoShellSurfaceWindowName[] = "ExoShellSurface";

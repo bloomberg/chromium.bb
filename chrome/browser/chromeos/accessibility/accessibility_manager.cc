@@ -14,6 +14,7 @@
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -794,6 +795,13 @@ void AccessibilityManager::HandleAccessibilityGesture(ui::AXGesture gesture) {
       std::move(event_args)));
   event_router->DispatchEventWithLazyListener(
       extension_misc::kChromeVoxExtensionId, std::move(event));
+}
+
+void AccessibilityManager::SetTouchAccessibilityAnchorPoint(
+    const gfx::Point& anchor_point) {
+  ash::RootWindowController* root_window_controller =
+      ash::RootWindowController::ForTargetRootWindow();
+  root_window_controller->SetTouchAccessibilityAnchorPoint(anchor_point);
 }
 
 bool AccessibilityManager::IsHighContrastEnabled() {

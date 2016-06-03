@@ -37,6 +37,7 @@ TouchExplorationController::TouchExplorationController(
     : root_window_(root_window),
       delegate_(delegate),
       state_(NO_FINGERS_DOWN),
+      anchor_point_state_(ANCHOR_POINT_NONE),
       gesture_provider_(new GestureProviderAura(this, this)),
       prev_state_(NO_FINGERS_DOWN),
       VLOG_on_(true),
@@ -47,6 +48,15 @@ TouchExplorationController::TouchExplorationController(
 
 TouchExplorationController::~TouchExplorationController() {
   root_window_->GetHost()->GetEventSource()->RemoveEventRewriter(this);
+}
+
+void TouchExplorationController::SetTouchAccessibilityAnchorPoint(
+    const gfx::Point& anchor_point) {
+  gfx::Point native_point = anchor_point;
+  root_window_->GetHost()->ConvertPointToNativeScreen(&native_point);
+
+  anchor_point_ = gfx::PointF(native_point.x(), native_point.y());
+  anchor_point_state_ = ANCHOR_POINT_EXPLICITLY_SET;
 }
 
 ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
@@ -295,6 +305,7 @@ ui::EventRewriteStatus TouchExplorationController::InSingleTapPressed(
       SET_STATE(GESTURE_IN_PROGRESS);
       return InGestureInProgress(event, rewritten_event);
     }
+    anchor_point_state_ = ANCHOR_POINT_FROM_TOUCH_EXPLORATION;
     EnterTouchToMouseMode();
     SET_STATE(TOUCH_EXPLORATION);
     return InTouchExploration(event, rewritten_event);
@@ -315,8 +326,10 @@ TouchExplorationController::InSingleTapOrTouchExploreReleased(
     return ui::EVENT_REWRITE_DISCARD;
   }
   if (type == ui::ET_TOUCH_PRESSED) {
-    // If there is no touch exploration yet, we can't send a click, so discard.
-    if (!last_touch_exploration_) {
+    // If there is no anchor point for synthesized events because the
+    // user hasn't touch-explored or focused anything yet, we can't
+    // send a click, so discard.
+    if (anchor_point_state_ == ANCHOR_POINT_NONE) {
       tap_timer_.Stop();
       return ui::EVENT_REWRITE_DISCARD;
     }
@@ -333,7 +346,8 @@ TouchExplorationController::InSingleTapOrTouchExploreReleased(
     // will determine the offset.
     last_unused_finger_event_.reset(new ui::TouchEvent(event));
     return ui::EVENT_REWRITE_DISCARD;
-  } else if (type == ui::ET_TOUCH_RELEASED && !last_touch_exploration_) {
+  } else if (type == ui::ET_TOUCH_RELEASED &&
+             anchor_point_state_ == ANCHOR_POINT_NONE) {
     // If the previous press was discarded, we need to also handle its
     // release.
     if (current_touch_ids_.size() == 0) {
@@ -366,23 +380,10 @@ ui::EventRewriteStatus TouchExplorationController::InDoubleTapPending(
     if (current_touch_ids_.size() != 0)
       return EVENT_REWRITE_DISCARD;
 
-    std::unique_ptr<ui::TouchEvent> touch_press;
-    touch_press.reset(new ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(),
-                                         initial_press_->touch_id(),
-                                         event.time_stamp()));
-    touch_press->set_location_f(last_touch_exploration_->location_f());
-    touch_press->set_root_location_f(last_touch_exploration_->location_f());
-    DispatchEvent(touch_press.get());
+    SendSimulatedClick();
 
-    std::unique_ptr<ui::TouchEvent> new_event(
-        new ui::TouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(),
-                           initial_press_->touch_id(), event.time_stamp()));
-    new_event->set_location_f(last_touch_exploration_->location_f());
-    new_event->set_root_location_f(last_touch_exploration_->location_f());
-    new_event->set_flags(event.flags());
-    *rewritten_event = std::move(new_event);
     SET_STATE(NO_FINGERS_DOWN);
-    return ui::EVENT_REWRITE_REWRITTEN;
+    return ui::EVENT_REWRITE_DISCARD;
   }
   NOTREACHED();
   return ui::EVENT_REWRITE_CONTINUE;
@@ -398,15 +399,9 @@ ui::EventRewriteStatus TouchExplorationController::InTouchReleasePending(
     if (current_touch_ids_.size() != 0)
       return EVENT_REWRITE_DISCARD;
 
-    std::unique_ptr<ui::TouchEvent> new_event(
-        new ui::TouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(),
-                           initial_press_->touch_id(), event.time_stamp()));
-    new_event->set_location_f(last_touch_exploration_->location_f());
-    new_event->set_root_location_f(last_touch_exploration_->location_f());
-    new_event->set_flags(event.flags());
-    *rewritten_event = std::move(new_event);
+    SendSimulatedClick();
     SET_STATE(NO_FINGERS_DOWN);
-    return ui::EVENT_REWRITE_REWRITTEN;
+    return ui::EVENT_REWRITE_DISCARD;
   }
   NOTREACHED();
   return ui::EVENT_REWRITE_CONTINUE;
@@ -417,18 +412,11 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploration(
     std::unique_ptr<ui::Event>* rewritten_event) {
   const ui::EventType type = event.type();
   if (type == ui::ET_TOUCH_PRESSED) {
-    // Handle split-tap.
+    // Enter split-tap mode.
     initial_press_.reset(new TouchEvent(event));
     tap_timer_.Stop();
-    std::unique_ptr<ui::TouchEvent> new_event(
-        new ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(), event.touch_id(),
-                           event.time_stamp()));
-    new_event->set_location_f(last_touch_exploration_->location_f());
-    new_event->set_root_location_f(last_touch_exploration_->location_f());
-    new_event->set_flags(event.flags());
-    *rewritten_event = std::move(new_event);
     SET_STATE(TOUCH_EXPLORE_SECOND_PRESS);
-    return ui::EVENT_REWRITE_REWRITTEN;
+    return ui::EVENT_REWRITE_DISCARD;
   } else if (type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) {
     initial_press_.reset(new TouchEvent(event));
     StartTapTimer();
@@ -441,6 +429,9 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploration(
   // Rewrite as a mouse-move event.
   *rewritten_event = CreateMouseMoveEvent(event.location_f(), event.flags());
   last_touch_exploration_.reset(new TouchEvent(event));
+  if (anchor_point_state_ != ANCHOR_POINT_EXPLICITLY_SET)
+    anchor_point_ = last_touch_exploration_->location_f();
+
   return ui::EVENT_REWRITE_REWRITTEN;
 }
 
@@ -525,8 +516,9 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
     std::unique_ptr<ui::TouchEvent> new_event(
         new ui::TouchEvent(ui::ET_TOUCH_CANCELLED, gfx::Point(),
                            initial_press_->touch_id(), event.time_stamp()));
-    new_event->set_location_f(last_touch_exploration_->location_f());
-    new_event->set_root_location_f(last_touch_exploration_->location_f());
+    // TODO(dmazzoni): fix for multiple displays. http://crbug.com/616793
+    new_event->set_location_f(anchor_point_);
+    new_event->set_root_location_f(anchor_point_);
     new_event->set_flags(event.flags());
     *rewritten_event = std::move(new_event);
     SET_STATE(WAIT_FOR_NO_FINGERS);
@@ -547,19 +539,10 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
     // Check the distance between the current finger location and the original
     // location. The slop for this is a bit more generous since keeping two
     // fingers in place is a bit harder. If the user has left the slop, the
-    // split tap press (which was previous dispatched) is lifted with a touch
-    // cancelled, and the user enters the wait state.
+    // user enters the wait state.
     if ((event.location_f() - original_touch->location_f()).Length() >
         GetSplitTapTouchSlop()) {
-      std::unique_ptr<ui::TouchEvent> new_event(
-          new ui::TouchEvent(ui::ET_TOUCH_CANCELLED, gfx::Point(),
-                             initial_press_->touch_id(), event.time_stamp()));
-      new_event->set_location_f(last_touch_exploration_->location_f());
-      new_event->set_root_location_f(last_touch_exploration_->location_f());
-      new_event->set_flags(event.flags());
-      *rewritten_event = std::move(new_event);
       SET_STATE(WAIT_FOR_NO_FINGERS);
-      return ui::EVENT_REWRITE_REWRITTEN;
     }
     return ui::EVENT_REWRITE_DISCARD;
   } else if (type == ui::ET_TOUCH_RELEASED || type == ui::ET_TOUCH_CANCELLED) {
@@ -576,17 +559,11 @@ ui::EventRewriteStatus TouchExplorationController::InTouchExploreSecondPress(
     if (current_touch_ids_.size() != 1)
       return EVENT_REWRITE_DISCARD;
 
-    // Rewrite at location of last touch exploration.
-    std::unique_ptr<ui::TouchEvent> new_event(
-        new ui::TouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(),
-                           initial_press_->touch_id(), event.time_stamp()));
-    new_event->set_location_f(last_touch_exploration_->location_f());
-    new_event->set_root_location_f(last_touch_exploration_->location_f());
-    new_event->set_flags(event.flags());
-    *rewritten_event = std::move(new_event);
+    SendSimulatedClick();
+
     SET_STATE(TOUCH_EXPLORATION);
     EnterTouchToMouseMode();
-    return ui::EVENT_REWRITE_REWRITTEN;
+    return ui::EVENT_REWRITE_DISCARD;
   }
   NOTREACHED();
   return ui::EVENT_REWRITE_CONTINUE;
@@ -602,6 +579,34 @@ ui::EventRewriteStatus TouchExplorationController::InWaitForNoFingers(
 
 void TouchExplorationController::PlaySoundForTimer() {
   delegate_->PlayVolumeAdjustEarcon();
+}
+
+void TouchExplorationController::SendSimulatedClick() {
+  // If we got an anchor point from ChromeVox, send a double-tap gesture
+  // and let ChromeVox handle the click.
+  if (anchor_point_state_ == ANCHOR_POINT_EXPLICITLY_SET) {
+    delegate_->HandleAccessibilityGesture(ui::AX_GESTURE_CLICK);
+    return;
+  }
+
+  // If we don't have an anchor point, we can't send a simulated click.
+  if (anchor_point_state_ == ANCHOR_POINT_NONE)
+    return;
+
+  // Otherwise send a simulated press/release at the anchor point.
+  std::unique_ptr<ui::TouchEvent> touch_press;
+  touch_press.reset(new ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(),
+                                       initial_press_->touch_id(), Now()));
+  touch_press->set_location_f(anchor_point_);
+  touch_press->set_root_location_f(anchor_point_);
+  DispatchEvent(touch_press.get());
+
+  std::unique_ptr<ui::TouchEvent> touch_release;
+  touch_release.reset(new ui::TouchEvent(ui::ET_TOUCH_RELEASED, gfx::Point(),
+                                         initial_press_->touch_id(), Now()));
+  touch_release->set_location_f(anchor_point_);
+  touch_release->set_root_location_f(anchor_point_);
+  DispatchEvent(touch_release.get());
 }
 
 ui::EventRewriteStatus TouchExplorationController::InSlideGesture(
@@ -713,17 +718,18 @@ void TouchExplorationController::OnTapTimerFired() {
     case TOUCH_EXPLORE_RELEASED:
       SET_STATE(NO_FINGERS_DOWN);
       last_touch_exploration_.reset(new TouchEvent(*initial_press_));
+      anchor_point_ = last_touch_exploration_->location_f();
+      anchor_point_state_ = ANCHOR_POINT_FROM_TOUCH_EXPLORATION;
       return;
     case DOUBLE_TAP_PENDING: {
       SET_STATE(ONE_FINGER_PASSTHROUGH);
-      passthrough_offset_ = last_unused_finger_event_->location_f() -
-                            last_touch_exploration_->location_f();
+      passthrough_offset_ =
+          last_unused_finger_event_->location_f() - anchor_point_;
       std::unique_ptr<ui::TouchEvent> passthrough_press(
           new ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(),
                              last_unused_finger_event_->touch_id(), Now()));
-      passthrough_press->set_location_f(last_touch_exploration_->location_f());
-      passthrough_press->set_root_location_f(
-          last_touch_exploration_->location_f());
+      passthrough_press->set_location_f(anchor_point_);
+      passthrough_press->set_root_location_f(anchor_point_);
       DispatchEvent(passthrough_press.get());
       return;
     }
@@ -733,6 +739,7 @@ void TouchExplorationController::OnTapTimerFired() {
     case GESTURE_IN_PROGRESS:
       // If only one finger is down, go into touch exploration.
       if (current_touch_ids_.size() == 1) {
+        anchor_point_state_ = ANCHOR_POINT_FROM_TOUCH_EXPLORATION;
         EnterTouchToMouseMode();
         SET_STATE(TOUCH_EXPLORATION);
         break;
@@ -751,6 +758,8 @@ void TouchExplorationController::OnTapTimerFired() {
       initial_press_->location_f(), initial_press_->flags());
   DispatchEvent(mouse_move.get());
   last_touch_exploration_.reset(new TouchEvent(*initial_press_));
+  anchor_point_ = last_touch_exploration_->location_f();
+  anchor_point_state_ = ANCHOR_POINT_FROM_TOUCH_EXPLORATION;
 }
 
 void TouchExplorationController::OnPassthroughTimerFired() {
@@ -762,7 +771,6 @@ void TouchExplorationController::OnPassthroughTimerFired() {
   if (!initial_press_ ||
       touch_locations_.find(initial_press_->touch_id()) !=
           touch_locations_.end()) {
-    LOG(ERROR) << "No initial press or the initial press has been released.";
   }
 
   gfx::Point location =

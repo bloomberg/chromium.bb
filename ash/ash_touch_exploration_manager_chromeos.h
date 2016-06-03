@@ -52,6 +52,10 @@ class ASH_EXPORT AshTouchExplorationManager
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 
+  // Update the touch exploration controller so that synthesized touch
+  // events are anchored at this point.
+  void SetTouchAccessibilityAnchorPoint(const gfx::Point& anchor_point);
+
  private:
   void UpdateTouchExplorationState();
   bool VolumeAdjustSoundEnabled();

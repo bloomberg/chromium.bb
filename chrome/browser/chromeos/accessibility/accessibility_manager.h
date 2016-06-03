@@ -250,6 +250,10 @@ class AccessibilityManager
   // to ChromeVox.
   void HandleAccessibilityGesture(ui::AXGesture gesture);
 
+  // Update the touch exploration controller so that synthesized
+  // touch events are anchored at this point.
+  void SetTouchAccessibilityAnchorPoint(const gfx::Point& anchor_point);
+
   // Called by our widget observer when the ChromeVoxPanel is closing.
   void OnChromeVoxPanelClosing();
   void OnChromeVoxPanelDestroying();
